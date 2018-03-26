@@ -1,0 +1,30 @@
+{
+  "name": "planning-app",
+  "version": "1.0.0",
+  "description": "Aragon planning application developer by Space Decentral and Giveth.",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "truffle test",
+    "lint": "solium --dir ./contracts",
+    "coverage": "./node_modules/.bin/solidity-coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Giveth/planning-app.git"
+  },
+  "keywords": [
+    "Ethereum",
+    "Aragon",
+    "Decentralized",
+    "Solidity"
+  ],
+  "author": "",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/Giveth/planning-app/issues"
+  },
+  "homepage": "https://github.com/Giveth/planning-app#readme"
+}
