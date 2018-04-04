@@ -11,7 +11,8 @@
   "scripts": {
     "test": "truffle test",
     "compile": "truffle compile",
-    "publish": "aragon-dev-cli publish"
+    "publish": "aragon-dev-cli publish",
+    "playground": "aragon-dev-cli playground"
   },
   "keywords": [],
   "license": "GPL-3.0"
