@@ -1,5 +1,5 @@
-var App = artifacts.require('./App.sol')
+var RangeVoting = artifacts.require('./RangeVoting.sol')
 
 module.exports = function (deployer) {
-  deployer.deploy(App)
+  deployer.deploy(RangeVoting)
 }
