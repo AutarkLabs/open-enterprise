@@ -1,0 +1,23 @@
+{
+  "name": "app-name-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "dependencies": {
+    "@aragon/ui": "^0.4.0",
+    "@aragon/client": "^1.0.0-beta.2",
+    "styled-components": "^3.1.6"
+  },
+  "devDependencies": {
+    "webpack": "^3.8.1",
+    "react-scripts": "1.0.17"
+  },
+  "scripts": {
+    "sync-assets": "rsync -rtu \"$(dirname $(node -p 'require.resolve(\"@aragon/ui\")'))/\" public/aragon-ui",
+    "start": "npm run sync-assets && PORT=3001 react-scripts start",
+    "build": "npm run sync-assets && react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "license": "GPL-3.0"
+}
