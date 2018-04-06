@@ -66,7 +66,7 @@ contract RangeVoting is IForwarder, AragonApp {
     function initialize(
         MiniMeToken _token,
         uint256 _minParticipationPct,
-		uint256 _candidateSupportPct,
+        uint256 _candidateSupportPct,
         uint64 _voteTime
     ) onlyInit external
     {
@@ -84,6 +84,35 @@ contract RangeVoting is IForwarder, AragonApp {
         votes.length += 1;
     }
 
+    /**
+    * @notice Create a new vote about "`_metadata`"
+    * @param _executionScript EVM script to be executed on approval
+    * @return voteId id for newly created vote
+    */
+    function newVote(bytes _executionScript, string _metadata) auth(CREATE_VOTES_ROLE) external returns (uint256 voteId) {
+        return _newVote(_executionScript, _metadata);
+    }
+
+    function vote(uint256 _voteId, uint256[] _supports, bool _executesIfDecided) external {
+		//needs implementation
+    }
+
+    function addCandidate(bytes metadata, string description) external auth(ADD_CANDIDATES_ROLE) {
+        // needs implementation
+    }
+    
+    function getCandidate(string description) external {
+        // Needs implementation (should return)        
+    }
+    
+    /**
+    * @notice Execute the result of vote #`_voteId`
+    * @param _voteId Id for vote
+    */
+    function executeVote(uint256 _voteId) external {
+        require(canExecute(_voteId));
+        _executeVote(_voteId);
+    }
 
     function isForwarder() public pure returns (bool) {
         return true;
@@ -103,22 +132,48 @@ contract RangeVoting is IForwarder, AragonApp {
         return canPerform(_sender, CREATE_VOTES_ROLE, arr());
     }
 	
-    function _newVote(bytes _executionScript, string _metadata) isInitialized internal returns (uint256 voteId) {
-        voteId = votes.length++;
-        Vote storage vote = votes[voteId];
-        vote.executionScript = _executionScript;
-        vote.creator = msg.sender;
-        vote.startDate = uint64(now);
-        vote.metadata = _metadata;
-        vote.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
-        vote.totalVoters = token.totalSupplyAt(vote.snapshotBlock);
-        vote.candidateSupportPct = candidateSupportPct;
+    function canVote(uint256 _voteId, address _voter) public view returns (bool) {
+        Vote storage vote = votes[_voteId];
 
-        StartVote(voteId);
+        return _isVoteOpen(vote) && token.balanceOfAt(_voter, vote.snapshotBlock) > 0;
     }
 
-    function vote(uint256 _voteId, uint256[] _supports, bool _executesIfDecided) external {
-		//needs implementation
+    function canExecute(uint256 _voteId) public view returns (bool) {
+        // Needs implementation
+    }
+
+    function getVote(uint256 _voteId) public view {
+        // Needs implementation (should return)
+    }
+
+    function getVoteMetadata(uint256 _voteId) public view returns (string) {
+        return votes[_voteId].metadata;
+    }
+
+    function getVoterState(uint256 _voteId, address _voter) public view {
+        // Needs implementation (should return)
+    }
+
+    function _newVote(bytes _executionScript, string _metadata) isInitialized internal returns (uint256 voteId) {
+        // Needs implementation (should be very similar to standard vote)
+    }
+    
+    function _vote(
+        uint256 _voteId,
+        bool _supports,
+        address _voter,
+        bool _executesIfDecided
+    ) internal
+    {
+        // Needs implementation        
+    }
+
+    function _executeVote(uint256 _voteId) internal {
+        // Needs implementation
+    }
+
+    function _isVoteOpen(Vote storage vote) internal view returns (bool) {
+        return uint64(now) < (vote.startDate.add(voteTime)) && !vote.executed;
     }
 
 	/**
