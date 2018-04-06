@@ -27,7 +27,7 @@ contract RangeVoting is IForwarder, AragonApp {
     bytes32 constant public ADD_CANDIDATES_ROLE = keccak256("ADD_CANDIDATES_ROLE");
     bytes32 constant public MODIFY_PARTICIPATION_ROLE = keccak256("MODIFY_PARTICIPATION_ROLE");
 
-	struct Vote {
+    struct Vote {
         address creator;
         uint64 startDate;
         uint256 snapshotBlock;
@@ -36,24 +36,25 @@ contract RangeVoting is IForwarder, AragonApp {
         string metadata;
         bytes executionScript;
         bool executed;
-		string[] candidateKeys;
-		mapping (bytes32 => CandidateState) candidates;
+        string[] candidateKeys;
+        mapping (bytes32 => CandidateState) candidates;
         mapping (address => uint256[]) voters;
     }
 
-	struct CandidateState {
-		bool added;
-		bytes metadata;
-		uint8 keyArrayIndex;
-		uint256 voteSupport;
-	}
+    struct CandidateState {
+        bool added;
+        bytes metadata;
+        uint8 keyArrayIndex;
+        uint256 voteSupport;
+    }
 
     Vote[] votes;
 
     event StartVote(uint256 indexed voteId);
-    event CastVote(uint256 indexed voteId, address indexed voter, bool supports, uint256 stake);
+    event CastVote(uint256 indexed voteId, address indexed voter, uint256[] supports, uint256 stake);
+    event UpdateCandidateSupport(string indexed candidateKey, uint256 support);
     event ExecuteVote(uint256 indexed voteId);
-    event ChangeMinQuorum(uint256 minAcceptQuorumPct);
+    event ChangeCandidateSupport(uint256 candidateSupportPct);
 
 	/**
     * @notice Initializes Voting app with `_token.symbol(): string` for governance, minimum participation of `(_minParticipationPct - _minParticipationPct % 10^14) / 10^16`, minimal candidate acceptance of `(_candidateSupportPct - _candidateSupportPct % 10^14) / 10^16` and vote duations of `(_voteTime - _voteTime % 86400) / 86400` day `_voteTime >= 172800 ? 's' : ''`
@@ -101,7 +102,6 @@ contract RangeVoting is IForwarder, AragonApp {
     function canForward(address _sender, bytes _evmCallScript) public view returns (bool) {
         return canPerform(_sender, CREATE_VOTES_ROLE, arr());
     }
-
 	
     function _newVote(bytes _executionScript, string _metadata) isInitialized internal returns (uint256 voteId) {
         voteId = votes.length++;
@@ -115,6 +115,10 @@ contract RangeVoting is IForwarder, AragonApp {
         vote.candidateSupportPct = candidateSupportPct;
 
         StartVote(voteId);
+    }
+
+    function vote(uint256 _voteId, uint256[] _supports, bool _executesIfDecided) external {
+		//needs implementation
     }
 
 	/**
