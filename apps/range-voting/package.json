@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "dependencies": {
-    "@aragon/os": "^3.0.2"
+    "@aragon/os": "^3.1.2"
   },
   "devDependencies": {
     "@aragon/cli": "^2.0.0"
