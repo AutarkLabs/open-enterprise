@@ -160,7 +160,7 @@ contract RangeVoting is IForwarder, AragonApp {
     
     function _vote(
         uint256 _voteId,
-        bool _supports,
+        uint256[] _supports,
         address _voter,
         bool _executesIfDecided
     ) internal
