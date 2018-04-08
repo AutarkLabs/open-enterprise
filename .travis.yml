@@ -13,6 +13,8 @@ env:
   - TASK=coverage
 before_script:
   - npm prune
-  - ganache-cli
+  - ganache-cli -p 7545 > /dev/null &
+  - sleep 5
+  - truffle migrate
 script:
   - npm run $TASK
