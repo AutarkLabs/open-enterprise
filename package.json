@@ -29,5 +29,8 @@
   "homepage": "https://github.com/Giveth/planning-app#readme",
   "dependencies": {
     "@aragon/client": "^1.0.0-beta.7"
+  },
+  "devDependencies": {
+    "ganache-cli": "^6.1.0"
   }
 }
