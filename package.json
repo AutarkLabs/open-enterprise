@@ -9,7 +9,7 @@
   "scripts": {
     "test": "cd apps/range-voting/ && truffle test",
     "lint": "solium --dir ./apps/range-voting/contracts",
-    "coverage": "./node_modules/.bin/solidity-coverage"
+    "coverage": "cd apps/range-voting/ && ./node_modules/.bin/solidity-coverage"
   },
   "repository": {
     "type": "git",
