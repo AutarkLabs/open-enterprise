@@ -13,5 +13,6 @@ env:
   - TASK=coverage
 before_script:
   - npm prune
+  - ganache-cli
 script:
   - npm run $TASK
