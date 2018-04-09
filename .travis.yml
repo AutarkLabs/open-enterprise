@@ -10,8 +10,12 @@ node_js:
 env:
   - TASK=test
   - TASK=lint
-  - TASK=coverage
 before_script:
   - npm prune
+  - ganache-cli > /dev/null &
+  - sleep 5
+  - cd apps/range-voting/
+  - npm i
+  - cd ../..
 script:
   - npm run $TASK

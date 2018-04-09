@@ -6,7 +6,10 @@
     "@aragon/os": "^3.1.2"
   },
   "devDependencies": {
-    "@aragon/cli": "^2.0.0"
+    "@aragon/cli": "^2.0.0",
+    "solidity-coverage": "0.3.5",
+    "truffle": "4.0.5",
+    "ethereumjs-abi": "^0.6.4"
   },
   "scripts": {
     "test": "truffle test",
