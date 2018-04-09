@@ -1,10 +1,10 @@
-/*  test-helpers arn't available as the mono-repo is not setup.
-const { assertRevert } = require('@aragon/test-helpers/assertThrow')
-const getBlockNumber = require('@aragon/test-helpers/blockNumber')(web3)
-const timeTravel = require('@aragon/test-helpers/timeTravel')(web3)
-const { encodeCallScript, EMPTY_SCRIPT } = require('@aragon/test-helpers/evmScript')
+
+const { assertRevert } = require('../test-helpers/assertThrow')
+const getBlockNumber = require('../test-helpers/blockNumber')(web3)
+const timeTravel = require('../test-helpers/timeTravel')(web3)
+const { encodeCallScript, EMPTY_SCRIPT } = require('../test-helpers/evmScript')
 const ExecutionTarget = artifacts.require('ExecutionTarget')
-*/
+
 const RangeVoting = artifacts.require('RangeVoting')
 const MiniMeToken = artifacts.require('@aragon/os/contracts/lib/minime/MiniMeToken')
 const DAOFactory = artifacts.require('@aragon/os/contracts/factory/DAOFactory')
