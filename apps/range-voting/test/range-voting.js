@@ -118,13 +118,13 @@ contract('RangeVoting App', accounts => {
                
             })
 
-            it('holder can add candidates'), async () => {
+            it('holder can add candidates', async () => {
 
-            }
+            })
 
-            it('user can get candidate options'), async () => {
+            it('user can get candidate options', async () => {
 
-            }
+            })
 
             it('has correct state', async () => {
                
