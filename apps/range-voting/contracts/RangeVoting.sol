@@ -12,7 +12,7 @@ import "@aragon/os/contracts/common/IForwarder.sol";
 
 
 contract RangeVoting is IForwarder, AragonApp {
-	
+    
     using SafeMath for uint256;
     using SafeMath64 for uint64;
 
@@ -56,7 +56,7 @@ contract RangeVoting is IForwarder, AragonApp {
     event ExecuteVote(uint256 indexed voteId);
     event ChangeCandidateSupport(uint256 candidateSupportPct);
 
-	/**
+    /**
     * @notice Initializes Voting app with `_token.symbol(): string` for governance, minimum participation of `(_minParticipationPct - _minParticipationPct % 10^14) / 10^16`, minimal candidate acceptance of `(_candidateSupportPct - _candidateSupportPct % 10^14) / 10^16` and vote duations of `(_voteTime - _voteTime % 86400) / 86400` day `_voteTime >= 172800 ? 's' : ''`
     * @param _token MiniMeToken address that will be used as governance token
     * @param _minParticipationPct Percentage of voters that must participate in a vote for it to succeed (expressed as a 10^18 percentage, (eg 10^16 = 1%, 10^18 = 100%)
@@ -94,7 +94,7 @@ contract RangeVoting is IForwarder, AragonApp {
     }
 
     function vote(uint256 _voteId, uint256[] _supports, bool _executesIfDecided) external {
-		//needs implementation
+        //needs implementation
     }
 
     function addCandidate(bytes metadata, string description) external auth(ADD_CANDIDATES_ROLE) {
@@ -111,6 +111,7 @@ contract RangeVoting is IForwarder, AragonApp {
     */
     function executeVote(uint256 _voteId) external {
         require(canExecute(_voteId));
+        /* solium-disable-next-line */
         _executeVote(_voteId);
     }
 
@@ -125,13 +126,14 @@ contract RangeVoting is IForwarder, AragonApp {
     */
     function forward(bytes _evmScript) public {
         require(canForward(msg.sender, _evmScript));
+        /* solium-disable-next-line */
         _newVote(_evmScript, "");
     }
 
     function canForward(address _sender, bytes _evmCallScript) public view returns (bool) {
         return canPerform(_sender, CREATE_VOTES_ROLE, arr());
     }
-	
+    
     function canVote(uint256 _voteId, address _voter) public view returns (bool) {
         Vote storage vote = votes[_voteId];
 
@@ -176,7 +178,7 @@ contract RangeVoting is IForwarder, AragonApp {
         return uint64(now) < (vote.startDate.add(voteTime)) && !vote.executed;
     }
 
-	/**
+    /**
     * @dev Calculates whether `_value` is at least a percent `_pct` over `_total`
     */
     function _isValuePct(uint256 _value, uint256 _total, uint256 _pct) internal pure returns (bool) {
