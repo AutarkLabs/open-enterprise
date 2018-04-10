@@ -28,7 +28,7 @@ In order to get added as a contributor and get an invite to our meetings you nee
 
 Every month we allocate ~5,000 USD (ether fluctuates) to our RewardDAO, in order to be eligible all you need to do is complete a task with a given weight. At the end of the month we divide our RewardDAO budget evenly based on total points of contributions. Regular Reward members of the repository are not eligible for the RewardDAO so don't worry about us taking all those delicious points!
 
-Currently payouts are handled manually using a multi-sig however in the future
+Currently payouts are handled manually using a multi-sig however in the future all of this should be automated through the software we're building.
 
 ## Contact
 
