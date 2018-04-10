@@ -7,9 +7,9 @@
     "test": "test"
   },
   "scripts": {
-    "test": "truffle test",
-    "lint": "solium --dir ./contracts",
-    "coverage": "./node_modules/.bin/solidity-coverage"
+    "test": "cd apps/range-voting/ && truffle test",
+    "lint": "solium --dir ./apps/range-voting/contracts",
+    "coverage": "cd apps/range-voting/ && ./node_modules/.bin/solidity-coverage"
   },
   "repository": {
     "type": "git",
@@ -29,5 +29,11 @@
   "homepage": "https://github.com/Giveth/planning-app#readme",
   "dependencies": {
     "@aragon/client": "^1.0.0-beta.7"
+  },
+  "devDependencies": {
+    "ganache-cli": "^6.1.0",
+    "truffle": "4.0.5",
+    "solium": "0.5.5",
+    "solidity-coverage": "0.3.5"
   }
 }
