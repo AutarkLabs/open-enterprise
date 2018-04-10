@@ -1,5 +1,5 @@
 {
-  "name": "planning-app",
+  "name": "@tpt/planning-app",
   "version": "1.0.0",
   "description": "Aragon planning application developed by Space Decentral and Giveth.",
   "main": "truffle-config.js",
@@ -7,9 +7,11 @@
     "test": "test"
   },
   "scripts": {
-    "test": "cd apps/range-voting/ && truffle test",
-    "lint": "solium --dir ./apps/range-voting/contracts",
-    "coverage": "cd apps/range-voting/ && ./node_modules/.bin/solidity-coverage"
+    "install": "npm run bootstrap",
+    "bootstrap": "lerna bootstrap --nohoist=@aragon/os",
+    "test": "lerna run --concurrency=1 --stream test",
+    "lint": "lerna run --scope=@tpt/apps-* lint",
+    "coverage": "./node_modules/.bin/solidity-coverage"
   },
   "repository": {
     "type": "git",
@@ -31,6 +33,7 @@
     "@aragon/client": "^1.0.0-beta.7"
   },
   "devDependencies": {
+    "lerna": "^2.10.0",
     "ganache-cli": "^6.1.0",
     "truffle": "4.0.5",
     "solium": "0.5.5",
