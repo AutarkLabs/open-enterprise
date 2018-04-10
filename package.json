@@ -10,7 +10,7 @@
     "install": "npm run bootstrap",
     "bootstrap": "lerna bootstrap --nohoist=@aragon/os",
     "test": "lerna run --concurrency=1 --stream test",
-    "lint": "solium --dir ./contracts",
+    "lint": "lerna run lint",
     "coverage": "./node_modules/.bin/solidity-coverage"
   },
   "repository": {
