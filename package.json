@@ -1,5 +1,5 @@
 {
-  "name": "planning-app",
+  "name": "@tpt/planning-app",
   "version": "1.0.0",
   "description": "Aragon planning application developed by Space Decentral and Giveth.",
   "main": "truffle-config.js",
@@ -10,7 +10,7 @@
     "install": "npm run bootstrap",
     "bootstrap": "lerna bootstrap --nohoist=@aragon/os",
     "test": "lerna run --concurrency=1 --stream test",
-    "lint": "lerna run lint",
+    "lint": "lerna run --scope=@tpt/apps-* lint",
     "coverage": "./node_modules/.bin/solidity-coverage"
   },
   "repository": {
