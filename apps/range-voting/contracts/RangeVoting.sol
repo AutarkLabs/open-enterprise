@@ -189,7 +189,7 @@ contract RangeVoting is IForwarder, AragonApp {
         candidate.added = true;
         candidate.keyArrayIndex = vote.candidateKeys.length++;
         candidate.metadata = _metadata;
-        vote.candidateKeys[keyArrayIndex] = _description;
+        vote.candidateKeys[candidate.keyArrayIndex] = _description;
     }
     
     /**
