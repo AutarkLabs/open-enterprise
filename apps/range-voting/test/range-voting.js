@@ -115,6 +115,16 @@ contract('RangeVoting App', accounts => {
             let script = ''
 
             beforeEach(async () => {
+                const action = { to: executionTarget.address, calldata: executionTarget.contract.execute.getData() }
+                script = encodeCallScript([action, action])
+                voteId = createdVoteId(await app.newVote(script, 'metadata', { from: nonHolder }))
+            })
+
+            it('has correct vote ID', async () => {
+                assert.equal(voteId, 1, 'RangeVote should have been created')
+            })
+
+            it('has correct state', async () => {
                
             })
 
@@ -124,10 +134,6 @@ contract('RangeVoting App', accounts => {
 
             it('user can get candidate options', async () => {
 
-            })
-
-            it('has correct state', async () => {
-               
             })
 
             it('holder can vote', async () => {
