@@ -52,7 +52,7 @@ contract RangeVoting is IForwarder, AragonApp {
 
     bytes32 constant public CREATE_VOTES_ROLE = keccak256("CREATE_VOTES_ROLE");
     bytes32 constant public ADD_CANDIDATES_ROLE = keccak256("ADD_CANDIDATES_ROLE");
-    bytes32 constant public MODIFY_PARTICIPATION_ROLE = keccak256("MODIFY_PARTICIPATION_ROLE");
+    bytes32 constant public MODIFY_PARTICIPATION_ROLE = keccak256("MODIFY_CANDIDATE_SUPPORT_ROLE");
 
     struct Vote {
         address creator;
@@ -291,8 +291,9 @@ contract RangeVoting is IForwarder, AragonApp {
 ///////////////////////
 
     /**
-    * @notice `getVoterState` allows a user to get the vote weights for a given
-    *         voter.
+    * @notice `_newVote` starts a new vote and adds it to the votes array.
+    *         votes are not started with a vote from the caller, as candidates
+    *         and candidate weights need to be supplied.
     * @param _executionScript The script that will be executed when
     *        this vote closes
     * @param _metadata The metadata or vote information attached to this vote
@@ -301,7 +302,17 @@ contract RangeVoting is IForwarder, AragonApp {
     function _newVote(bytes _executionScript, string _metadata)
     isInitialized internal returns (uint256 voteId)
     {
-        // Needs implementation (should be very similar to standard vote)
+        voteId = votes.length++;
+        Vote storage vote = votes[voteId];
+        vote.executionScript = _executionScript;
+        vote.creator = msg.sender;
+        vote.startDate = uint64(now);
+        vote.metadata = _metadata;
+        vote.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
+        vote.totalVoters = token.totalSupplyAt(vote.snapshotBlock);
+        vote.candidateSupportPct = candidateSupportPct;
+
+        StartVote(voteId);
     }
     
     /*
