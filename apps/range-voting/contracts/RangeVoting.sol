@@ -187,7 +187,7 @@ contract RangeVoting is IForwarder, AragonApp {
         require(candidate.added == false);
         // Set all data for the candidate
         candidate.added = true;
-        candidate.keyArrayIndex = vote.candidateKeys.length++;
+        candidate.keyArrayIndex = uint8(vote.candidateKeys.length++);
         candidate.metadata = _metadata;
         vote.candidateKeys[candidate.keyArrayIndex] = _description;
     }
@@ -199,10 +199,10 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _description The candidate key used when adding the candidate.
     */
     function getCandidate(uint256 _voteId, string _description)
-    external constant returns(bool, bytes, uint8, uint256)
+    external view returns(bool, bytes, uint8, uint256)
     {
-        Vote memory vote = votes[_voteId];
-        CandidateState memory candidate = vote.candidates[keccak256(_description)];
+        Vote storage vote = votes[_voteId];
+        CandidateState storage candidate = vote.candidates[keccak256(_description)];
         return(
             candidate.added,
             candidate.metadata,
