@@ -10,8 +10,8 @@ import "@aragon/os/contracts/lib/zeppelin/math/SafeMath64.sol";
 
 import "@aragon/os/contracts/common/IForwarder.sol";
 
-/*
-    Copyright 2018, That Planning Tab
+/*******************************************************************************
+  Copyright 2018, That Planning Tab
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,16 +25,18 @@ import "@aragon/os/contracts/common/IForwarder.sol";
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+*******************************************************************************/
 
- /// @title RangeVoting Contract
-/// @author Arthur Lunn
-/// @dev This vote is meant to take a set of options and then let
-///  holders of a specific token distribute their current voting
-///  weight along all options. The code is designed to work as an
-///  Aragon app [much thanks to the team for much of the codes structure]
-///  but could easily be adapted to other systems.
-///  Attention was paid to make the program as generalized as possible.
+/*******************************************************************************
+* @title RangeVoting Contract
+* @author Arthur Lunn
+* @dev This vote is meant to take a set of options and then let
+*  holders of a specific token distribute their current voting
+*  weight along all options. The code is designed to work as an
+*  Aragon app [much thanks to the team for much of the codes structure]
+*  but could easily be adapted to other systems.
+*  Attention was paid to make the program as generalized as possible.
+*******************************************************************************/
 contract RangeVoting is IForwarder, AragonApp {
     
     using SafeMath for uint256;
@@ -75,7 +77,12 @@ contract RangeVoting is IForwarder, AragonApp {
     Vote[] votes;
 
     event StartVote(uint256 indexed voteId);
-    event CastVote(uint256 indexed voteId, address indexed voter, uint256[] supports, uint256 stake);
+    event CastVote(
+        uint256 indexed voteId,
+        address indexed voter,
+        uint256[] supports,
+        uint256 stake
+    );
     event UpdateCandidateSupport(string indexed candidateKey, uint256 support);
     event ExecuteVote(uint256 indexed voteId);
     event ChangeCandidateSupport(uint256 candidateSupportPct);
@@ -85,11 +92,22 @@ contract RangeVoting is IForwarder, AragonApp {
 ////////////////
 
     /**
-    * @notice Initializes RangeVoting app with `_token.symbol(): string` for governance, minimum participation of `(_minParticipationPct - _minParticipationPct % 10^14) / 10^16`, minimal candidate acceptance of `(_candidateSupportPct - _candidateSupportPct % 10^14) / 10^16` and vote duations of `(_voteTime - _voteTime % 86400) / 86400` day `_voteTime >= 172800 ? 's' : ''`
+    * @notice Initializes RangeVoting app with `_token.symbol(): string` for 
+    *         governance, minimum participation of 
+    *         `(_minParticipationPct - _minParticipationPct % 10^14) 
+    *         / 10^16`, minimal candidate acceptance of 
+    *         `(_candidateSupportPct - _candidateSupportPct % 10^14) / 10^16`
+    *         and vote duations of `(_voteTime - _voteTime % 86400) / 86400`
+    *         day `_voteTime >= 172800 ? 's' : ''`
     * @param _token MiniMeToken address that will be used as governance token
-    * @param _minParticipationPct Percentage of voters that must participate in a vote for it to succeed (expressed as a 10^18 percentage, (eg 10^16 = 1%, 10^18 = 100%)
-    * @param _candidateSupportPct Percentage of cast voting power that must support a candidate for it to be counted (expressed as a 10^18 percentage, (eg 10^16 = 1%, 10^18 = 100%)
-    * @param _voteTime Seconds that a vote will be open for token holders to vote (unless it is impossible for the fate of the vote to change)
+    * @param _minParticipationPct Percentage of voters that must participate in 
+    *        a vote for it to succeed (expressed as a 10^18 percentage,
+    *        (eg 10^16 = 1%, 10^18 = 100%)
+    * @param _candidateSupportPct Percentage of cast voting power that must
+    *        support a candidate for it to be counted (expressed as a 10^18
+    *        percentage, (eg 10^16 = 1%, 10^18 = 100%)
+    * @param _voteTime Seconds that a vote will be open for token holders to
+    *        vote (unless it is impossible for the fate of the vote to change)
     */
     function initialize(
         MiniMeToken _token,
@@ -111,6 +129,7 @@ contract RangeVoting is IForwarder, AragonApp {
 
         votes.length += 1;
     }
+
 ///////////////////////
 // Voting functions
 ///////////////////////
@@ -121,15 +140,18 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _executionScript EVM script to be executed on approval
     * @return voteId id for newly created vote
     */
-    function newVote(bytes _executionScript, string _metadata) auth(CREATE_VOTES_ROLE) external returns (uint256 voteId) {
+    function newVote(bytes _executionScript, string _metadata)
+    auth(CREATE_VOTES_ROLE) external returns (uint256 voteId)
+    {
         return _newVote(_executionScript, _metadata);
     }
 
     /**
     * @notice Allows a token holder to caste a vote on the current options.
     * @param _voteId id for vote structure this 'ballot action' is connected to
-    * @param _supports Array of support weights in order of their order in `votes[_voteId].candidateKeys`,
-                       sum of all supports must be less than `token.balance[msg.sender]`.
+    * @param _supports Array of support weights in order of their order in 
+    *                  `votes[_voteId].candidateKeys`, sum of all supports
+    *                  must be less than `token.balance[msg.sender]`.
     */
     function vote(uint256 _voteId, uint256[] _supports) external {
         //needs implementation
@@ -146,19 +168,22 @@ contract RangeVoting is IForwarder, AragonApp {
     }
 
     /**
-    * @notice `addCandidate` allows the `ADD_CANDIDATES_ROLE` to add candidates (or options) to
-    *         the current vote. 
-    * @param metadata Any additional information about the candidate. Base implementation
-    *                 does not use this parameter.
-    * @param description This is the string that will be displayed along the option when voting
+    * @notice `addCandidate` allows the `ADD_CANDIDATES_ROLE` to add candidates
+    *         (or options) to the current vote. 
+    * @param metadata Any additional information about the candidate.
+    *        Base implementation does not use this parameter.
+    * @param description This is the string that will be displayed along the
+    *        option when voting
     */
-    function addCandidate(bytes metadata, string description) external auth(ADD_CANDIDATES_ROLE) {
+    function addCandidate(bytes metadata, string description) external
+    auth(ADD_CANDIDATES_ROLE)
+    {
         // needs implementation
     }
     
     /**
-    * @notice `getCandidate` serves as a basic getter using the description key to return the struct
-    *         data. 
+    * @notice `getCandidate` serves as a basic getter using the description key
+    *         to return the struct data. 
     * @param description The candidate key used when adding the candidate.
     */
     function getCandidate(string description) external constant {
@@ -198,10 +223,16 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _evmCallScript Not used in this implementation
     * @returns True is `_sender` has correct permissions
     */
-    function canForward(address _sender, bytes _evmCallScript) public view returns (bool) {
+    function canForward(address _sender, bytes _evmCallScript)
+    public view returns (bool)
+    {
         return canPerform(_sender, CREATE_VOTES_ROLE, arr());
     }
-    
+
+///////////////////////
+// View state functions
+///////////////////////
+
     /**
     * @notice `canVote` is used to check whether an address is elligible to
     *         cast a vote in a given vote action.
@@ -217,7 +248,8 @@ contract RangeVoting is IForwarder, AragonApp {
 
     /**
     * @notice `canExecute` is used to check that the participation has been met
-    *         and the vote has reached it's end before the execute function is called.
+    *         and the vote has reached it's end before the execute
+    *         function is called.
     * @param _voteId The ID of the Vote which would be executed.
     * @returns True if the vote is elligible for execution.
     */
@@ -253,14 +285,21 @@ contract RangeVoting is IForwarder, AragonApp {
         // Needs implementation (should return)
     }
 
+///////////////////////
+// Internal functions
+///////////////////////
+
     /**
     * @notice `getVoterState` allows a user to get the vote weights for a given
     *         voter.
-    * @param _executionScript The script that will be executed when this vote closes
+    * @param _executionScript The script that will be executed when
+    *        this vote closes
     * @param _metadata The metadata or vote information attached to this vote
     * @returns voteId The ID(or index) of this vote in the votes array.
     */
-    function _newVote(bytes _executionScript, string _metadata) isInitialized internal returns (uint256 voteId) {
+    function _newVote(bytes _executionScript, string _metadata)
+    isInitialized internal returns (uint256 voteId)
+    {
         // Needs implementation (should be very similar to standard vote)
     }
     
@@ -268,8 +307,9 @@ contract RangeVoting is IForwarder, AragonApp {
     * @notice `_vote` is the internal function that allows a token holder to
     *         caste a vote on the current options.
     * @param _voteId id for vote structure this 'ballot action' is connected to
-    * @param _supports Array of support weights in order of their order in `votes[_voteId].candidateKeys`,
-    *                  sum of all supports must be less than `token.balance[msg.sender]`.
+    * @param _supports Array of support weights in order of their order in 
+    *        `votes[_voteId].candidateKeys`, sum of all supports must be less
+    *        than `token.balance[msg.sender]`.
     * @param _voter The address of the entity "casting" this vote action.
     */
     function _vote(
@@ -282,8 +322,8 @@ contract RangeVoting is IForwarder, AragonApp {
     }
 
     /**
-    * @notice `_executeVote` executes the provided script for this vote and passes along the
-    *         candidate data to the next function.
+    * @notice `_executeVote` executes the provided script for this vote and
+    *         passes along the candidate data to the next function.
     * @returns voteId The ID(or index) of this vote in the votes array.
     */
     function _executeVote(uint256 _voteId) internal {
@@ -300,14 +340,17 @@ contract RangeVoting is IForwarder, AragonApp {
     /**
     * @dev Calculates whether `_value` is at least a percent `_pct` over `_total`
     */
-    function _isValuePct(uint256 _value, uint256 _total, uint256 _pct) internal pure returns (bool) {
+    function _isValuePct(uint256 _value, uint256 _total, uint256 _pct)
+    internal pure returns (bool)
+    {
         if (_value == 0 && _total > 0)
             return false;
 
         uint256 m = _total.mul(_pct);
         uint256 v = m / PCT_BASE;
 
-        // If division is exact, allow same value, otherwise require value to be greater
+        // If division is exact, allow same value,
+        // otherwise require value to be greater
         return m % PCT_BASE == 0 ? _value >= v : _value > v;
     }
 }
