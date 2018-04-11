@@ -43,6 +43,7 @@ contract('RangeVoting App', accounts => {
         app = RangeVoting.at(receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
 
         await acl.createPermission(ANY_ADDR, app.address, await app.CREATE_VOTES_ROLE(), root, { from: root })
+        await acl.createPermission(ANY_ADDR, app.address, await app.ADD_CANDIDATES_ROLE(), root, { from: root })
         await acl.createPermission(ANY_ADDR, app.address, await app.MODIFY_PARTICIPATION_ROLE(), root, { from: root })
     })
 
@@ -113,6 +114,7 @@ contract('RangeVoting App', accounts => {
         context('creating vote', () => {
             let voteId = {}
             let script = ''
+            let candidateState
 
             beforeEach(async () => {
                 const action = { to: executionTarget.address, calldata: executionTarget.contract.execute.getData() }
@@ -129,11 +131,12 @@ contract('RangeVoting App', accounts => {
             })
 
             it('holder can add candidates', async () => {
-
-            })
-
-            it('user can get candidate options', async () => {
-
+                await app.addCandidate(voteId, 0x0,"Apple")
+                candidateState = await app.getCandidate(voteId, "Apple")
+                assert.equal(candidateState[0], true, 'Candidate should have been added')
+                assert.equal(candidateState[1], 0x0, 'Metadata should be 0x0')
+                assert.equal(candidateState[2], 0, 'First candidate shoudl be index 0')
+                assert.equal(candidateState[3], 0, 'Support should start at 0')
             })
 
             it('holder can vote', async () => {

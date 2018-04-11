@@ -171,15 +171,25 @@ contract RangeVoting is IForwarder, AragonApp {
     /**
     * @notice `addCandidate` allows the `ADD_CANDIDATES_ROLE` to add candidates
     *         (or options) to the current vote. 
+    * @param _voteId id for vote structure this 'ballot action' is connected to    
     * @param metadata Any additional information about the candidate.
     *        Base implementation does not use this parameter.
     * @param description This is the string that will be displayed along the
     *        option when voting
     */
-    function addCandidate(bytes metadata, string description) external
-    auth(ADD_CANDIDATES_ROLE)
+    function addCandidate(uint256 _voteId, bytes _metadata, string _description)
+    external auth(ADD_CANDIDATES_ROLE)
     {
-        // needs implementation
+        // Get vote and canddiate into storage
+        Vote storage vote = votes[voteId];
+        CandidateState storage candidate = vote.candidates[keccak256(description)];
+        // Make sure that this candidate has not already been added
+        require(candidate.added == false);
+        // Set all data for the candidate
+        candidate.added = true;
+        candidate.keyArrayIndex = candidateKeys.length++;
+        candidate.metadata = _metadata;
+        vote.candidateKeys[keyArrayIndex] = description;
     }
     
     /**
@@ -187,8 +197,17 @@ contract RangeVoting is IForwarder, AragonApp {
     *         to return the struct data. 
     * @param description The candidate key used when adding the candidate.
     */
-    function getCandidate(string description) external constant {
-        // Needs implementation (should return)        
+    function getCandidate(uint256 _voteId, string description)
+    external constant returns(bool, bytes, uint8, uint256)
+    {
+        Vote memory vote = votes[voteId];
+        CandidateState memory candidate = vote.candidates[keccak256(description)];
+        return(
+            candidate.added,
+            candidate.metadata,
+            candidate.keyArrayIndex,
+            candidate.voteSupport
+        );
     }
 
 ///////////////////////
