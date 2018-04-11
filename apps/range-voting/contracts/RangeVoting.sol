@@ -199,7 +199,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @notice `isForwader` is a basic helper function used to determine
     *         if a function implements the IForwarder interface
     * @dev IForwarder interface conformance
-    * @returns always returns true
+    * @return always returns true
     */
     function isForwarder() public pure returns (bool) {
         return true;
@@ -222,7 +222,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @dev IForwarder interface conformance
     * @param _sender Address of the entity trying to forward
     * @param _evmCallScript Not used in this implementation
-    * @returns True is `_sender` has correct permissions
+    * @return True is `_sender` has correct permissions
     */
     function canForward(address _sender, bytes _evmCallScript)
     public view returns (bool)
@@ -239,7 +239,7 @@ contract RangeVoting is IForwarder, AragonApp {
     *         cast a vote in a given vote action.
     * @param _voter The address of the entity trying to vote
     * @param _voteId The ID of the Vote on which the vote would be cast.
-    * @returns True is `_voter` has a vote token balance and vote is open
+    * @return True is `_voter` has a vote token balance and vote is open
     */
     function canVote(uint256 _voteId, address _voter) public view returns (bool) {
         Vote storage vote = votes[_voteId];
@@ -252,7 +252,7 @@ contract RangeVoting is IForwarder, AragonApp {
     *         and the vote has reached it's end before the execute
     *         function is called.
     * @param _voteId The ID of the Vote which would be executed.
-    * @returns True if the vote is elligible for execution.
+    * @return True if the vote is elligible for execution.
     */
     function canExecute(uint256 _voteId) public view returns (bool) {
         // Needs implementation
@@ -296,7 +296,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _executionScript The script that will be executed when
     *        this vote closes
     * @param _metadata The metadata or vote information attached to this vote
-    * @returns voteId The ID(or index) of this vote in the votes array.
+    * @return voteId The ID(or index) of this vote in the votes array.
     */
     function _newVote(bytes _executionScript, string _metadata)
     isInitialized internal returns (uint256 voteId)
@@ -325,7 +325,7 @@ contract RangeVoting is IForwarder, AragonApp {
     /**
     * @notice `_executeVote` executes the provided script for this vote and
     *         passes along the candidate data to the next function.
-    * @returns voteId The ID(or index) of this vote in the votes array.
+    * @return voteId The ID(or index) of this vote in the votes array.
     */
     function _executeVote(uint256 _voteId) internal {
         // Needs implementation
