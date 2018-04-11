@@ -10,6 +10,7 @@ import "@aragon/os/contracts/lib/zeppelin/math/SafeMath64.sol";
 
 import "@aragon/os/contracts/common/IForwarder.sol";
 
+
 /*******************************************************************************
   Copyright 2018, That Planning Tab
 
@@ -26,7 +27,6 @@ import "@aragon/os/contracts/common/IForwarder.sol";
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *******************************************************************************/
-
 /*******************************************************************************
 * @title RangeVoting Contract
 * @author Arthur Lunn
@@ -39,6 +39,7 @@ import "@aragon/os/contracts/common/IForwarder.sol";
 *******************************************************************************/
 contract RangeVoting is IForwarder, AragonApp {
     
+
     using SafeMath for uint256;
     using SafeMath64 for uint64;
 
@@ -354,3 +355,4 @@ contract RangeVoting is IForwarder, AragonApp {
         return m % PCT_BASE == 0 ? _value >= v : _value > v;
     }
 }
+
