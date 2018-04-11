@@ -11,7 +11,10 @@
     "ganache-cli": "^6.0.3",
     "truffle-hdwallet-provider": "0.0.3",
     "solidity-coverage": "0.3.5",
-    "solium": "^0.5.5"
+    "solium": "^0.5.5",
+    "solidity-coverage": "0.3.5",
+    "truffle": "4.0.5",
+    "ethereumjs-abi": "^0.6.4"
   },
   "scripts": {
     "test": "TRUFFLE_TEST=true npm run ganache-cli:dev",
