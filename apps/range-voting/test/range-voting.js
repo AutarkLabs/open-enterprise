@@ -65,7 +65,7 @@ contract('RangeVoting App', accounts => {
 
             await app.initialize(token.address, minimumParticipation, candidateSupportPct, RangeVotingTime)
 
-            //executionTarget = await ExecutionTarget.new()
+            executionTarget = await ExecutionTarget.new()
         })
 
         it('fails on reinitialization', async () => {
