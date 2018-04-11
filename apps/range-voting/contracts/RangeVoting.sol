@@ -52,7 +52,7 @@ contract RangeVoting is IForwarder, AragonApp {
 
     bytes32 constant public CREATE_VOTES_ROLE = keccak256("CREATE_VOTES_ROLE");
     bytes32 constant public ADD_CANDIDATES_ROLE = keccak256("ADD_CANDIDATES_ROLE");
-    bytes32 constant public MODIFY_PARTICIPATION_ROLE = keccak256("MODIFY_PARTICIPATION_ROLE");
+    bytes32 constant public MODIFY_PARTICIPATION_ROLE = keccak256("MODIFY_CANDIDATE_SUPPORT_ROLE");
 
     struct Vote {
         address creator;
@@ -171,24 +171,44 @@ contract RangeVoting is IForwarder, AragonApp {
     /**
     * @notice `addCandidate` allows the `ADD_CANDIDATES_ROLE` to add candidates
     *         (or options) to the current vote. 
-    * @param metadata Any additional information about the candidate.
+    * @param _voteId id for vote structure this 'ballot action' is connected to    
+    * @param _metadata Any additional information about the candidate.
     *        Base implementation does not use this parameter.
-    * @param description This is the string that will be displayed along the
+    * @param _description This is the string that will be displayed along the
     *        option when voting
     */
-    function addCandidate(bytes metadata, string description) external
-    auth(ADD_CANDIDATES_ROLE)
+    function addCandidate(uint256 _voteId, bytes _metadata, string _description)
+    external auth(ADD_CANDIDATES_ROLE)
     {
-        // needs implementation
+        // Get vote and canddiate into storage
+        Vote storage vote = votes[_voteId];
+        CandidateState storage candidate = vote.candidates[keccak256(_description)];
+        // Make sure that this candidate has not already been added
+        require(candidate.added == false);
+        // Set all data for the candidate
+        candidate.added = true;
+        candidate.keyArrayIndex = uint8(vote.candidateKeys.length++);
+        candidate.metadata = _metadata;
+        vote.candidateKeys[candidate.keyArrayIndex] = _description;
     }
     
     /**
     * @notice `getCandidate` serves as a basic getter using the description key
     *         to return the struct data. 
-    * @param description The candidate key used when adding the candidate.
+    * @param _voteId id for vote structure this 'ballot action' is connected to    
+    * @param _description The candidate key used when adding the candidate.
     */
-    function getCandidate(string description) external constant {
-        // Needs implementation (should return)        
+    function getCandidate(uint256 _voteId, string _description)
+    external view returns(bool, bytes, uint8, uint256)
+    {
+        Vote storage vote = votes[_voteId];
+        CandidateState storage candidate = vote.candidates[keccak256(_description)];
+        return(
+            candidate.added,
+            candidate.metadata,
+            candidate.keyArrayIndex,
+            candidate.voteSupport
+        );
     }
 
 ///////////////////////
@@ -291,8 +311,9 @@ contract RangeVoting is IForwarder, AragonApp {
 ///////////////////////
 
     /**
-    * @notice `getVoterState` allows a user to get the vote weights for a given
-    *         voter.
+    * @notice `_newVote` starts a new vote and adds it to the votes array.
+    *         votes are not started with a vote from the caller, as candidates
+    *         and candidate weights need to be supplied.
     * @param _executionScript The script that will be executed when
     *        this vote closes
     * @param _metadata The metadata or vote information attached to this vote
@@ -301,7 +322,17 @@ contract RangeVoting is IForwarder, AragonApp {
     function _newVote(bytes _executionScript, string _metadata)
     isInitialized internal returns (uint256 voteId)
     {
-        // Needs implementation (should be very similar to standard vote)
+        voteId = votes.length++;
+        Vote storage vote = votes[voteId];
+        vote.executionScript = _executionScript;
+        vote.creator = msg.sender;
+        vote.startDate = uint64(now);
+        vote.metadata = _metadata;
+        vote.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
+        vote.totalVoters = token.totalSupplyAt(vote.snapshotBlock);
+        vote.candidateSupportPct = candidateSupportPct;
+
+        StartVote(voteId);
     }
     
     /*
