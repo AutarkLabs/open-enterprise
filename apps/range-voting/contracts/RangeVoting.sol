@@ -181,7 +181,7 @@ contract RangeVoting is IForwarder, AragonApp {
     external auth(ADD_CANDIDATES_ROLE)
     {
         // Get vote and canddiate into storage
-        Vote storage vote = votes[voteId];
+        Vote storage vote = votes[_voteId];
         CandidateState storage candidate = vote.candidates[keccak256(description)];
         // Make sure that this candidate has not already been added
         require(candidate.added == false);
@@ -197,10 +197,10 @@ contract RangeVoting is IForwarder, AragonApp {
     *         to return the struct data. 
     * @param description The candidate key used when adding the candidate.
     */
-    function getCandidate(uint256 _voteId, string description)
+    function getCandidate(uint256 _voteId, string _description)
     external constant returns(bool, bytes, uint8, uint256)
     {
-        Vote memory vote = votes[voteId];
+        Vote memory vote = votes[_voteId];
         CandidateState memory candidate = vote.candidates[keccak256(description)];
         return(
             candidate.added,
