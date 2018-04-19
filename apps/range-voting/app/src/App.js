@@ -16,6 +16,8 @@ import Template from './Template'
 import Review from './Review'
 import Launch from './Launch'
 
+import { noop } from './utils'
+
 const SPRING_SHOW = {
   stiffness: 120,
   damping: 17,
@@ -41,6 +43,9 @@ class App extends React.Component {
     balance: null,
     network: '',
     visible: true,
+    contractCreationStatus: 'none',
+    onComplete: noop,
+    onCreateContract: noop,
   }
   state = {
     ...initialState,
@@ -143,6 +148,32 @@ class App extends React.Component {
     })
   }
 
+  prepareReview = () => {
+    const { template } = this.state
+
+    if (!Templates.has(template)) {
+      return null
+    }
+
+    const templateData = Templates.get(template)
+    return templateData.prepareData(this.state.templateData)
+  }
+
+  createContract = () => {
+    const { template } = this.state
+
+    if (!Templates.has(template)) {
+      return null
+    }
+
+    const templateData = Templates.get(template)
+    const data = templateData.prepareData(this.state.templateData)
+
+    console.log('onCreateContract ', data)
+    this.props.onCreateContract(templateData.name, data)
+  }
+
+
   moveStep = (direction = 1) => {
     const { stepIndex } = this.state
     const steps = this.getSteps()
@@ -151,8 +182,8 @@ class App extends React.Component {
       return
     }
 
-    if (steps[newStepIndex].screen === 'launch') {
-      this.buildDao()
+    if (steps[newStepIndex].screen === 'review') {
+      this.createContract()
     }
 
     this.setState({ stepIndex: newStepIndex, direction })
@@ -293,7 +324,12 @@ class App extends React.Component {
       )
     }
     if (screen === 'review') {
-      return <Review onConfirm={onComplete} {...sharedProps} />
+      const configurationData=this.prepareReview()
+      return <Review
+        onConfirm={onComplete}
+        configurationData={configurationData}
+        {...sharedProps}
+      />
     }
     if (screen === 'launch') {
       return <Launch onConfirm={onComplete} {...sharedProps} />

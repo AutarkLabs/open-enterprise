@@ -1,6 +1,7 @@
 import ConfigureVotingName from './ConfigureVotingName'
 import ConfigureVotingConditions from './ConfigureVotingConditions'
 import ConfigureVotingDefaults from './ConfigureVotingDefaults'
+import icon from './assets/icon.svg'
 
 const isIntegerString = value => /^[0-9]*$/.test(value)
 
@@ -8,9 +9,10 @@ const template = {
   name: 'payoutengine',
   label: 'Payout Engine',
   description: 'Determine how to share a budget across multiple projects',
+  icon,
   fields: {
     voteName: {
-      defaultValue: () => '',
+      defaultValue: () => 'tst',
       filter: value => ({ voteName: value.slice(0, 30) }),
     },
     voteDescription: {
@@ -19,12 +21,15 @@ const template = {
     },
     votePermission: {
       defaultValue: () => 0,
+      filter: value => ({ votePermission: value })
     },
     voteWeight: {
       defaultValue: () => 0,
+      filter: value => ({ voteWeight: value })
     },
     voteOutcome: {
       defaultValue: () => 0,
+      filter: value => ({ voteOutcome: value })
     },
     support: {
       defaultValue: () => -1,

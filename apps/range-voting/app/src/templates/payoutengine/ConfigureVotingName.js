@@ -1,8 +1,9 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Field, TextInput, Text, theme } from '@aragon/ui'
+import { Field, TextInput } from '@aragon/ui'
 import { lerp } from '../../math-utils'
 import { noop } from '../../utils'
+import { Main, Content, Title, Subtitle, Hint } from '../../style'
 
 class ConfigureVotingName extends React.Component {
   static defaultProps = {
@@ -75,13 +76,14 @@ class ConfigureVotingNameContent extends React.PureComponent {
         <Title>Payout Engine</Title>
         <StepContainer>
           <SubmitForm onSubmit={onSubmit} innerRef={formRef}>
-            <p style={{ textAlign: 'center' }}>
-              <Text size="large" color={theme.textTertiary} align="center">
-                You are creating a custom, reusable multi-option voting app. Enter a name and description so you remember its purpose.
-              </Text>
-            </p>
+            <Subtitle>
+              You are creating a custom, reusable multi-option voting app. Enter a name and description so you remember its purpose.
+            </Subtitle>
             <Fields>
               <Fields.Field label="Name">
+                <Hint>
+                  What do you want to name this app?
+                </Hint>
                 <TextInput
                   placeholder="Name"
                   value={fields.voteName}
@@ -89,6 +91,9 @@ class ConfigureVotingNameContent extends React.PureComponent {
                 />
               </Fields.Field>
               <Fields.Field label="Description">
+                <Hint>
+                  How would you describe this app?
+                </Hint>
                 <TextInput
                   placeholder="Description"
                   onChange={handleDescriptionChange}
@@ -110,29 +115,6 @@ const SubmitForm = ({ children, innerRef = noop, ...props }) => (
   </form>
 )
 
-const Main = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  padding: 100px;
-  padding-top: 140px;
-`
-
-const Content = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-`
-
-const Title = styled.h1`
-  text-align: center;
-  font-size: 37px;
-  margin-bottom: 40px;
-`
-
 const StepContainer = styled.div`
   display: flex;
   align-items: flex-start;
@@ -142,16 +124,14 @@ const StepContainer = styled.div`
 `
 
 const Fields = styled.div`
-  display: flex;
   justify-content: center;
   margin-top: 40px;
+  width: 80%;
+  margin: auto;
 `
 
 Fields.Field = styled(Field)`
   position: relative;
-  & + & {
-    margin-left: 55px;
-  }
   &:after {
     position: absolute;
     bottom: 6px;

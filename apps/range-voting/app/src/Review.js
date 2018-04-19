@@ -2,48 +2,73 @@ import React from 'react'
 import styled from 'styled-components'
 import { theme, Text } from '@aragon/ui'
 import { noop } from './utils'
+import { Main, Content } from './style'
+import Templates from './templates'
 
 class Review extends React.Component {
+  constructor(props) {
+    super(props)
+  }
   static defaultProps = {
     warm: false,
     positionProgress: 0,
-    onSelect: noop,
-  }
-  handleTemplateSelect = template => {
-    this.props.onSelect(template)
   }
   render() {
-    const { positionProgress, warm, templates, activeTemplate } = this.props
-    return (
+    const { positionProgress, warm, configurationData } = this.props
+if (configurationData === null) {
+return null
+}
+console.log (configurationData)
+   return (
       <Main
         style={{
           opacity: 1 - Math.abs(positionProgress),
           willChange: warm ? 'opacity' : 'auto',
         }}
-        >
+      >
         <Content>
-this is visible review component
+          <ScrollWrapper>
+            <Label>Name</Label>
+            <Text>{configurationData.voteName}</Text>
+
+            <Label>Description</Label>
+            <Text>{configurationData.voteDescription}</Text>
+
+            <Label>Voting Permission</Label>
+
+            <Label>Voting Weight</Label>
+
+            <Label>Voting Outcome</Label>
+
+            <Label>Support</Label>
+            <Text>{configurationData.supportNeeded}</Text>
+
+            <Label>Min. Quorum</Label>
+            <Text>{configurationData.minAcceptanceQuorum}</Text>
+
+            <Label>Vote Duration</Label>
+            <Text>{configurationData.voteDuration}</Text>
+
+          </ScrollWrapper>
         </Content>
       </Main>
     )
   }
 }
 
-const Main = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  width: 100%;
+const ScrollWrapper = styled.div`
+  width: 600px;
   height: 100%;
-  padding: 100px;
-  padding-top: 140px;
+  overflow: auto;
+  border: 1px solid ${theme.contentBorder};
+  padding: 10px;
 `
-
-const Content = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+const Label = styled.div`
+  font-size: 11px;
+  font-weight: 200;
+  text-transform: uppercase;
+  color: ${theme.textTertiary};
+  margin-top: 8px;
 `
-
 export default Review
+

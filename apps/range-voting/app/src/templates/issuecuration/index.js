@@ -1,6 +1,7 @@
 import ConfigureVotingName from './ConfigureVotingName'
 import ConfigureVotingConditions from './ConfigureVotingConditions'
 import ConfigureVotingDefaults from './ConfigureVotingDefaults'
+import icon from './assets/icon.svg'
 
 const isIntegerString = value => /^[0-9]*$/.test(value)
 
@@ -8,6 +9,7 @@ const template = {
   name: 'issuecuration',
   label: 'Issue Curation',
   description: 'Determine the top tasks to prioritize as an organization',
+  icon,
   fields: {
     support: {
       defaultValue: () => -1,
@@ -61,7 +63,7 @@ const template = {
   screens: [
     {
       screen: 'voting-name',
-      validate: ({}) => {
+      validate: () => {
         // needs adding
         return true
       },
@@ -69,7 +71,7 @@ const template = {
     },
     {
       screen: 'voting-conditions',
-      validate: ({}) => {
+      validate: () => {
         // needs adding
         return true
       },

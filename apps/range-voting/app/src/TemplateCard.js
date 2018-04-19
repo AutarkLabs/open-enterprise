@@ -23,8 +23,8 @@ class TemplateCard extends React.Component {
             <IconCheck />
           </CheckContainer>
           <img src={icon} alt="" />
-          <Text size="xlarge" color={theme.textPrimary}>{label}</Text>
-          <Text size="small" color={theme.textTertiary}>{description}</Text>
+          <Text size="large" color={theme.textPrimary}>{label}</Text>
+          <Text size="xxsmall" color={theme.textTertiary}>{description}</Text>
         </Content>
       </Main>
     )

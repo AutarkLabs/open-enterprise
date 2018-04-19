@@ -1,8 +1,9 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Text, Field, DropDown, theme } from '@aragon/ui'
+import { Field, DropDown } from '@aragon/ui'
 import { lerp } from '../../math-utils'
 import { noop } from '../../utils'
+import { Main, Content, Title, Subtitle, Hint } from '../../style'
 
 class ConfigureVotingConditions extends React.Component {
   static defaultProps = {
@@ -14,9 +15,6 @@ class ConfigureVotingConditions extends React.Component {
   }
   constructor(props) {
     super(props)
-    this.handleVotePermissionChange = this.createChangeHandler('votePermission')
-    this.handleVoteWeightChange = this.createChangeHandler('voteWeight')
-    this.handleVoteOutcomeChange = this.createChangeHandler('voteOutcome')
   }
   componentWillReceiveProps({ positionProgress }) {
     if (
@@ -26,9 +24,24 @@ class ConfigureVotingConditions extends React.Component {
       this.formEl.elements[0].focus()
     }
   }
+  handleVotePermissionChange = index => {
+     const { onFieldUpdate, screen } = this.props
+     onFieldUpdate(screen, 'votePermission', index)
+     console.log('event votePermission ' + index)
+  }
+  handleVoteWeightChange = index => {
+     const { onFieldUpdate, screen } = this.props
+     onFieldUpdate(screen, 'voteWeight', index)
+     console.log('event voteWeight ' + index)
+  }
+  handleVoteOutcomeChange = index => {
+     const { onFieldUpdate, screen } = this.props
+     onFieldUpdate(screen, 'voteOutcome', index)
+     console.log('event voteOutcome ' + index)
+  }
   createChangeHandler(name) {
     return event => {
-console.log('event ' + name + ': ' + event.target.value)
+//console.log('event ' + name + ': ' + event.target.value)
       const { onFieldUpdate, screen } = this.props
       onFieldUpdate(screen, name, event.target.value)
     }
@@ -75,13 +88,16 @@ class ConfigureVotingConditionsContent extends React.PureComponent {
       formRef,
     } = this.props
     const votePermissionItems=[
-      'Project Owners'
+      'Project Owners',
+      'Every DAO token holder',
     ]
     const voteWeightItems=[
-      'Each voter has equal weight'
+      'Each voter has equal weight',
+      'Voting power is weighted based on token balance'
     ]
     const voteOutcomeItems=[
-      'Transfer tokens upon execution'
+      'Transfer tokens upon execution',
+      'Informational vote'
     ]
 
     return (
@@ -89,16 +105,14 @@ class ConfigureVotingConditionsContent extends React.PureComponent {
         <Title>Payout Engine</Title>
         <StepContainer>
           <SubmitForm onSubmit={onSubmit} innerRef={formRef}>
-            <p style={{ textAlign: 'center' }}>
-              <Text size="large" color={theme.textTertiary} align="center">
+            <Subtitle>
                 Choose your voting settings below. You can’t change these later, so pick carefully.
-              </Text>
-            </p>
+            </Subtitle>
             <Fields>
               <Fields.Field label="Voting Permission">
-                <Text size="xsmall" color={theme.textTertiary} align="center">
+                <Hint>
                   Which role will have permission to vote
-                </Text>
+                </Hint>
                 <ConditionDropDown
                   items={votePermissionItems}
                   active={fields.votePermission}
@@ -106,9 +120,9 @@ class ConfigureVotingConditionsContent extends React.PureComponent {
                 />
               </Fields.Field>
               <Fields.Field label="Voting Weight">
-                <Text size="xsmall" color={theme.textTertiary} align="center">
+                <Hint>
                   How each vote will be weighted
-                </Text>
+                </Hint>
                 <DropDown
                   items={voteWeightItems}
                   active={fields.voteWeight}
@@ -116,9 +130,9 @@ class ConfigureVotingConditionsContent extends React.PureComponent {
                 />
               </Fields.Field>
               <Fields.Field label="Outcome">
-                <Text size="xsmall" color={theme.textTertiary} align="center">
+                <Hint>
                   If the vote is informative or results in a token transfer
-                </Text>
+                </Hint>
                 <DropDown
                   items={voteOutcomeItems}
                   active={fields.voteOutcome}
@@ -140,29 +154,6 @@ const SubmitForm = ({ children, innerRef = noop, ...props }) => (
   </form>
 )
 
-const Main = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  padding: 100px;
-  padding-top: 140px;
-`
-
-const Content = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-`
-
-const Title = styled.h1`
-  text-align: center;
-  font-size: 37px;
-  margin-bottom: 40px;
-`
-
 const StepContainer = styled.div`
   display: flex;
   align-items: flex-start;
@@ -170,18 +161,23 @@ const StepContainer = styled.div`
   width: 100%;
   height: 100%;
 `
-
 const Fields = styled.div`
+  justify-content: center;
   margin-top: 40px;
+  width: 80%;
+  margin: auto;
 `
-
 const ConditionDropDown = styled(DropDown)`
   width: 380px;
   font-size: 37px;
 `
-
 Fields.Field = styled(Field)`
-  width: 80%;
   position: relative;
+  &:after {
+    position: absolute;
+    bottom: 6px;
+    left: 100px;
+    font-size: 14px;
+  }
 `
 export default ConfigureVotingConditions

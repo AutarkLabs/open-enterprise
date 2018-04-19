@@ -1,9 +1,9 @@
 import React from 'react'
 import styled from 'styled-components'
-import { theme, Text } from '@aragon/ui'
 import { noop } from './utils'
 import { lerp } from './math-utils'
 import TemplateCard from './TemplateCard'
+import { Main, Content, Title, Subtitle } from './style'
 
 class Template extends React.Component {
   static defaultProps = {
@@ -69,33 +69,6 @@ class TemplateContent extends React.PureComponent {
     )
   }
 }
-
-const Main = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  padding: 100px;
-  padding-top: 140px;
-`
-
-const Subtitle = styled.div`
-  text-align: center;
-  color: ${theme.textTertiary};
-`
-
-const Content = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-`
-
-const Title = styled.h1`
-  font-size: 37px;
-  margin-bottom: 40px;
-`
 
 const Templates = styled.div`
   display: flex;
