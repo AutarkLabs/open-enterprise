@@ -38,7 +38,7 @@ import "@aragon/os/contracts/common/IForwarder.sol";
 *  Attention was paid to make the program as generalized as possible.
 *******************************************************************************/
 contract RangeVoting is IForwarder, AragonApp {
-    
+
 
     using SafeMath for uint256;
     using SafeMath64 for uint64;
@@ -63,16 +63,18 @@ contract RangeVoting is IForwarder, AragonApp {
         string metadata;
         bytes executionScript;
         bool executed;
-        string[] candidateKeys;
-        mapping (bytes32 => CandidateState) candidates;
         mapping (address => uint256[]) voters;
     }
+
+    bytes32[] candidateKeys;
+    mapping (bytes32 => CandidateState) candidates;
 
     struct CandidateState {
         bool added;
         bytes metadata;
         uint8 keyArrayIndex;
         uint256 voteSupport;
+        string description;
     }
 
     Vote[] votes;
@@ -93,15 +95,15 @@ contract RangeVoting is IForwarder, AragonApp {
 ////////////////
 
     /**
-    * @notice Initializes RangeVoting app with `_token.symbol(): string` for 
-    *         governance, minimum participation of 
-    *         `(_minParticipationPct - _minParticipationPct % 10^14) 
-    *         / 10^16`, minimal candidate acceptance of 
+    * @notice Initializes RangeVoting app with `_token.symbol(): string` for
+    *         governance, minimum participation of
+    *         `(_minParticipationPct - _minParticipationPct % 10^14)
+    *         / 10^16`, minimal candidate acceptance of
     *         `(_candidateSupportPct - _candidateSupportPct % 10^14) / 10^16`
     *         and vote duations of `(_voteTime - _voteTime % 86400) / 86400`
     *         day `_voteTime >= 172800 ? 's' : ''`
     * @param _token MiniMeToken address that will be used as governance token
-    * @param _minParticipationPct Percentage of voters that must participate in 
+    * @param _minParticipationPct Percentage of voters that must participate in
     *        a vote for it to succeed (expressed as a 10^18 percentage,
     *        (eg 10^16 = 1%, 10^18 = 100%)
     * @param _candidateSupportPct Percentage of cast voting power that must
@@ -150,8 +152,8 @@ contract RangeVoting is IForwarder, AragonApp {
     /**
     * @notice Allows a token holder to caste a vote on the current options.
     * @param _voteId id for vote structure this 'ballot action' is connected to
-    * @param _supports Array of support weights in order of their order in 
-    *                  `votes[_voteId].candidateKeys`, sum of all supports
+    * @param _supports Array of support weights in order of their order in
+    *                  `candidateKeys`, sum of all supports
     *                  must be less than `token.balance[msg.sender]`.
     */
     function vote(uint256 _voteId, uint256[] _supports) external {
@@ -170,39 +172,35 @@ contract RangeVoting is IForwarder, AragonApp {
 
     /**
     * @notice `addCandidate` allows the `ADD_CANDIDATES_ROLE` to add candidates
-    *         (or options) to the current vote. 
-    * @param _voteId id for vote structure this 'ballot action' is connected to    
+    *         (or options) to the current vote.
     * @param _metadata Any additional information about the candidate.
     *        Base implementation does not use this parameter.
     * @param _description This is the string that will be displayed along the
     *        option when voting
     */
-    function addCandidate(uint256 _voteId, bytes _metadata, string _description)
+    function addCandidate(bytes _metadata, string _description)
     external auth(ADD_CANDIDATES_ROLE)
     {
-        // Get vote and canddiate into storage
-        Vote storage vote = votes[_voteId];
-        CandidateState storage candidate = vote.candidates[keccak256(_description)];
+        // Get canddiate into storage
+        CandidateState storage candidate = candidates[keccak256(_description)];
         // Make sure that this candidate has not already been added
         require(candidate.added == false);
         // Set all data for the candidate
         candidate.added = true;
-        candidate.keyArrayIndex = uint8(vote.candidateKeys.length++);
+        candidate.keyArrayIndex = uint8(candidateKeys.length++);
         candidate.metadata = _metadata;
-        vote.candidateKeys[candidate.keyArrayIndex] = _description;
+        candidate.description = _description;
     }
-    
+
     /**
     * @notice `getCandidate` serves as a basic getter using the description key
-    *         to return the struct data. 
-    * @param _voteId id for vote structure this 'ballot action' is connected to    
+    *         to return the struct data.
     * @param _description The candidate key used when adding the candidate.
     */
-    function getCandidate(uint256 _voteId, string _description)
+    function getCandidate(string _description)
     external view returns(bool, bytes, uint8, uint256)
     {
-        Vote storage vote = votes[_voteId];
-        CandidateState storage candidate = vote.candidates[keccak256(_description)];
+        CandidateState storage candidate = candidates[keccak256(_description)];
         return(
             candidate.added,
             candidate.metadata,
@@ -283,15 +281,25 @@ contract RangeVoting is IForwarder, AragonApp {
     *         struct and returns the individual values.
     * @param _voteId The ID of the Vote struct in the `votes` array
     */
-    function getVote(uint256 _voteId) public view {
-        // Needs implementation (should return)
+    function getVote(uint256 _voteId) public view returns (bool open, address creator, uint64 startDate, uint256 snapshotBlock, uint256 candidateSupportPct, uint256 totalVoters, string metadata, bytes executionScript, bool executed) {
+        Vote storage vote = votes[_voteId];
+
+        open = _isVoteOpen(vote);
+        creator = vote.creator;
+        startDate = vote.startDate;
+        snapshotBlock = vote.snapshotBlock;
+        candidateSupportPct = candidateSupportPct;
+        totalVoters = vote.totalVoters;
+        metadata = vote.metadata;
+        executionScript = vote.executionScript;
+        executed = vote.executed;
     }
 
     /**
     * @notice `getVoteMetadata` simply pulls the vote metadata out of a vote
     *         struct and returns the individual value.
     * @param _voteId The ID of the Vote struct in the `votes` array
-    */    
+    */
     function getVoteMetadata(uint256 _voteId) public view returns (string) {
         return votes[_voteId].metadata;
     }
@@ -302,8 +310,8 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _voteId The ID of the Vote struct in the `votes` array.
     * @param _voter The voter whose weights will be returned
     */
-    function getVoterState(uint256 _voteId, address _voter) public view {
-        // Needs implementation (should return)
+    function getVoterState(uint256 _voteId, address _voter) public view returns (uint256[]) {
+        return votes[_voteId].voters[_voter];
     }
 
 ///////////////////////
@@ -334,13 +342,13 @@ contract RangeVoting is IForwarder, AragonApp {
 
         StartVote(voteId);
     }
-    
+
     /*
     * @notice `_vote` is the internal function that allows a token holder to
     *         caste a vote on the current options.
     * @param _voteId id for vote structure this 'ballot action' is connected to
-    * @param _supports Array of support weights in order of their order in 
-    *        `votes[_voteId].candidateKeys`, sum of all supports must be less
+    * @param _supports Array of support weights in order of their order in
+    *        `candidateKeys`, sum of all supports must be less
     *        than `token.balance[msg.sender]`.
     * @param _voter The address of the entity "casting" this vote action.
     */
@@ -350,7 +358,7 @@ contract RangeVoting is IForwarder, AragonApp {
         address _voter
     ) internal
     {
-        // Needs implementation        
+        // Needs implementation
     }
 
     /**
@@ -386,4 +394,3 @@ contract RangeVoting is IForwarder, AragonApp {
         return m % PCT_BASE == 0 ? _value >= v : _value > v;
     }
 }
-
