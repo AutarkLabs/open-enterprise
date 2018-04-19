@@ -106,9 +106,9 @@ contract('RangeVoting App', accounts => {
             const voteId = createdVoteId(await app.forward(script, { from: holder50 }))
             assert.equal(voteId, 1, 'RangeVoting should have been created')
         })
-        
+
         it('can change minimum candidate support', async () => {
-            
+
         })
         */
         context('creating vote', () => {
@@ -126,8 +126,7 @@ contract('RangeVoting App', accounts => {
                 assert.equal(voteId, 1, 'RangeVote should have been created')
             })
 
-            it('has correct state', async () => {
-               
+            xit('has correct state', async () => {
             })
 
             it('holder can add candidates', async () => {
@@ -135,41 +134,38 @@ contract('RangeVoting App', accounts => {
                 candidateState = await app.getCandidate(voteId, "Apple")
                 assert.equal(candidateState[0], true, 'Candidate should have been added')
                 assert.equal(candidateState[1], "0x", 'Metadata should be 0')
-                assert.equal(candidateState[2], 0, 'First candidate shoudl be index 0')
+                assert.equal(candidateState[2], 0, 'First candidate should be index 0')
                 assert.equal(candidateState[3], 0, 'Support should start at 0')
             })
 
-            it('holder can vote', async () => {
-                
+            xit('holder can vote', async () => {
             })
 
-            it('holder can modify vote', async () => {
-
+            xit('holder can modify vote', async () => {
             })
 
-            it('token transfers dont affect RangeVoting', async () => {
+            xit('token transfers dont affect RangeVoting', async () => {
             })
 
-            it('throws when non-holder votes', async () => {
+            xit('throws when non-holder votes', async () => {
             })
 
-            it('throws when RangeVoting after RangeVoting closes', async () => {
+            xit('throws when RangeVoting after RangeVoting closes', async () => {
             })
 
-            it('can execute if vote is approved with support and quorum', async () => {
+            xit('can execute if vote is approved with support and quorum', async () => {
             })
 
-            it('cannot execute vote if minimum participation not met', async () => {
+            xit('cannot execute vote if minimum participation not met', async () => {
             })
 
-            it('cannot execute vote if not support met', async () => {
-                
+            xit('cannot execute vote if not support met', async () => {
             })
 
-            it('cannot re-execute vote', async () => {
+            xit('cannot re-execute vote', async () => {
             })
 
-            it('cannot vote on executed vote', async () => {
+            xit('cannot vote on executed vote', async () => {
             })
         })
 
@@ -219,13 +215,13 @@ contract('RangeVoting App', accounts => {
             await app.initialize(token.address, minimumParticipation, candidateSupportPct, RangeVotingTime)
         })
 
-        it('new vote cannot be executed before RangeVoting', async () => {
-            
+        xit('new vote cannot be executed before RangeVoting', async () => {
+
 
         })
 
-        it('creating vote as holder executes vote', async () => {
-    
+        xit('creating vote as holder executes vote', async () => {
+
         })
     })
 
@@ -246,12 +242,12 @@ contract('RangeVoting App', accounts => {
             await app.initialize(token.address, minimumParticipation, candidateSupportPct, RangeVotingTime)
         })
 
-        it('new vote cannot be executed before holder2 RangeVoting', async () => {
-            
+        xit('new vote cannot be executed before holder2 RangeVoting', async () => {
+
         })
 
-        it('creating vote as holder2 executes vote', async () => {
-            
+        xit('creating vote as holder2 executes vote', async () => {
+
         })
     })
     context('before init', () => {
