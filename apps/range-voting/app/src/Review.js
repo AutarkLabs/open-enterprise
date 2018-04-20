@@ -15,10 +15,10 @@ class Review extends React.Component {
   }
   render() {
     const { positionProgress, warm, configurationData } = this.props
-if (configurationData === null) {
-return null
-}
-console.log (configurationData)
+    if (configurationData === null) {
+      return null
+    }
+
    return (
       <Main
         style={{
@@ -35,16 +35,19 @@ console.log (configurationData)
             <Text>{configurationData.voteDescription}</Text>
 
             <Label>Voting Permission</Label>
+            <Text>{configurationData.votePermissionText}</Text>
 
             <Label>Voting Weight</Label>
+            <Text>{configurationData.voteWeightText}</Text>
 
             <Label>Voting Outcome</Label>
+            <Text>{configurationData.voteOutcomeText}</Text>
 
             <Label>Support</Label>
-            <Text>{configurationData.supportNeeded}</Text>
+            <Text>{configurationData.supportNeeded}%</Text>
 
             <Label>Min. Quorum</Label>
-            <Text>{configurationData.minAcceptanceQuorum}</Text>
+            <Text>{configurationData.minAcceptanceQuorum}%</Text>
 
             <Label>Vote Duration</Label>
             <Text>{configurationData.voteDuration}</Text>

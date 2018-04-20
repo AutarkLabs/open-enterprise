@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { Motion, spring } from 'react-motion'
 import { spring as springConf } from '@aragon/ui'
-import {AragonApp, AppBar} from '@aragon/ui'
+import { AragonApp, AppBar } from '@aragon/ui'
 
 import LoginButton from './components/LoginButton'
 
@@ -43,6 +43,9 @@ class App extends React.Component {
     balance: null,
     network: '',
     visible: true,
+    walletWeb3: null,
+    web3: null,
+    connected: false,
     contractCreationStatus: 'none',
     onComplete: noop,
     onCreateContract: noop,
@@ -126,7 +129,6 @@ class App extends React.Component {
   handleConfigurationFieldUpdate = (screen, name, value) => {
     this.setState(({ templateData, template }) => {
       const updatedFields = this.filterConfigurationValue(template, name, value)
-
       // If the filter returns null, the value is not updated
       if (updatedFields === null) {
         return {}
@@ -161,6 +163,7 @@ class App extends React.Component {
 
   createContract = () => {
     const { template } = this.state
+console.log ('createContract')
 
     if (!Templates.has(template)) {
       return null
@@ -177,6 +180,7 @@ class App extends React.Component {
   moveStep = (direction = 1) => {
     const { stepIndex } = this.state
     const steps = this.getSteps()
+console.log ('moveStep: ' + steps)
     const newStepIndex = stepIndex + direction
     if (newStepIndex > steps.length - 1 || newStepIndex < 0) {
       return
@@ -222,9 +226,8 @@ class App extends React.Component {
   isLaunchingNext() {
     const { stepIndex } = this.state
     const steps = this.getSteps()
-    return steps[stepIndex + 1] && steps[stepIndex + 1].name === 'launch'
+    return steps[stepIndex + 1] && steps[stepIndex + 1].screen === 'launch'
   }
-
   
   render () {
     const { direction, stepIndex } = this.state
@@ -279,7 +282,7 @@ class App extends React.Component {
                         onNext={this.nextStep}
                         enableNext={this.isNextEnabled()}
                         enablePrev={this.isPrevEnabled()}
-                        launchingNext={this.isLaunchingNext()}
+                        isLaunchingNext={this.isLaunchingNext()}
                       />
                     </React.Fragment>
                   )}
@@ -289,10 +292,6 @@ class App extends React.Component {
           </Main>
         )}
       </Motion>
- 
-
-
-
       </AragonApp>
     )
   }

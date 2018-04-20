@@ -4,6 +4,7 @@ import { Field, DropDown } from '@aragon/ui'
 import { lerp } from '../../math-utils'
 import { noop } from '../../utils'
 import { Main, Content, Title, Subtitle, Hint } from '../../style'
+import { votePermissionItems, voteWeightItems, voteOutcomeItems } from './voting-conditions'
 
 class ConfigureVotingConditions extends React.Component {
   static defaultProps = {
@@ -12,9 +13,6 @@ class ConfigureVotingConditions extends React.Component {
     onFieldUpdate: noop,
     onSubmit: noop,
     fields: {},
-  }
-  constructor(props) {
-    super(props)
   }
   componentWillReceiveProps({ positionProgress }) {
     if (
@@ -27,21 +25,17 @@ class ConfigureVotingConditions extends React.Component {
   handleVotePermissionChange = index => {
      const { onFieldUpdate, screen } = this.props
      onFieldUpdate(screen, 'votePermission', index)
-     console.log('event votePermission ' + index)
   }
   handleVoteWeightChange = index => {
      const { onFieldUpdate, screen } = this.props
      onFieldUpdate(screen, 'voteWeight', index)
-     console.log('event voteWeight ' + index)
   }
   handleVoteOutcomeChange = index => {
      const { onFieldUpdate, screen } = this.props
      onFieldUpdate(screen, 'voteOutcome', index)
-     console.log('event voteOutcome ' + index)
   }
   createChangeHandler(name) {
     return event => {
-//console.log('event ' + name + ': ' + event.target.value)
       const { onFieldUpdate, screen } = this.props
       onFieldUpdate(screen, name, event.target.value)
     }
@@ -87,19 +81,6 @@ class ConfigureVotingConditionsContent extends React.PureComponent {
       onSubmit,
       formRef,
     } = this.props
-    const votePermissionItems=[
-      'Project Owners',
-      'Every DAO token holder',
-    ]
-    const voteWeightItems=[
-      'Each voter has equal weight',
-      'Voting power is weighted based on token balance'
-    ]
-    const voteOutcomeItems=[
-      'Transfer tokens upon execution',
-      'Informational vote'
-    ]
-
     return (
       <Content>
         <Title>Payout Engine</Title>
@@ -107,7 +88,7 @@ class ConfigureVotingConditionsContent extends React.PureComponent {
           <SubmitForm onSubmit={onSubmit} innerRef={formRef}>
             <Subtitle>
                 Choose your voting settings below. You can’t change these later, so pick carefully.
-            </Subtitle>
+           </Subtitle>
             <Fields>
               <Fields.Field label="Voting Permission">
                 <Hint>

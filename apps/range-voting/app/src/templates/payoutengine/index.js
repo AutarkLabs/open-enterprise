@@ -2,9 +2,9 @@ import ConfigureVotingName from './ConfigureVotingName'
 import ConfigureVotingConditions from './ConfigureVotingConditions'
 import ConfigureVotingDefaults from './ConfigureVotingDefaults'
 import icon from './assets/icon.svg'
+import { votePermissionItems, voteWeightItems, voteOutcomeItems } from './voting-conditions'
 
 const isIntegerString = value => /^[0-9]*$/.test(value)
-
 const template = {
   name: 'payoutengine',
   label: 'Payout Engine',
@@ -12,7 +12,7 @@ const template = {
   icon,
   fields: {
     voteName: {
-      defaultValue: () => 'tst',
+      defaultValue: () => '',
       filter: value => ({ voteName: value.slice(0, 30) }),
     },
     voteDescription: {
@@ -21,15 +21,42 @@ const template = {
     },
     votePermission: {
       defaultValue: () => 0,
-      filter: value => ({ votePermission: value })
+      items: votePermissionItems,
+      filter: value => {
+        if (!isIntegerString(value)) {
+          return { votePermission: 0 }
+        }
+        if (value < 0 || value >= votePermissionItems.length) {
+          return { votePermission: 0 }
+        }
+        return { votePermission: value }
+      }
     },
     voteWeight: {
       defaultValue: () => 0,
-      filter: value => ({ voteWeight: value })
+      items: voteWeightItems,
+      filter: value => {
+        if (!isIntegerString(value)) {
+          return { voteWeight: 0 }
+        }
+        if (value < 0 || value >= voteWeightItems.length) {
+          return { voteWeight: 0 }
+        }
+        return { voteWeight: value }
+      }
     },
     voteOutcome: {
       defaultValue: () => 0,
-      filter: value => ({ voteOutcome: value })
+      items: voteOutcomeItems,
+      filter: value => {
+        if (!isIntegerString(value)) {
+          return { voteOutcome: 0 }
+        }
+        if (value < 0 || value >= voteOutcomeItems.length) {
+          return { voteOutcome: 0 }
+        }
+        return { voteOutcome: value }
+      }
     },
     support: {
       defaultValue: () => -1,
@@ -123,13 +150,22 @@ const template = {
     support,
     minQuorum,
     voteDuration,
+    votePermission,
+    voteWeight,
+    voteOutcome
   }) => {
     return {
       voteName: voteName,
       voteDescription: voteDescription,
-      supportNeeded: support / 100,
-      minAcceptanceQuorum: minQuorum / 100,
-      voteDuration: voteDuration * 60 * 60,
+      supportNeeded: support,
+      minAcceptanceQuorum: minQuorum,
+      voteDuration: voteDuration,
+      votePermission: votePermission,
+      votePermissionText: votePermissionItems[votePermission],
+      voteWeight: voteWeight,
+      voteWeightText: voteWeightItems[voteWeight],
+      voteOutcome: voteOutcome,
+      voteOutcomeText: voteOutcomeItems[voteOutcome]
     }
   },
 }

@@ -13,7 +13,7 @@ class PrevNext extends React.Component {
       enableNext,
       visible,
       direction,
-      isSigningNext,
+      isLaunchingNext,
     } = this.props
     return (
       <Motion
@@ -37,7 +37,7 @@ class PrevNext extends React.Component {
               onNext={onNext}
               enablePrev={enablePrev}
               enableNext={enableNext}
-              isSigningNext={isSigningNext}
+              isLaunchingNext={isLaunchingNext}
             />
           </Main>
         )}
@@ -62,7 +62,7 @@ class PrevNextContent extends React.PureComponent {
           onClick={this.props.onNext}
           disabled={!this.props.enableNext}
         >
-          {this.props.isSigningNext ? 'Finish' : 'Next'}
+          {this.props.isLaunchingNext ? 'Finish' : 'Next'}
         </StrongButton>
       </React.Fragment>
     )

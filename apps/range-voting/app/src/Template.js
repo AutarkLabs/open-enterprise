@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import { noop } from './utils'
 import { lerp } from './math-utils'
 import TemplateCard from './TemplateCard'
+import { Button } from '@aragon/ui'
 import { Main, Content, Title, Subtitle } from './style'
 
 class Template extends React.Component {
@@ -48,7 +49,6 @@ class TemplateContent extends React.PureComponent {
             A way to gather votes and opinions on questions that have multiple options.
             Choose a template to get started quickly. Don't worry - you can change it later.
           </Subtitle>
-
         <Templates>
           {[...this.props.templates.entries()].map(
             ([template, { label, icon, description }], i) => (
