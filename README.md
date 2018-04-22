@@ -1,4 +1,7 @@
 
+### Background
+The proposal for this [Aragon Planning app](https://github.com/aragon/nest/pull/24) was developed by members of [Space Decentral](https://spacedecentral.net) and [Giveth](https://giveth.io), and received funding via [Aragon's Nest program](https://blog.aragon.one/introducing-aragon-nest-1aa8c91c0566). An example of decentralization at it's finest. We are developing this app as a collaborative unit because it is a crucial building block for any organization that aims to coordinate work and streamline management duties, without traditional managers. This app will work with any ERC-20 token or Aragon DAO.
+
 ### Details
 
 An organization should be able to seamlessly create and manage multiple projects using a Planning app. The basic system would require:
