@@ -111,15 +111,36 @@ contract('RangeVoting App', accounts => {
             
         })
         */
-        context('creating vote', () => {
+        context('creating vote with normal distributions', () => {
             let voteId = {}
             let script = ''
             let candidateState
+
+            const holder19 = accounts[0]
+            const holder31 = accounts[1]
+            const holder50 = accounts[2]
+            const nonHolder = accounts[4]
+    
+            const minimumParticipation = pct16(50)
+            const candidateSupportPct = pct16(5)
+    
+            
+            
 
             beforeEach(async () => {
                 const action = { to: executionTarget.address, calldata: executionTarget.contract.execute.getData() }
                 script = encodeCallScript([action, action])
                 voteId = createdVoteId(await app.newVote(script, 'metadata', { from: nonHolder }))
+                const n = '0x00'
+                token = await MiniMeToken.new(n, n, 0, 'n', 0, 'n', true) // empty parameters minime
+    
+                await token.generateTokens(holder19, 19)
+                await token.generateTokens(holder31, 31)
+                await token.generateTokens(holder50, 50)
+    
+                await app.initialize(token.address, minimumParticipation, candidateSupportPct, RangeVotingTime)
+    
+                executionTarget = await ExecutionTarget.new()
             })
 
             it('has correct vote ID', async () => {
@@ -137,17 +158,27 @@ contract('RangeVoting App', accounts => {
                 assert.equal(candidateState[1], "0x", 'Metadata should be 0')
                 assert.equal(candidateState[2], 0, 'First candidate shoudl be index 0')
                 assert.equal(candidateState[3], 0, 'Support should start at 0')
+                await app.addCandidate(voteId, "0x","Apple")
+                await app.addCandidate(voteId, "0x","Orange")
+                await app.addCandidate(voteId, "0x","Race Car")
             })
 
             it('holder can vote', async () => {
-                
+                let vote = [2,3,4]
+                await app.vote(voteId, vote, { from: holder19 })
             })
 
             it('holder can modify vote', async () => {
-
+                let vote = [4,3,2]
+                await app.vote(voteId, vote, { from: holder19 })
             })
 
             it('token transfers dont affect RangeVoting', async () => {
+                await token.transfer(nonHolder, 31, { from: holder31 })
+
+                await app.vote(voteId, true, true, { from: holder31 })
+                //const state = await app.getVote(voteId)
+            
             })
 
             it('throws when non-holder votes', async () => {
@@ -214,7 +245,7 @@ contract('RangeVoting App', accounts => {
             const n = '0x00'
             token = await MiniMeToken.new(n, n, 0, 'n', 0, 'n', true) // empty parameters minime
 
-            await token.generateTokens(holder, 1)
+            await token.generateTokens(holder)
 
             await app.initialize(token.address, minimumParticipation, candidateSupportPct, RangeVotingTime)
         })
