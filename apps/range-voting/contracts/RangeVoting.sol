@@ -387,12 +387,9 @@ contract RangeVoting is IForwarder, AragonApp {
         address _voter
     ) internal
     {
-        Vote storage vote = votes[_voteId];
-
         // this could re-enter, though we can asume the
         // governance token is not maliciuous
         uint256 voterStake = token.balanceOfAt(_voter, vote.snapshotBlock);
-        VoterState state = vote.voters[_voter];
         uint256 totalSupport = 0;
 
         Vote storage vote = votes[_voteId];
@@ -400,16 +397,13 @@ contract RangeVoting is IForwarder, AragonApp {
 
         // This is going to cost a lot of gas... it'd be cool if there was
         // a better way to do this.
-        for(uint256 i = 0; i < _supports.length; i++){
+        for (uint256 i = 0; i < _supports.length; i++) {
             totalSupport = totalSupprt.add(_supports[i]);
             // Might make sense to move this outside the for loop
             // Probably safer here but some gas calculations should be done
             require(totalSupprt < voterStake);
             voteSupport = vote.candidates[candidateKeys[i]].voteSupport;
-            voteSupport = voteSupport
-                          .sub(vote.voters[msg.sender])
-                          .add(_supports[i]);
-
+            voteSupport = voteSupport.sub(vote.voters[msg.sender]).add(_supports[i]);
         }
 
         vote.voters[msg.sender] = _supports;
