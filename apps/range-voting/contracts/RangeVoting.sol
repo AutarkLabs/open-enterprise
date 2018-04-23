@@ -393,7 +393,7 @@ contract RangeVoting is IForwarder, AragonApp {
         uint256 totalSupport = 0;
 
         Vote storage vote = votes[_voteId];
-        uint256 storage voteSupport;
+        uint256 voteSupport;
 
         // This is going to cost a lot of gas... it'd be cool if there was
         // a better way to do this.
@@ -404,6 +404,7 @@ contract RangeVoting is IForwarder, AragonApp {
             require(totalSupprt < voterStake);
             voteSupport = vote.candidates[candidateKeys[i]].voteSupport;
             voteSupport = voteSupport.sub(vote.voters[msg.sender]).add(_supports[i]);
+            vote.candidates[candidateKeys[i]].voteSupport = voteSupport;
         }
 
         vote.voters[msg.sender] = _supports;
