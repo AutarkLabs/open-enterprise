@@ -68,13 +68,13 @@ contract RangeVoting is IForwarder, AragonApp {
         mapping (address => uint256[]) voters;
     }
 
+    mapping (bytes32 => string ) candidateDescriptions;
 
     struct CandidateState {
         bool added;
         bytes metadata;
         uint8 keyArrayIndex;
         uint256 voteSupport;
-        string description;
     }
 
     Vote[] votes;
@@ -153,7 +153,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @notice Allows a token holder to caste a vote on the current options.
     * @param _voteId id for vote structure this 'ballot action' is connected to
     * @param _supports Array of support weights in order of their order in
-    *                  `candidateKeys`, sum of all supports
+    *                  `votes[_voteId].candidateKeys`, sum of all supports
     *                  must be less than `token.balance[msg.sender]`.
     */
     function vote(uint256 _voteId, uint256[] _supports) external {
@@ -171,6 +171,7 @@ contract RangeVoting is IForwarder, AragonApp {
     }
 
     /**
+    * @param _voteId id for vote structure this 'ballot action' is connected to 
     * @notice `addCandidate` allows the `ADD_CANDIDATES_ROLE` to add candidates
     *         (or options) to the current vote.
     * @param _metadata Any additional information about the candidate.
@@ -183,20 +184,22 @@ contract RangeVoting is IForwarder, AragonApp {
     {
         // Get vote and candidate into storage
         Vote storage vote = votes[_voteId];
-        CandidateState storage candidate = vote.candidates[keccak256(_description)];
+        bytes32 cKey = keccak256(_description);
+        CandidateState storage candidate = vote.candidates[cKey];
         // Make sure that this candidate has not already been added
         require(candidate.added == false);
         // Set all data for the candidate
         candidate.added = true;
         candidate.keyArrayIndex = uint8(vote.candidateKeys.length++);
         candidate.metadata = _metadata;
-        candidate.description = _description;
-        vote.candidateKeys[candidate.keyArrayIndex] = keccak256(_description);
+        candidateDescriptions[cKey] = _description;
+        vote.candidateKeys[candidate.keyArrayIndex] = cKey;
     }
 
     /**
     * @notice `getCandidate` serves as a basic getter using the description
     *         to return the struct data.
+    * @param _voteId id for vote structure this 'ballot action' is connected to
     * @param _description The candidate descrciption of the candidate.
     */
     function getCandidate(uint256 _voteId, string _description)
@@ -217,36 +220,11 @@ contract RangeVoting is IForwarder, AragonApp {
     *         to return the struct data.
     * @param _description The bytes32 key used when adding the candidate.
     */
-    function getCandidate(uint256 _voteId, bytes32 key)
-    external view returns(bool, bytes, uint8, uint256, string)
-    {
-        Vote storage vote = votes[_voteId];
-        CandidateState storage candidate = candidates[key];        
-        return(
-            candidate.added,
-            candidate.metadata,
-            candidate.keyArrayIndex,
-            candidate.voteSupport,
-            candidate.description
-        );
-    }
-
-    /**
-    * @notice `getCandidate` serves as a basic getter using the key
-    *         to return the struct data.
-    * @param _description The bytes32 key used when adding the candidate.
-    */
-    function getCandidateDescription(uint256 _voteId, bytes32 key)
+    function getCandidateDescription(bytes32 _key)
     external view returns(string)
     {
-        Vote storage vote = votes[_voteId];
-        CandidateState storage candidate = candidates[key];        
-        return(
-            candidate.description
-        );
+        return(candidateDescriptions[key]);
     }
-
-
 
 ///////////////////////
 // IForwarder functions
