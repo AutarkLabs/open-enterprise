@@ -63,7 +63,7 @@ contract RangeVoting is IForwarder, AragonApp {
         string metadata;
         bytes executionScript;
         bool executed;
-        string[] candidateKeys;
+        bytes32[] candidateKeys;
         mapping (bytes32 => CandidateState) candidates;
         mapping (address => uint256[]) voters;
     }
@@ -155,7 +155,8 @@ contract RangeVoting is IForwarder, AragonApp {
     *                  must be less than `token.balance[msg.sender]`.
     */
     function vote(uint256 _voteId, uint256[] _supports) external {
-        //needs implementation
+        require(canVote(_voteId, msg.sender));
+        _vote(_voteId, _supports, msg.sender);
     }
 
     /**
@@ -350,7 +351,39 @@ contract RangeVoting is IForwarder, AragonApp {
         address _voter
     ) internal
     {
-        // Needs implementation        
+        Vote storage vote = votes[_voteId];
+
+        // this could re-enter, though we can asume the
+        // governance token is not maliciuous
+        uint256 voterStake = token.balanceOfAt(_voter, vote.snapshotBlock);
+        VoterState state = vote.voters[_voter];
+        uint256 totalSupport = 0;
+
+        Vote storage vote = votes[_voteId];
+        uint256 storage voteSupport;
+
+        // This is going to cost a lot of gas... it'd be cool if there was
+        // a better way to do this.
+        for(uint256 i = 0; i < _supports.length; i++){
+            totalSupport = totalSupprt.add(_supports[i]);
+            // Might make sense to move this outside the for loop
+            // Probably safer here but some gas calculations should be done
+            require(totalSupprt < voterStake);
+            voteSupport = vote.candidates[candidateKeys[i]].voteSupport;
+            voteSupport = voteSupport
+                          .sub(vote.voters[msg.sender])
+                          .add(_supports[i]);
+
+        }
+
+        vote.voters[msg.sender] = _supports;
+
+        CastVote(
+            _voteId,
+            _voter,
+            _supports,
+            voterStake
+        );
     }
 
     /**
