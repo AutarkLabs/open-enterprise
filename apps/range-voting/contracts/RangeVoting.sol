@@ -206,7 +206,7 @@ contract RangeVoting is IForwarder, AragonApp {
     external view returns(bool, bytes, uint8, uint256)
     {
         Vote storage vote = votes[_voteId];
-        CandidateState storage candidate = candidates[keccak256(_description)];        
+        CandidateState storage candidate = vote.candidates[keccak256(_description)];        
         return(
             candidate.added,
             candidate.metadata,
