@@ -402,9 +402,9 @@ contract RangeVoting is IForwarder, AragonApp {
             // Might make sense to move this outside the for loop
             // Probably safer here but some gas calculations should be done
             require(totalSupport < voterStake);
-            voteSupport = vote.candidates[candidateKeys[i]].voteSupport;
+            voteSupport = vote.candidates[vote.candidateKeys[i]].voteSupport;
             voteSupport = voteSupport.sub(vote.voters[msg.sender]).add(_supports[i]);
-            vote.candidates[candidateKeys[i]].voteSupport = voteSupport;
+            vote.candidates[vote.candidateKeys[i]].voteSupport = voteSupport;
         }
 
         vote.voters[msg.sender] = _supports;
