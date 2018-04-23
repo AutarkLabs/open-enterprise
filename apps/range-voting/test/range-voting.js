@@ -148,6 +148,8 @@ contract('RangeVoting App', accounts => {
             })
 
             xit('has correct state', async () => {
+                let voteState = await app.getVote(voteId)
+                console.log(voteState)
             })
 
             it('holder can add candidates', async () => {
@@ -165,19 +167,37 @@ contract('RangeVoting App', accounts => {
             it('holder can vote', async () => {
                 let vote = [2,3,4]
                 await app.vote(voteId, vote, { from: holder19 })
+                let holderVoteData = await app.getVoterState(voteId,holder19)
+                assert.equal(vote, holderVoteData, "vote and voter state should match after casting ballot")
+                let candidateApple = await app.getCandidate(voteId, "Apple")
+                let candidateOrange = await app.getCandidate(voteId, "Orange")
+                let candidateCar = await app.getCandidate(voteId, "Race Car")
+                assert.equal(vote[0], candidateApple[3], "The correct amount of support should be logged for apple")
+                assert.equal(vote[1], candidateOrange[3], "The correct amount of support should be logged for orange")
+                assert.equal(vote[2], candidateCar[3], "The correct amount of support should be logged for car")
             })
 
             it('holder can modify vote', async () => {
-                let vote = [4,3,2]
-                await app.vote(voteId, vote, { from: holder19 })
+                let voteOne = [2,3,4]                
+                let voteTwo = [4,3,2]
+                await app.vote(voteId, voteOne, { from: holder19 })
+                await app.vote(voteId, voteTwo, { from: holder19 })
+                let holderVoteData = await app.getVoterState(voteId,holder19)
+                assert.equal(voteTwo, holderVoteData, "vote and voter state should match after casting ballot")
+                let candidateApple = await app.getCandidate(voteId, "Apple")
+                let candidateOrange = await app.getCandidate(voteId, "Orange")
+                let candidateCar = await app.getCandidate(voteId, "Race Car")
+                assert.equal(voteTwo[0], candidateApple[3], "The correct amount of support should be logged for apple")
+                assert.equal(voteTwo[1], candidateOrange[3], "The correct amount of support should be logged for orange")
+                assert.equal(voteTwo[2], candidateCar[3], "The correct amount of support should be logged for car")
             })
 
             it('token transfers dont affect RangeVoting', async () => {
+                let vote = [10,9,12]
                 await token.transfer(nonHolder, 31, { from: holder31 })
-
-                await app.vote(voteId, true, true, { from: holder31 })
-                //const state = await app.getVote(voteId)
-            
+                await app.vote(voteId, vote, { from: holder31 })
+                let holderVoteData = await app.getVoterState(voteId,holder19)
+                assert.equal(vote, holderVoteData, "vote and voter state should match after casting ballot")
             })
 
             xit('throws when non-holder votes', async () => {
