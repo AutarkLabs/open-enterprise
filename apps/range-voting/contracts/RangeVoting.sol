@@ -218,7 +218,7 @@ contract RangeVoting is IForwarder, AragonApp {
     /**
     * @notice `getCandidate` serves as a basic getter using the key
     *         to return the struct data.
-    * @param _description The bytes32 key used when adding the candidate.
+    * @param _key The bytes32 key used when adding the candidate.
     */
     function getCandidateDescription(bytes32 _key)
     external view returns(string)
