@@ -223,7 +223,7 @@ contract RangeVoting is IForwarder, AragonApp {
     function getCandidateDescription(bytes32 _key)
     external view returns(string)
     {
-        return(candidateDescriptions[key]);
+        return(candidateDescriptions[_key]);
     }
 
 ///////////////////////
