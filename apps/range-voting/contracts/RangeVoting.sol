@@ -63,11 +63,11 @@ contract RangeVoting is IForwarder, AragonApp {
         string metadata;
         bytes executionScript;
         bool executed;
+        bytes32[] candidateKeys;
+        mapping (bytes32 => CandidateState) candidates;
         mapping (address => uint256[]) voters;
     }
 
-    bytes32[] candidateKeys;
-    mapping (bytes32 => CandidateState) candidates;
 
     struct CandidateState {
         bool added;
@@ -178,29 +178,32 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _description This is the string that will be displayed along the
     *        option when voting
     */
-    function addCandidate(bytes _metadata, string _description)
+    function addCandidate(uint256 _voteId, bytes _metadata, string _description)
     external auth(ADD_CANDIDATES_ROLE)
     {
-        // Get canddiate into storage
-        CandidateState storage candidate = candidates[keccak256(_description)];
+        // Get vote and candidate into storage
+        Vote storage vote = votes[_voteId];
+        CandidateState storage candidate = vote.candidates[keccak256(_description)];
         // Make sure that this candidate has not already been added
         require(candidate.added == false);
         // Set all data for the candidate
         candidate.added = true;
-        candidate.keyArrayIndex = uint8(candidateKeys.length++);
+        candidate.keyArrayIndex = uint8(vote.candidateKeys.length++);
         candidate.metadata = _metadata;
         candidate.description = _description;
+        vote.candidateKeys[candidate.keyArrayIndex] = keccak256(_description);
     }
 
     /**
-    * @notice `getCandidate` serves as a basic getter using the description key
+    * @notice `getCandidate` serves as a basic getter using the description
     *         to return the struct data.
-    * @param _description The candidate key used when adding the candidate.
+    * @param _description The candidate descrciption of the candidate.
     */
-    function getCandidate(string _description)
+    function getCandidate(uint256 _voteId, string _description)
     external view returns(bool, bytes, uint8, uint256)
     {
-        CandidateState storage candidate = candidates[keccak256(_description)];
+        Vote storage vote = votes[_voteId];
+        CandidateState storage candidate = candidates[keccak256(_description)];        
         return(
             candidate.added,
             candidate.metadata,
@@ -208,6 +211,42 @@ contract RangeVoting is IForwarder, AragonApp {
             candidate.voteSupport
         );
     }
+
+    /**
+    * @notice `getCandidate` serves as a basic getter using the key
+    *         to return the struct data.
+    * @param _description The bytes32 key used when adding the candidate.
+    */
+    function getCandidate(uint256 _voteId, bytes32 key)
+    external view returns(bool, bytes, uint8, uint256, string)
+    {
+        Vote storage vote = votes[_voteId];
+        CandidateState storage candidate = candidates[key];        
+        return(
+            candidate.added,
+            candidate.metadata,
+            candidate.keyArrayIndex,
+            candidate.voteSupport,
+            candidate.description
+        );
+    }
+
+    /**
+    * @notice `getCandidate` serves as a basic getter using the key
+    *         to return the struct data.
+    * @param _description The bytes32 key used when adding the candidate.
+    */
+    function getCandidateDescription(uint256 _voteId, bytes32 key)
+    external view returns(string)
+    {
+        Vote storage vote = votes[_voteId];
+        CandidateState storage candidate = candidates[key];        
+        return(
+            candidate.description
+        );
+    }
+
+
 
 ///////////////////////
 // IForwarder functions
@@ -281,7 +320,18 @@ contract RangeVoting is IForwarder, AragonApp {
     *         struct and returns the individual values.
     * @param _voteId The ID of the Vote struct in the `votes` array
     */
-    function getVote(uint256 _voteId) public view returns (bool open, address creator, uint64 startDate, uint256 snapshotBlock, uint256 candidateSupportPct, uint256 totalVoters, string metadata, bytes executionScript, bool executed) {
+    function getVote(uint256 _voteId) public view returns 
+    (
+        bool open,
+        address creator,
+        uint64 startDate, 
+        uint256 snapshotBlock, 
+        uint256 candidateSupportPct, 
+        uint256 totalVoters, 
+        string metadata, 
+        bytes executionScript, 
+        bool executed
+    ) {
         Vote storage vote = votes[_voteId];
 
         open = _isVoteOpen(vote);

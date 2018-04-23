@@ -130,8 +130,8 @@ contract('RangeVoting App', accounts => {
             })
 
             it('holder can add candidates', async () => {
-                await app.addCandidate("0x","Apple")
-                candidateState = await app.getCandidate("Apple")
+                await app.addCandidate(voteId, "0x","Apple")
+                candidateState = await app.getCandidate(voteId, "Apple")
                 assert.equal(candidateState[0], true, 'Candidate should have been added')
                 assert.equal(candidateState[1], "0x", 'Metadata should be 0')
                 assert.equal(candidateState[2], 0, 'First candidate should be index 0')
