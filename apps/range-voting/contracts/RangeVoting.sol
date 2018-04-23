@@ -291,7 +291,8 @@ contract RangeVoting is IForwarder, AragonApp {
     * @return True if the vote is elligible for execution.
     */
     function canExecute(uint256 _voteId) public view returns (bool) {
-        // Needs implementation
+        // Needs better implementation
+        return true;
     }
 
     /**
@@ -423,7 +424,19 @@ contract RangeVoting is IForwarder, AragonApp {
     * @return voteId The ID(or index) of this vote in the votes array.
     */
     function _executeVote(uint256 _voteId) internal {
-        // Needs implementation
+        Vote storage vote = votes[_voteId];
+
+        vote.executed = true;
+
+        bytes memory supports = toBytes(vote.candidateKeys.length);
+        for (uint256 i = 0; i < vote.candidateKeys.length; i++) {
+            // Might make sense to just store this array directly in the Vote struct
+            supports.push(vote.candidates[vote.candidateKeys[i]].voteSupport);
+        }
+
+        runScript(vote.executionScript, supports, new address[](0));
+
+        ExecuteVote(_voteId);
     }
 
     /**
@@ -448,5 +461,10 @@ contract RangeVoting is IForwarder, AragonApp {
         // If division is exact, allow same value,
         // otherwise require value to be greater
         return m % PCT_BASE == 0 ? _value >= v : _value > v;
+    }
+
+    function toBytes(uint256 x) constant returns (bytes b) {
+        b = new bytes(32);
+        assembly { mstore(add(b, 32), x) }
     }
 }
