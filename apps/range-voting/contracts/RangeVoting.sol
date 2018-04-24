@@ -75,6 +75,7 @@ contract RangeVoting is IForwarder, AragonApp {
         bytes metadata;
         uint8 keyArrayIndex;
         uint256 voteSupport;
+        //string description;
     }
 
     Vote[] votes;
@@ -172,9 +173,10 @@ contract RangeVoting is IForwarder, AragonApp {
     }
 
     /**
-    * @param _voteId id for vote structure this 'ballot action' is connected to 
+    * @param _voteId id for vote structure this 'ballot action' is connected to
     * @notice `addCandidate` allows the `ADD_CANDIDATES_ROLE` to add candidates
     *         (or options) to the current vote.
+    * @param _voteId id for vote structure this 'ballot action' is connected to
     * @param _metadata Any additional information about the candidate.
     *        Base implementation does not use this parameter.
     * @param _description This is the string that will be displayed along the
@@ -193,6 +195,7 @@ contract RangeVoting is IForwarder, AragonApp {
         candidate.added = true;
         candidate.keyArrayIndex = uint8(vote.candidateKeys.length++);
         candidate.metadata = _metadata;
+        // double check
         candidateDescriptions[cKey] = _description;
         vote.candidateKeys[candidate.keyArrayIndex] = cKey;
     }
@@ -207,7 +210,7 @@ contract RangeVoting is IForwarder, AragonApp {
     external view returns(bool, bytes, uint8, uint256)
     {
         Vote storage vote = votes[_voteId];
-        CandidateState storage candidate = vote.candidates[keccak256(_description)];        
+        CandidateState storage candidate = vote.candidates[keccak256(_description)];
         return(
             candidate.added,
             candidate.metadata,
@@ -299,16 +302,16 @@ contract RangeVoting is IForwarder, AragonApp {
     *         struct and returns the individual values.
     * @param _voteId The ID of the Vote struct in the `votes` array
     */
-    function getVote(uint256 _voteId) public view returns 
+    function getVote(uint256 _voteId) public view returns
     (
         bool open,
         address creator,
-        uint64 startDate, 
-        uint256 snapshotBlock, 
-        uint256 candidateSupportPct, 
-        uint256 totalVoters, 
-        string metadata, 
-        bytes executionScript, 
+        uint64 startDate,
+        uint256 snapshotBlock,
+        uint256 candidateSupportPct,
+        uint256 totalVoters,
+        string metadata,
+        bytes executionScript,
         bool executed
     ) {
         Vote storage vote = votes[_voteId];
@@ -317,7 +320,7 @@ contract RangeVoting is IForwarder, AragonApp {
         creator = vote.creator;
         startDate = vote.startDate;
         snapshotBlock = vote.snapshotBlock;
-        candidateSupportPct = candidateSupportPct;
+        candidateSupportPct = vote.candidateSupportPct;
         totalVoters = vote.totalVoters;
         metadata = vote.metadata;
         executionScript = vote.executionScript;
@@ -377,7 +380,7 @@ contract RangeVoting is IForwarder, AragonApp {
     *         caste a vote on the current options.
     * @param _voteId id for vote structure this 'ballot action' is connected to
     * @param _supports Array of support weights in order of their order in
-    *        `candidateKeys`, sum of all supports must be less
+    *        `votes[_voteId].candidateKeys`, sum of all supports must be less
     *        than `token.balance[msg.sender]`.
     * @param _voter The address of the entity "casting" this vote action.
     */
@@ -387,34 +390,40 @@ contract RangeVoting is IForwarder, AragonApp {
         address _voter
     ) internal
     {
+        Vote storage vote = votes[_voteId];
+
         // this could re-enter, though we can asume the
         // governance token is not maliciuous
         uint256 voterStake = token.balanceOfAt(_voter, vote.snapshotBlock);
         uint256 totalSupport = 0;
 
-        Vote storage vote = votes[_voteId];
         uint256 voteSupport;
+        uint256[] oldVoteSupport = vote.voters[msg.sender];
+        bytes32[] cKeys = vote.candidateKeys;
 
+        uint256 i = 0;
         // This is going to cost a lot of gas... it'd be cool if there was
         // a better way to do this.
-        for (uint256 i = 0; i < _supports.length; i++) {
+        for (i; i < oldVoteSupport.length; i++) {
             totalSupport = totalSupport.add(_supports[i]);
             // Might make sense to move this outside the for loop
             // Probably safer here but some gas calculations should be done
-            require(totalSupport < voterStake);
-            voteSupport = vote.candidates[vote.candidateKeys[i]].voteSupport;
-            voteSupport = voteSupport.sub(vote.voters[msg.sender][i]).add(_supports[i]);
-            vote.candidates[vote.candidateKeys[i]].voteSupport = voteSupport;
+            require(totalSupport <= voterStake);
+
+            voteSupport = vote.candidates[cKeys[i]].voteSupport;
+            voteSupport = voteSupport.sub(oldVoteSupport[i]);
+            voteSupport = voteSupport.add(_supports[i]);
+            vote.candidates[cKeys[i]].voteSupport = voteSupport;
+        }
+        for (i; i < _supports.length; i++) {
+            totalSupport = totalSupport.add(_supports[i]);
+            require(totalSupport <= voterStake);
+            voteSupport = vote.candidates[cKeys[i]].voteSupport;
+            voteSupport = voteSupport.add(_supports[i]);
+            vote.candidates[cKeys[i]].voteSupport = voteSupport;
         }
 
         vote.voters[msg.sender] = _supports;
-
-        CastVote(
-            _voteId,
-            _voter,
-            _supports,
-            voterStake
-        );
     }
 
     /**
