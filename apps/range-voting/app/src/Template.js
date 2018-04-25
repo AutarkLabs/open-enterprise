@@ -3,7 +3,6 @@ import styled from 'styled-components'
 import { noop } from './utils'
 import { lerp } from './math-utils'
 import TemplateCard from './TemplateCard'
-import { Button } from '@aragon/ui'
 import { Main, Content, Title, Subtitle } from './style'
 
 class Template extends React.Component {

@@ -2,7 +2,6 @@ import React from 'react'
 import styled from 'styled-components'
 import { theme, Text, Button } from '@aragon/ui'
 import { lerp } from './math-utils'
-import { noop } from './utils'
 import { Main, Content, Title } from './style'
 
 import imgPending from './assets/transaction-pending.svg'

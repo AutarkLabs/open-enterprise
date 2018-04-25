@@ -163,7 +163,6 @@ class App extends React.Component {
 
   createContract = () => {
     const { template } = this.state
-console.log ('createContract')
 
     if (!Templates.has(template)) {
       return null
@@ -176,11 +175,9 @@ console.log ('createContract')
     this.props.onCreateContract(templateData.name, data)
   }
 
-
   moveStep = (direction = 1) => {
     const { stepIndex } = this.state
     const steps = this.getSteps()
-console.log ('moveStep: ' + steps)
     const newStepIndex = stepIndex + direction
     if (newStepIndex > steps.length - 1 || newStepIndex < 0) {
       return

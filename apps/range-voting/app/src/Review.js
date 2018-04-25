@@ -1,14 +1,9 @@
 import React from 'react'
 import styled from 'styled-components'
 import { theme, Text } from '@aragon/ui'
-import { noop } from './utils'
 import { Main, Content } from './style'
-import Templates from './templates'
 
 class Review extends React.Component {
-  constructor(props) {
-    super(props)
-  }
   static defaultProps = {
     warm: false,
     positionProgress: 0,
