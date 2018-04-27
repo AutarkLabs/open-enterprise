@@ -14,7 +14,7 @@ In order to get started contributing please find an issue marked "good first iss
 
 We still need to document a comprehensive wiki on setting up the dev environment (want to help?), but this is what we have so far:
 
-Main resources:
+### Main Aragon documents/resources
 * https://wiki.aragon.one/dev/
 * https://github.com/aragon/aragonOS/blob/docs/docs/aragonOS.md
 * https://github.com/aragon/hack
@@ -22,21 +22,13 @@ Main resources:
 * https://github.com/aragon/aragon.js/blob/master/docs/APP.md
 * https://github.com/aragon/aragon.js/blob/master/docs/WRAPPER.md
 
-Those are the main Aragon documents, the WIP gist is probably the most helpful but also the mod incomplete. If you follow the instructions you'll run into some issues with some assumptions made about the APM permissions. As far as design the app.md and wrapper.md are the most helpful for the front end, and the hack.md gives the best overview. The aragonOS.md details the solidity code and how the core of their system works.
+The WIP gist is probably the most helpful but also the most incomplete. If you follow the instructions, you'll run into some issues with some assumptions made about the APM permissions. As far as design the app.md and wrapper.md are the most helpful for the front end, and the hack.md gives the best overview. The aragonOS.md details the solidity code and how the core of their system works.
 
 ## Contribution Process
 
 All issues are assigned an hour estimate in "points" by our team during our twice weekly meetings using [planning poker](https://en.wikipedia.org/wiki/Planning_poker). For each estimated hour in completed tasks a contributor gets 1 contributor point. 
 
 In order to get added as an official "Contributor" and get an invite to our meetings, you need to accumulate at least 20 contributor points. This means if you complete tasks with weights 8 and 7 you could not attend meetings but after completing another with at least a weight of 5 you could!
-
-### Project Management
-
-We use Zenhub's Github Chrome Extension for project management, so [please install it](https://chrome.google.com/webstore/detail/zenhub-for-github/ogcgkffhplmphkaahpmffcafajaocjbd?hl=en-US). The only way you can see the points is with this extension.
-
-After installing the extension:
-* Navigate to the "Zenhub" tab within Github
-* Self-assign yourself unclaimed issues in the "Backlog" - ideally ones that have points allocated to them (we may be a bit behind in doing all of the planning poker - we will have another session soon).
 
 ### Contribution Rewards
 
@@ -50,6 +42,14 @@ The following "Regular Reward Members" (aka full-time members) of the project, a
 * quazia
 * stellarmagnet
 * rkzel
+
+### Project Management
+
+We use Zenhub's Github Chrome Extension for project management, so [please install it](https://chrome.google.com/webstore/detail/zenhub-for-github/ogcgkffhplmphkaahpmffcafajaocjbd?hl=en-US). The only way you can see the points is with this extension.
+
+After installing the extension:
+* Navigate to the "Zenhub" tab within Github
+* Self-assign yourself unclaimed issues in the "Backlog" - ideally ones that have points allocated to them (we may be a bit behind in doing all of the planning poker - we will have another session soon).
 
 
 ### Pull Requests
@@ -72,4 +72,4 @@ If you have any questions or want to get involved in our development please let 
 
 ## Special Thanks
 
-Special thanks go to the Aragon team for much of the work this project is based on as well as for allocating us this grant to build the tools we need to DAOify open source developemt!
+Special thanks go to the Aragon team for much of the work this project is based on, as well as for allocating us this grant to build the tools we need to DAOify open source developemt!
