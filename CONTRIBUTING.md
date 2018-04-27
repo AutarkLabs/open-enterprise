@@ -7,7 +7,23 @@ This is the project repo for [Aragon Nest proposal #24](https://github.com/arago
 
 In order to get started contributing please find an issue marked "good first issue" and look over our rules for pull requests.
 
-For details on getting your development environment setup please see our [README.md](https://github.com/Giveth/planning-app/blob/master/README.md)
+### Background Material
+* [White Paper](https://drive.google.com/open?id=192hg6lUoePoWh_zR2uCyIHcw7TYH4gEc7CoUMZ1lkl8)
+* [Design Files](https://invis.io/U2HNX5CST9W)
+
+## Environment Setup
+
+We still need to document a comprehensive wiki on setting up the dev environment (want to help?), but this is what we have so far:
+
+Main resources:
+* https://wiki.aragon.one/dev/
+* https://github.com/aragon/aragonOS/blob/docs/docs/aragonOS.md
+* https://github.com/aragon/hack
+* https://gist.github.com/izqui/2a02c337aafa225c403de9c988cb78a0
+* https://github.com/aragon/aragon.js/blob/master/docs/APP.md
+* https://github.com/aragon/aragon.js/blob/master/docs/WRAPPER.md
+
+Those are the main Aragon documents, the WIP gist is probably the most helpful but also the mod incomplete. If you follow the instructions you'll run into some issues with some assumptions made about the APM permissions. As far as design the app.md and wrapper.md are the most helpful for the front end, and the hack.md gives the best overview. The aragonOS.md details the solidity code and how the core of their system works.
 
 ## Project Management
 
