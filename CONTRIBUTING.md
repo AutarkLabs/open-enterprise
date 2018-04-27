@@ -9,6 +9,10 @@ In order to get started contributing please find an issue marked "good first iss
 
 For details on getting your development environment setup please see our [README.md](https://github.com/Giveth/planning-app/blob/master/README.md)
 
+## Project Management
+
+We use Zenhub's Github Chrome Extension for project management, so [please install it](https://chrome.google.com/webstore/detail/zenhub-for-github/ogcgkffhplmphkaahpmffcafajaocjbd?hl=en-US).
+
 
 ## Pull Requests
 
@@ -22,17 +26,23 @@ In order for a pull request to get accepted it needs to:
 
 ## Contributor Status and Compensation
 
-All issues are assigned an hour estimate by our team during our twice weekly meetings using planning poker.
+All issues are assigned an hour estimate in "points" by our team during our twice weekly meetings using planning poker. You can only see the points if you install the Zenhub extension, so [please install it](https://chrome.google.com/webstore/detail/zenhub-for-github/ogcgkffhplmphkaahpmffcafajaocjbd?hl=en-US).
 
 In order to get added as a contributor and get an invite to our meetings you need to accumulate at least 20 contributor points. For each hour in completed tasks a contributor gets 1 contributor point. This means if you complete tasks with weights 8 and 7 you could not attend meetings but after completing another with at least a weight of 5 you could!
 
-Every month we allocate ~5,000 USD (ether fluctuates) to our RewardDAO, in order to be eligible all you need to do is complete a task with a given weight. At the end of the month we divide our RewardDAO budget evenly based on total points of contributions. Regular Reward members of the repository are not eligible for the RewardDAO so don't worry about us taking all those delicious points!
+Every month we allocate ~5,000 USD (ether fluctuates) to a reward pool (that we call "RewardDAO"). In order to be eligible all you need to do is complete a task with a given weight. At the end of the milestone (which can span in some cases span multiple months), we divide our RewardDAO budget evenly based on total points of contributions. Regular Reward members of the repository are not eligible for the RewardDAO so don't worry about us taking all those delicious points!
 
 Currently payouts are handled manually using a multi-sig however in the future all of this should be automated through the software we're building.
 
+### Regular Reward Members
+The following "Regular Reward Members" of the repository are not eligible for the RewardDAO so don't worry about us taking all those delicious points!
+* quazia
+* stellarmagnet
+* rkzel
+
 ## Contact
 
-We can generally be found in the [social-coding riot channel](https://riot.im/app/#/room/#social-coding:matrix.org)
+We can generally be found in the [Aragon Planning riot channel](https://riot.im/app/#/room/#aragon-planning:matrix.org)
 
 You may also reach out to us via email at: nest@space.coop
 
