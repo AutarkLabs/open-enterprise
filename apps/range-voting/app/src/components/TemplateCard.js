@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Text, theme, font, IconCheck } from '@aragon/ui'
-import { noop } from './utils'
+import { noop } from '../utils/utils'
 
 class TemplateCard extends React.Component {
   static defaultProps = {

@@ -2,8 +2,8 @@ import React from 'react'
 import styled from 'styled-components'
 import { Motion, spring } from 'react-motion'
 import { spring as springConf, Text } from '@aragon/ui'
-import * as Steps from './steps'
-import { lerp } from './math-utils'
+import * as Steps from '../range-voting/steps'
+import { lerp } from '../utils/math-utils'
 
 const STEPS_COUNT = Steps.ProgressBarGroups.length
 

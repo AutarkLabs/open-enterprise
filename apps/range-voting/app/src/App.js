@@ -1,22 +1,21 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Motion, spring } from 'react-motion'
 import { spring as springConf } from '@aragon/ui'
-import { AragonApp, AppBar } from '@aragon/ui'
+import { AragonApp, AppBar, Button, SidePanel, Text, observe } from '@aragon/ui'
+import AppLayout from './components/AppLayout'
+import EmptyState from './screens/EmptyState'
+import Dashboard from './screens/Dashboard'
+import Tools from './screens/Tools'
+import Issues from './screens/Issues'
+import Proposals from './screens/Proposals'
+import { noop } from './utils/utils'
+import { networkContextType } from './utils/provideNetwork'
 
 import LoginButton from './components/LoginButton'
 
-import * as Steps from './steps'
-import Templates from './templates'
-
-import StepsBar from './StepsBar'
-import PrevNext from './PrevNext'
-
-import Template from './Template'
-import Review from './Review'
-import Launch from './Launch'
-
-import { noop } from './utils'
+import RangeVoting from './range-voting/RangeVoting'
 
 const SPRING_SHOW = {
   stiffness: 120,
@@ -34,14 +33,21 @@ const initialState = {
   template: null,
   templateData: {},
   stepIndex: 0,
-  direction: 1
+  direction: 1,
+  activeTabId: 0
 }
 
 class App extends React.Component {
+  static propTypes = {
+    app: PropTypes.object.isRequired,
+  }
   static defaultProps = {
     account: '',
     balance: null,
-    network: '',
+    network: {
+      etherscanBaseUrl: 'https://rinkeby.etherscan.io',
+      name: 'rinkeby',
+    },
     visible: true,
     walletWeb3: null,
     web3: null,
@@ -49,308 +55,91 @@ class App extends React.Component {
     contractCreationStatus: 'none',
     onComplete: noop,
     onCreateContract: noop,
+    tabs: [ {id: 0, name: 'Dashboard', screen: Dashboard },
+{id: 1, name: 'Issues', screen: Issues},
+{id: 2, name: 'Proposals', screen: Proposals},
+{id: 3, name: 'Tools', screen: Tools},
+    ],
   }
+  static childContextTypes = {
+    network: networkContextType,
+  }
+  getChildContext() {
+    return { network: this.props.network }
+  }
+
   state = {
     ...initialState,
   }
 
   componentWillReceiveProps(nextProps) {
     const { props } = this
+  }
 
-    if (nextProps.visible && !props.visible) {
-      this.setState({ stepIndex: 0 })
+  
+  handleTabClick(id) {
+    return event => {
+      this.setState({
+        activeTabId: id
+      })
+      console.log ('handleTabClick: ' + id)
     }
-  }
-
-  getSteps() {
-    const { template } = this.state
-
-    const configureSteps = Templates.has(template)
-      ? Templates.get(template).screens.map(step => ({
-          ...step,
-          group: Steps.Configure,
-        }))
-      : []
-
-    return [
-      { screen: 'template', group: Steps.Template },
-      ...configureSteps,
-      { screen: 'review', group: Steps.Review },
-      { screen: 'launch', group: Steps.Launch },
-    ]
-  }
-
-  currentStep() {
-    const { stepIndex } = this.state
-    const steps = this.getSteps()
-    return steps[stepIndex] || { group: Steps.Template }
-  }
-
-  getInitialDataFromTemplate(template) {
-    if (!Templates.has(template)) {
-      return []
-    }
-    const fields = Templates.get(template).fields
-    return Object.entries(fields).reduce(
-      (fields, [name, { defaultValue }]) => ({
-        ...fields,
-        [name]: defaultValue(),
-      }),
-      {}
-    )
-  }
-
-  getTemplateScreen(template, screen) {
-    if (!Templates.has(template)) {
-      return null
-    }
-    return (
-      Templates.get(template).screens.find(
-        screenData => screenData.screen === screen
-      ) || null
-    )
-  }
-
-  filterConfigurationValue(template, name, value) {
-    if (!Templates.has(template)) {
-      return null
-    }
-    return Templates.get(template).fields[name].filter(
-      value,
-      this.state.templateData
-    )
-  }
-
-  validateConfigurationScreen(template, screen) {
-    const screenData = this.getTemplateScreen(template, screen)
-    return screenData ? screenData.validate(this.state.templateData) : false
-  }
-
-  handleConfigurationFieldUpdate = (screen, name, value) => {
-    this.setState(({ templateData, template }) => {
-      const updatedFields = this.filterConfigurationValue(template, name, value)
-      // If the filter returns null, the value is not updated
-      if (updatedFields === null) {
-        return {}
-      }
-
-      return {
-        templateData: {
-          ...templateData,
-          ...updatedFields,
-        },
-      }
-    })
-  }
-
-  handleTemplateSelect = (template = null) => {
-    this.setState({
-      template,
-      templateData: this.getInitialDataFromTemplate(template),
-    })
-  }
-
-  prepareReview = () => {
-    const { template } = this.state
-
-    if (!Templates.has(template)) {
-      return null
-    }
-
-    const templateData = Templates.get(template)
-    return templateData.prepareData(this.state.templateData)
-  }
-
-  createContract = () => {
-    const { template } = this.state
-
-    if (!Templates.has(template)) {
-      return null
-    }
-
-    const templateData = Templates.get(template)
-    const data = templateData.prepareData(this.state.templateData)
-
-    console.log('onCreateContract ', data)
-    this.props.onCreateContract(templateData.name, data)
-  }
-
-  moveStep = (direction = 1) => {
-    const { stepIndex } = this.state
-    const steps = this.getSteps()
-    const newStepIndex = stepIndex + direction
-    if (newStepIndex > steps.length - 1 || newStepIndex < 0) {
-      return
-    }
-
-    if (steps[newStepIndex].screen === 'review') {
-      this.createContract()
-    }
-
-    this.setState({ stepIndex: newStepIndex, direction })
-  }
-  nextStep = () => {
-    if (this.isNextEnabled()) {
-      this.moveStep(1)
-    }
-  }
-  prevStep = () => {
-    if (this.isPrevEnabled()) {
-      this.moveStep(-1)
-    }
-  }
-  isPrevEnabled() {
-    return true
-  }
-  isNextEnabled() {
-    const { template } = this.state
-    const step = this.currentStep()
-    if (step.screen === 'template') {
-      return !!template
-    }
-    if (step.group === Steps.Configure) {
-      return this.validateConfigurationScreen(template, step.screen)
-    }
-    return true
-  }
-
-  isPrevNextVisible() {
-    const step = this.currentStep()
-    return (
-      step.group !== Steps.Launch
-    )
-  }
-  isLaunchingNext() {
-    const { stepIndex } = this.state
-    const steps = this.getSteps()
-    return steps[stepIndex + 1] && steps[stepIndex + 1].screen === 'launch'
   }
   
+
   render () {
-    const { direction, stepIndex } = this.state
-    const { visible } = this.props
-    const step = this.currentStep()
-    const steps = this.getSteps()
+    const { tabs } = this.props
+    const { activeTabId } = this.state
+    const Screen = tabs[activeTabId].screen
 
     return (
-      <AragonApp backgroundLogo={true}>
-        <AppBar title="Range Voting" endContent={<LoginButton />}/>
-      
-           <Motion
-        style={{
-          showProgress: spring(
-            Number(visible),
-            visible ? SPRING_SHOW : SPRING_HIDE
-          ),
-        }}
-      > 
-        {({ showProgress }) => (
-          <Main
-            style={{
-              transform: visible
-                ? 'none'
-                : `translateY(${100 * (1 - showProgress)}%)`,
-              opacity: visible ? showProgress : 1,
-            }}
-          > 
-            <View>
-              <Window>
-                <Motion
-                  style={{ screenProgress: spring(stepIndex, SPRING_SCREEN) }}
-                > 
-                  {({ screenProgress }) => (
-                    <React.Fragment>
-                      <StepsBar activeGroup={step.group} />
-                      <div>
-                        {steps.map(({ screen }, i) => (
-                          <Screen active={screen === step.screen} key={screen}>
-                            {this.renderScreen(
-                              screen,
-                              i - stepIndex,
-                              i - screenProgress
-                            )}
-                          </Screen>
-                        ))}
-                      </div>
-                      <PrevNext
-                        visible={this.isPrevNextVisible()}
-                        direction={direction}
-                        onPrev={this.prevStep}
-                        onNext={this.nextStep}
-                        enableNext={this.isNextEnabled()}
-                        enablePrev={this.isPrevEnabled()}
-                        isLaunchingNext={this.isLaunchingNext()}
-                      />
-                    </React.Fragment>
-                  )}
-                </Motion>
-              </Window>
-            </View>
-          </Main>
-        )}
-      </Motion>
+      <AragonApp publicUrl="/aragon-ui/">
+        <AppLayout>
+          <AppLayout.Header>
+            <AppBar
+              title="Planning"
+              endContent={
+                <Button mode="strong" onClick={this.handleCreateProject}>
+                  New Project
+                </Button>
+              }
+            />
+          </AppLayout.Header>
+          <Tabs>{
+            tabs.map (({id, name}) => (
+              <Tab
+                active={id === activeTabId}
+                onClick={this.handleTabClick(id)}
+                key={id}
+              >{name}</Tab>
+            ))}
+          </Tabs>
+          <AppLayout.ScrollWrapper>
+            <AppLayout.Content>
+               <Screen onActivate={this.handleCreateProject} />
+            </AppLayout.Content>
+          </AppLayout.ScrollWrapper>
+        </AppLayout>
       </AragonApp>
     )
   }
-
-
-  renderScreen(screen, position, positionProgress) {
-    const {
-      template
-    } = this.state
-
-    const {
-      account,
-      network,
-      balance,
-      onComplete,
-    } = this.props
-
-    positionProgress = Math.min(1, Math.max(-1, positionProgress))
-    const warm = Math.abs(position) <= 1
-    const sharedProps = { positionProgress, warm }
-    if (screen === 'template') {
-      return (
-        <Template
-          templates={Templates}
-          activeTemplate={template}
-          onSelect={this.handleTemplateSelect}
-          {...sharedProps}
-        />
-      )
-    }
-    if (screen === 'review') {
-      const configurationData=this.prepareReview()
-      return <Review
-        onConfirm={onComplete}
-        configurationData={configurationData}
-        {...sharedProps}
-      />
-    }
-    if (screen === 'launch') {
-      return <Launch onConfirm={onComplete} {...sharedProps} />
-    }
-    const steps = this.getSteps()
-    const configureScreen = steps.find(
-      step => step.screen === screen && step.group === Steps.Configure
-    )
-    if (!configureScreen) {
-      return null
-    }
-
-    const ConfigureScreen = configureScreen.Component
-    const fields = this.state.templateData
-    return (
-      <ConfigureScreen
-        screen={screen}
-        fields={fields}
-        onFieldUpdate={this.handleConfigurationFieldUpdate}
-        onSubmit={this.nextStep}
-        {...sharedProps}
-      />
-    )
-  }
 }
+
+const Tabs = styled.div`
+  display: flex;
+  height: 30px;
+  background-color: #9EF;
+  width: 100%;
+  line-height: 30px;
+`
+const Tab = styled.div`
+  font-size: '13px';
+  margin-left: 20px;
+  align-items: center;
+  cursor: pointer;
+  font-weight: ${({ active }) => (active ? '800' : '400')};
+`
+
 const Main = styled.div`
   position: fixed;
   z-index: 2;
@@ -366,15 +155,6 @@ const Main = styled.div`
       rgba(0, 0, 0, 0.08) 100%
     ),
     linear-gradient(-226deg, #00f1e1 0%, #00b4e4 100%);
-`
-
-const View = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 800px;
-  min-height: 100%;
-  padding: 50px;
 `
 
 const Window = styled.div`

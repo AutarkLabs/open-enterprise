@@ -1,12 +1,12 @@
 import React from 'react'
 import styled from 'styled-components'
 import { theme, Text, Button } from '@aragon/ui'
-import { lerp } from './math-utils'
-import { Main, Content, Title } from './style'
+import { lerp } from '../utils/math-utils'
+import { Main, Content, Title } from '../style'
 
-import imgPending from './assets/transaction-pending.svg'
-import imgSuccess from './assets/transaction-success.svg'
-import imgError from './assets/transaction-error.svg'
+import imgPending from '../assets/transaction-pending.svg'
+import imgSuccess from '../assets/transaction-success.svg'
+import imgError from '../assets/transaction-error.svg'
 
 class Launch extends React.Component {
   static defaultProps = {

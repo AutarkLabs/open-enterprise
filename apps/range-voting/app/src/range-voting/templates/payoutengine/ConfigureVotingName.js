@@ -1,11 +1,11 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Field, TextInput } from '@aragon/ui'
-import { lerp } from '../../math-utils'
-import { noop } from '../../utils'
-import { Main, Content, Title, Subtitle, Hint } from '../../style'
+import { Main, Content, Title, Subtitle, Hint } from '../../../style'
+import { lerp } from '../../../utils/math-utils'
+import { noop } from '../../../utils/utils'
 
-class ConfigureVotingDefaults extends React.Component {
+class ConfigureVotingName extends React.Component {
   static defaultProps = {
     warm: false,
     positionProgress: 0,
@@ -15,9 +15,8 @@ class ConfigureVotingDefaults extends React.Component {
   }
   constructor(props) {
     super(props)
-    this.handleSupportChange = this.createChangeHandler('support')
-    this.handleMinQuorumChange = this.createChangeHandler('minQuorum')
-    this.handleVoteDurationChange = this.createChangeHandler('voteDuration')
+    this.handleNameChange = this.createChangeHandler('voteName')
+    this.handleDescriptionChange = this.createChangeHandler('voteDescription')
   }
   componentWillReceiveProps({ positionProgress }) {
     if (
@@ -51,11 +50,10 @@ class ConfigureVotingDefaults extends React.Component {
           willChange: warm ? 'opacity, transform' : 'auto',
         }}
       >
-        <ConfigureVotingDefaultsContent
+        <ConfigureVotingNameContent
           fields={fields}
-          handleSupportChange={this.handleSupportChange}
-          handleMinQuorumChange={this.handleMinQuorumChange}
-          handleVoteDurationChange={this.handleVoteDurationChange}
+          handleNameChange={this.handleNameChange}
+          handleDescriptionChange={this.handleDescriptionChange}
           onSubmit={this.handleSubmit}
           formRef={this.handleFormRef}
         />
@@ -64,13 +62,12 @@ class ConfigureVotingDefaults extends React.Component {
   }
 }
 
-class ConfigureVotingDefaultsContent extends React.PureComponent {
+class ConfigureVotingNameContent extends React.PureComponent {
   render() {
     const {
       fields,
-      handleSupportChange,
-      handleMinQuorumChange,
-      handleVoteDurationChange,
+      handleNameChange,
+      handleDescriptionChange,
       onSubmit,
       formRef,
     } = this.props
@@ -80,39 +77,29 @@ class ConfigureVotingDefaultsContent extends React.PureComponent {
         <StepContainer>
           <SubmitForm onSubmit={onSubmit} innerRef={formRef}>
             <Subtitle>
-              Choose your voting settings below. You can’t change these later, so pick carefully.
+              You are creating a custom, reusable multi-option voting app. Enter a name and description so you remember its purpose.
             </Subtitle>
             <Fields>
-              <Fields.PercentageField label="Support">
+              <Fields.Field label="Name">
                 <Hint>
-                  Percentage of votes required to validate an option
+                  What do you want to name this app?
                 </Hint>
-                <SymbolInput
-                  placeholder="e.g. 50"
-                  value={fields.support === -1 ? '' : fields.support}
-                  onChange={handleSupportChange}
+                <TextInput
+                  placeholder="Name"
+                  value={fields.voteName}
+                  onChange={handleNameChange}
                 />
-              </Fields.PercentageField>
-              <Fields.PercentageField label="Min. Quorum">
+              </Fields.Field>
+              <Fields.Field label="Description">
                 <Hint>
-                  Percentage of token supply required to participate in proposals
+                  How would you describe this app?
                 </Hint>
-                <SymbolInput
-                  placeholder="e.g. 15"
-                  value={fields.minQuorum === -1 ? '' : fields.minQuorum}
-                  onChange={handleMinQuorumChange}
+                <TextInput
+                  placeholder="Description"
+                  onChange={handleDescriptionChange}
+                  value={fields.voteDescription}
                 />
-              </Fields.PercentageField>
-              <Fields.HoursField label="Vote Duration">
-                <Hint>
-                  Duration each vote is active for
-                </Hint>
-                <SymbolInput
-                  placeholder="e.g. 24"
-                  onChange={handleVoteDurationChange}
-                  value={fields.voteDuration === -1 ? '' : fields.voteDuration}
-                />
-              </Fields.HoursField>
+              </Fields.Field>
             </Fields>
           </SubmitForm>
         </StepContainer>
@@ -136,16 +123,13 @@ const StepContainer = styled.div`
   height: 100%;
 `
 
-const SymbolInput = styled(TextInput)`
-  text-align: right;
-  width: 120px;
-  padding-right: 25px;
-`
-
 const Fields = styled.div`
   justify-content: center;
   margin-top: 40px;
+  width: 80%;
+  margin: auto;
 `
+
 Fields.Field = styled(Field)`
   position: relative;
   &:after {
@@ -155,15 +139,4 @@ Fields.Field = styled(Field)`
     font-size: 14px;
   }
 `
-Fields.PercentageField = styled(Fields.Field)`
-  &:after {
-    content: '%';
-  }
-`
-Fields.HoursField = styled(Fields.Field)`
-  &:after {
-    content: 'H';
-  }
-`
-
-export default ConfigureVotingDefaults
+export default ConfigureVotingName

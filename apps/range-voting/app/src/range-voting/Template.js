@@ -1,9 +1,9 @@
 import React from 'react'
 import styled from 'styled-components'
-import { noop } from './utils'
-import { lerp } from './math-utils'
-import TemplateCard from './TemplateCard'
-import { Main, Content, Title, Subtitle } from './style'
+import { noop } from '../utils/utils'
+import { lerp } from '../utils/math-utils'
+import TemplateCard from '../components/TemplateCard'
+import { Main, Content, Title, Subtitle } from '../style'
 
 class Template extends React.Component {
   static defaultProps = {

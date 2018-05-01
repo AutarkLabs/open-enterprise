@@ -1,10 +1,10 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Field, TextInput, Text, theme } from '@aragon/ui'
-import { lerp } from '../../math-utils'
-import { noop } from '../../utils'
+import { lerp } from '../../../utils/math-utils'
+import { noop } from '../../../utils/utils'
 
-class ConfigureVotingDefaults extends React.Component {
+class ConfigureVotingName extends React.Component {
   static defaultProps = {
     warm: false,
     positionProgress: 0,
@@ -75,7 +75,7 @@ class ConfigureVotingDefaultsContent extends React.PureComponent {
     } = this.props
     return (
       <Content>
-        <Title>Issue Curation</Title>
+        <Title>Democracy Project</Title>
         <StepContainer>
           <SubmitForm onSubmit={onSubmit} innerRef={formRef}>
             <p style={{ textAlign: 'center' }}>
@@ -186,4 +186,4 @@ Fields.HoursField = styled(Fields.Field)`
   }
 `
 
-export default ConfigureVotingDefaults
+export default ConfigureVotingName

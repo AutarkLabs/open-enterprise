@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { Motion, spring } from 'react-motion'
 import { spring as springConf, Button } from '@aragon/ui'
-import { lerp } from './math-utils'
+import { lerp } from '../utils/math-utils'
 
 class PrevNext extends React.Component {
   render() {

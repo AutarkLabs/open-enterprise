@@ -1,4 +1,4 @@
-import { safeDiv } from './math-utils'
+import { safeDiv } from '../../utils/math-utils'
 import {
   VOTE_ABSENT,
   VOTE_STATUS_ONGOING,
@@ -16,9 +16,9 @@ export const getVoteStatus = (vote, support, quorum) => {
     return VOTE_STATUS_ACCEPTED
   }
 
-  const totalVotes = map... // vote.yea + vote.nay
+  const totalVotes = 13 // map... orig: vote.yea + vote.nay
 
-  const hasSupport = map... // vote.yea / totalVotes >= support
+  const hasSupport = 63 // map... orig: vote.yea / totalVotes >= support
   const hasMinQuorum = getQuorumProgress(vote) >= quorum
 
   if (vote.open) {

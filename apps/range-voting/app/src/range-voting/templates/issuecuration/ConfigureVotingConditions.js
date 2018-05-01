@@ -1,8 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Field, TextInput, Text, theme } from '@aragon/ui'
-import { lerp } from '../../math-utils'
-import { noop } from '../../utils'
+import { lerp } from '../../../utils/math-utils'
+import { noop } from '../../../utils/utils'
 
 class ConfigureVotingConditions extends React.Component {
   static defaultProps = {

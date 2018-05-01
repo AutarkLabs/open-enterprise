@@ -1,10 +1,10 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Field, TextInput, Text, theme } from '@aragon/ui'
-import { lerp } from '../../math-utils'
-import { noop } from '../../utils'
+import { lerp } from '../../../utils/math-utils'
+import { noop } from '../../../utils/utils'
 
-class ConfigureVotingName extends React.Component {
+class ConfigureVotingConditions extends React.Component {
   static defaultProps = {
     warm: false,
     positionProgress: 0,
@@ -186,4 +186,4 @@ Fields.HoursField = styled(Fields.Field)`
   }
 `
 
-export default ConfigureVotingName
+export default ConfigureVotingConditions

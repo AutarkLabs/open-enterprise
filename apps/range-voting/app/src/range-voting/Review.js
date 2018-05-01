@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { theme, Text } from '@aragon/ui'
-import { Main, Content } from './style'
+import { Main, Content } from '../style'
 
 class Review extends React.Component {
   static defaultProps = {
