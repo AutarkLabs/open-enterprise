@@ -1,11 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Motion, spring } from 'react-motion'
-import { spring as springConf } from '@aragon/ui'
+import { spring as springConf, theme } from '@aragon/ui'
 import { AragonApp, AppBar, Button, SidePanel, Text, observe } from '@aragon/ui'
 import AppLayout from './components/AppLayout'
-import EmptyState from './screens/EmptyState'
 import Dashboard from './screens/Dashboard'
 import Tools from './screens/Tools'
 import Issues from './screens/Issues'
@@ -13,29 +11,18 @@ import Proposals from './screens/Proposals'
 import { noop } from './utils/utils'
 import { networkContextType } from './utils/provideNetwork'
 
-import LoginButton from './components/LoginButton'
-
+import NewProjectPanelContent from './components/NewProjectPanelContent'
 import RangeVoting from './range-voting/RangeVoting'
-
-const SPRING_SHOW = {
-  stiffness: 120,
-  damping: 17,
-  precision: 0.001,
-}
-const SPRING_HIDE = {
-  stiffness: 70,
-  damping: 15,
-  precision: 0.001,
-}
-const SPRING_SCREEN = springConf('slow')
 
 const initialState = {
   template: null,
   templateData: {},
   stepIndex: 0,
   direction: 1,
-  activeTabId: 0
+  activeTabId: 0,
+  createProjectVisible: false
 }
+
 
 class App extends React.Component {
   static propTypes = {
@@ -55,10 +42,11 @@ class App extends React.Component {
     contractCreationStatus: 'none',
     onComplete: noop,
     onCreateContract: noop,
-    tabs: [ {id: 0, name: 'Dashboard', screen: Dashboard },
-{id: 1, name: 'Issues', screen: Issues},
-{id: 2, name: 'Proposals', screen: Proposals},
-{id: 3, name: 'Tools', screen: Tools},
+    tabs: [
+      {id: 0, name: 'Dashboard', screen: Dashboard},
+      {id: 1, name: 'Issues', screen: Issues},
+      {id: 2, name: 'Proposals', screen: Proposals},
+      {id: 3, name: 'Tools', screen: Tools},
     ],
   }
   static childContextTypes = {
@@ -75,7 +63,6 @@ class App extends React.Component {
   componentWillReceiveProps(nextProps) {
     const { props } = this
   }
-
   
   handleTabClick(id) {
     return event => {
@@ -86,10 +73,19 @@ class App extends React.Component {
     }
   }
   
-
+  handleCreateProjectOpen = () => {
+    this.setState({ createProjectVisible: true })
+  }
+  handleCreateProjectClose = () => {
+    this.setState({ createProjectVisible: false })
+  }
+  handleCreateProject = () => {
+    const {name, description, repoURL, bountySystem} = this.state
+    alert ('creating: ' + name + ', ' + description + ', ' + repoURL + ', ' + bountySystem)
+  }
   render () {
     const { tabs } = this.props
-    const { activeTabId } = this.state
+    const { activeTabId, createProjectVisible } = this.state
     const Screen = tabs[activeTabId].screen
 
     return (
@@ -99,7 +95,7 @@ class App extends React.Component {
             <AppBar
               title="Planning"
               endContent={
-                <Button mode="strong" onClick={this.handleCreateProject}>
+                <Button mode="strong" onClick={this.handleCreateProjectOpen}>
                   New Project
                 </Button>
               }
@@ -116,10 +112,22 @@ class App extends React.Component {
           </Tabs>
           <AppLayout.ScrollWrapper>
             <AppLayout.Content>
-               <Screen onActivate={this.handleCreateProject} />
+               <Screen onActivate={this.handleCreateProjectOpen} />
             </AppLayout.Content>
           </AppLayout.ScrollWrapper>
         </AppLayout>
+
+        <SidePanel
+          title="New Project"
+          opened={createProjectVisible}
+          onClose={this.handleCreateProjectClose}
+        >
+          <NewProjectPanelContent
+            opened={createProjectVisible}
+            onCreateProject={this.handleCreateProject}
+          />
+        </SidePanel>
+
       </AragonApp>
     )
   }
@@ -127,10 +135,11 @@ class App extends React.Component {
 
 const Tabs = styled.div`
   display: flex;
-  height: 30px;
-  background-color: #9EF;
+  height: 40px;
+  background-color: #FFF;
   width: 100%;
-  line-height: 30px;
+  line-height: 40px;
+  border-bottom: 1px solid #e8e8e8;
 `
 const Tab = styled.div`
   font-size: '13px';
@@ -138,6 +147,7 @@ const Tab = styled.div`
   align-items: center;
   cursor: pointer;
   font-weight: ${({ active }) => (active ? '800' : '400')};
+  border-bottom: ${({ active }) => (active ? '4px solid ' + theme.accent : '0px')};
 `
 
 const Main = styled.div`
@@ -175,7 +185,4 @@ const Screen = styled.div`
   overflow: hidden;
   pointer-events: ${({ active }) => (active ? 'auto' : 'none')};
 `
-
-
-
 export default App;
