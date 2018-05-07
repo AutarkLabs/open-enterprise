@@ -332,9 +332,9 @@ class App extends React.Component {
     } = this.state
 
     const {
-      account,
-      network,
-      balance,
+      //account,
+      //network,
+      //balance,
       onComplete,
     } = this.props
 

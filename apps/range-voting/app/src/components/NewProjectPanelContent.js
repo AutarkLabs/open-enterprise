@@ -1,47 +1,11 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Button, Info, TextInput, DropDown, Field } from '@aragon/ui'
+import { Button } from '@aragon/ui'
 
-const initialState = {
-  projectName: '',
-  description: '',
-  repoURL: '',
-  bountySystem: '',
-}
 
 class NewProjectPanelContent extends React.Component {
-  static defaultProps = {
-    onCreateProject: () => {},
-  }
   state = {
-    ...initialState,
-  }
-
-  constructor(props) {
-    super(props)
-    this.handleNameChange = this.createChangeHandler('projectName')
-    this.handleDescriptionChange = this.createChangeHandler('description')
-    this.handleRepoURLChange = this.createChangeHandler('repoURL')
-  }
-
-  componentWillReceiveProps({ opened }) {
-    if (opened && !this.props.opened) {
-      // setTimeout is needed as a small hack to wait until the input's on
-      // screen until we call focus
-      this.projectNameInput && setTimeout(() => this.projectNameInput.focus(), 0)
-    } else if (!opened && this.props.opened) {
-      // Finished closing the panel, so reset its state
-      this.setState({ ...initialState })
-    }
-  }
-
-  createChangeHandler(name) {
-    return event => {
-      this.setState({[name]: event.target.value})
-    }
-  }
-  handleBountySystemChange = index => {
-     this.setState({'bountySystem': index})
+    isAuthenticated: false
   }
 
   handleSubmit = event => {
@@ -50,56 +14,22 @@ class NewProjectPanelContent extends React.Component {
     this.props.onCreateProject(this.state.projectName.trim())
   }
   render() {
-    const { projectName, description, repoURL, bountySystem } = this.state
-    const bountySystemItems = ['Status Open Bounty', 'Gitcoin', 'Bounties Network']
+    const { isAuthenticated } = this.state
     return (
       <div>
-        <Form onSubmit={this.handleSubmit}>
-          <Field label="Name">
-            <TextInput
-              value={projectName}
-              onChange={this.handleNameChange}
-              required
-              wide
-            />
-          </Field>
-          <Field label="Description">
-            <TextInput
-              value={description}
-              onChange={this.handleDescriptionChange}
-              required
-              wide
-            />
-          </Field>
-          <Field label="Repo URL">
-            <TextInput
-              value={repoURL}
-              onChange={this.handleRepoURLChange}
-              required
-              wide
-            />
-          </Field>
-          <Field label="bountySystem">
-            <DropDown
-              items={bountySystemItems}
-              active={bountySystem}
-              onChange={this.handleBountySystemChange}
-              required
-              wide
-            />
-          </Field>
+        Sign in with GitHub to start managing your repos with Aragon
+        <ul>
+          <li>Prioritize your backlog</li>
+          <li>Reach consensus on issue valuations</li>
+          <li>Allocate bounties to multiple issues</li>
+        </ul>
           <Button mode="strong" type="submit" wide>
-            Create Project
+             Sign in with GitHub 
           </Button>
-        </Form>
       </div>
     )
   }
 }
-
-const Form = styled.form`
-  margin-top: 20px;
-`
 
 export default NewProjectPanelContent
 

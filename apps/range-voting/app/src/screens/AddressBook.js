@@ -5,12 +5,12 @@ import emptyIcon from '../assets/empty-card-icon.svg'
 
 const EmptyIcon = () => <img src={emptyIcon} alt="" />
 
-const Content = ({ onActivate }) => (
+const AddressBook = ({ onActivate }) => (
   <Main>
     <EmptyStateCard
       icon={EmptyIcon}
-      title="Dashboard"
-      text="placeholder for real dashboard"
+      title="AddressBook"
+      text="placeholder for AddressBook"
       actionText="New Project"
       onActivate={onActivate}
     />
@@ -24,11 +24,4 @@ const Main = styled.div`
   flex-grow: 1;
 `
 
-class Dashboard extends React.Component {
-  render () {
-    const { name, active } = this.props
-    return (<Content />)
-  }
-}
-
-export default Dashboard
+export default AddressBook

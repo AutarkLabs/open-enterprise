@@ -4,10 +4,11 @@ import styled from 'styled-components'
 import { spring as springConf, theme } from '@aragon/ui'
 import { AragonApp, AppBar, Button, SidePanel, Text, observe } from '@aragon/ui'
 import AppLayout from './components/AppLayout'
-import Dashboard from './screens/Dashboard'
+import Overview from './screens/Overview'
 import Tools from './screens/Tools'
 import Issues from './screens/Issues'
-import Proposals from './screens/Proposals'
+import Decisions from './screens/Decisions'
+import AddressBook from './screens/AddressBook'
 import { noop } from './utils/utils'
 import { networkContextType } from './utils/provideNetwork'
 
@@ -19,7 +20,7 @@ const initialState = {
   templateData: {},
   stepIndex: 0,
   direction: 1,
-  activeTabId: 0,
+  activeTabId: 1,
   createProjectVisible: false
 }
 
@@ -43,10 +44,11 @@ class App extends React.Component {
     onComplete: noop,
     onCreateContract: noop,
     tabs: [
-      {id: 0, name: 'Dashboard', screen: Dashboard},
-      {id: 1, name: 'Issues', screen: Issues},
-      {id: 2, name: 'Proposals', screen: Proposals},
+      {id: 0, name: 'Overview', screen: Overview},
+      {id: 1, name: 'Decisions', screen: Decisions},
+      {id: 2, name: 'Issues', screen: Issues},
       {id: 3, name: 'Tools', screen: Tools},
+      {id: 4, name: 'Address Book', screen: AddressBook},
     ],
   }
   static childContextTypes = {
