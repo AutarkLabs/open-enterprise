@@ -1,8 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { spring as springConf, theme } from '@aragon/ui'
-import { AragonApp, AppBar, Button, SidePanel, Text, observe } from '@aragon/ui'
+import { theme } from '@aragon/ui'
+import { AragonApp, AppBar, Button, SidePanel } from '@aragon/ui'
 import AppLayout from './components/AppLayout'
 import Overview from './screens/Overview'
 import Tools from './screens/Tools'
@@ -13,17 +13,21 @@ import { noop } from './utils/utils'
 import { networkContextType } from './utils/provideNetwork'
 
 import NewProjectPanelContent from './components/NewProjectPanelContent'
-import RangeVoting from './range-voting/RangeVoting'
+//import RangeVoting from './range-voting/RangeVoting'
 
 const initialState = {
   template: null,
   templateData: {},
   stepIndex: 0,
-  direction: 1,
-  activeTabId: 1,
-  createProjectVisible: false
+  activeTabId: 0,
+  createProjectVisible: false,
+  git: {
+    token: '',
+    isAuthd: false,
+    reposManaged: {}, // to be populated from....
+    issues: {}
+  }
 }
-
 
 class App extends React.Component {
   static propTypes = {
@@ -51,9 +55,11 @@ class App extends React.Component {
       {id: 4, name: 'Address Book', screen: AddressBook},
     ],
   }
+
   static childContextTypes = {
     network: networkContextType,
   }
+
   getChildContext() {
     return { network: this.props.network }
   }
@@ -62,16 +68,31 @@ class App extends React.Component {
     ...initialState,
   }
 
-  componentWillReceiveProps(nextProps) {
-    const { props } = this
+//  componentWillReceiveProps(nextProps) {
+  //  const { props } = this
+//  }
+  handleAddRepos(reposToAdd) {
+    const { git } = this.state
+
+    for (var index in reposToAdd) {
+      if (Object.prototype.hasOwnProperty.call(reposToAdd, index)) {
+        var repo = reposToAdd[index]
+        if (repo.name in git.reposManaged) {
+          console.log('already in: ' + repo.name)
+        } else {
+          console.log('adding: ' + repo.name)
+          git.reposManaged[repo.name] = repo
+        }
+      }
+      this.setState({ createProjectVisible: false })
+    }
   }
-  
+
   handleTabClick(id) {
     return event => {
       this.setState({
         activeTabId: id
       })
-      console.log ('handleTabClick: ' + id)
     }
   }
   
@@ -87,9 +108,8 @@ class App extends React.Component {
   }
   render () {
     const { tabs } = this.props
-    const { activeTabId, createProjectVisible } = this.state
+    const { activeTabId, createProjectVisible, git } = this.state
     const Screen = tabs[activeTabId].screen
-
     return (
       <AragonApp publicUrl="/aragon-ui/">
         <AppLayout>
@@ -114,7 +134,10 @@ class App extends React.Component {
           </Tabs>
           <AppLayout.ScrollWrapper>
             <AppLayout.Content>
-               <Screen onActivate={this.handleCreateProjectOpen} />
+               <Screen
+                  onActivate={this.handleCreateProjectOpen}
+                  git={git}
+               />
             </AppLayout.Content>
           </AppLayout.ScrollWrapper>
         </AppLayout>
@@ -127,6 +150,8 @@ class App extends React.Component {
           <NewProjectPanelContent
             opened={createProjectVisible}
             onCreateProject={this.handleCreateProject}
+            onHandleAddRepos={this.handleAddRepos.bind(this)}
+            git={git}
           />
         </SidePanel>
 
@@ -151,7 +176,7 @@ const Tab = styled.div`
   font-weight: ${({ active }) => (active ? '800' : '400')};
   border-bottom: ${({ active }) => (active ? '4px solid ' + theme.accent : '0px')};
 `
-
+/*
 const Main = styled.div`
   position: fixed;
   z-index: 2;
@@ -187,4 +212,5 @@ const Screen = styled.div`
   overflow: hidden;
   pointer-events: ${({ active }) => (active ? 'auto' : 'none')};
 `
+*/
 export default App;
