@@ -2,6 +2,8 @@ pragma solidity ^0.4.18;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
 
+import "@aragon/os/contracts/evmscript/ScriptHelpers.sol";
+
 import "@aragon/os/contracts/lib/minime/MiniMeToken.sol";
 
 import "@aragon/os/contracts/lib/zeppelin/math/SafeMath.sol";
@@ -428,13 +430,14 @@ contract RangeVoting is IForwarder, AragonApp {
 
         vote.executed = true;
         uint256 voteLength = vote.candidateKeys.length;
-        bytes32 memory supports = bytes32(voteLength + 2);
-        supports[0] = bytes32(0x20);
-        supports[1] = bytes32(voteLength);
+        uint256 supportsOffset = 0;
+        bytes memory supports = new bytes(32 * (voteLength));
+        bytes32[] supports32;
         for (uint256 i = 0; i < voteLength; i++) {
-            // Might make sense to just store this array directly in the Vote struct
-            supports[i + 2] = bytes32(vote.candidates[vote.candidateKeys[i]].voteSupport);
+            supports32.push(bytes32(vote.candidates[vote.candidateKeys[i]].voteSupport));
         }
+
+        ScriptHelpers.memcpy(getPtr(supports), getPtr(supports32), supports32.length * 32);
 
         runScript(vote.executionScript, supports, new address[](0));
 
@@ -465,8 +468,22 @@ contract RangeVoting is IForwarder, AragonApp {
         return m % PCT_BASE == 0 ? _value >= v : _value > v;
     }
 
-    function toBytes(uint256 x) constant returns (bytes b) {
-        b = new bytes(32);
-        assembly { mstore(add(b, 32), x) }
+    /**
+    * @dev taken directly from ScriptHelpers
+    */
+    function getPtr(bytes memory _x) internal pure returns (uint256 ptr) {
+        assembly {
+            ptr := _x
+        }
     }
+
+        /**
+    * @dev taken directly from ScriptHelpers
+    */
+    function getPtr(bytes32[] memory _x) internal pure returns (uint256 ptr) {
+        assembly {
+            ptr := _x
+        }
+    }
+
 }
