@@ -427,11 +427,13 @@ contract RangeVoting is IForwarder, AragonApp {
         Vote storage vote = votes[_voteId];
 
         vote.executed = true;
-
-        bytes memory supports = toBytes(vote.candidateKeys.length);
-        for (uint256 i = 0; i < vote.candidateKeys.length; i++) {
+        uint256 voteLength = vote.candidateKeys.length;
+        bytes32 memory supports = bytes32(voteLength + 2);
+        supports[0] = bytes32(0x20);
+        supports[1] = bytes32(voteLength);
+        for (uint256 i = 0; i < voteLength; i++) {
             // Might make sense to just store this array directly in the Vote struct
-            supports.push(vote.candidates[vote.candidateKeys[i]].voteSupport);
+            supports[i + 2] = bytes32(vote.candidates[vote.candidateKeys[i]].voteSupport);
         }
 
         runScript(vote.executionScript, supports, new address[](0));
