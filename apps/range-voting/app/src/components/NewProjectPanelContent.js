@@ -2,10 +2,11 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { theme, Text, Field, Info, TextInput, Button } from '@aragon/ui'
+import { GraphQLClient } from 'graphql-request'
 
-const octokit = require('@octokit/rest')({
-  debug: true
-})
+//const octokit = require('@octokit/rest')({
+//  debug: true
+//})
 
 class NewProjectPanelContent extends React.Component {
   static propTypes = {
@@ -21,13 +22,110 @@ class NewProjectPanelContent extends React.Component {
       reposToAdd: {},
       reposManaged: git.reposManaged,
       isAuthenticated: false,
-      token: '',
+      token: git.token,
       err: ''
     }
   }
 
-  processRepos = result => {
-    this.setState({ reposFromServer: result.data })
+/*    const query = `{
+      user(login:"` + login + `") {
+        repositories(first:10,affiliations:[OWNER,COLLABORATOR,ORGANIZATION_MEMBER]) {
+          edges {
+            node {
+              refs (first:10,refPrefix: "refs/heads/"){
+                edges {
+                  node {
+                    name
+                    target {
+                      ... on Commit {
+                        id
+                        history(first: 0) {
+                          totalCount
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              issues(first:3) {
+                totalCount
+              }
+              name
+              id
+              collaborators(first:3) {
+                totalCount
+                edges {
+                  node {
+                    id
+                    login
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }`
+*/
+  getRepos = (client, login) => {
+    const query = `{
+      user(login:"` + login + `") {
+        repositories(first:10,affiliations:[OWNER,COLLABORATOR,ORGANIZATION_MEMBER]) {
+          edges {
+            node {
+              refs (first:10,refPrefix: "refs/heads/"){
+                edges {
+                  node {
+                    name
+                    target {
+                      ... on Commit {
+                        history(first: 0) {
+                          totalCount
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              issues(first:3) {
+                totalCount
+              }
+              name
+              collaborators(first:3) {
+                totalCount
+              }
+            }
+          }
+        }
+      }
+    }`
+
+    client.request(query)
+      .then(data => {
+        console.log(data)
+        this.processRepos(data)
+      })
+      .catch(err => this.setState({ err: err.message }))
+  }
+
+  processRepos = data => {
+    var reposFromServer = {}
+    
+    data.user.repositories.edges.map(
+      rNode => {
+        var commits = 0
+        rNode.node.refs.edges.map(
+          refNode => {
+            commits += refNode.node.target.history.totalCount
+        })
+
+        reposFromServer[rNode.node.name] = {
+          collaborators: rNode.node.collaborators.totalCount,
+          commits: commits
+        }
+        console.log ('adding ' + rNode.node.name, reposFromServer)
+    })
+    this.setState({ reposFromServer: reposFromServer })
   }
 
   handleLogin = event => {
@@ -40,6 +138,36 @@ class NewProjectPanelContent extends React.Component {
       return
     }
 
+    const client = new GraphQLClient(
+      'https://api.github.com/graphql',
+      {
+        headers: {
+          Authorization: 'Bearer ' + token,
+        }
+      }
+    )
+
+    const whoami = `{
+      viewer {
+        id
+        login
+        avatarUrl
+      }
+    }`
+
+    client.request(whoami)
+      .then(data => {
+        console.log(data)
+        this.setState({
+          isAuthenticated: true,
+          login: data.viewer.login,
+          avatarUrl: data.viewer.avatarUrl
+        })
+        this.getRepos(client, data.viewer.login)
+      })
+      .catch(err => this.setState({ err: err.message }))
+
+/*
    octokit.authenticate({
       type: 'oauth',
       token: token
@@ -55,6 +183,7 @@ class NewProjectPanelContent extends React.Component {
       this.setState({ isAuthenticated: true })
     })
     .catch (err => this.setState({ err: err.message }))
+*/
   }
 
   handleReposSubmit = event => {
@@ -82,20 +211,20 @@ class NewProjectPanelContent extends React.Component {
     var reposDisplayList = []
     const { reposFromServer, reposManaged } = this.state
 
-    for (var index in reposFromServer) {
-      if (Object.prototype.hasOwnProperty.call(reposFromServer, index)) {
-        var repo = reposFromServer[index]
-        const checkboxHandler = this.generateCheckboxHandler(index)
+    for (var repoName in reposFromServer) {
+      if (Object.prototype.hasOwnProperty.call(reposFromServer, repoName)) {
+        var repo = reposFromServer[repoName]
+        const checkboxHandler = this.generateCheckboxHandler(repoName)
         reposDisplayList.push(
-          <li key={index}>
+          <li key={repoName}>
             {
-            (repo.name in reposManaged) ? 
+            (repoName in reposManaged) ? 
             <input type="checkbox" onChange={checkboxHandler} checked disabled />
             :
             <input type="checkbox" onChange={checkboxHandler} />
             }
             <Text>
-              {repo.name}
+              {repoName}
             </Text>
           </li>
          )

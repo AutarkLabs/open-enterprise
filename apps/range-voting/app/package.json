@@ -14,7 +14,8 @@
     "prop-types": "^15.6.0",
     "react-blockies": "^1.2.2",
     "seed-random": "^2.2.0",
-    "@octokit/rest": "15.3.0"
+    "@octokit/rest": "15.3.0",
+    "graphql-request": "1.6.0"
   },
   "devDependencies": {
     "@aragon/react-scripts": "^1.1.0-aragon.4",
