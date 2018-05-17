@@ -11,53 +11,49 @@ import { GraphQLClient } from 'graphql-request'
 class NewProjectPanelContent extends React.Component {
   static propTypes = {
     onHandleAddRepos: PropTypes.func.isRequired,
-    git: PropTypes.object.isRequired
+    onHandleGitHubAuth: PropTypes.func.isRequired,
+    github: PropTypes.object.isRequired
   }
 
   constructor(props) {
     super(props)
-    const { git } = this.props
+    const { github } = this.props
     this.state = {
       reposFromServer: {},
       reposToAdd: {},
-      reposManaged: git.reposManaged,
-      isAuthenticated: false,
-      token: git.token,
+      reposManaged: github.reposManaged,
+      token: github.token, // <App> is allowed to know better
       err: ''
     }
   }
 
-/*    const query = `{
-      user(login:"` + login + `") {
-        repositories(first:10,affiliations:[OWNER,COLLABORATOR,ORGANIZATION_MEMBER]) {
+/*
+
+For each chosen repo Issues shouild be downloaded separately.
+However, for simplicity's sake, and thanks to graphql, downloading
+repositories with issues list included is not going to cost much.
+
+  getIssues = (client, repoName, ownerLogin) => {
+    const query = `{
+      repository(owner: "` + ownerLogin + `", name: "` + repoName + `") {
+        id
+        issues(first: 3) {
+          totalCount
           edges {
             node {
-              refs (first:10,refPrefix: "refs/heads/"){
-                edges {
-                  node {
-                    name
-                    target {
-                      ... on Commit {
-                        id
-                        history(first: 0) {
-                          totalCount
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-              issues(first:3) {
-                totalCount
-              }
-              name
               id
-              collaborators(first:3) {
+              title
+              state
+              url
+              labels(first: 10) {
                 totalCount
                 edges {
                   node {
                     id
-                    login
+                    name
+                    description
+                    color
+                    url
                   }
                 }
               }
@@ -66,13 +62,29 @@ class NewProjectPanelContent extends React.Component {
         }
       }
     }`
+
+    client.request(query)
+      .then(data => {
+        console.log(data)
+        this.processIssues(data)
+      })
+      .catch(err => this.setState({ err: err.message }))
+  }
 */
+
   getRepos = (client, login) => {
     const query = `{
       user(login:"` + login + `") {
         repositories(first:10,affiliations:[OWNER,COLLABORATOR,ORGANIZATION_MEMBER]) {
           edges {
             node {
+              id
+              name
+              description
+              owner {
+                id
+                login
+              }
               refs (first:10,refPrefix: "refs/heads/"){
                 edges {
                   node {
@@ -89,9 +101,28 @@ class NewProjectPanelContent extends React.Component {
               }
               issues(first:3) {
                 totalCount
+                edges {
+                  node {
+                    id
+                    title
+                    state
+                    url
+                    labels(first: 10) {
+                      totalCount
+                      edges {
+                        node {
+                          id
+                          name
+                          description
+                          color
+                          url
+                        }
+                      }
+                    }
+                  }
+                }
               }
-              name
-              collaborators(first:3) {
+              collaborators(first:1) {
                 totalCount
               }
             }
@@ -119,9 +150,13 @@ class NewProjectPanelContent extends React.Component {
             commits += refNode.node.target.history.totalCount
         })
 
-        reposFromServer[rNode.node.name] = {
+        reposFromServer[rNode.node.id] = {
+          name: rNode.node.name,
+          description: rNode.node.description,
           collaborators: rNode.node.collaborators.totalCount,
-          commits: commits
+          commits: commits,
+          ownerLogin: rNode.node.owner.login,
+          issues: rNode.node.issues.edges
         }
         console.log ('adding ' + rNode.node.name, reposFromServer)
     })
@@ -129,7 +164,6 @@ class NewProjectPanelContent extends React.Component {
   }
 
   handleLogin = event => {
-    // would be nice to include some filtering/validating
     event.preventDefault()
 
     const { token } = this.state
@@ -158,32 +192,12 @@ class NewProjectPanelContent extends React.Component {
     client.request(whoami)
       .then(data => {
         console.log(data)
-        this.setState({
-          isAuthenticated: true,
-          login: data.viewer.login,
-          avatarUrl: data.viewer.avatarUrl
-        })
+        const { onHandleGitHubAuth } = this.props
         this.getRepos(client, data.viewer.login)
+        // below: <App> is getting notified about successful login
+        onHandleGitHubAuth(token, data.viewer.login, data.viewer.avatarUrl)
       })
       .catch(err => this.setState({ err: err.message }))
-
-/*
-   octokit.authenticate({
-      type: 'oauth',
-      token: token
-    })
-
-    octokit.repos.getAll({})
-    .then(result => {
-      if (octokit.hasNextPage(result)) {
-        return octokit.getNextPage(result)
-        .then(this.processRepos(result))
-      }
-      this.processRepos(result)
-      this.setState({ isAuthenticated: true })
-    })
-    .catch (err => this.setState({ err: err.message }))
-*/
   }
 
   handleReposSubmit = event => {
@@ -193,15 +207,15 @@ class NewProjectPanelContent extends React.Component {
     onHandleAddRepos(reposToAdd)
   }
 
-  generateCheckboxHandler = index => {
+  generateCheckboxHandler = repoId => {
     return event => {
-      console.log('toggled: ' + index + ', ' + event.target.checked)
+      console.log('toggled: ' + repoId + ', ' + event.target.checked)
       const { reposToAdd, reposFromServer } = this.state
       if (event.target.checked) {
-        reposToAdd[index] = reposFromServer[index]
+        reposToAdd[repoId] = reposFromServer[repoId]
         this.setState({ reposToAdd: reposToAdd })
       } else {
-        delete reposToAdd[index]
+        delete reposToAdd[repoId]
         this.setState({ reposToAdd: reposToAdd })
       }
     }
@@ -211,20 +225,20 @@ class NewProjectPanelContent extends React.Component {
     var reposDisplayList = []
     const { reposFromServer, reposManaged } = this.state
 
-    for (var repoName in reposFromServer) {
-      if (Object.prototype.hasOwnProperty.call(reposFromServer, repoName)) {
-        var repo = reposFromServer[repoName]
-        const checkboxHandler = this.generateCheckboxHandler(repoName)
+    for (var repoId in reposFromServer) {
+      if (Object.prototype.hasOwnProperty.call(reposFromServer, repoId)) {
+        var repo = reposFromServer[repoId]
+        const checkboxHandler = this.generateCheckboxHandler(repoId)
         reposDisplayList.push(
-          <li key={repoName}>
+          <li key={repoId}>
             {
-            (repoName in reposManaged) ? 
+            (repoId in reposManaged) ? 
             <input type="checkbox" onChange={checkboxHandler} checked disabled />
             :
             <input type="checkbox" onChange={checkboxHandler} />
             }
             <Text>
-              {repoName}
+              {repo.name}
             </Text>
           </li>
          )
@@ -284,9 +298,9 @@ class NewProjectPanelContent extends React.Component {
   }
 
   render() {
-    const { isAuthenticated } = this.state
+    const { github } = this.props
 
-    if (isAuthenticated) {
+    if (github.isAuthenticated) {
       return this.showRepos()
     } else {
       return this.authenticate()

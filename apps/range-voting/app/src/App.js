@@ -21,11 +21,13 @@ const initialState = {
   stepIndex: 0,
   activeTabId: 0,
   createProjectVisible: false,
-  git: {
+  github: {
+    isAuthenticated: false,
+    login: '',
+    avatarUrl: '',
+    activeRepo: '',
     token: '',
-    isAuthd: false,
-    reposManaged: {}, // to be populated from....
-    issues: {}
+    reposManaged: {}, // to be populated from contract or git backend itself
   }
 }
 
@@ -71,20 +73,46 @@ class App extends React.Component {
 //  componentWillReceiveProps(nextProps) {
   //  const { props } = this
 //  }
-  handleAddRepos(reposToAdd) {
-    const { git } = this.state
+  handleGitHubAuth(token, login, avatarUrl) {
+    // probably unnecessarily explicit
+    // meant to be called from NewProjectPanelContent after successful whoami query
+    const { github } = this.state
+    github.token = token
+    github.login = login
+    github.avatarUrl = avatarUrl
+    github.isAuthenticated = true
+    github.activeRepo = ''
+    this.setState({ github: github })
+    console.log('updated auth: ' + this.state)
+  }
 
-    for (var index in reposToAdd) {
-      if (Object.prototype.hasOwnProperty.call(reposToAdd, index)) {
-        var repo = reposToAdd[index]
-        if (repo.name in git.reposManaged) {
+  handleRepoSelect = repoId =>  {
+    console.log('top handleRepoSelect: ' + repoId)
+    const { github } = this.state
+    github.activeRepo = repoId
+    this.setState({
+      github: github,
+      activeTabId: 2 // because selecting a repo shows Issues
+    })
+  }
+
+  handleAddRepos = reposToAdd => {
+    const { github } = this.state
+
+    for (var repoId in reposToAdd) {
+      if (Object.prototype.hasOwnProperty.call(reposToAdd, repoId)) {
+        var repo = reposToAdd[repoId]
+        if (repoId in github.reposManaged) {
           console.log('already in: ' + repo.name)
         } else {
           console.log('adding: ' + repo.name)
-          git.reposManaged[repo.name] = repo
+          github.reposManaged[repoId] = repo
         }
       }
-      this.setState({ createProjectVisible: false })
+      this.setState({
+        createProjectVisible: false,
+        activeTabId: 0 // show Overview
+      })
     }
   }
 
@@ -108,7 +136,7 @@ class App extends React.Component {
   }
   render () {
     const { tabs } = this.props
-    const { activeTabId, createProjectVisible, git } = this.state
+    const { activeTabId, createProjectVisible, github } = this.state
     const Screen = tabs[activeTabId].screen
     return (
       <AragonApp publicUrl="/aragon-ui/">
@@ -136,7 +164,8 @@ class App extends React.Component {
             <AppLayout.Content>
                <Screen
                   onActivate={this.handleCreateProjectOpen}
-                  git={git}
+                  github={github}
+                  handleRepoSelect={this.handleRepoSelect}
                />
             </AppLayout.Content>
           </AppLayout.ScrollWrapper>
@@ -151,7 +180,8 @@ class App extends React.Component {
             opened={createProjectVisible}
             onCreateProject={this.handleCreateProject}
             onHandleAddRepos={this.handleAddRepos.bind(this)}
-            git={git}
+            onHandleGitHubAuth={this.handleGitHubAuth.bind(this)}
+            github={github}
           />
         </SidePanel>
 
