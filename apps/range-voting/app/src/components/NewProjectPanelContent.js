@@ -75,7 +75,7 @@ repositories with issues list included is not going to cost much.
   getRepos = (client, login) => {
     const query = `{
       user(login:"` + login + `") {
-        repositories(first:10,affiliations:[OWNER,COLLABORATOR,ORGANIZATION_MEMBER]) {
+        repositories(first:20,affiliations:[OWNER,COLLABORATOR,ORGANIZATION_MEMBER]) {
           edges {
             node {
               id
@@ -99,7 +99,7 @@ repositories with issues list included is not going to cost much.
                   }
                 }
               }
-              issues(first:3) {
+              issues(first:10) {
                 totalCount
                 edges {
                   node {
@@ -107,6 +107,13 @@ repositories with issues list included is not going to cost much.
                     title
                     state
                     url
+                    createdAt
+                    number
+                    repository {
+                      id
+                      name
+                      nameWithOwner
+                    }
                     labels(first: 10) {
                       totalCount
                       edges {
@@ -139,13 +146,13 @@ repositories with issues list included is not going to cost much.
       .catch(err => this.setState({ err: err.message }))
   }
 
-  processRepos = data => {
+  processRepos(data) {
     var reposFromServer = {}
     
-    data.user.repositories.edges.map(
+    data.user.repositories.edges.forEach(
       rNode => {
         var commits = 0
-        rNode.node.refs.edges.map(
+        rNode.node.refs.edges.forEach(
           refNode => {
             commits += refNode.node.target.history.totalCount
         })
@@ -159,6 +166,7 @@ repositories with issues list included is not going to cost much.
           issues: rNode.node.issues.edges
         }
         console.log ('adding ' + rNode.node.name, reposFromServer)
+        return 
     })
     this.setState({ reposFromServer: reposFromServer })
   }
@@ -167,7 +175,7 @@ repositories with issues list included is not going to cost much.
     event.preventDefault()
 
     const { token } = this.state
-    if ((token.length !== 40) || (/^[a-zA-Z0-9]+$/.test(token) == false)) {
+    if ((token.length !== 40) || (/^[a-zA-Z0-9]+$/.test(token) === false)) {
       this.setState({ err: 'Invalid token' })
       return
     }
@@ -209,7 +217,6 @@ repositories with issues list included is not going to cost much.
 
   generateCheckboxHandler = repoId => {
     return event => {
-      console.log('toggled: ' + repoId + ', ' + event.target.checked)
       const { reposToAdd, reposFromServer } = this.state
       if (event.target.checked) {
         reposToAdd[repoId] = reposFromServer[repoId]

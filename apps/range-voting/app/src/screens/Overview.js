@@ -148,7 +148,7 @@ class Overview extends React.Component {
         <EmptyMain>
           <EmptyStateCard
             icon={EmptyIcon}
-            title="You have no added any projects."
+            title="You have not added any projects."
             text="Get started now by adding a new project."
             actionText="New Project"
             onActivate={onActivate}

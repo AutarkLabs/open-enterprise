@@ -99,25 +99,24 @@ class App extends React.Component {
   handleAddRepos = reposToAdd => {
     const { github } = this.state
 
-    for (var repoId in reposToAdd) {
-      if (Object.prototype.hasOwnProperty.call(reposToAdd, repoId)) {
-        var repo = reposToAdd[repoId]
-        if (repoId in github.reposManaged) {
-          console.log('already in: ' + repo.name)
-        } else {
-          console.log('adding: ' + repo.name)
-          github.reposManaged[repoId] = repo
-        }
+    Object.keys(reposToAdd).forEach((repoId) => {
+      var repo = reposToAdd[repoId]
+      if (repoId in github.reposManaged) {
+        console.log('already in: ' + repo.name)
+      } else {
+        console.log('adding: ' + repo.name)
+        github.reposManaged[repoId] = repo
       }
-      this.setState({
-        createProjectVisible: false,
-        activeTabId: 0 // show Overview
-      })
-    }
+    })
+    this.setState({
+      createProjectVisible: false,
+      activeTabId: 0, // show Overview
+      github: github
+    })
   }
 
   handleTabClick(id) {
-    return event => {
+    return () => {
       this.setState({
         activeTabId: id
       })
