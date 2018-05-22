@@ -114,6 +114,12 @@ repositories with issues list included is not going to cost much.
                       name
                       nameWithOwner
                     }
+                    milestone {
+                      id
+                      title
+                      url
+                      description
+                    }
                     labels(first: 10) {
                       totalCount
                       edges {
@@ -157,15 +163,36 @@ repositories with issues list included is not going to cost much.
             commits += refNode.node.target.history.totalCount
         })
 
+        const labels = {}
+        const milestones = {}
+
+        rNode.node.issues.edges.forEach(
+          issue => {
+            if (issue.node.labels.totalCount > 0) {
+              issue.node.labels.edges.forEach(
+                label => {
+                  labels[label.node.id] = label.node
+                }
+              )
+            }
+            if (issue.node.milestone) {
+              milestones[issue.node.milestone.id] = issue.node.milestone
+            }
+          }
+        )
         reposFromServer[rNode.node.id] = {
           name: rNode.node.name,
           description: rNode.node.description,
           collaborators: rNode.node.collaborators.totalCount,
           commits: commits,
           ownerLogin: rNode.node.owner.login,
-          issues: rNode.node.issues.edges
+          issues: rNode.node.issues.edges,
+          labels: labels,
+          milestones: milestones
         }
-        console.log ('adding ' + rNode.node.name, reposFromServer)
+        //console.log ('adding ' + rNode.node.name, reposFromServer)
+        //console.log('labels: ',labels)
+        //console.log('milestones: ',milestones)
         return 
     })
     this.setState({ reposFromServer: reposFromServer })
@@ -254,7 +281,7 @@ repositories with issues list included is not going to cost much.
 
     return(
       <div>
-        <Text>Which repos do you want to add?</Text>
+        <Text size='large'>Which repos do you want to add?</Text>
         <Form onSubmit={this.handleReposSubmit}>
           <RepoList>
             {reposDisplayList}
@@ -275,7 +302,7 @@ repositories with issues list included is not going to cost much.
     const { token, err } = this.state
     return(
       <div>
-        Sign in with GitHub to start managing your repos with Aragon
+        <Text size='large'>Sign in with GitHub to start managing your repos with Aragon</Text>
         <ul>
           <li>Prioritize your backlog</li>
           <li>Reach consensus on issue valuations</li>

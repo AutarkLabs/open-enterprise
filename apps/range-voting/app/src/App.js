@@ -26,6 +26,8 @@ const initialState = {
     login: '',
     avatarUrl: '',
     activeRepo: '',
+    activeLabel: '',
+    activeMilestone: '',
     token: '',
     reposManaged: {}, // to be populated from contract or git backend itself
   }
@@ -86,6 +88,7 @@ class App extends React.Component {
     console.log('updated auth: ' + this.state)
   }
 
+  // <App> needs to know what repo is selected, because selection matters on multiple screens
   handleRepoSelect = repoId =>  {
     console.log('top handleRepoSelect: ' + repoId)
     const { github } = this.state
@@ -94,6 +97,21 @@ class App extends React.Component {
       github: github,
       activeTabId: 2 // because selecting a repo shows Issues
     })
+  }
+
+   // this probably needs to be limited to Issues screen
+   handleLabelSelect = labelName =>  {
+    console.log('top handleLabelSelect: ' + labelName)
+    const { github } = this.state
+    github.activeLabelName = labelName
+    this.setState({ github: github })
+  }
+
+   handleMilestoneSelect = milestoneName =>  {
+    console.log('top handleMSSelect: ' + milestoneName)
+    const { github } = this.state
+    github.activeMilestoneName = milestoneName
+    this.setState({ github: github })
   }
 
   handleAddRepos = reposToAdd => {
@@ -165,6 +183,8 @@ class App extends React.Component {
                   onActivate={this.handleCreateProjectOpen}
                   github={github}
                   handleRepoSelect={this.handleRepoSelect}
+                  handleLabelSelect={this.handleLabelSelect}
+                  handleMilestoneSelect={this.handleMilestoneSelect}
                />
             </AppLayout.Content>
           </AppLayout.ScrollWrapper>
