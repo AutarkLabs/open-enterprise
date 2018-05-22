@@ -106,12 +106,12 @@ contract('RangeVoting App', accounts => {
             const voteId = createdVoteId(await app.forward(script, { from: holder50 }))
             assert.equal(voteId, 1, 'RangeVoting should have been created')
         })
-        
+
         it('can change minimum candidate support', async () => {
-            
+
         })
         */
-        context('creating vote', () => {
+        context('creating vote with normal distributions', () => {
             let voteId = {}
             let script = ''
             let candidateState
@@ -119,7 +119,9 @@ contract('RangeVoting App', accounts => {
             beforeEach(async () => {
                 const action = { to: executionTarget.address, calldata: executionTarget.contract.execute.getData() }
                 script = encodeCallScript([action, action])
-                voteId = createdVoteId(await app.newVote(script, 'metadata', { from: nonHolder }))
+                let newvote = await app.newVote(script, 'metadata', { from: nonHolder })
+                //console.log(newvote.logs[0].args)
+                voteId = createdVoteId(newvote)
             })
 
             it('has correct vote ID', async () => {
@@ -127,7 +129,15 @@ contract('RangeVoting App', accounts => {
             })
 
             it('has correct state', async () => {
-               
+                let voteState = await app.getVote(voteId)
+                let tokenBalance = await token.totalSupply()
+                assert.equal(voteState[0], true, "is true")
+                assert.equal(voteState[1], nonHolder, "is nonHolder")
+                assert.equal(voteState[4].toNumber(), candidateSupportPct.toNumber(), "is candidateSupportPct")
+                assert.equal(voteState[5].toNumber(), tokenBalance.toNumber(), "is token.totalSupply()")
+                assert.equal(voteState[6], 'metadata', "is metadata")
+                assert.equal(voteState[7], script, "is script")
+                assert.equal(voteState[8], false, "is false")
             })
 
             it('holder can add candidates', async () => {
@@ -135,41 +145,86 @@ contract('RangeVoting App', accounts => {
                 candidateState = await app.getCandidate(voteId, "Apple")
                 assert.equal(candidateState[0], true, 'Candidate should have been added')
                 assert.equal(candidateState[1], "0x", 'Metadata should be 0')
-                assert.equal(candidateState[2], 0, 'First candidate shoudl be index 0')
+                assert.equal(candidateState[2], 0, 'First candidate should be index 0')
                 assert.equal(candidateState[3], 0, 'Support should start at 0')
+                await app.addCandidate(voteId, "0x","Orange")
+                await app.addCandidate(voteId, "0x","Race Car")
             })
 
             it('holder can vote', async () => {
-                
+                let vote = [2,3,4]
+                await app.addCandidate(voteId, "0x","Apple")
+                await app.addCandidate(voteId, "0x","Orange")
+                await app.addCandidate(voteId, "0x","Banana")
+                let voter = holder19
+                await app.vote(voteId, vote, { from: voter })
+
+                let holderVoteData = await app.getVoterState(voteId, voter)
+                assert.equal(vote[0], holderVoteData[0].toNumber(), "vote and voter state should match after casting ballot")
+                assert.equal(vote[1], holderVoteData[1].toNumber(), "vote and voter state should match after casting ballot")
+                assert.equal(vote[2], holderVoteData[2].toNumber(), "vote and voter state should match after casting ballot")
+                let candidateApple = await app.getCandidate(voteId, "Apple")
+                let candidateOrange = await app.getCandidate(voteId, "Orange")
+                let candidateBanana = await app.getCandidate(voteId, "Banana")
+                assert.equal(vote[0], candidateApple[3], "The correct amount of support should be logged for apple")
+                assert.equal(vote[1], candidateOrange[3], "The correct amount of support should be logged for orange")
+                assert.equal(vote[2], candidateBanana[3], "The correct amount of support should be logged for Banana")
             })
 
             it('holder can modify vote', async () => {
-
+                let voteOne = [2,3,4]
+                let voteTwo = [4,3,2]
+                await app.addCandidate(voteId, "0x","Apple")
+                await app.addCandidate(voteId, "0x","Orange")
+                await app.addCandidate(voteId, "0x","Banana")
+                let voter = holder19
+                await app.vote(voteId, voteOne, { from: voter })
+                await app.vote(voteId, voteTwo, { from: voter })
+                let holderVoteData = await app.getVoterState(voteId, voter)
+                assert.equal(voteTwo[0], holderVoteData[0].toNumber(), "vote and voter state should match after casting ballot")
+                assert.equal(voteTwo[1], holderVoteData[1].toNumber(), "vote and voter state should match after casting ballot")
+                assert.equal(voteTwo[2], holderVoteData[2].toNumber(), "vote and voter state should match after casting ballot")
+                let candidateApple = await app.getCandidate(voteId, "Apple")
+                let candidateOrange = await app.getCandidate(voteId, "Orange")
+                let candidateBanana = await app.getCandidate(voteId, "Banana")
+                assert.equal(voteTwo[0], candidateApple[3], "The correct amount of support should be logged for apple")
+                assert.equal(voteTwo[1], candidateOrange[3], "The correct amount of support should be logged for orange")
+                assert.equal(voteTwo[2], candidateBanana[3], "The correct amount of support should be logged for banana")
             })
 
             it('token transfers dont affect RangeVoting', async () => {
+                let vote = [10,9,12]
+                let voter = holder31
+                await app.addCandidate(voteId, "0x","Apple")
+                await app.addCandidate(voteId, "0x","Orange")
+                await app.addCandidate(voteId, "0x","Banana")
+                //await token.transfer(nonHolder, 31, { from: voter })
+                await app.vote(voteId, vote, { from: voter })
+                let holderVoteData = await app.getVoterState(voteId, voter)
+                assert.equal(vote[0], holderVoteData[0].toNumber(), "vote and voter state should match after casting ballot")
+                assert.equal(vote[1], holderVoteData[1].toNumber(), "vote and voter state should match after casting ballot")
+                assert.equal(vote[2], holderVoteData[2].toNumber(), "vote and voter state should match after casting ballot")
             })
 
-            it('throws when non-holder votes', async () => {
+            xit('throws when non-holder votes', async () => {
             })
 
-            it('throws when RangeVoting after RangeVoting closes', async () => {
+            xit('throws when RangeVoting after RangeVoting closes', async () => {
             })
 
-            it('can execute if vote is approved with support and quorum', async () => {
+            xit('can execute if vote is approved with support and quorum', async () => {
             })
 
-            it('cannot execute vote if minimum participation not met', async () => {
+            xit('cannot execute vote if minimum participation not met', async () => {
             })
 
-            it('cannot execute vote if not support met', async () => {
-                
+            xit('cannot execute vote if not support met', async () => {
             })
 
-            it('cannot re-execute vote', async () => {
+            xit('cannot re-execute vote', async () => {
             })
 
-            it('cannot vote on executed vote', async () => {
+            xit('cannot vote on executed vote', async () => {
             })
         })
 
@@ -214,18 +269,18 @@ contract('RangeVoting App', accounts => {
             const n = '0x00'
             token = await MiniMeToken.new(n, n, 0, 'n', 0, 'n', true) // empty parameters minime
 
-            await token.generateTokens(holder, 1)
+            await token.generateTokens(holder)
 
             await app.initialize(token.address, minimumParticipation, candidateSupportPct, RangeVotingTime)
         })
 
-        it('new vote cannot be executed before RangeVoting', async () => {
-            
+        xit('new vote cannot be executed before RangeVoting', async () => {
+
 
         })
 
-        it('creating vote as holder executes vote', async () => {
-    
+        xit('creating vote as holder executes vote', async () => {
+
         })
     })
 
@@ -246,12 +301,12 @@ contract('RangeVoting App', accounts => {
             await app.initialize(token.address, minimumParticipation, candidateSupportPct, RangeVotingTime)
         })
 
-        it('new vote cannot be executed before holder2 RangeVoting', async () => {
-            
+        xit('new vote cannot be executed before holder2 RangeVoting', async () => {
+
         })
 
-        it('creating vote as holder2 executes vote', async () => {
-            
+        xit('creating vote as holder2 executes vote', async () => {
+
         })
     })
     context('before init', () => {
