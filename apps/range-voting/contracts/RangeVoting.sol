@@ -313,7 +313,8 @@ contract RangeVoting is IForwarder, AragonApp {
         string metadata,
         bytes executionScript,
         bool executed
-    ) {
+    )
+    {
         Vote storage vote = votes[_voteId];
 
         open = _isVoteOpen(vote);
