@@ -1,6 +1,22 @@
 {
-  "appName": "app.open.aragonpm.eth",
-  "version": "1.0.0",
-  "roles": [],
-  "path": "contracts/App.sol"
+  "appName": "planning.aragonpm.eth",
+  "version": "0.0.1",
+  "roles": [
+    {
+      "name": "Create new votes",
+      "id": "CREATE_VOTES_ROLE",
+      "params": []
+    },
+    {
+      "name": "Add candidates role",
+      "id": "ADD_CANDIDATES_ROLE",
+      "params": []
+    },
+    {
+      "name": "Modify candidate support role",
+      "id": "MODIFY_PARTICIPATION_ROLE",
+      "params": []
+    }
+  ],
+  "path": "contracts/RangeVoting.sol"
 }
