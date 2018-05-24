@@ -33,7 +33,24 @@ const initialState = {
   }
 }
 
-class App extends React.Component {
+export default class App extends React.Component {
+
+  constructor () {
+    super()
+
+    this.app = new Aragon(
+      new providers.WindowMessage(window.parent)
+    )
+    this.state = {}
+    // ugly hack: aragon.js doesn't have handshakes yet
+    // the wrapper is sending a message to the app before the app's ready to handle it
+    // the iframe needs some time to set itself up,
+    // so we put a timeout to wait for 5s before subscribing
+    setTimeout(() => {
+      this.setState({ state$: this.app.state() })
+    }, 5000)
+  }
+
   static propTypes = {
     app: PropTypes.object.isRequired,
   }
@@ -68,13 +85,8 @@ class App extends React.Component {
     return { network: this.props.network }
   }
 
-  state = {
-    ...initialState,
-  }
 
-//  componentWillReceiveProps(nextProps) {
-  //  const { props } = this
-//  }
+
   handleGitHubAuth(token, login, avatarUrl) {
     // probably unnecessarily explicit
     // meant to be called from NewProjectPanelContent after successful whoami query
@@ -89,7 +101,7 @@ class App extends React.Component {
   }
 
   // <App> needs to know what repo is selected, because selection matters on multiple screens
-  handleRepoSelect = repoId =>  {
+  handleRepoSelect(repoId) {
     console.log('top handleRepoSelect: ' + repoId)
     const { github } = this.state
     github.activeRepo = repoId
@@ -100,21 +112,21 @@ class App extends React.Component {
   }
 
    // this probably needs to be limited to Issues screen
-   handleLabelSelect = labelName =>  {
+   handleLabelSelect(labelName)  {
     console.log('top handleLabelSelect: ' + labelName)
     const { github } = this.state
     github.activeLabelName = labelName
     this.setState({ github: github })
   }
 
-   handleMilestoneSelect = milestoneName =>  {
+   handleMilestoneSelect(milestoneName) {
     console.log('top handleMSSelect: ' + milestoneName)
     const { github } = this.state
     github.activeMilestoneName = milestoneName
     this.setState({ github: github })
   }
 
-  handleAddRepos = reposToAdd => {
+  handleAddRepos(reposToAdd) {
     const { github } = this.state
 
     Object.keys(reposToAdd).forEach((repoId) => {
@@ -141,13 +153,13 @@ class App extends React.Component {
     }
   }
   
-  handleCreateProjectOpen = () => {
+  handleCreateProjectOpen() {
     this.setState({ createProjectVisible: true })
   }
-  handleCreateProjectClose = () => {
+  handleCreateProjectClose() {
     this.setState({ createProjectVisible: false })
   }
-  handleCreateProject = () => {
+  handleCreateProject() {
     const {name, description, repoURL, bountySystem} = this.state
     alert ('creating: ' + name + ', ' + description + ', ' + repoURL + ', ' + bountySystem)
   }
@@ -262,4 +274,3 @@ const Screen = styled.div`
   pointer-events: ${({ active }) => (active ? 'auto' : 'none')};
 `
 */
-export default App;

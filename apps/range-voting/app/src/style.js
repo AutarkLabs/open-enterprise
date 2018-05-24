@@ -39,4 +39,3 @@ const Hint = styled.div`
 `
 
 export { Main, Content, Subtitle, Title, Hint }
-
