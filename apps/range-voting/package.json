@@ -34,6 +34,8 @@
     "react-oauth-popup": "0.0.4"
   },
   "scripts": {
+    "dev": "parcel app/src/index.html",
+    "devchain": "aragon devchain",
     "start": "aragon run",
     "test": "aragon contracts test",
     "compile": "aragon contracts compile",

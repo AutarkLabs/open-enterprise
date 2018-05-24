@@ -1,6 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
+import Aragon, { providers } from '@aragon/client'
+
 import { theme } from '@aragon/ui'
 import { AragonApp, AppBar, Button, SidePanel } from '@aragon/ui'
 import AppLayout from './components/AppLayout'
@@ -10,7 +12,6 @@ import Issues from './screens/Issues'
 import Decisions from './screens/Decisions'
 import AddressBook from './screens/AddressBook'
 import { noop } from './utils/utils'
-import { networkContextType } from './utils/provideNetwork'
 
 import NewProjectPanelContent from './components/NewProjectPanelContent'
 //import RangeVoting from './range-voting/RangeVoting'
@@ -35,13 +36,14 @@ const initialState = {
 
 export default class App extends React.Component {
 
-  constructor () {
-    super()
+  constructor (props) {
+    super(props)
 
     this.app = new Aragon(
       new providers.WindowMessage(window.parent)
     )
-    this.state = {}
+
+    this.state = initialState
     // ugly hack: aragon.js doesn't have handshakes yet
     // the wrapper is sending a message to the app before the app's ready to handle it
     // the iframe needs some time to set itself up,
@@ -51,9 +53,6 @@ export default class App extends React.Component {
     }, 5000)
   }
 
-  static propTypes = {
-    app: PropTypes.object.isRequired,
-  }
   static defaultProps = {
     account: '',
     balance: null,
@@ -76,16 +75,6 @@ export default class App extends React.Component {
       {id: 4, name: 'Address Book', screen: AddressBook},
     ],
   }
-
-  static childContextTypes = {
-    network: networkContextType,
-  }
-
-  getChildContext() {
-    return { network: this.props.network }
-  }
-
-
 
   handleGitHubAuth(token, login, avatarUrl) {
     // probably unnecessarily explicit
@@ -167,6 +156,7 @@ export default class App extends React.Component {
     const { tabs } = this.props
     const { activeTabId, createProjectVisible, github } = this.state
     const Screen = tabs[activeTabId].screen
+    
     return (
       <AragonApp publicUrl="/aragon-ui/">
         <AppLayout>
