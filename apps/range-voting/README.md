@@ -1,28 +1,17 @@
-# Aragon React Boilerplate
+# Range voting
 
-> 🕵️ [Find more boilerplates using GitHub](https://github.com/search?q=topic:aragon-boilerplate) | 
-> ✨ [Official boilerplates](https://github.com/search?q=topic:aragon-boilerplate+org:aragon)
+## Workflow
+For fast frontend development without aragon backend:
 
-React boilerplate for Aragon applications.
+`npm run dev`
 
-## Usage
+For testing everything in relation to each other you first need to delete the `dist` folder from `.gitignore` and then run the following each time you make a change:
 
-```sh
-aragon-dev-cli init foo.aragonpm.test react
-```
+`npm run start`
 
-## Prerequisites
-
-- [**truffle**](https://github.com/trufflesuite/truffle): Used to build and test the contracts
-- [**@aragon/cli**](https://github.com/aragon/aragon-dev-cli): Used to publish the application
-
-## What's in the box?
-
-### npm Scripts
-
-- **build**: Builds the contracts
-- **test**: Runs tests for the contracts
-- **publish**: Builds the apps and the contracts and publishes them to IPFS and APM
+You can run each of following commands in each terminal tab:
+`npm run devchain`
+`npm run test`
 
 ### Libraries
 
