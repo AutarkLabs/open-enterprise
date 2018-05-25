@@ -1,6 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
+import Aragon, { providers } from '@aragon/client'
+
 import { theme } from '@aragon/ui'
 import { AragonApp, AppBar, Button, SidePanel } from '@aragon/ui'
 import AppLayout from './components/AppLayout'
@@ -10,7 +12,6 @@ import Issues from './screens/Issues'
 import Decisions from './screens/Decisions'
 import AddressBook from './screens/AddressBook'
 import { noop } from './utils/utils'
-import { networkContextType } from './utils/provideNetwork'
 
 import NewProjectPanelContent from './components/NewProjectPanelContent'
 //import RangeVoting from './range-voting/RangeVoting'
@@ -33,10 +34,25 @@ const initialState = {
   }
 }
 
-class App extends React.Component {
-  static propTypes = {
-    app: PropTypes.object.isRequired,
+export default class App extends React.Component {
+
+  constructor (props) {
+    super(props)
+
+    this.app = new Aragon(
+      new providers.WindowMessage(window.parent)
+    )
+
+    this.state = initialState
+    // ugly hack: aragon.js doesn't have handshakes yet
+    // the wrapper is sending a message to the app before the app's ready to handle it
+    // the iframe needs some time to set itself up,
+    // so we put a timeout to wait for 5s before subscribing
+    setTimeout(() => {
+      this.setState({ state$: this.app.state() })
+    }, 5000)
   }
+
   static defaultProps = {
     account: '',
     balance: null,
@@ -60,22 +76,7 @@ class App extends React.Component {
     ],
   }
 
-  static childContextTypes = {
-    network: networkContextType,
-  }
-
-  getChildContext() {
-    return { network: this.props.network }
-  }
-
-  state = {
-    ...initialState,
-  }
-
-//  componentWillReceiveProps(nextProps) {
-  //  const { props } = this
-//  }
-  handleGitHubAuth(token, login, avatarUrl) {
+  handleGitHubAuth = (token, login, avatarUrl) => {
     // probably unnecessarily explicit
     // meant to be called from NewProjectPanelContent after successful whoami query
     const { github } = this.state
@@ -89,7 +90,7 @@ class App extends React.Component {
   }
 
   // <App> needs to know what repo is selected, because selection matters on multiple screens
-  handleRepoSelect = repoId =>  {
+  handleRepoSelect = (repoId) => {
     console.log('top handleRepoSelect: ' + repoId)
     const { github } = this.state
     github.activeRepo = repoId
@@ -100,21 +101,21 @@ class App extends React.Component {
   }
 
    // this probably needs to be limited to Issues screen
-   handleLabelSelect = labelName =>  {
+   handleLabelSelect = (labelName) => {
     console.log('top handleLabelSelect: ' + labelName)
     const { github } = this.state
     github.activeLabelName = labelName
     this.setState({ github: github })
   }
 
-   handleMilestoneSelect = milestoneName =>  {
+   handleMilestoneSelect = (milestoneName) => {
     console.log('top handleMSSelect: ' + milestoneName)
     const { github } = this.state
     github.activeMilestoneName = milestoneName
     this.setState({ github: github })
   }
 
-  handleAddRepos = reposToAdd => {
+  handleAddRepos = (reposToAdd) => {
     const { github } = this.state
 
     Object.keys(reposToAdd).forEach((repoId) => {
@@ -133,7 +134,7 @@ class App extends React.Component {
     })
   }
 
-  handleTabClick(id) {
+  handleTabClick = (id) => {
     return () => {
       this.setState({
         activeTabId: id
@@ -151,10 +152,12 @@ class App extends React.Component {
     const {name, description, repoURL, bountySystem} = this.state
     alert ('creating: ' + name + ', ' + description + ', ' + repoURL + ', ' + bountySystem)
   }
-  render () {
+
+  render() {
     const { tabs } = this.props
     const { activeTabId, createProjectVisible, github } = this.state
     const Screen = tabs[activeTabId].screen
+    
     return (
       <AragonApp publicUrl="/aragon-ui/">
         <AppLayout>
@@ -210,8 +213,6 @@ class App extends React.Component {
 }
 
 const Tabs = styled.div`
-  display: flex;
-  height: 40px;
   background-color: #FFF;
   width: 100%;
   line-height: 40px;
@@ -220,7 +221,7 @@ const Tabs = styled.div`
 const Tab = styled.div`
   font-size: '13px';
   margin-left: 20px;
-  align-items: center;
+  display: inline-block;
   cursor: pointer;
   font-weight: ${({ active }) => (active ? '800' : '400')};
   border-bottom: ${({ active }) => (active ? '4px solid ' + theme.accent : '0px')};
@@ -262,4 +263,3 @@ const Screen = styled.div`
   pointer-events: ${({ active }) => (active ? 'auto' : 'none')};
 `
 */
-export default App;
