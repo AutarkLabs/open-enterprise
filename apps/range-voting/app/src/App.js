@@ -76,7 +76,7 @@ export default class App extends React.Component {
     ],
   }
 
-  handleGitHubAuth(token, login, avatarUrl) {
+  handleGitHubAuth = (token, login, avatarUrl) => {
     // probably unnecessarily explicit
     // meant to be called from NewProjectPanelContent after successful whoami query
     const { github } = this.state
@@ -90,7 +90,7 @@ export default class App extends React.Component {
   }
 
   // <App> needs to know what repo is selected, because selection matters on multiple screens
-  handleRepoSelect(repoId) {
+  handleRepoSelect = (repoId) => {
     console.log('top handleRepoSelect: ' + repoId)
     const { github } = this.state
     github.activeRepo = repoId
@@ -101,21 +101,21 @@ export default class App extends React.Component {
   }
 
    // this probably needs to be limited to Issues screen
-   handleLabelSelect(labelName)  {
+   handleLabelSelect = (labelName) => {
     console.log('top handleLabelSelect: ' + labelName)
     const { github } = this.state
     github.activeLabelName = labelName
     this.setState({ github: github })
   }
 
-   handleMilestoneSelect(milestoneName) {
+   handleMilestoneSelect = (milestoneName) => {
     console.log('top handleMSSelect: ' + milestoneName)
     const { github } = this.state
     github.activeMilestoneName = milestoneName
     this.setState({ github: github })
   }
 
-  handleAddRepos(reposToAdd) {
+  handleAddRepos = (reposToAdd) => {
     const { github } = this.state
 
     Object.keys(reposToAdd).forEach((repoId) => {
@@ -134,7 +134,7 @@ export default class App extends React.Component {
     })
   }
 
-  handleTabClick(id) {
+  handleTabClick = (id) => {
     return () => {
       this.setState({
         activeTabId: id
@@ -142,17 +142,18 @@ export default class App extends React.Component {
     }
   }
   
-  handleCreateProjectOpen() {
+  handleCreateProjectOpen = () => {
     this.setState({ createProjectVisible: true })
   }
-  handleCreateProjectClose() {
+  handleCreateProjectClose = () => {
     this.setState({ createProjectVisible: false })
   }
-  handleCreateProject() {
+  handleCreateProject = () => {
     const {name, description, repoURL, bountySystem} = this.state
     alert ('creating: ' + name + ', ' + description + ', ' + repoURL + ', ' + bountySystem)
   }
-  render () {
+
+  render() {
     const { tabs } = this.props
     const { activeTabId, createProjectVisible, github } = this.state
     const Screen = tabs[activeTabId].screen
@@ -212,8 +213,6 @@ export default class App extends React.Component {
 }
 
 const Tabs = styled.div`
-  display: flex;
-  height: 40px;
   background-color: #FFF;
   width: 100%;
   line-height: 40px;
@@ -222,7 +221,7 @@ const Tabs = styled.div`
 const Tab = styled.div`
   font-size: '13px';
   margin-left: 20px;
-  align-items: center;
+  display: inline-block;
   cursor: pointer;
   font-weight: ${({ active }) => (active ? '800' : '400')};
   border-bottom: ${({ active }) => (active ? '4px solid ' + theme.accent : '0px')};
