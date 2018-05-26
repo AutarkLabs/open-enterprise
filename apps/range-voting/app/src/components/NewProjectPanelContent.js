@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { theme, Text, Field, Info, TextInput, Button } from '@aragon/ui'
 import { GraphQLClient } from 'graphql-request'
+import CheckboxInput from './Checkbox'
 
 //const octokit = require('@octokit/rest')({
 //  debug: true
@@ -243,9 +244,9 @@ repositories with issues list included is not going to cost much.
   }
 
   generateCheckboxHandler = repoId => {
-    return event => {
+    return isChecked => {
       const { reposToAdd, reposFromServer } = this.state
-      if (event.target.checked) {
+      if (isChecked) {
         reposToAdd[repoId] = reposFromServer[repoId]
         this.setState({ reposToAdd: reposToAdd })
       } else {
@@ -259,25 +260,20 @@ repositories with issues list included is not going to cost much.
     var reposDisplayList = []
     const { reposFromServer, reposManaged } = this.state
 
-    for (var repoId in reposFromServer) {
-      if (Object.prototype.hasOwnProperty.call(reposFromServer, repoId)) {
-        var repo = reposFromServer[repoId]
-        const checkboxHandler = this.generateCheckboxHandler(repoId)
-        reposDisplayList.push(
-          <li key={repoId}>
-            {
-            (repoId in reposManaged) ? 
-            <input type="checkbox" onChange={checkboxHandler} checked disabled />
-            :
-            <input type="checkbox" onChange={checkboxHandler} />
-            }
-            <Text>
-              {repo.name}
-            </Text>
-          </li>
-         )
-       }
-    }
+    Object.keys(reposFromServer).forEach((repoId) => {
+      var repo = reposFromServer[repoId]
+      const checkboxHandler = this.generateCheckboxHandler(repoId)
+      reposDisplayList.push(
+        <li key={repoId}>
+          <CheckboxInput
+            isChecked={repoId in reposManaged}
+            isDisabled={repoId in reposManaged}
+            onClick={checkboxHandler}
+            label={repo.name}
+          />
+        </li>
+      )
+    })
 
     return(
       <div>

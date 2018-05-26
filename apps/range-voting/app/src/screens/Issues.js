@@ -1,7 +1,9 @@
 import React from 'react'
 import styled from 'styled-components'
-import { theme, SafeLink, EmptyStateCard, Text, DropDown, Table, TableRow, TableCell, TableHeader, Button } from '@aragon/ui'
+import { SidePanel, theme, SafeLink, EmptyStateCard, Text, DropDown, Table, TableRow, TableCell, TableHeader, Button } from '@aragon/ui'
 import emptyIcon from '../assets/empty-card-icon.svg'
+import CheckboxInput from '../components/Checkbox'
+
 const EmptyIcon = () => <img src={emptyIcon} alt="" />
 
 const EmptyMain = styled.div`
@@ -15,8 +17,27 @@ class Issues extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      activeBountyName: 'All'
+      activeBountyName: 'All',
+      allocateBountiesVisible: false,
+      selectedAllIssues: false,
+      selectedIssues: {},
+      visibleIssues: [],
+      visibleLabels: {},
+      visibleMilestones: {},
+      visibleBounties: {}
     }
+  }
+
+  handleAllocateBountiesOpen = () => {
+    this.setState({ allocateBountiesVisible: true })
+  }
+
+  handleAllocateBountiesClose = () => {
+    this.setState({ allocateBountiesVisible: false })
+  }
+
+  componentDidMount() {
+    this.filterIssues()
   }
 
   handleRepoSelect = index => {
@@ -26,8 +47,8 @@ class Issues extends React.Component {
       Object.keys(github.reposManaged)[index - 1] // because [0] == 'All'
       :
       ''
-    console.log('repo changed to ' + newRepoId)
     this.props.handleRepoSelect(newRepoId)
+    this.filterIssues()
   }
 
   generateHandleLabelSelect = labelsNames => {
@@ -37,14 +58,13 @@ class Issues extends React.Component {
         :
         ''
 
-      console.log('label changed to ' + newLabel)
       this.props.handleLabelSelect(newLabel)
+      this.filterIssues()
     }
   }
 
    generateHandleLabelClick = newLabel => {
     return () => {
-      console.log('label clickchanged to ' + newLabel)
       this.props.handleLabelSelect(newLabel)
     }
   }
@@ -55,35 +75,43 @@ class Issues extends React.Component {
         milestonesNames[index]
         :
         ''
-
-      console.log('milestone changed to ' + newMilestone)
       this.props.handleMilestoneSelect(newMilestone)
+      this.filterIssues()
     }
   }
 
-  render () {
-    const { onActivate, github } = this.props
-
-    if (Object.keys(github.reposManaged).length === 0) {
-      return (
-        <EmptyMain >
-          <EmptyStateCard
-            icon={EmptyIcon}
-            title="You have no added any projects."
-            text="Get started now by adding a new project."
-            actionText="New Project"
-            onActivate={onActivate}
-          />
-        </EmptyMain>
-      )
+  generateCheckboxHandler = issueIndex => {
+    return isChecked => {
+      const { visibleIssues, selectedIssues } = this.state
+      const issueId = visibleIssues[issueIndex].node.id
+      if (isChecked) {
+        selectedIssues[issueId] = visibleIssues[issueIndex]
+        this.setState({ selectedIssues: selectedIssues })
+      } else {
+        delete selectedIssues[issueId]
+        this.setState({ selectedIssues: selectedIssues, selectedAllIssues: false })
+      }
     }
+  }
 
-    var issues = [], labels = {}, milestones = {}
-    // use list of issues from higher component (App)
+  checkboxAllHandler = (isChecked) => {
+    if (isChecked) {
+      const { visibleIssues } =  this.state
+      const selectedIssues = []
+      visibleIssues.forEach((issue) => { selectedIssues[issue.node.id] = issue })
+      this.setState({ selectedIssues: selectedIssues, selectedAllIssues: true })
+    } else {
+      this.setState({ selectedIssues: [], selectedAllIssues: false })
+    }
+  }
+
+  filterIssues() {
+    const { github } = this.props
+    const activeLabelName = github.activeLabelName ? github.activeLabelName : 'All'
+    const activeMilestoneName = github.activeMilestoneName ? github.activeMilestoneName : 'All'
     const repos = github.reposManaged
-    // names of repos for repo Select
-    const reposNames = ['All', ...Object.keys(repos).map((repoId) => {return repos[repoId].name})]
-    // issues[] is base for filtering, labels and milestones determine criteria
+    var issues = [], labels = {}, milestones = {}
+
     if (github.activeRepo) {
       issues = repos[github.activeRepo].issues
       labels = repos[github.activeRepo].labels
@@ -96,13 +124,6 @@ class Issues extends React.Component {
       })
     }
 
-    // determine names of active positions in selects
-    const activeRepoName = github.activeRepo ? repos[github.activeRepo].name : 'All'
-    const activeLabelName = github.activeLabelName ? github.activeLabelName : 'All'
-    const activeMilestoneName = github.activeMilestoneName ? github.activeMilestoneName : 'All'
-    const { activeBountyName } =  this.state
-
-    // easier to remove issues than selectively add, filtering by labels and milestones, for both cases above
     if (activeLabelName !== 'All') {
       issues = issues.filter((issue) => {
         let found = false
@@ -121,16 +142,44 @@ class Issues extends React.Component {
         return issue.milestone.title === activeMilestoneName
       })
     }
-    
+    this.setState({visibleIssues: issues, visibleLabels: labels, visibleMilestones: milestones})
+  }
+
+  render() {
+    const { onActivate, github } = this.props
+    const { visibleIssues, visibleLabels, visibleMilestones, activeBountyName, allocateBountiesVisible, selectedIssues } =  this.state
+
+    if (Object.keys(github.reposManaged).length === 0) {
+      return (
+        <EmptyMain >
+          <EmptyStateCard
+            icon={EmptyIcon}
+            title="You have no added any projects."
+            text="Get started now by adding a new project."
+            actionText="New Project"
+            onActivate={onActivate}
+          />
+        </EmptyMain>
+      )
+    }
+
+    const repos = github.reposManaged
+    // names of repos for repo Select
+    const reposNames = ['All', ...Object.keys(repos).map((repoId) => {return repos[repoId].name})]
+
+    // determine names of active positions in selects
+    const activeRepoName = github.activeRepo ? repos[github.activeRepo].name : 'All'
+    const activeLabelName = github.activeLabelName ? github.activeLabelName : 'All'
+    const activeMilestoneName = github.activeMilestoneName ? github.activeMilestoneName : 'All'
+
     // names and indexes for Selects options
     const activeRepoNameIndex = reposNames.indexOf(activeRepoName)
-    const labelsNames = ['All', ...Object.keys(labels).map((labelId) => {return labels[labelId].name})]
+    const labelsNames = ['All', ...Object.keys(visibleLabels).map((labelId) => {return visibleLabels[labelId].name})]
     const activeLabelNameIndex = labelsNames.indexOf(activeLabelName)
-    const milestonesNames = ['All', ...Object.keys(milestones).map((milestoneId) => {return milestones[milestoneId].title})]
+    const milestonesNames = ['All', ...Object.keys(visibleMilestones).map((milestoneId) => {return visibleMilestones[milestoneId].title})]
     const activeMilestoneNameIndex = milestonesNames.indexOf(activeMilestoneName)
-    const bountiesNames = ['All', 'xs', 's', 'm', 'l', 'xl']
+    const bountiesNames = ['All', 'None', 'xs', 's', 'm', 'l', 'xl']
     const activeBountyNameIndex = bountiesNames.indexOf(activeBountyName)
-
 
 /*
           <Text weight='bold'>{issue.node.title}</Text>
@@ -150,8 +199,13 @@ class Issues extends React.Component {
             })
           }
  */
-    const issuesTableRows = issues.map((issue) => { return (
+    const issuesTableRows = visibleIssues.map((issue, index) => {
+      const checkboxHandler = this.generateCheckboxHandler(index)
+      return (
       <TableRow key={issue.node.id}>
+        <TableCell>
+          <CheckboxInput isChecked={issue.node.id in selectedIssues} onClick={checkboxHandler} />
+        </TableCell>
         <TableCell>
           <Text>{issue.node.repository.name} #{issue.node.number}</Text>
         </TableCell>
@@ -195,13 +249,20 @@ class Issues extends React.Component {
             <DropDownLabel>Bounty</DropDownLabel>
             <DropDown items={bountiesNames} active={activeBountyNameIndex} onChange={this.handleBountySelect} />
           </Filter>
-          <Button>
+          <Button
+            mode={Object.keys(this.state.selectedIssues).length ? 'strong' : 'disabled'}
+            onClick={Object.keys(this.state.selectedIssues).length ? this.handleAllocateBountiesOpen : null}
+          >
+            
             Allocate Bounties
           </Button>
         </Filters>
         <Table
           header={
             <TableRow>
+              <th style={{ width: '20px' }}>
+                 <CheckboxInput onClick={this.checkboxAllHandler} isChecked={this.state.selectedAllIssues} />
+              </th>
               <TableHeader title="Issue" />
               <TableHeader title="Title" />
               <TableHeader title="Created" />
@@ -211,6 +272,26 @@ class Issues extends React.Component {
         >
           {issuesTableRows}
         </Table>
+        
+        <SidePanel
+          title="Allocate Bounties"
+          opened={allocateBountiesVisible}
+          onClose={this.handleAllocateBountiesClose}
+        >
+          <Table>
+            { Object.keys(selectedIssues).map((issueId) => {
+              const issue = selectedIssues[issueId].node
+              return (
+              <TableRow key={issueId}>
+                <TableCell>
+                  {issue.title}
+                </TableCell>
+              </TableRow>
+            )})
+            }
+          </Table>
+        </SidePanel>
+
       </IssuesMain>
     )
   }

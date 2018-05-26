@@ -4,6 +4,7 @@ import styled from 'styled-components'
 import { theme } from '@aragon/ui'
 import { AragonApp, AppBar, Button, SidePanel } from '@aragon/ui'
 import AppLayout from './components/AppLayout'
+import CheckboxInput from './components/Checkbox'
 import Overview from './screens/Overview'
 import Tools from './screens/Tools'
 import Issues from './screens/Issues'
@@ -13,7 +14,11 @@ import { noop } from './utils/utils'
 import { networkContextType } from './utils/provideNetwork'
 
 import NewProjectPanelContent from './components/NewProjectPanelContent'
+import NewIssuePanelContent from './components/NewIssuePanelContent'
 //import RangeVoting from './range-voting/RangeVoting'
+
+// quick and dirty way of populating issues and repos from a snapshot of few public repos
+// import getPreprocessedRepos from './github.repos'
 
 const initialState = {
   template: null,
@@ -21,6 +26,7 @@ const initialState = {
   stepIndex: 0,
   activeTabId: 0,
   createProjectVisible: false,
+  createIssueVisible: false,
   github: {
     isAuthenticated: false,
     login: '',
@@ -30,6 +36,7 @@ const initialState = {
     activeMilestone: '',
     token: '',
     reposManaged: {}, // to be populated from contract or git backend itself
+//    reposManaged: getPreprocessedRepos(), // to be populated from contract or git backend itself
   }
 }
 
@@ -52,9 +59,9 @@ class App extends React.Component {
     onComplete: noop,
     onCreateContract: noop,
     tabs: [
-      {id: 0, name: 'Overview', screen: Overview},
+      {id: 0, name: 'Overview', screen: Overview, barButton: { title: 'Add Project', handlerVar: 'createProjectVisible' }},
       {id: 1, name: 'Decisions', screen: Decisions},
-      {id: 2, name: 'Issues', screen: Issues},
+      {id: 2, name: 'Issues', screen: Issues, barButton: { title: 'New Issue', handlerVar: 'createIssueVisible' }},
       {id: 3, name: 'Tools', screen: Tools},
       {id: 4, name: 'Address Book', screen: AddressBook},
     ],
@@ -126,6 +133,7 @@ class App extends React.Component {
         github.reposManaged[repoId] = repo
       }
     })
+
     this.setState({
       createProjectVisible: false,
       activeTabId: 0, // show Overview
@@ -141,8 +149,14 @@ class App extends React.Component {
     }
   }
   
-  handleCreateProjectOpen = () => {
-    this.setState({ createProjectVisible: true })
+  handleCreateIssueClose = () => {
+    this.setState({ createIssueVisible: false })
+  }
+  generateSidePanelHandlerOpen = (handlerVar) => {
+    return event => {
+      console.log('open: ' + handlerVar)
+      this.setState({ [handlerVar]: true })
+    }
   }
   handleCreateProjectClose = () => {
     this.setState({ createProjectVisible: false })
@@ -151,21 +165,27 @@ class App extends React.Component {
     const {name, description, repoURL, bountySystem} = this.state
     alert ('creating: ' + name + ', ' + description + ', ' + repoURL + ', ' + bountySystem)
   }
+
   render () {
     const { tabs } = this.props
-    const { activeTabId, createProjectVisible, github } = this.state
+    const { activeTabId, createProjectVisible, createIssueVisible, github } = this.state
     const Screen = tabs[activeTabId].screen
+    
+    const barButton = ('barButton' in tabs[activeTabId]) ?
+    (
+      <Button mode="strong" onClick={this.generateSidePanelHandlerOpen(tabs[activeTabId].barButton.handlerVar)}>
+        {tabs[activeTabId].barButton.title}
+      </Button>
+    )
+    : null
+
     return (
       <AragonApp publicUrl="/aragon-ui/">
         <AppLayout>
           <AppLayout.Header>
             <AppBar
               title="Planning"
-              endContent={
-                <Button mode="strong" onClick={this.handleCreateProjectOpen}>
-                  New Project
-                </Button>
-              }
+              endContent={barButton}
             />
           </AppLayout.Header>
           <Tabs>{
@@ -199,6 +219,19 @@ class App extends React.Component {
             opened={createProjectVisible}
             onCreateProject={this.handleCreateProject}
             onHandleAddRepos={this.handleAddRepos.bind(this)}
+            onHandleGitHubAuth={this.handleGitHubAuth.bind(this)}
+            github={github}
+          />
+        </SidePanel>
+
+        <SidePanel
+          title="New Issue"
+          opened={createIssueVisible}
+          onClose={this.handleCreateIssueClose}
+        >
+          <NewIssuePanelContent
+            opened={createProjectVisible}
+            onCreateIssue={this.handleCreateIssue}
             onHandleGitHubAuth={this.handleGitHubAuth.bind(this)}
             github={github}
           />
