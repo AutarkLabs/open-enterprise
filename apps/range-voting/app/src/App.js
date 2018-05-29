@@ -210,6 +210,7 @@ class App extends React.Component {
           <AppLayout.ScrollWrapper>
             <AppLayout.Content>
                <Screen
+                  app={this.props.app}
                   onActivate={newItemHandler}
                   github={github}
                   handleRepoSelect={this.handleRepoSelect}

@@ -97,3 +97,9 @@ export function randomInt(min, max) {
 export function random(min = 0, max = 1) {
   return Math.floor(Math.random() * (max - min)) + min
 }
+
+// Return 0 if denominator is 0 to avoid NaNs
+export function safeDiv(num, denom) {
+  return denom ? num / denom : 0
+}
+
