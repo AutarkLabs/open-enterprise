@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { SidePanel, theme, SafeLink, EmptyStateCard, Text, DropDown, Table, TableRow, TableCell, TableHeader, Button } from '@aragon/ui'
+import { Badge, SidePanel, theme, SafeLink, EmptyStateCard, Text, DropDown, Table, TableRow, TableCell, TableHeader, Button } from '@aragon/ui'
 import emptyIcon from '../assets/empty-card-icon.svg'
 import CheckboxInput from '../components/Checkbox'
 
@@ -24,7 +24,8 @@ class Issues extends React.Component {
       visibleIssues: [],
       visibleLabels: {},
       visibleMilestones: {},
-      visibleBounties: {}
+      visibleBounties: {},
+      changedBountiesTemp: {}
     }
   }
 
@@ -105,13 +106,35 @@ class Issues extends React.Component {
     }
   }
 
+  generateHandleChangeIssueBounty = (issueId) => {
+    return index => {
+      const {selectedIssues, changedBountiesTemp} = this.state
+      if (selectedIssues[issueId].bounty !== index) {
+        changedBountiesTemp[issueId] = index
+        // this is a placeholer for testing. what should happen instead
+        // is nothing - issues bounties should be assigned at App level,
+        // and reflected in managedRepos.
+        selectedIssues[issueId].node.bounty = index
+        this.setState({ selectedIssues: selectedIssues })
+      } else {
+        delete changedBountiesTemp[issueId]
+      }
+    }
+  }
+
+  handleSubmitBounties = event => {
+    event.preventDefault()
+    //const { selectedIssues, changedBountiesTemp } = this.state
+    console.log('handleSubmitBounties')
+    // this.props.updateIssuesBounties()
+  }
+
   filterIssues() {
     const { github } = this.props
     const activeLabelName = github.activeLabelName ? github.activeLabelName : 'All'
     const activeMilestoneName = github.activeMilestoneName ? github.activeMilestoneName : 'All'
     const repos = github.reposManaged
     var issues = [], labels = {}, milestones = {}
-
     if (github.activeRepo) {
       issues = repos[github.activeRepo].issues
       labels = repos[github.activeRepo].labels
@@ -211,7 +234,7 @@ class Issues extends React.Component {
         </TableCell>
         <TableCell>
           <SafeLink style={{ textDecoration: 'none' }} href={issue.node.url} target="_blank">
-            <Text weight='bold'>{issue.node.title}</Text>
+            <IssueTitle>{issue.node.title}</IssueTitle>
           </SafeLink>
           {
             issue.node.labels.edges.map( label => {
@@ -232,7 +255,7 @@ class Issues extends React.Component {
     )})
 
     const handleLabelSelect = this.generateHandleLabelSelect(labelsNames)
-
+    const bounties = ['none', 'xs', 's', 'm', 'l', 'xl']
     return (
       <IssuesMain>
         <Filters>
@@ -247,13 +270,13 @@ class Issues extends React.Component {
             <DropDown items={milestonesNames} active={activeMilestoneNameIndex} onChange={this.handleMilestoneSelect} />
           </Filter><Filter>
             <DropDownLabel>Bounty</DropDownLabel>
-            <DropDown items={bountiesNames} active={activeBountyNameIndex} onChange={this.handleBountySelect} />
+            <DropDown items={bounties} active={activeBountyNameIndex} onChange={this.handleBountySelect} />
           </Filter>
           <Button
             mode={Object.keys(this.state.selectedIssues).length ? 'strong' : 'disabled'}
             onClick={Object.keys(this.state.selectedIssues).length ? this.handleAllocateBountiesOpen : null}
+            style={{ marginLeft: 'auto' }}
           >
-            
             Allocate Bounties
           </Button>
         </Filters>
@@ -272,31 +295,75 @@ class Issues extends React.Component {
         >
           {issuesTableRows}
         </Table>
-        
+        {
+        // SidePanels are rendered regardless whether they are needed - not necessarily?
+        }
         <SidePanel
           title="Allocate Bounties"
           opened={allocateBountiesVisible}
           onClose={this.handleAllocateBountiesClose}
         >
-          <Table>
+          <Table style={{ marginBottom: '10px' }}>
             { Object.keys(selectedIssues).map((issueId) => {
               const issue = selectedIssues[issueId].node
+              const handleChangeIssueBounty = this.generateHandleChangeIssueBounty(issueId)
               return (
               <TableRow key={issueId}>
                 <TableCell>
-                  {issue.title}
+                  <BountyAssignForm>
+                    <div>
+                      <Text>{issue.repository.name} #{issue.number}</Text>
+                      <SafeLink style={{ textDecoration: 'none' }} href={issue.url} target="_blank">
+                        <IssueTitle>{issue.title}</IssueTitle>
+                      </SafeLink>
+                      {
+                        'bounty' in issue ? (
+                        <BadgeBountyBox>
+                          <BadgeBounty background={'#dfd'} foreground={'#0d0'}>{issue.bounty} ANT</BadgeBounty>
+                          <BadgeBounty background={'#eef'} foreground={'#00d'}>{issue.bounty * 2} USD</BadgeBounty>
+                        </BadgeBountyBox>
+                        )
+                        :
+                        ''
+                      }
+                    </div>
+                    <div>
+                      <DropDown items={bounties} active={issue.bounty} onChange={handleChangeIssueBounty} />
+                    </div>
+                  </BountyAssignForm>
                 </TableCell>
               </TableRow>
             )})
             }
           </Table>
+          <Button
+            onClick={this.handleSubmitBounties}
+            mode={'strong'}
+            wide
+          >
+            Submit Bounties
+          </Button>
         </SidePanel>
-
       </IssuesMain>
     )
   }
 }
 
+const IssueTitle = styled.div`
+  font-weight: bold;
+  font-size: 15px;
+`
+const BadgeBountyBox = styled.div`
+  margin-top: 10px;
+`
+const BadgeBounty = styled(Badge)`
+  margin-left: 20px;
+`
+const BountyAssignForm = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+`
 const IssuesMain = styled.div`
   margin-top: 0px;
 `

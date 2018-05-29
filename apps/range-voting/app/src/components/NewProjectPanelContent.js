@@ -155,7 +155,9 @@ repositories with issues list included is not going to cost much.
 
   processRepos(data) {
     var reposFromServer = {}
-    
+    // this is a placeholder just to have the bounties work in the simplest fashion.
+    const BountyLabels = {}
+
     data.user.repositories.edges.forEach(
       rNode => {
         var commits = 0
@@ -172,12 +174,18 @@ repositories with issues list included is not going to cost much.
             if (issue.node.labels.totalCount > 0) {
               issue.node.labels.edges.forEach(
                 label => {
-                  labels[label.node.id] = label.node
+                  if (label.node.name in BountyLabels) {
+                    issue.bounty = BountyLabels[label.node.name]
+                  } else {
+                    labels[label.node.id] = label.node
+                  }
                 }
               )
             }
             if (issue.node.milestone) {
               milestones[issue.node.milestone.id] = issue.node.milestone
+            }
+            if (! ('bounty' in issue)) {
             }
           }
         )

@@ -1,8 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { theme, Text, Field, Info, TextInput, Button, DropDown } from '@aragon/ui'
-import { GraphQLClient } from 'graphql-request'
+import { theme, Field, Info, TextInput, Button, DropDown } from '@aragon/ui'
+//import { GraphQLClient } from 'graphql-request'
 
 //const octokit = require('@octokit/rest')({
 //  debug: true
@@ -10,14 +10,14 @@ import { GraphQLClient } from 'graphql-request'
 
 class NewIssuePanelContent extends React.Component {
   static propTypes = {
-    onHandleAddRepos: PropTypes.func.isRequired,
-    onHandleGitHubAuth: PropTypes.func.isRequired,
+//    onHandleAddRepos: PropTypes.func.isRequired,
+//    onHandleGitHubAuth: PropTypes.func.isRequired,
     github: PropTypes.object.isRequired
   }
 
   constructor(props) {
     super(props)
-    const { github } = this.props
+    //const { github } = this.props
     this.state = {
       repo: '',
       err: ''
@@ -89,9 +89,6 @@ class NewIssuePanelContent extends React.Component {
 
 const Form = styled.form`
   margin-top: 20px;
-`
-const RepoList = styled.ul`
-  list-style-type: none;
 `
 export default NewIssuePanelContent
 

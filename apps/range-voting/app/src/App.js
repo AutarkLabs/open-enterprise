@@ -4,21 +4,25 @@ import styled from 'styled-components'
 import { theme } from '@aragon/ui'
 import { AragonApp, AppBar, Button, SidePanel } from '@aragon/ui'
 import AppLayout from './components/AppLayout'
-import CheckboxInput from './components/Checkbox'
 import Overview from './screens/Overview'
 import Tools from './screens/Tools'
 import Issues from './screens/Issues'
 import Decisions from './screens/Decisions'
 import AddressBook from './screens/AddressBook'
+import Settings from './screens/Settings'
 import { noop } from './utils/utils'
 import { networkContextType } from './utils/provideNetwork'
 
 import NewProjectPanelContent from './components/NewProjectPanelContent'
 import NewIssuePanelContent from './components/NewIssuePanelContent'
-//import RangeVoting from './range-voting/RangeVoting'
+import RangeVoting from './range-voting/RangeVoting'
 
 // quick and dirty way of populating issues and repos from a snapshot of few public repos
-// import getPreprocessedRepos from './github.repos'
+//import getPreprocessedRepos from './github.repos'
+
+// app.initialize(token, minParticipationPct,
+// candidateSupportPct,
+// voteTime)
 
 const initialState = {
   template: null,
@@ -27,6 +31,7 @@ const initialState = {
   activeTabId: 0,
   createProjectVisible: false,
   createIssueVisible: false,
+  rangeWizardActive: false,
   github: {
     isAuthenticated: false,
     login: '',
@@ -62,8 +67,9 @@ class App extends React.Component {
       {id: 0, name: 'Overview', screen: Overview, barButton: { title: 'Add Project', handlerVar: 'createProjectVisible' }},
       {id: 1, name: 'Decisions', screen: Decisions},
       {id: 2, name: 'Issues', screen: Issues, barButton: { title: 'New Issue', handlerVar: 'createIssueVisible' }},
-      {id: 3, name: 'Tools', screen: Tools},
+      {id: 3, name: 'Tools', screen: Tools, barButton: { title: 'New Tool', handlerVar: 'rangeWizardActive' }},
       {id: 4, name: 'Address Book', screen: AddressBook},
+      {id: 5, name: 'Settings', screen: Settings},
     ],
   }
 
@@ -92,12 +98,11 @@ class App extends React.Component {
     github.isAuthenticated = true
     github.activeRepo = ''
     this.setState({ github: github })
-    console.log('updated auth: ' + this.state)
   }
 
   // <App> needs to know what repo is selected, because selection matters on multiple screens
   handleRepoSelect = repoId =>  {
-    console.log('top handleRepoSelect: ' + repoId)
+    //console.log('top handleRepoSelect: ' + repoId)
     const { github } = this.state
     github.activeRepo = repoId
     this.setState({
@@ -108,14 +113,12 @@ class App extends React.Component {
 
    // this probably needs to be limited to Issues screen
    handleLabelSelect = labelName =>  {
-    console.log('top handleLabelSelect: ' + labelName)
     const { github } = this.state
     github.activeLabelName = labelName
     this.setState({ github: github })
   }
 
    handleMilestoneSelect = milestoneName =>  {
-    console.log('top handleMSSelect: ' + milestoneName)
     const { github } = this.state
     github.activeMilestoneName = milestoneName
     this.setState({ github: github })
@@ -153,8 +156,7 @@ class App extends React.Component {
     this.setState({ createIssueVisible: false })
   }
   generateSidePanelHandlerOpen = (handlerVar) => {
-    return event => {
-      console.log('open: ' + handlerVar)
+    return () => {
       this.setState({ [handlerVar]: true })
     }
   }
@@ -170,16 +172,24 @@ class App extends React.Component {
     const { tabs } = this.props
     const { activeTabId, createProjectVisible, createIssueVisible, github } = this.state
     const Screen = tabs[activeTabId].screen
-    
-    const barButton = ('barButton' in tabs[activeTabId]) ?
-    (
-      <Button mode="strong" onClick={this.generateSidePanelHandlerOpen(tabs[activeTabId].barButton.handlerVar)}>
-        {tabs[activeTabId].barButton.title}
-      </Button>
-    )
-    : null
+    var newItemHandler = null
+    var barButton = null
 
-    return (
+    if ('barButton' in tabs[activeTabId]) {
+      newItemHandler = this.generateSidePanelHandlerOpen(tabs[activeTabId].barButton.handlerVar)
+      barButton = (
+        <Button mode="strong" onClick={newItemHandler}>
+          {tabs[activeTabId].barButton.title}
+        </Button>
+      )
+    }
+
+    return this.state.rangeWizardActive ?
+    (
+      <RangeVoting visible={true} app={this.props.app} />
+    ) 
+    :
+    (
       <AragonApp publicUrl="/aragon-ui/">
         <AppLayout>
           <AppLayout.Header>
@@ -200,7 +210,7 @@ class App extends React.Component {
           <AppLayout.ScrollWrapper>
             <AppLayout.Content>
                <Screen
-                  onActivate={this.handleCreateProjectOpen}
+                  onActivate={newItemHandler}
                   github={github}
                   handleRepoSelect={this.handleRepoSelect}
                   handleLabelSelect={this.handleLabelSelect}

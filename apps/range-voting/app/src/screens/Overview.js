@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { DropDown, Card, Text, EmptyStateCard, theme, font, IconCheck } from '@aragon/ui'
+import { Text, EmptyStateCard, theme, font, IconCheck } from '@aragon/ui'
 import emptyIcon from '../assets/empty-card-icon.svg'
 import { noop } from '../utils/utils'
 
@@ -17,7 +17,7 @@ class RepoCard extends React.Component {
   }
   render() {
     const { active, icon, label, description, commits, collaborators } = this.props
-    const items = ['...', 'Remove Repo']
+    //const items = ['...', 'Remove Repo']
     return (
       <Main onClick={this.handleClick} active={active}>
         <Content>
@@ -160,7 +160,7 @@ class Overview extends React.Component {
     return (
       <Repos>
         {Object.entries(github.reposManaged).map(
-          ([repoId, { name, description, collaborators, commits }], i) => (
+          ([repoId, { name, description, collaborators, commits }]) => (
             <RepoCardWrapper key={repoId}>
               <RepoCard
                  repoId={repoId}

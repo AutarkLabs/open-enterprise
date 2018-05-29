@@ -38,7 +38,7 @@ const SPRING_HIDE = {
 }
 const SPRING_SCREEN = springConf('slow')
 
-class App extends React.Component {
+class RangeVoting extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
   }
@@ -428,6 +428,5 @@ const Screen = styled.div`
   pointer-events: ${({ active }) => (active ? 'auto' : 'none')};
 `
 
+export default RangeVoting;
 
-
-export default App;
