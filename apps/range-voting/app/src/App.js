@@ -11,62 +11,20 @@ import Tools from './screens/Tools'
 import Issues from './screens/Issues'
 import Decisions from './screens/Decisions'
 import AddressBook from './screens/AddressBook'
-import { noop } from './utils/utils'
 
 import NewProjectPanelContent from './components/NewProjectPanelContent'
 //import RangeVoting from './range-voting/RangeVoting'
 
-const initialState = {
-  template: null,
-  templateData: {},
-  stepIndex: 0,
-  activeTabId: 0,
-  createProjectVisible: false,
-  github: {
-    isAuthenticated: false,
-    login: '',
-    avatarUrl: '',
-    activeRepo: '',
-    activeLabel: '',
-    activeMilestone: '',
-    token: '',
-    reposManaged: {}, // to be populated from contract or git backend itself
-  }
-}
-
 export default class App extends React.Component {
-
-  constructor (props) {
-    super(props)
-
-    this.app = new Aragon(
-      new providers.WindowMessage(window.parent)
-    )
-
-    this.state = initialState
-    // ugly hack: aragon.js doesn't have handshakes yet
-    // the wrapper is sending a message to the app before the app's ready to handle it
-    // the iframe needs some time to set itself up,
-    // so we put a timeout to wait for 5s before subscribing
-    setTimeout(() => {
-      this.setState({ state$: this.app.state() })
-    }, 5000)
+  static propTypes = {
+    app: PropTypes.object.isRequired,
   }
 
   static defaultProps = {
-    account: '',
-    balance: null,
     network: {
       etherscanBaseUrl: 'https://rinkeby.etherscan.io',
       name: 'rinkeby',
     },
-    visible: true,
-    walletWeb3: null,
-    web3: null,
-    connected: false,
-    contractCreationStatus: 'none',
-    onComplete: noop,
-    onCreateContract: noop,
     tabs: [
       {id: 0, name: 'Overview', screen: Overview},
       {id: 1, name: 'Decisions', screen: Decisions},
@@ -74,6 +32,36 @@ export default class App extends React.Component {
       {id: 3, name: 'Tools', screen: Tools},
       {id: 4, name: 'Address Book', screen: AddressBook},
     ],
+  }
+
+  constructor(props) {
+    super(props)
+    this.state = {
+      template: null,
+      templateData: {},
+      stepIndex: 0,
+      activeTabId: 0,
+      createProjectVisible: false,
+      github: {
+        isAuthenticated: false,
+        login: '',
+        avatarUrl: '',
+        activeRepo: '',
+        activeLabel: '',
+        activeMilestone: '',
+        token: '',
+        reposManaged: {}, // to be populated from contract or git backend itself
+      }
+    }
+  }
+
+  componentDidMount() {
+    const { app } = this.props
+    app.votes().first().subscribe((test) => console.log(test))
+    app.initialize().first().subscribe((test) => console.log(test))
+    app.vote().first().subscribe((test) => console.log(test))
+    app.call("test").first().subscribe((test) => console.log(test))
+    app.events().subscribe((test) => console.log(test))
   }
 
   handleGitHubAuth = (token, login, avatarUrl) => {
@@ -154,9 +142,38 @@ export default class App extends React.Component {
   }
 
   render() {
-    const { tabs } = this.props
+    const { tabs, app } = this.props
     const { activeTabId, createProjectVisible, github } = this.state
     const Screen = tabs[activeTabId].screen
+    
+    // Trying lots of combinations here
+    // app.votes().first().subscribe((test) => console.log(test))
+    // app.initialize().first().subscribe((test) => console.log(test))
+    // app.vote().first().subscribe((test) => console.log(test))
+    // app.call("test").subscribe((test) => console.log(test))
+    // app.events().subscribe((test) => console.log(test))
+
+    // setTimeout(() => {
+    //     // This guy should catch all events going through e.g. Test("LOLOL")
+    //     app.events().subscribe((event) => {
+    //       console.log(event)
+    //     })
+    //     app.state().subscribe((state) => {
+    //       console.log(state)
+    //     })
+    //     app.store((state, event) => {
+    //       console.log(state)
+    //       console.log(event)
+    //       return state
+    //     }).subscribe((state) => {
+    //       console.log(state)
+    //     })
+    // }, 5000)
+
+    // setTimeout(() => {
+    //   // This works and returns "test" as it should but it should also trigger and event Test("LOLOL")
+    //   app.call("test").subscribe((data) => console.log(data))
+    // }, 6000)
     
     return (
       <AragonApp publicUrl="/aragon-ui/">
