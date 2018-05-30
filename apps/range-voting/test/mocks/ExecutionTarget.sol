@@ -10,6 +10,9 @@ contract ExecutionTarget {
         Executed(_signal.length);
     }
 
+    function autoThrow(uint256[] _signal) public {
+        require(false);
+    }
 
     event Executed(uint length);
 }

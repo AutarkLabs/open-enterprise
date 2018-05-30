@@ -435,6 +435,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @notice `_executeVote` executes the provided script for this vote and
     *         passes along the candidate data to the next function.
     * @return voteId The ID(or index) of this vote in the votes array.
+    * @dev This function needs to be cleaned up ALOT
     */
     function _executeVote(uint256 _voteId) internal {
         Vote storage vote = votes[_voteId];
@@ -517,24 +518,4 @@ contract RangeVoting is IForwarder, AragonApp {
         // otherwise require value to be greater
         return m % PCT_BASE == 0 ? _value >= v : _value > v;
     }
-
-    /**
-    * @dev taken directly from ScriptHelpers
-    */
-    function getPtr(bytes memory _x) internal pure returns (uint256 ptr) {
-        assembly {
-            ptr := _x
-        }
-    }
-
-    /**
-    * @dev taken directly from ScriptHelpers
-    */
-    function getPtr(bytes32[] _x) internal pure returns (uint256 ptr) {
-        assembly {
-            ptr := _x
-        }
-    }
-
-
 }
