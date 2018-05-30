@@ -21,6 +21,6 @@ import "@aragon/os/contracts/lib/minime/MiniMeToken.sol";
 // When I first saw this contract I audibly laughed out loud.
 // Glad to get to use this janky hack for myself XD
 
-contract TestRangeVoting {
+contract Spoof {
   // ...
 }

@@ -28,12 +28,21 @@ import "@aragon/os/contracts/lib/zeppelin/math/SafeMath64.sol";
 *      percentage breakdown to an array of addresses.
 *******************************************************************************/
 contract PayoutEngine is AragonApp {
-
+    using SafeMath for uint256;
     struct Payout {
-        string[] candidateKeys;
+        bytes32[] candidateKeys;
         address[] candidateAddresses;
         uint256[] supports;
+        string metadata;
     }
+
+    bool distSet = false;
+
+    Payout payout;
+
+    bytes32 constant public START_PAYOUT_ROLE = keccak256("START_PAYOUT_ROLE");
+    bytes32 constant public SET_DISTRIBUTION_ROLE = keccak256("SET_DISTRIBUTION_ROLE");
+
     /**
     * @dev This is the function that setups who the candidates will be, and 
     *      where the funds will go for the payout. This is where the payout
@@ -47,11 +56,13 @@ contract PayoutEngine is AragonApp {
     *
     */
     function startPayout(
-        string[] _candidateKeys,
+        bytes32[] _candidateKeys,
         address[] _candidateAddresses,
         string _metadata
-    ) external auth(START_PAYOUT_ROLE) returns(uint256 payoutId){
-
+    ) external auth(START_PAYOUT_ROLE) {
+        payout.candidateKeys = _candidateKeys;
+        payout.candidateAddresses = _candidateAddresses;
+        payout.metadata = _metadata;
     }
     /**
     * @dev This is the function that the RangeVote will call. It doesn’t need
@@ -59,12 +70,15 @@ contract PayoutEngine is AragonApp {
     *      “SET_DISTRIBUTION_ROLE” will be given to the RangeVote.
     * @notice Sets the distribution for the given `payoutId` using an the
     *         supplied candidate keys and support values.
-    * @param _payoutId The id or key for the specific payout.
     * @param _candidateKeys The array of keys for all candidates in this payout
     * @param _supports The Array of all support values for the various candidates
     */
-    function setDistribution(uint256 _payoutId, string[] _candidateKeys, uint256[] _supports) external auth(SET_DISTRIBUTION_ROLE){
-
+    function setDistribution(bytes32[] _candidateKeys, uint256[] _supports) external auth(SET_DISTRIBUTION_ROLE){
+        distSet = true;
+        for(uint i = 0; i < _candidateKeys.length; i++){
+            require(payout.candidateKeys[i] == _candidateKeys[i]);
+        }
+        payout.supports = _supports;
     }
     /*
     * @dev This function is how a payout is used. When ether is fed into the
@@ -75,8 +89,20 @@ contract PayoutEngine is AragonApp {
     * @param _payoutId The ID or key of the payout being "run"
     *
     */
-    function runPayout(uint256 _payoutId) external payable{
+    function runPayout() external payable{
+        require(distSet);
+        uint256 totalSupport;
+        uint256 pointsPer;
+        
+        for(uint i = 0; i < payout.supports.length; i++){
+            totalSupport += payout.supports[i];
+        }
+        
+        pointsPer = this.balance.div(totalSupport);
 
+        for(i = 0; i < payout.candidateAddresses.length; i++){
+            payout.candidateAddresses[i].transfer(payout.supports[i].mul(pointsPer));
+        }
     }
     
 }
