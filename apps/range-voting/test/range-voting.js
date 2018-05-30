@@ -76,12 +76,8 @@ contract('RangeVoting App', accounts => {
         })
         /** Need to fix this test */
         it('execution scripts can execute actions', async () => {
-            let action = { to: executionTarget.address, calldata: executionTarget.contract.setSignal.getData([10,15,25])}
-            console.log(action)
-            //encodeCallScript([action])//
-            const script =  "0x00000001ff029cc4bfb080944d60189b740e1de952c03639000000a42aed5bcd"
-            //
-            console.log(script)
+            let action = { to: executionTarget.address, calldata: executionTarget.contract.setSignal.getData([0])}
+            const script = encodeCallScript([action])
             const voteId = createdVoteId(await app.newVote(script, '', { from: holder50 }))
             let vote = [10,15,25]
             await app.addCandidate(voteId, "0x","Apple")

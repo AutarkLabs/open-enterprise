@@ -443,33 +443,32 @@ contract RangeVoting is IForwarder, AragonApp {
         uint256 candidateLength = vote.candidateKeys.length;
         bytes memory executionScript = new bytes(32);
         executionScript = vote.executionScript;
-        bytes1 singleByte;
+        bytes32 singleByte;
         bytes memory script = new bytes(32 * (candidateLength + 3));
-        //assembly {  
-        //    mstore(add(script, 32), mload(add(executionScript,32)))
-        //}
-        uint256 offset = 25;
+        assembly {  
+            mstore(add(script, 32), mload(add(executionScript,32)))
+        }
+        uint256 offset = 59;
         bytes memory smallData = new bytes(32);
-        uint256 smallDataUint = 32 * (candidateLength + 2) + 4;
+        uint256 supportsData = 32 * (candidateLength + 2) + 4;
         assembly {
-            mstore(add(smallData, 32), smallDataUint)
+            mstore(add(smallData, 32), supportsData)
         }
-        ExecutionScript(smallData, supportsData);
         for( uint256 i = 28; i < 32; i++){
-            singleByte = smallData[i];
+            supportsData = uint256(smallData[i]);
             assembly{
-                mstore8(add(script,offset),singleByte)
+                mstore8(add(script,59), supportsData)
             }
-            offset++;
+            offset--;
         }
-        ExecutionScript(script, supportsData);
 
-        uint256 supportsData = 32;
-        offset = (vote.executionScript.length) + 32;
+        supportsData = 32;
+        offset = 64;
 
         assembly {
             mstore(add(script, offset), supportsData)
         }
+        
         offset += 32;
         supportsData = candidateLength;
 
@@ -486,9 +485,8 @@ contract RangeVoting is IForwarder, AragonApp {
             offset += 32;
         }
 
-        ExecutionScript(script, supportsData);
 
-        //runScript(script, supports, new address[](0));
+        runScript(script, new bytes(0), new address[](0));
 
         ExecuteVote(_voteId);
     }
