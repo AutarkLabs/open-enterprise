@@ -46,7 +46,7 @@ contract RangeVoting is IForwarder, AragonApp {
     using SafeMath64 for uint64;
 
     MiniMeToken public token;
-    uint256 public candidateSupportPct;
+    uint256 public globalCandidateSupportPct;
     uint256 public minParticipationPct;
     uint64 public voteTime;
 
@@ -92,6 +92,7 @@ contract RangeVoting is IForwarder, AragonApp {
     event UpdateCandidateSupport(string indexed candidateKey, uint256 support);
     event ExecuteVote(uint256 indexed voteId);
     event ChangeCandidateSupport(uint256 candidateSupportPct);
+    event ExecutionScript(bytes script, uint256 data);
 
 ////////////////
 // Constructor
@@ -130,7 +131,7 @@ contract RangeVoting is IForwarder, AragonApp {
 
         token = _token;
         minParticipationPct = _minParticipationPct;
-        candidateSupportPct = _candidateSupportPct;
+        globalCandidateSupportPct = _candidateSupportPct;
         voteTime = _voteTime;
 
         votes.length += 1;
@@ -374,7 +375,7 @@ contract RangeVoting is IForwarder, AragonApp {
         vote.metadata = _metadata;
         vote.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
         vote.totalVoters = token.totalSupplyAt(vote.snapshotBlock);
-        vote.candidateSupportPct = candidateSupportPct;
+        vote.candidateSupportPct = globalCandidateSupportPct;
 
         StartVote(voteId);
     }
@@ -402,8 +403,8 @@ contract RangeVoting is IForwarder, AragonApp {
         uint256 totalSupport = 0;
 
         uint256 voteSupport;
-        uint256[] oldVoteSupport = vote.voters[msg.sender];
-        bytes32[] cKeys = vote.candidateKeys;
+        uint256[] storage oldVoteSupport = vote.voters[msg.sender];
+        bytes32[] storage cKeys = vote.candidateKeys;
 
         uint256 i = 0;
         // This is going to cost a lot of gas... it'd be cool if there was
@@ -439,20 +440,39 @@ contract RangeVoting is IForwarder, AragonApp {
         Vote storage vote = votes[_voteId];
 
         vote.executed = true;
-        uint256 voteLength = vote.candidateKeys.length;
-        uint256 supportsOffset = 0;
-        bytes memory supports = new bytes(32 * (voteLength));
-        bytes32[] supports32;
-        for (uint256 i = 0; i < voteLength; i++) {
-            supports32.push(bytes32(vote.candidates[vote.candidateKeys[i]].voteSupport));
+        uint256 candidateLength = vote.candidateKeys.length;
+        bytes memory supports = new bytes(32 * (candidateLength + 2));
+        uint256 supportsData = 32;
+        uint256 offset = 32;
+
+        assembly {
+            mstore(add(supports, offset), supportsData)
+        }
+        offset += 32;
+        supportsData = candidateLength;
+
+        assembly {
+            mstore(add(supports, offset), supportsData)
+        }
+        offset += 32;
+        for (uint256 i = 0; i < candidateLength; i++) {
+            supportsData = votes[_voteId].candidates[votes[_voteId].candidateKeys[i]].voteSupport;
+
+            assembly {
+                mstore(add(supports, offset), supportsData)
+            }
+            offset += 32;
         }
 
-        ScriptHelpers.memcpy(getPtr(supports), getPtr(supports32), supports32.length * 32);
+        ExecutionScript(supports, supportsData);
 
         runScript(vote.executionScript, supports, new address[](0));
 
         ExecuteVote(_voteId);
     }
+
+
+    
 
     /**
     * @dev Calculates whether `_value` is at least a percent `_pct` over `_total`
@@ -487,13 +507,14 @@ contract RangeVoting is IForwarder, AragonApp {
         }
     }
 
-        /**
+    /**
     * @dev taken directly from ScriptHelpers
     */
-    function getPtr(bytes32[] memory _x) internal pure returns (uint256 ptr) {
+    function getPtr(bytes32[] _x) internal pure returns (uint256 ptr) {
         assembly {
             ptr := _x
         }
     }
+
 
 }

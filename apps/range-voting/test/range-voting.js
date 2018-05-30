@@ -53,7 +53,7 @@ contract('RangeVoting App', accounts => {
         const holder50 = accounts[2]
         const nonHolder = accounts[4]
 
-        const minimumParticipation = pct16(50)
+        const minimumParticipation = pct16(30)
         const candidateSupportPct = pct16(5)
 
         beforeEach(async () => {
@@ -74,25 +74,33 @@ contract('RangeVoting App', accounts => {
                 await app.initialize(token.address, minimumParticipation, candidateSupportPct, RangeVotingTime)
             })
         })
-
-        /*
-         // These sections need to be modified when we have the execution methods implemented. Our voting implementation
-         // DOES NOT automatically vote on behalf of the person starting the vote as it's category based.
-         // We could implement a newVote function with support values but that doesn't make a ton of sense and isn't
-         // needed to get our base application up and running.
-        it('execution scripts can execute multiple actions', async () => {
-            const action = { to: executionTarget.address, calldata: executionTarget.contract.execute.getData() }
-            const script = encodeCallScript([action, action, action])
+        /** Need to fix this test */
+        it('execution scripts can execute actions', async () => {
+            let action = { to: executionTarget.address, calldata: "0x2aed5bcd" }
+            console.log(action)
+            //action.calldata = action.calldata.slice(0,9)
+            const script = "0x000000019dff452de448e382459c6156c1c161ac248d38de000000042aed5bcd"
+            //encodeCallScript([action])
+            console.log(script)
             const voteId = createdVoteId(await app.newVote(script, '', { from: holder50 }))
-            assert.equal(await executionTarget.counter(), 3, 'should have executed multiple times')
+            let vote = [10,15,25]
+            await app.addCandidate(voteId, "0x","Apple")
+            await app.addCandidate(voteId, "0x","Orange")
+            await app.addCandidate(voteId, "0x","Banana")
+            let voter = holder50
+            await app.vote(voteId, vote, { from: voter })
+            await app.executeVote(voteId)        
+            assert.equal(await executionTarget.signal(0), 10, 'should have executed multiple times')
         })
 
         it('execution script can be empty', async () => {
             const voteId = createdVoteId(await app.newVote(encodeCallScript([]), '', { from: holder50 }))
         })
 
-        it('execution throws if any action on script throws', async () => {
-            const action = { to: executionTarget.address, calldata: executionTarget.contract.execute.getData() }
+
+        /** Need to fix this test */
+        xit('execution throws if any action on script throws', async () => {
+            const action = { to: executionTarget.address, calldata: executionTarget.contract.setSignal.getData([0]) }
             let script = encodeCallScript([action])
             script = script.slice(0, -2) // remove one byte from calldata for it to fail
             return assertRevert(async () => {
@@ -101,7 +109,7 @@ contract('RangeVoting App', accounts => {
         })
 
         it('forwarding creates vote', async () => {
-            const action = { to: executionTarget.address, calldata: executionTarget.contract.execute.getData() }
+            const action = { to: executionTarget.address, calldata: executionTarget.contract.setSignal.getData([0]) }
             const script = encodeCallScript([action])
             const voteId = createdVoteId(await app.forward(script, { from: holder50 }))
             assert.equal(voteId, 1, 'RangeVoting should have been created')
@@ -110,14 +118,15 @@ contract('RangeVoting App', accounts => {
         it('can change minimum candidate support', async () => {
 
         })
-        */
+
+
         context('creating vote with normal distributions', () => {
             let voteId = {}
             let script = ''
             let candidateState
 
             beforeEach(async () => {
-                const action = { to: executionTarget.address, calldata: executionTarget.contract.execute.getData() }
+                const action = { to: executionTarget.address, calldata: executionTarget.contract.setSignal.getData([0]) }
                 script = encodeCallScript([action, action])
                 let newvote = await app.newVote(script, 'metadata', { from: nonHolder })
                 //console.log(newvote.logs[0].args)
