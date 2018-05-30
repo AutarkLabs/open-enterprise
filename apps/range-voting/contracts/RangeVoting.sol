@@ -441,32 +441,54 @@ contract RangeVoting is IForwarder, AragonApp {
 
         vote.executed = true;
         uint256 candidateLength = vote.candidateKeys.length;
-        bytes memory supports = new bytes(32 * (candidateLength + 2));
+        bytes memory executionScript = new bytes(32);
+        executionScript = vote.executionScript;
+        bytes1 singleByte;
+        bytes memory script = new bytes(32 * (candidateLength + 3));
+        //assembly {  
+        //    mstore(add(script, 32), mload(add(executionScript,32)))
+        //}
+        uint256 offset = 25;
+        bytes memory smallData = new bytes(32);
+        uint256 smallDataUint = 32 * (candidateLength + 2) + 4;
+        assembly {
+            mstore(add(smallData, 32), smallDataUint)
+        }
+        ExecutionScript(smallData, supportsData);
+        for( uint256 i = 28; i < 32; i++){
+            singleByte = smallData[i];
+            assembly{
+                mstore8(add(script,offset),singleByte)
+            }
+            offset++;
+        }
+        ExecutionScript(script, supportsData);
+
         uint256 supportsData = 32;
-        uint256 offset = 32;
+        offset = (vote.executionScript.length) + 32;
 
         assembly {
-            mstore(add(supports, offset), supportsData)
+            mstore(add(script, offset), supportsData)
         }
         offset += 32;
         supportsData = candidateLength;
 
         assembly {
-            mstore(add(supports, offset), supportsData)
+            mstore(add(script, offset), supportsData)
         }
         offset += 32;
-        for (uint256 i = 0; i < candidateLength; i++) {
+        for (i = 0; i < candidateLength; i++) {
             supportsData = votes[_voteId].candidates[votes[_voteId].candidateKeys[i]].voteSupport;
 
             assembly {
-                mstore(add(supports, offset), supportsData)
+                mstore(add(script, offset), supportsData)
             }
             offset += 32;
         }
 
-        ExecutionScript(supports, supportsData);
+        ExecutionScript(script, supportsData);
 
-        runScript(vote.executionScript, supports, new address[](0));
+        //runScript(script, supports, new address[](0));
 
         ExecuteVote(_voteId);
     }
