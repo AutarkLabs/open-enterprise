@@ -20,22 +20,20 @@ class VoteRow extends React.Component {
 
     var totalSupport = 0
     for(var k in candidates) {
-        console.log ('k: ' + k + ', v: ' + candidates[k])
+        //console.log ('k: ' + k + ', v: ' + candidates[k])
         totalSupport += candidates[k]
     }
     var bars = []
     for(var candidateName in candidates) {
-	    bars.push (
-	    <Bar>
-                  <ProgressBar
-                  progress={safeDiv(candidates[candidateName], totalSupport)}
-		  candidateName={ candidateName }
-                />
-            </Bar>
-
-	)
+      bars.push (
+        <Bar key={candidateName}>
+          <ProgressBar
+            progress={safeDiv(candidates[candidateName], totalSupport)}
+            candidateName={ candidateName }
+          />
+        </Bar>
+      )
     }
-
 
     return (
       <TableRow>

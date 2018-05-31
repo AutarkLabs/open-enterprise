@@ -78,7 +78,6 @@ class Decisions extends React.Component {
       voteVisible: false,
       voteSidebarOpened: false,
     }
-    console.log ('constructor')
   }
   componentWillReceiveProps(nextProps) {
     const { settingsLoaded } = this.state
@@ -149,8 +148,6 @@ class Decisions extends React.Component {
     const displayVotes = settingsLoaded && votes.length > 0
     const supportRequired = settingsLoaded ? supportRequiredPct / pctBase : -1
 
-    console.log ('render: ' + settingsLoaded)
-    
     // Add useful properties to the votes
     const preparedVotes = displayVotes
       ? votes.map(vote => {
@@ -174,12 +171,7 @@ class Decisions extends React.Component {
 
     return (
        <Main>
-	  
           <AppLayout.ScrollWrapper>
-            <AppLayout.Content>
-                <Button mode="strong" onClick={this.handleCreateVoteOpen}>
-                  Create Vote
-                </Button>
               {displayVotes ? (
                 <Votes votes={preparedVotes} onSelectVote={this.handleVoteOpen} />
               ) : (
@@ -191,11 +183,10 @@ class Decisions extends React.Component {
                   onActivate={this.handleCreateVoteOpen}
                 />
               )}
-            </AppLayout.Content>
           </AppLayout.ScrollWrapper>
 
         {displayVotes && (
-          <SidePanel title={ currentVote && `Vote #${currentVoteId} (${currentVote.open ? 'Open' : 'Closed'})` }
+          <SidePanel title={ currentVote ? `Vote #${currentVoteId} (${currentVote.open ? 'Open' : 'Closed'})` : 'currentVote' }
             opened={Boolean(!createVoteVisible && voteVisible)}
             onClose={this.handleVoteClose}
             onTransitionEnd={this.handleVoteTransitionEnd}
@@ -224,7 +215,6 @@ class Decisions extends React.Component {
 
 const Main = styled.div`
   display: flex;
-  margin-top: 50px;
 `
 
 export default Decisions

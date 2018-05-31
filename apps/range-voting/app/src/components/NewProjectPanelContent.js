@@ -266,7 +266,7 @@ repositories with issues list included is not going to cost much.
 
   showRepos() {
     var reposDisplayList = []
-    const { reposFromServer, reposManaged } = this.state
+    const { reposFromServer, reposManaged, reposToAdd } = this.state
 
     Object.keys(reposFromServer).forEach((repoId) => {
       var repo = reposFromServer[repoId]
@@ -274,7 +274,7 @@ repositories with issues list included is not going to cost much.
       reposDisplayList.push(
         <li key={repoId}>
           <CheckboxInput
-            isChecked={repoId in reposManaged}
+            isChecked={repoId in reposManaged || repoId in reposToAdd}
             isDisabled={repoId in reposManaged}
             onClick={checkboxHandler}
             label={repo.name}

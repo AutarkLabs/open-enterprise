@@ -295,9 +295,6 @@ class Issues extends React.Component {
         >
           {issuesTableRows}
         </Table>
-        {
-        // SidePanels are rendered regardless whether they are needed - not necessarily?
-        }
         <SidePanel
           title="Allocate Bounties"
           opened={allocateBountiesVisible}
@@ -348,6 +345,8 @@ class Issues extends React.Component {
     )
   }
 }
+
+
 
 const IssueTitle = styled.div`
   font-weight: bold;

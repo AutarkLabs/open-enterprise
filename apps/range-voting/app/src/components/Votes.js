@@ -17,7 +17,7 @@ class Votes extends React.Component {
         {openedVotes.length > 0 && (
           <VotesTableWrapper>
             <Title>
-              <span>Opened Votes</span>
+              <span>Open Decisions</span>
               <BadgeNumber
                 background={colors.Rain['Rain Sky']}
                 color={colors.Rain.Slate}
@@ -36,7 +36,7 @@ class Votes extends React.Component {
         {closedVotes.length > 0 && (
           <VotesTableWrapper>
             <Title>
-              <span>Closed Votes</span>
+              <span>Closed Decisions</span>
             </Title>
             <VotesTable
               opened={false}

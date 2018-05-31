@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Text, EmptyStateCard, theme, font, IconCheck } from '@aragon/ui'
+import { DropDown, Text, EmptyStateCard, theme, font, IconCheck } from '@aragon/ui'
 import emptyIcon from '../assets/empty-card-icon.svg'
 import { noop } from '../utils/utils'
 
@@ -12,19 +12,30 @@ class RepoCard extends React.Component {
     label: '',
     description: ''
   }
-  handleClick = () => {
+  handleClick = event => {
+console.log(event)
+    event.stopPropagation()
+    event.preventDefault()
+
     this.props.onSelect(this.props.repoId)
   }
+
+  handleRepoCard = event => {
+    console.log('handled')
+    event.stopPropagation()
+    event.preventDefault()
+  }
+
   render() {
-    const { active, icon, label, description, commits, collaborators } = this.props
-    //const items = ['...', 'Remove Repo']
+    const { active, label, description, commits, collaborators } = this.props
+    const items = ['..', 'View on GitHub', 'Remove Project']
     return (
-      <Main onClick={this.handleClick} active={active}>
-        <Content>
+      <Main active={active}>
+        <Content onClick={this.handleClick}>
           <CheckContainer active={active}>
             <IconCheck />
           </CheckContainer>
-          <img src={icon} alt="" />
+            <DropDown items={items} onClick={this.handleRepoCard} />
           <Text size="large" color={theme.textPrimary}>{label}</Text>
           <Text size="xxsmall" color={theme.textTertiary}>{description}</Text>
           <Stats>
