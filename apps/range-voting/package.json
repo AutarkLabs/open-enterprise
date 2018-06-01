@@ -1,6 +1,6 @@
 {
   "name": "@tpt/apps-range-voting",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "main": "index.js",
   "description": "",
   "dependencies": {
