@@ -28,7 +28,9 @@ import "@aragon/os/contracts/lib/zeppelin/math/SafeMath64.sol";
 *      percentage breakdown to an array of addresses.
 *******************************************************************************/
 contract PayoutEngine is AragonApp {
+
     using SafeMath for uint256;
+
     struct Payout {
         bytes32[] candidateKeys;
         address[] candidateAddresses;
@@ -55,7 +57,7 @@ contract PayoutEngine is AragonApp {
     * @param _metadata Any relevent label for the payout
     *
     */
-    function startPayout(
+    function initializePayout(
         bytes32[] _candidateKeys,
         address[] _candidateAddresses,
         string _metadata
@@ -64,6 +66,7 @@ contract PayoutEngine is AragonApp {
         payout.candidateAddresses = _candidateAddresses;
         payout.metadata = _metadata;
     }
+
     /**
     * @dev This is the function that the RangeVote will call. It doesn’t need
     *      to be called by a RangeVote but for our use case the
@@ -80,6 +83,7 @@ contract PayoutEngine is AragonApp {
         }
         payout.supports = _supports;
     }
+
     /*
     * @dev This function is how a payout is used. When ether is fed into the
     *      runPayout function it’s sent out based on the distribution
