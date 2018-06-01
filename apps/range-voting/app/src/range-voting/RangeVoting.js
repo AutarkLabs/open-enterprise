@@ -6,6 +6,7 @@ import { spring as springConf } from '@aragon/ui'
 import { AragonApp, AppBar } from '@aragon/ui'
 
 import LoginButton from '../components/LoginButton'
+import close from '../assets/close.svg'
 
 import * as Steps from './steps'
 import Templates from './templates'
@@ -38,9 +39,10 @@ const SPRING_HIDE = {
 }
 const SPRING_SCREEN = springConf('slow')
 
-class App extends React.Component {
+class RangeVoting extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
+    handleClose: PropTypes.func.isRequired
   }
   static defaultProps = {
     account: '',
@@ -158,7 +160,7 @@ class App extends React.Component {
     return screenData ? screenData.validate(this.state.templateData) : false
   }
 
-  handleConfigurationFieldUpdate = (screen, name, value) => {
+  handleConfigurationFieldUpdate = (name, value) => {
     this.setState(({ templateData, template }) => {
       const updatedFields = this.filterConfigurationValue(template, name, value)
       // If the filter returns null, the value is not updated
@@ -287,6 +289,13 @@ class App extends React.Component {
           > 
             <View>
               <Window>
+                <RangeWizardCloseButton
+                  type="button"
+                  onClick={this.props.handleClose}
+                >
+                  <img src={close} alt="Close" />
+                </RangeWizardCloseButton>
+
                 <Motion
                   style={{ screenProgress: spring(stepIndex, SPRING_SCREEN) }}
                 > 
@@ -428,6 +437,22 @@ const Screen = styled.div`
   pointer-events: ${({ active }) => (active ? 'auto' : 'none')};
 `
 
+const RangeWizardCloseButton = styled.button`
+  ${Window} & {
+    position: absolute;
+    padding: 20px;
+    top: 0;
+    right: 0;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    outline: 0;
+    z-index:3;
+    &::-moz-focus-inner {
+      border: 0;
+    }
+  }
+`
 
+export default RangeVoting;
 
-export default App;

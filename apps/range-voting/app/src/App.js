@@ -4,18 +4,57 @@ import styled from 'styled-components'
 import Aragon, { providers } from '@aragon/client'
 
 import { theme } from '@aragon/ui'
-import { AragonApp, AppBar, Button, SidePanel } from '@aragon/ui'
+import { Badge, AragonApp, AppBar, Button, SidePanel } from '@aragon/ui'
 import AppLayout from './components/AppLayout'
 import Overview from './screens/Overview'
 import Tools from './screens/Tools'
 import Issues from './screens/Issues'
 import Decisions from './screens/Decisions'
 import AddressBook from './screens/AddressBook'
+<<<<<<< HEAD
+=======
+import Settings from './screens/Settings'
+import { noop } from './utils/utils'
+import { networkContextType } from './utils/provideNetwork'
+>>>>>>> d5c9fa51c1e119b2c11bb54cbec32fdb85dc68bb
 
 import NewProjectPanelContent from './components/NewProjectPanelContent'
-//import RangeVoting from './range-voting/RangeVoting'
+import NewIssuePanelContent from './components/NewIssuePanelContent'
+import RangeVoting from './range-voting/RangeVoting'
 
+// quick and dirty way of populating issues and repos from a snapshot of few public repos
+//import getPreprocessedRepos from './github.repos'
+
+// app.initialize(token, minParticipationPct,
+// candidateSupportPct,
+// voteTime)
+
+<<<<<<< HEAD
 export default class App extends React.Component {
+=======
+const initialState = {
+  template: null,
+  templateData: {},
+  stepIndex: 0,
+  activeTabId: 0,
+  createProjectVisible: false,
+  createIssueVisible: false,
+  rangeWizardActive: false,
+  github: {
+    isAuthenticated: false,
+    login: '',
+    avatarUrl: '',
+    activeRepo: '',
+    activeLabel: '',
+    activeMilestone: '',
+    authToken: '',
+    reposManaged: {}, // to be populated from contract or git backend itself
+//    reposManaged: getPreprocessedRepos(), // to be populated from contract or git backend itself
+  }
+}
+
+class App extends React.Component {
+>>>>>>> d5c9fa51c1e119b2c11bb54cbec32fdb85dc68bb
   static propTypes = {
     app: PropTypes.object.isRequired,
   }
@@ -26,12 +65,13 @@ export default class App extends React.Component {
       name: 'rinkeby',
     },
     tabs: [
-      {id: 0, name: 'Overview', screen: Overview},
-      {id: 1, name: 'Decisions', screen: Decisions},
-      {id: 2, name: 'Issues', screen: Issues},
-      {id: 3, name: 'Tools', screen: Tools},
-      {id: 4, name: 'Address Book', screen: AddressBook},
-    ],
+      { id: 0, name: 'Overview', screen: Overview, barButton: { title: 'Add Project', handlerVar: 'createProjectVisible' }},
+      { id: 1, name: 'Decisions', screen: Decisions, barSelectButton: { title: 'Actions', items: ['one', 'two', 'three'] }},
+      { id: 2, name: 'Issues', screen: Issues, barButton: { title: 'New Issue', handlerVar: 'createIssueVisible' }},
+      { id: 3, name: 'Tools', screen: Tools, barButton: { title: 'New Tool', handlerVar: 'rangeWizardActive' }},
+      { id: 4, name: 'Address Book', screen: AddressBook },
+      { id: 5, name: 'Settings', screen: Settings },
+    ]
   }
 
   constructor(props) {
@@ -64,22 +104,33 @@ export default class App extends React.Component {
     app.events().subscribe((test) => console.log(test))
   }
 
+<<<<<<< HEAD
   handleGitHubAuth = (token, login, avatarUrl) => {
+=======
+//  componentWillReceiveProps(nextProps) {
+  //  const { props } = this
+//  }
+  handleGitHubAuth = (authToken, login, avatarUrl) => {
+>>>>>>> d5c9fa51c1e119b2c11bb54cbec32fdb85dc68bb
     // probably unnecessarily explicit
     // meant to be called from NewProjectPanelContent after successful whoami query
     const { github } = this.state
-    github.token = token
+    github.authToken = authToken
     github.login = login
     github.avatarUrl = avatarUrl
     github.isAuthenticated = true
     github.activeRepo = ''
     this.setState({ github: github })
-    console.log('updated auth: ' + this.state)
   }
 
   // <App> needs to know what repo is selected, because selection matters on multiple screens
+<<<<<<< HEAD
   handleRepoSelect = (repoId) => {
     console.log('top handleRepoSelect: ' + repoId)
+=======
+  handleRepoSelect = repoId =>  {
+    //console.log('top handleRepoSelect: ' + repoId)
+>>>>>>> d5c9fa51c1e119b2c11bb54cbec32fdb85dc68bb
     const { github } = this.state
     github.activeRepo = repoId
     this.setState({
@@ -89,15 +140,23 @@ export default class App extends React.Component {
   }
 
    // this probably needs to be limited to Issues screen
+<<<<<<< HEAD
    handleLabelSelect = (labelName) => {
     console.log('top handleLabelSelect: ' + labelName)
+=======
+   handleLabelSelect = labelName =>  {
+>>>>>>> d5c9fa51c1e119b2c11bb54cbec32fdb85dc68bb
     const { github } = this.state
     github.activeLabelName = labelName
     this.setState({ github: github })
   }
 
+<<<<<<< HEAD
    handleMilestoneSelect = (milestoneName) => {
     console.log('top handleMSSelect: ' + milestoneName)
+=======
+   handleMilestoneSelect = milestoneName =>  {
+>>>>>>> d5c9fa51c1e119b2c11bb54cbec32fdb85dc68bb
     const { github } = this.state
     github.activeMilestoneName = milestoneName
     this.setState({ github: github })
@@ -115,6 +174,7 @@ export default class App extends React.Component {
         github.reposManaged[repoId] = repo
       }
     })
+
     this.setState({
       createProjectVisible: false,
       activeTabId: 0, // show Overview
@@ -130,8 +190,16 @@ export default class App extends React.Component {
     }
   }
   
-  handleCreateProjectOpen = () => {
-    this.setState({ createProjectVisible: true })
+  handleCreateIssueClose = () => {
+    this.setState({ createIssueVisible: false })
+  }
+  generateSidePanelHandlerOpen = (handlerVar) => {
+    return () => {
+      this.setState({ [handlerVar]: true })
+    }
+  }
+  handleRangeWizardClose = () => {
+    this.setState({ rangeWizardActive: false })
   }
   handleCreateProjectClose = () => {
     this.setState({ createProjectVisible: false })
@@ -140,6 +208,7 @@ export default class App extends React.Component {
     const {name, description, repoURL, bountySystem} = this.state
     alert ('creating: ' + name + ', ' + description + ', ' + repoURL + ', ' + bountySystem)
   }
+<<<<<<< HEAD
 
   render() {
     const { tabs, app } = this.props
@@ -176,16 +245,71 @@ export default class App extends React.Component {
     // }, 6000)
     
     return (
+=======
+  
+  handleRangeWizardLaunch = tool => {
+    const { tools } = this.state
+    tools.push(tool)
+    this.setState({ tools: tools })
+  
+    this.handleRangeWizardClose()
+  }
+
+  render () {
+    const { tabs } = this.props
+    const { activeTabId, createProjectVisible, createIssueVisible, github, tools } = this.state
+    const Screen = tabs[activeTabId].screen
+    var newItemHandler = null
+    var barButton = null
+
+    // trigger change in bool variable, which is enough to make associated SidePanel show up
+    if ('barButton' in tabs[activeTabId]) {
+      newItemHandler = this.generateSidePanelHandlerOpen(tabs[activeTabId].barButton.handlerVar)
+      barButton = (
+        <Button mode="strong" onClick={newItemHandler}>
+          {tabs[activeTabId].barButton.title}
+        </Button>
+      )
+    }
+
+    //
+    if ('barSelectButton' in tabs[activeTabId]) {
+      barButton = (
+        <DropDownButton>
+          <Button mode="strong">
+            {tabs[activeTabId].barSelectButton.title}
+          </Button>
+          <DropDownContent>
+          {
+            tabs[activeTabId].barSelectButton.items.map((item) => {
+              return (
+               <div key={item}>{item}</div>
+              )
+            })
+          }
+          </DropDownContent>
+        </DropDownButton>
+      )
+    }
+
+    return this.state.rangeWizardActive ?
+    (
+      <RangeVoting
+        visible={true}
+        app={this.props.app}
+        handleClose={this.handleRangeWizardClose}
+        handleLaunch={this.handleRangeWizardLaunch}
+      />
+    ) 
+    :
+    (
+>>>>>>> d5c9fa51c1e119b2c11bb54cbec32fdb85dc68bb
       <AragonApp publicUrl="/aragon-ui/">
         <AppLayout>
           <AppLayout.Header>
             <AppBar
               title="Planning"
-              endContent={
-                <Button mode="strong" onClick={this.handleCreateProjectOpen}>
-                  New Project
-                </Button>
-              }
+              endContent={barButton}
             />
           </AppLayout.Header>
           <Tabs>{
@@ -200,8 +324,10 @@ export default class App extends React.Component {
           <AppLayout.ScrollWrapper>
             <AppLayout.Content>
                <Screen
-                  onActivate={this.handleCreateProjectOpen}
+                  app={this.props.app}
+                  onActivate={newItemHandler}
                   github={github}
+                  tools={tools}
                   handleRepoSelect={this.handleRepoSelect}
                   handleLabelSelect={this.handleLabelSelect}
                   handleMilestoneSelect={this.handleMilestoneSelect}
@@ -209,9 +335,13 @@ export default class App extends React.Component {
             </AppLayout.Content>
           </AppLayout.ScrollWrapper>
         </AppLayout>
-
+        {/*
+          SidePanels should live in appropriate screen, but screen is a component one
+          level down and in order to communicate with <App> (where data is stored)
+          they need to be given multiple callbacks in props - easier to keep them all here. 
+        */}
         <SidePanel
-          title="New Project"
+          title="Add Project"
           opened={createProjectVisible}
           onClose={this.handleCreateProjectClose}
         >
@@ -219,7 +349,20 @@ export default class App extends React.Component {
             opened={createProjectVisible}
             onCreateProject={this.handleCreateProject}
             onHandleAddRepos={this.handleAddRepos.bind(this)}
-            onHandleGitHubAuth={this.handleGitHubAuth.bind(this)}
+            onHandleGitHubAuth={this.handleGitHubAuth}
+            github={github}
+          />
+        </SidePanel>
+
+        <SidePanel
+          title="New Issue"
+          opened={createIssueVisible}
+          onClose={this.handleCreateIssueClose}
+        >
+          <NewIssuePanelContent
+            opened={createIssueVisible}
+            onCreateIssue={this.handleCreateIssue}
+            onHandleGitHubAuth={this.handleGitHubAuth}
             github={github}
           />
         </SidePanel>
@@ -243,7 +386,21 @@ const Tab = styled.div`
   font-weight: ${({ active }) => (active ? '800' : '400')};
   border-bottom: ${({ active }) => (active ? '4px solid ' + theme.accent : '0px')};
 `
-/*
+const DropDownContent = styled.div`
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+`
+const DropDownButton = styled.div`
+  position: relative;
+  display: inline-block;
+  &:hover ${DropDownContent} {
+    display: block;
+  }
+`/*
 const Main = styled.div`
   position: fixed;
   z-index: 2;

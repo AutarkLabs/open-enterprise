@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { theme, Text, Field, Info, TextInput, Button } from '@aragon/ui'
 import { GraphQLClient } from 'graphql-request'
+import CheckboxInput from './Checkbox'
 
 //const octokit = require('@octokit/rest')({
 //  debug: true
@@ -22,7 +23,7 @@ class NewProjectPanelContent extends React.Component {
       reposFromServer: {},
       reposToAdd: {},
       reposManaged: github.reposManaged,
-      token: github.token, // <App> is allowed to know better
+      authToken: github.authToken, // <App> is allowed to know better
       err: ''
     }
   }
@@ -154,7 +155,9 @@ repositories with issues list included is not going to cost much.
 
   processRepos(data) {
     var reposFromServer = {}
-    
+    // this is a placeholder just to have the bounties work in the simplest fashion.
+    const BountyLabels = {}
+
     data.user.repositories.edges.forEach(
       rNode => {
         var commits = 0
@@ -171,12 +174,18 @@ repositories with issues list included is not going to cost much.
             if (issue.node.labels.totalCount > 0) {
               issue.node.labels.edges.forEach(
                 label => {
-                  labels[label.node.id] = label.node
+                  if (label.node.name in BountyLabels) {
+                    issue.bounty = BountyLabels[label.node.name]
+                  } else {
+                    labels[label.node.id] = label.node
+                  }
                 }
               )
             }
             if (issue.node.milestone) {
               milestones[issue.node.milestone.id] = issue.node.milestone
+            }
+            if (! ('bounty' in issue)) {
             }
           }
         )
@@ -201,8 +210,8 @@ repositories with issues list included is not going to cost much.
   handleLogin = event => {
     event.preventDefault()
 
-    const { token } = this.state
-    if ((token.length !== 40) || (/^[a-zA-Z0-9]+$/.test(token) === false)) {
+    const { authToken } = this.state
+    if ((authToken.length !== 40) || (/^[a-zA-Z0-9]+$/.test(authToken) === false)) {
       this.setState({ err: 'Invalid token' })
       return
     }
@@ -211,7 +220,7 @@ repositories with issues list included is not going to cost much.
       'https://api.github.com/graphql',
       {
         headers: {
-          Authorization: 'Bearer ' + token,
+          Authorization: 'Bearer ' + authToken,
         }
       }
     )
@@ -230,7 +239,7 @@ repositories with issues list included is not going to cost much.
         const { onHandleGitHubAuth } = this.props
         this.getRepos(client, data.viewer.login)
         // below: <App> is getting notified about successful login
-        onHandleGitHubAuth(token, data.viewer.login, data.viewer.avatarUrl)
+        onHandleGitHubAuth(authToken, data.viewer.login, data.viewer.avatarUrl)
       })
       .catch(err => this.setState({ err: err.message }))
   }
@@ -243,9 +252,9 @@ repositories with issues list included is not going to cost much.
   }
 
   generateCheckboxHandler = repoId => {
-    return event => {
+    return isChecked => {
       const { reposToAdd, reposFromServer } = this.state
-      if (event.target.checked) {
+      if (isChecked) {
         reposToAdd[repoId] = reposFromServer[repoId]
         this.setState({ reposToAdd: reposToAdd })
       } else {
@@ -257,27 +266,22 @@ repositories with issues list included is not going to cost much.
 
   showRepos() {
     var reposDisplayList = []
-    const { reposFromServer, reposManaged } = this.state
+    const { reposFromServer, reposManaged, reposToAdd } = this.state
 
-    for (var repoId in reposFromServer) {
-      if (Object.prototype.hasOwnProperty.call(reposFromServer, repoId)) {
-        var repo = reposFromServer[repoId]
-        const checkboxHandler = this.generateCheckboxHandler(repoId)
-        reposDisplayList.push(
-          <li key={repoId}>
-            {
-            (repoId in reposManaged) ? 
-            <input type="checkbox" onChange={checkboxHandler} checked disabled />
-            :
-            <input type="checkbox" onChange={checkboxHandler} />
-            }
-            <Text>
-              {repo.name}
-            </Text>
-          </li>
-         )
-       }
-    }
+    Object.keys(reposFromServer).forEach((repoId) => {
+      var repo = reposFromServer[repoId]
+      const checkboxHandler = this.generateCheckboxHandler(repoId)
+      reposDisplayList.push(
+        <li key={repoId}>
+          <CheckboxInput
+            isChecked={repoId in reposManaged || repoId in reposToAdd}
+            isDisabled={repoId in reposManaged}
+            onClick={checkboxHandler}
+            label={repo.name}
+          />
+        </li>
+      )
+    })
 
     return(
       <div>
@@ -295,11 +299,11 @@ repositories with issues list included is not going to cost much.
   }
 
   handleTokenChange = event => {
-    this.setState({ token: event.target.value, err: '' })
+    this.setState({ authToken: event.target.value, err: '' })
   }
 
   authenticate() {
-    const { token, err } = this.state
+    const { authToken, err } = this.state
     return(
       <div>
         <Text size='large'>Sign in with GitHub to start managing your repos with Aragon</Text>
@@ -315,9 +319,9 @@ repositories with issues list included is not going to cost much.
               {err}
             </Info>
           )}
-          <Field label="Token">
+          <Field label="Personal Token">
             <TextInput
-              value={token}
+              value={authToken}
               onChange={this.handleTokenChange}
               required
               wide

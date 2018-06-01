@@ -11,4 +11,3 @@ export function hasLoadedVoteSettings(state) {
 }
 
 export default voteSettings
-

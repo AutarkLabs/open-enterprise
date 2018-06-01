@@ -28,8 +28,8 @@ class ConfigureVotingDefaults extends React.Component {
   }
   createChangeHandler(name) {
     return event => {
-      const { onFieldUpdate, screen } = this.props
-      onFieldUpdate(screen, name, event.target.value)
+      const { onFieldUpdate } = this.props
+      onFieldUpdate(name, event.target.value)
     }
   }
   handleSubmit = event => {
