@@ -9,10 +9,12 @@
     "@aragon/ui": "^0.11.0",
     "react": "^16.3.2",
     "react-dom": "^16.3.2",
+    "react-blockies": "^1.2.2",
     "styled-components": "^3.2.6",
     "graphql-request": "1.6.0"
   },
   "devDependencies": {
+    "@aragon/react-scripts": "^1.1.0-aragon.4",
     "solidity-coverage": "0.3.5",
     "solium": "^1.0.4",
     "ethereumjs-abi": "^0.6.4",
@@ -36,13 +38,13 @@
   "scripts": {
     "dev": "parcel app/src/index.html",
     "devchain": "aragon devchain",
-    "start": "aragon run",
+    "start": "aragon run && cd app/  && react-scripts start",
     "test": "aragon contracts test",
     "compile": "aragon contracts compile",
-    "sync-assets": "mkdir -p dist; rsync -rtu \"$(dirname $(node -p 'require.resolve(\"@aragon/ui\")'))/\" dist/aragon-ui",
-    "build:app": "parcel build app/src/index.html -d dist/ --public-url '.'",
-    "build:script": "parcel build app/src/script.js -d dist/",
-    "build": "npm run compile && npm run sync-assets && npm run build:app && npm run build:script",
+    "sync-assets": "mkdir -p public; rsync -rtu \"$(dirname $(node -p 'require.resolve(\"@aragon/ui\")'))/\" public/aragon-ui",
+    "build:app": "parcel build app/src/index.html -d public/ --public-url '.'",
+    "build:script": "parcel build app/src/script.js -d public/",
+    "build": "npm run compile && npm run sync-assets && npm run build:app && npm run build:script && cd app/ && react-scripts build",
     "publish": "aragon publish"
   },
   "keywords": [],

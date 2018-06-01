@@ -11,12 +11,9 @@ import Tools from './screens/Tools'
 import Issues from './screens/Issues'
 import Decisions from './screens/Decisions'
 import AddressBook from './screens/AddressBook'
-<<<<<<< HEAD
-=======
 import Settings from './screens/Settings'
 import { noop } from './utils/utils'
 import { networkContextType } from './utils/provideNetwork'
->>>>>>> d5c9fa51c1e119b2c11bb54cbec32fdb85dc68bb
 
 import NewProjectPanelContent from './components/NewProjectPanelContent'
 import NewIssuePanelContent from './components/NewIssuePanelContent'
@@ -29,9 +26,6 @@ import RangeVoting from './range-voting/RangeVoting'
 // candidateSupportPct,
 // voteTime)
 
-<<<<<<< HEAD
-export default class App extends React.Component {
-=======
 const initialState = {
   template: null,
   templateData: {},
@@ -53,8 +47,7 @@ const initialState = {
   }
 }
 
-class App extends React.Component {
->>>>>>> d5c9fa51c1e119b2c11bb54cbec32fdb85dc68bb
+export default class App extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
   }
@@ -104,14 +97,10 @@ class App extends React.Component {
     app.events().subscribe((test) => console.log(test))
   }
 
-<<<<<<< HEAD
-  handleGitHubAuth = (token, login, avatarUrl) => {
-=======
 //  componentWillReceiveProps(nextProps) {
   //  const { props } = this
 //  }
   handleGitHubAuth = (authToken, login, avatarUrl) => {
->>>>>>> d5c9fa51c1e119b2c11bb54cbec32fdb85dc68bb
     // probably unnecessarily explicit
     // meant to be called from NewProjectPanelContent after successful whoami query
     const { github } = this.state
@@ -124,13 +113,8 @@ class App extends React.Component {
   }
 
   // <App> needs to know what repo is selected, because selection matters on multiple screens
-<<<<<<< HEAD
-  handleRepoSelect = (repoId) => {
-    console.log('top handleRepoSelect: ' + repoId)
-=======
   handleRepoSelect = repoId =>  {
     //console.log('top handleRepoSelect: ' + repoId)
->>>>>>> d5c9fa51c1e119b2c11bb54cbec32fdb85dc68bb
     const { github } = this.state
     github.activeRepo = repoId
     this.setState({
@@ -140,23 +124,13 @@ class App extends React.Component {
   }
 
    // this probably needs to be limited to Issues screen
-<<<<<<< HEAD
-   handleLabelSelect = (labelName) => {
-    console.log('top handleLabelSelect: ' + labelName)
-=======
    handleLabelSelect = labelName =>  {
->>>>>>> d5c9fa51c1e119b2c11bb54cbec32fdb85dc68bb
     const { github } = this.state
     github.activeLabelName = labelName
     this.setState({ github: github })
   }
 
-<<<<<<< HEAD
-   handleMilestoneSelect = (milestoneName) => {
-    console.log('top handleMSSelect: ' + milestoneName)
-=======
    handleMilestoneSelect = milestoneName =>  {
->>>>>>> d5c9fa51c1e119b2c11bb54cbec32fdb85dc68bb
     const { github } = this.state
     github.activeMilestoneName = milestoneName
     this.setState({ github: github })
@@ -208,44 +182,6 @@ class App extends React.Component {
     const {name, description, repoURL, bountySystem} = this.state
     alert ('creating: ' + name + ', ' + description + ', ' + repoURL + ', ' + bountySystem)
   }
-<<<<<<< HEAD
-
-  render() {
-    const { tabs, app } = this.props
-    const { activeTabId, createProjectVisible, github } = this.state
-    const Screen = tabs[activeTabId].screen
-    
-    // Trying lots of combinations here
-    // app.votes().first().subscribe((test) => console.log(test))
-    // app.initialize().first().subscribe((test) => console.log(test))
-    // app.vote().first().subscribe((test) => console.log(test))
-    // app.call("test").subscribe((test) => console.log(test))
-    // app.events().subscribe((test) => console.log(test))
-
-    // setTimeout(() => {
-    //     // This guy should catch all events going through e.g. Test("LOLOL")
-    //     app.events().subscribe((event) => {
-    //       console.log(event)
-    //     })
-    //     app.state().subscribe((state) => {
-    //       console.log(state)
-    //     })
-    //     app.store((state, event) => {
-    //       console.log(state)
-    //       console.log(event)
-    //       return state
-    //     }).subscribe((state) => {
-    //       console.log(state)
-    //     })
-    // }, 5000)
-
-    // setTimeout(() => {
-    //   // This works and returns "test" as it should but it should also trigger and event Test("LOLOL")
-    //   app.call("test").subscribe((data) => console.log(data))
-    // }, 6000)
-    
-    return (
-=======
   
   handleRangeWizardLaunch = tool => {
     const { tools } = this.state
@@ -303,7 +239,6 @@ class App extends React.Component {
     ) 
     :
     (
->>>>>>> d5c9fa51c1e119b2c11bb54cbec32fdb85dc68bb
       <AragonApp publicUrl="/aragon-ui/">
         <AppLayout>
           <AppLayout.Header>
