@@ -44,7 +44,7 @@ contract PayoutEngine is AragonApp {
     bytes32 constant public SET_DISTRIBUTION_ROLE = keccak256("SET_DISTRIBUTION_ROLE");
 
     /**
-    * @dev This is the function that setups who the candidates will be, and 
+    * @dev This is the function that setups who the candidates will be, and
     *      where the funds will go for the payout. This is where the payout
     *      object needs to be created in the payouts array.
     * @notice Start a payout with the specified candidates and addresses.
@@ -84,25 +84,24 @@ contract PayoutEngine is AragonApp {
     * @dev This function is how a payout is used. When ether is fed into the
     *      runPayout function it’s sent out based on the distribution
     *      that’s been set. May need an additional modifier to prevent re-runs.
-    * @notice When this function is called the payout will actually be 
+    * @notice When this function is called the payout will actually be
     *         processed and funds will be sent the appropriate places.
-    * @param _payoutId The ID or key of the payout being "run"
     *
     */
     function runPayout() external payable{
         require(distSet);
         uint256 totalSupport;
         uint256 pointsPer;
-        
+
         for(uint i = 0; i < payout.supports.length; i++){
             totalSupport += payout.supports[i];
         }
-        
+
         pointsPer = this.balance.div(totalSupport);
 
         for(i = 0; i < payout.candidateAddresses.length; i++){
             payout.candidateAddresses[i].transfer(payout.supports[i].mul(pointsPer));
         }
     }
-    
+
 }
