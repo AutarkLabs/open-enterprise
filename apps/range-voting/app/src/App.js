@@ -39,7 +39,7 @@ const initialState = {
     activeRepo: '',
     activeLabel: '',
     activeMilestone: '',
-    token: '',
+    authToken: '',
     reposManaged: {}, // to be populated from contract or git backend itself
 //    reposManaged: getPreprocessedRepos(), // to be populated from contract or git backend itself
   }
@@ -88,11 +88,11 @@ class App extends React.Component {
 //  componentWillReceiveProps(nextProps) {
   //  const { props } = this
 //  }
-  handleGitHubAuth = (token, login, avatarUrl) => {
+  handleGitHubAuth = (authToken, login, avatarUrl) => {
     // probably unnecessarily explicit
     // meant to be called from NewProjectPanelContent after successful whoami query
     const { github } = this.state
-    github.token = token
+    github.authToken = authToken
     github.login = login
     github.avatarUrl = avatarUrl
     github.isAuthenticated = true

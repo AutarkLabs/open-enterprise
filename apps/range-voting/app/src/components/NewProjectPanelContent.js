@@ -23,7 +23,7 @@ class NewProjectPanelContent extends React.Component {
       reposFromServer: {},
       reposToAdd: {},
       reposManaged: github.reposManaged,
-      token: github.token, // <App> is allowed to know better
+      authToken: github.authToken, // <App> is allowed to know better
       err: ''
     }
   }
@@ -210,8 +210,8 @@ repositories with issues list included is not going to cost much.
   handleLogin = event => {
     event.preventDefault()
 
-    const { token } = this.state
-    if ((token.length !== 40) || (/^[a-zA-Z0-9]+$/.test(token) === false)) {
+    const { authToken } = this.state
+    if ((authToken.length !== 40) || (/^[a-zA-Z0-9]+$/.test(authToken) === false)) {
       this.setState({ err: 'Invalid token' })
       return
     }
@@ -220,7 +220,7 @@ repositories with issues list included is not going to cost much.
       'https://api.github.com/graphql',
       {
         headers: {
-          Authorization: 'Bearer ' + token,
+          Authorization: 'Bearer ' + authToken,
         }
       }
     )
@@ -239,7 +239,7 @@ repositories with issues list included is not going to cost much.
         const { onHandleGitHubAuth } = this.props
         this.getRepos(client, data.viewer.login)
         // below: <App> is getting notified about successful login
-        onHandleGitHubAuth(token, data.viewer.login, data.viewer.avatarUrl)
+        onHandleGitHubAuth(authToken, data.viewer.login, data.viewer.avatarUrl)
       })
       .catch(err => this.setState({ err: err.message }))
   }
@@ -299,11 +299,11 @@ repositories with issues list included is not going to cost much.
   }
 
   handleTokenChange = event => {
-    this.setState({ token: event.target.value, err: '' })
+    this.setState({ authToken: event.target.value, err: '' })
   }
 
   authenticate() {
-    const { token, err } = this.state
+    const { authToken, err } = this.state
     return(
       <div>
         <Text size='large'>Sign in with GitHub to start managing your repos with Aragon</Text>
@@ -319,9 +319,9 @@ repositories with issues list included is not going to cost much.
               {err}
             </Info>
           )}
-          <Field label="Token">
+          <Field label="Personal Token">
             <TextInput
-              value={token}
+              value={authToken}
               onChange={this.handleTokenChange}
               required
               wide
