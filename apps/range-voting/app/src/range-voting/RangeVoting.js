@@ -397,12 +397,7 @@ const Main = styled.div`
   bottom: 0;
   overflow: auto;
   height: 100vh;
-  background-image: linear-gradient(
-      0deg,
-      rgba(0, 0, 0, 0.08) 0%,
-      rgba(0, 0, 0, 0.08) 100%
-    ),
-    linear-gradient(-226deg, #00f1e1 0%, #00b4e4 100%);
+  background-color: rgba(40, 40, 40, 0.4);
 `
 
 const View = styled.div`
@@ -420,7 +415,7 @@ const Window = styled.div`
   height: 660px;
   background: #fff;
   border-radius: 3px;
-  box-shadow: 0 10px 28px 0 rgba(11, 103, 157, 0.7);
+  box-shadow: 0 10px 28px 0 rgba(90, 90, 90, 0.7);
 `
 
 const Screen = styled.div`

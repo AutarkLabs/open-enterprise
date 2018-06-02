@@ -216,17 +216,7 @@ class App extends React.Component {
       )
     }
 
-    return this.state.rangeWizardActive ?
-    (
-      <RangeVoting
-        visible={true}
-        app={this.props.app}
-        handleClose={this.handleRangeWizardClose}
-        handleLaunch={this.handleRangeWizardLaunch}
-      />
-    ) 
-    :
-    (
+    return (
       <AragonApp publicUrl="/aragon-ui/">
         <AppLayout>
           <AppLayout.Header>
@@ -290,6 +280,14 @@ class App extends React.Component {
           />
         </SidePanel>
 
+      { this.state.rangeWizardActive && (
+        <RangeVoting
+          visible={true}
+          app={this.props.app}
+          handleClose={this.handleRangeWizardClose}
+          handleLaunch={this.handleRangeWizardLaunch}
+        />
+      )}
       </AragonApp>
     )
   }
