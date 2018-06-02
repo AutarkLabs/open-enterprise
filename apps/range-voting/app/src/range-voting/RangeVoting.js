@@ -267,10 +267,7 @@ class RangeVoting extends React.Component {
     const steps = this.getSteps()
 
     return (
-      <AragonApp backgroundLogo={true}>
-        <AppBar title="Range Voting" endContent={<LoginButton />}/>
-      
-           <Motion
+      <Motion
         style={{
           showProgress: spring(
             Number(visible),
@@ -330,7 +327,6 @@ class RangeVoting extends React.Component {
           </Main>
         )}
       </Motion>
-      </AragonApp>
     )
   }
 
