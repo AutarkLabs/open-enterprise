@@ -11,12 +11,6 @@ class ConnectedApp extends React.Component {
   }
   componentDidMount() {
     window.addEventListener('message', this.handleWrapperMessage)
-    // Trying the same thing here
-    this.state.app.store((state, event) => {
-      console.log(event)
-      console.log(state)
-      return state
-    })
   }
   componentWillUnmount() {
     window.removeEventListener('message', this.handleWrapperMessage)

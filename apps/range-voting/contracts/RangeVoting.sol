@@ -90,7 +90,6 @@ contract RangeVoting is IForwarder, AragonApp {
     event UpdateCandidateSupport(string indexed candidateKey, uint256 support);
     event ExecuteVote(uint256 indexed voteId);
     event ChangeCandidateSupport(uint256 candidateSupportPct);
-    event Test(string test);
 
 ////////////////
 // Constructor
@@ -171,14 +170,6 @@ contract RangeVoting is IForwarder, AragonApp {
         require(canExecute(_voteId));
         /* solium-disable-next-line */
         _executeVote(_voteId);
-    }
-
-    /**
-    * @notice test stuff
-    */
-    function test() external returns (string) {
-        Test("LOLOL");
-        return "test";
     }
 
     /**

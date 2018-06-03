@@ -308,7 +308,8 @@ class RangeVoting extends React.Component {
                             {this.renderScreen(
                               screen,
                               i - stepIndex,
-                              i - screenProgress
+                              i - screenProgress,
+                              step.screen,
                             )}
                           </Screen>
                         ))}
@@ -335,7 +336,7 @@ class RangeVoting extends React.Component {
   }
 
 
-  renderScreen(screen, position, positionProgress) {
+  renderScreen(screen, position, positionProgress, activeScreen) {
     const {
       template
     } = this.state
@@ -360,8 +361,8 @@ class RangeVoting extends React.Component {
         />
       )
     }
+    const configurationData = this.prepareReview()
     if (screen === 'review') {
-      const configurationData=this.prepareReview()
       return <Review
         onConfirm={onComplete}
         configurationData={configurationData}
@@ -369,7 +370,14 @@ class RangeVoting extends React.Component {
       />
     }
     if (screen === 'launch') {
-      return <Launch onConfirm={onComplete} {...sharedProps} />
+      const active = activeScreen === 'launch'
+      return <Launch
+        app={this.props.app}
+        onConfirm={onComplete}
+        configurationData={configurationData}
+        active={active}
+        {...sharedProps}
+      />
     }
     const steps = this.getSteps()
     const configureScreen = steps.find(

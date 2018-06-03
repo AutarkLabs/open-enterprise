@@ -12,13 +12,40 @@ class Launch extends React.Component {
   static defaultProps = {
     warm: false,
     positionProgress: 0,
-    contractCreationStatus: 'none',
+  }
+  constructor(props) {
+    super(props)
+    this.state = {
+      active: false,
+      contractCreationStatus: 'none',
+    }
   }
   handleTemplateSelect = template => {
     this.props.onSelect(template)
   }
   render() {
-    const { positionProgress, warm, contractCreationStatus, onTryAgain } = this.props
+    const {
+      active,
+      app,
+      configurationData,
+      positionProgress,
+      warm,
+      onTryAgain,
+    } = this.props
+    const { contractCreationStatus } = this.state
+    // This a a very hacky way - still finding out how to do it correctly
+    if (!this.state.active && active) {
+      this.setState({ active: true })
+      app.initialize(
+        "0xffffffffffffffffffffffffffffffffffffffff",
+        configurationData.supportNeeded,
+        configurationData.minAcceptanceQuorum,
+        configurationData.voteDuration
+      ).subscribe(
+        () => this.setState({ contractCreationStatus: 'success' }),
+        () => this.setState({ contractCreationStatus: 'error' })
+      )
+    }
     return (
       <Main>
         <Content
@@ -40,7 +67,8 @@ class Launch extends React.Component {
 
 class SignContent extends React.PureComponent {
   render() {
-    const { contractCreationStatus, onTryAgain } = this.props
+    const { contractCreationStatus, onTryAgain, app } = this.props
+    console.log(app)
     return (
       <React.Fragment>
         <Title>
@@ -51,20 +79,19 @@ class SignContent extends React.PureComponent {
 
         <p>
           <Text size="large" color={theme.textSecondary}>
-            Your wallet should open and you need to sign two transactions, one
-            after another.
+            Your wallet should open and you need to sign the transaction to initialize Range voting.
           </Text>
         </p>
 
         <Transactions>
-          <Transaction>
+          {/* <Transaction>
             <TransactionTitle>
               <Text weight="bold" color={theme.textSecondary} smallcaps>
                 Token creation
               </Text>
             </TransactionTitle>
             {this.renderTxStatus(contractCreationStatus)}
-          </Transaction>
+          </Transaction> */}
           <Transaction>
             <TransactionTitle>
               <Text weight="bold" color={theme.textSecondary} smallcaps>
@@ -83,7 +110,7 @@ class SignContent extends React.PureComponent {
           </TryAgain>
         )}
 
-        {contractCreationStatus !== 'error' && (
+        {contractCreationStatus === 'none' && (
           <Note>
             <Text size="xsmall" color={theme.textSecondary}>
               It might take some time before these transactions get processed,
@@ -162,9 +189,6 @@ const Transactions = styled.div`
 
 const Transaction = styled.div`
   width: 145px;
-  &:first-child {
-    margin-right: 145px;
-  }
 `
 
 const TransactionTitle = styled.h2`

@@ -4,28 +4,29 @@ import voteSettings, { hasLoadedVoteSettings } from './range-voting/vote-setting
 import { EMPTY_CALLSCRIPT } from './range-voting/vote-utils'
 
 const app = new Aragon()
+// app.initialize("0xffffffffffffffffffffffffffffffffffffffff", 100000000000000000, 200000000000000000, 86400)
+//   .subscribe((result) => console.log(!!result))
+// setTimeout(() => {
+//     // These guys should catch all events going through e.g. Test("LOLOL")
+//     app.events().subscribe((event) => {
+//       console.log(event)
+//     })
+//     app.state().subscribe((state) => {
+//       console.log(state)
+//     })
+//     app.store((state, event) => {
+//       console.log(state)
+//       console.log(event)
+//       return state
+//     }).subscribe((state) => {
+//       console.log(state)
+//     })
+// }, 5000)
 
-setTimeout(() => {
-    // These guys should catch all events going through e.g. Test("LOLOL")
-    app.events().subscribe((event) => {
-      console.log(event)
-    })
-    app.state().subscribe((state) => {
-      console.log(state)
-    })
-    app.store((state, event) => {
-      console.log(state)
-      console.log(event)
-      return state
-    }).subscribe((state) => {
-      console.log(state)
-    })
-}, 5000)
-
-setTimeout(() => {
-  // This works and returns "test" as it should but it should also trigger and event Test("LOLOL")
-  app.call("test").subscribe((data) => console.log(data))
-}, 6000)
+// setTimeout(() => {
+//   // This works and returns "test" as it should but it should also trigger and event Test("LOLOL")
+//   app.call("test").subscribe((data) => console.log(data))
+// }, 6000)
 
 // This guy too - Have you tried this without async?
 // Going to try it out

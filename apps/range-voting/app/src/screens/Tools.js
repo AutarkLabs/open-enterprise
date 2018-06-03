@@ -142,7 +142,11 @@ class Tools extends React.Component {
 
   render () {
     const { onActivate } = this.props
-    const tools = []
+    const tools = [{
+      repoId: '123',
+      label: 'test',
+      description: 'description test',
+    }]
 
     if (Object.keys(tools).length === 0) {
       return (
@@ -160,8 +164,8 @@ class Tools extends React.Component {
 
     return (
       <ToolsMain>
-        {Object.entries(tools).map(
-          ([repoId, { name, description, collaborators, commits }]) => (
+        {tools.map(
+          ({repoId, name, description }) => (
             <ToolCardWrapper key={repoId}>
               <ToolCard
                  repoId={repoId}
