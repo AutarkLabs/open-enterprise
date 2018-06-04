@@ -12,11 +12,11 @@ import {
   Text,
   theme,
 } from '@aragon/ui'
-import { combineLatest } from '../rxjs'
-import provideNetwork from '../utils/provideNetwork'
-import { VOTE_NAY, VOTE_YEA } from '../utils/vote-types'
-import VoteSummary from './VoteSummary'
-import VoteStatus from './VoteStatus'
+import { combineLatest } from '../../rxjs'
+import provideNetwork from '../../utils/provideNetwork'
+import { VOTE_NAY, VOTE_YEA } from '../../utils/vote-types'
+import VoteSummary from '../VoteSummary'
+import VoteStatus from '../VoteStatus'
 
 class VotePanelContent extends React.Component {
   static propTypes = {
@@ -30,7 +30,7 @@ class VotePanelContent extends React.Component {
     this.loadUserCanVote()
     this.loadUserBalance()
   }
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.user !== this.props.user) {
       this.loadUserCanVote()
     }

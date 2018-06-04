@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Button, Info, Text, TextInput, Field } from '@aragon/ui'
+import { Button, Info, TextInput, Field } from '@aragon/ui'
 
 const initialState = {
   question: '',
@@ -14,7 +14,7 @@ class NewVotePanelContent extends React.Component {
   state = {
     ...initialState,
   }
-  componentWillReceiveProps({ opened }) {
+  UNSAFE_componentWillReceiveProps({ opened }) {
     if (opened && !this.props.opened) {
       // setTimeout is needed as a small hack to wait until the input's on
       // screen until we call focus
@@ -66,7 +66,7 @@ class NewVotePanelContent extends React.Component {
 	  </Field>
           <Button mode="strong" type="submit" wide>
             Begin Vote
-          </Button>
+        </Button>
         </Form>
       </div>
     )
@@ -77,10 +77,10 @@ const Form = styled.form`
   margin-top: 20px;
 `
 
-const Warning = styled(Text.Paragraph).attrs({
-  size: 'xsmall',
-})`
-  margin-top: 10px;
-`
+// const Warning = styled(Text.Paragraph).attrs({
+//   size: 'xsmall',
+// })`
+//   margin-top: 10px;
+// `
 
 export default NewVotePanelContent

@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { theme } from '@aragon/ui'
-import { Badge, AragonApp, AppBar, Button, SidePanel } from '@aragon/ui'
+import { AragonApp, AppBar, Button, SidePanel } from '@aragon/ui'
 import AppLayout from './components/AppLayout'
 import Overview from './screens/Overview'
 import Tools from './screens/Tools'
@@ -29,7 +29,7 @@ const initialState = {
   template: null,
   templateData: {},
   stepIndex: 0,
-  activeTabId: 3,
+  activeTabId: 0,
   createProjectVisible: false,
   createIssueVisible: false,
   rangeWizardActive: false,
@@ -171,12 +171,12 @@ class App extends React.Component {
     const {name, description, repoURL, bountySystem} = this.state
     alert ('creating: ' + name + ', ' + description + ', ' + repoURL + ', ' + bountySystem)
   }
-  
+
   handleRangeWizardLaunch = tool => {
     const { tools } = this.state
     tools.push(tool)
     this.setState({ tools: tools })
-  
+
     this.handleRangeWizardClose()
   }
 
@@ -197,7 +197,6 @@ class App extends React.Component {
       )
     }
 
-<<<<<<< Updated upstream
     //
     if ('barSelectButton' in tabs[activeTabId]) {
       barButton = (
@@ -219,14 +218,6 @@ class App extends React.Component {
     }
 
     return (
-=======
-    return this.state.rangeWizardActive ?
-    (
-      <RangeVoting visible={true} app={this.props.app} />
-    )
-    :
-    (
->>>>>>> Stashed changes
       <AragonApp publicUrl="/aragon-ui/">
         <AppLayout>
           <AppLayout.Header>
@@ -261,7 +252,7 @@ class App extends React.Component {
         {/*
           SidePanels should live in appropriate screen, but screen is a component one
           level down and in order to communicate with <App> (where data is stored)
-          they need to be given multiple callbacks in props - easier to keep them all here. 
+          they need to be given multiple callbacks in props - easier to keep them all here.
         */}
         <SidePanel
           title="Add Project"

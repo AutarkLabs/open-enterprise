@@ -3,9 +3,7 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Motion, spring } from 'react-motion'
 import { spring as springConf } from '@aragon/ui'
-import { AragonApp, AppBar } from '@aragon/ui'
 
-import LoginButton from '../components/LoginButton'
 import close from '../assets/close.svg'
 
 import * as Steps from './steps'
@@ -68,7 +66,7 @@ class RangeVoting extends React.Component {
       settingsLoaded: false,
       tokenContract: this.getTokenContract(props.tokenAddress),
       voteVisible: false,
-      voteSidebarOpened: true,
+      voteSidebarOpened: false,
     }
   }
   getTokenContract(tokenAddress) {
@@ -267,10 +265,7 @@ class RangeVoting extends React.Component {
     const steps = this.getSteps()
 
     return (
-      <AragonApp backgroundLogo={true}>
-        <AppBar title="Range Voting" endContent={<LoginButton />}/>
-
-           <Motion
+      <Motion
         style={{
           showProgress: spring(
             Number(visible),

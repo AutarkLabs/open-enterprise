@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { theme, Text, Field, Info, TextInput, Button } from '@aragon/ui'
 import { GraphQLClient } from 'graphql-request'
-import CheckboxInput from './Checkbox'
+import CheckboxInput from '../Checkbox'
 
 //const octokit = require('@octokit/rest')({
 //  debug: true
@@ -202,7 +202,7 @@ repositories with issues list included is not going to cost much.
         //console.log ('adding ' + rNode.node.name, reposFromServer)
         //console.log('labels: ',labels)
         //console.log('milestones: ',milestones)
-        return 
+        return
     })
     this.setState({ reposFromServer: reposFromServer })
   }
@@ -328,7 +328,7 @@ repositories with issues list included is not going to cost much.
             />
           </Field>
           <Button mode="strong" type="submit" wide>
-             Sign in with GitHub 
+             Sign in with GitHub
           </Button>
         </Form>
       </div>
@@ -353,4 +353,3 @@ const RepoList = styled.ul`
   list-style-type: none;
 `
 export default NewProjectPanelContent
-

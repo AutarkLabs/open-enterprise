@@ -11,7 +11,6 @@ import { hasLoadedVoteSettings } from '../utils/vote-settings'
 import { VOTE_YEA } from '../utils/vote-types'
 import { isBefore } from 'date-fns/esm'
 import {
-    Button,
     EmptyStateCard,
     SidePanel
 } from '@aragon/ui'
