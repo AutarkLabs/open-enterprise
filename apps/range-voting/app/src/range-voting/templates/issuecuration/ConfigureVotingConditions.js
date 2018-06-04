@@ -18,7 +18,7 @@ class ConfigureVotingConditions extends React.Component {
     this.handleMinQuorumChange = this.createChangeHandler('minQuorum')
     this.handleVoteDurationChange = this.createChangeHandler('voteDuration')
   }
-  componentWillReceiveProps({ positionProgress }) {
+  UNSAFE_componentWillReceiveProps({ positionProgress }) {
     if (
       positionProgress === 0 &&
       positionProgress !== this.props.positionProgress

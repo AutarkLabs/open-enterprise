@@ -14,7 +14,7 @@ class ConfigureVotingConditions extends React.Component {
     onSubmit: noop,
     fields: {},
   }
-  componentWillReceiveProps({ positionProgress }) {
+  UNSAFE_componentWillReceiveProps({ positionProgress }) {
     if (
       positionProgress === 0 &&
       positionProgress !== this.props.positionProgress

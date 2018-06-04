@@ -12,9 +12,10 @@ import AddressBook from './screens/AddressBook'
 import Settings from './screens/Settings'
 import { noop } from './utils/utils'
 import { networkContextType } from './utils/provideNetwork'
-
-import NewProjectPanelContent from './components/NewProjectPanelContent'
-import NewIssuePanelContent from './components/NewIssuePanelContent'
+import {
+    NewProjectPanelContent,
+    NewIssuePanelContent
+} from './components/Panels'
 import RangeVoting from './range-voting/RangeVoting'
 
 // quick and dirty way of populating issues and repos from a snapshot of few public repos
@@ -28,7 +29,7 @@ const initialState = {
   template: null,
   templateData: {},
   stepIndex: 0,
-  activeTabId: 0,
+  activeTabId: 3,
   createProjectVisible: false,
   createIssueVisible: false,
   rangeWizardActive: false,
@@ -151,7 +152,7 @@ class App extends React.Component {
       })
     }
   }
-  
+
   handleCreateIssueClose = () => {
     this.setState({ createIssueVisible: false })
   }
@@ -196,6 +197,7 @@ class App extends React.Component {
       )
     }
 
+<<<<<<< Updated upstream
     //
     if ('barSelectButton' in tabs[activeTabId]) {
       barButton = (
@@ -217,6 +219,14 @@ class App extends React.Component {
     }
 
     return (
+=======
+    return this.state.rangeWizardActive ?
+    (
+      <RangeVoting visible={true} app={this.props.app} />
+    )
+    :
+    (
+>>>>>>> Stashed changes
       <AragonApp publicUrl="/aragon-ui/">
         <AppLayout>
           <AppLayout.Header>

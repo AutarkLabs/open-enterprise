@@ -18,7 +18,7 @@ class ConfigureVotingName extends React.Component {
     this.handleNameChange = this.createChangeHandler('voteName')
     this.handleDescriptionChange = this.createChangeHandler('voteDescription')
   }
-  componentWillReceiveProps({ positionProgress }) {
+  UNSAFE_componentWillReceiveProps({ positionProgress }) {
     if (
       positionProgress === 0 &&
       positionProgress !== this.props.positionProgress

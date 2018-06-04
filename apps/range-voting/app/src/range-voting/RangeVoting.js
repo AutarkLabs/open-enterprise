@@ -68,14 +68,14 @@ class RangeVoting extends React.Component {
       settingsLoaded: false,
       tokenContract: this.getTokenContract(props.tokenAddress),
       voteVisible: false,
-      voteSidebarOpened: false,
+      voteSidebarOpened: true,
     }
   }
   getTokenContract(tokenAddress) {
     return tokenAddress && this.props.app.external(tokenAddress, tokenAbi)
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const { settingsLoaded } = this.state
     const { props } = this
 
@@ -259,7 +259,7 @@ class RangeVoting extends React.Component {
     const steps = this.getSteps()
     return steps[stepIndex + 1] && steps[stepIndex + 1].screen === 'launch'
   }
-  
+
   render () {
     const { direction, stepIndex } = this.state
     const { visible } = this.props
@@ -267,14 +267,17 @@ class RangeVoting extends React.Component {
     const steps = this.getSteps()
 
     return (
-      <Motion
+      <AragonApp backgroundLogo={true}>
+        <AppBar title="Range Voting" endContent={<LoginButton />}/>
+
+           <Motion
         style={{
           showProgress: spring(
             Number(visible),
             visible ? SPRING_SHOW : SPRING_HIDE
           ),
         }}
-      > 
+      >
         {({ showProgress }) => (
           <Main
             style={{
@@ -283,7 +286,7 @@ class RangeVoting extends React.Component {
                 : `translateY(${100 * (1 - showProgress)}%)`,
               opacity: visible ? showProgress : 1,
             }}
-          > 
+          >
             <View>
               <Window>
                 <RangeWizardCloseButton
@@ -295,7 +298,7 @@ class RangeVoting extends React.Component {
 
                 <Motion
                   style={{ screenProgress: spring(stepIndex, SPRING_SCREEN) }}
-                > 
+                >
                   {({ screenProgress }) => (
                     <React.Fragment>
                       <StepsBar activeGroup={step.group} />
@@ -446,4 +449,3 @@ const RangeWizardCloseButton = styled.button`
 `
 
 export default RangeVoting;
-
