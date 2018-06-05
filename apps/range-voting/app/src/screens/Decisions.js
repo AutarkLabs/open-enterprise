@@ -1,20 +1,27 @@
 import React from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
-import { isBefore } from 'date-fns/esm'
-import { AppBar, Button, SidePanel } from '@aragon/ui'
-import { EmptyStateCard } from '@aragon/ui'
+import AppLayout from '../components/AppLayout'
 import emptyIcon from '../assets/empty-card-icon.svg'
 import Votes from '../components/Votes'
 import tokenBalanceOfAbi from '../abi/token-balanceof.json'
 import tokenDecimalsAbi from '../abi/token-decimals.json'
-import VotePanelContent from '../components/VotePanelContent'
-import NewVotePanelContent from '../components/NewVotePanelContent'
-import AppLayout from '../components/AppLayout'
 import { safeDiv } from '../utils/math-utils'
 import { hasLoadedVoteSettings } from '../utils/vote-settings'
 import { VOTE_YEA } from '../utils/vote-types'
-import { EMPTY_CALLSCRIPT, getQuorumProgress } from '../utils/vote-utils'
+import { isBefore } from 'date-fns/esm'
+import {
+    EmptyStateCard,
+    SidePanel
+} from '@aragon/ui'
+import {
+    VotePanelContent,
+    NewVotePanelContent
+} from '../components/Panels'
+import {
+    EMPTY_CALLSCRIPT,
+    getQuorumProgress
+} from '../utils/vote-utils'
 
 const tokenAbi = [].concat(tokenBalanceOfAbi, tokenDecimalsAbi)
 
@@ -79,7 +86,7 @@ class Decisions extends React.Component {
       voteSidebarOpened: false,
     }
   }
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const { settingsLoaded } = this.state
     // Is this the first time we've loaded the settings?
     if (!settingsLoaded && hasLoadedVoteSettings(nextProps)) {
@@ -148,6 +155,8 @@ class Decisions extends React.Component {
     const displayVotes = settingsLoaded && votes.length > 0
     const supportRequired = settingsLoaded ? supportRequiredPct / pctBase : -1
 
+    console.log ('render: ' + settingsLoaded)
+
     // Add useful properties to the votes
     const preparedVotes = displayVotes
       ? votes.map(vote => {
@@ -171,6 +180,7 @@ class Decisions extends React.Component {
 
     return (
        <Main>
+
           <AppLayout.ScrollWrapper>
               {displayVotes ? (
                 <Votes votes={preparedVotes} onSelectVote={this.handleVoteOpen} />
@@ -218,4 +228,3 @@ const Main = styled.div`
 `
 
 export default Decisions
-

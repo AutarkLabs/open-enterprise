@@ -3,9 +3,7 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Motion, spring } from 'react-motion'
 import { spring as springConf } from '@aragon/ui'
-import { AragonApp, AppBar } from '@aragon/ui'
 
-import LoginButton from '../components/LoginButton'
 import close from '../assets/close.svg'
 
 import * as Steps from './steps'
@@ -75,7 +73,7 @@ class RangeVoting extends React.Component {
     return tokenAddress && this.props.app.external(tokenAddress, tokenAbi)
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const { settingsLoaded } = this.state
     const { props } = this
 
@@ -259,7 +257,7 @@ class RangeVoting extends React.Component {
     const steps = this.getSteps()
     return steps[stepIndex + 1] && steps[stepIndex + 1].screen === 'launch'
   }
-  
+
   render () {
     const { direction, stepIndex } = this.state
     const { visible } = this.props
@@ -274,7 +272,7 @@ class RangeVoting extends React.Component {
             visible ? SPRING_SHOW : SPRING_HIDE
           ),
         }}
-      > 
+      >
         {({ showProgress }) => (
           <Main
             style={{
@@ -283,7 +281,7 @@ class RangeVoting extends React.Component {
                 : `translateY(${100 * (1 - showProgress)}%)`,
               opacity: visible ? showProgress : 1,
             }}
-          > 
+          >
             <View>
               <Window>
                 <RangeWizardCloseButton
@@ -295,7 +293,7 @@ class RangeVoting extends React.Component {
 
                 <Motion
                   style={{ screenProgress: spring(stepIndex, SPRING_SCREEN) }}
-                > 
+                >
                   {({ screenProgress }) => (
                     <React.Fragment>
                       <StepsBar activeGroup={step.group} />
@@ -454,4 +452,3 @@ const RangeWizardCloseButton = styled.button`
 `
 
 export default RangeVoting;
-
