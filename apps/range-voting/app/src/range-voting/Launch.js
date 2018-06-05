@@ -79,7 +79,7 @@ class SignContent extends React.PureComponent {
 
         <p>
           <Text size="large" color={theme.textSecondary}>
-            Your wallet should open and you need to sign the transaction to initialize Range voting.
+            Your wallet should open and you need to sign the transaction to initialize range voting.
           </Text>
         </p>
 
@@ -95,7 +95,7 @@ class SignContent extends React.PureComponent {
           <Transaction>
             <TransactionTitle>
               <Text weight="bold" color={theme.textSecondary} smallcaps>
-                Vote creation
+                Initializing...
               </Text>
             </TransactionTitle>
             {this.renderTxStatus(contractCreationStatus)}

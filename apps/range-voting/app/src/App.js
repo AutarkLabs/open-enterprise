@@ -23,10 +23,6 @@ import RangeVoting from './range-voting/RangeVoting'
 // quick and dirty way of populating issues and repos from a snapshot of few public repos
 //import getPreprocessedRepos from './github.repos'
 
-// app.initialize(token, minParticipationPct,
-// candidateSupportPct,
-// voteTime)
-
 const initialState = {
   template: null,
   templateData: {},
@@ -89,18 +85,6 @@ export default class App extends React.Component {
     }
   }
 
-  componentDidMount() {
-    const { app } = this.props
-    app.votes().first().subscribe((test) => console.log(test))
-    app.initialize().first().subscribe((test) => console.log(test))
-    app.vote().first().subscribe((test) => console.log(test))
-    app.call("test").first().subscribe((test) => console.log(test))
-    app.events().subscribe((test) => console.log(test))
-  }
-
-//  componentWillReceiveProps(nextProps) {
-  //  const { props } = this
-//  }
   handleGitHubAuth = (authToken, login, avatarUrl) => {
     // probably unnecessarily explicit
     // meant to be called from NewProjectPanelContent after successful whoami query
