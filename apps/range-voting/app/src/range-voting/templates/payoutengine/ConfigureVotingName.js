@@ -94,7 +94,7 @@ class ConfigureVotingNameContent extends React.PureComponent {
                 <Hint>
                   How would you describe this app?
                 </Hint>
-                <TextInput
+                <TextInput.Multiline
                   placeholder="Description"
                   onChange={handleDescriptionChange}
                   value={fields.voteDescription}
