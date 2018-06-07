@@ -1,3 +1,20 @@
+### Setup
+In order to get the planning application we assume the following global dependencies:
+Node LTS or greater
+Python2.7
+@aragon/cli@4.1.1
+
+Assuming these have been installed run the following:
+First in a seperate terminal run ``aragon devchain``
+
+``cd apps/bare``
+``npm i``
+``npm run publish:rpc``
+``cd ../range-voting``
+``npm i``
+``npm run start:kit``
+
+In order to get the application working it may be necesary to run ``aragon devchain --reset``. If this doesn't work try deleting the ``public`` folder in ``apps/range-voting``.
 
 ### Background
 The proposal for this [Aragon Planning app](https://github.com/aragon/nest/pull/24) was developed by members of [Space Decentral](https://spacedecentral.net) and [Giveth](https://giveth.io), and received funding via [Aragon's Nest program](https://blog.aragon.one/introducing-aragon-nest-1aa8c91c0566): an example of decentralization at it's finest. We are developing this app as a collaborative unit because it is a crucial building block for any organization that aims to coordinate work and streamline management duties, without traditional managers. This app will work with any ERC-20 token or Aragon DAO.

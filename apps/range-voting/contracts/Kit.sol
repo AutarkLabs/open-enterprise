@@ -54,9 +54,8 @@ contract Kit is KitBase {
 		Kernel dao = fac.newDAO(this);
 		ACL acl = ACL(dao.acl());
 		acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
-        /*
 		address root = msg.sender;
-		bytes32 appId = apmNamehash("app");
+		bytes32 appId = apmNamehash("planning");
 		bytes32 votingAppId = apmNamehash("voting");
 		bytes32 tokenManagerAppId = apmNamehash("token-manager");
 
@@ -89,6 +88,7 @@ contract Kit is KitBase {
 		acl.grantPermission(root, acl, acl.CREATE_PERMISSIONS_ROLE());
 		acl.revokePermission(this, acl, acl.CREATE_PERMISSIONS_ROLE());
 		acl.setPermissionManager(root, acl, acl.CREATE_PERMISSIONS_ROLE());
+        /*
 
         */
 		DeployInstance(dao);
