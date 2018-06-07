@@ -82,6 +82,7 @@ repositories with issues list included is not going to cost much.
               id
               name
               description
+              url
               owner {
                 id
                 login
@@ -192,6 +193,7 @@ repositories with issues list included is not going to cost much.
         reposFromServer[rNode.node.id] = {
           name: rNode.node.name,
           description: rNode.node.description,
+          url: rNode.node.url,
           collaborators: rNode.node.collaborators.totalCount,
           commits: commits,
           ownerLogin: rNode.node.owner.login,

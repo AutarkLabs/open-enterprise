@@ -111,6 +111,18 @@ class App extends React.Component {
     })
   }
 
+  // removing repos is triggered from Tools tab
+  handleRepoRemove = repoId =>  {
+    const { github } = this.state
+    if (github.activeRepo === repoId) {
+      github.activeRepo = ''
+    }
+    delete github.reposManaged[repoId]
+    this.setState({
+      github: github
+    })
+  }
+
    // this probably needs to be limited to Issues screen
    handleLabelSelect = labelName =>  {
     const { github } = this.state
@@ -241,7 +253,8 @@ class App extends React.Component {
                   onActivate={newItemHandler}
                   github={github}
                   tools={tools}
-                  handleRepoSelect={this.handleRepoSelect}
+                  onSelect={this.handleRepoSelect}
+                  onRemove={this.handleRepoRemove}
                   handleLabelSelect={this.handleLabelSelect}
                   handleMilestoneSelect={this.handleMilestoneSelect}
                />
