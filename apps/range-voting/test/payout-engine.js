@@ -57,41 +57,31 @@ contract('PayoutEngine App', accounts => {
 
         it('initialize, set distribution, and run payout', async () => {
 
-            // const imperialunderfundedBudget = await web3.eth.getBalance(empire)
-            // console.log(imperialunderfundedBudget.toNumber())
+            const imperialunderfundedBudget = await web3.eth.getBalance(empire)
 
-            // var send = await web3.eth.sendTransaction({from:web3.eth.coinbase, to:empire, value:web3.toWei(0.05, "ether")});
+            var send = await web3.eth.sendTransaction({from:empire, to:app.address, value:web3.toWei(0.01, "ether")});
 
-            const imperialInitialBudget = await web3.eth.getBalance(empire)
             const bobafettInitialBalance = await web3.eth.getBalance(bobafett)
             const dengarInitialBalance = await web3.eth.getBalance(dengar)
             const bosskInitialBalance = await web3.eth.getBalance(bossk)
 
-            console.log(imperialInitialBudget.toNumber())
-            console.log(bobafettInitialBalance.toNumber())
-
             candidateKeys = ["0x1", "0x2", "0x3"]
             candidateAddresses = [bobafett, dengar, bossk]
-            app.initializePayout(candidateKeys, candidateAddresses, '', { from: empire})
+            await app.initializePayout(candidateKeys, candidateAddresses, '', { from: empire})
 
-            supports = [300, 200, 100]
-            totalsupport = 600
-            app.setDistribution(candidateKeys, supports, { from: empire})
+            supports = [500, 200, 300]
+            totalsupport = 1000
+            await app.setDistribution(candidateKeys, supports, { from: empire})
 
-            // app.runPayout()
-            app.runPayout({from: empire, value: web3.toWei(0.05, "ether")})
+            await app.runPayout()
 
-            const imperialBudget = await web3.eth.getBalance(empire)
             const bobafettBalance = await web3.eth.getBalance(bobafett)
             const dengarBalance = await web3.eth.getBalance(dengar)
             const bosskBalance = await web3.eth.getBalance(bossk)
 
-            console.log(imperialBudget.toNumber())
-            console.log(bobafettBalance.toNumber())
-
-            // assert.equal(bobafettBalance.toNumber() - bobafettInitialBalance.toNumber(), imperialBudget.toNumber()*supports[0]/totalsupport, 'bounty hunter expense')
-            // assert.equal(dengarBalance.toNumber() - dengarInitialBalance.toNumber(), imperialBudget.toNumber()*supports[1]/totalsupport, 'bounty hunter expense')
-            // assert.equal(bosskBalance.toNumber() - bosskInitialBalance.toNumber(), imperialBudget.toNumber()*supports[2]/totalsupport, 'bounty hunter expense')
+            assert.equal(bobafettBalance.toNumber() - bobafettInitialBalance.toNumber(), web3.toWei(0.01, "ether")*supports[0]/totalsupport, 'bounty hunter expense')
+            assert.equal(dengarBalance.toNumber() - dengarInitialBalance.toNumber(), web3.toWei(0.01, "ether")*supports[1]/totalsupport, 'bounty hunter expense')
+            assert.equal(bosskBalance.toNumber() - bosskInitialBalance.toNumber(), web3.toWei(0.01, "ether")*supports[2]/totalsupport, 'bounty hunter expense')
 
         })
 

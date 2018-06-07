@@ -108,4 +108,8 @@ contract PayoutEngine is AragonApp {
         }
     }
 
+    function () public payable {
+
+    }
+
 }
