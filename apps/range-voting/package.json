@@ -39,9 +39,7 @@
     "solidity-sha3": "^0.4.1",
     "truffle": "4.0.5",
     "truffle-hdwallet-provider": "0.0.3",
-    "react-oauth-popup": "0.0.4",
-    "ethereumjs-abi": "^0.6.4",
-    "truffle-hdwallet-provider": "0.0.3"
+    "react-oauth-popup": "0.0.4"
   },
   "scripts": {
     "dev": "parcel app/src/index.html",
