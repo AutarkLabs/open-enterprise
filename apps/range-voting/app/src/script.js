@@ -1,39 +1,44 @@
-import Aragon from '@aragon/client'
+import Aragon, { providers } from '@aragon/client'
 import { combineLatest } from './rxjs'
 import voteSettings, { hasLoadedVoteSettings } from './range-voting/vote-settings'
 import { EMPTY_CALLSCRIPT } from './range-voting/vote-utils'
 
 const app = new Aragon()
+// app.initialize("0xffffffffffffffffffffffffffffffffffffffff", 100000000000000000, 200000000000000000, 86400)
+//   .subscribe((result) => console.log(!!result))
+// setTimeout(() => {
+//     // These guys should catch all events going through e.g. Test("LOLOL")
+//     app.events().subscribe((event) => {
+//       console.log(event)
+//     })
+//     app.state().subscribe((state) => {
+//       console.log(state)
+//     })
+//     app.store((state, event) => {
+//       console.log(state)
+//       console.log(event)
+//       return state
+//     }).subscribe((state) => {
+//       console.log(state)
+//     })
+// }, 5000)
 
-app.store(async (state, { event, returnValues }) => {
-  let nextState = {
-    ...state,
-    // Fetch the app's settings, if we haven't already
-    ...(!hasLoadedVoteSettings(state) ? await loadVoteSettings() : {}),
-  }
+// setTimeout(() => {
+//   // This works and returns "test" as it should but it should also trigger and event Test("LOLOL")
+//   app.call("test").subscribe((data) => console.log(data))
+// }, 6000)
 
-  switch (event) {
-    case 'StartVote':
-      nextState = await startVote(nextState, returnValues)
-      break
-    case 'CastVote':
-      nextState = await castVote(nextState, returnValues)
-      break
-    case 'UpdateCandidateSupport':
-      nextState = await updateCandidateSupport(nextState, returnValues)
-      break
-    case 'ExecuteVote':
-      nextState = await executeVote(nextState, returnValues)
-      break
-    case 'ChangeCandidateSupport':
-      nextState = await changeCandidateSupport(nextState, returnValues)
-      break
-    default:
-      break
-  }
+// This guy too - Have you tried this without async?
+// Going to try it out
+// const test = app.store((state, event) => {
+//   console.log(event)
+//   console.log(state)
+//   return state
+// }).subscribe((state) => {
+//   console.log(state)
+// })
 
-  return nextState
-})
+
 
 /***********************
  *                     *

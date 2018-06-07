@@ -3,9 +3,8 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Motion, spring } from 'react-motion'
 import { spring as springConf } from '@aragon/ui'
-import { AragonApp, AppBar } from '@aragon/ui'
 
-import LoginButton from '../components/LoginButton'
+import close from '../assets/close.svg'
 
 import * as Steps from './steps'
 import Templates from './templates'
@@ -38,9 +37,10 @@ const SPRING_HIDE = {
 }
 const SPRING_SCREEN = springConf('slow')
 
-class App extends React.Component {
+class RangeVoting extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
+    handleClose: PropTypes.func.isRequired
   }
   static defaultProps = {
     account: '',
@@ -73,7 +73,7 @@ class App extends React.Component {
     return tokenAddress && this.props.app.external(tokenAddress, tokenAbi)
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const { settingsLoaded } = this.state
     const { props } = this
 
@@ -158,7 +158,7 @@ class App extends React.Component {
     return screenData ? screenData.validate(this.state.templateData) : false
   }
 
-  handleConfigurationFieldUpdate = (screen, name, value) => {
+  handleConfigurationFieldUpdate = (name, value) => {
     this.setState(({ templateData, template }) => {
       const updatedFields = this.filterConfigurationValue(template, name, value)
       // If the filter returns null, the value is not updated
@@ -257,7 +257,7 @@ class App extends React.Component {
     const steps = this.getSteps()
     return steps[stepIndex + 1] && steps[stepIndex + 1].screen === 'launch'
   }
-  
+
   render () {
     const { direction, stepIndex } = this.state
     const { visible } = this.props
@@ -265,17 +265,14 @@ class App extends React.Component {
     const steps = this.getSteps()
 
     return (
-      <AragonApp backgroundLogo={true}>
-        <AppBar title="Range Voting" endContent={<LoginButton />}/>
-      
-           <Motion
+      <Motion
         style={{
           showProgress: spring(
             Number(visible),
             visible ? SPRING_SHOW : SPRING_HIDE
           ),
         }}
-      > 
+      >
         {({ showProgress }) => (
           <Main
             style={{
@@ -284,12 +281,19 @@ class App extends React.Component {
                 : `translateY(${100 * (1 - showProgress)}%)`,
               opacity: visible ? showProgress : 1,
             }}
-          > 
+          >
             <View>
               <Window>
+                <RangeWizardCloseButton
+                  type="button"
+                  onClick={this.props.handleClose}
+                >
+                  <img src={close} alt="Close" />
+                </RangeWizardCloseButton>
+
                 <Motion
                   style={{ screenProgress: spring(stepIndex, SPRING_SCREEN) }}
-                > 
+                >
                   {({ screenProgress }) => (
                     <React.Fragment>
                       <StepsBar activeGroup={step.group} />
@@ -299,7 +303,8 @@ class App extends React.Component {
                             {this.renderScreen(
                               screen,
                               i - stepIndex,
-                              i - screenProgress
+                              i - screenProgress,
+                              step.screen,
                             )}
                           </Screen>
                         ))}
@@ -321,12 +326,11 @@ class App extends React.Component {
           </Main>
         )}
       </Motion>
-      </AragonApp>
     )
   }
 
 
-  renderScreen(screen, position, positionProgress) {
+  renderScreen(screen, position, positionProgress, activeScreen) {
     const {
       template
     } = this.state
@@ -351,8 +355,8 @@ class App extends React.Component {
         />
       )
     }
+    const configurationData = this.prepareReview()
     if (screen === 'review') {
-      const configurationData=this.prepareReview()
       return <Review
         onConfirm={onComplete}
         configurationData={configurationData}
@@ -360,7 +364,14 @@ class App extends React.Component {
       />
     }
     if (screen === 'launch') {
-      return <Launch onConfirm={onComplete} {...sharedProps} />
+      const active = activeScreen === 'launch'
+      return <Launch
+        app={this.props.app}
+        onConfirm={onComplete}
+        configurationData={configurationData}
+        active={active}
+        {...sharedProps}
+      />
     }
     const steps = this.getSteps()
     const configureScreen = steps.find(
@@ -392,12 +403,7 @@ const Main = styled.div`
   bottom: 0;
   overflow: auto;
   height: 100vh;
-  background-image: linear-gradient(
-      0deg,
-      rgba(0, 0, 0, 0.08) 0%,
-      rgba(0, 0, 0, 0.08) 100%
-    ),
-    linear-gradient(-226deg, #00f1e1 0%, #00b4e4 100%);
+  background-color: rgba(40, 40, 40, 0.4);
 `
 
 const View = styled.div`
@@ -415,7 +421,7 @@ const Window = styled.div`
   height: 660px;
   background: #fff;
   border-radius: 3px;
-  box-shadow: 0 10px 28px 0 rgba(11, 103, 157, 0.7);
+  box-shadow: 0 10px 28px 0 rgba(90, 90, 90, 0.7);
 `
 
 const Screen = styled.div`
@@ -428,6 +434,21 @@ const Screen = styled.div`
   pointer-events: ${({ active }) => (active ? 'auto' : 'none')};
 `
 
+const RangeWizardCloseButton = styled.button`
+  ${Window} & {
+    position: absolute;
+    padding: 20px;
+    top: 0;
+    right: 0;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    outline: 0;
+    z-index:3;
+    &::-moz-focus-inner {
+      border: 0;
+    }
+  }
+`
 
-
-export default App;
+export default RangeVoting;

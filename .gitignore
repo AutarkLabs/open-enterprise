@@ -62,3 +62,6 @@ package-lock.json
 
 # aragon/ui prod directory
 aragon-ui/
+
+.cache
+

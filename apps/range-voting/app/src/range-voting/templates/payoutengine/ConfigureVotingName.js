@@ -18,7 +18,7 @@ class ConfigureVotingName extends React.Component {
     this.handleNameChange = this.createChangeHandler('voteName')
     this.handleDescriptionChange = this.createChangeHandler('voteDescription')
   }
-  componentWillReceiveProps({ positionProgress }) {
+  UNSAFE_componentWillReceiveProps({ positionProgress }) {
     if (
       positionProgress === 0 &&
       positionProgress !== this.props.positionProgress
@@ -28,8 +28,8 @@ class ConfigureVotingName extends React.Component {
   }
   createChangeHandler(name) {
     return event => {
-      const { onFieldUpdate, screen } = this.props
-      onFieldUpdate(screen, name, event.target.value)
+      const { onFieldUpdate } = this.props
+      onFieldUpdate(name, event.target.value)
     }
   }
   handleSubmit = event => {
@@ -94,7 +94,7 @@ class ConfigureVotingNameContent extends React.PureComponent {
                 <Hint>
                   How would you describe this app?
                 </Hint>
-                <TextInput
+                <TextInput.Multiline
                   placeholder="Description"
                   onChange={handleDescriptionChange}
                   value={fields.voteDescription}

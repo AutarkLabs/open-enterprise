@@ -53,7 +53,7 @@ contract('RangeVoting App', accounts => {
         const holder50 = accounts[2]
         const nonHolder = accounts[4]
 
-        const minimumParticipation = pct16(50)
+        const minimumParticipation = pct16(30)
         const candidateSupportPct = pct16(5)
 
         beforeEach(async () => {
@@ -75,16 +75,18 @@ contract('RangeVoting App', accounts => {
             })
         })
 
-        /*
-         // These sections need to be modified when we have the execution methods implemented. Our voting implementation
-         // DOES NOT automatically vote on behalf of the person starting the vote as it's category based.
-         // We could implement a newVote function with support values but that doesn't make a ton of sense and isn't
-         // needed to get our base application up and running.
-        it('execution scripts can execute multiple actions', async () => {
-            const action = { to: executionTarget.address, calldata: executionTarget.contract.execute.getData() }
-            const script = encodeCallScript([action, action, action])
+        it('execution scripts can execute actions', async () => {
+            let action = { to: executionTarget.address, calldata: executionTarget.contract.setSignal.getData([0])}
+            const script = encodeCallScript([action])
             const voteId = createdVoteId(await app.newVote(script, '', { from: holder50 }))
-            assert.equal(await executionTarget.counter(), 3, 'should have executed multiple times')
+            let vote = [10,15,25]
+            await app.addCandidate(voteId, "0x","Apple")
+            await app.addCandidate(voteId, "0x","Orange")
+            await app.addCandidate(voteId, "0x","Banana")
+            let voter = holder50
+            await app.vote(voteId, vote, { from: voter })
+            await app.executeVote(voteId)        
+            assert.equal(await executionTarget.signal(0), 10, 'should have executed multiple times')
         })
 
         it('execution script can be empty', async () => {
@@ -92,16 +94,22 @@ contract('RangeVoting App', accounts => {
         })
 
         it('execution throws if any action on script throws', async () => {
-            const action = { to: executionTarget.address, calldata: executionTarget.contract.execute.getData() }
-            let script = encodeCallScript([action])
-            script = script.slice(0, -2) // remove one byte from calldata for it to fail
+            let action = { to: executionTarget.address, calldata: executionTarget.contract.autoThrow.getData([0])}
+            const script = encodeCallScript([action])
+            const voteId = createdVoteId(await app.newVote(script, '', { from: holder50 }))
+            let vote = [10,15,25]
+            await app.addCandidate(voteId, "0x","Apple")
+            await app.addCandidate(voteId, "0x","Orange")
+            await app.addCandidate(voteId, "0x","Banana")
+            let voter = holder50
+            await app.vote(voteId, vote, { from: voter })
             return assertRevert(async () => {
-                await app.newVote(script, '', { from: holder50 })
+                await app.executeVote(voteId)        
             })
         })
 
         it('forwarding creates vote', async () => {
-            const action = { to: executionTarget.address, calldata: executionTarget.contract.execute.getData() }
+            const action = { to: executionTarget.address, calldata: executionTarget.contract.setSignal.getData([0]) }
             const script = encodeCallScript([action])
             const voteId = createdVoteId(await app.forward(script, { from: holder50 }))
             assert.equal(voteId, 1, 'RangeVoting should have been created')
@@ -110,14 +118,15 @@ contract('RangeVoting App', accounts => {
         it('can change minimum candidate support', async () => {
 
         })
-        */
+
+
         context('creating vote with normal distributions', () => {
             let voteId = {}
             let script = ''
             let candidateState
 
             beforeEach(async () => {
-                const action = { to: executionTarget.address, calldata: executionTarget.contract.execute.getData() }
+                const action = { to: executionTarget.address, calldata: executionTarget.contract.setSignal.getData([0]) }
                 script = encodeCallScript([action, action])
                 let newvote = await app.newVote(script, 'metadata', { from: nonHolder })
                 //console.log(newvote.logs[0].args)
@@ -205,27 +214,6 @@ contract('RangeVoting App', accounts => {
                 assert.equal(vote[1], holderVoteData[1].toNumber(), "vote and voter state should match after casting ballot")
                 assert.equal(vote[2], holderVoteData[2].toNumber(), "vote and voter state should match after casting ballot")
             })
-
-            xit('throws when non-holder votes', async () => {
-            })
-
-            xit('throws when RangeVoting after RangeVoting closes', async () => {
-            })
-
-            xit('can execute if vote is approved with support and quorum', async () => {
-            })
-
-            xit('cannot execute vote if minimum participation not met', async () => {
-            })
-
-            xit('cannot execute vote if not support met', async () => {
-            })
-
-            xit('cannot re-execute vote', async () => {
-            })
-
-            xit('cannot vote on executed vote', async () => {
-            })
         })
 
     })
@@ -274,14 +262,6 @@ contract('RangeVoting App', accounts => {
             await app.initialize(token.address, minimumParticipation, candidateSupportPct, RangeVotingTime)
         })
 
-        xit('new vote cannot be executed before RangeVoting', async () => {
-
-
-        })
-
-        xit('creating vote as holder executes vote', async () => {
-
-        })
     })
 
     context('token supply = 3', () => {
@@ -301,13 +281,6 @@ contract('RangeVoting App', accounts => {
             await app.initialize(token.address, minimumParticipation, candidateSupportPct, RangeVotingTime)
         })
 
-        xit('new vote cannot be executed before holder2 RangeVoting', async () => {
-
-        })
-
-        xit('creating vote as holder2 executes vote', async () => {
-
-        })
     })
     context('before init', () => {
         it('fails creating a vote before initialization', async () => {

@@ -1,6 +1,6 @@
 {
   "appName": "planning.aragonpm.eth",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "roles": [
     {
       "name": "Create new votes",
@@ -20,4 +20,3 @@
   ],
   "path": "contracts/RangeVoting.sol"
 }
-

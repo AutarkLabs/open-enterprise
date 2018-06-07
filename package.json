@@ -30,13 +30,9 @@
   },
   "homepage": "https://github.com/Giveth/planning-app#readme",
   "dependencies": {
-    "@aragon/client": "^1.0.0-beta.7"
+    "@aragon/client": "^1.0.0-beta.9"
   },
   "devDependencies": {
-    "lerna": "^2.10.0",
-    "ganache-cli": "^6.1.0",
-    "truffle": "4.0.5",
-    "solium": "0.5.5",
-    "solidity-coverage": "0.3.5"
+    "lerna": "^2.10.0"
   }
 }

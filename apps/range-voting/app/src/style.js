@@ -8,7 +8,6 @@ const Main = styled.div`
   width: 100%;
   height: 100%;
   padding: 100px;
-  padding-top: 140px;
 `
 
 const Content = styled.div`
@@ -39,4 +38,3 @@ const Hint = styled.div`
 `
 
 export { Main, Content, Subtitle, Title, Hint }
-

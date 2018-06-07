@@ -19,7 +19,7 @@ class ConfigureVotingDefaults extends React.Component {
     this.handleMinQuorumChange = this.createChangeHandler('minQuorum')
     this.handleVoteDurationChange = this.createChangeHandler('voteDuration')
   }
-  componentWillReceiveProps({ positionProgress }) {
+  UNSAFE_componentWillReceiveProps({ positionProgress }) {
     if (
       positionProgress === 0 &&
       positionProgress !== this.props.positionProgress
@@ -29,8 +29,8 @@ class ConfigureVotingDefaults extends React.Component {
   }
   createChangeHandler(name) {
     return event => {
-      const { onFieldUpdate, screen } = this.props
-      onFieldUpdate(screen, name, event.target.value)
+      const { onFieldUpdate } = this.props
+      onFieldUpdate(name, event.target.value)
     }
   }
   handleSubmit = event => {

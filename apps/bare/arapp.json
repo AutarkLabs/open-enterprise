@@ -1,0 +1,6 @@
+{
+  "appName": "bare-kit.aragonpm.eth",
+  "version": "2.0.0",
+  "roles": [],
+  "path": "contracts/BareKit.sol"
+}

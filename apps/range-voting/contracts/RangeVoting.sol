@@ -2,6 +2,8 @@ pragma solidity ^0.4.18;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
 
+import "@aragon/os/contracts/evmscript/ScriptHelpers.sol";
+
 import "@aragon/os/contracts/lib/minime/MiniMeToken.sol";
 
 import "@aragon/os/contracts/lib/zeppelin/math/SafeMath.sol";
@@ -44,7 +46,7 @@ contract RangeVoting is IForwarder, AragonApp {
     using SafeMath64 for uint64;
 
     MiniMeToken public token;
-    uint256 public candidateSupportPct;
+    uint256 public globalCandidateSupportPct;
     uint256 public minParticipationPct;
     uint64 public voteTime;
 
@@ -90,6 +92,7 @@ contract RangeVoting is IForwarder, AragonApp {
     event UpdateCandidateSupport(string indexed candidateKey, uint256 support);
     event ExecuteVote(uint256 indexed voteId);
     event ChangeCandidateSupport(uint256 candidateSupportPct);
+    event ExecutionScript(bytes script, uint256 data);
 
 ////////////////
 // Constructor
@@ -128,7 +131,7 @@ contract RangeVoting is IForwarder, AragonApp {
 
         token = _token;
         minParticipationPct = _minParticipationPct;
-        candidateSupportPct = _candidateSupportPct;
+        globalCandidateSupportPct = _candidateSupportPct;
         voteTime = _voteTime;
 
         votes.length += 1;
@@ -294,7 +297,8 @@ contract RangeVoting is IForwarder, AragonApp {
     * @return True if the vote is elligible for execution.
     */
     function canExecute(uint256 _voteId) public view returns (bool) {
-        // Needs implementation
+        // Needs better implementation
+        return true;
     }
 
     /**
@@ -371,7 +375,7 @@ contract RangeVoting is IForwarder, AragonApp {
         vote.metadata = _metadata;
         vote.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
         vote.totalVoters = token.totalSupplyAt(vote.snapshotBlock);
-        vote.candidateSupportPct = candidateSupportPct;
+        vote.candidateSupportPct = globalCandidateSupportPct;
 
         StartVote(voteId);
     }
@@ -399,8 +403,8 @@ contract RangeVoting is IForwarder, AragonApp {
         uint256 totalSupport = 0;
 
         uint256 voteSupport;
-        uint256[] oldVoteSupport = vote.voters[msg.sender];
-        bytes32[] cKeys = vote.candidateKeys;
+        uint256[] storage oldVoteSupport = vote.voters[msg.sender];
+        bytes32[] storage cKeys = vote.candidateKeys;
 
         uint256 i = 0;
         // This is going to cost a lot of gas... it'd be cool if there was
@@ -431,10 +435,65 @@ contract RangeVoting is IForwarder, AragonApp {
     * @notice `_executeVote` executes the provided script for this vote and
     *         passes along the candidate data to the next function.
     * @return voteId The ID(or index) of this vote in the votes array.
+    * @dev This function needs to be cleaned up ALOT
     */
     function _executeVote(uint256 _voteId) internal {
-        // Needs implementation
+        Vote storage vote = votes[_voteId];
+
+        vote.executed = true;
+        uint256 candidateLength = vote.candidateKeys.length;
+        bytes memory executionScript = new bytes(32);
+        executionScript = vote.executionScript;
+        bytes32 singleByte;
+        bytes memory script = new bytes(32 * (candidateLength + 3));
+        assembly {  
+            mstore(add(script, 32), mload(add(executionScript,32)))
+        }
+        uint256 offset = 59;
+        bytes memory smallData = new bytes(32);
+        uint256 supportsData = 32 * (candidateLength + 2) + 4;
+        assembly {
+            mstore(add(smallData, 32), supportsData)
+        }
+        for( uint256 i = 28; i < 32; i++){
+            supportsData = uint256(smallData[i]);
+            assembly{
+                mstore8(add(script,59), supportsData)
+            }
+            offset--;
+        }
+
+        supportsData = 32;
+        offset = 64;
+
+        assembly {
+            mstore(add(script, offset), supportsData)
+        }
+        
+        offset += 32;
+        supportsData = candidateLength;
+
+        assembly {
+            mstore(add(script, offset), supportsData)
+        }
+        offset += 32;
+        for (i = 0; i < candidateLength; i++) {
+            supportsData = votes[_voteId].candidates[votes[_voteId].candidateKeys[i]].voteSupport;
+
+            assembly {
+                mstore(add(script, offset), supportsData)
+            }
+            offset += 32;
+        }
+
+
+        runScript(script, new bytes(0), new address[](0));
+
+        ExecuteVote(_voteId);
     }
+
+
+    
 
     /**
     * @dev Calculates whether `_value` is at least a percent `_pct` over `_total`

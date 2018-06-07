@@ -14,7 +14,7 @@ class ConfigureVotingConditions extends React.Component {
     onSubmit: noop,
     fields: {},
   }
-  componentWillReceiveProps({ positionProgress }) {
+  UNSAFE_componentWillReceiveProps({ positionProgress }) {
     if (
       positionProgress === 0 &&
       positionProgress !== this.props.positionProgress
@@ -23,21 +23,21 @@ class ConfigureVotingConditions extends React.Component {
     }
   }
   handleVotePermissionChange = index => {
-     const { onFieldUpdate, screen } = this.props
-     onFieldUpdate(screen, 'votePermission', index)
+     const { onFieldUpdate } = this.props
+     onFieldUpdate('votePermission', index)
   }
   handleVoteWeightChange = index => {
-     const { onFieldUpdate, screen } = this.props
-     onFieldUpdate(screen, 'voteWeight', index)
+     const { onFieldUpdate } = this.props
+     onFieldUpdate('voteWeight', index)
   }
   handleVoteOutcomeChange = index => {
-     const { onFieldUpdate, screen } = this.props
-     onFieldUpdate(screen, 'voteOutcome', index)
+     const { onFieldUpdate } = this.props
+     onFieldUpdate('voteOutcome', index)
   }
   createChangeHandler(name) {
     return event => {
-      const { onFieldUpdate, screen } = this.props
-      onFieldUpdate(screen, name, event.target.value)
+      const { onFieldUpdate } = this.props
+      onFieldUpdate(name, event.target.value)
     }
   }
   handleSubmit = event => {

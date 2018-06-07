@@ -1,4 +1,4 @@
-import { safeDiv } from '../../utils/math-utils'
+import { safeDiv } from '../utils/math-utils'
 import {
   VOTE_ABSENT,
   VOTE_STATUS_ONGOING,
