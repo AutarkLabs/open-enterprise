@@ -1,0 +1,9 @@
+{
+	"name": "PayoutEngine",
+	"description": "Create and manage multiple projects",
+	"icons": [{
+	  "src": "images/icon.svg",
+	  "sizes": "192x192"
+	}]
+  }
+  
