@@ -4,6 +4,10 @@
   "private": true,
   "description": "",
   "dependencies": {
+    "@aragon/apps-finance": "^1.0.1",
+    "@aragon/apps-token-manager": "^1.0.0",
+    "@aragon/apps-vault": "^2.0.1",
+    "@aragon/apps-voting": "^1.0.0",
     "@aragon/client": "^1.0.0-beta.7",
     "@aragon/ui": "^0.12.0",
     "@octokit/rest": "15.3.0",
