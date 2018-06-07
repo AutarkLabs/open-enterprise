@@ -11,7 +11,7 @@ import "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import "@aragon/os/contracts/lib/minime/MiniMeToken.sol";
 
 import "./RangeVoting.sol";
-import "./PayoutEngine.sol";
+import "../../payout-engine/contracts/PayoutEngine.sol";
 
 
 contract KitBase is APMNamehash {
