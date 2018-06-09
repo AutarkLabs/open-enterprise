@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Button, Info, Text, TextInput, Field } from '@aragon/ui'
+import { Button, Info, TextInput, Field } from '@aragon/ui'
 
 const initialState = {
   question: '',
@@ -75,12 +75,6 @@ class NewVotePanelContent extends React.Component {
 
 const Form = styled.form`
   margin-top: 20px;
-`
-
-const Warning = styled(Text.Paragraph).attrs({
-  size: 'xsmall',
-})`
-  margin-top: 10px;
 `
 
 export default NewVotePanelContent
