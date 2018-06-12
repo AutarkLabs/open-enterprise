@@ -67,21 +67,7 @@ export default class App extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      template: null,
-      templateData: {},
-      stepIndex: 0,
-      activeTabId: 0,
-      createProjectVisible: false,
-      github: {
-        isAuthenticated: false,
-        login: '',
-        avatarUrl: '',
-        activeRepo: '',
-        activeLabel: '',
-        activeMilestone: '',
-        token: '',
-        reposManaged: {}, // to be populated from contract or git backend itself
-      }
+      ...initialState
     }
   }
 
