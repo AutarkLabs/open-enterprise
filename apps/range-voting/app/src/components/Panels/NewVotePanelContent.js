@@ -66,7 +66,7 @@ class NewVotePanelContent extends React.Component {
 	  </Field>
           <Button mode="strong" type="submit" wide>
             Begin Vote
-        </Button>
+          </Button>
         </Form>
       </div>
     )

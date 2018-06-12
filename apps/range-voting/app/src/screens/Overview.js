@@ -8,7 +8,7 @@ const EmptyIcon = () => <img src={emptyIcon} alt="" />
 
 class Overview extends React.Component {
   handleRepoSelect = repoId => {
-    this.props.handleRepoSelect(repoId)
+    this.props.onSelect(repoId)
   }
   handleRepoRemove = repoId => {
     this.props.onRemove(repoId)
