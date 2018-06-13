@@ -3,6 +3,8 @@ import styled from 'styled-components'
 import { theme, Text, Button } from '@aragon/ui'
 import { lerp } from '../utils/math-utils'
 import { Main, Content, Title } from '../style'
+import { BigNumber } from 'bignumber.js'
+import { addTool } from '../stores/ToolStore'
 
 import imgPending from '../assets/transaction-pending.svg'
 import imgSuccess from '../assets/transaction-success.svg'
@@ -20,6 +22,36 @@ class Launch extends React.Component {
       contractCreationStatus: 'none',
     }
   }
+  componentWillReceiveProps(nextProps) {
+    const { active, app, configurationData } = nextProps
+    // Hacky way to only initialize once
+    if (active && !this.state.active) {
+      this.state.active = true
+      app.initialize(
+        "0xffffffffffffffffffffffffffffffffffffffff",
+        configurationData.supportNeeded * 10**16,
+        configurationData.minAcceptanceQuorum * 10**16,
+        configurationData.voteDuration * 60 * 60,
+      ).subscribe(
+        (data) => {
+          if (data) {
+            this.setState({ contractCreationStatus: 'success' })
+            addTool({
+              label: 'Monthly Reward DAO',
+              description: 'Allocate our monthly reward DAO accross four circles: Governance, Dapp, Social Coding, and Comms',
+              address: '0x45f3...5567',
+              stats: [
+                  {label: 'BALANCE', value: '10 ETH' },
+                  {label: 'BUDGET', value: '5 ETH / Month'}
+              ]
+            })
+          } else {
+            this.setState({ contractCreationStatus: 'error' })
+          }
+        }
+      )
+    }
+  }
   handleTemplateSelect = template => {
     this.props.onSelect(template)
   }
@@ -33,19 +65,7 @@ class Launch extends React.Component {
       onTryAgain,
     } = this.props
     const { contractCreationStatus } = this.state
-    // This a a very hacky way - still finding out how to do it correctly
-    if (!this.state.active && active) {
-      this.setState({ active: true })
-      app.initialize(
-        "0xffffffffffffffffffffffffffffffffffffffff",
-        configurationData.supportNeeded,
-        configurationData.minAcceptanceQuorum,
-        configurationData.voteDuration
-      ).subscribe(
-        () => this.setState({ contractCreationStatus: 'success' }),
-        () => this.setState({ contractCreationStatus: 'error' })
-      )
-    }
+
     return (
       <Main>
         <Content
@@ -68,7 +88,7 @@ class Launch extends React.Component {
 class SignContent extends React.PureComponent {
   render() {
     const { contractCreationStatus, onTryAgain, app } = this.props
-    console.log(app)
+
     return (
       <React.Fragment>
         <Title>

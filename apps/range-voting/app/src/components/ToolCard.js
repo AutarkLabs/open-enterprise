@@ -36,15 +36,6 @@ const initialState = {
 }
 
 class ToolCard extends Component {
-    static defaultProps = {
-        label: 'Monthly Reward DAO',
-        description: 'Allocate our monthly reward DAO accross four circles: Governance, Dapp, Social Coding, and Comms',
-        address: '0x45f3...5567',
-        stats: [
-            {label: 'BALANCE', value: '10 ETH' },
-            {label: 'BUDGET', value: '5 ETH / Month'}
-        ]
-    }
     state = {
         ...initialState,
     }
@@ -62,7 +53,7 @@ class ToolCard extends Component {
     render () {
         const { label, description, stats, address } = this.props
         const { contextMenuItems } = this.state
-
+        console.log(this.props)
         const menuElements = contextMenuItems.map((item) =>
             <StyledMenuItem
                 key={item.text}

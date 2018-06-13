@@ -1,5 +1,5 @@
 import React from 'react'
-import { compareDesc } from 'date-fns/esm'
+import { compareDesc } from 'date-fns'
 import { Table, TableHeader, TableRow } from '@aragon/ui'
 import VoteRow from './VoteRow'
 

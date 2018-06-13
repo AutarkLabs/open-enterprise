@@ -9,7 +9,7 @@ import tokenDecimalsAbi from '../abi/token-decimals.json'
 import { safeDiv } from '../utils/math-utils'
 import { hasLoadedVoteSettings } from '../utils/vote-settings'
 import { VOTE_YEA } from '../utils/vote-types'
-import { isBefore } from 'date-fns/esm'
+import { isBefore } from 'date-fns'
 import {
     EmptyStateCard,
     SidePanel
