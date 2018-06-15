@@ -1,0 +1,17 @@
+{
+  "appName": "github-registry.aragonpm.eth",
+  "version": "19.0.1",
+  "roles": [
+    {
+      "name": "Increment the counter",
+      "id": "INCREMENT_ROLE",
+      "params": []
+    },
+    {
+      "name": "Decrement the counter",
+      "id": "DECREMENT_ROLE",
+      "params": []
+    }
+  ],
+  "path": "contracts/GithubRegistry.sol"
+}

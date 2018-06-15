@@ -1,0 +1,10 @@
+{
+  "name": "GithubRegistry",
+  "description": "An application for Aragon",
+  "icons": [{
+    "src": "images/icon.png",
+    "sizes": "22x22"
+  }],
+  "start_url": "/public/index.html",
+  "script": "/public/script.js"
+}
