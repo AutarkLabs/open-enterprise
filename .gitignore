@@ -57,9 +57,6 @@ typings/
 # dotenv environment variables file
 .env
 
-# Package Lock
-package-lock.json
-
 # aragon/ui prod directory
 aragon-ui/
 

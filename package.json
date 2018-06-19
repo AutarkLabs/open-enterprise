@@ -33,6 +33,6 @@
     "@aragon/client": "^1.0.0-beta.9"
   },
   "devDependencies": {
-    "lerna": "^2.10.0"
+    "lerna": "^2.11.0"
   }
 }
