@@ -1,7 +1,6 @@
 pragma solidity ^0.4.18;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
-import "@aragon/os/contracts/lib/zeppelin/math/SafeMath.sol";
 
 /*******************************************************************************
   Copyright 2018, That Planning Tab
@@ -33,15 +32,16 @@ contract AddressBook is AragonApp {
     }
 
     // The entries in the registry.
-    Entry[] entries;
+    mapping(address => Entry) entries;
+    mapping(bytes32 => bool) nameUsed;
 
     // Fired when an entry is added to the registry.
-    event EntryAdded(bytes32 id);
+    event EntryAdded(address addr);
     // Fired when an entry is removed from the registry.
-    event EntryRemoved(bytes32 id);
+    event EntryRemoved(address addr);
 
-    bytes32 public constant ADD_ENTRY_ROLE = bytes32(1);
-    bytes32 public constant REMOVE_ENTRY_ROLE = bytes32(2);
+    bytes32 public constant ADD_ENTRY_ROLE = keccak256("ADD_ENTRY_ROLE");
+    bytes32 public constant REMOVE_ENTRY_ROLE = keccak256("REMOVE_ENTRY_ROLE");
 
     /**
      * Add an entry to the registry.
@@ -51,15 +51,16 @@ contract AddressBook is AragonApp {
         address _address,
         string _name,
         string _entryType
-    ) public auth(ADD_ENTRY_ROLE) returns (bytes32 _id) {
-        _id = keccak256(_name);
+    ) public auth(ADD_ENTRY_ROLE) returns (address) {
+        require(!nameUsed[keccak256(_name)]);
 
-        Entry storage entry = entries[_id];
+        Entry storage entry = entries[_address];
         entry.entryAddress = _address;
         entry.name = _name;
         entry.entryType = _entryType;
 
-        EntryAdded(_id);
+        EntryAdded(_address);
+        return _address;
     }
 
     /**
@@ -67,10 +68,11 @@ contract AddressBook is AragonApp {
      * @param _id The ID of the entry to remove
      */
     function remove(
-        bytes32 _id
+        address _addr
     ) public auth(REMOVE_ENTRY_ROLE) {
-        delete entries[_id];
-        EntryRemoved(_id);
+        nameUsed[keccak256(entries[_addr].name)] = false;
+        delete entries[_addr];
+        EntryRemoved(_addr);
     }
 
     /**
@@ -78,9 +80,9 @@ contract AddressBook is AragonApp {
      * @param _id The ID of the entry to get
      */
     function get(
-        bytes32 _id
+        address _addr
     ) public constant returns (address, string, string) {
-        Entry storage entry = entries[_id];
+        Entry storage entry = entries[_addr];
 
         return(
             entry.entryAddress,
