@@ -1,16 +1,16 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-import { AragonApp, AppBar, Button } from '@aragon/ui'
+import { AragonApp, AppBar, Button, SidePanel } from '@aragon/ui'
 import AppLayout from './components/AppLayout'
 import Tools from './screens/Tools'
-import RangeVoting from './range-voting/RangeVoting'
+import { NewPayoutVotePanelContent } from './components/Panels'
 
 const initialState = {
   template: null,
   templateData: {},
   stepIndex: 0,
-  rangeWizardActive: false,
+  panelActive: false,
 }
 
 export default class App extends React.Component {
@@ -25,17 +25,17 @@ export default class App extends React.Component {
     }
   }
 
-  handleRangeWizardOpen = () => {
-    this.setState({ rangeWizardActive: true })
+  handlePanelOpen = () => {
+    this.setState({ panelActive: true })
   }
 
-  handleRangeWizardClose = () => {
-    this.setState({ rangeWizardActive: false })
+  handlePanelClose = () => {
+    this.setState({ panelActive: false })
   }
 
   render () {
     const barButton = (
-      <Button mode="strong" onClick={this.handleRangeWizardOpen}>
+      <Button mode="strong" onClick={this.handlePanelOpen}>
         New Payout
       </Button>
     )
@@ -51,18 +51,16 @@ export default class App extends React.Component {
           </AppLayout.Header>
           <AppLayout.ScrollWrapper>
             <AppLayout.Content>
-               <Tools onActivate={this.handleRangeWizardOpen} />
+               <Tools onActivate={this.handlePanelOpen} />
             </AppLayout.Content>
           </AppLayout.ScrollWrapper>
         </AppLayout>
-
-      {this.state.rangeWizardActive && (
-        <RangeVoting
-          visible={true}
-          app={this.props.app}
-          handleClose={this.handleRangeWizardClose}
-        />
-      )}
+        <SidePanel
+          opened={this.state.panelActive}
+          onClose={this.handlePanelClose}
+        >
+          <NewPayoutVotePanelContent />
+        </SidePanel>
       </AragonApp>
     )
   }

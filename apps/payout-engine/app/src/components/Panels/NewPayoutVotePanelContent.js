@@ -69,7 +69,7 @@ class NewPayoutVotePanel extends Component {
 
         return(
             <StyledPanel>
-                <Text size="xxlarge">New Payout Vote</Text>
+                <Text size="xxlarge">New Payout</Text>
                 <Text color={textTertiary}>Monthly Reward DAO</Text>
                 <Field label="DESCRIPTION">
                     <TextInput.Multiline
@@ -97,7 +97,7 @@ class NewPayoutVotePanel extends Component {
                 <Button
                     mode="strong"
                     type="submit"
-                    wide>Begin Vote</Button>
+                    wide>Create Payout</Button>
             </StyledPanel>
         )
     }

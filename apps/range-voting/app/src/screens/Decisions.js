@@ -216,7 +216,7 @@ class Decisions extends React.Component {
 
         <SidePanel title="Create Vote" opened={createVoteVisible} onClose={this.handleCreateVoteClose} >
            <NewVotePanelContent opened={createVoteVisible} onCreateVote={this.handleCreateVote} />
-	</SidePanel>
+	      </SidePanel>
 
       </Main>
     )
