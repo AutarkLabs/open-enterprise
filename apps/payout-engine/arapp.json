@@ -1,0 +1,17 @@
+{
+  "appName": "planning.aragonpm.eth",
+  "version": "1.0.0",
+  "roles": [
+    {
+      "name": "Start payout role",
+      "id": "START_PAYOUT_ROLE",
+      "params": []
+    },
+    {
+      "name": "Set distribution role",
+      "id": "SET_DISTRIBUTION_ROLE",
+      "params": []
+    }
+  ],
+  "path": "contracts/PayoutEngine.sol"
+}
