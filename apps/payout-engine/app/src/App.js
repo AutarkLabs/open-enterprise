@@ -1,10 +1,11 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import styled from 'styled-components'
 
-import { AragonApp, AppBar, Button, SidePanel } from '@aragon/ui'
+import { AragonApp, AppBar, Button, SidePanel, IconAdd } from '@aragon/ui'
 import AppLayout from './components/AppLayout'
 import Tools from './screens/Tools'
-import { NewPayoutVotePanelContent } from './components/Panels'
+import { NewAccountPanelContent } from './components/Panels'
 
 const initialState = {
   template: null,
@@ -35,9 +36,16 @@ export default class App extends React.Component {
 
   render () {
     const barButton = (
-      <Button mode="strong" onClick={this.handlePanelOpen}>
-        New Payout
-      </Button>
+      <DropDownButton>
+        <Button Button mode="strong">
+          New Account
+        </Button>
+        <DropDownContent>
+          <DropDownItem onClick={this.handlePanelOpen}><CloseIcon />Informational Payput</DropDownItem>
+          <DropDownItem><CloseIcon />One-time Payout</DropDownItem>
+          <DropDownItem><CloseIcon />Monthly Payout</DropDownItem>
+        </DropDownContent>
+      </DropDownButton>
     )
 
     return (
@@ -45,13 +53,13 @@ export default class App extends React.Component {
         <AppLayout>
           <AppLayout.Header>
             <AppBar
-              title="Payout Engine"
+              title="Allocations"
               endContent={barButton}
             />
           </AppLayout.Header>
           <AppLayout.ScrollWrapper>
             <AppLayout.Content>
-               <Tools onActivate={this.handlePanelOpen} />
+               <Tools onActivate={this.handlePanelOpen} button={barButton} />
             </AppLayout.Content>
           </AppLayout.ScrollWrapper>
         </AppLayout>
@@ -59,9 +67,44 @@ export default class App extends React.Component {
           opened={this.state.panelActive}
           onClose={this.handlePanelClose}
         >
-          <NewPayoutVotePanelContent />
+          <NewAccountPanelContent />
         </SidePanel>
       </AragonApp>
     )
   }
 }
+
+const DropDownContent = styled.div`
+  display: none;
+  position: absolute;
+  background-color: #FFFFFF;
+  border: 1px solid rgba(209,209,209,0.75);
+  box-shadow: 0 4px 4px 0 rgba(0,0,0,0.03);
+  border-radius: 3px;
+  padding: .5rem 0;
+  z-index: 1;
+  margin-left: -8rem;
+  white-space: nowrap;
+`
+const DropDownItem = styled.div`
+  padding: .5rem 1rem;
+  display: flex;
+  &:hover {
+    color: #00CBE6;
+    cursor: pointer;
+  }
+`
+
+const DropDownButton = styled.div`
+  position: relative;
+  display: inline-block;
+  &:hover ${DropDownContent} {
+    display: block;
+  }
+`
+
+const CloseIcon = styled(IconAdd)`
+  color: #98A0A2;
+  margin-right: .5rem;
+`
+

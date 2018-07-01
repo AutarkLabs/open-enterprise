@@ -53,7 +53,6 @@ class ToolCard extends Component {
     render () {
         const { label, description, stats, address } = this.props
         const { contextMenuItems } = this.state
-        console.log(this.props)
         const menuElements = contextMenuItems.map((item) =>
             <StyledMenuItem
                 key={item.text}
@@ -81,26 +80,82 @@ class ToolCard extends Component {
 
         return (
             <StyledCard>
-                <ContextMenu>
-                    {menuElements}
-                </ContextMenu>
-                <img src={icon} alt={`${label} icon`} />
-                <Text size="large" color={textPrimary}>
+                <MenuContainer>
+                    <ContextMenu>
+                        {menuElements}
+                    </ContextMenu>
+                </MenuContainer>
+                <IconContainer>
+                    <img src={icon} alt={`${label} icon`} />
+                </IconContainer>
+                <CardTitle size="large" color={textPrimary}>
                     {label}
-                </Text>
-                <Text size="small" color={textTertiary}>
-                    {description}
-                </Text>
-                {statsElements}
-                <Text size="xsmall" color={accent}>
+                </CardTitle>
+                <CardAddress size="small" color="#4A90E2">
                     {address}
-                </Text>
-                </StyledCard>
+                </CardAddress>
+               <StatsContainer>
+                    <StatsTitle>Balance</StatsTitle>
+                    <StatsValue>10 ETH</StatsValue>
+               </StatsContainer>
+               <StatsContainer>
+                    <StatsTitle>Limit</StatsTitle>
+                    <StatsValue>5 ETH / Payout</StatsValue>
+               </StatsContainer>
+            </StyledCard>
         )
     }
 }
 
 const StyledCard = styled(Card)`
+    height: 300px;
+    width: 280px;
+`
+
+const MenuContainer = styled.div`
+    float: right;
+    margin-top: 1rem;
+    margin-right: 1rem;
+`
+
+const CardTitle = styled(Text)`
+    display: block;
+    text-align: center;
+    font-weight: bold;
+    font-size: 20px;
+`
+
+const CardAddress = styled(Text)`
+    display: block;
+    text-align: center;
+    text-decoration: underline;
+    cursor: pointer;
+`
+
+const IconContainer = styled.div`
+    margin-top: 4rem;
+    margin-left: 100px;
+`
+
+const StatsContainer = styled.div`
+    width: 50%;
+    display: inline-block;
+    margin-top: 3rem;
+    padding-left: 1rem;
+`
+
+const StatsTitle = styled.p`
+    color: #6D777B;
+    font-size: 16px;
+    text-transform: lowercase;
+    font-variant: small-caps;
+`
+
+const StatsValue = styled.p`
+    font-size: 14px;
+`
+
+const StyledCardtest = styled(Card)`
     height: 312px;
     width: 280px;
     display: grid;

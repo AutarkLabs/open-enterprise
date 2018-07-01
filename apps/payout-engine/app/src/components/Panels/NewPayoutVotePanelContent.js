@@ -7,7 +7,8 @@ import {
     IconAdd,
     Text,
     TextInput,
-    theme
+    DropDown,
+    theme,
 } from '@aragon/ui'
 
 const { accent, textSecondary, textTertiary } = theme
@@ -69,9 +70,9 @@ class NewPayoutVotePanel extends Component {
 
         return(
             <StyledPanel>
-                <Text size="xxlarge">New Payout</Text>
-                <Text color={textTertiary}>Monthly Reward DAO</Text>
-                <Field label="DESCRIPTION">
+                <Text size="xxlarge">New Allocation</Text>
+                <Text color={textTertiary}>Title of Account</Text>
+                <Field label="Description">
                     <TextInput.Multiline
                         rows='3'
                         required
@@ -79,10 +80,8 @@ class NewPayoutVotePanel extends Component {
                         placeholder="Describe your vote"
                         wide/>
                 </Field>
-                <Field label="VOTING TOKENS">
-                    <TextInput
-                        required
-                        type="number"/>
+                <Field label="Allocation type">
+                    <DropDown items={['Informational', 'Token Transfer']} />
                 </Field>
                 <Field label="OPTIONS">
                     {optionsElements}
@@ -127,7 +126,7 @@ const StyledPanel = styled.div`
             resize: none;
         }
     }
-    & > :nth-child(5) {
+    & > :nth-child(4) {
         & input {
             width: calc(100% - 38px);
             margin-bottom: 10px;

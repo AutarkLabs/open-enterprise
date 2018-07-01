@@ -4,21 +4,25 @@ import { ToolStore } from '../stores/ToolStore'
 import { Subscribe } from 'laco-react'
 
 import { EmptyStateCard, SidePanel } from '@aragon/ui'
-import emptyIcon from '../assets/empty-card-icon.svg'
+import emptyIcon from '../assets/empty-allocation.svg'
 import ToolCard from '../components/ToolCard'
 import { NewPayoutVotePanelContent } from '../components/Panels'
 
 const EmptyIcon = () => <img src={emptyIcon} alt="" />
 
-const initialState = {
-  sidePanelOpened: false,
-}
-
 class Tools extends React.Component {
   static defaultProps = {}
 
   state = {
-    ...initialState,
+    sidePanelOpened: false,
+    tools: [{
+      label: 'Monthly Reward DAO',
+      address: '0x45f3...5567',
+      stats: [
+          {label: 'BALANCE', value: '10 ETH' },
+          {label: 'BUDGET', value: '5 ETH / Month'}
+      ]
+    }]
   }
 
   openSidePanel = () => {
@@ -31,16 +35,16 @@ class Tools extends React.Component {
 
   render() {
     const { onActivate } = this.props
-    const { sidePanelOpened } = this.state
+    const { sidePanelOpened, tools } = this.state
 
-    if (ToolStore.get().tools.length === 0) {
+    if (!tools.length) {
       return (
         <StyledEmptyWrapper>
           <EmptyStateCard
             icon={EmptyIcon}
-            title="You have not created any payouts"
-            text="Get started now by creating a new payout"
-            actionText="New Payout"
+            title="You have not created any allocation accounts."
+            text="Get started now by creating a new account."
+            actionText="New Account"
             onActivate={onActivate}
           />
         </StyledEmptyWrapper>
@@ -49,13 +53,7 @@ class Tools extends React.Component {
 
     return (
       <StyledTools>
-        <Subscribe to={[ToolStore]}>
-          {({ tools }) => (
-            tools.map((tool) => 
-              (<ToolCard {...tool} openSidePanelLink={this.openSidePanel} />)
-            )
-          )}
-        </Subscribe>
+        {tools.map((tool) => <ToolCard {...tool} openSidePanelLink={this.openSidePanel} />)}
         <SidePanel
           opened={sidePanelOpened}
           onClose={this.closeSidePanel}
