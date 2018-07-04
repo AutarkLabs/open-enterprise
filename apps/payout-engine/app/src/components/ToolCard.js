@@ -51,7 +51,7 @@ class ToolCard extends Component {
     openManageParemeters = () => {}
 
     render () {
-        const { label, description, stats, address } = this.props
+        const { title, description, balance, limit, address } = this.props
         const { contextMenuItems } = this.state
         const menuElements = contextMenuItems.map((item) =>
             <StyledMenuItem
@@ -63,21 +63,6 @@ class ToolCard extends Component {
             </StyledMenuItem>
         )
 
-        const statsElements = stats.map((stat) =>
-            <React.Fragment key={stat.label}>
-                <Text
-                    size="xxsmall"
-                    color={textTertiary}>
-                    {stat.label}
-                </Text>
-                <Text
-                    size="xsmall"
-                    color={textPrimary}>
-                    {stat.value}
-                </Text>
-            </React.Fragment>
-        )
-
         return (
             <StyledCard>
                 <MenuContainer>
@@ -86,21 +71,21 @@ class ToolCard extends Component {
                     </ContextMenu>
                 </MenuContainer>
                 <IconContainer>
-                    <img src={icon} alt={`${label} icon`} />
+                    <img src={icon} alt={`${title} icon`} />
                 </IconContainer>
                 <CardTitle size="large" color={textPrimary}>
-                    {label}
+                    {title}
                 </CardTitle>
                 <CardAddress size="small" color="#4A90E2">
                     {address}
                 </CardAddress>
                <StatsContainer>
                     <StatsTitle>Balance</StatsTitle>
-                    <StatsValue>10 ETH</StatsValue>
+                    <StatsValue>{balance} ETH</StatsValue>
                </StatsContainer>
                <StatsContainer>
                     <StatsTitle>Limit</StatsTitle>
-                    <StatsValue>5 ETH / Payout</StatsValue>
+                    <StatsValue>{limit.value} {limit.label} / Payout</StatsValue>
                </StatsContainer>
             </StyledCard>
         )
@@ -134,7 +119,7 @@ const CardAddress = styled(Text)`
 
 const IconContainer = styled.div`
     margin-top: 4rem;
-    margin-left: 100px;
+    margin-left: 110px;
 `
 
 const StatsContainer = styled.div`

@@ -17,13 +17,13 @@ const isIntegerString = (value) => /^[0-9]*$/.test(value)
 
 class NewAccountPanel extends Component {
   state = {
+    items: ['ETH', 'ARA', 'GIV'],
     activeItem: 0,
     title: '',
-    limit: null,
-  }
-
-  handleLimitChange = (index) => {
-    this.setState({ activeItem: index })
+    limit: {
+      value: null,
+      label: ''
+    },
   }
 
   titleChange = (e) => {
@@ -32,39 +32,62 @@ class NewAccountPanel extends Component {
 
   limitChange = (e) => {
     if (isIntegerString(e.target.value)) {
-      this.setState({ limit: e.target.value })
+      const { items, activeItem } = this.state
+      this.setState({
+        limit: {
+          value: e.target.value,
+          label: items[activeItem]
+        }
+      })
     }
   }
-    render() {
-        const {
-            title,
-            limit,
-        } = this.state
 
-      return (
-          <div>
-            <Text size="xxlarge">New Account</Text>
-            <FieldTitle>Title<Required>*</Required></FieldTitle>
-            <FieldInput
-              onChange={this.titleChange}
-              placeholder="Enter title"
-              type="title"
-              value={title}
-            />
-            <FieldTitle>Limit<Required>*</Required></FieldTitle>
-            <FieldText>What sort of limits do you want to set per allocation vote?</FieldText>
-            <LimitInput
-              onChange={this.limitChange}
-              placeholder="e.g. 20"
-              type="limit"
-              value={isIntegerString(limit) ? limit : ''}
-            />
-            <DropDown items={['ETH', 'ARA', 'GIV']} active={this.state.activeItem} onChange={this.handleLimitChange} />
-            <Button mode="strong" type="submit" wide >
-              Create Account
-            </Button>
-          </div>
-      )
+  createAccount = () => {
+    const { onCreateAccount, onClose } = this.props
+    onCreateAccount(this.state)
+    this.state.limit = {
+      value: null,
+      label: '',
+    }
+    this.state.title = ''
+    onClose()
+  }
+
+  render() {
+    const {
+        title,
+        limit,
+        items,
+    } = this.state
+
+    return (
+        <div>
+          <Text size="xxlarge">New Account</Text>
+          <FieldTitle>Title<Required>*</Required></FieldTitle>
+          <FieldInput
+            onChange={this.titleChange}
+            placeholder="Enter title"
+            type="title"
+            value={title}
+          />
+          <FieldTitle>Limit<Required>*</Required></FieldTitle>
+          <FieldText>What sort of limits do you want to set per allocation vote?</FieldText>
+          <LimitInput
+            onChange={this.limitChange}
+            placeholder="e.g. 20"
+            type="limit"
+            value={isIntegerString(limit.value) ? limit.value : ''}
+          />
+          <DropDown
+            items={items}
+            active={this.state.activeItem}
+            onChange={(activeItem) => this.setState({ activeItem })}
+          />
+          <Button mode="strong" type="submit" wide onClick={this.createAccount} >
+            Create Account
+          </Button>
+        </div>
+    )
   }
 }
 

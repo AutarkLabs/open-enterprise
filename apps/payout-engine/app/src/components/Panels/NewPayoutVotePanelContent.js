@@ -17,7 +17,9 @@ const initialState = {
     description: '',
     votingTokens: null,
     options: ['Mars', 'The Moon'],
-    optionInputText: ''
+    optionInputText: '',
+    activeItem: 0,
+    items: ['Informational', 'Token Transfer']
 }
 
 class NewPayoutVotePanel extends Component {
@@ -81,7 +83,12 @@ class NewPayoutVotePanel extends Component {
                         wide/>
                 </Field>
                 <Field label="Allocation type">
-                    <DropDown items={['Informational', 'Token Transfer']} />
+                    <DropDown
+                        required
+                        items={this.state.items}
+                        active={this.state.activeItem}
+                        onChange={(activeItem) => this.setState({ activeItem })}
+                    />
                 </Field>
                 <Field label="OPTIONS">
                     {optionsElements}
@@ -126,7 +133,7 @@ const StyledPanel = styled.div`
             resize: none;
         }
     }
-    & > :nth-child(4) {
+    & > :nth-child(5) {
         & input {
             width: calc(100% - 38px);
             margin-bottom: 10px;

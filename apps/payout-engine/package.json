@@ -12,6 +12,7 @@
     "@aragon/os": "^3.0.2",
     "@aragon/react-scripts": "^1.1.0-aragon.4",
     "@aragon/ui": "^0.15.0",
+    "babel-core": "^6.26.3",
     "bignumber.js": "^7.2.1",
     "date-fns": "^1.29.0",
     "graphql-request": "1.6.0",

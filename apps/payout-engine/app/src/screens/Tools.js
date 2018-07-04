@@ -34,10 +34,10 @@ class Tools extends React.Component {
   }
 
   render() {
-    const { onActivate } = this.props
+    const { onActivate, accounts } = this.props
     const { sidePanelOpened, tools } = this.state
 
-    if (!tools.length) {
+    if (!accounts.length) {
       return (
         <StyledEmptyWrapper>
           <EmptyStateCard
@@ -53,7 +53,7 @@ class Tools extends React.Component {
 
     return (
       <StyledTools>
-        {tools.map((tool) => <ToolCard {...tool} openSidePanelLink={this.openSidePanel} />)}
+        {accounts.map((account) => <ToolCard {...account} openSidePanelLink={this.openSidePanel} />)}
         <SidePanel
           opened={sidePanelOpened}
           onClose={this.closeSidePanel}
