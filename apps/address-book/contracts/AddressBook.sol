@@ -45,7 +45,9 @@ contract AddressBook is AragonApp {
 
     /**
      * Add an entry to the registry.
-     * @param _data The entry to add to the registry
+     * @param _address The address of the entry to add to the registry
+     * @param _name The name of the entry to add to the registry
+     * @param _entryType The type of the entry to add to the registry
      */
     function add(
         address _address,
@@ -65,7 +67,7 @@ contract AddressBook is AragonApp {
 
     /**
      * Remove an entry from the registry.
-     * @param _id The ID of the entry to remove
+     * @param _addr The ID of the entry to remove
      */
     function remove(
         address _addr
@@ -77,7 +79,7 @@ contract AddressBook is AragonApp {
 
     /**
      * Get an entry from the registry.
-     * @param _id The ID of the entry to get
+     * @param _addr The ID of the entry to get
      */
     function get(
         address _addr
