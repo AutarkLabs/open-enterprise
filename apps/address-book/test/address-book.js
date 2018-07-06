@@ -53,11 +53,27 @@ contract('AddressBook App', accounts => {
         beforeEach(async () => {
         })
 
-        it('add entry to addressbook', async () => {
+        it('add to, get, and remove entry from addressbook', async () => {
             app.add(starfleet, "Starfleet", "Group")
             app.add(jeanluc, "Jean-Luc Picard", "Individual")
             app.add(borg, "Borg", "N/A")
-
+            entry1 = await app.get(starfleet)
+            entry2 = await app.get(jeanluc)
+            entry3 = await app.get(borg)
+            assert.equal(entry1[0], starfleet)
+            assert.equal(entry1[1], "Starfleet")
+            assert.equal(entry1[2], "Group")
+            assert.equal(entry2[0], jeanluc)
+            assert.equal(entry2[1], "Jean-Luc Picard")
+            assert.equal(entry2[2], "Individual")
+            assert.equal(entry3[0], borg)
+            assert.equal(entry3[1], "Borg")
+            assert.equal(entry3[2], "N/A")
+            app.remove(borg)
+            entry3 = await app.get(borg)
+            assert.notEqual(entry3[0], borg)
+            assert.notEqual(entry3[1], "Borg")
+            assert.notEqual(entry3[2], "N/A")
         })
     })
 })
