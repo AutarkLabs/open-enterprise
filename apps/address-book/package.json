@@ -1,5 +1,5 @@
 {
-  "name": "app-name",
+  "name": "@tpt/apps-address-book",
   "version": "1.0.0",
   "description": "",
   "dependencies": {
