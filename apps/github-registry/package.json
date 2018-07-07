@@ -9,7 +9,7 @@
     "@aragon/apps-vault": "^2.0.1",
     "@aragon/apps-voting": "^1.0.0",
     "@aragon/client": "^1.0.0-beta.8",
-    "@aragon/os": "^3.0.2",
+    "@aragon/os": "^3.1.9",
     "@aragon/react-scripts": "^1.1.0-aragon.4",
     "@aragon/ui": "^0.15.0",
     "bignumber.js": "^7.2.1",

@@ -1,5 +1,5 @@
 {
-  "name": "@tpt/apps-range-voting",
+  "name": "@tpt/apps-address-book",
   "version": "1.0.0",
   "main": "index.js",
   "description": "",
@@ -27,7 +27,6 @@
     "solium": "^1.0.4",
     "ethereumjs-abi": "^0.6.4",
     "parcel-bundler": "^1.8.1",
-    "@aragon/os": "^3.1.2",
     "planning-app": "^1.0.1",
     "@aragon/cli": "^4.0.6",
     "@aragon/test-helpers": "^1.0.0",

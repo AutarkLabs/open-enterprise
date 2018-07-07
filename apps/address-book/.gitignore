@@ -3,4 +3,4 @@ build
 package-lock.json
 .cache
 dist
-public
+public/
