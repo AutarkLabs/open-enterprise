@@ -53,8 +53,8 @@ export default class App extends React.Component {
         <AppLayout>
           <AppLayout.Header>
             <AppBar
-              title="Decisions"
-              endContent={barButton}
+              title="Range Voting"
+              // endContent={barButton}
             />
           </AppLayout.Header>
           <AppLayout.ScrollWrapper>

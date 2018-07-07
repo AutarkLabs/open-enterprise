@@ -15,12 +15,12 @@ const ATTRIBUTES = {
     color: theme.textSecondary,
   },
   [VOTE_STATUS_SUCCESSFUL]: {
-    label: 'Finished',
+    label: 'Approved',
     Icon: IconCheck,
     color: theme.positive,
   },
   [VOTE_STATUS_FAILED]: {
-    label: 'Failed',
+    label: 'Rejected',
     Icon: IconCross,
     color: theme.negative,
   },
@@ -38,7 +38,6 @@ const VoteStatus = ({ vote: { data, support, quorum } }) => {
 }
 
 const Main = styled.span`
-  font-weight: 600;
   white-space: nowrap;
   color: ${({ color }) => color};
 `
