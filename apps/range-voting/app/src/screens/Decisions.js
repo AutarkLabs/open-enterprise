@@ -10,18 +10,9 @@ import { safeDiv } from '../utils/math-utils'
 import { hasLoadedVoteSettings } from '../utils/vote-settings'
 import { VOTE_YEA } from '../utils/vote-types'
 import { isBefore } from 'date-fns'
-import {
-    EmptyStateCard,
-    SidePanel
-} from '@aragon/ui'
-import {
-    VotePanelContent,
-    NewVotePanelContent
-} from '../components/Panels'
-import {
-    EMPTY_CALLSCRIPT,
-    getQuorumProgress
-} from '../utils/vote-utils'
+import { EmptyStateCard, SidePanel } from '@aragon/ui'
+import { VotePanelContent, NewVotePanelContent } from '../components/Panels'
+import { EMPTY_CALLSCRIPT, getQuorumProgress } from '../utils/vote-utils'
 
 const tokenAbi = [].concat(tokenBalanceOfAbi, tokenDecimalsAbi)
 
@@ -36,43 +27,72 @@ class Decisions extends React.Component {
     tokenAddress: null,
     supportRequiredPct: 74,
     userAccount: '',
-    votes: [{
-	voteId: 1,
-	data: {
-		creator: '0x123342',
-		executed: false,
-		minAcceptQuorum: 70,
-		snapshotBlock: 10,
-		startDate: 2123222340356,
-		totalVoters: 30,
-		script: 'v_script',
-		description: 'this is the first hardcoded vote',
-		candidates: {
-			'not necessarily': 12,
-			'possibly': 3,
-			'maybe': 9,
-			'perhaps': 0
-		}
-	}
-    },{
-	voteId: 3,
-	data: {
-		creator: '0x123342',
-		executed: true,
-		minAcceptQuorum: 98,
-		snapshotBlock: 11,
-		startDate: 1123222340356,
-		totalVoters: 33,
-		script: 'v_script 2',
-		description: 'this is second hardcoded vote',
-		candidates: {
-			'orange': 120,
-			'octarine': 13,
-			'darkish grey': 339,
-			'almost blue': 0
-		}
-	}
-    }],
+    votes: [
+      {
+        voteId: 1,
+        data: {
+          type: 'allocation',
+          creator: '0x123342',
+          executed: false,
+          minAcceptQuorum: 70,
+          snapshotBlock: 10,
+          startDate: 2123222340356,
+          totalVoters: 30,
+          script: 'v_script',
+          description: 'this is the first hardcoded vote',
+          options: [
+            {
+              label: 'not necessarily',
+              value: 12
+            },
+            {
+              label: 'possibly',
+              value: 3
+            },
+            {
+              label: 'maybe',
+              value: 9
+            },
+            {
+              label: 'perhaps',
+              value: 0
+            },
+          ],
+        },
+      },
+      {
+        voteId: 3,
+        data: {
+          type: 'informational',
+          creator: '0x123342',
+          executed: true,
+          minAcceptQuorum: 98,
+          snapshotBlock: 11,
+          startDate: 1123222340356,
+          totalVoters: 33,
+          script: 'v_script 2',
+          description: 'this is second hardcoded vote',
+          options: [
+            {
+              label: 'orange',
+              value: 120
+            },
+            {
+              label: 'octarine',
+              value: 13
+            },
+            {
+              label: 'darkish grey',
+              value: 339
+            },
+            {
+              label: 'almost blue',
+              value: 0
+            },
+          ],
+        },
+      },
+    ],
     voteTime: -1,
   }
   constructor(props) {
@@ -151,11 +171,10 @@ class Decisions extends React.Component {
       voteVisible,
     } = this.state
 
-
     const displayVotes = settingsLoaded && votes.length > 0
     const supportRequired = settingsLoaded ? supportRequiredPct / pctBase : -1
 
-    console.log ('render: ' + settingsLoaded)
+    console.log('render: ' + settingsLoaded)
 
     // Add useful properties to the votes
     const preparedVotes = displayVotes
@@ -179,24 +198,30 @@ class Decisions extends React.Component {
         : preparedVotes.find(vote => vote.voteId === currentVoteId)
 
     return (
-       <Main>
-
-          <AppLayout.ScrollWrapper>
-              {displayVotes ? (
-                <Votes votes={preparedVotes} onSelectVote={this.handleVoteOpen} />
-              ) : (
-                <EmptyStateCard
-                 icon={EmptyIcon}
-                  title="No votes yet"
-                  text="No votes"
-                  actionText="New Vote"
-                  onActivate={this.handleCreateVoteOpen}
-                />
-              )}
-          </AppLayout.ScrollWrapper>
+      <Main>
+        <AppLayout.ScrollWrapper>
+          {displayVotes ? (
+            <Votes votes={preparedVotes} onSelectVote={this.handleVoteOpen} />
+          ) : (
+            <EmptyStateCard
+              icon={EmptyIcon}
+              title="No votes yet"
+              text="No votes"
+              actionText="New Vote"
+              onActivate={this.handleCreateVoteOpen}
+            />
+          )}
+        </AppLayout.ScrollWrapper>
 
         {displayVotes && (
-          <SidePanel title={ currentVote ? `Vote #${currentVoteId} (${currentVote.open ? 'Open' : 'Closed'})` : 'currentVote' }
+          <SidePanel
+            title={
+              currentVote
+                ? `Vote #${currentVoteId} (${
+                    currentVote.open ? 'Open' : 'Closed'
+                  })`
+                : 'currentVote'
+            }
             opened={Boolean(!createVoteVisible && voteVisible)}
             onClose={this.handleVoteClose}
             onTransitionEnd={this.handleVoteTransitionEnd}
@@ -214,10 +239,17 @@ class Decisions extends React.Component {
           </SidePanel>
         )}
 
-        <SidePanel title="Create Vote" opened={createVoteVisible} onClose={this.handleCreateVoteClose} >
-           <NewVotePanelContent opened={createVoteVisible} onCreateVote={this.handleCreateVote} />
-	</SidePanel>
-
+        <SidePanel
+          title="Create Vote"
+          opened={createVoteVisible}
+          onClose={this.handleCreateVoteClose}
+        >
+          <NewVotePanelContent
+            opened={createVoteVisible}
+            onCreateVote={this.handleCreateVote}
+            etherscanBaseUrl="https://rinkeby.etherscan.io"
+          />
+        </SidePanel>
       </Main>
     )
   }

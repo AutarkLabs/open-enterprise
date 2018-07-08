@@ -16,9 +16,6 @@ const ProgressBar = ({ progress, candidateName }) => (
             color={theme.accent}
             style={{ width: `${progress * 100}%` }}
           />
-          <Text size="xsmall" color={theme.textSecondary}>
-            { Math.round (progress * 100) }%
-          </Text>
         </Base>
       </Main>
     )}
@@ -40,17 +37,16 @@ const Main = styled.div`
   align-items: center;
 `
 const Base = styled.div`
-  margin-left: 10px;
   width: 100%;
-  height: 16px;
-  background: #edf3f6;
+  height: 6px;
+  background-color: #edf3f6;
   border-radius: 2px;
   text-align: right;
   line-height: 14px;
   padding-right: 6px;
 `
 const Progress = styled.div`
-  height: 16px;
+  height: 6px;
   background: ${({ color }) => color};
   border-radius: 2px;
   float: left;

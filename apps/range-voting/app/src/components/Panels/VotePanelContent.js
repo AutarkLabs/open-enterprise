@@ -85,7 +85,7 @@ class VotePanelContent extends React.Component {
     ))
   }
   render() {
-    const { network: { etherscanBaseUrl }, vote, ready } = this.props
+    const { etherscanBaseUrl, vote, ready } = this.props
     const { userBalance, userCanVote } = this.state
     if (!vote) {
       return null
