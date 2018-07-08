@@ -45,6 +45,7 @@ contract PayoutEngine is AragonApp {
         uint256 amount;
         uint256 startTime;
         bool distSet;
+        address token;
     }
 
     Vault vault;
@@ -86,11 +87,13 @@ contract PayoutEngine is AragonApp {
     */
     function newPayout(
         string _metadata,
-        uint256 _limit
+        uint256 _limit,
+        address _token
     ) external auth(START_PAYOUT_ROLE) returns(uint256) {
         Payout payout = new Payout(_candidateKeys, _candidateAddresses, _metadata);
         payout.metadata = _metadata;
         payout.limit = _limit;
+        payout.token = _token;
         payouts.push(payout);
     }
 
@@ -147,7 +150,7 @@ contract PayoutEngine is AragonApp {
     *         processed and funds will be sent the appropriate places.
     *
     */
-    function runPayout(uint256 _payoutId) external payable{
+    function executePayout(uint256 _payoutId) external payable auth(EXECUTE_PAYOUT_ROLE){
         Payout payout = payouts[_payoutId];
         require(!payout.informational);
         require(payout.distSet);
@@ -171,7 +174,7 @@ contract PayoutEngine is AragonApp {
             vault.transfer(vault.ETH, this, remainingBalance, 0);
         }
 
-        pointsPer = this.balance.div(totalSupport);
+        pointsPer = payout.amount.div(totalSupport);
 
         //handle vault
 
