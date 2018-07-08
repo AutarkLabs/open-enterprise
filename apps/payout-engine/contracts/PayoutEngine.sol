@@ -2,6 +2,8 @@ pragma solidity ^0.4.18;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
 
+import "@aragon/apps-vault/contracts/Vault.sol";
+
 import "@aragon/os/contracts/lib/zeppelin/math/SafeMath.sol";
 
 import "@aragon/os/contracts/lib/zeppelin/math/SafeMath64.sol";
@@ -36,14 +38,23 @@ contract PayoutEngine is AragonApp {
         address[] candidateAddresses;
         uint256[] supports;
         string metadata;
+        uint256 limit;
+        bool recurring;
+        bool informational;
+        uint256 period;
+        uint256 amount;
+        uint256 startTime;
+        bool distSet;
     }
 
-    bool distSet = false;
+    Vault vault;
 
-    Payout payout;
+
+    Payout[] payouts;
 
     bytes32 constant public START_PAYOUT_ROLE = keccak256("START_PAYOUT_ROLE");
     bytes32 constant public SET_DISTRIBUTION_ROLE = keccak256("SET_DISTRIBUTION_ROLE");
+    bytes32 constant public EXECUTE_PAYOUT_ROLE = keccak256("EXECUTE_PAYOUT_ROLE");
 
     /**
     * @dev This is the function that setups who the candidates will be, and
@@ -58,14 +69,32 @@ contract PayoutEngine is AragonApp {
     *
     */
     function initializePayout(
-        bytes32[] _candidateKeys,
-        address[] _candidateAddresses,
-        string _metadata
-    ) external auth(START_PAYOUT_ROLE) {
-        payout.candidateKeys = _candidateKeys;
-        payout.candidateAddresses = _candidateAddresses;
-        payout.metadata = _metadata;
+        Vault _vault
+    ) external {
+        vault = _vault;
     }
+
+
+    /**
+    * @dev This is the function that setups who the candidates will be, and
+    *      where the funds will go for the payout. This is where the payout
+    *      object needs to be created in the payouts array.
+    * @notice Start a payout with the specified candidates and addresses.
+    *         None of the distribution or payments are handled in this step.
+    * @param _metadata Any relevent label for the payout
+    *
+    */
+    function newPayout(
+        string _metadata,
+        uint256 _limit
+    ) external auth(START_PAYOUT_ROLE) returns(uint256) {
+        Payout payout = new Payout(_candidateKeys, _candidateAddresses, _metadata);
+        payout.metadata = _metadata;
+        payout.limit = _limit;
+        payouts.push(payout);
+    }
+
+
 
     /**
     * @dev This is the function that the RangeVote will call. It doesn’t need
@@ -76,7 +105,33 @@ contract PayoutEngine is AragonApp {
     * @param _candidateKeys The array of keys for all candidates in this payout
     * @param _supports The Array of all support values for the various candidates
     */
-    function setDistribution(bytes32[] _candidateKeys, uint256[] _supports) external auth(SET_DISTRIBUTION_ROLE){
+    function setDistribution(
+        bytes32[] _candidateKeys,
+        uint256[] _supports,
+        uint256 _payoutId,
+        bool _informational,
+        bool _recurring,
+        uint256 _period,
+        uint256 _amount
+    ) external auth(SET_DISTRIBUTION_ROLE){
+        Payout payout = payouts[_payoutId];
+        require(_amount <= payout.limit);
+        payout.informational = _informational;
+        payout.recurring = _recurring;
+        if(!_informational){
+            payout.amount = _amount;
+        } else {
+            payout.amount = 0;
+        }
+        if(_recurring){
+            // minimum granularity is a single day
+            require(period > 86399);
+            payout.period = _period;
+            payout.startTime = now;
+        } else {
+            payout.period = 0;
+        }
+
         distSet = true;
         for(uint i = 0; i < _candidateKeys.length; i++){
             require(payout.candidateKeys[i] == _candidateKeys[i]);
@@ -92,8 +147,17 @@ contract PayoutEngine is AragonApp {
     *         processed and funds will be sent the appropriate places.
     *
     */
-    function runPayout() external payable{
-        require(distSet);
+    function runPayout(uint256 _payoutId) external payable{
+        Payout payout = payouts[_payoutId];
+        require(!payout.informational);
+        require(payout.distSet);
+        if(payout.recurring){
+            uint256 payoutTime = payout.startTime.add(payout.period);
+            require(payoutTime > now);
+            payout.startTime = payoutTime;
+        } else {
+            payout.distSet = false;
+        }
         uint256 totalSupport;
         uint256 pointsPer;
 
@@ -102,6 +166,8 @@ contract PayoutEngine is AragonApp {
         }
 
         pointsPer = this.balance.div(totalSupport);
+
+        //handle vault
 
         for(i = 0; i < payout.candidateAddresses.length; i++){
             payout.candidateAddresses[i].transfer(payout.supports[i].mul(pointsPer));
