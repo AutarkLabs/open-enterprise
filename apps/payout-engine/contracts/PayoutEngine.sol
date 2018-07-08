@@ -165,6 +165,12 @@ contract PayoutEngine is AragonApp {
             totalSupport += payout.supports[i];
         }
 
+        if(this.balance < amount){
+            uint256 remainingBalance = amount.sub(this.balance);
+            require(!(vault.balance < remainingBalance));
+            vault.transfer(vault.ETH, this, remainingBalance, 0);
+        }
+
         pointsPer = this.balance.div(totalSupport);
 
         //handle vault
