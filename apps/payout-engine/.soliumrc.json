@@ -1,0 +1,21 @@
+{
+  "extends": "solium:recommended",
+  "rules": {
+    "imports-on-top": 0,
+    "variable-declarations": 1,
+    "array-declarations": 1,
+    "operator-whitespace": 1,
+    "lbrace": 1,
+    "mixedcase": 1,
+    "camelcase": 1,
+    "uppercase": 1,
+    "no-empty-blocks": 1,
+    "no-unused-vars": 1,
+    "quotes": 1,
+    "blank-lines": 1,
+    "indentation": ["error", 4],
+    "whitespace": 1,
+    "deprecated-suicide": 1,
+    "pragma-on-top": 1
+  }
+}

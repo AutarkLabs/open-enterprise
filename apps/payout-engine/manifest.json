@@ -1,0 +1,10 @@
+{
+  "name": "Allocations",
+  "description": "Determine the distribution of funds",
+  "icons": [{
+    "src": "images/icon.svg",
+    "sizes": "192x192"
+  }],
+  "start_url": "/public/index.html",
+  "script": "/public/script.js"
+}
