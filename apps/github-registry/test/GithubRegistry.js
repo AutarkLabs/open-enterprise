@@ -5,7 +5,7 @@ const timeTravel = require('../test-helpers/timeTravel')(web3)
 const { encodeCallScript, EMPTY_SCRIPT } = require('../test-helpers/evmScript')
 const ExecutionTarget = artifacts.require('ExecutionTarget')
 
-const RangeVoting = artifacts.require('RangeVoting')
+const GithubRegistry = artifacts.require('GithubRegistry')
 const MiniMeToken = artifacts.require('@aragon/os/contracts/lib/minime/MiniMeToken')
 const DAOFactory = artifacts.require('@aragon/os/contracts/factory/DAOFactory')
 const EVMScriptRegistryFactory = artifacts.require('@aragon/os/contracts/factory/EVMScriptRegistryFactory')
@@ -19,13 +19,14 @@ const createdVoteId = receipt => receipt.logs.filter(x => x.event == 'StartVote'
 const ANY_ADDR = ' 0xffffffffffffffffffffffffffffffffffffffff'
 
 
-contract('RangeVoting App', accounts => {
+contract('Github Registry App', accounts => {
     let daoFact, app, token, executionTarget = {}
 
     const RangeVotingTime = 1000
     const root = accounts[0]
 
     before(async () => {
+        //Create Base DAO Contracts
         const kernelBase = await getContract('Kernel').new()
         const aclBase = await getContract('ACL').new()
         const regFact = await EVMScriptRegistryFactory.new()
@@ -33,19 +34,25 @@ contract('RangeVoting App', accounts => {
     })
 
     beforeEach(async () => {
+        //Deploy Base DAO Contracts
         const r = await daoFact.newDAO(root)
         const dao = Kernel.at(r.logs.filter(l => l.event == 'DeployDAO')[0].args.dao)
         const acl = ACL.at(await dao.acl())
 
+        //Create DAO admin role
         await acl.createPermission(root, dao.address, await dao.APP_MANAGER_ROLE(), root, { from: root })
+        
+        //Deploy Contract to be tested
+        const receipt = await dao.newAppInstance('0x1234', (await GithubRegistry.new()).address, { from: root })
+        app = GithubRegistry.at(receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
 
-        const receipt = await dao.newAppInstance('0x1234', (await RangeVoting.new()).address, { from: root })
-        app = RangeVoting.at(receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
-
-        await acl.createPermission(ANY_ADDR, app.address, await app.CREATE_VOTES_ROLE(), root, { from: root })
-        await acl.createPermission(ANY_ADDR, app.address, await app.ADD_CANDIDATES_ROLE(), root, { from: root })
-        await acl.createPermission(ANY_ADDR, app.address, await app.MODIFY_PARTICIPATION_ROLE(), root, { from: root })
+        //create ACL permissions
+        await acl.createPermission(ANY_ADDR, app.address, await app.ADD_ENTRY_ROLE(), root, { from: root })
+        await acl.createPermission(ANY_ADDR, app.address, await app.REMOVE_ENTRY_ROLE(), root, { from: root })
+        await acl.createPermission(ANY_ADDR, app.address, await app.ADD_BOUNTY_ROLE(), root, { from: root })
     })
+
+    context('')
 
     context('normal token supply', () => {
         const holder19 = accounts[0]

@@ -48,7 +48,7 @@ contract GithubRegistry is AragonApp {
         repos[_id] = GithubRepo(_owner, _repo);
         //add the index to the repo struct and push the id to the repo array
         repos[_id].index = repoIDs.push(_id) - 1; 
-        emit EntryAdded(_id);
+        RepoAdded(_id);
     }
 
     /**
@@ -63,7 +63,7 @@ contract GithubRegistry is AragonApp {
         repoIDs[repos[_id].index] = repoIDs[repoIDs.length - 1];
         repoIDs.length = repoIDs.length - 1;
         delete repos[_id];
-        EntryRemoved(_id);
+        RepoRemoved(_id);
     }
 
     function getRepoArrayLength() public view returns (uint256) {
@@ -92,6 +92,6 @@ contract GithubRegistry is AragonApp {
         bytes32 _repoID, uint256 _issueNumber, uint256 _bountySize
     ) internal {
         repos[_repoID].issues[_issueNumber] = GithubIssue(_repoID, _issueNumber, true, _bountySize, address(0));
-        emit BountyAdded(repos[_repoID].owner, repos[_repoID].repo, _issueNumber, _bountySize);
+        BountyAdded(repos[_repoID].owner, repos[_repoID].repo, _issueNumber, _bountySize);
     }
 }
