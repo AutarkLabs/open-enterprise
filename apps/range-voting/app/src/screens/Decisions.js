@@ -11,7 +11,7 @@ import { hasLoadedVoteSettings } from '../utils/vote-settings'
 import { VOTE_YEA } from '../utils/vote-types'
 import { isBefore } from 'date-fns'
 import { EmptyStateCard, SidePanel } from '@aragon/ui'
-import { VotePanelContent, NewVotePanelContent } from '../components/Panels'
+import { VotePanelContent } from '../components/Panels'
 import { EMPTY_CALLSCRIPT, getQuorumProgress } from '../utils/vote-utils'
 
 const tokenAbi = [].concat(tokenBalanceOfAbi, tokenDecimalsAbi)
@@ -238,18 +238,6 @@ class Decisions extends React.Component {
             )}
           </SidePanel>
         )}
-
-        <SidePanel
-          title="Create Vote"
-          opened={createVoteVisible}
-          onClose={this.handleCreateVoteClose}
-        >
-          <NewVotePanelContent
-            opened={createVoteVisible}
-            onCreateVote={this.handleCreateVote}
-            etherscanBaseUrl="https://rinkeby.etherscan.io"
-          />
-        </SidePanel>
       </Main>
     )
   }
