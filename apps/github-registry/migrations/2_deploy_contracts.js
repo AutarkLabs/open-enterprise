@@ -1,4 +1,4 @@
-var App = artifacts.require('./App.sol')
+var App = artifacts.require('./GithubRegistry.sol')
 
 module.exports = function (deployer) {
   deployer.deploy(App)

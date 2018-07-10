@@ -5,8 +5,8 @@ import "@aragon/os/contracts/apps/AragonApp.sol";
 contract GithubRegistry is AragonApp {
 
     struct GithubRepo {
-        bytes32 owner;
-        bytes32 repo;
+        bytes16 owner;
+        bytes16 repo;
         mapping(uint256 => GithubIssue) issues;
         uint index;
     }
@@ -30,7 +30,7 @@ contract GithubRegistry is AragonApp {
     // Fired when a repository is removed from the registry.
     event RepoRemoved(bytes32 id);
     // Fired when a bounty is added to a repo
-    event BountyAdded(bytes32 owner, bytes32 repo, uint256 issueNumber, uint256 bountySize);
+    event BountyAdded(bytes16 owner, bytes16 repo, uint256 issueNumber, uint256 bountySize);
 
     bytes32 public constant ADD_ENTRY_ROLE = keccak256("ADD_REPO_ROLE");
     bytes32 public constant REMOVE_ENTRY_ROLE =  keccak256("REMOVE_REPO_ROLE");
@@ -39,13 +39,13 @@ contract GithubRegistry is AragonApp {
 
     /**
      * Add an entry to the registry.
-     * @param _data The entry to add to the registry
+     * @param _id The entry to add to the registry
      */
     function addRepo(
-        bytes32 _owner, bytes32 _repo
+        bytes16 _owner, bytes16 _repo
     ) public auth(ADD_ENTRY_ROLE) returns (bytes32 _id) {
-        _id = keccak256(_owner + _repo);  // overflow should still yield a useable identifier
-        repos[_id] = GithubRepo(_owner, _repo);
+        _id = keccak256(_owner, _repo);  // overflow should still yield a useable identifier
+        repos[_id] = GithubRepo(_owner, _repo, 0);
         //add the index to the repo struct and push the id to the repo array
         repos[_id].index = repoIDs.push(_id) - 1; 
         RepoAdded(_id);
