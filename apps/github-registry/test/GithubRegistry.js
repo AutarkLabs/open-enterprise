@@ -3,10 +3,10 @@ const { assertRevert } = require('../test-helpers/assertThrow')
 const getBlockNumber = require('../test-helpers/blockNumber')(web3)
 const timeTravel = require('../test-helpers/timeTravel')(web3)
 const { encodeCallScript, EMPTY_SCRIPT } = require('../test-helpers/evmScript')
-//const ExecutionTarget = artifacts.require('../test/mocks/ExecutionTarget')
+const ExecutionTarget = artifacts.require('ExecutionTarget')
 
 const GithubRegistry = artifacts.require('GithubRegistry')
-//const MiniMeToken = artifacts.require('@aragon/os/contracts/lib/minime/MiniMeToken')
+const MiniMeToken = artifacts.require('@aragon/os/contracts/lib/minime/MiniMeToken')
 const DAOFactory = artifacts.require('@aragon/os/contracts/factory/DAOFactory')
 const EVMScriptRegistryFactory = artifacts.require('@aragon/os/contracts/factory/EVMScriptRegistryFactory')
 const ACL = artifacts.require('@aragon/os/contracts/acl/ACL')
@@ -19,7 +19,7 @@ const createdVoteId = receipt => receipt.logs.filter(x => x.event == 'StartVote'
 const ANY_ADDR = ' 0xffffffffffffffffffffffffffffffffffffffff'
 
 
-contract('Github Registry App', accounts => {
+contract('Github Registry App', function (accounts) {
     let daoFact, app, token, executionTarget = {}
 
     const RangeVotingTime = 1000
@@ -52,7 +52,6 @@ contract('Github Registry App', accounts => {
         await acl.createPermission(ANY_ADDR, app.address, await app.ADD_BOUNTY_ROLE(), root, { from: root })
     })
 
-    context('')
 
     context('normal token supply', () => {
         const holder19 = accounts[0]
