@@ -11,6 +11,7 @@ import {
   Countdown,
   Text,
   theme,
+  Slider,
 } from '@aragon/ui'
 import { combineLatest } from '../../rxjs'
 import provideNetwork from '../../utils/provideNetwork'
@@ -25,6 +26,7 @@ class VotePanelContent extends React.Component {
   state = {
     userCanVote: false,
     userBalance: null,
+    showResults: false,
   }
   componentDidMount() {
     this.loadUserCanVote()
@@ -53,7 +55,7 @@ class VotePanelContent extends React.Component {
         .first()
         .subscribe(([balance, decimals]) => {
           const adjustedBalance = Math.floor(
-            parseInt(balance, 10) / Math.pow(10, decimals)
+            parseInt(balance, 10) / Math.pow(10, decimals),
           )
           this.setState({
             userBalance: adjustedBalance,
@@ -86,19 +88,45 @@ class VotePanelContent extends React.Component {
   }
   render() {
     const { etherscanBaseUrl, vote, ready } = this.props
-    const { userBalance, userCanVote } = this.state
+    const { userBalance, userCanVote, showResults } = this.state
     if (!vote) {
       return null
     }
 
     const { endDate, open, quorum, quorumProgress, support } = vote
-    const { creator, metadata, totalVoters, description, candidates } = vote.data
+    const {
+      creator,
+      metadata,
+      totalVoters,
+      description,
+      candidates,
+    } = vote.data
 
     // const creatorName = 'Robert Johnson' // TODO: get creator name
 
     return (
       <div>
         <SidePanelSplit>
+          <div>
+            <h2>
+              <Label>Created by</Label>
+            </h2>
+            <Creator>
+              <CreatorImg>
+                <Blockies seed={creator} size={8} />
+              </CreatorImg>
+              <div>
+                <p>
+                  <SafeLink
+                    href={`${etherscanBaseUrl}/address/${creator}`}
+                    target="_blank"
+                  >
+                    {creator}
+                  </SafeLink>
+                </p>
+              </div>
+            </Creator>
+          </div>
           <div>
             <h2>
               <Label>{open ? 'Time Remaining:' : 'Status'}</Label>
@@ -115,22 +143,8 @@ class VotePanelContent extends React.Component {
               )}
             </div>
           </div>
-          <div>
-            <h2>
-              <Label>Quorum</Label>
-            </h2>
-            <div>{quorum * 100}%</div>
-          </div>
         </SidePanelSplit>
         <Part>
-          {metadata && (
-            <React.Fragment>
-              <h2>
-                <Label>Question:</Label>
-              </h2>
-              <Question>{metadata}</Question>
-            </React.Fragment>
-          )}
           {description && (
             <React.Fragment>
               <h2>
@@ -140,65 +154,52 @@ class VotePanelContent extends React.Component {
             </React.Fragment>
           )}
         </Part>
-        <SidePanelSeparator />
-        <Part>
-          <h2>
-            <Label>Created By:</Label>
-          </h2>
-          <Creator>
-            <CreatorImg>
-              <Blockies seed={creator} size={8} />
-            </CreatorImg>
-            <div>
-              {/* <p>
-                <strong>{creatorName}</strong>
-              </p> */}
-              <p>
-                <SafeLink
-                  href={`${etherscanBaseUrl}/address/${creator}`}
-                  target="_blank"
-                >
-                  {creator}
-                </SafeLink>
-              </p>
-            </div>
-          </Creator>
-        </Part>
-        <SidePanelSeparator />
-
-        <VoteSummary
-          candidates={candidates}
-          tokenSupply={totalVoters}
-          quorum={quorum}
-          quorumProgress={quorumProgress}
-          support={support}
-          ready={ready}
-        />
-
-        {userCanVote && (
+        <SidePanelSplit>
           <div>
+            <h2>
+              <Label>Amount</Label>
+            </h2>
+            <p>100 ETH (One-Time)</p>
+          </div>
+          <div>
+            <h2>
+              <Label>Dates</Label>
+            </h2>
+            <p>When vote is approved</p>
+          </div>
+        </SidePanelSplit>
+        <SidePanelSplit>
+          <div>
+            <h2>
+              <Label>Voter participation</Label>
+            </h2>
+            <p>
+              24% <RedText>(34% quorum required)</RedText>
+            </p>
+          </div>
+          <div>
+            <h2>
+              <Label>Your voting tokens</Label>
+            </h2>
+            <p>100</p>
+          </div>
+        </SidePanelSplit>
+        {open && (
+          <div>
+            <AdjustContainer>
+              <FirstLabel>Options</FirstLabel>
+              <SecondLabel>Votes</SecondLabel>
+              <Slider />
+              <Button mode="strong" wide>
+                Submit Vote
+              </Button>
+            </AdjustContainer>
             <SidePanelSeparator />
-            <VotingButtons>
-              <Button
-                mode="strong"
-                emphasis="positive"
-                wide
-                onClick={this.handleYesClick}
-              >
-                Yes
-              </Button>
-              <Button
-                mode="strong"
-                emphasis="negative"
-                wide
-                onClick={this.handleNoClick}
-              >
-                No
-              </Button>
-            </VotingButtons>
-            <Info title={`You will cast ${userBalance || '...'} votes`} />
           </div>
         )}
+        <ShowText onClick={() => this.setState({ showResults: !showResults })}>
+          {showResults ? 'Hide Voting Results' : 'Show Voting Results'}
+        </ShowText>
       </div>
     )
   }
@@ -210,6 +211,30 @@ const Label = styled(Text).attrs({
 })`
   display: block;
   margin-bottom: 10px;
+`
+const FirstLabel = styled(Label)`
+  display: inline-block;
+`
+
+const SecondLabel = styled(Label)`
+  float: right;
+`
+
+const AdjustContainer = styled.div`
+  padding: 1rem 0;
+`
+
+const ShowText = styled.p`
+  color: #21aae7;
+  font-size: 15px;
+  text-decoration: underline;
+  margin-top: 1rem;
+  cursor: pointer;
+`
+
+const RedText = styled.span`
+  color: #e31733;
+  font-size: 14px;
 `
 
 const Part = styled.div`
