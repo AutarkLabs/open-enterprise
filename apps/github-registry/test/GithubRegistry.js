@@ -19,7 +19,7 @@ const createdVoteId = receipt => receipt.logs.filter(x => x.event == 'StartVote'
 const ANY_ADDR = ' 0xffffffffffffffffffffffffffffffffffffffff'
 
 
-contract('Github Registry App', accounts => {
+contract('Github Registry App', function (accounts) {
     let daoFact, app, token, executionTarget = {}
 
     const RangeVotingTime = 1000
@@ -52,7 +52,6 @@ contract('Github Registry App', accounts => {
         await acl.createPermission(ANY_ADDR, app.address, await app.ADD_BOUNTY_ROLE(), root, { from: root })
     })
 
-    context('')
 
     context('normal token supply', () => {
         const holder19 = accounts[0]
