@@ -100,9 +100,13 @@ class VotePanelContent extends React.Component {
       totalVoters,
       description,
       candidates,
+      options,
+      type,
     } = vote.data
 
-    // const creatorName = 'Robert Johnson' // TODO: get creator name
+    console.log(vote)
+
+    const showInfo = type === 'allocation' || type === 'curation'
 
     return (
       <div>
@@ -189,10 +193,27 @@ class VotePanelContent extends React.Component {
             <AdjustContainer>
               <FirstLabel>Options</FirstLabel>
               <SecondLabel>Votes</SecondLabel>
-              <Slider />
-              <Button mode="strong" wide>
+              {options.map((option) => (
+                <div>
+                  <p>{option.label}</p>
+                  <SliderContainer>
+                    <StyledSlider />
+                    <ValueContainer>
+                      123
+                    </ValueContainer>
+                  </SliderContainer>
+                </div>
+              ))}
+              <SecondRedText>x remaining</SecondRedText>
+              <SubmitButton mode="strong" wide>
                 Submit Vote
-              </Button>
+              </SubmitButton>
+              {showInfo && (
+                <Info.Action title="Info">
+                  Vote carefully. After this vote closes, it will result in a
+                  financial payment.
+                </Info.Action>
+              )}
             </AdjustContainer>
             <SidePanelSeparator />
           </div>
@@ -218,10 +239,33 @@ const FirstLabel = styled(Label)`
 
 const SecondLabel = styled(Label)`
   float: right;
+  margin-right: 16px;
 `
 
 const AdjustContainer = styled.div`
   padding: 1rem 0;
+`
+
+const ValueContainer = styled.div`
+  box-shadow: 0 4px 4px 0 rgba(0,0,0,0.03);
+  border-radius: 3px;
+  width: 70px;
+  height: 40px;
+  border: 1px solid #E6E6E6;
+  padding-top: .5rem;
+  text-align: center;
+`
+
+const SliderContainer = styled.div`
+  display: flex;
+`
+
+const StyledSlider = styled(Slider)`
+  width: 320px;
+`
+
+const SubmitButton = styled(Button)`
+  margin: 1rem 0;
 `
 
 const ShowText = styled.p`
@@ -235,6 +279,11 @@ const ShowText = styled.p`
 const RedText = styled.span`
   color: #e31733;
   font-size: 14px;
+`
+
+const SecondRedText = RedText.extend`
+  float: right;
+  margin-top: .5rem;
 `
 
 const Part = styled.div`
