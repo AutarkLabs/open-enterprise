@@ -15,7 +15,7 @@ const Kernel = artifacts.require('@aragon/os/contracts/kernel/Kernel')
 const getContract = name => artifacts.require(name)
 const pct16 = x => new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))
 const createdVoteId = receipt => receipt.logs.filter(x => x.event == 'StartVote')[0].args.voteId
-const getRepoId = receipt => receipt.logs.filter(x => x.event == 'RepoAdded')[0].args._id
+const getRepoId = receipt => receipt.logs.filter(x => x.event == 'RepoAdded')[0].args.id
 
 const ANY_ADDR = ' 0xffffffffffffffffffffffffffffffffffffffff'
 
@@ -48,17 +48,31 @@ contract('Github Registry App', function (accounts) {
         app = GithubRegistry.at(receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
 
         //create ACL permissions
-        await acl.createPermission(ANY_ADDR, app.address, await app.ADD_ENTRY_ROLE(), root, { from: root })
-        await acl.createPermission(ANY_ADDR, app.address, await app.REMOVE_ENTRY_ROLE(), root, { from: root })
-        await acl.createPermission(ANY_ADDR, app.address, await app.ADD_BOUNTY_ROLE(), root, { from: root })
+        const owner1 = accounts[0]
+        //const owner2 = accounts[1]
+        //const bountyadder = accounts[2]
+        //const repoAdmin = accounts[4]
+
+        await acl.createPermission(owner1, app.address, await app.ADD_REPO_ROLE(), root, { from: root })
+        //await acl.createPermission(ANY_ADDR, app.address, await app.ADD_REPO_ROLE(), root, { from: root })
+        //await acl.createPermission(ANY_ADDR, app.address, await app.ADD_BOUNTY_ROLE(), root, { from: root })
+        //await acl.createPermission(ANY_ADDR, app.address, await app.REMOVE_REPO_ROLE(), root, { from: root })
+
     })
 
     context('creating and retrieving repos', function () {
-        it('creates a repo entry and returns the generated repoID', async function () {
-            repoOwner = accounts[0]
-            expectedID = web3.sha3('abc', '123')
+        
+        it('creates a repo id entry', async function () {
             repoID = (await app.addRepo('abc', String(123))).logs.filter(x => x.event == 'RepoAdded')[0].args.id
             assert.equal(repoID, '0x779b71f95cca231dba9830306e5e888357c053f5c4b9294c41fd3b10a8a1f101', 'repo is created and hashed ID is returned')
+        })
+
+        it('retrieves repo information successfully', async function () {
+            const owner1 = accounts[0]
+            repoID = (await app.addRepo('abc', String(123))).logs.filter(x => x.event == 'RepoAdded')[0].args.id
+            repoInfo = await app.getRepo(repoID, {from:owner1})
+            result = web3.toAscii(repoInfo[0]).replace(/\0/g, '')
+            assert.equal(result, 'abc', 'invalid repo info returned')
         })
     })
 
