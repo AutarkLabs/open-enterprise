@@ -1,30 +1,22 @@
 
 const { assertRevert } = require('../test-helpers/assertThrow')
-const getBlockNumber = require('../test-helpers/blockNumber')(web3)
-const timeTravel = require('../test-helpers/timeTravel')(web3)
-const { encodeCallScript, EMPTY_SCRIPT } = require('../test-helpers/evmScript')
-const ExecutionTarget = artifacts.require('ExecutionTarget')
 
 const GithubRegistry = artifacts.require('GithubRegistry')
-const MiniMeToken = artifacts.require('@aragon/os/contracts/lib/minime/MiniMeToken')
 const DAOFactory = artifacts.require('@aragon/os/contracts/factory/DAOFactory')
 const EVMScriptRegistryFactory = artifacts.require('@aragon/os/contracts/factory/EVMScriptRegistryFactory')
 const ACL = artifacts.require('@aragon/os/contracts/acl/ACL')
 const Kernel = artifacts.require('@aragon/os/contracts/kernel/Kernel')
 
 const getContract = name => artifacts.require(name)
-const pct16 = x => new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))
-const createdVoteId = receipt => receipt.logs.filter(x => x.event == 'StartVote')[0].args.voteId
-const getRepoId = receipt => receipt.logs.filter(x => x.event == 'RepoAdded')[0].args.id
-
-const ANY_ADDR = ' 0xffffffffffffffffffffffffffffffffffffffff'
-
 
 contract('Github Registry App', function (accounts) {
-    let daoFact, app, token, executionTarget = {}
+    let daoFact, app = {}
 
-    const RangeVotingTime = 1000
     const root = accounts[0]
+    const owner1 = accounts[0]
+    const owner2 = accounts[1]
+    const bountyAdder = accounts[2]
+    const repoRemover = accounts[4]
 
     before(async () => {
         //Create Base DAO Contracts
@@ -48,19 +40,15 @@ contract('Github Registry App', function (accounts) {
         app = GithubRegistry.at(receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
 
         //create ACL permissions
-        const owner1 = accounts[0]
-        //const owner2 = accounts[1]
-        //const bountyadder = accounts[2]
-        //const repoAdmin = accounts[4]
 
         await acl.createPermission(owner1, app.address, await app.ADD_REPO_ROLE(), root, { from: root })
-        //await acl.createPermission(ANY_ADDR, app.address, await app.ADD_REPO_ROLE(), root, { from: root })
-        //await acl.createPermission(ANY_ADDR, app.address, await app.ADD_BOUNTY_ROLE(), root, { from: root })
-        //await acl.createPermission(ANY_ADDR, app.address, await app.REMOVE_REPO_ROLE(), root, { from: root })
+        await acl.grantPermission(owner2, app.address, await app.ADD_REPO_ROLE(), { from: root })
+        await acl.createPermission(bountyAdder, app.address, await app.ADD_BOUNTY_ROLE(), root, { from: root })
+        await acl.createPermission(repoRemover, app.address, await app.REMOVE_REPO_ROLE(), root, { from: root })
 
     })
 
-    context('creating and retrieving repos', function () {
+    context('creating and retrieving repos and bounties', function () {
         
         it('creates a repo id entry', async function () {
             repoID = (await app.addRepo('abc', String(123))).logs.filter(x => x.event == 'RepoAdded')[0].args.id
@@ -68,13 +56,38 @@ contract('Github Registry App', function (accounts) {
         })
 
         it('retrieves repo information successfully', async function () {
-            const owner1 = accounts[0]
+            //const owner1 = accounts[0]
             repoID = (await app.addRepo('abc', String(123))).logs.filter(x => x.event == 'RepoAdded')[0].args.id
             repoInfo = await app.getRepo(repoID, {from:owner1})
             result = web3.toAscii(repoInfo[0]).replace(/\0/g, '')
             assert.equal(result, 'abc', 'invalid repo info returned')
         })
+
+        it('accepts bounties for issues in an added repo', async function () {
+            //const bountyAdder = accounts[2]
+            repoID = (await app.addRepo('abc', String(123))).logs.filter(x => x.event == 'RepoAdded')[0].args.id
+            issue3Receipt = (await app.addBounties(repoID, [1,2,3],[10,20,30],{from:bountyAdder})).logs.filter(x => x.event == 'BountyAdded')[2]
+            issue3Bounty = issue3Receipt.args.bountySize.toNumber()
+            assert.equal(issue3Bounty,30,'bounty not added')
+        })
     })
+
+    context('invalid operations', function () {
+        it('cannot retrieve a removed Repo', async function () {
+            repoID = (await app.addRepo('abc', String(123))).logs.filter(x => x.event == 'RepoAdded')[0].args.id
+            await app.removeRepo(repoID, {from:repoRemover})
+            result = await app.getRepo(repoID)
+            assert.equal(web3.toAscii(result[0]).replace(/\0/g, ''), '', 'repo returned')
+        })
+
+        it('cannot add bounties to unregistered repos', function () {
+            assertRevert(async() => {
+                await app.addBounties('0xdeadbeef', [1,2,3],[10,20,30],{from:bountyAdder})
+            })
+        })
+
+        
+    }) 
 
     
 })

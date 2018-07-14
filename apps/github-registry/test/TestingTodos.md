@@ -1,7 +1,7 @@
-# Testing Ideas
+# Testing Plan
 
-* Retrieve repos - **Done**
-* add bounties to issues
-* can't retrieve deleted repo
-* can't add issues to deleted repo
+* can't retrieve deleted repo - **Done**
+* can't add issues to deleted repo - **Done**
 * add repos - **Done**
+* Retrieve repos - **Done**
+* add bounties to issues - **Done**
