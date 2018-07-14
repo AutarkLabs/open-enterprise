@@ -4,20 +4,18 @@ import styled from 'styled-components'
 import { Motion, spring } from 'react-motion'
 import { Text, theme } from '@aragon/ui'
 
-const ProgressBar = ({ progress, candidateName }) => (
+const ProgressBar = ({ progress, label }) => (
   <Motion defaultStyle={{ progress: 0 }} style={{ progress: spring(progress) }}>
     {({ progress }) => (
       <Main>
-        <Text size="xsmall" color={theme.textSecondary}>
-	  { candidateName }
-	</Text>
+        <Label>{label}</Label>
         <Base>
           <Progress
             color={theme.accent}
             style={{ width: `${progress * 100}%` }}
           />
           <Text size="xsmall" color={theme.textSecondary}>
-            { Math.round (progress * 100) }%
+            {Math.round(progress * 100)}%
           </Text>
         </Base>
       </Main>
@@ -35,13 +33,18 @@ ProgressBar.propTypes = {
   progress: PropTypes.number,
 }
 
+const Label = styled.p`
+  margin-top: 1rem;
+  margin-bottom: .5rem;
+`
+
 const Main = styled.div`
   width: 100%;
   align-items: center;
 `
 const Base = styled.div`
   width: 100%;
-  height: 16px;
+  height: 20px;
   background: #edf3f6;
   border-radius: 2px;
   text-align: right;
@@ -49,7 +52,7 @@ const Base = styled.div`
   padding-right: 6px;
 `
 const Progress = styled.div`
-  height: 16px;
+  height: 20px;
   background: ${({ color }) => color};
   border-radius: 2px;
   float: left;

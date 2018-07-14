@@ -16,8 +16,10 @@ import {
 import { combineLatest } from '../../rxjs'
 import provideNetwork from '../../utils/provideNetwork'
 import { VOTE_NAY, VOTE_YEA } from '../../utils/vote-types'
+import { safeDiv } from '../../utils/math-utils'
 import VoteSummary from '../VoteSummary'
 import VoteStatus from '../VoteStatus'
+import ProgressBarThick from '../ProgressBarThick'
 
 class VotePanelContent extends React.Component {
   static propTypes = {
@@ -27,6 +29,8 @@ class VotePanelContent extends React.Component {
     userCanVote: false,
     userBalance: null,
     showResults: false,
+    voteOptions: [],
+    remaining: 100,
   }
   componentDidMount() {
     this.loadUserCanVote()
@@ -86,9 +90,32 @@ class VotePanelContent extends React.Component {
       </React.Fragment>
     ))
   }
+  sliderUpdate = (value, idx) => {
+    const total = this.state.voteOptions.reduce(
+      (acc, { sliderValue }, index) => {
+        return (
+          acc +
+          (idx === index
+            ? Math.round(value * 100) || 0
+            : Math.round(sliderValue * 100) || 0)
+        )
+      },
+      0,
+    )
+    if (total <= 100) {
+      this.state.voteOptions[idx].sliderValue = value
+      this.setState({ remaining: 100 - total })
+    }
+  }
   render() {
     const { etherscanBaseUrl, vote, ready } = this.props
-    const { userBalance, userCanVote, showResults } = this.state
+    const {
+      userBalance,
+      userCanVote,
+      showResults,
+      voteOptions,
+      remaining,
+    } = this.state
     if (!vote) {
       return null
     }
@@ -104,7 +131,11 @@ class VotePanelContent extends React.Component {
       type,
     } = vote.data
 
-    console.log(vote)
+    if (!voteOptions.length) {
+      this.state.voteOptions = options
+    }
+
+    const totalSupport = options.reduce((acc, option) => acc + option.value, 0)
 
     const showInfo = type === 'allocation' || type === 'curation'
 
@@ -193,18 +224,23 @@ class VotePanelContent extends React.Component {
             <AdjustContainer>
               <FirstLabel>Options</FirstLabel>
               <SecondLabel>Votes</SecondLabel>
-              {options.map((option) => (
+              {this.state.voteOptions.map((option, idx) => (
                 <div>
-                  <p>{option.label}</p>
                   <SliderContainer>
-                    <StyledSlider />
+                    <div>
+                      <p>{option.label}</p>
+                      <Slider
+                        value={option.sliderValue}
+                        onUpdate={value => this.sliderUpdate(value, idx)}
+                      />
+                    </div>
                     <ValueContainer>
-                      123
+                      {Math.round(option.sliderValue * 100) || 0}
                     </ValueContainer>
                   </SliderContainer>
                 </div>
               ))}
-              <SecondRedText>x remaining</SecondRedText>
+              <SecondRedText>{remaining} remaining</SecondRedText>
               <SubmitButton mode="strong" wide>
                 Submit Vote
               </SubmitButton>
@@ -221,6 +257,18 @@ class VotePanelContent extends React.Component {
         <ShowText onClick={() => this.setState({ showResults: !showResults })}>
           {showResults ? 'Hide Voting Results' : 'Show Voting Results'}
         </ShowText>
+        {showResults &&
+          options.map(option => (
+            <ProgressBarThick
+              progress={safeDiv(option.value, totalSupport)}
+              label={option.label}
+            />
+          ))}
+        {showResults && (
+          <Text size="xsmall" color={theme.textSecondary}>
+            A minimum of 5% is required for an option to become validated
+          </Text>
+        )}
       </div>
     )
   }
@@ -247,21 +295,21 @@ const AdjustContainer = styled.div`
 `
 
 const ValueContainer = styled.div`
-  box-shadow: 0 4px 4px 0 rgba(0,0,0,0.03);
+  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.03);
   border-radius: 3px;
   width: 70px;
   height: 40px;
-  border: 1px solid #E6E6E6;
-  padding-top: .5rem;
+  border: 1px solid #e6e6e6;
+  padding-top: 0.5rem;
   text-align: center;
 `
 
 const SliderContainer = styled.div`
   display: flex;
-`
-
-const StyledSlider = styled(Slider)`
-  width: 320px;
+  align-items: center;
+  & > :nth-child(1) {
+    width: 320px;
+  }
 `
 
 const SubmitButton = styled(Button)`
