@@ -38,6 +38,7 @@
     "ganache-cli": "^6.0.3",
     "parcel-bundler": "^1.8.1",
     "planning-app": "^1.0.1",
+    "react-hot-loader": "^4.3.3",
     "react-oauth-popup": "0.0.4",
     "solidity-sha3": "^0.4.1",
     "solium": "^1.0.4",
