@@ -38,7 +38,7 @@ class VoteRow extends React.Component {
       <Bar key={option.label}>
         <ProgressBar
           progress={safeDiv(option.value, totalSupport)}
-          candidateName={ option.label }
+          label={ option.label }
         />
       </Bar>
     ))

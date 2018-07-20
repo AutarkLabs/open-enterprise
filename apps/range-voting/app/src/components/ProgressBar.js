@@ -4,12 +4,12 @@ import styled from 'styled-components'
 import { Motion, spring } from 'react-motion'
 import { Text, theme } from '@aragon/ui'
 
-const ProgressBar = ({ progress, candidateName }) => (
+const ProgressBar = ({ progress, label }) => (
   <Motion defaultStyle={{ progress: 0 }} style={{ progress: spring(progress) }}>
     {({ progress }) => (
       <Main>
         <Text size="xsmall" color={theme.textSecondary}>
-	  { candidateName }
+	  { label }
 	</Text>
         <Base>
           <Progress
