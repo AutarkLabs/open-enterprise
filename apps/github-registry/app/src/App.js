@@ -1,392 +1,204 @@
-import { hot } from "react-hot-loader";
-import React from "react";
-import PropTypes from "prop-types";
+import React, { Component, PureComponent } from "react";
+import { AragonApp, Text, theme } from "@aragon/ui";
 import styled from "styled-components";
-import Aragon, { providers } from "@aragon/client";
+import { GithubProvider } from "./context/GithubContext";
 
-import { theme } from "@aragon/ui";
-import { AragonApp, AppBar, Button, SidePanel } from "@aragon/ui";
-import AppLayout from "./components/AppLayout";
-import Overview from "./screens/Overview";
-import Tools from "./screens/Tools";
-import Issues from "./screens/Issues";
-import Decisions from "./screens/Decisions";
-import AddressBook from "./screens/AddressBook";
-import Settings from "./screens/Settings";
-import { noop } from "./utils/utils";
-import { networkContextType } from "./utils/provideNetwork";
-import {
-  NewProjectPanelContent,
-  NewIssuePanelContent
-} from "./components/Panels";
-import RangeVoting from "./range-voting/RangeVoting";
+import { Issues, Overview, Settings } from "./screens";
 
-// quick and dirty way of populating issues and repos from a snapshot of few public repos
-//import getPreprocessedRepos from './github.repos'
+class TabbedView extends PureComponent {
+  state = {
+    activeIndex: 0
+  };
 
-const initialState = {
-  template: null,
-  templateData: {},
-  stepIndex: 0,
-  activeTabId: 0,
-  createProjectVisible: false,
-  createIssueVisible: false,
-  rangeWizardActive: false,
-  github: {
-    isAuthenticated: false,
-    login: "",
-    avatarUrl: "",
-    activeRepo: "",
-    activeLabel: "",
-    activeMilestone: "",
-    authToken: "",
-    reposManaged: {} // to be populated from contract or git backend itself
-    //    reposManaged: getPreprocessedRepos(), // to be populated from contract or git backend itself
+  selectTabIndex(activeIndex) {
+    this.setState({ activeIndex });
   }
-};
-
-class App extends React.Component {
-  static propTypes = {
-    app: PropTypes.object.isRequired
-  };
-
-  static defaultProps = {
-    network: {
-      etherscanBaseUrl: "https://rinkeby.etherscan.io",
-      name: "rinkeby"
-    },
-    tabs: [
-      {
-        id: 0,
-        name: "Overview",
-        screen: Overview,
-        barButton: { title: "Add Project", handlerVar: "createProjectVisible" }
-      },
-      // {
-      //   id: 1,
-      //   name: "Decisions",
-      //   screen: Decisions,
-      //   barSelectButton: { title: "Actions", items: ["one", "two", "three"] }
-      // },
-      {
-        id: 2,
-        name: "Issues",
-        screen: Issues,
-        barButton: { title: "New Issue", handlerVar: "createIssueVisible" }
-      },
-      {
-        id: 3,
-        name: "Tools",
-        screen: Tools,
-        barButton: { title: "New Tool", handlerVar: "rangeWizardActive" }
-      },
-      { id: 4, name: "Address Book", screen: AddressBook },
-      { id: 5, name: "Settings", screen: Settings }
-    ]
-  };
-
-  constructor(props) {
-    super(props);
-    this.state = {
-      ...initialState
-    };
-  }
-
-  handleGitHubAuth = (authToken, login, avatarUrl) => {
-    // probably unnecessarily explicit
-    // meant to be called from NewProjectPanelContent after successful whoami query
-    const { github } = this.state;
-    github.authToken = authToken;
-    github.login = login;
-    github.avatarUrl = avatarUrl;
-    github.isAuthenticated = true;
-    github.activeRepo = "";
-    this.setState({ github: github });
-  };
-
-  // <App> needs to know what repo is selected, because selection matters on multiple screens
-  handleRepoSelect = repoId => {
-    //console.log('top handleRepoSelect: ' + repoId)
-    const { github } = this.state;
-    github.activeRepo = repoId;
-    this.setState({
-      github: github,
-      activeTabId: 2 // because selecting a repo shows Issues
-    });
-  };
-
-  // removing repos is triggered from Tools tab
-  handleRepoRemove = repoId => {
-    const { github } = this.state;
-    if (github.activeRepo === repoId) {
-      github.activeRepo = "";
-    }
-    delete github.reposManaged[repoId];
-    this.setState({
-      github: github
-    });
-  };
-
-  // this probably needs to be limited to Issues screen
-  handleLabelSelect = labelName => {
-    const { github } = this.state;
-    github.activeLabelName = labelName;
-    this.setState({ github: github });
-  };
-
-  handleMilestoneSelect = milestoneName => {
-    const { github } = this.state;
-    github.activeMilestoneName = milestoneName;
-    this.setState({ github: github });
-  };
-
-  handleAddRepos = reposToAdd => {
-    const { github } = this.state;
-
-    Object.keys(reposToAdd).forEach(repoId => {
-      var repo = reposToAdd[repoId];
-      if (repoId in github.reposManaged) {
-        console.log("already in: " + repo.name);
-      } else {
-        console.log("adding: " + repo.name);
-        github.reposManaged[repoId] = repo;
-      }
-    });
-
-    this.setState({
-      createProjectVisible: false,
-      activeTabId: 0, // show Overview
-      github: github
-    });
-  };
-
-  handleTabClick = id => {
-    return () => {
-      this.setState({
-        activeTabId: id
-      });
-    };
-  };
-
-  handleCreateIssueClose = () => {
-    this.setState({ createIssueVisible: false });
-  };
-  generateSidePanelHandlerOpen = handlerVar => {
-    return () => {
-      this.setState({ [handlerVar]: true });
-    };
-  };
-  handleRangeWizardClose = () => {
-    this.setState({ rangeWizardActive: false });
-  };
-  handleCreateProjectClose = () => {
-    this.setState({ createProjectVisible: false });
-  };
-  handleCreateProject = () => {
-    const { name, description, repoURL, bountySystem } = this.state;
-    alert(
-      "creating: " +
-        name +
-        ", " +
-        description +
-        ", " +
-        repoURL +
-        ", " +
-        bountySystem
-    );
-  };
-
-  handleRangeWizardLaunch = tool => {
-    const { tools } = this.state;
-    tools.push(tool);
-    this.setState({ tools: tools });
-
-    this.handleRangeWizardClose();
-  };
 
   render() {
-    const { tabs } = this.props;
-    const {
-      activeTabId,
-      createProjectVisible,
-      createIssueVisible,
-      github,
-      tools
-    } = this.state;
-    const Screen = tabs[activeTabId].screen;
-    var newItemHandler = null;
-    var barButton = null;
+    const children = React.Children.map(this.props.children, child => {
+      return React.cloneElement(child, {
+        activeIndex: this.state.activeIndex,
+        onSelectTab: this.selectTabIndex.bind(this)
+      });
+    });
+    return <StyledTabbedView>{children}</StyledTabbedView>;
+  }
+}
 
-    // trigger change in bool variable, which is enough to make associated SidePanel show up
-    if ("barButton" in tabs[activeTabId]) {
-      newItemHandler = this.generateSidePanelHandlerOpen(
-        tabs[activeTabId].barButton.handlerVar
-      );
-      barButton = (
-        <Button mode="strong" onClick={newItemHandler}>
-          {tabs[activeTabId].barButton.title}
-        </Button>
-      );
-    }
-
-    //
-    if ("barSelectButton" in tabs[activeTabId]) {
-      barButton = (
-        <DropDownButton>
-          <Button mode="strong">
-            {tabs[activeTabId].barSelectButton.title}
-          </Button>
-          <DropDownContent>
-            {tabs[activeTabId].barSelectButton.items.map(item => {
-              return <div key={item}>{item}</div>;
-            })}
-          </DropDownContent>
-        </DropDownButton>
-      );
-    }
-
+class ScreenView extends PureComponent {
+  render() {
+    const { activeIndex } = this.props;
     return (
-      <AragonApp publicUrl="/aragon-ui/">
-        <AppLayout>
-          <AppLayout.Header>
-            <AppBar title="Planning" endContent={barButton} />
-          </AppLayout.Header>
-          <Tabs>
-            {tabs.map(({ id, name }) => (
-              <Tab
-                active={id === activeTabId}
-                onClick={this.handleTabClick(id)}
-                key={id}
-              >
-                {name}
-              </Tab>
-            ))}
-          </Tabs>
-          <AppLayout.ScrollWrapper>
-            <AppLayout.Content>
-              <Screen
-                app={this.props.app}
-                onActivate={newItemHandler}
-                github={github}
-                tools={tools}
-                onSelect={this.handleRepoSelect}
-                onRemove={this.handleRepoRemove}
-                handleLabelSelect={this.handleLabelSelect}
-                handleMilestoneSelect={this.handleMilestoneSelect}
-              />
-            </AppLayout.Content>
-          </AppLayout.ScrollWrapper>
-        </AppLayout>
-        {/*
-          SidePanels should live in appropriate screen, but screen is a component one
-          level down and in order to communicate with <App> (where data is stored)
-          they need to be given multiple callbacks in props - easier to keep them all here.
-        */}
-        <SidePanel
-          title="Add Project"
-          opened={createProjectVisible}
-          onClose={this.handleCreateProjectClose}
-        >
-          <NewProjectPanelContent
-            opened={createProjectVisible}
-            onCreateProject={this.handleCreateProject}
-            onHandleAddRepos={this.handleAddRepos.bind(this)}
-            onHandleGitHubAuth={this.handleGitHubAuth}
-            github={github}
-          />
-        </SidePanel>
+      <StyledScreenView>{this.props.children[activeIndex]}</StyledScreenView>
+    );
+  }
+}
 
-        <SidePanel
-          title="New Issue"
-          opened={createIssueVisible}
-          onClose={this.handleCreateIssueClose}
-        >
-          <NewIssuePanelContent
-            opened={createIssueVisible}
-            onCreateIssue={this.handleCreateIssue}
-            onHandleGitHubAuth={this.handleGitHubAuth}
-            github={github}
-          />
-        </SidePanel>
+const AppTitle = () => <StyledTitle size="xxlarge">Planning</StyledTitle>;
+const TabBar = props => {
+  const { activeIndex } = props;
+  const children = React.Children.map(props.children, (child, index) => {
+    return React.cloneElement(child, {
+      isActive: index === activeIndex,
+      onSelect: () => props.onSelectTab(index)
+    });
+  });
+  return <StyledTabBar>{children}</StyledTabBar>;
+};
+const Tab = props => {
+  const { isActive, onSelect } = props;
+  return (
+    <StyledTab className={isActive && "active"} onClick={onSelect}>
+      <Text>{props.children}</Text>
+    </StyledTab>
+  );
+};
+const ActiveIndicator = () => <StyledIndicator />;
 
-        {this.state.rangeWizardActive && (
-          <RangeVoting
-            visible={true}
-            app={this.props.app}
-            handleClose={this.handleRangeWizardClose}
-            handleLaunch={this.handleRangeWizardLaunch}
-          />
-        )}
+// STYLES
+const StyledTitle = styled(Text)`
+  position: relative;
+  z-index: 1;
+  display: block;
+  padding-left: 30px;
+  line-height: 63px;
+  background: ${theme.contentBackground};
+  box-shadow: rgba(0, 0, 0, 0.1) 1px 0 15px;
+  overflow: visible;
+  border-bottom: 1px solid ${theme.contentBorder};
+`;
+const StyledTabbedView = styled.div`
+  position: absolute;
+  height: calc(100% - 63px);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+`;
+// Meter un spring motion desde top a la barra de tabs y un opacity a la screenview
+// Crear igual que unselected pero para sombras
+// ojo con las sombras material on hover
+const StyledTabBar = styled.nav`
+  line-height: 31px;
+  padding-left: 30px;
+  background: ${theme.contentBackground};
+  border-bottom: 1px solid ${theme.contentBorder};
+  ${"" /* box-shadow: 1px 0 15px rgba(0, 0, 0, 0.1); */} ${"" /* box-shadow: inset 0 1px 15px 0px rgba(0,0,0,0.1); */};
+`;
+
+// Falta el hover, el active, etc
+const StyledTab = styled.div`
+  padding-top: 4px;
+  display: inline-block;
+  cursor: pointer;
+  height: 37px;
+  margin-right: 50px;
+  transition: all 0.5s cubic-bezier(0.38, 0.8, 0.32, 1.07);
+  &.active {
+    cursor: default;
+    text-shadow: 0.1px 0 0 ${theme.textPrimary}, -0.1px 0 0 ${theme.textPrimary};
+    border-bottom: 4px solid ${theme.accent}};
+  }
+  &:hover:not(.active) {
+    color: ${theme.textSecondary};
+  }
+`;
+const StyledIndicator = styled.div`
+  // position: relative;
+  // bottom: 0;
+  // height: 4px;
+  // width: 65px;
+  // background: ${theme.accent};
+`;
+const StyledScreenView = styled.main`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+  overflow: auto;
+  flex-grow: 1;
+
+  // /* position: static;
+  // display: flex;
+  // padding: 30px;
+  // overflow: auto;
+  // align-items: center;
+  // justify-content: center;
+  // background: red; */
+`;
+// NOTES
+// We need essentially those elements, then wrap the whole app into a context HOC wrapper
+
+// Indicator toma refs con fordward refs //Habrá que pasarle una ref al elemento que es el active index
+
+// meter el scrollwrapper en screenview
+
+// usar render props para pasar active index
+// para el bbotón: https://reactjs.org/docs/forwarding-refs.html guardando ref en el estado y que sea "active index"
+
+// 01 tabbed view pasa props a tabbar: {activeIndex} y screenview: {activeIndex}
+// 02 appbar necesita {activeindex} para el buttonbarr (o recogerlo con context directamente en el buttonbar con context)
+// 03 quitar appview
+
+// HOC PROVIDERS
+// export default withContext(App)
+// UIContext = {appTitle, appStyles (themes, etc) => importa aragon/ui }
+
+const tabData = [
+  {
+    screen: Overview,
+    button: { label: "Add Project", actions: ["sidePanelOpen"] },
+    sidePanelContent: "NewProject",
+    sidePanelTitle: "New Project"
+  },
+  {
+    screen: Issues,
+    button: { label: "New Issue", actions: ["createIssue"] }
+  },
+  { screen: Settings }
+];
+
+const getTabTitle = screen => screen.name.split(/(?=[A-Z])/).join(" ");
+
+// const findTab = tabName => tabs.find(e => getTabTitle(e.screen) === tabName)
+
+// const getTabTitles = tabData.map(({ screen }) => getTabTitle(screen))
+const githubData = {
+  authToken: "",
+  login: "",
+  avatarUrl: "",
+  isAuthenticated: "true",
+  activeRepo: "",
+  activeLabel: "",
+  activeMilestone: "",
+  reposToAdd: {},
+  reposFromServer: {},
+  reposManaged: {}, // to be populated from contract or git backend itself,
+  err: ""
+  //    reposManaged: getPreprocessedRepos(), // to be populated from contract or git backend itself
+};
+class App extends Component {
+  render() {
+    return (
+      <AragonApp backgroundLogo publicUrl="/aragon-ui/">
+        <GithubProvider>
+          <AppTitle />
+          <TabbedView>
+            <TabBar>
+              {tabData.map(({ screen }) => (
+                <Tab key={getTabTitle(screen)}>{getTabTitle(screen)}</Tab>
+              ))}
+              <ActiveIndicator />
+            </TabBar>
+            <ScreenView>
+              {tabData.map(({ screen: Screen }) => (
+                <Screen key={getTabTitle(Screen)} github={githubData} />
+              ))}
+            </ScreenView>
+          </TabbedView>
+        </GithubProvider>
       </AragonApp>
     );
   }
 }
 
-const Tabs = styled.div`
-  background-color: #fff;
-  width: 100%;
-  line-height: 40px;
-  border-bottom: 1px solid #e8e8e8;
-`;
-const Tab = styled.div`
-  font-size: "13px";
-  margin-left: 20px;
-  display: inline-block;
-  cursor: pointer;
-  font-weight: ${({ active }) => (active ? "800" : "400")};
-  border-bottom: ${({ active }) =>
-    active ? "4px solid " + theme.accent : "0px"};
-`;
-const DropDownContent = styled.div`
-  display: none;
-  position: absolute;
-  background-color: #f1f1f1;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-  z-index: 1;
-`;
-const DropDownButton = styled.div`
-  position: relative;
-  display: inline-block;
-  &:hover ${DropDownContent} {
-    display: block;
-  }
-`; /*
-const Main = styled.div`
-  position: fixed;
-  z-index: 2;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow: auto;
-  height: 100vh;
-  background-image: linear-gradient(
-      0deg,
-      rgba(0, 0, 0, 0.08) 0%,
-      rgba(0, 0, 0, 0.08) 100%
-    ),
-    linear-gradient(-226deg, #00f1e1 0%, #00b4e4 100%);
-`
-
-const Window = styled.div`
-  position: relative;
-  width: 1080px;
-  height: 660px;
-  background: #fff;
-  border-radius: 3px;
-  box-shadow: 0 10px 28px 0 rgba(11, 103, 157, 0.7);
-`
-
-const Screen = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow: hidden;
-  pointer-events: ${({ active }) => (active ? 'auto' : 'none')};
-`
-*/
-
-export default hot(module)(App);
+export default App;

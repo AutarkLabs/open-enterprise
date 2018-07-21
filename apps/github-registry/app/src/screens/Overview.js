@@ -1,72 +1,107 @@
-import React from 'react'
-import styled from 'styled-components'
-import { EmptyStateCard } from '@aragon/ui'
-import emptyIcon from '../assets/empty-card-icon.svg'
-import RepoCard from '../components/RepoCard'
+import React from "react";
+import styled from "styled-components";
+import { Button, EmptyStateCard, SidePanel } from "@aragon/ui";
+import { IconEmpty } from "../assets";
+import RepoCard from "../components/RepoCard";
+import { NewProject } from "../components";
 
-const EmptyIcon = () => <img src={emptyIcon} alt="" />
+const overviewData = {
+  title: "Tools",
+  emptyState: {
+    title: "You have not added any projects.",
+    text: "Get started now by adding a new project.",
+    label: "New Project",
+    icon: IconEmpty,
+    onClick: "openRangeWizard"
+  }
+};
 
 class Overview extends React.Component {
-  handleRepoSelect = repoId => {
-    this.props.onSelect(repoId)
-  }
-  handleRepoRemove = repoId => {
-    this.props.onRemove(repoId)
-  }
+  state = { sidePanelOpened: false };
 
-  render () {
-    const { onActivate, github } = this.props
-    
-    if (Object.keys(github.reposManaged).length === 0) {
-      return (
-        <EmptyMain>
-          <EmptyStateCard
-            icon={EmptyIcon}
-            title="You have not added any projects."
-            text="Get started now by adding a new project."
-            actionText="New Project"
-            onActivate={onActivate}
-          />
-        </EmptyMain>
-      )
-    }
+  closeSidePanel = () => {
+    this.setState({ sidePanelOpened: false });
+  };
+
+  openSidePanel = () => {
+    this.setState({ sidePanelOpened: true });
+  };
+
+  handleRepoSelect = repoId => {
+    this.props.onSelect(repoId);
+  };
+  handleRepoRemove = repoId => {
+    this.props.onRemove(repoId);
+  };
+
+  render() {
+    const { sidePanelOpened } = this.state;
+    const { github } = this.props;
 
     return (
       <StyledOverview>
-        {Object.entries(github.reposManaged).map(
-          ([repoId, { name, description, collaborators, commits, url }]) => (
-            <RepoCard
-               key={repoId}
-               repoId={repoId}
-               icon={emptyIcon}
-               label={name}
-               description={description}
-               collaborators={collaborators}
-               commits={commits}
-               url={url}
-               active={repoId === github.activeRepo}
-               onSelect={this.handleRepoSelect}
-               onRemove={this.handleRepoRemove}
-             />
-         ))}
+        {Object.keys(github.reposManaged).length === 0 ? (
+          <StyledEmptyStateCard
+            title={overviewData.emptyState.title}
+            text={overviewData.emptyState.text}
+            icon={overviewData.emptyState.icon}
+            actionText={overviewData.emptyState.label}
+            onActivate={this.openSidePanel}
+          />
+        ) : (
+          Object.entries(github.reposManaged).map(
+            ([repoId, { name, description, collaborators, commits, url }]) => (
+              <RepoCard
+                key={repoId}
+                repoId={repoId}
+                icon={emptyIcon}
+                label={name}
+                description={description}
+                collaborators={collaborators}
+                commits={commits}
+                url={url}
+                active={repoId === github.activeRepo}
+                onSelect={this.handleRepoSelect}
+                onRemove={this.handleRepoRemove}
+              />
+            )
+          )
+        )}
+        <StyledButton onClick={this.openSidePanel} mode="strong">
+          New Project
+        </StyledButton>
+        <SidePanel
+          title="New Project"
+          opened={sidePanelOpened}
+          onClose={this.closeSidePanel}
+        >
+          <NewProject github={github} />
+        </SidePanel>
       </StyledOverview>
-    )
+    );
   }
 }
 
-const EmptyMain = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-grow: 1;
-`
-const StyledOverview = styled.div`
-    display: grid;
-    grid-template-columns: repeat(3, auto);
-    grid-auto-rows: auto;
-    grid-gap: 2rem;
-    justify-content: start;
+const StyledOverview = styled.section`
+  // display: flex;
+  // flex-direction: row;
+  // background: green;
+  // align-content: center;
+  // align-items: center;
+  // justify-content: center;
+  // padding: 30px;
 `;
 
-export default Overview
+const StyledButton = styled(Button)`
+  position: fixed;
+  top: 11px;
+  right: 30px;
+  z-index: 2;
+`;
 
+// Pasar a parent?
+const StyledEmptyStateCard = styled(EmptyStateCard)`
+  padding: 35px;
+`;
+
+export default Overview;

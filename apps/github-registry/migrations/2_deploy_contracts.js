@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-var RangeVoting = artifacts.require('./RangeVoting.sol')
-=======
-var App = artifacts.require('./GithubRegistry.sol')
->>>>>>> upstream/111-github-registry
+var GithubRegistry = artifacts.require("./GithubRegistry.sol");
 
-module.exports = function (deployer) {
-  deployer.deploy(RangeVoting)
-}
+module.exports = function(deployer) {
+  deployer.deploy(GithubRegistry);
+};
