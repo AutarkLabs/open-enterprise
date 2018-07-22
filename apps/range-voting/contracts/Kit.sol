@@ -11,6 +11,8 @@ import "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import "@aragon/os/contracts/lib/minime/MiniMeToken.sol";
 
 import "./RangeVoting.sol";
+import "../../payout-engine/contracts/PayoutEngine.sol";
+
 
 contract KitBase is APMNamehash {
     ENS public ens;
@@ -58,10 +60,14 @@ contract Kit is KitBase {
 		bytes32 appId = apmNamehash("planning");
 		bytes32 votingAppId = apmNamehash("voting");
 		bytes32 tokenManagerAppId = apmNamehash("token-manager");
+		bytes32 payoutEngineAppId = apmNamehash("payout-engine");
+
 
 		RangeVoting app = RangeVoting(dao.newAppInstance(appId, latestVersionAppBase(appId)));
 		Voting voting = Voting(dao.newAppInstance(votingAppId, latestVersionAppBase(votingAppId)));
 		TokenManager tokenManager = TokenManager(dao.newAppInstance(tokenManagerAppId, latestVersionAppBase(tokenManagerAppId)));
+		PayoutEngine payoutEngine = PayoutEngine(dao.newAppInstance(payoutEngineAppId, latestVersionAppBase(payoutEngineAppId)));
+
 
 		MiniMeToken token = tokenFactory.createCloneToken(address(0), 0, "App token", 0, "APP", true);
 		token.changeController(tokenManager);
@@ -74,6 +80,10 @@ contract Kit is KitBase {
 		tokenManager.mint(root, 1); // Give one token to root
 
 		acl.createPermission(ANY_ENTITY, voting, voting.CREATE_VOTES_ROLE(), root);
+
+		acl.createPermission(ANY_ENTITY, payoutEngine, payoutEngine.START_PAYOUT_ROLE(), root);
+		acl.createPermission(ANY_ENTITY, payoutEngine, payoutEngine.SET_DISTRIBUTION_ROLE(), root);
+
 
 		acl.createPermission(voting, app, app.CREATE_VOTES_ROLE(), voting);
 		acl.createPermission(ANY_ENTITY, app, app.ADD_CANDIDATES_ROLE(), root);
