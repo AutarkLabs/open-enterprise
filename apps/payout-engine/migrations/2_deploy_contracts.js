@@ -1,5 +1,5 @@
-var RangeVoting = artifacts.require('./RangeVoting.sol')
+var PayoutEngine = artifacts.require('./PayoutEngine.sol')
 
 module.exports = function (deployer) {
-  deployer.deploy(RangeVoting)
+  deployer.deploy(PayoutEngine)
 }
