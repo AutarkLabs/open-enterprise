@@ -56,8 +56,8 @@
     "sync-assets": "mkdir -p public; rsync -rtu \"$(dirname $(node -p 'require.resolve(\"@aragon/ui\")'))/\" public/aragon-ui",
     "build:app": "parcel build app/src/index.html -d public/ --public-url '.'",
     "build:script": "parcel build app/src/script.js -d public/",
-    "build": "npm run compile && npm run sync-assets && npm run build:app && npm run build:script && cd app/ && react-scripts build",
-    "publish": "aragon publish"
+    "build": "npm run compile && cd app && npm run build",
+    "publish": "aragon apm publish"
   },
   "keywords": [],
   "license": "GPL-3.0"
