@@ -1,12 +1,19 @@
-# Range voting
+# Github Registry App
+
+## Info
+
+This is a Planning App child app.
 
 ## Workflow
+
 For fast frontend development without aragon backend:
 
-`npm run dev`
+From root github-registry folder:
+`npm i`
+`cd app && npm i` (this is needed right now to fix some babel deps conflict)
+`cd .. && npm run dev`
 
-For testing everything in relation to each other you first need to delete the `dist` folder from `.gitignore` and then run the following each time you make a change:
-
+For testing everything in relation to each other you first need to delete the `dist` folders from `.gitignore` and then run the following each time you make a change:
 `npm run start`
 
 You can run each of following commands in each terminal tab:

@@ -1,22 +1,17 @@
 {
-  "appName": "planning.aragonpm.eth",
-  "version": "1.0.0",
+  "appName": "github-registry.aragonpm.eth",
+  "version": "19.0.1",
   "roles": [
     {
-      "name": "Create new votes",
-      "id": "CREATE_VOTES_ROLE",
+      "name": "Increment the counter",
+      "id": "INCREMENT_ROLE",
       "params": []
     },
     {
-      "name": "Add candidates role",
-      "id": "ADD_CANDIDATES_ROLE",
-      "params": []
-    },
-    {
-      "name": "Modify candidate support role",
-      "id": "MODIFY_PARTICIPATION_ROLE",
+      "name": "Decrement the counter",
+      "id": "DECREMENT_ROLE",
       "params": []
     }
   ],
-  "path": "contracts/RangeVoting.sol"
+  "path": "contracts/GithubRegistry.sol"
 }

@@ -7,6 +7,7 @@ import "@aragon/os/contracts/lib/ens/PublicResolver.sol";
 import "@aragon/os/contracts/apm/APMNamehash.sol";
 
 import "@aragon/apps-voting/contracts/Voting.sol";
+import "@aragon/apps-vault/contracts/Vault.sol";
 import "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import "@aragon/os/contracts/lib/minime/MiniMeToken.sol";
 
@@ -18,6 +19,8 @@ contract KitBase is APMNamehash {
 
     event DeployInstance(address dao);
     event InstalledApp(address appProxy, bytes32 appId);
+
+    enum Apps { Finance, TokenManager, Vault, Voting }
 
     function KitBase(DAOFactory _fac, ENS _ens) {
     	ens = _ens;
@@ -58,26 +61,44 @@ contract Kit is KitBase {
 		bytes32 appId = apmNamehash("planning");
 		bytes32 votingAppId = apmNamehash("voting");
 		bytes32 tokenManagerAppId = apmNamehash("token-manager");
+	
 
-		RangeVoting app = RangeVoting(dao.newAppInstance(appId, latestVersionAppBase(appId)));
+		RangeVoting rangeVoting = RangeVoting(dao.newAppInstance(appId, latestVersionAppBase(appId)));
 		Voting voting = Voting(dao.newAppInstance(votingAppId, latestVersionAppBase(votingAppId)));
 		TokenManager tokenManager = TokenManager(dao.newAppInstance(tokenManagerAppId, latestVersionAppBase(tokenManagerAppId)));
+		Vault vault = Vault(dao.newAppInstance(appIds[uint8(Apps.Vault)], latestVersionAppBase(appIds[uint8(Apps.Vault)])));
+        InstalledApp(vault, appIds[uint8(Apps.Vault)]);
+        InstalledApp(voting, appIds[uint8(Apps.Voting)]);
+        InstalledApp(tokenManager, appIds[uint8(Apps.TokenManager)]);
+
 
 		MiniMeToken token = tokenFactory.createCloneToken(address(0), 0, "App token", 0, "APP", true);
 		token.changeController(tokenManager);
+
 
 		tokenManager.initialize(token, true, 0, true);
 		// Initialize apps
 		voting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
 
-		acl.createPermission(this, tokenManager, tokenManager.MINT_ROLE(), this);
-		tokenManager.mint(root, 1); // Give one token to root
+        Vault vaultBase = Vault(latestVersionAppBase(appIds[uint8(Apps.Vault)]));
+        // inits
+        vault.initialize(vaultBase.erc20ConnectorBase(), vaultBase.ethConnectorBase()); // init with trusted connectors
+        finance.initialize(IVaultConnector(vault), uint64(-1) - uint64(now)); // yuge period
+
 
 		acl.createPermission(ANY_ENTITY, voting, voting.CREATE_VOTES_ROLE(), root);
 
-		acl.createPermission(voting, app, app.CREATE_VOTES_ROLE(), voting);
-		acl.createPermission(ANY_ENTITY, app, app.ADD_CANDIDATES_ROLE(), root);
-		acl.createPermission(voting, app, app.MODIFY_PARTICIPATION_ROLE(), root);
+        acl.createPermission(finance, vault, vault.TRANSFER_ROLE(), voting);
+        acl.createPermission(voting, finance, finance.CREATE_PAYMENTS_ROLE(), voting);
+        acl.createPermission(voting, finance, finance.EXECUTE_PAYMENTS_ROLE(), voting);
+        acl.createPermission(voting, finance, finance.DISABLE_PAYMENTS_ROLE(), voting);
+        acl.createPermission(voting, tokenManager, tokenManager.ASSIGN_ROLE(), voting);
+        acl.createPermission(voting, tokenManager, tokenManager.REVOKE_VESTINGS_ROLE(), voting);
+
+        acl.createPermission(finance, vault, vault.TRANSFER_ROLE(), voting);
+		acl.createPermission(voting, rangeVoting, rangeVoting.CREATE_VOTES_ROLE(), voting);
+		acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.ADD_CANDIDATES_ROLE(), root);
+		acl.createPermission(voting, rangeVoting, rangeVoting.MODIFY_PARTICIPATION_ROLE(), root);
 		acl.grantPermission(voting, tokenManager, tokenManager.MINT_ROLE());
 
 		// Clean up permissions

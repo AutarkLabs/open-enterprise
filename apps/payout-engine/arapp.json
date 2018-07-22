@@ -3,13 +3,18 @@
   "version": "1.0.0",
   "roles": [
     {
-      "name": "Start payout role",
+      "name": "Initiate an allocations payout",
       "id": "START_PAYOUT_ROLE",
       "params": []
     },
     {
-      "name": "Set distribution role",
+      "name": "Set the distribution that will correspond to this allocation",
       "id": "SET_DISTRIBUTION_ROLE",
+      "params": []
+    },
+    {
+      "name": "Execute a set payout",
+      "id": "EXECUTE_PAYOUT_ROLE",
       "params": []
     }
   ],
