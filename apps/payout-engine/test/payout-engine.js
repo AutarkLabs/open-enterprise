@@ -10,6 +10,7 @@ const DAOFactory = artifacts.require('@aragon/os/contracts/factory/DAOFactory')
 const EVMScriptRegistryFactory = artifacts.require('@aragon/os/contracts/factory/EVMScriptRegistryFactory')
 const ACL = artifacts.require('@aragon/os/contracts/acl/ACL')
 const Kernel = artifacts.require('@aragon/os/contracts/kernel/Kernel')
+const Vault = artifacts.require('@aragon/apps-vault/contracts/Vault')
 
 const getContract = name => artifacts.require(name)
 const createdPayoutId = receipt => receipt.logs.filter(x => x.event == 'StartPayout')[0].args.voteId
@@ -36,8 +37,13 @@ contract('PayoutEngine App', accounts => {
 
         await acl.createPermission(root, dao.address, await dao.APP_MANAGER_ROLE(), root, { from: root })
 
-        const receipt = await dao.newAppInstance('0x1234', (await PayoutEngine.new()).address, { from: root })
-        app = PayoutEngine.at(receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
+        let receipt = await dao.newAppInstance('0x1234', (await Vault.new()).address, { from: root })
+
+        vault = Vault.at(receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
+
+        receipt = await dao.newAppInstance('0x2345', (await PayoutEngine.new()).address, { from: root })
+
+        allocation = PayoutEngine.at(receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
 
         await acl.createPermission(ANY_ADDR, app.address, await app.START_PAYOUT_ROLE(), root, { from: root })
         await acl.createPermission(ANY_ADDR, app.address, await app.SET_DISTRIBUTION_ROLE(), root, { from: root })
@@ -67,13 +73,15 @@ contract('PayoutEngine App', accounts => {
 
             candidateKeys = ["0x1", "0x2", "0x3"]
             candidateAddresses = [bobafett, dengar, bossk]
-            await app.initializePayout(candidateKeys, candidateAddresses, '', { from: empire})
+            await allocation.initializePayout(vault.address, { from: empire})
+
+            let allocationId = (await allocation.newPayout("Fett's vett", web3.toWei(1, "ether"), address(0))).toNumber()
 
             supports = [500, 200, 300]
             totalsupport = 1000
-            await app.setDistribution(candidateKeys, supports, { from: empire})
+            await app.setDistribution(candidateKeys, supports, allocationId, false, false, 0, web3.toWei(0.01, "ether"), { from: empire})
 
-            await app.runPayout()
+            await app.executePayout(allocationId)
 
             const bobafettBalance = await web3.eth.getBalance(bobafett)
             const dengarBalance = await web3.eth.getBalance(dengar)
