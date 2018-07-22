@@ -5,8 +5,8 @@ import "@aragon/os/contracts/apps/AragonApp.sol";
 contract GithubRegistry is AragonApp {
 
     struct GithubRepo {
-        bytes16 owner;
-        bytes16 repo;
+        bytes20 owner;  // repo owner's address
+        bytes12 repo;  // Github repo id int that is stringified
         mapping(uint256 => GithubIssue) issues;
         uint index;
     }
@@ -22,7 +22,7 @@ contract GithubRegistry is AragonApp {
     // The entries in the registry.
     mapping(bytes32 => GithubRepo) repos;
 
-    // Give us an array so we can actually iterate
+    // Gives us an array so we can actually iterate
     bytes32[] repoIDs;
 
     // Fired when a repository is added to the registry.
@@ -30,10 +30,10 @@ contract GithubRegistry is AragonApp {
     // Fired when a repository is removed from the registry.
     event RepoRemoved(bytes32 id);
     // Fired when a bounty is added to a repo
-    event BountyAdded(bytes16 owner, bytes16 repo, uint256 issueNumber, uint256 bountySize);
+    event BountyAdded(bytes20 owner, bytes12 repo, uint256 issueNumber, uint256 bountySize);
 
-    bytes32 public constant ADD_ENTRY_ROLE = keccak256("ADD_REPO_ROLE");
-    bytes32 public constant REMOVE_ENTRY_ROLE =  keccak256("REMOVE_REPO_ROLE");
+    bytes32 public constant ADD_REPO_ROLE = keccak256("ADD_REPO_ROLE");
+    bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
     bytes32 public constant ADD_BOUNTY_ROLE =  keccak256("ADD_BOUNTY_ROLE");
 
 
@@ -42,8 +42,8 @@ contract GithubRegistry is AragonApp {
      * @param _id The entry to add to the registry
      */
     function addRepo(
-        bytes16 _owner, bytes16 _repo
-    ) public auth(ADD_ENTRY_ROLE) returns (bytes32 _id) {
+        bytes20 _owner, bytes12 _repo
+    ) public auth(ADD_REPO_ROLE) returns (bytes32 _id) {
         _id = keccak256(_owner, _repo);  // overflow should still yield a useable identifier
         repos[_id] = GithubRepo(_owner, _repo, 0);
         //add the index to the repo struct and push the id to the repo array
@@ -57,7 +57,7 @@ contract GithubRegistry is AragonApp {
      */
     function removeRepo(
         bytes32 _id
-    ) public auth(REMOVE_ENTRY_ROLE) {
+    ) public auth(REMOVE_REPO_ROLE) {
         // Take the repo out of the repo array in constant time by replacing the element
         // with last element
         repoIDs[repos[_id].index] = repoIDs[repoIDs.length - 1];
@@ -76,7 +76,7 @@ contract GithubRegistry is AragonApp {
      */
     function getRepo(
         bytes32 _id
-    ) public view returns (bytes32 _owner, bytes32 _repo) {
+    ) public view returns (bytes20 _owner, bytes12 _repo) {
         _owner = repos[_id].owner;
         _repo = repos[_id].repo;
     }
