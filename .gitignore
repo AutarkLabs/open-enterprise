@@ -62,3 +62,4 @@ aragon-ui/
 
 .cache
 codealike.json
+package-lock.json
