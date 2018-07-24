@@ -8,6 +8,8 @@ import "@aragon/os/contracts/apm/APMNamehash.sol";
 
 import "@aragon/apps-voting/contracts/Voting.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
+import "@aragon/apps-finance/contracts/Finance.sol";
+import "@aragon/apps-vault/contracts/IVaultConnector.sol";
 import "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import "@aragon/os/contracts/lib/minime/MiniMeToken.sol";
 
@@ -58,18 +60,23 @@ contract Kit is KitBase {
 		ACL acl = ACL(dao.acl());
 		acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
 		address root = msg.sender;
-		bytes32 appId = apmNamehash("planning");
+		bytes32 planningAppId = apmNamehash("planning");
+		bytes32 rangeVoteAppId = apmNamehash("range-voting");
 		bytes32 votingAppId = apmNamehash("voting");
 		bytes32 tokenManagerAppId = apmNamehash("token-manager");
+		bytes32 vaultAppId = apmNamehash("vault");
+		bytes32 financeAppId = apmNamehash("finance");
 	
 
-		//RangeVoting rangeVoting = RangeVoting(dao.newAppInstance(appId, latestVersionAppBase(appId)));
+		RangeVoting rangeVoting = RangeVoting(dao.newAppInstance(rangeVoteAppId, latestVersionAppBase(rangeVoteAppId)));
 		Voting voting = Voting(dao.newAppInstance(votingAppId, latestVersionAppBase(votingAppId)));
 		TokenManager tokenManager = TokenManager(dao.newAppInstance(tokenManagerAppId, latestVersionAppBase(tokenManagerAppId)));
-		Vault vault = Vault(dao.newAppInstance(appIds[uint8(Apps.Vault)], latestVersionAppBase(appIds[uint8(Apps.Vault)])));
-        InstalledApp(vault, appIds[uint8(Apps.Vault)]);
-        InstalledApp(voting, appIds[uint8(Apps.Voting)]);
-        InstalledApp(tokenManager, appIds[uint8(Apps.TokenManager)]);
+		Vault vault = Vault(dao.newAppInstance(vaultAppId, latestVersionAppBase(vaultAppId)));
+		Finance finance = Finance(dao.newAppInstance(financeAppId, latestVersionAppBase(financeAppId)));
+
+        InstalledApp(vault, vaultAppId);
+        InstalledApp(voting, votingAppId);
+        InstalledApp(tokenManager, tokenManagerAppId);
 
 
 		MiniMeToken token = tokenFactory.createCloneToken(address(0), 0, "App token", 0, "APP", true);
@@ -80,7 +87,7 @@ contract Kit is KitBase {
 		// Initialize apps
 		voting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
 
-        Vault vaultBase = Vault(latestVersionAppBase(appIds[uint8(Apps.Vault)]));
+        Vault vaultBase = Vault(latestVersionAppBase(vaultAppId));
         // inits
         vault.initialize(vaultBase.erc20ConnectorBase(), vaultBase.ethConnectorBase()); // init with trusted connectors
         finance.initialize(IVaultConnector(vault), uint64(-1) - uint64(now)); // yuge period

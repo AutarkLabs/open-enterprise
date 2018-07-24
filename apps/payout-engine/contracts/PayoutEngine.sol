@@ -4,6 +4,8 @@ import "@aragon/os/contracts/apps/AragonApp.sol";
 
 import "@aragon/apps-vault/contracts/Vault.sol";
 
+import "@aragon/apps-vault/contracts/IVaultConnector.sol";
+
 import "@aragon/os/contracts/lib/zeppelin/math/SafeMath.sol";
 
 import "@aragon/os/contracts/lib/zeppelin/math/SafeMath64.sol";
@@ -48,7 +50,7 @@ contract PayoutEngine is AragonApp {
         address token;
     }
 
-    Vault vault;
+    IVaultConnector vault;
 
 
     Payout[] payouts;
@@ -68,7 +70,8 @@ contract PayoutEngine is AragonApp {
     function initializePayout(
         Vault _vault
     ) external {
-        vault = _vault;
+        vault = _vault.ethConnectorBase();
+        initialized();
     }
 
 
@@ -82,11 +85,16 @@ contract PayoutEngine is AragonApp {
     *
     */
     function newPayout(
+        bytes32[] _candidateKeys,
+        address[] _candidateAddresses,        
         string _metadata,
         uint256 _limit,
         address _token
-    ) external auth(START_PAYOUT_ROLE) returns(uint256) {
-        Payout payout;
+    ) external onlyInit auth(START_PAYOUT_ROLE) returns(uint256) {
+        Payout memory payout;
+        payout.candidateKeys = _candidateKeys;
+        payout.candidateAddresses = _candidateAddresses;
+        payout.metadata = _metadata;
         payout.metadata = _metadata;
         payout.limit = _limit;
         payout.token = _token;
@@ -112,7 +120,7 @@ contract PayoutEngine is AragonApp {
         bool _recurring,
         uint256 _period,
         uint256 _amount
-    ) external auth(SET_DISTRIBUTION_ROLE){
+    ) external onlyInit auth(SET_DISTRIBUTION_ROLE){
         Payout payout = payouts[_payoutId];
         require(_amount <= payout.limit);
         payout.informational = _informational;
@@ -146,7 +154,7 @@ contract PayoutEngine is AragonApp {
     *         processed and funds will be sent the appropriate places.
     *
     */
-    function executePayout(uint256 _payoutId) external payable auth(EXECUTE_PAYOUT_ROLE){
+    function executePayout(uint256 _payoutId) external payable onlyInit auth(EXECUTE_PAYOUT_ROLE){
         Payout payout = payouts[_payoutId];
         require(!payout.informational);
         require(payout.distSet);
@@ -166,8 +174,8 @@ contract PayoutEngine is AragonApp {
 
         if(this.balance < payout.amount){
             uint256 remainingBalance = payout.amount.sub(this.balance);
-            require(!(vault.balance < remainingBalance));
-            vault.transfer(vault.ETH, this, remainingBalance, 0);
+            require(!(vault.balance(address(0)) < remainingBalance));
+            vault.transfer(address(0), this, remainingBalance, new bytes(0));
         }
 
         pointsPer = payout.amount.div(totalSupport);
