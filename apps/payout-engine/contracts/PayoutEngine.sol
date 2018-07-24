@@ -63,10 +63,6 @@ contract PayoutEngine is AragonApp {
     *      object needs to be created in the payouts array.
     * @notice Start a payout with the specified candidates and addresses.
     *         None of the distribution or payments are handled in this step.
-    * @param _candidateKeys An array of all keys (descriptions) of candidates.
-    * @param _candidateAddresses An array of all the recipient addresses for
-    *        all candidates.
-    * @param _metadata Any relevent label for the payout
     *
     */
     function initializePayout(
@@ -90,7 +86,7 @@ contract PayoutEngine is AragonApp {
         uint256 _limit,
         address _token
     ) external auth(START_PAYOUT_ROLE) returns(uint256) {
-        Payout payout = new Payout(_candidateKeys, _candidateAddresses, _metadata);
+        Payout payout;
         payout.metadata = _metadata;
         payout.limit = _limit;
         payout.token = _token;
@@ -128,14 +124,14 @@ contract PayoutEngine is AragonApp {
         }
         if(_recurring){
             // minimum granularity is a single day
-            require(period > 86399);
+            require(payout.period > 86399);
             payout.period = _period;
             payout.startTime = now;
         } else {
             payout.period = 0;
         }
 
-        distSet = true;
+        payout.distSet = true;
         for(uint i = 0; i < _candidateKeys.length; i++){
             require(payout.candidateKeys[i] == _candidateKeys[i]);
         }
@@ -168,8 +164,8 @@ contract PayoutEngine is AragonApp {
             totalSupport += payout.supports[i];
         }
 
-        if(this.balance < amount){
-            uint256 remainingBalance = amount.sub(this.balance);
+        if(this.balance < payout.amount){
+            uint256 remainingBalance = payout.amount.sub(this.balance);
             require(!(vault.balance < remainingBalance));
             vault.transfer(vault.ETH, this, remainingBalance, 0);
         }

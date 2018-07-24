@@ -11,7 +11,7 @@ import "@aragon/apps-vault/contracts/Vault.sol";
 import "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import "@aragon/os/contracts/lib/minime/MiniMeToken.sol";
 
-import "./RangeVoting.sol";
+//import "./RangeVoting.sol";
 
 contract KitBase is APMNamehash {
     ENS public ens;
@@ -63,7 +63,7 @@ contract Kit is KitBase {
 		bytes32 tokenManagerAppId = apmNamehash("token-manager");
 	
 
-		RangeVoting rangeVoting = RangeVoting(dao.newAppInstance(appId, latestVersionAppBase(appId)));
+		//RangeVoting rangeVoting = RangeVoting(dao.newAppInstance(appId, latestVersionAppBase(appId)));
 		Voting voting = Voting(dao.newAppInstance(votingAppId, latestVersionAppBase(votingAppId)));
 		TokenManager tokenManager = TokenManager(dao.newAppInstance(tokenManagerAppId, latestVersionAppBase(tokenManagerAppId)));
 		Vault vault = Vault(dao.newAppInstance(appIds[uint8(Apps.Vault)], latestVersionAppBase(appIds[uint8(Apps.Vault)])));
@@ -96,9 +96,9 @@ contract Kit is KitBase {
         acl.createPermission(voting, tokenManager, tokenManager.REVOKE_VESTINGS_ROLE(), voting);
 
         acl.createPermission(finance, vault, vault.TRANSFER_ROLE(), voting);
-		acl.createPermission(voting, rangeVoting, rangeVoting.CREATE_VOTES_ROLE(), voting);
-		acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.ADD_CANDIDATES_ROLE(), root);
-		acl.createPermission(voting, rangeVoting, rangeVoting.MODIFY_PARTICIPATION_ROLE(), root);
+		//acl.createPermission(voting, rangeVoting, rangeVoting.CREATE_VOTES_ROLE(), voting);
+		//acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.ADD_CANDIDATES_ROLE(), root);
+		//acl.createPermission(voting, rangeVoting, rangeVoting.MODIFY_PARTICIPATION_ROLE(), root);
 		acl.grantPermission(voting, tokenManager, tokenManager.MINT_ROLE());
 
 		// Clean up permissions
