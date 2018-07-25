@@ -21,13 +21,13 @@ import "@aragon/os/contracts/lib/zeppelin/math/SafeMath64.sol";
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *******************************************************************************/
 /*******************************************************************************
-* @title PayoutEngine Contract
+* @title Allocations Contract
 * @author Arthur Lunn
 * @dev This contract is meant to handle tasks like basic budgeting,
 *      and any time that tokens need to be distributed based on a certain
 *      percentage breakdown to an array of addresses.
 *******************************************************************************/
-contract PayoutEngine is AragonApp {
+contract Allocations is AragonApp {
 
     using SafeMath for uint256;
 

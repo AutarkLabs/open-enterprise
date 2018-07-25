@@ -30,6 +30,7 @@ export default class App extends React.Component {
 
   onCreateAccount = (account) => {
     const { title, limit } = account
+    //this.props.app.newPayout(title, limit, 0x0)
     this.state.accounts.push({
       title,
       limit,

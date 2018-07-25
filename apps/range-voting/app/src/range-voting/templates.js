@@ -1,16 +1,16 @@
 import issuecuration from './templates/issuecuration'
 import budgetengine from './templates/budgetengine'
-import payoutengine from './templates/payoutengine'
+import allocations from './templates/allocations'
 
 const IssueCuration = Symbol('IssueCuration')
 const BudgetEngine = Symbol('BudgetEngine')
-const PayoutEngine = Symbol('PayoutEngine')
+const Allocations = Symbol('Allocations')
 
 const Templates = new Map()
-Templates.set(PayoutEngine, payoutengine)
+Templates.set(Allocations, allocations)
 Templates.set(BudgetEngine, budgetengine)
 Templates.set(IssueCuration, issuecuration)
 
 export default Templates
-export { IssueCuration, BudgetEngine, PayoutEngine }
+export { IssueCuration, BudgetEngine, Allocations }
 

@@ -1,5 +1,5 @@
-var PayoutEngine = artifacts.require('./PayoutEngine.sol')
+var Allocations = artifacts.require('./Allocations.sol')
 
 module.exports = function (deployer) {
-  deployer.deploy(PayoutEngine)
+  deployer.deploy(Allocations)
 }

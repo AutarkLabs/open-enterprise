@@ -85,15 +85,11 @@ contract Allocations is AragonApp {
     *
     */
     function newPayout(
-        bytes32[] _candidateKeys,
-        address[] _candidateAddresses,        
         string _metadata,
         uint256 _limit,
         address _token
     ) external onlyInit auth(START_PAYOUT_ROLE) returns(uint256) {
         Payout memory payout;
-        payout.candidateKeys = _candidateKeys;
-        payout.candidateAddresses = _candidateAddresses;
         payout.metadata = _metadata;
         payout.metadata = _metadata;
         payout.limit = _limit;
@@ -114,6 +110,7 @@ contract Allocations is AragonApp {
     */
     function setDistribution(
         bytes32[] _candidateKeys,
+        address[] _candidateAddresses,
         uint256[] _supports,
         uint256 _payoutId,
         bool _informational,
@@ -122,6 +119,8 @@ contract Allocations is AragonApp {
         uint256 _amount
     ) external onlyInit auth(SET_DISTRIBUTION_ROLE){
         Payout payout = payouts[_payoutId];
+        payout.candidateKeys = _candidateKeys;
+        payout.candidateAddresses = _candidateAddresses;
         require(_amount <= payout.limit);
         payout.informational = _informational;
         payout.recurring = _recurring;

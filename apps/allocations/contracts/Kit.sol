@@ -81,7 +81,7 @@ contract Kit is KitBase {
         InstalledApp(rangeVoting, rangeVoteAppId);
         InstalledApp(voting, votingAppId);
         InstalledApp(tokenManager, tokenManagerAppId);
-        InstalledApp(allocations, allocationsAppId);
+        //InstalledApp(allocations, allocationsAppId);
 
 
         MiniMeToken token = tokenFactory.createCloneToken(address(0), 0, "App token", 0, "APP", true);

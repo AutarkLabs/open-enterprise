@@ -6,7 +6,7 @@ import { votePermissionItems, voteWeightItems, voteOutcomeItems } from './voting
 
 const isIntegerString = value => /^[0-9]*$/.test(value)
 const template = {
-  name: 'payoutengine',
+  name: 'allocations',
   label: 'Payout Engine',
   description: 'Determine how to share a budget across multiple projects',
   icon,

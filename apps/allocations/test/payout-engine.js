@@ -5,7 +5,7 @@ const timeTravel = require('../test-helpers/timeTravel')(web3)
 const { encodeCallScript, EMPTY_SCRIPT } = require('../test-helpers/evmScript')
 const ExecutionTarget = artifacts.require('ExecutionTarget')
 
-const PayoutEngine = artifacts.require('PayoutEngine')
+const Allocations = artifacts.require('Allocations')
 const DAOFactory = artifacts.require('@aragon/os/contracts/factory/DAOFactory')
 const EVMScriptRegistryFactory = artifacts.require('@aragon/os/contracts/factory/EVMScriptRegistryFactory')
 const ACL = artifacts.require('@aragon/os/contracts/acl/ACL')
@@ -18,7 +18,7 @@ const createdPayoutId = receipt => receipt.logs.filter(x => x.event == 'StartPay
 const ANY_ADDR = ' 0xffffffffffffffffffffffffffffffffffffffff'
 
 
-contract('PayoutEngine App', accounts => {
+contract('Allocations App', accounts => {
     let daoFact, app, token, executionTarget = {}
 
     const root = accounts[0]
@@ -41,9 +41,9 @@ contract('PayoutEngine App', accounts => {
 
         vault = Vault.at(receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
 
-        receipt = await dao.newAppInstance('0x2345', (await PayoutEngine.new()).address, { from: root })
+        receipt = await dao.newAppInstance('0x2345', (await Allocations.new()).address, { from: root })
 
-        allocation = PayoutEngine.at(receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
+        allocation = Allocations.at(receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
 
         await acl.createPermission(ANY_ADDR, app.address, await app.START_PAYOUT_ROLE(), root, { from: root })
         await acl.createPermission(ANY_ADDR, app.address, await app.SET_DISTRIBUTION_ROLE(), root, { from: root })
