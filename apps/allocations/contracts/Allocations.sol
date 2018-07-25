@@ -2,9 +2,9 @@ pragma solidity ^0.4.18;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
 
-import "@aragon/apps-vault/contracts/Vault.sol";
+//import "@aragon/apps-vault/contracts/Vault.sol";
 
-import "@aragon/apps-vault/contracts/IVaultConnector.sol";
+//import "@aragon/apps-vault/contracts/IVaultConnector.sol";
 
 import "@aragon/os/contracts/lib/zeppelin/math/SafeMath.sol";
 
@@ -25,13 +25,13 @@ import "@aragon/os/contracts/lib/zeppelin/math/SafeMath64.sol";
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *******************************************************************************/
 /*******************************************************************************
-* @title PayoutEngine Contract
+* @title Allocations Contract
 * @author Arthur Lunn
 * @dev This contract is meant to handle tasks like basic budgeting,
 *      and any time that tokens need to be distributed based on a certain
 *      percentage breakdown to an array of addresses.
 *******************************************************************************/
-contract PayoutEngine is AragonApp {
+contract Allocations is AragonApp {
 
     using SafeMath for uint256;
 
@@ -50,7 +50,7 @@ contract PayoutEngine is AragonApp {
         address token;
     }
 
-    IVaultConnector vault;
+    //IVaultConnector vault;
 
 
     Payout[] payouts;
@@ -67,10 +67,10 @@ contract PayoutEngine is AragonApp {
     *         None of the distribution or payments are handled in this step.
     *
     */
-    function initializePayout(
-        Vault _vault
+    function initializeAllocations(
+        //Vault _vault
     ) external {
-        vault = _vault.ethConnectorBase();
+        //vault = _vault.ethConnectorBase();
         initialized();
     }
 
@@ -173,9 +173,14 @@ contract PayoutEngine is AragonApp {
         }
 
         if(this.balance < payout.amount){
+            revert();
+            /*
+            For now the vault isn't working see aragon-apps issue #292
+
             uint256 remainingBalance = payout.amount.sub(this.balance);
             require(!(vault.balance(address(0)) < remainingBalance));
             vault.transfer(address(0), this, remainingBalance, new bytes(0));
+            */
         }
 
         pointsPer = payout.amount.div(totalSupport);

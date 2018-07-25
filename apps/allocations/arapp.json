@@ -1,5 +1,5 @@
 {
-  "appName": "planning.aragonpm.eth",
+  "appName": "allocations.aragonpm.eth",
   "version": "1.0.0",
   "roles": [
     {
@@ -18,5 +18,5 @@
       "params": []
     }
   ],
-  "path": "contracts/PayoutEngine.sol"
+  "path": "contracts/Allocations.sol"
 }
