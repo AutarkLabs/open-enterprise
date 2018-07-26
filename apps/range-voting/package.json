@@ -21,7 +21,7 @@
     "react-blockies": "^1.2.2",
     "react-dom": "^16.3.2",
     "styled-components": "^3.2.6",
-    "webpack": "3.10.0"
+    "webpack": "3.11.0"
   },
   "devDependencies": {
     "solium": "^1.0.4",

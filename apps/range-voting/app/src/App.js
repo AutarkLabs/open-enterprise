@@ -56,11 +56,11 @@ export default class App extends React.Component {
     },
     tabs: [
       { id: 0, name: 'Overview', screen: Overview, barButton: { title: 'Add Project', handlerVar: 'createProjectVisible' }},
-      { id: 1, name: 'Decisions', screen: Decisions, barSelectButton: { title: 'Actions', items: ['one', 'two', 'three'] }},
-      { id: 2, name: 'Issues', screen: Issues, barButton: { title: 'New Issue', handlerVar: 'createIssueVisible' }},
-      { id: 3, name: 'Tools', screen: Tools, barButton: { title: 'New Tool', handlerVar: 'rangeWizardActive' }},
-      { id: 4, name: 'Address Book', screen: AddressBook },
-      { id: 5, name: 'Settings', screen: Settings },
+//      { id: 1, name: 'Decisions', screen: Decisions, barSelectButton: { title: 'Actions', items: ['one', 'two', 'three'] }},
+      { id: 1, name: 'Issues', screen: Issues, barButton: { title: 'New Issue', handlerVar: 'createIssueVisible' }},
+//      { id: 3, name: 'Tools', screen: Tools, barButton: { title: 'New Tool', handlerVar: 'rangeWizardActive' }},
+//      { id: 4, name: 'Address Book', screen: AddressBook },
+      { id: 2, name: 'Settings', screen: Settings },
     ]
   }
 
@@ -90,7 +90,7 @@ export default class App extends React.Component {
     github.activeRepo = repoId
     this.setState({
       github: github,
-      activeTabId: 2 // because selecting a repo shows Issues
+      activeTabId: 1 // because selecting a repo shows Issues
     })
   }
 
@@ -216,7 +216,7 @@ export default class App extends React.Component {
         <AppLayout>
           <AppLayout.Header>
             <AppBar
-              title="Planning"
+              title="Projects"
               endContent={barButton}
             />
           </AppLayout.Header>
