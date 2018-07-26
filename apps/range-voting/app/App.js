@@ -22,7 +22,7 @@ export default class App extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      ...initialState
+      ...initialState,
     }
   }
 
@@ -34,22 +34,28 @@ export default class App extends React.Component {
     this.setState({ panelActive: false })
   }
 
-  render () {
+  render() {
     const barButton = (
       <DropDownButton>
         <Button Button mode="strong">
           Actions
         </Button>
         <DropDownContent>
-          <DropDownItem><CloseIcon />New Payout Engine</DropDownItem>
-          <DropDownItem><CloseIcon />New Issue Curation</DropDownItem>
-          <DropDownItem><CloseIcon />New Budget Engine</DropDownItem>
+          <DropDownItem>
+            <CloseIcon />New Payout Engine
+          </DropDownItem>
+          <DropDownItem>
+            <CloseIcon />New Issue Curation
+          </DropDownItem>
+          <DropDownItem>
+            <CloseIcon />New Budget Engine
+          </DropDownItem>
         </DropDownContent>
       </DropDownButton>
     )
 
     return (
-      <AragonApp publicUrl="/aragon-ui/">
+      <AragonApp publicUrl="aragon-ui-assets/">
         <AppLayout>
           <AppLayout.Header>
             <AppBar
@@ -59,11 +65,12 @@ export default class App extends React.Component {
           </AppLayout.Header>
           <AppLayout.ScrollWrapper>
             <AppLayout.Content>
-               <Decisions onActivate={this.handlePanelOpen} />
+              <Decisions onActivate={this.handlePanelOpen} />
             </AppLayout.Content>
           </AppLayout.ScrollWrapper>
         </AppLayout>
         <SidePanel
+          title={''}
           opened={this.state.panelActive}
           onClose={this.handlePanelClose}
         >
@@ -77,20 +84,20 @@ export default class App extends React.Component {
 const DropDownContent = styled.div`
   display: none;
   position: absolute;
-  background-color: #FFFFFF;
-  border: 1px solid rgba(209,209,209,0.75);
-  box-shadow: 0 4px 4px 0 rgba(0,0,0,0.03);
+  background-color: #ffffff;
+  border: 1px solid rgba(209, 209, 209, 0.75);
+  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.03);
   border-radius: 3px;
-  padding: .5rem 0;
+  padding: 0.5rem 0;
   z-index: 1;
   margin-left: -8rem;
   white-space: nowrap;
 `
 const DropDownItem = styled.div`
-  padding: .5rem 1rem;
+  padding: 0.5rem 1rem;
   display: flex;
   &:hover {
-    color: #00CBE6;
+    color: #00cbe6;
     cursor: pointer;
   }
 `
@@ -104,6 +111,6 @@ const DropDownButton = styled.div`
 `
 
 const CloseIcon = styled(IconAdd)`
-  color: #98A0A2;
-  margin-right: .5rem;
+  color: #98a0a2;
+  margin-right: 0.5rem;
 `

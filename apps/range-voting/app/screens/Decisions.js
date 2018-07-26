@@ -20,7 +20,8 @@ const EmptyIcon = () => <img src={emptyIcon} alt="" />
 
 class Decisions extends React.Component {
   static propTypes = {
-    app: PropTypes.object.isRequired,
+    // app: PropTypes.object.isRequired,
+    app: PropTypes.object,
   }
   static defaultProps = {
     pctBase: 100,
@@ -43,19 +44,19 @@ class Decisions extends React.Component {
           options: [
             {
               label: 'not necessarily',
-              value: 12
+              value: 12,
             },
             {
               label: 'possibly',
-              value: 3
+              value: 3,
             },
             {
               label: 'maybe',
-              value: 9
+              value: 9,
             },
             {
               label: 'perhaps',
-              value: 0
+              value: 0,
             },
           ],
         },
@@ -75,19 +76,19 @@ class Decisions extends React.Component {
           options: [
             {
               label: 'orange',
-              value: 120
+              value: 120,
             },
             {
               label: 'octarine',
-              value: 13
+              value: 13,
             },
             {
               label: 'darkish grey',
-              value: 339
+              value: 339,
             },
             {
               label: 'almost blue',
-              value: 0
+              value: 0,
             },
           ],
         },
@@ -174,22 +175,22 @@ class Decisions extends React.Component {
     const displayVotes = settingsLoaded && votes.length > 0
     const supportRequired = settingsLoaded ? supportRequiredPct / pctBase : -1
 
-    console.log('render: ' + settingsLoaded)
+    // console.log('[Decisions.js:178] settingsLoaded: ' + settingsLoaded)
 
     // Add useful properties to the votes
     const preparedVotes = displayVotes
       ? votes.map(vote => {
-          const endDate = new Date(vote.data.startDate + voteTime)
-          return {
-            ...vote,
-            endDate,
-            // Open if not executed and now is still before end date
-            open: !vote.data.executed && isBefore(new Date(), endDate),
-            quorum: safeDiv(vote.data.minAcceptQuorum, pctBase),
-            quorumProgress: getQuorumProgress(vote.data),
-            support: supportRequired,
-          }
-        })
+        const endDate = new Date(vote.data.startDate + voteTime)
+        return {
+          ...vote,
+          endDate,
+          // Open if not executed and now is still before end date
+          open: !vote.data.executed && isBefore(new Date(), endDate),
+          quorum: safeDiv(vote.data.minAcceptQuorum, pctBase),
+          quorumProgress: getQuorumProgress(vote.data),
+          support: supportRequired,
+        }
+      })
       : votes
 
     const currentVote =
@@ -218,8 +219,8 @@ class Decisions extends React.Component {
             title={
               currentVote
                 ? `Vote #${currentVoteId} (${
-                    currentVote.open ? 'Open' : 'Closed'
-                  })`
+                  currentVote.open ? 'Open' : 'Closed'
+                })`
                 : 'currentVote'
             }
             opened={Boolean(!createVoteVisible && voteVisible)}

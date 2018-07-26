@@ -1,0 +1,4 @@
+{
+  "presets": ["stage-3"],
+  "plugins": ["transform-class-properties", "transform-runtime"]
+}

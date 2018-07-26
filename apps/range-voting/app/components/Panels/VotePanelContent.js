@@ -23,7 +23,7 @@ import ProgressBarThick from '../ProgressBarThick'
 
 class VotePanelContent extends React.Component {
   static propTypes = {
-    app: PropTypes.object.isRequired,
+    app: PropTypes.object, // TODO: isRequired?
   }
   state = {
     userCanVote: false,
@@ -59,7 +59,7 @@ class VotePanelContent extends React.Component {
         .first()
         .subscribe(([balance, decimals]) => {
           const adjustedBalance = Math.floor(
-            parseInt(balance, 10) / Math.pow(10, decimals),
+            parseInt(balance, 10) / Math.pow(10, decimals)
           )
           this.setState({
             userBalance: adjustedBalance,
@@ -100,7 +100,7 @@ class VotePanelContent extends React.Component {
             : Math.round(sliderValue * 100) || 0)
         )
       },
-      0,
+      0
     )
     if (total <= 100) {
       this.state.voteOptions[idx].sliderValue = value
@@ -331,7 +331,7 @@ const RedText = styled.span`
 
 const SecondRedText = RedText.extend`
   float: right;
-  margin-top: .5rem;
+  margin-top: 0.5rem;
 `
 
 const Part = styled.div`
