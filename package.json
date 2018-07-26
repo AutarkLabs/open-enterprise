@@ -1,54 +1,33 @@
 {
   "name": "@tpt/planning-app",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Aragon planning application developed by Space Decentral and Giveth.",
-  "main": "truffle.js",
-  "directories": {
-    "test": "test"
-  },
-  "scripts": {
-    "install": "npm run bootstrap",
-    "bootstrap": "lerna bootstrap --nohoist=@aragon/os",
-    "clean": "git clean -fdxi",
-    "start:kit": "npm run build:apps && npm run publish:apps && aragon run --kit Kit --kit-init @ARAGON_ENS",
-    "build:apps": "npm run compile && lerna run --concurrency=1 --stream build",
-    "publish:apps": "lerna run --concurrency=1 --stream publish",
-    "publish": "aragon publish",
-    "compile": "aragon contracts compile && npm run lint",
-    "test": "lerna run --concurrency=1 --stream test",
-    "lint": "lerna run --scope=@tpt/apps-* lint",
-    "coverage": "./node_modules/.bin/solidity-coverage"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Giveth/planning-app.git"
-  },
-  "keywords": [
-    "Ethereum",
-    "Aragon",
-    "Decentralized",
-    "Solidity"
-  ],
-  "author": "",
-  "license": "GPL-3.0",
-  "bugs": {
-    "url": "https://github.com/Giveth/planning-app/issues"
-  },
-  "homepage": "https://github.com/Giveth/planning-app#readme",
   "dependencies": {
-    "@aragon/client": "^1.0.0-beta.9",
-    "@aragon/os": "3.1.9",
-    "@aragon/ui": "^0.16.0"
+    "@aragon/apps-token-manager": "^1.0.0",
+    "@aragon/apps-voting": "^1.0.0",
+    "@aragon/os": "3.1.9"
   },
   "devDependencies": {
-    "@aragon/cli": "^4.1.3",
-    "babel-plugin-styled-components": "^1.5.1",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-preset-env": "^1.7.0",
-    "babel-preset-stage-2": "^6.24.1",
-    "ganache-cli": "^6.1.6",
+    "@aragon/cli": "^4.0.6",
+    "concurrently": "^3.6.1",
     "lerna": "^2.11.0",
-    "parcel-bundler": "^1.9.7",
-    "truffle": "4.1.13"
-  }
+    "truffle": "4.0.5"
+  },
+  "scripts": {
+    "bootstrap": "npx lerna bootstrap --no-hoist=@aragon/os",
+    "clean": "git clean -fdxi",
+    "dev:range": "cd apps/range-voting && npm run dev",
+    "devchain": "npx aragon devchain",
+    "devchain:reset": "npx aragon devchain --reset",
+    "install": "npm run bootstrap",
+    "publish:apps": "npx lerna run --concurrency=1 --stream publish",
+    "start": "npm i && npx concurrently npm:devchain \"sleep 8 && npm run publish:apps && npm run start:kit\"",
+    "start:kit": "npx aragon run --kit PlanningKit --kit-init @ARAGON_ENS"
+  },
+  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Giveth/planning-app"
+  },
+  "license": "GPL-3.0"
 }

@@ -1,6 +1,6 @@
 {
-  "appName": "planning-app.aragonpm.eth",
-  "version": "1.0.0",
+  "appName": "planning-dummy.aragonpm.eth",
+  "version": "0.0.1",
   "roles": [],
-  "path": "contracts/PlanningApp.sol"
+  "path": "contracts/PlanningDummy.sol"
 }

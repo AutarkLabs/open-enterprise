@@ -1,0 +1,17 @@
+# Git files
+.gitignore
+
+# Build files
+.cache
+node_modules
+
+# Lock files
+package-lock.json
+yarn.lock
+
+# Others
+test
+test-helpers
+app
+migrations
+contracts

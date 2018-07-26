@@ -61,5 +61,7 @@ typings/
 aragon-ui/
 
 .cache
+dist
+build
 codealike.json
 package-lock.json
