@@ -5,7 +5,7 @@ import styled from 'styled-components'
 
 import { AragonApp, AppBar, Button, SidePanel, IconAdd } from '@aragon/ui'
 import AppLayout from './components/AppLayout'
-import Decisions from './screens/Decisions'
+import Decisions from './Decisions'
 import { NewPayoutVotePanelContent } from './components/Panels'
 
 const initialState = {

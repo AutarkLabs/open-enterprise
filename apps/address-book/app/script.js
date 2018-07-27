@@ -1,7 +1,7 @@
 import Aragon, { providers } from '@aragon/client'
 import { combineLatest } from './rxjs'
-import voteSettings, { hasLoadedVoteSettings } from './range-voting/vote-settings'
-import { EMPTY_CALLSCRIPT } from './range-voting/vote-utils'
+// import voteSettings, { hasLoadedVoteSettings } from './range-voting/vote-settings'
+// import { EMPTY_CALLSCRIPT } from './range-voting/vote-utils'
 
 const app = new Aragon()
 // app.initialize("0xffffffffffffffffffffffffffffffffffffffff", 100000000000000000, 200000000000000000, 86400)
@@ -38,8 +38,6 @@ const app = new Aragon()
 //   console.log(state)
 // })
 
-
-
 /***********************
  *                     *
  *   Event Handlers    *
@@ -72,24 +70,24 @@ async function startVote(state, { voteId }) {
  *                     *
  ***********************/
 
-async function loadVoteDescription(vote) {
-  if (!vote.script || vote.script === EMPTY_CALLSCRIPT) {
-    return vote
-  }
+// async function loadVoteDescription(vote) {
+//   if (!vote.script || vote.script === EMPTY_CALLSCRIPT) {
+//     return vote
+//   }
 
-  const path = await app.describeScript(vote.script).toPromise()
+//   const path = await app.describeScript(vote.script).toPromise()
 
-  vote.description = path
-    .map(step => {
-      const identifier = step.identifier ? ` (${step.identifier})` : ''
-      const app = step.name ? `${step.name}${identifier}` : `${step.to}`
+//   vote.description = path
+//     .map(step => {
+//       const identifier = step.identifier ? ` (${step.identifier})` : ''
+//       const app = step.name ? `${step.name}${identifier}` : `${step.to}`
 
-      return `${app}: ${step.description || 'No description'}`
-    })
-    .join('\n')
+//       return `${app}: ${step.description || 'No description'}`
+//     })
+//     .join('\n')
 
-  return vote
-}
+//   return vote
+// }
 
 function loadVoteData(voteId) {
   return new Promise(resolve => {
@@ -136,43 +134,43 @@ async function updateState(state, voteId, transform) {
   }
 }
 
-function loadVoteSettings() {
-  return Promise.all(
-    voteSettings.map(
-      ([name, key, type = 'string']) =>
-        new Promise((resolve, reject) =>
-          app
-            .call(name)
-            .first()
-            .map(val => {
-              if (type === 'number') {
-                return parseInt(val, 10)
-              }
-              if (type === 'time') {
-                // Adjust for js time (in ms vs s)
-                return parseInt(val, 10) * 1000
-              }
-              return val
-            })
-            .subscribe(value => {
-              resolve({ [key]: value })
-            }, reject)
-        )
-    )
-  )
-    .then(settings =>
-      settings.reduce((acc, setting) => ({ ...acc, ...setting }), {})
-    )
-    .catch(err => {
-      console.error('Failed to load Vote settings', err)
-      // Return an empty object to try again later
-      return {}
-    })
-}
+// function loadVoteSettings() {
+//   return Promise.all(
+//     voteSettings.map(
+//       ([name, key, type = 'string']) =>
+//         new Promise((resolve, reject) =>
+//           app
+//             .call(name)
+//             .first()
+//             .map(val => {
+//               if (type === 'number') {
+//                 return parseInt(val, 10)
+//               }
+//               if (type === 'time') {
+//                 // Adjust for js time (in ms vs s)
+//                 return parseInt(val, 10) * 1000
+//               }
+//               return val
+//             })
+//             .subscribe(value => {
+//               resolve({ [key]: value })
+//             }, reject)
+//         )
+//     )
+//   )
+//     .then(settings =>
+//       settings.reduce((acc, setting) => ({ ...acc, ...setting }), {})
+//     )
+//     .catch(err => {
+//       console.error('Failed to load Vote settings', err)
+//       // Return an empty object to try again later
+//       return {}
+//     })
+// }
 
 // Apply transmations to a vote received from web3
 // Note: ignores the 'open' field as we calculate that locally
-// 
+//
 function marshallVote({
   creator,
   executed,
@@ -198,4 +196,3 @@ function marshallVote({
     description,
   }
 }
-

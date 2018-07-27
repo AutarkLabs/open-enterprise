@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { EmptyStateCard } from '@aragon/ui'
-import emptyIcon from '../assets/empty-card-icon.svg'
+import emptyIcon from './assets/empty-card-icon.svg'
 
 const EmptyIcon = () => <img src={emptyIcon} alt="" />
 
