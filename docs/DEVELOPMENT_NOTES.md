@@ -112,6 +112,8 @@ _Tip: Look at letter g to quickly know if aragon fonts were loaded and applied_
 
 So only one slash at the end, otherwise ipfs will probably fail reading asset paths and the app will not show fonts/colors the way it should, it will load the fallback then.
 
+- To inspect ipfs files for errors deploying, load ipfs ui: http://localhost:5001/webui while the Aragon Wrapper is running, and paste the ipfs hash from the app into the files tab to load its content.
+
 #### Additional info
 
 - The old deployment code that seemed to do the kit and aragon apps deployments with javascript was replaced by the handy Kit smart contract, but here is kept for historical purposes: [**bare/migrations/2_deploy.js**](https://github.com/Giveth/planning-app/blob/bfb0900b6c15d91bc1d0d9967c6f5c46c3b9dd27/wip-apps/bare/migrations/2_deploy.js)
