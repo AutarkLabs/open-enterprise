@@ -14,7 +14,7 @@ lerna info versioning independent
 ```
 
 - Planning-app is the base monorepo.
-- Frontend packages where merged with individual aragon apps, it added complexity and was not needed.
+- Frontend packages were merged with individual aragon apps, it added complexity and was not needed.
 - Aragon/cli should be used to bump package versions with `apm version` (more info in Aragon hack documentation). It needs to have a devhchain running.
 
 ## Recommended instructions
