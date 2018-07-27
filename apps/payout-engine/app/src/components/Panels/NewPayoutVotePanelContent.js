@@ -137,7 +137,7 @@ class NewPayoutVotePanel extends Component {
           <IconAdd onClick={this.handleAddOptionClick} />
         </Field>
         <Button mode="strong" type="submit" wide>
-          Create Payout
+          Create Allocation
         </Button>
       </StyledPanel>
     )

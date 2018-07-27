@@ -18,7 +18,7 @@ const { accent, textPrimary, textTertiary } = theme
 const initialState = {
     contextMenuItems: [
         {
-            text: 'New Payout Vote',
+            text: 'New Allocation',
             icon: IconAdd,
             function: 'openNewPayoutVote',
             colors: {
@@ -81,11 +81,11 @@ class ToolCard extends Component {
                 </CardAddress>
                <StatsContainer>
                     <StatsTitle>Balance</StatsTitle>
-                    <StatsValue>{balance} ETH</StatsValue>
+                    <StatsValue>{balance} {limit.label}</StatsValue>
                </StatsContainer>
                <StatsContainer>
                     <StatsTitle>Limit</StatsTitle>
-                    <StatsValue>{limit.value} {limit.label} / Payout</StatsValue>
+                    <StatsValue>{limit.value} {limit.label} / Allocation</StatsValue>
                </StatsContainer>
             </StyledCard>
         )
