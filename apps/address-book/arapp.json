@@ -1,0 +1,17 @@
+{
+  "appName": "address-book.aragonpm.eth",
+  "version": "0.0.1",
+  "roles": [
+    {
+      "name": "Add entry",
+      "id": "ADD_ENTRY_ROLE",
+      "params": []
+    },
+    {
+      "name": "Remove entry",
+      "id": "REMOVE_ENTRY_ROLE",
+      "params": []
+    }
+  ],
+  "path": "contracts/AddressBook.sol"
+}
