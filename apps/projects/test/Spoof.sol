@@ -1,9 +1,9 @@
 pragma solidity ^0.4.18;
 
-import "@aragon/os/contracts/factory/EVMScriptRegistryFactory.sol";
-import "@aragon/os/contracts/factory/DAOFactory.sol";
-import "@aragon/os/contracts/acl/ACL.sol";
-import "@aragon/os/contracts/lib/minime/MiniMeToken.sol";
+import "../node_modules/@aragon/os/contracts/factory/EVMScriptRegistryFactory.sol";
+import "../node_modules/@aragon/os/contracts/factory/DAOFactory.sol";
+import "../node_modules/@aragon/os/contracts/acl/ACL.sol";
+import "../node_modules/@aragon/os/contracts/lib/minime/MiniMeToken.sol";
 
 // You might think this file is a bit odd, but let me explain.
 // We only use the MiniMeToken contract in our tests, which
@@ -21,6 +21,7 @@ import "@aragon/os/contracts/lib/minime/MiniMeToken.sol";
 // When I first saw this contract I audibly laughed out loud.
 // Glad to get to use this janky hack for myself XD
 
+// solium-disable-next-line no-empty-blocks
 contract Spoof {
   // ...
 }
