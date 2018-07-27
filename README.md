@@ -1,4 +1,4 @@
-# That Planning App
+# That Planning App &middot; [![Build Status](https://travis-ci.org/Giveth/planning-app.svg?branch=122-planning-app-FE)](https://travis-ci.org/Giveth/planning-app)
 
 <p align="center">
   <a href="#development-setup">Development Setup</a> •
