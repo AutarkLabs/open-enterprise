@@ -1,0 +1,6 @@
+{
+  "name": "Github Registry",
+  "description": "An application for Aragon",
+  "start_url": "dist/index.html",
+  "script": "dist/script.js"
+}

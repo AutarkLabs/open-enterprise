@@ -1,0 +1,22 @@
+{
+  "appName": "github-registry.aragonpm.eth",
+  "version": "0.0.1",
+  "roles": [
+    {
+      "name": "Add a new entry",
+      "id": "ADD_ENTRY_ROLE",
+      "params": []
+    },
+    {
+      "name": "Remove an entry",
+      "id": "REMOVE_ENTRY_ROLE",
+      "params": []
+    },
+    {
+      "name": "Add a bounty",
+      "id": "ADD_BOUNTY_ROLE",
+      "params": []
+    }
+  ],
+  "path": "contracts/GithubRegistry.sol"
+}
