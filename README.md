@@ -22,12 +22,12 @@ $ npm i
 $ npm start
 
 # Develop single app react frontend:
-$ npm run dev:github
+$ npm run dev:projects
 
 # Develop single app with backend and aragon wrapper:
 $ npm run start:range
 
-# current app name aliases: {address, github, payout, range}
+# current app name aliases: {address, projects, payout, range}
 ```
 
 #### Extra tips:

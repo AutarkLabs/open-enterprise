@@ -7,6 +7,9 @@ $ lerna ls
 lerna info version 2.11.0
 lerna info versioning independent
 @tpt/planning-app      v0.0.1
+@tpt/apps-address-book v0.0.1
+@tpt/apps-allocations   v0.0.1
+@tpt/apps-projects     v0.0.1
 @tpt/apps-range-voting v0.0.1
 ```
 
@@ -30,8 +33,8 @@ lerna info versioning independent
 
   - where `<app_name>` can be one of:
     - `address` for Address Book App (`npm run dev:address`)
-    - `github` for Github Registry App (`npm run dev:github`)
-    - `payout` for Payout Engine App (`npm run dev:payout`)
+    - `projects` for Projects App (`npm run dev:projects`)
+    - `allocations` for Allocations App (`npm run dev:allocations`)
     - `range` for Range Voting App (`npm run dev:range`)
 
 #### To start blockchain, smart contract or Aragon os development:
@@ -40,8 +43,8 @@ lerna info versioning independent
 
   - where `<app_name>` can be one of:
     - `address` for Address Book App (`npm run start:address`)
-    - `github` for Github Registry App (`npm run start:github`)
-    - `payout` for Payout Engine App (`npm run start:payout`)
+    - `projects` for Projects App (`npm run start:projects`)
+    - `allocations` for Allocations App (`npm run start:allocations`)
     - `range` for Range Voting App (`npm run start:range`)
 
 #### To run everything working together in the Aragon Wrapper:
@@ -73,19 +76,42 @@ Finally, the script launches the Aragon Wrapper with the complete planning suite
 - `npm run clean`
   Just if the other steps don't work call this and start over with a clean state, maybe combined with `rm -rf ~/.ipfs ~/.aragon` to delete the local machine state (this does not delete any key, just local data that then will be downloaded again).
 
-#### Complete npm script list:
+#### Incomplete npm script list:
 
-| Command                  | Description                                    |
-| ------------------------ | ---------------------------------------------- |
-| `npm run bootstrap`      | Bootstrap the full project deps                |
-| `npm run clean`          | Delete temp git state (build and dep folders)  |
-| `npm run dev:address`    | Start Address Book app frontend development    |
-| `npm run dev:github`     | Start Github Registry app frontend development |
-| `npm run dev:payout`     | Start Payout Engine app frontend development   |
-| `npm run dev:range`      | Start Range Voting app frontend development    |
-| `npm run devchain`       | Start a local development blockchain           |
-| `npm run devchain:reset` | Reset local blockchain and start new one       |
-| `npm i` or `npm install` | Launch the bootstrap script                    |
-| `npm run publish:apps`   | Deploy all apps to local ipfs apm              |
-| `npm run start`          | Start the full planning app with DAO kit       |
-| `npm run start:kit`      | Deploy and start the DAO Kit with everything   |
+| Command                   | Description                                   |
+| ------------------------- | --------------------------------------------- |
+| `npm run bootstrap`       | Bootstrap the full project deps               |
+| `npm run clean`           | Delete temp git state (build and dep folders) |
+| `npm run dev:address`     | Start Address Book app frontend development   |
+| `npm run dev:projects`    | Start Projects app frontend development       |
+| `npm run dev:allocations` | Start Allocatioons app frontend development   |
+| `npm run dev:range`       | Start Range Voting app frontend development   |
+| `npm run devchain`        | Start a local development blockchain          |
+| `npm run devchain:reset`  | Reset local blockchain and start new one      |
+| `npm i` or `npm install`  | Launch the bootstrap script                   |
+| `npm run publish:apps`    | Deploy all apps to local ipfs apm             |
+| `npm run start`           | Start the full planning app with DAO kit      |
+| `npm run start:kit`       | Deploy and start the DAO Kit with everything  |
+
+#### Apps Loading Bug (Is actually a Metamask issue)
+
+- If Aragon Wrapper seems to be stuck loading the apps in the browser, what is known to be a solution is to change metamask provider, by switching the networks, to rinkeby, for example, and then switching to local rpc again, then refreshing the page, and Apps will load now.
+- The reason for this is that Metamask is not correctly updating the blockchain state from aragon devchain between the normal restarts and resets that happen in development.
+
+#### Wrong fonts, colors or browser console errors
+
+_Tip: Look at letter g to quickly know if aragon fonts were loaded and applied_
+
+- Aragon puts all the files in the app in the ipfs folder, so files must be correctly built to the dist folder, this happens in all single apps.
+- Aragon provides the command `copy-aragon-ui-assets` and we use `npm run sync-assets` to call it. The problem is that is easy to have errors configuring the path in AragonApp component (from @aragon/ui), because is not documented where the slashes go or things like that, even some original Aragon apps have or had this error.
+- The right way to configure AragonApp is like this:
+
+```js
+<AragonApp publicUrl="aragon-ui-assets/">You App Here</>
+```
+
+So only one slash at the end, otherwise ipfs will probably fail reading asset paths and the app will not show fonts/colors the way it should, it will load the fallback then.
+
+#### Additional info
+
+- The old deployment code that seemed to do the kit and aragon apps deployments with javascript was replaced by the handy Kit smart contract, but here is kept for historical purposes: [**bare/migrations/2_deploy.js**](https://github.com/Giveth/planning-app/blob/bfb0900b6c15d91bc1d0d9967c6f5c46c3b9dd27/wip-apps/bare/migrations/2_deploy.js)
