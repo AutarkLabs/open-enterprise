@@ -16,6 +16,8 @@
   "scripts": {
     "bootstrap": "npx lerna bootstrap --no-hoist=@aragon/os",
     "clean": "git clean -fdxi",
+    "dev:address": "cd apps/address-book && npm run dev",
+    "dev:allocations": "cd apps/allocations && npm run dev",
     "dev:projects": "cd apps/projects && npm run dev",
     "dev:range": "cd apps/range-voting && npm run dev",
     "devchain": "npx aragon devchain",
@@ -24,8 +26,16 @@
     "publish:apps": "npx lerna run --concurrency=1 --stream publish",
     "start": "npm i && npx concurrently npm:devchain \"sleep 8 && npm run publish:apps && npm run start:kit\"",
     "start:kit": "npx aragon run --kit PlanningKit --kit-init @ARAGON_ENS",
+    "start:address": "cd apps/address-book && npm start",
+    "start:allocations": "cd apps/allocations && npm start",
     "start:projects": "cd apps/projects && npm start",
-    "start:range": "cd apps/range-voting && npm start"
+    "start:range": "cd apps/range-voting && npm start",
+    "test": "npx lerna run --scope=@tpt/apps-* --concurrency=1 --stream test",
+    "test:address": "npx concurrently npm:devchain \"sleep 8 && cd apps/address-book && npm test\"",
+    "test:allocations": "npx concurrently npm:devchain \"sleep 8 && cd apps/allocations && npm test\"",
+    "test:projects": "npx concurrently npm:devchain \"sleep 8 && cd apps/projects && npm test\"",
+    "test:range": "npx concurrently npm:devchain \"sleep 8 && cd apps/range-voting && npm test\"",
+    "lint": "npx lerna run --scope=@tpt/apps-* --concurrency=1 --stream lint"
   },
   "keywords": [],
   "repository": {
