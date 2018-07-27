@@ -2,12 +2,16 @@ import ConfigureVotingName from './ConfigureVotingName'
 import ConfigureVotingConditions from './ConfigureVotingConditions'
 import ConfigureVotingDefaults from './ConfigureVotingDefaults'
 import icon from './assets/icon.svg'
-import { votePermissionItems, voteWeightItems, voteOutcomeItems } from './voting-conditions'
+import {
+  votePermissionItems,
+  voteWeightItems,
+  voteOutcomeItems,
+} from './voting-conditions'
 
 const isIntegerString = value => /^[0-9]*$/.test(value)
 const template = {
-  name: 'payoutengine',
-  label: 'Payout Engine',
+  name: 'allocations',
+  label: 'Allocations',
   description: 'Determine how to share a budget across multiple projects',
   icon,
   fields: {
@@ -17,7 +21,7 @@ const template = {
     },
     voteDescription: {
       defaultValue: () => '',
-      filter: value => ({ voteDescription: value })
+      filter: value => ({ voteDescription: value }),
     },
     votePermission: {
       defaultValue: () => 0,
@@ -30,7 +34,7 @@ const template = {
           return { votePermission: 0 }
         }
         return { votePermission: value }
-      }
+      },
     },
     voteWeight: {
       defaultValue: () => 0,
@@ -43,7 +47,7 @@ const template = {
           return { voteWeight: 0 }
         }
         return { voteWeight: value }
-      }
+      },
     },
     voteOutcome: {
       defaultValue: () => 0,
@@ -56,7 +60,7 @@ const template = {
           return { voteOutcome: 0 }
         }
         return { voteOutcome: value }
-      }
+      },
     },
     support: {
       defaultValue: () => -1,
@@ -114,10 +118,10 @@ const template = {
         // votes names should probably be unique
         if (voteName === '' || voteDescription === '') {
           return false
-        } 
+        }
         return true
       },
-      Component: ConfigureVotingName
+      Component: ConfigureVotingName,
     },
     {
       screen: 'voting-conditions',
@@ -125,7 +129,7 @@ const template = {
         // needs adding
         return true
       },
-      Component: ConfigureVotingConditions
+      Component: ConfigureVotingConditions,
     },
     {
       screen: 'voting-defaults',
@@ -152,7 +156,7 @@ const template = {
     voteDuration,
     votePermission,
     voteWeight,
-    voteOutcome
+    voteOutcome,
   }) => {
     return {
       voteName: voteName,
@@ -165,10 +169,9 @@ const template = {
       voteWeight: voteWeight,
       voteWeightText: voteWeightItems[voteWeight],
       voteOutcome: voteOutcome,
-      voteOutcomeText: voteOutcomeItems[voteOutcome]
+      voteOutcomeText: voteOutcomeItems[voteOutcome],
     }
   },
 }
 
 export default template
-
