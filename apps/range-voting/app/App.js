@@ -1,4 +1,5 @@
 import React from 'react'
+import { hot } from 'react-hot-loader'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
@@ -14,7 +15,7 @@ const initialState = {
   panelActive: false,
 }
 
-export default class App extends React.Component {
+class App extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
   }
@@ -114,3 +115,5 @@ const CloseIcon = styled(IconAdd)`
   color: #98a0a2;
   margin-right: 0.5rem;
 `
+
+export default hot(module)(App)
