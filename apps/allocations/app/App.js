@@ -1,13 +1,14 @@
-import React from "react"
-import PropTypes from "prop-types"
-import styled from "styled-components"
+import React from 'react'
+import { hot } from 'react-hot-loader'
+import PropTypes from 'prop-types'
+import styled from 'styled-components'
 
-import { AragonApp, AppBar, Button, SidePanel, IconAdd } from "@aragon/ui"
-import AppLayout from "./components/AppLayout"
-import Tools from "./screens/Tools"
-import { NewAccountPanelContent } from "./components/Panels"
+import { AragonApp, AppBar, Button, SidePanel, IconAdd } from '@aragon/ui'
+import AppLayout from './components/AppLayout'
+import Tools from './screens/Tools'
+import { NewAccountPanelContent } from './components/Panels'
 
-export default class App extends React.Component {
+class App extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
   }
@@ -33,7 +34,7 @@ export default class App extends React.Component {
     this.state.accounts.push({
       title,
       limit,
-      address: "0x45f3...5567",
+      address: '0x45f3...5567',
       balance: 0,
     })
     this.setState({})
@@ -47,7 +48,7 @@ export default class App extends React.Component {
     )
 
     return (
-      <AragonApp publicUrl="/aragon-ui/">
+      <AragonApp publicUrl="aragon-ui-assets/">
         <AppLayout>
           <AppLayout.Header>
             <AppBar title="Allocations" endContent={barButton} />
@@ -109,3 +110,5 @@ const CloseIcon = styled(IconAdd)`
   color: #98a0a2;
   margin-right: 0.5rem;
 `
+
+export default hot(module)(App)
