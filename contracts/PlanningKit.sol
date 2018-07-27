@@ -58,23 +58,25 @@ contract PlanningKit is KitBase {
         acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
 
         address root = msg.sender;
-        bytes32 allocationsId = apmNamehash("allocations");
-        bytes32 addressBookId = apmNamehash("address-book");
-        bytes32 projectsId = apmNamehash("projects");
-        bytes32 rangeVotingId = apmNamehash("range-voting");
-
-        bytes32 votingAppId = apmNamehash("voting");
-        bytes32 tokenManagerAppId = apmNamehash("token-manager");
+        
+        bytes32[6] memory apps = [
+            apmNamehash("allocations"),
+            apmNamehash("address-book"),
+            apmNamehash("projects"),
+            apmNamehash("range-voting"),
+            apmNamehash("voting"),
+            apmNamehash("token-manager")
+        ];
 
         // Planning Apps
-        Allocations allocations = Allocations(dao.newAppInstance(allocationsId, latestVersionAppBase(allocationsId)));
-        AddressBook addressBook = AddressBook(dao.newAppInstance(addressBookId, latestVersionAppBase(addressBookId)));
-        Projects projects = Prokects(dao.newAppInstance(projectsId, latestVersionAppBase(projectsId)));
-        RangeVoting rangeVoting = RangeVoting(dao.newAppInstance(rangeVotingId, latestVersionAppBase(rangeVotingId)));
+        Allocations allocations = Allocations(dao.newAppInstance(apps[0], latestVersionAppBase(apps[0])));
+        AddressBook addressBook = AddressBook(dao.newAppInstance(apps[1], latestVersionAppBase(apps[1])));
+        Projects projects = Projects(dao.newAppInstance(apps[2], latestVersionAppBase(apps[2])));
+        RangeVoting rangeVoting = RangeVoting(dao.newAppInstance(apps[3], latestVersionAppBase(apps[3])));
 
         // Aragon Apps
-        Voting voting = Voting(dao.newAppInstance(votingAppId, latestVersionAppBase(votingAppId)));
-        TokenManager tokenManager = TokenManager(dao.newAppInstance(tokenManagerAppId, latestVersionAppBase(tokenManagerAppId)));
+        Voting voting = Voting(dao.newAppInstance(apps[4], latestVersionAppBase(apps[4])));
+        TokenManager tokenManager = TokenManager(dao.newAppInstance(apps[5], latestVersionAppBase(apps[5])));
 
         // MiniMe Token
         MiniMeToken token = tokenFactory.createCloneToken(address(0), 0, "App token", 0, "APP", true);
@@ -102,8 +104,8 @@ contract PlanningKit is KitBase {
         acl.createPermission(voting, addressBook, addressBook.REMOVE_ENTRY_ROLE(), root);
 
         // Projects permissions:
-        acl.createPermission(voting, projects, projects.ADD_ENTRY_ROLE(), root);
-        acl.createPermission(voting, projects, projects.REMOVE_ENTRY_ROLE(), root);
+        acl.createPermission(voting, projects, projects.ADD_REPO_ROLE(), root);
+        acl.createPermission(voting, projects, projects.REMOVE_REPO_ROLE(), root);
         acl.createPermission(voting, projects, projects.ADD_BOUNTY_ROLE(), root);
 
         // Range-voting permissions

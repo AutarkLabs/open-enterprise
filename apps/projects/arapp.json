@@ -3,13 +3,13 @@
   "version": "0.0.1",
   "roles": [
     {
-      "name": "Add a new entry",
-      "id": "ADD_ENTRY_ROLE",
+      "name": "Add a new repository",
+      "id": "ADD_REPO_ROLE",
       "params": []
     },
     {
-      "name": "Remove an entry",
-      "id": "REMOVE_ENTRY_ROLE",
+      "name": "Remove a repository",
+      "id": "REMOVE_REPO_ROLE",
       "params": []
     },
     {
