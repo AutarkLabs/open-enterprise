@@ -2,9 +2,9 @@ pragma solidity ^0.4.18;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
 
-//import "@aragon/apps-vault/contracts/Vault.sol";
+// import "@aragon/apps-vault/contracts/Vault.sol";
 
-//import "@aragon/apps-vault/contracts/IVaultConnector.sol";
+// import "@aragon/apps-vault/contracts/IVaultConnector.sol";
 
 import "@aragon/os/contracts/lib/zeppelin/math/SafeMath.sol";
 
@@ -50,7 +50,7 @@ contract Allocations is AragonApp {
         address token;
     }
 
-    //IVaultConnector vault;
+    // IVaultConnector vault;
 
 
     Payout[] payouts;
@@ -68,9 +68,9 @@ contract Allocations is AragonApp {
     *
     */
     function initializeAllocations(
-        //Vault _vault
+        // Vault _vault
     ) external {
-        //vault = _vault.ethConnectorBase();
+        // vault = _vault.ethConnectorBase();
         initialized();
     }
 

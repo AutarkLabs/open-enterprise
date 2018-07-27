@@ -1,4 +1,4 @@
-const { assertRevert } = require('../test-helpers/assertThrow')
+const { assertRevert } = require('../../shared/test-helpers/assertThrow')
 
 const Projects = artifacts.require('Projects')
 const DAOFactory = artifacts.require('@aragon/os/contracts/factory/DAOFactory')

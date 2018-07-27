@@ -1,5 +1,12 @@
 pragma solidity ^0.4.18;
 
+// TODO: Move ExecutionTarget to a shared location
+
+import "@aragon/os/contracts/factory/EVMScriptRegistryFactory.sol";
+import "@aragon/os/contracts/factory/DAOFactory.sol";
+import "@aragon/os/contracts/acl/ACL.sol";
+import "@aragon/os/contracts/lib/minime/MiniMeToken.sol";
+
 contract ExecutionTarget {
     uint[] public signal;
 
