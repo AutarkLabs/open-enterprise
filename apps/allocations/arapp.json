@@ -1,6 +1,6 @@
 {
-  "appName": "planning.aragonpm.eth",
-  "version": "1.0.0",
+  "appName": "allocations.aragonpm.eth",
+  "version": "0.0.1",
   "roles": [
     {
       "name": "Initiate an allocations payout",
@@ -18,5 +18,5 @@
       "params": []
     }
   ],
-  "path": "contracts/PayoutEngine.sol"
+  "path": "contracts/Allocations.sol"
 }
