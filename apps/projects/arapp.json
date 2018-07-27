@@ -1,5 +1,5 @@
 {
-  "appName": "github-registry.aragonpm.eth",
+  "appName": "projects.aragonpm.eth",
   "version": "0.0.1",
   "roles": [
     {
@@ -18,5 +18,5 @@
       "params": []
     }
   ],
-  "path": "contracts/GithubRegistry.sol"
+  "path": "contracts/Projects.sol"
 }

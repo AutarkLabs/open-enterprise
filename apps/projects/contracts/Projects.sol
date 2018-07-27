@@ -2,7 +2,7 @@ pragma solidity 0.4.18;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
 
-contract GithubRegistry is AragonApp {
+contract Projects is AragonApp {
 
     struct GithubRepo {
         bytes20 owner;  // repo owner's address

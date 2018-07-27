@@ -35,7 +35,7 @@ class ScreenView extends PureComponent {
   }
 }
 
-const AppTitle = () => <StyledTitle size="xxlarge">Planning</StyledTitle>
+const AppTitle = () => <StyledTitle size="xxlarge">Projects</StyledTitle>
 const TabBar = props => {
   const { activeIndex } = props
   const children = React.Children.map(props.children, (child, index) => {
