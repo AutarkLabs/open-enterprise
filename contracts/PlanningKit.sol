@@ -10,6 +10,9 @@ import "@aragon/apps-voting/contracts/Voting.sol";
 import "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import "@aragon/os/contracts/lib/minime/MiniMeToken.sol";
 
+// import "../apps/address-book/contracts/AddressBook.sol";
+// import "../apps/allocations/contracts/Allocations.sol";
+// import "../apps/projects/contracts/Projects.sol";
 import "../apps/range-voting/contracts/RangeVoting.sol";
 
 contract KitBase is APMNamehash {
@@ -55,11 +58,21 @@ contract PlanningKit is KitBase {
         acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
 
         address root = msg.sender;
+        // bytes32 allocationsId = apmNamehash("allocations");
+        // bytes32 addressBookId = apmNamehash("address-book");
+        // bytes32 prrojectsId = apmNamehash("projects");
         bytes32 rangeVotingId = apmNamehash("range-voting");
+
         bytes32 votingAppId = apmNamehash("voting");
         bytes32 tokenManagerAppId = apmNamehash("token-manager");
 
+        // Planning Apps
+        // Allocations allocations = Allocations(dao.newAppInstance(allocationsId, latestVersionAppBase(allocationsId)));
+        // AddressBook addressBook = AddressBook(dao.newAppInstance(addressBookId, latestVersionAppBase(addressBookId)));
+        // Projects projects = Prokects(dao.newAppInstance(projectsId, latestVersionAppBase(projectsId)));
         RangeVoting rangeVoting = RangeVoting(dao.newAppInstance(rangeVotingId, latestVersionAppBase(rangeVotingId)));
+
+        // Aragon Apps
         Voting voting = Voting(dao.newAppInstance(votingAppId, latestVersionAppBase(votingAppId)));
         TokenManager tokenManager = TokenManager(dao.newAppInstance(tokenManagerAppId, latestVersionAppBase(tokenManagerAppId)));
 
@@ -77,12 +90,23 @@ contract PlanningKit is KitBase {
 
         acl.grantPermission(voting, tokenManager, tokenManager.MINT_ROLE());
 
+        // Allocations permissions:
+        // TODO:
+        // acl.createPermission(ANY_ENTITY, allocations, allocations.START_PAYOUT_ROLE(), root);
+        // acl.createPermission(ANY_ENTITY, allocations, allocations.SET_DISTRIBUTION_ROLE(), root);
+
+        // AddressBook permissions:
+        // TODO:
+
+        // Projects permissions:
+        // TODO:
+
         // Range-voting permissions
         acl.createPermission(voting, rangeVoting, rangeVoting.CREATE_VOTES_ROLE(), voting);
         acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.ADD_CANDIDATES_ROLE(), root);
         acl.createPermission(voting, rangeVoting, rangeVoting.MODIFY_PARTICIPATION_ROLE(), root);
         
-        // Clean up permissions
+        // Clean up template permissions
         acl.grantPermission(root, dao, dao.APP_MANAGER_ROLE());
         acl.revokePermission(this, dao, dao.APP_MANAGER_ROLE());
         acl.setPermissionManager(root, dao, dao.APP_MANAGER_ROLE());
