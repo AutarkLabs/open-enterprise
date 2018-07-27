@@ -15,8 +15,8 @@ import Settings from './screens/Settings'
 import { noop } from './utils/utils'
 import { networkContextType } from './utils/provideNetwork'
 import {
-    NewProjectPanelContent,
-    NewIssuePanelContent
+  NewProjectPanelContent,
+  NewIssuePanelContent
 } from './components/Panels'
 import RangeVoting from './range-voting/RangeVoting'
 
@@ -40,7 +40,7 @@ const initialState = {
     activeMilestone: '',
     authToken: '',
     reposManaged: {}, // to be populated from contract or git backend itself
-//    reposManaged: getPreprocessedRepos(), // to be populated from contract or git backend itself
+    //    reposManaged: getPreprocessedRepos(), // to be populated from contract or git backend itself
   }
 }
 
@@ -108,16 +108,16 @@ export default class App extends React.Component {
 
    // this probably needs to be limited to Issues screen
    handleLabelSelect = labelName =>  {
-    const { github } = this.state
-    github.activeLabelName = labelName
-    this.setState({ github: github })
-  }
+     const { github } = this.state
+     github.activeLabelName = labelName
+     this.setState({ github: github })
+   }
 
    handleMilestoneSelect = milestoneName =>  {
-    const { github } = this.state
-    github.activeMilestoneName = milestoneName
-    this.setState({ github: github })
-  }
+     const { github } = this.state
+     github.activeMilestoneName = milestoneName
+     this.setState({ github: github })
+   }
 
   handleAddRepos = (reposToAdd) => {
     const { github } = this.state
@@ -199,13 +199,13 @@ export default class App extends React.Component {
             {tabs[activeTabId].barSelectButton.title}
           </Button>
           <DropDownContent>
-          {
-            tabs[activeTabId].barSelectButton.items.map((item) => {
-              return (
-               <div key={item}>{item}</div>
-              )
-            })
-          }
+            {
+              tabs[activeTabId].barSelectButton.items.map((item) => {
+                return (
+                  <div key={item}>{item}</div>
+                )
+              })
+            }
           </DropDownContent>
         </DropDownButton>
       )
@@ -216,7 +216,7 @@ export default class App extends React.Component {
         <AppLayout>
           <AppLayout.Header>
             <AppBar
-              title="Planning"
+              title="Projects"
               endContent={barButton}
             />
           </AppLayout.Header>
@@ -231,16 +231,16 @@ export default class App extends React.Component {
           </Tabs>
           <AppLayout.ScrollWrapper>
             <AppLayout.Content>
-               <Screen
-                  app={this.props.app}
-                  onActivate={newItemHandler}
-                  github={github}
-                  tools={tools}
-                  onSelect={this.handleRepoSelect}
-                  onRemove={this.handleRepoRemove}
-                  handleLabelSelect={this.handleLabelSelect}
-                  handleMilestoneSelect={this.handleMilestoneSelect}
-               />
+              <Screen
+                app={this.props.app}
+                onActivate={newItemHandler}
+                github={github}
+                tools={tools}
+                onSelect={this.handleRepoSelect}
+                onRemove={this.handleRepoRemove}
+                handleLabelSelect={this.handleLabelSelect}
+                handleMilestoneSelect={this.handleMilestoneSelect}
+              />
             </AppLayout.Content>
           </AppLayout.ScrollWrapper>
         </AppLayout>
@@ -276,14 +276,14 @@ export default class App extends React.Component {
           />
         </SidePanel>
 
-      { this.state.rangeWizardActive && (
-        <RangeVoting
-          visible={true}
-          app={this.props.app}
-          handleClose={this.handleRangeWizardClose}
-          handleLaunch={this.handleRangeWizardLaunch}
-        />
-      )}
+        { this.state.rangeWizardActive && (
+          <RangeVoting
+            visible={true}
+            app={this.props.app}
+            handleClose={this.handleRangeWizardClose}
+            handleLaunch={this.handleRangeWizardLaunch}
+          />
+        )}
       </AragonApp>
     )
   }
