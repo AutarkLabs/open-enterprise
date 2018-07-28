@@ -1,7 +1,7 @@
 {
   "name": "@tpt/apps-projects",
   "version": "0.0.1",
-  "description": "",
+  "description": "Project management Aragon app",
   "dependencies": {
     "@aragon/client": "^1.0.0-beta.8",
     "@aragon/os": "3.1.9",
@@ -11,6 +11,7 @@
     "graphql-request": "^1.7.0",
     "laco": "^0.4.0",
     "laco-react": "^0.4.0",
+    "prop-types": "^15.6.2",
     "react": "^16.4.1",
     "react-blockies": "^1.3.0",
     "react-dom": "^16.4.1",
