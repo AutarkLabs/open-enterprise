@@ -1,42 +1,44 @@
-import React from "react";
-import styled from "styled-components";
-import { Button, EmptyStateCard, SidePanel } from "@aragon/ui";
-import { IconEmpty } from "../assets";
-import RepoCard from "../components/RepoCard";
-import { NewProject } from "../components";
+import React from 'react'
+import styled from 'styled-components'
+import { Button, SidePanel } from '@aragon/ui'
+import { IconEmpty } from '../assets'
+import RepoCard from '../components/RepoCard'
+import { NewProject } from '../components'
+import PropTypes from 'prop-types'
+import EmptyStateCard from '../components/EmptyStateCard'
 
 const overviewData = {
-  title: "Tools",
+  title: 'Tools',
   emptyState: {
-    title: "You have not added any projects.",
-    text: "Get started now by adding a new project.",
-    label: "New Project",
+    title: 'You have not added any projects.',
+    text: 'Get started now by adding a new project.',
+    label: 'New Project',
     icon: IconEmpty,
-    onClick: "openRangeWizard"
-  }
-};
+    onClick: 'openRangeWizard',
+  },
+}
 
 class Overview extends React.Component {
-  state = { sidePanelOpened: false };
+  state = { sidePanelOpened: false }
 
   closeSidePanel = () => {
-    this.setState({ sidePanelOpened: false });
-  };
+    this.setState({ sidePanelOpened: false })
+  }
 
   openSidePanel = () => {
-    this.setState({ sidePanelOpened: true });
-  };
+    this.setState({ sidePanelOpened: true })
+  }
 
   handleRepoSelect = repoId => {
-    this.props.onSelect(repoId);
-  };
+    this.props.onSelect(repoId)
+  }
   handleRepoRemove = repoId => {
-    this.props.onRemove(repoId);
-  };
+    this.props.onRemove(repoId)
+  }
 
   render() {
-    const { sidePanelOpened } = this.state;
-    const { github } = this.props;
+    const { sidePanelOpened } = this.state
+    const { github } = this.props
 
     return (
       <StyledOverview>
@@ -78,7 +80,7 @@ class Overview extends React.Component {
           <NewProject github={github} />
         </SidePanel>
       </StyledOverview>
-    );
+    )
   }
 }
 
@@ -90,18 +92,17 @@ const StyledOverview = styled.section`
   // align-items: center;
   // justify-content: center;
   // padding: 30px;
-`;
+`
 
 const StyledButton = styled(Button)`
   position: fixed;
   top: 11px;
   right: 30px;
   z-index: 2;
-`;
+`
 
-// Pasar a parent?
 const StyledEmptyStateCard = styled(EmptyStateCard)`
   padding: 35px;
-`;
+`
 
-export default Overview;
+export default Overview

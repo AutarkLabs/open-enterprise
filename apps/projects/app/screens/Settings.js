@@ -5,14 +5,14 @@ import { theme, Field, TextInput, Button, Info } from '@aragon/ui'
 class Settings extends React.Component {
   state = {
     bounties: {
-      'XS': 1,
-      'S': 2,
-      'M': 3,
-      'L': 4,
-      'XL': 5,
+      XS: 1,
+      S: 2,
+      M: 3,
+      L: 4,
+      XL: 5,
     },
     RPH: 30,
-    err: ''
+    err: '',
   }
 
   generateHoursHandler = bountyName => {
@@ -20,51 +20,54 @@ class Settings extends React.Component {
       console.log('changing ' + bountyName + ' to ' + event.target.value)
       const { bounties } = this.state
       bounties[bountyName] = event.target.value
-      this.setState({bounties: bounties})
+      this.setState({ bounties: bounties })
     }
   }
 
   handleRPHChange = event => {
     console.log('changing RPH to ' + event.target.value)
-    this.setState({'RPH': event.target.value})
+    this.setState({ RPH: event.target.value })
   }
 
   handleSubmit = () => {
     console.log('handleSubmit')
   }
 
-  render () {
-    const bountyNames = ['XS','S','M','L','XL']
+  render() {
+    const bountyNames = ['XS', 'S', 'M', 'L', 'XL']
     const { bounties, err } = this.state
 
     return (
       <Main>
         <Title>Bounty Amounts</Title>
-        <Description>Define the hour estimates that are associated with each bounty size</Description>
+        <Description>
+          Define the hour estimates that are associated with each bounty size
+        </Description>
         <Form onSubmit={this.handleSubmit}>
-          {
-          (err) && (
+          {err && (
             <Info background={theme.negative} title="Error">
               {err}
             </Info>
           )}
-          { bountyNames.map((bountyName) => {
-              const changeHours = this.generateHoursHandler(bountyName)
-              return (
-                <Field key={bountyName} label={bountyName}>
-                  <TextInput
-                    value={bounties[bountyName]}
-                    onChange={changeHours}
-                    required
-                  />
-                  <Label>Hours</Label>
-                </Field>
-              )
-            })
-          }
+          {bountyNames.map(bountyName => {
+            const changeHours = this.generateHoursHandler(bountyName)
+            return (
+              <Field key={bountyName} label={bountyName}>
+                <TextInput
+                  value={bounties[bountyName]}
+                  onChange={changeHours}
+                  required
+                />
+                <Label>Hours</Label>
+              </Field>
+            )
+          })}
           <Horizontal />
           <Title>Base Rate</Title>
-          <Description>Define your organizations hourly rate. This is multiplied by the bounty size to determine bounty amount.</Description>
+          <Description>
+            Define your organizations hourly rate. This is multiplied by the
+            bounty size to determine bounty amount.
+          </Description>
           <Field label="Rate per hour">
             <TextInput
               value={this.state.RPH}
@@ -73,11 +76,11 @@ class Settings extends React.Component {
             />
             <Label>USD</Label>
           </Field>
-          <Button mode="strong" type="submit" onClick>
-             Submit
+          {/* TODO: add onClick to Button */}
+          <Button mode="strong" type="submit">
+            Submit
           </Button>
         </Form>
-
       </Main>
     )
   }
@@ -111,4 +114,3 @@ const Horizontal = styled.hr`
   margin-bottom: 20px;
 `
 export default Settings
-
