@@ -1,4 +1,6 @@
-# That Planning App &middot; [![Build Status](https://travis-ci.org/Giveth/planning-app.svg?branch=122-planning-app-FE)](https://travis-ci.org/Giveth/planning-app)
+# That Planning App
+
+[![Build Status](https://travis-ci.org/Giveth/planning-app.svg?branch=122-planning-app-FE)](https://travis-ci.org/Giveth/planning-app) [![Coverage Status](https://coveralls.io/repos/github/ottodevs/planning-app/badge.svg?branch=122-planning-app-FE)](https://coveralls.io/github/ottodevs/planning-app?branch=122-planning-app-FE)
 
 <p align="center">
   <a href="#development-setup">Development Setup</a> •
