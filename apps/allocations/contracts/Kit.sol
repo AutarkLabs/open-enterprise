@@ -91,6 +91,7 @@ contract Kit is KitBase {
         tokenManager.initialize(token, true, 0, true);
         // Initialize apps
         voting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
+        allocations.initialize();
         _setupPerms(acl, voting, tokenManager, rangeVoting, allocations);
         
         DeployInstance(dao);

@@ -59,6 +59,9 @@ contract Allocations is AragonApp {
     bytes32 constant public SET_DISTRIBUTION_ROLE = keccak256("SET_DISTRIBUTION_ROLE");
     bytes32 constant public EXECUTE_PAYOUT_ROLE = keccak256("EXECUTE_PAYOUT_ROLE");
 
+    event ExecutePayout(uint256 payoutId);
+    event NewPayout(uint256 payoutId);
+
     /**
     * @dev This is the function that setups who the candidates will be, and
     *      where the funds will go for the payout. This is where the payout
@@ -67,13 +70,20 @@ contract Allocations is AragonApp {
     *         None of the distribution or payments are handled in this step.
     *
     */
-    function initializeAllocations(
+    function initialize(
         //Vault _vault
-    ) external {
+    ) onlyInit external {
         //vault = _vault.ethConnectorBase();
         initialized();
     }
 
+
+    function getPayout(uint256 _payoutId) public view returns(uint256 limit, string metadata, address token) {
+        Payout payout = payouts[_payoutId];
+        limit = payout.limit;
+        metadata = payout.metadata;
+        token = payout.token;
+    }
 
     /**
     * @dev This is the function that setups who the candidates will be, and
@@ -88,16 +98,23 @@ contract Allocations is AragonApp {
         string _metadata,
         uint256 _limit,
         address _token
-    ) external onlyInit auth(START_PAYOUT_ROLE) returns(uint256) {
+    ) external isInitialized auth(START_PAYOUT_ROLE) returns(uint256) {
         Payout memory payout;
         payout.metadata = _metadata;
         payout.metadata = _metadata;
         payout.limit = _limit;
         payout.token = _token;
         payouts.push(payout);
+        NewPayout(payouts.length);
+        return payouts.length;
     }
 
-
+    /**
+        @dev this is a test hahaha
+     */
+    function test() external returns(uint256) {
+        return 123;
+    }
 
     /**
     * @dev This is the function that the RangeVote will call. It doesn’t need
@@ -189,6 +206,8 @@ contract Allocations is AragonApp {
         for(i = 0; i < payout.candidateAddresses.length; i++){
             payout.candidateAddresses[i].transfer(payout.supports[i].mul(pointsPer));
         }
+
+        ExecutePayout(_payoutId);
     }
 
     function () public payable {

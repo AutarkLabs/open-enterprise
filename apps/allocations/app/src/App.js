@@ -2,12 +2,12 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
-import { AragonApp, AppBar, Button, SidePanel, IconAdd } from '@aragon/ui'
+import { AragonApp, AppBar, Button, SidePanel, IconAdd, observe } from '@aragon/ui'
 import AppLayout from './components/AppLayout'
 import Tools from './screens/Tools'
 import { NewAccountPanelContent } from './components/Panels'
 
-export default class App extends React.Component {
+class App extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
   }
@@ -30,13 +30,9 @@ export default class App extends React.Component {
 
   onCreateAccount = (account) => {
     const { title, limit } = account
-    //this.props.app.newPayout(title, limit, 0x0)
-    this.state.accounts.push({
-      title,
-      limit,
-      address: '0x45f3...5567',
-      balance: 0,
-    })
+    console.log(this.props.app.newPayout(account.title, account.limit.value, 0x0))
+    console.log("something else")
+    console.log(this.props.app)
     this.setState({})
   }
 
@@ -121,3 +117,7 @@ const CloseIcon = styled(IconAdd)`
   margin-right: .5rem;
 `
 
+export default observe(
+  observable => observable.map(state => ({ ...state })),
+  {}
+)(App)
