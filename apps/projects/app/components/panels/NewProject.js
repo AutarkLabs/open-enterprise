@@ -29,12 +29,12 @@
 // // `
 // export default NewProject;
 
-import React from "react";
-import PropTypes from "prop-types";
-import styled from "styled-components";
-import { theme, Text, Field, Info, TextInput, Button } from "@aragon/ui";
-import { GraphQLClient } from "graphql-request";
-import CheckboxInput from "../Checkbox";
+import React from 'react'
+import PropTypes from 'prop-types'
+import styled from 'styled-components'
+import { theme, Text, Field, Info, TextInput, Button } from '@aragon/ui'
+import { GraphQLClient } from 'graphql-request'
+import CheckboxInput from '../Checkbox'
 
 //const octokit = require('@octokit/rest')({
 //  debug: true
@@ -44,19 +44,19 @@ class NewProject extends React.Component {
   static propTypes = {
     // onHandleAddRepos: PropTypes.func.isRequired,
     // onHandleGitHubAuth: PropTypes.func.isRequired,
-    github: PropTypes.object.isRequired
-  };
+    github: PropTypes.object.isRequired,
+  }
 
   constructor(props) {
-    super(props);
-    const { github } = this.props;
+    super(props)
+    const { github } = this.props
     this.state = {
       reposFromServer: {},
       reposToAdd: {},
       reposManaged: github.reposManaged,
       authToken: github.authToken, // <App> is allowed to know better
-      err: ""
-    };
+      err: '',
+    }
   }
 
   /*
@@ -178,52 +178,52 @@ repositories with issues list included is not going to cost much.
           }
         }
       }
-    }`;
+    }`
 
     client
       .request(query)
       .then(data => {
-        console.log(data);
-        this.processRepos(data);
+        console.log(data)
+        this.processRepos(data)
       })
-      .catch(err => this.setState({ err: err.message }));
-  };
+      .catch(err => this.setState({ err: err.message }))
+  }
 
   processRepos(data) {
-    var reposFromServer = {};
+    var reposFromServer = {}
     // this is a placeholder just to have the bounties work in the simplest fashion.
     const BountyLabels = {
-      bounty_xs: "xs",
-      bounty_s: "s",
-      bounty_m: "m",
-      bounty_l: "l",
-      bounty_xl: "xl"
-    };
+      bounty_xs: 'xs',
+      bounty_s: 's',
+      bounty_m: 'm',
+      bounty_l: 'l',
+      bounty_xl: 'xl',
+    }
 
     data.user.repositories.edges.forEach(rNode => {
-      var commits = 0;
+      var commits = 0
       rNode.node.refs.edges.forEach(refNode => {
-        commits += refNode.node.target.history.totalCount;
-      });
+        commits += refNode.node.target.history.totalCount
+      })
 
-      const labels = {};
-      const milestones = {};
+      const labels = {}
+      const milestones = {}
 
       rNode.node.issues.edges.forEach(issue => {
-        issue.node.bounty = "";
+        issue.node.bounty = ''
         if (issue.node.labels.totalCount > 0) {
           issue.node.labels.edges.forEach(label => {
             if (label.node.name in BountyLabels) {
-              issue.node.bounty = BountyLabels[label.node.name];
+              issue.node.bounty = BountyLabels[label.node.name]
             } else {
-              labels[label.node.id] = label.node;
+              labels[label.node.id] = label.node
             }
-          });
+          })
         }
         if (issue.node.milestone) {
-          milestones[issue.node.milestone.id] = issue.node.milestone;
+          milestones[issue.node.milestone.id] = issue.node.milestone
         }
-      });
+      })
       reposFromServer[rNode.node.id] = {
         name: rNode.node.name,
         description: rNode.node.description,
@@ -233,30 +233,30 @@ repositories with issues list included is not going to cost much.
         ownerLogin: rNode.node.owner.login,
         issues: rNode.node.issues.edges,
         labels: labels,
-        milestones: milestones
-      };
+        milestones: milestones,
+      }
       //console.log ('adding ' + rNode.node.name, reposFromServer)
       //console.log('labels: ',labels)
       //console.log('milestones: ',milestones)
-      return;
-    });
-    this.setState({ reposFromServer: reposFromServer });
+      return
+    })
+    this.setState({ reposFromServer: reposFromServer })
   }
 
   handleLogin = event => {
-    event.preventDefault();
+    event.preventDefault()
 
-    const { authToken } = this.state;
+    const { authToken } = this.state
     if (authToken.length !== 40 || /^[a-zA-Z0-9]+$/.test(authToken) === false) {
-      this.setState({ err: "Invalid token" });
-      return;
+      this.setState({ err: 'Invalid token' })
+      return
     }
 
-    const client = new GraphQLClient("https://api.github.com/graphql", {
+    const client = new GraphQLClient('https://api.github.com/graphql', {
       headers: {
-        Authorization: "Bearer " + authToken
-      }
-    });
+        Authorization: 'Bearer ' + authToken,
+      },
+    })
 
     const whoami = `{
       viewer {
@@ -264,47 +264,47 @@ repositories with issues list included is not going to cost much.
         login
         avatarUrl
       }
-    }`;
+    }`
 
     client
       .request(whoami)
       .then(data => {
-        console.log(data);
-        const { onHandleGitHubAuth } = this.props;
-        this.getRepos(client, data.viewer.login);
+        console.log(data)
+        const { onHandleGitHubAuth } = this.props
+        this.getRepos(client, data.viewer.login)
         // below: <App> is getting notified about successful login
-        onHandleGitHubAuth(authToken, data.viewer.login, data.viewer.avatarUrl);
+        onHandleGitHubAuth(authToken, data.viewer.login, data.viewer.avatarUrl)
       })
-      .catch(err => this.setState({ err: err.message }));
-  };
+      .catch(err => this.setState({ err: err.message }))
+  }
 
   handleReposSubmit = event => {
-    event.preventDefault();
-    const { onHandleAddRepos } = this.props;
-    const { reposToAdd } = this.state;
-    onHandleAddRepos(reposToAdd);
-  };
+    event.preventDefault()
+    const { onHandleAddRepos } = this.props
+    const { reposToAdd } = this.state
+    onHandleAddRepos(reposToAdd)
+  }
 
   generateCheckboxHandler = repoId => {
     return isChecked => {
-      const { reposToAdd, reposFromServer } = this.state;
+      const { reposToAdd, reposFromServer } = this.state
       if (isChecked) {
-        reposToAdd[repoId] = reposFromServer[repoId];
-        this.setState({ reposToAdd: reposToAdd });
+        reposToAdd[repoId] = reposFromServer[repoId]
+        this.setState({ reposToAdd: reposToAdd })
       } else {
-        delete reposToAdd[repoId];
-        this.setState({ reposToAdd: reposToAdd });
+        delete reposToAdd[repoId]
+        this.setState({ reposToAdd: reposToAdd })
       }
-    };
-  };
+    }
+  }
 
   showRepos() {
-    var reposDisplayList = [];
-    const { reposFromServer, reposManaged, reposToAdd } = this.state;
+    var reposDisplayList = []
+    const { reposFromServer, reposManaged, reposToAdd } = this.state
 
     Object.keys(reposFromServer).forEach(repoId => {
-      var repo = reposFromServer[repoId];
-      const checkboxHandler = this.generateCheckboxHandler(repoId);
+      var repo = reposFromServer[repoId]
+      const checkboxHandler = this.generateCheckboxHandler(repoId)
       reposDisplayList.push(
         <li key={repoId}>
           <CheckboxInput
@@ -314,8 +314,8 @@ repositories with issues list included is not going to cost much.
             label={repo.name}
           />
         </li>
-      );
-    });
+      )
+    })
 
     return (
       <div>
@@ -327,15 +327,15 @@ repositories with issues list included is not going to cost much.
           </Button>
         </Form>
       </div>
-    );
+    )
   }
 
   handleTokenChange = event => {
-    this.setState({ authToken: event.target.value, err: "" });
-  };
+    this.setState({ authToken: event.target.value, err: '' })
+  }
 
   authenticate() {
-    const { authToken, err } = this.state;
+    const { authToken, err } = this.state
     return (
       <div>
         <Text size="large">
@@ -365,24 +365,24 @@ repositories with issues list included is not going to cost much.
           </Button>
         </Form>
       </div>
-    );
+    )
   }
 
   render() {
-    const { github } = this.props;
+    const { github } = this.props
 
     if (github.isAuthenticated) {
-      return this.showRepos();
+      return this.showRepos()
     } else {
-      return this.authenticate();
+      return this.authenticate()
     }
   }
 }
 
 const Form = styled.form`
   margin-top: 20px;
-`;
+`
 const RepoList = styled.ul`
   list-style-type: none;
-`;
-export default NewProject;
+`
+export default NewProject

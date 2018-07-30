@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { SidePanel as BasePanel } from '@aragon/ui'
 import { SidePanelConsumer } from 'context'
 
-// Todo rename PanelContent suffix to Panel
+// TODO: rename PanelContent suffix to Panel
 class SidePanel extends Component {
   render() {
     return (
