@@ -1,6 +1,6 @@
 # That Planning App
 
-[![Build Status](https://travis-ci.org/Giveth/planning-app.svg?branch=122-planning-app-FE)](https://travis-ci.org/Giveth/planning-app) [![Coverage Status](https://coveralls.io/repos/github/ottodevs/planning-app/badge.svg?branch=122-planning-app-FE)](https://coveralls.io/github/ottodevs/planning-app?branch=122-planning-app-FE)
+[![Build Status](https://travis-ci.org/Giveth/planning-app.svg?branch=m2-base)](https://travis-ci.org/Giveth/planning-app) [![Coverage Status](https://coveralls.io/repos/github/Giveth/planning-app/badge.svg?branch=m2-base)](https://coveralls.io/github/Giveth/planning-app?branch=m2-base)
 
 <p align="center">
   <a href="#development-setup">Development Setup</a> •
