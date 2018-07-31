@@ -76,10 +76,6 @@ Finally, the script launches the Aragon Wrapper with the complete planning suite
 - `npm run clean`
   Just if the other steps don't work call this and start over with a clean state, maybe combined with `rm -rf ~/.ipfs ~/.aragon` to delete the local machine state (this does not delete any key, just local data that then will be downloaded again).
 
-- I get error _"couldn't find module 'ethereumjs-wallet/hdkey'"_
-  Read: https://ethereum.stackexchange.com/questions/55390/i-get-error-couldnt-find-module-ethereumjs-wallet-hdkey
-  Currently ethereumjs-wallet is locked to 0.6.0 in package.json
-
 #### Incomplete npm script list:
 
 | Command                   | Description                                   |
