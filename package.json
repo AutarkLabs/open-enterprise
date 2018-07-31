@@ -11,7 +11,7 @@
     "@aragon/cli": "^4.0.6",
     "concurrently": "^3.6.1",
     "coveralls": "^3.0.2",
-    "ethereumjs-wallet": "^0.6.1",
+    "ethereumjs-wallet": "0.6.0",
     "lerna": "^2.11.0",
     "truffle": "4.0.5"
   },
