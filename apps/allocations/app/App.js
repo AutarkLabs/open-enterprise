@@ -3,7 +3,14 @@ import { hot } from 'react-hot-loader'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
-import { AragonApp, AppBar, Button, SidePanel, IconAdd } from '@aragon/ui'
+import {
+  AragonApp,
+  AppBar,
+  Button,
+  SidePanel,
+  IconAdd,
+  observe,
+} from '@aragon/ui'
 import AppLayout from './components/AppLayout'
 import Tools from './screens/Tools'
 import { NewAccountPanelContent } from './components/Panels'
@@ -31,12 +38,12 @@ class App extends React.Component {
 
   onCreateAccount = account => {
     const { title, limit } = account
-    this.state.accounts.push({
-      title,
-      limit,
-      address: '0x45f3...5567',
-      balance: 0,
-    })
+    console.log(
+      '[allocations/app.js]',
+      this.props.app.newPayout(account.title, account.limit.value, 0x0)
+    )
+    console.log('[allocations/app.js]', 'something else')
+    console.log('[allocations/app.js]', this.props.app)
     this.setState({})
   }
 
@@ -111,4 +118,6 @@ const CloseIcon = styled(IconAdd)`
   margin-right: 0.5rem;
 `
 
-export default hot(module)(App)
+export default hot(module)(
+  observe(observable => observable.map(state => ({ ...state })), {})(App)
+)
