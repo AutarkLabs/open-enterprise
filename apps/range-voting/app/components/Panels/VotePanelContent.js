@@ -226,18 +226,18 @@ class VotePanelContent extends React.Component {
               <SecondLabel>Votes</SecondLabel>
               {this.state.voteOptions.map((option, idx) => (
                 <div>
-                  <SliderContainer>
-                    <div>
+                  <SliderAndValueContainer>
+                    <SliderContainer>
                       <p>{option.label}</p>
                       <Slider
                         value={option.sliderValue}
                         onUpdate={value => this.sliderUpdate(value, idx)}
                       />
-                    </div>
+                    </SliderContainer>
                     <ValueContainer>
                       {Math.round(option.sliderValue * 100) || 0}
                     </ValueContainer>
-                  </SliderContainer>
+                  </SliderAndValueContainer>
                 </div>
               ))}
               <SecondRedText>{remaining} remaining</SecondRedText>
@@ -304,11 +304,16 @@ const ValueContainer = styled.div`
   text-align: center;
 `
 
-const SliderContainer = styled.div`
+const SliderAndValueContainer = styled.div`
   display: flex;
   align-items: center;
-  & > :nth-child(1) {
-    width: 320px;
+`
+
+const SliderContainer = styled.div`
+  width: 320px;
+  & > :nth-child(2) {
+    padding: 0;
+    padding-right: 17px;
   }
 `
 
