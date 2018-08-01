@@ -23,12 +23,14 @@
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-stage-3": "^6.24.1",
+    "coveralls": "^3.0.2",
     "eslint": "^5.2.0",
     "eslint-config-prettier": "^2.9.0",
     "eslint-plugin-react": "^7.10.0",
     "parcel-bundler": "^1.9.3",
     "prettier": "1.13.7",
     "react-hot-loader": "^4.3.4",
+    "solidity-coverage": "^0.5.5",
     "truffle": "4.0.5",
     "truffle-hdwallet-provider": "0.0.6"
   },
@@ -42,7 +44,8 @@
     "publish": "npx apm publish",
     "start": "npx aragon run",
     "sync-assets": "npx copy-aragon-ui-assets ./dist",
-    "test": "npx aragon contracts test"
+    "test": "npx aragon contracts test",
+    "coverage": "./node_modules/.bin/solidity-coverage"
   },
   "keywords": [],
   "repository": {

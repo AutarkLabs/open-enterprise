@@ -14,3 +14,5 @@ before_script:
   - npm prune
 script:
   - npm run $TASK
+after_script:
+  - npm run coverage && cat coverage/lcov.info | coveralls
