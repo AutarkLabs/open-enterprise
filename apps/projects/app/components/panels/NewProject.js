@@ -42,9 +42,10 @@ import CheckboxInput from '../Checkbox'
 
 class NewProject extends React.Component {
   static propTypes = {
-    // onHandleAddRepos: PropTypes.func.isRequired,
-    // onHandleGitHubAuth: PropTypes.func.isRequired,
+    onHandleAddRepos: PropTypes.func.isRequired,
+    onHandleGitHubAuth: PropTypes.func.isRequired,
     github: PropTypes.object.isRequired,
+    closeSidePanel: PropTypes.func.isRequired,
   }
 
   constructor(props) {
@@ -283,6 +284,7 @@ repositories with issues list included is not going to cost much.
     const { onHandleAddRepos } = this.props
     const { reposToAdd } = this.state
     onHandleAddRepos(reposToAdd)
+    this.props.closeSidePanel()
   }
 
   generateCheckboxHandler = repoId => {

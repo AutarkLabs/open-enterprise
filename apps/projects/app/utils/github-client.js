@@ -2,7 +2,7 @@ export const githubData = {
   authToken: '',
   login: '',
   avatarUrl: '',
-  isAuthenticated: 'true',
+  isAuthenticated: false,
   activeRepo: '',
   activeLabel: '',
   activeMilestone: '',

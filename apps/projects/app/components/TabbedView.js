@@ -3,7 +3,7 @@ import styled from 'styled-components'
 
 const StyledTabbedView = styled.div`
   position: absolute;
-  height: calc(100% - 63px);
+  height: calc(100% - 64px);
   width: 100%;
   display: flex;
   flex-direction: column;

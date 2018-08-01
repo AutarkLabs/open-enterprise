@@ -4,13 +4,14 @@ import { AragonApp } from '@aragon/ui'
 // import { GithubProvider } from './context/GithubContext'
 
 import { Issues, Overview, Settings } from './screens'
-import { githubData } from './utils/github-client'
+import { github } from './utils/github-client'
 
 import TabContent from './components/TabContent'
 import TabbedView from './components/TabbedView'
 import { Tab } from './components/Tab'
 import { TabBar } from './components/TabBar'
 import { AppTitle } from './components/AppTitle'
+import { runInThisContext } from 'vm'
 
 const tabData = [
   {
@@ -29,10 +30,60 @@ const tabData = [
 ]
 
 class App extends Component {
+  state = { github }
+
+  handleAddRepos = reposToAdd => {
+    const { github } = this.state
+
+    Object.keys(reposToAdd).forEach(repoId => {
+      var repo = reposToAdd[repoId]
+      if (repoId in github.reposManaged) {
+        console.log('[App.js] already in: ' + repo.name)
+      } else {
+        console.log('[App.js] adding: ' + repo.name)
+        github.reposManaged[repoId] = repo
+      }
+    })
+  }
+
+  handleCreateProject = () => {
+    const { name, description, repoURL, bountySystem } = this.state
+    alert(
+      'creating: ' +
+        name +
+        ', ' +
+        description +
+        ', ' +
+        repoURL +
+        ', ' +
+        bountySystem
+    )
+  }
+
+  handleGitHubAuth = (authToken, login, avatarUrl) => {
+    // probably unnecessarily explicit
+    // meant to be called from NewProjectPanelContent after successful whoami query
+    const { github } = this.state
+    github.authToken = authToken
+    github.login = login
+    github.avatarUrl = avatarUrl
+    github.isAuthenticated = true
+    github.activeRepo = ''
+    this.setState({ github: github })
+  }
+
+  handleRemoveRepo = repoId => {
+    this.setState(({ github }) => {
+      delete github.reposManaged[repoId]
+      return { github: github }
+    })
+  }
+
   render() {
+    const { github } = this.state
     return (
       // TODO: <React.StrictMode>
-      <AragonApp backgroundLogo publicUrl="aragon-ui-assets/">
+      <AragonApp publicUrl="aragon-ui-assets/">
         {/* <GithubProvider> */}
         <AppTitle />
         <TabbedView>
@@ -43,7 +94,14 @@ class App extends Component {
           </TabBar>
           <TabContent>
             {tabData.map(({ screen: Screen }) => (
-              <Screen key={screen} github={githubData} />
+              <Screen
+                key={screen}
+                github={github}
+                onHandleAddRepos={this.handleAddRepos.bind(this)}
+                onHandleGitHubAuth={this.handleGitHubAuth}
+                onCreateProject={this.handleCreateProject}
+                onRemove={this.handleRemoveRepo}
+              />
             ))}
           </TabContent>
         </TabbedView>
