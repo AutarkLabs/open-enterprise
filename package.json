@@ -12,6 +12,7 @@
     "concurrently": "^3.6.1",
     "coveralls": "^3.0.2",
     "lerna": "^2.11.0",
+    "ethereumjs-wallet": "0.6.0",
     "truffle": "4.0.5",
     "truffle-hdwallet-provider": "0.0.6"
   },
