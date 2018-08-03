@@ -1,0 +1,22 @@
+{
+  "appName": "allocations.aragonpm.eth",
+  "version": "0.0.1",
+  "roles": [
+    {
+      "name": "Initiate an allocations payout",
+      "id": "START_PAYOUT_ROLE",
+      "params": []
+    },
+    {
+      "name": "Set the distribution that will correspond to this allocation",
+      "id": "SET_DISTRIBUTION_ROLE",
+      "params": []
+    },
+    {
+      "name": "Execute a set payout",
+      "id": "EXECUTE_PAYOUT_ROLE",
+      "params": []
+    }
+  ],
+  "path": "contracts/Allocations.sol"
+}

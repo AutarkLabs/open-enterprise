@@ -1,0 +1,22 @@
+{
+  "appName": "projects.aragonpm.eth",
+  "version": "0.0.1",
+  "roles": [
+    {
+      "name": "Add a new repository",
+      "id": "ADD_REPO_ROLE",
+      "params": []
+    },
+    {
+      "name": "Remove a repository",
+      "id": "REMOVE_REPO_ROLE",
+      "params": []
+    },
+    {
+      "name": "Add a bounty",
+      "id": "ADD_BOUNTY_ROLE",
+      "params": []
+    }
+  ],
+  "path": "contracts/Projects.sol"
+}

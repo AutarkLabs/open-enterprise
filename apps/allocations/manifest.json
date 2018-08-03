@@ -1,0 +1,6 @@
+{
+  "name": "Allocations",
+  "description": "Determine the distribution of funds",
+  "start_url": "dist/index.html",
+  "script": "dist/script.js"
+}
