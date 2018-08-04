@@ -108,25 +108,25 @@ contract PlanningKit is KitBase {
         // Allocations permissions:
         acl.createPermission(ANY_ENTITY, allocations, allocations.START_PAYOUT_ROLE(), root);
         acl.createPermission(rangeVoting, allocations, allocations.SET_DISTRIBUTION_ROLE(), root);
-        acl.createPermission(voting, allocations, allocations.EXECUTE_PAYOUT_ROLE(), root);
-        InstalledApp(voting, apps[0]);
+        acl.createPermission(rangeVoting, allocations, allocations.EXECUTE_PAYOUT_ROLE(), root);
+        InstalledApp(allocations, apps[0]);
 
         // AddressBook permissions:
         acl.createPermission(voting, addressBook, addressBook.ADD_ENTRY_ROLE(), root);
         acl.createPermission(voting, addressBook, addressBook.REMOVE_ENTRY_ROLE(), root);
-        InstalledApp(voting, apps[1]);
+        InstalledApp(addressBook, apps[1]);
 
         // Projects permissions:
         acl.createPermission(voting, projects, projects.ADD_REPO_ROLE(), root);
         acl.createPermission(voting, projects, projects.REMOVE_REPO_ROLE(), root);
         acl.createPermission(voting, projects, projects.ADD_BOUNTY_ROLE(), root);
-        InstalledApp(voting, apps[2]);
+        InstalledApp(projects, apps[2]);
 
         // Range-voting permissions
-        acl.createPermission(voting, rangeVoting, rangeVoting.CREATE_VOTES_ROLE(), voting);
+        acl.createPermission(allocations, rangeVoting, rangeVoting.CREATE_VOTES_ROLE(), voting);
         acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.ADD_CANDIDATES_ROLE(), root);
         acl.createPermission(voting, rangeVoting, rangeVoting.MODIFY_PARTICIPATION_ROLE(), root);
-        InstalledApp(voting, apps[3]);
+        InstalledApp(rangeVoting, apps[3]);
 
         // TokenManager permissions
         acl.createPermission(voting, tokenManager, tokenManager.ASSIGN_ROLE(), voting);
