@@ -19,6 +19,7 @@
   "scripts": {
     "bootstrap": "npx lerna bootstrap --no-hoist=@aragon/os",
     "clean": "git clean -fdxi",
+    "coverage": "lerna run --scope=@tpt/apps-* --concurrency=1 --stream coverage",
     "dev:address": "cd apps/address-book && npm run dev",
     "dev:allocations": "cd apps/allocations && npm run dev",
     "dev:projects": "cd apps/projects && npm run dev",

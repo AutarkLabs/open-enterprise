@@ -39,13 +39,14 @@
     "build:script": "npx parcel build app/script.js -d dist/",
     "build": "npm run compile && npm run sync-assets && npm run build:app && npm run build:script",
     "compile": "npx aragon contracts compile",
+    "coverage": "SOLIDITY_COVERAGE=true npm run ganache-cli:test",
     "dev": "npm run sync-assets && npx parcel app/index.html --open",
     "devchain": "npx aragon devchain",
+    "ganache-cli:test": "../shared/test-helpers/ganache-cli.sh",
     "publish": "npx apm publish",
     "start": "npx aragon run",
     "sync-assets": "npx copy-aragon-ui-assets ./dist",
-    "test": "npx aragon contracts test",
-    "coverage": "./node_modules/.bin/solidity-coverage"
+    "test": "npx aragon contracts test"
   },
   "keywords": [],
   "repository": {
