@@ -1,5 +1,14 @@
 pragma solidity 0.4.18;
 
+/*
+    Kits work:
+    https://github.com/aragon/aragen/pull/15
+    https://github.com/aragon/dao-kits/tree/tcr_deferred_lock
+    https://github.com/aragon/dao-kits/blob/2316fd7c591812bc9a72787bdd6f219b0c654c8e/kits/dev/contracts/DevTemplate.sol
+    https://github.com/aragon/aragen/blob/master/scripts/deploy-base
+
+*/
+
 import "@aragon/os/contracts/factory/DAOFactory.sol";
 import "@aragon/os/contracts/apm/Repo.sol";
 import "@aragon/os/contracts/lib/ens/ENS.sol";
