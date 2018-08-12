@@ -40,6 +40,7 @@
     "compile": "npx aragon contracts compile",
     "dev": "npm run sync-assets && npx parcel app/index.html --open",
     "devchain": "npx aragon devchain",
+    "lint:css": "npx stylelint './src/**/*.js'",
     "publish": "npx apm publish",
     "start": "npx aragon run",
     "sync-assets": "npx copy-aragon-ui-assets ./dist",
