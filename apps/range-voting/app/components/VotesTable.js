@@ -11,7 +11,6 @@ const VotesTable = ({ votes, opened, onSelectVote }) => (
         <TableHeader title="Question" />
         <TableHeader title="Participation" align="right" />
         <TableHeader title={'Results'} />
-        <TableHeader title="Actions" />
       </TableRow>
     }
   >

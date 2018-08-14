@@ -16,12 +16,10 @@ class Tools extends React.Component {
   state = {
     sidePanelOpened: false,
     tools: [{
-      label: 'Monthly Reward DAO',
-      address: '0x45f3...5567',
-      stats: [
-          {label: 'BALANCE', value: '10 ETH' },
-          {label: 'BUDGET', value: '5 ETH / Month'}
-      ]
+      title: 'Monthly Reward DAO',
+      address: '0x5ADF43DD006c6C36506e2b2DFA352E60002d22Dc',
+      balance: 0,
+      limit: { label: 'ETH', value: 0 }
     }]
   }
 
