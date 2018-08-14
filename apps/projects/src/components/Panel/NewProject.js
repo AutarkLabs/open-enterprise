@@ -50,12 +50,13 @@ class NewProject extends React.Component {
   // }
 
   render() {
-    const { github } = this.props
+    // const { github } = this.props
     return (
       // <GithubContext.Consumer>
       //   {({ login }) => <div>Hello {login}</div>}
       // </GithubContext.Consumer>
-      <div>Helaalo {github.login}</div>
+      // <div>Helaalo {github.login}</div>
+      <div>New projrs</div>
       // <ApolloProvider client={client}>
       //   <a
       //     style={{
@@ -70,5 +71,5 @@ class NewProject extends React.Component {
   }
 }
 
-export default withGithub(NewProject)
-// export default NewProject
+// export default withGithub(NewProject)
+export default NewProject

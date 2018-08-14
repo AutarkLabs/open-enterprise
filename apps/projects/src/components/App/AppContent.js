@@ -15,33 +15,22 @@ import { Issues, Overview, Settings } from '../Content'
     }
   ]
 */
-const contentData = [
-  {
-    title: 'Overview',
-    screen: Overview,
-    button: { label: 'Add Project', actions: ['sidePanelOpen'] },
-    sidePanelContent: 'NewProject',
-    sidePanelTitle: 'New Project',
-  },
-  {
-    title: 'Issues',
-    screen: Issues,
-    button: { label: 'New Issue', actions: ['createIssue'] },
-  },
-  { title: 'Settings', screen: Settings },
-]
 
-const loadTabs = contentData.map(({ title }) => <Tab key={title}>{title}</Tab>)
 // TODO: Dynamic component loading
-const loadScreens = contentData.map(({ screen: Screen }) => (
-  <Screen key={Screen} />
-))
 
 const AppContent = () => {
   return (
     <TabbedView>
-      <TabBar>{loadTabs}</TabBar>
-      <TabContent>{loadScreens}</TabContent>
+      <TabBar>
+        <Tab>Overview</Tab>
+        <Tab>Issues</Tab>
+        <Tab>Settings</Tab>
+      </TabBar>
+      <TabContent>
+        <Overview />
+        <Issues />
+        <Settings />
+      </TabContent>
     </TabbedView>
   )
 }
