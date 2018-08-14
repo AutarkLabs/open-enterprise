@@ -17,9 +17,11 @@ const StyledButton = styled.div`
   text-indent: 10px;
   line-height: ${BASE_HEIGHT - 2}px;
   box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.03);
+
   :active {
     background: ${theme.contentBackgroundActive};
   }
+
   > :last-child {
     margin-right: 10px;
     color: #b3b3b3;
@@ -33,6 +35,7 @@ const StyledDropDown = styled.div`
   width: ${({ BASE_WIDTH }) => BASE_WIDTH}px;
   height: ${BASE_HEIGHT}px;
   ${unselectable};
+
   > * {
     background: ${theme.contentBackground};
     border: 1px solid ${theme.contentBorder};
@@ -50,12 +53,15 @@ const DropDownItems = styled.div`
   opacity: ${({ opened }) => (opened ? 1 : 0)};
   transition: all 0.2s ease-out;
   top: calc(100% - 1px);
+
   > * {
     text-indent: 10px;
     line-height: ${BASE_HEIGHT - 2}px;
+
     :hover {
       color: ${theme.accent};
     }
+
     :active {
       background: ${theme.contentBackgroundActive};
     }
@@ -83,7 +89,7 @@ class DropDown extends React.PureComponent {
     document.removeEventListener('click', this.close)
   }
 
-  loadItems = (items) => items.map(item => <div key={item}>{item}</div>)
+  loadItems = items => items.map(item => <div key={item}>{item}</div>)
 
   render() {
     const {
@@ -99,9 +105,7 @@ class DropDown extends React.PureComponent {
           {items[0]}
           <IconArrowDown />
         </StyledButton>
-        <DropDownItems opened={opened}>
-          {this.loadItems(items)}
-        </DropDownItems>
+        <DropDownItems opened={opened}>{this.loadItems(items)}</DropDownItems>
       </StyledDropDown>
     )
   }

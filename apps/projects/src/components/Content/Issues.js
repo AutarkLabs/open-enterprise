@@ -1,8 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
-import { TextInput, theme } from '@aragon/ui'
+import { Button, TextInput, theme } from '@aragon/ui'
 
-import { DropDown } from '../DropDown'
+import FilterBar from './FilterBar'
 
 class Issues extends React.Component {
   render() {
@@ -13,10 +13,12 @@ class Issues extends React.Component {
             <StyledTextInput />
             <Magnifier />
           </StyledSearchInput>
-          {/* TODO: Here it goes the active filters box */}
+          {/* // TODO: Here it goes the active filters box */}
+          <Button mode="secondary">Actions</Button>
           {/* <ActionsDropDown /> */}
           {/* <StyledActionsDropDown /> */}
         </StyledSearchBar>
+        <FilterBar />
       </StyledIssues>
     )
   }
@@ -35,38 +37,20 @@ const Magnifier = () => (
   </svg>
 )
 
-const actions = ['Curate Issues', 'Allocate Bounties']
+const StyledIssues = styled.div`
+  padding: 15px 30px;
+`
 
-const SearchBar = () => <div>SearchBar</div>
-// const ActionsDropDown = () => (
-//   <StyledDropDown items={actions} label="Actions" width={118} />
-// )
-const FiltersBar = () => <div>FiltersBar</div>
-const IssueList = () => <div>IssueList</div>
-
-// const StyledDropDown = styled(DropDown)`
-//   background: ${theme.secondayBackground};
-// `
-// const StyledActionsDropDown = styled(DropDown).attrs({
-//   items: actions,
-//   width: 118,
-//   label: 'Actions',
-// })`
-// :first-child {
-//   background: red;
-// }
-//   /* background: red;
-//   color: red;
-//    > * {
-//     background-color: lime;
-//     color: red;
-//   } */
-// `
+const StyledSearchBar = styled.div`
+  display: flex;
+  justify-content: space-between;
+`
 
 const StyledSearchInput = styled.div`
   position: relative;
   width: 220px;
   height: 40px;
+
   > :last-child {
     position: absolute;
     right: 15px;
@@ -84,15 +68,6 @@ const StyledTextInput = styled(TextInput).attrs({
   border: 1px sold #ccc;
   padding-right: 35px;
   font-size: 16px;
-`
-
-const StyledIssues = styled.div`
-  padding: 15px 30px;
-`
-
-const StyledSearchBar = styled.div`
-  display: flex;
-  justify-content: space-between;
 `
 
 export default Issues
