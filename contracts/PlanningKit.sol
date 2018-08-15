@@ -104,6 +104,8 @@ contract PlanningKit is KitBase {
         // rangeVoting.initialize();
         tokenManager.initialize(token, true, 0, true);
         voting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
+        rangeVoting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
+        
 
         // Allocations permissions:
         acl.createPermission(ANY_ENTITY, allocations, allocations.START_PAYOUT_ROLE(), root);
