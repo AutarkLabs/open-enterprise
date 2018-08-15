@@ -18,14 +18,7 @@ class Allocations extends React.Component {
 
   state = {
     sidePanelOpened: false,
-    allocations: [{
-      label: 'Monthly Reward DAO',
-      address: '0x45f3...5567',
-      stats: [
-          {label: 'BALANCE', value: '10 ETH' },
-          {label: 'BUDGET', value: '5 ETH / Month'}
-      ]
-    }]
+    allocations: []
   }
 
   openSidePanel = () => {
