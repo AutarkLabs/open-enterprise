@@ -51,7 +51,15 @@ class ToolCard extends Component {
     openManageParemeters = () => {}
 
     render () {
-        const { title, description, balance, limit, address } = this.props
+        console.log(this.props)
+        const { metadata, description, balance, limit, token, proxy } = this.props.data
+        let tokenLabel
+        // Hardcoded token lookup for eth and possibly others?
+        switch(parseInt(token)) {
+            case (0):
+                tokenLabel = "ETH"
+                break
+        }
         const { contextMenuItems } = this.state
         const menuElements = contextMenuItems.map((item) =>
             <StyledMenuItem
@@ -71,21 +79,21 @@ class ToolCard extends Component {
                     </ContextMenu>
                 </MenuContainer>
                 <IconContainer>
-                    <img src={icon} alt={`${title} icon`} />
+                    <img src={icon} alt={`${metadata} icon`} />
                 </IconContainer>
                 <CardTitle size="large" color={textPrimary}>
-                    {title}
+                    {metadata}
                 </CardTitle>
                 <CardAddress size="small" color="#4A90E2">
-                    {address}
+                    {proxy}
                 </CardAddress>
                <StatsContainer>
                     <StatsTitle>Balance</StatsTitle>
-                    <StatsValue>{balance} {limit.label}</StatsValue>
+                    <StatsValue>{balance} {tokenLabel}</StatsValue>
                </StatsContainer>
                <StatsContainer>
                     <StatsTitle>Limit</StatsTitle>
-                    <StatsValue>{limit.value} {limit.label} / Allocation</StatsValue>
+                    <StatsValue>{limit} {tokenLabel}/ Allocation</StatsValue>
                </StatsContainer>
             </StyledCard>
         )
@@ -112,9 +120,11 @@ const CardTitle = styled(Text)`
 
 const CardAddress = styled(Text)`
     display: block;
+    width: 300px;
     text-align: center;
     text-decoration: underline;
     cursor: pointer;
+    text-overflow: ellipsis;
 `
 
 const IconContainer = styled.div`
