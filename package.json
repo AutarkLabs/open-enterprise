@@ -5,15 +5,15 @@
   "dependencies": {
     "@aragon/apps-token-manager": "^1.0.0",
     "@aragon/apps-voting": "^1.0.0",
-    "@aragon/os": "3.1.9"
+    "@aragon/os": "^3.1.10"
   },
   "devDependencies": {
-    "@aragon/cli": "^4.0.6",
+    "@aragon/cli": "^4.1.5",
     "concurrently": "^3.6.1",
     "coveralls": "^3.0.2",
-    "lerna": "^2.11.0",
-    "truffle": "^4.1.13",
-    "truffle-hdwallet-provider": "0.0.6"
+    "lerna": "^3.0.5",
+    "truffle": "^4.1.14",
+    "truffle-hdwallet-provider": "^0.0.6"
   },
   "scripts": {
     "bootstrap": "npx lerna bootstrap --no-hoist=@aragon/os",

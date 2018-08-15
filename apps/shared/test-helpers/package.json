@@ -2,6 +2,6 @@
   "name": "@aragon/test-helpers",
   "version": "0.0.1",
   "devDependencies": {
-    "ethereumjs-abi": "^0.6.4"
+    "ethereumjs-abi": "^0.6.5"
   }
 }
