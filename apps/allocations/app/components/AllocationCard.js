@@ -85,8 +85,7 @@ class AllocationCard extends Component {
                     {metadata}
                 </CardTitle>
                 <CardAddress size="small" color="#4A90E2">
-<<<<<<< HEAD:apps/allocations/app/components/AllocationCard.js
-                    {proxy}
+                    {proxy.slice(0,6) + '...' + proxy.slice(-4)}
                 </CardAddress>
                <StatsContainer>
                     <StatsTitle>Balance</StatsTitle>
@@ -95,17 +94,6 @@ class AllocationCard extends Component {
                <StatsContainer>
                     <StatsTitle>Limit</StatsTitle>
                     <StatsValue>{limit} {tokenLabel}/ Allocation</StatsValue>
-=======
-                    {address.slice(0,6) + '...' + address.slice(-4)}
-                </CardAddress>
-               <StatsContainer>
-                    <StatsTitle>Balance</StatsTitle>
-                    <StatsValue>{balance || 'n/a'} {limit.label}</StatsValue>
-               </StatsContainer>
-               <StatsContainer>
-                    <StatsTitle>Limit</StatsTitle>
-                    <StatsValue>{limit.value || 'n/a'} {limit.label} / Allocation</StatsValue>
->>>>>>> b60c4501c97f35d682bbd6998e8e12d694fe2444:apps/allocations/app/components/ToolCard.js
                </StatsContainer>
             </StyledCard>
         )
