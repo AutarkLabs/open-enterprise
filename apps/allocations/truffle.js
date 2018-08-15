@@ -1,7 +1,7 @@
-var path = require('path');
+var path = require('path')
 
 module.exports = {
-  contracts_build_directory: path.join(__dirname, './dist/contracts/'),
+  contracts_build_directory: path.join(__dirname, './build/contracts/'),
   networks: {
     development: {
       host: 'localhost',
@@ -16,6 +16,6 @@ module.exports = {
       port: 8555,
       gas: 0xfffffffffff,
       gasPrice: 0x01,
-    }
-  }
+    },
+  },
 }
