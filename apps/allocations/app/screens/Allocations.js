@@ -1,21 +1,24 @@
 import React from 'react'
 import styled from 'styled-components'
-import { ToolStore } from '../stores/ToolStore'
+import { AllocationStore } from '../stores/AllocationStore'
 import { Subscribe } from 'laco-react'
 
 import { EmptyStateCard, SidePanel } from '@aragon/ui'
 import emptyIcon from '../assets/empty-allocation.svg'
-import ToolCard from '../components/ToolCard'
+import AllocationCard from '../components/AllocationCard'
 import { NewPayoutVotePanelContent } from '../components/Panels'
 
 const EmptyIcon = () => <img src={emptyIcon} alt="" />
 
-class Tools extends React.Component {
-  static defaultProps = {}
+class Allocations extends React.Component {
+  static defaultProps = {
+    onSetDistribution: () => {},
+    onClose: () => {}
+  }
 
   state = {
     sidePanelOpened: false,
-    tools: [{
+    allocations: [{
       label: 'Monthly Reward DAO',
       address: '0x45f3...5567',
       stats: [
@@ -35,7 +38,7 @@ class Tools extends React.Component {
 
   render() {
     const { onActivate, accounts } = this.props
-    const { sidePanelOpened, tools } = this.state
+    const { sidePanelOpened, allocations } = this.state
 
     if (!accounts.length) {
       return (
@@ -52,15 +55,18 @@ class Tools extends React.Component {
     }
 
     return (
-      <StyledTools>
-        {accounts.map((account) => <ToolCard {...account} openSidePanelLink={this.openSidePanel} />)}
+      <StyledAllocations>
+        {accounts.map((account) => <AllocationCard {...account} openSidePanelLink={this.openSidePanel} />)}
         <SidePanel
           opened={sidePanelOpened}
           onClose={this.closeSidePanel}
         >
-          <NewPayoutVotePanelContent />
+          <NewPayoutVotePanelContent
+            onSetDistribution = {this.props.onSetDistribution}
+            onClose = {this.props.onClose}
+          />
         </SidePanel>
-      </StyledTools>
+      </StyledAllocations>
     )
   }
 }
@@ -72,7 +78,7 @@ const StyledEmptyWrapper = styled.div`
   flex-grow: 1;
 `
 
-const StyledTools = styled.div`
+const StyledAllocations = styled.div`
   display: grid;
   grid-template-columns: repeat(3, auto);
   grid-auto-rows: auto;
@@ -80,4 +86,4 @@ const StyledTools = styled.div`
   justify-content: start;
 `
 
-export default Tools
+export default Allocations

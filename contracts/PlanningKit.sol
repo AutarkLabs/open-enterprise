@@ -104,6 +104,8 @@ contract PlanningKit is KitBase {
         // rangeVoting.initialize();
         tokenManager.initialize(token, true, 0, true);
         voting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
+        rangeVoting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
+        
 
         // Allocations permissions:
         acl.createPermission(ANY_ENTITY, allocations, allocations.START_PAYOUT_ROLE(), root);
@@ -123,7 +125,7 @@ contract PlanningKit is KitBase {
         InstalledApp(voting, apps[2]);
 
         // Range-voting permissions
-        acl.createPermission(voting, rangeVoting, rangeVoting.CREATE_VOTES_ROLE(), voting);
+        acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.CREATE_VOTES_ROLE(), root);
         acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.ADD_CANDIDATES_ROLE(), root);
         acl.createPermission(voting, rangeVoting, rangeVoting.MODIFY_PARTICIPATION_ROLE(), root);
         InstalledApp(voting, apps[3]);

@@ -1,4 +1,4 @@
-import React, { Component }  from 'react'
+import React, { Component } from  'react'
 import styled from 'styled-components'
 
 import {
@@ -12,13 +12,14 @@ import {
 } from '@aragon/ui'
 
 import icon from '../assets/empty-card-icon.svg'
+import { format } from 'path';
 
 const { accent, textPrimary, textTertiary } = theme
 
 const initialState = {
     contextMenuItems: [
         {
-            text: 'New Payout Vote',
+            text: 'New Allocation',
             icon: IconAdd,
             function: 'openNewPayoutVote',
             colors: {
@@ -35,7 +36,8 @@ const initialState = {
     ],
 }
 
-class ToolCard extends Component {
+class AllocationCard extends Component {
+
     state = {
         ...initialState,
     }
@@ -44,16 +46,22 @@ class ToolCard extends Component {
         if (typeof this.props.openSidePanelLink === "function") {
             this.props.openSidePanelLink()
         } else {
-            console.info('ToolCard component: openSidePanelLink not defined, click has no effect')
+            console.info('AllocationCard component: openSidePanelLink not defined, click has no effect')
         }
     }
 
     openManageParemeters = () => {}
 
     render () {
-        const { label, description, stats, address } = this.props
+        const { metadata, description, balance, limit, token, proxy } = this.props.data
+        let tokenLabel
+        // Hardcoded token lookup for eth and possibly others?
+        switch(parseInt(token)) {
+            case (0):
+                tokenLabel = "ETH"
+                break
+        }
         const { contextMenuItems } = this.state
-        console.log(this.props)
         const menuElements = contextMenuItems.map((item) =>
             <StyledMenuItem
                 key={item.text}
@@ -64,43 +72,86 @@ class ToolCard extends Component {
             </StyledMenuItem>
         )
 
-        const statsElements = stats.map((stat) =>
-            <React.Fragment key={stat.label}>
-                <Text
-                    size="xxsmall"
-                    color={textTertiary}>
-                    {stat.label}
-                </Text>
-                <Text
-                    size="xsmall"
-                    color={textPrimary}>
-                    {stat.value}
-                </Text>
-            </React.Fragment>
-        )
-
         return (
             <StyledCard>
-                <ContextMenu>
-                    {menuElements}
-                </ContextMenu>
-                <img src={icon} alt={`${label} icon`} />
-                <Text size="large" color={textPrimary}>
-                    {label}
-                </Text>
-                <Text size="small" color={textTertiary}>
-                    {description}
-                </Text>
-                {statsElements}
-                <Text size="xsmall" color={accent}>
-                    {address}
-                </Text>
-                </StyledCard>
+                <MenuContainer>
+                    <ContextMenu>
+                        {menuElements}
+                    </ContextMenu>
+                </MenuContainer>
+                <IconContainer>
+                    <img src={icon} alt={`${metadata} icon`} />
+                </IconContainer>
+                <CardTitle size="large" color={textPrimary}>
+                    {metadata}
+                </CardTitle>
+                <CardAddress size="small" color="#4A90E2">
+                    {proxy}
+                </CardAddress>
+               <StatsContainer>
+                    <StatsTitle>Balance</StatsTitle>
+                    <StatsValue>{balance} {tokenLabel}</StatsValue>
+               </StatsContainer>
+               <StatsContainer>
+                    <StatsTitle>Limit</StatsTitle>
+                    <StatsValue>{limit} {tokenLabel}/ Allocation</StatsValue>
+               </StatsContainer>
+            </StyledCard>
         )
     }
 }
 
 const StyledCard = styled(Card)`
+    height: 300px;
+    width: 280px;
+`
+
+const MenuContainer = styled.div`
+    float: right;
+    margin-top: 1rem;
+    margin-right: 1rem;
+`
+
+const CardTitle = styled(Text)`
+    display: block;
+    text-align: center;
+    font-weight: bold;
+    font-size: 20px;
+`
+
+const CardAddress = styled(Text)`
+    display: block;
+    width: 300px;
+    text-align: center;
+    text-decoration: underline;
+    cursor: pointer;
+    text-overflow: ellipsis;
+`
+
+const IconContainer = styled.div`
+    margin-top: 4rem;
+    margin-left: 110px;
+`
+
+const StatsContainer = styled.div`
+    width: 50%;
+    display: inline-block;
+    margin-top: 3rem;
+    padding-left: 1rem;
+`
+
+const StatsTitle = styled.p`
+    color: #6D777B;
+    font-size: 16px;
+    text-transform: lowercase;
+    font-variant: small-caps;
+`
+
+const StatsValue = styled.p`
+    font-size: 14px;
+`
+
+const StyledCardtest = styled(Card)`
     height: 312px;
     width: 280px;
     display: grid;
@@ -180,4 +231,4 @@ const StyledMenuItem = styled(ContextMenuItem)
     }
 `
 
-export default ToolCard
+export default AllocationCard
