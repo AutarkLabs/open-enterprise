@@ -12,7 +12,7 @@ import {
   observe,
 } from '@aragon/ui'
 import AppLayout from './components/AppLayout'
-import Tools from './screens/Tools'
+import Allocations from './screens/Allocations'
 import { NewAccountPanelContent } from './components/Panels'
 
 class App extends React.Component {
@@ -44,9 +44,16 @@ class App extends React.Component {
     this.setState({})
   }
 
-  render() {
-    console.log(this.props)
+  onSetDistribution = () => {
+    console.log("it's working!")
+  }
+  
+  onSetDistribution = settings => {
+    this.props.app.set(voteId, voteType === VOTE_YEA, executesIfDecided)
+  }
 
+
+  render() {
     const barButton = (
       <Button Button mode="strong" onClick={this.handlePanelOpen}>
         New Account
@@ -61,7 +68,8 @@ class App extends React.Component {
           </AppLayout.Header>
           <AppLayout.ScrollWrapper>
             <AppLayout.Content>
-              <Tools
+              <Allocations
+                onSetDistribution = {this.onSetDistribution}
                 onActivate={this.handlePanelOpen}
                 button={barButton}
                 accounts= {(this.props.accounts !== undefined) ? this.props.accounts : []}

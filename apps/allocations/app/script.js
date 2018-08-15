@@ -14,7 +14,6 @@ app.store(async (state, { event, returnValues }) => {
   switch (event) {
   case 'NewAccount':
     nextState = await newAccount(nextState, returnValues)
-    console.log(nextState)
     break
   }
 

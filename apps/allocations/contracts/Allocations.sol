@@ -146,8 +146,9 @@ contract Allocations is AragonApp, Fundable {
 
     /**
     * @dev This is the function that the RangeVote will call. It doesn’t need
-    *      to be called by a RangeVote but for our use case the
-    *      “SET_DISTRIBUTION_ROLE” will be given to the RangeVote.
+    *      to be called by a RangeVote (options get weird if it's not)
+    *      but for our use case the “SET_DISTRIBUTION_ROLE” will be given to
+    *      the RangeVote.
     * @notice Sets the distribution for the given `payoutId` using an the
     *         supplied candidate keys and support values.
     * @param _candidateKeys The array of keys for all candidates in this payout

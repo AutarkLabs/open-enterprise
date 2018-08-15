@@ -1,4 +1,4 @@
-import React, { Component }  from 'react'
+import React, { Component } from  'react'
 import styled from 'styled-components'
 
 import {
@@ -12,6 +12,7 @@ import {
 } from '@aragon/ui'
 
 import icon from '../assets/empty-card-icon.svg'
+import { format } from 'path';
 
 const { accent, textPrimary, textTertiary } = theme
 
@@ -35,7 +36,8 @@ const initialState = {
     ],
 }
 
-class ToolCard extends Component {
+class AllocationCard extends Component {
+
     state = {
         ...initialState,
     }
@@ -44,14 +46,13 @@ class ToolCard extends Component {
         if (typeof this.props.openSidePanelLink === "function") {
             this.props.openSidePanelLink()
         } else {
-            console.info('ToolCard component: openSidePanelLink not defined, click has no effect')
+            console.info('AllocationCard component: openSidePanelLink not defined, click has no effect')
         }
     }
 
     openManageParemeters = () => {}
 
     render () {
-        console.log(this.props)
         const { metadata, description, balance, limit, token, proxy } = this.props.data
         let tokenLabel
         // Hardcoded token lookup for eth and possibly others?
@@ -230,4 +231,4 @@ const StyledMenuItem = styled(ContextMenuItem)
     }
 `
 
-export default ToolCard
+export default AllocationCard

@@ -17,12 +17,15 @@ const { accent, textSecondary, textTertiary } = theme
 const isIntegerString = value => /^[0-9]*$/.test(value)
 
 class NewPayoutVotePanel extends Component {
-  static defaultProps = {}
+  static defaultProps = {
+    onSetDistribution: () => {},
+  }
 
   state = {
     description: '',
     votingTokens: null,
     options: ['Mars', 'The Moon'],
+    addresses: ['0x1234', '0xDEAD'],
     optionInputText: '',
     activeAllocationItem: 0,
     allocationTypes: ['Informational', 'Token Transfer'],
@@ -58,6 +61,19 @@ class NewPayoutVotePanel extends Component {
     }
   }
 
+  handleSubmit = event => {
+    event.preventDefault()
+    this.props.onCreateAllocation(
+      this.state.options.trim(),
+      this.state.addresses.trim(),
+      this.props.payoutId,
+      this.state.activeAllocationItem,
+      this.state.activePayoutOption,
+      this.state.amount
+    )
+  }
+
+
   render() {
     const {
       options,
@@ -66,9 +82,8 @@ class NewPayoutVotePanel extends Component {
       activeAllocationItem,
       payoutTypes,
       activePayoutOption,
-      amount,
+      amount
     } = this.state
-
     const optionsElements = options.map(option => (
       <React.Fragment key={option}>
         <TextInput readOnly value={option} />
