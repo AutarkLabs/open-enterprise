@@ -62,15 +62,17 @@ class NewPayoutVotePanel extends Component {
   }
 
   handleSubmit = event => {
+    const { onClose } = this.props
     event.preventDefault()
-    this.props.onCreateAllocation(
-      this.state.options.trim(),
-      this.state.addresses.trim(),
+    this.props.onSetDistribution(
+      this.state.options,
+      this.state.addresses,
       this.props.payoutId,
       this.state.activeAllocationItem,
       this.state.activePayoutOption,
       this.state.amount
     )
+    onClose()
   }
 
 
@@ -151,7 +153,7 @@ class NewPayoutVotePanel extends Component {
           />
           <IconAdd onClick={this.handleAddOptionClick} />
         </Field>
-        <Button mode="strong" type="submit" wide>
+        <Button mode="strong" type="submit" wide onClick={this.handleSubmit}>
           Create Allocation
         </Button>
       </StyledPanel>

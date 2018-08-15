@@ -151,11 +151,11 @@ contract Allocations is AragonApp, Fundable {
     *      the RangeVote.
     * @notice Sets the distribution for the given `payoutId` using an the
     *         supplied candidate keys and support values.
-    * @param _candidateKeys The array of keys for all candidates in this payout
-    * @param _supports The Array of all support values for the various candidates
+    * param _candidateKeys The array of keys for all candidates in this payout
+    * param _supports The Array of all support values for the various candidates
     */
     function setDistribution(
-        bytes32[] _candidateKeys,
+        //bytes32[] _candidateKeys,
         address[] _candidateAddresses,
         uint256[] _supports,
         uint256 _payoutId,
@@ -163,9 +163,9 @@ contract Allocations is AragonApp, Fundable {
         bool _recurring,
         uint256 _period,
         uint256 _balance
-    ) external onlyInit auth(SET_DISTRIBUTION_ROLE){
+    ) external isInitialized auth(SET_DISTRIBUTION_ROLE) {
         Payout payout = payouts[_payoutId];
-        payout.candidateKeys = _candidateKeys;
+        //payout.candidateKeys = _candidateKeys;
         payout.candidateAddresses = _candidateAddresses;
         require(_balance <= payout.limit);
         payout.informational = _informational;
@@ -185,9 +185,9 @@ contract Allocations is AragonApp, Fundable {
         }
 
         payout.distSet = true;
-        for(uint i = 0; i < _candidateKeys.length; i++){
+        /*for(uint i = 0; i < _candidateKeys.length; i++){
             require(payout.candidateKeys[i] == _candidateKeys[i]);
-        }
+        }*/
         payout.supports = _supports;
     }
 

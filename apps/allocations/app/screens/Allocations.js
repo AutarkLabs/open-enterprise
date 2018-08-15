@@ -13,6 +13,7 @@ const EmptyIcon = () => <img src={emptyIcon} alt="" />
 class Allocations extends React.Component {
   static defaultProps = {
     onSetDistribution: () => {},
+    onClose: () => {}
   }
 
   state = {
@@ -62,6 +63,7 @@ class Allocations extends React.Component {
         >
           <NewPayoutVotePanelContent
             onSetDistribution = {this.props.onSetDistribution}
+            onClose = {this.props.onClose}
           />
         </SidePanel>
       </StyledAllocations>
