@@ -42,8 +42,6 @@ class App extends React.Component {
       '[allocations/app.js]',
       this.props.app.newPayout(account.title, account.limit.value, 0x0)
     )
-    console.log('[allocations/app.js]', 'something else')
-    console.log('[allocations/app.js]', this.props.app)
     this.setState({})
   }
 

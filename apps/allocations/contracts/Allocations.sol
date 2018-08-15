@@ -60,7 +60,7 @@ contract Allocations is AragonApp {
     bytes32 constant public EXECUTE_PAYOUT_ROLE = keccak256("EXECUTE_PAYOUT_ROLE");
 
     event ExecutePayout(uint256 payoutId);
-    event NewPayout(uint256 payoutId);
+    event NewAccount(uint256 accountId);
 
     /**
     * @dev This is the function that setups who the candidates will be, and
@@ -79,7 +79,7 @@ contract Allocations is AragonApp {
 
 
     function getPayout(uint256 _payoutId) public view returns(uint256 limit, string metadata, address token) {
-        Payout payout = payouts[_payoutId];
+        Payout payout = payouts[_payoutId.sub(1)];
         limit = payout.limit;
         metadata = payout.metadata;
         token = payout.token;
@@ -105,7 +105,7 @@ contract Allocations is AragonApp {
         payout.limit = _limit;
         payout.token = _token;
         payouts.push(payout);
-        NewPayout(payouts.length);
+        NewAccount(payouts.length);
         return payouts.length;
     }
 

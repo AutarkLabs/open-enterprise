@@ -11,7 +11,7 @@ import {
     theme
 } from '@aragon/ui'
 
-import icon from '../assets/empty-card-icon.svg'
+import icon from '../assets/allocation-card-icon.svg'
 
 const { accent, textPrimary, textTertiary } = theme
 
@@ -77,15 +77,15 @@ class ToolCard extends Component {
                     {title}
                 </CardTitle>
                 <CardAddress size="small" color="#4A90E2">
-                    {address}
+                    {address.slice(0,6) + '...' + address.slice(-4)}
                 </CardAddress>
                <StatsContainer>
                     <StatsTitle>Balance</StatsTitle>
-                    <StatsValue>{balance} {limit.label}</StatsValue>
+                    <StatsValue>{balance || 'n/a'} {limit.label}</StatsValue>
                </StatsContainer>
                <StatsContainer>
                     <StatsTitle>Limit</StatsTitle>
-                    <StatsValue>{limit.value} {limit.label} / Allocation</StatsValue>
+                    <StatsValue>{limit.value || 'n/a'} {limit.label} / Allocation</StatsValue>
                </StatsContainer>
             </StyledCard>
         )
@@ -94,7 +94,7 @@ class ToolCard extends Component {
 
 const StyledCard = styled(Card)`
     height: 300px;
-    width: 280px;
+    width: 300px;
 `
 
 const MenuContainer = styled.div`
