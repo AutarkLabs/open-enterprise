@@ -30,7 +30,7 @@
     "parcel-bundler": "^1.9.7",
     "prettier": "^1.14.2",
     "react-hot-loader": "^4.3.4",
-    "solidity-coverage": "^0.5.7",
+    "solidity-coverage": "^0.4.2",
     "truffle": "^4.1.13",
     "truffle-hdwallet-provider": "^0.0.6"
   },
