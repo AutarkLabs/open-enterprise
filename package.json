@@ -12,7 +12,7 @@
     "concurrently": "^3.6.1",
     "coveralls": "^3.0.2",
     "lerna": "^3.0.5",
-    "truffle": "^4.1.14",
+    "truffle": "^4.0.5",
     "truffle-hdwallet-provider": "^0.0.6"
   },
   "scripts": {

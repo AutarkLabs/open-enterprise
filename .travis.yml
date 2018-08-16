@@ -11,6 +11,8 @@ env:
   - TASK=lint
   - TASK=test
   - TASK=coverage
+install:
+  - travis_wait npm i
 before_script:
   - npm prune
 script:
