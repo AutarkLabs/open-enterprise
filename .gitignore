@@ -69,3 +69,4 @@ package-lock.json
 # solidity coverage
 */**/scTopics
 */**/coverageEnv
+*/**/coverage.json
