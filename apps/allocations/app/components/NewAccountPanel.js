@@ -1,28 +1,18 @@
-import React, { Component } from "react"
-import styled from "styled-components"
-import IconRemove from "../Icons/Remove"
-import {
-  Button,
-  Field,
-  IconAdd,
-  Text,
-  TextInput,
-  theme,
-  DropDown,
-} from "@aragon/ui"
+import React, { Component } from 'react'
+import styled from 'styled-components'
 
-const { accent, textSecondary, textTertiary } = theme
+import { Button, Text, DropDown } from '@aragon/ui'
 
 const isIntegerString = value => /^[0-9]*$/.test(value)
 
 class NewAccountPanel extends Component {
   state = {
-    items: ["ETH", "ARA", "GIV"],
+    items: ['ETH', 'ARA', 'GIV'],
     activeItem: 0,
-    title: "",
+    title: '',
     limit: {
       value: null,
-      label: "",
+      label: '',
     },
   }
 
@@ -50,9 +40,9 @@ class NewAccountPanel extends Component {
     })
     this.state.limit = {
       value: null,
-      label: "",
+      label: '',
     }
-    this.state.title = ""
+    this.state.title = ''
     onClose()
   }
 
@@ -63,7 +53,8 @@ class NewAccountPanel extends Component {
       <div>
         <Text size="xxlarge">New Account</Text>
         <FieldTitle>
-          Title<Required>*</Required>
+          Title
+          <Required>*</Required>
         </FieldTitle>
         <FieldInput
           onChange={this.titleChange}
@@ -72,7 +63,8 @@ class NewAccountPanel extends Component {
           value={title}
         />
         <FieldTitle>
-          Limit<Required>*</Required>
+          Limit
+          <Required>*</Required>
         </FieldTitle>
         <FieldText>
           What sort of limits do you want to set per allocation vote?
@@ -81,7 +73,7 @@ class NewAccountPanel extends Component {
           onChange={this.limitChange}
           placeholder="e.g. 20"
           type="limit"
-          value={isIntegerString(limit) ? limit : ""}
+          value={isIntegerString(limit) ? limit : ''}
         />
         <DropDown
           items={items}

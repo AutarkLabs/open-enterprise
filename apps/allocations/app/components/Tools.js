@@ -1,12 +1,10 @@
 import React from 'react'
 import styled from 'styled-components'
-import { ToolStore } from '../stores/ToolStore'
-import { Subscribe } from 'laco-react'
 
 import { EmptyStateCard, SidePanel } from '@aragon/ui'
 import emptyIcon from '../assets/empty-allocation.svg'
-import ToolCard from '../components/ToolCard'
-import { NewPayoutVotePanelContent } from '../components/Panels'
+import ToolCard from './ToolCard'
+import { NewPayoutVotePanel } from './NewPayoutVotePanel'
 
 const EmptyIcon = () => <img src={emptyIcon} alt="" />
 
@@ -15,12 +13,14 @@ class Tools extends React.Component {
 
   state = {
     sidePanelOpened: false,
-    tools: [{
-      title: 'Monthly Reward DAO',
-      address: '0x5ADF43DD006c6C36506e2b2DFA352E60002d22Dc',
-      balance: 0,
-      limit: { label: 'ETH', value: 0 }
-    }]
+    tools: [
+      {
+        title: 'Monthly Reward DAO',
+        address: '0x5ADF43DD006c6C36506e2b2DFA352E60002d22Dc',
+        balance: 0,
+        limit: { label: 'ETH', value: 0 },
+      },
+    ],
   }
 
   openSidePanel = () => {
@@ -33,7 +33,7 @@ class Tools extends React.Component {
 
   render() {
     const { onActivate, accounts } = this.props
-    const { sidePanelOpened, tools } = this.state
+    const { sidePanelOpened } = this.state
 
     if (!accounts.length) {
       return (
@@ -51,12 +51,11 @@ class Tools extends React.Component {
 
     return (
       <StyledTools>
-        {accounts.map((account) => <ToolCard {...account} openSidePanelLink={this.openSidePanel} />)}
-        <SidePanel
-          opened={sidePanelOpened}
-          onClose={this.closeSidePanel}
-        >
-          <NewPayoutVotePanelContent />
+        {accounts.map(account => (
+          <ToolCard {...account} openSidePanelLink={this.openSidePanel} />
+        ))}
+        <SidePanel opened={sidePanelOpened} onClose={this.closeSidePanel}>
+          <NewPayoutVotePanel />
         </SidePanel>
       </StyledTools>
     )

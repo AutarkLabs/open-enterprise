@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
-import IconRemove from '../Icons/Remove'
+import IconRemove from './IconRemove'
 import {
   Button,
   Field,
@@ -108,7 +108,8 @@ class NewPayoutVotePanel extends Component {
         {!!activeAllocationItem && (
           <div label="AMOUNT">
             <FieldTitle>
-              AMOUNT<Required>*</Required>
+              AMOUNT
+              <Required>*</Required>
             </FieldTitle>
             <LimitInput
               onChange={this.amountChange}
@@ -199,7 +200,7 @@ const StyledPanel = styled.div`
       resize: none;
     }
   }
-  & > :nth-child(${props => props.hack ? '7' : '5'}) {
+  & > :nth-child(${props => (props.hack ? '7' : '5')}) {
     & input {
       width: calc(100% - 38px);
       margin-bottom: 10px;
