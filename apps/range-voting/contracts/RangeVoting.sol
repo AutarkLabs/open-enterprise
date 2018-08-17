@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity 0.4.18;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
 
@@ -10,7 +10,13 @@ import "@aragon/os/contracts/lib/zeppelin/math/SafeMath.sol";
 
 import "@aragon/os/contracts/lib/zeppelin/math/SafeMath64.sol";
 
-import "@aragon/os/contracts/common/IForwarder.sol";
+// import "@aragon/os/contracts/common/IForwarder.sol";
+/* Temp hack to pass coverage until further research */
+interface IForwarder {
+    function isForwarder() public returns (bool);
+    function canForward(address sender, bytes evmCallScript) public returns (bool);
+    function forward(bytes evmCallScript) public;
+}
 
 
 /*******************************************************************************
@@ -121,7 +127,7 @@ contract RangeVoting is IForwarder, AragonApp {
         uint256 _minParticipationPct,
         uint256 _candidateSupportPct,
         uint64 _voteTime
-    ) onlyInit external
+    ) external onlyInit
     {
         initialized();
 
@@ -147,8 +153,8 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _executionScript EVM script to be executed on approval
     * @return voteId id for newly created vote
     */
-    function newVote(bytes _executionScript, string _metadata)
-    auth(CREATE_VOTES_ROLE) external returns (uint256 voteId)
+    function newVote(bytes _executionScript, string _metadata) external
+    auth(CREATE_VOTES_ROLE) returns (uint256 voteId)
     {
         return _newVote(_executionScript, _metadata);
     }
@@ -243,7 +249,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @dev IForwarder interface conformance
     * @return always returns true
     */
-    function isForwarder() public pure returns (bool) {
+    function isForwarder() public returns (bool) {
         return true;
     }
 
@@ -263,11 +269,10 @@ contract RangeVoting is IForwarder, AragonApp {
     *         for the vote forwarding
     * @dev IForwarder interface conformance
     * @param _sender Address of the entity trying to forward
-    * @param _evmCallScript Not used in this implementation
     * @return True is `_sender` has correct permissions
     */
-    function canForward(address _sender, bytes _evmCallScript)
-    public view returns (bool)
+    function canForward(address _sender, bytes /*_evmCallScript*/)
+    public returns (bool)
     {
         return canPerform(_sender, CREATE_VOTES_ROLE, arr());
     }
@@ -293,10 +298,9 @@ contract RangeVoting is IForwarder, AragonApp {
     * @notice `canExecute` is used to check that the participation has been met
     *         and the vote has reached it's end before the execute
     *         function is called.
-    * @param _voteId The ID of the Vote which would be executed.
     * @return True if the vote is elligible for execution.
     */
-    function canExecute(uint256 _voteId) public view returns (bool) {
+    function canExecute(uint256 /*_voteId*/) public pure returns (bool) {
         // Needs better implementation
         return true;
     }
@@ -364,8 +368,8 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _metadata The metadata or vote information attached to this vote
     * @return voteId The ID(or index) of this vote in the votes array.
     */
-    function _newVote(bytes _executionScript, string _metadata)
-    isInitialized internal returns (uint256 voteId)
+    function _newVote(bytes _executionScript, string _metadata) internal
+    isInitialized returns (uint256 voteId)
     {
         voteId = votes.length++;
         Vote storage vote = votes[voteId];
@@ -444,7 +448,6 @@ contract RangeVoting is IForwarder, AragonApp {
         uint256 candidateLength = vote.candidateKeys.length;
         bytes memory executionScript = new bytes(32);
         executionScript = vote.executionScript;
-        bytes32 singleByte;
         bytes memory script = new bytes(32 * (candidateLength + 3));
         assembly {  
             mstore(add(script, 32), mload(add(executionScript,32)))
@@ -455,7 +458,7 @@ contract RangeVoting is IForwarder, AragonApp {
         assembly {
             mstore(add(smallData, 32), supportsData)
         }
-        for( uint256 i = 28; i < 32; i++){
+        for ( uint256 i = 28; i < 32; i++) {
             supportsData = uint256(smallData[i]);
             assembly{
                 mstore8(add(script,59), supportsData)
@@ -491,9 +494,6 @@ contract RangeVoting is IForwarder, AragonApp {
 
         ExecuteVote(_voteId);
     }
-
-
-    
 
     /**
     * @dev Calculates whether `_value` is at least a percent `_pct` over `_total`

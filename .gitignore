@@ -63,7 +63,7 @@ aragon-ui/
 .cache
 dist
 build
-codealike.jsons
+codealike.json
 
 # solidity coverage
 */**/scTopics

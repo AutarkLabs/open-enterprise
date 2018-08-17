@@ -1,7 +1,7 @@
 const {
   encodeCallScript,
   EMPTY_SCRIPT,
-} = require('../../shared/test-helpers/evmScript')
+} = require('@tpt/test-helpers/evmScript')
 
 const AddressBook = artifacts.require('AddressBook')
 

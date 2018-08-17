@@ -1,4 +1,5 @@
-const { assertRevert } = require('../../shared/test-helpers/assertThrow')
+// TODO: Fix test
+// const { assertRevert } = require('@tpt/test-helpers/assertThrow')
 
 const Projects = artifacts.require('Projects')
 const DAOFactory = artifacts.require('@aragon/os/contracts/factory/DAOFactory')
@@ -136,6 +137,7 @@ contract('Projects App', function(accounts) {
       )
     })
 
+    // TODO: Fix test not passing
     // it('cannot add bounties to unregistered repos', function() {
     //   assertRevert(async () => {
     //     await app.addBounties('0xdeadbeef', [1, 2, 3], [10, 20, 30], {

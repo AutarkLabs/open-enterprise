@@ -49,7 +49,8 @@
     "start": "npx aragon run",
     "sync-assets": "npx copy-aragon-ui-assets ./dist",
     "test:gas": "GAS_REPORTER=true npm test",
-    "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
+    "test": "TRUFFLE_TEST=true npm run ganache-cli:test",
+    "link:shared": "npm link ../shared/test-helpers"
   },
   "keywords": [],
   "repository": {
