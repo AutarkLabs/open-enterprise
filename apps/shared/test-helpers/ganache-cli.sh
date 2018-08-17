@@ -16,8 +16,10 @@ testrpc_running() {
 start_testrpc() {
   if [ "$SOLIDITY_COVERAGE" = true ]; then
     npx testrpc-sc -i 16 --gasLimit 0xfffffffffff --port "$testrpc_port"  > /dev/null &
-  else
+  elif [ "$TRUFFLE_TEST" = true ]; then
     npx ganache-cli -i 15 --gasLimit 50000000 --port "$testrpc_port" > /dev/null &
+  elif [ "$START_KIT" = true ]; then
+    npx aragon devchain --port "$testrpc_port" > /dev/null &
   fi
 
   testrpc_pid=$!
@@ -41,6 +43,9 @@ if [ "$SOLIDITY_COVERAGE" = true ]; then
 elif [ "$TRUFFLE_TEST" = true ]; then
   npx truffle test --network rpc "$@"
   result=$?
+elif [ "$START_KIT" = true ]; then
+npm run publish:apps && npm run start:kit
+result=$?
 fi
 
 kill -9 $testrpc_pid
