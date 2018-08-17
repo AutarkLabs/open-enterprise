@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import Aragon, { providers } from '@aragon/client'
+
 import App from './App'
 
 class ConnectedApp extends React.Component {
