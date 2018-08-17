@@ -1,10 +1,9 @@
 import React from 'react'
-import { hot } from 'react-hot-loader'
 import PropTypes from 'prop-types'
 import { AragonApp, AppBar, Button, SidePanel, observe } from '@aragon/ui'
 
 import AppLayout from './components/AppLayout'
-import Tools from './components/Tools'
+import Allocations from './components/Allocations'
 import NewAccountPanel from './components/NewAccountPanel'
 
 class App extends React.Component {
@@ -30,9 +29,50 @@ class App extends React.Component {
 
   onCreateAccount = account => {
     console.log(
-      '[allocations/app.js]',
       this.props.app.newPayout(account.title, account.limit.value, 0x0)
     )
+    console.log(this.props.app.newPayout)
+    console.log(this.props.app)
+
+    this.setState({})
+  }
+
+  onSetDistribution = (
+    options,
+    addresses,
+    payoutId,
+    activeAllocationItem,
+    activePayoutOption,
+    amount
+  ) => {
+    console.log('it\'s working!')
+    console.log(
+      options +
+        addresses +
+        payoutId +
+        activeAllocationItem +
+        activePayoutOption +
+        amount
+    )
+    // need proper payoutId
+    // add logic to define period
+    //this.props.app.setDistribution(options, addresses, [], 0, activeAllocationItem === 0, activePayoutOption ===0, 0, 0)
+    console.log('empty arrays1')
+    console.log(this.props.app.setDistribution([], [], 0, true, true, 0, 0))
+    console.log('empty arrays2')
+    console.log(
+      this.props.app.setDistribution(
+        addresses,
+        [],
+        0,
+        activeAllocationItem === 0,
+        activePayoutOption === 0,
+        86399 * 30,
+        amount
+      )
+    )
+
+    console.log('end')
     this.setState({})
   }
 
@@ -51,10 +91,14 @@ class App extends React.Component {
           </AppLayout.Header>
           <AppLayout.ScrollWrapper>
             <AppLayout.Content>
-              <Tools
+              <Allocations
+                onSetDistribution={this.onSetDistribution}
                 onActivate={this.handlePanelOpen}
+                onClose={this.handlePanelClose}
                 button={barButton}
-                accounts={this.state.accounts}
+                accounts={
+                  this.props.accounts !== undefined ? this.props.accounts : []
+                }
               />
             </AppLayout.Content>
           </AppLayout.ScrollWrapper>
@@ -73,6 +117,7 @@ class App extends React.Component {
   }
 }
 
-export default hot(module)(
-  observe(observable => observable.map(state => ({ ...state })), {})(App)
-)
+export default observe(
+  observable => observable.map(state => ({ ...state })),
+  {}
+)(App)

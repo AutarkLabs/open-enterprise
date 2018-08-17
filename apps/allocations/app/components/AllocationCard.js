@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { Component } from 'react'
 import styled from 'styled-components'
+
 import {
   Card,
   ContextMenu,
@@ -34,7 +35,7 @@ const initialState = {
   ],
 }
 
-class ToolCard extends React.Component {
+class AllocationCard extends Component {
   state = {
     ...initialState,
   }
@@ -44,7 +45,7 @@ class ToolCard extends React.Component {
       this.props.openSidePanelLink()
     } else {
       console.info(
-        'ToolCard component: openSidePanelLink not defined, click has no effect'
+        'AllocationCard component: openSidePanelLink not defined, click has no effect'
       )
     }
   }
@@ -52,7 +53,21 @@ class ToolCard extends React.Component {
   openManageParemeters = () => {}
 
   render() {
-    const { title, description, balance, limit, address } = this.props
+    const {
+      metadata,
+      description,
+      balance,
+      limit,
+      token,
+      proxy,
+    } = this.props.data
+    let tokenLabel
+    // Hardcoded token lookup for eth and possibly others?
+    switch (parseInt(token)) {
+    case 0:
+      tokenLabel = 'ETH'
+      break
+    }
     const { contextMenuItems } = this.state
     const menuElements = contextMenuItems.map(item => (
       <StyledMenuItem
@@ -71,24 +86,24 @@ class ToolCard extends React.Component {
           <ContextMenu>{menuElements}</ContextMenu>
         </MenuContainer>
         <IconContainer>
-          <img src={icon} alt={`${title} icon`} />
+          <img src={icon} alt={`${metadata} icon`} />
         </IconContainer>
         <CardTitle size="large" color={textPrimary}>
-          {title}
+          {metadata}
         </CardTitle>
         <CardAddress size="small" color="#4A90E2">
-          {address.slice(0, 6) + '...' + address.slice(-4)}
+          {proxy.slice(0, 6) + '...' + proxy.slice(-4)}
         </CardAddress>
         <StatsContainer>
           <StatsTitle>Balance</StatsTitle>
           <StatsValue>
-            {balance || 'n/a'} {limit.label}
+            {balance} {tokenLabel}
           </StatsValue>
         </StatsContainer>
         <StatsContainer>
           <StatsTitle>Limit</StatsTitle>
           <StatsValue>
-            {limit.value || 'n/a'} {limit.label} / Allocation
+            {limit} {tokenLabel}/ Allocation
           </StatsValue>
         </StatsContainer>
       </StyledCard>
@@ -116,9 +131,11 @@ const CardTitle = styled(Text)`
 
 const CardAddress = styled(Text)`
   display: block;
+  width: 300px;
   text-align: center;
   text-decoration: underline;
   cursor: pointer;
+  text-overflow: ellipsis;
 `
 
 const IconContainer = styled.div`
@@ -221,4 +238,4 @@ const StyledMenuItem = styled(ContextMenuItem).attrs({
   }
 `
 
-export default ToolCard
+export default AllocationCard
