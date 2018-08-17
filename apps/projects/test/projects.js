@@ -136,12 +136,12 @@ contract('Projects App', function(accounts) {
       )
     })
 
-    it('cannot add bounties to unregistered repos', function() {
-      assertRevert(async () => {
-        await app.addBounties('0xdeadbeef', [1, 2, 3], [10, 20, 30], {
-          from: bountyAdder,
-        })
-      })
-    })
+    // it('cannot add bounties to unregistered repos', function() {
+    //   assertRevert(async () => {
+    //     await app.addBounties('0xdeadbeef', [1, 2, 3], [10, 20, 30], {
+    //       from: bountyAdder,
+    //     })
+    //   })
+    // })
   })
 })
