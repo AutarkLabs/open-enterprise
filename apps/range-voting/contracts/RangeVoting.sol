@@ -12,7 +12,7 @@ import "@aragon/os/contracts/lib/zeppelin/math/SafeMath64.sol";
 
 // import "@aragon/os/contracts/common/IForwarder.sol";
 /* Temp hack to pass coverage until further research */
-interface IForwarder {
+interface IForwarderFixed {
     function isForwarder() public returns (bool);
     function canForward(address sender, bytes evmCallScript) public returns (bool);
     function forward(bytes evmCallScript) public;
@@ -45,7 +45,7 @@ interface IForwarder {
 *  but could easily be adapted to other systems.
 *  Attention was paid to make the program as generalized as possible.
 *******************************************************************************/
-contract RangeVoting is IForwarder, AragonApp {
+contract RangeVoting is IForwarderFixed, AragonApp {
 
 
     using SafeMath for uint256;
@@ -321,8 +321,7 @@ contract RangeVoting is IForwarder, AragonApp {
         string metadata,
         bytes executionScript,
         bool executed
-    )
-    {
+    ) {
         Vote storage vote = votes[_voteId];
 
         open = _isVoteOpen(vote);
@@ -380,7 +379,7 @@ contract RangeVoting is IForwarder, AragonApp {
         vote.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
         vote.totalVoters = token.totalSupplyAt(vote.snapshotBlock);
         vote.candidateSupportPct = globalCandidateSupportPct;
-
+        votes.push(vote);
         StartVote(voteId);
     }
 
