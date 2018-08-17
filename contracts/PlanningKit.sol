@@ -9,15 +9,15 @@ pragma solidity 0.4.18;
 
 */
 
-import "@aragon/os/contracts/factory/DAOFactory.sol";
-import "@aragon/os/contracts/apm/Repo.sol";
-import "@aragon/os/contracts/lib/ens/ENS.sol";
-import "@aragon/os/contracts/lib/ens/PublicResolver.sol";
-import "@aragon/os/contracts/apm/APMNamehash.sol";
+import "../node_modules/@aragon/os/contracts/factory/DAOFactory.sol";
+import "../node_modules/@aragon/os/contracts/apm/Repo.sol";
+import "../node_modules/@aragon/os/contracts/lib/ens/ENS.sol";
+import "../node_modules/@aragon/os/contracts/lib/ens/PublicResolver.sol";
+import "../node_modules/@aragon/os/contracts/apm/APMNamehash.sol";
 
-import "@aragon/apps-voting/contracts/Voting.sol";
-import "@aragon/apps-token-manager/contracts/TokenManager.sol";
-import "@aragon/os/contracts/lib/minime/MiniMeToken.sol";
+import "../node_modules/@aragon/apps-voting/contracts/Voting.sol";
+import "../node_modules/@aragon/apps-token-manager/contracts/TokenManager.sol";
+import "../node_modules/@aragon/os/contracts/lib/minime/MiniMeToken.sol";
 
 import "../apps/address-book/contracts/AddressBook.sol";
 import "../apps/allocations/contracts/Allocations.sol";
@@ -60,7 +60,7 @@ contract PlanningKit is KitBase {
     uint256 constant PCT = 10 ** 16;
     address constant ANY_ENTITY = address(-1);
 
-    function PlanningKit(ENS ens) KitBase(DAOFactory(0), ens) public {
+    function PlanningKit(ENS ens) public KitBase(DAOFactory(0), ens) {
         tokenFactory = new MiniMeTokenFactory();
     }
 
@@ -102,7 +102,7 @@ contract PlanningKit is KitBase {
         Voting voting = Voting(dao.newAppInstance(apps[5], latestVersionAppBase(apps[5])));
 
         // MiniMe Token
-        MiniMeToken token = tokenFactory.createCloneToken(address(0), 0, "App token", 0, "APP", true);
+        MiniMeToken token = tokenFactory.createCloneToken(token, 0, "App token", 0, "APP", true);
         token.changeController(tokenManager);
 
         // Initialize apps

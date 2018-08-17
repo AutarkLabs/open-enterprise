@@ -1,18 +1,18 @@
 {
   "name": "@tpt/planning-app",
   "version": "0.0.1",
-  "description": "Aragon planning application developed by Space Decentral and Giveth.",
+  "description": "Aragon planning suite developed by Space Decentral and Giveth.",
   "dependencies": {
     "@aragon/apps-token-manager": "^1.0.0",
     "@aragon/apps-voting": "^1.0.0",
-    "@aragon/os": "^3.1.10"
+    "@aragon/os": "^3.1.9"
   },
   "devDependencies": {
     "@aragon/cli": "^4.1.5",
     "concurrently": "^3.6.1",
     "coveralls": "^3.0.2",
-    "lerna": "^3.0.5",
-    "truffle": "^4.0.5",
+    "lerna": "^3.0.6",
+    "truffle": "4.0.5",
     "truffle-hdwallet-provider": "^0.0.6"
   },
   "scripts": {
@@ -27,17 +27,17 @@
     "devchain:reset": "npx aragon devchain --reset",
     "install": "npm run bootstrap",
     "publish:apps": "npx lerna run --concurrency=1 --stream publish",
-    "start": "npm i && npx concurrently npm:devchain \"sleep 8 && npm run publish:apps && npm run start:kit\"",
+    "start": "npm i && START_KIT=true apps/shared/test-helpers/ganache-cli.sh",
     "start:kit": "npx aragon run --kit PlanningKit --kit-init @ARAGON_ENS",
     "start:address": "cd apps/address-book && npm start",
     "start:allocations": "cd apps/allocations && npm start",
     "start:projects": "cd apps/projects && npm start",
     "start:range": "cd apps/range-voting && npm start",
     "test": "npx lerna run --scope=@tpt/apps-* --concurrency=1 --stream test",
-    "test:address": "npx concurrently npm:devchain \"sleep 8 && cd apps/address-book && npm test\"",
-    "test:allocations": "npx concurrently npm:devchain \"sleep 8 && cd apps/allocations && npm test\"",
-    "test:projects": "npx concurrently npm:devchain \"sleep 8 && cd apps/projects && npm test\"",
-    "test:range": "npx concurrently npm:devchain \"sleep 8 && cd apps/range-voting && npm test\"",
+    "test:address": "cd apps/address-book && npm test",
+    "test:allocations": "cd apps/allocations && npm test",
+    "test:projects": "cd apps/projects && npm test",
+    "test:range": "cd apps/range-voting && npm test",
     "lint": "npx lerna run --scope=@tpt/apps-* --concurrency=1 --stream lint"
   },
   "keywords": [],
