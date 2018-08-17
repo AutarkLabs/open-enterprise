@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
-import { noop } from '../utils/utils'
-import { lerp } from '../utils/math-utils'
+
+import { lerp } from './math-utils'
 import TemplateCard from '../components/TemplateCard'
 import { Main, Content, Title, Subtitle } from '../style'
 
@@ -9,7 +9,7 @@ class Template extends React.Component {
   static defaultProps = {
     warm: false,
     positionProgress: 0,
-    onSelect: noop,
+    onSelect: null,
   }
   handleTemplateSelect = template => {
     this.props.onSelect(template)
@@ -40,14 +40,13 @@ class TemplateContent extends React.PureComponent {
   render() {
     return (
       <React.Fragment>
-        <Title>
-            Create multi-option vote
-        </Title>
+        <Title>Create multi-option vote</Title>
 
-          <Subtitle>
-            A way to gather votes and opinions on questions that have multiple options.
-            Choose a template to get started quickly. Don't worry - you can change it later.
-          </Subtitle>
+        <Subtitle>
+          A way to gather votes and opinions on questions that have multiple
+          options. Choose a template to get started quickly. Don't worry - you
+          can change it later.
+        </Subtitle>
         <Templates>
           {[...this.props.templates.entries()].map(
             ([template, { label, icon, description }], i) => (

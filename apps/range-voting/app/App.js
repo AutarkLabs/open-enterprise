@@ -2,10 +2,10 @@ import React from 'react'
 import { hot } from 'react-hot-loader'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-
 import { AragonApp, AppBar, Button, SidePanel, IconAdd } from '@aragon/ui'
+
 import AppLayout from './components/AppLayout'
-import Decisions from './Decisions'
+import Decisions from './components/Decisions'
 import { NewPayoutVotePanelContent } from './components/Panels'
 
 const initialState = {
@@ -43,13 +43,16 @@ class App extends React.Component {
         </Button>
         <DropDownContent>
           <DropDownItem>
-            <CloseIcon />New Payout Engine
+            <CloseIcon />
+            New Payout Engine
           </DropDownItem>
           <DropDownItem>
-            <CloseIcon />New Issue Curation
+            <CloseIcon />
+            New Issue Curation
           </DropDownItem>
           <DropDownItem>
-            <CloseIcon />New Budget Engine
+            <CloseIcon />
+            New Budget Engine
           </DropDownItem>
         </DropDownContent>
       </DropDownButton>

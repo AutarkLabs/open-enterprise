@@ -3,7 +3,6 @@ import styled from 'styled-components'
 import { theme, Text, Button } from '@aragon/ui'
 import { lerp } from '../utils/math-utils'
 import { Main, Content, Title } from '../style'
-import { BigNumber } from 'bignumber.js'
 import { addTool } from '../stores/ToolStore'
 
 import imgPending from '../assets/transaction-pending.svg'
@@ -27,29 +26,30 @@ class Launch extends React.Component {
     // Hacky way to only initialize once
     if (active && !this.state.active) {
       this.state.active = true
-      app.initialize(
-        "0xffffffffffffffffffffffffffffffffffffffff",
-        configurationData.supportNeeded * 10**16,
-        configurationData.minAcceptanceQuorum * 10**16,
-        configurationData.voteDuration * 60 * 60,
-      ).subscribe(
-        (data) => {
+      app
+        .initialize(
+          '0xffffffffffffffffffffffffffffffffffffffff',
+          configurationData.supportNeeded * 10 ** 16,
+          configurationData.minAcceptanceQuorum * 10 ** 16,
+          configurationData.voteDuration * 60 * 60
+        )
+        .subscribe(data => {
           if (data) {
             this.setState({ contractCreationStatus: 'success' })
             addTool({
               label: 'Monthly Reward DAO',
-              description: 'Allocate our monthly reward DAO accross four circles: Governance, Dapp, Social Coding, and Comms',
+              description:
+                'Allocate our monthly reward DAO accross four circles: Governance, Dapp, Social Coding, and Comms',
               address: '0x45f3...5567',
               stats: [
-                  {label: 'BALANCE', value: '10 ETH' },
-                  {label: 'BUDGET', value: '5 ETH / Month'}
-              ]
+                { label: 'BALANCE', value: '10 ETH' },
+                { label: 'BUDGET', value: '5 ETH / Month' },
+              ],
             })
           } else {
             this.setState({ contractCreationStatus: 'error' })
           }
-        }
-      )
+        })
     }
   }
   handleTemplateSelect = template => {
@@ -99,7 +99,8 @@ class SignContent extends React.PureComponent {
 
         <p>
           <Text size="large" color={theme.textSecondary}>
-            Your wallet should open and you need to sign the transaction to initialize range voting.
+            Your wallet should open and you need to sign the transaction to
+            initialize range voting.
           </Text>
         </p>
 
@@ -228,4 +229,3 @@ const TryAgain = styled.div`
 `
 
 export default Launch
-

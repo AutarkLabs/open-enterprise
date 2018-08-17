@@ -1,5 +1,5 @@
-import { assertRevert } from '../../shared/test-helpers/assertThrow'
-import { encodeCallScript } from '../../shared/test-helpers/evmScript'
+const { assertRevert } = require('../../shared/test-helpers/assertThrow')
+const { encodeCallScript } = require('../../shared/test-helpers/evmScript')
 
 const ExecutionTarget = artifacts.require('ExecutionTarget')
 const RangeVoting = artifacts.require('RangeVoting')

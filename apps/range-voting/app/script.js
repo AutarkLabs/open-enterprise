@@ -1,6 +1,6 @@
-import Aragon, { providers } from '@aragon/client'
+import Aragon from '@aragon/client'
 import { combineLatest } from './rxjs'
-import voteSettings, { hasLoadedVoteSettings } from './range-voting/vote-settings'
+import voteSettings from './range-voting/vote-settings'
 import { EMPTY_CALLSCRIPT } from './range-voting/vote-utils'
 
 const app = new Aragon()
