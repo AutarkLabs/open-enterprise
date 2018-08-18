@@ -15,7 +15,7 @@ testrpc_running() {
 
 start_testrpc() {
   if [ "$SOLIDITY_COVERAGE" = true ]; then
-    npx testrpc-sc -i 16 --gasLimit 0xfffffffffff --port "$testrpc_port"  > /dev/null &
+    ../../node_modules/.bin/testrpc-sc -i 16 --gasLimit 0xfffffffffff --port "$testrpc_port"  > /dev/null &
   elif [ "$TRUFFLE_TEST" = true ]; then
     npx ganache-cli -i 15 --gasLimit 50000000 --port "$testrpc_port" > /dev/null &
   elif [ "$START_KIT" = true ]; then
