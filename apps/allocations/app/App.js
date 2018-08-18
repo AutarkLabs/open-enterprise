@@ -4,8 +4,8 @@ import PropTypes from 'prop-types'
 import { AragonApp, AppBar, Button, SidePanel, observe } from '@aragon/ui'
 
 import AppLayout from './components/AppLayout'
-import Tools from './components/Tools'
-import NewAccountPanel from './components/NewAccountPanel'
+import Allocations from './screens/Allocations'
+import NewAccountPanel from './components/'
 
 class App extends React.Component {
   static propTypes = {
@@ -20,7 +20,9 @@ class App extends React.Component {
     accounts: [],
   }
 
+
   handlePanelOpen = () => {
+
     this.setState({ panelActive: true })
   }
 
@@ -29,12 +31,16 @@ class App extends React.Component {
   }
 
   onCreateAccount = account => {
-    console.log(
-      '[allocations/app.js]',
-      this.props.app.newPayout(account.title, account.limit.value, 0x0)
-    )
+    this.props.app.newPayout(account.title, account.limit.value, 0x0)
     this.setState({})
   }
+
+  
+  onSetDistribution = (options, addresses, payoutId, activeAllocationItem, activePayoutOption, amount) => {
+    this.props.app.setDistribution(addresses, [], 0, activeAllocationItem === 0, activePayoutOption === 0, 86399 * 30, amount)
+    this.setState({})
+  }
+
 
   render() {
     const barButton = (
@@ -51,10 +57,12 @@ class App extends React.Component {
           </AppLayout.Header>
           <AppLayout.ScrollWrapper>
             <AppLayout.Content>
-              <Tools
+              <Allocations
+                onSetDistribution = {this.onSetDistribution}
                 onActivate={this.handlePanelOpen}
+                onClose={this.handlePanelClose}
                 button={barButton}
-                accounts={this.state.accounts}
+                accounts= {(this.props.accounts !== undefined) ? this.props.accounts : []}
               />
             </AppLayout.Content>
           </AppLayout.ScrollWrapper>

@@ -1,26 +1,24 @@
 import React from '../../../../../../.cache/typescript/2.9/node_modules/@types/react'
 import styled from 'styled-components'
+import { AllocationStore } from './AllocationStore'
+import { Subscribe } from 'laco-react'
 
 import { EmptyStateCard, SidePanel } from '@aragon/ui'
 import emptyIcon from '../assets/empty-allocation.svg'
-import ToolCard from './ToolCard'
-import { NewPayoutVotePanel } from './NewPayoutVotePanel'
+import AllocationCard from './AllocationCard'
+import { NewPayoutVotePanelContent } from './Panels'
 
 const EmptyIcon = () => <img src={emptyIcon} alt="" />
 
-class Tools extends React.Component {
-  static defaultProps = {}
+class Allocations extends React.Component {
+  static defaultProps = {
+    onSetDistribution: () => {},
+    onClose: () => {}
+  }
 
   state = {
     sidePanelOpened: false,
-    tools: [
-      {
-        title: 'Monthly Reward DAO',
-        address: '0x5ADF43DD006c6C36506e2b2DFA352E60002d22Dc',
-        balance: 0,
-        limit: { label: 'ETH', value: 0 },
-      },
-    ],
+    allocations: []
   }
 
   openSidePanel = () => {
@@ -33,7 +31,7 @@ class Tools extends React.Component {
 
   render() {
     const { onActivate, accounts } = this.props
-    const { sidePanelOpened } = this.state
+    const { sidePanelOpened, allocations } = this.state
 
     if (!accounts.length) {
       return (
@@ -50,14 +48,18 @@ class Tools extends React.Component {
     }
 
     return (
-      <StyledTools>
-        {accounts.map(account => (
-          <ToolCard {...account} openSidePanelLink={this.openSidePanel} />
-        ))}
-        <SidePanel opened={sidePanelOpened} onClose={this.closeSidePanel}>
-          <NewPayoutVotePanel />
+      <StyledAllocations>
+        {accounts.map((account) => <AllocationCard {...account} openSidePanelLink={this.openSidePanel} />)}
+        <SidePanel
+          opened={sidePanelOpened}
+          onClose={this.closeSidePanel}
+        >
+          <NewPayoutVotePanelContent
+            onSetDistribution = {this.props.onSetDistribution}
+            onClose = {this.props.onClose}
+          />
         </SidePanel>
-      </StyledTools>
+      </StyledAllocations>
     )
   }
 }
@@ -69,7 +71,7 @@ const StyledEmptyWrapper = styled.div`
   flex-grow: 1;
 `
 
-const StyledTools = styled.div`
+const StyledAllocations = styled.div`
   display: grid;
   grid-template-columns: repeat(3, auto);
   grid-auto-rows: auto;
@@ -77,4 +79,4 @@ const StyledTools = styled.div`
   justify-content: start;
 `
 
-export default Tools
+export default Allocations

@@ -44,10 +44,9 @@ function loadAccountData(accountId) {
   return new Promise(resolve => {
     combineLatest(app.call('getPayout', accountId)).subscribe(
       ([account, metadata]) => {
-        resolve({
-          account,
-          metadata,
-        })
+        resolve(
+          account
+        )
       }
     )
   })

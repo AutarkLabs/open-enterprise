@@ -271,8 +271,8 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _sender Address of the entity trying to forward
     * @return True is `_sender` has correct permissions
     */
-    function canForward(address _sender, bytes /*_evmCallScript*/)
-    public returns (bool)
+    function canForward(address _sender, bytes _evmCallScript)
+    public view returns (bool)
     {
         return canPerform(_sender, CREATE_VOTES_ROLE, arr());
     }
@@ -372,7 +372,7 @@ contract RangeVoting is IForwarder, AragonApp {
     isInitialized returns (uint256 voteId)
     {
         voteId = votes.length++;
-        Vote storage vote = votes[voteId];
+        Vote memory vote;
         vote.executionScript = _executionScript;
         vote.creator = msg.sender;
         vote.startDate = uint64(now);
@@ -380,7 +380,7 @@ contract RangeVoting is IForwarder, AragonApp {
         vote.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
         vote.totalVoters = token.totalSupplyAt(vote.snapshotBlock);
         vote.candidateSupportPct = globalCandidateSupportPct;
-
+        votes.push(vote);
         StartVote(voteId);
     }
 
