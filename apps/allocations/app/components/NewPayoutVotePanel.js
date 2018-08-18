@@ -1,4 +1,4 @@
-import React, { Component } from '../../../../../../.cache/typescript/2.9/node_modules/@types/react'
+import React, { Component } from 'react'
 import styled from 'styled-components'
 import IconRemove from './IconRemove'
 import {

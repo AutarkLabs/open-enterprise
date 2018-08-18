@@ -1,4 +1,4 @@
-import React, { Component } from  '../../../../../../.cache/typescript/2.9/node_modules/@types/react'
+import React, { Component } from  'react'
 import styled from 'styled-components'
 import {
   Card,
@@ -99,52 +99,6 @@ class AllocationCard extends Component {
     }
   }
 
-  openManageParemeters = () => {}
-
-  render() {
-    const { title, description, balance, limit, address } = this.props
-    const { contextMenuItems } = this.state
-    const menuElements = contextMenuItems.map(item => (
-      <StyledMenuItem
-        key={item.text}
-        onClick={this[item.function]} // this[item.handler]
-        colors={item.colors}
-      >
-        {React.createElement(item.icon)}
-        {item.text}
-      </StyledMenuItem>
-    ))
-
-    return (
-      <StyledCard>
-        <MenuContainer>
-          <ContextMenu>{menuElements}</ContextMenu>
-        </MenuContainer>
-        <IconContainer>
-          <img src={icon} alt={`${title} icon`} />
-        </IconContainer>
-        <CardTitle size="large" color={textPrimary}>
-          {title}
-        </CardTitle>
-        <CardAddress size="small" color="#4A90E2">
-          {address.slice(0, 6) + '...' + address.slice(-4)}
-        </CardAddress>
-        <StatsContainer>
-          <StatsTitle>Balance</StatsTitle>
-          <StatsValue>
-            {balance || 'n/a'} {limit.label}
-          </StatsValue>
-        </StatsContainer>
-        <StatsContainer>
-          <StatsTitle>Limit</StatsTitle>
-          <StatsValue>
-            {limit.value || 'n/a'} {limit.label} / Allocation
-          </StatsValue>
-        </StatsContainer>
-      </StyledCard>
-    )
-  }
-}
 
 const StyledCard = styled(Card)`
   height: 300px;

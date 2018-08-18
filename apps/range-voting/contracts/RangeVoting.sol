@@ -10,13 +10,8 @@ import "@aragon/os/contracts/lib/zeppelin/math/SafeMath.sol";
 
 import "@aragon/os/contracts/lib/zeppelin/math/SafeMath64.sol";
 
-// import "@aragon/os/contracts/common/IForwarder.sol";
-/* Temp hack to pass coverage until further research */
-interface IForwarder {
-    function isForwarder() public returns (bool);
-    function canForward(address sender, bytes evmCallScript) public returns (bool);
-    function forward(bytes evmCallScript) public;
-}
+import "@aragon/os/contracts/common/IForwarder.sol";
+
 
 
 /*******************************************************************************
@@ -249,7 +244,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @dev IForwarder interface conformance
     * @return always returns true
     */
-    function isForwarder() public returns (bool) {
+    function isForwarder() public pure returns (bool) {
         return true;
     }
 

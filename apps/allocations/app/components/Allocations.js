@@ -1,12 +1,11 @@
-import React from '../../../../../../.cache/typescript/2.9/node_modules/@types/react'
+import React from 'react'
 import styled from 'styled-components'
 import { AllocationStore } from './AllocationStore'
-import { Subscribe } from 'laco-react'
 
 import { EmptyStateCard, SidePanel } from '@aragon/ui'
 import emptyIcon from '../assets/empty-allocation.svg'
 import AllocationCard from './AllocationCard'
-import { NewPayoutVotePanelContent } from './Panels'
+import { NewPayoutVotePanel } from './NewPayoutVotePanel'
 
 const EmptyIcon = () => <img src={emptyIcon} alt="" />
 
@@ -54,7 +53,7 @@ class Allocations extends React.Component {
           opened={sidePanelOpened}
           onClose={this.closeSidePanel}
         >
-          <NewPayoutVotePanelContent
+          <NewPayoutVotePanel
             onSetDistribution = {this.props.onSetDistribution}
             onClose = {this.props.onClose}
           />

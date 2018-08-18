@@ -4,8 +4,8 @@ import PropTypes from 'prop-types'
 import { AragonApp, AppBar, Button, SidePanel, observe } from '@aragon/ui'
 
 import AppLayout from './components/AppLayout'
-import Allocations from './screens/Allocations'
-import NewAccountPanel from './components/'
+import Allocations from './components/Allocations'
+import NewAccountPanel from './components/NewAccountPanel'
 
 class App extends React.Component {
   static propTypes = {
