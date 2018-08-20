@@ -1,13 +1,7 @@
 {
   "name": "@tpt/test-helpers",
   "version": "0.0.1",
-  "description": "Helper scripts for planning suite",
   "devDependencies": {
     "ethereumjs-abi": "^0.6.5"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Giveth/planning-app"
-  },
-  "license": "GPL-3.0"
+  }
 }
