@@ -8,7 +8,6 @@
     "@aragon/ui": "^0.16.0",
     "babel-runtime": "^6.26.0",
     "date-fns": "^1.29.0",
-    "graphql-request": "^1.8.2",
     "laco": "^0.4.0",
     "laco-react": "^0.4.0",
     "prop-types": "^15.6.2",
