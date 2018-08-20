@@ -11,8 +11,7 @@ import {
     theme
 } from '@aragon/ui'
 
-import icon from '../assets/empty-card-icon.svg'
-import { format } from 'path';
+import icon from '../assets/allocation-card-icon.svg'
 
 const { accent, textPrimary, textTertiary } = theme
 
@@ -86,7 +85,7 @@ class AllocationCard extends Component {
                     {metadata}
                 </CardTitle>
                 <CardAddress size="small" color="#4A90E2">
-                    {proxy}
+                    {proxy.slice(0,6) + '...' + proxy.slice(-4)}
                 </CardAddress>
                <StatsContainer>
                     <StatsTitle>Balance</StatsTitle>
@@ -103,7 +102,7 @@ class AllocationCard extends Component {
 
 const StyledCard = styled(Card)`
     height: 300px;
-    width: 280px;
+    width: 300px;
 `
 
 const MenuContainer = styled.div`

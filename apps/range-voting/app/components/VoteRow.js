@@ -54,10 +54,10 @@ class VoteRow extends React.Component {
 
     return (
       <TableRow>
-        <StatusCell>
+        <StatusCell onClick={this.handleVoteClick}>
           {open ? <Countdown end={endDate} /> : <VoteStatus vote={vote} />}
         </StatusCell>
-        <QuestionCell>
+        <QuestionCell onClick={this.handleVoteClick}>
           <div>
             {question && (
               <QuestionWrapper>
@@ -70,7 +70,7 @@ class VoteRow extends React.Component {
             {typeBadge}
           </div>
         </QuestionCell>
-        <Cell align="right">{totalVoters}%</Cell>
+        <Cell align="right" onClick={this.handleVoteClick}>{totalVoters}%</Cell>
         <BarsCell>
           <BarsGroup>
             { showMore ? bars : [bars[0], bars[1]] }
@@ -81,11 +81,6 @@ class VoteRow extends React.Component {
             </ShowMoreText>
           </BarsGroup>
         </BarsCell>
-        <ActionsCell>
-          <Button mode="outline" onClick={this.handleVoteClick}>
-            View Vote
-          </Button>
-        </ActionsCell>
       </TableRow>
     )
   }
@@ -93,6 +88,7 @@ class VoteRow extends React.Component {
 
 const Cell = styled(TableCell)`
   vertical-align: top;
+  cursor: pointer;
 `
 
 const StatusCell = styled(Cell)`
@@ -108,6 +104,7 @@ const BarsCell = styled(Cell)`
   flex-shrink: 0;
   width: 25%;
   min-width: 200px;
+  cursor: auto;
 `
 
 const ActionsCell = styled(Cell)`
@@ -144,6 +141,7 @@ const ShowMoreText = styled.p`
   font-style: italic;
   margin-top: .5rem;
   cursor: pointer;
+  pointer-events: auto;
 `
 
 export default VoteRow
