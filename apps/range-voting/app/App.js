@@ -116,4 +116,8 @@ const CloseIcon = styled(IconAdd)`
   margin-right: 0.5rem;
 `
 
-export default hot(module)(App)
+
+export default observe(
+  observable => observable.map(state => ({ ...state })),
+  {}
+)(App)

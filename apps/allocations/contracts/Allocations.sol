@@ -103,6 +103,7 @@ contract Allocations is AragonApp, Fundable {
         //Vault _vault
     ) onlyInit external {
         //vault = _vault.ethConnectorBase();
+        payouts.push(new Payout());
         initialized();
     }
 
@@ -130,8 +131,7 @@ contract Allocations is AragonApp, Fundable {
         uint256 _limit,
         address _token
     ) external isInitialized auth(START_PAYOUT_ROLE) returns(uint256) {
-        Payout memory payout;
-        payout.metadata = _metadata;
+        Payout storage payout;
         payout.metadata = _metadata;
         payout.limit = _limit;
         payout.token = _token;

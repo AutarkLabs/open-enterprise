@@ -1,5 +1,6 @@
 {
   "extends": "solium:recommended",
+  "plugins": ["security"],
   "rules": {
     "imports-on-top": 0,
     "variable-declarations": 1,
@@ -16,6 +17,7 @@
     "indentation": ["error", 4],
     "whitespace": 1,
     "deprecated-suicide": 1,
-    "pragma-on-top": 1
+    "pragma-on-top": 1,
+    "no-inline-assembly": 0
   }
 }
