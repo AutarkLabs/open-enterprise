@@ -377,7 +377,7 @@ contract RangeVoting is IForwarder, AragonApp {
         isInitialized internal returns (uint256 voteId)
     {
         voteId = votes.length++;
-        Vote memory vote;
+        Vote storage vote = votes[voteId];
         vote.executionScript = _executionScript;
         vote.creator = msg.sender;
         vote.startDate = uint64(now);
@@ -386,9 +386,8 @@ contract RangeVoting is IForwarder, AragonApp {
         vote.totalVoters = token.totalSupplyAt(vote.snapshotBlock);
         vote.candidateSupportPct = globalCandidateSupportPct;
         var (scriptOffset, scriptRemainder) = _extractCandidates(_executionScript, voteId);
-        vote.scriptOffset = scriptOffset;
-        vote.scriptRemainder = scriptRemainder;
-        votes.push(vote);
+        //vote.scriptOffset = scriptOffset;
+        //vote.scriptRemainder = scriptRemainder;
         StartVote(voteId);
     }
 
@@ -404,19 +403,25 @@ contract RangeVoting is IForwarder, AragonApp {
         // Since the calldataLength is 4 bytes the start offset is
         uint256 startOffset = 0x04 + 0x14 + 0x04;
         // The first paramater is located at a byte depth indicated by the first
-        // word in the calldata (which is located at the startOffset)
-        uint256 firstParamOffset = startOffset + _executionScript.uint256At(startOffset);
+        // word in the calldata (which is located at the startOffset + 0x04 for the function signature)
+        // so we have:
+        // start offset (spec id + address + calldataLength) + param offset + function signature
+        uint256 firstParamOffset = startOffset + _executionScript.uint256At(startOffset + 0x04) + 0x04;
         currentOffset = firstParamOffset;
+
         // compute end of script / next location and ensure there's no 
         // shenanigans
         require(startOffset + calldataLength <= _executionScript.length);
-
         // The first word in the param slot is the length of the array
+        
+
         uint256 candidateLength = _executionScript.uint256At(currentOffset);
+    
         address currentCandidate;
         currentOffset = currentOffset + 0x20;
         // This has the potential to be too gas expensive to ever happen.
         // Upper limit of candidates should be checked against this function
+        
         for(uint256 i = candidateLength; i > 0; i--){
             currentCandidate = _executionScript.addressAt(currentOffset);
             currentOffset = currentOffset + 0x20;
@@ -425,10 +430,15 @@ contract RangeVoting is IForwarder, AragonApp {
         // Skip the next param since it's also determined by this contract
         // In order to do this we move the offsett one word for the length of the param
         // and we move the offset one word for each param.
-        currentOffset = currentOffset.add(_executionScript.uint256At(currentOffset).mul(0x20)).add(0x20);
+        currentOffset = currentOffset.add(_executionScript.uint256At(currentOffset).mul(0x20));
+
         // The offset represents the data we've already accounted for; the rest is what will later
         // need to be copied over.
+
         calldataLength = calldataLength.sub(currentOffset);
+        /*
+
+        */
     }
 
     /*

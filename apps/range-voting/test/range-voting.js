@@ -1,5 +1,5 @@
-import { assertRevert } from '../../shared/test-helpers/assertThrow'
-import { encodeCallScript } from '../../shared/test-helpers/evmScript'
+const { assertRevert } = require('../../shared/test-helpers/assertThrow')
+const { encodeCallScript } = require('../../shared/test-helpers/evmScript')
 
 const ExecutionTarget = artifacts.require('ExecutionTarget')
 const RangeVoting = artifacts.require('RangeVoting')
@@ -126,19 +126,39 @@ contract('RangeVoting App', accounts => {
       })
     })
 
-    it('execution scripts can execute actions', async () => {
+    it('can create new vote', async () => {
       let action = {
         to: executionTarget.address,
-        calldata: executionTarget.contract.setSignal.getData([0]),
+        calldata: executionTarget.contract.setSignal.getData([accounts[7], accounts[8], accounts[9]], [0,0,0]),
+      }
+      const script = encodeCallScript([action])
+      const voteId = createdVoteId(
+        await app.newVote(script, '', { from: holder50 })
+      )
+    })
+    it('can cast votes', async () => {
+      let action = {
+        to: executionTarget.address,
+        calldata: executionTarget.contract.setSignal.getData([accounts[7], accounts[8], accounts[9]], [0,0,0]),
       }
       const script = encodeCallScript([action])
       const voteId = createdVoteId(
         await app.newVote(script, '', { from: holder50 })
       )
       let vote = [10, 15, 25]
-      await app.addCandidate(voteId, '0x', 'Apple')
-      await app.addCandidate(voteId, '0x', 'Orange')
-      await app.addCandidate(voteId, '0x', 'Banana')
+      let voter = holder50
+      await app.vote(voteId, vote, { from: voter })
+    })
+    it('execution scripts can execute actions', async () => {
+      let action = {
+        to: executionTarget.address,
+        calldata: executionTarget.contract.setSignal.getData([accounts[7], accounts[8], accounts[9]], [0,0,0]),
+      }
+      const script = encodeCallScript([action])
+      const voteId = createdVoteId(
+        await app.newVote(script, '', { from: holder50 })
+      )
+      let vote = [10, 15, 25]
       let voter = holder50
       await app.vote(voteId, vote, { from: voter })
       await app.executeVote(voteId)
@@ -154,7 +174,7 @@ contract('RangeVoting App', accounts => {
         await app.newVote(encodeCallScript([]), '', { from: holder50 })
       )
     })
-
+/*
     it('execution throws if any action on script throws', async () => {
       let action = {
         to: executionTarget.address,
@@ -454,5 +474,7 @@ contract('RangeVoting App', accounts => {
         await app.newVote(encodeCallScript([]), '')
       })
     })
+  */
+
   })
 })

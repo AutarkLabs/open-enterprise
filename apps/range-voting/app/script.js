@@ -15,6 +15,7 @@ app.store(async (state, { event, returnValues }) => {
   switch (event) {
   case 'StartVote':
     nextState = await startVote(nextState, returnValues)
+    console.log("Vote Started")
     console.log(nextState)
     break
   }
