@@ -42,13 +42,9 @@ async function newAccount(state, { accountId }) {
 
 function loadAccountData(accountId) {
   return new Promise(resolve => {
-    combineLatest(app.call('getPayout', accountId)).subscribe(
-      ([account, metadata]) => {
-        resolve(
-          account
-        )
-      }
-    )
+    combineLatest(app.call('getPayout', accountId)).subscribe(([account]) => {
+      resolve(account)
+    })
   })
 }
 

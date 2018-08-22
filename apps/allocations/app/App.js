@@ -1,5 +1,4 @@
 import React from 'react'
-import { hot } from 'react-hot-loader'
 import PropTypes from 'prop-types'
 import { AragonApp, AppBar, Button, SidePanel, observe } from '@aragon/ui'
 
@@ -20,7 +19,6 @@ class App extends React.Component {
     accounts: [],
   }
 
-
   handlePanelOpen = () => {
     this.setState({ panelActive: true })
   }
@@ -40,7 +38,6 @@ class App extends React.Component {
     this.setState({})
   }
 
-
   render() {
     const barButton = (
       <Button Button mode="strong" onClick={this.handlePanelOpen}>
@@ -57,11 +54,13 @@ class App extends React.Component {
           <AppLayout.ScrollWrapper>
             <AppLayout.Content>
               <Allocations
-                onSetDistribution = {this.onSetDistribution}
+                onSetDistribution={this.onSetDistribution}
                 onActivate={this.handlePanelOpen}
                 onClose={this.handlePanelClose}
                 button={barButton}
-                accounts= {(this.props.accounts !== undefined) ? this.props.accounts : []}
+                accounts={
+                  this.props.accounts !== undefined ? this.props.accounts : []
+                }
               />
             </AppLayout.Content>
           </AppLayout.ScrollWrapper>
@@ -80,6 +79,7 @@ class App extends React.Component {
   }
 }
 
-export default hot(module)(
-  observe(observable => observable.map(state => ({ ...state })), {})(App)
-)
+export default observe(
+  observable => observable.map(state => ({ ...state })),
+  {}
+)(App)

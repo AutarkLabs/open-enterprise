@@ -1,5 +1,6 @@
-import React, { Component } from  'react'
+import React, { Component } from 'react'
 import styled from 'styled-components'
+
 import {
   Card,
   ContextMenu,
@@ -120,6 +121,7 @@ const CardTitle = styled(Text)`
 
 const CardAddress = styled(Text)`
   display: block;
+  width: 300px;
   text-align: center;
   text-decoration: underline;
   cursor: pointer;
