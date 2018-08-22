@@ -36,80 +36,70 @@ const initialState = {
 }
 
 class AllocationCard extends Component {
-  state = {
-    ...initialState,
-  }
 
-  openNewPayoutVote = () => {
-    if (typeof this.props.openSidePanelLink === 'function') {
-      this.props.openSidePanelLink()
-    } else {
-      console.info(
-        'AllocationCard component: openSidePanelLink not defined, click has no effect'
-      )
+    state = {
+        ...initialState,
+    }
+
+    openNewPayoutVote = () => {
+        if (typeof this.props.openSidePanelLink === "function") {
+            this.props.openSidePanelLink()
+        } else {
+            console.info('AllocationCard component: openSidePanelLink not defined, click has no effect')
+        }
+    }
+
+    openManageParemeters = () => {}
+
+    render () {
+        const { metadata, description, balance, limit, token, proxy } = this.props.data
+        let tokenLabel
+        // Hardcoded token lookup for eth and possibly others?
+        switch(parseInt(token)) {
+            case (0):
+                tokenLabel = "ETH"
+                break
+        }
+        const { contextMenuItems } = this.state
+        const menuElements = contextMenuItems.map((item) =>
+            <StyledMenuItem
+                key={item.text}
+                onClick={this[item.function]} // this[item.handler]
+                colors={item.colors}>
+                {React.createElement(item.icon)}
+                {item.text}
+            </StyledMenuItem>
+        )
+
+        return (
+            <StyledCard>
+                <MenuContainer>
+                    <ContextMenu>
+                        {menuElements}
+                    </ContextMenu>
+                </MenuContainer>
+                <IconContainer>
+                    <img src={icon} alt={`${metadata} icon`} />
+                </IconContainer>
+                <CardTitle size="large" color={textPrimary}>
+                    {metadata}
+                </CardTitle>
+                <CardAddress size="small" color="#4A90E2">
+                    {proxy.slice(0,6) + '...' + proxy.slice(-4)}
+                </CardAddress>
+               <StatsContainer>
+                    <StatsTitle>Balance</StatsTitle>
+                    <StatsValue>{balance} {tokenLabel}</StatsValue>
+               </StatsContainer>
+               <StatsContainer>
+                    <StatsTitle>Limit</StatsTitle>
+                    <StatsValue>{limit} {tokenLabel}/ Allocation</StatsValue>
+               </StatsContainer>
+            </StyledCard>
+        )
     }
   }
 
-  openManageParemeters = () => {}
-
-  render() {
-    const {
-      metadata,
-      description,
-      balance,
-      limit,
-      token,
-      proxy,
-    } = this.props.data
-    let tokenLabel
-    // Hardcoded token lookup for eth and possibly others?
-    switch (parseInt(token)) {
-    case 0:
-      tokenLabel = 'ETH'
-      break
-    }
-    const { contextMenuItems } = this.state
-    const menuElements = contextMenuItems.map(item => (
-      <StyledMenuItem
-        key={item.text}
-        onClick={this[item.function]} // this[item.handler]
-        colors={item.colors}
-      >
-        {React.createElement(item.icon)}
-        {item.text}
-      </StyledMenuItem>
-    ))
-
-    return (
-      <StyledCard>
-        <MenuContainer>
-          <ContextMenu>{menuElements}</ContextMenu>
-        </MenuContainer>
-        <IconContainer>
-          <img src={icon} alt={`${metadata} icon`} />
-        </IconContainer>
-        <CardTitle size="large" color={textPrimary}>
-          {metadata}
-        </CardTitle>
-        <CardAddress size="small" color="#4A90E2">
-          {proxy.slice(0, 6) + '...' + proxy.slice(-4)}
-        </CardAddress>
-        <StatsContainer>
-          <StatsTitle>Balance</StatsTitle>
-          <StatsValue>
-            {balance} {tokenLabel}
-          </StatsValue>
-        </StatsContainer>
-        <StatsContainer>
-          <StatsTitle>Limit</StatsTitle>
-          <StatsValue>
-            {limit} {tokenLabel}/ Allocation
-          </StatsValue>
-        </StatsContainer>
-      </StyledCard>
-    )
-  }
-}
 
 const StyledCard = styled(Card)`
   height: 300px;
@@ -135,7 +125,6 @@ const CardAddress = styled(Text)`
   text-align: center;
   text-decoration: underline;
   cursor: pointer;
-  text-overflow: ellipsis;
 `
 
 const IconContainer = styled.div`

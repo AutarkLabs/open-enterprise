@@ -28,51 +28,13 @@ class App extends React.Component {
   }
 
   onCreateAccount = account => {
-    console.log(
-      this.props.app.newPayout(account.title, account.limit.value, 0x0)
-    )
-    console.log(this.props.app.newPayout)
-    console.log(this.props.app)
-
+    this.props.app.newPayout(account.title, account.limit.value, 0x0)
     this.setState({})
   }
 
-  onSetDistribution = (
-    options,
-    addresses,
-    payoutId,
-    activeAllocationItem,
-    activePayoutOption,
-    amount
-  ) => {
-    console.log('it\'s working!')
-    console.log(
-      options +
-        addresses +
-        payoutId +
-        activeAllocationItem +
-        activePayoutOption +
-        amount
-    )
-    // need proper payoutId
-    // add logic to define period
-    //this.props.app.setDistribution(options, addresses, [], 0, activeAllocationItem === 0, activePayoutOption ===0, 0, 0)
-    console.log('empty arrays1')
-    console.log(this.props.app.setDistribution([], [], 0, true, true, 0, 0))
-    console.log('empty arrays2')
-    console.log(
-      this.props.app.setDistribution(
-        addresses,
-        [],
-        0,
-        activeAllocationItem === 0,
-        activePayoutOption === 0,
-        86399 * 30,
-        amount
-      )
-    )
-
-    console.log('end')
+  
+  onSetDistribution = (options, addresses, payoutId, activeAllocationItem, activePayoutOption, amount) => {
+    this.props.app.setDistribution(addresses, [], 0, activeAllocationItem === 0, activePayoutOption === 0, 86399 * 30, amount)
     this.setState({})
   }
 
