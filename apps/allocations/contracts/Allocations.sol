@@ -129,19 +129,16 @@ contract Allocations is AragonApp, Fundable {
         string _metadata,
         uint256 _limit,
         address _token
-    ) external isInitialized auth(START_PAYOUT_ROLE) returns(uint256) {
-        Payout memory payout;
-        payout.metadata = _metadata;
+    ) external isInitialized auth(START_PAYOUT_ROLE) returns(uint256 payoutId) {
+        payoutId = payouts.length++;
+        Payout storage payout = payouts[payoutId];
         payout.metadata = _metadata;
         payout.limit = _limit;
         payout.token = _token;
         payout.balance = 0;
-        uint256 id = payouts.length;
-        FundForwarder fund = new FundForwarder(id, address(this));
+        FundForwarder fund = new FundForwarder(payoutId, address(this));
         payout.proxy = address(fund);
-        payouts.push(payout);
-        NewAccount(id);
-        return payouts.length;
+        NewAccount(payoutId);
     }
 
     /**

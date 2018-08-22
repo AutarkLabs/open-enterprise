@@ -22,7 +22,6 @@ class App extends React.Component {
 
 
   handlePanelOpen = () => {
-
     this.setState({ panelActive: true })
   }
 

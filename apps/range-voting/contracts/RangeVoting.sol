@@ -2,8 +2,6 @@ pragma solidity 0.4.18;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
 
-import "@aragon/os/contracts/evmscript/ScriptHelpers.sol";
-
 import "@aragon/os/contracts/lib/minime/MiniMeToken.sol";
 
 import "@aragon/os/contracts/lib/zeppelin/math/SafeMath.sol";
@@ -12,6 +10,7 @@ import "@aragon/os/contracts/lib/zeppelin/math/SafeMath64.sol";
 
 import "@aragon/os/contracts/common/IForwarder.sol";
 
+//import "./misc/CustomScriptHelpers.sol";
 
 
 /*******************************************************************************
@@ -41,7 +40,7 @@ import "@aragon/os/contracts/common/IForwarder.sol";
 *  Attention was paid to make the program as generalized as possible.
 *******************************************************************************/
 contract RangeVoting is IForwarder, AragonApp {
-
+    //using CustomScriptHelpers for bytes;
 
     using SafeMath for uint256;
     using SafeMath64 for uint64;
@@ -65,13 +64,15 @@ contract RangeVoting is IForwarder, AragonApp {
         uint256 totalVoters;
         string metadata;
         bytes executionScript;
+        uint256 scriptOffset;
+        uint256 scriptRemainder;
         bool executed;
         bytes32[] candidateKeys;
         mapping (bytes32 => CandidateState) candidates;
         mapping (address => uint256[]) voters;
     }
 
-    mapping (bytes32 => string ) candidateDescriptions;
+    mapping (bytes32 => address ) candidateDescriptions;
 
     struct CandidateState {
         bool added;
@@ -186,8 +187,8 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _description This is the string that will be displayed along the
     *        option when voting
     */
-    function addCandidate(uint256 _voteId, bytes _metadata, string _description)
-    external auth(ADD_CANDIDATES_ROLE)
+    function addCandidate(uint256 _voteId, bytes _metadata, address _description)
+    public auth(ADD_CANDIDATES_ROLE)
     {
         // Get vote and candidate into storage
         Vote storage vote = votes[_voteId];
@@ -210,7 +211,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _voteId id for vote structure this 'ballot action' is connected to
     * @param _description The candidate descrciption of the candidate.
     */
-    function getCandidate(uint256 _voteId, string _description)
+    function getCandidate(uint256 _voteId, address _description)
     external view returns(bool, bytes, uint8, uint256)
     {
         Vote storage vote = votes[_voteId];
@@ -229,7 +230,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _key The bytes32 key used when adding the candidate.
     */
     function getCandidateDescription(bytes32 _key)
-    external view returns(string)
+    external view returns(address)
     {
         return(candidateDescriptions[_key]);
     }
@@ -359,7 +360,15 @@ contract RangeVoting is IForwarder, AragonApp {
     *         votes are not started with a vote from the caller, as candidates
     *         and candidate weights need to be supplied.
     * @param _executionScript The script that will be executed when
-    *        this vote closes
+    *        this vote closes. Script is of the following form:
+    *            [ specId (uint32) ] many calls with this structure ->
+    *            [ to (address: 20 bytes) ]
+    *            [ calldataLength (uint32: 4 bytes) ]
+    *            [ calldata (calldataLength bytes) ]
+    *        In order to work with a range vote the execution script must contain
+    *        Arrays as its first two paramaters.
+    *        The first Array is generally a list of identifiers (bytes32 or address)
+    *        The second array will be composed of support value (uint256).
     * @param _metadata The metadata or vote information attached to this vote
     * @return voteId The ID(or index) of this vote in the votes array.
     */
@@ -367,7 +376,7 @@ contract RangeVoting is IForwarder, AragonApp {
     isInitialized returns (uint256 voteId)
     {
         voteId = votes.length++;
-        Vote memory vote;
+        Vote storage vote = votes[voteId];
         vote.executionScript = _executionScript;
         vote.creator = msg.sender;
         vote.startDate = uint64(now);
@@ -375,8 +384,60 @@ contract RangeVoting is IForwarder, AragonApp {
         vote.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
         vote.totalVoters = token.totalSupplyAt(vote.snapshotBlock);
         vote.candidateSupportPct = globalCandidateSupportPct;
-        votes.push(vote);
+        var (scriptOffset, scriptRemainder) = _extractCandidates(_executionScript, voteId);
+        //vote.scriptOffset = scriptOffset;
+        //vote.scriptRemainder = scriptRemainder;
         StartVote(voteId);
+    }
+
+    /**
+    * @dev This function needs to work with strings instead of addresses but it doesn't
+    *      This fits our current use case better and string manipulation is harder
+    *      since there's more like... dynamic-ness.
+    */
+    function _extractCandidates(bytes _executionScript, uint256 _voteId) internal returns(uint256 currentOffset, uint256 calldataLength) {
+        // in order to find out the total length of our call data we take the 3rd
+        // relevent byte chunk (after the specif and the target address)
+        calldataLength = uint256(_executionScript.uint32At(0x4 + 0x14));
+        // Since the calldataLength is 4 bytes the start offset is
+        uint256 startOffset = 0x04 + 0x14 + 0x04;
+        // The first paramater is located at a byte depth indicated by the first
+        // word in the calldata (which is located at the startOffset + 0x04 for the function signature)
+        // so we have:
+        // start offset (spec id + address + calldataLength) + param offset + function signature
+        uint256 firstParamOffset = startOffset + _executionScript.uint256At(startOffset + 0x04) + 0x04;
+        currentOffset = firstParamOffset;
+
+        // compute end of script / next location and ensure there's no 
+        // shenanigans
+        require(startOffset + calldataLength <= _executionScript.length);
+        // The first word in the param slot is the length of the array
+        
+
+        uint256 candidateLength = _executionScript.uint256At(currentOffset);
+    
+        address currentCandidate;
+        currentOffset = currentOffset + 0x20;
+        // This has the potential to be too gas expensive to ever happen.
+        // Upper limit of candidates should be checked against this function
+        
+        for(uint256 i = candidateLength; i > 0; i--){
+            currentCandidate = _executionScript.addressAt(currentOffset);
+            currentOffset = currentOffset + 0x20;
+            addCandidate(_voteId, new bytes(0), currentCandidate);
+        }
+        // Skip the next param since it's also determined by this contract
+        // In order to do this we move the offsett one word for the length of the param
+        // and we move the offset one word for each param.
+        currentOffset = currentOffset.add(_executionScript.uint256At(currentOffset).mul(0x20));
+
+        // The offset represents the data we've already accounted for; the rest is what will later
+        // need to be copied over.
+
+        calldataLength = calldataLength.sub(currentOffset);
+        /*
+
+        */
     }
 
     /*
@@ -434,7 +495,8 @@ contract RangeVoting is IForwarder, AragonApp {
     * @notice `_executeVote` executes the provided script for this vote and
     *         passes along the candidate data to the next function.
     * @return voteId The ID(or index) of this vote in the votes array.
-    * @dev This function needs to be cleaned up ALOT
+    * @dev This function needs to be cleaned up ALOT; also generalized
+    *      for functions that have an unknown number of params
     */
     function _executeVote(uint256 _voteId) internal {
         Vote storage vote = votes[_voteId];
@@ -443,12 +505,16 @@ contract RangeVoting is IForwarder, AragonApp {
         uint256 candidateLength = vote.candidateKeys.length;
         bytes memory executionScript = new bytes(32);
         executionScript = vote.executionScript;
+        // The total length of the new script will be one 32 byte space
+        // for each candidate as well as 3 32 byte spaces for
+        // additional data
         bytes memory script = new bytes(32 * (candidateLength + 3));
         assembly {  
             mstore(add(script, 32), mload(add(executionScript,32)))
         }
         uint256 offset = 59;
         bytes memory smallData = new bytes(32);
+        // This is the size indicator for the 
         uint256 supportsData = 32 * (candidateLength + 2) + 4;
         assembly {
             mstore(add(smallData, 32), supportsData)
