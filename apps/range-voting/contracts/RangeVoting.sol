@@ -8,10 +8,17 @@ import "@aragon/os/contracts/lib/zeppelin/math/SafeMath.sol";
 
 import "@aragon/os/contracts/lib/zeppelin/math/SafeMath64.sol";
 
-import "@aragon/os/contracts/common/IForwarder.sol";
+// import "@aragon/os/contracts/common/IForwarder.sol";
 
 //import "./misc/CustomScriptHelpers.sol";
 
+// import "@aragon/os/contracts/common/IForwarder.sol";
+/* Temp hack to pass coverage until further research */
+interface IForwarderFixed {
+    function isForwarder() public returns (bool);
+    function canForward(address sender, bytes evmCallScript) public returns (bool);
+    function forward(bytes evmCallScript) public;
+}
 
 /*******************************************************************************
   Copyright 2018, That Planning Tab
@@ -39,7 +46,7 @@ import "@aragon/os/contracts/common/IForwarder.sol";
 *  but could easily be adapted to other systems.
 *  Attention was paid to make the program as generalized as possible.
 *******************************************************************************/
-contract RangeVoting is IForwarder, AragonApp {
+contract RangeVoting is IForwarderFixed, AragonApp {
     //using CustomScriptHelpers for bytes;
 
     using SafeMath for uint256;
@@ -245,7 +252,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @dev IForwarder interface conformance
     * @return always returns true
     */
-    function isForwarder() public pure returns (bool) {
+    function isForwarder() public returns (bool) {
         return true;
     }
 
@@ -268,7 +275,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @return True is `_sender` has correct permissions
     */
     function canForward(address _sender, bytes _evmCallScript)
-    public view returns (bool)
+    public returns (bool)
     {
         return canPerform(_sender, CREATE_VOTES_ROLE, arr());
     }

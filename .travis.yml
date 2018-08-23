@@ -1,12 +1,18 @@
-sudo: required
+sudo: false
 language: node_js
 cache:
   directories:
     - node_modules
+    - $HOME/.npm
 notifications:
   email: false
 before_install:
   - npm i -g npm@latest
+env:
+  global:
+    - NODE_NO_WARNINGS=1
+matrix:
+  fast_finish: true
 node_js:
   - 'lts/*'
   - 'node'
@@ -14,11 +20,6 @@ env:
   - TASK=lint
   - TASK=test
   - TASK=coverage
-install:
-  - travis_wait npm i
-before_script:
-  - npm prune
-  - npm run link:shared
 script:
   - npm run $TASK
 after_success:
