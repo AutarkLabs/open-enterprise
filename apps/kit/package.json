@@ -18,6 +18,7 @@
     "link:shared": "mkdir -p node_modules/@tpt && ln -s $(pwd)/../shared/test-helpers node_modules/@tpt/test-helpers 2> /dev/null",
     "lint": "solium --dir ./contracts",
     "start:kit": "aragon run --kit PlanningKit --kit-init @ARAGON_ENS",
+    "ganache-cli:test": "../shared/test-helpers/ganache-cli.sh",
     "test:gas": "GAS_REPORTER=true npm test",
     "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
   },

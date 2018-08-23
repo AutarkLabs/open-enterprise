@@ -1,5 +1,16 @@
 {
-  "lerna": "2.11.0",
+  "command": {
+    "run": {
+      "concurrency": 1,
+      "scope": "@tpt/apps-*",
+      "stream": true
+    },
+    "bootstrap": {
+      "ignore-scripts": true,
+      "progress": true
+    }
+  },
+  "hoist": true,
   "packages": ["apps/*", "apps/shared/*"],
   "version": "independent"
 }

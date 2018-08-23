@@ -5,42 +5,45 @@
   "devDependencies": {
     "@aragon/cli": "^4.1.5",
     "coveralls": "^3.0.2",
-    "lerna": "^3.0.6",
-    "eth-gas-reporter": "^0.1.10"
+    "eth-gas-reporter": "^0.1.10",
+    "lerna": "^3.1.4"
   },
   "scripts": {
-    "bootstrap": "npx lerna bootstrap --hoist",
+    "bootstrap": "npx lerna bootstrap",
+    "preInstall": "npm run bootstrap",
+    "postinstall": "npm run link",
     "clean": "git clean -ffdx",
-    "coverage": "npx lerna run --scope=@tpt/apps-* --concurrency=1 --stream coverage",
+    "coverage": "npx lerna run coverage",
+    "coveralls": "cat apps/*/coverage/lcov.info | npx coveralls",
     "dev:address": "cd apps/address-book && npm run dev",
     "dev:allocations": "cd apps/allocations && npm run dev",
     "dev:projects": "cd apps/projects && npm run dev",
     "dev:range": "cd apps/range-voting && npm run dev",
     "devchain": "aragon devchain",
     "devchain:reset": "aragon devchain --reset",
-    "install": "npm run bootstrap && npm run link",
-    "publish:apps": "npx lerna run --concurrency=1 --stream publish",
+    "publish:apps": "npx lerna run publish",
     "start": "START_KIT=true apps/shared/test-helpers/ganache-cli.sh",
     "start:kit": "cd apps/kit && npm run start:kit",
     "start:address": "cd apps/address-book && npm start",
     "start:allocations": "cd apps/allocations && npm start",
     "start:projects": "cd apps/projects && npm start",
     "start:range": "cd apps/range-voting && npm start",
-    "test": "npx lerna run --scope=@tpt/apps-* --concurrency=1 --stream test",
-    "test:gas": "npx lerna run --scope=@tpt/apps-* --concurrency=1 --stream test:gas",
-    "link": "npm run link:aragon && npm run link:shared",
-    "link:aragon": "npx lerna run --stream link:aragon",
-    "link:shared": "npx lerna run --stream link:shared",
+    "test": "npx lerna run test",
+    "test:gas": "npx lerna run test:gas",
+    "link": "rm -rf apps/*/node_modules/@* && npm run link:aragon && npm run link:shared",
+    "link:aragon": "npx lerna run link:aragon --scope=@tpt/* --loglevel='silent'",
+    "link:shared": "npx lerna run link:shared --scope=@tpt/* --loglevel='silent'",
     "test:address": "cd apps/address-book && npm test",
     "test:allocations": "cd apps/allocations && npm test",
     "test:projects": "cd apps/projects && npm test",
     "test:range": "cd apps/range-voting && npm test",
-    "lint": "npx lerna run --scope=@tpt/apps-* --concurrency=1 --stream lint"
+    "lint": "npx lerna run lint"
   },
   "keywords": [],
   "repository": {
     "type": "git",
     "url": "https://github.com/Giveth/planning-app"
   },
-  "license": "GPL-3.0"
+  "license": "GPL-3.0",
+  "name": "planning-app"
 }
