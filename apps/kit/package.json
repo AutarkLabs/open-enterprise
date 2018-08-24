@@ -5,10 +5,11 @@
   "dependencies": {
     "@aragon/apps-token-manager": "^1.0.0",
     "@aragon/apps-voting": "^1.0.0",
+    "@aragon/apps-finance": "^1.0.1",
     "@aragon/os": "^3.1.9"
   },
   "devDependencies": {
-    "@aragon/cli": "^4.1.5",
+    "@aragon/cli": "git://github.com/ottodevs/aragon-cli",
     "truffle": "4.0.5",
     "truffle-hdwallet-provider": "^0.0.6"
   },
