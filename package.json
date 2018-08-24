@@ -3,7 +3,6 @@
   "version": "0.0.1",
   "description": "Aragon planning suite monorepo developed by Space Decentral and Giveth.",
   "devDependencies": {
-    "@aragon/cli": "git://github.com/ottodevs/aragon-cli",
     "coveralls": "^3.0.2",
     "eth-gas-reporter": "^0.1.10",
     "lerna": "^3.1.4"

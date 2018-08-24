@@ -22,7 +22,7 @@ before_install: |
   # avoids bugs around https://github.com/travis-ci/travis-ci/issues/5092
   export PATH=~/npm/node_modules/.bin:$PATH
 # this avoids compilation in most cases (where we don't need it)
-install: npm run bootstrap && npm run link
+install: npm run postinstall
 cache:
   directories:
     - ~/.npm # cache npm's cache

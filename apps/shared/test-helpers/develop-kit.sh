@@ -45,7 +45,8 @@ copy_assets() {
 export -f copy_assets
 
 deploy_contract() {
-    deployed_at=$(npx truffle compile && npx truffle migrate --reset | tail -4 | head -1 | awk '{ print $NF }')
+    npx truffle compile > /dev/null
+    deployed_at=$(npx truffle migrate --reset | tail -4 | head -1 | awk '{ print $NF }')
     echo "Deployed at:" $deployed_at
     published=$(npm run publish:http -- --contract $deployed_at | tail -2)
     echo $published

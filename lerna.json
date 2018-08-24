@@ -6,7 +6,6 @@
       "stream": true
     },
     "bootstrap": {
-      "ignore-scripts": true,
       "progress": true
     }
   },

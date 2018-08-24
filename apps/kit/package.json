@@ -3,13 +3,13 @@
   "version": "0.0.1",
   "description": "Aragon planning suite developed by Space Decentral and Giveth.",
   "dependencies": {
+    "@aragon/apps-finance": "^1.0.1",
     "@aragon/apps-token-manager": "^1.0.0",
     "@aragon/apps-voting": "^1.0.0",
-    "@aragon/apps-finance": "^1.0.1",
     "@aragon/os": "^3.1.9"
   },
   "devDependencies": {
-    "@aragon/cli": "git://github.com/ottodevs/aragon-cli",
+    "@aragon/cli": "git://github.com/ottodevs/aragon-cli.git",
     "truffle": "4.0.5",
     "truffle-hdwallet-provider": "^0.0.6"
   },
