@@ -1,6 +1,6 @@
 # ensure running in a container for fast boot
 sudo: false
-dist: 'trusty'
+dist: "trusty"
 
 # these are executed in order.  each must pass for the next to be run
 stages:
@@ -10,13 +10,13 @@ stages:
 
 #defaults
 language: node_js
-node_js: 'node'
+node_js: "node"
 # `nvm install` happens before the cache is restored, which means
 # we must install our own npm elsewhere (`~/npm`)
 before_install: |
   [[ ! -x ~/npm/node_modules/.bin/npm ]] && {
     # caching feature creates `~/npm` for us
-    cd ~/npm && npm init -y > /dev/null && npm install npm@latest lerna@latest
+    cd ~/npm && npm init -y && npm install npm@latest lerna@latest
     cd -
   } || true
   # avoids bugs around https://github.com/travis-ci/travis-ci/issues/5092
@@ -32,11 +32,11 @@ jobs:
   include:
     - script: npm run coverage
       after_success: npm run coveralls
-      env: 'COVERAGE=true'
+      env: "COVERAGE=true"
 
     - &node
       script: npm run test
-      node_js: 'lts/*'
+      node_js: "lts/*"
 
     - stage: lint
       script: npm run lint

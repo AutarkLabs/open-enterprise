@@ -13,9 +13,9 @@ start_testrpc() {
 	if [ "$RESET" = true ]; then
 		echo "RESET=true -> Will delete ~/.aragon folder ctrl+c to abort now" && sleep 2
 		rm -rf ~/.aragon
-		aragon devchain --reset >/dev/null &
+		aragon devchain --reset &
 	else
-		aragon devchain --port "$testrpc_port" >/dev/null &
+		aragon devchain --port "$testrpc_port" &
 	fi
 
 	testrpc_pid=$!
@@ -45,7 +45,7 @@ copy_assets() {
 export -f copy_assets
 
 deploy_contract() {
-	truffle compile >/dev/null
+	truffle compile
 	deployed_at=$(truffle migrate --reset | tail -4 | head -1 | awk '{ print $NF }')
 	echo "Deployed at:" $deployed_at
 	published=$(npm run publish:http -- --contract $deployed_at | tail -2)
@@ -91,7 +91,7 @@ start_kit() {
 }
 
 echo "Compiling and getting deployed contract address"
-lerna exec --scope=@tpt/apps-* --concurrency=1 --stream -- deploy_contract
+lerna exec --scope=@tpt/apps-* --concurrency=1 -- deploy_contract
 lerna exec --scope=@tpt/apps-* -- apm versions
 echo "Starting multi parcel instances in parallel execution"
 start_multi_parcel

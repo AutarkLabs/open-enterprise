@@ -19,10 +19,10 @@ import "@aragon/apps-voting/contracts/Voting.sol";
 import "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import "@aragon/os/contracts/lib/minime/MiniMeToken.sol";
 
-import "../../address-book/contracts/AddressBook.sol";
-import "../../allocations/contracts/Allocations.sol";
-import "../../projects/contracts/Projects.sol";
-import "../../range-voting/contracts/RangeVoting.sol";
+import "@tpt/apps-address-book/contracts/AddressBook.sol";
+import "@tpt/apps-allocations/contracts/Allocations.sol";
+import "@tpt/apps-projects/contracts/Projects.sol";
+import "@tpt/apps-range-voting/contracts/RangeVoting.sol";
 
 contract KitBase is APMNamehash {
     ENS public ens;
@@ -48,7 +48,7 @@ contract KitBase is APMNamehash {
 
     function latestVersionAppBase(bytes32 appId) public view returns (address base) {
         Repo repo = Repo(PublicResolver(ens.resolver(appId)).addr(appId));
-        (,base,) = repo.getLatest();
+        (, base, ) = repo.getLatest();
 
         return base;
     }

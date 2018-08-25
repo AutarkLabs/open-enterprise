@@ -2,8 +2,7 @@
   "command": {
     "run": {
       "concurrency": 1,
-      "scope": "@tpt/apps-*",
-      "stream": true
+      "scope": "@tpt/apps-*"
     },
     "bootstrap": {
       "progress": true

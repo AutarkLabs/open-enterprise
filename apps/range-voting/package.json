@@ -36,7 +36,7 @@
     "dev": "npm run sync-assets && parcel app/index.html --port 4444",
     "devchain": "aragon devchain",
     "ganache-cli:test": "../shared/test-helpers/ganache-cli.sh",
-    "link:aragon": "mkdir -p node_modules/@aragon/os && ln -s $(pwd)/../../node_modules/@aragon/os/contracts node_modules/@aragon/os/contracts 2> /dev/null",
+    "link:aragon": "mkdir -p node_modules/@aragon/os && ln -s $PWD/../../node_modules/@aragon/os/contracts node_modules/@aragon/os/contracts",
     "lint": "solium --dir ./contracts",
     "prepublishOnly": "truffle compile --all",
     "publish": "apm publish",
