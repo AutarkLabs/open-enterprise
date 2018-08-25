@@ -16,7 +16,7 @@ node_js: 'node'
 before_install: |
   [[ ! -x ~/npm/node_modules/.bin/npm ]] && {
     # caching feature creates `~/npm` for us
-    cd ~/npm && npm install npm@latest
+    cd ~/npm && npm init -y > /dev/null && npm install npm@latest lerna@latest
     cd -
   } || true
   # avoids bugs around https://github.com/travis-ci/travis-ci/issues/5092
