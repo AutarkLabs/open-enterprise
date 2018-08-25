@@ -1,14 +1,14 @@
 pragma solidity ^0.4.18;
 
-import "@aragon/os/contracts/apps/AragonApp.sol";
+import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
 
-// import "@aragon/apps-vault/contracts/Vault.sol";
+// import @tpt/test-helpers/contracts/Vault.sol";
 
-// import "@aragon/apps-vault/contracts/IVaultConnector.sol";
+// import "@tpt/test-helpers/contracts/IVaultConnector.sol";
 
-import "@aragon/os/contracts/lib/zeppelin/math/SafeMath.sol";
+import "@tpt/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
 
-import "@aragon/os/contracts/lib/zeppelin/math/SafeMath64.sol";
+import "@tpt/test-helpers/contracts/lib/zeppelin/math/SafeMath64.sol";
 
 /*******************************************************************************
   Copyright 2018, That Planning Tab
@@ -101,7 +101,8 @@ contract Allocations is AragonApp, Fundable {
     */
     function initialize(
         //Vault _vault
-    ) onlyInit external {
+    ) onlyInit external
+    {
         //vault = _vault.ethConnectorBase();
         initialized();
     }
@@ -129,7 +130,8 @@ contract Allocations is AragonApp, Fundable {
         string _metadata,
         uint256 _limit,
         address _token
-    ) external isInitialized auth(START_PAYOUT_ROLE) returns(uint256 payoutId) {
+    ) external isInitialized auth(START_PAYOUT_ROLE) returns(uint256 payoutId)
+    {
         payoutId = payouts.length++;
         Payout storage payout = payouts[payoutId];
         payout.metadata = _metadata;
@@ -160,7 +162,8 @@ contract Allocations is AragonApp, Fundable {
         bool _recurring,
         uint256 _period,
         uint256 _balance
-    ) external isInitialized auth(SET_DISTRIBUTION_ROLE) {
+    ) external isInitialized auth(SET_DISTRIBUTION_ROLE) 
+    {
         Payout payout = payouts[_payoutId];
         //payout.candidateKeys = _candidateKeys;
         payout.candidateAddresses = _candidateAddresses;

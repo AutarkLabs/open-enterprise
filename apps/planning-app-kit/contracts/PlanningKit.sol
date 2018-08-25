@@ -9,15 +9,15 @@ pragma solidity 0.4.18;
 
 */
 
-import "@aragon/os/contracts/factory/DAOFactory.sol";
-import "@aragon/os/contracts/apm/Repo.sol";
-import "@aragon/os/contracts/lib/ens/ENS.sol";
-import "@aragon/os/contracts/lib/ens/PublicResolver.sol";
-import "@aragon/os/contracts/apm/APMNamehash.sol";
+import "@tpt/test-helpers/contracts/factory/DAOFactory.sol";
+import "@tpt/test-helpers/contracts/apm/Repo.sol";
+import "@tpt/test-helpers/contracts/lib/ens/ENS.sol";
+import "@tpt/test-helpers/contracts/lib/ens/PublicResolver.sol";
+import "@tpt/test-helpers/contracts/apm/APMNamehash.sol";
 
 import "@aragon/apps-voting/contracts/Voting.sol";
 import "@aragon/apps-token-manager/contracts/TokenManager.sol";
-import "@aragon/os/contracts/lib/minime/MiniMeToken.sol";
+import "@tpt/test-helpers/contracts/lib/minime/MiniMeToken.sol";
 
 import "@tpt/apps-address-book/contracts/AddressBook.sol";
 import "@tpt/apps-allocations/contracts/Allocations.sol";

@@ -1,6 +1,6 @@
 pragma solidity ^0.4.18;
 
-import "@aragon/os/contracts/apps/AragonApp.sol";
+import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
 
 /*******************************************************************************
   Copyright 2018, That Planning Tab

@@ -1,6 +1,6 @@
 pragma solidity ^0.4.4;
 
-import "@aragon/os/contracts/apps/AragonApp.sol";
+import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
 
 /* This is only a dummy contract to make Aragon happy
 when it looks for a standard aragon app structure */

@@ -5,12 +5,14 @@ const {
 
 const AddressBook = artifacts.require('AddressBook')
 
-const DAOFactory = artifacts.require('@aragon/os/contracts/factory/DAOFactory')
-const EVMScriptRegistryFactory = artifacts.require(
-  '@aragon/os/contracts/factory/EVMScriptRegistryFactory'
+const DAOFactory = artifacts.require(
+  '@tpt/test-helpers/contracts/factory/DAOFactory'
 )
-const ACL = artifacts.require('@aragon/os/contracts/acl/ACL')
-const Kernel = artifacts.require('@aragon/os/contracts/kernel/Kernel')
+const EVMScriptRegistryFactory = artifacts.require(
+  '@tpt/test-helpers/contracts/factory/EVMScriptRegistryFactory'
+)
+const ACL = artifacts.require('@tpt/test-helpers/contracts/acl/ACL')
+const Kernel = artifacts.require('@tpt/test-helpers/contracts/kernel/Kernel')
 
 const getContract = name => artifacts.require(name)
 

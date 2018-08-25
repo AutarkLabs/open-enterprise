@@ -14,19 +14,19 @@ node_js: "node"
 # `nvm install` happens before the cache is restored, which means
 # we must install our own npm elsewhere (`~/npm`)
 before_install: |
-  [[ ! -x ~/npm/node_modules/.bin/npm ]] && {
-    # caching feature creates `~/npm` for us
-    cd ~/npm && npm init -y && npm install npm@latest lerna@latest
+  [[ ! -x ~/global-bins/node_modules/.bin/npm ]] && {
+    # caching feature creates `~/global-bins` for us
+    cd ~/global-bins && npm init -y && npm install npm@latest lerna
     cd -
   } || true
   # avoids bugs around https://github.com/travis-ci/travis-ci/issues/5092
-  export PATH=~/npm/node_modules/.bin:$PATH
+  export PATH=~/global-bins/node_modules/.bin:$PATH
 # this avoids compilation in most cases (where we don't need it)
 install: npm run postinstall
 cache:
   directories:
     - ~/.npm # cache npm's cache
-    - ~/npm # cache latest npm
+    - ~/global-bins # cache latest npm and lerna
 
 jobs:
   include:

@@ -1,10 +1,12 @@
 const Allocations = artifacts.require('Allocations')
-const DAOFactory = artifacts.require('@aragon/os/contracts/factory/DAOFactory')
-const EVMScriptRegistryFactory = artifacts.require(
-  '@aragon/os/contracts/factory/EVMScriptRegistryFactory'
+const DAOFactory = artifacts.require(
+  '@tpt/test-helpers/contracts/factory/DAOFactory'
 )
-const ACL = artifacts.require('@aragon/os/contracts/acl/ACL')
-const Kernel = artifacts.require('@aragon/os/contracts/kernel/Kernel')
+const EVMScriptRegistryFactory = artifacts.require(
+  '@tpt/test-helpers/contracts/factory/EVMScriptRegistryFactory'
+)
+const ACL = artifacts.require('@tpt/test-helpers/contracts/acl/ACL')
+const Kernel = artifacts.require('@tpt/test-helpers/contracts/kernel/Kernel')
 
 // TODO: Fix Vault not loading artifacts error
 // const Vault = artifacts.require('@aragon/apps-vault/contracts/Vault')
@@ -84,14 +86,14 @@ contract('Allocations App', accounts => {
     // )
 
     receipt = await dao.newAppInstance(
-       '0x2345',
-       (await Allocations.new()).address,
-       { from: root }
+      '0x2345',
+      (await Allocations.new()).address,
+      { from: root }
     )
 
-     allocation = Allocations.at(
-       receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
-     )
+    allocation = Allocations.at(
+      receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
+    )
   })
 
   context('main context', () => {
@@ -108,34 +110,34 @@ contract('Allocations App', accounts => {
       // TODO: Test does not work, fix
       const imperialunderfundedBudget = await web3.eth.getBalance(empire)
       var send = await web3.eth.sendTransaction({
-         from: empire,
-         to: app.address,
-         value: web3.toWei(0.01, 'ether'),
-       })
-       const bobafettInitialBalance = await web3.eth.getBalance(bobafett)
-       const dengarInitialBalance = await web3.eth.getBalance(dengar)
-       const bosskInitialBalance = await web3.eth.getBalance(bossk)
-       candidateAddresses = [bobafett, dengar, bossk]
-       await app.initialize({ from: empire })
+        from: empire,
+        to: app.address,
+        value: web3.toWei(0.01, 'ether'),
+      })
+      const bobafettInitialBalance = await web3.eth.getBalance(bobafett)
+      const dengarInitialBalance = await web3.eth.getBalance(dengar)
+      const bosskInitialBalance = await web3.eth.getBalance(bossk)
+      candidateAddresses = [bobafett, dengar, bossk]
+      await app.initialize({ from: empire })
 
-       let allocationId = (await app.newPayout(
-        'Fett\'s vett',
-         web3.toWei(1, 'ether'),
-         0x0
-       )).logs[0].args.accountId.toNumber()
-       supports = [500, 200, 300]
-       totalsupport = 1000
-       await app.setDistribution(
-         candidateAddresses,
-         supports,
-         allocationId,
-         false,
-         false,
-         0,
-         web3.toWei(0.01, 'ether'),
-         { from: empire }
-       )
-       /*await app.executePayout(allocationId)
+      let allocationId = (await app.newPayout(
+        "Fett's vett",
+        web3.toWei(1, 'ether'),
+        0x0
+      )).logs[0].args.accountId.toNumber()
+      supports = [500, 200, 300]
+      totalsupport = 1000
+      await app.setDistribution(
+        candidateAddresses,
+        supports,
+        allocationId,
+        false,
+        false,
+        0,
+        web3.toWei(0.01, 'ether'),
+        { from: empire }
+      )
+      /*await app.executePayout(allocationId)
        const bobafettBalance = await web3.eth.getBalance(bobafett)
        const dengarBalance = await web3.eth.getBalance(dengar)
        const bosskBalance = await web3.eth.getBalance(bossk)

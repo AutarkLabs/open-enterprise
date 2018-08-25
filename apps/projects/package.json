@@ -13,6 +13,7 @@
     "styled-components": "^3.4.2"
   },
   "devDependencies": {
+    "@tpt/test-helpers": "^0.0.1",
     "babel-eslint": "^8.2.6",
     "babel-plugin-styled-components": "^1.5.1",
     "babel-plugin-transform-class-properties": "^6.24.1",
@@ -32,7 +33,6 @@
     "dev": "npm run sync-assets && parcel src/index.html --port 3333",
     "devchain": "aragon devchain",
     "ganache-cli:test": "../shared/test-helpers/ganache-cli.sh",
-    "link:aragon": "mkdir -p node_modules/@aragon/os && ln -s $PWD/../../node_modules/@aragon/os/contracts node_modules/@aragon/os/contracts",
     "lint": "solium --dir ./contracts",
     "prepublishOnly": "truffle compile --all",
     "publish": "apm publish",
