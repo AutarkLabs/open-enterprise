@@ -33,7 +33,7 @@
     "lint": "solium --dir ./contracts",
     "prepublishOnly": "truffle compile --all",
     "publish": "apm publish",
-    "publish:http": "npx apm publish --http localhost:2222 --served-at ./dist",
+    "publish:http": "apm publish --http localhost:2222 --served-at ./dist",
     "start": "aragon run",
     "sync-assets": "copy-aragon-ui-assets ./dist",
     "test:gas": "GAS_REPORTER=true npm test",

@@ -23,8 +23,6 @@ lerna info versioning independent
 
 - `npm i` : Installs root project dependencies and then bootstraps all independent app dependencies.
 
-**It installs everthying needed, since commands are run with `npx` it is not necessary to have global requirements apart from Node.js LTS or greater**
-
 ### Then, run one of the handy scripts depending of the needs:
 
 #### To start frontend development:
@@ -69,7 +67,7 @@ Finally, the script launches the Aragon Wrapper with the complete planning suite
   To debug if the individual apps are being published, if more control is needed, individual app publishing can be called by `cd apps/app_folder && npm run publish`
 - `npm run devchain or npm run devchain:reset`
   Is needed to be run in another terminal window to be able to deploy all apps together. `npm start` script does this by using concurrently npm package.
-- If previous steps where succesful, then run: `npx aragon run --kit PlanningKit --kit-init @ARAGON_ENS`
+- If previous steps where succesful, then run: `aragon run --kit PlanningKit --kit-init @ARAGON_ENS`
   To deploy the kit and launch the Aragon Wrapper in the browser.
   It needs the same local blockchain to find the locally deployed apps, so better to keep the devchain open and running (Again, with `npm start` is not needed (but allowed) because is launched in parallel with concurrently).
 
