@@ -1,8 +1,12 @@
-pragma solidity ^0.4.18;
+/*
+ * SPDX-License-Identitifer:    MIT
+ */
+
+pragma solidity ^0.4.24;
 
 
 contract ACLSyntaxSugar {
-    function arr() internal pure returns (uint256[] r) {}
+    function arr() internal pure returns (uint256[]) {}
 
     function arr(bytes32 _a) internal pure returns (uint256[] r) {
         return arr(uint256(_a));
@@ -22,6 +26,10 @@ contract ACLSyntaxSugar {
 
     function arr(address _a, uint256 _b, uint256 _c) internal pure returns (uint256[] r) {
         return arr(uint256(_a), _b, _c);
+    }
+
+    function arr(address _a, uint256 _b, uint256 _c, uint256 _d) internal pure returns (uint256[] r) {
+        return arr(uint256(_a), _b, _c, _d);
     }
 
     function arr(address _a, uint256 _b) internal pure returns (uint256[] r) {

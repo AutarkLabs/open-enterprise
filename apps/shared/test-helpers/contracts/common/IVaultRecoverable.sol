@@ -1,9 +1,13 @@
-pragma solidity ^0.4.18;
+/*
+ * SPDX-License-Identitifer:    MIT
+ */
+
+pragma solidity ^0.4.24;
 
 
 interface IVaultRecoverable {
     function transferToVault(address token) external;
 
-    function allowRecoverability(address token) public view returns (bool);
-    function getRecoveryVault() public view returns (address);
+    function allowRecoverability(address token) external view returns (bool);
+    function getRecoveryVault() external view returns (address);
 }

@@ -1,4 +1,8 @@
-pragma solidity ^0.4.18;
+/*
+ * SPDX-License-Identitifer:    MIT
+ */
+
+pragma solidity ^0.4.24;
 
 import "../acl/IACL.sol";
 import "../common/IVaultRecoverable.sol";

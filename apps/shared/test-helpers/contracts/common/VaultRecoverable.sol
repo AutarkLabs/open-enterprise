@@ -1,4 +1,8 @@
-pragma solidity ^0.4.18;
+/*
+ * SPDX-License-Identitifer:    MIT
+ */
+
+pragma solidity ^0.4.24;
 
 import "./EtherTokenConstant.sol";
 import "./IsContract.sol";
@@ -18,7 +22,7 @@ contract VaultRecoverable is IVaultRecoverable, EtherTokenConstant, IsContract {
         require(isContract(vault));
 
         if (_token == ETH) {
-            vault.transfer(this.balance);
+            vault.transfer(address(this).balance);
         } else {
             uint256 amount = ERC20(_token).balanceOf(this);
             ERC20(_token).transfer(vault, amount);
@@ -33,4 +37,7 @@ contract VaultRecoverable is IVaultRecoverable, EtherTokenConstant, IsContract {
     function allowRecoverability(address token) public view returns (bool) {
         return true;
     }
+
+    // Cast non-implemented interface to be public so we can use it internally
+    function getRecoveryVault() public view returns (address);
 }

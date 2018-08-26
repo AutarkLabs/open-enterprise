@@ -1,39 +1,46 @@
-pragma solidity ^0.4.18;
+/*
+ * SPDX-License-Identitifer:    MIT
+ */
 
-import "./ScriptHelpers.sol";
+pragma solidity ^0.4.24;
+
 import "./IEVMScriptExecutor.sol";
 import "./IEVMScriptRegistry.sol";
 
 import "../apps/AppStorage.sol";
+import "../common/Initializable.sol";
 
 
-contract EVMScriptRunner is AppStorage, EVMScriptRegistryConstants {
-    using ScriptHelpers for bytes;
-
-    function runScript(bytes _script, bytes _input, address[] _blacklist) protectState internal returns (bytes output) {
-        // TODO: Too much data flying around, maybe extracting spec id here is cheaper
-        address executorAddr = getExecutor(_script);
-        require(executorAddr != address(0));
-
-        bytes memory calldataArgs = _script.encode(_input, _blacklist);
-        bytes4 sig = IEVMScriptExecutor(0).execScript.selector;
-
-        require(executorAddr.delegatecall(sig, calldataArgs));
-
-        bytes memory ret = returnedDataDecoded();
-
-        require(ret.length > 0);
-
-        return ret;
-    }
+contract EVMScriptRunner is AppStorage, Initializable, EVMScriptRegistryConstants {
+    event ScriptResult(address indexed executor, bytes script, bytes input, bytes returnData);
 
     function getExecutor(bytes _script) public view returns (IEVMScriptExecutor) {
         return IEVMScriptExecutor(getExecutorRegistry().getScriptExecutor(_script));
     }
 
-    // TODO: Internal
+    function runScript(bytes _script, bytes _input, address[] _blacklist)
+        internal
+        isInitialized
+        protectState
+        returns (bytes)
+    {
+        // TODO: Too much data flying around, maybe extracting spec id here is cheaper
+        IEVMScriptExecutor executor = getExecutor(_script);
+        require(address(executor) != address(0));
+
+        bytes4 sig = executor.execScript.selector;
+
+        require(address(executor).delegatecall(abi.encodeWithSelector(sig, _script, _input, _blacklist)));
+
+        bytes memory output = returnedDataDecoded();
+
+        emit ScriptResult(address(executor), _script, _input, output);
+
+        return output;
+    }
+
     function getExecutorRegistry() internal view returns (IEVMScriptRegistry) {
-        address registryAddr = kernel.getApp(EVMSCRIPT_REGISTRY_APP);
+        address registryAddr = kernel().getApp(EVMSCRIPT_REGISTRY_APP);
         return IEVMScriptRegistry(registryAddr);
     }
 
@@ -55,10 +62,10 @@ contract EVMScriptRunner is AppStorage, EVMScriptRegistryConstants {
     }
 
     modifier protectState {
-        address preKernel = kernel;
-        bytes32 preAppId = appId;
+        address preKernel = address(kernel());
+        bytes32 preAppId = appId();
         _; // exec
-        require(kernel == preKernel);
-        require(appId == preAppId);
+        require(address(kernel()) == preKernel);
+        require(appId() == preAppId);
     }
 }
