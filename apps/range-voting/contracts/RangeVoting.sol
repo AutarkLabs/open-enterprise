@@ -1,4 +1,4 @@
-pragma solidity 0.4.18;
+pragma solidity ^0.4.18;
 
 import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
 
@@ -7,6 +7,9 @@ import "@tpt/test-helpers/contracts/lib/minime/MiniMeToken.sol";
 import "@tpt/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
 
 import "@tpt/test-helpers/contracts/lib/zeppelin/math/SafeMath64.sol";
+
+import "@tpt/test-helpers/contracts/evmscript/ScriptHelpers.sol";
+
 
 // import "@tpt/test-helpers/contracts/common/IForwarder.sol";
 
@@ -19,6 +22,7 @@ interface IForwarderFixed {
     function canForward(address sender, bytes evmCallScript) public returns (bool);
     function forward(bytes evmCallScript) public;
 }
+
 
 /*******************************************************************************
   Copyright 2018, That Planning Tab
@@ -47,7 +51,7 @@ interface IForwarderFixed {
 *  Attention was paid to make the program as generalized as possible.
 *******************************************************************************/
 contract RangeVoting is IForwarderFixed, AragonApp {
-    //using CustomScriptHelpers for bytes;
+    using ScriptHelpers for bytes;
 
     using SafeMath for uint256;
     using SafeMath64 for uint64;
@@ -218,7 +222,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
     * @param _voteId id for vote structure this 'ballot action' is connected to
     * @param _description The candidate descrciption of the candidate.
     */
-    function getCandidate(uint256 _voteId, address _description)
+    function getCandidate(uint256 _voteId, address _description) // solium-disable-line function-order
     external view returns(bool, bytes, uint8, uint256)
     {
         Vote storage vote = votes[_voteId];
@@ -236,7 +240,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
     *         to return the struct data.
     * @param _key The bytes32 key used when adding the candidate.
     */
-    function getCandidateDescription(bytes32 _key)
+    function getCandidateDescription(bytes32 _key) // solium-disable-line function-order
     external view returns(address)
     {
         return(candidateDescriptions[_key]);
@@ -324,7 +328,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         string metadata,
         bytes executionScript,
         bool executed
-    ) {
+    ) { // solium-disable-line lbrace
         Vote storage vote = votes[_voteId];
 
         open = _isVoteOpen(vote);
@@ -385,12 +389,12 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         Vote storage vote = votes[voteId];
         vote.executionScript = _executionScript;
         vote.creator = msg.sender;
-        vote.startDate = uint64(now);
+        vote.startDate = uint64(block.timestamp); // solium-disable-line security/no-block-members
         vote.metadata = _metadata;
         vote.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
         vote.totalVoters = token.totalSupplyAt(vote.snapshotBlock);
         vote.candidateSupportPct = globalCandidateSupportPct;
-        var (scriptOffset, scriptRemainder) = _extractCandidates(_executionScript, voteId);
+        // var (scriptOffset, scriptRemainder) = _extractCandidates(_executionScript, voteId);
         //vote.scriptOffset = scriptOffset;
         //vote.scriptRemainder = scriptRemainder;
         StartVote(voteId);
@@ -427,7 +431,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         // This has the potential to be too gas expensive to ever happen.
         // Upper limit of candidates should be checked against this function
         
-        for(uint256 i = candidateLength; i > 0; i--){
+        for (uint256 i = candidateLength; i > 0; i--) {
             currentCandidate = _executionScript.addressAt(currentOffset);
             currentOffset = currentOffset + 0x20;
             addCandidate(_voteId, new bytes(0), currentCandidate);
@@ -566,7 +570,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
     * @dev Calculates whether `_value` is at least a percent `_pct` over `_total`
     */
     function _isVoteOpen(Vote storage vote) internal view returns (bool) {
-        return uint64(now) < (vote.startDate.add(voteTime)) && !vote.executed;
+        return uint64(block.timestamp) < (vote.startDate.add(voteTime)) && !vote.executed; // solium-disable-line security/no-block-members
     }
 
     /**
