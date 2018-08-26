@@ -2,7 +2,6 @@
   "private": true,
   "name": "planning-app-monorepo",
   "devDependencies": {
-    "@aragon/cli": "git://github.com/ottodevs/aragon-cli.git",
     "lerna": "^3.1.4"
   },
   "scripts": {
