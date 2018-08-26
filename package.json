@@ -36,6 +36,10 @@
     "test:allocations": "cd apps/allocations && npm test",
     "test:projects": "cd apps/projects && npm test",
     "test:range": "cd apps/range-voting && npm test",
-    "lint": "lerna run lint"
+    "lint": "lerna run lint",
+    "lint:address": "cd apps/address-book && npm run lint",
+    "lint:allocations": "cd apps/allocations && npm run lint",
+    "lint:projects": "cd apps/projects && npm run lint",
+    "lint:range": "cd apps/range-voting && npm run lint"
   }
 }
