@@ -40,10 +40,10 @@ interface Fundable {
 * @dev This will 100% break if the contract is upgraded. Basically just a proxy
        to receive funds from an address and "piece it out" to a layered contract
 *******************************************************************************/
-contract FundForwarder {
+contract FundForwarder { // solium-disable-line blank-lines
     Fundable fundable;
     uint256 id;
-    function FundForwarder(uint256 _id, address _fundable) public {
+    function FundForwarder(uint256 _id, address _fundable) public { // solium-disable-line blank-lines
         fundable = Fundable(_fundable);
         id = _id;
     }
@@ -59,7 +59,7 @@ contract FundForwarder {
 *      and any time that tokens need to be distributed based on a certain
 *      percentage breakdown to an array of addresses.
 *******************************************************************************/
-contract Allocations is AragonApp, Fundable {
+contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
 
     using SafeMath for uint256;
 
@@ -99,9 +99,9 @@ contract Allocations is AragonApp, Fundable {
     *         None of the distribution or payments are handled in this step.
     *
     */
-    function initialize(
+    function initialize( // solium-disable-line blank-lines
         //Vault _vault
-    ) onlyInit external
+    ) external onlyInit // solium-disable-line visibility-first
     {
         //vault = _vault.ethConnectorBase();
         initialized();
@@ -126,7 +126,7 @@ contract Allocations is AragonApp, Fundable {
     * @param _metadata Any relevent label for the payout
     *
     */
-    function newPayout(
+    function newPayout( // solium-disable-line function-order
         string _metadata,
         uint256 _limit,
         address _token
@@ -140,7 +140,7 @@ contract Allocations is AragonApp, Fundable {
         payout.balance = 0;
         FundForwarder fund = new FundForwarder(payoutId, address(this));
         payout.proxy = address(fund);
-        NewAccount(payoutId);
+        NewAccount(payoutId); // solium-disable-line emit
     }
 
     /**
@@ -153,7 +153,7 @@ contract Allocations is AragonApp, Fundable {
     * param _candidateKeys The array of keys for all candidates in this payout
     * param _supports The Array of all support values for the various candidates
     */
-    function setDistribution(
+    function setDistribution( // solium-disable-line function-order
         //bytes32[] _candidateKeys,
         address[] _candidateAddresses,
         uint256[] _supports,
@@ -167,19 +167,19 @@ contract Allocations is AragonApp, Fundable {
         Payout payout = payouts[_payoutId];
         //payout.candidateKeys = _candidateKeys;
         payout.candidateAddresses = _candidateAddresses;
-        require(_balance <= payout.limit);
+        require(_balance <= payout.limit); // solium-disable-line error-reason
         payout.informational = _informational;
         payout.recurring = _recurring;
-        if(!_informational){
+        if (!_informational) {
             payout.balance = _balance;
         } else {
             payout.balance = 0;
         }
-        if(_recurring){
+        if (_recurring) {
             // minimum granularity is a single day
-            require(payout.period > 86399);
+            require(payout.period > 86399); // solium-disable-line error-reason
             payout.period = _period;
-            payout.startTime = now;
+            payout.startTime = now; // solium-disable-line security/no-block-members
         } else {
             payout.period = 0;
         }
@@ -191,9 +191,9 @@ contract Allocations is AragonApp, Fundable {
         payout.supports = _supports;
     }
 
-    function fund(uint256 Id) external payable {
-        Payout payout = payouts[Id];
-        require(!payout.informational);
+    function fund(uint256 _id) external payable { // solium-disable-line function-order
+        Payout payout = payouts[_id];
+        require(!payout.informational); // solium-disable-line error-reason
         payout.balance.add(msg.value);
     }
 
@@ -205,13 +205,13 @@ contract Allocations is AragonApp, Fundable {
     *         processed and funds will be sent the appropriate places.
     *
     */
-    function executePayout(uint256 _payoutId) external payable onlyInit auth(EXECUTE_PAYOUT_ROLE){
+    function executePayout(uint256 _payoutId) external payable onlyInit auth(EXECUTE_PAYOUT_ROLE) { // solium-disable-line function-order
         Payout payout = payouts[_payoutId];
-        require(!payout.informational);
-        require(payout.distSet);
-        if(payout.recurring){
+        require(!payout.informational); // solium-disable-line error-reason
+        require(payout.distSet); // solium-disable-line error-reason
+        if (payout.recurring) {
             uint256 payoutTime = payout.startTime.add(payout.period);
-            require(payoutTime > now);
+            require(payoutTime > now); // solium-disable-line security/no-block-members, error-reason
             payout.startTime = payoutTime;
         } else {
             payout.distSet = false;
@@ -219,12 +219,12 @@ contract Allocations is AragonApp, Fundable {
         uint256 totalSupport;
         uint256 pointsPer;
 
-        for(uint i = 0; i < payout.supports.length; i++){
+        for (uint i = 0; i < payout.supports.length; i++) {
             totalSupport += payout.supports[i];
         }
 
-        if(this.balance < payout.balance){
-            revert();
+        if (this.balance < payout.balance) {
+            revert(); // solium-disable-line error-reason
             /*
             For now the vault isn't working see aragon-apps issue #292
 
@@ -238,14 +238,14 @@ contract Allocations is AragonApp, Fundable {
 
         //handle vault
 
-        for(i = 0; i < payout.candidateAddresses.length; i++){
+        for (i = 0; i < payout.candidateAddresses.length; i++) {
             payout.candidateAddresses[i].transfer(payout.supports[i].mul(pointsPer));
         }
 
-        ExecutePayout(_payoutId);
+        ExecutePayout(_payoutId); // solium-disable-line emit
     }
 
-    function () public payable {
+    function () public payable { // solium-disable-line function-order
 
     }
 

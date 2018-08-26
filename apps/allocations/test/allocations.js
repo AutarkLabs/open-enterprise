@@ -24,7 +24,7 @@ contract('Allocations App', accounts => {
   const root = accounts[0]
 
   before(async () => {
-    const kernelBase = await getContract('Kernel').new()
+    const kernelBase = await getContract('Kernel').new(true)
     const aclBase = await getContract('ACL').new()
     const regFact = await EVMScriptRegistryFactory.new()
     daoFact = await DAOFactory.new(
