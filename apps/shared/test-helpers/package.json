@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "devDependencies": {
     "@aragon/cli": "git://github.com/ottodevs/aragon-cli.git",
+    "eth-gas-reporter": "^0.1.10",
     "ethereumjs-abi": "^0.6.5",
     "ganache-cli": "^6.1.8",
     "solidity-coverage": "0.3.5",

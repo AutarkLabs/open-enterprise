@@ -2,6 +2,7 @@
   "private": true,
   "name": "planning-app-monorepo",
   "devDependencies": {
+    "@aragon/cli": "git://github.com/ottodevs/aragon-cli.git",
     "lerna": "^3.1.4"
   },
   "scripts": {
@@ -10,7 +11,7 @@
     "clean": "git clean -ffdx",
     "clean:aragon": "rm -rf ~/.aragon && rm -rf ~/.ipfs",
     "coverage": "lerna run coverage",
-    "coverage:address": "cd apps/address && lerna run coverage",
+    "coverage:address": "cd apps/address-book && lerna run coverage",
     "coverage:allocations": "cd apps/allocations && lerna run coverage",
     "coverage:projects": "cd apps/projects && lerna run coverage",
     "coverage:range": "cd apps/range-voting && lerna run coverage",
