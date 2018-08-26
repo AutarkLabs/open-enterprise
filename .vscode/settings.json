@@ -1,7 +1,5 @@
 {
-  "extends": "solium:all",
-  "plugins": ["security"],
-  "rules": {
+  "solidity.soliumRules": {
     "security/no-low-level-calls": "off",
     "security/no-inline-assembly": "off",
     "emit": "off",
