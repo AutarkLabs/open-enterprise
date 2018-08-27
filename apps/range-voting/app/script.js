@@ -1,6 +1,8 @@
 import Aragon, { providers } from '@aragon/client'
 import { combineLatest } from './rxjs'
-import voteSettings, { hasLoadedVoteSettings } from './range-voting/vote-settings'
+import voteSettings, {
+  hasLoadedVoteSettings,
+} from './range-voting/vote-settings'
 import { EMPTY_CALLSCRIPT } from './range-voting/vote-utils'
 
 const app = new Aragon()
@@ -15,15 +17,13 @@ app.store(async (state, { event, returnValues }) => {
   switch (event) {
   case 'StartVote':
     nextState = await startVote(nextState, returnValues)
-    console.log("Vote Started")
+    console.log('Vote Started')
     console.log(nextState)
     break
   }
 
   return nextState
 })
-
-
 
 /***********************
  *                     *
@@ -157,7 +157,7 @@ function loadVoteSettings() {
 
 // Apply transmations to a vote received from web3
 // Note: ignores the 'open' field as we calculate that locally
-// 
+//
 function marshallVote({
   creator,
   executed,
@@ -183,4 +183,3 @@ function marshallVote({
     description,
   }
 }
-

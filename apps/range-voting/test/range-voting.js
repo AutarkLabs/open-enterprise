@@ -129,7 +129,10 @@ contract('RangeVoting App', accounts => {
     it('can create new vote', async () => {
       let action = {
         to: executionTarget.address,
-        calldata: executionTarget.contract.setSignal.getData([accounts[7], accounts[8], accounts[9]], [0,0,0]),
+        calldata: executionTarget.contract.setSignal.getData(
+          [accounts[7], accounts[8], accounts[9]],
+          [0, 0, 0]
+        ),
       }
       const script = encodeCallScript([action])
       const voteId = createdVoteId(
@@ -139,7 +142,10 @@ contract('RangeVoting App', accounts => {
     it('can cast votes', async () => {
       let action = {
         to: executionTarget.address,
-        calldata: executionTarget.contract.setSignal.getData([accounts[7], accounts[8], accounts[9]], [0,0,0]),
+        calldata: executionTarget.contract.setSignal.getData(
+          [accounts[7], accounts[8], accounts[9]],
+          [0, 0, 0]
+        ),
       }
       const script = encodeCallScript([action])
       const voteId = createdVoteId(
@@ -152,7 +158,10 @@ contract('RangeVoting App', accounts => {
     it('execution scripts can execute actions', async () => {
       let action = {
         to: executionTarget.address,
-        calldata: executionTarget.contract.setSignal.getData([accounts[7], accounts[8], accounts[9]], [0,0,0]),
+        calldata: executionTarget.contract.setSignal.getData(
+          [accounts[7], accounts[8], accounts[9]],
+          [0, 0, 0]
+        ),
       }
       const script = encodeCallScript([action])
       const voteId = createdVoteId(
@@ -174,7 +183,7 @@ contract('RangeVoting App', accounts => {
         await app.newVote(encodeCallScript([]), '', { from: holder50 })
       )
     })
-/*
+    /*
     it('execution throws if any action on script throws', async () => {
       let action = {
         to: executionTarget.address,
@@ -475,6 +484,5 @@ contract('RangeVoting App', accounts => {
       })
     })
   */
-
   })
 })
