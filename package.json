@@ -27,7 +27,7 @@
     "devchain:reset": "npx aragon devchain --reset",
     "install": "npm run bootstrap",
     "publish:apps": "npx lerna run --concurrency=1 --stream publish",
-    "start": "npm i && npx concurrently npm:devchain \"sleep 8 && npm run publish:apps && npm run start:kit\"",
+    "start": "npx concurrently npm:devchain \"sleep 8 && npm run publish:apps && npm run start:kit\"",
     "start:kit": "npx aragon run --kit PlanningKit --kit-init @ARAGON_ENS",
     "start:address": "cd apps/address-book && npm start",
     "start:allocations": "cd apps/allocations && npm start",
