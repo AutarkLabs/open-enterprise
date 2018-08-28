@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity 0.4.18;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
 
@@ -10,7 +10,7 @@ import "@aragon/os/contracts/lib/zeppelin/math/SafeMath64.sol";
 
 import "@aragon/os/contracts/common/IForwarder.sol";
 
-//import "./misc/CustomScriptHelpers.sol";
+import "@aragon/os/contracts/lib/misc/Migrations.sol";
 
 /*******************************************************************************
   Copyright 2018, That Planning Tab
@@ -40,27 +40,32 @@ import "@aragon/os/contracts/common/IForwarder.sol";
 *******************************************************************************/
 contract RangeVoting is IForwarder, AragonApp {
     //using CustomScriptHelpers for bytes;
-
+    
     using SafeMath for uint256;
     using SafeMath64 for uint64;
 
     MiniMeToken public token;
-    uint256 public globalCandidateSupportPct;
-    uint256 public minParticipationPct;
+    uint256 public globalCandidateSupportPct; //supportRequiredPct;
+    uint256 public minParticipationPct; //minAcceptQuorumPct;
     uint64 public voteTime;
 
-    uint256 constant public PCT_BASE = 10 ** 18;
+    uint256 constant public PCT_BASE = 10 ** 18; // 0% = 0; 1% = 10^16; 100% = 10^18
 
     bytes32 constant public CREATE_VOTES_ROLE = keccak256("CREATE_VOTES_ROLE");
     bytes32 constant public ADD_CANDIDATES_ROLE = keccak256("ADD_CANDIDATES_ROLE");
     bytes32 constant public MODIFY_PARTICIPATION_ROLE = keccak256("MODIFY_CANDIDATE_SUPPORT_ROLE");
+    // bytes32 constant public MODIFY_QUORUM_ROLE = keccak256("MODIFY_QUORUM_ROLE");
+
+    // enum VoterState { Absent, Yea, Nay }
 
     struct Vote {
         address creator;
         uint64 startDate;
         uint256 snapshotBlock;
-        uint256 candidateSupportPct;
+        uint256 candidateSupportPct; //minAcceptQuorumPct;
         uint256 totalVoters;
+        // uint256 yea;
+        // uint256 nay;
         string metadata;
         bytes executionScript;
         uint256 scriptOffset;
@@ -69,6 +74,7 @@ contract RangeVoting is IForwarder, AragonApp {
         bytes32[] candidateKeys;
         mapping (bytes32 => CandidateState) candidates;
         mapping (address => uint256[]) voters;
+        // mapping (address => VoterState) voters;
     }
 
     mapping (bytes32 => address ) candidateDescriptions;
@@ -82,6 +88,7 @@ contract RangeVoting is IForwarder, AragonApp {
     }
 
     Vote[] votes;
+    // Vote[] internal votes; // first index is 1
 
     event StartVote(uint256 indexed voteId);
     event CastVote(
@@ -90,16 +97,18 @@ contract RangeVoting is IForwarder, AragonApp {
         uint256[] supports,
         uint256 stake
     );
+    // event CastVote(uint256 indexed voteId, address indexed voter, bool supports, uint256 stake);
     event UpdateCandidateSupport(string indexed candidateKey, uint256 support);
     event ExecuteVote(uint256 indexed voteId);
     event ChangeCandidateSupport(uint256 candidateSupportPct);
     event ExecutionScript(bytes script, uint256 data);
+    // event ChangeMinQuorum(uint256 minAcceptQuorumPct);
 
 ////////////////
 // Constructor
 ////////////////
 
-    /**
+   /**
     * @notice Initializes RangeVoting app with `_token.symbol(): string` for
     *         governance, minimum participation of
     *         `(_minParticipationPct - _minParticipationPct % 10^14)
@@ -121,6 +130,8 @@ contract RangeVoting is IForwarder, AragonApp {
         MiniMeToken _token,
         uint256 _minParticipationPct,
         uint256 _candidateSupportPct,
+        // uint256 _supportRequiredPct,
+        // uint256 _minAcceptQuorumPct,
         uint64 _voteTime
     ) onlyInit external
     {
@@ -129,32 +140,76 @@ contract RangeVoting is IForwarder, AragonApp {
         require(_minParticipationPct > 0);
         require(_minParticipationPct <= PCT_BASE);
         require(_minParticipationPct >= _candidateSupportPct);
+        // require(_minAcceptQuorumPct > 0);
+        // require(_supportRequiredPct <= PCT_BASE);
+        // require(_supportRequiredPct >= _minAcceptQuorumPct);
 
         token = _token;
         minParticipationPct = _minParticipationPct;
         globalCandidateSupportPct = _candidateSupportPct;
+        // supportRequiredPct = _supportRequiredPct;
+        // minAcceptQuorumPct = _minAcceptQuorumPct;
         voteTime = _voteTime;
 
         votes.length += 1;
     }
-
 ///////////////////////
 // Voting functions
 ///////////////////////
 
 
+    // /**
+    // * @notice Change minimum acceptance quorum to `(_minAcceptQuorumPct - _minAcceptQuorumPct % 10^16) / 10^14`%
+    // * @param _minAcceptQuorumPct New acceptance quorum
+    // */
+    // function changeMinAcceptQuorumPct(uint256 _minAcceptQuorumPct) authP(MODIFY_QUORUM_ROLE, arr(_minAcceptQuorumPct, minAcceptQuorumPct)) isInitialized external {
+    //     require(_minAcceptQuorumPct > 0);
+    //     require(supportRequiredPct >= _minAcceptQuorumPct);
+    //     minAcceptQuorumPct = _minAcceptQuorumPct;
+
+    //     ChangeMinQuorum(_minAcceptQuorumPct);
+    // }
+
     /**
     * @notice Create a new vote about "`_metadata`"
     * @param _executionScript EVM script to be executed on approval
-    * @return voteId id for newly created vote
+    * @param _metadata Vote metadata
+    * @return voteId Id for newly created vote
     */
     function newVote(bytes _executionScript, string _metadata)
         auth(CREATE_VOTES_ROLE) external returns (uint256 voteId)
     {
         return _newVote(_executionScript, _metadata);
+        // return _newVote(_executionScript, _metadata, true);
     }
 
+    // /**
+    //  * @notice Create a new vote about "`_metadata`"
+    //  * @param _executionScript EVM script to be executed on approval
+    //  * @param _metadata Vote metadata
+    //  * @param _castVote Whether to also cast newly created vote
+    //  * @return voteId id for newly created vote
+    //  */
+    // function newVote(bytes _executionScript, string _metadata, bool _castVote) auth(CREATE_VOTES_ROLE) external returns (uint256 voteId) {
+    //     return _newVote(_executionScript, _metadata, _castVote);
+    // }
+
+    // /**
+    // * @notice Vote `_supports ? 'yea' : 'nay'` in vote #`_voteId`
+    // * @param _voteId Id for vote
+    // * @param _supports Whether voter supports the vote
+    // * @param _executesIfDecided Whether the vote should execute its action if it becomes decided
+    // */
     /**
+    // function vote(uint256 _voteId, bool _supports, bool _executesIfDecided) isInitialized external {
+    //     require(canVote(_voteId, msg.sender));
+    //     _vote(
+    //         _voteId,
+    //         _supports,
+    //         msg.sender,
+    //         _executesIfDecided
+    //     );
+    // }
     * @notice Allows a token holder to caste a vote on the current options.
     * @param _voteId id for vote structure this 'ballot action' is connected to
     * @param _supports Array of support weights in order of their order in
@@ -170,13 +225,13 @@ contract RangeVoting is IForwarder, AragonApp {
     * @notice Execute the result of vote #`_voteId`
     * @param _voteId Id for vote
     */
+    // function executeVote(uint256 _voteId) isInitialized external {
     function executeVote(uint256 _voteId) external {
         require(canExecute(_voteId));
-        /* solium-disable-next-line */
         _executeVote(_voteId);
     }
 
-    /**
+     /**
     * @param _voteId id for vote structure this 'ballot action' is connected to
     * @notice `addCandidate` allows the `ADD_CANDIDATES_ROLE` to add candidates
     *         (or options) to the current vote.
@@ -190,18 +245,18 @@ contract RangeVoting is IForwarder, AragonApp {
     public auth(ADD_CANDIDATES_ROLE)
     {
         // Get vote and candidate into storage
-        Vote storage vote = votes[_voteId];
+        Vote storage voteA = votes[_voteId];
         bytes32 cKey = keccak256(_description);
-        CandidateState storage candidate = vote.candidates[cKey];
+        CandidateState storage candidate = voteA.candidates[cKey];
         // Make sure that this candidate has not already been added
         require(candidate.added == false);
         // Set all data for the candidate
         candidate.added = true;
-        candidate.keyArrayIndex = uint8(vote.candidateKeys.length++);
+        candidate.keyArrayIndex = uint8(voteA.candidateKeys.length++);
         candidate.metadata = _metadata;
         // double check
         candidateDescriptions[cKey] = _description;
-        vote.candidateKeys[candidate.keyArrayIndex] = cKey;
+        voteA.candidateKeys[candidate.keyArrayIndex] = cKey;
     }
 
     /**
@@ -213,8 +268,8 @@ contract RangeVoting is IForwarder, AragonApp {
     function getCandidate(uint256 _voteId, address _description)
     external view returns(bool, bytes, uint8, uint256)
     {
-        Vote storage vote = votes[_voteId];
-        CandidateState storage candidate = vote.candidates[keccak256(_description)];
+        Vote storage voteB = votes[_voteId];
+        CandidateState storage candidate = voteB.candidates[keccak256(_description)];
         return(
             candidate.added,
             candidate.metadata,
@@ -233,7 +288,6 @@ contract RangeVoting is IForwarder, AragonApp {
     {
         return(candidateDescriptions[_key]);
     }
-
 ///////////////////////
 // IForwarder functions
 ///////////////////////
@@ -247,7 +301,6 @@ contract RangeVoting is IForwarder, AragonApp {
     function isForwarder() public pure returns (bool) {
         return true;
     }
-
     /**
     * @notice Creates a vote to execute the desired action
     * @dev IForwarder interface conformance
@@ -255,8 +308,7 @@ contract RangeVoting is IForwarder, AragonApp {
     */
     function forward(bytes _evmScript) public {
         require(canForward(msg.sender, _evmScript));
-        /* solium-disable-next-line */
-        _newVote(_evmScript, "");
+        _newVote(_evmScript, ""); /*, true);*/
     }
 
     /**
@@ -285,9 +337,9 @@ contract RangeVoting is IForwarder, AragonApp {
     * @return True is `_voter` has a vote token balance and vote is open
     */
     function canVote(uint256 _voteId, address _voter) public view returns (bool) {
-        Vote storage vote = votes[_voteId];
+        Vote storage voteC = votes[_voteId];
 
-        return _isVoteOpen(vote) && token.balanceOfAt(_voter, vote.snapshotBlock) > 0;
+        return _isVoteOpen(voteC) && token.balanceOfAt(_voter, voteC.snapshotBlock) > 0;
     }
 
     /**
@@ -298,7 +350,28 @@ contract RangeVoting is IForwarder, AragonApp {
     * @return True if the vote is elligible for execution.
     */
     function canExecute(uint256 _voteId) public view returns (bool) {
-        // Needs better implementation
+        Vote storage voteD = votes[_voteId];
+
+        if (voteD.executed)
+            return false;
+
+        // Voting is already decided
+        // if (_isValuePct(vote.yea, vote.totalVoters, supportRequiredPct))
+            // return true;
+
+        // uint256 totalVotes = vote.yea.add(vote.nay);
+
+        // vote ended?
+        // if (_isVoteOpen(vote))
+            // return false;
+        // has Support?
+        // if (!_isValuePct(vote.yea, totalVotes, supportRequiredPct))
+            // return false;
+        // has Min Quorum?
+        // if (!_isValuePct(vote.yea, vote.totalVoters, vote.minAcceptQuorumPct))
+            // return false;
+
+        // TODO: Implement
         return true;
     }
 
@@ -310,27 +383,37 @@ contract RangeVoting is IForwarder, AragonApp {
     function getVote(uint256 _voteId) public view returns
     (
         bool open,
+        // bool executed,
         address creator,
         uint64 startDate,
         uint256 snapshotBlock,
+        // uint256 minAcceptQuorum,
+        // uint256 yea,
+        // uint256 nay,
         uint256 candidateSupportPct,
         uint256 totalVoters,
         string metadata,
-        bytes executionScript,
+        bytes executionScript, // script,
         bool executed
     )
     {
-        Vote storage vote = votes[_voteId];
+        // Vote storage voteE = votes[_voteId];
+        Vote storage voteE = votes[_voteId];
 
-        open = _isVoteOpen(vote);
-        creator = vote.creator;
-        startDate = vote.startDate;
-        snapshotBlock = vote.snapshotBlock;
-        candidateSupportPct = vote.candidateSupportPct;
-        totalVoters = vote.totalVoters;
-        metadata = vote.metadata;
-        executionScript = vote.executionScript;
-        executed = vote.executed;
+        open = _isVoteOpen(voteE);
+        // executed = vote.executed;
+        creator = voteE.creator;
+        startDate = voteE.startDate;
+        snapshotBlock = voteE.snapshotBlock;
+        // minAcceptQuorum = vote.minAcceptQuorumPct;
+        // yea = vote.yea;
+        // nay = vote.nay;
+        candidateSupportPct = voteE.candidateSupportPct;
+        totalVoters = voteE.totalVoters;
+        metadata = voteE.metadata;
+        executionScript = voteE.executionScript;
+        executed = voteE.executed;
+        // script = vote.executionScript;
     }
 
     /**
@@ -348,7 +431,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _voteId The ID of the Vote struct in the `votes` array.
     * @param _voter The voter whose weights will be returned
     */
-    function getVoterState(uint256 _voteId, address _voter) public view returns (uint256[]) {
+    function getVoterState(uint256 _voteId, address _voter) public view returns (uint256[]) { //VoterState) {
         return votes[_voteId].voters[_voter];
     }
 
@@ -376,19 +459,31 @@ contract RangeVoting is IForwarder, AragonApp {
     function _newVote(bytes _executionScript, string _metadata)
         isInitialized internal returns (uint256 voteId)
     {
+    // function _newVote(bytes _executionScript, string _metadata, bool _castVote) isInitialized internal returns (uint256 voteId) {
         voteId = votes.length++;
-        Vote storage vote = votes[voteId];
-        vote.executionScript = _executionScript;
-        vote.creator = msg.sender;
-        vote.startDate = uint64(now);
-        vote.metadata = _metadata;
-        vote.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
-        vote.totalVoters = token.totalSupplyAt(vote.snapshotBlock);
-        vote.candidateSupportPct = globalCandidateSupportPct;
-        var (scriptOffset, scriptRemainder) = _extractCandidates(_executionScript, voteId);
+        Vote storage voteF = votes[voteId];
+        voteF.executionScript = _executionScript;
+        voteF.creator = msg.sender;
+        voteF.startDate = uint64(now);
+        voteF.metadata = _metadata;
+        voteF.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
+        voteF.totalVoters = token.totalSupplyAt(voteF.snapshotBlock);
+        // vote.minAcceptQuorumPct = minAcceptQuorumPct;
+        voteF.candidateSupportPct = globalCandidateSupportPct;
+        // var (scriptOffset, scriptRemainder) = _extractCandidates(_executionScript, voteId);
         //vote.scriptOffset = scriptOffset;
         //vote.scriptRemainder = scriptRemainder;
+
         StartVote(voteId);
+
+        // if (_castVote && canVote(voteId, msg.sender)) {
+        //     _vote(
+        //         voteId,
+        //         true,
+        //         msg.sender,
+        //         true
+        //     );
+        // }
     }
 
     /**
@@ -452,20 +547,46 @@ contract RangeVoting is IForwarder, AragonApp {
     */
     function _vote(
         uint256 _voteId,
+        // bool _supports,
         uint256[] _supports,
         address _voter
+        // bool _executesIfDecided
     ) internal
     {
-        Vote storage vote = votes[_voteId];
+        Vote storage voteG = votes[_voteId];
 
         // this could re-enter, though we can asume the
         // governance token is not maliciuous
-        uint256 voterStake = token.balanceOfAt(_voter, vote.snapshotBlock);
+        uint256 voterStake = token.balanceOfAt(_voter, voteG.snapshotBlock);
         uint256 totalSupport = 0;
+        // VoterState state = vote.voters[_voter];
+
+        // // if voter had previously voted, decrease count
+        // if (state == VoterState.Yea)
+        //     vote.yea = vote.yea.sub(voterStake);
+        // if (state == VoterState.Nay)
+        //     vote.nay = vote.nay.sub(voterStake);
+
+        // if (_supports)
+        //     vote.yea = vote.yea.add(voterStake);
+        // else
+        //     vote.nay = vote.nay.add(voterStake);
+
+        // vote.voters[_voter] = _supports ? VoterState.Yea : VoterState.Nay;
+
+        // CastVote(
+        //     _voteId,
+        //     _voter,
+        //     _supports,
+        //     voterStake
+        // );
+
+        // if (_executesIfDecided && canExecute(_voteId))
+        //     _executeVote(_voteId);
 
         uint256 voteSupport;
-        uint256[] storage oldVoteSupport = vote.voters[msg.sender];
-        bytes32[] storage cKeys = vote.candidateKeys;
+        uint256[] storage oldVoteSupport = voteG.voters[msg.sender];
+        bytes32[] storage cKeys = voteG.candidateKeys;
 
         uint256 i = 0;
         // This is going to cost a lot of gas... it'd be cool if there was
@@ -476,20 +597,20 @@ contract RangeVoting is IForwarder, AragonApp {
             // Probably safer here but some gas calculations should be done
             require(totalSupport <= voterStake);
 
-            voteSupport = vote.candidates[cKeys[i]].voteSupport;
+            voteSupport = voteG.candidates[cKeys[i]].voteSupport;
             voteSupport = voteSupport.sub(oldVoteSupport[i]);
             voteSupport = voteSupport.add(_supports[i]);
-            vote.candidates[cKeys[i]].voteSupport = voteSupport;
+            voteG.candidates[cKeys[i]].voteSupport = voteSupport;
         }
         for (i; i < _supports.length; i++) {
             totalSupport = totalSupport.add(_supports[i]);
             require(totalSupport <= voterStake);
-            voteSupport = vote.candidates[cKeys[i]].voteSupport;
+            voteSupport = voteG.candidates[cKeys[i]].voteSupport;
             voteSupport = voteSupport.add(_supports[i]);
-            vote.candidates[cKeys[i]].voteSupport = voteSupport;
+            voteG.candidates[cKeys[i]].voteSupport = voteSupport;
         }
 
-        vote.voters[msg.sender] = _supports;
+        voteG.voters[msg.sender] = _supports;
     }
 
     /**
@@ -500,30 +621,32 @@ contract RangeVoting is IForwarder, AragonApp {
     *      for functions that have an unknown number of params
     */
     function _executeVote(uint256 _voteId) internal {
-        Vote storage vote = votes[_voteId];
+        Vote storage voteH = votes[_voteId];
 
-        vote.executed = true;
-        uint256 candidateLength = vote.candidateKeys.length;
+        voteH.executed = true;
+        uint256 candidateLength = voteH.candidateKeys.length;
         bytes memory executionScript = new bytes(32);
-        executionScript = vote.executionScript;
-        bytes32 singleByte;
+        // bytes memory input = new bytes(0); // TODO: Consider input for voting scripts
+        
+        executionScript = voteH.executionScript;
+        // bytes32 singleByte;
         // The total length of the new script will be one 32 byte space
         // for each candidate as well as 3 32 byte spaces for
         // additional data
         bytes memory script = new bytes(32 * (candidateLength + 3));
-        assembly {  
+        assembly {  // solium-disable-line security/no-inline-assembly
             mstore(add(script, 32), mload(add(executionScript,32)))
         }
         uint256 offset = 59;
         bytes memory smallData = new bytes(32);
         // This is the size indicator for the 
         uint256 supportsData = 32 * (candidateLength + 2) + 4;
-        assembly {
+        assembly { // solium-disable-line security/no-inline-assembly
             mstore(add(smallData, 32), supportsData)
         }
         for( uint256 i = 28; i < 32; i++){
             supportsData = uint256(smallData[i]);
-            assembly{
+            assembly{ // solium-disable-line security/no-inline-assembly
                 mstore8(add(script,59), supportsData)
             }
             offset--;
@@ -532,21 +655,21 @@ contract RangeVoting is IForwarder, AragonApp {
         supportsData = 32;
         offset = 64;
 
-        assembly {
+        assembly { // solium-disable-line security/no-inline-assembly
             mstore(add(script, offset), supportsData)
         }
         
         offset += 32;
         supportsData = candidateLength;
 
-        assembly {
+        assembly { // solium-disable-line security/no-inline-assembly
             mstore(add(script, offset), supportsData)
         }
         offset += 32;
         for (i = 0; i < candidateLength; i++) {
             supportsData = votes[_voteId].candidates[votes[_voteId].candidateKeys[i]].voteSupport;
 
-            assembly {
+            assembly { // solium-disable-line security/no-inline-assembly
                 mstore(add(script, offset), supportsData)
             }
             offset += 32;
@@ -554,31 +677,31 @@ contract RangeVoting is IForwarder, AragonApp {
 
 
         runScript(script, new bytes(0), new address[](0));
+        // runScript(vote.executionScript, input, new address[](0));
 
         ExecuteVote(_voteId);
     }
 
-
-    
-
-    /**
-    * @dev Calculates whether `_value` is at least a percent `_pct` over `_total`
-    */
-    function _isVoteOpen(Vote storage vote) internal view returns (bool) {
-        return uint64(now) < (vote.startDate.add(voteTime)) && !vote.executed;
+    function _isVoteOpen(Vote storage _vote) internal view returns (bool) {
+        return uint64(now) < _vote.startDate.add(voteTime) && !_vote.executed; // solium-disable-line security/no-block-members
     }
 
     /**
-    * @dev Calculates whether `_value` is at least a percent `_pct` over `_total`
+    * @dev Calculates whether `_value` is at least a percentage `_pct` of `_total`
     */
     function _isValuePct(uint256 _value, uint256 _total, uint256 _pct)
-    internal pure returns (bool)
+        internal pure returns (bool)
     {
+        // if (_total == 0) {
         if (_value == 0 && _total > 0)
             return false;
+        // } 
 
         uint256 m = _total.mul(_pct);
         uint256 v = m / PCT_BASE;
+        // uint256 computedPct = _value.mul(PCT_BASE) / _total;
+
+        // return computedPct >= _pct;
 
         // If division is exact, allow same value,
         // otherwise require value to be greater
