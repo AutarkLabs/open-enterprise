@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Button, Countdown, TableCell, TableRow } from '@aragon/ui'
+import { Countdown, TableCell, TableRow } from '@aragon/ui'
 import ProgressBar from './ProgressBar'
 import VoteStatus from './VoteStatus'
 import { safeDiv } from '../math-utils'
@@ -11,8 +11,6 @@ class VoteRow extends React.Component {
   }
 
   handleVoteClick = () => {
-    console.log('state', this.state)
-    console.log('props', this.props)
     this.props.onSelectVote(this.props.vote.voteId)
   }
   render() {
@@ -85,9 +83,9 @@ const BarsCell = styled(Cell)`
   min-width: 200px;
 `
 
-const ActionsCell = styled(Cell)`
-  width: 0;
-`
+// const ActionsCell = styled(Cell)`
+//   width: 0;
+// `
 
 const QuestionWrapper = styled.p`
   margin-right: 20px;

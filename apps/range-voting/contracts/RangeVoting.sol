@@ -1,4 +1,4 @@
-pragma solidity 0.4.18;
+pragma solidity ^0.4.18;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
 
@@ -133,13 +133,13 @@ contract RangeVoting is IForwarder, AragonApp {
         // uint256 _supportRequiredPct,
         // uint256 _minAcceptQuorumPct,
         uint64 _voteTime
-    ) onlyInit external
+    ) external onlyInit
     {
         initialized();
 
-        require(_minParticipationPct > 0);
-        require(_minParticipationPct <= PCT_BASE);
-        require(_minParticipationPct >= _candidateSupportPct);
+        require(_minParticipationPct > 0); // solium-disable-line error-reason
+        require(_minParticipationPct <= PCT_BASE); // solium-disable-line error-reason
+        require(_minParticipationPct >= _candidateSupportPct); // solium-disable-line error-reason
         // require(_minAcceptQuorumPct > 0);
         // require(_supportRequiredPct <= PCT_BASE);
         // require(_supportRequiredPct >= _minAcceptQuorumPct);
@@ -177,7 +177,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @return voteId Id for newly created vote
     */
     function newVote(bytes _executionScript, string _metadata)
-        auth(CREATE_VOTES_ROLE) external returns (uint256 voteId)
+        external auth(CREATE_VOTES_ROLE) returns (uint256 voteId)
     {
         return _newVote(_executionScript, _metadata);
         // return _newVote(_executionScript, _metadata, true);
@@ -217,7 +217,7 @@ contract RangeVoting is IForwarder, AragonApp {
     *                  must be less than `token.balance[msg.sender]`.
     */
     function vote(uint256 _voteId, uint256[] _supports) external {
-        require(canVote(_voteId, msg.sender));
+        require(canVote(_voteId, msg.sender)); // solium-disable-line error-reason
         _vote(_voteId, _supports, msg.sender);
     }
 
@@ -227,12 +227,11 @@ contract RangeVoting is IForwarder, AragonApp {
     */
     // function executeVote(uint256 _voteId) isInitialized external {
     function executeVote(uint256 _voteId) external {
-        require(canExecute(_voteId));
+        require(canExecute(_voteId)); // solium-disable-line error-reason
         _executeVote(_voteId);
     }
 
      /**
-    * @param _voteId id for vote structure this 'ballot action' is connected to
     * @notice `addCandidate` allows the `ADD_CANDIDATES_ROLE` to add candidates
     *         (or options) to the current vote.
     * @param _voteId id for vote structure this 'ballot action' is connected to
@@ -249,7 +248,7 @@ contract RangeVoting is IForwarder, AragonApp {
         bytes32 cKey = keccak256(_description);
         CandidateState storage candidate = voteA.candidates[cKey];
         // Make sure that this candidate has not already been added
-        require(candidate.added == false);
+        require(candidate.added == false); // solium-disable-line error-reason
         // Set all data for the candidate
         candidate.added = true;
         candidate.keyArrayIndex = uint8(voteA.candidateKeys.length++);
@@ -307,7 +306,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _evmScript Start vote with script
     */
     function forward(bytes _evmScript) public {
-        require(canForward(msg.sender, _evmScript));
+        require(canForward(msg.sender, _evmScript)); // solium-disable-line error-reason
         _newVote(_evmScript, ""); /*, true);*/
     }
 
@@ -316,14 +315,14 @@ contract RangeVoting is IForwarder, AragonApp {
     *         for the vote forwarding
     * @dev IForwarder interface conformance
     * @param _sender Address of the entity trying to forward
-    * @param _evmCallScript Not used in this implementation
     * @return True is `_sender` has correct permissions
     */
-    function canForward(address _sender, bytes _evmCallScript)
+    function canForward(address _sender, bytes /*_evmCallScript*/)
         public view returns (bool)
     {
         return canPerform(_sender, CREATE_VOTES_ROLE, arr());
     }
+    // * @param _evmCallScript Not used in this implementation
 
 ///////////////////////
 // View state functions
@@ -474,7 +473,7 @@ contract RangeVoting is IForwarder, AragonApp {
         //vote.scriptOffset = scriptOffset;
         //vote.scriptRemainder = scriptRemainder;
 
-        StartVote(voteId);
+        StartVote(voteId); // solium-disable-line emit
 
         // if (_castVote && canVote(voteId, msg.sender)) {
         //     _vote(
@@ -506,7 +505,7 @@ contract RangeVoting is IForwarder, AragonApp {
 
         // compute end of script / next location and ensure there's no 
         // shenanigans
-        require(startOffset + calldataLength <= _executionScript.length);
+        require(startOffset + calldataLength <= _executionScript.length); // solium-disable-line error-reason
         // The first word in the param slot is the length of the array
         
 
@@ -595,7 +594,7 @@ contract RangeVoting is IForwarder, AragonApp {
             totalSupport = totalSupport.add(_supports[i]);
             // Might make sense to move this outside the for loop
             // Probably safer here but some gas calculations should be done
-            require(totalSupport <= voterStake);
+            require(totalSupport <= voterStake); // solium-disable-line error-reason
 
             voteSupport = voteG.candidates[cKeys[i]].voteSupport;
             voteSupport = voteSupport.sub(oldVoteSupport[i]);
@@ -604,7 +603,7 @@ contract RangeVoting is IForwarder, AragonApp {
         }
         for (i; i < _supports.length; i++) {
             totalSupport = totalSupport.add(_supports[i]);
-            require(totalSupport <= voterStake);
+            require(totalSupport <= voterStake); // solium-disable-line error-reason
             voteSupport = voteG.candidates[cKeys[i]].voteSupport;
             voteSupport = voteSupport.add(_supports[i]);
             voteG.candidates[cKeys[i]].voteSupport = voteSupport;
@@ -679,7 +678,7 @@ contract RangeVoting is IForwarder, AragonApp {
         runScript(script, new bytes(0), new address[](0));
         // runScript(vote.executionScript, input, new address[](0));
 
-        ExecuteVote(_voteId);
+        ExecuteVote(_voteId); // solium-disable-line emit
     }
 
     function _isVoteOpen(Vote storage _vote) internal view returns (bool) {

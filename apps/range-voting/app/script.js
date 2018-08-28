@@ -15,12 +15,16 @@ app.store(async (state, { event, returnValues }) => {
 
   switch (event) {
     case 'CastVote':
+      console.info('[RangeVoting > script]: received CastVote')
       nextState = await castVote(nextState, returnValues)
       break
     case 'ExecuteVote':
+      console.info('[RangeVoting > script]: received ExecuteVote')
+
       nextState = await executeVote(nextState, returnValues)
       break
     case 'StartVote':
+      console.info('[RangeVoting > script]: received StartVote')
       nextState = await startVote(nextState, returnValues)
       break
     default:
@@ -65,11 +69,15 @@ async function startVote(state, { voteId }) {
  ***********************/
 
 async function loadVoteDescription(vote) {
-  if (!vote.script || vote.script === EMPTY_CALLSCRIPT) {
+  if (!vote.executionScript || vote.executionScript === EMPTY_CALLSCRIPT) {
+    console.info(
+      '[RangeVoting > script] loadVoteDescription: No description found for:',
+      vote
+    )
     return vote
   }
 
-  const path = await app.describeScript(vote.script).toPromise()
+  const path = await app.describeScript(vote.executionScript).toPromise()
 
   vote.description = path
     .map(step => {
@@ -84,6 +92,7 @@ async function loadVoteDescription(vote) {
 }
 
 function loadVoteData(voteId) {
+  console.info('[RangeVoting > script]: loadVoteData')
   return new Promise(resolve => {
     combineLatest(
       app.call('getVote', voteId),
@@ -156,7 +165,7 @@ function loadVoteSettings() {
       settings.reduce((acc, setting) => ({ ...acc, ...setting }), {})
     )
     .catch(err => {
-      console.error('Failed to load Vote settings', err)
+      console.error('[RangeVoting > script] Failed to load Vote settings', err)
       // Return an empty object to try again later
       return {}
     })

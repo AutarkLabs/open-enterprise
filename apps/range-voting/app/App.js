@@ -95,6 +95,7 @@ class App extends React.Component {
   handleVoteClose = () => {
     this.setState({ voteVisible: false })
   }
+
   handleVoteTransitionEnd = opened => {
     this.setState(opened ? { voteSidebarOpened: true } : { currentVoteId: -1 })
   }
