@@ -37,7 +37,6 @@ class NewIssue extends React.Component {
     const newRepoId = index
       ? Object.keys(github.reposManaged)[index - 1] // because [0] == 'Choose Project'
       : 'Choose Project'
-    console.log('repo changed to ' + newRepoId)
     this.setState(newRepoId)
   }
 

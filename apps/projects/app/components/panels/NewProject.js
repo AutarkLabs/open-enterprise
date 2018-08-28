@@ -98,7 +98,6 @@ repositories with issues list included is not going to cost much.
 
     client.request(query)
       .then(data => {
-        console.log(data)
         this.processIssues(data)
       })
       .catch(err => this.setState({ err: err.message }))
@@ -184,7 +183,6 @@ repositories with issues list included is not going to cost much.
     client
       .request(query)
       .then(data => {
-        console.log(data)
         this.processRepos(data)
       })
       .catch(err => this.setState({ err: err.message }))
@@ -236,9 +234,6 @@ repositories with issues list included is not going to cost much.
         labels: labels,
         milestones: milestones,
       }
-      //console.log ('adding ' + rNode.node.name, reposFromServer)
-      //console.log('labels: ',labels)
-      //console.log('milestones: ',milestones)
       return
     })
     this.setState({ reposFromServer: reposFromServer })
@@ -270,7 +265,6 @@ repositories with issues list included is not going to cost much.
     client
       .request(whoami)
       .then(data => {
-        console.log(data)
         const { onHandleGitHubAuth } = this.props
         this.getRepos(client, data.viewer.login)
         // below: <App> is getting notified about successful login

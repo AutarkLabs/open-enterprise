@@ -152,7 +152,6 @@ class Issues extends React.Component {
     //event.preventDefault()
     const { selectedIssues, changedBountiesTemp } = this.state
 
-    console.log('handleSubmitBounties', changedBountiesTemp)
     // this.props.updateIssuesBounties()
     this.handleAllocateBountiesClose()
   }

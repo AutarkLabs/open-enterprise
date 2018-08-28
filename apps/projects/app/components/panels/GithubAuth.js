@@ -1,24 +1,23 @@
-import React, { Component } from "react";
-import styled from "styled-components";
+import React, { Component } from 'react'
+import styled from 'styled-components'
 // import { GithubConsumer } from "../context";
-import { Text, Info, theme, Field, TextInput, Button } from "@aragon/ui";
+import { Text, Info, theme, Field, TextInput, Button } from '@aragon/ui'
 
 const Form = styled.form`
   margin-top: 20px;
-`;
+`
 
 class GithubAuth extends Component {
   state = {
     authToken: null,
-    err: ""
-  };
+    err: '',
+  }
   handleTokenChange = event => {
-    this.setState({ authToken: event.target.value, err: "" });
-    console.log(this.state.authToken);
-  };
+    this.setState({ authToken: event.target.value, err: '' })
+  }
 
   render() {
-    const { err, authToken } = this.state;
+    const { err, authToken } = this.state
     return (
       <div>
         <Text size="large">
@@ -43,8 +42,8 @@ class GithubAuth extends Component {
           </Button>
         </Form>
       </div>
-    );
+    )
   }
 }
 
-export default GithubAuth;
+export default GithubAuth

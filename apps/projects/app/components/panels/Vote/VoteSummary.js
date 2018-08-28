@@ -22,7 +22,6 @@ const VoteSummary = ({
   var totalVotes = 0
 
   for (var k in candidates) {
-    console.log('k: ' + k + ', v: ' + candidates[k])
     totalVotes += candidates[k]
   }
 

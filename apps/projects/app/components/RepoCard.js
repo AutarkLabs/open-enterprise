@@ -30,8 +30,6 @@ class RepoCard extends React.Component {
   }
 
   handleClick = event => {
-    console.log('handleClick')
-    console.log(event)
     this.props.onSelect(this.props.repoId)
   }
 

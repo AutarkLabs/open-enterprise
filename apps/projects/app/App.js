@@ -38,9 +38,7 @@ class App extends Component {
     Object.keys(reposToAdd).forEach(repoId => {
       var repo = reposToAdd[repoId]
       if (repoId in github.reposManaged) {
-        console.log('[App.js] already in: ' + repo.name)
       } else {
-        console.log('[App.js] adding: ' + repo.name)
         github.reposManaged[repoId] = repo
       }
     })

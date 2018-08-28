@@ -17,7 +17,6 @@ class Settings extends React.Component {
 
   generateHoursHandler = bountyName => {
     return event => {
-      console.log('changing ' + bountyName + ' to ' + event.target.value)
       const { bounties } = this.state
       bounties[bountyName] = event.target.value
       this.setState({ bounties: bounties })
@@ -25,13 +24,10 @@ class Settings extends React.Component {
   }
 
   handleRPHChange = event => {
-    console.log('changing RPH to ' + event.target.value)
     this.setState({ RPH: event.target.value })
   }
 
-  handleSubmit = () => {
-    console.log('handleSubmit')
-  }
+  handleSubmit = () => {}
 
   render() {
     const bountyNames = ['XS', 'S', 'M', 'L', 'XL']

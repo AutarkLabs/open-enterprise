@@ -16,20 +16,24 @@ class VoteRow extends React.Component {
   render() {
     const { vote } = this.props
     const { endDate, open } = vote
-    const { metadata: question, description, totalVoters, candidates } = vote.data
+    const {
+      metadata: question,
+      description,
+      totalVoters,
+      candidates,
+    } = vote.data
 
     var totalSupport = 0
-    for(var k in candidates) {
-        //console.log ('k: ' + k + ', v: ' + candidates[k])
-        totalSupport += candidates[k]
+    for (var k in candidates) {
+      totalSupport += candidates[k]
     }
     var bars = []
-    for(var candidateName in candidates) {
-      bars.push (
+    for (var candidateName in candidates) {
+      bars.push(
         <Bar key={candidateName}>
           <ProgressBar
             progress={safeDiv(candidates[candidateName], totalSupport)}
-            candidateName={ candidateName }
+            candidateName={candidateName}
           />
         </Bar>
       )
@@ -52,11 +56,11 @@ class VoteRow extends React.Component {
             )}
           </div>
         </QuestionCell>
-        <Cell align="right">{ totalVoters } ({Math.round(totalVoters) / 100}%)</Cell>
+        <Cell align="right">
+          {totalVoters} ({Math.round(totalVoters) / 100}%)
+        </Cell>
         <BarsCell>
-          <BarsGroup>
-	  { bars }
-          </BarsGroup>
+          <BarsGroup>{bars}</BarsGroup>
         </BarsCell>
         <ActionsCell>
           <Button mode="outline" onClick={this.handleVoteClick}>

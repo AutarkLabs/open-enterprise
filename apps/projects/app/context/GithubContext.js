@@ -1,12 +1,12 @@
-import React, { Component, createContext } from "react";
+import React, { Component, createContext } from 'react'
 // import PropTypes from "prop-types";
 // import { GraphQLClient } from "graphql-request";
 // const octokit = require('@octokit/rest')({
 //  debug: true
 // })
 
-export const GithubContext = createContext();
-export const GithubConsumer = GithubContext.Consumer;
+export const GithubContext = createContext()
+export const GithubConsumer = GithubContext.Consumer
 export class GithubProvider extends Component {
   // TODO: propTypes
   //   static propTypes = {
@@ -16,26 +16,26 @@ export class GithubProvider extends Component {
   //   };
 
   state = {
-    authToken: "",
-    login: "",
-    avatarUrl: "",
-    isAuthenticated: "true",
-    activeRepo: "",
-    activeLabel: "",
-    activeMilestone: "",
+    authToken: '',
+    login: '',
+    avatarUrl: '',
+    isAuthenticated: 'true',
+    activeRepo: '',
+    activeLabel: '',
+    activeMilestone: '',
     reposToAdd: {},
     reposFromServer: {},
     reposManaged: {}, // to be populated from contract or git backend itself,
-    err: ""
+    err: '',
     //    reposManaged: getPreprocessedRepos(), // to be populated from contract or git backend itself
-  };
+  }
 
   render() {
     return (
       <GithubContext.Provider value={this.state}>
         {this.props.children}
       </GithubContext.Provider>
-    );
+    )
   }
 }
 
@@ -43,11 +43,10 @@ export const withGithub = Component => props => (
   <GithubConsumer>
     {github => <Component {...props} github={github} />}
   </GithubConsumer>
-);
+)
 
 // <App> needs to know what repo is selected, because selection matters on multiple screens
 //   handleRepoSelect = repoId => {
-//     //console.log('top handleRepoSelect: ' + repoId)
 //     const { github } = this.state;
 //     github.activeRepo = repoId;
 //     this.setState({
@@ -75,9 +74,7 @@ export const withGithub = Component => props => (
 //     Object.keys(reposToAdd).forEach(repoId => {
 //       var repo = reposToAdd[repoId];
 //       if (repoId in github.reposManaged) {
-//         console.log("already in: " + repo.name);
 //       } else {
-//         console.log("adding: " + repo.name);
 //         github.reposManaged[repoId] = repo;
 //       }
 //     });
@@ -175,7 +172,6 @@ export const withGithub = Component => props => (
 //     client
 //       .request(query)
 //       .then(data => {
-//         console.log(data);
 //         this.processRepos(data);
 //       })
 //       .catch(err => this.setState({ err: err.message }));
@@ -219,7 +215,6 @@ repositories with issues list included is not going to cost much.
 
     client.request(query)
       .then(data => {
-        console.log(data)
         this.processIssues(data)
       })
       .catch(err => this.setState({ err: err.message }))
@@ -266,9 +261,6 @@ repositories with issues list included is not going to cost much.
 //         labels: labels,
 //         milestones: milestones
 //       };
-//       //console.log ('adding ' + rNode.node.name, reposFromServer)
-//       //console.log('labels: ',labels)
-//       //console.log('milestones: ',milestones)
 //       return;
 //     });
 //     this.setState({ reposFromServer: reposFromServer });
@@ -300,7 +292,6 @@ repositories with issues list included is not going to cost much.
 //     client
 //       .request(whoami)
 //       .then(data => {
-//         console.log(data);
 //         const { onHandleGitHubAuth } = this.props;
 //         this.getRepos(client, data.viewer.login);
 //         // below: <App> is getting notified about successful login
