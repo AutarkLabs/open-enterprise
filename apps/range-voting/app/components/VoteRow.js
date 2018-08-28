@@ -11,16 +11,19 @@ class VoteRow extends React.Component {
   }
 
   handleVoteClick = () => {
+    console.log('state', this.state)
+    console.log('props', this.props)
     this.props.onSelectVote(this.props.vote.voteId)
   }
   render() {
     const { vote } = this.props
     const { endDate, open } = vote
     const { metadata: question, description, nay, totalVoters, yea } = vote.data
-    const totalVotes = safeDiv(yea + nay, totalVoters)
+    // const totalVotes = safeDiv(yea + nay, totalVoters)
+    const totalVotes = totalVoters
 
     return (
-      <TableRow>
+      <TableRow onClick={this.handleVoteClick}>
         <StatusCell>
           {open ? <Countdown end={endDate} /> : <VoteStatus vote={vote} />}
         </StatusCell>
@@ -53,11 +56,11 @@ class VoteRow extends React.Component {
             </Bar>
           </BarsGroup>
         </BarsCell>
-        <ActionsCell>
+        {/* <ActionsCell>
           <Button mode="outline" onClick={this.handleVoteClick}>
             View Vote
           </Button>
-        </ActionsCell>
+        </ActionsCell> */}
       </TableRow>
     )
   }

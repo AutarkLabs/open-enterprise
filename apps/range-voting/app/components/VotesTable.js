@@ -9,9 +9,9 @@ const VotesTable = ({ votes, opened, onSelectVote }) => (
       <TableRow>
         <TableHeader title={opened ? 'Time Remaining' : 'Status'} />
         <TableHeader title="Question" />
-        <TableHeader title="Total Votes" align="right" />
-        <TableHeader title={opened ? 'Progress' : 'Result'} />
-        <TableHeader title="Actions" />
+        <TableHeader title="Participation" align="right" />
+        <TableHeader title={opened ? 'Results' : 'Result'} />
+        {/* <TableHeader title="Actions" /> */}
       </TableRow>
     }
   >
