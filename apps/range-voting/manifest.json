@@ -1,6 +1,12 @@
 {
   "name": "Range Voting",
   "description": "Create and manage multiple projects",
-  "start_url": "dist/index.html",
-  "script": "dist/script.js"
+  "icons": [
+    {
+      "src": "images/icon.png",
+      "sizes": "192x192"
+    }
+  ],
+  "script": "dist/script.js",
+  "start_url": "dist/index.html"
 }

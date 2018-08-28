@@ -1,9 +1,88 @@
+// module.exports = require("@aragon/os/truffle-config")
+const HDWalletProvider = require('truffle-hdwallet-provider')
+const HDWalletProviderPrivkey = require('truffle-hdwallet-provider-privkey')
+
+let mnemonic
+try {
+  mnemonic = require(require('homedir')() + '/.aragon/mnemonic.json').mnemonic
+} catch (e) {
+  mnemonic =
+    'stumble story behind hurt patient ball whisper art swift tongue ice alien'
+}
+
+let ropstenProvider,
+  kovanProvider,
+  rinkebyProvider = {}
+
+if (process.env.LIVE_NETWORKS) {
+  ropstenProvider = new HDWalletProvider(mnemonic, 'https://ropsten.infura.io/')
+  kovanProvider = new HDWalletProvider(mnemonic, 'https://kovan.infura.io')
+
+  try {
+    const { rpc, keys } = require(require('homedir')() +
+      '/.aragon/rinkebykey.json')
+    rinkebyProvider = new HDWalletProviderPrivkey(keys, rpc)
+  } catch (e) {
+    rinkebyProvider = new HDWalletProvider(
+      mnemonic,
+      'https://rinkeby.infura.io'
+    )
+  }
+}
+
+const mochaGasSettings = {
+  reporter: 'eth-gas-reporter',
+  reporterOptions: {
+    currency: 'USD',
+    gasPrice: 3,
+  },
+}
+
+const mocha = process.env.GAS_REPORTER ? mochaGasSettings : {}
+
 module.exports = {
   networks: {
     development: {
       host: 'localhost',
       port: 8545,
-      network_id: '*'
-    }
-  }
+      network_id: '*',
+    },
+    rpc: {
+      network_id: 15,
+      host: 'localhost',
+      port: 8545,
+      gas: 6.9e6,
+    },
+    devnet: {
+      network_id: 15,
+      host: 'localhost',
+      port: 8535,
+      gas: 6.9e6,
+    },
+    ropsten: {
+      network_id: 3,
+      provider: ropstenProvider,
+      gas: 4.712e6,
+    },
+    kovan: {
+      network_id: 42,
+      provider: kovanProvider,
+      gas: 6.9e6,
+    },
+    rinkeby: {
+      network_id: 4,
+      provider: rinkebyProvider,
+      gas: 6.9e6,
+      gasPrice: 15000000001,
+    },
+    coverage: {
+      host: 'localhost',
+      network_id: '*',
+      port: 8555,
+      gas: 0xffffffffff,
+      gasPrice: 0x01,
+    },
+  },
+  build: {},
+  mocha,
 }
