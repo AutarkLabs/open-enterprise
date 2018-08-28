@@ -21,8 +21,7 @@ class Allocations extends React.Component {
   }
 
   openSidePanel = () => {
-    console.log('state', this.state)
-    console.log('props', this.props)
+    console.info('[Allocations.js] props', this.props)
     this.setState({ sidePanelOpened: true })
   }
 

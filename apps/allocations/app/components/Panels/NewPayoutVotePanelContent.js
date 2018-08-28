@@ -33,14 +33,15 @@ class NewPayoutVotePanel extends Component {
     payoutTypes: ['One-Time', 'Monthly'],
     amount: null,
   }
+  handleDescriptionChange = e => {
+    this.setState({ description: e.target.value })
+  }
 
-  handleChange = e => {
+  handleOptionChange = e => {
     this.setState({ optionInputText: e.target.value })
   }
 
   handleAddOptionClick = () => {
-    console.log('state', this.state)
-    console.log('props', this.props)
     const { options, optionInputText } = this.state
     optionInputText &&
       !options.includes(optionInputText) &&
@@ -48,6 +49,8 @@ class NewPayoutVotePanel extends Component {
         options: [...options, optionInputText],
         optionInputText: '',
       }))
+    console.info('[Allocations > NewPayoutVotePanelContent] state', this.state)
+    console.info('[Allocations > NewPayoutVotePanelContent] props', this.props)
   }
 
   handleRemoveOption = option => {
@@ -79,6 +82,7 @@ class NewPayoutVotePanel extends Component {
 
   render() {
     const {
+      description,
       options,
       optionInputText,
       allocationTypes,
@@ -111,6 +115,8 @@ class NewPayoutVotePanel extends Component {
             type="text"
             placeholder="Describe your allocation"
             wide
+            value={description}
+            onChange={this.handleDescriptionChange}
           />
         </Field>
         <Field label="Allocation type">
@@ -147,7 +153,7 @@ class NewPayoutVotePanel extends Component {
         <Field label="OPTIONS">
           {optionsElements}
           <TextInput
-            onChange={this.handleChange}
+            onChange={this.handleOptionChange}
             type="text"
             placeholder="Enter an option"
             value={optionInputText}
