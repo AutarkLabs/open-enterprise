@@ -1,6 +1,6 @@
-import React, { Component } from "react"
-import styled from "styled-components"
-import IconRemove from "../Icons/Remove"
+import React, { Component } from 'react'
+import styled from 'styled-components'
+import IconRemove from '../Icons/Remove'
 import {
   Button,
   Field,
@@ -9,7 +9,7 @@ import {
   TextInput,
   theme,
   DropDown,
-} from "@aragon/ui"
+} from '@aragon/ui'
 
 const { accent, textSecondary, textTertiary } = theme
 
@@ -17,12 +17,12 @@ const isIntegerString = value => /^[0-9]*$/.test(value)
 
 class NewAccountPanel extends Component {
   state = {
-    items: ["ETH", "ARA", "GIV"],
+    items: ['ETH', 'ARA', 'GIV'],
     activeItem: 0,
-    title: "",
+    title: '',
     limit: {
       value: null,
-      label: "",
+      label: '',
     },
   }
 
@@ -50,9 +50,9 @@ class NewAccountPanel extends Component {
     })
     this.state.limit = {
       value: null,
-      label: "",
+      label: '',
     }
-    this.state.title = ""
+    this.state.title = ''
     onClose()
   }
 
@@ -62,12 +62,13 @@ class NewAccountPanel extends Component {
     return (
       <div>
         <Text size="xxlarge">New Account</Text>
+        <br />
         <FieldTitle>
-          Title<Required>*</Required>
+          Description<Required>*</Required>
         </FieldTitle>
         <FieldInput
           onChange={this.titleChange}
-          placeholder="Enter title"
+          placeholder="Describe your account/prooject for which you will be creating allocation votes."
           type="title"
           value={title}
         />
@@ -81,7 +82,7 @@ class NewAccountPanel extends Component {
           onChange={this.limitChange}
           placeholder="e.g. 20"
           type="limit"
-          value={isIntegerString(limit) ? limit : ""}
+          value={isIntegerString(limit) ? limit : ''}
         />
         <DropDown
           items={items}

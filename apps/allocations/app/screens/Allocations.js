@@ -13,15 +13,16 @@ const EmptyIcon = () => <img src={emptyIcon} alt="" />
 class Allocations extends React.Component {
   static defaultProps = {
     onSetDistribution: () => {},
-    onClose: () => {}
+    onClose: () => {},
   }
 
   state = {
     sidePanelOpened: false,
-    allocations: []
   }
 
   openSidePanel = () => {
+    console.log('state', this.state)
+    console.log('props', this.props)
     this.setState({ sidePanelOpened: true })
   }
 
@@ -31,7 +32,7 @@ class Allocations extends React.Component {
 
   render() {
     const { onActivate, accounts } = this.props
-    const { sidePanelOpened, allocations } = this.state
+    const { sidePanelOpened } = this.state
 
     if (!accounts.length) {
       return (
@@ -49,14 +50,13 @@ class Allocations extends React.Component {
 
     return (
       <StyledAllocations>
-        {accounts.map((account) => <AllocationCard {...account} openSidePanelLink={this.openSidePanel} />)}
-        <SidePanel
-          opened={sidePanelOpened}
-          onClose={this.closeSidePanel}
-        >
+        {accounts.map(account => (
+          <AllocationCard {...account} openSidePanelLink={this.openSidePanel} />
+        ))}
+        <SidePanel opened={sidePanelOpened} onClose={this.closeSidePanel}>
           <NewPayoutVotePanelContent
-            onSetDistribution = {this.props.onSetDistribution}
-            onClose = {this.props.onClose}
+            onSetDistribution={this.props.onSetDistribution}
+            onClose={this.props.onClose}
           />
         </SidePanel>
       </StyledAllocations>

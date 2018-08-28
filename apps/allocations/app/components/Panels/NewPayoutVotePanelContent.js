@@ -39,6 +39,8 @@ class NewPayoutVotePanel extends Component {
   }
 
   handleAddOptionClick = () => {
+    console.log('state', this.state)
+    console.log('props', this.props)
     const { options, optionInputText } = this.state
     optionInputText &&
       !options.includes(optionInputText) &&
@@ -75,7 +77,6 @@ class NewPayoutVotePanel extends Component {
     onClose()
   }
 
-
   render() {
     const {
       options,
@@ -84,7 +85,7 @@ class NewPayoutVotePanel extends Component {
       activeAllocationItem,
       payoutTypes,
       activePayoutOption,
-      amount
+      amount,
     } = this.state
     const optionsElements = options.map(option => (
       <React.Fragment key={option}>
@@ -94,9 +95,9 @@ class NewPayoutVotePanel extends Component {
     ))
 
     return (
-      <StyledPanel hack={!!activeAllocationItem}>
+      <StyledPanel hack={!!amount}>
         <Text size="xxlarge">New Allocation</Text>
-        <Text color={textTertiary}>Title of Account</Text>
+        <Text color={textTertiary}>Allocation Title Here</Text>
         {!!activeAllocationItem && (
           <Info.Action title="Warning">
             This will create a Range Vote and after it closes, it will result in
@@ -108,7 +109,7 @@ class NewPayoutVotePanel extends Component {
             rows="3"
             required
             type="text"
-            placeholder="Describe your vote"
+            placeholder="Describe your allocation"
             wide
           />
         </Field>
@@ -216,7 +217,7 @@ const StyledPanel = styled.div`
       resize: none;
     }
   }
-  & > :nth-child(${props => props.hack ? '7' : '5'}) {
+  & > :nth-child(${props => (props.hack ? '7' : '5')}) {
     & input {
       width: calc(100% - 38px);
       margin-bottom: 10px;
