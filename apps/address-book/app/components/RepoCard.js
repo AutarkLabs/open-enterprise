@@ -8,14 +8,13 @@ import {
   ContextMenuItem,
   IconCross,
   IconHome,
-  SafeLink
+  SafeLink,
 } from '@aragon/ui'
 import { noop } from '../utils/utils'
 
 const { textPrimary, textTertiary } = theme
 
-const initialState = {
-}
+const initialState = {}
 
 class RepoCard extends React.Component {
   static defaultProps = {
@@ -23,15 +22,13 @@ class RepoCard extends React.Component {
     active: false,
     onSelect: noop,
     label: '',
-    description: ''
+    description: '',
   }
   state = {
     ...initialState,
   }
 
   handleClick = event => {
-    console.log('handleClick')
-    console.log(event)
     this.props.onSelect(this.props.repoId)
   }
 
@@ -44,29 +41,33 @@ class RepoCard extends React.Component {
   }
 
   render() {
-    const { active, label, description, commits, collaborators, url } = this.props
-    const colors={
-          iconColor: textTertiary,
-          labelColor: textPrimary
+    const {
+      active,
+      label,
+      description,
+      commits,
+      collaborators,
+      url,
+    } = this.props
+    const colors = {
+      iconColor: textTertiary,
+      labelColor: textPrimary,
     }
     return (
       <StyledCard onClick={this.handleClick}>
         <div onClick={this.handleContextClick}>
           <ContextMenu>
-            <StyledMenuItem
-              key="cm1"
-              colors={colors}
-            >
+            <StyledMenuItem key="cm1" colors={colors}>
               {React.createElement(IconHome)}
-              <SafeLink href={url} target="_blank" style={{ textDecoration: 'none' }}>
+              <SafeLink
+                href={url}
+                target="_blank"
+                style={{ textDecoration: 'none' }}
+              >
                 View on GitHub
               </SafeLink>
             </StyledMenuItem>
-            <StyledMenuItem
-              key="cm2"
-              onClick={this.removeRepo}
-              colors={colors}
-            >
+            <StyledMenuItem key="cm2" onClick={this.removeRepo} colors={colors}>
               {React.createElement(IconCross)}
               Remove Project
             </StyledMenuItem>
@@ -78,21 +79,17 @@ class RepoCard extends React.Component {
         <Text size="small" color={textTertiary}>
           {description}
         </Text>
-        
+
         <StatsItem>
           {React.createElement(IconHome)}
-          <StatsNumber>
-            {commits}
-          </StatsNumber>
-	  commits
-       </StatsItem>
-       <StatsItem>
+          <StatsNumber>{commits}</StatsNumber>
+          commits
+        </StatsItem>
+        <StatsItem>
           {React.createElement(IconHome)}
-          <StatsNumber>
-            {collaborators}
-          </StatsNumber>
-	  contributors
-       </StatsItem>
+          <StatsNumber>{collaborators}</StatsNumber>
+          contributors
+        </StatsItem>
       </StyledCard>
     )
   }
@@ -106,12 +103,9 @@ const StatsNumber = styled(Text)`
   font-weight: bold;
   margin-right: 2px;
 `
-const StyledMenuItem = styled(ContextMenuItem)
-.attrs({
-    iconColor: props =>
-        props.colors.iconColor || textPrimary,
-    labelColor: props =>
-        props.colors.labelColor || props.colors.iconColor
+const StyledMenuItem = styled(ContextMenuItem).attrs({
+  iconColor: props => props.colors.iconColor || textPrimary,
+  labelColor: props => props.colors.labelColor || props.colors.iconColor,
 })`
     color: ${props => props.labelColor}
     font-weight: bold;
@@ -129,11 +123,11 @@ const StyledCard = styled(Card)`
   grid-template-columns: repeat(4, 25%);
   grid-template-rows: 70px 24px auto 34px;
   grid-template-areas:
-    ".    .    .    menu"
-    "labl labl labl labl"
-    "desc desc desc desc"
-    "sta1 sta1 sta2 sta2";
-       
+    '.    .    .    menu'
+    'labl labl labl labl'
+    'desc desc desc desc'
+    'sta1 sta1 sta2 sta2';
+
   grid-gap: 12px 0;
 
   & > :nth-child(1) {
@@ -162,12 +156,11 @@ const StyledCard = styled(Card)`
     align-items: center;
   }
   & > :nth-child(5) {
-   grid-area: sta2;
-   display: flex;
-   align-items: center;
-   padding: 10px;
+    grid-area: sta2;
+    display: flex;
+    align-items: center;
+    padding: 10px;
   }
 `
 
 export default RepoCard
-

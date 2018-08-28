@@ -13,7 +13,7 @@ class NewProjectPanelContent extends React.Component {
   static propTypes = {
     onHandleAddRepos: PropTypes.func.isRequired,
     onHandleGitHubAuth: PropTypes.func.isRequired,
-    github: PropTypes.object.isRequired
+    github: PropTypes.object.isRequired,
   }
 
   constructor(props) {
@@ -24,11 +24,11 @@ class NewProjectPanelContent extends React.Component {
       reposToAdd: {},
       reposManaged: github.reposManaged,
       authToken: github.authToken, // <App> is allowed to know better
-      err: ''
+      err: '',
     }
   }
 
-/*
+  /*
 
 For each chosen repo Issues shouild be downloaded separately.
 However, for simplicity's sake, and thanks to graphql, downloading
@@ -66,7 +66,6 @@ repositories with issues list included is not going to cost much.
 
     client.request(query)
       .then(data => {
-        console.log(data)
         this.processIssues(data)
       })
       .catch(err => this.setState({ err: err.message }))
@@ -74,8 +73,11 @@ repositories with issues list included is not going to cost much.
 */
 
   getRepos = (client, login) => {
-    const query = `{
-      user(login:"` + login + `") {
+    const query =
+      `{
+      user(login:"` +
+      login +
+      `") {
         repositories(first:20,affiliations:[OWNER,COLLABORATOR,ORGANIZATION_MEMBER]) {
           edges {
             node {
@@ -146,9 +148,9 @@ repositories with issues list included is not going to cost much.
       }
     }`
 
-    client.request(query)
+    client
+      .request(query)
       .then(data => {
-        console.log(data)
         this.processRepos(data)
       })
       .catch(err => this.setState({ err: err.message }))
@@ -158,58 +160,49 @@ repositories with issues list included is not going to cost much.
     var reposFromServer = {}
     // this is a placeholder just to have the bounties work in the simplest fashion.
     const BountyLabels = {
-      'bounty_xs': 'xs',
-      'bounty_s': 's',
-      'bounty_m': 'm',
-      'bounty_l': 'l',
-      'bounty_xl': 'xl'
+      bounty_xs: 'xs',
+      bounty_s: 's',
+      bounty_m: 'm',
+      bounty_l: 'l',
+      bounty_xl: 'xl',
     }
 
-    data.user.repositories.edges.forEach(
-      rNode => {
-        var commits = 0
-        rNode.node.refs.edges.forEach(
-          refNode => {
-            commits += refNode.node.target.history.totalCount
-        })
+    data.user.repositories.edges.forEach(rNode => {
+      var commits = 0
+      rNode.node.refs.edges.forEach(refNode => {
+        commits += refNode.node.target.history.totalCount
+      })
 
-        const labels = {}
-        const milestones = {}
+      const labels = {}
+      const milestones = {}
 
-        rNode.node.issues.edges.forEach(
-          issue => {
-            issue.node.bounty = ''
-            if (issue.node.labels.totalCount > 0) {
-              issue.node.labels.edges.forEach(
-                label => {
-                  if (label.node.name in BountyLabels) {
-                    issue.node.bounty = BountyLabels[label.node.name]
-                  } else {
-                    labels[label.node.id] = label.node
-                  }
-                }
-              )
+      rNode.node.issues.edges.forEach(issue => {
+        issue.node.bounty = ''
+        if (issue.node.labels.totalCount > 0) {
+          issue.node.labels.edges.forEach(label => {
+            if (label.node.name in BountyLabels) {
+              issue.node.bounty = BountyLabels[label.node.name]
+            } else {
+              labels[label.node.id] = label.node
             }
-            if (issue.node.milestone) {
-              milestones[issue.node.milestone.id] = issue.node.milestone
-            }
-          }
-        )
-        reposFromServer[rNode.node.id] = {
-          name: rNode.node.name,
-          description: rNode.node.description,
-          url: rNode.node.url,
-          collaborators: rNode.node.collaborators.totalCount,
-          commits: commits,
-          ownerLogin: rNode.node.owner.login,
-          issues: rNode.node.issues.edges,
-          labels: labels,
-          milestones: milestones
+          })
         }
-        //console.log ('adding ' + rNode.node.name, reposFromServer)
-        //console.log('labels: ',labels)
-        //console.log('milestones: ',milestones)
-        return
+        if (issue.node.milestone) {
+          milestones[issue.node.milestone.id] = issue.node.milestone
+        }
+      })
+      reposFromServer[rNode.node.id] = {
+        name: rNode.node.name,
+        description: rNode.node.description,
+        url: rNode.node.url,
+        collaborators: rNode.node.collaborators.totalCount,
+        commits: commits,
+        ownerLogin: rNode.node.owner.login,
+        issues: rNode.node.issues.edges,
+        labels: labels,
+        milestones: milestones,
+      }
+      return
     })
     this.setState({ reposFromServer: reposFromServer })
   }
@@ -218,19 +211,16 @@ repositories with issues list included is not going to cost much.
     event.preventDefault()
 
     const { authToken } = this.state
-    if ((authToken.length !== 40) || (/^[a-zA-Z0-9]+$/.test(authToken) === false)) {
+    if (authToken.length !== 40 || /^[a-zA-Z0-9]+$/.test(authToken) === false) {
       this.setState({ err: 'Invalid token' })
       return
     }
 
-    const client = new GraphQLClient(
-      'https://api.github.com/graphql',
-      {
-        headers: {
-          Authorization: 'Bearer ' + authToken,
-        }
-      }
-    )
+    const client = new GraphQLClient('https://api.github.com/graphql', {
+      headers: {
+        Authorization: 'Bearer ' + authToken,
+      },
+    })
 
     const whoami = `{
       viewer {
@@ -240,9 +230,9 @@ repositories with issues list included is not going to cost much.
       }
     }`
 
-    client.request(whoami)
+    client
+      .request(whoami)
       .then(data => {
-        console.log(data)
         const { onHandleGitHubAuth } = this.props
         this.getRepos(client, data.viewer.login)
         // below: <App> is getting notified about successful login
@@ -275,7 +265,7 @@ repositories with issues list included is not going to cost much.
     var reposDisplayList = []
     const { reposFromServer, reposManaged, reposToAdd } = this.state
 
-    Object.keys(reposFromServer).forEach((repoId) => {
+    Object.keys(reposFromServer).forEach(repoId => {
       var repo = reposFromServer[repoId]
       const checkboxHandler = this.generateCheckboxHandler(repoId)
       reposDisplayList.push(
@@ -290,15 +280,13 @@ repositories with issues list included is not going to cost much.
       )
     })
 
-    return(
+    return (
       <div>
-        <Text size='large'>Which repos do you want to add?</Text>
+        <Text size="large">Which repos do you want to add?</Text>
         <Form onSubmit={this.handleReposSubmit}>
-          <RepoList>
-            {reposDisplayList}
-          </RepoList>
+          <RepoList>{reposDisplayList}</RepoList>
           <Button mode="strong" type="submit" wide>
-             Finish
+            Finish
           </Button>
         </Form>
       </div>
@@ -311,17 +299,18 @@ repositories with issues list included is not going to cost much.
 
   authenticate() {
     const { authToken, err } = this.state
-    return(
+    return (
       <div>
-        <Text size='large'>Sign in with GitHub to start managing your repos with Aragon</Text>
+        <Text size="large">
+          Sign in with GitHub to start managing your repos with Aragon
+        </Text>
         <ul>
           <li>Prioritize your backlog</li>
           <li>Reach consensus on issue valuations</li>
           <li>Allocate bounties to multiple issues</li>
         </ul>
         <Form onSubmit={this.handleLogin}>
-          {
-          (err) && (
+          {err && (
             <Info background={theme.negative} title="Error">
               {err}
             </Info>
@@ -335,7 +324,7 @@ repositories with issues list included is not going to cost much.
             />
           </Field>
           <Button mode="strong" type="submit" wide>
-             Sign in with GitHub
+            Sign in with GitHub
           </Button>
         </Form>
       </div>

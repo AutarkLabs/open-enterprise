@@ -10,9 +10,9 @@ import { theme, Field, Info, TextInput, Button, DropDown } from '@aragon/ui'
 
 class NewIssuePanelContent extends React.Component {
   static propTypes = {
-//    onHandleAddRepos: PropTypes.func.isRequired,
-//    onHandleGitHubAuth: PropTypes.func.isRequired,
-    github: PropTypes.object.isRequired
+    //    onHandleAddRepos: PropTypes.func.isRequired,
+    //    onHandleGitHubAuth: PropTypes.func.isRequired,
+    github: PropTypes.object.isRequired,
   }
 
   constructor(props) {
@@ -20,7 +20,7 @@ class NewIssuePanelContent extends React.Component {
     //const { github } = this.props
     this.state = {
       repo: '',
-      err: ''
+      err: '',
     }
   }
 
@@ -34,11 +34,9 @@ class NewIssuePanelContent extends React.Component {
   handleRepoSelect = index => {
     const { github } = this.props
 
-    const newRepoId = index ?
-      Object.keys(github.reposManaged)[index - 1] // because [0] == 'Choose Project'
-      :
-      'Choose Project'
-    console.log('repo changed to ' + newRepoId)
+    const newRepoId = index
+      ? Object.keys(github.reposManaged)[index - 1] // because [0] == 'Choose Project'
+      : 'Choose Project'
     this.setState(newRepoId)
   }
 
@@ -46,49 +44,49 @@ class NewIssuePanelContent extends React.Component {
     const { github } = this.props
     const { err } = this.state
     const repos = github.reposManaged
-    const reposNames = ['Choose Project', ...Object.keys(repos).map((repoId) => {return repos[repoId].name})]
-    const activeRepoName = github.activeRepo ? repos[github.activeRepo].name : 'Choose Project'
+    const reposNames = [
+      'Choose Project',
+      ...Object.keys(repos).map(repoId => {
+        return repos[repoId].name
+      }),
+    ]
+    const activeRepoName = github.activeRepo
+      ? repos[github.activeRepo].name
+      : 'Choose Project'
     const activeRepoNameIndex = reposNames.indexOf(activeRepoName)
 
-    return(
+    return (
       <div>
         <Form onSubmit={this.handleLogin}>
-          {
-          (err) && (
+          {err && (
             <Info background={theme.negative} title="Error">
               {err}
             </Info>
           )}
 
           <Field label="Project">
-            <DropDown items={reposNames} active={activeRepoNameIndex} onChange={this.handleRepoSelect} />
+            <DropDown
+              items={reposNames}
+              active={activeRepoNameIndex}
+              onChange={this.handleRepoSelect}
+            />
           </Field>
           <Field label="Title">
-            <TextInput
-              onChange={this.handleTitleChange}
-              required
-              wide
-            />
+            <TextInput onChange={this.handleTitleChange} required wide />
           </Field>
           <Field label="Description">
-            <TextInput
-              onChange={this.handleDescriptionChange}
-              required
-              wide
-            />
+            <TextInput onChange={this.handleDescriptionChange} required wide />
           </Field>
           <Button mode="strong" type="submit" wide>
-             Submit Issue 
+            Submit Issue
           </Button>
         </Form>
       </div>
     )
   }
-
 }
 
 const Form = styled.form`
   margin-top: 20px;
 `
 export default NewIssuePanelContent
-

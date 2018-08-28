@@ -13,7 +13,6 @@ app.store(async (state, { event, returnValues }) => {
 
   switch (event) {
   case 'NewPayout':
-    console.log('event caught by app store hookup')
     nextState = await newPayout(nextState, returnValues)
     break
   }
@@ -28,7 +27,6 @@ app.store(async (state, { event, returnValues }) => {
  ***********************/
 
 async function newPayout(state, { payoutId }) {
-  console.log(payoutId)
   const transform = ({ data, ...payout }) => ({
     ...payout,
     data: { ...data, executed: true },
@@ -45,10 +43,7 @@ async function newPayout(state, { payoutId }) {
 function loadPayoutData(payoutId) {
   return new Promise(resolve => {
     combineLatest(app.call('getPayout', payoutId)).subscribe(
-      ([payout, metadata]) => {
-        console.log('payout')
-        console.log(payout)
-      }
+      ([payout, metadata]) => {}
     )
   })
 }
