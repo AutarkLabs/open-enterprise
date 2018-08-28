@@ -1,5 +1,5 @@
 import React from 'react'
-import { compareDesc } from 'date-fns'
+import { compareDesc } from 'date-fns/esm'
 import { Table, TableHeader, TableRow } from '@aragon/ui'
 import VoteRow from './VoteRow'
 
@@ -9,8 +9,9 @@ const VotesTable = ({ votes, opened, onSelectVote }) => (
       <TableRow>
         <TableHeader title={opened ? 'Time Remaining' : 'Status'} />
         <TableHeader title="Question" />
-        <TableHeader title="Participation" align="right" />
-        <TableHeader title={'Results'} />
+        <TableHeader title="Total Votes" align="right" />
+        <TableHeader title={opened ? 'Progress' : 'Result'} />
+        <TableHeader title="Actions" />
       </TableRow>
     }
   >
