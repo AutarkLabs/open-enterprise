@@ -390,7 +390,7 @@ contract RangeVoting is IForwarder, AragonApp {
         // uint256 minAcceptQuorum,
         // uint256 yea,
         // uint256 nay,
-        uint256 candidateSupportPct,
+        uint256 candidateSupport,
         uint256 totalVoters,
         string metadata,
         bytes executionScript, // script,
@@ -408,7 +408,7 @@ contract RangeVoting is IForwarder, AragonApp {
         // minAcceptQuorum = vote.minAcceptQuorumPct;
         // yea = vote.yea;
         // nay = vote.nay;
-        candidateSupportPct = voteE.candidateSupportPct;
+        candidateSupport = voteE.candidateSupportPct;
         totalVoters = voteE.totalVoters;
         metadata = voteE.metadata;
         executionScript = voteE.executionScript;
@@ -457,14 +457,14 @@ contract RangeVoting is IForwarder, AragonApp {
     * @return voteId The ID(or index) of this vote in the votes array.
     */
     function _newVote(bytes _executionScript, string _metadata)
-        isInitialized internal returns (uint256 voteId)
+        internal isInitialized returns (uint256 voteId)
     {
     // function _newVote(bytes _executionScript, string _metadata, bool _castVote) isInitialized internal returns (uint256 voteId) {
         voteId = votes.length++;
         Vote storage voteF = votes[voteId];
         voteF.executionScript = _executionScript;
         voteF.creator = msg.sender;
-        voteF.startDate = uint64(now);
+        voteF.startDate = uint64(now); // solium-disable-line security/no-block-members
         voteF.metadata = _metadata;
         voteF.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
         voteF.totalVoters = token.totalSupplyAt(voteF.snapshotBlock);
