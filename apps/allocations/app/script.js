@@ -1,5 +1,6 @@
-import Aragon, { providers } from '@aragon/client'
-import { combineLatest } from './rxjs'
+import Aragon from '@aragon/client'
+import 'rxjs/add/operator/first' // Make sure observables have .first
+import { combineLatest } from 'rxjs/observable/combineLatest'
 
 const app = new Aragon()
 
@@ -44,17 +45,16 @@ function loadAccountData(accountId) {
   return new Promise(resolve => {
     combineLatest(app.call('getPayout', accountId)).subscribe(
       ([account, metadata]) => {
-        resolve(
-          account
-        )
+        resolve(account)
       }
     )
   })
 }
 
 async function updateAccounts(accounts, accountId, transform) {
-
-  const accountIndex = accounts.findIndex(account => account.accountId === accountId)
+  const accountIndex = accounts.findIndex(
+    account => account.accountId === accountId
+  )
 
   if (accountIndex === -1) {
     // If we can't find it, load its data, perform the transformation, and concat
@@ -65,7 +65,6 @@ async function updateAccounts(accounts, accountId, transform) {
       })
     )
   } else {
-    
     const nextAccounts = Array.from(accounts)
     nextAccounts[accountIndex] = await transform(nextAccounts[accountIndex])
     return nextAccounts
