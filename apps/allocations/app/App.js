@@ -32,9 +32,23 @@ class App extends React.Component {
     this.setState({})
   }
 
-  
-  onSetDistribution = (options, addresses, payoutId, activeAllocationItem, activePayoutOption, amount) => {
-    this.props.app.setDistribution(addresses, [], 0, activeAllocationItem === 0, activePayoutOption === 0, 86399 * 30, amount)
+  onSetDistribution = (
+    options,
+    addresses,
+    payoutId,
+    activeAllocationItem,
+    activePayoutOption,
+    amount
+  ) => {
+    this.props.app.setDistribution(
+      addresses,
+      [],
+      0,
+      activeAllocationItem === 0,
+      activePayoutOption === 0,
+      86399 * 30,
+      amount
+    )
     this.setState({})
   }
 

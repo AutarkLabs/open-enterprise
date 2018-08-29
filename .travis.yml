@@ -1,25 +1,48 @@
-sudo: required
+# ensure running in a container for fast boot
+sudo: false
+dist: 'trusty'
+
+# these are executed in order.  each must pass for the next to be run
+stages:
+  - precache # warm up cache for default Node.js version
+  - lint # lint code and docs
+  - test # all tests
+
+#defaults
 language: node_js
+node_js: 'node'
+# `nvm install` happens before the cache is restored, which means
+# we must install our own npm elsewhere (`~/npm`)
+before_install: |
+  [[ ! -x ~/npm/node_modules/.bin/npm ]] && {
+    # caching feature creates `~/npm` for us
+    cd ~/npm && npm install npm@latest
+    cd -
+  } || true
+  # avoids bugs around https://github.com/travis-ci/travis-ci/issues/5092
+  export PATH=~/npm/node_modules/.bin:$PATH
+# this avoids compilation in most cases (where we don't need it)
+install: npm run postinstall
 cache:
   directories:
-    - node_modules
+    - ~/.npm # cache npm's cache
+    - ~/npm # cache latest npm
+
+jobs:
+  include:
+    - script: npm run coverage
+      after_success: npm run coveralls
+      env: 'COVERAGE=true'
+
+    - &node
+      script: npm run test
+      node_js: 'lts/*'
+
+    - stage: lint
+      script: npm run lint
+
+    - stage: precache
+      script: true
+
 notifications:
   email: false
-before_install:
-  - npm i -g npm@latest
-node_js:
-  - 'lts/*'
-  - 'node'
-env:
-  - TASK=lint
-  - TASK=test
-  - TASK=coverage
-install:
-  - travis_wait npm i
-before_script:
-  - npm prune
-  - npm run link:shared
-script:
-  - npm run $TASK
-after_success:
-  - cat apps/*/coverage/lcov.info | npx coveralls
