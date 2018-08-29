@@ -15,6 +15,7 @@ class NewVotePanelContent extends React.Component {
   }
   componentWillReceiveProps({ opened }) {
     if (opened && !this.props.opened) {
+      // TODO: Fix this
       // setTimeout is needed as a small hack to wait until the input's on
       // screen until we call focus
       this.questionInput && setTimeout(() => this.questionInput.focus(), 0)
