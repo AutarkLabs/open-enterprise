@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { EmptyStateCard } from '@aragon/ui'
-import emptyIcon from './assets/empty-card-icon.svg'
+import emptyIcon from '../assets/empty-card-icon.svg'
 
 const EmptyIcon = () => <img src={emptyIcon} alt="" />
 
@@ -9,9 +9,9 @@ const AddressBook = ({ onActivate }) => (
   <Main>
     <EmptyStateCard
       icon={EmptyIcon}
-      title="AddressBook"
-      text="placeholder for AddressBook"
-      actionText="New Project"
+      title="You have not added anyone to the address book."
+      text="Get started now by adding a new entity."
+      actionText="New Entity"
       onActivate={onActivate}
     />
   </Main>

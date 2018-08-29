@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import Aragon, { providers } from '@aragon/client'
-import App from './App'
+import App from './components/App'
 
 class ConnectedApp extends React.Component {
   state = {
@@ -41,7 +41,4 @@ class ConnectedApp extends React.Component {
     return <App {...this.state} />
   }
 }
-ReactDOM.render(
-  <ConnectedApp />,
-  document.getElementById('root')
-)
+ReactDOM.render(<ConnectedApp />, document.getElementById('root'))
