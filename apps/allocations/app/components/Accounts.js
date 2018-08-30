@@ -2,8 +2,8 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { EmptyStateCard, SidePanel } from '@aragon/ui'
-import emptyIcon from '../assets/empty-allocation.svg'
-import { AccountCard, NewAllocation } from '.'
+import emptyIcon from '../assets/empty-accounts.svg'
+import { AccountCard/*, NewAllocation*/ } from '.'
 
 const EmptyIcon = () => <img src={emptyIcon} alt="" />
 
@@ -49,11 +49,11 @@ class Accounts extends React.Component {
           opened={this.state.sidePanelOpened}
           onClose={this.closeSidePanel}
         >
-          <NewAllocation
+          {/* <NewAllocation
             accountDescription={this.state.selectedAccountDescription}
             onSetDistribution={this.props.onSetDistribution}
             onClose={this.props.onClose}
-          />
+          /> */}
         </SidePanel>
       </StyledAccounts>
     )

@@ -3,7 +3,7 @@ import { hot } from 'react-hot-loader'
 import PropTypes from 'prop-types'
 
 import { AragonApp, AppBar, Button, SidePanel, observe } from '@aragon/ui'
-import { AppLayout, Accounts, NewAccount } from '.'
+import { AppLayout, Accounts /*, NewAccount*/ } from '.'
 
 const mockState = {
   accounts: [
@@ -24,101 +24,81 @@ const mockState = {
   ],
 }
 
+const HeaderButton = ({ action }) => (
+  <Button Button mode="strong" onClick={action}>
+    New Account
+  </Button>
+)
+
 class App extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
   }
 
   state = {
-    panelActive: false,
+    panelVisible: false,
     accounts: [],
     ...mockState,
   }
 
-  handlePanelOpen = () => {
-    this.setState({ panelActive: true })
+  openPanel = () => {
+    this.setState({ panelVisible: true })
   }
 
-  handlePanelClose = () => {
-    this.setState({ panelActive: false })
+  closePanel = () => {
+    this.setState({ panelVisible: false })
   }
 
-  onCreateAccount = account => {
+  addAccount = account => {
     this.setState(({ accounts }) => ({
       accounts: [...accounts, account],
     }))
-    this.handlePanelClose()
+    this.closePanel()
   }
 
-  onSetDistribution = () =>
-  // options,
-  // addresses,
-  // payoutId,
-  // activeAllocationItem,
-  // activePayoutOption,
-  // amount
-  {
-    // TODO: need proper payoutId
-    // add logic to define period
-    //this.props.app.setDistribution(options, addresses, [], 0, activeAllocationItem === 0, activePayoutOption ===0, 0, 0)
-    // console.error('empty arrays1')
-    // console.error(this.props.app.setDistribution([], [], 0, true, true, 0, 0))
-    // console.error('empty arrays2')
-    // console.error(
-    //   this.props.app.setDistribution(
-    //     addresses,
-    //     [],
-    //     0,
-    //     activeAllocationItem === 0,
-    //     activePayoutOption === 0,
-    //     86399 * 30,
-    //     amount
-    //   )
-    // )
-
-    console.info('[Allocations > script] onSetDistribution end')
+  // TODO: Review previous code in this function
+  setAllocation = () => {
+    console.log('Allocation set.')
   }
 
   render() {
-    const barButton = (
-      <Button Button mode="strong" onClick={this.handlePanelOpen}>
-        New Account
-      </Button>
-    )
-
     return (
-      <React.StrictMode>
-        <AragonApp publicUrl="aragon-ui-assets/">
-          <AppLayout>
-            <AppLayout.Header>
-              <AppBar title="Allocations" endContent={barButton} />
-            </AppLayout.Header>
-            <AppLayout.ScrollWrapper>
-              <AppLayout.Content>
-                <Accounts
-                  onSetDistribution={this.onSetDistribution}
-                  onActivate={this.handlePanelOpen}
-                  onClose={this.handlePanelClose}
-                  button={barButton}
-                  accounts={
-                    this.state.accounts !== undefined ? this.state.accounts : []
-                  }
-                />
-              </AppLayout.Content>
-            </AppLayout.ScrollWrapper>
-          </AppLayout>
-          <SidePanel
-            opened={this.state.panelActive}
-            onClose={this.handlePanelClose}
-            title="New Account"
-          >
-            <NewAccount
-              onCreateAccount={this.onCreateAccount}
-              onClose={this.handlePanelClose}
+      // TODO: Profile App with strict mode, perf and why-did-you-update, apply memoization
+      // <React.StrictMode>
+      <AragonApp publicUrl="aragon-ui-assets/">
+        <AppLayout>
+          <AppLayout.Header>
+            <AppBar
+              title="Allocations"
+              endContent={<HeaderButton action={this.openPanel} />}
             />
-          </SidePanel>
-        </AragonApp>
-      </React.StrictMode>
+          </AppLayout.Header>
+          <AppLayout.ScrollWrapper>
+            <AppLayout.Content>
+              <Accounts
+                onSetDistribution={this.setAllocation}
+                onActivate={this.openPanel}
+                onClose={this.closePanel}
+                button={<HeaderButton action={this.openPanel} />}
+                accounts={
+                  this.state.accounts !== undefined ? this.state.accounts : []
+                }
+              />
+            </AppLayout.Content>
+          </AppLayout.ScrollWrapper>
+        </AppLayout>
+        <SidePanel
+          opened={this.state.panelVisible}
+          onClose={this.closePanel}
+          title="New Account"
+        >
+          <NewAccount
+            addAccount={this.addAccount}
+            onClose={this.handlePanelClose}
+          />
+        </SidePanel>
+      </AragonApp>
+      // {/* </React.StrictMode> */}
     )
   }
 }

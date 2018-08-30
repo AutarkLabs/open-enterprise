@@ -11,7 +11,7 @@ import {
   theme,
 } from '@aragon/ui'
 
-import icon from '../assets/allocation-card-icon.svg'
+import icon from '../assets/account-card.svg'
 
 const { accent, textPrimary, textTertiary } = theme
 const contextMenuItems = [
