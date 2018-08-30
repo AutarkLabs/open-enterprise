@@ -13,6 +13,7 @@
     "postinstall": "npm run bootstrap && npm run link",
     "clean": "git clean -ffdx",
     "clean:aragon": "rm -rf ~/.aragon && rm -rf ~/.ipfs",
+    "clean:build": "git clean -ffdx --exclude=node_modules/",
     "coverage": "npx lerna run coverage",
     "coveralls": "cat apps/*/coverage/lcov.info | npx coveralls",
     "dev": "apps/shared/test-helpers/develop-kit.sh",
