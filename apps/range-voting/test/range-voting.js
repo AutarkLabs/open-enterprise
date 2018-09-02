@@ -176,12 +176,12 @@ contract('RangeVoting App', accounts => {
         fixing. createdVoteId returns unint, 1, when logged to console
       */
 
-      // await app.executeVote(voteId)
-      // assert.equal(
-      //   await executionTarget.signal(0),
-      //   10,
-      //   'should have executed multiple times'
-      // )
+      await app.executeVote(voteId)
+      assert.equal(
+        await executionTarget.signal(0),
+        10,
+        'should have executed multiple times'
+      )
     })
 
     xit('execution script can be empty', async () => {
