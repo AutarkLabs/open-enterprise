@@ -196,8 +196,8 @@ contract('RangeVoting App', accounts => {
       let action = {
         to: executionTarget.address,
         calldata: executionTarget.contract.setSignal.getData(
-          [accounts[7], accounts[8], accounts[9]],
-          [0, 0, 0]
+          [],
+          []
         ),
       }
       const script = encodeCallScript([action])
@@ -205,9 +205,9 @@ contract('RangeVoting App', accounts => {
         await app.newVote(script, '', { from: holder50 })
       )
       let vote = [10, 15, 25]
-      await app.addCandidate(voteId, '0x', 'Apple')
-      await app.addCandidate(voteId, '0x', 'Orange')
-      await app.addCandidate(voteId, '0x', 'Banana')
+      await app.addCandidate(voteId, '0x', accounts[7])
+      await app.addCandidate(voteId, '0x', accounts[8])
+      await app.addCandidate(voteId, '0x', accounts[9])
       let voter = holder50
       await app.vote(voteId, vote, { from: voter })
       return assertRevert(async () => {
@@ -275,8 +275,8 @@ contract('RangeVoting App', accounts => {
       })
 
       it('holder can add candidates', async () => {
-        await app.addCandidate(voteId, '0x', 'Apple')
-        candidateState = await app.getCandidate(voteId, 'Apple')
+        await app.addCandidate(voteId, '0x', accounts[7])
+        candidateState = await app.getCandidate(voteId, accounts[7])
         assert.equal(
           candidateState[0],
           true,
@@ -285,15 +285,15 @@ contract('RangeVoting App', accounts => {
         assert.equal(candidateState[1], '0x', 'Metadata should be 0')
         assert.equal(candidateState[2], 0, 'First candidate should be index 0')
         assert.equal(candidateState[3], 0, 'Support should start at 0')
-        await app.addCandidate(voteId, '0x', 'Orange')
-        await app.addCandidate(voteId, '0x', 'Race Car')
+        await app.addCandidate(voteId, '0x', accounts[8])
+        await app.addCandidate(voteId, '0x', accounts[9])
       })
 
       it('holder can vote', async () => {
         let vote = [2, 3, 4]
-        await app.addCandidate(voteId, '0x', 'Apple')
-        await app.addCandidate(voteId, '0x', 'Orange')
-        await app.addCandidate(voteId, '0x', 'Banana')
+        await app.addCandidate(voteId, '0x', accounts[7])
+        await app.addCandidate(voteId, '0x', accounts[8])
+        await app.addCandidate(voteId, '0x', accounts[9])
         let voter = holder19
         await app.vote(voteId, vote, { from: voter })
 
@@ -313,9 +313,10 @@ contract('RangeVoting App', accounts => {
           holderVoteData[2].toNumber(),
           'vote and voter state should match after casting ballot'
         )
-        let candidateApple = await app.getCandidate(voteId, 'Apple')
-        let candidateOrange = await app.getCandidate(voteId, 'Orange')
-        let candidateBanana = await app.getCandidate(voteId, 'Banana')
+        let candidateApple = await app.getCandidate(voteId, accounts[7])
+        let candidateOrange = await app.getCandidate(voteId,accounts[8])
+        let candidateBanana = await app.getCandidate(voteId, accounts[9])
+        console.log(candidateApple)
         assert.equal(
           vote[0],
           candidateApple[3],
@@ -336,9 +337,9 @@ contract('RangeVoting App', accounts => {
       it('holder can modify vote', async () => {
         let voteOne = [2, 3, 4]
         let voteTwo = [4, 3, 2]
-        await app.addCandidate(voteId, '0x', 'Apple')
-        await app.addCandidate(voteId, '0x', 'Orange')
-        await app.addCandidate(voteId, '0x', 'Banana')
+        await app.addCandidate(voteId, '0x', accounts[7])
+        await app.addCandidate(voteId, '0x', accounts[8])
+        await app.addCandidate(voteId, '0x',accounts[9])
         let voter = holder19
         await app.vote(voteId, voteOne, { from: voter })
         await app.vote(voteId, voteTwo, { from: voter })
@@ -358,9 +359,9 @@ contract('RangeVoting App', accounts => {
           holderVoteData[2].toNumber(),
           'vote and voter state should match after casting ballot'
         )
-        let candidateApple = await app.getCandidate(voteId, 'Apple')
-        let candidateOrange = await app.getCandidate(voteId, 'Orange')
-        let candidateBanana = await app.getCandidate(voteId, 'Banana')
+        let candidateApple = await app.getCandidate(voteId, accounts[7])
+        let candidateOrange = await app.getCandidate(voteId, accounts[8])
+        let candidateBanana = await app.getCandidate(voteId, accounts[9])
         assert.equal(
           voteTwo[0],
           candidateApple[3],
@@ -381,9 +382,9 @@ contract('RangeVoting App', accounts => {
       it('token transfers dont affect RangeVoting', async () => {
         let vote = [10, 9, 12]
         let voter = holder31
-        await app.addCandidate(voteId, '0x', 'Apple')
-        await app.addCandidate(voteId, '0x', 'Orange')
-        await app.addCandidate(voteId, '0x', 'Banana')
+        await app.addCandidate(voteId, '0x', accounts[7])
+        await app.addCandidate(voteId, '0x', accounts[8])
+        await app.addCandidate(voteId, '0x',accounts[9])
         //await token.transfer(nonHolder, 31, { from: voter })
         await app.vote(voteId, vote, { from: voter })
         let holderVoteData = await app.getVoterState(voteId, voter)
