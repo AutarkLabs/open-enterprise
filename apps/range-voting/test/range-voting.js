@@ -155,7 +155,7 @@ contract('RangeVoting App', accounts => {
       let voter = holder50
       await app.vote(voteId, vote, { from: voter })
     })
-    xit('execution scripts can execute actions', async () => {
+    it('execution scripts can execute actions', async () => {
       let action = {
         to: executionTarget.address,
         calldata: executionTarget.contract.setSignal.getData(
@@ -184,16 +184,21 @@ contract('RangeVoting App', accounts => {
       )
     })
 
-    xit('execution script can be empty', async () => {
+    it('execution script can be empty', async () => {
+      let callScript = encodeCallScript([])
       const voteId = createdVoteId(
-        await app.newVote(encodeCallScript([]), '', { from: holder50 })
+        await app.newVote(callScript, '', { from: holder50 })
       )
+      assert.equal(voteId, 1, 'A vote should be created with empty script')
     })
 
-    xit('execution throws if any action on script throws', async () => {
+    it('execution throws if any action on script throws', async () => {
       let action = {
         to: executionTarget.address,
-        calldata: executionTarget.contract.autoThrow.getData([0]),
+        calldata: executionTarget.contract.setSignal.getData(
+          [accounts[7], accounts[8], accounts[9]],
+          [0, 0, 0]
+        ),
       }
       const script = encodeCallScript([action])
       const voteId = createdVoteId(
@@ -210,10 +215,13 @@ contract('RangeVoting App', accounts => {
       })
     })
 
-    xit('forwarding creates vote', async () => {
-      const action = {
+    it('forwarding creates vote', async () => {
+      let action = {
         to: executionTarget.address,
-        calldata: executionTarget.contract.setSignal.getData([0]),
+        calldata: executionTarget.contract.setSignal.getData(
+          [accounts[7], accounts[8], accounts[9]],
+          [0, 0, 0]
+        ),
       }
       const script = encodeCallScript([action])
       const voteId = createdVoteId(
@@ -230,21 +238,23 @@ contract('RangeVoting App', accounts => {
       let candidateState
 
       beforeEach(async () => {
-        const action = {
+        let action = {
           to: executionTarget.address,
-          calldata: executionTarget.contract.setSignal.getData([0]),
+          calldata: executionTarget.contract.setSignal.getData(
+            [accounts[7], accounts[8], accounts[9]],
+            [0, 0, 0]
+          ),
         }
         script = encodeCallScript([action, action])
         let newvote = await app.newVote(script, 'metadata', { from: nonHolder })
-        //console.log(newvote.logs[0].args)
         voteId = createdVoteId(newvote)
       })
 
-      xit('has correct vote ID', async () => {
+      it('has correct vote ID', async () => {
         assert.equal(voteId, 1, 'RangeVote should have been created')
       })
 
-      xit('has correct state', async () => {
+      it('has correct state', async () => {
         let voteState = await app.getVote(voteId)
         let tokenBalance = await token.totalSupply()
         assert.equal(voteState[0], true, 'is true')
@@ -264,7 +274,7 @@ contract('RangeVoting App', accounts => {
         assert.equal(voteState[8], false, 'is false')
       })
 
-      xit('holder can add candidates', async () => {
+      it('holder can add candidates', async () => {
         await app.addCandidate(voteId, '0x', 'Apple')
         candidateState = await app.getCandidate(voteId, 'Apple')
         assert.equal(
@@ -279,7 +289,7 @@ contract('RangeVoting App', accounts => {
         await app.addCandidate(voteId, '0x', 'Race Car')
       })
 
-      xit('holder can vote', async () => {
+      it('holder can vote', async () => {
         let vote = [2, 3, 4]
         await app.addCandidate(voteId, '0x', 'Apple')
         await app.addCandidate(voteId, '0x', 'Orange')
@@ -323,7 +333,7 @@ contract('RangeVoting App', accounts => {
         )
       })
 
-      xit('holder can modify vote', async () => {
+      it('holder can modify vote', async () => {
         let voteOne = [2, 3, 4]
         let voteTwo = [4, 3, 2]
         await app.addCandidate(voteId, '0x', 'Apple')
@@ -368,7 +378,7 @@ contract('RangeVoting App', accounts => {
         )
       })
 
-      xit('token transfers dont affect RangeVoting', async () => {
+      it('token transfers dont affect RangeVoting', async () => {
         let vote = [10, 9, 12]
         let voter = holder31
         await app.addCandidate(voteId, '0x', 'Apple')

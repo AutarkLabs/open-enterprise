@@ -390,9 +390,14 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         vote.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
         vote.totalVoters = token.totalSupplyAt(vote.snapshotBlock);
         vote.candidateSupportPct = globalCandidateSupportPct;
-        var (scriptOffset, scriptRemainder) = _extractCandidates(_executionScript, voteId);
-        //vote.scriptOffset = scriptOffset;
-        //vote.scriptRemainder = scriptRemainder;
+        vote.scriptOffset = 0;
+        vote.scriptRemainder = 0;
+        require(_executionScript.uint32At(0x0) == 1);
+        if(_executionScript.length != 4) {
+            var (scriptOffset, scriptRemainder) = _extractCandidates(_executionScript, voteId);
+            vote.scriptOffset = scriptOffset;
+            vote.scriptRemainder = scriptRemainder;    
+        }
         StartVote(voteId);
     }
 
@@ -515,6 +520,8 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         // for each candidate as well as 3 32 byte spaces for
         // additional data
         bytes memory script = new bytes(32 * (candidateLength + 3));
+        ExecutionScript(script, 0);
+        /*
         assembly {  
             mstore(add(script, 32), mload(add(executionScript,32)))
         }
@@ -558,7 +565,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
 
 
         runScript(script, new bytes(0), new address[](0));
-
+        */
         ExecuteVote(_voteId);
     }
 
