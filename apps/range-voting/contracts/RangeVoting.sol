@@ -519,9 +519,9 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         // The total length of the new script will be one 32 byte space
         // for each candidate as well as 3 32 byte spaces for
         // additional data
-        bytes memory script = new bytes(32 * (candidateLength + 3));
-        ExecutionScript(script, 0);
-        /*
+        bytes memory script = new bytes( 32 * (2 * candidateLength + 3));
+        
+        
         assembly {  
             mstore(add(script, 32), mload(add(executionScript,32)))
         }
@@ -539,14 +539,12 @@ contract RangeVoting is IForwarderFixed, AragonApp {
             }
             offset--;
         }
-
         supportsData = 32;
         offset = 64;
 
         assembly {
             mstore(add(script, offset), supportsData)
         }
-        
         offset += 32;
         supportsData = candidateLength;
 
@@ -554,6 +552,17 @@ contract RangeVoting is IForwarderFixed, AragonApp {
             mstore(add(script, offset), supportsData)
         }
         offset += 32;
+
+        for (i = 0; i < candidateLength; i++) {
+            bytes32 canKey = votes[_voteId].candidateKeys[i];
+            //candidateData = votes[_voteId].candidates[votes[_voteId].candidateKeys[i]];
+            address candidateData = candidateDescriptions[canKey];
+            assembly {
+                mstore(add(script, offset), candidateData)
+            }
+            offset += 32; //offset needs to adjust to accomodate addresses
+        }
+        
         for (i = 0; i < candidateLength; i++) {
             supportsData = votes[_voteId].candidates[votes[_voteId].candidateKeys[i]].voteSupport;
 
@@ -562,8 +571,13 @@ contract RangeVoting is IForwarderFixed, AragonApp {
             }
             offset += 32;
         }
+        
 
-
+        script.copy(executionScript.getPtr(),vote.scriptOffset,vote.scriptRemainder);
+        
+        ExecutionScript(script, 0);
+        
+        /*
         runScript(script, new bytes(0), new address[](0));
         */
         ExecuteVote(_voteId);

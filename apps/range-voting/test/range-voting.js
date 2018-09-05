@@ -170,18 +170,23 @@ contract('RangeVoting App', accounts => {
       let vote = [10, 15, 25]
       let voter = holder50
       await app.vote(voteId, vote, { from: voter })
-
+      
       /* TODO: test case is failing after this point. executeVote reverts 
         transaction. Could be an invalid voteId or function itself needs 
         fixing. createdVoteId returns unint, 1, when logged to console
       */
 
       await app.executeVote(voteId)
+      assert.equal(1,0,'force failure')
+      /*
       assert.equal(
         await executionTarget.signal(0),
         10,
         'should have executed multiple times'
+
+        
       )
+      */
     })
 
     it('execution script can be empty', async () => {
@@ -283,17 +288,17 @@ contract('RangeVoting App', accounts => {
           'Candidate should have been added'
         )
         assert.equal(candidateState[1], '0x', 'Metadata should be 0')
-        assert.equal(candidateState[2], 0, 'First candidate should be index 0')
-        assert.equal(candidateState[3], 0, 'Support should start at 0')
+        assert.equal(candidateState[2].toNumber(), 3, 'Fourth candidate should be at index 3')
+        assert.equal(candidateState[3].toNumber(), 0, 'Support should start at 0')
         await app.addCandidate(voteId, '0x', accounts[8])
         await app.addCandidate(voteId, '0x', accounts[9])
       })
 
       it('holder can vote', async () => {
         let vote = [2, 3, 4]
-        await app.addCandidate(voteId, '0x', accounts[7])
-        await app.addCandidate(voteId, '0x', accounts[8])
-        await app.addCandidate(voteId, '0x', accounts[9])
+        //await app.addCandidate(voteId, '0x', accounts[7])
+        //await app.addCandidate(voteId, '0x', accounts[8])
+        //await app.addCandidate(voteId, '0x', accounts[9])
         let voter = holder19
         await app.vote(voteId, vote, { from: voter })
 
@@ -319,7 +324,7 @@ contract('RangeVoting App', accounts => {
         console.log(candidateApple)
         assert.equal(
           vote[0],
-          candidateApple[3],
+          candidateApple[3].toNumber(),
           'The correct amount of support should be logged for apple'
         )
         assert.equal(

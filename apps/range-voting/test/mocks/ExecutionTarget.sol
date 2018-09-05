@@ -22,5 +22,9 @@ contract ExecutionTarget {
         require(false);
     }
 
+    function getSignal(uint256 sigIndex) public returns (uint) {
+        return signal[sigIndex];
+    }
+
     event Executed(uint length);
 }
