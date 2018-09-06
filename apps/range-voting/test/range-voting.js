@@ -296,9 +296,9 @@ contract('RangeVoting App', accounts => {
 
       it('holder can vote', async () => {
         let vote = [2, 3, 4]
-        //await app.addCandidate(voteId, '0x', accounts[7])
-        //await app.addCandidate(voteId, '0x', accounts[8])
-        //await app.addCandidate(voteId, '0x', accounts[9])
+        await app.addCandidate(voteId, '0x', accounts[7])
+        await app.addCandidate(voteId, '0x', accounts[8])
+        await app.addCandidate(voteId, '0x', accounts[9])
         let voter = holder19
         await app.vote(voteId, vote, { from: voter })
 
@@ -322,6 +322,7 @@ contract('RangeVoting App', accounts => {
         let candidateOrange = await app.getCandidate(voteId,accounts[8])
         let candidateBanana = await app.getCandidate(voteId, accounts[9])
         console.log(candidateApple)
+        console.log((await app.getVote(voteId))[5].toNumber())
         assert.equal(
           vote[0],
           candidateApple[3].toNumber(),
@@ -369,7 +370,7 @@ contract('RangeVoting App', accounts => {
         let candidateBanana = await app.getCandidate(voteId, accounts[9])
         assert.equal(
           voteTwo[0],
-          candidateApple[3],
+          candidateApple[3].toNumber(),
           'The correct amount of support should be logged for apple'
         )
         assert.equal(
