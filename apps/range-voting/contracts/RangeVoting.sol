@@ -102,6 +102,8 @@ contract RangeVoting is IForwarderFixed, AragonApp {
     event ExecuteVote(uint256 indexed voteId);
     event ChangeCandidateSupport(uint256 candidateSupportPct);
     event ExecutionScript(bytes script, uint256 data);
+    event DebugVote(uint256 voterStake, uint256 totalSupport, uint256 voteSupport);
+    event DebugAddCandidate(uint8 keyArrayIndex);
 
 ////////////////
 // Constructor
@@ -210,13 +212,15 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         // double check
         candidateDescriptions[cKey] = _description;
         vote.candidateKeys[candidate.keyArrayIndex] = cKey;
+
+        DebugAddCandidate(candidate.keyArrayIndex);
     }
 
     /**
     * @notice `getCandidate` serves as a basic getter using the description
     *         to return the struct data.
     * @param _voteId id for vote structure this 'ballot action' is connected to
-    * @param _description The candidate descrciption of the candidate.
+    * @param _description The description of the candidate.
     */
     function getCandidate(uint256 _voteId, address _description)
     external view returns(bool, bytes, uint8, uint256)
@@ -478,6 +482,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         bytes32[] storage cKeys = vote.candidateKeys;
 
         uint256 i = 0;
+
         // This is going to cost a lot of gas... it'd be cool if there was
         // a better way to do this.
         for (i; i < oldVoteSupport.length; i++) {
@@ -490,6 +495,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
             voteSupport = voteSupport.sub(oldVoteSupport[i]);
             voteSupport = voteSupport.add(_supports[i]);
             vote.candidates[cKeys[i]].voteSupport = voteSupport;
+            DebugVote(voterStake, totalSupport, voteSupport);
         }
         for (i; i < _supports.length; i++) {
             totalSupport = totalSupport.add(_supports[i]);
@@ -497,7 +503,9 @@ contract RangeVoting is IForwarderFixed, AragonApp {
             voteSupport = vote.candidates[cKeys[i]].voteSupport;
             voteSupport = voteSupport.add(_supports[i]);
             vote.candidates[cKeys[i]].voteSupport = voteSupport;
+            DebugVote(voterStake, totalSupport, voteSupport);
         }
+
 
         vote.voters[msg.sender] = _supports;
     }

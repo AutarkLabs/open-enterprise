@@ -33,6 +33,7 @@
     "solium": "^1.1.8",
     "solium-plugin-security": "^0.1.1",
     "truffle": "4.0.5",
+    "truffle-assertions": "^0.4.0",
     "truffle-hdwallet-provider": "^0.0.6"
   },
   "scripts": {
