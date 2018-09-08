@@ -104,6 +104,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
     event ExecuteVote(uint256 indexed voteId);
     event ChangeCandidateSupport(uint256 candidateSupportPct);
     event ExecutionScript(bytes script, uint256 data);
+    event AddCandidate(address candidate);
 
 ////////////////
 // Constructor
@@ -174,7 +175,6 @@ contract RangeVoting is IForwarderFixed, AragonApp {
     function vote(uint256 _voteId, uint256[] _supports) external {
         require(canVote(_voteId, msg.sender));
         _vote(_voteId, _supports, msg.sender);
-        //CastVote(votes[_voteId].candidates[cKeys[]].voteSupport, votes[_voteId].candidates[cKeys[i]].metadata, vote.candidates[cKeys[i]].added);
     }
 
     /**
@@ -436,9 +436,10 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         // Upper limit of candidates should be checked against this function
         
         for(uint256 i = candidateLength; i > 0; i--){
-            currentCandidate = _executionScript.addressAt(currentOffset);
+            currentCandidate = _executionScript.addressAt(currentOffset + 0x0C);
             currentOffset = currentOffset + 0x20;
             addCandidate(_voteId, new bytes(0), currentCandidate);
+            AddCandidate(currentCandidate);
         }
         // Skip the next param since it's also determined by this contract
         // In order to do this we move the offsett one word for the length of the param
@@ -483,12 +484,10 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         uint256 i = 0;
         // This is going to cost a lot of gas... it'd be cool if there was
         // a better way to do this.
-       
-        for (i = 0; i < oldVoteSupport.length; i++) {
+        for (i; i < oldVoteSupport.length; i++) {
             totalSupport = totalSupport.add(_supports[i]);
             // Might make sense to move this outside the for loop
             // Probably safer here but some gas calculations should be done
-            
             require(totalSupport <= voterStake);
 
             voteSupport = vote.candidates[cKeys[i]].voteSupport;
@@ -498,13 +497,10 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         }
         for (i; i < _supports.length; i++) {
             totalSupport = totalSupport.add(_supports[i]);
-            //CastVote(totalSupport);
-            //CastVote(voterStake);
             require(totalSupport <= voterStake);
             voteSupport = vote.candidates[cKeys[i]].voteSupport;
             voteSupport = voteSupport.add(_supports[i]);
             vote.candidates[cKeys[i]].voteSupport = voteSupport;
-            CastVote(votes[_voteId].candidates[cKeys[i]].voteSupport, vote.candidates[cKeys[i]].metadata, vote.candidates[cKeys[i]].added);
         }
 
         vote.voters[msg.sender] = _supports;

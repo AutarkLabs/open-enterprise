@@ -252,17 +252,23 @@ contract('RangeVoting App', accounts => {
             [0, 0, 0]
           ),
         }
-
-        console.log('apple: ',apple)
         
         script = encodeCallScript([action, action])
         let newvote = await app.newVote(script, 'metadata', { from: nonHolder })
         voteId = createdVoteId(newvote)
-        console.log(await app.getCandidate(voteId, apple))
       })
 
       it('has correct vote ID', async () => {
         assert.equal(voteId, 1, 'RangeVote should have been created')
+      })
+
+      it('stored the candidate addresses correctly', async () => {
+        let appleAddressAdded = (await app.getCandidate(voteId, apple))[0]
+        let orangeAddressAdded = (await app.getCandidate(voteId, orange))[0]
+        let bananaAddressAdded = (await app.getCandidate(voteId, banana))[0]
+        assert.equal(appleAddressAdded, true, 'apple address extracted incorrectly')
+        assert.equal(orangeAddressAdded, true, 'apple address extracted incorrectly')
+        assert.equal(bananaAddressAdded, true, 'apple address extracted incorrectly')
       })
 
       it('has correct state', async () => {
@@ -324,8 +330,7 @@ contract('RangeVoting App', accounts => {
           holderVoteData[2].toNumber(),
           'vote and voter state should match after casting ballot'
         )
-        //console.log(await app.getVote(voteId))
-        console.log(apple)
+        
         let candidateApple = await app.getCandidate(voteId, accounts[6])
         let candidateOrange = await app.getCandidate(voteId, accounts[7])
         let candidateBanana = await app.getCandidate(voteId, accounts[8])
@@ -356,7 +361,7 @@ contract('RangeVoting App', accounts => {
         let voter = holder19
         await app.vote(voteId, voteOne, { from: voter })
         await app.vote(voteId, voteTwo, { from: voter })
-        console.log('meep')
+        
         let holderVoteData = await app.getVoterState(voteId, voter)
         assert.equal(
           voteTwo[0],
@@ -376,7 +381,7 @@ contract('RangeVoting App', accounts => {
         let candidateApple = await app.getCandidate(voteId, accounts[7])
         let candidateOrange = await app.getCandidate(voteId, accounts[8])
         let candidateBanana = await app.getCandidate(voteId, accounts[9])
-        console.log(candidateApple)
+        
         assert.equal(
           voteTwo[3],
           candidateApple[3].toNumber(),
