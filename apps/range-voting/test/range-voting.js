@@ -170,23 +170,16 @@ contract('RangeVoting App', accounts => {
       let vote = [10, 15, 25]
       let voter = holder50
       await app.vote(voteId, vote, { from: voter })
-      
-      /* TODO: test case is failing after this point. executeVote reverts 
-        transaction. Could be an invalid voteId or function itself needs 
-        fixing. createdVoteId returns unint, 1, when logged to console
-      */
-
       await app.executeVote(voteId)
-      assert.equal(1,0,'force failure')
-      /*
-      assert.equal(
-        await executionTarget.signal(0),
-        10,
-        'should have executed multiple times'
-
-        
-      )
-      */
+      let signal;
+      for(let i = 0; i < vote.length; i ++){
+        signal = await executionTarget.getSignal(i);
+        assert.equal(
+          signal.toNumber(),
+          vote[i],
+          'Signal ' + i + ' should be ' + vote[i]
+        )
+      }    
     })
 
     it('execution script can be empty', async () => {

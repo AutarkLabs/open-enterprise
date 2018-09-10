@@ -22,7 +22,7 @@ contract ExecutionTarget {
         require(false);
     }
 
-    function getSignal(uint256 sigIndex) public returns (uint) {
+    function getSignal(uint256 sigIndex) public view returns (uint) {
         return signal[sigIndex];
     }
 
