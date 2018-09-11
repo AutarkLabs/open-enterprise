@@ -1,49 +1,46 @@
 {
   "name": "@tpt/apps-allocations",
   "version": "0.0.1",
-  "description": "",
-  "dependencies": {
-    "@aragon/client": "^1.0.0-beta.8",
-    "@aragon/os": "3.1.9",
-    "@aragon/ui": "^0.16.0",
-    "babel-runtime": "^6.26.0",
-    "react": "^16.4.1",
-    "react-blockies": "^1.3.0",
-    "react-dom": "^16.4.1",
-    "styled-components": "^3.2.6"
-  },
-  "devDependencies": {
-    "@aragon/cli": "^4.0.6",
-    "babel-eslint": "^8.2.6",
-    "babel-plugin-transform-class-properties": "^6.24.1",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-preset-stage-3": "^6.24.1",
-    "eslint": "^5.2.0",
-    "eslint-config-prettier": "^2.9.0",
-    "eslint-plugin-react": "^7.10.0",
-    "parcel-bundler": "^1.9.3",
-    "prettier": "1.13.7",
-    "react-hot-loader": "^4.3.4",
-    "truffle": "4.0.5",
-    "truffle-hdwallet-provider": "0.0.6",
-    "why-did-you-update": "^0.1.1"
-  },
+  "description": "Allocations app from Planning Suite",
+  "main": "index.js",
   "scripts": {
-    "build:app": "npx parcel build app/index.html -d dist/ --public-url '.'",
-    "build:script": "npx parcel build app/script.js -d dist/",
-    "build": "npm run compile && npm run sync-assets && npm run build:app && npm run build:script",
-    "compile": "npx aragon contracts compile",
-    "dev": "npm run sync-assets && npx parcel app/index.html --open",
-    "devchain": "npx aragon devchain",
-    "publish": "npx apm publish",
-    "start": "npx aragon run",
-    "sync-assets": "npx copy-aragon-ui-assets ./dist",
-    "test": "npx aragon contracts test"
+    "dev": "npm run sync-assets && parcel app/index.html",
+    "sync-assets": "copy-aragon-ui-assets ./dist",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "repository": {
     "type": "git",
     "url": "https://github.com/Giveth/planning-app"
   },
-  "license": "GPL-3.0"
+  "license": "GPL-3.0",
+  "author": "",
+  "dependencies": {
+    "@aragon/client": "^1.0.0-beta.9",
+    "@aragon/ui": "git://github.com/ottodevs/aragon-ui.git#5a332274056852d8e803b0e539c4b64bcaff236b",
+    "prop-types": "^15.6.2",
+    "react": "^16.4.2",
+    "react-dom": "^16.4.2",
+    "react-onclickout": "^2.0.8",
+    "react-spring": "^5.6.8",
+    "styled-components": "^3.4.5"
+  },
+  "devDependencies": {
+    "babel-eslint": "^9.0.0",
+    "babel-plugin-styled-components": "^1.5.1",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
+    "babel-preset-stage-3": "^6.24.1",
+    "eslint": "^5.4.0",
+    "eslint-config-prettier": "^3.0.1",
+    "eslint-plugin-react": "^7.11.1",
+    "parcel-bundler": "^1.9.7",
+    "prettier": "^1.14.2",
+    "react-hot-loader": "^4.3.5",
+    "stylelint": "^9.5.0",
+    "stylelint-config-standard": "^18.2.0",
+    "stylelint-config-styled-components": "^0.1.1",
+    "stylelint-processor-styled-components": "^1.3.2"
+  }
 }
