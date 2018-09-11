@@ -1,7 +1,0 @@
-export { default as AccountCard } from './AccountCard'
-export { default as Accounts } from './Accounts'
-export { default as App } from './App'
-export { default as AppLayout } from './AppLayout'
-// export { default as IconRemove } from './IconRemove'
-// export { default as NewAccount } from './NewAccount'
-// export { default as NewAllocation } from './NewAllocation'

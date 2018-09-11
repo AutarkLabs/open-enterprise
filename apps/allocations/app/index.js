@@ -1,18 +1,22 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import Aragon, { providers } from '@aragon/client'
-import { App } from './components'
+
+import { allocationsMockData } from './utils/mockData'
+import { App } from './components/App'
 
 // if (process.env.NODE_ENV !== 'production') {
 //   const { whyDidYouUpdate } = require('why-did-you-update')
 //   whyDidYouUpdate(React)
 // }
 
+// TODO: Convert to stateless functional component
 class ConnectedApp extends React.Component {
   state = {
     app: new Aragon(new providers.WindowMessage(window.parent)),
     observable: null,
     userAccount: '',
+    // ...allocationsMockData
   }
   componentDidMount() {
     window.addEventListener('message', this.handleWrapperMessage)
@@ -46,4 +50,4 @@ class ConnectedApp extends React.Component {
     return <App {...this.state} />
   }
 }
-ReactDOM.render(<ConnectedApp />, document.getElementById('root'))
+ReactDOM.render(<ConnectedApp />, document.getElementById('allocations'))
