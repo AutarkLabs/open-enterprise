@@ -29,7 +29,7 @@ const initialState = {
     {
       text: 'Manage Parameters',
       icon: IconSettings,
-      function: 'openManageParemeters',
+      function: 'openManageParameters',
       colors: { iconColor: accent },
     },
   ],
@@ -46,7 +46,7 @@ class ToolCard extends Component {
     }
   }
 
-  openManageParemeters = () => {}
+  openManageParameters = () => {}
 
   render() {
     const { label, description, stats, address } = this.props
