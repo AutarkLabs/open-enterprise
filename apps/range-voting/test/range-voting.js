@@ -171,9 +171,9 @@ contract('RangeVoting App', accounts => {
       let voter = holder50
       await app.vote(voteId, vote, { from: voter })
       await app.executeVote(voteId)
-      let signal;
+      let signal
       for(let i = 0; i < vote.length; i ++){
-        signal = await executionTarget.getSignal(i);
+        signal = await executionTarget.getSignal(i)
         assert.equal(
           signal.toNumber(),
           vote[i],
