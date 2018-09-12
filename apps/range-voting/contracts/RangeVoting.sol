@@ -463,7 +463,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
     *            [ calldataLength (uint32: 4 bytes) ]
     *            [ calldata (calldataLength bytes) ]
     *        In order to work with a range vote the execution script must contain
-    *        Arrays as its first two paramaters.
+    *        Arrays as its first two parameters.
     *        The first Array is generally a list of identifiers (bytes32 or address)
     *        The second array will be composed of support value (uint256).
     * @param _metadata The metadata or vote information attached to this vote
@@ -504,7 +504,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         calldataLength = uint256(_executionScript.uint32At(0x4 + 0x14));
         // Since the calldataLength is 4 bytes the start offset is
         uint256 startOffset = 0x04 + 0x14 + 0x04;
-        // The first paramater is located at a byte depth indicated by the first
+        // The first parameter is located at a byte depth indicated by the first
         // word in the calldata (which is located at the startOffset + 0x04 for the function signature)
         // so we have:
         // start offset (spec id + address + calldataLength) + param offset + function signature
