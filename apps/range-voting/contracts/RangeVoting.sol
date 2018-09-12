@@ -76,8 +76,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         uint256 snapshotBlock;
         uint256 candidateSupportPct; //minAcceptQuorumPct;
         uint256 totalVoters;
-        // uint256 yea;
-        // uint256 nay;
+        uint256 totalParticipation;
         string metadata;
         bytes executionScript;
         uint256 scriptOffset;
@@ -363,11 +362,30 @@ contract RangeVoting is IForwarderFixed, AragonApp {
     * @notice `canExecute` is used to check that the participation has been met
     *         and the vote has reached it's end before the execute
     *         function is called.
+    * @param _voteId id for vote structure this 'ballot action' is connected to
     * @return True if the vote is elligible for execution.
     */
-    function canExecute(uint256 /*_voteId*/) public pure returns (bool) {
-        // Needs better implementation
-        return true;
+    function canExecute(uint256 _voteId) public view returns (bool) {
+        Vote storage vote = votes[_voteId];
+        if (vote.executed)
+            return false;
+        // vote ended?
+        if (_isVoteOpen(vote))
+            return false;
+        //does not pass tests
+        bytes32[] storage cKeys = vote.candidateKeys;
+        uint256 i = 0;
+        // TODO: refactor to make something usable, commented because was unused
+        // for (i; i < cKeys.length; i++) {
+        //     bytes32 cKey = cKeys[i];
+        //     CandidateState storage candidateState = vote.candidates[cKey]; // TODO: we never use this, what is the purpose?
+        //     // has candidate support?
+        //     // if (!_isValuePct(candidateState.voteSupport, vote.totalParticipation, vote.candidateSupportPct))
+        //         // return false;
+        // }
+        // has minimum participation threshold been reached?
+        if (!_isValuePct(vote.totalParticipation, vote.totalVoters, minParticipationPct))
+            return true;
     }
 
     /**
@@ -387,6 +405,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         // uint256 nay,
         uint256 candidateSupport,
         uint256 totalVoters,
+        uint256 totalParticipation,
         string metadata,
         bytes executionScript, // script,
         bool executed
@@ -399,6 +418,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         snapshotBlock = vote.snapshotBlock;
         candidateSupportPct = vote.candidateSupportPct;
         totalVoters = vote.totalVoters;
+        totalParticipation = vote.totalParticipation;
         metadata = vote.metadata;
         executionScript = vote.executionScript;
         executed = vote.executed;
@@ -580,10 +600,12 @@ contract RangeVoting is IForwarderFixed, AragonApp {
             // Probably safer here but some gas calculations should be done
             require(totalSupport <= voterStake); // solium-disable-line error-reason
 
-            voteSupport = voteG.candidates[cKeys[i]].voteSupport;
+            voteSupport = vote.candidates[cKeys[i]].voteSupport;
+            vote.totalParticipation = vote.totalParticipation.sub(voteSupport);
             voteSupport = voteSupport.sub(oldVoteSupport[i]);
             voteSupport = voteSupport.add(_supports[i]);
-            voteG.candidates[cKeys[i]].voteSupport = voteSupport;
+            vote.totalParticipation = vote.totalParticipation.add(voteSupport);
+            vote.candidates[cKeys[i]].voteSupport = voteSupport;
         }
         for (i; i < _supports.length; i++) {
             totalSupport = totalSupport.add(_supports[i]);
@@ -593,7 +615,8 @@ contract RangeVoting is IForwarderFixed, AragonApp {
             voteG.candidates[cKeys[i]].voteSupport = voteSupport;
         }
 
-        voteG.voters[msg.sender] = _supports;
+        vote.voters[msg.sender] = _supports;
+        // vote.totalParticipation = vote.totalParticipation.sub(oldVoteSupport[i]);
     }
 
     /**
