@@ -15,7 +15,7 @@ lerna info versioning independent
 
 - Planning-app is the base monorepo.
 - Frontend packages were merged with individual aragon apps, it added complexity and was not needed.
-- Aragon/cli should be used to bump package versions with `apm version` (more info in Aragon hack documentation). It needs to have a devhchain running.
+- Aragon/cli should be used to bump package versions with `aragon apm version` (more info in Aragon hack documentation). It needs to have a devhchain running.
 
 ## Recommended instructions
 
@@ -49,7 +49,7 @@ lerna info versioning independent
 
 - `npm start`
 
-This script checks/install dependencies through lerna bootstrap, then concurrently starts a local development blockchain to deploy the individual apps there calling apm publish on each app, also with help of lerna.
+This script checks/install dependencies through lerna bootstrap, then concurrently starts a local development blockchain to deploy the individual apps there calling `aragon apm publish` on each app, also with help of lerna.
 When individual apps are deployed, the aragon/cli --kit option compiles and deploys the PlanningKit dao template sitting in contracts folder.
 
 This folder contains also a PlanningDummy smart contract. This is needed to conform the minimal requirements to be an Aragon App, call it bare, skeleton, minimal. This smart contract is actually never deployed nor called from any other contract.
