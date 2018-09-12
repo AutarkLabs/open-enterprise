@@ -1,4 +1,14 @@
 {
+  "eslint.autoFixOnSave": true,
+  "eslint.enable": true,
+  "eslint.run": "onType",
+  "files.associations": {
+    ".stylelintrc": "json"
+  },
+  "prettier.eslintIntegration": true,
+  "prettier.stylelintIntegration": true,
+  "solidity.packageDefaultDependenciesContractsDirectory": "",
+  "solidity.packageDefaultDependenciesDirectory": "",
   "solidity.soliumRules": {
     "security/no-low-level-calls": "off",
     "security/no-inline-assembly": "off",
@@ -31,5 +41,6 @@
     "max-len": "error",
     "visibility-first": "error",
     "linebreak-style": "error"
-  }
+  },
+  "solidity.validationDelay": 0
 }
