@@ -55,7 +55,7 @@ class NewProject extends React.Component {
       // <GithubContext.Consumer>
       //   {({ login }) => <div>Hello {login}</div>}
       // </GithubContext.Consumer>
-      // <div>Helaalo {github.login}</div>
+      // <div>Hello {github.login}</div>
       <div>New projrs</div>
       // <ApolloProvider client={client}>
       //   <a
