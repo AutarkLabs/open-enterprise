@@ -1,8 +1,6 @@
 const { assertRevert } = require('@tpt/test-helpers/assertThrow')
 const { encodeCallScript } = require('@tpt/test-helpers/evmScript')
-const getBlockNumber = require('@tpt/test-helpers/blockNumber')(web3)
 const timeTravel = require('@tpt/test-helpers/timeTravel')(web3)
-// const timeTravel = require('@aragon/test-helpers/timeTravel')(web3)
 
 const ExecutionTarget = artifacts.require('ExecutionTarget')
 const RangeVoting = artifacts.require('RangeVoting')
@@ -173,13 +171,19 @@ contract('RangeVoting App', accounts => {
       let vote = [10, 15, 25]
       let voter = holder50
       await app.vote(voteId, vote, { from: voter })
-      console.log(await web3.eth.getBlock(latest))
-      await timeTravel(RangeVotingTime + 2000)
-      console.log(await web3.eth.getBlock(latest))
+      await timeTravel(RangeVotingTime + 1)
+      /*
+        TODO: timeTravel should be working, according to debug logs in https://github.com/capsulecorplab/planning-app/commit/dd2a02e5bbebf994433aa45596eea591349be9a9
+        'execution scripts can execute actions' encountering timeout errors.
+        Hypotheses:
+        - Could possibly be memory issues w/ local machine
+        - package-lock.json out of sync.
+        - ?
+      */
       await app.executeVote(voteId)
-      let signal;
+      let signal
       for(let i = 0; i < vote.length; i ++){
-        signal = await executionTarget.getSignal(i);
+        signal = await executionTarget.getSignal(i)
         assert.equal(
           signal.toNumber(),
           vote[i],
