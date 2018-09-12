@@ -23,7 +23,7 @@ start_testrpc() {
 
 if testrpc_running; then
 	echo "Killing testrpc instance at port $testrpc_port"
-	kill -9 $(lsof -i:$testrpc_port -t)
+	kill -9 "$(lsof -i:"$testrpc_port" -t)"
 fi
 
 echo "Starting our own testrpc instance at port $testrpc_port"
@@ -33,7 +33,7 @@ sleep 5
 replace_manifest_path() {
 	file=$PWD/manifest.json
 	output=$PWD/dist/manifest.json
-	sed "s/dist\\///g" $file >$output
+	sed "s/dist\\///g" "$file" >"$output"
 }
 
 export -f replace_manifest_path
@@ -45,11 +45,12 @@ copy_assets() {
 export -f copy_assets
 
 deploy_contract() {
-	truffle compile
-	deployed_at=$(truffle migrate --reset | tail -4 | head -1 | awk '{ print $NF }')
-	echo "Deployed at:" $deployed_at
-	published=$(npm run publish:http -- --contract $deployed_at | tail -2)
-	echo $published
+	# TODO: Are we sure we want to mute truffle output? we should discuss this maybe
+	npx truffle compile >/dev/null
+	deployed_at=$(npx truffle migrate --reset | tail -4 | head -1 | awk '{ print $NF }')
+	echo "Deployed at:" "$deployed_at"
+	published=$(npm run publish:http -- --contract "$deployed_at" | tail -2)
+	echo "$published"
 	replace_manifest_path
 	copy_assets
 	sleep 2
@@ -63,9 +64,9 @@ multi_parcel_running() {
 
 if multi_parcel_running; then
 	for i in $(seq 1 4); do
-		parcel_port=$(printf %4s | tr " " $i)
-		echo "Killing parcel instance at port" $parcel_port
-		kill -9 $(lsof -i:$parcel_port -t)
+		parcel_port=$(printf "%4s | tr" "$i")
+		echo "Killing parcel instance at port" "$parcel_port"
+		kill -9 "$(lsof -i:"$parcel_port" -t)"
 	done
 fi
 
@@ -94,7 +95,7 @@ echo "Compiling and getting deployed contract address"
 lerna exec --scope=@tpt/apps-* --concurrency=1 -- deploy_contract
 lerna exec --scope=@tpt/apps-* -- apm versions
 echo "Starting multi parcel instances in parallel execution"
-start_multi_parcel
+start_multi_parcel "$@"
 sleep 10
 
 kit_running() {
@@ -103,7 +104,7 @@ kit_running() {
 
 if kit_running; then
 	echo "Killing kit instance at port 3000"
-	kill -9 $(lsof -i:'3000' -t)
+	kill -9 "$(lsof -i:'3000' -t)"
 fi
 
 start_kit
