@@ -1,6 +1,7 @@
 // module.exports = require("@aragon/os/truffle-config")
 const HDWalletProvider = require('truffle-hdwallet-provider')
 const HDWalletProviderPrivkey = require('truffle-hdwallet-provider-privkey')
+const path = require('path')
 
 let mnemonic
 try {
@@ -10,9 +11,9 @@ try {
     'stumble story behind hurt patient ball whisper art swift tongue ice alien'
 }
 
-let ropstenProvider,
-  kovanProvider,
-  rinkebyProvider = {}
+let ropstenProvider = {}
+let kovanProvider = {}
+let rinkebyProvider = {}
 
 if (process.env.LIVE_NETWORKS) {
   ropstenProvider = new HDWalletProvider(mnemonic, 'https://ropsten.infura.io/')
@@ -41,17 +42,18 @@ const mochaGasSettings = {
 const mocha = process.env.GAS_REPORTER ? mochaGasSettings : {}
 
 module.exports = {
+  contracts_build_directory: path.join(__dirname, './build/contracts/'),
   networks: {
-    development: {
-      host: 'localhost',
-      port: 8545,
-      network_id: '*',
-    },
     rpc: {
       network_id: 15,
       host: 'localhost',
       port: 8545,
       gas: 6.9e6,
+    },
+    development: {
+      host: 'localhost',
+      port: 8545,
+      network_id: '*',
     },
     devnet: {
       network_id: 15,

@@ -1,10 +1,12 @@
 const Allocations = artifacts.require('Allocations')
-const DAOFactory = artifacts.require('@aragon/os/contracts/factory/DAOFactory')
-const EVMScriptRegistryFactory = artifacts.require(
-  '@aragon/os/contracts/factory/EVMScriptRegistryFactory'
+const DAOFactory = artifacts.require(
+  '@tpt/test-helpers/contracts/factory/DAOFactory'
 )
-const ACL = artifacts.require('@aragon/os/contracts/acl/ACL')
-const Kernel = artifacts.require('@aragon/os/contracts/kernel/Kernel')
+const EVMScriptRegistryFactory = artifacts.require(
+  '@tpt/test-helpers/contracts/factory/EVMScriptRegistryFactory'
+)
+const ACL = artifacts.require('@tpt/test-helpers/contracts/acl/ACL')
+const Kernel = artifacts.require('@tpt/test-helpers/contracts/kernel/Kernel')
 
 // TODO: Fix Vault not loading artifacts error
 // const Vault = artifacts.require('@aragon/apps-vault/contracts/Vault')
@@ -22,7 +24,7 @@ contract('Allocations App', accounts => {
   const root = accounts[0]
 
   before(async () => {
-    const kernelBase = await getContract('Kernel').new()
+    const kernelBase = await getContract('Kernel').new(true)
     const aclBase = await getContract('ACL').new()
     const regFact = await EVMScriptRegistryFactory.new()
     daoFact = await DAOFactory.new(

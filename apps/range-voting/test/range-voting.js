@@ -19,14 +19,16 @@ const ExecutionTarget = artifacts.require('ExecutionTarget')
 
 const RangeVoting = artifacts.require('RangeVoting')
 const MiniMeToken = artifacts.require(
-  '@aragon/os/contracts/lib/minime/MiniMeToken'
+  '@tpt/test-helpers/contracts/lib/minime/MiniMeToken'
 )
-const DAOFactory = artifacts.require('@aragon/os/contracts/factory/DAOFactory')
+const DAOFactory = artifacts.require(
+  '@tpt/test-helpers/contracts/factory/DAOFactory'
+)
 const EVMScriptRegistryFactory = artifacts.require(
-  '@aragon/os/contracts/factory/EVMScriptRegistryFactory'
+  '@tpt/test-helpers/contracts/factory/EVMScriptRegistryFactory'
 )
-const ACL = artifacts.require('@aragon/os/contracts/acl/ACL')
-const Kernel = artifacts.require('@aragon/os/contracts/kernel/Kernel')
+const ACL = artifacts.require('@tpt/test-helpers/contracts/acl/ACL')
+const Kernel = artifacts.require('@tpt/test-helpers/contracts/kernel/Kernel')
 
 const getContract = name => artifacts.require(name)
 const pct16 = x =>
@@ -52,7 +54,7 @@ contract('RangeVoting App', accounts => {
   const root = accounts[0]
 
   before(async () => {
-    const kernelBase = await getContract('Kernel').new()
+    const kernelBase = await getContract('Kernel').new(true)
     const aclBase = await getContract('ACL').new()
     const regFact = await EVMScriptRegistryFactory.new()
     daoFact = await DAOFactory.new(

@@ -1,16 +1,28 @@
 pragma solidity ^0.4.18;
 
-import "@aragon/os/contracts/apps/AragonApp.sol";
+import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
 
-import "@aragon/os/contracts/lib/minime/MiniMeToken.sol";
+import "@tpt/test-helpers/contracts/lib/minime/MiniMeToken.sol";
 
-import "@aragon/os/contracts/lib/zeppelin/math/SafeMath.sol";
+import "@tpt/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
 
-import "@aragon/os/contracts/lib/zeppelin/math/SafeMath64.sol";
+import "@tpt/test-helpers/contracts/lib/zeppelin/math/SafeMath64.sol";
 
-import "@aragon/os/contracts/common/IForwarder.sol";
+import "@tpt/test-helpers/contracts/evmscript/ScriptHelpers.sol";
+
+
+// import "@tpt/test-helpers/contracts/common/IForwarder.sol";
 
 import "@aragon/os/contracts/lib/misc/Migrations.sol";
+
+// import "@tpt/test-helpers/contracts/common/IForwarder.sol";
+/* Temp hack to pass coverage until further research */
+interface IForwarderFixed {
+    function isForwarder() public returns (bool);
+    function canForward(address sender, bytes evmCallScript) public returns (bool);
+    function forward(bytes evmCallScript) public;
+}
+
 
 /*******************************************************************************
   Copyright 2018, That Planning Tab
@@ -38,9 +50,9 @@ import "@aragon/os/contracts/lib/misc/Migrations.sol";
 *  but could easily be adapted to other systems.
 *  Attention was paid to make the program as generalized as possible.
 *******************************************************************************/
-contract RangeVoting is IForwarder, AragonApp {
-    //using CustomScriptHelpers for bytes;
-    
+contract RangeVoting is IForwarderFixed, AragonApp {
+    using ScriptHelpers for bytes;
+
     using SafeMath for uint256;
     using SafeMath64 for uint64;
 
@@ -153,6 +165,7 @@ contract RangeVoting is IForwarder, AragonApp {
 
         votes.length += 1;
     }
+    
 ///////////////////////
 // Voting functions
 ///////////////////////
@@ -264,7 +277,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _voteId id for vote structure this 'ballot action' is connected to
     * @param _description The candidate descrciption of the candidate.
     */
-    function getCandidate(uint256 _voteId, address _description)
+    function getCandidate(uint256 _voteId, address _description) // solium-disable-line function-order
     external view returns(bool, bytes, uint8, uint256)
     {
         Vote storage voteB = votes[_voteId];
@@ -282,11 +295,12 @@ contract RangeVoting is IForwarder, AragonApp {
     *         to return the struct data.
     * @param _key The bytes32 key used when adding the candidate.
     */
-    function getCandidateDescription(bytes32 _key)
+    function getCandidateDescription(bytes32 _key) // solium-disable-line function-order
     external view returns(address)
     {
         return(candidateDescriptions[_key]);
     }
+
 ///////////////////////
 // IForwarder functions
 ///////////////////////
@@ -297,9 +311,10 @@ contract RangeVoting is IForwarder, AragonApp {
     * @dev IForwarder interface conformance
     * @return always returns true
     */
-    function isForwarder() public pure returns (bool) {
+    function isForwarder() public returns (bool) {
         return true;
     }
+
     /**
     * @notice Creates a vote to execute the desired action
     * @dev IForwarder interface conformance
@@ -322,6 +337,7 @@ contract RangeVoting is IForwarder, AragonApp {
     {
         return canPerform(_sender, CREATE_VOTES_ROLE, arr());
     }
+
     // * @param _evmCallScript Not used in this implementation
 
 ///////////////////////
@@ -345,32 +361,10 @@ contract RangeVoting is IForwarder, AragonApp {
     * @notice `canExecute` is used to check that the participation has been met
     *         and the vote has reached it's end before the execute
     *         function is called.
-    * @param _voteId The ID of the Vote which would be executed.
     * @return True if the vote is elligible for execution.
     */
-    function canExecute(uint256 _voteId) public view returns (bool) {
-        Vote storage voteD = votes[_voteId];
-
-        if (voteD.executed)
-            return false;
-
-        // Voting is already decided
-        // if (_isValuePct(vote.yea, vote.totalVoters, supportRequiredPct))
-            // return true;
-
-        // uint256 totalVotes = vote.yea.add(vote.nay);
-
-        // vote ended?
-        // if (_isVoteOpen(vote))
-            // return false;
-        // has Support?
-        // if (!_isValuePct(vote.yea, totalVotes, supportRequiredPct))
-            // return false;
-        // has Min Quorum?
-        // if (!_isValuePct(vote.yea, vote.totalVoters, vote.minAcceptQuorumPct))
-            // return false;
-
-        // TODO: Implement
+    function canExecute(uint256 /*_voteId*/) public pure returns (bool) {
+        // Needs better implementation
         return true;
     }
 
@@ -394,25 +388,18 @@ contract RangeVoting is IForwarder, AragonApp {
         string metadata,
         bytes executionScript, // script,
         bool executed
-    )
-    {
-        // Vote storage voteE = votes[_voteId];
-        Vote storage voteE = votes[_voteId];
+    ) { // solium-disable-line lbrace
+        Vote storage vote = votes[_voteId];
 
-        open = _isVoteOpen(voteE);
-        // executed = vote.executed;
-        creator = voteE.creator;
-        startDate = voteE.startDate;
-        snapshotBlock = voteE.snapshotBlock;
-        // minAcceptQuorum = vote.minAcceptQuorumPct;
-        // yea = vote.yea;
-        // nay = vote.nay;
-        candidateSupport = voteE.candidateSupportPct;
-        totalVoters = voteE.totalVoters;
-        metadata = voteE.metadata;
-        executionScript = voteE.executionScript;
-        executed = voteE.executed;
-        // script = vote.executionScript;
+        open = _isVoteOpen(vote);
+        creator = vote.creator;
+        startDate = vote.startDate;
+        snapshotBlock = vote.snapshotBlock;
+        candidateSupportPct = vote.candidateSupportPct;
+        totalVoters = vote.totalVoters;
+        metadata = vote.metadata;
+        executionScript = vote.executionScript;
+        executed = vote.executed;
     }
 
     /**
@@ -455,20 +442,19 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _metadata The metadata or vote information attached to this vote
     * @return voteId The ID(or index) of this vote in the votes array.
     */
-    function _newVote(bytes _executionScript, string _metadata)
-        internal isInitialized returns (uint256 voteId)
+    function _newVote(bytes _executionScript, string _metadata) internal
+    isInitialized returns (uint256 voteId)
     {
     // function _newVote(bytes _executionScript, string _metadata, bool _castVote) isInitialized internal returns (uint256 voteId) {
         voteId = votes.length++;
-        Vote storage voteF = votes[voteId];
-        voteF.executionScript = _executionScript;
-        voteF.creator = msg.sender;
-        voteF.startDate = uint64(now); // solium-disable-line security/no-block-members
-        voteF.metadata = _metadata;
-        voteF.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
-        voteF.totalVoters = token.totalSupplyAt(voteF.snapshotBlock);
-        // vote.minAcceptQuorumPct = minAcceptQuorumPct;
-        voteF.candidateSupportPct = globalCandidateSupportPct;
+        Vote storage vote = votes[voteId];
+        vote.executionScript = _executionScript;
+        vote.creator = msg.sender;
+        vote.startDate = uint64(block.timestamp); // solium-disable-line security/no-block-members
+        vote.metadata = _metadata;
+        vote.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
+        vote.totalVoters = token.totalSupplyAt(vote.snapshotBlock);
+        vote.candidateSupportPct = globalCandidateSupportPct;
         // var (scriptOffset, scriptRemainder) = _extractCandidates(_executionScript, voteId);
         //vote.scriptOffset = scriptOffset;
         //vote.scriptRemainder = scriptRemainder;
@@ -516,7 +502,7 @@ contract RangeVoting is IForwarder, AragonApp {
         // This has the potential to be too gas expensive to ever happen.
         // Upper limit of candidates should be checked against this function
         
-        for(uint256 i = candidateLength; i > 0; i--){
+        for (uint256 i = candidateLength; i > 0; i--) {
             currentCandidate = _executionScript.addressAt(currentOffset);
             currentOffset = currentOffset + 0x20;
             addCandidate(_voteId, new bytes(0), currentCandidate);
@@ -625,10 +611,7 @@ contract RangeVoting is IForwarder, AragonApp {
         voteH.executed = true;
         uint256 candidateLength = voteH.candidateKeys.length;
         bytes memory executionScript = new bytes(32);
-        // bytes memory input = new bytes(0); // TODO: Consider input for voting scripts
-        
-        executionScript = voteH.executionScript;
-        // bytes32 singleByte;
+        executionScript = vote.executionScript;
         // The total length of the new script will be one 32 byte space
         // for each candidate as well as 3 32 byte spaces for
         // additional data
@@ -643,7 +626,7 @@ contract RangeVoting is IForwarder, AragonApp {
         assembly { // solium-disable-line security/no-inline-assembly
             mstore(add(smallData, 32), supportsData)
         }
-        for( uint256 i = 28; i < 32; i++){
+        for ( uint256 i = 28; i < 32; i++) {
             supportsData = uint256(smallData[i]);
             assembly{ // solium-disable-line security/no-inline-assembly
                 mstore8(add(script,59), supportsData)
@@ -681,8 +664,11 @@ contract RangeVoting is IForwarder, AragonApp {
         ExecuteVote(_voteId); // solium-disable-line emit
     }
 
-    function _isVoteOpen(Vote storage _vote) internal view returns (bool) {
-        return uint64(now) < _vote.startDate.add(voteTime) && !_vote.executed; // solium-disable-line security/no-block-members
+    /**
+    * @dev Calculates whether `_value` is at least a percent `_pct` over `_total`
+    */
+    function _isVoteOpen(Vote storage vote) internal view returns (bool) {
+        return uint64(block.timestamp) < (vote.startDate.add(voteTime)) && !vote.executed; // solium-disable-line security/no-block-members
     }
 
     /**

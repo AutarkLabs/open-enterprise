@@ -46,8 +46,8 @@
     "prettier": "^1.8.2"
   },
   "scripts": {
-    "build:app": "npx parcel build app/index.html -d dist/ --public-url '.'",
-    "build:script": "npx parcel build app/script.js -d dist/",
+    "build:app": "parcel build app/index.html -d dist/ --public-url '.'",
+    "build:script": "parcel build app/script.js -d dist/",
     "build": "npm run compile && npm run sync-assets && npm run build:app && npm run build:script",
     "compile": "truffle compile",
     "dev": "npm run sync-assets && npx parcel app/index.html --open",

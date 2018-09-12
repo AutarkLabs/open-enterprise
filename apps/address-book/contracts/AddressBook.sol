@@ -1,6 +1,7 @@
 pragma solidity ^0.4.18;
 
-import "@aragon/os/contracts/apps/AragonApp.sol";
+import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
+
 
 /*******************************************************************************
   Copyright 2018, That Planning Tab
@@ -53,15 +54,15 @@ contract AddressBook is AragonApp {
         address _address,
         string _name,
         string _entryType
-    ) public auth(ADD_ENTRY_ROLE) returns (address) {
-        require(!nameUsed[keccak256(_name)]);
+    ) public auth(ADD_ENTRY_ROLE) returns (address) { // solium-disable-line lbrace
+        require(!nameUsed[keccak256(_name)]); // solium-disable-line error-reason
 
         Entry storage entry = entries[_address];
         entry.entryAddress = _address;
         entry.name = _name;
         entry.entryType = _entryType;
 
-        EntryAdded(_address);
+        EntryAdded(_address); // solium-disable-line emit
         return _address;
     }
 
@@ -71,10 +72,10 @@ contract AddressBook is AragonApp {
      */
     function remove(
         address _addr
-    ) public auth(REMOVE_ENTRY_ROLE) {
+    ) public auth(REMOVE_ENTRY_ROLE) { // solium-disable-line lbrace
         nameUsed[keccak256(entries[_addr].name)] = false;
         delete entries[_addr];
-        EntryRemoved(_addr);
+        EntryRemoved(_addr); // solium-disable-line emit
     }
 
     /**
@@ -83,7 +84,7 @@ contract AddressBook is AragonApp {
      */
     function get(
         address _addr
-    ) public constant returns (address, string, string) {
+    ) public view returns (address, string, string) { // solium-disable-line lbrace
         Entry storage entry = entries[_addr];
 
         return(

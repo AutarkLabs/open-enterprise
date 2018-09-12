@@ -1,7 +1,19 @@
 {
-  "name": "@aragon/test-helpers",
+  "name": "@tpt/test-helpers",
+  "description": "Helper scripts for planning suite",
   "version": "0.0.1",
   "devDependencies": {
-    "ethereumjs-abi": "^0.6.4"
-  }
+    "@aragon/cli": "git://github.com/ottodevs/aragon-cli.git",
+    "eth-gas-reporter": "^0.1.10",
+    "ethereumjs-abi": "^0.6.5",
+    "ganache-cli": "^6.1.8",
+    "solidity-coverage": "0.5.7",
+    "solium": "^1.1.8",
+    "truffle": "4.1.14"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Giveth/planning-app"
+  },
+  "license": "GPL-3.0"
 }
