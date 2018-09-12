@@ -116,9 +116,6 @@ contract RangeVoting is IForwarderFixed, AragonApp {
     event ChangeCandidateSupport(uint256 candidateSupportPct);
     event ExecutionScript(bytes script, uint256 data);
     event AddCandidate(address candidate);
-    // TODO: Do we want Debug events in production?
-    event DebugVote(uint256 voterStake, uint256 totalSupport, uint256 voteSupport);
-    event DebugAddCandidate(uint8 keyArrayIndex);
 
 ////////////////
 // Constructor
@@ -273,15 +270,13 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         // double check
         candidateDescriptions[cKey] = _description;
         voteA.candidateKeys[candidate.keyArrayIndex] = cKey;
-
-        DebugAddCandidate(candidate.keyArrayIndex);
     }
 
     /**
     * @notice `getCandidate` serves as a basic getter using the description
     *         to return the struct data.
     * @param _voteId id for vote structure this 'ballot action' is connected to
-    * @param _description The description of the candidate.
+    * @param _description The candidate descrciption of the candidate.
     */
     function getCandidate(uint256 _voteId, address _description) // solium-disable-line function-order
     external view returns(bool, bytes, uint8, uint256)
@@ -597,7 +592,6 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         bytes32[] storage cKeys = voteG.candidateKeys;
 
         uint256 i = 0;
-
         // This is going to cost a lot of gas... it'd be cool if there was
         // a better way to do this.
         for (i; i < oldVoteSupport.length; i++) {
@@ -612,7 +606,6 @@ contract RangeVoting is IForwarderFixed, AragonApp {
             voteSupport = voteSupport.add(_supports[i]);
             vote.totalParticipation = vote.totalParticipation.add(voteSupport);
             vote.candidates[cKeys[i]].voteSupport = voteSupport;
-            DebugVote(voterStake, totalSupport, voteSupport);
         }
         for (i; i < _supports.length; i++) {
             totalSupport = totalSupport.add(_supports[i]);
@@ -620,9 +613,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
             voteSupport = voteG.candidates[cKeys[i]].voteSupport;
             voteSupport = voteSupport.add(_supports[i]);
             voteG.candidates[cKeys[i]].voteSupport = voteSupport;
-            DebugVote(voterStake, totalSupport, voteSupport);
         }
-
 
         vote.voters[msg.sender] = _supports;
         // vote.totalParticipation = vote.totalParticipation.sub(oldVoteSupport[i]);
