@@ -4,6 +4,8 @@ const getBlockNumber = require('@tpt/test-helpers/blockNumber')(web3)
 const timeTravel = require('@tpt/test-helpers/timeTravel')(web3)
 // const timeTravel = require('@aragon/test-helpers/timeTravel')(web3)
 
+const truffleAssert = require('truffle-assertions')
+
 const ExecutionTarget = artifacts.require('ExecutionTarget')
 
 const RangeVoting = artifacts.require('RangeVoting')
@@ -327,30 +329,56 @@ contract('RangeVoting App', accounts => {
         await app.addCandidate(voteId, '0xdeadbeef', accounts[6])
         await app.addCandidate(voteId, '0xdead', accounts[7])
         await app.addCandidate(voteId, '0xbeef', accounts[8])
+        let tx = await app.addCandidate(voteId, '0x', accounts[7])
+        truffleAssert.eventEmitted(tx, 'DebugAddCandidate', ev => {
+          console.log('keyArrayIndex:', ev.keyArrayIndex.toNumber())
+          return true
+        })
+
+        tx = await app.addCandidate(voteId, '0x', accounts[8])
+        truffleAssert.eventEmitted(tx, 'DebugAddCandidate', ev => {
+          console.log('keyArrayIndex:', ev.keyArrayIndex.toNumber())
+          return true
+        })
+
+        tx = await app.addCandidate(voteId, '0x', accounts[9])
+        truffleAssert.eventEmitted(tx, 'DebugAddCandidate', ev => {
+          console.log('keyArrayIndex:', ev.keyArrayIndex.toNumber())
+          return true
+        })
+
         let voter = holder19
-        await app.vote(voteId, vote, { from: voter })
+        tx = await app.vote(voteId, vote, { from: voter })
+        truffleAssert.eventEmitted(tx, 'DebugVote', ev => {
+          console.log('voterStake:', ev.voterStake.toNumber())
+          console.log('totalSupport:', ev.totalSupport.toNumber())
+          console.log('voteSupport:', ev.voteSupport.toNumber())
+          return true
+        })
 
         let holderVoteData = await app.getVoterState(voteId, voter)
         assert.equal(
           vote[0],
           holderVoteData[0].toNumber(),
           'vote and voter state should match after casting ballot'
-        )
+        )  
         assert.equal(
           vote[1],
           holderVoteData[1].toNumber(),
           'vote and voter state should match after casting ballot'
-        )
+        )  
         assert.equal(
           vote[2],
           holderVoteData[2].toNumber(),
           'vote and voter state should match after casting ballot'
         )
-        
-        let candidateApple = await app.getCandidate(voteId, accounts[6])
-        let candidateOrange = await app.getCandidate(voteId, accounts[7])
-        let candidateBanana = await app.getCandidate(voteId, accounts[8])
-        
+        let candidateApple = await app.getCandidate(voteId, accounts[7])
+        let candidateOrange = await app.getCandidate(voteId,accounts[8])
+        let candidateBanana = await app.getCandidate(voteId, accounts[9])
+        console.log('candidateApple[3]:', candidateApple[3].toNumber())
+        console.log('candidateOrange[3]:', candidateOrange[3].toNumber())
+        console.log('candidateBanana[3]:', candidateBanana[3].toNumber())
+
         assert.equal(
           vote[3],
           candidateApple[3].toNumber(),
@@ -363,6 +391,12 @@ contract('RangeVoting App', accounts => {
         )
         assert.equal(
           vote[5],
+          vote[1],
+          candidateOrange[3].toNumber(),
+          'The correct amount of support should be logged for orange'
+        )
+        assert.equal(
+          vote[2],
           candidateBanana[3].toNumber(),
           'The correct amount of support should be logged for Banana'
         )
