@@ -55,28 +55,6 @@ module.exports = {
       port: 8545,
       network_id: '*',
     },
-    devnet: {
-      network_id: 15,
-      host: 'localhost',
-      port: 8535,
-      gas: 6.9e6,
-    },
-    ropsten: {
-      network_id: 3,
-      provider: ropstenProvider,
-      gas: 4.712e6,
-    },
-    kovan: {
-      network_id: 42,
-      provider: kovanProvider,
-      gas: 6.9e6,
-    },
-    rinkeby: {
-      network_id: 4,
-      provider: rinkebyProvider,
-      gas: 6.9e6,
-      gasPrice: 15000000001,
-    },
     coverage: {
       host: 'localhost',
       network_id: '*',

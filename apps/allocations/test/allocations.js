@@ -96,7 +96,7 @@ contract('Allocations App', accounts => {
     )
   })
 
-  context('main context', () => {
+  context('funded Payout', () => {
     const empire = accounts[0]
     const bobafett = accounts[1]
     const dengar = accounts[2]
@@ -105,8 +105,12 @@ contract('Allocations App', accounts => {
     before(async () => {})
 
     beforeEach(async () => {})
-
-    it('initialize, set distribution, and run payout', async () => {
+    // TODO: Split common initial steps into the parent beforeEach Function
+    // TODO: Create Assertions for each intermediary step:
+    // 1. initialization
+    // 2. setDistribution
+    // 3. executePayout
+    it('initializes, sets distribution, and runs payout', async () => {
       // TODO: Test does not work, fix
       const imperialunderfundedBudget = await web3.eth.getBalance(empire)
       var send = await web3.eth.sendTransaction({
@@ -137,25 +141,40 @@ contract('Allocations App', accounts => {
         web3.toWei(0.01, 'ether'),
         { from: empire }
       )
-      /*await app.executePayout(allocationId)
-       const bobafettBalance = await web3.eth.getBalance(bobafett)
-       const dengarBalance = await web3.eth.getBalance(dengar)
-       const bosskBalance = await web3.eth.getBalance(bossk)
-       assert.equal(
-         bobafettBalance.toNumber() - bobafettInitialBalance.toNumber(),
-         (web3.toWei(0.01, 'ether') * supports[0]) / totalsupport,
-         'bounty hunter expense'
-       )
-       assert.equal(
-         dengarBalance.toNumber() - dengarInitialBalance.toNumber(),
-         (web3.toWei(0.01, 'ether') * supports[1]) / totalsupport,
-         'bounty hunter expense'
-       )
-       assert.equal(
-         bosskBalance.toNumber() - bosskInitialBalance.toNumber(),
-         (web3.toWei(0.01, 'ether') * supports[2]) / totalsupport,
-         'bounty hunter expense'
-       )*/
+      await app.executePayout(allocationId)
+      const bobafettBalance = await web3.eth.getBalance(bobafett)
+      const dengarBalance = await web3.eth.getBalance(dengar)
+      const bosskBalance = await web3.eth.getBalance(bossk)
+      assert.equal(
+        bobafettBalance.toNumber() - bobafettInitialBalance.toNumber(),
+        (web3.toWei(0.01, 'ether') * supports[0]) / totalsupport,
+        'bounty hunter expense'
+      )
+      assert.equal(
+        dengarBalance.toNumber() - dengarInitialBalance.toNumber(),
+        (web3.toWei(0.01, 'ether') * supports[1]) / totalsupport,
+        'bounty hunter expense'
+      )
+      assert.equal(
+        bosskBalance.toNumber() - bosskInitialBalance.toNumber(),
+        (web3.toWei(0.01, 'ether') * supports[2]) / totalsupport,
+        'bounty hunter expense'
+      )
+    })
+  })
+
+  context('Informational Payout', () => {
+    it('cannot accept funds', async () => {
+      //assertrevert when attempt to add funds
+    })
+    it('cannot execute', async () => {
+      // assertrevert an attempt to run executePayout for an informational vote
+    })
+  })
+
+  context('recurring payout', () => {
+    it('cannot occur more frequently than daily', async () => {
+      
     })
   })
 })

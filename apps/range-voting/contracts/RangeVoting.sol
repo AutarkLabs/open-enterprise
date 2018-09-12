@@ -104,17 +104,19 @@ contract RangeVoting is IForwarderFixed, AragonApp {
 
     event StartVote(uint256 indexed voteId);
     event CastVote(
-        uint256 indexed voteId,
-        address indexed voter,
-        uint256[] supports,
-        uint256 stake
+        //uint256 indexed voteId,
+        //address indexed voter,
+        uint256 supports,
+        bytes desc,
+        bool added
+        //uint256 stake
     );
     // event CastVote(uint256 indexed voteId, address indexed voter, bool supports, uint256 stake);
     event UpdateCandidateSupport(string indexed candidateKey, uint256 support);
     event ExecuteVote(uint256 indexed voteId);
     event ChangeCandidateSupport(uint256 candidateSupportPct);
     event ExecutionScript(bytes script, uint256 data);
-    // event ChangeMinQuorum(uint256 minAcceptQuorumPct);
+    event AddCandidate(address candidate);
 
 ////////////////
 // Constructor
@@ -455,20 +457,15 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         vote.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
         vote.totalVoters = token.totalSupplyAt(vote.snapshotBlock);
         vote.candidateSupportPct = globalCandidateSupportPct;
-        // var (scriptOffset, scriptRemainder) = _extractCandidates(_executionScript, voteId);
-        //vote.scriptOffset = scriptOffset;
-        //vote.scriptRemainder = scriptRemainder;
-
-        StartVote(voteId); // solium-disable-line emit
-
-        // if (_castVote && canVote(voteId, msg.sender)) {
-        //     _vote(
-        //         voteId,
-        //         true,
-        //         msg.sender,
-        //         true
-        //     );
-        // }
+        vote.scriptOffset = 0;
+        vote.scriptRemainder = 0;
+        require(_executionScript.uint32At(0x0) == 1);
+        if (_executionScript.length != 4) {
+            var (scriptOffset, scriptRemainder) = _extractCandidates(_executionScript, voteId);
+            vote.scriptOffset = scriptOffset;
+            vote.scriptRemainder = scriptRemainder;    
+        }
+        StartVote(voteId);
     }
 
     /**
@@ -503,9 +500,10 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         // Upper limit of candidates should be checked against this function
         
         for (uint256 i = candidateLength; i > 0; i--) {
-            currentCandidate = _executionScript.addressAt(currentOffset);
+            currentCandidate = _executionScript.addressAt(currentOffset + 0x0C);
             currentOffset = currentOffset + 0x20;
             addCandidate(_voteId, new bytes(0), currentCandidate);
+            AddCandidate(currentCandidate);
         }
         // Skip the next param since it's also determined by this contract
         // In order to do this we move the offsett one word for the length of the param
@@ -615,39 +613,68 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         // The total length of the new script will be one 32 byte space
         // for each candidate as well as 3 32 byte spaces for
         // additional data
-        bytes memory script = new bytes(32 * (candidateLength + 3));
-        assembly {  // solium-disable-line security/no-inline-assembly
+        uint256 scriptLength = 32 * (2 * (candidateLength + 2)) + 32; //+ (vote.scriptRemainder * 32);
+        bytes memory script = new bytes(scriptLength);
+        
+        
+        assembly {  
             mstore(add(script, 32), mload(add(executionScript,32)))
         }
-        uint256 offset = 59;
+        uint256 offset = 64;
         bytes memory smallData = new bytes(32);
         // This is the size indicator for the 
-        uint256 supportsData = 32 * (candidateLength + 2) + 4;
-        assembly { // solium-disable-line security/no-inline-assembly
+        uint256 supportsData = 2 * 32 * (candidateLength + 2) + 4;
+        assembly {
             mstore(add(smallData, 32), supportsData)
         }
-        for ( uint256 i = 28; i < 32; i++) {
+        for ( uint256 i = 28; i < 31; i++) {
             supportsData = uint256(smallData[i]);
-            assembly{ // solium-disable-line security/no-inline-assembly
-                mstore8(add(script,59), supportsData)
+            uint256 internalOffset = i + 28;
+            assembly{
+                mstore8(add(script,internalOffset), supportsData)
             }
-            offset--;
         }
+        // First param is located at 0x40
+        supportsData = 64;
 
-        supportsData = 32;
-        offset = 64;
+        assembly {
+            mstore(add(script, offset), supportsData)
+        }
+        //Second param is located at 
+        //0x40 + 0x20 for param 1 length + 0x20 * the number of candidates
+        // May need safemath
+        supportsData = 64 + ( 32 * ( 1 + candidateLength ) );
+        offset += 32;
 
         assembly { // solium-disable-line security/no-inline-assembly
             mstore(add(script, offset), supportsData)
         }
-        
         offset += 32;
+
         supportsData = candidateLength;
 
         assembly { // solium-disable-line security/no-inline-assembly
             mstore(add(script, offset), supportsData)
         }
         offset += 32;
+
+        for (i = 0; i < candidateLength; i++) {
+            bytes32 canKey = votes[_voteId].candidateKeys[i];
+            uint256 candidateData = uint256(candidateDescriptions[canKey]);
+            assembly {
+                mstore(add(script, offset), candidateData)
+            }
+            offset += 32; 
+        }
+
+
+        supportsData = candidateLength;
+
+        assembly {
+            mstore(add(script, offset), supportsData)
+        }
+        offset += 32;        
+        
         for (i = 0; i < candidateLength; i++) {
             supportsData = votes[_voteId].candidates[votes[_voteId].candidateKeys[i]].voteSupport;
 
@@ -656,12 +683,14 @@ contract RangeVoting is IForwarderFixed, AragonApp {
             }
             offset += 32;
         }
+        
 
-
+        //script.copy(executionScript.getPtr(),vote.scriptOffset,vote.scriptRemainder);
+        
+        ExecutionScript(script, 0);
+        
         runScript(script, new bytes(0), new address[](0));
-        // runScript(vote.executionScript, input, new address[](0));
-
-        ExecuteVote(_voteId); // solium-disable-line emit
+        ExecuteVote(_voteId);
     }
 
     /**
