@@ -242,6 +242,16 @@ contract Allocations is AragonApp, Fundable {
         ExecutePayout(_payoutId);
     }
 
+    function getNumberOfCandidates(uint256 _payoutId) public view returns(uint256 numCandidates) {
+        Payout payout = payouts[_payoutId];
+        numCandidates = payout.supports.length;
+    }
+
+    function getPayoutDistributionValue(uint256 _payoutId, uint256 idx) public view returns(uint256 supports) {
+        Payout payout = payouts[_payoutId];
+        supports = payout.supports[idx];
+    }
+
     function () public payable {
 
     }
