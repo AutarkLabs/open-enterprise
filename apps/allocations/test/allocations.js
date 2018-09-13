@@ -138,14 +138,9 @@ contract('Allocations App', accounts => {
         false,
         0,
         web3.toWei(0.01, 'ether'),
-        { from: empire }
+        { from: empire, value: web3.toWei(0.01, 'ether') }
       )
     })
-    // TODO: Split common initial steps into the parent beforeEach Function
-    // TODO: Create Assertions for each intermediary step:
-    // 1. initialization - Done
-    // 2. setDistribution
-    // 3. executePayout
 
     it('app initialized properly', async () => {
       const initBlock = await app.getInitializationBlock()
@@ -175,8 +170,8 @@ contract('Allocations App', accounts => {
     it('executes the payout', async () => {
       // TODO: Test does not work, fix
 
-
-      //await app.executePayout(allocationId)
+      await app.fund(allocationId, {from: empire})
+      await app.executePayout(allocationId, {from: empire})
       const bobafettBalance = await web3.eth.getBalance(bobafett)
       const dengarBalance = await web3.eth.getBalance(dengar)
       const bosskBalance = await web3.eth.getBalance(bossk)
