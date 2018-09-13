@@ -94,41 +94,42 @@ contract('Allocations App', accounts => {
     allocation = Allocations.at(
       receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
     )
+    const test = await app.initialize({ from: accounts[0] })
   })
 
-  context('funded Payout', () => {
+  context('app creation and funded Payout', () => {
     const empire = accounts[0]
     const bobafett = accounts[1]
     const dengar = accounts[2]
     const bossk = accounts[3]
+    let imperialBudget
 
-    before(async () => {})
+    let bobafettInitialBalance
+    let dengarInitialBalance
+    let bosskInitialBalance
+    let allocationId
+    let supports
 
-    beforeEach(async () => {})
-    // TODO: Split common initial steps into the parent beforeEach Function
-    // TODO: Create Assertions for each intermediary step:
-    // 1. initialization
-    // 2. setDistribution
-    // 3. executePayout
-    it('initializes, sets distribution, and runs payout', async () => {
-      // TODO: Test does not work, fix
-      const imperialunderfundedBudget = await web3.eth.getBalance(empire)
+    before(async () => {
+      imperialBudget = await web3.eth.getBalance(empire)
       var send = await web3.eth.sendTransaction({
         from: empire,
         to: app.address,
         value: web3.toWei(0.01, 'ether'),
       })
-      const bobafettInitialBalance = await web3.eth.getBalance(bobafett)
-      const dengarInitialBalance = await web3.eth.getBalance(dengar)
-      const bosskInitialBalance = await web3.eth.getBalance(bossk)
+      bobafettInitialBalance = await web3.eth.getBalance(bobafett)
+      dengarInitialBalance = await web3.eth.getBalance(dengar)
+      bosskInitialBalance = await web3.eth.getBalance(bossk)
       candidateAddresses = [bobafett, dengar, bossk]
-      await app.initialize({ from: empire })
+    })
 
-      let allocationId = (await app.newPayout(
+    beforeEach(async () => {
+      allocationId = (await app.newPayout(
         'Fett\'s vett',
         web3.toWei(1, 'ether'),
         0x0
       )).logs[0].args.accountId.toNumber()
+
       supports = [500, 200, 300]
       totalsupport = 1000
       await app.setDistribution(
@@ -141,7 +142,43 @@ contract('Allocations App', accounts => {
         web3.toWei(0.01, 'ether'),
         { from: empire }
       )
-      await app.executePayout(allocationId)
+    })
+    // TODO: Split common initial steps into the parent beforeEach Function
+    // TODO: Create Assertions for each intermediary step:
+    // 1. initialization - Done
+    // 2. setDistribution
+    // 3. executePayout
+
+    it('app initialized properly', async () => {
+      const initBlock = await app.getInitializationBlock()
+      assert.isAbove(initBlock,0,'App was not initialized properly')
+    })
+    
+    it('can create a new Payout', async () => {
+      payoutMembers = await app.getPayout(allocationId)
+      assert.equal(payoutMembers[2], 'Fett\'s vett', 'Payout metadata incorrect')
+      assert.equal(payoutMembers[0].toNumber(), 10000000000000000, 'Payout Balance Incorrect')
+      assert.equal(payoutMembers[1].toNumber(), 1000000000000000000,'Payout Limit incorrect')
+    })
+
+    it('sets the distribution', async () => {
+      const candidateArrayLength = (await app.getNumberOfCandidates(allocationId)).toNumber()
+      let storedSupport = []
+      let supportVal
+
+      for (let i = 0; i < candidateArrayLength; i++) {
+        supportVal = (await app.getPayoutDistributionValue(allocationId, i)).toNumber()
+        assert.equal(supports[i], supportVal,'support distributions do not match what is specified')
+        storedSupport.push(supportVal)
+      }
+      assert.equal(supports.length, storedSupport.length, 'distribution array lengths do not match')
+    })
+
+    it('executes the payout', async () => {
+      // TODO: Test does not work, fix
+
+
+      //await app.executePayout(allocationId)
       const bobafettBalance = await web3.eth.getBalance(bobafett)
       const dengarBalance = await web3.eth.getBalance(dengar)
       const bosskBalance = await web3.eth.getBalance(bossk)
@@ -164,16 +201,18 @@ contract('Allocations App', accounts => {
   })
 
   context('Informational Payout', () => {
-    it('cannot accept funds', async () => {
+    it('can create new Payout')
+    it('sets the distribution')
+    xit('cannot accept funds', async () => {
       //assertrevert when attempt to add funds
     })
-    it('cannot execute', async () => {
+    xit('cannot execute', async () => {
       // assertrevert an attempt to run executePayout for an informational vote
     })
   })
 
   context('recurring payout', () => {
-    it('cannot occur more frequently than daily', async () => {
+    xit('cannot occur more frequently than daily', async () => {
       
     })
   })
