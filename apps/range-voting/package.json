@@ -13,7 +13,7 @@
     "ganache-cli:test": "../shared/test-helpers/ganache-cli.sh",
     "lint": "solium --dir ./contracts",
     "prepublishOnly": "truffle compile --all",
-    "publish:http": "aragon apm publish --http localhost:4444 --served-at ./dist",
+    "publish:http": "aragon apm publish --http localhost:4444 --http-served-from ./dist",
     "publish": "aragon apm publish",
     "start": "aragon run",
     "sync-assets": "copy-aragon-ui-assets ./dist",
