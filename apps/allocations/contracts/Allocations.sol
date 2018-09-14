@@ -171,6 +171,7 @@ contract Allocations is AragonApp, Fundable {
             require(msg.value == _balance);
             payout.balance = _balance;
         } else {
+            require(msg.value == 0);
             payout.balance = 0;
         }
         if(_recurring){
@@ -193,6 +194,7 @@ contract Allocations is AragonApp, Fundable {
         Payout payout = payouts[Id];
         require(!payout.informational);
         payout.balance.add(msg.value);
+        require(payout.balance <= payout.limit);
     }
 
     /*
