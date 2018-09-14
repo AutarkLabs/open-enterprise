@@ -1,6 +1,7 @@
-pragma solidity 0.4.18;
+pragma solidity ^0.4.24;
 
-import "@aragon/os/contracts/apps/AragonApp.sol";
+import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
+
 
 contract Projects is AragonApp {
 
@@ -43,7 +44,8 @@ contract Projects is AragonApp {
      */
     function addRepo(
         bytes20 _owner, bytes12 _repo
-    ) public auth(ADD_REPO_ROLE) returns (bytes32 _id) {
+    ) public auth(ADD_REPO_ROLE) returns (bytes32 _id) 
+    {
         _id = keccak256(_owner, _repo);  // overflow should still yield a useable identifier
         repos[_id] = GithubRepo(_owner, _repo, 0);
         //add the index to the repo struct and push the id to the repo array
@@ -57,7 +59,8 @@ contract Projects is AragonApp {
      */
     function removeRepo(
         bytes32 _id
-    ) public auth(REMOVE_REPO_ROLE) {
+    ) public auth(REMOVE_REPO_ROLE)
+    {
         // Take the repo out of the repo array in constant time by replacing the element
         // with last element
         repoIDs[repos[_id].index] = repoIDs[repoIDs.length - 1];
@@ -74,24 +77,33 @@ contract Projects is AragonApp {
      * Get an entry from the registry.
      * @param _id The ID of the entry to get
      */
-    function getRepo(
-        bytes32 _id
-    ) public view returns (bytes20 _owner, bytes12 _repo) {
+    function getRepo(bytes32 _id) public view returns (bytes20 _owner, bytes12 _repo) {
         _owner = repos[_id].owner;
         _repo = repos[_id].repo;
     }
 
-
     function addBounties(bytes32 _repoID, uint256[] _issueNumbers, uint256[] _bountySizes) public  auth(ADD_BOUNTY_ROLE) {
-        for (uint i = 0; i < _issueNumbers.length; i++){
+        for (uint i = 0; i < _issueNumbers.length; i++) {
             _addBounty(_repoID, _issueNumbers[i], _bountySizes[i]);
         }
     }
 
     function _addBounty(
         bytes32 _repoID, uint256 _issueNumber, uint256 _bountySize
-    ) internal {
-        repos[_repoID].issues[_issueNumber] = GithubIssue(_repoID, _issueNumber, true, _bountySize, address(0));
-        BountyAdded(repos[_repoID].owner, repos[_repoID].repo, _issueNumber, _bountySize);
+    ) internal 
+    {
+        repos[_repoID].issues[_issueNumber] = GithubIssue(
+            _repoID,
+            _issueNumber,
+            true,
+            _bountySize,
+            address(0)
+        );
+        BountyAdded(
+            repos[_repoID].owner,
+            repos[_repoID].repo,
+            _issueNumber,
+            _bountySize
+        );
     }
 }

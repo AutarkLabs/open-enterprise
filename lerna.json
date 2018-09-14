@@ -1,5 +1,14 @@
 {
-  "lerna": "2.11.0",
-  "packages": [".", "apps/*"],
+  "command": {
+    "run": {
+      "concurrency": 1,
+      "scope": "@tpt/apps-*"
+    },
+    "bootstrap": {
+      "progress": true
+    }
+  },
+  "hoist": true,
+  "packages": ["apps/*", "apps/shared/*"],
   "version": "independent"
 }

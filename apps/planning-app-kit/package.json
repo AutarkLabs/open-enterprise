@@ -1,0 +1,26 @@
+{
+  "name": "@tpt/kits-planning-app",
+  "version": "0.0.1",
+  "description": "Aragon Planning Suite developed by Space Decentral and Giveth",
+  "scripts": {
+    "coverage": "SOLIDITY_COVERAGE=true npm run ganache-cli:test",
+    "ganache-cli:test": "../shared/test-helpers/ganache-cli.sh",
+    "lint": "solium --dir ./contracts",
+    "start:kit": "aragon run --kit PlanningKit --kit-init @ARAGON_ENS",
+    "test:gas": "GAS_REPORTER=true npm test",
+    "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
+  },
+  "dependencies": {
+    "@tpt/apps-address-book": "^0.0.1",
+    "@tpt/apps-allocations": "^0.0.1",
+    "@tpt/apps-projects": "^0.0.1",
+    "@tpt/apps-range-voting": "^0.0.1"
+  },
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Giveth/planning-app"
+  },
+  "keywords": [],
+  "license": "GPL-3.0"
+}

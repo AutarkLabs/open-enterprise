@@ -1,7 +1,15 @@
 {
-  "name": "@aragon/test-helpers",
+  "private": true,
+  "name": "@tpt/test-helpers",
   "version": "0.0.1",
+  "description": "Helper scripts for Planning Suite",
   "devDependencies": {
-    "ethereumjs-abi": "^0.6.4"
+    "@aragon/cli": "^5.0.0",
+    "eth-gas-reporter": "^0.1.10",
+    "ethereumjs-abi": "^0.6.5",
+    "ganache-cli": "^6.1.8",
+    "solidity-coverage": "0.5.8",
+    "solium": "^1.1.8",
+    "truffle": "4.1.14"
   }
 }
