@@ -176,8 +176,8 @@ contract Allocations is AragonApp, Fundable {
         }
         if(_recurring){
             // minimum granularity is a single day
-            require(payout.period > 86399);
             payout.period = _period;
+            require(payout.period > 86399);
             payout.startTime = now;
         } else {
             payout.period = 0;
@@ -211,6 +211,7 @@ contract Allocations is AragonApp, Fundable {
         require(payout.distSet);
         
         if(payout.recurring){
+            // TDDO create payout execution counter to ensure payout time tracks payouts
             uint256 payoutTime = payout.startTime.add(payout.period);
             require(payoutTime > now);
             payout.startTime = payoutTime;

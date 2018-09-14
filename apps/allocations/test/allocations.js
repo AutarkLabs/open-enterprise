@@ -7,6 +7,7 @@ const ACL = artifacts.require('@aragon/os/contracts/acl/ACL')
 const Kernel = artifacts.require('@aragon/os/contracts/kernel/Kernel')
 
 const { assertRevert } = require('@tpt/test-helpers/assertThrow')
+const timetravel = require('@tpt/test-helpers/timeTravel')(web3)
 
 // TODO: Fix Vault not loading artifacts error
 // const Vault = artifacts.require('@aragon/apps-vault/contracts/Vault')
@@ -308,8 +309,71 @@ contract('Allocations App', accounts => {
   })
 
   context('recurring payout', () => {
-    xit('cannot occur more frequently than daily', async () => {
-      
+    const empire = accounts[0]
+    const bobafett = accounts[1]
+    const dengar = accounts[2]
+    const bossk = accounts[3]
+    let imperialBudget
+
+    let bobafettInitialBalance
+    let dengarInitialBalance
+    let bosskInitialBalance
+    let allocationId
+    let supports
+
+    before(async () => {
+      imperialBudget = await web3.eth.getBalance(empire)
+      var send = await web3.eth.sendTransaction({
+        from: empire,
+        to: app.address,
+        value: web3.toWei(0.01, 'ether'),
+      })
+      bobafettInitialBalance = await web3.eth.getBalance(bobafett)
+      dengarInitialBalance = await web3.eth.getBalance(dengar)
+      bosskInitialBalance = await web3.eth.getBalance(bossk)
+      candidateAddresses = [bobafett, dengar, bossk]
+    })
+
+    beforeEach(async () => {
+      allocationId = (await app.newPayout(
+        'Fett\'s auto warranty',
+        web3.toWei(0.1, 'ether'),
+        0x0
+      )).logs[0].args.accountId.toNumber()
+    })
+    it('cannot occur more frequently than daily', async () => {
+      supports = [300, 400, 300]
+      totalsupport = 1000
+      return assertRevert(async () => {
+        await app.setDistribution(
+          candidateAddresses,
+          supports,
+          allocationId,
+          false,
+          true,
+          86300,
+          web3.toWei(0.01, 'ether'),
+          { from: empire, value: web3.toWei(0.01, 'ether') }
+        )
+      })
+    })
+    it('will not execute more frequently than the specified period', async () => {
+      supports = [300, 400, 300]
+      totalsupport = 1000
+      await app.setDistribution(
+        candidateAddresses,
+        supports,
+        allocationId,
+        false,
+        true,
+        86400,
+        web3.toWei(0.01, 'ether'),
+        { from: empire, value: web3.toWei(0.01, 'ether') }
+      )
+      await timetravel(86500)
+      await executePayout(allocationId)
+      // TODO add assertion to ensure this passes
+      // TODO attempt another execution without enough time passing
     })
   })
 })
