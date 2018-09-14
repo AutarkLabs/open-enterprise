@@ -308,7 +308,7 @@ contract('Allocations App', accounts => {
     })
   })
 
-  context('recurring payout', () => {
+  context('Recurring Payout', () => {
     const empire = accounts[0]
     const bobafett = accounts[1]
     const dengar = accounts[2]
@@ -371,9 +371,35 @@ contract('Allocations App', accounts => {
         { from: empire, value: web3.toWei(0.01, 'ether') }
       )
       await timetravel(86500)
-      await executePayout(allocationId)
-      // TODO add assertion to ensure this passes
-      // TODO attempt another execution without enough time passing
+      await app.executePayout(allocationId)
+      const bobafettBalance = await web3.eth.getBalance(bobafett)
+      const dengarBalance = await web3.eth.getBalance(dengar)
+      const bosskBalance = await web3.eth.getBalance(bossk)
+      assert.equal(
+        bobafettBalance.toNumber() - bobafettInitialBalance.toNumber(),
+        (web3.toWei(0.01, 'ether') * supports[0]) / totalsupport,
+        'bounty hunter expense 1 not paid out'
+      )
+      assert.equal(
+        dengarBalance.toNumber() - dengarInitialBalance.toNumber(),
+        (web3.toWei(0.01, 'ether') * supports[1]) / totalsupport,
+        'bounty hunter expense 2 not paid out'
+      )
+      assert.equal(
+        bosskBalance.toNumber() - bosskInitialBalance.toNumber(),
+        (web3.toWei(0.01, 'ether') * supports[2]) / totalsupport,
+        'bounty hunter expense 3 not paid out'
+      )
+      
+      await app.fund(
+        allocationId, 
+        {from:empire, value: web3.toWei(0.01, 'ether')}
+      )
+      await timetravel(43200)
+      return assertRevert(async () =>{
+        await app.executePayout(allocationId)
+      })
+
     })
   })
 })
