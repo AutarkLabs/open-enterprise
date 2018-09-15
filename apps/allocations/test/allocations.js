@@ -8,6 +8,9 @@ const {
 
 const Allocations = artifacts.require('Allocations')
 
+const { assertRevert } = require('@tpt/test-helpers/assertThrow')
+const timetravel = require('@tpt/test-helpers/timeTravel')(web3)
+
 // TODO: Fix Vault not loading artifacts error
 // const Vault = artifacts.require('@aragon/apps-vault/contracts/Vault')
 
@@ -140,14 +143,9 @@ contract('Allocations App', accounts => {
         false,
         0,
         web3.toWei(0.01, 'ether'),
-        { from: empire }
+        { from: empire, value: web3.toWei(0.01, 'ether') }
       )
     })
-    // TODO: Split common initial steps into the parent beforeEach Function
-    // TODO: Create Assertions for each intermediary step:
-    // 1. initialization - Done
-    // 2. setDistribution
-    // 3. executePayout
 
     it('app initialized properly', async () => {
       let initBlock = await app.getInitializationBlock()
@@ -200,9 +198,7 @@ contract('Allocations App', accounts => {
     })
 
     it('executes the payout', async () => {
-      // TODO: Test does not work, fix
-
-      //await app.executePayout(allocationId)
+      await app.executePayout(allocationId, {from: empire})
       const bobafettBalance = await web3.eth.getBalance(bobafett)
       const dengarBalance = await web3.eth.getBalance(dengar)
       const bosskBalance = await web3.eth.getBalance(bossk)
@@ -227,20 +223,215 @@ contract('Allocations App', accounts => {
       //   'bounty hunter expense'
       // )
     })
+
+    it('cannot add to balance without passing equal msg.value', async () => {
+      allocationId = (await app.newPayout(
+        'Fett\'s Lambo',
+        web3.toWei(1, 'ether'),
+        0x0
+      )).logs[0].args.accountId.toNumber()
+      
+      supports = [300, 300, 400]
+      totalsupport = 1000
+
+      return assertRevert(async () => { 
+        await app.setDistribution(
+          candidateAddresses,
+          supports,
+          allocationId,
+          false,
+          false,
+          0,
+          web3.toWei(0.01, 'ether'),
+          { from: empire}
+        )
+      })
+    })
   })
 
   context('Informational Payout', () => {
-    it('can create new Payout')
-    it('sets the distribution')
-    xit('cannot accept funds', async () => {
-      //assertrevert when attempt to add funds
+    const empire = accounts[0]
+    const bobafett = accounts[1]
+    const dengar = accounts[2]
+    const bossk = accounts[3]
+    let imperialBudget
+
+    let bobafettInitialBalance
+    let dengarInitialBalance
+    let bosskInitialBalance
+    let allocationId
+    let supports
+
+    before(async () => {
+      imperialBudget = await web3.eth.getBalance(empire)
+      var send = await web3.eth.sendTransaction({
+        from: empire,
+        to: app.address,
+        value: web3.toWei(0.01, 'ether'),
+      })
+      bobafettInitialBalance = await web3.eth.getBalance(bobafett)
+      dengarInitialBalance = await web3.eth.getBalance(dengar)
+      bosskInitialBalance = await web3.eth.getBalance(bossk)
+      candidateAddresses = [bobafett, dengar, bossk]
     })
-    xit('cannot execute', async () => {
+
+    beforeEach(async () => {
+      allocationId = (await app.newPayout(
+        'Fett\'s auto warranty',
+        0,
+        0x0
+      )).logs[0].args.accountId.toNumber()
+
+      supports = [300, 400, 300]
+      totalsupport = 1000
+      await app.setDistribution(
+        candidateAddresses,
+        supports,
+        allocationId,
+        true,
+        false,
+        0,
+        0,
+        { from: empire}
+      )
+    })
+
+    it('can create new Payout', async () => {
+      payoutMembers = await app.getPayout(allocationId)
+      assert.equal(payoutMembers[2], 'Fett\'s auto warranty', 'Payout metadata incorrect')
+      assert.equal(payoutMembers[0].toNumber(), 0, 'Payout Balance Incorrect')
+      assert.equal(payoutMembers[1].toNumber(), 0,'Payout Limit incorrect')
+    })
+
+    it('sets the distribution', async () => {
+      const candidateArrayLength = (await app.getNumberOfCandidates(allocationId)).toNumber()
+      let storedSupport = []
+      let supportVal
+
+      for (let i = 0; i < candidateArrayLength; i++) {
+        supportVal = (await app.getPayoutDistributionValue(allocationId, i)).toNumber()
+        assert.equal(supports[i], supportVal,'support distributions do not match what is specified')
+        storedSupport.push(supportVal)
+      }
+      assert.equal(supports.length, storedSupport.length, 'distribution array lengths do not match')
+    })
+    it('cannot accept funds', async () => {
+      //assertrevert when attempt to add funds
+      supports = [300, 400, 300]
+      totalsupport = 1000
+      return assertRevert(async () => {
+        await app.setDistribution(
+          candidateAddresses,
+          supports,
+          allocationId,
+          true,
+          false,
+          0,
+          0,
+          { from: empire,  value: web3.toWei(0.01, 'ether') }
+        )
+      })
+    })
+    it('cannot execute', async () => {
       // assertrevert an attempt to run executePayout for an informational vote
+      return assertRevert(async () => {
+        await app.executePayout(allocationId)
+      })
     })
   })
 
-  context('recurring payout', () => {
-    xit('cannot occur more frequently than daily', async () => {})
+  context('Recurring Payout', () => {
+    const empire = accounts[0]
+    const bobafett = accounts[1]
+    const dengar = accounts[2]
+    const bossk = accounts[3]
+    let imperialBudget
+
+    let bobafettInitialBalance
+    let dengarInitialBalance
+    let bosskInitialBalance
+    let allocationId
+    let supports
+
+    before(async () => {
+      imperialBudget = await web3.eth.getBalance(empire)
+      var send = await web3.eth.sendTransaction({
+        from: empire,
+        to: app.address,
+        value: web3.toWei(0.01, 'ether'),
+      })
+      bobafettInitialBalance = await web3.eth.getBalance(bobafett)
+      dengarInitialBalance = await web3.eth.getBalance(dengar)
+      bosskInitialBalance = await web3.eth.getBalance(bossk)
+      candidateAddresses = [bobafett, dengar, bossk]
+    })
+
+    beforeEach(async () => {
+      allocationId = (await app.newPayout(
+        'Fett\'s auto warranty',
+        web3.toWei(0.1, 'ether'),
+        0x0
+      )).logs[0].args.accountId.toNumber()
+    })
+    it('cannot occur more frequently than daily', async () => {
+      supports = [300, 400, 300]
+      totalsupport = 1000
+      return assertRevert(async () => {
+        await app.setDistribution(
+          candidateAddresses,
+          supports,
+          allocationId,
+          false,
+          true,
+          86300,
+          web3.toWei(0.01, 'ether'),
+          { from: empire, value: web3.toWei(0.01, 'ether') }
+        )
+      })
+    })
+    it('will not execute more frequently than the specified period', async () => {
+      supports = [300, 400, 300]
+      totalsupport = 1000
+      await app.setDistribution(
+        candidateAddresses,
+        supports,
+        allocationId,
+        false,
+        true,
+        86400,
+        web3.toWei(0.01, 'ether'),
+        { from: empire, value: web3.toWei(0.01, 'ether') }
+      )
+      await timetravel(86500)
+      await app.executePayout(allocationId)
+      const bobafettBalance = await web3.eth.getBalance(bobafett)
+      const dengarBalance = await web3.eth.getBalance(dengar)
+      const bosskBalance = await web3.eth.getBalance(bossk)
+      assert.equal(
+        bobafettBalance.toNumber() - bobafettInitialBalance.toNumber(),
+        (web3.toWei(0.01, 'ether') * supports[0]) / totalsupport,
+        'bounty hunter expense 1 not paid out'
+      )
+      assert.equal(
+        dengarBalance.toNumber() - dengarInitialBalance.toNumber(),
+        (web3.toWei(0.01, 'ether') * supports[1]) / totalsupport,
+        'bounty hunter expense 2 not paid out'
+      )
+      assert.equal(
+        bosskBalance.toNumber() - bosskInitialBalance.toNumber(),
+        (web3.toWei(0.01, 'ether') * supports[2]) / totalsupport,
+        'bounty hunter expense 3 not paid out'
+      )
+      
+      await app.fund(
+        allocationId, 
+        {from:empire, value: web3.toWei(0.01, 'ether')}
+      )
+      await timetravel(43200)
+      return assertRevert(async () =>{
+        await app.executePayout(allocationId)
+      })
+
+    })
   })
 })

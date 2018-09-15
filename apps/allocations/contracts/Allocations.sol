@@ -162,23 +162,25 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         bool _recurring,
         uint256 _period,
         uint256 _balance
-    ) external isInitialized auth(SET_DISTRIBUTION_ROLE) { // solium-disable-line lbrace
-        Payout storage payout = payouts[_payoutId];
+    ) external payable isInitialized auth(SET_DISTRIBUTION_ROLE) {
+        Payout payout = payouts[_payoutId];
         //payout.candidateKeys = _candidateKeys;
         payout.candidateAddresses = _candidateAddresses;
         require(_balance <= payout.limit);  // solium-disable-line error-reason
         payout.informational = _informational;
         payout.recurring = _recurring;
-        if (!_informational) {
+        if(!_informational){
+            require(msg.value == _balance);
             payout.balance = _balance;
         } else {
+            require(msg.value == 0);
             payout.balance = 0;
         }
         if (_recurring) {
             // minimum granularity is a single day
-            require(payout.period > 86399); // solium-disable-line error-reason
             payout.period = _period;
-            payout.startTime = now; // solium-disable-line security/no-block-members
+            require(payout.period > 86399);
+            payout.startTime = now;
         } else {
             payout.period = 0;
         }
@@ -194,6 +196,7 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         Payout storage payout = payouts[id];
         require(!payout.informational); // solium-disable-line error-reason
         payout.balance.add(msg.value);
+        require(payout.balance <= payout.limit);
     }
 
     /*
@@ -204,13 +207,15 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
     *         processed and funds will be sent the appropriate places.
     *
     */
-    function executePayout(uint256 _payoutId) external payable onlyInit auth(EXECUTE_PAYOUT_ROLE) { // solium-disable-line function-order
-        Payout storage payout = payouts[_payoutId];
-        require(!payout.informational); // solium-disable-line error-reason
-        require(payout.distSet); // solium-disable-line error-reason
-        if (payout.recurring) {
+    function executePayout(uint256 _payoutId) external payable auth(EXECUTE_PAYOUT_ROLE) {
+        Payout payout = payouts[_payoutId];
+        require(!payout.informational);
+        require(payout.distSet);
+        
+        if(payout.recurring){
+            // TDDO create payout execution counter to ensure payout time tracks payouts
             uint256 payoutTime = payout.startTime.add(payout.period);
-            require(payoutTime > now); // solium-disable-line security/no-block-members, error-reason
+            require(payoutTime < now);
             payout.startTime = payoutTime;
         } else {
             payout.distSet = false;
@@ -221,27 +226,26 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         for (uint i = 0; i < payout.supports.length; i++) {
             totalSupport += payout.supports[i];
         }
-
-        if (address(this).balance < payout.balance) {
-            revert();  // solium-disable-line error-reason
+        
+        if(this.balance < payout.balance) {
+            revert();
             /*
             For now the vault isn't working see aragon-apps issue #292
-
+        
             uint256 remainingBalance = payout.balance.sub(this.balance);
             require(!(vault.balance(address(0)) < remainingBalance));
             vault.transfer(address(0), this, remainingBalance, new bytes(0));
             */
         }
-
+        
         pointsPer = payout.balance.div(totalSupport);
-
         //handle vault
-
-        for (i = 0; i < payout.candidateAddresses.length; i++) {
+        
+        for(i = 0; i < payout.candidateAddresses.length; i++) {
             payout.candidateAddresses[i].transfer(payout.supports[i].mul(pointsPer));
         }
-
-        emit ExecutePayout(_payoutId); // solium-disable-line emit
+        
+        ExecutePayout(_payoutId);
     }
 
     function getNumberOfCandidates(uint256 _payoutId) public view returns(uint256 numCandidates) {
