@@ -4,10 +4,10 @@
 
 pragma solidity ^0.4.24;
 
+import "../lib/token/ERC20.sol";
 import "./EtherTokenConstant.sol";
 import "./IsContract.sol";
 import "./IVaultRecoverable.sol";
-import "../lib/zeppelin/token/ERC20.sol";
 
 
 contract VaultRecoverable is IVaultRecoverable, EtherTokenConstant, IsContract {
@@ -31,12 +31,12 @@ contract VaultRecoverable is IVaultRecoverable, EtherTokenConstant, IsContract {
 
     /**
     * @dev By default deriving from AragonApp makes it recoverable
-    * @param token Token address that would be recovered
     * @return bool whether the app allows the recovery
     */
-    function allowRecoverability(address token) public view returns (bool) {
+    function allowRecoverability(address /*token*/) public view returns (bool) {
         return true;
     }
+    // * @param token Token address that would be recovered // unused
 
     // Cast non-implemented interface to be public so we can use it internally
     function getRecoveryVault() public view returns (address);

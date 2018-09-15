@@ -1,6 +1,6 @@
 // Taken from https://github.com/trufflesuite/truffle/blob/ef03be9e35909e5e7c97a9ecb07ccae4872645ca/packages/truffle-core/lib/testing/Assert.sol
 
-pragma solidity ^0.4.17;
+pragma solidity ^0.4.24;
 
 /*
     File: Assertions.slb
@@ -35,6 +35,7 @@ pragma solidity ^0.4.17;
     }
     (end)
 */
+
 library Assert {
 
     // Constant: ADDRESS_NULL
@@ -1164,8 +1165,9 @@ library Assert {
         else
             rev = new bytes(size);
 
-        for (; j < size; j++)
+        for (; j < size; j++) {
             rev[j] = bts[size - j - 1];
+        }
         return string(rev);
     }
 

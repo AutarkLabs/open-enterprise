@@ -1,4 +1,4 @@
-pragma solidity ^0.4.6;
+pragma solidity ^0.4.24;
 
 /*
     Copyright 2016, Jordi Baylina
@@ -27,7 +27,7 @@ pragma solidity ^0.4.6;
 
 import "./ITokenController.sol";
 
-contract Controlled {
+contract Controlled { // solium-disable-line blank-lines
     /// @notice The address of the controller is the only address that can call
     ///  a function with this modifier
     modifier onlyController {
@@ -37,28 +37,27 @@ contract Controlled {
 
     address public controller;
 
-    function Controlled()  public { controller = msg.sender;}
+    constructor()  public { controller = msg.sender;}
 
     /// @notice Changes the controller of the contract
     /// @param _newController The new controller of the contract
-    function changeController(address _newController) onlyController  public {
+    function changeController(address _newController) public onlyController {
         controller = _newController;
     }
 }
 
-contract ApproveAndCallFallBack {
+contract ApproveAndCallFallBack { // solium-disable-line blank-lines
     function receiveApproval(
         address from,
         uint256 _amount,
         address _token,
-        bytes _data
-    ) public;
+        bytes _data) public;
 }
 
 /// @dev The actual token contract, the default controller is the msg.sender
 ///  that deploys the contract, so usually this token will be deployed by a
 ///  token controller contract, which Giveth will call a "Campaign"
-contract MiniMeToken is Controlled {
+contract MiniMeToken is Controlled { // solium-disable-line blank-lines
 
     string public name;                //The Token's name: e.g. DigixDAO Tokens
     uint8 public decimals;             //Number of decimals of the smallest unit
@@ -123,7 +122,7 @@ contract MiniMeToken is Controlled {
     /// @param _decimalUnits Number of decimals of the new token
     /// @param _tokenSymbol Token Symbol for the new token
     /// @param _transfersEnabled If true, tokens will be able to be transferred
-    function MiniMeToken(
+    constructor( // solium-disable-line blank-lines
         MiniMeTokenFactory _tokenFactory,
         MiniMeToken _parentToken,
         uint _parentSnapShotBlock,
@@ -195,7 +194,7 @@ contract MiniMeToken is Controlled {
         require((_to != 0) && (_to != address(this)));
         // If the amount being transfered is more than the balance of the
         //  account the transfer returns false
-        var previousBalanceFrom = balanceOfAt(_from, block.number);
+        uint previousBalanceFrom = balanceOfAt(_from, block.number);
         if (previousBalanceFrom < _amount) {
             return false;
         }
@@ -209,17 +208,17 @@ contract MiniMeToken is Controlled {
         updateValueAtNow(balances[_from], previousBalanceFrom - _amount);
         // Then update the balance array with the new value for the address
         //  receiving the tokens
-        var previousBalanceTo = balanceOfAt(_to, block.number);
+        uint previousBalanceTo = balanceOfAt(_to, block.number);
         require(previousBalanceTo + _amount >= previousBalanceTo); // Check for overflow
         updateValueAtNow(balances[_to], previousBalanceTo + _amount);
         // An event to make the transfer easy to find on the blockchain
-        Transfer(_from, _to, _amount);
+        emit Transfer(_from, _to, _amount);
         return true;
     }
 
     /// @param _owner The address that's balance is being requested
     /// @return The balance of `_owner` at the current block
-    function balanceOf(address _owner) public constant returns (uint256 balance) {
+    function balanceOf(address _owner) public view returns (uint256 balance) { // solium-disable-line function-order
         return balanceOfAt(_owner, block.number);
     }
 
@@ -229,7 +228,7 @@ contract MiniMeToken is Controlled {
     /// @param _spender The address of the account able to transfer the tokens
     /// @param _amount The amount of tokens to be approved for transfer
     /// @return True if the approval was successful
-    function approve(address _spender, uint256 _amount) public returns (bool success) {
+    function approve(address _spender, uint256 _amount) public returns (bool success) { // solium-disable-line function-order
         require(transfersEnabled);
 
         // To change the approve amount you first have to reduce the addresses`
@@ -245,7 +244,7 @@ contract MiniMeToken is Controlled {
         }
 
         allowed[msg.sender][_spender] = _amount;
-        Approval(msg.sender, _spender, _amount);
+        emit Approval(msg.sender, _spender, _amount);
         return true;
     }
 
@@ -254,7 +253,7 @@ contract MiniMeToken is Controlled {
     /// @param _spender The address of the account able to transfer the tokens
     /// @return Amount of remaining tokens of _owner that _spender is allowed
     ///  to spend
-    function allowance(address _owner, address _spender) public constant returns (uint256 remaining) {
+    function allowance(address _owner, address _spender) public view returns (uint256 remaining) { // solium-disable-line function-order
         return allowed[_owner][_spender];
     }
 
@@ -265,7 +264,9 @@ contract MiniMeToken is Controlled {
     /// @param _spender The address of the contract able to transfer the tokens
     /// @param _amount The amount of tokens to be approved for transfer
     /// @return True if the function call was successful
-    function approveAndCall(ApproveAndCallFallBack _spender, uint256 _amount, bytes _extraData) public returns (bool success) {
+    function approveAndCall(ApproveAndCallFallBack _spender, uint256 _amount, bytes _extraData) // solium-disable-line function-order
+    public returns (bool success)
+    {
         require(approve(_spender, _amount));
 
         _spender.receiveApproval(
@@ -280,10 +281,9 @@ contract MiniMeToken is Controlled {
 
     /// @dev This function makes it easy to get the total number of tokens
     /// @return The total number of tokens
-    function totalSupply() public constant returns (uint) {
+    function totalSupply() public view returns (uint) { // solium-disable-line function-order
         return totalSupplyAt(block.number);
     }
-
 
 ////////////////
 // Query balance and totalSupply in History
@@ -293,7 +293,7 @@ contract MiniMeToken is Controlled {
     /// @param _owner The address from which the balance will be retrieved
     /// @param _blockNumber The block number when the balance is queried
     /// @return The balance at `_blockNumber`
-    function balanceOfAt(address _owner, uint _blockNumber) public constant returns (uint) {
+    function balanceOfAt(address _owner, uint _blockNumber) public view returns (uint) { // solium-disable-line function-order
 
         // These next few lines are used when the balance of the token is
         //  requested before a check point was ever created for this token, it
@@ -317,7 +317,7 @@ contract MiniMeToken is Controlled {
     /// @notice Total amount of tokens at a specific `_blockNumber`.
     /// @param _blockNumber The block number when the totalSupply is queried
     /// @return The total amount of tokens at `_blockNumber`
-    function totalSupplyAt(uint _blockNumber) public constant returns(uint) {
+    function totalSupplyAt(uint _blockNumber) public view returns(uint) { // solium-disable-line function-order
 
         // These next few lines are used when the totalSupply of the token is
         //  requested before a check point was ever created for this token, it
@@ -351,7 +351,7 @@ contract MiniMeToken is Controlled {
     ///  if the block is zero than the actual block, the current block is used
     /// @param _transfersEnabled True if transfers are allowed in the clone
     /// @return The address of the new MiniMeToken Contract
-    function createCloneToken(
+    function createCloneToken( // solium-disable-line function-order
         string _cloneTokenName,
         uint8 _cloneDecimalUnits,
         string _cloneTokenSymbol,
@@ -373,7 +373,7 @@ contract MiniMeToken is Controlled {
         cloneToken.changeController(msg.sender);
 
         // An event to make the token easy to find on the blockchain
-        NewCloneToken(address(cloneToken), snapshot);
+        emit NewCloneToken(address(cloneToken), snapshot);
         return cloneToken;
     }
 
@@ -385,30 +385,31 @@ contract MiniMeToken is Controlled {
     /// @param _owner The address that will be assigned the new tokens
     /// @param _amount The quantity of tokens generated
     /// @return True if the tokens are generated correctly
-    function generateTokens(address _owner, uint _amount) onlyController public returns (bool) {
+    function generateTokens(address _owner, uint _amount) // solium-disable-line function-order
+    public onlyController returns (bool)
+    {
         uint curTotalSupply = totalSupply();
         require(curTotalSupply + _amount >= curTotalSupply); // Check for overflow
         uint previousBalanceTo = balanceOf(_owner);
         require(previousBalanceTo + _amount >= previousBalanceTo); // Check for overflow
         updateValueAtNow(totalSupplyHistory, curTotalSupply + _amount);
         updateValueAtNow(balances[_owner], previousBalanceTo + _amount);
-        Transfer(0, _owner, _amount);
+        emit Transfer(0, _owner, _amount);
         return true;
     }
-
 
     /// @notice Burns `_amount` tokens from `_owner`
     /// @param _owner The address that will lose the tokens
     /// @param _amount The quantity of tokens to burn
     /// @return True if the tokens are burned correctly
-    function destroyTokens(address _owner, uint _amount) onlyController public returns (bool) {
+    function destroyTokens(address _owner, uint _amount) public onlyController returns (bool) { // solium-disable-line function-order
         uint curTotalSupply = totalSupply();
         require(curTotalSupply >= _amount);
         uint previousBalanceFrom = balanceOf(_owner);
         require(previousBalanceFrom >= _amount);
         updateValueAtNow(totalSupplyHistory, curTotalSupply - _amount);
         updateValueAtNow(balances[_owner], previousBalanceFrom - _amount);
-        Transfer(_owner, 0, _amount);
+        emit Transfer(_owner, 0, _amount);
         return true;
     }
 
@@ -419,7 +420,7 @@ contract MiniMeToken is Controlled {
 
     /// @notice Enables token holders to transfer their tokens freely if true
     /// @param _transfersEnabled True if transfers are allowed in the clone
-    function enableTransfers(bool _transfersEnabled) onlyController public {
+    function enableTransfers(bool _transfersEnabled) public onlyController { // solium-disable-line function-order
         transfersEnabled = _transfersEnabled;
     }
 
@@ -431,7 +432,7 @@ contract MiniMeToken is Controlled {
     /// @param checkpoints The history of values being queried
     /// @param _block The block number to retrieve the value at
     /// @return The number of tokens being queried
-    function getValueAt(Checkpoint[] storage checkpoints, uint _block) constant internal returns (uint) {
+    function getValueAt(Checkpoint[] storage checkpoints, uint _block) internal view returns (uint) {
         if (checkpoints.length == 0)
             return 0;
 
@@ -473,7 +474,7 @@ contract MiniMeToken is Controlled {
     /// @dev Internal function to determine if an address is a contract
     /// @param _addr The address being queried
     /// @return True if `_addr` is a contract
-    function isContract(address _addr) constant internal returns(bool) {
+    function isContract(address _addr) internal view returns(bool) {
         uint size;
         if (_addr == 0)
             return false;
@@ -486,14 +487,14 @@ contract MiniMeToken is Controlled {
     }
 
     /// @dev Helper function to return a min betwen the two uints
-    function min(uint a, uint b) pure internal returns (uint) {
+    function min(uint a, uint b) internal pure returns (uint) {
         return a < b ? a : b;
     }
 
     /// @notice The fallback function: If the contract's controller has not been
     ///  set to 0, then the `proxyPayment` method is called which relays the
     ///  ether and creates tokens as described in the token controller contract
-    function () external payable {
+    function () external payable { // solium-disable-line function-order
         require(isContract(controller));
         // Adding the ` == true` makes the linter shut up so...
         require(ITokenController(controller).proxyPayment.value(msg.value)(msg.sender) == true);
@@ -507,16 +508,16 @@ contract MiniMeToken is Controlled {
     ///  sent tokens to this contract.
     /// @param _token The address of the token contract that you want to recover
     ///  set to 0 in case you want to extract ether.
-    function claimTokens(address _token) onlyController public {
+    function claimTokens(address _token) public onlyController { // solium-disable-line function-order
         if (_token == 0x0) {
-            controller.transfer(this.balance);
+            controller.transfer(address(this).balance);
             return;
         }
 
         MiniMeToken token = MiniMeToken(_token);
         uint balance = token.balanceOf(this);
         token.transfer(controller, balance);
-        ClaimedTokens(_token, controller, balance);
+        emit ClaimedTokens(_token, controller, balance);
     }
 
 ////////////////
@@ -529,7 +530,7 @@ contract MiniMeToken is Controlled {
         address indexed _owner,
         address indexed _spender,
         uint256 _amount
-        );
+    );
 
 }
 

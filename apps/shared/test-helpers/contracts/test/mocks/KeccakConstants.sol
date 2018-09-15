@@ -12,18 +12,11 @@ contract KeccakConstants is APMNamehash {
     bytes32 constant public APP_ADDR_NAMESPACE = keccak256(abi.encodePacked("app"));
 
     bytes32 constant public KERNEL_APP_ID = keccak256(abi.encodePacked(APM_NODE, keccak256("kernel")));
-    bytes32 constant public KERNEL_APP = keccak256(abi.encodePacked(CORE_NAMESPACE, KERNEL_APP_ID));
-
     bytes32 constant public ACL_APP_ID = keccak256(abi.encodePacked(APM_NODE, keccak256("acl")));
-    bytes32 constant public ACL_APP = keccak256(abi.encodePacked(APP_ADDR_NAMESPACE, ACL_APP_ID));
 
     bytes32 constant public APP_MANAGER_ROLE = keccak256(abi.encodePacked("APP_MANAGER_ROLE"));
 
-    bytes32 constant public DEFAULT_VAULT_ID = keccak256(
-        abi.encodePacked(
-            APP_ADDR_NAMESPACE, keccak256(abi.encodePacked(APM_NODE, keccak256("vault")))
-        )
-    );
+    bytes32 constant public DEFAULT_VAULT_APP_ID = keccak256(abi.encodePacked(APM_NODE, keccak256("vault")));
 
     // ENS
     bytes32 constant public ENS_ROOT = bytes32(0);
@@ -46,7 +39,7 @@ contract KeccakConstants is APMNamehash {
 
     // EVMScriptRegistry
     bytes32 constant public EVMSCRIPT_REGISTRY_APP_ID = keccak256(abi.encodePacked(APM_NODE, keccak256("evmreg")));
-    bytes32 constant public EVMSCRIPT_REGISTRY_APP = keccak256(abi.encodePacked(APP_ADDR_NAMESPACE, EVMSCRIPT_REGISTRY_APP_ID));
+    bytes32 constant public REGISTRY_ADD_EXECUTOR_ROLE = keccak256("REGISTRY_ADD_EXECUTOR_ROLE");
     bytes32 constant public REGISTRY_MANAGER_ROLE = keccak256(abi.encodePacked("REGISTRY_MANAGER_ROLE"));
 
     // EVMScriptExecutor types
@@ -57,6 +50,7 @@ contract KeccakConstants is APMNamehash {
 
     // Unstructured storage
     bytes32 public constant initializationBlockPosition = keccak256(abi.encodePacked("aragonOS.initializable.initializationBlock"));
+    bytes32 public constant depositablePosition = keccak256(abi.encodePacked("aragonOS.depositableStorage.depositable"));
     bytes32 public constant kernelPosition = keccak256(abi.encodePacked("aragonOS.appStorage.kernel"));
     bytes32 public constant appIdPosition = keccak256(abi.encodePacked("aragonOS.appStorage.appId"));
     bytes32 public constant pinnedCodePosition = keccak256(abi.encodePacked("aragonOS.appStorage.pinnedCode"));

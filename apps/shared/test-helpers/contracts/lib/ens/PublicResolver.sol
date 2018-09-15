@@ -1,6 +1,7 @@
-pragma solidity ^0.4.0;
+pragma solidity ^0.4.24;
 
-import './AbstractENS.sol';
+import "./AbstractENS.sol";
+
 
 /**
  * A simple resolver anyone can use; only allows the owner of a node to set its
@@ -58,13 +59,13 @@ contract PublicResolver {
      * @return True if the contract implements the requested interface.
      */
     function supportsInterface(bytes4 interfaceID) public pure returns (bool) {
-        return interfaceID == ADDR_INTERFACE_ID ||
-               interfaceID == CONTENT_INTERFACE_ID ||
-               interfaceID == NAME_INTERFACE_ID ||
-               interfaceID == ABI_INTERFACE_ID ||
-               interfaceID == PUBKEY_INTERFACE_ID ||
-               interfaceID == TEXT_INTERFACE_ID ||
-               interfaceID == INTERFACE_META_ID;
+        return interfaceID == ADDR_INTERFACE_ID || 
+                interfaceID == CONTENT_INTERFACE_ID ||
+                interfaceID == NAME_INTERFACE_ID ||
+                interfaceID == ABI_INTERFACE_ID ||
+                interfaceID == PUBKEY_INTERFACE_ID ||
+                interfaceID == TEXT_INTERFACE_ID ||
+                interfaceID == INTERFACE_META_ID;
     }
 
     /**
@@ -72,7 +73,7 @@ contract PublicResolver {
      * @param node The ENS node to query.
      * @return The associated address.
      */
-    function addr(bytes32 node) public constant returns (address ret) {
+    function addr(bytes32 node) public view returns (address ret) {
         ret = records[node].addr;
     }
 
@@ -82,9 +83,9 @@ contract PublicResolver {
      * @param node The node to update.
      * @param addr The address to set.
      */
-    function setAddr(bytes32 node, address addr) only_owner(node) public {
-        records[node].addr = addr;
-        AddrChanged(node, addr);
+    function setAddr(bytes32 node, address _addr) public only_owner(node) {
+        records[node].addr = _addr;
+        emit AddrChanged(node, _addr);
     }
 
     /**
@@ -94,7 +95,7 @@ contract PublicResolver {
      * @param node The ENS node to query.
      * @return The associated content hash.
      */
-    function content(bytes32 node) public constant returns (bytes32 ret) {
+    function content(bytes32 node) public view returns (bytes32 ret) {
         ret = records[node].content;
     }
 
