@@ -1,4 +1,4 @@
-pragma solidity 0.4.18;
+pragma solidity ^0.4.24;
 
 /*
     Kits work:
@@ -23,6 +23,7 @@ import "@tpt/apps-address-book/contracts/AddressBook.sol";
 import "@tpt/apps-allocations/contracts/Allocations.sol";
 import "@tpt/apps-projects/contracts/Projects.sol";
 import "@tpt/apps-range-voting/contracts/RangeVoting.sol";
+
 
 contract KitBase is APMNamehash {
     ENS public ens;
@@ -53,6 +54,7 @@ contract KitBase is APMNamehash {
         return base;
     }
 }
+
 
 contract PlanningKit is KitBase {
     MiniMeTokenFactory tokenFactory;

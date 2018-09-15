@@ -1,10 +1,10 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.24;
 
 import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
 
 
 /*******************************************************************************
-  Copyright 2018, That Planning Tab
+    Copyright 2018, That Planning Tab
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -55,14 +55,14 @@ contract AddressBook is AragonApp {
         string _name,
         string _entryType
     ) public auth(ADD_ENTRY_ROLE) returns (address) { // solium-disable-line lbrace
-        require(!nameUsed[keccak256(_name)]); // solium-disable-line error-reason
+        require(!nameUsed[keccak256(abi.encodePacked(_name))]); // solium-disable-line error-reason
 
         Entry storage entry = entries[_address];
         entry.entryAddress = _address;
         entry.name = _name;
         entry.entryType = _entryType;
 
-        EntryAdded(_address); // solium-disable-line emit
+        emit EntryAdded(_address); // solium-disable-line emit
         return _address;
     }
 
@@ -73,9 +73,9 @@ contract AddressBook is AragonApp {
     function remove(
         address _addr
     ) public auth(REMOVE_ENTRY_ROLE) { // solium-disable-line lbrace
-        nameUsed[keccak256(entries[_addr].name)] = false;
+        nameUsed[keccak256(abi.encodePacked(entries[_addr].name))] = false;
         delete entries[_addr];
-        EntryRemoved(_addr); // solium-disable-line emit
+        emit EntryRemoved(_addr); // solium-disable-line emit
     }
 
     /**

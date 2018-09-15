@@ -46,11 +46,11 @@ contract Projects is AragonApp {
         bytes20 _owner, bytes12 _repo
     ) public auth(ADD_REPO_ROLE) returns (bytes32 _id) 
     {
-        _id = keccak256(_owner, _repo);  // overflow should still yield a useable identifier
+        _id = keccak256(abi.encodePacked(_owner, _repo));  // overflow should still yield a useable identifier
         repos[_id] = GithubRepo(_owner, _repo, 0);
         //add the index to the repo struct and push the id to the repo array
         repos[_id].index = repoIDs.push(_id) - 1; 
-        RepoAdded(_id);
+        emit RepoAdded(_id);
     }
 
     /**
@@ -66,7 +66,7 @@ contract Projects is AragonApp {
         repoIDs[repos[_id].index] = repoIDs[repoIDs.length - 1];
         repoIDs.length = repoIDs.length - 1;
         delete repos[_id];
-        RepoRemoved(_id);
+        emit RepoRemoved(_id);
     }
 
     function getRepoArrayLength() public view returns (uint256) {
@@ -99,7 +99,7 @@ contract Projects is AragonApp {
             _bountySize,
             address(0)
         );
-        BountyAdded(
+        emit BountyAdded(
             repos[_repoID].owner,
             repos[_repoID].repo,
             _issueNumber,

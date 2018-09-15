@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.24;
 
 // TODO: Move ExecutionTarget to a shared location
 
@@ -11,11 +11,11 @@ import "@tpt/test-helpers/contracts/lib/minime/MiniMeToken.sol";
 contract ExecutionTarget {
     uint[] public signal;
 
-    function setSignal(address[] _addr, uint256[] _signal) public {
+    function setSignal(address[] /*_addr*/, uint256[] _signal) public {
         for (uint i = 0; i < _signal.length; i++) {
             signal.push(_signal[i]);
         }
-        Executed(_signal.length);
+        emit Executed(_signal.length);
     }
 
     function autoThrow(uint256[] /*_signal*/) public pure {

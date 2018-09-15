@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.24;
 
 import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
 
@@ -11,21 +11,21 @@ import "@tpt/test-helpers/contracts/lib/zeppelin/math/SafeMath64.sol";
 import "@tpt/test-helpers/contracts/evmscript/ScriptHelpers.sol";
 
 
-// import "@tpt/test-helpers/contracts/common/IForwarder.sol";
+import "@tpt/test-helpers/contracts/common/IForwarder.sol";
 
-import "@aragon/os/contracts/lib/misc/Migrations.sol";
+import "@tpt/test-helpers/contracts/lib/misc/Migrations.sol";
 
 // import "@tpt/test-helpers/contracts/common/IForwarder.sol";
 /* Temp hack to pass coverage until further research */
-interface IForwarderFixed {
-    function isForwarder() public returns (bool);
-    function canForward(address sender, bytes evmCallScript) public returns (bool);
-    function forward(bytes evmCallScript) public;
-}
+// interface IForwarderFixed {
+//     function isForwarder() external returns (bool);
+//     function canForward(address sender, bytes evmCallScript) external returns (bool);
+//     function forward(bytes evmCallScript) external;
+// }
 
 
 /*******************************************************************************
-  Copyright 2018, That Planning Tab
+    Copyright 2018, That Planning Tab
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@ interface IForwarderFixed {
 *  but could easily be adapted to other systems.
 *  Attention was paid to make the program as generalized as possible.
 *******************************************************************************/
-contract RangeVoting is IForwarderFixed, AragonApp {
+contract RangeVoting is IForwarder, AragonApp {
     using ScriptHelpers for bytes;
 
     using SafeMath for uint256;
@@ -63,9 +63,9 @@ contract RangeVoting is IForwarderFixed, AragonApp {
 
     uint256 constant public PCT_BASE = 10 ** 18; // 0% = 0; 1% = 10^16; 100% = 10^18
 
-    bytes32 constant public CREATE_VOTES_ROLE = keccak256("CREATE_VOTES_ROLE");
-    bytes32 constant public ADD_CANDIDATES_ROLE = keccak256("ADD_CANDIDATES_ROLE");
-    bytes32 constant public MODIFY_PARTICIPATION_ROLE = keccak256("MODIFY_CANDIDATE_SUPPORT_ROLE");
+    bytes32 constant public CREATE_VOTES_ROLE = keccak256(abi.encodePacked("CREATE_VOTES_ROLE"));
+    bytes32 constant public ADD_CANDIDATES_ROLE = keccak256(abi.encodePacked("ADD_CANDIDATES_ROLE"));
+    bytes32 constant public MODIFY_PARTICIPATION_ROLE = keccak256(abi.encodePacked("MODIFY_CANDIDATE_SUPPORT_ROLE"));
     // bytes32 constant public MODIFY_QUORUM_ROLE = keccak256("MODIFY_QUORUM_ROLE");
 
     // enum VoterState { Absent, Yea, Nay }
@@ -259,7 +259,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
     {
         // Get vote and candidate into storage
         Vote storage voteA = votes[_voteId];
-        bytes32 cKey = keccak256(_description);
+        bytes32 cKey = keccak256(abi.encodePacked(_description));
         CandidateState storage candidate = voteA.candidates[cKey];
         // Make sure that this candidate has not already been added
         require(candidate.added == false); // solium-disable-line error-reason
@@ -282,7 +282,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
     external view returns(bool, bytes, uint8, uint256)
     {
         Vote storage voteB = votes[_voteId];
-        CandidateState storage candidate = voteB.candidates[keccak256(_description)];
+        CandidateState storage candidate = voteB.candidates[keccak256(abi.encodePacked(_description))];
         return(
             candidate.added,
             candidate.metadata,
@@ -317,29 +317,29 @@ contract RangeVoting is IForwarderFixed, AragonApp {
     }
 
     /**
-    * @notice Creates a vote to execute the desired action
-    * @dev IForwarder interface conformance
-    * @param _evmScript Start vote with script
-    */
-    function forward(bytes _evmScript) public {
-        require(canForward(msg.sender, _evmScript)); // solium-disable-line error-reason
-        _newVote(_evmScript, ""); /*, true);*/
-    }
-
-    /**
     * @notice Used to make sure that the permissions are being handled properl
     *         for the vote forwarding
     * @dev IForwarder interface conformance
     * @param _sender Address of the entity trying to forward
     * @return True is `_sender` has correct permissions
     */
-    function canForward(address _sender, bytes /*_evmCallScript*/)
+    function canForward(address _sender, bytes /*_evmCallScript*/) // solium-disable-line function-order
         public view returns (bool)
     {
         return canPerform(_sender, CREATE_VOTES_ROLE, arr());
     }
 
     // * @param _evmCallScript Not used in this implementation
+
+        /**
+    * @notice Creates a vote to execute the desired action
+    * @dev IForwarder interface conformance
+    * @param _evmScript Start vote with script
+    */
+    function forward(bytes _evmScript) public { // solium-disable-line function-order
+        require(canForward(msg.sender, _evmScript)); // solium-disable-line error-reason
+        _newVote(_evmScript, ""); /*, true);*/
+    }
 
 ///////////////////////
 // View state functions
@@ -366,15 +366,15 @@ contract RangeVoting is IForwarderFixed, AragonApp {
     * @return True if the vote is elligible for execution.
     */
     function canExecute(uint256 _voteId) public view returns (bool) {
-        Vote storage vote = votes[_voteId];
-        if (vote.executed)
+        Vote storage voteX = votes[_voteId];
+        if (voteX.executed)
             return false;
         // vote ended?
-        if (_isVoteOpen(vote))
+        if (_isVoteOpen(voteX))
             return false;
         //does not pass tests
-        bytes32[] storage cKeys = vote.candidateKeys;
-        uint256 i = 0;
+        // bytes32[] storage cKeys = voteX.candidateKeys; // unused
+        // uint256 i = 0; // unused
         // TODO: refactor to make something usable, commented because was unused
         // for (i; i < cKeys.length; i++) {
         //     bytes32 cKey = cKeys[i];
@@ -384,7 +384,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         //         // return false;
         // }
         // has minimum participation threshold been reached?
-        if (!_isValuePct(vote.totalParticipation, vote.totalVoters, minParticipationPct))
+        if (!_isValuePct(voteX.totalParticipation, voteX.totalVoters, minParticipationPct))
             return true;
     }
 
@@ -410,18 +410,18 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         bytes executionScript, // script,
         bool executed
     ) { // solium-disable-line lbrace
-        Vote storage vote = votes[_voteId];
+        Vote storage voteY = votes[_voteId];
 
-        open = _isVoteOpen(vote);
-        creator = vote.creator;
-        startDate = vote.startDate;
-        snapshotBlock = vote.snapshotBlock;
-        candidateSupportPct = vote.candidateSupportPct;
-        totalVoters = vote.totalVoters;
-        totalParticipation = vote.totalParticipation;
-        metadata = vote.metadata;
-        executionScript = vote.executionScript;
-        executed = vote.executed;
+        open = _isVoteOpen(voteY);
+        creator = voteY.creator;
+        startDate = voteY.startDate;
+        snapshotBlock = voteY.snapshotBlock;
+        candidateSupport = voteY.candidateSupportPct;
+        totalVoters = voteY.totalVoters;
+        totalParticipation = voteY.totalParticipation;
+        metadata = voteY.metadata;
+        executionScript = voteY.executionScript;
+        executed = voteY.executed;
     }
 
     /**
@@ -469,23 +469,25 @@ contract RangeVoting is IForwarderFixed, AragonApp {
     {
     // function _newVote(bytes _executionScript, string _metadata, bool _castVote) isInitialized internal returns (uint256 voteId) {
         voteId = votes.length++;
-        Vote storage vote = votes[voteId];
-        vote.executionScript = _executionScript;
-        vote.creator = msg.sender;
-        vote.startDate = uint64(block.timestamp); // solium-disable-line security/no-block-members
-        vote.metadata = _metadata;
-        vote.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
-        vote.totalVoters = token.totalSupplyAt(vote.snapshotBlock);
-        vote.candidateSupportPct = globalCandidateSupportPct;
-        vote.scriptOffset = 0;
-        vote.scriptRemainder = 0;
+        Vote storage voteZ = votes[voteId];
+        voteZ.executionScript = _executionScript;
+        voteZ.creator = msg.sender;
+        voteZ.startDate = uint64(block.timestamp); // solium-disable-line security/no-block-members
+        voteZ.metadata = _metadata;
+        voteZ.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
+        voteZ.totalVoters = token.totalSupplyAt(voteZ.snapshotBlock);
+        voteZ.candidateSupportPct = globalCandidateSupportPct;
+        voteZ.scriptOffset = 0;
+        voteZ.scriptRemainder = 0;
         require(_executionScript.uint32At(0x0) == 1);
         if (_executionScript.length != 4) {
-            var (scriptOffset, scriptRemainder) = _extractCandidates(_executionScript, voteId);
-            vote.scriptOffset = scriptOffset;
-            vote.scriptRemainder = scriptRemainder;    
+            uint256 scriptOffset;
+            uint256 scriptRemainder;
+            (scriptOffset, scriptRemainder) = _extractCandidates(_executionScript, voteId);
+            voteZ.scriptOffset = scriptOffset;
+            voteZ.scriptRemainder = scriptRemainder;    
         }
-        StartVote(voteId);
+        emit StartVote(voteId);
     }
 
     /**
@@ -523,7 +525,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
             currentCandidate = _executionScript.addressAt(currentOffset + 0x0C);
             currentOffset = currentOffset + 0x20;
             addCandidate(_voteId, new bytes(0), currentCandidate);
-            AddCandidate(currentCandidate);
+            emit AddCandidate(currentCandidate);
         }
         // Skip the next param since it's also determined by this contract
         // In order to do this we move the offsett one word for the length of the param
@@ -600,12 +602,12 @@ contract RangeVoting is IForwarderFixed, AragonApp {
             // Probably safer here but some gas calculations should be done
             require(totalSupport <= voterStake); // solium-disable-line error-reason
 
-            voteSupport = vote.candidates[cKeys[i]].voteSupport;
-            vote.totalParticipation = vote.totalParticipation.sub(voteSupport);
+            voteSupport = voteG.candidates[cKeys[i]].voteSupport;
+            voteG.totalParticipation = voteG.totalParticipation.sub(voteSupport);
             voteSupport = voteSupport.sub(oldVoteSupport[i]);
             voteSupport = voteSupport.add(_supports[i]);
-            vote.totalParticipation = vote.totalParticipation.add(voteSupport);
-            vote.candidates[cKeys[i]].voteSupport = voteSupport;
+            voteG.totalParticipation = voteG.totalParticipation.add(voteSupport);
+            voteG.candidates[cKeys[i]].voteSupport = voteSupport;
         }
         for (i; i < _supports.length; i++) {
             totalSupport = totalSupport.add(_supports[i]);
@@ -615,7 +617,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
             voteG.candidates[cKeys[i]].voteSupport = voteSupport;
         }
 
-        vote.voters[msg.sender] = _supports;
+        voteG.voters[msg.sender] = _supports;
         // vote.totalParticipation = vote.totalParticipation.sub(oldVoteSupport[i]);
     }
 
@@ -632,7 +634,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         voteH.executed = true;
         uint256 candidateLength = voteH.candidateKeys.length;
         bytes memory executionScript = new bytes(32);
-        executionScript = vote.executionScript;
+        executionScript = voteH.executionScript;
         // The total length of the new script will be one 32 byte space
         // for each candidate as well as 3 32 byte spaces for
         // additional data
@@ -710,17 +712,17 @@ contract RangeVoting is IForwarderFixed, AragonApp {
 
         //script.copy(executionScript.getPtr(),vote.scriptOffset,vote.scriptRemainder);
         
-        ExecutionScript(script, 0);
+        emit ExecutionScript(script, 0);
         
         runScript(script, new bytes(0), new address[](0));
-        ExecuteVote(_voteId);
+        emit ExecuteVote(_voteId);
     }
 
     /**
     * @dev Calculates whether `_value` is at least a percent `_pct` over `_total`
     */
-    function _isVoteOpen(Vote storage vote) internal view returns (bool) {
-        return uint64(block.timestamp) < (vote.startDate.add(voteTime)) && !vote.executed; // solium-disable-line security/no-block-members
+    function _isVoteOpen(Vote storage voteArg) internal view returns (bool) {
+        return uint64(block.timestamp) < (voteArg.startDate.add(voteTime)) && !voteArg.executed; // solium-disable-line security/no-block-members
     }
 
     /**

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.24;
 
 import "@tpt/test-helpers/contracts/factory/EVMScriptRegistryFactory.sol";
 import "@tpt/test-helpers/contracts/factory/DAOFactory.sol";

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.24;
 
 import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
 
@@ -11,7 +11,7 @@ import "@tpt/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
 import "@tpt/test-helpers/contracts/lib/zeppelin/math/SafeMath64.sol";
 
 /*******************************************************************************
-  Copyright 2018, That Planning Tab
+    Copyright 2018, That Planning Tab
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -38,12 +38,12 @@ interface Fundable {
 * @title FundForwarder
 * @author Arthur Lunn
 * @dev This will 100% break if the contract is upgraded. Basically just a proxy
-       to receive funds from an address and "piece it out" to a layered contract
+*      to receive funds from an address and "piece it out" to a layered contract
 *******************************************************************************/
 contract FundForwarder { // solium-disable-line blank-lines
     Fundable fundable;
     uint256 id;
-    function FundForwarder(uint256 _id, address _fundable) public { // solium-disable-line blank-lines
+    constructor(uint256 _id, address _fundable) public { // solium-disable-line blank-lines
         fundable = Fundable(_fundable);
         id = _id;
     }
@@ -140,7 +140,7 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         payout.balance = 0;
         FundForwarder fund = new FundForwarder(payoutId, address(this));
         payout.proxy = address(fund);
-        NewAccount(payoutId); // solium-disable-line emit
+        emit NewAccount(payoutId); // solium-disable-line emit
     }
 
     /**
@@ -222,7 +222,7 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
             totalSupport += payout.supports[i];
         }
 
-        if (this.balance < payout.balance) {
+        if (address(this).balance < payout.balance) {
             revert();  // solium-disable-line error-reason
             /*
             For now the vault isn't working see aragon-apps issue #292
@@ -241,20 +241,20 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
             payout.candidateAddresses[i].transfer(payout.supports[i].mul(pointsPer));
         }
 
-        ExecutePayout(_payoutId); // solium-disable-line emit
+        emit ExecutePayout(_payoutId); // solium-disable-line emit
     }
 
     function getNumberOfCandidates(uint256 _payoutId) public view returns(uint256 numCandidates) {
-        Payout payout = payouts[_payoutId];
+        Payout storage payout = payouts[_payoutId];
         numCandidates = payout.supports.length;
     }
 
     function getPayoutDistributionValue(uint256 _payoutId, uint256 idx) public view returns(uint256 supports) {
-        Payout payout = payouts[_payoutId];
+        Payout storage payout = payouts[_payoutId];
         supports = payout.supports[idx];
     }
 
-    function () public payable {
+    function () public payable { // solium-disable-line function-order
 
     }
 
