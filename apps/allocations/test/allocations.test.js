@@ -198,16 +198,11 @@ contract('Allocations App', accounts => {
     })
 
     it('executes the payout', async () => {
-      await app.executePayout(allocationId, {from: empire})
+      await app.executePayout(allocationId, { from: empire })
       const bobafettBalance = await web3.eth.getBalance(bobafett)
       const dengarBalance = await web3.eth.getBalance(dengar)
       const bosskBalance = await web3.eth.getBalance(bossk)
-      // assert.equal(
-      //   bobafettBalance.toNumber() - bobafettInitialBalance.toNumber(),
-      //   (web3.toWei(0.01, 'ether') * supports[0]) / totalsupport,
-      //   'bounty hunter expense'
-      // )
-      console.log(
+      assert.equal(
         bobafettBalance.toNumber() - bobafettInitialBalance.toNumber(),
         (web3.toWei(0.01, 'ether') * supports[0]) / totalsupport,
         'bounty hunter expense'
@@ -230,11 +225,11 @@ contract('Allocations App', accounts => {
         web3.toWei(1, 'ether'),
         0x0
       )).logs[0].args.accountId.toNumber()
-      
+
       supports = [300, 300, 400]
       totalsupport = 1000
 
-      return assertRevert(async () => { 
+      return assertRevert(async () => {
         await app.setDistribution(
           candidateAddresses,
           supports,
@@ -243,7 +238,7 @@ contract('Allocations App', accounts => {
           false,
           0,
           web3.toWei(0.01, 'ether'),
-          { from: empire}
+          { from: empire }
         )
       })
     })
@@ -292,28 +287,45 @@ contract('Allocations App', accounts => {
         false,
         0,
         0,
-        { from: empire}
+        { from: empire }
       )
     })
 
     it('can create new Payout', async () => {
       payoutMembers = await app.getPayout(allocationId)
-      assert.equal(payoutMembers[2], 'Fett\'s auto warranty', 'Payout metadata incorrect')
+      assert.equal(
+        payoutMembers[2],
+        'Fett\'s auto warranty',
+        'Payout metadata incorrect'
+      )
       assert.equal(payoutMembers[0].toNumber(), 0, 'Payout Balance Incorrect')
-      assert.equal(payoutMembers[1].toNumber(), 0,'Payout Limit incorrect')
+      assert.equal(payoutMembers[1].toNumber(), 0, 'Payout Limit incorrect')
     })
 
     it('sets the distribution', async () => {
-      const candidateArrayLength = (await app.getNumberOfCandidates(allocationId)).toNumber()
+      const candidateArrayLength = (await app.getNumberOfCandidates(
+        allocationId
+      )).toNumber()
       let storedSupport = []
       let supportVal
 
       for (let i = 0; i < candidateArrayLength; i++) {
-        supportVal = (await app.getPayoutDistributionValue(allocationId, i)).toNumber()
-        assert.equal(supports[i], supportVal,'support distributions do not match what is specified')
+        supportVal = (await app.getPayoutDistributionValue(
+          allocationId,
+          i
+        )).toNumber()
+        assert.equal(
+          supports[i],
+          supportVal,
+          'support distributions do not match what is specified'
+        )
         storedSupport.push(supportVal)
       }
-      assert.equal(supports.length, storedSupport.length, 'distribution array lengths do not match')
+      assert.equal(
+        supports.length,
+        storedSupport.length,
+        'distribution array lengths do not match'
+      )
     })
     it('cannot accept funds', async () => {
       //assertrevert when attempt to add funds
@@ -328,7 +340,7 @@ contract('Allocations App', accounts => {
           false,
           0,
           0,
-          { from: empire,  value: web3.toWei(0.01, 'ether') }
+          { from: empire, value: web3.toWei(0.01, 'ether') }
         )
       })
     })
@@ -389,6 +401,7 @@ contract('Allocations App', accounts => {
         )
       })
     })
+    // TODO: timetravel not working
     it('will not execute more frequently than the specified period', async () => {
       supports = [300, 400, 300]
       totalsupport = 1000
@@ -422,16 +435,15 @@ contract('Allocations App', accounts => {
         (web3.toWei(0.01, 'ether') * supports[2]) / totalsupport,
         'bounty hunter expense 3 not paid out'
       )
-      
-      await app.fund(
-        allocationId, 
-        {from:empire, value: web3.toWei(0.01, 'ether')}
-      )
+
+      await app.fund(allocationId, {
+        from: empire,
+        value: web3.toWei(0.01, 'ether'),
+      })
       await timetravel(43200)
-      return assertRevert(async () =>{
+      return assertRevert(async () => {
         await app.executePayout(allocationId)
       })
-
     })
   })
 })
