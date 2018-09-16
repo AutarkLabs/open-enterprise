@@ -10,21 +10,21 @@ import {
   SidePanelSeparator,
   Countdown,
   Text,
-  theme,
+  theme
 } from '@aragon/ui'
 import { combineLatest } from '../rxjs'
-import provideNetwork from '../utils/provideNetwork'
+import provideNetwork from '../range-voting/provideNetwork'
 import { VOTE_NAY, VOTE_YEA } from '../vote-types'
 import VoteSummary from './VoteSummary'
 import VoteStatus from './VoteStatus'
 
 class VotePanelContent extends React.Component {
   static propTypes = {
-    app: PropTypes.object.isRequired,
+    app: PropTypes.object.isRequired
   }
   state = {
     userCanVote: false,
-    userBalance: null,
+    userBalance: null
   }
   componentDidMount() {
     this.loadUserCanVote()
@@ -56,7 +56,7 @@ class VotePanelContent extends React.Component {
             parseInt(balance, 10) / Math.pow(10, decimals)
           )
           this.setState({
-            userBalance: adjustedBalance,
+            userBalance: adjustedBalance
           })
         })
     }
@@ -70,7 +70,7 @@ class VotePanelContent extends React.Component {
         .first()
         .subscribe(canVote => {
           this.setState({
-            userCanVote: canVote,
+            userCanVote: canVote
           })
         })
     }
@@ -88,7 +88,7 @@ class VotePanelContent extends React.Component {
     const {
       network: { etherscanBaseUrl },
       vote,
-      ready,
+      ready
     } = this.props
     const { userBalance, userCanVote } = this.state
     if (!vote) {
@@ -211,7 +211,7 @@ class VotePanelContent extends React.Component {
 
 const Label = styled(Text).attrs({
   smallcaps: true,
-  color: theme.textSecondary,
+  color: theme.textSecondary
 })`
   display: block;
   margin-bottom: 10px;
