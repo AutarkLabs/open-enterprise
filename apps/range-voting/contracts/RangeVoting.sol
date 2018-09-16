@@ -2,7 +2,8 @@ pragma solidity ^0.4.24;
 
 import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
 
-import "@tpt/test-helpers/contracts/lib/minime/MiniMeToken.sol";
+// import "@tpt/test-helpers/contracts/lib/minime/MiniMeToken.sol"; // TODO: Use this
+import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 
 import "@tpt/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
 

@@ -162,14 +162,15 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         bool _recurring,
         uint256 _period,
         uint256 _balance
-    ) external payable isInitialized auth(SET_DISTRIBUTION_ROLE) {
-        Payout payout = payouts[_payoutId];
+    ) external payable isInitialized auth(SET_DISTRIBUTION_ROLE)
+    {
+        Payout storage payout = payouts[_payoutId];
         //payout.candidateKeys = _candidateKeys;
         payout.candidateAddresses = _candidateAddresses;
         require(_balance <= payout.limit);  // solium-disable-line error-reason
         payout.informational = _informational;
         payout.recurring = _recurring;
-        if(!_informational){
+        if (!_informational) {
             require(msg.value == _balance);
             payout.balance = _balance;
         } else {
@@ -212,10 +213,11 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         require(!payout.informational);
         require(payout.distSet);
         
-        if(payout.recurring){
+        if (payout.recurring)
+        {
             // TDDO create payout execution counter to ensure payout time tracks payouts
             uint256 payoutTime = payout.startTime.add(payout.period);
-            require(payoutTime < now);
+            require(payoutTime < block.timestamp);
             payout.startTime = payoutTime;
         } else {
             payout.distSet = false;
