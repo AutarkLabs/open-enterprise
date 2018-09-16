@@ -181,7 +181,7 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
             // minimum granularity is a single day
             payout.period = _period;
             require(payout.period > 86399);
-            payout.startTime = now;
+            payout.startTime = block.timestamp; // solium-disable-line security/no-block-members
         } else {
             payout.period = 0;
         }
@@ -208,16 +208,15 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
     *         processed and funds will be sent the appropriate places.
     *
     */
-    function executePayout(uint256 _payoutId) external payable auth(EXECUTE_PAYOUT_ROLE) {
-        Payout payout = payouts[_payoutId];
+    function executePayout(uint256 _payoutId) external payable auth(EXECUTE_PAYOUT_ROLE) { // solium-disable-line function-order
+        Payout storage payout = payouts[_payoutId];
         require(!payout.informational);
         require(payout.distSet);
         
-        if (payout.recurring)
-        {
+        if (payout.recurring) {
             // TDDO create payout execution counter to ensure payout time tracks payouts
             uint256 payoutTime = payout.startTime.add(payout.period);
-            require(payoutTime < block.timestamp);
+            require(payoutTime < block.timestamp); // solium-disable-line security/no-block-members
             payout.startTime = payoutTime;
         } else {
             payout.distSet = false;
@@ -229,7 +228,7 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
             totalSupport += payout.supports[i];
         }
         
-        if(this.balance < payout.balance) {
+        if (address(this).balance < payout.balance) {
             revert();
             /*
             For now the vault isn't working see aragon-apps issue #292
@@ -243,11 +242,11 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         pointsPer = payout.balance.div(totalSupport);
         //handle vault
         
-        for(i = 0; i < payout.candidateAddresses.length; i++) {
+        for (i = 0; i < payout.candidateAddresses.length; i++) {
             payout.candidateAddresses[i].transfer(payout.supports[i].mul(pointsPer));
         }
         
-        ExecutePayout(_payoutId);
+        emit ExecutePayout(_payoutId);
     }
 
     function getNumberOfCandidates(uint256 _payoutId) public view returns(uint256 numCandidates) {

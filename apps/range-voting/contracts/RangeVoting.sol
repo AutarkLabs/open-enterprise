@@ -480,7 +480,7 @@ contract RangeVoting is IForwarder, AragonApp {
         voteZ.candidateSupportPct = globalCandidateSupportPct;
         voteZ.scriptOffset = 0;
         voteZ.scriptRemainder = 0;
-        require(_executionScript.uint32At(0x0) == 1);
+        require(_executionScript.uint32At(0x0) == 1); // solium-disable-line error-reason
         if (_executionScript.length != 4) {
             uint256 scriptOffset;
             uint256 scriptRemainder;
