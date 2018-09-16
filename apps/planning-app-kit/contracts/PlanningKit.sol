@@ -96,7 +96,7 @@ contract PlanningKit is KitBase {
         ];
 
         // Planning Apps
-        // AllocationsApp allocations = AllocationsApp(dao.newAppInstance(apps[0], latestVersionAppBase(apps[0])));
+        AllocationsApp allocations = AllocationsApp(dao.newAppInstance(apps[0], latestVersionAppBase(apps[0])));
         AddressBookApp addressBook = AddressBookApp(dao.newAppInstance(apps[1], latestVersionAppBase(apps[1])));
         ProjectsApp projects = ProjectsApp(dao.newAppInstance(apps[2], latestVersionAppBase(apps[2])));
         RangeVotingApp rangeVoting = RangeVotingApp(dao.newAppInstance(apps[3], latestVersionAppBase(apps[3])));
@@ -109,7 +109,7 @@ contract PlanningKit is KitBase {
         token.changeController(tokenManager);
 
         // Initialize apps
-        // allocations.initialize();
+        allocations.initialize();
         // TODO: Enable when code is ready in the apps
         // addressBook.initialize();
         // projects.initialize();
@@ -119,10 +119,10 @@ contract PlanningKit is KitBase {
         
 
         // Allocations permissions:
-        // acl.createPermission(ANY_ENTITY, allocations, allocations.START_PAYOUT_ROLE(), root);
-        // acl.createPermission(rangeVoting, allocations, allocations.SET_DISTRIBUTION_ROLE(), root);
-        // acl.createPermission(rangeVoting, allocations, allocations.EXECUTE_PAYOUT_ROLE(), root);
-        // emit InstalledApp(allocations, apps[0]);
+        acl.createPermission(ANY_ENTITY, allocations, allocations.START_PAYOUT_ROLE(), root);
+        acl.createPermission(rangeVoting, allocations, allocations.SET_DISTRIBUTION_ROLE(), root);
+        acl.createPermission(rangeVoting, allocations, allocations.EXECUTE_PAYOUT_ROLE(), root);
+        emit InstalledApp(allocations, apps[0]);
 
         // AddressBook permissions:
         acl.createPermission(voting, addressBook, addressBook.ADD_ENTRY_ROLE(), root);

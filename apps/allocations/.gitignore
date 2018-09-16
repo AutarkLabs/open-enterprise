@@ -1,5 +1,0 @@
-# this file is needed for apm and ipfs, TODO: fix it, the file should not be needed
-node_modules
-build
-.cache
-dist
