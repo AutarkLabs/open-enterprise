@@ -11,10 +11,13 @@
     "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
   },
   "dependencies": {
+    "@aragon/apps-token-manager": "^2.0.0-alpha.1",
+    "@aragon/apps-voting": "^2.0.0-alpha.1",
     "@tpt/apps-address-book": "^0.0.1",
     "@tpt/apps-allocations": "^0.0.1",
     "@tpt/apps-projects": "^0.0.1",
-    "@tpt/apps-range-voting": "^0.0.1"
+    "@tpt/apps-range-voting": "^0.0.1",
+    "@tpt/test-helpers": "^0.0.1"
   },
   "author": "",
   "repository": {
