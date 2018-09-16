@@ -1,9 +1,8 @@
 {
-  "presets": ["stage-3"],
+  "presets": ["env", "react", "stage-3"],
   "plugins": [
-    ["styled-components", { "displayName": true }],
     "transform-class-properties",
-    "transform-runtime",
+    ["styled-components", { "displayName": true }],
     "react-hot-loader/babel"
   ]
 }

@@ -3,35 +3,21 @@
     "browser": true,
     "es6": true
   },
-  "extends": [
-    "standard",
-    "standard-react",
-    "prettier",
-    "prettier/flowtype",
-    "prettier/react"
-  ],
+  "extends": "prettier/react",
   "parser": "babel-eslint",
   "parserOptions": {
     "ecmaFeatures": {
-      "experimentalObjectRestSpread": true,
       "jsx": true
     },
+    "ecmaVersion": 2018,
     "sourceType": "module"
   },
-  "plugins": ["prettier", "react"],
+  "plugins": ["react"],
   "rules": {
-    "react/prop-types": 0,
-    "prettier/prettier": [
-      "error",
-      {
-        "singleQuote": true,
-        "semi": false,
-        "trailingComma": "es5",
-        "bracketSpacing": true,
-        "jsxBracketSameLine": false,
-        "parser": "flow"
-      }
-    ],
-    "linebreak-style": ["error", "unix"]
+    "indent": ["error", 2],
+    "linebreak-style": ["error", "unix"],
+    "quotes": ["error", "single"],
+    "react/no-typos": 1,
+    "semi": ["error", "never"]
   }
 }
