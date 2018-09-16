@@ -1,6 +1,6 @@
 # That Planning App
 
-[![Build Status](https://travis-ci.org/Giveth/planning-app.svg?branch=dev)](https://travis-ci.org/Giveth/planning-app) [![Coverage Status](https://coveralls.io/repos/github/Giveth/planning-app/badge.svg?branch=dev)](https://coveralls.io/github/Giveth/planning-app?branch=dev)
+[![Build Status](https://travis-ci.org/Giveth/planning-app.svg?branch=m2-base)](https://travis-ci.org/Giveth/planning-app) [![Coverage Status](https://coveralls.io/repos/github/Giveth/planning-app/badge.svg?branch=m2-base)](https://coveralls.io/github/Giveth/planning-app?branch=m2-base)
 
 <p align="center">
   <a href="#development-setup">Development Setup</a> •
@@ -38,7 +38,7 @@ $ npm run start:range
 - Start the dao kit to manage smart contracts interactions between all "planning apps" and aragon official apps (token manager and voting right now)
 - The start script spawns a local blockchain, needed to publish the apps before deploying the dao kit template with all them.
 
-**Detailed information in the [DEVELOPMENT_NOTES.md](https://github.com/Giveth/planning-app/blob/dev/docs/DEVELOPMENT_NOTES.md) document.**
+**Detailed information in the [DEVELOPMENT_NOTES.md](https://github.com/Giveth/planning-app/blob/122-planning-app-FE/docs/DEVELOPMENT_NOTES.md) document.**
 
 ## Background
 
