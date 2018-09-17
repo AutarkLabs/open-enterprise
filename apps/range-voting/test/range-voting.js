@@ -356,46 +356,60 @@ contract('RangeVoting App', accounts => {
         await app.addCandidate(voteId, '0x', accounts[9])
         let voter = holder19
         await app.vote(voteId, voteOne, { from: voter })
-        /* TODO:
-          test breaks after this point. Need to re-examine _vote()
+        let holderVoteData1 = await app.getVoterState(voteId, voter)
+        assert.equal(
+          voteOne[0],
+          holderVoteData1[0].toNumber(),
+          'vote and voter state should match after casting ballot'
+        )
+        assert.equal(
+          voteOne[1],
+          holderVoteData1[1].toNumber(),
+          'vote and voter state should match after casting ballot'
+        )
+        assert.equal(
+          voteOne[2],
+          holderVoteData1[2].toNumber(),
+          'vote and voter state should match after casting ballot'
+        )
+        /* TODO: totalParticipation remains at zero after vote. 
+          added `if (totalParticipation > 0) ` in _vote() as temporary fix.
         */
-        // await app.vote(voteId, voteTwo, { from: voter })
-        
-        // let holderVoteData = await app.getVoterState(voteId, voter)
-        // assert.equal(
-        //   voteTwo[0],
-        //   holderVoteData[0].toNumber(),
-        //   'vote and voter state should match after casting ballot'
-        // )
-        // assert.equal(
-        //   voteTwo[1],
-        //   holderVoteData[1].toNumber(),
-        //   'vote and voter state should match after casting ballot'
-        // )
-        // assert.equal(
-        //   voteTwo[2],
-        //   holderVoteData[2].toNumber(),
-        //   'vote and voter state should match after casting ballot'
-        // )
-        // let candidateApple = await app.getCandidate(voteId, accounts[7])
-        // let candidateOrange = await app.getCandidate(voteId, accounts[8])
-        // let candidateBanana = await app.getCandidate(voteId, accounts[9])
-        
-        // assert.equal(
-        //   voteTwo[3],
-        //   candidateApple[3].toNumber(),
-        //   'The correct amount of support should be logged for apple'
-        // )
-        // assert.equal(
-        //   voteTwo[4],
-        //   candidateOrange[3].toNumber(),
-        //   'The correct amount of support should be logged for orange'
-        // )
-        // assert.equal(
-        //   voteTwo[5],
-        //   candidateBanana[3].toNumber(),
-        //   'The correct amount of support should be logged for banana'
-        // )
+        await app.vote(voteId, voteTwo, { from: voter })
+        let holderVoteData2 = await app.getVoterState(voteId, voter)
+        assert.equal(
+          voteTwo[0],
+          holderVoteData2[0].toNumber(),
+          'vote and voter state should match after casting ballot'
+        )
+        assert.equal(
+          voteTwo[1],
+          holderVoteData2[1].toNumber(),
+          'vote and voter state should match after casting ballot'
+        )
+        assert.equal(
+          voteTwo[2],
+          holderVoteData2[2].toNumber(),
+          'vote and voter state should match after casting ballot'
+        )
+        let candidateApple = await app.getCandidate(voteId, accounts[7])
+        let candidateOrange = await app.getCandidate(voteId, accounts[8])
+        let candidateBanana = await app.getCandidate(voteId, accounts[9])
+        assert.equal(
+          voteTwo[3],
+          candidateApple[3].toNumber(),
+          'The correct amount of support should be logged for apple'
+        )
+        assert.equal(
+          voteTwo[4],
+          candidateOrange[3].toNumber(),
+          'The correct amount of support should be logged for orange'
+        )
+        assert.equal(
+          voteTwo[5],
+          candidateBanana[3].toNumber(),
+          'The correct amount of support should be logged for banana'
+        )
       })
 
       it('token transfers dont affect RangeVoting', async () => {
@@ -406,71 +420,105 @@ contract('RangeVoting App', accounts => {
         await app.addCandidate(voteId, '0x',accounts[9])
         //await token.transfer(nonHolder, 31, { from: voter })
         await app.vote(voteId, vote, { from: voter })
-        let holderVoteData = await app.getVoterState(voteId, voter)
+        let holderVoteData1 = await app.getVoterState(voteId, voter)
         assert.equal(
           vote[0],
-          holderVoteData[0].toNumber(),
+          holderVoteData1[0].toNumber(),
           'vote and voter state should match after casting ballot'
         )
         assert.equal(
           vote[1],
-          holderVoteData[1].toNumber(),
+          holderVoteData1[1].toNumber(),
           'vote and voter state should match after casting ballot'
         )
         assert.equal(
           vote[2],
-          holderVoteData[2].toNumber(),
+          holderVoteData1[2].toNumber(),
           'vote and voter state should match after casting ballot'
         )
       })
 
-      // it('cannot execute during open vote', async () => {
-      //   const voteState = await app.getVote(voteId)
-      //   const canExecute = await app.canExecute(voteId)
-      // })
-      // it('can execute if vote has sufficient candidate support', async () => {
-      //   let voteOne = [4,15,0]
-      //   let voteTwo = [20,10,1]
-      //   let voteThree = [30,15,5]
-      //   await app.vote(voteId, voteOne, { from: holder19 })
-      //   await app.vote(voteId, voteTwo, { from: holder31 })
-      //   await app.vote(voteId, voteThree, { from: holder50 })
-      //   const voteState = await app.getVote(voteId)
-      //   await timeTravel(RangeVotingTime + 1)
-      //   const canExecute = await app.canExecute(voteId)
-      //   canExecute.should.be.true;
-      // })
-      // it('can not execute if vote has insufficient candidate support', async () => {
-      //   let voteOne = [2,17,0]
-      //   let voteTwo = [18,12,1]
-      //   let voteThree = [30,19,1]
-      //   await app.vote(voteId, voteOne, { from: holder19 })
-      //   await app.vote(voteId, voteTwo, { from: holder31 })
-      //   await app.vote(voteId, voteThree, { from: holder50 })
-      //   await timeTravel(RangeVotingTime + 1)
-      //   const canExecute = await app.canExecute(voteId)
-      //   canExecute.should.be.false;
-      // })
-      // it('can execute vote if minimum participation (quorum) has been met', async () => {
-      //   let voteOne = [10,0,0]
-      //   let voteTwo = [0,20,0]
-      //   let voteThree = [0,0,40]
-      //   await app.vote(voteId, voteOne, { from: holder19 })
-      //   await app.vote(voteId, voteTwo, { from: holder31 })
-      //   await app.vote(voteId, voteThree, { from: holder50 })
-      //   await timeTravel(RangeVotingTime + 1)
-      //   const canExecute = await app.canExecute(voteId)
-      //   canExecute.should.be.true
-      // })
-      // it('cannot execute vote if minimum participation (quorum) not met', async () => {
-      //   let voteOne = [10,0,0]
-      //   let voteTwo = [0,10,0]
-      //   let voteThree = [0,0,10]
-      //   await app.vote(voteId, voteOne, { from: holder19 })
-      //   await app.vote(voteId, voteTwo, { from: holder31 })
-      //   await app.vote(voteId, voteThree, { from: holder50 })
-      //   await timeTravel(RangeVotingTime + 1)
-      // })
+      it('cannot execute during open vote', async () => {
+        const voteState = await app.getVote(voteId)
+        const canExecute = await app.canExecute(voteId)
+        assert.equal(
+          canExecute,
+          false,
+          'canExecute should be false'
+        )
+      })
+      it('can execute if vote has sufficient candidate support', async () => {
+        let voteOne = [4,15,0]
+        let voteTwo = [20,10,1]
+        let voteThree = [30,15,5]
+        await app.vote(voteId, voteOne, { from: holder19 })
+        await app.vote(voteId, voteTwo, { from: holder31 })
+        await app.vote(voteId, voteThree, { from: holder50 })
+        const voteState = await app.getVote(voteId)
+        timeTravel(RangeVotingTime + 1)
+        const canExecute = await app.canExecute(voteId)
+        /*
+          TODO: canExecute expected to be true, but returning false.
+          Diagnosis: condition in L324 is being met, candidateState.voteSupport
+          should be fine, but totalParticipation returning zero is causing 
+          problems (i.e., can't divide by zero).
+        */
+        assert.equal(
+          canExecute,
+          true,
+          'canExecute should be true'
+        )
+      })
+      it('cannot execute if vote has insufficient candidate support', async () => {
+        let voteOne = [2,17,0]
+        let voteTwo = [18,12,1]
+        let voteThree = [30,19,1]
+        await app.vote(voteId, voteOne, { from: holder19 })
+        await app.vote(voteId, voteTwo, { from: holder31 })
+        await app.vote(voteId, voteThree, { from: holder50 })
+        timeTravel(RangeVotingTime + 1)
+        const canExecute = await app.canExecute(voteId)
+        assert.equal(
+          canExecute,
+          false,
+          'canExecute should be false'
+        )
+      })
+      it('can execute vote if minimum participation (quorum) has been met', async () => {
+        let voteOne = [10,0,0]
+        let voteTwo = [0,20,0]
+        let voteThree = [0,0,40]
+        await app.vote(voteId, voteOne, { from: holder19 })
+        await app.vote(voteId, voteTwo, { from: holder31 })
+        await app.vote(voteId, voteThree, { from: holder50 })
+        timeTravel(RangeVotingTime + 1)
+        const canExecute = await app.canExecute(voteId)
+        /*
+          TODO: canExecute expected to be true, but returning false.
+          Diagnosis: condition in L328 return, totalParticipation returning zero
+          is causing quorum to not be satisfied.
+        */
+        assert.equal(
+          canExecute,
+          true,
+          'canExecute should be true'
+        )
+      })
+      it('cannot execute vote if minimum participation (quorum) not met', async () => {
+        let voteOne = [10,0,0]
+        let voteTwo = [0,10,0]
+        let voteThree = [0,0,10]
+        await app.vote(voteId, voteOne, { from: holder19 })
+        await app.vote(voteId, voteTwo, { from: holder31 })
+        await app.vote(voteId, voteThree, { from: holder50 })
+        timeTravel(RangeVotingTime + 1)
+        const canExecute = await app.canExecute(voteId)
+        assert.equal(
+          canExecute,
+          false,
+          'canExecute should be false'
+        )
+      })
 
     })
   })

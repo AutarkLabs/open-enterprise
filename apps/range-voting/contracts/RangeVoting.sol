@@ -189,7 +189,6 @@ contract RangeVoting is IForwarderFixed, AragonApp {
     }
 
     /**
-    * @param _voteId id for vote structure this 'ballot action' is connected to
     * @notice `addCandidate` allows the `ADD_CANDIDATES_ROLE` to add candidates
     *         (or options) to the current vote.
     * @param _voteId id for vote structure this 'ballot action' is connected to
@@ -251,7 +250,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
 ///////////////////////
 
     /**
-    * @notice `isForwader` is a basic helper function used to determine
+    * @notice `isForwarder` is a basic helper function used to determine
     *         if a function implements the IForwarder interface
     * @dev IForwarder interface conformance
     * @return always returns true
@@ -291,8 +290,8 @@ contract RangeVoting is IForwarderFixed, AragonApp {
     /**
     * @notice `canVote` is used to check whether an address is elligible to
     *         cast a vote in a given vote action.
-    * @param _voter The address of the entity trying to vote
     * @param _voteId The ID of the Vote on which the vote would be cast.
+    * @param _voter The address of the entity trying to vote
     * @return True is `_voter` has a vote token balance and vote is open
     */
     function canVote(uint256 _voteId, address _voter) public view returns (bool) {
@@ -322,12 +321,12 @@ contract RangeVoting is IForwarderFixed, AragonApp {
             bytes32 cKey = cKeys[i];
             CandidateState storage candidateState = vote.candidates[cKey];
              // has candidate support?
-            // if (!_isValuePct(candidateState.voteSupport, vote.totalParticipation, vote.candidateSupportPct))
-                // return false;
+            if (!_isValuePct(candidateState.voteSupport, vote.totalParticipation, vote.candidateSupportPct))
+                return false;
         }
          // has minimum participation threshold been reached?
         if (!_isValuePct(vote.totalParticipation, vote.totalVoters, minParticipationPct))
-            // return false;
+            return false;
         return true;
     }
 
@@ -513,7 +512,8 @@ contract RangeVoting is IForwarderFixed, AragonApp {
             require(totalSupport <= voterStake);
 
             voteSupport = vote.candidates[cKeys[i]].voteSupport;
-            vote.totalParticipation = vote.totalParticipation.sub(voteSupport);
+            if (vote.totalParticipation > 0) // temporary fix. shouldn't be needed if working properly
+                vote.totalParticipation = vote.totalParticipation.sub(voteSupport);
             voteSupport = voteSupport.sub(oldVoteSupport[i]);
             voteSupport = voteSupport.add(_supports[i]);
             vote.totalParticipation = vote.totalParticipation.add(voteSupport);
