@@ -372,9 +372,6 @@ contract('RangeVoting App', accounts => {
           holderVoteData1[2].toNumber(),
           'vote and voter state should match after casting ballot'
         )
-        /* TODO: totalParticipation remains at zero after vote. 
-          added `if (totalParticipation > 0) ` in _vote() as temporary fix.
-        */
         await app.vote(voteId, voteTwo, { from: voter })
         let holderVoteData2 = await app.getVoterState(voteId, voter)
         assert.equal(
@@ -457,12 +454,7 @@ contract('RangeVoting App', accounts => {
         const voteState = await app.getVote(voteId)
         timeTravel(RangeVotingTime + 1)
         const canExecute = await app.canExecute(voteId)
-        /*
-          TODO: canExecute expected to be true, but returning false.
-          Diagnosis: condition in L324 is being met, candidateState.voteSupport
-          should be fine, but totalParticipation returning zero is causing 
-          problems (i.e., can't divide by zero).
-        */
+
         assert.equal(
           canExecute,
           true,
@@ -493,11 +485,7 @@ contract('RangeVoting App', accounts => {
         await app.vote(voteId, voteThree, { from: holder50 })
         timeTravel(RangeVotingTime + 1)
         const canExecute = await app.canExecute(voteId)
-        /*
-          TODO: canExecute expected to be true, but returning false.
-          Diagnosis: condition in L328 return, totalParticipation returning zero
-          is causing quorum to not be satisfied.
-        */
+
         assert.equal(
           canExecute,
           true,
@@ -506,7 +494,7 @@ contract('RangeVoting App', accounts => {
       })
       it('cannot execute vote if minimum participation (quorum) not met', async () => {
         let voteOne = [10,0,0]
-        let voteTwo = [0,10,0]
+        let voteTwo = [0,9,0]
         let voteThree = [0,0,10]
         await app.vote(voteId, voteOne, { from: holder19 })
         await app.vote(voteId, voteTwo, { from: holder31 })

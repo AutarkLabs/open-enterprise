@@ -512,11 +512,11 @@ contract RangeVoting is IForwarderFixed, AragonApp {
             require(totalSupport <= voterStake);
 
             voteSupport = vote.candidates[cKeys[i]].voteSupport;
-            if (vote.totalParticipation > 0) // temporary fix. shouldn't be needed if working properly
-                vote.totalParticipation = vote.totalParticipation.sub(voteSupport);
+            //if (vote.totalParticipation > 0) // temporary fix. shouldn't be needed if working properly
+            vote.totalParticipation = vote.totalParticipation.sub(oldVoteSupport[i]);
             voteSupport = voteSupport.sub(oldVoteSupport[i]);
             voteSupport = voteSupport.add(_supports[i]);
-            vote.totalParticipation = vote.totalParticipation.add(voteSupport);
+            vote.totalParticipation = vote.totalParticipation.add(_supports[i]);
             vote.candidates[cKeys[i]].voteSupport = voteSupport;
         }
         for (i; i < _supports.length; i++) {
@@ -524,6 +524,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
             require(totalSupport <= voterStake);
             voteSupport = vote.candidates[cKeys[i]].voteSupport;
             voteSupport = voteSupport.add(_supports[i]);
+            vote.totalParticipation = vote.totalParticipation.add(_supports[i]);
             vote.candidates[cKeys[i]].voteSupport = voteSupport;
         }
 
