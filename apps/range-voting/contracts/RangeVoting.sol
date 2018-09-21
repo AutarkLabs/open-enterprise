@@ -8,17 +8,16 @@ import "@aragon/os/contracts/lib/zeppelin/math/SafeMath.sol";
 
 import "@aragon/os/contracts/lib/zeppelin/math/SafeMath64.sol";
 
-// import "@aragon/os/contracts/common/IForwarder.sol";
+import "@aragon/os/contracts/common/IForwarder.sol";
 
 //import "./misc/CustomScriptHelpers.sol";
 
-// import "@aragon/os/contracts/common/IForwarder.sol";
-/* Temp hack to pass coverage until further research */
-interface IForwarderFixed {
-    function isForwarder() public returns (bool);
-    function canForward(address sender, bytes evmCallScript) public returns (bool);
-    function forward(bytes evmCallScript) public;
-}
+// /* Temp hack to pass coverage until further research */
+// interface IForwarderFixed {
+//     function isForwarder() public returns (bool);
+//     function canForward(address sender, bytes evmCallScript) public returns (bool);
+//     function forward(bytes evmCallScript) public;
+// }
 
 /*******************************************************************************
   Copyright 2018, That Planning Tab
@@ -46,7 +45,7 @@ interface IForwarderFixed {
 *  but could easily be adapted to other systems.
 *  Attention was paid to make the program as generalized as possible.
 *******************************************************************************/
-contract RangeVoting is IForwarderFixed, AragonApp {
+contract RangeVoting is IForwarder, AragonApp {
     //using CustomScriptHelpers for bytes;
 
     using SafeMath for uint256;
@@ -255,7 +254,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
     * @dev IForwarder interface conformance
     * @return always returns true
     */
-    function isForwarder() public returns (bool) {
+    function isForwarder() public pure returns (bool) {
         return true;
     }
 
@@ -277,8 +276,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
     * @param _sender Address of the entity trying to forward
     * @return True is `_sender` has correct permissions
     */
-    function canForward(address _sender, bytes _evmCallScript)
-    public returns (bool)
+    function canForward(address _sender, bytes _evmCallScript) public view returns (bool)
     {
         return canPerform(_sender, CREATE_VOTES_ROLE, arr());
     }
