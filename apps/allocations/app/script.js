@@ -1,6 +1,6 @@
 import Aragon from '@aragon/client'
-import 'rxjs/add/operator/first' // Make sure observables have .first
-import { combineLatest } from 'rxjs/observable/combineLatest'
+import { first } from 'rxjs' // Make sure observables have .first
+import { combineLatest } from 'rxjs'
 
 const app = new Aragon()
 

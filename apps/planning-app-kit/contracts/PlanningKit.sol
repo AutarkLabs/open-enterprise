@@ -16,13 +16,11 @@ import "@tpt/test-helpers/contracts/lib/ens/PublicResolver.sol";
 import "@tpt/test-helpers/contracts/apm/APMNamehash.sol";
 
 import {Voting as VotingApp} from "@aragon/apps-voting/contracts/Voting.sol"; /* Already defined in ACLHelper */
-import {TokenManager as TokenManagerApp} from "@aragon/apps-token-manager/contracts/TokenManager.sol"; /* Already defined in EVMScriptRunner */
+//import {TokenManager as TokenManagerApp} from "@aragon/apps-token-manager/contracts/TokenManager.sol"; /* Already defined in EVMScriptRunner */
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 // import "@tpt/test-helpers/contracts/lib/minime/MiniMeToken.sol"; // TODO: use this 
 
-import {AddressBook as AddressBookApp} from "@tpt/apps-address-book/contracts/AddressBook.sol";
 import {Allocations as AllocationsApp} from "@tpt/apps-allocations/contracts/Allocations.sol";
-import {Projects as ProjectsApp} from "@tpt/apps-projects/contracts/Projects.sol";
 import {RangeVoting as RangeVotingApp} from "@tpt/apps-range-voting/contracts/RangeVoting.sol";
 
 
@@ -97,23 +95,22 @@ contract PlanningKit is KitBase {
 
         // Planning Apps
         AllocationsApp allocations = AllocationsApp(dao.newAppInstance(apps[0], latestVersionAppBase(apps[0])));
-        AddressBookApp addressBook = AddressBookApp(dao.newAppInstance(apps[1], latestVersionAppBase(apps[1])));
-        ProjectsApp projects = ProjectsApp(dao.newAppInstance(apps[2], latestVersionAppBase(apps[2])));
+        //AddressBookApp addressBook = AddressBookApp(dao.newAppInstance(apps[1], latestVersionAppBase(apps[1])));
         RangeVotingApp rangeVoting = RangeVotingApp(dao.newAppInstance(apps[3], latestVersionAppBase(apps[3])));
         // Aragon Apps
-        TokenManagerApp tokenManager = TokenManagerApp(dao.newAppInstance(apps[4], latestVersionAppBase(apps[4])));
+        //TokenManagerApp tokenManager = TokenManagerApp(dao.newAppInstance(apps[4], latestVersionAppBase(apps[4])));
         VotingApp voting = VotingApp(dao.newAppInstance(apps[5], latestVersionAppBase(apps[5])));
 
         // MiniMe Token
         MiniMeToken token = tokenFactory.createCloneToken(token, 0, "App token", 0, "APP", true);
-        token.changeController(tokenManager);
+        //token.changeController(tokenManager);
 
         // Initialize apps
         allocations.initialize();
         // TODO: Enable when code is ready in the apps
         // addressBook.initialize();
         // projects.initialize();
-        tokenManager.initialize(token, true, 0, true);
+        //tokenManager.initialize(token, true, 0, true);
         voting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
         rangeVoting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
         
@@ -125,15 +122,18 @@ contract PlanningKit is KitBase {
         emit InstalledApp(allocations, apps[0]);
 
         // AddressBook permissions:
+        /*
         acl.createPermission(voting, addressBook, addressBook.ADD_ENTRY_ROLE(), root);
         acl.createPermission(voting, addressBook, addressBook.REMOVE_ENTRY_ROLE(), root);
         emit InstalledApp(addressBook, apps[1]);
-
+        */
         // Projects permissions:
+        /*
         acl.createPermission(voting, projects, projects.ADD_REPO_ROLE(), root);
         acl.createPermission(voting, projects, projects.REMOVE_REPO_ROLE(), root);
         acl.createPermission(voting, projects, projects.ADD_BOUNTY_ROLE(), root);
         emit InstalledApp(projects, apps[2]);
+        */
 
         // Range-voting permissions
         acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.CREATE_VOTES_ROLE(), root);
@@ -141,13 +141,14 @@ contract PlanningKit is KitBase {
         acl.createPermission(voting, rangeVoting, rangeVoting.MODIFY_PARTICIPATION_ROLE(), root);
         emit InstalledApp(rangeVoting, apps[3]);
 
-        // TokenManager permissions
+        /* TokenManager permissions
         acl.createPermission(voting, tokenManager, tokenManager.ASSIGN_ROLE(), voting);
         acl.createPermission(voting, tokenManager, tokenManager.REVOKE_VESTINGS_ROLE(), voting);
         // acl.grantPermission(voting, tokenManager, tokenManager.MINT_ROLE()); // TODO: Causes VM revert
         acl.createPermission(this, tokenManager, tokenManager.MINT_ROLE(), this);
         tokenManager.mint(root, 1); // Give one token to root
         emit InstalledApp(tokenManager, apps[4]);
+        */
         
         // Voting permissions
         acl.createPermission(ANY_ENTITY, voting, voting.CREATE_VOTES_ROLE(), root);
