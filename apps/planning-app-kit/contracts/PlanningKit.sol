@@ -15,7 +15,7 @@ import "@tpt/test-helpers/contracts/lib/ens/ENS.sol";
 import "@tpt/test-helpers/contracts/lib/ens/PublicResolver.sol";
 import "@tpt/test-helpers/contracts/apm/APMNamehash.sol";
 
-import {Voting as VotingApp} from "@aragon/apps-voting/contracts/Voting.sol"; /* Already defined in ACLHelper */
+import "@tpt/test-helpers/contracts/apps/Voting.sol"; /* Already defined in ACLHelper */
 //import {TokenManager as TokenManagerApp} from "@aragon/apps-token-manager/contracts/TokenManager.sol"; /* Already defined in EVMScriptRunner */
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 // import "@tpt/test-helpers/contracts/lib/minime/MiniMeToken.sol"; // TODO: use this 
