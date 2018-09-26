@@ -14,10 +14,10 @@ import "@tpt/test-helpers/contracts/apm/Repo.sol";
 import "@tpt/test-helpers/contracts/lib/ens/ENS.sol";
 import "@tpt/test-helpers/contracts/lib/ens/PublicResolver.sol";
 import "@tpt/test-helpers/contracts/apm/APMNamehash.sol";
+import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 
 import "@tpt/test-helpers/contracts/apps/Voting.sol"; /* Already defined in ACLHelper */
 //import {TokenManager as TokenManagerApp} from "@aragon/apps-token-manager/contracts/TokenManager.sol"; /* Already defined in EVMScriptRunner */
-import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 // import "@tpt/test-helpers/contracts/lib/minime/MiniMeToken.sol"; // TODO: use this 
 
 import {Allocations as AllocationsApp} from "@tpt/apps-allocations/contracts/Allocations.sol";
@@ -99,7 +99,7 @@ contract PlanningKit is KitBase {
         RangeVotingApp rangeVoting = RangeVotingApp(dao.newAppInstance(apps[3], latestVersionAppBase(apps[3])));
         // Aragon Apps
         //TokenManagerApp tokenManager = TokenManagerApp(dao.newAppInstance(apps[4], latestVersionAppBase(apps[4])));
-        VotingApp voting = VotingApp(dao.newAppInstance(apps[5], latestVersionAppBase(apps[5])));
+        //Voting voting = Voting(dao.newAppInstance(apps[5], latestVersionAppBase(apps[5])));
 
         // MiniMe Token
         MiniMeToken token = tokenFactory.createCloneToken(token, 0, "App token", 0, "APP", true);
@@ -111,7 +111,7 @@ contract PlanningKit is KitBase {
         // addressBook.initialize();
         // projects.initialize();
         //tokenManager.initialize(token, true, 0, true);
-        voting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
+        //voting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
         rangeVoting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
         
 
@@ -138,7 +138,7 @@ contract PlanningKit is KitBase {
         // Range-voting permissions
         acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.CREATE_VOTES_ROLE(), root);
         acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.ADD_CANDIDATES_ROLE(), root);
-        acl.createPermission(voting, rangeVoting, rangeVoting.MODIFY_PARTICIPATION_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.MODIFY_PARTICIPATION_ROLE(), root);
         emit InstalledApp(rangeVoting, apps[3]);
 
         /* TokenManager permissions
@@ -152,7 +152,6 @@ contract PlanningKit is KitBase {
         
         // Voting permissions
         acl.createPermission(ANY_ENTITY, voting, voting.CREATE_VOTES_ROLE(), root);
-        emit InstalledApp(voting, apps[5]);
 
 
         // Clean up template permissions
