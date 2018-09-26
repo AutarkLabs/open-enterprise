@@ -151,7 +151,7 @@ contract PlanningKit is KitBase {
         */
         
         // Voting permissions
-        acl.createPermission(ANY_ENTITY, voting, voting.CREATE_VOTES_ROLE(), root);
+        //acl.createPermission(ANY_ENTITY, voting, voting.CREATE_VOTES_ROLE(), root);
 
 
         // Clean up template permissions
