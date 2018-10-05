@@ -39,5 +39,8 @@
     "lint:allocations": "cd apps/allocations && npm run lint",
     "lint:projects": "cd apps/projects && npm run lint",
     "lint:range": "cd apps/range-voting && npm run lint"
+  },
+  "dependencies": {
+    "@aragon/cli": "^5.0.0"
   }
 }

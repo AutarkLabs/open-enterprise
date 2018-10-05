@@ -10,19 +10,20 @@ const Accounts = ({
   onNewAllocation,
   onManageParameters,
 }) => {
+  console.log(accounts)
   const accountsEmpty = accounts.length === 0
   const accountsMap = accounts.map(
-    ({ address, balance, description, limit, token }, id) => (
+    ({data}) => (
       <Account
         // TODO: Make this more unique by other id?
-        key={id}
-        address={address}
-        balance={balance}
-        limit={limit}
-        token={token}
-        description={description}
-        onNewAllocation={onNewAllocation}
-        onManageParameters={onManageParameters}
+        key={data.id}
+        proxy={data.proxy}
+        balance={data.balance}
+        limit={data.limit}
+        token={data.token}
+        description={data.metadata}
+        onNewAllocation={data.onNewAllocation}
+        onManageParameters={data.onManageParameters}
       />
     )
   )

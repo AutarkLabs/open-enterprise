@@ -1,5 +1,4 @@
 import { AragonApp, observe, SidePanel } from '@aragon/ui'
-import { hot } from 'react-hot-loader'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
@@ -25,16 +24,14 @@ class AllocationsApp extends React.Component {
     // TODO: Don't use this in production
     // ...allocationsMockData,
   }
-
   createAccount = ({ limit, ...account }) => {
     account.balance = 0
     account.limit = parseInt(limit)
-    this.setState(({ accounts }) => ({
-      accounts: [...accounts, account],
-    }))
+    this.props.app.newPayout(account.description, account.limit, 0x0)
     this.closePanel()
     console.info('App.js: Account Created:')
     console.table(account)
+    this.setState({})    
   }
 
   submitAllocation = allocation => {
@@ -76,6 +73,9 @@ class AllocationsApp extends React.Component {
   }
 
   closePanel = () => {
+    console.log(this.state)
+    console.log(this.props)
+    console.log((this.props.accounts !== undefined) ? this.props.accounts : [])        
     this.setState({ panel: { visible: false } })
   }
 
@@ -88,7 +88,7 @@ class AllocationsApp extends React.Component {
         <Title text="Allocations" />
         <NewAccountButton onClick={this.newAccount} />
         <Accounts
-          accounts={accounts}
+          accounts={(this.props.accounts !== undefined) ? this.props.accounts : []}
           onNewAccount={this.newAccount}
           onNewAllocation={this.newAllocation}
           onManageParameters={this.manageParameters}
@@ -115,8 +115,7 @@ const StyledAragonApp = styled(AragonApp).attrs({
   justify-content: stretch;
 `
 
-export default hot(module)(
-  observe(observable => observable.map(state => ({ ...state })), {})(
-    AllocationsApp
-  )
-)
+export default observe(
+  observable => observable.map(state => ({ ...state })),
+  {}
+)(AllocationsApp)

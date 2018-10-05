@@ -41,10 +41,13 @@ class ConnectedApp extends React.Component {
           userAccount: accounts[0],
         })
       })
+      app.cache('state', [])      
     }
   }
   sendMessageToWrapper = (name, value) => {
+    console.log("Sending message to wrapper")
     window.parent.postMessage({ from: 'app', name, value }, '*')
+    
   }
   render() {
     return <App {...this.state} />

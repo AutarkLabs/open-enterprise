@@ -110,7 +110,7 @@ contract PlanningKit is KitBase {
         // TODO: Enable when code is ready in the apps
         // addressBook.initialize();
         // projects.initialize();
-        //tokenManager.initialize(token, true, 0, true);
+        //tokenManager.initialize(token, true, 0);
         //voting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
         rangeVoting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
         

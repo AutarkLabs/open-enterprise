@@ -8,7 +8,7 @@ import { Card, Text, theme } from '@aragon/ui'
 import { ContextMenuItems } from '.'
 
 const Account = ({
-  address,
+  proxy,
   balance,
   description,
   limit,
@@ -17,14 +17,22 @@ const Account = ({
   token,
 }) => {
   const newAllocation = () => {
-    onNewAllocation(address, description)
+    onNewAllocation(proxy, description)
   }
 
   const manageParameters = () => {
-    onManageParameters(address)
+    onManageParameters(proxy)
+  }
+  /*Need a better solution that this, should be handled in
+  App.js using token manager once more tokens are supported */
+  function translateToken(token) {
+    if(token == 0x0){
+      return 'ETH'
+    }
   }
 
-  const truncatedAddress = `${address.slice(0, 6)}...${address.slice(-4)}`
+  const truncatedProxy = `${proxy.slice(0, 6)}...${proxy.slice(-4)}`
+  const translatedToken = translateToken(token)
 
   return (
     <StyledCard>
@@ -33,17 +41,17 @@ const Account = ({
       </MenuContainer>
       <IconContainer />
       <CardTitle>{description}</CardTitle>
-      <CardAddress>{truncatedAddress}</CardAddress>
+      <CardAddress>{truncatedProxy}</CardAddress>
       <StatsContainer>
         <StatsTitle>Balance</StatsTitle>
         <StatsValue>
-          {balance} {token}
+          {balance} {translatedToken}
         </StatsValue>
       </StatsContainer>
       <StatsContainer>
         <StatsTitle>Limit</StatsTitle>
         <StatsValue>
-          {limit} {token}/ Payout
+          {limit} {translatedToken}/ Payout
         </StatsValue>
       </StatsContainer>
     </StyledCard>
@@ -51,7 +59,7 @@ const Account = ({
 }
 
 Account.propTypes = {
-  address: PropTypes.string.isRequired,
+  proxy: PropTypes.string.isRequired,
   limit: PropTypes.number.isRequired,
   token: PropTypes.string.isRequired,
   balance: PropTypes.number.isRequired,
