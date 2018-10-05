@@ -8,16 +8,11 @@ const app = new Aragon()
 let appState
 app.events().subscribe(handleEvents)
 app.state().subscribe( (state) => {
-  console.log("current state:")
-  console.log(state)
   appState = state
 })
 
 async function handleEvents(response){
   let nextState
-  console.log(response)
-  console.log(response.event)
-  console.log(response.returnValues.accountId)
   switch (response.event) {
   case 'NewAccount':
     nextState = await newAccount(appState, response.returnValues)
