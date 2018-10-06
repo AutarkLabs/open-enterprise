@@ -4,35 +4,33 @@ import voteSettings, { hasLoadedVoteSettings } from './vote-settings'
 import { EMPTY_CALLSCRIPT } from './vote-utils'
 
 const app = new Aragon()
+let appState
+app.events().subscribe(handleEvents)
+app.state().subscribe( (state) => {
+  appState = state
+})
 
-// Hook up the script as an aragon.js store
-app.store(async (state, { event, returnValues }) => {
-  let nextState = {
-    ...state,
-    // Fetch the app's settings, if we haven't already
-    ...(!hasLoadedVoteSettings(state) ? await loadVoteSettings() : {}),
-  }
-
-  switch (event) {
+async function handleEvents(response){
+  let nextState
+  switch (response.event) {
     case 'CastVote':
       console.info('[RangeVoting > script]: received CastVote')
-      nextState = await castVote(nextState, returnValues)
+      nextState = await castVote(nextState, response.returnValues)
       break
     case 'ExecuteVote':
       console.info('[RangeVoting > script]: received ExecuteVote')
 
-      nextState = await executeVote(nextState, returnValues)
+      nextState = await executeVote(nextState, response.returnValues)
       break
     case 'StartVote':
       console.info('[RangeVoting > script]: received StartVote')
-      nextState = await startVote(nextState, returnValues)
+      nextState = await startVote(nextState, response.returnValues)
       break
     default:
       break
   }
-
-  return nextState
-})
+  app.cache('state', nextState)
+}
 
 /***********************
  *                     *
