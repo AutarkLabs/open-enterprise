@@ -22,8 +22,8 @@ const Accounts = ({
         limit={data.limit}
         token={data.token}
         description={data.metadata}
-        onNewAllocation={data.onNewAllocation}
-        onManageParameters={data.onManageParameters}
+        onNewAllocation={onNewAllocation}
+        onManageParameters={onManageParameters}
       />
     )
   )
