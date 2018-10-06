@@ -38,6 +38,7 @@ const INITIAL_STATE = {
 
 class NewAllocation extends React.Component {
   static propTypes = {
+    key: PropTypes.number.isRequired,
     onSubmitAllocation: PropTypes.func.isRequired,
     description: PropTypes.string,
   }
@@ -56,25 +57,21 @@ class NewAllocation extends React.Component {
 
   submitAllocation = () => {
     // clear input here.
-    this.props.onSubmitAllocation({
-      // address,
-      // description,
-      // token,
-      // limit,
-    })
+    let informational = this.state.allocationTypeIndex == 0
+    // TO-DO :: Recurring needs to be set!!!
+    let allocation = {
+      addresses: this.state.options,
+      payoutId: this.props.id,
+      information: informational,
+      recurring: false,
+      period: 3600,
+      balance: this.props.limit
+    }
+    this.props.onSubmitAllocation(allocation)
     this.setState(INITIAL_STATE)
     console.info('New Allocation: submitting...')
-    // console.table(this.props)
-    // console.table(this.state)
-    // TODO: Plug-in here
-    // this.props.onSetDistribution(
-    //   this.state.options,
-    //   this.state.addresses,
-    //   this.props.payoutId,
-    //   this.state.activeAllocationItem,
-    //   this.state.activePayoutOption,
-    //   this.state.amount
-    // )
+    console.table(this.props)
+    console.table(this.state)
   }
 
   render() {

@@ -8,6 +8,7 @@ import { Card, Text, theme } from '@aragon/ui'
 import { ContextMenuItems } from '.'
 
 const Account = ({
+  id,
   proxy,
   balance,
   description,
@@ -17,7 +18,7 @@ const Account = ({
   token,
 }) => {
   const newAllocation = () => {
-    onNewAllocation(proxy, description)
+    onNewAllocation(proxy, description, id, limit)
   }
 
   const manageParameters = () => {

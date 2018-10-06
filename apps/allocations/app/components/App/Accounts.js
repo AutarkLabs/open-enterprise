@@ -13,10 +13,10 @@ const Accounts = ({
   console.log(accounts)
   const accountsEmpty = accounts.length === 0
   const accountsMap = accounts.map(
-    ({data}) => (
-      <Account
+    ({data, accountId}) =>      
+      (<Account
         // TODO: Make this more unique by other id?
-        key={data.id}
+        id={accountId}
         proxy={data.proxy}
         balance={data.balance}
         limit={data.limit}
@@ -24,8 +24,7 @@ const Accounts = ({
         description={data.metadata}
         onNewAllocation={onNewAllocation}
         onManageParameters={onManageParameters}
-      />
-    )
+      />)
   )
 
   if (accountsEmpty) {

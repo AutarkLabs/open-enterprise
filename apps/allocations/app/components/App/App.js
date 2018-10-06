@@ -34,8 +34,16 @@ class AllocationsApp extends React.Component {
     this.setState({})    
   }
 
-  submitAllocation = allocation => {
-    // TODO: Implement
+  submitAllocation = allocation => {  
+    this.props.app.setDistribution(
+      allocation.addresses,
+      [],
+      allocation.payoutId,
+      allocation.informational,
+      allocation.recurring,
+      allocation.period,
+      allocation.balance
+    )
     console.info('App.js: Allocation submitted:')
     console.table(allocation)
   }
@@ -57,13 +65,15 @@ class AllocationsApp extends React.Component {
     })
   }
 
-  newAllocation = (address, description) => {
+  newAllocation = (address, description, id, limit) => {
     this.setState({
       panel: {
         visible: true,
         content: NewAllocation,
         data: {
           address,
+          id,
+          limit,
           heading: 'New Allocation',
           subHeading: description,
           onSubmitAllocation: this.submitAllocation,
