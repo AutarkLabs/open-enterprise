@@ -72,10 +72,7 @@ class AllocationsApp extends React.Component {
     })
   }
 
-  closePanel = () => {
-    console.log(this.state)
-    console.log(this.props)
-    console.log((this.props.accounts !== undefined) ? this.props.accounts : [])        
+  closePanel = () => {       
     this.setState({ panel: { visible: false } })
   }
 
