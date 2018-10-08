@@ -1,4 +1,4 @@
-import Aragon, { providers } from '@aragon/client'
+import Aragon from '@aragon/client'
 import { combineLatest } from './rxjs'
 
 const app = new Aragon()
@@ -12,9 +12,8 @@ app.store(async (state, { event, returnValues }) => {
   }
 
   switch (event) {
-  case 'NewPayout':
-    console.log('event caught by app store hookup')
-    nextState = await newPayout(nextState, returnValues)
+  case 'NewAccount':
+    nextState = await newAccount(nextState, returnValues)
     break
   }
 
@@ -27,13 +26,12 @@ app.store(async (state, { event, returnValues }) => {
  *                     *
  ***********************/
 
-async function newPayout(state, { payoutId }) {
-  console.log(payoutId)
-  const transform = ({ data, ...payout }) => ({
-    ...payout,
+async function newAccount(state, { accountId }) {
+  const transform = ({ data, ...account }) => ({
+    ...account,
     data: { ...data, executed: true },
   })
-  return updateState(state, payoutId, transform)
+  return updateState(state, accountId, transform)
 }
 
 /***********************
@@ -42,41 +40,40 @@ async function newPayout(state, { payoutId }) {
  *                     *
  ***********************/
 
-function loadPayoutData(payoutId) {
+function loadAccountData(accountId) {
   return new Promise(resolve => {
-    combineLatest(app.call('getPayout', payoutId)).subscribe(
-      ([payout, metadata]) => {
-        console.log('payout')
-        console.log(payout)
-      }
-    )
+    combineLatest(app.call('getPayout', accountId)).subscribe(([account]) => {
+      resolve(account)
+    })
   })
 }
 
-async function updatePayouts(payouts, payoutId, transform) {
-  const payoutIndex = payouts.findIndex(payout => payout.payoutId === payoutId)
+async function updateAccounts(accounts, accountId, transform) {
+  const accountIndex = accounts.findIndex(
+    account => account.accountId === accountId
+  )
 
-  if (payoutIndex === -1) {
+  if (accountIndex === -1) {
     // If we can't find it, load its data, perform the transformation, and concat
-    return payouts.concat(
+    return accounts.concat(
       await transform({
-        payoutId,
-        data: await loadPayoutData(payoutId),
+        accountId,
+        data: await loadAccountData(accountId),
       })
     )
   } else {
-    const nextPayouts = Array.from(payouts)
-    nextPayouts[payoutIndex] = await transform(nextPayouts[payoutIndex])
-    return nextPayouts
+    const nextAccounts = Array.from(accounts)
+    nextAccounts[accountIndex] = await transform(nextAccounts[accountIndex])
+    return nextAccounts
   }
 }
 
-async function updateState(state, payoutId, transform) {
-  const { payouts = [] } = state
+async function updateState(state, accountId, transform) {
+  const { accounts = [] } = state
 
   return {
     ...state,
-    payouts: await updatePayouts(payouts, payoutId, transform),
+    accounts: await updateAccounts(accounts, accountId, transform),
   }
 }
 

@@ -64,4 +64,9 @@ aragon-ui/
 dist
 build
 codealike.json
-package-lock.json
+
+# solidity coverage
+*/**/scTopics
+*/**/coverageEnv
+*/**/coverage.json
+*/**/coverage

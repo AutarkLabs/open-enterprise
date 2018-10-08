@@ -24,6 +24,34 @@ import "@aragon/os/contracts/lib/zeppelin/math/SafeMath64.sol";
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *******************************************************************************/
+
+/*******************************************************************************
+* @title IsFundable
+* @author Arthur Lunn
+* @dev Basic interface to show something as fundable
+*******************************************************************************/
+interface Fundable {
+    function fund(uint256 id) external payable;
+}
+
+/*******************************************************************************
+* @title FundForwarder
+* @author Arthur Lunn
+* @dev This will 100% break if the contract is upgraded. Basically just a proxy
+       to receive funds from an address and "piece it out" to a layered contract
+*******************************************************************************/
+contract FundForwarder {
+    Fundable fundable;
+    uint256 id;
+    function FundForwarder(uint256 _id, address _fundable) public {
+        fundable = Fundable(_fundable);
+        id = _id;
+    }
+    function () public payable {
+        fundable.fund.value(msg.value)(id);
+    }
+}
+
 /*******************************************************************************
 * @title Allocations Contract
 * @author Arthur Lunn
@@ -31,7 +59,7 @@ import "@aragon/os/contracts/lib/zeppelin/math/SafeMath64.sol";
 *      and any time that tokens need to be distributed based on a certain
 *      percentage breakdown to an array of addresses.
 *******************************************************************************/
-contract Allocations is AragonApp {
+contract Allocations is AragonApp, Fundable {
 
     using SafeMath for uint256;
 
@@ -44,10 +72,11 @@ contract Allocations is AragonApp {
         bool recurring;
         bool informational;
         uint256 period;
-        uint256 amount;
+        uint256 balance;
         uint256 startTime;
         bool distSet;
         address token;
+        address proxy;
     }
 
     // IVaultConnector vault;
@@ -60,7 +89,7 @@ contract Allocations is AragonApp {
     bytes32 constant public EXECUTE_PAYOUT_ROLE = keccak256("EXECUTE_PAYOUT_ROLE");
 
     event ExecutePayout(uint256 payoutId);
-    event NewPayout(uint256 payoutId);
+    event NewAccount(uint256 accountId);
 
     /**
     * @dev This is the function that setups who the candidates will be, and
@@ -78,11 +107,13 @@ contract Allocations is AragonApp {
     }
 
 
-    function getPayout(uint256 _payoutId) public view returns(uint256 limit, string metadata, address token) {
+    function getPayout(uint256 _payoutId) public view returns(uint256 balance, uint256 limit, string metadata, address token, address proxy) {
         Payout payout = payouts[_payoutId];
         limit = payout.limit;
+        balance = payout.balance;
         metadata = payout.metadata;
         token = payout.token;
+        proxy = payout.proxy;
     }
 
     /**
@@ -98,53 +129,48 @@ contract Allocations is AragonApp {
         string _metadata,
         uint256 _limit,
         address _token
-    ) external isInitialized auth(START_PAYOUT_ROLE) returns(uint256) {
-        Payout memory payout;
-        payout.metadata = _metadata;
+    ) external isInitialized auth(START_PAYOUT_ROLE) returns(uint256 payoutId) {
+        payoutId = payouts.length++;
+        Payout storage payout = payouts[payoutId];
         payout.metadata = _metadata;
         payout.limit = _limit;
         payout.token = _token;
-        payouts.push(payout);
-        NewPayout(payouts.length);
-        return payouts.length;
-    }
-
-    /**
-        @dev this is a test hahaha
-     */
-    function test() external returns(uint256) {
-        return 123;
+        payout.balance = 0;
+        FundForwarder fund = new FundForwarder(payoutId, address(this));
+        payout.proxy = address(fund);
+        NewAccount(payoutId);
     }
 
     /**
     * @dev This is the function that the RangeVote will call. It doesn’t need
-    *      to be called by a RangeVote but for our use case the
-    *      “SET_DISTRIBUTION_ROLE” will be given to the RangeVote.
+    *      to be called by a RangeVote (options get weird if it's not)
+    *      but for our use case the “SET_DISTRIBUTION_ROLE” will be given to
+    *      the RangeVote.
     * @notice Sets the distribution for the given `payoutId` using an the
     *         supplied candidate keys and support values.
-    * @param _candidateKeys The array of keys for all candidates in this payout
-    * @param _supports The Array of all support values for the various candidates
+    * param _candidateKeys The array of keys for all candidates in this payout
+    * param _supports The Array of all support values for the various candidates
     */
     function setDistribution(
-        bytes32[] _candidateKeys,
+        //bytes32[] _candidateKeys,
         address[] _candidateAddresses,
         uint256[] _supports,
         uint256 _payoutId,
         bool _informational,
         bool _recurring,
         uint256 _period,
-        uint256 _amount
-    ) external onlyInit auth(SET_DISTRIBUTION_ROLE){
+        uint256 _balance
+    ) external isInitialized auth(SET_DISTRIBUTION_ROLE) {
         Payout payout = payouts[_payoutId];
-        payout.candidateKeys = _candidateKeys;
+        //payout.candidateKeys = _candidateKeys;
         payout.candidateAddresses = _candidateAddresses;
-        require(_amount <= payout.limit);
+        require(_balance <= payout.limit);
         payout.informational = _informational;
         payout.recurring = _recurring;
         if(!_informational){
-            payout.amount = _amount;
+            payout.balance = _balance;
         } else {
-            payout.amount = 0;
+            payout.balance = 0;
         }
         if(_recurring){
             // minimum granularity is a single day
@@ -156,10 +182,16 @@ contract Allocations is AragonApp {
         }
 
         payout.distSet = true;
-        for(uint i = 0; i < _candidateKeys.length; i++){
+        /*for(uint i = 0; i < _candidateKeys.length; i++){
             require(payout.candidateKeys[i] == _candidateKeys[i]);
-        }
+        }*/
         payout.supports = _supports;
+    }
+
+    function fund(uint256 Id) external payable {
+        Payout payout = payouts[Id];
+        require(!payout.informational);
+        payout.balance.add(msg.value);
     }
 
     /*
@@ -188,18 +220,18 @@ contract Allocations is AragonApp {
             totalSupport += payout.supports[i];
         }
 
-        if(this.balance < payout.amount){
+        if(this.balance < payout.balance){
             revert();
             /*
             For now the vault isn't working see aragon-apps issue #292
 
-            uint256 remainingBalance = payout.amount.sub(this.balance);
+            uint256 remainingBalance = payout.balance.sub(this.balance);
             require(!(vault.balance(address(0)) < remainingBalance));
             vault.transfer(address(0), this, remainingBalance, new bytes(0));
             */
         }
 
-        pointsPer = payout.amount.div(totalSupport);
+        pointsPer = payout.balance.div(totalSupport);
 
         //handle vault
 
@@ -215,3 +247,5 @@ contract Allocations is AragonApp {
     }
 
 }
+
+

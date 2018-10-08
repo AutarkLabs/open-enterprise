@@ -1,12 +1,13 @@
+import { theme, IconTime, IconCross, IconCheck } from '@aragon/ui'
 import React from 'react'
 import styled from 'styled-components'
-import { theme, IconTime, IconCross, IconCheck } from '@aragon/ui'
+
 import {
   VOTE_STATUS_ONGOING,
   VOTE_STATUS_SUCCESSFUL,
   VOTE_STATUS_FAILED,
-} from '../utils/vote-types'
-import { getVoteStatus } from '../utils/vote-utils'
+} from '../range-voting/vote-types'
+import { getVoteStatus } from '../range-voting/vote-utils'
 
 const ATTRIBUTES = {
   [VOTE_STATUS_ONGOING]: {
