@@ -8,17 +8,16 @@ import "@aragon/os/contracts/lib/zeppelin/math/SafeMath.sol";
 
 import "@aragon/os/contracts/lib/zeppelin/math/SafeMath64.sol";
 
-// import "@aragon/os/contracts/common/IForwarder.sol";
+import "@aragon/os/contracts/common/IForwarder.sol";
 
 //import "./misc/CustomScriptHelpers.sol";
 
-// import "@aragon/os/contracts/common/IForwarder.sol";
-/* Temp hack to pass coverage until further research */
-interface IForwarderFixed {
-    function isForwarder() public returns (bool);
-    function canForward(address sender, bytes evmCallScript) public returns (bool);
-    function forward(bytes evmCallScript) public;
-}
+// /* Temp hack to pass coverage until further research */
+// interface IForwarderFixed {
+//     function isForwarder() public returns (bool);
+//     function canForward(address sender, bytes evmCallScript) public returns (bool);
+//     function forward(bytes evmCallScript) public;
+// }
 
 /*******************************************************************************
   Copyright 2018, That Planning Tab
@@ -46,7 +45,7 @@ interface IForwarderFixed {
 *  but could easily be adapted to other systems.
 *  Attention was paid to make the program as generalized as possible.
 *******************************************************************************/
-contract RangeVoting is IForwarderFixed, AragonApp {
+contract RangeVoting is IForwarder, AragonApp {
     //using CustomScriptHelpers for bytes;
 
     using SafeMath for uint256;
@@ -69,6 +68,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         uint256 snapshotBlock;
         uint256 candidateSupportPct;
         uint256 totalVoters;
+        uint256 totalParticipation;
         string metadata;
         bytes executionScript;
         uint256 scriptOffset;
@@ -188,7 +188,6 @@ contract RangeVoting is IForwarderFixed, AragonApp {
     }
 
     /**
-    * @param _voteId id for vote structure this 'ballot action' is connected to
     * @notice `addCandidate` allows the `ADD_CANDIDATES_ROLE` to add candidates
     *         (or options) to the current vote.
     * @param _voteId id for vote structure this 'ballot action' is connected to
@@ -250,12 +249,12 @@ contract RangeVoting is IForwarderFixed, AragonApp {
 ///////////////////////
 
     /**
-    * @notice `isForwader` is a basic helper function used to determine
+    * @notice `isForwarder` is a basic helper function used to determine
     *         if a function implements the IForwarder interface
     * @dev IForwarder interface conformance
     * @return always returns true
     */
-    function isForwarder() public returns (bool) {
+    function isForwarder() public pure returns (bool) {
         return true;
     }
 
@@ -277,8 +276,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
     * @param _sender Address of the entity trying to forward
     * @return True is `_sender` has correct permissions
     */
-    function canForward(address _sender, bytes _evmCallScript)
-    public returns (bool)
+    function canForward(address _sender, bytes _evmCallScript) public view returns (bool)
     {
         return canPerform(_sender, CREATE_VOTES_ROLE, arr());
     }
@@ -290,8 +288,8 @@ contract RangeVoting is IForwarderFixed, AragonApp {
     /**
     * @notice `canVote` is used to check whether an address is elligible to
     *         cast a vote in a given vote action.
-    * @param _voter The address of the entity trying to vote
     * @param _voteId The ID of the Vote on which the vote would be cast.
+    * @param _voter The address of the entity trying to vote
     * @return True is `_voter` has a vote token balance and vote is open
     */
     function canVote(uint256 _voteId, address _voter) public view returns (bool) {
@@ -304,10 +302,29 @@ contract RangeVoting is IForwarderFixed, AragonApp {
     * @notice `canExecute` is used to check that the participation has been met
     *         and the vote has reached it's end before the execute
     *         function is called.
+    * @param _voteId id for vote structure this 'ballot action' is connected to
     * @return True if the vote is elligible for execution.
     */
-    function canExecute(uint256 /*_voteId*/) public pure returns (bool) {
-        // Needs better implementation
+    function canExecute(uint256 _voteId) public view returns (bool) {
+        Vote storage vote = votes[_voteId];
+        if (vote.executed)
+            return false;
+         // vote ended?
+        if (_isVoteOpen(vote))
+          return false;
+         //does not pass tests
+        bytes32[] storage cKeys = vote.candidateKeys;
+        uint256 i = 0;
+        for (i; i < cKeys.length; i++) {
+            bytes32 cKey = cKeys[i];
+            CandidateState storage candidateState = vote.candidates[cKey];
+             // has candidate support?
+            if (!_isValuePct(candidateState.voteSupport, vote.totalParticipation, vote.candidateSupportPct))
+                return false;
+        }
+         // has minimum participation threshold been reached?
+        if (!_isValuePct(vote.totalParticipation, vote.totalVoters, minParticipationPct))
+            return false;
         return true;
     }
 
@@ -324,6 +341,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         uint256 snapshotBlock,
         uint256 candidateSupportPct,
         uint256 totalVoters,
+        uint256 totalParticipation,
         string metadata,
         bytes executionScript,
         bool executed
@@ -336,6 +354,7 @@ contract RangeVoting is IForwarderFixed, AragonApp {
         snapshotBlock = vote.snapshotBlock;
         candidateSupportPct = vote.candidateSupportPct;
         totalVoters = vote.totalVoters;
+        totalParticipation = vote.totalParticipation;
         metadata = vote.metadata;
         executionScript = vote.executionScript;
         executed = vote.executed;
@@ -491,8 +510,11 @@ contract RangeVoting is IForwarderFixed, AragonApp {
             require(totalSupport <= voterStake);
 
             voteSupport = vote.candidates[cKeys[i]].voteSupport;
+            //if (vote.totalParticipation > 0) // temporary fix. shouldn't be needed if working properly
+            vote.totalParticipation = vote.totalParticipation.sub(oldVoteSupport[i]);
             voteSupport = voteSupport.sub(oldVoteSupport[i]);
             voteSupport = voteSupport.add(_supports[i]);
+            vote.totalParticipation = vote.totalParticipation.add(_supports[i]);
             vote.candidates[cKeys[i]].voteSupport = voteSupport;
         }
         for (i; i < _supports.length; i++) {
@@ -500,10 +522,12 @@ contract RangeVoting is IForwarderFixed, AragonApp {
             require(totalSupport <= voterStake);
             voteSupport = vote.candidates[cKeys[i]].voteSupport;
             voteSupport = voteSupport.add(_supports[i]);
+            vote.totalParticipation = vote.totalParticipation.add(_supports[i]);
             vote.candidates[cKeys[i]].voteSupport = voteSupport;
         }
 
         vote.voters[msg.sender] = _supports;
+        // vote.totalParticipation = vote.totalParticipation.sub(oldVoteSupport[i]);
     }
 
     /**
