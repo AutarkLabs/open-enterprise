@@ -415,7 +415,7 @@ contract('Allocations App', accounts => {
         web3.toWei(0.01, 'ether'),
         { from: empire, value: web3.toWei(0.01, 'ether') }
       )
-      await timetravel(86500)
+      timetravel(86500)
       await app.executePayout(allocationId)
       const bobafettBalance = await web3.eth.getBalance(bobafett)
       const dengarBalance = await web3.eth.getBalance(dengar)
@@ -440,7 +440,7 @@ contract('Allocations App', accounts => {
         from: empire,
         value: web3.toWei(0.01, 'ether'),
       })
-      await timetravel(43200)
+      timetravel(43200)
       return assertRevert(async () => {
         await app.executePayout(allocationId)
       })

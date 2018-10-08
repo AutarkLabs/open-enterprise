@@ -246,7 +246,7 @@ contract RangeVoting is IForwarder, AragonApp {
         _executeVote(_voteId);
     }
 
-     /**
+    /**
     * @notice `addCandidate` allows the `ADD_CANDIDATES_ROLE` to add candidates
     *         (or options) to the current vote.
     * @param _voteId id for vote structure this 'ballot action' is connected to
@@ -308,7 +308,7 @@ contract RangeVoting is IForwarder, AragonApp {
 ///////////////////////
 
     /**
-    * @notice `isForwader` is a basic helper function used to determine
+    * @notice `isForwarder` is a basic helper function used to determine
     *         if a function implements the IForwarder interface
     * @dev IForwarder interface conformance
     * @return always returns true
@@ -324,8 +324,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _sender Address of the entity trying to forward
     * @return True is `_sender` has correct permissions
     */
-    function canForward(address _sender, bytes /*_evmCallScript*/) // solium-disable-line function-order
-        public view returns (bool)
+    function canForward(address _sender, bytes _evmCallScript) public view returns (bool)
     {
         return canPerform(_sender, CREATE_VOTES_ROLE, arr());
     }
@@ -349,8 +348,8 @@ contract RangeVoting is IForwarder, AragonApp {
     /**
     * @notice `canVote` is used to check whether an address is elligible to
     *         cast a vote in a given vote action.
-    * @param _voter The address of the entity trying to vote
     * @param _voteId The ID of the Vote on which the vote would be cast.
+    * @param _voter The address of the entity trying to vote
     * @return True is `_voter` has a vote token balance and vote is open
     */
     function canVote(uint256 _voteId, address _voter) public view returns (bool) {
@@ -370,23 +369,23 @@ contract RangeVoting is IForwarder, AragonApp {
         Vote storage voteX = votes[_voteId];
         if (voteX.executed)
             return false;
-        // vote ended?
-        if (_isVoteOpen(voteX))
+         // vote ended?
+        if (_isVoteOpen(vote))
+          return false;
+         //does not pass tests
+        bytes32[] storage cKeys = vote.candidateKeys;
+        uint256 i = 0;
+        for (i; i < cKeys.length; i++) {
+            bytes32 cKey = cKeys[i];
+            CandidateState storage candidateState = vote.candidates[cKey];
+             // has candidate support?
+            if (!_isValuePct(candidateState.voteSupport, vote.totalParticipation, vote.candidateSupportPct))
+                return false;
+        }
+         // has minimum participation threshold been reached?
+        if (!_isValuePct(vote.totalParticipation, vote.totalVoters, minParticipationPct))
             return false;
-        //does not pass tests
-        // bytes32[] storage cKeys = voteX.candidateKeys; // unused
-        // uint256 i = 0; // unused
-        // TODO: refactor to make something usable, commented because was unused
-        // for (i; i < cKeys.length; i++) {
-        //     bytes32 cKey = cKeys[i];
-        //     CandidateState storage candidateState = vote.candidates[cKey]; // TODO: we never use this, what is the purpose?
-        //     // has candidate support?
-        //     // if (!_isValuePct(candidateState.voteSupport, vote.totalParticipation, vote.candidateSupportPct))
-        //         // return false;
-        // }
-        // has minimum participation threshold been reached?
-        if (!_isValuePct(voteX.totalParticipation, voteX.totalVoters, minParticipationPct))
-            return true;
+        return true;
     }
 
     /**
@@ -603,19 +602,21 @@ contract RangeVoting is IForwarder, AragonApp {
             // Probably safer here but some gas calculations should be done
             require(totalSupport <= voterStake); // solium-disable-line error-reason
 
-            voteSupport = voteG.candidates[cKeys[i]].voteSupport;
-            voteG.totalParticipation = voteG.totalParticipation.sub(voteSupport);
+            voteSupport = vote.candidates[cKeys[i]].voteSupport;
+            //if (vote.totalParticipation > 0) // temporary fix. shouldn't be needed if working properly
+            vote.totalParticipation = vote.totalParticipation.sub(oldVoteSupport[i]);
             voteSupport = voteSupport.sub(oldVoteSupport[i]);
             voteSupport = voteSupport.add(_supports[i]);
-            voteG.totalParticipation = voteG.totalParticipation.add(voteSupport);
-            voteG.candidates[cKeys[i]].voteSupport = voteSupport;
+            vote.totalParticipation = vote.totalParticipation.add(_supports[i]);
+            vote.candidates[cKeys[i]].voteSupport = voteSupport;
         }
         for (i; i < _supports.length; i++) {
             totalSupport = totalSupport.add(_supports[i]);
             require(totalSupport <= voterStake); // solium-disable-line error-reason
             voteSupport = voteG.candidates[cKeys[i]].voteSupport;
             voteSupport = voteSupport.add(_supports[i]);
-            voteG.candidates[cKeys[i]].voteSupport = voteSupport;
+            vote.totalParticipation = vote.totalParticipation.add(_supports[i]);
+            vote.candidates[cKeys[i]].voteSupport = voteSupport;
         }
 
         voteG.voters[msg.sender] = _supports;

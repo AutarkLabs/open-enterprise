@@ -1,28 +1,15 @@
-module.exports = web3 => duration => {
-  const id = Date.now();
-
+module.exports = web3 => s => {
   return new Promise((resolve, reject) => {
-    web3.currentProvider.sendAsync(
-      {
-        jsonrpc: "2.0",
-        method: "evm_increaseTime",
-        params: [duration],
-        id: id
-      },
-      err1 => {
-        if (err1) return reject(err1);
-
-        web3.currentProvider.sendAsync(
-          {
-            jsonrpc: "2.0",
-            method: "evm_mine",
-            id: id + 1
-          },
-          (err2, res) => {
-            return err2 ? reject(err2) : resolve(res);
-          }
-        );
+    web3.currentProvider.send({
+      jsonrpc: '2.0',
+      method: 'evm_increaseTime',
+      params: [s],
+      id: new Date().getTime()
+    }, function(err) {
+      if (err) {
+        return reject(err)
       }
-    );
-  });
-};
+      resolve(result)
+    })
+  })
+}
