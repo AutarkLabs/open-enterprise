@@ -69,8 +69,6 @@ contract RangeVoting is IForwarder, AragonApp {
     bytes32 constant public MODIFY_PARTICIPATION_ROLE = keccak256(abi.encodePacked("MODIFY_CANDIDATE_SUPPORT_ROLE"));
     // bytes32 constant public MODIFY_QUORUM_ROLE = keccak256("MODIFY_QUORUM_ROLE");
 
-    // enum VoterState { Absent, Yea, Nay }
-
     struct Vote {
         address creator;
         uint64 startDate;
@@ -86,7 +84,6 @@ contract RangeVoting is IForwarder, AragonApp {
         bytes32[] candidateKeys;
         mapping (bytes32 => CandidateState) candidates;
         mapping (address => uint256[]) voters;
-        // mapping (address => VoterState) voters;
     }
 
     mapping (bytes32 => address ) candidateDescriptions;
@@ -104,14 +101,9 @@ contract RangeVoting is IForwarder, AragonApp {
 
     event StartVote(uint256 indexed voteId);
     event CastVote(
-        //uint256 indexed voteId,
-        //address indexed voter,
-        uint256 supports,
-        bytes desc,
-        bool added
-        //uint256 stake
+        uint256 indexed voteId
     );
-    // event CastVote(uint256 indexed voteId, address indexed voter, bool supports, uint256 stake);
+    event CastVote(uint256 indexed voteId, address indexed voter, bool supports, uint256 stake);
     event UpdateCandidateSupport(string indexed candidateKey, uint256 support);
     event ExecuteVote(uint256 indexed voteId);
     event ChangeCandidateSupport(uint256 candidateSupportPct);
@@ -313,7 +305,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @dev IForwarder interface conformance
     * @return always returns true
     */
-    function isForwarder() public returns (bool) {
+    function isForwarder() public pure returns (bool) {
         return true;
     }
 
@@ -366,8 +358,8 @@ contract RangeVoting is IForwarder, AragonApp {
     * @return True if the vote is elligible for execution.
     */
     function canExecute(uint256 _voteId) public view returns (bool) {
-        Vote storage voteX = votes[_voteId];
-        if (voteX.executed)
+        Vote storage vote = votes[_voteId];
+        if (vote.executed)
             return false;
          // vote ended?
         if (_isVoteOpen(vote))
@@ -558,40 +550,21 @@ contract RangeVoting is IForwarder, AragonApp {
         // bool _executesIfDecided
     ) internal
     {
-        Vote storage voteG = votes[_voteId];
+        Vote storage vote = votes[_voteId];
 
         // this could re-enter, though we can asume the
         // governance token is not maliciuous
-        uint256 voterStake = token.balanceOfAt(_voter, voteG.snapshotBlock);
+        uint256 voterStake = token.balanceOfAt(_voter, vote.snapshotBlock);
         uint256 totalSupport = 0;
-        // VoterState state = vote.voters[_voter];
 
-        // // if voter had previously voted, decrease count
-        // if (state == VoterState.Yea)
-        //     vote.yea = vote.yea.sub(voterStake);
-        // if (state == VoterState.Nay)
-        //     vote.nay = vote.nay.sub(voterStake);
+        CastVote(
+            _voteId
+        );
 
-        // if (_supports)
-        //     vote.yea = vote.yea.add(voterStake);
-        // else
-        //     vote.nay = vote.nay.add(voterStake);
-
-        // vote.voters[_voter] = _supports ? VoterState.Yea : VoterState.Nay;
-
-        // CastVote(
-        //     _voteId,
-        //     _voter,
-        //     _supports,
-        //     voterStake
-        // );
-
-        // if (_executesIfDecided && canExecute(_voteId))
-        //     _executeVote(_voteId);
 
         uint256 voteSupport;
-        uint256[] storage oldVoteSupport = voteG.voters[msg.sender];
-        bytes32[] storage cKeys = voteG.candidateKeys;
+        uint256[] storage oldVoteSupport = vote.voters[msg.sender];
+        bytes32[] storage cKeys = vote.candidateKeys;
 
         uint256 i = 0;
         // This is going to cost a lot of gas... it'd be cool if there was
@@ -601,9 +574,7 @@ contract RangeVoting is IForwarder, AragonApp {
             // Might make sense to move this outside the for loop
             // Probably safer here but some gas calculations should be done
             require(totalSupport <= voterStake); // solium-disable-line error-reason
-
             voteSupport = vote.candidates[cKeys[i]].voteSupport;
-            //if (vote.totalParticipation > 0) // temporary fix. shouldn't be needed if working properly
             vote.totalParticipation = vote.totalParticipation.sub(oldVoteSupport[i]);
             voteSupport = voteSupport.sub(oldVoteSupport[i]);
             voteSupport = voteSupport.add(_supports[i]);
@@ -613,13 +584,13 @@ contract RangeVoting is IForwarder, AragonApp {
         for (i; i < _supports.length; i++) {
             totalSupport = totalSupport.add(_supports[i]);
             require(totalSupport <= voterStake); // solium-disable-line error-reason
-            voteSupport = voteG.candidates[cKeys[i]].voteSupport;
+            voteSupport = vote.candidates[cKeys[i]].voteSupport;
             voteSupport = voteSupport.add(_supports[i]);
             vote.totalParticipation = vote.totalParticipation.add(_supports[i]);
             vote.candidates[cKeys[i]].voteSupport = voteSupport;
         }
 
-        voteG.voters[msg.sender] = _supports;
+        vote.voters[msg.sender] = _supports;
         // vote.totalParticipation = vote.totalParticipation.sub(oldVoteSupport[i]);
     }
 
