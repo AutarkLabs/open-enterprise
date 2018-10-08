@@ -91,7 +91,7 @@ contract Allocations is AragonApp, Fundable {
     event ExecutePayout(uint256 payoutId);
     event NewAccount(uint256 accountId);
 
-    /**
+    /*
     * @dev This is the function that setups who the candidates will be, and
     *      where the funds will go for the payout. This is where the payout
     *      object needs to be created in the payouts array.
