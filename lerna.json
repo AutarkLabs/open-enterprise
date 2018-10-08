@@ -2,11 +2,9 @@
   "command": {
     "run": {
       "concurrency": 1,
-      "scope": "@tpt/apps-*",
-      "stream": true
+      "scope": "@tpt/apps-*"
     },
     "bootstrap": {
-      "ignore-scripts": true,
       "progress": true
     }
   },

@@ -16,36 +16,34 @@ set -o errexit
 #      echo "$DIR/node_modules/.bin"
 # }
 
-
 if [ "$SOLIDITY_COVERAGE" = true ]; then
-  testrpc_port=8555
+	testrpc_port=8555
 else
-  testrpc_port=8545
+	testrpc_port=8545
 fi
 
-
 testrpc_running() {
-  nc -z localhost "$testrpc_port"
+	nc -z localhost "$testrpc_port"
 }
 
 start_testrpc() {
-  if [ "$SOLIDITY_COVERAGE" = true ]; then
-    testrpc-sc -i 16 --gasLimit 0xfffffffffff --port "$testrpc_port"  > /dev/null &
-  elif [ "$TRUFFLE_TEST" = true ]; then
-    ganache-cli -i 15 --gasLimit 50000000 --port "$testrpc_port" > /dev/null &
-  elif [ "$START_KIT" = true ]; then
-    aragon devchain --port "$testrpc_port" > /dev/null &
-  elif [ "$DEV" = true ]; then
-    aragon devchain --reset --port "$testrpc_port" > /dev/null &
-    npx lerna run dev --parallel --stream --scope=@tpt/apps-* &
-  fi
+	if [ "$SOLIDITY_COVERAGE" = true ]; then
+		testrpc-sc -i 16 --gasLimit 0xfffffffffff --port "$testrpc_port" >/dev/null &
+	elif [ "$TRUFFLE_TEST" = true ]; then
+		ganache-cli -i 15 --gasLimit 50000000 --port "$testrpc_port" >/dev/null &
+	elif [ "$START_KIT" = true ]; then
+		aragon devchain --port "$testrpc_port" &
+	elif [ "$DEV" = true ]; then
+		aragon devchain --reset --port "$testrpc_port" &
+		lerna run dev --parallel --scope=@tpt/apps-* &
+	fi
 
-  testrpc_pid=$!
+	testrpc_pid=$!
 }
 
 if testrpc_running; then
-  echo "Killing testrpc instance at port $testrpc_port"
-  kill -9 $(lsof -i:$testrpc_port -t)
+	echo "Killing testrpc instance at port $testrpc_port"
+	kill -9 $(lsof -i:$testrpc_port -t)
 fi
 
 echo "Starting our own testrpc instance at port $testrpc_port"
@@ -56,17 +54,17 @@ sleep 5
 set +e
 result=0
 if [ "$SOLIDITY_COVERAGE" = true ]; then
-  solidity-coverage "$@"
-  result=$?
+	solidity-coverage "$@"
+	result=$?
 elif [ "$TRUFFLE_TEST" = true ]; then
-  truffle test --network rpc "$@"
-  result=$?
+	truffle test --network rpc "$@" | grep -v 'Compiling'
+	result=$?
 elif [ "$START_KIT" = true ]; then
-  npm run publish:apps && npm run start:kit
-  result=$?
+	npm run publish:apps && npm run start:kit
+	result=$?
 elif [ "$DEV" = true ]; then
-  npm run publish:http && npm run start:kit
-  result=$?
+	npm run publish:http && npm run start:kit
+	result=$?
 fi
 
 kill -9 $testrpc_pid

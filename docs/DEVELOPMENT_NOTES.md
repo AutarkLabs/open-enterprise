@@ -15,15 +15,13 @@ lerna info versioning independent
 
 - Planning-app is the base monorepo.
 - Frontend packages were merged with individual aragon apps, it added complexity and was not needed.
-- Aragon/cli should be used to bump package versions with `apm version` (more info in Aragon hack documentation). It needs to have a devhchain running.
+- Aragon/cli should be used to bump package versions with `aragon apm version` (more info in Aragon hack documentation). It needs to have a devhchain running.
 
 ## Recommended instructions
 
 ### Before doing anything run the install script to avoid dependency errors:
 
 - `npm i` : Installs root project dependencies and then bootstraps all independent app dependencies.
-
-**It installs everthying needed, since commands are run with `npx` it is not necessary to have global requirements apart from Node.js LTS or greater**
 
 ### Then, run one of the handy scripts depending of the needs:
 
@@ -51,7 +49,7 @@ lerna info versioning independent
 
 - `npm start`
 
-This script checks/install dependencies through lerna bootstrap, then concurrently starts a local development blockchain to deploy the individual apps there calling apm publish on each app, also with help of lerna.
+This script checks/install dependencies through lerna bootstrap, then concurrently starts a local development blockchain to deploy the individual apps there calling `aragon apm publish` on each app, also with help of lerna.
 When individual apps are deployed, the aragon/cli --kit option compiles and deploys the PlanningKit dao template sitting in contracts folder.
 
 This folder contains also a PlanningDummy smart contract. This is needed to conform the minimal requirements to be an Aragon App, call it bare, skeleton, minimal. This smart contract is actually never deployed nor called from any other contract.
@@ -69,7 +67,7 @@ Finally, the script launches the Aragon Wrapper with the complete planning suite
   To debug if the individual apps are being published, if more control is needed, individual app publishing can be called by `cd apps/app_folder && npm run publish`
 - `npm run devchain or npm run devchain:reset`
   Is needed to be run in another terminal window to be able to deploy all apps together. `npm start` script does this by using concurrently npm package.
-- If previous steps where succesful, then run: `npx aragon run --kit PlanningKit --kit-init @ARAGON_ENS`
+- If previous steps where succesful, then run: `aragon run --kit PlanningKit --kit-init @ARAGON_ENS`
   To deploy the kit and launch the Aragon Wrapper in the browser.
   It needs the same local blockchain to find the locally deployed apps, so better to keep the devchain open and running (Again, with `npm start` is not needed (but allowed) because is launched in parallel with concurrently).
 

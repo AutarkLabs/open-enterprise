@@ -1,9 +1,0 @@
-{
-  "presets": ["stage-3"],
-  "plugins": [
-    ["styled-components", { "displayName": true }],
-    "transform-class-properties",
-    "transform-runtime",
-    "react-hot-loader/babel"
-  ]
-}

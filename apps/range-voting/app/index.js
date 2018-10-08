@@ -41,7 +41,5 @@ class ConnectedApp extends React.Component {
     return <App {...this.state} />
   }
 }
-ReactDOM.render(
-  <ConnectedApp />,
-  document.getElementById('root')
-)
+
+ReactDOM.render(<ConnectedApp />, document.getElementById('root'))

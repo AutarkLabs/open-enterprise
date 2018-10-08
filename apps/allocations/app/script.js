@@ -1,24 +1,26 @@
-import Aragon from '@aragon/client'
-import { combineLatest } from './rxjs'
+import Aragon, {providers} from '@aragon/client'
+import { first, of } from 'rxjs' // Make sure observables have .first
+import { combineLatest } from 'rxjs'
+import { empty } from 'rxjs/observable/empty'
+
 
 const app = new Aragon()
+let appState
+app.events().subscribe(handleEvents)
+app.state().subscribe( (state) => {
+  appState = state
+})
 
-// Hook up the script as an aragon.js store
-app.store(async (state, { event, returnValues }) => {
-  let nextState = {
-    ...state,
-    // Fetch the app's settings, if we haven't already
-    //...(!hasLoadedVoteSettings(state) ? await loadVoteSettings() : {}),
-  }
-
-  switch (event) {
+async function handleEvents(response){
+  let nextState
+  switch (response.event) {
   case 'NewAccount':
-    nextState = await newAccount(nextState, returnValues)
+    nextState = await newAccount(appState, response.returnValues)
     break
   }
+  app.cache('state', nextState)
+}
 
-  return nextState
-})
 
 /***********************
  *                     *
@@ -42,9 +44,11 @@ async function newAccount(state, { accountId }) {
 
 function loadAccountData(accountId) {
   return new Promise(resolve => {
-    combineLatest(app.call('getPayout', accountId)).subscribe(([account]) => {
-      resolve(account)
-    })
+    combineLatest(app.call('getPayout', accountId)).subscribe(
+      ([account, metadata]) => {
+        resolve(account)
+      }
+    )
   })
 }
 
@@ -76,7 +80,3 @@ async function updateState(state, accountId, transform) {
     accounts: await updateAccounts(accounts, accountId, transform),
   }
 }
-
-// Apply transmations to a vote received from web3
-// Note: ignores the 'open' field as we calculate that locally
-//

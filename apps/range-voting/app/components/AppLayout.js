@@ -28,4 +28,3 @@ AppLayout.Content = styled.div`
 `
 
 export default AppLayout
-

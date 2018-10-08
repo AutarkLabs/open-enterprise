@@ -1,29 +1,36 @@
 import Aragon from '@aragon/client'
 import { combineLatest } from './rxjs'
-import voteSettings from './range-voting/vote-settings'
-import { EMPTY_CALLSCRIPT } from './range-voting/vote-utils'
+import voteSettings, { hasLoadedVoteSettings } from './vote-settings'
+import { EMPTY_CALLSCRIPT } from './vote-utils'
 
 const app = new Aragon()
-// Hook up the script as an aragon.js store
-app.store(async (state, { event, returnValues }) => {
-  let nextState = {
-    ...state,
-    // Fetch the app's settings, if we haven't already
-    //...(!hasLoadedVoteSettings(state) ? await loadVoteSettings() : {}),
-  }
-
-  switch (event) {
-  case 'StartVote':
-    nextState = await startVote(nextState, returnValues)
-    console.log("Vote Started")
-    console.log(nextState)
-    break
-  }
-
-  return nextState
+let appState
+app.events().subscribe(handleEvents)
+app.state().subscribe( (state) => {
+  appState = state
 })
 
+async function handleEvents(response){
+  let nextState
+  switch (response.event) {
+    case 'CastVote':
+      console.info('[RangeVoting > script]: received CastVote')
+      nextState = await castVote(nextState, response.returnValues)
+      break
+    case 'ExecuteVote':
+      console.info('[RangeVoting > script]: received ExecuteVote')
 
+      nextState = await executeVote(nextState, response.returnValues)
+      break
+    case 'StartVote':
+      console.info('[RangeVoting > script]: received StartVote')
+      nextState = await startVote(nextState, response.returnValues)
+      break
+    default:
+      break
+  }
+  app.cache('state', nextState)
+}
 
 /***********************
  *                     *
@@ -32,6 +39,8 @@ app.store(async (state, { event, returnValues }) => {
  ***********************/
 
 async function castVote(state, { voteId }) {
+  // Let's just reload the entire vote again,
+  // cause do we really want more than one source of truth with a blockchain?
   const transform = async vote => ({
     ...vote,
     data: await loadVoteData(voteId),
@@ -58,11 +67,15 @@ async function startVote(state, { voteId }) {
  ***********************/
 
 async function loadVoteDescription(vote) {
-  if (!vote.script || vote.script === EMPTY_CALLSCRIPT) {
+  if (!vote.executionScript || vote.executionScript === EMPTY_CALLSCRIPT) {
+    console.info(
+      '[RangeVoting > script] loadVoteDescription: No description found for:',
+      vote
+    )
     return vote
   }
 
-  const path = await app.describeScript(vote.script).toPromise()
+  const path = await app.describeScript(vote.executionScript).toPromise()
 
   vote.description = path
     .map(step => {
@@ -77,6 +90,7 @@ async function loadVoteDescription(vote) {
 }
 
 function loadVoteData(voteId) {
+  console.info('[RangeVoting > script]: loadVoteData')
   return new Promise(resolve => {
     combineLatest(
       app.call('getVote', voteId),
@@ -149,7 +163,7 @@ function loadVoteSettings() {
       settings.reduce((acc, setting) => ({ ...acc, ...setting }), {})
     )
     .catch(err => {
-      console.error('Failed to load Vote settings', err)
+      console.error('[RangeVoting > script] Failed to load Vote settings', err)
       // Return an empty object to try again later
       return {}
     })
@@ -157,30 +171,26 @@ function loadVoteSettings() {
 
 // Apply transmations to a vote received from web3
 // Note: ignores the 'open' field as we calculate that locally
-// 
 function marshallVote({
+  open,
   creator,
-  executed,
-  minAcceptQuorum,
-  nay,
-  snapshotBlock,
   startDate,
+  snapshotBlock,
+  candidateSupport,
   totalVoters,
-  yea,
-  script,
-  description,
+  metadata,
+  executionScript,
+  executed,
 }) {
   return {
+    open,
     creator,
-    executed,
-    minAcceptQuorum: parseInt(minAcceptQuorum, 10),
-    nay: parseInt(nay, 10),
-    snapshotBlock: parseInt(snapshotBlock, 10),
     startDate: parseInt(startDate, 10) * 1000, // adjust for js time (in ms vs s)
+    snapshotBlock: parseInt(snapshotBlock, 10),
+    candidateSupport: parseInt(candidateSupport, 10),
     totalVoters: parseInt(totalVoters, 10),
-    yea: parseInt(yea, 10),
-    script,
-    description,
+    metadata,
+    executionScript,
+    executed,
   }
 }
-

@@ -4,10 +4,10 @@ import styled from 'styled-components'
 
 import {
   VOTE_STATUS_ONGOING,
-  VOTE_STATUS_SUCCESSFUL,
-  VOTE_STATUS_FAILED,
-} from '../range-voting/vote-types'
-import { getVoteStatus } from '../range-voting/vote-utils'
+  VOTE_STATUS_REJECTED,
+  VOTE_STATUS_ACCEPTED,
+} from '../vote-types'
+import { getVoteStatus } from '../vote-utils'
 
 const ATTRIBUTES = {
   [VOTE_STATUS_ONGOING]: {
@@ -15,12 +15,12 @@ const ATTRIBUTES = {
     Icon: IconTime,
     color: theme.textSecondary,
   },
-  [VOTE_STATUS_SUCCESSFUL]: {
+  [VOTE_STATUS_ACCEPTED]: {
     label: 'Approved',
     Icon: IconCheck,
     color: theme.positive,
   },
-  [VOTE_STATUS_FAILED]: {
+  [VOTE_STATUS_REJECTED]: {
     label: 'Rejected',
     Icon: IconCross,
     color: theme.negative,
@@ -39,6 +39,7 @@ const VoteStatus = ({ vote: { data, support, quorum } }) => {
 }
 
 const Main = styled.span`
+  font-weight: 600;
   white-space: nowrap;
   color: ${({ color }) => color};
 `
