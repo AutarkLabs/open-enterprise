@@ -160,7 +160,7 @@ contract Allocations is AragonApp, Fundable {
         bool _recurring,
         uint256 _period,
         uint256 _balance
-    ) external isInitialized auth(SET_DISTRIBUTION_ROLE) {
+    ) external payable isInitialized auth(SET_DISTRIBUTION_ROLE) {
         Payout payout = payouts[_payoutId];
         //payout.candidateKeys = _candidateKeys;
         payout.candidateAddresses = _candidateAddresses;
@@ -168,14 +168,16 @@ contract Allocations is AragonApp, Fundable {
         payout.informational = _informational;
         payout.recurring = _recurring;
         if(!_informational){
+            require(msg.value == _balance);
             payout.balance = _balance;
         } else {
+            require(msg.value == 0);
             payout.balance = 0;
         }
         if(_recurring){
             // minimum granularity is a single day
-            require(payout.period > 86399);
             payout.period = _period;
+            require(payout.period > 86399);
             payout.startTime = now;
         } else {
             payout.period = 0;
@@ -192,6 +194,7 @@ contract Allocations is AragonApp, Fundable {
         Payout payout = payouts[Id];
         require(!payout.informational);
         payout.balance.add(msg.value);
+        require(payout.balance <= payout.limit);
     }
 
     /*
@@ -202,13 +205,15 @@ contract Allocations is AragonApp, Fundable {
     *         processed and funds will be sent the appropriate places.
     *
     */
-    function executePayout(uint256 _payoutId) external payable onlyInit auth(EXECUTE_PAYOUT_ROLE){
+    function executePayout(uint256 _payoutId) external payable auth(EXECUTE_PAYOUT_ROLE) {
         Payout payout = payouts[_payoutId];
         require(!payout.informational);
         require(payout.distSet);
+        
         if(payout.recurring){
+            // TDDO create payout execution counter to ensure payout time tracks payouts
             uint256 payoutTime = payout.startTime.add(payout.period);
-            require(payoutTime > now);
+            require(payoutTime < now);
             payout.startTime = payoutTime;
         } else {
             payout.distSet = false;
@@ -219,27 +224,36 @@ contract Allocations is AragonApp, Fundable {
         for(uint i = 0; i < payout.supports.length; i++){
             totalSupport += payout.supports[i];
         }
-
-        if(this.balance < payout.balance){
+        
+        if(this.balance < payout.balance) {
             revert();
             /*
             For now the vault isn't working see aragon-apps issue #292
-
+        
             uint256 remainingBalance = payout.balance.sub(this.balance);
             require(!(vault.balance(address(0)) < remainingBalance));
             vault.transfer(address(0), this, remainingBalance, new bytes(0));
             */
         }
-
+        
         pointsPer = payout.balance.div(totalSupport);
-
         //handle vault
-
-        for(i = 0; i < payout.candidateAddresses.length; i++){
+        
+        for(i = 0; i < payout.candidateAddresses.length; i++) {
             payout.candidateAddresses[i].transfer(payout.supports[i].mul(pointsPer));
         }
-
+        
         ExecutePayout(_payoutId);
+    }
+
+    function getNumberOfCandidates(uint256 _payoutId) public view returns(uint256 numCandidates) {
+        Payout payout = payouts[_payoutId];
+        numCandidates = payout.supports.length;
+    }
+
+    function getPayoutDistributionValue(uint256 _payoutId, uint256 idx) public view returns(uint256 supports) {
+        Payout payout = payouts[_payoutId];
+        supports = payout.supports[idx];
     }
 
     function () public payable {
