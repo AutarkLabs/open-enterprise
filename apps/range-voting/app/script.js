@@ -4,14 +4,17 @@ import voteSettings, { hasLoadedVoteSettings } from './vote-settings'
 import { EMPTY_CALLSCRIPT } from './vote-utils'
 
 const app = new Aragon()
-let appState
+let appState = {
+  votes: []
+}
 app.events().subscribe(handleEvents)
 app.state().subscribe( (state) => {
   appState = state
 })
 
 async function handleEvents(response){
-  let nextState
+  let nextState = appState
+  console.log(response)
   switch (response.event) {
     case 'CastVote':
       console.info('[RangeVoting > script]: received CastVote')
@@ -109,8 +112,9 @@ function loadVoteData(voteId) {
 }
 
 async function updateVotes(votes, voteId, transform) {
+  console.log("UpdatingVote")
   const voteIndex = votes.findIndex(vote => vote.voteId === voteId)
-
+  console.log("VoteUpdated")
   if (voteIndex === -1) {
     // If we can't find it, load its data, perform the transformation, and concat
     return votes.concat(
@@ -127,7 +131,7 @@ async function updateVotes(votes, voteId, transform) {
 }
 
 async function updateState(state, voteId, transform) {
-  const { votes = [] } = state
+  const { votes = [] } = state ? state : []
 
   return {
     ...state,

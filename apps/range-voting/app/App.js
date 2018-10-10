@@ -117,7 +117,7 @@ class App extends React.Component {
       voteVisible,
     } = this.state
 
-    const displayVotes = settingsLoaded && votes.length > 0
+    const displayVotes = votes.length > 0
     const supportRequired = settingsLoaded
       ? globalCandidateSupportPct / pctBase
       : -1

@@ -388,32 +388,26 @@ contract RangeVoting is IForwarder, AragonApp {
     function getVote(uint256 _voteId) public view returns
     (
         bool open,
-        // bool executed,
         address creator,
         uint64 startDate,
         uint256 snapshotBlock,
-        // uint256 minAcceptQuorum,
-        // uint256 yea,
-        // uint256 nay,
         uint256 candidateSupport,
         uint256 totalVoters,
         uint256 totalParticipation,
-        string metadata,
         bytes executionScript, // script,
         bool executed
     ) { // solium-disable-line lbrace
-        Vote storage voteY = votes[_voteId];
+        Vote storage vote = votes[_voteId];
 
-        open = _isVoteOpen(voteY);
-        creator = voteY.creator;
-        startDate = voteY.startDate;
-        snapshotBlock = voteY.snapshotBlock;
-        candidateSupport = voteY.candidateSupportPct;
-        totalVoters = voteY.totalVoters;
-        totalParticipation = voteY.totalParticipation;
-        metadata = voteY.metadata;
-        executionScript = voteY.executionScript;
-        executed = voteY.executed;
+        open = _isVoteOpen(vote);
+        creator = vote.creator;
+        startDate = vote.startDate;
+        snapshotBlock = vote.snapshotBlock;
+        candidateSupport = vote.candidateSupportPct;
+        totalVoters = vote.totalVoters;
+        totalParticipation = vote.totalParticipation;
+        executionScript = vote.executionScript;
+        executed = vote.executed;
     }
 
     /**
