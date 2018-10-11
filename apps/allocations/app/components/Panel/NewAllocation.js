@@ -18,12 +18,14 @@ import {
   FormField,
   OptionsInput,
   SettingsInput,
+  InputDropDown,
 } from '../Form'
 import { isIntegerString, isStringEmpty } from '../../utils/helpers'
 
 // TODO: Extract to shared
 const AVAILABLE_TOKENS = ['ETH', 'ANT', 'GIV', 'FTL', '🦄']
 const ALLOCATION_TYPES = ['Informational', 'Token Transfer']
+const PAYOUT_TYPES = ['One-Time', 'Monthly']
 const INITIAL_STATE = {
   description: '',
   votingTokens: null,
@@ -32,7 +34,10 @@ const INITIAL_STATE = {
   allocationType: '',
   allocationTypeIndex: 0,
   activePayoutOption: 0,
-  payoutTypes: ['One-Time', 'Monthly'],
+  payoutType: '',
+  payoutTypeIndex: 0,
+  payoutToken: '',
+  payoutTokenIndex: 0,
   amount: null,
 }
 
@@ -53,6 +58,12 @@ class NewAllocation extends React.Component {
   // TODO: Manage dropdown to return a name and value as the rest of inputs
   changeAllocationType = (index, items) => {
     this.setState({ allocationTypeIndex: index, allocationType: items[index] })
+  }
+  changePayoutToken = (index, items) => {
+    this.setState({ payoutTokenIndex: index, payoutToken: items[index] })
+  }
+  changePayoutType = (index, items) => {
+    this.setState({ payoutTypeIndex: index, payoutType: items[index] })
   }
 
   submitAllocation = () => {
@@ -83,6 +94,11 @@ class NewAllocation extends React.Component {
         description={this.props.description}
         submitText="Submit Allocation"
       >
+        { (this.state.allocationTypeIndex == 1) &&
+          <Info.Action title="Warning">
+            This will create a Range Vote and after it closes, it will result in a financial transfer.
+          </Info.Action> 
+        }
         <FormField
           required
           label="Description"
@@ -108,6 +124,39 @@ class NewAllocation extends React.Component {
             />
           }
         />
+        { (this.state.allocationTypeIndex == 1) &&
+          <FormField
+            required
+            separator
+            label="Amount"
+            input={
+              <div>
+                <InputDropDown
+                  textInput={{
+                    name: 'amount',
+                    value: this.state.limit,
+                    onChange: this.changeField,
+                    placeholder: 'e.g. 20',
+                    type: 'number',
+                    min: '0',
+                  }}
+                  dropDown={{
+                    name: 'token',
+                    items: AVAILABLE_TOKENS,
+                    active: this.state.payoutTokenIndex,
+                    onChange: this.changePayoutToken,
+                  }}
+                />
+                <DropDown
+                  name="payoutType"
+                  items={PAYOUT_TYPES}
+                  active={this.state.payoutTypeIndex}
+                  onChange={this.changePayoutType}
+                />
+              </div>
+          }
+        />
+        }
         <FormField
           separator
           label="Options"
