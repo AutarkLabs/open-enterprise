@@ -1,20 +1,18 @@
-import { EmptyStateCard, SidePanel } from '@aragon/ui'
-import { isBefore } from 'date-fns'
-import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-
-import { EMPTY_CALLSCRIPT, getQuorumProgress } from '../range-voting/vote-utils'
-import { hasLoadedVoteSettings } from '../range-voting/vote-settings'
-import { safeDiv } from '../range-voting/math-utils'
-import { VOTE_YEA } from '../range-voting/vote-types'
-import { VotePanelContent } from './Panels'
-import AppLayout from './AppLayout'
-import Votes from './Votes'
-
-import emptyIcon from '../assets/empty-card-icon.svg'
-import tokenBalanceOfAbi from '../abi/token-balanceof.json'
-import tokenDecimalsAbi from '../abi/token-decimals.json'
+import PropTypes from 'prop-types'
+import AppLayout from './components/AppLayout'
+import emptyIcon from './assets/empty-card-icon.svg'
+import Votes from './components/Votes'
+import tokenBalanceOfAbi from './abi/token-balanceof.json'
+import tokenDecimalsAbi from './abi/token-decimals.json'
+import { safeDiv } from './utils/math-utils'
+import { hasLoadedVoteSettings } from './utils/vote-settings'
+import { VOTE_YEA } from './utils/vote-types'
+import { isBefore } from 'date-fns'
+import { EmptyStateCard, SidePanel } from '@aragon/ui'
+import { VotePanelContent } from './components/Panels'
+import { EMPTY_CALLSCRIPT, getQuorumProgress } from './utils/vote-utils'
 
 const tokenAbi = [].concat(tokenBalanceOfAbi, tokenDecimalsAbi)
 

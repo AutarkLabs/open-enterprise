@@ -1,14 +1,15 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Text, theme, font, IconCheck } from '@aragon/ui'
+import { noop } from '../utils/utils'
 
 class TemplateCard extends React.Component {
   static defaultProps = {
     template: null,
     active: false,
-    onSelect: null,
+    onSelect: noop,
     label: '',
-    description: '',
+    description: ''
   }
   handleClick = () => {
     this.props.onSelect(this.props.template)
@@ -22,12 +23,8 @@ class TemplateCard extends React.Component {
             <IconCheck />
           </CheckContainer>
           <img src={icon} alt="" />
-          <Text size="large" color={theme.textPrimary}>
-            {label}
-          </Text>
-          <Text size="xxsmall" color={theme.textTertiary}>
-            {description}
-          </Text>
+          <Text size="large" color={theme.textPrimary}>{label}</Text>
+          <Text size="xxsmall" color={theme.textTertiary}>{description}</Text>
         </Content>
       </Main>
     )

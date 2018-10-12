@@ -8,14 +8,15 @@ const ProgressBar = ({ progress, label }) => (
   <Motion defaultStyle={{ progress: 0 }} style={{ progress: spring(progress) }}>
     {({ progress }) => (
       <Main>
-        <Text size="xsmall" color={theme.textSecondary}>
-	  { label }
-	</Text>
+        <Label>{label}</Label>
         <Base>
           <Progress
             color={theme.accent}
             style={{ width: `${progress * 100}%` }}
           />
+          <Text size="xsmall" color={theme.textSecondary}>
+            {Math.round(progress * 100)}%
+          </Text>
         </Base>
       </Main>
     )}
@@ -32,21 +33,26 @@ ProgressBar.propTypes = {
   progress: PropTypes.number,
 }
 
+const Label = styled.p`
+  margin-top: 1rem;
+  margin-bottom: .5rem;
+`
+
 const Main = styled.div`
   width: 100%;
   align-items: center;
 `
 const Base = styled.div`
   width: 100%;
-  height: 6px;
-  background-color: #edf3f6;
+  height: 20px;
+  background: #edf3f6;
   border-radius: 2px;
   text-align: right;
   line-height: 14px;
   padding-right: 6px;
 `
 const Progress = styled.div`
-  height: 6px;
+  height: 20px;
   background: ${({ color }) => color};
   border-radius: 2px;
   float: left;

@@ -1,39 +1,29 @@
-import Aragon from '@aragon/client'
+import Aragon, { providers } from '@aragon/client'
 import { combineLatest } from './rxjs'
-import voteSettings, { hasLoadedVoteSettings } from './vote-settings'
-import { EMPTY_CALLSCRIPT } from './vote-utils'
+import voteSettings, { hasLoadedVoteSettings } from './range-voting/vote-settings'
+import { EMPTY_CALLSCRIPT } from './range-voting/vote-utils'
 
 const app = new Aragon()
-let appState = {
-  votes: []
-}
-app.events().subscribe(handleEvents)
-app.state().subscribe( (state) => {
-  appState = state
+// Hook up the script as an aragon.js store
+app.store(async (state, { event, returnValues }) => {
+  let nextState = {
+    ...state,
+    // Fetch the app's settings, if we haven't already
+    //...(!hasLoadedVoteSettings(state) ? await loadVoteSettings() : {}),
+  }
+
+  switch (event) {
+  case 'StartVote':
+    nextState = await startVote(nextState, returnValues)
+    console.log("Vote Started")
+    console.log(nextState)
+    break
+  }
+
+  return nextState
 })
 
-async function handleEvents(response){
-  let nextState = appState
-  console.log(response)
-  switch (response.event) {
-    case 'CastVote':
-      console.info('[RangeVoting > script]: received CastVote')
-      nextState = await castVote(nextState, response.returnValues)
-      break
-    case 'ExecuteVote':
-      console.info('[RangeVoting > script]: received ExecuteVote')
 
-      nextState = await executeVote(nextState, response.returnValues)
-      break
-    case 'StartVote':
-      console.info('[RangeVoting > script]: received StartVote')
-      nextState = await startVote(nextState, response.returnValues)
-      break
-    default:
-      break
-  }
-  app.cache('state', nextState)
-}
 
 /***********************
  *                     *
@@ -42,8 +32,6 @@ async function handleEvents(response){
  ***********************/
 
 async function castVote(state, { voteId }) {
-  // Let's just reload the entire vote again,
-  // cause do we really want more than one source of truth with a blockchain?
   const transform = async vote => ({
     ...vote,
     data: await loadVoteData(voteId),
@@ -70,15 +58,11 @@ async function startVote(state, { voteId }) {
  ***********************/
 
 async function loadVoteDescription(vote) {
-  if (!vote.executionScript || vote.executionScript === EMPTY_CALLSCRIPT) {
-    console.info(
-      '[RangeVoting > script] loadVoteDescription: No description found for:',
-      vote
-    )
+  if (!vote.script || vote.script === EMPTY_CALLSCRIPT) {
     return vote
   }
 
-  const path = await app.describeScript(vote.executionScript).toPromise()
+  const path = await app.describeScript(vote.script).toPromise()
 
   vote.description = path
     .map(step => {
@@ -93,7 +77,6 @@ async function loadVoteDescription(vote) {
 }
 
 function loadVoteData(voteId) {
-  console.info('[RangeVoting > script]: loadVoteData')
   return new Promise(resolve => {
     combineLatest(
       app.call('getVote', voteId),
@@ -112,9 +95,8 @@ function loadVoteData(voteId) {
 }
 
 async function updateVotes(votes, voteId, transform) {
-  console.log("UpdatingVote")
   const voteIndex = votes.findIndex(vote => vote.voteId === voteId)
-  console.log("VoteUpdated")
+
   if (voteIndex === -1) {
     // If we can't find it, load its data, perform the transformation, and concat
     return votes.concat(
@@ -131,7 +113,7 @@ async function updateVotes(votes, voteId, transform) {
 }
 
 async function updateState(state, voteId, transform) {
-  const { votes = [] } = state ? state : []
+  const { votes = [] } = state
 
   return {
     ...state,
@@ -167,7 +149,7 @@ function loadVoteSettings() {
       settings.reduce((acc, setting) => ({ ...acc, ...setting }), {})
     )
     .catch(err => {
-      console.error('[RangeVoting > script] Failed to load Vote settings', err)
+      console.error('Failed to load Vote settings', err)
       // Return an empty object to try again later
       return {}
     })
@@ -175,26 +157,30 @@ function loadVoteSettings() {
 
 // Apply transmations to a vote received from web3
 // Note: ignores the 'open' field as we calculate that locally
+// 
 function marshallVote({
-  open,
   creator,
-  startDate,
-  snapshotBlock,
-  candidateSupport,
-  totalVoters,
-  metadata,
-  executionScript,
   executed,
+  minAcceptQuorum,
+  nay,
+  snapshotBlock,
+  startDate,
+  totalVoters,
+  yea,
+  script,
+  description,
 }) {
   return {
-    open,
     creator,
-    startDate: parseInt(startDate, 10) * 1000, // adjust for js time (in ms vs s)
-    snapshotBlock: parseInt(snapshotBlock, 10),
-    candidateSupport: parseInt(candidateSupport, 10),
-    totalVoters: parseInt(totalVoters, 10),
-    metadata,
-    executionScript,
     executed,
+    minAcceptQuorum: parseInt(minAcceptQuorum, 10),
+    nay: parseInt(nay, 10),
+    snapshotBlock: parseInt(snapshotBlock, 10),
+    startDate: parseInt(startDate, 10) * 1000, // adjust for js time (in ms vs s)
+    totalVoters: parseInt(totalVoters, 10),
+    yea: parseInt(yea, 10),
+    script,
+    description,
   }
 }
+
