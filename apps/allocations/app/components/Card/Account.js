@@ -14,9 +14,6 @@ import {
   theme,
 } from '@aragon/ui'
 
-// import provideNetwork from '../../utils/provideNetwork'
-
-
 const Account = ({
   id,
   proxy,
@@ -46,9 +43,8 @@ const Account = ({
 
   const truncatedProxy = `${proxy.slice(0, 6)}...${proxy.slice(-4)}`
   const translatedToken = translateToken(token)
- // const { network: { etherscanBaseUrl } } = this.props
 
-
+//TODO: use {etherScanBaseUrl instead of hard coded rinkeby}
   return (
     <StyledCard>
       <MenuContainer>
@@ -68,7 +64,9 @@ const Account = ({
       <CardAddress>
           <SafeLink
             href={`https://rinkeby.etherscan.io/address/${proxy}`}
-            target="_blank">
+            title={`${proxy}`}
+            target="_blank"
+			>
             {truncatedProxy}
           </SafeLink>
       </CardAddress>
@@ -115,11 +113,10 @@ const ActionLabel = styled.span`
 `
 
 const CardTitle = styled(Text.Block).attrs({
-  size: 'large',
+  size: 'xxlarge',
 })`
   text-align: center;
   font-weight: bold;
-  font-size: 20px;
   color: ${theme.textPrimary};
 `
 
