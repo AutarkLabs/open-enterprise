@@ -107,6 +107,7 @@ const MenuContainer = styled.div`
   float: right;
   margin-top: 1rem;
   margin-right: 1rem;
+  align-items: center;
 `
 
 const ActionLabel = styled.span`
@@ -136,7 +137,7 @@ const IconContainer = styled.img.attrs({
 })`
   alt: ${({ description }) => description} 'icon';
   margin-top: 4rem;
-  margin-left: 110px;
+  margin-left: 120px;
 `
 
 const StatsContainer = styled.div`
