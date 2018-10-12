@@ -3,7 +3,7 @@ import { hot } from 'react-hot-loader'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
-import { AragonApp, AppBar, Button, SidePanel, IconAdd } from '@aragon/ui'
+import { AragonApp, AppBar, Button, SidePanel, IconAdd, observe } from '@aragon/ui'
 import AppLayout from './components/AppLayout'
 import Decisions from './Decisions'
 import { NewPayoutVotePanelContent } from './components/Panels'
