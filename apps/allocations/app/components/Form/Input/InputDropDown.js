@@ -33,7 +33,7 @@ const StyledInputDropDown = styled.div`
       border: 1px solid ${theme.contentBorderActive};
     }
   }
-  > :last-child > : first-child {
+  > :last-child > :first-child {
     border-radius: 0 3px 3px 0;
     margin-left: -1px;
   }

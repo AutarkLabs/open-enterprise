@@ -135,7 +135,7 @@ class NewAllocation extends React.Component {
             separator
             label="Amount"
             input={
-              <div style={{ display: 'flex', background: 'red' }}>
+              <div style={{ display: 'flex' }}>
                 <InputDropDown
                   textInput={{
                     name: 'amount',
@@ -195,7 +195,7 @@ class NewAllocation extends React.Component {
 const RecurringDropDown = ({ dropDown }) => {
   return (
     <StyledRecurringDropDown>
-      <DropDown {...dropDown} />
+      <DropDown {...dropDown} wide />
     </StyledRecurringDropDown>
   )
 }

@@ -20,12 +20,6 @@ InputDropDown.propTypes = {
 
 const StyledInputDropDown = styled.div`
   display: inline-flex;
-
-  > :last-child > : first-child {
-    border-radius: 0 3px 3px 0;
-    margin-left: -1px;
-  }
-
   > :first-child {
     border-radius: 3px 0 0 3px;
     border: 1px solid ${theme.contentBorder};
@@ -36,6 +30,10 @@ const StyledInputDropDown = styled.div`
       outline: 0;
       border: 1px solid ${theme.contentBorderActive};
     }
+  }
+  > :last-child > :first-child {
+    border-radius: 0 3px 3px 0;
+    margin-left: -1px;
   }
 `
 
