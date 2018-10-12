@@ -394,6 +394,7 @@ contract RangeVoting is IForwarder, AragonApp {
         uint256 candidateSupport,
         uint256 totalVoters,
         uint256 totalParticipation,
+        uint256 totalCandidates,
         bytes executionScript, // script,
         bool executed
     ) { // solium-disable-line lbrace
@@ -407,6 +408,7 @@ contract RangeVoting is IForwarder, AragonApp {
         totalVoters = vote.totalVoters;
         totalParticipation = vote.totalParticipation;
         executionScript = vote.executionScript;
+        totalCandidates = vote.candidateKeys.length;
         executed = vote.executed;
     }
 

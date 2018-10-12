@@ -1,7 +1,7 @@
 import Aragon from '@aragon/client'
 import { combineLatest } from './rxjs'
-import voteSettings, { hasLoadedVoteSettings } from './vote-settings'
-import { EMPTY_CALLSCRIPT } from './vote-utils'
+import voteSettings, { hasLoadedVoteSettings } from './utils/vote-settings'
+import { EMPTY_CALLSCRIPT } from './utils/vote-utils'
 
 const app = new Aragon()
 let appState = {
@@ -32,6 +32,7 @@ async function handleEvents(response){
     default:
       break
   }
+  console.log(nextState)
   app.cache('state', nextState)
 }
 

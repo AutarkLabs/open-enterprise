@@ -66,7 +66,10 @@ class App extends React.Component {
           </AppLayout.Header>
           <AppLayout.ScrollWrapper>
             <AppLayout.Content>
-              <Decisions onActivate={this.handlePanelOpen} />
+              <Decisions 
+                onActivate={this.handlePanelOpen}
+                votes={ (this.props.votes !== undefined) ?  this.props.votes : []}
+              />
             </AppLayout.Content>
           </AppLayout.ScrollWrapper>
         </AppLayout>
