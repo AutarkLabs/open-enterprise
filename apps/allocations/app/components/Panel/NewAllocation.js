@@ -69,7 +69,7 @@ class NewAllocation extends React.Component {
   submitAllocation = () => {
     // clear input here.
     let informational = this.state.allocationTypeIndex == 0
-    let recurring = ! informational && this.state.payoutTypeIndex != 0
+    let recurring = !informational && this.state.payoutTypeIndex != 0
     // TODO: period should be smarter: now the only option is monthly
     let period = recurring ? 86400 * 31 : 0
 
@@ -79,7 +79,7 @@ class NewAllocation extends React.Component {
       information: informational,
       recurring: recurring,
       period: period,
-      balance: this.props.limit
+      balance: this.props.limit,
     }
 
     this.props.onSubmitAllocation(allocation)
@@ -98,11 +98,12 @@ class NewAllocation extends React.Component {
         description={this.props.description}
         submitText="Submit Allocation"
       >
-        { (this.state.allocationTypeIndex == 1) &&
+        {this.state.allocationTypeIndex == 1 && (
           <Info.Action title="Warning">
-            This will create a Range Vote and after it closes, it will result in a financial transfer.
+            This will create a Range Vote and after it closes, it will result in
+            a financial transfer.
           </Info.Action>
-        }
+        )}
         <FormField
           required
           label="Description"
@@ -128,13 +129,13 @@ class NewAllocation extends React.Component {
             />
           }
         />
-        { (this.state.allocationTypeIndex == 1) &&
+        {this.state.allocationTypeIndex == 1 && (
           <FormField
             required
             separator
             label="Amount"
             input={
-              <div style={{ display: 'inline-flex'}}>
+              <div style={{ display: 'flex', background: 'red' }}>
                 <InputDropDown
                   textInput={{
                     name: 'amount',
@@ -152,16 +153,16 @@ class NewAllocation extends React.Component {
                 />
                 <RecurringDropDown
                   dropDown={{
-                  name: 'payoutType',
-                  items: PAYOUT_TYPES,
-                  active: this.state.payoutTypeIndex,
-                  onChange: this.changePayoutType,
-                }}
+                    name: 'payoutType',
+                    items: PAYOUT_TYPES,
+                    active: this.state.payoutTypeIndex,
+                    onChange: this.changePayoutType,
+                  }}
                 />
               </div>
-          }
-        />
-        }
+            }
+          />
+        )}
         <FormField
           separator
           label="Options"
@@ -191,17 +192,17 @@ class NewAllocation extends React.Component {
   }
 }
 
-const RecurringDropDown = ({dropDown}) => {
+const RecurringDropDown = ({ dropDown }) => {
   return (
     <StyledRecurringDropDown>
       <DropDown {...dropDown} />
-  </StyledRecurringDropDown>
+    </StyledRecurringDropDown>
   )
 }
 
-
 const StyledRecurringDropDown = styled.div`
-  margin-left: 30px;
+  margin-left: 17px;
+  width: 162px;
 `
 
 export default NewAllocation
