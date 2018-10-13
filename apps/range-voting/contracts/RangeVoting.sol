@@ -165,18 +165,6 @@ contract RangeVoting is IForwarder, AragonApp {
 ///////////////////////
 
 
-    // /**
-    // * @notice Change minimum acceptance quorum to `(_minAcceptQuorumPct - _minAcceptQuorumPct % 10^16) / 10^14`%
-    // * @param _minAcceptQuorumPct New acceptance quorum
-    // */
-    // function changeMinAcceptQuorumPct(uint256 _minAcceptQuorumPct) authP(MODIFY_QUORUM_ROLE, arr(_minAcceptQuorumPct, minAcceptQuorumPct)) isInitialized external {
-    //     require(_minAcceptQuorumPct > 0);
-    //     require(supportRequiredPct >= _minAcceptQuorumPct);
-    //     minAcceptQuorumPct = _minAcceptQuorumPct;
-
-    //     ChangeMinQuorum(_minAcceptQuorumPct);
-    // }
-
     /**
     * @notice Create a new vote about "`_metadata`"
     * @param _executionScript EVM script to be executed on approval
@@ -190,33 +178,7 @@ contract RangeVoting is IForwarder, AragonApp {
         // return _newVote(_executionScript, _metadata, true);
     }
 
-    // /**
-    //  * @notice Create a new vote about "`_metadata`"
-    //  * @param _executionScript EVM script to be executed on approval
-    //  * @param _metadata Vote metadata
-    //  * @param _castVote Whether to also cast newly created vote
-    //  * @return voteId id for newly created vote
-    //  */
-    // function newVote(bytes _executionScript, string _metadata, bool _castVote) auth(CREATE_VOTES_ROLE) external returns (uint256 voteId) {
-    //     return _newVote(_executionScript, _metadata, _castVote);
-    // }
-
-    // /**
-    // * @notice Vote `_supports ? 'yea' : 'nay'` in vote #`_voteId`
-    // * @param _voteId Id for vote
-    // * @param _supports Whether voter supports the vote
-    // * @param _executesIfDecided Whether the vote should execute its action if it becomes decided
-    // */
     /**
-    // function vote(uint256 _voteId, bool _supports, bool _executesIfDecided) isInitialized external {
-    //     require(canVote(_voteId, msg.sender));
-    //     _vote(
-    //         _voteId,
-    //         _supports,
-    //         msg.sender,
-    //         _executesIfDecided
-    //     );
-    // }
     * @notice Allows a token holder to caste a vote on the current options.
     * @param _voteId id for vote structure this 'ballot action' is connected to
     * @param _supports Array of support weights in order of their order in
@@ -471,7 +433,6 @@ contract RangeVoting is IForwarder, AragonApp {
     function _newVote(bytes _executionScript, string _metadata) internal
     isInitialized returns (uint256 voteId)
     {
-    // function _newVote(bytes _executionScript, string _metadata, bool _castVote) isInitialized internal returns (uint256 voteId) {
         voteId = votes.length++;
         Vote storage voteZ = votes[voteId];
         voteZ.executionScript = _executionScript;
@@ -559,10 +520,8 @@ contract RangeVoting is IForwarder, AragonApp {
     */
     function _vote(
         uint256 _voteId,
-        // bool _supports,
         uint256[] _supports,
         address _voter
-        // bool _executesIfDecided
     ) internal
     {
         Vote storage vote = votes[_voteId];
@@ -606,7 +565,6 @@ contract RangeVoting is IForwarder, AragonApp {
         }
 
         vote.voters[msg.sender] = _supports;
-        // vote.totalParticipation = vote.totalParticipation.sub(oldVoteSupport[i]);
     }
 
     /**
