@@ -1,6 +1,6 @@
 {
   "appName": "range-voting.aragonpm.eth",
-  "version": "31.0.0",
+  "version": "1.0.0",
   "roles": [
     {
       "name": "Create new votes",

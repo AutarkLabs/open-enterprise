@@ -6,6 +6,7 @@ import styled from 'styled-components'
 import { AragonApp, AppBar, Button, SidePanel, IconAdd, observe } from '@aragon/ui'
 import AppLayout from './components/AppLayout'
 import Decisions from './Decisions'
+import { hasLoadedVoteSettings } from './vote-settings'
 import { NewPayoutVotePanelContent } from './components/Panels'
 
 const initialState = {
@@ -25,6 +26,17 @@ class App extends React.Component {
     this.state = {
       ...initialState,
     }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { settingsLoaded } = this.state
+    // Is this the first time we've loaded the settings?
+    if (!settingsLoaded && hasLoadedVoteSettings(nextProps)) {
+      this.setState({
+        settingsLoaded: true,
+      })
+    }
+    console.log(this.state)
   }
 
   handlePanelOpen = () => {
@@ -69,6 +81,8 @@ class App extends React.Component {
               <Decisions 
                 onActivate={this.handlePanelOpen}
                 votes={ (this.props.votes !== undefined) ?  this.props.votes : []}
+                voteTime = { this.props.voteTime }
+                supportRequiredPct = { this.props.supportRequiredPct }
               />
             </AppLayout.Content>
           </AppLayout.ScrollWrapper>

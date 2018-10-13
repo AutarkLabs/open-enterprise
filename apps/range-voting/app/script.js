@@ -13,7 +13,10 @@ app.state().subscribe( (state) => {
 })
 
 async function handleEvents(response){
-  let nextState = appState
+  let nextState = 
+  {...appState,
+    ...(!hasLoadedVoteSettings(state) ? await loadVoteSettings() : {}),
+  }    
   switch (response.event) {
     case 'CastVote':
       console.info('[RangeVoting > script]: received CastVote')
@@ -185,6 +188,7 @@ async function updateState(state, voteId, transform, candidate = null) {
 }
 
 function loadVoteSettings() {
+  console.log("loadingVoteSettings")
   return Promise.all(
     voteSettings.map(
       ([name, key, type = 'string']) =>
@@ -212,7 +216,7 @@ function loadVoteSettings() {
       settings.reduce((acc, setting) => ({ ...acc, ...setting }), {})
     )
     .catch(err => {
-      console.error('[RangeVoting > script] Failed to load Vote settings', err)
+      console.error('Failed to load Vote settings', err)
       // Return an empty object to try again later
       return {}
     })
