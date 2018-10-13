@@ -28,9 +28,15 @@ async function handleEvents(response){
       console.info('[RangeVoting > script]: received StartVote')
       nextState = await startVote(nextState, response.returnValues)
       break
+    case 'AddCandidate':
+      console.info('[RangeVoting > script]: received AddCandidate')
+      nextState = await addCandidate(nextState, response.returnValues)
+      break
     default:
       break
   }
+  console.log('[RangeVoting > script]: end state')
+  console.log(nextState)  
   app.cache('state', nextState)
 }
 
@@ -60,6 +66,10 @@ async function executeVote(state, { voteId }) {
 
 async function startVote(state, { voteId }) {
   return updateState(state, voteId, vote => vote)
+}
+
+async function addCandidate(state, { voteId, candidate}) {
+  return updateState(state, voteId, vote => vote, candidate)
 }
 
 /***********************
@@ -122,17 +132,53 @@ async function updateVotes(votes, voteId, transform) {
     )
   } else {
     const nextVotes = Array.from(votes)
+    let options = nextVotes[voteIndex].data.options
     nextVotes[voteIndex] = await transform(nextVotes[voteIndex])
+    nextVotes[voteIndex].data.options = options
     return nextVotes
   }
 }
 
-async function updateState(state, voteId, transform) {
-  const { votes = [] } = state ? state : []
+async function updateCandidate(votes, voteId, candidate) {
+  const voteIndex = votes.findIndex(vote => vote.voteId === voteId)
+  let nextVotes
+  if (voteIndex === -1) {
+    // If we can't find it, load its data, perform the transformation, and concat
+    nextVotes = Array.from(votes)
+    nextVotes.push(
+      {
+        voteId,
+        data: {
+          options: {
+            label: candidate,
+            value: 0
+          }
+        }
+      }
+    )
+  } else {
+    nextVotes = Array.from(votes)
+    if(nextVotes[voteIndex].data.options === undefined){
+      nextVotes[voteIndex].data.options = []
+    }
+    nextVotes[voteIndex].data.options.push({
+      label: candidate,
+      value: 0
+    })
+  }
+  return nextVotes  
+}
 
+async function updateState(state, voteId, transform, candidate = null) {
+  let { votes = [] } = state ? state : []
+  if(candidate != null){
+    votes = await updateCandidate(votes, voteId, candidate)
+  } else {
+    votes = await updateVotes(votes, voteId, transform)
+  }
   return {
     ...state,
-    votes: await updateVotes(votes, voteId, transform),
+    votes: votes,
   }
 }
 
@@ -181,22 +227,13 @@ function marshallVote({
   totalVoters,
   totalParticipation,
   totalCandidates,
+  options,
   metadata,
   executionScript,
   executed,
 }) {
-  let options = []
+  options = options ? options: []
   let voteData = {}
-  for(let i; i < totalCandidates; i ++){
-    app.call('getCandidate', voteId, i).subscribe( (data) => {
-      console.log(data)
-      voteData = {
-        label: data.metadata,
-        value: paseInt(data.voteSupport, 10)
-      }
-    })    
-    options = [...options, voteData]
-  }
   return {
     open,
     creator,

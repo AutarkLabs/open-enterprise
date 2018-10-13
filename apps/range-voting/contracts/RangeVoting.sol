@@ -108,7 +108,7 @@ contract RangeVoting is IForwarder, AragonApp {
     event ExecuteVote(uint256 indexed voteId);
     event ChangeCandidateSupport(uint256 candidateSupportPct);
     event ExecutionScript(bytes script, uint256 data);
-    event AddCandidate(address candidate);
+    event AddCandidate(uint256 indexed voteId, address candidate);
 
 ////////////////
 // Constructor
@@ -225,7 +225,8 @@ contract RangeVoting is IForwarder, AragonApp {
         // double check
         candidateDescriptions[cKey] = _description;
         voteA.candidateKeys.push(cKey);
-        voteA.candidateKeys.length = voteA.candidateKeys.length++;        
+        voteA.candidateKeys.length = voteA.candidateKeys.length++;
+        emit AddCandidate(_voteId, _description);
     }
 
     /**
@@ -452,9 +453,6 @@ contract RangeVoting is IForwarder, AragonApp {
             voteZ.scriptOffset = scriptOffset;
             voteZ.scriptRemainder = scriptRemainder;    
         }
-        /*
-
-        */
         emit StartVote(voteId);
     }
 
@@ -493,7 +491,6 @@ contract RangeVoting is IForwarder, AragonApp {
             currentCandidate = _executionScript.addressAt(currentOffset + 0x0C);
             currentOffset = currentOffset + 0x20;
             addCandidate(_voteId, new bytes(0), currentCandidate);
-            emit AddCandidate(currentCandidate);
         }
         // Skip the next param since it's also determined by this contract
         // In order to do this we move the offsett one word for the length of the param
