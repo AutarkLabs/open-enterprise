@@ -136,27 +136,17 @@ contract RangeVoting is IForwarder, AragonApp {
         MiniMeToken _token,
         uint256 _minParticipationPct,
         uint256 _candidateSupportPct,
-        // uint256 _supportRequiredPct,
-        // uint256 _minAcceptQuorumPct,
         uint64 _voteTime
     ) external onlyInit
     {
         initialized();
-
         require(_minParticipationPct > 0); // solium-disable-line error-reason
         require(_minParticipationPct <= PCT_BASE); // solium-disable-line error-reason
         require(_minParticipationPct >= _candidateSupportPct); // solium-disable-line error-reason
-        // require(_minAcceptQuorumPct > 0);
-        // require(_supportRequiredPct <= PCT_BASE);
-        // require(_supportRequiredPct >= _minAcceptQuorumPct);
-
         token = _token;
         minParticipationPct = _minParticipationPct;
         globalCandidateSupportPct = _candidateSupportPct;
-        // supportRequiredPct = _supportRequiredPct;
-        // minAcceptQuorumPct = _minAcceptQuorumPct;
         voteTime = _voteTime;
-
         votes.length += 1;
     }
     
@@ -225,7 +215,6 @@ contract RangeVoting is IForwarder, AragonApp {
         // double check
         candidateDescriptions[cKey] = _description;
         voteA.candidateKeys.push(cKey);
-        voteA.candidateKeys.length = voteA.candidateKeys.length++;
         emit AddCandidate(_voteId, _description);
     }
 

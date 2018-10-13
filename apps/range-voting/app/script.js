@@ -36,7 +36,8 @@ async function handleEvents(response){
       break
   }
   console.log('[RangeVoting > script]: end state')
-  console.log(nextState)  
+  console.log(nextState)
+  appState = nextState
   app.cache('state', nextState)
 }
 
@@ -122,21 +123,22 @@ function loadVoteData(voteId) {
 
 async function updateVotes(votes, voteId, transform) {
   const voteIndex = votes.findIndex(vote => vote.voteId === voteId)
+  let nextVotes = Array.from(votes)
   if (voteIndex === -1) {
     // If we can't find it, load its data, perform the transformation, and concat
-    return votes.concat(
+    console.log("Vote Not Found")
+    nextVotes =  votes.concat(
       await transform({
         voteId,
         data: await loadVoteData(voteId),
       })
     )
   } else {
-    const nextVotes = Array.from(votes)
-    let options = nextVotes[voteIndex].data.options
+    let options = nextVotes[voteIndex].data.options             
     nextVotes[voteIndex] = await transform(nextVotes[voteIndex])
-    nextVotes[voteIndex].data.options = options
-    return nextVotes
+    nextVotes[voteIndex].data.options = options      
   }
+  return nextVotes
 }
 
 async function updateCandidate(votes, voteId, candidate) {
@@ -149,10 +151,10 @@ async function updateCandidate(votes, voteId, candidate) {
       {
         voteId,
         data: {
-          options: {
+          options: [{
             label: candidate,
             value: 0
-          }
+          }]
         }
       }
     )
@@ -232,7 +234,7 @@ function marshallVote({
   executionScript,
   executed,
 }) {
-  options = options ? options: []
+  options = options !== undefined ? options: []
   let voteData = {}
   return {
     open,
