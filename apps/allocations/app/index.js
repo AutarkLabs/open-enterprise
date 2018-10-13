@@ -32,6 +32,7 @@ class ConnectedApp extends React.Component {
     }
     if (data.name === 'ready') {
       const { app } = this.state
+      console.log('received a ready from the wrapper')
       this.sendMessageToWrapper('ready', true)
       this.setState({
         observable: app.state(),
@@ -45,7 +46,7 @@ class ConnectedApp extends React.Component {
     }
   }
   sendMessageToWrapper = (name, value) => {
-    console.log("Sending message to wrapper")
+    console.log('Sending message to wrapper')
     window.parent.postMessage({ from: 'app', name, value }, '*')
     
   }
