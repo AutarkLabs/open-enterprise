@@ -14,7 +14,6 @@ app.state().subscribe( (state) => {
 
 async function handleEvents(response){
   let nextState = appState
-  console.log(response)
   switch (response.event) {
     case 'CastVote':
       console.info('[RangeVoting > script]: received CastVote')
@@ -32,7 +31,6 @@ async function handleEvents(response){
     default:
       break
   }
-  console.log(nextState)
   app.cache('state', nextState)
 }
 
@@ -113,9 +111,7 @@ function loadVoteData(voteId) {
 }
 
 async function updateVotes(votes, voteId, transform) {
-  console.log("UpdatingVote")
   const voteIndex = votes.findIndex(vote => vote.voteId === voteId)
-  console.log("VoteUpdated")
   if (voteIndex === -1) {
     // If we can't find it, load its data, perform the transformation, and concat
     return votes.concat(
@@ -192,7 +188,6 @@ function marshallVote({
   let options = []
   let voteData = {}
   for(let i; i < totalCandidates; i ++){
-    console.log()
     app.call('getCandidate', voteId, i).subscribe( (data) => {
       console.log(data)
       voteData = {
