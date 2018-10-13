@@ -88,7 +88,7 @@ Account.propTypes = {
   proxy: PropTypes.string.isRequired,
   limit: PropTypes.string.isRequired, // We are receiving this as string, parseInt if needed
   token: PropTypes.string.isRequired,
-  balance: PropTypes.number.isRequired,
+  balance: PropTypes.string.isRequired, // We are receiving this as string, parseInt if needed
   description: PropTypes.string.isRequired,
   onNewAllocation: PropTypes.func.isRequired,
   onManageParameters: PropTypes.func.isRequired,
