@@ -37,7 +37,7 @@ class App extends React.Component {
   submitAllocation = allocation => {
     this.props.app.setDistribution(
       allocation.addresses,
-      new Array(allocation.addresses),
+      [],
       allocation.payoutId,
       allocation.informational,
       allocation.recurring,
