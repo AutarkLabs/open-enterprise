@@ -183,10 +183,25 @@ function marshallVote({
   snapshotBlock,
   candidateSupport,
   totalVoters,
+  totalParticipation,
+  totalCandidates,
   metadata,
   executionScript,
   executed,
 }) {
+  let options = []
+  let voteData = {}
+  for(let i; i < totalCandidates; i ++){
+    console.log()
+    app.call('getCandidate', voteId, i).subscribe( (data) => {
+      console.log(data)
+      voteData = {
+        label: data.metadata,
+        value: paseInt(data.voteSupport, 10)
+      }
+    })    
+    options = [...options, voteData]
+  }
   return {
     open,
     creator,
@@ -194,6 +209,9 @@ function marshallVote({
     snapshotBlock: parseInt(snapshotBlock, 10),
     candidateSupport: parseInt(candidateSupport, 10),
     totalVoters: parseInt(totalVoters, 10),
+    totalParticipation: parseInt(totalParticipation, 10),
+    totalCandidates:  parseInt(totalParticipation, 10),
+    options,
     metadata,
     executionScript,
     executed,
