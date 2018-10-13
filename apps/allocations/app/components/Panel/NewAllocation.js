@@ -38,7 +38,7 @@ const INITIAL_STATE = {
 
 class NewAllocation extends React.Component {
   static propTypes = {
-    key: PropTypes.number.isRequired,
+    // key: PropTypes.number.isRequired, // TODO: Check the use of this required prop
     onSubmitAllocation: PropTypes.func.isRequired,
     description: PropTypes.string,
   }
@@ -65,7 +65,7 @@ class NewAllocation extends React.Component {
       information: informational,
       recurring: false,
       period: 3600,
-      balance: this.props.limit
+      balance: this.props.limit,
     }
     this.props.onSubmitAllocation(allocation)
     this.setState(INITIAL_STATE)
