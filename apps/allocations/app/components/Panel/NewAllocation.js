@@ -18,12 +18,14 @@ import {
   FormField,
   OptionsInput,
   SettingsInput,
+  InputDropDown,
 } from '../Form'
 import { isIntegerString, isStringEmpty } from '../../utils/helpers'
 
 // TODO: Extract to shared
 const AVAILABLE_TOKENS = ['ETH', 'ANT', 'GIV', 'FTL', '🦄']
 const ALLOCATION_TYPES = ['Informational', 'Token Transfer']
+const PAYOUT_TYPES = ['One-Time', 'Monthly']
 const INITIAL_STATE = {
   description: '',
   votingTokens: null,
@@ -32,7 +34,10 @@ const INITIAL_STATE = {
   allocationType: '',
   allocationTypeIndex: 0,
   activePayoutOption: 0,
-  payoutTypes: ['One-Time', 'Monthly'],
+  payoutType: '',
+  payoutTypeIndex: 0,
+  payoutToken: '',
+  payoutTokenIndex: 0,
   amount: null,
 }
 
@@ -54,19 +59,29 @@ class NewAllocation extends React.Component {
   changeAllocationType = (index, items) => {
     this.setState({ allocationTypeIndex: index, allocationType: items[index] })
   }
+  changePayoutToken = (index, items) => {
+    this.setState({ payoutTokenIndex: index, payoutToken: items[index] })
+  }
+  changePayoutType = (index, items) => {
+    this.setState({ payoutTypeIndex: index, payoutType: items[index] })
+  }
 
   submitAllocation = () => {
     // clear input here.
     let informational = this.state.allocationTypeIndex == 0
-    // TO-DO :: Recurring needs to be set!!!
+    let recurring = !informational && this.state.payoutTypeIndex != 0
+    // TODO: period should be smarter: now the only option is monthly
+    let period = recurring ? 86400 * 31 : 0
+
     let allocation = {
       addresses: this.state.options,
       payoutId: this.props.id,
       information: informational,
-      recurring: false,
-      period: 3600,
-      balance: this.props.limit
+      recurring: recurring,
+      period: period,
+      balance: this.props.limit,
     }
+
     this.props.onSubmitAllocation(allocation)
     this.setState(INITIAL_STATE)
     console.info('New Allocation: submitting...')
@@ -83,6 +98,12 @@ class NewAllocation extends React.Component {
         description={this.props.description}
         submitText="Submit Allocation"
       >
+        {this.state.allocationTypeIndex == 1 && (
+          <Info.Action title="Warning">
+            This will create a Range Vote and after it closes, it will result in
+            a financial transfer.
+          </Info.Action>
+        )}
         <FormField
           required
           label="Description"
@@ -108,6 +129,40 @@ class NewAllocation extends React.Component {
             />
           }
         />
+        {this.state.allocationTypeIndex == 1 && (
+          <FormField
+            required
+            separator
+            label="Amount"
+            input={
+              <div style={{ display: 'flex' }}>
+                <InputDropDown
+                  textInput={{
+                    name: 'amount',
+                    value: this.state.limit,
+                    onChange: this.changeField,
+                    type: 'number',
+                    min: '0',
+                  }}
+                  dropDown={{
+                    name: 'token',
+                    items: AVAILABLE_TOKENS,
+                    active: this.state.payoutTokenIndex,
+                    onChange: this.changePayoutToken,
+                  }}
+                />
+                <RecurringDropDown
+                  dropDown={{
+                    name: 'payoutType',
+                    items: PAYOUT_TYPES,
+                    active: this.state.payoutTypeIndex,
+                    onChange: this.changePayoutType,
+                  }}
+                />
+              </div>
+            }
+          />
+        )}
         <FormField
           separator
           label="Options"
@@ -136,6 +191,19 @@ class NewAllocation extends React.Component {
     )
   }
 }
+
+const RecurringDropDown = ({ dropDown }) => {
+  return (
+    <StyledRecurringDropDown>
+      <DropDown {...dropDown} wide />
+    </StyledRecurringDropDown>
+  )
+}
+
+const StyledRecurringDropDown = styled.div`
+  margin-left: 17px;
+  width: 162px;
+`
 
 export default NewAllocation
 

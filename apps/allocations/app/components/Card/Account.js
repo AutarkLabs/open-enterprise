@@ -3,9 +3,16 @@ import styled from 'styled-components'
 import icon from '../../assets/account-card.svg'
 import PropTypes from 'prop-types'
 
-import { Card, Text, theme } from '@aragon/ui'
-
-import { ContextMenuItems } from '.'
+import {
+  Card,
+  Text,
+  ContextMenu,
+  ContextMenuItem,
+  IconAdd,
+  IconSettings,
+  SafeLink,
+  theme,
+} from '@aragon/ui'
 
 const Account = ({
   id,
@@ -17,6 +24,8 @@ const Account = ({
   onManageParameters,
   token,
 }) => {
+  
+
   const newAllocation = () => {
     onNewAllocation(proxy, description, id, limit)
   }
@@ -35,14 +44,32 @@ const Account = ({
   const truncatedProxy = `${proxy.slice(0, 6)}...${proxy.slice(-4)}`
   const translatedToken = translateToken(token)
 
+//TODO: use {etherScanBaseUrl instead of hard coded rinkeby}
   return (
     <StyledCard>
       <MenuContainer>
-        <ContextMenuItems actions={{ manageParameters, newAllocation }} />
+        <ContextMenu>
+          <ContextMenuItem onClick={newAllocation}>
+            <IconAdd />
+            <ActionLabel>New Allocation</ActionLabel>
+          </ContextMenuItem>
+          <ContextMenuItem onClick={manageParameters}>
+            <IconSettings />
+            <ActionLabel>Manage Parameters</ActionLabel>
+          </ContextMenuItem>
+        </ContextMenu> 
       </MenuContainer>
       <IconContainer />
       <CardTitle>{description}</CardTitle>
-      <CardAddress>{truncatedProxy}</CardAddress>
+      <CardAddress>
+          <SafeLink
+            href={`https://rinkeby.etherscan.io/address/${proxy}`}
+            title={`${proxy}`}
+            target="_blank"
+			>
+            {truncatedProxy}
+          </SafeLink>
+      </CardAddress>
       <StatsContainer>
         <StatsTitle>Balance</StatsTitle>
         <StatsValue>
@@ -52,7 +79,7 @@ const Account = ({
       <StatsContainer>
         <StatsTitle>Limit</StatsTitle>
         <StatsValue>
-          {limit} {translatedToken}/ Payout
+          {limit} {translatedToken}/ Allocation
         </StatsValue>
       </StatsContainer>
     </StyledCard>
@@ -78,25 +105,27 @@ const MenuContainer = styled.div`
   float: right;
   margin-top: 1rem;
   margin-right: 1rem;
+  align-items: center;
+`
+
+const ActionLabel = styled.span`
+  margin-left: 15px;
 `
 
 const CardTitle = styled(Text.Block).attrs({
-  size: 'large',
+  size: 'xxlarge',
 })`
   text-align: center;
   font-weight: bold;
-  font-size: 20px;
   color: ${theme.textPrimary};
 `
 
 const CardAddress = styled(Text.Block).attrs({
   size: 'small',
-  color: '#4a90e2',
 })`
-  width: 300px;
   text-align: center;
-  text-decoration: underline;
-  cursor: pointer;
+  width: 300px;
+  color: ${theme.accent};
 `
 
 const IconContainer = styled.img.attrs({
@@ -105,7 +134,7 @@ const IconContainer = styled.img.attrs({
 })`
   alt: ${({ description }) => description} 'icon';
   margin-top: 4rem;
-  margin-left: 110px;
+  margin-left: 120px;
 `
 
 const StatsContainer = styled.div`

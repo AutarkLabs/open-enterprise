@@ -79,7 +79,6 @@ class NewAccount extends React.Component {
                 name: 'limit',
                 value: this.state.limit,
                 onChange: this.changeField,
-                placeholder: 'e.g. 20',
                 type: 'number',
                 min: '0',
               }}
