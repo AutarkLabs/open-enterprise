@@ -46,7 +46,7 @@ class App extends React.Component {
     )
     console.info('App.js: Allocation submitted:')
     console.table(allocation)
-    closePanel()   
+    this.closePanel()   
   }
 
   manageParameters = address => {

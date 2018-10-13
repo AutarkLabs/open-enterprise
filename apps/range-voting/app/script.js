@@ -15,7 +15,7 @@ app.state().subscribe( (state) => {
 async function handleEvents(response){
   let nextState = 
   {...appState,
-    ...(!hasLoadedVoteSettings(state) ? await loadVoteSettings() : {}),
+    ...(!hasLoadedVoteSettings(appState) ? await loadVoteSettings() : {}),
   }    
   switch (response.event) {
     case 'CastVote':
