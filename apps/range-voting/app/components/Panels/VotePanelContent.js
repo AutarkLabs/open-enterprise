@@ -13,11 +13,11 @@ import {
   theme,
   Slider,
 } from '@aragon/ui'
-
 import { combineLatest } from '../../rxjs'
-import provideNetwork from '../../range-voting/provideNetwork'
-import { VOTE_NAY, VOTE_YEA } from '../../range-voting/vote-types'
-import { safeDiv } from '../../range-voting/math-utils'
+import provideNetwork from '../../utils/provideNetwork'
+import { VOTE_NAY, VOTE_YEA } from '../../utils/vote-types'
+import { safeDiv } from '../../utils/math-utils'
+import VoteSummary from '../VoteSummary'
 import VoteStatus from '../VoteStatus'
 import ProgressBarThick from '../ProgressBarThick'
 
@@ -108,14 +108,28 @@ class VotePanelContent extends React.Component {
     }
   }
   render() {
-    const { etherscanBaseUrl, vote } = this.props
-    const { showResults, voteOptions, remaining } = this.state
+    const { etherscanBaseUrl, vote, ready } = this.props
+    const {
+      userBalance,
+      userCanVote,
+      showResults,
+      voteOptions,
+      remaining,
+    } = this.state
     if (!vote) {
       return null
     }
 
-    const { endDate, open, support } = vote
-    const { creator, totalVoters, description, options, type } = vote.data
+    const { endDate, open, quorum, quorumProgress, support } = vote
+    const {
+      creator,
+      metadata,
+      totalVoters,
+      description,
+      candidates,
+      options,
+      type,
+    } = vote.data
 
     if (!voteOptions.length) {
       this.state.voteOptions = options
@@ -335,6 +349,13 @@ const Part = styled.div`
   }
 `
 
+const Question = styled.p`
+  max-width: 100%;
+  overflow: hidden;
+  word-break: break-all;
+  hyphens: auto;
+`
+
 const Creator = styled.div`
   display: flex;
   align-items: center;
@@ -349,6 +370,17 @@ const CreatorImg = styled.div`
   & + div {
     a {
       color: ${theme.accent};
+    }
+  }
+`
+
+const VotingButtons = styled.div`
+  display: flex;
+  padding: 30px 0 20px;
+  & > * {
+    width: 50%;
+    &:first-child {
+      margin-right: 10px;
     }
   }
 `

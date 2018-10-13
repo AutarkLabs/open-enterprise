@@ -258,11 +258,12 @@ contract RangeVoting is IForwarder, AragonApp {
         require(candidate.added == false); // solium-disable-line error-reason
         // Set all data for the candidate
         candidate.added = true;
-        candidate.keyArrayIndex = uint8(voteA.candidateKeys.length++);
+        candidate.keyArrayIndex = uint8(voteA.candidateKeys.length);
         candidate.metadata = _metadata;
         // double check
         candidateDescriptions[cKey] = _description;
-        voteA.candidateKeys[candidate.keyArrayIndex] = cKey;
+        voteA.candidateKeys.push(cKey);
+        voteA.candidateKeys.length = voteA.candidateKeys.length++;        
     }
 
     /**
@@ -272,16 +273,31 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _description The candidate descrciption of the candidate.
     */
     function getCandidate(uint256 _voteId, address _description) // solium-disable-line function-order
-    external view returns(bool, bytes, uint8, uint256)
+    external view returns(bool added, bytes metadata, uint8 keyArrayIndex, uint256 voteSupport)
     {
         Vote storage voteB = votes[_voteId];
         CandidateState storage candidate = voteB.candidates[keccak256(abi.encodePacked(_description))];
-        return(
-            candidate.added,
-            candidate.metadata,
-            candidate.keyArrayIndex,
-            candidate.voteSupport
-        );
+        added = candidate.added;
+        metadata = candidate.metadata;
+        keyArrayIndex = candidate.keyArrayIndex;
+        voteSupport = candidate.voteSupport;
+    }
+
+    /**
+    * @notice `getCandidate` serves as a basic getter using the description
+    *         to return the struct data.
+    * @param _voteId id for vote structure this 'ballot action' is connected to
+    * @param _candidateIndex The candidate descrciption of the candidate.
+    */
+    function getCandidate(uint256 _voteId, uint256 _candidateIndex) // solium-disable-line function-order
+    external view returns(bool added, bytes metadata, uint8 keyArrayIndex, uint256 voteSupport)
+    {
+        Vote storage voteB = votes[_voteId];
+        CandidateState storage candidate = voteB.candidates[voteB.candidateKeys[_candidateIndex]];
+        added = candidate.added;
+        metadata = candidate.metadata;
+        keyArrayIndex = candidate.keyArrayIndex;
+        voteSupport = candidate.voteSupport;
     }
 
     /**
@@ -388,32 +404,28 @@ contract RangeVoting is IForwarder, AragonApp {
     function getVote(uint256 _voteId) public view returns
     (
         bool open,
-        // bool executed,
         address creator,
         uint64 startDate,
         uint256 snapshotBlock,
-        // uint256 minAcceptQuorum,
-        // uint256 yea,
-        // uint256 nay,
         uint256 candidateSupport,
         uint256 totalVoters,
         uint256 totalParticipation,
-        string metadata,
+        uint256 totalCandidates,
         bytes executionScript, // script,
         bool executed
     ) { // solium-disable-line lbrace
-        Vote storage voteY = votes[_voteId];
+        Vote storage vote = votes[_voteId];
 
-        open = _isVoteOpen(voteY);
-        creator = voteY.creator;
-        startDate = voteY.startDate;
-        snapshotBlock = voteY.snapshotBlock;
-        candidateSupport = voteY.candidateSupportPct;
-        totalVoters = voteY.totalVoters;
-        totalParticipation = voteY.totalParticipation;
-        metadata = voteY.metadata;
-        executionScript = voteY.executionScript;
-        executed = voteY.executed;
+        open = _isVoteOpen(vote);
+        creator = vote.creator;
+        startDate = vote.startDate;
+        snapshotBlock = vote.snapshotBlock;
+        candidateSupport = vote.candidateSupportPct;
+        totalVoters = vote.totalVoters;
+        totalParticipation = vote.totalParticipation;
+        executionScript = vote.executionScript;
+        totalCandidates = vote.candidateKeys.length;
+        executed = vote.executed;
     }
 
     /**
@@ -479,6 +491,9 @@ contract RangeVoting is IForwarder, AragonApp {
             voteZ.scriptOffset = scriptOffset;
             voteZ.scriptRemainder = scriptRemainder;    
         }
+        /*
+
+        */
         emit StartVote(voteId);
     }
 

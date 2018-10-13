@@ -10,7 +10,7 @@ import { allocationsMockData } from '../../utils/mockData'
 
 const ASSETS_URL = 'aragon-ui-assets/'
 
-class AllocationsApp extends React.Component {
+class App extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
     accounts: PropTypes.arrayOf(PropTypes.object),
@@ -34,7 +34,7 @@ class AllocationsApp extends React.Component {
     this.setState({})    
   }
 
-  submitAllocation = allocation => {  
+  submitAllocation = allocation => {
     this.props.app.setDistribution(
       allocation.addresses,
       [],
@@ -125,4 +125,4 @@ const StyledAragonApp = styled(AragonApp).attrs({
 export default observe(
   observable => observable.map(state => ({ ...state })),
   {}
-)(AllocationsApp)
+)(App)

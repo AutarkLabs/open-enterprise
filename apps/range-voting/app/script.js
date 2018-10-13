@@ -1,17 +1,19 @@
 import Aragon from '@aragon/client'
 import { combineLatest } from './rxjs'
-import voteSettings, { hasLoadedVoteSettings } from './vote-settings'
-import { EMPTY_CALLSCRIPT } from './vote-utils'
+import voteSettings, { hasLoadedVoteSettings } from './utils/vote-settings'
+import { EMPTY_CALLSCRIPT } from './utils/vote-utils'
 
 const app = new Aragon()
-let appState
+let appState = {
+  votes: []
+}
 app.events().subscribe(handleEvents)
 app.state().subscribe( (state) => {
   appState = state
 })
 
 async function handleEvents(response){
-  let nextState
+  let nextState = appState
   switch (response.event) {
     case 'CastVote':
       console.info('[RangeVoting > script]: received CastVote')
@@ -110,7 +112,6 @@ function loadVoteData(voteId) {
 
 async function updateVotes(votes, voteId, transform) {
   const voteIndex = votes.findIndex(vote => vote.voteId === voteId)
-
   if (voteIndex === -1) {
     // If we can't find it, load its data, perform the transformation, and concat
     return votes.concat(
@@ -127,7 +128,7 @@ async function updateVotes(votes, voteId, transform) {
 }
 
 async function updateState(state, voteId, transform) {
-  const { votes = [] } = state
+  const { votes = [] } = state ? state : []
 
   return {
     ...state,
@@ -178,10 +179,24 @@ function marshallVote({
   snapshotBlock,
   candidateSupport,
   totalVoters,
+  totalParticipation,
+  totalCandidates,
   metadata,
   executionScript,
   executed,
 }) {
+  let options = []
+  let voteData = {}
+  for(let i; i < totalCandidates; i ++){
+    app.call('getCandidate', voteId, i).subscribe( (data) => {
+      console.log(data)
+      voteData = {
+        label: data.metadata,
+        value: paseInt(data.voteSupport, 10)
+      }
+    })    
+    options = [...options, voteData]
+  }
   return {
     open,
     creator,
@@ -189,6 +204,9 @@ function marshallVote({
     snapshotBlock: parseInt(snapshotBlock, 10),
     candidateSupport: parseInt(candidateSupport, 10),
     totalVoters: parseInt(totalVoters, 10),
+    totalParticipation: parseInt(totalParticipation, 10),
+    totalCandidates:  parseInt(totalParticipation, 10),
+    options,
     metadata,
     executionScript,
     executed,
