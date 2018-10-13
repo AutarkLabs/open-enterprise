@@ -69,7 +69,7 @@ const Account = ({
 
 Account.propTypes = {
   proxy: PropTypes.string.isRequired,
-  limit: PropTypes.number.isRequired,
+  limit: PropTypes.string.isRequired, // We are receiving this as string, parseInt if needed
   token: PropTypes.string.isRequired,
   balance: PropTypes.number.isRequired,
   description: PropTypes.string.isRequired,
