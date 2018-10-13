@@ -326,7 +326,7 @@ const SubmitButton = styled(Button)`
 `
 
 const ShowText = styled.p`
-  color: #21aae7;
+  color: ${theme.accent};
   font-size: 15px;
   text-decoration: underline;
   margin-top: 1rem;
