@@ -158,6 +158,7 @@ class VotePanelContent extends React.Component {
                   <SafeLink
                     href={`https://rinkeby.etherscan.io/address/${creator}`}
                     target="_blank"
+                    title={creator}
                   >
                     {truncatedCreator}
                   </SafeLink>

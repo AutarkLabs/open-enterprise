@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import icon from '../../assets/account-card.svg'
 import PropTypes from 'prop-types'
 
-import { Card, Text, theme } from '@aragon/ui'
+import { Card, SafeLink, Text, theme } from '@aragon/ui'
 
 import { ContextMenuItems } from '.'
 
@@ -27,7 +27,7 @@ const Account = ({
   /*Need a better solution that this, should be handled in
   App.js using token manager once more tokens are supported */
   function translateToken(token) {
-    if(token == 0x0){
+    if (token == 0x0) {
       return 'ETH'
     }
   }
@@ -42,7 +42,15 @@ const Account = ({
       </MenuContainer>
       <IconContainer />
       <CardTitle>{description}</CardTitle>
-      <CardAddress>{truncatedProxy}</CardAddress>
+      <CardAddress>
+        <SafeLink
+          href={`https://rinkeby.etherscan.io/address/${proxy}`}
+          target="_blank"
+          title={proxy}
+        >
+          {truncatedProxy}
+        </SafeLink>
+      </CardAddress>
       <StatsContainer>
         <StatsTitle>Balance</StatsTitle>
         <StatsValue>
