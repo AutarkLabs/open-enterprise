@@ -138,6 +138,7 @@ class VotePanelContent extends React.Component {
     const totalSupport = options.reduce((acc, option) => acc + option.value, 0)
 
     const showInfo = type === 'allocation' || type === 'curation'
+    const truncatedCreator = `${creator.slice(0, 6)}...${creator.slice(-4)}`
 
     const truncatedCreator = `${creator.slice(0, 6)}...${creator.slice(-4)}`
 
