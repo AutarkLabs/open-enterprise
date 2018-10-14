@@ -606,7 +606,7 @@ contract RangeVoting is IForwarder, AragonApp {
 
         emit ExecutionScript(script, 0);
         
-        //runScript(script, new bytes(0), new address[](0));
+        runScript(script, new bytes(0), new address[](0));
         emit ExecuteVote(_voteId);
     }
 

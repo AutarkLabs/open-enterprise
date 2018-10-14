@@ -69,7 +69,6 @@ class NewAllocation extends React.Component {
   submitAllocation = () => {
     // clear input here.
     let informational = (this.state.allocationTypeIndex === 0)
-    console.log(informational)
     let recurring = !informational && this.state.payoutTypeIndex != 0
     // TODO: period should be smarter: now the only option is monthly
     let period = recurring ? 86400 * 31 : 0
