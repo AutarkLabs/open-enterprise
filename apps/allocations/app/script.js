@@ -3,13 +3,25 @@ import { first, of } from 'rxjs' // Make sure observables have .first
 import { combineLatest } from 'rxjs'
 import { empty } from 'rxjs/observable/empty'
 
-
 const app = new Aragon()
 let appState
 app.events().subscribe(handleEvents)
+
 app.state().subscribe( (state) => {
-  appState = state
+  console.log(
+    'entered state subscription:\n',
+    state
+  )
+  appState = state ? state : {accounts:[]}
+  //appState = state
 })
+
+
+/***********************
+ *                     *
+ *   Event Handlers    *
+ *                     *
+ ***********************/
 
 async function handleEvents(response){
   let nextState
@@ -22,18 +34,21 @@ async function handleEvents(response){
 }
 
 
-/***********************
- *                     *
- *   Event Handlers    *
- *                     *
- ***********************/
-
 async function newAccount(state, { accountId }) {
   const transform = ({ data, ...account }) => ({
     ...account,
     data: { ...data, executed: true },
   })
-  return updateState(state, accountId, transform)
+  try {
+    let updatedState = await updateState(state, accountId, transform)
+    return updatedState
+  }
+  catch(err) {
+    console.error(
+      'updateState failed to return:',
+      err,
+    )
+  }
 }
 
 /***********************
@@ -43,6 +58,7 @@ async function newAccount(state, { accountId }) {
  ***********************/
 
 function loadAccountData(accountId) {
+  console.log('loadAccountData entered')
   return new Promise(resolve => {
     combineLatest(app.call('getPayout', accountId)).subscribe(
       ([account, metadata]) => {
@@ -56,9 +72,9 @@ async function updateAccounts(accounts, accountId, transform) {
   const accountIndex = accounts.findIndex(
     account => account.accountId === accountId
   )
-
   if (accountIndex === -1) {
     // If we can't find it, load its data, perform the transformation, and concat
+    console.log('account not found: retrieving from chain')
     return accounts.concat(
       await transform({
         accountId,
@@ -74,9 +90,17 @@ async function updateAccounts(accounts, accountId, transform) {
 
 async function updateState(state, accountId, transform) {
   const { accounts = [] } = state
-
-  return {
-    ...state,
-    accounts: await updateAccounts(accounts, accountId, transform),
+  try {
+    let newAccounts = await updateAccounts(accounts, accountId, transform)
+    let newState = {...state, accounts: newAccounts}
+    return newState
+  }
+  catch(err) {
+    console.error(
+      'Update accounts failed to return:',
+      err,
+      'here\'s what returned in NewAccounts',
+      newAccounts
+    )
   }
 }
