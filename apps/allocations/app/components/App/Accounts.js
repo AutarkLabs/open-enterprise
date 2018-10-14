@@ -12,20 +12,20 @@ const Accounts = ({
 }) => {
   console.log(accounts)
   const accountsEmpty = accounts.length === 0
-  const accountsMap = accounts.map(
-    ({data, accountId}) =>      
-      (<Account
-        // TODO: Make this more unique by other id?
-        id={accountId}
-        proxy={data.proxy}
-        balance={data.balance}
-        limit={data.limit}
-        token={data.token}
-        description={data.metadata}
-        onNewAllocation={onNewAllocation}
-        onManageParameters={onManageParameters}
-      />)
-  )
+  const accountsMap = accounts.map(({ data, accountId }) => (
+    <Account
+      // TODO: Make this more unique by other id?
+      key={accountId}
+      id={accountId}
+      proxy={data.proxy}
+      balance={data.balance}
+      limit={data.limit}
+      token={data.token}
+      description={data.metadata}
+      onNewAllocation={onNewAllocation}
+      onManageParameters={onManageParameters}
+    />
+  ))
 
   if (accountsEmpty) {
     return <Empty action={onNewAccount} />
@@ -34,6 +34,7 @@ const Accounts = ({
 }
 
 Accounts.propTypes = {
+  // TODO: Create account shape
   accounts: PropTypes.arrayOf(PropTypes.object).isRequired,
   onNewAccount: PropTypes.func.isRequired,
   onNewAllocation: PropTypes.func.isRequired,

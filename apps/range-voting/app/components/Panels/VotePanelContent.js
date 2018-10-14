@@ -11,26 +11,26 @@ import {
   Countdown,
   Text,
   theme,
-  Slider,
+  Slider
 } from '@aragon/ui'
-
 import { combineLatest } from '../../rxjs'
-import provideNetwork from '../../range-voting/provideNetwork'
-import { VOTE_NAY, VOTE_YEA } from '../../range-voting/vote-types'
-import { safeDiv } from '../../range-voting/math-utils'
+import provideNetwork from '../../utils/provideNetwork'
+import { VOTE_NAY, VOTE_YEA } from '../../utils/vote-types'
+import { safeDiv } from '../../utils/math-utils'
+import VoteSummary from '../VoteSummary'
 import VoteStatus from '../VoteStatus'
 import ProgressBarThick from '../ProgressBarThick'
 
 class VotePanelContent extends React.Component {
   static propTypes = {
-    app: PropTypes.object, // TODO: isRequired?
+    app: PropTypes.object // TODO: isRequired?
   }
   state = {
     userCanVote: false,
     userBalance: null,
     showResults: false,
     voteOptions: [],
-    remaining: 100,
+    remaining: 100
   }
   componentDidMount() {
     this.loadUserCanVote()
@@ -62,7 +62,7 @@ class VotePanelContent extends React.Component {
             parseInt(balance, 10) / Math.pow(10, decimals)
           )
           this.setState({
-            userBalance: adjustedBalance,
+            userBalance: adjustedBalance
           })
         })
     }
@@ -76,7 +76,7 @@ class VotePanelContent extends React.Component {
         .first()
         .subscribe(canVote => {
           this.setState({
-            userCanVote: canVote,
+            userCanVote: canVote
           })
         })
     }
@@ -108,14 +108,28 @@ class VotePanelContent extends React.Component {
     }
   }
   render() {
-    const { etherscanBaseUrl, vote } = this.props
-    const { showResults, voteOptions, remaining } = this.state
+    const { etherscanBaseUrl, vote, ready } = this.props
+    const {
+      userBalance,
+      userCanVote,
+      showResults,
+      voteOptions,
+      remaining
+    } = this.state
     if (!vote) {
       return null
     }
 
-    const { endDate, open, support } = vote
-    const { creator, totalVoters, description, options, type } = vote.data
+    const { endDate, open, quorum, quorumProgress, support } = vote
+    const {
+      creator,
+      metadata,
+      totalVoters,
+      description,
+      candidates,
+      options,
+      type
+    } = vote.data
 
     if (!voteOptions.length) {
       this.state.voteOptions = options
@@ -124,6 +138,8 @@ class VotePanelContent extends React.Component {
     const totalSupport = options.reduce((acc, option) => acc + option.value, 0)
 
     const showInfo = type === 'allocation' || type === 'curation'
+
+    const truncatedCreator = `${creator.slice(0, 6)}...${creator.slice(-4)}`
 
     return (
       <div>
@@ -138,11 +154,13 @@ class VotePanelContent extends React.Component {
               </CreatorImg>
               <div>
                 <p>
+                  {/* // TODO: Change to etherscanUrl constant for the selected network*/}
                   <SafeLink
-                    href={`${etherscanBaseUrl}/address/${creator}`}
+                    href={`https://rinkeby.etherscan.io/address/${creator}`}
                     target="_blank"
+                    title={creator}
                   >
-                    {creator}
+                    {truncatedCreator}
                   </SafeLink>
                 </p>
               </div>
@@ -262,7 +280,7 @@ class VotePanelContent extends React.Component {
 
 const Label = styled(Text).attrs({
   smallcaps: true,
-  color: theme.textSecondary,
+  color: theme.textSecondary
 })`
   display: block;
   margin-bottom: 10px;
@@ -308,7 +326,7 @@ const SubmitButton = styled(Button)`
 `
 
 const ShowText = styled.p`
-  color: #21aae7;
+  color: ${theme.accent};
   font-size: 15px;
   text-decoration: underline;
   margin-top: 1rem;
@@ -335,6 +353,13 @@ const Part = styled.div`
   }
 `
 
+const Question = styled.p`
+  max-width: 100%;
+  overflow: hidden;
+  word-break: break-all;
+  hyphens: auto;
+`
+
 const Creator = styled.div`
   display: flex;
   align-items: center;
@@ -349,6 +374,17 @@ const CreatorImg = styled.div`
   & + div {
     a {
       color: ${theme.accent};
+    }
+  }
+`
+
+const VotingButtons = styled.div`
+  display: flex;
+  padding: 30px 0 20px;
+  & > * {
+    width: 50%;
+    &:first-child {
+      margin-right: 10px;
     }
   }
 `

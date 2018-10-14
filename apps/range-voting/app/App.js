@@ -1,210 +1,124 @@
 import React from 'react'
+import { hot } from 'react-hot-loader'
 import PropTypes from 'prop-types'
-import { isBefore } from 'date-fns/esm'
-import { AragonApp, AppBar, SidePanel, observe } from '@aragon/ui'
-import EmptyState from './screens/EmptyState'
-import Votes from './screens/Votes'
-import tokenBalanceOfAbi from './abi/token-balanceof.json'
-import tokenDecimalsAbi from './abi/token-decimals.json'
-import VotePanelContent from './components/VotePanelContent'
-import NewVotePanelContent from './components/NewVotePanelContent'
-import AppLayout from './components/AppLayout'
-import { networkContextType } from './range-voting/provideNetwork'
-import { safeDiv } from './math-utils'
-import { hasLoadedVoteSettings } from './vote-settings'
-import { VOTE_YEA } from './vote-types'
-import { EMPTY_CALLSCRIPT, getQuorumProgress } from './vote-utils'
+import styled from 'styled-components'
 
-const tokenAbi = [].concat(tokenBalanceOfAbi, tokenDecimalsAbi)
+import { AragonApp, AppBar, Button, SidePanel, IconAdd, observe } from '@aragon/ui'
+import AppLayout from './components/AppLayout'
+import Decisions from './Decisions'
+import { NewPayoutVotePanelContent } from './components/Panels'
+
+const initialState = {
+  template: null,
+  templateData: {},
+  stepIndex: 0,
+  panelActive: false,
+}
 
 class App extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
   }
-  static defaultProps = {
-    network: {
-      etherscanBaseUrl: 'https://rinkeby.etherscan.io',
-      name: 'rinkeby',
-    },
-    pctBase: -1,
-    tokenAddress: null,
-    globalCandidateSupportPct: -1,
-    userAccount: '',
-    votes: [],
-    voteTime: -1,
-  }
-  static childContextTypes = {
-    network: networkContextType,
-  }
-  getChildContext() {
-    return { network: this.props.network }
-  }
 
   constructor(props) {
     super(props)
     this.state = {
-      createVoteVisible: false,
-      currentVoteId: -1,
-      settingsLoaded: false,
-      tokenContract: this.getTokenContract(props.tokenAddress),
-      voteVisible: false,
-      voteSidebarOpened: false,
-    }
-  }
-  componentWillReceiveProps(nextProps) {
-    const { settingsLoaded } = this.state
-    // Is this the first time we've loaded the settings?
-    if (!settingsLoaded && hasLoadedVoteSettings(nextProps)) {
-      this.setState({
-        settingsLoaded: true,
-      })
-    }
-    if (nextProps.tokenAddress !== this.props.tokenAddress) {
-      this.setState({
-        tokenContract: this.getTokenContract(nextProps.tokenAddress),
-      })
+      ...initialState,
     }
   }
 
-  getTokenContract(tokenAddress) {
-    return tokenAddress && this.props.app.external(tokenAddress, tokenAbi)
-  }
-  handleCreateVote = question => {
-    this.props.app.newVote(EMPTY_CALLSCRIPT, question)
-    this.handleCreateVoteClose()
-  }
-  handleCreateVoteOpen = () => {
-    this.setState({ createVoteVisible: true })
-  }
-  handleCreateVoteClose = () => {
-    this.setState({ createVoteVisible: false })
-  }
-  handleVoteOpen = voteId => {
-    const exists = this.props.votes.some(vote => voteId === vote.voteId)
-    if (!exists) return
-    this.setState({
-      currentVoteId: voteId,
-      voteVisible: true,
-      voteSidebarOpened: false,
-    })
-  }
-  handleVote = (voteId, voteType, executesIfDecided = true) => {
-    this.props.app.vote(voteId, voteType === VOTE_YEA, executesIfDecided)
-    this.handleVoteClose()
-  }
-  handleVoteClose = () => {
-    this.setState({ voteVisible: false })
+  handlePanelOpen = () => {
+    this.setState({ panelActive: true })
   }
 
-  handleVoteTransitionEnd = opened => {
-    this.setState(opened ? { voteSidebarOpened: true } : { currentVoteId: -1 })
+  handlePanelClose = () => {
+    this.setState({ panelActive: false })
   }
+
   render() {
-    const {
-      app,
-      pctBase,
-      globalCandidateSupportPct,
-      userAccount,
-      votes,
-      voteTime,
-    } = this.props
-    const {
-      createVoteVisible,
-      currentVoteId,
-      settingsLoaded,
-      tokenContract,
-      voteSidebarOpened,
-      voteVisible,
-    } = this.state
-
-    const displayVotes = settingsLoaded && votes.length > 0
-    const supportRequired = settingsLoaded
-      ? globalCandidateSupportPct / pctBase
-      : -1
-
-    // Add useful properties to the votes
-    const preparedVotes = displayVotes
-      ? votes.map(vote => {
-          const endDate = new Date(vote.data.startDate + voteTime)
-          return {
-            ...vote,
-            endDate,
-            // Open if not executed and now is still before end date
-            open: !vote.data.executed && isBefore(new Date(), endDate),
-            quorum: safeDiv(vote.data.candidateSupport, pctBase),
-            quorumProgress: getQuorumProgress(vote.data),
-            support: supportRequired,
-          }
-        })
-      : votes
-
-    const currentVote =
-      currentVoteId === -1
-        ? null
-        : preparedVotes.find(vote => vote.voteId === currentVoteId)
+    const barButton = (
+      <DropDownButton>
+        <Button Button mode="strong">
+          Actions
+        </Button>
+        <DropDownContent>
+          <DropDownItem>
+            <CloseIcon />New Payout Engine
+          </DropDownItem>
+          <DropDownItem>
+            <CloseIcon />New Issue Curation
+          </DropDownItem>
+          <DropDownItem>
+            <CloseIcon />New Budget Engine
+          </DropDownItem>
+        </DropDownContent>
+      </DropDownButton>
+    )
 
     return (
-      <AragonApp publicUrl="./aragon-ui/">
+      <AragonApp publicUrl="aragon-ui-assets/">
         <AppLayout>
           <AppLayout.Header>
             <AppBar
               title="Range Voting"
-              // endContent={
-              //   <Button mode="strong" onClick={this.handleCreateVoteOpen}>
-              //     New Vote
-              //   </Button>
-              // }
+              // endContent={barButton}
             />
           </AppLayout.Header>
           <AppLayout.ScrollWrapper>
             <AppLayout.Content>
-              {displayVotes ? (
-                <Votes
-                  votes={preparedVotes}
-                  onSelectVote={this.handleVoteOpen}
-                />
-              ) : (
-                <EmptyState onActivate={this.handleCreateVoteOpen} />
-              )}
+              <Decisions 
+                onActivate={this.handlePanelOpen}
+                votes={ (this.props.votes !== undefined) ?  this.props.votes : []}
+              />
             </AppLayout.Content>
           </AppLayout.ScrollWrapper>
         </AppLayout>
-
-        {displayVotes &&
-          currentVote && (
-            <SidePanel
-              title={`Vote #${currentVoteId} (${
-                currentVote.open ? 'Open' : 'Closed'
-              })`}
-              opened={Boolean(!createVoteVisible && voteVisible)}
-              onClose={this.handleVoteClose}
-              onTransitionEnd={this.handleVoteTransitionEnd}
-            >
-              <VotePanelContent
-                app={app}
-                vote={currentVote}
-                user={userAccount}
-                ready={voteSidebarOpened}
-                tokenContract={tokenContract}
-                onVote={this.handleVote}
-              />
-            </SidePanel>
-          )}
-
         <SidePanel
-          title="New Vote"
-          opened={createVoteVisible}
-          onClose={this.handleCreateVoteClose}
+          title={''}
+          opened={this.state.panelActive}
+          onClose={this.handlePanelClose}
         >
-          <NewVotePanelContent
-            opened={createVoteVisible}
-            onCreateVote={this.handleCreateVote}
-          />
+          <NewPayoutVotePanelContent />
         </SidePanel>
       </AragonApp>
     )
   }
 }
+
+const DropDownContent = styled.div`
+  display: none;
+  position: absolute;
+  background-color: #ffffff;
+  border: 1px solid rgba(209, 209, 209, 0.75);
+  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.03);
+  border-radius: 3px;
+  padding: 0.5rem 0;
+  z-index: 1;
+  margin-left: -8rem;
+  white-space: nowrap;
+`
+const DropDownItem = styled.div`
+  padding: 0.5rem 1rem;
+  display: flex;
+  &:hover {
+    color: #00cbe6;
+    cursor: pointer;
+  }
+`
+
+const DropDownButton = styled.div`
+  position: relative;
+  display: inline-block;
+  &:hover ${DropDownContent} {
+    display: block;
+  }
+`
+
+const CloseIcon = styled(IconAdd)`
+  color: #98a0a2;
+  margin-right: 0.5rem;
+`
+
 
 export default observe(
   observable => observable.map(state => ({ ...state })),

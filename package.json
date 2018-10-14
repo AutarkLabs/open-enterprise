@@ -24,6 +24,7 @@
     "publish:http": "lerna run publish:http",
     "start": "START_KIT=true apps/shared/test-helpers/ganache-cli.sh",
     "restart": "RESTART_KIT=true apps/shared/test-helpers/ganache-cli.sh",
+    "start:dev": "DEV=true apps/shared/test-helpers/ganache-cli.sh",
     "start:kit": "cd apps/planning-app-kit && npm run start:kit",
     "start:address": "cd apps/address-book && npm start",
     "start:allocations": "cd apps/allocations && npm start",
