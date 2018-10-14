@@ -83,7 +83,6 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
 
 
     Payout[] payouts;
-    uint256 public payoutSize;
 
     bytes32 constant public START_PAYOUT_ROLE = keccak256("START_PAYOUT_ROLE");
     bytes32 constant public SET_DISTRIBUTION_ROLE = keccak256("SET_DISTRIBUTION_ROLE");
@@ -134,7 +133,6 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
     ) external isInitialized auth(START_PAYOUT_ROLE) returns(uint256 payoutId)
     {
         payoutId = payouts.length++;
-        payoutSize = payouts.length;
         Payout storage payout = payouts[payoutId];
         payout.metadata = _metadata;
         payout.limit = _limit;
