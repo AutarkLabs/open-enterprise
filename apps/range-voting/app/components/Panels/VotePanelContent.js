@@ -44,14 +44,12 @@ class VotePanelContent extends React.Component {
       this.loadUserBalance()
     }
   }
-  handleNoClick = () => {
-    this.props.onVote(this.props.vote.voteId, VOTE_NAY)
+  handleVoteSubmit = () => {
+    let optionsArray = []
+    this.state.voteOptions.forEach((element) => {optionsArray.push(element.value)})
+    this.props.onVote(this.props.vote.voteId, optionsArray)
   }
-  handleYesClick = () => {
-    // TODO: add a manual execute button and checkboxes to let user select if
-    // they want to auto execute
-    this.props.onVote(this.props.vote.voteId, VOTE_YEA)
-  }
+
   loadUserBalance = () => {
     const { tokenContract, user } = this.props
     if (tokenContract && user) {
@@ -242,7 +240,7 @@ class VotePanelContent extends React.Component {
                 </div>
               ))}
               <SecondRedText>{remaining} remaining</SecondRedText>
-              <SubmitButton mode="strong" wide>
+              <SubmitButton mode="strong" wide onClick={this.handleVoteSubmit}>
                 Submit Vote
               </SubmitButton>
               {showInfo && (

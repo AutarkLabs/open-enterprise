@@ -144,8 +144,8 @@ class Decisions extends React.Component {
       voteSidebarOpened: false,
     })
   }
-  handleVote = (voteId, voteType, executesIfDecided = true) => {
-    this.props.app.vote(voteId, voteType === VOTE_YEA, executesIfDecided)
+  handleVote = (voteId, supports) => {
+    this.props.app.vote(voteId, supports)
     this.handleVoteClose()
   }
   handleVoteClose = () => {
@@ -175,8 +175,6 @@ class Decisions extends React.Component {
 
     const displayVotes = settingsLoaded && votes.length > 0
     const supportRequired = settingsLoaded ? supportRequiredPct / pctBase : -1
-
-    // console.log('[Decisions.js:178] settingsLoaded: ' + settingsLoaded)
 
     // Add useful properties to the votes
     const preparedVotes = displayVotes
