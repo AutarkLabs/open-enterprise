@@ -113,7 +113,7 @@ contract PlanningKit is KitBase {
         // projects.initialize();
         //tokenManager.initialize(token, true, 0);
         //voting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
-        rangeVoting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
+        rangeVoting.initialize(token, 50 * PCT, 20 * PCT, 1 minutes);
         
 
         // Allocations permissions:

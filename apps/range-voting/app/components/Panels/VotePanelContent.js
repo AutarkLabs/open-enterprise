@@ -36,7 +36,7 @@ class VotePanelContent extends React.Component {
     this.loadUserCanVote()
     this.loadUserBalance()
   }
-  UNSAFE_componentWillReceiveProps(nextProps) {
+  componentWillReceiveProps(nextProps) {
     if (nextProps.user !== this.props.user) {
       this.loadUserCanVote()
     }
@@ -46,14 +46,21 @@ class VotePanelContent extends React.Component {
   }
   handleVoteSubmit = () => {
     let optionsArray = []
-    this.state.voteOptions.forEach((element) => {optionsArray.push(element.value)})
+    this.state.voteOptions.forEach((element) => {
+      let voteWeight = element.sliderValue ? 
+        element.sliderValue * this.state.userBalance :
+        0
+      optionsArray.push(voteWeight)
+    })
     this.props.onVote(this.props.vote.voteId, optionsArray)
+  }
+
+  executeVote = () => {
+    this.props.app.executeVote(this.props.vote.voteId)
   }
 
   loadUserBalance = () => {
     const { tokenContract, user } = this.props
-    console.log("Loading user:", user)
-    console.log("Loading tokenContract:", tokenContract)    
     if (tokenContract && user) {
       combineLatest(tokenContract.balanceOf(user), tokenContract.decimals())
         .first()
@@ -108,7 +115,7 @@ class VotePanelContent extends React.Component {
     }
   }
   render() {
-    const { etherscanBaseUrl, vote, ready } = this.props
+    const { etherscanBaseUrl, vote, ready, minParticipationPct } = this.props
     const {
       userBalance,
       userCanVote,
@@ -120,7 +127,8 @@ class VotePanelContent extends React.Component {
       return null
     }
 
-    const { endDate, open, quorum, quorumProgress, support } = vote
+    const { endDate, open, quorum, support } = vote
+    const {participationPct, canExecute} = vote.data
     const {
       creator,
       metadata,
@@ -210,7 +218,7 @@ class VotePanelContent extends React.Component {
               <Label>Voter participation</Label>
             </h2>
             <p>
-              24% <RedText>(34% quorum required)</RedText>
+              {participationPct}% <RedText>({minParticipationPct/ (10**16)}% participation required)</RedText>
             </p>
           </div>
           <div>
@@ -253,6 +261,13 @@ class VotePanelContent extends React.Component {
               )}
             </AdjustContainer>
             <SidePanelSeparator />
+          </div>
+        )}
+        {(!open) && (
+          <div>
+            <SubmitButton mode="strong" wide onClick={this.executeVote}>
+              Execute Vote
+            </SubmitButton>
           </div>
         )}
         <ShowText onClick={() => this.setState({ showResults: !showResults })}>

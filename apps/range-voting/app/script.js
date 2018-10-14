@@ -22,6 +22,10 @@ async function handleEvents(response){
       console.info('[RangeVoting > script]: received CastVote')
       nextState = await castVote(nextState, response.returnValues)
       break
+    case 'ExecutionScript':
+      console.info('[RangeVoting > script]: received ExecutionScript')
+      console.info(response.returnValues)      
+      break
     case 'ExecuteVote':
       console.info('[RangeVoting > script]: received ExecuteVote')
 
@@ -107,10 +111,11 @@ async function loadVoteData(voteId) {
     combineLatest(
       app.call('getVote', voteId),
       app.call('getVoteMetadata', voteId),
-      app.call('getCandidateLength',voteId)
+      app.call('getCandidateLength',voteId),
+      app.call('canExecute', voteId)
     )
       .first()
-      .subscribe(([vote, metadata, totalCandidates]) => {
+      .subscribe(([vote, metadata, totalCandidates, canExecute]) => {
         loadVoteDescription(vote).then(async (vote) => {
           let options = []
           for(let i = 0; i < totalCandidates; i++){
@@ -121,6 +126,7 @@ async function loadVoteData(voteId) {
           resolve({
             ...marshallVote(vote),
             metadata,
+            canExecute,
             options: options
           })
         })
@@ -217,16 +223,19 @@ function marshallVote({
   executed,
 }) {
   let voteData = {}
+  totalVoters = parseInt(totalVoters, 10)
+  totalParticipation = parseInt(totalParticipation, 10)
   return {
     open,
     creator,
     startDate: parseInt(startDate, 10) * 1000, // adjust for js time (in ms vs s)
     snapshotBlock: parseInt(snapshotBlock, 10),
     candidateSupport: parseInt(candidateSupport, 10),
-    totalVoters: parseInt(totalVoters, 10),
-    totalParticipation: parseInt(totalParticipation, 10),
+    totalVoters: totalVoters,
+    totalParticipation: totalParticipation,
     metadata,
     executionScript,
     executed,
+    participationPct: (totalParticipation/totalVoters * 100)
   }
 }

@@ -633,11 +633,11 @@ contract RangeVoting is IForwarder, AragonApp {
         }
         
 
-        //script.copy(executionScript.getPtr(),vote.scriptOffset,vote.scriptRemainder);
+        script.copy(executionScript.getPtr(),vote.scriptOffset,vote.scriptRemainder);
         
         emit ExecutionScript(script, 0);
         
-        runScript(script, new bytes(0), new address[](0));
+        //runScript(script, new bytes(0), new address[](0));
         emit ExecuteVote(_voteId);
     }
 

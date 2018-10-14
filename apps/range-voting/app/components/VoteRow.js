@@ -30,8 +30,7 @@ class VoteRow extends React.Component {
     const { showMore } = this.state
     const { vote } = this.props
     const { endDate, open } = vote
-    const { metadata: question, description, totalVoters, candidates, options, type } = vote.data
-
+    const { metadata: question, description, candidates, options, participationPct, type } = vote.data
     const totalSupport = options.reduce((acc, option) => acc + option.value, 0)
 
     const bars = options.map((option) => (
@@ -70,15 +69,17 @@ class VoteRow extends React.Component {
             {typeBadge}
           </div>
         </QuestionCell>
-        <Cell align="right" onClick={this.handleVoteClick}>{totalVoters}%</Cell>
+        <Cell align="right" onClick={this.handleVoteClick}>{participationPct}%</Cell>
         <BarsCell>
           <BarsGroup>
             { showMore ? bars : [bars[0], bars[1]] }
-            <ShowMoreText
-              onClick={() => this.setState({ showMore: !showMore})}
-            >
-              {showMore ? 'Show less options...' : (bars.length - 2 + ' more options...')}
-            </ShowMoreText>
+            { (bars.length > 2) && (
+              <ShowMoreText
+                onClick={() => this.setState({ showMore: !showMore})}
+              >
+                {showMore ? 'Show less options...' : (bars.length - 2 + ' more options...')}
+              </ShowMoreText>
+            )}
           </BarsGroup>
         </BarsCell>
       </TableRow>
