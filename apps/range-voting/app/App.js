@@ -85,7 +85,8 @@ class App extends React.Component {
                 votes={ (this.props.votes !== undefined) ?  this.props.votes : []}
                 voteTime = { this.props.voteTime }
                 supportRequiredPct = { this.props.supportRequiredPct }
-                tokenContract = { this.props.tokenContract }
+                tokenAddress = { this.props.tokenAddress }
+                userAccount = { this.props.userAccount }
               />
             </AppLayout.Content>
           </AppLayout.ScrollWrapper>

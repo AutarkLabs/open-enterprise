@@ -52,6 +52,8 @@ class VotePanelContent extends React.Component {
 
   loadUserBalance = () => {
     const { tokenContract, user } = this.props
+    console.log("Loading user:", user)
+    console.log("Loading tokenContract:", tokenContract)    
     if (tokenContract && user) {
       combineLatest(tokenContract.balanceOf(user), tokenContract.decimals())
         .first()

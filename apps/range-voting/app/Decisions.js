@@ -162,7 +162,7 @@ class Decisions extends React.Component {
       userAccount,
       votes,
       voteTime,
-      tokenContract
+      tokenAddress
     } = this.props
     const {
       createVoteVisible,
