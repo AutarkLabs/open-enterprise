@@ -217,7 +217,7 @@ class VotePanelContent extends React.Component {
             <h2>
               <Label>Your voting tokens</Label>
             </h2>
-            <p>100</p>
+            <p>{this.state.userBalance}</p>
           </div>
         </SidePanelSplit>
         {open && (

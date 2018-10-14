@@ -103,6 +103,7 @@ contract PlanningKit is KitBase {
 
         // MiniMe Token
         MiniMeToken token = tokenFactory.createCloneToken(token, 0, "App token", 0, "APP", true);
+        token.generateTokens(address(0xb4124cEB3451635DAcedd11767f004d8a28c6eE7), 1 ether);
         //token.changeController(tokenManager);
 
         // Initialize apps
