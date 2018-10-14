@@ -1,9 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import Aragon, { providers } from '@aragon/client'
-
-import { allocationsMockData } from './utils/mockData'
-import { App } from './components/App'
+//import { allocationsMockData } from './utils/mockData'
+import App from './components/App/App'
 
 // if (process.env.NODE_ENV !== 'production') {
 //   const { whyDidYouUpdate } = require('why-did-you-update')
@@ -32,7 +31,6 @@ class ConnectedApp extends React.Component {
     }
     if (data.name === 'ready') {
       const { app } = this.state
-      console.log('received a ready from the wrapper')
       this.sendMessageToWrapper('ready', true)
       this.setState({
         observable: app.state(),
@@ -42,11 +40,9 @@ class ConnectedApp extends React.Component {
           userAccount: accounts[0],
         })
       })
-      app.cache('state', [])      
     }
   }
   sendMessageToWrapper = (name, value) => {
-    console.log('Sending message to wrapper')
     window.parent.postMessage({ from: 'app', name, value }, '*')
     
   }
