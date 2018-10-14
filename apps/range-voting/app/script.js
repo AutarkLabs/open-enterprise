@@ -16,7 +16,7 @@ async function handleEvents(response){
   let nextState = 
   {...appState,
     ...(!hasLoadedVoteSettings(appState) ? await loadVoteSettings() : {}),
-  }    
+  }
   switch (response.event) {
     case 'CastVote':
       console.info('[RangeVoting > script]: received CastVote')
@@ -30,10 +30,6 @@ async function handleEvents(response){
     case 'StartVote':
       console.info('[RangeVoting > script]: received StartVote')
       nextState = await startVote(nextState, response.returnValues)
-      break
-    case 'AddCandidate':
-      console.info('[RangeVoting > script]: received AddCandidate')
-      nextState = await addCandidate(nextState, response.returnValues)
       break
     default:
       break
@@ -105,19 +101,27 @@ async function loadVoteDescription(vote) {
   return vote
 }
 
-function loadVoteData(voteId) {
+async function loadVoteData(voteId) {
   console.info('[RangeVoting > script]: loadVoteData')
   return new Promise(resolve => {
     combineLatest(
       app.call('getVote', voteId),
-      app.call('getVoteMetadata', voteId)
+      app.call('getVoteMetadata', voteId),
+      app.call('getCandidateLength',voteId)
     )
       .first()
-      .subscribe(([vote, metadata]) => {
-        loadVoteDescription(vote).then(vote => {
+      .subscribe(([vote, metadata, totalCandidates]) => {
+        loadVoteDescription(vote).then(async (vote) => {
+          let options = []
+          for(let i = 0; i < totalCandidates; i++){
+            let candidateData = await getCandidate(voteId, i)
+            console.log(candidateData)
+            options.push(candidateData)
+          }
           resolve({
             ...marshallVote(vote),
             metadata,
+            options: options
           })
         })
       })
@@ -137,50 +141,27 @@ async function updateVotes(votes, voteId, transform) {
       })
     )
   } else {
-    let options = nextVotes[voteIndex].data.options             
     nextVotes[voteIndex] = await transform(nextVotes[voteIndex])
-    nextVotes[voteIndex].data.options = options      
   }
   return nextVotes
 }
 
-async function updateCandidate(votes, voteId, candidate) {
-  const voteIndex = votes.findIndex(vote => vote.voteId === voteId)
-  let nextVotes
-  if (voteIndex === -1) {
-    // If we can't find it, load its data, perform the transformation, and concat
-    nextVotes = Array.from(votes)
-    nextVotes.push(
-      {
-        voteId,
-        data: {
-          options: [{
-            label: candidate,
-            value: 0
-          }]
-        }
-      }
-    )
-  } else {
-    nextVotes = Array.from(votes)
-    if(nextVotes[voteIndex].data.options === undefined){
-      nextVotes[voteIndex].data.options = []
-    }
-    nextVotes[voteIndex].data.options.push({
-      label: candidate,
-      value: 0
+async function getCandidate(voteId, candidateIndex) {
+  return new Promise(resolve => {    
+    app.call('getCandidate', voteId, candidateIndex)
+    .first()
+    .subscribe((candidateData) => {
+      resolve({
+        label: candidateData.candidateAddress,
+        value: candidateData.voteSupport
+      })
     })
-  }
-  return nextVotes  
+  })
 }
 
 async function updateState(state, voteId, transform, candidate = null) {
   let { votes = [] } = state ? state : []
-  if(candidate != null){
-    votes = await updateCandidate(votes, voteId, candidate)
-  } else {
-    votes = await updateVotes(votes, voteId, transform)
-  }
+  votes = await updateVotes(votes, voteId, transform)
   return {
     ...state,
     votes: votes,
@@ -188,7 +169,6 @@ async function updateState(state, voteId, transform, candidate = null) {
 }
 
 function loadVoteSettings() {
-  console.log("loadingVoteSettings")
   return Promise.all(
     voteSettings.map(
       ([name, key, type = 'string']) =>
@@ -232,13 +212,10 @@ function marshallVote({
   candidateSupport,
   totalVoters,
   totalParticipation,
-  totalCandidates,
-  options,
   metadata,
   executionScript,
   executed,
 }) {
-  options = options !== undefined ? options: []
   let voteData = {}
   return {
     open,
@@ -248,8 +225,6 @@ function marshallVote({
     candidateSupport: parseInt(candidateSupport, 10),
     totalVoters: parseInt(totalVoters, 10),
     totalParticipation: parseInt(totalParticipation, 10),
-    totalCandidates:  parseInt(totalParticipation, 10),
-    options,
     metadata,
     executionScript,
     executed,

@@ -64,9 +64,9 @@ contract RangeVoting is IForwarder, AragonApp {
 
     uint256 constant public PCT_BASE = 10 ** 18; // 0% = 0; 1% = 10^16; 100% = 10^18
 
-    bytes32 constant public CREATE_VOTES_ROLE = keccak256(abi.encodePacked("CREATE_VOTES_ROLE"));
-    bytes32 constant public ADD_CANDIDATES_ROLE = keccak256(abi.encodePacked("ADD_CANDIDATES_ROLE"));
-    bytes32 constant public MODIFY_PARTICIPATION_ROLE = keccak256(abi.encodePacked("MODIFY_CANDIDATE_SUPPORT_ROLE"));
+    bytes32 constant public CREATE_VOTES_ROLE = keccak256("CREATE_VOTES_ROLE");
+    bytes32 constant public ADD_CANDIDATES_ROLE = keccak256("ADD_CANDIDATES_ROLE");
+    bytes32 constant public MODIFY_PARTICIPATION_ROLE = keccak256("MODIFY_CANDIDATE_SUPPORT_ROLE");
     // bytes32 constant public MODIFY_QUORUM_ROLE = keccak256("MODIFY_QUORUM_ROLE");
 
     struct Vote {
@@ -108,7 +108,7 @@ contract RangeVoting is IForwarder, AragonApp {
     event ExecuteVote(uint256 indexed voteId);
     event ChangeCandidateSupport(uint256 candidateSupportPct);
     event ExecutionScript(bytes script, uint256 data);
-    event AddCandidate(uint256 indexed voteId, address candidate);
+    event AddCandidate(uint256 indexed voteId, address candidate, uint length);
 
 ////////////////
 // Constructor
@@ -203,36 +203,21 @@ contract RangeVoting is IForwarder, AragonApp {
     public auth(ADD_CANDIDATES_ROLE)
     {
         // Get vote and candidate into storage
-        Vote storage voteA = votes[_voteId];
-        bytes32 cKey = keccak256(abi.encodePacked(_description));
-        CandidateState storage candidate = voteA.candidates[cKey];
+        Vote storage vote = votes[_voteId];
+        bytes32[] storage keys = vote.candidateKeys;
+        bytes32 cKey = keccak256(_description);
+        CandidateState storage candidate = vote.candidates[cKey];
         // Make sure that this candidate has not already been added
         require(candidate.added == false); // solium-disable-line error-reason
         // Set all data for the candidate
         candidate.added = true;
-        candidate.keyArrayIndex = uint8(voteA.candidateKeys.length);
+        candidate.keyArrayIndex = uint8(keys.length);
         candidate.metadata = _metadata;
         // double check
         candidateDescriptions[cKey] = _description;
-        voteA.candidateKeys.push(cKey);
-        emit AddCandidate(_voteId, _description);
-    }
-
-    /**
-    * @notice `getCandidate` serves as a basic getter using the description
-    *         to return the struct data.
-    * @param _voteId id for vote structure this 'ballot action' is connected to
-    * @param _description The candidate descrciption of the candidate.
-    */
-    function getCandidate(uint256 _voteId, address _description) // solium-disable-line function-order
-    external view returns(bool added, bytes metadata, uint8 keyArrayIndex, uint256 voteSupport)
-    {
-        Vote storage voteB = votes[_voteId];
-        CandidateState storage candidate = voteB.candidates[keccak256(abi.encodePacked(_description))];
-        added = candidate.added;
-        metadata = candidate.metadata;
-        keyArrayIndex = candidate.keyArrayIndex;
-        voteSupport = candidate.voteSupport;
+        keys.push(cKey);
+        vote.candidateKeys = keys;
+        emit AddCandidate(_voteId, candidateDescriptions[cKey], vote.candidateKeys.length);
     }
 
     /**
@@ -242,13 +227,11 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _candidateIndex The candidate descrciption of the candidate.
     */
     function getCandidate(uint256 _voteId, uint256 _candidateIndex) // solium-disable-line function-order
-    external view returns(bool added, bytes metadata, uint8 keyArrayIndex, uint256 voteSupport)
+    external view returns(address candidateAddress, uint256 voteSupport)
     {
-        Vote storage voteB = votes[_voteId];
-        CandidateState storage candidate = voteB.candidates[voteB.candidateKeys[_candidateIndex]];
-        added = candidate.added;
-        metadata = candidate.metadata;
-        keyArrayIndex = candidate.keyArrayIndex;
+        Vote storage vote = votes[_voteId];
+        CandidateState storage candidate = vote.candidates[vote.candidateKeys[_candidateIndex]];
+        candidateAddress = candidateDescriptions[vote.candidateKeys[_candidateIndex]];
         voteSupport = candidate.voteSupport;
     }
 
@@ -313,9 +296,9 @@ contract RangeVoting is IForwarder, AragonApp {
     * @return True is `_voter` has a vote token balance and vote is open
     */
     function canVote(uint256 _voteId, address _voter) public view returns (bool) {
-        Vote storage voteC = votes[_voteId];
+        Vote storage vote = votes[_voteId];
 
-        return _isVoteOpen(voteC) && token.balanceOfAt(_voter, voteC.snapshotBlock) > 0;
+        return _isVoteOpen(vote) && token.balanceOfAt(_voter, vote.snapshotBlock) > 0;
     }
 
     /**
@@ -362,7 +345,6 @@ contract RangeVoting is IForwarder, AragonApp {
         uint256 candidateSupport,
         uint256 totalVoters,
         uint256 totalParticipation,
-        uint256 totalCandidates,
         bytes executionScript, // script,
         bool executed
     ) { // solium-disable-line lbrace
@@ -376,8 +358,17 @@ contract RangeVoting is IForwarder, AragonApp {
         totalVoters = vote.totalVoters;
         totalParticipation = vote.totalParticipation;
         executionScript = vote.executionScript;
-        totalCandidates = vote.candidateKeys.length;
         executed = vote.executed;
+    }
+
+        /**
+    * @notice `getVote` simply splits all of the data elements out of a vote
+    *         struct and returns the individual values.
+    * @param _voteId The ID of the Vote struct in the `votes` array
+    */
+    function getCandidateLength(uint256 _voteId) public view returns
+    ( uint totalCandidates ) { // solium-disable-line lbrace
+        totalCandidates = votes[_voteId].candidateKeys.length;
     }
 
     /**
@@ -424,23 +415,23 @@ contract RangeVoting is IForwarder, AragonApp {
     isInitialized returns (uint256 voteId)
     {
         voteId = votes.length++;
-        Vote storage voteZ = votes[voteId];
-        voteZ.executionScript = _executionScript;
-        voteZ.creator = msg.sender;
-        voteZ.startDate = uint64(block.timestamp); // solium-disable-line security/no-block-members
-        voteZ.metadata = _metadata;
-        voteZ.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
-        voteZ.totalVoters = token.totalSupplyAt(voteZ.snapshotBlock);
-        voteZ.candidateSupportPct = globalCandidateSupportPct;
-        voteZ.scriptOffset = 0;
-        voteZ.scriptRemainder = 0;
+        Vote storage vote = votes[voteId];
+        vote.executionScript = _executionScript;
+        vote.creator = msg.sender;
+        vote.startDate = uint64(block.timestamp); // solium-disable-line security/no-block-members
+        vote.metadata = _metadata;
+        vote.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
+        vote.totalVoters = token.totalSupplyAt(vote.snapshotBlock);
+        vote.candidateSupportPct = globalCandidateSupportPct;
+        vote.scriptOffset = 0;
+        vote.scriptRemainder = 0;
         require(_executionScript.uint32At(0x0) == 1); // solium-disable-line error-reason
         if (_executionScript.length != 4) {
             uint256 scriptOffset;
             uint256 scriptRemainder;
             (scriptOffset, scriptRemainder) = _extractCandidates(_executionScript, voteId);
-            voteZ.scriptOffset = scriptOffset;
-            voteZ.scriptRemainder = scriptRemainder;    
+            vote.scriptOffset = scriptOffset;
+            vote.scriptRemainder = scriptRemainder;    
         }
         emit StartVote(voteId);
     }
@@ -561,12 +552,12 @@ contract RangeVoting is IForwarder, AragonApp {
     *      for functions that have an unknown number of params
     */
     function _executeVote(uint256 _voteId) internal {
-        Vote storage voteH = votes[_voteId];
+        Vote storage vote = votes[_voteId];
 
-        voteH.executed = true;
-        uint256 candidateLength = voteH.candidateKeys.length;
+        vote.executed = true;
+        uint256 candidateLength = vote.candidateKeys.length;
         bytes memory executionScript = new bytes(32);
-        executionScript = voteH.executionScript;
+        executionScript = vote.executionScript;
         // The total length of the new script will be one 32 byte space
         // for each candidate as well as 3 32 byte spaces for
         // additional data
