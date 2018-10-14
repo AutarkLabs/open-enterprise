@@ -4,6 +4,14 @@ import styled from 'styled-components'
 import { IconAdd, TextInput, theme, unselectable } from '@aragon/ui'
 import IconRemove from '../../../assets/components/IconRemove'
 
+const {
+  disabled,
+  contentBackgroundActive,
+  contentBorderActive,
+  contentBorder,
+  textSecondary,
+} = theme
+
 class OptionsInput extends React.Component {
   static propTypes = {
     input: PropTypes.string.isRequired,
@@ -47,7 +55,7 @@ class OptionsInput extends React.Component {
       </div>
     ))
     return (
-      <StyledOptionsInput>
+      <StyledOptionsInput empty={!this.props.input.length}>
         {loadOptions}
         <div className="option">
           <StyledInput
@@ -67,18 +75,18 @@ const StyledInput = styled(TextInput)`
   transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
   ::placeholder {
     transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-    color: ${theme.contentBorder};
+    color: ${contentBorder};
   }
   :focus {
-    border-color: ${theme.contentBorderActive};
+    border-color: ${contentBorderActive};
     ::placeholder {
-      color: ${theme.contentBorderActive};
+      color: ${contentBorderActive};
     }
   }
   :read-only {
     cursor: default;
     :focus {
-      border-color: ${theme.contentBorder};
+      border-color: ${contentBorder};
     }
   }
 `
@@ -93,19 +101,19 @@ const StyledOptionsInput = styled.div`
       flex-grow: 1;
     }
     > svg {
-      cursor: pointer;
+      cursor: ${({ empty }) => (empty ? 'not-allowed' : 'pointer')};
       margin-left: 3px;
       margin-top: -3px;
       height: auto;
       width: 1.8rem;
-      color: ${theme.textSecondary};
+      color: ${({ empty }) => (empty ? disabled : textSecondary)};
       vertical-align: middle;
       transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
       :hover {
-        color: ${theme.contentBorderActive};
+        color: ${({ empty }) => (empty ? disabled : contentBorderActive)};
       }
       :active {
-        color: ${theme.contentBackgroundActive};
+        color: ${({ empty }) => (empty ? disabled : contentBackgroundActive)};
       }
     }
   }
