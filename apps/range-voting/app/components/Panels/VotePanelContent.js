@@ -11,7 +11,7 @@ import {
   Countdown,
   Text,
   theme,
-  Slider,
+  Slider
 } from '@aragon/ui'
 import { combineLatest } from '../../rxjs'
 import provideNetwork from '../../utils/provideNetwork'
@@ -23,14 +23,14 @@ import ProgressBarThick from '../ProgressBarThick'
 
 class VotePanelContent extends React.Component {
   static propTypes = {
-    app: PropTypes.object, // TODO: isRequired?
+    app: PropTypes.object // TODO: isRequired?
   }
   state = {
     userCanVote: false,
     userBalance: null,
     showResults: false,
     voteOptions: [],
-    remaining: 100,
+    remaining: 100
   }
   componentDidMount() {
     this.loadUserCanVote()
@@ -69,7 +69,7 @@ class VotePanelContent extends React.Component {
             parseInt(balance, 10) / Math.pow(10, decimals)
           )
           this.setState({
-            userBalance: adjustedBalance,
+            userBalance: adjustedBalance
           })
         })
     }
@@ -83,7 +83,7 @@ class VotePanelContent extends React.Component {
         .first()
         .subscribe(canVote => {
           this.setState({
-            userCanVote: canVote,
+            userCanVote: canVote
           })
         })
     }
@@ -121,7 +121,7 @@ class VotePanelContent extends React.Component {
       userCanVote,
       showResults,
       voteOptions,
-      remaining,
+      remaining
     } = this.state
     if (!vote) {
       return null
@@ -136,7 +136,7 @@ class VotePanelContent extends React.Component {
       description,
       candidates,
       options,
-      type,
+      type
     } = vote.data
 
     if (!voteOptions.length) {
@@ -146,6 +146,8 @@ class VotePanelContent extends React.Component {
     const totalSupport = options.reduce((acc, option) => acc + option.value, 0)
 
     const showInfo = type === 'allocation' || type === 'curation'
+    const truncatedCreator = `${creator.slice(0, 6)}...${creator.slice(-4)}`
+
     const truncatedCreator = `${creator.slice(0, 6)}...${creator.slice(-4)}`
 
     return (
@@ -161,9 +163,11 @@ class VotePanelContent extends React.Component {
               </CreatorImg>
               <div>
                 <p>
+                  {/* // TODO: Change to etherscanUrl constant for the selected network*/}
                   <SafeLink
-                    href={`${etherscanBaseUrl}/address/${creator}`}
+                    href={`https://rinkeby.etherscan.io/address/${creator}`}
                     target="_blank"
+                    title={creator}
                   >
                     {truncatedCreator}
                   </SafeLink>
@@ -292,7 +296,7 @@ class VotePanelContent extends React.Component {
 
 const Label = styled(Text).attrs({
   smallcaps: true,
-  color: theme.textSecondary,
+  color: theme.textSecondary
 })`
   display: block;
   margin-bottom: 10px;
@@ -338,7 +342,7 @@ const SubmitButton = styled(Button)`
 `
 
 const ShowText = styled.p`
-  color: #21aae7;
+  color: ${theme.accent};
   font-size: 15px;
   text-decoration: underline;
   margin-top: 1rem;

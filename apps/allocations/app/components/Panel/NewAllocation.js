@@ -43,7 +43,7 @@ const INITIAL_STATE = {
 
 class NewAllocation extends React.Component {
   static propTypes = {
-    key: PropTypes.number.isRequired,
+    // key: PropTypes.number.isRequired, // TODO: Check the use of this required prop
     onSubmitAllocation: PropTypes.func.isRequired,
     description: PropTypes.string,
   }

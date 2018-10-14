@@ -24,8 +24,6 @@ const Account = ({
   onManageParameters,
   token,
 }) => {
-  
-
   const newAllocation = () => {
     onNewAllocation(proxy, description, id, limit)
   }
@@ -36,7 +34,7 @@ const Account = ({
   /*Need a better solution that this, should be handled in
   App.js using token manager once more tokens are supported */
   function translateToken(token) {
-    if(token == 0x0){
+    if (token == 0x0) {
       return 'ETH'
     }
   }
@@ -44,7 +42,7 @@ const Account = ({
   const truncatedProxy = `${proxy.slice(0, 6)}...${proxy.slice(-4)}`
   const translatedToken = translateToken(token)
 
-//TODO: use {etherScanBaseUrl instead of hard coded rinkeby}
+  //TODO: use {etherScanBaseUrl instead of hard coded rinkeby}
   return (
     <StyledCard>
       <MenuContainer>
@@ -57,18 +55,18 @@ const Account = ({
             <IconSettings />
             <ActionLabel>Manage Parameters</ActionLabel>
           </ContextMenuItem>
-        </ContextMenu> 
+        </ContextMenu>
       </MenuContainer>
       <IconContainer />
       <CardTitle>{description}</CardTitle>
       <CardAddress>
-          <SafeLink
-            href={`https://rinkeby.etherscan.io/address/${proxy}`}
-            title={`${proxy}`}
-            target="_blank"
-			>
-            {truncatedProxy}
-          </SafeLink>
+        <SafeLink
+          href={`https://rinkeby.etherscan.io/address/${proxy}`}
+          target="_blank"
+          title={proxy}
+        >
+          {truncatedProxy}
+        </SafeLink>
       </CardAddress>
       <StatsContainer>
         <StatsTitle>Balance</StatsTitle>
@@ -88,9 +86,9 @@ const Account = ({
 
 Account.propTypes = {
   proxy: PropTypes.string.isRequired,
-  limit: PropTypes.number.isRequired,
+  limit: PropTypes.string.isRequired, // We are receiving this as string, parseInt if needed
   token: PropTypes.string.isRequired,
-  balance: PropTypes.number.isRequired,
+  balance: PropTypes.string.isRequired, // We are receiving this as string, parseInt if needed
   description: PropTypes.string.isRequired,
   onNewAllocation: PropTypes.func.isRequired,
   onManageParameters: PropTypes.func.isRequired,
