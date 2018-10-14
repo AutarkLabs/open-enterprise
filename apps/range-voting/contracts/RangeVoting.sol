@@ -402,7 +402,7 @@ contract RangeVoting is IForwarder, AragonApp {
     *        this vote closes. Script is of the following form:
     *            [ specId (uint32) ] many calls with this structure ->
     *            [ to (address: 20 bytes) ]
-    *            [ calldataLength (uint32: 4 bytes) ]
+    *            [ function hash (uint32: 4 bytes) ]
     *            [ calldata (calldataLength bytes) ]
     *        In order to work with a range vote the execution script must contain
     *        Arrays as its first two parameters.
@@ -558,19 +558,31 @@ contract RangeVoting is IForwarder, AragonApp {
         uint256 candidateLength = vote.candidateKeys.length;
         bytes memory executionScript = new bytes(32);
         executionScript = vote.executionScript;
-        uint256 firstDynamicElementLocation = executionScript.uint256At(32);
-        uint256 secondDynamicElementLocation = 32 + firstDynamicElementLocation + (candidateLength * 32);
-        uint256 staticParamLength = firstDynamicElementLocation - 32;
+        // Doesn't fit in local storage but here for reference
+        //uint256 firstDynamicElementLocation = executionScript.uint256At(32);
+        uint256 secondDynamicElementLocation = 32 + executionScript.uint256At(32) + (candidateLength * 32);
+        
+        // Doesn't fit in local storage but here for reference
+        //uint256 staticParamLength = firstDynamicElementLocation - 64;
         // The total length of the new script will be two 32 byte spaces
         // for each candidate (one for support one for address)
         // as well as 3 32 byte spaces for
-        // the header (specId, target address, function hash)
+        // the header (specId 0x4, target address 0x14, calldata 0x4, function hash 0x4)
         // and the two dynamic param locations
         // as well as additional space for the staticParameters
         // Seperate variable isn't used here to save storage space
-        bytes memory script = new bytes(32 * (2 * (candidateLength + 1)) + 32 + staticParamLength);
+        uint256 callDataLength = 32 * (2 * (candidateLength + 2)) + executionScript.uint256At(32) - 68;
+        bytes memory callDataLengthMem = new bytes(32);
+        assembly {
+            mstore(add(callDataLengthMem, 32), callDataLength)
+        }
+        // script is callDataLength long plus 32 bytes for the "header" - function
+        bytes memory script = new bytes(callDataLength + 28);
         // Copy header information and first dynamic location as it's unchanged
         script.copy(executionScript.getPtr() + 32,0, 64);
+
+        //fix the calldataLength
+        memcpyshort((script.getPtr() + 56), callDataLengthMem.getPtr() + 60, 4);
 
         // Add second dynamic element location as it may have changed
         assembly {
@@ -579,11 +591,18 @@ contract RangeVoting is IForwarder, AragonApp {
 
 
         // Copy over all static parameters
-        script.copy(executionScript.getPtr() + 128,96,staticParamLength);
+        script.copy(executionScript.getPtr() + 128,96,executionScript.uint256At(32) - 64);
 
 
         // Set the initial offest after the static parameters
-        uint256 offset = 128 + staticParamLength;
+        uint256 offset = 64 + executionScript.uint256At(32);
+
+        assembly { // solium-disable-line security/no-inline-assembly
+            mstore(add(script, offset), candidateLength)
+        }
+
+        offset += 32; 
+
         // Copy all candidate data
         for (uint256 i = 0; i < candidateLength; i++) {
             bytes32 canKey = votes[_voteId].candidateKeys[i];
@@ -593,6 +612,12 @@ contract RangeVoting is IForwarder, AragonApp {
             }
             offset += 32; 
         }       
+        
+        assembly { // solium-disable-line security/no-inline-assembly
+            mstore(add(script, offset), candidateLength)
+        }
+
+        offset += 32; 
 
         // Copy all support data
         for (i = 0; i < candidateLength; i++) {
@@ -608,6 +633,21 @@ contract RangeVoting is IForwarder, AragonApp {
         
         runScript(script, new bytes(0), new address[](0));
         emit ExecuteVote(_voteId);
+    }
+
+    function memcpyshort(uint _dest, uint _src, uint _len) internal pure {
+        uint256 src = _src;
+        uint256 dest = _dest;
+        uint256 len = _len;
+
+        require(_len < 32);
+        // Copy remaining bytes
+        uint mask = 256 ** (32 - len) - 1;
+        assembly {
+            let srcpart := and(mload(src), not(mask))
+            let destpart := and(mload(dest), mask)
+            mstore(dest, or(destpart, srcpart))
+        }
     }
 
     /**
