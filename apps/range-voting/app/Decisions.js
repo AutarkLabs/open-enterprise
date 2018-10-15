@@ -228,7 +228,7 @@ class Decisions extends React.Component {
           <SidePanel
             title={
               currentVote
-                ? `Vote #${currentVoteId} (${
+                ? `Range Vote #${currentVoteId} (${
                   currentVote.open ? 'Open' : 'Closed'
                 })`
                 : 'currentVote'
