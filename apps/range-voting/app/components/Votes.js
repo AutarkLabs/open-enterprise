@@ -1,10 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import {
-  BadgeNumber,
-  Button,
-  colors,
-} from '@aragon/ui'
+import { BadgeNumber, colors } from '@aragon/ui'
 import VotesTable from '../components/VotesTable'
 
 class Votes extends React.Component {
@@ -17,7 +13,7 @@ class Votes extends React.Component {
         {openedVotes.length > 0 && (
           <VotesTableWrapper>
             <Title>
-              <span>Open Decisions</span>
+              <span>Open Range Votes</span>
               <BadgeNumber
                 background={colors.Rain['Rain Sky']}
                 color={colors.Rain.Slate}
@@ -36,7 +32,7 @@ class Votes extends React.Component {
         {closedVotes.length > 0 && (
           <VotesTableWrapper>
             <Title>
-              <span>Closed Decisions</span>
+              <span>Closed Range Votes</span>
             </Title>
             <VotesTable
               opened={false}
@@ -46,9 +42,9 @@ class Votes extends React.Component {
           </VotesTableWrapper>
         )}
 
-        <SeeMoreWrapper>
+        {/* <SeeMoreWrapper>
           <Button mode="secondary">Show Older Range Votes</Button>
-        </SeeMoreWrapper>
+        </SeeMoreWrapper> */}
       </Main>
     )
   }
@@ -73,9 +69,9 @@ const VotesTableWrapper = styled.div`
   margin-bottom: 30px;
 `
 
-const SeeMoreWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-`
+// const SeeMoreWrapper = styled.div`
+//   display: flex;
+//   justify-content: center;
+// `
 
 export default Votes
