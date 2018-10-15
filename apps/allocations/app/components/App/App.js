@@ -49,6 +49,12 @@ class App extends React.Component {
     this.closePanel()   
   }
 
+  onExecutePayout = (id) => {
+    console.info('App.js: Executing Payout:')
+    console.info(id)
+    this.props.app.executePayout(id)
+  }
+
   manageParameters = address => {
     // TODO: Implement
     console.info(
@@ -101,6 +107,7 @@ class App extends React.Component {
           onNewAccount={this.newAccount}
           onNewAllocation={this.newAllocation}
           onManageParameters={this.manageParameters}
+          onExecutePayout={this.onExecutePayout}
         />
         <SidePanel
           title={(panel.data && panel.data.heading) || ''}

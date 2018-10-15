@@ -171,8 +171,7 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         payout.informational = _informational;
         payout.recurring = _recurring;
         if (!_informational) {
-            require(msg.value == _balance);
-            payout.balance = _balance;
+            require(payout.balance >= _balance);
         } else {
             require(msg.value == 0);
             payout.balance = 0;
@@ -180,7 +179,7 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         if (_recurring) {
             // minimum granularity is a single day
             payout.period = _period;
-            require(payout.period > 86399);
+            //require(payout.period > 86399);
             payout.startTime = block.timestamp; // solium-disable-line security/no-block-members
         } else {
             payout.period = 0;
@@ -195,9 +194,11 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
 
     function fund(uint256 id) external payable { // solium-disable-line function-order
         Payout storage payout = payouts[id];
-        require(!payout.informational); // solium-disable-line error-reason
-        payout.balance.add(msg.value);
-        require(payout.balance <= payout.limit);
+        // Need to re-work to setup require guards again
+        //require(!payout.informational); // solium-disable-line error-reason
+        payout.balance = payout.balance.add(msg.value);
+        //require(payout.balance <= payout.limit);
+        emit PayoutFunded(id, payout.balance);
     }
 
     /*
@@ -236,7 +237,7 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
             uint256 remainingBalance = payout.balance.sub(this.balance);
             require(!(vault.balance(address(0)) < remainingBalance));
             vault.transfer(address(0), this, remainingBalance, new bytes(0));
-            */
+        */  
         }
         
         pointsPer = payout.balance.div(totalSupport);
@@ -245,7 +246,7 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         for (i = 0; i < payout.candidateAddresses.length; i++) {
             payout.candidateAddresses[i].transfer(payout.supports[i].mul(pointsPer));
         }
-        
+      
         emit ExecutePayout(_payoutId);
     }
 
