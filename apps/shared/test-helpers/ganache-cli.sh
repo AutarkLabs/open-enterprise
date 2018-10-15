@@ -62,7 +62,7 @@ if [ "$SOLIDITY_COVERAGE" = true ]; then
 elif [ "$TRUFFLE_TEST" = true ]; then
 	truffle test --network rpc "$@" | grep -v 'Compiling'
 	result=$?
-elif [ "$START_KIT" = true -o $RESTART_KIT = true ]; then
+elif [ "$START_KIT" = true -o "$RESTART_KIT" = true ]; then
 	npm run publish:apps && npm run start:kit
 	result=$?
 elif [ "$DEV" = true ]; then
