@@ -119,7 +119,7 @@ contract PlanningKit is KitBase {
         // Allocations permissions:
         acl.createPermission(ANY_ENTITY, allocations, allocations.START_PAYOUT_ROLE(), root);
         acl.createPermission(rangeVoting, allocations, allocations.SET_DISTRIBUTION_ROLE(), root);
-        acl.createPermission(rangeVoting, allocations, allocations.EXECUTE_PAYOUT_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, allocations, allocations.EXECUTE_PAYOUT_ROLE(), root);
         emit InstalledApp(allocations, apps[0]);
 
         // AddressBook permissions:
