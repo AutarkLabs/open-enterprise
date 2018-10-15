@@ -228,10 +228,10 @@ class VotePanelContent extends React.Component {
               <FirstLabel>Options</FirstLabel>
               <SecondLabel>Votes</SecondLabel>
               {this.state.voteOptions.map((option, idx) => (
-                <div>
+                <div key={idx}>
                   <SliderAndValueContainer>
                     <SliderContainer>
-                      <p>{option.label}</p>
+                      <Text size="small">{option.label}</Text>
                       <Slider
                         value={option.sliderValue}
                         onUpdate={value => this.sliderUpdate(value, idx)}
