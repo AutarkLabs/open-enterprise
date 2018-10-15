@@ -198,6 +198,10 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         //require(!payout.informational); // solium-disable-line error-reason
         payout.balance = payout.balance.add(msg.value);
         //require(payout.balance <= payout.limit);
+<<<<<<< HEAD
+=======
+        emit PayoutFunded(id, payout.balance);
+>>>>>>> 6e34d3a8675141b9e46343b368ee997ec64b838d
     }
 
     /*
