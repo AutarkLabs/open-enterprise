@@ -88,7 +88,7 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
     bytes32 constant public SET_DISTRIBUTION_ROLE = keccak256("SET_DISTRIBUTION_ROLE");
     bytes32 constant public EXECUTE_PAYOUT_ROLE = keccak256("EXECUTE_PAYOUT_ROLE");
 
-    event ExecutePayout(uint256 payoutId);
+    event PayoutExecuted(uint256 payoutId);
     event NewAccount(uint256 accountId);
 
     /*
@@ -208,7 +208,8 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
     *         processed and funds will be sent the appropriate places.
     *
     */
-    function executePayout(uint256 _payoutId) external payable auth(EXECUTE_PAYOUT_ROLE) { // solium-disable-line function-order
+    function executePayout() external payable auth(EXECUTE_PAYOUT_ROLE) returns(bool success){ // solium-disable-line function-order
+        uint256 _payoutId = 0;
         Payout storage payout = payouts[_payoutId];
         require(!payout.informational);
         require(payout.distSet);
@@ -245,8 +246,8 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         for (i = 0; i < payout.candidateAddresses.length; i++) {
             payout.candidateAddresses[i].transfer(payout.supports[i].mul(pointsPer));
         }
-      
-        emit ExecutePayout(_payoutId);
+        success = true;
+        emit PayoutExecuted(_payoutId);
     }
 
     function getNumberOfCandidates(uint256 _payoutId) public view returns(uint256 numCandidates) {
