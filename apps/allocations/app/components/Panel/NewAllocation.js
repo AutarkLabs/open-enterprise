@@ -68,7 +68,7 @@ class NewAllocation extends React.Component {
 
   submitAllocation = () => {
     // clear input here.
-    let informational = this.state.allocationTypeIndex == 0
+    let informational = this.state.allocationTypeIndex === 0
     let recurring = !informational && this.state.payoutTypeIndex != 0
     // TODO: period should be smarter: now the only option is monthly
     let period = recurring ? 86400 * 31 : 0
@@ -135,8 +135,9 @@ class NewAllocation extends React.Component {
             separator
             label="Amount"
             input={
-              <div style={{ display: 'flex' }}>
+              <div style={{ display: 'flex', width: '375px' }}>
                 <InputDropDown
+                  wide
                   textInput={{
                     name: 'amount',
                     value: this.state.limit,
