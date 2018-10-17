@@ -24,6 +24,7 @@ const Account = ({
   onManageParameters,
   onExecutePayout,
   token,
+  app
 }) => {
   const newAllocation = () => {
     onNewAllocation(proxy, description, id, limit)
@@ -34,7 +35,8 @@ const Account = ({
   }
 
   const executePayout = () => {
-    onExecutePayout(id)
+    console.info('App.js: Executing Payout:')
+    app.runPayout(id)    
   }
   /*Need a better solution that this, should be handled in
   App.js using token manager once more tokens are supported */
@@ -95,6 +97,7 @@ const Account = ({
 
 Account.propTypes = {
   proxy: PropTypes.string.isRequired,
+  app: PropTypes.object.isRequired,
   limit: PropTypes.string.isRequired, // We are receiving this as string, parseInt if needed
   token: PropTypes.string.isRequired,
   balance: PropTypes.string.isRequired, // We are receiving this as string, parseInt if needed

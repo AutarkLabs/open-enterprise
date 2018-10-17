@@ -199,17 +199,16 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         payout.balance = payout.balance.add(msg.value);
         //require(payout.balance <= payout.limit);
     }
-
     /*
     * @dev This function is how a payout is used. When ether is fed into the
     *      runPayout function it’s sent out based on the distribution
     *      that’s been set. May need an additional modifier to prevent re-runs.
+    *      Auth needs to be set here.
     * @notice When this function is called the payout will actually be
     *         processed and funds will be sent the appropriate places.
-    *
+    * @param _payoutId That payout that will be executed
     */
-    function executePayout() external payable auth(EXECUTE_PAYOUT_ROLE) returns(bool success){ // solium-disable-line function-order
-        uint256 _payoutId = 0;
+    function runPayout(uint256 _payoutId) external payable isInitialized returns(bool success){ // solium-disable-line function-order
         Payout storage payout = payouts[_payoutId];
         require(!payout.informational);
         require(payout.distSet);
@@ -249,6 +248,7 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         success = true;
         emit PayoutExecuted(_payoutId);
     }
+
 
     function getNumberOfCandidates(uint256 _payoutId) public view returns(uint256 numCandidates) {
         Payout storage payout = payouts[_payoutId];

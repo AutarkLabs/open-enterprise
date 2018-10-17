@@ -9,7 +9,8 @@ const Accounts = ({
   onNewAccount,
   onNewAllocation,
   onManageParameters,
-  onExecutePayout
+  onExecutePayout,
+  app
 }) => {
   const accountsEmpty = accounts.length === 0
   const accountsMap = accounts.map(({ data, accountId }) => (
@@ -25,6 +26,7 @@ const Accounts = ({
       onNewAllocation={onNewAllocation}
       onManageParameters={onManageParameters}
       onExecutePayout={onExecutePayout}
+      app= {app}
     />
   ))
 
