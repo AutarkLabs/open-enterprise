@@ -33,6 +33,9 @@ async function handleEvents(response){
     console.log('FundAccount Fired: ', response.returnValues)
     nextState = await newAccount(appState, response.returnValues)
     break
+  case 'SetDistribution':
+    nextState = await newAccount(appState, response.returnValues)
+    break
   }
   app.cache('state', nextState)
 }
@@ -40,23 +43,6 @@ async function handleEvents(response){
 
 async function newAccount(state, { accountId, ...eventArgs }) {
   console.log('arguments from events:', ...eventArgs)
-  const transform = ({ data, ...account }) => ({
-    ...account,
-    data: { ...data, executed: true },
-  })
-  try {
-    let updatedState = await updateState(state, accountId, transform)
-    return updatedState
-  }
-  catch(err) {
-    console.error(
-      'updateState failed to return:',
-      err,
-    )
-  }
-}
-
-async function updateAccountBalance(state, { accountId, balance}) {
   const transform = ({ data, ...account }) => ({
     ...account,
     data: { ...data, executed: true },
