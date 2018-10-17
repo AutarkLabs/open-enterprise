@@ -7,10 +7,8 @@ const DescriptionInput = styled(TextInput.Multiline).attrs({
 })`
   resize: none; /* TODO: Should we have the ability to resize the form? */
   height: 75px;
-  transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
   ::placeholder {
-    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-    color: ${theme.contentBorder};
+    color: ${theme.contentBorderActive};
   }
   :focus {
     border-color: ${theme.contentBorderActive};
