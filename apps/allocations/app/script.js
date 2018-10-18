@@ -27,21 +27,21 @@ async function handleEvents(response){
   let nextState
   switch (response.event) {
   case 'NewAccount':
-    nextState = await newAccount(appState, response.returnValues)
+    nextState = await syncAccounts(appState, response.returnValues)
     break
   case 'FundAccount':
     console.log('FundAccount Fired: ', response.returnValues)
-    nextState = await newAccount(appState, response.returnValues)
+    nextState = await syncAccounts(appState, response.returnValues)
     break
   case 'SetDistribution':
-    nextState = await newAccount(appState, response.returnValues)
+    nextState = await syncAccounts(appState, response.returnValues)
     break
   }
   app.cache('state', nextState)
 }
 
 
-async function newAccount(state, { accountId, ...eventArgs }) {
+async function syncAccounts(state, { accountId, ...eventArgs }) {
   console.log('arguments from events:', ...eventArgs)
   const transform = ({ data, ...account }) => ({
     ...account,
@@ -76,7 +76,7 @@ function loadAccountData(accountId) {
   })
 }
 
-async function updateAccounts(accounts, accountId, transform) {
+async function checkAccountsLoaded(accounts, accountId, transform) {
   const accountIndex = accounts.findIndex(
     account => account.accountId === accountId
   )
@@ -102,7 +102,7 @@ async function updateAccounts(accounts, accountId, transform) {
 async function updateState(state, accountId, transform) {
   const { accounts = [] } = state
   try {
-    let newAccounts = await updateAccounts(accounts, accountId, transform)
+    let newAccounts = await checkAccountsLoaded(accounts, accountId, transform)
     let newState = {...state, accounts: newAccounts}
     return newState
   }
