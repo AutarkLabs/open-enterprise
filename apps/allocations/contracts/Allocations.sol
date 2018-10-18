@@ -90,6 +90,8 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
 
     event ExecutePayout(uint256 payoutId);
     event NewAccount(uint256 accountId);
+    event FundAccount(uint256 accountId);
+    event SetDistribution(uint256 _payoutId);
 
     /*
     * @dev This is the function that setups who the candidates will be, and
@@ -191,13 +193,15 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
             require(payout.candidateKeys[i] == _candidateKeys[i]);
         }*/
         payout.supports = _supports;
+        emit SetDistribution(_payoutId);
     }
 
     function fund(uint256 id) external payable { // solium-disable-line function-order
         Payout storage payout = payouts[id];
         require(!payout.informational); // solium-disable-line error-reason
-        payout.balance.add(msg.value);
-        require(payout.balance <= payout.limit);
+        payout.balance = payout.balance.add(msg.value);
+        //require(payout.balance <= payout.limit);
+        emit FundAccount(id);
     }
 
     /*
