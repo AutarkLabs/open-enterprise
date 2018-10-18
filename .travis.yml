@@ -1,6 +1,6 @@
 # ensure running in a container for fast boot
-sudo: false
 dist: "trusty"
+sudo: false
 
 # these are executed in order.  each must pass for the next to be run
 stages:
@@ -13,20 +13,21 @@ language: node_js
 node_js: "node"
 # `nvm install` happens before the cache is restored, which means
 # we must install our own npm elsewhere (`~/npm`)
-before_install: |
-  [[ ! -x ~/cached-bins/node_modules/.bin/npm ]] && {
-    # caching feature creates `~/global-bins` for us
-    cd ~/cached-bins && echo '{"private":true}' > package.json && npm install npm@latest lerna --no-package-lock
-    cd -
-  } || true
-  # avoids bugs around https://github.com/travis-ci/travis-ci/issues/5092
-  export PATH=~/cached-bins/node_modules/.bin:$PATH
-# this avoids compilation in most cases (where we don't need it)
-install: npm run postinstall
+#before_install: |
+#  [[ ! -x ~/cached-bins/node_modules/.bin/npm ]] && {
+#    # caching feature creates `~/global-bins` for us
+#    cd ~/cached-bins && echo '{"private":true}' > package.json && npm install npm@latest lerna --no-package-lock
+#    cd -
+#  } || true
+#  # avoids bugs around https://github.com/travis-ci/travis-ci/issues/5092
+#  export PATH=~/cached-bins/node_modules/.bin:$PATH
+## this avoids compilation in most cases (where we don't need it)
+install: npm install
 cache:
   directories:
-    - ~/.npm # cache npm's cache
-    - ~/cached-bins # cache latest npm and lerna
+    - ~/node_modules
+    #- ~/.npm # cache npm's cache
+    #- ~/cached-bins # cache latest npm and lerna
 
 jobs:
   include:
