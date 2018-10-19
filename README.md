@@ -7,6 +7,7 @@
   <a href="#background">Background</a> •
   <a href="#details">Details</a> •
   <a href="#design-concepts">Design Concepts</a>
+  <a href="#contact">Contact</a>
 </p>
 
 ## Development Setup
@@ -44,9 +45,9 @@ $ npm run start:range
 
 The proposal for this [Aragon Planning app](https://github.com/aragon/nest/pull/24) was developed by members of [Space Decentral](https://spacedecentral.net) and [Giveth](https://giveth.io), and received funding via [Aragon's Nest program](https://blog.aragon.one/introducing-aragon-nest-1aa8c91c0566): an example of decentralization at it's finest. We are developing this app as a collaborative unit because it is a crucial building block for any organization that aims to coordinate work and streamline management duties, without traditional managers. This app will work with any ERC-20 token or Aragon DAO.
 
-## Details
+## Apps
 
-An organization should be able to seamlessly create and manage multiple projects using a Planning app. The basic system would require:
+This repository contains the following apps:
 
 - **Voting Patterns:** Create two new voting patterns to support range voting and consensus-based voting. These patterns would be able to be utilized on various planning tools.
   - **Range Voting:** Allowing for votes to be placed as a range of numerals. This pattern can be applied to various tools such as issue curation and collective budgeting.
@@ -93,3 +94,15 @@ These are some initial concepts. We expect to refine them and gather community f
 
 Hypothetical flow diagram. The components should be "plug and play" to design a rewards system tailored to an organization's unique needs.
 ![image](https://user-images.githubusercontent.com/2584493/36970345-91ff7ee6-2068-11e8-94a6-968f055b7ebc.png)
+
+## Contact
+
+We can generally be found in the [Aragon Planning riot room](https://riot.im/app/#/room/#aragon-planning:matrix.org)
+
+You may also reach out to us via email at: nest@space.coop
+
+If you have any questions or want to get involved in our development please let us know!
+
+## Special Thanks
+
+Special thanks go to the Aragon team for much of the work this project is based on, as well as for allocating us this grant to build the tools we need to DAOify open source developemt!
