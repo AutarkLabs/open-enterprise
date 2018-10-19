@@ -7,7 +7,7 @@
   },
   "scripts": {
     "bootstrap": "lerna bootstrap --hoist",
-    "postinstall": "npm run bootstrap",
+    "postinstall": "rm -f package-lock.json && npm run bootstrap",
     "clean": "git clean -ffdx",
     "clean:aragon": "rm -rf ~/.aragon && rm -rf ~/.ipfs",
     "clean:build": "git clean -ffdx --exclude=node_modules/",
