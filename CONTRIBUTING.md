@@ -30,9 +30,7 @@ contribute:
 2. **Diagnosis** Provide a hypothesis as to what could be causing an issue, by commenting on the issue and suggesting procedures for testing that hypothesis.
 3. **Treatment** - Provide suggestions on how to triage an issue.
 
-### Asking for General Help
 
-Please feel free to direct questions or requests for general help in the [Aragon Planning riot channel](https://riot.im/app/#/room/#aragon-planning:matrix.org).
 
 ## Pull Requests
 
@@ -51,9 +49,13 @@ We still need to document a comprehensive wiki on setting up the dev environment
 * https://github.com/aragon/aragon.js/blob/master/docs/APP.md
 * https://github.com/aragon/aragon.js/blob/master/docs/WRAPPER.md
 
-The WIP gist is probably the most helpful but also the most incomplete. If you follow the instructions, you'll run into some issues with some assumptions made about the APM permissions. As far as design, the app.md and wrapper.md are the most helpful for the front end, and the hack.md gives the best overview. The aragonOS.md details the solidity code and how the core of their system works.
+The WIP gist is probably the most helpful but also the most incomplete. If you follow the instructions, you'll run into some issues with some assumptions made about the APM permissions. As far as design, the app.md and wrapper.md are the most helpful for the front end, and the hack.md gives the best overview. The aragonOS.md details the solidity code and how the core of their system works. 
 
-### PR Process
+### Asking for General Help
+
+Please feel free to direct questions or requests for general help in the [Aragon Planning riot channel](https://riot.im/app/#/room/#aragon-planning:matrix.org).
+
+### Pull Request Process
 
 Install the [ZenHub for Github](https://chrome.google.com/webstore/detail/zenhub-for-github/ogcgkffhplmphkaahpmffcafajaocjbd?hl=en-US) chrome extension.
 
