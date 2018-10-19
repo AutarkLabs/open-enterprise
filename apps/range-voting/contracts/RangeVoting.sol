@@ -267,8 +267,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _sender Address of the entity trying to forward
     * @return True is `_sender` has correct permissions
     */
-    function canForward(address _sender, bytes _evmCallScript) public view returns (bool)
-    {
+    function canForward(address _sender, bytes _evmCallScript) public view returns (bool) {
         return canPerform(_sender, CREATE_VOTES_ROLE, arr());
     }
 
@@ -508,9 +507,7 @@ contract RangeVoting is IForwarder, AragonApp {
         uint256 voterStake = token.balanceOfAt(_voter, vote.snapshotBlock);
         uint256 totalSupport = 0;
 
-        CastVote(
-            _voteId
-        );
+        emit CastVote(_voteId);
 
 
         uint256 voteSupport;
