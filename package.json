@@ -3,7 +3,7 @@
   "name": "planning-app-monorepo",
   "devDependencies": {
     "coveralls": "3.0.2",
-    "lerna": "^3.3.1"
+    "lerna": "^3.4.3"
   },
   "scripts": {
     "bootstrap": "lerna bootstrap --hoist",
@@ -22,8 +22,8 @@
     "devchain:reset": "aragon devchain --reset",
     "publish:apps": "lerna run publish",
     "publish:http": "lerna run publish:http",
-    "start": "START_KIT=true apps/shared/test-helpers/ganache-cli.sh",
     "restart": "RESTART_KIT=true apps/shared/test-helpers/ganache-cli.sh",
+    "start": "START_KIT=true apps/shared/test-helpers/ganache-cli.sh",
     "start:dev": "DEV=true apps/shared/test-helpers/ganache-cli.sh",
     "start:kit": "cd apps/planning-app-kit && npm run start:kit",
     "start:address": "cd apps/address-book && npm start",
