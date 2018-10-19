@@ -46,7 +46,7 @@ start_testrpc() {
 
 if testrpc_running; then
 	echo "Killing testrpc instance at port $testrpc_port"
-	kill -9 $(lsof -i:$testrpc_port -t)
+	kill -9 "$(lsof -i:$testrpc_port -t)"
 fi
 
 echo "Starting our own testrpc instance at port $testrpc_port"
@@ -62,7 +62,7 @@ if [ "$SOLIDITY_COVERAGE" = true ]; then
 elif [ "$TRUFFLE_TEST" = true ]; then
 	truffle test --network rpc "$@" | grep -v 'Compiling'
 	result=$?
-elif [ "$START_KIT" = true -o $RESTART_KIT = true ]; then
+elif [ "$START_KIT" = true ]; then
 	npm run publish:apps && npm run start:kit
 	result=$?
 elif [ "$DEV" = true ]; then
