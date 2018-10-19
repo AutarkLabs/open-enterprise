@@ -108,6 +108,7 @@ class App extends React.Component {
           onNewAllocation={this.newAllocation}
           onManageParameters={this.manageParameters}
           onExecutePayout={this.onExecutePayout}
+          app={this.props.app}
         />
         <SidePanel
           title={(panel.data && panel.data.heading) || ''}

@@ -36,6 +36,8 @@ async function handleEvents(response){
   case 'SetDistribution':
     nextState = await syncAccounts(appState, response.returnValues)
     break
+  default:
+    console.log(response)
   }
   app.cache('state', nextState)
 }
