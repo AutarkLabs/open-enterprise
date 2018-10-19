@@ -34,7 +34,6 @@ FormField.propTypes = {
 
 const StyledField = styled.div`
   margin-bottom: 1rem;
-  font-size: 12px;
 `
 
 const StyledAsterisk = styled.span`
