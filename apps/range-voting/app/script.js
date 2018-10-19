@@ -35,6 +35,9 @@ async function handleEvents(response){
       console.info('[RangeVoting > script]: received StartVote')
       nextState = await startVote(nextState, response.returnValues)
       break
+    case 'ExternalContract':
+      console.info('[RangeVoting > script]: received ExternalContract')    
+      app.external(response.returnValues.addr)
     default:
       break
   }
@@ -112,10 +115,12 @@ async function loadVoteData(voteId) {
       app.call('getVote', voteId),
       app.call('getVoteMetadata', voteId),
       app.call('getCandidateLength',voteId),
-      app.call('canExecute', voteId)
+      app.call('canExecute', voteId),
+      app.getPayout(0)
     )
       .first()
-      .subscribe(([vote, metadata, totalCandidates, canExecute]) => {
+      .subscribe(([vote, metadata, totalCandidates, canExecute, payout]) => {
+        console.log("Payout in script.js", payout)
         loadVoteDescription(vote).then(async (vote) => {
           let options = []
           for(let i = 0; i < totalCandidates; i++){

@@ -108,6 +108,8 @@ contract RangeVoting is IForwarder, AragonApp {
     event ExecuteVote(uint256 indexed voteId);
     event ChangeCandidateSupport(uint256 candidateSupportPct);
     event ExecutionScript(bytes script, uint256 data);
+    // Add hash info
+    event ExternalContract(address addr);
     event AddCandidate(uint256 indexed voteId, address candidate, uint length);
 
 ////////////////
@@ -425,6 +427,7 @@ contract RangeVoting is IForwarder, AragonApp {
         vote.scriptOffset = 0;
         vote.scriptRemainder = 0;
         require(_executionScript.uint32At(0x0) == 1); // solium-disable-line error-reason
+        emit ExternalContract(_executionScript.addressAt(0x4));
         if (_executionScript.length != 4) {
             uint256 scriptOffset;
             uint256 scriptRemainder;
