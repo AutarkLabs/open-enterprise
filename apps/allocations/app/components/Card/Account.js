@@ -22,6 +22,7 @@ const Account = ({
   limit,
   onNewAllocation,
   onManageParameters,
+  onExecutePayout,
   token,
 }) => {
   const newAllocation = () => {
@@ -30,6 +31,10 @@ const Account = ({
 
   const manageParameters = () => {
     onManageParameters(proxy)
+  }
+
+  const executePayout = () => {
+    onExecutePayout(id)
   }
   /*Need a better solution that this, should be handled in
   App.js using token manager once more tokens are supported */
@@ -54,6 +59,10 @@ const Account = ({
           <ContextMenuItem onClick={manageParameters}>
             <IconSettings />
             <ActionLabel>Manage Parameters</ActionLabel>
+          </ContextMenuItem>
+          <ContextMenuItem onClick={executePayout}>
+            <IconSettings />
+            <ActionLabel>Execute Payout</ActionLabel>
           </ContextMenuItem>
         </ContextMenu>
       </MenuContainer>

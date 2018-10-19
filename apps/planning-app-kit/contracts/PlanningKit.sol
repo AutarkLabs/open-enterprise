@@ -103,6 +103,7 @@ contract PlanningKit is KitBase {
 
         // MiniMe Token
         MiniMeToken token = tokenFactory.createCloneToken(token, 0, "App token", 0, "APP", true);
+        token.generateTokens(address(0xb4124cEB3451635DAcedd11767f004d8a28c6eE7), 1 ether);
         //token.changeController(tokenManager);
 
         // Initialize apps
@@ -112,13 +113,13 @@ contract PlanningKit is KitBase {
         // projects.initialize();
         //tokenManager.initialize(token, true, 0);
         //voting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
-        rangeVoting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
+        rangeVoting.initialize(token, 50 * PCT, 20 * PCT, 1 minutes);
         
 
         // Allocations permissions:
         acl.createPermission(ANY_ENTITY, allocations, allocations.START_PAYOUT_ROLE(), root);
         acl.createPermission(rangeVoting, allocations, allocations.SET_DISTRIBUTION_ROLE(), root);
-        acl.createPermission(rangeVoting, allocations, allocations.EXECUTE_PAYOUT_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, allocations, allocations.EXECUTE_PAYOUT_ROLE(), root);
         emit InstalledApp(allocations, apps[0]);
 
         // AddressBook permissions:

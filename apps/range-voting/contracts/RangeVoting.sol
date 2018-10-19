@@ -402,7 +402,7 @@ contract RangeVoting is IForwarder, AragonApp {
     *        this vote closes. Script is of the following form:
     *            [ specId (uint32) ] many calls with this structure ->
     *            [ to (address: 20 bytes) ]
-    *            [ calldataLength (uint32: 4 bytes) ]
+    *            [ function hash (uint32: 4 bytes) ]
     *            [ calldata (calldataLength bytes) ]
     *        In order to work with a range vote the execution script must contain
     *        Arrays as its first two parameters.
@@ -558,87 +558,96 @@ contract RangeVoting is IForwarder, AragonApp {
         uint256 candidateLength = vote.candidateKeys.length;
         bytes memory executionScript = new bytes(32);
         executionScript = vote.executionScript;
-        // The total length of the new script will be one 32 byte space
-        // for each candidate as well as 3 32 byte spaces for
-        // additional data
-        uint256 scriptLength = 32 * (2 * (candidateLength + 2)) + 32; //+ (vote.scriptRemainder * 32);
-        bytes memory script = new bytes(scriptLength);
+        // Doesn't fit in local storage but here for reference
+        //uint256 firstDynamicElementLocation = executionScript.uint256At(32);
+        uint256 secondDynamicElementLocation = 32 + executionScript.uint256At(32) + (candidateLength * 32);
         
-        
-        assembly {  
-            mstore(add(script, 32), mload(add(executionScript,32)))
-        }
-        uint256 offset = 64;
-        bytes memory smallData = new bytes(32);
-        // This is the size indicator for the 
-        uint256 supportsData = 2 * 32 * (candidateLength + 2) + 4;
+        // Doesn't fit in local storage but here for reference
+        //uint256 staticParamLength = firstDynamicElementLocation - 64;
+        // The total length of the new script will be two 32 byte spaces
+        // for each candidate (one for support one for address)
+        // as well as 3 32 byte spaces for
+        // the header (specId 0x4, target address 0x14, calldata 0x4, function hash 0x4)
+        // and the two dynamic param locations
+        // as well as additional space for the staticParameters
+        // Seperate variable isn't used here to save storage space
+        uint256 callDataLength = 32 * (2 * (candidateLength + 2)) + executionScript.uint256At(32) - 68;
+        bytes memory callDataLengthMem = new bytes(32);
         assembly {
-            mstore(add(smallData, 32), supportsData)
+            mstore(add(callDataLengthMem, 32), callDataLength)
         }
-        for ( uint256 i = 28; i < 31; i++) {
-            supportsData = uint256(smallData[i]);
-            uint256 internalOffset = i + 28;
-            assembly{
-                mstore8(add(script,internalOffset), supportsData)
-            }
-        }
-        // First param is located at 0x40
-        supportsData = 64;
+        // script is callDataLength long plus 32 bytes for the "header" - function
+        bytes memory script = new bytes(callDataLength + 28);
+        // Copy header information and first dynamic location as it's unchanged
+        script.copy(executionScript.getPtr() + 32,0, 64);
 
+        //fix the calldataLength
+        memcpyshort((script.getPtr() + 56), callDataLengthMem.getPtr() + 60, 4);
+
+        // Add second dynamic element location as it may have changed
         assembly {
-            mstore(add(script, offset), supportsData)
+            mstore(add(script, 96), secondDynamicElementLocation)
         }
-        //Second param is located at 
-        //0x40 + 0x20 for param 1 length + 0x20 * the number of candidates
-        // May need safemath
-        supportsData = 64 + ( 32 * ( 1 + candidateLength ) );
-        offset += 32;
+
+
+        // Copy over all static parameters
+        script.copy(executionScript.getPtr() + 128,96,executionScript.uint256At(32) - 64);
+
+
+        // Set the initial offest after the static parameters
+        uint256 offset = 64 + executionScript.uint256At(32);
 
         assembly { // solium-disable-line security/no-inline-assembly
-            mstore(add(script, offset), supportsData)
+            mstore(add(script, offset), candidateLength)
         }
-        offset += 32;
 
-        supportsData = candidateLength;
+        offset += 32; 
 
-        assembly { // solium-disable-line security/no-inline-assembly
-            mstore(add(script, offset), supportsData)
-        }
-        offset += 32;
-
-        for (i = 0; i < candidateLength; i++) {
+        // Copy all candidate data
+        for (uint256 i = 0; i < candidateLength; i++) {
             bytes32 canKey = votes[_voteId].candidateKeys[i];
             uint256 candidateData = uint256(candidateDescriptions[canKey]);
             assembly {
                 mstore(add(script, offset), candidateData)
             }
             offset += 32; 
-        }
-
-
-        supportsData = candidateLength;
-
-        assembly {
-            mstore(add(script, offset), supportsData)
-        }
-        offset += 32;        
+        }       
         
+        assembly { // solium-disable-line security/no-inline-assembly
+            mstore(add(script, offset), candidateLength)
+        }
+
+        offset += 32; 
+
+        // Copy all support data
         for (i = 0; i < candidateLength; i++) {
-            supportsData = votes[_voteId].candidates[votes[_voteId].candidateKeys[i]].voteSupport;
+            uint256 supportsData = votes[_voteId].candidates[votes[_voteId].candidateKeys[i]].voteSupport;
 
             assembly { // solium-disable-line security/no-inline-assembly
                 mstore(add(script, offset), supportsData)
             }
             offset += 32;
         }
-        
 
-        //script.copy(executionScript.getPtr(),vote.scriptOffset,vote.scriptRemainder);
-        
         emit ExecutionScript(script, 0);
         
         runScript(script, new bytes(0), new address[](0));
         emit ExecuteVote(_voteId);
+    }
+
+    function memcpyshort(uint _dest, uint _src, uint _len) internal pure {
+        uint256 src = _src;
+        uint256 dest = _dest;
+        uint256 len = _len;
+
+        require(_len < 32);
+        // Copy remaining bytes
+        uint mask = 256 ** (32 - len) - 1;
+        assembly {
+            let srcpart := and(mload(src), not(mask))
+            let destpart := and(mload(dest), mask)
+            mstore(dest, or(destpart, srcpart))
+        }
     }
 
     /**
