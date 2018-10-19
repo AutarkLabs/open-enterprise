@@ -29,6 +29,8 @@ async function handleEvents(response){
   case 'NewAccount':
     nextState = await newAccount(appState, response.returnValues)
     break
+  default:
+    console.log(response)
   }
   app.cache('state', nextState)
 }

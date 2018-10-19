@@ -571,7 +571,7 @@ contract RangeVoting is IForwarder, AragonApp {
         // and the two dynamic param locations
         // as well as additional space for the staticParameters
         // Seperate variable isn't used here to save storage space
-        uint256 callDataLength = 32 * (2 * (candidateLength + 2)) + executionScript.uint256At(32) - 68;
+        uint256 callDataLength = 32 * (2 * (candidateLength + 2)) + executionScript.uint256At(32) - 60;
         bytes memory callDataLengthMem = new bytes(32);
         assembly {
             mstore(add(callDataLengthMem, 32), callDataLength)
