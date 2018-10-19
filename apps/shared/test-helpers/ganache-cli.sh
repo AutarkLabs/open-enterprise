@@ -33,6 +33,9 @@ start_testrpc() {
 		ganache-cli -i 15 --gasLimit 50000000 --port "$testrpc_port" >/dev/null &
 	elif [ "$START_KIT" = true ]; then
 		aragon devchain --port "$testrpc_port" &
+	elif [ "$RESTART_KIT" = true ]; then
+		rm -rf ~/.ipfs
+		aragon devchain --reset --port "$testrpc_port" &
 	elif [ "$DEV" = true ]; then
 		aragon devchain --reset --port "$testrpc_port" &
 		lerna run dev --parallel --scope=@tpt/apps-* &
@@ -59,7 +62,7 @@ if [ "$SOLIDITY_COVERAGE" = true ]; then
 elif [ "$TRUFFLE_TEST" = true ]; then
 	truffle test --network rpc "$@" | grep -v 'Compiling'
 	result=$?
-elif [ "$START_KIT" = true ]; then
+elif [ "$START_KIT" = true -o "$RESTART_KIT" = true ]; then
 	npm run publish:apps && npm run start:kit
 	result=$?
 elif [ "$DEV" = true ]; then

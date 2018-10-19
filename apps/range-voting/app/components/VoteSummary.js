@@ -2,27 +2,62 @@ import React from 'react'
 import styled from 'styled-components'
 import { Motion, spring } from 'react-motion'
 import { SidePanel, Text, theme, spring as springConf } from '@aragon/ui'
-import { safeDiv } from '../math-utils'
+import { safeDiv } from '../utils/math-utils'
 
 const { PANEL_INNER_WIDTH } = SidePanel
 
 const fast = springConf('fast')
 
+// consider using:
+// https://www.npmjs.com/package/color-scheme
+
 const VoteSummary = ({
-  votesYea,
-  votesNay,
+  candidates,
   tokenSupply,
   quorum,
   quorumProgress,
   support,
   ready,
 }) => {
-  const totalVotes = votesYea + votesNay
-  const votesYeaPct = safeDiv(votesYea, tokenSupply)
-  const votesNayPct = safeDiv(votesNay, tokenSupply)
+  
+  var totalVotes = 0
 
-  const votesYeaVotersPct = safeDiv(votesYea, totalVotes)
-  const votesNayVotersPct = safeDiv(votesNay, totalVotes)
+  for(var k in candidates) {
+    console.log ('k: ' + k + ', v: ' + candidates[k])
+    totalVotes += candidates[k]
+  }
+
+  var bars = []
+  var items = []
+
+//  uint256 public candidateSupportPct; voting power
+//  uint256 public minParticipationPct; voters
+
+  for(k in candidates) {
+    const votesPct = safeDiv(candidates[k], tokenSupply)
+    const votesVotersPct = safeDiv(candidates[k], totalVotes)
+
+bars.push (
+		<Votes
+                color={theme.accept}
+                style={{
+                  transform: `scaleX(${votesPct * 10})`,
+                }}
+              />
+     )
+
+items.push (
+          <Candidate color={theme.accent}>
+            <span>{k}</span>
+	    <span>
+            <strong>{Math.round(votesVotersPct * 10 * 100)}%</strong>
+            <Text size="xsmall" color={theme.textSecondary}>
+              ({Math.round(support * 100)}% needed)
+            </Text>
+	    </span>
+          </Candidate>
+ 	   )
+}
 
   return (
     <Motion
@@ -51,34 +86,11 @@ const VoteSummary = ({
               }}
             />
             <Bar>
-              <Votes
-                color={theme.positive}
-                style={{
-                  transform: `scaleX(${votesYeaPct * progress})`,
-                }}
-              />
-              <Votes
-                color={theme.negative}
-                style={{
-                  transform: `scaleX(${votesNayPct * progress})`,
-                  left: `${PANEL_INNER_WIDTH * votesYeaPct * progress}px`,
-                }}
-              />
+	    { bars }
             </Bar>
           </BarWrapper>
-
-          <YesNoItem color={theme.positive}>
-            <span>Yes</span>
-            <strong>{Math.round(votesYeaVotersPct * progress * 100)}%</strong>
-            <Text size="xsmall" color={theme.textSecondary}>
-              ({Math.round(support * 100)}% needed)
-            </Text>
-          </YesNoItem>
-          <YesNoItem color={theme.negative}>
-            <span>No</span>
-            <strong>{Math.round(votesNayVotersPct * progress * 100)}%</strong>
-          </YesNoItem>
-        </Main>
+	  { items }
+       </Main>
       )}
     </Motion>
   )
@@ -139,7 +151,7 @@ const QuorumBar = styled.div`
   border-right: 1px dashed #979797;
 `
 
-const YesNoItem = styled.div`
+const Candidate = styled.div`
   display: flex;
   align-items: center;
   white-space: nowrap;
@@ -156,11 +168,14 @@ const YesNoItem = styled.div`
     background: ${({ color }) => color};
   }
   span:first-child {
-    width: 35px;
+    //width: 35px;
     color: ${theme.textSecondary};
   }
   span:last-child {
-    margin-left: 10px;
+    margin-left: auto;
+  }
+  strong {
+    margin-right: 10px;
   }
 `
 
