@@ -26,7 +26,7 @@ class Decisions extends React.Component {
   static defaultProps = {
     pctBase: 100,
     tokenAddress: null,
-    supportRequiredPct: 74,
+    supportRequiredPct: 0,
     userAccount: '',
     votes: [
       {
@@ -144,8 +144,8 @@ class Decisions extends React.Component {
       voteSidebarOpened: false
     })
   }
-  handleVote = (voteId, voteType, executesIfDecided = true) => {
-    this.props.app.vote(voteId, voteType === VOTE_YEA, executesIfDecided)
+  handleVote = (voteId, supports) => {
+    this.props.app.vote(voteId, supports)
     this.handleVoteClose()
   }
   handleVoteClose = () => {
@@ -158,10 +158,11 @@ class Decisions extends React.Component {
     const {
       app,
       pctBase,
-      supportRequiredPct,
+      minParticipationPct,
       userAccount,
       votes,
-      voteTime
+      voteTime,
+      tokenAddress
     } = this.props
     const {
       createVoteVisible,
@@ -173,9 +174,6 @@ class Decisions extends React.Component {
     } = this.state
 
     const displayVotes = settingsLoaded && votes.length > 0
-    const supportRequired = settingsLoaded ? supportRequiredPct / pctBase : -1
-
-    // console.log('[Decisions.js:178] settingsLoaded: ' + settingsLoaded)
 
     // Add useful properties to the votes
     const preparedVotes = displayVotes
@@ -188,7 +186,6 @@ class Decisions extends React.Component {
           open: !vote.data.executed && isBefore(new Date(), endDate),
           quorum: safeDiv(vote.data.minAcceptQuorum, pctBase),
           quorumProgress: getQuorumProgress(vote.data),
-          support: supportRequired
         }
       })
       : votes
@@ -245,6 +242,7 @@ class Decisions extends React.Component {
                 ready={voteSidebarOpened}
                 tokenContract={tokenContract}
                 onVote={this.handleVote}
+                minParticipationPct={minParticipationPct}
               />
             )}
           </SidePanel>

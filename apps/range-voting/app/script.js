@@ -2,8 +2,10 @@ import Aragon from '@aragon/client'
 import { combineLatest } from './rxjs'
 import voteSettings, { hasLoadedVoteSettings } from './utils/vote-settings'
 import { EMPTY_CALLSCRIPT } from './utils/vote-utils'
+import AllocationJSON from '../../allocations/build/contracts/Allocations.json'
 
 const app = new Aragon()
+let allocations
 let appState = {
   votes: []
 }
@@ -22,6 +24,10 @@ async function handleEvents(response){
       console.info('[RangeVoting > script]: received CastVote')
       nextState = await castVote(nextState, response.returnValues)
       break
+    case 'ExecutionScript':
+      console.info('[RangeVoting > script]: received ExecutionScript')
+      console.info(response.returnValues)      
+      break
     case 'ExecuteVote':
       console.info('[RangeVoting > script]: received ExecuteVote')
 
@@ -31,6 +37,9 @@ async function handleEvents(response){
       console.info('[RangeVoting > script]: received StartVote')
       nextState = await startVote(nextState, response.returnValues)
       break
+    case 'ExternalContract':
+      console.info('[RangeVoting > script]: received ExternalContract')
+      allocations = app.external(response.returnValues.addr, AllocationJSON.abi)
     default:
       break
   }
@@ -68,10 +77,6 @@ async function startVote(state, { voteId }) {
   return updateState(state, voteId, vote => vote)
 }
 
-async function addCandidate(state, { voteId, candidate}) {
-  return updateState(state, voteId, vote => vote, candidate)
-}
-
 /***********************
  *                     *
  *       Helpers       *
@@ -107,10 +112,11 @@ async function loadVoteData(voteId) {
     combineLatest(
       app.call('getVote', voteId),
       app.call('getVoteMetadata', voteId),
-      app.call('getCandidateLength',voteId)
+      app.call('getCandidateLength',voteId),
+      app.call('canExecute', voteId),
     )
       .first()
-      .subscribe(([vote, metadata, totalCandidates]) => {
+      .subscribe(([vote, metadata, totalCandidates, canExecute, payout]) => {
         loadVoteDescription(vote).then(async (vote) => {
           let options = []
           for(let i = 0; i < totalCandidates; i++){
@@ -118,10 +124,21 @@ async function loadVoteData(voteId) {
             console.log(candidateData)
             options.push(candidateData)
           }
-          resolve({
+          let returnObject = {
             ...marshallVote(vote),
             metadata,
-            options: options
+            canExecute,
+            options: options,
+          }
+          allocations.getPayout(vote.externalId)
+          .first()
+          .subscribe((payout) => {
+            resolve({
+              ...returnObject,
+              limit: parseInt(payout.limit, 10),
+              balance: parseInt(payout.balance, 10),
+              metadata: payout.metadata  
+            })
           })
         })
       })
@@ -217,16 +234,19 @@ function marshallVote({
   executed,
 }) {
   let voteData = {}
+  totalVoters = parseInt(totalVoters, 10)
+  totalParticipation = parseInt(totalParticipation, 10)
   return {
     open,
     creator,
     startDate: parseInt(startDate, 10) * 1000, // adjust for js time (in ms vs s)
     snapshotBlock: parseInt(snapshotBlock, 10),
     candidateSupport: parseInt(candidateSupport, 10),
-    totalVoters: parseInt(totalVoters, 10),
-    totalParticipation: parseInt(totalParticipation, 10),
+    totalVoters: totalVoters,
+    totalParticipation: totalParticipation,
     metadata,
     executionScript,
     executed,
+    participationPct: (totalParticipation/totalVoters * 100)
   }
 }

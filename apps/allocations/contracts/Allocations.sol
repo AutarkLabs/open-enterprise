@@ -88,8 +88,10 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
     bytes32 constant public SET_DISTRIBUTION_ROLE = keccak256("SET_DISTRIBUTION_ROLE");
     bytes32 constant public EXECUTE_PAYOUT_ROLE = keccak256("EXECUTE_PAYOUT_ROLE");
 
-    event ExecutePayout(uint256 payoutId);
+    event PayoutExecuted(uint256 payoutId);
     event NewAccount(uint256 accountId);
+    event FundAccount(uint256 accountId);
+    event SetDistribution(uint256 _payoutId);
 
     /*
     * @dev This is the function that setups who the candidates will be, and
@@ -171,8 +173,7 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         payout.informational = _informational;
         payout.recurring = _recurring;
         if (!_informational) {
-            require(msg.value == _balance);
-            payout.balance = _balance;
+            require(payout.balance >= _balance);
         } else {
             require(msg.value == 0);
             payout.balance = 0;
@@ -180,7 +181,7 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         if (_recurring) {
             // minimum granularity is a single day
             payout.period = _period;
-            require(payout.period > 86399);
+            //require(payout.period > 86399);
             payout.startTime = block.timestamp; // solium-disable-line security/no-block-members
         } else {
             payout.period = 0;
@@ -191,63 +192,59 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
             require(payout.candidateKeys[i] == _candidateKeys[i]);
         }*/
         payout.supports = _supports;
+        emit SetDistribution(_payoutId);
     }
 
     function fund(uint256 id) external payable { // solium-disable-line function-order
         Payout storage payout = payouts[id];
         require(!payout.informational); // solium-disable-line error-reason
-        payout.balance.add(msg.value);
-        require(payout.balance <= payout.limit);
+        payout.balance = payout.balance.add(msg.value);
+        //require(payout.balance <= payout.limit);
+        emit FundAccount(id);
     }
-
-    /*
-    * @dev This function is how a payout is used. When ether is fed into the
-    *      runPayout function it’s sent out based on the distribution
-    *      that’s been set. May need an additional modifier to prevent re-runs.
-    * @notice When this function is called the payout will actually be
-    *         processed and funds will be sent the appropriate places.
-    *
-    */
-    function executePayout(uint256 _payoutId) external payable auth(EXECUTE_PAYOUT_ROLE) { // solium-disable-line function-order
+    function runPayout(uint256 _payoutId) external payable isInitialized returns(bool success){ // solium-disable-line function-order
         Payout storage payout = payouts[_payoutId];
+        uint256 pointsPer;
+        uint256 totalSupport;
+        uint i;
+        for (i = 0; i < payout.supports.length; i++) {
+            totalSupport += payout.supports[i];
+        }
+
         require(!payout.informational);
         require(payout.distSet);
-        
         if (payout.recurring) {
             // TDDO create payout execution counter to ensure payout time tracks payouts
             uint256 payoutTime = payout.startTime.add(payout.period);
-            require(payoutTime < block.timestamp); // solium-disable-line security/no-block-members
+            //require(payoutTime < block.timestamp); // solium-disable-line security/no-block-members
             payout.startTime = payoutTime;
         } else {
             payout.distSet = false;
         }
-        uint256 totalSupport;
-        uint256 pointsPer;
 
-        for (uint i = 0; i < payout.supports.length; i++) {
-            totalSupport += payout.supports[i];
-        }
-        
+
+        /*
+        For now the vault isn't working see aragon-apps issue #292
+        Update: Need to re-implement vault
+
         if (address(this).balance < payout.balance) {
             revert();
-            /*
-            For now the vault isn't working see aragon-apps issue #292
         
             uint256 remainingBalance = payout.balance.sub(this.balance);
             require(!(vault.balance(address(0)) < remainingBalance));
             vault.transfer(address(0), this, remainingBalance, new bytes(0));
-            */
         }
-        
+        */  
+
         pointsPer = payout.balance.div(totalSupport);
         //handle vault
-        
         for (i = 0; i < payout.candidateAddresses.length; i++) {
             payout.candidateAddresses[i].transfer(payout.supports[i].mul(pointsPer));
         }
-        
-        emit ExecutePayout(_payoutId);
+        success = true;
+        emit PayoutExecuted(_payoutId);
     }
+
 
     function getNumberOfCandidates(uint256 _payoutId) public view returns(uint256 numCandidates) {
         Payout storage payout = payouts[_payoutId];

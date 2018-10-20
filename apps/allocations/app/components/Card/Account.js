@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import icon from '../../assets/account-card.svg'
 import PropTypes from 'prop-types'
-
+import {BigNumber} from 'bignumber.js'
 import {
   Card,
   Text,
@@ -22,7 +22,9 @@ const Account = ({
   limit,
   onNewAllocation,
   onManageParameters,
+  onExecutePayout,
   token,
+  app
 }) => {
   const newAllocation = () => {
     onNewAllocation(proxy, description, id, limit)
@@ -30,6 +32,11 @@ const Account = ({
 
   const manageParameters = () => {
     onManageParameters(proxy)
+  }
+
+  const executePayout = () => {
+    console.info('App.js: Executing Payout:')
+    app.runPayout(id)    
   }
   /*Need a better solution that this, should be handled in
   App.js using token manager once more tokens are supported */
@@ -55,6 +62,10 @@ const Account = ({
             <IconSettings />
             <ActionLabel>Manage Parameters</ActionLabel>
           </ContextMenuItem>
+          <ContextMenuItem onClick={executePayout}>
+            <IconSettings />
+            <ActionLabel>Execute Payout</ActionLabel>
+          </ContextMenuItem>
         </ContextMenu>
       </MenuContainer>
       <IconContainer />
@@ -71,7 +82,7 @@ const Account = ({
       <StatsContainer>
         <StatsTitle>Balance</StatsTitle>
         <StatsValue>
-          {balance} {translatedToken}
+          {BigNumber(balance).div(BigNumber(10e17)).dp(3).toString()} {translatedToken}
         </StatsValue>
       </StatsContainer>
       <StatsContainer>
@@ -86,6 +97,7 @@ const Account = ({
 
 Account.propTypes = {
   proxy: PropTypes.string.isRequired,
+  app: PropTypes.object.isRequired,
   limit: PropTypes.string.isRequired, // We are receiving this as string, parseInt if needed
   token: PropTypes.string.isRequired,
   balance: PropTypes.string.isRequired, // We are receiving this as string, parseInt if needed

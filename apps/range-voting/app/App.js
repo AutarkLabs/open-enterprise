@@ -37,7 +37,6 @@ class App extends React.Component {
         settingsLoaded: true,
       })
     }
-    console.log(this.state)
   }
 
   handlePanelOpen = () => {
@@ -81,9 +80,12 @@ class App extends React.Component {
             <AppLayout.Content>
               <Decisions 
                 onActivate={this.handlePanelOpen}
+                app={this.props.app}
                 votes={ (this.props.votes !== undefined) ?  this.props.votes : []}
                 voteTime = { this.props.voteTime }
-                supportRequiredPct = { this.props.supportRequiredPct }
+                minParticipationPct = { this.props.minParticipationPct }
+                tokenAddress = { this.props.tokenAddress }
+                userAccount = { this.props.userAccount }
               />
             </AppLayout.Content>
           </AppLayout.ScrollWrapper>

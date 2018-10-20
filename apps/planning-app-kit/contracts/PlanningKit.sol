@@ -21,6 +21,7 @@ import "@tpt/test-helpers/contracts/apps/Voting.sol"; /* Already defined in ACLH
 // import "@tpt/test-helpers/contracts/lib/minime/MiniMeToken.sol"; // TODO: use this 
 
 import {Allocations as AllocationsApp} from "@tpt/apps-allocations/contracts/Allocations.sol";
+import {Projects as ProjectsApp} from "@tpt/apps-projects/contracts/Projects.sol";
 import {RangeVoting as RangeVotingApp} from "@tpt/apps-range-voting/contracts/RangeVoting.sol";
 
 
@@ -96,6 +97,7 @@ contract PlanningKit is KitBase {
         // Planning Apps
         AllocationsApp allocations = AllocationsApp(dao.newAppInstance(apps[0], latestVersionAppBase(apps[0])));
         //AddressBookApp addressBook = AddressBookApp(dao.newAppInstance(apps[1], latestVersionAppBase(apps[1])));
+        ProjectsApp projects = ProjectsApp(dao.newAppInstance(apps[2], latestVersionAppBase(apps[2])));
         RangeVotingApp rangeVoting = RangeVotingApp(dao.newAppInstance(apps[3], latestVersionAppBase(apps[3])));
         // Aragon Apps
         //TokenManagerApp tokenManager = TokenManagerApp(dao.newAppInstance(apps[4], latestVersionAppBase(apps[4])));
@@ -103,22 +105,23 @@ contract PlanningKit is KitBase {
 
         // MiniMe Token
         MiniMeToken token = tokenFactory.createCloneToken(token, 0, "App token", 0, "APP", true);
+        token.generateTokens(address(0xb4124cEB3451635DAcedd11767f004d8a28c6eE7), 1 ether);
         //token.changeController(tokenManager);
 
         // Initialize apps
         allocations.initialize();
         // TODO: Enable when code is ready in the apps
         // addressBook.initialize();
-        // projects.initialize();
+        projects.initialize();
         //tokenManager.initialize(token, true, 0);
         //voting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
-        rangeVoting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
+        rangeVoting.initialize(token, 50 * PCT, 20 * PCT, 1 minutes);
         
 
         // Allocations permissions:
         acl.createPermission(ANY_ENTITY, allocations, allocations.START_PAYOUT_ROLE(), root);
         acl.createPermission(rangeVoting, allocations, allocations.SET_DISTRIBUTION_ROLE(), root);
-        acl.createPermission(rangeVoting, allocations, allocations.EXECUTE_PAYOUT_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, allocations, allocations.EXECUTE_PAYOUT_ROLE(), root);
         emit InstalledApp(allocations, apps[0]);
 
         // AddressBook permissions:
@@ -128,12 +131,10 @@ contract PlanningKit is KitBase {
         emit InstalledApp(addressBook, apps[1]);
         */
         // Projects permissions:
-        /*
-        acl.createPermission(voting, projects, projects.ADD_REPO_ROLE(), root);
-        acl.createPermission(voting, projects, projects.REMOVE_REPO_ROLE(), root);
-        acl.createPermission(voting, projects, projects.ADD_BOUNTY_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, projects, projects.ADD_REPO_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, projects, projects.REMOVE_REPO_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, projects, projects.ADD_BOUNTY_ROLE(), root);
         emit InstalledApp(projects, apps[2]);
-        */
 
         // Range-voting permissions
         acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.CREATE_VOTES_ROLE(), root);
