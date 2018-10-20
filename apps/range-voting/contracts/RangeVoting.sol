@@ -159,7 +159,7 @@ contract RangeVoting is IForwarder, AragonApp {
 
 
     /**
-    * @notice Create a new vote about "`_metadata`"
+    * @notice Create a new range vote about "`_metadata`"
     * @param _executionScript EVM script to be executed on approval
     * @param _metadata Vote metadata
     * @return voteId Id for newly created vote
@@ -172,7 +172,7 @@ contract RangeVoting is IForwarder, AragonApp {
     }
 
     /**
-    * @notice Allows a token holder to caste a vote on the current options.
+    * @notice Allows a token holder to caste a range vote on the current options.
     * @param _voteId id for vote structure this 'ballot action' is connected to
     * @param _supports Array of support weights in order of their order in
     *                  `votes[_voteId].candidateKeys`, sum of all supports
@@ -184,7 +184,7 @@ contract RangeVoting is IForwarder, AragonApp {
     }
 
     /**
-    * @notice Execute the result of vote #`_voteId`
+    * @notice Execute the result of range vote #`_voteId`
     * @param _voteId Id for vote
     */
     // function executeVote(uint256 _voteId) isInitialized external {
@@ -195,7 +195,7 @@ contract RangeVoting is IForwarder, AragonApp {
 
     /**
     * @notice `addCandidate` allows the `ADD_CANDIDATES_ROLE` to add candidates
-    *         (or options) to the current vote.
+    *         (or options) to the current range vote.
     * @param _voteId id for vote structure this 'ballot action' is connected to
     * @param _metadata Any additional information about the candidate.
     *        Base implementation does not use this parameter.
@@ -265,7 +265,7 @@ contract RangeVoting is IForwarder, AragonApp {
 
     /**
     * @notice Used to make sure that the permissions are being handled properl
-    *         for the vote forwarding
+    *         for the range vote forwarding
     * @dev IForwarder interface conformance
     * @param _sender Address of the entity trying to forward
     * @return True is `_sender` has correct permissions
@@ -292,7 +292,7 @@ contract RangeVoting is IForwarder, AragonApp {
 
     /**
     * @notice `canVote` is used to check whether an address is elligible to
-    *         cast a vote in a given vote action.
+    *         cast a range vote in a given range vote action.
     * @param _voteId The ID of the Vote on which the vote would be cast.
     * @param _voter The address of the entity trying to vote
     * @return True is `_voter` has a vote token balance and vote is open
