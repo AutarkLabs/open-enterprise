@@ -135,8 +135,9 @@ class NewAllocation extends React.Component {
             separator
             label="Amount"
             input={
-              <div style={{ display: 'flex' }}>
+              <div style={{ display: 'flex', width: '375px' }}>
                 <InputDropDown
+                  wide
                   textInput={{
                     name: 'amount',
                     value: this.state.limit,

@@ -8,7 +8,7 @@ const VotesTable = ({ votes, opened, onSelectVote }) => (
     header={
       <TableRow>
         <TableHeader title={opened ? 'Time Remaining' : 'Status'} />
-        <TableHeader title="Question" />
+        <TableHeader title="Description" />
         <TableHeader title="Participation" align="right" />
         <TableHeader title={'Results'} />
       </TableRow>
