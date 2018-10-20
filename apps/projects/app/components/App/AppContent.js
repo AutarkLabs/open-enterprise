@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 
 import { TabbedView, TabBar, TabContent, Tab } from '../TabbedView'
@@ -18,7 +19,10 @@ import { Issues, Overview, Settings } from '../Content'
 
 // TODO: Dynamic component loading
 
-const AppContent = () => {
+const AppContent = ({
+  projects,
+  onNewProject,
+}) => {
   return (
     <TabbedView>
       <TabBar>
@@ -27,12 +31,18 @@ const AppContent = () => {
         <Tab>Settings</Tab>
       </TabBar>
       <TabContent>
-        <Overview />
+        <Overview projects={projects} onNewProject={onNewProject} />
         <Issues />
         <Settings />
       </TabContent>
     </TabbedView>
   )
 }
+
+AppContent.propTypes = {
+  projects: PropTypes.object.isRequired,
+  onNewProject: PropTypes.func.isRequired,
+}
+
 
 export default AppContent
