@@ -22,6 +22,7 @@ import { Issues, Overview, Settings } from '../Content'
 const AppContent = ({
   projects,
   onNewProject,
+  onSelect,
 }) => {
   return (
     <TabbedView>
@@ -31,7 +32,7 @@ const AppContent = ({
         <Tab>Settings</Tab>
       </TabBar>
       <TabContent>
-        <Overview projects={projects} onNewProject={onNewProject} />
+        <Overview projects={projects} onNewProject={onNewProject} onSelect={onSelect} />
         <Issues />
         <Settings />
       </TabContent>
@@ -42,6 +43,7 @@ const AppContent = ({
 AppContent.propTypes = {
   projects: PropTypes.object.isRequired,
   onNewProject: PropTypes.func.isRequired,
+  onSelect: PropTypes.func.isRequired,
 }
 
 

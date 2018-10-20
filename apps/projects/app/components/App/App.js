@@ -6,17 +6,16 @@ import { AppContent, AppTitle } from '.'
 
 const ASSETS_URL = 'aragon-ui-assets/'
 
-const projects = {}
-
 class App extends React.Component {
 
-  newProject = () => { alert('test') }
+  newProject = () => { alert('test new') }
+  selectProject = () => { alert('test select') }
 
   render() {
     return (
       <AragonApp publicUrl={ASSETS_URL}>
         <AppTitle />
-        <AppContent projects={projects} onNewProject={this.newProject} />
+        <AppContent projects={this.props.reposManaged} onNewProject={this.newProject} onSelect={this.selectProject} />
       </AragonApp>
     )
   }
