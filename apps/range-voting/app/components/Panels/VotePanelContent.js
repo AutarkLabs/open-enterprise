@@ -205,7 +205,7 @@ class VotePanelContent extends React.Component {
             <h2>
               <Label>Amount</Label>
             </h2>
-            <p>100 ETH (One-Time)</p>
+            <p>{vote.data.balance}</p>
           </div>
           <div>
             <h2>
