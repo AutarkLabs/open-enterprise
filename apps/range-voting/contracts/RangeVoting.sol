@@ -76,6 +76,7 @@ contract RangeVoting is IForwarder, AragonApp {
         uint256 candidateSupportPct; //minAcceptQuorumPct;
         uint256 totalVoters;
         uint256 totalParticipation;
+        uint256 externalId;
         string metadata;
         bytes executionScript;
         uint256 scriptOffset;
@@ -109,7 +110,7 @@ contract RangeVoting is IForwarder, AragonApp {
     event ChangeCandidateSupport(uint256 candidateSupportPct);
     event ExecutionScript(bytes script, uint256 data);
     // Add hash info
-    event ExternalContract(address addr);
+    event ExternalContract(uint256 indexed voteId, address addr, uint256 externalId);
     event AddCandidate(uint256 indexed voteId, address candidate, uint length);
 
 ////////////////
@@ -346,6 +347,7 @@ contract RangeVoting is IForwarder, AragonApp {
         uint256 candidateSupport,
         uint256 totalVoters,
         uint256 totalParticipation,
+        uint256 externalId,        
         bytes executionScript, // script,
         bool executed
     ) { // solium-disable-line lbrace
@@ -360,6 +362,7 @@ contract RangeVoting is IForwarder, AragonApp {
         totalParticipation = vote.totalParticipation;
         executionScript = vote.executionScript;
         executed = vote.executed;
+        externalId = vote.externalId;
     }
 
         /**
@@ -427,7 +430,6 @@ contract RangeVoting is IForwarder, AragonApp {
         vote.scriptOffset = 0;
         vote.scriptRemainder = 0;
         require(_executionScript.uint32At(0x0) == 1); // solium-disable-line error-reason
-        emit ExternalContract(_executionScript.addressAt(0x4));
         if (_executionScript.length != 4) {
             uint256 scriptOffset;
             uint256 scriptRemainder;
@@ -435,6 +437,8 @@ contract RangeVoting is IForwarder, AragonApp {
             vote.scriptOffset = scriptOffset;
             vote.scriptRemainder = scriptRemainder;    
         }
+        vote.externalId = _executionScript.uint256At(96);
+        emit ExternalContract(voteId, _executionScript.addressAt(0x4),_executionScript.uint256At(0x44));
         emit StartVote(voteId);
     }
 

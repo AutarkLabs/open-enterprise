@@ -2,8 +2,10 @@ import Aragon from '@aragon/client'
 import { combineLatest } from './rxjs'
 import voteSettings, { hasLoadedVoteSettings } from './utils/vote-settings'
 import { EMPTY_CALLSCRIPT } from './utils/vote-utils'
+import AllocationJSON from '../../allocations/build/contracts/Allocations.json'
 
 const app = new Aragon()
+let allocations
 let appState = {
   votes: []
 }
@@ -36,8 +38,8 @@ async function handleEvents(response){
       nextState = await startVote(nextState, response.returnValues)
       break
     case 'ExternalContract':
-      console.info('[RangeVoting > script]: received ExternalContract')    
-      app.external(response.returnValues.addr)
+      console.info('[RangeVoting > script]: received ExternalContract')
+      allocations = app.external(response.returnValues.addr, AllocationJSON.abi)
     default:
       break
   }
@@ -73,10 +75,6 @@ async function executeVote(state, { voteId }) {
 
 async function startVote(state, { voteId }) {
   return updateState(state, voteId, vote => vote)
-}
-
-async function addCandidate(state, { voteId, candidate}) {
-  return updateState(state, voteId, vote => vote, candidate)
 }
 
 /***********************
@@ -116,11 +114,9 @@ async function loadVoteData(voteId) {
       app.call('getVoteMetadata', voteId),
       app.call('getCandidateLength',voteId),
       app.call('canExecute', voteId),
-      app.getPayout(0)
     )
       .first()
       .subscribe(([vote, metadata, totalCandidates, canExecute, payout]) => {
-        console.log("Payout in script.js", payout)
         loadVoteDescription(vote).then(async (vote) => {
           let options = []
           for(let i = 0; i < totalCandidates; i++){
@@ -128,11 +124,21 @@ async function loadVoteData(voteId) {
             console.log(candidateData)
             options.push(candidateData)
           }
-          resolve({
+          let returnObject = {
             ...marshallVote(vote),
             metadata,
             canExecute,
-            options: options
+            options: options,
+          }
+          allocations.getPayout(vote.externalId)
+          .first()
+          .subscribe((payout) => {
+            resolve({
+              ...returnObject,
+              limit: parseInt(payout.limit, 10),
+              balance: parseInt(payout.balance, 10),
+              metadata: payout.metadata  
+            })
           })
         })
       })
