@@ -8,7 +8,7 @@
     "eth-gas-reporter": "0.1.10",
     "ethereumjs-abi": "0.6.5",
     "ganache-cli": "6.1.8",
-    "solidity-coverage": "0.5.8",
+    "solidity-coverage": "0.5.11",
     "solium": "1.1.8",
     "truffle": "4.1.14"
   }
