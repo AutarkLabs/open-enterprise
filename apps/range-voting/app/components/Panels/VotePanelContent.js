@@ -200,7 +200,7 @@ class VotePanelContent extends React.Component {
             </React.Fragment>
           )}
         </Part>
-        <SidePanelSplit>
+        <SidePanelSplit style={{ borderBottom: 'none' }}>
           <div>
             <h2>
               <Label>Amount</Label>

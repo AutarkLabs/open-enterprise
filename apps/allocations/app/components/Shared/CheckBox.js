@@ -17,7 +17,7 @@ const CheckBox = styled.input.attrs({ type: 'checkbox' })`
     content: url('data:image/svg+xml;utf8,<svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" width="14" height="10"><path d="M4.176 7.956L12.114 0l1.062 1.062-9 9L0 5.886l1.044-1.062z" fill-rule="evenodd"/></svg>');
     position: absolute;
     left: -0.0375rem;
-    top: -0.0625rem;
+    top: -0.33rem;
     opacity: 0;
     transform: scale(0.3) rotate(-45deg);
     transition: all 100ms ease-in-out;
