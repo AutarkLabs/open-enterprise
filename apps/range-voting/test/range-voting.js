@@ -149,7 +149,7 @@ contract('RangeVoting App', accounts => {
         calldata: executionTarget.contract.setSignal.getData(
           [accounts[7], accounts[8], accounts[9]],
           [0, 0, 0]
-        ),
+        )
       }
       const script = encodeCallScript([action])
       const voteId = createdVoteId(
@@ -162,7 +162,7 @@ contract('RangeVoting App', accounts => {
         calldata: executionTarget.contract.setSignal.getData(
           [accounts[7], accounts[8], accounts[9]],
           [0, 0, 0]
-        ),
+        )
       }
       const script = encodeCallScript([action])
       const voteId = createdVoteId(
@@ -178,7 +178,7 @@ contract('RangeVoting App', accounts => {
         calldata: executionTarget.contract.setSignal.getData(
           [accounts[7], accounts[8], accounts[9]],
           [0, 0, 0]
-        ),
+        )
       }
       const script = encodeCallScript([action])
       const voteId = createdVoteId(
@@ -190,7 +190,7 @@ contract('RangeVoting App', accounts => {
       timeTravel(RangeVotingTime + 1)
       await app.executeVote(voteId)
       let signal
-      for(let i = 0; i < vote.length; i ++){
+      for (let i = 0; i < vote.length; i++) {
         signal = await executionTarget.getSignal(i)
         assert.equal(
           signal.toNumber(),
@@ -211,10 +211,7 @@ contract('RangeVoting App', accounts => {
     it('execution throws if any action on script throws', async () => {
       let action = {
         to: executionTarget.address,
-        calldata: executionTarget.contract.setSignal.getData(
-          [],
-          []
-        ),
+        calldata: executionTarget.contract.setSignal.getData([], [])
       }
       const script = encodeCallScript([action])
       const voteId = createdVoteId(
@@ -237,7 +234,7 @@ contract('RangeVoting App', accounts => {
         calldata: executionTarget.contract.setSignal.getData(
           [accounts[7], accounts[8], accounts[9]],
           [0, 0, 0]
-        ),
+        )
       }
       const script = encodeCallScript([action])
       const voteId = createdVoteId(
@@ -254,14 +251,13 @@ contract('RangeVoting App', accounts => {
       let candidateState
       let apple = accounts[2], orange = accounts[3], banana = accounts[4]
 
-
       beforeEach(async () => {
         let action = {
           to: executionTarget.address,
           calldata: executionTarget.contract.setSignal.getData(
             [apple, orange, banana],
             [0, 0, 0]
-          ),
+          )
         }
         
         script = encodeCallScript([action, action])
@@ -281,7 +277,6 @@ contract('RangeVoting App', accounts => {
         assert.equal(orangeAddressAdded, true, 'apple address extracted incorrectly')
         assert.equal(bananaAddressAdded, true, 'apple address extracted incorrectly')
       })
-
       it('has correct state', async () => {
         let voteState = await app.getVote(voteId)
         let tokenBalance = await token.totalSupply()
