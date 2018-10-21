@@ -12,7 +12,7 @@ contract ExecutionTarget {
     }
 
     function autoThrow(uint256[] /*_signal*/) public pure {
-        require(false);
+        require(false); // solium-disable-line error-reason
     }
 
     function getSignal(uint256 sigIndex) public view returns (uint) {
