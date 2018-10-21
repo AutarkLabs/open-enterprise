@@ -1,23 +1,18 @@
+const {
+  ACL,
+  DAOFactory,
+  EVMScriptRegistryFactory,
+  Kernel,
+  MiniMeToken
+} = require('@tpt/test-helpers/artifacts')
+
+const RangeVoting = artifacts.require('RangeVotingMock')
+const ExecutionTarget = artifacts.require('ExecutionTarget')
+
 const { assertRevert } = require('@tpt/test-helpers/assertThrow')
 const { encodeCallScript } = require('@tpt/test-helpers/evmScript')
 const timeTravel = require('@tpt/test-helpers/timeTravel')(web3)
 
-const ExecutionTarget = artifacts.require('ExecutionTarget')
-
-const RangeVoting = artifacts.require('RangeVoting')
-const MiniMeToken = artifacts.require(
-  '@tpt/test-helpers/contracts/lib/minime/MiniMeToken'
-)
-const DAOFactory = artifacts.require(
-  '@tpt/test-helpers/contracts/factory/DAOFactory'
-)
-const EVMScriptRegistryFactory = artifacts.require(
-  '@tpt/test-helpers/contracts/factory/EVMScriptRegistryFactory'
-)
-const ACL = artifacts.require('@tpt/test-helpers/contracts/acl/ACL')
-const Kernel = artifacts.require('@tpt/test-helpers/contracts/kernel/Kernel')
-
-const getContract = name => artifacts.require(name)
 const pct16 = x =>
   new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))
 const createdVoteId = receipt =>
@@ -41,8 +36,8 @@ contract('RangeVoting App', accounts => {
   const root = accounts[0]
 
   before(async () => {
-    const kernelBase = await getContract('Kernel').new(true)
-    const aclBase = await getContract('ACL').new()
+    const kernelBase = await Kernel.new(true)
+    const aclBase = await ACL.new()
     const regFact = await EVMScriptRegistryFactory.new()
     daoFact = await DAOFactory.new(
       kernelBase.address,
@@ -54,8 +49,9 @@ contract('RangeVoting App', accounts => {
   beforeEach(async () => {
     const r = await daoFact.newDAO(root)
     const dao = Kernel.at(
-      r.logs.filter(l => l.event === 'DeployDAO')[0].args.dao
+      r.logs.filter(l => l.event == 'DeployDAO')[0].args.dao
     )
+
     const acl = ACL.at(await dao.acl())
 
     await acl.createPermission(
