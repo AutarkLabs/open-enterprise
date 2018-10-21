@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import icon from '../../assets/account-card.svg'
 import PropTypes from 'prop-types'
-import {BigNumber} from 'bignumber.js'
+import { BigNumber } from 'bignumber.js'
 import {
   Card,
   Text,
@@ -24,7 +24,7 @@ const Account = ({
   onManageParameters,
   onExecutePayout,
   token,
-  app
+  app,
 }) => {
   const newAllocation = () => {
     onNewAllocation(proxy, description, id, limit)
@@ -82,7 +82,11 @@ const Account = ({
       <StatsContainer>
         <StatsTitle>Balance</StatsTitle>
         <StatsValue>
-          {BigNumber(balance).div(BigNumber(10e17)).dp(3).toString()} {translatedToken}
+          {BigNumber(balance)
+            .div(BigNumber(10e17))
+            .dp(3)
+            .toString()}
+          {translatedToken}
         </StatsValue>
       </StatsContainer>
       <StatsContainer>

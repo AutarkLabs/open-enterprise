@@ -46,10 +46,10 @@ class VotePanelContent extends React.Component {
   }
   handleVoteSubmit = () => {
     let optionsArray = []
-    this.state.voteOptions.forEach((element) => {
-      let voteWeight = element.sliderValue ? 
-        element.sliderValue * this.state.userBalance :
-        0
+    this.state.voteOptions.forEach(element => {
+      let voteWeight = element.sliderValue
+        ? element.sliderValue * this.state.userBalance
+        : 0
       optionsArray.push(voteWeight)
     })
     this.props.onVote(this.props.vote.voteId, optionsArray)
@@ -128,7 +128,7 @@ class VotePanelContent extends React.Component {
     }
 
     const { endDate, open, quorum, support } = vote
-    const {participationPct, canExecute} = vote.data
+    const { participationPct, canExecute } = vote.data
     const {
       creator,
       metadata,
@@ -220,7 +220,10 @@ class VotePanelContent extends React.Component {
               <Label>Voter participation</Label>
             </h2>
             <p>
-              {participationPct}% <RedText>({minParticipationPct/ (10**16)}% participation required)</RedText>
+              {participationPct}%{' '}
+              <RedText>
+                ({minParticipationPct / 10 ** 16}% participation required)
+              </RedText>
             </p>
           </div>
           <div>
@@ -265,7 +268,7 @@ class VotePanelContent extends React.Component {
             <SidePanelSeparator />
           </div>
         )}
-        {(!open) && (
+        {!open && (
           <div>
             <SubmitButton mode="strong" wide onClick={this.executeVote}>
               Execute Vote

@@ -3,7 +3,15 @@ import { hot } from 'react-hot-loader'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
-import { AragonApp, AppBar, Button, SidePanel, IconAdd, observe } from '@aragon/ui'
+import {
+  AragonApp,
+  AppBar,
+  Button,
+  SidePanel,
+  IconAdd,
+  observe,
+  theme
+} from '@aragon/ui'
 import AppLayout from './components/AppLayout'
 import Decisions from './Decisions'
 import { hasLoadedVoteSettings } from './utils/vote-settings'
@@ -14,18 +22,18 @@ const initialState = {
   templateData: {},
   stepIndex: 0,
   settingsLoaded: false,  
-  panelActive: false,
+  panelActive: false
 }
 
 class App extends React.Component {
   static propTypes = {
-    app: PropTypes.object.isRequired,
+    app: PropTypes.object.isRequired
   }
 
   constructor(props) {
     super(props)
     this.state = {
-      ...initialState,
+      ...initialState
     }
   }
 
@@ -34,7 +42,7 @@ class App extends React.Component {
     // Is this the first time we've loaded the settings?
     if (!settingsLoaded && hasLoadedVoteSettings(nextProps)) {
       this.setState({
-        settingsLoaded: true,
+        settingsLoaded: true
       })
     }
   }
@@ -55,13 +63,16 @@ class App extends React.Component {
         </Button>
         <DropDownContent>
           <DropDownItem>
-            <CloseIcon />New Payout Engine
+            <CloseIcon />
+            New Payout Engine
           </DropDownItem>
           <DropDownItem>
-            <CloseIcon />New Issue Curation
+            <CloseIcon />
+            New Issue Curation
           </DropDownItem>
           <DropDownItem>
-            <CloseIcon />New Budget Engine
+            <CloseIcon />
+            New Budget Engine
           </DropDownItem>
         </DropDownContent>
       </DropDownButton>
@@ -81,11 +92,11 @@ class App extends React.Component {
               <Decisions 
                 onActivate={this.handlePanelOpen}
                 app={this.props.app}
-                votes={ (this.props.votes !== undefined) ?  this.props.votes : []}
-                voteTime = { this.props.voteTime }
-                minParticipationPct = { this.props.minParticipationPct }
-                tokenAddress = { this.props.tokenAddress }
-                userAccount = { this.props.userAccount }
+                votes={this.props.votes !== undefined ? this.props.votes : []}
+                voteTime={this.props.voteTime}
+                minParticipationPct={this.props.minParticipationPct}
+                tokenAddress={this.props.tokenAddress}
+                userAccount={this.props.userAccount}
               />
             </AppLayout.Content>
           </AppLayout.ScrollWrapper>
@@ -135,7 +146,6 @@ const CloseIcon = styled(IconAdd)`
   color: #98a0a2;
   margin-right: 0.5rem;
 `
-
 
 export default observe(
   observable => observable.map(state => ({ ...state })),

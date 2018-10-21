@@ -9,7 +9,7 @@ const ProgressBar = ({ progress, label }) => (
     {({ progress }) => (
       <Main>
         <Text size="xsmall" color={theme.textSecondary}>
-	  { label }
+          {label}
 	</Text>
         <Base>
           <Progress
@@ -23,13 +23,13 @@ const ProgressBar = ({ progress, label }) => (
 )
 
 ProgressBar.defaultProps = {
-  progress: 0,
+  progress: 0
 }
 
 ProgressBar.propTypes = {
   // type: PropTypes.oneOf(['positive', 'negative']).isRequired,
   type: PropTypes.oneOf(['positive', 'negative']),
-  progress: PropTypes.number,
+  progress: PropTypes.number
 }
 
 const Main = styled.div`

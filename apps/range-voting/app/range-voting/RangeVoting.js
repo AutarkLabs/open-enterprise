@@ -28,12 +28,12 @@ const tokenAbi = [].concat(tokenBalanceOfAbi, tokenDecimalsAbi)
 const SPRING_SHOW = {
   stiffness: 120,
   damping: 17,
-  precision: 0.001,
+  precision: 0.001
 }
 const SPRING_HIDE = {
   stiffness: 70,
   damping: 15,
-  precision: 0.001,
+  precision: 0.001
 }
 const SPRING_SCREEN = springConf('slow')
 
@@ -52,7 +52,7 @@ class RangeVoting extends React.Component {
     connected: false,
     contractCreationStatus: 'none',
     onComplete: noop,
-    onCreateContract: noop,
+    onCreateContract: noop
   }
   constructor(props) {
     super(props)
@@ -66,7 +66,7 @@ class RangeVoting extends React.Component {
       settingsLoaded: false,
       tokenContract: this.getTokenContract(props.tokenAddress),
       voteVisible: false,
-      voteSidebarOpened: false,
+      voteSidebarOpened: false
     }
   }
   getTokenContract(tokenAddress) {
@@ -80,12 +80,12 @@ class RangeVoting extends React.Component {
     // Is this the first time we've loaded the settings?
     if (!settingsLoaded && hasLoadedVoteSettings(nextProps)) {
       this.setState({
-        settingsLoaded: true,
+        settingsLoaded: true
       })
     }
     if (nextProps.tokenAddress !== this.props.tokenAddress) {
       this.setState({
-        tokenContract: this.getTokenContract(nextProps.tokenAddress),
+        tokenContract: this.getTokenContract(nextProps.tokenAddress)
       })
     }
 
@@ -100,7 +100,7 @@ class RangeVoting extends React.Component {
     const configureSteps = Templates.has(template)
       ? Templates.get(template).screens.map(step => ({
           ...step,
-          group: Steps.Configure,
+        group: Steps.Configure
         }))
       : []
 
@@ -108,7 +108,7 @@ class RangeVoting extends React.Component {
       { screen: 'template', group: Steps.Template },
       ...configureSteps,
       { screen: 'review', group: Steps.Review },
-      { screen: 'launch', group: Steps.Launch },
+      { screen: 'launch', group: Steps.Launch }
     ]
   }
 
@@ -126,7 +126,7 @@ class RangeVoting extends React.Component {
     return Object.entries(fields).reduce(
       (fields, [name, { defaultValue }]) => ({
         ...fields,
-        [name]: defaultValue(),
+        [name]: defaultValue()
       }),
       {}
     )
@@ -169,8 +169,8 @@ class RangeVoting extends React.Component {
       return {
         templateData: {
           ...templateData,
-          ...updatedFields,
-        },
+          ...updatedFields
+      }
       }
     })
   }
@@ -178,7 +178,7 @@ class RangeVoting extends React.Component {
   handleTemplateSelect = (template = null) => {
     this.setState({
       template,
-      templateData: this.getInitialDataFromTemplate(template),
+      templateData: this.getInitialDataFromTemplate(template)
     })
   }
 
@@ -248,9 +248,7 @@ class RangeVoting extends React.Component {
 
   isPrevNextVisible() {
     const step = this.currentStep()
-    return (
-      step.group !== Steps.Launch
-    )
+    return step.group !== Steps.Launch
   }
   isLaunchingNext() {
     const { stepIndex } = this.state
@@ -258,7 +256,7 @@ class RangeVoting extends React.Component {
     return steps[stepIndex + 1] && steps[stepIndex + 1].screen === 'launch'
   }
 
-  render () {
+  render() {
     const { direction, stepIndex } = this.state
     const { visible } = this.props
     const step = this.currentStep()
@@ -270,7 +268,7 @@ class RangeVoting extends React.Component {
           showProgress: spring(
             Number(visible),
             visible ? SPRING_SHOW : SPRING_HIDE
-          ),
+          )
         }}
       >
         {({ showProgress }) => (
@@ -279,7 +277,7 @@ class RangeVoting extends React.Component {
               transform: visible
                 ? 'none'
                 : `translateY(${100 * (1 - showProgress)}%)`,
-              opacity: visible ? showProgress : 1,
+              opacity: visible ? showProgress : 1
             }}
           >
             <View>
@@ -304,7 +302,7 @@ class RangeVoting extends React.Component {
                               screen,
                               i - stepIndex,
                               i - screenProgress,
-                              step.screen,
+                              step.screen
                             )}
                           </Screen>
                         ))}
@@ -329,17 +327,14 @@ class RangeVoting extends React.Component {
     )
   }
 
-
   renderScreen(screen, position, positionProgress, activeScreen) {
-    const {
-      template
-    } = this.state
+    const { template } = this.state
 
     const {
       //account,
       //network,
       //balance,
-      onComplete,
+      onComplete
     } = this.props
 
     positionProgress = Math.min(1, Math.max(-1, positionProgress))
@@ -357,21 +352,25 @@ class RangeVoting extends React.Component {
     }
     const configurationData = this.prepareReview()
     if (screen === 'review') {
-      return <Review
+      return (
+        <Review
         onConfirm={onComplete}
         configurationData={configurationData}
         {...sharedProps}
       />
+      )
     }
     if (screen === 'launch') {
       const active = activeScreen === 'launch'
-      return <Launch
+      return (
+        <Launch
         app={this.props.app}
         onConfirm={onComplete}
         configurationData={configurationData}
         active={active}
         {...sharedProps}
       />
+      )
     }
     const steps = this.getSteps()
     const configureScreen = steps.find(
@@ -444,11 +443,11 @@ const RangeWizardCloseButton = styled.button`
     background: none;
     border: 0;
     outline: 0;
-    z-index:3;
+    z-index: 3;
     &::-moz-focus-inner {
       border: 0;
     }
   }
 `
 
-export default RangeVoting;
+export default RangeVoting

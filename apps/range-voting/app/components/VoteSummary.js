@@ -17,13 +17,12 @@ const VoteSummary = ({
   quorum,
   quorumProgress,
   support,
-  ready,
+  ready
 }) => {
-  
   var totalVotes = 0
 
-  for(var k in candidates) {
-    console.log ('k: ' + k + ', v: ' + candidates[k])
+  for (var k in candidates) {
+    console.log('k: ' + k + ', v: ' + candidates[k])
     totalVotes += candidates[k]
   }
 
@@ -33,20 +32,20 @@ const VoteSummary = ({
 //  uint256 public candidateSupportPct; voting power
 //  uint256 public minParticipationPct; voters
 
-  for(k in candidates) {
+  for (k in candidates) {
     const votesPct = safeDiv(candidates[k], tokenSupply)
     const votesVotersPct = safeDiv(candidates[k], totalVotes)
 
-bars.push (
+    bars.push(
 		<Votes
                 color={theme.accept}
                 style={{
-                  transform: `scaleX(${votesPct * 10})`,
+          transform: `scaleX(${votesPct * 10})`
                 }}
               />
      )
 
-items.push (
+    items.push(
           <Candidate color={theme.accent}>
             <span>{k}</span>
 	    <span>
@@ -82,14 +81,12 @@ items.push (
                 transform: `
                 translateX(${PANEL_INNER_WIDTH * quorum * progress}px)
                 scaleY(${quorum ? progress : 0})
-              `,
+              `
               }}
             />
-            <Bar>
-	    { bars }
-            </Bar>
+            <Bar>{bars}</Bar>
           </BarWrapper>
-	  { items }
+          {items}
        </Main>
       )}
     </Motion>
