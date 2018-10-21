@@ -36,7 +36,7 @@ const Account = ({
 
   const executePayout = () => {
     console.info('App.js: Executing Payout:')
-    app.runPayout(id)    
+    app.runPayout(id)
   }
   /*Need a better solution that this, should be handled in
   App.js using token manager once more tokens are supported */
@@ -80,7 +80,9 @@ const Account = ({
         </SafeLink>
       </CardAddress>
       <StatsContainer>
-        <StatsTitle>Balance</StatsTitle>
+        <Text smallcaps color={theme.textSecondary}>
+          Balance
+        </Text>
         <StatsValue>
           {BigNumber(balance)
             .div(BigNumber(10e17))
@@ -90,7 +92,9 @@ const Account = ({
         </StatsValue>
       </StatsContainer>
       <StatsContainer>
-        <StatsTitle>Limit</StatsTitle>
+        <Text smallcaps color={theme.textSecondary}>
+          Limit
+        </Text>
         <StatsValue>
           {limit} {translatedToken}/ Allocation
         </StatsValue>
@@ -156,13 +160,6 @@ const StatsContainer = styled.div`
   display: inline-block;
   margin-top: 3rem;
   padding-left: 1rem;
-`
-
-const StatsTitle = styled.p`
-  color: #6d777b;
-  font-size: 16px;
-  text-transform: lowercase;
-  font-variant: small-caps;
 `
 
 const StatsValue = styled.p`

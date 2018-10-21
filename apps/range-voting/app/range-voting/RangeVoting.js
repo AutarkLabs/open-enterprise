@@ -99,9 +99,9 @@ class RangeVoting extends React.Component {
 
     const configureSteps = Templates.has(template)
       ? Templates.get(template).screens.map(step => ({
-          ...step,
+        ...step,
         group: Steps.Configure
-        }))
+      }))
       : []
 
     return [
@@ -170,7 +170,7 @@ class RangeVoting extends React.Component {
         templateData: {
           ...templateData,
           ...updatedFields
-      }
+        }
       }
     })
   }
@@ -354,22 +354,22 @@ class RangeVoting extends React.Component {
     if (screen === 'review') {
       return (
         <Review
-        onConfirm={onComplete}
-        configurationData={configurationData}
-        {...sharedProps}
-      />
+          onConfirm={onComplete}
+          configurationData={configurationData}
+          {...sharedProps}
+        />
       )
     }
     if (screen === 'launch') {
       const active = activeScreen === 'launch'
       return (
         <Launch
-        app={this.props.app}
-        onConfirm={onComplete}
-        configurationData={configurationData}
-        active={active}
-        {...sharedProps}
-      />
+          app={this.props.app}
+          onConfirm={onComplete}
+          configurationData={configurationData}
+          active={active}
+          {...sharedProps}
+        />
       )
     }
     const steps = this.getSteps()
@@ -402,7 +402,7 @@ const Main = styled.div`
   bottom: 0;
   overflow: auto;
   height: 100vh;
-  background-color: rgba(40, 40, 40, 0.4);
+  background-color: ${theme.contentBackground};
 `
 
 const View = styled.div`
@@ -418,7 +418,7 @@ const Window = styled.div`
   position: relative;
   width: 1080px;
   height: 660px;
-  background: #fff;
+  background: ${theme.contentBackground};
   border-radius: 3px;
   box-shadow: 0 10px 28px 0 rgba(90, 90, 90, 0.7);
 `

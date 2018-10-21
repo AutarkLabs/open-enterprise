@@ -351,7 +351,7 @@ const ShowText = styled.p`
 `
 
 const RedText = styled.span`
-  color: #e31733;
+  color: ${theme.negative};
   font-size: 14px;
 `
 

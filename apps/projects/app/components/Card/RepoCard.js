@@ -117,7 +117,7 @@ const StyledCard = styled(Card)`
   height: 220px;
   max-width: 249px;
   border-radius: 3px;
-  background-color: #feffff;
+  background-color: ${theme.contentBackground};
   padding: 10px 14px 10px 14px;
   :hover {
     /* // border: 1px solid rgba(209, 209, 209, 0.5); */

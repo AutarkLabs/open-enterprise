@@ -10,7 +10,7 @@ const ProgressBar = ({ progress, label }) => (
       <Main>
         <Text size="xsmall" color={theme.textSecondary}>
           {label}
-	</Text>
+        </Text>
         <Base>
           <Progress
             color={theme.accent}
@@ -39,7 +39,7 @@ const Main = styled.div`
 const Base = styled.div`
   width: 100%;
   height: 6px;
-  background-color: #edf3f6;
+  background-color: ${theme.infoBackground};
   border-radius: 2px;
   text-align: right;
   line-height: 14px;

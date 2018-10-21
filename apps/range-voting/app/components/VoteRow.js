@@ -53,6 +53,7 @@ class VoteRow extends React.Component {
       </Bar>
     ))
 
+    // TODO: Hardcode colors into constants or extend aragon ui theme if needed
     let typeBadge
     if (type === 'allocation') {
       typeBadge = generateBadge('#AF499A', '#EED3F4', 'Allocation')
@@ -153,7 +154,7 @@ const Bar = styled.div`
 
 const ShowMoreText = styled.p`
   font-size: 12px;
-  color: #9B9B9B;
+  color: ${theme.textTertiary};
   font-style: italic;
   margin-top: 0.5rem;
   cursor: pointer;

@@ -21,7 +21,7 @@ const initialState = {
   template: null,
   templateData: {},
   stepIndex: 0,
-  settingsLoaded: false,  
+  settingsLoaded: false,
   panelActive: false
 }
 
@@ -89,7 +89,7 @@ class App extends React.Component {
           </AppLayout.Header>
           <AppLayout.ScrollWrapper>
             <AppLayout.Content>
-              <Decisions 
+              <Decisions
                 onActivate={this.handlePanelOpen}
                 app={this.props.app}
                 votes={this.props.votes !== undefined ? this.props.votes : []}
@@ -116,9 +116,9 @@ class App extends React.Component {
 const DropDownContent = styled.div`
   display: none;
   position: absolute;
-  background-color: #ffffff;
-  border: 1px solid rgba(209, 209, 209, 0.75);
-  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.03);
+  background-color: ${theme.contentBackground};
+  border: 1px solid · ${theme.contentBorder};
+  box-shadow: 0 4px 4px 0 ${theme.shadow};
   border-radius: 3px;
   padding: 0.5rem 0;
   z-index: 1;
@@ -129,7 +129,7 @@ const DropDownItem = styled.div`
   padding: 0.5rem 1rem;
   display: flex;
   &:hover {
-    color: #00cbe6;
+    color: ${theme.mainBgGradientStart};
     cursor: pointer;
   }
 `
@@ -143,7 +143,7 @@ const DropDownButton = styled.div`
 `
 
 const CloseIcon = styled(IconAdd)`
-  color: #98a0a2;
+  color: ${theme.textSecondary};
   margin-right: 0.5rem;
 `
 
