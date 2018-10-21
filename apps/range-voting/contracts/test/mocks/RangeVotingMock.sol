@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "../../contracts/RangeVoting.sol";
+import "../../RangeVoting.sol";
 
 
 contract RangeVotingMock is RangeVoting {

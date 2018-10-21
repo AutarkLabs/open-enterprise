@@ -1,12 +1,5 @@
 pragma solidity ^0.4.24;
 
-// TODO: Move ExecutionTarget to a shared location
-
-import "@tpt/test-helpers/contracts/factory/EVMScriptRegistryFactory.sol";
-import "@tpt/test-helpers/contracts/factory/DAOFactory.sol";
-import "@tpt/test-helpers/contracts/acl/ACL.sol";
-import "@tpt/test-helpers/contracts/lib/minime/MiniMeToken.sol";
-
 
 contract ExecutionTarget {
     uint[] public signal;

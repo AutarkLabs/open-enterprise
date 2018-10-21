@@ -11,12 +11,17 @@ import "@tpt/test-helpers/contracts/lib/minime/MiniMeToken.sol";
 // from an external dependency.
 //
 // We are now left with three options:
-// - Copy/paste the MiniMeToken contract
+// - Copy/paste all dependency contracts
 // - Run the tests with `truffle compile --all` on
 // - Or trick Truffle by claiming we use it in a Solidity test
 //
 // You know which one I went for.
+// -- Somebody from Aragon (probably Jorge?)
 
-contract TestRangeVoting {
-  // ...
+// When I first saw this contract I audibly laughed out loud.
+// Glad to get to use this janky hack for myself XD
+
+
+// solium-disable-next-line no-empty-blocks
+contract TestImports {
 }
