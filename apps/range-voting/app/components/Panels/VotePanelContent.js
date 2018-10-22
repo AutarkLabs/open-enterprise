@@ -47,10 +47,10 @@ class VotePanelContent extends React.Component {
   }
   handleVoteSubmit = () => {
     let optionsArray = []
-    this.state.voteOptions.forEach((element) => {
-      let voteWeight = element.sliderValue ? 
-        element.sliderValue * this.state.userBalance :
-        0
+    this.state.voteOptions.forEach(element => {
+      let voteWeight = element.sliderValue
+        ? element.sliderValue * this.state.userBalance
+        : 0
       optionsArray.push(voteWeight)
     })
     this.props.onVote(this.props.vote.voteId, optionsArray)
@@ -129,7 +129,7 @@ class VotePanelContent extends React.Component {
     }
 
     const { endDate, open, quorum, support } = vote
-    const {participationPct, canExecute} = vote.data
+    const { participationPct, canExecute } = vote.data
     const {
       creator,
       metadata,
@@ -253,14 +253,14 @@ class VotePanelContent extends React.Component {
                           margin: '0.5rem 0 1rem 0'
                         }}
                       >
-                      <Slider
+                        <Slider
                           width="270px"
-                        value={option.sliderValue}
-                        onUpdate={value => this.sliderUpdate(value, idx)}
-                      />
-                    <ValueContainer>
-                      {Math.round(option.sliderValue * 100) || 0}
-                    </ValueContainer>
+                          value={option.sliderValue}
+                          onUpdate={value => this.sliderUpdate(value, idx)}
+                        />
+                        <ValueContainer>
+                          {Math.round(option.sliderValue * 100) || 0}
+                        </ValueContainer>
                       </div>
                     </div>
                   </SliderAndValueContainer>
@@ -288,7 +288,7 @@ class VotePanelContent extends React.Component {
             <SidePanelSeparator />
           </div>
         )}
-        {(!open) && (
+        {!open && (
           <div>
             <SubmitButton mode="strong" wide onClick={this.executeVote}>
               Execute Vote
@@ -368,6 +368,11 @@ const ShowText = styled.p`
   text-decoration: underline;
   margin-top: 1rem;
   cursor: pointer;
+`
+
+const SecondRedText = styled(Text)`
+  float: right;
+  margin-top: 0.5rem;
 `
 
 const Part = styled.div`
