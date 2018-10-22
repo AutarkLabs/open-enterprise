@@ -221,7 +221,10 @@ class VotePanelContent extends React.Component {
               <Label>Voter participation</Label>
             </h2>
             <p>
-              {participationPct}% <RedText>({minParticipationPct/ (10**16)}% participation required)</RedText>
+              {participationPct}%{' '}
+              <Text size="small" color={theme.negative}>
+                ({minParticipationPct / 10 ** 16}% required)
+              </Text>
             </p>
           </div>
           <div>
@@ -263,7 +266,15 @@ class VotePanelContent extends React.Component {
                   </SliderAndValueContainer>
                 </div>
               ))}
-              <SecondRedText>{remaining} remaining</SecondRedText>
+              <Text
+                size="small"
+                color={theme.negative}
+                style={{
+                  float: 'right'
+                }}
+              >
+                {remaining} remaining
+              </Text>
               <SubmitButton mode="strong" wide onClick={this.handleVoteSubmit}>
                 Submit Vote
               </SubmitButton>
@@ -329,7 +340,7 @@ const ValueContainer = styled.div`
   border-radius: 3px;
   width: 69px;
   height: 40px;
-  border: 1px solid #e6e6e6;
+  border: 1px solid ${theme.contentBorder};
   padding-top: 0.5rem;
   text-align: center;
 `
@@ -357,16 +368,6 @@ const ShowText = styled.p`
   text-decoration: underline;
   margin-top: 1rem;
   cursor: pointer;
-`
-
-const RedText = styled.span`
-  color: #e31733;
-  font-size: 14px;
-`
-
-const SecondRedText = RedText.extend`
-  float: right;
-  margin-top: 0.5rem;
 `
 
 const Part = styled.div`
