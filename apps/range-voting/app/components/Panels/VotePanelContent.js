@@ -10,8 +10,7 @@ import {
   SidePanelSeparator,
   Countdown,
   Text,
-  theme,
-  Slider
+  theme
 } from '@aragon/ui'
 import { combineLatest } from '../../rxjs'
 import provideNetwork from '../../utils/provideNetwork'
@@ -20,6 +19,7 @@ import { safeDiv } from '../../utils/math-utils'
 import VoteSummary from '../VoteSummary'
 import VoteStatus from '../VoteStatus'
 import ProgressBarThick from '../ProgressBarThick'
+import Slider from '../Slider'
 
 class VotePanelContent extends React.Component {
   static propTypes = {
@@ -238,16 +238,24 @@ class VotePanelContent extends React.Component {
               {this.state.voteOptions.map((option, idx) => (
                 <div key={idx}>
                   <SliderAndValueContainer>
-                    <SliderContainer>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <Text size="small">{option.label}</Text>
+                      <div
+                        style={{
+                          display: 'flex',
+                          margin: '0.5rem 0 1rem 0'
+                        }}
+                      >
                       <Slider
+                          width="270px"
                         value={option.sliderValue}
                         onUpdate={value => this.sliderUpdate(value, idx)}
                       />
-                    </SliderContainer>
                     <ValueContainer>
                       {Math.round(option.sliderValue * 100) || 0}
                     </ValueContainer>
+                      </div>
+                    </div>
                   </SliderAndValueContainer>
                 </div>
               ))}
@@ -315,7 +323,7 @@ const AdjustContainer = styled.div`
 const ValueContainer = styled.div`
   box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.03);
   border-radius: 3px;
-  width: 70px;
+  width: 69px;
   height: 40px;
   border: 1px solid #e6e6e6;
   padding-top: 0.5rem;
