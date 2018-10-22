@@ -2,6 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import Blockies from 'react-blockies'
+import { BigNumber } from 'bignumber.js'
 import {
   Button,
   Info,
@@ -227,7 +228,10 @@ class VotePanelContent extends React.Component {
             <h2>
               <Label>Your voting tokens</Label>
             </h2>
-            <p>{this.state.userBalance}</p>
+            {BigNumber(this.state.userBalance)
+              .div(BigNumber(10e15))
+              .dp(3)
+              .toString()}
           </div>
         </SidePanelSplit>
         {open && (
