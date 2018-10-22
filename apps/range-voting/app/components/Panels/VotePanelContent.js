@@ -370,11 +370,6 @@ const ShowText = styled.p`
   cursor: pointer;
 `
 
-const SecondRedText = styled(Text)`
-  float: right;
-  margin-top: 0.5rem;
-`
-
 const Part = styled.div`
   padding: 20px 0;
   h2 {
