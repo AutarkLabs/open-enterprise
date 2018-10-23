@@ -34,7 +34,7 @@ cache:
 
 jobs:
   include:
-    - script: npm run coverage
+    - script: travis_wait 60 npm run coverage
       after_success: npm run coveralls
       env: "COVERAGE=true"
 
