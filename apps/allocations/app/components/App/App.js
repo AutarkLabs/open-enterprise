@@ -49,7 +49,7 @@ class App extends React.Component {
     this.closePanel()   
   }
 
-  onExecutePayout = (id) => {
+  onExecutePayout = id => {
     console.info('App.js: Executing Payout:')
     console.info(id)
     this.props.app.executePayout(id)
@@ -87,7 +87,6 @@ class App extends React.Component {
         },
       },
     })
-   
   }
 
   closePanel = () => {       
@@ -103,7 +102,9 @@ class App extends React.Component {
         <Title text="Allocations" />
         <NewAccountButton onClick={this.newAccount} />
         <Accounts
-          accounts={(this.props.accounts !== undefined) ? this.props.accounts : []}
+          accounts={
+            this.props.accounts !== undefined ? this.props.accounts : []
+          }
           onNewAccount={this.newAccount}
           onNewAllocation={this.newAllocation}
           onManageParameters={this.manageParameters}

@@ -24,7 +24,7 @@ const StyledButton = styled.div`
 
   > :last-child {
     margin-right: 10px;
-    color: #b3b3b3;
+    color: ${theme.contentBorderActive};
     transform: rotate(${({ opened }) => (opened ? -180 : 0)}deg);
     transition: all 0.2s ease-out;
   }

@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import icon from '../../assets/account-card.svg'
 import PropTypes from 'prop-types'
-import {BigNumber} from 'bignumber.js'
+import { BigNumber } from 'bignumber.js'
 import {
   Card,
   Text,
@@ -24,7 +24,7 @@ const Account = ({
   onManageParameters,
   onExecutePayout,
   token,
-  app
+  app,
 }) => {
   const newAllocation = () => {
     onNewAllocation(proxy, description, id, limit)
@@ -36,7 +36,7 @@ const Account = ({
 
   const executePayout = () => {
     console.info('App.js: Executing Payout:')
-    app.runPayout(id)    
+    app.runPayout(id)
   }
   /*Need a better solution that this, should be handled in
   App.js using token manager once more tokens are supported */
@@ -80,13 +80,21 @@ const Account = ({
         </SafeLink>
       </CardAddress>
       <StatsContainer>
-        <StatsTitle>Balance</StatsTitle>
+        <Text smallcaps color={theme.textSecondary}>
+          Balance
+        </Text>
         <StatsValue>
-          {BigNumber(balance).div(BigNumber(10e17)).dp(3).toString()} {translatedToken}
+          {BigNumber(balance)
+            .div(BigNumber(10e17))
+            .dp(3)
+            .toString()}
+          {translatedToken}
         </StatsValue>
       </StatsContainer>
       <StatsContainer>
-        <StatsTitle>Limit</StatsTitle>
+        <Text smallcaps color={theme.textSecondary}>
+          Limit
+        </Text>
         <StatsValue>
           {limit} {translatedToken}/ Allocation
         </StatsValue>
@@ -152,13 +160,6 @@ const StatsContainer = styled.div`
   display: inline-block;
   margin-top: 3rem;
   padding-left: 1rem;
-`
-
-const StatsTitle = styled.p`
-  color: #6d777b;
-  font-size: 16px;
-  text-transform: lowercase;
-  font-variant: small-caps;
 `
 
 const StatsValue = styled.p`

@@ -27,7 +27,7 @@ const StyledSettingsInput = styled.div`
   }
   > :last-child:last-child {
     /* aragon-ui is messing up with the badge styles */
-    padding-top: 0;
+    padding: 0;
   }
 `
 

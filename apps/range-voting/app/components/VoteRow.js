@@ -1,22 +1,26 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Button, Countdown, TableCell, TableRow, Badge } from '@aragon/ui'
+import {
+  Button,
+  Countdown,
+  TableCell,
+  TableRow,
+  Badge,
+  theme
+} from '@aragon/ui'
 import ProgressBar from './ProgressBar'
 import VoteStatus from './VoteStatus'
 import { safeDiv } from '../utils/math-utils'
 
 const generateBadge = (foreground, background, text) => (
-  <Badge
-  foreground={foreground}
-  background={background}
-  >
+  <Badge foreground={foreground} background={background}>
     {text}
   </Badge>
 )
 
 class VoteRow extends React.Component {
   static defaultProps = {
-    onSelectVote: () => {},
+    onSelectVote: () => {}
   }
 
   state = {
@@ -30,23 +34,31 @@ class VoteRow extends React.Component {
     const { showMore } = this.state
     const { vote } = this.props
     const { endDate, open } = vote
-    const { metadata: question, description, candidates, options, participationPct, type } = vote.data
+    const {
+      metadata: question,
+      description,
+      candidates,
+      options,
+      participationPct,
+      type
+    } = vote.data
     const totalSupport = options.reduce((acc, option) => acc + option.value, 0)
 
-    const bars = options.map((option) => (
+    const bars = options.map(option => (
       <Bar key={option.label}>
         <ProgressBar
           progress={safeDiv(option.value, totalSupport)}
-          label={ option.label }
+          label={option.label}
         />
       </Bar>
     ))
 
+    // TODO: Hardcode colors into constants or extend aragon ui theme if needed
     let typeBadge
     if (type === 'allocation') {
       typeBadge = generateBadge('#AF499A', '#EED3F4', 'Allocation')
     } else if (type === 'curation') {
-      typeBadge = generateBadge('#4B5EBF', '#9FD2F1' , 'Curation')
+      typeBadge = generateBadge('#4B5EBF', '#9FD2F1', 'Curation')
     } else if (type === 'informational') {
       typeBadge = generateBadge('#C1B95B', '#F1EB9F', 'Informational')
     }
@@ -69,15 +81,19 @@ class VoteRow extends React.Component {
             {typeBadge}
           </div>
         </QuestionCell>
-        <Cell align="right" onClick={this.handleVoteClick}>{participationPct}%</Cell>
+        <Cell align="right" onClick={this.handleVoteClick}>
+          {participationPct}%
+        </Cell>
         <BarsCell>
           <BarsGroup>
-            { showMore ? bars : [bars[0], bars[1]] }
-            { (bars.length > 2) && (
+            {showMore ? bars : [bars[0], bars[1]]}
+            {bars.length > 2 && (
               <ShowMoreText
-                onClick={() => this.setState({ showMore: !showMore})}
+                onClick={() => this.setState({ showMore: !showMore })}
               >
-                {showMore ? 'Show less options...' : (bars.length - 2 + ' more options...')}
+                {showMore
+                  ? 'Show less options...'
+                  : bars.length - 2 + ' more options...'}
               </ShowMoreText>
             )}
           </BarsGroup>
@@ -132,15 +148,15 @@ const BarsGroup = styled.div`
 
 const Bar = styled.div`
   &:not(:first-child) {
-    margin-top: .5rem;
+    margin-top: 0.5rem;
   }
 `
 
 const ShowMoreText = styled.p`
   font-size: 12px;
-  color: #9B9B9B;
+  color: ${theme.textTertiary};
   font-style: italic;
-  margin-top: .5rem;
+  margin-top: 0.5rem;
   cursor: pointer;
   pointer-events: auto;
 `

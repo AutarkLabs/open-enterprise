@@ -45,7 +45,7 @@ const StyledAsterisk = styled.span`
 export const StyledHint = styled.span`
   display: block;
   opacity: 0.75;
-  color: #717171;
+  color: ${theme.textTertiary};
   font-size: 0.6rem;
   font-weight: 300;
   line-height: 24px;

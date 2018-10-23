@@ -104,7 +104,9 @@ const BountyCurrency = () => (
     </Text.Block>
     <Text.Block>The default currency used when allocating bounties.</Text.Block>
     <Field label="Select currency">
-      <DropDown items={bountyCurrencies} />
+      <StyledInputDropDown style={{ paddingLeft: '11px' }}>
+        <DropDown items={bountyCurrencies} />
+      </StyledInputDropDown>
     </Field>
   </div>
 )

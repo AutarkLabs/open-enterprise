@@ -12,8 +12,6 @@ import {
   SafeLink,
 } from '@aragon/ui'
 
-const { textPrimary, textTertiary } = theme
-
 const initialState = {}
 
 class RepoCard extends React.Component {
@@ -50,8 +48,8 @@ class RepoCard extends React.Component {
       url,
     } = this.props
     const colors = {
-      iconColor: textTertiary,
-      labelColor: textPrimary,
+      iconColor: theme.textTertiary,
+      labelColor: theme.textPrimary,
     }
     return (
       <StyledCard onClick={this.handleClick}>
@@ -73,10 +71,10 @@ class RepoCard extends React.Component {
             </StyledMenuItem>
           </ContextMenu>
         </div>
-        <Text size="large" color={textPrimary}>
+        <Text size="large" color={theme.textPrimary}>
           {label}
         </Text>
-        <Text size="small" color={textTertiary}>
+        <Text size="small" color={theme.textTertiary}>
           {description}
         </Text>
 
@@ -104,7 +102,7 @@ const StatsNumber = styled(Text)`
   margin-right: 2px;
 `
 const StyledMenuItem = styled(ContextMenuItem).attrs({
-  iconColor: props => props.colors.iconColor || textPrimary,
+  iconColor: props => props.colors.iconColor || theme.textPrimary,
   labelColor: props => props.colors.labelColor || props.colors.iconColor,
 })`
   color: ${props => props.labelColor};
@@ -119,12 +117,13 @@ const StyledCard = styled(Card)`
   height: 220px;
   max-width: 249px;
   border-radius: 3px;
-  background-color: #feffff;
+  background-color: ${theme.contentBackground};
   padding: 10px 14px 10px 14px;
   :hover {
     /* // border: 1px solid rgba(209, 209, 209, 0.5); */
     box-shadow: 0 9px 10px 0 rgba(101, 148, 170, 0.1);
   }
+
   transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
   margin-right: 30px;
   cursor: pointer;
@@ -136,7 +135,6 @@ const StyledCard = styled(Card)`
     'labl labl labl labl'
     'desc desc desc desc'
     'sta1 sta1 sta2 sta2';
-
   grid-gap: 12px 0;
 
   & > :nth-child(1) {

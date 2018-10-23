@@ -17,47 +17,46 @@ const VoteSummary = ({
   quorum,
   quorumProgress,
   support,
-  ready,
+  ready
 }) => {
-  
   var totalVotes = 0
 
-  for(var k in candidates) {
-    console.log ('k: ' + k + ', v: ' + candidates[k])
+  for (var k in candidates) {
+    console.log('k: ' + k + ', v: ' + candidates[k])
     totalVotes += candidates[k]
   }
 
   var bars = []
   var items = []
 
-//  uint256 public candidateSupportPct; voting power
-//  uint256 public minParticipationPct; voters
+  //  uint256 public candidateSupportPct; voting power
+  //  uint256 public minParticipationPct; voters
 
-  for(k in candidates) {
+  for (k in candidates) {
     const votesPct = safeDiv(candidates[k], tokenSupply)
     const votesVotersPct = safeDiv(candidates[k], totalVotes)
 
-bars.push (
-		<Votes
-                color={theme.accept}
-                style={{
-                  transform: `scaleX(${votesPct * 10})`,
-                }}
-              />
-     )
+    bars.push(
+      <Votes
+        color={theme.accept}
+        style={{
+          transform: `scaleX(${votesPct * 10})`
+        }}
+      />
+    )
 
-items.push (
-          <Candidate color={theme.accent}>
-            <span>{k}</span>
-	    <span>
-            <strong>{Math.round(votesVotersPct * 10 * 100)}%</strong>
-            <Text size="xsmall" color={theme.textSecondary}>
-              ({Math.round(support * 100)}% needed)
-            </Text>
-	    </span>
-          </Candidate>
- 	   )
-}
+    items.push(
+      <Candidate color={theme.accent}>
+        <span>{k}</span>
+        <span>
+          <strong>{Math.round(votesVotersPct * 10 * 100)}%</strong>
+          <Text size="xsmall" color={theme.textSecondary}>
+            ({Math.round(support * 100)}% needed)
+          </Text>
+        </span>
+      </Candidate>
+    )
+  }
 
   return (
     <Motion
@@ -82,15 +81,13 @@ items.push (
                 transform: `
                 translateX(${PANEL_INNER_WIDTH * quorum * progress}px)
                 scaleY(${quorum ? progress : 0})
-              `,
+              `
               }}
             />
-            <Bar>
-	    { bars }
-            </Bar>
+            <Bar>{bars}</Bar>
           </BarWrapper>
-	  { items }
-       </Main>
+          {items}
+        </Main>
       )}
     </Motion>
   )
@@ -107,10 +104,10 @@ const Header = styled.h2`
 
 const Label = styled(Text).attrs({
   smallcaps: true,
-  color: theme.textSecondary,
+  color: theme.textSecondary
 })`
   strong {
-    color: #000;
+    color: ${theme.text};
   }
 `
 
