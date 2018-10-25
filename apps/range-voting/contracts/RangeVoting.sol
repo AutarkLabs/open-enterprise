@@ -2,8 +2,7 @@ pragma solidity ^0.4.24;
 
 import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
 
-// import "@tpt/test-helpers/contracts/lib/minime/MiniMeToken.sol"; // TODO: Use this
-import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
+import "@tpt/test-helpers/contracts/lib/minime/MiniMeToken.sol";
 
 import "@tpt/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
 
@@ -644,7 +643,7 @@ contract RangeVoting is IForwarder, AragonApp {
         uint256 dest = _dest;
         uint256 len = _len;
 
-        require(_len < 32);
+        require(_len < 32, "_len should be less than 32");
         // Copy remaining bytes
         uint mask = 256 ** (32 - len) - 1;
         assembly {

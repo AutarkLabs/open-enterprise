@@ -140,6 +140,11 @@ contract('Allocations App', accounts => {
 
       supports = [500, 200, 300]
       totalsupport = 1000
+
+      await app.fund(allocationId, {
+        from: empire,
+        value: web3.toWei(0.01, 'ether'),
+      })
       await app.setDistribution(
         candidateAddresses,
         supports,
@@ -349,7 +354,7 @@ contract('Allocations App', accounts => {
       })
     })
     it('cannot execute', async () => {
-      // assertrevert an attempt to run executePayout for an informational vote
+      // assertrevert an attempt to run runPayout for an informational vote
       return assertRevert(async () => {
         await app.runPayout(allocationId)
       })
@@ -420,8 +425,7 @@ contract('Allocations App', accounts => {
         false,
         true,
         86400,
-        web3.toWei(0.01, 'ether'),
-        { from: empire, value: web3.toWei(0.01, 'ether') }
+        web3.toWei(0.01, 'ether')
       )
       timetravel(86500)
       await app.runPayout(allocationId)
