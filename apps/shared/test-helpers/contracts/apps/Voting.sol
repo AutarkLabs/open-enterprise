@@ -10,7 +10,7 @@ import "../common/IForwarder.sol";
 import "../lib/math/SafeMath.sol";
 import "../lib/math/SafeMath64.sol";
 
-import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
+import "../lib/minime/MiniMeToken.sol";
 
 
 contract Voting is IForwarder, AragonApp {

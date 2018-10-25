@@ -202,7 +202,8 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         //require(payout.balance <= payout.limit);
         emit FundAccount(id);
     }
-    function runPayout(uint256 _payoutId) external payable isInitialized returns(bool success){ // solium-disable-line function-order
+
+    function runPayout(uint256 _payoutId) external payable isInitialized returns(bool success) { // solium-disable-line function-order
         Payout storage payout = payouts[_payoutId];
         uint256 pointsPer;
         uint256 totalSupport;
@@ -244,7 +245,6 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         success = true;
         emit PayoutExecuted(_payoutId);
     }
-
 
     function getNumberOfCandidates(uint256 _payoutId) public view returns(uint256 numCandidates) {
         Payout storage payout = payouts[_payoutId];
