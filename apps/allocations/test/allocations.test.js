@@ -118,7 +118,7 @@ contract('Allocations App', accounts => {
       var send = await web3.eth.sendTransaction({
         from: empire,
         to: app.address,
-        value: web3.toWei(0.01, 'ether'),
+        value: web3.toWei(0.1, 'ether'),
       })
       bobafettInitialBalance = await web3.eth.getBalance(bobafett)
       dengarInitialBalance = await web3.eth.getBalance(dengar)
@@ -133,6 +133,11 @@ contract('Allocations App', accounts => {
         0x0
       )).logs[0].args.accountId.toNumber()
 
+      await app.fund(
+        allocationId,
+        { from: empire, value: web3.toWei(0.01, 'ether') }
+      )
+
       supports = [500, 200, 300]
       totalsupport = 1000
       await app.setDistribution(
@@ -142,8 +147,7 @@ contract('Allocations App', accounts => {
         false,
         false,
         0,
-        web3.toWei(0.01, 'ether'),
-        { from: empire, value: web3.toWei(0.01, 'ether') }
+        web3.toWei(0.01, 'ether')
       )
     })
 
@@ -198,7 +202,7 @@ contract('Allocations App', accounts => {
     })
 
     it('executes the payout', async () => {
-      await app.executePayout(allocationId, { from: empire })
+      await app.runPayout(allocationId, { from: empire })
       const bobafettBalance = await web3.eth.getBalance(bobafett)
       const dengarBalance = await web3.eth.getBalance(dengar)
       const bosskBalance = await web3.eth.getBalance(bossk)
@@ -347,7 +351,7 @@ contract('Allocations App', accounts => {
     it('cannot execute', async () => {
       // assertrevert an attempt to run executePayout for an informational vote
       return assertRevert(async () => {
-        await app.executePayout(allocationId)
+        await app.runPayout(allocationId)
       })
     })
   })
@@ -401,10 +405,14 @@ contract('Allocations App', accounts => {
         )
       })
     })
-    // TODO: timetravel not working
+    
     it('will not execute more frequently than the specified period', async () => {
       supports = [300, 400, 300]
       totalsupport = 1000
+      await app.fund(allocationId, {
+        from: empire,
+        value: web3.toWei(0.01, 'ether'),
+      })
       await app.setDistribution(
         candidateAddresses,
         supports,
@@ -416,7 +424,7 @@ contract('Allocations App', accounts => {
         { from: empire, value: web3.toWei(0.01, 'ether') }
       )
       timetravel(86500)
-      await app.executePayout(allocationId)
+      await app.runPayout(allocationId)
       const bobafettBalance = await web3.eth.getBalance(bobafett)
       const dengarBalance = await web3.eth.getBalance(dengar)
       const bosskBalance = await web3.eth.getBalance(bossk)
@@ -442,7 +450,7 @@ contract('Allocations App', accounts => {
       })
       timetravel(43200)
       return assertRevert(async () => {
-        await app.executePayout(allocationId)
+        await app.runPayout(allocationId)
       })
     })
   })

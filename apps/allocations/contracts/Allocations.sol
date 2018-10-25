@@ -216,7 +216,7 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         if (payout.recurring) {
             // TDDO create payout execution counter to ensure payout time tracks payouts
             uint256 payoutTime = payout.startTime.add(payout.period);
-            //require(payoutTime < block.timestamp); // solium-disable-line security/no-block-members
+            require(payoutTime < block.timestamp); // solium-disable-line security/no-block-members
             payout.startTime = payoutTime;
         } else {
             payout.distSet = false;
