@@ -1,7 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import Aragon, { providers } from '@aragon/client'
-import projectsMockData from './utils/mockData'
 import App from './components/App/App'
 
 // if (process.env.NODE_ENV !== 'production') {
@@ -15,7 +14,6 @@ class ConnectedApp extends React.Component {
     app: new Aragon(new providers.WindowMessage(window.parent)),
     observable: null,
     userAccount: '',
-    reposManaged: projectsMockData(),
   }
   componentDidMount() {
 

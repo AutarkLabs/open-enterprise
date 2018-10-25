@@ -3,6 +3,7 @@ import React from 'react'
 
 import { TabbedView, TabBar, TabContent, Tab } from '../TabbedView'
 import { Issues, Overview, Settings } from '../Content'
+import AppTitleButton from '../App/AppTitleButton'
 
 // TODO: improve structure:
 /*
@@ -19,31 +20,48 @@ import { Issues, Overview, Settings } from '../Content'
 
 // TODO: Dynamic component loading
 
-const AppContent = ({
-  projects,
-  onNewProject,
-  onSelect,
-}) => {
+const AppContent = props => {
+  const contentData = [
+    {
+      tabName: 'Overview',
+      TabComponent: Overview,
+      tabButton: { caption: "New Project", onClick: props.onNewProject }
+    }, {
+      tabName: 'Issues',
+      TabComponent: Issues,
+      tabButton: { caption: "New Issue", onClick: props.onNewIssue }
+    }, {
+      tabName: 'Settings',
+      TabComponent: Settings,
+    }
+  ]
+
+  var appTitleButton = contentData[props.activeIndex].tabButton ? contentData[props.activeIndex].tabButton : null
+
+  // TODO: get rid of that div
   return (
-    <TabbedView>
-      <TabBar>
-        <Tab>Overview</Tab>
-        <Tab>Issues</Tab>
-        <Tab>Settings</Tab>
-      </TabBar>
-      <TabContent>
-        <Overview projects={projects} onNewProject={onNewProject} onSelect={onSelect} />
-        <Issues />
-        <Settings />
-      </TabContent>
-    </TabbedView>
+    <div>
+      { appTitleButton && <AppTitleButton caption={appTitleButton.caption} onClick={appTitleButton.onClick} /> }
+
+      <TabbedView activeIndex={props.activeIndex} changeActiveIndex={props.changeActiveIndex}>
+        <TabBar>
+          { contentData.map(({tabName}) => ( <Tab key={tabName}>{tabName}</Tab>)) }
+        </TabBar>
+        <TabContent>
+          { contentData.map(({TabComponent}) => ( <TabComponent key={TabComponent} {...props} />)) }
+        </TabContent>
+      </TabbedView>
+    </div>
   )
 }
 
 AppContent.propTypes = {
   projects: PropTypes.object.isRequired,
   onNewProject: PropTypes.func.isRequired,
+  onNewIssue: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,
+  activeIndex: PropTypes.number.isRequired,
+  changeActiveIndex: PropTypes.func.isRequired
 }
 
 

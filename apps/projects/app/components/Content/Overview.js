@@ -38,7 +38,11 @@ const Overview = ({
   if (Object.keys(projects).length === 0) {
     return <EmptyProjects action={onNewProject} />
   }
-  return <StyledProjects><Repos projects={projects} onSelect={onSelect} /></StyledProjects>
+  return (
+    <StyledProjects>
+      <Repos projects={projects} onSelect={onSelect} />
+    </StyledProjects>
+  )
 }
 
 Overview.propTypes = {

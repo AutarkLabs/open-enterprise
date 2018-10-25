@@ -10,19 +10,11 @@ const StyledTabbedView = styled.div`
 `
 
 export default class TabbedView extends PureComponent {
-  state = {
-    activeIndex: 0,
-  }
-
-  selectTabIndex(activeIndex) {
-    this.setState({ activeIndex })
-  }
-
   render() {
     const children = React.Children.map(this.props.children, child => {
       return React.cloneElement(child, {
-        activeIndex: this.state.activeIndex,
-        onSelectTab: this.selectTabIndex.bind(this),
+        activeIndex: this.props.activeIndex,
+        onSelectTab: this.props.changeActiveIndex,
       })
     })
     return <StyledTabbedView>{children}</StyledTabbedView>
