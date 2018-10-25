@@ -216,16 +216,16 @@ contract('Allocations App', accounts => {
         (web3.toWei(0.01, 'ether') * supports[0]) / totalsupport,
         'bounty hunter expense'
       )
-      // assert.equal(
-      //   dengarBalance.toNumber() - dengarInitialBalance.toNumber(),
-      //   (web3.toWei(0.01, 'ether') * supports[1]) / totalsupport,
-      //   'bounty hunter expense'
-      // )
-      // assert.equal(
-      //   bosskBalance.toNumber() - bosskInitialBalance.toNumber(),
-      //   (web3.toWei(0.01, 'ether') * supports[2]) / totalsupport,
-      //   'bounty hunter expense'
-      // )
+      assert.equal(
+         dengarBalance.toNumber() - dengarInitialBalance.toNumber(),
+         (web3.toWei(0.01, 'ether') * supports[1]) / totalsupport,
+         'bounty hunter expense'
+       )
+      assert.equal(
+        bosskBalance.toNumber() - bosskInitialBalance.toNumber(),
+        (web3.toWei(0.01, 'ether') * supports[2]) / totalsupport,
+        'bounty hunter expense'
+      )
     })
 
     it('cannot add to balance without passing equal msg.value', async () => {
