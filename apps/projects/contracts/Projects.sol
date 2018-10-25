@@ -2,6 +2,7 @@ pragma solidity ^0.4.24;
 
 import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
 
+
 contract Projects is AragonApp {
     function initialize( // solium-disable-line blank-lines
         //Vault _vault
