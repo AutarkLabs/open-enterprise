@@ -46,7 +46,7 @@ const Overview = ({
 }
 
 Overview.propTypes = {
-  projects: PropTypes.object.isRequired,
+  projects: PropTypes.object,
   onNewProject: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,
 }
