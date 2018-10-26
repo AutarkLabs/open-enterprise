@@ -2,7 +2,8 @@ import React from 'react'
 import { hot } from 'react-hot-loader'
 import { AragonApp, observe, SidePanel } from '@aragon/ui'
 import PropTypes from 'prop-types'
-import { AppContent, AppTitle } from '.'
+import { AppContent } from '.'
+import { Title } from '../Shared'
 import { NewProject } from '../Panel'
 
 import projectsMockData from '../../utils/mockData'
@@ -57,7 +58,7 @@ class App extends React.Component {
 
     return (
       <AragonApp publicUrl={ASSETS_URL}>
-        <AppTitle />
+        <Title text="Projects" shadow />
 
         <AppContent
           app={this.props.app}

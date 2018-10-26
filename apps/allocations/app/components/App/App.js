@@ -3,7 +3,8 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 
-import { Accounts, NewAccountButton, Title } from '.'
+import { Accounts, NewAccountButton } from '.'
+import { Title } from '../Shared'
 import { NewAccount, NewAllocation } from '../Panel'
 
 import { allocationsMockData } from '../../utils/mockData'
