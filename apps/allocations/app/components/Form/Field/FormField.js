@@ -46,7 +46,7 @@ export const StyledHint = styled.span`
   display: block;
   opacity: 0.75;
   color: ${theme.textTertiary};
-  font-size: 0.6rem;
+  font-size: 12px;
   font-weight: 300;
   line-height: 24px;
 `
