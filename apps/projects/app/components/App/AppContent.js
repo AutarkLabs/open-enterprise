@@ -40,8 +40,7 @@ const AppContent = props => {
 
   // TODO: get rid of that div
   return (
-    <div>
-      { appTitleButton && <AppTitleButton caption={appTitleButton.caption} onClick={appTitleButton.onClick} /> }
+    <React.Fragment>
 
       <TabbedView activeIndex={props.activeIndex} changeActiveIndex={props.changeActiveIndex}>
         <TabBar>
@@ -51,7 +50,7 @@ const AppContent = props => {
           { contentData.map(({TabComponent}) => ( <TabComponent key={TabComponent} {...props} />)) }
         </TabContent>
       </TabbedView>
-    </div>
+    </React.Fragment>
   )
 }
 
