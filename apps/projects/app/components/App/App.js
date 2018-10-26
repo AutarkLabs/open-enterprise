@@ -38,7 +38,11 @@ class App extends React.Component {
       panel: {
         visible: true,
         content: NewProject,
-        data: { heading: 'New Project', onCreateProject: this.createProject },
+        data: {
+          heading: 'New Project',
+          onCreateProject: this.createProject,
+          app: this.props.app
+        },
       },
     })
   }
@@ -56,6 +60,7 @@ class App extends React.Component {
         <AppTitle />
 
         <AppContent
+          app={this.props.app}
           projects={this.state.reposManaged}
           onNewProject={this.newProject}
           onNewIssue={this.newIssue}

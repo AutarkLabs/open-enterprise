@@ -43,10 +43,8 @@ class ConnectedApp extends React.Component {
   }
   sendMessageToWrapper = (name, value) => {
     window.parent.postMessage({ from: 'app', name, value }, '*')
-    
   }
   render() {
-console.log(this.state)
     return <App {...this.state} />
   }
 }

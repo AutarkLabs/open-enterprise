@@ -79,7 +79,11 @@ class NewProject extends React.Component {
     }
   }
 
-  handleReposSubmit = () => { alert('tst') }
+  handleReposSubmit = () => {
+    const { reposToAdd } = this.state
+    console.log(reposToAdd)
+    this.props.app.addRepo('', '')
+  }
 
   showRepos() {
     var reposDisplayList = []
