@@ -1,6 +1,5 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import styled from 'styled-components'
 import { Text, theme, SidePanelSeparator } from '@aragon/ui'
 
 import { FieldTitle } from '.'
@@ -12,15 +11,28 @@ const FormField = ({ input, label, hint, required, separator }) => {
   // )
 
   return (
-    <StyledField>
+    <div style={{ marginBottom: '1rem' }}>
       <FieldTitle>
         {label && <Text color={theme.textTertiary}>{label}</Text>}
-        {required && <StyledAsterisk title="Required">*</StyledAsterisk>}
+        {required && (
+          <Text
+            size="xsmall"
+            color={theme.accent}
+            title="Required"
+            style={{ marginLeft: '0.3rem' }}
+          >
+            *
+          </Text>
+        )}
       </FieldTitle>
-      {hint && <StyledHint>{hint}</StyledHint>}
+      {hint && (
+        <Text size="xsmall" color={theme.textTertiary}>
+          {hint}
+        </Text>
+      )}
       {input}
       {separator && <SidePanelSeparator style={{ marginTop: '1rem' }} />}
-    </StyledField>
+    </div>
   )
 }
 
@@ -31,24 +43,5 @@ FormField.propTypes = {
   hint: PropTypes.string,
   seeparator: PropTypes.bool,
 }
-
-const StyledField = styled.div`
-  margin-bottom: 1rem;
-`
-
-const StyledAsterisk = styled.span`
-  color: ${theme.accent};
-  margin-left: 0.3rem;
-  font-size: 0.6rem;
-`
-
-export const StyledHint = styled.span`
-  display: block;
-  opacity: 0.75;
-  color: ${theme.textTertiary};
-  font-size: 12px;
-  font-weight: 300;
-  line-height: 24px;
-`
 
 export default FormField
