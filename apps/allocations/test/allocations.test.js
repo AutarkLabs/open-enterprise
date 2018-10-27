@@ -37,12 +37,18 @@ contract('Allocations App', accounts => {
   })
 
   beforeEach(async () => {
+    console.log('before each')
+
     const r = await daoFact.newDAO(root)
+    console.log('daoFact.newDao(root)', r)
+
     const dao = Kernel.at(
       r.logs.filter(l => l.event == 'DeployDAO')[0].args.dao
     )
+    console.log('Kernel at', dao)
 
     const acl = ACL.at(await dao.acl())
+    console.log('ACL.at', acl)
 
     await acl.createPermission(
       root,
@@ -52,14 +58,20 @@ contract('Allocations App', accounts => {
       { from: root }
     )
 
+    console.log('acl.createPermission')
+
     let receipt = await dao.newAppInstance(
       '0x1234',
       (await Allocations.new()).address,
       { from: root }
     )
+    console.log('dao.newAppInstance', receipt)
+
     app = Allocations.at(
       receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
     )
+
+    console.log('Allocations.at', app)
 
     await acl.createPermission(
       ANY_ADDR,
@@ -68,6 +80,8 @@ contract('Allocations App', accounts => {
       root,
       { from: root }
     )
+    console.log('acl.createPermission, start_payout_role')
+
     await acl.createPermission(
       ANY_ADDR,
       app.address,
@@ -75,6 +89,8 @@ contract('Allocations App', accounts => {
       root,
       { from: root }
     )
+    console.log('acl.createPermission, set_distr')
+
     await acl.createPermission(
       ANY_ADDR,
       app.address,
@@ -82,6 +98,7 @@ contract('Allocations App', accounts => {
       root,
       { from: root }
     )
+    console.log('acl.createPermission, execute_pa')
 
     // TODO: Fix vault
     // vault = Vault.at(
@@ -93,11 +110,13 @@ contract('Allocations App', accounts => {
       (await Allocations.new()).address,
       { from: root }
     )
+    console.log('dao.newAppinsta, receipt')
 
     allocation = Allocations.at(
       receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
     )
     await app.initialize({ from: accounts[0] })
+    console.log('Allocations.at', allocation)
   })
 
   context('app creation and funded Payout', () => {
@@ -135,12 +154,12 @@ contract('Allocations App', accounts => {
 
       supports = [500, 200, 300]
       totalsupport = 1000
-      
+
       await app.fund(allocationId, {
         from: empire,
         value: web3.toWei(0.01, 'ether'),
       })
-      
+
       await app.setDistribution(
         candidateAddresses,
         supports,
