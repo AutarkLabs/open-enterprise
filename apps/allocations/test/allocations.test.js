@@ -60,11 +60,10 @@ contract('Allocations App', accounts => {
 
     console.log('04-acl.createPermission')
 
-    let receipt = await dao.newAppInstance(
-      '0x1234',
-      (await Allocations.new()).address,
-      { from: root }
-    )
+    const address = (await Allocations.new()).address
+    console.log('4.5', address)
+
+    let receipt = await dao.newAppInstance('0x1234', address, { from: root })
     console.log('05-dao.newAppInstance')
 
     app = Allocations.at(
