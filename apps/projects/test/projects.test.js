@@ -54,6 +54,8 @@ contract('Projects App', accounts => {
     let receipt = await dao.newAppInstance(
       '0x1234',
       (await Projects.new()).address,
+      '0x0',
+      false,
       { from: root }
     )
     app = Projects.at(
