@@ -37,18 +37,18 @@ contract('Allocations App', accounts => {
   })
 
   beforeEach(async () => {
-    console.log('before each')
+    console.log('00-before each')
 
     const r = await daoFact.newDAO(root)
-    console.log('daoFact.newDao(root)', r)
+    console.log('01-daoFact.newDao(root)')
 
     const dao = Kernel.at(
       r.logs.filter(l => l.event == 'DeployDAO')[0].args.dao
     )
-    console.log('Kernel at', dao)
+    console.log('02-Kernel at')
 
     const acl = ACL.at(await dao.acl())
-    console.log('ACL.at', acl)
+    console.log('03-ACL.at')
 
     await acl.createPermission(
       root,
@@ -58,20 +58,20 @@ contract('Allocations App', accounts => {
       { from: root }
     )
 
-    console.log('acl.createPermission')
+    console.log('04-acl.createPermission')
 
     let receipt = await dao.newAppInstance(
       '0x1234',
       (await Allocations.new()).address,
       { from: root }
     )
-    console.log('dao.newAppInstance', receipt)
+    console.log('05-dao.newAppInstance')
 
     app = Allocations.at(
       receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
     )
 
-    console.log('Allocations.at', app)
+    console.log('06-Allocations.at')
 
     await acl.createPermission(
       ANY_ADDR,
@@ -80,7 +80,7 @@ contract('Allocations App', accounts => {
       root,
       { from: root }
     )
-    console.log('acl.createPermission, start_payout_role')
+    console.log('07-acl.createPermission, start_payout_role')
 
     await acl.createPermission(
       ANY_ADDR,
@@ -89,7 +89,7 @@ contract('Allocations App', accounts => {
       root,
       { from: root }
     )
-    console.log('acl.createPermission, set_distr')
+    console.log('08-acl.createPermission, set_distr')
 
     await acl.createPermission(
       ANY_ADDR,
@@ -98,7 +98,7 @@ contract('Allocations App', accounts => {
       root,
       { from: root }
     )
-    console.log('acl.createPermission, execute_pa')
+    console.log('09-acl.createPermission, execute_pa')
 
     // TODO: Fix vault
     // vault = Vault.at(
@@ -110,13 +110,13 @@ contract('Allocations App', accounts => {
       (await Allocations.new()).address,
       { from: root }
     )
-    console.log('dao.newAppinsta, receipt')
+    console.log('10-dao.newAppinsta, receipt')
 
     allocation = Allocations.at(
       receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
     )
     await app.initialize({ from: accounts[0] })
-    console.log('Allocations.at', allocation)
+    console.log('11-Allocations.at')
   })
 
   context('app creation and funded Payout', () => {
