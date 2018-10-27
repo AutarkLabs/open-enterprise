@@ -1,6 +1,7 @@
 import { AragonApp, observe, SidePanel } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
+import { hot } from 'react-hot-loader'
 import styled from 'styled-components'
 
 import { Accounts, NewAccountButton } from '.'
@@ -32,7 +33,7 @@ class App extends React.Component {
     this.closePanel()
     console.info('App.js: Account Created:')
     console.table(account)
-    this.setState({})    
+    this.setState({})
   }
 
   submitAllocation = allocation => {
@@ -47,7 +48,7 @@ class App extends React.Component {
     )
     console.info('App.js: Allocation submitted:')
     console.table(allocation)
-    this.closePanel()   
+    this.closePanel()
   }
 
   onExecutePayout = id => {
@@ -90,7 +91,7 @@ class App extends React.Component {
     })
   }
 
-  closePanel = () => {       
+  closePanel = () => {
     this.setState({ panel: { visible: false } })
   }
 
@@ -137,4 +138,4 @@ const StyledAragonApp = styled(AragonApp).attrs({
 export default observe(
   observable => observable.map(state => ({ ...state })),
   {}
-)(App)
+)(hot(module)(App))
