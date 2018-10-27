@@ -63,7 +63,7 @@ contract('Allocations App', accounts => {
     const address = (await Allocations.new()).address
     console.log('4.5', address)
 
-    let receipt = await dao.newAppInstance('0x1234', address, 0x0, {
+    let receipt = await dao.newAppInstance('0x1234', address, 0x0, false, {
       from: root,
     })
     console.log('05-dao.newAppInstance')
@@ -109,6 +109,8 @@ contract('Allocations App', accounts => {
     receipt = await dao.newAppInstance(
       '0x2345',
       (await Allocations.new()).address,
+      '0x0',
+      false,
       { from: root }
     )
     console.log('10-dao.newAppinsta, receipt')
