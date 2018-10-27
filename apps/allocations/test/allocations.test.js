@@ -140,11 +140,6 @@ contract('Allocations App', accounts => {
 
       supports = [500, 200, 300]
       totalsupport = 1000
-
-      await app.fund(allocationId, {
-        from: empire,
-        value: web3.toWei(0.01, 'ether'),
-      })
       await app.setDistribution(
         candidateAddresses,
         supports,
@@ -217,10 +212,10 @@ contract('Allocations App', accounts => {
         'bounty hunter expense'
       )
       assert.equal(
-         dengarBalance.toNumber() - dengarInitialBalance.toNumber(),
-         (web3.toWei(0.01, 'ether') * supports[1]) / totalsupport,
-         'bounty hunter expense'
-       )
+        dengarBalance.toNumber() - dengarInitialBalance.toNumber(),
+        (web3.toWei(0.01, 'ether') * supports[1]) / totalsupport,
+        'bounty hunter expense'
+      )
       assert.equal(
         bosskBalance.toNumber() - bosskInitialBalance.toNumber(),
         (web3.toWei(0.01, 'ether') * supports[2]) / totalsupport,
