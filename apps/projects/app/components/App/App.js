@@ -74,7 +74,6 @@ class App extends React.Component {
   render() {
     const { panel } = this.state
     const PanelContent = panel.content
-    console.log('current project props:', this.props.repos)
 
     return (
       <StyledAragonApp publicUrl={ASSETS_URL}>
