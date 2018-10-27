@@ -32,12 +32,12 @@ class NewProject extends React.Component {
       542678: { name: 'test 3' },
       3736: { name: 'test 4' },
       80268: { name: 'test 5' },
-      99825: { name: 'test 6' }
+      99825: { name: 'test 6' },
     },
     reposManaged: {
       542678: 1,
-      80268: 1
-    }
+      80268: 1,
+    },
   }
 
   // componentDidMount() {
@@ -69,7 +69,7 @@ class NewProject extends React.Component {
   generateCheckboxHandler = repoId => {
     return checked => {
       const { reposToAdd, reposFromServer } = this.state
-      if (! (repoId in reposToAdd)) {
+      if (!(repoId in reposToAdd)) {
         reposToAdd[repoId] = reposFromServer[repoId]
         this.setState({ reposToAdd: reposToAdd })
       } else {
@@ -80,23 +80,21 @@ class NewProject extends React.Component {
   }
 
   handleReposSubmit = () => {
-    const { reposToAdd } = this.state
-    console.log(reposToAdd)
-    this.props.app.addRepo('', '')
+    this.props.onCreateProject()
   }
 
   showRepos() {
     var reposDisplayList = []
     const { reposFromServer, reposManaged, reposToAdd } = this.state
 
-    Object.keys(reposFromServer).forEach((repoId) => {
+    Object.keys(reposFromServer).forEach(repoId => {
       var repo = reposFromServer[repoId]
       const checkboxHandler = this.generateCheckboxHandler(repoId)
       reposDisplayList.push(
         <RepoListItem key={repoId}>
           <CheckBox
             key={repoId}
-            checked={repoId in reposManaged || repoId in reposToAdd}
+            // checked={repoId in reposManaged || repoId in reposToAdd}
             disabled={repoId in reposManaged}
             onClick={checkboxHandler}
           />
@@ -105,21 +103,15 @@ class NewProject extends React.Component {
       )
     })
 
-    return(
+    return (
       <div>
-        <Text size='large'>Which repos do you want to add?</Text>
-        <Form
-          onSubmit={this.handleReposSubmit}
-          submitText="Finish"
-        >
-          <RepoList>
-            {reposDisplayList}
-          </RepoList>
+        <Text size="large">Which repos do you want to add?</Text>
+        <Form onSubmit={this.handleReposSubmit} submitText="Finish">
+          <RepoList>{reposDisplayList}</RepoList>
         </Form>
       </div>
     )
   }
-
 
   render() {
     // const { github } = this.props
@@ -161,4 +153,3 @@ const CheckBoxLabel = styled(Text)`
 
 // export default withGithub(NewProject)
 export default NewProject
-
