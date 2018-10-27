@@ -1,24 +1,64 @@
 import Aragon, { providers } from '@aragon/client'
-import 'rxjs/add/operator/first' // Make sure observables have .first
-export { combineLatest } from 'rxjs/observable/combineLatest'
+import { first, of } from 'rxjs' // Make sure observables have .first
+import { combineLatest } from 'rxjs'
+import { empty } from 'rxjs/observable/empty'
+
+import { GraphQLClient } from 'graphql-request'
+
+const authToken = ''
+const client = new GraphQLClient('https://api.github.com/graphql', {
+  headers: {
+    Authorization: 'Bearer ' + authToken,
+  },
+})
+
+const toAscii = hex => {
+  // Find termination
+  let str = ''
+  let i = 0,
+    l = hex.length
+  if (hex.substring(0, 2) === '0x') {
+    i = 2
+  }
+  for (; i < l; i += 2) {
+    let code = parseInt(hex.substr(i, 2), 16)
+    str += String.fromCharCode(code)
+  }
+
+  return str
+}
+
+const repoData = id => `{
+    node(id: "${id}") {
+      ... on Repository {
+        name
+        description
+        defaultBranchRef {
+            target {
+              ...on Commit {
+                history {
+                  totalCount
+                }
+              }
+            }
+          }
+        collaborators {
+          totalCount
+        }
+      }
+    }
+}`
+
+const getRepoData = repo => client.request(repoData(repo))
 
 const app = new Aragon()
+let appState
+app.events().subscribe(handleEvents)
 
-// Hook up the script as an aragon.js store
-app.store(async (state, { event, returnValues }) => {
-  let nextState = {
-    ...state,
-    // Fetch the app's settings, if we haven't already
-    //...(!hasLoadedVoteSettings(state) ? await loadVoteSettings() : {}),
-  }
-
-  switch (event) {
-  case 'NewPayout':
-    nextState = await newPayout(nextState, returnValues)
-    break
-  }
-
-  return nextState
+app.state().subscribe(state => {
+  console.log('Projects: entered state subscription:\n', state)
+  appState = state ? state : { repos: [] }
+  //appState = state
 })
 
 /***********************
@@ -27,12 +67,41 @@ app.store(async (state, { event, returnValues }) => {
  *                     *
  ***********************/
 
-async function newPayout(state, { payoutId }) {
-  const transform = ({ data, ...payout }) => ({
-    ...payout,
-    data: { ...data, executed: true },
+async function handleEvents(response) {
+  let nextState
+  switch (response.event) {
+  case 'RepoAdded':
+    nextState = await syncRepos(appState, response.returnValues)
+    console.log('RepoAdded Received', response.returnValues, nextState)
+    break
+  case 'RepoRemoved':
+    nextState = await syncRepos(appState, response.returnValues)
+    console.log('RepoRemoved Received', response.returnValues, nextState)
+
+    break
+  case 'BountyAdded':
+    nextState = await syncRepos(appState, response.returnValues)
+    console.log('BountyAdded Received', response.returnValues, nextState)
+
+    break
+  default:
+    console.log('Unknown event catched:', response)
+  }
+  app.cache('state', nextState)
+}
+
+async function syncRepos(state, { id, ...eventArgs }) {
+  console.log('syncRepos: arguments from events:', ...eventArgs)
+
+  const transform = ({ ...repo }) => ({
+    ...repo,
   })
-  return updateState(state, payoutId, transform)
+  try {
+    let updatedState = await updateState(state, id, transform)
+    return updatedState
+  } catch (err) {
+    console.error('updateState failed to return:', err)
+  }
 }
 
 /***********************
@@ -41,41 +110,76 @@ async function newPayout(state, { payoutId }) {
  *                     *
  ***********************/
 
-function loadPayoutData(payoutId) {
+function loadRepoData(id) {
+  console.log('loadRepoData entered')
   return new Promise(resolve => {
-    combineLatest(app.call('getPayout', payoutId)).subscribe(
-      ([payout, metadata]) => {}
-    )
+    combineLatest(app.call('getRepo', id)).subscribe(([{ _owner, _repo }]) => {
+      console.log('loadRepoData:', _owner, _repo)
+      let [owner, repo] = [toAscii(_owner), toAscii(_repo)]
+      getRepoData(repo).then(
+        ({
+          node: {
+            name,
+            description,
+            collaborators: { totalCount: collaborators },
+            defaultBranchRef: {
+              target: {
+                history: { totalCount: commits },
+              },
+            },
+          },
+        }) => {
+          let metadata = {
+            name,
+            description,
+            collaborators,
+            commits,
+          }
+          resolve({ owner, repo, metadata })
+        }
+      )
+    })
   })
 }
 
-async function updatePayouts(payouts, payoutId, transform) {
-  const payoutIndex = payouts.findIndex(payout => payout.payoutId === payoutId)
+async function checkReposLoaded(repos, id, transform) {
+  const repoIndex = repos.findIndex(repo => repo.id === id)
+  console.log('checkReposLoaded, repoIndex:', repos, id)
+  const { metadata, ...data } = await loadRepoData(id)
 
-  if (payoutIndex === -1) {
+  if (repoIndex === -1) {
     // If we can't find it, load its data, perform the transformation, and concat
-    return payouts.concat(
+    console.log('repo not found: retrieving from chain')
+    return repos.concat(
       await transform({
-        payoutId,
-        data: await loadPayoutData(payoutId),
+        id,
+        data: { ...data },
+        metadata,
       })
     )
   } else {
-    const nextPayouts = Array.from(payouts)
-    nextPayouts[payoutIndex] = await transform(nextPayouts[payoutIndex])
-    return nextPayouts
+    const nextRepos = Array.from(repos)
+    nextRepos[repoIndex] = await transform({
+      id,
+      data: { ...data },
+      metadata,
+    })
+    return nextRepos
   }
 }
 
-async function updateState(state, payoutId, transform) {
-  const { payouts = [] } = state
-
-  return {
-    ...state,
-    payouts: await updatePayouts(payouts, payoutId, transform),
+async function updateState(state, id, transform) {
+  const { repos = [] } = state
+  try {
+    let newRepos = await checkReposLoaded(repos, id, transform)
+    let newState = { ...state, repos: newRepos }
+    return newState
+  } catch (err) {
+    console.error(
+      'Update repos failed to return:',
+      err,
+      'here\'s what returned in NewRepos',
+      newRepos
+    )
   }
 }
-
-// Apply transmations to a vote received from web3
-// Note: ignores the 'open' field as we calculate that locally
-//
