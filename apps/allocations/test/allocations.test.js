@@ -63,7 +63,9 @@ contract('Allocations App', accounts => {
     const address = (await Allocations.new()).address
     console.log('4.5', address)
 
-    let receipt = await dao.newAppInstance('0x1234', address, { from: root })
+    let receipt = await dao.newAppInstance('0x1234', address, 0x0, {
+      from: root,
+    })
     console.log('05-dao.newAppInstance')
 
     app = Allocations.at(
