@@ -1,40 +1,60 @@
-import React from 'react'
-import { hot } from 'react-hot-loader'
 import { AragonApp, observe, SidePanel } from '@aragon/ui'
 import PropTypes from 'prop-types'
+import React from 'react'
+import { hot } from 'react-hot-loader'
+import styled from 'styled-components'
+
 import { AppContent } from '.'
 import { Title } from '../Shared'
 import { NewProject } from '../Panel'
-
-import projectsMockData from '../../utils/mockData'
 
 const ASSETS_URL = 'aragon-ui-assets/'
 
 class App extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
+    repos: PropTypes.arrayOf(PropTypes.object),
   }
 
   state = {
+    repos: [],
     activeIndex: 0,
     panel: {
       visible: false,
     },
     // TODO: Don't use this in production
-    reposManaged: projectsMockData(),
+    // reposManaged: projectsMockData(),
   }
 
-  changeActiveIndex = (activeIndex) => {
+  changeActiveIndex = activeIndex => {
     this.setState({ activeIndex })
   }
 
-  selectProject = () => { alert('test select') }
+  selectProject = () => {
+    console.log('selectProject')
+  }
 
-  createProject = ({}) => { alert('create project')}
+  createProject = () => {
+    console.info('App.js: createProject')
+    this.closePanel()
+    this.setState({})
+    console.log('projects props:', this.props)
+    // console.log('hex:', window.web3.toHex('MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5'))
 
-  newIssue = () => { alert('new issue') }
+    // this.props.app.addRepo(this.props.userAccount, '0x012026678901')
+    this.props.app.addRepo(
+      web3.toHex('MDQ6VXNlcjUwMzAwNTk='),
+      web3.toHex('MDEwOlJlcG9zaXRvcnkxNDkxMzQ4NTk=')
+    )
+  }
+
+  newIssue = () => {
+    console.log('newIssue')
+  }
 
   newProject = () => {
+    console.log('newproject', this.props)
+
     this.setState({
       panel: {
         visible: true,
@@ -42,30 +62,33 @@ class App extends React.Component {
         data: {
           heading: 'New Project',
           onCreateProject: this.createProject,
-          app: this.props.app
         },
       },
     })
   }
 
-  closePanel = () => {       
+  closePanel = () => {
     this.setState({ panel: { visible: false } })
   }
 
   render() {
     const { panel } = this.state
     const PanelContent = panel.content
+    console.log('current project props:', this.props.repos)
 
     return (
-      <AragonApp publicUrl={ASSETS_URL}>
+      <StyledAragonApp publicUrl={ASSETS_URL}>
         <Title text="Projects" shadow />
 
         <AppContent
           app={this.props.app}
-          projects={this.state.reposManaged}
+          projects={this.props.repos !== undefined ? this.props.repos : []}
           onNewProject={this.newProject}
           onNewIssue={this.newIssue}
-          onSelect={this.selectProject} activeIndex={this.state.activeIndex} changeActiveIndex={this.changeActiveIndex}/>
+          onSelect={this.selectProject}
+          activeIndex={this.state.activeIndex}
+          changeActiveIndex={this.changeActiveIndex}
+        />
 
         <SidePanel
           title={(panel.data && panel.data.heading) || ''}
@@ -74,10 +97,22 @@ class App extends React.Component {
         >
           {panel.content && <PanelContent {...panel.data} />}
         </SidePanel>
-
-      </AragonApp>
+      </StyledAragonApp>
     )
   }
 }
 
-export default hot(module)(App)
+const StyledAragonApp = styled(AragonApp).attrs({
+  publicUrl: ASSETS_URL,
+})`
+  display: flex;
+  height: 100vh;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+`
+
+export default observe(
+  observable => observable.map(state => ({ ...state })),
+  {}
+)(hot(module)(App))

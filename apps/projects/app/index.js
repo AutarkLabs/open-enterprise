@@ -19,7 +19,6 @@ class ConnectedApp extends React.Component {
     // ...projectsMockData,
   }
   componentDidMount() {
-
     window.addEventListener('message', this.handleWrapperMessage)
   }
   componentWillUnmount() {
