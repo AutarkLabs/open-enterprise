@@ -10,38 +10,38 @@ let appState = {
   votes: []
 }
 app.events().subscribe(handleEvents)
-app.state().subscribe( (state) => {
+app.state().subscribe(state => {
   appState = state
 })
 
-async function handleEvents(response){
-  let nextState = 
-  {...appState,
-    ...(!hasLoadedVoteSettings(appState) ? await loadVoteSettings() : {}),
+async function handleEvents(response) {
+  let nextState = {
+    ...appState,
+    ...(!hasLoadedVoteSettings(appState) ? await loadVoteSettings() : {})
   }
   switch (response.event) {
-    case 'CastVote':
-      console.info('[RangeVoting > script]: received CastVote')
-      nextState = await castVote(nextState, response.returnValues)
-      break
-    case 'ExecutionScript':
-      console.info('[RangeVoting > script]: received ExecutionScript')
-      console.info(response.returnValues)      
-      break
-    case 'ExecuteVote':
-      console.info('[RangeVoting > script]: received ExecuteVote')
+  case 'CastVote':
+    console.info('[RangeVoting > script]: received CastVote')
+    nextState = await castVote(nextState, response.returnValues)
+    break
+  case 'ExecutionScript':
+    console.info('[RangeVoting > script]: received ExecutionScript')
+    console.info(response.returnValues)
+    break
+  case 'ExecuteVote':
+    console.info('[RangeVoting > script]: received ExecuteVote')
 
-      nextState = await executeVote(nextState, response.returnValues)
-      break
-    case 'StartVote':
-      console.info('[RangeVoting > script]: received StartVote')
-      nextState = await startVote(nextState, response.returnValues)
-      break
-    case 'ExternalContract':
-      console.info('[RangeVoting > script]: received ExternalContract')
-      allocations = app.external(response.returnValues.addr, AllocationJSON.abi)
-    default:
-      break
+    nextState = await executeVote(nextState, response.returnValues)
+    break
+  case 'StartVote':
+    console.info('[RangeVoting > script]: received StartVote')
+    nextState = await startVote(nextState, response.returnValues)
+    break
+  case 'ExternalContract':
+    console.info('[RangeVoting > script]: received ExternalContract')
+    allocations = app.external(response.returnValues.addr, AllocationJSON.abi)
+  default:
+    break
   }
   console.log('[RangeVoting > script]: end state')
   console.log(nextState)
@@ -60,7 +60,7 @@ async function castVote(state, { voteId }) {
   // cause do we really want more than one source of truth with a blockchain?
   const transform = async vote => ({
     ...vote,
-    data: await loadVoteData(voteId),
+    data: await loadVoteData(voteId)
   })
   return updateState(state, voteId, transform)
 }
@@ -68,7 +68,7 @@ async function castVote(state, { voteId }) {
 async function executeVote(state, { voteId }) {
   const transform = ({ data, ...vote }) => ({
     ...vote,
-    data: { ...data, executed: true },
+    data: { ...data, executed: true }
   })
   return updateState(state, voteId, transform)
 }
@@ -112,14 +112,14 @@ async function loadVoteData(voteId) {
     combineLatest(
       app.call('getVote', voteId),
       app.call('getVoteMetadata', voteId),
-      app.call('getCandidateLength',voteId),
-      app.call('canExecute', voteId),
+      app.call('getCandidateLength', voteId),
+      app.call('canExecute', voteId)
     )
       .first()
       .subscribe(([vote, metadata, totalCandidates, canExecute, payout]) => {
-        loadVoteDescription(vote).then(async (vote) => {
+        loadVoteDescription(vote).then(async vote => {
           let options = []
-          for(let i = 0; i < totalCandidates; i++){
+          for (let i = 0; i < totalCandidates; i++) {
             let candidateData = await getCandidate(voteId, i)
             console.log(candidateData)
             options.push(candidateData)
@@ -128,18 +128,19 @@ async function loadVoteData(voteId) {
             ...marshallVote(vote),
             metadata,
             canExecute,
-            options: options,
+            options: options
           }
-          allocations.getPayout(vote.externalId)
-          .first()
-          .subscribe((payout) => {
-            resolve({
-              ...returnObject,
-              limit: parseInt(payout.limit, 10),
-              balance: parseInt(payout.balance, 10),
-              metadata: payout.metadata  
+          allocations
+            .getPayout(vote.externalId)
+            .first()
+            .subscribe(payout => {
+              resolve({
+                ...returnObject,
+                limit: parseInt(payout.limit, 10),
+                balance: parseInt(payout.balance, 10),
+                metadata: payout.metadata
+              })
             })
-          })
         })
       })
   })
@@ -150,11 +151,11 @@ async function updateVotes(votes, voteId, transform) {
   let nextVotes = Array.from(votes)
   if (voteIndex === -1) {
     // If we can't find it, load its data, perform the transformation, and concat
-    console.log("Vote Not Found")
-    nextVotes =  votes.concat(
+    console.log('Vote Not Found')
+    nextVotes = votes.concat(
       await transform({
         voteId,
-        data: await loadVoteData(voteId),
+        data: await loadVoteData(voteId)
       })
     )
   } else {
@@ -164,15 +165,16 @@ async function updateVotes(votes, voteId, transform) {
 }
 
 async function getCandidate(voteId, candidateIndex) {
-  return new Promise(resolve => {    
-    app.call('getCandidate', voteId, candidateIndex)
-    .first()
-    .subscribe((candidateData) => {
-      resolve({
-        label: candidateData.candidateAddress,
-        value: candidateData.voteSupport
+  return new Promise(resolve => {
+    app
+      .call('getCandidate', voteId, candidateIndex)
+      .first()
+      .subscribe(candidateData => {
+        resolve({
+          label: candidateData.candidateAddress,
+          value: candidateData.voteSupport
+        })
       })
-    })
   })
 }
 
@@ -181,7 +183,7 @@ async function updateState(state, voteId, transform, candidate = null) {
   votes = await updateVotes(votes, voteId, transform)
   return {
     ...state,
-    votes: votes,
+    votes: votes
   }
 }
 
@@ -231,7 +233,7 @@ function marshallVote({
   totalParticipation,
   metadata,
   executionScript,
-  executed,
+  executed
 }) {
   let voteData = {}
   totalVoters = parseInt(totalVoters, 10)
@@ -247,6 +249,6 @@ function marshallVote({
     metadata,
     executionScript,
     executed,
-    participationPct: (totalParticipation/totalVoters * 100)
+    participationPct: (totalParticipation / totalVoters) * 100
   }
 }
