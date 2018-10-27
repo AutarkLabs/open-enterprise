@@ -14,7 +14,7 @@ class Review extends React.Component {
       return null
     }
 
-   return (
+    return (
       <Main
         style={{
           opacity: 1 - Math.abs(positionProgress),

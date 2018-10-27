@@ -23,16 +23,16 @@ class ConfigureVotingConditions extends React.Component {
     }
   }
   handleVotePermissionChange = index => {
-     const { onFieldUpdate } = this.props
-     onFieldUpdate('votePermission', index)
+    const { onFieldUpdate } = this.props
+    onFieldUpdate('votePermission', index)
   }
   handleVoteWeightChange = index => {
-     const { onFieldUpdate } = this.props
-     onFieldUpdate('voteWeight', index)
+    const { onFieldUpdate } = this.props
+    onFieldUpdate('voteWeight', index)
   }
   handleVoteOutcomeChange = index => {
-     const { onFieldUpdate } = this.props
-     onFieldUpdate('voteOutcome', index)
+    const { onFieldUpdate } = this.props
+    onFieldUpdate('voteOutcome', index)
   }
   createChangeHandler(name) {
     return event => {
@@ -88,7 +88,7 @@ class ConfigureVotingConditionsContent extends React.PureComponent {
           <SubmitForm onSubmit={onSubmit} innerRef={formRef}>
             <Subtitle>
                 Choose your voting settings below. You can’t change these later, so pick carefully.
-           </Subtitle>
+            </Subtitle>
             <Fields>
               <Fields.Field label="Voting Permission">
                 <Hint>
