@@ -25,29 +25,45 @@ const AppContent = props => {
     {
       tabName: 'Overview',
       TabComponent: Overview,
-      tabButton: { caption: "New Project", onClick: props.onNewProject }
-    }, {
+      tabButton: { caption: 'New Project', onClick: props.onNewProject },
+    },
+    {
       tabName: 'Issues',
       TabComponent: Issues,
-      tabButton: { caption: "New Issue", onClick: props.onNewIssue }
-    }, {
+      tabButton: { caption: 'New Issue', onClick: props.onNewIssue },
+    },
+    {
       tabName: 'Settings',
       TabComponent: Settings,
-    }
+    },
   ]
 
-  var appTitleButton = contentData[props.activeIndex].tabButton ? contentData[props.activeIndex].tabButton : null
+  var appTitleButton = contentData[props.activeIndex].tabButton
+    ? contentData[props.activeIndex].tabButton
+    : null
 
-  // TODO: get rid of that div
   return (
     <React.Fragment>
+      {appTitleButton && (
+        <AppTitleButton
+          caption={appTitleButton.caption}
+          onClick={appTitleButton.onClick}
+        />
+      )}
 
-      <TabbedView activeIndex={props.activeIndex} changeActiveIndex={props.changeActiveIndex}>
+      <TabbedView
+        activeIndex={props.activeIndex}
+        changeActiveIndex={props.changeActiveIndex}
+      >
         <TabBar>
-          { contentData.map(({tabName}) => ( <Tab key={tabName}>{tabName}</Tab>)) }
+          {contentData.map(({ tabName }) => (
+            <Tab key={tabName}>{tabName}</Tab>
+          ))}
         </TabBar>
         <TabContent>
-          { contentData.map(({TabComponent}) => ( <TabComponent key={TabComponent} {...props} />)) }
+          {contentData.map(({ TabComponent }) => (
+            <TabComponent key={TabComponent} {...props} />
+          ))}
         </TabContent>
       </TabbedView>
     </React.Fragment>
@@ -55,13 +71,12 @@ const AppContent = props => {
 }
 
 AppContent.propTypes = {
-  projects: PropTypes.object,
+  projects: PropTypes.arrayOf(PropTypes.object).isRequired,
   onNewProject: PropTypes.func.isRequired,
   onNewIssue: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,
   activeIndex: PropTypes.number.isRequired,
-  changeActiveIndex: PropTypes.func.isRequired
+  changeActiveIndex: PropTypes.func.isRequired,
 }
-
 
 export default AppContent
