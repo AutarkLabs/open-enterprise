@@ -1,69 +1,42 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { RepoCard } from '../Card'
 
-import { Project, EmptyProjects } from '../Card'
+import { Project, Empty } from '../Card'
 
-const Repos = ({
-  projects,
-  onSelect
-}) => (
-        <CardsWrapper>
-          {Object.entries(projects).map(
-            ([repoId, { name, description, collaborators, commits, url }]) => (
-              <RepoCard
-                className="repo-card"
-                key={repoId}
-                repoId={repoId}
-                label={name}
-                description={description}
-                collaborators={collaborators}
-                commits={commits}
-                url={url}
-                active={repoId === 1}
-                onSelect={onSelect}
-//                onRemove={this.handleRepoRemove}
-              />
-            )
-          )}
-        </CardsWrapper>
-)
-
-const Overview = ({
-  projects,
-  onNewProject,
-  onSelect
-}) => {
-  if (Object.keys(projects).length === 0) {
-    return <EmptyProjects action={onNewProject} />
+const Overview = ({ projects, onNewProject, onSelect, app }) => {
+  const projectsEmpty = projects.length === 0
+  console.log('Overview projects:', projects)
+  if (projectsEmpty) {
+    return <Empty action={onNewProject} />
   }
-  return (
-    <StyledProjects>
-      <Repos projects={projects} onSelect={onSelect} />
-    </StyledProjects>
-  )
+
+  const projectsMap = projects.map((project, index) => (
+    <Project
+      key={index}
+      label={project.metadata.name}
+      description={project.metadata.description}
+      // id={projectId}
+      // name={data.name}
+      commits={project.metadata.commits}
+      contributors={project.metadata.collaborators}
+      // url={data.url}
+    />
+  ))
+  return <StyledProjects>{projectsMap}</StyledProjects>
 }
 
 Overview.propTypes = {
-  projects: PropTypes.object,
-  onNewProject: PropTypes.func.isRequired,
-  onSelect: PropTypes.func.isRequired,
+  projects: PropTypes.arrayOf(PropTypes.object).isRequired,
 }
 
-const StyledProjects = styled.section`
-  padding: 30px;
-  display: flex;
-  height: 100%;
-`
-
-const CardsWrapper = styled.div`
-  flex-grow: 1;
+const StyledProjects = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, 249px);
-  grid-gap: 30px;
-  grid-auto-rows: 220px;
+  grid-template-columns: repeat(3, auto);
+  grid-auto-rows: auto;
+  grid-gap: 2rem;
+  justify-content: start;
+  padding: 30px;
 `
 
 export default Overview
-
