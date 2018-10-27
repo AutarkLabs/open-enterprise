@@ -118,7 +118,7 @@ contract('Allocations App', accounts => {
       var send = await web3.eth.sendTransaction({
         from: empire,
         to: app.address,
-        value: web3.toWei(0.01, 'ether'),
+        value: web3.toWei(0.1, 'ether'),
       })
       bobafettInitialBalance = await web3.eth.getBalance(bobafett)
       dengarInitialBalance = await web3.eth.getBalance(dengar)
@@ -132,6 +132,11 @@ contract('Allocations App', accounts => {
         web3.toWei(1, 'ether'),
         0x0
       )).logs[0].args.accountId.toNumber()
+
+      await app.fund(
+        allocationId,
+        { from: empire, value: web3.toWei(0.01, 'ether') }
+      )
 
       supports = [500, 200, 300]
       totalsupport = 1000
@@ -211,16 +216,16 @@ contract('Allocations App', accounts => {
         (web3.toWei(0.01, 'ether') * supports[0]) / totalsupport,
         'bounty hunter expense'
       )
-      // assert.equal(
-      //   dengarBalance.toNumber() - dengarInitialBalance.toNumber(),
-      //   (web3.toWei(0.01, 'ether') * supports[1]) / totalsupport,
-      //   'bounty hunter expense'
-      // )
-      // assert.equal(
-      //   bosskBalance.toNumber() - bosskInitialBalance.toNumber(),
-      //   (web3.toWei(0.01, 'ether') * supports[2]) / totalsupport,
-      //   'bounty hunter expense'
-      // )
+      assert.equal(
+         dengarBalance.toNumber() - dengarInitialBalance.toNumber(),
+         (web3.toWei(0.01, 'ether') * supports[1]) / totalsupport,
+         'bounty hunter expense'
+       )
+      assert.equal(
+        bosskBalance.toNumber() - bosskInitialBalance.toNumber(),
+        (web3.toWei(0.01, 'ether') * supports[2]) / totalsupport,
+        'bounty hunter expense'
+      )
     })
 
     it('cannot add to balance without passing equal msg.value', async () => {
@@ -405,7 +410,7 @@ contract('Allocations App', accounts => {
         )
       })
     })
-    // TODO: timetravel not working
+    
     it('will not execute more frequently than the specified period', async () => {
       supports = [300, 400, 300]
       totalsupport = 1000

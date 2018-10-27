@@ -312,37 +312,35 @@ contract('RangeVoting App', accounts => {
           'is token.totalSupply()'
         )
         assert.equal(voteState[6].toNumber(), 0, 'is totalParticipation')
-        // TODO: Fix metadata not passing
-        // assert.equal(voteState[7], 'metadata', 'is metadata')
         assert.equal(voteState[8], script, 'is script')
         assert.equal(voteState[9], false, 'is false')
       })
 
       xit('holder can add candidates', async () => {
         await app.addCandidate(voteId, '0xdeadbeef', accounts[5])
-        // candidateState = await app.getCandidate(voteId, accounts[5])
-        // assert.equal(
-        //   candidateState[0],
-        //   true,
-        //   'Candidate should have been added'
-        // )
-        // assert.equal(
-        //   candidateState[1],
-        //   '0xdeadbeef',
-        //   'Metadata should be 0xdeadbeef'
-        // )
-        // assert.equal(
-        //   candidateState[2].toNumber(),
-        //   3,
-        //   'Fourth candidate should be at index 3'
-        // )
-        // assert.equal(
-        //   candidateState[3].toNumber(),
-        //   0,
-        //   'Support should start at 0'
-        // )
-        // await app.addCandidate(voteId, '0x', accounts[8])
-        // await app.addCandidate(voteId, '0x', accounts[9])
+        candidateState = await app.getCandidate(voteId, accounts[5])
+        assert.equal(
+           candidateState[0],
+           true,
+           'Candidate should have been added'
+        )
+        assert.equal(
+          candidateState[1],
+          '0xdeadbeef',
+          'Metadata should be 0xdeadbeef'
+        )
+        assert.equal(
+          candidateState[2].toNumber(),
+          3,
+          'Fourth candidate should be at index 3'
+        )
+        assert.equal(
+          candidateState[3].toNumber(),
+          0,
+          'Support should start at 0'
+        )
+        await app.addCandidate(voteId, '0x', accounts[8])
+        await app.addCandidate(voteId, '0x', accounts[9])
       })
 
       xit('holder can vote', async () => {
@@ -458,7 +456,6 @@ contract('RangeVoting App', accounts => {
         await app.addCandidate(voteId, '0x', accounts[7])
         await app.addCandidate(voteId, '0x', accounts[8])
         await app.addCandidate(voteId, '0x', accounts[9])
-        //await token.transfer(nonHolder, 31, { from: voter })
         await app.vote(voteId, vote, { from: voter })
         let holderVoteData1 = await app.getVoterState(voteId, voter)
         assert.equal(
