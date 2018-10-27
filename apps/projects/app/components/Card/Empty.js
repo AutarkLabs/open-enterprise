@@ -4,9 +4,9 @@ import styled from 'styled-components'
 import { EmptyStateCard, unselectable } from '@aragon/ui'
 import icon from '../../assets/svg/empty-card-icon.svg'
 
-const Icon = () => <img src={icon} alt="No projects icon" />
+const Icon = () => <img src={icon} alt="Empty projects icon" />
 
-const EmptyProjects = ({ action }) => (
+const Empty = ({ action }) => (
   <EmptyWrapper>
     <EmptyStateCard
       title="You have not added any projects."
@@ -18,8 +18,8 @@ const EmptyProjects = ({ action }) => (
   </EmptyWrapper>
 )
 
-EmptyProjects.propTypes = {
-  action: PropTypes.func.isRequired
+Empty.propTypes = {
+  action: PropTypes.func.isRequired,
 }
 
 const EmptyWrapper = styled.div`
@@ -28,7 +28,7 @@ const EmptyWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  height: calc(100vh - 64px - 38px);
 `
 
-export default EmptyProjects
-
+export default Empty
