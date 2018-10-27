@@ -115,11 +115,11 @@ contract('Allocations App', accounts => {
 
     before(async () => {
       imperialBudget = await web3.eth.getBalance(empire)
-      var send = await web3.eth.sendTransaction({
-        from: empire,
-        to: app.address,
-        value: web3.toWei(0.1, 'ether'),
-      })
+      // var send = await web3.eth.sendTransaction({
+      //   from: empire,
+      //   to: app.address,
+      //   value: web3.toWei(0.1, 'ether'),
+      // })
       bobafettInitialBalance = await web3.eth.getBalance(bobafett)
       dengarInitialBalance = await web3.eth.getBalance(dengar)
       bosskInitialBalance = await web3.eth.getBalance(bossk)
@@ -133,18 +133,14 @@ contract('Allocations App', accounts => {
         0x0
       )).logs[0].args.accountId.toNumber()
 
-      await app.fund(
-        allocationId,
-        { from: empire, value: web3.toWei(0.01, 'ether') }
-      )
-
       supports = [500, 200, 300]
       totalsupport = 1000
-
+      
       await app.fund(allocationId, {
         from: empire,
         value: web3.toWei(0.01, 'ether'),
       })
+      
       await app.setDistribution(
         candidateAddresses,
         supports,
@@ -217,10 +213,10 @@ contract('Allocations App', accounts => {
         'bounty hunter expense'
       )
       assert.equal(
-         dengarBalance.toNumber() - dengarInitialBalance.toNumber(),
-         (web3.toWei(0.01, 'ether') * supports[1]) / totalsupport,
-         'bounty hunter expense'
-       )
+        dengarBalance.toNumber() - dengarInitialBalance.toNumber(),
+        (web3.toWei(0.01, 'ether') * supports[1]) / totalsupport,
+        'bounty hunter expense'
+      )
       assert.equal(
         bosskBalance.toNumber() - bosskInitialBalance.toNumber(),
         (web3.toWei(0.01, 'ether') * supports[2]) / totalsupport,
@@ -410,7 +406,7 @@ contract('Allocations App', accounts => {
         )
       })
     })
-    
+
     it('will not execute more frequently than the specified period', async () => {
       supports = [300, 400, 300]
       totalsupport = 1000

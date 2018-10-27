@@ -31,7 +31,7 @@
     "start:allocations": "cd apps/allocations && npm start",
     "start:projects": "cd apps/projects && npm start",
     "start:range": "cd apps/range-voting && npm start",
-    "test": "lerna run test --stream",
+    "test": "lerna run test",
     "test:gas": "lerna run test:gas",
     "test:address": "cd apps/address-book && npm test",
     "test:allocations": "cd apps/allocations && npm test",
