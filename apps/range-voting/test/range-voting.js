@@ -62,6 +62,8 @@ contract('RangeVoting App', accounts => {
       { from: root }
     )
 
+    // TODO: Revert to only use 2 params when truffle is updated
+    // read: https://github.com/Giveth/planning-app/pull/243
     const receipt = await dao.newAppInstance(
       '0x1234',
       (await RangeVoting.new()).address,
@@ -320,9 +322,9 @@ contract('RangeVoting App', accounts => {
         await app.addCandidate(voteId, '0xdeadbeef', accounts[5])
         candidateState = await app.getCandidate(voteId, accounts[5])
         assert.equal(
-           candidateState[0],
-           true,
-           'Candidate should have been added'
+          candidateState[0],
+          true,
+          'Candidate should have been added'
         )
         assert.equal(
           candidateState[1],

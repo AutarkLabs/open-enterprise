@@ -52,6 +52,8 @@ contract('Allocations App', accounts => {
       { from: root }
     )
 
+    // TODO: Revert to only use 2 params when truffle is updated
+    // read: https://github.com/Giveth/planning-app/pull/243
     let receipt = await dao.newAppInstance(
       '0x1234',
       (await Allocations.new()).address,
@@ -88,6 +90,8 @@ contract('Allocations App', accounts => {
     //   receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
     // )
 
+    // TODO: Revert to only use 2 params when truffle is updated
+    // read: https://github.com/Giveth/planning-app/pull/243
     receipt = await dao.newAppInstance(
       '0x2345',
       (await Allocations.new()).address,
@@ -133,10 +137,10 @@ contract('Allocations App', accounts => {
         0x0
       )).logs[0].args.accountId.toNumber()
 
-      await app.fund(
-        allocationId,
-        { from: empire, value: web3.toWei(0.01, 'ether') }
-      )
+      await app.fund(allocationId, {
+        from: empire,
+        value: web3.toWei(0.01, 'ether'),
+      })
 
       supports = [500, 200, 300]
       totalsupport = 1000
@@ -405,7 +409,7 @@ contract('Allocations App', accounts => {
         )
       })
     })
-    
+
     it('will not execute more frequently than the specified period', async () => {
       supports = [300, 400, 300]
       totalsupport = 1000
