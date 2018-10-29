@@ -1,6 +1,6 @@
 # That Planning Suite
 
-[![Build Status](https://travis-ci.org/Giveth/planning-app.svg?branch=dev)](https://travis-ci.org/Giveth/planning-app) [![Coverage Status](https://coveralls.io/repos/github/Giveth/planning-app/badge.svg?branch=dev)](https://coveralls.io/github/Giveth/planning-app?branch=dev)
+[![Build Status](https://travis-ci.org/spacedecentral/planning-suite.svg?branch=dev)](https://travis-ci.org/spacedecentral/planning-suite) [![Coverage Status](https://coveralls.io/repos/github/spacedecentral/planning-suite/badge.svg?branch=dev)](https://coveralls.io/github/spacedecentral/planning-suite?branch=dev)
 
 <p align="center">
   <a href="#development-setup">Development Setup</a> •
