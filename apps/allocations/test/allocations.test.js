@@ -52,6 +52,8 @@ contract('Allocations App', accounts => {
       { from: root }
     )
 
+    // TODO: Revert to only use 2 params when truffle is updated
+    // read: https://github.com/Giveth/planning-app/pull/243
     let receipt = await dao.newAppInstance(
       '0x1234',
       (await Allocations.new()).address,
@@ -90,6 +92,8 @@ contract('Allocations App', accounts => {
     //   receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
     // )
 
+    // TODO: Revert to only use 2 params when truffle is updated
+    // read: https://github.com/Giveth/planning-app/pull/243
     receipt = await dao.newAppInstance(
       '0x2345',
       (await Allocations.new()).address,
