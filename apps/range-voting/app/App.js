@@ -150,4 +150,4 @@ const CloseIcon = styled(IconAdd)`
 export default observe(
   observable => observable.map(state => ({ ...state })),
   {}
-)(App)
+)(hot(module)(App))

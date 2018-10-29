@@ -105,7 +105,7 @@ contract('Allocations App', accounts => {
     allocation = Allocations.at(
       receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
     )
-    const test = await app.initialize({ from: accounts[0] })
+    await app.initialize({ from: accounts[0] })
   })
 
   context('app creation and funded Payout', () => {
