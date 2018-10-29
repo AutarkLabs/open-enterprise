@@ -8,6 +8,7 @@ const {
 
 const Allocations = artifacts.require('Allocations')
 
+const { encodeCall } = require('@tpt/test-helpers/encodeCall')
 const { assertRevert } = require('@tpt/test-helpers/assertThrow')
 const timetravel = require('@tpt/test-helpers/timeTravel')(web3)
 
@@ -52,13 +53,16 @@ contract('Allocations App', accounts => {
       { from: root }
     )
 
-    // TODO: Revert to only use 2 params when truffle is updated
+    // TODO: Revert to use regular function call when truffle gets updated
     // read: https://github.com/Giveth/planning-app/pull/243
     let receipt = await dao.newAppInstance(
       '0x1234',
       (await Allocations.new()).address,
+      0x0,
+      false,
       { from: root }
     )
+
     app = Allocations.at(
       receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
     )
@@ -90,17 +94,6 @@ contract('Allocations App', accounts => {
     //   receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
     // )
 
-    // TODO: Revert to only use 2 params when truffle is updated
-    // read: https://github.com/Giveth/planning-app/pull/243
-    receipt = await dao.newAppInstance(
-      '0x2345',
-      (await Allocations.new()).address,
-      { from: root }
-    )
-
-    allocation = Allocations.at(
-      receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
-    )
     await app.initialize({ from: accounts[0] })
   })
 
