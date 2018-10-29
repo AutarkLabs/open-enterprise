@@ -245,7 +245,7 @@ contract('RangeVoting App', accounts => {
       let voteId = {}
       let script = ''
       let candidateState
-      let [, , ...candidates] = accounts
+      let [, , ...candidates] = accounts.slice(0,5)
       let [apple, orange, banana] = candidates
 
       beforeEach(async () => {
@@ -318,41 +318,16 @@ contract('RangeVoting App', accounts => {
         assert.equal(voteState[9], false, 'is false')
       })
 
-      xit('holder can add candidates', async () => {
-        await app.addCandidate(voteId, '0xdeadbeef', accounts[5])
-        // candidateState = await app.getCandidate(voteId, accounts[5])
-        // assert.equal(
-        //   candidateState[0],
-        //   true,
-        //   'Candidate should have been added'
-        // )
-        // assert.equal(
-        //   candidateState[1],
-        //   '0xdeadbeef',
-        //   'Metadata should be 0xdeadbeef'
-        // )
-        // assert.equal(
-        //   candidateState[2].toNumber(),
-        //   3,
-        //   'Fourth candidate should be at index 3'
-        // )
-        // assert.equal(
-        //   candidateState[3].toNumber(),
-        //   0,
-        //   'Support should start at 0'
-        // )
-        // await app.addCandidate(voteId, '0x', accounts[8])
-        // await app.addCandidate(voteId, '0x', accounts[9])
-      })
-
-      xit('holder can vote', async () => {
-        let vote = [1, 2, 3, 4, 5, 0]
-        await app.addCandidate(voteId, '0xdeadbeef', accounts[6])
-        await app.addCandidate(voteId, '0xdead', accounts[7])
-        await app.addCandidate(voteId, '0xbeef', accounts[8])
+      it('holder can vote', async () => {
+        let vote = [1, 2, 3]
         let voter = holder19
-        await app.vote(voteId, vote, { from: voter })
 
+        let appleInfo = (await app.getCandidate(
+          voteId,
+          candidates.indexOf(apple)
+        ))
+        console.log(appleInfo)
+        await app.vote(voteId, vote, { from: voter })
         let holderVoteData = await app.getVoterState(voteId, voter)
         assert.equal(
           vote[0],
@@ -369,52 +344,62 @@ contract('RangeVoting App', accounts => {
           holderVoteData[2].toNumber(),
           'vote and voter state should match after casting ballot'
         )
-
-        let candidateApple = await app.getCandidate(voteId, accounts[6])
-        let candidateOrange = await app.getCandidate(voteId, accounts[7])
-        let candidateBanana = await app.getCandidate(voteId, accounts[8])
-
+        //assert.equal(
+        //  vote[3],
+        //  holderVoteData[3].toNumber(),
+        //  'vote and voter state should match after casting ballot'
+        //)
+        
+        appleInfo = (await app.getCandidate(
+          voteId,
+          candidates.indexOf(apple)
+        ))
+        console.log(appleInfo)
+        let orangeInfo = (await app.getCandidate(
+          voteId,
+          candidates.indexOf(orange)
+        ))
+        let bananaInfo = (await app.getCandidate(
+          voteId,
+          candidates.indexOf(banana)
+        ))
+        //let mangoInfo = (await app.getCandidate(
+        //  voteId,
+        //  candidates.indexOf(accounts[5])
+        //))
+        
         assert.equal(
-          vote[3],
-          candidateApple[3].toNumber(),
+          appleInfo[1].toNumber(),
+          vote[0],
           'The correct amount of support should be logged for Apple'
         )
         assert.equal(
-          vote[4],
-          candidateOrange[3].toNumber(),
+          orangeInfo[1].toNumber(),
+          vote[1],
           'The correct amount of support should be logged for Orange'
         )
         assert.equal(
-          vote[5],
-          candidateBanana[3].toNumber(),
+          bananaInfo[1].toNumber(),
+          vote[2],
           'The correct amount of support should be logged for Banana'
         )
+        //assert.equal(
+        //  vote[3],
+        //  mangoInfo[1].toNumber(),
+        //  'The correct amount of support should be logged for Mango'
+        //)
       })
 
-      xit('holder can modify vote', async () => {
-        let voteOne = [1, 2, 3, 4, 5, 0]
-        let voteTwo = [0, 5, 4, 3, 2, 1]
-        await app.addCandidate(voteId, '0x', accounts[7])
-        await app.addCandidate(voteId, '0x', accounts[8])
-        await app.addCandidate(voteId, '0x', accounts[9])
-        let voter = holder19
-        await app.vote(voteId, voteOne, { from: voter })
-        let holderVoteData1 = await app.getVoterState(voteId, voter)
-        assert.equal(
-          voteOne[0],
-          holderVoteData1[0].toNumber(),
-          'vote and voter state should match after casting ballot'
-        )
-        assert.equal(
-          voteOne[1],
-          holderVoteData1[1].toNumber(),
-          'vote and voter state should match after casting ballot'
-        )
-        assert.equal(
-          voteOne[2],
-          holderVoteData1[2].toNumber(),
-          'vote and voter state should match after casting ballot'
-        )
+      it('holder can modify vote', async () => {
+        let voteTwo = [6, 5, 4]
+        
+        let voter = holder31
+
+        let appleInfo = (await app.getCandidate(
+          voteId,
+          candidates.indexOf(apple)
+        ))
+        console.log(appleInfo)
         await app.vote(voteId, voteTwo, { from: voter })
         let holderVoteData2 = await app.getVoterState(voteId, voter)
         assert.equal(
@@ -432,33 +417,81 @@ contract('RangeVoting App', accounts => {
           holderVoteData2[2].toNumber(),
           'vote and voter state should match after casting ballot'
         )
-        let candidateApple = await app.getCandidate(voteId, accounts[7])
-        let candidateOrange = await app.getCandidate(voteId, accounts[8])
-        let candidateBanana = await app.getCandidate(voteId, accounts[9])
+        //assert.equal(
+        //  voteTwo[3],
+        //  holderVoteData2[3].toNumber(),
+        //  'vote and voter state should match after casting ballot'
+        //)
+
+        appleInfo = (await app.getCandidate(
+          voteId,
+          candidates.indexOf(apple)
+        ))
+        console.log(appleInfo)
+        let orangeInfo = (await app.getCandidate(
+          voteId,
+          candidates.indexOf(orange)
+        ))
+        let bananaInfo = (await app.getCandidate(
+          voteId,
+          candidates.indexOf(banana)
+        ))
+        //let mangoInfo = (await app.getCandidate(
+        //  voteId,
+        //  candidates.indexOf(accounts[5])
+        //))
+        //voteTwo.reverse()
         assert.equal(
-          voteTwo[3],
-          candidateApple[3].toNumber(),
-          'The correct amount of support should be logged for apple'
+          appleInfo[1].toNumber(),
+          voteTwo[0],
+          'The correct amount of support should be logged for Apple'
         )
         assert.equal(
-          voteTwo[4],
-          candidateOrange[3].toNumber(),
-          'The correct amount of support should be logged for orange'
+          orangeInfo[1].toNumber(),
+          voteTwo[1],
+          'The correct amount of support should be logged for Orange'
         )
         assert.equal(
-          voteTwo[5],
-          candidateBanana[3].toNumber(),
-          'The correct amount of support should be logged for banana'
+          bananaInfo[1].toNumber(),
+          voteTwo[2],
+          'The correct amount of support should be logged for Banana'
         )
+        //assert.equal(
+        //  mangoInfo[1].toNumber(),
+        //  voteTwo[3],
+        //  'The correct amount of support should be logged for Mango'
+        //)
+      })
+
+      it('holder can add candidates', async () => {
+        //console.log(accounts[5], accounts[6],'all accounts:', accounts)
+        //console.log(apple,orange,banana)
+        mango = accounts[5]
+        await app.addCandidate(voteId, '0xbeefdead', mango)
+        candidates.push(mango)
+        //console.log(await app.getCandidateLength(voteId))
+        candidateState = await app.getCandidate(
+          voteId, 
+          candidates.indexOf(mango)
+        )
+        assert.equal(
+          candidateState[0],
+          mango,
+          'Candidate should have been added'
+        )
+        assert.equal(
+          candidateState[1].toNumber(),
+          0,
+          'Support should start at 0'
+        )
+        //await app.addCandidate(voteId, '0x', accounts[8])
+        //await app.addCandidate(voteId, '0x', accounts[9])
       })
 
       xit('token transfers dont affect RangeVoting', async () => {
-        let vote = [10, 9, 12]
+        let vote = [10, 9, 12,5]
         let voter = holder31
-        await app.addCandidate(voteId, '0x', accounts[7])
-        await app.addCandidate(voteId, '0x', accounts[8])
-        await app.addCandidate(voteId, '0x', accounts[9])
-        //await token.transfer(nonHolder, 31, { from: voter })
+        await token.transfer(nonHolder, 31, { from: voter })
         await app.vote(voteId, vote, { from: voter })
         let holderVoteData1 = await app.getVoterState(voteId, voter)
         assert.equal(
