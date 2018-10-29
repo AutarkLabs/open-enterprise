@@ -65,6 +65,8 @@ contract('RangeVoting App', accounts => {
     const receipt = await dao.newAppInstance(
       '0x1234',
       (await RangeVoting.new()).address,
+      0x0,
+      false,
       { from: root }
     )
     app = RangeVoting.at(

@@ -55,6 +55,8 @@ contract('Allocations App', accounts => {
     let receipt = await dao.newAppInstance(
       '0x1234',
       (await Allocations.new()).address,
+      0x0,
+      false,
       { from: root }
     )
     app = Allocations.at(
@@ -91,6 +93,8 @@ contract('Allocations App', accounts => {
     receipt = await dao.newAppInstance(
       '0x2345',
       (await Allocations.new()).address,
+      0x0,
+      false,
       { from: root }
     )
 
