@@ -111,7 +111,9 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
     }
 
 
-    function getPayout(uint256 _payoutId) public view returns(uint256 balance, uint256 limit, string metadata, address token, address proxy, uint256 amount) {
+    function getPayout(uint256 _payoutId) public view
+    returns(uint256 balance, uint256 limit, string metadata, address token, address proxy, uint256 amount)
+    {
         Payout storage payout = payouts[_payoutId];
         limit = payout.limit;
         balance = payout.balance;
