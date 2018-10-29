@@ -43,11 +43,11 @@ class VoteRow extends React.Component {
       type
     } = vote.data
     const totalSupport = options.reduce((acc, option) => acc + option.value, 0)
-
+    
     const bars = options.map(option => (
       <Bar key={option.label}>
         <ProgressBar
-          progress={safeDiv(option.value, totalSupport)}
+          progress={safeDiv(parseInt(option.value, 10), totalSupport)}
           label={option.label}
         />
       </Bar>

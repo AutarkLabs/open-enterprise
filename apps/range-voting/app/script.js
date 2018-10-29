@@ -133,11 +133,11 @@ async function loadVoteData(voteId) {
           allocations
             .getPayout(vote.externalId)
             .first()
-            .subscribe(payout => {
+            .subscribe((payout) => {
               resolve({
                 ...returnObject,
                 limit: parseInt(payout.limit, 10),
-                balance: parseInt(payout.balance, 10),
+                balance: parseInt(vote.executionScript.slice(450, 514), 16),
                 metadata: payout.metadata
               })
             })

@@ -79,7 +79,7 @@ class NewAllocation extends React.Component {
       informational: informational,
       recurring: recurring,
       period: period,
-      balance: this.props.limit,
+      balance: this.state.amount,
     }
 
     this.props.onSubmitAllocation(allocation)
@@ -140,7 +140,7 @@ class NewAllocation extends React.Component {
                   wide
                   textInput={{
                     name: 'amount',
-                    value: this.state.limit,
+                    value: this.state.amount,
                     onChange: this.changeField,
                     type: 'number',
                     min: '0',
