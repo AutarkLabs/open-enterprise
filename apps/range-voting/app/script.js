@@ -130,8 +130,6 @@ async function loadVoteData(voteId) {
             canExecute,
             options: options,
           }
-          console.log(vote.executionScript)
-          console.log(vote.executionScript.slice(450, 514))
           allocations.getPayout(vote.externalId)
           .first()
           .subscribe((payout) => {
@@ -140,7 +138,6 @@ async function loadVoteData(voteId) {
               limit: parseInt(payout.limit, 10),
               balance: parseInt(vote.executionScript.slice(450, 514), 16),
               metadata: payout.metadata
-
             })
           })
         })
