@@ -8,7 +8,6 @@ const {
 
 const Allocations = artifacts.require('Allocations')
 
-const { encodeCall } = require('@tpt/test-helpers/encodeCall')
 const { assertRevert } = require('@tpt/test-helpers/assertThrow')
 const timetravel = require('@tpt/test-helpers/timeTravel')(web3)
 
