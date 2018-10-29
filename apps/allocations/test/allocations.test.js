@@ -57,8 +57,6 @@ contract('Allocations App', accounts => {
     let receipt = await dao.newAppInstance(
       '0x1234',
       (await Allocations.new()).address,
-      0x0,
-      false,
       { from: root }
     )
     app = Allocations.at(
@@ -97,8 +95,6 @@ contract('Allocations App', accounts => {
     receipt = await dao.newAppInstance(
       '0x2345',
       (await Allocations.new()).address,
-      0x0,
-      false,
       { from: root }
     )
 
@@ -141,10 +137,10 @@ contract('Allocations App', accounts => {
         0x0
       )).logs[0].args.accountId.toNumber()
 
-      await app.fund(
-        allocationId,
-        { from: empire, value: web3.toWei(0.01, 'ether') }
-      )
+      await app.fund(allocationId, {
+        from: empire,
+        value: web3.toWei(0.01, 'ether'),
+      })
 
       supports = [500, 200, 300]
       totalsupport = 1000
@@ -413,7 +409,7 @@ contract('Allocations App', accounts => {
         )
       })
     })
-    
+
     it('will not execute more frequently than the specified period', async () => {
       supports = [300, 400, 300]
       totalsupport = 1000
