@@ -20,8 +20,7 @@ const EmptyIcon = () => <img src={emptyIcon} alt="" />
 
 class Decisions extends React.Component {
   static propTypes = {
-    // app: PropTypes.object.isRequired,
-    app: PropTypes.object
+    app: PropTypes.object.isRequired
   }
   static defaultProps = {
     pctBase: 100,
