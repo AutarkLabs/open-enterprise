@@ -59,9 +59,9 @@ const Main = styled.button`
   &:focus,
   &:hover {
     ${({ active }) =>
-      active
-        ? ''
-        : `
+    active
+      ? ''
+      : `
             transform: $translateY(-1px);
             box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.15);
           `};

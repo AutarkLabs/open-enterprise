@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { EmptyStateCard, unselectable } from '@aragon/ui'
 import icon from '../../assets/empty-accounts.svg'
 
-const Icon = () => <img src={icon} alt="No accounts icon" />
+const Icon = () => <img src={icon} alt="Empty accounts icon" />
 
 const Empty = ({ action }) => (
   <EmptyWrapper>
@@ -19,7 +19,7 @@ const Empty = ({ action }) => (
 )
 
 Empty.propTypes = {
-  action: PropTypes.func.isRequired
+  action: PropTypes.func.isRequired,
 }
 
 const EmptyWrapper = styled.div`
@@ -28,6 +28,7 @@ const EmptyWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 100vh;
 `
 
 export default Empty

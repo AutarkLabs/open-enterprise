@@ -21,7 +21,7 @@ class CheckboxInput extends React.Component {
 
   onClickInternal = () => {
     var isChecked = ! this.state.isChecked
-    this.setState({isChecked: isChecked});
+    this.setState({isChecked: isChecked})
     this.props.onClick(isChecked)
   }
 
