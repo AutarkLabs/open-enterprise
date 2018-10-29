@@ -7,6 +7,7 @@ const StyledTitle = styled(Text)`
   ${unselectable};
   background: ${theme.contentBackground};
   border-bottom: 1px solid ${theme.contentBorder};
+  ${({ shadow }) => shadow && 'box-shadow: rgba(0, 0, 0, 0.1) 1px 0 15px'};
   display: block;
   line-height: 63px;
   overflow: visible;
@@ -15,10 +16,15 @@ const StyledTitle = styled(Text)`
   z-index: 1;
 `
 
-const AppTitle = ({ text }) => <StyledTitle size="xxlarge">{text}</StyledTitle>
+const Title = ({ text, shadow }) => (
+  <StyledTitle size="xxlarge" shadow={shadow}>
+    {text}
+  </StyledTitle>
+)
 
-AppTitle.propTypes = {
+Title.propTypes = {
   text: PropTypes.string.isRequired,
+  shadow: PropTypes.bool,
 }
 
-export default AppTitle
+export default Title

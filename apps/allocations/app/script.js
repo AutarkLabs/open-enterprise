@@ -1,4 +1,4 @@
-import Aragon, {providers} from '@aragon/client'
+import Aragon from '@aragon/client'
 import { first, of } from 'rxjs' // Make sure observables have .first
 import { combineLatest } from 'rxjs'
 import { empty } from 'rxjs/observable/empty'
@@ -7,15 +7,11 @@ const app = new Aragon()
 let appState
 app.events().subscribe(handleEvents)
 
-app.state().subscribe( (state) => {
-  console.log(
-    'entered state subscription:\n',
-    state
-  )
-  appState = state ? state : {accounts:[]}
+app.state().subscribe(state => {
+  console.log('Allocations: entered state subscription:\n', state)
+  appState = state ? state : { accounts: [] }
   //appState = state
 })
-
 
 /***********************
  *                     *
@@ -23,7 +19,7 @@ app.state().subscribe( (state) => {
  *                     *
  ***********************/
 
-async function handleEvents(response){
+async function handleEvents(response) {
   let nextState
   switch (response.event) {
   case 'NewAccount':
@@ -42,7 +38,6 @@ async function handleEvents(response){
   app.cache('state', nextState)
 }
 
-
 async function syncAccounts(state, { accountId, ...eventArgs }) {
   console.log('arguments from events:', ...eventArgs)
   const transform = ({ data, ...account }) => ({
@@ -52,12 +47,8 @@ async function syncAccounts(state, { accountId, ...eventArgs }) {
   try {
     let updatedState = await updateState(state, accountId, transform)
     return updatedState
-  }
-  catch(err) {
-    console.error(
-      'updateState failed to return:',
-      err,
-    )
+  } catch (err) {
+    console.error('updateState failed to return:', err)
   }
 }
 
@@ -105,10 +96,9 @@ async function updateState(state, accountId, transform) {
   const { accounts = [] } = state
   try {
     let newAccounts = await checkAccountsLoaded(accounts, accountId, transform)
-    let newState = {...state, accounts: newAccounts}
+    let newState = { ...state, accounts: newAccounts }
     return newState
-  }
-  catch(err) {
+  } catch (err) {
     console.error(
       'Update accounts failed to return:',
       err,

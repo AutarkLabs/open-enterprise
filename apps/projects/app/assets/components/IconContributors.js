@@ -3,10 +3,11 @@ import styled from 'styled-components'
 
 const StyledIcon = styled.div`
   display: inline-flex;
-  align-self: flex-end;
+  align-self: baseline;
   margin-right: 2px;
   svg {
-    bottom: 0.35em;
+    transform: scale(0.9);
+    bottom: -3.6px;
     position: relative;
   }
 `
@@ -17,8 +18,8 @@ const IconContributors = props => (
       className="octicon octicon-organization"
       aria-hidden="true"
       viewBox="0 0 16 16"
-      width="1em"
-      height="1em"
+      width="16px"
+      height="16px"
       fill="#666"
       {...props}
     >

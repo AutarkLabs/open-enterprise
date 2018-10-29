@@ -3,10 +3,11 @@ import styled from 'styled-components'
 
 const StyledIcon = styled.div`
   display: inline-flex;
-  align-self: flex-end;
+  align-self: baseline;
   margin-right: 2px;
   svg {
-    bottom: 0.35em;
+    transform: scale(0.9);
+    bottom: -1.6px;
     position: relative;
   }
 `

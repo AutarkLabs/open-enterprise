@@ -44,10 +44,10 @@ class TemplateContent extends React.PureComponent {
             Create multi-option vote
         </Title>
 
-          <Subtitle>
+        <Subtitle>
             A way to gather votes and opinions on questions that have multiple options.
             Choose a template to get started quickly. Don't worry - you can change it later.
-          </Subtitle>
+        </Subtitle>
         <Templates>
           {[...this.props.templates.entries()].map(
             ([template, { label, icon, description }], i) => (

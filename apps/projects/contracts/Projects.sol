@@ -13,8 +13,8 @@ contract Projects is AragonApp {
     }
 
     struct GithubRepo {
-        bytes20 owner;  // repo owner's address
-        bytes12 repo;  // Github repo id int that is stringified
+        bytes32 owner;  // repo owner's address
+        bytes32 repo;  // Github repo id int that is stringified
         mapping(uint256 => GithubIssue) issues;
         uint index;
     }
@@ -38,7 +38,7 @@ contract Projects is AragonApp {
     // Fired when a repository is removed from the registry.
     event RepoRemoved(bytes32 id);
     // Fired when a bounty is added to a repo
-    event BountyAdded(bytes20 owner, bytes12 repo, uint256 issueNumber, uint256 bountySize);
+    event BountyAdded(bytes32 owner, bytes32 repo, uint256 issueNumber, uint256 bountySize);
 
     bytes32 public constant ADD_REPO_ROLE = keccak256("ADD_REPO_ROLE");
     bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
@@ -47,10 +47,11 @@ contract Projects is AragonApp {
 
     /**
      * Add an entry to the registry.
-     * @param _id The entry to add to the registry
+     * @param _owner The entry to add to the registry
+     * @notice Add selected repository to Managed Projects 
      */
     function addRepo(
-        bytes20 _owner, bytes12 _repo
+        bytes32 _owner, bytes32 _repo
     ) public auth(ADD_REPO_ROLE) returns (bytes32 _id) 
     {
         _id = keccak256(abi.encodePacked(_owner, _repo));  // overflow should still yield a useable identifier
@@ -84,7 +85,7 @@ contract Projects is AragonApp {
      * Get an entry from the registry.
      * @param _id The ID of the entry to get
      */
-    function getRepo(bytes32 _id) public view returns (bytes20 _owner, bytes12 _repo) {
+    function getRepo(bytes32 _id) public view returns (bytes32 _owner, bytes32 _repo) {
         _owner = repos[_id].owner;
         _repo = repos[_id].repo;
     }

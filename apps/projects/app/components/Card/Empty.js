@@ -2,17 +2,17 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { EmptyStateCard, unselectable } from '@aragon/ui'
-import icon from '../../assets/empty-accounts.svg'
+import icon from '../../assets/svg/empty-card-icon.svg'
 
-const Icon = () => <img src={icon} alt="Empty accounts icon" />
+const Icon = () => <img src={icon} alt="Empty projects icon" />
 
 const Empty = ({ action }) => (
   <EmptyWrapper>
     <EmptyStateCard
-      title="You have not created any allocation accounts."
-      text="Get started now by creating a new account."
+      title="You have not added any projects."
+      text="Get started now by adding a new project."
       icon={Icon}
-      actionText="New Account"
+      actionText="New Project"
       onActivate={action}
     />
   </EmptyWrapper>
@@ -28,7 +28,7 @@ const EmptyWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  height: calc(100vh - 64px - 38px);
 `
 
 export default Empty
