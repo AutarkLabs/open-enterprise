@@ -28,7 +28,8 @@
     "react-dom": "16.5.1",
     "react-number-format": "3.5.2",
     "rxjs": "6.3.2",
-    "styled-components": "3.4.6"
+    "styled-components": "3.4.6",
+    "truffle-assertions": "0.6.2"
   },
   "devDependencies": {
     "@tpt/test-helpers": "^0.0.1",

@@ -47,7 +47,9 @@ contract Projects is AragonApp {
 
     /**
      * Add an entry to the registry.
-     * @param _id The entry to add to the registry
+     * @param _owner The repo owner's address
+     * @param _repo The GitHub repo id int that is stringified
+     * @return _id The entry added to the registry
      */
     function addRepo(
         bytes20 _owner, bytes12 _repo

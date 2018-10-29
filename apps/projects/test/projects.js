@@ -1,5 +1,6 @@
 // TODO: Fix test
 // const { assertRevert } = require('@tpt/test-helpers/assertThrow')
+const truffleAssert = require('truffle-assertions')
 
 const Projects = artifacts.require('Projects')
 const DAOFactory = artifacts.require(
@@ -13,7 +14,7 @@ const Kernel = artifacts.require('@tpt/test-helpers/contracts/kernel/Kernel')
 
 const getContract = name => artifacts.require(name)
 
-contract('Projects App', function(accounts) {
+contract('Projects App', function (accounts) {
   let daoFact,
     app = {}
 
@@ -90,12 +91,14 @@ contract('Projects App', function(accounts) {
     )
   })
 
-  context('creating and retrieving repos and bounties', function() {
-    it('creates a repo id entry', async function() {
+  context('creating and retrieving repos and bounties', function () {
+    it('creates a repo id entry', async function () {
       // TODO: Test failing
-      // repoID = (await app.addRepo('abc', String(123))).logs.filter(
-      //   x => x.event == 'RepoAdded'
-      // )[0].args.id
+      let addrepo = await app.addRepo('abc', String(123))
+      truffleAssert.eventEmitted(addrepo, 'RepoAdded', (ev) => {
+        console.log(ev.id)
+      })
+      // repoID = ().logs.filter(x => x.event == 'RepoAdded')[0].args.id
       // assert.equal(
       //   repoID,
       //   '0x779b71f95cca231dba9830306e5e888357c053f5c4b9294c41fd3b10a8a1f101',
@@ -103,7 +106,7 @@ contract('Projects App', function(accounts) {
       // )
     })
 
-    it('retrieves repo information successfully', async function() {
+    it('retrieves repo information successfully', async function () {
       //const owner1 = accounts[0]
       // TODO: Test failing
       // repoID = (await app.addRepo('abc', String(123))).logs.filter(
@@ -114,7 +117,7 @@ contract('Projects App', function(accounts) {
       // assert.equal(result, 'abc', 'invalid repo info returned')
     })
 
-    it('accepts bounties for issues in an added repo', async function() {
+    it('accepts bounties for issues in an added repo', async function () {
       //const bountyAdder = accounts[2]
       // TODO: Test failing
       // repoID = (await app.addRepo('abc', String(123))).logs.filter(
@@ -128,8 +131,8 @@ contract('Projects App', function(accounts) {
     })
   })
 
-  context('invalid operations', function() {
-    it('cannot retrieve a removed Repo', async function() {
+  context('invalid operations', function () {
+    it('cannot retrieve a removed Repo', async function () {
       // TODO: Test failing
       // repoID = (await app.addRepo('abc', String(123))).logs.filter(
       //   x => x.event == 'RepoAdded'
