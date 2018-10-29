@@ -1,19 +1,20 @@
+import { AragonApp, observe, SidePanel } from '@aragon/ui'
+import PropTypes from 'prop-types'
 import React from 'react'
 import { hot } from 'react-hot-loader'
-import { AragonApp } from '@aragon/ui'
+import styled from 'styled-components'
 
-import { AppContent, AppTitle } from '.'
+import { AppContent } from '.'
+import { Title } from '../Shared'
+import { NewProject } from '../Panel'
 
 const ASSETS_URL = 'aragon-ui-assets/'
 
-const ProjectsApp = () => (
-  // TODO: Add update detector to clean unneded renders
-  // TODO: enable <React.StrictMode> to find react lifecycle quirks
-  <AragonApp publicUrl={ASSETS_URL}>
-    <AppTitle />
-    <AppContent />
-  </AragonApp>
-)
+class App extends React.Component {
+  static propTypes = {
+    app: PropTypes.object.isRequired,
+    repos: PropTypes.arrayOf(PropTypes.object),
+  }
 
   state = {
     repos: [],

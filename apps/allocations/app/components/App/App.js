@@ -3,10 +3,11 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 
-import { Accounts, NewAccountButton, Title } from '.'
+import { Accounts, NewAccountButton } from '.'
+import { Title } from '../Shared'
 import { NewAccount, NewAllocation } from '../Panel'
 
-import { allocationsMockData } from '../../utils/mockData'
+// import { allocationsMockData } from '../../utils/mockData'
 
 const ASSETS_URL = 'aragon-ui-assets/'
 
@@ -94,7 +95,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { accounts, panel } = this.state
+    const { panel } = this.state
     const PanelContent = panel.content
     return (
       // TODO: Profile App with React.StrictMode, perf and why-did-you-update, apply memoization
