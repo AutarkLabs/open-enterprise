@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@aragon/client": "1.0.0-beta.9",
-    "@aragon/ui": "ottodevs/aragon-ui#99fde0f",
+    "@aragon/ui": "ottodevs/aragon-ui#5b17efa",
     "prop-types": "15.6.2",
     "react": "16.5.1",
     "react-blockies": "1.3.0",
