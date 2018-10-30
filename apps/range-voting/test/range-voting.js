@@ -253,7 +253,7 @@ contract('RangeVoting App', accounts => {
           to: executionTarget.address,
           calldata: executionTarget.contract.setSignal.getData(
             // TODO: Candidates need to be added in reverse order to keep their initial index
-            candidates.reverse(),
+            candidates,
             [0, 0, 0]
           )
         }
@@ -322,11 +322,7 @@ contract('RangeVoting App', accounts => {
         let vote = [1, 2, 3]
         let voter = holder19
 
-        let appleInfo = (await app.getCandidate(
-          voteId,
-          candidates.indexOf(apple)
-        ))
-        console.log(appleInfo)
+        await app.vote(voteId, vote, { from: voter })
         await app.vote(voteId, vote, { from: voter })
         let holderVoteData = await app.getVoterState(voteId, voter)
         assert.equal(
@@ -344,17 +340,11 @@ contract('RangeVoting App', accounts => {
           holderVoteData[2].toNumber(),
           'vote and voter state should match after casting ballot'
         )
-        //assert.equal(
-        //  vote[3],
-        //  holderVoteData[3].toNumber(),
-        //  'vote and voter state should match after casting ballot'
-        //)
-        
-        appleInfo = (await app.getCandidate(
+
+        let appleInfo = (await app.getCandidate(
           voteId,
           candidates.indexOf(apple)
         ))
-        console.log(appleInfo)
         let orangeInfo = (await app.getCandidate(
           voteId,
           candidates.indexOf(orange)
@@ -363,11 +353,7 @@ contract('RangeVoting App', accounts => {
           voteId,
           candidates.indexOf(banana)
         ))
-        //let mangoInfo = (await app.getCandidate(
-        //  voteId,
-        //  candidates.indexOf(accounts[5])
-        //))
-        
+
         assert.equal(
           appleInfo[1].toNumber(),
           vote[0],
@@ -383,11 +369,6 @@ contract('RangeVoting App', accounts => {
           vote[2],
           'The correct amount of support should be logged for Banana'
         )
-        //assert.equal(
-        //  vote[3],
-        //  mangoInfo[1].toNumber(),
-        //  'The correct amount of support should be logged for Mango'
-        //)
       })
 
       it('holder can modify vote', async () => {
@@ -395,11 +376,7 @@ contract('RangeVoting App', accounts => {
         
         let voter = holder31
 
-        let appleInfo = (await app.getCandidate(
-          voteId,
-          candidates.indexOf(apple)
-        ))
-        console.log(appleInfo)
+        await app.vote(voteId, voteTwo, { from: voter })
         await app.vote(voteId, voteTwo, { from: voter })
         let holderVoteData2 = await app.getVoterState(voteId, voter)
         assert.equal(
@@ -417,17 +394,11 @@ contract('RangeVoting App', accounts => {
           holderVoteData2[2].toNumber(),
           'vote and voter state should match after casting ballot'
         )
-        //assert.equal(
-        //  voteTwo[3],
-        //  holderVoteData2[3].toNumber(),
-        //  'vote and voter state should match after casting ballot'
-        //)
 
-        appleInfo = (await app.getCandidate(
+        let appleInfo = (await app.getCandidate(
           voteId,
           candidates.indexOf(apple)
         ))
-        console.log(appleInfo)
         let orangeInfo = (await app.getCandidate(
           voteId,
           candidates.indexOf(orange)
@@ -436,11 +407,7 @@ contract('RangeVoting App', accounts => {
           voteId,
           candidates.indexOf(banana)
         ))
-        //let mangoInfo = (await app.getCandidate(
-        //  voteId,
-        //  candidates.indexOf(accounts[5])
-        //))
-        //voteTwo.reverse()
+
         assert.equal(
           appleInfo[1].toNumber(),
           voteTwo[0],
@@ -456,40 +423,10 @@ contract('RangeVoting App', accounts => {
           voteTwo[2],
           'The correct amount of support should be logged for Banana'
         )
-        //assert.equal(
-        //  mangoInfo[1].toNumber(),
-        //  voteTwo[3],
-        //  'The correct amount of support should be logged for Mango'
-        //)
       })
 
-      it('holder can add candidates', async () => {
-        //console.log(accounts[5], accounts[6],'all accounts:', accounts)
-        //console.log(apple,orange,banana)
-        mango = accounts[5]
-        await app.addCandidate(voteId, '0xbeefdead', mango)
-        candidates.push(mango)
-        //console.log(await app.getCandidateLength(voteId))
-        candidateState = await app.getCandidate(
-          voteId, 
-          candidates.indexOf(mango)
-        )
-        assert.equal(
-          candidateState[0],
-          mango,
-          'Candidate should have been added'
-        )
-        assert.equal(
-          candidateState[1].toNumber(),
-          0,
-          'Support should start at 0'
-        )
-        //await app.addCandidate(voteId, '0x', accounts[8])
-        //await app.addCandidate(voteId, '0x', accounts[9])
-      })
-
-      xit('token transfers dont affect RangeVoting', async () => {
-        let vote = [10, 9, 12,5]
+      it('token transfers dont affect RangeVoting', async () => {
+        let vote = [10, 9, 12]
         let voter = holder31
         await token.transfer(nonHolder, 31, { from: voter })
         await app.vote(voteId, vote, { from: voter })
@@ -511,20 +448,19 @@ contract('RangeVoting App', accounts => {
         )
       })
 
-      xit('cannot execute during open vote', async () => {
-        const voteState = await app.getVote(voteId)
+      it('cannot execute during open vote', async () => {
         const canExecute = await app.canExecute(voteId)
         assert.equal(canExecute, false, 'canExecute should be false')
       })
-      xit('can execute if vote has sufficient candidate support', async () => {
+      it('can execute if vote has sufficient candidate support', async () => {
         let voteOne = [4, 15, 0]
         let voteTwo = [20, 10, 1]
         let voteThree = [30, 15, 5]
         await app.vote(voteId, voteOne, { from: holder19 })
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
-        const voteState = await app.getVote(voteId)
-        timeTravel(RangeVotingTime + 1)
+        //const voteState = await app.getVote(voteId)
+        timeTravel(RangeVotingTime + 100)
         const canExecute = await app.canExecute(voteId)
 
         assert.equal(canExecute, true, 'canExecute should be true')
@@ -536,11 +472,11 @@ contract('RangeVoting App', accounts => {
         await app.vote(voteId, voteOne, { from: holder19 })
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
-        timeTravel(RangeVotingTime + 1)
+        timeTravel(RangeVotingTime + 100)
         const canExecute = await app.canExecute(voteId)
         assert.equal(canExecute, false, 'canExecute should be false')
       })
-      xit('can execute vote if minimum participation (quorum) has been met', async () => {
+      it('can execute vote if minimum participation (quorum) has been met', async () => {
         let voteOne = [10, 0, 0]
         let voteTwo = [0, 20, 0]
         let voteThree = [0, 0, 40]
@@ -549,7 +485,6 @@ contract('RangeVoting App', accounts => {
         await app.vote(voteId, voteThree, { from: holder50 })
         timeTravel(RangeVotingTime + 1)
         const canExecute = await app.canExecute(voteId)
-
         assert.equal(canExecute, true, 'canExecute should be true')
       })
       it('cannot execute vote if minimum participation (quorum) not met', async () => {
@@ -562,6 +497,28 @@ contract('RangeVoting App', accounts => {
         timeTravel(RangeVotingTime + 1)
         const canExecute = await app.canExecute(voteId)
         assert.equal(canExecute, false, 'canExecute should be false')
+      })
+      it('holder can add candidates', async () => {
+        //console.log(accounts[5], accounts[6],'all accounts:', accounts)
+        //console.log(apple,orange,banana)
+        mango = accounts[5]
+        await app.addCandidate(voteId, '0xbeefdead', mango)
+        candidates.push(mango)
+        //console.log(await app.getCandidateLength(voteId))
+        candidateState = await app.getCandidate(
+          voteId, 
+          candidates.indexOf(mango)
+        )
+        assert.equal(
+          candidateState[0],
+          mango,
+          'Candidate should have been added'
+        )
+        assert.equal(
+          candidateState[1].toNumber(),
+          0,
+          'Support should start at 0'
+        )
       })
     })
   })

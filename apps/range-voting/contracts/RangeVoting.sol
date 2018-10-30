@@ -316,7 +316,6 @@ contract RangeVoting is IForwarder, AragonApp {
          // vote ended?
         if (_isVoteOpen(vote))
           return false;
-         //does not pass tests
         bytes32[] storage cKeys = vote.candidateKeys;
         uint256 i = 0;
         for (i; i < cKeys.length; i++) {
