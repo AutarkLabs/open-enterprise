@@ -13,7 +13,7 @@ lerna info versioning independent
 @tpt/apps-range-voting v0.0.1
 ```
 
-- Planning-app is the base monorepo.
+- Planning-suite is the base monorepo.
 - Frontend packages were merged with individual aragon apps, it added complexity and was not needed.
 - Aragon/cli should be used to bump package versions with `aragon apm version` (more info in Aragon hack documentation). It needs to have a devhchain running.
 
