@@ -6,7 +6,7 @@
 $ lerna ls
 lerna info version 2.11.0
 lerna info versioning independent
-@tpt/planning-app      v0.0.1
+@tpt/planning-suite      v0.0.1
 @tpt/apps-address-book v0.0.1
 @tpt/apps-allocations   v0.0.1
 @tpt/apps-projects     v0.0.1

@@ -4,7 +4,7 @@
 
 Contributions to That Planning App include code, documentation, answering user questions, running the project's infrastructure, and advocating for all types of DAOs.
 
-This guide explains the process for contributing to the Planning App project's core `planning-app/apps` GitHub Repository and describes what to expect at each step.
+This guide explains the process for contributing to the Planning App project's core `planning-suite/apps` GitHub Repository and describes what to expect at each step.
 
 ## Contents
 

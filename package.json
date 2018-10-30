@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "planning-app-monorepo",
+  "name": "planning-suite-monorepo",
   "devDependencies": {
     "coveralls": "3.0.2",
     "lerna": "^3.4.3"
@@ -26,7 +26,7 @@
     "restart": "RESTART_KIT=true apps/shared/test-helpers/ganache-cli.sh",
     "start": "START_KIT=true apps/shared/test-helpers/ganache-cli.sh",
     "start:dev": "DEV=true apps/shared/test-helpers/ganache-cli.sh",
-    "start:kit": "cd apps/planning-app-kit && npm run start:kit",
+    "start:kit": "cd apps/planning-suite-kit && npm run start:kit",
     "start:address": "cd apps/address-book && npm start",
     "start:allocations": "cd apps/allocations && npm start",
     "start:projects": "cd apps/projects && npm start",

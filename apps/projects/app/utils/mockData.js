@@ -514,7 +514,7 @@ const savedRepos = {
         {
           node: {
             id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
-            name: 'planning-app',
+            name: 'planning-suite',
             description:
               'This repository holds all of the smart contracts and Aragon applications needed to create an aggregate Aragon application for the use of planning and asset distributions for a development team (or more generally any sort of coordinated decentralized work)',
             owner: {
@@ -608,8 +608,8 @@ const savedRepos = {
                     number: 1,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
-                      name: 'planning-app',
-                      nameWithOwner: 'Giveth/planning-app',
+                      name: 'planning-suite',
+                      nameWithOwner: 'Giveth/planning-suite',
                     },
                     milestone: null,
                     labels: {
@@ -628,8 +628,8 @@ const savedRepos = {
                     number: 2,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
-                      name: 'planning-app',
-                      nameWithOwner: 'Giveth/planning-app',
+                      name: 'planning-suite',
+                      nameWithOwner: 'Giveth/planning-suite',
                     },
                     milestone: null,
                     labels: {
@@ -659,8 +659,8 @@ const savedRepos = {
                     number: 3,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
-                      name: 'planning-app',
-                      nameWithOwner: 'Giveth/planning-app',
+                      name: 'planning-suite',
+                      nameWithOwner: 'Giveth/planning-suite',
                     },
                     milestone: {
                       id: 'MDk6TWlsZXN0b25lMzI5NDU4Mg==',
@@ -684,8 +684,8 @@ const savedRepos = {
                     number: 4,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
-                      name: 'planning-app',
-                      nameWithOwner: 'Giveth/planning-app',
+                      name: 'planning-suite',
+                      nameWithOwner: 'Giveth/planning-suite',
                     },
                     milestone: {
                       id: 'MDk6TWlsZXN0b25lMzM2NzU1MQ==',
@@ -720,8 +720,8 @@ const savedRepos = {
                     number: 5,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
-                      name: 'planning-app',
-                      nameWithOwner: 'Giveth/planning-app',
+                      name: 'planning-suite',
+                      nameWithOwner: 'Giveth/planning-suite',
                     },
                     milestone: null,
                     labels: {
@@ -741,8 +741,8 @@ const savedRepos = {
                     number: 6,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
-                      name: 'planning-app',
-                      nameWithOwner: 'Giveth/planning-app',
+                      name: 'planning-suite',
+                      nameWithOwner: 'Giveth/planning-suite',
                     },
                     milestone: null,
                     labels: {
@@ -762,8 +762,8 @@ const savedRepos = {
                     number: 7,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
-                      name: 'planning-app',
-                      nameWithOwner: 'Giveth/planning-app',
+                      name: 'planning-suite',
+                      nameWithOwner: 'Giveth/planning-suite',
                     },
                     milestone: {
                       id: 'MDk6TWlsZXN0b25lMzM2NzU1MQ==',
@@ -799,8 +799,8 @@ const savedRepos = {
                     number: 8,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
-                      name: 'planning-app',
-                      nameWithOwner: 'Giveth/planning-app',
+                      name: 'planning-suite',
+                      nameWithOwner: 'Giveth/planning-suite',
                     },
                     milestone: null,
                     labels: {
@@ -842,8 +842,8 @@ const savedRepos = {
                     number: 9,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
-                      name: 'planning-app',
-                      nameWithOwner: 'Giveth/planning-app',
+                      name: 'planning-suite',
+                      nameWithOwner: 'Giveth/planning-suite',
                     },
                     milestone: null,
                     labels: {
@@ -863,8 +863,8 @@ const savedRepos = {
                     number: 10,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
-                      name: 'planning-app',
-                      nameWithOwner: 'Giveth/planning-app',
+                      name: 'planning-suite',
+                      nameWithOwner: 'Giveth/planning-suite',
                     },
                     milestone: null,
                     labels: {
