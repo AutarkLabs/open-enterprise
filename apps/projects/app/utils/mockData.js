@@ -519,7 +519,7 @@ const savedRepos = {
               'This repository holds all of the smart contracts and Aragon applications needed to create an aggregate Aragon application for the use of planning and asset distributions for a development team (or more generally any sort of coordinated decentralized work)',
             owner: {
               id: 'MDEyOk9yZ2FuaXphdGlvbjIzNDc1NjQ1',
-              login: 'Giveth',
+              login: 'spacedecentral',
             },
             refs: {
               edges: [
@@ -609,7 +609,7 @@ const savedRepos = {
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
                       name: 'planning-suite',
-                      nameWithOwner: 'Giveth/planning-suite',
+                      nameWithOwner: 'spacedecentral/planning-suite',
                     },
                     milestone: null,
                     labels: {
@@ -629,7 +629,7 @@ const savedRepos = {
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
                       name: 'planning-suite',
-                      nameWithOwner: 'Giveth/planning-suite',
+                      nameWithOwner: 'spacedecentral/planning-suite',
                     },
                     milestone: null,
                     labels: {
@@ -660,7 +660,7 @@ const savedRepos = {
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
                       name: 'planning-suite',
-                      nameWithOwner: 'Giveth/planning-suite',
+                      nameWithOwner: 'spacedecentral/planning-suite',
                     },
                     milestone: {
                       id: 'MDk6TWlsZXN0b25lMzI5NDU4Mg==',
@@ -685,7 +685,7 @@ const savedRepos = {
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
                       name: 'planning-suite',
-                      nameWithOwner: 'Giveth/planning-suite',
+                      nameWithOwner: 'spacedecentral/planning-suite',
                     },
                     milestone: {
                       id: 'MDk6TWlsZXN0b25lMzM2NzU1MQ==',
@@ -721,7 +721,7 @@ const savedRepos = {
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
                       name: 'planning-suite',
-                      nameWithOwner: 'Giveth/planning-suite',
+                      nameWithOwner: 'spacedecentral/planning-suite',
                     },
                     milestone: null,
                     labels: {
@@ -742,7 +742,7 @@ const savedRepos = {
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
                       name: 'planning-suite',
-                      nameWithOwner: 'Giveth/planning-suite',
+                      nameWithOwner: 'spacedecentral/planning-suite',
                     },
                     milestone: null,
                     labels: {
@@ -763,7 +763,7 @@ const savedRepos = {
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
                       name: 'planning-suite',
-                      nameWithOwner: 'Giveth/planning-suite',
+                      nameWithOwner: 'spacedecentral/planning-suite',
                     },
                     milestone: {
                       id: 'MDk6TWlsZXN0b25lMzM2NzU1MQ==',
@@ -800,7 +800,7 @@ const savedRepos = {
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
                       name: 'planning-suite',
-                      nameWithOwner: 'Giveth/planning-suite',
+                      nameWithOwner: 'spacedecentral/planning-suite',
                     },
                     milestone: null,
                     labels: {
@@ -843,7 +843,7 @@ const savedRepos = {
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
                       name: 'planning-suite',
-                      nameWithOwner: 'Giveth/planning-suite',
+                      nameWithOwner: 'spacedecentral/planning-suite',
                     },
                     milestone: null,
                     labels: {
@@ -864,7 +864,7 @@ const savedRepos = {
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
                       name: 'planning-suite',
-                      nameWithOwner: 'Giveth/planning-suite',
+                      nameWithOwner: 'spacedecentral/planning-suite',
                     },
                     milestone: null,
                     labels: {
