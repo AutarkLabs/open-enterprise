@@ -183,7 +183,7 @@ contract RangeVoting is IForwarder, AragonApp {
     }
 
     /**
-    * @notice Execute the result of range vote #`_voteId`
+    * @notice Allows a token holder to cast a vote on the current options.
     * @param _voteId Id for vote
     */
     // function executeVote(uint256 _voteId) isInitialized external {

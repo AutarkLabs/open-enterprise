@@ -62,9 +62,13 @@ contract('RangeVoting App', accounts => {
       { from: root }
     )
 
+    // TODO: Revert to only use 2 params when truffle is updated
+    // read: https://github.com/Giveth/planning-app/pull/243
     const receipt = await dao.newAppInstance(
       '0x1234',
       (await RangeVoting.new()).address,
+      0x0,
+      false,
       { from: root }
     )
     app = RangeVoting.at(
@@ -312,8 +316,6 @@ contract('RangeVoting App', accounts => {
           'is token.totalSupply()'
         )
         assert.equal(voteState[6].toNumber(), 0, 'is totalParticipation')
-        // TODO: Fix metadata not passing
-        // assert.equal(voteState[7], 'metadata', 'is metadata')
         assert.equal(voteState[8], script, 'is script')
         assert.equal(voteState[9], false, 'is false')
       })
@@ -428,6 +430,7 @@ contract('RangeVoting App', accounts => {
       it('token transfers dont affect RangeVoting', async () => {
         let vote = [10, 9, 12]
         let voter = holder31
+
         await token.transfer(nonHolder, 31, { from: voter })
         await app.vote(voteId, vote, { from: voter })
         let holderVoteData1 = await app.getVoterState(voteId, voter)

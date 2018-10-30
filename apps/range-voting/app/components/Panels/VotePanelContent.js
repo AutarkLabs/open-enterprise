@@ -301,7 +301,7 @@ class VotePanelContent extends React.Component {
         {showResults &&
           options.map(option => (
             <ProgressBarThick
-              progress={safeDiv(option.value, totalSupport)}
+              progress={safeDiv(parseInt(option.value, 10), totalSupport)}
               label={option.label}
             />
           ))}

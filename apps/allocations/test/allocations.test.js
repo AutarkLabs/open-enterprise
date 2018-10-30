@@ -52,11 +52,16 @@ contract('Allocations App', accounts => {
       { from: root }
     )
 
+    // TODO: Revert to use regular function call when truffle gets updated
+    // read: https://github.com/Giveth/planning-app/pull/243
     let receipt = await dao.newAppInstance(
       '0x1234',
       (await Allocations.new()).address,
+      0x0,
+      false,
       { from: root }
     )
+
     app = Allocations.at(
       receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
     )
@@ -88,16 +93,7 @@ contract('Allocations App', accounts => {
     //   receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
     // )
 
-    receipt = await dao.newAppInstance(
-      '0x2345',
-      (await Allocations.new()).address,
-      { from: root }
-    )
-
-    allocation = Allocations.at(
-      receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
-    )
-    const test = await app.initialize({ from: accounts[0] })
+    await app.initialize({ from: accounts[0] })
   })
 
   context('app creation and funded Payout', () => {
@@ -118,7 +114,7 @@ contract('Allocations App', accounts => {
       var send = await web3.eth.sendTransaction({
         from: empire,
         to: app.address,
-        value: web3.toWei(0.01, 'ether'),
+        value: web3.toWei(0.1, 'ether'),
       })
       bobafettInitialBalance = await web3.eth.getBalance(bobafett)
       dengarInitialBalance = await web3.eth.getBalance(dengar)
@@ -133,13 +129,13 @@ contract('Allocations App', accounts => {
         0x0
       )).logs[0].args.accountId.toNumber()
 
-      supports = [500, 200, 300]
-      totalsupport = 1000
-
       await app.fund(allocationId, {
         from: empire,
         value: web3.toWei(0.01, 'ether'),
       })
+
+      supports = [500, 200, 300]
+      totalsupport = 1000
       await app.setDistribution(
         candidateAddresses,
         supports,
@@ -211,16 +207,16 @@ contract('Allocations App', accounts => {
         (web3.toWei(0.01, 'ether') * supports[0]) / totalsupport,
         'bounty hunter expense'
       )
-      // assert.equal(
-      //   dengarBalance.toNumber() - dengarInitialBalance.toNumber(),
-      //   (web3.toWei(0.01, 'ether') * supports[1]) / totalsupport,
-      //   'bounty hunter expense'
-      // )
-      // assert.equal(
-      //   bosskBalance.toNumber() - bosskInitialBalance.toNumber(),
-      //   (web3.toWei(0.01, 'ether') * supports[2]) / totalsupport,
-      //   'bounty hunter expense'
-      // )
+      assert.equal(
+        dengarBalance.toNumber() - dengarInitialBalance.toNumber(),
+        (web3.toWei(0.01, 'ether') * supports[1]) / totalsupport,
+        'bounty hunter expense'
+      )
+      assert.equal(
+        bosskBalance.toNumber() - bosskInitialBalance.toNumber(),
+        (web3.toWei(0.01, 'ether') * supports[2]) / totalsupport,
+        'bounty hunter expense'
+      )
     })
 
     it('cannot add to balance without passing equal msg.value', async () => {
@@ -405,7 +401,7 @@ contract('Allocations App', accounts => {
         )
       })
     })
-    // TODO: timetravel not working
+
     it('will not execute more frequently than the specified period', async () => {
       supports = [300, 400, 300]
       totalsupport = 1000

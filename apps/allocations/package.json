@@ -13,7 +13,8 @@
     "ganache-cli:test": "../shared/test-helpers/ganache-cli.sh",
     "lint": "solium --dir ./contracts",
     "prepublishOnly": "truffle compile --all",
-    "publish:http": "aragon apm publish --http localhost:2222 --http-served-from ./dist",
+    "publish:http": "npm run publish:http-copy-files && aragon apm publish --http localhost:2222 --http-served-from ./dist",
+    "publish:http-copy-files": "npm run build:script && mkdir -p dist/images && cp images/icon.svg dist/images/",
     "publish": "aragon apm publish",
     "start": "aragon run",
     "sync-assets": "copy-aragon-ui-assets ./dist",
@@ -22,7 +23,7 @@
   },
   "dependencies": {
     "@aragon/client": "1.0.0-beta.9",
-    "@aragon/ui": "ottodevs/aragon-ui#99fde0f",
+    "@aragon/ui": "ottodevs/aragon-ui#5b17efa",
     "bignumber.js": "^7.2.1",
     "prop-types": "15.6.2",
     "react": "16.5.1",

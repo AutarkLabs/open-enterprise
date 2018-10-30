@@ -1,8 +1,9 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import Aragon, { providers } from '@aragon/client'
-//import { allocationsMockData } from './utils/mockData'
 import App from './components/App/App'
+
+//import { allocationsMockData } from './utils/mockData'
 
 // if (process.env.NODE_ENV !== 'production') {
 //   const { whyDidYouUpdate } = require('why-did-you-update')
@@ -44,7 +45,6 @@ class ConnectedApp extends React.Component {
   }
   sendMessageToWrapper = (name, value) => {
     window.parent.postMessage({ from: 'app', name, value }, '*')
-    
   }
   render() {
     return <App {...this.state} />

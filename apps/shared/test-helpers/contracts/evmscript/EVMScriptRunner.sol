@@ -12,11 +12,20 @@ import "../kernel/KernelConstants.sol";
 import "../common/Initializable.sol";
 
 
-contract EVMScriptRunner is AppStorage, Initializable, EVMScriptRegistryConstants, KernelConstants {
+contract EVMScriptRunner is AppStorage, Initializable, EVMScriptRegistryConstants, KernelNamespaceConstants {
+    string private constant ERROR_EXECUTOR_UNAVAILABLE = "EVMRUN_EXECUTOR_UNAVAILABLE";
+    string private constant ERROR_EXECUTION_REVERTED = "EVMRUN_EXECUTION_REVERTED";
+    string private constant ERROR_PROTECTED_STATE_MODIFIED = "EVMRUN_PROTECTED_STATE_MODIFIED";
+
     event ScriptResult(address indexed executor, bytes script, bytes input, bytes returnData);
 
-    function getExecutor(bytes _script) public view returns (IEVMScriptExecutor) {
-        return IEVMScriptExecutor(getExecutorRegistry().getScriptExecutor(_script));
+    function getEVMScriptExecutor(bytes _script) public view returns (IEVMScriptExecutor) {
+        return IEVMScriptExecutor(getEVMScriptRegistry().getScriptExecutor(_script));
+    }
+
+    function getEVMScriptRegistry() public view returns (IEVMScriptRegistry) {
+        address registryAddr = kernel().getApp(KERNEL_APP_ADDR_NAMESPACE, EVMSCRIPT_REGISTRY_APP_ID);
+        return IEVMScriptRegistry(registryAddr);
     }
 
     function runScript(bytes _script, bytes _input, address[] _blacklist)
@@ -26,23 +35,18 @@ contract EVMScriptRunner is AppStorage, Initializable, EVMScriptRegistryConstant
         returns (bytes)
     {
         // TODO: Too much data flying around, maybe extracting spec id here is cheaper
-        IEVMScriptExecutor executor = getExecutor(_script);
-        require(address(executor) != address(0));
+        IEVMScriptExecutor executor = getEVMScriptExecutor(_script);
+        require(address(executor) != address(0), ERROR_EXECUTOR_UNAVAILABLE);
 
         bytes4 sig = executor.execScript.selector;
-
-        require(address(executor).delegatecall(abi.encodeWithSelector(sig, _script, _input, _blacklist)));
+        bytes memory data = abi.encodeWithSelector(sig, _script, _input, _blacklist);
+        require(address(executor).delegatecall(data), ERROR_EXECUTION_REVERTED);
 
         bytes memory output = returnedDataDecoded();
 
         emit ScriptResult(address(executor), _script, _input, output);
 
         return output;
-    }
-
-    function getExecutorRegistry() internal view returns (IEVMScriptRegistry) {
-        address registryAddr = kernel().getApp(APP_ADDR_NAMESPACE, EVMSCRIPT_REGISTRY_APP_ID);
-        return IEVMScriptRegistry(registryAddr);
     }
 
     /**
@@ -66,7 +70,7 @@ contract EVMScriptRunner is AppStorage, Initializable, EVMScriptRegistryConstant
         address preKernel = address(kernel());
         bytes32 preAppId = appId();
         _; // exec
-        require(address(kernel()) == preKernel);
-        require(appId() == preAppId);
+        require(address(kernel()) == preKernel, ERROR_PROTECTED_STATE_MODIFIED);
+        require(appId() == preAppId, ERROR_PROTECTED_STATE_MODIFIED);
     }
 }

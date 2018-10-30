@@ -28,7 +28,7 @@ class Launch extends React.Component {
     if (active && !this.state.active) {
       this.state.active = true
       app.initialize(
-        "0xffffffffffffffffffffffffffffffffffffffff",
+        '0xffffffffffffffffffffffffffffffffffffffff',
         configurationData.supportNeeded * 10**16,
         configurationData.minAcceptanceQuorum * 10**16,
         configurationData.voteDuration * 60 * 60,
@@ -41,8 +41,8 @@ class Launch extends React.Component {
               description: 'Allocate our monthly reward DAO accross four circles: Governance, Dapp, Social Coding, and Comms',
               address: '0x45f3...5567',
               stats: [
-                  {label: 'BALANCE', value: '10 ETH' },
-                  {label: 'BUDGET', value: '5 ETH / Month'}
+                {label: 'BALANCE', value: '10 ETH' },
+                {label: 'BUDGET', value: '5 ETH / Month'}
               ]
             })
           } else {
