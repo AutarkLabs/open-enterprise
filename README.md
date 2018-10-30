@@ -39,7 +39,7 @@ $ npm run start:range
 - Start the dao kit to manage smart contracts interactions between all "planning apps" and aragon official apps (token manager and voting right now)
 - The start script spawns a local blockchain, needed to publish the apps before deploying the dao kit template with all them.
 
-**Detailed information in the [DEVELOPMENT_NOTES.md](https://github.com/Giveth/planning-app/blob/dev/docs/DEVELOPMENT_NOTES.md) document.**
+**Detailed information in the [DEVELOPMENT_NOTES.md](https://github.com/spacedecentral/planning-suite/blob/dev/docs/DEVELOPMENT_NOTES.md) document.**
 
 ## Background
 

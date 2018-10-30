@@ -53,7 +53,7 @@ contract('Allocations App', accounts => {
     )
 
     // TODO: Revert to use regular function call when truffle gets updated
-    // read: https://github.com/Giveth/planning-app/pull/243
+    // read: https://github.com/spacedecentral/planning-suite/pull/243
     let receipt = await dao.newAppInstance(
       '0x1234',
       (await Allocations.new()).address,

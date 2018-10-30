@@ -114,4 +114,4 @@ So only one slash at the end, otherwise ipfs will probably fail reading asset pa
 
 #### Additional info
 
-- The old deployment code that seemed to do the kit and aragon apps deployments with javascript was replaced by the handy Kit smart contract, but here is kept for historical purposes: [**bare/migrations/2_deploy.js**](https://github.com/Giveth/planning-app/blob/bfb0900b6c15d91bc1d0d9967c6f5c46c3b9dd27/wip-apps/bare/migrations/2_deploy.js)
+- The old deployment code that seemed to do the kit and aragon apps deployments with javascript was replaced by the handy Kit smart contract, but here is kept for historical purposes: [**bare/migrations/2_deploy.js**](https://github.com/spacedecentral/planning-suite/blob/bfb0900b6c15d91bc1d0d9967c6f5c46c3b9dd27/wip-apps/bare/migrations/2_deploy.js)

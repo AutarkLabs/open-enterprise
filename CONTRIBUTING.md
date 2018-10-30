@@ -26,7 +26,7 @@ that *all* contributors are expected to follow. This code describes the
 For bug related issues, there are fundamentally three ways an individual can
 contribute:
 
-1. **Symptoms** - If you believe that you have uncovered a bug, open a [new issue](https://github.com/Giveth/planning-app/issues/new) labeled `bug`. Title the issue after the error message, or your best description of the *symptoms* you've encountered, and provide detailed steps, with any additional context, for attempting to replicate the issue.
+1. **Symptoms** - If you believe that you have uncovered a bug, open a [new issue](https://github.com/spacedecentral/planning-suite/issues/new) labeled `bug`. Title the issue after the error message, or your best description of the *symptoms* you've encountered, and provide detailed steps, with any additional context, for attempting to replicate the issue.
 2. **Diagnosis** Provide a hypothesis as to what could be causing an issue, by commenting on the issue and suggesting procedures for testing that hypothesis.
 3. **Treatment** - Provide suggestions on how to triage an issue.
 
