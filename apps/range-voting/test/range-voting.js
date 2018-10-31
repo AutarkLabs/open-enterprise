@@ -62,11 +62,16 @@ contract('RangeVoting App', accounts => {
       { from: root }
     )
 
-    const receipt = await dao.newAppInstance(
+    // TODO: Revert to use regular function call when truffle gets updated
+    // read: https://github.com/Giveth/planning-app/pull/243
+    let receipt = await dao.newAppInstance(
       '0x1234',
       (await RangeVoting.new()).address,
+      0x0,
+      false,
       { from: root }
     )
+
     app = RangeVoting.at(
       receipt.logs.filter(l => l.event === 'NewAppProxy')[0].args.proxy
     )
