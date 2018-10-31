@@ -39,6 +39,7 @@ const INITIAL_STATE = {
   payoutToken: '',
   payoutTokenIndex: 0,
   amount: null,
+  allocationError: false 
 }
 
 class NewAllocation extends React.Component {
@@ -68,6 +69,7 @@ class NewAllocation extends React.Component {
 
   submitAllocation = () => {
     // clear input here.
+
     let informational = (this.state.allocationTypeIndex === 0)
     let recurring = !informational && this.state.payoutTypeIndex != 0
     // TODO: period should be smarter: now the only option is monthly
@@ -81,8 +83,13 @@ class NewAllocation extends React.Component {
       period: period,
       balance: this.state.amount,
     }
-
+    console.log(allocation.balance, this.props.limit, !informational)
+    if (allocation.balance > this.props.limit && !informational) {
+      this.state.allocationError = true;
+      return;
+    }
     this.props.onSubmitAllocation(allocation)
+    this.state.allocationError = false;    
     this.setState(INITIAL_STATE)
     console.info('New Allocation: submitting...')
     console.table(this.props)
@@ -188,8 +195,13 @@ class NewAllocation extends React.Component {
             />
           }
         />
+        {this.state.allocationError && (
+          <Info title="Error">
+            Amount must be less than limit.
+          </Info>
+        )} 
       </Form>
-    )
+   )
   }
 }
 
