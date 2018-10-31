@@ -1,21 +1,21 @@
 pragma solidity ^0.4.24;
 
-import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
+import "@tps/test-helpers/contracts/apps/AragonApp.sol";
 
-import "@tpt/test-helpers/contracts/lib/minime/MiniMeToken.sol";
+import "@tps/test-helpers/contracts/lib/minime/MiniMeToken.sol";
 
-import "@tpt/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
+import "@tps/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
 
-import "@tpt/test-helpers/contracts/lib/zeppelin/math/SafeMath64.sol";
+import "@tps/test-helpers/contracts/lib/zeppelin/math/SafeMath64.sol";
 
-import "@tpt/test-helpers/contracts/evmscript/ScriptHelpers.sol";
+import "@tps/test-helpers/contracts/evmscript/ScriptHelpers.sol";
 
 
-import "@tpt/test-helpers/contracts/common/IForwarder.sol";
+import "@tps/test-helpers/contracts/common/IForwarder.sol";
 
-import "@tpt/test-helpers/contracts/lib/misc/Migrations.sol";
+import "@tps/test-helpers/contracts/lib/misc/Migrations.sol";
 
-// import "@tpt/test-helpers/contracts/common/IForwarder.sol";
+// import "@tps/test-helpers/contracts/common/IForwarder.sol";
 /* Temp hack to pass coverage until further research */
 // interface IForwarderFixed {
 //     function isForwarder() external returns (bool);

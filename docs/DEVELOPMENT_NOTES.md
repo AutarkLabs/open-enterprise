@@ -6,11 +6,11 @@
 $ lerna ls
 lerna info version 2.11.0
 lerna info versioning independent
-@tpt/planning-suite      v0.0.1
-@tpt/apps-address-book v0.0.1
-@tpt/apps-allocations   v0.0.1
-@tpt/apps-projects     v0.0.1
-@tpt/apps-range-voting v0.0.1
+@tps/planning-suite      v0.0.1
+@tps/apps-address-book v0.0.1
+@tps/apps-allocations   v0.0.1
+@tps/apps-projects     v0.0.1
+@tps/apps-range-voting v0.0.1
 ```
 
 - Planning-suite is the base monorepo.

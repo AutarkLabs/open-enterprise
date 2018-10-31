@@ -4,12 +4,12 @@ const {
   DAOFactory,
   EVMScriptRegistryFactory,
   Kernel,
-} = require('@tpt/test-helpers/artifacts')
+} = require('@tps/test-helpers/artifacts')
 
 const Allocations = artifacts.require('Allocations')
 
-const { assertRevert } = require('@tpt/test-helpers/assertThrow')
-const timetravel = require('@tpt/test-helpers/timeTravel')(web3)
+const { assertRevert } = require('@tps/test-helpers/assertThrow')
+const timetravel = require('@tps/test-helpers/timeTravel')(web3)
 
 // TODO: Fix Vault not loading artifacts error
 // const Vault = artifacts.require('@aragon/apps-vault/contracts/Vault')

@@ -4,14 +4,14 @@ const {
   EVMScriptRegistryFactory,
   Kernel,
   MiniMeToken
-} = require('@tpt/test-helpers/artifacts')
+} = require('@tps/test-helpers/artifacts')
 
 const RangeVoting = artifacts.require('RangeVotingMock')
 const ExecutionTarget = artifacts.require('ExecutionTarget')
 
-const { assertRevert } = require('@tpt/test-helpers/assertThrow')
-const { encodeCallScript } = require('@tpt/test-helpers/evmScript')
-const timeTravel = require('@tpt/test-helpers/timeTravel')(web3)
+const { assertRevert } = require('@tps/test-helpers/assertThrow')
+const { encodeCallScript } = require('@tps/test-helpers/evmScript')
+const timeTravel = require('@tps/test-helpers/timeTravel')(web3)
 
 const pct16 = x =>
   new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))

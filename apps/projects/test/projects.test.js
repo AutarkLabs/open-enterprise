@@ -4,11 +4,11 @@ const {
   DAOFactory,
   EVMScriptRegistryFactory,
   Kernel,
-} = require('@tpt/test-helpers/artifacts')
+} = require('@tps/test-helpers/artifacts')
 
 const Projects = artifacts.require('Projects')
 
-const { assertRevert } = require('@tpt/test-helpers/assertThrow')
+const { assertRevert } = require('@tps/test-helpers/assertThrow')
 
 contract('Projects App', accounts => {
   let daoFact,
