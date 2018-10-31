@@ -113,110 +113,120 @@ class NewAllocation extends React.Component {
 
   render() {
     return (
-      <Form
-        // heading={this.props.heading}
-        subHeading={this.props.subHeading}
-        onSubmit={this.submitAllocation}
-        description={this.props.description}
-        submitText="Submit Allocation"
-      >
-        {this.state.allocationTypeIndex == 1 && (
-          <Info.Action title="Warning">
-            This will create a Range Vote and after it closes, it will result in
-            a financial transfer.
-          </Info.Action>
-        )}
-        <FormField
-          required
-          label="Description"
-          input={
-            <DescriptionInput
-              name="description"
-              onChange={this.changeField}
-              placeholder="Describe your allocation."
-              value={this.state.description}
-            />
-          }
-        />
-        <FormField
-          required
-          separator
-          label="Allocation type"
-          input={
-            <DropDown
-              active={this.state.allocationTypeIndex}
-              items={ALLOCATION_TYPES}
-              name="allocationType"
-              onChange={this.changeAllocationType}
-            />
-          }
-        />
-        {this.state.allocationTypeIndex == 1 && (
+      <div>
+        <Form
+          // heading={this.props.heading}
+          subHeading={this.props.subHeading}
+          onSubmit={this.submitAllocation}
+          description={this.props.description}
+          submitText="Submit Allocation"
+        >
+          {this.state.allocationTypeIndex == 1 && (
+            <Info.Action title="Warning">
+              This will create a Range Vote and after it closes, it will result in
+              a financial transfer.
+            </Info.Action>
+          )}
+          <FormField
+            required
+            label="Description"
+            input={
+              <DescriptionInput
+                name="description"
+                onChange={this.changeField}
+                placeholder="Describe your allocation."
+                value={this.state.description}
+              />
+            }
+          />
           <FormField
             required
             separator
-            label="Amount"
+            label="Allocation type"
             input={
-              <div style={{ display: 'flex', width: '375px' }}>
-                <InputDropDown
-                  wide
-                  textInput={{
-                    name: 'amount',
-                    value: this.state.amount,
-                    onChange: this.changeField,
-                    type: 'number',
-                    min: '0',
-                  }}
-                  dropDown={{
-                    name: 'token',
-                    items: AVAILABLE_TOKENS,
-                    active: this.state.payoutTokenIndex,
-                    onChange: this.changePayoutToken,
-                  }}
-                />
-                <RecurringDropDown
-                  dropDown={{
-                    name: 'payoutType',
-                    items: PAYOUT_TYPES,
-                    active: this.state.payoutTypeIndex,
-                    onChange: this.changePayoutType,
-                  }}
-                />
-              </div>
+              <DropDown
+                active={this.state.allocationTypeIndex}
+                items={ALLOCATION_TYPES}
+                name="allocationType"
+                onChange={this.changeAllocationType}
+              />
             }
           />
-        )}
-        <FormField
-          separator
-          label="Options"
-          input={
-            <OptionsInput
-              name="options"
-              placeholder="Enter an option"
-              onChange={this.changeField}
-              value={this.state.options}
-              input={this.state.optionsInput}
-              validator={this.isAddress}
+          {this.state.allocationTypeIndex == 1 && (
+            <FormField
+              required
+              separator
+              label="Amount"
+              input={
+                <div style={{ display: 'flex', width: '375px' }}>
+                  <InputDropDown
+                    wide
+                    textInput={{
+                      name: 'amount',
+                      value: this.state.amount,
+                      onChange: this.changeField,
+                      type: 'number',
+                      min: '0',
+                    }}
+                    dropDown={{
+                      name: 'token',
+                      items: AVAILABLE_TOKENS,
+                      active: this.state.payoutTokenIndex,
+                      onChange: this.changePayoutToken,
+                    }}
+                  />
+                  <RecurringDropDown
+                    dropDown={{
+                      name: 'payoutType',
+                      items: PAYOUT_TYPES,
+                      active: this.state.payoutTypeIndex,
+                      onChange: this.changePayoutType,
+                    }}
+                  />
+                </div>
+              }
             />
-          }
-        />
-        <FormField
-          label="Settings"
-          input={
-            <SettingsInput
-              name="options"
-              placeholder="Enter an option"
-              onChange={this.changeField}
-              value={this.state.settings}
-            />
-          }
-        />
+          )}
+          <FormField
+            separator
+            label="Options"
+            input={
+              <OptionsInput
+                name="options"
+                placeholder="Enter an option"
+                onChange={this.changeField}
+                value={this.state.options}
+                input={this.state.optionsInput}
+                validator={this.isAddress}
+                error={this.state.allocationError}
+              />
+            }
+          />
+          <FormField
+            label="Settings"
+            input={
+              <SettingsInput
+                name="options"
+                placeholder="Enter an option"
+                onChange={this.changeField}
+                value={this.state.settings}
+              />
+            }
+          />
+        </Form>
+        <Text>
         {this.state.allocationError && (
+            <Info title="Error">
+              Amount must be less than limit.
+            </Info>
+        )}
+        {this.state.addressError && (
           <Info title="Error">
-            Amount must be less than limit.
+            All options must be addresses and cannot be duplicates.
           </Info>
-        )} 
-      </Form>
+        )}
+        </Text>
+      </div>
    )
   }
 }

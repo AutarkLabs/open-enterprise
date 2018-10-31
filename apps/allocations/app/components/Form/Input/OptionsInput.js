@@ -19,6 +19,7 @@ class OptionsInput extends React.Component {
     value: PropTypes.array.isRequired,
     onChange: PropTypes.func.isRequired,
     validator: PropTypes.func,
+    error: PropTypes.bool
   }
 
   addOption = () => {
@@ -27,6 +28,7 @@ class OptionsInput extends React.Component {
     if (input && !value.includes(input) && this.props.validator(input)) {
       this.props.onChange({ target: { name, value: [...value, input] } })
       this.props.onChange({ target: { name: 'optionsInput', value: '' } })
+      this.props.error = true
       console.log('Option Added')
     } else {
       console.log('OptionsInput: The option is empty or already present')
