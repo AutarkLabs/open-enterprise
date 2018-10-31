@@ -18,12 +18,13 @@ class OptionsInput extends React.Component {
     name: PropTypes.string.isRequired,
     value: PropTypes.array.isRequired,
     onChange: PropTypes.func.isRequired,
+    validator: PropTypes.func,
   }
 
   addOption = () => {
     // TODO: Implement some rules about what an 'Option can be' duplicates, etc
     const { input, name, value } = this.props
-    if (input && !value.includes(input)) {
+    if (input && !value.includes(input) && this.props.validator(input)) {
       this.props.onChange({ target: { name, value: [...value, input] } })
       this.props.onChange({ target: { name: 'optionsInput', value: '' } })
       console.log('Option Added')

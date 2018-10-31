@@ -67,6 +67,14 @@ class NewAllocation extends React.Component {
     this.setState({ payoutTypeIndex: index, payoutType: items[index] })
   }
 
+  // Should be using web3.isAddress probably but this is good enough for now
+  isAddress = (addr) => {
+    if(!/^(0x)?[0-9a-f]{40}$/i.test(addr)){
+      return false;
+    }
+    return true;
+  }
+
   submitAllocation = () => {
     // clear input here.
 
@@ -74,7 +82,15 @@ class NewAllocation extends React.Component {
     let recurring = !informational && this.state.payoutTypeIndex != 0
     // TODO: period should be smarter: now the only option is monthly
     let period = recurring ? 86400 * 31 : 0
-
+    let optionsInput = this.state.optionsInput
+    if(!(this.isAddress(optionsInput) || optionsInput==='')) {
+      console.log(optionsInput)
+      this.state.addressError = true
+      return
+    }
+    if(this.isAddress(optionsInput)) {
+      this.state.options.push(this.state.optionsInput)
+    }
     let allocation = {
       addresses: this.state.options,
       payoutId: this.props.id,
@@ -83,7 +99,6 @@ class NewAllocation extends React.Component {
       period: period,
       balance: this.state.amount,
     }
-    console.log(allocation.balance, this.props.limit, !informational)
     if (allocation.balance > this.props.limit && !informational) {
       this.state.allocationError = true;
       return;
@@ -181,6 +196,7 @@ class NewAllocation extends React.Component {
               onChange={this.changeField}
               value={this.state.options}
               input={this.state.optionsInput}
+              validator={this.isAddress}
             />
           }
         />
