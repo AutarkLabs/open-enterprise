@@ -72,7 +72,7 @@ contract RangeVoting is IForwarder, AragonApp {
         address creator;
         uint64 startDate;
         uint256 snapshotBlock;
-        uint256 candidateSupportPct; //minAcceptQuorumPct;
+        uint256 candidateSupportPct; //aka minAcceptQuorumPct;
         uint256 totalVoters;
         uint256 totalParticipation;
         uint256 externalId;
@@ -93,20 +93,13 @@ contract RangeVoting is IForwarder, AragonApp {
         bytes metadata;
         uint8 keyArrayIndex;
         uint256 voteSupport;
-        //string description;
     }
 
     Vote[] votes;
-    // Vote[] internal votes; // first index is 1
 
     event StartVote(uint256 indexed voteId);
-    event CastVote(
-        uint256 indexed voteId
-    );
-    event CastVote(uint256 indexed voteId, address indexed voter, bool supports, uint256 stake);
-    event UpdateCandidateSupport(string indexed candidateKey, uint256 support);
+    event CastVote(uint256 indexed voteId);
     event ExecuteVote(uint256 indexed voteId);
-    event ChangeCandidateSupport(uint256 candidateSupportPct);
     event ExecutionScript(bytes script, uint256 data);
     // Add hash info
     event ExternalContract(uint256 indexed voteId, address addr, uint256 externalId);
@@ -167,7 +160,6 @@ contract RangeVoting is IForwarder, AragonApp {
         external auth(CREATE_VOTES_ROLE) returns (uint256 voteId)
     {
         return _newVote(_executionScript, _metadata);
-        // return _newVote(_executionScript, _metadata, true);
     }
 
     /**
@@ -237,16 +229,6 @@ contract RangeVoting is IForwarder, AragonApp {
         voteSupport = candidate.voteSupport;
     }
 
-    /**
-    * @notice `getCandidate` serves as a basic getter using the key
-    *         to return the struct data.
-    * @param _key The bytes32 key used when adding the candidate.
-    */
-    function getCandidateDescription(bytes32 _key) // solium-disable-line function-order
-    external view returns(address)
-    {
-        return(candidateDescriptions[_key]);
-    }
 
 ///////////////////////
 // IForwarder functions
@@ -389,7 +371,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _voteId The ID of the Vote struct in the `votes` array.
     * @param _voter The voter whose weights will be returned
     */
-    function getVoterState(uint256 _voteId, address _voter) public view returns (uint256[]) { //VoterState) {
+    function getVoterState(uint256 _voteId, address _voter) public view returns (uint256[]) { 
         return votes[_voteId].voters[_voter];
     }
 
@@ -576,7 +558,7 @@ contract RangeVoting is IForwarder, AragonApp {
         // Seperate variable isn't used here to save storage space
         uint256 callDataLength = 32 * (2 * (candidateLength + 2)) + executionScript.uint256At(32) - 60;
         bytes memory callDataLengthMem = new bytes(32);
-        assembly {
+        assembly { // solium-disable-line security/no-inline-assembly
             mstore(add(callDataLengthMem, 32), callDataLength)
         }
         // script is callDataLength long plus 32 bytes for the "header" - function
@@ -588,7 +570,7 @@ contract RangeVoting is IForwarder, AragonApp {
         memcpyshort((script.getPtr() + 56), callDataLengthMem.getPtr() + 60, 4);
 
         // Add second dynamic element location as it may have changed
-        assembly {
+        assembly { // solium-disable-line security/no-inline-assembly
             mstore(add(script, 96), secondDynamicElementLocation)
         }
 
@@ -610,7 +592,7 @@ contract RangeVoting is IForwarder, AragonApp {
         for (uint256 i = 0; i < candidateLength; i++) {
             bytes32 canKey = votes[_voteId].candidateKeys[i];
             uint256 candidateData = uint256(candidateDescriptions[canKey]);
-            assembly {
+            assembly { // solium-disable-line security/no-inline-assembly
                 mstore(add(script, offset), candidateData)
             }
             offset += 32; 
@@ -646,7 +628,7 @@ contract RangeVoting is IForwarder, AragonApp {
         require(_len < 32, "_len should be less than 32");
         // Copy remaining bytes
         uint mask = 256 ** (32 - len) - 1;
-        assembly {
+        assembly { // solium-disable-line security/no-inline-assembly
             let srcpart := and(mload(src), not(mask))
             let destpart := and(mload(dest), mask)
             mstore(dest, or(destpart, srcpart))
