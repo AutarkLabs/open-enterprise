@@ -114,7 +114,6 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
 
     }
 
-
 /////////////////////////////
 // Payout Lifecycle functions
 /////////////////////////////

@@ -229,7 +229,6 @@ contract RangeVoting is IForwarder, AragonApp {
         voteSupport = candidate.voteSupport;
     }
 
-
 ///////////////////////
 // IForwarder functions
 ///////////////////////
