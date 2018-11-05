@@ -21,10 +21,6 @@ const createdVoteId = receipt =>
 const ANY_ADDR = '0xffffffffffffffffffffffffffffffffffffffff'
 const NULL_ADDRESS = '0x00'
 
-// const VOTER_STATE = ['ABSENT', 'YEA', 'NAY'].reduce((state, key, index) => {
-//   state[key] = index
-//   return state
-// }, {})
 
 contract('RangeVoting App', accounts => {
   let daoFact = {}

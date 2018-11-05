@@ -99,7 +99,7 @@ contract RangeVoting is IForwarder, AragonApp {
     Vote[] votes;
     // Vote[] internal votes; // first index is 1
 
-    event StartVote(uint256 voteId);
+    event StartVote(uint256 indexed voteId);
     event CastVote(
         uint256 indexed voteId
     );
