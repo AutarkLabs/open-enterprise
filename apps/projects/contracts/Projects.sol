@@ -2,13 +2,37 @@ pragma solidity ^0.4.24;
 
 import "@tps/test-helpers/contracts/apps/AragonApp.sol";
 
+interface Bounties {
+    function issueAndActivateBounty(
+        address _issuer,
+        uint _deadline,
+        string _data,
+        uint256 _fulfillmentAmount,
+        address _arbiter,
+        bool _paysTokens,
+        address _tokenContract,
+        uint256 _value
+    ) external payable;  
+
+    function fulfillBounty(
+        uint _bountyId, 
+        string _data
+    ) external;
+    
+    function acceptFulfillment(
+        uint _bountyId, 
+        uint _fulfillmentId
+    ) external;
+}
 
 contract Projects is AragonApp {
-    function initialize( // solium-disable-line blank-lines
-        //Vault _vault
-    ) external onlyInit // solium-disable-line visibility-first
+     // Address of the Standard Bounties Contract
+    address bounties;
+    function initialize(address _bountiesAddr)//, Vault _vault
+    external onlyInit // solium-disable-line visibility-first
     {
         //vault = _vault.ethConnectorBase();
+        bounties = _bountiesAddr; // Standard Bounties address
         initialized();
     }
 

@@ -4,6 +4,7 @@ const {
   DAOFactory,
   EVMScriptRegistryFactory,
   Kernel,
+  StandardBounties
 } = require('@tps/test-helpers/artifacts')
 
 const Projects = artifacts.require('Projects')
@@ -50,6 +51,9 @@ contract('Projects App', accounts => {
       { from: root }
     )
 
+    // Deploy test Bounties contract
+    bountiesBase = await StandardBounties.new(web3.toBigNumber(owner1))
+
     //Deploy Contract to be tested
     // TODO: Revert to use regular function call when truffle gets updated
     // read: https://github.com/spacedecentral/planning-suite/pull/243
@@ -89,11 +93,12 @@ contract('Projects App', accounts => {
       root,
       { from: root }
     )
-    await app.initialize({ from: accounts[0] })
+
+    await app.initialize(bountiesBase.address)
   })
 
-  context('creating and retrieving repos and bounties', function() {
-    it('creates a repo id entry', async function() {
+  context('creating and retrieving repos and bounties', function () {
+    it('creates a repo id entry', async function () {
       repoID = (await app.addRepo(
         'MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5',
         'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk='
@@ -105,7 +110,7 @@ contract('Projects App', accounts => {
       )
     })
 
-    it('retrieves repo information successfully', async function() {
+    it('retrieves repo information successfully', async function () {
       const owner1 = accounts[0]
       repoID = (await app.addRepo(
         'MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5',
@@ -122,7 +127,7 @@ contract('Projects App', accounts => {
       )
     })
 
-    it('accepts bounties for issues in an added repo', async function() {
+    it('accepts bounties for issues in an added repo', async function () {
       const bountyAdder = accounts[2]
       repoID = (await app.addRepo('abc', String(123))).logs.filter(
         x => x.event == 'RepoAdded'
@@ -135,8 +140,8 @@ contract('Projects App', accounts => {
     })
   })
 
-  context('invalid operations', function() {
-    it('cannot retrieve a removed Repo', async function() {
+  context('invalid operations', function () {
+    it('cannot retrieve a removed Repo', async function () {
       repoID = (await app.addRepo('abc', String(123))).logs.filter(
         x => x.event == 'RepoAdded'
       )[0].args.id
@@ -149,7 +154,7 @@ contract('Projects App', accounts => {
       )
     })
 
-    it('cannot add bounties to unregistered repos', function() {
+    it('cannot add bounties to unregistered repos', function () {
       assertRevert(async () => {
         await app.addBounties('0xdeadbeef', [1, 2, 3], [10, 20, 30], {
           from: bountyAdder,

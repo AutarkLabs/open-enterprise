@@ -4,6 +4,7 @@ import "@tps/test-helpers/contracts/factory/EVMScriptRegistryFactory.sol";
 import "@tps/test-helpers/contracts/factory/DAOFactory.sol";
 import "@tps/test-helpers/contracts/acl/ACL.sol";
 import "@tps/test-helpers/contracts/lib/minime/MiniMeToken.sol";
+import "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
 
 // You might think this file is a bit odd, but let me explain.
 // We only use the MiniMeToken contract in our tests, which
