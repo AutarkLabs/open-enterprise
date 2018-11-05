@@ -25,6 +25,7 @@ interface Bounties {
     ) external;
 }
 
+
 contract Projects is AragonApp {
      // Address of the Standard Bounties Contract
     address bounties;
