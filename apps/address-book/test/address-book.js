@@ -55,8 +55,11 @@ contract('AddressBook App', accounts => {
     const receipt = await dao.newAppInstance(
       '0x1234',
       (await AddressBook.new()).address,
+      0x0,
+      false,
       { from: root }
     )
+
     app = AddressBook.at(
       receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
     )
@@ -82,9 +85,9 @@ contract('AddressBook App', accounts => {
     let jeanluc = accounts[1]
     let borg = accounts[2]
 
-    before(async () => {})
+    before(async () => { })
 
-    beforeEach(async () => {})
+    beforeEach(async () => { })
 
     it('add to, get, and remove entry from addressbook', async () => {
       // TODO: Fix failing test
