@@ -32,7 +32,7 @@
   "devDependencies": {
     "@tpt/test-helpers": "^0.0.1",
     "babel-eslint": "9.0.0",
-    "babel-plugin-styled-components": "1.7.1",
+    "babel-plugin-styled-components": "1.5.1",
     "babel-plugin-transform-class-properties": "6.24.1",
     "babel-plugin-transform-runtime": "6.23.0",
     "babel-preset-env": "1.7.0",
