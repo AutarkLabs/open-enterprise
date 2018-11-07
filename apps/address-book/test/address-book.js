@@ -16,6 +16,9 @@ const Kernel = artifacts.require('@tpt/test-helpers/contracts/kernel/Kernel')
 
 const getContract = name => artifacts.require(name)
 
+const addedEntry = receipt =>
+  receipt.logs.filter(x => x.event === 'EntryAdded')[0].args.addr
+
 const ANY_ADDR = ' 0xffffffffffffffffffffffffffffffffffffffff'
 
 contract('AddressBook App', accounts => {
@@ -89,28 +92,44 @@ contract('AddressBook App', accounts => {
 
     beforeEach(async () => { })
 
-    it('add to, get, and remove entry from addressbook', async () => {
+    xit('add entry to addressbook', async () => {
+      const entry0 = addedEntry(
+        await app.add(starfleet, 'Starfleet', 'Group') // TODO: Error: VM Exception while processing transaction: revert
+      )
+      // assert.equal(entry0, '', 'A vote should be created with empty script')
+      // const entry1 = addedEntry(
+      //   // await app.add(jeanluc, 'Jean-Luc Picard', 'Individual', { from: starfleet })
+      // )
+      // // assert.equal(entry1, '', 'A vote should be created with empty script')
+      // const entry2 = addedEntry(
+      //   // await app.add(borg, 'Borg', 'N/A', { from: starfleet })
+      // )
+      // assert.equal(entry2, '', 'A vote should be created with empty script')
+    })
+
+    xit('get entry from addressbook', async () => {
       // TODO: Fix failing test
-      // app.add(starfleet, 'Starfleet', 'Group')
-      // app.add(jeanluc, 'Jean-Luc Picard', 'Individual')
-      // app.add(borg, 'Borg', 'N/A')
-      // entry1 = await app.get(starfleet)
-      // entry2 = await app.get(jeanluc)
-      // entry3 = await app.get(borg)
-      // assert.equal(entry1[0], starfleet)
-      // assert.equal(entry1[1], 'Starfleet')
-      // assert.equal(entry1[2], 'Group')
-      // assert.equal(entry2[0], jeanluc)
-      // assert.equal(entry2[1], 'Jean-Luc Picard')
-      // assert.equal(entry2[2], 'Individual')
-      // assert.equal(entry3[0], borg)
-      // assert.equal(entry3[1], 'Borg')
-      // assert.equal(entry3[2], 'N/A')
-      // app.remove(borg)
-      // entry3 = await app.get(borg)
-      // assert.notEqual(entry3[0], borg)
-      // assert.notEqual(entry3[1], 'Borg')
-      // assert.notEqual(entry3[2], 'N/A')
+      entry1 = await app.get(starfleet)
+      entry2 = await app.get(jeanluc)
+      entry3 = await app.get(borg)
+      assert.equal(entry1[0], starfleet)
+      assert.equal(entry1[1], 'Starfleet')
+      assert.equal(entry1[2], 'Group')
+      assert.equal(entry2[0], jeanluc)
+      assert.equal(entry2[1], 'Jean-Luc Picard')
+      assert.equal(entry2[2], 'Individual')
+      assert.equal(entry3[0], borg)
+      assert.equal(entry3[1], 'Borg')
+      assert.equal(entry3[2], 'N/A')
+    })
+
+    xit('remove entry from addressbook', async () => {
+      // TODO: Fix failing test
+      app.remove(borg)
+      entry3 = await app.get(borg)
+      assert.notEqual(entry3[0], borg)
+      assert.notEqual(entry3[1], 'Borg')
+      assert.notEqual(entry3[2], 'N/A')
     })
   })
 })
