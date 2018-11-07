@@ -1,6 +1,16 @@
 {
-  "appName": "address-book.aragonpm.eth",
-  "version": "0.0.1",
+  "environments": {
+    "default": {
+      "registry": "0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1",
+      "appName": "address-book.open.aragonpm.eth",
+      "network": "rpc"
+    },
+    "openrinkeby": {
+      "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
+      "appName": "address-book.open.aragonpm.eth",
+      "network": "rinkeby"
+    }
+  },
   "roles": [
     {
       "name": "Add entry",
