@@ -83,9 +83,10 @@ class NewAllocation extends React.Component {
     // TODO: period should be smarter: now the only option is monthly
     let period = recurring ? 86400 * 31 : 0
     let optionsInput = this.state.optionsInput
+    this.setState({addressError: this.state.addressError, allocationError: false})    
     if(!(this.isAddress(optionsInput) || optionsInput==='')) {
-      console.log(optionsInput)
-      this.state.addressError = true
+      this.setState({addressError: true})      
+      this.setState()      
       return
     }
     if(this.isAddress(optionsInput)) {
@@ -99,8 +100,8 @@ class NewAllocation extends React.Component {
       period: period,
       balance: this.state.amount,
     }
-    if (allocation.balance > this.props.limit && !informational) {
-      this.state.allocationError = true;
+    if ( (allocation.balance > this.props.limit) && !informational) {
+      this.setState({allocationError: true})
       return;
     }
     this.props.onSubmitAllocation(allocation)
@@ -198,7 +199,7 @@ class NewAllocation extends React.Component {
                 value={this.state.options}
                 input={this.state.optionsInput}
                 validator={this.isAddress}
-                error={this.state.allocationError}
+                error={this.state.addressError}
               />
             }
           />
@@ -214,18 +215,18 @@ class NewAllocation extends React.Component {
             }
           />
         </Form>
-        <Text>
-        {this.state.allocationError && (
+        <div>
+          {this.state.allocationError && (
+              <Info title="Error">
+                Amount must be less than limit.
+              </Info>
+          )}
+          {this.state.addressError && (
             <Info title="Error">
-              Amount must be less than limit.
+              All options must be addresses and cannot be duplicates.
             </Info>
-        )}
-        {this.state.addressError && (
-          <Info title="Error">
-            All options must be addresses and cannot be duplicates.
-          </Info>
-        )}
-        </Text>
+          )}
+        </div>
       </div>
    )
   }
