@@ -97,7 +97,7 @@ contract('AddressBook App', accounts => {
       // symptom: add() throws VM exception with auth(ADD_ENTRY_ROLE) uncommented
       // diagnosis: permissions for ADD_ENTRY_ROLE not being set correctly 
       const entry0 = addedEntry(
-        await app.add(starfleet, 'Starfleet', 'Group')
+        await app.add(starfleet, 'Starfleet', 'Group', { from: starfleet })
       )
       assert.equal(entry0, starfleet, 'An entry should be added')
       const entry1 = addedEntry(
@@ -107,23 +107,23 @@ contract('AddressBook App', accounts => {
       const entry2 = addedEntry(
         await app.add(borg, 'Borg', 'N/A', { from: starfleet })
       )
-      assert.equal(entry2, borg, 'An entry should be added')
     })
 
     xit('get entry from addressbook', async () => {
+      assert.equal(entry2, borg, 'An entry should be added')
+      entry0 = await app.get(starfleet)
+      entry1 = await app.get(jeanluc)
+      entry2 = await app.get(borg)
+      assert.equal(entry0[0], starfleet)
+      assert.equal(entry0[1], 'Starfleet')
+      assert.equal(entry0[2], 'Group')
+      assert.equal(entry1[0], jeanluc)
+      assert.equal(entry1[1], 'Jean-Luc Picard')
+      assert.equal(entry1[2], 'Individual')
+      assert.equal(entry2[0], borg)
+      assert.equal(entry2[1], 'Borg')
+      assert.equal(entry2[2], 'N/A')
       // TODO: Fix failing test
-      entry1 = await app.get(starfleet)
-      entry2 = await app.get(jeanluc)
-      entry3 = await app.get(borg)
-      assert.equal(entry1[0], starfleet)
-      assert.equal(entry1[1], 'Starfleet')
-      assert.equal(entry1[2], 'Group')
-      assert.equal(entry2[0], jeanluc)
-      assert.equal(entry2[1], 'Jean-Luc Picard')
-      assert.equal(entry2[2], 'Individual')
-      assert.equal(entry3[0], borg)
-      assert.equal(entry3[1], 'Borg')
-      assert.equal(entry3[2], 'N/A')
     })
 
     xit('remove entry from addressbook', async () => {
