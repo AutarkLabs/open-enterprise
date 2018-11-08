@@ -1,6 +1,6 @@
 {
   "appName": "allocations.aragonpm.eth",
-  "version": "0.0.1",
+  "version": "3.0.0",
   "roles": [
     {
       "name": "Initiate an allocations payout",
