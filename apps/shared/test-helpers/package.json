@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "description": "Helper scripts for Planning Suite",
   "devDependencies": {
-    "@aragon/cli": "5.2.0-beta.4",
+    "@aragon/cli": "5.2.0",
     "eth-gas-reporter": "0.1.10",
     "ethereumjs-abi": "0.6.5",
     "ganache-cli": "6.1.8",
