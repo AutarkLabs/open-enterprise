@@ -54,7 +54,7 @@ contract AddressBook is AragonApp {
         address _address,
         string _name,
         string _entryType
-    ) public auth(ADD_ENTRY_ROLE) returns (address) { // solium-disable-line lbrace
+    ) public auth(ADD_ENTRY_ROLE) { // solium-disable-line lbrace
         require(!nameUsed[keccak256(abi.encodePacked(_name))]); // solium-disable-line error-reason
 
         Entry storage entry = entries[_address];
@@ -63,7 +63,6 @@ contract AddressBook is AragonApp {
         entry.entryType = _entryType;
 
         emit EntryAdded(_address); // solium-disable-line emit
-        return _address;
     }
 
     /**

@@ -92,10 +92,14 @@ contract('AddressBook App', accounts => {
 
     beforeEach(async () => { })
 
-    xit('add entry to addressbook', async () => {
+    it('add entry to addressbook', async () => {
+      // TODO: debug ACL permissions
+      // symptom: add() throws VM exception with auth(ADD_ENTRY_ROLE) uncommented
+      // diagnosis: permissions for ADD_ENTRY_ROLE not being set correctly 
       const entry0 = addedEntry(
-        await app.add(starfleet, 'Starfleet', 'Group') // TODO: Error: VM Exception while processing transaction: revert
+        await app.add(starfleet, 'Starfleet', 'Group')
       )
+      console.log(entry0.toString(), starfleet.toString())
       // assert.equal(entry0, '', 'A vote should be created with empty script')
       // const entry1 = addedEntry(
       //   // await app.add(jeanluc, 'Jean-Luc Picard', 'Individual', { from: starfleet })
