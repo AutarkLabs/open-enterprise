@@ -99,16 +99,15 @@ contract('AddressBook App', accounts => {
       const entry0 = addedEntry(
         await app.add(starfleet, 'Starfleet', 'Group')
       )
-      console.log(entry0.toString(), starfleet.toString())
-      // assert.equal(entry0, '', 'A vote should be created with empty script')
-      // const entry1 = addedEntry(
-      //   // await app.add(jeanluc, 'Jean-Luc Picard', 'Individual', { from: starfleet })
-      // )
-      // // assert.equal(entry1, '', 'A vote should be created with empty script')
-      // const entry2 = addedEntry(
-      //   // await app.add(borg, 'Borg', 'N/A', { from: starfleet })
-      // )
-      // assert.equal(entry2, '', 'A vote should be created with empty script')
+      assert.equal(entry0, starfleet, 'An entry should be added')
+      const entry1 = addedEntry(
+        await app.add(jeanluc, 'Jean-Luc Picard', 'Individual', { from: starfleet })
+      )
+      assert.equal(entry1, jeanluc, 'An entry should be added')
+      const entry2 = addedEntry(
+        await app.add(borg, 'Borg', 'N/A', { from: starfleet })
+      )
+      assert.equal(entry2, borg, 'An entry should be added')
     })
 
     xit('get entry from addressbook', async () => {
