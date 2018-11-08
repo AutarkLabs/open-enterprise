@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import { BigNumber } from 'bignumber.js'
 
 import {
   Button,
@@ -98,7 +99,7 @@ class NewAllocation extends React.Component {
       informational: informational,
       recurring: recurring,
       period: period,
-      balance: this.state.amount,
+      balance: this.state.amount*10e17,
     }
     if ( (allocation.balance > this.props.limit) && !informational) {
       this.setState({allocationError: true})
