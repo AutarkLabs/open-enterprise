@@ -28,12 +28,12 @@ interface Bounties {
 
 contract Projects is AragonApp {
      // Address of the Standard Bounties Contract
-    address bounties;
+    Bounties bounties;
     function initialize(address _bountiesAddr)//, Vault _vault
     external onlyInit // solium-disable-line visibility-first
     {
         //vault = _vault.ethConnectorBase();
-        bounties = _bountiesAddr; // Standard Bounties address
+        bounties = Bounties(_bountiesAddr); // Standard Bounties instance
         initialized();
     }
 
