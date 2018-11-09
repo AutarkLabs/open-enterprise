@@ -71,7 +71,7 @@ contract AddressBook is AragonApp {
      */
     function remove(
         address _addr
-    ) public auth(REMOVE_ENTRY_ROLE) { // solium-disable-line lbrace
+    ) public /*auth(REMOVE_ENTRY_ROLE)*/ { // solium-disable-line lbrace
         nameUsed[keccak256(abi.encodePacked(entries[_addr].name))] = false;
         delete entries[_addr];
         emit EntryRemoved(_addr); // solium-disable-line emit
