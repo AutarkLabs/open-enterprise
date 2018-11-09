@@ -11,6 +11,9 @@ const Kernel = artifacts.require('@tps/test-helpers/contracts/kernel/Kernel')
 
 const getContract = name => artifacts.require(name)
 
+const removedEntry = receipt =>
+  receipt.logs.filter(x => x.event === 'EntryRemoved')[0].args.addr
+
 const ANY_ADDR = ' 0xffffffffffffffffffffffffffffffffffffffff'
 
 contract('AddressBook App', accounts => {
