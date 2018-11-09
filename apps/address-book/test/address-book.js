@@ -1,18 +1,17 @@
+/* global artifact, ... */
+const {
+  ACL,
+  DAOFactory,
+  EVMScriptRegistryFactory,
+  Kernel,
+} = require('@tpt/test-helpers/artifacts')
+
 const {
   encodeCallScript,
   EMPTY_SCRIPT,
 } = require('@tpt/test-helpers/evmScript')
 
 const AddressBook = artifacts.require('AddressBook')
-
-const DAOFactory = artifacts.require(
-  '@tpt/test-helpers/contracts/factory/DAOFactory'
-)
-const EVMScriptRegistryFactory = artifacts.require(
-  '@tpt/test-helpers/contracts/factory/EVMScriptRegistryFactory'
-)
-const ACL = artifacts.require('@tpt/test-helpers/contracts/acl/ACL')
-const Kernel = artifacts.require('@tpt/test-helpers/contracts/kernel/Kernel')
 
 const getContract = name => artifacts.require(name)
 
