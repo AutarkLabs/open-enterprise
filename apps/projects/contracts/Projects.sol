@@ -1,18 +1,23 @@
 pragma solidity ^0.4.24;
 
 import "@tps/test-helpers/contracts/apps/AragonApp.sol";
+import "@tps/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
 
 interface Bounties {
-    function issueAndActivateBounty(
+    function issueBounty(
         address _issuer,
         uint _deadline,
         string _data,
         uint256 _fulfillmentAmount,
         address _arbiter,
         bool _paysTokens,
-        address _tokenContract,
-        uint256 _value
-    ) external payable;  
+        address _tokenContract
+    ) external returns (uint);  
+
+    function activateBounty(
+        uint _bountyId, 
+        uint _value
+    ) external payable;
 
     function fulfillBounty(
         uint _bountyId, 
@@ -27,7 +32,7 @@ interface Bounties {
 
 
 contract Projects is AragonApp {
-     // Address of the Standard Bounties Contract
+    using SafeMath for uint256;
     Bounties bounties;
     function initialize(address _bountiesAddr)//, Vault _vault
     external onlyInit // solium-disable-line visibility-first
@@ -48,8 +53,7 @@ contract Projects is AragonApp {
         bytes32 repo;  // This is the internal repo identifier
         uint256 number; // May be redundant tracking this
         bool hasBounty;
-        uint256 bountySize;
-        address bountyWallet; // Not sure if we'll have a way to "retrieve" this value from status open bounties
+        uint standardBountyID; // Not sure if we'll have a way to "retrieve" this value from status open bounties
     }
 
     // The entries in the registry.
@@ -68,6 +72,7 @@ contract Projects is AragonApp {
     bytes32 public constant ADD_REPO_ROLE = keccak256("ADD_REPO_ROLE");
     bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
     bytes32 public constant ADD_BOUNTY_ROLE =  keccak256("ADD_BOUNTY_ROLE");
+    bytes32 public constant FULFILL_BOUNTY_ROLE = keccak256("FULFILL_BOUNTY_ROLE");
 
 
     /**
@@ -115,22 +120,58 @@ contract Projects is AragonApp {
         _repo = repos[_id].repo;
     }
 
-    function addBounties(bytes32 _repoID, uint256[] _issueNumbers, uint256[] _bountySizes) public  auth(ADD_BOUNTY_ROLE) {
-        for (uint i = 0; i < _issueNumbers.length; i++) {
-            _addBounty(_repoID, _issueNumbers[i], _bountySizes[i]);
+    function addBounties(
+        bytes32 _repoID, 
+        uint256[] _issueNumbers, 
+        uint256[] _bountySizes, 
+        uint256[] _deadlines,
+        uint256[] _fulfillmentAmounts,
+        bool[] _tokenBounties,
+        address[] _tokenContracts,
+        string _ipfsAddresses
+    ) public payable auth(ADD_BOUNTY_ROLE) {
+        // ensure the transvalue passed equals transaction value
+        checkTransValueEqualsMessageValue(msg.value, _bountySizes,_tokenBounties);
+        
+        string memory ipfsHash;
+        uint standardBountyID;
+        // submit the bounty to the StandardBounties contract
+        for (uint i = 0; i < _bountySizes.length; i++) {
+            ipfsHash = substring(_ipfsAddresses, i.mul(46), i.add(1).mul(46));
+            standardBountyID = bounties.issueBounty(
+                this,                           //    address _issuer
+                _deadlines[i],                  //    uint _deadline
+                ipfsHash,                       //     parse input to get ipfs hash
+                _fulfillmentAmounts[i],         //    uint256 _fulfillmentAmount
+                address(0),                     //    address _arbiter
+                _tokenBounties[i],              //    bool _paysTokens
+                _tokenContracts[i]             //    address _tokenContract
+            );
+            // Activate the bounty so it can be fulfilled
+            bounties.activateBounty.value(_bountySizes[i])(standardBountyID, _bountySizes[i]);
+
+            //Add bounty to local registry
+            _addBounty(
+                _repoID, 
+                _issueNumbers[i],
+                standardBountyID, 
+                _bountySizes[i]
+            );
         }
     }
 
     function _addBounty(
-        bytes32 _repoID, uint256 _issueNumber, uint256 _bountySize
+        bytes32 _repoID, 
+        uint256 _issueNumber,
+        uint _standardBountyID,
+        uint256 _bountySize
     ) internal 
     {
         repos[_repoID].issues[_issueNumber] = GithubIssue(
             _repoID,
             _issueNumber,
             true,
-            _bountySize,
-            address(0)
+            _standardBountyID
         );
         emit BountyAdded(
             repos[_repoID].owner,
@@ -138,5 +179,30 @@ contract Projects is AragonApp {
             _issueNumber,
             _bountySize
         );
+    }
+
+    function checkTransValueEqualsMessageValue(
+        uint256 _msgValue,
+        uint256[] _bountySizes,
+        bool[] _tokenBounties
+    ) internal pure {
+        uint256 transValueTotal = 0;
+        for (uint i = 0; i < _bountySizes.length; i++) {
+            if(!(_tokenBounties[i])) {
+                transValueTotal = transValueTotal.add(_bountySizes[i]);
+            }
+        }
+        require(_msgValue >= transValueTotal, "not enough ETH sent to cover bounties");
+    }
+
+    function substring(string str, uint startIndex, uint endIndex) internal pure returns (string) {
+        // first char is at location 0
+        //IPFS addresses span from 0 (startindex) to 46 (endIndex)
+        bytes memory strBytes = bytes(str);
+        bytes memory result = new bytes(endIndex-startIndex);
+        for(uint i = startIndex; i < endIndex; i++) {
+            result[i-startIndex] = strBytes[i];
+        }
+        return string(result);
     }
 }
