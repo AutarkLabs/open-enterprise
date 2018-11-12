@@ -175,8 +175,7 @@ contract('RangeVoting App', accounts => {
       const castedvoteId = castedVoteId(
         await app.vote(voteId, vote, { from: voter })
       )
-      // console.log(castedvoteId.toNumber()) //TODO: voteId returning as bigNumber. Why?
-      // assert.equal(castedvotedId, 1, 'A vote should have been casted')
+      assert.equal(castedvoteId, 1, 'A vote should have been casted')
     })
     it('execution scripts can execute actions', async () => {
       let action = {
