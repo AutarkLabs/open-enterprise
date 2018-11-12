@@ -114,8 +114,9 @@ contract PlanningKit is KitBase {
         // addressBook.initialize();
         projects.initialize();
         //tokenManager.initialize(token, true, 0);
-        //voting.initialize(token, 50 * PCT, 20 * PCT, 1 days);
-        rangeVoting.initialize(token, 50 * PCT, 20 * PCT, 1 minutes);
+        // At least 50% of the voting tokens must vote, there is no minimum
+        // candidate support, and the vote will last 1 minute for testing.
+        rangeVoting.initialize(token, 50 * PCT, 0, 1 minutes);
         
 
         // Allocations permissions:
