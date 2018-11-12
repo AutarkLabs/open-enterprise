@@ -18,6 +18,9 @@ const pct16 = x =>
 const createdVoteId = receipt =>
   receipt.logs.filter(x => x.event === 'StartVote')[0].args.voteId
 
+const castedVoteId = receipt =>
+  receipt.logs.filter(x => x.event === 'CastVote')[0].args.voteId
+
 const ANY_ADDR = '0xffffffffffffffffffffffffffffffffffffffff'
 const NULL_ADDRESS = '0x00'
 
@@ -152,6 +155,7 @@ contract('RangeVoting App', accounts => {
       const voteId = createdVoteId(
         await app.newVote(script, '', { from: holder50 })
       )
+      assert.equal(voteId, 1, 'A vote should be created with empty script')
     })
     it('can cast votes', async () => {
       let action = {
@@ -165,9 +169,14 @@ contract('RangeVoting App', accounts => {
       const voteId = createdVoteId(
         await app.newVote(script, '', { from: holder50 })
       )
+      assert.equal(voteId, 1, 'A vote should be created with empty script')
       let vote = [10, 15, 25]
       let voter = holder50
-      await app.vote(voteId, vote, { from: voter })
+      const castedvoteId = castedVoteId(
+        await app.vote(voteId, vote, { from: voter })
+      )
+      // console.log(castedvoteId.toNumber()) //TODO: voteId returning as bigNumber. Why?
+      // assert.equal(castedvotedId, 1, 'A vote should have been casted')
     })
     it('execution scripts can execute actions', async () => {
       let action = {
@@ -240,13 +249,13 @@ contract('RangeVoting App', accounts => {
       assert.equal(voteId, 1, 'RangeVoting should have been created')
     })
 
-    xit('can change minimum candidate support', async () => {})
+    xit('can change minimum candidate support', async () => { })
 
     context('creating vote with normal distributions', () => {
       let voteId = {}
       let script = ''
       let candidateState
-      let [, , ...candidates] = accounts.slice(0,5)
+      let [, , ...candidates] = accounts.slice(0, 5)
       let [apple, orange, banana] = candidates
 
       beforeEach(async () => {
@@ -374,7 +383,7 @@ contract('RangeVoting App', accounts => {
 
       it('holder can modify vote', async () => {
         let voteTwo = [6, 5, 4]
-        
+
         let voter = holder31
 
         await app.vote(voteId, voteTwo, { from: voter })
@@ -504,7 +513,7 @@ contract('RangeVoting App', accounts => {
         await app.addCandidate(voteId, '0xbeefdead', mango)
         candidates.push(mango)
         candidateState = await app.getCandidate(
-          voteId, 
+          voteId,
           candidates.indexOf(mango)
         )
         assert.equal(
@@ -565,7 +574,7 @@ contract('RangeVoting App', accounts => {
       })
     })
   })
-  
+
   context('before init', () => {
     it('fails creating a vote before initialization', async () => {
       return assertRevert(async () => {
