@@ -68,6 +68,7 @@ contract Projects is AragonApp {
     event RepoRemoved(bytes32 id);
     // Fired when a bounty is added to a repo
     event BountyAdded(bytes32 owner, bytes32 repo, uint256 issueNumber, uint256 bountySize);
+    event FulfillmentAccepted(bytes32 repo, uint256 issueNumber, uint fulfillmentID);
 
     bytes32 public constant ADD_REPO_ROLE = keccak256("ADD_REPO_ROLE");
     bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
@@ -179,6 +180,28 @@ contract Projects is AragonApp {
             _issueNumber,
             _bountySize
         );
+    }
+
+    function fulfillBounty(uint _standardBountyId, string _data) external {
+        bounties.fulfillBounty(_standardBountyId, _data);
+    }
+
+    function acceptFulfillment(
+        bytes32 _repoID,
+        uint256 _issueNumber, 
+        uint _bountyFulfillmentID
+    ) external auth(ADD_BOUNTY_ROLE) {
+        GithubIssue storage issue = repos[_repoID].issues[_issueNumber];
+        bounties.acceptFulfillment(issue.standardBountyID, _bountyFulfillmentID);
+        emit FulfillmentAccepted(_repoID, _issueNumber, _bountyFulfillmentID);
+    }
+
+    function getIssue(bytes32 _repoID, uint256 _issueNumber) external view 
+    returns(bool hasBounty, uint standardBountyID)
+    {
+        GithubIssue storage issue = repos[_repoID].issues[_issueNumber];
+        hasBounty = issue.hasBounty;
+        standardBountyID = issue.standardBountyID;
     }
 
     function checkTransValueEqualsMessageValue(
