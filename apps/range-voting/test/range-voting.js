@@ -526,6 +526,22 @@ contract('RangeVoting App', accounts => {
           'Support should start at 0'
         )
       })
+      it('holder can get total number of candidates', async () => {
+        const totalcandidates = await app.getCandidateLength(voteId)
+        assert.equal(
+          totalcandidates,
+          4,
+          'THERE ARE FOUR CANDIDATES!'
+        )
+      })
+      it('holder can get vote metadata', async () => {
+        const metadata = await app.getVoteMetadata(voteId)
+        assert.equal(
+          metadata,
+          'metadata',
+          'Vote has metadata'
+        )
+      })
     })
   })
   context('wrong initializations', () => {
