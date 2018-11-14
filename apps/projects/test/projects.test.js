@@ -154,6 +154,7 @@ contract('Projects App', accounts => {
     })
 
     //TODO Add tests for other bounty functions (fulfillBounty, AcceptFulfillment)
+    //TODO topocount to test minimum bound of bounties that can be accepted
   })
 
   context('invalid operations', function () {
