@@ -474,6 +474,17 @@ contract('RangeVoting App', accounts => {
 
         assert.equal(canExecute, true, 'canExecute should be true')
       })
+      it('cannot execute if vote has 0 candidate support', async () => {
+        let voteOne = [0, 0, 0]
+        let voteTwo = [0, 0, 0]
+        let voteThree = [0, 0, 0]
+        await app.vote(voteId, voteOne, { from: holder19 })
+        await app.vote(voteId, voteTwo, { from: holder31 })
+        await app.vote(voteId, voteThree, { from: holder50 })
+        timeTravel(RangeVotingTime + 100)
+        const canExecute = await app.canExecute(voteId)
+        assert.equal(canExecute, false, 'canExecute should be false')
+      })
       it('cannot execute if vote has insufficient candidate support', async () => {
         let voteOne = [2, 17, 0]
         let voteTwo = [18, 12, 1]
