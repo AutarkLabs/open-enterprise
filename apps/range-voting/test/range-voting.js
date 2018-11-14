@@ -321,8 +321,8 @@ contract('RangeVoting App', accounts => {
           'is token.totalSupply()'
         )
         assert.equal(voteState[6].toNumber(), 0, 'is totalParticipation')
-        // TODO: Fix metadata not passing
-        // assert.equal(voteState[7], 'metadata', 'is metadata')
+        // TODO: externalId returning as 3. Need sanity check to ensure if this s/b the case.
+        assert.equal(voteState[7].toNumber(), 3, 'is externalId')
         assert.equal(voteState[8], script, 'is script')
         assert.equal(voteState[9], false, 'is false')
       })
