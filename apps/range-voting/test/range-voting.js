@@ -461,6 +461,19 @@ contract('RangeVoting App', accounts => {
         const canExecute = await app.canExecute(voteId)
         assert.equal(canExecute, false, 'canExecute should be false')
       })
+      it('cannot execute if vote instance executed', async () => {
+        let voteOne = [4, 15, 0]
+        let voteTwo = [20, 10, 1]
+        let voteThree = [30, 15, 5]
+        await app.vote(voteId, voteOne, { from: holder19 })
+        await app.vote(voteId, voteTwo, { from: holder31 })
+        await app.vote(voteId, voteThree, { from: holder50 })
+        timeTravel(RangeVotingTime + 1)
+        await app.executeVote(voteId)
+        const canExecute = await app.canExecute(voteId)
+
+        assert.equal(canExecute, false, 'canExecute should be false')
+      })
       it('can execute if vote has sufficient candidate support', async () => {
         let voteOne = [4, 15, 0]
         let voteTwo = [20, 10, 1]
@@ -468,8 +481,7 @@ contract('RangeVoting App', accounts => {
         await app.vote(voteId, voteOne, { from: holder19 })
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
-        //const voteState = await app.getVote(voteId)
-        timeTravel(RangeVotingTime + 100)
+        timeTravel(RangeVotingTime + 1)
         const canExecute = await app.canExecute(voteId)
 
         assert.equal(canExecute, true, 'canExecute should be true')
@@ -481,7 +493,7 @@ contract('RangeVoting App', accounts => {
         await app.vote(voteId, voteOne, { from: holder19 })
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
-        timeTravel(RangeVotingTime + 100)
+        timeTravel(RangeVotingTime + 1)
         const canExecute = await app.canExecute(voteId)
         assert.equal(canExecute, false, 'canExecute should be false')
       })
@@ -492,7 +504,7 @@ contract('RangeVoting App', accounts => {
         await app.vote(voteId, voteOne, { from: holder19 })
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
-        timeTravel(RangeVotingTime + 100)
+        timeTravel(RangeVotingTime + 1)
         const canExecute = await app.canExecute(voteId)
         assert.equal(canExecute, false, 'canExecute should be false')
       })
