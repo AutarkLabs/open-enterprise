@@ -126,7 +126,6 @@ contract Projects is AragonApp {
         uint256[] _issueNumbers, 
         uint256[] _bountySizes, 
         uint256[] _deadlines,
-        uint256[] _fulfillmentAmounts,
         bool[] _tokenBounties,
         address[] _tokenContracts,
         string _ipfsAddresses
@@ -141,12 +140,12 @@ contract Projects is AragonApp {
             ipfsHash = substring(_ipfsAddresses, i.mul(46), i.add(1).mul(46));
             standardBountyID = bounties.issueBounty(
                 this,                           //    address _issuer
-                _deadlines[i],                  //    uint _deadline
+                _deadlines[i]+now,                  //    uint _deadline
                 ipfsHash,                       //     parse input to get ipfs hash
-                _fulfillmentAmounts[i],         //    uint256 _fulfillmentAmount
+                _bountySizes[i],         //    uint256 _fulfillmentAmount
                 address(0),                     //    address _arbiter
                 _tokenBounties[i],              //    bool _paysTokens
-                _tokenContracts[i]             //    address _tokenContract
+                address(_tokenContracts[i])             //    address _tokenContract
             );
             // Activate the bounty so it can be fulfilled
             bounties.activateBounty.value(_bountySizes[i])(standardBountyID, _bountySizes[i]);
@@ -215,7 +214,7 @@ contract Projects is AragonApp {
                 transValueTotal = transValueTotal.add(_bountySizes[i]);
             }
         }
-        require(_msgValue >= transValueTotal, "not enough ETH sent to cover bounties");
+        require(_msgValue == transValueTotal, "ETH sent to cover bounties does not match bounty total");
     }
 
     function substring(string str, uint startIndex, uint endIndex) internal pure returns (string) {

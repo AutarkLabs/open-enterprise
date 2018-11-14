@@ -13,6 +13,7 @@ const { assertRevert } = require('@tps/test-helpers/assertThrow')
 
 contract('Projects App', accounts => {
   let daoFact,
+    bountiesBase,
     app = {}
 
   const root = accounts[0]
@@ -31,6 +32,9 @@ contract('Projects App', accounts => {
       aclBase.address,
       regFact.address
     )
+    // Deploy test Bounties contract
+    bountiesBase = await StandardBounties.new(web3.toBigNumber(owner1))
+    bounties = StandardBounties.at(bountiesBase.address)
   })
 
   beforeEach(async () => {
@@ -50,9 +54,6 @@ contract('Projects App', accounts => {
       root,
       { from: root }
     )
-
-    // Deploy test Bounties contract
-    bountiesBase = await StandardBounties.new(web3.toBigNumber(owner1))
 
     //Deploy Contract to be tested
     // TODO: Revert to use regular function call when truffle gets updated
@@ -127,17 +128,32 @@ contract('Projects App', accounts => {
       )
     })
 
-    it('accepts bounties for issues in an added repo', async function () {
+    it('accepts bounties and adds them to StandardBounties.sol', async function() {
       const bountyAdder = accounts[2]
       repoID = (await app.addRepo('abc', String(123))).logs.filter(
         x => x.event == 'RepoAdded'
       )[0].args.id
-      issue3Receipt = (await app.addBounties(repoID, [1, 2, 3], [10, 20, 30], {
-        from: bountyAdder,
-      })).logs.filter(x => x.event == 'BountyAdded')[2]
+      issue3Receipt = (await app.addBounties(
+        repoID, 
+        [1, 2, 3], 
+        [10, 20, 30],
+        [86400,86400,86400] ,
+        [false,false,false],
+        [0,0,0],
+        'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+        {from: bountyAdder, value: 60}
+      )).logs.filter(x => x.event == 'BountyAdded')[2]
       issue3Bounty = issue3Receipt.args.bountySize.toNumber()
-      assert.equal(issue3Bounty, 30, 'bounty not added')
+      assert.strictEqual(issue3Bounty, 30, 'bounty not added')
+      IssueData = await app.getIssue(repoID,1)
+      bountyID = IssueData[1].toNumber()
+      result = await bounties.getBountyData(bountyID)
+      assert.strictEqual(result, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC', 'IPFS hash stored incorrectly')
+      
+      //TODO Add validations for all other data entered for a bounty
     })
+
+    //TODO Add tests for other bounty functions (fulfillBounty, AcceptFulfillment)
   })
 
   context('invalid operations', function () {
@@ -154,11 +170,31 @@ contract('Projects App', accounts => {
       )
     })
 
-    it('cannot add bounties to unregistered repos', function () {
+    it('cannot add bounties to unregistered repos', async function() {
       assertRevert(async () => {
         await app.addBounties('0xdeadbeef', [1, 2, 3], [10, 20, 30], {
           from: bountyAdder,
         })
+      })
+    })
+
+
+    it('addBounties reverts when value sent is incorrect', async function() {
+      const bountyAdder = accounts[2]
+      repoID = (await app.addRepo('abc', String(123))).logs.filter(
+        x => x.event == 'RepoAdded'
+      )[0].args.id
+      assertRevert(async () => {
+        await app.addBounties(
+          repoID, 
+          [1, 2, 3], 
+          [10, 20, 30],                   // 60 total Wei should be sent
+          [86400,86400,86400] ,
+          [false,false,false],
+          [0,0,0],
+          'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+          {from: bountyAdder, value: 61}  // 61 Wei sent instead
+        )
       })
     })
   })
