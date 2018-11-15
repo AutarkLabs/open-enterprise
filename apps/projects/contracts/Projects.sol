@@ -76,6 +76,29 @@ contract Projects is AragonApp {
     bytes32 public constant FULFILL_BOUNTY_ROLE = keccak256("FULFILL_BOUNTY_ROLE");
 
 
+    function fulfillBounty(uint _standardBountyId, string _data) external {
+        bounties.fulfillBounty(_standardBountyId, _data);
+    }
+
+    function acceptFulfillment(
+        bytes32 _repoID,
+        uint256 _issueNumber, 
+        uint _bountyFulfillmentID
+    ) external auth(ADD_BOUNTY_ROLE) 
+    {
+        GithubIssue storage issue = repos[_repoID].issues[_issueNumber];
+        bounties.acceptFulfillment(issue.standardBountyID, _bountyFulfillmentID);
+        emit FulfillmentAccepted(_repoID, _issueNumber, _bountyFulfillmentID);
+    }
+
+    function getIssue(bytes32 _repoID, uint256 _issueNumber) external view 
+    returns(bool hasBounty, uint standardBountyID)
+    {
+        GithubIssue storage issue = repos[_repoID].issues[_issueNumber];
+        hasBounty = issue.hasBounty;
+        standardBountyID = issue.standardBountyID;
+    }
+
     /**
      * Add an entry to the registry.
      * @param _owner The entry to add to the registry
