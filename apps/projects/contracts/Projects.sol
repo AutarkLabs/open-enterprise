@@ -83,7 +83,7 @@ contract Projects is AragonApp {
      */
     function addRepo(
         bytes32 _owner, bytes32 _repo
-    ) external auth(ADD_REPO_ROLE) returns (bytes32 _id) 
+    ) public auth(ADD_REPO_ROLE) returns (bytes32 _id)
     {
         _id = keccak256(abi.encodePacked(_owner, _repo));  // overflow should still yield a useable identifier
         repos[_id] = GithubRepo(_owner, _repo, 0);
@@ -98,7 +98,7 @@ contract Projects is AragonApp {
      */
     function removeRepo(
         bytes32 _id
-    ) external auth(REMOVE_REPO_ROLE)
+    ) public auth(REMOVE_REPO_ROLE)
     {
         // Take the repo out of the repo array in constant time by replacing the element
         // with last element
@@ -108,7 +108,7 @@ contract Projects is AragonApp {
         emit RepoRemoved(_id);
     }
 
-    function getRepoArrayLength() external view returns (uint256) {
+    function getRepoArrayLength() public view returns (uint256) {
         return repoIDs.length;
     }
 
@@ -116,7 +116,7 @@ contract Projects is AragonApp {
      * Get an entry from the registry.
      * @param _id The ID of the entry to get
      */
-    function getRepo(bytes32 _id) external view returns (bytes32 _owner, bytes32 _repo) {
+    function getRepo(bytes32 _id) public view returns (bytes32 _owner, bytes32 _repo) {
         _owner = repos[_id].owner;
         _repo = repos[_id].repo;
     }
@@ -129,7 +129,7 @@ contract Projects is AragonApp {
         bool[] _tokenBounties,
         address[] _tokenContracts,
         string _ipfsAddresses
-    ) external payable auth(ADD_BOUNTY_ROLE) 
+    ) public payable auth(ADD_BOUNTY_ROLE)
     {
         // ensure the transvalue passed equals transaction value
         checkTransValueEqualsMessageValue(msg.value, _bountySizes,_tokenBounties);
