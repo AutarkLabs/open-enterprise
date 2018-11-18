@@ -100,10 +100,7 @@ contract RangeVoting is IForwarder, AragonApp {
     // Vote[] internal votes; // first index is 1
 
     event StartVote(uint256 indexed voteId);
-    event CastVote(
-        uint256 indexed voteId
-    );
-    event CastVote(uint256 indexed voteId, address indexed voter, bool supports, uint256 stake);
+    event CastVote(uint256 indexed voteId);
     event UpdateCandidateSupport(string indexed candidateKey, uint256 support);
     event ExecuteVote(uint256 indexed voteId);
     event ChangeCandidateSupport(uint256 candidateSupportPct);
@@ -238,7 +235,7 @@ contract RangeVoting is IForwarder, AragonApp {
     }
 
     /**
-    * @notice `getCandidate` serves as a basic getter using the key
+    * @notice `getCandidateDescription` serves as a basic getter using the key
     *         to return the struct data.
     * @param _key The bytes32 key used when adding the candidate.
     */
@@ -364,8 +361,8 @@ contract RangeVoting is IForwarder, AragonApp {
     }
 
         /**
-    * @notice `getVote` simply splits all of the data elements out of a vote
-    *         struct and returns the individual values.
+    * @notice `getCandidateLength` returns the total number of candidates for
+    *         a given vote.
     * @param _voteId The ID of the Vote struct in the `votes` array
     */
     function getCandidateLength(uint256 _voteId) public view returns
