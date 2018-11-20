@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import { Form, FormField, SettingsInput } from '../Form'
 import { Text } from '@aragon/ui'
 import CheckBox from '../Shared/CheckBox'
+import { GithubAuth } from '.'
 
 import { withGithub, GithubContext } from '../../context'
 // import ApolloClient from 'apollo-boost'
