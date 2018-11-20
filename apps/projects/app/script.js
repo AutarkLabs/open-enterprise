@@ -5,6 +5,9 @@ import { empty } from 'rxjs/observable/empty'
 
 import { GraphQLClient } from 'graphql-request'
 
+const STATUS = {
+  INITIAL: 'initial',
+}
 const authToken = ''
 const client = new GraphQLClient('https://api.github.com/graphql', {
   headers: {
@@ -53,6 +56,9 @@ const getRepoData = repo => client.request(repoData(repo))
 
 const app = new Aragon()
 let appState
+
+app.rpc.send('cache', ['set', 'github', { status: STATUS.INITIAL }])
+
 app.events().subscribe(handleEvents)
 
 app.state().subscribe(state => {
