@@ -83,12 +83,12 @@ class NewProject extends React.Component {
     this.props.onCreateProject()
   }
 
-  showRepos() {
-    var reposDisplayList = []
+  showRepos = () => {
+    let reposDisplayList = []
     const { reposFromServer, reposManaged, reposToAdd } = this.state
 
     Object.keys(reposFromServer).forEach(repoId => {
-      var repo = reposFromServer[repoId]
+      let repo = reposFromServer[repoId]
       const checkboxHandler = this.generateCheckboxHandler(repoId)
       reposDisplayList.push(
         <RepoListItem key={repoId}>
