@@ -114,26 +114,17 @@ class NewProject extends React.Component {
   }
 
   render() {
-    // const { github } = this.props
-
-    return this.showRepos()
+    const {
+      github: { status = 'initial' },
+    } = this.props
+    const { showRepos } = this
 
     return (
-      // <GithubContext.Consumer>
-      //   {({ login }) => <div>Hello {login}</div>}
-      // </GithubContext.Consumer>
-      // <div>Hello {github.login}</div>
-      <div>New project</div>
-      // <ApolloProvider client={client}>
-      //   <a
-      //     style={{
-      //       display: this.state.status === STATUS.INITIAL ? 'inline' : 'none',
-      //     }}
-      //     href={`https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&scope=user&redirect_uri=${REDIRECT_URI}`}
-      //   >
-      //     Login
-      //   </a>
-      // </ApolloProvider>
+      <React.Fragment>
+        {status === 'initial' && <GithubAuth />}
+        {status === 'authenticated' && showRepos()}
+        {/* {status === 'requesting' && showLoading()} */}
+      </React.Fragment>
     )
   }
 }
