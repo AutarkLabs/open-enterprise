@@ -1,18 +1,18 @@
 const {
   encodeCallScript,
   EMPTY_SCRIPT,
-} = require('@tpt/test-helpers/evmScript')
+} = require('@tps/test-helpers/evmScript')
 
 const AddressBook = artifacts.require('AddressBook')
 
 const DAOFactory = artifacts.require(
-  '@tpt/test-helpers/contracts/factory/DAOFactory'
+  '@tps/test-helpers/contracts/factory/DAOFactory'
 )
 const EVMScriptRegistryFactory = artifacts.require(
-  '@tpt/test-helpers/contracts/factory/EVMScriptRegistryFactory'
+  '@tps/test-helpers/contracts/factory/EVMScriptRegistryFactory'
 )
-const ACL = artifacts.require('@tpt/test-helpers/contracts/acl/ACL')
-const Kernel = artifacts.require('@tpt/test-helpers/contracts/kernel/Kernel')
+const ACL = artifacts.require('@tps/test-helpers/contracts/acl/ACL')
+const Kernel = artifacts.require('@tps/test-helpers/contracts/kernel/Kernel')
 
 const getContract = name => artifacts.require(name)
 
@@ -82,9 +82,9 @@ contract('AddressBook App', accounts => {
     let jeanluc = accounts[1]
     let borg = accounts[2]
 
-    before(async () => {})
+    before(async () => { })
 
-    beforeEach(async () => {})
+    beforeEach(async () => { })
 
     it('add to, get, and remove entry from addressbook', async () => {
       // TODO: Fix failing test

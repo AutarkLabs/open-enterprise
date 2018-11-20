@@ -4,14 +4,14 @@ const {
   EVMScriptRegistryFactory,
   Kernel,
   MiniMeToken
-} = require('@tpt/test-helpers/artifacts')
+} = require('@tps/test-helpers/artifacts')
 
 const RangeVoting = artifacts.require('RangeVotingMock')
 const ExecutionTarget = artifacts.require('ExecutionTarget')
 
-const { assertRevert } = require('@tpt/test-helpers/assertThrow')
-const { encodeCallScript } = require('@tpt/test-helpers/evmScript')
-const timeTravel = require('@tpt/test-helpers/timeTravel')(web3)
+const { assertRevert } = require('@tps/test-helpers/assertThrow')
+const { encodeCallScript } = require('@tps/test-helpers/evmScript')
+const timeTravel = require('@tps/test-helpers/timeTravel')(web3)
 
 const pct16 = x =>
   new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))
@@ -61,9 +61,9 @@ contract('RangeVoting App', accounts => {
       { from: root }
     )
 
-    // TODO: Revert to use regular function call when truffle gets updated
-    // read: https://github.com/Giveth/planning-app/pull/243
-    let receipt = await dao.newAppInstance(
+    // TODO: Revert to only use 2 params when truffle is updated
+    // read: https://github.com/spacedecentral/planning-suite/pull/243
+    const receipt = await dao.newAppInstance(
       '0x1234',
       (await RangeVoting.new()).address,
       0x0,

@@ -6,14 +6,14 @@
 $ lerna ls
 lerna info version 2.11.0
 lerna info versioning independent
-@tpt/planning-app      v0.0.1
-@tpt/apps-address-book v0.0.1
-@tpt/apps-allocations   v0.0.1
-@tpt/apps-projects     v0.0.1
-@tpt/apps-range-voting v0.0.1
+@tps/planning-suite      v0.0.1
+@tps/apps-address-book v0.0.1
+@tps/apps-allocations   v0.0.1
+@tps/apps-projects     v0.0.1
+@tps/apps-range-voting v0.0.1
 ```
 
-- Planning-app is the base monorepo.
+- Planning-suite is the base monorepo.
 - Frontend packages were merged with individual aragon apps, it added complexity and was not needed.
 - Aragon/cli should be used to bump package versions with `aragon apm version` (more info in Aragon hack documentation). It needs to have a devhchain running.
 
@@ -114,4 +114,4 @@ So only one slash at the end, otherwise ipfs will probably fail reading asset pa
 
 #### Additional info
 
-- The old deployment code that seemed to do the kit and aragon apps deployments with javascript was replaced by the handy Kit smart contract, but here is kept for historical purposes: [**bare/migrations/2_deploy.js**](https://github.com/Giveth/planning-app/blob/bfb0900b6c15d91bc1d0d9967c6f5c46c3b9dd27/wip-apps/bare/migrations/2_deploy.js)
+- The old deployment code that seemed to do the kit and aragon apps deployments with javascript was replaced by the handy Kit smart contract, but here is kept for historical purposes: [**bare/migrations/2_deploy.js**](https://github.com/spacedecentral/planning-suite/blob/bfb0900b6c15d91bc1d0d9967c6f5c46c3b9dd27/wip-apps/bare/migrations/2_deploy.js)

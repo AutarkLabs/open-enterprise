@@ -1,14 +1,14 @@
 pragma solidity ^0.4.24;
 
-import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
+import "@tps/test-helpers/contracts/apps/AragonApp.sol";
 
-// import @tpt/test-helpers/contracts/Vault.sol";
+// import @tps/test-helpers/contracts/Vault.sol";
 
-// import "@tpt/test-helpers/contracts/IVaultConnector.sol";
+// import "@tps/test-helpers/contracts/IVaultConnector.sol";
 
-import "@tpt/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
+import "@tps/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
 
-import "@tpt/test-helpers/contracts/lib/zeppelin/math/SafeMath64.sol";
+import "@tps/test-helpers/contracts/lib/zeppelin/math/SafeMath64.sol";
 
 /*******************************************************************************
     Copyright 2018, That Planning Tab
