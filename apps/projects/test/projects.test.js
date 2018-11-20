@@ -11,6 +11,9 @@ const Projects = artifacts.require('Projects')
 
 const { assertRevert } = require('@tps/test-helpers/assertThrow')
 
+const addedRepo = receipt => receipt.logs.filter(x => x.event == 'RepoAdded')[0].args.id
+const addedBounties = receipt => receipt.logs.filter(x => x.event == 'BountyAdded')[2]
+
 contract('Projects App', accounts => {
   let daoFact,
     bountiesBase,
@@ -100,10 +103,12 @@ contract('Projects App', accounts => {
 
   context('creating and retrieving repos and bounties', function () {
     it('creates a repo id entry', async function () {
-      repoID = (await app.addRepo(
-        'MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5',
-        'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk='
-      )).logs.filter(x => x.event == 'RepoAdded')[0].args.id
+      const repoID = addedRepo(
+        await app.addRepo(
+          'MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5',
+          'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk='
+        )
+      )
       assert.equal(
         repoID,
         '0xd1f2b806d3ffc90a501a7c22dbbcbb3f1f14e136cd9da208dc0b6e6b0f64b777',
@@ -113,12 +118,14 @@ contract('Projects App', accounts => {
 
     it('retrieves repo information successfully', async function () {
       const owner1 = accounts[0]
-      repoID = (await app.addRepo(
-        'MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5',
-        'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk='
-      )).logs.filter(x => x.event == 'RepoAdded')[0].args.id
-      repoInfo = await app.getRepo(repoID, { from: owner1 })
-      result = web3.toAscii(repoInfo[0])
+      const repoID = addedRepo(
+        await app.addRepo(
+          'MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5',
+          'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk='
+        )
+      )
+      const repoInfo = await app.getRepo(repoID, { from: owner1 })
+      const result = web3.toAscii(repoInfo[0])
 
       // result = repoInfo[0]
       assert.equal(
@@ -130,24 +137,26 @@ contract('Projects App', accounts => {
 
     it('accepts bounties and adds them to StandardBounties.sol', async function () {
       const bountyAdder = accounts[2]
-      repoID = (await app.addRepo('abc', String(123))).logs.filter(
-        x => x.event == 'RepoAdded'
-      )[0].args.id
-      issue3Receipt = (await app.addBounties(
-        repoID,
-        [1, 2, 3],
-        [10, 20, 30],
-        [86400, 86400, 86400],
-        [false, false, false],
-        [0, 0, 0],
-        'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
-        { from: bountyAdder, value: 60 }
-      )).logs.filter(x => x.event == 'BountyAdded')[2]
-      issue3Bounty = issue3Receipt.args.bountySize.toNumber()
+      const repoID = addedRepo(
+        await app.addRepo('abc', String(123))
+      )
+      const issue3Receipt = addedBounties(
+        await app.addBounties(
+          repoID,
+          [1, 2, 3],
+          [10, 20, 30],
+          [86400, 86400, 86400],
+          [false, false, false],
+          [0, 0, 0],
+          'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+          { from: bountyAdder, value: 60 }
+        )
+      )
+      const issue3Bounty = issue3Receipt.args.bountySize.toNumber()
       assert.strictEqual(issue3Bounty, 30, 'bounty not added')
-      IssueData = await app.getIssue(repoID, 1)
-      bountyID = IssueData[1].toNumber()
-      result = await bounties.getBountyData(bountyID)
+      const IssueData = await app.getIssue(repoID, 1)
+      const bountyID = IssueData[1].toNumber()
+      const result = await bounties.getBountyData(bountyID)
       assert.strictEqual(result, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC', 'IPFS hash stored incorrectly')
 
       //TODO Add validations for all other data entered for a bounty
@@ -166,11 +175,11 @@ contract('Projects App', accounts => {
 
   context('invalid operations', function () {
     it('cannot retrieve a removed Repo', async function () {
-      repoID = (await app.addRepo('abc', String(123))).logs.filter(
-        x => x.event == 'RepoAdded'
-      )[0].args.id
+      const repoID = addedRepo(
+        await app.addRepo('abc', String(123))
+      )
       await app.removeRepo(repoID, { from: repoRemover })
-      result = await app.getRepo(repoID)
+      const result = await app.getRepo(repoID)
       assert.equal(
         web3.toAscii(result[0]).replace(/\0/g, ''),
         '',
@@ -189,9 +198,9 @@ contract('Projects App', accounts => {
 
     it('addBounties reverts when value sent is incorrect', async function () {
       const bountyAdder = accounts[2]
-      repoID = (await app.addRepo('abc', String(123))).logs.filter(
-        x => x.event == 'RepoAdded'
-      )[0].args.id
+      const repoID = addedRepo(
+        await app.addRepo('abc', String(123))
+      )
       assertRevert(async () => {
         await app.addBounties(
           repoID,
