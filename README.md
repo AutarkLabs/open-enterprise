@@ -103,4 +103,4 @@ If you have any questions or want to get involved in our development please let 
 
 ## Special Thanks
 
-Special thanks go to the Aragon team for much of the work this project is based on, as well as for allocating us this grant to build the tools we need to DAOify open source developemt!
+Special thanks go to the Aragon team for much of the work this project is based on, as well as for allocating us this grant to build the tools we need to DAOify open source development!
