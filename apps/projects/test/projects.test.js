@@ -154,12 +154,18 @@ contract('Projects App', accounts => {
       )
       const issue3Bounty = issue3Receipt.args.bountySize.toNumber()
       assert.strictEqual(issue3Bounty, 30, 'bounty not added')
-      const IssueData = await app.getIssue(repoID, 1)
-      const bountyID = IssueData[1].toNumber()
-      const result = await bounties.getBountyData(bountyID)
-      assert.strictEqual(result, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC', 'IPFS hash stored incorrectly')
-
-      //TODO Add validations for all other data entered for a bounty
+      const IssueData1 = await app.getIssue(repoID, 1)
+      const bountyId1 = IssueData1[1].toNumber()
+      const bountyData1 = await bounties.getBountyData(bountyId1)
+      assert.strictEqual(bountyData1, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC', 'IPFS hash stored incorrectly')
+      const IssueData2 = await app.getIssue(repoID, 2)
+      const bountyId2 = IssueData2[1].toNumber()
+      const bountyData2 = await bounties.getBountyData(bountyId2)
+      assert.strictEqual(bountyData2, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC', 'IPFS hash stored incorrectly')
+      const IssueData3 = await app.getIssue(repoID, 3)
+      const bountyId3 = IssueData3[1].toNumber()
+      const bountyData3 = await bounties.getBountyData(bountyId3)
+      assert.strictEqual(bountyData3, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC', 'IPFS hash stored incorrectly')
     })
 
     xit('fulfills bounty', async function () {
