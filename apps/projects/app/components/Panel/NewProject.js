@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import { Form, FormField, SettingsInput } from '../Form'
 import { Text } from '@aragon/ui'
 import CheckBox from '../Shared/CheckBox'
+import { GithubAuth } from '.'
 
 import { withGithub, GithubContext } from '../../context'
 // import ApolloClient from 'apollo-boost'
@@ -83,12 +84,12 @@ class NewProject extends React.Component {
     this.props.onCreateProject()
   }
 
-  showRepos() {
-    var reposDisplayList = []
+  showRepos = () => {
+    let reposDisplayList = []
     const { reposFromServer, reposManaged, reposToAdd } = this.state
 
     Object.keys(reposFromServer).forEach(repoId => {
-      var repo = reposFromServer[repoId]
+      let repo = reposFromServer[repoId]
       const checkboxHandler = this.generateCheckboxHandler(repoId)
       reposDisplayList.push(
         <RepoListItem key={repoId}>
@@ -114,26 +115,17 @@ class NewProject extends React.Component {
   }
 
   render() {
-    // const { github } = this.props
-
-    return this.showRepos()
+    const {
+      github: { status = 'initial' },
+    } = this.props
+    const { showRepos } = this
 
     return (
-      // <GithubContext.Consumer>
-      //   {({ login }) => <div>Hello {login}</div>}
-      // </GithubContext.Consumer>
-      // <div>Hello {github.login}</div>
-      <div>New project</div>
-      // <ApolloProvider client={client}>
-      //   <a
-      //     style={{
-      //       display: this.state.status === STATUS.INITIAL ? 'inline' : 'none',
-      //     }}
-      //     href={`https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&scope=user&redirect_uri=${REDIRECT_URI}`}
-      //   >
-      //     Login
-      //   </a>
-      // </ApolloProvider>
+      <React.Fragment>
+        {status === 'initial' && <GithubAuth />}
+        {status === 'authenticated' && showRepos()}
+        {/* {status === 'requesting' && showLoading()} */}
+      </React.Fragment>
     )
   }
 }
