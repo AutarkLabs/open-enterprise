@@ -11,7 +11,7 @@ const Projects = artifacts.require('Projects')
 
 const { assertRevert } = require('@tps/test-helpers/assertThrow')
 
-const addedRepo = receipt => receipt.logs.filter(x => x.event == 'RepoAdded')[0].args.id
+const addedRepo = receipt => receipt.logs.filter(x => x.event == 'RepoAdded')[0].args.repoId
 const addedBounties = receipt => receipt.logs.filter(x => x.event == 'BountyAdded')[2]
 
 contract('Projects App', accounts => {
