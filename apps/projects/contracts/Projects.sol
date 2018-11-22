@@ -101,7 +101,6 @@ contract Projects is AragonApp {
     bytes32 public constant ADD_REPO_ROLE = keccak256("ADD_REPO_ROLE");
     bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
     bytes32 public constant ADD_BOUNTY_ROLE =  keccak256("ADD_BOUNTY_ROLE");
-    bytes32 public constant FULFILL_BOUNTY_ROLE = keccak256("FULFILL_BOUNTY_ROLE");
     
 ///////////////////////
 // View state functions

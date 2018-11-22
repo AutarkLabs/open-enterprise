@@ -11,8 +11,12 @@ const Projects = artifacts.require('Projects')
 
 const { assertRevert } = require('@tps/test-helpers/assertThrow')
 
-const addedRepo = receipt => receipt.logs.filter(x => x.event == 'RepoAdded')[0].args.repoId
-const addedBounties = receipt => receipt.logs.filter(x => x.event == 'BountyAdded')[2]
+const addedRepo = receipt => receipt.logs.filter(
+  x => x.event == 'RepoAdded')[0].args.repoId
+const addedBounties = receipt => receipt.logs.filter(
+  x => x.event == 'BountyAdded')[2]
+const acceptedFulfillment = receipt => receipt.logs.filter(
+  x => x.event == 'FulfillmentAccepted')
 
 contract('Projects App', accounts => {
   let daoFact,
@@ -168,15 +172,37 @@ contract('Projects App', accounts => {
       assert.strictEqual(bountyData3, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC', 'IPFS hash stored incorrectly')
     })
 
-    xit('fulfills bounty', async function () {
-      //TODO Add test for fulfillBounty
-    })
-
-    xit('accepts fulfillment', async function () {
-      //TODO Add test for acceptFulfillment
-    })
-
     //TODO topocount to test minimum bound of bounties that can be accepted
+  })
+
+  context('fulfill bounty & accept fulfillment', function () {
+    xit('accepts fulfillment', async function () {
+      const repoID = addedRepo(
+        await app.addRepo('abc', String(123))
+      )
+      addedBounties(
+        await app.addBounties(
+          repoID,
+          [1, 2, 3],
+          [10, 20, 30],
+          [86400, 86400, 86400],
+          [false, false, false],
+          [0, 0, 0],
+          'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+          { from: bountyAdder, value: 60 }
+        )
+      )
+      const IssueData1 = await app.getIssue(repoID, 1)
+      const bountyId1 = IssueData1[1].toNumber()
+      await app.fulfillBounty(0, 'findthemillenniumfalcon')
+      let result = acceptedFulfillment(
+        await app.acceptFulfillment(repoID, 1, 0, { from: root })
+      )
+      // TODO: debug vm exception
+    })
+
+    // TODO: add state checks for standard bounty contract,
+    // such that it reflects state changes made in projects contract
   })
 
   context('invalid operations', function () {
@@ -220,5 +246,6 @@ contract('Projects App', accounts => {
         )
       })
     })
+
   })
 })
