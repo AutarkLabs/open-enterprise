@@ -20,6 +20,7 @@ import "@tps/test-helpers/contracts/apps/Voting.sol"; /* Already defined in ACLH
 //import {TokenManager as TokenManagerApp} from "@aragon/apps-token-manager/contracts/TokenManager.sol"; /* Already defined in EVMScriptRunner */
 // import "@tps/test-helpers/contracts/lib/minime/MiniMeToken.sol"; // TODO: use this 
 
+import {AddressBook as AddressBook} from "@tps/apps-address-book/contracts/AddressBook.sol";
 import {Allocations as AllocationsApp} from "@tps/apps-allocations/contracts/Allocations.sol";
 import {Projects as ProjectsApp} from "@tps/apps-projects/contracts/Projects.sol";
 import {RangeVoting as RangeVotingApp} from "@tps/apps-range-voting/contracts/RangeVoting.sol";
@@ -96,7 +97,7 @@ contract PlanningKit is KitBase {
 
         // Planning Apps
         AllocationsApp allocations = AllocationsApp(dao.newAppInstance(apps[0], latestVersionAppBase(apps[0])));
-        //AddressBookApp addressBook = AddressBookApp(dao.newAppInstance(apps[1], latestVersionAppBase(apps[1])));
+        AddressBookApp addressBook = AddressBookApp(dao.newAppInstance(apps[1], latestVersionAppBase(apps[1])));
         ProjectsApp projects = ProjectsApp(dao.newAppInstance(apps[2], latestVersionAppBase(apps[2])));
         RangeVotingApp rangeVoting = RangeVotingApp(dao.newAppInstance(apps[3], latestVersionAppBase(apps[3])));
         // Aragon Apps
@@ -111,7 +112,7 @@ contract PlanningKit is KitBase {
         // Initialize apps
         allocations.initialize();
         // TODO: Enable when code is ready in the apps
-        // addressBook.initialize();
+        addressBook.initialize();
         projects.initialize();
         //tokenManager.initialize(token, true, 0);
         // At least 50% of the voting tokens must vote, there is no minimum
@@ -126,11 +127,10 @@ contract PlanningKit is KitBase {
         emit InstalledApp(allocations, apps[0]);
 
         // AddressBook permissions:
-        /*
-        acl.createPermission(voting, addressBook, addressBook.ADD_ENTRY_ROLE(), root);
-        acl.createPermission(voting, addressBook, addressBook.REMOVE_ENTRY_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, addressBook, addressBook.ADD_ENTRY_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, addressBook, addressBook.REMOVE_ENTRY_ROLE(), root);
         emit InstalledApp(addressBook, apps[1]);
-        */
+
         // Projects permissions:
         acl.createPermission(ANY_ENTITY, projects, projects.ADD_REPO_ROLE(), root);
         acl.createPermission(ANY_ENTITY, projects, projects.REMOVE_REPO_ROLE(), root);
