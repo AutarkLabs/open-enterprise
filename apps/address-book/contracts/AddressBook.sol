@@ -26,6 +26,14 @@ import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
 * association of a human-readable string to a type, and ethereum address.
 *******************************************************************************/
 contract AddressBook is AragonApp {
+    function initialize( // solium-disable-line blank-lines
+        //Vault _vault
+    ) external onlyInit // solium-disable-line visibility-first
+    {
+        //vault = _vault.ethConnectorBase();
+        initialized();
+    }
+
     struct Entry {
         address entryAddress;
         string name;
@@ -50,7 +58,7 @@ contract AddressBook is AragonApp {
      * @param _name The name of the entry to add to the registry
      * @param _entryType The type of the entry to add to the registry
      */
-    function add(
+    function addEntry(
         address _address,
         string _name,
         string _entryType
@@ -70,7 +78,7 @@ contract AddressBook is AragonApp {
      * Remove an entry from the registry.
      * @param _addr The ID of the entry to remove
      */
-    function remove(
+    function removeEntry(
         address _addr
     ) public auth(REMOVE_ENTRY_ROLE) { // solium-disable-line lbrace
         nameUsed[keccak256(abi.encodePacked(entries[_addr].name))] = false;

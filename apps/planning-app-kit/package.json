@@ -11,6 +11,7 @@
     "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
   },
   "dependencies": {
+    "@tpt/apps-address-book": "^0.0.1",
     "@tpt/apps-allocations": "^0.0.1",
     "@tpt/apps-projects": "^0.0.1",
     "@tpt/apps-range-voting": "^0.0.1",
@@ -19,7 +20,7 @@
   "author": "",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Giveth/planning-app"
+    "url": "https://github.com/spacedecentral/planning-suite"
   },
   "keywords": [],
   "license": "GPL-3.0"
