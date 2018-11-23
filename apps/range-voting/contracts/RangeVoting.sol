@@ -399,8 +399,9 @@ contract RangeVoting is IForwarder, AragonApp {
     *         and candidate weights need to be supplied.
     * @param _executionScript The script that will be executed when
     *        this vote closes. Script is of the following form:
-    *            [ specId (uint32) ] many calls with this structure ->
+    *            [ specId (uint32: 4 bytes) ] many calls with this structure ->
     *            [ to (address: 20 bytes) ]
+    *            [calldataLength (uint32: 4 bytes) ]
     *            [ function hash (uint32: 4 bytes) ]
     *            [ calldata (calldataLength bytes) ]
     *        In order to work with a range vote the execution script must contain
@@ -444,7 +445,7 @@ contract RangeVoting is IForwarder, AragonApp {
     */
     function _extractCandidates(bytes _executionScript, uint256 _voteId) internal returns(uint256 currentOffset, uint256 calldataLength) {
         // in order to find out the total length of our call data we take the 3rd
-        // relevent byte chunk (after the specif and the target address)
+        // relevent byte chunk (after the specid and the target address)
         calldataLength = uint256(_executionScript.uint32At(0x4 + 0x14));
         // Since the calldataLength is 4 bytes the start offset is
         uint256 startOffset = 0x04 + 0x14 + 0x04;
@@ -452,6 +453,7 @@ contract RangeVoting is IForwarder, AragonApp {
         // word in the calldata (which is located at the startOffset + 0x04 for the function signature)
         // so we have:
         // start offset (spec id + address + calldataLength) + param offset + function signature
+        // note:function signature legth (0x04) added in both contexts: grabbing the offset value and the outer offset calculation
         uint256 firstParamOffset = startOffset + _executionScript.uint256At(startOffset + 0x04) + 0x04;
         currentOffset = firstParamOffset;
 
