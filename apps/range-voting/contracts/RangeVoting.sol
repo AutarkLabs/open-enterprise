@@ -86,14 +86,13 @@ contract RangeVoting is IForwarder, AragonApp {
         mapping (address => uint256[]) voters;
     }
 
-    mapping (bytes32 => address ) candidateDescriptions;
+    mapping (bytes32 => address ) candidateAddresses;
 
     struct CandidateState {
         bool added;
-        bytes metadata;
+        string metadata;
         uint8 keyArrayIndex;
         uint256 voteSupport;
-        //string description;
     }
 
     Vote[] votes;
@@ -198,7 +197,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _description This is the string that will be displayed along the
     *        option when voting
     */
-    function addCandidate(uint256 _voteId, bytes _metadata, address _description)
+    function addCandidate(uint256 _voteId, string _metadata, address _description)
     public auth(ADD_CANDIDATES_ROLE)
     {
         // Get vote and candidate into storage
@@ -213,10 +212,10 @@ contract RangeVoting is IForwarder, AragonApp {
         candidate.keyArrayIndex = uint8(keys.length);
         candidate.metadata = _metadata;
         // double check
-        candidateDescriptions[cKey] = _description;
+        candidateAddresses[cKey] = _description;
         keys.push(cKey);
         voteInstance.candidateKeys = keys;
-        emit AddCandidate(_voteId, candidateDescriptions[cKey], voteInstance.candidateKeys.length);
+        emit AddCandidate(_voteId, candidateAddresses[cKey], voteInstance.candidateKeys.length);
     }
 
     /**
@@ -230,7 +229,7 @@ contract RangeVoting is IForwarder, AragonApp {
     {
         Vote storage voteInstance = votes[_voteId];
         CandidateState storage candidate = voteInstance.candidates[voteInstance.candidateKeys[_candidateIndex]];
-        candidateAddress = candidateDescriptions[voteInstance.candidateKeys[_candidateIndex]];
+        candidateAddress = candidateAddresses[voteInstance.candidateKeys[_candidateIndex]];
         voteSupport = candidate.voteSupport;
     }
 
@@ -242,7 +241,7 @@ contract RangeVoting is IForwarder, AragonApp {
     function getCandidateDescription(bytes32 _key) // solium-disable-line function-order
     external view returns(address)
     {
-        return(candidateDescriptions[_key]);
+        return(candidateAddresses[_key]);
     }
 
 ///////////////////////
@@ -438,6 +437,33 @@ contract RangeVoting is IForwarder, AragonApp {
         emit StartVote(voteId);
     }
 
+    function _goToParamOffset(uint256 _paramNum, bytes _executionScript) internal pure returns(uint256 paramOffset) {
+        /*
+        param numbers and what they map to:
+        1. candidate addresses 
+        2. Info String indexes
+        3. Info String length
+        4. Supports values
+        */
+        uint256 startOffset = 0x04 + 0x14 + 0x04;
+        paramOffset = startOffset + _executionScript.uint256At(startOffset + 0x04) + 0x04 + (0x20 * (_paramNum));
+    }
+
+    function substring(
+        bytes strBytes,
+        uint startIndex,
+        uint endIndex
+    ) internal pure returns (string)
+    {
+        // first char is at location 0
+        //IPFS addresses span from 0 (startindex) to 46 (endIndex)
+        bytes memory result = new bytes(endIndex-startIndex);
+        for (uint i = startIndex; i < endIndex; i++) {
+            result[i-startIndex] = strBytes[i];
+        }
+        return string(result);
+    }
+
     /**
     * @dev This function needs to work with strings instead of addresses but it doesn't
     *      This fits our current use case better and string manipulation is harder
@@ -453,7 +479,7 @@ contract RangeVoting is IForwarder, AragonApp {
         // word in the calldata (which is located at the startOffset + 0x04 for the function signature)
         // so we have:
         // start offset (spec id + address + calldataLength) + param offset + function signature
-        // note:function signature legth (0x04) added in both contexts: grabbing the offset value and the outer offset calculation
+        // note:function signature length (0x04) added in both contexts: grabbing the offset value and the outer offset calculation
         uint256 firstParamOffset = startOffset + _executionScript.uint256At(startOffset + 0x04) + 0x04;
         currentOffset = firstParamOffset;
 
@@ -462,23 +488,33 @@ contract RangeVoting is IForwarder, AragonApp {
         require(startOffset + calldataLength <= _executionScript.length); // solium-disable-line error-reason
         // The first word in the param slot is the length of the array
 
-
+        // obtain the beginning index of the infoString
+        uint256 infoStart = _goToParamOffset(3,_executionScript) + 0x20;
         uint256 candidateLength = _executionScript.uint256At(currentOffset);
     
         address currentCandidate;
+        string memory info;
+        uint256 infoEnd;
+
         currentOffset = currentOffset + 0x20;
         // This has the potential to be too gas expensive to ever happen.
         // Upper limit of candidates should be checked against this function
         
         for (uint256 i = candidateLength; i > 0; i--) {
             currentCandidate = _executionScript.addressAt(currentOffset + 0x0C);
+            //find the end of the infoString using the relative arg positions
+            infoEnd = infoStart + _executionScript.uint256At(currentOffset + (0x20 * (candidateLength + 1) ));
+            info = substring(_executionScript, infoStart, infoEnd);
             currentOffset = currentOffset + 0x20;
-            addCandidate(_voteId, new bytes(0), currentCandidate);
+            // update the index for the next iteration
+            infoStart = infoEnd;
+            addCandidate(_voteId, info, currentCandidate);
         }
         // Skip the next param since it's also determined by this contract
-        // In order to do this we move the offsett one word for the length of the param
+        // In order to do this we move the offset one word for the length of the param
         // and we move the offset one word for each param.
-        currentOffset = currentOffset.add(_executionScript.uint256At(currentOffset).mul(0x20));
+        //currentOffset = currentOffset.add(_executionScript.uint256At(currentOffset).mul(0x20));
+        currentOffset = _goToParamOffset(4, _executionScript);
 
         // The offset represents the data we've already accounted for; the rest is what will later
         // need to be copied over.
@@ -607,7 +643,7 @@ contract RangeVoting is IForwarder, AragonApp {
         // Copy all candidate data
         for (uint256 i = 0; i < candidateLength; i++) {
             bytes32 canKey = votes[_voteId].candidateKeys[i];
-            uint256 candidateData = uint256(candidateDescriptions[canKey]);
+            uint256 candidateData = uint256(candidateAddresses[canKey]);
             assembly {
                 mstore(add(script, offset), candidateData)
             }

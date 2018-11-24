@@ -4,7 +4,12 @@ pragma solidity ^0.4.24;
 contract ExecutionTarget {
     uint[] public signal;
 
-    function setSignal(address[] /*_addr*/, uint256[] _signal) public {
+    function setSignal(
+        address[] /*_addr*/, 
+        uint256[] /*_infoIndices*/, 
+        string /*_candidateInfo*/,
+        uint256[] _signal
+    ) public {
         for (uint i = 0; i < _signal.length; i++) {
             signal.push(_signal[i]);
         }
