@@ -20,7 +20,7 @@ const acceptedFulfillment = receipt => receipt.logs.filter(
 
 contract('Projects App', accounts => {
   let daoFact,
-    bountiesBase,
+    registry,
     app = {}
 
   const root = accounts[0]
@@ -39,9 +39,6 @@ contract('Projects App', accounts => {
       aclBase.address,
       regFact.address
     )
-    // Deploy test Bounties contract
-    bountiesBase = await StandardBounties.new(web3.toBigNumber(owner1))
-    bounties = StandardBounties.at(bountiesBase.address)
   })
 
   beforeEach(async () => {
@@ -102,7 +99,11 @@ contract('Projects App', accounts => {
       { from: root }
     )
 
-    await app.initialize(bountiesBase.address)
+    // Deploy test Bounties contract
+    registry = await StandardBounties.new(web3.toBigNumber(owner1))
+    bounties = StandardBounties.at(registry.address)
+
+    await app.initialize(registry.address)
   })
 
   context('creating and retrieving repos and bounties', function () {
@@ -172,15 +173,50 @@ contract('Projects App', accounts => {
       assert.strictEqual(bountyData3, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC', 'IPFS hash stored incorrectly')
     })
 
-    //TODO topocount to test minimum bound of bounties that can be accepted
-  })
+    context('standard bounty verification tests', function () {
+      beforeEach(async () => {
+        await bounties.issueBounty(accounts[0],
+          2528821098,
+          'data',
+          1000,
+          0x0,
+          false,
+          0x0,
+          { from: accounts[0] }
+        )
+      })
 
-  context('fulfill bounty & accept fulfillment', function () {
-    xit('accepts fulfillment', async function () {
-      const repoID = addedRepo(
-        await app.addRepo('abc', String(123))
-      )
-      addedBounties(
+      it('verifies that the StandardBounties registry works', async () => {
+        let owner = await registry.owner()
+        assert(owner == accounts[0])
+      })
+
+      it('verifies that simple bounty contribution and activation functions', async () => {
+        await bounties.contribute(0, 1000, { from: accounts[0], value: 1000 })
+        let bounty = await bounties.getBounty(0)
+        assert(bounty[4] == 0)
+        await bounties.activateBounty(0, 0, { from: accounts[0] })
+        bounty = await bounties.getBounty(0)
+        assert(bounty[4] == 1)
+      })
+
+      it('verifies that basic fulfillment acceptance flow works', async () => {
+        await registry.activateBounty(0, 1000, { from: accounts[0], value: 1000 })
+        await registry.fulfillBounty(0, 'data', { from: accounts[1] })
+        let fulfillment = await registry.getFulfillment(0, 0)
+        assert(fulfillment[0] === false)
+        await registry.acceptFulfillment(0, 0, { from: accounts[0] })
+        fulfillment = await registry.getFulfillment(0, 0)
+        assert(fulfillment[0] === true)
+      })
+    })
+
+    context('fulfill bounty & accept fulfillment', function () {
+      beforeEach(async () => {
+        const bountyAdder = accounts[2]
+        const repoID = addedRepo(
+          await app.addRepo('abc', String(123))
+        )
         await app.addBounties(
           repoID,
           [1, 2, 3],
@@ -191,14 +227,18 @@ contract('Projects App', accounts => {
           'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
           { from: bountyAdder, value: 60 }
         )
-      )
-      const IssueData1 = await app.getIssue(repoID, 1)
-      const bountyId1 = IssueData1[1].toNumber()
-      await app.fulfillBounty(0, 'findthemillenniumfalcon')
-      let result = acceptedFulfillment(
-        await app.acceptFulfillment(repoID, 1, 0, { from: root })
-      )
-      // TODO: debug vm exception
+      })
+
+      xit('accepts fulfillment', async function () {
+        await app.fulfillBounty(0, 'findthemillenniumfalcon')
+        let result = acceptedFulfillment(
+          await app.acceptFulfillment(repoID, 1, 0, { from: root })
+        )
+        // TODO: debug vm exception
+      })
+
+      // TODO: add state checks for standard bounty contract,
+      // such that it reflects state changes made in projects contract
     })
 
     // TODO: add state checks for standard bounty contract,
