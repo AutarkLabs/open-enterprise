@@ -229,18 +229,19 @@ contract('RangeVoting App', accounts => {
     it('execution throws if any action on script throws', async () => {
       let action = {
         to: executionTarget.address,
-        calldata: executionTarget.contract.setSignal.getData([], [])
+        calldata: executionTarget.contract.setSignal.getData([], [], '', [])
       }
       const script = encodeCallScript([action])
+      console.log(script)
       const voteId = createdVoteId(
         await app.newVote(script, '', { from: holder50 })
       )
-      let vote = [10, 15, 25]
-      await app.addCandidate(voteId, '0x', accounts[7])
-      await app.addCandidate(voteId, '0x', accounts[8])
-      await app.addCandidate(voteId, '0x', accounts[9])
-      let voter = holder50
-      await app.vote(voteId, vote, { from: voter })
+      //let vote = [10, 15, 25]
+      //await app.addCandidate(voteId, '0x', accounts[7])
+      //await app.addCandidate(voteId, '0x', accounts[8])
+      //await app.addCandidate(voteId, '0x', accounts[9])
+      //let voter = holder50
+      //await app.vote(voteId, vote, { from: voter })
       return assertRevert(async () => {
         await app.executeVote(voteId)
       })

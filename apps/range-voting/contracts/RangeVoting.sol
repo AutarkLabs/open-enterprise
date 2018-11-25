@@ -446,7 +446,7 @@ contract RangeVoting is IForwarder, AragonApp {
         4. Supports values
         */
         uint256 startOffset = 0x04 + 0x14 + 0x04;
-        paramOffset = startOffset + _executionScript.uint256At(startOffset + 0x04) + 0x04 + (0x20 * (_paramNum));
+        paramOffset = _executionScript.uint256At(startOffset + 0x04 + (0x20 * (_paramNum - 1) ));
     }
 
     function substring(
@@ -480,7 +480,7 @@ contract RangeVoting is IForwarder, AragonApp {
         // so we have:
         // start offset (spec id + address + calldataLength) + param offset + function signature
         // note:function signature length (0x04) added in both contexts: grabbing the offset value and the outer offset calculation
-        uint256 firstParamOffset = startOffset + _executionScript.uint256At(startOffset + 0x04) + 0x04;
+        uint256 firstParamOffset = startOffset + 0x80 + 0x04;
         currentOffset = firstParamOffset;
 
         // compute end of script / next location and ensure there's no 
@@ -515,7 +515,7 @@ contract RangeVoting is IForwarder, AragonApp {
         // and we move the offset one word for each param.
         //currentOffset = currentOffset.add(_executionScript.uint256At(currentOffset).mul(0x20));
         currentOffset = _goToParamOffset(4, _executionScript);
-
+        //currentOffset = 0;
         // The offset represents the data we've already accounted for; the rest is what will later
         // need to be copied over.
 
