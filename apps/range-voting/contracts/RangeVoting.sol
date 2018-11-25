@@ -107,6 +107,8 @@ contract RangeVoting is IForwarder, AragonApp {
     // Add hash info
     event ExternalContract(uint256 indexed voteId, address addr, uint256 externalId);
     event AddCandidate(uint256 voteId, address candidate, uint length);
+    event Metadata(string metadata);
+    event Location(uint256 currentLocation);
 
 ////////////////
 // Constructor
@@ -225,12 +227,13 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _candidateIndex The candidate descrciption of the candidate.
     */
     function getCandidate(uint256 _voteId, uint256 _candidateIndex) // solium-disable-line function-order
-    external view returns(address candidateAddress, uint256 voteSupport)
+    external view returns(address candidateAddress, uint256 voteSupport, string metadata)
     {
         Vote storage voteInstance = votes[_voteId];
         CandidateState storage candidate = voteInstance.candidates[voteInstance.candidateKeys[_candidateIndex]];
         candidateAddress = candidateAddresses[voteInstance.candidateKeys[_candidateIndex]];
         voteSupport = candidate.voteSupport;
+        metadata = candidate.metadata;
     }
 
     /**
@@ -446,7 +449,7 @@ contract RangeVoting is IForwarder, AragonApp {
         4. Supports values
         */
         uint256 startOffset = 0x04 + 0x14 + 0x04;
-        paramOffset = _executionScript.uint256At(startOffset + 0x04 + (0x20 * (_paramNum - 1) ));
+        paramOffset = _executionScript.uint256At(startOffset + 0x04 + (0x20 * (_paramNum - 1) )) + 0x20;
     }
 
     function substring(
@@ -490,6 +493,7 @@ contract RangeVoting is IForwarder, AragonApp {
 
         // obtain the beginning index of the infoString
         uint256 infoStart = _goToParamOffset(3,_executionScript) + 0x20;
+        Location(infoStart);
         uint256 candidateLength = _executionScript.uint256At(currentOffset);
     
         address currentCandidate;
@@ -505,6 +509,8 @@ contract RangeVoting is IForwarder, AragonApp {
             //find the end of the infoString using the relative arg positions
             infoEnd = infoStart + _executionScript.uint256At(currentOffset + (0x20 * (candidateLength + 1) ));
             info = substring(_executionScript, infoStart, infoEnd);
+            Metadata(info);
+            Location(infoEnd);
             currentOffset = currentOffset + 0x20;
             // update the index for the next iteration
             infoStart = infoEnd;

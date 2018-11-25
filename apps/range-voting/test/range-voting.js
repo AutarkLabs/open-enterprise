@@ -150,13 +150,13 @@ contract('RangeVoting App', accounts => {
           // original args: address[], uint256[] supports
           //  updated args: address[], uint256[] infoIndex, string Info, uint256[] _supports 
           [accounts[7], accounts[8], accounts[9]],
-          [4, 8, 12],
+          [4, 4, 4],
           'arg1arg2arg3',
           [0, 0, 0]
         )
       }
       const script = encodeCallScript([action])
-      console.log(script)
+      //console.log(script)
       const voteId = createdVoteId(
         await app.newVote(script, '', { from: holder50 })
       )
@@ -169,7 +169,7 @@ contract('RangeVoting App', accounts => {
           // original args: address[], uint256[] supports
           //  updated args: address[], uint256[] infoIndex, string Info, uint256[] _supports 
           [accounts[7], accounts[8], accounts[9]],
-          [4, 8, 12],
+          [4, 4, 4],
           'arg1arg2arg3',
           [0, 0, 0]
         )
@@ -186,14 +186,14 @@ contract('RangeVoting App', accounts => {
       )
       assert.equal(castedvoteId, 1, 'A vote should have been casted')
     })
-    it('execution scripts can execute actions', async () => {
+    xit('execution scripts can execute actions', async () => {
       let action = {
         to: executionTarget.address,
         calldata: executionTarget.contract.setSignal.getData(
           // original args: address[], uint256[] supports
           //  updated args: address[], uint256[] infoIndex, string Info, uint256[] _supports 
           [accounts[7], accounts[8], accounts[9]],
-          [4, 8, 12],
+          [4, 4, 4],
           'arg1arg2arg3',
           [0, 0, 0]
         )
@@ -232,16 +232,16 @@ contract('RangeVoting App', accounts => {
         calldata: executionTarget.contract.setSignal.getData([], [], '', [])
       }
       const script = encodeCallScript([action])
-      console.log(script)
+      //console.log(script)
       const voteId = createdVoteId(
         await app.newVote(script, '', { from: holder50 })
       )
-      //let vote = [10, 15, 25]
-      //await app.addCandidate(voteId, '0x', accounts[7])
-      //await app.addCandidate(voteId, '0x', accounts[8])
-      //await app.addCandidate(voteId, '0x', accounts[9])
-      //let voter = holder50
-      //await app.vote(voteId, vote, { from: voter })
+      let vote = [10, 15, 25]
+      await app.addCandidate(voteId, '0x', accounts[7])
+      await app.addCandidate(voteId, '0x', accounts[8])
+      await app.addCandidate(voteId, '0x', accounts[9])
+      let voter = holder50
+      await app.vote(voteId, vote, { from: voter })
       return assertRevert(async () => {
         await app.executeVote(voteId)
       })
@@ -254,7 +254,7 @@ contract('RangeVoting App', accounts => {
           // original args: address[], uint256[] supports
           //  updated args: address[], uint256[] infoIndex, string Info, uint256[] _supports 
           [accounts[7], accounts[8], accounts[9]],
-          [4, 8, 12],
+          [4, 4, 4],
           'arg1arg2arg3',
           [0, 0, 0]
         )
@@ -268,7 +268,7 @@ contract('RangeVoting App', accounts => {
 
     xit('can change minimum candidate support', async () => { })
 
-    xcontext('creating vote with normal distributions', () => {
+    context('creating vote with normal distributions', () => {
       let voteId = {}
       let script = ''
       let candidateState
@@ -281,11 +281,14 @@ contract('RangeVoting App', accounts => {
           calldata: executionTarget.contract.setSignal.getData(
             // TODO: Candidates need to be added in reverse order to keep their initial index
             candidates,
+            [4, 4, 4],
+            'arg1arg2arg3',
             [0, 0, 0]
           )
         }
 
-        script = encodeCallScript([action, action])
+        script = encodeCallScript([action])
+        //console.log(script)
         let newvote = await app.newVote(script, 'metadata', { from: nonHolder })
         voteId = createdVoteId(newvote)
       })
@@ -295,30 +298,33 @@ contract('RangeVoting App', accounts => {
       })
 
       it('stored the candidate addresses correctly', async () => {
-        let appleAddressAdded = (await app.getCandidate(
+        let appleState = (await app.getCandidate(
           voteId,
           candidates.indexOf(apple)
-        ))[0]
-        let orangeAddressAdded = (await app.getCandidate(
+        ))
+        console.log(appleState)
+        let orangeState = (await app.getCandidate(
           voteId,
           candidates.indexOf(orange)
-        ))[0]
-        let bananaAddressAdded = (await app.getCandidate(
+        ))
+        console.log(orangeState)
+        let bananaState = (await app.getCandidate(
           voteId,
           candidates.indexOf(banana)
-        ))[0]
+        ))
+        console.log(bananaState)
         assert.equal(
-          appleAddressAdded,
+          appleState[0],
           apple,
           'apple address extracted incorrectly'
         )
         assert.equal(
-          orangeAddressAdded,
+          orangeState[0],
           orange,
           'orange address extracted incorrectly'
         )
         assert.equal(
-          bananaAddressAdded,
+          bananaState[0],
           banana,
           'banana address extracted incorrectly'
         )
@@ -566,14 +572,15 @@ contract('RangeVoting App', accounts => {
           0,
           'Support should start at 0'
         )
+        candidates.pop()
       })
-      xit('holder can get total number of candidates', async () => {
+      it('holder can get total number of candidates', async () => {
         // TODO: totalcandidates seems to be stuck at 4.
         const totalcandidates = await app.getCandidateLength(voteId)
         assert.equal(
-          totalcandidates,
-          4,
-          'THERE ARE FOUR CANDIDATES!'
+          totalcandidates.toNumber(),
+          3,
+          'candidate array length is incorrect'
         )
       })
       it('holder can get vote metadata', async () => {
@@ -586,7 +593,7 @@ contract('RangeVoting App', accounts => {
       })
     })
   })
-  xcontext('wrong initializations', () => {
+  context('wrong initializations', () => {
     beforeEach(async () => {
       const n = '0x00'
       token = await MiniMeToken.new(n, n, 0, 'n', 0, 'n', true) // empty parameters minime
@@ -632,7 +639,7 @@ contract('RangeVoting App', accounts => {
     })
   })
 
-  xcontext('before init', () => {
+  context('before init', () => {
     it('fails creating a vote before initialization', async () => {
       return assertRevert(async () => {
         await app.newVote(encodeCallScript([]), '')
