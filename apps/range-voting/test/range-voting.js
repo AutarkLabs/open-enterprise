@@ -148,11 +148,11 @@ contract('RangeVoting App', accounts => {
         to: executionTarget.address,
         calldata: executionTarget.contract.setSignal.getData(
           // original args: address[], uint256[] supports
-          //  updated args: address[], uint256[] infoIndex, string Info, uint256[] _supports 
+          //  updated args: address[], uint256[] _supports, uint256[] infoIndex, string Info 
           [accounts[7], accounts[8], accounts[9]],
+          [0, 0, 0],
           [4, 4, 4],
-          'arg1arg2arg3',
-          [0, 0, 0]
+          'arg1arg2arg3'
         )
       }
       const script = encodeCallScript([action])
@@ -167,11 +167,11 @@ contract('RangeVoting App', accounts => {
         to: executionTarget.address,
         calldata: executionTarget.contract.setSignal.getData(
           // original args: address[], uint256[] supports
-          //  updated args: address[], uint256[] infoIndex, string Info, uint256[] _supports 
+          //  updated args: address[], uint256[] supports, uint256[] infoIndex, string Info
           [accounts[7], accounts[8], accounts[9]],
+          [0, 0, 0],
           [4, 4, 4],
-          'arg1arg2arg3',
-          [0, 0, 0]
+          'arg1arg2arg3'
         )
       }
       const script = encodeCallScript([action])
@@ -191,11 +191,11 @@ contract('RangeVoting App', accounts => {
         to: executionTarget.address,
         calldata: executionTarget.contract.setSignal.getData(
           // original args: address[], uint256[] supports
-          //  updated args: address[], uint256[] infoIndex, string Info, uint256[] _supports 
+          //  updated args: address[], uint256[] supports, uint256[] infoIndex, string Info
           [accounts[7], accounts[8], accounts[9]],
+          [0, 0, 0],
           [4, 4, 4],
-          'arg1arg2arg3',
-          [0, 0, 0]
+          'arg1arg2arg3'
         )
       }
       const script = encodeCallScript([action])
@@ -229,7 +229,7 @@ contract('RangeVoting App', accounts => {
     it('execution throws if any action on script throws', async () => {
       let action = {
         to: executionTarget.address,
-        calldata: executionTarget.contract.setSignal.getData([], [], '', [])
+        calldata: executionTarget.contract.setSignal.getData([], [], [], '')
       }
       const script = encodeCallScript([action])
       //console.log(script)
@@ -252,11 +252,11 @@ contract('RangeVoting App', accounts => {
         to: executionTarget.address,
         calldata: executionTarget.contract.setSignal.getData(
           // original args: address[], uint256[] supports
-          //  updated args: address[], uint256[] infoIndex, string Info, uint256[] _supports 
+          //  updated args: address[], uint256[] supports, uint256[] infoIndex, string Info
           [accounts[7], accounts[8], accounts[9]],
+          [0, 0, 0],
           [4, 4, 4],
-          'arg1arg2arg3',
-          [0, 0, 0]
+          'arg1arg2arg3'
         )
       }
       const script = encodeCallScript([action])
@@ -281,9 +281,9 @@ contract('RangeVoting App', accounts => {
           calldata: executionTarget.contract.setSignal.getData(
             // TODO: Candidates need to be added in reverse order to keep their initial index
             candidates,
+            [0, 0, 0],
             [4, 4, 4],
-            'arg1arg2arg3',
-            [0, 0, 0]
+            'arg1arg2arg3'
           )
         }
 

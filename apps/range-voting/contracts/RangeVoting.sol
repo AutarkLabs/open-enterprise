@@ -444,9 +444,9 @@ contract RangeVoting is IForwarder, AragonApp {
         /*
         param numbers and what they map to:
         1. candidate addresses 
-        2. Info String indexes
-        3. Info String length
-        4. Supports values
+        2. Supports values
+        3. Info String indexes
+        4. Info String length
         */
         uint256 startOffset = 0x04 + 0x14 + 0x04;
         paramOffset = _executionScript.uint256At(startOffset + 0x04 + (0x20 * (_paramNum - 1) )) + 0x20;
@@ -471,6 +471,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @dev This function needs to work with strings instead of addresses but it doesn't
     *      This fits our current use case better and string manipulation is harder
     *      since there's more like... dynamic-ness.
+            //TODO Update the above dev info
     */
     function _extractCandidates(bytes _executionScript, uint256 _voteId) internal returns(uint256 currentOffset, uint256 calldataLength) {
         // in order to find out the total length of our call data we take the 3rd
@@ -492,7 +493,7 @@ contract RangeVoting is IForwarder, AragonApp {
         // The first word in the param slot is the length of the array
 
         // obtain the beginning index of the infoString
-        uint256 infoStart = _goToParamOffset(3,_executionScript) + 0x20;
+        uint256 infoStart = _goToParamOffset(4,_executionScript) + 0x20;
         Location(infoStart);
         uint256 candidateLength = _executionScript.uint256At(currentOffset);
     
@@ -507,7 +508,7 @@ contract RangeVoting is IForwarder, AragonApp {
         for (uint256 i = candidateLength; i > 0; i--) {
             currentCandidate = _executionScript.addressAt(currentOffset + 0x0C);
             //find the end of the infoString using the relative arg positions
-            infoEnd = infoStart + _executionScript.uint256At(currentOffset + (0x20 * (candidateLength + 1) ));
+            infoEnd = infoStart + _executionScript.uint256At(currentOffset + (0x20 * 2 * (candidateLength + 1) ));
             info = substring(_executionScript, infoStart, infoEnd);
             Metadata(info);
             Location(infoEnd);
