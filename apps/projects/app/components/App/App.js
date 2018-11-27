@@ -63,6 +63,7 @@ class App extends React.Component {
           heading: 'New Project',
           onCreateProject: this.createProject,
           github: props.github,
+          onGithubSignIn: this.handleGithubSignIn,
         },
       },
     }))
@@ -70,6 +71,10 @@ class App extends React.Component {
 
   closePanel = () => {
     this.setState({ panel: { visible: false } })
+  }
+
+  handleGithubSignIn = () => {
+    console.log('popup here')
   }
 
   render() {
