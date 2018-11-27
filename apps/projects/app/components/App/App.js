@@ -53,6 +53,11 @@ const getPopupOffset = ({ width, height }) => {
   return { top, left }
 }
 
+const getURLParam = param => {
+  const searchParam = new URLSearchParams(window.location.search)
+  return searchParam.get(param)
+}
+
 class App extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
@@ -67,6 +72,34 @@ class App extends React.Component {
     },
     // TODO: Don't use this in production
     // reposManaged: projectsMockData(),
+  }
+
+  componentDidMount() {
+    /**
+     * Acting as the redirect target it looks up for 'code' URL param on component mount
+     * if it detects the code then sends to the opener window
+     * via postMessage with 'popup' as origin and close the window (usually a popup)
+     */
+    const code = getURLParam('code')
+    code &&
+      window.opener.postMessage(
+        { from: 'popup', name: 'code', value: code },
+        '*'
+      )
+    window.close()
+  }
+
+  handlePopupMessage = message => {
+    if (message.data.from !== 'popup') return
+    if (message.data.name === 'code') {
+      const code = message.data.value
+      console.log('AuthCode received from github:', code)
+      console.log('Proceeding to token request...')
+
+      // TODO: Optimize the listeners lifecycle, ie: remove on unmount
+      console.log('removing messageListener')
+      window.removeEventListener('message', this.messageHandler)
+    }
   }
 
   changeActiveIndex = activeIndex => {
@@ -117,7 +150,11 @@ class App extends React.Component {
   }
 
   handleGithubSignIn = () => {
+    // The popup is launched, its ref is checked and saved in the state in one step
     this.setState(({ oldPopup }) => ({ popup: githubPopup(oldPopup) }))
+    // Listen for the github redirection with the auth-code encoded as url param
+    console.log('adding messageListener')
+    window.addEventListener('message', this.handlePopupMessage)
   }
 
   render() {
