@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { Text, Info, theme, Field, TextInput, Button } from '@aragon/ui'
 
-const GithubAuth = ({ handleSignIn }) => (
+const GithubAuth = ({ onGithubSignIn }) => (
   <React.Fragment>
     <Text size="large" style={{ marginTop: '20px' }}>
       Sign in with GitHub to start managing your repos with Aragon
@@ -23,7 +23,7 @@ const GithubAuth = ({ handleSignIn }) => (
     {/* <Field label="Personal Token">
             <TextInput onChange={this.handleTokenChange} required wide />
           </Field> */}
-    <Button mode="strong" wide onClick={handleSignIn}>
+    <Button mode="strong" wide onClick={onGithubSignIn}>
       Sign in with GitHub
     </Button>
   </React.Fragment>

@@ -117,12 +117,13 @@ class NewProject extends React.Component {
   render() {
     const {
       github: { status = 'initial' },
+      onGithubSignIn,
     } = this.props
     const { showRepos } = this
 
     return (
       <React.Fragment>
-        {status === 'initial' && <GithubAuth />}
+        {status === 'initial' && <GithubAuth onGithubSignIn={onGithubSignIn} />}
         {status === 'authenticated' && showRepos()}
         {/* {status === 'requesting' && showLoading()} */}
       </React.Fragment>
