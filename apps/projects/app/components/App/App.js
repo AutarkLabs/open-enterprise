@@ -7,12 +7,14 @@ import styled from 'styled-components'
 import { AppContent } from '.'
 import { Title } from '../Shared'
 import { NewProject } from '../Panel'
+import { STATUS } from '../../utils/github'
 
 const ASSETS_URL = 'aragon-ui-assets/'
 
 // TODO: let the user customize the github app on settings screen?
 const CLIENT_ID = 'd556542aa7a03e640409'
 const GITHUB_URI = 'https://github.com/login/oauth/authorize'
+const AUTH_URI = 'http://localhost:9999/authenticate'
 
 // TODO: This should be dynamically set depending on the execution environment (dev, prod...)
 const REDIRECT_URI = 'http://localhost:3333'
@@ -23,8 +25,8 @@ export const githubPopup = (popup = null) => {
     popup = window.open(
       // TODO: Improve readability here: encode = (params: Object) => (JSON.stringify(params).replace(':', '=').trim())
       // encode uurl params
-      // `${GITHUB_URI}?client_id=${CLIENT_ID}&scope=user&redirect_uri=${REDIRECT_URI}`,
-      `${REDIRECT_URI}/?code=232r3423`,
+      `${GITHUB_URI}?client_id=${CLIENT_ID}&scope=user&redirect_uri=${REDIRECT_URI}`,
+      // `${REDIRECT_URI}/?code=232r3423`, // <= use this to avoid spamming github for testing purposes
       'githubAuth',
       // TODO: Improve readability here: encode = (fields: Object) => (JSON.stringify(fields).replace(':', '=').trim())
       `scrollbars=no,toolbar=no,location=no,titlebar=no,directories=no,status=no,menubar=no, ${getPopupDimensions()}`
@@ -58,6 +60,25 @@ const getURLParam = param => {
   return searchParam.get(param)
 }
 
+/**
+ * Sends an http request to the AUTH_URI with the auth code obtained from the oauth flow
+ * @param {string} code
+ * @returns {string} The authentation token obtained from the auth server
+ */
+const getToken = async code => {
+  console.log('getToken entered')
+
+  // TODO: Manage when server does not respond
+  try {
+    let response = await fetch(`${AUTH_URI}/${code}`)
+    let json = await response.json()
+    if (json.token) return json.token
+    else throw Error(`${json.error}`)
+  } catch (e) {
+    console.error('Error from Authentication server:', e)
+  }
+}
+
 class App extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
@@ -89,16 +110,22 @@ class App extends React.Component {
     window.close()
   }
 
-  handlePopupMessage = message => {
+  handlePopupMessage = async message => {
     if (message.data.from !== 'popup') return
     if (message.data.name === 'code') {
-      const code = message.data.value
-      console.log('AuthCode received from github:', code)
-      console.log('Proceeding to token request...')
-
       // TODO: Optimize the listeners lifecycle, ie: remove on unmount
       console.log('removing messageListener')
       window.removeEventListener('message', this.messageHandler)
+
+      const code = message.data.value
+      console.log('AuthCode received from github:', code)
+      console.log('Proceeding to token request...')
+      const token = await getToken(code)
+      console.log('token obtained:', token)
+      this.props.app.cache('github', {
+        status: STATUS.AUTHENTICATED,
+        token: token,
+      })
     }
   }
 
@@ -131,18 +158,17 @@ class App extends React.Component {
   newProject = () => {
     console.log('newproject', this.props)
 
-    this.setState((_, props) => ({
+    this.setState({
       panel: {
         visible: true,
         content: NewProject,
         data: {
           heading: 'New Project',
           onCreateProject: this.createProject,
-          github: props.github,
           onGithubSignIn: this.handleGithubSignIn,
         },
       },
-    }))
+    })
   }
 
   closePanel = () => {
@@ -159,7 +185,9 @@ class App extends React.Component {
 
   render() {
     const { panel } = this.state
+    const { github } = this.props
     const PanelContent = panel.content
+    console.log('rendered App component, github prop:', github)
 
     return (
       <StyledAragonApp publicUrl={ASSETS_URL}>
@@ -180,7 +208,7 @@ class App extends React.Component {
           opened={panel.visible}
           onClose={this.closePanel}
         >
-          {panel.content && <PanelContent {...panel.data} />}
+          {panel.content && <PanelContent {...panel.data} github={github} />}
         </SidePanel>
       </StyledAragonApp>
     )

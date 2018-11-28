@@ -4,10 +4,8 @@ import { combineLatest } from 'rxjs'
 import { empty } from 'rxjs/observable/empty'
 
 import { GraphQLClient } from 'graphql-request'
+import { STATUS } from './utils/github'
 
-const STATUS = {
-  INITIAL: 'initial',
-}
 const authToken = ''
 const client = new GraphQLClient('https://api.github.com/graphql', {
   headers: {
@@ -57,7 +55,21 @@ const getRepoData = repo => client.request(repoData(repo))
 const app = new Aragon()
 let appState
 
-app.rpc.send('cache', ['set', 'github', { status: STATUS.INITIAL }])
+/**
+ * Observe the github object.
+ * @return {Observable} An observable of github object over time.
+ */
+const github = () => {
+  return app.rpc
+    .sendAndObserveResponses('cache', ['get', 'github'])
+    .pluck('result')
+}
+
+github().subscribe(result => {
+  console.log('github object received from cache:', result)
+  if (result) return
+  else app.cache('github', { status: STATUS.INITIAL })
+})
 
 app.events().subscribe(handleEvents)
 

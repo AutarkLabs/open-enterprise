@@ -6,6 +6,10 @@ import CheckBox from '../Shared/CheckBox'
 import { GithubAuth } from '.'
 
 import { withGithub, GithubContext } from '../../context'
+import { STATUS_CODES } from 'http'
+
+import { STATUS } from '../../utils/github'
+
 // import ApolloClient from 'apollo-boost'
 // import { ApolloProvider } from 'react-apollo'
 
@@ -123,8 +127,11 @@ class NewProject extends React.Component {
 
     return (
       <React.Fragment>
-        {status === 'initial' && <GithubAuth onGithubSignIn={onGithubSignIn} />}
-        {status === 'authenticated' && showRepos()}
+        {status === STATUS.AUTHENTICATED ? (
+          showRepos()
+        ) : (
+          <GithubAuth onGithubSignIn={onGithubSignIn} />
+        )}
         {/* {status === 'requesting' && showLoading()} */}
       </React.Fragment>
     )
