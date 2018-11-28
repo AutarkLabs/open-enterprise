@@ -14,7 +14,7 @@ const ASSETS_URL = 'aragon-ui-assets/'
 // TODO: let the user customize the github app on settings screen?
 const CLIENT_ID = 'd556542aa7a03e640409'
 const GITHUB_URI = 'https://github.com/login/oauth/authorize'
-const AUTH_URI = 'http://localhost:9999/authenticate'
+const AUTH_URI = 'https://tps-github-auth.now.sh/authenticate'
 
 // TODO: This should be dynamically set depending on the execution environment (dev, prod...)
 const REDIRECT_URI = 'http://localhost:3333'
