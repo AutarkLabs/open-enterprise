@@ -10,6 +10,8 @@ import { Query } from 'react-apollo'
 import { withGithub, GithubContext } from '../../context'
 import { STATUS_CODES } from 'http'
 
+import RepoSelector from './NewProject/RepoSelector'
+
 import { STATUS } from '../../utils/github'
 
 // import ApolloClient from 'apollo-boost'
@@ -146,8 +148,9 @@ class NewProject extends React.Component {
     return (
       <React.Fragment>
         {status === STATUS.AUTHENTICATED ? (
-          showRepos()
+          <RepoSelector />
         ) : (
+          // showRepos()
           <GithubAuth onGithubSignIn={onGithubSignIn} />
         )}
         {/* {status === 'requesting' && showLoading()} */}
