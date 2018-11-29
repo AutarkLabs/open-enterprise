@@ -15,8 +15,8 @@ const addedRepo = receipt => receipt.logs.filter(
   x => x.event == 'RepoAdded')[0].args.repoId
 const addedBounties = receipt => receipt.logs.filter(
   x => x.event == 'BountyAdded')[2]
-const acceptedFulfillment = receipt => receipt.logs.filter(
-  x => x.event == 'FulfillmentAccepted')
+const fulfilledBounty = receipt => receipt.logs.filter(
+  x => x.event == 'BountyFulfilled')[0].args
 
 contract('Projects App', accounts => {
   let daoFact,
@@ -192,7 +192,7 @@ contract('Projects App', accounts => {
         assert(fulfillment[0] === false)
         await registry.acceptFulfillment(0, 0, { from: accounts[0] })
         fulfillment = await registry.getFulfillment(0, 0)
-        var bounty = await registry.getBounty(0)
+        const bounty = await registry.getBounty(0)
         assert(fulfillment[0] === true)
         assert(bounty[5] == 0)
       })
@@ -207,24 +207,22 @@ contract('Projects App', accounts => {
           0x0,
           { from: accounts[0] })
         await registry.activateBounty(0, 1000, { from: accounts[0], value: 1000 })
-
         await registry.fulfillBounty(0, 'data', { from: accounts[1] })
         await registry.fulfillBounty(0, 'data2', { from: accounts[2] })
-
         let fulfillment = await registry.getFulfillment(0, 0)
-
+        assert(fulfillment[0] === false)
         await registry.acceptFulfillment(0, 1, { from: accounts[0] })
         fulfillment = await registry.getFulfillment(0, 0)
-
-        var bounty = await registry.getBounty(0)
+        const bounty = await registry.getBounty(0)
+        // assert(fulfillment[0] === true)
         assert(bounty[5] == 0)
       })
     })
 
-    context('fulfill bounty & accept fulfillment', () => {
+    context('issue, fulfill, and accept fulfillment for bulk bounties', () => {
       let issue3Receipt
 
-      beforeEach(async () => {
+      beforeEach('issue bulk bounties', async () => {
         issue3Receipt = addedBounties(
           await app.addBounties(
             repoId,
@@ -233,14 +231,13 @@ contract('Projects App', accounts => {
             [86400, 86400, 86400],
             [false, false, false],
             [0, 0, 0],
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
             { from: bountyAdder, value: 60 }
           )
         )
-
       })
 
-      it('verifies bounty data contains correct IPFS hash', async () => {
+      it('verifies bounty data contains correct IPFS hashes', async () => {
         const issue3Bounty = issue3Receipt.args.bountySize.toNumber()
         assert.strictEqual(issue3Bounty, 30, 'bounty not added')
         const IssueData1 = await app.getIssue(repoId, 1)
@@ -250,30 +247,52 @@ contract('Projects App', accounts => {
         const IssueData2 = await app.getIssue(repoId, 2)
         const bountyId2 = IssueData2[1].toNumber()
         const bountyData2 = await bounties.getBountyData(bountyId2)
-        assert.strictEqual(bountyData2, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC', 'IPFS hash stored correctly')
+        assert.strictEqual(bountyData2, 'QmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWu', 'IPFS hash stored correctly')
         const IssueData3 = await app.getIssue(repoId, 3)
         const bountyId3 = IssueData3[1].toNumber()
         const bountyData3 = await bounties.getBountyData(bountyId3)
-        assert.strictEqual(bountyData3, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC', 'IPFS hash stored correctly')
+        assert.strictEqual(bountyData3, 'QmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w', 'IPFS hash stored correctly')
       })
 
-      xit('accepts fulfillment', async () => {
-        await app.fulfillBounty(0, 'findthemillenniumfalcon')
-        // let fulfillment = await registry.getFulfillment(0, 0)
-        // assert(fulfillment[0] === false)
-        // let result = acceptedFulfillment(
-        //   await app.acceptFulfillment(repoId, 1, 0, { from: bountyAdder })
-        // )
-        // TODO: debug vm exception
-        // Diagnosis: correct roles possibly not activating bounty or accepting fulfillment
+      it('fulfill bounties and accept fulfillment', async () => {
+        const IssueData1 = await app.getIssue(repoId, 1)
+        const bountyId1 = IssueData1[1].toNumber()
+        const fulfillmentId1 = fulfilledBounty(
+          await registry.fulfillBounty(bountyId1, 'findthemillenniumfalcon')
+        )._fulfillmentId.toNumber()
+        let fulfillment1 = await registry.getFulfillment(bountyId1, fulfillmentId1)
+        assert(fulfillment1[0] === false)
+        await app.acceptFulfillment(repoId, 1, fulfillmentId1, { from: bountyAdder })
+        fulfillment1 = await registry.getFulfillment(bountyId1, fulfillmentId1)
+        assert(fulfillment1[0] === true)
+
+        const IssueData2 = await app.getIssue(repoId, 2)
+        const bountyId2 = IssueData2[1].toNumber()
+        const fulfillmentId2 = fulfilledBounty(
+          await registry.fulfillBounty(bountyId2, 'findthemillenniumfalcon')
+        )._fulfillmentId.toNumber()
+        let fulfillment2 = await registry.getFulfillment(bountyId2, fulfillmentId2)
+        assert(fulfillment2[0] === false)
+        await app.acceptFulfillment(repoId, 2, fulfillmentId2, { from: bountyAdder })
+        fulfillment2 = await registry.getFulfillment(bountyId2, fulfillmentId2)
+        assert(fulfillment2[0] === true)
+
+        const IssueData3 = await app.getIssue(repoId, 3)
+        const bountyId3 = IssueData3[1].toNumber()
+        const fulfillmentId3 = fulfilledBounty(
+          await registry.fulfillBounty(bountyId3, 'findthemillenniumfalcon')
+        )._fulfillmentId.toNumber()
+        let fulfillment3 = await registry.getFulfillment(bountyId3, fulfillmentId3)
+        assert(fulfillment3[0] === false)
+        await app.acceptFulfillment(repoId, 3, fulfillmentId3, { from: bountyAdder })
+        fulfillment3 = await registry.getFulfillment(bountyId3, fulfillmentId3)
+        assert(fulfillment3[0] === true)
       })
 
       // TODO: add state checks for standard bounty contract,
       // such that it reflects state changes made in projects contract
     })
 
-    // TODO: add state checks for standard bounty contract,
-    // such that it reflects state changes made in projects contract
   })
 
   context('invalid operations', () => {
