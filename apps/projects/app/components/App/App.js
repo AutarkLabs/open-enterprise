@@ -4,6 +4,8 @@ import React from 'react'
 import { hot } from 'react-hot-loader'
 import styled from 'styled-components'
 
+import { ApolloProvider } from 'react-apollo'
+
 import { AppContent } from '.'
 import { Title } from '../Shared'
 import { NewProject } from '../Panel'
@@ -185,31 +187,32 @@ class App extends React.Component {
 
   render() {
     const { panel } = this.state
-    const { github } = this.props
+    const { github, client } = this.props
     const PanelContent = panel.content
     console.log('rendered App component, github prop:', github)
 
     return (
       <StyledAragonApp publicUrl={ASSETS_URL}>
         <Title text="Projects" shadow />
+        <ApolloProvider client={client}>
+          <AppContent
+            app={this.props.app}
+            projects={this.props.repos !== undefined ? this.props.repos : []}
+            onNewProject={this.newProject}
+            onNewIssue={this.newIssue}
+            onSelect={this.selectProject}
+            activeIndex={this.state.activeIndex}
+            changeActiveIndex={this.changeActiveIndex}
+          />
 
-        <AppContent
-          app={this.props.app}
-          projects={this.props.repos !== undefined ? this.props.repos : []}
-          onNewProject={this.newProject}
-          onNewIssue={this.newIssue}
-          onSelect={this.selectProject}
-          activeIndex={this.state.activeIndex}
-          changeActiveIndex={this.changeActiveIndex}
-        />
-
-        <SidePanel
-          title={(panel.data && panel.data.heading) || ''}
-          opened={panel.visible}
-          onClose={this.closePanel}
-        >
-          {panel.content && <PanelContent {...panel.data} github={github} />}
-        </SidePanel>
+          <SidePanel
+            title={(panel.data && panel.data.heading) || ''}
+            opened={panel.visible}
+            onClose={this.closePanel}
+          >
+            {panel.content && <PanelContent {...panel.data} github={github} />}
+          </SidePanel>
+        </ApolloProvider>
       </StyledAragonApp>
     )
   }
