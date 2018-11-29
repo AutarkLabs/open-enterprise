@@ -4,6 +4,8 @@ import { Form, FormField, SettingsInput } from '../Form'
 import { Text } from '@aragon/ui'
 import CheckBox from '../Shared/CheckBox'
 import { GithubAuth } from '.'
+import { gql } from 'apollo-boost'
+import { Query } from 'react-apollo'
 
 import { withGithub, GithubContext } from '../../context'
 import { STATUS_CODES } from 'http'
@@ -26,6 +28,14 @@ import { STATUS } from '../../utils/github'
 //     }
 //   },
 // })
+
+const GET_AVATAR = gql`
+  query {
+    viewer {
+      avatarUrl
+    }
+  }
+`
 
 class NewProject extends React.Component {
   state = {
@@ -113,6 +123,14 @@ class NewProject extends React.Component {
         <Text size="large">Which repos do you want to add?</Text>
         <Form onSubmit={this.handleReposSubmit} submitText="Finish">
           <RepoList>{reposDisplayList}</RepoList>
+          <Query query={GET_AVATAR}>
+            {({ loading, error, data }) => {
+              if (loading) return <div>Loading...</div>
+              if (error) return <div>Error :(</div>
+
+              return <h1>{JSON.stringify(data)}</h1>
+            }}
+          </Query>
         </Form>
       </div>
     )
