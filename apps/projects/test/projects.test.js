@@ -128,7 +128,12 @@ contract('Projects App', accounts => {
       )
     })
 
-    it('retrieves repo information successfully', async () => {
+    it('retrieve repo array length', async () => {
+      const repolength = await app.getRepoArrayLength()
+      assert(repolength, 2)
+    })
+
+    it('retrieve repo information successfully', async () => {
       const repoInfo = await app.getRepo(repoId, { from: owner1 })
       const result = web3.toAscii(repoInfo[0])
 
@@ -211,10 +216,10 @@ contract('Projects App', accounts => {
         await registry.fulfillBounty(0, 'data2', { from: accounts[2] })
         let fulfillment = await registry.getFulfillment(0, 0)
         assert(fulfillment[0] === false)
-        await registry.acceptFulfillment(0, 1, { from: accounts[0] })
+        await registry.acceptFulfillment(0, 0, { from: accounts[0] })
         fulfillment = await registry.getFulfillment(0, 0)
         const bounty = await registry.getBounty(0)
-        // assert(fulfillment[0] === true)
+        assert(fulfillment[0] === true)
         assert(bounty[5] == 0)
       })
     })
@@ -288,11 +293,7 @@ contract('Projects App', accounts => {
         fulfillment3 = await registry.getFulfillment(bountyId3, fulfillmentId3)
         assert(fulfillment3[0] === true)
       })
-
-      // TODO: add state checks for standard bounty contract,
-      // such that it reflects state changes made in projects contract
     })
-
   })
 
   context('invalid operations', () => {

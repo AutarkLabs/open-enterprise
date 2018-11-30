@@ -41,11 +41,6 @@ interface Bounties {
         uint _value
     ) external payable;
 
-    function fulfillBounty(
-        uint _bountyId, 
-        string _data
-    ) external;
-    
     function acceptFulfillment(
         uint _bountyId, 
         uint _fulfillmentId
@@ -177,15 +172,6 @@ contract Projects is AragonApp {
 ///////////////////
 // Bounty functions
 ///////////////////
-
-    /**
-     * @notice submit a fulfillment for the given bounty
-     * @param _standardBountyId the id of the standard bounty
-     * @param _data the data artifacts representing the fulfillment of the bounty
-     */
-    function fulfillBounty(uint _standardBountyId, string _data) external {
-        bounties.fulfillBounty(_standardBountyId, _data);
-    }
 
     /**
      * @notice accept a given fulfillment
