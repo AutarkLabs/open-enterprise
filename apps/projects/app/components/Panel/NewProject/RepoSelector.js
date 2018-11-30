@@ -11,6 +11,7 @@ class Repo extends React.Component {
     repos: [],
     filteredRepos: [],
     filtered: false,
+    filter: '',
   }
 
   componentDidMount() {
@@ -29,8 +30,10 @@ class Repo extends React.Component {
     }
   }
 
+  // TODO: use observables
   searchRepos = e => {
     const repos = this.state.repos.filter(repo => {
+      this.setState({ filter: e.target.value })
       if (repo.node.nameWithOwner.indexOf(e.target.value) > -1) {
         return repo
       } else {
@@ -44,32 +47,61 @@ class Repo extends React.Component {
     })
   }
 
+  handleClearSearch = () => {
+    // TODO: initial state
+    this.setState({
+      filter: '',
+      filtered: false,
+      filteredRepos: [],
+    })
+  }
+
   render() {
-    const { repos, filteredRepos, filtered } = this.state
+    const { repos, filteredRepos, filtered, filter } = this.state
 
     const visibleRepos = filtered ? filteredRepos : repos
 
-    const repositories =
-      repos.length > 0 ? (
-        visibleRepos.map((repo, i) => {
-          return (
-            <div key={i} style={{ display: 'flex', alignItems: 'baseline' }}>
-              <CheckBox
-                style={{ marginRight: '10.5px', width: '17px', height: '17px' }}
-              />
-              <Text.Block
-                size="xlarge"
-                color={theme.textSecondary}
-                style={{ lineHeight: '26px' }}
-              >
-                {repo.node.nameWithOwner}
-              </Text.Block>
-            </div>
-          )
-        })
+    // TODO: extract to component
+    const repoList =
+      visibleRepos.length > 0 ? (
+        visibleRepos.map((repo, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'baseline' }}>
+            <CheckBox
+              style={{
+                marginRight: '10.5px',
+                width: '17px',
+                height: '17px',
+              }}
+            />
+            <Text.Block
+              size="xlarge"
+              color={theme.textSecondary}
+              style={{ lineHeight: '26px' }}
+            >
+              {repo.node.nameWithOwner}
+            </Text.Block>
+          </div>
+        ))
       ) : (
-        <Loading />
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            marginTop: '19px',
+            flexDirection: 'column',
+          }}
+        >
+          <Text.Block>
+            There are no repositories matching{' '}
+            <Text weight="bold">{this.state.filter}</Text>
+          </Text.Block>
+          <ClearSearch onClick={this.handleClearSearch}>
+            Clear Search
+          </ClearSearch>
+        </div>
       )
+
+    const repositories = repos.length > 0 ? repoList : <Loading />
 
     return (
       <React.Fragment>
@@ -88,6 +120,7 @@ class Repo extends React.Component {
               style={{ margin: '16px 0', flexShrink: '0' }}
               placeholder="Search for a repo"
               wide
+              value={filter}
               onChange={this.searchRepos}
             />
             <div
@@ -207,14 +240,23 @@ const Loading = () => (
   </div>
 )
 
+const ClearSearch = styled(Text.Block).attrs({
+  size: 'small',
+  color: theme.accent,
+})`
+  text-decoration: underline;
+  margin-top: 15px;
+  :hover {
+    cursor: pointer;
+  }
+`
 export default graphql(gql`
   query {
     viewer {
       repositories(
         affiliations: [COLLABORATOR, ORGANIZATION_MEMBER, OWNER]
-        isFork: false
-        first: 50
-        orderBy: { field: NAME, direction: DESC }
+        first: 100
+        orderBy: { field: NAME, direction: ASC }
       ) {
         edges {
           node {
