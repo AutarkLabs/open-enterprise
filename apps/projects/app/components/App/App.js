@@ -27,7 +27,7 @@ export const githubPopup = (popup = null) => {
     popup = window.open(
       // TODO: Improve readability here: encode = (params: Object) => (JSON.stringify(params).replace(':', '=').trim())
       // encode uurl params
-      `${GITHUB_URI}?client_id=${CLIENT_ID}&scope=user&redirect_uri=${REDIRECT_URI}`,
+      `${GITHUB_URI}?client_id=${CLIENT_ID}&scope=user%20public_repo&redirect_uri=${REDIRECT_URI}`,
       // `${REDIRECT_URI}/?code=232r3423`, // <= use this to avoid spamming github for testing purposes
       'githubAuth',
       // TODO: Improve readability here: encode = (fields: Object) => (JSON.stringify(fields).replace(':', '=').trim())
@@ -139,18 +139,15 @@ class App extends React.Component {
     console.log('selectProject')
   }
 
-  createProject = () => {
-    console.info('App.js: createProject')
+  createProject = ({ owner, project }) => {
+    console.info('App.js: createProject', project)
     this.closePanel()
-    this.setState({})
+    // this.setState({})
     console.log('projects props:', this.props)
     // console.log('hex:', window.web3.toHex('MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5'))
 
     // this.props.app.addRepo(this.props.userAccount, '0x012026678901')
-    this.props.app.addRepo(
-      web3.toHex('MDQ6VXNlcjUwMzAwNTk='),
-      web3.toHex('MDEwOlJlcG9zaXRvcnkxNDkxMzQ4NTk=')
-    )
+    this.props.app.addRepo(web3.toHex(owner), web3.toHex(project))
   }
 
   newIssue = () => {

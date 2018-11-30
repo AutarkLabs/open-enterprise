@@ -96,10 +96,6 @@ class NewProject extends React.Component {
     }
   }
 
-  handleReposSubmit = () => {
-    this.props.onCreateProject()
-  }
-
   showRepos = () => {
     let reposDisplayList = []
     const { reposFromServer, reposManaged, reposToAdd } = this.state
@@ -148,7 +144,7 @@ class NewProject extends React.Component {
     return (
       <React.Fragment>
         {status === STATUS.AUTHENTICATED ? (
-          <RepoSelector />
+          <RepoSelector onCreateProject={this.props.onCreateProject} />
         ) : (
           // showRepos()
           <GithubAuth onGithubSignIn={onGithubSignIn} />
