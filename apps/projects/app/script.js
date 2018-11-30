@@ -6,13 +6,6 @@ import { empty } from 'rxjs/observable/empty'
 import { GraphQLClient } from 'graphql-request'
 import { STATUS } from './utils/github'
 
-const authToken = ''
-const client = new GraphQLClient('https://api.github.com/graphql', {
-  headers: {
-    Authorization: 'Bearer ' + authToken,
-  },
-})
-
 const toAscii = hex => {
   // Find termination
   let str = ''
@@ -50,8 +43,6 @@ const repoData = id => `{
     }
 }`
 
-const getRepoData = repo => client.request(repoData(repo))
-
 const app = new Aragon()
 let appState
 
@@ -65,10 +56,24 @@ const github = () => {
     .pluck('result')
 }
 
+let client
+const getRepoData = repo => client.request(repoData(repo))
+const initClient = authToken => {
+  client = new GraphQLClient('https://api.github.com/graphql', {
+    headers: {
+      Authorization: 'Bearer ' + authToken,
+    },
+  })
+}
+
+// TODO: Handle cases where checking validity of token fails (revoked, etc)
+
 github().subscribe(result => {
   console.log('github object received from cache:', result)
-  if (result) return
-  else app.cache('github', { status: STATUS.INITIAL })
+  if (result) {
+    result.token && initClient(result.token)
+    return
+  } else app.cache('github', { status: STATUS.INITIAL })
 })
 
 app.events().subscribe(handleEvents)

@@ -2,22 +2,25 @@ import React from 'react'
 import { graphql } from 'react-apollo'
 import gql from 'graphql-tag'
 import styled from 'styled-components'
-import { Button, Text, TextInput, theme } from '@aragon/ui'
+import { Button, RadioList, Text, TextInput, theme } from '@aragon/ui'
 
 import ethereumLoadingAnimation from '../../../assets/svg/ethereum-loading.svg'
-import { CheckBox } from '../../Shared'
+
 class Repo extends React.Component {
   state = {
     repos: [],
     filteredRepos: [],
     filtered: false,
     filter: '',
+    project: '',
+    repoSelected: -1,
   }
 
   componentDidMount() {
     if (this.props.data && this.props.data.viewer) {
       this.setState({
         repos: this.props.data.viewer.repositories.edges,
+        owner: this.props.data.viewer.id,
       })
     }
   }
@@ -56,33 +59,47 @@ class Repo extends React.Component {
     })
   }
 
+  handleNewProject = () => {
+    const { owner, project } = this.state
+    console.log('new project:', project, owner)
+
+    if (project.length > 0) this.props.onCreateProject({ owner, project })
+  }
+
+  onRepoSelected = i => {
+    this.setState({ repoSelected: i })
+  }
+
+  onRepoListChanged = e => {
+    this.setState({ project: e.target.value })
+  }
+
   render() {
     const { repos, filteredRepos, filtered, filter } = this.state
 
     const visibleRepos = filtered ? filteredRepos : repos
 
     // TODO: extract to component
+    const repoArray = visibleRepos.map(repo => ({
+      title: repo.node.nameWithOwner,
+      value: repo.node.id,
+      description: '',
+    }))
+
     const repoList =
       visibleRepos.length > 0 ? (
-        visibleRepos.map((repo, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'baseline' }}>
-            <CheckBox
-              style={{
-                marginRight: '10.5px',
-                width: '17px',
-                height: '17px',
-              }}
-            />
-            <Text.Block
-              size="xlarge"
-              color={theme.textSecondary}
-              style={{ lineHeight: '26px' }}
-            >
-              {repo.node.nameWithOwner}
-            </Text.Block>
-          </div>
-        ))
+        <RadioList
+          items={repoArray}
+          selected={this.state.repoSelected}
+          onChange={this.onRepoListChanged}
+          onSelect={this.onRepoSelected}
+        />
       ) : (
+        // <RadioGroup>
+        //   {visibleRepos.map((repo, i) => (
+        //     <RepoLine repo={repo} i={i} onRepoSelected={this.onRepoSelected} />
+        //   ))}
+        // </RadioGroup>
         <div
           style={{
             display: 'flex',
@@ -127,6 +144,7 @@ class Repo extends React.Component {
               style={{
                 flexGrow: '1',
                 overflowY: 'auto',
+                paddingRight: '10px',
                 margin: '16px 0',
                 // Hack needed to make the scrollable list, since the whole SidePanel is a scrollable container
                 height: 'calc(100vh - 253px)',
@@ -134,7 +152,13 @@ class Repo extends React.Component {
             >
               {repositories}
             </div>
-            <Button mode="strong" wide style={{ flexShrink: '0' }}>
+            <Button
+              mode="strong"
+              wide
+              style={{ flexShrink: '0' }}
+              onClick={this.handleNewProject}
+              disabled={this.state.repoSelected < 0}
+            >
               Finish
             </Button>
           </div>
@@ -253,14 +277,16 @@ const ClearSearch = styled(Text.Block).attrs({
 export default graphql(gql`
   query {
     viewer {
+      id
       repositories(
         affiliations: [COLLABORATOR, ORGANIZATION_MEMBER, OWNER]
-        first: 100
+        first: 20
         orderBy: { field: NAME, direction: ASC }
       ) {
         edges {
           node {
             nameWithOwner
+            id
           }
         }
       }
