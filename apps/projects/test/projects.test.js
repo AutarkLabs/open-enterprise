@@ -319,7 +319,7 @@ contract('Projects App', accounts => {
     })
 
 
-    it('addBounties reverts when value sent is incorrect', async () => {
+    it('cannot issue bulk bounties with invalid value', async () => {
       const bountyAdder = accounts[2]
       const repoId = addedRepo(
         await app.addRepo('abc', String(123))
@@ -336,6 +336,34 @@ contract('Projects App', accounts => {
           { from: bountyAdder, value: 61 }  // 61 Wei sent instead
         )
       })
+    })
+
+    it('cannot accept unfulfilled bounties', async () => {
+      let repoId = addedRepo(
+        await app.addRepo(
+          'MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5',
+          'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk='
+        )
+      )
+      await app.addBounties(
+        repoId,
+        [1, 2, 3],
+        [10, 20, 30],
+        [86400, 86400, 86400],
+        [false, false, false],
+        [0, 0, 0],
+        'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+        { from: bountyAdder, value: 60 }
+      )
+      assertRevert(async () => {
+        await app.acceptFulfillment(repoId, 0, 0, { from: bountyAdder })
+      })
+      await registry.fulfillBounty(0, 'findthemillenniumfalcon')
+      let fulfillment1 = await registry.getFulfillment(0, 0)
+      assert(fulfillment1[0] === false)
+      await app.acceptFulfillment(repoId, 0, 0, { from: bountyAdder })
+      fulfillment1 = await registry.getFulfillment(0, 0)
+      assert(fulfillment1[0] === true)
     })
   })
 })
