@@ -186,7 +186,7 @@ contract('RangeVoting App', accounts => {
       )
       assert.equal(castedvoteId, 1, 'A vote should have been casted')
     })
-    xit('execution scripts can execute actions', async () => {
+    it('execution scripts can execute actions', async () => {
       let action = {
         to: executionTarget.address,
         calldata: executionTarget.contract.setSignal.getData(
@@ -302,17 +302,14 @@ contract('RangeVoting App', accounts => {
           voteId,
           candidates.indexOf(apple)
         ))
-        console.log(appleState)
         let orangeState = (await app.getCandidate(
           voteId,
           candidates.indexOf(orange)
         ))
-        console.log(orangeState)
         let bananaState = (await app.getCandidate(
           voteId,
           candidates.indexOf(banana)
         ))
-        console.log(bananaState)
         assert.equal(
           appleState[0],
           apple,
