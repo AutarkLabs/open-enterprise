@@ -76,12 +76,12 @@ class NewEntity extends React.Component {
         <FormField
           label="Type"
           input={
-          <DropDown
-            name="eType"
-            items={ENTITY_TYPES}
-            onChange={this.changeField}
-            wide
-          />
+            <DropDown
+              name="eType"
+              items={ENTITY_TYPES}
+              onChange={this.changeField}
+              wide
+            />
           }
         />
       </Form>

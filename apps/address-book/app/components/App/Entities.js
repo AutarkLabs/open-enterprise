@@ -30,31 +30,30 @@ const Entities = ({
           </TableRow>
         }
       >
-      {
-        entities.map(ent => {
-          const eType = ENTITY_TYPES[ent.eType]
-          return (
-            <TableRow key={ent.eAddress}>
-              <EntityCell>
-                <EntityWrapper>
-                  <Text>{ent.eName}</Text>
-                  <SafeLink style={{ color: '#21AAE7' }} href={"#"}>
-                    {ent.eAddress}
-                  </SafeLink>
-                </EntityWrapper>
-              </EntityCell>
-              <EntityCell align="center">
-                <Badge foreground={eType.fg} background={eType.bg}>{eType.name}</Badge>
-              </EntityCell>
-              <EntityCell>
-                <ContextMenu>
-                  <ContextMenuItem onClick={removeEntity(ent.eAddress)}>Remove</ContextMenuItem>
-                </ContextMenu>
-              </EntityCell>
-
-            </TableRow>
-          )})
-      }
+        {
+          entities.map(ent => {
+            const eType = ENTITY_TYPES[ent.eType]
+            return (
+              <TableRow key={ent.eAddress}>
+                <EntityCell>
+                  <EntityWrapper>
+                    <Text>{ent.eName}</Text>
+                    <SafeLink style={{ color: '#21AAE7' }} href={'#'}>
+                      {ent.eAddress}
+                    </SafeLink>
+                  </EntityWrapper>
+                </EntityCell>
+                <EntityCell align="center">
+                  <Badge foreground={eType.fg} background={eType.bg}>{eType.name}</Badge>
+                </EntityCell>
+                <EntityCell>
+                  <ContextMenu>
+                    <ContextMenuItem onClick={removeEntity(ent.eAddress)}>Remove</ContextMenuItem>
+                  </ContextMenu>
+                </EntityCell>
+              </TableRow>
+            )})
+        }
       </Table>
     )
   }

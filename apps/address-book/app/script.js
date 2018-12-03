@@ -1,23 +1,16 @@
-import Aragon, { providers } from '@aragon/client'
-import { combineLatest } from './rxjs'
+import Aragon from '@aragon/client'
+import { first, of } from 'rxjs' // Make sure observables have .first
+import { combineLatest } from 'rxjs'
+import { empty } from 'rxjs/observable/empty'
 
 const app = new Aragon()
+let appState
+app.events().subscribe(handleEvents)
 
-// Hook up the script as an aragon.js store
-app.store(async (state, { event, returnValues }) => {
-  let nextState = {
-    ...state,
-    // Fetch the app's settings, if we haven't already
-    //...(!hasLoadedVoteSettings(state) ? await loadVoteSettings() : {}),
-  }
-
-  switch (event) {
-  case 'NewPayout':
-    nextState = await newPayout(nextState, returnValues)
-    break
-  }
-
-  return nextState
+app.state().subscribe(state => {
+  console.log('Allocations: entered state subscription:\n', state)
+  appState = state ? state : { entries: [] }
+  //appState = state
 })
 
 /***********************
@@ -26,12 +19,34 @@ app.store(async (state, { event, returnValues }) => {
  *                     *
  ***********************/
 
-async function newPayout(state, { payoutId }) {
-  const transform = ({ data, ...payout }) => ({
-    ...payout,
-    data: { ...data, executed: true },
+async function handleEvents(response) {
+  let nextState
+  switch (response.event) {
+  case 'EntryAdded':
+    nextState = await syncEntries(appState, response.returnValues)
+    break
+  case 'EntryRemoved':
+    console.log('EntryRemoved Fired: ', response.returnValues)
+    nextState = await syncEntries(appState, response.returnValues)
+    break
+  default:
+    console.log(response)
+  }
+  app.cache('state', nextState)
+}
+
+async function syncEntries(state, { addr, ...eventArgs }) {
+  console.log('arguments from events:', ...eventArgs)
+  const transform = ({ data, ...entry }) => ({
+    ...entry,
+    data: { ...data },
   })
-  return updateState(state, payoutId, transform)
+  try {
+    let updatedState = await updateState(state, addr, transform)
+    return updatedState
+  } catch (err) {
+    console.error('updateState failed to return:', err)
+  }
 }
 
 /***********************
@@ -40,41 +55,57 @@ async function newPayout(state, { payoutId }) {
  *                     *
  ***********************/
 
-function loadPayoutData(payoutId) {
+function loadEntryData(addr) {
+  console.log('loadEntryData entered')
   return new Promise(resolve => {
-    combineLatest(app.call('getPayout', payoutId)).subscribe(
-      ([payout, metadata]) => {}
+    combineLatest(app.call('getEntry', addr)).subscribe(
+      ( [entry]) => {
+        console.log(entry)
+        resolve({
+          entryAddress: entry[0],
+          name: entry[1],
+          entryType: entry[2]
+        })
+      }
     )
   })
 }
 
-async function updatePayouts(payouts, payoutId, transform) {
-  const payoutIndex = payouts.findIndex(payout => payout.payoutId === payoutId)
-
-  if (payoutIndex === -1) {
+async function checkEntriesLoaded(entries, addr, transform) {
+  const entryIndex = entries.findIndex(
+    entry => entry.entryAddress === addr
+  )
+  if (entryIndex === -1) {
     // If we can't find it, load its data, perform the transformation, and concat
-    return payouts.concat(
+    console.log('entry not found: retrieving from chain')
+    return entries.concat(
       await transform({
-        payoutId,
-        data: await loadPayoutData(payoutId),
+        addr,
+        data: await loadEntryData(addr),
       })
     )
   } else {
-    const nextPayouts = Array.from(payouts)
-    nextPayouts[payoutIndex] = await transform(nextPayouts[payoutIndex])
-    return nextPayouts
+    const entryIndex = Array.from(entries)
+    nextEntries[entryIndex] = await transform({
+      addr,
+      data: await loadEntryData(addr),
+    })
+    return nextEntries
   }
 }
 
-async function updateState(state, payoutId, transform) {
-  const { payouts = [] } = state
-
-  return {
-    ...state,
-    payouts: await updatePayouts(payouts, payoutId, transform),
+async function updateState(state, addr, transform) {
+  const { entries = [] } = state
+  try {
+    let nextEntries = await checkEntriesLoaded(entries, addr, transform)
+    let newState = { ...state, entries: nextEntries }
+    return newState
+  } catch (err) {
+    console.error(
+      'Update entries failed to return:',
+      err,
+      'here\'s what returned in NewEntries',
+      nextEntries
+    )
   }
 }
-
-// Apply transmations to a vote received from web3
-// Note: ignores the 'open' field as we calculate that locally
-//
