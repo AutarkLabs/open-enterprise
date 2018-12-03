@@ -24,7 +24,7 @@ class App extends React.Component {
   }
 
   createEntity = entity => {
-// temp workaround
+    // temp workaround
     var { entities } = this.state
     entities.push(entity)
     this.setState({ entities })
@@ -37,7 +37,7 @@ class App extends React.Component {
   }
 
   removeEntity = eAddress => {
-// temp workaround
+    // temp workaround
     var { entities } = this.state
     const e2 = entities.filter(entity => entity.eAddress !== eAddress)
     this.setState({ entities: e2 })

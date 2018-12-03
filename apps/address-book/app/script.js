@@ -21,8 +21,8 @@ app.state().subscribe(state => {
 async function handleEvents(response) {
   let nextState
   switch (response.event) {
-    default:
-      console.log('iAB: Unknown event catched:', response)
+  default:
+    console.log('iAB: Unknown event catched:', response)
   }
   app.cache('state', nextState)
 }

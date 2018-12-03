@@ -32,9 +32,9 @@ const FormField = ({ input, label, hint, required, separator, err }) => {
       )}
       {err && (
         <div>
-        <Text size="xsmall" color={theme.negative}>
-          {err}
-        </Text>
+          <Text size="xsmall" color={theme.negative}>
+            {err}
+          </Text>
         </div>
       )}
       {input}
