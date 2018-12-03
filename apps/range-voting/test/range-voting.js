@@ -152,11 +152,13 @@ contract('RangeVoting App', accounts => {
           [accounts[7], accounts[8], accounts[9]],
           [0, 0, 0],
           [4, 4, 4],
-          'arg1arg2arg3'
+          'arg1arg2arg3',
+          [0x61, 0x61, 0x61],
+          [0x61, 0x61, 0x61]
         )
       }
       const script = encodeCallScript([action])
-      //console.log(script)
+     //console.log(script)
       const voteId = createdVoteId(
         await app.newVote(script, '', { from: holder50 })
       )
@@ -171,7 +173,9 @@ contract('RangeVoting App', accounts => {
           [accounts[7], accounts[8], accounts[9]],
           [0, 0, 0],
           [4, 4, 4],
-          'arg1arg2arg3'
+          'arg1arg2arg3',
+          ['0x0', '0x0', '0x0'],
+          ['0x0', '0x0', '0x0']
         )
       }
       const script = encodeCallScript([action])
@@ -186,7 +190,7 @@ contract('RangeVoting App', accounts => {
       )
       assert.equal(castedvoteId, 1, 'A vote should have been casted')
     })
-    it('execution scripts can execute actions', async () => {
+    xit('execution scripts can execute actions', async () => {
       let action = {
         to: executionTarget.address,
         calldata: executionTarget.contract.setSignal.getData(
@@ -195,7 +199,9 @@ contract('RangeVoting App', accounts => {
           [accounts[7], accounts[8], accounts[9]],
           [0, 0, 0],
           [4, 4, 4],
-          'arg1arg2arg3'
+          'arg1arg2arg3',
+          ['0x0', '0x0', '0x0'],
+          ['0x0', '0x0', '0x0']
         )
       }
       const script = encodeCallScript([action])
@@ -229,7 +235,7 @@ contract('RangeVoting App', accounts => {
     it('execution throws if any action on script throws', async () => {
       let action = {
         to: executionTarget.address,
-        calldata: executionTarget.contract.setSignal.getData([], [], [], '')
+        calldata: executionTarget.contract.setSignal.getData([], [], [], '',[],[])
       }
       const script = encodeCallScript([action])
       //console.log(script)
@@ -237,9 +243,9 @@ contract('RangeVoting App', accounts => {
         await app.newVote(script, '', { from: holder50 })
       )
       let vote = [10, 15, 25]
-      await app.addCandidate(voteId, '0x', accounts[7])
-      await app.addCandidate(voteId, '0x', accounts[8])
-      await app.addCandidate(voteId, '0x', accounts[9])
+      await app.addCandidate(voteId, '0x', accounts[7],0x0,0x0)
+      await app.addCandidate(voteId, '0x', accounts[8],0x0,0x0)
+      await app.addCandidate(voteId, '0x', accounts[9],0x0,0x0)
       let voter = holder50
       await app.vote(voteId, vote, { from: voter })
       return assertRevert(async () => {
@@ -256,7 +262,9 @@ contract('RangeVoting App', accounts => {
           [accounts[7], accounts[8], accounts[9]],
           [0, 0, 0],
           [4, 4, 4],
-          'arg1arg2arg3'
+          'arg1arg2arg3',
+          ['0x0', '0x0', '0x0'],
+          ['0x0', '0x0', '0x0']
         )
       }
       const script = encodeCallScript([action])
@@ -283,7 +291,9 @@ contract('RangeVoting App', accounts => {
             candidates,
             [0, 0, 0],
             [4, 4, 4],
-            'arg1arg2arg3'
+            'arg1arg2arg3',
+            [0x1, 0x2, 0x3],
+            [0x1, 0x2, 0x3]
           )
         }
 
@@ -302,6 +312,7 @@ contract('RangeVoting App', accounts => {
           voteId,
           candidates.indexOf(apple)
         ))
+        //console.log(appleState)
         let orangeState = (await app.getCandidate(
           voteId,
           candidates.indexOf(orange)
@@ -553,7 +564,7 @@ contract('RangeVoting App', accounts => {
       })
       it('holder can add candidates', async () => {
         mango = accounts[5]
-        await app.addCandidate(voteId, '0xbeefdead', mango)
+        await app.addCandidate(voteId, '0xbeefdead', mango, 0x1, 0x1)
         candidates.push(mango)
         candidateState = await app.getCandidate(
           voteId,
@@ -572,7 +583,6 @@ contract('RangeVoting App', accounts => {
         candidates.pop()
       })
       it('holder can get total number of candidates', async () => {
-        // TODO: totalcandidates seems to be stuck at 4.
         const totalcandidates = await app.getCandidateLength(voteId)
         assert.equal(
           totalcandidates.toNumber(),

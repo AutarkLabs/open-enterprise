@@ -94,6 +94,8 @@ contract RangeVoting is IForwarder, AragonApp {
         string metadata;
         uint8 keyArrayIndex;
         uint256 voteSupport;
+        bytes32 externalId1;
+        bytes32 externalId2;
     }
 
     Vote[] votes;
@@ -110,6 +112,8 @@ contract RangeVoting is IForwarder, AragonApp {
     event AddCandidate(uint256 voteId, address candidate, uint length);
     event Metadata(string metadata);
     event Location(uint256 currentLocation);
+    event Address(address candidate);
+    event CandidateQty(uint256 numberOfCandidates);
 
 ////////////////
 // Constructor
@@ -200,7 +204,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _description This is the string that will be displayed along the
     *        option when voting
     */
-    function addCandidate(uint256 _voteId, string _metadata, address _description)
+    function addCandidate(uint256 _voteId, string _metadata, address _description, bytes32 eId1, bytes32 eId2)
     public auth(ADD_CANDIDATES_ROLE)
     {
         // Get vote and candidate into storage
@@ -214,6 +218,8 @@ contract RangeVoting is IForwarder, AragonApp {
         candidate.added = true;
         candidate.keyArrayIndex = uint8(keys.length);
         candidate.metadata = _metadata;
+        candidate.externalId1 = eId1;
+        candidate.externalId2 = eId2;
         // double check
         candidateAddresses[cKey] = _description;
         keys.push(cKey);
@@ -229,13 +235,15 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _candidateIndex The candidate descrciption of the candidate.
     */
     function getCandidate(uint256 _voteId, uint256 _candidateIndex) // solium-disable-line function-order
-    external view returns(address candidateAddress, uint256 voteSupport, string metadata)
+    external view returns(address candidateAddress, uint256 voteSupport, string metadata, bytes32 externalId1, bytes32 externalId2)
     {
         Vote storage voteInstance = votes[_voteId];
         CandidateState storage candidate = voteInstance.candidates[voteInstance.candidateKeys[_candidateIndex]];
         candidateAddress = candidateAddresses[voteInstance.candidateKeys[_candidateIndex]];
         voteSupport = candidate.voteSupport;
         metadata = candidate.metadata;
+        externalId1 = candidate.externalId1;
+        externalId2 = candidate.externalId2;
     }
 
     /**
@@ -450,6 +458,8 @@ contract RangeVoting is IForwarder, AragonApp {
         2. Supports values
         3. Info String indexes
         4. Info String length
+        5. Level 1 external references
+        6. level 2 external references
         */
         uint256 startOffset = 0x04 + 0x14 + 0x04;
         paramOffset = _executionScript.uint256At(startOffset + 0x04 + (0x20 * (_paramNum - 1) )) + 0x20;
@@ -470,6 +480,38 @@ contract RangeVoting is IForwarder, AragonApp {
         return string(result);
     }
 
+    function _iterateExtraction(uint256 _voteId, bytes _executionScript, uint256 _currentOffset, uint256 _candidateLength) internal {
+        uint256 currentOffset = _currentOffset;
+        address currentCandidate;
+        string memory info;
+        uint256 infoEnd;
+        bytes32 externalId1;
+        bytes32 externalId2;
+        uint256 idOffset;
+        uint256 infoStart = _goToParamOffset(4,_executionScript) + 0x20;
+        Location(infoStart);
+        emit CandidateQty(_candidateLength);
+        for (uint256 i = 0 ; i < _candidateLength; i++) {
+            currentCandidate = _executionScript.addressAt(currentOffset + 0x0C);
+            emit Address(currentCandidate);
+            //find the end of the infoString using the relative arg positions
+            infoEnd = infoStart + _executionScript.uint256At(currentOffset + (0x20 * 2 * (_candidateLength + 1) ));
+            info = substring(_executionScript, infoStart, infoEnd);
+            Metadata(info);
+            Location(infoEnd);
+            currentOffset = currentOffset + 0x20;
+            // update the index for the next iteration
+            infoStart = infoEnd;
+            // store candidate external IDs
+            idOffset = _goToParamOffset(5, _executionScript) + 0x20 * (i + 1);
+            externalId1 = bytes32(_executionScript.uint256At(idOffset));
+            idOffset = _goToParamOffset(6, _executionScript) + 0x20 * (i + 1);
+            externalId2 = bytes32(_executionScript.uint256At(idOffset));
+
+            addCandidate(_voteId, info, currentCandidate, externalId1, externalId2);
+        }
+    }
+
     /**
     * @dev This function needs to work with strings instead of addresses but it doesn't
     *      This fits our current use case better and string manipulation is harder
@@ -487,7 +529,7 @@ contract RangeVoting is IForwarder, AragonApp {
         // so we have:
         // start offset (spec id + address + calldataLength) + param offset + function signature
         // note:function signature length (0x04) added in both contexts: grabbing the offset value and the outer offset calculation
-        uint256 firstParamOffset = startOffset + 0x80 + 0x04;
+        uint256 firstParamOffset = _goToParamOffset(1, _executionScript);
         currentOffset = firstParamOffset;
 
         // compute end of script / next location and ensure there's no 
@@ -496,30 +538,38 @@ contract RangeVoting is IForwarder, AragonApp {
         // The first word in the param slot is the length of the array
 
         // obtain the beginning index of the infoString
-        uint256 infoStart = _goToParamOffset(4,_executionScript) + 0x20;
-        Location(infoStart);
+        //uint256 infoStart = _goToParamOffset(4,_executionScript) + 0x20;
+        //Location(infoStart);
         uint256 candidateLength = _executionScript.uint256At(currentOffset);
     
-        address currentCandidate;
-        string memory info;
-        uint256 infoEnd;
-
+        //address currentCandidate;
+        //string memory info;
+        //uint256 infoEnd;
+        //bytes32 externalId1;
+        //bytes32 externalId2;
+        //uint256 idOffset;
         currentOffset = currentOffset + 0x20;
         // This has the potential to be too gas expensive to ever happen.
         // Upper limit of candidates should be checked against this function
-        
-        for (uint256 i = candidateLength; i > 0; i--) {
-            currentCandidate = _executionScript.addressAt(currentOffset + 0x0C);
-            //find the end of the infoString using the relative arg positions
-            infoEnd = infoStart + _executionScript.uint256At(currentOffset + (0x20 * 2 * (candidateLength + 1) ));
-            info = substring(_executionScript, infoStart, infoEnd);
-            Metadata(info);
-            Location(infoEnd);
-            currentOffset = currentOffset + 0x20;
-            // update the index for the next iteration
-            infoStart = infoEnd;
-            addCandidate(_voteId, info, currentCandidate);
-        }
+        _iterateExtraction(_voteId, _executionScript, currentOffset, candidateLength);
+        //for (uint256 i = candidateLength; i > 0; i--) {
+        //    currentCandidate = _executionScript.addressAt(currentOffset + 0x0C);
+        //    //find the end of the infoString using the relative arg positions
+        //    infoEnd = infoStart + _executionScript.uint256At(currentOffset + (0x20 * 2 * (candidateLength + 1) ));
+        //    info = substring(_executionScript, infoStart, infoEnd);
+        //    Metadata(info);
+        //    Location(infoEnd);
+        //    currentOffset = currentOffset + 0x20;
+        //    // update the index for the next iteration
+        //    infoStart = infoEnd;
+        //    // store candidate external IDs
+        //    idOffset = _goToParamOffset(5, _executionScript) + 0x20 * i;
+        //    externalId1 = _executionScript.bytes32At(idOffset);
+        //    idOffset = _goToParamOffset(6, _executionScript) + 0x20 * i;
+        //    externalId2 = _executionScript.bytes32At(idOffset);
+        //    //add pulled data to storage
+        //    addCandidate(_voteId, info, currentCandidate, externalId1, externalId2);
+        //}
         // Skip the next param since it's also determined by this contract
         // In order to do this we move the offset one word for the length of the param
         // and we move the offset one word for each param.

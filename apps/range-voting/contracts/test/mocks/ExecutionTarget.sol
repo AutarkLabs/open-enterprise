@@ -8,8 +8,11 @@ contract ExecutionTarget {
         address[] /*_addr*/, 
         uint256[] _signal,
         uint256[] /*_infoIndices*/, 
-        string /*_candidateInfo*/
-    ) public {
+        string /*_candidateInfo*/,
+        bytes32[] /*level 1 ID */,
+        bytes32[] /* level 2 ID */
+    ) public 
+    {
         for (uint i = 0; i < _signal.length; i++) {
             signal.push(_signal[i]);
         }
