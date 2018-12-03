@@ -41,6 +41,13 @@ class ConnectedApp extends React.Component {
           userAccount: accounts[0] || '',
         })
       })
+      app.rpc
+        .sendAndObserveResponses('cache', ['get', 'github'])
+        .pluck('result')
+        .subscribe(github => {
+          console.log('github object received from backend cache:', github)
+          this.setState({ github: github })
+        })
     }
   }
   sendMessageToWrapper = (name, value) => {
