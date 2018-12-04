@@ -190,7 +190,7 @@ contract('RangeVoting App', accounts => {
       )
       assert.equal(castedvoteId, 1, 'A vote should have been casted')
     })
-    xit('execution scripts can execute actions', async () => {
+    it('execution scripts can execute actions', async () => {
       let action = {
         to: executionTarget.address,
         calldata: executionTarget.contract.setSignal.getData(
@@ -213,6 +213,7 @@ contract('RangeVoting App', accounts => {
       await app.vote(voteId, vote, { from: voter })
       timeTravel(RangeVotingTime + 1)
       await app.executeVote(voteId)
+      //assert.equal(1,0)
       let signal
       for (let i = 0; i < vote.length; i++) {
         signal = await executionTarget.getSignal(i)
