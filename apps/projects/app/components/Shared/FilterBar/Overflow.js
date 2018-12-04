@@ -39,7 +39,7 @@ class Overflow extends React.Component {
 
   calculateItems = () => {
     const containerWidth = this.theRef.current.clientWidth
-    console.log(containerWidth)
+    // console.log(containerWidth)
 
     const itemWidth = 200
     const shown = Math.floor(containerWidth / itemWidth)

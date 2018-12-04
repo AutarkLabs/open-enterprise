@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { unselectable } from '@aragon/ui'
 
-import { EmptyStateCard } from '../Card'
+import { EmptyStateCard } from '.'
 
 const EmptyWrapper = styled.div`
   ${unselectable};
