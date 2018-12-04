@@ -29,6 +29,7 @@ class Repo extends React.Component {
     if (nextProps.data.viewer.repositories) {
       this.setState({
         repos: nextProps.data.viewer.repositories.edges,
+        owner: nextProps.data.viewer.id,
       })
     }
   }
@@ -281,6 +282,7 @@ export default graphql(gql`
       repositories(
         affiliations: [COLLABORATOR, ORGANIZATION_MEMBER, OWNER]
         first: 20
+        isFork: false
         orderBy: { field: NAME, direction: ASC }
       ) {
         edges {
