@@ -6,7 +6,7 @@ import { Project, Empty } from '../Card'
 
 const Overview = ({ projects, onNewProject, onSelect, app }) => {
   const projectsEmpty = projects.length === 0
-  console.log('Overview projects:', projects)
+  // console.log('Overview projects:', projects)
   if (projectsEmpty) {
     return <Empty action={onNewProject} />
   }
