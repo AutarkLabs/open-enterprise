@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { Button, Text, Field, TextInput, theme } from '@aragon/ui'
 import NumberFormat from 'react-number-format'
 
-import { DropDown } from '../DropDown'
+import { DropDown } from '../Shared'
 
 class Settings extends React.Component {
   render() {
