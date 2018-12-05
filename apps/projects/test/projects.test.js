@@ -27,7 +27,7 @@ contract('Projects App', accounts => {
   const owner1 = accounts[0]
   const owner2 = accounts[1]
   const bountyAdder = accounts[2]
-  const repoRemover = accounts[4]
+  const repoRemover = accounts[3]
 
   before(async () => {
     //Create Base DAO Contracts
@@ -130,18 +130,17 @@ contract('Projects App', accounts => {
 
     it('retrieve repo array length', async () => {
       const repolength = await app.getRepoArrayLength()
-      assert(repolength, 2)
+      assert(repolength, 2, 'valid repo length returned')
     })
 
     it('retrieve repo information successfully', async () => {
       const repoInfo = await app.getRepo(repoId, { from: owner1 })
       const result = web3.toAscii(repoInfo[0])
 
-      // result = repoInfo[0]
       assert.equal(
         result,
         'MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5',
-        'invalid repo info returned'
+        'valid repo info returned'
       )
     })
 
@@ -292,6 +291,53 @@ contract('Projects App', accounts => {
         await app.acceptFulfillment(repoId, 3, fulfillmentId3, { from: bountyAdder })
         fulfillment3 = await registry.getFulfillment(bountyId3, fulfillmentId3)
         assert(fulfillment3[0] === true)
+      })
+
+      it('verify balance is correct before and after accepting fulfillment in standard bounty', async () => {
+        const IssueData1 = await app.getIssue(repoId, 1)
+        const bountyId1 = IssueData1[1].toNumber()
+        const fulfillmentId1 = fulfilledBounty(
+          await registry.fulfillBounty(bountyId1, 'findthemillenniumfalcon')
+        )._fulfillmentId.toNumber()
+        let fulfillment1 = await registry.getFulfillment(bountyId1, fulfillmentId1)
+        assert(fulfillment1[0] === false)
+        let bounty1 = await registry.getBounty(bountyId1)
+        assert.strictEqual(bounty1[5].toNumber(), 10)
+        await app.acceptFulfillment(repoId, 1, fulfillmentId1, { from: bountyAdder })
+        fulfillment1 = await registry.getFulfillment(bountyId1, fulfillmentId1)
+        assert(fulfillment1[0] === true)
+        bounty1 = await registry.getBounty(bountyId1)
+        assert.strictEqual(bounty1[5].toNumber(), 0)
+
+        const IssueData2 = await app.getIssue(repoId, 2)
+        const bountyId2 = IssueData2[1].toNumber()
+        const fulfillmentId2 = fulfilledBounty(
+          await registry.fulfillBounty(bountyId2, 'findthemillenniumfalcon')
+        )._fulfillmentId.toNumber()
+        let fulfillment2 = await registry.getFulfillment(bountyId2, fulfillmentId2)
+        assert(fulfillment2[0] === false)
+        let bounty2 = await registry.getBounty(bountyId2)
+        assert.strictEqual(bounty2[5].toNumber(), 20)
+        await app.acceptFulfillment(repoId, 2, fulfillmentId2, { from: bountyAdder })
+        fulfillment2 = await registry.getFulfillment(bountyId2, fulfillmentId2)
+        assert(fulfillment2[0] === true)
+        bounty2 = await registry.getBounty(bountyId2)
+        assert.strictEqual(bounty2[5].toNumber(), 0)
+
+        const IssueData3 = await app.getIssue(repoId, 3)
+        const bountyId3 = IssueData3[1].toNumber()
+        const fulfillmentId3 = fulfilledBounty(
+          await registry.fulfillBounty(bountyId3, 'findthemillenniumfalcon')
+        )._fulfillmentId.toNumber()
+        let fulfillment3 = await registry.getFulfillment(bountyId3, fulfillmentId3)
+        assert(fulfillment3[0] === false)
+        let bounty3 = await registry.getBounty(bountyId3)
+        assert.strictEqual(bounty3[5].toNumber(), 30)
+        await app.acceptFulfillment(repoId, 3, fulfillmentId3, { from: bountyAdder })
+        fulfillment3 = await registry.getFulfillment(bountyId3, fulfillmentId3)
+        assert(fulfillment3[0] === true)
+        bounty3 = await registry.getBounty(bountyId3)
+        assert.strictEqual(bounty3[5].toNumber(), 0)
       })
     })
   })
