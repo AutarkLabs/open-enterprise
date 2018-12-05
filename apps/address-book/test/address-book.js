@@ -1,3 +1,8 @@
+const {
+  encodeCallScript,
+  EMPTY_SCRIPT,
+} = require('@tps/test-helpers/evmScript')
+
 const AddressBook = artifacts.require('AddressBook')
 
 const DAOFactory = artifacts.require(
@@ -10,9 +15,6 @@ const ACL = artifacts.require('@tps/test-helpers/contracts/acl/ACL')
 const Kernel = artifacts.require('@tps/test-helpers/contracts/kernel/Kernel')
 
 const getContract = name => artifacts.require(name)
-
-const removedEntry = receipt =>
-  receipt.logs.filter(x => x.event === 'EntryRemoved')[0].args.addr
 
 const ANY_ADDR = ' 0xffffffffffffffffffffffffffffffffffffffff'
 
