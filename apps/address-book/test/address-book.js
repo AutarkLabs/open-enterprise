@@ -19,9 +19,9 @@ const getContract = name => artifacts.require(name)
 const ANY_ADDR = ' 0xffffffffffffffffffffffffffffffffffffffff'
 
 contract('AddressBook App', accounts => {
-  let daoFact,
-    app,
-    token,
+  let daoFact = {},
+    app = {},
+    token = {},
     executionTarget = {}
 
   const root = accounts[0]
@@ -55,6 +55,8 @@ contract('AddressBook App', accounts => {
     const receipt = await dao.newAppInstance(
       '0x1234',
       (await AddressBook.new()).address,
+      0x0,
+      false,
       { from: root }
     )
     app = AddressBook.at(
@@ -86,28 +88,29 @@ contract('AddressBook App', accounts => {
 
     beforeEach(async () => {})
 
-    it('add to, get, and remove entry from addressbook', async () => {
-      // TODO: Fix failing test
-      // app.add(starfleet, 'Starfleet', 'Group')
-      // app.add(jeanluc, 'Jean-Luc Picard', 'Individual')
-      // app.add(borg, 'Borg', 'N/A')
-      // entry1 = await app.get(starfleet)
-      // entry2 = await app.get(jeanluc)
-      // entry3 = await app.get(borg)
-      // assert.equal(entry1[0], starfleet)
-      // assert.equal(entry1[1], 'Starfleet')
-      // assert.equal(entry1[2], 'Group')
-      // assert.equal(entry2[0], jeanluc)
-      // assert.equal(entry2[1], 'Jean-Luc Picard')
-      // assert.equal(entry2[2], 'Individual')
-      // assert.equal(entry3[0], borg)
-      // assert.equal(entry3[1], 'Borg')
-      // assert.equal(entry3[2], 'N/A')
-      // app.remove(borg)
-      // entry3 = await app.get(borg)
-      // assert.notEqual(entry3[0], borg)
-      // assert.notEqual(entry3[1], 'Borg')
-      // assert.notEqual(entry3[2], 'N/A')
+    it('add to and get entries from addressbook', async () => {
+      await app.addEntry(starfleet, 'Starfleet', 'Group')
+      await app.addEntry(jeanluc, 'Jean-Luc Picard', 'Individual')
+      await app.addEntry(borg, 'Borg', 'N/A')
+      entry1 = await app.get(starfleet)
+      entry2 = await app.get(jeanluc)
+      entry3 = await app.get(borg)
+      assert.equal(entry1[0], starfleet)
+      assert.equal(entry1[1], 'Starfleet')
+      assert.equal(entry1[2], 'Group')
+      assert.equal(entry2[0], jeanluc)
+      assert.equal(entry2[1], 'Jean-Luc Picard')
+      assert.equal(entry2[2], 'Individual')
+      assert.equal(entry3[0], borg)
+      assert.equal(entry3[1], 'Borg')
+      assert.equal(entry3[2], 'N/A')
+    })
+
+    it('remove entry from addressbook', async () => {
+      await app.removeEntry(borg)
+      entry3 = await app.get(borg)
+      assert.notEqual(entry3[0], borg)
     })
   })
 })
+

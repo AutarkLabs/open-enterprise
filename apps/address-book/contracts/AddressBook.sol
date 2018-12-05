@@ -57,33 +57,41 @@ contract AddressBook is AragonApp {
      * @param _address The address of the entry to add to the registry
      * @param _name The name of the entry to add to the registry
      * @param _entryType The type of the entry to add to the registry
+
+    ) public auth(ADD_ENTRY_ROLE) returns (address)
+    {
+
      */
     function addEntry(
         address _address,
         string _name,
         string _entryType
-    ) public auth(ADD_ENTRY_ROLE) returns (address) { // solium-disable-line lbrace
-        require(!nameUsed[keccak256(abi.encodePacked(_name))]); // solium-disable-line error-reason
+    ) public auth(ADD_ENTRY_ROLE) returns (address)
+    {
+        require(!nameUsed[keccak256(abi.encodePacked(_name))], 'name already in use');
 
         Entry storage entry = entries[_address];
         entry.entryAddress = _address;
         entry.name = _name;
         entry.entryType = _entryType;
 
-        emit EntryAdded(_address); // solium-disable-line emit
+        emit EntryAdded(_address);
+        
         return _address;
     }
 
     /**
      * Remove an entry from the registry.
      * @param _addr The ID of the entry to remove
+    ) public auth(REMOVE_ENTRY_ROLE) { // solium-disable-line lbrace
      */
     function removeEntry(
         address _addr
-    ) public auth(REMOVE_ENTRY_ROLE) { // solium-disable-line lbrace
+    ) public auth(REMOVE_ENTRY_ROLE)
+    {
         nameUsed[keccak256(abi.encodePacked(entries[_addr].name))] = false;
         delete entries[_addr];
-        emit EntryRemoved(_addr); // solium-disable-line emit
+        emit EntryRemoved(_addr);
     }
 
     /**
@@ -92,7 +100,8 @@ contract AddressBook is AragonApp {
      */
     function get(
         address _addr
-    ) public view returns (address, string, string) { // solium-disable-line lbrace
+    ) public view returns (address, string, string)
+    {
         Entry storage entry = entries[_addr];
 
         return(
