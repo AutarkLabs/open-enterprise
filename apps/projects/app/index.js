@@ -28,7 +28,8 @@ class ConnectedApp extends React.Component {
         if (token) {
           operation.setContext({
             headers: {
-              authorization: `Bearer ${token}`,
+              accept: 'application/vnd.github.starfire-preview+json', // needed to create issues
+              authorization: `bearer ${token}`,
             },
           })
         }
