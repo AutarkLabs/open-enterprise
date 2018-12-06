@@ -13,15 +13,16 @@ class Overflow extends React.Component {
   theRef = React.createRef()
 
   componentDidMount() {
-    window.addEventListener('resize', this.debounced(200, this.calculateItems))
+    window.addEventListener('resize', this.resize)
     this.calculateItems()
   }
 
   componentWillUnmount() {
-    window.removeEventListener(
-      'resize',
-      this.debounced(200, this.calculateItems)
-    )
+    window.removeEventListener('resize', this.resize)
+  }
+
+  resize = () => {
+    this.debounced(200, this.calculateItems)
   }
 
   debounced = (delay, fn) => {
@@ -38,7 +39,9 @@ class Overflow extends React.Component {
   }
 
   calculateItems = () => {
-    const containerWidth = this.theRef.current.clientWidth
+    const containerWidth = this.theRef.current
+      ? this.theRef.current.clientWidth
+      : 0
     // console.log(containerWidth)
 
     const itemWidth = 200
