@@ -23,7 +23,7 @@ import "@tps/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
 * @title Projects Contract
 * @author Kevin Siegler
 * @dev This contract defines a registry for Github issues in addition to
-* applying bulk bounties..
+* applying bounties in bulk and accepting fulfillment via this contract
 *******************************************************************************/
 interface Bounties {
     function issueBounty(
@@ -75,7 +75,7 @@ contract Projects is AragonApp {
         bytes32 repo;  // This is the internal repo identifier
         uint256 number; // May be redundant tracking this
         bool hasBounty;
-        uint standardBountyId; // Not sure if we'll have a way to "retrieve" this value from status open bounties
+        uint standardBountyId;
     }
 
     // The entries in the registry.
@@ -220,12 +220,12 @@ contract Projects is AragonApp {
             ipfsHash = substring(_ipfsAddresses, i.mul(46), i.add(1).mul(46));
             standardBountyId = bounties.issueBounty(
                 this,                           //    address _issuer
-                _deadlines[i] + block.timestamp,    // solium-disable-line security/no-block-members
-                ipfsHash,                       //     parse input to get ipfs hash
-                _bountySizes[i],         //    uint256 _fulfillmentAmount
+                _deadlines[i],                  //    uint256 _deadlines
+                ipfsHash,                       //    parse input to get ipfs hash
+                _bountySizes[i],                //    uint256 _fulfillmentAmount
                 address(0),                     //    address _arbiter
                 _tokenBounties[i],              //    bool _paysTokens
-                address(_tokenContracts[i])             //    address _tokenContract
+                address(_tokenContracts[i])     //    address _tokenContract
             );
             // Activate the bounty so it can be fulfilled
             bounties.activateBounty.value(_bountySizes[i])(standardBountyId, _bountySizes[i]);
