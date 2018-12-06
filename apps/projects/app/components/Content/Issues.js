@@ -105,9 +105,9 @@ class Issues extends React.PureComponent {
             variables={{ reposIds }}
             onError={console.error}
           >
-            {({ data: { nodes }, loading, error }) => {
-              if (nodes) {
-                return shapeIssues(flattenIssues(nodes)).map(
+            {({ data, loading, error }) => {
+              if (data && data.nodes) {
+                return shapeIssues(flattenIssues(data.nodes)).map(
                   ({ id, ...issue }) => (
                     <Issue
                       isSelected={this.state.selectedIssues.includes(id)}
