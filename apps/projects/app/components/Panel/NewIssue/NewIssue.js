@@ -150,7 +150,9 @@ class NewIssue extends React.PureComponent {
       <Mutation
         mutation={NEW_ISSUE}
         variables={{ title, description, id }}
-        onError={() => {}}
+        onError={() => {
+          console.error
+        }}
       >
         {(newIssue, result) => {
           const { data, loading, error, called } = result
@@ -195,6 +197,7 @@ class NewIssue extends React.PureComponent {
 
           const { createIssue } = data
           if (createIssue) {
+            // TODO: Close panel
             return <div>Created issue...</div>
           } else return null
         }}
