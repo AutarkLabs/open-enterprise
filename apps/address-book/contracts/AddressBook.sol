@@ -55,6 +55,10 @@ contract AddressBook is AragonApp {
      * @param _addr The address of the entry to add to the registry
      * @param _name The name of the entry to add to the registry
      * @param _entryType The type of the entry to add to the registry
+
+    ) public auth(ADD_ENTRY_ROLE) returns (address)
+    {
+
      */
     function addEntry(
         address _addr,
@@ -62,7 +66,7 @@ contract AddressBook is AragonApp {
         string _entryType
     ) public auth(ADD_ENTRY_ROLE) 
     { 
-        require(!nameUsed[keccak256(abi.encodePacked(_name))]); 
+        require(!nameUsed[keccak256(abi.encodePacked(_name))], "name already in use");
 
         Entry storage entry = entries[_addr];
         entry.entryAddress = _addr;
@@ -75,6 +79,7 @@ contract AddressBook is AragonApp {
     /**
      * Remove an entry from the registry.
      * @param _addr The ID of the entry to remove
+    ) public auth(REMOVE_ENTRY_ROLE) { // solium-disable-line lbrace
      */
     function removeEntry(
         address _addr

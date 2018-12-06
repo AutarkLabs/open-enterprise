@@ -19,9 +19,8 @@ const getContract = name => artifacts.require(name)
 const ANY_ADDR = ' 0xffffffffffffffffffffffffffffffffffffffff'
 
 contract('AddressBook App', accounts => {
-  let daoFact,
-    app,
-    token
+  let daoFact = {},
+    app = {}
 
   const root = accounts[0]
 
@@ -84,9 +83,9 @@ contract('AddressBook App', accounts => {
     let borg = accounts[2]  
     
     it('add to and get from addressbook', async () => {
-      app.addEntry(starfleet, 'Starfleet', 'Group')
-      app.addEntry(jeanluc, 'Jean-Luc Picard', 'Individual')
-      app.addEntry(borg, 'Borg', 'N/A')
+      await app.addEntry(starfleet, 'Starfleet', 'Group')
+      await app.addEntry(jeanluc, 'Jean-Luc Picard', 'Individual')
+      await app.addEntry(borg, 'Borg', 'N/A')
       entry1 = await app.getEntry(starfleet)
       entry2 = await app.getEntry(jeanluc)
       entry3 = await app.getEntry(borg)
@@ -101,7 +100,7 @@ contract('AddressBook App', accounts => {
       assert.equal(entry3[2], 'N/A')
     })
     it('remove entry from addressbook', async () => {  
-      app.removeEntry(borg)
+      await app.removeEntry(borg)
       entry3 = await app.getEntry(borg)
       assert.notEqual(entry3[0], borg)
       assert.notEqual(entry3[1], 'Borg')
@@ -109,3 +108,4 @@ contract('AddressBook App', accounts => {
     })
   })
 })
+
