@@ -26,11 +26,9 @@ import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
 * association of a human-readable string to a type, and ethereum address.
 *******************************************************************************/
 contract AddressBook is AragonApp {
-    function initialize( // solium-disable-line blank-lines
-        //Vault _vault
-    ) external onlyInit // solium-disable-line visibility-first
+    function initialize( 
+    ) external onlyInit
     {
-        //vault = _vault.ethConnectorBase();
         initialized();
     }
 
@@ -62,15 +60,16 @@ contract AddressBook is AragonApp {
         address _addr,
         string _name,
         string _entryType
-    ) public /*auth(ADD_ENTRY_ROLE)*/ { // solium-disable-line lbrace
-        require(!nameUsed[keccak256(abi.encodePacked(_name))]); // solium-disable-line error-reason
+    ) public auth(ADD_ENTRY_ROLE) 
+    { 
+        require(!nameUsed[keccak256(abi.encodePacked(_name))]); 
 
         Entry storage entry = entries[_addr];
         entry.entryAddress = _addr;
         entry.name = _name;
         entry.entryType = _entryType;
 
-        emit EntryAdded(_addr); // solium-disable-line emit
+        emit EntryAdded(_addr); 
     }
 
     /**
@@ -79,10 +78,11 @@ contract AddressBook is AragonApp {
      */
     function removeEntry(
         address _addr
-    ) public /*auth(REMOVE_ENTRY_ROLE)*/ { // solium-disable-line lbrace
+    ) public auth(REMOVE_ENTRY_ROLE) 
+    { 
         nameUsed[keccak256(abi.encodePacked(entries[_addr].name))] = false;
         delete entries[_addr];
-        emit EntryRemoved(_addr); // solium-disable-line emit
+        emit EntryRemoved(_addr); 
     }
 
     /**
@@ -91,7 +91,8 @@ contract AddressBook is AragonApp {
      */
     function getEntry(
         address _addr
-    ) public view returns (address _entryAddress, string _name, string _entryType) { // solium-disable-line lbrace
+    ) public view returns (address _entryAddress, string _name, string _entryType) 
+    { 
         Entry storage entry = entries[_addr];
 
         _entryAddress = entry.entryAddress;
