@@ -2,7 +2,6 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import Aragon, { providers } from '@aragon/client'
 import ApolloClient from 'apollo-boost'
-import { InMemoryCache } from 'apollo-cache-inmemory'
 
 import App from './components/App/App'
 
@@ -34,7 +33,6 @@ class ConnectedApp extends React.Component {
           })
         }
       },
-      cache: new InMemoryCache(),
     }),
   }
   componentDidMount() {
