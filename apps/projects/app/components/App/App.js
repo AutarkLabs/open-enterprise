@@ -8,7 +8,7 @@ import { ApolloProvider } from 'react-apollo'
 
 import { AppContent } from '.'
 import { Title } from '../Shared'
-import { NewProject } from '../Panel'
+import PanelManager, { PANELS } from '../Panel'
 import { STATUS } from '../../utils/github'
 
 const ASSETS_URL = 'aragon-ui-assets/'
@@ -89,12 +89,7 @@ class App extends React.Component {
 
   state = {
     repos: [],
-    activeIndex: 0,
-    panel: {
-      visible: false,
-    },
-    // TODO: Don't use this in production
-    // reposManaged: projectsMockData(),
+    activeIndex: 1,
   }
 
   componentDidMount() {
@@ -151,27 +146,36 @@ class App extends React.Component {
   }
 
   newIssue = () => {
-    console.log('newIssue')
+    const { repos } = this.props
+    const repoNames =
+      (repos &&
+        repos.map(repo => ({
+          name: repo.metadata.name,
+          id: repo.data.repo,
+        }))) ||
+      'No repos'
+
+    this.setState(() => ({
+      panel: PANELS.NewIssue,
+      panelProps: {
+        reposManaged: repoNames,
+      },
+    }))
   }
 
   newProject = () => {
-    console.log('newproject', this.props)
-
-    this.setState({
-      panel: {
-        visible: true,
-        content: NewProject,
-        data: {
-          heading: 'New Project',
-          onCreateProject: this.createProject,
-          onGithubSignIn: this.handleGithubSignIn,
-        },
+    this.setState((_, { github: { status } }) => ({
+      panel: PANELS.NewProject,
+      panelProps: {
+        onCreateProject: this.createProject,
+        onGithubSignIn: this.handleGithubSignIn,
+        status: status,
       },
-    })
+    }))
   }
 
   closePanel = () => {
-    this.setState({ panel: { visible: false } })
+    this.setState({ panel: undefined })
   }
 
   handleGithubSignIn = () => {
@@ -183,11 +187,8 @@ class App extends React.Component {
   }
 
   render() {
-    const { panel } = this.state
-    const { github, client } = this.props
-    const PanelContent = panel.content
-    console.log('rendered App component, github prop:', github)
-
+    const { activeIndex, panel, panelProps } = this.state
+    const { client } = this.props
     return (
       <StyledAragonApp publicUrl={ASSETS_URL}>
         <Title text="Projects" shadow />
@@ -198,17 +199,15 @@ class App extends React.Component {
             onNewProject={this.newProject}
             onNewIssue={this.newIssue}
             onSelect={this.selectProject}
-            activeIndex={this.state.activeIndex}
+            activeIndex={activeIndex}
             changeActiveIndex={this.changeActiveIndex}
           />
 
-          <SidePanel
-            title={(panel.data && panel.data.heading) || ''}
-            opened={panel.visible}
+          <PanelManager
             onClose={this.closePanel}
-          >
-            {panel.content && <PanelContent {...panel.data} github={github} />}
-          </SidePanel>
+            activePanel={panel}
+            {...panelProps}
+          />
         </ApolloProvider>
       </StyledAragonApp>
     )
