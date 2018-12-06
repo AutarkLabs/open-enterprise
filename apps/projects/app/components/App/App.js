@@ -175,7 +175,7 @@ class App extends React.Component {
   }
 
   closePanel = () => {
-    this.setState({ panel: undefined })
+    this.setState({ panel: undefined, panelProps: undefined })
   }
 
   handleGithubSignIn = () => {
