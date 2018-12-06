@@ -26,8 +26,8 @@
     "@aragon/ui": "ottodevs/aragon-ui#5b17efa",
     "bignumber.js": "^7.2.1",
     "prop-types": "15.6.2",
-    "react": "16.5.1",
-    "react-dom": "16.5.1",
+    "react": "^16.6.3",
+    "react-dom": "^16.6.3",
     "rxjs": "6.3.2",
     "rxjs-compat": "6.3.2",
     "styled-components": "3.4.6"
