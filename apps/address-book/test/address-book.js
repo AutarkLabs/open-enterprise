@@ -20,9 +20,7 @@ const ANY_ADDR = ' 0xffffffffffffffffffffffffffffffffffffffff'
 
 contract('AddressBook App', accounts => {
   let daoFact = {},
-    app = {},
-    token = {},
-    executionTarget = {}
+    app = {}
 
   const root = accounts[0]
 
@@ -35,9 +33,6 @@ contract('AddressBook App', accounts => {
       aclBase.address,
       regFact.address
     )
-  })
-
-  beforeEach(async () => {
     const r = await daoFact.newDAO(root)
     const dao = Kernel.at(
       r.logs.filter(l => l.event == 'DeployDAO')[0].args.dao
@@ -62,7 +57,10 @@ contract('AddressBook App', accounts => {
     app = AddressBook.at(
       receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
     )
+    
+    await app.initialize();
 
+  
     await acl.createPermission(
       ANY_ADDR,
       app.address,
@@ -82,19 +80,15 @@ contract('AddressBook App', accounts => {
   context('main context', () => {
     let starfleet = accounts[0]
     let jeanluc = accounts[1]
-    let borg = accounts[2]
-
-    before(async () => {})
-
-    beforeEach(async () => {})
-
-    it('add to and get entries from addressbook', async () => {
+    let borg = accounts[2]  
+    
+    it('add to and get from addressbook', async () => {
       await app.addEntry(starfleet, 'Starfleet', 'Group')
       await app.addEntry(jeanluc, 'Jean-Luc Picard', 'Individual')
       await app.addEntry(borg, 'Borg', 'N/A')
-      entry1 = await app.get(starfleet)
-      entry2 = await app.get(jeanluc)
-      entry3 = await app.get(borg)
+      entry1 = await app.getEntry(starfleet)
+      entry2 = await app.getEntry(jeanluc)
+      entry3 = await app.getEntry(borg)
       assert.equal(entry1[0], starfleet)
       assert.equal(entry1[1], 'Starfleet')
       assert.equal(entry1[2], 'Group')
@@ -105,11 +99,12 @@ contract('AddressBook App', accounts => {
       assert.equal(entry3[1], 'Borg')
       assert.equal(entry3[2], 'N/A')
     })
-
-    it('remove entry from addressbook', async () => {
+    it('remove entry from addressbook', async () => {  
       await app.removeEntry(borg)
-      entry3 = await app.get(borg)
+      entry3 = await app.getEntry(borg)
       assert.notEqual(entry3[0], borg)
+      assert.notEqual(entry3[1], 'Borg')
+      assert.notEqual(entry3[2], 'N/A')
     })
   })
 })

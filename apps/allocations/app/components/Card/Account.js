@@ -84,7 +84,7 @@ const Account = ({
           Balance
         </Text>
         <StatsValue>
-          {BigNumber(balance)
+          {" " + BigNumber(balance)
             .div(BigNumber(10e17))
             .dp(3)
             .toString()}

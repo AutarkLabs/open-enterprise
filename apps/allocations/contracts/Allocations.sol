@@ -2,10 +2,6 @@ pragma solidity ^0.4.24;
 
 import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
 
-// import @tpt/test-helpers/contracts/Vault.sol";
-
-// import "@tpt/test-helpers/contracts/IVaultConnector.sol";
-
 import "@tpt/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
 
 import "@tpt/test-helpers/contracts/lib/zeppelin/math/SafeMath64.sol";
@@ -80,7 +76,6 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         address proxy;
     }
 
-    // IVaultConnector vault;
 
 
     Payout[] payouts;
@@ -103,10 +98,8 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
     *
     */
     function initialize( // solium-disable-line blank-lines
-        //Vault _vault
     ) external onlyInit // solium-disable-line visibility-first
     {
-        //vault = _vault.ethConnectorBase();
         initialized();
     }
 
@@ -160,7 +153,6 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
     * param _supports The Array of all support values for the various candidates
     */
     function setDistribution( // solium-disable-line function-order
-        //bytes32[] _candidateKeys,
         address[] _candidateAddresses,
         uint256[] _supports,
         uint256 _payoutId,
@@ -171,20 +163,21 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
     ) external payable isInitialized auth(SET_DISTRIBUTION_ROLE)
     {
         Payout storage payout = payouts[_payoutId];
-        //payout.candidateKeys = _candidateKeys;
         payout.candidateAddresses = _candidateAddresses;
         require(_amount <= payout.limit);  // solium-disable-line error-reason
         payout.informational = _informational;
         payout.recurring = _recurring;
         if (!_informational) {
             require(payout.balance >= _amount);
+            require(payout.limit >= _amount);
         } else {
             require(msg.value == 0);
             payout.balance = 0;
         }
         if (_recurring) {
-            // minimum granularity is a single day
             payout.period = _period;
+            // minimum granularity is a single day
+            // This check is disabled currently to enable testing of shorter times
             //require(payout.period > 86399);
             payout.startTime = block.timestamp; // solium-disable-line security/no-block-members
         } else {
@@ -192,10 +185,9 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         }
 
         payout.distSet = true;
-        /*for(uint i = 0; i < _candidateKeys.length; i++){
-            require(payout.candidateKeys[i] == _candidateKeys[i]);
-        }*/
+
         payout.supports = _supports;
+        payout.amount = _amount;
         emit SetDistribution(_payoutId, _amount);
     }
 
@@ -203,7 +195,6 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         Payout storage payout = payouts[id];
         require(!payout.informational); // solium-disable-line error-reason
         payout.balance = payout.balance.add(msg.value);
-        //require(payout.balance <= payout.limit);
         emit FundAccount(id);
     }
 
@@ -227,21 +218,7 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
             payout.distSet = false;
         }
 
-
-        /*
-        For now the vault isn't working see aragon-apps issue #292
-        Update: Need to re-implement vault
-
-        if (address(this).balance < payout.balance) {
-            revert();
-        
-            uint256 remainingBalance = payout.balance.sub(this.balance);
-            require(!(vault.balance(address(0)) < remainingBalance));
-            vault.transfer(address(0), this, remainingBalance, new bytes(0));
-        }
-        */  
-
-        pointsPer = payout.balance.div(totalSupport);
+        pointsPer = payout.amount.div(totalSupport);
         //handle vault
         for (i = 0; i < payout.candidateAddresses.length; i++) {
             payout.candidateAddresses[i].transfer(payout.supports[i].mul(pointsPer));
@@ -261,7 +238,7 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
     }
 
     function () public payable { // solium-disable-line function-order
-
+        revert();
     }
 
 }

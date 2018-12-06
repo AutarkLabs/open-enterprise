@@ -4,7 +4,7 @@ import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
 
 
 /*******************************************************************************
-    Copyright 2018, That Planning Tab
+    Copyright 2018, That Planning Suite
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,11 +26,9 @@ import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
 * association of a human-readable string to a type, and ethereum address.
 *******************************************************************************/
 contract AddressBook is AragonApp {
-    function initialize( // solium-disable-line blank-lines
-        //Vault _vault
-    ) external onlyInit // solium-disable-line visibility-first
+    function initialize( 
+    ) external onlyInit
     {
-        //vault = _vault.ethConnectorBase();
         initialized();
     }
 
@@ -54,7 +52,7 @@ contract AddressBook is AragonApp {
 
     /**
      * Add an entry to the registry.
-     * @param _address The address of the entry to add to the registry
+     * @param _addr The address of the entry to add to the registry
      * @param _name The name of the entry to add to the registry
      * @param _entryType The type of the entry to add to the registry
 
@@ -63,21 +61,19 @@ contract AddressBook is AragonApp {
 
      */
     function addEntry(
-        address _address,
+        address _addr,
         string _name,
         string _entryType
-    ) public auth(ADD_ENTRY_ROLE) returns (address)
-    {
-        require(!nameUsed[keccak256(abi.encodePacked(_name))], 'name already in use');
+    ) public auth(ADD_ENTRY_ROLE) 
+    { 
+        require(!nameUsed[keccak256(abi.encodePacked(_name))], "name already in use");
 
-        Entry storage entry = entries[_address];
-        entry.entryAddress = _address;
+        Entry storage entry = entries[_addr];
+        entry.entryAddress = _addr;
         entry.name = _name;
         entry.entryType = _entryType;
 
-        emit EntryAdded(_address);
-        
-        return _address;
+        emit EntryAdded(_addr); 
     }
 
     /**
@@ -87,27 +83,25 @@ contract AddressBook is AragonApp {
      */
     function removeEntry(
         address _addr
-    ) public auth(REMOVE_ENTRY_ROLE)
-    {
+    ) public auth(REMOVE_ENTRY_ROLE) 
+    { 
         nameUsed[keccak256(abi.encodePacked(entries[_addr].name))] = false;
         delete entries[_addr];
-        emit EntryRemoved(_addr);
+        emit EntryRemoved(_addr); 
     }
 
     /**
      * Get an entry from the registry.
      * @param _addr The ID of the entry to get
      */
-    function get(
+    function getEntry(
         address _addr
-    ) public view returns (address, string, string)
-    {
+    ) public view returns (address _entryAddress, string _name, string _entryType) 
+    { 
         Entry storage entry = entries[_addr];
 
-        return(
-            entry.entryAddress,
-            entry.name,
-            entry.entryType
-        );
+        _entryAddress = entry.entryAddress;
+        _name = entry.name;
+        _entryType = entry.entryType;
     }
 }

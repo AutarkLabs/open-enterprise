@@ -31,15 +31,16 @@ const Entities = ({
         }
       >
         {
-          entities.map(ent => {
-            const eType = ENTITY_TYPES[ent.eType]
+          entities.map(entity => {
+            var ent = entity.data
+            const eType = ENTITY_TYPES[ent.entryType]
             return (
-              <TableRow key={ent.eAddress}>
+              <TableRow key={ent.entryAddress}>
                 <EntityCell>
                   <EntityWrapper>
-                    <Text>{ent.eName}</Text>
+                    <Text>{ent.name}</Text>
                     <SafeLink style={{ color: '#21AAE7' }} href={'#'}>
-                      {ent.eAddress}
+                      {ent.entryAddress}
                     </SafeLink>
                   </EntityWrapper>
                 </EntityCell>
@@ -48,7 +49,7 @@ const Entities = ({
                 </EntityCell>
                 <EntityCell>
                   <ContextMenu>
-                    <ContextMenuItem onClick={removeEntity(ent.eAddress)}>Remove</ContextMenuItem>
+                    <ContextMenuItem onClick={removeEntity(ent.entryAddress)}>Remove</ContextMenuItem>
                   </ContextMenu>
                 </EntityCell>
               </TableRow>
