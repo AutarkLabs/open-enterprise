@@ -1,6 +1,6 @@
 {
   "appName": "address-book.aragonpm.eth",
-  "version": "0.0.1",
+  "version": "21.0.0",
   "roles": [
     {
       "name": "Add entry",

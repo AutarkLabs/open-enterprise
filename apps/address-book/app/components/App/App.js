@@ -25,15 +25,17 @@ class App extends React.Component {
 
   createEntity = entity => {
     // temp workaround
-    var { entities } = this.state
+    
+    this.props.app.addEntry(entity.eAddress, entity.eName , entity.eType.toString())
+
+
+    console.info('App.js: Entity Created lol: ', entity.eName)
+    console.table(entity)
+    /*
     entities.push(entity)
     this.setState({ entities })
-
-    this.props.app.addEntry(entity.eName, entity.eAddress, entity.eType)
-
-    this.closePanel()
-    console.info('App.js: Entity Created: ', entity.eName)
-    console.table(entity)
+    */
+    this.closePanel()    
   }
 
   removeEntity = eAddress => {
@@ -72,7 +74,7 @@ class App extends React.Component {
 
         <ScrollWrapper>
           <Content>
-            <Entities entities={entities} onNewEntity={this.newEntity} onRemoveEntity={this.removeEntity} />
+            <Entities entities={this.props.entries !== undefined ? this.props.entries : []} onNewEntity={this.newEntity} onRemoveEntity={this.removeEntity} />
           </Content>
         </ScrollWrapper>
         
