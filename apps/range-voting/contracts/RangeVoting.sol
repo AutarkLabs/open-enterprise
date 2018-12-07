@@ -168,7 +168,7 @@ contract RangeVoting is IForwarder, AragonApp {
     }
 
     /**
-    * @notice Allows a token holder to caste a range vote on the current options.
+    * @notice Cast a range vote.
     * @param _voteId id for vote structure this 'ballot action' is connected to
     * @param _supports Array of support weights in order of their order in
     *                  `votes[_voteId].candidateKeys`, sum of all supports
@@ -180,7 +180,7 @@ contract RangeVoting is IForwarder, AragonApp {
     }
 
     /**
-    * @notice Allows a token holder to cast a vote on the current options.
+    * @notice Cast a range vote.
     * @param _voteId Id for vote
     */
     // function executeVote(uint256 _voteId) isInitialized external {

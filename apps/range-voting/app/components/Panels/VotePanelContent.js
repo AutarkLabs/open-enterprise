@@ -295,6 +295,7 @@ class VotePanelContent extends React.Component {
             </SubmitButton>
           </div>
         )}
+        <div>
         <ShowText onClick={() => this.setState({ showResults: !showResults })}>
           {showResults ? 'Hide Voting Results' : 'Show Voting Results'}
         </ShowText>
@@ -310,6 +311,7 @@ class VotePanelContent extends React.Component {
             A minimum of 5% is required for an option to become validated
           </Text>
         )}
+        </div>
       </div>
     )
   }

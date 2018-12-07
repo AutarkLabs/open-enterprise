@@ -94,7 +94,7 @@ class App extends React.Component {
                 app={this.props.app}
                 votes={this.props.votes !== undefined ? this.props.votes : []}
                 voteTime={this.props.voteTime}
-                minParticipationPct={this.props.minParticipationPct}
+                minParticipationPct={this.props.minParticipationPct ? this.props.minParticipationPct.toFixed(2) : "N/A"}
                 tokenAddress={this.props.tokenAddress}
                 userAccount={this.props.userAccount}
               />
