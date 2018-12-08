@@ -77,4 +77,6 @@ class ConnectedApp extends React.Component {
     return <App {...this.state} />
   }
 }
-ReactDOM.render(<ConnectedApp />, document.getElementById('projects'))
+module.hot.accept(
+  ReactDOM.render(<ConnectedApp />, document.getElementById('projects'))
+)
