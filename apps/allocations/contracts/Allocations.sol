@@ -2,12 +2,12 @@ pragma solidity ^0.4.24;
 
 import "@tps/test-helpers/contracts/apps/AragonApp.sol";
 
-import "@tpt/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
+import "@tps/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
 
 import "@tps/test-helpers/contracts/lib/zeppelin/math/SafeMath64.sol";
 
 /*******************************************************************************
-    Copyright 2018, That Planning Tab
+    Copyright 2018, That Planning Suite
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
