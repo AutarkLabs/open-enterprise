@@ -40,12 +40,12 @@ We still need to document a comprehensive wiki on setting up the dev environment
 
 ### Main Aragon documents/resources
 
-- https://wiki.aragon.one/dev/
-- https://github.com/aragon/aragonOS/blob/docs/docs/aragonOS.md
-- https://github.com/aragon/hack
-- https://gist.github.com/izqui/2a02c337aafa225c403de9c988cb78a0
-- https://github.com/aragon/aragon.js/blob/master/docs/APP.md
-- https://github.com/aragon/aragon.js/blob/master/docs/WRAPPER.md
+- <https://wiki.aragon.one/dev/>
+- <https://github.com/aragon/aragonOS/blob/docs/docs/aragonOS.md>
+- <https://github.com/aragon/hack>
+- <https://gist.github.com/izqui/2a02c337aafa225c403de9c988cb78a0>
+- <https://github.com/aragon/aragon.js/blob/master/docs/APP.md>
+- <https://github.com/aragon/aragon.js/blob/master/docs/WRAPPER.md>
 
 The WIP gist is probably the most helpful but also the most incomplete. If you follow the instructions, you'll run into some issues with some assumptions made about the APM permissions. As far as design, the app.md and wrapper.md are the most helpful for the front end, and the hack.md gives the best overview. The aragonOS.md details the solidity code and how the core of their system works.
 
