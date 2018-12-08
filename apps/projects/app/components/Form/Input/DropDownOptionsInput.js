@@ -12,7 +12,7 @@ const {
   textSecondary,
 } = theme
 
-class OptionsInput extends React.Component {
+class DropDownOptionsInput extends React.Component {
   static propTypes = {
     input: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
@@ -48,23 +48,31 @@ class OptionsInput extends React.Component {
   }
 
   render() {
-    const loadOptions = this.props.value.map(option => (
-      <div className="option" key={option}>
-        <StyledInput readOnly value={option} />
-        <IconRemove onClick={() => this.removeOption(option)} />
-      </div>
-    ))
+    console.log('dropdown:', this.state, this.props)
+
+    const loadOptions = this.props.value.map(issue => {
+      const { repo, number, title } = issue
+      const issueString = `${repo} #${number} - ${title}`
+      return (
+        <div className="option" key={issue.id}>
+          <StyledInput readOnly wide value={issueString} />
+          <IconRemove onClick={() => this.removeOption(issue)} />
+        </div>
+      )
+    })
+
     return (
       <StyledOptionsInput empty={!this.props.input.length}>
         {loadOptions}
-        <div className="option">
+        {/* TODO: Implement selecting more issues from the Panel: */}
+        {/* <div className="option">
           <StyledInput
             placeholder={this.props.placeholder}
             value={this.props.input}
             onChange={this.onChangeInput}
           />
           <IconAdd onClick={this.addOption} />
-        </div>
+        </div> */}
       </StyledOptionsInput>
     )
   }
@@ -117,4 +125,4 @@ const StyledOptionsInput = styled.div`
   }
 `
 
-export default OptionsInput
+export default DropDownOptionsInput
