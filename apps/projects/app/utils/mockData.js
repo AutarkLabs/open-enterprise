@@ -621,7 +621,7 @@ const savedRepos = {
                 {
                   node: {
                     id: 'MDU6SXNzdWUzMDg3NzQ3MTM=',
-                    title: 'Initialize Planning App (dev)',
+                    title: 'Initialize Planning Suite (dev)',
                     state: 'CLOSED',
                     url: 'https://github.com/spacedecentral/planning-suite/issues/2',
                     createdAt: '2018-03-26T23:55:20Z',
