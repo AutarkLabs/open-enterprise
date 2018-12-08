@@ -175,8 +175,26 @@ class App extends React.PureComponent {
     }))
   }
 
+  curateIssues = issues => {
+    this.setState((_prevState, _prevProps) => ({
+      panel: PANELS.NewIssueCuration,
+      panelProps: {
+        issues: issues,
+        onSubmit: this.onSubmitCuration,
+        // rate: getSetting(SETTINGS.rate),
+      },
+    }))
+  }
+
+  onSubmitCuration = issues => {
+    console.log(
+      'Ready to curate these issues from the contract:',
+      issues.map(issue => issue.title)
+    )
+  }
+
   closePanel = () => {
-    this.setState({ panel: undefined, panelProps: undefined })
+    this.setState({ panel: null, panelProps: null })
   }
 
   handleGithubSignIn = () => {
@@ -192,26 +210,27 @@ class App extends React.PureComponent {
     const { client } = this.props
     return (
       <ErrorBoundary>
-      <StyledAragonApp publicUrl={ASSETS_URL}>
-        <Title text="Projects" shadow />
-        <ApolloProvider client={client}>
-          <AppContent
-            app={this.props.app}
-            projects={this.props.repos !== undefined ? this.props.repos : []}
-            onNewProject={this.newProject}
-            onNewIssue={this.newIssue}
-            onSelect={this.selectProject}
-            activeIndex={activeIndex}
-            changeActiveIndex={this.changeActiveIndex}
-          />
+        <StyledAragonApp publicUrl={ASSETS_URL}>
+          <Title text="Projects" shadow />
+          <ApolloProvider client={client}>
+            <AppContent
+              app={this.props.app}
+              projects={this.props.repos !== undefined ? this.props.repos : []}
+              onNewProject={this.newProject}
+              onNewIssue={this.newIssue}
+              onCurateIssues={this.curateIssues}
+              onSelect={this.selectProject}
+              activeIndex={activeIndex}
+              changeActiveIndex={this.changeActiveIndex}
+            />
 
-          <PanelManager
-            onClose={this.closePanel}
-            activePanel={panel}
-            {...panelProps}
-          />
-        </ApolloProvider>
-      </StyledAragonApp>
+            <PanelManager
+              onClose={this.closePanel}
+              activePanel={panel}
+              {...panelProps}
+            />
+          </ApolloProvider>
+        </StyledAragonApp>
       </ErrorBoundary>
     )
   }
