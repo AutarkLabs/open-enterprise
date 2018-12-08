@@ -47,6 +47,7 @@ class Issues extends React.PureComponent {
 
   handleAllocateBounties = () => {
     console.log('handleAllocateBounties')
+    this.props.onAllocateBounties(this.state.selectedIssues)
   }
 
   handleIssueSelection = issue => {
