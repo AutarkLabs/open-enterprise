@@ -50,19 +50,18 @@ contract('AddressBook App', accounts => {
     app = AddressBook.at(
       receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
     )
-    
-    await app.initialize();
 
-  
+    await app.initialize()
+
     await acl.createPermission(
-      ANY_ADDR,
+      accounts[0],
       app.address,
       await app.ADD_ENTRY_ROLE(),
       root,
       { from: root }
     )
     await acl.createPermission(
-      ANY_ADDR,
+      accounts[0],
       app.address,
       await app.REMOVE_ENTRY_ROLE(),
       root,
@@ -73,8 +72,8 @@ contract('AddressBook App', accounts => {
   context('main context', () => {
     let starfleet = accounts[0]
     let jeanluc = accounts[1]
-    let borg = accounts[2]  
-    
+    let borg = accounts[2]
+
     it('add to and get from addressbook', async () => {
       await app.addEntry(starfleet, 'Starfleet', 'Group')
       await app.addEntry(jeanluc, 'Jean-Luc Picard', 'Individual')
@@ -92,17 +91,36 @@ contract('AddressBook App', accounts => {
       assert.equal(entry3[1], 'Borg')
       assert.equal(entry3[2], 'N/A')
     })
-    it('should revert when repeating a name', async () => {
-      return assertRevert( async () => {
-        await app.addEntry(borg, 'Borg', 'N/A')
-      })
-    })
-    it('remove entry from addressbook', async () => {  
+
+    it('remove entry from addressbook', async () => {
       await app.removeEntry(borg)
       entry3 = await app.getEntry(borg)
       assert.notEqual(entry3[0], borg)
       assert.notEqual(entry3[1], 'Borg')
       assert.notEqual(entry3[2], 'N/A')
+    })
+
+    context('invalid operations', () => {
+      it('should revert when adding an entry for repeated name', async () => {
+        return assertRevert(async () => {
+          await app.addEntry(borg, 'Starfleet', 'Group')
+          'name already in use'
+        })
+      })
+
+      it('should revert when adding an entry by unauthorized address', async () => {
+        assertRevert(async () => {
+          await app.addEntry(borg, 'Borg', 'N/A', { from: borg }),
+          'does not have addEntry authorization'
+        })
+      })
+
+      it('should revert when removing an entry by unauthorized address', async () => {
+        assertRevert(async () => {
+          await app.removeEntry(starfleet, { from: borg }),
+          'does not have removeEntry authorization'
+        })
+      })
     })
   })
 })
