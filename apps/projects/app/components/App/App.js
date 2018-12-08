@@ -175,6 +175,13 @@ class App extends React.PureComponent {
     }))
   }
 
+  newBountyAllocation = _issues => {
+    this.setState((_prevState, _prevProps) => ({
+      panel: PANELS.NewBountyAllocation,
+      panelProps: {},
+    }))
+  }
+
   curateIssues = issues => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.NewIssueCuration,
@@ -219,6 +226,7 @@ class App extends React.PureComponent {
               onNewProject={this.newProject}
               onNewIssue={this.newIssue}
               onCurateIssues={this.curateIssues}
+              onAllocateBounties={this.newBountyAllocation}
               onSelect={this.selectProject}
               activeIndex={activeIndex}
               changeActiveIndex={this.changeActiveIndex}
