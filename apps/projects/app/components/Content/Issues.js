@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { gql } from 'apollo-boost'
 import { Query } from 'react-apollo'
 import {
-  //   Button,
+  Button,
   //   Dropdown,
   //   Text,
   TextInput,
@@ -42,18 +42,20 @@ class Issues extends React.PureComponent {
     selectedIssues: [],
   }
   handleCurateIssues = () => {
-    console.log('let\'s curate this issues:', this.state.selectedIssues)
+    this.props.onCurateIssues(this.state.selectedIssues)
   }
 
   handleAllocateBounties = () => {
     console.log('handleAllocateBounties')
   }
 
-  handleIssueSelection = id => {
+  handleIssueSelection = issue => {
     this.setState(({ selectedIssues }) => {
-      const newSelectedIssues = selectedIssues.includes(id)
-        ? selectedIssues.filter(issue => issue !== id)
-        : [...new Set([].concat(...selectedIssues, id))]
+      const newSelectedIssues = selectedIssues
+        .map(selectedIssue => selectedIssue.id)
+        .includes(issue.id)
+        ? selectedIssues.filter(selectedIssue => selectedIssue.id !== issue.id)
+        : [...new Set([].concat(...selectedIssues, issue))]
       return { selectedIssues: newSelectedIssues }
     })
   }
@@ -99,37 +101,49 @@ class Issues extends React.PureComponent {
           </ActionsMenu>
         </div>
         <FilterBar />
-        <IssuesScrollView>
-          <Query
-            query={GET_ISSUES}
-            variables={{ reposIds }}
-            onError={console.error}
-          >
-            {({ data, loading, error }) => {
-              if (data && data.nodes) {
-                return shapeIssues(flattenIssues(data.nodes)).map(
-                  ({ id, ...issue }) => (
+        {reposIds.length > 0 && (
+          <IssuesScrollView>
+            <Query
+              fetchPolicy="cache-first"
+              query={GET_ISSUES}
+              variables={{ reposIds }}
+              onError={console.error}
+            >
+              {({ data, loading, error, refetch }) => {
+                if (data && data.nodes) {
+                  return shapeIssues(flattenIssues(data.nodes)).map(issue => (
                     <Issue
-                      isSelected={this.state.selectedIssues.includes(id)}
+                      isSelected={this.state.selectedIssues
+                        .map(selectedIssue => selectedIssue.id)
+                        .includes(issue.id)}
                       onSelect={() => {
-                        this.handleIssueSelection(id)
+                        this.handleIssueSelection(issue)
                       }}
-                      key={id}
+                      key={issue.id}
                       {...issue}
                     />
+                  ))
+                }
+                if (loading) {
+                  return <div>Loading...</div>
+                }
+                if (error) {
+                  console.log(error)
+                  return (
+                    <div>
+                      Error {JSON.stringify(error)}
+                      <div>
+                        <Button mode="strong" onClick={() => refetch()}>
+                          Try refetching?
+                        </Button>
+                      </div>
+                    </div>
                   )
-                )
-              }
-              if (loading) {
-                return <div>Loading...</div>
-              }
-              if (error) {
-                console.log(error)
-                return <div>Error</div>
-              }
-            }}
-          </Query>
-        </IssuesScrollView>
+                }
+              }}
+            </Query>
+          </IssuesScrollView>
+        )}
       </StyledIssues>
     )
   }
