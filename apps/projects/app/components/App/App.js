@@ -10,6 +10,7 @@ import { AppContent } from '.'
 import { Title } from '../Shared'
 import PanelManager, { PANELS } from '../Panel'
 import { STATUS } from '../../utils/github'
+import ErrorBoundary from './ErrorBoundary'
 
 const ASSETS_URL = 'aragon-ui-assets/'
 
@@ -81,7 +82,7 @@ const getToken = async code => {
   }
 }
 
-class App extends React.Component {
+class App extends React.PureComponent {
   static propTypes = {
     app: PropTypes.object.isRequired,
     repos: PropTypes.arrayOf(PropTypes.object),
@@ -190,6 +191,7 @@ class App extends React.Component {
     const { activeIndex, panel, panelProps } = this.state
     const { client } = this.props
     return (
+      <ErrorBoundary>
       <StyledAragonApp publicUrl={ASSETS_URL}>
         <Title text="Projects" shadow />
         <ApolloProvider client={client}>
@@ -210,6 +212,7 @@ class App extends React.Component {
           />
         </ApolloProvider>
       </StyledAragonApp>
+      </ErrorBoundary>
     )
   }
 }
