@@ -194,7 +194,7 @@ class App extends React.PureComponent {
   }
 
   closePanel = () => {
-    this.setState({ panel: null, panelProps: null })
+    this.setState({ panel: undefined, panelProps: undefined })
   }
 
   handleGithubSignIn = () => {
