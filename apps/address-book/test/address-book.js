@@ -6,6 +6,7 @@ const {
 } = require('@tps/test-helpers/artifacts')
 
 const AddressBook = artifacts.require('AddressBook')
+const { assertRevert } = require('@tps/test-helpers/assertThrow')
 
 const getContract = name => artifacts.require(name)
 
@@ -113,6 +114,9 @@ contract('AddressBook App', accounts => {
         assert.equal(entry3[1], 'Borg')
         assert.equal(entry3[2], 'N/A')
       })
+    })
+    it('should revert when repeating a name', async () => {
+      assertRevert(app.addEntry(borg, 'Borg', 'N/A'))
     })
     it('remove entry from addressbook', async () => {
       await app.removeEntry(borg)
