@@ -84,10 +84,11 @@ const Account = ({
           Balance
         </Text>
         <StatsValue>
-          {" " + BigNumber(balance)
-            .div(BigNumber(10e17))
-            .dp(3)
-            .toString()}
+          {' ' +
+            BigNumber(balance)
+              .div(BigNumber(10e17))
+              .dp(3)
+              .toString()}
           {translatedToken}
         </StatsValue>
       </StatsContainer>

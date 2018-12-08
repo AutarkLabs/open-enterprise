@@ -1,17 +1,8 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { BigNumber } from 'bignumber.js'
 
-import {
-  Button,
-  Field,
-  Text,
-  TextInput,
-  DropDown,
-  theme,
-  Info,
-} from '@aragon/ui'
+import { DropDown, Info } from '@aragon/ui'
 
 import {
   DescriptionInput,
@@ -21,7 +12,6 @@ import {
   SettingsInput,
   InputDropDown,
 } from '../Form'
-import { isIntegerString, isStringEmpty } from '../../utils/helpers'
 
 // TODO: Extract to shared
 const AVAILABLE_TOKENS = ['ETH', 'ANT', 'GIV', 'FTL', '🦄']
@@ -40,7 +30,7 @@ const INITIAL_STATE = {
   payoutToken: '',
   payoutTokenIndex: 0,
   amount: null,
-  allocationError: false 
+  allocationError: false,
 }
 
 class NewAllocation extends React.Component {
@@ -69,28 +59,31 @@ class NewAllocation extends React.Component {
   }
 
   // Should be using web3.isAddress probably but this is good enough for now
-  isAddress = (addr) => {
-    if(!/^(0x)?[0-9a-f]{40}$/i.test(addr)){
-      return false;
+  isAddress = addr => {
+    if (!/^(0x)?[0-9a-f]{40}$/i.test(addr)) {
+      return false
     }
-    return true;
+    return true
   }
 
   submitAllocation = () => {
     // clear input here.
 
-    let informational = (this.state.allocationTypeIndex === 0)
+    let informational = this.state.allocationTypeIndex === 0
     let recurring = !informational && this.state.payoutTypeIndex != 0
     // TODO: period should be smarter: now the only option is monthly
     let period = recurring ? 86400 * 31 : 0
     let optionsInput = this.state.optionsInput
-    this.setState({addressError: this.state.addressError, allocationError: false})    
-    if(!(this.isAddress(optionsInput) || optionsInput==='')) {
-      this.setState({addressError: true})      
-      this.setState()      
+    this.setState({
+      addressError: this.state.addressError,
+      allocationError: false,
+    })
+    if (!(this.isAddress(optionsInput) || optionsInput === '')) {
+      this.setState({ addressError: true })
+      this.setState()
       return
     }
-    if(this.isAddress(optionsInput)) {
+    if (this.isAddress(optionsInput)) {
       this.state.options.push(this.state.optionsInput)
     }
     let allocation = {
@@ -99,14 +92,14 @@ class NewAllocation extends React.Component {
       informational: informational,
       recurring: recurring,
       period: period,
-      balance: this.state.amount*10e17,
+      balance: this.state.amount * 10e17,
     }
-    if ( (allocation.balance > this.props.limit) && !informational) {
-      this.setState({allocationError: true})
-      return;
+    if (allocation.balance > this.props.limit && !informational) {
+      this.setState({ allocationError: true })
+      return
     }
     this.props.onSubmitAllocation(allocation)
-    this.state.allocationError = false;    
+    this.state.allocationError = false
     this.setState(INITIAL_STATE)
     console.info('New Allocation: submitting...')
     console.table(this.props)
@@ -125,8 +118,8 @@ class NewAllocation extends React.Component {
         >
           {this.state.allocationTypeIndex == 1 && (
             <Info.Action title="Warning">
-              This will create a Range Vote and after it closes, it will result in
-              a financial transfer.
+              This will create a Range Vote and after it closes, it will result
+              in a financial transfer.
             </Info.Action>
           )}
           <FormField
@@ -218,9 +211,7 @@ class NewAllocation extends React.Component {
         </Form>
         <div>
           {this.state.allocationError && (
-              <Info title="Error">
-                Amount must be less than limit.
-              </Info>
+            <Info title="Error">Amount must be less than limit.</Info>
           )}
           {this.state.addressError && (
             <Info title="Error">
@@ -229,7 +220,7 @@ class NewAllocation extends React.Component {
           )}
         </div>
       </div>
-   )
+    )
   }
 }
 
