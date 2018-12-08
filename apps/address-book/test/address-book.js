@@ -1,18 +1,11 @@
 const {
-  encodeCallScript,
-  EMPTY_SCRIPT,
-} = require('@tps/test-helpers/evmScript')
+  ACL,
+  DAOFactory,
+  EVMScriptRegistryFactory,
+  Kernel,
+} = require('@tps/test-helpers/artifacts')
 
 const AddressBook = artifacts.require('AddressBook')
-
-const DAOFactory = artifacts.require(
-  '@tps/test-helpers/contracts/factory/DAOFactory'
-)
-const EVMScriptRegistryFactory = artifacts.require(
-  '@tps/test-helpers/contracts/factory/EVMScriptRegistryFactory'
-)
-const ACL = artifacts.require('@tps/test-helpers/contracts/acl/ACL')
-const Kernel = artifacts.require('@tps/test-helpers/contracts/kernel/Kernel')
 
 const getContract = name => artifacts.require(name)
 
@@ -23,6 +16,17 @@ contract('AddressBook App', accounts => {
     app = {}
 
   const root = accounts[0]
+
+  before(async () => {
+    const kernelBase = await Kernel.new(true)
+    const aclBase = await ACL.new()
+    const regFact = await EVMScriptRegistryFactory.new()
+    daoFact = await DAOFactory.new(
+      kernelBase.address,
+      aclBase.address,
+      regFact.address
+    )
+  })
 
   before(async () => {
     const kernelBase = await getContract('Kernel').new(true)
@@ -76,27 +80,39 @@ contract('AddressBook App', accounts => {
     )
   })
 
-  context('main context', () => {
+  context('main context', async () => {
     let starfleet = accounts[0]
     let jeanluc = accounts[1]
     let borg = accounts[2]
+    let receipt
 
-    it('add to and get from addressbook', async () => {
-      await app.addEntry(starfleet, 'Starfleet', 'Group')
-      await app.addEntry(jeanluc, 'Jean-Luc Picard', 'Individual')
-      await app.addEntry(borg, 'Borg', 'N/A')
-      entry1 = await app.getEntry(starfleet)
-      entry2 = await app.getEntry(jeanluc)
-      entry3 = await app.getEntry(borg)
-      assert.equal(entry1[0], starfleet)
-      assert.equal(entry1[1], 'Starfleet')
-      assert.equal(entry1[2], 'Group')
-      assert.equal(entry2[0], jeanluc)
-      assert.equal(entry2[1], 'Jean-Luc Picard')
-      assert.equal(entry2[2], 'Individual')
-      assert.equal(entry3[0], borg)
-      assert.equal(entry3[1], 'Borg')
-      assert.equal(entry3[2], 'N/A')
+    describe('add to and get from addressbook', async () => {
+      beforeEach(async () => {
+        receipt = await app.addEntry(starfleet, 'Starfleet', 'Group')
+      })
+      it('emit the address in the event', async () => {
+        assert.equal(
+          receipt.logs.filter(l => l.event == 'EntryAdded')[0].args.addr,
+          starfleet,
+          'event emitted should have correct address'
+        )
+      })
+      it('get the entry fields', async () => {
+        await app.addEntry(jeanluc, 'Jean-Luc Picard', 'Individual')
+        await app.addEntry(borg, 'Borg', 'N/A')
+        entry1 = await app.getEntry(starfleet)
+        entry2 = await app.getEntry(jeanluc)
+        entry3 = await app.getEntry(borg)
+        assert.equal(entry1[0], starfleet)
+        assert.equal(entry1[1], 'Starfleet')
+        assert.equal(entry1[2], 'Group')
+        assert.equal(entry2[0], jeanluc)
+        assert.equal(entry2[1], 'Jean-Luc Picard')
+        assert.equal(entry2[2], 'Individual')
+        assert.equal(entry3[0], borg)
+        assert.equal(entry3[1], 'Borg')
+        assert.equal(entry3[2], 'N/A')
+      })
     })
     it('remove entry from addressbook', async () => {
       await app.removeEntry(borg)
