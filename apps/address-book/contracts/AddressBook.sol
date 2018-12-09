@@ -71,6 +71,8 @@ contract AddressBook is AragonApp {
         entry.name = _name;
         entry.entryType = _entryType;
 
+        nameUsed[keccak256(abi.encodePacked(_name))] = true;
+
         emit EntryAdded(_addr); 
     }
 

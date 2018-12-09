@@ -20,7 +20,7 @@ import "@tps/test-helpers/contracts/apps/Voting.sol"; /* Already defined in ACLH
 //import {TokenManager as TokenManagerApp} from "@aragon/apps-token-manager/contracts/TokenManager.sol"; /* Already defined in EVMScriptRunner */
 // import "@tps/test-helpers/contracts/lib/minime/MiniMeToken.sol"; // TODO: use this 
 
-import {AddressBook as AddressBook} from "@tps/apps-address-book/contracts/AddressBook.sol";
+import {AddressBook as AddressBookApp} from "@tps/apps-address-book/contracts/AddressBook.sol";
 import {Allocations as AllocationsApp} from "@tps/apps-allocations/contracts/Allocations.sol";
 import {Projects as ProjectsApp} from "@tps/apps-projects/contracts/Projects.sol";
 import {RangeVoting as RangeVotingApp} from "@tps/apps-range-voting/contracts/RangeVoting.sol";

@@ -29,7 +29,7 @@ class App extends React.Component {
     entities.push(entity)
     this.setState({ entities })
 
-    this.props.app.addEntry(entity.eName, entity.eAddress, entity.eType)
+    this.props.app.addEntry(entity.eAddress, entity.eName, entity.eType)
 
     this.closePanel()
     console.info('App.js: Entity Created: ', entity.eName)
