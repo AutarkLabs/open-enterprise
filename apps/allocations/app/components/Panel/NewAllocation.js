@@ -212,9 +212,9 @@ class NewAllocation extends React.Component {
         </Form>
         <div>
           {this.state.allocationError && (
-              <Info title="Error">
-                Amount must be less than limit.
-              </Info>
+            <Info title="Error">
+              Amount must be less than limit.
+            </Info>
           )}
           {this.state.addressError && (
             <Info title="Error">
