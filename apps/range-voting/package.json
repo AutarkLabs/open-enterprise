@@ -1,5 +1,5 @@
 {
-  "name": "@tpt/apps-range-voting",
+  "name": "@tps/apps-range-voting",
   "version": "0.0.1",
   "description": "Range Voting app from Planning Suite",
   "scripts": {
@@ -35,7 +35,7 @@
     "polyfill": "0.1.0"
   },
   "devDependencies": {
-    "@tpt/test-helpers": "^0.0.1",
+    "@tps/test-helpers": "^0.0.1",
     "babel-core": "6.26.3",
     "babel-eslint": "9.0.0",
     "babel-plugin-styled-components": "1.5.1",

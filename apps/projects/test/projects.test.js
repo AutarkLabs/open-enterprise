@@ -4,11 +4,11 @@ const {
   DAOFactory,
   EVMScriptRegistryFactory,
   Kernel,
-} = require('@tpt/test-helpers/artifacts')
+} = require('@tps/test-helpers/artifacts')
 
 const Projects = artifacts.require('Projects')
 
-const { assertRevert } = require('@tpt/test-helpers/assertThrow')
+const { assertRevert } = require('@tps/test-helpers/assertThrow')
 
 contract('Projects App', accounts => {
   let daoFact,
@@ -52,7 +52,7 @@ contract('Projects App', accounts => {
 
     //Deploy Contract to be tested
     // TODO: Revert to use regular function call when truffle gets updated
-    // read: https://github.com/Giveth/planning-app/pull/243
+    // read: https://github.com/spacedecentral/planning-suite/pull/243
     let receipt = await dao.newAppInstance(
       '0x1234',
       (await Projects.new()).address,

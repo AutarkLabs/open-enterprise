@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "planning-app-monorepo",
+  "name": "planning-suite-monorepo",
   "devDependencies": {
     "coveralls": "3.0.2",
     "lerna": "^3.4.3"
@@ -37,8 +37,8 @@
     "test:allocations": "cd apps/allocations && npm test",
     "test:projects": "cd apps/projects && npm test",
     "test:range": "cd apps/range-voting && npm test",
-    "lint": "lerna run lint --no-bail && lerna exec --scope=@tpt/apps-* --stream -- npx eslint app",
-    "lint:fix": "lerna exec --scope=@tpt/apps-* --stream -- npx eslint app --fix",
+    "lint": "lerna run lint --no-bail && lerna exec --scope=@tps/apps-* --stream -- npx eslint app",
+    "lint:fix": "lerna exec --scope=@tps/apps-* --stream -- npx eslint app --fix",
     "lint:address": "cd apps/address-book && npm run lint",
     "lint:allocations": "cd apps/allocations && npm run lint",
     "lint:projects": "cd apps/projects && npm run lint",

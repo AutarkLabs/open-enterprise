@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
+import "@tps/test-helpers/contracts/apps/AragonApp.sol";
 
 
 /*******************************************************************************
@@ -26,9 +26,7 @@ import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
 * association of a human-readable string to a type, and ethereum address.
 *******************************************************************************/
 contract AddressBook is AragonApp {
-    function initialize( 
-    ) external onlyInit
-    {
+    function initialize() external onlyInit {
         initialized();
     }
 
@@ -72,6 +70,8 @@ contract AddressBook is AragonApp {
         entry.entryAddress = _addr;
         entry.name = _name;
         entry.entryType = _entryType;
+
+        nameUsed[keccak256(abi.encodePacked(_name))] = true;
 
         emit EntryAdded(_addr); 
     }

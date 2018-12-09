@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
+import "@tps/test-helpers/contracts/apps/AragonApp.sol";
 
 
 /* This is only a dummy contract to make Aragon happy

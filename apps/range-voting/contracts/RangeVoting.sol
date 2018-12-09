@@ -1,21 +1,21 @@
 pragma solidity ^0.4.24;
 
-import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
+import "@tps/test-helpers/contracts/apps/AragonApp.sol";
 
-import "@tpt/test-helpers/contracts/lib/minime/MiniMeToken.sol";
+import "@tps/test-helpers/contracts/lib/minime/MiniMeToken.sol";
 
-import "@tpt/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
+import "@tps/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
 
-import "@tpt/test-helpers/contracts/lib/zeppelin/math/SafeMath64.sol";
+import "@tps/test-helpers/contracts/lib/zeppelin/math/SafeMath64.sol";
 
-import "@tpt/test-helpers/contracts/evmscript/ScriptHelpers.sol";
+import "@tps/test-helpers/contracts/evmscript/ScriptHelpers.sol";
 
 
-import "@tpt/test-helpers/contracts/common/IForwarder.sol";
+import "@tps/test-helpers/contracts/common/IForwarder.sol";
 
-import "@tpt/test-helpers/contracts/lib/misc/Migrations.sol";
+import "@tps/test-helpers/contracts/lib/misc/Migrations.sol";
 
-// import "@tpt/test-helpers/contracts/common/IForwarder.sol";
+// import "@tps/test-helpers/contracts/common/IForwarder.sol";
 /* Temp hack to pass coverage until further research */
 // interface IForwarderFixed {
 //     function isForwarder() external returns (bool);
@@ -25,7 +25,7 @@ import "@tpt/test-helpers/contracts/lib/misc/Migrations.sol";
 
 
 /*******************************************************************************
-    Copyright 2018, That Planning Tab
+    Copyright 2018, That Planning Suite
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -204,7 +204,7 @@ contract RangeVoting is IForwarder, AragonApp {
         // Get vote and candidate into storage
         Vote storage voteInstance = votes[_voteId];
         bytes32[] storage keys = voteInstance.candidateKeys;
-        bytes32 cKey = keccak256(_description);
+        bytes32 cKey = keccak256(abi.encodePacked(_description));
         CandidateState storage candidate = voteInstance.candidates[cKey];
         // Make sure that this candidate has not already been added
         require(candidate.added == false); // solium-disable-line error-reason
@@ -266,7 +266,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _sender Address of the entity trying to forward
     * @return True is `_sender` has correct permissions
     */
-    function canForward(address _sender, bytes _evmCallScript) public view returns (bool) {
+    function canForward(address _sender, bytes /*_evmCallScript*/) public view returns (bool) {
         return canPerform(_sender, CREATE_VOTES_ROLE, arr());
     }
 
