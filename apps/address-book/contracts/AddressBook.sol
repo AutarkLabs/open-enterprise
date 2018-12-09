@@ -26,8 +26,7 @@ import "@tps/test-helpers/contracts/apps/AragonApp.sol";
 * association of a human-readable string to a type, and ethereum address.
 *******************************************************************************/
 contract AddressBook is AragonApp {
-    function initialize( 
-    ) external onlyInit
+    function initialize() external onlyInit
     {
         initialized();
     }

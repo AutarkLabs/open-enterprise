@@ -5,6 +5,7 @@ import { empty } from 'rxjs/observable/empty'
 
 const app = new Aragon()
 let appState
+let addressBook
 app.events().subscribe(handleEvents)
 
 app.state().subscribe(state => {
@@ -21,6 +22,20 @@ app.state().subscribe(state => {
 
 async function handleEvents(response) {
   let nextState
+  if(!addressBook){
+    // this should be refactored to be a "setting"
+    app.call('addressBook').subscribe(
+      (response) => {
+        console.log("addressBook response")
+        console.log(response)
+      }
+    )
+    //allocations = app.external(, AllocationJSON.abi)
+  }
+  let nextState = {
+    ...appState,
+    ...(!hasLoadedVoteSettings(appState) ? await loadVoteSettings() : {})
+  }
   switch (response.event) {
   case 'NewAccount':
     nextState = await syncAccounts(appState, response.returnValues)
