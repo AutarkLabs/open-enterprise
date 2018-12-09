@@ -1,6 +1,7 @@
 import Aragon from '@aragon/client'
 import { first, of } from 'rxjs' // Make sure observables have .first
 import { combineLatest } from 'rxjs'
+import AddressBookJSON from '../../address-book/build/contracts/AddressBook.json'
 import { empty } from 'rxjs/observable/empty'
 
 const app = new Aragon()
@@ -10,8 +11,17 @@ app.events().subscribe(handleEvents)
 
 app.state().subscribe(state => {
   console.log('Allocations: entered state subscription:\n', state)
-  appState = state ? state : { accounts: [] }
+  appState = state ? state : { accounts: [], entries: [] }
   //appState = state
+  if(!addressBook){
+    // this should be refactored to be a "setting"
+    app.call('addressBook').subscribe(
+      (response) => {
+        addressBook = app.external(response, AddressBookJSON.abi)
+        addressBook.events().subscribe(handleEvents)
+      }
+    )
+  }
 })
 
 /***********************
@@ -22,20 +32,7 @@ app.state().subscribe(state => {
 
 async function handleEvents(response) {
   let nextState
-  if(!addressBook){
-    // this should be refactored to be a "setting"
-    app.call('addressBook').subscribe(
-      (response) => {
-        console.log("addressBook response")
-        console.log(response)
-      }
-    )
-    //allocations = app.external(, AllocationJSON.abi)
-  }
-  let nextState = {
-    ...appState,
-    ...(!hasLoadedVoteSettings(appState) ? await loadVoteSettings() : {})
-  }
+
   switch (response.event) {
   case 'NewAccount':
     nextState = await syncAccounts(appState, response.returnValues)
@@ -47,6 +44,14 @@ async function handleEvents(response) {
   case 'SetDistribution':
     nextState = await syncAccounts(appState, response.returnValues)
     break
+  case 'EntryAdded':
+    console.log('EntryAdded Fired: ', response.returnValues)
+    nextState = await syncEntries(appState, response.returnValues)
+    break
+  case 'EntryRemoved':
+    console.log('EntryRemoved Fired: ', response.returnValues)
+    nextState = await syncEntries(appState, response.returnValues)
+    break  
   default:
     console.log(response)
   }
@@ -60,7 +65,21 @@ async function syncAccounts(state, { accountId, ...eventArgs }) {
     data: { ...data, executed: true },
   })
   try {
-    let updatedState = await updateState(state, accountId, transform)
+    let updatedState = await updateAllocationState(state, accountId, transform)
+    return updatedState
+  } catch (err) {
+    console.error('updateState failed to return:', err)
+  }
+}
+
+async function syncEntries(state, { addr, ...eventArgs }) {
+  console.log('arguments from events:', ...eventArgs)
+  const transform = ({ data, ...entry }) => ({
+    ...entry,
+    data: { ...data },
+  })
+  try {
+    let updatedState = await updateEntryState(state, addr, transform)
     return updatedState
   } catch (err) {
     console.error('updateState failed to return:', err)
@@ -107,7 +126,7 @@ async function checkAccountsLoaded(accounts, accountId, transform) {
   }
 }
 
-async function updateState(state, accountId, transform) {
+async function updateAllocationState(state, accountId, transform) {
   const { accounts = [] } = state
   try {
     let newAccounts = await checkAccountsLoaded(accounts, accountId, transform)
@@ -119,6 +138,62 @@ async function updateState(state, accountId, transform) {
       err,
       'here\'s what returned in NewAccounts',
       newAccounts
+    )
+  }
+}
+
+
+function loadEntryData(addr) {
+  console.log('loadEntryData entered')
+  return new Promise(resolve => {
+    combineLatest(addressBook.getEntry(addr)).subscribe(
+      ( [entry]) => {
+        console.log(entry)
+        resolve({
+          entryAddress: entry[0],
+          name: entry[1],
+          entryType: entry[2]
+        })
+      }
+    )
+  })
+}
+
+async function checkEntriesLoaded(entries, addr, transform) {
+  const entryIndex = entries.findIndex(
+    entry => entry.entryAddress === addr
+  )
+  if (entryIndex === -1) {
+    // If we can't find it, load its data, perform the transformation, and concat
+    console.log('entry not found: retrieving from chain')
+    return entries.concat(
+      await transform({
+        addr,
+        data: await loadEntryData(addr),
+      })
+    )
+  } else {
+    const nextEntries = Array.from(entries)
+    nextEntries[entryIndex] = await transform({
+      addr,
+      data: await loadEntryData(addr),
+    })
+    return nextEntries
+  }
+}
+
+async function updateEntryState(state, addr, transform) {
+  const { entries = [] } = state
+  try {
+    let nextEntries = await checkEntriesLoaded(entries, addr, transform)
+    let newState = { ...state, entries: nextEntries }
+    return newState
+  } catch (err) {
+    console.error(
+      'Update entries failed to return:',
+      err,
+      'here\'s what returned in NewEntries',
+      nextEntries
     )
   }
 }

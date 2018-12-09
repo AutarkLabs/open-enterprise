@@ -11,11 +11,11 @@
     "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
   },
   "dependencies": {
-    "@tpt/apps-address-book": "^0.0.1",
-    "@tpt/apps-allocations": "^0.0.1",
-    "@tpt/apps-projects": "^0.0.1",
-    "@tpt/apps-range-voting": "^0.0.1",
-    "@tpt/test-helpers": "^0.0.1"
+    "@tps/apps-address-book": "^0.0.1",
+    "@tps/apps-allocations": "^0.0.1",
+    "@tps/apps-projects": "^0.0.1",
+    "@tps/apps-range-voting": "^0.0.1",
+    "@tps/test-helpers": "^0.0.1"
   },
   "author": "",
   "repository": {

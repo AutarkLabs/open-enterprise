@@ -2,9 +2,9 @@ pragma solidity ^0.4.24;
 
 import "@tps/test-helpers/contracts/apps/AragonApp.sol";
 
-import "@tps/address-book/contracts/AddressBook.sol";
+import "@tps/apps-address-book/contracts/AddressBook.sol";
 
-import "@tpt/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
+import "@tps/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
 
 import "@tps/test-helpers/contracts/lib/zeppelin/math/SafeMath64.sol";
 
@@ -82,7 +82,7 @@ contract Allocations is AragonApp, Fundable {
     }
 
 
-    AddressBook addressBook;
+    AddressBook public addressBook;
     Payout[] payouts;
 
     bytes32 constant public START_PAYOUT_ROLE = keccak256("START_PAYOUT_ROLE");
@@ -97,7 +97,7 @@ contract Allocations is AragonApp, Fundable {
     function () public payable { 
         revert();
     }
-    
+
     /*
     * @dev This is the function that setups who the candidates will be, and
     *      where the funds will go for the payout. This is where the payout
@@ -107,10 +107,10 @@ contract Allocations is AragonApp, Fundable {
     *
     */
     function initialize(
-        address _addressBook
+        AddressBook _addressBook
     ) external onlyInit
     {
-        registry = AddressBook(_addressBook);
+        addressBook = _addressBook;
         initialized();
     }
 
