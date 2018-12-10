@@ -154,11 +154,13 @@ contract('RangeVoting App', accounts => {
           [4, 4, 4],
           'arg1arg2arg3',
           [0x61, 0x61, 0x61],
-          [0x61, 0x61, 0x61]
+          [0x61, 0x61, 0x61],
+          5,
+          false
         )
       }
       const script = encodeCallScript([action])
-     //console.log(script)
+      //console.log(script)
       const voteId = createdVoteId(
         await app.newVote(script, '', { from: holder50 })
       )
@@ -175,7 +177,9 @@ contract('RangeVoting App', accounts => {
           [4, 4, 4],
           'arg1arg2arg3',
           ['0x0', '0x0', '0x0'],
-          ['0x0', '0x0', '0x0']
+          ['0x0', '0x0', '0x0'],
+          5,
+          false
         )
       }
       const script = encodeCallScript([action])
@@ -201,7 +205,9 @@ contract('RangeVoting App', accounts => {
           [4, 4, 4],
           'arg1arg2arg3',
           ['0x0', '0x0', '0x0'],
-          ['0x0', '0x0', '0x0']
+          ['0x0', '0x0', '0x0'],
+          5,
+          true
         )
       }
       const script = encodeCallScript([action])
@@ -236,7 +242,7 @@ contract('RangeVoting App', accounts => {
     it('execution throws if any action on script throws', async () => {
       let action = {
         to: executionTarget.address,
-        calldata: executionTarget.contract.setSignal.getData([], [], [], '',[],[])
+        calldata: executionTarget.contract.setSignal.getData([], [], [], '',[],[],0,true)
       }
       const script = encodeCallScript([action])
       //console.log(script)
@@ -265,7 +271,9 @@ contract('RangeVoting App', accounts => {
           [4, 4, 4],
           'arg1arg2arg3',
           ['0x0', '0x0', '0x0'],
-          ['0x0', '0x0', '0x0']
+          ['0x0', '0x0', '0x0'],
+          5,
+          false
         )
       }
       const script = encodeCallScript([action])
@@ -294,7 +302,9 @@ contract('RangeVoting App', accounts => {
             [4, 4, 4],
             'arg1arg2arg3',
             [0x1, 0x2, 0x3],
-            [0x1, 0x2, 0x3]
+            [0x1, 0x2, 0x3],
+            5,
+            false
           )
         }
 

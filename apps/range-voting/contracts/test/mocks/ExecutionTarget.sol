@@ -10,7 +10,9 @@ contract ExecutionTarget {
         uint256[] /*_infoIndices*/, 
         string /*_candidateInfo*/,
         bytes32[] /*level 1 ID */,
-        bytes32[] /* level 2 ID */
+        bytes32[] /* level 2 ID */,
+        uint256 /*test param*/,
+        bool /*test param*/
     ) public 
     {
         for (uint i = 0; i < _signal.length; i++) {
