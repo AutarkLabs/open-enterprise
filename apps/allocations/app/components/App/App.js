@@ -36,14 +36,14 @@ class App extends React.Component {
   }
 
   submitAllocation = allocation => {
-    const emptyArray = new Array(allocation.addresses.length).fill(0)
+    const emptyArray1 = new Array(allocation.addresses.length).fill(0)
     this.props.app.setDistribution(
       allocation.addresses,
-      emptyArray,
-      emptyArray,
+      emptyArray1, //[]
+      emptyArray1, //[]
       '',
-      emptyArray,
-      emptyArray,
+      [], // Issue with bytes32 handling
+      [], // Issue with bytes32 handling
       allocation.payoutId,
       allocation.informational,
       allocation.recurring,
