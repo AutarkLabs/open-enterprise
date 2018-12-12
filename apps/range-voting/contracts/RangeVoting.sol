@@ -446,6 +446,7 @@ contract RangeVoting is IForwarder, AragonApp {
             voteInstance.scriptOffset = scriptOffset;
             voteInstance.scriptRemainder = scriptRemainder;    
         }
+        // First Static Parameter in script parsed for the externalId
         voteInstance.externalId = _executionScript.uint256At(224);
         emit ExternalContract(voteId, _executionScript.addressAt(0x4),_executionScript.uint256At(0x44));
         emit StartVote(voteId);
