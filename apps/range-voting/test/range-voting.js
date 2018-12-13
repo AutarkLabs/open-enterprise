@@ -204,8 +204,8 @@ contract('RangeVoting App', accounts => {
           [0, 0, 0],
           [4, 4, 4],
           'arg1arg2arg3',
-          ['0x0', '0x0', '0x0'],
-          ['0x0', '0x0', '0x0'],
+          [1, 2, 3],
+          [2, 4, 6],
           5,
           true
         )
@@ -224,9 +224,19 @@ contract('RangeVoting App', accounts => {
       for (let i = 0; i < vote.length; i++) {
         signal = await executionTarget.getSignal(i)
         assert.equal(
-          signal.toNumber(),
+          signal[0].toNumber(),
           vote[i],
           'Signal ' + i + ' should be ' + vote[i]
+        )
+        assert.equal(
+          signal[1].toNumber(),
+          (i+1),
+          'Id1 ' + ( i + 1 ) + 'is incorrect'
+        )
+        assert.equal(
+          signal[2].toNumber(),
+          ( 2 * ( i + 1 )),
+          'Id2 ' + ( 2 * ( i + 1 ))+ ' is incorrect'
         )
       }
     })
