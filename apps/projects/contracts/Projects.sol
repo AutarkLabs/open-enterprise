@@ -24,6 +24,7 @@ contract Projects is AragonApp {
         uint256 number; // May be redundant tracking this
         bool hasBounty;
         uint256 bountySize;
+        uint256 priority;
         address bountyWallet; // Not sure if we'll have a way to "retrieve" this value from status open bounties
     }
 
@@ -39,11 +40,36 @@ contract Projects is AragonApp {
     event RepoRemoved(bytes32 id);
     // Fired when a bounty is added to a repo
     event BountyAdded(bytes32 owner, bytes32 repo, uint256 issueNumber, uint256 bountySize);
+    // Fired when an issue is curated
+    event IssueCurated(bytes32 repo, uint256 issueNumber, uint256 priority);
 
     bytes32 public constant ADD_REPO_ROLE = keccak256("ADD_REPO_ROLE");
     bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
     bytes32 public constant ADD_BOUNTY_ROLE =  keccak256("ADD_BOUNTY_ROLE");
+    bytes32 public constant CURATE_ISSUES_ROLE = keccak256("CURATE_ISSUES_ROLE");
 
+    function curateIssues(
+        address[] unusedAddresses, 
+        uint256[] issuePriorities,
+        uint256[] issueDescriptionIdices, 
+        string issueDescriptions,
+        uint256[] issueRepos,
+        uint256[] issueNumbers
+    ) external isInitialized auth(CURATE_ISSUES_ROLE)
+    {
+        bytes32 repoId;
+        require(issuePriorities.length == unusedAddresses.length, "length mismatch: issuePriorites and unusedAddresses");
+        require(issuePriorities.length == issueDescriptionIdices.length, "length mismatch: issuePriorites and issueDescriptionIdx");
+        require(issueRepos.length == issueDescriptionIdices.length, "length mismatch: issueRepos and issueDescriptionIdx");
+        require(issueRepos.length == issueDescriptionIdices.length, "length mismatch: issueRepos and issueNumbers");
+
+        for (uint256 i = 0; i < issuePriorities.length; i++) {
+            repoId = bytes32(issueRepos[i]);
+            require(issuePriorities[i] == 999, "bounty already assigned for issue");
+            repos[repoId].issues[uint256(issueNumbers[i])].priority = issuePriorities[i];
+            emit IssueCurated(repoId,issueNumbers[i],issuePriorities[i]);
+        }
+    }
 
     /**
      * Add an entry to the registry.
@@ -105,6 +131,7 @@ contract Projects is AragonApp {
             _issueNumber,
             true,
             _bountySize,
+            999,
             address(0)
         );
         emit BountyAdded(
