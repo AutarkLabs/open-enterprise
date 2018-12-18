@@ -14,7 +14,7 @@
     "lint": "solium --dir ./contracts",
     "publish:http": "npm run publish:http-copy-files && aragon apm publish patch --http localhost:1111 --http-served-from ./dist",
     "publish:http-copy-files": "npm run build:script && mkdir -p dist/images && cp images/icon.svg dist/images/",
-    "publish": "aragon apm publish",
+    "publish": "aragon apm publish patch",
     "start": "aragon run",
     "sync-assets": "copy-aragon-ui-assets ./dist",
     "test:gas": "GAS_REPORTER=true npm test",
