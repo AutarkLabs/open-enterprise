@@ -14,13 +14,35 @@ import ErrorBoundary from './ErrorBoundary'
 
 const ASSETS_URL = 'aragon-ui-assets/'
 
-// TODO: let the user customize the github app on settings screen?
-const CLIENT_ID = 'd556542aa7a03e640409'
 const GITHUB_URI = 'https://github.com/login/oauth/authorize'
-const AUTH_URI = 'https://tps-github-auth.now.sh/authenticate'
 
+// TODO: let the user customize the github app on settings screen?
+// TODO: Extract to an external js utility to keep this file clean
+// Variable fields depending on the execution environment:
 // TODO: This should be dynamically set depending on the execution environment (dev, prod...)
-const REDIRECT_URI = 'http://localhost:3333'
+let CLIENT_ID = ''
+let REDIRECT_URI = ''
+let AUTH_URI = ''
+
+switch (window.location.origin) {
+case 'http://localhost:3333':
+  console.log('Github OAuth: Using local http provider deployment')
+  CLIENT_ID = 'd556542aa7a03e640409'
+  REDIRECT_URI = 'http://localhost:3333'
+  AUTH_URI = 'https://dev-tps-github-auth.now.sh/authenticate'
+  break
+case 'http://localhost:8080':
+  console.log('Github OAuth: Using local IPFS deployment')
+  CLIENT_ID = '686f96197cc9bb07a43d'
+  REDIRECT_URI = window.location.href
+  AUTH_URI = 'https://local-tps-github-auth.now.sh/authenticate'
+  break
+default:
+  console.log(
+    'Github OAuth: Scenario not implemented yet, Github API disabled for the current Projects App deployment'
+  )
+  break
+}
 
 export const githubPopup = (popup = null) => {
   // Checks to save some memory if the popup exists as a window object
