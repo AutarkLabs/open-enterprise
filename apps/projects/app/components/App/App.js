@@ -112,7 +112,7 @@ class App extends React.PureComponent {
 
   state = {
     repos: [],
-    activeIndex: 1,
+    activeIndex: 0,
   }
 
   componentDidMount() {
@@ -177,11 +177,14 @@ class App extends React.PureComponent {
           id: repo.data.repo,
         }))) ||
       'No repos'
+    const reposIds = (repos && repos.map(repo => repo.data.repo)) || []
 
     this.setState(() => ({
       panel: PANELS.NewIssue,
       panelProps: {
         reposManaged: repoNames,
+        closePanel: this.closePanel,
+        reposIds,
       },
     }))
   }
