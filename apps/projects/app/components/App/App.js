@@ -194,9 +194,32 @@ class App extends React.PureComponent {
   }
 
   onSubmitCuration = issues => {
+    var issuesTitles = issues.map(issue => issue.title)
+    var issueIndicies = []
+    issues.map((issue, i, indicies) => {
+      if(i == 0){
+        return issues[i].title.length
+      }
+      return indicies[i-1] + issues[i].title.length
+    })
     console.log(
       'Ready to curate these issues from the contract:',
-      issues.map(issue => issue.title)
+      issuesTitles,
+      issues.map(issue => issue.id),
+      issues.map(issue => issue.number),
+      issues.map(issue => issue.repo)
+    )
+    console.log(issues)
+    console.log("Repos:", this.props.repos)
+    const emptyIntArray = new Array(issues.length).fill(0)
+    this.props.app.curateIssues(
+      emptyIntArray,
+      emptyIntArray,
+      issueIndicies,
+      issuesTitles.join(),
+      //issues.map(issue => issue.repo)
+      this.state.repos,
+      issues.map(issue => issue.number)
     )
   }
 

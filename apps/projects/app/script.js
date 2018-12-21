@@ -157,6 +157,7 @@ function loadRepoData(id) {
             description,
             collaborators,
             commits,
+            id
           }
           resolve({ owner, repo, metadata })
         }

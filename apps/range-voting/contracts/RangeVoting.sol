@@ -108,7 +108,7 @@ contract RangeVoting is IForwarder, AragonApp {
     event ChangeCandidateSupport(uint256 candidateSupportPct);
     event ExecutionScript(bytes script, uint256 data);
     // Add hash info
-    event ExternalContract(uint256 indexed voteId, address addr, uint256 externalId);
+    event ExternalContract(uint256 indexed voteId, address addr, bytes32 funcSig);
     event AddCandidate(uint256 voteId, address candidate, uint length);
     event Metadata(string metadata);
     event Location(uint256 currentLocation);
@@ -448,7 +448,7 @@ contract RangeVoting is IForwarder, AragonApp {
         }
         // First Static Parameter in script parsed for the externalId
         voteInstance.externalId = _executionScript.uint256At(224);
-        emit ExternalContract(voteId, _executionScript.addressAt(0x4),_executionScript.uint256At(0x44));
+        emit ExternalContract(voteId, _executionScript.addressAt(0x4),_executionScript.bytes32At(0x44));
         emit StartVote(voteId);
     }
 
