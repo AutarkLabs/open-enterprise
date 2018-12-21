@@ -110,10 +110,6 @@ contract RangeVoting is IForwarder, AragonApp {
     // Add hash info
     event ExternalContract(uint256 indexed voteId, address addr, uint256 externalId);
     event AddCandidate(uint256 voteId, address candidate, uint length);
-    event Metadata(string metadata);
-    event Location(uint256 currentLocation);
-    event Address(address candidate);
-    event CandidateQty(uint256 numberOfCandidates);
 
 ////////////////
 // Constructor
@@ -417,9 +413,15 @@ contract RangeVoting is IForwarder, AragonApp {
     *            [ function hash (uint32: 4 bytes) ]
     *            [ calldata (calldataLength bytes) ]
     *        In order to work with a range vote the execution script must contain
-    *        Arrays as its first two parameters.
+    *        Arrays as its first six parameters. Non-string array lengths must all equal candidateLength
     *        The first Array is generally a list of identifiers (bytes32 or address)
     *        The second array will be composed of support value (uint256).
+    *        The third array will be end index for each candidates Information within the infoString (optional uint256)
+    *        The fourth array is a string of concatenated candidate information, the infoString (optional string)
+    *        The fifth array is an array of identification keys (optional uint256)
+    *        The sixth array is a second array of identification keys, usually mapping to a second level (optional uint256)
+    *        The seventh parameter is used as the identifier for this vote. (uint256)
+    *        See ExecutionTarget.sol in the test folder for an example  forwarded function (setSignal)
     * @param _metadata The metadata or vote information attached to this vote
     * @return voteId The ID(or index) of this vote in the votes array.
     */
@@ -446,7 +448,7 @@ contract RangeVoting is IForwarder, AragonApp {
             voteInstance.scriptOffset = scriptOffset;
             voteInstance.scriptRemainder = scriptRemainder;    
         }
-        // First Static Parameter in script parsed for the externalId
+        // First Static Parameter in script parsed for the externalId at the seventh parameter
         voteInstance.externalId = _executionScript.uint256At(224);
         emit ExternalContract(voteId, _executionScript.addressAt(0x4),_executionScript.uint256At(0x44));
         emit StartVote(voteId);
@@ -455,12 +457,12 @@ contract RangeVoting is IForwarder, AragonApp {
     function _goToParamOffset(uint256 _paramNum, bytes _executionScript) internal pure returns(uint256 paramOffset) {
         /*
         param numbers and what they map to:
-        1. candidate addresses 
-        2. Supports values
-        3. Info String indexes
-        4. Info String length
-        5. Level 1 external references
-        6. level 2 external references
+        1: candidate addresses 
+        2: Supports values
+        3: Info String indexes
+        4: Info String length
+        5: Level 1 external references
+        6: level 2 external references
         */
         uint256 startOffset = 0x04 + 0x14 + 0x04;
         paramOffset = _executionScript.uint256At(startOffset + 0x04 + (0x20 * (_paramNum - 1) )) + 0x20;
@@ -490,16 +492,11 @@ contract RangeVoting is IForwarder, AragonApp {
         bytes32 externalId2;
         uint256 idOffset;
         uint256 infoStart = _goToParamOffset(4,_executionScript) + 0x20;
-        //Location(infoStart);
-        emit CandidateQty(_candidateLength);
         for (uint256 i = 0 ; i < _candidateLength; i++) {
             currentCandidate = _executionScript.addressAt(currentOffset + 0x0C);
-            emit Address(currentCandidate);
             //find the end of the infoString using the relative arg positions
             infoEnd = infoStart + _executionScript.uint256At(currentOffset + (0x20 * 2 * (_candidateLength + 1) ));
             info = substring(_executionScript, infoStart, infoEnd);
-            //Metadata(info);
-            //Location(infoEnd);
             currentOffset = currentOffset + 0x20;
             // update the index for the next iteration
             infoStart = infoEnd;
@@ -514,10 +511,7 @@ contract RangeVoting is IForwarder, AragonApp {
     }
 
     /**
-    * @dev This function needs to work with strings instead of addresses but it doesn't
-    *      This fits our current use case better and string manipulation is harder
-    *      since there's more like... dynamic-ness.
-            //TODO Update the above dev info
+    * @dev This function parses the _executionScript and stores relevant information for the vote
     */
     function _extractCandidates(bytes _executionScript, uint256 _voteId) internal returns(uint256 currentOffset, uint256 calldataLength) {
         // in order to find out the total length of our call data we take the 3rd
@@ -540,7 +534,6 @@ contract RangeVoting is IForwarder, AragonApp {
 
         // obtain the beginning index of the infoString
         //uint256 infoStart = _goToParamOffset(4,_executionScript) + 0x20;
-        //Location(infoStart);
         uint256 candidateLength = _executionScript.uint256At(currentOffset);
     
 
@@ -697,11 +690,6 @@ contract RangeVoting is IForwarder, AragonApp {
         bytes memory executionScript = new bytes(32);
         executionScript = voteInstance.executionScript;
         uint256 dynamicOffset = executionScript.uint256At(32);
-        // Doesn't fit in local storage but here for reference
-        //uint256 firstDynamicElementLocation = executionScript.uint256At(32);
-        //uint256 secondDynamicElementLocation = 32 + dynamicOffset + (candidateLength * 32);
-        //uint256 thirdDynamicElementLocation = secondDynamicElementLocation + 32 + (candidateLength * 32);
-        //uint256 fourthDynamicElementLocation = thirdDynamicElementLocation + 32 + (candidateLength * 32);
         // Doesn't fit in local storage but here for reference
         //uint256 staticParamLength = firstDynamicElementLocation - 64;
         // The total length of the new script will be two 32 byte spaces
