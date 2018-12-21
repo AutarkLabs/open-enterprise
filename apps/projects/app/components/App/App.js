@@ -200,10 +200,14 @@ class App extends React.PureComponent {
     }))
   }
 
-  newBountyAllocation = _issues => {
+  newBountyAllocation = issues => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.NewBountyAllocation,
-      panelProps: {},
+      panelProps: {
+        issues: issues,
+        onSubmit: this.onSubmitBountyAllocation,
+        rate: 8.5,
+      },
     }))
   }
 
@@ -222,6 +226,13 @@ class App extends React.PureComponent {
     console.log(
       'Ready to curate these issues from the contract:',
       issues.map(issue => issue.title)
+    )
+  }
+
+  onSubmitBountyAllocation = bounties => {
+    console.log(
+      'Ready to allocate bounties:',
+      issues.map(bounty => bounty.title)
     )
   }
 
