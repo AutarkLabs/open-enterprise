@@ -1,6 +1,6 @@
 {
   "appName": "projects.aragonpm.eth",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "roles": [
     {
       "name": "Add a new repository",
