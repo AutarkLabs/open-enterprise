@@ -26,7 +26,6 @@ import {
 } from '../../Form'
 
 class NewBountyAllocation extends React.Component {
-  state = NewBountyAllocation.initialState
   static propTypes = {
     /** array of issues to allocate bounties on */
     issues: PropTypes.arrayOf(
@@ -40,26 +39,73 @@ class NewBountyAllocation extends React.Component {
     onSubmit: PropTypes.func.isRequired,
   }
 
-  static initialState = {
-    description: '',
-    bounties: {}
-  }
-
   descriptionChange = e => {
     this.setState({ description: e.target.value })
   }
 
-  generateHoursChange = id => (index) => {
-    const { bounties } = this.state
-    bounties[id] = index
-    console.log('generateHoursChange: id: ', id, ', index: ', index, ', bounties: ', bounties)
-    this.setState({bounties})
+  constructor(props) {
+    super(props)
+    let bounties = {}
+    this.props.issues.map(issue => {
+      bounties[issue.id] = {
+        hours: 0,
+        exp: 0,
+        deadline: 0,
+        avail: 0,
+        detailsOpen: 0
+      }
+    })
+    this.state = {
+      description: '',
+      bounties,
+    }
+console.log('constructor: ', bounties)
   }
+
+  configBounty = (id, key, val) => {
+    const { bounties } = this.state
+    // that's value reversal based on what's already there - special treatment
+    if (key == 'detailsOpen') {
+      bounties[id][key] = 1 - bounties[id][key]
+    } else bounties[id][key] = val
+    this.setState({bounties})
+    console.log('configBounty: ', bounties)
+  }
+
+  generateHoursChange = id => index => {
+    this.configBounty(id, 'hours', index)
+    console.log('generateHoursChange: id: ', id, ', index: ', index)
+  }
+
+  generateExpChange = id => index => {
+    this.configBounty(id, 'exp', index)
+    console.log('generateExpChange: id: ', id, ', index: ', index)
+  }
+
+  generateDeadlineChange = id => index => {
+    this.configBounty(id, 'deadline', index)
+    console.log('generateExpChange: id: ', id, ', index: ', index)
+  }
+
+  generateAvailChange = id => index => {
+    this.configBounty(id, 'avail', index)
+    console.log('generateExpChange: id: ', id, ', index: ', index)
+  }
+
+   generateArrowChange = id => () => {
+    this.configBounty(id, 'detailsOpen')
+    console.log('generateArrowChange: id: ', id)
+  }
+
+   
 
   render() {
     const bountyHours = ['-', '5', '10', '15']
+    const bountyExp = ['-', 'beginner', 'expert']
+    const bountyDeadline = ['-', 'yesterday', 'last week']
+    const bountyAvail = ['-', '1', '2', '3']
     const { bounties } = this.state
-
+console.log('bounties: ', bounties)
     return (
       <Form
         onSubmit={this.props.onSubmit}
@@ -84,10 +130,14 @@ class NewBountyAllocation extends React.Component {
             <Table>
               {
               this.props.issues.map(issue => (
-                <TableRow>
-                  <Cell key={issue.id}>
+                <TableRow key={issue.id}>
+                  <Cell>
+                    <IBMain>
                     <IssueBounty>
-                      <IBArrow> > </IBArrow>
+                      <IBArrow
+                        direction={bounties[issue.id]['detailsOpen']}
+                        onClick={this.generateArrowChange(issue.id)}
+                      >></IBArrow>
                       <IBTitle size='normal' weight="bold">{issue.title}</IBTitle>
                       <IBHours>
                         <IBHoursInput>
@@ -95,7 +145,7 @@ class NewBountyAllocation extends React.Component {
                           <DropDown
                             items={bountyHours}
                             onChange={this.generateHoursChange(issue.id)}
-                            active={bounties[issue.id]}
+                            active={bounties[issue.id]['hours']}
                           />
                         </IBHoursInput>
                       </IBHours>
@@ -107,7 +157,48 @@ class NewBountyAllocation extends React.Component {
                         </IBValueShow>
                       )}
                       </IBValue>
+
                     </IssueBounty>
+                    <IBDetails open={bounties[issue.id]['detailsOpen']}>
+
+                      <IBExp>
+                          <FormField
+                            label="Experience level"
+                            input={
+                            <DropDown
+                              items={bountyExp}
+                              onChange={this.generateExpChange(issue.id)}
+                              active={bounties[issue.id]['exp']}
+                            />
+                            }
+                          />
+                      </IBExp>
+                      <IBDeadline>
+                          <FormField
+                            label="Deadline"
+                            input={
+                            <DropDown
+                              items={bountyDeadline}
+                              onChange={this.generateDeadlineChange(issue.id)}
+                              active={bounties[issue.id]['deadline']}
+                            />
+                            }
+                          />
+                      </IBDeadline>
+                      <IBAvail>
+                          <FormField
+                            label="Num. Available"
+                            input={
+                            <DropDown
+                              items={bountyAvail}
+                              onChange={this.generateAvailChange(issue.id)}
+                              active={bounties[issue.id]['avail']}
+                            />
+                            }
+                          />
+                      </IBAvail>
+                    </IBDetails>
+                    </IBMain>
                   </Cell>
                 </TableRow>
               ))
@@ -123,7 +214,12 @@ class NewBountyAllocation extends React.Component {
 const Cell = styled(TableCell)`
   padding: 0px;
 `
+const IBMain = styled.div`
+  display: flex;
+  flex-flow: column;
+`
 const IssueBounty = styled.div`
+  clear: all;
   display: grid;
   grid-template-columns: 41px 159px auto;
   grid-template-rows: auto;
@@ -138,6 +234,23 @@ const IBTitle = styled(Text)`
 `
 const IBHours = styled.div`
     grid-area: hours;
+`
+const IBExp = styled.div`
+    grid-area: exp;
+`
+const IBDetails = styled.div`
+  display: ${({ open }) => (open ? 'grid' : 'none')};
+  grid-template-columns: 41px 159px auto;
+  grid-template-rows: auto;
+  grid-template-areas:
+    ".     exp   dline"
+    ".     avail .    ";
+`
+const IBDeadline = styled.div`
+    grid-area: dline;
+`
+const IBAvail = styled.div`
+    grid-area: avail;
 `
 const IBValue = styled.div`
   grid-area: value;
@@ -158,7 +271,7 @@ margin: 10px 0px;
 const IBArrow = styled.div`
   grid-area: arrow;
   place-self: center;
-  transform: rotate(-90deg);
+  transform: ${({ direction }) => (direction ? 'rotate(-90deg)' : 'rotate(90deg)')};
   font-size: 17px;
   line-height: 17px;
 `
