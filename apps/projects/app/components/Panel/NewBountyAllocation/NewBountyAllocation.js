@@ -10,19 +10,13 @@ import {
   DropDown,
   theme,
   Badge,
-//  Info,
   Table, TableHeader, TableRow, TableCell
 } from '@aragon/ui'
 
 import {
-//  DescriptionInput,
   Form,
   FormField,
   FieldTitle,
-
-//  OptionsInput,
-//  SettingsInput,
-//  InputDropDown,
 } from '../../Form'
 
 class NewBountyAllocation extends React.Component {
@@ -59,7 +53,7 @@ class NewBountyAllocation extends React.Component {
       description: '',
       bounties,
     }
-console.log('constructor: ', bounties)
+    //console.log('constructor: ', bounties)
   }
 
   configBounty = (id, key, val) => {
@@ -92,12 +86,10 @@ console.log('constructor: ', bounties)
     console.log('generateExpChange: id: ', id, ', index: ', index)
   }
 
-   generateArrowChange = id => () => {
+  generateArrowChange = id => () => {
     this.configBounty(id, 'detailsOpen')
     console.log('generateArrowChange: id: ', id)
   }
-
-   
 
   render() {
     const bountyHours = ['-', '5', '10', '15']
@@ -105,7 +97,7 @@ console.log('constructor: ', bounties)
     const bountyDeadline = ['-', 'yesterday', 'last week']
     const bountyAvail = ['-', '1', '2', '3']
     const { bounties } = this.state
-console.log('bounties: ', bounties)
+    //console.log('bounties: ', bounties)
     return (
       <Form
         onSubmit={this.props.onSubmit}
@@ -129,79 +121,80 @@ console.log('bounties: ', bounties)
           input={
             <Table>
               {
-              this.props.issues.map(issue => (
-                <TableRow key={issue.id}>
-                  <Cell>
-                    <IBMain>
-                    <IssueBounty>
-                      <IBArrow
-                        direction={bounties[issue.id]['detailsOpen']}
-                        onClick={this.generateArrowChange(issue.id)}
-                      >></IBArrow>
-                      <IBTitle size='normal' weight="bold">{issue.title}</IBTitle>
-                      <IBHours>
-                        <IBHoursInput>
-                          <FieldTitle>Hours</FieldTitle>
-                          <DropDown
-                            items={bountyHours}
-                            onChange={this.generateHoursChange(issue.id)}
-                            active={bounties[issue.id]['hours']}
-                          />
-                        </IBHoursInput>
-                      </IBHours>
-                      <IBValue>
-                      {(issue.id in bounties && bounties[issue.id] > 0) && (
-                        <IBValueShow>
-                          <FieldTitle>$100</FieldTitle>
-                          <Badge>10 ANT</Badge>
-                        </IBValueShow>
-                      )}
-                      </IBValue>
-
-                    </IssueBounty>
-                    <IBDetails open={bounties[issue.id]['detailsOpen']}>
-
-                      <IBExp>
-                          <FormField
-                            label="Experience level"
-                            input={
-                            <DropDown
-                              items={bountyExp}
-                              onChange={this.generateExpChange(issue.id)}
-                              active={bounties[issue.id]['exp']}
-                            />
+                this.props.issues.map(issue => (
+                  <TableRow key={issue.id}>
+                    <Cell>
+                      <IBMain>
+                        <IssueBounty>
+                          <IBArrow
+                            direction={bounties[issue.id]['detailsOpen']}
+                            onClick={this.generateArrowChange(issue.id)}
+                          >></IBArrow>
+                          <IBTitle size='normal' weight="bold">{issue.title}</IBTitle>
+                          <IBHours>
+                            <IBHoursInput>
+                              <FieldTitle>Hours</FieldTitle>
+                              <DropDown
+                                items={bountyHours}
+                                onChange={this.generateHoursChange(issue.id)}
+                                active={bounties[issue.id]['hours']}
+                              />
+                            </IBHoursInput>
+                          </IBHours>
+                          <IBValue>
+                            {
+                              (issue.id in bounties && bounties[issue.id] > 0) && (
+                                <IBValueShow>
+                                  <FieldTitle>$100</FieldTitle>
+                                  <Badge>10 ANT</Badge>
+                                </IBValueShow>
+                              )
                             }
-                          />
-                      </IBExp>
-                      <IBDeadline>
-                          <FormField
-                            label="Deadline"
-                            input={
-                            <DropDown
-                              items={bountyDeadline}
-                              onChange={this.generateDeadlineChange(issue.id)}
-                              active={bounties[issue.id]['deadline']}
+                          </IBValue>
+                        </IssueBounty>
+                        <IBDetails open={bounties[issue.id]['detailsOpen']}>
+                          <IBExp>
+                            <FormField
+                              label="Experience level"
+                              input={
+                                <DropDown
+                                  items={bountyExp}
+                                  onChange={this.generateExpChange(issue.id)}
+                                  active={bounties[issue.id]['exp']}
+                                />
+                              }
                             />
-                            }
-                          />
-                      </IBDeadline>
-                      <IBAvail>
-                          <FormField
-                            label="Num. Available"
-                            input={
-                            <DropDown
-                              items={bountyAvail}
-                              onChange={this.generateAvailChange(issue.id)}
-                              active={bounties[issue.id]['avail']}
+                          </IBExp>
+                          <IBDeadline>
+                            <FormField
+                              label="Deadline"
+                              input={
+                                <DropDown
+                                  items={bountyDeadline}
+                                  onChange={this.generateDeadlineChange(issue.id)}
+                                  active={bounties[issue.id]['deadline']}
+                                />
+                              }
                             />
-                            }
-                          />
-                      </IBAvail>
-                    </IBDetails>
-                    </IBMain>
-                  </Cell>
-                </TableRow>
-              ))
+                          </IBDeadline>
+                          <IBAvail>
+                            <FormField
+                              label="Num. Available"
+                              input={
+                                <DropDown
+                                  items={bountyAvail}
+                                  onChange={this.generateAvailChange(issue.id)}
+                                  active={bounties[issue.id]['avail']}
+                                />
+                              }
+                            />
+                          </IBAvail>
+                        </IBDetails>
+                      </IBMain>
+                    </Cell>
+                  </TableRow>
+                )
+                )
               }
             </Table>
           }

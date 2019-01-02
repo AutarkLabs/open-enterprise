@@ -136,8 +136,8 @@ class NewIssue extends React.PureComponent {
     // TODO: Put SidePanel inside the component?
 
     const reGet = [{
-        query: GET_ISSUES,
-        variables: { reposIds }
+      query: GET_ISSUES,
+      variables: { reposIds }
     }]
 
     return (
