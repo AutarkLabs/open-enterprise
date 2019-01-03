@@ -53,6 +53,30 @@ The WIP gist is probably the most helpful but also the most incomplete. If you f
 
 Please feel free to direct questions or requests for general help in the [Aragon Planning riot channel](https://riot.im/app/#/room/#aragon-planning:matrix.org).
 
+### ZenHub Board
+
+The ZenHub board is broken down into the following columns:
+
+- **New Issues**: Unsorted issues
+
+- **Icebox**: Issues that are low in priority or may be revisited in the future.
+
+- **Backlog**: Issues with high priority, ready to be worked on.
+
+- **Breakdown | WIP**: Issues being defined. This can be accomplished by annotations on implementation strategy, accompanied by unit tests.
+
+- **Breakdown | Done**: Issues that have been defined, awaiting transition to implementation pipeline.
+
+- **Implementation | WIP**: Changes undergoing implementation.
+
+- **Track**: Issues that are temporarily frozen, until their blockers/dependencies are resolved.
+
+- **Implementation | Done**: Changes that have been implemented and have full test coverage, awaiting transition to Review/QA pipeline.
+
+- **Review/QA**: Open pull requests that are "author ready" and awaiting/undergoing review.
+
+- **Closed**: Issues that have been resolved or deprecated.
+
 ### Pull Request Process
 
 Install the [ZenHub for Github](https://chrome.google.com/webstore/detail/zenhub-for-github/ogcgkffhplmphkaahpmffcafajaocjbd?hl=en-US) chrome extension.
