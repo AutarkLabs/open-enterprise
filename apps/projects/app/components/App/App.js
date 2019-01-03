@@ -29,7 +29,9 @@ case 'http://localhost:3333':
   console.log('Github OAuth: Using local http provider deployment')
   CLIENT_ID = 'd556542aa7a03e640409'
   REDIRECT_URI = 'http://localhost:3333'
-  AUTH_URI = 'https://dev-tps-github-auth.now.sh/authenticate'
+  AUTH_URI = 'https://tps-github-auth.now.sh/authenticate'
+  // TODO: change auth service to be more explicit to:
+  // AUTH_URI = 'https://dev-tps-github-auth.now.sh/authenticate'
   break
 case 'http://localhost:8080':
   console.log('Github OAuth: Using local IPFS deployment')
@@ -140,11 +142,18 @@ class App extends React.PureComponent {
       const code = message.data.value
       console.log('AuthCode received from github:', code)
       console.log('Proceeding to token request...')
+      // TODO: Check token received correctly
       const token = await getToken(code)
       console.log('token obtained:', token)
       this.props.app.cache('github', {
         status: STATUS.AUTHENTICATED,
         token: token,
+      })
+      this.setState({
+        panelProps: {
+          onCreateProject: this.createProject,
+          status: STATUS.AUTHENTICATED,
+        },
       })
     }
   }
@@ -190,7 +199,7 @@ class App extends React.PureComponent {
   }
 
   newProject = () => {
-    this.setState((_, { github: { status } }) => ({
+    this.setState((_prevState, { github: { status } }) => ({
       panel: PANELS.NewProject,
       panelProps: {
         onCreateProject: this.createProject,
