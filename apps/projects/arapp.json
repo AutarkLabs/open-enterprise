@@ -3,18 +3,43 @@
   "version": "0.0.1",
   "roles": [
     {
-      "name": "Add a new repository",
-      "id": "ADD_REPO_ROLE",
+      "name": "Update settings for Projects app",
+      "id": "UPDATE_PROJ_SETTINGS_ROLE",
       "params": []
     },
     {
-      "name": "Remove a repository",
-      "id": "REMOVE_REPO_ROLE",
+      "name": "Create issue curation votes",
+      "id": "CREATE_CURATION_ROLE",
       "params": []
     },
     {
-      "name": "Add a bounty",
-      "id": "ADD_BOUNTY_ROLE",
+      "name": "Create bounty votes",
+      "id": "CREATE_BOUNTY_ROLE",
+      "params": []
+    },
+    {
+      "name": "Approve work completed for bounties",
+      "id": "APPROVE_BOUNTY_ROLE",
+      "params": []
+    },
+    {
+      "name": "Arbitrate disputes related to bounties",
+      "id": "ARBITRATE_BOUNTY_ROLE",
+      "params": []
+    },
+    {
+      "name": "Create a project",
+      "id": "CREATE_PROJECT_ROLE",
+      "params": []
+    },
+    {
+      "name": "Update a project",
+      "id": "UPDATE_PROJECT_ROLE",
+      "params": []
+    },
+    {
+      "name": "Delete a project",
+      "id": "DELETE_PROJECT_ROLE",
       "params": []
     }
   ],

@@ -132,9 +132,9 @@ contract PlanningKit is KitBase {
         emit InstalledApp(addressBook, apps[1]);
 
         // Projects permissions:
-        acl.createPermission(ANY_ENTITY, projects, projects.ADD_REPO_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, projects, projects.REMOVE_REPO_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, projects, projects.ADD_BOUNTY_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, projects, projects.CREATE_PROJECT_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, projects, projects.DELETE_PROJECT_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, projects, projects.CREATE_BOUNTY_ROLE(), root);
         emit InstalledApp(projects, apps[2]);
 
         // Range-voting permissions
