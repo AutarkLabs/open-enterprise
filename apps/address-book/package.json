@@ -1,5 +1,5 @@
 {
-  "name": "@tpt/apps-address-book",
+  "name": "@tps/apps-address-book",
   "version": "0.0.1",
   "description": "Address book app from Planning Suite",
   "scripts": {
@@ -12,7 +12,8 @@
     "dev": "npm run sync-assets && parcel app/index.html --port 1111",
     "ganache-cli:test": "../shared/test-helpers/ganache-cli.sh",
     "lint": "solium --dir ./contracts",
-    "publish:http": "aragon apm publish --http localhost:1111 --http-served-from ./dist",
+    "publish:http": "npm run publish:http-copy-files && aragon apm publish --http localhost:1111 --http-served-from ./dist",
+    "publish:http-copy-files": "npm run build:script && mkdir -p dist/images && cp images/icon.svg dist/images/",
     "publish": "aragon apm publish",
     "start": "aragon run",
     "sync-assets": "copy-aragon-ui-assets ./dist",
@@ -30,9 +31,10 @@
     "styled-components": "3.4.6"
   },
   "devDependencies": {
-    "@tpt/test-helpers": "0.0.1",
+    "@tps/test-helpers": "^0.0.1",
+    "babel-core": "6.26.3",
     "babel-eslint": "9.0.0",
-    "babel-plugin-styled-components": "1.7.1",
+    "babel-plugin-styled-components": "1.5.1",
     "babel-plugin-transform-class-properties": "6.24.1",
     "babel-plugin-transform-runtime": "6.23.0",
     "babel-preset-env": "1.7.0",
@@ -52,7 +54,7 @@
   "author": "",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Giveth/planning-app"
+    "url": "https://github.com/spacedecentral/planning-suite"
   },
   "keywords": [],
   "license": "GPL-3.0"

@@ -1,9 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "@tpt/test-helpers/contracts/factory/EVMScriptRegistryFactory.sol";
-import "@tpt/test-helpers/contracts/factory/DAOFactory.sol";
-import "@tpt/test-helpers/contracts/acl/ACL.sol";
-import "@tpt/test-helpers/contracts/lib/minime/MiniMeToken.sol";
+import "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
 
 // You might think this file is a bit odd, but let me explain.
 // We only use the MiniMeToken contract in our tests, which
@@ -21,7 +18,7 @@ import "@tpt/test-helpers/contracts/lib/minime/MiniMeToken.sol";
 // When I first saw this contract I audibly laughed out loud.
 // Glad to get to use this janky hack for myself XD
 
-
-contract Spoof { // solium-disable-line no-empty-blocks
+// solium-disable-next-line no-empty-blocks
+contract Spoof {
   // ...
 }

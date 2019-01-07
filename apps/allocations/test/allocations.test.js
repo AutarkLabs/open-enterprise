@@ -4,12 +4,12 @@ const {
   DAOFactory,
   EVMScriptRegistryFactory,
   Kernel,
-} = require('@tpt/test-helpers/artifacts')
+} = require('@tps/test-helpers/artifacts')
 
 const Allocations = artifacts.require('Allocations')
 
-const { assertRevert } = require('@tpt/test-helpers/assertThrow')
-const timetravel = require('@tpt/test-helpers/timeTravel')(web3)
+const { assertRevert } = require('@tps/test-helpers/assertThrow')
+const timetravel = require('@tps/test-helpers/timeTravel')(web3)
 
 // TODO: Fix Vault not loading artifacts error
 // const Vault = artifacts.require('@aragon/apps-vault/contracts/Vault')
@@ -52,13 +52,16 @@ contract('Allocations App', accounts => {
       { from: root }
     )
 
-    // TODO: Revert to only use 2 params when truffle is updated
-    // read: https://github.com/Giveth/planning-app/pull/243
+    // TODO: Revert to use regular function call when truffle gets updated
+    // read: https://github.com/spacedecentral/planning-suite/pull/243
     let receipt = await dao.newAppInstance(
       '0x1234',
       (await Allocations.new()).address,
+      0x0,
+      false,
       { from: root }
     )
+
     app = Allocations.at(
       receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
     )
@@ -90,17 +93,6 @@ contract('Allocations App', accounts => {
     //   receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
     // )
 
-    // TODO: Revert to only use 2 params when truffle is updated
-    // read: https://github.com/Giveth/planning-app/pull/243
-    receipt = await dao.newAppInstance(
-      '0x2345',
-      (await Allocations.new()).address,
-      { from: root }
-    )
-
-    allocation = Allocations.at(
-      receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
-    )
     await app.initialize({ from: accounts[0] })
   })
 
@@ -109,7 +101,6 @@ contract('Allocations App', accounts => {
     const bobafett = accounts[1]
     const dengar = accounts[2]
     const bossk = accounts[3]
-    let imperialBudget
 
     let bobafettInitialBalance
     let dengarInitialBalance
@@ -118,12 +109,6 @@ contract('Allocations App', accounts => {
     let supports
 
     before(async () => {
-      imperialBudget = await web3.eth.getBalance(empire)
-      var send = await web3.eth.sendTransaction({
-        from: empire,
-        to: app.address,
-        value: web3.toWei(0.1, 'ether'),
-      })
       bobafettInitialBalance = await web3.eth.getBalance(bobafett)
       dengarInitialBalance = await web3.eth.getBalance(dengar)
       bosskInitialBalance = await web3.eth.getBalance(bossk)
@@ -257,24 +242,11 @@ contract('Allocations App', accounts => {
     const bobafett = accounts[1]
     const dengar = accounts[2]
     const bossk = accounts[3]
-    let imperialBudget
 
-    let bobafettInitialBalance
-    let dengarInitialBalance
-    let bosskInitialBalance
     let allocationId
     let supports
 
     before(async () => {
-      imperialBudget = await web3.eth.getBalance(empire)
-      var send = await web3.eth.sendTransaction({
-        from: empire,
-        to: app.address,
-        value: web3.toWei(0.01, 'ether'),
-      })
-      bobafettInitialBalance = await web3.eth.getBalance(bobafett)
-      dengarInitialBalance = await web3.eth.getBalance(dengar)
-      bosskInitialBalance = await web3.eth.getBalance(bossk)
       candidateAddresses = [bobafett, dengar, bossk]
     })
 
@@ -365,7 +337,6 @@ contract('Allocations App', accounts => {
     const bobafett = accounts[1]
     const dengar = accounts[2]
     const bossk = accounts[3]
-    let imperialBudget
 
     let bobafettInitialBalance
     let dengarInitialBalance
@@ -374,12 +345,6 @@ contract('Allocations App', accounts => {
     let supports
 
     before(async () => {
-      imperialBudget = await web3.eth.getBalance(empire)
-      var send = await web3.eth.sendTransaction({
-        from: empire,
-        to: app.address,
-        value: web3.toWei(0.01, 'ether'),
-      })
       bobafettInitialBalance = await web3.eth.getBalance(bobafett)
       dengarInitialBalance = await web3.eth.getBalance(dengar)
       bosskInitialBalance = await web3.eth.getBalance(bossk)

@@ -6,26 +6,26 @@
 $ lerna ls
 lerna info version 2.11.0
 lerna info versioning independent
-@tpt/planning-app      v0.0.1
-@tpt/apps-address-book v0.0.1
-@tpt/apps-allocations   v0.0.1
-@tpt/apps-projects     v0.0.1
-@tpt/apps-range-voting v0.0.1
+@tps/planning-suite      v0.0.1
+@tps/apps-address-book v0.0.1
+@tps/apps-allocations   v0.0.1
+@tps/apps-projects     v0.0.1
+@tps/apps-range-voting v0.0.1
 ```
 
-- Planning-app is the base monorepo.
+- Planning-suite is the base monorepo.
 - Frontend packages were merged with individual aragon apps, it added complexity and was not needed.
 - Aragon/cli should be used to bump package versions with `aragon apm version` (more info in Aragon hack documentation). It needs to have a devhchain running.
 
 ## Recommended instructions
 
-### Before doing anything run the install script to avoid dependency errors:
+### Before doing anything run the install script to avoid dependency errors
 
 - `npm i` : Installs root project dependencies and then bootstraps all independent app dependencies.
 
-### Then, run one of the handy scripts depending of the needs:
+### Then, run one of the handy scripts depending of the needs
 
-#### To start frontend development:
+#### To start frontend development
 
 - `npm run dev:<app_name>`
 
@@ -35,7 +35,7 @@ lerna info versioning independent
     - `allocations` for Allocations App (`npm run dev:allocations`)
     - `range` for Range Voting App (`npm run dev:range`)
 
-#### To start blockchain, smart contract or Aragon os development:
+#### To start blockchain, smart contract or Aragon os development
 
 - `npm run start:<app_name>`
 
@@ -45,7 +45,7 @@ lerna info versioning independent
     - `allocations` for Allocations App (`npm run start:allocations`)
     - `range` for Range Voting App (`npm run start:range`)
 
-#### To run everything working together in the Aragon Wrapper:
+#### To run everything working together in the Aragon Wrapper
 
 - `npm start`
 
@@ -74,7 +74,7 @@ Finally, the script launches the Aragon Wrapper with the complete planning suite
 - `npm run clean`
   Just if the other steps don't work call this and start over with a clean state, maybe combined with `rm -rf ~/.ipfs ~/.aragon` to delete the local machine state (this does not delete any key, just local data that then will be downloaded again).
 
-#### Incomplete npm script list:
+### Incomplete npm script list
 
 | Command                   | Description                                   |
 | ------------------------- | --------------------------------------------- |
@@ -88,7 +88,7 @@ Finally, the script launches the Aragon Wrapper with the complete planning suite
 | `npm run devchain:reset`  | Reset local blockchain and start new one      |
 | `npm i` or `npm install`  | Launch the bootstrap script                   |
 | `npm run publish:apps`    | Deploy all apps to local ipfs apm             |
-| `npm run start`           | Start the full planning app with DAO kit      |
+| `npm run start`           | Start the full planning suite with DAO kit    |
 | `npm run start:kit`       | Deploy and start the DAO Kit with everything  |
 
 #### Apps Loading Bug (Is actually a Metamask issue)
@@ -98,7 +98,7 @@ Finally, the script launches the Aragon Wrapper with the complete planning suite
 
 #### Wrong fonts, colors or browser console errors
 
-_Tip: Look at letter g to quickly know if aragon fonts were loaded and applied_
+> _Tip: Look at letter g to quickly know if aragon fonts were loaded and applied_
 
 - Aragon puts all the files in the app in the ipfs folder, so files must be correctly built to the dist folder, this happens in all single apps.
 - Aragon provides the command `copy-aragon-ui-assets` and we use `npm run sync-assets` to call it. The problem is that is easy to have errors configuring the path in AragonApp component (from @aragon/ui), because is not documented where the slashes go or things like that, even some original Aragon apps have or had this error.
@@ -110,8 +110,8 @@ _Tip: Look at letter g to quickly know if aragon fonts were loaded and applied_
 
 So only one slash at the end, otherwise ipfs will probably fail reading asset paths and the app will not show fonts/colors the way it should, it will load the fallback then.
 
-- To inspect ipfs files for errors deploying, load ipfs ui: http://localhost:5001/webui while the Aragon Wrapper is running, and paste the ipfs hash from the app into the files tab to load its content.
+- To inspect ipfs files for errors deploying, load ipfs ui: <http://localhost:5001/webui> while the Aragon Wrapper is running, and paste the ipfs hash from the app into the files tab to load its content.
 
 #### Additional info
 
-- The old deployment code that seemed to do the kit and aragon apps deployments with javascript was replaced by the handy Kit smart contract, but here is kept for historical purposes: [**bare/migrations/2_deploy.js**](https://github.com/Giveth/planning-app/blob/bfb0900b6c15d91bc1d0d9967c6f5c46c3b9dd27/wip-apps/bare/migrations/2_deploy.js)
+- The old deployment code that seemed to do the kit and aragon apps deployments with javascript was replaced by the handy Kit smart contract, but here is kept for historical purposes: [**bare/migrations/2_deploy.js**](https://github.com/spacedecentral/planning-suite/blob/bfb0900b6c15d91bc1d0d9967c6f5c46c3b9dd27/wip-apps/bare/migrations/2_deploy.js)
