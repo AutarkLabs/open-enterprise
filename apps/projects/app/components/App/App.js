@@ -55,16 +55,17 @@ class App extends React.Component {
   newProject = () => {
     console.log('newproject', this.props)
 
-    this.setState({
+    this.setState((_, props) => ({
       panel: {
         visible: true,
         content: NewProject,
         data: {
           heading: 'New Project',
           onCreateProject: this.createProject,
+          github: props.github,
         },
       },
-    })
+    }))
   }
 
   closePanel = () => {
@@ -74,7 +75,6 @@ class App extends React.Component {
   render() {
     const { panel } = this.state
     const PanelContent = panel.content
-    console.log('current project props:', this.props.repos)
 
     return (
       <StyledAragonApp publicUrl={ASSETS_URL}>

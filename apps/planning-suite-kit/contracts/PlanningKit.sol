@@ -9,20 +9,21 @@ pragma solidity ^0.4.24;
 
 // */
 
-import "@tpt/test-helpers/contracts/factory/DAOFactory.sol";
-import "@tpt/test-helpers/contracts/apm/Repo.sol";
-import "@tpt/test-helpers/contracts/lib/ens/ENS.sol";
-import "@tpt/test-helpers/contracts/lib/ens/PublicResolver.sol";
-import "@tpt/test-helpers/contracts/apm/APMNamehash.sol";
-import "@tpt/test-helpers/contracts/lib/minime/MiniMeToken.sol";
+import "@tps/test-helpers/contracts/factory/DAOFactory.sol";
+import "@tps/test-helpers/contracts/apm/Repo.sol";
+import "@tps/test-helpers/contracts/lib/ens/ENS.sol";
+import "@tps/test-helpers/contracts/lib/ens/PublicResolver.sol";
+import "@tps/test-helpers/contracts/apm/APMNamehash.sol";
+import "@tps/test-helpers/contracts/lib/minime/MiniMeToken.sol";
 
-import "@tpt/test-helpers/contracts/apps/Voting.sol"; /* Already defined in ACLHelper */
+import "@tps/test-helpers/contracts/apps/Voting.sol"; /* Already defined in ACLHelper */
 //import {TokenManager as TokenManagerApp} from "@aragon/apps-token-manager/contracts/TokenManager.sol"; /* Already defined in EVMScriptRunner */
-// import "@tpt/test-helpers/contracts/lib/minime/MiniMeToken.sol"; // TODO: use this 
+// import "@tps/test-helpers/contracts/lib/minime/MiniMeToken.sol"; // TODO: use this 
 
-import {Allocations as AllocationsApp} from "@tpt/apps-allocations/contracts/Allocations.sol";
-import {Projects as ProjectsApp} from "@tpt/apps-projects/contracts/Projects.sol";
-import {RangeVoting as RangeVotingApp} from "@tpt/apps-range-voting/contracts/RangeVoting.sol";
+import {AddressBook as AddressBookApp} from "@tps/apps-address-book/contracts/AddressBook.sol";
+import {Allocations as AllocationsApp} from "@tps/apps-allocations/contracts/Allocations.sol";
+import {Projects as ProjectsApp} from "@tps/apps-projects/contracts/Projects.sol";
+import {RangeVoting as RangeVotingApp} from "@tps/apps-range-voting/contracts/RangeVoting.sol";
 
 
 contract KitBase is APMNamehash {
@@ -96,7 +97,7 @@ contract PlanningKit is KitBase {
 
         // Planning Apps
         AllocationsApp allocations = AllocationsApp(dao.newAppInstance(apps[0], latestVersionAppBase(apps[0])));
-        //AddressBookApp addressBook = AddressBookApp(dao.newAppInstance(apps[1], latestVersionAppBase(apps[1])));
+        AddressBookApp addressBook = AddressBookApp(dao.newAppInstance(apps[1], latestVersionAppBase(apps[1])));
         ProjectsApp projects = ProjectsApp(dao.newAppInstance(apps[2], latestVersionAppBase(apps[2])));
         RangeVotingApp rangeVoting = RangeVotingApp(dao.newAppInstance(apps[3], latestVersionAppBase(apps[3])));
         // Aragon Apps
@@ -111,7 +112,7 @@ contract PlanningKit is KitBase {
         // Initialize apps
         allocations.initialize();
         // TODO: Enable when code is ready in the apps
-        // addressBook.initialize();
+        addressBook.initialize();
         projects.initialize();
         //tokenManager.initialize(token, true, 0);
         // At least 50% of the voting tokens must vote, there is no minimum
@@ -126,11 +127,10 @@ contract PlanningKit is KitBase {
         emit InstalledApp(allocations, apps[0]);
 
         // AddressBook permissions:
-        /*
-        acl.createPermission(voting, addressBook, addressBook.ADD_ENTRY_ROLE(), root);
-        acl.createPermission(voting, addressBook, addressBook.REMOVE_ENTRY_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, addressBook, addressBook.ADD_ENTRY_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, addressBook, addressBook.REMOVE_ENTRY_ROLE(), root);
         emit InstalledApp(addressBook, apps[1]);
-        */
+
         // Projects permissions:
         acl.createPermission(ANY_ENTITY, projects, projects.ADD_REPO_ROLE(), root);
         acl.createPermission(ANY_ENTITY, projects, projects.REMOVE_REPO_ROLE(), root);
