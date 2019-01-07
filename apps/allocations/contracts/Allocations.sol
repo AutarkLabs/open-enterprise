@@ -35,6 +35,7 @@ interface Fundable {
 * @author Arthur Lunn
 * @dev This will 100% break if the contract is upgraded. Basically just a proxy
 *      to receive funds from an address and "piece it out" to a layered contract
+*      Any advice on best practice for this would be welcome.
 *******************************************************************************/
 contract FundForwarder { // solium-disable-line blank-lines
     Fundable fundable;
@@ -53,7 +54,8 @@ contract FundForwarder { // solium-disable-line blank-lines
 * @author Arthur Lunn
 * @dev This contract is meant to handle tasks like basic budgeting,
 *      and any time that tokens need to be distributed based on a certain
-*      percentage breakdown to an array of addresses.
+*      percentage breakdown to an array of addresses. Currently it works with ETH
+*      needs to be adapted to work with tokens.
 *******************************************************************************/
 contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
 
@@ -95,7 +97,6 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
     *      object needs to be created in the payouts array.
     * @notice Start a payout with the specified candidates and addresses.
     *         None of the distribution or payments are handled in this step.
-    *
     */
     function initialize( // solium-disable-line blank-lines
     ) external onlyInit // solium-disable-line visibility-first
@@ -241,7 +242,7 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         Payout storage payout = payouts[_payoutId];
         numCandidates = payout.supports.length;
     }
-
+    
     function getPayoutDistributionValue(uint256 _payoutId, uint256 idx) external view returns(uint256 supports) {
         Payout storage payout = payouts[_payoutId];
         supports = payout.supports[idx];
