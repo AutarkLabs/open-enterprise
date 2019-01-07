@@ -4,19 +4,22 @@ const {
   EVMScriptRegistryFactory,
   Kernel,
   MiniMeToken
-} = require('@tpt/test-helpers/artifacts')
+} = require('@tps/test-helpers/artifacts')
 
 const RangeVoting = artifacts.require('RangeVotingMock')
 const ExecutionTarget = artifacts.require('ExecutionTarget')
 
-const { assertRevert } = require('@tpt/test-helpers/assertThrow')
-const { encodeCallScript } = require('@tpt/test-helpers/evmScript')
-const timeTravel = require('@tpt/test-helpers/timeTravel')(web3)
+const { assertRevert } = require('@tps/test-helpers/assertThrow')
+const { encodeCallScript } = require('@tps/test-helpers/evmScript')
+const timeTravel = require('@tps/test-helpers/timeTravel')(web3)
 
 const pct16 = x =>
   new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))
 const createdVoteId = receipt =>
   receipt.logs.filter(x => x.event === 'StartVote')[0].args.voteId
+
+const castedVoteId = receipt =>
+  receipt.logs.filter(x => x.event === 'CastVote')[0].args.voteId
 
 const ANY_ADDR = '0xffffffffffffffffffffffffffffffffffffffff'
 const NULL_ADDRESS = '0x00'
@@ -58,9 +61,9 @@ contract('RangeVoting App', accounts => {
       { from: root }
     )
 
-    // TODO: Revert to use regular function call when truffle gets updated
-    // read: https://github.com/Giveth/planning-app/pull/243
-    let receipt = await dao.newAppInstance(
+    // TODO: Revert to only use 2 params when truffle is updated
+    // read: https://github.com/spacedecentral/planning-suite/pull/243
+    const receipt = await dao.newAppInstance(
       '0x1234',
       (await RangeVoting.new()).address,
       0x0,
@@ -152,6 +155,7 @@ contract('RangeVoting App', accounts => {
       const voteId = createdVoteId(
         await app.newVote(script, '', { from: holder50 })
       )
+      assert.equal(voteId, 1, 'A vote should be created with empty script')
     })
     it('can cast votes', async () => {
       let action = {
@@ -165,9 +169,13 @@ contract('RangeVoting App', accounts => {
       const voteId = createdVoteId(
         await app.newVote(script, '', { from: holder50 })
       )
+      assert.equal(voteId, 1, 'A vote should be created with empty script')
       let vote = [10, 15, 25]
       let voter = holder50
-      await app.vote(voteId, vote, { from: voter })
+      const castedvoteId = castedVoteId(
+        await app.vote(voteId, vote, { from: voter })
+      )
+      assert.equal(castedvoteId, 1, 'A vote should have been casted')
     })
     it('execution scripts can execute actions', async () => {
       let action = {
@@ -240,13 +248,13 @@ contract('RangeVoting App', accounts => {
       assert.equal(voteId, 1, 'RangeVoting should have been created')
     })
 
-    xit('can change minimum candidate support', async () => {})
+    xit('can change minimum candidate support', async () => { })
 
     context('creating vote with normal distributions', () => {
       let voteId = {}
       let script = ''
       let candidateState
-      let [, , ...candidates] = accounts.slice(0,5)
+      let [, , ...candidates] = accounts.slice(0, 5)
       let [apple, orange, banana] = candidates
 
       beforeEach(async () => {
@@ -313,8 +321,8 @@ contract('RangeVoting App', accounts => {
           'is token.totalSupply()'
         )
         assert.equal(voteState[6].toNumber(), 0, 'is totalParticipation')
-        // TODO: Fix metadata not passing
-        // assert.equal(voteState[7], 'metadata', 'is metadata')
+        // TODO: externalId returning as 3. Need sanity check to ensure if this s/b the case.
+        // assert.equal(voteState[7].toNumber(), 3, 'is externalId')
         assert.equal(voteState[8], script, 'is script')
         assert.equal(voteState[9], false, 'is false')
       })
@@ -374,7 +382,7 @@ contract('RangeVoting App', accounts => {
 
       it('holder can modify vote', async () => {
         let voteTwo = [6, 5, 4]
-        
+
         let voter = holder31
 
         await app.vote(voteId, voteTwo, { from: voter })
@@ -453,6 +461,19 @@ contract('RangeVoting App', accounts => {
         const canExecute = await app.canExecute(voteId)
         assert.equal(canExecute, false, 'canExecute should be false')
       })
+      it('cannot execute if vote instance executed', async () => {
+        let voteOne = [4, 15, 0]
+        let voteTwo = [20, 10, 1]
+        let voteThree = [30, 15, 5]
+        await app.vote(voteId, voteOne, { from: holder19 })
+        await app.vote(voteId, voteTwo, { from: holder31 })
+        await app.vote(voteId, voteThree, { from: holder50 })
+        timeTravel(RangeVotingTime + 1)
+        await app.executeVote(voteId)
+        const canExecute = await app.canExecute(voteId)
+
+        assert.equal(canExecute, false, 'canExecute should be false')
+      })
       it('can execute if vote has sufficient candidate support', async () => {
         let voteOne = [4, 15, 0]
         let voteTwo = [20, 10, 1]
@@ -460,11 +481,21 @@ contract('RangeVoting App', accounts => {
         await app.vote(voteId, voteOne, { from: holder19 })
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
-        //const voteState = await app.getVote(voteId)
-        timeTravel(RangeVotingTime + 100)
+        timeTravel(RangeVotingTime + 1)
         const canExecute = await app.canExecute(voteId)
 
         assert.equal(canExecute, true, 'canExecute should be true')
+      })
+      it('cannot execute if vote has 0 candidate support', async () => {
+        let voteOne = [0, 0, 0]
+        let voteTwo = [0, 0, 0]
+        let voteThree = [0, 0, 0]
+        await app.vote(voteId, voteOne, { from: holder19 })
+        await app.vote(voteId, voteTwo, { from: holder31 })
+        await app.vote(voteId, voteThree, { from: holder50 })
+        timeTravel(RangeVotingTime + 1)
+        const canExecute = await app.canExecute(voteId)
+        assert.equal(canExecute, false, 'canExecute should be false')
       })
       it('cannot execute if vote has insufficient candidate support', async () => {
         let voteOne = [2, 17, 0]
@@ -473,7 +504,7 @@ contract('RangeVoting App', accounts => {
         await app.vote(voteId, voteOne, { from: holder19 })
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
-        timeTravel(RangeVotingTime + 100)
+        timeTravel(RangeVotingTime + 1)
         const canExecute = await app.canExecute(voteId)
         assert.equal(canExecute, false, 'canExecute should be false')
       })
@@ -504,7 +535,7 @@ contract('RangeVoting App', accounts => {
         await app.addCandidate(voteId, '0xbeefdead', mango)
         candidates.push(mango)
         candidateState = await app.getCandidate(
-          voteId, 
+          voteId,
           candidates.indexOf(mango)
         )
         assert.equal(
@@ -516,6 +547,23 @@ contract('RangeVoting App', accounts => {
           candidateState[1].toNumber(),
           0,
           'Support should start at 0'
+        )
+      })
+      xit('holder can get total number of candidates', async () => {
+        // TODO: totalcandidates seems to be stuck at 4.
+        const totalcandidates = await app.getCandidateLength(voteId)
+        assert.equal(
+          totalcandidates,
+          4,
+          'THERE ARE FOUR CANDIDATES!'
+        )
+      })
+      it('holder can get vote metadata', async () => {
+        const metadata = await app.getVoteMetadata(voteId)
+        assert.equal(
+          metadata,
+          'metadata',
+          'Vote has metadata'
         )
       })
     })
@@ -565,7 +613,7 @@ contract('RangeVoting App', accounts => {
       })
     })
   })
-  
+
   context('before init', () => {
     it('fails creating a vote before initialization', async () => {
       return assertRevert(async () => {

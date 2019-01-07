@@ -1,21 +1,21 @@
 pragma solidity ^0.4.24;
 
-import "@tpt/test-helpers/contracts/apps/AragonApp.sol";
+import "@tps/test-helpers/contracts/apps/AragonApp.sol";
 
-import "@tpt/test-helpers/contracts/lib/minime/MiniMeToken.sol";
+import "@tps/test-helpers/contracts/lib/minime/MiniMeToken.sol";
 
-import "@tpt/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
+import "@tps/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
 
-import "@tpt/test-helpers/contracts/lib/zeppelin/math/SafeMath64.sol";
+import "@tps/test-helpers/contracts/lib/zeppelin/math/SafeMath64.sol";
 
-import "@tpt/test-helpers/contracts/evmscript/ScriptHelpers.sol";
+import "@tps/test-helpers/contracts/evmscript/ScriptHelpers.sol";
 
 
-import "@tpt/test-helpers/contracts/common/IForwarder.sol";
+import "@tps/test-helpers/contracts/common/IForwarder.sol";
 
-import "@tpt/test-helpers/contracts/lib/misc/Migrations.sol";
+import "@tps/test-helpers/contracts/lib/misc/Migrations.sol";
 
-// import "@tpt/test-helpers/contracts/common/IForwarder.sol";
+// import "@tps/test-helpers/contracts/common/IForwarder.sol";
 /* Temp hack to pass coverage until further research */
 // interface IForwarderFixed {
 //     function isForwarder() external returns (bool);
@@ -25,7 +25,7 @@ import "@tpt/test-helpers/contracts/lib/misc/Migrations.sol";
 
 
 /*******************************************************************************
-    Copyright 2018, That Planning Tab
+    Copyright 2018, That Planning Suite
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -66,13 +66,12 @@ contract RangeVoting is IForwarder, AragonApp {
     bytes32 constant public CREATE_VOTES_ROLE = keccak256("CREATE_VOTES_ROLE");
     bytes32 constant public ADD_CANDIDATES_ROLE = keccak256("ADD_CANDIDATES_ROLE");
     bytes32 constant public MODIFY_PARTICIPATION_ROLE = keccak256("MODIFY_CANDIDATE_SUPPORT_ROLE");
-    // bytes32 constant public MODIFY_QUORUM_ROLE = keccak256("MODIFY_QUORUM_ROLE");
 
     struct Vote {
         address creator;
         uint64 startDate;
         uint256 snapshotBlock;
-        uint256 candidateSupportPct; //minAcceptQuorumPct;
+        uint256 candidateSupportPct; //aka minAcceptQuorumPct;
         uint256 totalVoters;
         uint256 totalParticipation;
         uint256 externalId;
@@ -93,20 +92,14 @@ contract RangeVoting is IForwarder, AragonApp {
         bytes metadata;
         uint8 keyArrayIndex;
         uint256 voteSupport;
-        //string description;
     }
 
     Vote[] votes;
-    // Vote[] internal votes; // first index is 1
 
     event StartVote(uint256 indexed voteId);
-    event CastVote(
-        uint256 indexed voteId
-    );
-    event CastVote(uint256 indexed voteId, address indexed voter, bool supports, uint256 stake);
+    event CastVote(uint256 indexed voteId);
     event UpdateCandidateSupport(string indexed candidateKey, uint256 support);
     event ExecuteVote(uint256 indexed voteId);
-    event ChangeCandidateSupport(uint256 candidateSupportPct);
     event ExecutionScript(bytes script, uint256 data);
     // Add hash info
     event ExternalContract(uint256 indexed voteId, address addr, uint256 externalId);
@@ -167,7 +160,6 @@ contract RangeVoting is IForwarder, AragonApp {
         external auth(CREATE_VOTES_ROLE) returns (uint256 voteId)
     {
         return _newVote(_executionScript, _metadata);
-        // return _newVote(_executionScript, _metadata, true);
     }
 
     /**
@@ -207,7 +199,7 @@ contract RangeVoting is IForwarder, AragonApp {
         // Get vote and candidate into storage
         Vote storage voteInstance = votes[_voteId];
         bytes32[] storage keys = voteInstance.candidateKeys;
-        bytes32 cKey = keccak256(_description);
+        bytes32 cKey = keccak256(abi.encodePacked(_description));
         CandidateState storage candidate = voteInstance.candidates[cKey];
         // Make sure that this candidate has not already been added
         require(candidate.added == false); // solium-disable-line error-reason
@@ -238,7 +230,7 @@ contract RangeVoting is IForwarder, AragonApp {
     }
 
     /**
-    * @notice `getCandidate` serves as a basic getter using the key
+    * @notice `getCandidateDescription` serves as a basic getter using the key
     *         to return the struct data.
     * @param _key The bytes32 key used when adding the candidate.
     */
@@ -269,7 +261,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _sender Address of the entity trying to forward
     * @return True is `_sender` has correct permissions
     */
-    function canForward(address _sender, bytes _evmCallScript) public view returns (bool) {
+    function canForward(address _sender, bytes /*_evmCallScript*/) public view returns (bool) {
         return canPerform(_sender, CREATE_VOTES_ROLE, arr());
     }
 
@@ -364,8 +356,8 @@ contract RangeVoting is IForwarder, AragonApp {
     }
 
         /**
-    * @notice `getVote` simply splits all of the data elements out of a vote
-    *         struct and returns the individual values.
+    * @notice `getCandidateLength` returns the total number of candidates for
+    *         a given vote.
     * @param _voteId The ID of the Vote struct in the `votes` array
     */
     function getCandidateLength(uint256 _voteId) public view returns
@@ -388,7 +380,7 @@ contract RangeVoting is IForwarder, AragonApp {
     * @param _voteId The ID of the Vote struct in the `votes` array.
     * @param _voter The voter whose weights will be returned
     */
-    function getVoterState(uint256 _voteId, address _voter) public view returns (uint256[]) { //VoterState) {
+    function getVoterState(uint256 _voteId, address _voter) public view returns (uint256[]) { 
         return votes[_voteId].voters[_voter];
     }
 
@@ -575,7 +567,7 @@ contract RangeVoting is IForwarder, AragonApp {
         // Seperate variable isn't used here to save storage space
         uint256 callDataLength = 32 * (2 * (candidateLength + 2)) + executionScript.uint256At(32) - 60;
         bytes memory callDataLengthMem = new bytes(32);
-        assembly {
+        assembly { // solium-disable-line security/no-inline-assembly
             mstore(add(callDataLengthMem, 32), callDataLength)
         }
         // script is callDataLength long plus 32 bytes for the "header" - function
@@ -587,7 +579,7 @@ contract RangeVoting is IForwarder, AragonApp {
         memcpyshort((script.getPtr() + 56), callDataLengthMem.getPtr() + 60, 4);
 
         // Add second dynamic element location as it may have changed
-        assembly {
+        assembly { // solium-disable-line security/no-inline-assembly
             mstore(add(script, 96), secondDynamicElementLocation)
         }
 
@@ -609,7 +601,7 @@ contract RangeVoting is IForwarder, AragonApp {
         for (uint256 i = 0; i < candidateLength; i++) {
             bytes32 canKey = votes[_voteId].candidateKeys[i];
             uint256 candidateData = uint256(candidateDescriptions[canKey]);
-            assembly {
+            assembly { // solium-disable-line security/no-inline-assembly
                 mstore(add(script, offset), candidateData)
             }
             offset += 32; 
@@ -645,7 +637,7 @@ contract RangeVoting is IForwarder, AragonApp {
         require(_len < 32, "_len should be less than 32");
         // Copy remaining bytes
         uint mask = 256 ** (32 - len) - 1;
-        assembly {
+        assembly { // solium-disable-line security/no-inline-assembly
             let srcpart := and(mload(src), not(mask))
             let destpart := and(mload(dest), mask)
             mstore(dest, or(destpart, srcpart))

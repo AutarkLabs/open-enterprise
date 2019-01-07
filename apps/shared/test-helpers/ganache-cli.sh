@@ -38,7 +38,7 @@ start_testrpc() {
 		aragon devchain --reset --port "$testrpc_port" &
 	elif [ "$DEV" = true ]; then
 		aragon devchain --reset --port "$testrpc_port" &
-		lerna run dev --parallel --scope=@tpt/apps-* &
+		lerna run dev --parallel --scope=@tps/apps-* &
 	fi
 
 	testrpc_pid=$!
