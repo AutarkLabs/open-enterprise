@@ -296,21 +296,23 @@ class VotePanelContent extends React.Component {
           </div>
         )}
         <div>
-        <ShowText onClick={() => this.setState({ showResults: !showResults })}>
-          {showResults ? 'Hide Voting Results' : 'Show Voting Results'}
-        </ShowText>
-        {showResults &&
-          options.map(option => (
-            <ProgressBarThick
-              progress={safeDiv(parseInt(option.value, 10), totalSupport)}
-              label={option.label}
-            />
-          ))}
-        {showResults && (
-          <Text size="xsmall" color={theme.textSecondary}>
-            A minimum of 5% is required for an option to become validated
-          </Text>
-        )}
+          <ShowText
+            onClick={() => this.setState({ showResults: !showResults })}
+          >
+            {showResults ? 'Hide Voting Results' : 'Show Voting Results'}
+          </ShowText>
+          {showResults &&
+            options.map(option => (
+              <ProgressBarThick
+                progress={safeDiv(parseInt(option.value, 10), totalSupport)}
+                label={option.label}
+              />
+            ))}
+          {showResults && (
+            <Text size="xsmall" color={theme.textSecondary}>
+              A minimum of 5% is required for an option to become validated
+            </Text>
+          )}
         </div>
       </div>
     )

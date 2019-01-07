@@ -99,12 +99,8 @@ class NewAllocation extends React.Component {
       this.setState({ allocationError: true })
       return
     }
-    if ( (allocation.balance > this.props.limit) && !informational) {
-      this.setState({allocationError: true})
-      return;
-    }
     this.props.onSubmitAllocation(allocation)
-    this.state.allocationError = false;    
+    this.state.allocationError = false
     this.setState(INITIAL_STATE)
     console.info('New Allocation: submitting...')
     console.table(this.props)
