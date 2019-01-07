@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "@tpt/test-helpers",
+  "name": "@tps/test-helpers",
   "version": "0.0.1",
   "description": "Helper scripts for Planning Suite",
   "devDependencies": {

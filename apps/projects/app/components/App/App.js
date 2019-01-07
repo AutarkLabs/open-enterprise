@@ -55,16 +55,17 @@ class App extends React.Component {
   newProject = () => {
     console.log('newproject', this.props)
 
-    this.setState({
+    this.setState((_, props) => ({
       panel: {
         visible: true,
         content: NewProject,
         data: {
           heading: 'New Project',
           onCreateProject: this.createProject,
+          github: props.github,
         },
       },
-    })
+    }))
   }
 
   closePanel = () => {
