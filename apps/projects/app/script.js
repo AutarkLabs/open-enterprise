@@ -56,6 +56,12 @@ const github = () => {
     .pluck('result')
 }
 
+const bountySettings = () => {
+  return app.rpc
+    .sendAndObserveResponses('cache', ['get', 'bountySettings'])
+    .pluck('result')
+}
+
 let client
 const getRepoData = repo => {
   try {
@@ -84,12 +90,18 @@ github().subscribe(result => {
   } else app.cache('github', { status: STATUS.INITIAL })
 })
 
+bountySettings().subscribe(result => {
+  console.log('bountySettings object received from cache:', result)
+  if (!result) {
+    app.cache('bountySettings', {})
+  }
+})
+
 app.events().subscribe(handleEvents)
 
 app.state().subscribe(state => {
   console.log('Projects: entered state subscription:\n', state)
   appState = state ? state : { repos: [] }
-  //appState = state
 })
 
 /***********************
@@ -109,12 +121,14 @@ async function handleEvents(response) {
   case 'RepoRemoved':
     nextState = await syncRepos(appState, response.returnValues)
     console.log('RepoRemoved Received', response.returnValues, nextState)
-
     break
   case 'BountyAdded':
     nextState = await syncRepos(appState, response.returnValues)
     console.log('BountyAdded Received', response.returnValues, nextState)
-
+    break
+  case 'BountySettingsChanged':
+    app.cache('bountySettings', response.returnValues)
+    nextState = { ...appState, bountySettings: response.returnValues }
     break
   default:
     console.log('Unknown event catched:', response)
@@ -143,10 +157,9 @@ async function syncRepos(state, { repoId, ...eventArgs }) {
  ***********************/
 
 function loadRepoData(id) {
-  console.log('loadRepoData entered')
   return new Promise(resolve => {
+    console.log('loadRepoData Promise entered: ' + id)
     combineLatest(app.call('getRepo', id)).subscribe(([{ _owner, _repo }]) => {
-      console.log('loadRepoData:', _owner, _repo)
       let [owner, repo] = [toAscii(_owner), toAscii(_repo)]
       getRepoData(repo).then(
         ({node}) => {
@@ -182,6 +195,7 @@ async function checkReposLoaded(repos, id, transform) {
       })
     )
   } else {
+    console.log('repo found: ' + repoIndex)
     const nextRepos = Array.from(repos)
     nextRepos[repoIndex] = await transform({
       id,
@@ -193,6 +207,7 @@ async function checkReposLoaded(repos, id, transform) {
 }
 
 async function updateState(state, id, transform) {
+  console.log('update state: ' + state + ', id: ' + id)
   const { repos = [] } = state
   try {
     let newRepos = await checkReposLoaded(repos, id, transform)

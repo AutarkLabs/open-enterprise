@@ -29,7 +29,7 @@ class NewBountyAllocation extends React.Component {
       })
     ),
     /** base rate in pennies */
-    rate: PropTypes.number,
+    baseRate: PropTypes.number,
     onSubmit: PropTypes.func.isRequired,
   }
 
@@ -58,10 +58,12 @@ class NewBountyAllocation extends React.Component {
 
   configBounty = (id, key, val) => {
     const { bounties } = this.state
-    // that's value reversal based on what's already there - special treatment
+    // arrow clicked - it's simple value reversal case, 1 indicates details are open, 0 - closed
     if (key == 'detailsOpen') {
       bounties[id][key] = 1 - bounties[id][key]
-    } else bounties[id][key] = val
+    } else {
+      bounties[id][key] = val
+    }
     this.setState({bounties})
     console.log('configBounty: ', bounties)
   }
@@ -97,7 +99,8 @@ class NewBountyAllocation extends React.Component {
     const bountyDeadline = ['-', 'yesterday', 'last week']
     const bountyAvail = ['-', '1', '2', '3']
     const { bounties } = this.state
-    //console.log('bounties: ', bounties)
+    const { baseRate } = this.props
+    console.log('bounties: ', bounties, ', baseRate: ', baseRate)
     return (
       <Form
         onSubmit={this.props.onSubmit}
@@ -143,7 +146,7 @@ class NewBountyAllocation extends React.Component {
                           </IBHours>
                           <IBValue>
                             {
-                              (issue.id in bounties && bounties[issue.id] > 0) && (
+                              (issue.id in bounties && bounties[issue.id]['hours'] > 0) && (
                                 <IBValueShow>
                                   <FieldTitle>$100</FieldTitle>
                                   <Badge>10 ANT</Badge>

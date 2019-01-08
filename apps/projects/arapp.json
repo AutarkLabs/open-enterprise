@@ -14,7 +14,7 @@
   "roles": [
     {
       "name": "Update settings for Projects app",
-      "id": "UPDATE_PROJ_SETTINGS_ROLE",
+      "id": "CHANGE_BOUNTY_SETTINGS",
       "params": []
     },
     {
