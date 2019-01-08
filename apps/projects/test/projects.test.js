@@ -42,6 +42,7 @@ contract('Projects App', accounts => {
   })
 
   beforeEach(async () => {
+
     //Deploy Base DAO Contracts
     const r = await daoFact.newDAO(root)
     const dao = Kernel.at(
@@ -81,11 +82,15 @@ contract('Projects App', accounts => {
       root,
       { from: root }
     )
-    await acl.grantPermission(
-      owner2, app.address,
+
+    await acl.createPermission(
+      owner2,
+      app.address,
       await app.ADD_REPO_ROLE(),
+      root,
       { from: root }
     )
+
     await acl.createPermission(
       bountyAdder,
       app.address,
@@ -93,14 +98,22 @@ contract('Projects App', accounts => {
       root,
       { from: root }
     )
+
     await acl.createPermission(
-      repoRemover,
+      bountyAdder,
       app.address,
-      await app.DELETE_PROJECT_ROLE(),
+      await app.ADD_BOUNTY_ROLE(),
       root,
       { from: root }
     )
 
+    await acl.createPermission(
+      repoRemover,
+      app.address,
+      await app.REMOVE_REPO_ROLE(),
+      root,
+      { from: root }
+    )
     // Deploy test Bounties contract
     registry = await StandardBounties.new(web3.toBigNumber(owner1))
     bounties = StandardBounties.at(registry.address)
@@ -115,8 +128,9 @@ contract('Projects App', accounts => {
       repoId = addedRepo(
         await app.addRepo(
           'MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5',
-          'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk='
-        )
+          'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk=',
+          { from: owner2 }
+        )        
       )
     })
 
@@ -345,7 +359,7 @@ contract('Projects App', accounts => {
   context('invalid operations', () => {
     it('cannot retrieve a removed Repo', async () => {
       const repoId = addedRepo(
-        await app.addRepo('abc', String(123))
+        await app.addRepo('abc', String(123), {from: owner2})
       )
       await app.removeRepo(repoId, { from: repoRemover })
       const result = await app.getRepo(repoId)
@@ -368,7 +382,7 @@ contract('Projects App', accounts => {
     it('cannot issue bulk bounties with invalid value', async () => {
       const bountyAdder = accounts[2]
       const repoId = addedRepo(
-        await app.addRepo('abc', String(123))
+        await app.addRepo('abc', String(123), { from: owner2 })
       )
       assertRevert(async () => {
         await app.addBounties(
@@ -388,7 +402,8 @@ contract('Projects App', accounts => {
       let repoId = addedRepo(
         await app.addRepo(
           'MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5',
-          'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk='
+          'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk=',
+          { from: owner2 }
         )
       )
       await app.addBounties(
