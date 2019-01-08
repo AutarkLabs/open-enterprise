@@ -101,7 +101,6 @@ contract('Allocations App', accounts => {
     const bobafett = accounts[1]
     const dengar = accounts[2]
     const bossk = accounts[3]
-    let imperialBudget
 
     let bobafettInitialBalance
     let dengarInitialBalance
@@ -110,12 +109,6 @@ contract('Allocations App', accounts => {
     let supports
 
     before(async () => {
-      imperialBudget = await web3.eth.getBalance(empire)
-      var send = await web3.eth.sendTransaction({
-        from: empire,
-        to: app.address,
-        value: web3.toWei(0.1, 'ether'),
-      })
       bobafettInitialBalance = await web3.eth.getBalance(bobafett)
       dengarInitialBalance = await web3.eth.getBalance(dengar)
       bosskInitialBalance = await web3.eth.getBalance(bossk)
@@ -259,24 +252,11 @@ contract('Allocations App', accounts => {
     const bobafett = accounts[1]
     const dengar = accounts[2]
     const bossk = accounts[3]
-    let imperialBudget
 
-    let bobafettInitialBalance
-    let dengarInitialBalance
-    let bosskInitialBalance
     let allocationId
     let supports
 
     before(async () => {
-      imperialBudget = await web3.eth.getBalance(empire)
-      var send = await web3.eth.sendTransaction({
-        from: empire,
-        to: app.address,
-        value: web3.toWei(0.01, 'ether'),
-      })
-      bobafettInitialBalance = await web3.eth.getBalance(bobafett)
-      dengarInitialBalance = await web3.eth.getBalance(dengar)
-      bosskInitialBalance = await web3.eth.getBalance(bossk)
       candidateAddresses = [bobafett, dengar, bossk]
     })
 
@@ -377,7 +357,6 @@ contract('Allocations App', accounts => {
     const bobafett = accounts[1]
     const dengar = accounts[2]
     const bossk = accounts[3]
-    let imperialBudget
 
     let bobafettInitialBalance
     let dengarInitialBalance
@@ -386,12 +365,6 @@ contract('Allocations App', accounts => {
     let supports
 
     before(async () => {
-      imperialBudget = await web3.eth.getBalance(empire)
-      var send = await web3.eth.sendTransaction({
-        from: empire,
-        to: app.address,
-        value: web3.toWei(0.01, 'ether'),
-      })
       bobafettInitialBalance = await web3.eth.getBalance(bobafett)
       dengarInitialBalance = await web3.eth.getBalance(dengar)
       bosskInitialBalance = await web3.eth.getBalance(bossk)

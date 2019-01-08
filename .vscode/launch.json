@@ -23,6 +23,16 @@
             "args": [
                 "test"
             ]
+        }.
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Projects truffle test (debuggable)",
+            "cwd": "${workspaceFolder}/apps/projects",
+            "program": "${workspaceRoot}/node_modules/truffle/build/cli.bundled.js",
+            "args": [
+                "test"
+            ]
         }
     ]
 }

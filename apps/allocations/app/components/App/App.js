@@ -27,7 +27,7 @@ class App extends React.Component {
   }
   createAccount = ({ limit, ...account }) => {
     account.balance = 0
-    account.limit = parseInt(limit)
+    account.limit = parseInt(limit)*10e17
     this.props.app.newPayout(account.description, account.limit, 0x0)
     this.closePanel()
     console.info('App.js: Account Created:')
