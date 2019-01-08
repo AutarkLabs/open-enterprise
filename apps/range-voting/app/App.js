@@ -10,7 +10,7 @@ import {
   SidePanel,
   IconAdd,
   observe,
-  theme
+  theme,
 } from '@aragon/ui'
 import AppLayout from './components/AppLayout'
 import Decisions from './Decisions'
@@ -22,18 +22,18 @@ const initialState = {
   templateData: {},
   stepIndex: 0,
   settingsLoaded: false,
-  panelActive: false
+  panelActive: false,
 }
 
 class App extends React.Component {
   static propTypes = {
-    app: PropTypes.object.isRequired
+    app: PropTypes.object.isRequired,
   }
 
   constructor(props) {
     super(props)
     this.state = {
-      ...initialState
+      ...initialState,
     }
   }
 
@@ -42,7 +42,7 @@ class App extends React.Component {
     // Is this the first time we've loaded the settings?
     if (!settingsLoaded && hasLoadedVoteSettings(nextProps)) {
       this.setState({
-        settingsLoaded: true
+        settingsLoaded: true,
       })
     }
   }
@@ -94,7 +94,11 @@ class App extends React.Component {
                 app={this.props.app}
                 votes={this.props.votes !== undefined ? this.props.votes : []}
                 voteTime={this.props.voteTime}
-                minParticipationPct={this.props.minParticipationPct ? this.props.minParticipationPct.toFixed(2) : "N/A"}
+                minParticipationPct={
+                  this.props.minParticipationPct
+                    ? this.props.minParticipationPct.toFixed(2)
+                    : 'N/A'
+                }
                 tokenAddress={this.props.tokenAddress}
                 userAccount={this.props.userAccount}
               />

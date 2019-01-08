@@ -23,8 +23,6 @@ module.exports = {
       host: 'localhost',
       port: 8545,
       network_id: '*',
-      gas: 7984452, // Block Gas Limit same as latest on Mainnet https://ethstats.net/
-      gasPrice: 2000000000, // same as latest on Mainnet https://ethstats.net/
     },
     coverage: {
       host: 'localhost',

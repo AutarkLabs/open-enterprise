@@ -9,7 +9,7 @@ import "@tps/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
 import "@tps/test-helpers/contracts/lib/zeppelin/math/SafeMath64.sol";
 
 /*******************************************************************************
-    Copyright 2018, That Planning Tab
+    Copyright 2018, That Planning Suite
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -38,6 +38,7 @@ interface Fundable {
 * @author Arthur Lunn
 * @dev This will 100% break if the contract is upgraded. Basically just a proxy
 *      to receive funds from an address and "piece it out" to a layered contract
+*      Any advice on best practice for this would be welcome.
 *******************************************************************************/
 contract FundForwarder { 
     Fundable fundable;
@@ -46,8 +47,7 @@ contract FundForwarder {
         fundable = Fundable(_fundable);
         id = _id;
     }
-
-    function () public payable {
+    function () external payable {
         fundable.fund.value(msg.value)(id);
     }
 }
@@ -58,7 +58,8 @@ contract FundForwarder {
 * @author Arthur Lunn
 * @dev This contract is meant to handle tasks like basic budgeting,
 *      and any time that tokens need to be distributed based on a certain
-*      percentage breakdown to an array of addresses.
+*      percentage breakdown to an array of addresses. Currently it works with ETH
+*      needs to be adapted to work with tokens.
 *******************************************************************************/
 contract Allocations is AragonApp, Fundable { 
 
@@ -104,7 +105,6 @@ contract Allocations is AragonApp, Fundable {
     *      object needs to be created in the payouts array.
     * @notice Start a payout with the specified candidates and addresses.
     *         None of the distribution or payments are handled in this step.
-    *
     */
     function initialize(
         AddressBook _addressBook
@@ -115,7 +115,7 @@ contract Allocations is AragonApp, Fundable {
     }
 
     /**
-    * @dev This is the function that setups who the candidates will be, and
+    * @dev This is the function that sets up who the candidates will be, and
     *      where the funds will go for the payout. This is where the payout
     *      object needs to be created in the payouts array.
     * @notice Start a payout with the specified candidates and addresses.
@@ -166,10 +166,11 @@ contract Allocations is AragonApp, Fundable {
         payout.informational = _informational;
         payout.recurring = _recurring;
         if (!_informational) {
-            require(payout.balance >= _amount);
-            require(payout.limit >= _amount);
+            payout.balance.add(msg.value);
+            require(payout.balance >= _amount, "payout account underfunded");
+            require(payout.limit >= _amount, "payout limit too low for amount");
         } else {
-            require(msg.value == 0);
+            require(msg.value == 0, "cannot fund informational allocation");
             payout.balance = 0;
         }
         if (_recurring) {
@@ -183,7 +184,6 @@ contract Allocations is AragonApp, Fundable {
         }
 
         payout.distSet = true;
-
         payout.supports = _supports;
         payout.amount = _amount;
         emit SetDistribution(_payoutId, _amount);
@@ -205,12 +205,12 @@ contract Allocations is AragonApp, Fundable {
             totalSupport += payout.supports[i];
         }
 
-        require(!payout.informational);
-        require(payout.distSet);
+        require(!payout.informational, "Informational payouts don't run");
+        require(payout.distSet, "setDistribution must be called first");
         if (payout.recurring) {
             // TDDO create payout execution counter to ensure payout time tracks payouts
             uint256 payoutTime = payout.startTime.add(payout.period);
-            require(payoutTime < block.timestamp); 
+            require(payoutTime < block.timestamp,"payout period not yet finished"); // solium-disable-line security/no-block-members
             payout.startTime = payoutTime;
         } else {
             payout.distSet = false;
@@ -225,7 +225,10 @@ contract Allocations is AragonApp, Fundable {
         emit PayoutExecuted(_payoutId);
     }
 
-    function getPayout(uint256 _payoutId) public view
+///////////////////////
+// Getter functions
+///////////////////////
+    function getPayout(uint256 _payoutId) external view
     returns(uint256 balance, uint256 limit, string metadata, address token, address proxy, uint256 amount)
     {
         Payout storage payout = payouts[_payoutId];
@@ -236,13 +239,13 @@ contract Allocations is AragonApp, Fundable {
         proxy = payout.proxy;
         amount = payout.amount;
     }
-    
-    function getNumberOfCandidates(uint256 _payoutId) public view returns(uint256 numCandidates) {
+
+    function getNumberOfCandidates(uint256 _payoutId) external view returns(uint256 numCandidates) {
         Payout storage payout = payouts[_payoutId];
         numCandidates = payout.supports.length;
     }
-
-    function getPayoutDistributionValue(uint256 _payoutId, uint256 idx) public view returns(uint256 supports) {
+    
+    function getPayoutDistributionValue(uint256 _payoutId, uint256 idx) external view returns(uint256 supports) {
         Payout storage payout = payouts[_payoutId];
         supports = payout.supports[idx];
     }
