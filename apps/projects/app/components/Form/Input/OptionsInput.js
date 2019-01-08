@@ -72,8 +72,10 @@ class OptionsInput extends React.Component {
 
 const StyledInput = styled(TextInput)`
   ${unselectable}; /* it is possible to select the placeholder without this */
+  transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
   ::placeholder {
-    color: ${theme.contentBorderActive};
+    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+    color: ${contentBorder};
   }
   :focus {
     border-color: ${contentBorderActive};

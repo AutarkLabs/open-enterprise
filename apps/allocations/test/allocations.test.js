@@ -129,14 +129,9 @@ contract('Allocations App', accounts => {
 
       supports = [500, 200, 300]
       totalsupport = 1000
-      const zeros = new Array(candidateAddresses.length).fill(0)
       await app.setDistribution(
         candidateAddresses,
         supports,
-        zeros,
-        '',
-        zeros,
-        zeros,
         allocationId,
         false,
         false,
@@ -228,14 +223,9 @@ contract('Allocations App', accounts => {
       totalsupport = 1000
 
       return assertRevert(async () => {
-        const zeros = new Array(candidateAddresses.length).fill(0)
         await app.setDistribution(
           candidateAddresses,
           supports,
-          zeros,
-          '',
-          zeros,
-          zeros,
           allocationId,
           false,
           false,
@@ -269,14 +259,9 @@ contract('Allocations App', accounts => {
 
       supports = [300, 400, 300]
       totalsupport = 1000
-      const zeros = new Array(candidateAddresses.length).fill(0)
       await app.setDistribution(
         candidateAddresses,
         supports,
-        zeros,
-        '',
-        zeros,
-        zeros,
         allocationId,
         true,
         false,
@@ -326,15 +311,10 @@ contract('Allocations App', accounts => {
       //assertrevert when attempt to add funds
       supports = [300, 400, 300]
       totalsupport = 1000
-      const zeros = new Array(candidateAddresses.length).fill(0)
       return assertRevert(async () => {
         await app.setDistribution(
           candidateAddresses,
           supports,
-          zeros,
-          '',
-          zeros,
-          zeros,
           allocationId,
           true,
           false,
@@ -381,15 +361,10 @@ contract('Allocations App', accounts => {
     it('cannot occur more frequently than daily', async () => {
       supports = [300, 400, 300]
       totalsupport = 1000
-      const zeros = new Array(candidateAddresses.length).fill(0)
       return assertRevert(async () => {
         await app.setDistribution(
           candidateAddresses,
           supports,
-          zeros,
-          '',
-          zeros,
-          zeros,
           allocationId,
           false,
           true,
@@ -403,7 +378,6 @@ contract('Allocations App', accounts => {
     it('will not execute more frequently than the specified period', async () => {
       supports = [300, 400, 300]
       totalsupport = 1000
-      const zeros = new Array(candidateAddresses.length).fill(0)
       await app.fund(allocationId, {
         from: empire,
         value: web3.toWei(0.01, 'ether'),
@@ -411,10 +385,6 @@ contract('Allocations App', accounts => {
       await app.setDistribution(
         candidateAddresses,
         supports,
-        zeros,
-        '',
-        zeros,
-        zeros,
         allocationId,
         false,
         true,
