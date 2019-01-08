@@ -15,7 +15,6 @@ import "@tps/test-helpers/contracts/lib/ens/ENS.sol";
 import "@tps/test-helpers/contracts/lib/ens/PublicResolver.sol";
 import "@tps/test-helpers/contracts/apm/APMNamehash.sol";
 import "@tps/test-helpers/contracts/lib/minime/MiniMeToken.sol";
-
 import "@tps/test-helpers/contracts/apps/Voting.sol"; /* Already defined in ACLHelper */
 //import {TokenManager as TokenManagerApp} from "@aragon/apps-token-manager/contracts/TokenManager.sol"; /* Already defined in EVMScriptRunner */
 // import "@tps/test-helpers/contracts/lib/minime/MiniMeToken.sol"; // TODO: use this 
@@ -25,6 +24,7 @@ import {Allocations as AllocationsApp} from "@tps/apps-allocations/contracts/All
 import {Projects as ProjectsApp} from "@tps/apps-projects/contracts/Projects.sol";
 import {RangeVoting as RangeVotingApp} from "@tps/apps-range-voting/contracts/RangeVoting.sol";
 import {AddressBook as AddressBookApp} from "@tps/apps-address-book/contracts/AddressBook.sol";
+import {StandardBounties as StandardBounties} from "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
 
 
 contract KitBase is APMNamehash {
@@ -72,6 +72,7 @@ contract PlanningKit is KitBase {
         Kernel dao = fac.newDAO(this);
         ACL acl = ACL(dao.acl());
         acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
+        StandardBounties registry = StandardBounties(root);
 
         address root = msg.sender;
         
@@ -114,7 +115,7 @@ contract PlanningKit is KitBase {
         allocations.initialize(addressBook);
         // TODO: Enable when code is ready in the apps
         addressBook.initialize();
-        projects.initialize();
+        projects.initialize(registry);
         //tokenManager.initialize(token, true, 0);
         // At least 50% of the voting tokens must vote, there is no minimum
         // candidate support, and the vote will last 1 minute for testing.

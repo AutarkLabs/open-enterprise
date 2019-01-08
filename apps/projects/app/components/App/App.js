@@ -170,11 +170,10 @@ class App extends React.PureComponent {
     console.info('App.js: createProject', project)
     this.closePanel()
     // this.setState({})
-    console.log('projects props:', this.props)
+    console.log('projects props:', web3.toHex(owner).toString(), web3.toHex(project).toString())
     // console.log('hex:', window.web3.toHex('MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5'))
 
-    // this.props.app.addRepo(this.props.userAccount, '0x012026678901')
-    this.props.app.addRepo(web3.toHex(owner), web3.toHex(project))
+    console.log(this.props.app.addRepo(web3.toHex(owner), web3.toHex(project)))
   }
 
   newIssue = () => {

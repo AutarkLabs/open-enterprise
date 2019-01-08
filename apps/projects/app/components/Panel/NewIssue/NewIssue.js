@@ -4,20 +4,6 @@ import styled from 'styled-components'
 import { Mutation } from 'react-apollo'
 import { gql } from 'apollo-boost'
 import { theme, Field, Info, TextInput, Button, DropDown } from '@aragon/ui'
-
-// TODO: labels
-export const NEW_ISSUE = gql`
-  mutation create($title: String!, $description: String, $id: ID!) {
-    createIssue(
-      input: { title: $title, body: $description, repositoryId: $id }
-    ) {
-      issue {
-        id
-      }
-    }
-  }
-`
-
 import { NEW_ISSUE, GET_ISSUES } from '../../../utils/gql-queries.js'
 
 // TODO: labels
