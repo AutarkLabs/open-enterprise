@@ -45,6 +45,6 @@
     "lint:range": "cd apps/range-voting && npm run lint"
   },
   "dependencies": {
-    "@aragon/cli": "5.0.0"
+    "@aragon/cli": "5.2.1"
   }
 }

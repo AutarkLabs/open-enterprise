@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import { BigNumber } from 'bignumber.js'
 
 import {
   Button,
@@ -10,6 +11,7 @@ import {
   DropDown,
   theme,
   Info,
+  Checkbox
 } from '@aragon/ui'
 
 import {
@@ -17,10 +19,10 @@ import {
   Form,
   FormField,
   OptionsInput,
+  OptionsInputDropdown,
   SettingsInput,
   InputDropDown,
 } from '../Form'
-import { isIntegerString, isStringEmpty } from '../../utils/helpers'
 
 // TODO: Extract to shared
 const AVAILABLE_TOKENS = ['ETH', 'ANT', 'GIV', 'FTL', '🦄']
@@ -39,6 +41,9 @@ const INITIAL_STATE = {
   payoutToken: '',
   payoutTokenIndex: 0,
   amount: null,
+  allocationError: false, 
+  balanceSetting: false,
+  addressSetting: false
 }
 
 class NewAllocation extends React.Component {
@@ -46,6 +51,7 @@ class NewAllocation extends React.Component {
     // key: PropTypes.number.isRequired, // TODO: Check the use of this required prop
     onSubmitAllocation: PropTypes.func.isRequired,
     description: PropTypes.string,
+    entities: PropTypes.object,
   }
 
   state = INITIAL_STATE
@@ -66,23 +72,48 @@ class NewAllocation extends React.Component {
     this.setState({ payoutTypeIndex: index, payoutType: items[index] })
   }
 
+  // Should be using web3.isAddress probably but this is good enough for now
+  isAddress = addr => {
+    if (!/^(0x)?[0-9a-f]{40}$/i.test(addr)) {
+      return false
+    }
+    return true
+  }
+
   submitAllocation = () => {
     // clear input here.
+
     let informational = (this.state.allocationTypeIndex === 0)
     let recurring = !informational && this.state.payoutTypeIndex != 0
     // TODO: period should be smarter: now the only option is monthly
     let period = recurring ? 86400 * 31 : 0
-
+    let optionsInput = this.state.optionsInput
+    this.setState({
+      addressError: this.state.addressError,
+      allocationError: false,
+    })
+    if (!(this.isAddress(optionsInput) || optionsInput === '')) {
+      this.setState({ addressError: true })
+      this.setState()
+      return
+    }
+    if (this.isAddress(optionsInput)) {
+      this.state.options.push(this.state.optionsInput)
+    }
     let allocation = {
       addresses: this.state.options,
       payoutId: this.props.id,
       informational: informational,
       recurring: recurring,
       period: period,
-      balance: this.state.amount,
+      balance: this.state.amount * 10e17,
     }
-
+    if (allocation.balance > this.props.limit && !informational) {
+      this.setState({ allocationError: true })
+      return
+    }
     this.props.onSubmitAllocation(allocation)
+    this.state.allocationError = false
     this.setState(INITIAL_STATE)
     console.info('New Allocation: submitting...')
     console.table(this.props)
@@ -91,104 +122,148 @@ class NewAllocation extends React.Component {
 
   render() {
     return (
-      <Form
-        // heading={this.props.heading}
-        subHeading={this.props.subHeading}
-        onSubmit={this.submitAllocation}
-        description={this.props.description}
-        submitText="Submit Allocation"
-      >
-        {this.state.allocationTypeIndex == 1 && (
-          <Info.Action title="Warning">
-            This will create a Range Vote and after it closes, it will result in
-            a financial transfer.
-          </Info.Action>
-        )}
-        <FormField
-          required
-          label="Description"
-          input={
-            <DescriptionInput
-              name="description"
-              onChange={this.changeField}
-              placeholder="Describe your allocation."
-              value={this.state.description}
-            />
-          }
-        />
-        <FormField
-          required
-          separator
-          label="Allocation type"
-          input={
-            <DropDown
-              active={this.state.allocationTypeIndex}
-              items={ALLOCATION_TYPES}
-              name="allocationType"
-              onChange={this.changeAllocationType}
-            />
-          }
-        />
-        {this.state.allocationTypeIndex == 1 && (
+      <div>
+        <Form
+          // heading={this.props.heading}
+          subHeading={this.props.subHeading}
+          onSubmit={this.submitAllocation}
+          description={this.props.description}
+          submitText="Submit Allocation"
+        >
+          {this.state.allocationTypeIndex == 1 && (
+            <Info.Action title="Warning">
+              This will create a Range Vote and after it closes, it will result
+              in a financial transfer.
+            </Info.Action>
+          )}
+          <FormField
+            required
+            label="Description"
+            input={
+              <DescriptionInput
+                name="description"
+                onChange={this.changeField}
+                placeholder="Describe your allocation."
+                value={this.state.description}
+              />
+            }
+          />
           <FormField
             required
             separator
-            label="Amount"
+            label="Allocation type"
             input={
-              <div style={{ display: 'flex', width: '375px' }}>
-                <InputDropDown
-                  wide
-                  textInput={{
-                    name: 'amount',
-                    value: this.state.amount,
-                    onChange: this.changeField,
-                    type: 'number',
-                    min: '0',
-                  }}
-                  dropDown={{
-                    name: 'token',
-                    items: AVAILABLE_TOKENS,
-                    active: this.state.payoutTokenIndex,
-                    onChange: this.changePayoutToken,
-                  }}
-                />
-                <RecurringDropDown
-                  dropDown={{
-                    name: 'payoutType',
-                    items: PAYOUT_TYPES,
-                    active: this.state.payoutTypeIndex,
-                    onChange: this.changePayoutType,
-                  }}
-                />
+              <DropDown
+                active={this.state.allocationTypeIndex}
+                items={ALLOCATION_TYPES}
+                name="allocationType"
+                onChange={this.changeAllocationType}
+              />
+            }
+          />
+          <FormField
+            label="Settings"
+            input={
+              <div>
+              <SettingsInput
+                name="balanceSetting"
+                text="Must vote with entire balance"
+                onChange={this.changeField}
+              />
+              {this.props.entities.length > 0 && 
+              <SettingsInput
+                name="addressSetting"
+                text="Use address book for options"
+                onChange={this.changeField}
+              />}
               </div>
             }
           />
-        )}
-        <FormField
-          separator
-          label="Options"
-          input={
-            <OptionsInput
-              name="options"
-              placeholder="Enter an option"
-              onChange={this.changeField}
-              value={this.state.options}
-              input={this.state.optionsInput}
+          {this.state.allocationTypeIndex == 1 && (
+            <FormField
+              required
+              separator
+              label="Amount"
+              input={
+                <div style={{ display: 'flex', width: '375px' }}>
+                  <InputDropDown
+                    wide
+                    textInput={{
+                      name: 'amount',
+                      value: this.state.amount,
+                      onChange: this.changeField,
+                      type: 'number',
+                      min: '0',
+                    }}
+                    dropDown={{
+                      name: 'token',
+                      items: AVAILABLE_TOKENS,
+                      active: this.state.payoutTokenIndex,
+                      onChange: this.changePayoutToken,
+                    }}
+                  />
+                  <RecurringDropDown
+                    dropDown={{
+                      name: 'payoutType',
+                      items: PAYOUT_TYPES,
+                      active: this.state.payoutTypeIndex,
+                      onChange: this.changePayoutType,
+                    }}
+                  />
+                </div>
+              }
+            />
+          )}
+          {this.state.addressSetting == true &&
+            <FormField
+              separator
+              label={this.state.addressSetting}
+              input={
+                <OptionsInputDropdown
+                  name="options"
+                  placeholder="Enter an option"
+                  onChange={this.changeField}
+                  value={this.state.options}
+                  input={this.state.optionsInput}
+                  validator={this.isAddress}
+                  error={this.state.addressError}
+                  entities={this.props.entities}
+                />
+              }
             />
           }
-        />
-        <FormField
-          label="Settings"
-          input={
-            <SettingsInput
-              name="options"
-              placeholder="Enter an option"
-              onChange={this.changeField}
-              value={this.state.settings}
+          {this.state.addressSetting == false &&
+            <FormField
+              separator
+              label={this.state.addressSetting}
+              input={
+                <OptionsInput
+                  name="options"
+                  placeholder="Enter an option"
+                  onChange={this.changeField}
+                  value={this.state.options}
+                  input={this.state.optionsInput}
+                  validator={this.isAddress}
+                  error={this.state.addressError}
+                />
+              }
             />
           }
-        />
-      </Form>
+          
+        </Form>
+        <div>
+          {this.state.allocationError && (
+              <Info title="Error">
+                Amount must be less than limit.
+              </Info>
+          )}
+          {this.state.addressError && (
+            <Info title="Error">
+              All options must be addresses and cannot be duplicates.
+            </Info>
+          )}
+        </div>
+      </div>
     )
   }
 }

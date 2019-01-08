@@ -27,7 +27,7 @@ class App extends React.Component {
   }
   createAccount = ({ limit, ...account }) => {
     account.balance = 0
-    account.limit = parseInt(limit)
+    account.limit = parseInt(limit)*10e17
     this.props.app.newPayout(account.description, account.limit, 0x0)
     this.closePanel()
     console.info('App.js: Account Created:')
@@ -79,6 +79,8 @@ class App extends React.Component {
   }
 
   newAllocation = (address, description, id, limit) => {
+    // The whole entries vs entities thing needs to be fixed; these are too close
+    let entities = this.props.entries !== undefined ? this.props.entries : []
     this.setState({
       panel: {
         visible: true,
@@ -90,6 +92,7 @@ class App extends React.Component {
           heading: 'New Allocation',
           subHeading: description,
           onSubmitAllocation: this.submitAllocation,
+          entities: entities
         },
       },
     })

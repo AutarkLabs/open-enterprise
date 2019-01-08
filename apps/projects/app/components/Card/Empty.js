@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { EmptyStateCard, unselectable } from '@aragon/ui'
-import icon from '../../assets/svg/empty-card-icon.svg'
+import icon from '../Shared/assets/svg/empty-card-icon.svg'
 
 const Icon = () => <img src={icon} alt="Empty projects icon" />
 
