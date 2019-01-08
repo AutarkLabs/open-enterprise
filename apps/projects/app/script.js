@@ -111,6 +111,7 @@ app.state().subscribe(state => {
  ***********************/
 
 async function handleEvents(response) {
+  console.log(response)
   let nextState
   switch (response.event) {
   case 'RepoAdded':
