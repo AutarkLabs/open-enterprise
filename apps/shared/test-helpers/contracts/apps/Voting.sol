@@ -156,7 +156,7 @@ contract Voting is IForwarder, AragonApp {
     }
 
     /**
-    * @notice Execute the result of vote #`_voteId`
+    * @notice Execute the result of range vote #`_voteId`
     * @dev Initialization check is implicitly provided by `voteExists()` as new votes can only be
     *      created via `newVote(),` which requires initialization
     * @param _voteId Id for vote

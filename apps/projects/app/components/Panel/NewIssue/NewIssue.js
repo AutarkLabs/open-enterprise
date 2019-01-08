@@ -18,6 +18,9 @@ export const NEW_ISSUE = gql`
   }
 `
 
+import { NEW_ISSUE, GET_ISSUES } from '../../../utils/gql-queries.js'
+
+// TODO: labels
 // TODO: import validator from '../data/validation'
 
 const Form = styled.form`
@@ -124,7 +127,7 @@ class NewIssue extends React.PureComponent {
       isValid,
       selectedProject,
     } = this.state
-    const { reposManaged } = this.props
+    const { reposManaged, reposIds } = this.props
     const {
       projectChange,
       titleChange,
@@ -146,9 +149,15 @@ class NewIssue extends React.PureComponent {
     // TODO: hide button when no repos managed: prompt to create new project
     // TODO: Put SidePanel inside the component?
 
+    const reGet = [{
+      query: GET_ISSUES,
+      variables: { reposIds }
+    }]
+
     return (
       <Mutation
         mutation={NEW_ISSUE}
+        refetchQueries={reGet}
         variables={{ title, description, id }}
         onError={() => {
           console.error
@@ -197,8 +206,8 @@ class NewIssue extends React.PureComponent {
 
           const { createIssue } = data
           if (createIssue) {
-            // TODO: Close panel
-            return <div>Created issue...</div>
+            this.props.closePanel()
+            return null
           } else return null
         }}
       </Mutation>

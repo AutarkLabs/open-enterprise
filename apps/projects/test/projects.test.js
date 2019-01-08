@@ -68,24 +68,29 @@ contract('Projects App', accounts => {
     await acl.createPermission(
       owner1,
       app.address,
-      await app.ADD_REPO_ROLE(),
+      await app.CREATE_PROJECT_ROLE(),
       root,
       { from: root }
     )
-    await acl.grantPermission(owner2, app.address, await app.ADD_REPO_ROLE(), {
-      from: root,
-    })
+    await acl.grantPermission(
+      owner2,
+      app.address,
+      await app.CREATE_PROJECT_ROLE(),
+      {
+        from: root,
+      }
+    )
     await acl.createPermission(
       bountyAdder,
       app.address,
-      await app.ADD_BOUNTY_ROLE(),
+      await app.CREATE_BOUNTY_ROLE(),
       root,
       { from: root }
     )
     await acl.createPermission(
       repoRemover,
       app.address,
-      await app.REMOVE_REPO_ROLE(),
+      await app.DELETE_PROJECT_ROLE(),
       root,
       { from: root }
     )

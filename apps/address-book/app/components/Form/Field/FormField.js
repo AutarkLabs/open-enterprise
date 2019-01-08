@@ -4,7 +4,7 @@ import { Text, theme, SidePanelSeparator } from '@aragon/ui'
 
 import { FieldTitle } from '.'
 
-const FormField = ({ input, label, hint, required, separator }) => {
+const FormField = ({ input, label, hint, required, separator, err }) => {
   // TODO: Currently it will only work with 1 required child
   // const isRequired = React.Children.toArray(children).some(
   //   ({ props: childProps }) => childProps.required
@@ -13,7 +13,7 @@ const FormField = ({ input, label, hint, required, separator }) => {
   return (
     <div style={{ marginBottom: '1rem' }}>
       <FieldTitle>
-        {label && <Text color={theme.textSecondary}>{label}</Text>}
+        {label && <Text color={theme.textTertiary}>{label}</Text>}
         {required && (
           <Text
             size="xsmall"
@@ -26,9 +26,16 @@ const FormField = ({ input, label, hint, required, separator }) => {
         )}
       </FieldTitle>
       {hint && (
-        <Text size="xsmall" color={theme.textSecondary}>
+        <Text size="xsmall" color={theme.textTertiary}>
           {hint}
         </Text>
+      )}
+      {err && (
+        <div>
+          <Text size="xsmall" color={theme.negative}>
+            {err}
+          </Text>
+        </div>
       )}
       {input}
       {separator && <SidePanelSeparator style={{ marginTop: '1rem' }} />}
@@ -41,7 +48,8 @@ FormField.propTypes = {
   label: PropTypes.string,
   required: PropTypes.bool,
   hint: PropTypes.string,
-  seeparator: PropTypes.bool,
+  separator: PropTypes.bool,
+  err: PropTypes.string,
 }
 
 export default FormField

@@ -40,9 +40,14 @@ contract Projects is AragonApp {
     // Fired when a bounty is added to a repo
     event BountyAdded(bytes32 owner, bytes32 repo, uint256 issueNumber, uint256 bountySize);
 
-    bytes32 public constant ADD_REPO_ROLE = keccak256("ADD_REPO_ROLE");
-    bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
-    bytes32 public constant ADD_BOUNTY_ROLE =  keccak256("ADD_BOUNTY_ROLE");
+    bytes32 public constant UPDATE_PROJ_SETTINGS_ROLE = keccak256("UPDATE_PROJ_SETTINGS_ROLE");
+    bytes32 public constant CREATE_CURATION_ROLE = keccak256("CREATE_CURATION_ROLE");
+    bytes32 public constant CREATE_BOUNTY_ROLE =  keccak256("CREATE_BOUNTY_ROLE");
+    bytes32 public constant APPROVE_BOUNTY_ROLE =  keccak256("APPROVE_BOUNTY_ROLE");
+    bytes32 public constant ARBITRATE_BOUNTY_ROLE = keccak256("ARBITRATE_BOUNTY_ROLE");
+    bytes32 public constant CREATE_PROJECT_ROLE = keccak256("CREATE_PROJECT_ROLE");
+    bytes32 public constant UPDATE_PROJECT_ROLE =  keccak256("UPDATE_PROJECT_ROLE");
+    bytes32 public constant DELETE_PROJECT_ROLE =  keccak256("DELETE_PROJECT_ROLE");
 
 
     /**
@@ -52,7 +57,7 @@ contract Projects is AragonApp {
      */
     function addRepo(
         bytes32 _owner, bytes32 _repo
-    ) public auth(ADD_REPO_ROLE) returns (bytes32 _id) 
+    ) public auth(CREATE_PROJECT_ROLE) returns (bytes32 _id) 
     {
         _id = keccak256(abi.encodePacked(_owner, _repo));  // overflow should still yield a useable identifier
         repos[_id] = GithubRepo(_owner, _repo, 0);
@@ -67,7 +72,7 @@ contract Projects is AragonApp {
      */
     function removeRepo(
         bytes32 _id
-    ) public auth(REMOVE_REPO_ROLE)
+    ) public auth(DELETE_PROJECT_ROLE)
     {
         // Take the repo out of the repo array in constant time by replacing the element
         // with last element
@@ -90,7 +95,7 @@ contract Projects is AragonApp {
         _repo = repos[_id].repo;
     }
 
-    function addBounties(bytes32 _repoID, uint256[] _issueNumbers, uint256[] _bountySizes) public  auth(ADD_BOUNTY_ROLE) {
+    function addBounties(bytes32 _repoID, uint256[] _issueNumbers, uint256[] _bountySizes) public  auth(CREATE_BOUNTY_ROLE) {
         for (uint i = 0; i < _issueNumbers.length; i++) {
             _addBounty(_repoID, _issueNumbers[i], _bountySizes[i]);
         }
