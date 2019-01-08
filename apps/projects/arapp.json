@@ -56,6 +56,11 @@
       "name": "Add issue priorities",
       "id": "CURATE_ISSUES_ROLE",
       "params": []
+    },
+    {
+      "name": "Add repos",
+      "id": "ADD_REPO_ROLE",
+      "params": []
     }
   ],
   "path": "contracts/Projects.sol"
