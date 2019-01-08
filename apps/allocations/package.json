@@ -15,7 +15,7 @@
     "prepublishOnly": "truffle compile --all",
     "publish:http": "npm run publish:http-copy-files && aragon apm publish patch --http localhost:2222 --http-served-from ./dist",
     "publish:http-copy-files": "npm run build:script && mkdir -p dist/images && cp images/icon.svg dist/images/",
-    "publish": "aragon apm publish 1.0.0",
+    "publish": "aragon apm publish patch",
     "start": "aragon run",
     "sync-assets": "copy-aragon-ui-assets ./dist",
     "test:gas": "GAS_REPORTER=true npm test",

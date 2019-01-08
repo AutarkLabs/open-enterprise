@@ -14,13 +14,37 @@ import ErrorBoundary from './ErrorBoundary'
 
 const ASSETS_URL = 'aragon-ui-assets/'
 
-// TODO: let the user customize the github app on settings screen?
-const CLIENT_ID = 'd556542aa7a03e640409'
 const GITHUB_URI = 'https://github.com/login/oauth/authorize'
-const AUTH_URI = 'https://tps-github-auth.now.sh/authenticate'
 
+// TODO: let the user customize the github app on settings screen?
+// TODO: Extract to an external js utility to keep this file clean
+// Variable fields depending on the execution environment:
 // TODO: This should be dynamically set depending on the execution environment (dev, prod...)
-const REDIRECT_URI = 'http://localhost:3333'
+let CLIENT_ID = ''
+let REDIRECT_URI = ''
+let AUTH_URI = ''
+
+switch (window.location.origin) {
+case 'http://localhost:3333':
+  console.log('Github OAuth: Using local http provider deployment')
+  CLIENT_ID = 'd556542aa7a03e640409'
+  REDIRECT_URI = 'http://localhost:3333'
+  AUTH_URI = 'https://tps-github-auth.now.sh/authenticate'
+  // TODO: change auth service to be more explicit to:
+  // AUTH_URI = 'https://dev-tps-github-auth.now.sh/authenticate'
+  break
+case 'http://localhost:8080':
+  console.log('Github OAuth: Using local IPFS deployment')
+  CLIENT_ID = '686f96197cc9bb07a43d'
+  REDIRECT_URI = window.location.href
+  AUTH_URI = 'https://local-tps-github-auth.now.sh/authenticate'
+  break
+default:
+  console.log(
+    'Github OAuth: Scenario not implemented yet, Github API disabled for the current Projects App deployment'
+  )
+  break
+}
 
 export const githubPopup = (popup = null) => {
   // Checks to save some memory if the popup exists as a window object
@@ -90,7 +114,7 @@ class App extends React.PureComponent {
 
   state = {
     repos: [],
-    activeIndex: 1,
+    activeIndex: 0,
   }
 
   componentDidMount() {
@@ -118,11 +142,18 @@ class App extends React.PureComponent {
       const code = message.data.value
       console.log('AuthCode received from github:', code)
       console.log('Proceeding to token request...')
+      // TODO: Check token received correctly
       const token = await getToken(code)
       console.log('token obtained:', token)
       this.props.app.cache('github', {
         status: STATUS.AUTHENTICATED,
         token: token,
+      })
+      this.setState({
+        panelProps: {
+          onCreateProject: this.createProject,
+          status: STATUS.AUTHENTICATED,
+        },
       })
     }
   }
@@ -139,11 +170,10 @@ class App extends React.PureComponent {
     console.info('App.js: createProject', project)
     this.closePanel()
     // this.setState({})
-    console.log('projects props:', this.props)
+    console.log('projects props:', web3.toHex(owner).toString(), web3.toHex(project).toString())
     // console.log('hex:', window.web3.toHex('MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5'))
 
-    // this.props.app.addRepo(this.props.userAccount, '0x012026678901')
-    this.props.app.addRepo(web3.toHex(owner), web3.toHex(project))
+    console.log(this.props.app.addRepo(web3.toHex(owner), web3.toHex(project)))
   }
 
   newIssue = () => {
@@ -155,17 +185,20 @@ class App extends React.PureComponent {
           id: repo.data.repo,
         }))) ||
       'No repos'
+    const reposIds = (repos && repos.map(repo => repo.data.repo)) || []
 
     this.setState(() => ({
       panel: PANELS.NewIssue,
       panelProps: {
         reposManaged: repoNames,
+        closePanel: this.closePanel,
+        reposIds,
       },
     }))
   }
 
   newProject = () => {
-    this.setState((_, { github: { status } }) => ({
+    this.setState((_prevState, { github: { status } }) => ({
       panel: PANELS.NewProject,
       panelProps: {
         onCreateProject: this.createProject,
@@ -175,10 +208,14 @@ class App extends React.PureComponent {
     }))
   }
 
-  newBountyAllocation = _issues => {
+  newBountyAllocation = issues => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.NewBountyAllocation,
-      panelProps: {},
+      panelProps: {
+        issues: issues,
+        onSubmit: this.onSubmitBountyAllocation,
+        rate: 8.5,
+      },
     }))
   }
 

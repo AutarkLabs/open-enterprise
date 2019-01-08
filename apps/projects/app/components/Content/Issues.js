@@ -15,27 +15,9 @@ import {
 
 import { DropDownButton as ActionsMenu, FilterBar } from '../Shared'
 import { Issue } from '../Card'
+import { GET_ISSUES } from '../../utils/gql-queries.js'
 
 // import ethereumLoadingAnimation from '../Shared/assets/svg/ethereum-loading.svg'
-
-export const GET_ISSUES = gql`
-  query getIssuesForRepos($reposIds: [ID!]!) {
-    nodes(ids: $reposIds) {
-      ... on Repository {
-        issues(first: 20) {
-          nodes {
-            number
-            id
-            title
-            repository {
-              name
-            }
-          }
-        }
-      }
-    }
-  }
-`
 
 class Issues extends React.PureComponent {
   state = {

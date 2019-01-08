@@ -57,7 +57,15 @@ const github = () => {
 }
 
 let client
-const getRepoData = repo => client.request(repoData(repo))
+const getRepoData = repo => {
+  try {
+    let data = client.request(repoData(repo))
+    return data
+  } catch (err) {
+    console.error('getRepoData failed: ', err)
+  }
+}
+
 const initClient = authToken => {
   client = new GraphQLClient('https://api.github.com/graphql', {
     headers: {
@@ -91,6 +99,7 @@ app.state().subscribe(state => {
  ***********************/
 
 async function handleEvents(response) {
+  console.log(response)
   let nextState
   switch (response.event) {
   case 'RepoAdded':
@@ -113,14 +122,14 @@ async function handleEvents(response) {
   app.cache('state', nextState)
 }
 
-async function syncRepos(state, { id, ...eventArgs }) {
+async function syncRepos(state, { repoId, ...eventArgs }) {
   console.log('syncRepos: arguments from events:', ...eventArgs)
 
   const transform = ({ ...repo }) => ({
     ...repo,
   })
   try {
-    let updatedState = await updateState(state, id, transform)
+    let updatedState = await updateState(state, repoId, transform)
     return updatedState
   } catch (err) {
     console.error('updateState failed to return:', err)
@@ -140,22 +149,13 @@ function loadRepoData(id) {
       console.log('loadRepoData:', _owner, _repo)
       let [owner, repo] = [toAscii(_owner), toAscii(_repo)]
       getRepoData(repo).then(
-        ({
-          node: {
-            name,
-            description,
-            collaborators: { totalCount: collaborators },
-            defaultBranchRef: {
-              target: {
-                history: { totalCount: commits },
-              },
-            },
-          },
-        }) => {
+        ({node}) => {
+          let commits = node.defaultBranchRef ? node.defaultBranchRef.commits : 0
+          let description = node.description ? node.description : '(no description available)'
           let metadata = {
-            name,
-            description,
-            collaborators,
+            name: node.name,
+            description: node.description,
+            collaborators: node.collaborators.totalCount,
             commits,
             id
           }
