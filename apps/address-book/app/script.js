@@ -85,7 +85,7 @@ async function checkEntriesLoaded(entries, addr, transform) {
       })
     )
   } else {
-    const entryIndex = Array.from(entries)
+    const nextEntries = Array.from(entries)
     nextEntries[entryIndex] = await transform({
       addr,
       data: await loadEntryData(addr),

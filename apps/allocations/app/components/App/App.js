@@ -74,6 +74,8 @@ class App extends React.Component {
   }
 
   newAllocation = (address, description, id, limit) => {
+    // The whole entries vs entities thing needs to be fixed; these are too close
+    let entities = this.props.entries !== undefined ? this.props.entries : []
     this.setState({
       panel: {
         visible: true,
@@ -85,6 +87,7 @@ class App extends React.Component {
           heading: 'New Allocation',
           subHeading: description,
           onSubmitAllocation: this.submitAllocation,
+          entities: entities
         },
       },
     })
