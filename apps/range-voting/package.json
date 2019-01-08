@@ -13,26 +13,26 @@
     "ganache-cli:test": "../shared/test-helpers/ganache-cli.sh",
     "lint": "solium --dir ./contracts",
     "prepublishOnly": "truffle compile --all",
-    "publish:http": "npm run publish:http-copy-files && aragon apm publish --http localhost:4444 --http-served-from ./dist",
+    "publish:http": "npm run publish:http-copy-files && aragon apm publish patch --http localhost:4444 --http-served-from ./dist",
     "publish:http-copy-files": "npm run build:script && mkdir -p dist/images && cp images/icon.svg dist/images/",
-    "publish": "aragon apm publish",
+    "publish": "aragon apm publish patch",
     "start": "aragon run",
     "sync-assets": "copy-aragon-ui-assets ./dist",
     "test:gas": "GAS_REPORTER=true npm test",
     "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
   },
   "dependencies": {
-    "@aragon/client": "1.0.0-beta.9",
+    "@aragon/client": "1.1.0",
     "@aragon/ui": "ottodevs/aragon-ui#5b17efa",
+    "polyfill": "0.1.0",
     "prop-types": "15.6.2",
-    "react": "16.5.1",
+    "react": "^16.6.3",
     "react-blockies": "1.3.0",
-    "react-dom": "16.5.1",
+    "react-dom": "^16.6.3",
     "react-motion": "0.5.2",
     "rxjs": "6.3.2",
     "rxjs-compat": "6.3.2",
-    "styled-components": "3.4.6",
-    "polyfill": "0.1.0"
+    "styled-components": "3.4.6"
   },
   "devDependencies": {
     "@tps/test-helpers": "^0.0.1",

@@ -1,20 +1,65 @@
 {
-  "appName": "projects.aragonpm.eth",
-  "version": "0.0.1",
+  "environments": {
+    "default": {
+      "registry": "0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1",
+      "appName": "projects.aragonpm.eth",
+      "network": "rpc"
+    },
+    "openrinkeby": {
+      "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
+      "appName": "projects.open.aragonpm.eth",
+      "network": "rinkeby"
+    }
+  },
   "roles": [
     {
-      "name": "Add a new repository",
+      "name": "Update settings for Projects app",
+      "id": "CHANGE_BOUNTY_SETTINGS",
+      "params": []
+    },
+    {
+      "name": "Create issue curation votes",
+      "id": "CREATE_CURATION_ROLE",
+      "params": []
+    },
+    {
+      "name": "Create bounty votes",
+      "id": "CREATE_BOUNTY_ROLE",
+      "params": []
+    },
+    {
+      "name": "Approve work completed for bounties",
+      "id": "APPROVE_BOUNTY_ROLE",
+      "params": []
+    },
+    {
+      "name": "Arbitrate disputes related to bounties",
+      "id": "ARBITRATE_BOUNTY_ROLE",
+      "params": []
+    },
+    {
+      "name": "Create a project",
+      "id": "CREATE_PROJECT_ROLE",
+      "params": []
+    },
+    {
+      "name": "Update a project",
+      "id": "UPDATE_PROJECT_ROLE",
+      "params": []
+    },
+    {
+      "name": "Delete a project",
+      "id": "DELETE_PROJECT_ROLE",
+      "params": []
+    },
+    {
+      "name": "Add issue priorities",
+      "id": "CURATE_ISSUES_ROLE",
+      "params": []
+    },
+    {
+      "name": "Add repos",
       "id": "ADD_REPO_ROLE",
-      "params": []
-    },
-    {
-      "name": "Remove a repository",
-      "id": "REMOVE_REPO_ROLE",
-      "params": []
-    },
-    {
-      "name": "Add a bounty",
-      "id": "ADD_BOUNTY_ROLE",
       "params": []
     }
   ],
