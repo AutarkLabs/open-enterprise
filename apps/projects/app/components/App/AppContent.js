@@ -61,8 +61,8 @@ const AppContent = props => {
           ))}
         </TabBar>
         <TabContent>
-          {contentData.map(({ TabComponent }, i) => (
-            <TabComponent key={i} {...props} />
+          {contentData.map(({ TabComponent }) => (
+            <TabComponent key={TabComponent} {...props} />
           ))}
         </TabContent>
       </TabbedView>
@@ -72,7 +72,6 @@ const AppContent = props => {
 
 AppContent.propTypes = {
   projects: PropTypes.arrayOf(PropTypes.object).isRequired,
-  bountySettings: PropTypes.object.isRequired,
   onNewProject: PropTypes.func.isRequired,
   onNewIssue: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,

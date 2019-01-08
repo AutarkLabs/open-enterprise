@@ -77,12 +77,6 @@ library ScriptHelpers {
         }
     }
 
-    function bytes32At(bytes _data, uint256 _location) internal pure returns (bytes32 result) {
-        assembly {
-            result := mload(add(_data, add(0x20, _location)))
-        }
-    }
-
     function addressAt(bytes _data, uint256 _location) internal pure returns (address result) {
         uint256 word = uint256At(_data, _location);
 

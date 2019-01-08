@@ -2,7 +2,7 @@ import Aragon from '@aragon/client'
 import { combineLatest } from './rxjs'
 import voteSettings, { hasLoadedVoteSettings } from './utils/vote-settings'
 import { EMPTY_CALLSCRIPT } from './utils/vote-utils'
-import AllocationJSON from '../../shared/json-abis/Allocations.json'
+import AllocationJSON from '../../allocations/build/contracts/Allocations.json'
 
 const app = new Aragon()
 let allocations
@@ -38,16 +38,8 @@ async function handleEvents(response) {
     nextState = await startVote(nextState, response.returnValues)
     break
   case 'ExternalContract':
-    let funcSig = response.returnValues.funcSig
-    console.info('[RangeVoting > script]: received ExternalContract', funcSig)
-    // Should actually be a case-switch
-    if(funcSig == "f1d12a23"){
-      console.log("Loading Projects Data")
-      resolve(loadVoteDataProjects(voteData, voteId))
-    } else {
-      console.log("Loading Allocations Contract")
-      allocations = app.external(response.returnValues.addr, AllocationJSON.abi)
-    }
+    console.info('[RangeVoting > script]: received ExternalContract')
+    allocations = app.external(response.returnValues.addr, AllocationJSON.abi)
   default:
     break
   }
@@ -116,92 +108,42 @@ async function loadVoteDescription(vote) {
 
 async function loadVoteData(voteId) {
   console.info('[RangeVoting > script]: loadVoteData')
-  let vote
-  return new Promise((resolve, reject) => {
-    app
-    .call('getVote', voteId)
-    .first()
-    .subscribe(voteData => {
-      let funcSig = voteData.executionScript.slice(58, 66)
-      if(funcSig == "f1d12a23"){
-        console.log("Loading Projects Data")
-        resolve(loadVoteDataProjects(voteData, voteId))
-      } else {
-        console.log("Loading Allocations Data")
-        resolve(loadVoteDataAllocation(voteData, voteId))
-      }
-    })
-  })
-}
-// These functions arn't DRY make them better
-async function loadVoteDataAllocation(vote, voteId) {
-  return new Promise(resolve => 
+  return new Promise(resolve => {
     combineLatest(
+      app.call('getVote', voteId),
       app.call('getVoteMetadata', voteId),
       app.call('getCandidateLength', voteId),
       app.call('canExecute', voteId)
     )
-    .first()
-    .subscribe(([metadata, totalCandidates, canExecute, payout]) => {
-      loadVoteDescription(vote).then(async vote => {
-        let options = []
-        for (let i = 0; i < totalCandidates; i++) {
-          let candidateData = await getAllocationCandidate(voteId, i)
-          console.log(candidateData)
-          options.push(candidateData)
-        }
-        let returnObject = {
-          ...marshallVote(vote),
-          metadata,
-          canExecute,
-          options: options
-        }
-        allocations
-          .getPayout(vote.externalId)
-          .first()
-          .subscribe((payout) => {
-            resolve({
-              ...returnObject,
-              limit: parseInt(payout.limit, 10),
-              balance: parseInt(vote.executionScript.slice(450, 514), 16),
-              metadata: payout.metadata
+      .first()
+      .subscribe(([vote, metadata, totalCandidates, canExecute, payout]) => {
+        loadVoteDescription(vote).then(async vote => {
+          let options = []
+          for (let i = 0; i < totalCandidates; i++) {
+            let candidateData = await getCandidate(voteId, i)
+            console.log(candidateData)
+            options.push(candidateData)
+          }
+          let returnObject = {
+            ...marshallVote(vote),
+            metadata,
+            canExecute,
+            options: options
+          }
+          allocations
+            .getPayout(vote.externalId)
+            .first()
+            .subscribe((payout) => {
+              resolve({
+                ...returnObject,
+                limit: parseInt(payout.limit, 10),
+                balance: parseInt(vote.executionScript.slice(450, 514), 16),
+                metadata: payout.metadata
+              })
             })
-          })
+        })
       })
-    })
-  )
-}
-// These functions arn't DRY make them better
-async function loadVoteDataProjects(vote, voteId) {
-  return new Promise(resolve => 
-    combineLatest(
-      app.call('getVoteMetadata', voteId),
-      app.call('getCandidateLength', voteId),
-      app.call('canExecute', voteId)
-    )
-    .first()
-    .subscribe(([metadata, totalCandidates, canExecute]) => {
-      console.log("projects data:", metadata, totalCandidates, canExecute)
-      loadVoteDescription(vote).then(async vote => {
-        let options = []
-        console.log("Vote data:", voteId, vote)
-        for (let i = 0; i < totalCandidates; i++) {
-          let candidateData = await getProjectCandidate(voteId, i)
-          console.log("candidate data",candidateData)
-          options.push(candidateData)
-        }
-        console.log(metadata)
-        let returnObject = {
-          ...marshallVote(vote),
-          metadata,
-          canExecute,
-          options: options
-        }
-        resolve(returnObject)
-        // Project specific code
-      })
-    })
-  )
+  })
 }
 
 async function updateVotes(votes, voteId, transform) {
@@ -222,7 +164,7 @@ async function updateVotes(votes, voteId, transform) {
   return nextVotes
 }
 
-async function getAllocationCandidate(voteId, candidateIndex) {
+async function getCandidate(voteId, candidateIndex) {
   return new Promise(resolve => {
     app
       .call('getCandidate', voteId, candidateIndex)
@@ -230,20 +172,6 @@ async function getAllocationCandidate(voteId, candidateIndex) {
       .subscribe(candidateData => {
         resolve({
           label: candidateData.candidateAddress,
-          value: candidateData.voteSupport
-        })
-      })
-  })
-}
-
-async function getProjectCandidate(voteId, candidateIndex) {
-  return new Promise(resolve => {
-    app
-      .call('getCandidate', voteId, candidateIndex)
-      .first()
-      .subscribe(candidateData => {
-        resolve({
-          label: candidateData.metadata,
           value: candidateData.voteSupport
         })
       })

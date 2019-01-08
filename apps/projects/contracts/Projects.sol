@@ -61,39 +61,8 @@ contract Projects is AragonApp {
     {
         //vault = _vault.ethConnectorBase();
         bounties = Bounties(_bountiesAddr); // Standard Bounties instance
-
-       // TODO: this causes VM exception and revert - due to auth?
-       // changeBountySettings("test8explvl", 3000, 336, "FTL", 0x0..., 0x0...);
-
-       settings.expLevels = "100\tBeginner\t300\tIntermediate\t500\tAdvanced";
-       settings.baseRate = 3000;
-       settings.bountyDeadline = 336;
-       settings.bountyCurrency = "FTL";
-       settings.bountyAllocator = 0x0000000000000000000000000000000000000000;
-       settings.bountyArbiter = 0x0000000000000000000000000000000000000000;
-
-       emit BountySettingsChanged(
-            settings.expLevels,
-            settings.baseRate,
-            settings.bountyDeadline,
-            settings.bountyCurrency,
-            settings.bountyAllocator,
-            settings.bountyArbiter
-       );
-
         initialized();
     }
-
-    struct BountySettings {
-        string expLevels;
-        uint256 baseRate;
-        uint256 bountyDeadline;
-        string bountyCurrency;
-        address bountyAllocator;
-        address bountyArbiter;
-    }
-
-    BountySettings settings;
 
     struct GithubRepo {
         bytes32 owner;  // repo owner's address
@@ -106,9 +75,6 @@ contract Projects is AragonApp {
         bytes32 repo;  // This is the internal repo identifier
         uint256 number; // May be redundant tracking this
         bool hasBounty;
-        uint256 bountySize;
-        uint256 priority;
-        address bountyWallet; // Not sure if we'll have a way to "retrieve" this value from status open bounties
         uint standardBountyId;
     }
 
@@ -124,55 +90,12 @@ contract Projects is AragonApp {
     event RepoRemoved(bytes32 repoId);
     // Fired when a bounty is added to a repo
     event BountyAdded(bytes32 owner, bytes32 repoId, uint256 issueNumber, uint256 bountySize);
-    // Fired when an issue is curated
-    event IssueCurated(bytes32 repo, uint256 issueNumber, uint256 priority);
     // Fired when fulfillment is accepted
     event FulfillmentAccepted(bytes32 repoId, uint256 issueNumber, uint fulfillmentId);
-    // Fired when settings are changed
-    event BountySettingsChanged(
-        string expLevels,
-        uint256 baseRate,
-        uint256 bountyDeadline,
-        string bountyCurrency,
-        address bountyAllocator,
-        address bountyArbiter
-    );
 
-    bytes32 public constant CHANGE_BOUNTY_SETTINGS =  keccak256("CHANGE_BOUNTY_SETTINGS");
-    bytes32 public constant CREATE_CURATION_ROLE = keccak256("CREATE_CURATION_ROLE");
-    bytes32 public constant CREATE_BOUNTY_ROLE =  keccak256("CREATE_BOUNTY_ROLE");
-    bytes32 public constant APPROVE_BOUNTY_ROLE =  keccak256("APPROVE_BOUNTY_ROLE");
-    bytes32 public constant ARBITRATE_BOUNTY_ROLE = keccak256("ARBITRATE_BOUNTY_ROLE");
-    bytes32 public constant CREATE_PROJECT_ROLE = keccak256("CREATE_PROJECT_ROLE");
-    bytes32 public constant UPDATE_PROJECT_ROLE =  keccak256("UPDATE_PROJECT_ROLE");
-    bytes32 public constant DELETE_PROJECT_ROLE =  keccak256("DELETE_PROJECT_ROLE");
     bytes32 public constant ADD_REPO_ROLE = keccak256("ADD_REPO_ROLE");
     bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
     bytes32 public constant ADD_BOUNTY_ROLE =  keccak256("ADD_BOUNTY_ROLE");
-    bytes32 public constant CURATE_ISSUES_ROLE = keccak256("CURATE_ISSUES_ROLE");
-
-    function curateIssues(
-        address[] unusedAddresses, 
-        uint256[] issuePriorities,
-        uint256[] issueDescriptionIdices, 
-        string issueDescriptions,
-        uint256[] issueRepos,
-        uint256[] issueNumbers
-    ) external isInitialized auth(CURATE_ISSUES_ROLE)
-    {
-        bytes32 repoId;
-        require(issuePriorities.length == unusedAddresses.length, "length mismatch: issuePriorites and unusedAddresses");
-        require(issuePriorities.length == issueDescriptionIdices.length, "length mismatch: issuePriorites and issueDescriptionIdx");
-        require(issueRepos.length == issueDescriptionIdices.length, "length mismatch: issueRepos and issueDescriptionIdx");
-        require(issueRepos.length == issueDescriptionIdices.length, "length mismatch: issueRepos and issueNumbers");
-
-        for (uint256 i = 0; i < issuePriorities.length; i++) {
-            repoId = bytes32(issueRepos[i]);
-            require(issuePriorities[i] == 999, "bounty already assigned for issue");
-            repos[repoId].issues[uint256(issueNumbers[i])].priority = issuePriorities[i];
-            emit IssueCurated(repoId,issueNumbers[i],issuePriorities[i]);
-        }
-    }
     
 ///////////////////////
 // View state functions
@@ -332,9 +255,6 @@ contract Projects is AragonApp {
             _repoId,
             _issueNumber,
             true,
-            _bountySize,
-            999,
-            address(0),
             _standardBountyId
         );
         emit BountyAdded(
@@ -375,24 +295,4 @@ contract Projects is AragonApp {
         }
         return string(result);
     }
-
-    function changeBountySettings(
-        string expLevels,
-        uint256 baseRate,
-        uint256 bountyDeadline,
-        string bountyCurrency,
-        address bountyAllocator,
-        address bountyArbiter
-    ) public auth(CHANGE_BOUNTY_SETTINGS)
-    {
-       settings.expLevels = expLevels;
-       settings.baseRate = baseRate;
-       settings.bountyDeadline = bountyDeadline;
-       settings.bountyCurrency = bountyCurrency;
-       settings.bountyAllocator = bountyAllocator;
-       settings.bountyArbiter = bountyArbiter;
-
-       emit BountySettingsChanged(expLevels, baseRate, bountyDeadline, bountyCurrency, bountyAllocator, bountyArbiter);
-    }
-
 }
