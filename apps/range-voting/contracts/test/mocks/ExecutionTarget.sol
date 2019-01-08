@@ -5,7 +5,8 @@ contract ExecutionTarget {
     uint256[] public signal;
     uint256[] public level1Id;
     uint256[] public level2Id;
-
+    /// @dev The first 6 arguments in setSignal are necessary in a function that will be forwarded to rangeVoting.
+    /// Any additional parameters must not e an array type of any form, or the function will not be forwardable.
     function setSignal(
         address[] /*_addr*/, 
         uint256[] _signal,

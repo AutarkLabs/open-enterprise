@@ -413,9 +413,15 @@ contract RangeVoting is IForwarder, AragonApp {
     *            [ function hash (uint32: 4 bytes) ]
     *            [ calldata (calldataLength bytes) ]
     *        In order to work with a range vote the execution script must contain
-    *        Arrays as its first two parameters.
+    *        Arrays as its first six parameters. Non-string array lengths must all equal candidateLength
     *        The first Array is generally a list of identifiers (bytes32 or address)
     *        The second array will be composed of support value (uint256).
+    *        The third array will be end index for each candidates Information within the infoString (optional uint256)
+    *        The fourth array is a string of concatenated candidate information, the infoString (optional string)
+    *        The fifth array is an array of identification keys (optional uint256)
+    *        The sixth array is a second array of identification keys, usually mapping to a second level (optional uint256)
+    *        The seventh parameter is used as the identifier for this vote. (uint256)
+    *        See ExecutionTarget.sol in the test folder for an example  forwarded function (setSignal)
     * @param _metadata The metadata or vote information attached to this vote
     * @return voteId The ID(or index) of this vote in the votes array.
     */
