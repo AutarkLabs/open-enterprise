@@ -24,6 +24,7 @@ import {AddressBook as AddressBookApp} from "@tps/apps-address-book/contracts/Ad
 import {Allocations as AllocationsApp} from "@tps/apps-allocations/contracts/Allocations.sol";
 import {Projects as ProjectsApp} from "@tps/apps-projects/contracts/Projects.sol";
 import {RangeVoting as RangeVotingApp} from "@tps/apps-range-voting/contracts/RangeVoting.sol";
+import {AddressBook as AddressBookApp} from "@tps/apps-address-book/contracts/AddressBook.sol";
 
 
 contract KitBase is APMNamehash {
@@ -110,7 +111,7 @@ contract PlanningKit is KitBase {
         //token.changeController(tokenManager);
 
         // Initialize apps
-        allocations.initialize();
+        allocations.initialize(addressBook);
         // TODO: Enable when code is ready in the apps
         addressBook.initialize();
         projects.initialize();
@@ -135,6 +136,10 @@ contract PlanningKit is KitBase {
         acl.createPermission(ANY_ENTITY, projects, projects.CREATE_PROJECT_ROLE(), root);
         acl.createPermission(ANY_ENTITY, projects, projects.DELETE_PROJECT_ROLE(), root);
         acl.createPermission(ANY_ENTITY, projects, projects.CREATE_BOUNTY_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, projects, projects.ADD_REPO_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, projects, projects.REMOVE_REPO_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, projects, projects.ADD_BOUNTY_ROLE(), root);
+        acl.createPermission(rangeVoting, projects, projects.CURATE_ISSUES_ROLE(), root);
         emit InstalledApp(projects, apps[2]);
 
         // Range-voting permissions

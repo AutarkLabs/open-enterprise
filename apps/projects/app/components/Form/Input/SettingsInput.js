@@ -6,11 +6,17 @@ import { Badge, Text, theme } from '@aragon/ui'
 import { CheckBox } from '../../Shared'
 
 class SettingsInput extends React.Component {
+  static propTypes = {
+    // key: PropTypes.number.isRequired, // TODO: Check the use of this required prop
+    name: PropTypes.func,
+    text: PropTypes.string.isRequired,
+  }
+
   render() {
     return (
       <StyledSettingsInput>
         <CheckBox />
-        <Text>Must vote with entire balance</Text>
+        <Text>{this.props.text}</Text>
         <Badge.Info small>?</Badge.Info>
       </StyledSettingsInput>
     )

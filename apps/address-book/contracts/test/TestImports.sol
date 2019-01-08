@@ -7,6 +7,7 @@ import "@tps/test-helpers/contracts/factory/EVMScriptRegistryFactory.sol";
 
 import "@tps/test-helpers/contracts/lib/misc/Migrations.sol";
 import "@tps/test-helpers/contracts/lib/minime/MiniMeToken.sol";
+import "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
 
 // You might think this file is a bit odd, but let me explain.
 // We only use some contracts in our tests, which means Truffle

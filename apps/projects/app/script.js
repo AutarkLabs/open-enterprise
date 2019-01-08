@@ -156,6 +156,7 @@ function loadRepoData(id) {
             description: node.description,
             collaborators: node.collaborators.totalCount,
             commits,
+            id
           }
           resolve({ owner, repo, metadata })
         }

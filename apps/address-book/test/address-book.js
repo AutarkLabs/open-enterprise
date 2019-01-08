@@ -1,11 +1,18 @@
 const {
-  ACL,
-  DAOFactory,
-  EVMScriptRegistryFactory,
-  Kernel
-} = require('@tps/test-helpers/artifacts')
+  encodeCallScript,
+  EMPTY_SCRIPT,
+} = require('@tps/test-helpers/evmScript')
+
 const AddressBook = artifacts.require('AddressBook')
-const { assertRevert } = require('@tps/test-helpers/assertThrow')
+
+const DAOFactory = artifacts.require(
+  '@tps/test-helpers/contracts/factory/DAOFactory'
+)
+const EVMScriptRegistryFactory = artifacts.require(
+  '@tps/test-helpers/contracts/factory/EVMScriptRegistryFactory'
+)
+const ACL = artifacts.require('@tps/test-helpers/contracts/acl/ACL')
+const Kernel = artifacts.require('@tps/test-helpers/contracts/kernel/Kernel')
 
 const getContract = name => artifacts.require(name)
 
@@ -91,11 +98,6 @@ contract('AddressBook App', accounts => {
       assert.equal(entry3[0], borg)
       assert.equal(entry3[1], 'Borg')
       assert.equal(entry3[2], 'N/A')
-    })
-    it('should revert when repeating a name', async () => {
-      return assertRevert( async () => {
-        await app.addEntry(borg, 'Borg', 'N/A')
-      })
     })
     it('remove entry from addressbook', async () => {  
       await app.removeEntry(borg)
