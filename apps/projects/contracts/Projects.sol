@@ -61,8 +61,39 @@ contract Projects is AragonApp {
     {
         //vault = _vault.ethConnectorBase();
         bounties = Bounties(_bountiesAddr); // Standard Bounties instance
+
+       // TODO: this causes VM exception and revert - due to auth?
+       // changeBountySettings("test8explvl", 3000, 336, "FTL", 0x0..., 0x0...);
+
+       settings.expLevels = "100\tBeginner\t300\tIntermediate\t500\tAdvanced";
+       settings.baseRate = 3000;
+       settings.bountyDeadline = 336;
+       settings.bountyCurrency = "FTL";
+       settings.bountyAllocator = 0x0000000000000000000000000000000000000000;
+       settings.bountyArbiter = 0x0000000000000000000000000000000000000000;
+
+       emit BountySettingsChanged(
+            settings.expLevels,
+            settings.baseRate,
+            settings.bountyDeadline,
+            settings.bountyCurrency,
+            settings.bountyAllocator,
+            settings.bountyArbiter
+       );
+
         initialized();
     }
+
+    struct BountySettings {
+        string expLevels;
+        uint256 baseRate;
+        uint256 bountyDeadline;
+        string bountyCurrency;
+        address bountyAllocator;
+        address bountyArbiter;
+    }
+
+    BountySettings settings;
 
     struct GithubRepo {
         bytes32 owner;  // repo owner's address
@@ -97,8 +128,17 @@ contract Projects is AragonApp {
     event IssueCurated(bytes32 repo, uint256 issueNumber, uint256 priority);
     // Fired when fulfillment is accepted
     event FulfillmentAccepted(bytes32 repoId, uint256 issueNumber, uint fulfillmentId);
+    // Fired when settings are changed
+    event BountySettingsChanged(
+        string expLevels,
+        uint256 baseRate,
+        uint256 bountyDeadline,
+        string bountyCurrency,
+        address bountyAllocator,
+        address bountyArbiter
+    );
 
-    bytes32 public constant UPDATE_PROJ_SETTINGS_ROLE = keccak256("UPDATE_PROJ_SETTINGS_ROLE");
+    bytes32 public constant CHANGE_BOUNTY_SETTINGS =  keccak256("CHANGE_BOUNTY_SETTINGS");
     bytes32 public constant CREATE_CURATION_ROLE = keccak256("CREATE_CURATION_ROLE");
     bytes32 public constant CREATE_BOUNTY_ROLE =  keccak256("CREATE_BOUNTY_ROLE");
     bytes32 public constant APPROVE_BOUNTY_ROLE =  keccak256("APPROVE_BOUNTY_ROLE");
@@ -335,4 +375,24 @@ contract Projects is AragonApp {
         }
         return string(result);
     }
+
+    function changeBountySettings(
+        string expLevels,
+        uint256 baseRate,
+        uint256 bountyDeadline,
+        string bountyCurrency,
+        address bountyAllocator,
+        address bountyArbiter
+    ) public auth(CHANGE_BOUNTY_SETTINGS)
+    {
+       settings.expLevels = expLevels;
+       settings.baseRate = baseRate;
+       settings.bountyDeadline = bountyDeadline;
+       settings.bountyCurrency = bountyCurrency;
+       settings.bountyAllocator = bountyAllocator;
+       settings.bountyArbiter = bountyArbiter;
+
+       emit BountySettingsChanged(expLevels, baseRate, bountyDeadline, bountyCurrency, bountyAllocator, bountyArbiter);
+    }
+
 }

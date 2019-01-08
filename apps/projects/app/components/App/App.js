@@ -214,7 +214,7 @@ class App extends React.PureComponent {
       panelProps: {
         issues: issues,
         onSubmit: this.onSubmitBountyAllocation,
-        rate: 8.5,
+        bountySettings: this.props.bountySettings,
       },
     }))
   }
