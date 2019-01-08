@@ -61,8 +61,8 @@ const AppContent = props => {
           ))}
         </TabBar>
         <TabContent>
-          {contentData.map(({ TabComponent }) => (
-            <TabComponent key={TabComponent} {...props} />
+          {contentData.map(({ TabComponent }, i) => (
+            <TabComponent key={i} {...props} />
           ))}
         </TabContent>
       </TabbedView>

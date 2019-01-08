@@ -26,6 +26,11 @@
       "name": "Add a bounty",
       "id": "ADD_BOUNTY_ROLE",
       "params": []
+    },
+    {
+      "name": "Add issue priorities",
+      "id": "CURATE_ISSUES_ROLE",
+      "params": []
     }
   ],
   "path": "contracts/Projects.sol"

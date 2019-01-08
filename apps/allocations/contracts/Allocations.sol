@@ -153,12 +153,16 @@ contract Allocations is AragonApp, Fundable {
     function setDistribution(
         address[] _candidateAddresses,
         uint256[] _supports,
+        uint256[] /*unused_infoIndices*/,
+        string /*unused_candidateInfo*/,
+        uint256[] /*unused_level 1 ID - converted to bytes32*/,
+        uint256[] /*unused_level 2 ID - converted to bytes32*/,
         uint256 _payoutId,
         bool _informational,
         bool _recurring,
         uint256 _period,
         uint256 _amount
-    ) external payable isInitialized auth(SET_DISTRIBUTION_ROLE)
+    ) public payable isInitialized auth(SET_DISTRIBUTION_ROLE)
     {
         Payout storage payout = payouts[_payoutId];
         payout.candidateAddresses = _candidateAddresses;

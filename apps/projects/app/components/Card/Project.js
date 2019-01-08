@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { IconHistory, IconContributors } from '../../assets'
+import { IconHistory, IconContributors } from '../Shared'
 import {
   Card,
   Text,
@@ -27,7 +27,7 @@ const Project = ({ id, label, description, commits, contributors }) => {
   }
 
   const clickContext = () => {
-    // event.stopPropagation()
+    event.stopPropagation()
     console.log('clickContext')
   }
 

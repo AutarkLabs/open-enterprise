@@ -4,16 +4,7 @@ import { combineLatest } from 'rxjs'
 import { empty } from 'rxjs/observable/empty'
 
 import { GraphQLClient } from 'graphql-request'
-
-const STATUS = {
-  INITIAL: 'initial',
-}
-const authToken = ''
-const client = new GraphQLClient('https://api.github.com/graphql', {
-  headers: {
-    Authorization: 'Bearer ' + authToken,
-  },
-})
+import { STATUS } from './utils/github'
 
 const toAscii = hex => {
   // Find termination
@@ -52,12 +43,38 @@ const repoData = id => `{
     }
 }`
 
-const getRepoData = repo => client.request(repoData(repo))
-
 const app = new Aragon()
 let appState
 
-app.rpc.send('cache', ['set', 'github', { status: STATUS.INITIAL }])
+/**
+ * Observe the github object.
+ * @return {Observable} An observable of github object over time.
+ */
+const github = () => {
+  return app.rpc
+    .sendAndObserveResponses('cache', ['get', 'github'])
+    .pluck('result')
+}
+
+let client
+const getRepoData = repo => client.request(repoData(repo))
+const initClient = authToken => {
+  client = new GraphQLClient('https://api.github.com/graphql', {
+    headers: {
+      Authorization: 'Bearer ' + authToken,
+    },
+  })
+}
+
+// TODO: Handle cases where checking validity of token fails (revoked, etc)
+
+github().subscribe(result => {
+  console.log('github object received from cache:', result)
+  if (result) {
+    result.token && initClient(result.token)
+    return
+  } else app.cache('github', { status: STATUS.INITIAL })
+})
 
 app.events().subscribe(handleEvents)
 
@@ -140,6 +157,7 @@ function loadRepoData(id) {
             description,
             collaborators,
             commits,
+            id
           }
           resolve({ owner, repo, metadata })
         }

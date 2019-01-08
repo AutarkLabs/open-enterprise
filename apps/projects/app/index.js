@@ -1,6 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import Aragon, { providers } from '@aragon/client'
+import ApolloClient from 'apollo-boost'
+
 import App from './components/App/App'
 
 // import { projectsMockData } from './utils/mockData'
@@ -17,6 +19,21 @@ class ConnectedApp extends React.Component {
     observable: null,
     userAccount: '',
     // ...projectsMockData,
+    github: { token: null },
+    client: new ApolloClient({
+      uri: 'https://api.github.com/graphql',
+      request: operation => {
+        const { token } = this.state.github
+        if (token) {
+          operation.setContext({
+            headers: {
+              accept: 'application/vnd.github.starfire-preview+json', // needed to create issues
+              authorization: `bearer ${token}`,
+            },
+          })
+        }
+      },
+    }),
   }
   componentDidMount() {
     window.addEventListener('message', this.handleWrapperMessage)
@@ -27,7 +44,7 @@ class ConnectedApp extends React.Component {
   // handshake between Aragon Core and the iframe,
   // since iframes can lose messages that were sent before they were ready
   handleWrapperMessage = ({ data }) => {
-    const {app} = this.state
+    const { app } = this.state
     if (data.from !== 'wrapper') {
       return
     }
@@ -46,7 +63,10 @@ class ConnectedApp extends React.Component {
         .pluck('result')
         .subscribe(github => {
           console.log('github object received from backend cache:', github)
-          this.setState({ github: github })
+
+          this.setState({
+            github: github,
+          })
         })
     }
   }
@@ -57,5 +77,6 @@ class ConnectedApp extends React.Component {
     return <App {...this.state} />
   }
 }
-ReactDOM.render(<ConnectedApp />, document.getElementById('projects'))
-
+module.hot.accept(
+  ReactDOM.render(<ConnectedApp />, document.getElementById('projects'))
+)
