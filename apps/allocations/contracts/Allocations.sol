@@ -2,6 +2,8 @@ pragma solidity ^0.4.24;
 
 import "@tps/test-helpers/contracts/apps/AragonApp.sol";
 
+import "@tps/apps-address-book/contracts/AddressBook.sol";
+
 import "@tps/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
 
 import "@tps/test-helpers/contracts/lib/zeppelin/math/SafeMath64.sol";
@@ -30,6 +32,7 @@ interface Fundable {
     function fund(uint256 id) external payable;
 }
 
+
 /*******************************************************************************
 * @title FundForwarder
 * @author Arthur Lunn
@@ -37,10 +40,10 @@ interface Fundable {
 *      to receive funds from an address and "piece it out" to a layered contract
 *      Any advice on best practice for this would be welcome.
 *******************************************************************************/
-contract FundForwarder { // solium-disable-line blank-lines
+contract FundForwarder { 
     Fundable fundable;
     uint256 id;
-    constructor(uint256 _id, address _fundable) public { // solium-disable-line blank-lines
+    constructor(uint256 _id, address _fundable) public { 
         fundable = Fundable(_fundable);
         id = _id;
     }
@@ -48,6 +51,7 @@ contract FundForwarder { // solium-disable-line blank-lines
         fundable.fund.value(msg.value)(id);
     }
 }
+
 
 /*******************************************************************************
 * @title Allocations Contract
@@ -57,7 +61,7 @@ contract FundForwarder { // solium-disable-line blank-lines
 *      percentage breakdown to an array of addresses. Currently it works with ETH
 *      needs to be adapted to work with tokens.
 *******************************************************************************/
-contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
+contract Allocations is AragonApp, Fundable { 
 
     using SafeMath for uint256;
 
@@ -79,7 +83,7 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
     }
 
 
-
+    AddressBook public addressBook;
     Payout[] payouts;
 
     bytes32 constant public START_PAYOUT_ROLE = keccak256("START_PAYOUT_ROLE");
@@ -91,6 +95,10 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
     event FundAccount(uint256 accountId);
     event SetDistribution(uint256 payoutId, uint256 amount);
 
+    function () public payable { 
+        revert();
+    }
+
     /*
     * @dev This is the function that setups who the candidates will be, and
     *      where the funds will go for the payout. This is where the payout
@@ -98,19 +106,13 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
     * @notice Start a payout with the specified candidates and addresses.
     *         None of the distribution or payments are handled in this step.
     */
-    function initialize( // solium-disable-line blank-lines
-    ) external onlyInit // solium-disable-line visibility-first
+    function initialize(
+        AddressBook _addressBook
+    ) external onlyInit
     {
+        addressBook = _addressBook;
         initialized();
     }
-
-    function () public payable { // solium-disable-line function-order
-
-    }
-
-/////////////////////////////
-// Payout Lifecycle functions
-/////////////////////////////
 
     /**
     * @dev This is the function that sets up who the candidates will be, and
@@ -121,7 +123,7 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
     * @param _metadata Any relevent label for the payout
     *
     */
-    function newPayout( // solium-disable-line function-order
+    function newPayout( 
         string _metadata,
         uint256 _limit,
         address _token
@@ -135,7 +137,7 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         payout.balance = 0;
         FundForwarder fund = new FundForwarder(payoutId, address(this));
         payout.proxy = address(fund);
-        emit NewAccount(payoutId); // solium-disable-line emit
+        emit NewAccount(payoutId); 
     }
 
     /**
@@ -148,7 +150,7 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
     * param _candidateKeys The array of keys for all candidates in this payout
     * param _supports The Array of all support values for the various candidates
     */
-    function setDistribution( // solium-disable-line function-order
+    function setDistribution(
         address[] _candidateAddresses,
         uint256[] _supports,
         uint256[] /*unused_infoIndices*/,
@@ -164,7 +166,7 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
     {
         Payout storage payout = payouts[_payoutId];
         payout.candidateAddresses = _candidateAddresses;
-        require(_amount <= payout.limit);  // solium-disable-line error-reason
+        require(_amount <= payout.limit);  
         payout.informational = _informational;
         payout.recurring = _recurring;
         if (!_informational) {
@@ -180,7 +182,7 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
             // minimum granularity is a single day
             // This check is disabled currently to enable testing of shorter times
             //require(payout.period > 86399);
-            payout.startTime = block.timestamp; // solium-disable-line security/no-block-members
+            payout.startTime = block.timestamp; 
         } else {
             payout.period = 0;
         }
@@ -191,14 +193,14 @@ contract Allocations is AragonApp, Fundable { // solium-disable-line blank-lines
         emit SetDistribution(_payoutId, _amount);
     }
 
-    function fund(uint256 id) external payable { // solium-disable-line function-order
+    function fund(uint256 id) external payable { 
         Payout storage payout = payouts[id];
-        require(!payout.informational); // solium-disable-line error-reason
+        require(!payout.informational);
         payout.balance = payout.balance.add(msg.value);
         emit FundAccount(id);
     }
 
-    function runPayout(uint256 _payoutId) external payable isInitialized returns(bool success) { // solium-disable-line function-order
+    function runPayout(uint256 _payoutId) external payable isInitialized returns(bool success) {
         Payout storage payout = payouts[_payoutId];
         uint256 pointsPer;
         uint256 totalSupport;

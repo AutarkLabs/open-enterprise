@@ -24,6 +24,7 @@ import {AddressBook as AddressBookApp} from "@tps/apps-address-book/contracts/Ad
 import {Allocations as AllocationsApp} from "@tps/apps-allocations/contracts/Allocations.sol";
 import {Projects as ProjectsApp} from "@tps/apps-projects/contracts/Projects.sol";
 import {RangeVoting as RangeVotingApp} from "@tps/apps-range-voting/contracts/RangeVoting.sol";
+import {AddressBook as AddressBookApp} from "@tps/apps-address-book/contracts/AddressBook.sol";
 
 
 contract KitBase is APMNamehash {
@@ -110,7 +111,7 @@ contract PlanningKit is KitBase {
         //token.changeController(tokenManager);
 
         // Initialize apps
-        allocations.initialize();
+        allocations.initialize(addressBook);
         // TODO: Enable when code is ready in the apps
         addressBook.initialize();
         projects.initialize();

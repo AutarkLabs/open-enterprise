@@ -34,6 +34,7 @@
   },
   "devDependencies": {
     "@tps/test-helpers": "^0.0.1",
+    "@tps/apps-address-book": "^0.0.1",
     "babel-core": "6.26.3",
     "babel-eslint": "9.0.0",
     "babel-plugin-styled-components": "1.5.1",

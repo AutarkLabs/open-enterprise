@@ -3,13 +3,23 @@ import React from 'react'
 import styled from 'styled-components'
 import { BigNumber } from 'bignumber.js'
 
-import { DropDown, Info } from '@aragon/ui'
+import {
+  Button,
+  Field,
+  Text,
+  TextInput,
+  DropDown,
+  theme,
+  Info,
+  Checkbox
+} from '@aragon/ui'
 
 import {
   DescriptionInput,
   Form,
   FormField,
   OptionsInput,
+  OptionsInputDropdown,
   SettingsInput,
   InputDropDown,
 } from '../Form'
@@ -31,7 +41,9 @@ const INITIAL_STATE = {
   payoutToken: '',
   payoutTokenIndex: 0,
   amount: null,
-  allocationError: false,
+  allocationError: false, 
+  balanceSetting: false,
+  addressSetting: false
 }
 
 class NewAllocation extends React.Component {
@@ -39,6 +51,7 @@ class NewAllocation extends React.Component {
     // key: PropTypes.number.isRequired, // TODO: Check the use of this required prop
     onSubmitAllocation: PropTypes.func.isRequired,
     description: PropTypes.string,
+    entities: PropTypes.object,
   }
 
   state = INITIAL_STATE
@@ -148,6 +161,24 @@ class NewAllocation extends React.Component {
               />
             }
           />
+          <FormField
+            label="Settings"
+            input={
+              <div>
+              <SettingsInput
+                name="balanceSetting"
+                text="Must vote with entire balance"
+                onChange={this.changeField}
+              />
+              {this.props.entities.length > 0 && 
+              <SettingsInput
+                name="addressSetting"
+                text="Use address book for options"
+                onChange={this.changeField}
+              />}
+              </div>
+            }
+          />
           {this.state.allocationTypeIndex == 1 && (
             <FormField
               required
@@ -183,38 +214,48 @@ class NewAllocation extends React.Component {
               }
             />
           )}
-          <FormField
-            separator
-            label="Options"
-            input={
-              <OptionsInput
-                name="options"
-                placeholder="Enter an option"
-                onChange={this.changeField}
-                value={this.state.options}
-                input={this.state.optionsInput}
-                validator={this.isAddress}
-                error={this.state.addressError}
-              />
-            }
-          />
-          <FormField
-            label="Settings"
-            input={
-              <SettingsInput
-                name="options"
-                placeholder="Enter an option"
-                onChange={this.changeField}
-                value={this.state.settings}
-              />
-            }
-          />
+          {this.state.addressSetting == true &&
+            <FormField
+              separator
+              label={this.state.addressSetting}
+              input={
+                <OptionsInputDropdown
+                  name="options"
+                  placeholder="Enter an option"
+                  onChange={this.changeField}
+                  value={this.state.options}
+                  input={this.state.optionsInput}
+                  validator={this.isAddress}
+                  error={this.state.addressError}
+                  entities={this.props.entities}
+                />
+              }
+            />
+          }
+          {this.state.addressSetting == false &&
+            <FormField
+              separator
+              label={this.state.addressSetting}
+              input={
+                <OptionsInput
+                  name="options"
+                  placeholder="Enter an option"
+                  onChange={this.changeField}
+                  value={this.state.options}
+                  input={this.state.optionsInput}
+                  validator={this.isAddress}
+                  error={this.state.addressError}
+                />
+              }
+            />
+          }
+          
         </Form>
         <div>
           {this.state.allocationError && (
-            <Info title="Error">
-              Amount must be less than limit.
-            </Info>
+              <Info title="Error">
+                Amount must be less than limit.
+              </Info>
           )}
           {this.state.addressError && (
             <Info title="Error">
