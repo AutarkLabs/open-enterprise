@@ -93,7 +93,7 @@ contract('Allocations App', accounts => {
     //   receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
     // )
 
-    await app.initialize({ from: accounts[0] })
+    await app.initialize( 0x0, { from: accounts[0] })
   })
 
   context('app creation and funded Payout', () => {
