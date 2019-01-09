@@ -247,7 +247,7 @@ class App extends React.PureComponent {
       issues.map(issue => issue.repo)
     )
     console.log(issues)
-    console.log("Repos:", this.props.repos)
+    console.log('Repos:', this.props.repos)
     const emptyIntArray = new Array(issues.length).fill(0)
     this.props.app.curateIssues(
       emptyIntArray,

@@ -96,12 +96,17 @@ class NewBountyAllocation extends React.Component {
 
   render() {
     const bountyHours = ['-', '5', '10', '15']
-    const bountyExp = ['-', 'beginner', 'expert']
+    const bountyExp = [{name: '-', mul: 1}]
     const bountyDeadline = ['-', 'yesterday', 'last week']
     const bountyAvail = ['-', '1', '2', '3']
     const { bounties } = this.state
-    const { baseRate } = this.props
-    console.log('bounties: ', bounties, ', baseRate: ', baseRate)
+    const { bountySettings } = this.props
+
+    const rate = bountySettings.baseRate / 100
+    let a = bountySettings.expLevels.split('\t')
+    for (let i = 0; i < a.length; i += 2) bountyExp.push({mul: a[i] / 100, name: a[i+1]})
+
+    console.log('bounties: ', bounties, ', bountySettings: ', bountySettings)
     return (
       <Form
         onSubmit={this.props.onSubmit}
@@ -131,9 +136,9 @@ class NewBountyAllocation extends React.Component {
                       <IBMain>
                         <IssueBounty>
                           <IBArrow onClick={this.generateArrowChange(issue.id)}>
-                          {
-                            (bounties[issue.id]['detailsOpen'] ? <IconBigArrowUp /> : <IconBigArrowDown />)
-                          }
+                            {
+                              (bounties[issue.id]['detailsOpen'] ? <IconBigArrowUp /> : <IconBigArrowDown />)
+                            }
                           </IBArrow>
                           <IBTitle size='normal' weight="bold">{issue.title}</IBTitle>
                           <IBHours>
@@ -150,8 +155,13 @@ class NewBountyAllocation extends React.Component {
                             {
                               (issue.id in bounties && bounties[issue.id]['hours'] > 0) && (
                                 <IBValueShow>
-                                  <FieldTitle>$100</FieldTitle>
-                                  <Badge>10 ANT</Badge>
+                                  <FieldTitle></FieldTitle>
+                                  <Badge>{
+                                    bounties[issue.id]['hours'] * rate * bountyExp[bounties[issue.id]['exp']].mul
+                                  } {
+                                    bountySettings.bountyCurrency
+                                  }
+                                  </Badge>
                                 </IBValueShow>
                               )
                             }
@@ -163,7 +173,7 @@ class NewBountyAllocation extends React.Component {
                               label="Experience level"
                               input={
                                 <DropDown
-                                  items={bountyExp}
+                                  items={bountyExp.map(exp => exp.name)}
                                   onChange={this.generateExpChange(issue.id)}
                                   active={bounties[issue.id]['exp']}
                                 />
