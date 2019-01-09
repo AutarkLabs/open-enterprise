@@ -274,7 +274,7 @@ class App extends React.PureComponent {
 
   render() {
     const { activeIndex, panel, panelProps } = this.state
-    const { client } = this.props
+    const { client, bountySettings } = this.props
     return (
       <ErrorBoundary>
         <StyledAragonApp publicUrl={ASSETS_URL}>
@@ -283,6 +283,7 @@ class App extends React.PureComponent {
             <AppContent
               app={this.props.app}
               projects={this.props.repos !== undefined ? this.props.repos : []}
+              bountySettings={bountySettings !== undefined ? bountySettings : {}}
               onNewProject={this.newProject}
               onNewIssue={this.newIssue}
               onCurateIssues={this.curateIssues}
