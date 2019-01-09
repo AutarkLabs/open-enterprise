@@ -155,8 +155,8 @@ class NewBountyAllocation extends React.Component {
                             {
                               (issue.id in bounties && bounties[issue.id]['hours'] > 0) && (
                                 <IBValueShow>
-                                  <FieldTitle></FieldTitle>
-                                  <Badge>{
+                                  <FieldTitle>Bounty Value</FieldTitle>
+                                  <Badge style={{marginLeft: '5px'}}>{
                                     bounties[issue.id]['hours'] * rate * bountyExp[bounties[issue.id]['exp']].mul
                                   } {
                                     bountySettings.bountyCurrency
@@ -229,7 +229,7 @@ const IBMain = styled.div`
 const IssueBounty = styled.div`
   clear: all;
   display: grid;
-  grid-template-columns: 41px 159px auto;
+  grid-template-columns: 41px 173px 173px;
   grid-template-rows: auto;
   grid-template-areas:
     "arrow title title"
@@ -248,7 +248,7 @@ const IBExp = styled.div`
 `
 const IBDetails = styled.div`
   display: ${({ open }) => (open ? 'grid' : 'none')};
-  grid-template-columns: 41px 159px auto;
+  grid-template-columns: 41px 173px 173px;
   grid-template-rows: auto;
   grid-template-areas:
     ".     exp   dline"
@@ -269,7 +269,6 @@ const IBValueShow = styled.div`
     justify-content: center;
   > :first-child {
     height: 40px;
-    width: 45px;
     line-height: 40px;
   }
   > :last-child {
