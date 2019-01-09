@@ -3,7 +3,6 @@ import React from 'react'
 import styled from 'styled-components'
 
 import {
-//  Button,
   Field,
   Text,
   TextInput,
@@ -18,6 +17,8 @@ import {
   FormField,
   FieldTitle,
 } from '../../Form'
+
+import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
 
 class NewBountyAllocation extends React.Component {
   static propTypes = {
@@ -129,10 +130,11 @@ class NewBountyAllocation extends React.Component {
                     <Cell>
                       <IBMain>
                         <IssueBounty>
-                          <IBArrow
-                            direction={bounties[issue.id]['detailsOpen']}
-                            onClick={this.generateArrowChange(issue.id)}
-                          >></IBArrow>
+                          <IBArrow onClick={this.generateArrowChange(issue.id)}>
+                          {
+                            (bounties[issue.id]['detailsOpen'] ? <IconBigArrowUp /> : <IconBigArrowDown />)
+                          }
+                          </IBArrow>
                           <IBTitle size='normal' weight="bold">{issue.title}</IBTitle>
                           <IBHours>
                             <IBHoursInput>
@@ -267,9 +269,6 @@ margin: 10px 0px;
 const IBArrow = styled.div`
   grid-area: arrow;
   place-self: center;
-  transform: ${({ direction }) => (direction ? 'rotate(-90deg)' : 'rotate(90deg)')};
-  font-size: 17px;
-  line-height: 17px;
 `
 const IBHoursInput = styled.div`
   display: inline-flex;
