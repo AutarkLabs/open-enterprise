@@ -238,6 +238,7 @@ const IssueBounty = styled.div`
 const IBTitle = styled(Text)`
     grid-area: title;
     line-height: 42px;
+    padding-top: 6px;
 }
 `
 const IBHours = styled.div`
