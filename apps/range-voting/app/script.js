@@ -41,11 +41,11 @@ async function handleEvents(response) {
     let funcSig = response.returnValues.funcSig
     console.info('[RangeVoting > script]: received ExternalContract', funcSig)
     // Should actually be a case-switch
-    if(funcSig == "f1d12a23"){
-      console.log("Loading Projects Data")
+    if(funcSig == 'f1d12a23'){
+      console.log('Loading Projects Data')
       resolve(loadVoteDataProjects(voteData, voteId))
     } else {
-      console.log("Loading Allocations Contract")
+      console.log('Loading Allocations Contract')
       allocations = app.external(response.returnValues.addr, AllocationJSON.abi)
     }
   default:
@@ -119,18 +119,18 @@ async function loadVoteData(voteId) {
   let vote
   return new Promise((resolve, reject) => {
     app
-    .call('getVote', voteId)
-    .first()
-    .subscribe(voteData => {
-      let funcSig = voteData.executionScript.slice(58, 66)
-      if(funcSig == "f1d12a23"){
-        console.log("Loading Projects Data")
-        resolve(loadVoteDataProjects(voteData, voteId))
-      } else {
-        console.log("Loading Allocations Data")
-        resolve(loadVoteDataAllocation(voteData, voteId))
-      }
-    })
+      .call('getVote', voteId)
+      .first()
+      .subscribe(voteData => {
+        let funcSig = voteData.executionScript.slice(58, 66)
+        if(funcSig == 'f1d12a23'){
+          console.log('Loading Projects Data')
+          resolve(loadVoteDataProjects(voteData, voteId))
+        } else {
+          console.log('Loading Allocations Data')
+          resolve(loadVoteDataAllocation(voteData, voteId))
+        }
+      })
   })
 }
 // These functions arn't DRY make them better
@@ -141,34 +141,34 @@ async function loadVoteDataAllocation(vote, voteId) {
       app.call('getCandidateLength', voteId),
       app.call('canExecute', voteId)
     )
-    .first()
-    .subscribe(([metadata, totalCandidates, canExecute, payout]) => {
-      loadVoteDescription(vote).then(async vote => {
-        let options = []
-        for (let i = 0; i < totalCandidates; i++) {
-          let candidateData = await getAllocationCandidate(voteId, i)
-          console.log(candidateData)
-          options.push(candidateData)
-        }
-        let returnObject = {
-          ...marshallVote(vote),
-          metadata,
-          canExecute,
-          options: options
-        }
-        allocations
-          .getPayout(vote.externalId)
-          .first()
-          .subscribe((payout) => {
-            resolve({
-              ...returnObject,
-              limit: parseInt(payout.limit, 10),
-              balance: parseInt(vote.executionScript.slice(450, 514), 16),
-              metadata: payout.metadata
+      .first()
+      .subscribe(([metadata, totalCandidates, canExecute, payout]) => {
+        loadVoteDescription(vote).then(async vote => {
+          let options = []
+          for (let i = 0; i < totalCandidates; i++) {
+            let candidateData = await getAllocationCandidate(voteId, i)
+            console.log(candidateData)
+            options.push(candidateData)
+          }
+          let returnObject = {
+            ...marshallVote(vote),
+            metadata,
+            canExecute,
+            options: options
+          }
+          allocations
+            .getPayout(vote.externalId)
+            .first()
+            .subscribe((payout) => {
+              resolve({
+                ...returnObject,
+                limit: parseInt(payout.limit, 10),
+                balance: parseInt(vote.executionScript.slice(450, 514), 16),
+                metadata: payout.metadata
+              })
             })
-          })
+        })
       })
-    })
   )
 }
 // These functions arn't DRY make them better
@@ -179,28 +179,28 @@ async function loadVoteDataProjects(vote, voteId) {
       app.call('getCandidateLength', voteId),
       app.call('canExecute', voteId)
     )
-    .first()
-    .subscribe(([metadata, totalCandidates, canExecute]) => {
-      console.log("projects data:", metadata, totalCandidates, canExecute)
-      loadVoteDescription(vote).then(async vote => {
-        let options = []
-        console.log("Vote data:", voteId, vote)
-        for (let i = 0; i < totalCandidates; i++) {
-          let candidateData = await getProjectCandidate(voteId, i)
-          console.log("candidate data",candidateData)
-          options.push(candidateData)
-        }
-        console.log(metadata)
-        let returnObject = {
-          ...marshallVote(vote),
-          metadata,
-          canExecute,
-          options: options
-        }
-        resolve(returnObject)
+      .first()
+      .subscribe(([metadata, totalCandidates, canExecute]) => {
+        console.log('projects data:', metadata, totalCandidates, canExecute)
+        loadVoteDescription(vote).then(async vote => {
+          let options = []
+          console.log('Vote data:', voteId, vote)
+          for (let i = 0; i < totalCandidates; i++) {
+            let candidateData = await getProjectCandidate(voteId, i)
+            console.log('candidate data',candidateData)
+            options.push(candidateData)
+          }
+          console.log(metadata)
+          let returnObject = {
+            ...marshallVote(vote),
+            metadata,
+            canExecute,
+            options: options
+          }
+          resolve(returnObject)
         // Project specific code
+        })
       })
-    })
   )
 }
 

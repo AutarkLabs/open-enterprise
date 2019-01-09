@@ -165,12 +165,12 @@ class NewAllocation extends React.Component {
             label="Settings"
             input={
               <div>
-              <SettingsInput
-                name="balanceSetting"
-                text="Must vote with entire balance"
-                onChange={this.changeField}
-              />
-              {this.props.entities.length > 0 && 
+                <SettingsInput
+                  name="balanceSetting"
+                  text="Must vote with entire balance"
+                  onChange={this.changeField}
+                />
+                {this.props.entities.length > 0 && 
               <SettingsInput
                 name="addressSetting"
                 text="Use address book for options"
@@ -253,9 +253,9 @@ class NewAllocation extends React.Component {
         </Form>
         <div>
           {this.state.allocationError && (
-              <Info title="Error">
+            <Info title="Error">
                 Amount must be less than limit.
-              </Info>
+            </Info>
           )}
           {this.state.addressError && (
             <Info title="Error">
