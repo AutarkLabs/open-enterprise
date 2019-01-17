@@ -14,6 +14,9 @@ import React from 'react'
 import styled from 'styled-components'
 import { Empty } from '../Card'
 import isAddress from 'web3-utils'
+import icon from '../../assets/copy.svg'
+
+const CopyIcon = () => <img src={icon} alt="Copy address to the clipboard" />
 
 // TODO: colors taken directly from Invision
 const ENTITY_TYPES = [
@@ -44,6 +47,7 @@ const Entities = ({ entities, onNewEntity, onRemoveEntity }) => {
               <EntityCell>
                 <EntityWrapper>
                   <Text>{ent.name}</Text>
+                  <div style={{ display: 'flex' }}>
                   <SafeLink
                     style={{ color: '#21AAE7' }}
                     // TODO: Populate the rinkeby depending on the deployment network. TIP: use href.location for that
@@ -55,6 +59,15 @@ const Entities = ({ entities, onNewEntity, onRemoveEntity }) => {
                   >
                     {ent.entryAddress}
                   </SafeLink>
+                    <span
+                      onClick={() => {
+                        navigator.clipboard.writeText(ent.entryAddress)
+                      }}
+                      style={{ marginLeft: '.5rem', cursor: 'pointer' }}
+                    >
+                      <CopyIcon />
+                    </span>
+                  </div>
                 </EntityWrapper>
               </EntityCell>
               <EntityCell align="center">
