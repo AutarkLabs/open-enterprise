@@ -170,7 +170,11 @@ class App extends React.PureComponent {
     console.info('App.js: createProject', project)
     this.closePanel()
     // this.setState({})
-    console.log('projects props:', web3.toHex(owner).toString(), web3.toHex(project).toString())
+    console.log(
+      'projects props:',
+      web3.toHex(owner).toString(),
+      web3.toHex(project).toString()
+    )
     // console.log('hex:', window.web3.toHex('MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5'))
 
     console.log(this.props.app.addRepo(web3.toHex(owner), web3.toHex(project)))
@@ -234,10 +238,10 @@ class App extends React.PureComponent {
     var issuesTitles = issues.map(issue => issue.title)
     var issueIndicies = []
     issues.map((issue, i, indicies) => {
-      if(i == 0){
+      if (i == 0) {
         return issues[i].title.length
       }
-      return indicies[i-1] + issues[i].title.length
+      return indicies[i - 1] + issues[i].title.length
     })
     console.log(
       'Ready to curate these issues from the contract:',

@@ -40,13 +40,12 @@ class TemplateContent extends React.PureComponent {
   render() {
     return (
       <React.Fragment>
-        <Title>
-            Create multi-option vote
-        </Title>
+        <Title>Create multi-option vote</Title>
 
         <Subtitle>
-            A way to gather votes and opinions on questions that have multiple options.
-            Choose a template to get started quickly. Don't worry - you can change it later.
+          A way to gather votes and opinions on questions that have multiple
+          options. Choose a template to get started quickly. Don't worry - you
+          can change it later.
         </Subtitle>
         <Templates>
           {[...this.props.templates.entries()].map(

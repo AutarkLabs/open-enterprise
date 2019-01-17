@@ -161,20 +161,20 @@ function loadRepoData(id) {
     console.log('loadRepoData Promise entered: ' + id)
     combineLatest(app.call('getRepo', id)).subscribe(([{ _owner, _repo }]) => {
       let [owner, repo] = [toAscii(_owner), toAscii(_repo)]
-      getRepoData(repo).then(
-        ({node}) => {
+      getRepoData(repo).then(({ node }) => {
           let commits = node.defaultBranchRef ? node.defaultBranchRef.commits : 0
-          let description = node.description ? node.description : '(no description available)'
+        let description = node.description
+          ? node.description
+          : '(no description available)'
           let metadata = {
             name: node.name,
             description: node.description,
             collaborators: node.collaborators.totalCount,
             commits,
-            id
+          id,
           }
           resolve({ owner, repo, metadata })
-        }
-      )
+      })
     })
   })
 }
