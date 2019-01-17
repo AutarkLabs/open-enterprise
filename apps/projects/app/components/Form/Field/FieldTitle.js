@@ -3,7 +3,7 @@ import { Text, theme, unselectable } from '@aragon/ui'
 
 const FieldTitle = styled(Text.Block)`
   ${unselectable};
-  color: ${theme.textSecondary};
+  color: ${theme.textTertiary};
   text-transform: lowercase;
   font-variant: small-caps;
   font-weight: bold;

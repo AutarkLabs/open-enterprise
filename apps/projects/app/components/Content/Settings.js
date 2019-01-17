@@ -33,9 +33,9 @@ class Settings extends React.Component {
       expLevels: [],
     }
 
-    let found = bountyCurrencies.findIndex(el => el == s.bountyCurrency)
+    let found = bountyCurrencies.findIndex(el => el === s.bountyCurrency)
 
-    if (found == -1) {
+    if (found === -1) {
       bountyCurrencies.push(s.bountyCurrency)
       n.bountyCurrency = bountyCurrencies.length - 1
     } else n.bountyCurrency = found
@@ -125,7 +125,6 @@ class Settings extends React.Component {
   }
 
   render() {
-    const {
       baseRate,
       expLevels,
       bountyCurrency,
@@ -134,9 +133,6 @@ class Settings extends React.Component {
       bountyAllocator,
       bountyArbiter,
     } = this.state
-
-    //console.log('SETTINGS RENDER PROPS: ', this.props.bountySettings)
-    //console.log('SETTINGS RENDER STATE: ', this.state)
 
     // TODO: hourglass in case settings are still being loaded
     if (!('baseRate' in this.props.bountySettings))

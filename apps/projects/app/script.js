@@ -133,9 +133,15 @@ async function handleEvents(response) {
     nextState = await syncRepos(appState, response.returnValues)
     console.log('BountyAdded Received', response.returnValues, nextState)
     break
-  case 'BountySettingsChanged':
-    app.cache('bountySettings', response.returnValues)
-    nextState = { ...appState, bountySettings: response.returnValues }
+    case 'BountySettingsChanged':
+      // Old:
+// <<<<<<< HEAD
+//     app.cache('bountySettings', response.returnValues)
+//     nextState = { ...appState, bountySettings: response.returnValues }
+// =======
+    let settings = await syncSettings(appState)
+    console.log('BountySettingsChanged to ', settings)
+    app.cache('bountySettings', settings)
     break
   default:
     console.log('Unknown event catched:', response)
@@ -154,6 +160,15 @@ async function syncRepos(state, { repoId, ...eventArgs }) {
     return updatedState
   } catch (err) {
     console.error('updateState failed to return:', err)
+  }
+}
+
+async function syncSettings(state) {
+  try {
+    let settings = await loadSettings()
+    return settings
+  } catch (err) {
+    console.error(' failed to return:', err)
   }
 }
 
@@ -182,6 +197,14 @@ function loadRepoData(id) {
         }
         resolve({ owner, repo, metadata })
       })
+    })
+  })
+}
+
+function loadSettings() {
+  return new Promise(resolve => {
+    combineLatest(app.call('getSettings')).subscribe(([settings]) => {
+      resolve(settings)
     })
   })
 }

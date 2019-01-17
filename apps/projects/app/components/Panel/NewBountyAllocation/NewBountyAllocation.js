@@ -3,21 +3,21 @@ import React from 'react'
 import styled from 'styled-components'
 
 import {
-//  Button,
   Field,
   Text,
   TextInput,
   DropDown,
   theme,
   Badge,
-  Table, TableHeader, TableRow, TableCell
+  Table,
+  TableHeader,
+  TableRow,
+  TableCell,
 } from '@aragon/ui'
 
-import {
-  Form,
-  FormField,
-  FieldTitle,
-} from '../../Form'
+import { Form, FormField, FieldTitle } from '../../Form'
+
+import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
 
 class NewBountyAllocation extends React.Component {
   static propTypes = {
@@ -46,7 +46,7 @@ class NewBountyAllocation extends React.Component {
         exp: 0,
         deadline: 0,
         avail: 0,
-        detailsOpen: 0
+        detailsOpen: 0,
       }
     })
     this.state = {
@@ -64,7 +64,7 @@ class NewBountyAllocation extends React.Component {
     } else {
       bounties[id][key] = val
     }
-    this.setState({bounties})
+    this.setState({ bounties })
     console.log('configBounty: ', bounties)
   }
 
@@ -95,19 +95,31 @@ class NewBountyAllocation extends React.Component {
 
   render() {
     const bountyHours = ['-', '5', '10', '15']
-    const bountyExp = ['-', 'beginner', 'expert']
+    const bountyExp = [{ name: '-', mul: 1 }]
     const bountyDeadline = ['-', 'yesterday', 'last week']
     const bountyAvail = ['-', '1', '2', '3']
     const { bounties } = this.state
-    const { baseRate } = this.props
-    console.log('bounties: ', bounties, ', baseRate: ', baseRate)
+    // OLD conflicting code
+    // <<<<<<< HEAD
+    //     const { baseRate } = this.props
+    //     console.log('bounties: ', bounties, ', baseRate: ', baseRate)
+    // =======
+    const { bountySettings } = this.props
+
+    const rate = bountySettings.baseRate / 100
+    let a = bountySettings.expLevels.split('\t')
+    for (let i = 0; i < a.length; i += 2)
+      bountyExp.push({ mul: a[i] / 100, name: a[i + 1] })
+
+    console.log('bounties: ', bounties, ', bountySettings: ', bountySettings)
     return (
       <Form
         onSubmit={this.props.onSubmit}
         description={this.props.description}
         submitText="Submit Bounty Allocation"
       >
-        <FormField label="Description"
+        <FormField
+          label="Description"
           required
           input={
             <TextInput.Multiline
@@ -118,87 +130,95 @@ class NewBountyAllocation extends React.Component {
             />
           }
         />
-        <FormField label="Issues"
+        <FormField
+          label="Issues"
           hint="Enter the estimated hours per issue"
           required
           input={
             <Table>
-              {
-                this.props.issues.map(issue => (
-                  <TableRow key={issue.id}>
-                    <Cell>
-                      <IBMain>
-                        <IssueBounty>
-                          <IBArrow
-                            direction={bounties[issue.id]['detailsOpen']}
-                            onClick={this.generateArrowChange(issue.id)}
-                          >></IBArrow>
-                          <IBTitle size='normal' weight="bold">{issue.title}</IBTitle>
-                          <IBHours>
-                            <IBHoursInput>
-                              <FieldTitle>Hours</FieldTitle>
+              {this.props.issues.map(issue => (
+                <TableRow key={issue.id}>
+                  <Cell>
+                    <IBMain>
+                      <IssueBounty>
+                        <IBArrow onClick={this.generateArrowChange(issue.id)}>
+                          {bounties[issue.id]['detailsOpen'] ? (
+                            <IconBigArrowUp />
+                          ) : (
+                            <IconBigArrowDown />
+                          )}
+                        </IBArrow>
+                        <IBTitle size="normal" weight="bold">
+                          {issue.title}
+                        </IBTitle>
+                        <IBHours>
+                          <IBHoursInput>
+                            <FieldTitle>Hours</FieldTitle>
+                            <DropDown
+                              items={bountyHours}
+                              onChange={this.generateHoursChange(issue.id)}
+                              active={bounties[issue.id]['hours']}
+                            />
+                          </IBHoursInput>
+                        </IBHours>
+                        <IBValue>
+                          {issue.id in bounties &&
+                            bounties[issue.id]['hours'] > 0 && (
+                            <IBValueShow>
+                              <FieldTitle>Bounty Value</FieldTitle>
+                              <Badge style={{ marginLeft: '5px' }}>
+                                {bounties[issue.id]['hours'] *
+                                    rate *
+                                    bountyExp[bounties[issue.id]['exp']]
+                                      .mul}{' '}
+                                {bountySettings.bountyCurrency}
+                              </Badge>
+                            </IBValueShow>
+                          )}
+                        </IBValue>
+                      </IssueBounty>
+                      <IBDetails open={bounties[issue.id]['detailsOpen']}>
+                        <IBExp>
+                          <FormField
+                            label="Experience level"
+                            input={
                               <DropDown
-                                items={bountyHours}
-                                onChange={this.generateHoursChange(issue.id)}
-                                active={bounties[issue.id]['hours']}
+                                items={bountyExp.map(exp => exp.name)}
+                                onChange={this.generateExpChange(issue.id)}
+                                active={bounties[issue.id]['exp']}
                               />
-                            </IBHoursInput>
-                          </IBHours>
-                          <IBValue>
-                            {
-                              (issue.id in bounties && bounties[issue.id]['hours'] > 0) && (
-                                <IBValueShow>
-                                  <FieldTitle>$100</FieldTitle>
-                                  <Badge>10 ANT</Badge>
-                                </IBValueShow>
-                              )
                             }
-                          </IBValue>
-                        </IssueBounty>
-                        <IBDetails open={bounties[issue.id]['detailsOpen']}>
-                          <IBExp>
-                            <FormField
-                              label="Experience level"
-                              input={
-                                <DropDown
-                                  items={bountyExp}
-                                  onChange={this.generateExpChange(issue.id)}
-                                  active={bounties[issue.id]['exp']}
-                                />
-                              }
-                            />
-                          </IBExp>
-                          <IBDeadline>
-                            <FormField
-                              label="Deadline"
-                              input={
-                                <DropDown
-                                  items={bountyDeadline}
-                                  onChange={this.generateDeadlineChange(issue.id)}
-                                  active={bounties[issue.id]['deadline']}
-                                />
-                              }
-                            />
-                          </IBDeadline>
-                          <IBAvail>
-                            <FormField
-                              label="Num. Available"
-                              input={
-                                <DropDown
-                                  items={bountyAvail}
-                                  onChange={this.generateAvailChange(issue.id)}
-                                  active={bounties[issue.id]['avail']}
-                                />
-                              }
-                            />
-                          </IBAvail>
-                        </IBDetails>
-                      </IBMain>
-                    </Cell>
-                  </TableRow>
-                )
-                )
-              }
+                          />
+                        </IBExp>
+                        <IBDeadline>
+                          <FormField
+                            label="Deadline"
+                            input={
+                              <DropDown
+                                items={bountyDeadline}
+                                onChange={this.generateDeadlineChange(issue.id)}
+                                active={bounties[issue.id]['deadline']}
+                              />
+                            }
+                          />
+                        </IBDeadline>
+                        <IBAvail>
+                          <FormField
+                            label="Num. Available"
+                            input={
+                              <DropDown
+                                items={bountyAvail}
+                                onChange={this.generateAvailChange(issue.id)}
+                                active={bounties[issue.id]['avail']}
+                              />
+                            }
+                          />
+                        </IBAvail>
+                      </IBDetails>
+                    </IBMain>
+                  </Cell>
+                </TableRow>
+              ))}
             </Table>
           }
         />
@@ -217,36 +237,37 @@ const IBMain = styled.div`
 const IssueBounty = styled.div`
   clear: all;
   display: grid;
-  grid-template-columns: 41px 159px auto;
+  grid-template-columns: 41px 173px 173px;
   grid-template-rows: auto;
   grid-template-areas:
-    "arrow title title"
-    "arrow hours value";
+    'arrow title title'
+    'arrow hours value';
 `
 const IBTitle = styled(Text)`
     grid-area: title;
     line-height: 42px;
+    padding-top: 6px;
 }
 `
 const IBHours = styled.div`
-    grid-area: hours;
+  grid-area: hours;
 `
 const IBExp = styled.div`
-    grid-area: exp;
+  grid-area: exp;
 `
 const IBDetails = styled.div`
   display: ${({ open }) => (open ? 'grid' : 'none')};
-  grid-template-columns: 41px 159px auto;
+  grid-template-columns: 41px 173px 173px;
   grid-template-rows: auto;
   grid-template-areas:
-    ".     exp   dline"
-    ".     avail .    ";
+    '.     exp   dline'
+    '.     avail .    ';
 `
 const IBDeadline = styled.div`
-    grid-area: dline;
+  grid-area: dline;
 `
 const IBAvail = styled.div`
-    grid-area: avail;
+  grid-area: avail;
 `
 const IBValue = styled.div`
   grid-area: value;
@@ -254,22 +275,18 @@ const IBValue = styled.div`
 const IBValueShow = styled.div`
   display: inline-flex;
   position: relative;
-    justify-content: center;
+  justify-content: center;
   > :first-child {
     height: 40px;
-    width: 45px;
     line-height: 40px;
   }
   > :last-child {
-margin: 10px 0px;
+    margin: 10px 0px;
   }
 `
 const IBArrow = styled.div`
   grid-area: arrow;
   place-self: center;
-  transform: ${({ direction }) => (direction ? 'rotate(-90deg)' : 'rotate(90deg)')};
-  font-size: 17px;
-  line-height: 17px;
 `
 const IBHoursInput = styled.div`
   display: inline-flex;
