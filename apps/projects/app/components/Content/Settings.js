@@ -1,16 +1,11 @@
 import React from 'react'
 import styled from 'styled-components'
-// import { theme, Field, TextInput, Button, Info } from '@aragon/ui'
 import { DropDown, Button, Text, Field, TextInput, theme } from '@aragon/ui'
 import NumberFormat from 'react-number-format'
-
-//import { DropDown } from '../Shared'
 
 const bountyDeadlines = ['Weeks', 'Days', 'Hours']
 const bountyDeadlinesMul = [168, 24, 1] // it is one variable in contract, so number * multiplier = hours
 const bountyCurrencies = ['BTC', 'ETH', 'TL', 'ANT', '🦄']
-
-// https://zoom.us/j/5754780405
 
 class Settings extends React.Component {
   state = {}
