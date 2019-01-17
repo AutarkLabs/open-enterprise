@@ -91,9 +91,16 @@ github().subscribe(result => {
 })
 
 bountySettings().subscribe(result => {
-  console.log('bountySettings object received from cache:', result)
+  console.log('script.js bountySettings object received from cache:', result)
+  // TODO: If we don't receive the bountySettings that are hardcoded into the smart contract we should not continue silently, it must be a bad signal
+  // ...So we must break with an error at least, and never create an empty bounty settings object that will generate more problems for sure
+  // TODO: We probably also want to handle clearing the cache
+  // TODO: What is the source of truth for these settings? the contract o the cached values? is not clear at all. the github settings instead just exist in cache.
   if (!result) {
-    app.cache('bountySettings', {})
+    console.error(
+      'Something is wrong and we didn\'t received the expected hardcoded bountySettings from the contract'
+    )
+    // app.cache('bountySettings', {})
   }
 })
 
@@ -162,18 +169,18 @@ function loadRepoData(id) {
     combineLatest(app.call('getRepo', id)).subscribe(([{ _owner, _repo }]) => {
       let [owner, repo] = [toAscii(_owner), toAscii(_repo)]
       getRepoData(repo).then(({ node }) => {
-          let commits = node.defaultBranchRef ? node.defaultBranchRef.commits : 0
+        let commits = node.defaultBranchRef ? node.defaultBranchRef.commits : 0
         let description = node.description
           ? node.description
           : '(no description available)'
-          let metadata = {
-            name: node.name,
-            description: node.description,
-            collaborators: node.collaborators.totalCount,
-            commits,
+        let metadata = {
+          name: node.name,
+          description: node.description,
+          collaborators: node.collaborators.totalCount,
+          commits,
           id,
-          }
-          resolve({ owner, repo, metadata })
+        }
+        resolve({ owner, repo, metadata })
       })
     })
   })

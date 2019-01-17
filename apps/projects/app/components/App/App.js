@@ -286,6 +286,7 @@ class App extends React.PureComponent {
           <ApolloProvider client={client}>
             <AppContent
               app={this.props.app}
+              bountySettings={this.props.bountySettings}
               projects={this.props.repos !== undefined ? this.props.repos : []}
               onNewProject={this.newProject}
               onNewIssue={this.newIssue}
