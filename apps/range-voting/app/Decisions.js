@@ -209,7 +209,7 @@ class Decisions extends React.Component {
               }}
             >
               <EmptyStateCard
-                icon={EmptyIcon}
+                icon={<EmptyIcon />}
                 title="You have not created any range votes."
                 text="Use the Allocations app to get started."
                 actionButton={() => <div />}

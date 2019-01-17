@@ -8,7 +8,7 @@ const EmptyIcon = () => <img src={emptyIcon} alt="" />
 const AddressBook = ({ onActivate }) => (
   <Main>
     <EmptyStateCard
-      icon={EmptyIcon}
+      icon={<EmptyIcon />}
       title="You have not added anyone to the address book."
       text="Get started now by adding a new entity."
       actionText="New Entity"

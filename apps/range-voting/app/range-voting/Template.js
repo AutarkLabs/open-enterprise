@@ -54,7 +54,7 @@ class TemplateContent extends React.PureComponent {
               <TemplateCardWrapper key={i}>
                 <TemplateCard
                   template={template}
-                  icon={icon}
+                  icon={<icon />}
                   label={label}
                   description={description}
                   active={template === this.props.activeTemplate}
