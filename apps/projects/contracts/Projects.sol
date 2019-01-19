@@ -152,20 +152,11 @@ contract Projects is AragonApp {
     event BountySettingsChanged();
 // >>>>>>> upstream/222-projects-v1
 
-    bytes32 public constant CHANGE_BOUNTY_SETTINGS =  keccak256("CHANGE_BOUNTY_SETTINGS");
-
-    bytes32 public constant UPDATE_PROJ_SETTINGS_ROLE = keccak256("UPDATE_PROJ_SETTINGS_ROLE");
-    bytes32 public constant CREATE_CURATION_ROLE = keccak256("CREATE_CURATION_ROLE");
-    bytes32 public constant CREATE_BOUNTY_ROLE =  keccak256("CREATE_BOUNTY_ROLE");
-    bytes32 public constant APPROVE_BOUNTY_ROLE =  keccak256("APPROVE_BOUNTY_ROLE");
-    bytes32 public constant ARBITRATE_BOUNTY_ROLE = keccak256("ARBITRATE_BOUNTY_ROLE");
-    bytes32 public constant CREATE_PROJECT_ROLE = keccak256("CREATE_PROJECT_ROLE");
-    bytes32 public constant UPDATE_PROJECT_ROLE =  keccak256("UPDATE_PROJECT_ROLE");
-    bytes32 public constant DELETE_PROJECT_ROLE =  keccak256("DELETE_PROJECT_ROLE");
-    bytes32 public constant ADD_REPO_ROLE = keccak256("ADD_REPO_ROLE");
-    bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
     bytes32 public constant ADD_BOUNTY_ROLE =  keccak256("ADD_BOUNTY_ROLE");
+    bytes32 public constant ADD_REPO_ROLE = keccak256("ADD_REPO_ROLE");
+    bytes32 public constant CHANGE_SETTINGS_ROLE =  keccak256("CHANGE_SETTINGS_ROLE");
     bytes32 public constant CURATE_ISSUES_ROLE = keccak256("CURATE_ISSUES_ROLE");
+    bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
 
     function curateIssues(
         address[] unusedAddresses, 
@@ -201,7 +192,7 @@ contract Projects is AragonApp {
         string bountyCurrency,
         address bountyAllocator,
         address bountyArbiter
-    ) external auth(CHANGE_BOUNTY_SETTINGS)
+    ) external auth(CHANGE_SETTINGS_ROLE)
     {
         // old conflicting code: 
 // <<<<<<< HEAD

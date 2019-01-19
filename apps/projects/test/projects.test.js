@@ -74,27 +74,11 @@ contract('Projects App', accounts => {
       receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
     )
 
-    //create ACL permissions
+    // create ACL permissions
     await acl.createPermission(
       owner1,
       app.address,
-      await app.CREATE_PROJECT_ROLE(),
-      root,
-      { from: root }
-    )
-
-    await acl.createPermission(
-      owner2,
-      app.address,
       await app.ADD_REPO_ROLE(),
-      root,
-      { from: root }
-    )
-
-    await acl.createPermission(
-      bountyAdder,
-      app.address,
-      await app.CREATE_BOUNTY_ROLE(),
       root,
       { from: root }
     )
