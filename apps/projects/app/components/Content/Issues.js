@@ -14,7 +14,7 @@ import {
 } from '@aragon/ui'
 
 import { DropDownButton as ActionsMenu, FilterBar } from '../Shared'
-import { Issue } from '../Card'
+import { Issue, Empty } from '../Card'
 import { GET_ISSUES } from '../../utils/gql-queries.js'
 
 // import ethereumLoadingAnimation from '../Shared/assets/svg/ethereum-loading.svg'
@@ -22,14 +22,84 @@ import { GET_ISSUES } from '../../utils/gql-queries.js'
 class Issues extends React.PureComponent {
   state = {
     selectedIssues: [],
+    allSelected: false,
+    filters: {
+      projects: {},
+      labels: {}, 
+      milestones: {},
+      deadlines: {},
+      experiences: {},
+    },
+    textFilter: '',
+    reload: false
   }
+
   handleCurateIssues = () => {
     this.props.onCurateIssues(this.state.selectedIssues)
   }
 
   handleAllocateBounties = () => {
-    console.log('handleAllocateBounties')
     this.props.onAllocateBounties(this.state.selectedIssues)
+  }
+
+  toggleSelectAll = issuesFiltered => () => {
+    if (this.state.allSelected) {
+      this.setState({ allSelected: false, selectedIssues: [] })
+    } else {
+      this.setState({ allSelected: true, selectedIssues: issuesFiltered })
+    }
+  }
+
+  handleFiltering = filters => {
+    // TODO: why is reload necessary?
+    this.setState({ filters, reload: !this.state.reload })
+  }
+
+  applyFilters = issues => {
+    const { filters, textFilter } = this.state
+    
+    const issuesByProject = issues.filter(issue => {
+      if (Object.keys(filters.projects).length === 0) return true
+      if (Object.keys(filters.projects).indexOf(issue.repository.id) !== -1) return true
+      return false
+    })
+    //console.log('FILTER PROJECT: ', issuesByProject)  
+
+    const issuesByLabel = issuesByProject.filter(issue => {
+      // if there are no labels to filter by, pass all
+      if (Object.keys(filters.labels).length === 0) return true
+      // if labelless issues are allowed, let them pass
+      if (('labelless' in filters.labels) && (issue.labels.totalCount === 0)) return true
+      // otherwise, fail all issues without labels
+      if (issue.labels.totalCount === 0) return false
+      
+      let labelsIds = issue.labels.edges.map(label => label.node.id)
+
+      if (Object.keys(filters.labels).filter(
+        id => labelsIds.indexOf(id) !== -1
+      ).length > 0) return true
+      return false
+    })
+    //console.log('FILTER LABEL: ', issuesByLabel)  
+
+    const issuesByMilestone = issuesByLabel.filter(issue => {
+      // if there are no MS filters, all issues pass
+      if (Object.keys(filters.milestones).length === 0) return true
+      // should issues without milestones pass?
+      if (('milestoneless' in filters.milestones) && (issue.milestone == null)) return true
+      // if issues without milestones should not pass, they are rejected below
+      if (issue.milestone === null) return false
+      if (Object.keys(filters.milestones).indexOf(issue.milestone.id) !== -1) return true
+      return false
+    })
+    //console.log('FILTER MS: ', issuesByMilestone)
+
+    // last but not least, if there is any text in textFilter...
+    if (textFilter) {
+      return issuesByMilestone.filter(issue => issue.title.match(textFilter))
+    }
+
+    return issuesByMilestone
   }
 
   handleIssueSelection = issue => {
@@ -43,8 +113,66 @@ class Issues extends React.PureComponent {
     })
   }
 
+  handleTextFilter = e => {
+    this.setState({ textFilter: e.target.value, reload: !this.state.reload })
+  }
+
+  actionsMenu = () => (
+    <div>
+      <TextInput onChange={this.handleTextFilter} />
+      <ActionsMenu enabled={!!this.state.selectedIssues.length}>
+        <ContextMenuItem
+          onClick={this.handleCurateIssues}
+          style={{ display: 'flex', alignItems: 'flex-start' }}
+        >
+          <div>
+            <IconAdd color={theme.textTertiary} />
+          </div>
+          <ActionLabel>Curate Issues</ActionLabel>
+        </ContextMenuItem>
+        <ContextMenuItem
+          onClick={this.handleAllocateBounties}
+          style={{ display: 'flex', alignItems: 'flex-start' }}
+        >
+          <div style={{ marginLeft: '4px' }}>
+            <IconShare color={theme.textTertiary} />
+          </div>
+          <ActionLabel>Allocate Bounties</ActionLabel>
+        </ContextMenuItem>
+      </ActionsMenu>
+    </div>
+  )
+
+  queryLoading = () => (
+    <StyledIssues>
+      {this.actionsMenu()}
+      <FilterBar handleSelectAll={this.toggleSelectAll} allSelected={false} issues={[]} issuesFiltered={[]} handleFiltering={this.handleFiltering} />
+      <IssuesScrollView>
+        <div>Loading...</div>
+      </IssuesScrollView>
+    </StyledIssues>
+  )
+
+  queryError = (error, refetch) => (
+    <StyledIssues>
+      {this.actionsMenu()}
+      <FilterBar handleSelectAll={this.toggleSelectAll} allSelected={false} issues={[]} issuesFiltered={[]} handleFiltering={this.handleFiltering} />
+      <IssuesScrollView>
+        <div>
+          Error {JSON.stringify(error)}
+          <div>
+            <Button mode="strong" onClick={() => refetch()}>
+              Try refetching?
+            </Button>
+          </div>
+        </div>
+      </IssuesScrollView>
+    </StyledIssues>
+  )
+
   render() {
-    const { projects } = this.props
+    const { projects, onNewProject } = this.props
+    const { allSelected } = this.state
     const reposIds = projects.map(project => project.data.repo)
 
     const flattenIssues = nodes =>
@@ -56,45 +184,34 @@ class Issues extends React.PureComponent {
         repo: name,
       }))
 
-    console.log('current issues props:', this.props, 'and state:', this.state)
+    //console.log('current issues props:', this.props, 'and state:', this.state)
+
+    if (reposIds.length === 0) return <Empty action={onNewProject} />
+
     return (
-      <StyledIssues>
-        <div>
-          <TextInput />
-          {/* // TODO: Here it goes the active filters box */}
-          <ActionsMenu enabled={!!this.state.selectedIssues.length}>
-            <ContextMenuItem
-              onClick={this.handleCurateIssues}
-              style={{ display: 'flex', alignItems: 'flex-start' }}
-            >
-              <div>
-                <IconAdd color={theme.textTertiary} />
-              </div>
-              <ActionLabel>Curate Issues</ActionLabel>
-            </ContextMenuItem>
-            <ContextMenuItem
-              onClick={this.handleAllocateBounties}
-              style={{ display: 'flex', alignItems: 'flex-start' }}
-            >
-              <div style={{ marginLeft: '4px' }}>
-                <IconShare color={theme.textTertiary} />
-              </div>
-              <ActionLabel>Allocate Bounties</ActionLabel>
-            </ContextMenuItem>
-          </ActionsMenu>
-        </div>
-        <FilterBar />
-        {reposIds.length > 0 && (
-          <IssuesScrollView>
-            <Query
-              fetchPolicy="cache-first"
-              query={GET_ISSUES}
-              variables={{ reposIds }}
-              onError={console.error}
-            >
-              {({ data, loading, error, refetch }) => {
-                if (data && data.nodes) {
-                  return shapeIssues(flattenIssues(data.nodes)).map(issue => (
+      <Query
+        fetchPolicy="cache-first"
+        query={GET_ISSUES}
+        variables={{ reposIds }}
+        onError={console.error}
+      >
+
+        {({ data, loading, error, refetch }) => {
+          if (data && data.nodes) {
+            let issues = flattenIssues(data.nodes)
+            let issuesFiltered = this.applyFilters(issues)
+            return (
+              <StyledIssues>
+                {this.actionsMenu()}
+                <FilterBar
+                  handleSelectAll={this.toggleSelectAll(issuesFiltered)}
+                  allSelected={allSelected}
+                  issues={issues}
+                  issuesFiltered={issuesFiltered}
+                  handleFiltering={this.handleFiltering}
+                />
+                <IssuesScrollView>
+                  {shapeIssues(issuesFiltered).map(issue => (
                     <Issue
                       isSelected={this.state.selectedIssues
                         .map(selectedIssue => selectedIssue.id)
@@ -105,35 +222,21 @@ class Issues extends React.PureComponent {
                       key={issue.id}
                       {...issue}
                     />
-                  ))
-                }
-                if (loading) {
-                  return <div>Loading...</div>
-                }
-                if (error) {
-                  console.log(error)
-                  return (
-                    <div>
-                      Error {JSON.stringify(error)}
-                      <div>
-                        <Button mode="strong" onClick={() => refetch()}>
-                          Try refetching?
-                        </Button>
-                      </div>
-                    </div>
-                  )
-                }
-              }}
-            </Query>
-          </IssuesScrollView>
-        )}
-      </StyledIssues>
+                  ))}
+                </IssuesScrollView>
+              </StyledIssues>
+            )} 
+
+          if (loading) return this.queryLoading()
+
+          if (error) return this.queryError(error, refetch)
+        }}
+      </Query>
     )
   }
 }
 
 const StyledIssues = styled.div`
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   padding: 15px 30px;

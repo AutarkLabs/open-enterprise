@@ -114,7 +114,7 @@ class App extends React.PureComponent {
 
   state = {
     repos: [],
-    activeIndex: 0,
+    activeIndex: 1,
   }
 
   componentDidMount() {

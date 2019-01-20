@@ -10,8 +10,25 @@ export const GET_ISSUES = gql`
             id
             title
             repository {
+              id
               name
             }
+            labels(first: 10) {
+              totalCount
+              edges {
+                node {
+                  id
+                  name
+                  description
+                  color
+                }
+              }
+            }
+            milestone {
+              id
+              title
+            }
+            state
           }
         }
       }

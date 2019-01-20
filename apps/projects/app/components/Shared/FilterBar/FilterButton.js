@@ -10,7 +10,6 @@ const FilterButton = styled.div`
   padding: 15px 20px;
   height: 40px;
   margin-left: -1px;
-  margin-top: -1px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
