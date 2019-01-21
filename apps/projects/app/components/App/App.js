@@ -282,7 +282,7 @@ class App extends React.PureComponent {
     return (
       <StyledAragonApp publicUrl={ASSETS_URL}>
         <BaseStyles />
-        <Title text="Projects" shadow />
+        <Title text="Projects" />
         <ApolloProvider client={client}>
           <ErrorBoundary>
             <AppContent
