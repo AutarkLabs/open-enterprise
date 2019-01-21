@@ -20,7 +20,7 @@ const EmptyIcon = () => <img src={emptyIcon} alt="" />
 
 class Decisions extends React.Component {
   static propTypes = {
-    app: PropTypes.object.isRequired
+    app: PropTypes.object.isRequired,
   }
   static defaultProps = {
     pctBase: 100,
@@ -43,22 +43,22 @@ class Decisions extends React.Component {
           options: [
             {
               label: 'not necessarily',
-              value: 12
+              value: 12,
             },
             {
               label: 'possibly',
-              value: 3
+              value: 3,
             },
             {
               label: 'maybe',
-              value: 9
+              value: 9,
             },
             {
               label: 'perhaps',
-              value: 0
-            }
-          ]
-        }
+              value: 0,
+            },
+          ],
+        },
       },
       {
         voteId: 3,
@@ -75,25 +75,25 @@ class Decisions extends React.Component {
           options: [
             {
               label: 'orange',
-              value: 120
+              value: 120,
             },
             {
               label: 'octarine',
-              value: 13
+              value: 13,
             },
             {
               label: 'darkish grey',
-              value: 339
+              value: 339,
             },
             {
               label: 'almost blue',
-              value: 0
-            }
-          ]
-        }
-      }
+              value: 0,
+            },
+          ],
+        },
+      },
     ],
-    voteTime: -1
+    voteTime: -1,
   }
   constructor(props) {
     super(props)
@@ -103,7 +103,7 @@ class Decisions extends React.Component {
       settingsLoaded: true,
       tokenContract: this.getTokenContract(props.tokenAddress),
       voteVisible: false,
-      voteSidebarOpened: false
+      voteSidebarOpened: false,
     }
   }
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -111,12 +111,12 @@ class Decisions extends React.Component {
     // Is this the first time we've loaded the settings?
     if (!settingsLoaded && hasLoadedVoteSettings(nextProps)) {
       this.setState({
-        settingsLoaded: true
+        settingsLoaded: true,
       })
     }
     if (nextProps.tokenAddress !== this.props.tokenAddress) {
       this.setState({
-        tokenContract: this.getTokenContract(nextProps.tokenAddress)
+        tokenContract: this.getTokenContract(nextProps.tokenAddress),
       })
     }
   }
@@ -140,7 +140,7 @@ class Decisions extends React.Component {
     this.setState({
       currentVoteId: voteId,
       voteVisible: true,
-      voteSidebarOpened: false
+      voteSidebarOpened: false,
     })
   }
   handleVote = (voteId, supports) => {
@@ -161,7 +161,7 @@ class Decisions extends React.Component {
       userAccount,
       votes,
       voteTime,
-      tokenAddress
+      tokenAddress,
     } = this.props
     const {
       createVoteVisible,
@@ -169,7 +169,7 @@ class Decisions extends React.Component {
       settingsLoaded,
       tokenContract,
       voteSidebarOpened,
-      voteVisible
+      voteVisible,
     } = this.state
 
     const displayVotes = settingsLoaded && votes.length > 0
@@ -205,11 +205,11 @@ class Decisions extends React.Component {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                height: '100vh'
+                height: '100vh',
               }}
             >
               <EmptyStateCard
-                icon={EmptyIcon}
+                icon={<EmptyIcon />}
                 title="You have not created any range votes."
                 text="Use the Allocations app to get started."
                 actionButton={() => <div />}

@@ -1,23 +1,32 @@
-import { Table, TableHeader, TableRow, TableCell, Text, SafeLink, ContextMenu, ContextMenuItem, Badge } from '@aragon/ui'
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableCell,
+  Text,
+  SafeLink,
+  ContextMenu,
+  ContextMenuItem,
+  Badge,
+} from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { Empty } from '../Card'
 import isAddress from 'web3-utils'
+import icon from '../../assets/copy.svg'
+
+const CopyIcon = () => <img src={icon} alt="Copy address to the clipboard" />
 
 // TODO: colors taken directly from Invision
 const ENTITY_TYPES = [
   { name: 'Individual', fg: '#76A4E5', bg: '#CDECFF' },
   { name: 'Organisation', fg: '#E5B243', bg: '#F6E4B0' },
-  { name: 'Project', fg: '#EE5BF1', bg: '#EDD0F2' }
+  { name: 'Project', fg: '#EE5BF1', bg: '#EDD0F2' },
 ]
 
-const Entities = ({
-  entities,
-  onNewEntity,
-  onRemoveEntity
-}) => {
-  const removeEntity = (eAddress) => () => onRemoveEntity(eAddress)
+const Entities = ({ entities, onNewEntity, onRemoveEntity }) => {
+  const removeEntity = eAddress => () => onRemoveEntity(eAddress)
 
   if (entities.length === 0) {
     return <Empty action={onNewEntity} />
@@ -30,31 +39,52 @@ const Entities = ({
           </TableRow>
         }
       >
-        {
-          entities.map(entity => {
-            var ent = entity.data
-            const eType = ENTITY_TYPES[ent.entryType]
-            return (
-              <TableRow key={ent.entryAddress}>
-                <EntityCell>
-                  <EntityWrapper>
-                    <Text>{ent.name}</Text>
-                    <SafeLink style={{ color: '#21AAE7' }} href={'#'}>
-                      {ent.entryAddress}
-                    </SafeLink>
-                  </EntityWrapper>
-                </EntityCell>
-                <EntityCell align="center">
-                  <Badge foreground={eType.fg} background={eType.bg}>{eType.name}</Badge>
-                </EntityCell>
-                <EntityCell>
-                  <ContextMenu>
-                    <ContextMenuItem onClick={removeEntity(ent.entryAddress)}>Remove</ContextMenuItem>
-                  </ContextMenu>
-                </EntityCell>
-              </TableRow>
-            )})
-        }
+        {entities.map(entity => {
+          var ent = entity.data
+          const eType = ENTITY_TYPES[ent.entryType]
+          return (
+            <TableRow key={ent.entryAddress}>
+              <EntityCell>
+                <EntityWrapper>
+                  <Text>{ent.name}</Text>
+                  <div style={{ display: 'flex' }}>
+                  <SafeLink
+                    style={{ color: '#21AAE7' }}
+                    // TODO: Populate the rinkeby depending on the deployment network. TIP: use href.location for that
+                    href={`https://rinkeby.etherscan.io/address/${
+                      ent.entryAddress
+                    }`}
+                    target="_blank"
+                    title={ent.entryAddress}
+                  >
+                    {ent.entryAddress}
+                  </SafeLink>
+                    <span
+                      onClick={() => {
+                        navigator.clipboard.writeText(ent.entryAddress)
+                      }}
+                      style={{ marginLeft: '.5rem', cursor: 'pointer' }}
+                    >
+                      <CopyIcon />
+                    </span>
+                  </div>
+                </EntityWrapper>
+              </EntityCell>
+              <EntityCell align="center">
+                <Badge foreground={eType.fg} background={eType.bg}>
+                  {eType.name}
+                </Badge>
+              </EntityCell>
+              <EntityCell>
+                <ContextMenu>
+                  <ContextMenuItem onClick={removeEntity(ent.entryAddress)}>
+                    Remove
+                  </ContextMenuItem>
+                </ContextMenu>
+              </EntityCell>
+            </TableRow>
+          )
+        })}
       </Table>
     )
   }
@@ -63,7 +93,7 @@ const Entities = ({
 Entities.propTypes = {
   entities: PropTypes.array.isRequired,
   onNewEntity: PropTypes.func.isRequired,
-  onRemoveEntity: PropTypes.func.isRequired
+  onRemoveEntity: PropTypes.func.isRequired,
 }
 
 const EntityCell = styled(TableCell)`
@@ -75,4 +105,3 @@ const EntityWrapper = styled.div`
   margin-left: 10px;
 `
 export default Entities
-

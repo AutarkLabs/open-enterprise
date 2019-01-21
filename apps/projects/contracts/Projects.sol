@@ -86,8 +86,7 @@ contract Projects is AragonApp {
     BountySettings settings;
 
     struct GithubRepo {
-        bytes32 owner;  // repo owner's address
-        bytes32 repo;  // Github repo id int that is stringified
+        bytes20 owner; // repo owner's id on github
         mapping(uint256 => GithubIssue) issues;
         uint index;
     }
@@ -102,18 +101,20 @@ contract Projects is AragonApp {
         uint standardBountyId;
     }
 
-    // The entries in the registry.
-    mapping(bytes32 => GithubRepo) repos;
+    // The entries in the repos registry.
+    mapping(bytes32 => GithubRepo) private repos;
 
-    // Gives us an array so we can actually iterate
-    bytes32[] repoIds;
+    // Gives us a repos array so we can actually iterate
+    bytes32[] private repoIndex;
 
     // Fired when a repository is added to the registry.
-    event RepoAdded(bytes32 repoId);
+    event RepoAdded(bytes32 indexed repoId, bytes20 owner, uint index);
     // Fired when a repository is removed from the registry.
-    event RepoRemoved(bytes32 repoId);
+    event RepoRemoved(bytes32 indexed repoId, uint index);
+    // Fired when a repo is updated in the registry
+    event RepoUpdated(bytes32 indexed repoId, bytes20 newOwner, uint newIndex);
     // Fired when a bounty is added to a repo
-    event BountyAdded(bytes32 owner, bytes32 repoId, uint256 issueNumber, uint256 bountySize);
+    event BountyAdded(bytes20 owner, bytes32 repoId, uint256 issueNumber, uint256 bountySize);
     // Fired when an issue is curated
     event IssueCurated(bytes32 repo, uint256 issueNumber, uint256 priority);
     // Fired when fulfillment is accepted
@@ -121,20 +122,11 @@ contract Projects is AragonApp {
     // Fired when settings are changed
     event BountySettingsChanged();
 
-    bytes32 public constant CHANGE_BOUNTY_SETTINGS =  keccak256("CHANGE_BOUNTY_SETTINGS");
-
-    bytes32 public constant UPDATE_PROJ_SETTINGS_ROLE = keccak256("UPDATE_PROJ_SETTINGS_ROLE");
-    bytes32 public constant CREATE_CURATION_ROLE = keccak256("CREATE_CURATION_ROLE");
-    bytes32 public constant CREATE_BOUNTY_ROLE =  keccak256("CREATE_BOUNTY_ROLE");
-    bytes32 public constant APPROVE_BOUNTY_ROLE =  keccak256("APPROVE_BOUNTY_ROLE");
-    bytes32 public constant ARBITRATE_BOUNTY_ROLE = keccak256("ARBITRATE_BOUNTY_ROLE");
-    bytes32 public constant CREATE_PROJECT_ROLE = keccak256("CREATE_PROJECT_ROLE");
-    bytes32 public constant UPDATE_PROJECT_ROLE =  keccak256("UPDATE_PROJECT_ROLE");
-    bytes32 public constant DELETE_PROJECT_ROLE =  keccak256("DELETE_PROJECT_ROLE");
-    bytes32 public constant ADD_REPO_ROLE = keccak256("ADD_REPO_ROLE");
-    bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
     bytes32 public constant ADD_BOUNTY_ROLE =  keccak256("ADD_BOUNTY_ROLE");
+    bytes32 public constant ADD_REPO_ROLE = keccak256("ADD_REPO_ROLE");
+    bytes32 public constant CHANGE_SETTINGS_ROLE =  keccak256("CHANGE_SETTINGS_ROLE");
     bytes32 public constant CURATE_ISSUES_ROLE = keccak256("CURATE_ISSUES_ROLE");
+    bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
 
     function curateIssues(
         address[] unusedAddresses, 
@@ -170,7 +162,7 @@ contract Projects is AragonApp {
         string bountyCurrency,
         address bountyAllocator,
         address bountyArbiter
-    ) external auth(CHANGE_BOUNTY_SETTINGS)
+    ) external auth(CHANGE_SETTINGS_ROLE)
     {
         _changeBountySettings(expLevels, baseRate, bountyDeadline, bountyCurrency, bountyAllocator, bountyArbiter);
     }
@@ -194,19 +186,19 @@ contract Projects is AragonApp {
     /**
      * @notice Get registry size.
      */
-    function getRepoArrayLength() external view returns (uint256) {
-        return repoIds.length;
+    function getReposCount() external view returns (uint count) {
+        return repoIndex.length;
     }
 
     /**
      * @notice Get an entry from the registry.
      * @param _repoId The id of the Github repo in the projects registry
-     * @return _owner repo's owner address
-     * @return _repo the Github repo entry
+     * @return owner repo's owner address
+     * @return index the Github repo registry index
      */
-    function getRepo(bytes32 _repoId) external view returns (bytes32 _owner, bytes32 _repo) {
-        _owner = repos[_repoId].owner;
-        _repo = repos[_repoId].repo;
+    function getRepo(bytes32 _repoId) external view returns (bytes20 owner, uint index) {
+        require(isRepoAdded(_repoId), "REPO_NOT_ADDED");
+        return(repos[_repoId].owner, repos[_repoId].index);
     }
 
     /**
@@ -221,7 +213,8 @@ contract Projects is AragonApp {
         string bountyCurrency,
         address bountyAllocator,
         address bountyArbiter
-    ) {
+    )
+    {
         return (
             settings.expLevels,
             settings.baseRate,
@@ -235,23 +228,22 @@ contract Projects is AragonApp {
 ///////////////////////
 // Repository functions
 ///////////////////////
-
     /**
      * @notice Add selected repository to Managed Projects 
-     * @param _owner The entry to add to the projects registry
-     * @param _repo the Github repo entry to add to the projects registry
-     * @return _repoId Id for newly added repo
+     * @param _owner Github id of the entity that owns the repo to add
+     * @param _repoId Github id of the repo to add
+     * @return index for the added repo at the registry
      */
     function addRepo(
-        bytes32 _owner,
-        bytes32 _repo
-    ) external auth(ADD_REPO_ROLE) returns (bytes32 _repoId)
+        bytes32 _repoId,
+        bytes20 _owner
+    ) external auth(ADD_REPO_ROLE) returns (uint index)
     {
-        _repoId = keccak256(abi.encodePacked(_owner, _repo));  // overflow should still yield a useable identifier
-        repos[_repoId] = GithubRepo(_owner, _repo, 0);
-        //add the index to the repo struct and push the id to the repo array
-        repos[_repoId].index = repoIds.push(_repoId) - 1;
-        emit RepoAdded(_repoId);
+        require(!isRepoAdded(_repoId), "REPO_ALREADY_ADDED");
+        repos[_repoId].owner = _owner;
+        repos[_repoId].index = repoIndex.push(_repoId) - 1;
+        emit RepoAdded(_repoId, _owner, repos[_repoId].index);
+        return repoIndex.length - 1;
     }
 
     /**
@@ -260,14 +252,17 @@ contract Projects is AragonApp {
      */
     function removeRepo(
         bytes32 _repoId
-    ) external auth(REMOVE_REPO_ROLE)
+    ) external auth(REMOVE_REPO_ROLE) returns(bool success)
     {
-        // Take the repo out of the repo array in constant time by replacing the element
-        // with last element
-        repoIds[repos[_repoId].index] = repoIds[repoIds.length - 1];
-        repoIds.length = repoIds.length - 1;
-        delete repos[_repoId];
-        emit RepoRemoved(_repoId);
+        require(isRepoAdded(_repoId), "REPO_NOT_ADDED");
+        uint rowToDelete = repos[_repoId].index;
+        bytes32 repoToMove = repoIndex[repoIndex.length - 1];
+        repoIndex[rowToDelete] = repoToMove;
+        repos[repoToMove].index = rowToDelete;
+        repoIndex.length--;
+        emit RepoRemoved(_repoId, rowToDelete);
+        emit RepoUpdated(repoToMove, repos[repoToMove].owner, rowToDelete);
+        return true;
     }
 
 ///////////////////
@@ -282,9 +277,9 @@ contract Projects is AragonApp {
      */
     function acceptFulfillment(
         bytes32 _repoId,
-        uint256 _issueNumber, 
+        uint256 _issueNumber,
         uint _bountyFulfillmentId
-    ) external auth(ADD_BOUNTY_ROLE) 
+    ) external auth(ADD_BOUNTY_ROLE)
     {
         GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
         bounties.acceptFulfillment(issue.standardBountyId, _bountyFulfillmentId);
@@ -303,8 +298,8 @@ contract Projects is AragonApp {
      */
     function addBounties(
         bytes32 _repoId,
-        uint256[] _issueNumbers, 
-        uint256[] _bountySizes, 
+        uint256[] _issueNumbers,
+        uint256[] _bountySizes,
         uint256[] _deadlines,
         bool[] _tokenBounties,
         address[] _tokenContracts,
@@ -342,6 +337,21 @@ contract Projects is AragonApp {
     }
 
 ///////////////////////
+// Public utility functions
+///////////////////////
+
+    /**
+     * @notice Checks if a repo exists in the registry
+     * @param _repoId the github repo id to check
+     * @return _repoId Id for newly added repo
+     */
+    function isRepoAdded(bytes32 _repoId) public view returns(bool isAdded) {
+        if (repoIndex.length == 0)
+            return false;
+        return (repoIndex[repos[_repoId].index] == _repoId);
+    }
+
+///////////////////////
 // Internal functions
 ///////////////////////
 
@@ -369,7 +379,7 @@ contract Projects is AragonApp {
         uint256 _issueNumber,
         uint _standardBountyId,
         uint256 _bountySize
-    ) internal 
+    ) internal
     {
         repos[_repoId].issues[_issueNumber] = GithubIssue(
             _repoId,
@@ -382,7 +392,7 @@ contract Projects is AragonApp {
         );
         emit BountyAdded(
             repos[_repoId].owner,
-            repos[_repoId].repo,
+            _repoId,
             _issueNumber,
             _bountySize
         );
@@ -392,7 +402,7 @@ contract Projects is AragonApp {
         uint256 _msgValue,
         uint256[] _bountySizes,
         bool[] _tokenBounties
-    ) internal pure 
+    ) internal pure
     {
         uint256 transValueTotal = 0;
         for (uint i = 0; i < _bountySizes.length; i++) {

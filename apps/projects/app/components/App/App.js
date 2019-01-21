@@ -1,4 +1,4 @@
-import { AragonApp, observe, SidePanel } from '@aragon/ui'
+import { BaseStyles, PublicUrl, observe } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { hot } from 'react-hot-loader'
@@ -12,7 +12,7 @@ import PanelManager, { PANELS } from '../Panel'
 import { STATUS } from '../../utils/github'
 import ErrorBoundary from './ErrorBoundary'
 
-const ASSETS_URL = 'aragon-ui-assets/'
+const ASSETS_URL = './aragon-ui-assets/'
 
 const GITHUB_URI = 'https://github.com/login/oauth/authorize'
 
@@ -52,7 +52,7 @@ export const githubPopup = (popup = null) => {
     popup = window.open(
       // TODO: Improve readability here: encode = (params: Object) => (JSON.stringify(params).replace(':', '=').trim())
       // encode uurl params
-      `${GITHUB_URI}?client_id=${CLIENT_ID}&scope=user%20public_repo&redirect_uri=${REDIRECT_URI}`,
+      `${GITHUB_URI}?client_id=${CLIENT_ID}&scope=public_repo&redirect_uri=${REDIRECT_URI}`,
       // `${REDIRECT_URI}/?code=232r3423`, // <= use this to avoid spamming github for testing purposes
       'githubAuth',
       // TODO: Improve readability here: encode = (fields: Object) => (JSON.stringify(fields).replace(':', '=').trim())
@@ -170,7 +170,11 @@ class App extends React.PureComponent {
     console.info('App.js: createProject', project)
     this.closePanel()
     // this.setState({})
-    console.log('projects props:', web3.toHex(owner).toString(), web3.toHex(project).toString())
+    console.log(
+      'projects props:',
+      web3.toHex(owner).toString(),
+      web3.toHex(project).toString()
+    )
     // console.log('hex:', window.web3.toHex('MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5'))
 
     console.log(this.props.app.addRepo(web3.toHex(owner), web3.toHex(project)))
@@ -234,10 +238,10 @@ class App extends React.PureComponent {
     var issuesTitles = issues.map(issue => issue.title)
     var issueIndicies = []
     issues.map((issue, i, indicies) => {
-      if(i == 0){
+      if (i == 0) {
         return issues[i].title.length
       }
-      return indicies[i-1] + issues[i].title.length
+      return indicies[i - 1] + issues[i].title.length
     })
     console.log(
       'Ready to curate these issues from the contract:',
@@ -276,12 +280,14 @@ class App extends React.PureComponent {
     const { activeIndex, panel, panelProps } = this.state
     const { client, bountySettings } = this.props
     return (
-      <ErrorBoundary>
-        <StyledAragonApp publicUrl={ASSETS_URL}>
-          <Title text="Projects" shadow />
-          <ApolloProvider client={client}>
+      <StyledAragonApp publicUrl={ASSETS_URL}>
+        <BaseStyles />
+        <Title text="Projects" />
+        <ApolloProvider client={client}>
+          <ErrorBoundary>
             <AppContent
               app={this.props.app}
+              bountySettings={this.props.bountySettings}
               projects={this.props.repos !== undefined ? this.props.repos : []}
               bountySettings={bountySettings !== undefined ? bountySettings : {}}
               onNewProject={this.newProject}
@@ -298,15 +304,15 @@ class App extends React.PureComponent {
               activePanel={panel}
               {...panelProps}
             />
-          </ApolloProvider>
-        </StyledAragonApp>
-      </ErrorBoundary>
+          </ErrorBoundary>
+        </ApolloProvider>
+      </StyledAragonApp>
     )
   }
 }
 
-const StyledAragonApp = styled(AragonApp).attrs({
-  publicUrl: ASSETS_URL,
+const StyledAragonApp = styled(PublicUrl.Provider).attrs({
+  url: ASSETS_URL,
 })`
   display: flex;
   height: 100vh;

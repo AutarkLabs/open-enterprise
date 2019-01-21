@@ -97,10 +97,6 @@ contract Allocations is AragonApp, Fundable {
     event FundAccount(uint256 accountId);
     event SetDistribution(uint256 payoutId, uint256 amount);
 
-    function () public payable { 
-        revert();
-    }
-
     /*
     * @dev This is the function that setups who the candidates will be, and
     *      where the funds will go for the payout. This is where the payout
@@ -177,7 +173,7 @@ contract Allocations is AragonApp, Fundable {
         emit FundAccount(id);
     }
 
-    function runPayout(uint256 _payoutId) external payable isInitialized returns(bool success) {
+    function runPayout(uint256 _payoutId) external payable isInitialized auth(EXECUTE_PAYOUT_ROLE) returns(bool success) {
         Payout storage payout = payouts[_payoutId];
         uint256 pointsPer;
         uint256 totalSupport;

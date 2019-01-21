@@ -127,9 +127,8 @@ async function handleEvents(response) {
     console.log('BountyAdded Received', response.returnValues, nextState)
     break
   case 'BountySettingsChanged':
-    let settings = await syncSettings(appState)
-    console.log('BountySettingsChanged to ', settings)
-    app.cache('bountySettings', settings)
+    app.cache('bountySettings', response.returnValues)
+    nextState = { ...appState, bountySettings: response.returnValues }
     break
   default:
     console.log('Unknown event catched:', response)

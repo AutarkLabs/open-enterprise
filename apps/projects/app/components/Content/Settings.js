@@ -1,16 +1,11 @@
 import React from 'react'
 import styled from 'styled-components'
-// import { theme, Field, TextInput, Button, Info } from '@aragon/ui'
 import { DropDown, Button, Text, Field, TextInput, theme } from '@aragon/ui'
 import NumberFormat from 'react-number-format'
-
-//import { DropDown } from '../Shared'
 
 const bountyDeadlines = ['Weeks', 'Days', 'Hours']
 const bountyDeadlinesMul = [168, 24, 1] // it is one variable in contract, so number * multiplier = hours
 const bountyCurrencies = ['BTC', 'ETH', 'TL', 'ANT', '🦄']
-
-// https://zoom.us/j/5754780405
 
 class Settings extends React.Component {
   state = {}
@@ -26,7 +21,8 @@ class Settings extends React.Component {
     if ('baseRate' in state) return null
 
     // before data is downloaded from cache/chain
-    if (!('bountySettings' in props && 'baseRate' in props.bountySettings)) return null
+    if (!('bountySettings' in props && 'baseRate' in props.bountySettings))
+      return null
 
     // data has just became available
     let s = props.bountySettings
@@ -34,16 +30,14 @@ class Settings extends React.Component {
       baseRate: s.baseRate / 100,
       bountyAllocator: s.bountyAllocator,
       bountyArbiter: s.bountyArbiter,
-      expLevels: []
+      expLevels: [],
     }
 
-    let found = bountyCurrencies.findIndex(
-      (el) => (el == s.bountyCurrency)
-    )
+    let found = bountyCurrencies.findIndex(el => el === s.bountyCurrency)
 
-    if (found == -1) {
+    if (found === -1) {
       bountyCurrencies.push(s.bountyCurrency)
-      n.bountyCurrency = bountyCurrencies.length -1
+      n.bountyCurrency = bountyCurrencies.length - 1
     } else n.bountyCurrency = found
 
     // bountyDeadlinesMul = [168, 24, 1]
@@ -56,24 +50,35 @@ class Settings extends React.Component {
       }
     }
     let a = s.expLevels.split('\t')
-    for (let i = 0; i < a.length; i += 2) n.expLevels.push({mul: a[i] / 100, name: a[i+1]})
+    for (let i = 0; i < a.length; i += 2)
+      n.expLevels.push({ mul: a[i] / 100, name: a[i + 1] })
 
     return n
   }
 
   submitChanges = () => {
-    const { baseRate, expLevels, bountyDeadlineT, bountyDeadlineD, bountyCurrency, bountyAllocator, bountyArbiter } = this.state
+    const {
+      baseRate,
+      expLevels,
+      bountyDeadlineT,
+      bountyDeadlineD,
+      bountyCurrency,
+      bountyAllocator,
+      bountyArbiter,
+    } = this.state
     // flatten deadline
     let bountyDeadline = bountyDeadlinesMul[bountyDeadlineD] * bountyDeadlineT
     // flatten expLevels
-    let expLevelsStr = expLevels.map(l => (l.mul * 100) + '\t' + l.name).join('\t')
+    let expLevelsStr = expLevels
+      .map(l => l.mul * 100 + '\t' + l.name)
+      .join('\t')
     console.log('Submitting new Settings: ', {
       lvl: expLevelsStr,
       rate: web3.toHex(baseRate),
       ddl: web3.toHex(bountyDeadline),
       cur: bountyCurrencies[bountyCurrency],
       bountyArbiter,
-      bountyAllocator
+      bountyAllocator,
     })
 
     //expLevels, baseRate, bountyDeadline, bountyCurrency, bountyAllocator, bountyArbiter
@@ -108,7 +113,7 @@ class Settings extends React.Component {
 
   addExpLevel = () => {
     let { expLevels } = this.state
-    expLevels.push({name: '', mul: 1})
+    expLevels.push({ name: '', mul: 1 })
     this.setState({ expLevels })
   }
 
@@ -120,15 +125,18 @@ class Settings extends React.Component {
   }
 
   render() {
-    const { baseRate, expLevels, bountyCurrency, bountyDeadlineT, bountyDeadlineD, bountyAllocator, bountyArbiter } = this.state
-
-    //console.log('SETTINGS RENDER PROPS: ', this.props.bountySettings)
-    //console.log('SETTINGS RENDER STATE: ', this.state)
+      baseRate,
+      expLevels,
+      bountyCurrency,
+      bountyDeadlineT,
+      bountyDeadlineD,
+      bountyAllocator,
+      bountyArbiter,
+    } = this.state
 
     // TODO: hourglass in case settings are still being loaded
-    if (!('baseRate' in this.props.bountySettings)) return (
-      <div>Loading settings...</div>
-    )
+    if (!('baseRate' in this.props.bountySettings))
+      return <div>Loading settings...</div>
 
     return (
       <StyledContent>
@@ -144,9 +152,18 @@ class Settings extends React.Component {
           </Button>
         </div>
         <div className="column">
-          <BountyContractAddress bountyAllocator={bountyAllocator} onChange={this.bountyAllocatorChange} />
-          <BountyCurrency bountyCurrency={bountyCurrency} onChange={this.bountyCurrencyChange} />
-          <BountyArbiter bountyArbiter={bountyArbiter} onChange={this.bountyArbiterChange} />
+          <BountyContractAddress
+            bountyAllocator={bountyAllocator}
+            onChange={this.bountyAllocatorChange}
+          />
+          <BountyCurrency
+            bountyCurrency={bountyCurrency}
+            onChange={this.bountyCurrencyChange}
+          />
+          <BountyArbiter
+            bountyArbiter={bountyArbiter}
+            onChange={this.bountyArbiterChange}
+          />
           <BountyDeadline
             bountyDeadlineT={bountyDeadlineT}
             onChangeT={this.bountyDeadlineChangeT}
@@ -176,7 +193,12 @@ const StyledInputDropDown = styled.div`
   }
 `
 
-const BountyDeadline = ({bountyDeadlineT, onChangeT, bountyDeadlineD, onChangeD}) => (
+const BountyDeadline = ({
+  bountyDeadlineT,
+  onChangeT,
+  bountyDeadlineD,
+  onChangeD,
+}) => (
   <div>
     <Text.Block size="large" weight="bold">
       BountyDeadline
@@ -203,7 +225,7 @@ const BountyDeadline = ({bountyDeadlineT, onChangeT, bountyDeadlineD, onChangeD}
   </div>
 )
 
-const BountyArbiter = ({bountyArbiter, onChange}) => (
+const BountyArbiter = ({ bountyArbiter, onChange }) => (
   <div>
     <Text.Block size="large" weight="bold">
       Bounty Arbiter
@@ -232,21 +254,24 @@ const BountyArbiter = ({bountyArbiter, onChange}) => (
   </div>
 )
 
-const BountyCurrency = ({bountyCurrency, onChange}) => (
+const BountyCurrency = ({ bountyCurrency, onChange }) => (
   <div>
     <Text.Block size="large" weight="bold">
       Bounty Currency
     </Text.Block>
     <Text.Block>The default currency used when allocating bounties.</Text.Block>
     <Field label="Select currency">
-      <DropDown items={bountyCurrencies} active={bountyCurrency} onChange={onChange} />
-      <StyledInputDropDown style={{ paddingLeft: '11px' }}>
-      </StyledInputDropDown>
+      <DropDown
+        items={bountyCurrencies}
+        active={bountyCurrency}
+        onChange={onChange}
+      />
+      <StyledInputDropDown style={{ paddingLeft: '11px' }} />
     </Field>
   </div>
 )
 
-const BountyContractAddress = ({bountyAllocator, onChange}) => (
+const BountyContractAddress = ({ bountyAllocator, onChange }) => (
   <div>
     <Text.Block size="large" weight="bold">
       Bounty Contract Address
@@ -277,7 +302,7 @@ const BountyContractAddress = ({bountyAllocator, onChange}) => (
   </div>
 )
 
-const BaseRate = ({baseRate, onChange}) => (
+const BaseRate = ({ baseRate, onChange }) => (
   <div>
     <Text.Block size="large" weight="bold">
       Base Rate
@@ -300,16 +325,20 @@ const BaseRate = ({baseRate, onChange}) => (
   </div>
 )
 
-const ExperienceLevel = ({expLevels, onAddExpLevel, generateExpLevelHandler}) => {
-  let last = expLevels[expLevels.length -1]
-  let disableAdd = (last.mul != '' && last.name != '') ? false : true
+const ExperienceLevel = ({
+  expLevels,
+  onAddExpLevel,
+  generateExpLevelHandler,
+}) => {
+  let last = expLevels[expLevels.length - 1]
+  let disableAdd = last.mul != '' && last.name != '' ? false : true
   return (
     <div>
       <Text.Block size="large" weight="bold">
         Experience Level
       </Text.Block>
       <Text.Block>Define the experience level multipliers.</Text.Block>
-      { expLevels.map((exp, index) => (
+      {expLevels.map((exp, index) => (
         <Field key={index} label={'LEVEL ' + index}>
           <NumberFormat
             customInput={StyledNumberInput}
@@ -319,10 +348,18 @@ const ExperienceLevel = ({expLevels, onAddExpLevel, generateExpLevelHandler}) =>
             allowNegative={false}
             onChange={generateExpLevelHandler(index, 'M')}
           />
-          <StyledTextInput defaultValue={exp.name} onChange={generateExpLevelHandler(index, 'N')} />
+          <StyledTextInput
+            defaultValue={exp.name}
+            onChange={generateExpLevelHandler(index, 'N')}
+          />
         </Field>
       ))}
-      <StyledButton disabled={disableAdd} compact mode="secondary" onClick={onAddExpLevel}>
+      <StyledButton
+        disabled={disableAdd}
+        compact
+        mode="secondary"
+        onClick={onAddExpLevel}
+      >
         + Add Another
       </StyledButton>
     </div>

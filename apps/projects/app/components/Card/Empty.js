@@ -11,7 +11,7 @@ const Empty = ({ action }) => (
     <EmptyStateCard
       title="You have not added any projects."
       text="Get started now by adding a new project."
-      icon={Icon}
+      icon={<Icon />}
       actionText="New Project"
       onActivate={action}
     />

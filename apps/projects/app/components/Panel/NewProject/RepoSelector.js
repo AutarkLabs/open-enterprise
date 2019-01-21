@@ -281,7 +281,7 @@ export default graphql(gql`
       id
       repositories(
         affiliations: [COLLABORATOR, ORGANIZATION_MEMBER, OWNER]
-        first: 20
+        first: 100
         isFork: false
         orderBy: { field: NAME, direction: ASC }
       ) {

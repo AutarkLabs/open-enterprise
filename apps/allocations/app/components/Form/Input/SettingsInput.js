@@ -6,6 +6,8 @@ import { Badge, Text, theme } from '@aragon/ui'
 import { CheckBox } from '../../Shared'
 
 class SettingsInput extends React.Component {
+  state = { checked: false }
+  
   static propTypes = {
     // key: PropTypes.number.isRequired, // TODO: Check the use of this required prop
     name: PropTypes.string.isRequired,
@@ -19,7 +21,7 @@ class SettingsInput extends React.Component {
     this.setState({checked: value})
     this.props.onChange({ target: { name: name, value: value } })
   }
-  state = { checked: false }
+
   render() {
     return (
       <StyledSettingsInput>

@@ -1,8 +1,18 @@
 {
   "roles": [
     {
+      "name": "Add bounties",
+      "id": "ADD_BOUNTY_ROLE",
+      "params": []
+    },
+    {
+      "name": "Add repos",
+      "id": "ADD_REPO_ROLE",
+      "params": []
+    },
+    {
       "name": "Update settings for Projects app",
-      "id": "CHANGE_BOUNTY_SETTINGS",
+      "id": "CHANGE_SETTINGS_ROLE",
       "params": []
     },
     {
@@ -11,43 +21,8 @@
       "params": []
     },
     {
-      "name": "Create bounty votes",
-      "id": "CREATE_BOUNTY_ROLE",
-      "params": []
-    },
-    {
-      "name": "Approve work completed for bounties",
-      "id": "APPROVE_BOUNTY_ROLE",
-      "params": []
-    },
-    {
-      "name": "Arbitrate disputes related to bounties",
-      "id": "ARBITRATE_BOUNTY_ROLE",
-      "params": []
-    },
-    {
-      "name": "Create a project",
-      "id": "CREATE_PROJECT_ROLE",
-      "params": []
-    },
-    {
-      "name": "Update a project",
-      "id": "UPDATE_PROJECT_ROLE",
-      "params": []
-    },
-    {
-      "name": "Delete a project",
-      "id": "DELETE_PROJECT_ROLE",
-      "params": []
-    },
-    {
-      "name": "Add issue priorities",
-      "id": "CURATE_ISSUES_ROLE",
-      "params": []
-    },
-    {
-      "name": "Add repos",
-      "id": "ADD_REPO_ROLE",
+      "name": "Remove repos from the registry",
+      "id": "REMOVE_REPO_ROLE",
       "params": []
     }
   ],
