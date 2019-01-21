@@ -1,36 +1,16 @@
-// module.exports = require("@aragon/os/truffle-config")
-const HDWalletProvider = require('truffle-hdwallet-provider')
-const HDWalletProviderPrivkey = require('truffle-hdwallet-provider-privkey')
+/**
+ * https://github.com/aragon/aragonOS/blob/v4.0.0/truffle-config.js
+ */
+const homedir = require('homedir')
 const path = require('path')
 
-let mnemonic
-try {
-  mnemonic = require(require('homedir')() + '/.aragon/mnemonic.json').mnemonic
-} catch (e) {
-  mnemonic =
-    'stumble story behind hurt patient ball whisper art swift tongue ice alien'
-}
+const HDWalletProvider = require('truffle-hdwallet-provider')
+const HDWalletProviderPrivkey = require('truffle-hdwallet-provider-privkey')
 
-let ropstenProvider = {}
-let kovanProvider = {}
-let rinkebyProvider = {}
+const DEFAULT_MNEMONIC =
+  'explain tackle mirror kit van hammer degree position ginger unfair soup bonus'
 
-if (process.env.LIVE_NETWORKS) {
-  ropstenProvider = new HDWalletProvider(mnemonic, 'https://ropsten.infura.io/')
-  kovanProvider = new HDWalletProvider(mnemonic, 'https://kovan.infura.io')
-
-  try {
-    const { rpc, keys } = require(require('homedir')() +
-      '/.aragon/rinkebykey.json')
-    rinkebyProvider = new HDWalletProviderPrivkey(keys, rpc)
-  } catch (e) {
-    rinkebyProvider = new HDWalletProvider(
-      mnemonic,
-      'https://rinkeby.infura.io'
-    )
-  }
-}
-
+const mocha = process.env.GAS_REPORTER ? mochaGasSettings : {}
 const mochaGasSettings = {
   reporter: 'eth-gas-reporter',
   reporterOptions: {
@@ -39,7 +19,37 @@ const mochaGasSettings = {
   },
 }
 
-const mocha = process.env.GAS_REPORTER ? mochaGasSettings : {}
+const defaultRPC = network => `https://${network}.infura.io`
+
+const configFilePath = filename => path.join(homedir(), `.aragon/${filename}`)
+
+const mnemonic = () => {
+  try {
+    return require(configFilePath('mnemonic.json')).mnemonic
+  } catch (e) {
+    return DEFAULT_MNEMONIC
+  }
+}
+
+const settingsForNetwork = network => {
+  try {
+    return require(configFilePath(`${network}_key.json`))
+  } catch (e) {
+    return {}
+  }
+}
+
+// Lazily loaded provider
+const providerForNetwork = network => () => {
+  let { rpc, keys } = settingsForNetwork(network)
+  rpc = rpc || defaultRPC(network)
+
+  if (!keys || keys.length == 0) {
+    return new HDWalletProvider(mnemonic(), rpc)
+  }
+
+  return new HDWalletProviderPrivkey(keys, rpc)
+}
 
 module.exports = {
   contracts_build_directory: path.join(__dirname, './build/contracts/'),
@@ -54,6 +64,8 @@ module.exports = {
       host: 'localhost',
       port: 8545,
       network_id: '*',
+      gas: 7984452, // Block Gas Limit same as latest on Mainnet https://ethstats.net/
+      gasPrice: 2000000000, // same as latest on Mainnet https://ethstats.net/
     },
     coverage: {
       host: 'localhost',
@@ -61,6 +73,14 @@ module.exports = {
       port: 8555,
       gas: 0xfffffffffff,
       gasPrice: 0x01,
+    },
+    rinkeby: {
+      network_id: 4,
+      provider: providerForNetwork('rinkeby'),
+    },
+    mainnet: {
+      network_id: 1,
+      provider: providerForNetwork('mainnet'),
     },
   },
   build: {},

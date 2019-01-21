@@ -1,16 +1,4 @@
 {
-  "environments": {
-    "default": {
-      "registry": "0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1",
-      "appName": "projects.aragonpm.eth",
-      "network": "rpc"
-    },
-    "openrinkeby": {
-      "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
-      "appName": "projects.open.aragonpm.eth",
-      "network": "rinkeby"
-    }
-  },
   "roles": [
     {
       "name": "Update settings for Projects app",
@@ -63,5 +51,23 @@
       "params": []
     }
   ],
+  "environments": {
+    "default": {
+      "network": "development",
+      "appName": "projects.aragonpm.eth"
+    },
+    "staging": {
+      "registry": "0x98df287b6c145399aaa709692c8d308357bc085d",
+      "appName": "projects.open.aragonpm.eth",
+      "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
+      "network": "rinkeby"
+    },
+    "production": {
+      "registry": "0x314159265dd8dbb310642f98f50c066173c1259b",
+      "appName": "projects.open.aragonpm.eth",
+      "wsRPC": "wss://mainnet.eth.aragon.network/ws",
+      "network": "mainnet"
+    }
+  },
   "path": "contracts/Projects.sol"
 }
