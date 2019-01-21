@@ -97,10 +97,6 @@ contract Allocations is AragonApp, Fundable {
     event FundAccount(uint256 accountId);
     event SetDistribution(uint256 payoutId, uint256 amount);
 
-    function () public payable { 
-        revert();
-    }
-
     /*
     * @dev This is the function that setups who the candidates will be, and
     *      where the funds will go for the payout. This is where the payout
