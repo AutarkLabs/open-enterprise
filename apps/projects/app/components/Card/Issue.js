@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { Text, theme } from '@aragon/ui'
+import { Text, theme, Badge } from '@aragon/ui'
 
 import { CheckButton } from '../Shared'
 
@@ -27,9 +27,13 @@ const StyledIssue = styled.div`
     flex: 1 1 auto;
   }
 `
+const IssueDetails = styled.div`
+  display: flex;
+  justify-content: space-between;
+`
 
 // TODO: @aragon/ui Table?
-const Issue = ({ title, repo, number, isSelected, onSelect }) => (
+const Issue = ({ title, repo, number, labels, isSelected, onSelect }) => (
   <StyledIssue>
     <CheckButton checked={isSelected} onChange={onSelect} />
     <div
@@ -53,9 +57,23 @@ const Issue = ({ title, repo, number, isSelected, onSelect }) => (
           • {repo} #{number}
         </Text>
       </div>
-      <Text.Block size="small" color={theme.textTertiary}>
-        Beginner • Pending funding • Due in 4 weeks
-      </Text.Block>
+      <IssueDetails>
+        <Text.Block size="small" color={theme.textTertiary}>
+          Beginner • Pending funding • Due in 4 weeks
+        </Text.Block>
+        <div>
+          { labels.totalCount ? (
+            labels.edges.map(label =>
+              <Badge
+                key={label.node.id}
+                style={{ marginLeft: '5px'}}
+                background={'#'+label.node.color}
+                foreground={'#000'}>{label.node.name}
+              </Badge>
+            )) : ''
+          }
+        </div>
+      </IssueDetails>
     </div>
   </StyledIssue>
 )

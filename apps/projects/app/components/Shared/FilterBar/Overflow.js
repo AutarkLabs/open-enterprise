@@ -1,4 +1,6 @@
 import React from 'react'
+import styled from 'styled-components'
+
 
 import FilterButton from './FilterButton'
 
@@ -60,19 +62,18 @@ class Overflow extends React.Component {
         ref={this.theRef}
         style={{
           width: '40px',
-          border: '1px solid rgba(209, 209, 209, 0.5)',
           height: '40px',
-          margin: '-1px',
-          overflow: 'hidden',
+          //overflow: 'hidden',
+          display: 'flex',
         }}
       >
         {visibleElements}
         <FilterButton
           style={{
             display: 'inline-flex',
-            justifyContent: 'center',
-            width: '40px',
-            padding: 0,
+            justifyContent: 'left',
+            width: '100%',
+            paddingLeft: '10px',
           }}
         >
           …

@@ -62,21 +62,13 @@ contract Projects is AragonApp {
         //vault = _vault.ethConnectorBase();
         bounties = Bounties(_bountiesAddr); // Standard Bounties instance
 
-
-        settings.expLevels = "100\tBeginner\t300\tIntermediate\t500\tAdvanced";
-        settings.baseRate = 3000;
-        settings.bountyDeadline = 336;
-        settings.bountyCurrency = "FTL";
-        settings.bountyAllocator = 0x0000000000000000000000000000000000000000;
-        settings.bountyArbiter = 0x0000000000000000000000000000000000000000;
-
-        emit BountySettingsChanged(
-            settings.expLevels,
-            settings.baseRate,
-            settings.bountyDeadline,
-            settings.bountyCurrency,
-            settings.bountyAllocator,
-            settings.bountyArbiter
+        _changeBountySettings(
+            "100\tBeginner\t300\tIntermediate\t500\tAdvanced",
+            3001, // baseRate
+            336, // bountyDeadline
+            "FTL", // bountyCurrency
+            0x0000000000000000000000000000000000000000, // bountyAllocator
+            0x0000000000000000000000000000000000000000 //bountyArbiter
         );
 
         initialized();
@@ -127,14 +119,7 @@ contract Projects is AragonApp {
     // Fired when fulfillment is accepted
     event FulfillmentAccepted(bytes32 repoId, uint256 issueNumber, uint fulfillmentId);
     // Fired when settings are changed
-    event BountySettingsChanged(
-        string expLevels,
-        uint256 baseRate,
-        uint256 bountyDeadline,
-        string bountyCurrency,
-        address bountyAllocator,
-        address bountyArbiter
-    );
+    event BountySettingsChanged();
 
     bytes32 public constant CHANGE_BOUNTY_SETTINGS =  keccak256("CHANGE_BOUNTY_SETTINGS");
 
@@ -187,14 +172,7 @@ contract Projects is AragonApp {
         address bountyArbiter
     ) external auth(CHANGE_BOUNTY_SETTINGS)
     {
-        settings.expLevels = expLevels;
-        settings.baseRate = baseRate;
-        settings.bountyDeadline = bountyDeadline;
-        settings.bountyCurrency = bountyCurrency;
-        settings.bountyAllocator = bountyAllocator;
-        settings.bountyArbiter = bountyArbiter;
-
-        emit BountySettingsChanged(expLevels, baseRate, bountyDeadline, bountyCurrency, bountyAllocator, bountyArbiter);
+        _changeBountySettings(expLevels, baseRate, bountyDeadline, bountyCurrency, bountyAllocator, bountyArbiter);
     }
 
 ///////////////////////
@@ -229,6 +207,29 @@ contract Projects is AragonApp {
     function getRepo(bytes32 _repoId) external view returns (bytes32 _owner, bytes32 _repo) {
         _owner = repos[_repoId].owner;
         _repo = repos[_repoId].repo;
+    }
+
+    /**
+     * @notice Get general settings.
+     * @return BountySettings
+     */
+
+    function getSettings() external view returns (
+        string expLevels,
+        uint256 baseRate,
+        uint256 bountyDeadline,
+        string bountyCurrency,
+        address bountyAllocator,
+        address bountyArbiter
+    ) {
+        return (
+            settings.expLevels,
+            settings.baseRate,
+            settings.bountyDeadline,
+            settings.bountyCurrency,
+            settings.bountyAllocator,
+            settings.bountyArbiter
+        );
     }
 
 ///////////////////////
@@ -343,6 +344,25 @@ contract Projects is AragonApp {
 ///////////////////////
 // Internal functions
 ///////////////////////
+
+    function _changeBountySettings(
+        string expLevels,
+        uint256 baseRate,
+        uint256 bountyDeadline,
+        string bountyCurrency,
+        address bountyAllocator,
+        address bountyArbiter
+    ) internal
+    {
+        settings.expLevels = expLevels;
+        settings.baseRate = baseRate;
+        settings.bountyDeadline = bountyDeadline;
+        settings.bountyCurrency = bountyCurrency;
+        settings.bountyAllocator = bountyAllocator;
+        settings.bountyArbiter = bountyArbiter;
+
+        emit BountySettingsChanged();
+    }
 
     function _addBounty(
         bytes32 _repoId,

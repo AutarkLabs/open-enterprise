@@ -127,8 +127,9 @@ async function handleEvents(response) {
     console.log('BountyAdded Received', response.returnValues, nextState)
     break
   case 'BountySettingsChanged':
-    app.cache('bountySettings', response.returnValues)
-    nextState = { ...appState, bountySettings: response.returnValues }
+    let settings = await syncSettings(appState)
+    console.log('BountySettingsChanged to ', settings)
+    app.cache('bountySettings', settings)
     break
   default:
     console.log('Unknown event catched:', response)
@@ -150,6 +151,15 @@ async function syncRepos(state, { repoId, ...eventArgs }) {
   }
 }
 
+async function syncSettings(state) {
+  try {
+    let settings = await loadSettings()
+    return settings
+  } catch (err) {
+    console.error(' failed to return:', err)
+  }
+}
+
 /***********************
  *                     *
  *       Helpers       *
@@ -161,20 +171,28 @@ function loadRepoData(id) {
     console.log('loadRepoData Promise entered: ' + id)
     combineLatest(app.call('getRepo', id)).subscribe(([{ _owner, _repo }]) => {
       let [owner, repo] = [toAscii(_owner), toAscii(_repo)]
-      getRepoData(repo).then(
-        ({node}) => {
-          let commits = node.defaultBranchRef ? node.defaultBranchRef.commits : 0
-          let description = node.description ? node.description : '(no description available)'
-          let metadata = {
-            name: node.name,
-            description: node.description,
-            collaborators: node.collaborators.totalCount,
-            commits,
-            id
-          }
-          resolve({ owner, repo, metadata })
+      getRepoData(repo).then(({ node }) => {
+        let commits = node.defaultBranchRef ? node.defaultBranchRef.commits : 0
+        let description = node.description
+          ? node.description
+          : '(no description available)'
+        let metadata = {
+          name: node.name,
+          description: node.description,
+          collaborators: node.collaborators.totalCount,
+          commits,
+          id,
         }
-      )
+        resolve({ owner, repo, metadata })
+      })
+    })
+  })
+}
+
+function loadSettings() {
+  return new Promise(resolve => {
+    combineLatest(app.call('getSettings')).subscribe(([settings]) => {
+      resolve(settings)
     })
   })
 }
