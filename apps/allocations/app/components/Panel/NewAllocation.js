@@ -94,7 +94,6 @@ class NewAllocation extends React.Component {
     })
     if (!(this.isAddress(optionsInput) || optionsInput === '')) {
       this.setState({ addressError: true })
-      this.setState()
       return
     }
     if (this.isAddress(optionsInput)) {
