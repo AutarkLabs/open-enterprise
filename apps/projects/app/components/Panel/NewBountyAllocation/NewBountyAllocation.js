@@ -16,7 +16,6 @@ import {
 } from '@aragon/ui'
 
 import { Form, FormField, FieldTitle } from '../../Form'
-
 import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
 
 class NewBountyAllocation extends React.Component {
@@ -53,7 +52,6 @@ class NewBountyAllocation extends React.Component {
       description: '',
       bounties,
     }
-    //console.log('constructor: ', bounties)
   }
 
   configBounty = (id, key, val) => {
@@ -94,19 +92,16 @@ class NewBountyAllocation extends React.Component {
   }
 
   render() {
+    console.log('Bounty props:', this.props)
+
     const bountyHours = ['-', '5', '10', '15']
     const bountyExp = [{ name: '-', mul: 1 }]
     const bountyDeadline = ['-', 'yesterday', 'last week']
     const bountyAvail = ['-', '1', '2', '3']
     const { bounties } = this.state
-    // OLD conflicting code
-    // <<<<<<< HEAD
-    //     const { baseRate } = this.props
-    //     console.log('bounties: ', bounties, ', baseRate: ', baseRate)
-    // =======
     const { bountySettings } = this.props
 
-    const rate = bountySettings.baseRate / 100
+    // const rate = bountySettings.baseRate / 100
     let a = bountySettings.expLevels.split('\t')
     for (let i = 0; i < a.length; i += 2)
       bountyExp.push({ mul: a[i] / 100, name: a[i + 1] })
@@ -114,7 +109,7 @@ class NewBountyAllocation extends React.Component {
     console.log('bounties: ', bounties, ', bountySettings: ', bountySettings)
     return (
       <Form
-        onSubmit={this.props.onSubmit}
+        onSubmit={() => this.props.onSubmit(bounties)}
         description={this.props.description}
         submitText="Submit Bounty Allocation"
       >
@@ -141,13 +136,10 @@ class NewBountyAllocation extends React.Component {
                   <Cell>
                     <IBMain>
                       <IssueBounty>
-                        <IBArrow onClick={this.generateArrowChange(issue.id)}>
-                          {bounties[issue.id]['detailsOpen'] ? (
-                            <IconBigArrowUp />
-                          ) : (
-                            <IconBigArrowDown />
-                          )}
-                        </IBArrow>
+                        <IBArrow
+                          direction={bounties[issue.id]['detailsOpen']}
+                          onClick={this.generateArrowChange(issue.id)}
+                        />
                         <IBTitle size="normal" weight="bold">
                           {issue.title}
                         </IBTitle>
@@ -173,6 +165,9 @@ class NewBountyAllocation extends React.Component {
                                       .mul}{' '}
                                 {bountySettings.bountyCurrency}
                               </Badge>
+
+                              {/* <FieldTitle>$100</FieldTitle>
+                              <Badge>10 ANT</Badge> */}
                             </IBValueShow>
                           )}
                         </IBValue>
@@ -228,7 +223,7 @@ class NewBountyAllocation extends React.Component {
 }
 
 const Cell = styled(TableCell)`
-  padding: 0px;
+  padding: 0;
 `
 const IBMain = styled.div`
   display: flex;
@@ -244,10 +239,9 @@ const IssueBounty = styled.div`
     'arrow hours value';
 `
 const IBTitle = styled(Text)`
-    grid-area: title;
-    line-height: 42px;
-    padding-top: 6px;
-}
+  grid-area: title;
+  line-height: 42px;
+  padding-top: 6px;
 `
 const IBHours = styled.div`
   grid-area: hours;
@@ -281,12 +275,16 @@ const IBValueShow = styled.div`
     line-height: 40px;
   }
   > :last-child {
-    margin: 10px 0px;
+    margin: 10px 0;
   }
 `
 const IBArrow = styled.div`
   grid-area: arrow;
-  place-self: center;
+  align-self: center;
+  transform: ${({ direction }) =>
+    direction ? 'rotate(-90deg)' : 'rotate(90deg)'};
+  font-size: 17px;
+  line-height: 17px;
 `
 const IBHoursInput = styled.div`
   display: inline-flex;
