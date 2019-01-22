@@ -1,7 +1,8 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { IconAdd, TextInput, theme, unselectable, DropDown } from '@aragon/ui'
+import { IconAdd, TextInput, theme, unselectable } from '@aragon/ui'
+import MultiDropDown from './MultiDropdown'
 import IconRemove from '../../../assets/components/IconRemove'
 
 const {
@@ -18,19 +19,20 @@ class OptionsInputDropdown extends React.Component {
     name: PropTypes.string.isRequired,
     value: PropTypes.array.isRequired,
     onChange: PropTypes.func.isRequired,
-    validator: PropTypes.func,
-    error: PropTypes.bool,
+    validator: PropTypes.func.isRequired,
     entities: PropTypes.object,
   }
 
+  state = {
+    entities: this.props.entities,
+  }
 
   addOption = () => {
     // TODO: Implement some rules about what an 'Option can be' duplicates, etc
     const { input, name, value } = this.props
-    if (input && !value.includes(input) && this.props.validator(input)) {
+    if (input && this.props.validator(value, input.addr)) {
       this.props.onChange({ target: { name, value: [...value, input] } })
       this.props.onChange({ target: { name: 'optionsInput', value: '' } })
-      this.props.error = true
       console.log('Option Added')
     } else {
       console.log('OptionsInput: The option is empty or already present')
@@ -48,28 +50,38 @@ class OptionsInputDropdown extends React.Component {
     console.log('Option Removed', option, this.props.value)
   }
 
-  onChangeInput = (index, items) => {
-    let value = this.props.entities[index].addr
-    this.props.onChange({ target: { name: 'optionsInput', value } })
-  }
 
   render() {
-    const loadOptions = this.props.value.map(option => (
-      <div className="option" key={option}>
-        <StyledInput readOnly value={option} />
-        <IconRemove onClick={() => this.removeOption(option)} />
+    const loadOptions = this.props.value.map((option, index) => (
+      <div className="option" key={option.addr}>
+          <MultiDropDown
+              name={this.props.name}
+              index={index}
+              placeholder={this.props.placeholder}
+              onChange={this.props.onChange}
+              value={this.props.value}
+              entities={this.state.entities}
+              activeItem={option.index}
+              validator={this.props.validator}
+          />
+          <IconRemove onClick={() => this.removeOption(option)} />
       </div>
     ))
     return (
       <StyledOptionsInput empty={!this.props.input.length}>
         {loadOptions}
         <div className="option">
-          <DropDown
-            items={this.props.entities.map(entity => entity.data.name)}
-            onChange={this.onChangeInput}
-            wide={true}
-          />
-          <IconAdd onClick={this.addOption} />
+          <MultiDropDown
+            name={'optionsInput'}
+            index={-1}
+            placeholder={this.props.placeholder}
+            value={this.props.value}
+            onChange={this.props.onChange}
+            entities={this.state.entities}
+            activeItem={0}
+            validator={this.props.validator}
+            />
+            <IconAdd onClick={this.addOption} />
         </div>
       </StyledOptionsInput>
     )

@@ -73,10 +73,16 @@ class NewAllocation extends React.Component {
   }
 
   // Should be using web3.isAddress probably but this is good enough for now
-  isAddress = addr => {
-    if (!/^(0x)?[0-9a-f]{40}$/i.test(addr)) {
+  isAddressError = (entities, addr) => {
+    console.log("address")
+    console.log(entities)
+    console.log(addr)
+    let entitiesAddrs = entities.map(entity => entity.addr)
+    if (!/^(0x)?[0-9a-f]{40}$/i.test(addr) || entitiesAddrs.includes(addr)) {
+      this.state.addressError = true
       return false
     }
+    this.state.addressError = false
     return true
   }
 
@@ -87,20 +93,18 @@ class NewAllocation extends React.Component {
     let recurring = !informational && this.state.payoutTypeIndex != 0
     // TODO: period should be smarter: now the only option is monthly
     let period = recurring ? 86400 * 31 : 0
-    let optionsInput = this.state.optionsInput
+    let optionsInput = this.state.optionsInput.addr
     this.setState({
       addressError: this.state.addressError,
       allocationError: false,
     })
-    if (!(this.isAddress(optionsInput) || optionsInput === '')) {
+    if (!(this.isAddressError(this.state.options, optionsInput) || optionsInput === '')) {
       this.setState({ addressError: true })
-      return
-    }
-    if (this.isAddress(optionsInput)) {
+    } else {
       this.state.options.push(this.state.optionsInput)
     }
     let allocation = {
-      addresses: this.state.options,
+      addresses: this.state.options.map(option => option.addr),
       payoutId: this.props.id,
       informational: informational,
       recurring: recurring,
@@ -224,7 +228,7 @@ class NewAllocation extends React.Component {
                   onChange={this.changeField}
                   value={this.state.options}
                   input={this.state.optionsInput}
-                  validator={this.isAddress}
+                  validator={this.isAddressError}
                   error={this.state.addressError}
                   entities={this.props.entities}
                 />
@@ -242,7 +246,7 @@ class NewAllocation extends React.Component {
                   onChange={this.changeField}
                   value={this.state.options}
                   input={this.state.optionsInput}
-                  validator={this.isAddress}
+                  validator={this.isAddressError}
                   error={this.state.addressError}
                 />
               }
