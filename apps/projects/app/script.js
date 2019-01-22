@@ -91,8 +91,11 @@ github().subscribe(result => {
 })
 
 bountySettings().subscribe(result => {
-  console.log('bountySettings object received from cache:', result)
+  result && console.log('bountySettings object received from cache:', result)
   if (!result) {
+    console.error(
+      'Something is wrong and we didn\'t received the expected hardcoded bountySettings from the contract'
+    )
     app.cache('bountySettings', {})
   }
 })
@@ -100,7 +103,7 @@ bountySettings().subscribe(result => {
 app.events().subscribe(handleEvents)
 
 app.state().subscribe(state => {
-  console.log('Projects: entered state subscription:\n', state)
+  state && console.log('[Projects] entered state subscription:\n', state)
   appState = state ? state : { repos: [] }
 })
 
@@ -111,33 +114,40 @@ app.state().subscribe(state => {
  ***********************/
 
 async function handleEvents(response) {
-  console.log(response)
   let nextState
   switch (response.event) {
   case 'RepoAdded':
+    console.log('[Projects] event RepoAdded')
     nextState = await syncRepos(appState, response.returnValues)
-    console.log('RepoAdded Received', response.returnValues, nextState)
     break
   case 'RepoRemoved':
+    console.log('[Projects] RepoRemoved', response.returnValues)
     nextState = await syncRepos(appState, response.returnValues)
-    console.log('RepoRemoved Received', response.returnValues, nextState)
     break
-  case 'BountyAdded':
+  case 'RepoUpdated':
+    console.log('[Projects] RepoUpdated', response.returnValues)
     nextState = await syncRepos(appState, response.returnValues)
-    console.log('BountyAdded Received', response.returnValues, nextState)
+  case 'BountyAdded':
+    console.log('[Projects] BountyAdded', response.returnValues)
+    nextState = await syncRepos(appState, response.returnValues)
+    break
+  case 'IssueCurated':
+    console.log('[Projects] IssueCurated', response.returnValues)
+    nextState = await syncRepos(appState, response.returnValues)
     break
   case 'BountySettingsChanged':
+    console.log('[Projects] BountySettingsChanged') // this one has no returnValues
     app.cache('bountySettings', response.returnValues)
     nextState = { ...appState, bountySettings: response.returnValues }
     break
   default:
-    console.log('Unknown event catched:', response)
+    console.log('[Projects] Unknown event catched:', response)
   }
   app.cache('state', nextState)
 }
 
 async function syncRepos(state, { repoId, ...eventArgs }) {
-  console.log('syncRepos: arguments from events:', ...eventArgs)
+  console.log('syncRepos: arguments from events:', eventArgs)
 
   const transform = ({ ...repo }) => ({
     ...repo,
@@ -167,22 +177,22 @@ async function syncSettings(state) {
 
 function loadRepoData(id) {
   return new Promise(resolve => {
-    console.log('loadRepoData Promise entered: ' + id)
-    combineLatest(app.call('getRepo', id)).subscribe(([{ _owner, _repo }]) => {
-      let [owner, repo] = [toAscii(_owner), toAscii(_repo)]
-      getRepoData(repo).then(({ node }) => {
-        let commits = node.defaultBranchRef ? node.defaultBranchRef.commits : 0
-        let description = node.description
+    app.call('getRepo', id).subscribe(({ owner, index }) => {
+      const [_repo, _owner] = [toAscii(id), toAscii(owner)]
+      getRepoData(_repo).then(({ node }) => {
+        const commits = node.defaultBranchRef
+          ? node.defaultBranchRef.commits
+          : 0
+        const description = node.description
           ? node.description
           : '(no description available)'
-        let metadata = {
+        const metadata = {
           name: node.name,
-          description: node.description,
+          description: description,
           collaborators: node.collaborators.totalCount,
           commits,
-          id,
         }
-        resolve({ owner, repo, metadata })
+        resolve({ _repo, _owner, index, metadata })
       })
     })
   })
@@ -198,12 +208,13 @@ function loadSettings() {
 
 async function checkReposLoaded(repos, id, transform) {
   const repoIndex = repos.findIndex(repo => repo.id === id)
+  console.log('this is the repo index:', repoIndex)
   console.log('checkReposLoaded, repoIndex:', repos, id)
   const { metadata, ...data } = await loadRepoData(id)
 
   if (repoIndex === -1) {
     // If we can't find it, load its data, perform the transformation, and concat
-    console.log('repo not found: retrieving from chain')
+    console.log('repo not found in the cache: retrieving from chain')
     return repos.concat(
       await transform({
         id,

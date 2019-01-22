@@ -116,7 +116,7 @@ contract Projects is AragonApp {
     // Fired when a bounty is added to a repo
     event BountyAdded(bytes20 owner, bytes32 repoId, uint256 issueNumber, uint256 bountySize);
     // Fired when an issue is curated
-    event IssueCurated(bytes32 repo, uint256 issueNumber, uint256 priority);
+    event IssueCurated(bytes32 repoId, uint256 issueNumber, uint256 priority);
     // Fired when fulfillment is accepted
     event FulfillmentAccepted(bytes32 repoId, uint256 issueNumber, uint fulfillmentId);
     // Fired when settings are changed
