@@ -114,7 +114,7 @@ class App extends React.PureComponent {
 
   state = {
     repos: [],
-    activeIndex: 1,
+    activeIndex: 0,
   }
 
   componentDidMount() {
@@ -167,17 +167,15 @@ class App extends React.PureComponent {
   }
 
   createProject = ({ owner, project }) => {
-    console.info('App.js: createProject', project)
+    console.info('App.js: createProject', project, owner)
     this.closePanel()
-    // this.setState({})
-    console.log(
-      'projects props:',
-      web3.toHex(owner).toString(),
-      web3.toHex(project).toString()
-    )
-    // console.log('hex:', window.web3.toHex('MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5'))
+    this.props.app.addRepo(web3.toHex(project), web3.toHex(owner))
+  }
 
-    console.log(this.props.app.addRepo(web3.toHex(owner), web3.toHex(project)))
+  removeProject = projectId => {
+    console.log('App.js: removeProject', projectId)
+    this.props.app.removeRepo(projectId)
+    // TODO: Toast feedback here maybe
   }
 
   newIssue = () => {
@@ -221,6 +219,11 @@ class App extends React.PureComponent {
         bountySettings: this.props.bountySettings,
       },
     }))
+  }
+
+  onSubmitBountyAllocation = bounties => {
+    console.log('bounty allocation submitted', bounties)
+    // TODO: The contract addBounties function first param is just a single repoId, so in the case a bounty allocation comprises issues from multiple repos it should launch a tx for each repo
   }
 
   curateIssues = issues => {
@@ -289,8 +292,11 @@ class App extends React.PureComponent {
               app={this.props.app}
               bountySettings={this.props.bountySettings}
               projects={this.props.repos !== undefined ? this.props.repos : []}
-              bountySettings={bountySettings !== undefined ? bountySettings : {}}
+              bountySettings={
+                bountySettings !== undefined ? bountySettings : {}
+              }
               onNewProject={this.newProject}
+              onRemoveProject={this.removeProject}
               onNewIssue={this.newIssue}
               onCurateIssues={this.curateIssues}
               onAllocateBounties={this.newBountyAllocation}

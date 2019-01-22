@@ -4,7 +4,13 @@ import styled from 'styled-components'
 
 import { Project, Empty } from '../Card'
 
-const Overview = ({ projects, onNewProject, onSelect, app }) => {
+const Overview = ({
+  projects,
+  onNewProject,
+  onRemoveProject,
+  onSelect,
+  app,
+}) => {
   const projectsEmpty = projects.length === 0
   // console.log('Overview projects:', projects)
   if (projectsEmpty) {
@@ -16,7 +22,8 @@ const Overview = ({ projects, onNewProject, onSelect, app }) => {
       key={index}
       label={project.metadata.name}
       description={project.metadata.description}
-      // id={projectId}
+      onRemoveProject={onRemoveProject}
+      id={project.id}
       // name={data.name}
       commits={project.metadata.commits}
       contributors={project.metadata.collaborators}
