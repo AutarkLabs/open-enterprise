@@ -73,7 +73,7 @@ function loadEntryData(addr) {
 
 async function checkEntriesLoaded(entries, addr, transform) {
   const entryIndex = entries.findIndex(
-    entry => entry.entryAddress === addr
+    entry => entry.addr === addr
   )
   if (entryIndex === -1) {
     // If we can't find it, load its data, perform the transformation, and concat
