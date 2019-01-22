@@ -25,13 +25,13 @@ class Issues extends React.PureComponent {
     allSelected: false,
     filters: {
       projects: {},
-      labels: {}, 
+      labels: {},
       milestones: {},
       deadlines: {},
       experiences: {},
     },
     textFilter: '',
-    reload: false
+    reload: false,
   }
 
   handleCurateIssues = () => {
@@ -57,39 +57,45 @@ class Issues extends React.PureComponent {
 
   applyFilters = issues => {
     const { filters, textFilter } = this.state
-    
+
     const issuesByProject = issues.filter(issue => {
       if (Object.keys(filters.projects).length === 0) return true
-      if (Object.keys(filters.projects).indexOf(issue.repository.id) !== -1) return true
+      if (Object.keys(filters.projects).indexOf(issue.repository.id) !== -1)
+        return true
       return false
     })
-    //console.log('FILTER PROJECT: ', issuesByProject)  
+    //console.log('FILTER PROJECT: ', issuesByProject)
 
     const issuesByLabel = issuesByProject.filter(issue => {
       // if there are no labels to filter by, pass all
       if (Object.keys(filters.labels).length === 0) return true
       // if labelless issues are allowed, let them pass
-      if (('labelless' in filters.labels) && (issue.labels.totalCount === 0)) return true
+      if ('labelless' in filters.labels && issue.labels.totalCount === 0)
+        return true
       // otherwise, fail all issues without labels
       if (issue.labels.totalCount === 0) return false
-      
+
       let labelsIds = issue.labels.edges.map(label => label.node.id)
 
-      if (Object.keys(filters.labels).filter(
-        id => labelsIds.indexOf(id) !== -1
-      ).length > 0) return true
+      if (
+        Object.keys(filters.labels).filter(id => labelsIds.indexOf(id) !== -1)
+          .length > 0
+      )
+        return true
       return false
     })
-    //console.log('FILTER LABEL: ', issuesByLabel)  
+    //console.log('FILTER LABEL: ', issuesByLabel)
 
     const issuesByMilestone = issuesByLabel.filter(issue => {
       // if there are no MS filters, all issues pass
       if (Object.keys(filters.milestones).length === 0) return true
       // should issues without milestones pass?
-      if (('milestoneless' in filters.milestones) && (issue.milestone == null)) return true
+      if ('milestoneless' in filters.milestones && issue.milestone == null)
+        return true
       // if issues without milestones should not pass, they are rejected below
       if (issue.milestone === null) return false
-      if (Object.keys(filters.milestones).indexOf(issue.milestone.id) !== -1) return true
+      if (Object.keys(filters.milestones).indexOf(issue.milestone.id) !== -1)
+        return true
       return false
     })
     //console.log('FILTER MS: ', issuesByMilestone)
@@ -146,7 +152,13 @@ class Issues extends React.PureComponent {
   queryLoading = () => (
     <StyledIssues>
       {this.actionsMenu()}
-      <FilterBar handleSelectAll={this.toggleSelectAll} allSelected={false} issues={[]} issuesFiltered={[]} handleFiltering={this.handleFiltering} />
+      <FilterBar
+        handleSelectAll={this.toggleSelectAll}
+        allSelected={false}
+        issues={[]}
+        issuesFiltered={[]}
+        handleFiltering={this.handleFiltering}
+      />
       <IssuesScrollView>
         <div>Loading...</div>
       </IssuesScrollView>
@@ -156,7 +168,13 @@ class Issues extends React.PureComponent {
   queryError = (error, refetch) => (
     <StyledIssues>
       {this.actionsMenu()}
-      <FilterBar handleSelectAll={this.toggleSelectAll} allSelected={false} issues={[]} issuesFiltered={[]} handleFiltering={this.handleFiltering} />
+      <FilterBar
+        handleSelectAll={this.toggleSelectAll}
+        allSelected={false}
+        issues={[]}
+        issuesFiltered={[]}
+        handleFiltering={this.handleFiltering}
+      />
       <IssuesScrollView>
         <div>
           Error {JSON.stringify(error)}
@@ -172,8 +190,11 @@ class Issues extends React.PureComponent {
 
   render() {
     const { projects, onNewProject } = this.props
+    // better return early if we have no projects added?
+    if (projects.length === 0) return <Empty action={onNewProject} />
+
     const { allSelected } = this.state
-    const reposIds = projects.map(project => project.data.repo)
+    const reposIds = projects.map(project => project.data._repo)
 
     const flattenIssues = nodes =>
       nodes && [].concat(...nodes.map(node => node.issues.nodes))
@@ -186,8 +207,6 @@ class Issues extends React.PureComponent {
 
     //console.log('current issues props:', this.props, 'and state:', this.state)
 
-    if (reposIds.length === 0) return <Empty action={onNewProject} />
-
     return (
       <Query
         fetchPolicy="cache-first"
@@ -195,7 +214,6 @@ class Issues extends React.PureComponent {
         variables={{ reposIds }}
         onError={console.error}
       >
-
         {({ data, loading, error, refetch }) => {
           if (data && data.nodes) {
             let issues = flattenIssues(data.nodes)
@@ -225,7 +243,8 @@ class Issues extends React.PureComponent {
                   ))}
                 </IssuesScrollView>
               </StyledIssues>
-            )} 
+            )
+          }
 
           if (loading) return this.queryLoading()
 
