@@ -6,7 +6,7 @@ import {
   TableCell,
   TableRow,
   Badge,
-  theme
+  theme,
 } from '@aragon/ui'
 import ProgressBar from './ProgressBar'
 import VoteStatus from './VoteStatus'
@@ -20,11 +20,11 @@ const generateBadge = (foreground, background, text) => (
 
 class VoteRow extends React.Component {
   static defaultProps = {
-    onSelectVote: () => {}
+    onSelectVote: () => {},
   }
 
   state = {
-    showMore: false
+    showMore: false,
   }
 
   handleVoteClick = () => {
@@ -40,10 +40,10 @@ class VoteRow extends React.Component {
       candidates,
       options,
       participationPct,
-      type
+      type,
     } = vote.data
     const totalSupport = options.reduce((acc, option) => acc + option.value, 0)
-    
+
     const bars = options.map(option => (
       <Bar key={option.label}>
         <ProgressBar
@@ -82,7 +82,7 @@ class VoteRow extends React.Component {
           </div>
         </QuestionCell>
         <Cell align="right" onClick={this.handleVoteClick}>
-          {participationPct}%
+          {parseFloat(participationPct.toFixed(2))}%
         </Cell>
         <BarsCell>
           <BarsGroup>

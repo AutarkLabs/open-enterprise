@@ -221,7 +221,7 @@ class VotePanelContent extends React.Component {
               <Label>Voter participation</Label>
             </h2>
             <p>
-              {participationPct}%{' '}
+              {parseFloat(participationPct.toFixed(2))}%{' '}
               <Text size="small" color={theme.negative}>
                 ({minParticipationPct / 10 ** 16}% required)
               </Text>
