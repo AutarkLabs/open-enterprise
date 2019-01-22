@@ -469,4 +469,30 @@ contract('Projects App', accounts => {
       assert(fulfillment1[0] === true)
     })
   })
+
+  context('issue curation', () => {
+    xit('should curate a single issue', async () => {
+      // assert()
+    })
+    xit('should curate multiple issues', async () => {
+      // assert()
+    })
+    context('invalid issue curation operations', () => {
+      xit('should revert on unusedAddresses length mismatch', async () => {
+        // assert()
+      })
+      xit('should revert on unusedAddresses length mismatch', async () => {
+        // assert()
+      })
+      xit('should revert on unusedAddresses length mismatch', async () => {
+        // assert()
+      })
+      xit('should revert on unusedAddresses length mismatch', async () => {
+        // assert()
+      })
+      xit('should revert if an issue has an already assigned bounty', async () => {
+        // assert()
+      })
+    })
+  })
 })
