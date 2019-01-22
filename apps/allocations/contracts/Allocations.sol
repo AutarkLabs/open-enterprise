@@ -92,10 +92,10 @@ contract Allocations is AragonApp, Fundable {
     bytes32 constant public SET_DISTRIBUTION_ROLE = keccak256("SET_DISTRIBUTION_ROLE");
     bytes32 constant public EXECUTE_PAYOUT_ROLE = keccak256("EXECUTE_PAYOUT_ROLE");
 
-    event PayoutExecuted(uint256 payoutId);
+    event PayoutExecuted(uint256 accountId);
     event NewAccount(uint256 accountId);
     event FundAccount(uint256 accountId);
-    event SetDistribution(uint256 payoutId, uint256 amount);
+    event SetDistribution(uint256 accountId);
 
     /*
     * @dev This is the function that setups who the candidates will be, and
@@ -252,7 +252,7 @@ contract Allocations is AragonApp, Fundable {
         payout.distSet = true;
         payout.supports = _supports;
         payout.amount = _amount;
-        emit SetDistribution(_payoutId, _amount);
+        emit SetDistribution(_payoutId);
     }
 
 }

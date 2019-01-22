@@ -31,8 +31,7 @@ app.state().subscribe(state => {
  ***********************/
 
 async function handleEvents(response) {
-  let nextState
-
+  let nextState = null
   switch (response.event) {
   case 'NewAccount':
     nextState = await syncAccounts(appState, response.returnValues)
@@ -55,7 +54,9 @@ async function handleEvents(response) {
   default:
     console.log(response)
   }
-  app.cache('state', nextState)
+  if(nextState !== null) {
+    app.cache('state', nextState)
+  }
 }
 
 async function syncAccounts(state, { accountId, ...eventArgs }) {
