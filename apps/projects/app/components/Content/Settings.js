@@ -125,6 +125,7 @@ class Settings extends React.Component {
   }
 
   render() {
+    const {
       baseRate,
       expLevels,
       bountyCurrency,
