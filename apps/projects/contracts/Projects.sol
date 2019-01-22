@@ -131,17 +131,17 @@ contract Projects is AragonApp {
     function curateIssues(
         address[] unusedAddresses, 
         uint256[] issuePriorities,
-        uint256[] issueDescriptionIdices, 
-        string issueDescriptions,
+        uint256[] issueDescriptionIndices, 
+        string /* unused_issueDescriptions */,
         uint256[] issueRepos,
         uint256[] issueNumbers
     ) external isInitialized auth(CURATE_ISSUES_ROLE)
     {
         bytes32 repoId;
         require(issuePriorities.length == unusedAddresses.length, "length mismatch: issuePriorites and unusedAddresses");
-        require(issuePriorities.length == issueDescriptionIdices.length, "length mismatch: issuePriorites and issueDescriptionIdx");
-        require(issueRepos.length == issueDescriptionIdices.length, "length mismatch: issueRepos and issueDescriptionIdx");
-        require(issueRepos.length == issueDescriptionIdices.length, "length mismatch: issueRepos and issueNumbers");
+        require(issuePriorities.length == issueDescriptionIndices.length, "length mismatch: issuePriorites and issueDescriptionIdx");
+        require(issueRepos.length == issueDescriptionIndices.length, "length mismatch: issueRepos and issueDescriptionIdx");
+        require(issueRepos.length == issueDescriptionIndices.length, "length mismatch: issueRepos and issueNumbers");
 
         for (uint256 i = 0; i < issuePriorities.length; i++) {
             repoId = bytes32(issueRepos[i]);
