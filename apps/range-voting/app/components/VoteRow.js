@@ -43,26 +43,12 @@ class VoteRow extends React.Component {
       participationPct,
       type,
     } = vote.data
-    let totalSupport = BigNumber(0)
-    // Couldn't get this working with a reducer :[
-    options.forEach(option => {
-      totalSupport = totalSupport.plus(BigNumber(option.value))
+    
+    let totalSupport  = 0
+    options.forEach( option => {
+      totalSupport = totalSupport + parseFloat(option.value, 10)
+      console.log(totalSupport)
     })
-
-    let optionProgress = 0
-    let optionsFill = options.map( option => {
-      console.log(option.value)
-      if(option.value === 0){
-        return {label: option.label, progress: 0}        
-      }
-      optionProgress = BigNumber(option.value).times(BigNumber(100.00)).div(BigNumber(totalSupport)).toNumber();
-      console.log(optionProgress)
-      optionProgress = optionProgress / 100;
-      console.log(optionProgress)
-      return {label: option.label, progress: parseFloat(optionProgress)}
-    })
-
-    console.log(optionsFill)
 
     // TODO: Hardcode colors into constants or extend aragon ui theme if needed
     let typeBadge
@@ -97,18 +83,18 @@ class VoteRow extends React.Component {
         </Cell>
         <BarsCell>
           <BarsGroup>
-            {showMore && optionsFill.map(option => (
+            {showMore && options.map(option => (
               <Bar key={option.label}>
                 <ProgressBar
-                  progress={option.optionProgress}
+                  progress={safeDiv(parseInt(option.value, 10), totalSupport)}
                   label={option.label}
                 />
               </Bar>
             ))}
-            {!showMore && optionsFill.slice(0,2).map(option => (
+            {!showMore && options.slice(0,2).map(option => (
               <Bar key={option.label}>
                 <ProgressBar
-                  progress={option.optionProgress}
+                  progress={safeDiv(parseInt(option.value, 10), totalSupport)}
                   label={option.label}
                 />
               </Bar>

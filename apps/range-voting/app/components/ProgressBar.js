@@ -23,10 +23,6 @@ const ProgressBar = ({ progress, label }) => (
 )
 
 
-ProgressBar.propTypes = {
-  progress: PropTypes.number
-}
-
 const Main = styled.div`
   width: 100%;
   align-items: center;
