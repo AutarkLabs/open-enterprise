@@ -238,6 +238,7 @@ class App extends React.PureComponent {
   }
 
   onSubmitCuration = issues => {
+    this.closePanel()
     // TODO: maybe assign this to issueDescriptionIndices, not clear
     issues.map((issue, i, indices) => {
       if (i == 0) {
