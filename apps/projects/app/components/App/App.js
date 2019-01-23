@@ -238,6 +238,7 @@ class App extends React.PureComponent {
   }
 
   onSubmitCuration = issues => {
+    // TODO: maybe assign this to issueDescriptionIndices, not clear
     issues.map((issue, i, indices) => {
       if (i == 0) {
         return issue.title.length
@@ -245,21 +246,21 @@ class App extends React.PureComponent {
       return indices[i - 1] + issue.title.length
     })
 
-    console.log('Issues:', issues)
-    console.log('Repos:', this.props.repos)
-    const emptyIntArray = new Array(issues.length).fill(0)
-    const unusedAddresses = emptyIntArray
-    const issuePriorities = emptyIntArray
-    const issueDescriptionIndices = []
-    const issueDescriptions = issues.map(issue => issue.title).join()
-    const issueRepos = this.state.repos
-    const issueNumbers = issues.map(issue => issue.number)
-
+    // Define contract function params
+    const unusedAddresses = [0] // TODO: FAILS WITH MULTIPLE ADDRESSES
+    const issuePriorities = [999, 999]
+    const issueDescriptionIndices = [3, 4]
+    // TODO: splitting of descriptions needs to be fixed at smart contract level
+    const unused_issueDescriptions = 'Cats,Dogs'
+    /* TODO: The numbers below are supposedly coming from an eventual:
+     issues.map(issue => web3.utils.hextToNum(web3.toHex(issue.repoId))) */
+    const issueRepos = [260, 409]
+    const issueNumbers = [1, 3]
     this.props.app.curateIssues(
       unusedAddresses,
       issuePriorities,
       issueDescriptionIndices,
-      issueDescriptions,
+      unused_issueDescriptions,
       issueRepos,
       issueNumbers
     )

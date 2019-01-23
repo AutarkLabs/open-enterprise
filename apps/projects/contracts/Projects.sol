@@ -141,11 +141,11 @@ contract Projects is AragonApp {
         require(issuePriorities.length == unusedAddresses.length, "length mismatch: issuePriorites and unusedAddresses");
         require(issuePriorities.length == issueDescriptionIndices.length, "length mismatch: issuePriorites and issueDescriptionIdx");
         require(issueRepos.length == issueDescriptionIndices.length, "length mismatch: issueRepos and issueDescriptionIdx");
-        require(issueRepos.length == issueDescriptionIndices.length, "length mismatch: issueRepos and issueNumbers");
+        require(issueRepos.length == issueNumbers.length, "length mismatch: issueRepos and issueNumbers");
 
         for (uint256 i = 0; i < issuePriorities.length; i++) {
             repoId = bytes32(issueRepos[i]);
-            require(issuePriorities[i] == 999, "bounty already assigned for issue");
+            require(issuePriorities[i] != 999, "issue already curated");
             repos[repoId].issues[uint256(issueNumbers[i])].priority = issuePriorities[i];
             emit IssueCurated(repoId,issueNumbers[i],issuePriorities[i]);
         }

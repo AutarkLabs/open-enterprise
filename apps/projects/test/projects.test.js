@@ -96,6 +96,15 @@ contract('Projects App', accounts => {
       root,
       { from: root }
     )
+
+    await acl.createPermission(
+      root,
+      app.address,
+      await app.CURATE_ISSUES_ROLE(),
+      root,
+      { from: root }
+    )
+
     // Deploy test Bounties contract
     registry = await StandardBounties.new(web3.toBigNumber(owner1))
     bounties = StandardBounties.at(registry.address)
@@ -471,7 +480,25 @@ contract('Projects App', accounts => {
   })
 
   context('issue curation', () => {
-    xit('should curate a single issue', async () => {
+    // TODO: We should create every permission for every test this way to speed up testing
+    // TODO: Create an external helper function that inits acl and sets permissions
+    before(async () => {})
+    it('should curate a single issue', async () => {
+      const unusedAddresses = accounts.slice(0, 4)
+      const zeros = new Array(unusedAddresses.length).fill(0)
+      const issuePriorities = zeros
+      const issueDescriptionIndices = zeros
+      const unused_issueDescriptions = ''
+      const issueRepos = zeros
+      const issueNumbers = zeros
+      await app.curateIssues(
+        unusedAddresses,
+        issuePriorities,
+        issueDescriptionIndices,
+        unused_issueDescriptions,
+        issueRepos,
+        issueNumbers
+      )
       // assert()
     })
     xit('should curate multiple issues', async () => {
