@@ -11,7 +11,7 @@ import {
   DropDown,
   theme,
   Info,
-  Checkbox
+  Checkbox,
 } from '@aragon/ui'
 
 import {
@@ -41,9 +41,9 @@ const INITIAL_STATE = {
   payoutToken: '',
   payoutTokenIndex: 0,
   amount: null,
-  allocationError: false, 
+  allocationError: false,
   balanceSetting: false,
-  addressSetting: false
+  addressSetting: false,
 }
 
 class NewAllocation extends React.Component {
@@ -89,7 +89,7 @@ class NewAllocation extends React.Component {
   submitAllocation = () => {
     // clear input here.
 
-    let informational = (this.state.allocationTypeIndex === 0)
+    let informational = this.state.allocationTypeIndex === 0
     let recurring = !informational && this.state.payoutTypeIndex != 0
     // TODO: period should be smarter: now the only option is monthly
     let period = recurring ? 86400 * 31 : 0
@@ -173,12 +173,13 @@ class NewAllocation extends React.Component {
                   text="Must vote with entire balance"
                   onChange={this.changeField}
                 />
-                {this.props.entities.length > 0 && 
-              <SettingsInput
-                name="addressSetting"
-                text="Use address book for options"
-                onChange={this.changeField}
-              />}
+                {this.props.entities.length > 0 && (
+                  <SettingsInput
+                    name="addressSetting"
+                    text="Use address book for options"
+                    onChange={this.changeField}
+                  />
+                )}
               </div>
             }
           />
@@ -217,7 +218,7 @@ class NewAllocation extends React.Component {
               }
             />
           )}
-          {this.state.addressSetting == true &&
+          {this.state.addressSetting == true && (
             <FormField
               separator
               label={this.state.addressSetting}
@@ -234,8 +235,8 @@ class NewAllocation extends React.Component {
                 />
               }
             />
-          }
-          {this.state.addressSetting == false &&
+          )}
+          {this.state.addressSetting == false && (
             <FormField
               separator
               label={this.state.addressSetting}
@@ -251,14 +252,11 @@ class NewAllocation extends React.Component {
                 />
               }
             />
-          }
-          
+          )}
         </Form>
         <div>
           {this.state.allocationError && (
-            <Info title="Error">
-                Amount must be less than limit.
-            </Info>
+            <Info title="Error">Amount must be less than limit.</Info>
           )}
           {this.state.addressError && (
             <Info title="Error">

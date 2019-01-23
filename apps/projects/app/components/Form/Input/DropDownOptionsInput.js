@@ -48,8 +48,6 @@ class DropDownOptionsInput extends React.Component {
   }
 
   render() {
-    console.log('dropdown:', this.state, this.props)
-
     const loadOptions = this.props.value.map(issue => {
       const { repo, number, title } = issue
       const issueString = `${repo} #${number} - ${title}`
@@ -107,7 +105,6 @@ const StyledOptionsInput = styled.div`
       flex-grow: 1;
     }
     > svg {
-      cursor: ${({ empty }) => (empty ? 'not-allowed' : 'pointer')};
       margin-left: 3px;
       margin-top: -3px;
       height: auto;
@@ -124,5 +121,10 @@ const StyledOptionsInput = styled.div`
     }
   }
 `
+
+// > svg {
+/* cursor not really needed here */
+/* cursor: ${({ empty }) => (empty ? 'not-allowed' : 'pointer')}; */
+// }
 
 export default DropDownOptionsInput

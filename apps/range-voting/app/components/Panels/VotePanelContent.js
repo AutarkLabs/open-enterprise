@@ -302,8 +302,9 @@ class VotePanelContent extends React.Component {
             {showResults ? 'Hide Voting Results' : 'Show Voting Results'}
           </ShowText>
           {showResults &&
-            options.map(option => (
+            options.map((option, index) => (
               <ProgressBarThick
+                key={index}
                 progress={safeDiv(parseInt(option.value, 10), totalSupport)}
                 label={option.label}
               />

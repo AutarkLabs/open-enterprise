@@ -24,7 +24,7 @@ DescriptionInput.propTypes = {
   rows: PropTypes.string,
   placeholder: PropTypes.string,
   name: PropTypes.string.isRequired,
-  value: PropTypes.string.isRequired,
+  value: PropTypes.string, // This is empty initially, so never required
   onChange: PropTypes.func.isRequired,
 }
 
