@@ -74,7 +74,7 @@ class NewAllocation extends React.Component {
 
   // Should be using web3.isAddress probably but this is good enough for now
   isAddressError = (entities, addr) => {
-    console.log("address")
+    console.log('address')
     console.log(entities)
     console.log(addr)
     let entitiesAddrs = entities.map(entity => entity.addr)

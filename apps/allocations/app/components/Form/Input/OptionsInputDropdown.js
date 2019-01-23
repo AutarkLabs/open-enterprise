@@ -54,17 +54,17 @@ class OptionsInputDropdown extends React.Component {
   render() {
     const loadOptions = this.props.value.map((option, index) => (
       <div className="option" key={option.addr}>
-          <MultiDropDown
-              name={this.props.name}
-              index={index}
-              placeholder={this.props.placeholder}
-              onChange={this.props.onChange}
-              value={this.props.value}
-              entities={this.state.entities}
-              activeItem={option.index}
-              validator={this.props.validator}
-          />
-          <IconRemove onClick={() => this.removeOption(option)} />
+        <MultiDropDown
+          name={this.props.name}
+          index={index}
+          placeholder={this.props.placeholder}
+          onChange={this.props.onChange}
+          value={this.props.value}
+          entities={this.state.entities}
+          activeItem={option.index}
+          validator={this.props.validator}
+        />
+        <IconRemove onClick={() => this.removeOption(option)} />
       </div>
     ))
     return (
@@ -80,8 +80,8 @@ class OptionsInputDropdown extends React.Component {
             entities={this.state.entities}
             activeItem={0}
             validator={this.props.validator}
-            />
-            <IconAdd onClick={this.addOption} />
+          />
+          <IconAdd onClick={this.addOption} />
         </div>
       </StyledOptionsInput>
     )
