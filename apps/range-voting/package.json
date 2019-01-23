@@ -27,6 +27,7 @@
     "@aragon/client": "1.1.0",
     "@aragon/ui": "ottodevs/aragon-ui#5b17efa",
     "polyfill": "0.1.0",
+    "bignumber.js": "^7.2.1",
     "prop-types": "15.6.2",
     "react": "^16.6.3",
     "react-blockies": "1.3.0",

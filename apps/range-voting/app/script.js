@@ -163,7 +163,7 @@ async function loadVoteDataAllocation(vote, voteId) {
               resolve({
                 ...returnObject,
                 limit: parseInt(payout.limit, 10),
-                balance: parseInt(vote.executionScript.slice(450, 514), 16),
+                balance: parseInt(vote.executionScript.slice(706, 770), 16),
                 metadata: payout.metadata
               })
             })
