@@ -49,14 +49,10 @@ contract AddressBook is AragonApp {
     bytes32 public constant REMOVE_ENTRY_ROLE = keccak256("REMOVE_ENTRY_ROLE");
 
     /**
-     * Add an entry to the registry.
+     * @notice Add entity '`_name`' with the address '`_addr`' to the registry.
      * @param _addr The address of the entry to add to the registry
      * @param _name The name of the entry to add to the registry
      * @param _entryType The type of the entry to add to the registry
-
-    ) public auth(ADD_ENTRY_ROLE) returns (address)
-    {
-
      */
     function addEntry(
         address _addr,
@@ -77,9 +73,8 @@ contract AddressBook is AragonApp {
     }
 
     /**
-     * Remove an entry from the registry.
+     * @notice Remove entity with address '`_addr`' from the registry.
      * @param _addr The ID of the entry to remove
-    ) public auth(REMOVE_ENTRY_ROLE) { // solium-disable-line lbrace
      */
     function removeEntry(
         address _addr

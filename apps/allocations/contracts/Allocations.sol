@@ -144,8 +144,7 @@ contract Allocations is AragonApp, Fundable {
     * @dev This is the function that sets up who the candidates will be, and
     *      where the funds will go for the payout. This is where the payout
     *      object needs to be created in the payouts array.
-    * @notice Start a payout with the specified candidates and addresses.
-    *         None of the distribution or payments are handled in this step.
+    * @notice Create a new account so you can begin creating allocations.
     * @param _metadata Any relevent label for the payout
     *
     */

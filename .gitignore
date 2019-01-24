@@ -70,3 +70,4 @@ codealike.json
 */**/coverageEnv
 */**/coverage.json
 */**/coverage
+.DS_Store
