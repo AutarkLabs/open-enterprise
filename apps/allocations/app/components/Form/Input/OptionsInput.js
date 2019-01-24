@@ -19,19 +19,22 @@ class OptionsInput extends React.Component {
     value: PropTypes.array.isRequired,
     onChange: PropTypes.func.isRequired,
     validator: PropTypes.func,
-    error: PropTypes.bool
+    error: PropTypes.bool,
   }
 
   addOption = () => {
     // TODO: Implement some rules about what an 'Option can be' duplicates, etc
     const { input, name, value } = this.props
-    if (input && !value.includes(input) && this.props.validator(input)) {
+    // if (input && !value.includes(input) && this.props.validator(input)) { // TODO: Fix this
+    if (input && !value.includes(input)) {
       this.props.onChange({ target: { name, value: [...value, input] } })
+      // The second call is currently needed reset the new OptionField
+      // TODO: Avoid calling the method twice
       this.props.onChange({ target: { name: 'optionsInput', value: '' } })
-      this.props.error = true
+      // this.props.error = true // TODO: It is not possible to modify props this way
       console.log('Option Added')
     } else {
-      console.log('OptionsInput: The option is empty or already present')
+      console.log('[OptionsInput.js] Option empty or already present')
     }
   }
 

@@ -35,7 +35,9 @@ class OptionsInputDropdown extends React.Component {
       this.props.onChange({ target: { name: 'optionsInput', value: '' } })
       console.log('Option Added')
     } else {
-      console.log('OptionsInput: The option is empty or already present')
+      console.log(
+        'OptionsInputDropdown: The option is empty or already present'
+      )
     }
   }
 
@@ -49,7 +51,6 @@ class OptionsInputDropdown extends React.Component {
       })
     console.log('Option Removed', option, this.props.value)
   }
-
 
   render() {
     const loadOptions = this.props.value.map((option, index) => (

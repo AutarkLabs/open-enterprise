@@ -1,18 +1,8 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { BigNumber } from 'bignumber.js'
 
-import {
-  Button,
-  Field,
-  Text,
-  TextInput,
-  DropDown,
-  theme,
-  Info,
-  Checkbox,
-} from '@aragon/ui'
+import { DropDown, Info } from '@aragon/ui'
 
 import {
   DescriptionInput,
@@ -48,10 +38,9 @@ const INITIAL_STATE = {
 
 class NewAllocation extends React.Component {
   static propTypes = {
-    // key: PropTypes.number.isRequired, // TODO: Check the use of this required prop
     onSubmitAllocation: PropTypes.func.isRequired,
     description: PropTypes.string,
-    entities: PropTypes.object,
+    entities: PropTypes.array, // TODO: Better shape the array
   }
 
   state = INITIAL_STATE
@@ -72,68 +61,70 @@ class NewAllocation extends React.Component {
     this.setState({ payoutTypeIndex: index, payoutType: items[index] })
   }
 
-  // Should be using web3.isAddress probably but this is good enough for now
   isAddressError = (entities, addr) => {
-    console.log('address')
-    console.log(entities)
-    console.log(addr)
-    let entitiesAddrs = entities.map(entity => entity.addr)
-    if (!/^(0x)?[0-9a-f]{40}$/i.test(addr) || entitiesAddrs.includes(addr)) {
-      this.state.addressError = true
-      return false
-    }
-    this.state.addressError = false
-    return true
+    const isAddress = /^(0x)?[0-9a-f]{40}$/i.test(addr) // TODO: replace by: web3.isAddress(addr)
+    console.log('[isAddressError] entitites', entities, 'addr', addr)
+    const isDuplicated =
+      entities.length > 1 && entities.map(entity => entity.addr).includes(addr)
+    // const isEmpty = addr && addr.length === 0
+    const errorCondition = !isAddress || isDuplicated || isEmpty
+    return errorCondition
   }
 
   submitAllocation = () => {
-    // clear input here.
-
     let informational = this.state.allocationTypeIndex === 0
-    let recurring = !informational && this.state.payoutTypeIndex != 0
-    // TODO: period should be smarter: now the only option is monthly
-    let period = recurring ? 86400 * 31 : 0
-    let optionsInput = this.state.optionsInput.addr
-    this.setState({
-      addressError: this.state.addressError,
-      allocationError: false,
-    })
-    if (!(this.isAddressError(this.state.options, optionsInput) || optionsInput === '')) {
-      this.setState({ addressError: true })
-    } else {
-      this.state.options.push(this.state.optionsInput)
-    }
+    let recurring = this.state.payoutTypeIndex !== 0
+
+    // define the allocation object
     let allocation = {
-      addresses: this.state.options.map(option => option.addr),
       payoutId: this.props.id,
       informational: informational,
       recurring: recurring,
-      period: period,
+      period: recurring ? 86400 * 31 : 0,
       balance: this.state.amount * 10e17,
     }
-    if (allocation.balance > this.props.limit && !informational) {
-      this.setState({ allocationError: true })
+
+    // check for correct balance if token transfer type
+    if (!informational) {
+      if (allocation.balance > this.props.limit) {
+        this.setState({ allocationError: true })
+        return
+      }
+    }
+
+    // check options are addresses TODO: fix contract to accept regular strings (informational vote)
+    let optionsInput = this.state.optionsInput.addr
+    if (this.isAddressError(this.state.options, optionsInput)) {
+      this.setState({ addressError: true })
       return
     }
+
+    // Add seleccted addressbook entries to options
+    // It is a good practice to mark unused args with underscore
+    this.setState((prevState, _prevProps) => ({
+      options: { ...prevState.options, optionsInput },
+    }))
+
+    // If everything is ok (no validation errors) add options to allocation.addresses
+    allocation.addresses = this.state.options.map(option => option.addr)
+
+    // submit the allocation (invoke contract function)
     this.props.onSubmitAllocation(allocation)
-    this.state.allocationError = false
+
+    // reset everything here
     this.setState(INITIAL_STATE)
-    console.info('New Allocation: submitting...')
-    console.table(this.props)
-    console.table(this.state)
   }
 
   render() {
     return (
       <div>
         <Form
-          // heading={this.props.heading}
           subHeading={this.props.subHeading}
           onSubmit={this.submitAllocation}
           description={this.props.description}
           submitText="Submit Allocation"
         >
-          {this.state.allocationTypeIndex == 1 && (
+          {this.state.allocationTypeIndex === 1 && (
             <Info.Action title="Warning">
               This will create a Range Vote and after it closes, it will result
               in a financial transfer.
@@ -173,17 +164,18 @@ class NewAllocation extends React.Component {
                   text="Must vote with entire balance"
                   onChange={this.changeField}
                 />
-                {this.props.entities.length > 0 && (
-                  <SettingsInput
-                    name="addressSetting"
-                    text="Use address book for options"
-                    onChange={this.changeField}
-                  />
-                )}
+                {// temporarily check > 1 because the first is "Select an entry msg"
+                  this.props.entities.length > 1 && (
+                    <SettingsInput
+                      name="addressSetting"
+                      text="Use address book for options"
+                      onChange={this.changeField}
+                    />
+                  )}
               </div>
             }
           />
-          {this.state.allocationTypeIndex == 1 && (
+          {this.state.allocationTypeIndex === 1 && (
             <FormField
               required
               separator
@@ -218,10 +210,10 @@ class NewAllocation extends React.Component {
               }
             />
           )}
-          {this.state.addressSetting == true && (
+          {this.state.addressSetting === true && (
             <FormField
               separator
-              label={this.state.addressSetting}
+              // label={this.state.addressSetting} // TODO: Label MUST be string here boolean is passed
               input={
                 <OptionsInputDropdown
                   name="options"
@@ -236,10 +228,10 @@ class NewAllocation extends React.Component {
               }
             />
           )}
-          {this.state.addressSetting == false && (
+          {this.state.addressSetting === false && (
             <FormField
               separator
-              label={this.state.addressSetting}
+              // label={this.state.addressSetting} // TODO: a string MUST be passed instead of this current boolean
               input={
                 <OptionsInput
                   name="options"

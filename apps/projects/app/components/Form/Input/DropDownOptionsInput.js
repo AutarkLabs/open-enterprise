@@ -28,7 +28,9 @@ class DropDownOptionsInput extends React.Component {
       this.props.onChange({ target: { name: 'optionsInput', value: '' } })
       console.log('Option Added')
     } else {
-      console.log('OptionsInput: The option is empty or already present')
+      console.log(
+        'DropDownOptionsInput: The option is empty or already present'
+      )
     }
   }
 
