@@ -33,6 +33,7 @@ app.state().subscribe(state => {
 async function handleEvents(response) {
   let nextState = null
   switch (response.event) {
+  case 'PayoutExecuted':
   case 'NewAccount':
     nextState = await syncAccounts(appState, response.returnValues)
     break

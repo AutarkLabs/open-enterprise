@@ -197,6 +197,7 @@ contract Allocations is AragonApp, Fundable {
         //handle vault
         for (i = 0; i < payout.candidateAddresses.length; i++) {
             payout.candidateAddresses[i].transfer(payout.supports[i].mul(pointsPer));
+            payout.balance = payout.balance.sub(payout.supports[i].mul(pointsPer));
         }
         success = true;
         emit PayoutExecuted(_payoutId);
