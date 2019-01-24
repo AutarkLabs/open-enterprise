@@ -9,7 +9,7 @@ import {
   ContextMenu,
   ContextMenuItem,
   IconAdd,
-  IconSettings,
+  IconFundraising,
   SafeLink,
   theme,
 } from '@aragon/ui'
@@ -58,13 +58,9 @@ const Account = ({
             <IconAdd />
             <ActionLabel>New Allocation</ActionLabel>
           </ContextMenuItem>
-          <ContextMenuItem onClick={manageParameters}>
-            <IconSettings />
-            <ActionLabel>Manage Parameters</ActionLabel>
-          </ContextMenuItem>
           <ContextMenuItem onClick={executePayout}>
-            <IconSettings />
-            <ActionLabel>Execute Payout</ActionLabel>
+            <IconFundraising />
+            <ActionLabel>Distribute Allocation</ActionLabel>
           </ContextMenuItem>
         </ContextMenu>
       </MenuContainer>
