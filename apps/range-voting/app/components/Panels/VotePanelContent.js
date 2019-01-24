@@ -129,8 +129,9 @@ class VotePanelContent extends React.Component {
     }
 
     const { endDate, open, quorum, support } = vote
-    const { participationPct, canExecute } = vote.data
     const {
+      participationPct,
+      canExecute,
       creator,
       metadata,
       totalVoters,
@@ -211,9 +212,10 @@ class VotePanelContent extends React.Component {
               <Label>Amount</Label>
             </h2>
             <p>{' ' + BigNumber(vote.data.balance)
-            .div(BigNumber(10e17))
-            .dp(3)
-            .toString()}</p>
+              .div(BigNumber(10e17))
+              .dp(3)
+              .toString()}
+            </p>
           </div>
           <div>
             <h2>

@@ -185,6 +185,7 @@ class Decisions extends React.Component {
           open: !vote.data.executed && isBefore(new Date(), endDate),
           quorum: safeDiv(vote.data.minAcceptQuorum, pctBase),
           quorumProgress: getQuorumProgress(vote.data),
+          description: vote.data.metadata
         }
       })
       : votes
@@ -224,7 +225,7 @@ class Decisions extends React.Component {
           <SidePanel
             title={
               currentVote
-                ? `Range Vote #${currentVoteId} (${
+                ? `${currentVote.description} (${
                   currentVote.open ? 'Open' : 'Closed'
                 })`
                 : 'currentVote'
