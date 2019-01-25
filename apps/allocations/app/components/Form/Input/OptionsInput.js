@@ -26,11 +26,11 @@ class OptionsInput extends React.Component {
     // TODO: Implement some rules about what an 'Option can be' duplicates, etc
     const { input, name, value } = this.props
     // if (input && !value.includes(input) && this.props.validator(input)) { // TODO: Fix this
-    if (input && !value.includes(input)) {
+    if (input && !value.map( v => v.addr ).includes(input)) {
       this.props.onChange({ target: { name, value: [...value, input] } })
       // The second call is currently needed reset the new OptionField
       // TODO: Avoid calling the method twice
-      this.props.onChange({ target: { name: 'optionsInput', value: '' } })
+      this.props.onChange({ target: { name: 'optionsInputString', value: {addr:''} } })
       // this.props.error = true // TODO: It is not possible to modify props this way
       console.log('Option Added')
     } else {
@@ -50,13 +50,13 @@ class OptionsInput extends React.Component {
   }
 
   onChangeInput = ({ target: { value } }) => {
-    this.props.onChange({ target: { name: 'optionsInput', value } })
+    this.props.onChange({ target: { name: 'optionsInputString', value: {addr:value} } })
   }
 
   render() {
     const loadOptions = this.props.value.map(option => (
-      <div className="option" key={option}>
-        <StyledInput readOnly value={option} />
+      <div className="option" key={option.addr}>
+        <StyledInput readOnly value={option.addr} />
         <IconRemove onClick={() => this.removeOption(option)} />
       </div>
     ))
@@ -66,7 +66,7 @@ class OptionsInput extends React.Component {
         <div className="option">
           <StyledInput
             placeholder={this.props.placeholder}
-            value={this.props.input}
+            value={this.props.input.addr}
             onChange={this.onChangeInput}
           />
           <IconAdd onClick={this.addOption} />

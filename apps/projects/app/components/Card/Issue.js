@@ -29,7 +29,6 @@ const StyledIssue = styled.div`
 `
 const IssueDetails = styled.div`
   display: flex;
-  justify-content: space-between;
 `
 
 // TODO: @aragon/ui Table?
@@ -41,20 +40,22 @@ const Issue = ({ title, repo, number, labels, isSelected, onSelect }) => (
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-around',
-        height: '100px',
+        height: '90px',
         flex: '1',
       }}
     >
       <div>
         <Text
           color={theme.textPrimary}
-          size="xlarge"
+          size="large"
           style={{ marginRight: '5px' }}
         >
           {title}
         </Text>
+      </div>
+      <IssueDetails>
         <Text color={theme.textSecondary}>
-          • {repo} #{number}
+          {repo} #{number}
         </Text>
         <Text size="small" color={theme.textTertiary}>
           { labels.totalCount ? (
@@ -68,7 +69,7 @@ const Issue = ({ title, repo, number, labels, isSelected, onSelect }) => (
             )) : ''
           }        
         </Text>
-      </div>
+      </IssueDetails>
     </div>
   </StyledIssue>
 )

@@ -21,8 +21,6 @@ const PAYOUT_TYPES = ['One-Time', 'Monthly']
 const INITIAL_STATE = {
   description: '',
   votingTokens: null,
-  options: [],
-  optionsInput: '',
   allocationType: '',
   allocationTypeIndex: 0,
   activePayoutOption: 0,
@@ -34,6 +32,10 @@ const INITIAL_STATE = {
   allocationError: false,
   balanceSetting: false,
   addressSetting: false,
+  options: [],
+  optionsInput: {addr: 0, index: 0},
+  optionsString: [],
+  optionsInputString: {addr: 'Enter an option'}
 }
 
 class NewAllocation extends React.Component {
@@ -66,7 +68,7 @@ class NewAllocation extends React.Component {
     console.log('[isAddressError] entitites', entities, 'addr', addr)
     const isDuplicated =
       entities.length > 1 && entities.map(entity => entity.addr).includes(addr)
-    // const isEmpty = addr && addr.length === 0
+    const isEmpty = !addr || addr.length === 0 || addr === 0x0
     const errorCondition = !isAddress || isDuplicated || isEmpty
     return errorCondition
   }
@@ -74,6 +76,7 @@ class NewAllocation extends React.Component {
   submitAllocation = () => {
     let informational = this.state.allocationTypeIndex === 0
     let recurring = this.state.payoutTypeIndex !== 0
+    let options = this.state.addressSetting ? this.state.options : this.state.optionsString
 
     // define the allocation object
     let allocation = {
@@ -92,21 +95,17 @@ class NewAllocation extends React.Component {
       }
     }
 
+    // If everything is ok (no validation errors) add options to allocation.addresses
+    allocation.addresses = options.map(option => option.addr)
+
     // check options are addresses TODO: fix contract to accept regular strings (informational vote)
     let optionsInput = this.state.optionsInput.addr
-    if (this.isAddressError(this.state.options, optionsInput)) {
+    if (optionsInput !== 0 && this.isAddressError(this.state.options, optionsInput)) {
       this.setState({ addressError: true })
       return
+    } else if (optionsInput !== 0) {
+      allocation.addresses.push(optionsInput)
     }
-
-    // Add seleccted addressbook entries to options
-    // It is a good practice to mark unused args with underscore
-    this.setState((prevState, _prevProps) => ({
-      options: { ...prevState.options, optionsInput },
-    }))
-
-    // If everything is ok (no validation errors) add options to allocation.addresses
-    allocation.addresses = this.state.options.map(option => option.addr)
 
     // submit the allocation (invoke contract function)
     this.props.onSubmitAllocation(allocation)
@@ -224,6 +223,7 @@ class NewAllocation extends React.Component {
                   validator={this.isAddressError}
                   error={this.state.addressError}
                   entities={this.props.entities}
+                  activeItem={this.state.optionsInput.index}
                 />
               }
             />
@@ -234,11 +234,11 @@ class NewAllocation extends React.Component {
               // label={this.state.addressSetting} // TODO: a string MUST be passed instead of this current boolean
               input={
                 <OptionsInput
-                  name="options"
+                  name="optionsString"
                   placeholder="Enter an option"
                   onChange={this.changeField}
-                  value={this.state.options}
-                  input={this.state.optionsInput}
+                  value={this.state.optionsString}
+                  input={this.state.optionsInputString}
                   validator={this.isAddressError}
                   error={this.state.addressError}
                 />

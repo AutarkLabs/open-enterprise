@@ -12,35 +12,35 @@ class MultiDropdown extends React.Component {
     activeItem: PropTypes.number.isRequired,
     validator: PropTypes.func.isRequired,
   }
-  
-  state = {
-      activeItem: this.props.activeItem,
-  }
 
   onChangeInput = (index, items) => {
     const { name, value, entities } = this.props
     let newValue = {
-        addr: entities[index].addr,
-        index: index
+      addr: entities[index].addr,
+      index: index
     }
-    this.props.validator(value, newValue.addr)
+    if(this.props.validator(value, newValue.addr)) {
+      this.props.onChange({ target: { name: 'addressError', value: true} })
+    } else {
+      this.props.onChange({ target: { name: 'addressError', value: false} })
+    }
     this.setState({ activeItem: index})
     if(name === 'optionsInput'){
-        this.props.onChange({ target: { name: 'optionsInput', value: newValue } })
+      this.props.onChange({ target: { name: 'optionsInput', value: newValue } })
     } else {
-        value[this.props.index] = newValue
-        this.props.onChange({ target: { name, value: value } })
+      value[this.props.index] = newValue
+      this.props.onChange({ target: { name, value: value } })
     }
   }
 
   render() {
     return (
-        <DropDown
-            items={this.props.entities.map(entity => entity.data.name)}
-            active={this.state.activeItem ? this.state.activeItem : 0 }
-            onChange={this.onChangeInput}
-            wide={true}
-        />
+      <DropDown
+        items={this.props.entities.map(entity => entity.data.name)}
+        active={this.props.activeItem}
+        onChange={this.onChangeInput}
+        wide={true}
+      />
     )
   }
 }

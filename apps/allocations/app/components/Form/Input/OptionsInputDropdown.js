@@ -18,6 +18,7 @@ class OptionsInputDropdown extends React.Component {
     input: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     value: PropTypes.array.isRequired,
+    activeItem: PropTypes.number.isRequired,
     onChange: PropTypes.func.isRequired,
     validator: PropTypes.func.isRequired,
     entities: PropTypes.object,
@@ -30,11 +31,15 @@ class OptionsInputDropdown extends React.Component {
   addOption = () => {
     // TODO: Implement some rules about what an 'Option can be' duplicates, etc
     const { input, name, value } = this.props
-    if (input && this.props.validator(value, input.addr)) {
+    if (input && !this.props.validator(value, input.addr)) {
       this.props.onChange({ target: { name, value: [...value, input] } })
-      this.props.onChange({ target: { name: 'optionsInput', value: '' } })
+      this.props.onChange({ target: { name: 'optionsInput', value: {
+        addr: 0,
+        index: 0
+      } } })
       console.log('Option Added')
     } else {
+      this.props.onChange({ target: { name: 'addressError', value: true} })
       console.log(
         'OptionsInputDropdown: The option is empty or already present'
       )
@@ -62,7 +67,7 @@ class OptionsInputDropdown extends React.Component {
           onChange={this.props.onChange}
           value={this.props.value}
           entities={this.state.entities}
-          activeItem={option.index}
+          activeItem={this.props.value[index].index}
           validator={this.props.validator}
         />
         <IconRemove onClick={() => this.removeOption(option)} />
@@ -79,7 +84,7 @@ class OptionsInputDropdown extends React.Component {
             value={this.props.value}
             onChange={this.props.onChange}
             entities={this.state.entities}
-            activeItem={0}
+            activeItem={this.props.activeItem}
             validator={this.props.validator}
           />
           <IconAdd onClick={this.addOption} />
