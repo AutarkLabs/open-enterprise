@@ -39,6 +39,7 @@ class NewIssueCuration extends React.Component {
   render() {
     return (
       <Form onSubmit={this.submitCuration} submitText="Submit Curation">
+        {false &&
         <FormField
           required
           label="Description"
@@ -51,6 +52,7 @@ class NewIssueCuration extends React.Component {
             />
           }
         />
+        }
         <FormField
           label="Issues"
           required

@@ -196,34 +196,37 @@ class VotePanelContent extends React.Component {
             </div>
           </div>
         </SidePanelSplit>
-        <Part>
-          {description && (
+        {description && (
+          <Part>
             <React.Fragment>
               <h2>
                 <Label>Description:</Label>
               </h2>
               <p>{this.renderDescription(description)}</p>
             </React.Fragment>
-          )}
-        </Part>
-        <SidePanelSplit style={{ borderBottom: 'none' }}>
-          <div>
-            <h2>
-              <Label>Amount</Label>
-            </h2>
-            <p>{' ' + BigNumber(vote.data.balance)
-              .div(BigNumber(10e17))
-              .dp(3)
-              .toString()}
-            </p>
-          </div>
-          <div>
-            <h2>
-              <Label>Dates</Label>
-            </h2>
-            <p>When vote is approved</p>
-          </div>
-        </SidePanelSplit>
+          </Part>
+        )}
+        
+        {vote.data.balance !== undefined && (
+          <SidePanelSplit style={{ borderBottom: 'none' }}>
+            <div>
+              <h2>
+                <Label>Amount</Label>
+              </h2>
+              <p>{' ' + BigNumber(vote.data.balance)
+                .div(BigNumber(10e17))
+                .dp(3)
+                .toString() + ' ETH'}
+              </p>
+            </div>
+            <div>
+              <h2>
+                <Label>Dates</Label>
+              </h2>
+              <p>When vote is approved</p>
+            </div>
+          </SidePanelSplit>
+        )}
         <SidePanelSplit>
           <div>
             <h2>

@@ -125,22 +125,24 @@ class NewAllocation extends React.Component {
         >
           {this.state.allocationTypeIndex === 1 && (
             <Info.Action title="Warning">
-              This will create a Range Vote and after it closes, it will result
-              in a financial transfer.
+            This will create a Range Vote and after it closes, it will result
+            in a financial transfer.
             </Info.Action>
           )}
-          <FormField
-            required
-            label="Description"
-            input={
-              <DescriptionInput
-                name="description"
-                onChange={this.changeField}
-                placeholder="Describe your allocation."
-                value={this.state.description}
-              />
-            }
-          />
+          {false &&
+            (<FormField
+              required
+              label="Description"
+              input={
+                <DescriptionInput
+                  name="description"
+                  onChange={this.changeField}
+                  placeholder="Describe your allocation."
+                  value={this.state.description}
+                />
+              }
+            />)
+          }
           <FormField
             required
             separator
