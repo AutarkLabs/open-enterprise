@@ -59,9 +59,6 @@ const Issue = ({ title, repo, number, labels, isSelected, onSelect }) => (
       </div>
       <IssueDetails>
         <Text.Block size="small" color={theme.textTertiary}>
-          Beginner • Pending funding • Due in 4 weeks
-        </Text.Block>
-        <div>
           { labels.totalCount ? (
             labels.edges.map(label =>
               <Badge
@@ -71,8 +68,7 @@ const Issue = ({ title, repo, number, labels, isSelected, onSelect }) => (
                 foreground={'#000'}>{label.node.name}
               </Badge>
             )) : ''
-          }
-        </div>
+          }        </Text.Block>
       </IssueDetails>
     </div>
   </StyledIssue>
