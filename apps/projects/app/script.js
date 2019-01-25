@@ -56,12 +56,6 @@ const github = () => {
     .pluck('result')
 }
 
-const bountySettings = () => {
-  return app.rpc
-    .sendAndObserveResponses('cache', ['get', 'bountySettings'])
-    .pluck('result')
-}
-
 let client
 const getRepoData = repo => {
   try {
@@ -90,21 +84,11 @@ github().subscribe(result => {
   } else app.cache('github', { status: STATUS.INITIAL })
 })
 
-bountySettings().subscribe(result => {
-  result && console.log('bountySettings object received from cache:', result)
-  if (!result) {
-    console.error(
-      'Something is wrong and we didn\'t received the expected hardcoded bountySettings from the contract'
-    )
-    app.cache('bountySettings', {})
-  }
-})
-
 app.events().subscribe(handleEvents)
 
 app.state().subscribe(state => {
-  state && console.log('[Projects] entered state subscription:\n', state)
-  appState = state ? state : { repos: [] }
+  state && console.log('[Projects script] state subscription:\n', state)
+  appState = state ? state : { repos: [], bountySettings: {} }
 })
 
 /***********************
@@ -136,9 +120,8 @@ async function handleEvents(response) {
     nextState = await syncRepos(appState, response.returnValues)
     break
   case 'BountySettingsChanged':
-    console.log('[Projects] BountySettingsChanged') // this one has no returnValues
-    app.cache('bountySettings', response.returnValues)
-    nextState = { ...appState, bountySettings: response.returnValues }
+    console.log('[Projects] BountySettingsChanged')
+    nextState = await syncSettings(appState) // No returnValues on this
     break
   default:
     console.log('[Projects] Unknown event catched:', response)
@@ -163,9 +146,10 @@ async function syncRepos(state, { repoId, ...eventArgs }) {
 async function syncSettings(state) {
   try {
     let settings = await loadSettings()
-    return settings
+    state.bountySettings = settings
+    return state
   } catch (err) {
-    console.error(' failed to return:', err)
+    console.error('[Projects script] syncSettings settings failed:', err)
   }
 }
 
@@ -200,7 +184,7 @@ function loadRepoData(id) {
 
 function loadSettings() {
   return new Promise(resolve => {
-    combineLatest(app.call('getSettings')).subscribe(([settings]) => {
+    app.call('getSettings').subscribe(settings => {
       resolve(settings)
     })
   })

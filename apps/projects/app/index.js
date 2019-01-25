@@ -20,7 +20,6 @@ class ConnectedApp extends React.Component {
     userAccount: '',
     // ...projectsMockData,
     github: { token: null },
-    bountySettings: {},
     client: new ApolloClient({
       uri: 'https://api.github.com/graphql',
       request: operation => {
@@ -68,14 +67,6 @@ class ConnectedApp extends React.Component {
           this.setState({
             github: github,
           })
-        })
-      app.rpc
-        .sendAndObserveResponses('cache', ['get', 'bountySettings'])
-        .pluck('result')
-        .subscribe(bountySettings => {
-          console.log('index.js bountySettings object received from backend cache:', bountySettings)
-
-          this.setState({ bountySettings })
         })
     }
   }
