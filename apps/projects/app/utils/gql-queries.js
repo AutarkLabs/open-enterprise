@@ -4,7 +4,7 @@ export const GET_ISSUES = gql`
   query getIssuesForRepos($reposIds: [ID!]!) {
     nodes(ids: $reposIds) {
       ... on Repository {
-        issues(first: 20) {
+        issues(last: 100) {
           nodes {
             number
             id
@@ -13,7 +13,7 @@ export const GET_ISSUES = gql`
               id
               name
             }
-            labels(first: 10) {
+            labels(first: 30) {
               totalCount
               edges {
                 node {
