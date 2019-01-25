@@ -41,9 +41,8 @@ async function handleEvents(response) {
     let funcSig = response.returnValues.funcSig
     console.info('[RangeVoting > script]: received ExternalContract', funcSig)
     // Should actually be a case-switch
-    if(funcSig == 'f1d12a23'){
+    if(funcSig.slice(58) == 'f2122136'){
       console.log('Loading Projects Data')
-      resolve(loadVoteDataProjects(voteData, voteId))
     } else {
       console.log('Loading Allocations Contract')
       allocations = app.external(response.returnValues.addr, AllocationJSON.abi)
@@ -123,7 +122,7 @@ async function loadVoteData(voteId) {
       .first()
       .subscribe(voteData => {
         let funcSig = voteData.executionScript.slice(58, 66)
-        if(funcSig == 'f1d12a23'){
+        if(funcSig == 'f2122136'){
           console.log('Loading Projects Data')
           resolve(loadVoteDataProjects(voteData, voteId))
         } else {

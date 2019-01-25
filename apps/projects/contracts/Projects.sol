@@ -116,7 +116,7 @@ contract Projects is AragonApp {
     // Fired when a bounty is added to a repo
     event BountyAdded(bytes20 owner, bytes32 repoId, uint256 issueNumber, uint256 bountySize);
     // Fired when an issue is curated
-    event IssueCurated(bytes32 repoId, uint256 issueNumber, uint256 priority);
+    event IssueCurated(bytes32 repoId);
     // Fired when fulfillment is accepted
     event FulfillmentAccepted(bytes32 repoId, uint256 issueNumber, uint fulfillmentId);
     // Fired when settings are changed
@@ -129,16 +129,17 @@ contract Projects is AragonApp {
     bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
 
     function curateIssues(
-        address[] unusedAddresses, 
+        address[] /*unusedAddresses*/, 
         uint256[] issuePriorities,
         uint256[] issueDescriptionIndices, 
-        string /* unused_issueDescriptions */,
+        string /*issueDescriptions*/,
         uint256[] issueRepos,
-        uint256[] issueNumbers
+        uint256[] issueNumbers,
+        uint256 currationId
     ) external isInitialized auth(CURATE_ISSUES_ROLE)
     {
         bytes32 repoId;
-        require(issuePriorities.length == unusedAddresses.length, "length mismatch: issuePriorites and unusedAddresses");
+        //require(issuePriorities.length == unusedAddresses.length, "length mismatch: issuePriorites and unusedAddresses");
         require(issuePriorities.length == issueDescriptionIndices.length, "length mismatch: issuePriorites and issueDescriptionIdx");
         require(issueRepos.length == issueDescriptionIndices.length, "length mismatch: issueRepos and issueDescriptionIdx");
         require(issueRepos.length == issueNumbers.length, "length mismatch: issueRepos and issueNumbers");
@@ -147,7 +148,7 @@ contract Projects is AragonApp {
             repoId = bytes32(issueRepos[i]);
             require(issuePriorities[i] != 999, "issue already curated");
             repos[repoId].issues[uint256(issueNumbers[i])].priority = issuePriorities[i];
-            emit IssueCurated(repoId,issueNumbers[i],issuePriorities[i]);
+            emit IssueCurated(repoId);
         }
     }
     

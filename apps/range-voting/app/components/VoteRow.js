@@ -47,7 +47,6 @@ class VoteRow extends React.Component {
     let totalSupport  = 0
     options.forEach( option => {
       totalSupport = totalSupport + parseFloat(option.value, 10)
-      console.log(totalSupport)
     })
 
     // TODO: Hardcode colors into constants or extend aragon ui theme if needed

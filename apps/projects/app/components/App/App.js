@@ -240,30 +240,32 @@ class App extends React.PureComponent {
   onSubmitCuration = issues => {
     this.closePanel()
     // TODO: maybe assign this to issueDescriptionIndices, not clear
-    issues.map((issue, i, indices) => {
+    let issueDescriptionIndices = []
+    issues.forEach((issue, i) => {
       if (i == 0) {
-        return issue.title.length
+        issueDescriptionIndices.push(issue.title.length)
+      } else {
+        issueDescriptionIndices.push(issue.title.length)
       }
-      return indices[i - 1] + issue.title.length
     })
 
-    // Define contract function params
-    const unusedAddresses = [0] // TODO: FAILS WITH MULTIPLE ADDRESSES
-    const issuePriorities = [999, 999]
-    const issueDescriptionIndices = [3, 4]
+
     // TODO: splitting of descriptions needs to be fixed at smart contract level
-    const unused_issueDescriptions = 'Cats,Dogs'
+    const issueDescriptions = issues.map(issue => issue.title).join('')
     /* TODO: The numbers below are supposedly coming from an eventual:
      issues.map(issue => web3.utils.hextToNum(web3.toHex(issue.repoId))) */
-    const issueRepos = [260, 409]
-    const issueNumbers = [1, 3]
+    const issueNumbers = issues.map(issue => issue.number)
+    const emptyIntArray = new Array(issues.length).fill(0)
+    const emptyAddrArray = ['0xb4124cEB3451635DAcedd11767f004d8a28c6eE7', '0xd00cc82a132f421bA6414D196BC830Db95e2e7Dd', '0x89c199302bd4ebAfAa0B5Ee1Ca7028C202766A7F']
+
     this.props.app.curateIssues(
-      unusedAddresses,
-      issuePriorities,
+      emptyAddrArray.slice(0,issues.length),
+      emptyIntArray,
       issueDescriptionIndices,
-      unused_issueDescriptions,
-      issueRepos,
-      issueNumbers
+      issueDescriptions,
+      emptyIntArray,
+      issueNumbers,
+      1
     )
   }
 
