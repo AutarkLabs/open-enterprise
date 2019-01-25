@@ -36,7 +36,7 @@ class NewEntity extends React.Component {
       data[e.target.name] = e.target.value
       err[e.target.name] = ''
     }
-    this.setState({ data, err })
+    this.setState({ data, err, activeItem: e })
   }
 
   handleSubmit = () => {
@@ -80,6 +80,7 @@ class NewEntity extends React.Component {
               name="eType"
               items={ENTITY_TYPES}
               onChange={this.changeField}
+              active={this.state.activeItem}
               wide
             />
           }
