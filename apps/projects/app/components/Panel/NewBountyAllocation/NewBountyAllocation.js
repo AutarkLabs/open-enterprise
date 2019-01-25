@@ -92,8 +92,6 @@ class NewBountyAllocation extends React.Component {
   }
 
   render() {
-    console.log('Bounty props:', this.props)
-
     const bountyHours = ['-', '5', '10', '15']
     const bountyExp = [{ name: '-', mul: 1 }]
     const bountyDeadline = ['-', 'yesterday', 'last week']
@@ -101,7 +99,7 @@ class NewBountyAllocation extends React.Component {
     const { bounties } = this.state
     const { bountySettings } = this.props
 
-    // const rate = bountySettings.baseRate / 100
+    const rate = bountySettings.baseRate / 100
     let a = bountySettings.expLevels.split('\t')
     for (let i = 0; i < a.length; i += 2)
       bountyExp.push({ mul: a[i] / 100, name: a[i + 1] })
@@ -109,7 +107,7 @@ class NewBountyAllocation extends React.Component {
     console.log('bounties: ', bounties, ', bountySettings: ', bountySettings)
     return (
       <Form
-        onSubmit={() => this.props.onSubmit(bounties)}
+        onSubmit={this.props.onSubmit}
         description={this.props.description}
         submitText="Submit Bounty Allocation"
       >
@@ -136,10 +134,13 @@ class NewBountyAllocation extends React.Component {
                   <Cell>
                     <IBMain>
                       <IssueBounty>
-                        <IBArrow
-                          direction={bounties[issue.id]['detailsOpen']}
-                          onClick={this.generateArrowChange(issue.id)}
-                        />
+                        <IBArrow onClick={this.generateArrowChange(issue.id)}>
+                          {bounties[issue.id]['detailsOpen'] ? (
+                            <IconBigArrowUp />
+                          ) : (
+                            <IconBigArrowDown />
+                          )}
+                        </IBArrow>
                         <IBTitle size="normal" weight="bold">
                           {issue.title}
                         </IBTitle>
@@ -165,9 +166,6 @@ class NewBountyAllocation extends React.Component {
                                       .mul}{' '}
                                 {bountySettings.bountyCurrency}
                               </Badge>
-
-                              {/* <FieldTitle>$100</FieldTitle>
-                              <Badge>10 ANT</Badge> */}
                             </IBValueShow>
                           )}
                         </IBValue>
@@ -280,11 +278,7 @@ const IBValueShow = styled.div`
 `
 const IBArrow = styled.div`
   grid-area: arrow;
-  align-self: center;
-  transform: ${({ direction }) =>
-    direction ? 'rotate(-90deg)' : 'rotate(90deg)'};
-  font-size: 17px;
-  line-height: 17px;
+  place-self: center; // TODO: Check browser support for this
 `
 const IBHoursInput = styled.div`
   display: inline-flex;

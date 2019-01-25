@@ -224,6 +224,16 @@ class App extends React.PureComponent {
   onSubmitBountyAllocation = bounties => {
     console.log('bounty allocation submitted', bounties)
     // TODO: The contract addBounties function first param is just a single repoId, so in the case a bounty allocation comprises issues from multiple repos it should launch a tx for each repo
+    // this.props.app.addBounties()
+    // bytes32 _repoId,
+    // uint256[] _issueNumbers,
+    // uint256[] _bountySizes,
+    // uint256[] _deadlines,
+    // bool[] _tokenBounties,
+    // address[] _tokenContracts,
+    // string _ipfsAddresses
+
+    // this.closePanel()
   }
 
   curateIssues = issues => {
@@ -249,7 +259,6 @@ class App extends React.PureComponent {
       }
     })
 
-
     // TODO: splitting of descriptions needs to be fixed at smart contract level
     const issueDescriptions = issues.map(issue => issue.title).join('')
     /* TODO: The numbers below are supposedly coming from an eventual:
@@ -257,8 +266,8 @@ class App extends React.PureComponent {
     const issueNumbers = issues.map(issue => issue.number)
     const emptyIntArray = new Array(issues.length).fill(0)
     const emptyAddrArray = [
-      '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7', 
-      '0xd00cc82a132f421bA6414D196BC830Db95e2e7Dd', 
+      '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
+      '0xd00cc82a132f421bA6414D196BC830Db95e2e7Dd',
       '0x89c199302bd4ebAfAa0B5Ee1Ca7028C202766A7F',
       '0xd28c35a207c277029ade183b6e910e8d85206c07',
       '0xee6bd04c6164d7f0fa1cb03277c855639d99a7f6',
@@ -268,10 +277,11 @@ class App extends React.PureComponent {
       '0x690a63d7023780ccbdeed33ef1ee62c55c47460d',
       '0xb1afc07af31795d61471c169ecc64ad5776fa5a1',
       '0x4aafed050dc1cf7e349accb7c2d768fd029ece62',
-      '0xd7a5846dea118aa76f0001011e9dc91a8952bf19']
+      '0xd7a5846dea118aa76f0001011e9dc91a8952bf19',
+    ]
 
     this.props.app.curateIssues(
-      emptyAddrArray.slice(0,issues.length),
+      emptyAddrArray.slice(0, issues.length),
       emptyIntArray,
       issueDescriptionIndices,
       issueDescriptions,
