@@ -163,7 +163,7 @@ async function loadVoteDataAllocation(vote, voteId) {
                 ...returnObject,
                 limit: parseInt(payout.limit, 10),
                 balance: parseInt(vote.executionScript.slice(706, 770), 16),
-                metadata: payout.metadata
+                metadata: 'Range Vote ' + voteId + ' - Allocation (' + payout.metadata + ')'
               })
             })
         })
@@ -192,7 +192,7 @@ async function loadVoteDataProjects(vote, voteId) {
           console.log(metadata)
           let returnObject = {
             ...marshallVote(vote),
-            metadata: 'Top February Tasks',
+            metadata: 'Range Vote ' + voteId + ' - Issue Curation',
             canExecute,
             options: options
           }
