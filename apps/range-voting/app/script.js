@@ -192,7 +192,7 @@ async function loadVoteDataProjects(vote, voteId) {
           console.log(metadata)
           let returnObject = {
             ...marshallVote(vote),
-            metadata,
+            metadata: 'Top February Tasks',
             canExecute,
             options: options
           }
