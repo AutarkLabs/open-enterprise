@@ -491,13 +491,15 @@ contract('Projects App', accounts => {
       const unused_issueDescriptions = ''
       const issueRepos = zeros
       const issueNumbers = zeros
+      const unused_curationId = 0
       await app.curateIssues(
         unusedAddresses,
         issuePriorities,
         issueDescriptionIndices,
         unused_issueDescriptions,
         issueRepos,
-        issueNumbers
+        issueNumbers,
+        unused_curationId
       )
       // assert()
     })

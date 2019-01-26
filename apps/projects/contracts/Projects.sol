@@ -129,13 +129,13 @@ contract Projects is AragonApp {
     bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
 
     function curateIssues(
-        address[] /*unusedAddresses*/, 
+        address[] /*unused_Addresses*/, 
         uint256[] issuePriorities,
         uint256[] issueDescriptionIndices, 
-        string /*issueDescriptions*/,
+        string /* unused_issueDescriptions*/,
         uint256[] issueRepos,
         uint256[] issueNumbers,
-        uint256 currationId
+        uint256 /* unused_curationId */
     ) external isInitialized auth(CURATE_ISSUES_ROLE)
     {
         bytes32 repoId;

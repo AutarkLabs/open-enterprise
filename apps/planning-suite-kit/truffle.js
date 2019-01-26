@@ -7,7 +7,6 @@ const mochaGasSettings = {
     gasPrice: 3,
   },
 }
-
 const mocha = process.env.GAS_REPORTER ? mochaGasSettings : {}
 
 module.exports = {
