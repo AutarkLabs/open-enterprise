@@ -26,11 +26,13 @@ class OptionsInput extends React.Component {
     // TODO: Implement some rules about what an 'Option can be' duplicates, etc
     const { input, name, value } = this.props
     // if (input && !value.includes(input) && this.props.validator(input)) { // TODO: Fix this
-    if (input && !value.map( v => v.addr ).includes(input)) {
+    if (input && !value.map(v => v.addr).includes(input)) {
       this.props.onChange({ target: { name, value: [...value, input] } })
       // The second call is currently needed reset the new OptionField
       // TODO: Avoid calling the method twice
-      this.props.onChange({ target: { name: 'optionsInputString', value: {addr:''} } })
+      this.props.onChange({
+        target: { name: 'optionsInputString', value: { addr: '' } },
+      })
       // this.props.error = true // TODO: It is not possible to modify props this way
       console.log('Option Added')
     } else {
@@ -50,7 +52,9 @@ class OptionsInput extends React.Component {
   }
 
   onChangeInput = ({ target: { value } }) => {
-    this.props.onChange({ target: { name: 'optionsInputString', value: {addr:value} } })
+    this.props.onChange({
+      target: { name: 'optionsInputString', value: { addr: value } },
+    })
   }
 
   render() {
@@ -105,7 +109,6 @@ const StyledOptionsInput = styled.div`
       flex-grow: 1;
     }
     > svg {
-      cursor: ${({ empty }) => (empty ? 'not-allowed' : 'pointer')};
       margin-left: 3px;
       margin-top: -3px;
       height: auto;
@@ -122,5 +125,8 @@ const StyledOptionsInput = styled.div`
     }
   }
 `
+
+// TODO: fix svg cursor:
+/* cursor: ${({ empty }) => (empty ? 'not-allowed' : 'pointer')}; */
 
 export default OptionsInput

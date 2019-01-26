@@ -33,13 +33,18 @@ class OptionsInputDropdown extends React.Component {
     const { input, name, value } = this.props
     if (input && !this.props.validator(value, input.addr)) {
       this.props.onChange({ target: { name, value: [...value, input] } })
-      this.props.onChange({ target: { name: 'optionsInput', value: {
-        addr: 0,
-        index: 0
-      } } })
+      this.props.onChange({
+        target: {
+          name: 'optionsInput',
+          value: {
+            addr: 0,
+            index: 0,
+          },
+        },
+      })
       console.log('Option Added')
     } else {
-      this.props.onChange({ target: { name: 'addressError', value: true} })
+      this.props.onChange({ target: { name: 'addressError', value: true } })
       console.log(
         'OptionsInputDropdown: The option is empty or already present'
       )
@@ -123,7 +128,6 @@ const StyledOptionsInput = styled.div`
       flex-grow: 1;
     }
     > svg {
-      cursor: ${({ empty }) => (empty ? 'not-allowed' : 'pointer')};
       margin-left: 3px;
       margin-top: -3px;
       height: auto;
@@ -140,5 +144,6 @@ const StyledOptionsInput = styled.div`
     }
   }
 `
-
+/* TODO: FIX CURSOR > svg { */
+/* cursor: ${({ empty }) => (empty ? 'not-allowed' : 'pointer')}; */
 export default OptionsInputDropdown

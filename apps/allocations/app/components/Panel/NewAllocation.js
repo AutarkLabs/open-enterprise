@@ -33,9 +33,9 @@ const INITIAL_STATE = {
   balanceSetting: false,
   addressSetting: false,
   options: [],
-  optionsInput: {addr: 0, index: 0},
+  optionsInput: { addr: 0, index: 0 },
   optionsString: [],
-  optionsInputString: {addr: 'Enter an option'}
+  optionsInputString: { addr: '' },
 }
 
 class NewAllocation extends React.Component {
@@ -76,7 +76,9 @@ class NewAllocation extends React.Component {
   submitAllocation = () => {
     let informational = this.state.allocationTypeIndex === 0
     let recurring = this.state.payoutTypeIndex !== 0
-    let options = this.state.addressSetting ? this.state.options : this.state.optionsString
+    let options = this.state.addressSetting
+      ? this.state.options
+      : this.state.optionsString
 
     // define the allocation object
     let allocation = {
@@ -100,7 +102,10 @@ class NewAllocation extends React.Component {
 
     // check options are addresses TODO: fix contract to accept regular strings (informational vote)
     let optionsInput = this.state.optionsInput.addr
-    if (optionsInput !== 0 && this.isAddressError(this.state.options, optionsInput)) {
+    if (
+      optionsInput !== 0 &&
+      this.isAddressError(this.state.options, optionsInput)
+    ) {
       this.setState({ addressError: true })
       return
     } else if (optionsInput !== 0) {
@@ -125,12 +130,12 @@ class NewAllocation extends React.Component {
         >
           {this.state.allocationTypeIndex === 1 && (
             <Info.Action title="Warning">
-            This will create a Range Vote and after it closes, it will result
-            in a financial transfer.
+              This will create a Range Vote and after it closes, it will result
+              in a financial transfer.
             </Info.Action>
           )}
-          {false &&
-            (<FormField
+          {false && (
+            <FormField
               required
               label="Description"
               input={
@@ -141,8 +146,8 @@ class NewAllocation extends React.Component {
                   value={this.state.description}
                 />
               }
-            />)
-          }
+            />
+          )}
           <FormField
             required
             separator
