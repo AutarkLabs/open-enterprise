@@ -132,7 +132,7 @@ const StyledOptionsInput = styled.div`
       margin-top: -3px;
       height: auto;
       width: 1.8rem;
-      color: ${({ empty }) => (empty ? disabled : textSecondary)};
+      color: ${textSecondary};
       vertical-align: middle;
       transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
       :hover {
@@ -144,6 +144,7 @@ const StyledOptionsInput = styled.div`
     }
   }
 `
-/* TODO: FIX CURSOR > svg { */
+// TODO: fix empty svg cursor and color:
 /* cursor: ${({ empty }) => (empty ? 'not-allowed' : 'pointer')}; */
+// color: ${({ empty }) => (empty ? disabled : textSecondary)};
 export default OptionsInputDropdown
