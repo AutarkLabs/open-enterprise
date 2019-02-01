@@ -13,70 +13,36 @@ const ASSETS_URL = 'aragon-ui-assets/'
 class App extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
+    // TODO: Shape this
     entities: PropTypes.arrayOf(PropTypes.object),
   }
 
   state = {
-    entities: [
-      {
-        eName: 'test1',
-        eAddress: '0x9876534251783930048725651738894',
-        eType: 1,
-      },
-    ],
-    panel: {
-      visible: false,
-    },
+    panelVisible: false,
   }
 
   createEntity = entity => {
-    // temp workaround
-
-    this.props.app.addEntry(
-      entity.eAddress,
-      entity.eName,
-      entity.eType.toString()
-    )
-
-    console.info('App.js: Entity Created lol: ', entity.eName)
-    console.table(entity)
-    /*
-    entities.push(entity)
-    this.setState({ entities })
-    */
+    this.props.app.addEntry(entity.address, entity.name, entity.type)
     this.closePanel()
   }
 
-  removeEntity = eAddress => {
-    console.log('remove addr', eAddress)
-
-    // temp workaround
-    var { entities } = this.state
-    const e2 = entities.filter(entity => entity.eAddress !== eAddress)
-    this.setState({ entities: e2 })
-
-    this.props.app.removeEntry(eAddress)
-
-    console.info('App.js: Entity removed: ', eAddress)
+  removeEntity = address => {
+    this.props.app.removeEntry(address)
   }
 
   newEntity = () => {
     this.setState({
-      panel: {
-        visible: true,
-        content: NewEntity,
-        data: { heading: 'New entity', onCreateEntity: this.createEntity },
-      },
+      panelVisible: true,
     })
   }
 
   closePanel = () => {
-    this.setState({ panel: { visible: false } })
+    this.setState({ panelVisible: false })
   }
 
   render() {
-    const { panel, entities } = this.state
-    const PanelContent = panel.content
+    const { panelVisible } = this.state
+    const { entries } = this.props
 
     return (
       <StyledAragonApp>
@@ -86,9 +52,7 @@ class App extends React.Component {
         <ScrollWrapper>
           <Content>
             <Entities
-              entities={
-                this.props.entries !== undefined ? this.props.entries : []
-              }
+              entities={entries ? entries : []}
               onNewEntity={this.newEntity}
               onRemoveEntity={this.removeEntity}
             />
@@ -96,11 +60,11 @@ class App extends React.Component {
         </ScrollWrapper>
 
         <SidePanel
-          title={(panel.data && panel.data.heading) || ''}
-          opened={panel.visible}
+          title="New entity"
+          opened={panelVisible}
           onClose={this.closePanel}
         >
-          {panel.content && <PanelContent {...panel.data} />}
+          <NewEntity onCreateEntity={this.createEntity} />
         </SidePanel>
       </StyledAragonApp>
     )
