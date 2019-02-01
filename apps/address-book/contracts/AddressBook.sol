@@ -60,6 +60,7 @@ contract AddressBook is AragonApp {
         string _entryType
     ) public auth(ADD_ENTRY_ROLE) 
     { 
+        require(entries[_addr].entryAddress == 0, "entry exists with that address");
         require(!nameUsed[keccak256(abi.encodePacked(_name))], "name already in use");
 
         Entry storage entry = entries[_addr];
@@ -80,6 +81,7 @@ contract AddressBook is AragonApp {
         address _addr
     ) public auth(REMOVE_ENTRY_ROLE) 
     { 
+        require(entries[_addr].entryAddress != 0, "entry does not exist");
         nameUsed[keccak256(abi.encodePacked(entries[_addr].name))] = false;
         delete entries[_addr];
         emit EntryRemoved(_addr); 
@@ -92,8 +94,9 @@ contract AddressBook is AragonApp {
     function getEntry(
         address _addr
     ) public view returns (address _entryAddress, string _name, string _entryType) 
-    { 
+    {
         Entry storage entry = entries[_addr];
+        require(nameUsed[keccak256(abi.encodePacked(entry.name))], "entry does not exist");
 
         _entryAddress = entry.entryAddress;
         _name = entry.name;

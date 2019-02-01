@@ -1,16 +1,11 @@
 import Aragon from '@aragon/client'
-import { first, of } from 'rxjs' // Make sure observables have .first
-import { combineLatest } from 'rxjs'
-import { empty } from 'rxjs/observable/empty'
 
 const app = new Aragon()
 let appState
 app.events().subscribe(handleEvents)
 
 app.state().subscribe(state => {
-  console.log('Allocations: entered state subscription:\n', state)
   appState = state ? state : { entries: [] }
-  //appState = state
 })
 
 /***********************
@@ -19,33 +14,42 @@ app.state().subscribe(state => {
  *                     *
  ***********************/
 
-async function handleEvents(response) {
+async function handleEvents({ event, returnValues }) {
   let nextState
-  switch (response.event) {
+  switch (event) {
   case 'EntryAdded':
-    nextState = await syncEntries(appState, response.returnValues)
+    nextState = await syncEntries(appState, returnValues)
     break
   case 'EntryRemoved':
-    console.log('EntryRemoved Fired: ', response.returnValues)
-    nextState = await syncEntries(appState, response.returnValues)
+    nextState = await onRemoveEntry(appState, returnValues)
     break
   default:
-    console.log(response)
+    console.log('[AddressBook script] Unknown event', response)
   }
   app.cache('state', nextState)
 }
 
-async function syncEntries(state, { addr, ...eventArgs }) {
-  console.log('arguments from events:', ...eventArgs)
+const onRemoveEntry = async (state, { addr }) => {
+  const { entries = [] } = state
+  // Try to find the removed entry in the current state
+  const entryIndex = entries.findIndex(entry => entry.addr === addr)
+  // If the entry exists in the state, remove from it
+  if (entryIndex !== -1) {
+    entries.splice(entryIndex, 1)
+  }
+  return state
+}
+
+async function syncEntries(state, { addr }) {
   const transform = ({ data, ...entry }) => ({
     ...entry,
     data: { ...data },
   })
   try {
-    let updatedState = await updateState(state, addr, transform)
+    const updatedState = await updateState(state, addr, transform)
     return updatedState
   } catch (err) {
-    console.error('updateState failed to return:', err)
+    console.error('[AddressBook script] syncEntries failed', err)
   }
 }
 
@@ -55,33 +59,29 @@ async function syncEntries(state, { addr, ...eventArgs }) {
  *                     *
  ***********************/
 
-function loadEntryData(addr) {
-  console.log('loadEntryData entered')
+const loadEntryData = async addr => {
   return new Promise(resolve => {
-    combineLatest(app.call('getEntry', addr)).subscribe(
-      ( [entry]) => {
-        console.log(entry)
+    app.call('getEntry', addr).subscribe(entry => {
+      // return gracefully when entry not found
+      entry &&
         resolve({
           entryAddress: entry[0],
           name: entry[1],
-          entryType: entry[2]
+          entryType: entry[2],
         })
-      }
-    )
+    })
   })
 }
 
 async function checkEntriesLoaded(entries, addr, transform) {
-  const entryIndex = entries.findIndex(
-    entry => entry.addr === addr
-  )
+  const entryIndex = entries.findIndex(entry => entry.addr === addr)
   if (entryIndex === -1) {
     // If we can't find it, load its data, perform the transformation, and concat
-    console.log('entry not found: retrieving from chain')
+    // hopefully every "not_found" entry will be deleted when its EntryRemoved event is handled
     return entries.concat(
       await transform({
         addr,
-        data: await loadEntryData(addr),
+        data: (await loadEntryData(addr)) || 'not_found',
       })
     )
   } else {
@@ -97,15 +97,10 @@ async function checkEntriesLoaded(entries, addr, transform) {
 async function updateState(state, addr, transform) {
   const { entries = [] } = state
   try {
-    let nextEntries = await checkEntriesLoaded(entries, addr, transform)
-    let newState = { ...state, entries: nextEntries }
+    const nextEntries = await checkEntriesLoaded(entries, addr, transform)
+    const newState = { ...state, entries: nextEntries }
     return newState
   } catch (err) {
-    console.error(
-      'Update entries failed to return:',
-      err,
-      'here\'s what returned in NewEntries',
-      nextEntries
-    )
+    console.error('[AddressBook script] updateState failed', err)
   }
 }

@@ -17,7 +17,13 @@ class App extends React.Component {
   }
 
   state = {
-    entities: [{eName: 'test1', eAddress: '0x9876534251783930048725651738894', eType: 1}],
+    entities: [
+      {
+        eName: 'test1',
+        eAddress: '0x9876534251783930048725651738894',
+        eType: 1,
+      },
+    ],
     panel: {
       visible: false,
     },
@@ -25,9 +31,12 @@ class App extends React.Component {
 
   createEntity = entity => {
     // temp workaround
-    
-    this.props.app.addEntry(entity.eAddress, entity.eName , entity.eType.toString())
 
+    this.props.app.addEntry(
+      entity.eAddress,
+      entity.eName,
+      entity.eType.toString()
+    )
 
     console.info('App.js: Entity Created lol: ', entity.eName)
     console.table(entity)
@@ -35,10 +44,12 @@ class App extends React.Component {
     entities.push(entity)
     this.setState({ entities })
     */
-    this.closePanel()    
+    this.closePanel()
   }
 
   removeEntity = eAddress => {
+    console.log('remove addr', eAddress)
+
     // temp workaround
     var { entities } = this.state
     const e2 = entities.filter(entity => entity.eAddress !== eAddress)
@@ -59,25 +70,31 @@ class App extends React.Component {
     })
   }
 
-  closePanel = () => {       
+  closePanel = () => {
     this.setState({ panel: { visible: false } })
   }
 
   render() {
     const { panel, entities } = this.state
     const PanelContent = panel.content
-    return (
 
+    return (
       <StyledAragonApp>
         <Title text="Address Book" />
         <NewEntityButton onClick={this.newEntity} />
 
         <ScrollWrapper>
           <Content>
-            <Entities entities={this.props.entries !== undefined ? this.props.entries : []} onNewEntity={this.newEntity} onRemoveEntity={this.removeEntity} />
+            <Entities
+              entities={
+                this.props.entries !== undefined ? this.props.entries : []
+              }
+              onNewEntity={this.newEntity}
+              onRemoveEntity={this.removeEntity}
+            />
           </Content>
         </ScrollWrapper>
-        
+
         <SidePanel
           title={(panel.data && panel.data.heading) || ''}
           opened={panel.visible}
@@ -116,4 +133,3 @@ export default observe(
   observable => observable.map(state => ({ ...state })),
   {}
 )(hot(module)(App))
-
