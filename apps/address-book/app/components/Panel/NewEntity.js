@@ -33,7 +33,7 @@ class NewEntity extends React.Component {
   }
 
   handleSubmit = () => {
-    const { name, address } = this.state
+    const { name, address, type } = this.state
     const error = {}
     if (!name) {
       error.name = 'Please provide a name'
@@ -48,7 +48,7 @@ class NewEntity extends React.Component {
     if (Object.keys(error).length) {
       this.setState({ error: error })
     } else {
-      this.props.onCreateEntity(this.state.data)
+      this.props.onCreateEntity({ name, address, type })
     }
   }
 

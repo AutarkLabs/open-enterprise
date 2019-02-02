@@ -26,7 +26,7 @@ const ENTITY_TYPES = [
 ]
 
 const Entities = ({ entities, onNewEntity, onRemoveEntity }) => {
-  const removeEntity = eAddress => () => onRemoveEntity(eAddress)
+  const removeEntity = address => () => onRemoveEntity(address)
 
   if (entities.length === 0) {
     return <Empty action={onNewEntity} />
@@ -39,29 +39,26 @@ const Entities = ({ entities, onNewEntity, onRemoveEntity }) => {
           </TableRow>
         }
       >
-        {entities.map(entity => {
-          var ent = entity.data
-          const eType = ENTITY_TYPES[ent.entryType]
+        {entities.map(({ data: { name, entryAddress, entryType } }) => {
+          const typeRow = ENTITY_TYPES.filter(row => row.name === entryType)[0]
           return (
-            <TableRow key={ent.entryAddress}>
+            <TableRow key={entryAddress}>
               <EntityCell>
                 <EntityWrapper>
-                  <Text>{ent.name}</Text>
+                  <Text>{name}</Text>
                   <div style={{ display: 'flex' }}>
-                  <SafeLink
-                    style={{ color: '#21AAE7' }}
-                    // TODO: Populate the rinkeby depending on the deployment network. TIP: use href.location for that
-                    href={`https://rinkeby.etherscan.io/address/${
-                      ent.entryAddress
-                    }`}
-                    target="_blank"
-                    title={ent.entryAddress}
-                  >
-                    {ent.entryAddress}
-                  </SafeLink>
+                    <SafeLink
+                      style={{ color: '#21AAE7' }}
+                      // TODO: Populate the rinkeby depending on the deployment network. TIP: use href.location for that
+                      href={`https://rinkeby.etherscan.io/address/${entryAddress}`}
+                      target="_blank"
+                      title={entryAddress}
+                    >
+                      {entryAddress}
+                    </SafeLink>
                     <span
                       onClick={() => {
-                        navigator.clipboard.writeText(ent.entryAddress)
+                        navigator.clipboard.writeText(entryAddress)
                       }}
                       style={{ marginLeft: '.5rem', cursor: 'pointer' }}
                     >
@@ -71,13 +68,13 @@ const Entities = ({ entities, onNewEntity, onRemoveEntity }) => {
                 </EntityWrapper>
               </EntityCell>
               <EntityCell align="center">
-                <Badge foreground={eType.fg} background={eType.bg}>
-                  {eType.name}
+                <Badge foreground={typeRow.fg} background={typeRow.bg}>
+                  {typeRow.name}
                 </Badge>
               </EntityCell>
               <EntityCell>
                 <ContextMenu>
-                  <ContextMenuItem onClick={removeEntity(ent.entryAddress)}>
+                  <ContextMenuItem onClick={removeEntity(entryAddress)}>
                     Remove
                   </ContextMenuItem>
                 </ContextMenu>
@@ -91,6 +88,7 @@ const Entities = ({ entities, onNewEntity, onRemoveEntity }) => {
 }
 
 Entities.propTypes = {
+  // TODO: shape better
   entities: PropTypes.array.isRequired,
   onNewEntity: PropTypes.func.isRequired,
   onRemoveEntity: PropTypes.func.isRequired,
