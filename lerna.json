@@ -9,9 +9,6 @@
     }
   },
   "hoist": true,
-  "packages": [
-    "apps/*",
-    "apps/shared/*"
-  ],
+  "packages": ["apps/*", "apps/shared/*", "kits/*"],
   "version": "independent"
 }
