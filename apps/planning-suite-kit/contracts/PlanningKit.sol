@@ -9,21 +9,22 @@ pragma solidity ^0.4.24;
 
 // */
 
-import "@tps/test-helpers/contracts/factory/DAOFactory.sol";
-import "@tps/test-helpers/contracts/apm/Repo.sol";
-import "@tps/test-helpers/contracts/lib/ens/ENS.sol";
-import "@tps/test-helpers/contracts/lib/ens/PublicResolver.sol";
-import "@tps/test-helpers/contracts/apm/APMNamehash.sol";
-import "@tps/test-helpers/contracts/lib/minime/MiniMeToken.sol";
-import "@tps/test-helpers/contracts/apps/Voting.sol"; /* Already defined in ACLHelper */
-//import {TokenManager as TokenManagerApp} from "@aragon/apps-token-manager/contracts/TokenManager.sol"; /* Already defined in EVMScriptRunner */
-// import "@tps/test-helpers/contracts/lib/minime/MiniMeToken.sol"; // TODO: use this 
+import "@aragon/os/contracts/factory/DAOFactory.sol";
+import "@aragon/os/contracts/apm/Repo.sol";
+import "@aragon/os/contracts/lib/ens/ENS.sol";
+import "@aragon/os/contracts/lib/ens/PublicResolver.sol";
+import "@aragon/os/contracts/apm/APMNamehash.sol";
+// import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
+
+import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
+import "@aragon/apps-survey/contracts/Survey.sol";
+import "@aragon/apps-token-manager/contracts/TokenManager.sol";
+import "@aragon/apps-voting/contracts/Voting.sol"; /* Already defined in ACLHelper */
 
 import {AddressBook as AddressBookApp} from "@tps/apps-address-book/contracts/AddressBook.sol";
 import {Allocations as AllocationsApp} from "@tps/apps-allocations/contracts/Allocations.sol";
 import {Projects as ProjectsApp} from "@tps/apps-projects/contracts/Projects.sol";
 import {RangeVoting as RangeVotingApp} from "@tps/apps-range-voting/contracts/RangeVoting.sol";
-import {AddressBook as AddressBookApp} from "@tps/apps-address-book/contracts/AddressBook.sol";
 import {StandardBounties as StandardBounties} from "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
 
 
@@ -88,13 +89,14 @@ contract PlanningKit is KitBase {
         */
 
         // nasty hack to trick the max vars limit error
-        bytes32[6] memory apps = [
+        bytes32[7] memory apps = [
             apmNamehash("allocations"),     // 0
             apmNamehash("address-book"),    // 1
             apmNamehash("projects"),        // 2
             apmNamehash("range-voting"),    // 3
             apmNamehash("token-manager"),   // 4
-            apmNamehash("voting")           // 5
+            apmNamehash("survey"),          // 5
+            apmNamehash("voting")           // 6
         ];
 
         // Planning Apps
@@ -103,23 +105,24 @@ contract PlanningKit is KitBase {
         ProjectsApp projects = ProjectsApp(dao.newAppInstance(apps[2], latestVersionAppBase(apps[2])));
         RangeVotingApp rangeVoting = RangeVotingApp(dao.newAppInstance(apps[3], latestVersionAppBase(apps[3])));
         // Aragon Apps
-        //TokenManagerApp tokenManager = TokenManagerApp(dao.newAppInstance(apps[4], latestVersionAppBase(apps[4])));
+        TokenManager tokenManager = TokenManager(dao.newAppInstance(apps[4], latestVersionAppBase(apps[4])));
+        // Survey survey = Survey(dao.newAppInstance(apps[5], latestVersionAppBase(apps[5])));
         //Voting voting = Voting(dao.newAppInstance(apps[5], latestVersionAppBase(apps[5])));
 
         // MiniMe Token
-        MiniMeToken token = tokenFactory.createCloneToken(token, 0, "App token", 0, "APP", true);
-        token.generateTokens(address(0xb4124cEB3451635DAcedd11767f004d8a28c6eE7), 1 ether);
-        //token.changeController(tokenManager);
+        MiniMeToken token = tokenFactory.createCloneToken(token, 0, "Autark Token", 0, "ATK", true);
+        token.generateTokens(root, 1);
+        token.changeController(tokenManager);
 
         // Initialize apps
         allocations.initialize(addressBook);
-        // TODO: Enable when code is ready in the apps
         addressBook.initialize();
         projects.initialize(registry);
-        //tokenManager.initialize(token, true, 0);
         // At least 50% of the voting tokens must vote, there is no minimum
         // candidate support, and the vote will last 1 minute for testing.
-        rangeVoting.initialize(token, 50 * PCT, 0, 1 minutes);
+        rangeVoting.initialize(token, 50 * PCT, 0, 10 minutes);
+        tokenManager.initialize(token, true, 0);
+        // survey.initialize(token, uint64(20 * PCT), uint64(10 minutes));
         
 
         // Allocations permissions:
@@ -147,14 +150,23 @@ contract PlanningKit is KitBase {
         acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.MODIFY_PARTICIPATION_ROLE(), root);
         emit InstalledApp(rangeVoting, apps[3]);
 
-        /* TokenManager permissions
-        acl.createPermission(voting, tokenManager, tokenManager.ASSIGN_ROLE(), voting);
-        acl.createPermission(voting, tokenManager, tokenManager.REVOKE_VESTINGS_ROLE(), voting);
-        // acl.grantPermission(voting, tokenManager, tokenManager.MINT_ROLE()); // TODO: Causes VM revert
-        acl.createPermission(this, tokenManager, tokenManager.MINT_ROLE(), this);
-        tokenManager.mint(root, 1); // Give one token to root
+        // token manager permissions
+        acl.createPermission(ANY_ENTITY, tokenManager, tokenManager.MINT_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, tokenManager, tokenManager.ISSUE_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, tokenManager, tokenManager.ASSIGN_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, tokenManager, tokenManager.REVOKE_VESTINGS_ROLE(), root);
         emit InstalledApp(tokenManager, apps[4]);
-        */
+
+        // survey permissions
+        //         // Set survey manager as the entity that can create votes and change participation
+        // // surveyManager can then give this permission to other entities
+        // acl.createPermission(ANY_ENTITY, survey, survey.CREATE_SURVEYS_ROLE(), root);
+        // acl.createPermission(ANY_ENTITY, survey, survey.MODIFY_PARTICIPATION_ROLE(), root);
+
+        // // acl.grantPermission(surveyManager, dao, dao.APP_MANAGER_ROLE());
+        // // acl.setPermissionManager(surveyManager, dao, dao.APP_MANAGER_ROLE());
+        // emit InstalledApp(tokenManager, apps[5]);
+
         
         // Voting permissions
         //acl.createPermission(ANY_ENTITY, voting, voting.CREATE_VOTES_ROLE(), root);

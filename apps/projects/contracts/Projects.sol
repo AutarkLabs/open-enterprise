@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
-import "@tps/test-helpers/contracts/apps/AragonApp.sol";
-import "@tps/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
+import "@aragon/os/contracts/apps/AragonApp.sol";
+import "@aragon/os/contracts/lib/math/SafeMath.sol";
 
 /*******************************************************************************
     Copyright 2018, That Planning Suite

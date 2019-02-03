@@ -72,7 +72,7 @@ contract('AddressBook App', accounts => {
   context('main context', () => {
     let starfleet = accounts[0]
 
-    it('should add and entry', async () => {
+    it('should add a new entry', async () => {
       const receipt = await app.addEntry(starfleet, 'Starfleet', 'Group')
       const addedAddress = receipt.logs.filter(l => l.event == 'EntryAdded')[0]
         .args.addr
