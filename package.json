@@ -3,7 +3,7 @@
   "name": "planning-suite-monorepo",
   "devDependencies": {
     "coveralls": "3.0.2",
-    "lerna": "^3.4.3"
+    "lerna": "^3.10.8"
   },
   "scripts": {
     "bootstrap": "lerna bootstrap --hoist",
