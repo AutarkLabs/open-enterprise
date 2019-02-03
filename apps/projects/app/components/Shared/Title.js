@@ -6,7 +6,6 @@ import { Text, theme, unselectable } from '@aragon/ui'
 const StyledTitle = styled(Text)`
   ${unselectable};
   background: ${theme.contentBackground};
-  border-bottom: 1px solid ${theme.contentBorder};
   ${({ shadow }) => shadow && 'box-shadow: rgba(0, 0, 0, 0.1) 1px 0 15px'};
   display: block;
   line-height: 63px;

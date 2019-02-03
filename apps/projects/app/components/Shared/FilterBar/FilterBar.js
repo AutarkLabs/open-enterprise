@@ -85,7 +85,7 @@ class FilterBar extends React.Component {
         if ('milestoneless' in filters.milestones) {
           filters.milestones['milestoneless'].count++
         } else {
-          filters.milestones['milestoneless'] = { title: 'Milestone-less', id: 'milestoneless', count: 1 }
+          filters.milestones['milestoneless'] = { title: 'Issues without milestones', id: 'milestoneless', count: 1 }
         }
       }
 
@@ -101,7 +101,7 @@ class FilterBar extends React.Component {
         if ('labelless' in filters.labels) {
           filters.labels['labelless'].count++
         } else {
-          filters.labels['labelless'] = { name: 'Label-less', id: 'labelless', count: 1 }
+          filters.labels['labelless'] = { name: 'Issues without labels', id: 'labelless', count: 1 }
         }
       }
       // TODO: shouldn't it be reporitory.id?

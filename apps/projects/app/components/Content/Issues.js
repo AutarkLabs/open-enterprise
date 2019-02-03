@@ -125,7 +125,10 @@ class Issues extends React.PureComponent {
 
   actionsMenu = () => (
     <div>
-      <TextInput onChange={this.handleTextFilter} />
+      <TextInput 
+        placeholder="Search Issues"
+        onChange={this.handleTextFilter}
+      />
       <ActionsMenu enabled={!!this.state.selectedIssues.length}>
         <ContextMenuItem
           onClick={this.handleCurateIssues}

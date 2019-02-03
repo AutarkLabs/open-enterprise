@@ -9,11 +9,11 @@ const GithubAuth = ({ onGithubSignIn = null }) => (
     <Text size="large" style={{ marginTop: '20px' }}>
       Sign in with GitHub to start managing your repos with Aragon
     </Text>
-    <ul>
+    <ProjBenefits>
       <li>Prioritize your backlog</li>
       <li>Reach consensus on issue valuations</li>
       <li>Allocate bounties to multiple issues</li>
-    </ul>
+    </ProjBenefits>
     {/* {err && (
           <Info background={theme.negative} title="Error">
             {err}
@@ -31,4 +31,7 @@ const GithubAuth = ({ onGithubSignIn = null }) => (
   </React.Fragment>
 )
 
+const ProjBenefits = styled.ul`
+  margin: 20px;
+`
 export default GithubAuth

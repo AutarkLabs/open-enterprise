@@ -170,12 +170,11 @@ class NewIssue extends React.PureComponent {
                     rows={5}
                     style={{ resize: 'none' }}
                     onChange={descriptionChange}
-                    required
                     wide
                   />
                 </Field>
                 <Field label="Labels">
-                  <TextInput onChange={labelsChange} required wide />
+                  <TextInput onChange={labelsChange} wide />
                 </Field>
                 <Button mode="strong" onClick={newIssue} wide>
                   Submit Issue

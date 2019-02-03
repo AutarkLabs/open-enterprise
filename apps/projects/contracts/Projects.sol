@@ -64,7 +64,7 @@ contract Projects is AragonApp {
 
         _changeBountySettings(
             "100\tBeginner\t300\tIntermediate\t500\tAdvanced",
-            3001, // baseRate
+            3000, // baseRate
             336, // bountyDeadline
             "FTL", // bountyCurrency
             0x0000000000000000000000000000000000000000, // bountyAllocator

@@ -92,7 +92,7 @@ class NewBountyAllocation extends React.Component {
   }
 
   render() {
-    const bountyHours = ['-', '5', '10', '15']
+    const bountyHours = ['-', '1', '2', '4', '8', '16', '24', '32', '40']
     const bountyExp = [{ name: '-', mul: 1 }]
     const bountyDeadline = ['-', 'yesterday', 'last week']
     const bountyAvail = ['-', '1', '2', '3']
@@ -158,12 +158,12 @@ class NewBountyAllocation extends React.Component {
                           {issue.id in bounties &&
                             bounties[issue.id]['hours'] > 0 && (
                             <IBValueShow>
-                              <FieldTitle>Bounty Value</FieldTitle>
+                              <FieldTitle>Value</FieldTitle>
                               <Badge style={{ marginLeft: '5px' }}>
-                                {bounties[issue.id]['hours'] *
+                                {bountyHours[bounties[issue.id]['hours']] *
                                     rate *
                                     bountyExp[bounties[issue.id]['exp']]
-                                      .mul}{' '}
+                                      .mul.toFixed(2)}{' '}
                                 {bountySettings.bountyCurrency}
                               </Badge>
                             </IBValueShow>
@@ -238,8 +238,9 @@ const IssueBounty = styled.div`
 `
 const IBTitle = styled(Text)`
   grid-area: title;
-  line-height: 42px;
-  padding-top: 6px;
+  line-height: 24px;
+  padding-top: 12px;
+  padding-bottom: 8px;
 `
 const IBHours = styled.div`
   grid-area: hours;
@@ -249,6 +250,8 @@ const IBExp = styled.div`
 `
 const IBDetails = styled.div`
   display: ${({ open }) => (open ? 'grid' : 'none')};
+  background: ${theme.mainBackground};
+  padding-top: 12px;
   grid-template-columns: 41px 173px 173px;
   grid-template-rows: auto;
   grid-template-areas:
