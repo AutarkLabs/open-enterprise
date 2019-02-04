@@ -1,6 +1,3 @@
-/**
- * https://github.com/aragon/aragonOS/blob/v4.0.0/truffle-config.js
- */
 const homedir = require('homedir')
 const path = require('path')
 
@@ -52,7 +49,7 @@ const providerForNetwork = network => () => {
 }
 
 module.exports = {
-  contracts_build_directory: path.join(__dirname, './build/contracts/'),
+  // contracts_build_directory: path.join(__dirname, './build/contracts/'),
   networks: {
     rpc: {
       network_id: 15,
