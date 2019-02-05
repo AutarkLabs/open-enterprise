@@ -6,6 +6,12 @@ import { Button, RadioList, Text, TextInput, theme } from '@aragon/ui'
 
 import ethereumLoadingAnimation from '../../../assets/svg/ethereum-loading.svg'
 
+const UNSELECT = {
+  repoSelected: -1,
+  project: '',
+  owner: '',
+}
+
 class Repo extends React.Component {
   state = {
     repos: [],
@@ -43,21 +49,21 @@ class Repo extends React.Component {
       }
     })
 
-    unselect()
     this.setState({
       filter: e.target.value,
       filteredRepos: repos,
       filtered: true,
+      ...UNSELECT,
     })
   }
 
   handleClearSearch = () => {
     // TODO: initial state
-    unselect()
     this.setState(prevState => ({
       filter: '',
       filtered: false,
       filteredRepos: prevState.repos,
+      ...UNSELECT,
     }))
   }
 
@@ -76,12 +82,7 @@ class Repo extends React.Component {
     }))
   }
 
-  unselect = () =>
-    this.setState({
-      repoSelected: -1,
-      project: '',
-      owner: '',
-    })
+  unselect = () => this.setState({})
 
   render() {
     const { repos, filteredRepos, filtered, filter } = this.state
