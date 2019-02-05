@@ -91,12 +91,13 @@ contract PlanningKit is KitBase {
         MiniMeToken token = tokenFactory.createCloneToken(MiniMeToken(0), 0, "Autark Token", 0, "autark", true);
         // token.changeController(tokenManager);
         // token.generateTokens(root, 1);
+        token.generateTokens(address(0xb4124cEB3451635DAcedd11767f004d8a28c6eE7), 1 ether);
 
         // Initialize apps
         addressBook.initialize();
         projects.initialize(registry);
-        rangeVoting.initialize(token, 50 * PCT, 0, 10 minutes);
-        allocations.initialize(addressBook); // REVERTS HERE
+        rangeVoting.initialize(token, 50 * PCT, 0, 1 minutes);
+        allocations.initialize(addressBook);
         // tokenManager.initialize(token, true, 0);
         // voting.initialize(token, 50 * PCT, 20 * PCT, 10 minutes);
         // // At least 50% of the voting tokens must vote, there is no minimum
