@@ -20,7 +20,7 @@ class Repo extends React.Component {
     if (this.props.data && this.props.data.viewer) {
       this.setState({
         repos: this.props.data.viewer.repositories.edges,
-        owner: this.props.data.viewer.id,
+        filteredRepos: this.props.data.viewer.repositories.edges,
       })
     }
   }
@@ -29,7 +29,6 @@ class Repo extends React.Component {
     if (nextProps.data.viewer.repositories) {
       this.setState({
         repos: nextProps.data.viewer.repositories.edges,
-        owner: nextProps.data.viewer.id,
       })
     }
   }
@@ -37,7 +36,6 @@ class Repo extends React.Component {
   // TODO: use observables
   searchRepos = e => {
     const repos = this.state.repos.filter(repo => {
-      this.setState({ filter: e.target.value })
       if (repo.node.nameWithOwner.indexOf(e.target.value) > -1) {
         return repo
       } else {
@@ -45,7 +43,9 @@ class Repo extends React.Component {
       }
     })
 
+    unselect()
     this.setState({
+      filter: e.target.value,
       filteredRepos: repos,
       filtered: true,
     })
@@ -53,25 +53,35 @@ class Repo extends React.Component {
 
   handleClearSearch = () => {
     // TODO: initial state
-    this.setState({
+    unselect()
+    this.setState(prevState => ({
       filter: '',
       filtered: false,
-      filteredRepos: [],
-    })
+      filteredRepos: prevState.repos,
+    }))
   }
 
   handleNewProject = () => {
     const { owner, project } = this.state
+    console.log('owner', owner, 'project', project)
+
     if (project.length > 0) this.props.onCreateProject({ owner, project })
   }
 
   onRepoSelected = i => {
-    this.setState({ repoSelected: i })
+    this.setState((prevState, _prevProps) => ({
+      repoSelected: i,
+      project: prevState.filteredRepos[i].node.id,
+      owner: prevState.filteredRepos[i].node.owner.id,
+    }))
   }
 
-  onRepoListChanged = e => {
-    this.setState({ project: e.target.value })
-  }
+  unselect = () =>
+    this.setState({
+      repoSelected: -1,
+      project: '',
+      owner: '',
+    })
 
   render() {
     const { repos, filteredRepos, filtered, filter } = this.state
@@ -90,8 +100,7 @@ class Repo extends React.Component {
         <RadioList
           items={repoArray}
           selected={this.state.repoSelected}
-          onChange={this.onRepoListChanged}
-          onSelect={this.onRepoSelected}
+          onChange={this.onRepoSelected}
         />
       ) : (
         // <RadioGroup>
@@ -287,6 +296,9 @@ export default graphql(gql`
           node {
             nameWithOwner
             id
+            owner {
+              id
+            }
           }
         }
       }
