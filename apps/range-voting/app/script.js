@@ -7,7 +7,7 @@ import AllocationJSON from '../../shared/json-abis/Allocations.json'
 const app = new Aragon()
 let allocations
 let appState = {
-  votes: []
+  votes: [],
 }
 app.events().subscribe(handleEvents)
 app.state().subscribe(state => {
@@ -17,7 +17,7 @@ app.state().subscribe(state => {
 async function handleEvents(response) {
   let nextState = {
     ...appState,
-    ...(!hasLoadedVoteSettings(appState) ? await loadVoteSettings() : {})
+    ...(!hasLoadedVoteSettings(appState) ? await loadVoteSettings() : {}),
   }
   switch (response.event) {
   case 'CastVote':
@@ -41,11 +41,14 @@ async function handleEvents(response) {
     let funcSig = response.returnValues.funcSig
     console.info('[RangeVoting > script]: received ExternalContract', funcSig)
     // Should actually be a case-switch
-    if(funcSig.slice(58) == 'f2122136'){
+    if (funcSig.slice(58) == 'f2122136') {
       console.log('Loading Projects Data')
     } else {
       console.log('Loading Allocations Contract')
-      allocations = app.external(response.returnValues.addr, AllocationJSON.abi)
+      allocations = app.external(
+        response.returnValues.addr,
+        AllocationJSON.abi
+      )
     }
   default:
     break
@@ -67,7 +70,7 @@ async function castVote(state, { voteId }) {
   // cause do we really want more than one source of truth with a blockchain?
   const transform = async vote => ({
     ...vote,
-    data: await loadVoteData(voteId)
+    data: await loadVoteData(voteId),
   })
   return updateState(state, voteId, transform)
 }
@@ -75,7 +78,7 @@ async function castVote(state, { voteId }) {
 async function executeVote(state, { voteId }) {
   const transform = ({ data, ...vote }) => ({
     ...vote,
-    data: { ...data, executed: true }
+    data: { ...data, executed: true },
   })
   return updateState(state, voteId, transform)
 }
@@ -122,7 +125,7 @@ async function loadVoteData(voteId) {
       .first()
       .subscribe(voteData => {
         let funcSig = voteData.executionScript.slice(58, 66)
-        if(funcSig == 'f2122136'){
+        if (funcSig == 'f2122136') {
           console.log('Loading Projects Data')
           resolve(loadVoteDataProjects(voteData, voteId))
         } else {
@@ -153,17 +156,22 @@ async function loadVoteDataAllocation(vote, voteId) {
             ...marshallVote(vote),
             metadata,
             canExecute,
-            options: options
+            options: options,
           }
           allocations
             .getPayout(vote.externalId)
             .first()
-            .subscribe((payout) => {
+            .subscribe(payout => {
               resolve({
                 ...returnObject,
                 limit: parseInt(payout.limit, 10),
                 balance: parseInt(vote.executionScript.slice(706, 770), 16),
-                metadata: 'Range Vote ' + voteId + ' - Allocation (' + payout.metadata + ')'
+                metadata:
+                  'Range Vote ' +
+                  voteId +
+                  ' - Allocation (' +
+                  payout.metadata +
+                  ')',
               })
             })
         })
@@ -186,7 +194,7 @@ async function loadVoteDataProjects(vote, voteId) {
           console.log('Vote data:', voteId, vote)
           for (let i = 0; i < totalCandidates; i++) {
             let candidateData = await getProjectCandidate(voteId, i)
-            console.log('candidate data',candidateData)
+            console.log('candidate data', candidateData)
             options.push(candidateData)
           }
           console.log(metadata)
@@ -194,7 +202,7 @@ async function loadVoteDataProjects(vote, voteId) {
             ...marshallVote(vote),
             metadata: 'Range Vote ' + voteId + ' - Issue Curation',
             canExecute,
-            options: options
+            options: options,
           }
           resolve(returnObject)
         // Project specific code
@@ -212,7 +220,7 @@ async function updateVotes(votes, voteId, transform) {
     nextVotes = votes.concat(
       await transform({
         voteId,
-        data: await loadVoteData(voteId)
+        data: await loadVoteData(voteId),
       })
     )
   } else {
@@ -229,7 +237,7 @@ async function getAllocationCandidate(voteId, candidateIndex) {
       .subscribe(candidateData => {
         resolve({
           label: candidateData.candidateAddress,
-          value: candidateData.voteSupport
+          value: candidateData.voteSupport,
         })
       })
   })
@@ -243,7 +251,7 @@ async function getProjectCandidate(voteId, candidateIndex) {
       .subscribe(candidateData => {
         resolve({
           label: candidateData.metadata,
-          value: candidateData.voteSupport
+          value: candidateData.voteSupport,
         })
       })
   })
@@ -254,7 +262,7 @@ async function updateState(state, voteId, transform, candidate = null) {
   votes = await updateVotes(votes, voteId, transform)
   return {
     ...state,
-    votes: votes
+    votes: votes,
   }
 }
 
@@ -304,7 +312,7 @@ function marshallVote({
   totalParticipation,
   metadata,
   executionScript,
-  executed
+  executed,
 }) {
   let voteData = {}
   totalVoters = parseInt(totalVoters, 10)
