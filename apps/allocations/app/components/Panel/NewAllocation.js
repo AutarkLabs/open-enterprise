@@ -22,7 +22,7 @@ const INITIAL_STATE = {
   description: '',
   votingTokens: null,
   allocationType: '',
-  allocationTypeIndex: 0,
+  allocationTypeIndex: 1,
   activePayoutOption: 0,
   payoutType: '',
   payoutTypeIndex: 0,

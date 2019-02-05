@@ -33,10 +33,12 @@ class MultiDropdown extends React.Component {
     }
   }
 
+  nameWrapper = name => <span style={{ whiteSpace: 'normal' }}>{name}</span>
+
   render() {
     return (
       <DropDown
-        items={this.props.entities.map(entity => entity.data.name)}
+        items={this.props.entities.map(entity => this.nameWrapper(entity.data.name))}
         active={this.props.activeItem}
         onChange={this.onChangeInput}
         wide={true}
