@@ -77,7 +77,7 @@ class ConfigureVotingDefaultsContent extends React.PureComponent {
       <Content>
         <Title>Issue Curation</Title>
         <StepContainer>
-          <SubmitForm onSubmit={onSubmit} innerRef={formRef}>
+          <SubmitForm onSubmit={onSubmit} ref={formRef}>
             <p style={{ textAlign: 'center' }}>
               <Text size="large" color={theme.textSecondary} align="center">
                 Choose your voting settings below. You can’t change these later,
@@ -114,8 +114,8 @@ class ConfigureVotingDefaultsContent extends React.PureComponent {
   }
 }
 
-const SubmitForm = ({ children, innerRef = noop, ...props }) => (
-  <form {...props} ref={innerRef}>
+const SubmitForm = ({ children, ref = noop, ...props }) => (
+  <form {...props} ref={ref}>
     {children}
     <input type="submit" style={{ display: 'none' }} />
   </form>
