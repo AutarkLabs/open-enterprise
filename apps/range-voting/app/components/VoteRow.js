@@ -11,7 +11,7 @@ import {
 import ProgressBar from './ProgressBar'
 import VoteStatus from './VoteStatus'
 import { safeDiv } from '../utils/math-utils'
-import BigNumber  from 'bignumber.js'
+import BigNumber from 'bignumber.js'
 
 const generateBadge = (foreground, background, text) => (
   <Badge foreground={foreground} background={background}>
@@ -44,8 +44,8 @@ class VoteRow extends React.Component {
       type,
     } = vote.data
     
-    let totalSupport  = 0
-    options.forEach( option => {
+    let totalSupport = 0
+    options.forEach(option => {
       totalSupport = totalSupport + parseFloat(option.value, 10)
     })
 
@@ -78,11 +78,12 @@ class VoteRow extends React.Component {
           </div>
         </QuestionCell>
         <Cell align="right" onClick={this.handleVoteClick}>
-          {parseFloat(participationPct.toFixed(2))}%
+          {participationPct.toFixed(2)}%
         </Cell>
         <BarsCell>
           <BarsGroup>
-            {showMore && options.map(option => (
+            {showMore &&
+              options.map(option => (
               <Bar key={option.label}>
                 <ProgressBar
                   progress={safeDiv(parseInt(option.value, 10), totalSupport)}
@@ -90,7 +91,8 @@ class VoteRow extends React.Component {
                 />
               </Bar>
             ))}
-            {!showMore && options.slice(0,2).map(option => (
+            {!showMore &&
+              options.slice(0, 2).map(option => (
               <Bar key={option.label}>
                 <ProgressBar
                   progress={safeDiv(parseInt(option.value, 10), totalSupport)}
