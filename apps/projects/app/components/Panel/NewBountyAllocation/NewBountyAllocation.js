@@ -99,7 +99,7 @@ class NewBountyAllocation extends React.Component {
     const { bounties } = this.state
     const { bountySettings } = this.props
 
-    const rate = bountySettings.baseRate / 100
+    const rate = bountySettings.baseRate
     let a = bountySettings.expLevels.split('\t')
     for (let i = 0; i < a.length; i += 2)
       bountyExp.push({ mul: a[i] / 100, name: a[i + 1] })
@@ -162,8 +162,9 @@ class NewBountyAllocation extends React.Component {
                               <Badge style={{ marginLeft: '5px' }}>
                                 {bountyHours[bounties[issue.id]['hours']] *
                                     rate *
-                                    bountyExp[bounties[issue.id]['exp']]
-                                      .mul.toFixed(2)}{' '}
+                                    bountyExp[
+                                      bounties[issue.id]['exp']
+                                    ].mul.toFixed(2)}{' '}
                                 {bountySettings.bountyCurrency}
                               </Badge>
                             </IBValueShow>

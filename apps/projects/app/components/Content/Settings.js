@@ -27,7 +27,7 @@ class Settings extends React.Component {
     // data has just became available
     let s = props.bountySettings
     let n = {
-      baseRate: s.baseRate / 100,
+      baseRate: s.baseRate,
       bountyAllocator: s.bountyAllocator,
       bountyArbiter: s.bountyArbiter,
       expLevels: [],
@@ -134,6 +134,8 @@ class Settings extends React.Component {
       bountyAllocator,
       bountyArbiter,
     } = this.state
+
+    console.log('bounteysee', bountyCurrency)
 
     // TODO: hourglass in case settings are still being loaded
     if (!('baseRate' in this.props.bountySettings))
@@ -321,7 +323,7 @@ const BaseRate = ({ baseRate, onChange }) => (
         allowNegative={false}
         onChange={onChange}
       />
-      <Text>USD</Text>
+      <Text>DAI</Text>
     </Field>
   </div>
 )
