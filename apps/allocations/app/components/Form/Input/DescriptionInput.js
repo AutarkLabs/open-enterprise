@@ -7,6 +7,7 @@ const DescriptionInput = styled(TextInput.Multiline).attrs({
 })`
   resize: none; /* TODO: Should we have the ability to resize the form? */
   height: 75px;
+  padding: 10px;
   ::placeholder {
     color: ${theme.contentBorderActive};
   }
