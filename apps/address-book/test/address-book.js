@@ -87,6 +87,12 @@ contract('AddressBook App', accounts => {
     it('should remove the previously added entry', async () => {
       await app.removeEntry(starfleet)
     })
+    it('should allow to use the same name from previously removed entry', async () => {
+      await app.addEntry(accounts[1], 'Starfleet', 'Dejavu')
+    })
+    it('should allow to use the same address from previously removed entry', async () => {
+      await app.addEntry(starfleet, 'NewStar', 'Dejavu')
+    })
   })
   context('invalid operations', () => {
     let [borg, jeanluc] = accounts.splice(1, 2)

@@ -48,12 +48,13 @@ class NewEntity extends React.Component {
     if (Object.keys(error).length) {
       this.setState({ error: error })
     } else {
+      this.setState(INITIAL_STATE)
       this.props.onCreateEntity({ name, address, type })
     }
   }
 
   render() {
-    const { type, error } = this.state
+    const { address, name, type, error } = this.state
     const { handleSubmit, changeField, changeType } = this
     return (
       <Form onSubmit={handleSubmit} submitText="Submit Entity">
@@ -61,14 +62,23 @@ class NewEntity extends React.Component {
           required
           label="Name"
           err={error && error.name}
-          input={<TextInput name="name" onChange={changeField} wide />}
+          input={
+            <TextInput name="name" onChange={changeField} value={name} wide />
+          }
         />
 
         <FormField
           required
           label="Address"
           err={error && error.address}
-          input={<TextInput name="address" onChange={changeField} wide />}
+          input={
+            <TextInput
+              name="address"
+              onChange={changeField}
+              value={address}
+              wide
+            />
+          }
         />
 
         <FormField
