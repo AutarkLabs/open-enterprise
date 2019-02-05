@@ -15,14 +15,14 @@ class Slider extends React.Component {
   static propTypes = {
     value: PropTypes.number,
     onUpdate: PropTypes.func,
-    width: PropTypes.string
+    width: PropTypes.string,
   }
   static defaultProps = {
     value: 0,
-    onUpdate: () => {}
+    onUpdate: () => {},
   }
   state = {
-    pressed: false
+    pressed: false,
   }
   componentWillUnmount() {
     this.dragStop()
@@ -51,7 +51,9 @@ class Slider extends React.Component {
   }
   updateValueFromClientX(clientX) {
     const rect = this.getRect()
-    const x = Math.min(rect.width, Math.max(0, clientX - rect.x))
+    const x = parseFloat(
+      Math.min(rect.width, Math.max(0, clientX - rect.x)).toFixed(2)
+    )
     this.props.onUpdate(x / rect.width)
   }
   dragStart = event => {
@@ -89,14 +91,14 @@ class Slider extends React.Component {
       ),
       background: pressProgress.interpolate(
         t => `hsl(0, 0%, ${100 * (1 - t * 0.01)}%)`
-      )
+      ),
     }
   }
   getHandlePositionStyles(value) {
     return {
       transform: value.interpolate(
         t => `translate3d(calc(${t * 100}% + ${HANDLE_SHADOW_MARGIN}px), 0, 0)`
-      )
+      ),
     }
   }
   getActiveBarStyles(value, pressProgress) {
@@ -104,18 +106,20 @@ class Slider extends React.Component {
       transform: value.interpolate(t => `scaleX(${t}) translateZ(0)`),
       background: pressProgress.interpolate(
         t => `hsl(179, ${Math.round(76 * (1 + 0.2 * t))}%, 48%)`
-      )
+      ),
     }
   }
   render() {
     const { pressed } = this.state
-    const value = Math.max(0, Math.min(1, this.props.value))
+    const value = parseFloat(
+      Math.max(0, Math.min(1, this.props.value)).toFixed(2)
+    )
     return (
       <Spring
         config={springs.swift}
         to={{
           pressProgress: Number(pressed),
-          value
+          value,
         }}
         native
       >
@@ -123,7 +127,7 @@ class Slider extends React.Component {
           <Main>
             <Area
               width={this.props.width}
-              innerRef={this.handleRef}
+              ref={this.handleRef}
               onMouseDown={this.dragStart}
               onTouchStart={this.dragStart}
             >
@@ -166,6 +170,7 @@ const Area = styled.div`
   width: ${({ width }) => width};
 `
 
+// left: -15px makes it align with its surrounding content
 const Bars = styled(animated.div)`
   position: absolute;
   left: -15px;
@@ -211,6 +216,7 @@ const HandlePosition = styled(animated.div)`
   transform-origin: 50% 50%;
 `
 
+// We need the handle -4px left to be aligned with block content
 const Handle = styled(animated.div)`
   position: absolute;
   top: 50%;
