@@ -162,10 +162,6 @@ class App extends React.PureComponent {
     this.setState({ activeIndex })
   }
 
-  selectProject = () => {
-    console.log('selectProject')
-  }
-
   createProject = ({ owner, project }) => {
     console.info('App.js: createProject', project, owner)
     this.closePanel()
@@ -326,7 +322,6 @@ class App extends React.PureComponent {
               onNewIssue={this.newIssue}
               onCurateIssues={this.curateIssues}
               onAllocateBounties={this.newBountyAllocation}
-              onSelect={this.selectProject}
               activeIndex={activeIndex}
               changeActiveIndex={this.changeActiveIndex}
             />

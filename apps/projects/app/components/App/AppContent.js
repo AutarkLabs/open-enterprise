@@ -75,7 +75,6 @@ AppContent.propTypes = {
   bountySettings: PropTypes.object.isRequired,
   onNewProject: PropTypes.func.isRequired,
   onNewIssue: PropTypes.func.isRequired,
-  onSelect: PropTypes.func.isRequired,
   activeIndex: PropTypes.number.isRequired,
   changeActiveIndex: PropTypes.func.isRequired,
 }

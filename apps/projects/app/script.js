@@ -26,6 +26,7 @@ const repoData = id => `{
     node(id: "${id}") {
       ... on Repository {
         name
+        url
         description
         defaultBranchRef {
             target {
@@ -172,6 +173,7 @@ function loadRepoData(id) {
           : '(no description available)'
         const metadata = {
           name: node.name,
+          url: node.url,
           description: description,
           collaborators: node.collaborators.totalCount,
           commits,
