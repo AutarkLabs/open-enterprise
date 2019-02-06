@@ -62,7 +62,7 @@ contract('RangeVoting App', accounts => {
     )
 
     // TODO: Revert to only use 2 params when truffle is updated
-    // read: https://github.com/spacedecentral/planning-suite/pull/243
+    // read: https://github.com/AutarkLabs/planning-suite/pull/243
     const receipt = await dao.newAppInstance(
       '0x1234',
       (await RangeVoting.new()).address,
