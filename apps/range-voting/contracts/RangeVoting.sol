@@ -65,7 +65,8 @@ contract RangeVoting is IForwarder, AragonApp {
 
     bytes32 constant public CREATE_VOTES_ROLE = keccak256("CREATE_VOTES_ROLE");
     bytes32 constant public ADD_CANDIDATES_ROLE = keccak256("ADD_CANDIDATES_ROLE");
-    bytes32 constant public MODIFY_PARTICIPATION_ROLE = keccak256("MODIFY_CANDIDATE_SUPPORT_ROLE");
+    // TODO: Unused ROLE
+    bytes32 constant public MODIFY_PARTICIPATION_ROLE = keccak256("MODIFY_PARTICIPATION_ROLE");
 
     struct Vote {
         address creator;
@@ -187,7 +188,7 @@ contract RangeVoting is IForwarder, AragonApp {
     */
     // function executeVote(uint256 _voteId) isInitialized external {
     function executeVote(uint256 _voteId) external {
-        require(canExecute(_voteId),"lacking permissions"); // solium-disable-line error-reason
+        require(canExecute(_voteId), "vote not meeting execution requirements");
         _executeVote(_voteId);
     }
 
