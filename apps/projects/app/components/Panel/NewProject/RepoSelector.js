@@ -35,6 +35,7 @@ class Repo extends React.Component {
     if (nextProps.data.viewer.repositories) {
       this.setState({
         repos: nextProps.data.viewer.repositories.edges,
+        filteredRepos: nextProps.data.viewer.repositories.edges,
       })
     }
   }
