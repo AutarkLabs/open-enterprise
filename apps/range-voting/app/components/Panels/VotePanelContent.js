@@ -46,20 +46,29 @@ class VotePanelContent extends React.Component {
     }
   }
   handleVoteSubmit = () => {
-    let optionsArray = []
+    const optionsArray = []
+    const userBalance = parseFloat(this.state.userBalance / 10 ** 16).toFixed(2)
+
     this.state.voteOptions.forEach(element => {
       let voteWeight = element.sliderValue
-        ? element.sliderValue * this.state.userBalance
+        ? Math.round(parseFloat((element.sliderValue * userBalance).toFixed(2)))
         : 0
       optionsArray.push(voteWeight)
     })
+    // TODO: Let these comments here for a while to be sure we are working with correct values:
+    console.log('Sum of values:', optionsArray.reduce((a, b) => a + b, 0))
+    console.log('userBalance', userBalance)
+    console.log(
+      'onVote voteId:',
+      this.props.vote.voteId,
+      'optionsArray',
+      optionsArray
+    )
     this.props.onVote(this.props.vote.voteId, optionsArray)
   }
-
   executeVote = () => {
     this.props.app.executeVote(this.props.vote.voteId)
   }
-
   loadUserBalance = () => {
     const { tokenContract, user } = this.props
     if (tokenContract && user) {
@@ -141,14 +150,17 @@ class VotePanelContent extends React.Component {
       type,
     } = vote.data
 
+    // TODO: Show decimals for vote participation only when needed
+    const voterParticipation = (participationPct * 10e15).toFixed(2)
+
+    // TODO: This block is wrong and has no sense
     if (!voteOptions.length) {
       this.state.voteOptions = options
     }
 
-    let totalSupport  = 0
-    options.forEach( option => {
+    let totalSupport = 0
+    options.forEach(option => {
       totalSupport = totalSupport + parseFloat(option.value, 10)
-      console.log(totalSupport)
     })
 
     const showInfo = type === 'allocation' || type === 'curation'
@@ -206,17 +218,20 @@ class VotePanelContent extends React.Component {
             </React.Fragment>
           </Part>
         )}
-        
+
         {vote.data.balance !== undefined && (
           <SidePanelSplit style={{ borderBottom: 'none' }}>
             <div>
               <h2>
                 <Label>Amount</Label>
               </h2>
-              <p>{' ' + BigNumber(vote.data.balance)
-                .div(BigNumber(10e17))
-                .dp(3)
-                .toString() + ' ETH'}
+              <p>
+                {' ' +
+                  BigNumber(vote.data.balance)
+                    .div(BigNumber(10e17))
+                    .dp(3)
+                    .toString() +
+                  ' ETH'}
               </p>
             </div>
             <div>
@@ -233,7 +248,7 @@ class VotePanelContent extends React.Component {
               <Label>Voter participation</Label>
             </h2>
             <p>
-              {parseFloat(participationPct.toFixed(2))}%{' '}
+              {voterParticipation}%{' '}
               <Text size="small" color={theme.negative}>
                 ({minParticipationPct / 10 ** 16}% required)
               </Text>

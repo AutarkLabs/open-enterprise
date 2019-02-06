@@ -15,7 +15,7 @@ import BigNumber from 'bignumber.js'
 
 const generateBadge = (foreground, background, text) => (
   <Badge foreground={foreground} background={background}>
-    {text}  
+    {text}
   </Badge>
 )
 
@@ -43,7 +43,7 @@ class VoteRow extends React.Component {
       participationPct,
       type,
     } = vote.data
-    
+
     let totalSupport = 0
     options.forEach(option => {
       totalSupport = totalSupport + parseFloat(option.value, 10)
@@ -78,28 +78,28 @@ class VoteRow extends React.Component {
           </div>
         </QuestionCell>
         <Cell align="right" onClick={this.handleVoteClick}>
-          {participationPct.toFixed(2)}%
+          {(participationPct * 10e15).toFixed(2)}%
         </Cell>
         <BarsCell>
           <BarsGroup>
             {showMore &&
               options.map(option => (
-              <Bar key={option.label}>
-                <ProgressBar
-                  progress={safeDiv(parseInt(option.value, 10), totalSupport)}
-                  label={option.label}
-                />
-              </Bar>
-            ))}
+                <Bar key={option.label}>
+                  <ProgressBar
+                    progress={safeDiv(parseInt(option.value, 10), totalSupport)}
+                    label={option.label}
+                  />
+                </Bar>
+              ))}
             {!showMore &&
               options.slice(0, 2).map(option => (
-              <Bar key={option.label}>
-                <ProgressBar
-                  progress={safeDiv(parseInt(option.value, 10), totalSupport)}
-                  label={option.label}
-                />
-              </Bar>
-            ))}
+                <Bar key={option.label}>
+                  <ProgressBar
+                    progress={safeDiv(parseInt(option.value, 10), totalSupport)}
+                    label={option.label}
+                  />
+                </Bar>
+              ))}
             {options.length > 2 && (
               <ShowMoreText
                 onClick={() => this.setState({ showMore: !showMore })}
