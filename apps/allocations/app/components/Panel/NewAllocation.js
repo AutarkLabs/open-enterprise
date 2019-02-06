@@ -186,8 +186,9 @@ class NewAllocation extends React.Component {
               required
               separator
               label="Amount"
+              // TODO: We should back to width: '375px' when RecurringDropDown is used again
               input={
-                <div style={{ display: 'flex', width: '375px' }}>
+                <div style={{ display: 'flex', width: '220px' }}>
                   <InputDropDown
                     wide
                     textInput={{
@@ -204,14 +205,15 @@ class NewAllocation extends React.Component {
                       onChange: this.changePayoutToken,
                     }}
                   />
-                  <RecurringDropDown
+                  {/* // Not currently implemented: */}
+                  {/* <RecurringDropDown
                     dropDown={{
                       name: 'payoutType',
                       items: PAYOUT_TYPES,
                       active: this.state.payoutTypeIndex,
                       onChange: this.changePayoutType,
                     }}
-                  />
+                  /> */}
                 </div>
               }
             />
