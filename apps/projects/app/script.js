@@ -165,7 +165,7 @@ function loadRepoData(id) {
       const [_repo, _owner] = [toAscii(id), toAscii(owner)]
       getRepoData(_repo).then(({ node }) => {
         const commits = node.defaultBranchRef
-          ? node.defaultBranchRef.commits
+          ? node.defaultBranchRef.target.history.totalCount
           : 0
         const description = node.description
           ? node.description
