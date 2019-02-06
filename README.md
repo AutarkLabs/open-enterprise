@@ -1,6 +1,6 @@
 # That Planning Suite
 
-[![Build Status](https://img.shields.io/travis/autark/planning-suite.svg?style=flat-square)](https://travis-ci.org/autark/planning-suite) [![Coverage Status](https://img.shields.io/coveralls/github/autark/planning-suite.svg?style=flat-square)](https://coveralls.io/github/autark/planning-suite)
+[![Build Status](https://img.shields.io/travis/AutarkLabs/planning-suite.svg?style=flat-square)](https://travis-ci.org/AutarkLabs/planning-suite) [![Coverage Status](https://img.shields.io/coveralls/github/AutarkLabs/planning-suite.svg?style=flat-square)](https://coveralls.io/github/AutarkLabs/planning-suite)
 
 <!-- markdownlint-disable MD033 -->
 <p align="center">
