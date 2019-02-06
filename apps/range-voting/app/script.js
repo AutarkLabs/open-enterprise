@@ -137,7 +137,7 @@ async function loadVoteData(voteId) {
 }
 // These functions arn't DRY make them better
 async function loadVoteDataAllocation(vote, voteId) {
-  return new Promise(resolve => 
+  return new Promise(resolve =>
     combineLatest(
       app.call('getVoteMetadata', voteId),
       app.call('getCandidateLength', voteId),
@@ -180,7 +180,7 @@ async function loadVoteDataAllocation(vote, voteId) {
 }
 // These functions arn't DRY make them better
 async function loadVoteDataProjects(vote, voteId) {
-  return new Promise(resolve => 
+  return new Promise(resolve =>
     combineLatest(
       app.call('getVoteMetadata', voteId),
       app.call('getCandidateLength', voteId),
@@ -205,7 +205,7 @@ async function loadVoteDataProjects(vote, voteId) {
             options: options,
           }
           resolve(returnObject)
-        // Project specific code
+          // Project specific code
         })
       })
   )
@@ -328,6 +328,7 @@ function marshallVote({
     metadata,
     executionScript,
     executed,
-    participationPct: (totalParticipation / totalVoters) * 100
+    participationPct:
+      totalVoters === 0 ? 0 : (totalParticipation / totalVoters) * 100,
   }
 }
