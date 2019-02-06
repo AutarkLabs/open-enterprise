@@ -8,7 +8,7 @@ const Overview = ({
   projects,
   onNewProject,
   onRemoveProject,
-  onSelect,
+  changeActiveIndex,
   app,
 }) => {
   const projectsEmpty = projects.length === 0
@@ -16,7 +16,6 @@ const Overview = ({
   if (projectsEmpty) {
     return <Empty action={onNewProject} />
   }
-
   const projectsMap = projects.map((project, index) => (
     <Project
       key={index}
@@ -27,7 +26,8 @@ const Overview = ({
       // name={data.name}
       commits={project.metadata.commits}
       contributors={project.metadata.collaborators}
-      // url={data.url}
+      url={project.metadata.url}
+      changeActiveIndex={changeActiveIndex}
     />
   ))
   return <StyledProjects>{projectsMap}</StyledProjects>
