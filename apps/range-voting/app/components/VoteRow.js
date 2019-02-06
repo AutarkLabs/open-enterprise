@@ -78,7 +78,7 @@ class VoteRow extends React.Component {
           </div>
         </QuestionCell>
         <Cell align="right" onClick={this.handleVoteClick}>
-          {(participationPct * 10e15).toFixed(2)}%
+          {participationPct.toFixed(2)}%
         </Cell>
         <BarsCell>
           <BarsGroup>

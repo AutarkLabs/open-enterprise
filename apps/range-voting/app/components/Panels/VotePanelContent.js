@@ -47,17 +47,20 @@ class VotePanelContent extends React.Component {
   }
   handleVoteSubmit = () => {
     const optionsArray = []
-    const userBalance = parseFloat(this.state.userBalance / 10 ** 16).toFixed(2)
 
     this.state.voteOptions.forEach(element => {
       let voteWeight = element.sliderValue
-        ? Math.round(parseFloat((element.sliderValue * userBalance).toFixed(2)))
+        ? Math.round(
+          parseFloat(
+            (element.sliderValue * this.state.userBalance).toFixed(2)
+          )
+        )
         : 0
       optionsArray.push(voteWeight)
     })
     // TODO: Let these comments here for a while to be sure we are working with correct values:
     console.log('Sum of values:', optionsArray.reduce((a, b) => a + b, 0))
-    console.log('userBalance', userBalance)
+    console.log('userBalance', this.state.userBalance)
     console.log(
       'onVote voteId:',
       this.props.vote.voteId,
@@ -248,7 +251,7 @@ class VotePanelContent extends React.Component {
               <Label>Voter participation</Label>
             </h2>
             <p>
-              {voterParticipation}%{' '}
+              {voterParticipation / 10 ** 16}%{' '}
               <Text size="small" color={theme.negative}>
                 ({minParticipationPct / 10 ** 16}% required)
               </Text>
@@ -258,10 +261,7 @@ class VotePanelContent extends React.Component {
             <h2>
               <Label>Your voting tokens</Label>
             </h2>
-            {BigNumber(this.state.userBalance)
-              .div(BigNumber(10e15))
-              .dp(3)
-              .toString()}
+            {BigNumber(this.state.userBalance).toString()}
           </div>
         </SidePanelSplit>
         {open && (

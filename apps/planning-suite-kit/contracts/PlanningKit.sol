@@ -7,7 +7,7 @@ import "@aragon/os/contracts/lib/ens/PublicResolver.sol";
 import "@aragon/os/contracts/apm/APMNamehash.sol";
 
 // import "@aragon/apps-voting/contracts/Voting.sol";
-// import "@aragon/apps-token-manager/contracts/TokenManager.sol";
+import "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 // import "@aragon/apps-survey/contracts/Survey.sol";
 
@@ -70,11 +70,12 @@ contract PlanningKit is KitBase {
         // bytes32 tokenManagerAppId = apmNamehash("token-manager");
 
 
-        bytes32[4] memory apps = [
+        bytes32[5] memory apps = [
             apmNamehash("address-book"),    // 0
             apmNamehash("projects"),        // 1
             apmNamehash("range-voting"),    // 2
-            apmNamehash("allocations")      // 3
+            apmNamehash("allocations"),     // 3
+            apmNamehash("token-manager")    // 4
         ];
 
         // Planning Apps
@@ -83,22 +84,21 @@ contract PlanningKit is KitBase {
         RangeVotingApp rangeVoting = RangeVotingApp(dao.newAppInstance(apps[2], latestVersionAppBase(apps[2])));
         Allocations allocations = Allocations(dao.newAppInstance(apps[3], latestVersionAppBase(apps[3])));
         // Aragon Apps
+        TokenManager tokenManager = TokenManager(dao.newAppInstance(apps[4], latestVersionAppBase(apps[4])));
         // Voting voting = Voting(dao.newAppInstance(votingAppId, latestVersionAppBase(votingAppId)));
-        // TokenManager tokenManager = TokenManager(dao.newAppInstance(tokenManagerAppId, latestVersionAppBase(tokenManagerAppId)));
         // // Survey survey = Survey(dao.newAppInstance(apps[6], latestVersionAppBase(apps[6])));
 
         // MiniMe Token
         MiniMeToken token = tokenFactory.createCloneToken(MiniMeToken(0), 0, "Autark Token", 0, "autark", true);
-        // token.changeController(tokenManager);
-        // token.generateTokens(root, 1);
-        token.generateTokens(address(0xb4124cEB3451635DAcedd11767f004d8a28c6eE7), 1 ether);
+        token.generateTokens(address(root), 100); // give root 100 autark tokens
+        token.changeController(tokenManager);
 
         // Initialize apps
         addressBook.initialize();
         projects.initialize(registry);
         rangeVoting.initialize(token, 50 * PCT, 0, 1 minutes);
         allocations.initialize(addressBook);
-        // tokenManager.initialize(token, true, 0);
+        tokenManager.initialize(token, true, 0);
         // voting.initialize(token, 50 * PCT, 20 * PCT, 10 minutes);
         // // At least 50% of the voting tokens must vote, there is no minimum
         // // candidate support, and the vote will last 1 minute for testing.
@@ -132,16 +132,16 @@ contract PlanningKit is KitBase {
         // emit InstalledApp(allocations, apps[1]);
 
         // Token Manager permissions
-        // acl.createPermission(ANY_ENTITY, tokenManager, tokenManager.MINT_ROLE(), this);
-        // acl.createPermission(ANY_ENTITY, tokenManager, tokenManager.ISSUE_ROLE(), root);
-        // acl.createPermission(ANY_ENTITY, tokenManager, tokenManager.ASSIGN_ROLE(), root);
-        // acl.createPermission(ANY_ENTITY, tokenManager, tokenManager.REVOKE_VESTINGS_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, tokenManager, tokenManager.MINT_ROLE(), this);
+        acl.createPermission(ANY_ENTITY, tokenManager, tokenManager.ISSUE_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, tokenManager, tokenManager.ASSIGN_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, tokenManager, tokenManager.REVOKE_VESTINGS_ROLE(), root);
         // tokenManager.mint(root, 1); // Give one token to root
         // emit InstalledApp(tokenManager, );
 
         // survey permissions
-        //         // Set survey manager as the entity that can create votes and change participation
-        // // surveyManager can then give this permission to other entities
+        // Set survey manager as the entity that can create votes and change participation
+        // surveyManager can then give this permission to other entities
         // acl.createPermission(ANY_ENTITY, survey, survey.CREATE_SURVEYS_ROLE(), root);
         // acl.createPermission(ANY_ENTITY, survey, survey.MODIFY_PARTICIPATION_ROLE(), root);
 
