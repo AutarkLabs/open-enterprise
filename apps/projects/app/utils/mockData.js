@@ -5,12 +5,12 @@ const savedRepos = {
         {
           node: {
             id: 'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk=',
-            name: 'spacedecentral-network',
+            name: 'autark-network',
             description:
               'With an integrated set of collaborative tools, we want to make planning and executing a space mission a simple and sleek process.',
             owner: {
               id: 'MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5',
-              login: 'spacedecentral',
+              login: 'autark',
             },
             refs: {
               edges: [
@@ -45,13 +45,13 @@ const savedRepos = {
                     title: 'Design an interactive knowledge base',
                     state: 'OPEN',
                     url:
-                      'https://github.com/spacedecentral/spacedecentral-network/issues/1',
+                      'https://github.com/AutarkLabs/autark-network/issues/1',
                     createdAt: '2018-01-23T00:37:07Z',
                     number: 1,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk=',
-                      name: 'spacedecentral-network',
-                      nameWithOwner: 'spacedecentral/spacedecentral-network',
+                      name: 'autark-network',
+                      nameWithOwner: 'autark/autark-network',
                     },
                     milestone: null,
                     labels: {
@@ -64,7 +64,7 @@ const savedRepos = {
                             description: 'New feature or request',
                             color: '84b6eb',
                             url:
-                              'https://github.com/spacedecentral/spacedecentral-network/labels/enhancement',
+                              'https://github.com/AutarkLabs/autark-network/labels/enhancement',
                           },
                         },
                       ],
@@ -77,13 +77,13 @@ const savedRepos = {
                     title: 'Load more link in forum isn\'t loading more',
                     state: 'CLOSED',
                     url:
-                      'https://github.com/spacedecentral/spacedecentral-network/issues/2',
+                      'https://github.com/AutarkLabs/autark-network/issues/2',
                     createdAt: '2018-01-25T20:20:09Z',
                     number: 2,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk=',
-                      name: 'spacedecentral-network',
-                      nameWithOwner: 'spacedecentral/spacedecentral-network',
+                      name: 'autark-network',
+                      nameWithOwner: 'autark/autark-network',
                     },
                     milestone: null,
                     labels: {
@@ -96,7 +96,7 @@ const savedRepos = {
                             description: 'Something isn\'t working',
                             color: 'ee0701',
                             url:
-                              'https://github.com/spacedecentral/spacedecentral-network/labels/bug',
+                              'https://github.com/AutarkLabs/autark-network/labels/bug',
                           },
                         },
                         {
@@ -106,7 +106,7 @@ const savedRepos = {
                             description: '',
                             color: 'c5def5',
                             url:
-                              'https://github.com/spacedecentral/spacedecentral-network/labels/points%3A%208',
+                              'https://github.com/AutarkLabs/autark-network/labels/points%3A%208',
                           },
                         },
                       ],
@@ -120,13 +120,13 @@ const savedRepos = {
                       'Year is not always displaying properly in forum posts',
                     state: 'CLOSED',
                     url:
-                      'https://github.com/spacedecentral/spacedecentral-network/issues/3',
+                      'https://github.com/AutarkLabs/autark-network/issues/3',
                     createdAt: '2018-01-25T20:21:18Z',
                     number: 3,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk=',
-                      name: 'spacedecentral-network',
-                      nameWithOwner: 'spacedecentral/spacedecentral-network',
+                      name: 'autark-network',
+                      nameWithOwner: 'autark/autark-network',
                     },
                     milestone: null,
                     labels: {
@@ -139,7 +139,7 @@ const savedRepos = {
                             description: 'Something isn\'t working',
                             color: 'ee0701',
                             url:
-                              'https://github.com/spacedecentral/spacedecentral-network/labels/bug',
+                              'https://github.com/AutarkLabs/autark-network/labels/bug',
                           },
                         },
                       ],
@@ -153,13 +153,13 @@ const savedRepos = {
                       'Make updates to the "Activity" that is being displayed',
                     state: 'OPEN',
                     url:
-                      'https://github.com/spacedecentral/spacedecentral-network/issues/4',
+                      'https://github.com/AutarkLabs/autark-network/issues/4',
                     createdAt: '2018-02-02T21:24:52Z',
                     number: 4,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk=',
-                      name: 'spacedecentral-network',
-                      nameWithOwner: 'spacedecentral/spacedecentral-network',
+                      name: 'autark-network',
+                      nameWithOwner: 'autark/autark-network',
                     },
                     milestone: null,
                     labels: {
@@ -174,13 +174,13 @@ const savedRepos = {
                     title: 'Validate that user\'s email domain is valid',
                     state: 'OPEN',
                     url:
-                      'https://github.com/spacedecentral/spacedecentral-network/issues/5',
+                      'https://github.com/AutarkLabs/autark-network/issues/5',
                     createdAt: '2018-02-07T17:57:42Z',
                     number: 5,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk=',
-                      name: 'spacedecentral-network',
-                      nameWithOwner: 'spacedecentral/spacedecentral-network',
+                      name: 'autark-network',
+                      nameWithOwner: 'autark/autark-network',
                     },
                     milestone: null,
                     labels: {
@@ -196,13 +196,13 @@ const savedRepos = {
                       'reusing mail address during registration results in 500',
                     state: 'OPEN',
                     url:
-                      'https://github.com/spacedecentral/spacedecentral-network/issues/7',
+                      'https://github.com/AutarkLabs/autark-network/issues/7',
                     createdAt: '2018-02-10T22:15:57Z',
                     number: 7,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk=',
-                      name: 'spacedecentral-network',
-                      nameWithOwner: 'spacedecentral/spacedecentral-network',
+                      name: 'autark-network',
+                      nameWithOwner: 'autark/autark-network',
                     },
                     milestone: null,
                     labels: {
@@ -217,13 +217,13 @@ const savedRepos = {
                     title: 'add youtube URL to footer',
                     state: 'CLOSED',
                     url:
-                      'https://github.com/spacedecentral/spacedecentral-network/issues/8',
+                      'https://github.com/AutarkLabs/autark-network/issues/8',
                     createdAt: '2018-02-10T22:35:14Z',
                     number: 8,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk=',
-                      name: 'spacedecentral-network',
-                      nameWithOwner: 'spacedecentral/spacedecentral-network',
+                      name: 'autark-network',
+                      nameWithOwner: 'autark/autark-network',
                     },
                     milestone: null,
                     labels: {
@@ -239,13 +239,13 @@ const savedRepos = {
                       'Send email notifications for replies to forum posts',
                     state: 'OPEN',
                     url:
-                      'https://github.com/spacedecentral/spacedecentral-network/issues/9',
+                      'https://github.com/AutarkLabs/autark-network/issues/9',
                     createdAt: '2018-02-15T02:27:11Z',
                     number: 9,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk=',
-                      name: 'spacedecentral-network',
-                      nameWithOwner: 'spacedecentral/spacedecentral-network',
+                      name: 'autark-network',
+                      nameWithOwner: 'autark/autark-network',
                     },
                     milestone: null,
                     labels: {
@@ -258,7 +258,7 @@ const savedRepos = {
                             description: '',
                             color: 'c5def5',
                             url:
-                              'https://github.com/spacedecentral/spacedecentral-network/labels/points%3A%2013',
+                              'https://github.com/AutarkLabs/autark-network/labels/points%3A%2013',
                           },
                         },
                       ],
@@ -271,13 +271,13 @@ const savedRepos = {
                     title: 'Forum text selection is bad on mobile',
                     state: 'OPEN',
                     url:
-                      'https://github.com/spacedecentral/spacedecentral-network/issues/10',
+                      'https://github.com/AutarkLabs/autark-network/issues/10',
                     createdAt: '2018-02-20T16:22:47Z',
                     number: 10,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk=',
-                      name: 'spacedecentral-network',
-                      nameWithOwner: 'spacedecentral/spacedecentral-network',
+                      name: 'autark-network',
+                      nameWithOwner: 'autark/autark-network',
                     },
                     milestone: null,
                     labels: {
@@ -290,7 +290,7 @@ const savedRepos = {
                             description: 'Something isn\'t working',
                             color: 'ee0701',
                             url:
-                              'https://github.com/spacedecentral/spacedecentral-network/labels/bug',
+                              'https://github.com/AutarkLabs/autark-network/labels/bug',
                           },
                         },
                       ],
@@ -304,13 +304,13 @@ const savedRepos = {
                       'Text formatting tool bar not being displayed when editing a previous forum post',
                     state: 'OPEN',
                     url:
-                      'https://github.com/spacedecentral/spacedecentral-network/issues/11',
+                      'https://github.com/AutarkLabs/autark-network/issues/11',
                     createdAt: '2018-02-24T06:01:02Z',
                     number: 11,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk=',
-                      name: 'spacedecentral-network',
-                      nameWithOwner: 'spacedecentral/spacedecentral-network',
+                      name: 'autark-network',
+                      nameWithOwner: 'autark/autark-network',
                     },
                     milestone: null,
                     labels: {
@@ -323,7 +323,7 @@ const savedRepos = {
                             description: 'Something isn\'t working',
                             color: 'ee0701',
                             url:
-                              'https://github.com/spacedecentral/spacedecentral-network/labels/bug',
+                              'https://github.com/AutarkLabs/autark-network/labels/bug',
                           },
                         },
                         {
@@ -333,7 +333,7 @@ const savedRepos = {
                             description: '',
                             color: 'c5def5',
                             url:
-                              'https://github.com/spacedecentral/spacedecentral-network/labels/points%3A%208',
+                              'https://github.com/AutarkLabs/autark-network/labels/points%3A%208',
                           },
                         },
                       ],
@@ -355,7 +355,7 @@ const savedRepos = {
               'Discussing our first Earth settlement and solving world challenges.',
             owner: {
               id: 'MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5',
-              login: 'spacedecentral',
+              login: 'autark',
             },
             refs: {
               edges: [
@@ -381,13 +381,13 @@ const savedRepos = {
                       'Cost/benefit analysis of a seastead vs. buying land',
                     state: 'OPEN',
                     url:
-                      'https://github.com/spacedecentral/spaceship-earth/issues/1',
+                      'https://github.com/AutarkLabs/spaceship-earth/issues/1',
                     createdAt: '2018-03-21T01:08:35Z',
                     number: 1,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjYxMDE2NDU=',
                       name: 'spaceship-earth',
-                      nameWithOwner: 'spacedecentral/spaceship-earth',
+                      nameWithOwner: 'autark/spaceship-earth',
                     },
                     milestone: null,
                     labels: {
@@ -400,7 +400,7 @@ const savedRepos = {
                             description: '',
                             color: 'c5def5',
                             url:
-                              'https://github.com/spacedecentral/spaceship-earth/labels/points%3A%2034',
+                              'https://github.com/AutarkLabs/spaceship-earth/labels/points%3A%2034',
                           },
                         },
                       ],
@@ -414,13 +414,13 @@ const savedRepos = {
                       'Write RFP to source proposals for how we determine location of the first Titanium Shores node',
                     state: 'OPEN',
                     url:
-                      'https://github.com/spacedecentral/spaceship-earth/issues/2',
+                      'https://github.com/AutarkLabs/spaceship-earth/issues/2',
                     createdAt: '2018-03-21T01:09:32Z',
                     number: 2,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjYxMDE2NDU=',
                       name: 'spaceship-earth',
-                      nameWithOwner: 'spacedecentral/spaceship-earth',
+                      nameWithOwner: 'autark/spaceship-earth',
                     },
                     milestone: null,
                     labels: {
@@ -433,7 +433,7 @@ const savedRepos = {
                             description: '',
                             color: 'c5def5',
                             url:
-                              'https://github.com/spacedecentral/spaceship-earth/labels/points%3A%2013',
+                              'https://github.com/AutarkLabs/spaceship-earth/labels/points%3A%2013',
                           },
                         },
                       ],
@@ -446,13 +446,13 @@ const savedRepos = {
                     title: 'Research 3D printed modular skyscrapers',
                     state: 'OPEN',
                     url:
-                      'https://github.com/spacedecentral/spaceship-earth/issues/3',
+                      'https://github.com/AutarkLabs/spaceship-earth/issues/3',
                     createdAt: '2018-03-21T01:17:04Z',
                     number: 3,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjYxMDE2NDU=',
                       name: 'spaceship-earth',
-                      nameWithOwner: 'spacedecentral/spaceship-earth',
+                      nameWithOwner: 'autark/spaceship-earth',
                     },
                     milestone: null,
                     labels: {
@@ -465,7 +465,7 @@ const savedRepos = {
                             description: '',
                             color: 'c5def5',
                             url:
-                              'https://github.com/spacedecentral/spaceship-earth/labels/points%3A%2013',
+                              'https://github.com/AutarkLabs/spaceship-earth/labels/points%3A%2013',
                           },
                         },
                       ],
@@ -478,13 +478,13 @@ const savedRepos = {
                     title: 'Help create and organize tasks for Spaceship Earth',
                     state: 'OPEN',
                     url:
-                      'https://github.com/spacedecentral/spaceship-earth/issues/4',
+                      'https://github.com/AutarkLabs/spaceship-earth/issues/4',
                     createdAt: '2018-03-21T01:19:10Z',
                     number: 4,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjYxMDE2NDU=',
                       name: 'spaceship-earth',
-                      nameWithOwner: 'spacedecentral/spaceship-earth',
+                      nameWithOwner: 'autark/spaceship-earth',
                     },
                     milestone: null,
                     labels: {
@@ -497,7 +497,7 @@ const savedRepos = {
                             description: '',
                             color: 'c5def5',
                             url:
-                              'https://github.com/spacedecentral/spaceship-earth/labels/points%3A%2013',
+                              'https://github.com/AutarkLabs/spaceship-earth/labels/points%3A%2013',
                           },
                         },
                       ],
@@ -519,7 +519,7 @@ const savedRepos = {
               'This repository holds all of the smart contracts and Aragon applications needed to create an aggregate Aragon application for the use of planning and asset distributions for a development team (or more generally any sort of coordinated decentralized work)',
             owner: {
               id: 'MDEyOk9yZ2FuaXphdGlvbjIzNDc1NjQ1',
-              login: 'spacedecentral',
+              login: 'autark',
             },
             refs: {
               edges: [
@@ -603,13 +603,13 @@ const savedRepos = {
                     id: 'MDU6SXNzdWUzMDg3NzI4NDc=',
                     title: 'Create instructions for contributors',
                     state: 'CLOSED',
-                    url: 'https://github.com/spacedecentral/planning-suite/issues/1',
+                    url: 'https://github.com/AutarkLabs/planning-suite/issues/1',
                     createdAt: '2018-03-26T23:44:36Z',
                     number: 1,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
                       name: 'planning-suite',
-                      nameWithOwner: 'spacedecentral/planning-suite',
+                      nameWithOwner: 'autark/planning-suite',
                     },
                     milestone: null,
                     labels: {
@@ -623,13 +623,13 @@ const savedRepos = {
                     id: 'MDU6SXNzdWUzMDg3NzQ3MTM=',
                     title: 'Initialize Planning Suite (dev)',
                     state: 'CLOSED',
-                    url: 'https://github.com/spacedecentral/planning-suite/issues/2',
+                    url: 'https://github.com/AutarkLabs/planning-suite/issues/2',
                     createdAt: '2018-03-26T23:55:20Z',
                     number: 2,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
                       name: 'planning-suite',
-                      nameWithOwner: 'spacedecentral/planning-suite',
+                      nameWithOwner: 'autark/planning-suite',
                     },
                     milestone: null,
                     labels: {
@@ -642,7 +642,7 @@ const savedRepos = {
                             description: '',
                             color: 'f9d0c4',
                             url:
-                              'https://github.com/spacedecentral/planning-suite/labels/epic',
+                              'https://github.com/AutarkLabs/planning-suite/labels/epic',
                           },
                         },
                       ],
@@ -654,18 +654,18 @@ const savedRepos = {
                     id: 'MDU6SXNzdWUzMDg3NzQ3NzU=',
                     title: 'Range Voting - Smart contracts',
                     state: 'OPEN',
-                    url: 'https://github.com/spacedecentral/planning-suite/issues/3',
+                    url: 'https://github.com/AutarkLabs/planning-suite/issues/3',
                     createdAt: '2018-03-26T23:55:40Z',
                     number: 3,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
                       name: 'planning-suite',
-                      nameWithOwner: 'spacedecentral/planning-suite',
+                      nameWithOwner: 'autark/planning-suite',
                     },
                     milestone: {
                       id: 'MDk6TWlsZXN0b25lMzI5NDU4Mg==',
                       title: 'Sprint 2 (Milestone 1)',
-                      url: 'https://github.com/spacedecentral/planning-suite/milestone/2',
+                      url: 'https://github.com/AutarkLabs/planning-suite/milestone/2',
                       description: '',
                     },
                     labels: {
@@ -679,18 +679,18 @@ const savedRepos = {
                     id: 'MDU6SXNzdWUzMDg3NzQ4NjU=',
                     title: 'Issue Curation',
                     state: 'OPEN',
-                    url: 'https://github.com/spacedecentral/planning-suite/issues/4',
+                    url: 'https://github.com/AutarkLabs/planning-suite/issues/4',
                     createdAt: '2018-03-26T23:56:10Z',
                     number: 4,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
                       name: 'planning-suite',
-                      nameWithOwner: 'spacedecentral/planning-suite',
+                      nameWithOwner: 'autark/planning-suite',
                     },
                     milestone: {
                       id: 'MDk6TWlsZXN0b25lMzM2NzU1MQ==',
                       title: 'Sprint 4 (Milestone 1)',
-                      url: 'https://github.com/spacedecentral/planning-suite/milestone/4',
+                      url: 'https://github.com/AutarkLabs/planning-suite/milestone/4',
                       description: '',
                     },
                     labels: {
@@ -703,7 +703,7 @@ const savedRepos = {
                             description: '',
                             color: 'f9d0c4',
                             url:
-                              'https://github.com/spacedecentral/planning-suite/labels/epic',
+                              'https://github.com/AutarkLabs/planning-suite/labels/epic',
                           },
                         },
                       ],
@@ -715,13 +715,13 @@ const savedRepos = {
                     id: 'MDU6SXNzdWUzMDg3NzQ4OTg=',
                     title: 'Payout Engine - UI design',
                     state: 'CLOSED',
-                    url: 'https://github.com/spacedecentral/planning-suite/issues/5',
+                    url: 'https://github.com/AutarkLabs/planning-suite/issues/5',
                     createdAt: '2018-03-26T23:56:20Z',
                     number: 5,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
                       name: 'planning-suite',
-                      nameWithOwner: 'spacedecentral/planning-suite',
+                      nameWithOwner: 'autark/planning-suite',
                     },
                     milestone: null,
                     labels: {
@@ -736,13 +736,13 @@ const savedRepos = {
                     title:
                       'Github Integration (oAuth) - For adding projects/issues',
                     state: 'OPEN',
-                    url: 'https://github.com/spacedecentral/planning-suite/issues/6',
+                    url: 'https://github.com/AutarkLabs/planning-suite/issues/6',
                     createdAt: '2018-03-26T23:56:29Z',
                     number: 6,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
                       name: 'planning-suite',
-                      nameWithOwner: 'spacedecentral/planning-suite',
+                      nameWithOwner: 'autark/planning-suite',
                     },
                     milestone: null,
                     labels: {
@@ -757,18 +757,18 @@ const savedRepos = {
                     title:
                       'Ability to allocate bounties to issues in a bulk-fashion',
                     state: 'OPEN',
-                    url: 'https://github.com/spacedecentral/planning-suite/issues/7',
+                    url: 'https://github.com/AutarkLabs/planning-suite/issues/7',
                     createdAt: '2018-03-28T17:09:08Z',
                     number: 7,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
                       name: 'planning-suite',
-                      nameWithOwner: 'spacedecentral/planning-suite',
+                      nameWithOwner: 'autark/planning-suite',
                     },
                     milestone: {
                       id: 'MDk6TWlsZXN0b25lMzM2NzU1MQ==',
                       title: 'Sprint 4 (Milestone 1)',
-                      url: 'https://github.com/spacedecentral/planning-suite/milestone/4',
+                      url: 'https://github.com/AutarkLabs/planning-suite/milestone/4',
                       description: '',
                     },
                     labels: {
@@ -781,7 +781,7 @@ const savedRepos = {
                             description: '',
                             color: 'f9d0c4',
                             url:
-                              'https://github.com/spacedecentral/planning-suite/labels/epic',
+                              'https://github.com/AutarkLabs/planning-suite/labels/epic',
                           },
                         },
                       ],
@@ -794,13 +794,13 @@ const savedRepos = {
                     title:
                       'Document development strategy for Status Open Bounty integration',
                     state: 'CLOSED',
-                    url: 'https://github.com/spacedecentral/planning-suite/issues/8',
+                    url: 'https://github.com/AutarkLabs/planning-suite/issues/8',
                     createdAt: '2018-03-28T17:37:06Z',
                     number: 8,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
                       name: 'planning-suite',
-                      nameWithOwner: 'spacedecentral/planning-suite',
+                      nameWithOwner: 'autark/planning-suite',
                     },
                     milestone: null,
                     labels: {
@@ -814,7 +814,7 @@ const savedRepos = {
                               'This issue needs to go through planning poker',
                             color: 'e5da75',
                             url:
-                              'https://github.com/spacedecentral/planning-suite/labels/Needs%20Poker',
+                              'https://github.com/AutarkLabs/planning-suite/labels/Needs%20Poker',
                           },
                         },
                         {
@@ -825,7 +825,7 @@ const savedRepos = {
                               'This issue requires research and design work',
                             color: 'b68bdd',
                             url:
-                              'https://github.com/spacedecentral/planning-suite/labels/R%26D',
+                              'https://github.com/AutarkLabs/planning-suite/labels/R%26D',
                           },
                         },
                       ],
@@ -837,13 +837,13 @@ const savedRepos = {
                     id: 'MDU6SXNzdWUzMTAxOTY2NDE=',
                     title: 'Design UML for range voting smart contracts',
                     state: 'OPEN',
-                    url: 'https://github.com/spacedecentral/planning-suite/issues/9',
+                    url: 'https://github.com/AutarkLabs/planning-suite/issues/9',
                     createdAt: '2018-03-31T00:19:12Z',
                     number: 9,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
                       name: 'planning-suite',
-                      nameWithOwner: 'spacedecentral/planning-suite',
+                      nameWithOwner: 'autark/planning-suite',
                     },
                     milestone: null,
                     labels: {
@@ -858,13 +858,13 @@ const savedRepos = {
                     title:
                       'Range voting comments, variables, and function signatures',
                     state: 'CLOSED',
-                    url: 'https://github.com/spacedecentral/planning-suite/issues/10',
+                    url: 'https://github.com/AutarkLabs/planning-suite/issues/10',
                     createdAt: '2018-03-31T00:37:29Z',
                     number: 10,
                     repository: {
                       id: 'MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=',
                       name: 'planning-suite',
-                      nameWithOwner: 'spacedecentral/planning-suite',
+                      nameWithOwner: 'autark/planning-suite',
                     },
                     milestone: null,
                     labels: {

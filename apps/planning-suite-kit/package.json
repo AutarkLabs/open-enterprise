@@ -1,7 +1,7 @@
 {
   "name": "@tps/kits-planning-suite",
   "version": "0.0.1",
-  "description": "Aragon Planning Suite developed by Space Decentral and Giveth",
+  "description": "Aragon Planning Suite developed by Autark",
   "scripts": {
     "coverage": "SOLIDITY_COVERAGE=true npm run ganache-cli:test",
     "ganache-cli:test": "../shared/test-helpers/ganache-cli.sh",
@@ -25,7 +25,7 @@
   "author": "",
   "repository": {
     "type": "git",
-    "url": "https://github.com/spacedecentral/planning-suite"
+    "url": "https://github.com/AutarkLabs/planning-suite"
   },
   "keywords": [],
   "license": "GPL-3.0"

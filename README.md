@@ -1,6 +1,6 @@
 # That Planning Suite
 
-[![Build Status](https://img.shields.io/travis/spacedecentral/planning-suite.svg?style=flat-square)](https://travis-ci.org/spacedecentral/planning-suite) [![Coverage Status](https://img.shields.io/coveralls/github/spacedecentral/planning-suite.svg?style=flat-square)](https://coveralls.io/github/spacedecentral/planning-suite)
+[![Build Status](https://img.shields.io/travis/autark/planning-suite.svg?style=flat-square)](https://travis-ci.org/autark/planning-suite) [![Coverage Status](https://img.shields.io/coveralls/github/autark/planning-suite.svg?style=flat-square)](https://coveralls.io/github/autark/planning-suite)
 
 <!-- markdownlint-disable MD033 -->
 <p align="center">
@@ -45,7 +45,7 @@ $ npm run start:range
 
 ## Background
 
-The proposal for an Aragon [Planning Suite](https://github.com/aragon/nest/pull/24) was developed by members of [Space Decentral](https://spacedecentral.net) and [Giveth](https://giveth.io), and received funding via [Aragon's Nest program](https://blog.aragon.one/introducing-aragon-nest-1aa8c91c0566): an example of decentralization at it's finest. We are developing this app as a collaborative unit because it is a crucial building block for any organization that aims to coordinate work and streamline management duties, without traditional managers. This app will work with any ERC-20 token or Aragon DAO.
+The proposal for an Aragon [Planning Suite](https://github.com/aragon/nest/pull/24) was developed by members of [Autark](https://autark.xyz, and received funding via [Aragon's Nest program](https://blog.aragon.one/introducing-aragon-nest-1aa8c91c0566): an example of decentralization at it's finest. We are developing this app as a collaborative unit because it is a crucial building block for any organization that aims to coordinate work and streamline management duties, without traditional managers. This app will work with any ERC-20 token or Aragon DAO.
 
 ## The Suite
 
