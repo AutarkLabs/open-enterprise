@@ -34,7 +34,7 @@ $ npm run start:range
 
 # current app name aliases: {address, projects, payout, range}
 ```
-
+ 
 ### Extra tips
 
 - Individual development is ultra-fast thanks to parcel and hot module replacement.
