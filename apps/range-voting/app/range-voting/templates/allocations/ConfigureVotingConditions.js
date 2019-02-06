@@ -2,7 +2,11 @@ import React from 'react'
 import styled from 'styled-components'
 import { Field, DropDown } from '@aragon/ui'
 import { Main, Content, Title, Subtitle, Hint } from '../../../style'
-import { votePermissionItems, voteWeightItems, voteOutcomeItems } from './voting-conditions'
+import {
+  votePermissionItems,
+  voteWeightItems,
+  voteOutcomeItems,
+} from './voting-conditions'
 import { lerp } from '../../../utils/math-utils'
 import { noop } from '../../../utils/utils'
 
@@ -85,15 +89,14 @@ class ConfigureVotingConditionsContent extends React.PureComponent {
       <Content>
         <Title>Payout Engine</Title>
         <StepContainer>
-          <SubmitForm onSubmit={onSubmit} innerRef={formRef}>
+          <SubmitForm onSubmit={onSubmit} ref={formRef}>
             <Subtitle>
-                Choose your voting settings below. You can’t change these later, so pick carefully.
+              Choose your voting settings below. You can’t change these later,
+              so pick carefully.
             </Subtitle>
             <Fields>
               <Fields.Field label="Voting Permission">
-                <Hint>
-                  Which role will have permission to vote
-                </Hint>
+                <Hint>Which role will have permission to vote</Hint>
                 <ConditionDropDown
                   items={votePermissionItems}
                   active={fields.votePermission}
@@ -101,9 +104,7 @@ class ConfigureVotingConditionsContent extends React.PureComponent {
                 />
               </Fields.Field>
               <Fields.Field label="Voting Weight">
-                <Hint>
-                  How each vote will be weighted
-                </Hint>
+                <Hint>How each vote will be weighted</Hint>
                 <DropDown
                   items={voteWeightItems}
                   active={fields.voteWeight}
@@ -128,8 +129,8 @@ class ConfigureVotingConditionsContent extends React.PureComponent {
   }
 }
 
-const SubmitForm = ({ children, innerRef = noop, ...props }) => (
-  <form {...props} ref={innerRef}>
+const SubmitForm = ({ children, ref = noop, ...props }) => (
+  <form {...props} ref={ref}>
     {children}
     <input type="submit" style={{ display: 'none' }} />
   </form>

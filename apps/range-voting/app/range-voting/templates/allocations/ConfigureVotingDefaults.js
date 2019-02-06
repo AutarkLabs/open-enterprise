@@ -78,15 +78,14 @@ class ConfigureVotingDefaultsContent extends React.PureComponent {
       <Content>
         <Title>Payout Engine</Title>
         <StepContainer>
-          <SubmitForm onSubmit={onSubmit} innerRef={formRef}>
+          <SubmitForm onSubmit={onSubmit} ref={formRef}>
             <Subtitle>
-              Choose your voting settings below. You can’t change these later, so pick carefully.
+              Choose your voting settings below. You can’t change these later,
+              so pick carefully.
             </Subtitle>
             <Fields>
               <Fields.PercentageField label="Support">
-                <Hint>
-                  Percentage of votes required to validate an option
-                </Hint>
+                <Hint>Percentage of votes required to validate an option</Hint>
                 <SymbolInput
                   placeholder="e.g. 50"
                   value={fields.support === -1 ? '' : fields.support}
@@ -95,7 +94,8 @@ class ConfigureVotingDefaultsContent extends React.PureComponent {
               </Fields.PercentageField>
               <Fields.PercentageField label="Min. Quorum">
                 <Hint>
-                  Percentage of token supply required to participate in proposals
+                  Percentage of token supply required to participate in
+                  proposals
                 </Hint>
                 <SymbolInput
                   placeholder="e.g. 15"
@@ -104,9 +104,7 @@ class ConfigureVotingDefaultsContent extends React.PureComponent {
                 />
               </Fields.PercentageField>
               <Fields.HoursField label="Vote Duration">
-                <Hint>
-                  Duration each vote is active for
-                </Hint>
+                <Hint>Duration each vote is active for</Hint>
                 <SymbolInput
                   placeholder="e.g. 24"
                   onChange={handleVoteDurationChange}
@@ -121,8 +119,8 @@ class ConfigureVotingDefaultsContent extends React.PureComponent {
   }
 }
 
-const SubmitForm = ({ children, innerRef = noop, ...props }) => (
-  <form {...props} ref={innerRef}>
+const SubmitForm = ({ children, ref = noop, ...props }) => (
+  <form {...props} ref={ref}>
     {children}
     <input type="submit" style={{ display: 'none' }} />
   </form>

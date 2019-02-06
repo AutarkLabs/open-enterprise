@@ -11,7 +11,7 @@ const Empty = ({ action }) => (
     <EmptyStateCard
       title="You have not created any allocation accounts."
       text="Get started now by creating a new account."
-      icon={Icon}
+      icon={<Icon />}
       actionText="New Account"
       onActivate={action}
     />

@@ -11,6 +11,11 @@
     "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
   },
   "dependencies": {
+    "@aragon/apps-shared-minime": "^1.0.1",
+    "@aragon/apps-survey": "^1.0.0-rc.2",
+    "@aragon/apps-token-manager": "^2.0.0",
+    "@aragon/apps-voting": "^2.0.0",
+    "@aragon/os": "^4.0.1",
     "@tps/apps-address-book": "^0.0.1",
     "@tps/apps-allocations": "^0.0.1",
     "@tps/apps-projects": "^0.0.1",

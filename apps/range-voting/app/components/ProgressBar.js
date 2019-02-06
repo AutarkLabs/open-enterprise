@@ -22,15 +22,6 @@ const ProgressBar = ({ progress, label }) => (
   </Motion>
 )
 
-ProgressBar.defaultProps = {
-  progress: 0
-}
-
-ProgressBar.propTypes = {
-  // type: PropTypes.oneOf(['positive', 'negative']).isRequired,
-  type: PropTypes.oneOf(['positive', 'negative']),
-  progress: PropTypes.number
-}
 
 const Main = styled.div`
   width: 100%;

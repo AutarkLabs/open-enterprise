@@ -19,19 +19,24 @@ class OptionsInput extends React.Component {
     value: PropTypes.array.isRequired,
     onChange: PropTypes.func.isRequired,
     validator: PropTypes.func,
-    error: PropTypes.bool
+    error: PropTypes.bool,
   }
 
   addOption = () => {
     // TODO: Implement some rules about what an 'Option can be' duplicates, etc
     const { input, name, value } = this.props
-    if (input && !value.includes(input) && this.props.validator(input)) {
+    // if (input && !value.includes(input) && this.props.validator(input)) { // TODO: Fix this
+    if (input && !value.map(v => v.addr).includes(input)) {
       this.props.onChange({ target: { name, value: [...value, input] } })
-      this.props.onChange({ target: { name: 'optionsInput', value: '' } })
-      this.props.error = true
+      // The second call is currently needed reset the new OptionField
+      // TODO: Avoid calling the method twice
+      this.props.onChange({
+        target: { name: 'optionsInputString', value: { addr: '' } },
+      })
+      // this.props.error = true // TODO: It is not possible to modify props this way
       console.log('Option Added')
     } else {
-      console.log('OptionsInput: The option is empty or already present')
+      console.log('[OptionsInput.js] Option empty or already present')
     }
   }
 
@@ -47,13 +52,15 @@ class OptionsInput extends React.Component {
   }
 
   onChangeInput = ({ target: { value } }) => {
-    this.props.onChange({ target: { name: 'optionsInput', value } })
+    this.props.onChange({
+      target: { name: 'optionsInputString', value: { addr: value } },
+    })
   }
 
   render() {
     const loadOptions = this.props.value.map(option => (
-      <div className="option" key={option}>
-        <StyledInput readOnly value={option} />
+      <div className="option" key={option.addr}>
+        <StyledInput readOnly value={option.addr} />
         <IconRemove onClick={() => this.removeOption(option)} />
       </div>
     ))
@@ -63,7 +70,7 @@ class OptionsInput extends React.Component {
         <div className="option">
           <StyledInput
             placeholder={this.props.placeholder}
-            value={this.props.input}
+            value={this.props.input.addr}
             onChange={this.onChangeInput}
           />
           <IconAdd onClick={this.addOption} />
@@ -102,12 +109,11 @@ const StyledOptionsInput = styled.div`
       flex-grow: 1;
     }
     > svg {
-      cursor: ${({ empty }) => (empty ? 'not-allowed' : 'pointer')};
       margin-left: 3px;
       margin-top: -3px;
       height: auto;
       width: 1.8rem;
-      color: ${({ empty }) => (empty ? disabled : textSecondary)};
+      color: ${textSecondary};
       vertical-align: middle;
       transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
       :hover {
@@ -119,5 +125,9 @@ const StyledOptionsInput = styled.div`
     }
   }
 `
+
+// TODO: fix empty svg cursor and color:
+/* cursor: ${({ empty }) => (empty ? 'not-allowed' : 'pointer')}; */
+// color: ${({ empty }) => (empty ? disabled : textSecondary)};
 
 export default OptionsInput

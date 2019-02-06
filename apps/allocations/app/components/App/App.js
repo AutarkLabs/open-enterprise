@@ -36,9 +36,14 @@ class App extends React.Component {
   }
 
   submitAllocation = allocation => {
+    const emptyIntArray = new Array(allocation.addresses.length).fill(0)
     this.props.app.setDistribution(
       allocation.addresses,
-      [],
+      emptyIntArray, //[]
+      emptyIntArray, //[]
+      '',
+      emptyIntArray, // Issue with bytes32 handling
+      emptyIntArray, // Issue with bytes32 handling
       allocation.payoutId,
       allocation.informational,
       allocation.recurring,
@@ -74,6 +79,11 @@ class App extends React.Component {
   }
 
   newAllocation = (address, description, id, limit) => {
+    // The whole entries vs entities thing needs to be fixed; these are too close
+    //const userEntity = {addr: '0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb', data: {entryAddress: '0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb', name: 'Bob', entryType: 'user'}}
+    const promptEntity = {addr: 0x0, data: {entryAddress: 0x0, name: 'Select an entry', entryType: 'prompt'}}
+    const entriesList = [promptEntity].concat(this.props.entries)
+    let entities = this.props.entries !== undefined ? entriesList : []
     this.setState({
       panel: {
         visible: true,
@@ -85,6 +95,7 @@ class App extends React.Component {
           heading: 'New Allocation',
           subHeading: description,
           onSubmitAllocation: this.submitAllocation,
+          entities: entities
         },
       },
     })
@@ -104,6 +115,7 @@ class App extends React.Component {
         <NewAccountButton onClick={this.newAccount} />
         <Accounts
           accounts={
+            //TODO: Change back to this.props.accounts when done
             this.props.accounts !== undefined ? this.props.accounts : []
           }
           onNewAccount={this.newAccount}

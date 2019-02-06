@@ -6,11 +6,12 @@ import {
   TableCell,
   TableRow,
   Badge,
-  theme
+  theme,
 } from '@aragon/ui'
 import ProgressBar from './ProgressBar'
 import VoteStatus from './VoteStatus'
 import { safeDiv } from '../utils/math-utils'
+import BigNumber from 'bignumber.js'
 
 const generateBadge = (foreground, background, text) => (
   <Badge foreground={foreground} background={background}>
@@ -20,11 +21,11 @@ const generateBadge = (foreground, background, text) => (
 
 class VoteRow extends React.Component {
   static defaultProps = {
-    onSelectVote: () => {}
+    onSelectVote: () => {},
   }
 
   state = {
-    showMore: false
+    showMore: false,
   }
 
   handleVoteClick = () => {
@@ -40,18 +41,13 @@ class VoteRow extends React.Component {
       candidates,
       options,
       participationPct,
-      type
+      type,
     } = vote.data
-    const totalSupport = options.reduce((acc, option) => acc + option.value, 0)
-    
-    const bars = options.map(option => (
-      <Bar key={option.label}>
-        <ProgressBar
-          progress={safeDiv(parseInt(option.value, 10), totalSupport)}
-          label={option.label}
-        />
-      </Bar>
-    ))
+
+    let totalSupport = 0
+    options.forEach(option => {
+      totalSupport = totalSupport + parseFloat(option.value, 10)
+    })
 
     // TODO: Hardcode colors into constants or extend aragon ui theme if needed
     let typeBadge
@@ -82,18 +78,35 @@ class VoteRow extends React.Component {
           </div>
         </QuestionCell>
         <Cell align="right" onClick={this.handleVoteClick}>
-          {participationPct}%
+          {participationPct.toFixed(2)}%
         </Cell>
         <BarsCell>
           <BarsGroup>
-            {showMore ? bars : [bars[0], bars[1]]}
-            {bars.length > 2 && (
+            {showMore &&
+              options.map(option => (
+                <Bar key={option.label}>
+                  <ProgressBar
+                    progress={safeDiv(parseInt(option.value, 10), totalSupport)}
+                    label={option.label}
+                  />
+                </Bar>
+              ))}
+            {!showMore &&
+              options.slice(0, 2).map(option => (
+                <Bar key={option.label}>
+                  <ProgressBar
+                    progress={safeDiv(parseInt(option.value, 10), totalSupport)}
+                    label={option.label}
+                  />
+                </Bar>
+              ))}
+            {options.length > 2 && (
               <ShowMoreText
                 onClick={() => this.setState({ showMore: !showMore })}
               >
                 {showMore
                   ? 'Show less options...'
-                  : bars.length - 2 + ' more options...'}
+                  : options.length - 2 + ' more options...'}
               </ShowMoreText>
             )}
           </BarsGroup>

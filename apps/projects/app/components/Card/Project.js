@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { IconHistory, IconContributors } from '../../assets'
+import { IconHistory, IconContributors } from '../Shared'
 import {
   Card,
   Text,
@@ -17,9 +17,17 @@ const colors = {
   labelColor: theme.textPrimary,
 }
 
-const Project = ({ id, label, description, commits, contributors }) => {
+const Project = ({
+  id,
+  label,
+  description,
+  commits,
+  contributors,
+  onRemoveProject,
+}) => {
   const removeProject = () => {
     console.log('removeProject')
+    onRemoveProject(id)
   }
 
   const clickProject = () => {
@@ -27,7 +35,7 @@ const Project = ({ id, label, description, commits, contributors }) => {
   }
 
   const clickContext = () => {
-    // event.stopPropagation()
+    event.stopPropagation()
     console.log('clickContext')
   }
 
@@ -39,7 +47,7 @@ const Project = ({ id, label, description, commits, contributors }) => {
             <IconHome />
             <ActionLabel>View on GitHub</ActionLabel>
           </ContextMenuItem>
-          <ContextMenuItem>
+          <ContextMenuItem onClick={removeProject}>
             <IconCross
               style={{ width: '22px', height: '22px', transform: 'scale(0.6)' }}
             />

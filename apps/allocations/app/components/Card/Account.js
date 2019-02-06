@@ -9,7 +9,7 @@ import {
   ContextMenu,
   ContextMenuItem,
   IconAdd,
-  IconSettings,
+  IconFundraising,
   SafeLink,
   theme,
 } from '@aragon/ui'
@@ -58,13 +58,9 @@ const Account = ({
             <IconAdd />
             <ActionLabel>New Allocation</ActionLabel>
           </ContextMenuItem>
-          <ContextMenuItem onClick={manageParameters}>
-            <IconSettings />
-            <ActionLabel>Manage Parameters</ActionLabel>
-          </ContextMenuItem>
           <ContextMenuItem onClick={executePayout}>
-            <IconSettings />
-            <ActionLabel>Execute Payout</ActionLabel>
+            <IconFundraising />
+            <ActionLabel>Distribute Allocation</ActionLabel>
           </ContextMenuItem>
         </ContextMenu>
       </MenuContainer>
@@ -87,8 +83,7 @@ const Account = ({
           {' ' + BigNumber(balance)
             .div(BigNumber(10e17))
             .dp(3)
-            .toString()}
-          {translatedToken}
+            .toString()} {translatedToken}
         </StatsValue>
       </StatsContainer>
       <StatsContainer>
@@ -96,7 +91,10 @@ const Account = ({
           Limit
         </Text>
         <StatsValue>
-          {limit} {translatedToken}/ Allocation
+          {' ' + BigNumber(limit)
+            .div(BigNumber(10e17))
+            .dp(3)
+            .toString()} {translatedToken}/ Allocation
         </StatsValue>
       </StatsContainer>
     </StyledCard>

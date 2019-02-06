@@ -46,20 +46,32 @@ class VotePanelContent extends React.Component {
     }
   }
   handleVoteSubmit = () => {
-    let optionsArray = []
+    const optionsArray = []
+
     this.state.voteOptions.forEach(element => {
       let voteWeight = element.sliderValue
-        ? element.sliderValue * this.state.userBalance
+        ? Math.round(
+          parseFloat(
+            (element.sliderValue * this.state.userBalance).toFixed(2)
+          )
+        )
         : 0
       optionsArray.push(voteWeight)
     })
+    // TODO: Let these comments here for a while to be sure we are working with correct values:
+    console.log('Sum of values:', optionsArray.reduce((a, b) => a + b, 0))
+    console.log('userBalance', this.state.userBalance)
+    console.log(
+      'onVote voteId:',
+      this.props.vote.voteId,
+      'optionsArray',
+      optionsArray
+    )
     this.props.onVote(this.props.vote.voteId, optionsArray)
   }
-
   executeVote = () => {
     this.props.app.executeVote(this.props.vote.voteId)
   }
-
   loadUserBalance = () => {
     const { tokenContract, user } = this.props
     if (tokenContract && user) {
@@ -129,8 +141,9 @@ class VotePanelContent extends React.Component {
     }
 
     const { endDate, open, quorum, support } = vote
-    const { participationPct, canExecute } = vote.data
     const {
+      participationPct,
+      canExecute,
       creator,
       metadata,
       totalVoters,
@@ -140,11 +153,18 @@ class VotePanelContent extends React.Component {
       type,
     } = vote.data
 
+    // TODO: Show decimals for vote participation only when needed
+    const voterParticipation = (participationPct * 10e15).toFixed(2)
+
+    // TODO: This block is wrong and has no sense
     if (!voteOptions.length) {
       this.state.voteOptions = options
     }
 
-    const totalSupport = options.reduce((acc, option) => acc + option.value, 0)
+    let totalSupport = 0
+    options.forEach(option => {
+      totalSupport = totalSupport + parseFloat(option.value, 10)
+    })
 
     const showInfo = type === 'allocation' || type === 'curation'
     const truncatedCreator = `${creator.slice(0, 6)}...${creator.slice(-4)}`
@@ -191,37 +211,47 @@ class VotePanelContent extends React.Component {
             </div>
           </div>
         </SidePanelSplit>
-        <Part>
-          {description && (
+        {description && (
+          <Part>
             <React.Fragment>
               <h2>
                 <Label>Description:</Label>
               </h2>
               <p>{this.renderDescription(description)}</p>
             </React.Fragment>
-          )}
-        </Part>
-        <SidePanelSplit style={{ borderBottom: 'none' }}>
-          <div>
-            <h2>
-              <Label>Amount</Label>
-            </h2>
-            <p>{vote.data.balance}</p>
-          </div>
-          <div>
-            <h2>
-              <Label>Dates</Label>
-            </h2>
-            <p>When vote is approved</p>
-          </div>
-        </SidePanelSplit>
+          </Part>
+        )}
+
+        {vote.data.balance !== undefined && (
+          <SidePanelSplit style={{ borderBottom: 'none' }}>
+            <div>
+              <h2>
+                <Label>Amount</Label>
+              </h2>
+              <p>
+                {' ' +
+                  BigNumber(vote.data.balance)
+                    .div(BigNumber(10e17))
+                    .dp(3)
+                    .toString() +
+                  ' ETH'}
+              </p>
+            </div>
+            <div>
+              <h2>
+                <Label>Dates</Label>
+              </h2>
+              <p>When vote is approved</p>
+            </div>
+          </SidePanelSplit>
+        )}
         <SidePanelSplit>
           <div>
             <h2>
               <Label>Voter participation</Label>
             </h2>
             <p>
-              {participationPct}%{' '}
+              {voterParticipation / 10 ** 16}%{' '}
               <Text size="small" color={theme.negative}>
                 ({minParticipationPct / 10 ** 16}% required)
               </Text>
@@ -231,10 +261,7 @@ class VotePanelContent extends React.Component {
             <h2>
               <Label>Your voting tokens</Label>
             </h2>
-            {BigNumber(this.state.userBalance)
-              .div(BigNumber(10e15))
-              .dp(3)
-              .toString()}
+            {BigNumber(this.state.userBalance).toString()}
           </div>
         </SidePanelSplit>
         {open && (
@@ -302,8 +329,9 @@ class VotePanelContent extends React.Component {
             {showResults ? 'Hide Voting Results' : 'Show Voting Results'}
           </ShowText>
           {showResults &&
-            options.map(option => (
+            options.map((option, index) => (
               <ProgressBarThick
+                key={index}
                 progress={safeDiv(parseInt(option.value, 10), totalSupport)}
                 label={option.label}
               />

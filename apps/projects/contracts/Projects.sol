@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
-import "@tps/test-helpers/contracts/apps/AragonApp.sol";
-import "@tps/test-helpers/contracts/lib/zeppelin/math/SafeMath.sol";
+import "@aragon/os/contracts/apps/AragonApp.sol";
+import "@aragon/os/contracts/lib/math/SafeMath.sol";
 
 /*******************************************************************************
     Copyright 2018, That Planning Suite
@@ -61,12 +61,32 @@ contract Projects is AragonApp {
     {
         //vault = _vault.ethConnectorBase();
         bounties = Bounties(_bountiesAddr); // Standard Bounties instance
+
+        _changeBountySettings(
+            "100\tBeginner\t300\tIntermediate\t500\tAdvanced",
+            3000, // baseRate
+            336, // bountyDeadline
+            "FTL", // bountyCurrency
+            0x0000000000000000000000000000000000000000, // bountyAllocator
+            0x0000000000000000000000000000000000000000 //bountyArbiter
+        );
+
         initialized();
     }
 
+    struct BountySettings {
+        string expLevels;
+        uint256 baseRate;
+        uint256 bountyDeadline;
+        string bountyCurrency;
+        address bountyAllocator;
+        address bountyArbiter;
+    }
+
+    BountySettings settings;
+
     struct GithubRepo {
-        bytes32 owner;  // repo owner's address
-        bytes32 repo;  // Github repo id int that is stringified
+        bytes20 owner; // repo owner's id on github
         mapping(uint256 => GithubIssue) issues;
         uint index;
     }
@@ -75,28 +95,79 @@ contract Projects is AragonApp {
         bytes32 repo;  // This is the internal repo identifier
         uint256 number; // May be redundant tracking this
         bool hasBounty;
+        uint256 bountySize;
+        uint256 priority;
+        address bountyWallet; // Not sure if we'll have a way to "retrieve" this value from status open bounties
         uint standardBountyId;
     }
 
-    // The entries in the registry.
-    mapping(bytes32 => GithubRepo) repos;
+    // The entries in the repos registry.
+    mapping(bytes32 => GithubRepo) private repos;
 
-    // Gives us an array so we can actually iterate
-    bytes32[] repoIds;
+    // Gives us a repos array so we can actually iterate
+    bytes32[] private repoIndex;
 
     // Fired when a repository is added to the registry.
-    event RepoAdded(bytes32 repoId);
+    event RepoAdded(bytes32 indexed repoId, bytes20 owner, uint index);
     // Fired when a repository is removed from the registry.
-    event RepoRemoved(bytes32 repoId);
+    event RepoRemoved(bytes32 indexed repoId, uint index);
+    // Fired when a repo is updated in the registry
+    event RepoUpdated(bytes32 indexed repoId, bytes20 newOwner, uint newIndex);
     // Fired when a bounty is added to a repo
-    event BountyAdded(bytes32 owner, bytes32 repoId, uint256 issueNumber, uint256 bountySize);
+    event BountyAdded(bytes20 owner, bytes32 repoId, uint256 issueNumber, uint256 bountySize);
+    // Fired when an issue is curated
+    event IssueCurated(bytes32 repoId);
     // Fired when fulfillment is accepted
     event FulfillmentAccepted(bytes32 repoId, uint256 issueNumber, uint fulfillmentId);
+    // Fired when settings are changed
+    event BountySettingsChanged();
 
-    bytes32 public constant ADD_REPO_ROLE = keccak256("ADD_REPO_ROLE");
-    bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
     bytes32 public constant ADD_BOUNTY_ROLE =  keccak256("ADD_BOUNTY_ROLE");
+    bytes32 public constant ADD_REPO_ROLE = keccak256("ADD_REPO_ROLE");
+    bytes32 public constant CHANGE_SETTINGS_ROLE =  keccak256("CHANGE_SETTINGS_ROLE");
+    bytes32 public constant CURATE_ISSUES_ROLE = keccak256("CURATE_ISSUES_ROLE");
+    bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
+
+    function curateIssues(
+        address[] /*unused_Addresses*/, 
+        uint256[] issuePriorities,
+        uint256[] issueDescriptionIndices, 
+        string /* unused_issueDescriptions*/,
+        uint256[] issueRepos,
+        uint256[] issueNumbers,
+        uint256 /* unused_curationId */
+    ) external isInitialized auth(CURATE_ISSUES_ROLE)
+    {
+        bytes32 repoId;
+        //require(issuePriorities.length == unusedAddresses.length, "length mismatch: issuePriorites and unusedAddresses");
+        require(issuePriorities.length == issueDescriptionIndices.length, "length mismatch: issuePriorites and issueDescriptionIdx");
+        require(issueRepos.length == issueDescriptionIndices.length, "length mismatch: issueRepos and issueDescriptionIdx");
+        require(issueRepos.length == issueNumbers.length, "length mismatch: issueRepos and issueNumbers");
+
+        for (uint256 i = 0; i < issuePriorities.length; i++) {
+            repoId = bytes32(issueRepos[i]);
+            require(issuePriorities[i] != 999, "issue already curated");
+            repos[repoId].issues[uint256(issueNumbers[i])].priority = issuePriorities[i];
+            emit IssueCurated(repoId);
+        }
+    }
     
+///////////////////////
+// Set state functions
+///////////////////////
+
+    function changeBountySettings(
+        string expLevels,
+        uint256 baseRate,
+        uint256 bountyDeadline,
+        string bountyCurrency,
+        address bountyAllocator,
+        address bountyArbiter
+    ) external auth(CHANGE_SETTINGS_ROLE)
+    {
+        _changeBountySettings(expLevels, baseRate, bountyDeadline, bountyCurrency, bountyAllocator, bountyArbiter);
+    }
+
 ///////////////////////
 // View state functions
 ///////////////////////
@@ -116,41 +187,64 @@ contract Projects is AragonApp {
     /**
      * @notice Get registry size.
      */
-    function getRepoArrayLength() external view returns (uint256) {
-        return repoIds.length;
+    function getReposCount() external view returns (uint count) {
+        return repoIndex.length;
     }
 
     /**
      * @notice Get an entry from the registry.
      * @param _repoId The id of the Github repo in the projects registry
-     * @return _owner repo's owner address
-     * @return _repo the Github repo entry
+     * @return owner repo's owner address
+     * @return index the Github repo registry index
      */
-    function getRepo(bytes32 _repoId) external view returns (bytes32 _owner, bytes32 _repo) {
-        _owner = repos[_repoId].owner;
-        _repo = repos[_repoId].repo;
+    function getRepo(bytes32 _repoId) external view returns (bytes20 owner, uint index) {
+        require(isRepoAdded(_repoId), "REPO_NOT_ADDED");
+        return(repos[_repoId].owner, repos[_repoId].index);
+    }
+
+    /**
+     * @notice Get general settings.
+     * @return BountySettings
+     */
+
+    function getSettings() external view returns (
+        string expLevels,
+        uint256 baseRate,
+        uint256 bountyDeadline,
+        string bountyCurrency,
+        address bountyAllocator,
+        address bountyArbiter
+    )
+    {
+        return (
+            settings.expLevels,
+            settings.baseRate,
+            settings.bountyDeadline,
+            settings.bountyCurrency,
+            settings.bountyAllocator,
+            settings.bountyArbiter
+        );
     }
 
 ///////////////////////
 // Repository functions
 ///////////////////////
-
     /**
      * @notice Add selected repository to Managed Projects 
-     * @param _owner The entry to add to the projects registry
-     * @param _repo the Github repo entry to add to the projects registry
-     * @return _repoId Id for newly added repo
+     * @param _owner Github id of the entity that owns the repo to add
+     * @param _repoId Github id of the repo to add
+     * @return index for the added repo at the registry
      */
     function addRepo(
-        bytes32 _owner,
-        bytes32 _repo
-    ) external auth(ADD_REPO_ROLE) returns (bytes32 _repoId)
+        bytes32 _repoId,
+        bytes20 _owner
+    ) external auth(ADD_REPO_ROLE) returns (uint index)
     {
-        _repoId = keccak256(abi.encodePacked(_owner, _repo));  // overflow should still yield a useable identifier
-        repos[_repoId] = GithubRepo(_owner, _repo, 0);
-        //add the index to the repo struct and push the id to the repo array
-        repos[_repoId].index = repoIds.push(_repoId) - 1;
-        emit RepoAdded(_repoId);
+        require(!isRepoAdded(_repoId), "REPO_ALREADY_ADDED");
+        repos[_repoId].owner = _owner;
+        repos[_repoId].index = repoIndex.push(_repoId) - 1;
+        emit RepoAdded(_repoId, _owner, repos[_repoId].index);
+        return repoIndex.length - 1;
     }
 
     /**
@@ -159,14 +253,17 @@ contract Projects is AragonApp {
      */
     function removeRepo(
         bytes32 _repoId
-    ) external auth(REMOVE_REPO_ROLE)
+    ) external auth(REMOVE_REPO_ROLE) returns(bool success)
     {
-        // Take the repo out of the repo array in constant time by replacing the element
-        // with last element
-        repoIds[repos[_repoId].index] = repoIds[repoIds.length - 1];
-        repoIds.length = repoIds.length - 1;
-        delete repos[_repoId];
-        emit RepoRemoved(_repoId);
+        require(isRepoAdded(_repoId), "REPO_NOT_ADDED");
+        uint rowToDelete = repos[_repoId].index;
+        bytes32 repoToMove = repoIndex[repoIndex.length - 1];
+        repoIndex[rowToDelete] = repoToMove;
+        repos[repoToMove].index = rowToDelete;
+        repoIndex.length--;
+        emit RepoRemoved(_repoId, rowToDelete);
+        emit RepoUpdated(repoToMove, repos[repoToMove].owner, rowToDelete);
+        return true;
     }
 
 ///////////////////
@@ -181,9 +278,9 @@ contract Projects is AragonApp {
      */
     function acceptFulfillment(
         bytes32 _repoId,
-        uint256 _issueNumber, 
+        uint256 _issueNumber,
         uint _bountyFulfillmentId
-    ) external auth(ADD_BOUNTY_ROLE) 
+    ) external auth(ADD_BOUNTY_ROLE)
     {
         GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
         bounties.acceptFulfillment(issue.standardBountyId, _bountyFulfillmentId);
@@ -202,8 +299,8 @@ contract Projects is AragonApp {
      */
     function addBounties(
         bytes32 _repoId,
-        uint256[] _issueNumbers, 
-        uint256[] _bountySizes, 
+        uint256[] _issueNumbers,
+        uint256[] _bountySizes,
         uint256[] _deadlines,
         bool[] _tokenBounties,
         address[] _tokenContracts,
@@ -241,25 +338,62 @@ contract Projects is AragonApp {
     }
 
 ///////////////////////
+// Public utility functions
+///////////////////////
+
+    /**
+     * @notice Checks if a repo exists in the registry
+     * @param _repoId the github repo id to check
+     * @return _repoId Id for newly added repo
+     */
+    function isRepoAdded(bytes32 _repoId) public view returns(bool isAdded) {
+        if (repoIndex.length == 0)
+            return false;
+        return (repoIndex[repos[_repoId].index] == _repoId);
+    }
+
+///////////////////////
 // Internal functions
 ///////////////////////
+
+    function _changeBountySettings(
+        string expLevels,
+        uint256 baseRate,
+        uint256 bountyDeadline,
+        string bountyCurrency,
+        address bountyAllocator,
+        address bountyArbiter
+    ) internal
+    {
+        settings.expLevels = expLevels;
+        settings.baseRate = baseRate;
+        settings.bountyDeadline = bountyDeadline;
+        settings.bountyCurrency = bountyCurrency;
+        settings.bountyAllocator = bountyAllocator;
+        settings.bountyArbiter = bountyArbiter;
+
+        emit BountySettingsChanged();
+    }
 
     function _addBounty(
         bytes32 _repoId,
         uint256 _issueNumber,
         uint _standardBountyId,
         uint256 _bountySize
-    ) internal 
+    ) internal
     {
         repos[_repoId].issues[_issueNumber] = GithubIssue(
             _repoId,
             _issueNumber,
             true,
+            _bountySize,
+            999,
+            address(0),
             _standardBountyId
         );
         emit BountyAdded(
             repos[_repoId].owner,
-            repos[_repoId].repo,
+            _repoId,
             _issueNumber,
             _bountySize
         );
@@ -269,7 +403,7 @@ contract Projects is AragonApp {
         uint256 _msgValue,
         uint256[] _bountySizes,
         bool[] _tokenBounties
-    ) internal pure 
+    ) internal pure
     {
         uint256 transValueTotal = 0;
         for (uint i = 0; i < _bountySizes.length; i++) {
@@ -295,4 +429,5 @@ contract Projects is AragonApp {
         }
         return string(result);
     }
+
 }

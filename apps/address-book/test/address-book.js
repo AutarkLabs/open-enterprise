@@ -2,12 +2,12 @@ const {
   ACL,
   DAOFactory,
   EVMScriptRegistryFactory,
-  Kernel
+  Kernel,
 } = require('@tps/test-helpers/artifacts')
-const AddressBook = artifacts.require('AddressBook')
-const { assertRevert } = require('@tps/test-helpers/assertThrow')
 
-const getContract = name => artifacts.require(name)
+const AddressBook = artifacts.require('AddressBook')
+
+const { assertRevert } = require('@tps/test-helpers/assertThrow')
 
 const ANY_ADDR = ' 0xffffffffffffffffffffffffffffffffffffffff'
 
@@ -18,8 +18,8 @@ contract('AddressBook App', accounts => {
   const root = accounts[0]
 
   before(async () => {
-    const kernelBase = await getContract('Kernel').new(true)
-    const aclBase = await getContract('ACL').new()
+    const kernelBase = await Kernel.new(true)
+    const aclBase = await ACL.new()
     const regFact = await EVMScriptRegistryFactory.new()
     daoFact = await DAOFactory.new(
       kernelBase.address,
@@ -54,14 +54,14 @@ contract('AddressBook App', accounts => {
     await app.initialize()
 
     await acl.createPermission(
-      accounts[0],
+      ANY_ADDR,
       app.address,
       await app.ADD_ENTRY_ROLE(),
       root,
       { from: root }
     )
     await acl.createPermission(
-      accounts[0],
+      ANY_ADDR,
       app.address,
       await app.REMOVE_ENTRY_ROLE(),
       root,
@@ -71,57 +71,54 @@ contract('AddressBook App', accounts => {
 
   context('main context', () => {
     let starfleet = accounts[0]
-    let jeanluc = accounts[1]
-    let borg = accounts[2]
 
-    it('add to and get from addressbook', async () => {
-      await app.addEntry(starfleet, 'Starfleet', 'Group')
-      await app.addEntry(jeanluc, 'Jean-Luc Picard', 'Individual')
-      await app.addEntry(borg, 'Borg', 'N/A')
+    it('should add a new entry', async () => {
+      const receipt = await app.addEntry(starfleet, 'Starfleet', 'Group')
+      const addedAddress = receipt.logs.filter(l => l.event == 'EntryAdded')[0]
+        .args.addr
+      assert.equal(addedAddress, starfleet)
+    })
+    it('should get the previously added entry', async () => {
       entry1 = await app.getEntry(starfleet)
-      entry2 = await app.getEntry(jeanluc)
-      entry3 = await app.getEntry(borg)
       assert.equal(entry1[0], starfleet)
       assert.equal(entry1[1], 'Starfleet')
       assert.equal(entry1[2], 'Group')
-      assert.equal(entry2[0], jeanluc)
-      assert.equal(entry2[1], 'Jean-Luc Picard')
-      assert.equal(entry2[2], 'Individual')
-      assert.equal(entry3[0], borg)
-      assert.equal(entry3[1], 'Borg')
-      assert.equal(entry3[2], 'N/A')
+    })
+    it('should remove the previously added entry', async () => {
+      await app.removeEntry(starfleet)
+    })
+    it('should allow to use the same name from previously removed entry', async () => {
+      await app.addEntry(accounts[1], 'Starfleet', 'Dejavu')
+    })
+    it('should allow to use the same address from previously removed entry', async () => {
+      await app.addEntry(starfleet, 'NewStar', 'Dejavu')
+    })
+  })
+  context('invalid operations', () => {
+    let [borg, jeanluc] = accounts.splice(1, 2)
+    before(async () => {
+      app.addEntry(borg, 'Borg', 'Individual')
     })
 
-    it('remove entry from addressbook', async () => {
-      await app.removeEntry(borg)
-      entry3 = await app.getEntry(borg)
-      assert.notEqual(entry3[0], borg)
-      assert.notEqual(entry3[1], 'Borg')
-      assert.notEqual(entry3[2], 'N/A')
+    it('should revert when adding duplicate address', async () => {
+      assertRevert(async () => {
+        await app.addEnty(borg, 'Burg', 'N/A')
+      })
     })
-
-    context('invalid operations', () => {
-      it('should revert when adding an entry for repeated name', async () => {
-        return assertRevert(async () => {
-          await app.addEntry(borg, 'Starfleet', 'Group')
-          'name already in use'
-        })
+    it('should revert when adding duplicate name', async () => {
+      assertRevert(async () => {
+        await app.addEntry(jeanluc, 'Borg', 'Captain')
       })
-
-      it('should revert when adding an entry by unauthorized address', async () => {
-        assertRevert(async () => {
-          await app.addEntry(borg, 'Borg', 'N/A', { from: borg }),
-          'does not have addEntry authorization'
-        })
+    })
+    it('should revert when removing not existant entry', async () => {
+      assertRevert(async () => {
+        await app.removeEntry(jeanluc)
       })
-
-      it('should revert when removing an entry by unauthorized address', async () => {
-        assertRevert(async () => {
-          await app.removeEntry(starfleet, { from: borg }),
-          'does not have removeEntry authorization'
-        })
+    })
+    it('should revert when getting not existant entry', async () => {
+      assertRevert(async () => {
+        await app.getEntry(jeanluc)
       })
     })
   })
 })
-

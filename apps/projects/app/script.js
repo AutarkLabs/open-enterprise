@@ -4,16 +4,7 @@ import { combineLatest } from 'rxjs'
 import { empty } from 'rxjs/observable/empty'
 
 import { GraphQLClient } from 'graphql-request'
-
-const STATUS = {
-  INITIAL: 'initial',
-}
-const authToken = ''
-const client = new GraphQLClient('https://api.github.com/graphql', {
-  headers: {
-    Authorization: 'Bearer ' + authToken,
-  },
-})
+import { STATUS } from './utils/github'
 
 const toAscii = hex => {
   // Find termination
@@ -52,19 +43,52 @@ const repoData = id => `{
     }
 }`
 
-const getRepoData = repo => client.request(repoData(repo))
-
 const app = new Aragon()
 let appState
 
-app.rpc.send('cache', ['set', 'github', { status: STATUS.INITIAL }])
+/**
+ * Observe the github object.
+ * @return {Observable} An observable of github object over time.
+ */
+const github = () => {
+  return app.rpc
+    .sendAndObserveResponses('cache', ['get', 'github'])
+    .pluck('result')
+}
+
+let client
+const getRepoData = repo => {
+  try {
+    let data = client.request(repoData(repo))
+    return data
+  } catch (err) {
+    console.error('getRepoData failed: ', err)
+  }
+}
+
+const initClient = authToken => {
+  client = new GraphQLClient('https://api.github.com/graphql', {
+    headers: {
+      Authorization: 'Bearer ' + authToken,
+    },
+  })
+}
+
+// TODO: Handle cases where checking validity of token fails (revoked, etc)
+
+github().subscribe(result => {
+  console.log('github object received from cache:', result)
+  if (result) {
+    result.token && initClient(result.token)
+    return
+  } else app.cache('github', { status: STATUS.INITIAL })
+})
 
 app.events().subscribe(handleEvents)
 
 app.state().subscribe(state => {
-  console.log('Projects: entered state subscription:\n', state)
-  appState = state ? state : { repos: [] }
-  //appState = state
+  state && console.log('[Projects script] state subscription:\n', state)
+  appState = state ? state : { repos: [], bountySettings: {} }
 })
 
 /***********************
@@ -77,36 +101,55 @@ async function handleEvents(response) {
   let nextState
   switch (response.event) {
   case 'RepoAdded':
+    console.log('[Projects] event RepoAdded')
     nextState = await syncRepos(appState, response.returnValues)
-    console.log('RepoAdded Received', response.returnValues, nextState)
     break
   case 'RepoRemoved':
+    console.log('[Projects] RepoRemoved', response.returnValues)
     nextState = await syncRepos(appState, response.returnValues)
-    console.log('RepoRemoved Received', response.returnValues, nextState)
-
     break
-  case 'BountyAdded':
+  case 'RepoUpdated':
+    console.log('[Projects] RepoUpdated', response.returnValues)
     nextState = await syncRepos(appState, response.returnValues)
-    console.log('BountyAdded Received', response.returnValues, nextState)
-
+  case 'BountyAdded':
+    console.log('[Projects] BountyAdded', response.returnValues)
+    nextState = await syncRepos(appState, response.returnValues)
+    break
+  case 'IssueCurated':
+    console.log('[Projects] IssueCurated', response.returnValues)
+    nextState = await syncRepos(appState, response.returnValues)
+    break
+  case 'BountySettingsChanged':
+    console.log('[Projects] BountySettingsChanged')
+    nextState = await syncSettings(appState) // No returnValues on this
     break
   default:
-    console.log('Unknown event catched:', response)
+    console.log('[Projects] Unknown event catched:', response)
   }
   app.cache('state', nextState)
 }
 
-async function syncRepos(state, { id, ...eventArgs }) {
-  console.log('syncRepos: arguments from events:', ...eventArgs)
+async function syncRepos(state, { repoId, ...eventArgs }) {
+  console.log('syncRepos: arguments from events:', eventArgs)
 
   const transform = ({ ...repo }) => ({
     ...repo,
   })
   try {
-    let updatedState = await updateState(state, id, transform)
+    let updatedState = await updateState(state, repoId, transform)
     return updatedState
   } catch (err) {
     console.error('updateState failed to return:', err)
+  }
+}
+
+async function syncSettings(state) {
+  try {
+    let settings = await loadSettings()
+    state.bountySettings = settings
+    return state
+  } catch (err) {
+    console.error('[Projects script] syncSettings settings failed:', err)
   }
 }
 
@@ -117,45 +160,45 @@ async function syncRepos(state, { id, ...eventArgs }) {
  ***********************/
 
 function loadRepoData(id) {
-  console.log('loadRepoData entered')
   return new Promise(resolve => {
-    combineLatest(app.call('getRepo', id)).subscribe(([{ _owner, _repo }]) => {
-      console.log('loadRepoData:', _owner, _repo)
-      let [owner, repo] = [toAscii(_owner), toAscii(_repo)]
-      getRepoData(repo).then(
-        ({
-          node: {
-            name,
-            description,
-            collaborators: { totalCount: collaborators },
-            defaultBranchRef: {
-              target: {
-                history: { totalCount: commits },
-              },
-            },
-          },
-        }) => {
-          let metadata = {
-            name,
-            description,
-            collaborators,
-            commits,
-          }
-          resolve({ owner, repo, metadata })
+    app.call('getRepo', id).subscribe(({ owner, index }) => {
+      const [_repo, _owner] = [toAscii(id), toAscii(owner)]
+      getRepoData(_repo).then(({ node }) => {
+        const commits = node.defaultBranchRef
+          ? node.defaultBranchRef.commits
+          : 0
+        const description = node.description
+          ? node.description
+          : '(no description available)'
+        const metadata = {
+          name: node.name,
+          description: description,
+          collaborators: node.collaborators.totalCount,
+          commits,
         }
-      )
+        resolve({ _repo, _owner, index, metadata })
+      })
+    })
+  })
+}
+
+function loadSettings() {
+  return new Promise(resolve => {
+    app.call('getSettings').subscribe(settings => {
+      resolve(settings)
     })
   })
 }
 
 async function checkReposLoaded(repos, id, transform) {
   const repoIndex = repos.findIndex(repo => repo.id === id)
+  console.log('this is the repo index:', repoIndex)
   console.log('checkReposLoaded, repoIndex:', repos, id)
   const { metadata, ...data } = await loadRepoData(id)
 
   if (repoIndex === -1) {
     // If we can't find it, load its data, perform the transformation, and concat
-    console.log('repo not found: retrieving from chain')
+    console.log('repo not found in the cache: retrieving from chain')
     return repos.concat(
       await transform({
         id,
@@ -164,6 +207,7 @@ async function checkReposLoaded(repos, id, transform) {
       })
     )
   } else {
+    console.log('repo found: ' + repoIndex)
     const nextRepos = Array.from(repos)
     nextRepos[repoIndex] = await transform({
       id,
@@ -175,6 +219,7 @@ async function checkReposLoaded(repos, id, transform) {
 }
 
 async function updateState(state, id, transform) {
+  console.log('update state: ' + state + ', id: ' + id)
   const { repos = [] } = state
   try {
     let newRepos = await checkReposLoaded(repos, id, transform)

@@ -1,73 +1,299 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Button, TextInput, theme } from '@aragon/ui'
+import { gql } from 'apollo-boost'
+import { Query } from 'react-apollo'
+import {
+  Button,
+  //   Dropdown,
+  //   Text,
+  TextInput,
+  theme,
+  ContextMenuItem,
+  IconShare,
+  IconAdd,
+} from '@aragon/ui'
 
-import FilterBar from './FilterBar'
+import { DropDownButton as ActionsMenu, FilterBar } from '../Shared'
+import { Issue, Empty } from '../Card'
+import { GET_ISSUES } from '../../utils/gql-queries.js'
 
-class Issues extends React.Component {
+// import ethereumLoadingAnimation from '../Shared/assets/svg/ethereum-loading.svg'
+
+class Issues extends React.PureComponent {
+  state = {
+    selectedIssues: [],
+    allSelected: false,
+    filters: {
+      projects: {},
+      labels: {},
+      milestones: {},
+      deadlines: {},
+      experiences: {},
+    },
+    textFilter: '',
+    reload: false,
+  }
+
+  handleCurateIssues = () => {
+    this.props.onCurateIssues(this.state.selectedIssues)
+  }
+
+  handleAllocateBounties = () => {
+    this.props.onAllocateBounties(this.state.selectedIssues)
+  }
+
+  toggleSelectAll = issuesFiltered => () => {
+    if (this.state.allSelected) {
+      this.setState({ allSelected: false, selectedIssues: [] })
+    } else {
+      this.setState({ allSelected: true, selectedIssues: issuesFiltered })
+    }
+  }
+
+  handleFiltering = filters => {
+    // TODO: why is reload necessary?
+    this.setState({ filters, reload: !this.state.reload })
+  }
+
+  applyFilters = issues => {
+    const { filters, textFilter } = this.state
+
+    const issuesByProject = issues.filter(issue => {
+      if (Object.keys(filters.projects).length === 0) return true
+      if (Object.keys(filters.projects).indexOf(issue.repository.id) !== -1)
+        return true
+      return false
+    })
+    //console.log('FILTER PROJECT: ', issuesByProject)
+
+    const issuesByLabel = issuesByProject.filter(issue => {
+      // if there are no labels to filter by, pass all
+      if (Object.keys(filters.labels).length === 0) return true
+      // if labelless issues are allowed, let them pass
+      if ('labelless' in filters.labels && issue.labels.totalCount === 0)
+        return true
+      // otherwise, fail all issues without labels
+      if (issue.labels.totalCount === 0) return false
+
+      let labelsIds = issue.labels.edges.map(label => label.node.id)
+
+      if (
+        Object.keys(filters.labels).filter(id => labelsIds.indexOf(id) !== -1)
+          .length > 0
+      )
+        return true
+      return false
+    })
+    //console.log('FILTER LABEL: ', issuesByLabel)
+
+    const issuesByMilestone = issuesByLabel.filter(issue => {
+      // if there are no MS filters, all issues pass
+      if (Object.keys(filters.milestones).length === 0) return true
+      // should issues without milestones pass?
+      if ('milestoneless' in filters.milestones && issue.milestone == null)
+        return true
+      // if issues without milestones should not pass, they are rejected below
+      if (issue.milestone === null) return false
+      if (Object.keys(filters.milestones).indexOf(issue.milestone.id) !== -1)
+        return true
+      return false
+    })
+    //console.log('FILTER MS: ', issuesByMilestone)
+
+    // last but not least, if there is any text in textFilter...
+    if (textFilter) {
+      return issuesByMilestone.filter(issue => issue.title.match(textFilter))
+    }
+
+    return issuesByMilestone
+  }
+
+  handleIssueSelection = issue => {
+    this.setState(({ selectedIssues }) => {
+      const newSelectedIssues = selectedIssues
+        .map(selectedIssue => selectedIssue.id)
+        .includes(issue.id)
+        ? selectedIssues.filter(selectedIssue => selectedIssue.id !== issue.id)
+        : [...new Set([].concat(...selectedIssues, issue))]
+      return { selectedIssues: newSelectedIssues }
+    })
+  }
+
+  handleTextFilter = e => {
+    this.setState({ textFilter: e.target.value, reload: !this.state.reload })
+  }
+
+  actionsMenu = () => (
+    <div>
+      <TextInput 
+        placeholder="Search Issues"
+        onChange={this.handleTextFilter}
+      />
+      <ActionsMenu enabled={!!this.state.selectedIssues.length}>
+        <ContextMenuItem
+          onClick={this.handleCurateIssues}
+          style={{ display: 'flex', alignItems: 'flex-start' }}
+        >
+          <div>
+            <IconAdd color={theme.textTertiary} />
+          </div>
+          <ActionLabel>Curate Issues</ActionLabel>
+        </ContextMenuItem>
+        <ContextMenuItem
+          onClick={this.handleAllocateBounties}
+          style={{ display: 'flex', alignItems: 'flex-start' }}
+        >
+          <div style={{ marginLeft: '4px' }}>
+            <IconShare color={theme.textTertiary} />
+          </div>
+          <ActionLabel>Allocate Bounties</ActionLabel>
+        </ContextMenuItem>
+      </ActionsMenu>
+    </div>
+  )
+
+  queryLoading = () => (
+    <StyledIssues>
+      {this.actionsMenu()}
+      <FilterBar
+        handleSelectAll={this.toggleSelectAll}
+        allSelected={false}
+        issues={[]}
+        issuesFiltered={[]}
+        handleFiltering={this.handleFiltering}
+      />
+      <IssuesScrollView>
+        <div>Loading...</div>
+      </IssuesScrollView>
+    </StyledIssues>
+  )
+
+  queryError = (error, refetch) => (
+    <StyledIssues>
+      {this.actionsMenu()}
+      <FilterBar
+        handleSelectAll={this.toggleSelectAll}
+        allSelected={false}
+        issues={[]}
+        issuesFiltered={[]}
+        handleFiltering={this.handleFiltering}
+      />
+      <IssuesScrollView>
+        <div>
+          Error {JSON.stringify(error)}
+          <div>
+            <Button mode="strong" onClick={() => refetch()}>
+              Try refetching?
+            </Button>
+          </div>
+        </div>
+      </IssuesScrollView>
+    </StyledIssues>
+  )
+
   render() {
+    const { projects, onNewProject } = this.props
+    // better return early if we have no projects added?
+    if (projects.length === 0) return <Empty action={onNewProject} />
+
+    const { allSelected } = this.state
+    const reposIds = projects.map(project => project.data._repo)
+
+    const flattenIssues = nodes =>
+      nodes && [].concat(...nodes.map(node => node.issues.nodes))
+
+    const shapeIssues = issues =>
+      issues.map(({ __typename, repository: { name }, ...fields }) => ({
+        ...fields,
+        repo: name,
+      }))
+
+    //console.log('current issues props:', this.props, 'and state:', this.state)
+
     return (
-      <StyledIssues>
-        <StyledSearchBar>
-          <StyledSearchInput>
-            <StyledTextInput />
-            <Magnifier />
-          </StyledSearchInput>
-          {/* // TODO: Here it goes the active filters box */}
-          <Button mode="secondary">Actions</Button>
-          {/* <ActionsDropDown /> */}
-          {/* <StyledActionsDropDown /> */}
-        </StyledSearchBar>
-        <FilterBar />
-      </StyledIssues>
+      <Query
+        fetchPolicy="cache-first"
+        query={GET_ISSUES}
+        variables={{ reposIds }}
+        onError={console.error}
+      >
+        {({ data, loading, error, refetch }) => {
+          if (data && data.nodes) {
+            let issues = flattenIssues(data.nodes)
+            let issuesFiltered = this.applyFilters(issues)
+            return (
+              <StyledIssues>
+                {this.actionsMenu()}
+                <FilterBar
+                  handleSelectAll={this.toggleSelectAll(issuesFiltered)}
+                  allSelected={allSelected}
+                  issues={issues}
+                  issuesFiltered={issuesFiltered}
+                  handleFiltering={this.handleFiltering}
+                />
+                <IssuesScrollView>
+                  {shapeIssues(issuesFiltered).map(issue => (
+                    <Issue
+                      isSelected={this.state.selectedIssues
+                        .map(selectedIssue => selectedIssue.id)
+                        .includes(issue.id)}
+                      onSelect={() => {
+                        this.handleIssueSelection(issue)
+                      }}
+                      key={issue.id}
+                      {...issue}
+                    />
+                  ))}
+                </IssuesScrollView>
+              </StyledIssues>
+            )
+          }
+
+          if (loading) return this.queryLoading()
+
+          if (error) return this.queryError(error, refetch)
+        }}
+      </Query>
     )
   }
 }
 
-// TODO: credit simple-line-icons project
-const Magnifier = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="currentColor"
-    width="16"
-    height="16"
-    viewBox="0 0 1024 1024"
-  >
-    <path d="M1014.64 969.04L703.71 656.207c57.952-69.408 92.88-158.704 92.88-256.208 0-220.912-179.088-400-400-400s-400 179.088-400 400 179.088 400 400 400c100.368 0 192.048-37.056 262.288-98.144l310.496 312.448c12.496 12.497 32.769 12.497 45.265 0 12.48-12.496 12.48-32.752 0-45.263zM396.59 736.527c-185.856 0-336.528-150.672-336.528-336.528S210.734 63.471 396.59 63.471c185.856 0 336.528 150.672 336.528 336.528S582.446 736.527 396.59 736.527z" />
-  </svg>
-)
-
 const StyledIssues = styled.div`
-  padding: 15px 30px;
-`
-
-const StyledSearchBar = styled.div`
   display: flex;
-  justify-content: space-between;
-`
-
-const StyledSearchInput = styled.div`
-  position: relative;
-  width: 220px;
-  height: 40px;
-
-  > :last-child {
-    position: absolute;
-    right: 15px;
-    top: 10px;
-    color: ${theme.textSecondary};
-    pointer-events: none;
+  flex-direction: column;
+  padding: 15px 30px;
+  > :first-child {
+    display: flex;
+    justify-content: space-between;
   }
+
+  /* height: 100%;
+  padding: 15px 30px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  > :nth-child(3) {
+    border-radius: 3px 3px 0 0;
+    margin-bottom: -1px;
+  }
+  > :nth-child(n + 4) {
+    border-radius: 0;
+    margin-bottom: -1px;
+  }
+  > :last-child {
+    border-radius: 0 0 3px 3px;
+  } */
 `
 
-// TODO: Extract to shared with StyledTextInput from settings
-const StyledTextInput = styled(TextInput).attrs({
-  type: 'text',
-})`
-  width: 100%;
-  border: 1px sold #ccc;
-  padding-right: 35px;
-  font-size: 16px;
+const IssuesScrollView = styled.div`
+  overflow-y: auto;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+`
+
+const ActionLabel = styled.span`
+  margin-left: 15px;
 `
 
 export default Issues

@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "@tps/test-helpers/contracts/apps/AragonApp.sol";
+import "@aragon/os/contracts/apps/AragonApp.sol";
 
 
 /*******************************************************************************
@@ -49,14 +49,10 @@ contract AddressBook is AragonApp {
     bytes32 public constant REMOVE_ENTRY_ROLE = keccak256("REMOVE_ENTRY_ROLE");
 
     /**
-     * Add an entry to the registry.
+     * @notice Add entity '`_name`' with the address '`_addr`' to the registry.
      * @param _addr The address of the entry to add to the registry
      * @param _name The name of the entry to add to the registry
      * @param _entryType The type of the entry to add to the registry
-
-    ) public auth(ADD_ENTRY_ROLE) returns (address)
-    {
-
      */
     function addEntry(
         address _addr,
@@ -64,6 +60,7 @@ contract AddressBook is AragonApp {
         string _entryType
     ) public auth(ADD_ENTRY_ROLE) 
     { 
+        require(entries[_addr].entryAddress == 0, "entry exists with that address");
         require(!nameUsed[keccak256(abi.encodePacked(_name))], "name already in use");
 
         Entry storage entry = entries[_addr];
@@ -71,20 +68,21 @@ contract AddressBook is AragonApp {
         entry.name = _name;
         entry.entryType = _entryType;
 
-        nameUsed[keccak256(abi.encodePacked(_name))] = true;
+        nameUsed[keccak256(abi.encodePacked(entries[_addr].name))] = true;
 
         emit EntryAdded(_addr); 
     }
 
     /**
-     * Remove an entry from the registry.
+     * @notice Remove entity with address '`_addr`' from the registry.
      * @param _addr The ID of the entry to remove
-    ) public auth(REMOVE_ENTRY_ROLE) { // solium-disable-line lbrace
      */
     function removeEntry(
         address _addr
     ) public auth(REMOVE_ENTRY_ROLE) 
     { 
+        require(entries[_addr].entryAddress != 0, "entry does not exist");
+        assert(nameUsed[keccak256(abi.encodePacked(entries[_addr].name))]); // the name MUST be used
         nameUsed[keccak256(abi.encodePacked(entries[_addr].name))] = false;
         delete entries[_addr];
         emit EntryRemoved(_addr); 
@@ -97,8 +95,9 @@ contract AddressBook is AragonApp {
     function getEntry(
         address _addr
     ) public view returns (address _entryAddress, string _name, string _entryType) 
-    { 
+    {
         Entry storage entry = entries[_addr];
+        require(nameUsed[keccak256(abi.encodePacked(entry.name))], "entry does not exist");
 
         _entryAddress = entry.entryAddress;
         _name = entry.name;

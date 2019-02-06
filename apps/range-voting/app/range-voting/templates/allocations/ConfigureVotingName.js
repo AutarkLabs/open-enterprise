@@ -75,15 +75,14 @@ class ConfigureVotingNameContent extends React.PureComponent {
       <Content>
         <Title>Payout Engine</Title>
         <StepContainer>
-          <SubmitForm onSubmit={onSubmit} innerRef={formRef}>
+          <SubmitForm onSubmit={onSubmit} ref={formRef}>
             <Subtitle>
-              You are creating a custom, reusable multi-option voting app. Enter a name and description so you remember its purpose.
+              You are creating a custom, reusable multi-option voting app. Enter
+              a name and description so you remember its purpose.
             </Subtitle>
             <Fields>
               <Fields.Field label="Name">
-                <Hint>
-                  What do you want to name this app?
-                </Hint>
+                <Hint>What do you want to name this app?</Hint>
                 <TextInput
                   placeholder="Name"
                   value={fields.voteName}
@@ -91,9 +90,7 @@ class ConfigureVotingNameContent extends React.PureComponent {
                 />
               </Fields.Field>
               <Fields.Field label="Description">
-                <Hint>
-                  How would you describe this app?
-                </Hint>
+                <Hint>How would you describe this app?</Hint>
                 <TextInput.Multiline
                   placeholder="Description"
                   onChange={handleDescriptionChange}
@@ -108,8 +105,8 @@ class ConfigureVotingNameContent extends React.PureComponent {
   }
 }
 
-const SubmitForm = ({ children, innerRef = noop, ...props }) => (
-  <form {...props} ref={innerRef}>
+const SubmitForm = ({ children, ref = noop, ...props }) => (
+  <form {...props} ref={ref}>
     {children}
     <input type="submit" style={{ display: 'none' }} />
   </form>
