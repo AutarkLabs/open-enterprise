@@ -1,0 +1,18 @@
+{
+  "private": true,
+  "name": "@tps/test-helpers",
+  "version": "0.0.1",
+  "description": "Helper scripts for Planning Suite",
+  "devDependencies": {
+    "@aragon/cli": "5.3.3",
+    "eth-gas-reporter": "0.1.12",
+    "ethereumjs-abi": "0.6.5",
+    "ganache-cli": "6.1.8",
+    "homedir": "^0.6.0",
+    "solidity-coverage": "0.5.11",
+    "solium": "1.1.8",
+    "truffle": "4.1.14",
+    "truffle-hdwallet-provider": "0.0.3",
+    "truffle-hdwallet-provider-privkey": "0.3.0"
+  }
+}

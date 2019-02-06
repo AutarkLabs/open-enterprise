@@ -1,0 +1,11 @@
+{
+  "trailingComma": "es5",
+  "overrides": [
+    {
+      "files": ".babelrc",
+      "options": {
+        "parser": "json"
+      }
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "roles": [
+    {
+      "name": "Initiate an allocations payout",
+      "id": "START_PAYOUT_ROLE",
+      "params": []
+    },
+    {
+      "name": "Set the distribution that will correspond to this allocation",
+      "id": "SET_DISTRIBUTION_ROLE",
+      "params": []
+    },
+    {
+      "name": "Execute a set payout",
+      "id": "EXECUTE_PAYOUT_ROLE",
+      "params": []
+    }
+  ],
+  "environments": {
+    "default": {
+      "registry": "0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1",
+      "appName": "allocations.aragonpm.eth",
+      "network": "rpc"
+    },
+    "openrinkeby": {
+      "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
+      "appName": "allocations.open.aragonpm.eth",
+      "network": "rinkeby"
+    },
+    "staging": {
+      "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
+      "appName": "allocations.open.aragonpm.eth",
+      "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
+      "network": "rinkeby"
+    }
+  },
+  "path": "contracts/Allocations.sol"
+}

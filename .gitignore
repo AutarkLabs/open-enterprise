@@ -57,8 +57,17 @@ typings/
 # dotenv environment variables file
 .env
 
-# Package Lock
-package-lock.json
-
 # aragon/ui prod directory
 aragon-ui/
+
+.cache
+dist
+build
+codealike.json
+
+# solidity coverage
+*/**/scTopics
+*/**/coverageEnv
+*/**/coverage.json
+*/**/coverage
+.DS_Store

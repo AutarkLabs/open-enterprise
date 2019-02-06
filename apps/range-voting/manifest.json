@@ -1,10 +1,12 @@
 {
-  "name": "Planning Application",
+  "name": "Range Voting",
   "description": "Create and manage multiple projects",
-  "icons": [{
-    "src": "images/icon.svg",
-    "sizes": "192x192"
-  }],
-  "script": "/script.js",
-  "start_url": "/index.html"
+  "icons": [
+    {
+      "src": "images/icon.png",
+      "sizes": "192x192"
+    }
+  ],
+  "script": "dist/script.js",
+  "start_url": "dist/index.html"
 }

@@ -1,16 +1,52 @@
-sudo: required
+# ensure running in a container for fast boot, travis has these requirements:
+sudo: false
+dist: "trusty"
+
+# these are executed in order. each must pass for the next to be run
+stages:
+  - precache # warm up cache for default Node.js version
+  - lint # lint code and docs
+  - test # all tests
+
+# defaults
 language: node_js
+node_js: "node" # equivalent to stable, node 10
+
+# `nvm install` happens before the cache is restored, which means
+# we must install our own npm elsewhere (`~/cached-bins`)
+before_install: |
+  # Evaluate with Bash if the npm in cached_bins path has NOT execution permission,
+  [[ ! -x ~/cached-bins/node_modules/.bin/npm ]] && {
+  # then we assume cache missed and install npm@latest and lerna
+  # caching feature creates `~/cached-bins` for us, the private:true is to avoid annoying npm warnings about package.json
+    cd ~/cached-bins && echo '{"private":true}' > package.json && npm install npm@latest lerna --no-package-lock
+    cd -
+  } || true
+  # avoids bugs around https://github.com/travis-ci/travis-ci/issues/5092
+  export PATH=~/cached-bins/node_modules/.bin:$PATH
+
+install: npm run postinstall
+
 cache:
   directories:
-    - node_modules
+    - ~/.npm # cache npm's cache
+    - ~/cached-bins # cache latest npm and lerna
+
+jobs:
+  include:
+    - script: travis_wait 60 npm run coverage
+      after_success: npm run coveralls
+      env: "COVERAGE=true"
+
+    - &node
+      script: npm run test
+      node_js: "lts/*"
+
+    - stage: lint
+      script: npm run lint
+
+    - stage: precache
+      script: true
+
 notifications:
   email: false
-node_js:
-  - '8'
-env:
-  - TASK=test
-  - TASK=lint
-before_script:
-  - npm prune
-script:
-  - npm run $TASK

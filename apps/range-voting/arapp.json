@@ -1,6 +1,4 @@
 {
-  "appName": "planning.aragonpm.eth",
-  "version": "0.0.1",
   "roles": [
     {
       "name": "Create new votes",
@@ -18,6 +16,23 @@
       "params": []
     }
   ],
+  "environments": {
+    "default": {
+      "registry": "0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1",
+      "appName": "range-voting.aragonpm.eth",
+      "network": "rpc"
+    },
+    "openrinkeby": {
+      "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
+      "appName": "range-voting.open.aragonpm.eth",
+      "network": "rinkeby"
+    },
+    "staging": {
+      "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
+      "appName": "range-voting.open.aragonpm.eth",
+      "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
+      "network": "rinkeby"
+    }
+  },
   "path": "contracts/RangeVoting.sol"
 }
-

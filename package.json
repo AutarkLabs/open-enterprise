@@ -1,42 +1,48 @@
 {
-  "name": "@tpt/planning-app",
-  "version": "1.0.0",
-  "description": "Aragon planning application developed by Space Decentral and Giveth.",
-  "main": "truffle-config.js",
-  "directories": {
-    "test": "test"
+  "private": true,
+  "name": "planning-suite-monorepo",
+  "devDependencies": {
+    "@aragon/cli": "5.3.3",
+    "coveralls": "3.0.2",
+    "lerna": "^3.10.8"
   },
   "scripts": {
-    "install": "npm run bootstrap",
-    "bootstrap": "lerna bootstrap --nohoist=@aragon/os",
-    "test": "lerna run --concurrency=1 --stream test",
-    "lint": "lerna run --scope=@tpt/apps-* lint",
-    "coverage": "./node_modules/.bin/solidity-coverage"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Giveth/planning-app.git"
-  },
-  "keywords": [
-    "Ethereum",
-    "Aragon",
-    "Decentralized",
-    "Solidity"
-  ],
-  "author": "",
-  "license": "GPL-3.0",
-  "bugs": {
-    "url": "https://github.com/Giveth/planning-app/issues"
-  },
-  "homepage": "https://github.com/Giveth/planning-app#readme",
-  "dependencies": {
-    "@aragon/client": "^1.0.0-beta.7"
-  },
-  "devDependencies": {
-    "lerna": "^2.10.0",
-    "ganache-cli": "^6.1.0",
-    "truffle": "4.0.5",
-    "solium": "0.5.5",
-    "solidity-coverage": "0.3.5"
+    "bootstrap": "lerna bootstrap --hoist",
+    "postinstall": "npm run bootstrap",
+    "clean": "git clean -ffdx",
+    "clean:commit": "rm -f package-lock.json && npm run bootstrap",
+    "clean:aragon": "rm -rf ~/.aragon && rm -rf ~/.ipfs",
+    "clean:build": "git clean -ffdx --exclude=node_modules/",
+    "coverage": "npx lerna run coverage --no-bail",
+    "coveralls": "cat apps/*/coverage/lcov.info | npx coveralls",
+    "dev": "apps/shared/test-helpers/develop-kit.sh",
+    "dev:address": "cd apps/address-book && npm run dev",
+    "dev:allocations": "cd apps/allocations && npm run dev",
+    "dev:projects": "cd apps/projects && npm run dev",
+    "dev:range": "cd apps/range-voting && npm run dev",
+    "devchain": "aragon devchain",
+    "devchain:reset": "aragon devchain --reset",
+    "publish:apps": "lerna run publish",
+    "publish:http": "lerna run publish:http",
+    "restart": "RESTART_KIT=true apps/shared/test-helpers/ganache-cli.sh",
+    "start": "START_KIT=true apps/shared/test-helpers/ganache-cli.sh",
+    "start:dev": "DEV=true apps/shared/test-helpers/ganache-cli.sh",
+    "start:kit": "cd apps/planning-suite-kit && npm run start:kit",
+    "start:address": "cd apps/address-book && npm start",
+    "start:allocations": "cd apps/allocations && npm start",
+    "start:projects": "cd apps/projects && npm start",
+    "start:range": "cd apps/range-voting && npm start",
+    "test": "lerna run test --no-bail",
+    "test:gas": "lerna run test:gas",
+    "test:address": "cd apps/address-book && npm test",
+    "test:allocations": "cd apps/allocations && npm test",
+    "test:projects": "cd apps/projects && npm test",
+    "test:range": "cd apps/range-voting && npm test",
+    "lint": "lerna run lint --no-bail && lerna exec --scope=@tps/apps-* --stream -- npx eslint app",
+    "lint:fix": "lerna exec --scope=@tps/apps-* --stream -- npx eslint app --fix",
+    "lint:address": "cd apps/address-book && npm run lint",
+    "lint:allocations": "cd apps/allocations && npm run lint",
+    "lint:projects": "cd apps/projects && npm run lint",
+    "lint:range": "cd apps/range-voting && npm run lint"
   }
 }

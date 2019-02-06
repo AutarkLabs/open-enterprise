@@ -1,0 +1,6 @@
+{
+  "name": "Projects",
+  "description": "Manage Github projects",
+  "start_url": "dist/index.html",
+  "script": "dist/script.js"
+}
