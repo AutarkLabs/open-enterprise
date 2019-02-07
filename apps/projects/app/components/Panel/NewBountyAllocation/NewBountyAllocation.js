@@ -18,13 +18,23 @@ import {
 import { Form, FormField, FieldTitle } from '../../Form'
 import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
 
+const bountyHours = ['-', '1', '2', '4', '8', '16', '24', '32', '40']
+const bountyExp = [{ name: '-', mul: 1 }]
+const bountyDeadline = ['-', 'yesterday', 'last week']
+const bountyAvail = ['-', '1', '2', '3']
+
 class NewBountyAllocation extends React.Component {
+
+  
   static propTypes = {
     /** array of issues to allocate bounties on */
     issues: PropTypes.arrayOf(
       PropTypes.shape({
         id: PropTypes.string,
         level: PropTypes.string,
+        title: PropTypes.string,
+        number: PropTypes.number,
+        repo: PropTypes.string,        
       })
     ),
     /** base rate in pennies */
@@ -41,11 +51,14 @@ class NewBountyAllocation extends React.Component {
     let bounties = {}
     this.props.issues.map(issue => {
       bounties[issue.id] = {
+        repo: issue.repo,
+        number: issue.number,
         hours: 0,
         exp: 0,
         deadline: 0,
         avail: 0,
         detailsOpen: 0,
+        size: 0
       }
     })
     this.state = {
@@ -66,13 +79,27 @@ class NewBountyAllocation extends React.Component {
     console.log('configBounty: ', bounties)
   }
 
+  updateSize = (id) => {
+    const { bounties } = this.state
+    const rate = this.props.bountySettings.baseRate
+    console.log('Update Size')
+    console.log(rate)
+    console.log(bountyHours[bounties[id]['hours']])
+    console.log(bountyExp[bounties[id]['exp']])
+    let size = bountyHours[bounties[id]['hours']] * rate * bountyExp[bounties[id]['exp']].mul
+    bounties[id]['size'] = size
+    this.setState({ bounties })
+  }
+
   generateHoursChange = id => index => {
     this.configBounty(id, 'hours', index)
+    this.updateSize(id)
     console.log('generateHoursChange: id: ', id, ', index: ', index)
   }
 
   generateExpChange = id => index => {
     this.configBounty(id, 'exp', index)
+    this.updateSize(id)
     console.log('generateExpChange: id: ', id, ', index: ', index)
   }
 
@@ -91,11 +118,14 @@ class NewBountyAllocation extends React.Component {
     console.log('generateArrowChange: id: ', id)
   }
 
+  submitBounties = () => {
+    // console.info('Submitting new curation', this.state, this.props)
+    this.props.onSubmit(this.state.bounties)
+  }
+
+
   render() {
-    const bountyHours = ['-', '1', '2', '4', '8', '16', '24', '32', '40']
-    const bountyExp = [{ name: '-', mul: 1 }]
-    const bountyDeadline = ['-', 'yesterday', 'last week']
-    const bountyAvail = ['-', '1', '2', '3']
+    
     const { bounties } = this.state
     const { bountySettings } = this.props
 
@@ -107,7 +137,7 @@ class NewBountyAllocation extends React.Component {
     console.log('bounties: ', bounties, ', bountySettings: ', bountySettings)
     return (
       <Form
-        onSubmit={this.props.onSubmit}
+        onSubmit={this.submitBounties}
         description={this.props.description}
         submitText="Submit Bounty Allocation"
       >
@@ -160,11 +190,7 @@ class NewBountyAllocation extends React.Component {
                             <IBValueShow>
                               <FieldTitle>Value</FieldTitle>
                               <Badge style={{ marginLeft: '5px' }}>
-                                {bountyHours[bounties[issue.id]['hours']] *
-                                    rate *
-                                    bountyExp[
-                                      bounties[issue.id]['exp']
-                                    ].mul.toFixed(2)}{' '}
+                                {bounties[issue.id]['size'].toFixed(2)}{' '}
                                 {bountySettings.bountyCurrency}
                               </Badge>
                             </IBValueShow>

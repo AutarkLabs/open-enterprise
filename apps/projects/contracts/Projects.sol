@@ -298,7 +298,7 @@ contract Projects is AragonApp {
      * @param _ipfsAddresses a string of ipfs addresses
      */
     function addBounties(
-        bytes32 _repoId,
+        uint256 _repoId,
         uint256[] _issueNumbers,
         uint256[] _bountySizes,
         uint256[] _deadlines,
@@ -329,7 +329,7 @@ contract Projects is AragonApp {
 
             //Add bounty to local registry
             _addBounty(
-                _repoId,
+                bytes32(_repoId),
                 _issueNumbers[i],
                 standardBountyId,
                 _bountySizes[i]

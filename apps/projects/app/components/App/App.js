@@ -223,17 +223,57 @@ class App extends React.PureComponent {
     }))
   }
 
-  onSubmitBountyAllocation = bounties => {
-    console.log('bounty allocation submitted', bounties)
-    // TODO: The contract addBounties function first param is just a single repoId, so in the case a bounty allocation comprises issues from multiple repos it should launch a tx for each repo
-    // this.props.app.addBounties()
-    // bytes32 _repoId,
-    // uint256[] _issueNumbers,
-    // uint256[] _bountySizes,
-    // uint256[] _deadlines,
-    // bool[] _tokenBounties,
-    // address[] _tokenContracts,
-    // string _ipfsAddresses
+  onSubmitBountyAllocation = issues => {
+    console.log('bounty allocation submitted', issues)
+
+    const emptyAddrArray = [
+      '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
+      '0xd00cc82a132f421bA6414D196BC830Db95e2e7Dd',
+      '0x89c199302bd4ebAfAa0B5Ee1Ca7028C202766A7F',
+      '0xd28c35a207c277029ade183b6e910e8d85206c07',
+      '0xee6bd04c6164d7f0fa1cb03277c855639d99a7f6',
+      '0xb1d048b756f7d432b42041715418b48e414c8f50',
+      '0x6945b970fa107663378d242de245a48c079a8bf6',
+      '0x83ac654be75487b9cfcc80117cdfb4a4c70b68a1',
+      '0x690a63d7023780ccbdeed33ef1ee62c55c47460d',
+      '0xb1afc07af31795d61471c169ecc64ad5776fa5a1',
+      '0x4aafed050dc1cf7e349accb7c2d768fd029ece62',
+      '0xd7a5846dea118aa76f0001011e9dc91a8952bf19',
+    ]
+
+    let repos = {}, repo
+    for (var key in issues) {
+      if(repos[issues[key].repo] == undefined) { repos[issues[key].repo] = [] }
+      repos[issues[key].repo].push({
+        ...issues[key]
+      })
+    }
+    console.log('bounty allocation submitted', repos)
+    for (var key in repos) {
+      repo = repos[key]
+      console.log(repo)
+      console.log(key)
+
+      console.log('Bounty data',
+        key,
+        repo.map( (issue) => { return issue.number}),
+        repo.map( (issue) => { return issue.size}),
+        repo.map( (issue) => { return issue.deadline}),
+        new Array(repo.length).fill(true),
+        repo.map( (issue) => { return issue.number}),
+        emptyAddrArray.slice(0, repo.length),
+        ''
+      )
+      this.props.app.addBounties(
+        key,
+        repo.map( (issue) => { issue.number}),
+        repo.map( (issue) => { issue.size}),
+        repo.map( (issue) => { issue.deadline}),
+        new Array(repo.length).fill(true),
+        emptyAddrArray.slice(0, repo.length),
+        ''
+      )
+    }
 
     // this.closePanel()
   }
