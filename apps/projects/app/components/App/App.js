@@ -16,6 +16,8 @@ const ASSETS_URL = './aragon-ui-assets/'
 
 const GITHUB_URI = 'https://github.com/login/oauth/authorize'
 
+let ipfsClient = require('ipfs-http-client')
+
 // TODO: let the user customize the github app on settings screen?
 // TODO: Extract to an external js utility to keep this file clean
 // Variable fields depending on the execution environment:
@@ -23,6 +25,8 @@ const GITHUB_URI = 'https://github.com/login/oauth/authorize'
 let CLIENT_ID = ''
 let REDIRECT_URI = ''
 let AUTH_URI = ''
+
+let ipfs = ipfsClient({ host: 'localhost', port: '5001', protocol: 'http'})
 
 switch (window.location.origin) {
 case 'http://localhost:3333':
@@ -223,7 +227,7 @@ class App extends React.PureComponent {
     }))
   }
 
-  onSubmitBountyAllocation = issues => {
+  onSubmitBountyAllocation = async issues => {
     console.log('bounty allocation submitted', issues)
 
     const emptyAddrArray = [
@@ -241,6 +245,14 @@ class App extends React.PureComponent {
       '0xd7a5846dea118aa76f0001011e9dc91a8952bf19',
     ]
 
+    
+    let content = ipfs.types.Buffer.from(issues.toString())
+    console.log(content)
+    console.log(ipfs)
+    console.log(ipfs.files)
+    let results = await ipfs.add(content)
+    console.log(results)
+    
     let repos = {}, repo
     for (var key in issues) {
       if(repos[issues[key].repo] == undefined) { repos[issues[key].repo] = [] }
@@ -256,19 +268,18 @@ class App extends React.PureComponent {
 
       console.log('Bounty data',
         key,
-        repo.map( (issue) => { return issue.number}),
-        repo.map( (issue) => { return issue.size}),
-        repo.map( (issue) => { return issue.deadline}),
+        repo.map( (issue) => issue.number),
+        repo.map( (issue) => issue.size),
+        repo.map( (issue) => issue.deadline),
         new Array(repo.length).fill(true),
-        repo.map( (issue) => { return issue.number}),
         emptyAddrArray.slice(0, repo.length),
         ''
       )
       this.props.app.addBounties(
-        key,
-        repo.map( (issue) => { issue.number}),
-        repo.map( (issue) => { issue.size}),
-        repo.map( (issue) => { issue.deadline}),
+        10,
+        repo.map( (issue) => issue.number),
+        repo.map( (issue) => issue.size),
+        repo.map( (issue) => issue.deadline),
         new Array(repo.length).fill(true),
         emptyAddrArray.slice(0, repo.length),
         ''
