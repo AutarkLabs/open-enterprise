@@ -136,6 +136,8 @@ contract Projects is AragonApp {
     event AssignmentRequested(address applicant, bytes32 indexed repoId, uint256 issueNumber);
     // Fired when Task Manager approves assignment request
     event AssignmentApproved(address applicant, bytes32 indexed repoId, uint256 issueNumber);
+    // Fired when a user submits work towards an issue
+    event WorkSubmitted(address submittor, bytes32 repoId, uint256 issueNumber);
 
     bytes32 public constant ADD_BOUNTY_ROLE =  keccak256("ADD_BOUNTY_ROLE");
     bytes32 public constant ADD_REPO_ROLE = keccak256("ADD_REPO_ROLE");
@@ -387,6 +389,24 @@ contract Projects is AragonApp {
         emit AssignmentApproved(_requestor, _repoId, _issueNumber);
     }
 
+    function submitWork(
+        bytes32 _repoId, 
+        uint256 _issueNumber, 
+        string _submissionAddress
+    ) public 
+    {
+        require(msg.sender == repos[_repoId].issues[_issueNumber].assignee, "User not assigned to this issue");
+
+        repos[_repoId].issues[_issueNumber].workSubmittors.push(msg.sender);
+        repos[_repoId].issues[_issueNumber].workSubmissions[msg.sender] = WorkSubmission(
+            false,
+            false,
+            _submissionAddress
+        );
+
+        emit WorkSubmitted(msg.sender, _repoId, _issueNumber);
+    }
+
 ///////////////////////
 // Public utility functions
 ///////////////////////
@@ -416,6 +436,25 @@ contract Projects is AragonApp {
     ) public view returns(string application) 
     {
         application = repos[_repoId].issues[_issueNumber].assignmentRequests[_applicant];
+    }
+
+        /**
+     * @notice Returns contributor's work submission
+     * @param _repoId the github repo id of the issue
+     * @param _issueNumber the github issue being worked on
+     * @param _contributor the address of the contributor
+     * @return  application IPFS hash for the applicant's proposed timeline and strategy
+     */
+    function getSubmission(
+        bytes32 _repoId, 
+        uint256 _issueNumber, 
+        address _contributor
+    ) public view returns(string submissionHash, bool approved, bool rejected) 
+    {
+        WorkSubmission memory submission = repos[_repoId].issues[_issueNumber].workSubmissions[_contributor];
+        submissionHash = submission.submissionHash;
+        approved = submission.approved;
+        rejected = submission.rejected;
     }
 
 ///////////////////////
