@@ -91,6 +91,12 @@ contract Projects is AragonApp {
         uint index;
     }
 
+    struct WorkSubmission {
+        bool approved;
+        bool rejected;
+        string submissionHash; //IPFS hash of the Pull Request
+    }
+
     struct GithubIssue {
         bytes32 repo;  // This is the internal repo identifier
         uint256 number; // May be redundant tracking this
@@ -99,6 +105,11 @@ contract Projects is AragonApp {
         uint256 priority;
         address bountyWallet; // Not sure if we'll have a way to "retrieve" this value from status open bounties
         uint standardBountyId;
+        address assignee;
+        address[] applicants;
+        address[] workSubmittors;
+        mapping(address => string) assignmentRequests;
+        mapping(address => WorkSubmission) workSubmissions;
     }
 
     // The entries in the repos registry.
@@ -121,12 +132,17 @@ contract Projects is AragonApp {
     event FulfillmentAccepted(bytes32 repoId, uint256 issueNumber, uint fulfillmentId);
     // Fired when settings are changed
     event BountySettingsChanged();
+    // Fired when user requests issue assignment
+    event AssignmentRequested(address applicant, bytes32 indexed repoId, uint256 issueNumber);
+    // Fired when Task Manager approves assignment request
+    event AssignmentApproved(address applicant, bytes32 indexed repoId, uint256 issueNumber);
 
     bytes32 public constant ADD_BOUNTY_ROLE =  keccak256("ADD_BOUNTY_ROLE");
     bytes32 public constant ADD_REPO_ROLE = keccak256("ADD_REPO_ROLE");
     bytes32 public constant CHANGE_SETTINGS_ROLE =  keccak256("CHANGE_SETTINGS_ROLE");
     bytes32 public constant CURATE_ISSUES_ROLE = keccak256("CURATE_ISSUES_ROLE");
     bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
+    bytes32 public constant TASK_MGR_ROLE = keccak256("TASK_MGR_ROLE");
 
     function curateIssues(
         address[] /*unused_Addresses*/, 
@@ -337,6 +353,40 @@ contract Projects is AragonApp {
         }
     }
 
+    /**
+     * @notice applies for this issue by submitting timeline and workplan
+     * @param _repoId the github repo id of the issue
+     * @param _issueNumber the github issue up for assignment
+     * @param _application IPFS hash for the applicant's proposed timeline and strategy
+     */
+    function requestAssignment(bytes32 _repoId, uint256 _issueNumber, string _application) public {
+        require(bytes(repos[_repoId].issues[_issueNumber].assignmentRequests[msg.sender]).length == 0, "User already applied for this issue");
+
+        repos[_repoId].issues[_issueNumber].applicants.push(msg.sender);
+        repos[_repoId].issues[_issueNumber].assignmentRequests[msg.sender] = _application;
+
+        emit AssignmentRequested(msg.sender, _repoId, _issueNumber);
+    }
+
+        /**
+     * @notice approves request for assignment to a single requestor
+     * @param _repoId the github repo id of the issue
+     * @param _issueNumber the github issue up for assignment
+     * @param _requestor address of user that will be assigned the issue
+     */
+    function approveAssignment(
+        bytes32 _repoId, 
+        uint256 _issueNumber, 
+        address _requestor
+    ) public auth(TASK_MGR_ROLE)
+    {
+        require(bytes(repos[_repoId].issues[_issueNumber].assignmentRequests[_requestor]).length != 0, "User has not applied for this issue");
+
+        repos[_repoId].issues[_issueNumber].assignee = _requestor;
+
+        emit AssignmentApproved(_requestor, _repoId, _issueNumber);
+    }
+
 ///////////////////////
 // Public utility functions
 ///////////////////////
@@ -350,6 +400,22 @@ contract Projects is AragonApp {
         if (repoIndex.length == 0)
             return false;
         return (repoIndex[repos[_repoId].index] == _repoId);
+    }
+
+    /**
+     * @notice Returns Applicant's Github Username
+     * @param _repoId the github repo id of the issue
+     * @param _issueNumber the github issue up for assignment
+     * @param _applicant the address of the applicant
+     * @return  application IPFS hash for the applicant's proposed timeline and strategy
+     */
+    function getAssignmentRequest(
+        bytes32 _repoId, 
+        uint256 _issueNumber, 
+        address _applicant
+    ) public view returns(string application) 
+    {
+        application = repos[_repoId].issues[_issueNumber].assignmentRequests[_applicant];
     }
 
 ///////////////////////
@@ -382,6 +448,7 @@ contract Projects is AragonApp {
         uint256 _bountySize
     ) internal
     {
+        address[] memory emptyAddressArray;
         repos[_repoId].issues[_issueNumber] = GithubIssue(
             _repoId,
             _issueNumber,
@@ -389,7 +456,10 @@ contract Projects is AragonApp {
             _bountySize,
             999,
             address(0),
-            _standardBountyId
+            _standardBountyId,
+            address(0),
+            emptyAddressArray,
+            emptyAddressArray
         );
         emit BountyAdded(
             repos[_repoId].owner,
