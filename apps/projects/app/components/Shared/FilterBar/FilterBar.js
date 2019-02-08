@@ -46,6 +46,14 @@ class FilterBar extends React.Component {
     }
   }
 
+  componentWillMount() {
+    if ('filterIssuesByRepoId' in this.props.activeIndex.tabData) {
+      let { filters } = this.state
+      filters.projects[this.props.activeIndex.tabData.filterIssuesByRepoId] = true
+      this.setState({ filters })
+    }
+  }
+
   // that's non-event for filters checkboxes to stop browser complaining about missing onChange handler
   // the point is to make the checkbox controlled by its FilterMenuItem parent
   noop = () => {}
