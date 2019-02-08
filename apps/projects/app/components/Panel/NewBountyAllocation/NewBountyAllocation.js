@@ -141,6 +141,7 @@ class NewBountyAllocation extends React.Component {
         description={this.props.description}
         submitText="Submit Bounty Allocation"
       >
+        {/* Not currently implemented:
         <FormField
           label="Description"
           required
@@ -152,7 +153,7 @@ class NewBountyAllocation extends React.Component {
               wide
             />
           }
-        />
+        />*/}
         <FormField
           label="Issues"
           hint="Enter the estimated hours per issue"
