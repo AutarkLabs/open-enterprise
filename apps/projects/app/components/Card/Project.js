@@ -19,6 +19,7 @@ const colors = {
 
 const Project = ({
   id,
+  repoId,
   label,
   description,
   commits,
@@ -39,7 +40,7 @@ const Project = ({
   const clickContext = () => {
     event.stopPropagation()
     console.log('clickContext')
-    changeActiveIndex(1)
+    changeActiveIndex({ tabIndex: 1, tabData: { filterIssuesByRepoId: repoId }})
   }
 
   return (
