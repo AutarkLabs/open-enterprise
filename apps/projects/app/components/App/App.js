@@ -223,6 +223,16 @@ class App extends React.PureComponent {
     }))
   }
 
+  submitWork = issue => {
+    this.setState((_prevState, _prevProps) => ({
+      panel: PANELS.SubmitWork,
+      panelProps: {
+        onSubmit: this.onSubmitWork,
+        issue
+      },
+    }))
+  }
+
   onSubmitBountyAllocation = bounties => {
     console.log('bounty allocation submitted', bounties)
     // TODO: The contract addBounties function first param is just a single repoId, so in the case a bounty allocation comprises issues from multiple repos it should launch a tx for each repo
@@ -326,6 +336,7 @@ class App extends React.PureComponent {
               onNewIssue={this.newIssue}
               onCurateIssues={this.curateIssues}
               onAllocateBounties={this.newBountyAllocation}
+              onSubmitWork={this.submitWork}
               onSelect={this.selectProject}
               activeIndex={activeIndex}
               changeActiveIndex={this.changeActiveIndex}

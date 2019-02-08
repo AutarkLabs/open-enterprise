@@ -29,6 +29,7 @@ export const GET_ISSUES = gql`
               title
             }
             state
+            url
           }
         }
       }
