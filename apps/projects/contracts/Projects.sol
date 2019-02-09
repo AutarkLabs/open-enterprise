@@ -2,6 +2,9 @@ pragma solidity ^0.4.24;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
 import "@aragon/os/contracts/lib/math/SafeMath.sol";
+import "@aragon/apps-vault/contracts/Vault.sol";
+import "@aragon/os/contracts/common/IsContract.sol";
+
 
 /*******************************************************************************
     Copyright 2018, That Planning Suite
@@ -26,6 +29,18 @@ import "@aragon/os/contracts/lib/math/SafeMath.sol";
 * applying bounties in bulk and accepting fulfillment via this contract
 *******************************************************************************/
 interface Bounties {
+
+  function issueAndActivateBounty(
+      address _issuer,
+      uint _deadline,
+      string _data,
+      uint256 _fulfillmentAmount,
+      address _arbiter,
+      bool _paysTokens,
+      address _tokenContract,
+      uint256 _value
+    ) public payable returns (uint);
+
     function issueBounty(
         address _issuer,
         uint _deadline,
@@ -48,31 +63,9 @@ interface Bounties {
 }
 
 
-contract Projects is AragonApp {
+contract Projects is IsContract, AragonApp {
     using SafeMath for uint256;
     Bounties bounties;
-
-////////////////
-// Constructor
-////////////////
-
-    function initialize(address _bountiesAddr)//, Vault _vault
-    external onlyInit // solium-disable-line visibility-first
-    {
-        //vault = _vault.ethConnectorBase();
-        bounties = Bounties(_bountiesAddr); // Standard Bounties instance
-
-        _changeBountySettings(
-            "100\tBeginner\t300\tIntermediate\t500\tAdvanced",
-            3000, // baseRate
-            336, // bountyDeadline
-            "FTL", // bountyCurrency
-            0x0000000000000000000000000000000000000000, // bountyAllocator
-            0x0000000000000000000000000000000000000000 //bountyArbiter
-        );
-
-        initialized();
-    }
 
     struct BountySettings {
         string expLevels;
@@ -101,6 +94,8 @@ contract Projects is AragonApp {
         uint standardBountyId;
     }
 
+    Vault public vault;
+
     // The entries in the repos registry.
     mapping(bytes32 => GithubRepo) private repos;
 
@@ -127,6 +122,35 @@ contract Projects is AragonApp {
     bytes32 public constant CHANGE_SETTINGS_ROLE =  keccak256("CHANGE_SETTINGS_ROLE");
     bytes32 public constant CURATE_ISSUES_ROLE = keccak256("CURATE_ISSUES_ROLE");
     bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
+
+    string private constant ERROR_VAULT_NOT_CONTRACT = "PROJECTS_VAULT_NOT_CONTRACT";
+    string private constant ERROR_STANDARD_BOUNTIES_NOT_CONTRACT = "STANDARD_BOUNTIES_NOT_CONTRACT";
+
+
+
+////////////////
+// Constructor
+////////////////
+    function initialize(address _bountiesAddr, Vault _vault)
+    external onlyInit // solium-disable-line visibility-first
+    {
+        initialized();
+
+        require(isContract(_vault), ERROR_VAULT_NOT_CONTRACT);
+
+        vault = _vault;
+
+        bounties = Bounties(_bountiesAddr); // Standard Bounties instance
+
+        _changeBountySettings(
+            "100\tBeginner\t300\tIntermediate\t500\tAdvanced",
+            3000, // baseRate
+            336, // bountyDeadline
+            "FTL", // bountyCurrency
+            0x0000000000000000000000000000000000000000, // bountyAllocator
+            0x0000000000000000000000000000000000000000 //bountyArbiter
+        );
+    }
 
     function curateIssues(
         address[] /*unused_Addresses*/, 
@@ -315,17 +339,20 @@ contract Projects is AragonApp {
         // submit the bounty to the StandardBounties contract
         for (uint i = 0; i < _bountySizes.length; i++) {
             ipfsHash = substring(_ipfsAddresses, i.mul(46), i.add(1).mul(46));
-            standardBountyId = bounties.issueBounty(
+            uint256 value = _bountySizes[i];
+            vault.transfer(address(_tokenContracts[i]), this, value);
+            standardBountyId = bounties.issueAndActivateBounty(
                 this,                           //    address _issuer
                 _deadlines[i],                  //    uint256 _deadlines
                 ipfsHash,                       //    parse input to get ipfs hash
                 _bountySizes[i],                //    uint256 _fulfillmentAmount
                 address(0),                     //    address _arbiter
                 _tokenBounties[i],              //    bool _paysTokens
-                address(_tokenContracts[i])     //    address _tokenContract
+                address(_tokenContracts[i]),    //    address _tokenContract
+                value                 //    uint256 _value
             );
-            // Activate the bounty so it can be fulfilled
-            bounties.activateBounty.value(_bountySizes[i])(standardBountyId, _bountySizes[i]);
+
+            // Implement case for ETH
 
             //Add bounty to local registry
             _addBounty(

@@ -16,6 +16,7 @@ import "@tps/apps-allocations/contracts/Allocations.sol";
 import "@tps/apps-projects/contracts/Projects.sol";
 import {RangeVoting as RangeVotingApp} from "@tps/apps-range-voting/contracts/RangeVoting.sol";
 import "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
+import "@aragon/apps-vault/contracts/Vault.sol";
 
 
 
@@ -70,12 +71,13 @@ contract PlanningKit is KitBase {
         // bytes32 tokenManagerAppId = apmNamehash("token-manager");
 
 
-        bytes32[5] memory apps = [
+        bytes32[6] memory apps = [
             apmNamehash("address-book"),    // 0
             apmNamehash("projects"),        // 1
             apmNamehash("range-voting"),    // 2
             apmNamehash("allocations"),     // 3
-            apmNamehash("token-manager")    // 4
+            apmNamehash("token-manager"),   // 4
+            apmNamehash("vault")            // 5
         ];
 
         // Planning Apps
@@ -85,6 +87,7 @@ contract PlanningKit is KitBase {
         Allocations allocations = Allocations(dao.newAppInstance(apps[3], latestVersionAppBase(apps[3])));
         // Aragon Apps
         TokenManager tokenManager = TokenManager(dao.newAppInstance(apps[4], latestVersionAppBase(apps[4])));
+        Vault vault = Vault(dao.newAppInstance(apps[5], latestVersionAppBase(apps[5])));
         // Voting voting = Voting(dao.newAppInstance(votingAppId, latestVersionAppBase(votingAppId)));
         // // Survey survey = Survey(dao.newAppInstance(apps[6], latestVersionAppBase(apps[6])));
 
@@ -94,8 +97,9 @@ contract PlanningKit is KitBase {
         token.changeController(tokenManager);
 
         // Initialize apps
+        vault.initialize();
         addressBook.initialize();
-        projects.initialize(registry);
+        projects.initialize(registry, vault);
         rangeVoting.initialize(token, 50 * PCT, 0, 1 minutes);
         allocations.initialize(addressBook);
         tokenManager.initialize(token, true, 0);
@@ -136,6 +140,10 @@ contract PlanningKit is KitBase {
         acl.createPermission(ANY_ENTITY, tokenManager, tokenManager.ISSUE_ROLE(), root);
         acl.createPermission(ANY_ENTITY, tokenManager, tokenManager.ASSIGN_ROLE(), root);
         acl.createPermission(ANY_ENTITY, tokenManager, tokenManager.REVOKE_VESTINGS_ROLE(), root);
+
+        // Token Manager permissions
+        acl.createPermission(projects, vault, vault.TRANSFER_ROLE(), root);
+
         // tokenManager.mint(root, 1); // Give one token to root
         // emit InstalledApp(tokenManager, );
 
