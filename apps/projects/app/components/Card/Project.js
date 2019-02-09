@@ -56,7 +56,11 @@ const Project = ({
         </ContextMenu>
       </MenuContainer>
       <CardTitle>{label}</CardTitle>
-      <CardDescription>{description}</CardDescription>
+      <CardDescription>
+        <CardDescriptionText>
+          {description}
+        </CardDescriptionText>
+      </CardDescription>
       <StyledStats>
         <StatsContainer>
           <IconHistory />
@@ -113,20 +117,31 @@ const CardTitle = styled(Text.Block).attrs({
   color: ${theme.textPrimary};
 `
 
-const CardDescription = styled(Text.Block).attrs({
+const CardDescriptionText = styled(Text.Block).attrs({
   size: 'xsmall',
 })`
-  flex-grow: 1;
+  display: block;
+  display: -webkit-box;
+  height: 7.0em;
+  margin: 0 auto;
+  line-height: 1.5em;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
   margin: 8px 0;
   text-align: center;
   color: ${theme.textPrimary};
+`
+
+const CardDescription = styled.div`
+  flex-grow: 1;
 `
 
 const StyledStats = styled.div`
   display: flex;
   justify-content: space-between;
   align-content: stretch;
-  position: relative;
 `
 
 const StatsContainer = styled(Text).attrs({
