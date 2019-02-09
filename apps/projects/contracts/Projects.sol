@@ -91,16 +91,19 @@ contract Projects is AragonApp {
         uint index;
     }
 
+    enum SubmissionStatus { Unreviewed, Accepted, Rejected }  // 0: unreviewed 1: Accepted 2: Rejected
+
     struct WorkSubmission {
-        bool approved;
-        bool rejected;
+        SubmissionStatus status;
         string submissionHash; //IPFS hash of the Pull Request
+        uint256 fulfillmentId; // Standard Bounties Fulfillment ID
     }
 
     struct GithubIssue {
         bytes32 repo;  // This is the internal repo identifier
         uint256 number; // May be redundant tracking this
         bool hasBounty;
+        bool fulfilled;
         uint256 bountySize;
         uint256 priority;
         address bountyWallet; // Not sure if we'll have a way to "retrieve" this value from status open bounties
@@ -195,10 +198,11 @@ contract Projects is AragonApp {
      * @param _repoId The id of the Github repo in the projects registry
      */
     function getIssue(bytes32 _repoId, uint256 _issueNumber) external view
-    returns(bool hasBounty, uint standardBountyId)
+    returns(bool hasBounty, uint standardBountyId, bool fulfilled)
     {
         GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
         hasBounty = issue.hasBounty;
+        fulfilled = issue.fulfilled;
         standardBountyId = issue.standardBountyId;
     }
 
@@ -392,16 +396,17 @@ contract Projects is AragonApp {
     function submitWork(
         bytes32 _repoId, 
         uint256 _issueNumber, 
-        string _submissionAddress
+        string _submissionAddress,
+        uint256 _fulfillmentId
     ) public 
     {
         require(msg.sender == repos[_repoId].issues[_issueNumber].assignee, "User not assigned to this issue");
 
         repos[_repoId].issues[_issueNumber].workSubmittors.push(msg.sender);
         repos[_repoId].issues[_issueNumber].workSubmissions[msg.sender] = WorkSubmission(
-            false,
-            false,
-            _submissionAddress
+            SubmissionStatus.Unreviewed,
+            _submissionAddress,
+            _fulfillmentId
         );
 
         emit WorkSubmitted(msg.sender, _repoId, _issueNumber);
@@ -449,12 +454,31 @@ contract Projects is AragonApp {
         bytes32 _repoId, 
         uint256 _issueNumber, 
         address _contributor
-    ) public view returns(string submissionHash, bool approved, bool rejected) 
+    ) public view returns(string submissionHash, uint256 fulfillmentId, SubmissionStatus status) 
     {
         WorkSubmission memory submission = repos[_repoId].issues[_issueNumber].workSubmissions[_contributor];
         submissionHash = submission.submissionHash;
-        approved = submission.approved;
-        rejected = submission.rejected;
+        fulfillmentId = submission.fulfillmentId;
+        status = submission.status;
+    }
+
+    function reviewSubmission(
+        bytes32 _repoId, 
+        uint256 _issueNumber, 
+        address _contributor,
+        bool _approved
+    ) public auth(TASK_MGR_ROLE)
+    {
+        GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
+        require(!issue.fulfilled,"Bounty Already Fulfilled");
+
+        if (_approved) {
+            bounties.acceptFulfillment(issue.standardBountyId, issue.workSubmissions[_contributor].fulfillmentId);
+            issue.fulfilled = true;
+            issue.workSubmissions[_contributor].status = SubmissionStatus.Accepted;
+        } else {
+            issue.workSubmissions[_contributor].status = SubmissionStatus.Rejected;
+        }
     }
 
 ///////////////////////
@@ -492,6 +516,7 @@ contract Projects is AragonApp {
             _repoId,
             _issueNumber,
             true,
+            false,
             _bountySize,
             999,
             address(0),
