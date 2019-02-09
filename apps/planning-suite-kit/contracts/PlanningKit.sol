@@ -80,8 +80,8 @@ contract PlanningKit is KitBase {
 
         (addressBook, projects, rangeVoting, allocations, tokenManager, vault, finance, token) = createApps(dao);
         
-        token.generateTokens(address(vault), 100); // give root 100 autark tokens
-        token.generateTokens(address(root), 100); // give root 100 autark tokens
+        token.generateTokens(address(root), 200 ether); // give root 100 autark tokens
+        token.generateTokens(address(this), 100 ether); // give root 100 autark tokens
         token.changeController(tokenManager);
 
         // Initialize apps
@@ -90,7 +90,10 @@ contract PlanningKit is KitBase {
         projects.initialize(registry, vault);
         rangeVoting.initialize(token, 50 * PCT, 0, 1 minutes);
         allocations.initialize(addressBook);
-        tokenManager.initialize(token, true, 0);        
+        tokenManager.initialize(token, true, 0);
+        finance.initialize(vault, 1 days);
+        token.approve(finance, 100 ether);
+        finance.deposit(token, 100 ether, "Initial token transfer");
 
         handlePermissions(
             dao,
@@ -153,7 +156,7 @@ contract PlanningKit is KitBase {
         // // Survey survey = Survey(dao.newAppInstance(apps[6], latestVersionAppBase(apps[6])));
 
         // MiniMe Token
-        token = tokenFactory.createCloneToken(MiniMeToken(0), 0, "Autark Token", 0, "autark", true);
+        token = tokenFactory.createCloneToken(MiniMeToken(0), 0, "Autark Token", 18, "autark", true);
     }
 
     function handlePermissions(
