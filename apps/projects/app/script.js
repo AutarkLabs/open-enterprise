@@ -5,6 +5,8 @@ import { empty } from 'rxjs/observable/empty'
 
 import { GraphQLClient } from 'graphql-request'
 import { STATUS } from './utils/github'
+import VaultJSON from '../build/contracts/Vault.json'
+
 
 const toAscii = hex => {
   // Find termination
@@ -44,7 +46,7 @@ const repoData = id => `{
 }`
 
 const app = new Aragon()
-let appState
+let appState, vault
 
 /**
  * Observe the github object.
@@ -89,6 +91,13 @@ app.events().subscribe(handleEvents)
 app.state().subscribe(state => {
   state && console.log('[Projects script] state subscription:\n', state)
   appState = state ? state : { repos: [], bountySettings: {} }
+  if (!vault) {
+    // this should be refactored to be a "setting"
+    app.call('vault').subscribe(response => {
+      vault = app.external(response, VaultJSON.abi)
+      vault.events().subscribe(handleEvents)
+    })
+  }
 })
 
 /***********************
