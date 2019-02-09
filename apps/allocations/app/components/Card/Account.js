@@ -65,37 +65,43 @@ const Account = ({
         </ContextMenu>
       </MenuContainer>
       <IconContainer />
-      <CardTitle>{description}</CardTitle>
-      <CardAddress>
-        <SafeLink
-          href={`https://rinkeby.etherscan.io/address/${proxy}`}
-          target="_blank"
-          title={proxy}
-        >
-          {truncatedProxy}
-        </SafeLink>
-      </CardAddress>
+      <TitleContainer>
+        <CardTitle>
+          {description}
+        </CardTitle>
+        <CardAddress>
+          <SafeLink
+            href={`https://rinkeby.etherscan.io/address/${proxy}`}
+            target="_blank"
+            title={proxy}
+          >
+            {truncatedProxy}
+          </SafeLink>
+        </CardAddress>
+      </TitleContainer>
       <StatsContainer>
-        <Text smallcaps color={theme.textSecondary}>
-          Balance
-        </Text>
-        <StatsValue>
-          {' ' + BigNumber(balance)
-            .div(BigNumber(10e17))
-            .dp(3)
-            .toString()} {translatedToken}
-        </StatsValue>
-      </StatsContainer>
-      <StatsContainer>
-        <Text smallcaps color={theme.textSecondary}>
-          Limit
-        </Text>
-        <StatsValue>
-          {' ' + BigNumber(limit)
-            .div(BigNumber(10e17))
-            .dp(3)
-            .toString()} {translatedToken}/ Allocation
-        </StatsValue>
+        <StyledStats>
+          <Text smallcaps color={theme.textSecondary}>
+            Balance
+          </Text>
+          <StatsValue>
+            {' ' + BigNumber(balance)
+              .div(BigNumber(10e17))
+              .dp(3)
+              .toString()} {translatedToken}
+          </StatsValue>
+        </StyledStats>
+        <StyledStats>
+          <Text smallcaps color={theme.textSecondary}>
+            Limit
+          </Text>
+          <StatsValue>
+            {' ' + BigNumber(limit)
+              .div(BigNumber(10e17))
+              .dp(3)
+              .toString()} {translatedToken}/ Allocation
+          </StatsValue>
+        </StyledStats>
       </StatsContainer>
     </StyledCard>
   )
@@ -112,15 +118,21 @@ Account.propTypes = {
   onManageParameters: PropTypes.func.isRequired,
 }
 
+const TitleContainer = styled.div`
+  flex-grow: 1;
+`
+
 const StyledCard = styled(Card)`
   height: 300px;
   width: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 12px;
 `
 
 const MenuContainer = styled.div`
-  float: right;
-  margin-top: 1rem;
-  margin-right: 1rem;
+  align-self: flex-end;
   align-items: center;
 `
 
@@ -134,13 +146,20 @@ const CardTitle = styled(Text.Block).attrs({
   text-align: center;
   font-weight: bold;
   color: ${theme.textPrimary};
+  display: block;
+  display: -webkit-box;
+  max-height: 3.0em;
+  line-height: 1.5em;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `
 
 const CardAddress = styled(Text.Block).attrs({
   size: 'small',
 })`
   text-align: center;
-  width: 300px;
   color: ${theme.accent};
 `
 
@@ -149,15 +168,18 @@ const IconContainer = styled.img.attrs({
   src: icon,
 })`
   alt: ${({ description }) => description} 'icon';
-  margin-top: 4rem;
-  margin-left: 120px;
+  margin-top: 1em;
+  align-content: center;
 `
 
 const StatsContainer = styled.div`
-  width: 50%;
+  display: flex;
+  justify-content: space-between;
+  align-content: stretch;
+`
+
+const StyledStats = styled.div`
   display: inline-block;
-  margin-top: 3rem;
-  padding-left: 1rem;
 `
 
 const StatsValue = styled.p`
