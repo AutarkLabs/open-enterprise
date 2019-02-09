@@ -473,7 +473,9 @@ contract Projects is AragonApp {
         require(!issue.fulfilled,"Bounty Already Fulfilled");
 
         if (_approved) {
-            bounties.acceptFulfillment(issue.standardBountyId, issue.workSubmissions[_contributor].fulfillmentId);
+            if (issue.hasBounty) {
+                bounties.acceptFulfillment(issue.standardBountyId, issue.workSubmissions[_contributor].fulfillmentId);
+            }
             issue.fulfilled = true;
             issue.workSubmissions[_contributor].status = SubmissionStatus.Accepted;
         } else {
