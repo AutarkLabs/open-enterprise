@@ -294,6 +294,7 @@ contract Projects is AragonApp {
 
     /**
      * @notice accept a given fulfillment
+     * @dev may be used if a contributor submits a fulfillment outside of the projects app.
      * @param _repoId The id of the Github repo in the projects registry
      * @param _issueNumber the index of the bounty
      * @param _bountyFulfillmentId the index of the fulfillment being accepted
@@ -307,6 +308,100 @@ contract Projects is AragonApp {
         GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
         bounties.acceptFulfillment(issue.standardBountyId, _bountyFulfillmentId);
         emit FulfillmentAccepted(_repoId, _issueNumber, _bountyFulfillmentId);
+    }
+
+    /**
+     * @notice apply to be assigned to this issue by submitting timeline and workplan
+     * @param _repoId the github repo id of the issue
+     * @param _issueNumber the github issue up for assignment
+     * @param _application IPFS hash for the applicant's proposed timeline and strategy
+     */
+    function requestAssignment(
+        bytes32 _repoId, 
+        uint256 _issueNumber, 
+        string _application
+    ) external isInitialized 
+    {
+        require(bytes(repos[_repoId].issues[_issueNumber].assignmentRequests[msg.sender]).length == 0, "User already applied for this issue");
+
+        repos[_repoId].issues[_issueNumber].applicants.push(msg.sender);
+        repos[_repoId].issues[_issueNumber].assignmentRequests[msg.sender] = _application;
+
+        emit AssignmentRequested(msg.sender, _repoId, _issueNumber);
+    }
+
+    /**
+     * @notice approve a request for assignment to a single requestor
+     * @param _repoId the github repo id of the issue
+     * @param _issueNumber the github issue up for assignment
+     * @param _requestor address of user that will be assigned the issue
+     */
+    function approveAssignment(
+        bytes32 _repoId, 
+        uint256 _issueNumber, 
+        address _requestor
+    ) external isInitialized auth(TASK_MGR_ROLE)
+    {
+        require(bytes(repos[_repoId].issues[_issueNumber].assignmentRequests[_requestor]).length != 0, "User has not applied for this issue");
+        repos[_repoId].issues[_issueNumber].assignee = _requestor;
+
+        emit AssignmentApproved(_requestor, _repoId, _issueNumber);
+    }
+
+    /**
+     * @notice Submit work for issue '`_issueNumber`'.
+     * @dev add a submission to local state after it's been added to StandardBounties.sol
+     * @param _repoId the github repo id of the issue
+     * @param _issueNumber the github issue up for assignment
+     * @param _submissionAddress IPFS hash of the Pull Request
+     * @param _fulfillmentId retrieved from event after the work is submitted to the bounties contract externally 
+     */
+    function submitWork(
+        bytes32 _repoId, 
+        uint256 _issueNumber, 
+        string _submissionAddress,
+        uint256 _fulfillmentId
+    ) external isInitialized
+    {
+        require(msg.sender == repos[_repoId].issues[_issueNumber].assignee, "User not assigned to this issue");
+
+        repos[_repoId].issues[_issueNumber].workSubmittors.push(msg.sender);
+        repos[_repoId].issues[_issueNumber].workSubmissions[msg.sender] = WorkSubmission(
+            SubmissionStatus.Unreviewed,
+            _submissionAddress,
+            _fulfillmentId
+        );
+
+        emit WorkSubmitted(msg.sender, _repoId, _issueNumber);
+    }
+
+    /**
+     * @notice Review work submitted by '`_contributor`'.
+     * @dev add a submission to local state after it's been added to StandardBounties.sol
+     * @param _repoId the github repo id of the issue
+     * @param _issueNumber the github issue up for resolution
+     * @param _contributor address of the asignee who submitted work for review
+     * @param _approved decision to accept the contribution 
+     */
+    function reviewSubmission(
+        bytes32 _repoId, 
+        uint256 _issueNumber, 
+        address _contributor,
+        bool _approved
+    ) external isInitialized auth(TASK_MGR_ROLE)
+    {
+        GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
+        require(!issue.fulfilled,"Bounty already fulfilled");
+
+        if (_approved) {
+            if (issue.hasBounty) {
+                bounties.acceptFulfillment(issue.standardBountyId, issue.workSubmissions[_contributor].fulfillmentId);
+            }
+            issue.fulfilled = true;
+            issue.workSubmissions[_contributor].status = SubmissionStatus.Accepted;
+        } else {
+            issue.workSubmissions[_contributor].status = SubmissionStatus.Rejected;
+        }
     }
 
     /**
@@ -327,7 +422,7 @@ contract Projects is AragonApp {
         bool[] _tokenBounties,
         address[] _tokenContracts,
         string _ipfsAddresses
-    ) public payable auth(ADD_BOUNTY_ROLE)
+    ) public isInitialized payable auth(ADD_BOUNTY_ROLE)
     {
         // ensure the transvalue passed equals transaction value
         checkTransValueEqualsMessageValue(msg.value, _bountySizes,_tokenBounties);
@@ -357,59 +452,6 @@ contract Projects is AragonApp {
                 _bountySizes[i]
             );
         }
-    }
-
-    /**
-     * @notice applies for this issue by submitting timeline and workplan
-     * @param _repoId the github repo id of the issue
-     * @param _issueNumber the github issue up for assignment
-     * @param _application IPFS hash for the applicant's proposed timeline and strategy
-     */
-    function requestAssignment(bytes32 _repoId, uint256 _issueNumber, string _application) public {
-        require(bytes(repos[_repoId].issues[_issueNumber].assignmentRequests[msg.sender]).length == 0, "User already applied for this issue");
-
-        repos[_repoId].issues[_issueNumber].applicants.push(msg.sender);
-        repos[_repoId].issues[_issueNumber].assignmentRequests[msg.sender] = _application;
-
-        emit AssignmentRequested(msg.sender, _repoId, _issueNumber);
-    }
-
-        /**
-     * @notice approves request for assignment to a single requestor
-     * @param _repoId the github repo id of the issue
-     * @param _issueNumber the github issue up for assignment
-     * @param _requestor address of user that will be assigned the issue
-     */
-    function approveAssignment(
-        bytes32 _repoId, 
-        uint256 _issueNumber, 
-        address _requestor
-    ) public auth(TASK_MGR_ROLE)
-    {
-        require(bytes(repos[_repoId].issues[_issueNumber].assignmentRequests[_requestor]).length != 0, "User has not applied for this issue");
-
-        repos[_repoId].issues[_issueNumber].assignee = _requestor;
-
-        emit AssignmentApproved(_requestor, _repoId, _issueNumber);
-    }
-
-    function submitWork(
-        bytes32 _repoId, 
-        uint256 _issueNumber, 
-        string _submissionAddress,
-        uint256 _fulfillmentId
-    ) public 
-    {
-        require(msg.sender == repos[_repoId].issues[_issueNumber].assignee, "User not assigned to this issue");
-
-        repos[_repoId].issues[_issueNumber].workSubmittors.push(msg.sender);
-        repos[_repoId].issues[_issueNumber].workSubmissions[msg.sender] = WorkSubmission(
-            SubmissionStatus.Unreviewed,
-            _submissionAddress,
-            _fulfillmentId
-        );
-
-        emit WorkSubmitted(msg.sender, _repoId, _issueNumber);
     }
 
 ///////////////////////
@@ -443,7 +485,7 @@ contract Projects is AragonApp {
         application = repos[_repoId].issues[_issueNumber].assignmentRequests[_applicant];
     }
 
-        /**
+    /**
      * @notice Returns contributor's work submission
      * @param _repoId the github repo id of the issue
      * @param _issueNumber the github issue being worked on
@@ -460,27 +502,6 @@ contract Projects is AragonApp {
         submissionHash = submission.submissionHash;
         fulfillmentId = submission.fulfillmentId;
         status = submission.status;
-    }
-
-    function reviewSubmission(
-        bytes32 _repoId, 
-        uint256 _issueNumber, 
-        address _contributor,
-        bool _approved
-    ) public auth(TASK_MGR_ROLE)
-    {
-        GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
-        require(!issue.fulfilled,"Bounty Already Fulfilled");
-
-        if (_approved) {
-            if (issue.hasBounty) {
-                bounties.acceptFulfillment(issue.standardBountyId, issue.workSubmissions[_contributor].fulfillmentId);
-            }
-            issue.fulfilled = true;
-            issue.workSubmissions[_contributor].status = SubmissionStatus.Accepted;
-        } else {
-            issue.workSubmissions[_contributor].status = SubmissionStatus.Rejected;
-        }
     }
 
 ///////////////////////
