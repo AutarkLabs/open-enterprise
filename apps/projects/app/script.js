@@ -6,7 +6,7 @@ import { empty } from 'rxjs/observable/empty'
 import { GraphQLClient } from 'graphql-request'
 import { STATUS } from './utils/github'
 import VaultJSON from '../build/contracts/Vault.json'
-
+import tokenSymbolAbi from './abi/token-symbol.json'
 
 const toAscii = hex => {
   // Find termination
@@ -90,7 +90,7 @@ app.events().subscribe(handleEvents)
 
 app.state().subscribe(state => {
   state && console.log('[Projects script] state subscription:\n', state)
-  appState = state ? state : { repos: [], bountySettings: {} }
+  appState = state ? state : { repos: [], bountySettings: {}, tokens: [] }
   if (!vault) {
     // this should be refactored to be a "setting"
     app.call('vault').subscribe(response => {
@@ -132,6 +132,9 @@ async function handleEvents(response) {
     console.log('[Projects] BountySettingsChanged')
     nextState = await syncSettings(appState) // No returnValues on this
     break
+  case 'VaultDeposit':
+    console.log('[Projects] VaultDeposit')
+    nextState = await syncTokens(appState, response.returnValues)   
   default:
     console.log('[Projects] Unknown event catched:', response)
   }
@@ -162,11 +165,40 @@ async function syncSettings(state) {
   }
 }
 
+async function syncTokens(state, {token}) {
+  try {
+    let tokens = state.tokens
+    const tokenIndex = tokens.findIndex(token => token.addr === token)
+    if(tokenIndex == -1) {
+      let newToken = await loadToken(token)
+      tokens.push(newToken)
+    }
+    return state
+  } catch (err) {
+    console.error('[Projects script] syncSettings settings failed:', err)
+  }
+}
+
 /***********************
  *                     *
  *       Helpers       *
  *                     *
  ***********************/
+
+
+function loadToken(token) {
+  let tokenContract = app.external(token, tokenSymbolAbi)
+  return new Promise(resolve => {
+    tokenContract.symbol().subscribe(symbol => {
+      // return gracefully when entry not found
+      symbol &&
+        resolve({
+          addr: token,
+          symbol: symbol
+        })
+    })
+  })
+}
 
 function loadRepoData(id) {
   return new Promise(resolve => {
