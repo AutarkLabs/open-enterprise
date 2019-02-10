@@ -38,8 +38,8 @@ const AppContent = props => {
     },
   ]
 
-  var appTitleButton = contentData[props.activeIndex].tabButton
-    ? contentData[props.activeIndex].tabButton
+  var appTitleButton = contentData[props.activeIndex.tabIndex].tabButton
+    ? contentData[props.activeIndex.tabIndex].tabButton
     : null
 
   return (
@@ -75,8 +75,7 @@ AppContent.propTypes = {
   bountySettings: PropTypes.object.isRequired,
   onNewProject: PropTypes.func.isRequired,
   onNewIssue: PropTypes.func.isRequired,
-  onSelect: PropTypes.func.isRequired,
-  activeIndex: PropTypes.number.isRequired,
+  activeIndex: PropTypes.object.isRequired,
   changeActiveIndex: PropTypes.func.isRequired,
 }
 
