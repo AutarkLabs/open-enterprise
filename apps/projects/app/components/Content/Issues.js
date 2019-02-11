@@ -34,6 +34,14 @@ class Issues extends React.PureComponent {
     reload: false,
   }
 
+  componentWillMount() {
+    if ('filterIssuesByRepoId' in this.props.activeIndex.tabData) {
+      let { filters } = this.state
+      filters.projects[this.props.activeIndex.tabData.filterIssuesByRepoId] = true
+      this.setState({ filters })
+    }
+  }
+
   handleCurateIssues = () => {
     this.props.onCurateIssues(this.state.selectedIssues)
   }
@@ -56,7 +64,7 @@ class Issues extends React.PureComponent {
 
   handleFiltering = filters => {
     // TODO: why is reload necessary?
-    this.setState({ filters, reload: !this.state.reload })
+    this.setState(prevState => ({ filters, reload: !prevState.reload }))
   }
 
   applyFilters = issues => {
@@ -165,6 +173,7 @@ class Issues extends React.PureComponent {
         issues={[]}
         issuesFiltered={[]}
         handleFiltering={this.handleFiltering}
+        activeIndex={this.props.activeIndex}
       />
       <IssuesScrollView>
         <div>Loading...</div>
@@ -181,6 +190,7 @@ class Issues extends React.PureComponent {
         issues={[]}
         issuesFiltered={[]}
         handleFiltering={this.handleFiltering}
+        activeIndex={this.props.activeIndex}
       />
       <IssuesScrollView>
         <div>
@@ -196,7 +206,7 @@ class Issues extends React.PureComponent {
   )
 
   render() {
-    const { projects, onNewProject } = this.props
+    const { projects, onNewProject, activeIndex } = this.props
     // better return early if we have no projects added?
     if (projects.length === 0) return <Empty action={onNewProject} />
 
@@ -234,6 +244,7 @@ class Issues extends React.PureComponent {
                   issues={issues}
                   issuesFiltered={issuesFiltered}
                   handleFiltering={this.handleFiltering}
+                  activeIndex={this.props.activeIndex}
                 />
                 <IssuesScrollView>
                   {shapeIssues(issuesFiltered).map(issue => (

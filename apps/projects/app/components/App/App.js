@@ -114,7 +114,7 @@ class App extends React.PureComponent {
 
   state = {
     repos: [],
-    activeIndex: 0,
+    activeIndex: { tabIndex: 0, tabData: {}},
   }
 
   componentDidMount() {
@@ -160,10 +160,6 @@ class App extends React.PureComponent {
 
   changeActiveIndex = activeIndex => {
     this.setState({ activeIndex })
-  }
-
-  selectProject = () => {
-    console.log('selectProject')
   }
 
   createProject = ({ owner, project }) => {
