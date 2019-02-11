@@ -32,7 +32,7 @@ const IssueDetails = styled.div`
 `
 
 // TODO: @aragon/ui Table?
-const Issue = ({ title, repo, number, labels, isSelected, onSelect, onSubmitWork }) => (
+const Issue = ({ title, repo, number, labels, isSelected, onSelect, onSubmitWork, onRequestAssignment}) => (
   <StyledIssue>
     <CheckButton checked={isSelected} onChange={onSelect} />
     <div
@@ -53,6 +53,7 @@ const Issue = ({ title, repo, number, labels, isSelected, onSelect, onSubmitWork
           {title}
         </Text>
         <Button onClick={onSubmitWork}>Submit Work</Button>
+        <Button onClick={onRequestAssignment}>Request Assignment</Button>
       </div>
       <IssueDetails>
         <Text color={theme.textSecondary}>
