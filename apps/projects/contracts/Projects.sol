@@ -141,6 +141,8 @@ contract Projects is AragonApp {
     event AssignmentApproved(address applicant, bytes32 indexed repoId, uint256 issueNumber);
     // Fired when a user submits work towards an issue
     event WorkSubmitted(address submittor, bytes32 repoId, uint256 issueNumber);
+    //Fired when a reivew is accepted
+    event SubmissionAccepted(address submittor, bytes32 repoId, uint256 issueNumber);
 
     bytes32 public constant ADD_BOUNTY_ROLE =  keccak256("ADD_BOUNTY_ROLE");
     bytes32 public constant ADD_REPO_ROLE = keccak256("ADD_REPO_ROLE");
@@ -399,6 +401,7 @@ contract Projects is AragonApp {
             }
             issue.fulfilled = true;
             issue.workSubmissions[_contributor].status = SubmissionStatus.Accepted;
+            emit SubmissionAccepted(_contributor, _repoId, _issueNumber);
         } else {
             issue.workSubmissions[_contributor].status = SubmissionStatus.Rejected;
         }
