@@ -9,11 +9,10 @@ import {
   theme,
   Info,
   SafeLink,
-  IconAttention
 } from '@aragon/ui'
 
-import { Form, FormField, FieldTitle, DateInput } from '../../Form'
-import { IconCalendar, IconGitHub, CheckButton } from '../../Shared'
+import { Form, FormField, DateInput } from '../../Form'
+import { IconGitHub, CheckButton } from '../../Shared'
 
 class RequestAssignment extends React.Component {
 
