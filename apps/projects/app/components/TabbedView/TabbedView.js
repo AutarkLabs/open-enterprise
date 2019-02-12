@@ -15,7 +15,7 @@ export default class TabbedView extends PureComponent {
     const children = React.Children.map(this.props.children, child => {
       return React.cloneElement(child, {
         activeIndex: this.props.activeIndex,
-        onSelectTab: this.props.changeActiveIndex,
+        changeActiveIndex: this.props.changeActiveIndex,
       })
     })
     return <StyledTabbedView>{children}</StyledTabbedView>

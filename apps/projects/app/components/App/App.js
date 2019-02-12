@@ -114,7 +114,7 @@ class App extends React.PureComponent {
 
   state = {
     repos: [],
-    activeIndex: 0,
+    activeIndex: { tabIndex: 0, tabData: {}},
   }
 
   componentDidMount() {
@@ -160,10 +160,6 @@ class App extends React.PureComponent {
 
   changeActiveIndex = activeIndex => {
     this.setState({ activeIndex })
-  }
-
-  selectProject = () => {
-    console.log('selectProject')
   }
 
   createProject = ({ owner, project }) => {
@@ -228,6 +224,7 @@ class App extends React.PureComponent {
       panel: PANELS.SubmitWork,
       panelProps: {
         onSubmit: this.onSubmitWork,
+        githubCurrentUser: this.props.githubCurrentUser,
         issue
       },
     }))
@@ -317,7 +314,8 @@ class App extends React.PureComponent {
 
   render() {
     const { activeIndex, panel, panelProps } = this.state
-    const { client, bountySettings } = this.props
+    const { client, bountySettings, githubCurrentUser } = this.props
+
     return (
       <StyledAragonApp publicUrl={ASSETS_URL}>
         <BaseStyles />
@@ -326,7 +324,8 @@ class App extends React.PureComponent {
           <ErrorBoundary>
             <AppContent
               app={this.props.app}
-              bountySettings={this.props.bountySettings}
+              bountySettings={bountySettings}
+              githubCurrentUser={githubCurrentUser}
               projects={this.props.repos !== undefined ? this.props.repos : []}
               bountySettings={
                 bountySettings !== undefined ? bountySettings : {}
@@ -337,7 +336,6 @@ class App extends React.PureComponent {
               onCurateIssues={this.curateIssues}
               onAllocateBounties={this.newBountyAllocation}
               onSubmitWork={this.submitWork}
-              onSelect={this.selectProject}
               activeIndex={activeIndex}
               changeActiveIndex={this.changeActiveIndex}
             />
