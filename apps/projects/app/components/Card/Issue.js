@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { Text, theme, Badge } from '@aragon/ui'
+import { Text, theme, Badge, Button } from '@aragon/ui'
 
 import { CheckButton } from '../Shared'
 
@@ -32,7 +32,7 @@ const IssueDetails = styled.div`
 `
 
 // TODO: @aragon/ui Table?
-const Issue = ({ title, repo, number, labels, isSelected, onSelect }) => (
+const Issue = ({ title, repo, number, labels, isSelected, onSelect, onReviewApplication }) => (
   <StyledIssue>
     <CheckButton checked={isSelected} onChange={onSelect} />
     <div
@@ -52,6 +52,7 @@ const Issue = ({ title, repo, number, labels, isSelected, onSelect }) => (
         >
           {title}
         </Text>
+        <Button onClick={onReviewApplication}>Review Application</Button>
       </div>
       <IssueDetails>
         <Text color={theme.textSecondary}>
