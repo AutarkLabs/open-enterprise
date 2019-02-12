@@ -7,6 +7,7 @@ const {
   StandardBounties,
 } = require('@tps/test-helpers/artifacts')
 
+const Vault = artifacts.require('Vault')
 const Projects = artifacts.require('Projects')
 
 const { assertRevert } = require('@tps/test-helpers/assertThrow')
@@ -107,9 +108,10 @@ contract('Projects App', accounts => {
 
     // Deploy test Bounties contract
     registry = await StandardBounties.new(web3.toBigNumber(owner1))
+    vault = await Vault.new()
     bounties = StandardBounties.at(registry.address)
 
-    await app.initialize(registry.address)
+    await app.initialize(registry.address, vault.address)
   })
 
   context('creating and retrieving repos and bounties', () => {

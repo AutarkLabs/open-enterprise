@@ -228,8 +228,16 @@ class App extends React.PureComponent {
   }
 
   onSubmitBountyAllocation = async issues => {
+    console.log('repos:', this.props.repos)
     console.log('bounty allocation submitted', issues)
-
+    let bountySymbol = this.props.bountySettings.bountyCurrency
+    let bountyToken
+    this.props.tokens.forEach(
+      token => {
+        if(token.symbol === bountySymbol) {
+          bountyToken = token.addr
+        }
+      })
     const emptyAddrArray = [
       '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
       '0xd00cc82a132f421bA6414D196BC830Db95e2e7Dd',
@@ -262,27 +270,42 @@ class App extends React.PureComponent {
     }
     console.log('bounty allocation submitted', repos)
     for (var key in repos) {
+
+      repo = repos[key]
+      let ipfsString = ''
+      let content, results
+      await repo.forEach(async r => {
+        console.log('String Builder')        
+        console.log(r)
+        content = ipfs.types.Buffer.from(r.toString())
+        results = await ipfs.add(content)
+        console.log(results)
+        ipfsString += results[0].hash
+        console.log(ipfsString)
+      })
+      
       repo = repos[key]
       console.log(repo)
       console.log(key)
+      const tokenArray = new Array(repo.length).fill(bountyToken)
 
       console.log('Bounty data',
-        key,
+        web3.toHex('MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM='),
         repo.map( (issue) => issue.number),
         repo.map( (issue) => issue.size),
         repo.map( (issue) => issue.deadline),
         new Array(repo.length).fill(true),
-        emptyAddrArray.slice(0, repo.length),
-        ''
+        tokenArray,
+        ipfsString
       )
       this.props.app.addBounties(
-        10,
+        web3.toHex('MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM='),
         repo.map( (issue) => issue.number),
         repo.map( (issue) => issue.size),
         repo.map( (issue) => issue.deadline),
         new Array(repo.length).fill(true),
-        emptyAddrArray.slice(0, repo.length),
-        ''
+        tokenArray,
+        ipfsString
       )
     }
 

@@ -322,41 +322,39 @@ contract Projects is IsContract, AragonApp {
      * @param _ipfsAddresses a string of ipfs addresses
      */
     function addBounties(
-        uint256 _repoId,
+        bytes32 _repoId,
         uint256[] _issueNumbers,
         uint256[] _bountySizes,
         uint256[] _deadlines,
         bool[] _tokenBounties,
         address[] _tokenContracts,
         string _ipfsAddresses
-    ) public payable auth(ADD_BOUNTY_ROLE)
+    ) public payable
     {
         // ensure the transvalue passed equals transaction value
-        checkTransValueEqualsMessageValue(msg.value, _bountySizes,_tokenBounties);
-        
+        //checkTransValueEqualsMessageValue(msg.value, _bountySizes,_tokenBounties);
         string memory ipfsHash;
         uint standardBountyId;
         // submit the bounty to the StandardBounties contract
         for (uint i = 0; i < _bountySizes.length; i++) {
             ipfsHash = substring(_ipfsAddresses, i.mul(46), i.add(1).mul(46));
-            uint256 value = _bountySizes[i];
-            vault.transfer(address(_tokenContracts[i]), this, value);
-            standardBountyId = bounties.issueAndActivateBounty(
+            standardBountyId = bounties.issueBounty(
                 this,                           //    address _issuer
                 _deadlines[i],                  //    uint256 _deadlines
                 ipfsHash,                       //    parse input to get ipfs hash
                 _bountySizes[i],                //    uint256 _fulfillmentAmount
                 address(0),                     //    address _arbiter
                 _tokenBounties[i],              //    bool _paysTokens
-                address(_tokenContracts[i]),    //    address _tokenContract
-                value                 //    uint256 _value
+                address(_tokenContracts[i])     //    address _tokenContract
             );
+            // Activate the bounty so it can be fulfilled
+            bounties.activateBounty.value(_bountySizes[i])(standardBountyId, _bountySizes[i]);
 
             // Implement case for ETH
 
             //Add bounty to local registry
             _addBounty(
-                bytes32(_repoId),
+                _repoId,
                 _issueNumbers[i],
                 standardBountyId,
                 _bountySizes[i]
