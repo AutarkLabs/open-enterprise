@@ -110,7 +110,7 @@ contract Projects is AragonApp {
         uint standardBountyId;
         address assignee;
         address[] applicants;
-        address[] workSubmittors;
+        address workSubmittor;
         mapping(address => string) assignmentRequests;
         mapping(address => WorkSubmission) workSubmissions;
     }
@@ -136,7 +136,7 @@ contract Projects is AragonApp {
     // Fired when settings are changed
     event BountySettingsChanged();
     // Fired when user requests issue assignment
-    event AssignmentRequested(address applicant, bytes32 indexed repoId, uint256 issueNumber);
+    event AssignmentRequested(bytes32 indexed repoId, uint256 issueNumber);
     // Fired when Task Manager approves assignment request
     event AssignmentApproved(address applicant, bytes32 indexed repoId, uint256 issueNumber);
     // Fired when a user submits work towards an issue
@@ -149,7 +149,8 @@ contract Projects is AragonApp {
     bytes32 public constant CHANGE_SETTINGS_ROLE =  keccak256("CHANGE_SETTINGS_ROLE");
     bytes32 public constant CURATE_ISSUES_ROLE = keccak256("CURATE_ISSUES_ROLE");
     bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
-    bytes32 public constant TASK_MGR_ROLE = keccak256("TASK_MGR_ROLE");
+    bytes32 public constant TASK_ASSIGNMENT_ROLE = keccak256("TASK_ASSIGNMENT_ROLE");
+    bytes32 public constant WORK_REVIEW_ROLE = keccak256("WORK_REVIEW_ROLE");
 
     function curateIssues(
         address[] /*unused_Addresses*/, 
@@ -329,7 +330,7 @@ contract Projects is AragonApp {
         repos[_repoId].issues[_issueNumber].applicants.push(msg.sender);
         repos[_repoId].issues[_issueNumber].assignmentRequests[msg.sender] = _application;
 
-        emit AssignmentRequested(msg.sender, _repoId, _issueNumber);
+        emit AssignmentRequested(_repoId, _issueNumber);
     }
 
     /**
@@ -342,7 +343,7 @@ contract Projects is AragonApp {
         bytes32 _repoId, 
         uint256 _issueNumber, 
         address _requestor
-    ) external isInitialized auth(TASK_MGR_ROLE)
+    ) external isInitialized auth(TASK_ASSIGNMENT_ROLE)
     {
         require(bytes(repos[_repoId].issues[_issueNumber].assignmentRequests[_requestor]).length != 0, "User has not applied for this issue");
         repos[_repoId].issues[_issueNumber].assignee = _requestor;
@@ -367,7 +368,6 @@ contract Projects is AragonApp {
     {
         require(msg.sender == repos[_repoId].issues[_issueNumber].assignee, "User not assigned to this issue");
 
-        repos[_repoId].issues[_issueNumber].workSubmittors.push(msg.sender);
         repos[_repoId].issues[_issueNumber].workSubmissions[msg.sender] = WorkSubmission(
             SubmissionStatus.Unreviewed,
             _submissionAddress,
@@ -390,7 +390,7 @@ contract Projects is AragonApp {
         uint256 _issueNumber, 
         address _contributor,
         bool _approved
-    ) external isInitialized auth(TASK_MGR_ROLE)
+    ) external isInitialized auth(WORK_REVIEW_ROLE)
     {
         GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
         require(!issue.fulfilled,"Bounty already fulfilled");
@@ -473,6 +473,36 @@ contract Projects is AragonApp {
     }
 
     /**
+     * @notice Returns Applicant array length
+     * @param _repoId the github repo id of the issue
+     * @param _issueNumber the github issue up for assignmen
+     * @return  array length of the applicants array
+     */
+    function getApplicantsLength(
+        bytes32 _repoId, 
+        uint256 _issueNumber
+    ) public view returns(uint256 applicantQty) 
+    {
+        applicantQty = repos[_repoId].issues[_issueNumber].applicants.length;
+    }
+
+    /**
+     * @notice Returns Applicant Address
+     * @param _repoId the github repo id of the issue
+     * @param _issueNumber the github issue up for assignment
+     * @param _idx the applicant's position in the array
+     * @return  applicant address
+     */
+    function getApplicant(
+        bytes32 _repoId, 
+        uint256 _issueNumber, 
+        uint256 _idx
+    ) public view returns(address applicant) 
+    {
+        applicant = repos[_repoId].issues[_issueNumber].applicants[_idx];
+    }
+
+    /**
      * @notice Returns Applicant's Github Username
      * @param _repoId the github repo id of the issue
      * @param _issueNumber the github issue up for assignment
@@ -549,7 +579,7 @@ contract Projects is AragonApp {
             _standardBountyId,
             address(0),
             emptyAddressArray,
-            emptyAddressArray
+            address(0)
         );
         emit BountyAdded(
             repos[_repoId].owner,
