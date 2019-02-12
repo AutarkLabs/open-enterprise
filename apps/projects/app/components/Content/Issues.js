@@ -50,6 +50,10 @@ class Issues extends React.PureComponent {
     this.props.onAllocateBounties(this.state.selectedIssues)
   }
 
+  handleSubmitWork = issue => {
+    this.props.onSubmitWork(issue)
+  }
+
   toggleSelectAll = issuesFiltered => () => {
     if (this.state.allSelected) {
       this.setState({ allSelected: false, selectedIssues: [] })
@@ -250,6 +254,9 @@ class Issues extends React.PureComponent {
                         .includes(issue.id)}
                       onSelect={() => {
                         this.handleIssueSelection(issue)
+                      }}
+                      onSubmitWork={() => {
+                        this.handleSubmitWork(issue)
                       }}
                       key={issue.id}
                       {...issue}
