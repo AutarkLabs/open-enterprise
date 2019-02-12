@@ -54,6 +54,10 @@ class Issues extends React.PureComponent {
     this.props.onSubmitWork(issue)
   }
 
+  handleRequestAssignment = issue => {
+    this.props.onRequestAssignment(issue)
+  }
+
   toggleSelectAll = issuesFiltered => () => {
     if (this.state.allSelected) {
       this.setState({ allSelected: false, selectedIssues: [] })
@@ -257,6 +261,9 @@ class Issues extends React.PureComponent {
                       }}
                       onSubmitWork={() => {
                         this.handleSubmitWork(issue)
+                      }}
+                      onRequestAssignment={() => {
+                        this.handleRequestAssignment(issue)
                       }}
                       key={issue.id}
                       {...issue}

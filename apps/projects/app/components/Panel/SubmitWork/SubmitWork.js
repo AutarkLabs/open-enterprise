@@ -52,7 +52,7 @@ class SubmitWork extends React.Component {
         noSeparator
         submitDisabled={this.canSubmit()}
       >
-        <Text>{title}</Text>
+        <IssueTitle>{title}</IssueTitle>
         
         <SafeLink
           href={url}
@@ -142,6 +142,13 @@ const IssueLinkRow = styled.div`
   height: 31px;
   display: flex;
   align-items: center;
+  margin-bottom: 10px;
+`
+const IssueTitle = styled(Text)`
+  color: #717171;
+  font-size: 17px;
+  font-weight: 300;
+  line-height: 38px;
 `
 
 export default SubmitWork
