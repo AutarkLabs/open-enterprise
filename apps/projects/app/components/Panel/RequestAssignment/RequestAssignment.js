@@ -38,12 +38,10 @@ class RequestAssignment extends React.Component {
     console.log('RequestAssignment', this.state)
   }
 
-  canSubmit = () => !(this.state.ack1 && this.state.ack2 && this.state.workplan)
+  canSubmit = () => !(this.state.ack1 && this.state.ack2 && this.state.workplan && !isNaN(this.state.hours) && this.state.hours > 0)
 
   render() {
-    // TODO: replace with props
-    const account = 'accplaceholder'
-
+    const { login } = this.props.githubCurrentUser
     const { title, repo, number, url } = this.props.issue
 
     return (
@@ -53,7 +51,7 @@ class RequestAssignment extends React.Component {
         noSeparator
         submitDisabled={this.canSubmit()}
       >
-        <Text>{title}</Text>
+        <IssueTitle>{title}</IssueTitle>
         <SafeLink
           href={url}
           target="_blank"
@@ -122,7 +120,7 @@ class RequestAssignment extends React.Component {
         </AckRow>
 
         <Info.Alert title="Submission note" background="#FFFAEE" style={{ marginBottom: '10px' }}>
-          Your inputs will be added as a comment to the Github issue from your “{account}” account.
+          Your inputs will be added as a comment to the Github issue from your “{login}” account.
         </Info.Alert>
       </Form>
     )
@@ -152,6 +150,13 @@ const IssueLinkRow = styled.div`
   height: 31px;
   display: flex;
   align-items: center;
+  margin-bottom: 10px;
+`
+const IssueTitle = styled(Text)`
+  color: #717171;
+  font-size: 17px;
+  font-weight: 300;
+  line-height: 38px;
 `
 
 export default RequestAssignment
