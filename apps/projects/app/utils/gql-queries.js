@@ -47,4 +47,13 @@ export const NEW_ISSUE = gql`
     }
   }
 `
+export const CURRENT_USER = gql`
+  query {
+    viewer {
+      id
+      login
+      avatarUrl
+    }
+  }
+`
 

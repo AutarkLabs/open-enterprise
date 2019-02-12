@@ -37,11 +37,11 @@ class SubmitWork extends React.Component {
     console.log('Submit', this.state)
   }
 
-  canSubmit = () => !(this.state.ack1 && this.state.ack2 && this.state.proof)
+  canSubmit = () => !(this.state.ack1 && this.state.ack2 && this.state.proof && !isNaN(this.state.hours) && this.state.hours > 0)
 
   render() {
     // TODO: replace with props
-    const account = 'accplaceholder'
+    const { login } = this.props.githubCurrentUser
 
     const { title, repo, number, url } = this.props.issue
 
@@ -87,7 +87,7 @@ class SubmitWork extends React.Component {
               rows={5}
               style={{ resize: 'none', height: 'auto' }}
               onChange={this.changeField}
-              placeholder="Do you have any other comments or details you would like to provide that hasn’t already been described elsewhere?"
+              placeholder="Comments or details that haven’t already been described elsewhere."
               wide
             />
           }
@@ -109,7 +109,7 @@ class SubmitWork extends React.Component {
             <CheckButton checked={this.state.ack1} onChange={this.setAck1}/>
           </div>
           <AckText>
-            I acknowledge that that my work must be accepted for me to receive the payout.
+            I acknowledge that my work must be accepted for me to receive the payout.
           </AckText>
         </AckRow>
 
@@ -123,7 +123,7 @@ class SubmitWork extends React.Component {
         </AckRow>
 
         <Info.Alert title="Submission note" background="#FFFAEE" style={{ marginBottom: '10px' }}>
-          Your inputs will be added as a comment to the Github issue from your “{account}” account.
+          Your inputs will be added as a comment to the Github issue from your “{login}” account.
         </Info.Alert>
       </Form>
     )
