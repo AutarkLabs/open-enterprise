@@ -91,14 +91,28 @@ contract Projects is AragonApp {
         uint index;
     }
 
+    enum SubmissionStatus { Unreviewed, Accepted, Rejected }  // 0: unreviewed 1: Accepted 2: Rejected
+
+    struct WorkSubmission {
+        SubmissionStatus status;
+        string submissionHash; //IPFS hash of the Pull Request
+        uint256 fulfillmentId; // Standard Bounties Fulfillment ID
+    }
+
     struct GithubIssue {
         bytes32 repo;  // This is the internal repo identifier
         uint256 number; // May be redundant tracking this
         bool hasBounty;
+        bool fulfilled;
         uint256 bountySize;
         uint256 priority;
         address bountyWallet; // Not sure if we'll have a way to "retrieve" this value from status open bounties
         uint standardBountyId;
+        address assignee;
+        address[] applicants;
+        address workSubmittor;
+        mapping(address => string) assignmentRequests;
+        mapping(address => WorkSubmission) workSubmissions;
     }
 
     // The entries in the repos registry.
@@ -121,12 +135,22 @@ contract Projects is AragonApp {
     event FulfillmentAccepted(bytes32 repoId, uint256 issueNumber, uint fulfillmentId);
     // Fired when settings are changed
     event BountySettingsChanged();
+    // Fired when user requests issue assignment
+    event AssignmentRequested(bytes32 indexed repoId, uint256 issueNumber);
+    // Fired when Task Manager approves assignment request
+    event AssignmentApproved(address applicant, bytes32 indexed repoId, uint256 issueNumber);
+    // Fired when a user submits work towards an issue
+    event WorkSubmitted(address submittor, bytes32 repoId, uint256 issueNumber);
+    //Fired when a reivew is accepted
+    event SubmissionAccepted(address submittor, bytes32 repoId, uint256 issueNumber);
 
     bytes32 public constant ADD_BOUNTY_ROLE =  keccak256("ADD_BOUNTY_ROLE");
     bytes32 public constant ADD_REPO_ROLE = keccak256("ADD_REPO_ROLE");
     bytes32 public constant CHANGE_SETTINGS_ROLE =  keccak256("CHANGE_SETTINGS_ROLE");
     bytes32 public constant CURATE_ISSUES_ROLE = keccak256("CURATE_ISSUES_ROLE");
     bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
+    bytes32 public constant TASK_ASSIGNMENT_ROLE = keccak256("TASK_ASSIGNMENT_ROLE");
+    bytes32 public constant WORK_REVIEW_ROLE = keccak256("WORK_REVIEW_ROLE");
 
     function curateIssues(
         address[] /*unused_Addresses*/, 
@@ -177,10 +201,11 @@ contract Projects is AragonApp {
      * @param _repoId The id of the Github repo in the projects registry
      */
     function getIssue(bytes32 _repoId, uint256 _issueNumber) external view
-    returns(bool hasBounty, uint standardBountyId)
+    returns(bool hasBounty, uint standardBountyId, bool fulfilled)
     {
         GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
         hasBounty = issue.hasBounty;
+        fulfilled = issue.fulfilled;
         standardBountyId = issue.standardBountyId;
     }
 
@@ -272,6 +297,7 @@ contract Projects is AragonApp {
 
     /**
      * @notice accept a given fulfillment
+     * @dev may be used if a contributor submits a fulfillment outside of the projects app.
      * @param _repoId The id of the Github repo in the projects registry
      * @param _issueNumber the index of the bounty
      * @param _bountyFulfillmentId the index of the fulfillment being accepted
@@ -285,6 +311,100 @@ contract Projects is AragonApp {
         GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
         bounties.acceptFulfillment(issue.standardBountyId, _bountyFulfillmentId);
         emit FulfillmentAccepted(_repoId, _issueNumber, _bountyFulfillmentId);
+    }
+
+    /**
+     * @notice apply to be assigned to this issue by submitting timeline and workplan
+     * @param _repoId the github repo id of the issue
+     * @param _issueNumber the github issue up for assignment
+     * @param _application IPFS hash for the applicant's proposed timeline and strategy
+     */
+    function requestAssignment(
+        bytes32 _repoId, 
+        uint256 _issueNumber, 
+        string _application
+    ) external isInitialized 
+    {
+        require(bytes(repos[_repoId].issues[_issueNumber].assignmentRequests[msg.sender]).length == 0, "User already applied for this issue");
+
+        repos[_repoId].issues[_issueNumber].applicants.push(msg.sender);
+        repos[_repoId].issues[_issueNumber].assignmentRequests[msg.sender] = _application;
+
+        emit AssignmentRequested(_repoId, _issueNumber);
+    }
+
+    /**
+     * @notice approve a request for assignment to a single requestor
+     * @param _repoId the github repo id of the issue
+     * @param _issueNumber the github issue up for assignment
+     * @param _requestor address of user that will be assigned the issue
+     */
+    function approveAssignment(
+        bytes32 _repoId, 
+        uint256 _issueNumber, 
+        address _requestor
+    ) external isInitialized auth(TASK_ASSIGNMENT_ROLE)
+    {
+        require(bytes(repos[_repoId].issues[_issueNumber].assignmentRequests[_requestor]).length != 0, "User has not applied for this issue");
+        repos[_repoId].issues[_issueNumber].assignee = _requestor;
+
+        emit AssignmentApproved(_requestor, _repoId, _issueNumber);
+    }
+
+    /**
+     * @notice Submit work for issue '`_issueNumber`'.
+     * @dev add a submission to local state after it's been added to StandardBounties.sol
+     * @param _repoId the github repo id of the issue
+     * @param _issueNumber the github issue up for assignment
+     * @param _submissionAddress IPFS hash of the Pull Request
+     * @param _fulfillmentId retrieved from event after the work is submitted to the bounties contract externally 
+     */
+    function submitWork(
+        bytes32 _repoId, 
+        uint256 _issueNumber, 
+        string _submissionAddress,
+        uint256 _fulfillmentId
+    ) external isInitialized
+    {
+        require(msg.sender == repos[_repoId].issues[_issueNumber].assignee, "User not assigned to this issue");
+
+        repos[_repoId].issues[_issueNumber].workSubmissions[msg.sender] = WorkSubmission(
+            SubmissionStatus.Unreviewed,
+            _submissionAddress,
+            _fulfillmentId
+        );
+
+        emit WorkSubmitted(msg.sender, _repoId, _issueNumber);
+    }
+
+    /**
+     * @notice Review work submitted by '`_contributor`'.
+     * @dev add a submission to local state after it's been added to StandardBounties.sol
+     * @param _repoId the github repo id of the issue
+     * @param _issueNumber the github issue up for resolution
+     * @param _contributor address of the asignee who submitted work for review
+     * @param _approved decision to accept the contribution 
+     */
+    function reviewSubmission(
+        bytes32 _repoId, 
+        uint256 _issueNumber, 
+        address _contributor,
+        bool _approved
+    ) external isInitialized auth(WORK_REVIEW_ROLE)
+    {
+        GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
+        require(!issue.fulfilled,"Bounty already fulfilled");
+
+        if (_approved) {
+            if (issue.hasBounty) {
+                bounties.acceptFulfillment(issue.standardBountyId, issue.workSubmissions[_contributor].fulfillmentId);
+            }
+            issue.fulfilled = true;
+            issue.workSubmissions[_contributor].status = SubmissionStatus.Accepted;
+            emit SubmissionAccepted(_contributor, _repoId, _issueNumber);
+        } else {
+            issue.workSubmissions[_contributor].status = SubmissionStatus.Rejected;
+        }
     }
 
     /**
@@ -305,7 +425,7 @@ contract Projects is AragonApp {
         bool[] _tokenBounties,
         address[] _tokenContracts,
         string _ipfsAddresses
-    ) public payable auth(ADD_BOUNTY_ROLE)
+    ) public isInitialized payable auth(ADD_BOUNTY_ROLE)
     {
         // ensure the transvalue passed equals transaction value
         checkTransValueEqualsMessageValue(msg.value, _bountySizes,_tokenBounties);
@@ -352,6 +472,71 @@ contract Projects is AragonApp {
         return (repoIndex[repos[_repoId].index] == _repoId);
     }
 
+    /**
+     * @notice Returns Applicant array length
+     * @param _repoId the github repo id of the issue
+     * @param _issueNumber the github issue up for assignmen
+     * @return  array length of the applicants array
+     */
+    function getApplicantsLength(
+        bytes32 _repoId, 
+        uint256 _issueNumber
+    ) public view returns(uint256 applicantQty) 
+    {
+        applicantQty = repos[_repoId].issues[_issueNumber].applicants.length;
+    }
+
+    /**
+     * @notice Returns Applicant Address
+     * @param _repoId the github repo id of the issue
+     * @param _issueNumber the github issue up for assignment
+     * @param _idx the applicant's position in the array
+     * @return  applicant address
+     */
+    function getApplicant(
+        bytes32 _repoId, 
+        uint256 _issueNumber, 
+        uint256 _idx
+    ) public view returns(address applicant) 
+    {
+        applicant = repos[_repoId].issues[_issueNumber].applicants[_idx];
+    }
+
+    /**
+     * @notice Returns Applicant's Github Username
+     * @param _repoId the github repo id of the issue
+     * @param _issueNumber the github issue up for assignment
+     * @param _applicant the address of the applicant
+     * @return  application IPFS hash for the applicant's proposed timeline and strategy
+     */
+    function getAssignmentRequest(
+        bytes32 _repoId, 
+        uint256 _issueNumber, 
+        address _applicant
+    ) public view returns(string application) 
+    {
+        application = repos[_repoId].issues[_issueNumber].assignmentRequests[_applicant];
+    }
+
+    /**
+     * @notice Returns contributor's work submission
+     * @param _repoId the github repo id of the issue
+     * @param _issueNumber the github issue being worked on
+     * @param _contributor the address of the contributor
+     * @return  application IPFS hash for the applicant's proposed timeline and strategy
+     */
+    function getSubmission(
+        bytes32 _repoId, 
+        uint256 _issueNumber, 
+        address _contributor
+    ) public view returns(string submissionHash, uint256 fulfillmentId, SubmissionStatus status) 
+    {
+        WorkSubmission memory submission = repos[_repoId].issues[_issueNumber].workSubmissions[_contributor];
+        submissionHash = submission.submissionHash;
+        fulfillmentId = submission.fulfillmentId;
+        status = submission.status;
+    }
+
 ///////////////////////
 // Internal functions
 ///////////////////////
@@ -382,14 +567,19 @@ contract Projects is AragonApp {
         uint256 _bountySize
     ) internal
     {
+        address[] memory emptyAddressArray;
         repos[_repoId].issues[_issueNumber] = GithubIssue(
             _repoId,
             _issueNumber,
             true,
+            false,
             _bountySize,
             999,
             address(0),
-            _standardBountyId
+            _standardBountyId,
+            address(0),
+            emptyAddressArray,
+            address(0)
         );
         emit BountyAdded(
             repos[_repoId].owner,
