@@ -6,7 +6,6 @@ import { Text, theme, Badge, Button } from '@aragon/ui'
 import { CheckButton } from '../Shared'
 
 const StyledIssue = styled.div`
-  overflow-y: hidden;
   flex: 1;
   width: 100%;
   background: ${theme.contentBackground};
@@ -14,12 +13,13 @@ const StyledIssue = styled.div`
   padding-left: 10px;
   height: 112px;
   align-items: center;
-  border-radius: 3px;
   border: 1px solid ${theme.contentBorder};
+  margin-bottom: -1px;
   position: relative;
   > :first-child {
     margin-right: 21.5px;
     justify-content: center;
+    z-index: 2;
   }
   > :nth-child(2) {
     height: 100%;
@@ -27,6 +27,22 @@ const StyledIssue = styled.div`
     flex: 1 1 auto;
   }
 `
+
+const ClickArea = styled.div`
+  height: 100%;
+  left: 0;
+  position: absolute;
+  width: 100%;
+  z-index: 1;
+  :active {
+    border: 1px solid ${theme.accent};
+    z-index: 3;
+  }
+  :hover {
+    cursor: pointer;
+  }
+`
+
 const IssueDetails = styled.div`
   display: flex;
 `
@@ -43,7 +59,7 @@ const Issue = ({
   onSubmitWork,
   onRequestAssignment
 }) => (
-  <StyledIssue onClick={onClick}>
+  <StyledIssue>
     <CheckButton checked={isSelected} onChange={onSelect} />
     <div
       style={{
@@ -85,6 +101,7 @@ const Issue = ({
         </Text>
       </IssueDetails>
     </div>
+    <ClickArea onClick={onClick} />
   </StyledIssue>
 )
 
