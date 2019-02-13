@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import { formatDistance } from 'date-fns'
 
 import {
   Field,
@@ -23,7 +24,7 @@ const application = {
   },
   workplan: 'I solemnly swear to work on it day and night until it is done.',
   hours: 13,
-  eta: '9/6/2018',
+  eta: '2/13/2019',
 }
 
 class ReviewApplication extends React.Component {
@@ -46,6 +47,7 @@ class ReviewApplication extends React.Component {
 
   render() {
     const { title, repo, number, url } = this.props.issue
+    const etaAgo = formatDistance(new Date(application.eta), new Date())
 
     return (
       <div>
@@ -72,7 +74,7 @@ class ReviewApplication extends React.Component {
             >
               {application.user.name ? application.user.name : application.user.login}
             </SafeLink>
-            applied 8 days ago
+            applied {etaAgo} ago
           </UserLink>
 
           <Separator/>

@@ -23,7 +23,7 @@ class RequestAssignment extends React.Component {
   state = {
     workplan: '',
     hours: 0,
-    eta: undefined,
+    eta: new Date(),
     ack1: false,
     ack2: false
   }
