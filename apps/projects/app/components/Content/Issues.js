@@ -32,12 +32,15 @@ class Issues extends React.PureComponent {
     },
     textFilter: '',
     reload: false,
+    showIssueDetail: false,
   }
 
   componentWillMount() {
     if ('filterIssuesByRepoId' in this.props.activeIndex.tabData) {
       let { filters } = this.state
-      filters.projects[this.props.activeIndex.tabData.filterIssuesByRepoId] = true
+      filters.projects[
+        this.props.activeIndex.tabData.filterIssuesByRepoId
+      ] = true
       this.setState({ filters })
     }
   }
@@ -139,12 +142,17 @@ class Issues extends React.PureComponent {
     this.setState({ textFilter: e.target.value, reload: !this.state.reload })
   }
 
+  handleIssueClick = issue => {
+    this.setState({ showIssueDetail: true, currentIssue: issue })
+  }
+
+  closeIssueDetail = () => {
+    this.setState({ showIssueDetail: false, currentIssue: null })
+  }
+
   actionsMenu = () => (
     <div>
-      <TextInput 
-        placeholder="Search Issues"
-        onChange={this.handleTextFilter}
-      />
+      <TextInput placeholder="Search Issues" onChange={this.handleTextFilter} />
       <ActionsMenu enabled={!!this.state.selectedIssues.length}>
         <ContextMenuItem
           onClick={this.handleCurateIssues}
@@ -256,6 +264,9 @@ class Issues extends React.PureComponent {
                       isSelected={this.state.selectedIssues
                         .map(selectedIssue => selectedIssue.id)
                         .includes(issue.id)}
+                      onClick={() => {
+                        this.handleIssueClick(issue)
+                      }}
                       onSelect={() => {
                         this.handleIssueSelection(issue)
                       }}

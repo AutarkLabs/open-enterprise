@@ -32,8 +32,18 @@ const IssueDetails = styled.div`
 `
 
 // TODO: @aragon/ui Table?
-const Issue = ({ title, repo, number, labels, isSelected, onSelect, onSubmitWork, onRequestAssignment}) => (
-  <StyledIssue>
+const Issue = ({
+  title,
+  repo,
+  number,
+  labels,
+  isSelected,
+  onClick,
+  onSelect,
+  onSubmitWork,
+  onRequestAssignment
+}) => (
+  <StyledIssue onClick={onClick}>
     <CheckButton checked={isSelected} onChange={onSelect} />
     <div
       style={{
@@ -60,16 +70,18 @@ const Issue = ({ title, repo, number, labels, isSelected, onSelect, onSubmitWork
           {repo} #{number}
         </Text>
         <Text size="small" color={theme.textTertiary}>
-          { labels.totalCount ? (
-            labels.edges.map(label =>
+          {labels.totalCount
+            ? labels.edges.map(label => (
               <Badge
                 key={label.node.id}
-                style={{ marginLeft: '5px'}}
-                background={'#'+label.node.color}
-                foreground={'#000'}>{label.node.name}
+                style={{ marginLeft: '5px' }}
+                background={'#' + label.node.color}
+                foreground={'#000'}
+              >
+                {label.node.name}
               </Badge>
-            )) : ''
-          }        
+            ))
+            : ''}
         </Text>
       </IssueDetails>
     </div>
@@ -81,6 +93,7 @@ Issue.propTypes = {
   repo: PropTypes.string.isRequired,
   number: PropTypes.number.isRequired,
   isSelected: PropTypes.bool,
+  onClick: PropTypes.func.isRequired,
   onSelect: PropTypes.func,
 }
 
