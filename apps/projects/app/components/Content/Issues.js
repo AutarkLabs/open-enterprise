@@ -54,6 +54,13 @@ class Issues extends React.PureComponent {
     this.props.onReviewApplication(issue)
   }
 
+  handleSubmitWork = issue => {
+    this.props.onSubmitWork(issue)
+  }
+
+  handleRequestAssignment = issue => {
+    this.props.onRequestAssignment(issue)
+  }
 
   toggleSelectAll = issuesFiltered => () => {
     if (this.state.allSelected) {
@@ -258,6 +265,12 @@ class Issues extends React.PureComponent {
                       }}
                       onReviewApplication={() => {
                         this.handleReviewApplication(issue)
+                      }}
+                      onSubmitWork={() => {
+                        this.handleSubmitWork(issue)
+                      }}
+                      onRequestAssignment={() => {
+                        this.handleRequestAssignment(issue)
                       }}
                       key={issue.id}
                       {...issue}

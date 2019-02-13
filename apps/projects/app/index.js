@@ -5,6 +5,8 @@ import ApolloClient from 'apollo-boost'
 
 import App from './components/App/App'
 
+import { CURRENT_USER } from './utils/gql-queries'
+
 // import { projectsMockData } from './utils/mockData'
 
 // if (process.env.NODE_ENV !== 'production') {
@@ -67,6 +69,17 @@ class ConnectedApp extends React.Component {
           this.setState({
             github: github,
           })
+
+          if (this.state.github.token) {
+            this.state.client.query({
+              query: CURRENT_USER
+            }).then(({data}) => {
+              this.setState({
+                githubCurrentUser: data.viewer
+              })
+              console.log('viewer: ', data)
+            })
+          }
         })
     }
   }

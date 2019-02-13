@@ -8,4 +8,4 @@ export { default as IconArrowDown } from './components/ArrowDown'
 export { default as IconBigArrowDown } from './components/BigArrowDown'
 export { default as IconBigArrowUp } from './components/BigArrowUp'
 export { default as IconGitHub } from './components/GitHub'
-
+export { default as IconCalendar } from './components/IconCalendar'

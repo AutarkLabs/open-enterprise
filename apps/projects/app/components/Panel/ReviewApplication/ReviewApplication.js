@@ -6,16 +6,15 @@ import {
   Field,
   Text,
   TextInput,
-  theme,
   Button,
   Info,
   SafeLink,
-  SidePanelSeparator
 } from '@aragon/ui'
 
-import { Form, FormField, FieldTitle } from '../../Form'
+import { FormField, FieldTitle } from '../../Form'
 import { IconGitHub, CheckButton } from '../../Shared'
 
+// external data, all of it
 const application = {
   user: {
     login: 'jsnow',
@@ -28,7 +27,6 @@ const application = {
 }
 
 class ReviewApplication extends React.Component {
-
   static propTypes = {
     issue: PropTypes.object.isRequired
   }
@@ -47,8 +45,6 @@ class ReviewApplication extends React.Component {
   }
 
   render() {
-    //const { login } = this.props.githubCurrentUser
-
     const { title, repo, number, url } = this.props.issue
 
     return (
@@ -89,7 +85,7 @@ class ReviewApplication extends React.Component {
 
           <FieldTitle>Estimated Completion</FieldTitle>
           <DetailText>{application.eta}</DetailText>
-      
+
         </ApplicationDetails>
 
         <FormField
@@ -137,7 +133,7 @@ const ApplicationDetails = styled.div`
 `
 const IssueTitle = styled(Text)`
   color: #717171;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 300;
   line-height: 38px;
 `
@@ -155,6 +151,7 @@ const IssueLinkRow = styled.div`
   height: 31px;
   display: flex;
   align-items: center;
+  margin-bottom: 10px;
 `
 
 export default ReviewApplication
