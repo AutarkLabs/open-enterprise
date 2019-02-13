@@ -18,13 +18,15 @@ import { IconGitHub, CheckButton } from '../../Shared'
 // external data, all of it
 const application = {
   user: {
-    login: 'jsnow',
-    name: 'Jon Snow',
-    avatar: 'https://avatars0.githubusercontent.com/u/34452131?v=4'
+    login: 'rkzel',
+    name: 'RKZ',
+    avatar: 'https://avatars0.githubusercontent.com/u/34452131?v=4',
+    url: "https://github.com/rkzel"
   },
   workplan: 'I solemnly swear to work on it day and night until it is done.',
   hours: 13,
   eta: '2/13/2019',
+  applicationDate: '2/9/2019'
 }
 
 class ReviewApplication extends React.Component {
@@ -46,35 +48,36 @@ class ReviewApplication extends React.Component {
   }
 
   render() {
-    const { title, repo, number, url } = this.props.issue
-    const etaAgo = formatDistance(new Date(application.eta), new Date())
+    const { issue } = this.props
+    const applicant = application.user
+    const applicationDateDistance = formatDistance(new Date(application.applicationDate), new Date())
 
     return (
       <div>
-        <IssueTitle>{title}</IssueTitle>
+        <IssueTitle>{issue.title}</IssueTitle>
         
         <SafeLink
-          href={url}
+          href={issue.url}
           target="_blank"
           style={{ textDecoration: 'none', color: '#21AAE7' }}
         >
           <IssueLinkRow>
             <IconGitHub color="#21AAE7" width='14px' height='14px' />
-            <Text style={{ marginLeft: '6px'}}>{repo} #{number}</Text>
+            <Text style={{ marginLeft: '6px'}}>{issue.repo} #{issue.number}</Text>
           </IssueLinkRow>
         </SafeLink>
 
         <ApplicationDetails>
           <UserLink>
-            <img src={application.user.avatar} style={{ width: '32px', height: '32px', marginRight: '10px'}} />
+            <img src={applicant.avatar} style={{ width: '32px', height: '32px', marginRight: '10px'}} />
             <SafeLink
-              href={url}
+              href={applicant.url}
               target="_blank"
               style={{ textDecoration: 'none', color: '#21AAE7', marginRight: '6px' }}
             >
-              {application.user.name ? application.user.name : application.user.login}
+              {applicant.name ? applicant.name : applicant.login}
             </SafeLink>
-            applied {etaAgo} ago
+            applied {applicationDateDistance} ago
           </UserLink>
 
           <Separator/>
