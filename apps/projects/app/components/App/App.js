@@ -219,6 +219,28 @@ class App extends React.PureComponent {
     }))
   }
 
+  submitWork = issue => {
+    this.setState((_prevState, _prevProps) => ({
+      panel: PANELS.SubmitWork,
+      panelProps: {
+        onSubmit: this.onSubmitWork,
+        githubCurrentUser: this.props.githubCurrentUser,
+        issue
+      },
+    }))
+  }
+
+  requestAssignment = issue => {
+    this.setState((_prevState, _prevProps) => ({
+      panel: PANELS.RequestAssignment,
+      panelProps: {
+        onSubmit: this.onRequestAssignment,
+        githubCurrentUser: this.props.githubCurrentUser,
+        issue
+      },
+    }))
+  }
+
   onSubmitBountyAllocation = bounties => {
     console.log('bounty allocation submitted', bounties)
     // TODO: The contract addBounties function first param is just a single repoId, so in the case a bounty allocation comprises issues from multiple repos it should launch a tx for each repo
@@ -303,7 +325,8 @@ class App extends React.PureComponent {
 
   render() {
     const { activeIndex, panel, panelProps } = this.state
-    const { client, bountySettings } = this.props
+    const { client, bountySettings, githubCurrentUser } = this.props
+
     return (
       <StyledAragonApp publicUrl={ASSETS_URL}>
         <BaseStyles />
@@ -312,7 +335,8 @@ class App extends React.PureComponent {
           <ErrorBoundary>
             <AppContent
               app={this.props.app}
-              bountySettings={this.props.bountySettings}
+              bountySettings={bountySettings}
+              githubCurrentUser={githubCurrentUser}
               projects={this.props.repos !== undefined ? this.props.repos : []}
               bountySettings={
                 bountySettings !== undefined ? bountySettings : {}
@@ -322,6 +346,8 @@ class App extends React.PureComponent {
               onNewIssue={this.newIssue}
               onCurateIssues={this.curateIssues}
               onAllocateBounties={this.newBountyAllocation}
+              onSubmitWork={this.submitWork}
+              onRequestAssignment={this.requestAssignment}
               activeIndex={activeIndex}
               changeActiveIndex={this.changeActiveIndex}
             />
