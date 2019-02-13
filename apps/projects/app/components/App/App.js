@@ -180,7 +180,7 @@ class App extends React.PureComponent {
       (repos &&
         repos.map(repo => ({
           name: repo.metadata.name,
-          id: repo.data.repo,
+          id: repo.data._repo,
         }))) ||
       'No repos'
     const reposIds = (repos && repos.map(repo => repo.data.repo)) || []
