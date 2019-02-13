@@ -54,9 +54,11 @@ contract PlanningKit is KitBase {
 
     uint256 constant PCT = 10 ** 16;
     address constant ANY_ENTITY = address(-1);
+    StandardBounties registry;
 
     constructor(ENS ens) public KitBase(DAOFactory(0), ens) {
         tokenFactory = new MiniMeTokenFactory();
+        registry = new StandardBounties(msg.sender);
     }
 
     function newInstance() public {
@@ -68,7 +70,6 @@ contract PlanningKit is KitBase {
 
         address root = msg.sender;
 
-        StandardBounties registry = StandardBounties(root);
         AddressBook addressBook;
         Projects projects;
         RangeVotingApp rangeVoting;
