@@ -269,6 +269,7 @@ class Issues extends React.PureComponent {
                   activeIndex={this.props.activeIndex}
                 />
                 <IssuesScrollView>
+                  <ScrollWrapper>
                   {shapeIssues(issuesFiltered).map(issue => (
                     <Issue
                       isSelected={this.state.selectedIssues
@@ -290,6 +291,7 @@ class Issues extends React.PureComponent {
                       {...issue}
                     />
                   ))}
+                  </ScrollWrapper>
                 </IssuesScrollView>
               </StyledIssues>
             )
@@ -305,37 +307,33 @@ class Issues extends React.PureComponent {
 }
 
 const StyledIssues = styled.div`
-  display: flex;
-  flex-direction: column;
   padding: 15px 30px;
   > :first-child {
     display: flex;
     justify-content: space-between;
   }
+`
 
-  /* height: 100%;
-  padding: 15px 30px;
+const ScrollWrapper = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  > :nth-child(3) {
+  justify-content: stretch;
+  flex-grow: 1;
+  > :first-child {
     border-radius: 3px 3px 0 0;
-    margin-bottom: -1px;
-  }
-  > :nth-child(n + 4) {
-    border-radius: 0;
-    margin-bottom: -1px;
   }
   > :last-child {
     border-radius: 0 0 3px 3px;
-  } */
+    margin-bottom: 10px;
+  }
 `
 
+// TODO: Calculate height with flex (maybe to add pagination at bottom?)
 const IssuesScrollView = styled.div`
+  height: 75vh;
+  position: relative;
   overflow-y: auto;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
 `
 
 const ActionLabel = styled.span`

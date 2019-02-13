@@ -11,12 +11,14 @@ import FilterDropDown from './FilterDropDown'
 
 const StyledFilterBar = styled.div`
   width: 100%;
-  background: ${theme.contentBackground};
   display: flex;
   margin: 12px 0;
   height: 40px;
   align-items: center;
   border-radius: 3px;
+  > * {
+    background: ${theme.contentBackground};
+  }
   > :first-child {
     width: 48px;
     padding: 0;
@@ -25,9 +27,12 @@ const StyledFilterBar = styled.div`
   }
   > :nth-last-child(2) {
     flex: 1 1 auto;
+    z-index: 3;
   }
   > :last-child {
+    > * {
     border-radius: 0 3px 3px 0;
+  }
   }
 `
 
