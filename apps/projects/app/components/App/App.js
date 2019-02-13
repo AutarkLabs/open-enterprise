@@ -302,7 +302,7 @@ class App extends React.PureComponent {
         web3.toHex('MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM='),
         repo.map( (issue) => issue.number),
         repo.map( (issue) => issue.size),
-        repo.map( (issue) => issue.deadline),
+        repo.map( (issue) => {return ( Date.now() + 8600 )} ),
         new Array(repo.length).fill(true),
         tokenArray,
         ipfsString

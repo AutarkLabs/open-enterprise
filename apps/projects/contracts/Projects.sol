@@ -39,7 +39,7 @@ interface Bounties {
       bool _paysTokens,
       address _tokenContract,
       uint256 _value
-    ) public payable returns (uint);
+    ) external payable returns (uint);
 
     function issueBounty(
         address _issuer,
@@ -60,6 +60,10 @@ interface Bounties {
         uint _bountyId, 
         uint _fulfillmentId
     ) external;
+}
+
+interface TokenApproval {
+    function approve(address _spender, uint256 _value) external returns (bool success);
 }
 
 
@@ -329,7 +333,7 @@ contract Projects is IsContract, AragonApp {
         bool[] _tokenBounties,
         address[] _tokenContracts,
         string _ipfsAddresses
-    ) public payable
+    ) public payable auth(ADD_BOUNTY_ROLE)
     {
         // ensure the transvalue passed equals transaction value
         //checkTransValueEqualsMessageValue(msg.value, _bountySizes,_tokenBounties);
@@ -337,7 +341,8 @@ contract Projects is IsContract, AragonApp {
         uint standardBountyId;
         // submit the bounty to the StandardBounties contract
         for (uint i = 0; i < _bountySizes.length; i++) {
-            ipfsHash = substring(_ipfsAddresses, i.mul(46), i.add(1).mul(46));
+            ipfsHash = "";//substring(_ipfsAddresses, i.mul(46), i.add(1).mul(46));
+            
             standardBountyId = bounties.issueBounty(
                 this,                           //    address _issuer
                 _deadlines[i],                  //    uint256 _deadlines
@@ -345,11 +350,13 @@ contract Projects is IsContract, AragonApp {
                 _bountySizes[i],                //    uint256 _fulfillmentAmount
                 address(0),                     //    address _arbiter
                 _tokenBounties[i],              //    bool _paysTokens
-                address(_tokenContracts[i])     //    address _tokenContract
+                _tokenContracts[i]     //    address _tokenContract
             );
+            
+            vault.transfer(address(_tokenContracts[i]), this, _bountySizes[i]);
+            TokenApproval(_tokenContracts[i]).approve(bounties, _bountySizes[i]);
             // Activate the bounty so it can be fulfilled
-            bounties.activateBounty.value(_bountySizes[i])(standardBountyId, _bountySizes[i]);
-
+            bounties.activateBounty(standardBountyId, _bountySizes[i]);
             // Implement case for ETH
 
             //Add bounty to local registry

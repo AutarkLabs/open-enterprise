@@ -61,6 +61,7 @@ contract PlanningKit is KitBase {
         
         tokenFactory = new MiniMeTokenFactory();
         registry = new StandardBounties(root);
+
     }
 
     function newInstance() public {
