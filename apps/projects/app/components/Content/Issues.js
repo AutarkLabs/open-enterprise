@@ -14,6 +14,7 @@ import {
 } from '@aragon/ui'
 
 import { DropDownButton as ActionsMenu, FilterBar } from '../Shared'
+import IssueDetail from './IssueDetail'
 import { Issue, Empty } from '../Card'
 import { GET_ISSUES } from '../../utils/gql-queries.js'
 
@@ -146,7 +147,7 @@ class Issues extends React.PureComponent {
     this.setState({ showIssueDetail: true, currentIssue: issue })
   }
 
-  closeIssueDetail = () => {
+  handleIssueDetailClose = () => {
     this.setState({ showIssueDetail: false, currentIssue: null })
   }
 
@@ -219,8 +220,17 @@ class Issues extends React.PureComponent {
 
   render() {
     const { projects, onNewProject, activeIndex } = this.props
+    const { currentIssue, showIssueDetail } = this.state
+
     // better return early if we have no projects added?
     if (projects.length === 0) return <Empty action={onNewProject} />
+    if (showIssueDetail)
+      return (
+        <IssueDetail
+          issue={currentIssue}
+          onClose={this.handleIssueDetailClose}
+        />
+      )
 
     const { allSelected } = this.state
     const reposIds = projects.map(project => project.data._repo)
