@@ -51,12 +51,16 @@ contract KitBase is APMNamehash {
 
 contract PlanningKit is KitBase {
     MiniMeTokenFactory tokenFactory;
+    StandardBounties registry;
 
     uint256 constant PCT = 10 ** 16;
     address constant ANY_ENTITY = address(-1);
 
     constructor(ENS ens) public KitBase(DAOFactory(0), ens) {
+        address root = msg.sender;
+        
         tokenFactory = new MiniMeTokenFactory();
+        registry = new StandardBounties(root);
     }
 
     function newInstance() public {
@@ -68,7 +72,6 @@ contract PlanningKit is KitBase {
 
         address root = msg.sender;
 
-        StandardBounties registry = StandardBounties(root);
         AddressBook addressBook;
         Projects projects;
         RangeVotingApp rangeVoting;
