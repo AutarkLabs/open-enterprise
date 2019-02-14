@@ -256,6 +256,18 @@ class App extends React.PureComponent {
     // this.closePanel()
   }
 
+  onReviewApplication = props => console.log('onReviewApplication', props)
+
+  reviewApplication = issue => {
+    this.setState((_prevState, _prevProps) => ({
+      panel: PANELS.ReviewApplication,
+      panelProps: {
+        issue,
+        onSubmit: this.onReviewApplication,
+      },
+    }))
+  }
+
   curateIssues = issues => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.NewIssueCuration,
@@ -350,6 +362,8 @@ class App extends React.PureComponent {
               onRequestAssignment={this.requestAssignment}
               activeIndex={activeIndex}
               changeActiveIndex={this.changeActiveIndex}
+
+              onReviewApplication={this.reviewApplication}
             />
 
             <PanelManager
