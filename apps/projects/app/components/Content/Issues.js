@@ -1,11 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
-import { gql } from 'apollo-boost'
 import { Query } from 'react-apollo'
 import {
   Button,
-  //   Dropdown,
-  //   Text,
   TextInput,
   theme,
   ContextMenuItem,
@@ -14,7 +11,7 @@ import {
 } from '@aragon/ui'
 
 import { DropDownButton as ActionsMenu, FilterBar } from '../Shared'
-import IssueDetail from './IssueDetail'
+import { IssueDetail } from './IssueDetail'
 import { Issue, Empty } from '../Card'
 import { GET_ISSUES } from '../../utils/gql-queries.js'
 
