@@ -21,7 +21,7 @@ const application = {
     login: 'rkzel',
     name: 'RKZ',
     avatar: 'https://avatars0.githubusercontent.com/u/34452131?v=4',
-    url: "https://github.com/rkzel"
+    url: 'https://github.com/rkzel'
   },
   workplan: 'I solemnly swear to work on it day and night until it is done.',
   hours: 13,
