@@ -3,8 +3,8 @@ import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import { Button } from '@aragon/ui'
 
-const AppTitleButton = ({ caption, onClick }) => (
-  <StyledButton mode="strong" onClick={onClick}>
+const AppTitleButton = ({ caption, onClick, disabled }) => (
+  <StyledButton mode="strong" onClick={onClick} disabled={disabled}>
     {caption}
   </StyledButton>
 )

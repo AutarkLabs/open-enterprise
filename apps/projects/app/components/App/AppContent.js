@@ -25,12 +25,12 @@ const AppContent = props => {
     {
       tabName: 'Overview',
       TabComponent: Overview,
-      tabButton: { caption: 'New Project', onClick: props.onNewProject },
+      tabButton: { caption: 'New Project', onClick: props.onNewProject, disabled: () => false },
     },
     {
       tabName: 'Issues',
       TabComponent: Issues,
-      tabButton: { caption: 'New Issue', onClick: props.onNewIssue },
+      tabButton: { caption: 'New Issue', onClick: props.onNewIssue, disabled: () => props.projects.length ? false : true },
     },
     {
       tabName: 'Settings',
@@ -48,6 +48,7 @@ const AppContent = props => {
         <AppTitleButton
           caption={appTitleButton.caption}
           onClick={appTitleButton.onClick}
+          disabled={appTitleButton.disabled()}
         />
       )}
 
