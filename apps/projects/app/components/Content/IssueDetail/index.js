@@ -1,7 +1,1 @@
-import React from 'react'
-
-const IssueDetail = () => {
-  return <div>Issue Detail</div>
-}
-
-export default IssueDetail
+export { default as IssueDetail } from './IssueDetail'
