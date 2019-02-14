@@ -20,6 +20,27 @@ import { GET_ISSUES } from '../../utils/gql-queries.js'
 
 // import ethereumLoadingAnimation from '../Shared/assets/svg/ethereum-loading.svg'
 
+const stringIssue = `UPDATE:
+I have tested that this works now when sending to regular Ethereum addresses, but it does not work when I am trying to send to Allocations Accounts.
+
+Is this because of gas issues? 4 months ago it worked when sending to allocations accounts, I think we have to figure out what is causing this.
+
+
+OLD TEXT:
+script.js breaks after a completed, voted-on allocation payout is executed
+
+clearing the caches shows the new allocations screen, so that executePayout event is causing a logjam in script.js`
+
+const mockIssue = {
+  id: 'MDU6SXNzdWU0MDE1NjM3MzE=',
+  body: stringIssue,
+  title:
+    'Allocations - Execute payout doesn\'t work when the payouts are being sent to other Accounts',
+  number: 305,
+  repo: 'planning-suite',
+  state: 'OPEN',
+}
+
 class Issues extends React.PureComponent {
   state = {
     selectedIssues: [],
@@ -33,6 +54,7 @@ class Issues extends React.PureComponent {
     },
     textFilter: '',
     reload: false,
+    currentIssue: mockIssue,
     showIssueDetail: false,
   }
 
@@ -235,9 +257,11 @@ class Issues extends React.PureComponent {
     const { allSelected } = this.state
     const reposIds = projects.map(project => project.data._repo)
 
+    // Build an array of plain issues by flattening the data obtained from github API
     const flattenIssues = nodes =>
       nodes && [].concat(...nodes.map(node => node.issues.nodes))
 
+    // Map the flattened issues into just needed data fields adding the repo name
     const shapeIssues = issues =>
       issues.map(({ __typename, repository: { name }, ...fields }) => ({
         ...fields,
@@ -270,27 +294,27 @@ class Issues extends React.PureComponent {
                 />
                 <IssuesScrollView>
                   <ScrollWrapper>
-                  {shapeIssues(issuesFiltered).map(issue => (
-                    <Issue
-                      isSelected={this.state.selectedIssues
-                        .map(selectedIssue => selectedIssue.id)
-                        .includes(issue.id)}
-                      onClick={() => {
-                        this.handleIssueClick(issue)
-                      }}
-                      onSelect={() => {
-                        this.handleIssueSelection(issue)
-                      }}
-                      onSubmitWork={() => {
-                        this.handleSubmitWork(issue)
-                      }}
-                      onRequestAssignment={() => {
-                        this.handleRequestAssignment(issue)
-                      }}
-                      key={issue.id}
-                      {...issue}
-                    />
-                  ))}
+                    {shapeIssues(issuesFiltered).map(issue => (
+                      <Issue
+                        isSelected={this.state.selectedIssues
+                          .map(selectedIssue => selectedIssue.id)
+                          .includes(issue.id)}
+                        onClick={() => {
+                          this.handleIssueClick(issue)
+                        }}
+                        onSelect={() => {
+                          this.handleIssueSelection(issue)
+                        }}
+                        onSubmitWork={() => {
+                          this.handleSubmitWork(issue)
+                        }}
+                        onRequestAssignment={() => {
+                          this.handleRequestAssignment(issue)
+                        }}
+                        key={issue.id}
+                        {...issue}
+                      />
+                    ))}
                   </ScrollWrapper>
                 </IssuesScrollView>
               </StyledIssues>
