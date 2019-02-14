@@ -13,6 +13,7 @@ class DropDownButton extends React.Component {
   static propTypes = {
     children: PropTypes.node,
     enabled: PropTypes.bool,
+    mode: PropTypes.string,
   }
   state = {
     opened: false,
@@ -25,7 +26,8 @@ class DropDownButton extends React.Component {
   }
   render() {
     const { opened } = this.state
-    const { children, enabled } = this.props
+    const { children, enabled, mode } = this.props
+    const buttonMode = enabled ? mode || 'secondary' : 'strong'
     return (
       <ClickOutHandler onClickOut={this.handleClose}>
         <Spring
@@ -43,7 +45,7 @@ class DropDownButton extends React.Component {
               }}
             >
               <Button
-                mode={enabled ? 'secondary' : 'strong'}
+                mode={buttonMode}
                 onClick={this.handleBaseButtonClick}
                 opened={opened}
                 disabled={!enabled}
