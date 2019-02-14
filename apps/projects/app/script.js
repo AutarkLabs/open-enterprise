@@ -122,11 +122,12 @@ async function handleEvents(response) {
     nextState = await syncRepos(appState, response.returnValues)
   case 'BountyAdded':
     console.log('[Projects] BountyAdded', response.returnValues)
-    nextState = await syncRepos(appState, response.returnValues)
+    nextState = await syncIssues(appState, response.returnValues)
+    console.log('Bounty Added State Change', nextState)
     break
   case 'IssueCurated':
     console.log('[Projects] IssueCurated', response.returnValues)
-    nextState = await syncRepos(appState, response.returnValues)
+    nextState = await syncIssues(appState, response.returnValues)
     break
   case 'BountySettingsChanged':
     console.log('[Projects] BountySettingsChanged')
@@ -149,6 +150,20 @@ async function syncRepos(state, { repoId, ...eventArgs }) {
   })
   try {
     let updatedState = await updateState(state, repoId, transform)
+    return updatedState
+  } catch (err) {
+    console.error('updateState failed to return:', err)
+  }
+}
+
+async function syncIssues(state, { repoId, issueNumber, ...eventArgs }) {
+  console.log('syncRepos: arguments from events:', eventArgs)
+
+  const transform = ({ ...repo }) => ({
+    ...repo,
+  })
+  try {
+    let updatedState = await updateIssueState(state, repoId, issueNumber, transform)
     return updatedState
   } catch (err) {
     console.error('updateState failed to return:', err)
@@ -223,6 +238,15 @@ function loadRepoData(id) {
   })
 }
 
+function loadIssueData(repoId, issueNumber) {
+  return new Promise(resolve => {
+    app.call('getIssue', repoId, issueNumber).subscribe(({ hasBounty, standardBountyId }) => {
+      const [_repo, _issueNumber] = [toAscii(repoId), toAscii(issueNumber)]
+      resolve({ _repo, _issueNumber, index, metadata, hasBounty, standardBountyId })
+    })
+  })
+}
+
 function loadSettings() {
   return new Promise(resolve => {
     app.call('getSettings').subscribe(settings => {
@@ -259,6 +283,34 @@ async function checkReposLoaded(repos, id, transform) {
   }
 }
 
+async function checkIssuesLoaded(repos, repoId, issueNumber, transform) {
+  const issueIndex = issues.findIndex(issue => issue.id === id)
+  console.log('this is the issue index:', issueIndex)
+  console.log('checkIssuesLoaded, repoIndex:', issues, id)
+  const { metadata, ...data } = await loadIssueData(repoId, issueNumber)
+
+  if (issueIndex === -1) {
+    // If we can't find it, load its data, perform the transformation, and concat
+    console.log('issue not found in the cache: retrieving from chain')
+    return issues.concat(
+      await transform({
+        id,
+        data: { ...data },
+        metadata,
+      })
+    )
+  } else {
+    console.log('issue found: ' + issueIndex)
+    const nextIssues = Array.from(issues)
+    nextIssues[issueIndex] = await transform({
+      id,
+      data: { ...data },
+      metadata,
+    })
+    return nextIssues
+  }
+}
+
 async function updateState(state, id, transform) {
   console.log('update state: ' + state + ', id: ' + id)
   const { repos = [] } = state
@@ -272,6 +324,23 @@ async function updateState(state, id, transform) {
       err,
       'here\'s what returned in NewRepos',
       newRepos
+    )
+  }
+}
+
+async function updateIssueState(state, repoId, issueNumber, transform) {
+  console.log('update state: ' + state + ', id: ' + id)
+  const { issues = [] } = state
+  try {
+    let newIssues = await checkIssuesLoaded(issues, repoId, issueNumber, transform)
+    let newState = { ...state, issues: newIssues }
+    return newState
+  } catch (err) {
+    console.error(
+      'Update issues failed to return:',
+      err,
+      'here\'s what returned in newIssues',
+      newIssues
     )
   }
 }
