@@ -392,6 +392,7 @@ class App extends React.PureComponent {
               app={this.props.app}
               bountySettings={this.props.bountySettings}
               projects={this.props.repos !== undefined ? this.props.repos : []}
+              bountyIssues={this.props.issues !== undefined ? this.props.issues : []}
               bountySettings={
                 bountySettings !== undefined ? bountySettings : {}
               }

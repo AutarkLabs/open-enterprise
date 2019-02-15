@@ -192,9 +192,13 @@ class Issues extends React.PureComponent {
   )
 
   render() {
-    const { projects, onNewProject } = this.props
+    const { projects, bountyIssues, onNewProject } = this.props
     // better return early if we have no projects added?
     if (projects.length === 0) return <Empty action={onNewProject} />
+    let bountyIssueObj = {}
+    bountyIssues.forEach(issue => {
+      bountyIssueObj[issue.issueNumber] = issue
+    })
 
     const { allSelected } = this.state
     const reposIds = projects.map(project => project.data._repo)
@@ -203,10 +207,22 @@ class Issues extends React.PureComponent {
       nodes && [].concat(...nodes.map(node => node.issues.nodes))
 
     const shapeIssues = issues =>
-      issues.map(({ __typename, repository: { name }, ...fields }) => ({
-        ...fields,
-        repo: name,
-      }))
+      issues.map(({ __typename, repository: { name }, ...fields }) => 
+      {
+        if(bountyIssueObj[fields.number]){
+          console.log('Bounty Issue Info:', bountyIssueObj[fields.number])
+
+          return { 
+            ...fields,
+            ...bountyIssueObj[fields.number].data,
+            repo: name,
+          }          
+        }
+        return { 
+          ...fields,
+          repo: name,
+        }
+      })
 
     //console.log('current issues props:', this.props, 'and state:', this.state)
 

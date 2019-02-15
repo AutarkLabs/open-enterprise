@@ -47,7 +47,7 @@ const repoData = id => `{
 }`
 
 const app = new Aragon()
-let appState, vault
+let appState, vault, bounties, tokens
 
 /**
  * Observe the github object.
@@ -241,9 +241,9 @@ function loadRepoData(id) {
 
 function loadIssueData(repoId, issueNumber) {
   return new Promise(resolve => {
-    app.call('getIssue', repoId, issueNumber).subscribe(({ hasBounty, standardBountyId }) => {
+    app.call('getIssue', repoId, issueNumber).subscribe(({ hasBounty, standardBountyId, balance}) => {
       const [_repo, _issueNumber] = [toAscii(repoId), toAscii(issueNumber)]
-      resolve({ _repo, _issueNumber, hasBounty, standardBountyId })
+      resolve({ _repo, _issueNumber, balance, hasBounty, standardBountyId})
     })
   })
 }

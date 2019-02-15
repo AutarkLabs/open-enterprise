@@ -60,6 +60,12 @@ interface Bounties {
         uint _bountyId, 
         uint _fulfillmentId
     ) external;
+
+
+  function getBounty(uint _bountyId)
+      external
+      view
+      returns (address, uint, uint, bool, uint, uint);
 }
 
 interface TokenApproval {
@@ -205,11 +211,13 @@ contract Projects is IsContract, AragonApp {
      * @param _repoId The id of the Github repo in the projects registry
      */
     function getIssue(bytes32 _repoId, uint256 _issueNumber) external view
-    returns(bool hasBounty, uint standardBountyId)
+    returns(bool hasBounty, uint standardBountyId, uint balance)
     {
         GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
         hasBounty = issue.hasBounty;
         standardBountyId = issue.standardBountyId;
+        ( , , , , ,balance) = bounties.getBounty(standardBountyId);
+
     }
 
     /**
