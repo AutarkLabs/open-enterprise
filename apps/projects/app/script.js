@@ -7,6 +7,7 @@ import { GraphQLClient } from 'graphql-request'
 import { STATUS } from './utils/github'
 import VaultJSON from '../build/contracts/Vault.json'
 import tokenSymbolAbi from './abi/token-symbol.json'
+import { isNullOrUndefined } from 'util'
 
 const toAscii = hex => {
   // Find termination
@@ -127,7 +128,7 @@ async function handleEvents(response) {
     break
   case 'IssueCurated':
     console.log('[Projects] IssueCurated', response.returnValues)
-    nextState = await syncIssues(appState, response.returnValues)
+    nextState = await syncRepos(appState, response.returnValues)
     break
   case 'BountySettingsChanged':
     console.log('[Projects] BountySettingsChanged')
@@ -157,7 +158,7 @@ async function syncRepos(state, { repoId, ...eventArgs }) {
 }
 
 async function syncIssues(state, { repoId, issueNumber, ...eventArgs }) {
-  console.log('syncRepos: arguments from events:', eventArgs)
+  console.log('syncIssues: arguments from events:', eventArgs)
 
   const transform = ({ ...repo }) => ({
     ...repo,
@@ -166,7 +167,7 @@ async function syncIssues(state, { repoId, issueNumber, ...eventArgs }) {
     let updatedState = await updateIssueState(state, repoId, issueNumber, transform)
     return updatedState
   } catch (err) {
-    console.error('updateState failed to return:', err)
+    console.error('updateIssueState failed to return:', err)
   }
 }
 
@@ -242,7 +243,7 @@ function loadIssueData(repoId, issueNumber) {
   return new Promise(resolve => {
     app.call('getIssue', repoId, issueNumber).subscribe(({ hasBounty, standardBountyId }) => {
       const [_repo, _issueNumber] = [toAscii(repoId), toAscii(issueNumber)]
-      resolve({ _repo, _issueNumber, index, metadata, hasBounty, standardBountyId })
+      resolve({ _repo, _issueNumber, hasBounty, standardBountyId })
     })
   })
 }
@@ -283,29 +284,28 @@ async function checkReposLoaded(repos, id, transform) {
   }
 }
 
-async function checkIssuesLoaded(repos, repoId, issueNumber, transform) {
-  const issueIndex = issues.findIndex(issue => issue.id === id)
+async function checkIssuesLoaded(issues, repoId, issueNumber, transform) {
+  const issueIndex = issues.findIndex(issue => issue.issueNumber === issueNumber)
   console.log('this is the issue index:', issueIndex)
-  console.log('checkIssuesLoaded, repoIndex:', issues, id)
-  const { metadata, ...data } = await loadIssueData(repoId, issueNumber)
+  console.log('checkIssuesLoaded, issueNumber:', issues, issueNumber)
+  const data = await loadIssueData(repoId, issueNumber)
+  console.log('loadIssueData:', data)
 
   if (issueIndex === -1) {
     // If we can't find it, load its data, perform the transformation, and concat
     console.log('issue not found in the cache: retrieving from chain')
     return issues.concat(
       await transform({
-        id,
-        data: { ...data },
-        metadata,
+        issueNumber,
+        data: data
       })
     )
   } else {
     console.log('issue found: ' + issueIndex)
     const nextIssues = Array.from(issues)
     nextIssues[issueIndex] = await transform({
-      id,
-      data: { ...data },
-      metadata,
+      issueNumber,
+      data: data
     })
     return nextIssues
   }
@@ -329,7 +329,7 @@ async function updateState(state, id, transform) {
 }
 
 async function updateIssueState(state, repoId, issueNumber, transform) {
-  console.log('update state: ' + state + ', id: ' + id)
+  console.log('update state: ', state, ', id: ', repoId)
   const { issues = [] } = state
   try {
     let newIssues = await checkIssuesLoaded(issues, repoId, issueNumber, transform)
