@@ -32,7 +32,7 @@ async function handleEvents({ event, returnValues }) {
   app.cache('state', filteredState)
 }
 
-export const onEntryAdded = async ({ entries = [] }, { addr }) => {
+const onEntryAdded = async ({ entries = [] }, { addr }) => {
   // is addr already in the state?
   if (entries.some(entry => entry.addr === addr)) {
     // entry already cached, do nothing
@@ -49,7 +49,7 @@ export const onEntryAdded = async ({ entries = [] }, { addr }) => {
   return state
 }
 
-export const onEntryRemoved = async ({ entries = [] }, { addr }) => {
+const onEntryRemoved = async ({ entries = [] }, { addr }) => {
   const removeIndex = entries.findIndex(entry => entry.addr === addr)
   if (removeIndex > -1) {
     // entry already cached, remove from state
@@ -84,7 +84,7 @@ const loadEntryData = async addr => {
 // Remove possible duplications and enforce state integration to follow smart contract rules
 // Currently is: unique addresses, unique names
 // TODO: Integrate validators in the frontend inputs to feedback the user about those rules
-const filterEntries = entries => {
+export const filterEntries = entries => {
   // use set to filter unique https://stackoverflow.com/q/39885893
   const filtered = entries
     .filter((set => e => !set.has(e.addr) && set.add(e.addr))(new Set()))

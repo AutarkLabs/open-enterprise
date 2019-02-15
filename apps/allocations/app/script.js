@@ -1,6 +1,6 @@
 import Aragon from '@aragon/client'
 import AddressBookJSON from '../../address-book/build/contracts/AddressBook.json'
-import { onEntryAdded, onEntryRemoved } from '../../address-book/app/script'
+import { filterEntries } from '../../address-book/app/script'
 
 const app = new Aragon()
 let appState, addressBook
@@ -46,7 +46,9 @@ async function handleEvents({ event, returnValues }) {
     console.log('[Allocations script] Unknown event', response)
   }
   if (nextState !== null) {
-    app.cache('state', nextState)
+    const { accounts, entries } = nextState
+    const filteredState = { accounts, entries: filterEntries(entries) }
+    app.cache('state', filteredState)
   }
 }
 
@@ -119,4 +121,52 @@ async function updateAllocationState(state, accountId, transform) {
   } catch (err) {
     console.error('[Allocations script] updateAllocationState failed', err)
   }
+}
+
+/** AddressBook management */
+const onEntryAdded = async ({ entries = [] }, { addr }) => {
+  // is addr already in the state?
+  if (entries.some(entry => entry.addr === addr)) {
+    // entry already cached, do nothing
+    console.log('[Allocations script]', addr, 'already cached')
+  } else {
+    // entry not cached
+    const data = await loadEntryData(addr) // async load data from contract
+    const entry = { addr, data } // transform for the frontend to understand
+    entries.push(entry) // add to the state object received as param
+    console.log('[Allocations script] caching new contract entry', data.name)
+    // console.log('[AddressBook script] at position', addedIndex) // in case we need the index
+  }
+  const state = { entries } // return the (un)modified entries array
+  return state
+}
+
+const onEntryRemoved = async ({ entries = [] }, { addr }) => {
+  const removeIndex = entries.findIndex(entry => entry.addr === addr)
+  if (removeIndex > -1) {
+    // entry already cached, remove from state
+    console.log('[Allocations script] removing', addr.name, 'cached copy')
+    entries.splice(removeIndex, 1)
+  }
+
+  const state = { entries } // return the (un)modified entries array
+  return state
+}
+/***********************
+ *     AddressBook     *
+ *       Helpers       *
+ ***********************/
+const loadEntryData = async addr => {
+  return new Promise(resolve => {
+    // this is why we cannot import methods without binding proxy caller
+    addressBook.getEntry(addr).subscribe(entry => {
+      // don't resolve when entry not found
+      entry &&
+        resolve({
+          entryAddress: entry[0],
+          name: entry[1],
+          entryType: entry[2],
+        })
+    })
+  })
 }
