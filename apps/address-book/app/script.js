@@ -26,7 +26,9 @@ async function handleEvents({ event, returnValues }) {
   default:
     console.log('[AddressBook script] Unknown event', response)
   }
-  app.cache('state', nextState)
+  // purify the resulting state to handle duplication edge cases
+  const filteredState = { entries: filterEntries(nextState.entries) }
+  app.cache('state', filteredState)
 }
 
 export const onEntryAdded = async ({ entries = [] }, { addr }) => {
@@ -78,34 +80,16 @@ const loadEntryData = async addr => {
   })
 }
 
-async function checkEntriesLoaded(entries, addr, transform) {
-  const entryIndex = entries.findIndex(entry => entry.addr === addr)
-  if (entryIndex === -1) {
-    // If we can't find it, load its data, perform the transformation, and concat
-    // hopefully every "not_found" entry will be deleted when its EntryRemoved event is handled
-    return entries.concat(
-      await transform({
-        addr,
-        data: (await loadEntryData(addr)) || 'not_found',
-      })
+// Remove possible duplications and enforce state integration to follow smart contract rules
+// Currently is: unique addresses, unique names
+// TODO: Integrate validators in the frontend inputs to feedback the user about those rules
+const filterEntries = entries => {
+  // use set to filter unique https://stackoverflow.com/q/39885893
+  const filtered = entries
+    .filter((set => e => !set.has(e.addr) && set.add(e.addr))(new Set()))
+    .filter(
+      (set => e => !set.has(e.data.name) && set.add(e.data.name))(new Set())
     )
-  } else {
-    const nextEntries = Array.from(entries)
-    nextEntries[entryIndex] = await transform({
-      addr,
-      data: await loadEntryData(addr),
-    })
-    return nextEntries
-  }
-}
 
-async function updateState(state, addr, transform) {
-  const { entries = [] } = state
-  try {
-    const nextEntries = await checkEntriesLoaded(entries, addr, transform)
-    const newState = { ...state, entries: nextEntries }
-    return newState
-  } catch (err) {
-    console.error('[AddressBook script] updateState failed', err)
-  }
+  return filtered
 }
