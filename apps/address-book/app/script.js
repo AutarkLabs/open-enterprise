@@ -24,7 +24,8 @@ async function handleEvents({ event, returnValues }) {
     nextState = await onEntryRemoved(appState, returnValues)
     break
   default:
-    console.log('[AddressBook script] Unknown event', response)
+    nextState = appState
+    console.log('[AddressBook script] unknown event', event, returnValues)
   }
   // purify the resulting state to handle duplication edge cases
   const filteredState = { entries: filterEntries(nextState.entries) }
@@ -69,7 +70,7 @@ export const onEntryRemoved = async ({ entries = [] }, { addr }) => {
 const loadEntryData = async addr => {
   return new Promise(resolve => {
     app.call('getEntry', addr).subscribe(entry => {
-      // return gracefully when entry not found
+      // don't resolve when entry not found
       entry &&
         resolve({
           entryAddress: entry[0],
