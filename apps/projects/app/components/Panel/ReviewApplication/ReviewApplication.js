@@ -12,7 +12,7 @@ import {
   SafeLink,
 } from '@aragon/ui'
 
-import { FormField, FieldTitle } from '../../Form'
+import { FormField, FieldTitle, DescriptionInput } from '../../Form'
 import { IconGitHub, CheckButton } from '../../Shared'
 
 // external data, all of it
@@ -96,13 +96,11 @@ class ReviewApplication extends React.Component {
         <FormField
           label="Feedback"
           input={
-            <TextInput.Multiline
+            <DescriptionInput
               name='feedback'
               rows={3}
-              style={{ resize: 'none', height: 'auto' }}
               onChange={this.changeField}
               placeholder="Do you have any feedback to provide the applicant?"
-              wide
             />
           }
         />
@@ -140,8 +138,10 @@ const IssueTitle = styled(Text)`
   color: #717171;
   font-size: 17px;
   font-weight: 300;
-  line-height: 38px;
+  line-height: 1.5;
+  margin-bottom: 10px;
 `
+
 const ReviewButton = styled(Button).attrs({
   mode: 'strong',
 })`
