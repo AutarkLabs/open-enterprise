@@ -18,10 +18,10 @@ async function handleEvents({ event, returnValues }) {
   let nextState
   switch (event) {
   case 'EntryAdded':
-    nextState = await syncEntries(appState, returnValues)
+    nextState = await onEntryAdded(appState, returnValues)
     break
   case 'EntryRemoved':
-    nextState = await onRemoveEntry(appState, returnValues)
+    nextState = await onEntryRemoved(appState, returnValues)
     break
   default:
     console.log('[AddressBook script] Unknown event', response)
@@ -29,28 +29,33 @@ async function handleEvents({ event, returnValues }) {
   app.cache('state', nextState)
 }
 
-const onRemoveEntry = async (state, { addr }) => {
-  const { entries = [] } = state
-  // Try to find the removed entry in the current state
-  const entryIndex = entries.findIndex(entry => entry.addr === addr)
-  // If the entry exists in the state, remove from it
-  if (entryIndex !== -1) {
-    entries.splice(entryIndex, 1)
+export const onEntryAdded = async ({ entries = [] }, { addr }) => {
+  // is addr already in the state?
+  if (entries.some(entry => entry.addr === addr)) {
+    // entry already cached, do nothing
+    console.log('[AddressBook script]', addr, 'already cached')
+  } else {
+    // entry not cached
+    const data = await loadEntryData(addr) // async load data from contract
+    const entry = { addr, data } // transform for the frontend to understand
+    entries.push(entry) // add to the state object received as param
+    console.log('[AddressBook script] caching new contract entry', data.name)
+    // console.log('[AddressBook script] at position', addedIndex) // in case we need the index
   }
+  const state = { entries } // return the (un)modified entries array
   return state
 }
 
-async function syncEntries(state, { addr }) {
-  const transform = ({ data, ...entry }) => ({
-    ...entry,
-    data: { ...data },
-  })
-  try {
-    const updatedState = await updateState(state, addr, transform)
-    return updatedState
-  } catch (err) {
-    console.error('[AddressBook script] syncEntries failed', err)
+export const onEntryRemoved = async ({ entries = [] }, { addr }) => {
+  const removeIndex = entries.findIndex(entry => entry.addr === addr)
+  if (removeIndex > -1) {
+    // entry already cached, remove from state
+    console.log('[AddressBook script] removing', addr.name, 'cached copy')
+    entries.splice(removeIndex, 1)
   }
+
+  const state = { entries } // return the (un)modified entries array
+  return state
 }
 
 /***********************
