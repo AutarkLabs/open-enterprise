@@ -1,13 +1,12 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Badge, Button, theme, Text, ContextMenuItem as FilterMenuItem } from '@aragon/ui'
+import { Badge, theme, ContextMenuItem as FilterMenuItem } from '@aragon/ui'
 
 import Overflow from './Overflow'
 import FilterButton from './FilterButton'
-import { CheckButton, IconArrowDown } from '../'
+import { CheckButton } from '../'
 import FilterDropDown from './FilterDropDown'
-//import { DropDownButton } from '../../Shared'
 
 const StyledFilterBar = styled.div`
   width: 100%;
@@ -31,8 +30,8 @@ const StyledFilterBar = styled.div`
   }
   > :last-child {
     > * {
-    border-radius: 0 3px 3px 0;
-  }
+      border-radius: 0 3px 3px 0;
+    }
   }
 `
 
@@ -48,13 +47,15 @@ class FilterBar extends React.Component {
       milestones: {},
       deadlines: {},
       experiences: {},
-    }
+    },
   }
 
   componentWillMount() {
     if ('filterIssuesByRepoId' in this.props.activeIndex.tabData) {
       let { filters } = this.state
-      filters.projects[this.props.activeIndex.tabData.filterIssuesByRepoId] = true
+      filters.projects[
+        this.props.activeIndex.tabData.filterIssuesByRepoId
+      ] = true
       this.setState({ filters })
     }
   }
@@ -65,10 +66,8 @@ class FilterBar extends React.Component {
 
   filter = (type, id) => () => {
     const { filters } = this.state
-    if (id in filters[type])
-      delete(filters[type][id])
-    else
-      filters[type][id] = true
+    if (id in filters[type]) delete filters[type][id]
+    else filters[type][id] = true
     // filters are in local state because of checkboxes
     // and sent to the parent (Issues) for actual display change
     this.setState({ filters })
@@ -79,7 +78,7 @@ class FilterBar extends React.Component {
     prepareFilters builds data structure for displaying filterbar dropdowns
     data comes from complete issues array, issuesFiltered is used for counters
   */
-  prepareFilters = (issues, issuesFiltered) => {
+  prepareFilters = (issues, _issuesFiltered) => {
     let filters = {
       projects: {},
       labels: {},
@@ -92,13 +91,20 @@ class FilterBar extends React.Component {
         if (issue.milestone.id in filters.milestones) {
           filters.milestones[issue.milestone.id].count++
         } else {
-          filters.milestones[issue.milestone.id] = { ...issue.milestone, count: 1 }
+          filters.milestones[issue.milestone.id] = {
+            ...issue.milestone,
+            count: 1,
+          }
         }
       } else {
         if ('milestoneless' in filters.milestones) {
           filters.milestones['milestoneless'].count++
         } else {
-          filters.milestones['milestoneless'] = { title: 'Issues without milestones', id: 'milestoneless', count: 1 }
+          filters.milestones['milestoneless'] = {
+            title: 'Issues without milestones',
+            id: 'milestoneless',
+            count: 1,
+          }
         }
       }
 
@@ -114,14 +120,21 @@ class FilterBar extends React.Component {
         if ('labelless' in filters.labels) {
           filters.labels['labelless'].count++
         } else {
-          filters.labels['labelless'] = { name: 'Issues without labels', id: 'labelless', count: 1 }
+          filters.labels['labelless'] = {
+            name: 'Issues without labels',
+            id: 'labelless',
+            count: 1,
+          }
         }
       }
       // TODO: shouldn't it be reporitory.id?
       if (issue.repository.id in filters.projects) {
         filters.projects[issue.repository.id].count++
       } else {
-        filters.projects[issue.repository.id] = { name: issue.repository.name, count: 1 }
+        filters.projects[issue.repository.id] = {
+          name: issue.repository.name,
+          count: 1,
+        }
       }
     })
     return filters
@@ -139,85 +152,119 @@ class FilterBar extends React.Component {
         <FilterButton>
           <CheckButton onChange={handleSelectAll} checked={allSelected} />
         </FilterButton>
-        
+
         <Overflow>
-          <FilterDropDown caption="Projects" enabled={ Object.keys(filtersData.projects).length > 0}>
-            { Object.keys(filtersData.projects).map(
-              id => (
-                <FilterMenuItem
-                  key={id}
-                  onClick={this.filter('projects', id)}
-                  style={{ display: 'flex', alignItems: 'flex-start' }}
-                >
-                  <div>
-                    <CheckButton onChange={this.noop} checked={id in filters.projects} />
-                  </div>
-                  <ActionLabel>
-                    {filtersData.projects[id].name} ({filtersData.projects[id].count})
-                  </ActionLabel>
-                </FilterMenuItem>
-              ))
-            }
+          <FilterDropDown
+            caption="Projects"
+            enabled={Object.keys(filtersData.projects).length > 0}
+          >
+            {Object.keys(filtersData.projects).map(id => (
+              <FilterMenuItem
+                key={id}
+                onClick={this.filter('projects', id)}
+                style={{ display: 'flex', alignItems: 'flex-start' }}
+              >
+                <div>
+                  <CheckButton
+                    onChange={this.noop}
+                    checked={id in filters.projects}
+                  />
+                </div>
+                <ActionLabel>
+                  {filtersData.projects[id].name} (
+                  {filtersData.projects[id].count})
+                </ActionLabel>
+              </FilterMenuItem>
+            ))}
           </FilterDropDown>
 
-          <FilterDropDown caption="Labels" enabled={ Object.keys(filtersData.labels).length > 0}>
-            { Object.keys(filtersData.labels).map(
-              id => (
-                <FilterMenuItem
-                  key={id}
-                  onClick={this.filter('labels', id)}
-                  style={{ display: 'flex', alignItems: 'flex-start' }}
-                >
-                  <div>
-                    <CheckButton onChange={this.noop} checked={id in filters.labels} />
-                  </div>
-                  <ActionLabel>
-                    <Badge background={'#'+filtersData.labels[id].color} foreground={'#000'}>{filtersData.labels[id].name}</Badge> ({filtersData.labels[id].count})
-                  </ActionLabel>
-                </FilterMenuItem>
-              ))
-            }
+          <FilterDropDown
+            caption="Labels"
+            enabled={Object.keys(filtersData.labels).length > 0}
+          >
+            {Object.keys(filtersData.labels).map(id => (
+              <FilterMenuItem
+                key={id}
+                onClick={this.filter('labels', id)}
+                style={{ display: 'flex', alignItems: 'flex-start' }}
+              >
+                <div>
+                  <CheckButton
+                    onChange={this.noop}
+                    checked={id in filters.labels}
+                  />
+                </div>
+                <ActionLabel>
+                  <Badge
+                    background={'#' + filtersData.labels[id].color}
+                    foreground={'#000'}
+                  >
+                    {filtersData.labels[id].name}
+                  </Badge>{' '}
+                  ({filtersData.labels[id].count})
+                </ActionLabel>
+              </FilterMenuItem>
+            ))}
           </FilterDropDown>
 
-          <FilterDropDown caption="Milestones" enabled={ Object.keys(filtersData.milestones).length > 0}>
-            { Object.keys(filtersData.milestones).map(
-              id => (
-                <FilterMenuItem
-                  key={id}
-                  onClick={this.filter('milestones', id)}
-                  style={{ display: 'flex', alignItems: 'flex-start' }}
-                >
-                  <div>
-                    <CheckButton onChange={this.noop} checked={id in filters.milestones} />
-                  </div>
-                  <ActionLabel>
-                    {filtersData.milestones[id].title} ({filtersData.milestones[id].count})
-                  </ActionLabel>
-                </FilterMenuItem>
-              ))
-            }
+          <FilterDropDown
+            caption="Milestones"
+            enabled={Object.keys(filtersData.milestones).length > 0}
+          >
+            {Object.keys(filtersData.milestones).map(id => (
+              <FilterMenuItem
+                key={id}
+                onClick={this.filter('milestones', id)}
+                style={{ display: 'flex', alignItems: 'flex-start' }}
+              >
+                <div>
+                  <CheckButton
+                    onChange={this.noop}
+                    checked={id in filters.milestones}
+                  />
+                </div>
+                <ActionLabel>
+                  {filtersData.milestones[id].title} (
+                  {filtersData.milestones[id].count})
+                </ActionLabel>
+              </FilterMenuItem>
+            ))}
           </FilterDropDown>
 
-          <FilterDropDown caption="Status" enabled={false}>
-          </FilterDropDown>
-          <FilterDropDown caption="Deadline" enabled={false}>
-          </FilterDropDown>
-          <FilterDropDown caption="Experience" enabled={false}>
-          </FilterDropDown>
-
+          <FilterDropDown caption="Status" enabled={false} />
+          <FilterDropDown caption="Deadline" enabled={false} />
+          <FilterDropDown caption="Experience" enabled={false} />
         </Overflow>
 
         <FilterDropDown caption="Sort by" enabled={true}>
-          <FilterMenuItem key={'1'} onClick={this.noop} style={{ display: 'flex', alignItems: 'flex-start' }}>
-            <div><CheckButton onChange={this.noop} checked={false} /></div>
+          <FilterMenuItem
+            key={'1'}
+            onClick={this.noop}
+            style={{ display: 'flex', alignItems: 'flex-start' }}
+          >
+            <div>
+              <CheckButton onChange={this.noop} checked={false} />
+            </div>
             <ActionLabel> ...label </ActionLabel>
           </FilterMenuItem>
-          <FilterMenuItem key={'2'} onClick={this.noop} style={{ display: 'flex', alignItems: 'flex-start' }}>
-            <div><CheckButton onChange={this.noop} checked={false} /></div>
+          <FilterMenuItem
+            key={'2'}
+            onClick={this.noop}
+            style={{ display: 'flex', alignItems: 'flex-start' }}
+          >
+            <div>
+              <CheckButton onChange={this.noop} checked={false} />
+            </div>
             <ActionLabel>...deadline</ActionLabel>
           </FilterMenuItem>
-          <FilterMenuItem key={'3'} onClick={this.noop} style={{ display: 'flex', alignItems: 'flex-start' }}>
-            <div><CheckButton onChange={this.noop} checked={false} /></div>
+          <FilterMenuItem
+            key={'3'}
+            onClick={this.noop}
+            style={{ display: 'flex', alignItems: 'flex-start' }}
+          >
+            <div>
+              <CheckButton onChange={this.noop} checked={false} />
+            </div>
             <ActionLabel>status</ActionLabel>
           </FilterMenuItem>
         </FilterDropDown>
@@ -229,7 +276,7 @@ class FilterBar extends React.Component {
 FilterBar.propTypes = {
   issues: PropTypes.arrayOf(PropTypes.object).isRequired,
   handleSelectAll: PropTypes.func.isRequired,
-  handleFiltering: PropTypes.func.isRequired
+  handleFiltering: PropTypes.func.isRequired,
 }
 
 export default FilterBar
