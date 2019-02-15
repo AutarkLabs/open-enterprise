@@ -1,5 +1,6 @@
 import Aragon from '@aragon/client'
 import AddressBookJSON from '../../address-book/build/contracts/AddressBook.json'
+import { onEntryAdded, onEntryRemoved } from '../../address-book/app/script'
 
 const app = new Aragon()
 let appState, addressBook
@@ -36,10 +37,10 @@ async function handleEvents({ event, returnValues }) {
     nextState = await syncAccounts(appState, returnValues)
     break
   case 'EntryAdded':
-    nextState = await syncEntries(appState, returnValues)
+    nextState = await onEntryAdded(appState, returnValues)
     break
   case 'EntryRemoved':
-    nextState = await onRemoveEntry(appState, returnValues)
+    nextState = await onEntryRemoved(appState, returnValues)
     break
   default:
     console.log('[Allocations script] Unknown event', response)
@@ -63,33 +64,6 @@ async function syncAccounts(state, { accountId }) {
     return updatedState
   } catch (err) {
     console.error('[Allocations script] syncAccounts failed', err)
-  }
-}
-
-// TODO: Maybe import from AddressBook script to D.R.Y.
-const onRemoveEntry = async (state, returnValues) => {
-  const { entries = [] } = state
-  // Try to find the removed entry in the current state
-  const entryIndex = entries.findIndex(
-    entry => entry.addr === returnValues.addr
-  )
-  // If the entry exists in the state, remove from it
-  if (entryIndex !== -1) {
-    entries.splice(entryIndex, 1)
-  }
-  return state
-}
-
-async function syncEntries(state, { addr }) {
-  const transform = ({ data, ...entry }) => ({
-    ...entry,
-    data: { ...data },
-  })
-  try {
-    const updatedState = await updateEntryState(state, addr, transform)
-    return updatedState
-  } catch (err) {
-    console.error('[Allocations script] syncEntries failed', err)
   }
 }
 
@@ -144,51 +118,5 @@ async function updateAllocationState(state, accountId, transform) {
     return newState
   } catch (err) {
     console.error('[Allocations script] updateAllocationState failed', err)
-  }
-}
-
-const loadEntryData = async addr => {
-  return new Promise(resolve => {
-    addressBook.getEntry(addr).subscribe(entry => {
-      // return gracefully when entry not found
-      entry &&
-        resolve({
-          entryAddress: entry[0],
-          name: entry[1],
-          entryType: entry[2],
-        })
-    })
-  })
-}
-
-async function checkEntriesLoaded(entries, addr, transform) {
-  const entryIndex = entries.findIndex(entry => entry.addr === addr)
-  if (entryIndex === -1) {
-    // If we can't find it, load its data, perform the transformation, and concat
-    // hopefully every "not_found" entry will be deleted when its EntryRemoved event is handled
-    return entries.concat(
-      await transform({
-        addr,
-        data: (await loadEntryData(addr)) || 'not_found',
-      })
-    )
-  } else {
-    const nextEntries = Array.from(entries)
-    nextEntries[entryIndex] = await transform({
-      addr,
-      data: await loadEntryData(addr),
-    })
-    return nextEntries
-  }
-}
-
-async function updateEntryState(state, addr, transform) {
-  const { entries = [] } = state
-  try {
-    const nextEntries = await checkEntriesLoaded(entries, addr, transform)
-    const newState = { ...state, entries: nextEntries }
-    return newState
-  } catch (err) {
-    console.error('[Allocations script] updateEntryState failed', err)
   }
 }
