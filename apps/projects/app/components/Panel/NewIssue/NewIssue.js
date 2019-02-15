@@ -83,7 +83,7 @@ class NewIssue extends React.PureComponent {
   }
 
   projectChange = index => {
-    index > 0 && this.setState({ project: index - 1, selectedProject: index })
+    this.setState({ selectedProject: index })
   }
 
   titleChange = e => {
@@ -106,14 +106,13 @@ class NewIssue extends React.PureComponent {
 
   render() {
     const {
-      project,
       title,
       description,
       labels,
       isValid,
       selectedProject,
     } = this.state
-    const { reposManaged, reposIds } = this.props
+    const { reposManaged } = this.props
     const {
       projectChange,
       titleChange,
@@ -122,18 +121,17 @@ class NewIssue extends React.PureComponent {
       formSubmit,
     } = this
 
-    const { id } = reposManaged[project]
-    console.log('current id:', id)
-
-    const names =
+    const items =
       typeof reposManaged === 'string'
         ? 'No repos'
         : reposManaged.map(repo => repo.name)
-    // const items = reposManaged.length > 1 ? ['Choose Project', ...names] : names // TODO: Manage single repo case
-    const items = ['Choose Project', ...names]
-
-    // TODO: hide button when no repos managed: prompt to create new project
-    // TODO: Put SidePanel inside the component?
+    
+    const reposIds =
+      typeof reposManaged === 'string'
+        ? []
+        : reposManaged.map(repo => repo.id)
+    
+    const id = reposIds[selectedProject]
 
     const reGet = [{
       query: GET_ISSUES,
@@ -160,6 +158,7 @@ class NewIssue extends React.PureComponent {
                     active={selectedProject}
                     onChange={projectChange}
                     wide
+                    required
                   />
                 </Field>
                 <Field label="Title">
@@ -167,8 +166,8 @@ class NewIssue extends React.PureComponent {
                 </Field>
                 <Field label="Description">
                   <TextInput.Multiline
-                    rows={5}
-                    style={{ resize: 'none' }}
+                    rows={3}
+                    style={{ resize: 'none', height: 'auto' }}
                     onChange={descriptionChange}
                     wide
                   />

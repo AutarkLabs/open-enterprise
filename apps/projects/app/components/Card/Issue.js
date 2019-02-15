@@ -1,12 +1,12 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { Text, theme, Badge } from '@aragon/ui'
+import { Text, theme, Badge, Button, ContextMenu, ContextMenuItem } from '@aragon/ui'
 
 import { CheckButton } from '../Shared'
 
 const StyledIssue = styled.div`
-  overflow-y: hidden;
+  //overflow-y: hidden;
   flex: 1;
   width: 100%;
   background: ${theme.contentBackground};
@@ -32,7 +32,7 @@ const IssueDetails = styled.div`
 `
 
 // TODO: @aragon/ui Table?
-const Issue = ({ title, repo, number, labels, isSelected, onSelect, balance, symbol }) => (
+const Issue = ({ title, repo, number, labels, isSelected, onSelect, onSubmitWork, onRequestAssignment, onReviewApplication, balance, symbol }) => (
   <StyledIssue>
     <CheckButton checked={isSelected} onChange={onSelect} />
     <div
@@ -52,13 +52,6 @@ const Issue = ({ title, repo, number, labels, isSelected, onSelect, balance, sym
         >
           {title}
         </Text>
-        { balance > 0 &&  
-        <Badge
-          style={{ justifyContent: 'flex-end'}}
-          background={'#00ff00'}
-          foreground={'#000'}>{balance + ' ' + symbol}
-        </Badge>
-        }
       </div>
       <IssueDetails>
         <Text color={theme.textSecondary}>
@@ -78,6 +71,26 @@ const Issue = ({ title, repo, number, labels, isSelected, onSelect, balance, sym
         </Text>
       </IssueDetails>
     </div>
+    <div style={{ marginRight: '20px' }}>
+      { balance > 0 &&  
+        <Badge
+          style={{ justifyContent: 'flex-end'}}
+          background={theme.green}
+          foreground={theme.green}>{balance + ' ' + symbol}
+        </Badge>
+      }
+      <ContextMenu>
+        <ContextMenuItem onClick={onSubmitWork}>
+          <ActionLabel>Submit Work</ActionLabel>
+        </ContextMenuItem>
+        <ContextMenuItem onClick={onRequestAssignment}>
+          <ActionLabel>Request Assignment</ActionLabel>
+        </ContextMenuItem>
+        <ContextMenuItem onClick={onReviewApplication}>
+          <ActionLabel>Review Application</ActionLabel>
+        </ContextMenuItem>
+      </ContextMenu>
+    </div>
   </StyledIssue>
 )
 
@@ -88,5 +101,13 @@ Issue.propTypes = {
   isSelected: PropTypes.bool,
   onSelect: PropTypes.func,
 }
+
+const ActionLabel = styled.span`
+  margin-left: 15px;
+`
+const MenuContainer = styled.div`
+  align-self: flex-end;
+  align-items: center;
+`
 
 export default Issue

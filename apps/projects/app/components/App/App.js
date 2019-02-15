@@ -118,7 +118,7 @@ class App extends React.PureComponent {
 
   state = {
     repos: [],
-    activeIndex: 0,
+    activeIndex: { tabIndex: 0, tabData: {}},
   }
 
   componentDidMount() {
@@ -166,10 +166,6 @@ class App extends React.PureComponent {
     this.setState({ activeIndex })
   }
 
-  selectProject = () => {
-    console.log('selectProject')
-  }
-
   createProject = ({ owner, project }) => {
     console.info('App.js: createProject', project, owner)
     this.closePanel()
@@ -188,7 +184,7 @@ class App extends React.PureComponent {
       (repos &&
         repos.map(repo => ({
           name: repo.metadata.name,
-          id: repo.data.repo,
+          id: repo.data._repo,
         }))) ||
       'No repos'
     const reposIds = (repos && repos.map(repo => repo.data.repo)) || []
@@ -308,8 +304,39 @@ class App extends React.PureComponent {
         ipfsString
       )
     }
+  }
+  submitWork = issue => {
+    this.setState((_prevState, _prevProps) => ({
+      panel: PANELS.SubmitWork,
+      panelProps: {
+        onSubmit: this.onSubmitWork,
+        githubCurrentUser: this.props.githubCurrentUser,
+        issue
+      },
+    }))
+  }
 
-    // this.closePanel()
+  requestAssignment = issue => {
+    this.setState((_prevState, _prevProps) => ({
+      panel: PANELS.RequestAssignment,
+      panelProps: {
+        onSubmit: this.onRequestAssignment,
+        githubCurrentUser: this.props.githubCurrentUser,
+        issue
+      },
+    }))
+  }
+
+  onReviewApplication = props => console.log('onReviewApplication', props)
+
+  reviewApplication = issue => {
+    this.setState((_prevState, _prevProps) => ({
+      panel: PANELS.ReviewApplication,
+      panelProps: {
+        issue,
+        onSubmit: this.onReviewApplication,
+      },
+    }))
   }
 
   curateIssues = issues => {
@@ -381,7 +408,8 @@ class App extends React.PureComponent {
 
   render() {
     const { activeIndex, panel, panelProps } = this.state
-    const { client, bountySettings } = this.props
+    const { client, bountySettings, githubCurrentUser } = this.props
+
     return (
       <StyledAragonApp publicUrl={ASSETS_URL}>
         <BaseStyles />
@@ -390,7 +418,8 @@ class App extends React.PureComponent {
           <ErrorBoundary>
             <AppContent
               app={this.props.app}
-              bountySettings={this.props.bountySettings}
+              bountySettings={bountySettings}
+              githubCurrentUser={githubCurrentUser}
               projects={this.props.repos !== undefined ? this.props.repos : []}
               bountyIssues={this.props.issues !== undefined ? this.props.issues : []}
               bountySettings={
@@ -402,9 +431,12 @@ class App extends React.PureComponent {
               onNewIssue={this.newIssue}
               onCurateIssues={this.curateIssues}
               onAllocateBounties={this.newBountyAllocation}
-              onSelect={this.selectProject}
+              onSubmitWork={this.submitWork}
+              onRequestAssignment={this.requestAssignment}
               activeIndex={activeIndex}
               changeActiveIndex={this.changeActiveIndex}
+
+              onReviewApplication={this.reviewApplication}
             />
 
             <PanelManager

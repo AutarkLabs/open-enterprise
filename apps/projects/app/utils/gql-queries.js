@@ -29,6 +29,7 @@ export const GET_ISSUES = gql`
               title
             }
             state
+            url
           }
         }
       }
@@ -43,6 +44,16 @@ export const NEW_ISSUE = gql`
       issue {
         id
       }
+    }
+  }
+`
+export const CURRENT_USER = gql`
+  query {
+    viewer {
+      id
+      login
+      url
+      avatarUrl
     }
   }
 `

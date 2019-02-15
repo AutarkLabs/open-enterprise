@@ -9,16 +9,16 @@ const StyledTabContent = styled.main`
 
 export default class TabContent extends PureComponent {
   static propTypes = {
-    activeIndex: PropTypes.number.isRequired,
+    activeIndex: PropTypes.object.isRequired,
     children: PropTypes.node.isRequired,
   }
 
   static defaultProps = {
-    activeIndex: 0,
+    activeIndex: { tabIndex: 0, tabData: {}},
   }
 
   render() {
     const { activeIndex, children } = this.props
-    return <StyledTabContent>{children[activeIndex]}</StyledTabContent>
+    return <StyledTabContent>{children[activeIndex.tabIndex]}</StyledTabContent>
   }
 }

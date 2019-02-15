@@ -25,12 +25,12 @@ const AppContent = props => {
     {
       tabName: 'Overview',
       TabComponent: Overview,
-      tabButton: { caption: 'New Project', onClick: props.onNewProject },
+      tabButton: { caption: 'New Project', onClick: props.onNewProject, disabled: () => false },
     },
     {
       tabName: 'Issues',
       TabComponent: Issues,
-      tabButton: { caption: 'New Issue', onClick: props.onNewIssue },
+      tabButton: { caption: 'New Issue', onClick: props.onNewIssue, disabled: () => props.projects.length ? false : true },
     },
     {
       tabName: 'Settings',
@@ -38,8 +38,8 @@ const AppContent = props => {
     },
   ]
 
-  var appTitleButton = contentData[props.activeIndex].tabButton
-    ? contentData[props.activeIndex].tabButton
+  var appTitleButton = contentData[props.activeIndex.tabIndex].tabButton
+    ? contentData[props.activeIndex.tabIndex].tabButton
     : null
 
   return (
@@ -48,6 +48,7 @@ const AppContent = props => {
         <AppTitleButton
           caption={appTitleButton.caption}
           onClick={appTitleButton.onClick}
+          disabled={appTitleButton.disabled()}
         />
       )}
 
@@ -77,8 +78,7 @@ AppContent.propTypes = {
   bountySettings: PropTypes.object.isRequired,
   onNewProject: PropTypes.func.isRequired,
   onNewIssue: PropTypes.func.isRequired,
-  onSelect: PropTypes.func.isRequired,
-  activeIndex: PropTypes.number.isRequired,
+  activeIndex: PropTypes.object.isRequired,
   changeActiveIndex: PropTypes.func.isRequired,
 }
 
