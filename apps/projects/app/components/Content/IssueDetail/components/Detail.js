@@ -191,11 +191,9 @@ const Detail = ({
   const activityRows = activities.map((data, i) => (
     <ActivityRow key={i} {...data} />
   ))
-
-  console.log('card props:', title)
   return (
     <Wrapper>
-      <div style={{ ...column, flex: 3, maxWidth: '705px' }}>
+      <div style={{ flex: 3, maxWidth: '705px' }}>
         <div style={cardStyle}>
           <Wrapper style={{ justifyContent: 'space-between' }}>
             <div style={{ ...column, flex: 2, marginRight: '20px' }}>
@@ -232,7 +230,7 @@ const Detail = ({
           <Text.Block>Labels</Text.Block>
         </div>
       </div>
-      <div style={{ ...column, flex: 1, maxWidth: '359px' }}>
+      <div style={{ flex: 1, maxWidth: '359px' }}>
         <div style={cardStyle}>
           <FieldTitle>Team</FieldTitle>
           {teamRows}
