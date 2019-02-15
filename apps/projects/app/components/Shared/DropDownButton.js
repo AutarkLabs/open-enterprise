@@ -38,7 +38,7 @@ class DropDownButton extends React.Component {
           {({ openProgress }) => (
             <Main
               style={{
-                zIndex: opened ? '2' : '1',
+                zIndex: opened ? '4' : '1',
                 boxShadow: openProgress.interpolate(
                   t => `0 4px 4px rgba(0, 0, 0, ${t * 0.03})`
                 ),
