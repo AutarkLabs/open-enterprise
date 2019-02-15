@@ -71,13 +71,14 @@ const Issue = ({ title, repo, number, labels, isSelected, onSelect, onSubmitWork
         </Text>
       </IssueDetails>
     </div>
-    <div style={{ marginRight: '20px' }}>
+    <div style={{ marginRight: '20px', display: 'inline-flex' }}>
       { balance > 0 &&  
         <Badge
-          style={{ justifyContent: 'flex-end'}}
-          background={theme.green}
-          foreground={theme.green}>{balance + ' ' + symbol}
+          style={{padding: '10px', marginRight: '20px', textSize: 'large'}}
+          background={'#e7f8ec'}
+          foreground={theme.positive}>{balance + ' ' + symbol}
         </Badge>
+        
       }
       <ContextMenu>
         <ContextMenuItem onClick={onSubmitWork}>
