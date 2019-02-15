@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { theme, unselectable } from '@aragon/ui'
 
-import { IconArrowDown } from '../../../assets'
+import { IconArrowDown } from '../../Shared'
 
 const BASE_HEIGHT = 40
 const BASE_WIDTH = 193
