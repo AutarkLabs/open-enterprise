@@ -50,6 +50,10 @@ class Issues extends React.PureComponent {
     this.props.onAllocateBounties(this.state.selectedIssues)
   }
 
+  handleReviewApplication = issue => {
+    this.props.onReviewApplication(issue)
+  }
+
   handleSubmitWork = issue => {
     this.props.onSubmitWork(issue)
   }
@@ -258,6 +262,9 @@ class Issues extends React.PureComponent {
                         .includes(issue.id)}
                       onSelect={() => {
                         this.handleIssueSelection(issue)
+                      }}
+                      onReviewApplication={() => {
+                        this.handleReviewApplication(issue)
                       }}
                       onSubmitWork={() => {
                         this.handleSubmitWork(issue)

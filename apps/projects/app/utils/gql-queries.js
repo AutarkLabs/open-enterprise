@@ -52,6 +52,7 @@ export const CURRENT_USER = gql`
     viewer {
       id
       login
+      url
       avatarUrl
     }
   }
