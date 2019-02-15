@@ -1,4 +1,3 @@
-
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
@@ -10,10 +9,11 @@ import {
   Button,
   Info,
   SafeLink,
-  DropDown
+  DropDown,
+  theme,
 } from '@aragon/ui'
 
-import { FormField, FieldTitle } from '../../Form'
+import { FormField, FieldTitle, DescriptionInput } from '../../Form'
 import { IconGitHub } from '../../Shared'
 
 // external Data
@@ -65,7 +65,7 @@ class ReviewWork extends React.Component {
 
   render() {
     const { issue } = this.props
-    const submittor = work.user
+    const submitter = work.user
     const submissionDateDistance = formatDistance(new Date(work.submissionDate), new Date())
     const ratings = [
       'Select a Rating',
@@ -93,13 +93,13 @@ class ReviewWork extends React.Component {
 
         <SubmissionDetails>
           <UserLink>
-            <img src={submittor.avatar} style={{ width: '32px', height: '32px', marginRight: '10px'}} />
+            <img src={submitter.avatar} style={{ width: '32px', height: '32px', marginRight: '10px'}} />
             <SafeLink
-              href={submittor.url}
+              href={submitter.url}
               target="_blank"
               style={{ textDecoration: 'none', color: '#21AAE7', marginRight: '6px' }}
             >
-              {submittor.name ? submittor.name : submittor.login}
+              {submitter.name ? submitter.name : submitter.login}
             </SafeLink>
             applied {submissionDateDistance} ago
           </UserLink>
@@ -138,7 +138,7 @@ class ReviewWork extends React.Component {
         <FormField
           label="Feedback"
           input={
-            <TextInput.Multiline
+            <DescriptionInput
               name='feedback'
               rows={5}
               style={{ resize: 'none', height: 'auto' }}
@@ -165,18 +165,15 @@ class ReviewWork extends React.Component {
 }
 
 function CommentsCheck(props) {
-  if (!props.comments) return null
-  else{
-    return <FieldTitle>Additional Comments</FieldTitle>
-  }
+  return props.comments ? <FieldTitle>Additional Comments</FieldTitle> : null
 }
 
 function RatingAlert(props) {
-  return props.alert ? <Info.Alert>Please Select A Quality Rating</Info.Alert> : null
+  return props.alert ? <Info.Alert>Please select a quality rating</Info.Alert> : null
 }
 
 const IssueTitle = styled(Text)`
-  color: #717171;
+  color: ${theme.textSecondary};
   font-size: 17px;
   font-weight: 300;
   line-height: 38px;
@@ -188,8 +185,8 @@ const IssueLinkRow = styled.div`
   margin-bottom: 10px;
 `
 const SubmissionDetails = styled.div`
-  border: 1px solid #DAEAEF;
-  background-color: #F3F9FB;
+  border: 1px solid ${theme.contentBorder};
+  background-color: ${theme.shadow};
   padding: 14px;
   margin-bottom: 14px;
 `
@@ -200,7 +197,7 @@ const UserLink = styled.div`
 const Separator = styled.hr`
   height: 1px;
   width: 100%;
-  color: #D1D1D1;
+  color: ${theme.contentBorder};
   opacity: 0.1;
 `
 const DetailText = styled(Text)`
@@ -218,7 +215,7 @@ const ReviewRow = styled.div`
 const ReviewButton = styled(Button).attrs({
   mode: 'strong',
 })`
-  width: 190px;
+  width: 48%;
 `
 
 export default ReviewWork
