@@ -192,12 +192,19 @@ class Issues extends React.PureComponent {
   )
 
   render() {
-    const { projects, bountyIssues, onNewProject } = this.props
+    const { projects, bountyIssues, onNewProject, tokens } = this.props
     // better return early if we have no projects added?
     if (projects.length === 0) return <Empty action={onNewProject} />
     let bountyIssueObj = {}
+    let tokenObj = {}
+
     bountyIssues.forEach(issue => {
       bountyIssueObj[issue.issueNumber] = issue
+    })
+
+    tokens.forEach(token => {
+      tokenObj[token.addr] = token.symbol
+      console.log('tokenObj:', tokenObj)
     })
 
     const { allSelected } = this.state
@@ -210,12 +217,14 @@ class Issues extends React.PureComponent {
       issues.map(({ __typename, repository: { name }, ...fields }) => 
       {
         if(bountyIssueObj[fields.number]){
-          console.log('Bounty Issue Info:', bountyIssueObj[fields.number])
+          let data = bountyIssueObj[fields.number].data
+          console.log('Bounty Issue Info:', data)
 
           return { 
             ...fields,
             ...bountyIssueObj[fields.number].data,
             repo: name,
+            symbol: tokenObj[data.token]
           }          
         }
         return { 

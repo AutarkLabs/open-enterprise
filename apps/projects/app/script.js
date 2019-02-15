@@ -241,9 +241,9 @@ function loadRepoData(id) {
 
 function loadIssueData(repoId, issueNumber) {
   return new Promise(resolve => {
-    app.call('getIssue', repoId, issueNumber).subscribe(({ hasBounty, standardBountyId, balance}) => {
+    app.call('getIssue', repoId, issueNumber).subscribe(({ hasBounty, standardBountyId, balance, token}) => {
       const [_repo, _issueNumber] = [toAscii(repoId), toAscii(issueNumber)]
-      resolve({ _repo, _issueNumber, balance, hasBounty, standardBountyId})
+      resolve({ _repo, _issueNumber, balance, hasBounty, token, standardBountyId})
     })
   })
 }

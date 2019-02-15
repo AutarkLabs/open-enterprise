@@ -32,7 +32,7 @@ const IssueDetails = styled.div`
 `
 
 // TODO: @aragon/ui Table?
-const Issue = ({ title, repo, number, labels, isSelected, onSelect, balance }) => (
+const Issue = ({ title, repo, number, labels, isSelected, onSelect, balance, symbol }) => (
   <StyledIssue>
     <CheckButton checked={isSelected} onChange={onSelect} />
     <div
@@ -56,7 +56,7 @@ const Issue = ({ title, repo, number, labels, isSelected, onSelect, balance }) =
         <Badge
           style={{ justifyContent: 'flex-end'}}
           background={'#00ff00'}
-          foreground={'#000'}>{balance}
+          foreground={'#000'}>{balance + ' ' + symbol}
         </Badge>
         }
       </div>
