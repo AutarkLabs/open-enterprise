@@ -16,12 +16,14 @@ const StyledIssue = styled.div`
   border: 1px solid ${theme.contentBorder};
   margin-bottom: -1px;
   position: relative;
-  > :first-child {
+  > :nth-child(2) {
+    /* checkbox */
     margin-right: 21.5px;
     justify-content: center;
     z-index: 2;
   }
-  > :nth-child(2) {
+  > :nth-child(3) {
+    /* text */
     height: 100%;
     padding: 10px;
     flex: 1 1 auto;
@@ -33,7 +35,7 @@ const ClickArea = styled.div`
   left: 0;
   position: absolute;
   width: 100%;
-  z-index: 1;
+  z-index: 0;
   :active {
     border: 1px solid ${theme.accent};
     z-index: 3;
@@ -57,9 +59,10 @@ const Issue = ({
   onClick,
   onSelect,
   onSubmitWork,
-  onRequestAssignment
+  onRequestAssignment,
 }) => (
   <StyledIssue>
+    <ClickArea onClick={onClick} />
     <CheckButton checked={isSelected} onChange={onSelect} />
     <div
       style={{
@@ -101,7 +104,6 @@ const Issue = ({
         </Text>
       </IssueDetails>
     </div>
-    <ClickArea onClick={onClick} />
   </StyledIssue>
 )
 
