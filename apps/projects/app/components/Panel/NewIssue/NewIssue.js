@@ -6,7 +6,7 @@ import { gql } from 'apollo-boost'
 import { theme, Field, Info, TextInput, Button, DropDown } from '@aragon/ui'
 import { NEW_ISSUE, GET_ISSUES } from '../../../utils/gql-queries.js'
 import { Form } from '../../Form'
-import ethereumLoadingAnimation from '../../../assets/svg/ethereum-loading.svg'
+import { LoadingAnimation } from '../../Shared'
 
 // TODO: labels
 // TODO: import validator from '../data/validation'
@@ -21,7 +21,7 @@ const Creating = () => (
       flexDirection: 'column',
     }}
   >
-    <LoadingAnimation src={ethereumLoadingAnimation} />
+    <LoadingAnimation style={{ marginBottom: '32px' }} />
     Creating issue...
   </div>
 )
@@ -173,10 +173,5 @@ class NewIssue extends React.PureComponent {
     )
   }
 }
-
-const LoadingAnimation = styled.img`
-  display: block;
-  margin-bottom: 32px;
-`
 
 export default NewIssue
