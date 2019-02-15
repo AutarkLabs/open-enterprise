@@ -39,30 +39,22 @@ const FieldTitle = styled(Text.Block)`
   margin-bottom: 6px;
 `
 
-const SummaryTable = () => {
-  return (
-    <StyledTable>
-      <StyledCell>
-        <FieldTitle>Experience Level</FieldTitle>
-        <Text color={theme.textPrimary}>Beginner</Text>
+const SummaryTable = ({ experience, deadline, slots, status }) => {
+  const FIELD_TITLES = [
+    'Experience Level',
+    'Deadline',
+    'Num. Available',
+    'Status',
+  ]
+  const mappedTableFields = [experience, deadline, slots, status].map(
+    (field, i) => (
+      <StyledCell key={i}>
+        <FieldTitle>{FIELD_TITLES[i]}</FieldTitle>
+        <Text color={theme.textPrimary}>{field}</Text>
       </StyledCell>
-
-      <StyledCell>
-        <FieldTitle>Deadline</FieldTitle>
-        <Text>Due in 4 weeks</Text>
-      </StyledCell>
-
-      <StyledCell>
-        <FieldTitle>Num. Available</FieldTitle>
-        <Text>Up to 3</Text>
-      </StyledCell>
-
-      <StyledCell>
-        <FieldTitle>Status</FieldTitle>
-        <Text>Funded</Text>
-      </StyledCell>
-    </StyledTable>
+    )
   )
+  return <StyledTable>{mappedTableFields}</StyledTable>
 }
 
 // this 10px padding and...
@@ -188,6 +180,7 @@ const Detail = ({
   body,
   activities = fakeActivities, // TODO: Remove default fake value when data arrives from backend
   team = fakeMembers, // TODO: Also this
+  summaryData, // an object containing {experience, deadline, slots, status} for that issue
 }) => {
   const calculatedDate = () => {
     // something obtained from props and transformed to be like:
@@ -233,7 +226,7 @@ const Detail = ({
               </Badge>
             </div>
           </Wrapper>
-          <SummaryTable />
+          <SummaryTable {...summaryData} />
           <FieldTitle>Description</FieldTitle>
           <Text.Block style={{ marginTop: '20px' }}>{body}</Text.Block>
           <Text.Block>Labels</Text.Block>
