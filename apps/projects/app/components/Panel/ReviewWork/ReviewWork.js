@@ -5,7 +5,6 @@ import styled from 'styled-components'
 import { formatDistance } from 'date-fns'
 
 import {
-  Field,
   Text,
   TextInput,
   Button,
@@ -15,34 +14,48 @@ import {
 } from '@aragon/ui'
 
 import { FormField, FieldTitle } from '../../Form'
-import { IconGitHub, CheckButton } from '../../Shared'
+import { IconGitHub } from '../../Shared'
 
 // external Data
 const work = {
   user: {
     login: 'rkzel',
-    name: 'RKZ',
+    name: 'Radek',
     avatar: 'https://avatars0.githubusercontent.com/u/34452131?v=4',
     url: 'https://github.com/rkzel'
   },
   proof: 'https://github.com/AutarkLabs/planning-suite/pull/411',
-  comments: 'such fun!',
+  comments: 'This was an interesting challenge',
   hours: 13,
+  submissionDate: '2/9/2019'
 }
+
 class ReviewWork extends React.Component {
+  static propTypes = {
+    issue: PropTypes.object.isRequired
+  }
 
   state = {
     feedback: '',
-    rating: 5,
+    rating: 0,
+    ratingAlert: false,
+  }
+
+  checkRating = (result) => {
+    if (!this.state.rating) this.setState({ratingAlert: true})
+    else {
+      this.setState({ratingAlert: false})
+      console.log(result, this.state.feedback, work)
+    }
   }
 
   changeField = ({ target: { name, value } }) => this.setState({ [name]: value })
 
   onReviewApplicationAccept = () => {
-    console.log('Accepted', this.state.feedback, application)
+    this.checkRating('Accepted')
   }
   onReviewApplicationReject = () => {
-    console.log('Rejected', this.state.feedback, application)
+    this.checkRating('Rejected')
   }
 
   generateRatingChange = () => index => {
@@ -50,42 +63,162 @@ class ReviewWork extends React.Component {
     console.log('index: ', index)
   }
 
-
   render() {
-    const ratings = [ 
-      '5 - Excellent',
-      '4 - Exceeds Expectations',
-      '3 - Acceptable',
-      '2 - Needs Rework', 
+    const { issue } = this.props
+    const submittor = work.user
+    const submissionDateDistance = formatDistance(new Date(work.submissionDate), new Date())
+    const ratings = [
+      'Select a Rating',
       '1 - Unusable', 
+      '2 - Needs Rework', 
+      '3 - Acceptable',
+      '4 - Exceeds Expectations',
+      '5 - Excellent',
     ]
+
     return(
-      //<div>Review Work Please NOW</div>
       <div>
-        <FieldTitle>Quality Rating</FieldTitle>
-        <DropDown
-          items={ratings}
-          onChange={this.generateRatingChange()}
-          active={this.state.rating}
+        <IssueTitle>{issue.title}</IssueTitle>
+        
+        <SafeLink
+          href={issue.url}
+          target="_blank"
+          style={{ textDecoration: 'none', color: '#21AAE7' }}
+        >
+          <IssueLinkRow>
+            <IconGitHub color="#21AAE7" width='14px' height='14px' />
+            <Text style={{ marginLeft: '6px'}}>{issue.repo} #{issue.number}</Text>
+          </IssueLinkRow>
+        </SafeLink>
+
+        <SubmissionDetails>
+          <UserLink>
+            <img src={submittor.avatar} style={{ width: '32px', height: '32px', marginRight: '10px'}} />
+            <SafeLink
+              href={submittor.url}
+              target="_blank"
+              style={{ textDecoration: 'none', color: '#21AAE7', marginRight: '6px' }}
+            >
+              {submittor.name ? submittor.name : submittor.login}
+            </SafeLink>
+            applied {submissionDateDistance} ago
+          </UserLink>
+
+          <Separator/>
+
+          <FieldTitle>Proof of Work</FieldTitle>
+          <SafeLink
+            href={work.proof}
+            target="_blank"
+            style={{ textDecoration: 'none', color: '#21AAE7' }}
+          >
+            <DetailText>{work.proof}</DetailText>
+          </SafeLink>
+
+          <CommentsCheck comments={work.comments} />
+          <DetailText>{work.comments}</DetailText>
+
+          <FieldTitle>Hours Worked</FieldTitle>
+          <DetailText>{work.hours}</DetailText>
+
+        </SubmissionDetails>
+
+        <FormField 
+          label="Quality Rating" 
+          required
+          input={
+            <DropDown
+              items={ratings}
+              onChange={this.generateRatingChange()}
+              active={this.state.rating}
+            />
+          }
         />
+
+        <FormField
+          label="Feedback"
+          input={
+            <TextInput.Multiline
+              name='feedback'
+              rows={5}
+              style={{ resize: 'none', height: 'auto' }}
+              onChange={this.changeField}
+              placeholder="Do you have any feedback to provide the contributor?"
+              wide
+            />
+          }
+        />
+
+        <ReviewRow>
+          <ReviewButton emphasis="negative" onClick={this.onReviewApplicationReject}>Reject</ReviewButton>
+          <ReviewButton emphasis="positive" onClick={this.onReviewApplicationAccept}>Accept</ReviewButton>
+        </ReviewRow>
+
+        <AlertArea>
+          <RatingAlert alert={this.state.ratingAlert} />
+        </AlertArea>
+        
       </div>
     )
   }
 
 }
 
-//ReviewWork.propTypes = {
-//  /** array of issues to allocate bounties on */
-//  issues: PropTypes.arrayOf(
-//    PropTypes.shape({
-//      id,
-//      level,
-//    })
-//  ),
-//  /** base rate in pennies */
-//  rate: PropTypes.number,
-//  /** callback fn */
-//  onSubmit: PropTypes.func,
-//}
+function CommentsCheck(props) {
+  if (!props.comments) return null
+  else{
+    return <FieldTitle>Additional Comments</FieldTitle>
+  }
+}
+
+function RatingAlert(props) {
+  return props.alert ? <Info.Alert>Please Select A Quality Rating</Info.Alert> : null
+}
+
+const IssueTitle = styled(Text)`
+  color: #717171;
+  font-size: 17px;
+  font-weight: 300;
+  line-height: 38px;
+`
+const IssueLinkRow = styled.div`
+  height: 31px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+`
+const SubmissionDetails = styled.div`
+  border: 1px solid #DAEAEF;
+  background-color: #F3F9FB;
+  padding: 14px;
+  margin-bottom: 14px;
+`
+const UserLink = styled.div`
+  display: flex;
+  align-items: center;
+`
+const Separator = styled.hr`
+  height: 1px;
+  width: 100%;
+  color: #D1D1D1;
+  opacity: 0.1;
+`
+const DetailText = styled(Text)`
+  display: block;
+  margin-bottom: 10px;
+`
+const AlertArea = styled.div`
+  padding: 14px
+`
+const ReviewRow = styled.div`
+  display: flex;
+  margin-bottom: 8px;
+  justify-content: space-between;
+`
+const ReviewButton = styled(Button).attrs({
+  mode: 'strong',
+})`
+  width: 190px;
+`
 
 export default ReviewWork
