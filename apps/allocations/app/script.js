@@ -24,42 +24,48 @@ app.state().subscribe(state => {
  ***********************/
 
 async function handleEvents({ event, returnValues }) {
-  let nextState = null
+  const { entries, accounts } = appState
+  let nextAccounts, nextEntries
   switch (event) {
   case 'PayoutExecuted':
   case 'NewAccount':
-    nextState = await syncAccounts(appState, returnValues)
+    nextAccounts = await syncAccounts(accounts, returnValues)
     break
   case 'FundAccount':
-    nextState = await syncAccounts(appState, returnValues)
+    nextAccounts = await syncAccounts(accounts, returnValues)
     break
   case 'SetDistribution':
-    nextState = await syncAccounts(appState, returnValues)
+    nextAccounts = await syncAccounts(accounts, returnValues)
     break
   case 'EntryAdded':
-    nextState = await onEntryAdded(appState, returnValues)
+    nextEntries = await onEntryAdded(entries, returnValues)
     break
   case 'EntryRemoved':
-    nextState = await onEntryRemoved(appState, returnValues)
+    nextEntries = await onEntryRemoved(entries, returnValues)
     break
   default:
-    console.log('[Allocations script] Unknown event', response)
+    console.log('[Allocations script] Unknown event', event, returnValues)
   }
-  if (nextState !== null) {
-    const { accounts, entries } = nextState
-    const filteredState = { accounts, entries: filterEntries(entries) }
-    app.cache('state', filteredState)
+
+  // If nextAccounts or nextEntries were not generated
+  // then return each original array
+  const filteredState = {
+    accounts: nextAccounts || accounts,
+    entries: (nextEntries && filterEntries(nextEntries)) || entries,
   }
+  console.log('[Allocation script] new state:', filteredState)
+
+  app.cache('state', filteredState)
 }
 
-async function syncAccounts(state, { accountId }) {
+async function syncAccounts(accounts, { accountId }) {
   const transform = ({ data, ...account }) => ({
     ...account,
     data: { ...data, executed: true },
   })
   try {
     const updatedState = await updateAllocationState(
-      state,
+      accounts,
       accountId,
       transform
     )
@@ -108,23 +114,22 @@ async function checkAccountsLoaded(accounts, accountId, transform) {
   }
 }
 
-async function updateAllocationState(state, accountId, transform) {
-  const { accounts = [] } = state
+async function updateAllocationState(accounts = [], accountId, transform) {
   try {
     const newAccounts = await checkAccountsLoaded(
       accounts,
       accountId,
       transform
     )
-    const newState = { ...state, accounts: newAccounts }
-    return newState
+    const nextAccounts = [...accounts, ...newAccounts]
+    return nextAccounts
   } catch (err) {
     console.error('[Allocations script] updateAllocationState failed', err)
   }
 }
 
 /** AddressBook management */
-const onEntryAdded = async ({ entries = [] }, { addr }) => {
+const onEntryAdded = async (entries = [], { addr }) => {
   // is addr already in the state?
   if (entries.some(entry => entry.addr === addr)) {
     // entry already cached, do nothing
@@ -137,20 +142,17 @@ const onEntryAdded = async ({ entries = [] }, { addr }) => {
     console.log('[Allocations script] caching new contract entry', data.name)
     // console.log('[AddressBook script] at position', addedIndex) // in case we need the index
   }
-  const state = { entries } // return the (un)modified entries array
-  return state
+  return entries // return the (un)modified entries array
 }
 
-const onEntryRemoved = async ({ entries = [] }, { addr }) => {
+const onEntryRemoved = async (entries = [], { addr }) => {
   const removeIndex = entries.findIndex(entry => entry.addr === addr)
   if (removeIndex > -1) {
     // entry already cached, remove from state
     console.log('[Allocations script] removing', addr.name, 'cached copy')
     entries.splice(removeIndex, 1)
   }
-
-  const state = { entries } // return the (un)modified entries array
-  return state
+  return entries // return the (un)modified entries array
 }
 /***********************
  *     AddressBook     *
