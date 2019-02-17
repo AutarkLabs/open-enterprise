@@ -167,6 +167,7 @@ const fakeMembers = [
 
 const Detail = ({
   bountyBadge = '100 ANT',
+  labels,
   title,
   number,
   repo,
@@ -221,8 +222,23 @@ const Detail = ({
           </Wrapper>
           <SummaryTable {...summaryData} />
           <FieldTitle>Description</FieldTitle>
-          <Text.Block style={{ marginTop: '20px' }}>{body}</Text.Block>
-          <Text.Block>Labels</Text.Block>
+          <Text.Block style={{ marginTop: '20px', marginBottom: '20px' }}>
+            {body}
+          </Text.Block>
+          <Text size="small" color={theme.textTertiary}>
+            {labels.totalCount
+              ? labels.edges.map(label => (
+                <Badge
+                  key={label.node.id}
+                  style={{ marginRight: '5px' }}
+                  background={'#' + label.node.color}
+                  foreground={'#000'}
+                >
+                  {label.node.name}
+                </Badge>
+              ))
+              : ''}
+          </Text>
         </div>
       </div>
       <div style={{ flex: 1, maxWidth: '359px' }}>
