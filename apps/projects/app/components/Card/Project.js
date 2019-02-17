@@ -28,24 +28,22 @@ const Project = ({
   onRemoveProject,
   changeActiveIndex
 }) => {
+
   const removeProject = () => {
     console.log('removeProject')
     onRemoveProject(id)
   }
 
-  const clickProject = () => {
-    console.log('clickProject')
-  }
+  const clickMenu = e => e.stopPropagation()
 
-  const clickContext = () => {
-    event.stopPropagation()
-    console.log('clickContext')
+  const clickContext = e => {
+    e.stopPropagation()
     changeActiveIndex({ tabIndex: 1, tabData: { filterIssuesByRepoId: repoId }})
   }
 
   return (
     <StyledCard onClick={clickContext}>
-      <MenuContainer>
+      <MenuContainer onClick={clickMenu}>
         <ContextMenu>
           <ContextMenuItem>
             <IconHome />
@@ -134,7 +132,7 @@ const CardDescriptionText = styled(Text.Block).attrs({
 })`
   display: block;
   display: -webkit-box;
-  height: 7.0em;
+  height: 7.1em;
   margin: 0 auto;
   line-height: 1.5em;
   -webkit-line-clamp: 5;

@@ -12,7 +12,7 @@ import {
   IconAttention
 } from '@aragon/ui'
 
-import { Form, FormField, FieldTitle } from '../../Form'
+import { Form, FormField, FieldTitle, DescriptionInput } from '../../Form'
 import { IconGitHub, CheckButton } from '../../Shared'
 
 class SubmitWork extends React.Component {
@@ -53,7 +53,7 @@ class SubmitWork extends React.Component {
         submitDisabled={this.canSubmit()}
       >
         <IssueTitle>{title}</IssueTitle>
-        
+
         <SafeLink
           href={url}
           target="_blank"
@@ -69,26 +69,22 @@ class SubmitWork extends React.Component {
           label="Proof of Work"
           required
           input={
-            <TextInput.Multiline
+            <DescriptionInput
               name='proof'
               rows={3}
-              style={{ resize: 'none', height: 'auto' }}
               onChange={this.changeField}
               placeholder="Please link the Github Pull Request or an alternative proof of work if requested."
-              wide
             />
           }
         />
         <FormField
           label="Additional Comments"
           input={
-            <TextInput.Multiline
+            <DescriptionInput
               name='comments'
               rows={5}
-              style={{ resize: 'none', height: 'auto' }}
               onChange={this.changeField}
               placeholder="Comments or details that haven’t already been described elsewhere."
-              wide
             />
           }
         />
@@ -148,7 +144,8 @@ const IssueTitle = styled(Text)`
   color: #717171;
   font-size: 17px;
   font-weight: 300;
-  line-height: 38px;
+  line-height: 1.5;
+  margin-bottom: 10px;
 `
 
 export default SubmitWork
