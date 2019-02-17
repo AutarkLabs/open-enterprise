@@ -58,7 +58,7 @@ class ReviewWork extends React.Component {
     this.checkRating('Rejected')
   }
 
-  generateRatingChange = () => index => {
+  onRatingChange = index => {
     this.setState({rating: index})
     console.log('index: ', index)
   }
@@ -123,13 +123,13 @@ class ReviewWork extends React.Component {
 
         </SubmissionDetails>
 
-        <FormField 
+        <FormField
           label="Quality Rating" 
           required
           input={
             <DropDown
               items={ratings}
-              onChange={this.generateRatingChange()}
+              onChange={this.onRatingChange}
               active={this.state.rating}
             />
           }
