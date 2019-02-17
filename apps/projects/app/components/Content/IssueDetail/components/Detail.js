@@ -1,10 +1,10 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Badge, Text, theme, ContextMenu, ContextMenuItem } from '@aragon/ui'
+import { formatDistance } from 'date-fns'
 
 import { DropDownButton } from '../../../Shared'
 import { IconGitHub } from '../../../Shared'
-
 
 const StyledTable = styled.div`
   margin-bottom: 20px;
@@ -172,13 +172,14 @@ const Detail = ({
   number,
   repo,
   body,
+  createdAt,
   activities = fakeActivities, // TODO: Remove default fake value when data arrives from backend
   team = fakeMembers, // TODO: Also this
   summaryData, // an object containing {experience, deadline, slots, status} for that issue
 }) => {
   const calculatedDate = () => {
-    // something obtained from props and transformed to be like:
-    return 'Opened 4 days ago'
+    const date = Date.now()
+    return formatDistance(createdAt, date, { addSuffix: true })
   }
   // Some dynamically generated components
   const teamRows = team.map((member, i) => <MemberRow key={i} {...member} />)
@@ -197,7 +198,7 @@ const Detail = ({
               <Text.Block color="#21AAE7" style={{ marginBottom: '10px' }}>
                 <IconGitHub color="#21AAE7" width="14px" height="14px" />
                 <span style={{ marginLeft: '5px ' }}>
-                {repo} #{number}
+                  {repo} #{number}
                 </span>
               </Text.Block>
               <Text.Block

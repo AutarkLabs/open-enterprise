@@ -10,6 +10,7 @@ export const GET_ISSUES = gql`
             id
             title
             body
+            createdAt
             repository {
               id
               name
