@@ -3,15 +3,8 @@ import styled from 'styled-components'
 import { Badge, Text, theme, ContextMenu, ContextMenuItem } from '@aragon/ui'
 
 import { DropDownButton } from '../../../Shared'
-import githubLogo from '../../../../assets/svg/github.svg'
+import { IconGitHub } from '../../../Shared'
 
-const GithubLogo = styled.img`
-  height: 1em;
-  vertical-align: middle;
-  margin-right: 5px;
-  filter: invert(59%) sepia(21%) saturate(3955%) hue-rotate(166deg)
-    brightness(96%) contrast(88%);
-`
 
 const StyledTable = styled.div`
   margin-bottom: 20px;
@@ -83,7 +76,7 @@ const column = {
 }
 
 // TODO: Remove fake default value for img
-const Avatar = ({ size, img = githubLogo }) => {
+const Avatar = ({ size, img }) => {
   // do something with the size...
   const avatarStyle = () => {
     switch (size) {
@@ -201,8 +194,10 @@ const Detail = ({
                 {title}
               </Text.Block>
               <Text.Block color="#21AAE7" style={{ marginBottom: '10px' }}>
-                <GithubLogo src={githubLogo} />
+                <IconGitHub color="#21AAE7" width="14px" height="14px" />
+                <span style={{ marginLeft: '5px ' }}>
                 {repo} #{number}
+                </span>
               </Text.Block>
               <Text.Block
                 size="small"
