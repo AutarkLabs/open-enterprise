@@ -50,6 +50,10 @@ class Issues extends React.PureComponent {
     this.props.onAllocateBounties(this.state.selectedIssues)
   }
 
+  handleReviewApplication = issue => {
+    this.props.onReviewApplication(issue)
+  }
+
   handleSubmitWork = issue => {
     this.props.onSubmitWork(issue)
   }
@@ -267,29 +271,32 @@ class Issues extends React.PureComponent {
                   activeIndex={this.props.activeIndex}
                 />
                 <IssuesScrollView>
-                  <ScrollWrapper>
-                    {shapeIssues(issuesFiltered).map(issue => (
-                      <Issue
-                        isSelected={this.state.selectedIssues
-                          .map(selectedIssue => selectedIssue.id)
-                          .includes(issue.id)}
-                        onClick={() => {
-                          this.handleIssueClick(issue)
-                        }}
-                        onSelect={() => {
-                          this.handleIssueSelection(issue)
-                        }}
-                        onSubmitWork={() => {
-                          this.handleSubmitWork(issue)
-                        }}
-                        onRequestAssignment={() => {
-                          this.handleRequestAssignment(issue)
-                        }}
-                        key={issue.id}
-                        {...issue}
-                      />
-                    ))}
-                  </ScrollWrapper>
+                <ScrollWrapper>
+                  {shapeIssues(issuesFiltered).map(issue => (
+                    <Issue
+                      isSelected={this.state.selectedIssues
+                        .map(selectedIssue => selectedIssue.id)
+                        .includes(issue.id)}
+                       onClick={() => {
+                        this.handleIssueClick(issue)
+                       }}
+                      onSelect={() => {
+                        this.handleIssueSelection(issue)
+                      }}
+                      onReviewApplication={() => {
+                        this.handleReviewApplication(issue)
+                      }}
+                      onSubmitWork={() => {
+                        this.handleSubmitWork(issue)
+                      }}
+                      onRequestAssignment={() => {
+                        this.handleRequestAssignment(issue)
+                      }}
+                      key={issue.id}
+                      {...issue}
+                    />
+                  ))}
+               </ScrollWrapper>
                 </IssuesScrollView>
               </StyledIssues>
             )

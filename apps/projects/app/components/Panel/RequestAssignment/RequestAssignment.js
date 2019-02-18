@@ -11,7 +11,7 @@ import {
   SafeLink,
 } from '@aragon/ui'
 
-import { Form, FormField, DateInput } from '../../Form'
+import { Form, FormField, DateInput, DescriptionInput } from '../../Form'
 import { IconGitHub, CheckButton } from '../../Shared'
 
 class RequestAssignment extends React.Component {
@@ -23,7 +23,7 @@ class RequestAssignment extends React.Component {
   state = {
     workplan: '',
     hours: 0,
-    eta: undefined,
+    eta: new Date(),
     ack1: false,
     ack2: false
   }
@@ -66,13 +66,11 @@ class RequestAssignment extends React.Component {
           label="Work Plan"
           required
           input={
-            <TextInput.Multiline
+            <DescriptionInput
               name='workplan'
               rows={3}
-              style={{ resize: 'none', height: 'auto' }}
               onChange={this.changeField}
               placeholder="Describe how you plan to accomplish the task and any questions you may have."
-              wide
             />
           }
         />
@@ -155,7 +153,8 @@ const IssueTitle = styled(Text)`
   color: #717171;
   font-size: 17px;
   font-weight: 300;
-  line-height: 38px;
+  line-height: 1.5;
+  margin-bottom: 10px;
 `
 
 export default RequestAssignment

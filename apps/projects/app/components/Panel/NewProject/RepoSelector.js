@@ -4,7 +4,7 @@ import gql from 'graphql-tag'
 import styled from 'styled-components'
 import { Button, RadioList, Text, TextInput, theme } from '@aragon/ui'
 
-import ethereumLoadingAnimation from '../../../assets/svg/ethereum-loading.svg'
+import { LoadingAnimation } from '../../Shared'
 
 const UNSELECT = {
   repoSelected: -1,
@@ -253,12 +253,6 @@ const ScrollWrapper = styled.div`
   /* max-height: 40%; */
   overflow: auto;
 `
-
-const LoadingAnimation = styled.img`
-  display: block;
-  margin-bottom: 32px;
-`
-
 const Loading = () => (
   <div
     style={{
@@ -266,10 +260,10 @@ const Loading = () => (
       justifyContent: 'center',
       alignItems: 'center',
       height: '100%',
-      flexDirection: 'column',
+      flexDirection: 'column'
     }}
   >
-    <LoadingAnimation src={ethereumLoadingAnimation} />
+    <LoadingAnimation style={{ marginBottom: '32px' }} />
     Loading repos...
   </div>
 )

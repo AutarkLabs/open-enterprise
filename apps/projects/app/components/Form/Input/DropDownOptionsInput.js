@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { IconAdd, TextInput, theme, unselectable } from '@aragon/ui'
-import IconRemove from '../../../assets/components/IconRemove'
+import { IconRemove } from '../../Shared'
 
 const {
   disabled,

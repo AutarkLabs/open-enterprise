@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { Text, theme, Badge, Button } from '@aragon/ui'
+import { Text, theme, Badge, Button, ContextMenu, ContextMenuItem } from '@aragon/ui'
 
 import { CheckButton } from '../Shared'
 
@@ -49,18 +49,7 @@ const IssueDetails = styled.div`
   display: flex;
 `
 
-// TODO: @aragon/ui Table?
-const Issue = ({
-  title,
-  repo,
-  number,
-  labels,
-  isSelected,
-  onClick,
-  onSelect,
-  onSubmitWork,
-  onRequestAssignment,
-}) => (
+const Issue = ({ title, repo, number, labels, isSelected, onClick, onSelect, onSubmitWork, onRequestAssignment, onReviewApplication}) => (
   <StyledIssue>
     <ClickArea onClick={onClick} />
     <CheckButton checked={isSelected} onChange={onSelect} />
@@ -81,8 +70,6 @@ const Issue = ({
         >
           {title}
         </Text>
-        <Button onClick={onSubmitWork}>Submit Work</Button>
-        <Button onClick={onRequestAssignment}>Request Assignment</Button>
       </div>
       <IssueDetails>
         <Text color={theme.textSecondary}>
@@ -104,6 +91,19 @@ const Issue = ({
         </Text>
       </IssueDetails>
     </div>
+    <div style={{ marginRight: '20px' }}>
+      <ContextMenu>
+        <ContextMenuItem onClick={onSubmitWork}>
+          <ActionLabel>Submit Work</ActionLabel>
+        </ContextMenuItem>
+        <ContextMenuItem onClick={onRequestAssignment}>
+          <ActionLabel>Request Assignment</ActionLabel>
+        </ContextMenuItem>
+        <ContextMenuItem onClick={onReviewApplication}>
+          <ActionLabel>Review Application</ActionLabel>
+        </ContextMenuItem>
+      </ContextMenu>
+    </div>
   </StyledIssue>
 )
 
@@ -115,5 +115,13 @@ Issue.propTypes = {
   onClick: PropTypes.func.isRequired,
   onSelect: PropTypes.func,
 }
+
+const ActionLabel = styled.span`
+  margin-left: 15px;
+`
+const MenuContainer = styled.div`
+  align-self: flex-end;
+  align-items: center;
+`
 
 export default Issue
