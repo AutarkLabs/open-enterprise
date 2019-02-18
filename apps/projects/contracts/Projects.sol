@@ -474,7 +474,7 @@ contract Projects is IsContract, AragonApp {
         uint standardBountyId;
         // submit the bounty to the StandardBounties contract
         for (uint i = 0; i < _bountySizes.length; i++) {
-            ipfsHash = "";//substring(_ipfsAddresses, i.mul(46), i.add(1).mul(46));
+            ipfsHash = getHash(_ipfsAddresses, i);
             
             standardBountyId = bounties.issueBounty(
                 this,                           //    address _issuer
@@ -649,19 +649,35 @@ contract Projects is IsContract, AragonApp {
         require(_msgValue == transValueTotal, "ETH sent to cover bounties does not match bounty total");
     }
 
-    function substring(
-        string str,
-        uint startIndex,
-        uint endIndex
+    function getHash(
+        string _str,
+        uint256 _hashIndex
     ) internal pure returns (string)
     {
         // first char is at location 0
         //IPFS addresses span from 0 (startindex) to 46 (endIndex)
-        bytes memory strBytes = bytes(str);
+        uint256 startIndex = _hashIndex * 46;
+        uint256 endIndex = startIndex + 46;
+        bytes memory strBytes = bytes(_str);
         bytes memory result = new bytes(endIndex-startIndex);
-        for (uint i = startIndex; i < endIndex; i++) {
-            result[i-startIndex] = strBytes[i];
+        uint256 length = endIndex - startIndex;
+        uint256 dest;
+        uint256 src;
+        assembly {
+          dest := add(result,0x20)
+          src := add(strBytes,add(0x20,startIndex))
+          mstore(dest, mload(src))
         }
+        src += 32;
+        dest += 32;
+        length -= 32;
+        uint mask = 256 ** (32 - length) - 1;
+        assembly {
+            let srcpart := and(mload(src), not(mask))
+            let destpart := and(mload(dest), mask)
+            mstore(dest, or(destpart, srcpart))
+        }
+
         return string(result);
     }
 

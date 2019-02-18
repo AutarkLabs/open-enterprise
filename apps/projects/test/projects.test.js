@@ -44,7 +44,6 @@ contract('Projects App', accounts => {
   beforeEach(async () => {
     //Deploy Base DAO Contracts
     const r = await daoFact.newDAO(root)
-    console.log('hello')
     const dao = Kernel.at(
       r.logs.filter(l => l.event == 'DeployDAO')[0].args.dao
     )
