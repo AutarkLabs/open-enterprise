@@ -21,7 +21,7 @@ const CopyIcon = () => <img src={icon} alt="Copy address to the clipboard" />
 // TODO: colors taken directly from Invision
 const ENTITY_TYPES = [
   { name: 'Individual', fg: '#76A4E5', bg: '#CDECFF' },
-  { name: 'Organisation', fg: '#E5B243', bg: '#F6E4B0' },
+  { name: 'Organization', fg: '#E5B243', bg: '#F6E4B0' },
   { name: 'Project', fg: '#EE5BF1', bg: '#EDD0F2' },
 ]
 
