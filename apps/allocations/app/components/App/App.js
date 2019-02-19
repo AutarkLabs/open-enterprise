@@ -6,6 +6,7 @@ import styled from 'styled-components'
 import { Accounts, NewAccountButton } from '.'
 import { Title } from '../Shared'
 import { NewAccount, NewAllocation } from '../Panel'
+import BigNumber from 'bignumber.js'
 
 // import { allocationsMockData } from '../../utils/mockData'
 
@@ -27,7 +28,7 @@ class App extends React.Component {
   }
   createAccount = ({ limit, ...account }) => {
     account.balance = 0
-    account.limit = parseInt(limit)*10e17
+    account.limit = BigNumber(10e17).times(limit).toString()
     this.props.app.newPayout(account.description, account.limit, 0x0)
     this.closePanel()
     console.info('App.js: Account Created:')
