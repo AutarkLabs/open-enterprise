@@ -224,8 +224,7 @@ class App extends React.PureComponent {
   }
 
   onSubmitBountyAllocation = async issues => {
-    console.log('repos:', this.props.repos)
-    console.log('bounty allocation submitted', issues)
+    this.closePanel()
     let bountySymbol = this.props.bountySettings.bountyCurrency
     let bountyToken
     this.props.tokens.forEach(
@@ -233,21 +232,8 @@ class App extends React.PureComponent {
         if(token.symbol === bountySymbol) {
           bountyToken = token.addr
         }
-      })
-    const emptyAddrArray = [
-      '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
-      '0xd00cc82a132f421bA6414D196BC830Db95e2e7Dd',
-      '0x89c199302bd4ebAfAa0B5Ee1Ca7028C202766A7F',
-      '0xd28c35a207c277029ade183b6e910e8d85206c07',
-      '0xee6bd04c6164d7f0fa1cb03277c855639d99a7f6',
-      '0xb1d048b756f7d432b42041715418b48e414c8f50',
-      '0x6945b970fa107663378d242de245a48c079a8bf6',
-      '0x83ac654be75487b9cfcc80117cdfb4a4c70b68a1',
-      '0x690a63d7023780ccbdeed33ef1ee62c55c47460d',
-      '0xb1afc07af31795d61471c169ecc64ad5776fa5a1',
-      '0x4aafed050dc1cf7e349accb7c2d768fd029ece62',
-      '0xd7a5846dea118aa76f0001011e9dc91a8952bf19',
-    ]
+      }
+    )
 
     
     let content = ipfs.types.Buffer.from(issues.toString())
@@ -264,29 +250,21 @@ class App extends React.PureComponent {
         ...issues[key]
       })
     }
-    console.log('bounty allocation submitted', repos)
     for (var key in repos) {
 
       repo = repos[key]
       let ipfsString = ''
       let content, results
       await repo.forEach(async r => {
-        console.log('String Builder')        
-        console.log(r)
         content = ipfs.types.Buffer.from(r.toString())
         results = await ipfs.add(content)
-        console.log(results)
         ipfsString += results[0].hash
-        console.log(ipfsString)
       })
       
-      repo = repos[key]
-      console.log(repo)
-      console.log(key)
       const tokenArray = new Array(repo.length).fill(bountyToken)
 
       console.log('Bounty data',
-        web3.toHex('MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM='),
+        web3.toHex(repo[0].repoId),
         repo.map( (issue) => issue.number),
         repo.map( (issue) => issue.size),
         repo.map( (issue) => issue.deadline),
@@ -295,7 +273,7 @@ class App extends React.PureComponent {
         ipfsString
       )
       this.props.app.addBounties(
-        web3.toHex('MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM='),
+        web3.toHex(repo[0].repoId),
         repo.map( (issue) => issue.number),
         repo.map( (issue) => issue.size),
         repo.map( (issue) => {return ( Date.now() + 8600 )} ),
@@ -320,36 +298,29 @@ class App extends React.PureComponent {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.RequestAssignment,
       panelProps: {
-        onSubmit: this.onRequestAssignment,
+        onRequestAssignment: this.onRequestAssignment,
         githubCurrentUser: this.props.githubCurrentUser,
         issue
       },
     }))
   }
 
-  onReviewApplication = props => console.log('onReviewApplication', props)
+  onRequestAssignment = (state, issue) => {
+    this.closePanel()
+    this.props.app.requestAssignment(web3.toHex(issue.repoId), issue.number, state.workplan)
+  }
 
   reviewApplication = issue => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.ReviewApplication,
       panelProps: {
         issue,
-        onSubmit: this.onReviewApplication,
+        onReviewApplication: this.onReviewApplication,
       },
     }))
   }
 
   onReviewApplication = props => console.log('onReviewApplication', props)
-
-  reviewApplication = issue => {
-    this.setState((_prevState, _prevProps) => ({
-      panel: PANELS.ReviewApplication,
-      panelProps: {
-        issue,
-        onSubmit: this.onReviewApplication,
-      },
-    }))
-  }
 
   curateIssues = issues => {
     this.setState((_prevState, _prevProps) => ({

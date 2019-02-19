@@ -47,6 +47,7 @@ class Issues extends React.PureComponent {
   }
 
   handleAllocateBounties = () => {
+    console.log('handleAllocationBounties:', this.state.selectedIssues)
     this.props.onAllocateBounties(this.state.selectedIssues)
   }
 
@@ -130,6 +131,7 @@ class Issues extends React.PureComponent {
 
   handleIssueSelection = issue => {
     this.setState(({ selectedIssues }) => {
+      console.log('handleIssueSelection', issue)
       const newSelectedIssues = selectedIssues
         .map(selectedIssue => selectedIssue.id)
         .includes(issue.id)
@@ -213,10 +215,8 @@ class Issues extends React.PureComponent {
     </StyledIssues>
   )
 
-  render() {
-    const { projects, onNewProject, activeIndex, tokens, bountyIssues } = this.props
-    // better return early if we have no projects added?
-    if (projects.length === 0) return <Empty action={onNewProject} />
+  shapeIssues = issues => {
+    const { tokens, bountyIssues } =  this.props
     let bountyIssueObj = {}
     let tokenObj = {}
 
@@ -229,31 +229,38 @@ class Issues extends React.PureComponent {
       console.log('tokenObj:', tokenObj)
     })
 
+    return issues.map(({ __typename, repository: { id, name }, ...fields }) => 
+    {
+      if(bountyIssueObj[fields.number]){
+        let data = bountyIssueObj[fields.number].data
+        console.log('Bounty Issue Info:', data)
+
+        return { 
+          ...fields,
+          ...bountyIssueObj[fields.number].data,
+          repoId: id,
+          repo: name,
+          symbol: tokenObj[data.token]
+        }          
+      }
+      return { 
+        ...fields,
+        repoId: id,
+        repo: name,
+      }
+    })
+  }
+  render() {
+    const { projects, onNewProject} = this.props
+    // better return early if we have no projects added?
+    if (projects.length === 0) return <Empty action={onNewProject} />
+
     const { allSelected } = this.state
     const reposIds = projects.map(project => project.data._repo)
 
     const flattenIssues = nodes =>
       nodes && [].concat(...nodes.map(node => node.issues.nodes))
 
-    const shapeIssues = issues =>
-      issues.map(({ __typename, repository: { name }, ...fields }) => 
-      {
-        if(bountyIssueObj[fields.number]){
-          let data = bountyIssueObj[fields.number].data
-          console.log('Bounty Issue Info:', data)
-
-          return { 
-            ...fields,
-            ...bountyIssueObj[fields.number].data,
-            repo: name,
-            symbol: tokenObj[data.token]
-          }          
-        }
-        return { 
-          ...fields,
-          repo: name,
-        }
-      })
 
     //console.log('current issues props:', this.props, 'and state:', this.state)
 
@@ -280,7 +287,7 @@ class Issues extends React.PureComponent {
                   activeIndex={this.props.activeIndex}
                 />
                 <IssuesScrollView>
-                  {shapeIssues(issuesFiltered).map(issue => (
+                  {this.shapeIssues(issuesFiltered).map(issue => (
                     <Issue
                       isSelected={this.state.selectedIssues
                         .map(selectedIssue => selectedIssue.id)

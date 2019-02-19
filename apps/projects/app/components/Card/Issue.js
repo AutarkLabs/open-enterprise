@@ -32,7 +32,7 @@ const IssueDetails = styled.div`
 `
 
 // TODO: @aragon/ui Table?
-const Issue = ({ title, repo, number, labels, isSelected, onSelect, onSubmitWork, onRequestAssignment, onReviewApplication, balance, symbol }) => (
+const Issue = ({workStatus, title, repo, number, labels, isSelected, onSelect, onSubmitWork, onRequestAssignment, onReviewApplication, balance, symbol }) => (
   <StyledIssue>
     <CheckButton checked={isSelected} onChange={onSelect} />
     <div
@@ -80,17 +80,19 @@ const Issue = ({ title, repo, number, labels, isSelected, onSelect, onSubmitWork
         </Badge>
         
       }
-      <ContextMenu>
-        <ContextMenuItem onClick={onSubmitWork}>
-          <ActionLabel>Submit Work</ActionLabel>
-        </ContextMenuItem>
-        <ContextMenuItem onClick={onRequestAssignment}>
-          <ActionLabel>Request Assignment</ActionLabel>
-        </ContextMenuItem>
-        <ContextMenuItem onClick={onReviewApplication}>
-          <ActionLabel>Review Application</ActionLabel>
-        </ContextMenuItem>
-      </ContextMenu>
+      {workStatus !== undefined &&
+        <ContextMenu>
+          <ContextMenuItem onClick={onSubmitWork}>
+            <ActionLabel>Submit Work</ActionLabel>
+          </ContextMenuItem>
+          <ContextMenuItem onClick={onRequestAssignment}>
+            <ActionLabel>Request Assignment</ActionLabel>
+          </ContextMenuItem>
+          <ContextMenuItem onClick={onReviewApplication}>
+            <ActionLabel>Review Application</ActionLabel>
+          </ContextMenuItem>
+        </ContextMenu>
+      }
     </div>
   </StyledIssue>
 )

@@ -9,6 +9,9 @@ import VaultJSON from '../build/contracts/Vault.json'
 import tokenSymbolAbi from './abi/token-symbol.json'
 import { isNullOrUndefined } from 'util'
 
+
+const status = ['new', 'review-applicants', 'review-work', 'finished']
+
 const toAscii = hex => {
   // Find termination
   let str = ''
@@ -109,7 +112,7 @@ app.state().subscribe(state => {
  ***********************/
 
 async function handleEvents(response) {
-  let nextState
+  let nextState, data
   switch (response.event) {
   case 'RepoAdded':
     console.log('[Projects] event RepoAdded')
@@ -122,15 +125,25 @@ async function handleEvents(response) {
   case 'RepoUpdated':
     console.log('[Projects] RepoUpdated', response.returnValues)
     nextState = await syncRepos(appState, response.returnValues)
+  case 'AssignmentRequested':
+    console.log('[Projects] AssignmentRequested', appState, response.returnValues)
+    if(response.returnValues === null || response.returnValues === undefined) {
+      break
+    }
+    data = await loadIssueData(response.returnValues)
+    data.workStatus = status[1]
+    nextState = syncIssues(appState, response.returnValues, data)
+    appState = nextState
+    break
   case 'BountyAdded':
     console.log('[Projects] BountyAdded', appState, response.returnValues)
     if(response.returnValues === null || response.returnValues === undefined) {
       break
     }
-    const data = await loadIssueData(response.returnValues)
+    data = await loadIssueData(response.returnValues)
+    data.workStatus = status[0]
     nextState = syncIssues(appState, response.returnValues, data)
     appState = nextState
-    console.log('Bounty Added State Change', nextState)
     break
   case 'IssueCurated':
     console.log('[Projects] IssueCurated', response.returnValues)
@@ -336,14 +349,14 @@ async function updateState(state, id, transform) {
   }
 }
 
-function updateIssueState(state, issueNumber, data ) {
+function updateIssueState(state, issueNumber, data) {
   console.log('update state: ', state, ', data: ', data)
   if(data === undefined || data === null) {
     return state
   }
   const { issues = [] } = state
   try {
-    let newIssues = checkIssuesLoaded(issues, issueNumber, data )
+    let newIssues = checkIssuesLoaded(issues, issueNumber, data)
     let newState = { ...state, issues: newIssues }
     return newState
   } catch (err) {
