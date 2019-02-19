@@ -30,17 +30,6 @@ import "@aragon/os/contracts/common/IsContract.sol";
 *******************************************************************************/
 interface Bounties {
 
-  function issueAndActivateBounty(
-      address _issuer,
-      uint _deadline,
-      string _data,
-      uint256 _fulfillmentAmount,
-      address _arbiter,
-      bool _paysTokens,
-      address _tokenContract,
-      uint256 _value
-    ) external payable returns (uint);
-
     function issueBounty(
         address _issuer,
         uint _deadline,
@@ -183,9 +172,9 @@ contract Projects is IsContract, AragonApp {
 
         _changeBountySettings(
             "100\tBeginner\t300\tIntermediate\t500\tAdvanced",
-            3000, // baseRate
+            1, // baseRate
             336, // bountyDeadline
-            "FTL", // bountyCurrency
+            "autark", // bountyCurrency
             0x0000000000000000000000000000000000000000, // bountyAllocator
             0x0000000000000000000000000000000000000000 //bountyArbiter
         );
@@ -483,13 +472,15 @@ contract Projects is IsContract, AragonApp {
                 _bountySizes[i],                //    uint256 _fulfillmentAmount
                 address(0),                     //    address _arbiter
                 _tokenBounties[i],              //    bool _paysTokens
-                _tokenContracts[i]     //    address _tokenContract
+                _tokenContracts[i]              //    address _tokenContract
             );
-            
-            vault.transfer(address(_tokenContracts[i]), this, _bountySizes[i]);
-            TokenApproval(_tokenContracts[i]).approve(bounties, _bountySizes[i]);
-            // Activate the bounty so it can be fulfilled
-            bounties.activateBounty(standardBountyId, _bountySizes[i]);
+
+            _activateBounty(
+                _tokenBounties[i],
+                _tokenContracts[i],
+                _bountySizes[i],
+                standardBountyId
+            );
             // Implement case for ETH
 
             //Add bounty to local registry
@@ -603,6 +594,23 @@ contract Projects is IsContract, AragonApp {
         settings.bountyArbiter = bountyArbiter;
 
         emit BountySettingsChanged();
+    }
+
+    function _activateBounty(
+        bool _tokenBounty,
+        address _tokenCountract,
+        uint _bountySize,
+        uint _standardBountyId
+    ) internal
+    {
+        if (_tokenBounty) {
+            vault.transfer(_tokenCountract, this, _bountySize);
+            TokenApproval(_tokenCountract).approve(bounties, _bountySize);
+            // Activate the bounty so it can be fulfilled
+            bounties.activateBounty(_standardBountyId, _bountySize);
+        } else {
+            bounties.activateBounty.value(_bountySize)(_standardBountyId, _bountySize);
+        }
     }
 
     function _addBounty(

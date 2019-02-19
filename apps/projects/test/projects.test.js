@@ -44,7 +44,6 @@ contract('Projects App', accounts => {
   beforeEach(async () => {
     //Deploy Base DAO Contracts
     const r = await daoFact.newDAO(root)
-    console.log('hello')
     const dao = Kernel.at(
       r.logs.filter(l => l.event == 'DeployDAO')[0].args.dao
     )
@@ -110,6 +109,15 @@ contract('Projects App', accounts => {
     // Deploy test Bounties contract
     registry = await StandardBounties.new(web3.toBigNumber(owner1))
     vault = await Vault.new()
+
+    await acl.createPermission(
+      app.address,
+      vault.address,
+      await vault.TRANSFER_ROLE(),
+      root,
+      { from: root }
+    )
+
     bounties = StandardBounties.at(registry.address)
 
     await app.initialize(registry.address, vault.address)
