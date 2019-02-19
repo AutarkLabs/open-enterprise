@@ -30,6 +30,7 @@ class Issues extends React.PureComponent {
       deadlines: {},
       experiences: {},
     },
+    sortBy: { what: 'Name', direction: -1 },
     textFilter: '',
     reload: false,
   }
@@ -73,6 +74,11 @@ class Issues extends React.PureComponent {
   handleFiltering = filters => {
     // TODO: why is reload necessary?
     this.setState(prevState => ({ filters, reload: !prevState.reload }))
+  }
+
+  handleSorting = sortBy => {
+    // TODO: why is reload necessary?
+    this.setState(prevState => ({ sortBy, reload: !prevState.reload }))
   }
 
   applyFilters = issues => {
@@ -181,6 +187,7 @@ class Issues extends React.PureComponent {
         issues={[]}
         issuesFiltered={[]}
         handleFiltering={this.handleFiltering}
+        handleSorting={this.handleSorting}
         activeIndex={this.props.activeIndex}
       />
       <IssuesScrollView>
@@ -198,6 +205,7 @@ class Issues extends React.PureComponent {
         issues={[]}
         issuesFiltered={[]}
         handleFiltering={this.handleFiltering}
+        handleSorting={this.handleSorting}
         activeIndex={this.props.activeIndex}
       />
       <IssuesScrollView>
@@ -212,6 +220,14 @@ class Issues extends React.PureComponent {
       </IssuesScrollView>
     </StyledIssues>
   )
+
+  generateSorter = () => {
+    const { what, direction } = this.state.sortBy
+    if (what === 'Name') return (i1, i2) => {
+      return i1.title < i2.title ? direction : direction * -1
+    }
+  }
+ 
 
   render() {
     const { projects, onNewProject, activeIndex } = this.props
@@ -231,6 +247,8 @@ class Issues extends React.PureComponent {
       }))
 
     //console.log('current issues props:', this.props, 'and state:', this.state)
+
+    const currentSorter = this.generateSorter()
 
     return (
       <Query
@@ -252,10 +270,11 @@ class Issues extends React.PureComponent {
                   issues={issues}
                   issuesFiltered={issuesFiltered}
                   handleFiltering={this.handleFiltering}
+                  handleSorting={this.handleSorting}
                   activeIndex={this.props.activeIndex}
                 />
                 <IssuesScrollView>
-                  {shapeIssues(issuesFiltered).map(issue => (
+                  {shapeIssues(issuesFiltered).sort(currentSorter).map(issue => (
                     <Issue
                       isSelected={this.state.selectedIssues
                         .map(selectedIssue => selectedIssue.id)
