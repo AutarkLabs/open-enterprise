@@ -53,7 +53,6 @@ class SubmitWork extends React.Component {
         submitDisabled={this.canSubmit()}
       >
         <IssueTitle>{title}</IssueTitle>
-
         <SafeLink
           href={url}
           target="_blank"

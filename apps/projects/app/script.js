@@ -5,6 +5,9 @@ import { empty } from 'rxjs/observable/empty'
 
 import { GraphQLClient } from 'graphql-request'
 import { STATUS } from './utils/github'
+import VaultJSON from '../build/contracts/Vault.json'
+import tokenSymbolAbi from './abi/token-symbol.json'
+import { isNullOrUndefined } from 'util'
 
 const toAscii = hex => {
   // Find termination
@@ -45,7 +48,7 @@ const repoData = id => `{
 }`
 
 const app = new Aragon()
-let appState
+let appState, vault, bounties, tokens
 
 /**
  * Observe the github object.
@@ -89,7 +92,14 @@ app.events().subscribe(handleEvents)
 
 app.state().subscribe(state => {
   state && console.log('[Projects script] state subscription:\n', state)
-  appState = state ? state : { repos: [], bountySettings: {} }
+  appState = state ? state : { repos: [], bountySettings: {}, tokens: [] }
+  if (!vault) {
+    // this should be refactored to be a "setting"
+    app.call('vault').subscribe(response => {
+      vault = app.external(response, VaultJSON.abi)
+      vault.events().subscribe(handleEvents)
+    })
+  }
 })
 
 /***********************
@@ -113,8 +123,14 @@ async function handleEvents(response) {
     console.log('[Projects] RepoUpdated', response.returnValues)
     nextState = await syncRepos(appState, response.returnValues)
   case 'BountyAdded':
-    console.log('[Projects] BountyAdded', response.returnValues)
-    nextState = await syncRepos(appState, response.returnValues)
+    console.log('[Projects] BountyAdded', appState, response.returnValues)
+    if(response.returnValues === null || response.returnValues === undefined) {
+      break
+    }
+    const data = await loadIssueData(response.returnValues)
+    nextState = syncIssues(appState, response.returnValues, data)
+    appState = nextState
+    console.log('Bounty Added State Change', nextState)
     break
   case 'IssueCurated':
     console.log('[Projects] IssueCurated', response.returnValues)
@@ -124,10 +140,15 @@ async function handleEvents(response) {
     console.log('[Projects] BountySettingsChanged')
     nextState = await syncSettings(appState) // No returnValues on this
     break
+  case 'VaultDeposit':
+    console.log('[Projects] VaultDeposit')
+    nextState = await syncTokens(appState, response.returnValues)   
   default:
     console.log('[Projects] Unknown event catched:', response)
   }
-  app.cache('state', nextState)
+  if(nextState) {
+    app.cache('state', nextState)
+  }
 }
 
 async function syncRepos(state, { repoId, ...eventArgs }) {
@@ -144,10 +165,40 @@ async function syncRepos(state, { repoId, ...eventArgs }) {
   }
 }
 
+function syncIssues(state, { issueNumber, ...eventArgs }, data) {
+  console.log('syncIssues: arguments from events:', eventArgs, 'state: ', state)
+
+  try {
+    let updatedState = updateIssueState(state, issueNumber, data)
+    return updatedState
+  } catch (err) {
+    console.error('updateIssueState failed to return:', err)
+  }
+}
+
 async function syncSettings(state) {
   try {
     let settings = await loadSettings()
     state.bountySettings = settings
+    return state
+  } catch (err) {
+    console.error('[Projects script] syncSettings settings failed:', err)
+  }
+}
+
+async function syncTokens(state, {token}) {
+  try {
+    let tokens = state.tokens
+    let tokenIndex = tokens.findIndex(currentToken => currentToken.addr === token)
+    if(tokenIndex == -1) {
+      let newToken = await loadToken(token)
+      tokenIndex = tokens.findIndex(currentToken => currentToken.symbol === newToken.symbol)
+      if(tokenIndex !== -1){
+        tokens[tokenIndex] = newToken
+      } else {
+        tokens.push(newToken)
+      }
+    }
     return state
   } catch (err) {
     console.error('[Projects script] syncSettings settings failed:', err)
@@ -159,6 +210,21 @@ async function syncSettings(state) {
  *       Helpers       *
  *                     *
  ***********************/
+
+
+function loadToken(token) {
+  let tokenContract = app.external(token, tokenSymbolAbi)
+  return new Promise(resolve => {
+    tokenContract.symbol().subscribe(symbol => {
+      // return gracefully when entry not found
+      symbol &&
+        resolve({
+          addr: token,
+          symbol: symbol
+        })
+    })
+  })
+}
 
 function loadRepoData(id) {
   return new Promise(resolve => {
@@ -180,6 +246,15 @@ function loadRepoData(id) {
         }
         resolve({ _repo, _owner, index, metadata })
       })
+    })
+  })
+}
+
+function loadIssueData({repoId, issueNumber}) {
+  return new Promise(resolve => {
+    app.call('getIssue', repoId, issueNumber).subscribe(({ hasBounty, standardBountyId, balance, token}) => {
+      const [_repo, _issueNumber] = [toAscii(repoId), toAscii(issueNumber)]
+      resolve({ _repo, _issueNumber, balance, hasBounty, token, standardBountyId})
     })
   })
 }
@@ -220,6 +295,30 @@ async function checkReposLoaded(repos, id, transform) {
   }
 }
 
+function checkIssuesLoaded(issues, issueNumber, data) {
+  const issueIndex = issues.findIndex(issue => issue.issueNumber === issueNumber)
+  console.log('this is the issue index:', issueIndex)
+  console.log('checkIssuesLoaded, issueNumber:', issues, issueNumber)
+  console.log('loadIssueData:', data)
+
+  if (issueIndex === -1) {
+    // If we can't find it, load its data, perform the transformation, and concat
+    console.log('issue not found in the cache: retrieving from chain')
+    return issues.concat({
+      issueNumber,
+      data: data
+    })
+  } else {
+    console.log('issue found: ' + issueIndex)
+    const nextIssues = Array.from(issues)
+    nextIssues[issueIndex] = {
+      issueNumber,
+      data: data
+    }
+    return nextIssues
+  }
+}
+
 async function updateState(state, id, transform) {
   console.log('update state: ' + state + ', id: ' + id)
   const { repos = [] } = state
@@ -233,6 +332,26 @@ async function updateState(state, id, transform) {
       err,
       'here\'s what returned in NewRepos',
       newRepos
+    )
+  }
+}
+
+function updateIssueState(state, issueNumber, data ) {
+  console.log('update state: ', state, ', data: ', data)
+  if(data === undefined || data === null) {
+    return state
+  }
+  const { issues = [] } = state
+  try {
+    let newIssues = checkIssuesLoaded(issues, issueNumber, data )
+    let newState = { ...state, issues: newIssues }
+    return newState
+  } catch (err) {
+    console.error(
+      'Update issues failed to return:',
+      err,
+      'here\'s what returned in newIssues',
+      newIssues
     )
   }
 }
