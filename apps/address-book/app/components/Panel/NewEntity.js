@@ -6,7 +6,7 @@ import web3Utils from 'web3-utils'
 
 // TODO: fields validation and error handling need improvement!
 
-const ENTITY_TYPES = ['Individual', 'Organisation', 'Project']
+const ENTITY_TYPES = ['Individual', 'Organization', 'Project']
 const INITIAL_STATE = {
   name: '',
   address: '',
