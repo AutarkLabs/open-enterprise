@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 
 import { DescriptionInput, Form, FormField, InputDropDown } from '../Form'
-import { isIntegerString, isStringEmpty } from '../../utils/helpers'
+import { isNumberString, isStringEmpty } from '../../utils/helpers'
 
 // TODO:: This should be votingTokens from account?
 const AVAILABLE_TOKENS = ['ETH', 'ANT', 'GIV', 'FTL', '🦄']
@@ -35,7 +35,7 @@ class NewAccount extends React.Component {
         'The Account was not added: Description is not valid or empty, review the inputs'
       )
     }
-    if (!isIntegerString(limit) || isStringEmpty(limit)) {
+    if (!isNumberString(limit) || isStringEmpty(limit)) {
       return console.info(
         'The account was not added: Limit is not valid or empty, review the inputs'
       )
