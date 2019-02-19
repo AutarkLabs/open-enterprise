@@ -5,16 +5,19 @@ import NumberFormat from 'react-number-format'
 
 const bountyDeadlines = ['Weeks', 'Days', 'Hours']
 const bountyDeadlinesMul = [168, 24, 1] // it is one variable in contract, so number * multiplier = hours
-const bountyCurrencies = ['BTC', 'ETH', 'TL', 'ANT', '🦄']
 
 class Settings extends React.Component {
-  state = {}
+  state = {
+    bountyCurrencies: this.props.tokens.map (token => token.symbol)
+  }
+
   /*
     props pass data directly from contract. Settings form needs that data to be modified
     before use. and then it is simpler to keep them in state, and adjusted before sending
     back to contract.
   */
   static getDerivedStateFromProps(props, state) {
+    let bountyCurrencies = state.bountyCurrencies
     // is all configured already? TODO: it might be useful to check
     // if there was no update to settings (on chain) in the meantime,
     // and what to do in that case. as of now: changes are ignored.
@@ -64,6 +67,7 @@ class Settings extends React.Component {
       bountyDeadlineD,
       bountyCurrency,
       bountyAllocator,
+      bountyCurrencies,
       bountyArbiter,
     } = this.state
     // flatten deadline
@@ -128,6 +132,7 @@ class Settings extends React.Component {
     const {
       baseRate,
       expLevels,
+      bountyCurrencies,
       bountyCurrency,
       bountyDeadlineT,
       bountyDeadlineD,
@@ -160,6 +165,7 @@ class Settings extends React.Component {
             onChange={this.bountyAllocatorChange}
           />
           <BountyCurrency
+            bountyCurrencies={bountyCurrencies}
             bountyCurrency={bountyCurrency}
             onChange={this.bountyCurrencyChange}
           />
@@ -257,7 +263,7 @@ const BountyArbiter = ({ bountyArbiter, onChange }) => (
   </div>
 )
 
-const BountyCurrency = ({ bountyCurrency, onChange }) => (
+const BountyCurrency = ({ bountyCurrency, onChange, bountyCurrencies}) => (
   <div>
     <Text.Block size="large" weight="bold">
       Bounty Currency
