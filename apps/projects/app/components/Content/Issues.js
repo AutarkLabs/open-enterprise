@@ -224,7 +224,7 @@ class Issues extends React.PureComponent {
   generateSorter = () => {
     const { what, direction } = this.state.sortBy
     if (what === 'Name') return (i1, i2) => {
-      return i1.title < i2.title ? direction : direction * -1
+      return i1.title.toUpperCase() < i2.title.toUpperCase() ? direction : direction * -1
     }
   }
  
