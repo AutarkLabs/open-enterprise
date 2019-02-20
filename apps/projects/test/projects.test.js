@@ -258,7 +258,7 @@ contract('Projects App', accounts => {
       beforeEach('issue bulk bounties', async () => {
         issue3Receipt = addedBounties(
           await app.addBounties(
-            repoId,
+            Array(3).fill(repoId),
             [1, 2, 3],
             [10, 20, 30],
             [Date.now() + 86400, Date.now() + 86400, Date.now() + 86400],
@@ -481,7 +481,7 @@ contract('Projects App', accounts => {
 
     it('cannot add bounties to unregistered repos', async () => {
       assertRevert(async () => {
-        await app.addBounties('0xdeadbeef', [1, 2, 3], [10, 20, 30], {
+        await app.addBounties(Array(3).fill('0xdeadbeef'), [1, 2, 3], [10, 20, 30], {
           from: bountyAdder,
         })
       })
@@ -496,7 +496,7 @@ contract('Projects App', accounts => {
         )
       )
       await app.addBounties(
-        repoId,
+        Array(3).fill(repoId),
         [1, 2, 3],
         [10, 20, 30],
         [Date.now() + 86400, Date.now() + 86400, Date.now() + 86400],
@@ -523,7 +523,7 @@ contract('Projects App', accounts => {
       )
       assertRevert(async () => {
         await app.addBounties(
-          repoId,
+          Array(3).fill(repoId),
           [1, 2, 3],
           [10, 20, 30], // 60 total Wei should be sent
           [Date.now() + 86400, Date.now() + 86400, Date.now() + 86400],
