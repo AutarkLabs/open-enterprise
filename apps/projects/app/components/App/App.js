@@ -246,18 +246,8 @@ class App extends React.PureComponent {
     for (var key in repos) {
 
       repo = repos[key]
-      let ipfsString = ''
-      let content, results
-      await repo.forEach(async r => {
-        content = ipfs.types.Buffer.from(r.toString())
-        results = await ipfs.add(content)
-        console.log('ipfsResults hash:', results[0].hash)
-
-        ipfsString = ipfsString.concat(results[0].hash)
-        console.log('ipfsResults:', results)
-        return
-      })
-      console.log('ipfsString:', ipfsString)
+      let ipfsString
+      ipfsString = await this.getIpfsString(repo)
       
       const tokenArray = new Array(repo.length).fill(bountyToken)
 
@@ -281,6 +271,18 @@ class App extends React.PureComponent {
       )
     }
   }
+
+  getIpfsString = async (repos) => {
+    let ipfsString = ''
+    let content, results
+    for(const r of repos) {
+      content = ipfs.types.Buffer.from(JSON.stringify(r))
+      results = await ipfs.add(content)
+      ipfsString = ipfsString.concat(results[0].hash)
+    }
+    return ipfsString
+  }
+
   submitWork = issue => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.SubmitWork,
@@ -305,7 +307,7 @@ class App extends React.PureComponent {
 
   onRequestAssignment = async (state, issue) => {
     this.closePanel()
-    let content = ipfs.types.Buffer.from(state.toString())
+    let content = ipfs.types.Buffer.from(JSON.stringify(state))
     let results = await ipfs.add(content)
     let requestString = results[0].hash
     this.props.app.requestAssignment(web3.toHex(issue.repoId), issue.number, requestString)

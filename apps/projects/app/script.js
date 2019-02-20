@@ -136,7 +136,8 @@ async function handleEvents(response) {
     data = await loadIssueData(response.returnValues)
     const requestsData = await loadRequestsData(response.returnValues)
     data.workStatus = status[1]
-    nextState = syncIssues(appState, response.returnValues, data, requestsData)
+    data.requestsData = requestsData
+    nextState = syncIssues(appState, response.returnValues, data)
     appState = nextState
     break
   case 'BountyAdded':
@@ -269,15 +270,13 @@ function loadRepoData(id) {
 
 function loadIssueData({repoId, issueNumber}) {
   return new Promise(resolve => {
-    app.call('getIssue', repoId, issueNumber).subscribe(async ({ hasBounty, standardBountyId, balance, token, dataHash}) => {
-      console.log(dataHash)
+    app.call('getIssue', repoId, issueNumber).subscribe(({ hasBounty, standardBountyId, balance, token, dataHash}) => {
+      let contentJSON
       ipfs.get(dataHash, (err, files) => {
-        files.forEach((file) => {
-          console.log(file.path)
-          console.log(file.content.toString('utf8'))
-        })
-        const [_repo, _issueNumber] = [toAscii(repoId), toAscii(issueNumber)]
-        resolve({ _repo, _issueNumber, balance, hasBounty, token, standardBountyId})
+        for(const file of files) {
+          contentJSON = JSON.parse(file.content.toString('utf8'))
+        }
+        resolve({ balance, hasBounty, token, standardBountyId, ...contentJSON})
       })      
     })
   })
@@ -285,9 +284,28 @@ function loadIssueData({repoId, issueNumber}) {
 
 function loadRequestsData({repoId, issueNumber}) {
   return new Promise(resolve => {
-    app.call('getApplicantsLength', repoId, issueNumber).subscribe(({ hasBounty, standardBountyId, balance, token}) => {
-      const [_repo, _issueNumber] = [toAscii(repoId), toAscii(issueNumber)]
-      resolve({ _repo, _issueNumber, balance, hasBounty, token, standardBountyId})
+    app.call('getApplicantsLength', repoId, issueNumber).subscribe(async (response) => {
+      let applicants = []
+      for(let applicantId = 0; applicantId < response; applicantId++){
+        applicants.push(await getRequest(repoId, issueNumber, applicantId))
+      }
+      resolve(applicants)
+    })
+  })
+}
+
+function getRequest (repoId, issueNumber, applicantId) {
+  return new Promise(resolve => {
+    app.call('getApplicant', repoId, issueNumber, applicantId).subscribe( (address) => {
+      app.call('getAssignmentRequest', repoId, issueNumber, address).subscribe( (hash) => {
+        let contentJSON
+        ipfs.get(hash, (err, files) => {
+          for(const file of files) {
+            contentJSON = JSON.parse(file.content.toString('utf8'))
+          }
+          resolve(contentJSON)
+        })
+      })
     })
   })
 }
