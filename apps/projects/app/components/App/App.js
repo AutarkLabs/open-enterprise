@@ -235,14 +235,7 @@ class App extends React.PureComponent {
       }
     )
 
-    
-    let content = ipfs.types.Buffer.from(issues.toString())
-    console.log(content)
-    console.log(ipfs)
-    console.log(ipfs.files)
-    let results = await ipfs.add(content)
-    console.log(results)
-    
+        
     let repos = {}, repo
     for (var key in issues) {
       if(repos[issues[key].repo] == undefined) { repos[issues[key].repo] = [] }
@@ -258,8 +251,13 @@ class App extends React.PureComponent {
       await repo.forEach(async r => {
         content = ipfs.types.Buffer.from(r.toString())
         results = await ipfs.add(content)
-        ipfsString += results[0].hash
+        console.log('ipfsResults hash:', results[0].hash)
+
+        ipfsString = ipfsString.concat(results[0].hash)
+        console.log('ipfsResults:', results)
+        return
       })
+      console.log('ipfsString:', ipfsString)
       
       const tokenArray = new Array(repo.length).fill(bountyToken)
 
@@ -305,9 +303,12 @@ class App extends React.PureComponent {
     }))
   }
 
-  onRequestAssignment = (state, issue) => {
+  onRequestAssignment = async (state, issue) => {
     this.closePanel()
-    this.props.app.requestAssignment(web3.toHex(issue.repoId), issue.number, state.workplan)
+    let content = ipfs.types.Buffer.from(state.toString())
+    let results = await ipfs.add(content)
+    let requestString = results[0].hash
+    this.props.app.requestAssignment(web3.toHex(issue.repoId), issue.number, requestString)
   }
 
   reviewApplication = issue => {

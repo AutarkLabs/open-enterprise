@@ -9,6 +9,9 @@ import VaultJSON from '../build/contracts/Vault.json'
 import tokenSymbolAbi from './abi/token-symbol.json'
 import { isNullOrUndefined } from 'util'
 
+let ipfsClient = require('ipfs-http-client')
+
+let ipfs = ipfsClient({ host: 'localhost', port: '5001', protocol: 'http'})
 
 const status = ['new', 'review-applicants', 'review-work', 'finished']
 
@@ -131,8 +134,9 @@ async function handleEvents(response) {
       break
     }
     data = await loadIssueData(response.returnValues)
+    const requestsData = await loadRequestsData(response.returnValues)
     data.workStatus = status[1]
-    nextState = syncIssues(appState, response.returnValues, data)
+    nextState = syncIssues(appState, response.returnValues, data, requestsData)
     appState = nextState
     break
   case 'BountyAdded':
@@ -142,7 +146,7 @@ async function handleEvents(response) {
     }
     data = await loadIssueData(response.returnValues)
     data.workStatus = status[0]
-    nextState = syncIssues(appState, response.returnValues, data)
+    nextState = syncIssues(appState, response.returnValues, data, [])
     appState = nextState
     break
   case 'IssueCurated':
@@ -265,7 +269,23 @@ function loadRepoData(id) {
 
 function loadIssueData({repoId, issueNumber}) {
   return new Promise(resolve => {
-    app.call('getIssue', repoId, issueNumber).subscribe(({ hasBounty, standardBountyId, balance, token}) => {
+    app.call('getIssue', repoId, issueNumber).subscribe(async ({ hasBounty, standardBountyId, balance, token, dataHash}) => {
+      console.log(dataHash)
+      ipfs.get(dataHash, (err, files) => {
+        files.forEach((file) => {
+          console.log(file.path)
+          console.log(file.content.toString('utf8'))
+        })
+        const [_repo, _issueNumber] = [toAscii(repoId), toAscii(issueNumber)]
+        resolve({ _repo, _issueNumber, balance, hasBounty, token, standardBountyId})
+      })      
+    })
+  })
+}
+
+function loadRequestsData({repoId, issueNumber}) {
+  return new Promise(resolve => {
+    app.call('getApplicantsLength', repoId, issueNumber).subscribe(({ hasBounty, standardBountyId, balance, token}) => {
       const [_repo, _issueNumber] = [toAscii(repoId), toAscii(issueNumber)]
       resolve({ _repo, _issueNumber, balance, hasBounty, token, standardBountyId})
     })
