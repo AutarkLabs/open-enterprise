@@ -128,7 +128,7 @@ class Issues extends React.PureComponent {
 
     // last but not least, if there is any text in textFilter...
     if (textFilter) {
-      return issuesByMilestone.filter(issue => issue.title.match(textFilter))
+      return issuesByMilestone.filter(issue => issue.title.toUpperCase().match(textFilter))
     }
 
     return issuesByMilestone
@@ -146,7 +146,7 @@ class Issues extends React.PureComponent {
   }
 
   handleTextFilter = e => {
-    this.setState({ textFilter: e.target.value, reload: !this.state.reload })
+    this.setState({ textFilter: e.target.value.toUpperCase(), reload: !this.state.reload })
   }
 
   actionsMenu = () => (
