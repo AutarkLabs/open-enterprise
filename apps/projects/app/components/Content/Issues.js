@@ -46,6 +46,10 @@ class Issues extends React.PureComponent {
     this.props.onCurateIssues(this.state.selectedIssues)
   }
 
+  handleAllocateSingleBounty = issue => {
+    this.props.onAllocateBounties([issue])
+  }
+
   handleAllocateBounties = () => {
     this.props.onAllocateBounties(this.state.selectedIssues)
   }
@@ -317,6 +321,9 @@ class Issues extends React.PureComponent {
                         }}
                         onRequestAssignment={() => {
                           this.handleRequestAssignment(issue)
+                        }}
+                        onAllocateSingleBounty={() => {
+                          this.handleAllocateSingleBounty(issue)
                         }}
                         key={issue.id}
                         {...issue}
