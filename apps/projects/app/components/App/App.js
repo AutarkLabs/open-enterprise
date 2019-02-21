@@ -333,9 +333,9 @@ class App extends React.PureComponent {
   onReviewApplication = props => console.log('onReviewApplication', props)
 
   onReviewWork = (state, issue) => {
-    console.log('onReviewWork', state, issue)
+    console.log('onReviewWork', issue.contributorAddr, state, issue)
     this.closePanel()
-    this.props.app.reviewSubmission(web3.toHex(issue.repoId), issue.number, '', state.accepted)
+    this.props.app.reviewSubmission(web3.toHex(issue.repoId), issue.number, issue.contributorAddr, state.accepted)
     //  bytes32 _repoId, uint256 _issueNumber, address _contributor, bool _approved
   }
 
