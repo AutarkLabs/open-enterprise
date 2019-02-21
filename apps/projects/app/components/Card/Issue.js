@@ -49,7 +49,7 @@ const IssueDetails = styled.div`
   display: flex;
 `
 
-const Issue = ({ title, repo, number, labels, isSelected, onClick, onSelect, onSubmitWork, onRequestAssignment, onReviewApplication}) => (
+const Issue = ({ title, repo, number, labels, isSelected, onClick, onSelect, onSubmitWork, onRequestAssignment, onReviewApplication, balance, symbol}) => (
   <StyledIssue>
     <ClickArea onClick={onClick} />
     <CheckButton checked={isSelected} onChange={onSelect} />
@@ -91,7 +91,15 @@ const Issue = ({ title, repo, number, labels, isSelected, onClick, onSelect, onS
         </Text>
       </IssueDetails>
     </div>
-    <div style={{ marginRight: '20px' }}>
+    <div style={{ marginRight: '20px', display: 'inline-flex' }}>
+      { balance > 0 &&  
+        <Badge
+          style={{padding: '10px', marginRight: '20px', textSize: 'large'}}
+          background={'#e7f8ec'}
+          foreground={theme.positive}>{balance + ' ' + symbol}
+        </Badge>
+        
+      }
       <ContextMenu>
         <ContextMenuItem onClick={onSubmitWork}>
           <ActionLabel>Submit Work</ActionLabel>

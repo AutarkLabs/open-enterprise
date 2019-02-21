@@ -219,11 +219,23 @@ class Issues extends React.PureComponent {
   )
 
   render() {
-    const { projects, onNewProject, activeIndex } = this.props
+    const { projects, onNewProject, activeIndex, tokens, bountyIssues } = this.props
     const { currentIssue, showIssueDetail } = this.state
 
     // better return early if we have no projects added?
     if (projects.length === 0) return <Empty action={onNewProject} />
+    let bountyIssueObj = {}
+    let tokenObj = {}
+
+    bountyIssues.forEach(issue => {
+      bountyIssueObj[issue.issueNumber] = issue
+    })
+
+    tokens.forEach(token => {
+      tokenObj[token.addr] = token.symbol
+      console.log('tokenObj:', tokenObj)
+    })
+
     if (showIssueDetail)
       return (
         <IssueDetail
@@ -241,10 +253,24 @@ class Issues extends React.PureComponent {
 
     // Map the flattened issues into just needed data fields adding the repo name
     const shapeIssues = issues =>
-      issues.map(({ __typename, repository: { name }, ...fields }) => ({
-        ...fields,
-        repo: name,
-      }))
+      issues.map(({ __typename, repository: { name }, ...fields }) => 
+      {
+        if(bountyIssueObj[fields.number]){
+          let data = bountyIssueObj[fields.number].data
+          console.log('Bounty Issue Info:', data)
+
+          return { 
+            ...fields,
+            ...bountyIssueObj[fields.number].data,
+            repo: name,
+            symbol: tokenObj[data.token]
+          }          
+        }
+        return { 
+          ...fields,
+          repo: name,
+        }
+      })
 
     //console.log('current issues props:', this.props, 'and state:', this.state)
 

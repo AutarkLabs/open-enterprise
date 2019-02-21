@@ -2,6 +2,9 @@ pragma solidity ^0.4.24;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
 import "@aragon/os/contracts/lib/math/SafeMath.sol";
+import "@aragon/apps-vault/contracts/Vault.sol";
+import "@aragon/os/contracts/common/IsContract.sol";
+
 
 /*******************************************************************************
     Copyright 2018, That Planning Suite
@@ -26,6 +29,7 @@ import "@aragon/os/contracts/lib/math/SafeMath.sol";
 * applying bounties in bulk and accepting fulfillment via this contract
 *******************************************************************************/
 interface Bounties {
+
     function issueBounty(
         address _issuer,
         uint _deadline,
@@ -45,34 +49,27 @@ interface Bounties {
         uint _bountyId, 
         uint _fulfillmentId
     ) external;
+
+
+  function getBounty(uint _bountyId)
+      external
+      view
+      returns (address, uint, uint, bool, uint, uint);
+
+    function getBountyToken(uint _bountyId)
+      external
+      view
+      returns (address);
+}
+
+interface TokenApproval {
+    function approve(address _spender, uint256 _value) external returns (bool success);
 }
 
 
-contract Projects is AragonApp {
+contract Projects is IsContract, AragonApp {
     using SafeMath for uint256;
     Bounties bounties;
-
-////////////////
-// Constructor
-////////////////
-
-    function initialize(address _bountiesAddr)//, Vault _vault
-    external onlyInit // solium-disable-line visibility-first
-    {
-        //vault = _vault.ethConnectorBase();
-        bounties = Bounties(_bountiesAddr); // Standard Bounties instance
-
-        _changeBountySettings(
-            "100\tBeginner\t300\tIntermediate\t500\tAdvanced",
-            3000, // baseRate
-            336, // bountyDeadline
-            "FTL", // bountyCurrency
-            0x0000000000000000000000000000000000000000, // bountyAllocator
-            0x0000000000000000000000000000000000000000 //bountyArbiter
-        );
-
-        initialized();
-    }
 
     struct BountySettings {
         string expLevels;
@@ -115,6 +112,8 @@ contract Projects is AragonApp {
         mapping(address => WorkSubmission) workSubmissions;
     }
 
+    Vault public vault;
+
     // The entries in the repos registry.
     mapping(bytes32 => GithubRepo) private repos;
 
@@ -151,6 +150,35 @@ contract Projects is AragonApp {
     bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
     bytes32 public constant TASK_ASSIGNMENT_ROLE = keccak256("TASK_ASSIGNMENT_ROLE");
     bytes32 public constant WORK_REVIEW_ROLE = keccak256("WORK_REVIEW_ROLE");
+
+    string private constant ERROR_VAULT_NOT_CONTRACT = "PROJECTS_VAULT_NOT_CONTRACT";
+    string private constant ERROR_STANDARD_BOUNTIES_NOT_CONTRACT = "STANDARD_BOUNTIES_NOT_CONTRACT";
+
+
+
+////////////////
+// Constructor
+////////////////
+    function initialize(address _bountiesAddr, Vault _vault)
+    external onlyInit // solium-disable-line visibility-first
+    {
+        initialized();
+
+        require(isContract(_vault), ERROR_VAULT_NOT_CONTRACT);
+
+        vault = _vault;
+
+        bounties = Bounties(_bountiesAddr); // Standard Bounties instance
+
+        _changeBountySettings(
+            "100\tBeginner\t300\tIntermediate\t500\tAdvanced",
+            1, // baseRate
+            336, // bountyDeadline
+            "autark", // bountyCurrency
+            0x0000000000000000000000000000000000000000, // bountyAllocator
+            0x0000000000000000000000000000000000000000 //bountyArbiter
+        );
+    }
 
     function curateIssues(
         address[] /*unused_Addresses*/, 
@@ -201,12 +229,14 @@ contract Projects is AragonApp {
      * @param _repoId The id of the Github repo in the projects registry
      */
     function getIssue(bytes32 _repoId, uint256 _issueNumber) external view
-    returns(bool hasBounty, uint standardBountyId, bool fulfilled)
+    returns(bool hasBounty, uint standardBountyId, bool fulfilled, uint balance, address token)
     {
         GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
         hasBounty = issue.hasBounty;
         fulfilled = issue.fulfilled;
         standardBountyId = issue.standardBountyId;
+        ( , , , , ,balance) = bounties.getBounty(standardBountyId);
+        token = bounties.getBountyToken(standardBountyId);
     }
 
     /**
@@ -409,7 +439,7 @@ contract Projects is AragonApp {
 
     /**
      * @notice add bulk bounties
-     * @param _repoId The id of the Github repo in the projects registry
+     * @param _repoIds The ids of the Github repos in the projects registry
      * @param _issueNumbers an array of bounty indexes
      * @param _bountySizes an array of bounty sizes
      * @param _deadlines an array of bounty deadlines
@@ -418,7 +448,7 @@ contract Projects is AragonApp {
      * @param _ipfsAddresses a string of ipfs addresses
      */
     function addBounties(
-        bytes32 _repoId,
+        bytes32[] _repoIds,
         uint256[] _issueNumbers,
         uint256[] _bountySizes,
         uint256[] _deadlines,
@@ -428,13 +458,13 @@ contract Projects is AragonApp {
     ) public isInitialized payable auth(ADD_BOUNTY_ROLE)
     {
         // ensure the transvalue passed equals transaction value
-        checkTransValueEqualsMessageValue(msg.value, _bountySizes,_tokenBounties);
-        
+        //checkTransValueEqualsMessageValue(msg.value, _bountySizes,_tokenBounties);
         string memory ipfsHash;
         uint standardBountyId;
         // submit the bounty to the StandardBounties contract
         for (uint i = 0; i < _bountySizes.length; i++) {
-            ipfsHash = substring(_ipfsAddresses, i.mul(46), i.add(1).mul(46));
+            ipfsHash = getHash(_ipfsAddresses, i);
+            
             standardBountyId = bounties.issueBounty(
                 this,                           //    address _issuer
                 _deadlines[i],                  //    uint256 _deadlines
@@ -442,14 +472,20 @@ contract Projects is AragonApp {
                 _bountySizes[i],                //    uint256 _fulfillmentAmount
                 address(0),                     //    address _arbiter
                 _tokenBounties[i],              //    bool _paysTokens
-                address(_tokenContracts[i])     //    address _tokenContract
+                _tokenContracts[i]              //    address _tokenContract
             );
-            // Activate the bounty so it can be fulfilled
-            bounties.activateBounty.value(_bountySizes[i])(standardBountyId, _bountySizes[i]);
+
+            _activateBounty(
+                _tokenBounties[i],
+                _tokenContracts[i],
+                _bountySizes[i],
+                standardBountyId
+            );
+            // Implement case for ETH
 
             //Add bounty to local registry
             _addBounty(
-                _repoId,
+                _repoIds[i],
                 _issueNumbers[i],
                 standardBountyId,
                 _bountySizes[i]
@@ -560,6 +596,23 @@ contract Projects is AragonApp {
         emit BountySettingsChanged();
     }
 
+    function _activateBounty(
+        bool _tokenBounty,
+        address _tokenCountract,
+        uint _bountySize,
+        uint _standardBountyId
+    ) internal
+    {
+        if (_tokenBounty) {
+            vault.transfer(_tokenCountract, this, _bountySize);
+            TokenApproval(_tokenCountract).approve(bounties, _bountySize);
+            // Activate the bounty so it can be fulfilled
+            bounties.activateBounty(_standardBountyId, _bountySize);
+        } else {
+            bounties.activateBounty.value(_bountySize)(_standardBountyId, _bountySize);
+        }
+    }
+
     function _addBounty(
         bytes32 _repoId,
         uint256 _issueNumber,
@@ -604,19 +657,35 @@ contract Projects is AragonApp {
         require(_msgValue == transValueTotal, "ETH sent to cover bounties does not match bounty total");
     }
 
-    function substring(
-        string str,
-        uint startIndex,
-        uint endIndex
+    function getHash(
+        string _str,
+        uint256 _hashIndex
     ) internal pure returns (string)
     {
         // first char is at location 0
         //IPFS addresses span from 0 (startindex) to 46 (endIndex)
-        bytes memory strBytes = bytes(str);
+        uint256 startIndex = _hashIndex * 46;
+        uint256 endIndex = startIndex + 46;
+        bytes memory strBytes = bytes(_str);
         bytes memory result = new bytes(endIndex-startIndex);
-        for (uint i = startIndex; i < endIndex; i++) {
-            result[i-startIndex] = strBytes[i];
+        uint256 length = endIndex - startIndex;
+        uint256 dest;
+        uint256 src;
+        assembly {
+          dest := add(result,0x20)
+          src := add(strBytes,add(0x20,startIndex))
+          mstore(dest, mload(src))
         }
+        src += 32;
+        dest += 32;
+        length -= 32;
+        uint mask = 256 ** (32 - length) - 1;
+        assembly {
+            let srcpart := and(mload(src), not(mask))
+            let destpart := and(mload(dest), mask)
+            mstore(dest, or(destpart, srcpart))
+        }
+
         return string(result);
     }
 

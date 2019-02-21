@@ -18,39 +18,47 @@ async function handleEvents({ event, returnValues }) {
   let nextState
   switch (event) {
   case 'EntryAdded':
-    nextState = await syncEntries(appState, returnValues)
+    nextState = await onEntryAdded(appState, returnValues)
     break
   case 'EntryRemoved':
-    nextState = await onRemoveEntry(appState, returnValues)
+    nextState = await onEntryRemoved(appState, returnValues)
     break
   default:
-    console.log('[AddressBook script] Unknown event', response)
+    nextState = appState
+    console.log('[AddressBook script] unknown event', event, returnValues)
   }
-  app.cache('state', nextState)
+  // purify the resulting state to handle duplication edge cases
+  const filteredState = { entries: filterEntries(nextState.entries) }
+  app.cache('state', filteredState)
 }
 
-const onRemoveEntry = async (state, { addr }) => {
-  const { entries = [] } = state
-  // Try to find the removed entry in the current state
-  const entryIndex = entries.findIndex(entry => entry.addr === addr)
-  // If the entry exists in the state, remove from it
-  if (entryIndex !== -1) {
-    entries.splice(entryIndex, 1)
+const onEntryAdded = async ({ entries = [] }, { addr }) => {
+  // is addr already in the state?
+  if (entries.some(entry => entry.addr === addr)) {
+    // entry already cached, do nothing
+    console.log('[AddressBook script]', addr, 'already cached')
+  } else {
+    // entry not cached
+    const data = await loadEntryData(addr) // async load data from contract
+    const entry = { addr, data } // transform for the frontend to understand
+    entries.push(entry) // add to the state object received as param
+    console.log('[AddressBook script] caching new contract entry', data.name)
+    // console.log('[AddressBook script] at position', addedIndex) // in case we need the index
   }
+  const state = { entries } // return the (un)modified entries array
   return state
 }
 
-async function syncEntries(state, { addr }) {
-  const transform = ({ data, ...entry }) => ({
-    ...entry,
-    data: { ...data },
-  })
-  try {
-    const updatedState = await updateState(state, addr, transform)
-    return updatedState
-  } catch (err) {
-    console.error('[AddressBook script] syncEntries failed', err)
+const onEntryRemoved = async ({ entries = [] }, { addr }) => {
+  const removeIndex = entries.findIndex(entry => entry.addr === addr)
+  if (removeIndex > -1) {
+    // entry already cached, remove from state
+    console.log('[AddressBook script] removing', addr.name, 'cached copy')
+    entries.splice(removeIndex, 1)
   }
+
+  const state = { entries } // return the (un)modified entries array
+  return state
 }
 
 /***********************
@@ -62,7 +70,7 @@ async function syncEntries(state, { addr }) {
 const loadEntryData = async addr => {
   return new Promise(resolve => {
     app.call('getEntry', addr).subscribe(entry => {
-      // return gracefully when entry not found
+      // don't resolve when entry not found
       entry &&
         resolve({
           entryAddress: entry[0],
@@ -73,34 +81,16 @@ const loadEntryData = async addr => {
   })
 }
 
-async function checkEntriesLoaded(entries, addr, transform) {
-  const entryIndex = entries.findIndex(entry => entry.addr === addr)
-  if (entryIndex === -1) {
-    // If we can't find it, load its data, perform the transformation, and concat
-    // hopefully every "not_found" entry will be deleted when its EntryRemoved event is handled
-    return entries.concat(
-      await transform({
-        addr,
-        data: (await loadEntryData(addr)) || 'not_found',
-      })
+// Remove possible duplications and enforce state integration to follow smart contract rules
+// Currently is: unique addresses, unique names
+// TODO: Integrate validators in the frontend inputs to feedback the user about those rules
+export const filterEntries = entries => {
+  // use set to filter unique https://stackoverflow.com/q/39885893
+  const filtered = entries
+    .filter((set => e => !set.has(e.addr) && set.add(e.addr))(new Set()))
+    .filter(
+      (set => e => !set.has(e.data.name) && set.add(e.data.name))(new Set())
     )
-  } else {
-    const nextEntries = Array.from(entries)
-    nextEntries[entryIndex] = await transform({
-      addr,
-      data: await loadEntryData(addr),
-    })
-    return nextEntries
-  }
-}
 
-async function updateState(state, addr, transform) {
-  const { entries = [] } = state
-  try {
-    const nextEntries = await checkEntriesLoaded(entries, addr, transform)
-    const newState = { ...state, entries: nextEntries }
-    return newState
-  } catch (err) {
-    console.error('[AddressBook script] updateState failed', err)
-  }
+  return filtered
 }
