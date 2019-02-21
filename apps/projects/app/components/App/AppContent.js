@@ -73,6 +73,8 @@ const AppContent = props => {
 
 AppContent.propTypes = {
   projects: PropTypes.arrayOf(PropTypes.object).isRequired,
+  bountyIssues: PropTypes.arrayOf(PropTypes.object).isRequired,
+  tokens: PropTypes.arrayOf(PropTypes.object).isRequired,
   bountySettings: PropTypes.object.isRequired,
   onNewProject: PropTypes.func.isRequired,
   onNewIssue: PropTypes.func.isRequired,

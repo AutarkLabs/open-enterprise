@@ -1,11 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
-import { gql } from 'apollo-boost'
 import { Query } from 'react-apollo'
 import {
   Button,
-  //   Dropdown,
-  //   Text,
   TextInput,
   theme,
   ContextMenuItem,
@@ -14,10 +11,9 @@ import {
 } from '@aragon/ui'
 
 import { DropDownButton as ActionsMenu, FilterBar } from '../Shared'
+import { IssueDetail } from './IssueDetail'
 import { Issue, Empty } from '../Card'
 import { GET_ISSUES } from '../../utils/gql-queries.js'
-
-// import ethereumLoadingAnimation from '../Shared/assets/svg/ethereum-loading.svg'
 
 class Issues extends React.PureComponent {
   state = {
@@ -33,12 +29,16 @@ class Issues extends React.PureComponent {
     sortBy: { what: 'Name', direction: -1 },
     textFilter: '',
     reload: false,
+    currentIssue: {},
+    showIssueDetail: false,
   }
 
   componentWillMount() {
     if ('filterIssuesByRepoId' in this.props.activeIndex.tabData) {
       let { filters } = this.state
-      filters.projects[this.props.activeIndex.tabData.filterIssuesByRepoId] = true
+      filters.projects[
+        this.props.activeIndex.tabData.filterIssuesByRepoId
+      ] = true
       this.setState({ filters })
     }
   }
@@ -149,12 +149,17 @@ class Issues extends React.PureComponent {
     this.setState({ textFilter: e.target.value.toUpperCase(), reload: !this.state.reload })
   }
 
+  handleIssueClick = issue => {
+    this.setState({ showIssueDetail: true, currentIssue: issue })
+  }
+
+  handleIssueDetailClose = () => {
+    this.setState({ showIssueDetail: false, currentIssue: null })
+  }
+
   actionsMenu = () => (
     <div>
-      <TextInput 
-        placeholder="Search Issues"
-        onChange={this.handleTextFilter}
-      />
+      <TextInput placeholder="Search Issues" onChange={this.handleTextFilter} />
       <ActionsMenu enabled={!!this.state.selectedIssues.length}>
         <ContextMenuItem
           onClick={this.handleCurateIssues}
@@ -225,21 +230,58 @@ class Issues extends React.PureComponent {
   }
 
   render() {
-    const { projects, onNewProject, activeIndex } = this.props
+    const { projects, onNewProject, activeIndex, tokens, bountyIssues } = this.props
+    const { currentIssue, showIssueDetail } = this.state
+
     // better return early if we have no projects added?
     if (projects.length === 0) return <Empty action={onNewProject} />
+    let bountyIssueObj = {}
+    let tokenObj = {}
+
+    bountyIssues.forEach(issue => {
+      bountyIssueObj[issue.issueNumber] = issue
+    })
+
+    tokens.forEach(token => {
+      tokenObj[token.addr] = token.symbol
+      console.log('tokenObj:', tokenObj)
+    })
+
+    if (showIssueDetail)
+      return (
+        <IssueDetail
+          issue={currentIssue}
+          onClose={this.handleIssueDetailClose}
+        />
+      )
 
     const { allSelected } = this.state
     const reposIds = projects.map(project => project.data._repo)
 
+    // Build an array of plain issues by flattening the data obtained from github API
     const flattenIssues = nodes =>
       nodes && [].concat(...nodes.map(node => node.issues.nodes))
 
+    // Map the flattened issues into just needed data fields adding the repo name
     const shapeIssues = issues =>
-      issues.map(({ __typename, repository: { name }, ...fields }) => ({
-        ...fields,
-        repo: name,
-      }))
+      issues.map(({ __typename, repository: { name }, ...fields }) => 
+      {
+        if(bountyIssueObj[fields.number]){
+          let data = bountyIssueObj[fields.number].data
+          console.log('Bounty Issue Info:', data)
+
+          return { 
+            ...fields,
+            ...bountyIssueObj[fields.number].data,
+            repo: name,
+            symbol: tokenObj[data.token]
+          }          
+        }
+        return { 
+          ...fields,
+          repo: name,
+        }
+      })
 
     //console.log('current issues props:', this.props, 'and state:', this.state)
 
@@ -267,6 +309,9 @@ class Issues extends React.PureComponent {
                       isSelected={this.state.selectedIssues
                         .map(selectedIssue => selectedIssue.id)
                         .includes(issue.id)}
+                      onClick={() => {
+                          this.handleIssueClick(issue)
+                        }}
                       onSelect={() => {
                         this.handleIssueSelection(issue)
                       }}
@@ -298,37 +343,33 @@ class Issues extends React.PureComponent {
 }
 
 const StyledIssues = styled.div`
-  display: flex;
-  flex-direction: column;
   padding: 15px 30px;
   > :first-child {
     display: flex;
     justify-content: space-between;
   }
+`
 
-  /* height: 100%;
-  padding: 15px 30px;
+const ScrollWrapper = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  > :nth-child(3) {
+  justify-content: stretch;
+  flex-grow: 1;
+  > :first-child {
     border-radius: 3px 3px 0 0;
-    margin-bottom: -1px;
-  }
-  > :nth-child(n + 4) {
-    border-radius: 0;
-    margin-bottom: -1px;
   }
   > :last-child {
     border-radius: 0 0 3px 3px;
-  } */
+    margin-bottom: 10px;
+  }
 `
 
+// TODO: Calculate height with flex (maybe to add pagination at bottom?)
 const IssuesScrollView = styled.div`
+  height: 75vh;
+  position: relative;
   overflow-y: auto;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
 `
 
 const ActionLabel = styled.span`

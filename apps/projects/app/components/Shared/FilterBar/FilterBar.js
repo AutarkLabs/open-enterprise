@@ -1,23 +1,24 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Badge, Button, theme, Text, ContextMenuItem as FilterMenuItem } from '@aragon/ui'
+import { Badge, theme, ContextMenuItem as FilterMenuItem } from '@aragon/ui'
 
 import Overflow from './Overflow'
 import FilterButton from './FilterButton'
-import { CheckButton, IconArrowDown } from '../'
+import { CheckButton } from '../'
 import FilterDropDown from './FilterDropDown'
 import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
-//import { DropDownButton } from '../../Shared'
 
 const StyledFilterBar = styled.div`
   width: 100%;
-  background: ${theme.contentBackground};
   display: flex;
   margin: 12px 0;
   height: 40px;
   align-items: center;
   border-radius: 3px;
+  > * {
+    background: ${theme.contentBackground};
+  }
   > :first-child {
     width: 48px;
     padding: 0;
@@ -26,9 +27,12 @@ const StyledFilterBar = styled.div`
   }
   > :nth-last-child(2) {
     flex: 1 1 auto;
+    z-index: 3;
   }
   > :last-child {
-    border-radius: 0 3px 3px 0;
+    > * {
+      border-radius: 0 3px 3px 0;
+    }
   }
 `
 
@@ -59,7 +63,9 @@ class FilterBar extends React.Component {
   componentWillMount() {
     if ('filterIssuesByRepoId' in this.props.activeIndex.tabData) {
       let { filters } = this.state
-      filters.projects[this.props.activeIndex.tabData.filterIssuesByRepoId] = true
+      filters.projects[
+        this.props.activeIndex.tabData.filterIssuesByRepoId
+      ] = true
       this.setState({ filters })
     }
   }
@@ -70,10 +76,8 @@ class FilterBar extends React.Component {
 
   filter = (type, id) => () => {
     const { filters } = this.state
-    if (id in filters[type])
-      delete(filters[type][id])
-    else
-      filters[type][id] = true
+    if (id in filters[type]) delete filters[type][id]
+    else filters[type][id] = true
     // filters are in local state because of checkboxes
     // and sent to the parent (Issues) for actual display change
     this.setState({ filters })
@@ -84,7 +88,7 @@ class FilterBar extends React.Component {
     prepareFilters builds data structure for displaying filterbar dropdowns
     data comes from complete issues array, issuesFiltered is used for counters
   */
-  prepareFilters = (issues, issuesFiltered) => {
+  prepareFilters = (issues, _issuesFiltered) => {
     let filters = {
       projects: {},
       labels: {},
@@ -97,13 +101,20 @@ class FilterBar extends React.Component {
         if (issue.milestone.id in filters.milestones) {
           filters.milestones[issue.milestone.id].count++
         } else {
-          filters.milestones[issue.milestone.id] = { ...issue.milestone, count: 1 }
+          filters.milestones[issue.milestone.id] = {
+            ...issue.milestone,
+            count: 1,
+          }
         }
       } else {
         if ('milestoneless' in filters.milestones) {
           filters.milestones['milestoneless'].count++
         } else {
-          filters.milestones['milestoneless'] = { title: 'Issues without milestones', id: 'milestoneless', count: 1 }
+          filters.milestones['milestoneless'] = {
+            title: 'Issues without milestones',
+            id: 'milestoneless',
+            count: 1,
+          }
         }
       }
 
@@ -119,14 +130,21 @@ class FilterBar extends React.Component {
         if ('labelless' in filters.labels) {
           filters.labels['labelless'].count++
         } else {
-          filters.labels['labelless'] = { name: 'Issues without labels', id: 'labelless', count: 1 }
+          filters.labels['labelless'] = {
+            name: 'Issues without labels',
+            id: 'labelless',
+            count: 1,
+          }
         }
       }
       // TODO: shouldn't it be reporitory.id?
       if (issue.repository.id in filters.projects) {
         filters.projects[issue.repository.id].count++
       } else {
-        filters.projects[issue.repository.id] = { name: issue.repository.name, count: 1 }
+        filters.projects[issue.repository.id] = {
+          name: issue.repository.name,
+          count: 1,
+        }
       }
     })
     return filters
@@ -234,6 +252,9 @@ class FilterBar extends React.Component {
           </FilterDropDown>
            */ }
 
+          <FilterDropDown caption="Status" enabled={false} />
+          <FilterDropDown caption="Deadline" enabled={false} />
+          <FilterDropDown caption="Experience" enabled={false} />
         </Overflow>
 
         <FilterDropDown caption="Sort by" enabled={true}>

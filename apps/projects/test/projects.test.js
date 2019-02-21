@@ -7,6 +7,7 @@ const {
   StandardBounties,
 } = require('@tps/test-helpers/artifacts')
 
+const Vault = artifacts.require('Vault')
 const Projects = artifacts.require('Projects')
 
 const { assertRevert } = require('@tps/test-helpers/assertThrow')
@@ -46,7 +47,7 @@ contract('Projects App', accounts => {
     const dao = Kernel.at(
       r.logs.filter(l => l.event == 'DeployDAO')[0].args.dao
     )
-
+      
     const acl = ACL.at(await dao.acl())
 
     //Create DAO admin role
@@ -104,12 +105,22 @@ contract('Projects App', accounts => {
       root,
       { from: root }
     )
-
+    
     // Deploy test Bounties contract
     registry = await StandardBounties.new(web3.toBigNumber(owner1))
+    vault = await Vault.new()
+
+    await acl.createPermission(
+      app.address,
+      vault.address,
+      await vault.TRANSFER_ROLE(),
+      root,
+      { from: root }
+    )
+
     bounties = StandardBounties.at(registry.address)
 
-    await app.initialize(registry.address)
+    await app.initialize(registry.address, vault.address)
   })
 
   context('creating and retrieving repos and bounties', () => {
@@ -247,7 +258,7 @@ contract('Projects App', accounts => {
       beforeEach('issue bulk bounties', async () => {
         issue3Receipt = addedBounties(
           await app.addBounties(
-            repoId,
+            Array(3).fill(repoId),
             [1, 2, 3],
             [10, 20, 30],
             [Date.now() + 86400, Date.now() + 86400, Date.now() + 86400],
@@ -402,83 +413,6 @@ contract('Projects App', accounts => {
     })
   })
 
-  context('invalid operations', () => {
-    it('cannot retrieve a removed Repo', async () => {
-      const repoId = addedRepo(
-        await app.addRepo('abc', String(123), { from: owner1 })
-      )
-      await app.removeRepo(repoId, { from: repoRemover })
-      // const result = await app.getRepo(repoId)
-      assertRevert(async () => {
-        await app.getRepo(repoId, { from: repoRemover })
-      })
-      // assert.equal(
-      //   web3.toAscii(result[0]).replace(/\0/g, ''),
-      //   '',
-      //   'repo returned'
-      // )
-    })
-
-    // TODO: Cannot remove a not existing repo
-    // TODO: settings tests
-
-    it('cannot add bounties to unregistered repos', async () => {
-      assertRevert(async () => {
-        await app.addBounties('0xdeadbeef', [1, 2, 3], [10, 20, 30], {
-          from: bountyAdder,
-        })
-      })
-    })
-
-    it('cannot issue bulk bounties with invalid value', async () => {
-      const bountyAdder = accounts[2]
-      const repoId = addedRepo(
-        await app.addRepo('abc', String(123), { from: owner1 })
-      )
-      assertRevert(async () => {
-        await app.addBounties(
-          repoId,
-          [1, 2, 3],
-          [10, 20, 30], // 60 total Wei should be sent
-          [Date.now() + 86400, Date.now() + 86400, Date.now() + 86400],
-          [false, false, false],
-          [0, 0, 0],
-          'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
-          { from: bountyAdder, value: 61 } // 61 Wei sent instead
-        )
-      })
-    })
-
-    it('cannot accept unfulfilled bounties', async () => {
-      let repoId = addedRepo(
-        await app.addRepo(
-          'MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5',
-          'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk=',
-          { from: owner1 }
-        )
-      )
-      await app.addBounties(
-        repoId,
-        [1, 2, 3],
-        [10, 20, 30],
-        [Date.now() + 86400, Date.now() + 86400, Date.now() + 86400],
-        [false, false, false],
-        [0, 0, 0],
-        'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
-        { from: bountyAdder, value: 60 }
-      )
-      assertRevert(async () => {
-        await app.acceptFulfillment(repoId, 0, 0, { from: bountyAdder })
-      })
-      await registry.fulfillBounty(0, 'findthemillenniumfalcon')
-      let fulfillment1 = await registry.getFulfillment(0, 0)
-      assert(fulfillment1[0] === false)
-      await app.acceptFulfillment(repoId, 0, 0, { from: bountyAdder })
-      fulfillment1 = await registry.getFulfillment(0, 0)
-      assert(fulfillment1[0] === true)
-    })
-  })
-
   context('issue curation', () => {
     // TODO: We should create every permission for every test this way to speed up testing
     // TODO: Create an external helper function that inits acl and sets permissions
@@ -521,6 +455,83 @@ contract('Projects App', accounts => {
       })
       xit('should revert if an issue has an already assigned bounty', async () => {
         // assert()
+      })
+    })
+  })
+
+  context('invalid operations', () => {
+    it('cannot retrieve a removed Repo', async () => {
+      const repoId = addedRepo(
+        await app.addRepo('abc', String(123), { from: owner1 })
+      )
+      await app.removeRepo(repoId, { from: repoRemover })
+      // const result = await app.getRepo(repoId)
+      assertRevert(async () => {
+        await app.getRepo(repoId, { from: repoRemover })
+      })
+      // assert.equal(
+      //   web3.toAscii(result[0]).replace(/\0/g, ''),
+      //   '',
+      //   'repo returned'
+      // )
+    })
+
+    // TODO: Cannot remove a not existing repo
+    // TODO: settings tests
+
+    it('cannot add bounties to unregistered repos', async () => {
+      assertRevert(async () => {
+        await app.addBounties(Array(3).fill('0xdeadbeef'), [1, 2, 3], [10, 20, 30], {
+          from: bountyAdder,
+        })
+      })
+    })
+
+    it('cannot accept unfulfilled bounties', async () => {
+      let repoId = addedRepo(
+        await app.addRepo(
+          'MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5',
+          'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk=',
+          { from: owner1 }
+        )
+      )
+      await app.addBounties(
+        Array(3).fill(repoId),
+        [1, 2, 3],
+        [10, 20, 30],
+        [Date.now() + 86400, Date.now() + 86400, Date.now() + 86400],
+        [false, false, false],
+        [0, 0, 0],
+        'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+        { from: bountyAdder, value: 60 }
+      )
+      assertRevert(async () => {
+        await app.acceptFulfillment(repoId, 0, 0, { from: bountyAdder })
+      })
+      await registry.fulfillBounty(0, 'findthemillenniumfalcon')
+      let fulfillment1 = await registry.getFulfillment(0, 0)
+      assert(fulfillment1[0] === false)
+      await app.acceptFulfillment(repoId, 0, 0, { from: bountyAdder })
+      fulfillment1 = await registry.getFulfillment(0, 0)
+      assert(fulfillment1[0] === true)
+    })
+
+    it('cannot issue bulk bounties with mismatched values', async () => {
+      const bountyAdder = accounts[2]
+      const repoId = addedRepo(
+        await app.addRepo('abc', String(123), { from: owner1 })
+      )
+      assertRevert(async () => {
+        await app.addBounties(
+          Array(3).fill(repoId),
+          [1, 2, 3],
+          [10, 20, 30], // 60 total Wei should be sent
+          [Date.now() + 86400, Date.now() + 86400, Date.now() + 86400],
+          [false, false, false],
+          [0, 0, 0],
+          'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+          { from: bountyAdder, value: 61 } // 61 Wei sent instead
+        )
       })
     })
   })
