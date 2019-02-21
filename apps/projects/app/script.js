@@ -303,7 +303,7 @@ function getRequest (repoId, issueNumber, applicantId) {
           for(const file of files) {
             contentJSON = JSON.parse(file.content.toString('utf8'))
           }
-          resolve(contentJSON)
+          resolve({contributorAddr: address, ...contentJSON})
         })
       })
     })

@@ -234,49 +234,46 @@ class App extends React.PureComponent {
         }
       }
     )
+    
+    let issuesArray = []
 
-        
-    let repos = {}, repo
     for (var key in issues) {
-      if(repos[issues[key].repo] == undefined) { repos[issues[key].repo] = [] }
-      repos[issues[key].repo].push({
-        ...issues[key]
-      })
+      issuesArray.push({key: key, ...issues[key]})
     }
-    for (var key in repos) {
 
-      repo = repos[key]
-      let ipfsString
-      ipfsString = await this.getIpfsString(repo)
-      
-      const tokenArray = new Array(repo.length).fill(bountyToken)
+    console.log('Submit issues:', issuesArray)
 
-      console.log('Bounty data',
-        web3.toHex(repo[0].repoId),
-        repo.map( (issue) => issue.number),
-        repo.map( (issue) => issue.size),
-        repo.map( (issue) => issue.deadline),
-        new Array(repo.length).fill(true),
-        tokenArray,
-        ipfsString
-      )
-      this.props.app.addBounties(
-        web3.toHex(repo[0].repoId),
-        repo.map( (issue) => issue.number),
-        repo.map( (issue) => issue.size),
-        repo.map( (issue) => {return ( Date.now() + 8600 )} ),
-        new Array(repo.length).fill(true),
-        tokenArray,
-        ipfsString
-      )
-    }
+    let ipfsString
+    ipfsString = await this.getIpfsString(issuesArray)
+    
+    const tokenArray = new Array(issuesArray.length).fill(bountyToken)
+
+    console.log('Bounty data',
+      issuesArray.map( (issue) => issue.repoId),
+      issuesArray.map( (issue) => issue.number),
+      issuesArray.map( (issue) => issue.size),
+      issuesArray.map( (issue) => issue.deadline),
+      new Array(issuesArray.length).fill(true),
+      tokenArray,
+      ipfsString
+    )
+    this.props.app.addBounties(
+      issuesArray.map( (issue) => web3.toHex(issue.repoId)),
+      issuesArray.map( (issue) => issue.number),
+      issuesArray.map( (issue) => issue.size),
+      issuesArray.map( (issue) => {return ( Date.now() + 8600 )} ),
+      new Array(issuesArray.length).fill(true),
+      tokenArray,
+      ipfsString
+    )
+
   }
 
-  getIpfsString = async (repos) => {
+  getIpfsString = async (issues) => {
     let ipfsString = ''
     let content, results
-    for(const r of repos) {
-      content = ipfs.types.Buffer.from(JSON.stringify(r))
+    for(const issue of issues) {
+      content = ipfs.types.Buffer.from(JSON.stringify(issue))
       results = await ipfs.add(content)
       ipfsString = ipfsString.concat(results[0].hash)
     }
