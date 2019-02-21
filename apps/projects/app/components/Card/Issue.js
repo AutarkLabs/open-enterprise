@@ -32,6 +32,8 @@ const IssueDetails = styled.div`
 `
 
 // TODO: @aragon/ui Table?
+// workStatus can be either: 'new', 'review-applicants', 'review-work', or 'finished'
+// It represents the state of the current issue in the approval bounty flow
 const Issue = ({workStatus, title, repo, number, labels, isSelected, onSelect, onSubmitWork, onRequestAssignment, onReviewApplication, balance, symbol }) => (
   <StyledIssue>
     <CheckButton checked={isSelected} onChange={onSelect} />
