@@ -1,11 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
-import { gql } from 'apollo-boost'
 import { Query } from 'react-apollo'
 import {
   Button,
-  //   Dropdown,
-  //   Text,
   TextInput,
   theme,
   ContextMenuItem,
@@ -14,10 +11,9 @@ import {
 } from '@aragon/ui'
 
 import { DropDownButton as ActionsMenu, FilterBar } from '../Shared'
+import { IssueDetail } from './IssueDetail'
 import { Issue, Empty } from '../Card'
 import { GET_ISSUES } from '../../utils/gql-queries.js'
-
-// import ethereumLoadingAnimation from '../Shared/assets/svg/ethereum-loading.svg'
 
 class Issues extends React.PureComponent {
   state = {
@@ -30,14 +26,19 @@ class Issues extends React.PureComponent {
       deadlines: {},
       experiences: {},
     },
+    sortBy: { what: 'Name', direction: -1 },
     textFilter: '',
     reload: false,
+    currentIssue: {},
+    showIssueDetail: false,
   }
 
   componentWillMount() {
     if ('filterIssuesByRepoId' in this.props.activeIndex.tabData) {
       let { filters } = this.state
-      filters.projects[this.props.activeIndex.tabData.filterIssuesByRepoId] = true
+      filters.projects[
+        this.props.activeIndex.tabData.filterIssuesByRepoId
+      ] = true
       this.setState({ filters })
     }
   }
@@ -78,6 +79,11 @@ class Issues extends React.PureComponent {
   handleFiltering = filters => {
     // TODO: why is reload necessary?
     this.setState(prevState => ({ filters, reload: !prevState.reload }))
+  }
+
+  handleSorting = sortBy => {
+    // TODO: why is reload necessary?
+    this.setState(prevState => ({ sortBy, reload: !prevState.reload }))
   }
 
   applyFilters = issues => {
@@ -127,7 +133,7 @@ class Issues extends React.PureComponent {
 
     // last but not least, if there is any text in textFilter...
     if (textFilter) {
-      return issuesByMilestone.filter(issue => issue.title.match(textFilter))
+      return issuesByMilestone.filter(issue => issue.title.toUpperCase().match(textFilter))
     }
 
     return issuesByMilestone
@@ -146,15 +152,20 @@ class Issues extends React.PureComponent {
   }
 
   handleTextFilter = e => {
-    this.setState({ textFilter: e.target.value, reload: !this.state.reload })
+    this.setState({ textFilter: e.target.value.toUpperCase(), reload: !this.state.reload })
+  }
+
+  handleIssueClick = issue => {
+    this.setState({ showIssueDetail: true, currentIssue: issue })
+  }
+
+  handleIssueDetailClose = () => {
+    this.setState({ showIssueDetail: false, currentIssue: null })
   }
 
   actionsMenu = () => (
     <div>
-      <TextInput 
-        placeholder="Search Issues"
-        onChange={this.handleTextFilter}
-      />
+      <TextInput placeholder="Search Issues" onChange={this.handleTextFilter} />
       <ActionsMenu enabled={!!this.state.selectedIssues.length}>
         <ContextMenuItem
           onClick={this.handleCurateIssues}
@@ -178,17 +189,22 @@ class Issues extends React.PureComponent {
     </div>
   )
 
+  filterBar = (issues, issuesFiltered) => (
+    <FilterBar
+      handleSelectAll={this.toggleSelectAll(issuesFiltered)}
+      allSelected={this.state.allSelected}
+      issues={issues}
+      issuesFiltered={issuesFiltered}
+      handleFiltering={this.handleFiltering}
+      handleSorting={this.handleSorting}
+      activeIndex={this.props.activeIndex}
+    />
+  )
+
   queryLoading = () => (
     <StyledIssues>
       {this.actionsMenu()}
-      <FilterBar
-        handleSelectAll={this.toggleSelectAll}
-        allSelected={false}
-        issues={[]}
-        issuesFiltered={[]}
-        handleFiltering={this.handleFiltering}
-        activeIndex={this.props.activeIndex}
-      />
+      {this.filterBar([], [])}
       <IssuesScrollView>
         <div>Loading...</div>
       </IssuesScrollView>
@@ -198,14 +214,7 @@ class Issues extends React.PureComponent {
   queryError = (error, refetch) => (
     <StyledIssues>
       {this.actionsMenu()}
-      <FilterBar
-        handleSelectAll={this.toggleSelectAll}
-        allSelected={false}
-        issues={[]}
-        issuesFiltered={[]}
-        handleFiltering={this.handleFiltering}
-        activeIndex={this.props.activeIndex}
-      />
+      {this.filterBar([], [])}
       <IssuesScrollView>
         <div>
           Error {JSON.stringify(error)}
@@ -232,7 +241,6 @@ class Issues extends React.PureComponent {
       tokenObj[token.addr] = token.symbol
       console.log('tokenObj:', tokenObj)
     })
-
     return issues.map(({ __typename, repository: { id, name }, ...fields }) => 
     {
       if(bountyIssueObj[fields.number]){
@@ -254,19 +262,39 @@ class Issues extends React.PureComponent {
       }
     })
   }
+
+  generateSorter = () => {
+    const { what, direction } = this.state.sortBy
+    if (what === 'Name') return (i1, i2) => {
+      return i1.title.toUpperCase() < i2.title.toUpperCase() ? direction : direction * -1
+    }
+  }
+
   render() {
-    const { projects, onNewProject} = this.props
+    const { projects, onNewProject, activeIndex, tokens, bountyIssues } = this.props
+    const { currentIssue, showIssueDetail } = this.state
+
     // better return early if we have no projects added?
-    if (projects.length === 0) return <Empty action={onNewProject} />
+    if (projects.length === 0) return <Empty action={onNewProject} />  
+    if (showIssueDetail)
+      return (
+        <IssueDetail
+          issue={currentIssue}
+          onClose={this.handleIssueDetailClose}
+        />
+      )
 
     const { allSelected } = this.state
     const reposIds = projects.map(project => project.data._repo)
 
+    // Build an array of plain issues by flattening the data obtained from github API
     const flattenIssues = nodes =>
       nodes && [].concat(...nodes.map(node => node.issues.nodes))
 
 
     //console.log('current issues props:', this.props, 'and state:', this.state)
+
+    const currentSorter = this.generateSorter()
 
     return (
       <Query
@@ -282,20 +310,17 @@ class Issues extends React.PureComponent {
             return (
               <StyledIssues>
                 {this.actionsMenu()}
-                <FilterBar
-                  handleSelectAll={this.toggleSelectAll(issuesFiltered)}
-                  allSelected={allSelected}
-                  issues={issues}
-                  issuesFiltered={issuesFiltered}
-                  handleFiltering={this.handleFiltering}
-                  activeIndex={this.props.activeIndex}
-                />
+                {this.filterBar(issues, issuesFiltered)}
+
                 <IssuesScrollView>
-                  {this.shapeIssues(issuesFiltered).map(issue => (
+                  {this.shapeIssues(issuesFiltered).sort(currentSorter).map(issue => (
                     <Issue
                       isSelected={this.state.selectedIssues
                         .map(selectedIssue => selectedIssue.id)
                         .includes(issue.id)}
+                      onClick={() => {
+                        this.handleIssueClick(issue)
+                      }}
                       onSelect={() => {
                         this.handleIssueSelection(issue)
                       }}
@@ -330,37 +355,33 @@ class Issues extends React.PureComponent {
 }
 
 const StyledIssues = styled.div`
-  display: flex;
-  flex-direction: column;
   padding: 15px 30px;
   > :first-child {
     display: flex;
     justify-content: space-between;
   }
+`
 
-  /* height: 100%;
-  padding: 15px 30px;
+const ScrollWrapper = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  > :nth-child(3) {
+  justify-content: stretch;
+  flex-grow: 1;
+  > :first-child {
     border-radius: 3px 3px 0 0;
-    margin-bottom: -1px;
-  }
-  > :nth-child(n + 4) {
-    border-radius: 0;
-    margin-bottom: -1px;
   }
   > :last-child {
     border-radius: 0 0 3px 3px;
-  } */
+    margin-bottom: 10px;
+  }
 `
 
+// TODO: Calculate height with flex (maybe to add pagination at bottom?)
 const IssuesScrollView = styled.div`
+  height: 75vh;
+  position: relative;
   overflow-y: auto;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
 `
 
 const ActionLabel = styled.span`

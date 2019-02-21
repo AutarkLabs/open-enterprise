@@ -304,7 +304,7 @@ function loadRequestsData({repoId, issueNumber}) {
   })
 }
 
-function getRequest (repoId, issueNumber, applicantId) {
+function getRequest(repoId, issueNumber, applicantId) {
   return new Promise(resolve => {
     app.call('getApplicant', repoId, issueNumber, applicantId).subscribe( (address) => {
       app.call('getAssignmentRequest', repoId, issueNumber, address).subscribe( (hash) => {

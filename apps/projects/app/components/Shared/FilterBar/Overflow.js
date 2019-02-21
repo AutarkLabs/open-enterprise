@@ -68,7 +68,8 @@ class Overflow extends React.Component {
         }}
       >
         {visibleElements}
-        <FilterButton
+        <OverflowPlaceholder />
+        {/*<FilterButton
           style={{
             display: 'inline-flex',
             justifyContent: 'left',
@@ -77,12 +78,19 @@ class Overflow extends React.Component {
           }}
         >
           …
-        </FilterButton>
+        </FilterButton>*/}
         {/* <FilterButton>...</FilterButton> */}
         {/* {overflowElements} */}
       </div>
     )
   }
 }
+
+const OverflowPlaceholder = styled(FilterButton)`
+  width: 100%;
+  :hover {
+    box-shadow: none;
+  }
+`
 
 export default Overflow

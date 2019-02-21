@@ -9,6 +9,8 @@ export const GET_ISSUES = gql`
             number
             id
             title
+            body
+            createdAt
             repository {
               id
               name
@@ -57,4 +59,3 @@ export const CURRENT_USER = gql`
     }
   }
 `
-

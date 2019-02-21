@@ -6,7 +6,6 @@ import { Text, theme, Badge, Button, ContextMenu, ContextMenuItem } from '@arago
 import { CheckButton } from '../Shared'
 
 const StyledIssue = styled.div`
-  //overflow-y: hidden;
   flex: 1;
   width: 100%;
   background: ${theme.contentBackground};
@@ -14,26 +13,47 @@ const StyledIssue = styled.div`
   padding-left: 10px;
   height: 112px;
   align-items: center;
-  border-radius: 3px;
   border: 1px solid ${theme.contentBorder};
+  margin-bottom: -1px;
   position: relative;
-  > :first-child {
+  > :nth-child(2) {
+    /* checkbox */
     margin-right: 21.5px;
     justify-content: center;
+    z-index: 2;
   }
-  > :nth-child(2) {
+  > :nth-child(3) {
+    /* text */
     height: 100%;
     padding: 10px;
     flex: 1 1 auto;
   }
 `
+
+const ClickArea = styled.div`
+  height: 100%;
+  left: 0;
+  position: absolute;
+  width: 100%;
+  z-index: 0;
+  :active {
+    border: 1px solid ${theme.accent};
+    z-index: 3;
+  }
+  :hover {
+    cursor: pointer;
+  }
+`
+
 const IssueDetails = styled.div`
   display: flex;
 `
 
-// TODO: @aragon/ui Table?
-const Issue = ({workStatus, title, repo, number, labels, isSelected, onSelect, onSubmitWork, onRequestAssignment, onReviewApplication, onReviewWork, balance, symbol }) => (
+// workStatus can be either: 'new', 'review-applicants', 'review-work', or 'finished'
+// It represents the state of the current issue in the approval bounty flow
+const Issue = ({workStatus, title, repo, number, labels, isSelected, onClick, onSelect, onSubmitWork, onRequestAssignment, onReviewApplication, onReviewWork, balance, symbol }) => (
   <StyledIssue>
+    <ClickArea onClick={onClick} />
     <CheckButton checked={isSelected} onChange={onSelect} />
     <div
       style={{
@@ -58,16 +78,18 @@ const Issue = ({workStatus, title, repo, number, labels, isSelected, onSelect, o
           {repo} #{number}
         </Text>
         <Text size="small" color={theme.textTertiary}>
-          { labels.totalCount ? (
-            labels.edges.map(label =>
+          {labels.totalCount
+            ? labels.edges.map(label => (
               <Badge
                 key={label.node.id}
-                style={{ marginLeft: '5px'}}
-                background={'#'+label.node.color}
-                foreground={'#000'}>{label.node.name}
+                style={{ marginLeft: '5px' }}
+                background={'#' + label.node.color}
+                foreground={'#000'}
+              >
+                {label.node.name}
               </Badge>
-            )) : ''
-          }        
+            ))
+            : ''}
         </Text>
       </IssueDetails>
     </div>
@@ -107,6 +129,7 @@ Issue.propTypes = {
   repo: PropTypes.string.isRequired,
   number: PropTypes.number.isRequired,
   isSelected: PropTypes.bool,
+  onClick: PropTypes.func.isRequired,
   onSelect: PropTypes.func,
 }
 
