@@ -14,7 +14,7 @@ const FilterButton = styled.div`
   font-weight: 500;
   cursor: pointer;
   width: 150px;
-  transition: all 0.3s ease-out;
+  transition: all 0.1s ease-out;
   ${unselectable};
   :hover {
     box-shadow: 0 0 8px 4px rgba(0, 0, 0, 0.06);

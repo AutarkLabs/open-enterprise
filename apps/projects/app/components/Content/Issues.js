@@ -26,6 +26,7 @@ class Issues extends React.PureComponent {
       deadlines: {},
       experiences: {},
     },
+    sortBy: { what: 'Name', direction: -1 },
     textFilter: '',
     reload: false,
     currentIssue: {},
@@ -75,6 +76,11 @@ class Issues extends React.PureComponent {
     this.setState(prevState => ({ filters, reload: !prevState.reload }))
   }
 
+  handleSorting = sortBy => {
+    // TODO: why is reload necessary?
+    this.setState(prevState => ({ sortBy, reload: !prevState.reload }))
+  }
+
   applyFilters = issues => {
     const { filters, textFilter } = this.state
 
@@ -122,7 +128,7 @@ class Issues extends React.PureComponent {
 
     // last but not least, if there is any text in textFilter...
     if (textFilter) {
-      return issuesByMilestone.filter(issue => issue.title.match(textFilter))
+      return issuesByMilestone.filter(issue => issue.title.toUpperCase().match(textFilter))
     }
 
     return issuesByMilestone
@@ -140,7 +146,7 @@ class Issues extends React.PureComponent {
   }
 
   handleTextFilter = e => {
-    this.setState({ textFilter: e.target.value, reload: !this.state.reload })
+    this.setState({ textFilter: e.target.value.toUpperCase(), reload: !this.state.reload })
   }
 
   handleIssueClick = issue => {
@@ -177,17 +183,22 @@ class Issues extends React.PureComponent {
     </div>
   )
 
+  filterBar = (issues, issuesFiltered) => (
+    <FilterBar
+      handleSelectAll={this.toggleSelectAll(issuesFiltered)}
+      allSelected={this.state.allSelected}
+      issues={issues}
+      issuesFiltered={issuesFiltered}
+      handleFiltering={this.handleFiltering}
+      handleSorting={this.handleSorting}
+      activeIndex={this.props.activeIndex}
+    />
+  )
+
   queryLoading = () => (
     <StyledIssues>
       {this.actionsMenu()}
-      <FilterBar
-        handleSelectAll={this.toggleSelectAll}
-        allSelected={false}
-        issues={[]}
-        issuesFiltered={[]}
-        handleFiltering={this.handleFiltering}
-        activeIndex={this.props.activeIndex}
-      />
+      {this.filterBar([], [])}
       <IssuesScrollView>
         <div>Loading...</div>
       </IssuesScrollView>
@@ -197,14 +208,7 @@ class Issues extends React.PureComponent {
   queryError = (error, refetch) => (
     <StyledIssues>
       {this.actionsMenu()}
-      <FilterBar
-        handleSelectAll={this.toggleSelectAll}
-        allSelected={false}
-        issues={[]}
-        issuesFiltered={[]}
-        handleFiltering={this.handleFiltering}
-        activeIndex={this.props.activeIndex}
-      />
+      {this.filterBar([], [])}
       <IssuesScrollView>
         <div>
           Error {JSON.stringify(error)}
@@ -217,6 +221,13 @@ class Issues extends React.PureComponent {
       </IssuesScrollView>
     </StyledIssues>
   )
+
+  generateSorter = () => {
+    const { what, direction } = this.state.sortBy
+    if (what === 'Name') return (i1, i2) => {
+      return i1.title.toUpperCase() < i2.title.toUpperCase() ? direction : direction * -1
+    }
+  }
 
   render() {
     const { projects, onNewProject, activeIndex, tokens, bountyIssues } = this.props
@@ -274,6 +285,8 @@ class Issues extends React.PureComponent {
 
     //console.log('current issues props:', this.props, 'and state:', this.state)
 
+    const currentSorter = this.generateSorter()
+
     return (
       <Query
         fetchPolicy="cache-first"
@@ -288,41 +301,33 @@ class Issues extends React.PureComponent {
             return (
               <StyledIssues>
                 {this.actionsMenu()}
-                <FilterBar
-                  handleSelectAll={this.toggleSelectAll(issuesFiltered)}
-                  allSelected={allSelected}
-                  issues={issues}
-                  issuesFiltered={issuesFiltered}
-                  handleFiltering={this.handleFiltering}
-                  activeIndex={this.props.activeIndex}
-                />
+                {this.filterBar(issues, issuesFiltered)}
+
                 <IssuesScrollView>
-                  <ScrollWrapper>
-                    {shapeIssues(issuesFiltered).map(issue => (
-                      <Issue
-                        isSelected={this.state.selectedIssues
-                          .map(selectedIssue => selectedIssue.id)
-                          .includes(issue.id)}
-                        onClick={() => {
-                          this.handleIssueClick(issue)
-                        }}
-                        onSelect={() => {
-                          this.handleIssueSelection(issue)
-                        }}
-                        onReviewApplication={() => {
-                          this.handleReviewApplication(issue)
-                        }}
-                        onSubmitWork={() => {
-                          this.handleSubmitWork(issue)
-                        }}
-                        onRequestAssignment={() => {
-                          this.handleRequestAssignment(issue)
-                        }}
-                        key={issue.id}
-                        {...issue}
-                      />
-                    ))}
-                  </ScrollWrapper>
+                  {shapeIssues(issuesFiltered).sort(currentSorter).map(issue => (
+                    <Issue
+                      isSelected={this.state.selectedIssues
+                        .map(selectedIssue => selectedIssue.id)
+                        .includes(issue.id)}
+                      onClick={() => {
+                        this.handleIssueClick(issue)
+                      }}
+                      onSelect={() => {
+                        this.handleIssueSelection(issue)
+                      }}
+                      onReviewApplication={() => {
+                        this.handleReviewApplication(issue)
+                      }}
+                      onSubmitWork={() => {
+                        this.handleSubmitWork(issue)
+                      }}
+                      onRequestAssignment={() => {
+                        this.handleRequestAssignment(issue)
+                      }}
+                      key={issue.id}
+                      {...issue}
+                    />
+                  ))}
                 </IssuesScrollView>
               </StyledIssues>
             )
