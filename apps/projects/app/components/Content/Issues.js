@@ -178,18 +178,22 @@ class Issues extends React.PureComponent {
     </div>
   )
 
+  filterBar = (issues, issuesFiltered) => (
+    <FilterBar
+      handleSelectAll={this.toggleSelectAll(issuesFiltered)}
+      allSelected={this.state.allSelected}
+      issues={issues}
+      issuesFiltered={issuesFiltered}
+      handleFiltering={this.handleFiltering}
+      handleSorting={this.handleSorting}
+      activeIndex={this.props.activeIndex}
+    />
+  )
+
   queryLoading = () => (
     <StyledIssues>
       {this.actionsMenu()}
-      <FilterBar
-        handleSelectAll={this.toggleSelectAll}
-        allSelected={false}
-        issues={[]}
-        issuesFiltered={[]}
-        handleFiltering={this.handleFiltering}
-        handleSorting={this.handleSorting}
-        activeIndex={this.props.activeIndex}
-      />
+      {this.filterBar([], [])}
       <IssuesScrollView>
         <div>Loading...</div>
       </IssuesScrollView>
@@ -199,15 +203,7 @@ class Issues extends React.PureComponent {
   queryError = (error, refetch) => (
     <StyledIssues>
       {this.actionsMenu()}
-      <FilterBar
-        handleSelectAll={this.toggleSelectAll}
-        allSelected={false}
-        issues={[]}
-        issuesFiltered={[]}
-        handleFiltering={this.handleFiltering}
-        handleSorting={this.handleSorting}
-        activeIndex={this.props.activeIndex}
-      />
+      {this.filterBar([], [])}
       <IssuesScrollView>
         <div>
           Error {JSON.stringify(error)}
@@ -227,7 +223,6 @@ class Issues extends React.PureComponent {
       return i1.title.toUpperCase() < i2.title.toUpperCase() ? direction : direction * -1
     }
   }
- 
 
   render() {
     const { projects, onNewProject, activeIndex } = this.props
@@ -264,15 +259,8 @@ class Issues extends React.PureComponent {
             return (
               <StyledIssues>
                 {this.actionsMenu()}
-                <FilterBar
-                  handleSelectAll={this.toggleSelectAll(issuesFiltered)}
-                  allSelected={allSelected}
-                  issues={issues}
-                  issuesFiltered={issuesFiltered}
-                  handleFiltering={this.handleFiltering}
-                  handleSorting={this.handleSorting}
-                  activeIndex={this.props.activeIndex}
-                />
+                {this.filterBar(issues, issuesFiltered)}
+
                 <IssuesScrollView>
                   {shapeIssues(issuesFiltered).sort(currentSorter).map(issue => (
                     <Issue
