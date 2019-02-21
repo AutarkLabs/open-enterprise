@@ -431,6 +431,7 @@ class App extends React.PureComponent {
         <ApolloProvider client={client}>
           <ErrorBoundary>
             <AppContent
+              status={this.props.github.status}
               app={this.props.app}
               bountySettings={bountySettings}
               githubCurrentUser={githubCurrentUser}
