@@ -17,7 +17,7 @@ const Unauthorized = ({ onLogin }) => (
       onActivate={onLogin}
     />
     <Text size="xsmall">
-      * Note: we plan to decouple from Github in the future!
+      * Note: we plan to decouple from GitHub in the future!
     </Text>
   </EmptyWrapper>
 )

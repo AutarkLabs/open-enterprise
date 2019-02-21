@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { DropDown, Button, Text, Field, TextInput, theme } from '@aragon/ui'
@@ -151,8 +152,6 @@ class Settings extends React.Component {
       bountyAllocator,
       bountyArbiter,
     } = this.state
-
-    console.log('bounteysee', bountyCurrency)
 
     // TODO: hourglass in case settings are still being loaded
     if (!('baseRate' in this.props.bountySettings))
