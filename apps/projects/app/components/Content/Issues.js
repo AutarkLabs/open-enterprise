@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { Query } from 'react-apollo'
@@ -10,12 +11,19 @@ import {
   IconAdd,
 } from '@aragon/ui'
 
-import { DropDownButton as ActionsMenu, FilterBar } from '../Shared'
-import { IssueDetail } from './IssueDetail'
-import { Issue, Empty } from '../Card'
+import { STATUS } from '../../utils/github'
 import { GET_ISSUES } from '../../utils/gql-queries.js'
+import { DropDownButton as ActionsMenu, FilterBar } from '../Shared'
+import { Issue, Empty } from '../Card'
+import { IssueDetail } from './IssueDetail'
+import Unauthorized from './Unauthorized'
 
 class Issues extends React.PureComponent {
+  static propTypes = {
+    onLogin: PropTypes.func.isRequired,
+    status: PropTypes.string.isRequired,
+  }
+
   state = {
     selectedIssues: [],
     allSelected: false,
@@ -137,7 +145,9 @@ class Issues extends React.PureComponent {
 
     // last but not least, if there is any text in textFilter...
     if (textFilter) {
-      return issuesByMilestone.filter(issue => issue.title.toUpperCase().match(textFilter))
+      return issuesByMilestone.filter(issue =>
+        issue.title.toUpperCase().match(textFilter)
+      )
     }
 
     return issuesByMilestone
@@ -156,7 +166,10 @@ class Issues extends React.PureComponent {
   }
 
   handleTextFilter = e => {
-    this.setState({ textFilter: e.target.value.toUpperCase(), reload: !this.state.reload })
+    this.setState({
+      textFilter: e.target.value.toUpperCase(),
+      reload: !this.state.reload,
+    })
   }
 
   handleIssueClick = issue => {
@@ -241,8 +254,7 @@ class Issues extends React.PureComponent {
   }
 
   shapeIssues = issues => {
-    const { tokens, bountyIssues, } =  this.props
-    let bountyIssueObj = {}
+    const { tokens, bountyIssues } = this.props
     let tokenObj = {}
     let expLevels = this.getExpLevels()
 
@@ -254,22 +266,21 @@ class Issues extends React.PureComponent {
       tokenObj[token.addr] = token.symbol
       console.log('tokenObj:', tokenObj)
     })
-    return issues.map(({ __typename, repository: { id, name }, ...fields }) => 
-    {
-      if(bountyIssueObj[fields.number]){
+    return issues.map(({ __typename, repository: { id, name }, ...fields }) => {
+      if (bountyIssueObj[fields.number]) {
         let data = bountyIssueObj[fields.number].data
         console.log('Bounty Issue Info:', data)
 
-        return { 
+        return {
           ...fields,
           ...bountyIssueObj[fields.number].data,
           repoId: id,
           repo: name,
           symbol: tokenObj[data.token],
-          expLevel: expLevels[data.exp].name
+          expLevel: expLevels[data.exp].name,
         }
       }
-      return { 
+      return {
         ...fields,
         repoId: id,
         repo: name,
@@ -279,29 +290,45 @@ class Issues extends React.PureComponent {
 
   generateSorter = () => {
     const { what, direction } = this.state.sortBy
-    if (what === 'Name') return (i1, i2) => {
-      return i1.title.toUpperCase() < i2.title.toUpperCase() ? direction : direction * -1
-    }
+    if (what === 'Name')
+      return (i1, i2) => {
+        return i1.title.toUpperCase() < i2.title.toUpperCase()
+          ? direction
+          : direction * -1
+      }
   }
 
   render() {
-    const { projects, onNewProject, bountySettings } = this.props
+    if (this.props.status === STATUS.INITIAL) {
+      return <Unauthorized onLogin={this.props.onLogin} />
+    }
+    const {
+      projects,
+      onNewProject,
+      activeIndex,
+      tokens,
+      bountyIssues,
+      bountySettings,
+    } = this.props
     const { currentIssue, showIssueDetail } = this.state
 
     // better return early if we have no projects added?
-    if (projects.length === 0) return <Empty action={onNewProject} />  
+    if (projects.length === 0) return <Empty action={onNewProject} />
+
+    // better return early if we have no projects added?
+    if (projects.length === 0) return <Empty action={onNewProject} />
     if (showIssueDetail)
       return (
         <IssueDetail
           issue={currentIssue}
           onClose={this.handleIssueDetailClose}
-          onReviewApplication = {() => {
+          onReviewApplication={() => {
             this.handleReviewApplication(currentIssue)
           }}
-          onRequestAssignment = {() => {
+          onRequestAssignment={() => {
             this.handleRequestAssignment(currentIssue)
           }}
-          onSubmitWork = {() => {
+          onSubmitWork={() => {
             this.handleSubmitWork(currentIssue)
           }}
           onAllocateSingleBounty={() => {
@@ -319,7 +346,6 @@ class Issues extends React.PureComponent {
     // Build an array of plain issues by flattening the data obtained from github API
     const flattenIssues = nodes =>
       nodes && [].concat(...nodes.map(node => node.issues.nodes))
-
 
     //console.log('current issues props:', this.props, 'and state:', this.state)
 
@@ -343,36 +369,38 @@ class Issues extends React.PureComponent {
 
                 <IssuesScrollView>
                   <ScrollWrapper>
-                    {this.shapeIssues(issuesFiltered).sort(currentSorter).map(issue => (
-                      <Issue
-                        isSelected={this.state.selectedIssues
-                          .map(selectedIssue => selectedIssue.id)
-                          .includes(issue.id)}
-                        onClick={() => {
-                          this.handleIssueClick(issue)
-                        }}
-                        onSelect={() => {
-                          this.handleIssueSelection(issue)
-                        }}
-                        onReviewApplication={() => {
-                          this.handleReviewApplication(issue)
-                        }}
-                        onSubmitWork={() => {
-                          this.handleSubmitWork(issue)
-                        }}
-                        onRequestAssignment={() => {
-                          this.handleRequestAssignment(issue)
-                        }}
-                        onAllocateSingleBounty={() => {
-                          this.handleAllocateSingleBounty(issue)
-                        }}
-                        onReviewWork={() => {
-                          this.handleReviewWork(issue)
-                        }}
-                        key={issue.id}
-                        {...issue}
-                      />
-                    ))}
+                    {this.shapeIssues(issuesFiltered)
+                      .sort(currentSorter)
+                      .map(issue => (
+                        <Issue
+                          isSelected={this.state.selectedIssues
+                            .map(selectedIssue => selectedIssue.id)
+                            .includes(issue.id)}
+                          onClick={() => {
+                            this.handleIssueClick(issue)
+                          }}
+                          onSelect={() => {
+                            this.handleIssueSelection(issue)
+                          }}
+                          onReviewApplication={() => {
+                            this.handleReviewApplication(issue)
+                          }}
+                          onSubmitWork={() => {
+                            this.handleSubmitWork(issue)
+                          }}
+                          onRequestAssignment={() => {
+                            this.handleRequestAssignment(issue)
+                          }}
+                          onAllocateSingleBounty={() => {
+                            this.handleAllocateSingleBounty(issue)
+                          }}
+                          onReviewWork={() => {
+                            this.handleReviewWork(issue)
+                          }}
+                          key={issue.id}
+                          {...issue}
+                        />
+                      ))}
                   </ScrollWrapper>
                 </IssuesScrollView>
               </StyledIssues>
