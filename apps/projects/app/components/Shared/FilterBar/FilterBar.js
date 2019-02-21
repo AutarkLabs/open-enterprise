@@ -251,10 +251,6 @@ class FilterBar extends React.Component {
           <FilterDropDown caption="Experience" enabled={false}>
           </FilterDropDown>
            */ }
-
-          <FilterDropDown caption="Status" enabled={false} />
-          <FilterDropDown caption="Deadline" enabled={false} />
-          <FilterDropDown caption="Experience" enabled={false} />
         </Overflow>
 
         <FilterDropDown caption="Sort by" enabled={true}>
