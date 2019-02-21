@@ -49,7 +49,10 @@ const IssueDetails = styled.div`
   display: flex;
 `
 
-const Issue = ({ title, repo, number, labels, isSelected, onClick, onSelect, onSubmitWork, onRequestAssignment, onReviewApplication, balance, symbol}) => (
+// TODO: @aragon/ui Table?
+// workStatus can be either: 'new', 'review-applicants', 'review-work', or 'finished'
+// It represents the state of the current issue in the approval bounty flow
+const Issue = ({workStatus, title, repo, number, labels, isSelected, onClick, onSelect, onSubmitWork, onRequestAssignment, onReviewApplication, balance, symbol }) => (
   <StyledIssue>
     <ClickArea onClick={onClick} />
     <CheckButton checked={isSelected} onChange={onSelect} />
@@ -100,17 +103,19 @@ const Issue = ({ title, repo, number, labels, isSelected, onClick, onSelect, onS
         </Badge>
         
       }
-      <ContextMenu>
-        <ContextMenuItem onClick={onSubmitWork}>
-          <ActionLabel>Submit Work</ActionLabel>
-        </ContextMenuItem>
-        <ContextMenuItem onClick={onRequestAssignment}>
-          <ActionLabel>Request Assignment</ActionLabel>
-        </ContextMenuItem>
-        <ContextMenuItem onClick={onReviewApplication}>
-          <ActionLabel>Review Application</ActionLabel>
-        </ContextMenuItem>
-      </ContextMenu>
+      {workStatus !== undefined &&
+        <ContextMenu>
+          <ContextMenuItem onClick={onSubmitWork}>
+            <ActionLabel>Submit Work</ActionLabel>
+          </ContextMenuItem>
+          <ContextMenuItem onClick={onRequestAssignment}>
+            <ActionLabel>Request Assignment</ActionLabel>
+          </ContextMenuItem>
+          <ContextMenuItem onClick={onReviewApplication}>
+            <ActionLabel>Review Application</ActionLabel>
+          </ContextMenuItem>
+        </ContextMenu>
+      }
     </div>
   </StyledIssue>
 )
