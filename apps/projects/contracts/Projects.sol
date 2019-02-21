@@ -60,6 +60,11 @@ interface Bounties {
       external
       view
       returns (address);
+
+    function getBountyData(uint _bountyId)
+      external
+      view
+      returns (string);
 }
 
 interface TokenApproval {
@@ -229,13 +234,14 @@ contract Projects is IsContract, AragonApp {
      * @param _repoId The id of the Github repo in the projects registry
      */
     function getIssue(bytes32 _repoId, uint256 _issueNumber) external view
-    returns(bool hasBounty, uint standardBountyId, bool fulfilled, uint balance, address token)
+    returns(bool hasBounty, uint standardBountyId, bool fulfilled, uint balance, address token, string dataHash)
     {
         GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
         hasBounty = issue.hasBounty;
         fulfilled = issue.fulfilled;
         standardBountyId = issue.standardBountyId;
         ( , , , , ,balance) = bounties.getBounty(standardBountyId);
+        dataHash = bounties.getBountyData(standardBountyId);
         token = bounties.getBountyToken(standardBountyId);
     }
 
@@ -439,7 +445,7 @@ contract Projects is IsContract, AragonApp {
 
     /**
      * @notice add bulk bounties
-     * @param _repoId The id of the Github repo in the projects registry
+     * @param _repoIds The ids of the Github repos in the projects registry
      * @param _issueNumbers an array of bounty indexes
      * @param _bountySizes an array of bounty sizes
      * @param _deadlines an array of bounty deadlines
@@ -448,7 +454,7 @@ contract Projects is IsContract, AragonApp {
      * @param _ipfsAddresses a string of ipfs addresses
      */
     function addBounties(
-        bytes32 _repoId,
+        bytes32[] _repoIds,
         uint256[] _issueNumbers,
         uint256[] _bountySizes,
         uint256[] _deadlines,
@@ -485,7 +491,7 @@ contract Projects is IsContract, AragonApp {
 
             //Add bounty to local registry
             _addBounty(
-                _repoId,
+                _repoIds[i],
                 _issueNumbers[i],
                 standardBountyId,
                 _bountySizes[i]

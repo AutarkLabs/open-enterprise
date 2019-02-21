@@ -234,55 +234,52 @@ class App extends React.PureComponent {
         }
       }
     )
+    
+    let issuesArray = []
 
-    
-    let content = ipfs.types.Buffer.from(issues.toString())
-    console.log(content)
-    console.log(ipfs)
-    console.log(ipfs.files)
-    let results = await ipfs.add(content)
-    console.log(results)
-    
-    let repos = {}, repo
     for (var key in issues) {
-      if(repos[issues[key].repo] == undefined) { repos[issues[key].repo] = [] }
-      repos[issues[key].repo].push({
-        ...issues[key]
-      })
+      issuesArray.push({key: key, ...issues[key]})
     }
-    for (var key in repos) {
 
-      repo = repos[key]
-      let ipfsString = ''
-      let content, results
-      await repo.forEach(async r => {
-        content = ipfs.types.Buffer.from(r.toString())
-        results = await ipfs.add(content)
-        ipfsString += results[0].hash
-      })
-      
-      const tokenArray = new Array(repo.length).fill(bountyToken)
+    console.log('Submit issues:', issuesArray)
 
-      console.log('Bounty data',
-        web3.toHex(repo[0].repoId),
-        repo.map( (issue) => issue.number),
-        repo.map( (issue) => issue.size),
-        repo.map( (issue) => issue.deadline),
-        new Array(repo.length).fill(true),
-        tokenArray,
-        ipfsString
-      )
-      this.props.app.addBounties(
-        web3.toHex(repo[0].repoId),
-        repo.map( (issue) => issue.number),
-        repo.map( (issue) => issue.size),
-        repo.map( (issue) => {return ( Date.now() + 8600 )} ),
-        new Array(repo.length).fill(true),
-        tokenArray,
-        ipfsString
-      )
-    }
+    let ipfsString
+    ipfsString = await this.getIpfsString(issuesArray)
+    
+    const tokenArray = new Array(issuesArray.length).fill(bountyToken)
+
+    console.log('Bounty data',
+      issuesArray.map( (issue) => issue.repoId),
+      issuesArray.map( (issue) => issue.number),
+      issuesArray.map( (issue) => issue.size),
+      issuesArray.map( (issue) => issue.deadline),
+      new Array(issuesArray.length).fill(true),
+      tokenArray,
+      ipfsString
+    )
+    this.props.app.addBounties(
+      issuesArray.map( (issue) => web3.toHex(issue.repoId)),
+      issuesArray.map( (issue) => issue.number),
+      issuesArray.map( (issue) => issue.size),
+      issuesArray.map( (issue) => {return ( Date.now() + 8600 )} ),
+      new Array(issuesArray.length).fill(true),
+      tokenArray,
+      ipfsString
+    )
+
   }
+
+  getIpfsString = async (issues) => {
+    let ipfsString = ''
+    let content, results
+    for(const issue of issues) {
+      content = ipfs.types.Buffer.from(JSON.stringify(issue))
+      results = await ipfs.add(content)
+      ipfsString = ipfsString.concat(results[0].hash)
+    }
+    return ipfsString
+  }
+
   submitWork = issue => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.SubmitWork,
@@ -305,9 +302,12 @@ class App extends React.PureComponent {
     }))
   }
 
-  onRequestAssignment = (state, issue) => {
+  onRequestAssignment = async (state, issue) => {
     this.closePanel()
-    this.props.app.requestAssignment(web3.toHex(issue.repoId), issue.number, state.workplan)
+    let content = ipfs.types.Buffer.from(JSON.stringify(state))
+    let results = await ipfs.add(content)
+    let requestString = results[0].hash
+    this.props.app.requestAssignment(web3.toHex(issue.repoId), issue.number, requestString)
   }
 
   reviewApplication = issue => {
