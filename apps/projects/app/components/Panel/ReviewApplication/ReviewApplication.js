@@ -4,30 +4,15 @@ import styled from 'styled-components'
 import { formatDistance } from 'date-fns'
 
 import {
-  Field,
   Text,
-  TextInput,
   Button,
-  Info,
   SafeLink,
 } from '@aragon/ui'
 
-import { FormField, FieldTitle, DescriptionInput } from '../../Form'
-import { IconGitHub, CheckButton } from '../../Shared'
+import { Form, FormField, FieldTitle, DescriptionInput } from '../../Form'
+import { IconGitHub } from '../../Shared'
 
 // external data, all of it
-const application = {
-  user: {
-    login: 'rkzel',
-    name: 'RKZ',
-    avatar: 'https://avatars0.githubusercontent.com/u/34452131?v=4',
-    url: 'https://github.com/rkzel'
-  },
-  workplan: 'I solemnly swear to work on it day and night until it is done.',
-  hours: 13,
-  eta: '2/13/2019',
-  applicationDate: '2/9/2019'
-}
 
 class ReviewApplication extends React.Component {
   static propTypes = {
@@ -40,20 +25,38 @@ class ReviewApplication extends React.Component {
 
   changeField = ({ target: { name, value } }) => this.setState({ [name]: value })
 
-  onReviewApplicationAccept = () => {
-    console.log('Accepted', this.state.feedback, application)
+  onReviewApplication = () => {
+    console.log('Accepted', this.state.feedback, this.props.issue)
+    this.props.onReviewApplication(this.props.issue)
   }
-  onReviewApplicationReject = () => {
-    console.log('Rejected', this.state.feedback, application)
-  }
+
 
   render() {
     const { issue } = this.props
+
+    const request = issue.requestsData[0]
+    
+    const application = {
+      user: {
+        login: 'rkzel',
+        name: 'RKZ',
+        avatar: 'https://avatars0.githubusercontent.com/u/34452131?v=4',
+        url: 'https://github.com/rkzel'
+      },
+      workplan: request.workplan,
+      hours: request.hours,
+      eta: request.eta,
+      applicationDate: '2/9/2019'
+    }
+
     const applicant = application.user
     const applicationDateDistance = formatDistance(new Date(application.applicationDate), new Date())
-
     return (
-      <div>
+      <Form
+        onSubmit={this.onReviewApplication}
+        submitText="Accept Assignment"
+        noSeparator
+      >
         <IssueTitle>{issue.title}</IssueTitle>
         
         <SafeLink
@@ -104,12 +107,7 @@ class ReviewApplication extends React.Component {
             />
           }
         />
-
-        <ReviewRow>
-          <ReviewButton emphasis="negative" onClick={this.onReviewApplicationReject}>Reject</ReviewButton>
-          <ReviewButton emphasis="positive" onClick={this.onReviewApplicationAccept}>Accept</ReviewButton>
-        </ReviewRow>
-      </div>
+      </Form>
     )
   }
 }
