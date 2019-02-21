@@ -114,10 +114,11 @@ class RequestAssignment extends React.Component {
             I agree to keep the organization informed of my progress every few days.
           </AckText>
         </AckRow>
-
+        {/* Github commenting is not currently implemented
         <Info.Alert title="Submission note" background="#FFFAEE" style={{ marginBottom: '10px' }}>
           Your inputs will be added as a comment to the Github issue from your “{login}” account.
         </Info.Alert>
+        */}
       </Form>
     )
   }
