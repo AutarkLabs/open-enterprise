@@ -135,6 +135,16 @@ async function handleEvents(response) {
     nextState = syncIssues(appState, response.returnValues, data)
     appState = nextState
     break
+  case 'SubmissionAccepted':
+    console.log('[Projects] SubmissionAccepted', appState, response.returnValues)
+    if(response.returnValues === null || response.returnValues === undefined) {
+      break
+    }
+    data = await loadIssueData(response.returnValues)
+    data.workStatus = status[3]
+    nextState = syncIssues(appState, response.returnValues, data)
+    appState = nextState
+    break
   case 'BountyAdded':
     console.log('[Projects] BountyAdded', appState, response.returnValues)
     if(response.returnValues === null || response.returnValues === undefined) {

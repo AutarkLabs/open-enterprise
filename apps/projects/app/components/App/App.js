@@ -320,7 +320,24 @@ class App extends React.PureComponent {
     }))
   }
 
+  reviewWork = issue => {
+    this.setState((_prevState, _prevProps) => ({
+      panel: PANELS.ReviewWork,
+      panelProps: {
+        issue,
+        onReviewWork: this.onReviewWork,
+      },
+    }))
+  }
+
   onReviewApplication = props => console.log('onReviewApplication', props)
+
+  onReviewWork = (state, issue) => {
+    console.log('onReviewWork', state, issue)
+    this.closePanel()
+    this.props.app.reviewSubmission(web3.toHex(issue.repoId), issue.number, '', state.accepted)
+    //  bytes32 _repoId, uint256 _issueNumber, address _contributor, bool _approved
+  }
 
   curateIssues = issues => {
     this.setState((_prevState, _prevProps) => ({
@@ -418,8 +435,8 @@ class App extends React.PureComponent {
               onRequestAssignment={this.requestAssignment}
               activeIndex={activeIndex}
               changeActiveIndex={this.changeActiveIndex}
-
               onReviewApplication={this.reviewApplication}
+              onReviewWork={this.reviewWork}
             />
 
             <PanelManager

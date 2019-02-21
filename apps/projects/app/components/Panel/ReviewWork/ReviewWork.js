@@ -38,24 +38,20 @@ class ReviewWork extends React.Component {
   state = {
     feedback: '',
     rating: 0,
-    ratingAlert: false,
-  }
-
-  checkRating = (result) => {
-    if (!this.state.rating) this.setState({ratingAlert: true})
-    else {
-      this.setState({ratingAlert: false})
-      console.log(result, this.state.feedback, work)
-    }
   }
 
   changeField = ({ target: { name, value } }) => this.setState({ [name]: value })
 
-  onReviewApplicationAccept = () => {
-    this.checkRating('Accepted')
+  onAccept = () => {
+    this.props.onReviewWork({...this.state, accepted: true}, this.props.issue)
   }
-  onReviewApplicationReject = () => {
-    this.checkRating('Rejected')
+
+  canSubmit = () => !(this.state.rating > 0)
+
+  onReject = () => {
+    const state = this.state
+    state.accepted = true
+    this.props.onReviewWork({...this.state, accepted: false}, this.props.issue)
   }
 
   onRatingChange = index => {
@@ -115,8 +111,8 @@ class ReviewWork extends React.Component {
             <DetailText>{work.proof}</DetailText>
           </SafeLink>
 
-          <CommentsCheck comments={work.comments} />
-          <DetailText>{work.comments}</DetailText>
+          {work.comments && <FieldTitle>Additional Comments</FieldTitle>}
+          {work.comments && <DetailText>{work.comments}</DetailText>}
 
           <FieldTitle>Hours Worked</FieldTitle>
           <DetailText>{work.hours}</DetailText>
@@ -140,9 +136,10 @@ class ReviewWork extends React.Component {
           input={
             <DescriptionInput
               name='feedback'
-              rows={5}
+              rows={'5'}
               style={{ resize: 'none', height: 'auto' }}
               onChange={this.changeField}
+              value={this.state.feedback}
               placeholder="Do you have any feedback to provide the contributor?"
               wide
             />
@@ -150,26 +147,27 @@ class ReviewWork extends React.Component {
         />
 
         <ReviewRow>
-          <ReviewButton emphasis="negative" onClick={this.onReviewApplicationReject}>Reject</ReviewButton>
-          <ReviewButton emphasis="positive" onClick={this.onReviewApplicationAccept}>Accept</ReviewButton>
+          <ReviewButton
+            disabled={this.canSubmit()}
+            emphasis="negative"
+            mode={this.canSubmit() ? 'secondary' : 'strong'}
+            onClick={this.onReject}
+          >
+            Reject
+          </ReviewButton>
+          <ReviewButton
+            disabled={this.canSubmit()}
+            emphasis="positive"
+            mode={this.canSubmit() ? 'secondary' : 'strong'}
+            onClick={this.onAccept}
+          >
+            Accept
+          </ReviewButton>
         </ReviewRow>
-
-        <AlertArea>
-          <RatingAlert alert={this.state.ratingAlert} />
-        </AlertArea>
         
       </div>
     )
   }
-
-}
-
-function CommentsCheck(props) {
-  return props.comments ? <FieldTitle>Additional Comments</FieldTitle> : null
-}
-
-function RatingAlert(props) {
-  return props.alert ? <Info.Alert>Please select a quality rating</Info.Alert> : null
 }
 
 const IssueTitle = styled(Text)`
@@ -212,9 +210,7 @@ const ReviewRow = styled.div`
   margin-bottom: 8px;
   justify-content: space-between;
 `
-const ReviewButton = styled(Button).attrs({
-  mode: 'strong',
-})`
+const ReviewButton = styled(Button)`
   width: 48%;
 `
 
