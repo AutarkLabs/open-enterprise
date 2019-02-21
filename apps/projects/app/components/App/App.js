@@ -408,7 +408,7 @@ class App extends React.PureComponent {
               bountySettings={
                 bountySettings !== undefined ? bountySettings : {}
               }
-              tokens={this.props.tokens !== undefined ? this.props.tokens : {} }
+              tokens={this.props.tokens !== undefined ? this.props.tokens : []}
               onNewProject={this.newProject}
               onRemoveProject={this.removeProject}
               onNewIssue={this.newIssue}
@@ -418,7 +418,6 @@ class App extends React.PureComponent {
               onRequestAssignment={this.requestAssignment}
               activeIndex={activeIndex}
               changeActiveIndex={this.changeActiveIndex}
-
               onReviewApplication={this.reviewApplication}
             />
 
