@@ -303,7 +303,7 @@ const BountyContractAddress = ({ bountyAllocator, onChange }) => (
     <Button.Anchor
       mode="outline"
       style={{ height: '40px' }}
-      href="https://etherscan.io/address/0x281055afc982d96fab65b3a49cac8b878184cb16"
+        href={`https://etherscan.io/address/${bountyAllocator}`}
       target="_blank"
     >
       See on Etherscan

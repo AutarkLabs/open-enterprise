@@ -180,7 +180,7 @@ contract Projects is IsContract, AragonApp {
             1, // baseRate
             336, // bountyDeadline
             "autark", // bountyCurrency
-            0x0000000000000000000000000000000000000000, // bountyAllocator
+            _bountiesAddr, // bountyAllocator
             0x0000000000000000000000000000000000000000 //bountyArbiter
         );
     }
