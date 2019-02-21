@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import PropTypes from 'prop-types'
 
 const StyledTabContent = styled.main`
-  overflow-x: hidden;
+  overflow: hidden;
   flex-grow: 1;
 `
 
