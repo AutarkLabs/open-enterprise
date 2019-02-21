@@ -16,6 +16,8 @@ const ASSETS_URL = './aragon-ui-assets/'
 
 const GITHUB_URI = 'https://github.com/login/oauth/authorize'
 
+let ipfsClient = require('ipfs-http-client')
+
 // TODO: let the user customize the github app on settings screen?
 // TODO: Extract to an external js utility to keep this file clean
 // Variable fields depending on the execution environment:
@@ -23,6 +25,8 @@ const GITHUB_URI = 'https://github.com/login/oauth/authorize'
 let CLIENT_ID = ''
 let REDIRECT_URI = ''
 let AUTH_URI = ''
+
+let ipfs = ipfsClient({ host: 'localhost', port: '5001', protocol: 'http'})
 
 switch (window.location.origin) {
 case 'http://localhost:3333':
@@ -219,6 +223,88 @@ class App extends React.PureComponent {
     }))
   }
 
+  onSubmitBountyAllocation = async issues => {
+    console.log('repos:', this.props.repos)
+    console.log('bounty allocation submitted', issues)
+    let bountySymbol = this.props.bountySettings.bountyCurrency
+    let bountyToken
+    this.props.tokens.forEach(
+      token => {
+        if(token.symbol === bountySymbol) {
+          bountyToken = token.addr
+        }
+      })
+    const emptyAddrArray = [
+      '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
+      '0xd00cc82a132f421bA6414D196BC830Db95e2e7Dd',
+      '0x89c199302bd4ebAfAa0B5Ee1Ca7028C202766A7F',
+      '0xd28c35a207c277029ade183b6e910e8d85206c07',
+      '0xee6bd04c6164d7f0fa1cb03277c855639d99a7f6',
+      '0xb1d048b756f7d432b42041715418b48e414c8f50',
+      '0x6945b970fa107663378d242de245a48c079a8bf6',
+      '0x83ac654be75487b9cfcc80117cdfb4a4c70b68a1',
+      '0x690a63d7023780ccbdeed33ef1ee62c55c47460d',
+      '0xb1afc07af31795d61471c169ecc64ad5776fa5a1',
+      '0x4aafed050dc1cf7e349accb7c2d768fd029ece62',
+      '0xd7a5846dea118aa76f0001011e9dc91a8952bf19',
+    ]
+
+    
+    let content = ipfs.types.Buffer.from(issues.toString())
+    console.log(content)
+    console.log(ipfs)
+    console.log(ipfs.files)
+    let results = await ipfs.add(content)
+    console.log(results)
+    
+    let repos = {}, repo
+    for (var key in issues) {
+      if(repos[issues[key].repo] == undefined) { repos[issues[key].repo] = [] }
+      repos[issues[key].repo].push({
+        ...issues[key]
+      })
+    }
+    console.log('bounty allocation submitted', repos)
+    for (var key in repos) {
+
+      repo = repos[key]
+      let ipfsString = ''
+      let content, results
+      await repo.forEach(async r => {
+        console.log('String Builder')        
+        console.log(r)
+        content = ipfs.types.Buffer.from(r.toString())
+        results = await ipfs.add(content)
+        console.log(results)
+        ipfsString += results[0].hash
+        console.log(ipfsString)
+      })
+      
+      repo = repos[key]
+      console.log(repo)
+      console.log(key)
+      const tokenArray = new Array(repo.length).fill(bountyToken)
+
+      console.log('Bounty data',
+        web3.toHex('MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM='),
+        repo.map( (issue) => issue.number),
+        repo.map( (issue) => issue.size),
+        repo.map( (issue) => issue.deadline),
+        new Array(repo.length).fill(true),
+        tokenArray,
+        ipfsString
+      )
+      this.props.app.addBounties(
+        web3.toHex('MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM='),
+        repo.map( (issue) => issue.number),
+        repo.map( (issue) => issue.size),
+        repo.map( (issue) => {return ( Date.now() + 8600 )} ),
+        new Array(repo.length).fill(true),
+        tokenArray,
+        ipfsString
+      )
+    }
+  }
   submitWork = issue => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.SubmitWork,
@@ -241,19 +327,16 @@ class App extends React.PureComponent {
     }))
   }
 
-  onSubmitBountyAllocation = bounties => {
-    console.log('bounty allocation submitted', bounties)
-    // TODO: The contract addBounties function first param is just a single repoId, so in the case a bounty allocation comprises issues from multiple repos it should launch a tx for each repo
-    // this.props.app.addBounties()
-    // bytes32 _repoId,
-    // uint256[] _issueNumbers,
-    // uint256[] _bountySizes,
-    // uint256[] _deadlines,
-    // bool[] _tokenBounties,
-    // address[] _tokenContracts,
-    // string _ipfsAddresses
+  onReviewApplication = props => console.log('onReviewApplication', props)
 
-    // this.closePanel()
+  reviewApplication = issue => {
+    this.setState((_prevState, _prevProps) => ({
+      panel: PANELS.ReviewApplication,
+      panelProps: {
+        issue,
+        onSubmit: this.onReviewApplication,
+      },
+    }))
   }
 
   onReviewApplication = props => console.log('onReviewApplication', props)
@@ -350,9 +433,11 @@ class App extends React.PureComponent {
               bountySettings={bountySettings}
               githubCurrentUser={githubCurrentUser}
               projects={this.props.repos !== undefined ? this.props.repos : []}
+              bountyIssues={this.props.issues !== undefined ? this.props.issues : []}
               bountySettings={
                 bountySettings !== undefined ? bountySettings : {}
               }
+              tokens={this.props.tokens !== undefined ? this.props.tokens : {} }
               onNewProject={this.newProject}
               onRemoveProject={this.removeProject}
               onNewIssue={this.newIssue}
