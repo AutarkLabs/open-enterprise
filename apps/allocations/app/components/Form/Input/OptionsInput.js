@@ -14,7 +14,7 @@ const {
 
 class OptionsInput extends React.Component {
   static propTypes = {
-    input: PropTypes.string.isRequired,
+    input: PropTypes.object.isRequired,
     name: PropTypes.string.isRequired,
     value: PropTypes.array.isRequired,
     onChange: PropTypes.func.isRequired,
