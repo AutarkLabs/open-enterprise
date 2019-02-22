@@ -409,7 +409,7 @@ contract Projects is IsContract, AragonApp {
         //uint256 _fulfillmentId
     ) external isInitialized
     {
-        //require(msg.sender == repos[_repoId].issues[_issueNumber].assignee, "User not assigned to this issue");
+        require(msg.sender == repos[_repoId].issues[_issueNumber].assignee, "User not assigned to this issue");
         GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
         bounties.fulfillBounty(issue.standardBountyId, _submissionAddress);
         issue.workSubmissions[msg.sender] = WorkSubmission(
