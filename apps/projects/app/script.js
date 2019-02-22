@@ -336,7 +336,7 @@ function getRequest(repoId, issueNumber, applicantId) {
 
 function loadSubmissionData({issueNumber, repoId}, assignee) {
   return new Promise(resolve => {
-    app.call('getSubmission', repoId, issueNumber, assignee).subscribe(async ({submissionHash, fulfillmentId, status}) => {
+    app.call('getSubmission', repoId, issueNumber, assignee).subscribe(({submissionHash, fulfillmentId, status}) => {
       let contentJSON
       ipfs.get(submissionHash, (err, files) => {
         for(const file of files) {

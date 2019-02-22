@@ -67,7 +67,7 @@ contract('Projects App', accounts => {
       (await Projects.new()).address,
       0x0,
       false,
-      { from: root}
+      { from: root }
     )
     app = Projects.at(
       receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
