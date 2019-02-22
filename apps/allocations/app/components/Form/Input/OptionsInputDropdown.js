@@ -1,122 +1,97 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { IconAdd, TextInput, theme, unselectable } from '@aragon/ui'
-import MultiDropDown from './MultiDropdown'
+import { IconAdd, theme } from '@aragon/ui'
+
 import IconRemove from '../../../assets/components/IconRemove'
+import MultiDropDown from './MultiDropdown'
 
-const {
-  disabled,
-  contentBackgroundActive,
-  contentBorderActive,
-  contentBorder,
-  textSecondary,
-} = theme
-
-class OptionsInputDropdown extends React.Component {
-  static propTypes = {
-    input: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-    value: PropTypes.array.isRequired,
-    activeItem: PropTypes.number.isRequired,
-    onChange: PropTypes.func.isRequired,
-    validator: PropTypes.func.isRequired,
-    entities: PropTypes.object,
-  }
-
-  state = {
-    entities: this.props.entities,
-  }
-
-  addOption = () => {
-    // TODO: Implement some rules about what an 'Option can be' duplicates, etc
-    const { input, name, value } = this.props
-    if (input && !this.props.validator(value, input.addr)) {
-      this.props.onChange({ target: { name, value: [...value, input] } })
-      this.props.onChange({
-        target: {
-          name: 'optionsInput',
-          value: {
-            addr: 0,
-            index: 0,
-          },
-        },
-      })
-      console.log('Option Added')
+const OptionsInputDropdown = ({
+  activeItem,
+  entities,
+  input,
+  name,
+  onChange,
+  placeholder = '',
+  validator,
+  value,
+}) => {
+  const addOption = () => {
+    if (input && !validator(value, input.addr)) {
+      onChange({ target: { name, value: [...value, input] } })
+      resetDropDown()
+      console.info('Option Added')
     } else {
-      this.props.onChange({ target: { name: 'addressError', value: true } })
-      console.log(
-        'OptionsInputDropdown: The option is empty or already present'
-      )
+      onChange({ target: { name: 'addressError', value: true } })
+      console.info('The option is empty or already present')
     }
   }
 
-  removeOption = option => {
-    const { name, value } = this.props
-    let index = value.indexOf(option)
-    // Double exclamation to make sure is reemoved
-    !!value.splice(index, 1) &&
-      this.props.onChange({
+  const removeOption = option => {
+    value.splice(value.indexOf(option), 1).length &&
+      onChange({
         target: { name, value },
       })
-    console.log('Option Removed', option, this.props.value)
+    console.info('Option Removed', option, value)
   }
 
-  render() {
-    const loadOptions = this.props.value.map((option, index) => (
-      <div className="option" key={option.addr}>
+  const resetDropDown = () => {
+    onChange({
+      target: {
+        name: 'optionsInput',
+        value: {
+          addr: 0,
+          index: 0,
+        },
+      },
+    })
+  }
+
+  const loadOptions = value.map((option, index) => (
+    <div className="option" key={option.addr}>
+      <MultiDropDown
+        name={name}
+        index={index}
+        placeholder={placeholder}
+        onChange={onChange}
+        value={value}
+        entities={entities}
+        activeItem={value[index].index}
+        validator={validator}
+      />
+      <IconRemove onClick={() => removeOption(option)} />
+    </div>
+  ))
+
+  return (
+    <StyledOptionsInput empty={!input.length}>
+      {loadOptions}
+      <div className="option">
         <MultiDropDown
-          name={this.props.name}
-          index={index}
-          placeholder={this.props.placeholder}
-          onChange={this.props.onChange}
-          value={this.props.value}
-          entities={this.state.entities}
-          activeItem={this.props.value[index].index}
-          validator={this.props.validator}
+          name={'optionsInput'}
+          index={-1}
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          entities={entities}
+          activeItem={activeItem}
+          validator={validator}
         />
-        <IconRemove onClick={() => this.removeOption(option)} />
+        <IconAdd onClick={addOption} />
       </div>
-    ))
-    return (
-      <StyledOptionsInput empty={!this.props.input.length}>
-        {loadOptions}
-        <div className="option">
-          <MultiDropDown
-            name={'optionsInput'}
-            index={-1}
-            placeholder={this.props.placeholder}
-            value={this.props.value}
-            onChange={this.props.onChange}
-            entities={this.state.entities}
-            activeItem={this.props.activeItem}
-            validator={this.props.validator}
-          />
-          <IconAdd onClick={this.addOption} />
-        </div>
-      </StyledOptionsInput>
-    )
-  }
+    </StyledOptionsInput>
+  )
 }
-
-const StyledInput = styled(TextInput)`
-  ${unselectable}; /* it is possible to select the placeholder without this */
-  ::placeholder {
-    color: ${theme.contentBorderActive};
-  }
-  :focus {
-    border-color: ${contentBorderActive};
-    ::placeholder {
-      color: ${contentBorderActive};
-    }
-  }
-  :read-only {
-    cursor: default;
-    :focus {
-      border-color: ${contentBorder};
-    }
-  }
-`
+OptionsInputDropdown.propTypes = {
+  activeItem: PropTypes.number.isRequired,
+  entities: PropTypes.array.isRequired,
+  input: PropTypes.object.isRequired,
+  name: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  placeholder: PropTypes.string,
+  validator: PropTypes.func.isRequired,
+  value: PropTypes.array.isRequired,
+}
 
 const StyledOptionsInput = styled.div`
   display: flex;
@@ -132,19 +107,19 @@ const StyledOptionsInput = styled.div`
       margin-top: -3px;
       height: auto;
       width: 1.8rem;
-      color: ${textSecondary};
+      color: ${theme.textSecondary};
       vertical-align: middle;
       transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
       :hover {
-        color: ${({ empty }) => (empty ? disabled : contentBorderActive)};
+        color: ${({ empty }) =>
+    empty ? theme.disabled : theme.contentBorderActive};
       }
       :active {
-        color: ${({ empty }) => (empty ? disabled : contentBackgroundActive)};
+        color: ${({ empty }) =>
+    empty ? theme.disabled : theme.contentBackgroundActive};
       }
     }
   }
 `
-// TODO: fix empty svg cursor and color:
-/* cursor: ${({ empty }) => (empty ? 'not-allowed' : 'pointer')}; */
-// color: ${({ empty }) => (empty ? disabled : textSecondary)};
+
 export default OptionsInputDropdown
