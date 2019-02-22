@@ -51,6 +51,7 @@ const ETADistance = date => formatDistance(new Date(date), new Date())
 const dot = <span style={{ margin: '0px 10px' }}>&middot;</span>
 
 const Issue = ({
+  workStatus,
   title,
   repo,
   number,
@@ -68,6 +69,9 @@ const Issue = ({
   dueDate = '02/02/2020',
   funded = 'Pending funding'
 }) => (
+// TODO: @aragon/ui Table?
+// workStatus can be either: 'new', 'review-applicants', 'review-work', or 'finished'
+// It represents the state of the current issue in the approval bounty flow
   <StyledIssue>
     <ClickArea onClick={onClick} />
     <CheckButton checked={isSelected} onChange={onSelect} />
@@ -115,20 +119,25 @@ const Issue = ({
           foreground={theme.positive}>{balance + ' ' + symbol}
         </Badge>
       }
-      <ContextMenu>
-        <ContextMenuItem onClick={onAllocateSingleBounty}>
-          <ActionLabel>Allocate Bounty</ActionLabel>
-        </ContextMenuItem>
-        <ContextMenuItem onClick={onSubmitWork}>
-          <ActionLabel>Submit Work</ActionLabel>
-        </ContextMenuItem>
-        <ContextMenuItem onClick={onRequestAssignment}>
-          <ActionLabel>Request Assignment</ActionLabel>
-        </ContextMenuItem>
-        <ContextMenuItem onClick={onReviewApplication}>
-          <ActionLabel>Review Application</ActionLabel>
-        </ContextMenuItem>
-      </ContextMenu>
+      {workStatus !== undefined &&
+        <ContextMenu>
+          {(workStatus === 'submit-work' || workStatus === 'review-work') &&
+            <ContextMenuItem onClick={onSubmitWork}>
+              <ActionLabel>Submit Work</ActionLabel>
+            </ContextMenuItem>
+          }
+          {(workStatus === 'new' || workStatus === 'review-applicants') &&
+            <ContextMenuItem onClick={onRequestAssignment}>
+              <ActionLabel>Request Assignment</ActionLabel>
+            </ContextMenuItem>
+          }
+          {workStatus === 'review-applicants' &&
+            <ContextMenuItem onClick={onReviewApplication}>
+              <ActionLabel>Review Application</ActionLabel>
+            </ContextMenuItem>
+          }
+        </ContextMenu>
+      }
     </BalanceAndContext>
   </StyledIssue>
 )

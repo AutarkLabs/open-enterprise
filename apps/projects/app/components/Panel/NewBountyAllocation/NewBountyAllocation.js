@@ -34,7 +34,8 @@ class NewBountyAllocation extends React.Component {
         level: PropTypes.string,
         title: PropTypes.string,
         number: PropTypes.number,
-        repo: PropTypes.string,        
+        repo: PropTypes.string,
+        repoId: PropTypes.string       
       })
     ),
     /** base rate in pennies */
@@ -53,6 +54,7 @@ class NewBountyAllocation extends React.Component {
       bounties[issue.id] = {
         repo: issue.repo,
         number: issue.number,
+        repoId: issue.repoId,
         hours: 0,
         exp: 0,
         deadline: 0,

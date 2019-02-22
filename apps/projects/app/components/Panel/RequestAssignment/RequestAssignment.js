@@ -3,7 +3,6 @@ import React from 'react'
 import styled from 'styled-components'
 
 import {
-  Field,
   Text,
   TextInput,
   theme,
@@ -34,7 +33,8 @@ class RequestAssignment extends React.Component {
   setAck2 = () => this.setState(prevState => ({ ack2: !prevState.ack2 }))
 
   onRequestAssignment = () => {
-    console.log('RequestAssignment', this.state)
+    let today = new Date()
+    this.props.onRequestAssignment({ ...this.state, user: this.props.githubCurrentUser, applicationDate: today.toISOString()}, this.props.issue)
   }
 
   canSubmit = () => !(this.state.ack1 && this.state.ack2 && this.state.workplan && !isNaN(this.state.hours) && this.state.hours > 0)
@@ -115,10 +115,11 @@ class RequestAssignment extends React.Component {
             I agree to keep the organization informed of my progress every few days.
           </AckText>
         </AckRow>
-
+        {/* Github commenting is not currently implemented
         <Info.Alert title="Submission note" background="#FFFAEE" style={{ marginBottom: '10px' }}>
           Your inputs will be added as a comment to the Github issue from your “{login}” account.
         </Info.Alert>
+        */}
       </Form>
     )
   }

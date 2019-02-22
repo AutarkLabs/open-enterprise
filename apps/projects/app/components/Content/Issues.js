@@ -26,6 +26,7 @@ class Issues extends React.PureComponent {
       deadlines: {},
       experiences: {},
     },
+    sortBy: { what: 'Name', direction: -1 },
     textFilter: '',
     reload: false,
     currentIssue: {},
@@ -51,6 +52,7 @@ class Issues extends React.PureComponent {
   }
 
   handleAllocateBounties = () => {
+    console.log('handleAllocationBounties:', this.state.selectedIssues)
     this.props.onAllocateBounties(this.state.selectedIssues)
   }
 
@@ -77,6 +79,11 @@ class Issues extends React.PureComponent {
   handleFiltering = filters => {
     // TODO: why is reload necessary?
     this.setState(prevState => ({ filters, reload: !prevState.reload }))
+  }
+
+  handleSorting = sortBy => {
+    // TODO: why is reload necessary?
+    this.setState(prevState => ({ sortBy, reload: !prevState.reload }))
   }
 
   applyFilters = issues => {
@@ -126,7 +133,7 @@ class Issues extends React.PureComponent {
 
     // last but not least, if there is any text in textFilter...
     if (textFilter) {
-      return issuesByMilestone.filter(issue => issue.title.match(textFilter))
+      return issuesByMilestone.filter(issue => issue.title.toUpperCase().match(textFilter))
     }
 
     return issuesByMilestone
@@ -134,6 +141,7 @@ class Issues extends React.PureComponent {
 
   handleIssueSelection = issue => {
     this.setState(({ selectedIssues }) => {
+      console.log('handleIssueSelection', issue)
       const newSelectedIssues = selectedIssues
         .map(selectedIssue => selectedIssue.id)
         .includes(issue.id)
@@ -144,7 +152,7 @@ class Issues extends React.PureComponent {
   }
 
   handleTextFilter = e => {
-    this.setState({ textFilter: e.target.value, reload: !this.state.reload })
+    this.setState({ textFilter: e.target.value.toUpperCase(), reload: !this.state.reload })
   }
 
   handleIssueClick = issue => {
@@ -181,17 +189,22 @@ class Issues extends React.PureComponent {
     </div>
   )
 
+  filterBar = (issues, issuesFiltered) => (
+    <FilterBar
+      handleSelectAll={this.toggleSelectAll(issuesFiltered)}
+      allSelected={this.state.allSelected}
+      issues={issues}
+      issuesFiltered={issuesFiltered}
+      handleFiltering={this.handleFiltering}
+      handleSorting={this.handleSorting}
+      activeIndex={this.props.activeIndex}
+    />
+  )
+
   queryLoading = () => (
     <StyledIssues>
       {this.actionsMenu()}
-      <FilterBar
-        handleSelectAll={this.toggleSelectAll}
-        allSelected={false}
-        issues={[]}
-        issuesFiltered={[]}
-        handleFiltering={this.handleFiltering}
-        activeIndex={this.props.activeIndex}
-      />
+      {this.filterBar([], [])}
       <IssuesScrollView>
         <div>Loading...</div>
       </IssuesScrollView>
@@ -201,14 +214,7 @@ class Issues extends React.PureComponent {
   queryError = (error, refetch) => (
     <StyledIssues>
       {this.actionsMenu()}
-      <FilterBar
-        handleSelectAll={this.toggleSelectAll}
-        allSelected={false}
-        issues={[]}
-        issuesFiltered={[]}
-        handleFiltering={this.handleFiltering}
-        activeIndex={this.props.activeIndex}
-      />
+      {this.filterBar([], [])}
       <IssuesScrollView>
         <div>
           Error {JSON.stringify(error)}
@@ -222,12 +228,8 @@ class Issues extends React.PureComponent {
     </StyledIssues>
   )
 
-  render() {
-    const { projects, onNewProject, activeIndex, tokens, bountyIssues } = this.props
-    const { currentIssue, showIssueDetail } = this.state
-
-    // better return early if we have no projects added?
-    if (projects.length === 0) return <Empty action={onNewProject} />
+  shapeIssues = issues => {
+    const { tokens, bountyIssues } =  this.props
     let bountyIssueObj = {}
     let tokenObj = {}
 
@@ -239,12 +241,55 @@ class Issues extends React.PureComponent {
       tokenObj[token.addr] = token.symbol
       console.log('tokenObj:', tokenObj)
     })
+    return issues.map(({ __typename, repository: { id, name }, ...fields }) => 
+    {
+      if(bountyIssueObj[fields.number]){
+        let data = bountyIssueObj[fields.number].data
+        console.log('Bounty Issue Info:', data)
 
+        return { 
+          ...fields,
+          ...bountyIssueObj[fields.number].data,
+          repoId: id,
+          repo: name,
+          symbol: tokenObj[data.token]
+        }          
+      }
+      return { 
+        ...fields,
+        repoId: id,
+        repo: name,
+      }
+    })
+  }
+
+  generateSorter = () => {
+    const { what, direction } = this.state.sortBy
+    if (what === 'Name') return (i1, i2) => {
+      return i1.title.toUpperCase() < i2.title.toUpperCase() ? direction : direction * -1
+    }
+  }
+
+  render() {
+    const { projects, onNewProject } = this.props
+    const { currentIssue, showIssueDetail } = this.state
+
+    // better return early if we have no projects added?
+    if (projects.length === 0) return <Empty action={onNewProject} />  
     if (showIssueDetail)
       return (
         <IssueDetail
           issue={currentIssue}
           onClose={this.handleIssueDetailClose}
+          handleReviewApplication = {() => {
+            this.handleReviewApplication(issue)
+          }}
+          handleRequestAssignment = {() => {
+            this.handleRequestAssignment(issue)
+          }}
+          handleSubmitWork = {() => {
+            this.handleSubmitWork(issue)
+          }}
         />
       )
 
@@ -255,28 +300,10 @@ class Issues extends React.PureComponent {
     const flattenIssues = nodes =>
       nodes && [].concat(...nodes.map(node => node.issues.nodes))
 
-    // Map the flattened issues into just needed data fields adding the repo name
-    const shapeIssues = issues =>
-      issues.map(({ __typename, repository: { name }, ...fields }) => 
-      {
-        if(bountyIssueObj[fields.number]){
-          let data = bountyIssueObj[fields.number].data
-          console.log('Bounty Issue Info:', data)
-
-          return { 
-            ...fields,
-            ...bountyIssueObj[fields.number].data,
-            repo: name,
-            symbol: tokenObj[data.token]
-          }          
-        }
-        return { 
-          ...fields,
-          repo: name,
-        }
-      })
 
     //console.log('current issues props:', this.props, 'and state:', this.state)
+
+    const currentSorter = this.generateSorter()
 
     return (
       <Query
@@ -292,17 +319,11 @@ class Issues extends React.PureComponent {
             return (
               <StyledIssues>
                 {this.actionsMenu()}
-                <FilterBar
-                  handleSelectAll={this.toggleSelectAll(issuesFiltered)}
-                  allSelected={allSelected}
-                  issues={issues}
-                  issuesFiltered={issuesFiltered}
-                  handleFiltering={this.handleFiltering}
-                  activeIndex={this.props.activeIndex}
-                />
+                {this.filterBar(issues, issuesFiltered)}
+
                 <IssuesScrollView>
                   <ScrollWrapper>
-                    {shapeIssues(issuesFiltered).map(issue => (
+                    {this.shapeIssues(issuesFiltered).sort(currentSorter).map(issue => (
                       <Issue
                         isSelected={this.state.selectedIssues
                           .map(selectedIssue => selectedIssue.id)
