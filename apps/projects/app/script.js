@@ -150,7 +150,8 @@ async function handleEvents(response) {
     data.workStatus = status[2]
     data.work = submissionData
     nextState = syncIssues(appstate, response.returnValues, data)
-
+    appState = nextState
+    break
   case 'BountyAdded':
     console.log('[Projects] BountyAdded', appState, response.returnValues)
     if(response.returnValues === null || response.returnValues === undefined) {
@@ -332,7 +333,6 @@ function loadSubmissionData({issueNumber, repoId}, assignee) {
     })
   })
 }
-
 
 function loadSettings() {
   return new Promise(resolve => {
