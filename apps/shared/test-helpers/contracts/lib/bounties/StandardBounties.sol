@@ -297,9 +297,9 @@ contract StandardBounties {
       isBeforeDeadline(_bountyId)
       notIssuerOrArbiter(_bountyId)
   {
-      fulfillments[_bountyId].push(Fulfillment(false, msg.sender, _data));
+      fulfillments[_bountyId].push(Fulfillment(false, tx.origin, _data));
 
-      BountyFulfilled(_bountyId, msg.sender, (fulfillments[_bountyId].length - 1));
+      BountyFulfilled(_bountyId, tx.origin, (fulfillments[_bountyId].length - 1));
   }
 
   /// @dev updateFulfillment(): Submit updated data for a given fulfillment
