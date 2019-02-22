@@ -11,14 +11,15 @@ const OptionsInput = ({
   validator,
   values,
 }) => {
+  const validated = !input || validator(values, input.addr)
+
   const addOption = () => {
-    const noError = input && !validator(values, input.addr)
     onChange({
-      target: noError
+      target: validated
         ? { name, value: [...values, input] }
         : { name: 'addressError', value: true }, // enable error msg if needed
     })
-    resetDropDown()
+    cleanInputBox()
   }
 
   const removeOption = option => {
@@ -26,25 +27,29 @@ const OptionsInput = ({
     onChange({ target: { name, value: values.filter(v => v !== option) } })
   }
 
-  const resetDropDown = () => {
-    onChange({ target: { name: 'optionsInputString', value: { addr: '' } } })
+  const cleanInputBox = () => {
+    onChange({ target: { name: 'userInput', value: { addr: '' } } })
   }
 
   const onChangeInput = ({ target: { value } }) => {
     onChange({
-      target: { name: 'optionsInputString', value: { addr: value } },
+      target: { name: 'userInput', value: { addr: value } },
     })
   }
 
   const loadOptions = values.map((option, i) => (
     <StyledOption key={i}>
       <StyledInput readOnly value={option.addr} />
-      <IconRemove style={pointer} onClick={() => removeOption(option)} />
+      <IconContainer
+        onClick={() => removeOption(option)}
+        title="Click to remove the option"
+        children={<IconRemove />}
+      />
     </StyledOption>
   ))
 
   return (
-    <div style={flexColumn} empty={!input.length}>
+    <div style={flexColumn}>
       {loadOptions}
       <StyledOption>
         <StyledInput
@@ -52,7 +57,12 @@ const OptionsInput = ({
           value={input.addr}
           onChange={onChangeInput}
         />
-        <IconAdd style={pointer} onClick={addOption} />
+        <IconContainer
+          disabled={!validated}
+          onClick={addOption}
+          title="Click to add the option"
+          children={<IconAdd />}
+        />
       </StyledOption>
     </div>
   )
@@ -68,10 +78,16 @@ OptionsInput.propTypes = {
 }
 
 const flexColumn = { display: 'flex', flexDirection: 'column' }
-const pointer = { cursor: 'pointer' }
+
+const StyledOption = styled.div`
+  display: flex;
+  margin-bottom: 0.625rem;
+  > :first-child {
+    flex-grow: 1;
+  }
+`
 
 const StyledInput = styled(TextInput)`
-  flex-grow: 1;
   ${unselectable}; /* it is possible to select the placeholder without this */
   ::placeholder {
     color: ${theme.contentBorderActive};
@@ -85,33 +101,30 @@ const StyledInput = styled(TextInput)`
   :read-only {
     cursor: default;
     :focus {
-      border-color: ${theme.contentBorder};
+      border-color: ${theme.positive};
     }
   }
 `
 
-const StyledOption = styled.div`
+const IconContainer = styled.button`
+  ${unselectable};
+  all: unset;
+  color: ${({ disabled }) => (disabled ? theme.disabled : theme.textSecondary)};
+  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
   display: flex;
-  margin-bottom: 0.625rem;
-  > :first-child {
-    flex-grow: 1;
+  justify-content: center;
+  :hover {
+    color: ${({ disabled }) =>
+    disabled ? theme.disabled : theme.contentBorderActive};
+  }
+  :active {
+    color: ${({ disabled }) => (disabled ? theme.disabled : theme.accent)};
   }
   > svg {
-    margin-left: 3px;
-    margin-top: -3px;
-    height: auto;
-    width: 1.8rem;
-    color: ${theme.textSecondary};
-    vertical-align: middle;
+    color: inherit;
+    height: 40px;
+    width: 40px;
     transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-    :hover {
-      color: ${({ empty }) =>
-    empty ? theme.disabled : theme.contentBorderActive};
-    }
-    :active {
-      color: ${({ empty }) =>
-    empty ? theme.disabled : theme.contentBackgroundActive};
-    }
   }
 `
 
