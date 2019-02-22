@@ -193,7 +193,7 @@ class NewAllocation extends React.Component {
                     wide
                     textInput={{
                       name: 'amount',
-                      value: this.state.amount,
+                      value: this.state.amount || '',
                       onChange: this.changeField,
                       type: 'number',
                       min: '0',
