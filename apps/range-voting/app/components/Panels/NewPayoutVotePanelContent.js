@@ -1,10 +1,10 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
-import IconRemove from '../Icons/Remove'
 import {
   Button,
   Field,
   IconAdd,
+  IconRemove,
   Text,
   TextInput,
   theme

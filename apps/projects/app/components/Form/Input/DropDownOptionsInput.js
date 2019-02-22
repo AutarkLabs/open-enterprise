@@ -1,16 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { IconAdd, TextInput, theme, unselectable } from '@aragon/ui'
-import { IconRemove } from '../../Shared'
-
-const {
-  disabled,
-  contentBackgroundActive,
-  contentBorderActive,
-  contentBorder,
-  textSecondary,
-} = theme
+import { IconAdd, IconRemove, TextInput, theme, unselectable } from '@aragon/ui'
 
 class DropDownOptionsInput extends React.Component {
   static propTypes = {
@@ -79,15 +70,15 @@ const StyledInput = styled(TextInput)`
     color: ${theme.contentBorderActive};
   }
   :focus {
-    border-color: ${contentBorderActive};
+    border-color: ${theme.contentBorderActive};
     ::placeholder {
-      color: ${contentBorderActive};
+      color: ${theme.contentBorderActive};
     }
   }
   :read-only {
     cursor: default;
     :focus {
-      border-color: ${contentBorder};
+      border-color: ${theme.contentBorder};
     }
   }
 `
@@ -106,15 +97,16 @@ const StyledOptionsInput = styled.div`
       margin-top: -3px;
       height: auto;
       width: 1.8rem;
-      color: ${({ empty }) => (empty ? disabled : textSecondary)};
+    color: ${theme.textSecondary};
       vertical-align: middle;
       transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
       :hover {
-        color: ${({ empty }) => (empty ? disabled : contentBorderActive)};
+      color: ${({ empty }) =>
+    empty ? theme.disabled : theme.contentBorderActive};
       }
       :active {
-        color: ${({ empty }) => (empty ? disabled : contentBackgroundActive)};
-      }
+      color: ${({ empty }) =>
+    empty ? theme.disabled : theme.contentBackgroundActive};
     }
   }
 `
