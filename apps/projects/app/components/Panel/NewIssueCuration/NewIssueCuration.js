@@ -1,8 +1,12 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { OptionsInput } from '@tps/ui'
 
-import { DescriptionInput, Form, FormField } from '../../Form'
+import {
+  DescriptionInput,
+  DropDownOptionsInput,
+  Form,
+  FormField,
+} from '../../Form'
 
 class NewIssueCuration extends React.Component {
   static propTypes = {
@@ -35,20 +39,20 @@ class NewIssueCuration extends React.Component {
   render() {
     return (
       <Form onSubmit={this.submitCuration} submitText="Submit Curation">
-        {false &&
-        <FormField
-          required
-          label="Description"
-          input={
-            <DescriptionInput
-              name="description"
-              onChange={this.changeField}
-              placeholder="Describe your proposal."
-              value={this.state.description}
-            />
-          }
-        />
-        }
+        {false && (
+          <FormField
+            required
+            label="Description"
+            input={
+              <DescriptionInput
+                name="description"
+                onChange={this.changeField}
+                placeholder="Describe your proposal."
+                value={this.state.description}
+              />
+            }
+          />
+        )}
         <FormField
           label="Issues"
           required
