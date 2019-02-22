@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { IconAdd, theme } from '@aragon/ui'
+import { IconAdd, theme, unselectable } from '@aragon/ui'
 
 import IconRemove from '../../../assets/components/IconRemove'
 import MultiDropDown from './MultiDropdown'
@@ -17,49 +17,28 @@ const OptionsInputDropdown = ({
   value,
 }) => {
   const addOption = () => {
-    if (input && !validator(value, input.addr)) {
-      onChange({ target: { name, value: [...value, input] } })
-      resetDropDown()
-      console.info('Option Added')
-    } else {
-      onChange({ target: { name: 'addressError', value: true } })
-      console.info('The option is empty or already present')
-    }
+    const noError = input && !validator(value, input.addr)
+    onChange({
+      target: noError
+        ? { name, value: [...value, input] }
+        : { name: 'addressError', value: true }, // enable error msg if needed
+    })
+    resetDropDown()
   }
 
   const removeOption = option => {
-    value.splice(value.indexOf(option), 1).length &&
-      onChange({
-        target: { name, value },
-      })
-    console.info('Option Removed', option, value)
+    // perform the change on the parent by using onChange prop without modifying value prop
+    onChange({ target: { name, value: value.filter(v => v !== option) } })
   }
 
   const resetDropDown = () => {
-    onChange({
-      target: {
-        name: 'optionsInput',
-        value: {
-          addr: 0,
-          index: 0,
-        },
-      },
-    })
+    onChange({ target: { name: 'optionsInput', value: { addr: 0, index: 0 } } })
   }
 
-  const loadOptions = value.map((option, index) => (
-    <div className="option" key={option.addr}>
-      <MultiDropDown
-        name={name}
-        index={index}
-        placeholder={placeholder}
-        onChange={onChange}
-        value={value}
-        entities={entities}
-        activeItem={value[index].index}
-        validator={validator}
-      />
-      <IconRemove onClick={() => removeOption(option)} />
+  const loadOptions = value.map((option, i) => (
+    <div className="option" key={i}>
+      <StyledLockedInput children={entities[i + 1].data.name} />
+      <IconRemove style={pointer} onClick={() => removeOption(option)} />
     </div>
   ))
 
@@ -77,7 +56,7 @@ const OptionsInputDropdown = ({
           activeItem={activeItem}
           validator={validator}
         />
-        <IconAdd onClick={addOption} />
+        <IconAdd style={pointer} onClick={addOption} />
       </div>
     </StyledOptionsInput>
   )
@@ -92,6 +71,18 @@ OptionsInputDropdown.propTypes = {
   validator: PropTypes.func.isRequired,
   value: PropTypes.array.isRequired,
 }
+
+const pointer = { cursor: 'pointer' }
+
+const StyledLockedInput = styled.div`
+  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.03);
+  padding: 8px 15px;
+  padding-right: 40px;
+  background: ${theme.contentBackground};
+  border: 1px solid ${theme.contentBorder};
+  border-radius: 3px;
+  ${unselectable()};
+`
 
 const StyledOptionsInput = styled.div`
   display: flex;
