@@ -146,10 +146,11 @@ async function handleEvents(response) {
       break
     }
     data = await loadIssueData(response.returnValues)
+    console.log('Data: ', data)
     const submissionData = await loadSubmissionData(response.returnValues, data.assignee)
-    data.workStatus = status[2]
+    data.workStatus = status[3]
     data.work = submissionData
-    nextState = syncIssues(appstate, response.returnValues, data)
+    nextState = syncIssues(appState, response.returnValues, data)
     appState = nextState
     break
   case 'BountyAdded':
@@ -328,6 +329,7 @@ function loadSubmissionData({issueNumber, repoId}, assignee) {
         for(const file of files) {
           contentJSON = JSON.parse(file.content.toString('utf8'))
         }
+        console.log('submissionData: ', {status, fulfillmentId, ...contentJSON})
         resolve({status, fulfillmentId, ...contentJSON})
       })
     })
