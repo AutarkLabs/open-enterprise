@@ -33,7 +33,8 @@ class RequestAssignment extends React.Component {
   setAck2 = () => this.setState(prevState => ({ ack2: !prevState.ack2 }))
 
   onRequestAssignment = () => {
-    this.props.onRequestAssignment(this.state, this.props.issue)
+    let today = new Date()
+    this.props.onRequestAssignment({ ...this.state, user: this.props.githubCurrentUser, applicationDate: today.toISOString()}, this.props.issue)
   }
 
   canSubmit = () => !(this.state.ack1 && this.state.ack2 && this.state.workplan && !isNaN(this.state.hours) && this.state.hours > 0)

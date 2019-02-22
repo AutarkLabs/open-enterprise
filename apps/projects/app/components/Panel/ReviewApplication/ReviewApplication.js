@@ -4,30 +4,16 @@ import styled from 'styled-components'
 import { formatDistance } from 'date-fns'
 
 import {
-  Field,
   Text,
-  TextInput,
   Button,
-  Info,
   SafeLink,
+  DropDown
 } from '@aragon/ui'
 
-import { FormField, FieldTitle, DescriptionInput } from '../../Form'
-import { IconGitHub, CheckButton } from '../../Shared'
+import { Form, FormField, FieldTitle, DescriptionInput } from '../../Form'
+import { IconGitHub } from '../../Shared'
 
 // external data, all of it
-const application = {
-  user: {
-    login: 'rkzel',
-    name: 'RKZ',
-    avatar: 'https://avatars0.githubusercontent.com/u/34452131?v=4',
-    url: 'https://github.com/rkzel'
-  },
-  workplan: 'I solemnly swear to work on it day and night until it is done.',
-  hours: 13,
-  eta: '2/13/2019',
-  applicationDate: '2/9/2019'
-}
 
 class ReviewApplication extends React.Component {
   static propTypes = {
@@ -35,27 +21,58 @@ class ReviewApplication extends React.Component {
   }
 
   state = {
-    feedback: ''
+    feedback: '',
+    requestIndex: 0
   }
 
   changeField = ({ target: { name, value } }) => this.setState({ [name]: value })
 
-  onReviewApplicationAccept = () => {
-    console.log('Accepted', this.state.feedback, application)
+  onReviewApplication = () => {
+    console.log('Accepted', this.state.feedback, this.props.issue)
+    this.props.onReviewApplication(this.props.issue)
   }
-  onReviewApplicationReject = () => {
-    console.log('Rejected', this.state.feedback, application)
-  }
+
+  changeRequest = (index) => {
+    this.setState({requestIndex: index})
+  } 
+
 
   render() {
     const { issue } = this.props
+
+    const request = issue.requestsData[this.state.requestIndex]
+    
+    const application = {
+      user: {
+        login: request.user.login,
+        name: request.user.login,
+        avatar: request.user.avatarUrl,
+        url: request.user.url
+      },
+      workplan: request.workplan,
+      hours: request.hours,
+      eta: (new Date(request.eta)).toLocaleDateString(),
+      applicationDate: request.applicationDate
+    }
+
     const applicant = application.user
     const applicationDateDistance = formatDistance(new Date(application.applicationDate), new Date())
-
     return (
-      <div>
+      <Form
+        onSubmit={this.onReviewApplication}
+        submitText="Accept Assignment"
+        noSeparator
+      >
         <IssueTitle>{issue.title}</IssueTitle>
         
+        <DropDown
+          name="Applicant"
+          items={issue.requestsData.map( request => request.user.login)}
+          onChange={this.changeRequest}
+          active={this.state.requestIndex}
+          wide
+        />
+
         <SafeLink
           href={issue.url}
           target="_blank"
@@ -92,7 +109,8 @@ class ReviewApplication extends React.Component {
           <DetailText>{application.eta}</DetailText>
 
         </ApplicationDetails>
-
+        {/* There is currently nowhere to display this feedback to the user,
+            Will be re-implemented when github messaging is enabled.
         <FormField
           label="Feedback"
           input={
@@ -104,12 +122,8 @@ class ReviewApplication extends React.Component {
             />
           }
         />
-
-        <ReviewRow>
-          <ReviewButton emphasis="negative" onClick={this.onReviewApplicationReject}>Reject</ReviewButton>
-          <ReviewButton emphasis="positive" onClick={this.onReviewApplicationAccept}>Accept</ReviewButton>
-        </ReviewRow>
-      </div>
+        */}
+      </Form>
     )
   }
 }
