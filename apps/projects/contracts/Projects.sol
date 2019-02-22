@@ -150,7 +150,7 @@ contract Projects is IsContract, AragonApp {
     // Fired when Task Manager approves assignment request
     event AssignmentApproved(address applicant, bytes32 indexed repoId, uint256 issueNumber);
     // Fired when a user submits work towards an issue
-    event WorkSubmitted(address submittor, bytes32 repoId, uint256 issueNumber);
+    event WorkSubmitted(bytes32 repoId, uint256 issueNumber);
     //Fired when a reivew is accepted
     event SubmissionAccepted(address submittor, bytes32 repoId, uint256 issueNumber);
 
@@ -240,7 +240,7 @@ contract Projects is IsContract, AragonApp {
      * @param _repoId The id of the Github repo in the projects registry
      */
     function getIssue(bytes32 _repoId, uint256 _issueNumber) external view
-    returns(bool hasBounty, uint standardBountyId, bool fulfilled, uint balance, address token, string dataHash)
+    returns(bool hasBounty, uint standardBountyId, bool fulfilled, uint balance, address token, string dataHash, address assignee)
     {
         GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
         hasBounty = issue.hasBounty;
@@ -249,6 +249,7 @@ contract Projects is IsContract, AragonApp {
         ( , , , , ,balance) = bounties.getBounty(standardBountyId);
         dataHash = bounties.getBountyData(standardBountyId);
         token = bounties.getBountyToken(standardBountyId);
+        assignee = issue.assignee;
     }
 
     /**
@@ -419,7 +420,7 @@ contract Projects is IsContract, AragonApp {
 
         issue.submissionQty += 1;
 
-        emit WorkSubmitted(msg.sender, _repoId, _issueNumber);
+        emit WorkSubmitted(_repoId, _issueNumber);
     }
 
     /**
