@@ -35,14 +35,9 @@ class DropDownOptionsInput extends React.Component {
   }
 
   removeOption = option => {
-    const { name, value } = this.props
-    let index = value.indexOf(option)
-    // Double exclamation to make sure is reemoved
-    !!value.splice(index, 1) &&
-      this.props.onChange({
-        target: { name, value },
-      })
-    console.log('Option Removed', option, this.props.value)
+    this.props.onChange({
+      target: { name, value: value.filter(v => v !== option) },
+    })
   }
 
   onChangeInput = ({ target: { value } }) => {

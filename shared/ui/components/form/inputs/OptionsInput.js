@@ -107,11 +107,11 @@ const StyledOptionsInput = styled.div`
       transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
       :hover {
         color: ${({ empty }) =>
-          empty ? theme.disabled : theme.contentBorderActive};
+    empty ? theme.disabled : theme.contentBorderActive};
       }
       :active {
         color: ${({ empty }) =>
-          empty ? theme.disabled : theme.contentBackgroundActive};
+    empty ? theme.disabled : theme.contentBackgroundActive};
       }
     }
   }
