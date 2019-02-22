@@ -284,11 +284,19 @@ class App extends React.PureComponent {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.SubmitWork,
       panelProps: {
-        onSubmit: this.onSubmitWork,
+        onSubmitWork: this.onSubmitWork,
         githubCurrentUser: this.props.githubCurrentUser,
         issue
       },
     }))
+  }
+
+  onSubmitWork = async (state, issue) => {
+    this.closePanel()
+    let content = ipfs.types.Buffer.from(JSON.stringify(state))
+    let results = await ipfs.add(content)
+    let submissionString = results[0].hash
+    this.props.app.submitWork(web3.toHex(issue.repoId), issue.number, submissionString)
   }
 
   requestAssignment = issue => {

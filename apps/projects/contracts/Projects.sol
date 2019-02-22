@@ -118,6 +118,7 @@ contract Projects is IsContract, AragonApp {
         address assignee;
         address[] applicants;
         address workSubmittor;
+        uint256 submissionQty;
         mapping(address => string) assignmentRequests;
         mapping(address => WorkSubmission) workSubmissions;
     }
@@ -398,23 +399,25 @@ contract Projects is IsContract, AragonApp {
      * @param _repoId the github repo id of the issue
      * @param _issueNumber the github issue up for assignment
      * @param _submissionAddress IPFS hash of the Pull Request
-     * @param _fulfillmentId retrieved from event after the work is submitted to the bounties contract externally 
+     * //param _fulfillmentId retrieved from event after the work is submitted to the bounties contract externally 
      */
     function submitWork(
         bytes32 _repoId, 
         uint256 _issueNumber, 
-        string _submissionAddress,
-        uint256 _fulfillmentId
+        string _submissionAddress
+        //uint256 _fulfillmentId
     ) external isInitialized
     {
-        require(msg.sender == repos[_repoId].issues[_issueNumber].assignee, "User not assigned to this issue");
+        //require(msg.sender == repos[_repoId].issues[_issueNumber].assignee, "User not assigned to this issue");
         GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
         bounties.fulfillBounty(issue.standardBountyId, _submissionAddress);
         issue.workSubmissions[msg.sender] = WorkSubmission(
             SubmissionStatus.Unreviewed,
             _submissionAddress,
-            _fulfillmentId
+            issue.submissionQty
         );
+
+        issue.submissionQty += 1;
 
         emit WorkSubmitted(msg.sender, _repoId, _issueNumber);
     }
@@ -645,7 +648,8 @@ contract Projects is IsContract, AragonApp {
             _standardBountyId,
             address(0),
             emptyAddressArray,
-            address(0)
+            address(0),
+            0
         );
         emit BountyAdded(
             repos[_repoId].owner,
