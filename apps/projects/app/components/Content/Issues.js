@@ -267,7 +267,7 @@ class Issues extends React.PureComponent {
   }
 
   render() {
-    const { projects, onNewProject, activeIndex, tokens, bountyIssues } = this.props
+    const { projects, onNewProject } = this.props
     const { currentIssue, showIssueDetail } = this.state
 
     // better return early if we have no projects added?
@@ -277,9 +277,15 @@ class Issues extends React.PureComponent {
         <IssueDetail
           issue={currentIssue}
           onClose={this.handleIssueDetailClose}
-          handleReviewApplication = {this.handleReviewApplication}
-          handleRequestAssignment = {this.handleRequestAssignment}
-          handleSubmitWork = {this.handleSubmitWork}
+          handleReviewApplication = {() => {
+            this.handleReviewApplication(issue)
+          }}
+          handleRequestAssignment = {() => {
+            this.handleRequestAssignment(issue)
+          }}
+          handleSubmitWork = {() => {
+            this.handleSubmitWork(issue)
+          }}
         />
       )
 
