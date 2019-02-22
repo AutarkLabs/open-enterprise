@@ -8,15 +8,15 @@ const MultiDropdown = ({
   name,
   onChange,
   validator,
-  value,
+  values,
 }) => {
   const onChangeInput = index => {
     const newValue = {
       addr: entities[index].addr,
       index: index,
     }
-    const validation = validator(value, newValue.addr) ? true : false
-    const inputValue = name === 'optionsInput' ? newValue : value
+    const validation = validator(values, newValue.addr) ? true : false
+    const inputValue = name === 'optionsInput' ? newValue : values
 
     // First onChange is for validator, second is for the input itself
     onChange({ target: { name: 'addressError', value: validation } })
@@ -38,7 +38,7 @@ MultiDropdown.propTypes = {
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
   validator: PropTypes.func.isRequired,
-  value: PropTypes.array.isRequired,
+  values: PropTypes.array.isRequired,
 }
 
 export default MultiDropdown

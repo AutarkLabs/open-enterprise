@@ -226,7 +226,7 @@ class NewAllocation extends React.Component {
                   name="options"
                   placeholder="Enter an option"
                   onChange={this.changeField}
-                  value={this.state.options}
+                  values={this.state.options}
                   input={this.state.optionsInput}
                   validator={this.isAddressError}
                   error={this.state.addressError}
@@ -245,7 +245,7 @@ class NewAllocation extends React.Component {
                   name="optionsString"
                   placeholder="Enter an option"
                   onChange={this.changeField}
-                  value={this.state.optionsString}
+                  values={this.state.optionsString}
                   input={this.state.optionsInputString}
                   validator={this.isAddressError}
                   error={this.state.addressError}

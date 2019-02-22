@@ -16,15 +16,15 @@ class DropDownOptionsInput extends React.Component {
   static propTypes = {
     input: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-    value: PropTypes.array.isRequired,
     onChange: PropTypes.func.isRequired,
+    values: PropTypes.array.isRequired,
   }
 
   addOption = () => {
     // TODO: Implement some rules about what an 'Option can be' duplicates, etc
-    const { input, name, value } = this.props
-    if (input && !value.includes(input)) {
-      this.props.onChange({ target: { name, value: [...value, input] } })
+    const { input, name, values } = this.props
+    if (input && !values.includes(input)) {
+      this.props.onChange({ target: { name, value: [...values, input] } })
       this.props.onChange({ target: { name: 'optionsInput', value: '' } })
       console.log('Option Added')
     } else {
@@ -36,7 +36,7 @@ class DropDownOptionsInput extends React.Component {
 
   removeOption = option => {
     this.props.onChange({
-      target: { name, value: value.filter(v => v !== option) },
+      target: { name, value: values.filter(v => v !== option) },
     })
   }
 
@@ -45,7 +45,7 @@ class DropDownOptionsInput extends React.Component {
   }
 
   render() {
-    const loadOptions = this.props.value.map(issue => {
+    const loadOptions = this.props.values.map(issue => {
       const { repo, number, title } = issue
       const issueString = `${repo} #${number} - ${title}`
       return (

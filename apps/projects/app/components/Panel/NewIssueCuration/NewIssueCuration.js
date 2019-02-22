@@ -61,7 +61,7 @@ class NewIssueCuration extends React.Component {
               name="issues"
               placeholder="Select option..."
               onChange={this.changeField}
-              value={this.state.curatedIssues}
+              values={this.state.curatedIssues}
               input={this.state.issuesInput}
             />
           }

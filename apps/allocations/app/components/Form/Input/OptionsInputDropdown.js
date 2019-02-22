@@ -14,13 +14,13 @@ const OptionsInputDropdown = ({
   onChange,
   placeholder = '',
   validator,
-  value,
+  values,
 }) => {
   const addOption = () => {
-    const noError = input && !validator(value, input.addr)
+    const noError = input && !validator(values, input.addr)
     onChange({
       target: noError
-        ? { name, value: [...value, input] }
+        ? { name, value: [...values, input] }
         : { name: 'addressError', value: true }, // enable error msg if needed
     })
     resetDropDown()
@@ -28,15 +28,14 @@ const OptionsInputDropdown = ({
 
   const removeOption = option => {
     // perform the change on the parent by using onChange prop without modifying value prop
-    onChange({ target: { name, value: value.filter(v => v !== option) } })
+    onChange({ target: { name, value: values.filter(v => v !== option) } })
   }
 
   const resetDropDown = () => {
     onChange({ target: { name: 'optionsInput', value: { addr: 0, index: 0 } } })
   }
 
-  const loadOptions = value.map((option, i) => (
-    <div className="option" key={i}>
+  const loadOptions = values.map((option, i) => (
       <StyledLockedInput children={entities[i + 1].data.name} />
       <IconRemove style={pointer} onClick={() => removeOption(option)} />
     </div>
@@ -50,7 +49,7 @@ const OptionsInputDropdown = ({
           name={'optionsInput'}
           index={-1}
           placeholder={placeholder}
-          value={value}
+          values={values}
           onChange={onChange}
           entities={entities}
           activeItem={activeItem}
@@ -69,7 +68,7 @@ OptionsInputDropdown.propTypes = {
   onChange: PropTypes.func.isRequired,
   placeholder: PropTypes.string,
   validator: PropTypes.func.isRequired,
-  value: PropTypes.array.isRequired,
+  values: PropTypes.array.isRequired,
 }
 
 const pointer = { cursor: 'pointer' }

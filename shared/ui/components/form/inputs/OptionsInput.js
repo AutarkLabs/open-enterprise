@@ -9,13 +9,13 @@ const OptionsInput = ({
   onChange,
   placeholder = '',
   validator,
-  value,
+  values,
 }) => {
   const addOption = () => {
-    const noError = input && !validator(value, input.addr)
+    const noError = input && !validator(values, input.addr)
     onChange({
       target: noError
-        ? { name, value: [...value, input] }
+        ? { name, value: [...values, input] }
         : { name: 'addressError', value: true }, // enable error msg if needed
     })
     resetDropDown()
@@ -23,7 +23,7 @@ const OptionsInput = ({
 
   const removeOption = option => {
     // perform the change on the parent by using onChange prop without modifying value prop
-    onChange({ target: { name, value: value.filter(v => v !== option) } })
+    onChange({ target: { name, value: values.filter(v => v !== option) } })
   }
 
   const resetDropDown = () => {
@@ -36,8 +36,7 @@ const OptionsInput = ({
     })
   }
 
-  const loadOptions = value.map((option, i) => (
-    <div className="option" key={i}>
+  const loadOptions = values.map((option, i) => (
       <StyledInput readOnly value={option.addr} />
       <IconRemove style={pointer} onClick={() => removeOption(option)} />
     </div>
@@ -64,7 +63,7 @@ OptionsInput.propTypes = {
   onChange: PropTypes.func.isRequired,
   placeholder: PropTypes.string,
   validator: PropTypes.func.isRequired,
-  value: PropTypes.array.isRequired,
+  values: PropTypes.array.isRequired,
 }
 
 const pointer = { cursor: 'pointer' }
