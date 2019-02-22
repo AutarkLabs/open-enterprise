@@ -35,15 +35,16 @@ const OptionsInputDropdown = ({
   }
 
   const loadOptions = values.map((option, i) => (
+    <StyledOption key={i}>
       <StyledLockedInput children={entities[i + 1].data.name} />
       <IconRemove style={pointer} onClick={() => removeOption(option)} />
-    </div>
+    </StyledOption>
   ))
 
   return (
-    <StyledOptionsInput empty={!input.length}>
+    <div style={flexColumn} empty={!input.length}>
       {loadOptions}
-      <div className="option">
+      <StyledOption>
         <MultiDropDown
           name={'optionsInput'}
           index={-1}
@@ -55,8 +56,8 @@ const OptionsInputDropdown = ({
           validator={validator}
         />
         <IconAdd style={pointer} onClick={addOption} />
-      </div>
-    </StyledOptionsInput>
+      </StyledOption>
+    </div>
   )
 }
 OptionsInputDropdown.propTypes = {
@@ -70,6 +71,7 @@ OptionsInputDropdown.propTypes = {
   values: PropTypes.array.isRequired,
 }
 
+const flexColumn = { display: 'flex', flexDirection: 'column' }
 const pointer = { cursor: 'pointer' }
 
 const StyledLockedInput = styled.div`
@@ -82,31 +84,27 @@ const StyledLockedInput = styled.div`
   ${unselectable()};
 `
 
-const StyledOptionsInput = styled.div`
+const StyledOption = styled.div`
   display: flex;
-  flex-direction: column;
-  > .option {
-    display: flex;
-    margin-bottom: 0.625rem;
-    > :first-child {
-      flex-grow: 1;
-    }
-    > svg {
-      margin-left: 3px;
-      margin-top: -3px;
-      height: auto;
-      width: 1.8rem;
-      color: ${theme.textSecondary};
-      vertical-align: middle;
-      transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-      :hover {
-        color: ${({ empty }) =>
+  margin-bottom: 0.625rem;
+  > :first-child {
+    flex-grow: 1;
+  }
+  > svg {
+    margin-left: 3px;
+    margin-top: -3px;
+    height: auto;
+    width: 1.8rem;
+    color: ${theme.textSecondary};
+    vertical-align: middle;
+    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+    :hover {
+      color: ${({ empty }) =>
     empty ? theme.disabled : theme.contentBorderActive};
-      }
-      :active {
-        color: ${({ empty }) =>
+    }
+    :active {
+      color: ${({ empty }) =>
     empty ? theme.disabled : theme.contentBackgroundActive};
-      }
     }
   }
 `

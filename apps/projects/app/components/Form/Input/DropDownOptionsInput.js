@@ -40,15 +40,15 @@ class DropDownOptionsInput extends React.Component {
       const { repo, number, title } = issue
       const issueString = `${repo} #${number} - ${title}`
       return (
-        <div className="option" key={issue.id}>
+        <StyledOption key={issue.id}>
           <StyledInput readOnly wide value={issueString} />
           <IconRemove onClick={() => this.removeOption(issue)} />
-        </div>
+        </StyledOption>
       )
     })
 
     return (
-      <StyledOptionsInput empty={!this.props.input.length}>
+      <div style={flexColumn} empty={!this.props.input.length}>
         {loadOptions}
         {/* TODO: Implement selecting more issues from the Panel: */}
         {/* <div className="option">
@@ -59,12 +59,15 @@ class DropDownOptionsInput extends React.Component {
           />
           <IconAdd onClick={this.addOption} />
         </div> */}
-      </StyledOptionsInput>
+      </div>
     )
   }
 }
 
+const flexColumn = { display: 'flex', flexDirection: 'column' }
+
 const StyledInput = styled(TextInput)`
+  flex-grow: 1;
   ${unselectable}; /* it is possible to select the placeholder without this */
   ::placeholder {
     color: ${theme.contentBorderActive};
@@ -83,37 +86,29 @@ const StyledInput = styled(TextInput)`
   }
 `
 
-const StyledOptionsInput = styled.div`
+const StyledOption = styled.div`
   display: flex;
-  flex-direction: column;
-  > .option {
-    display: flex;
-    margin-bottom: 0.625rem;
-    > :first-child {
-      flex-grow: 1;
-    }
-    > svg {
-      margin-left: 3px;
-      margin-top: -3px;
-      height: auto;
-      width: 1.8rem;
+  margin-bottom: 0.625rem;
+  > :first-child {
+    flex-grow: 1;
+  }
+  > svg {
+    margin-left: 3px;
+    margin-top: -3px;
+    height: auto;
+    width: 1.8rem;
     color: ${theme.textSecondary};
-      vertical-align: middle;
-      transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-      :hover {
+    vertical-align: middle;
+    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+    :hover {
       color: ${({ empty }) =>
     empty ? theme.disabled : theme.contentBorderActive};
-      }
-      :active {
+    }
+    :active {
       color: ${({ empty }) =>
     empty ? theme.disabled : theme.contentBackgroundActive};
     }
   }
 `
-
-// > svg {
-/* cursor not really needed here */
-/* cursor: ${({ empty }) => (empty ? 'not-allowed' : 'pointer')}; */
-// }
 
 export default DropDownOptionsInput
