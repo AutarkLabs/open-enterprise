@@ -1,12 +1,11 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import styled from 'styled-components'
-import { DropDown, Info, theme } from '@aragon/ui'
+import { DropDown, Info } from '@aragon/ui'
 import { OptionsInput } from '../../../../../shared/ui'
 
 import {
   AddressDropDownOptions,
-  DescriptionInput,
+  // DescriptionInput,
   Form,
   FormField,
   SettingsInput,
@@ -16,34 +15,36 @@ import {
 // TODO: Extract to shared
 const AVAILABLE_TOKENS = ['ETH', 'ANT', 'GIV', 'FTL', '🦄']
 const ALLOCATION_TYPES = ['Informational', 'Token Transfer']
-const PAYOUT_TYPES = ['One-Time', 'Monthly']
+// const PAYOUT_TYPES = ['One-Time', 'Monthly']
 const INITIAL_STATE = {
+  activePayoutOption: 0,
+  addressBookCandidates: [],
+  // TODO: Merge with userInput
+  addressBookInput: { addr: 0, index: 0 },
+  addressError: false,
+  addressSetting: false,
   allocationDescription: '',
-  votingTokens: null,
+  allocationError: false,
   allocationType: '',
   allocationTypeIndex: 1,
-  activePayoutOption: 0,
-  payoutType: '',
-  payoutTypeIndex: 0,
+  amount: null,
+  balanceSetting: false,
   payoutToken: '',
   payoutTokenIndex: 0,
-  amount: null,
-  allocationError: false,
-  balanceSetting: false,
-  addressSetting: false,
-  addressBookCandidates: [],
-  addressBookInput: { addr: 0, index: 0 },
-  userInputCandidates: [],
+  payoutType: '',
+  payoutTypeIndex: 0,
   userInput: { addr: '' },
+  userInputCandidates: [],
+  votingTokens: null,
 }
 
 const message = {
   addressError: 'All options must be addresses and cannot be duplicates.',
+  addressSetting: 'Use address book for options',
   allocationError: 'Amount must be more than zero and less than limit.',
+  balanceSetting: 'Must vote with entire balance',
   transferWarning:
     'This will create a Range Vote and after it closes, it will result in a financial transfer.',
-  balanceSetting: 'Must vote with entire balance',
-  addressSetting: 'Use address book for options',
 }
 
 const uniqueAddressValidation = (entries, addr) => {
@@ -66,24 +67,40 @@ class NewAllocation extends React.Component {
 
   // TODO: improve field checking for input errors and sanitize
   changeField = ({ target: { name, value } }) => {
+    // reset error to false if changing related field
+    const resetAddressError = ['addressBookInput, addressSetting'].includes(
+      name
+    )
+    const resetAllocationsError = name === 'amount'
+
+    // react chains the state changes asynchronously
+    resetAddressError && this.setState({ addressError: false })
+    resetAllocationsError && this.setState({ allocationError: false })
+
+    this.setState({ [name]: value })
     console.log('changing field', name, 'to', value)
-    this.setState({
-      [name]: value,
-      addressError: false,
-      allocationError: false,
-    })
   }
 
   // TODO: Manage dropdown to return a name and value as the rest of inputs
   changeAllocationType = (index, items) => {
-    this.setState({ allocationTypeIndex: index, allocationType: items[index] })
+    this.setState({
+      allocationError: false,
+      allocationTypeIndex: index,
+      allocationType: items[index],
+    })
   }
   changePayoutToken = (index, items) => {
-    this.setState({ payoutTokenIndex: index, payoutToken: items[index] })
+    this.setState({
+      allocationError: false,
+      payoutTokenIndex: index,
+      payoutToken: items[index],
+    })
   }
-  changePayoutType = (index, items) => {
-    this.setState({ payoutTypeIndex: index, payoutType: items[index] })
-  }
+
+  // TODO: Temporarily unused
+  // changePayoutType = (index, items) => {
+  //   this.setState({ payoutTypeIndex: index, payoutType: items[index] })
+  // }
 
   // TODO: fix contract to accept regular strings(informational vote)
   submitAllocation = () => {
@@ -130,6 +147,7 @@ class NewAllocation extends React.Component {
       onChange: this.changeField,
       type: 'number',
       min: '0',
+      max: props.limit,
     }
 
     const amountDropDown = {
@@ -147,21 +165,21 @@ class NewAllocation extends React.Component {
       <ErrorMessage key={i} hasError={state[e]} type={e} />
     ))
 
-    const descriptionField = (
-      <FormField
-        visible={false}
-        required
-        label="Description"
-        input={
-          <DescriptionInput
-            name="allocationDescription"
-            onChange={this.changeField}
-            placeholder="Describe your allocation."
-            value={state.allocationDescription}
-          />
-        }
-      />
-    )
+    // const descriptionField = (
+    //   <FormField
+    //     visible={false}
+    //     required
+    //     label="Description"
+    //     input={
+    //       <DescriptionInput
+    //         name="allocationDescription"
+    //         onChange={this.changeField}
+    //         placeholder="Describe your allocation."
+    //         value={state.allocationDescription}
+    //       />
+    //     }
+    //   />
+    // )
 
     const allocationTypeField = (
       <FormField
@@ -253,9 +271,9 @@ class NewAllocation extends React.Component {
           <OptionsInput
             error={state.addressError}
             input={state.userInput}
-            name="optionsString"
+            name="userInputCandidates"
             onChange={this.changeField}
-            placeholder="Enter an option"
+            placeholder="Enter an address option"
             validator={uniqueAddressValidation}
             values={state.userInputCandidates}
           />
@@ -272,7 +290,7 @@ class NewAllocation extends React.Component {
           submitText="Submit Allocation"
         >
           {warningMessages}
-          {descriptionField} {/* TODO: do something on this */}
+          {/* {descriptionField} */}
           {allocationTypeField}
           {settingsField}
           {amountField}
