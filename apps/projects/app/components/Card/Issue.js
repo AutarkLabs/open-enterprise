@@ -105,15 +105,21 @@ const Issue = ({workStatus, title, repo, number, labels, isSelected, onClick, on
       }
       {workStatus !== undefined &&
         <ContextMenu>
-          <ContextMenuItem onClick={onSubmitWork}>
-            <ActionLabel>Submit Work</ActionLabel>
-          </ContextMenuItem>
-          <ContextMenuItem onClick={onRequestAssignment}>
-            <ActionLabel>Request Assignment</ActionLabel>
-          </ContextMenuItem>
-          <ContextMenuItem onClick={onReviewApplication}>
-            <ActionLabel>Review Application</ActionLabel>
-          </ContextMenuItem>
+          {workStatus === 'submit-work' || workStatus === 'review-work' &&
+            <ContextMenuItem onClick={onSubmitWork}>
+              <ActionLabel>Submit Work</ActionLabel>
+            </ContextMenuItem>
+          }
+          {(workStatus === 'new' || workStatus === 'review-applicants') &&
+            <ContextMenuItem onClick={onRequestAssignment}>
+              <ActionLabel>Request Assignment</ActionLabel>
+            </ContextMenuItem>
+          }
+          {workStatus === 'review-applicants' &&
+            <ContextMenuItem onClick={onReviewApplication}>
+              <ActionLabel>Review Application</ActionLabel>
+            </ContextMenuItem>
+          }
         </ContextMenu>
       }
     </div>

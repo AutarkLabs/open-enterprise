@@ -423,7 +423,6 @@ class App extends React.PureComponent {
               onRequestAssignment={this.requestAssignment}
               activeIndex={activeIndex}
               changeActiveIndex={this.changeActiveIndex}
-
               onReviewApplication={this.reviewApplication}
             />
 

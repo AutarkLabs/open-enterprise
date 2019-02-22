@@ -26,18 +26,26 @@ export default class IssueDetail extends React.Component {
   componentWillUnmount() {
     modalRoot.removeChild(this.el)
   }
-
+  onHandleReviewApplication() {
+    this.props.handleReviewApplication(this.props.issue)
+  }
+  onHandleRequestAssignment() {
+    this.props.handleRequestAssignment(this.props.issue)
+  }
+  onHandleSubmitWork() {
+    this.props.handleSubmitWork(this.props.issue)
+  }
   render() {
-    const { onClose, issue, handleReviewApplication, handleRequestAssignment, handleSubmitWork } = this.props
+    const { onClose, issue } = this.props
 
     return createPortal(
       <div style={issueDetailStyle}>
         <Navigation onClose={onClose} />
         <Detail 
           {...issue} 
-          handleReviewApplication = {handleReviewApplication}
-          handleRequestAssignment = {handleRequestAssignment}
-          handleSubmitWork = {handleSubmitWork}
+          handleReviewApplication = {this.onHandleReviewApplication}
+          handleRequestAssignment = {this.onHandleRequestAssignment}
+          handleSubmitWork = {this.onHandleSubmitWork}
         />/>
       </div>,
       this.el

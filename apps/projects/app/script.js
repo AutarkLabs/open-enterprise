@@ -13,7 +13,7 @@ let ipfsClient = require('ipfs-http-client')
 
 let ipfs = ipfsClient({ host: 'localhost', port: '5001', protocol: 'http'})
 
-const status = ['new', 'review-applicants', 'review-work', 'finished']
+const status = ['new', 'review-applicants', 'submit-work', 'review-work', 'finished']
 
 const toAscii = hex => {
   // Find termination
@@ -115,7 +115,7 @@ app.state().subscribe(state => {
  ***********************/
 
 async function handleEvents(response) {
-  let nextState, data
+  let nextState, data, requestsData
   switch (response.event) {
   case 'RepoAdded':
     console.log('[Projects] event RepoAdded')
@@ -128,13 +128,25 @@ async function handleEvents(response) {
   case 'RepoUpdated':
     console.log('[Projects] RepoUpdated', response.returnValues)
     nextState = await syncRepos(appState, response.returnValues)
+  case 'AssignmentApproved':
+    console.log('[Projects] AssignmentApproved', appState, response.returnValues)
+    if(response.returnValues === null || response.returnValues === undefined) {
+      break
+    }
+    data = await loadIssueData(response.returnValues)
+    requestsData = await loadRequestsData(response.returnValues)
+    data.workStatus = status[2]
+    data.requestsData = requestsData
+    nextState = syncIssues(appState, response.returnValues, data)
+    appState = nextState
+    break
   case 'AssignmentRequested':
     console.log('[Projects] AssignmentRequested', appState, response.returnValues)
     if(response.returnValues === null || response.returnValues === undefined) {
       break
     }
     data = await loadIssueData(response.returnValues)
-    const requestsData = await loadRequestsData(response.returnValues)
+    requestsData = await loadRequestsData(response.returnValues)
     data.workStatus = status[1]
     data.requestsData = requestsData
     nextState = syncIssues(appState, response.returnValues, data)
