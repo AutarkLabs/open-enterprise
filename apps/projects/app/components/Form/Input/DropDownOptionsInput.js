@@ -42,29 +42,28 @@ class DropDownOptionsInput extends React.Component {
       return (
         <StyledOption key={issue.id}>
           <StyledInput readOnly wide value={issueString} />
-          <IconRemove onClick={() => this.removeOption(issue)} />
+          <IconContainer
+            onClick={() => removeOption(issue)}
+            title="Click to remove the issue"
+            children={<IconRemove />}
+          />
         </StyledOption>
       )
     })
 
-    return (
-      <div style={flexColumn} empty={!this.props.input.length}>
-        {loadOptions}
-        {/* TODO: Implement selecting more issues from the Panel: */}
-        {/* <div className="option">
-          <StyledInput
-            placeholder={this.props.placeholder}
-            value={this.props.input}
-            onChange={this.onChangeInput}
-          />
-          <IconAdd onClick={this.addOption} />
-        </div> */}
-      </div>
-    )
+    return <div style={flexColumn}>{loadOptions}</div>
   }
 }
 
 const flexColumn = { display: 'flex', flexDirection: 'column' }
+
+const StyledOption = styled.div`
+  display: flex;
+  margin-bottom: 0.625rem;
+  > :first-child {
+    flex-grow: 1;
+  }
+`
 
 const StyledInput = styled(TextInput)`
   flex-grow: 1;
@@ -86,27 +85,20 @@ const StyledInput = styled(TextInput)`
   }
 `
 
-const StyledOption = styled.div`
+const IconContainer = styled.span`
+  cursor: pointer;
   display: flex;
-  margin-bottom: 0.625rem;
-  > :first-child {
-    flex-grow: 1;
-  }
+  justify-content: center;
   > svg {
-    margin-left: 3px;
-    margin-top: -3px;
-    height: auto;
-    width: 1.8rem;
     color: ${theme.textSecondary};
-    vertical-align: middle;
+    height: auto;
+    width: 40px;
     transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-    :hover {
-      color: ${({ empty }) =>
-    empty ? theme.disabled : theme.contentBorderActive};
-    }
     :active {
-      color: ${({ empty }) =>
-    empty ? theme.disabled : theme.contentBackgroundActive};
+      color: ${theme.accent};
+    }
+    :hover {
+      color: ${theme.contentBorderActive};
     }
   }
 `
