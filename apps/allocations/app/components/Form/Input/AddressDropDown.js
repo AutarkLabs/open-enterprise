@@ -2,14 +2,31 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import { DropDown } from '@aragon/ui'
 
-const AddressDropDown = ({ activeItem, entities, name, onChange }) => {
+const AddressDropDown = ({
+  activeItem,
+  entities,
+  name,
+  onChange,
+  validator,
+  values,
+}) => {
   const onChangeInput = index => {
     if (!index) return
+
+    const selected = entities[index].addr
+
     const newValue = {
-      addr: entities[index].addr,
-      index: index, // index 0 is 'Select entry'
+      addr: selected,
+      index: index,
     }
-    onChange({ target: { name: name, value: newValue } })
+
+    const validated = validator(values, selected)
+
+    onChange({
+      target: validated
+        ? { name: name, value: newValue }
+        : { name: 'addressError', value: true }, // enable error msg if needed
+    })
   }
 
   const items = entities.map(e => (
@@ -26,6 +43,8 @@ AddressDropDown.propTypes = {
   entities: PropTypes.arrayOf(PropTypes.object),
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
+  validator: PropTypes.func.isRequired,
+  values: PropTypes.array.isRequired,
 }
 
 export default AddressDropDown
