@@ -328,8 +328,13 @@ class App extends React.PureComponent {
     }))
   }
 
-  onReviewApplication = props => console.log('onReviewApplication', props)
+  onReviewApplication = issue => {
+    console.log('onReviewApplication Issue:', issue)
+    console.log('onReviewApplication submission:', web3.toHex(issue.repoId), issue.number, issue.requestsData[0].contributorAddr)
 
+    this.props.app.approveAssignment(web3.toHex(issue.repoId), issue.number, issue.requestsData[0].contributorAddr)
+  }
+ 
   curateIssues = issues => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.NewIssueCuration,
@@ -426,7 +431,6 @@ class App extends React.PureComponent {
               onRequestAssignment={this.requestAssignment}
               activeIndex={activeIndex}
               changeActiveIndex={this.changeActiveIndex}
-
               onReviewApplication={this.reviewApplication}
             />
 
