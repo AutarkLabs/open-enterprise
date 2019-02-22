@@ -1,14 +1,14 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { DropDown, Info } from '@aragon/ui'
+import { DropDown, Info, theme } from '@aragon/ui'
 import { OptionsInput } from '../../../../../shared/ui'
 
 import {
+  AddressDropDownOptions,
   DescriptionInput,
   Form,
   FormField,
-  OptionsInputDropdown,
   SettingsInput,
   InputDropDown,
 } from '../Form'
@@ -18,7 +18,7 @@ const AVAILABLE_TOKENS = ['ETH', 'ANT', 'GIV', 'FTL', '🦄']
 const ALLOCATION_TYPES = ['Informational', 'Token Transfer']
 const PAYOUT_TYPES = ['One-Time', 'Monthly']
 const INITIAL_STATE = {
-  description: '',
+  allocationDescription: '',
   votingTokens: null,
   allocationType: '',
   allocationTypeIndex: 1,
@@ -31,10 +31,28 @@ const INITIAL_STATE = {
   allocationError: false,
   balanceSetting: false,
   addressSetting: false,
-  options: [],
-  optionsInput: { addr: 0, index: 0 },
-  optionsString: [],
-  optionsInputString: { addr: '' },
+  addressBookCandidates: [],
+  addressBookInput: { addr: 0, index: 0 },
+  userInputCandidates: [],
+  userInput: { addr: '' },
+}
+
+const message = {
+  addressError: 'All options must be addresses and cannot be duplicates.',
+  allocationError: 'Amount must be more than zero and less than limit.',
+  transferWarning:
+    'This will create a Range Vote and after it closes, it will result in a financial transfer.',
+  balanceSetting: 'Must vote with entire balance',
+  addressSetting: 'Use address book for options',
+}
+
+const uniqueAddressValidation = (entries, addr) => {
+  const isAddress = /^(0x)?[0-9a-f]{40}$/i.test(addr) // TODO: replace by: web3.isAddress(addr)
+  const isUnique = !entries.length || !entries.map(e => e.addr).includes(addr)
+  const notEmpty = addr && !!addr.length && addr !== '0x0'
+  const validated = isAddress && isUnique && notEmpty
+  console.log('validating', addr, entries, isAddress, isUnique, notEmpty)
+  return validated // approved if not errorCondition
 }
 
 class NewAllocation extends React.Component {
@@ -48,7 +66,12 @@ class NewAllocation extends React.Component {
 
   // TODO: improve field checking for input errors and sanitize
   changeField = ({ target: { name, value } }) => {
-    this.setState({ [name]: value })
+    console.log('changing field', name, 'to', value)
+    this.setState({
+      [name]: value,
+      addressError: false,
+      allocationError: false,
+    })
   }
 
   // TODO: Manage dropdown to return a name and value as the rest of inputs
@@ -62,229 +85,235 @@ class NewAllocation extends React.Component {
     this.setState({ payoutTypeIndex: index, payoutType: items[index] })
   }
 
-  isAddressError = (entities, addr) => {
-    const isAddress = /^(0x)?[0-9a-f]{40}$/i.test(addr) // TODO: replace by: web3.isAddress(addr)
-    console.log('[isAddressError] entitites', entities, 'addr', addr)
-    const isDuplicated =
-      entities.length > 1 && entities.map(entity => entity.addr).includes(addr)
-    const isEmpty = !addr || addr.length === 0 || addr === 0x0
-    const errorCondition = !isAddress || isDuplicated || isEmpty
-    return errorCondition
-  }
-
+  // TODO: fix contract to accept regular strings(informational vote)
   submitAllocation = () => {
-    let informational = this.state.allocationTypeIndex === 0
-    let recurring = this.state.payoutTypeIndex !== 0
-    let options = this.state.addressSetting
-      ? this.state.options
-      : this.state.optionsString
-
-    // define the allocation object
-    let allocation = {
+    const { props, state } = this
+    const informational = state.allocationTypeIndex === 0
+    const recurring = state.payoutTypeIndex !== 0
+    const candidates = state.addressSetting
+      ? state.addressBookCandidates
+      : state.userInputCandidates
+    const allocation = {
       payoutId: this.props.id,
       informational: informational,
       recurring: recurring,
       period: recurring ? 86400 * 31 : 0,
       balance: this.state.amount * 10e17,
     }
+    const overLimit = allocation.balance > props.limit
 
-    // check for correct balance if token transfer type
-    if (!informational) {
-      if (allocation.balance > this.props.limit) {
-        this.setState({ allocationError: true })
-        return
-      }
+    if (state.addressError || state.allocationError) {
+      return
     }
-
-    // If everything is ok (no validation errors) add options to allocation.addresses
-    allocation.addresses = options.map(option => option.addr)
-
-    // check options are addresses TODO: fix contract to accept regular strings (informational vote)
-    let optionsInput = this.state.optionsInput.addr
-    if (
-      optionsInput !== 0 &&
-      this.isAddressError(this.state.options, optionsInput)
-    ) {
+    if (!informational && (overLimit || allocation.balance === 0)) {
+      this.setState({ allocationError: true })
+      return
+    }
+    if (!candidates.length) {
       this.setState({ addressError: true })
       return
-    } else if (optionsInput !== 0) {
-      allocation.addresses.push(optionsInput)
     }
 
-    // submit the allocation (invoke contract function)
-    this.props.onSubmitAllocation(allocation)
-
-    // reset everything here
+    // If everything is ok (no validation error) add candidates to allocation.addresses
+    allocation.addresses = candidates.map(c => c.addr)
+    props.onSubmitAllocation(allocation)
     this.setState(INITIAL_STATE)
   }
 
   render() {
+    const { props, state } = this
+    const transferEnabled = state.allocationTypeIndex === 1
+
+    const amountInput = {
+      name: 'amount',
+      value: state.amount || '',
+      onChange: this.changeField,
+      type: 'number',
+      min: '0',
+    }
+
+    const amountDropDown = {
+      name: 'token',
+      items: AVAILABLE_TOKENS,
+      active: state.payoutTokenIndex,
+      onChange: this.changePayoutToken,
+    }
+
+    const warningMessages = (
+      <WarningMessage hasWarning={transferEnabled} type={'transferWarning'} />
+    )
+
+    const errorMessages = ['allocationError', 'addressError'].map((e, i) => (
+      <ErrorMessage key={i} hasError={state[e]} type={e} />
+    ))
+
+    const descriptionField = (
+      <FormField
+        visible={false}
+        required
+        label="Description"
+        input={
+          <DescriptionInput
+            name="allocationDescription"
+            onChange={this.changeField}
+            placeholder="Describe your allocation."
+            value={state.allocationDescription}
+          />
+        }
+      />
+    )
+
+    const allocationTypeField = (
+      <FormField
+        required
+        separator
+        label="Allocation type"
+        input={
+          <DropDown
+            active={state.allocationTypeIndex}
+            items={ALLOCATION_TYPES}
+            name="allocationType"
+            onChange={this.changeAllocationType}
+          />
+        }
+      />
+    )
+
+    const settingsInputs = [
+      { name: 'balanceSetting', visible: true },
+      { name: 'addressSetting', visible: props.entities.length > 1 },
+    ].map((s, i) => (
+      <SettingsInput
+        key={i}
+        onChange={this.changeField}
+        text={message[s.name]}
+        value={state[s.name]}
+        {...s}
+      />
+    ))
+
+    const settingsField = (
+      <FormField
+        label="Settings"
+        input={<React.Fragment children={settingsInputs} />}
+      />
+    )
+
+    const amountField = (
+      <FormField
+        visible={transferEnabled}
+        required
+        separator
+        label="Amount"
+        // TODO: We should back to width: '375px' when RecurringDropDown is used again
+        input={
+          <div style={{ display: 'flex', width: '220px' }}>
+            <InputDropDown
+              wide
+              textInput={amountInput}
+              dropDown={amountDropDown}
+            />
+            {/* // Not currently implemented: */}
+            {/* <RecurringDropDown
+            dropDown={{
+              name: 'payoutType',
+              items: PAYOUT_TYPES,
+              active: this.payoutTypeIndex,
+              onChange: this.changePayoutType,
+            }}
+          /> */}
+          </div>
+        }
+      />
+    )
+
+    const addressBookField = (
+      <FormField
+        visible={state.addressSetting}
+        separator
+        input={
+          <AddressDropDownOptions
+            activeItem={state.addressBookInput.index}
+            entities={props.entities}
+            input={state.addressBookInput}
+            name="addressBookCandidates"
+            onChange={this.changeField}
+            validator={uniqueAddressValidation}
+            values={state.addressBookCandidates}
+          />
+        }
+      />
+    )
+
+    const userOptionsField = (
+      <FormField
+        visible={!state.addressSetting}
+        separator
+        input={
+          <OptionsInput
+            error={state.addressError}
+            input={state.userInput}
+            name="optionsString"
+            onChange={this.changeField}
+            placeholder="Enter an option"
+            validator={uniqueAddressValidation}
+            values={state.userInputCandidates}
+          />
+        }
+      />
+    )
+
     return (
       <div>
         <Form
-          subHeading={this.props.subHeading}
+          subHeading={props.subHeading}
           onSubmit={this.submitAllocation}
-          description={this.props.description}
+          description={props.description}
           submitText="Submit Allocation"
         >
-          {this.state.allocationTypeIndex === 1 && (
-            <Info.Action title="Warning">
-              This will create a Range Vote and after it closes, it will result
-              in a financial transfer.
-            </Info.Action>
-          )}
-          {false && (
-            <FormField
-              required
-              label="Description"
-              input={
-                <DescriptionInput
-                  name="description"
-                  onChange={this.changeField}
-                  placeholder="Describe your allocation."
-                  value={this.state.description}
-                />
-              }
-            />
-          )}
-          <FormField
-            required
-            separator
-            label="Allocation type"
-            input={
-              <DropDown
-                active={this.state.allocationTypeIndex}
-                items={ALLOCATION_TYPES}
-                name="allocationType"
-                onChange={this.changeAllocationType}
-              />
-            }
-          />
-          <FormField
-            label="Settings"
-            input={
-              <div>
-                <SettingsInput
-                  name="balanceSetting"
-                  text="Must vote with entire balance"
-                  onChange={this.changeField}
-                />
-                {// temporarily check > 1 because the first is "Select an entry msg"
-                  this.props.entities.length > 1 && (
-                    <SettingsInput
-                      name="addressSetting"
-                      text="Use address book for options"
-                      onChange={this.changeField}
-                    />
-                  )}
-              </div>
-            }
-          />
-          {this.state.allocationTypeIndex === 1 && (
-            <FormField
-              required
-              separator
-              label="Amount"
-              // TODO: We should back to width: '375px' when RecurringDropDown is used again
-              input={
-                <div style={{ display: 'flex', width: '220px' }}>
-                  <InputDropDown
-                    wide
-                    textInput={{
-                      name: 'amount',
-                      value: this.state.amount || '',
-                      onChange: this.changeField,
-                      type: 'number',
-                      min: '0',
-                    }}
-                    dropDown={{
-                      name: 'token',
-                      items: AVAILABLE_TOKENS,
-                      active: this.state.payoutTokenIndex,
-                      onChange: this.changePayoutToken,
-                    }}
-                  />
-                  {/* // Not currently implemented: */}
-                  {/* <RecurringDropDown
-                    dropDown={{
-                      name: 'payoutType',
-                      items: PAYOUT_TYPES,
-                      active: this.state.payoutTypeIndex,
-                      onChange: this.changePayoutType,
-                    }}
-                  /> */}
-                </div>
-              }
-            />
-          )}
-          {this.state.addressSetting === true && (
-            <FormField
-              separator
-              // label={this.state.addressSetting} // TODO: Label MUST be string here boolean is passed
-              input={
-                <OptionsInputDropdown
-                  name="options"
-                  placeholder="Enter an option"
-                  onChange={this.changeField}
-                  values={this.state.options}
-                  input={this.state.optionsInput}
-                  validator={this.isAddressError}
-                  error={this.state.addressError}
-                  entities={this.props.entities}
-                  activeItem={this.state.optionsInput.index}
-                />
-              }
-            />
-          )}
-          {this.state.addressSetting === false && (
-            <FormField
-              separator
-              // label={this.state.addressSetting} // TODO: a string MUST be passed instead of this current boolean
-              input={
-                <OptionsInput
-                  name="optionsString"
-                  placeholder="Enter an option"
-                  onChange={this.changeField}
-                  values={this.state.optionsString}
-                  input={this.state.optionsInputString}
-                  validator={this.isAddressError}
-                  error={this.state.addressError}
-                />
-              }
-            />
-          )}
+          {warningMessages}
+          {descriptionField} {/* TODO: do something on this */}
+          {allocationTypeField}
+          {settingsField}
+          {amountField}
+          {addressBookField}
+          {userOptionsField}
+          {errorMessages}
         </Form>
-        <div>
-          {this.state.allocationError && (
-            <Info title="Error">Amount must be less than limit.</Info>
-          )}
-          {this.state.addressError && (
-            <Info title="Error">
-              All options must be addresses and cannot be duplicates.
-            </Info>
-          )}
-        </div>
       </div>
     )
   }
 }
 
-const RecurringDropDown = ({ dropDown }) => {
-  return (
-    <StyledRecurringDropDown>
-      <DropDown {...dropDown} wide />
-    </StyledRecurringDropDown>
-  )
+const ErrorMessage = ({ hasError, type }) =>
+  hasError ? (
+    <Info.Action
+      background="#fb79790f"
+      title="Error"
+      children={message[type]}
+      style={{ margin: '20px 0' }}
+    />
+  ) : null
+
+ErrorMessage.propTypes = {
+  hasError: PropTypes.bool,
+  type: PropTypes.string,
 }
 
-const StyledRecurringDropDown = styled.div`
-  margin-left: 17px;
-  width: 162px;
-`
+const WarningMessage = ({ hasWarning, type }) =>
+  hasWarning ? <Info.Action title="Warning" children={message[type]} /> : null
+
+// TODO: unused
+// const RecurringDropDown = ({ dropDown }) => {
+//   return (
+//     <StyledRecurringDropDown>
+//       <DropDown {...dropDown} wide />
+//     </StyledRecurringDropDown>
+//   )
+// }
+// const StyledRecurringDropDown = styled.div`
+//   margin-left: 17px;
+//   width: 162px;
+// `
 
 export default NewAllocation
-
-// TODO: Add Warning message, amount input and date picker input
-// FormFields: Warning* , descrription, alloocation type, amount, options
-// if allocation type token... show warning y amount
-// if freq > one time, show date picker
