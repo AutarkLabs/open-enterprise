@@ -4,81 +4,71 @@ import styled from 'styled-components'
 import { IconAdd, TextInput, theme, unselectable } from '@aragon/ui'
 import IconRemove from '../../../assets/components/IconRemove'
 
-const {
-  disabled,
-  contentBackgroundActive,
-  contentBorderActive,
-  contentBorder,
-  textSecondary,
-} = theme
-
-class OptionsInput extends React.Component {
-  static propTypes = {
-    input: PropTypes.object.isRequired,
-    name: PropTypes.string.isRequired,
-    value: PropTypes.array.isRequired,
-    onChange: PropTypes.func.isRequired,
-    validator: PropTypes.func,
-    error: PropTypes.bool,
+const OptionsInput = ({
+  input,
+  name,
+  onChange,
+  placeholder = '',
+  validator,
+  value,
+}) => {
+  const addOption = () => {
+    const noError = input && !validator(value, input.addr)
+    onChange({
+      target: noError
+        ? { name, value: [...value, input] }
+        : { name: 'addressError', value: true }, // enable error msg if needed
+    })
+    resetDropDown()
   }
 
-  addOption = () => {
-    // TODO: Implement some rules about what an 'Option can be' duplicates, etc
-    const { input, name, value } = this.props
-    // if (input && !value.includes(input) && this.props.validator(input)) { // TODO: Fix this
-    if (input && !value.map(v => v.addr).includes(input)) {
-      this.props.onChange({ target: { name, value: [...value, input] } })
-      // The second call is currently needed reset the new OptionField
-      // TODO: Avoid calling the method twice
-      this.props.onChange({
-        target: { name: 'optionsInputString', value: { addr: '' } },
-      })
-      // this.props.error = true // TODO: It is not possible to modify props this way
-      console.log('Option Added')
-    } else {
-      console.log('[OptionsInput.js] Option empty or already present')
-    }
+  const removeOption = option => {
+    // perform the change on the parent by using onChange prop without modifying value prop
+    onChange({ target: { name, value: value.filter(v => v !== option) } })
   }
 
-  removeOption = option => {
-    const { name, value } = this.props
-    let index = value.indexOf(option)
-    // Double exclamation to make sure is reemoved
-    !!value.splice(index, 1) &&
-      this.props.onChange({
-        target: { name, value },
-      })
-    console.log('Option Removed', option, this.props.value)
+  const resetDropDown = () => {
+    onChange({ target: { name: 'optionsInputString', value: { addr: '' } } })
   }
 
-  onChangeInput = ({ target: { value } }) => {
-    this.props.onChange({
+  const onChangeInput = ({ target: { value } }) => {
+    onChange({
       target: { name: 'optionsInputString', value: { addr: value } },
     })
   }
 
-  render() {
-    const loadOptions = this.props.value.map(option => (
-      <div className="option" key={option.addr}>
-        <StyledInput readOnly value={option.addr} />
-        <IconRemove onClick={() => this.removeOption(option)} />
+  const loadOptions = value.map((option, i) => (
+    <div className="option" key={i}>
+      <StyledInput readOnly value={option.addr} />
+      <IconRemove style={pointer} onClick={() => removeOption(option)} />
+    </div>
+  ))
+
+  return (
+    <StyledOptionsInput empty={!input.length}>
+      {loadOptions}
+      <div className="option">
+        <StyledInput
+          placeholder={placeholder}
+          value={input.addr}
+          onChange={onChangeInput}
+        />
+        <IconAdd style={pointer} onClick={addOption} />
       </div>
-    ))
-    return (
-      <StyledOptionsInput empty={!this.props.input.length}>
-        {loadOptions}
-        <div className="option">
-          <StyledInput
-            placeholder={this.props.placeholder}
-            value={this.props.input.addr}
-            onChange={this.onChangeInput}
-          />
-          <IconAdd onClick={this.addOption} />
-        </div>
-      </StyledOptionsInput>
-    )
-  }
+    </StyledOptionsInput>
+  )
 }
+
+OptionsInput.propTypes = {
+  input: PropTypes.object.isRequired,
+  name: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  placeholder: PropTypes.string,
+  validator: PropTypes.func.isRequired,
+  value: PropTypes.array.isRequired,
+}
+
+const pointer = { cursor: 'pointer' }
 
 const StyledInput = styled(TextInput)`
   ${unselectable}; /* it is possible to select the placeholder without this */
@@ -86,15 +76,15 @@ const StyledInput = styled(TextInput)`
     color: ${theme.contentBorderActive};
   }
   :focus {
-    border-color: ${contentBorderActive};
+    border-color: ${theme.contentBorderActive};
     ::placeholder {
-      color: ${contentBorderActive};
+      color: ${theme.contentBorderActive};
     }
   }
   :read-only {
     cursor: default;
     :focus {
-      border-color: ${contentBorder};
+      border-color: ${theme.contentBorder};
     }
   }
 `
@@ -113,21 +103,19 @@ const StyledOptionsInput = styled.div`
       margin-top: -3px;
       height: auto;
       width: 1.8rem;
-      color: ${textSecondary};
+      color: ${theme.textSecondary};
       vertical-align: middle;
       transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
       :hover {
-        color: ${({ empty }) => (empty ? disabled : contentBorderActive)};
+        color: ${({ empty }) =>
+    empty ? theme.disabled : theme.contentBorderActive};
       }
       :active {
-        color: ${({ empty }) => (empty ? disabled : contentBackgroundActive)};
+        color: ${({ empty }) =>
+    empty ? theme.disabled : theme.contentBackgroundActive};
       }
     }
   }
 `
-
-// TODO: fix empty svg cursor and color:
-/* cursor: ${({ empty }) => (empty ? 'not-allowed' : 'pointer')}; */
-// color: ${({ empty }) => (empty ? disabled : textSecondary)};
 
 export default OptionsInput
