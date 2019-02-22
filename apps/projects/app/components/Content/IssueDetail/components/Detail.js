@@ -175,8 +175,12 @@ const Detail = ({
   createdAt,
   activities = fakeActivities, // TODO: Remove default fake value when data arrives from backend
   team = fakeMembers, // TODO: Also this
-  summaryData, // an object containing {experience, deadline, slots, status} for that issue
+  exp,
+  deadline,
+  avail,
+  workStatus
 }) => {
+  const summaryData = {experience: exp, deadline: deadline, slots: avail, status: workStatus}
   const calculatedDate = () => {
     const date = Date.now()
     return formatDistance(createdAt, date, { addSuffix: true })

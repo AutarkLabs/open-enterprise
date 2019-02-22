@@ -277,6 +277,9 @@ class Issues extends React.PureComponent {
         <IssueDetail
           issue={currentIssue}
           onClose={this.handleIssueDetailClose}
+          handleReviewApplication = {this.handleReviewApplication}
+          handleRequestAssignment = {this.handleRequestAssignment}
+          handleSubmitWork = {this.handleSubmitWork}
         />
       )
 

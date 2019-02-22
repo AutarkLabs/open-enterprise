@@ -7,6 +7,7 @@ import {
   Text,
   Button,
   SafeLink,
+  DropDown
 } from '@aragon/ui'
 
 import { Form, FormField, FieldTitle, DescriptionInput } from '../../Form'
@@ -20,7 +21,8 @@ class ReviewApplication extends React.Component {
   }
 
   state = {
-    feedback: ''
+    feedback: '',
+    requestIndex: 0
   }
 
   changeField = ({ target: { name, value } }) => this.setState({ [name]: value })
@@ -30,23 +32,27 @@ class ReviewApplication extends React.Component {
     this.props.onReviewApplication(this.props.issue)
   }
 
+  changeRequest = (index) => {
+    this.setState({requestIndex: index})
+  } 
+
 
   render() {
     const { issue } = this.props
 
-    const request = issue.requestsData[0]
+    const request = issue.requestsData[this.state.requestIndex]
     
     const application = {
       user: {
-        login: 'rkzel',
-        name: 'RKZ',
-        avatar: 'https://avatars0.githubusercontent.com/u/34452131?v=4',
-        url: 'https://github.com/rkzel'
+        login: request.user.login,
+        name: request.user.login,
+        avatar: request.user.avatarUrl,
+        url: request.user.url
       },
       workplan: request.workplan,
       hours: request.hours,
-      eta: request.eta,
-      applicationDate: '2/9/2019'
+      eta: (new Date(request.eta)).toLocaleDateString(),
+      applicationDate: request.applicationDate
     }
 
     const applicant = application.user
@@ -59,6 +65,14 @@ class ReviewApplication extends React.Component {
       >
         <IssueTitle>{issue.title}</IssueTitle>
         
+        <DropDown
+          name="Applicant"
+          items={issue.requestsData.map( request => request.user.login)}
+          onChange={this.changeRequest}
+          active={this.state.requestIndex}
+          wide
+        />
+
         <SafeLink
           href={issue.url}
           target="_blank"
@@ -95,7 +109,8 @@ class ReviewApplication extends React.Component {
           <DetailText>{application.eta}</DetailText>
 
         </ApplicationDetails>
-
+        {/* There is currently nowhere to display this feedback to the user,
+            Will be re-implemented when github messaging is enabled.
         <FormField
           label="Feedback"
           input={
@@ -107,6 +122,7 @@ class ReviewApplication extends React.Component {
             />
           }
         />
+        */}
       </Form>
     )
   }

@@ -28,12 +28,17 @@ export default class IssueDetail extends React.Component {
   }
 
   render() {
-    const { onClose, issue } = this.props
+    const { onClose, issue, handleReviewApplication, handleRequestAssignment, handleSubmitWork } = this.props
 
     return createPortal(
       <div style={issueDetailStyle}>
         <Navigation onClose={onClose} />
-        <Detail {...issue} />
+        <Detail 
+          {...issue} 
+          handleReviewApplication = {handleReviewApplication}
+          handleRequestAssignment = {handleRequestAssignment}
+          handleSubmitWork = {handleSubmitWork}
+        />/>
       </div>,
       this.el
     )
