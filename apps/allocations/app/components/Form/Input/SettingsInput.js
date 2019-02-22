@@ -5,35 +5,31 @@ import { Badge, Text, theme } from '@aragon/ui'
 
 import { CheckBox } from '../../Shared'
 
-class SettingsInput extends React.Component {
-  state = { checked: false }
-  
-  static propTypes = {
-    // key: PropTypes.number.isRequired, // TODO: Check the use of this required prop
-    name: PropTypes.string.isRequired,
-    text: PropTypes.string.isRequired,
-    onChange: PropTypes.func.isRequired,
+const SettingsInput = ({
+  name,
+  onChange,
+  text,
+  value = false,
+  visible = true,
+}) => {
+  const changeChecked = () => {
+    onChange({ target: { name, value: !value } })
   }
-  
-  changeChecked = (checked) => {
-    const {name} = this.props
-    const value = !this.state.checked
-    this.setState({checked: value})
-    this.props.onChange({ target: { name: name, value: value } })
-  }
+  return visible ? (
+    <StyledSettingsInput>
+      <CheckBox checked={value} onChange={changeChecked} />
+      <Text>{text}</Text>
+      <Badge.Info small>?</Badge.Info>
+    </StyledSettingsInput>
+  ) : null
+}
 
-  render() {
-    return (
-      <StyledSettingsInput>
-        <CheckBox 
-          checked={this.state.checked}
-          onChange={this.changeChecked}
-        />
-        <Text>{this.props.text}</Text>
-        <Badge.Info small>?</Badge.Info>
-      </StyledSettingsInput>
-    )
-  }
+SettingsInput.propTypes = {
+  name: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  text: PropTypes.string.isRequired,
+  value: PropTypes.bool,
+  visible: PropTypes.bool,
 }
 
 const StyledSettingsInput = styled.div`
@@ -45,7 +41,6 @@ const StyledSettingsInput = styled.div`
     margin-right: 0.5rem;
   }
   > :last-child:last-child {
-    /* aragon-ui is messing up with the badge styles */
     padding: 0;
   }
 `
