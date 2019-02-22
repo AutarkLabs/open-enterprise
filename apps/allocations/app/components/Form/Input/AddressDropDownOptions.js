@@ -3,22 +3,24 @@ import React from 'react'
 import styled from 'styled-components'
 import { IconAdd, IconRemove, theme, unselectable } from '@aragon/ui'
 
-import MultiDropDown from './MultiDropdown'
+import AddressDropDown from './AddressDropDown'
 
-const OptionsInputDropdown = ({
+const AddressDropDownOptions = ({
   activeItem,
   entities,
   input,
   name,
   onChange,
-  placeholder = '',
   validator,
   values,
 }) => {
+  console.log('values', values, activeItem, input, name)
+
+  const validated = () => activeItem > 0 && validator(values, input.addr)
+
   const addOption = () => {
-    const noError = input && !validator(values, input.addr)
     onChange({
-      target: noError
+      target: validated()
         ? { name, value: [...values, input] }
         : { name: 'addressError', value: true }, // enable error msg if needed
     })
@@ -31,46 +33,54 @@ const OptionsInputDropdown = ({
   }
 
   const resetDropDown = () => {
-    onChange({ target: { name: 'optionsInput', value: { addr: 0, index: 0 } } })
+    onChange({
+      target: { name: 'addressBookInput', value: { addr: 0, index: 0 } },
+    })
   }
 
   const loadOptions = values.map((option, i) => (
     <StyledOption key={i}>
       <StyledLockedInput children={entities[i + 1].data.name} />
-      <IconRemove style={pointer} onClick={() => removeOption(option)} />
+      <IconContainer
+        onClick={() => removeOption(option)}
+        title="Click to remove"
+        children={<IconRemove />}
+      />
     </StyledOption>
   ))
+  console.log('active item', activeItem)
 
   return (
-    <div style={flexColumn} empty={!input.length}>
+    <div style={flexColumn}>
       {loadOptions}
       <StyledOption>
-        <MultiDropDown
+        <AddressDropDown
           activeItem={activeItem}
           entities={entities}
-          name={'optionsInput'}
+          name="addressBookInput"
           onChange={onChange}
-          validator={validator}
-          values={values}
         />
-        <IconAdd style={pointer} onClick={addOption} />
+        <IconContainer
+          disabled={!validated()}
+          onClick={addOption}
+          title={validated() ? 'Click to add' : ''}
+          children={<IconAdd />}
+        />
       </StyledOption>
     </div>
   )
 }
-OptionsInputDropdown.propTypes = {
+AddressDropDownOptions.propTypes = {
   activeItem: PropTypes.number.isRequired,
   entities: PropTypes.array.isRequired,
   input: PropTypes.object.isRequired,
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
-  placeholder: PropTypes.string,
   validator: PropTypes.func.isRequired,
   values: PropTypes.array.isRequired,
 }
 
 const flexColumn = { display: 'flex', flexDirection: 'column' }
-const pointer = { cursor: 'pointer' }
 
 const StyledLockedInput = styled.div`
   box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.03);
@@ -88,23 +98,28 @@ const StyledOption = styled.div`
   > :first-child {
     flex-grow: 1;
   }
+`
+
+const IconContainer = styled.button`
+  ${unselectable};
+  all: unset;
+  color: ${({ disabled }) => (disabled ? theme.disabled : theme.textSecondary)};
+  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+  display: flex;
+  justify-content: center;
+  :hover {
+    color: ${({ disabled }) =>
+    disabled ? theme.disabled : theme.contentBorderActive};
+  }
+  :active {
+    color: ${({ disabled }) => (disabled ? theme.disabled : theme.accent)};
+  }
   > svg {
-    margin-left: 3px;
-    margin-top: -3px;
-    height: auto;
-    width: 1.8rem;
-    color: ${theme.textSecondary};
-    vertical-align: middle;
+    color: inherit;
+    height: 40px;
+    width: 40px;
     transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-    :hover {
-      color: ${({ empty }) =>
-    empty ? theme.disabled : theme.contentBorderActive};
-    }
-    :active {
-      color: ${({ empty }) =>
-    empty ? theme.disabled : theme.contentBackgroundActive};
-    }
   }
 `
 
-export default OptionsInputDropdown
+export default AddressDropDownOptions
