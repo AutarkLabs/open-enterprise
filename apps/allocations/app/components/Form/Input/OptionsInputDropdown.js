@@ -46,14 +46,12 @@ const OptionsInputDropdown = ({
       {loadOptions}
       <StyledOption>
         <MultiDropDown
-          name={'optionsInput'}
-          index={-1}
-          placeholder={placeholder}
-          values={values}
-          onChange={onChange}
-          entities={entities}
           activeItem={activeItem}
+          entities={entities}
+          name={'optionsInput'}
+          onChange={onChange}
           validator={validator}
+          values={values}
         />
         <IconAdd style={pointer} onClick={addOption} />
       </StyledOption>
