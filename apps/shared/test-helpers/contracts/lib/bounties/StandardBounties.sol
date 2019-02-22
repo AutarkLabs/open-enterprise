@@ -282,7 +282,7 @@ contract StandardBounties {
   }
 
   modifier notIssuerOrArbiter(uint _bountyId) {
-      require(msg.sender != bounties[_bountyId].issuer && msg.sender != bounties[_bountyId].arbiter);
+      require(tx.origin != bounties[_bountyId].issuer && tx.origin != bounties[_bountyId].arbiter);
       _;
   }
 

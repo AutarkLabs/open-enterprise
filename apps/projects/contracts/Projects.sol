@@ -45,6 +45,11 @@ interface Bounties {
         uint _value
     ) external payable;
 
+    function fulfillBounty(
+        uint _bountyId, 
+        string _data
+    ) public;
+
     function acceptFulfillment(
         uint _bountyId, 
         uint _fulfillmentId
@@ -403,8 +408,9 @@ contract Projects is IsContract, AragonApp {
     ) external isInitialized
     {
         require(msg.sender == repos[_repoId].issues[_issueNumber].assignee, "User not assigned to this issue");
-
-        repos[_repoId].issues[_issueNumber].workSubmissions[msg.sender] = WorkSubmission(
+        GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
+        bounties.fulfillBounty(issue.standardBountyId, _submissionAddress);
+        issue.workSubmissions[msg.sender] = WorkSubmission(
             SubmissionStatus.Unreviewed,
             _submissionAddress,
             _fulfillmentId
@@ -539,26 +545,27 @@ contract Projects is IsContract, AragonApp {
         bytes32 _repoId, 
         uint256 _issueNumber, 
         uint256 _idx
-    ) public view returns(address applicant) 
+    ) public view returns(address applicant,string application) 
     {
         applicant = repos[_repoId].issues[_issueNumber].applicants[_idx];
+        application = repos[_repoId].issues[_issueNumber].assignmentRequests[applicant];
     }
 
-    /**
-     * @notice Returns Applicant's Github Username
-     * @param _repoId the github repo id of the issue
-     * @param _issueNumber the github issue up for assignment
-     * @param _applicant the address of the applicant
-     * @return  application IPFS hash for the applicant's proposed timeline and strategy
-     */
-    function getAssignmentRequest(
-        bytes32 _repoId, 
-        uint256 _issueNumber, 
-        address _applicant
-    ) public view returns(string application) 
-    {
-        application = repos[_repoId].issues[_issueNumber].assignmentRequests[_applicant];
-    }
+    ///**
+    // * @notice Returns Applicant's Github Username
+    // * @param _repoId the github repo id of the issue
+    // * @param _issueNumber the github issue up for assignment
+    // * @param _applicant the address of the applicant
+    // * @return  application IPFS hash for the applicant's proposed timeline and strategy
+    // */
+    //function getAssignmentRequest(
+    //    bytes32 _repoId, 
+    //    uint256 _issueNumber, 
+    //    address _applicant
+    //) public view returns(string application) 
+    //{
+    //    application = repos[_repoId].issues[_issueNumber].assignmentRequests[_applicant];
+    //}
 
     /**
      * @notice Returns contributor's work submission
@@ -648,20 +655,21 @@ contract Projects is IsContract, AragonApp {
         );
     }
 
-    function checkTransValueEqualsMessageValue(
-        uint256 _msgValue,
-        uint256[] _bountySizes,
-        bool[] _tokenBounties
-    ) internal pure
-    {
-        uint256 transValueTotal = 0;
-        for (uint i = 0; i < _bountySizes.length; i++) {
-            if (!(_tokenBounties[i])) {
-                transValueTotal = transValueTotal.add(_bountySizes[i]);
-            }
-        }
-        require(_msgValue == transValueTotal, "ETH sent to cover bounties does not match bounty total");
-    }
+    // this function isn't used
+    //function checkTransValueEqualsMessageValue(
+    //    uint256 _msgValue,
+    //    uint256[] _bountySizes,
+    //    bool[] _tokenBounties
+    //) internal pure
+    //{
+    //    uint256 transValueTotal = 0;
+    //    for (uint i = 0; i < _bountySizes.length; i++) {
+    //        if (!(_tokenBounties[i])) {
+    //            transValueTotal = transValueTotal.add(_bountySizes[i]);
+    //        }
+    //    }
+    //    require(_msgValue == transValueTotal, "ETH sent to cover bounties does not match bounty total");
+    //}
 
     function getHash(
         string _str,

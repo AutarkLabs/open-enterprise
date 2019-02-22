@@ -35,6 +35,7 @@ class SubmitWork extends React.Component {
 
   onSubmitWork = () => {
     console.log('Submit', this.state)
+    console.log('issue: ', this.props.issue)
   }
 
   canSubmit = () => !(this.state.ack1 && this.state.ack2 && this.state.proof && !isNaN(this.state.hours) && this.state.hours > 0)

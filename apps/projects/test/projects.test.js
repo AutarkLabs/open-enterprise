@@ -1,4 +1,5 @@
 /* global artifact, ... */
+console.log('Hello Kevin')
 const {
   ACL,
   DAOFactory,
@@ -60,14 +61,16 @@ contract('Projects App', accounts => {
     )
 
     //Deploy Contract to be tested
+    
+    projAddress = (await Projects.new({gas: 7.9e6})).address
     // TODO: Revert to use regular function call when truffle gets updated
     // read: https://github.com/AutarkLabs/planning-suite/pull/243
     let receipt = await dao.newAppInstance(
       '0x1234',
-      (await Projects.new()).address,
+      projAddress,
       0x0,
       false,
-      { from: root }
+      { from: root, gas: 6.9e6, }
     )
     app = Projects.at(
       receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
