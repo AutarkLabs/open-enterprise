@@ -16,11 +16,11 @@ const AddressDropDownOptions = ({
 }) => {
   console.log('values', values, activeItem, input, name)
 
-  const validated = () => activeItem > 0 && validator(values, input.addr)
+  const validated = activeItem > 0 && validator(values, input.addr)
 
   const addOption = () => {
     onChange({
-      target: validated()
+      target: validated
         ? { name, value: [...values, input] }
         : { name: 'addressError', value: true }, // enable error msg if needed
     })
@@ -59,11 +59,13 @@ const AddressDropDownOptions = ({
           entities={entities}
           name="addressBookInput"
           onChange={onChange}
+          validator={validator}
+          values={values}
         />
         <IconContainer
-          disabled={!validated()}
+          disabled={!validated}
           onClick={addOption}
-          title={validated() ? 'Click to add' : ''}
+          title={validated ? 'Click to add' : ''}
           children={<IconAdd />}
         />
       </StyledOption>
