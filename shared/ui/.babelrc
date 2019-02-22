@@ -4,7 +4,6 @@
     "transform-class-properties",
     "transform-runtime",
     "transform-react-jsx-source",
-    ["styled-components", { "displayName": true }],
-    "react-hot-loader/babel"
+    ["styled-components", { "displayName": true }]
   ]
 }
