@@ -1,12 +1,8 @@
 import PropTypes from 'prop-types'
 import React from 'react'
+import { OptionsInput } from '@tps/ui'
 
-import {
-  DescriptionInput,
-  Form,
-  FormField,
-  DropDownOptionsInput,
-} from '../../Form'
+import { DescriptionInput, Form, FormField } from '../../Form'
 
 class NewIssueCuration extends React.Component {
   static propTypes = {

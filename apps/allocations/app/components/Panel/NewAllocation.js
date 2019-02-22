@@ -1,14 +1,13 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-
 import { DropDown, Info } from '@aragon/ui'
+import { OptionsInput } from '@tps/ui'
 
 import {
   DescriptionInput,
   Form,
   FormField,
-  OptionsInput,
   OptionsInputDropdown,
   SettingsInput,
   InputDropDown,
