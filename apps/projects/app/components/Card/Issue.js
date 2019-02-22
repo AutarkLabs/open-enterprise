@@ -105,7 +105,7 @@ const Issue = ({workStatus, title, repo, number, labels, isSelected, onClick, on
       }
       {workStatus !== undefined &&
         <ContextMenu>
-          {workStatus === 'submit-work' || workStatus === 'review-work' &&
+          {(workStatus === 'submit-work' || workStatus === 'review-work') &&
             <ContextMenuItem onClick={onSubmitWork}>
               <ActionLabel>Submit Work</ActionLabel>
             </ContextMenuItem>
