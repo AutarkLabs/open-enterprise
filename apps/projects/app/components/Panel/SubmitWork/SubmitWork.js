@@ -36,6 +36,7 @@ class SubmitWork extends React.Component {
   onSubmitWork = () => {
     console.log('Submit', this.state)
     console.log('issue: ', this.props.issue)
+    let today = new Date()
     this.props.onSubmitWork({user: this.props.githubCurrentUser, submissionDate: today.toISOString(), ...this.state}, this.props.issue)
   }
 

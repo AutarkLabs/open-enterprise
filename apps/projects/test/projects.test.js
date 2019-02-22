@@ -1,5 +1,4 @@
 /* global artifact, ... */
-console.log('Hello Kevin')
 const {
   ACL,
   DAOFactory,

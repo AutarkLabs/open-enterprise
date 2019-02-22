@@ -321,13 +321,14 @@ function loadRequestsData({repoId, issueNumber}) {
 
 function getRequest(repoId, issueNumber, applicantId) {
   return new Promise(resolve => {
-    app.call('getApplicant', repoId, issueNumber, applicantId).subscribe( ({address, hash}) => {
+    app.call('getApplicant', repoId, issueNumber, applicantId).subscribe( async (response) => {
       let contentJSON
-      ipfs.get(hash, (err, files) => {
+      console.log('getApplicant response: ', response)
+      ipfs.get(response.application, (err, files) => {
         for(const file of files) {
           contentJSON = JSON.parse(file.content.toString('utf8'))
         }
-        resolve({contributorAddr: address, ...contentJSON})
+        resolve({contributorAddr: response.applicant, ...contentJSON})
       })
     })
   })
