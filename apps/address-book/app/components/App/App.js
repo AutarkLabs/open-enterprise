@@ -1,4 +1,4 @@
-import { AragonApp, observe, SidePanel } from '@aragon/ui'
+import { AragonApp, observe, SidePanel, ToastHub } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { hot } from 'react-hot-loader'
@@ -46,26 +46,28 @@ class App extends React.Component {
 
     return (
       <StyledAragonApp>
-        <Title text="Address Book" />
-        <NewEntityButton onClick={this.newEntity} />
+        <ToastHub>
+          <Title text="Address Book" />
+          <NewEntityButton onClick={this.newEntity} />
 
-        <ScrollWrapper>
-          <Content>
-            <Entities
-              entities={entries ? entries : []}
-              onNewEntity={this.newEntity}
-              onRemoveEntity={this.removeEntity}
-            />
-          </Content>
-        </ScrollWrapper>
+          <ScrollWrapper>
+            <Content>
+              <Entities
+                entities={entries ? entries : []}
+                onNewEntity={this.newEntity}
+                onRemoveEntity={this.removeEntity}
+              />
+            </Content>
+          </ScrollWrapper>
 
-        <SidePanel
-          title="New entity"
-          opened={panelVisible}
-          onClose={this.closePanel}
-        >
-          <NewEntity onCreateEntity={this.createEntity} />
-        </SidePanel>
+          <SidePanel
+            title="New entity"
+            opened={panelVisible}
+            onClose={this.closePanel}
+          >
+            <NewEntity onCreateEntity={this.createEntity} />
+          </SidePanel>
+        </ToastHub>
       </StyledAragonApp>
     )
   }
