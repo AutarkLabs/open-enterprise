@@ -25,6 +25,12 @@
       "id": "REMOVE_REPO_ROLE",
       "params": []
     }
+    ,
+    {
+      "name": "Assign tasks based on review of applicants",
+      "id": "TASK_ASSIGNMENT_ROLE",
+      "params": []
+    }
   ],
   "environments": {
     "default": {

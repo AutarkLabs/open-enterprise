@@ -19,13 +19,10 @@ import { Form, FormField, FieldTitle } from '../../Form'
 import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
 
 const bountyHours = ['-', '1', '2', '4', '8', '16', '24', '32', '40']
-const bountyExp = [{ name: '-', mul: 1 }]
 const bountyDeadline = ['-', 'yesterday', 'last week']
 const bountyAvail = ['-', '1', '2', '3']
 
 class NewBountyAllocation extends React.Component {
-
-  
   static propTypes = {
     /** array of issues to allocate bounties on */
     issues: PropTypes.arrayOf(
@@ -77,31 +74,22 @@ class NewBountyAllocation extends React.Component {
     } else {
       bounties[id][key] = val
     }
+    // just do it, recalculate size
+    const expLevels = this.getExpLevels()
+    let size = bountyHours[bounties[id]['hours']] * this.props.bountySettings.baseRate * expLevels[bounties[id]['exp']].mul
+    bounties[id]['size'] = size
+
     this.setState({ bounties })
     console.log('configBounty: ', bounties)
   }
 
-  updateSize = (id) => {
-    const { bounties } = this.state
-    const rate = this.props.bountySettings.baseRate
-    console.log('Update Size')
-    console.log(rate)
-    console.log(bountyHours[bounties[id]['hours']])
-    console.log(bountyExp[bounties[id]['exp']])
-    let size = bountyHours[bounties[id]['hours']] * rate * bountyExp[bounties[id]['exp']].mul
-    bounties[id]['size'] = size
-    this.setState({ bounties })
-  }
-
   generateHoursChange = id => index => {
     this.configBounty(id, 'hours', index)
-    this.updateSize(id)
     console.log('generateHoursChange: id: ', id, ', index: ', index)
   }
 
   generateExpChange = id => index => {
     this.configBounty(id, 'exp', index)
-    this.updateSize(id)
     console.log('generateExpChange: id: ', id, ', index: ', index)
   }
 
@@ -125,18 +113,22 @@ class NewBountyAllocation extends React.Component {
     this.props.onSubmit(this.state.bounties)
   }
 
+  // TODO: make it smarter. exp levels are quite constant, but they might not
+  // be immediately available
+  getExpLevels = () => {
+    let expLevels = [{ name: '-', mul: 1 }]
+    let a = this.props.bountySettings.expLevels.split('\t')
+    for (let i = 0; i < a.length; i += 2)
+      expLevels.push({ mul: a[i] / 100, name: a[i + 1] })
+    return expLevels
+  }
 
   render() {
-    
     const { bounties } = this.state
     const { bountySettings } = this.props
+    const expLevels = this.getExpLevels()
 
-    const rate = bountySettings.baseRate
-    let a = bountySettings.expLevels.split('\t')
-    for (let i = 0; i < a.length; i += 2)
-      bountyExp.push({ mul: a[i] / 100, name: a[i + 1] })
-
-    console.log('bounties: ', bounties, ', bountySettings: ', bountySettings)
+    //console.log('bounties: ', bounties, ', bountySettings: ', bountySettings)
     return (
       <Form
         onSubmit={this.submitBounties}
@@ -206,7 +198,7 @@ class NewBountyAllocation extends React.Component {
                             label="Experience level"
                             input={
                               <DropDown
-                                items={bountyExp.map(exp => exp.name)}
+                                items={expLevels.map(exp => exp.name)}
                                 onChange={this.generateExpChange(issue.id)}
                                 active={bounties[issue.id]['exp']}
                               />
