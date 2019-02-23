@@ -24,11 +24,15 @@
       "name": "Remove repos from the registry",
       "id": "REMOVE_REPO_ROLE",
       "params": []
-    }
-    ,
+    },
     {
       "name": "Assign tasks based on review of applicants",
       "id": "TASK_ASSIGNMENT_ROLE",
+      "params": []
+    },
+    {
+      "name": "Review and accept or reject work done on tasks",
+      "id": "WORK_REVIEW_ROLE",
       "params": []
     }
   ],
