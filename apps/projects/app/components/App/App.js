@@ -329,6 +329,7 @@ class App extends React.PureComponent {
   }
 
   onReviewApplication = issue => {
+    this.closePanel()
     console.log('onReviewApplication Issue:', issue)
     console.log('onReviewApplication submission:', web3.toHex(issue.repoId), issue.number, issue.requestsData[0].contributorAddr)
 
@@ -346,10 +347,10 @@ class App extends React.PureComponent {
   }
 
   onReviewWork = (state, issue) => {
-    console.log('onReviewWork', issue.contributorAddr, state, issue)
+    console.log('onReviewWork', issue)
+    console.log('onReviewWork', web3.toHex(issue.repoId), issue.number, issue.assignee, state.accepted)
     this.closePanel()
-    this.props.app.reviewSubmission(web3.toHex(issue.repoId), issue.number, issue.contributorAddr, state.accepted)
-    //  bytes32 _repoId, uint256 _issueNumber, address _contributor, bool _approved
+    this.props.app.reviewSubmission(web3.toHex(issue.repoId), issue.number, issue.assignee, state.accepted)
   }
 
   curateIssues = issues => {

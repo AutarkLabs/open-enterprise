@@ -107,9 +107,14 @@ const Issue = ({workStatus, title, repo, number, labels, isSelected, onClick, on
       {workStatus !== undefined &&
         <ContextMenu>
           {(workStatus === 'submit-work' || workStatus === 'review-work') &&
-            <ContextMenuItem onClick={onSubmitWork}>
-              <ActionLabel>Submit Work</ActionLabel>
-            </ContextMenuItem>
+            <div>
+              <ContextMenuItem onClick={onSubmitWork}>
+                <ActionLabel>Submit Work</ActionLabel>
+              </ContextMenuItem>
+              <ContextMenuItem onClick={onReviewWork}>
+                <ActionLabel>Review Work</ActionLabel>
+              </ContextMenuItem>
+            </div>
           }
           {(workStatus === 'new' || workStatus === 'review-applicants') &&
             <ContextMenuItem onClick={onRequestAssignment}>

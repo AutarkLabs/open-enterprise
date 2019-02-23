@@ -49,8 +49,6 @@ class ReviewWork extends React.Component {
   canSubmit = () => !(this.state.rating > 0)
 
   onReject = () => {
-    const state = this.state
-    state.accepted = true
     this.props.onReviewWork({...this.state, accepted: false}, this.props.issue)
   }
 
@@ -61,8 +59,11 @@ class ReviewWork extends React.Component {
 
   render() {
     const { issue } = this.props
-    const submitter = work.user
+
+    const work = issue.work
+    const submitter = issue.work.user
     const submissionDateDistance = formatDistance(new Date(work.submissionDate), new Date())
+
     const ratings = [
       'Select a Rating',
       '1 - Unusable', 
@@ -89,7 +90,7 @@ class ReviewWork extends React.Component {
 
         <SubmissionDetails>
           <UserLink>
-            <img src={submitter.avatar} style={{ width: '32px', height: '32px', marginRight: '10px'}} />
+            <img src={submitter.avatarUrl} style={{ width: '32px', height: '32px', marginRight: '10px'}} />
             <SafeLink
               href={submitter.url}
               target="_blank"

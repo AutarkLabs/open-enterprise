@@ -172,9 +172,9 @@ async function handleEvents(response) {
     }
     data = await loadIssueData(response.returnValues)
     console.log('Data: ', data)
-    const submissionData = await loadSubmissionData(response.returnValues, data.assignee)
-    data.workStatus = status[3]
-    data.work = submissionData
+    const workFinishedData = await loadSubmissionData(response.returnValues, data.assignee)
+    data.workStatus = status[4]
+    data.work = workFinishedData
     nextState = syncIssues(appState, response.returnValues, data)
     appState = nextState
     break
