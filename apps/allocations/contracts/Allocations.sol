@@ -44,8 +44,8 @@ contract FundForwarder {
     Fundable fundable;
     uint256 id;
 
-    constructor(uint256 _id, address _fundable) public { 
-        fundable = Fundable(_fundable);
+    constructor(uint256 _id, Fundable _fundable) public { 
+        fundable = _fundable;
         id = _id;
     }
 
