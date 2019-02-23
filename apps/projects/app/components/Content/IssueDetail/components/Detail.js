@@ -31,15 +31,17 @@ const FieldTitle = styled(Text.Block)`
   font-weight: bold;
   margin-bottom: 6px;
 `
-
-const SummaryTable = ({ experience, deadline, slots, status }) => {
+const ActionLabel = styled.span`
+  margin-left: 15px;
+`
+const SummaryTable = ({ expLevel, deadline, slots, workStatus }) => {
   const FIELD_TITLES = [
     'Experience Level',
     'Deadline',
     'Num. Available',
     'Status',
   ]
-  const mappedTableFields = [experience, deadline, slots, status].map(
+  const mappedTableFields = [expLevel, deadline, slots, workStatus].map(
     (field, i) => (
       <StyledCell key={i}>
         <FieldTitle>{FIELD_TITLES[i]}</FieldTitle>
@@ -166,6 +168,7 @@ const fakeMembers = [
 ]
 
 const Detail = ({
+  requestsData,
   bountyBadge = '100 ANT',
   labels,
   title,
@@ -175,15 +178,16 @@ const Detail = ({
   createdAt,
   activities = fakeActivities, // TODO: Remove default fake value when data arrives from backend
   team = fakeMembers, // TODO: Also this
-  exp,
+  expLevel,
   deadline,
   avail,
   workStatus,
   handleReviewApplication,
   handleRequestAssignment,
-  handleSubmitWork
+  handleSubmitWork,
+  handleAllocateSingleBounty
 }) => {
-  const summaryData = {experience: exp, deadline: deadline, slots: avail, status: workStatus}
+  const summaryData = {expLevel, deadline, slots: avail, workStatus}
   const calculatedDate = () => {
     const date = Date.now()
     return formatDistance(createdAt, date, { addSuffix: true })
@@ -218,6 +222,28 @@ const Detail = ({
             </div>
             <div style={{ ...column, flex: 0, alignItems: 'flex-end' }}>
               <DropDownButton enabled>
+
+                {workStatus === undefined &&
+                  <ContextMenuItem onClick={handleAllocateSingleBounty}>
+                    <ActionLabel>Allocate Bounty</ActionLabel>
+                  </ContextMenuItem>
+                }
+                {(workStatus === 'submit-work' || workStatus === 'review-work') &&
+                  <ContextMenuItem onClick={handleSubmitWork}>
+                    <ActionLabel>Submit Work</ActionLabel>
+                  </ContextMenuItem>
+                }
+                {(workStatus === 'new' || workStatus === 'review-applicants') &&
+                  <ContextMenuItem onClick={handleRequestAssignment}>
+                    <ActionLabel>Request Assignment</ActionLabel>
+                  </ContextMenuItem>
+                }
+                {workStatus === 'review-applicants' &&
+                  <ContextMenuItem onClick={handleReviewApplication}>
+                    <ActionLabel>Review Application ({requestsData.length})</ActionLabel>
+                  </ContextMenuItem>
+                }
+                {/*
                 <ContextMenuItem style={{ display: 'flex', alignItems: 'flex-start' }} onClick={handleSubmitWork}>
                   <Text>Submit Work</Text>
                 </ContextMenuItem>
@@ -227,6 +253,7 @@ const Detail = ({
                 <ContextMenuItem onClick={handleReviewApplication}>
                   <Text>Review Application</Text>
                 </ContextMenuItem>
+                */}
               </DropDownButton>
               <Badge
                 foreground={theme.badgeNotificationBackground}

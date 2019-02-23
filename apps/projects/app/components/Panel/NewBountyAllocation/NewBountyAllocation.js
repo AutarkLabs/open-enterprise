@@ -19,7 +19,7 @@ import { Form, FormField, FieldTitle } from '../../Form'
 import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
 
 const bountyHours = ['-', '1', '2', '4', '8', '16', '24', '32', '40']
-const bountyExp = [{ name: '-', mul: 1 }]
+const bountyExp = []
 const bountyDeadline = ['-', 'yesterday', 'last week']
 const bountyAvail = ['-', '1', '2', '3']
 

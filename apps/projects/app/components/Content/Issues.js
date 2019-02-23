@@ -228,10 +228,19 @@ class Issues extends React.PureComponent {
     </StyledIssues>
   )
 
+  getExpLevels = () => {
+    let expLevels = []
+    let a = this.props.bountySettings.expLevels.split('\t')
+    for (let i = 0; i < a.length; i += 2)
+      expLevels.push({ mul: a[i] / 100, name: a[i + 1] })
+    return expLevels
+  }
+
   shapeIssues = issues => {
-    const { tokens, bountyIssues } =  this.props
+    const { tokens, bountyIssues, } =  this.props
     let bountyIssueObj = {}
     let tokenObj = {}
+    let expLevels = this.getExpLevels()
 
     bountyIssues.forEach(issue => {
       bountyIssueObj[issue.issueNumber] = issue
@@ -252,8 +261,9 @@ class Issues extends React.PureComponent {
           ...bountyIssueObj[fields.number].data,
           repoId: id,
           repo: name,
-          symbol: tokenObj[data.token]
-        }          
+          symbol: tokenObj[data.token],
+          expLevel: expLevels[data.exp].name
+        }
       }
       return { 
         ...fields,
@@ -271,7 +281,7 @@ class Issues extends React.PureComponent {
   }
 
   render() {
-    const { projects, onNewProject } = this.props
+    const { projects, onNewProject, bountySettings } = this.props
     const { currentIssue, showIssueDetail } = this.state
 
     // better return early if we have no projects added?
@@ -282,13 +292,16 @@ class Issues extends React.PureComponent {
           issue={currentIssue}
           onClose={this.handleIssueDetailClose}
           handleReviewApplication = {() => {
-            this.handleReviewApplication(issue)
+            this.handleReviewApplication(currentIssue)
           }}
           handleRequestAssignment = {() => {
-            this.handleRequestAssignment(issue)
+            this.handleRequestAssignment(currentIssue)
           }}
           handleSubmitWork = {() => {
-            this.handleSubmitWork(issue)
+            this.handleSubmitWork(currentIssue)
+          }}
+          handleAllocateSingleBounty={() => {
+            this.handleAllocateSingleBounty(currentIssue)
           }}
         />
       )

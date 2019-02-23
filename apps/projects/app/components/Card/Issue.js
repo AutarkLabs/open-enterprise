@@ -65,8 +65,14 @@ const Issue = ({
   onAllocateSingleBounty,
   balance,
   symbol,
+ 
+  deadline,
+  requestsData,
+  bountySettings,
+ 
   expLevel = 'Intermediate',
   dueDate = '02/02/2020',
+
   funded = 'Pending funding'
 }) => (
 // TODO: @aragon/ui Table?
@@ -80,22 +86,27 @@ const Issue = ({
         <Text color={theme.textPrimary} size="xlarge">
           {title}
         </Text>
-
         {dot}
-
         <Text color={theme.textSecondary} size="large">
           {repo} #{number}
         </Text>
       </div>
       { (balance > 0 || labels.totalCount > 0) && <IssueDetails>
         <Text size="small" color={theme.textTertiary}>
-          { balance > 0 && <span style={{ marginRight: '15px'}}>
-            {expLevel}
-            {dot}
-            {ETADistance(dueDate)}
-            {dot}
-            {funded}
-          </span>
+          { balance > 0 &&
+            <span style={{ marginRight: '15px'}}>
+              {expLevel}
+              {dot}
+              {ETADistance(dueDate)}
+              {dot}
+              {funded}
+              {workStatus === 'review-applicants' &&
+                <span>
+                  {dot}
+                  Applicants: {requestsData.length}
+                </span>
+              }
+            </span>
           }
           { labels.totalCount ? (
             labels.edges.map(label =>
@@ -119,25 +130,28 @@ const Issue = ({
           foreground={theme.positive}>{balance + ' ' + symbol}
         </Badge>
       }
-      {workStatus !== undefined &&
-        <ContextMenu>
-          {(workStatus === 'submit-work' || workStatus === 'review-work') &&
-            <ContextMenuItem onClick={onSubmitWork}>
-              <ActionLabel>Submit Work</ActionLabel>
-            </ContextMenuItem>
-          }
-          {(workStatus === 'new' || workStatus === 'review-applicants') &&
-            <ContextMenuItem onClick={onRequestAssignment}>
-              <ActionLabel>Request Assignment</ActionLabel>
-            </ContextMenuItem>
-          }
-          {workStatus === 'review-applicants' &&
-            <ContextMenuItem onClick={onReviewApplication}>
-              <ActionLabel>Review Application</ActionLabel>
-            </ContextMenuItem>
-          }
-        </ContextMenu>
-      }
+      <ContextMenu>
+        {workStatus === undefined &&
+          <ContextMenuItem onClick={onAllocateSingleBounty}>
+            <ActionLabel>Allocate Bounty</ActionLabel>
+          </ContextMenuItem>
+        }
+        {(workStatus === 'submit-work' || workStatus === 'review-work') &&
+          <ContextMenuItem onClick={onSubmitWork}>
+            <ActionLabel>Submit Work</ActionLabel>
+          </ContextMenuItem>
+        }
+        {(workStatus === 'new' || workStatus === 'review-applicants') &&
+          <ContextMenuItem onClick={onRequestAssignment}>
+            <ActionLabel>Request Assignment</ActionLabel>
+          </ContextMenuItem>
+        }
+        {workStatus === 'review-applicants' &&
+          <ContextMenuItem onClick={onReviewApplication}>
+            <ActionLabel>Review Application ({requestsData.length})</ActionLabel>
+          </ContextMenuItem>
+        }
+      </ContextMenu>
     </BalanceAndContext>
   </StyledIssue>
 )
