@@ -1,9 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { Badge, Text, theme } from '@aragon/ui'
-
-import { CheckBox } from '../../Shared'
+import { Badge, Checkbox, Text, theme } from '@aragon/ui'
 
 class SettingsInput extends React.Component {
   static propTypes = {
@@ -15,8 +13,10 @@ class SettingsInput extends React.Component {
   render() {
     return (
       <StyledSettingsInput>
-        <CheckBox />
-        <Text>{this.props.text}</Text>
+        <label>
+          <Checkbox />
+          <Text>{this.props.text}</Text>
+        </label>
         <Badge.Info small>?</Badge.Info>
       </StyledSettingsInput>
     )

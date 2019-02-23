@@ -1,9 +1,18 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { Text, theme, Badge, Button, ContextMenu, ContextMenuItem } from '@aragon/ui'
+
+import {
+  Text,
+  theme,
+  Badge,
+  Checkbox,
+  ContextMenu,
+  ContextMenuItem,
+} from '@aragon/ui'
+
 import { formatDistance } from 'date-fns'
-import { CheckButton, BountyContextMenu } from '../Shared'
+import { BountyContextMenu } from '../Shared'
 
 const ClickArea = styled.div`
   height: 100%;
@@ -19,18 +28,22 @@ const ClickArea = styled.div`
     cursor: pointer;
   }
 `
-const DeadlineDistance = date => formatDistance(new Date(date), new Date(), { addSuffix: true })
+const DeadlineDistance = date =>
+  formatDistance(new Date(date), new Date(), { addSuffix: true })
 
 const dot = <span style={{ margin: '0px 10px' }}>&middot;</span>
 
-const labelsBadges = labels => labels.edges.map(label =>
-  <Badge
-    key={label.node.id}
-    style={{ marginRight: '10px'}}
-    background={'#'+label.node.color}
-    foreground={'#000'}>{label.node.name}
-  </Badge>
-)
+const labelsBadges = labels =>
+  labels.edges.map(label => (
+    <Badge
+      key={label.node.id}
+      style={{ marginRight: '10px' }}
+      background={'#' + label.node.color}
+      foreground={'#000'}
+    >
+      {label.node.name}
+    </Badge>
+  ))
 
 const Issue = ({
   workStatus,
@@ -52,19 +65,22 @@ const Issue = ({
   requestsData,
   bountySettings,
   expLevel,
-  slots
+  slots,
 }) => {
   //console.log('CARD:', workStatus, title, repo, number, labels, isSelected, balance, symbol, deadline, requestsData, expLevel, slots)
 
   // prepare display of number of slots vs number of applicants
-  const slotsAllocation = (requestsData === undefined) ? 'Unallocated (' + slots + ')' :
-    (requestsData.length < slots) ? 'Slots available: ' + (slots - requestsData.length) + '/' + slots:
-      'Allocated'
+  const slotsAllocation =
+    requestsData === undefined
+      ? 'Unallocated (' + slots + ')'
+      : requestsData.length < slots
+        ? 'Slots available: ' + (slots - requestsData.length) + '/' + slots
+        : 'Allocated'
 
   return (
     <StyledIssue>
       <ClickArea onClick={onClick} />
-      <CheckButton checked={isSelected} onChange={onSelect} />
+      <Checkbox checked={isSelected} onChange={onSelect} />
       <IssueDesc>
         <div>
           <Text color={theme.textPrimary} size="xlarge">
@@ -75,31 +91,34 @@ const Issue = ({
             {repo} #{number}
           </Text>
         </div>
-        { (balance > 0 || labels.totalCount > 0) && <IssueDetails>
-          <Text size="small" color={theme.textTertiary}>
-            { balance > 0 &&
-              <span style={{ marginRight: '15px'}}>
-                {expLevel}
-                {dot}
-                {slotsAllocation}
-                {dot}
-                Due {DeadlineDistance(deadline)}
-              </span>
-            }
-            { labels.totalCount ? labelsBadges(labels) : '' }        
-          </Text>
-        </IssueDetails>
-        }
+        {(balance > 0 || labels.totalCount > 0) && (
+          <IssueDetails>
+            <Text size="small" color={theme.textTertiary}>
+              {balance > 0 && (
+                <span style={{ marginRight: '15px' }}>
+                  {expLevel}
+                  {dot}
+                  {slotsAllocation}
+                  {dot}
+                  Due {DeadlineDistance(deadline)}
+                </span>
+              )}
+              {labels.totalCount ? labelsBadges(labels) : ''}
+            </Text>
+          </IssueDetails>
+        )}
       </IssueDesc>
       <BalanceAndContext>
-        { balance > 0 &&  
+        {balance > 0 && (
           <Badge
-            style={{padding: '10px', marginRight: '20px', textSize: 'large'}}
+            style={{ padding: '10px', marginRight: '20px', textSize: 'large' }}
             background={'#e7f8ec'}
-            foreground={theme.positive}>{balance + ' ' + symbol}
+            foreground={theme.positive}
+          >
+            {balance + ' ' + symbol}
           </Badge>
-        }
-        { workStatus !== 'finished' &&
+        )}
+        {workStatus !== 'finished' && (
           <ContextMenu>
             <BountyContextMenu
               workStatus={workStatus}
@@ -111,7 +130,7 @@ const Issue = ({
               onReviewWork={onReviewWork}
             />
           </ContextMenu>
-        }
+        )}
       </BalanceAndContext>
     </StyledIssue>
   )
@@ -124,7 +143,14 @@ Issue.propTypes = {
   isSelected: PropTypes.bool,
   onClick: PropTypes.func.isRequired,
   onSelect: PropTypes.func,
-  workStatus: PropTypes.oneOf([undefined, 'new', 'review-applicants', 'submit-work', 'review-work', 'finished']),
+  workStatus: PropTypes.oneOf([
+    undefined,
+    'new',
+    'review-applicants',
+    'submit-work',
+    'review-work',
+    'finished',
+  ]),
 }
 
 const StyledIssue = styled.div`
