@@ -5,7 +5,7 @@ import { empty } from 'rxjs/observable/empty'
 
 import { GraphQLClient } from 'graphql-request'
 import { STATUS } from './utils/github'
-import VaultJSON from '../build/contracts/Vault.json'
+import vaultAbi from '../../shared/json-abis/vault'
 import tokenSymbolAbi from './abi/token-symbol.json'
 import { isNullOrUndefined } from 'util'
 
@@ -102,7 +102,7 @@ app.state().subscribe(state => {
   if (!vault) {
     // this should be refactored to be a "setting"
     app.call('vault').subscribe(response => {
-      vault = app.external(response, VaultJSON.abi)
+      vault = app.external(response, vaultAbi.abi)
       vault.events().subscribe(handleEvents)
     })
   }
