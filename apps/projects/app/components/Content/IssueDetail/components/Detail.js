@@ -175,8 +175,15 @@ const Detail = ({
   createdAt,
   activities = fakeActivities, // TODO: Remove default fake value when data arrives from backend
   team = fakeMembers, // TODO: Also this
-  summaryData, // an object containing {experience, deadline, slots, status} for that issue
+  exp,
+  deadline,
+  avail,
+  workStatus,
+  handleReviewApplication,
+  handleRequestAssignment,
+  handleSubmitWork
 }) => {
+  const summaryData = {experience: exp, deadline: deadline, slots: avail, status: workStatus}
   const calculatedDate = () => {
     const date = Date.now()
     return formatDistance(createdAt, date, { addSuffix: true })
@@ -210,8 +217,17 @@ const Detail = ({
               </Text.Block>
             </div>
             <div style={{ ...column, flex: 0, alignItems: 'flex-end' }}>
-              <DropDownButton enabled />
-              {/* <Text>$500 USD</Text> */}
+              <DropDownButton enabled>
+                <ContextMenuItem style={{ display: 'flex', alignItems: 'flex-start' }} onClick={handleSubmitWork}>
+                  <Text>Submit Work</Text>
+                </ContextMenuItem>
+                <ContextMenuItem onClick={handleRequestAssignment}>
+                  <Text>Request Assignment</Text>
+                </ContextMenuItem>
+                <ContextMenuItem onClick={handleReviewApplication}>
+                  <Text>Review Application</Text>
+                </ContextMenuItem>
+              </DropDownButton>
               <Badge
                 foreground={theme.badgeNotificationBackground}
                 background="#D0F2DB"
@@ -242,16 +258,18 @@ const Detail = ({
           </Text>
         </div>
       </div>
-      <div style={{ flex: 1, maxWidth: '359px' }}>
-        <div style={cardStyle}>
-          <FieldTitle>Team</FieldTitle>
-          {teamRows}
+      {/* Activity and team not currently implemented
+        <div style={{ flex: 1, maxWidth: '359px' }}>
+          <div style={cardStyle}>
+            <FieldTitle>Team</FieldTitle>
+            {teamRows}
+          </div>
+          <div style={cardStyle}>
+            <FieldTitle>Activity</FieldTitle>
+            {activityRows}
+          </div>
         </div>
-        <div style={cardStyle}>
-          <FieldTitle>Activity</FieldTitle>
-          {activityRows}
-        </div>
-      </div>
+      */}
     </Wrapper>
   )
 }

@@ -45,6 +45,11 @@ interface Bounties {
         uint _value
     ) external payable;
 
+    function fulfillBounty(
+        uint _bountyId, 
+        string _data
+    ) public;
+
     function acceptFulfillment(
         uint _bountyId, 
         uint _fulfillmentId
@@ -113,6 +118,7 @@ contract Projects is IsContract, AragonApp {
         address assignee;
         address[] applicants;
         address workSubmittor;
+        uint256 submissionQty;
         mapping(address => string) assignmentRequests;
         mapping(address => WorkSubmission) workSubmissions;
     }
@@ -144,7 +150,7 @@ contract Projects is IsContract, AragonApp {
     // Fired when Task Manager approves assignment request
     event AssignmentApproved(address applicant, bytes32 indexed repoId, uint256 issueNumber);
     // Fired when a user submits work towards an issue
-    event WorkSubmitted(address submittor, bytes32 repoId, uint256 issueNumber);
+    event WorkSubmitted(bytes32 repoId, uint256 issueNumber);
     //Fired when a reivew is accepted
     event SubmissionAccepted(address submittor, bytes32 repoId, uint256 issueNumber);
 
@@ -180,7 +186,7 @@ contract Projects is IsContract, AragonApp {
             1, // baseRate
             336, // bountyDeadline
             "autark", // bountyCurrency
-            0x0000000000000000000000000000000000000000, // bountyAllocator
+            _bountiesAddr, // bountyAllocator
             0x0000000000000000000000000000000000000000 //bountyArbiter
         );
     }
@@ -234,7 +240,7 @@ contract Projects is IsContract, AragonApp {
      * @param _repoId The id of the Github repo in the projects registry
      */
     function getIssue(bytes32 _repoId, uint256 _issueNumber) external view
-    returns(bool hasBounty, uint standardBountyId, bool fulfilled, uint balance, address token, string dataHash)
+    returns(bool hasBounty, uint standardBountyId, bool fulfilled, uint balance, address token, string dataHash, address assignee)
     {
         GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
         hasBounty = issue.hasBounty;
@@ -243,6 +249,7 @@ contract Projects is IsContract, AragonApp {
         ( , , , , ,balance) = bounties.getBounty(standardBountyId);
         dataHash = bounties.getBountyData(standardBountyId);
         token = bounties.getBountyToken(standardBountyId);
+        assignee = issue.assignee;
     }
 
     /**
@@ -393,24 +400,27 @@ contract Projects is IsContract, AragonApp {
      * @param _repoId the github repo id of the issue
      * @param _issueNumber the github issue up for assignment
      * @param _submissionAddress IPFS hash of the Pull Request
-     * @param _fulfillmentId retrieved from event after the work is submitted to the bounties contract externally 
+     * //param _fulfillmentId retrieved from event after the work is submitted to the bounties contract externally 
      */
     function submitWork(
         bytes32 _repoId, 
         uint256 _issueNumber, 
-        string _submissionAddress,
-        uint256 _fulfillmentId
+        string _submissionAddress
+        //uint256 _fulfillmentId
     ) external isInitialized
     {
         require(msg.sender == repos[_repoId].issues[_issueNumber].assignee, "User not assigned to this issue");
-
-        repos[_repoId].issues[_issueNumber].workSubmissions[msg.sender] = WorkSubmission(
+        GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
+        bounties.fulfillBounty(issue.standardBountyId, _submissionAddress);
+        issue.workSubmissions[msg.sender] = WorkSubmission(
             SubmissionStatus.Unreviewed,
             _submissionAddress,
-            _fulfillmentId
+            issue.submissionQty
         );
 
-        emit WorkSubmitted(msg.sender, _repoId, _issueNumber);
+        issue.submissionQty += 1;
+
+        emit WorkSubmitted(_repoId, _issueNumber);
     }
 
     /**
@@ -539,26 +549,27 @@ contract Projects is IsContract, AragonApp {
         bytes32 _repoId, 
         uint256 _issueNumber, 
         uint256 _idx
-    ) public view returns(address applicant) 
+    ) public view returns(address applicant,string application) 
     {
         applicant = repos[_repoId].issues[_issueNumber].applicants[_idx];
+        application = repos[_repoId].issues[_issueNumber].assignmentRequests[applicant];
     }
 
-    /**
-     * @notice Returns Applicant's Github Username
-     * @param _repoId the github repo id of the issue
-     * @param _issueNumber the github issue up for assignment
-     * @param _applicant the address of the applicant
-     * @return  application IPFS hash for the applicant's proposed timeline and strategy
-     */
-    function getAssignmentRequest(
-        bytes32 _repoId, 
-        uint256 _issueNumber, 
-        address _applicant
-    ) public view returns(string application) 
-    {
-        application = repos[_repoId].issues[_issueNumber].assignmentRequests[_applicant];
-    }
+    ///**
+    // * @notice Returns Applicant's Github Username
+    // * @param _repoId the github repo id of the issue
+    // * @param _issueNumber the github issue up for assignment
+    // * @param _applicant the address of the applicant
+    // * @return  application IPFS hash for the applicant's proposed timeline and strategy
+    // */
+    //function getAssignmentRequest(
+    //    bytes32 _repoId, 
+    //    uint256 _issueNumber, 
+    //    address _applicant
+    //) public view returns(string application) 
+    //{
+    //    application = repos[_repoId].issues[_issueNumber].assignmentRequests[_applicant];
+    //}
 
     /**
      * @notice Returns contributor's work submission
@@ -638,7 +649,8 @@ contract Projects is IsContract, AragonApp {
             _standardBountyId,
             address(0),
             emptyAddressArray,
-            address(0)
+            address(0),
+            0
         );
         emit BountyAdded(
             repos[_repoId].owner,
@@ -648,20 +660,21 @@ contract Projects is IsContract, AragonApp {
         );
     }
 
-    function checkTransValueEqualsMessageValue(
-        uint256 _msgValue,
-        uint256[] _bountySizes,
-        bool[] _tokenBounties
-    ) internal pure
-    {
-        uint256 transValueTotal = 0;
-        for (uint i = 0; i < _bountySizes.length; i++) {
-            if (!(_tokenBounties[i])) {
-                transValueTotal = transValueTotal.add(_bountySizes[i]);
-            }
-        }
-        require(_msgValue == transValueTotal, "ETH sent to cover bounties does not match bounty total");
-    }
+    // this function isn't used
+    //function checkTransValueEqualsMessageValue(
+    //    uint256 _msgValue,
+    //    uint256[] _bountySizes,
+    //    bool[] _tokenBounties
+    //) internal pure
+    //{
+    //    uint256 transValueTotal = 0;
+    //    for (uint i = 0; i < _bountySizes.length; i++) {
+    //        if (!(_tokenBounties[i])) {
+    //            transValueTotal = transValueTotal.add(_bountySizes[i]);
+    //        }
+    //    }
+    //    require(_msgValue == transValueTotal, "ETH sent to cover bounties does not match bounty total");
+    //}
 
     function getHash(
         string _str,
