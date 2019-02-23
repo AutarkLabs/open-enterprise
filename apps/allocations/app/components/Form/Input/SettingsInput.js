@@ -1,9 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { Badge, Text, theme } from '@aragon/ui'
-
-import { CheckBox } from '../../Shared'
+import { Badge, Checkbox, Text, theme } from '@aragon/ui'
 
 const SettingsInput = ({
   name,
@@ -17,8 +15,10 @@ const SettingsInput = ({
   }
   return visible ? (
     <StyledSettingsInput>
-      <CheckBox checked={value} onChange={changeChecked} />
-      <Text>{text}</Text>
+      <label>
+        <Checkbox checked={value} onChange={changeChecked} />
+        <Text>{text}</Text>
+      </label>
       <Badge.Info small>?</Badge.Info>
     </StyledSettingsInput>
   ) : null
