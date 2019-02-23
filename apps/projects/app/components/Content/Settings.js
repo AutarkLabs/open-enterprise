@@ -8,7 +8,7 @@ const bountyDeadlinesMul = [168, 24, 1] // it is one variable in contract, so nu
 
 class Settings extends React.Component {
   state = {
-    bountyCurrencies: this.props.tokens.map (token => token.symbol)
+    bountyCurrencies: this.props.tokens.map(token => token.symbol),
   }
 
   /*
@@ -240,30 +240,32 @@ const BountyArbiter = ({ bountyArbiter, onChange }) => (
       Bounty Arbiter
     </Text.Block>
     <Text.Block>The entity responsible for dispute resolution.</Text.Block>
-    <TextInput
-      readOnly
-      style={{
-        width: '375px',
-        height: '40px',
-        fontSize: '15px',
-        textAlign: 'left',
-        marginRight: '10px',
-      }}
-      value="N/A"
-    />
-    {/* // TODO: not vertical aligned with the input field */}
-    <Button.Anchor
-      mode="outline"
-      style={{ height: '40px' }}
-      href="https://etherscan.io/address/0x281055afc982d96fab65b3a49cac8b878184cb16"
-      target="_blank"
-    >
-      See on Etherscan
-    </Button.Anchor>
+    <div style={{ display: 'flex' }}>
+      <TextInput
+        readOnly
+        style={{
+          width: '378px',
+          height: '40px',
+          fontSize: '15px',
+          textAlign: 'left',
+          marginRight: '10px',
+        }}
+        value="N/A"
+      />
+      <Button.Anchor
+        mode="outline"
+        style={{ height: '40px' }}
+        // href="https://etherscan.io/address/0x281055afc982d96fab65b3a49cac8b878184cb16"
+        target="_blank"
+        disabled
+      >
+        See on Etherscan
+      </Button.Anchor>
+    </div>
   </div>
 )
 
-const BountyCurrency = ({ bountyCurrency, onChange, bountyCurrencies}) => (
+const BountyCurrency = ({ bountyCurrency, onChange, bountyCurrencies }) => (
   <div>
     <Text.Block size="large" weight="bold">
       Bounty Currency
@@ -280,7 +282,7 @@ const BountyCurrency = ({ bountyCurrency, onChange, bountyCurrencies}) => (
   </div>
 )
 
-const BountyContractAddress = ({ bountyAllocator, onChange }) => (
+const BountyContractAddress = ({ bountyAllocator }) => (
   <div>
     <Text.Block size="large" weight="bold">
       Bounty Contract Address
@@ -288,26 +290,27 @@ const BountyContractAddress = ({ bountyAllocator, onChange }) => (
     <Text.Block>
       This is the smart contract that is actually allocating bounties.
     </Text.Block>
-    <TextInput
-      readOnly
-      style={{
-        width: '375px',
-        height: '40px',
-        fontSize: '15px',
-        textAlign: 'center',
-        marginRight: '10px',
-      }}
-      value={bountyAllocator}
-    />
-    {/* // TODO: not vertical aligned with the input field */}
-    <Button.Anchor
-      mode="outline"
-      style={{ height: '40px' }}
-      href="https://etherscan.io/address/0x281055afc982d96fab65b3a49cac8b878184cb16"
-      target="_blank"
-    >
-      See on Etherscan
-    </Button.Anchor>
+    <div style={{ display: 'flex' }}>
+      <TextInput
+        readOnly
+        style={{
+          width: '378px',
+          height: '40px',
+          fontSize: '15px',
+          textAlign: 'center',
+          marginRight: '10px',
+        }}
+        value={bountyAllocator}
+      />
+      <Button.Anchor
+        mode="outline"
+        style={{ height: '40px' }}
+        href={`https://etherscan.io/address/${bountyAllocator}`}
+        target="_blank"
+      >
+        See on Etherscan
+      </Button.Anchor>
+    </div>
   </div>
 )
 
