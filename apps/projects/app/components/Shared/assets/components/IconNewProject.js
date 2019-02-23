@@ -1,6 +1,6 @@
 import React from 'react'
 
-const NewProject = props => (
+const IconNewProject = props => (
   <svg viewBox="0 0 60 60" width="60px" height="60px" {...props}>
     <g fill="none" fillRule="evenodd">
       <circle cx={30} cy={30} r={30} fill="#F2F6F7" />
@@ -23,4 +23,4 @@ const NewProject = props => (
   </svg>
 )
 
-export default NewProject
+export default IconNewProject
