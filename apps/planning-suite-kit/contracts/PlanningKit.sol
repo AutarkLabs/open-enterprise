@@ -189,6 +189,7 @@ contract PlanningKit is KitBase {
         acl.createPermission(rangeVoting, projects, projects.CURATE_ISSUES_ROLE(), root);
         acl.createPermission(ANY_ENTITY, projects, projects.REMOVE_REPO_ROLE(), root);
         acl.createPermission(ANY_ENTITY, projects, projects.TASK_ASSIGNMENT_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, projects, projects.WORK_REVIEW_ROLE(), root);
         // emit InstalledApp(projects, apps[2]);
 
         // Range-voting permissions
