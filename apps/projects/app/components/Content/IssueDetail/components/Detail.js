@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Badge, Text, theme, ContextMenu, ContextMenuItem } from '@aragon/ui'
-import { formatDistance } from 'date-fns'
+import { format, formatDistance } from 'date-fns'
 
 import { DropDownButton } from '../../../Shared'
 import { IconGitHub, BountyContextMenu } from '../../../Shared'
@@ -38,7 +38,7 @@ const SummaryTable = ({ expLevel, deadline, slots, workStatus }) => {
   const FIELD_TITLES = [
     'Experience Level',
     'Deadline',
-    'Num. Available',
+    'Slots Available',
     'Status',
   ]
   const mappedTableFields = [expLevel, deadline, slots, workStatus].map(
@@ -169,7 +169,8 @@ const fakeMembers = [
 
 const Detail = ({
   requestsData,
-  bountyBadge = '100 ANT',
+  balance,
+  symbol,
   labels,
   title,
   number,
@@ -180,7 +181,7 @@ const Detail = ({
   team = fakeMembers, // TODO: Also this
   expLevel,
   deadline,
-  avail,
+  slots,
   workStatus,
   onReviewApplication,
   onReviewWork,
@@ -188,7 +189,17 @@ const Detail = ({
   onSubmitWork,
   onAllocateSingleBounty
 }) => {
-  const summaryData = {expLevel, deadline, slots: avail, workStatus}
+  //console.log('Detail props:', requestsData, balance, symbol, labels, title, number, repo, body, createdAt, expLevel, deadline, slots, workStatus)
+
+  const summaryData = {
+    expLevel: (expLevel === undefined) ? '-' : expLevel,
+    deadline: (deadline === undefined) ? '-' : format(deadline, 'yyyy-MM-dd HH:mm:ss'),
+    slots: (slots === undefined) ? '-' :
+      (requestsData === undefined) ? 'Unallocated (' + slots + ')' :
+        (requestsData.length < slots) ? 'Slots available: ' + (slots - requestsData.length) + '/' + slots:
+          'Allocated',
+    workStatus: (workStatus === undefined) ? 'No bounty yet' : workStatus
+  }
   const calculatedDate = () => {
     const date = Date.now()
     return formatDistance(createdAt, date, { addSuffix: true })
@@ -225,19 +236,22 @@ const Detail = ({
               <DropDownButton enabled>
                 <BountyContextMenu
                   workStatus={workStatus}
+                  requestsData={requestsData}
                   onAllocateSingleBounty={onAllocateSingleBounty}
                   onSubmitWork={onSubmitWork}
                   onRequestAssignment={onRequestAssignment}
                   onReviewApplication={onReviewApplication}
                 />
               </DropDownButton>
-              <Badge
-                foreground={theme.badgeNotificationBackground}
-                background="#D0F2DB"
-                style={{ marginTop: '15px' }}
-              >
-                <Text>{bountyBadge}</Text>
-              </Badge>
+              { balance > 0 &&
+                <Badge
+                  style={{padding: '10px', marginRight: '20px', textSize: 'large', marginTop: '15px'}}
+                  background={'#e7f8ec'}
+                  foreground={theme.positive}
+                >
+                  {balance + ' ' + symbol}
+                </Badge>
+              }
             </div>
           </Wrapper>
           <SummaryTable {...summaryData} />

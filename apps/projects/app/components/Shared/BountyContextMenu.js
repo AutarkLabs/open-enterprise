@@ -3,7 +3,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { ContextMenuItem } from '@aragon/ui'
 
-const BountyContextMenu = ({workStatus, onAllocateSingleBounty, onSubmitWork, onRequestAssignment, onReviewApplication, onReviewWork}) => <div>
+const BountyContextMenu = ({workStatus, requestsData, onAllocateSingleBounty, onSubmitWork, onRequestAssignment, onReviewApplication, onReviewWork}) => <div>
   {workStatus === undefined &&
     <ContextMenuItem onClick={onAllocateSingleBounty}>
       <ActionLabel>Allocate Bounty</ActionLabel>
@@ -11,12 +11,12 @@ const BountyContextMenu = ({workStatus, onAllocateSingleBounty, onSubmitWork, on
   }
   {(workStatus === 'submit-work' || workStatus === 'review-work') &&
     <div>
-       <ContextMenuItem onClick={onSubmitWork}>
-          <ActionLabel>Submit Work</ActionLabel>
-       </ContextMenuItem>
-       <ContextMenuItem onClick={onReviewWork}>
+      <ContextMenuItem onClick={onSubmitWork}>
+        <ActionLabel>Submit Work</ActionLabel>
+      </ContextMenuItem>
+      <ContextMenuItem onClick={onReviewWork}>
         <ActionLabel>Review Work</ActionLabel>
-       </ContextMenuItem>
+      </ContextMenuItem>
     </div>
   }
   {(workStatus === 'new' || workStatus === 'review-applicants') &&
