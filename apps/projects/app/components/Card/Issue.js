@@ -38,85 +38,84 @@ const Issue = ({
   onAllocateSingleBounty,
   balance,
   symbol,
- 
   deadline,
   requestsData,
   bountySettings,
- 
-  expLevel = 'Intermediate',
-  dueDate = '02/02/2020',
+  expLevel,
+  slots
+}) => {
+  //console.log('CARD:', workStatus, title, repo, number, labels, isSelected, onSelect, onClick, onSubmitWork, onRequestAssignment, onReviewApplication, onAllocateSingleBounty, balance, symbol, deadline, requestsData, bountySettings, expLevel, slots)
 
-  funded = 'Pending funding'
-}) => (
-// TODO: @aragon/ui Table?
-// workStatus can be either: 'new', 'review-applicants', 'review-work', or 'finished'
-// It represents the state of the current issue in the approval bounty flow
-  <StyledIssue>
-    <ClickArea onClick={onClick} />
-    <CheckButton checked={isSelected} onChange={onSelect} />
-    <IssueDesc>
-      <div>
-        <Text color={theme.textPrimary} size="xlarge">
-          {title}
-        </Text>
-        {dot}
-        <Text color={theme.textSecondary} size="large">
-          {repo} #{number}
-        </Text>
-      </div>
-      { (balance > 0 || labels.totalCount > 0) && <IssueDetails>
-        <Text size="small" color={theme.textTertiary}>
-          { balance > 0 &&
-            <span style={{ marginRight: '15px'}}>
-              {expLevel}
-              {dot}
-              {funded}
-              {dot}
-              {ETADistance(dueDate)}
-              {workStatus === 'review-applicants' &&
-                <span>
-                  {dot}
-                  Applicants: {requestsData.length}
-                </span>
-              }
-            </span>
-          }
-          { labels.totalCount ? (
-            labels.edges.map(label =>
-              <Badge
-                key={label.node.id}
-                style={{ marginRight: '10px'}}
-                background={'#'+label.node.color}
-                foreground={'#000'}>{label.node.name}
-              </Badge>
-            )) : ''
-          }        
-        </Text>
-      </IssueDetails>
-      }
-    </IssueDesc>
-    <BalanceAndContext>
-      { balance > 0 &&  
-        <Badge
-          style={{padding: '10px', marginRight: '20px', textSize: 'large'}}
-          background={'#e7f8ec'}
-          foreground={theme.positive}>{balance + ' ' + symbol}
-        </Badge>
-      }
-      { workStatus !== 'finished' &&
-        <ContextMenu>
-          <BountyContextMenu
-            workStatus={workStatus}
-            onAllocateSingleBounty={onAllocateSingleBounty}
-            onSubmitWork={onSubmitWork}
-            onRequestAssignment={onRequestAssignment}
-            onReviewApplication={onReviewApplication}
-          />
-        </ContextMenu>
-      }
-    </BalanceAndContext>
-  </StyledIssue>
-)
+  const slotsAllocation = (requestsData === undefined) ? 'Unallocated' : (requestsData.length < slots) ? 'Slots available: ' + (slots - requestsData.length) : 'Allocated'
+
+  return (
+    <StyledIssue>
+      <ClickArea onClick={onClick} />
+      <CheckButton checked={isSelected} onChange={onSelect} />
+      <IssueDesc>
+        <div>
+          <Text color={theme.textPrimary} size="xlarge">
+            {title}
+          </Text>
+          {dot}
+          <Text color={theme.textSecondary} size="large">
+            {repo} #{number}
+          </Text>
+        </div>
+        { (balance > 0 || labels.totalCount > 0) && <IssueDetails>
+          <Text size="small" color={theme.textTertiary}>
+            { balance > 0 &&
+              <span style={{ marginRight: '15px'}}>
+                {expLevel}
+                {dot}
+                {/*workStatus === 'review-applicants' &&
+                  <span>
+                    {dot}
+                    Applicants: {requestsData.length}
+                  </span>
+                */}
+                {slotsAllocation}
+                {dot}
+                {ETADistance(deadline)}
+              </span>
+            }
+            { labels.totalCount ? (
+              labels.edges.map(label =>
+                <Badge
+                  key={label.node.id}
+                  style={{ marginRight: '10px'}}
+                  background={'#'+label.node.color}
+                  foreground={'#000'}>{label.node.name}
+                </Badge>
+              )) : ''
+            }        
+          </Text>
+        </IssueDetails>
+        }
+      </IssueDesc>
+      <BalanceAndContext>
+        { balance > 0 &&  
+          <Badge
+            style={{padding: '10px', marginRight: '20px', textSize: 'large'}}
+            background={'#e7f8ec'}
+            foreground={theme.positive}>{balance + ' ' + symbol}
+          </Badge>
+        }
+        { workStatus !== 'finished' &&
+          <ContextMenu>
+            <BountyContextMenu
+              workStatus={workStatus}
+              onAllocateSingleBounty={onAllocateSingleBounty}
+              onSubmitWork={onSubmitWork}
+              onRequestAssignment={onRequestAssignment}
+              onReviewApplication={onReviewApplication}
+            />
+          </ContextMenu>
+        }
+      </BalanceAndContext>
+    </StyledIssue>
+  )
+}
 
 Issue.propTypes = {
   title: PropTypes.string.isRequired,

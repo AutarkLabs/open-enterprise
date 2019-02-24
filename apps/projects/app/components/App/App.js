@@ -248,7 +248,7 @@ class App extends React.PureComponent {
     
     const tokenArray = new Array(issuesArray.length).fill(bountyToken)
 
-    console.log('Bounty data',
+    console.log('Bounty data for app.addBounties',
       issuesArray.map( (issue) => issue.repoId),
       issuesArray.map( (issue) => issue.number),
       issuesArray.map( (issue) => issue.size),

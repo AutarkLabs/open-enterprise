@@ -11,12 +11,12 @@ const BountyContextMenu = ({workStatus, onAllocateSingleBounty, onSubmitWork, on
   }
   {(workStatus === 'submit-work' || workStatus === 'review-work') &&
     <div>
-       <ContextMenuItem onClick={onSubmitWork}>
-          <ActionLabel>Submit Work</ActionLabel>
-       </ContextMenuItem>
-       <ContextMenuItem onClick={onReviewWork}>
+      <ContextMenuItem onClick={onSubmitWork}>
+        <ActionLabel>Submit Work</ActionLabel>
+      </ContextMenuItem>
+      <ContextMenuItem onClick={onReviewWork}>
         <ActionLabel>Review Work</ActionLabel>
-       </ContextMenuItem>
+      </ContextMenuItem>
     </div>
   }
   {(workStatus === 'new' || workStatus === 'review-applicants') &&
