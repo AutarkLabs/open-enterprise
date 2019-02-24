@@ -4,7 +4,7 @@ import { Badge, Text, theme, ContextMenu, ContextMenuItem } from '@aragon/ui'
 import { formatDistance } from 'date-fns'
 
 import { DropDownButton } from '../../../Shared'
-import { IconGitHub } from '../../../Shared'
+import { IconGitHub, BountyContextMenu } from '../../../Shared'
 
 const StyledTable = styled.div`
   margin-bottom: 20px;
@@ -182,10 +182,11 @@ const Detail = ({
   deadline,
   avail,
   workStatus,
-  handleReviewApplication,
-  handleRequestAssignment,
-  handleSubmitWork,
-  handleAllocateSingleBounty
+  onReviewApplication,
+  onReviewWork,
+  onRequestAssignment,
+  onSubmitWork,
+  onAllocateSingleBounty
 }) => {
   const summaryData = {expLevel, deadline, slots: avail, workStatus}
   const calculatedDate = () => {
@@ -222,38 +223,13 @@ const Detail = ({
             </div>
             <div style={{ ...column, flex: 0, alignItems: 'flex-end' }}>
               <DropDownButton enabled>
-
-                {workStatus === undefined &&
-                  <ContextMenuItem onClick={handleAllocateSingleBounty}>
-                    <ActionLabel>Allocate Bounty</ActionLabel>
-                  </ContextMenuItem>
-                }
-                {(workStatus === 'submit-work' || workStatus === 'review-work') &&
-                  <ContextMenuItem onClick={handleSubmitWork}>
-                    <ActionLabel>Submit Work</ActionLabel>
-                  </ContextMenuItem>
-                }
-                {(workStatus === 'new' || workStatus === 'review-applicants') &&
-                  <ContextMenuItem onClick={handleRequestAssignment}>
-                    <ActionLabel>Request Assignment</ActionLabel>
-                  </ContextMenuItem>
-                }
-                {workStatus === 'review-applicants' &&
-                  <ContextMenuItem onClick={handleReviewApplication}>
-                    <ActionLabel>Review Application ({requestsData.length})</ActionLabel>
-                  </ContextMenuItem>
-                }
-                {/*
-                <ContextMenuItem style={{ display: 'flex', alignItems: 'flex-start' }} onClick={handleSubmitWork}>
-                  <Text>Submit Work</Text>
-                </ContextMenuItem>
-                <ContextMenuItem onClick={handleRequestAssignment}>
-                  <Text>Request Assignment</Text>
-                </ContextMenuItem>
-                <ContextMenuItem onClick={handleReviewApplication}>
-                  <Text>Review Application</Text>
-                </ContextMenuItem>
-                */}
+                <BountyContextMenu
+                  workStatus={workStatus}
+                  onAllocateSingleBounty={onAllocateSingleBounty}
+                  onSubmitWork={onSubmitWork}
+                  onRequestAssignment={onRequestAssignment}
+                  onReviewApplication={onReviewApplication}
+                />
               </DropDownButton>
               <Badge
                 foreground={theme.badgeNotificationBackground}

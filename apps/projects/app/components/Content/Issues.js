@@ -291,17 +291,20 @@ class Issues extends React.PureComponent {
         <IssueDetail
           issue={currentIssue}
           onClose={this.handleIssueDetailClose}
-          handleReviewApplication = {() => {
+          onReviewApplication = {() => {
             this.handleReviewApplication(currentIssue)
           }}
-          handleRequestAssignment = {() => {
+          onRequestAssignment = {() => {
             this.handleRequestAssignment(currentIssue)
           }}
-          handleSubmitWork = {() => {
+          onSubmitWork = {() => {
             this.handleSubmitWork(currentIssue)
           }}
-          handleAllocateSingleBounty={() => {
+          onAllocateSingleBounty={() => {
             this.handleAllocateSingleBounty(currentIssue)
+          }}
+          onReviewWork={() => {
+            this.handleReviewWork(currentIssue)
           }}
         />
       )

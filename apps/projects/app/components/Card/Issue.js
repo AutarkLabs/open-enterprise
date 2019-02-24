@@ -3,34 +3,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { Text, theme, Badge, Button, ContextMenu, ContextMenuItem } from '@aragon/ui'
 import { formatDistance } from 'date-fns'
-
-import { CheckButton } from '../Shared'
-
-/*
-const StyledIssue = styled.div`
-  flex: 1;
-  width: 100%;
-  background: ${theme.contentBackground};
-  display: flex;
-  padding-left: 10px;
-  height: 112px;
-  align-items: center;
-  border: 1px solid ${theme.contentBorder};
-  margin-bottom: -1px;
-  position: relative;
-  > :nth-child(2) {
-    /* checkbox * /
-    margin-right: 21.5px;
-    justify-content: center;
-    z-index: 2;
-  }
-  > :nth-child(3) {
-    /* text * /
-    height: 100%;
-    padding: 10px;
-    flex: 1 1 auto;
-  }
-*/
+import { CheckButton, BountyContextMenu } from '../Shared'
 
 const ClickArea = styled.div`
   height: 100%;
@@ -97,9 +70,9 @@ const Issue = ({
             <span style={{ marginRight: '15px'}}>
               {expLevel}
               {dot}
-              {ETADistance(dueDate)}
-              {dot}
               {funded}
+              {dot}
+              {ETADistance(dueDate)}
               {workStatus === 'review-applicants' &&
                 <span>
                   {dot}
@@ -130,28 +103,17 @@ const Issue = ({
           foreground={theme.positive}>{balance + ' ' + symbol}
         </Badge>
       }
-      <ContextMenu>
-        {workStatus === undefined &&
-          <ContextMenuItem onClick={onAllocateSingleBounty}>
-            <ActionLabel>Allocate Bounty</ActionLabel>
-          </ContextMenuItem>
-        }
-        {(workStatus === 'submit-work' || workStatus === 'review-work') &&
-          <ContextMenuItem onClick={onSubmitWork}>
-            <ActionLabel>Submit Work</ActionLabel>
-          </ContextMenuItem>
-        }
-        {(workStatus === 'new' || workStatus === 'review-applicants') &&
-          <ContextMenuItem onClick={onRequestAssignment}>
-            <ActionLabel>Request Assignment</ActionLabel>
-          </ContextMenuItem>
-        }
-        {workStatus === 'review-applicants' &&
-          <ContextMenuItem onClick={onReviewApplication}>
-            <ActionLabel>Review Application ({requestsData.length})</ActionLabel>
-          </ContextMenuItem>
-        }
-      </ContextMenu>
+      { workStatus !== 'finished' &&
+        <ContextMenu>
+          <BountyContextMenu
+            workStatus={workStatus}
+            onAllocateSingleBounty={onAllocateSingleBounty}
+            onSubmitWork={onSubmitWork}
+            onRequestAssignment={onRequestAssignment}
+            onReviewApplication={onReviewApplication}
+          />
+        </ContextMenu>
+      }
     </BalanceAndContext>
   </StyledIssue>
 )
@@ -163,19 +125,10 @@ Issue.propTypes = {
   isSelected: PropTypes.bool,
   onClick: PropTypes.func.isRequired,
   onSelect: PropTypes.func,
+  workStatus: PropTypes.oneOf([undefined, 'new', 'review-applicants', 'submit-work', 'review-work', 'finished']),
 }
 
-const ActionLabel = styled.span`
-  margin-left: 15px;
-`
-
-/*const MenuContainer = styled.div`
-  align-self: flex-end;
-  align-items: center;
-`
-*/
 const StyledIssue = styled.div`
-  //overflow-y: hidden;
   flex: 1;
   width: 100%;
   background: ${theme.contentBackground};
@@ -185,6 +138,7 @@ const StyledIssue = styled.div`
   align-items: center;
   border-radius: 3px;
   border: 1px solid ${theme.contentBorder};
+  margin-bottom: -1px;
   position: relative;
   > :nth-child(2) {
     /* checkbox */
