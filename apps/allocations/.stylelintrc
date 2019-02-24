@@ -5,7 +5,8 @@
     "stylelint-config-styled-components"
   ],
   "rules": {
-    "rule-empty-line-before": null,
-    "comment-empty-line-before": null
+    "comment-empty-line-before": null,
+    "declaration-colon-newline-after": null,
+    "rule-empty-line-before": null
   }
 }

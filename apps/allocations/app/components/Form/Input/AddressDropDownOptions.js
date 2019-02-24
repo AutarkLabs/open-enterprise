@@ -14,8 +14,6 @@ const AddressDropDownOptions = ({
   validator,
   values,
 }) => {
-  console.log('values', values, activeItem, input, name)
-
   const validated = activeItem > 0 && validator(values, input.addr)
 
   const addOption = () => {
@@ -38,17 +36,16 @@ const AddressDropDownOptions = ({
     })
   }
 
-  const loadOptions = values.map((option, i) => (
+  const loadOptions = values.map((v, i) => (
     <StyledOption key={i}>
-      <StyledLockedInput children={entities[i + 1].data.name} />
+      <StyledLockedInput children={entities[v.index].data.name} />
       <IconContainer
-        onClick={() => removeOption(option)}
+        onClick={() => removeOption(v)}
         title="Click to remove"
         children={<IconRemove />}
       />
     </StyledOption>
   ))
-  console.log('active item', activeItem)
 
   return (
     <div style={flexColumn}>

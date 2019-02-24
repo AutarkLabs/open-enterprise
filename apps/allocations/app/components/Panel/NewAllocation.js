@@ -51,7 +51,6 @@ const uniqueAddressValidation = (entries, addr) => {
   const isUnique = !entries.length || !entries.map(e => e.addr).includes(addr)
   const notEmpty = addr && !!addr.length && addr !== '0x0'
   const validated = isAddress && isUnique && notEmpty
-  console.log('validating', addr, entries, isAddress, isUnique, notEmpty)
   return validated // approved if not errorCondition
 }
 
@@ -67,9 +66,13 @@ class NewAllocation extends React.Component {
   // TODO: improve field checking for input errors and sanitize
   changeField = ({ target: { name, value } }) => {
     // reset error to false if changing related field
-    const resetAddressError = ['addressBookInput, addressSetting'].includes(
-      name
-    )
+    const resetAddressError = [
+      'addressBookInput',
+      'addressBookCandidates',
+      'addressSetting',
+      'userInput',
+      'userInputCandidates',
+    ].includes(name)
     const resetAllocationsError = name === 'amount'
 
     // react chains the state changes asynchronously
@@ -77,7 +80,7 @@ class NewAllocation extends React.Component {
     resetAllocationsError && this.setState({ allocationError: false })
 
     this.setState({ [name]: value })
-    console.log('changing field', name, 'to', value)
+    console.log('changeField', name, 'to', value)
   }
 
   // TODO: Manage dropdown to return a name and value as the rest of inputs
