@@ -60,6 +60,10 @@ class Issues extends React.PureComponent {
     this.props.onReviewApplication(issue)
   }
 
+  handleReviewWork = issue => {
+    this.props.onReviewWork(issue)
+  }
+
   handleSubmitWork = issue => {
     this.props.onSubmitWork(issue)
   }
@@ -361,6 +365,9 @@ class Issues extends React.PureComponent {
                         }}
                         onAllocateSingleBounty={() => {
                           this.handleAllocateSingleBounty(issue)
+                        }}
+                        onReviewWork={() => {
+                          this.handleReviewWork(issue)
                         }}
                         key={issue.id}
                         {...issue}

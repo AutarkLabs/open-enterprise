@@ -284,11 +284,19 @@ class App extends React.PureComponent {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.SubmitWork,
       panelProps: {
-        onSubmit: this.onSubmitWork,
+        onSubmitWork: this.onSubmitWork,
         githubCurrentUser: this.props.githubCurrentUser,
         issue
       },
     }))
+  }
+
+  onSubmitWork = async (state, issue) => {
+    this.closePanel()
+    let content = ipfs.types.Buffer.from(JSON.stringify(state))
+    let results = await ipfs.add(content)
+    let submissionString = results[0].hash
+    this.props.app.submitWork(web3.toHex(issue.repoId), issue.number, submissionString)
   }
 
   requestAssignment = issue => {
@@ -321,12 +329,30 @@ class App extends React.PureComponent {
   }
 
   onReviewApplication = issue => {
+    this.closePanel()
     console.log('onReviewApplication Issue:', issue)
     console.log('onReviewApplication submission:', web3.toHex(issue.repoId), issue.number, issue.requestsData[0].contributorAddr)
 
     this.props.app.approveAssignment(web3.toHex(issue.repoId), issue.number, issue.requestsData[0].contributorAddr)
   }
- 
+
+  reviewWork = issue => {
+    this.setState((_prevState, _prevProps) => ({
+      panel: PANELS.ReviewWork,
+      panelProps: {
+        issue,
+        onReviewWork: this.onReviewWork,
+      },
+    }))
+  }
+
+  onReviewWork = (state, issue) => {
+    console.log('onReviewWork', issue)
+    console.log('onReviewWork', web3.toHex(issue.repoId), issue.number, issue.assignee, state.accepted)
+    this.closePanel()
+    this.props.app.reviewSubmission(web3.toHex(issue.repoId), issue.number, issue.assignee, state.accepted)
+  }
+
   curateIssues = issues => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.NewIssueCuration,
@@ -413,7 +439,7 @@ class App extends React.PureComponent {
               bountySettings={
                 bountySettings !== undefined ? bountySettings : {}
               }
-              tokens={this.props.tokens !== undefined ? this.props.tokens : {} }
+              tokens={this.props.tokens !== undefined ? this.props.tokens : []}
               onNewProject={this.newProject}
               onRemoveProject={this.removeProject}
               onNewIssue={this.newIssue}
@@ -424,6 +450,7 @@ class App extends React.PureComponent {
               activeIndex={activeIndex}
               changeActiveIndex={this.changeActiveIndex}
               onReviewApplication={this.reviewApplication}
+              onReviewWork={this.reviewWork}
             />
 
             <PanelManager

@@ -164,6 +164,4 @@ const BalanceAndContext = styled.div`
   display: inline-flex;
 `
 
-
-
 export default Issue

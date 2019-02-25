@@ -90,6 +90,7 @@ class NewBountyAllocation extends React.Component {
 
   generateHoursChange = id => index => {
     this.configBounty(id, 'hours', index)
+    console.log('generateHoursChange: id: ', id, ', index: ', index)
   }
 
   generateExpChange = id => index => {
@@ -127,12 +128,11 @@ class NewBountyAllocation extends React.Component {
   }
 
   render() {
-    
     const { bounties } = this.state
     const { bountySettings } = this.props
     const expLevels = this.getExpLevels()
 
-    console.log('bounties: ', bounties, ', bountySettings: ', bountySettings)
+    //console.log('bounties: ', bounties, ', bountySettings: ', bountySettings)
     return (
       <Form
         onSubmit={this.submitBounties}
