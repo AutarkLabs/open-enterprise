@@ -260,7 +260,7 @@ class VotePanelContent extends React.Component {
               <Label>Your voting tokens</Label>
             </h2>
             {BigNumber(this.state.userBalance)
-              .div(BigNumber(this.state.decimals))
+              .div(BigNumber(10 ** (this.state.decimals)))
               .dp(3)
               .toString()}
           </div>
