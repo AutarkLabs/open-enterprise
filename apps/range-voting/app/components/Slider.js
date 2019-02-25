@@ -52,7 +52,7 @@ class Slider extends React.Component {
   updateValueFromClientX(clientX) {
     const rect = this.getRect()
     const x = parseFloat(
-      Math.min(rect.width, Math.max(0, clientX - rect.x)).toFixed(2)
+      Math.min(rect.width, Math.max(0, clientX - rect.x))
     )
     this.props.onUpdate(x / rect.width)
   }
@@ -112,7 +112,7 @@ class Slider extends React.Component {
   render() {
     const { pressed } = this.state
     const value = parseFloat(
-      Math.max(0, Math.min(1, this.props.value)).toFixed(2)
+      Math.max(0, Math.min(1, this.props.value))
     )
     return (
       <Spring
