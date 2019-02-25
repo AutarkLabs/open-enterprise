@@ -53,7 +53,7 @@ const Issue = ({
   expLevel,
   slots
 }) => {
-  console.log('CARD:', workStatus, title, repo, number, labels, isSelected, balance, symbol, deadline, requestsData, expLevel, slots)
+  //console.log('CARD:', workStatus, title, repo, number, labels, isSelected, balance, symbol, deadline, requestsData, expLevel, slots)
 
   // prepare display of number of slots vs number of applicants
   const slotsAllocation = (requestsData === undefined) ? 'Unallocated (' + slots + ')' :
