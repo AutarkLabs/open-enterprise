@@ -78,11 +78,9 @@ class VotePanelContent extends React.Component {
       combineLatest(tokenContract.balanceOf(user), tokenContract.decimals())
         .first()
         .subscribe(([balance, decimals]) => {
-          const adjustedBalance = Math.floor(
-            parseInt(balance, 10) / Math.pow(10, decimals)
-          )
           this.setState({
-            userBalance: adjustedBalance,
+            userBalance: balance,
+            decimals: decimals
           })
         })
     }
@@ -261,7 +259,10 @@ class VotePanelContent extends React.Component {
             <h2>
               <Label>Your voting tokens</Label>
             </h2>
-            {BigNumber(this.state.userBalance).toString()}
+            {BigNumber(this.state.userBalance)
+              .div(BigNumber(this.state.decimals))
+              .dp(3)
+              .toString()}
           </div>
         </SidePanelSplit>
         {open && (
