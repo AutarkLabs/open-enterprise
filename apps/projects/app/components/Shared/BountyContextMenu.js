@@ -40,6 +40,7 @@ BountyContextMenu.propTypes = {
   onSubmitWork: PropTypes.func.isRequired,
   onRequestAssignment: PropTypes.func.isRequired,
   onReviewApplication: PropTypes.func.isRequired,
+  onReviewWork: PropTypes.func.isRequired,
   workStatus: PropTypes.oneOf([undefined, 'new', 'review-applicants', 'submit-work', 'review-work', 'finished']),
 }
 

@@ -241,6 +241,7 @@ const Detail = ({
                   onSubmitWork={onSubmitWork}
                   onRequestAssignment={onRequestAssignment}
                   onReviewApplication={onReviewApplication}
+                  onReviewWork={onReviewWork}
                 />
               </DropDownButton>
               { balance > 0 &&

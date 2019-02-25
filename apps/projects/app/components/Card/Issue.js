@@ -45,6 +45,7 @@ const Issue = ({
   onRequestAssignment,
   onReviewApplication,
   onAllocateSingleBounty,
+  onReviewWork,
   balance,
   symbol,
   deadline,
@@ -107,6 +108,7 @@ const Issue = ({
               onSubmitWork={onSubmitWork}
               onRequestAssignment={onRequestAssignment}
               onReviewApplication={onReviewApplication}
+              onReviewWork={onReviewWork}
             />
           </ContextMenu>
         }
