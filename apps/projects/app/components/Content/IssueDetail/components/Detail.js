@@ -1,6 +1,14 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { Badge, Text, theme, ContextMenu, ContextMenuItem } from '@aragon/ui'
+import {
+  Badge,
+  Text,
+  theme,
+  ContextMenu,
+  ContextMenuItem,
+  SafeLink,
+} from '@aragon/ui'
 import { format, formatDistance } from 'date-fns'
 
 import { DropDownButton } from '../../../Shared'
@@ -111,40 +119,48 @@ const MemberRow = ({ name, role, status, avatar }) => (
     </ContextMenu>
   </Wrapper>
 )
-const ActivityRow = ({ name, log, date, avatar }) => (
-  <Wrapper style={{ padding: '0' }}>
-    <Avatar size="small" style={column}>
-      {avatar}
-    </Avatar>
-    <div style={{ ...column, flex: 2 }}>
-      <Text.Block>
-        {name} {log}
-      </Text.Block>
-      <Text.Block>{date}</Text.Block>
-    </div>
-  </Wrapper>
+
+const ActivityRow = ({ name, log, login, date, avatar, url }) => (
+  <React.Fragment>
+    <UserLink>
+      <img
+        src={avatar}
+        style={{ width: '49px', height: '49px', marginRight: '10px' }}
+      />
+      <div>
+        <SafeLink
+          href={url}
+          target="_blank"
+          style={{
+            textDecoration: 'none',
+            color: '#21AAE7',
+            marginRight: '6px',
+          }}
+        >
+          {name ? name : login}
+        </SafeLink>
+        {log}
+        <Text.Block color={theme.textSecondary} size="small">
+          {date}
+        </Text.Block>
+      </div>
+    </UserLink>
+
+    <Separator />
+  </React.Fragment>
 )
 
-const fakeActivities = [
-  {
-    name: 'Worf',
-    log: 'began the task',
-    date: '2 days ago',
-    avatar: null,
-  },
-  {
-    name: 'Tasha Yar',
-    log: 'assigned Worf',
-    date: '3 days ago',
-    avatar: null,
-  },
-  {
-    name: 'Data',
-    log: 'rejected Jean-Luc\'s work',
-    date: 'Last seen 4 hours ago',
-    avatar: null,
-  },
-]
+const UserLink = styled.div`
+  display: flex;
+  align-items: center;
+`
+
+const Separator = styled.hr`
+  height: 1px;
+  width: 100%;
+  color: #d1d1d1;
+  opacity: 0.1;
+`
 
 const fakeMembers = [
   {
@@ -177,7 +193,6 @@ const Detail = ({
   repo,
   body,
   createdAt,
-  activities = fakeActivities, // TODO: Remove default fake value when data arrives from backend
   team = fakeMembers, // TODO: Also this
   expLevel,
   deadline,
@@ -187,18 +202,23 @@ const Detail = ({
   onReviewWork,
   onRequestAssignment,
   onSubmitWork,
-  onAllocateSingleBounty
+  onAllocateSingleBounty,
 }) => {
   //console.log('Detail props:', requestsData, balance, symbol, labels, title, number, repo, body, createdAt, expLevel, deadline, slots, workStatus)
 
   const summaryData = {
-    expLevel: (expLevel === undefined) ? '-' : expLevel,
-    deadline: (deadline === undefined) ? '-' : format(deadline, 'yyyy-MM-dd HH:mm:ss'),
-    slots: (slots === undefined) ? '-' :
-      (requestsData === undefined) ? 'Unallocated (' + slots + ')' :
-        (requestsData.length < slots) ? 'Slots available: ' + (slots - requestsData.length) + '/' + slots:
-          'Allocated',
-    workStatus: (workStatus === undefined) ? 'No bounty yet' : workStatus
+    expLevel: expLevel === undefined ? '-' : expLevel,
+    deadline:
+      deadline === undefined ? '-' : format(deadline, 'yyyy-MM-dd HH:mm:ss'),
+    slots:
+      slots === undefined
+        ? '-'
+        : requestsData === undefined
+          ? 'Unallocated (' + slots + ')'
+          : requestsData.length < slots
+            ? 'Slots available: ' + (slots - requestsData.length) + '/' + slots
+            : 'Allocated',
+    workStatus: workStatus === undefined ? 'No bounty yet' : workStatus,
   }
   const calculatedDate = () => {
     const date = Date.now()
@@ -206,9 +226,25 @@ const Detail = ({
   }
   // Some dynamically generated components
   const teamRows = team.map((member, i) => <MemberRow key={i} {...member} />)
-  const activityRows = activities.map((data, i) => (
-    <ActivityRow key={i} {...data} />
-  ))
+  const activityData =
+    requestsData &&
+    requestsData.map((r, i) => {
+      const applicationDateDistance = formatDistance(
+        new Date(r.applicationDate),
+        new Date()
+      )
+      const activity = {
+        name: r.user.login,
+        log: 'requested assignment',
+        date: `${applicationDateDistance} ago`,
+        avatar: r.user.avatarUrl,
+      }
+      return activity
+    })
+  const activityRows = activityData
+    ? activityData.map((a, i) => <ActivityRow key={i} {...a} />)
+    : null
+
   return (
     <Wrapper>
       <div style={{ flex: 3, maxWidth: '705px' }}>
@@ -244,15 +280,20 @@ const Detail = ({
                   onReviewWork={onReviewWork}
                 />
               </DropDownButton>
-              { balance > 0 &&
+              {balance > 0 && (
                 <Badge
-                  style={{padding: '10px', marginRight: '20px', textSize: 'large', marginTop: '15px'}}
+                  style={{
+                    padding: '10px',
+                    marginRight: '20px',
+                    textSize: 'large',
+                    marginTop: '15px',
+                  }}
                   background={'#e7f8ec'}
                   foreground={theme.positive}
                 >
                   {balance + ' ' + symbol}
                 </Badge>
-              }
+              )}
             </div>
           </Wrapper>
           <SummaryTable {...summaryData} />
@@ -276,18 +317,17 @@ const Detail = ({
           </Text>
         </div>
       </div>
-      {/* Activity and team not currently implemented
-        <div style={{ flex: 1, maxWidth: '359px' }}>
-          <div style={cardStyle}>
+      {/* Activity and team not currently fully implemented */}
+      <div style={{ flex: 1, maxWidth: '359px' }}>
+        {/* <div style={cardStyle}>
             <FieldTitle>Team</FieldTitle>
             {teamRows}
-          </div>
-          <div style={cardStyle}>
-            <FieldTitle>Activity</FieldTitle>
-            {activityRows}
-          </div>
+        </div> */}
+        <div style={cardStyle}>
+          <FieldTitle>Activity</FieldTitle>
+          {activityRows}
         </div>
-      */}
+      </div>
     </Wrapper>
   )
 }
