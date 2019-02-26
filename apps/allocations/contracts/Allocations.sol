@@ -179,7 +179,6 @@ contract Allocations is AragonApp, Fundable {
         for (i = 0; i < payout.supports.length; i++) {
             totalSupport += payout.supports[i];
         }
-        totalSupport = totalSupport.div(10000);
         require(!payout.informational, "Informational payouts don't run");
         require(payout.distSet, "setDistribution must be called first");
         if (payout.recurring) {
