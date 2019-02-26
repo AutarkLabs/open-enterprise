@@ -174,13 +174,12 @@ contract Allocations is AragonApp, Fundable {
 
     function runPayout(uint256 _payoutId) external payable isInitialized auth(EXECUTE_PAYOUT_ROLE) returns(bool success) {
         Payout storage payout = payouts[_payoutId];
-        uint256 pointsPer;
         uint256 totalSupport;
         uint i;
         for (i = 0; i < payout.supports.length; i++) {
             totalSupport += payout.supports[i];
         }
-
+        totalSupport = totalSupport.div(10000);
         require(!payout.informational, "Informational payouts don't run");
         require(payout.distSet, "setDistribution must be called first");
         if (payout.recurring) {
@@ -192,11 +191,12 @@ contract Allocations is AragonApp, Fundable {
             payout.distSet = false;
         }
 
-        pointsPer = payout.amount.div(totalSupport);
+        uint individualPayout;
         //handle vault
         for (i = 0; i < payout.candidateAddresses.length; i++) {
-            payout.candidateAddresses[i].transfer(payout.supports[i].mul(pointsPer));
-            payout.balance = payout.balance.sub(payout.supports[i].mul(pointsPer));
+            individualPayout = payout.supports[i].mul(payout.amount).div(totalSupport);
+            payout.candidateAddresses[i].transfer(individualPayout);
+            payout.balance = payout.balance.sub(individualPayout);
         }
         success = true;
         emit PayoutExecuted(_payoutId);
