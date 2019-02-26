@@ -1,6 +1,11 @@
 import styled from 'styled-components'
 import { theme } from '@aragon/ui'
 
+// Aragon UI has no such colors as our design has: border: 1px solid #DAEAEF; and background-color: #F3F9FB;
+// the closest is Blue.Spindle and infoBacground...
+// background: ${theme.shadow};
+// border: 1px solid ${theme.contentBorder};
+
 const CheckButton = styled.input.attrs({ type: 'checkbox' })`
   appearance: none;
   display: inline-flex;
@@ -10,8 +15,8 @@ const CheckButton = styled.input.attrs({ type: 'checkbox' })`
   width: 14px;
   height: 14px;
   margin: 5px;
-  background: ${theme.shadow};
-  border: 1px solid ${theme.contentBorder};
+  background-color: #F3F9FB;
+  border: 1px solid #DAEAEF;
   border-radius: 3px;
   outline: 0;
   cursor: pointer;

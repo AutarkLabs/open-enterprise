@@ -28,17 +28,19 @@ export default class IssueDetail extends React.Component {
   }
 
   render() {
-    const { onClose, issue, handleReviewApplication, handleRequestAssignment, handleSubmitWork} = this.props
+    const { onClose, issue, onReviewApplication, onRequestAssignment, onSubmitWork, onAllocateSingleBounty, onReviewWork} = this.props
 
     return createPortal(
       <div style={issueDetailStyle}>
         <Navigation onClose={onClose} />
         <Detail 
-          {...issue} 
-          handleReviewApplication = {handleReviewApplication}
-          handleRequestAssignment = {handleRequestAssignment}
-          handleSubmitWork = {handleSubmitWork}
-        />/>
+          {...issue}
+          onReviewApplication={onReviewApplication}
+          onRequestAssignment={onRequestAssignment}
+          onSubmitWork={onSubmitWork}
+          onAllocateSingleBounty={onAllocateSingleBounty}
+          onReviewWork={onReviewWork}
+        />
       </div>,
       this.el
     )
