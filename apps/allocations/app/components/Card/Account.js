@@ -14,6 +14,8 @@ import {
   theme,
 } from '@aragon/ui'
 
+const ETH_DECIMALS = BigNumber(10e17)
+
 const Account = ({
   id,
   proxy,
@@ -86,7 +88,7 @@ const Account = ({
           </Text>
           <StatsValue>
             {' ' + BigNumber(balance)
-              .div(BigNumber(10e17))
+              .div(ETH_DECIMALS)
               .dp(3)
               .toString()} {translatedToken}
           </StatsValue>
@@ -97,7 +99,7 @@ const Account = ({
           </Text>
           <StatsValue>
             {' ' + BigNumber(limit)
-              .div(BigNumber(10e17))
+              .div(ETH_DECIMALS)
               .dp(3)
               .toString()} {translatedToken}/ Allocation
           </StatsValue>

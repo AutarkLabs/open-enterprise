@@ -11,6 +11,7 @@ import BigNumber from 'bignumber.js'
 // import { allocationsMockData } from '../../utils/mockData'
 
 const ASSETS_URL = 'aragon-ui-assets/'
+const ETH_DECIMALS = BigNumber(10e17)
 
 class App extends React.Component {
   static propTypes = {
@@ -28,7 +29,7 @@ class App extends React.Component {
   }
   createAccount = ({ limit, ...account }) => {
     account.balance = 0
-    account.limit = BigNumber(10e17).times(limit).toString()
+    account.limit = ETH_DECIMALS.times(limit).toString()
     this.props.app.newPayout(account.description, account.limit, 0x0)
     this.closePanel()
     console.info('App.js: Account Created:')
