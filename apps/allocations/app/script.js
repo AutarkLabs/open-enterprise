@@ -116,12 +116,11 @@ async function checkAccountsLoaded(accounts, accountId, transform) {
 
 async function updateAllocationState(accounts = [], accountId, transform) {
   try {
-    const newAccounts = await checkAccountsLoaded(
+    const nextAccounts = await checkAccountsLoaded(
       accounts,
       accountId,
       transform
     )
-    const nextAccounts = [...accounts, ...newAccounts]
     return nextAccounts
   } catch (err) {
     console.error('[Allocations script] updateAllocationState failed', err)
