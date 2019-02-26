@@ -46,7 +46,7 @@ class VotePanelContent extends React.Component {
     }
   }
   handleVoteSubmit = () => {
-    const optionsArray = []
+    let optionsArray = []
 
     this.state.voteOptions.forEach(element => {
       let voteWeight = element.sliderValue
@@ -58,8 +58,12 @@ class VotePanelContent extends React.Component {
         : 0
       optionsArray.push(voteWeight)
     })
+
+    //re-proportion the supports values so they don't exceed the total balance
+    const valueTotal = optionsArray.reduce((a, b) => a + b, 0)
+    optionsArray = optionsArray.map(tokenSupport => ( tokenSupport / valueTotal ) * parseInt(this.state.userBalance) )
     // TODO: Let these comments here for a while to be sure we are working with correct values:
-    console.log('Sum of values:', optionsArray.reduce((a, b) => a + b, 0))
+    console.log('Sum of values:', valueTotal)
     console.log('userBalance', this.state.userBalance)
     console.log(
       'onVote voteId:',
