@@ -47,6 +47,10 @@ class Issues extends React.PureComponent {
     this.props.onCurateIssues(this.state.selectedIssues)
   }
 
+  handleAllocateSingleBounty = issue => {
+    this.props.onAllocateBounties([issue])
+  }
+
   handleAllocateBounties = () => {
     console.log('handleAllocationBounties:', this.state.selectedIssues)
     this.props.onAllocateBounties(this.state.selectedIssues)
@@ -228,10 +232,19 @@ class Issues extends React.PureComponent {
     </StyledIssues>
   )
 
+  getExpLevels = () => {
+    let expLevels = []
+    let a = this.props.bountySettings.expLevels.split('\t')
+    for (let i = 0; i < a.length; i += 2)
+      expLevels.push({ mul: a[i] / 100, name: a[i + 1] })
+    return expLevels
+  }
+
   shapeIssues = issues => {
-    const { tokens, bountyIssues } =  this.props
+    const { tokens, bountyIssues, } =  this.props
     let bountyIssueObj = {}
     let tokenObj = {}
+    let expLevels = this.getExpLevels()
 
     bountyIssues.forEach(issue => {
       bountyIssueObj[issue.issueNumber] = issue
@@ -252,8 +265,9 @@ class Issues extends React.PureComponent {
           ...bountyIssueObj[fields.number].data,
           repoId: id,
           repo: name,
-          symbol: tokenObj[data.token]
-        }          
+          symbol: tokenObj[data.token],
+          expLevel: expLevels[data.exp].name
+        }
       }
       return { 
         ...fields,
@@ -271,7 +285,7 @@ class Issues extends React.PureComponent {
   }
 
   render() {
-    const { projects, onNewProject } = this.props
+    const { projects, onNewProject, bountySettings } = this.props
     const { currentIssue, showIssueDetail } = this.state
 
     // better return early if we have no projects added?
@@ -281,14 +295,20 @@ class Issues extends React.PureComponent {
         <IssueDetail
           issue={currentIssue}
           onClose={this.handleIssueDetailClose}
-          handleReviewApplication = {() => {
-            this.handleReviewApplication(issue)
+          onReviewApplication = {() => {
+            this.handleReviewApplication(currentIssue)
           }}
-          handleRequestAssignment = {() => {
-            this.handleRequestAssignment(issue)
+          onRequestAssignment = {() => {
+            this.handleRequestAssignment(currentIssue)
           }}
-          handleSubmitWork = {() => {
-            this.handleSubmitWork(issue)
+          onSubmitWork = {() => {
+            this.handleSubmitWork(currentIssue)
+          }}
+          onAllocateSingleBounty={() => {
+            this.handleAllocateSingleBounty(currentIssue)
+          }}
+          onReviewWork={() => {
+            this.handleReviewWork(currentIssue)
           }}
         />
       )
@@ -322,33 +342,38 @@ class Issues extends React.PureComponent {
                 {this.filterBar(issues, issuesFiltered)}
 
                 <IssuesScrollView>
-                  {this.shapeIssues(issuesFiltered).sort(currentSorter).map(issue => (
-                    <Issue
-                      isSelected={this.state.selectedIssues
-                        .map(selectedIssue => selectedIssue.id)
-                        .includes(issue.id)}
-                      onClick={() => {
-                        this.handleIssueClick(issue)
-                      }}
-                      onSelect={() => {
-                        this.handleIssueSelection(issue)
-                      }}
-                      onReviewApplication={() => {
-                        this.handleReviewApplication(issue)
-                      }}
-                      onSubmitWork={() => {
-                        this.handleSubmitWork(issue)
-                      }}
-                      onRequestAssignment={() => {
-                        this.handleRequestAssignment(issue)
-                      }}
-                      onReviewWork={() => {
-                        this.handleReviewWork(issue)
-                      }}
-                      key={issue.id}
-                      {...issue}
-                    />
-                  ))}
+                  <ScrollWrapper>
+                    {this.shapeIssues(issuesFiltered).sort(currentSorter).map(issue => (
+                      <Issue
+                        isSelected={this.state.selectedIssues
+                          .map(selectedIssue => selectedIssue.id)
+                          .includes(issue.id)}
+                        onClick={() => {
+                          this.handleIssueClick(issue)
+                        }}
+                        onSelect={() => {
+                          this.handleIssueSelection(issue)
+                        }}
+                        onReviewApplication={() => {
+                          this.handleReviewApplication(issue)
+                        }}
+                        onSubmitWork={() => {
+                          this.handleSubmitWork(issue)
+                        }}
+                        onRequestAssignment={() => {
+                          this.handleRequestAssignment(issue)
+                        }}
+                        onAllocateSingleBounty={() => {
+                          this.handleAllocateSingleBounty(issue)
+                        }}
+                        onReviewWork={() => {
+                          this.handleReviewWork(issue)
+                        }}
+                        key={issue.id}
+                        {...issue}
+                      />
+                    ))}
+                  </ScrollWrapper>
                 </IssuesScrollView>
               </StyledIssues>
             )
