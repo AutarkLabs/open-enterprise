@@ -460,10 +460,10 @@ class App extends React.PureComponent {
           <ErrorBoundary>
             <AppContent
               onLogin={this.handleGithubSignIn}
-              status={this.props.github.status}
+              status={this.props.github.status || STATUS.INITIAL}
               app={this.props.app}
               bountySettings={bountySettings}
-              githubCurrentUser={githubCurrentUser}
+              githubCurrentUser={githubCurrentUser || {}}
               projects={this.props.repos !== undefined ? this.props.repos : []}
               bountyIssues={
                 this.props.issues !== undefined ? this.props.issues : []
