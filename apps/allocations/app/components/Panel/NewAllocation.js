@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import { DropDown, Info } from '@aragon/ui'
+import web3Utils from 'web3-utils'
 import { OptionsInput, SettingsInput } from '../../../../../shared/ui'
 
 import {
@@ -47,7 +48,7 @@ const message = {
 }
 
 const uniqueAddressValidation = (entries, addr) => {
-  const isAddress = /^(0x)?[0-9a-f]{40}$/i.test(addr) // TODO: replace by: web3.isAddress(addr)
+  const isAddress = web3Utils.isAddress(addr)
   const isUnique = !entries.length || !entries.map(e => e.addr).includes(addr)
   const notEmpty = addr && !!addr.length && addr !== '0x0'
   const validated = isAddress && isUnique && notEmpty
