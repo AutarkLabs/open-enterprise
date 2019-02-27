@@ -171,21 +171,17 @@ const StyledIssue = styled.div`
     justify-content: center;
     z-index: 2;
   }
-  > :nth-child(3) {
-    /* text */
-    height: 100%;
-    padding: 10px;
-    flex: 1 1 auto;
-  }
 `
 const IssueDetails = styled.div`
   display: flex;
 `
 const IssueDesc = styled.div`
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
-  justify-content: space-around;
   height: 90px;
+  justify-content: space-around;
+  padding: 10px;
 `
 const BalanceAndContext = styled.div`
   margin-right: 20px;
