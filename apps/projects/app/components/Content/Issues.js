@@ -43,7 +43,7 @@ class Issues extends React.PureComponent {
 
   componentWillMount() {
     if ('filterIssuesByRepoId' in this.props.activeIndex.tabData) {
-      let { filters } = this.state
+      const { filters } = this.state
       filters.projects[
         this.props.activeIndex.tabData.filterIssuesByRepoId
       ] = true
@@ -118,7 +118,7 @@ class Issues extends React.PureComponent {
       // otherwise, fail all issues without labels
       if (issue.labels.totalCount === 0) return false
 
-      let labelsIds = issue.labels.edges.map(label => label.node.id)
+      const labelsIds = issue.labels.edges.map(label => label.node.id)
 
       if (
         Object.keys(filters.labels).filter(id => labelsIds.indexOf(id) !== -1)
@@ -246,8 +246,8 @@ class Issues extends React.PureComponent {
   )
 
   getExpLevels = () => {
-    let expLevels = []
-    let a = this.props.bountySettings.expLevels.split('\t')
+    const expLevels = []
+    const a = this.props.bountySettings.expLevels.split('\t')
     for (let i = 0; i < a.length; i += 2)
       expLevels.push({ mul: a[i] / 100, name: a[i + 1] })
     return expLevels
@@ -255,8 +255,9 @@ class Issues extends React.PureComponent {
 
   shapeIssues = issues => {
     const { tokens, bountyIssues } = this.props
-    let tokenObj = {}
-    let expLevels = this.getExpLevels()
+    const bountyIssueObj = {}
+    const tokenObj = {}
+    const expLevels = this.getExpLevels()
 
     bountyIssues.forEach(issue => {
       bountyIssueObj[issue.issueNumber] = issue
@@ -268,7 +269,7 @@ class Issues extends React.PureComponent {
     })
     return issues.map(({ __typename, repository: { id, name }, ...fields }) => {
       if (bountyIssueObj[fields.number]) {
-        let data = bountyIssueObj[fields.number].data
+        const data = bountyIssueObj[fields.number].data
         console.log('Bounty Issue Info:', data)
 
         return {
@@ -360,8 +361,8 @@ class Issues extends React.PureComponent {
       >
         {({ data, loading, error, refetch }) => {
           if (data && data.nodes) {
-            let issues = flattenIssues(data.nodes)
-            let issuesFiltered = this.applyFilters(issues)
+            const issues = flattenIssues(data.nodes)
+            const issuesFiltered = this.applyFilters(issues)
             return (
               <StyledIssues>
                 {this.actionsMenu()}
