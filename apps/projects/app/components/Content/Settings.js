@@ -469,6 +469,7 @@ const StyledButton = styled(Button)`
 const StyledContent = styled.div`
   padding: 30px;
   display: flex;
+  height: fit-content;
   > .column {
     display: flex;
     flex-direction: column;
