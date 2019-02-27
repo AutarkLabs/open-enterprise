@@ -13,8 +13,7 @@ import {
   SafeLink,
   theme,
 } from '@aragon/ui'
-
-const ETH_DECIMALS = BigNumber(10e17)
+import { ETH_DECIMALS } from '../../utils/constants'
 
 const Account = ({
   id,

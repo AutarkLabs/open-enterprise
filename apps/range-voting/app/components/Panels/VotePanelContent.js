@@ -154,10 +154,13 @@ class VotePanelContent extends React.Component {
       options,
       type,
     } = vote.data
-
+    const displayBalance = BigNumber(vote.data.balance)
+      .div(BigNumber(10 ** this.state.decimals))
+      .dp(3)
+      .toString()
     // TODO: Show decimals for vote participation only when needed
-    const disParticipationPct = (participationPct).toFixed(2)
-    const disMinParticipationPct = (minParticipationPct / 10 ** 16).toFixed(2)
+    const displayParticipationPct = (participationPct).toFixed(2)
+    const displayMinParticipationPct = (minParticipationPct / 10 ** 16).toFixed(2)
     // TODO: This block is wrong and has no sense
     if (!voteOptions.length) {
       this.state.voteOptions = options
@@ -231,12 +234,7 @@ class VotePanelContent extends React.Component {
                 <Label>Amount</Label>
               </h2>
               <p>
-                {' ' +
-                  BigNumber(vote.data.balance)
-                    .div(BigNumber(10 ** this.state.decimals))
-                    .dp(3)
-                    .toString() +
-                  ' ETH'}
+                {' ' + displayBalance + ' ETH'}
               </p>
             </div>
             <div>
@@ -253,9 +251,9 @@ class VotePanelContent extends React.Component {
               <Label>Voter participation</Label>
             </h2>
             <p>
-              {disParticipationPct}%{' '}
+              {displayParticipationPct}%{' '}
               <Text size="small" color={theme.negative}>
-                ({disMinParticipationPct}% required)
+                ({displayMinParticipationPct}% required)
               </Text>
             </p>
           </div>

@@ -6,12 +6,10 @@ import styled from 'styled-components'
 import { Accounts, NewAccountButton } from '.'
 import { Title } from '../Shared'
 import { NewAccount, NewAllocation } from '../Panel'
-import BigNumber from 'bignumber.js'
-
+import { ETH_DECIMALS } from '../../utils/constants'
 // import { allocationsMockData } from '../../utils/mockData'
 
 const ASSETS_URL = 'aragon-ui-assets/'
-const ETH_DECIMALS = BigNumber(10e17)
 
 class App extends React.Component {
   static propTypes = {

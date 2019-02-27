@@ -51,9 +51,7 @@ class Slider extends React.Component {
   }
   updateValueFromClientX(clientX) {
     const rect = this.getRect()
-    const x = parseFloat(
-      Math.floor(Math.min(rect.width, Math.max(0, clientX - rect.x)) * 1000 ) / 1000
-    )
+    const x = Math.min(rect.width, Math.max(0, clientX - rect.x))
     this.props.onUpdate(x / rect.width)
   }
   dragStart = event => {
@@ -111,9 +109,7 @@ class Slider extends React.Component {
   }
   render() {
     const { pressed } = this.state
-    const value = parseFloat(
-      Math.floor(Math.max(0, Math.min(1, this.props.value)) * 1000) / 1000
-    )
+    const value = Math.max(0, Math.min(1, this.props.value))
     return (
       <Spring
         config={springs.swift}
