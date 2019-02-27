@@ -40,11 +40,11 @@ interface Fundable {
 *      to receive funds from an address and "piece it out" to a layered contract
 *      Any advice on best practice for this would be welcome.
 *******************************************************************************/
-contract FundForwarder { 
+contract FundForwarder {
     Fundable fundable;
     uint256 id;
 
-    constructor(uint256 _id, address _fundable) public { 
+    constructor(uint256 _id, address _fundable) public {
         fundable = Fundable(_fundable);
         id = _id;
     }
@@ -63,7 +63,7 @@ contract FundForwarder {
 *      percentage breakdown to an array of addresses. Currently it works with ETH
 *      needs to be adapted to work with tokens.
 *******************************************************************************/
-contract Allocations is AragonApp, Fundable { 
+contract Allocations is AragonApp, Fundable {
 
     using SafeMath for uint256;
 
@@ -131,7 +131,7 @@ contract Allocations is AragonApp, Fundable {
         Payout storage payout = payouts[_payoutId];
         numCandidates = payout.supports.length;
     }
-    
+
     function getPayoutDistributionValue(uint256 _payoutId, uint256 idx) external view returns(uint256 supports) {
         Payout storage payout = payouts[_payoutId];
         supports = payout.supports[idx];
@@ -148,7 +148,7 @@ contract Allocations is AragonApp, Fundable {
     * @param _metadata Any relevent label for the payout
     *
     */
-    function newPayout( 
+    function newPayout(
         string _metadata,
         uint256 _limit,
         address _token
@@ -162,10 +162,10 @@ contract Allocations is AragonApp, Fundable {
         payout.balance = 0;
         FundForwarder fund = new FundForwarder(payoutId, address(this));
         payout.proxy = address(fund);
-        emit NewAccount(payoutId); 
+        emit NewAccount(payoutId);
     }
 
-    function fund(uint256 id) external payable { 
+    function fund(uint256 id) external payable {
         Payout storage payout = payouts[id];
         require(!payout.informational);
         payout.balance = payout.balance.add(msg.value);
@@ -227,33 +227,33 @@ contract Allocations is AragonApp, Fundable {
     {
         Payout storage payout = payouts[_payoutId];
         payout.candidateAddresses = _candidateAddresses;
-        require(_amount <= payout.limit);  
+        //require(_amount <= payout.limit, "payout amount over account limit"); // This is unnecessary
         payout.informational = _informational;
         payout.recurring = _recurring;
         if (!_informational) {
             payout.balance.add(msg.value);
+            payout.amount = _amount;
             require(payout.balance >= _amount, "payout account underfunded");
-            require(payout.limit >= _amount, "payout limit too low for amount");
+            require(payout.limit >= _amount, "payout amount over account limit");
         } else {
             require(msg.value == 0, "cannot fund informational allocation");
-            payout.balance = 0;
+            // must set amount to zero
+            //setting balance to zero orphans the funds submitted to this account
+            payout.amount = 0;
         }
         if (_recurring) {
             payout.period = _period;
             // minimum granularity is a single day
             // This check is disabled currently to enable testing of shorter times
             //require(payout.period > 86399);
-            payout.startTime = block.timestamp; 
+            payout.startTime = block.timestamp;
         } else {
             payout.period = 0;
         }
 
         payout.distSet = true;
         payout.supports = _supports;
-        payout.amount = _amount;
         emit SetDistribution(_payoutId);
     }
 
 }
-
-
