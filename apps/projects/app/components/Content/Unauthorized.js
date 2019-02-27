@@ -16,7 +16,7 @@ const Unauthorized = ({ onLogin }) => (
       actionText="Sign in with GitHub"
       onActivate={onLogin}
     />
-    <Text size="xsmall">
+    <Text size="xsmall" style={{ paddingTop: '10px' }}>
       * Note: we plan to decouple from GitHub in the future!
     </Text>
   </EmptyWrapper>
