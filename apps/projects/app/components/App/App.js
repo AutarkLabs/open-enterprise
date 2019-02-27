@@ -207,6 +207,7 @@ class App extends React.PureComponent {
       panelProps: {
         onCreateProject: this.createProject,
         onGithubSignIn: this.handleGithubSignIn,
+        reposAlreadyAdded: this.props.repos,
         status: status,
       },
     }))
@@ -423,7 +424,6 @@ class App extends React.PureComponent {
   render() {
     const { activeIndex, panel, panelProps } = this.state
     const { client, bountySettings, githubCurrentUser } = this.props
-
     return (
       <StyledAragonApp publicUrl={ASSETS_URL}>
         <BaseStyles />

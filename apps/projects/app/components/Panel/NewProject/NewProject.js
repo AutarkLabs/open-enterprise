@@ -8,10 +8,11 @@ import { STATUS } from '../../../utils/github'
 const NewProject = ({
   onCreateProject,
   onGithubSignIn,
+  reposAlreadyAdded,
   status = STATUS.INITIAL,
 }) =>
   status === STATUS.AUTHENTICATED ? (
-    <RepoSelector onCreateProject={onCreateProject} />
+    <RepoSelector onCreateProject={onCreateProject} reposAlreadyAdded={reposAlreadyAdded}/>
   ) : (
     <GithubAuth onGithubSignIn={onGithubSignIn} />
   )

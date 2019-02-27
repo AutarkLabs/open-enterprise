@@ -22,11 +22,16 @@ class Repo extends React.Component {
     repoSelected: -1,
   }
 
+  filterAlreadyAdded = repos => {
+    const reposAlreadyAddedIds = this.props.reposAlreadyAdded.map(repo => repo.data._repo)
+    return repos.filter(repo => reposAlreadyAddedIds.indexOf(repo.node.id) === -1)
+  }
+
   componentDidMount() {
     if (this.props.data && this.props.data.viewer) {
       this.setState({
-        repos: this.props.data.viewer.repositories.edges,
-        filteredRepos: this.props.data.viewer.repositories.edges,
+        repos: this.filterAlreadyAdded(this.props.data.viewer.repositories.edges),
+        filteredRepos: this.filterAlreadyAdded(this.props.data.viewer.repositories.edges),
       })
     }
   }
@@ -34,8 +39,8 @@ class Repo extends React.Component {
   componentWillReceiveProps(nextProps) {
     if (nextProps.data.viewer.repositories) {
       this.setState({
-        repos: nextProps.data.viewer.repositories.edges,
-        filteredRepos: nextProps.data.viewer.repositories.edges,
+        repos: this.filterAlreadyAdded(nextProps.data.viewer.repositories.edges),
+        filteredRepos: this.filterAlreadyAdded(nextProps.data.viewer.repositories.edges),
       })
     }
   }
@@ -86,10 +91,9 @@ class Repo extends React.Component {
   unselect = () => this.setState({})
 
   render() {
-    const { repos, filteredRepos, filtered, filter } = this.state
+    const { repos, filteredRepos, filtered, filter, reposAlreadyAdded } = this.state
 
     const visibleRepos = filtered ? filteredRepos : repos
-
     // TODO: extract to component
     const repoArray = visibleRepos.map(repo => ({
       title: repo.node.nameWithOwner,
@@ -128,7 +132,11 @@ class Repo extends React.Component {
         </div>
       )
 
-    const repositories = repos.length > 0 ? repoList : <Loading />
+    // if there are repos to add - list them. otherwise either all repos
+    // are already added or we're still waiting for the list from external
+    const repositories = repos.length > 0 ? repoList :
+      this.props.data && this.props.data.viewer && this.props.data.viewer.repositories.edges.length > 0 ?
+        <NoMoreRepos/> : <Loading />
 
     return (
       <React.Fragment>
@@ -265,6 +273,19 @@ const Loading = () => (
   >
     <LoadingAnimation style={{ marginBottom: '32px' }} />
     Loading repos...
+  </div>
+)
+const NoMoreRepos = () => (
+  <div
+    style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100%',
+      flexDirection: 'column'
+    }}
+  >
+    <Text>No more repos to add...</Text>
   </div>
 )
 
