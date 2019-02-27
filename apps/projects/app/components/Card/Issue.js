@@ -2,8 +2,130 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { Text, theme, Badge, Button, ContextMenu, ContextMenuItem } from '@aragon/ui'
+import { formatDistance } from 'date-fns'
+import { CheckButton, BountyContextMenu } from '../Shared'
 
-import { CheckButton } from '../Shared'
+const ClickArea = styled.div`
+  height: 100%;
+  left: 0;
+  position: absolute;
+  width: 100%;
+  z-index: 0;
+  :active {
+    border: 1px solid ${theme.accent};
+    z-index: 3;
+  }
+  :hover {
+    cursor: pointer;
+  }
+`
+const DeadlineDistance = date => formatDistance(new Date(date), new Date(), { addSuffix: true })
+
+const dot = <span style={{ margin: '0px 10px' }}>&middot;</span>
+
+const labelsBadges = labels => labels.edges.map(label =>
+  <Badge
+    key={label.node.id}
+    style={{ marginRight: '10px'}}
+    background={'#'+label.node.color}
+    foreground={'#000'}>{label.node.name}
+  </Badge>
+)
+
+const Issue = ({
+  workStatus,
+  title,
+  repo,
+  number,
+  labels,
+  isSelected,
+  onSelect,
+  onClick,
+  onSubmitWork,
+  onRequestAssignment,
+  onReviewApplication,
+  onAllocateSingleBounty,
+  onReviewWork,
+  balance,
+  symbol,
+  deadline,
+  requestsData,
+  bountySettings,
+  expLevel,
+  slots
+}) => {
+  //console.log('CARD:', workStatus, title, repo, number, labels, isSelected, balance, symbol, deadline, requestsData, expLevel, slots)
+
+  // prepare display of number of slots vs number of applicants
+  const slotsAllocation = (requestsData === undefined) ? 'Unallocated (' + slots + ')' :
+    (requestsData.length < slots) ? 'Slots available: ' + (slots - requestsData.length) + '/' + slots:
+      'Allocated'
+
+  return (
+    <StyledIssue>
+      <ClickArea onClick={onClick} />
+      <CheckButton checked={isSelected} onChange={onSelect} />
+      <IssueDesc>
+        <div>
+          <Text color={theme.textPrimary} size="xlarge">
+            {title}
+          </Text>
+          {dot}
+          <Text color={theme.textSecondary} size="large">
+            {repo} #{number}
+          </Text>
+        </div>
+        { (balance > 0 || labels.totalCount > 0) && <IssueDetails>
+          <Text size="small" color={theme.textTertiary}>
+            { balance > 0 &&
+              <span style={{ marginRight: '15px'}}>
+                {expLevel}
+                {dot}
+                {slotsAllocation}
+                {dot}
+                Due {DeadlineDistance(deadline)}
+              </span>
+            }
+            { labels.totalCount ? labelsBadges(labels) : '' }        
+          </Text>
+        </IssueDetails>
+        }
+      </IssueDesc>
+      <BalanceAndContext>
+        { balance > 0 &&  
+          <Badge
+            style={{padding: '10px', marginRight: '20px', textSize: 'large'}}
+            background={'#e7f8ec'}
+            foreground={theme.positive}>{balance + ' ' + symbol}
+          </Badge>
+        }
+        { workStatus !== 'finished' &&
+          <ContextMenu>
+            <BountyContextMenu
+              workStatus={workStatus}
+              requestsData={requestsData}
+              onAllocateSingleBounty={onAllocateSingleBounty}
+              onSubmitWork={onSubmitWork}
+              onRequestAssignment={onRequestAssignment}
+              onReviewApplication={onReviewApplication}
+              onReviewWork={onReviewWork}
+            />
+          </ContextMenu>
+        }
+      </BalanceAndContext>
+    </StyledIssue>
+  )
+}
+
+Issue.propTypes = {
+  title: PropTypes.string.isRequired,
+  repo: PropTypes.string.isRequired,
+  number: PropTypes.number.isRequired,
+  isSelected: PropTypes.bool,
+  onClick: PropTypes.func.isRequired,
+  onSelect: PropTypes.func,
+  workStatus: PropTypes.oneOf([undefined, 'new', 'review-applicants', 'submit-work', 'review-work', 'finished']),
+}
 
 const StyledIssue = styled.div`
   flex: 1;
@@ -13,6 +135,7 @@ const StyledIssue = styled.div`
   padding-left: 10px;
   height: 112px;
   align-items: center;
+  border-radius: 3px;
   border: 1px solid ${theme.contentBorder};
   margin-bottom: -1px;
   position: relative;
@@ -29,124 +152,18 @@ const StyledIssue = styled.div`
     flex: 1 1 auto;
   }
 `
-
-const ClickArea = styled.div`
-  height: 100%;
-  left: 0;
-  position: absolute;
-  width: 100%;
-  z-index: 0;
-  :active {
-    border: 1px solid ${theme.accent};
-    z-index: 3;
-  }
-  :hover {
-    cursor: pointer;
-  }
-`
-
 const IssueDetails = styled.div`
   display: flex;
 `
-
-// workStatus can be either: 'new', 'review-applicants', 'review-work', or 'finished'
-// It represents the state of the current issue in the approval bounty flow
-const Issue = ({workStatus, title, repo, number, labels, isSelected, onClick, onSelect, onSubmitWork, onRequestAssignment, onReviewApplication, onReviewWork, balance, symbol }) => (
-  <StyledIssue>
-    <ClickArea onClick={onClick} />
-    <CheckButton checked={isSelected} onChange={onSelect} />
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-around',
-        height: '90px',
-        flex: '1',
-      }}
-    >
-      <div>
-        <Text
-          color={theme.textPrimary}
-          size="large"
-          style={{ marginRight: '5px' }}
-        >
-          {title}
-        </Text>
-      </div>
-      <IssueDetails>
-        <Text color={theme.textSecondary}>
-          {repo} #{number}
-        </Text>
-        <Text size="small" color={theme.textTertiary}>
-          {labels.totalCount
-            ? labels.edges.map(label => (
-              <Badge
-                key={label.node.id}
-                style={{ marginLeft: '5px' }}
-                background={'#' + label.node.color}
-                foreground={'#000'}
-              >
-                {label.node.name}
-              </Badge>
-            ))
-            : ''}
-        </Text>
-      </IssueDetails>
-    </div>
-
-    <div style={{ marginRight: '20px', display: 'inline-flex' }}>
-      { balance > 0 &&  
-        <Badge
-          style={{padding: '10px', marginRight: '20px', textSize: 'large'}}
-          background={'#e7f8ec'}
-          foreground={theme.positive}>{balance + ' ' + symbol}
-        </Badge>
-        
-      }
-
-      {workStatus !== undefined && workStatus !== 'finished' &&
-        <ContextMenu>
-          {(workStatus === 'submit-work' || workStatus === 'review-work') &&
-            <div>
-              <ContextMenuItem onClick={onSubmitWork}>
-                <ActionLabel>Submit Work</ActionLabel>
-              </ContextMenuItem>
-              <ContextMenuItem onClick={onReviewWork}>
-                <ActionLabel>Review Work</ActionLabel>
-              </ContextMenuItem>
-            </div>
-          }
-          {(workStatus === 'new' || workStatus === 'review-applicants') &&
-            <ContextMenuItem onClick={onRequestAssignment}>
-              <ActionLabel>Request Assignment</ActionLabel>
-            </ContextMenuItem>
-          }
-          {workStatus === 'review-applicants' &&
-            <ContextMenuItem onClick={onReviewApplication}>
-              <ActionLabel>Review Application</ActionLabel>
-            </ContextMenuItem>
-          }
-        </ContextMenu>
-      }
-    </div>
-  </StyledIssue>
-)
-
-Issue.propTypes = {
-  title: PropTypes.string.isRequired,
-  repo: PropTypes.string.isRequired,
-  number: PropTypes.number.isRequired,
-  isSelected: PropTypes.bool,
-  onClick: PropTypes.func.isRequired,
-  onSelect: PropTypes.func,
-}
-
-const ActionLabel = styled.span`
-  margin-left: 15px;
+const IssueDesc = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  height: 90px;
 `
-const MenuContainer = styled.div`
-  align-self: flex-end;
-  align-items: center;
+const BalanceAndContext = styled.div`
+  margin-right: 20px;
+  display: inline-flex;
 `
 
 export default Issue
