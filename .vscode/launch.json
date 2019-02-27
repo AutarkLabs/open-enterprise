@@ -23,7 +23,7 @@
             "args": [
                 "test"
             ]
-        }.
+        },
         {
             "type": "node",
             "request": "launch",
