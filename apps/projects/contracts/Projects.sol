@@ -302,6 +302,7 @@ contract Projects is IsContract, AragonApp {
      * @param _owner Github id of the entity that owns the repo to add
      * @param _repoId Github id of the repo to add
      * @return index for the added repo at the registry
+     * // RepoUpdated event doesn't seem useful at the moment
      */
     function addRepo(
         bytes32 _repoId,
@@ -321,16 +322,20 @@ contract Projects is IsContract, AragonApp {
      */
     function removeRepo(
         bytes32 _repoId
-    ) external auth(REMOVE_REPO_ROLE) returns(bool success)
+    ) external auth(REMOVE_REPO_ROLE) returns (bool success)
     {
         require(isRepoAdded(_repoId), "REPO_NOT_ADDED");
         uint rowToDelete = repos[_repoId].index;
-        bytes32 repoToMove = repoIndex[repoIndex.length - 1];
-        repoIndex[rowToDelete] = repoToMove;
-        repos[repoToMove].index = rowToDelete;
+
+        if (repoIndex.length != 1) {
+            bytes32 repoToMove = repoIndex[repoIndex.length - 1];
+            repoIndex[rowToDelete] = repoToMove;
+            repos[repoToMove].index = rowToDelete;
+            //emit RepoUpdated(repoToMove, repos[repoToMove].owner, rowToDelete);
+        }
+
         repoIndex.length--;
         emit RepoRemoved(_repoId, rowToDelete);
-        emit RepoUpdated(repoToMove, repos[repoToMove].owner, rowToDelete);
         return true;
     }
 

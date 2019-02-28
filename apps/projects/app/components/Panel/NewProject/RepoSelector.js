@@ -70,8 +70,6 @@ class Repo extends React.Component {
 
   handleNewProject = () => {
     const { owner, project } = this.state
-    console.log('owner', owner, 'project', project)
-
     if (project.length > 0) this.props.onCreateProject({ owner, project })
   }
 

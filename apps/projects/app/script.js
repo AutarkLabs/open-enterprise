@@ -123,7 +123,11 @@ async function handleEvents(response) {
     break
   case 'RepoRemoved':
     console.log('[Projects] RepoRemoved', response.returnValues)
-    nextState = await syncRepos(appState, response.returnValues)
+    const id = response.returnValues.repoId
+    const repoIndex = appState.repos.findIndex(repo => repo.id === id)
+    if (repoIndex === -1) break
+    appState.repos.splice(repoIndex,1)
+    nextState = appState
     break
   case 'RepoUpdated':
     console.log('[Projects] RepoUpdated', response.returnValues)

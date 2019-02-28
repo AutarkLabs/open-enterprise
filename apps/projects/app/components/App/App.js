@@ -172,9 +172,9 @@ class App extends React.PureComponent {
     this.props.app.addRepo(web3.toHex(project), web3.toHex(owner))
   }
 
-  removeProject = projectId => {
-    console.log('App.js: removeProject', projectId)
-    this.props.app.removeRepo(projectId)
+  removeProject = project => {
+    console.log('App.js: removeProject', project)
+    this.props.app.removeRepo(web3.toHex(project))
     // TODO: Toast feedback here maybe
   }
 
