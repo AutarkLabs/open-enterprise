@@ -1,4 +1,4 @@
-import addressBookAbi from '../../../shared/abi/address-book'
+import addressBookAbi from '../../../shared/json-abis/address-book'
 import { app } from './'
 
 /// /////////////////////////////////////
