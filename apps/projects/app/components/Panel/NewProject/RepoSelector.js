@@ -23,6 +23,7 @@ class Repo extends React.Component {
   }
 
   filterAlreadyAdded = repos => {
+    if (this.props.reposAlreadyAdded === undefined) return repos
     const reposAlreadyAddedIds = this.props.reposAlreadyAdded.map(repo => repo.data._repo)
     return repos.filter(repo => reposAlreadyAddedIds.indexOf(repo.node.id) === -1)
   }
@@ -90,6 +91,33 @@ class Repo extends React.Component {
 
   unselect = () => this.setState({})
 
+  repoList = (visibleRepos, repoArray) => visibleRepos.length > 0 ? (
+    <RadioList
+      items={repoArray}
+      selected={this.state.repoSelected}
+      onChange={this.onRepoSelected}
+    />
+  ) : (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        marginTop: '19px',
+        flexDirection: 'column',
+      }}
+    >
+      <Text.Block>
+        There are no repositories matching{' '}
+        <Text weight="bold">{this.state.filter}</Text>
+      </Text.Block>
+      <ClearSearch onClick={this.handleClearSearch}>
+        Clear Search
+      </ClearSearch>
+    </div>
+  )
+
+  stillLoading = () => !(this.props.data && this.props.data.viewer && this.props.data.viewer.repositories.edges.length > 0)
+
   render() {
     const { repos, filteredRepos, filtered, filter, reposAlreadyAdded } = this.state
 
@@ -101,42 +129,16 @@ class Repo extends React.Component {
       description: '',
     }))
 
-    const repoList =
-      visibleRepos.length > 0 ? (
-        <RadioList
-          items={repoArray}
-          selected={this.state.repoSelected}
-          onChange={this.onRepoSelected}
-        />
-      ) : (
-        // <RadioGroup>
-        //   {visibleRepos.map((repo, i) => (
-        //     <RepoLine repo={repo} i={i} onRepoSelected={this.onRepoSelected} />
-        //   ))}
-        // </RadioGroup>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            marginTop: '19px',
-            flexDirection: 'column',
-          }}
-        >
-          <Text.Block>
-            There are no repositories matching{' '}
-            <Text weight="bold">{this.state.filter}</Text>
-          </Text.Block>
-          <ClearSearch onClick={this.handleClearSearch}>
-            Clear Search
-          </ClearSearch>
-        </div>
-      )
-
     // if there are repos to add - list them. otherwise either all repos
     // are already added or we're still waiting for the list from external
-    const repositories = repos.length > 0 ? repoList :
-      this.props.data && this.props.data.viewer && this.props.data.viewer.repositories.edges.length > 0 ?
-        <NoMoreRepos/> : <Loading />
+    let repositoriesDisplay
+
+    if (repos.length > 0)
+      repositoriesDisplay = this.repoList(visibleRepos, repoArray)
+    else if (this.stillLoading())
+      repositoriesDisplay = <Loading />
+    else
+      repositoriesDisplay = <NoMoreRepos/>
 
     return (
       <React.Fragment>
@@ -168,7 +170,7 @@ class Repo extends React.Component {
                 height: 'calc(100vh - 253px)',
               }}
             >
-              {repositories}
+              {repositoriesDisplay}
             </div>
             <Button
               mode="strong"
@@ -308,8 +310,8 @@ query {
    repositories(
      first: 100,
      orderBy: {field: UPDATED_AT, direction: DESC}
-     ownerAffiliations: [OWNER, COLLABORATOR, ORGANIZATION_MEMBER],
-     affiliations: [OWNER, COLLABORATOR, ORGANIZATION_MEMBER]) {
+     ownerAffiliations: [OWNER, COLLABORATOR],
+     affiliations: [OWNER, COLLABORATOR]) {
      totalCount
      edges {
       node {
