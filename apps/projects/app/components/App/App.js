@@ -235,7 +235,7 @@ class App extends React.PureComponent {
           bountyDecimals = token.decimals
         }
       }
-    })
+    )
 
     let issuesArray = []
 
