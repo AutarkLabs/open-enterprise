@@ -137,14 +137,14 @@ contract RewardToken {
     }
 
    /**
-    * @param _owner The address that's balance is being requested
-    * @return The balance of `addr` at the current block
+    * @param _addr The address that's balance is being requested
+    * @return The balance of `_addr` at the current block
     */
-    function balanceOf(address addr) public view returns(uint) {
-        if (addr == 0xdead) {
-            return this.balance - supply;
+    function balanceOf(address _addr) public view returns(uint) {
+        if (_addr == address(this)) {
+            return address(this).balance - supply;
         }
-        return balances[addr];
+        return balances[_addr];
     }
 
    /**
@@ -253,7 +253,7 @@ contract RewardToken {
 
         // If the amount being transfered is more than the balance of the
         //  account the transfer throws
-        var previousBalanceFrom = balanceOf(_from);
+        uint previousBalanceFrom = balanceOf(_from);
 
         require(previousBalanceFrom >= _amount, "Previous balance greater than amount");
 
@@ -268,7 +268,7 @@ contract RewardToken {
 
         // Then update the balance array with the new value for the address
         //  receiving the tokens
-        var previousBalanceTo = balanceOf(_to);
+        uint previousBalanceTo = balanceOf(_to);
         require(previousBalanceTo + _amount >= previousBalanceTo, "insufficient balance"); // Check for overflow
         balances[_to] = previousBalanceTo + _amount;
 
