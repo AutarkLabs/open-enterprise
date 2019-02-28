@@ -11,6 +11,7 @@ import { Title } from '../Shared'
 import PanelManager, { PANELS } from '../Panel'
 import { STATUS } from '../../utils/github'
 import ErrorBoundary from './ErrorBoundary'
+import BigNumber from 'bignumber.js'
 
 const ASSETS_URL = './aragon-ui-assets/'
 
@@ -226,11 +227,12 @@ class App extends React.PureComponent {
   onSubmitBountyAllocation = async issues => {
     this.closePanel()
     let bountySymbol = this.props.bountySettings.bountyCurrency
-    let bountyToken
+    let bountyToken, bountyDecimals
     this.props.tokens.forEach(
       token => {
         if(token.symbol === bountySymbol) {
           bountyToken = token.addr
+          bountyDecimals = token.decimals
         }
       }
     )
@@ -251,7 +253,7 @@ class App extends React.PureComponent {
     console.log('Bounty data for app.addBounties',
       issuesArray.map( (issue) => issue.repoId),
       issuesArray.map( (issue) => issue.number),
-      issuesArray.map( (issue) => issue.size),
+      issuesArray.map( (issue) => BigNumber(issue.size).times(10 ** bountyDecimals)).toString(),
       issuesArray.map( (issue) => issue.deadline),
       new Array(issuesArray.length).fill(true),
       tokenArray,
@@ -260,7 +262,7 @@ class App extends React.PureComponent {
     this.props.app.addBounties(
       issuesArray.map( (issue) => web3.toHex(issue.repoId)),
       issuesArray.map( (issue) => issue.number),
-      issuesArray.map( (issue) => issue.size),
+      issuesArray.map( (issue) => BigNumber(issue.size).times(10 ** bountyDecimals)),
       issuesArray.map( (issue) => {return ( Date.now() + 8600 )} ),
       new Array(issuesArray.length).fill(true),
       tokenArray,
