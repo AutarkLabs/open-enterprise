@@ -173,7 +173,7 @@ contract Allocations is AragonApp, Fundable {
     }
 
     /**
-    * @dev This is the function distributes the payouts to the candidates in accordance with the distribution values
+    * @dev This function distributes the payouts to the candidates in accordance with the distribution values
     * @notice Send payout amounts to the candidates in accordance with the distribution proportions
     * @param _payoutId Any relevent label for the payout
     */
