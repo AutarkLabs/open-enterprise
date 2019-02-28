@@ -17,14 +17,16 @@ pragma solidity ^0.4.17;
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/// @title Rewards Contract
-/// @author Arthur Lunn
-/// @dev This token is meant to allow for the easy distribution of tokens
-///  to a group of token holders in all constant time operations. This
-///  circumvents many of the issues present with the niave approach of simply
-///  burning tokens to reward token holders in that it allows both time-specific
-///  and variable payout rewards without the need to send to each individual
-///  that is being rewarded.
+/**
+ * @title Rewards Contract
+ * @author Arthur Lunn
+ * @dev This token is meant to allow for the easy distribution of tokens
+ *  to a group of token holders in all constant time operations. This
+ *  circumvents many of the issues present with the niave approach of simply
+ *  burning tokens to reward token holders in that it allows both time-specific
+ *  and variable payout rewards without the need to send to each individual
+ *  that is being rewarded.
+**/
 
 import "./Controlled.sol";
 import "./TokenController.sol";
@@ -68,109 +70,112 @@ contract RewardToken {
 
     /// @dev `Reward` serves as a basic constructor and simply initializes
     ///  the total payouts for the first period to 0.
-    function Reward() public {
+    constructor() public {
         sumPayout[period++] = 0;
         controller = msg.sender;
     }
-
-    /// @dev `updateRewards` is used to update the rewards for an individual
-    ///  user at a specific time. This function should be called any time
-    ///  that a users balance changes for any reason. 
-    /// @param user This is the user to update given as an ethereum address.
-    function updateRewards(address user) public {
-        PendingReward memory pendingReward = pendingRewards[pendingRewards.length - 1];
-        while(pendingReward.rewardTime < now){
-            pendingReward = pendingRewards.pop();
-            executeFutureReward(pendingReward.rewardValue);
-        }
-        // If this user has already been updated on the current period
-        // they don't need to be updated again.
-        if(info[user].lastTransfer == period) return;
-        // This gets the weighted payout for the period spanning from
-        // the last transfer or change in balance the user had, to the current
-        // period.
-        uint weightedpayout = sumPayout[period] - sumPayout[info[user].lastTransfer];
-        // Based on the weighted payout of the updated period, get the
-        // share that user should have based on their balance for that period
-        uint share = balances[user] * weightedpayout;
-        // Update the user's info
-        info[user].summedRewards += share;
-        info[user].lastTransfer = period;
-    }
-
-    /// @dev `addRewards` allows for distribution of ether to all of
-    ///  the users currently holding tokens. This function needs some sort
-    ///  of permission based access control. Controller contract should work.
-    function addReward() public payable{
-        sumPayout[period] = sumPayout[period++] + (msg.value / supply);
-    }
-
-        /// @dev `addRewards` allows for distribution of ether to all of
-    ///  the users currently holding tokens. This function needs some sort
-    ///  of permission based access control. Controller contract should work.
-    function addFutureReward(uint timePeriod) public payable{
-        pendingRewards.push(new PendingReward(timePeriod, msg.value));
-    }
-
-    function executeFutureReward(uint value) internal {
-        sumPayout[period] = sumPayout[period++] + (value / supply);
-    }
-
 
     /// @dev The default fallback function just triggers the addReward function.
     function() external payable {
         addReward();
     }
 
-    /// @dev This allows for the minting of reward tokens. This function
-    ///  needs some sort of permission based access control. Controller
-    ///  contract should work.
-    function mint(address user, uint amount) public {
-        balances[user] += amount;
-        emit Deposit(user, amount);
+   /**
+    * @dev `updateRewards` is used to update the rewards for an individual
+    *  user at a specific time. This function should be called any time
+    *  that a users balance changes for any reason.
+    * @param _user This is the user to update given as an ethereum address.
+    */
+    function updateRewards(address _user) public {
+        PendingReward memory pendingReward = pendingRewards[pendingRewards.length - 1];
+        while (pendingReward.rewardTime < block.timestamp) {
+            pendingReward = pendingRewards[--pendingRewards.length];
+            pendingRewards.length -= 1;
+            executeFutureReward(pendingReward.rewardValue);
+        }
+        // If this user has already been updated on the current period
+        // they don't need to be updated again.
+        if (info[_user].lastTransfer == period) {return;}
+        // This gets the weighted payout for the period spanning from
+        // the last transfer or change in balance the user had, to the current
+        // period.
+        uint weightedpayout = sumPayout[period] - sumPayout[info[_user].lastTransfer];
+        // Based on the weighted payout of the updated period, get the
+        // share that user should have based on their balance for that period
+        uint share = balances[_user] * weightedpayout;
+        // Update the user's info
+        info[_user].summedRewards += share;
+        info[_user].lastTransfer = period;
     }
 
-    /// @param _owner The address that's balance is being requested
-    /// @return The balance of `addr` at the current block
-    function balanceOf(address addr) public view returns(uint){
-        if(addr == 0xdead){
+   /**
+    * @dev `addRewards` allows for distribution of ether to all of
+    *  the users currently holding tokens. This function needs some sort
+    *  of permission based access control. Controller contract should work.
+    */
+    function addReward() public payable {
+        sumPayout[period] = sumPayout[period++] + (msg.value / supply);
+    }
+
+   /**
+    * @dev `addRewards` allows for distribution of ether to all of
+    *  the users currently holding tokens. This function needs some sort
+    *  of permission based access control. Controller contract should work.
+    */
+    function addFutureReward(uint timePeriod) public payable {
+        pendingRewards.push(PendingReward(timePeriod, msg.value));
+    }
+
+   /**
+    * @dev This allows for the minting of reward tokens. This function
+    *  needs some sort of permission based access control. Controller
+    *  contract should work.
+    */
+    function mint(address _user, uint _amount) public {
+        balances[_user] += _amount;
+        emit Deposit(_user, _amount);
+    }
+
+   /**
+    * @param _owner The address that's balance is being requested
+    * @return The balance of `addr` at the current block
+    */
+    function balanceOf(address addr) public view returns(uint) {
+        if (addr == 0xdead) {
             return this.balance - supply;
         }
         return balances[addr];
     }
 
-    /// @dev `withdraw` allows a user to withdraw their rewards in ether.
-    /// @param amt the amount to withdraw
-    function withdraw(uint amt) public {
+   /**
+    * @dev `withdraw` allows a user to withdraw their rewards in ether.
+    * @param _amt the amount to withdraw
+    */
+    function withdraw(uint _amt) public {
         syncPendingPayouts();
-        require(info[msg.sender].summedRewards >= amt, "Insufficient amount for withdraw");
-        info[msg.sender].summedRewards -= amt;
-        msg.sender.transfer(amt);
-        emit Withdraw(msg.sender, amt);
+        require(info[msg.sender].summedRewards >= _amt, "Insufficient amount for withdraw");
+        info[msg.sender].summedRewards -= _amt;
+        msg.sender.transfer(_amt);
+        emit Withdraw(msg.sender, _amt);
     }
 
-    function syncPendingPayouts() internal {
-        PendingReward storage pendingReward;
-        while(pendingRewards[pendingRewards.length - 1].timePeriod < now)
-        {
-            pendingReward = pendingRewards.pop();
-            executeFutureReward(pendingReward.rewardValue);
-        }
-    }
-
-    /// @dev `totalSupply` is a basic helper function to get the current total
-    ///  supply of reward tokens.
-    /// @return The total supply of reward tokens.
+   /**
+    * @dev `totalSupply` is a basic helper function to get the current total
+    *  supply of reward tokens.
+    * @return The total supply of reward tokens.
+    */
     function totalSupply() public view returns (uint) {
         return supply;
     }
 
-    /// @notice `msg.sender` approves `_spender` to spend `_amount` tokens on
-    ///  its behalf. This is a modified version of the ERC20 approve function
-    ///  to be a little bit safer
-    /// @param _spender The address of the account able to transfer the tokens
-    /// @param _amount The amount of tokens to be approved for transfer
-    /// @return True if the approval was successful
+   /**
+    * @notice `msg.sender` approves `_spender` to spend `_amount` tokens on
+    *  its behalf. This is a modified version of the ERC20 approve function
+    *  to be a little bit safer
+    * @param _spender The address of the account able to transfer the tokens
+    * @param _amount The amount of tokens to be approved for transfer
+    * @return True if the approval was successful
+    */
     function approve(address _spender, uint256 _amount) public returns (bool success) {
         require(transfersEnabled, "Transfers arn't enabled");
 
@@ -190,25 +195,27 @@ contract RewardToken {
         return true;
     }
 
-
-    /// @notice Send `_amount` tokens to `_to` from `msg.sender`
-    /// @param _to The address of the recipient
-    /// @param _amount The amount of tokens to be transferred
-    /// @return Whether the transfer was successful or not
+   /**
+    * @notice Send `_amount` tokens to `_to` from `msg.sender`
+    * @param _to The address of the recipient
+    * @param _amount The amount of tokens to be transferred
+    * @return Whether the transfer was successful or not
+    */
     function transfer(address _to, uint256 _amount) public returns (bool success) {
         require(transfersEnabled, "Transfers arn't enabled");
         doTransfer(msg.sender, _to, _amount);
         return true;
     }
 
-    /// @notice Send `_amount` tokens to `_to` from `_from` on the condition it
-    ///  is approved by `_from`
-    /// @param _from The address holding the tokens being transferred
-    /// @param _to The address of the recipient
-    /// @param _amount The amount of tokens to be transferred
-    /// @return True if the transfer was successful
-    function transferFrom(address _from, address _to, uint256 _amount
-    ) public returns (bool success) {
+   /**
+    * @notice Send `_amount` tokens to `_to` from `_from` on the condition it
+    *  is approved by `_from`
+    * @param _from The address holding the tokens being transferred
+    * @param _to The address of the recipient
+    * @param _amount The amount of tokens to be transferred
+    * @return True if the transfer was successful
+    */
+    function transferFrom(address _from, address _to, uint256 _amount) public returns (bool success) {
 
         // The controller of this contract can move tokens around at will,
         //  this is important to recognize! Confirm that you trust the
@@ -225,15 +232,16 @@ contract RewardToken {
         return true;
     }
 
-        /// @dev This is the actual transfer function in the token contract, it can
-    ///  only be called by other functions in this contract.
-    /// @param _from The address holding the tokens being transferred
-    /// @param _to The address of the recipient
-    /// @param _amount The amount of tokens to be transferred
-    /// @return True if the transfer was successful
-    function doTransfer(address _from, address _to, uint _amount
-    ) internal {
-           
+   /**
+    * @dev This is the actual transfer function in the token contract, it can
+    *  only be called by other functions in this contract.
+    * @param _from The address holding the tokens being transferred
+    * @param _to The address of the recipient
+    * @param _amount The amount of tokens to be transferred
+    * @return True if the transfer was successful
+    */
+    function doTransfer(address _from, address _to, uint _amount) internal {
+
         // If the amount is zero throw an event as dictated by the standard
         if (_amount == 0) {
             emit Transfer(_from, _to, _amount);
@@ -269,16 +277,34 @@ contract RewardToken {
 
     }
 
-    /// @dev Internal function to determine if an address is a contract
-    /// @param _addr The address being queried
-    /// @return True if `_addr` is a contract
+    //TODO Get these params right for executeFutureReward
+    function executeFutureReward(uint value) internal {
+        sumPayout[period] = sumPayout[period++] + (value / supply);
+    }
+
+    function syncPendingPayouts() internal {
+        PendingReward storage pendingReward;
+        while (pendingRewards[pendingRewards.length - 1].rewardTime < block.timestamp) {
+            pendingReward = pendingRewards[--pendingRewards.length];
+            pendingRewards.length -= 1;
+            executeFutureReward(pendingReward.rewardValue);
+        }
+    }
+
+   /**
+    * @dev Internal function to determine if an address is a contract
+    * @param _addr The address being queried
+    * @return True if `_addr` is a contract
+    */
     function isContract(address _addr) internal view returns(bool) {
         uint size;
-        if (_addr == 0) return false;
+        if (_addr == 0) {
+            return false;
+        }
         assembly {
             size := extcodesize(_addr)
         }
-        return size>0;
+        return size > 0;
     }
 
 }
