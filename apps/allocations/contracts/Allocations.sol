@@ -43,7 +43,7 @@ interface Fundable {
 contract FundForwarder {
     Fundable fundable;
     uint256 id;
-
+    
     constructor(uint256 _id, Fundable _fundable) public {
         fundable = _fundable;
         id = _id;
@@ -144,7 +144,7 @@ contract Allocations is AragonApp, Fundable {
     * @dev This is the function that sets up who the candidates will be, and
     *      where the funds will go for the payout. This is where the payout
     *      object needs to be created in the payouts array.
-    * @notice Create a new account so you can begin creating allocations.
+    * @notice Create a new account used for creating allocations
     * @param _metadata Any relevent label for the payout
     *
     */
@@ -172,6 +172,11 @@ contract Allocations is AragonApp, Fundable {
         emit FundAccount(id);
     }
 
+    /**
+    * @dev This function distributes the payouts to the candidates in accordance with the distribution values
+    * @notice Send payout amounts to the candidates in accordance with the distribution proportions
+    * @param _payoutId Any relevent label for the payout
+    */
     function runPayout(uint256 _payoutId) external payable isInitialized auth(EXECUTE_PAYOUT_ROLE) returns(bool success) {
         Payout storage payout = payouts[_payoutId];
         uint256 totalSupport;
@@ -206,10 +211,14 @@ contract Allocations is AragonApp, Fundable {
     *      to be called by a RangeVote (options get weird if it's not)
     *      but for our use case the “SET_DISTRIBUTION_ROLE” will be given to
     *      the RangeVote.
-    * @notice Sets the distribution for the given `payoutId` using an the
-    *         supplied candidate keys and support values.
-    * param _candidateKeys The array of keys for all candidates in this payout
-    * param _supports The Array of all support values for the various candidates
+    * @notice Sets the distribution proportion for this allocation
+    * @param _candidateAddresses Array of candidates to be allocated a portion of the payouut
+    * @param _supports The Array of all support values for the various candidates. These values are set in range voting
+    * @param _payoutId The Account used for the payout
+    * @param _informational boolean used to indicate whether and funds will be trnsacted onchain
+    * @param _recurring boolean used to indicate whether this is a recurring or one-time payout
+    * @param _period time interval between each recurring payout
+    * @param _amount The quantity of funds to be allocated
     */
     function setDistribution(
         address[] _candidateAddresses,
@@ -227,7 +236,7 @@ contract Allocations is AragonApp, Fundable {
     {
         Payout storage payout = payouts[_payoutId];
         payout.candidateAddresses = _candidateAddresses;
-        //require(_amount <= payout.limit, "payout amount over account limit"); // This is unnecessary
+        // require(_amount <= payout.limit, "payout amount over account limit"); // This is unnecessary
         payout.informational = _informational;
         payout.recurring = _recurring;
         if (!_informational) {
