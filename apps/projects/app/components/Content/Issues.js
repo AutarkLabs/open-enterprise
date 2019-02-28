@@ -10,6 +10,7 @@ import {
   IconShare,
   IconAdd,
 } from '@aragon/ui'
+import BigNumber from 'bignumber.js'
 
 import { STATUS } from '../../utils/github'
 import { GET_ISSUES } from '../../utils/gql-queries.js'
@@ -270,21 +271,27 @@ class Issues extends React.PureComponent {
     })
 
     tokens.forEach(token => {
-      tokenObj[token.addr] = token.symbol
+      tokenObj[token.addr] = {
+        symbol: token.symbol,
+        decimals: token.decimals,
+      }
       console.log('tokenObj:', tokenObj)
     })
     return issues.map(({ __typename, repository: { id, name }, ...fields }) => {
       if (bountyIssueObj[fields.number]) {
         const data = bountyIssueObj[fields.number].data
-        console.log('Bounty Issue Info:', data)
-
-        return {
+        const balance = BigNumber(bountyIssueObj[fields.number].data.balance)
+          .div(BigNumber(10 ** tokenObj[data.token].decimals))
+          .dp(3)
+          .toString()
+        return { 
           ...fields,
           ...bountyIssueObj[fields.number].data,
           repoId: id,
           repo: name,
-          symbol: tokenObj[data.token],
+          symbol: tokenObj[data.token].symbol,
           expLevel: expLevels[data.exp].name,
+          balance: balance
         }
       }
       return {
