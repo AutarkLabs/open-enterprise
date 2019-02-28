@@ -1,22 +1,19 @@
 import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableCell,
-  Text,
-  SafeLink,
+  Badge,
   ContextMenu,
   ContextMenuItem,
-  Badge,
+  SafeLink,
+  Table,
+  TableCell,
+  TableHeader,
+  TableRow,
+  Text,
 } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { Empty } from '../Card'
-import isAddress from 'web3-utils'
-import icon from '../../assets/copy.svg'
-
-const CopyIcon = () => <img src={icon} alt="Copy address to the clipboard" />
+import { ToastCopy } from '../../../../../shared/ui'
 
 // TODO: colors taken directly from Invision
 const ENTITY_TYPES = [
@@ -56,14 +53,7 @@ const Entities = ({ entities, onNewEntity, onRemoveEntity }) => {
                     >
                       {entryAddress}
                     </SafeLink>
-                    <span
-                      onClick={() => {
-                        navigator.clipboard.writeText(entryAddress)
-                      }}
-                      style={{ marginLeft: '.5rem', cursor: 'pointer' }}
-                    >
-                      <CopyIcon />
-                    </span>
+                    <ToastCopy address={entryAddress} />
                   </div>
                 </EntityWrapper>
               </EntityCell>

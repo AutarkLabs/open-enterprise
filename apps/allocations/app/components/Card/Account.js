@@ -15,6 +15,8 @@ import {
 } from '@aragon/ui'
 import { ETH_DECIMALS } from '../../utils/constants'
 
+import { ToastCopy } from '../../../../../shared/ui'
+
 const Account = ({
   id,
   proxy,
@@ -67,9 +69,7 @@ const Account = ({
       </MenuContainer>
       <IconContainer />
       <TitleContainer>
-        <CardTitle>
-          {description}
-        </CardTitle>
+        <CardTitle>{description}</CardTitle>
         <CardAddress>
           <SafeLink
             href={`https://rinkeby.etherscan.io/address/${proxy}`}
@@ -78,6 +78,7 @@ const Account = ({
           >
             {truncatedProxy}
           </SafeLink>
+          <ToastCopy address={proxy} />
         </CardAddress>
       </TitleContainer>
       <StatsContainer>
@@ -89,7 +90,8 @@ const Account = ({
             {' ' + BigNumber(balance)
               .div(ETH_DECIMALS)
               .dp(3)
-              .toString()} {translatedToken}
+              .toString()}{' '}
+            {translatedToken}
           </StatsValue>
         </StyledStats>
         <StyledStats>
@@ -100,7 +102,8 @@ const Account = ({
             {' ' + BigNumber(limit)
               .div(ETH_DECIMALS)
               .dp(3)
-              .toString()} {translatedToken}/ Allocation
+              .toString()}{' '}
+            {translatedToken} / Allocation
           </StatsValue>
         </StyledStats>
       </StatsContainer>
@@ -149,7 +152,7 @@ const CardTitle = styled(Text.Block).attrs({
   color: ${theme.textPrimary};
   display: block;
   display: -webkit-box;
-  max-height: 3.0em;
+  max-height: 3em;
   line-height: 1.5em;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -160,7 +163,8 @@ const CardTitle = styled(Text.Block).attrs({
 const CardAddress = styled(Text.Block).attrs({
   size: 'small',
 })`
-  text-align: center;
+  display: flex;
+  justify-content: center;
   color: ${theme.accent};
 `
 

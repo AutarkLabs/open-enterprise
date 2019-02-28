@@ -1,12 +1,21 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { DropDown, Button, Text, Field, TextInput, theme } from '@aragon/ui'
 import NumberFormat from 'react-number-format'
 
+import { STATUS } from '../../utils/github'
+
 const bountyDeadlines = ['Weeks', 'Days', 'Hours']
 const bountyDeadlinesMul = [168, 24, 1] // it is one variable in contract, so number * multiplier = hours
 
 class Settings extends React.Component {
+  static propTypes = {
+    app: PropTypes.object.isRequired,
+    githubCurrentUser: PropTypes.object, // TODO: is this required?
+    onLogin: PropTypes.func.isRequired,
+    status: PropTypes.string.isRequired,
+  }
   state = {
     bountyCurrencies: this.props.tokens.map(token => token.symbol),
   }
@@ -128,6 +137,10 @@ class Settings extends React.Component {
     this.setState({ expLevels })
   }
 
+  handleLogout = () => {
+    this.props.app.cache('github', { status: STATUS.INITIAL })
+  }
+
   render() {
     const {
       baseRate,
@@ -140,8 +153,6 @@ class Settings extends React.Component {
       bountyArbiter,
     } = this.state
 
-    console.log('bounteysee', bountyCurrency)
-
     // TODO: hourglass in case settings are still being loaded
     if (!('baseRate' in this.props.bountySettings))
       return <div>Loading settings...</div>
@@ -149,6 +160,12 @@ class Settings extends React.Component {
     return (
       <StyledContent>
         <div className="column">
+          <GitHubConnect
+            onLogin={this.props.onLogin}
+            onLogout={this.handleLogout}
+            status={this.props.status}
+            user={this.props.githubCurrentUser.login}
+          />
           <ExperienceLevel
             expLevels={expLevels}
             onAddExpLevel={this.addExpLevel}
@@ -337,6 +354,43 @@ const BaseRate = ({ baseRate, onChange }) => (
   </div>
 )
 
+const GitHubConnect = ({ onLogin, onLogout, status, user }) => {
+  const auth = status === STATUS.AUTHENTICATED
+  const bodyText = auth ? (
+    <span>
+      Logged in as
+      <Text weight="bold"> {user}</Text>
+    </span>
+  ) : (
+    'The Projects app uses GitHub to interact with issues.'
+  )
+  const buttonText = auth ? 'Disconnect Account' : 'Connect my GitHub'
+  const buttonAction = auth ? onLogout : onLogin
+  return (
+    <div>
+      <Text.Block
+        size="large"
+        weight="bold"
+        children={'GitHub authorization'}
+      />
+      <Text.Block children={bodyText} />
+      <StyledButton
+        compact
+        mode="secondary"
+        onClick={buttonAction}
+        children={buttonText}
+      />
+    </div>
+  )
+}
+
+GitHubConnect.propTypes = {
+  onLogin: PropTypes.func.isRequired,
+  onLogout: PropTypes.func.isRequired,
+  status: PropTypes.string.isRequired,
+  user: PropTypes.string, // TODO: is this required?
+}
+
 const ExperienceLevel = ({
   expLevels,
   onAddExpLevel,
@@ -415,6 +469,7 @@ const StyledButton = styled(Button)`
 const StyledContent = styled.div`
   padding: 30px;
   display: flex;
+  height: fit-content;
   > .column {
     display: flex;
     flex-direction: column;
