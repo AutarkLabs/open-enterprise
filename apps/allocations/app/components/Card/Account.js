@@ -13,6 +13,7 @@ import {
   SafeLink,
   theme,
 } from '@aragon/ui'
+import { ETH_DECIMALS } from '../../utils/constants'
 
 import { ToastCopy } from '../../../../../shared/ui'
 
@@ -86,11 +87,10 @@ const Account = ({
             Balance
           </Text>
           <StatsValue>
-            {' ' +
-              BigNumber(balance)
-                .div(BigNumber(10e17))
-                .dp(3)
-                .toString()}{' '}
+            {' ' + BigNumber(balance)
+              .div(ETH_DECIMALS)
+              .dp(3)
+              .toString()}{' '}
             {translatedToken}
           </StatsValue>
         </StyledStats>
@@ -99,12 +99,11 @@ const Account = ({
             Limit
           </Text>
           <StatsValue>
-            {' ' +
-              BigNumber(limit)
-                .div(BigNumber(10e17))
-                .dp(3)
-                .toString()}{' '}
-            {translatedToken}/ Allocation
+            {' ' + BigNumber(limit)
+              .div(ETH_DECIMALS)
+              .dp(3)
+              .toString()}{' '}
+            {translatedToken} / Allocation
           </StatsValue>
         </StyledStats>
       </StatsContainer>

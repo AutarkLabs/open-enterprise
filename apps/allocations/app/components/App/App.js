@@ -6,8 +6,7 @@ import styled from 'styled-components'
 import { Accounts, NewAccountButton } from '.'
 import { Title } from '../Shared'
 import { NewAccount, NewAllocation } from '../Panel'
-import BigNumber from 'bignumber.js'
-
+import { ETH_DECIMALS } from '../../utils/constants'
 // import { allocationsMockData } from '../../utils/mockData'
 
 const ASSETS_URL = 'aragon-ui-assets/'
@@ -28,9 +27,7 @@ class App extends React.Component {
   }
   createAccount = ({ limit, ...account }) => {
     account.balance = 0
-    account.limit = BigNumber(10e17)
-      .times(limit)
-      .toString()
+    account.limit = ETH_DECIMALS.times(limit).toString()
     this.props.app.newPayout(account.description, account.limit, 0x0)
     this.closePanel()
     console.info('App.js: Account Created:')
