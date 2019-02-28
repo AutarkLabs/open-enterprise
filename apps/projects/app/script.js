@@ -1,15 +1,10 @@
-import Aragon, { providers } from '@aragon/client'
-import { first, of } from 'rxjs' // Make sure observables have .first
-import { combineLatest } from 'rxjs'
-import { empty } from 'rxjs/observable/empty'
+import Aragon from '@aragon/client'
 
 import { GraphQLClient } from 'graphql-request'
 import { STATUS } from './utils/github'
 import vaultAbi from '../../shared/json-abis/vault'
 import tokenSymbolAbi from './abi/token-symbol.json'
 import tokenDecimalsAbi from './abi/token-decimal.json'
-import { isNullOrUndefined } from 'util'
-
 
 let ipfsClient = require('ipfs-http-client')
 

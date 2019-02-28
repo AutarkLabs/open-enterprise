@@ -1,7 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
 
-
 import FilterButton from './FilterButton'
 
 // TODO: document.querySelectorAll(".tab").forEach(e => console.log(e.clientWidth))
@@ -51,6 +50,7 @@ class Overflow extends React.Component {
     this.setState({ shown })
   }
 
+  // This splice does not directly mutate props since toArray generates new object
   splice = (...args) =>
     React.Children.toArray(this.props.children).splice(...args)
 
