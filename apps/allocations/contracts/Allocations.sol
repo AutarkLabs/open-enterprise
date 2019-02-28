@@ -44,8 +44,8 @@ contract FundForwarder {
     Fundable fundable;
     uint256 id;
 
-    constructor(uint256 _id, address _fundable) public { 
-        fundable = Fundable(_fundable);
+    constructor(uint256 _id, Fundable _fundable) public { 
+        fundable = _fundable;
         id = _id;
     }
 
@@ -160,7 +160,7 @@ contract Allocations is AragonApp, Fundable {
         payout.limit = _limit;
         payout.token = _token;
         payout.balance = 0;
-        FundForwarder fund = new FundForwarder(payoutId, address(this));
+        FundForwarder fund = new FundForwarder(payoutId, this);
         payout.proxy = address(fund);
         emit NewAccount(payoutId); 
     }
