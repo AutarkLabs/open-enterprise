@@ -2,21 +2,14 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 
-import {
-  Text,
-  TextInput,
-  theme,
-  Info,
-  SafeLink,
-} from '@aragon/ui'
+import { Checkbox, Text, TextInput, theme, SafeLink } from '@aragon/ui'
 
 import { Form, FormField, DateInput, DescriptionInput } from '../../Form'
-import { IconGitHub, CheckButton } from '../../Shared'
+import { IconGitHub } from '../../Shared'
 
 class RequestAssignment extends React.Component {
-
   static propTypes = {
-    issue: PropTypes.object.isRequired
+    issue: PropTypes.object.isRequired,
   }
 
   state = {
@@ -24,20 +17,35 @@ class RequestAssignment extends React.Component {
     hours: 0,
     eta: new Date(),
     ack1: false,
-    ack2: false
+    ack2: false,
   }
 
-  changeField = ({ target: { name, value } }) => this.setState({ [name]: value })
+  changeField = ({ target: { name, value } }) =>
+    this.setState({ [name]: value })
   changeDate = eta => this.setState({ eta })
   setAck1 = () => this.setState(prevState => ({ ack1: !prevState.ack1 }))
   setAck2 = () => this.setState(prevState => ({ ack2: !prevState.ack2 }))
 
   onRequestAssignment = () => {
     let today = new Date()
-    this.props.onRequestAssignment({ ...this.state, user: this.props.githubCurrentUser, applicationDate: today.toISOString()}, this.props.issue)
+    this.props.onRequestAssignment(
+      {
+        ...this.state,
+        user: this.props.githubCurrentUser,
+        applicationDate: today.toISOString(),
+      },
+      this.props.issue
+    )
   }
 
-  canSubmit = () => !(this.state.ack1 && this.state.ack2 && this.state.workplan && !isNaN(this.state.hours) && this.state.hours > 0)
+  canSubmit = () =>
+    !(
+      this.state.ack1 &&
+      this.state.ack2 &&
+      this.state.workplan &&
+      !isNaN(this.state.hours) &&
+      this.state.hours > 0
+    )
 
   render() {
     const { login } = this.props.githubCurrentUser
@@ -57,8 +65,10 @@ class RequestAssignment extends React.Component {
           style={{ textDecoration: 'none', color: '#21AAE7' }}
         >
           <IssueLinkRow>
-            <IconGitHub color="#21AAE7" width='14px' height='14px' />
-            <Text style={{ marginLeft: '6px'}}>{repo} #{number}</Text>
+            <IconGitHub color="#21AAE7" width="14px" height="14px" />
+            <Text style={{ marginLeft: '6px' }}>
+              {repo} #{number}
+            </Text>
           </IssueLinkRow>
         </SafeLink>
 
@@ -67,7 +77,7 @@ class RequestAssignment extends React.Component {
           required
           input={
             <DescriptionInput
-              name='workplan'
+              name="workplan"
               rows={3}
               onChange={this.changeField}
               placeholder="Describe how you plan to accomplish the task and any questions you may have."
@@ -80,7 +90,7 @@ class RequestAssignment extends React.Component {
             label="Estimated Hours"
             input={
               <HoursInput
-                name='hours'
+                name="hours"
                 value={this.state.hours}
                 onChange={this.changeField}
               />
@@ -90,7 +100,7 @@ class RequestAssignment extends React.Component {
             label="Estimated Completion"
             input={
               <DateInput
-                name='eta'
+                name="eta"
                 value={this.state.eta}
                 onChange={this.changeDate}
               />
@@ -99,20 +109,22 @@ class RequestAssignment extends React.Component {
         </Estimations>
 
         <AckRow>
-          <div style={{width: '23px'}}>
-            <CheckButton checked={this.state.ack1} onChange={this.setAck1}/>
+          <div style={{ width: '23px' }}>
+            <Checkbox checked={this.state.ack1} onChange={this.setAck1} />
           </div>
           <AckText>
-            I understand that this is an application and I should wait for approval before starting work.
+            I understand that this is an application and I should wait for
+            approval before starting work.
           </AckText>
         </AckRow>
 
         <AckRow>
-          <div style={{width: '23px'}}>
-            <CheckButton checked={this.state.ack2} onChange={this.setAck2}/>
+          <div style={{ width: '23px' }}>
+            <Checkbox checked={this.state.ack2} onChange={this.setAck2} />
           </div>
           <AckText>
-            I agree to keep the organization informed of my progress every few days.
+            I agree to keep the organization informed of my progress every few
+            days.
           </AckText>
         </AckRow>
         {/* Github commenting is not currently implemented

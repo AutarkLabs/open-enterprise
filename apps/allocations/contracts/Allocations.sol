@@ -43,9 +43,9 @@ interface Fundable {
 contract FundForwarder {
     Fundable fundable;
     uint256 id;
-
-    constructor(uint256 _id, address _fundable) public {
-        fundable = Fundable(_fundable);
+    
+    constructor(uint256 _id, Fundable _fundable) public {
+        fundable = _fundable;
         id = _id;
     }
 
@@ -160,7 +160,7 @@ contract Allocations is AragonApp, Fundable {
         payout.limit = _limit;
         payout.token = _token;
         payout.balance = 0;
-        FundForwarder fund = new FundForwarder(payoutId, address(this));
+        FundForwarder fund = new FundForwarder(payoutId, this);
         payout.proxy = address(fund);
         emit NewAccount(payoutId);
     }
@@ -179,13 +179,11 @@ contract Allocations is AragonApp, Fundable {
     */
     function runPayout(uint256 _payoutId) external payable isInitialized auth(EXECUTE_PAYOUT_ROLE) returns(bool success) {
         Payout storage payout = payouts[_payoutId];
-        uint256 pointsPer;
         uint256 totalSupport;
         uint i;
         for (i = 0; i < payout.supports.length; i++) {
             totalSupport += payout.supports[i];
         }
-
         require(!payout.informational, "Informational payouts don't run");
         require(payout.distSet, "setDistribution must be called first");
         if (payout.recurring) {
@@ -197,11 +195,12 @@ contract Allocations is AragonApp, Fundable {
             payout.distSet = false;
         }
 
-        pointsPer = payout.amount.div(totalSupport);
+        uint individualPayout;
         //handle vault
         for (i = 0; i < payout.candidateAddresses.length; i++) {
-            payout.candidateAddresses[i].transfer(payout.supports[i].mul(pointsPer));
-            payout.balance = payout.balance.sub(payout.supports[i].mul(pointsPer));
+            individualPayout = payout.supports[i].mul(payout.amount).div(totalSupport);
+            payout.candidateAddresses[i].transfer(individualPayout);
+            payout.balance = payout.balance.sub(individualPayout);
         }
         success = true;
         emit PayoutExecuted(_payoutId);
@@ -237,16 +236,19 @@ contract Allocations is AragonApp, Fundable {
     {
         Payout storage payout = payouts[_payoutId];
         payout.candidateAddresses = _candidateAddresses;
-        require(_amount <= payout.limit);
+        // require(_amount <= payout.limit, "payout amount over account limit"); // This is unnecessary
         payout.informational = _informational;
         payout.recurring = _recurring;
         if (!_informational) {
             payout.balance.add(msg.value);
+            payout.amount = _amount;
             require(payout.balance >= _amount, "payout account underfunded");
-            require(payout.limit >= _amount, "payout limit too low for amount");
+            require(payout.limit >= _amount, "payout amount over account limit");
         } else {
             require(msg.value == 0, "cannot fund informational allocation");
-            payout.balance = 0;
+            // must set amount to zero
+            //setting balance to zero orphans the funds submitted to this account
+            payout.amount = 0;
         }
         if (_recurring) {
             payout.period = _period;
@@ -260,7 +262,6 @@ contract Allocations is AragonApp, Fundable {
 
         payout.distSet = true;
         payout.supports = _supports;
-        payout.amount = _amount;
         emit SetDistribution(_payoutId);
     }
 
