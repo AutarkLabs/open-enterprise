@@ -113,8 +113,7 @@ contract RewardToken is Controlled {
         require(supply > 0, "ERR_NO_TOKENS_MINTED");
         syncPendingPayouts();
         //sumPayout[++period] = sumPayout[period] + (msg.value / supply);
-        period += 1;
-        sumPayout.push(msg.value / supply);
+        sumPayout.push(sumPayout[period++] + msg.value / supply);
     }
 
    /**
@@ -152,7 +151,7 @@ contract RewardToken is Controlled {
     * @param _amt the amount to withdraw
     */
     function withdraw(uint _amt) public {
-        syncPendingPayouts();
+        updateRewards(msg.sender);
         require(info[msg.sender].summedRewards >= _amt, "Insufficient amount for withdraw");
         info[msg.sender].summedRewards -= _amt;
         msg.sender.transfer(_amt);
@@ -261,6 +260,8 @@ contract RewardToken is Controlled {
         if (isContract(controller)) {
             require(TokenController(controller).onTransfer(_from, _to, _amount), "transfer not authorized");
         }
+        updateRewards(_from);
+        updateRewards(_to);
 
         // First update the balance array with the new value for the address
         //  sending the tokens
@@ -278,8 +279,7 @@ contract RewardToken is Controlled {
     }
 
     function executeFutureReward(uint value) internal {
-        //sumPayout[period] = sumPayout[period++] + (value / supply);
-        period += 1;
+        //sumPayout[period] = sumPayout[period++] + (value / supply);;
         sumPayout.push(sumPayout[period++] + value / supply);
     }
 
