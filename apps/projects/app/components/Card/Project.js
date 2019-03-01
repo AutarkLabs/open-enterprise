@@ -30,8 +30,8 @@ const Project = ({
 }) => {
 
   const removeProject = () => {
-    console.log('removeProject')
-    onRemoveProject(id)
+    console.log('removeProject', repoId)
+    onRemoveProject(repoId)
   }
 
   const clickMenu = e => e.stopPropagation()
