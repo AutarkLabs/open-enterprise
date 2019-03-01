@@ -3,6 +3,9 @@ pragma solidity ^0.4.24;
 import "@aragon/os/contracts/apps/AragonApp.sol";
 import "@aragon/os/contracts/common/IsContract.sol";
 
+import "@tps/test-helpers/contracts/lib/misc/Migrations.sol";
+
+
 
 contract RewardsCore is IsContract, AragonApp {
 

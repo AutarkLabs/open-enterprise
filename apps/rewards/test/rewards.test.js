@@ -8,6 +8,7 @@ const {
 
 //const RangeVoting = artifacts.require('RangeVotingMock')
 //const ExecutionTarget = artifacts.require('ExecutionTarget')
+const RewardToken = artifacts.require('RewardToken')
 
 const { assertRevert } = require('@tps/test-helpers/assertThrow')
 const { encodeCallScript } = require('@tps/test-helpers/evmScript')
@@ -23,6 +24,43 @@ const castedVoteId = receipt =>
 
 const ANY_ADDR = '0xffffffffffffffffffffffffffffffffffffffff'
 const NULL_ADDRESS = '0x00'
+
+contract('Rewards Token', accounts => {
+  let token = {}
+  const root = accounts[0]
+  holder1 = accounts[1]
+  holder2 = accounts[2]
+  holder3 = accounts[3]
+
+  beforeEach(async () => {
+    token = await RewardToken.new()
+    await token.mint(holder1, 50e18,)
+  })
+
+  it('receives rewards', async () => {
+    await token.addReward({from: root, value: web3.toWei(1, 'ether')})
+
+  })
+
+  // first test stable supply cases
+  // then test fluctuating supply (just increasing supply for now)
+
+  // Stable Supply Test Cases
+  // A. script
+  // 1. mint to single user
+  // 2. add reward
+  // 3. withdraw for single user should get full reward
+  // 4. mint tokens for second user
+  // 5. repeat 2 and 3
+
+  // test a case where a transfer occurs after a reward is added
+  // but before any rewards are withdrawn
+
+  // 1. add reward
+  // 2. claim reward with one user
+  // 3. do transfer
+  // 4. reclaim rewards with both users. (What happens?)
+})
 
 
 contract('Rewards App', accounts => {
@@ -132,6 +170,6 @@ contract('Rewards App', accounts => {
       //executionTarget = await ExecutionTarget.new()
     })
 
-    
+
   })
 })

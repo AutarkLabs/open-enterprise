@@ -1,4 +1,4 @@
-pragma solidity ^0.4.17;
+pragma solidity ^0.4.24;
 
 /*
     Copyright 2016, Arthur Lunn
@@ -32,7 +32,7 @@ import "./Controlled.sol";
 import "./TokenController.sol";
 
 
-contract RewardToken {
+contract RewardToken is Controlled {
 
     string public name     = "Reward Token";
     string public symbol   = "RWD";
@@ -53,8 +53,9 @@ contract RewardToken {
     event  Withdraw(address indexed src, uint wad);
 
     // Data object representing pending rewards in descending order;
-    // Next reward to 'payout' should be at the end of the array.
+    // Next reward to 'payout' is held by nextPendingReward.
     PendingReward[] public pendingRewards;
+    uint public nextPendingReward;
 
     /// @dev this structure is used to store information
     ///  for an individual users payout.
@@ -66,12 +67,12 @@ contract RewardToken {
     struct PendingReward {
         uint rewardTime;
         uint rewardValue;
+        bool executed;
     }
 
     /// @dev `Reward` serves as a basic constructor and simply initializes
     ///  the total payouts for the first period to 0.
     constructor() public {
-        sumPayout[period++] = 0;
         controller = msg.sender;
     }
 
@@ -87,22 +88,17 @@ contract RewardToken {
     * @param _user This is the user to update given as an ethereum address.
     */
     function updateRewards(address _user) public {
-        PendingReward memory pendingReward = pendingRewards[pendingRewards.length - 1];
-        while (pendingReward.rewardTime < block.timestamp) {
-            pendingReward = pendingRewards[--pendingRewards.length];
-            pendingRewards.length -= 1;
-            executeFutureReward(pendingReward.rewardValue);
-        }
+        syncPendingPayouts();
         // If this user has already been updated on the current period
         // they don't need to be updated again.
         if (info[_user].lastTransfer == period) {return;}
         // This gets the weighted payout for the period spanning from
         // the last transfer or change in balance the user had, to the current
         // period.
-        uint weightedpayout = sumPayout[period] - sumPayout[info[_user].lastTransfer];
+        uint weightedPayout = sumPayout[period] - sumPayout[info[_user].lastTransfer];
         // Based on the weighted payout of the updated period, get the
         // share that user should have based on their balance for that period
-        uint share = balances[_user] * weightedpayout;
+        uint share = balances[_user] * weightedPayout;
         // Update the user's info
         info[_user].summedRewards += share;
         info[_user].lastTransfer = period;
@@ -113,17 +109,19 @@ contract RewardToken {
     *  the users currently holding tokens. This function needs some sort
     *  of permission based access control. Controller contract should work.
     */
-    function addReward() public payable {
-        sumPayout[period] = sumPayout[period++] + (msg.value / supply);
+    function addReward() public payable onlyController {
+        require(supply > 0, "ERR_NO_TOKENS_MINTED");
+        syncPendingPayouts();
+        //sumPayout[++period] = sumPayout[period] + (msg.value / supply);
+        sumPayout.push(sumPayout[period++] + msg.value / supply);
     }
 
    /**
-    * @dev `addRewards` allows for distribution of ether to all of
-    *  the users currently holding tokens. This function needs some sort
-    *  of permission based access control. Controller contract should work.
+    * @dev `addFutureRewards` adds a queued reward to be
+    *  redeemed by token holders at a later specified date
     */
-    function addFutureReward(uint timePeriod) public payable {
-        pendingRewards.push(PendingReward(timePeriod, msg.value));
+    function addFutureReward(uint rewardDate) public payable {
+        pendingRewards.push(PendingReward(rewardDate, msg.value, false));
     }
 
    /**
@@ -133,6 +131,7 @@ contract RewardToken {
     */
     function mint(address _user, uint _amount) public {
         balances[_user] += _amount;
+        supply += _amount;
         emit Deposit(_user, _amount);
     }
 
@@ -152,7 +151,7 @@ contract RewardToken {
     * @param _amt the amount to withdraw
     */
     function withdraw(uint _amt) public {
-        syncPendingPayouts();
+        updateRewards(msg.sender);
         require(info[msg.sender].summedRewards >= _amt, "Insufficient amount for withdraw");
         info[msg.sender].summedRewards -= _amt;
         msg.sender.transfer(_amt);
@@ -261,6 +260,8 @@ contract RewardToken {
         if (isContract(controller)) {
             require(TokenController(controller).onTransfer(_from, _to, _amount), "transfer not authorized");
         }
+        updateRewards(_from);
+        updateRewards(_to);
 
         // First update the balance array with the new value for the address
         //  sending the tokens
@@ -277,18 +278,30 @@ contract RewardToken {
 
     }
 
-    //TODO Get these params right for executeFutureReward
     function executeFutureReward(uint value) internal {
-        sumPayout[period] = sumPayout[period++] + (value / supply);
+        //sumPayout[period] = sumPayout[period++] + (value / supply);;
+        sumPayout.push(sumPayout[period++] + value / supply);
     }
 
     function syncPendingPayouts() internal {
-        PendingReward storage pendingReward;
-        while (pendingRewards[pendingRewards.length - 1].rewardTime < block.timestamp) {
-            pendingReward = pendingRewards[--pendingRewards.length];
-            pendingRewards.length -= 1;
+        uint idxMax = pendingRewards.length;
+        uint idx = nextPendingReward;
+        // ensure there are pending rewards to be executed
+        if ( idxMax == 0 || idx == idxMax ) {return;}
+        // set idxMax to the actual maxIndex
+        idxMax -= 1;
+        // initialize pendingReward against against the next pending reward
+        PendingReward storage pendingReward = pendingRewards[idx];
+        // only execute the folowing rewards if they are due
+        while (pendingReward.rewardTime < block.timestamp) {
             executeFutureReward(pendingReward.rewardValue);
+            pendingReward.executed = true;
+            idx += 1;
+            // check we haven't reached the end of the array
+            if (idx > idxMax) {break;}
+            pendingReward = pendingRewards[idx];
         }
+        nextPendingReward = idx;
     }
 
    /**
