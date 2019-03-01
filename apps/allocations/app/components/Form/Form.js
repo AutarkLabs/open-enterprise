@@ -8,7 +8,7 @@ const Form = ({ children, onSubmit, submitText, heading, subHeading }) => {
     <React.Fragment>
       {heading && <Text size="xxlarge">{heading}</Text>}
       {subHeading && <Text color={theme.textTertiary}>{subHeading}</Text>}
-      <div style={{ height: '1rem' }} />
+      <div style={{ height: '1rem', height: 'fit-content' }} />
       {children}
       <Button
         style={{ userSelect: 'none' }}

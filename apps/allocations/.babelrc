@@ -3,7 +3,10 @@
   "plugins": [
     "transform-class-properties",
     "transform-runtime",
-    ["styled-components", { "displayName": true }],
+    [
+      "styled-components",
+      { "displayName": true, "fileName": false, "pure": true }
+    ],
     "react-hot-loader/babel"
   ]
 }

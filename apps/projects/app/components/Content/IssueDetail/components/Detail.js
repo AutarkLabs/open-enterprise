@@ -189,7 +189,6 @@ const Detail = ({
   onSubmitWork,
   onAllocateSingleBounty
 }) => {
-  //console.log('Detail props:', requestsData, balance, symbol, labels, title, number, repo, body, createdAt, expLevel, deadline, slots, workStatus)
 
   const summaryData = {
     expLevel: (expLevel === undefined) ? '-' : expLevel,

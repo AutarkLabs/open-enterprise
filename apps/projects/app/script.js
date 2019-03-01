@@ -1,15 +1,14 @@
-import Aragon, { providers } from '@aragon/client'
-import { first, of } from 'rxjs' // Make sure observables have .first
-import { combineLatest } from 'rxjs'
-import { empty } from 'rxjs/observable/empty'
+import Aragon from '@aragon/client'
 
 import { GraphQLClient } from 'graphql-request'
 import { STATUS } from './utils/github'
 import vaultAbi from '../../shared/json-abis/vault'
 import tokenSymbolAbi from './abi/token-symbol.json'
-import { isNullOrUndefined } from 'util'
+import tokenDecimalsAbi from './abi/token-decimal.json'
 
 let ipfsClient = require('ipfs-http-client')
+
+const tokenAbi = [].concat(tokenDecimalsAbi, tokenSymbolAbi)
 
 let ipfs = ipfsClient({ host: 'localhost', port: '5001', protocol: 'http'})
 
@@ -273,15 +272,16 @@ async function syncTokens(state, {token}) {
 
 
 function loadToken(token) {
-  let tokenContract = app.external(token, tokenSymbolAbi)
+  let tokenContract = app.external(token, tokenAbi)
   return new Promise(resolve => {
     tokenContract.symbol().subscribe(symbol => {
-      // return gracefully when entry not found
-      symbol &&
+      tokenContract.decimals().subscribe(decimals => {
         resolve({
           addr: token,
-          symbol: symbol
+          symbol: symbol,
+          decimals: decimals,
         })
+      })
     })
   })
 }
