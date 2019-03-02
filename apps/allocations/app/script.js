@@ -1,6 +1,6 @@
 import '@babel/polyfill'
 
-import { retryEvery } from '../../../shared/ui'
+import { retryEvery } from '../../../shared/ui/utils'
 import { app, initStore } from './store'
 
 retryEvery(async retry => {
