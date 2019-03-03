@@ -5,7 +5,7 @@ import { DescriptionInput, Form, FormField, InputDropDown } from '../Form'
 import { isNumberString, isStringEmpty } from '../../utils/helpers'
 
 // TODO:: This should be votingTokens from account?
-const AVAILABLE_TOKENS = ['ETH', 'ANT', 'GIV', 'FTL', '🦄']
+const AVAILABLE_TOKENS = [ 'ETH', 'ANT', 'GIV', 'FTL', '🦄' ]
 const INITIAL_STATE = {
   address: '0xffffffffffffffffffffffffffffffffffffffff',
   description: '',

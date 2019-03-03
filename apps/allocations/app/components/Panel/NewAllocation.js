@@ -13,8 +13,8 @@ import {
 } from '../Form'
 
 // TODO: Extract to shared
-const AVAILABLE_TOKENS = ['ETH', 'ANT', 'GIV', 'FTL', '🦄']
-const ALLOCATION_TYPES = ['Informational', 'Token Transfer']
+const AVAILABLE_TOKENS = [ 'ETH', 'ANT', 'GIV', 'FTL', '🦄' ]
+const ALLOCATION_TYPES = [ 'Informational', 'Token Transfer' ]
 // const PAYOUT_TYPES = ['One-Time', 'Monthly']
 const INITIAL_STATE = {
   activePayoutOption: 0,
@@ -164,7 +164,7 @@ class NewAllocation extends React.Component {
       <WarningMessage hasWarning={transferEnabled} type={'transferWarning'} />
     )
 
-    const errorMessages = ['allocationError', 'addressError'].map((e, i) => (
+    const errorMessages = [ 'allocationError', 'addressError' ].map((e, i) => (
       <ErrorMessage key={i} hasError={state[e]} type={e} />
     ))
 
