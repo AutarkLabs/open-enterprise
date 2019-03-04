@@ -1,13 +1,13 @@
 # That Planning Suite
 
-[![Build Status](https://img.shields.io/travis/AutarkLabs/planning-suite.svg?style=flat-square)](https://travis-ci.org/AutarkLabs/planning-suite) [![Coverage Status](https://img.shields.io/coveralls/github/AutarkLabs/planning-suite.svg?style=flat-square)](https://coveralls.io/github/AutarkLabs/planning-suite)
+[![Build Status](https://img.shields.io/travis/AutarkLabs/planning-suite.svg?style=flat-square)](https://travis-ci.org/AutarkLabs/planning-suite) [![Coverage Status](https://coveralls.io/repos/github/AutarkLabs/planning-suite/badge.svg?branch=dev)](https://coveralls.io/github/AutarkLabs/planning-suite?branch=dev)
 
 <!-- markdownlint-disable MD033 -->
 <p align="center">
   <a href="#development-setup">Development Setup</a> •
   <a href="#background">Background</a> •
   <a href="#details">Details</a> •
-  <a href="#design-concepts">Design Concepts</a>
+  <a href="#design-concepts">Design Concepts</a> •
   <a href="#contact">Contact</a>
 </p>
 <!-- markdownlint-enable MD033 -->
@@ -34,7 +34,7 @@ $ npm run start:range
 
 # current app name aliases: {address, projects, payout, range}
 ```
- 
+
 ### Extra tips
 
 - Individual development is ultra-fast thanks to parcel and hot module replacement.
