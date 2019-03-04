@@ -117,7 +117,6 @@ contract Projects is IsContract, AragonApp {
         uint standardBountyId;
         address assignee;
         address[] applicants;
-        address workSubmittor;
         uint256 submissionQty;
         uint256[] submissionIndices;
         mapping(address => string) assignmentRequests;
@@ -213,7 +212,7 @@ contract Projects is IsContract, AragonApp {
 
         for (uint256 i = 0; i < issuePriorities.length; i++) {
             repoId = bytes32(issueRepos[i]);
-            require(issuePriorities[i] != 999, "issue already curated");
+            //require(issuePriorities[i] != 999, "issue already curated"); // This function is not yet executed by range voting so this is unnecessary
             repos[repoId].issues[uint256(issueNumbers[i])].priority = issuePriorities[i];
             emit IssueCurated(repoId);
         }
@@ -415,8 +414,9 @@ contract Projects is IsContract, AragonApp {
         //uint256 _fulfillmentId
     ) external isInitialized
     {
-        require(msg.sender == repos[_repoId].issues[_issueNumber].assignee, "User not assigned to this issue");
         GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
+        require(!issue.fulfilled,"BOUNTY_FULFILLED");
+        require(msg.sender == issue.assignee, "USER_NOT_ASSIGNED");
         bounties.fulfillBounty(issue.standardBountyId, _submissionAddress);
         issue.submissionIndices.push(
             workSubmissions.push(
@@ -425,7 +425,7 @@ contract Projects is IsContract, AragonApp {
                     _submissionAddress,
                     issue.submissionQty
                 )
-            )
+            ) - 1 // push returns array length so we need to subtract 1 to get the index value
         );
 
         issue.submissionQty += 1;
@@ -450,7 +450,7 @@ contract Projects is IsContract, AragonApp {
     {
         GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
 
-        require(!issue.fulfilled,"Bounty already fulfilled");
+        require(!issue.fulfilled,"BOUNTY_FULFILLED");
 
         WorkSubmission storage submission = workSubmissions[issue.submissionIndices[_submissionNumber]];
 
@@ -463,6 +463,7 @@ contract Projects is IsContract, AragonApp {
             emit SubmissionAccepted(_submissionNumber, _repoId, _issueNumber);
         } else {
             submission.status = SubmissionStatus.Rejected;
+            emit SubmissionRejected(_submissionNumber, _repoId, _issueNumber);
         }
     }
 
@@ -661,7 +662,7 @@ contract Projects is IsContract, AragonApp {
             _standardBountyId,
             address(0),
             emptyAddressArray,
-            address(0),
+            //address(0),
             0,
             emptySubmissionIndexArray
         );
