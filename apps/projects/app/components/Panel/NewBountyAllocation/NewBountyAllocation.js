@@ -19,7 +19,6 @@ import {
 import { Form, FormField, FieldTitle, DateInput } from '../../Form'
 import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
 
-const bountyHours = ['-', '1', '2', '4', '8', '16', '24', '32', '40']
 const bountySlots = ['1', '2', '3']
 
 class NewBountyAllocation extends React.Component {
@@ -81,16 +80,18 @@ class NewBountyAllocation extends React.Component {
     }
     // just do it, recalculate size
     const expLevels = this.getExpLevels()
-    let size = bountyHours[bounties[id]['hours']] * this.props.bountySettings.baseRate * expLevels[bounties[id]['exp']].mul
+    let size = bounties[id]['hours'] * this.props.bountySettings.baseRate * expLevels[bounties[id]['exp']].mul
     bounties[id]['size'] = size
 
     this.setState({ bounties })
     console.log('configBounty: ', bounties)
   }
 
-  generateHoursChange = id => index => {
-    this.configBounty(id, 'hours', index)
-    console.log('generateHoursChange: id: ', id, ', index: ', index)
+  generateHoursChange = id => ({ target: {value}}) => {
+    value < 0 ?
+      this.configBounty(id, 'hours', 0)
+      :
+      this.configBounty(id, 'hours', parseInt(value))
   }
 
   generateExpChange = id => index => {
@@ -132,7 +133,6 @@ class NewBountyAllocation extends React.Component {
     const { bountySettings } = this.props
     const expLevels = this.getExpLevels()
 
-    //console.log('bounties: ', bounties, ', bountySettings: ', bountySettings)
     return (
       <Form
         onSubmit={this.submitBounties}
@@ -176,10 +176,10 @@ class NewBountyAllocation extends React.Component {
                         <IBHours>
                           <IBHoursInput>
                             <FieldTitle>Hours</FieldTitle>
-                            <DropDown
-                              items={bountyHours}
+                            <HoursInput
+                              name="hours"
+                              value={bounties[issue.id]['hours']}
                               onChange={this.generateHoursChange(issue.id)}
-                              active={bounties[issue.id]['hours']}
                             />
                           </IBHoursInput>
                         </IBHours>
@@ -246,6 +246,12 @@ class NewBountyAllocation extends React.Component {
   }
 }
 
+const HoursInput = styled(TextInput.Number)`
+  width: 100px;
+  height: 32px;
+  display: inline-block;
+  padding-top: 3px;
+`
 const Cell = styled(TableCell)`
   padding: 0;
 `
