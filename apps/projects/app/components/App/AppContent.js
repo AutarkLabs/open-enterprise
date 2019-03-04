@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 
+import { STATUS } from '../../utils/github'
 import { TabbedView, TabBar, TabContent, Tab } from '../TabbedView'
 import { Issues, Overview, Settings } from '../Content'
 import AppTitleButton from '../App/AppTitleButton'
@@ -25,12 +26,22 @@ const AppContent = props => {
     {
       tabName: 'Overview',
       TabComponent: Overview,
-      tabButton: { caption: 'New Project', onClick: props.onNewProject, disabled: () => false },
+      tabButton: {
+        caption: 'New Project',
+        onClick: props.onNewProject,
+        disabled: () => false,
+        hidden: () => false,
+      },
     },
     {
       tabName: 'Issues',
       TabComponent: Issues,
-      tabButton: { caption: 'New Issue', onClick: props.onNewIssue, disabled: () => props.projects.length ? false : true },
+      tabButton: {
+        caption: 'New Issue',
+        onClick: props.onNewIssue,
+        disabled: () => (props.projects.length ? false : true),
+        hidden: () => (props.projects.length ? false : true),
+      },
     },
     {
       tabName: 'Settings',
@@ -38,13 +49,16 @@ const AppContent = props => {
     },
   ]
 
-  var appTitleButton = contentData[props.activeIndex.tabIndex].tabButton
-    ? contentData[props.activeIndex.tabIndex].tabButton
-    : null
+  const appTitleButton =
+    props.status === STATUS.AUTHENTICATED &&
+    contentData[props.activeIndex.tabIndex].tabButton
+      ? contentData[props.activeIndex.tabIndex].tabButton
+      : null
 
   return (
     <React.Fragment>
-      {appTitleButton && (
+      {appTitleButton &&
+        !appTitleButton.hidden() && (
         <AppTitleButton
           caption={appTitleButton.caption}
           onClick={appTitleButton.onClick}
@@ -80,6 +94,7 @@ AppContent.propTypes = {
   onNewIssue: PropTypes.func.isRequired,
   activeIndex: PropTypes.object.isRequired,
   changeActiveIndex: PropTypes.func.isRequired,
+  status: PropTypes.string.isRequired,
 }
 
 export default AppContent

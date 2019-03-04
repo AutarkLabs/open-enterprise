@@ -11,7 +11,7 @@ const StyledTable = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   border: solid ${theme.contentBorder};
-  border-width: 2px 0;
+  border-width: 1px 0;
   > :not(:first-child) {
     border-left: 1px solid ${theme.contentBorder};
     padding-left: 15px;
@@ -189,7 +189,6 @@ const Detail = ({
   onSubmitWork,
   onAllocateSingleBounty
 }) => {
-  //console.log('Detail props:', requestsData, balance, symbol, labels, title, number, repo, body, createdAt, expLevel, deadline, slots, workStatus)
 
   const summaryData = {
     expLevel: (expLevel === undefined) ? '-' : expLevel,

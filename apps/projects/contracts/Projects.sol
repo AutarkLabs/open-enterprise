@@ -321,16 +321,19 @@ contract Projects is IsContract, AragonApp {
      */
     function removeRepo(
         bytes32 _repoId
-    ) external auth(REMOVE_REPO_ROLE) returns(bool success)
+    ) external auth(REMOVE_REPO_ROLE) returns (bool success)
     {
         require(isRepoAdded(_repoId), "REPO_NOT_ADDED");
         uint rowToDelete = repos[_repoId].index;
-        bytes32 repoToMove = repoIndex[repoIndex.length - 1];
-        repoIndex[rowToDelete] = repoToMove;
-        repos[repoToMove].index = rowToDelete;
+
+        if (repoIndex.length != 1) {
+            bytes32 repoToMove = repoIndex[repoIndex.length - 1];
+            repoIndex[rowToDelete] = repoToMove;
+            repos[repoToMove].index = rowToDelete;
+        }
+
         repoIndex.length--;
         emit RepoRemoved(_repoId, rowToDelete);
-        emit RepoUpdated(repoToMove, repos[repoToMove].owner, rowToDelete);
         return true;
     }
 
