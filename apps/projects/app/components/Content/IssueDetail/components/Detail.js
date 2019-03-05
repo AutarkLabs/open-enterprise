@@ -1,17 +1,17 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Badge, Text, theme, ContextMenu, ContextMenuItem } from '@aragon/ui'
-import { formatDistance } from 'date-fns'
+import { format, formatDistance } from 'date-fns'
 
 import { DropDownButton } from '../../../Shared'
-import { IconGitHub } from '../../../Shared'
+import { IconGitHub, BountyContextMenu } from '../../../Shared'
 
 const StyledTable = styled.div`
   margin-bottom: 20px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   border: solid ${theme.contentBorder};
-  border-width: 2px 0;
+  border-width: 1px 0;
   > :not(:first-child) {
     border-left: 1px solid ${theme.contentBorder};
     padding-left: 15px;
@@ -31,15 +31,17 @@ const FieldTitle = styled(Text.Block)`
   font-weight: bold;
   margin-bottom: 6px;
 `
-
-const SummaryTable = ({ experience, deadline, slots, status }) => {
+const ActionLabel = styled.span`
+  margin-left: 15px;
+`
+const SummaryTable = ({ expLevel, deadline, slots, workStatus }) => {
   const FIELD_TITLES = [
     'Experience Level',
     'Deadline',
-    'Num. Available',
+    'Slots Available',
     'Status',
   ]
-  const mappedTableFields = [experience, deadline, slots, status].map(
+  const mappedTableFields = [expLevel, deadline, slots, workStatus].map(
     (field, i) => (
       <StyledCell key={i}>
         <FieldTitle>{FIELD_TITLES[i]}</FieldTitle>
@@ -166,7 +168,9 @@ const fakeMembers = [
 ]
 
 const Detail = ({
-  bountyBadge = '100 ANT',
+  requestsData,
+  balance,
+  symbol,
   labels,
   title,
   number,
@@ -175,15 +179,26 @@ const Detail = ({
   createdAt,
   activities = fakeActivities, // TODO: Remove default fake value when data arrives from backend
   team = fakeMembers, // TODO: Also this
-  exp,
+  expLevel,
   deadline,
-  avail,
+  slots,
   workStatus,
-  handleReviewApplication,
-  handleRequestAssignment,
-  handleSubmitWork
+  onReviewApplication,
+  onReviewWork,
+  onRequestAssignment,
+  onSubmitWork,
+  onAllocateSingleBounty
 }) => {
-  const summaryData = {experience: exp, deadline: deadline, slots: avail, status: workStatus}
+
+  const summaryData = {
+    expLevel: (expLevel === undefined) ? '-' : expLevel,
+    deadline: (deadline === undefined) ? '-' : format(deadline, 'yyyy-MM-dd HH:mm:ss'),
+    slots: (slots === undefined) ? '-' :
+      (requestsData === undefined) ? 'Unallocated (' + slots + ')' :
+        (requestsData.length < slots) ? 'Slots available: ' + (slots - requestsData.length) + '/' + slots:
+          'Allocated',
+    workStatus: (workStatus === undefined) ? 'No bounty yet' : workStatus
+  }
   const calculatedDate = () => {
     const date = Date.now()
     return formatDistance(createdAt, date, { addSuffix: true })
@@ -218,23 +233,25 @@ const Detail = ({
             </div>
             <div style={{ ...column, flex: 0, alignItems: 'flex-end' }}>
               <DropDownButton enabled>
-                <ContextMenuItem style={{ display: 'flex', alignItems: 'flex-start' }} onClick={handleSubmitWork}>
-                  <Text>Submit Work</Text>
-                </ContextMenuItem>
-                <ContextMenuItem onClick={handleRequestAssignment}>
-                  <Text>Request Assignment</Text>
-                </ContextMenuItem>
-                <ContextMenuItem onClick={handleReviewApplication}>
-                  <Text>Review Application</Text>
-                </ContextMenuItem>
+                <BountyContextMenu
+                  workStatus={workStatus}
+                  requestsData={requestsData}
+                  onAllocateSingleBounty={onAllocateSingleBounty}
+                  onSubmitWork={onSubmitWork}
+                  onRequestAssignment={onRequestAssignment}
+                  onReviewApplication={onReviewApplication}
+                  onReviewWork={onReviewWork}
+                />
               </DropDownButton>
-              <Badge
-                foreground={theme.badgeNotificationBackground}
-                background="#D0F2DB"
-                style={{ marginTop: '15px' }}
-              >
-                <Text>{bountyBadge}</Text>
-              </Badge>
+              { balance > 0 &&
+                <Badge
+                  style={{padding: '10px', marginRight: '20px', textSize: 'large', marginTop: '15px'}}
+                  background={'#e7f8ec'}
+                  foreground={theme.positive}
+                >
+                  {balance + ' ' + symbol}
+                </Badge>
+              }
             </div>
           </Wrapper>
           <SummaryTable {...summaryData} />

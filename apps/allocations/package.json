@@ -26,6 +26,7 @@
   "dependencies": {
     "@aragon/client": "1.1.0",
     "@aragon/ui": "0.30.1",
+    "@tps/ui": "^0.0.1",
     "bignumber.js": "^7.2.1",
     "prop-types": "15.6.2",
     "react": "^16.7.0",
@@ -35,8 +36,8 @@
     "styled-components": "4.1.3"
   },
   "devDependencies": {
-    "@tps/test-helpers": "^0.0.1",
     "@tps/apps-address-book": "^0.0.1",
+    "@tps/test-helpers": "^0.0.1",
     "babel-core": "6.26.3",
     "babel-eslint": "9.0.0",
     "babel-plugin-styled-components": "1.5.1",
