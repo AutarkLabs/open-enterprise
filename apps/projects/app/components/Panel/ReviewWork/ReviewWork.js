@@ -175,7 +175,8 @@ const IssueTitle = styled(Text)`
   color: ${theme.textSecondary};
   font-size: 17px;
   font-weight: 300;
-  line-height: 38px;
+  line-height: 1.5;
+  margin-bottom: 10px;
 `
 const IssueLinkRow = styled.div`
   height: 31px;
