@@ -40,7 +40,7 @@ contract RewardsCore is IsContract, AragonApp {
 
     function claimReward(uint _rewardID) external returns(uint rewardAmount) {
         Reward storage reward = rewards[_rewardID];
-        require(block.number < reward.blockStart + reward.duration + reward.delay, "reward must be claimed after the reward duration and delay");
+        require(block.number > reward.blockStart + reward.duration + reward.delay, "reward must be claimed after the reward duration and delay");
         reward.claimed[msg.sender] = true;
         // Need to implement solution to occurances
         if (reward.isMerit) {
@@ -55,8 +55,9 @@ contract RewardsCore is IsContract, AragonApp {
     function getReward(uint rewardID) external view returns(
         bool isMerit,
         address referenceToken,
+        address rewardToken,
         uint amount,
-        uint duration,
+        uint endBlock,
         uint delay,
         uint rewardAmount
     )
@@ -64,8 +65,9 @@ contract RewardsCore is IsContract, AragonApp {
         Reward storage reward = rewards[rewardID];
         isMerit = reward.isMerit;
         referenceToken = reward.referenceToken;
+        rewardToken = reward.rewardToken;
         amount = reward.amount;
-        duration = reward.duration;
+        endBlock = reward.blockStart + reward.duration + reward.delay;
         delay = reward.delay;
         if (reward.isMerit) {
             rewardAmount = calculateMeritReward(reward);
@@ -108,19 +110,20 @@ contract RewardsCore is IsContract, AragonApp {
         uint supply;
         balance = reward.referenceToken.balanceOfAt(msg.sender, reward.blockStart + reward.duration);
         supply = reward.referenceToken.totalSupplyAt(reward.blockStart + reward.duration);
-        rewardAmount = reward.value * balance / supply;
+        rewardAmount = reward.amount * balance / supply;
     }
 
     function calculateMeritReward(Reward reward)internal view returns(uint rewardAmount) {
         uint supply;
+        uint balance;
         uint initialSupply = reward.referenceToken.totalSupplyAt(reward.blockStart);
         uint endingSupply = reward.referenceToken.totalSupplyAt(reward.blockStart + reward.duration);
         uint initialBalance = reward.referenceToken.balanceOfAt(msg.sender, reward.blockStart);
         uint endingBalance = reward.referenceToken.balanceOfAt(msg.sender, reward.blockStart + reward.duration);
         require(initialSupply < endingSupply, "The supply must have increased over the period");
         require(initialBalance < endingBalance, "The user must have earned tokens over the period");
-
         supply = endingSupply - initialSupply;
-        rewardAmount = reward.value * (endingBalance - initialBalance) / supply;
+        balance = endingBalance - initialBalance;
+        rewardAmount = reward.amount * balance / supply;
     }
 }
