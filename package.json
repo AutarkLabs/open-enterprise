@@ -2,7 +2,7 @@
   "private": true,
   "name": "planning-suite-monorepo",
   "devDependencies": {
-    "@aragon/cli": "5.3.3",
+    "@aragon/cli": "5.4.0",
     "coveralls": "3.0.2",
     "lerna": "^3.10.8"
   },
