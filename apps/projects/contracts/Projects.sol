@@ -104,6 +104,7 @@ contract Projects is IsContract, AragonApp {
         SubmissionStatus status;
         string submissionHash; //IPFS hash of the Pull Request
         uint256 fulfillmentId; // Standard Bounties Fulfillment ID
+        address submitter;
     }
 
     struct GithubIssue {
@@ -344,22 +345,22 @@ contract Projects is IsContract, AragonApp {
 // Bounty functions
 ///////////////////
 
-    /**
-     * @notice accept a given fulfillment
-     * @dev may be used if a contributor submits a fulfillment outside of the projects app.
-     * @param _repoId The id of the Github repo in the projects registry
-     * @param _issueNumber the index of the bounty
-     * @param _bountyFulfillmentId the index of the fulfillment being accepted
-     */
-    function acceptFulfillment(
-        bytes32 _repoId,
-        uint256 _issueNumber,
-        uint _bountyFulfillmentId
-    ) external auth(ADD_BOUNTY_ROLE)
-    {
-        GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
-        bounties.acceptFulfillment(issue.standardBountyId, _bountyFulfillmentId);
-    }
+    ///**
+    // * @notice accept a given fulfillment
+    // * @dev may be used if a contributor submits a fulfillment outside of the projects app.
+    // * @param _repoId The id of the Github repo in the projects registry
+    // * @param _issueNumber the index of the bounty
+    // * @param _bountyFulfillmentId the index of the fulfillment being accepted
+    // */
+    //function acceptFulfillment(
+    //    bytes32 _repoId,
+    //    uint256 _issueNumber,
+    //    uint _bountyFulfillmentId
+    //) external auth(ADD_BOUNTY_ROLE)
+    //{
+    //    GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
+    //    bounties.acceptFulfillment(issue.standardBountyId, _bountyFulfillmentId);
+    //}
 
     /**
      * @notice apply to be assigned to this issue by submitting timeline and workplan
@@ -390,11 +391,13 @@ contract Projects is IsContract, AragonApp {
     function approveAssignment(
         bytes32 _repoId,
         uint256 _issueNumber,
-        address _requestor
+        address _requestor,
+        string _updatedApplication
     ) external isInitialized auth(TASK_ASSIGNMENT_ROLE)
     {
         require(bytes(repos[_repoId].issues[_issueNumber].assignmentRequests[_requestor]).length != 0, "User has not applied for this issue");
         repos[_repoId].issues[_issueNumber].assignee = _requestor;
+        repos[_repoId].issues[_issueNumber].assignmentRequests[_requestor] = _updatedApplication;
 
         emit AssignmentApproved(_requestor, _repoId, _issueNumber);
     }
@@ -423,7 +426,8 @@ contract Projects is IsContract, AragonApp {
                 WorkSubmission(
                     SubmissionStatus.Unreviewed,
                     _submissionAddress,
-                    issue.submissionQty
+                    issue.submissionQty,
+                    issue.assignee
                 )
             ) - 1 // push returns array length so we need to subtract 1 to get the index value
         );
@@ -445,7 +449,8 @@ contract Projects is IsContract, AragonApp {
         bytes32 _repoId,
         uint256 _issueNumber,
         uint256 _submissionNumber,
-        bool _approved
+        bool _approved,
+        string updatedSubmissionHash
     ) external isInitialized auth(WORK_REVIEW_ROLE)
     {
         GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
@@ -453,6 +458,7 @@ contract Projects is IsContract, AragonApp {
         require(!issue.fulfilled,"BOUNTY_FULFILLED");
 
         WorkSubmission storage submission = workSubmissions[issue.submissionIndices[_submissionNumber]];
+        submission.submissionHash = updatedSubmissionHash;
 
         if (_approved) {
             if (issue.hasBounty) {
@@ -594,12 +600,13 @@ contract Projects is IsContract, AragonApp {
         bytes32 _repoId,
         uint256 _issueNumber,
         uint256 _submissionNumber
-    ) public view returns(string submissionHash, uint256 fulfillmentId, SubmissionStatus status)
+    ) public view returns(string submissionHash, uint256 fulfillmentId, SubmissionStatus status, address submitter)
     {
         WorkSubmission memory submission = workSubmissions[repos[_repoId].issues[_issueNumber].submissionIndices[_submissionNumber]];
         submissionHash = submission.submissionHash;
         fulfillmentId = submission.fulfillmentId;
         status = submission.status;
+        submitter = submission.submitter;
     }
 
 ///////////////////////
