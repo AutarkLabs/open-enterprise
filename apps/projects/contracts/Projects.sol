@@ -403,7 +403,7 @@ contract Projects is IsContract, AragonApp {
     }
 
     /**
-     * @notice Submit work for issue '`_issueNumber`'.
+     * @notice Submit work for issue `_issueNumber`.
      * @dev add a submission to local state after it's been added to StandardBounties.sol
      * @param _repoId the github repo id of the issue
      * @param _issueNumber the github issue up for assignment
@@ -438,7 +438,7 @@ contract Projects is IsContract, AragonApp {
     }
 
     /**
-     * @notice Review work submitted by '`_submissionNumber`'.
+     * @notice Review work submission.
      * @dev add a submission to local state after it's been added to StandardBounties.sol
      * @param _repoId the github repo id of the issue
      * @param _issueNumber the github issue up for resolution

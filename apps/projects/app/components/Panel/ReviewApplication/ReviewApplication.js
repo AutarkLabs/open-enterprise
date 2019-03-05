@@ -29,19 +29,19 @@ class ReviewApplication extends React.Component {
 
   onReviewApplication = () => {
     console.log('Accepted', this.state.feedback, this.props.issue)
-    this.props.onReviewApplication(this.props.issue)
+    this.props.onReviewApplication(this.props.issue, this.state.requestIndex)
   }
 
   changeRequest = (index) => {
     this.setState({requestIndex: index})
-  } 
+  }
 
 
   render() {
     const { issue } = this.props
 
     const request = issue.requestsData[this.state.requestIndex]
-    
+
     const application = {
       user: {
         login: request.user.login,
@@ -64,7 +64,7 @@ class ReviewApplication extends React.Component {
         noSeparator
       >
         <IssueTitle>{issue.title}</IssueTitle>
-        
+
         <DropDown
           name="Applicant"
           items={issue.requestsData.map( request => request.user.login)}

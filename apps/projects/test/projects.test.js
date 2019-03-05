@@ -408,12 +408,12 @@ contract('Projects App', accounts => {
       it('work can be accepted', async () => {
         await app.requestAssignment(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd', { from: root })
         applicantQty = await app.getApplicantsLength(repoId, 1)
-        applicant = await app.getApplicant(repoId, issueNumber, applicantQty.toNumber - 1)
+        applicant = await app.getApplicant(repoId, issueNumber, applicantQty.toNumber() - 1)
         await app.approveAssignment(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', { from: bountyAdder })
 
         await app.submitWork(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDk')
         submissionQty = await app.getSubmissionsLength(repoId, issueNumber)
-        const submissionIndex = submissionQty.toNumber - 1
+        const submissionIndex = submissionQty.toNumber() - 1
         submission = await app.getSubmission(repoId, issueNumber, submissionIndex)
 
         await app.reviewSubmission(repoId, issueNumber, submissionIndex, true, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl', { from: bountyAdder })
@@ -434,12 +434,12 @@ contract('Projects App', accounts => {
       it('work cannot be accepted or submitted after bounty is fulfilled', async () => {
         await app.requestAssignment(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd', { from: root })
         applicantQty = await app.getApplicantsLength(repoId, 1)
-        applicant = await app.getApplicant(repoId, issueNumber, applicantQty.toNumber - 1)
+        applicant = await app.getApplicant(repoId, issueNumber, applicantQty.toNumber() - 1)
         await app.approveAssignment(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', { from: bountyAdder })
 
         await app.submitWork(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDk')
         submissionQty = await app.getSubmissionsLength(repoId, issueNumber)
-        const submissionIndex = submissionQty.toNumber - 1
+        const submissionIndex = submissionQty.toNumber() - 1
         submission = await app.getSubmission(repoId, issueNumber, submissionIndex)
 
         await app.reviewSubmission(repoId, issueNumber, submissionIndex, true, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl', { from: bountyAdder })
