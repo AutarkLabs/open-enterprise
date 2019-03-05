@@ -182,6 +182,7 @@ const Detail = ({
   expLevel,
   deadline,
   slots,
+  work,
   workStatus,
   onReviewApplication,
   onReviewWork,
@@ -234,6 +235,7 @@ const Detail = ({
             <div style={{ ...column, flex: 0, alignItems: 'flex-end' }}>
               <DropDownButton enabled>
                 <BountyContextMenu
+                  work={work}
                   workStatus={workStatus}
                   requestsData={requestsData}
                   onAllocateSingleBounty={onAllocateSingleBounty}

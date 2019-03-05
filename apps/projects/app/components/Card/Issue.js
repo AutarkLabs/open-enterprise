@@ -46,6 +46,7 @@ const labelsBadges = labels =>
   ))
 
 const Issue = ({
+  work,
   workStatus,
   title,
   repo,
@@ -121,6 +122,7 @@ const Issue = ({
         {workStatus !== 'finished' && (
           <ContextMenu>
             <BountyContextMenu
+              work={work}
               workStatus={workStatus}
               requestsData={requestsData}
               onAllocateSingleBounty={onAllocateSingleBounty}
