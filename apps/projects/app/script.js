@@ -10,9 +10,9 @@ let ipfsClient = require('ipfs-http-client')
 
 const tokenAbi = [].concat(tokenDecimalsAbi, tokenSymbolAbi)
 
-let ipfs = ipfsClient({ host: 'localhost', port: '5001', protocol: 'http'})
+let ipfs = ipfsClient({ host: 'localhost', port: '5001', protocol: 'http' })
 
-const status = ['new', 'review-applicants', 'submit-work', 'review-work', 'finished']
+const status = [ 'new', 'review-applicants', 'submit-work', 'review-work', 'finished' ]
 
 const SUBMISSION_STAGE = 2
 
@@ -63,7 +63,7 @@ let appState, vault, bounties, tokens
  */
 const github = () => {
   return app.rpc
-    .sendAndObserveResponses('cache', ['get', 'github'])
+    .sendAndObserveResponses('cache', [ 'get', 'github' ])
     .pluck('result')
 }
 
@@ -256,7 +256,7 @@ async function syncSettings(state) {
   }
 }
 
-async function syncTokens(state, {token}) {
+async function syncTokens(state, { token }) {
   try {
     let tokens = state.tokens
     let tokenIndex = tokens.findIndex(currentToken => currentToken.addr === token)
@@ -311,7 +311,7 @@ function loadToken(token) {
 function loadRepoData(id) {
   return new Promise(resolve => {
     app.call('getRepo', id).subscribe(({ owner, index }) => {
-      const [_repo, _owner] = [toAscii(id), toAscii(owner)]
+      const [ _repo, _owner ] = [ toAscii(id), toAscii(owner) ]
       getRepoData(_repo).then(({ node }) => {
         const commits = node.defaultBranchRef
           ? node.defaultBranchRef.target.history.totalCount
@@ -332,21 +332,21 @@ function loadRepoData(id) {
   })
 }
 
-function loadIssueData({repoId, issueNumber}) {
+function loadIssueData({ repoId, issueNumber }) {
   return new Promise(resolve => {
-    app.call('getIssue', repoId, issueNumber).subscribe(({ hasBounty, standardBountyId, balance, token, dataHash, assignee}) => {
+    app.call('getIssue', repoId, issueNumber).subscribe(({ hasBounty, standardBountyId, balance, token, dataHash, assignee }) => {
       let contentJSON
       ipfs.get(dataHash, (err, files) => {
         for(const file of files) {
           contentJSON = JSON.parse(file.content.toString('utf8'))
         }
-        resolve({ balance, hasBounty, token, standardBountyId, assignee, ...contentJSON})
+        resolve({ balance, hasBounty, token, standardBountyId, assignee, ...contentJSON })
       })
     })
   })
 }
 
-function loadRequestsData({repoId, issueNumber}) {
+function loadRequestsData({ repoId, issueNumber }) {
   return new Promise(resolve => {
     app.call('getApplicantsLength', repoId, issueNumber).subscribe(async (response) => {
       let applicants = []
@@ -367,13 +367,13 @@ function getRequest(repoId, issueNumber, applicantId) {
         for(const file of files) {
           contentJSON = JSON.parse(file.content.toString('utf8'))
         }
-        resolve({contributorAddr: response.applicant, requestIPFSHash: response.application, ...contentJSON,})
+        resolve({ contributorAddr: response.applicant, requestIPFSHash: response.application, ...contentJSON })
       })
     })
   })
 }
 
-function loadSubmissionData({repoId, issueNumber}) {
+function loadSubmissionData({ repoId, issueNumber }) {
   return new Promise(resolve => {
     app.call('getSubmissionsLength', repoId, issueNumber).subscribe(async (response) => {
       let submissions = []
@@ -389,14 +389,14 @@ function loadSubmissionData({repoId, issueNumber}) {
 function getSubmission(repoId, issueNumber, submissionIndex) {
   return new Promise(resolve => {
     console.log(repoId, issueNumber, submissionIndex)
-    app.call('getSubmission', repoId, issueNumber, submissionIndex).subscribe(async ({submissionHash, fulfillmentId, status, submitter}) => {
+    app.call('getSubmission', repoId, issueNumber, submissionIndex).subscribe(async ({ submissionHash, fulfillmentId, status, submitter }) => {
       let contentJSON
       ipfs.get(submissionHash, (err, files) => {
         for(const file of files) {
           contentJSON = JSON.parse(file.content.toString('utf8'))
         }
-        console.log('submissionData: ', {status, fulfillmentId, submitter, ...contentJSON})
-        resolve({status, fulfillmentId, submitter, submissionIPFSHash: submissionHash, ...contentJSON})
+        console.log('submissionData: ', { status, fulfillmentId, submitter, ...contentJSON })
+        resolve({ status, fulfillmentId, submitter, submissionIPFSHash: submissionHash, ...contentJSON })
       })
     })
   })
