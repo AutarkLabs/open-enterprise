@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { DropDown, Button, Text, Field, TextInput, theme } from '@aragon/ui'
+import { FieldTitle } from '../Form'
 import NumberFormat from 'react-number-format'
 
 import { STATUS } from '../../utils/github'
@@ -171,7 +172,13 @@ class Settings extends React.Component {
             onAddExpLevel={this.addExpLevel}
             generateExpLevelHandler={this.generateExpLevelHandler}
           />
-          <BaseRate baseRate={baseRate} onChange={this.baseRateChange} />
+          <BaseRate
+            baseRate={baseRate}
+            onChangeRate={this.baseRateChange}
+            bountyCurrencies={bountyCurrencies}
+            bountyCurrency={bountyCurrency}
+            onChangeCurrency={this.bountyCurrencyChange}
+          />
           <Button mode="strong" onClick={this.submitChanges} wide>
             Submit Changes
           </Button>
@@ -180,11 +187,6 @@ class Settings extends React.Component {
           <BountyContractAddress
             bountyAllocator={bountyAllocator}
             onChange={this.bountyAllocatorChange}
-          />
-          <BountyCurrency
-            bountyCurrencies={bountyCurrencies}
-            bountyCurrency={bountyCurrency}
-            onChange={this.bountyCurrencyChange}
           />
           <BountyArbiter
             bountyArbiter={bountyArbiter}
@@ -201,23 +203,6 @@ class Settings extends React.Component {
     )
   }
 }
-
-// TODO: Inset shadow for DropDown? (as in address book entity type)
-const StyledInputDropDown = styled.div`
-  display: inline-flex;
-  position: relative;
-  justify-content: center;
-  > :first-child {
-    height: 40px;
-    width: 75px;
-    z-index: 2;
-  }
-  > :last-child {
-    left: -11px;
-    width: 130px;
-    z-index: 1;
-  }
-`
 
 const BountyDeadline = ({
   bountyDeadlineT,
@@ -282,23 +267,6 @@ const BountyArbiter = ({ bountyArbiter, onChange }) => (
   </div>
 )
 
-const BountyCurrency = ({ bountyCurrency, onChange, bountyCurrencies }) => (
-  <div>
-    <Text.Block size="large" weight="bold">
-      Bounty Currency
-    </Text.Block>
-    <Text.Block>The default currency used when allocating bounties.</Text.Block>
-    <Field label="Select currency">
-      <DropDown
-        items={bountyCurrencies}
-        active={bountyCurrency}
-        onChange={onChange}
-      />
-      <StyledInputDropDown style={{ paddingLeft: '11px' }} />
-    </Field>
-  </div>
-)
-
 const BountyContractAddress = ({ bountyAllocator }) => (
   <div>
     <Text.Block size="large" weight="bold">
@@ -331,7 +299,27 @@ const BountyContractAddress = ({ bountyAllocator }) => (
   </div>
 )
 
-const BaseRate = ({ baseRate, onChange }) => (
+const StyledInputDropDown = styled.div`
+  display: flex;
+  min-width: 0;
+  > :first-child {
+    border-radius: 3px 0 0 3px;
+    border: 1px solid ${theme.contentBorder};
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.03);
+    min-width: 84px;
+    flex: ${({ wide }) => (wide ? 1 : 0)};
+    z-index: 1;
+    :focus {
+      outline: 0;
+      border: 1px solid ${theme.contentBorderActive};
+    }
+  }
+  > :last-child > :first-child {
+    border-radius: 0 3px 3px 0;
+    margin-left: -1px;
+  }
+`
+const BaseRate = ({ baseRate, onChangeRate, bountyCurrency, onChangeCurrency, bountyCurrencies }) => (
   <div>
     <Text.Block size="large" weight="bold">
       Base Rate
@@ -340,17 +328,23 @@ const BaseRate = ({ baseRate, onChange }) => (
       Define your organization’s hourly rate. This is multiplied by the bounty
       size and converted into the bounty currency under the hood.
     </Text.Block>
-    <Field label="RATE PER HOUR">
+    <FieldTitle style={{marginBottom: '0px'}}>Rate per hour</FieldTitle>
+    <StyledInputDropDown style={{marginBottom: '0px'}}>
       <NumberFormat
         customInput={StyledNumberInput}
         fixedDecimalScale
         decimalScale={2}
         value={baseRate}
         allowNegative={false}
-        onChange={onChange}
+        onChange={onChangeRate}
+        style={{marginRight: '0px'}}
       />
-      <Text>DAI</Text>
-    </Field>
+      <DropDown
+        items={bountyCurrencies}
+        active={bountyCurrency}
+        onChange={onChangeCurrency}
+      />
+    </StyledInputDropDown>
   </div>
 )
 
@@ -432,15 +426,6 @@ const ExperienceLevel = ({
   )
 }
 
-// const StyledNumberInput = styled(TextInput)`
-//   height: 40px;
-//   /* // width: ${props => (props.type === 'number' ? '131' : '185')}px; */
-//   width: 131px;
-//   margin-right: 10px;
-//   text-align: right;
-//   /* // -moz-appearance: textfield; */
-//   font-size: 16px;
-// `
 const StyledNumberInput = styled(TextInput)`
   height: 40px;
   width: 131px;
