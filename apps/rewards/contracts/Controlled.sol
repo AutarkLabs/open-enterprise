@@ -5,7 +5,7 @@ contract Controlled {
    /**
     * @notice The address of the controller is the only address that can call a function with this modifier
     */
-    modifier onlyController {require(msg.sender == controller); _;}
+    modifier onlyController {require(msg.sender == controller, "Only controller can perform this action"); _;}
 
     address public controller;
 

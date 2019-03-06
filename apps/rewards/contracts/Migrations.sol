@@ -6,7 +6,7 @@ contract Migrations {
     uint public lastCompletedMigration;
 
     modifier restricted() {
-        require(msg.sender == owner);
+        require(msg.sender == owner, "Only owner may perform this action");
         _;
     }
 
