@@ -15,7 +15,7 @@ const { accent, textSecondary, textTertiary } = theme
 const initialState = {
   description: '',
   votingTokens: null,
-  options: ['Mars', 'The Moon'],
+  options: [ 'Mars', 'The Moon' ],
   optionInputText: '',
 }
 
@@ -35,7 +35,7 @@ class NewPayoutVotePanel extends Component {
     optionInputText &&
       !options.includes(optionInputText) &&
       this.setState(({ options, optionInputText }) => ({
-        options: [...options, optionInputText],
+        options: [ ...options, optionInputText ],
         optionInputText: '',
       }))
   }
@@ -43,7 +43,7 @@ class NewPayoutVotePanel extends Component {
   handleRemoveOption = option => {
     let index = this.state.options.indexOf(option)
     this.setState(({ options }) => ({
-      options: [...options.slice(0, index), ...options.slice(index + 1)],
+      options: [ ...options.slice(0, index), ...options.slice(index + 1) ],
     }))
   }
 

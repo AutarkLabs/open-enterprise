@@ -43,17 +43,17 @@ class ReviewWork extends React.Component {
   changeField = ({ target: { name, value } }) => this.setState({ [name]: value })
 
   onAccept = () => {
-    this.props.onReviewWork({...this.state, accepted: true}, this.props.issue)
+    this.props.onReviewWork({ ...this.state, accepted: true }, this.props.issue)
   }
 
   canSubmit = () => !(this.state.rating > 0)
 
   onReject = () => {
-    this.props.onReviewWork({...this.state, accepted: false}, this.props.issue)
+    this.props.onReviewWork({ ...this.state, accepted: false }, this.props.issue)
   }
 
   onRatingChange = index => {
-    this.setState({rating: index})
+    this.setState({ rating: index })
     console.log('index: ', index)
   }
 
@@ -84,13 +84,13 @@ class ReviewWork extends React.Component {
         >
           <IssueLinkRow>
             <IconGitHub color="#21AAE7" width='14px' height='14px' />
-            <Text style={{ marginLeft: '6px'}}>{issue.repo} #{issue.number}</Text>
+            <Text style={{ marginLeft: '6px' }}>{issue.repo} #{issue.number}</Text>
           </IssueLinkRow>
         </SafeLink>
 
         <SubmissionDetails>
           <UserLink>
-            <img src={submitter.avatarUrl} style={{ width: '32px', height: '32px', marginRight: '10px'}} />
+            <img src={submitter.avatarUrl} style={{ width: '32px', height: '32px', marginRight: '10px' }} />
             <SafeLink
               href={submitter.url}
               target="_blank"
