@@ -14,7 +14,7 @@ export default class TabContent extends PureComponent {
   }
 
   static defaultProps = {
-    activeIndex: { tabIndex: 0, tabData: {}},
+    activeIndex: { tabIndex: 0, tabData: {} },
   }
 
   render() {
