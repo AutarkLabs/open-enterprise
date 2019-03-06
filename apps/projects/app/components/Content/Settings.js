@@ -7,8 +7,8 @@ import NumberFormat from 'react-number-format'
 
 import { STATUS } from '../../utils/github'
 
-const bountyDeadlines = ['Weeks', 'Days', 'Hours']
-const bountyDeadlinesMul = [168, 24, 1] // it is one variable in contract, so number * multiplier = hours
+const bountyDeadlines = [ 'Weeks', 'Days', 'Hours' ]
+const bountyDeadlinesMul = [ 168, 24, 1 ] // it is one variable in contract, so number * multiplier = hours
 
 class Settings extends React.Component {
   static propTypes = {

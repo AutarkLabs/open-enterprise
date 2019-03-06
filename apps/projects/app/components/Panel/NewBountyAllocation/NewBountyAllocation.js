@@ -19,8 +19,8 @@ import {
 import { Form, FormField, FieldTitle, DateInput } from '../../Form'
 import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
 
-const bountyHours = ['-', '1', '2', '4', '8', '16', '24', '32', '40']
-const bountySlots = ['1', '2', '3']
+const bountyHours = [ '-', '1', '2', '4', '8', '16', '24', '32', '40' ]
+const bountySlots = [ '1', '2', '3' ]
 
 class NewBountyAllocation extends React.Component {
   static propTypes = {

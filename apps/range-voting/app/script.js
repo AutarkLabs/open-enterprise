@@ -144,7 +144,7 @@ async function loadVoteDataAllocation(vote, voteId) {
       app.call('canExecute', voteId)
     )
       .first()
-      .subscribe(([metadata, totalCandidates, canExecute, payout]) => {
+      .subscribe(([ metadata, totalCandidates, canExecute, payout ]) => {
         loadVoteDescription(vote).then(async vote => {
           let options = []
           for (let i = 0; i < totalCandidates; i++) {
@@ -187,7 +187,7 @@ async function loadVoteDataProjects(vote, voteId) {
       app.call('canExecute', voteId)
     )
       .first()
-      .subscribe(([metadata, totalCandidates, canExecute]) => {
+      .subscribe(([ metadata, totalCandidates, canExecute ]) => {
         console.log('projects data:', metadata, totalCandidates, canExecute)
         loadVoteDescription(vote).then(async vote => {
           let options = []
@@ -269,7 +269,7 @@ async function updateState(state, voteId, transform, candidate = null) {
 function loadVoteSettings() {
   return Promise.all(
     voteSettings.map(
-      ([name, key, type = 'string']) =>
+      ([ name, key, type = 'string' ]) =>
         new Promise((resolve, reject) =>
           app
             .call(name)

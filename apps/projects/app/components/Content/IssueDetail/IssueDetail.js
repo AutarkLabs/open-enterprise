@@ -28,7 +28,7 @@ export default class IssueDetail extends React.Component {
   }
 
   render() {
-    const { onClose, issue, onReviewApplication, onRequestAssignment, onSubmitWork, onAllocateSingleBounty, onReviewWork} = this.props
+    const { onClose, issue, onReviewApplication, onRequestAssignment, onSubmitWork, onAllocateSingleBounty, onReviewWork } = this.props
 
     return createPortal(
       <div style={issueDetailStyle}>
