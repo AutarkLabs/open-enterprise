@@ -14,6 +14,8 @@ let ipfs = ipfsClient({ host: 'localhost', port: '5001', protocol: 'http'})
 
 const status = ['new', 'review-applicants', 'submit-work', 'review-work', 'finished']
 
+const SUBMISSION_STAGE = 2
+
 const toAscii = hex => {
   // Find termination
   let str = ''
@@ -114,7 +116,7 @@ app.state().subscribe(state => {
  ***********************/
 
 async function handleEvents(response) {
-  let nextState, data, requestsData, submissionData
+  let nextState, data, newData
   switch (response.event) {
   case 'RepoAdded':
     console.log('[Projects] event RepoAdded')
@@ -131,83 +133,73 @@ async function handleEvents(response) {
   case 'RepoUpdated':
     console.log('[Projects] RepoUpdated', response.returnValues)
     nextState = await syncRepos(appState, response.returnValues)
-  case 'AssignmentApproved':
-    console.log('[Projects] AssignmentApproved', appState, response.returnValues)
-    if(response.returnValues === null || response.returnValues === undefined) {
-      break
-    }
-    data = await loadIssueData(response.returnValues)
-    requestsData = await loadRequestsData(response.returnValues)
-    data.workStatus = status[2]
-    data.requestsData = requestsData
-    nextState = syncIssues(appState, response.returnValues, data)
-    appState = nextState
-    break
-  case 'AssignmentRequested':
-    console.log('[Projects] AssignmentRequested', appState, response.returnValues)
-    if(response.returnValues === null || response.returnValues === undefined) {
-      break
-    }
-    data = await loadIssueData(response.returnValues)
-    requestsData = await loadRequestsData(response.returnValues)
-    data.workStatus = status[1]
-    data.requestsData = requestsData
-    nextState = syncIssues(appState, response.returnValues, data)
-    appState = nextState
-    break
-  case 'SubmissionRejected':
-    console.log('[Projects] SubmissionRejected', appState, response.returnValues)
-    if(response.returnValues === null || response.returnValues === undefined) {
-      break
-    }
-    data = await loadIssueData(response.returnValues)
-    console.log('Data: ', data)
-    submissionData = await loadSubmissionData(response.returnValues, data.assignee)
-    requestsData = await loadRequestsData(response.returnValues)
-    data.workStatus = status[2]
-    data.workSubmissions = submissionData
-    data.requestsData = requestsData
-    data.work = submissionData[submissionData.length - 1]
-    nextState = syncIssues(appState, response.returnValues, data)
-    appState = nextState
-    break
-  case 'WorkSubmitted':
-    console.log('[Projects] WorkSubmitted', appState, response.returnValues)
-    if(response.returnValues === null || response.returnValues === undefined) {
-      break
-    }
-    data = await loadIssueData(response.returnValues)
-    console.log('Data: ', data)
-    submissionData = await loadSubmissionData(response.returnValues, data.assignee)
-    requestsData = await loadRequestsData(response.returnValues)
-    data.workStatus = status[3]
-    data.workSubmissions = submissionData
-    data.requestsData = requestsData
-    data.work = submissionData[submissionData.length - 1]
-    nextState = syncIssues(appState, response.returnValues, data)
-    appState = nextState
-    break
-  case 'SubmissionAccepted':
-    console.log('[Projects] SubmissionAccepted', appState, response.returnValues)
-    if (response.returnValues === null || response.returnValues === undefined) {
-      break
-    }
-    data = await loadIssueData(response.returnValues)
-    console.log('Data: ', data)
-    const workFinishedData = await loadSubmissionData(response.returnValues, data.assignee)
-    data.workStatus = status[4]
-    data.work = workFinishedData
-    nextState = syncIssues(appState, response.returnValues, data)
-    appState = nextState
-    break
   case 'BountyAdded':
     console.log('[Projects] BountyAdded', appState, response.returnValues)
-    if(response.returnValues === null || response.returnValues === undefined) {
+    if(!response.returnValues) {
       break
     }
     data = await loadIssueData(response.returnValues)
     data.workStatus = status[0]
     nextState = syncIssues(appState, response.returnValues, data, [])
+    appState = nextState
+    break
+  case 'AssignmentRequested':
+    console.log('[Projects] AssignmentRequested', appState, response.returnValues)
+    if(!response.returnValues) {
+      break
+    }
+    data = await loadIssueData(response.returnValues)
+    data.workStatus = status[1]
+    newData = await updateIssueDetail(data, response)
+    nextState = syncIssues(appState, response.returnValues, newData)
+    appState = nextState
+    break
+  case 'AssignmentApproved':
+    console.log('[Projects] AssignmentApproved', appState, response.returnValues)
+    if(!response.returnValues) {
+      break
+    }
+    data = await loadIssueData(response.returnValues)
+    data.workStatus = status[2]
+    newData = await updateIssueDetail(data, response)
+    nextState = syncIssues(appState, response.returnValues, newData)
+    appState = nextState
+    break
+  case 'SubmissionRejected':
+    console.log('[Projects] SubmissionRejected', appState, response.returnValues)
+    if(!response.returnValues) {
+      break
+    }
+    data = await loadIssueData(response.returnValues)
+    data.workStatus = status[3]
+    console.log('Data: ', data)
+    newData = await updateIssueDetail(data, response)
+    nextState = syncIssues(appState, response.returnValues, newData)
+    appState = nextState
+    break
+  case 'WorkSubmitted':
+    console.log('[Projects] WorkSubmitted', appState, response.returnValues)
+    if(!response.returnValues) {
+      break
+    }
+    data = await loadIssueData(response.returnValues)
+    data.workStatus = status[3]
+    console.log('Data: ', data)
+    newData = await updateIssueDetail(data, response)
+    nextState = syncIssues(appState, response.returnValues, newData)
+    appState = nextState
+    break
+  case 'SubmissionAccepted':
+    console.log('[Projects] SubmissionAccepted', appState, response.returnValues)
+    if (!response.returnValues) {
+      break
+    }
+    data = await loadIssueData(response.returnValues)
+    console.log('Data: ', data)
+    data.workStatus = status[4]
+    //const workFinishedData = await loadSubmissionData(response.returnValues)
+    //data.work = workFinishedData
+    nextState = syncIssues(appState, response.returnValues, data)
     appState = nextState
     break
   case 'IssueCurated':
@@ -289,6 +281,17 @@ async function syncTokens(state, {token}) {
  *                     *
  ***********************/
 
+async function updateIssueDetail(data, response) {
+  let requestsData, submissionData
+  requestsData = await loadRequestsData(response.returnValues)
+  data.requestsData = requestsData
+  if (status.indexOf(data.workStatus) >= SUBMISSION_STAGE) {
+    submissionData = await loadSubmissionData(response.returnValues)
+    data.workSubmissions = submissionData
+    data.work = submissionData[submissionData.length - 1]
+  }
+  return data
+}
 
 function loadToken(token) {
   let tokenContract = app.external(token, tokenAbi)

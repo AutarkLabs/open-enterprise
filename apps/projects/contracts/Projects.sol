@@ -118,7 +118,7 @@ contract Projects is IsContract, AragonApp {
         uint standardBountyId;
         address assignee;
         address[] applicants;
-        uint256 submissionQty;
+        //uint256 submissionQty;
         uint256[] submissionIndices;
         mapping(address => string) assignmentRequests;
         //mapping(address => WorkSubmission) workSubmissions;
@@ -408,13 +408,11 @@ contract Projects is IsContract, AragonApp {
                 WorkSubmission(
                     SubmissionStatus.Unreviewed,
                     _submissionAddress,
-                    issue.submissionQty,
+                    issue.submissionIndices.length,
                     issue.assignee
                 )
             ) - 1 // push returns array length so we need to subtract 1 to get the index value
         );
-
-        issue.submissionQty += 1;
 
         emit WorkSubmitted(_repoId, _issueNumber);
     }
@@ -575,7 +573,7 @@ contract Projects is IsContract, AragonApp {
      * @notice Returns contributor's work submission
      * @param _repoId the github repo id of the issue
      * @param _issueNumber the github issue being worked on
-     * @param _submissionNumber the address of the contributor
+     * @param _submissionNumber the index of the contribution in the submissions Array
      * @return  application IPFS hash for the applicant's proposed timeline and strategy
      */
     function getSubmission(
@@ -652,7 +650,7 @@ contract Projects is IsContract, AragonApp {
             address(0),
             emptyAddressArray,
             //address(0),
-            0,
+            //0,
             emptySubmissionIndexArray
         );
         emit BountyAdded(
