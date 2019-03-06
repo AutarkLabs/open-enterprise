@@ -369,6 +369,7 @@ contract Projects is IsContract, AragonApp {
      * @param _repoId the github repo id of the issue
      * @param _issueNumber the github issue up for assignment
      * @param _requestor address of user that will be assigned the issue
+     * @param _updatedApplication IPFS hash of the application containing optional feedback
      */
     function approveAssignment(
         bytes32 _repoId,
@@ -424,13 +425,14 @@ contract Projects is IsContract, AragonApp {
      * @param _issueNumber the github issue up for resolution
      * @param _submissionNumber submission index of the submitted work for review
      * @param _approved decision to accept the contribution
+     * @param _updatedSubmissionHash IPFS hash of the submission containing optional feedback
      */
     function reviewSubmission(
         bytes32 _repoId,
         uint256 _issueNumber,
         uint256 _submissionNumber,
         bool _approved,
-        string updatedSubmissionHash
+        string _updatedSubmissionHash
     ) external isInitialized auth(WORK_REVIEW_ROLE)
     {
         GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
@@ -438,7 +440,7 @@ contract Projects is IsContract, AragonApp {
         require(!issue.fulfilled,"BOUNTY_FULFILLED");
 
         WorkSubmission storage submission = workSubmissions[issue.submissionIndices[_submissionNumber]];
-        submission.submissionHash = updatedSubmissionHash;
+        submission.submissionHash = _updatedSubmissionHash;
 
         if (_approved) {
             if (issue.hasBounty) {
