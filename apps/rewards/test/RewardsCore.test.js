@@ -45,9 +45,6 @@ contract('Rewards App', accounts => {
       aclBase.address,
       regFact.address
     )
-  })
-
-  beforeEach(async () => {
     const r = await daoFact.newDAO(root)
     const dao = Kernel.at(
       r.logs.filter(l => l.event == 'DeployDAO')[0].args.dao
@@ -80,7 +77,7 @@ contract('Rewards App', accounts => {
 
     // create ACL permissions
     await acl.createPermission(
-      ANY_ADDR,
+      root,
       app.address,
       await app.ADD_REWARD_ROLE(),
       root,
@@ -93,7 +90,7 @@ contract('Rewards App', accounts => {
     vault = Vault.at(receipt1.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
     await vault.initialize()
     await acl.createPermission(
-      ANY_ADDR,
+      app.address,
       vault.address,
       await vault.TRANSFER_ROLE(),
       root,
@@ -103,61 +100,189 @@ contract('Rewards App', accounts => {
 
     referenceToken = await MiniMeToken.new(NULL_ADDRESS, NULL_ADDRESS, 0, 'one', 18, 'one', true) // empty parameters minime
     rewardToken = await MiniMeToken.new(NULL_ADDRESS, NULL_ADDRESS, 0, 'two', 18, 'two', true) // empty parameters minime
-
-    await referenceToken.generateTokens(root, 1e18)
-
-    await referenceToken.generateTokens(contributor1, 1e18)
-    await referenceToken.generateTokens(contributor2, 1e18)
-    await referenceToken.generateTokens(contributor3, 1e18)
-
-    await rewardToken.generateTokens(root, 25e18)
-    await rewardToken.transfer(vault.address, 25e18)
-    await mineBlock()
-
   })
 
-  it('receives rewards dividends', async () => {
-    let rewardId = rewardAdded(
-      await app.newReward(
-        false,
-        referenceToken.address,
-        rewardToken.address,
-        4e18,
-        1,
-        1,
-        0
+  context('Basic contract functions', () => {
+    before(async () => {
+      await referenceToken.generateTokens(root, 1e18)
+      await referenceToken.generateTokens(contributor1, 1e18)
+      await referenceToken.generateTokens(contributor2, 1e18)
+      await referenceToken.generateTokens(contributor3, 1e18)
+
+      await rewardToken.generateTokens(root, 25e18)
+      await rewardToken.transfer(vault.address, 25e18)
+    })
+
+    let dividendRewardId, meritRewardId, rewardInformation
+    it('creates a dividend reward', async () => {
+      dividendRewardId = rewardAdded(
+        await app.newReward(
+          false,
+          referenceToken.address,
+          rewardToken.address,
+          4e18,
+          1,
+          1,
+          0
+        )
       )
-    )
-    await mineBlock()
-    await mineBlock()
-    await app.claimReward(rewardId)
-    const reward = await rewardToken.balanceOf(root)
-    assert(reward == 1e18, 'reward should be 1e18 or 1eth equivalant')
-  })
+      assert(dividendRewardId == 0, 'first reward should be id 0')
+    })
 
-  it('receives rewards merit', async () => {
-    await referenceToken.generateTokens(root, 30e18)
-    let rewardId = rewardAdded(
-      await app.newReward(
-        true,
-        referenceToken.address,
-        rewardToken.address,
-        4e18,
-        4,
-        1,
-        0
+    it('creates a merit reward', async () => {
+      meritRewardId = rewardAdded(
+        await app.newReward(
+          true,
+          referenceToken.address,
+          rewardToken.address,
+          4e18,
+          5,
+          1,
+          0
+        )
       )
-    )
-    await referenceToken.generateTokens(root, 1e18)
-    await referenceToken.generateTokens(contributor1, 1e18)
-    await referenceToken.generateTokens(contributor2, 1e18)
-    await referenceToken.generateTokens(contributor3, 1e18)
-    await mineBlock()
-    await mineBlock()
-    await app.claimReward(rewardId)
-    const reward = await rewardToken.balanceOf(root)
-    assert(reward == 1e18, 'reward should be 1e18 or 1eth equivalant')
+      await referenceToken.generateTokens(root, 1e18)
+      await referenceToken.generateTokens(contributor1, 1e18)
+      await referenceToken.generateTokens(contributor2, 1e18)
+      await referenceToken.generateTokens(contributor3, 1e18)
+      await mineBlock()
+      await mineBlock()
+      assert(meritRewardId == 1, 'second reward should be id 1')
+    })
+
+    it('gets information on the dividend reward', async () => {
+      rewardInformation = await app.getReward(dividendRewardId)
+      assert(rewardInformation[0] ===false, 'First reward should be dividend')
+    })
+
+    it('gets information on the merit reward', async () => {
+      rewardInformation = await app.getReward(meritRewardId)
+      assert(rewardInformation[0] === true, 'Second reward should be merit')
+    })
+
+    it('receives rewards dividends', async () => {
+      await app.claimReward(dividendRewardId)
+      const balance = await rewardToken.balanceOf(root)
+      assert(balance == 1e18, 'reward should be 1e18 or 1eth equivalant')
+    })
+
+    it('receives rewards merit', async () => {
+      await app.claimReward(meritRewardId)
+      const balance = await rewardToken.balanceOf(root)
+      assert(balance == 2e18, 'reward should be 2e18 or 2eth equivalant; 1 for each reward')
+    })
+
   })
 
+  context('Check require statements', () => {
+
+    it('fails to create reward without permission', async() => {
+      assertRevert(
+        app.newReward(
+          false,
+          referenceToken.address,
+          rewardToken.address,
+          4e18,
+          1,
+          1,
+          0, {from: contributor1}
+        )
+      )
+    })
+
+
+    it('fails to create reward with invalid reference token', async() => {
+      assertRevert(
+        app.newReward(
+          false,
+          0xdeadbeef,
+          rewardToken.address,
+          4e18,
+          1,
+          1,
+          0
+        )
+      )
+    })
+
+    xit('fails to create reward with invalid reward token', async() => {
+      assertRevert(
+        app.newReward(
+          false,
+          referenceToken.address,
+          root,
+          4e18,
+          1,
+          1,
+          0
+        )
+      )
+    })
+
+    it('fails to create merit reward multiple occurances', async() => {
+      assertRevert(
+        app.newReward(
+          true,
+          referenceToken.address,
+          rewardToken.address,
+          4e18,
+          1,
+          4,
+          0
+        )
+      )
+    })
+
+    it('fails to create dividend reward too many occurances', async() => {
+      assertRevert(
+        app.newReward(
+          false,
+          referenceToken.address,
+          rewardToken.address,
+          4e18,
+          4,
+          43,
+          0
+        )
+      )
+    })
+
+    it('fails to payout a merit reward with no token changes', async() => {
+      const meritRewardId = rewardAdded(
+        await app.newReward(
+          true,
+          referenceToken.address,
+          rewardToken.address,
+          4e18,
+          5,
+          1,
+          0
+        )
+      )
+      assertRevert(
+        app.claimReward(meritRewardId)
+      )
+    })
+
+    it('fails to payout a merit reward with no token changes for the user', async() => {
+      const meritRewardId = rewardAdded(
+        await app.newReward(
+          true,
+          referenceToken.address,
+          rewardToken.address,
+          4e18,
+          2,
+          1,
+          0
+        )
+      )
+      await referenceToken.generateTokens(contributor1, 1e18)
+      await referenceToken.generateTokens(contributor2, 1e18)
+
+      assertRevert(
+        app.claimReward(meritRewardId)
+      )
+    })
+  })
 
 })
