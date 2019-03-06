@@ -213,7 +213,6 @@ contract Projects is IsContract, AragonApp {
 
         for (uint256 i = 0; i < issuePriorities.length; i++) {
             repoId = bytes32(issueRepos[i]);
-            //require(issuePriorities[i] != 999, "issue already curated"); // This function is not yet executed by range voting so this is unnecessary
             repos[repoId].issues[uint256(issueNumbers[i])].priority = issuePriorities[i];
             emit IssueCurated(repoId);
         }
@@ -344,23 +343,6 @@ contract Projects is IsContract, AragonApp {
 ///////////////////
 // Bounty functions
 ///////////////////
-
-    ///**
-    // * @notice accept a given fulfillment
-    // * @dev may be used if a contributor submits a fulfillment outside of the projects app.
-    // * @param _repoId The id of the Github repo in the projects registry
-    // * @param _issueNumber the index of the bounty
-    // * @param _bountyFulfillmentId the index of the fulfillment being accepted
-    // */
-    //function acceptFulfillment(
-    //    bytes32 _repoId,
-    //    uint256 _issueNumber,
-    //    uint _bountyFulfillmentId
-    //) external auth(ADD_BOUNTY_ROLE)
-    //{
-    //    GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
-    //    bounties.acceptFulfillment(issue.standardBountyId, _bountyFulfillmentId);
-    //}
 
     /**
      * @notice apply to be assigned to this issue by submitting timeline and workplan
