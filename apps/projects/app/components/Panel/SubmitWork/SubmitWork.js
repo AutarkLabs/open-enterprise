@@ -131,6 +131,7 @@ class SubmitWork extends React.Component {
           </AckText>
         </AckRow>
 
+        { /* TODO: restore when GitHub commenting works
         <Info.Alert
           title="Submission note"
           background="#FFFAEE"
@@ -139,6 +140,7 @@ class SubmitWork extends React.Component {
           Your inputs will be added as a comment to the Github issue from your “
           {login}” account.
         </Info.Alert>
+        */ }
       </Form>
     )
   }

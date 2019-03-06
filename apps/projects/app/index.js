@@ -61,7 +61,7 @@ class ConnectedApp extends React.Component {
         })
       })
       app.rpc
-        .sendAndObserveResponses('cache', ['get', 'github'])
+        .sendAndObserveResponses('cache', [ 'get', 'github' ])
         .pluck('result')
         .subscribe(github => {
           console.log('github object received from backend cache:', github)
@@ -73,7 +73,7 @@ class ConnectedApp extends React.Component {
           if (this.state.github.token) {
             this.state.client.query({
               query: CURRENT_USER
-            }).then(({data}) => {
+            }).then(({ data }) => {
               this.setState({
                 githubCurrentUser: data.viewer
               })
