@@ -176,38 +176,38 @@ contract('Rewards App', accounts => {
 
   context('Check require statements', () => {
 
-    it('fails to create reward without permission', async() => {
-      assertRevert(
-        app.newReward(
+    it('fails to create reward without permission', () => {
+      assertRevert(async () => {
+        await app.newReward(
           false,
-          referenceToken.address,
-          rewardToken.address,
-          4e18,
-          1,
-          1,
-          0, {from: contributor1}
-        )
-      )
-    })
-
-
-    it('fails to create reward with invalid reference token', async() => {
-      assertRevert(
-        app.newReward(
-          false,
-          0xdeadbeef,
+          root,
           rewardToken.address,
           4e18,
           1,
           1,
           0
         )
-      )
+      })
     })
 
-    xit('fails to create reward with invalid reward token', async() => {
-      assertRevert(
-        app.newReward(
+
+    it('fails to create reward with invalid reference token', () => {
+      assertRevert(async () => {
+        await app.newReward(
+          false,
+          root,
+          rewardToken.address,
+          4e18,
+          1,
+          1,
+          0
+        )
+      })
+    })
+
+    it('fails to create reward with invalid reward token', () => {
+      assertRevert(async () => {
+        await app.newReward(
           false,
           referenceToken.address,
           root,
@@ -216,12 +216,12 @@ contract('Rewards App', accounts => {
           1,
           0
         )
-      )
+      })
     })
 
-    it('fails to create merit reward multiple occurances', async() => {
-      assertRevert(
-        app.newReward(
+    it('fails to create merit reward multiple occurances', () => {
+      assertRevert(async () => {
+        await app.newReward(
           true,
           referenceToken.address,
           rewardToken.address,
@@ -230,12 +230,12 @@ contract('Rewards App', accounts => {
           4,
           0
         )
-      )
+      })
     })
 
-    it('fails to create dividend reward too many occurances', async() => {
-      assertRevert(
-        app.newReward(
+    it('fails to create dividend reward too many occurances', () => {
+      assertRevert(async () => {
+        await app.newReward(
           false,
           referenceToken.address,
           rewardToken.address,
@@ -244,7 +244,7 @@ contract('Rewards App', accounts => {
           43,
           0
         )
-      )
+      })
     })
 
     it('fails to payout a merit reward with no token changes', async() => {
@@ -259,9 +259,9 @@ contract('Rewards App', accounts => {
           0
         )
       )
-      assertRevert(
-        app.claimReward(meritRewardId)
-      )
+      assertRevert(async () => {
+        await app.claimReward(meritRewardId)
+      })
     })
 
     it('fails to payout a merit reward with no token changes for the user', async() => {
@@ -279,9 +279,9 @@ contract('Rewards App', accounts => {
       await referenceToken.generateTokens(contributor1, 1e18)
       await referenceToken.generateTokens(contributor2, 1e18)
 
-      assertRevert(
-        app.claimReward(meritRewardId)
-      )
+      assertRevert(async () => {
+        await app.claimReward(meritRewardId)
+      })
     })
   })
 
