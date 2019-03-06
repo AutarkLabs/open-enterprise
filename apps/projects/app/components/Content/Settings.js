@@ -7,8 +7,8 @@ import NumberFormat from 'react-number-format'
 
 import { STATUS } from '../../utils/github'
 
-const bountyDeadlines = ['Weeks', 'Days', 'Hours']
-const bountyDeadlinesMul = [168, 24, 1] // it is one variable in contract, so number * multiplier = hours
+const bountyDeadlines = [ 'Weeks', 'Days', 'Hours' ]
+const bountyDeadlinesMul = [ 168, 24, 1 ] // it is one variable in contract, so number * multiplier = hours
 
 class Settings extends React.Component {
   static propTypes = {
@@ -328,8 +328,8 @@ const BaseRate = ({ baseRate, onChangeRate, bountyCurrency, onChangeCurrency, bo
       Define your organization’s hourly rate. This is multiplied by the bounty
       size and converted into the bounty currency under the hood.
     </Text.Block>
-    <FieldTitle style={{marginBottom: '0px'}}>Rate per hour</FieldTitle>
-    <StyledInputDropDown style={{marginBottom: '0px'}}>
+    <FieldTitle style={{marginBottom: '0'}}>Rate per hour</FieldTitle>
+    <StyledInputDropDown style={{marginBottom: '0'}}>
       <NumberFormat
         customInput={StyledNumberInput}
         fixedDecimalScale
@@ -337,7 +337,7 @@ const BaseRate = ({ baseRate, onChangeRate, bountyCurrency, onChangeCurrency, bo
         value={baseRate}
         allowNegative={false}
         onChange={onChangeRate}
-        style={{marginRight: '0px'}}
+        style={{marginRight: '0'}}
       />
       <DropDown
         items={bountyCurrencies}
