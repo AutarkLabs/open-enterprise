@@ -22,7 +22,6 @@ const ProgressBar = ({ progress, label }) => (
   </Motion>
 )
 
-
 const Main = styled.div`
   width: 100%;
   align-items: center;
@@ -34,7 +33,6 @@ const Base = styled.div`
   border-radius: 2px;
   text-align: right;
   line-height: 14px;
-  padding-right: 6px;
 `
 const Progress = styled.div`
   height: 6px;
