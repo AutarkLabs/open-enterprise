@@ -3,7 +3,16 @@ import React from 'react'
 import styled from 'styled-components'
 import { ContextMenuItem } from '@aragon/ui'
 
-const BountyContextMenu = ({ work, workStatus, requestsData, onAllocateSingleBounty, onSubmitWork, onRequestAssignment, onReviewApplication, onReviewWork }) => <div>
+const BountyContextMenu = ({
+  work,
+  workStatus,
+  requestsData,
+  onAllocateSingleBounty,
+  onSubmitWork,
+  onRequestAssignment,
+  onReviewApplication,
+  onReviewWork
+}) => <div>
   {workStatus === undefined &&
     <ContextMenuItem onClick={onAllocateSingleBounty}>
       <ActionLabel>Allocate Bounty</ActionLabel>
@@ -41,11 +50,11 @@ BountyContextMenu.propTypes = {
   onRequestAssignment: PropTypes.func.isRequired,
   onReviewApplication: PropTypes.func.isRequired,
   onReviewWork: PropTypes.func.isRequired,
-  workStatus: PropTypes.oneOf([ undefined, 'new', 'review-applicants', 'submit-work', 'review-work', 'finished' ]),
   work: PropTypes.oneOf([
     undefined,
     PropTypes.object,
   ]),
+  workStatus: PropTypes.oneOf([ undefined, 'new', 'review-applicants', 'submit-work', 'review-work', 'finished' ]),
 }
 
 export default BountyContextMenu

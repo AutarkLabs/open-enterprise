@@ -1,5 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
+import PropTypes from 'prop-types'
+
 import { Badge, Text, theme, ContextMenu, ContextMenuItem } from '@aragon/ui'
 import { format, formatDistance } from 'date-fns'
 
@@ -291,6 +293,19 @@ const Detail = ({
       */}
     </Wrapper>
   )
+}
+
+Detail.propTypes = {
+  onAllocateSingleBounty: PropTypes.func.isRequired,
+  onSubmitWork: PropTypes.func.isRequired,
+  onRequestAssignment: PropTypes.func.isRequired,
+  onReviewApplication: PropTypes.func.isRequired,
+  onReviewWork: PropTypes.func.isRequired,
+  workStatus: PropTypes.oneOf([ undefined, 'new', 'review-applicants', 'submit-work', 'review-work', 'finished' ]),
+  work: PropTypes.oneOf([
+    undefined,
+    PropTypes.object,
+  ]),
 }
 
 export default Detail
