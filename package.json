@@ -7,7 +7,7 @@
     "lerna": "^3.10.8"
   },
   "scripts": {
-    "bootstrap": "lerna bootstrap --hoist",
+    "bootstrap": "npx lerna bootstrap --hoist",
     "postinstall": "npm run bootstrap",
     "clean": "git clean -ffdx",
     "clean:commit": "rm -f package-lock.json && npm run bootstrap",
