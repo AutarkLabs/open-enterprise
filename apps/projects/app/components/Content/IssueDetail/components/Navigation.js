@@ -5,7 +5,7 @@ const Navigation = ({ onClose }) => {
   return (
     <AppBar
       title={
-        <NavigationBar items={['Projects', 'Issue Detail']} onBack={onClose} />
+        <NavigationBar items={[ 'Projects', 'Issue Detail' ]} onBack={onClose} />
       }
     />
   )

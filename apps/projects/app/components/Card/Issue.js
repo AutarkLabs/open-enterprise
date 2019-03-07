@@ -153,6 +153,10 @@ Issue.propTypes = {
     'review-work',
     'finished',
   ]),
+  work: PropTypes.oneOf([
+     undefined,
+     PropTypes.object,
+  ]),
 }
 
 const StyledIssue = styled.div`

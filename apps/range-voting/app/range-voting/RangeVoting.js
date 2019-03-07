@@ -124,7 +124,7 @@ class RangeVoting extends React.Component {
     }
     const fields = Templates.get(template).fields
     return Object.entries(fields).reduce(
-      (fields, [name, { defaultValue }]) => ({
+      (fields, [ name, { defaultValue }]) => ({
         ...fields,
         [name]: defaultValue()
       }),
