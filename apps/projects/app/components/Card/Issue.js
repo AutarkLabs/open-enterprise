@@ -154,8 +154,8 @@ Issue.propTypes = {
     'finished',
   ]),
   work: PropTypes.oneOf([
-     undefined,
-     PropTypes.object,
+    undefined,
+    PropTypes.object,
   ]),
 }
 
