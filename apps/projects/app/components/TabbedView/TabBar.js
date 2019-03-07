@@ -14,7 +14,7 @@ const TabBar = props => {
   const tabs = React.Children.map(children, (child, index) =>
     React.cloneElement(child, {
       isActive: index === activeIndex.tabIndex,
-      onSelect: () => changeActiveIndex({ tabIndex: index, tabData: {}}),
+      onSelect: () => changeActiveIndex({ tabIndex: index, tabData: {} }),
     })
   )
   return <StyledTabBar>{tabs}</StyledTabBar>

@@ -38,7 +38,7 @@ const Project = ({
 
   const clickContext = e => {
     e.stopPropagation()
-    changeActiveIndex({ tabIndex: 1, tabData: { filterIssuesByRepoId: repoId }})
+    changeActiveIndex({ tabIndex: 1, tabData: { filterIssuesByRepoId: repoId } })
   }
 
   return (

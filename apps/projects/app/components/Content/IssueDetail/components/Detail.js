@@ -41,7 +41,7 @@ const SummaryTable = ({ expLevel, deadline, slots, workStatus }) => {
     'Slots Available',
     'Status',
   ]
-  const mappedTableFields = [expLevel, deadline, slots, workStatus].map(
+  const mappedTableFields = [ expLevel, deadline, slots, workStatus ].map(
     (field, i) => (
       <StyledCell key={i}>
         <FieldTitle>{FIELD_TITLES[i]}</FieldTitle>
@@ -247,7 +247,7 @@ const Detail = ({
               </DropDownButton>
               { balance > 0 &&
                 <Badge
-                  style={{padding: '10px', marginRight: '20px', textSize: 'large', marginTop: '15px'}}
+                  style={{ padding: '10px', marginRight: '20px', textSize: 'large', marginTop: '15px' }}
                   background={'#e7f8ec'}
                   foreground={theme.positive}
                 >

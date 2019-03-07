@@ -15,7 +15,7 @@ class DropDownOptionsInput extends React.Component {
     // TODO: Implement some rules about what an 'Option can be' duplicates, etc
     const { input, name, values } = this.props
     if (input && !values.includes(input)) {
-      this.props.onChange({ target: { name, value: [...values, input] } })
+      this.props.onChange({ target: { name, value: [ ...values, input ] } })
       this.props.onChange({ target: { name: 'optionsInput', value: '' } })
       console.log('Option Added')
     } else {
