@@ -29,7 +29,7 @@ class NewProject extends React.Component {
       : this.props.onGithubSignIn
 
     if (this.state.started)
-      return <RepoSelector onCreateProject={this.props.onCreateProject} reposAlreadyAdded={this.props.reposAlreadyAdded}/>
+      return <RepoSelector onCreateProject={this.props.onCreateProject} reposAlreadyAdded={this.props.reposAlreadyAdded} />
 
     return (
       <React.Fragment>

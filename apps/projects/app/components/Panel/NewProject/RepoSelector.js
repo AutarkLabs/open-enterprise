@@ -23,9 +23,7 @@ class Repo extends React.Component {
   }
 
   filterAlreadyAdded = repos => {
-    if (this.props.reposAlreadyAdded === undefined) return repos
-    const reposAlreadyAddedIds = this.props.reposAlreadyAdded.map(repo => repo.data._repo)
-    return repos.filter(repo => reposAlreadyAddedIds.indexOf(repo.node.id) === -1)
+    return repos.filter(repo => !this.props.reposAlreadyAdded.includes(repo.node.id))
   }
 
   componentDidMount() {
@@ -114,7 +112,11 @@ class Repo extends React.Component {
     </div>
   )
 
-  stillLoading = () => !(this.props.data && this.props.data.viewer && this.props.data.viewer.repositories.edges.length > 0)
+  stillLoading = () => !(
+    this.props.data &&
+    this.props.data.viewer &&
+    this.props.data.viewer.repositories.edges.length > 0
+  )
 
   render() {
     const { repos, filteredRepos, filtered, filter, reposAlreadyAdded } = this.state
@@ -285,7 +287,7 @@ const NoMoreRepos = () => (
       flexDirection: 'column'
     }}
   >
-    <Text>No more repos to add...</Text>
+    <Text>No more repositories to add...</Text>
   </div>
 )
 
@@ -308,8 +310,8 @@ query {
    repositories(
      first: 100,
      orderBy: {field: UPDATED_AT, direction: DESC}
-     ownerAffiliations: [OWNER, COLLABORATOR],
-     affiliations: [OWNER, COLLABORATOR]) {
+     ownerAffiliations: [OWNER, COLLABORATOR, ORGANIZATION_MEMBER],
+     affiliations: [OWNER, COLLABORATOR, ORGANIZATION_MEMBER]) {
      totalCount
      edges {
       node {
