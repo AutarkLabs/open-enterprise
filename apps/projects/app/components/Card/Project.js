@@ -30,15 +30,15 @@ const Project = ({
 }) => {
 
   const removeProject = () => {
-    console.log('removeProject')
-    onRemoveProject(id)
+    console.log('removeProject', repoId)
+    onRemoveProject(repoId)
   }
 
   const clickMenu = e => e.stopPropagation()
 
   const clickContext = e => {
     e.stopPropagation()
-    changeActiveIndex({ tabIndex: 1, tabData: { filterIssuesByRepoId: repoId }})
+    changeActiveIndex({ tabIndex: 1, tabData: { filterIssuesByRepoId: repoId } })
   }
 
   return (

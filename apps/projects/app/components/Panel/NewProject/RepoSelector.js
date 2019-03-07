@@ -70,8 +70,6 @@ class Repo extends React.Component {
 
   handleNewProject = () => {
     const { owner, project } = this.state
-    console.log('owner', owner, 'project', project)
-
     if (project.length > 0) this.props.onCreateProject({ owner, project })
   }
 
@@ -278,26 +276,28 @@ const ClearSearch = styled(Text.Block).attrs({
     cursor: pointer;
   }
 `
+
+// TODO: Use nodes instead of edges (the app should be adapted at some places)
 export default graphql(gql`
-  query {
-    viewer {
-      id
-      repositories(
-        affiliations: [COLLABORATOR, ORGANIZATION_MEMBER, OWNER]
-        first: 100
-        isFork: false
-        orderBy: { field: NAME, direction: ASC }
-      ) {
-        edges {
-          node {
-            nameWithOwner
-            id
-            owner {
-              id
-            }
-          }
+query {
+  viewer {
+    id
+   repositories(
+     first: 100,
+     orderBy: {field: UPDATED_AT, direction: DESC}
+     ownerAffiliations: [OWNER, COLLABORATOR, ORGANIZATION_MEMBER],
+     affiliations: [OWNER, COLLABORATOR, ORGANIZATION_MEMBER]) {
+     totalCount
+     edges {
+      node {
+        nameWithOwner
+        id
+        owner {
+          id
         }
       }
     }
-  }
+   }
+ } 
+ }
 `)(Repo)

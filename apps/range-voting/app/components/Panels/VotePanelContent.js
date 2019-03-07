@@ -46,7 +46,7 @@ class VotePanelContent extends React.Component {
     }
   }
   handleVoteSubmit = () => {
-    const optionsArray = []
+    let optionsArray = []
 
     this.state.voteOptions.forEach(element => {
       let voteWeight = element.sliderValue
@@ -58,8 +58,12 @@ class VotePanelContent extends React.Component {
         : 0
       optionsArray.push(voteWeight)
     })
+
+    //re-proportion the supports values so they don't exceed the total balance
+    const valueTotal = optionsArray.reduce((a, b) => a + b, 0)
+    valueTotal > parseInt(this.state.userBalance) ? optionsArray = optionsArray.map(tokenSupport => ( tokenSupport / valueTotal ) * (parseInt(this.state.userBalance) * 0.9999) ) : 0
     // TODO: Let these comments here for a while to be sure we are working with correct values:
-    console.log('Sum of values:', optionsArray.reduce((a, b) => a + b, 0))
+    console.log('Sum of values:', valueTotal)
     console.log('userBalance', this.state.userBalance)
     console.log(
       'onVote voteId:',
@@ -77,12 +81,10 @@ class VotePanelContent extends React.Component {
     if (tokenContract && user) {
       combineLatest(tokenContract.balanceOf(user), tokenContract.decimals())
         .first()
-        .subscribe(([balance, decimals]) => {
-          const adjustedBalance = Math.floor(
-            parseInt(balance, 10) / Math.pow(10, decimals)
-          )
+        .subscribe(([ balance, decimals ]) => {
           this.setState({
-            userBalance: adjustedBalance,
+            userBalance: balance,
+            decimals: decimals
           })
         })
     }
@@ -152,10 +154,13 @@ class VotePanelContent extends React.Component {
       options,
       type,
     } = vote.data
-
+    const displayBalance = BigNumber(vote.data.balance)
+      .div(BigNumber(10 ** this.state.decimals))
+      .dp(3)
+      .toString()
     // TODO: Show decimals for vote participation only when needed
-    const voterParticipation = (participationPct * 10e15).toFixed(2)
-
+    const displayParticipationPct = (participationPct).toFixed(2)
+    const displayMinParticipationPct = (minParticipationPct / 10 ** 16).toFixed(2)
     // TODO: This block is wrong and has no sense
     if (!voteOptions.length) {
       this.state.voteOptions = options
@@ -229,12 +234,7 @@ class VotePanelContent extends React.Component {
                 <Label>Amount</Label>
               </h2>
               <p>
-                {' ' +
-                  BigNumber(vote.data.balance)
-                    .div(BigNumber(10e17))
-                    .dp(3)
-                    .toString() +
-                  ' ETH'}
+                {' ' + displayBalance + ' ETH'}
               </p>
             </div>
             <div>
@@ -251,9 +251,9 @@ class VotePanelContent extends React.Component {
               <Label>Voter participation</Label>
             </h2>
             <p>
-              {voterParticipation / 10 ** 16}%{' '}
+              {displayParticipationPct}%{' '}
               <Text size="small" color={theme.negative}>
-                ({minParticipationPct / 10 ** 16}% required)
+                ({displayMinParticipationPct}% required)
               </Text>
             </p>
           </div>
@@ -261,7 +261,10 @@ class VotePanelContent extends React.Component {
             <h2>
               <Label>Your voting tokens</Label>
             </h2>
-            {BigNumber(this.state.userBalance).toString()}
+            {BigNumber(this.state.userBalance)
+              .div(BigNumber(10 ** (this.state.decimals)))
+              .dp(3)
+              .toString()}
           </div>
         </SidePanelSplit>
         {open && (

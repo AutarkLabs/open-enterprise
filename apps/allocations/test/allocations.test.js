@@ -245,6 +245,76 @@ contract('Allocations App', accounts => {
         )
       })
     })
+
+    context('invalid workflows', () => {
+      beforeEach(async () => {
+        allocationId = (await app.newPayout(
+          'Fett\'s vett',
+          web3.toWei(1, 'ether'),
+          0x0
+        )).logs[0].args.accountId.toNumber()
+
+        //await app.fund(allocationId, {
+        //  from: empire,
+        //  value: web3.toWei(0.01, 'ether'),
+        //})
+      })
+
+      it('cannot set Distribution before funding the account', async () => {
+        supports = [500, 200, 300]
+        totalsupport = 1000
+        const zeros = new Array(candidateAddresses.length).fill(0)
+        return assertRevert(async () => {
+          await app.setDistribution(
+            candidateAddresses,
+            supports,
+            zeros,
+            '',
+            zeros,
+            zeros,
+            allocationId,
+            false,
+            false,
+            0,
+            web3.toWei(0.01, 'ether')
+          )
+        })
+      })
+      it('cannot set Distribution above account limit', async () => {
+        await app.fund(allocationId, {
+          from: empire,
+          value: web3.toWei(3.00, 'ether'),
+        })
+
+        supports = [500, 200, 300]
+        totalsupport = 1000
+        const zeros = new Array(candidateAddresses.length).fill(0)
+        return assertRevert(async () => {
+          await app.setDistribution(
+            candidateAddresses,
+            supports,
+            zeros,
+            '',
+            zeros,
+            zeros,
+            allocationId,
+            false,
+            false,
+            0,
+            web3.toWei(1.01, 'ether')
+          )
+        })
+      })
+      it('cannot execute payout before Distribution is set', async () => {
+        await app.fund(allocationId, {
+          from: empire,
+          value: web3.toWei(3.00, 'ether'),
+        })
+        return assertRevert(async () => {
+          await app.runPayout(allocationId, { from: empire })
+        })
+      })
+    })
   })
 
   context('Informational Payout', () => {
@@ -266,7 +336,20 @@ contract('Allocations App', accounts => {
         0,
         0x0
       )).logs[0].args.accountId.toNumber()
+    })
 
+    it('can create new Payout', async () => {
+      payoutMembers = await app.getPayout(allocationId)
+      assert.equal(
+        payoutMembers[2],
+        'Fett\'s auto warranty',
+        'Payout metadata incorrect'
+      )
+      assert.equal(payoutMembers[0].toNumber(), 0, 'Payout Balance Incorrect')
+      assert.equal(payoutMembers[1].toNumber(), 0, 'Payout Limit incorrect')
+    })
+
+    it('sets the distribution', async () => {
       supports = [300, 400, 300]
       totalsupport = 1000
       const zeros = new Array(candidateAddresses.length).fill(0)
@@ -284,20 +367,6 @@ contract('Allocations App', accounts => {
         0,
         { from: empire }
       )
-    })
-
-    it('can create new Payout', async () => {
-      payoutMembers = await app.getPayout(allocationId)
-      assert.equal(
-        payoutMembers[2],
-        'Fett\'s auto warranty',
-        'Payout metadata incorrect'
-      )
-      assert.equal(payoutMembers[0].toNumber(), 0, 'Payout Balance Incorrect')
-      assert.equal(payoutMembers[1].toNumber(), 0, 'Payout Limit incorrect')
-    })
-
-    it('sets the distribution', async () => {
       const candidateArrayLength = (await app.getNumberOfCandidates(
         allocationId
       )).toNumber()
@@ -322,7 +391,28 @@ contract('Allocations App', accounts => {
         'distribution array lengths do not match'
       )
     })
-    it('cannot accept funds', async () => {
+    it('cannot accept funds via a fund call', async () => {
+      supports = [300, 400, 300]
+      const zeros = new Array(candidateAddresses.length).fill(0)
+      await app.setDistribution(
+        candidateAddresses,
+        supports,
+        zeros,
+        '',
+        zeros,
+        zeros,
+        allocationId,
+        true,
+        false,
+        0,
+        0,
+        { from: empire }
+      )
+      return assertRevert(async () => {
+        await app.fund(allocationId, {from: empire, value: web3.toWei(0.01, 'ether')})
+      })
+    })
+    it('cannot accept funds via setDistribution', async () => {
       //assertrevert when attempt to add funds
       supports = [300, 400, 300]
       totalsupport = 1000

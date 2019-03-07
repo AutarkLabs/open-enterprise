@@ -1,19 +1,20 @@
-import Aragon, { providers } from '@aragon/client'
-import { first, of } from 'rxjs' // Make sure observables have .first
-import { combineLatest } from 'rxjs'
-import { empty } from 'rxjs/observable/empty'
+import Aragon from '@aragon/client'
 
 import { GraphQLClient } from 'graphql-request'
 import { STATUS } from './utils/github'
-import VaultJSON from '../build/contracts/Vault.json'
+import vaultAbi from '../../shared/json-abis/vault'
 import tokenSymbolAbi from './abi/token-symbol.json'
-import { isNullOrUndefined } from 'util'
+import tokenDecimalsAbi from './abi/token-decimal.json'
 
 let ipfsClient = require('ipfs-http-client')
 
-let ipfs = ipfsClient({ host: 'localhost', port: '5001', protocol: 'http'})
+const tokenAbi = [].concat(tokenDecimalsAbi, tokenSymbolAbi)
 
-const status = ['new', 'review-applicants', 'submit-work', 'review-work', 'finished']
+let ipfs = ipfsClient({ host: 'localhost', port: '5001', protocol: 'http' })
+
+const status = [ 'new', 'review-applicants', 'submit-work', 'review-work', 'finished' ]
+
+const SUBMISSION_STAGE = 2
 
 const toAscii = hex => {
   // Find termination
@@ -62,7 +63,7 @@ let appState, vault, bounties, tokens
  */
 const github = () => {
   return app.rpc
-    .sendAndObserveResponses('cache', ['get', 'github'])
+    .sendAndObserveResponses('cache', [ 'get', 'github' ])
     .pluck('result')
 }
 
@@ -102,7 +103,7 @@ app.state().subscribe(state => {
   if (!vault) {
     // this should be refactored to be a "setting"
     app.call('vault').subscribe(response => {
-      vault = app.external(response, VaultJSON.abi)
+      vault = app.external(response, vaultAbi.abi)
       vault.events().subscribe(handleEvents)
     })
   }
@@ -115,7 +116,7 @@ app.state().subscribe(state => {
  ***********************/
 
 async function handleEvents(response) {
-  let nextState, data, requestsData
+  let nextState, data, newData
   switch (response.event) {
   case 'RepoAdded':
     console.log('[Projects] event RepoAdded')
@@ -123,43 +124,82 @@ async function handleEvents(response) {
     break
   case 'RepoRemoved':
     console.log('[Projects] RepoRemoved', response.returnValues)
-    nextState = await syncRepos(appState, response.returnValues)
+    const id = response.returnValues.repoId
+    const repoIndex = appState.repos.findIndex(repo => repo.id === id)
+    if (repoIndex === -1) break
+    appState.repos.splice(repoIndex,1)
+    nextState = appState
     break
   case 'RepoUpdated':
     console.log('[Projects] RepoUpdated', response.returnValues)
     nextState = await syncRepos(appState, response.returnValues)
-  case 'AssignmentApproved':
-    console.log('[Projects] AssignmentApproved', appState, response.returnValues)
-    if(response.returnValues === null || response.returnValues === undefined) {
-      break
-    }
-    data = await loadIssueData(response.returnValues)
-    requestsData = await loadRequestsData(response.returnValues)
-    data.workStatus = status[2]
-    data.requestsData = requestsData
-    nextState = syncIssues(appState, response.returnValues, data)
-    appState = nextState
-    break
-  case 'AssignmentRequested':
-    console.log('[Projects] AssignmentRequested', appState, response.returnValues)
-    if(response.returnValues === null || response.returnValues === undefined) {
-      break
-    }
-    data = await loadIssueData(response.returnValues)
-    requestsData = await loadRequestsData(response.returnValues)
-    data.workStatus = status[1]
-    data.requestsData = requestsData
-    nextState = syncIssues(appState, response.returnValues, data)
-    appState = nextState
-    break
   case 'BountyAdded':
     console.log('[Projects] BountyAdded', appState, response.returnValues)
-    if(response.returnValues === null || response.returnValues === undefined) {
+    if(!response.returnValues) {
       break
     }
     data = await loadIssueData(response.returnValues)
     data.workStatus = status[0]
     nextState = syncIssues(appState, response.returnValues, data, [])
+    appState = nextState
+    break
+  case 'AssignmentRequested':
+    console.log('[Projects] AssignmentRequested', appState, response.returnValues)
+    if(!response.returnValues) {
+      break
+    }
+    data = await loadIssueData(response.returnValues)
+    data.workStatus = status[1]
+    newData = await updateIssueDetail(data, response)
+    nextState = syncIssues(appState, response.returnValues, newData)
+    appState = nextState
+    break
+  case 'AssignmentApproved':
+    console.log('[Projects] AssignmentApproved', appState, response.returnValues)
+    if(!response.returnValues) {
+      break
+    }
+    data = await loadIssueData(response.returnValues)
+    data.workStatus = status[2]
+    newData = await updateIssueDetail(data, response)
+    nextState = syncIssues(appState, response.returnValues, newData)
+    appState = nextState
+    break
+  case 'SubmissionRejected':
+    console.log('[Projects] SubmissionRejected', appState, response.returnValues)
+    if(!response.returnValues) {
+      break
+    }
+    data = await loadIssueData(response.returnValues)
+    data.workStatus = status[3]
+    console.log('Data: ', data)
+    newData = await updateIssueDetail(data, response)
+    nextState = syncIssues(appState, response.returnValues, newData)
+    appState = nextState
+    break
+  case 'WorkSubmitted':
+    console.log('[Projects] WorkSubmitted', appState, response.returnValues)
+    if(!response.returnValues) {
+      break
+    }
+    data = await loadIssueData(response.returnValues)
+    data.workStatus = status[3]
+    console.log('Data: ', data)
+    newData = await updateIssueDetail(data, response)
+    nextState = syncIssues(appState, response.returnValues, newData)
+    appState = nextState
+    break
+  case 'SubmissionAccepted':
+    console.log('[Projects] SubmissionAccepted', appState, response.returnValues)
+    if (!response.returnValues) {
+      break
+    }
+    data = await loadIssueData(response.returnValues)
+    console.log('Data: ', data)
+    data.workStatus = status[4]
+    //const workFinishedData = await loadSubmissionData(response.returnValues)
+    //data.work = workFinishedData
+    nextState = syncIssues(appState, response.returnValues, data)
     appState = nextState
     break
   case 'IssueCurated':
@@ -172,7 +212,7 @@ async function handleEvents(response) {
     break
   case 'VaultDeposit':
     console.log('[Projects] VaultDeposit')
-    nextState = await syncTokens(appState, response.returnValues)   
+    nextState = await syncTokens(appState, response.returnValues)
   default:
     console.log('[Projects] Unknown event catched:', response)
   }
@@ -216,7 +256,7 @@ async function syncSettings(state) {
   }
 }
 
-async function syncTokens(state, {token}) {
+async function syncTokens(state, { token }) {
   try {
     let tokens = state.tokens
     let tokenIndex = tokens.findIndex(currentToken => currentToken.addr === token)
@@ -241,17 +281,29 @@ async function syncTokens(state, {token}) {
  *                     *
  ***********************/
 
+async function updateIssueDetail(data, response) {
+  let requestsData, submissionData
+  requestsData = await loadRequestsData(response.returnValues)
+  data.requestsData = requestsData
+  if (status.indexOf(data.workStatus) >= SUBMISSION_STAGE) {
+    submissionData = await loadSubmissionData(response.returnValues)
+    data.workSubmissions = submissionData
+    data.work = submissionData[submissionData.length - 1]
+  }
+  return data
+}
 
 function loadToken(token) {
-  let tokenContract = app.external(token, tokenSymbolAbi)
+  let tokenContract = app.external(token, tokenAbi)
   return new Promise(resolve => {
     tokenContract.symbol().subscribe(symbol => {
-      // return gracefully when entry not found
-      symbol &&
+      tokenContract.decimals().subscribe(decimals => {
         resolve({
           addr: token,
-          symbol: symbol
+          symbol: symbol,
+          decimals: decimals,
         })
+      })
     })
   })
 }
@@ -259,7 +311,7 @@ function loadToken(token) {
 function loadRepoData(id) {
   return new Promise(resolve => {
     app.call('getRepo', id).subscribe(({ owner, index }) => {
-      const [_repo, _owner] = [toAscii(id), toAscii(owner)]
+      const [ _repo, _owner ] = [ toAscii(id), toAscii(owner) ]
       getRepoData(_repo).then(({ node }) => {
         const commits = node.defaultBranchRef
           ? node.defaultBranchRef.target.history.totalCount
@@ -280,21 +332,21 @@ function loadRepoData(id) {
   })
 }
 
-function loadIssueData({repoId, issueNumber}) {
+function loadIssueData({ repoId, issueNumber }) {
   return new Promise(resolve => {
-    app.call('getIssue', repoId, issueNumber).subscribe(({ hasBounty, standardBountyId, balance, token, dataHash}) => {
+    app.call('getIssue', repoId, issueNumber).subscribe(({ hasBounty, standardBountyId, balance, token, dataHash, assignee }) => {
       let contentJSON
       ipfs.get(dataHash, (err, files) => {
         for(const file of files) {
           contentJSON = JSON.parse(file.content.toString('utf8'))
         }
-        resolve({ balance, hasBounty, token, standardBountyId, ...contentJSON})
-      })      
+        resolve({ balance, hasBounty, token, standardBountyId, assignee, ...contentJSON })
+      })
     })
   })
 }
 
-function loadRequestsData({repoId, issueNumber}) {
+function loadRequestsData({ repoId, issueNumber }) {
   return new Promise(resolve => {
     app.call('getApplicantsLength', repoId, issueNumber).subscribe(async (response) => {
       let applicants = []
@@ -308,15 +360,43 @@ function loadRequestsData({repoId, issueNumber}) {
 
 function getRequest(repoId, issueNumber, applicantId) {
   return new Promise(resolve => {
-    app.call('getApplicant', repoId, issueNumber, applicantId).subscribe( (address) => {
-      app.call('getAssignmentRequest', repoId, issueNumber, address).subscribe( (hash) => {
-        let contentJSON
-        ipfs.get(hash, (err, files) => {
-          for(const file of files) {
-            contentJSON = JSON.parse(file.content.toString('utf8'))
-          }
-          resolve({contributorAddr: address, ...contentJSON})
-        })
+    app.call('getApplicant', repoId, issueNumber, applicantId).subscribe( async (response) => {
+      let contentJSON
+      console.log('getApplicant response: ', response)
+      ipfs.get(response.application, (err, files) => {
+        for(const file of files) {
+          contentJSON = JSON.parse(file.content.toString('utf8'))
+        }
+        resolve({ contributorAddr: response.applicant, requestIPFSHash: response.application, ...contentJSON })
+      })
+    })
+  })
+}
+
+function loadSubmissionData({ repoId, issueNumber }) {
+  return new Promise(resolve => {
+    app.call('getSubmissionsLength', repoId, issueNumber).subscribe(async (response) => {
+      let submissions = []
+      console.log('number of submissions: ', response)
+      for(let submissionId = 0; submissionId < response; submissionId++){
+        submissions.push(await getSubmission(repoId, issueNumber, submissionId))
+      }
+      resolve(submissions)
+    })
+  })
+}
+
+function getSubmission(repoId, issueNumber, submissionIndex) {
+  return new Promise(resolve => {
+    console.log(repoId, issueNumber, submissionIndex)
+    app.call('getSubmission', repoId, issueNumber, submissionIndex).subscribe(async ({ submissionHash, fulfillmentId, status, submitter }) => {
+      let contentJSON
+      ipfs.get(submissionHash, (err, files) => {
+        for(const file of files) {
+          contentJSON = JSON.parse(file.content.toString('utf8'))
+        }
+        console.log('submissionData: ', { status, fulfillmentId, submitter, ...contentJSON })
+        resolve({ status, fulfillmentId, submitter, submissionIPFSHash: submissionHash, ...contentJSON })
       })
     })
   })

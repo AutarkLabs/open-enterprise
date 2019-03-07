@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import { addHours } from 'date-fns'
 
 import {
   Field,
@@ -15,12 +16,10 @@ import {
   TableCell,
 } from '@aragon/ui'
 
-import { Form, FormField, FieldTitle } from '../../Form'
+import { Form, FormField, FieldTitle, DateInput } from '../../Form'
 import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
 
-const bountyHours = ['-', '1', '2', '4', '8', '16', '24', '32', '40']
-const bountyDeadline = ['-', 'yesterday', 'last week']
-const bountyAvail = ['-', '1', '2', '3']
+const bountySlots = [ '1', '2', '3' ]
 
 class NewBountyAllocation extends React.Component {
   static propTypes = {
@@ -54,8 +53,9 @@ class NewBountyAllocation extends React.Component {
         repoId: issue.repoId,
         hours: 0,
         exp: 0,
-        deadline: 0,
-        avail: 0,
+        deadline: addHours(new Date(), this.props.bountySettings.bountyDeadline),
+        slots: 1,
+        slotsIndex: 0,
         detailsOpen: 0,
         size: 0
       }
@@ -65,41 +65,41 @@ class NewBountyAllocation extends React.Component {
       bounties,
     }
   }
-
+  
   configBounty = (id, key, val) => {
     const { bounties } = this.state
     // arrow clicked - it's simple value reversal case, 1 indicates details are open, 0 - closed
-    if (key == 'detailsOpen') {
+    if (key === 'detailsOpen') {
       bounties[id][key] = 1 - bounties[id][key]
     } else {
       bounties[id][key] = val
+      if (key === 'slotsIndex') {
+        // slotsIndex governs DropDown. real value is in 'slots'
+        bounties[id]['slots'] = bountySlots[val]
+      }
     }
     // just do it, recalculate size
     const expLevels = this.getExpLevels()
-    let size = bountyHours[bounties[id]['hours']] * this.props.bountySettings.baseRate * expLevels[bounties[id]['exp']].mul
+    let size = bounties[id]['hours'] * this.props.bountySettings.baseRate * expLevels[bounties[id]['exp']].mul
     bounties[id]['size'] = size
 
     this.setState({ bounties })
-    console.log('configBounty: ', bounties)
+    //console.log('configBounty: ', bounties)
   }
 
-  generateHoursChange = id => index => {
-    this.configBounty(id, 'hours', index)
-    console.log('generateHoursChange: id: ', id, ', index: ', index)
-  }
+  generateHoursChange = id => ({ target: { value } }) => this.configBounty(id, 'hours', parseInt(value))
 
   generateExpChange = id => index => {
     this.configBounty(id, 'exp', index)
     console.log('generateExpChange: id: ', id, ', index: ', index)
   }
 
-  generateDeadlineChange = id => index => {
-    this.configBounty(id, 'deadline', index)
-    console.log('generateExpChange: id: ', id, ', index: ', index)
+  generateDeadlineChange = id => deadline => {
+    this.configBounty(id, 'deadline', deadline)
   }
 
-  generateAvailChange = id => index => {
-    this.configBounty(id, 'avail', index)
+  generateSlotsChange = id => index => {
+    this.configBounty(id, 'slotsIndex', index)
     console.log('generateExpChange: id: ', id, ', index: ', index)
   }
 
@@ -109,14 +109,14 @@ class NewBountyAllocation extends React.Component {
   }
 
   submitBounties = () => {
-    // console.info('Submitting new curation', this.state, this.props)
+    console.info('Submitting new Bounties', this.state.bounties)
     this.props.onSubmit(this.state.bounties)
   }
 
   // TODO: make it smarter. exp levels are quite constant, but they might not
   // be immediately available
   getExpLevels = () => {
-    let expLevels = [{ name: '-', mul: 1 }]
+    let expLevels = []
     let a = this.props.bountySettings.expLevels.split('\t')
     for (let i = 0; i < a.length; i += 2)
       expLevels.push({ mul: a[i] / 100, name: a[i + 1] })
@@ -128,7 +128,6 @@ class NewBountyAllocation extends React.Component {
     const { bountySettings } = this.props
     const expLevels = this.getExpLevels()
 
-    //console.log('bounties: ', bounties, ', bountySettings: ', bountySettings)
     return (
       <Form
         onSubmit={this.submitBounties}
@@ -172,10 +171,10 @@ class NewBountyAllocation extends React.Component {
                         <IBHours>
                           <IBHoursInput>
                             <FieldTitle>Hours</FieldTitle>
-                            <DropDown
-                              items={bountyHours}
+                            <HoursInput
+                              name="hours"
+                              value={bounties[issue.id]['hours']}
                               onChange={this.generateHoursChange(issue.id)}
-                              active={bounties[issue.id]['hours']}
                             />
                           </IBHoursInput>
                         </IBHours>
@@ -209,22 +208,22 @@ class NewBountyAllocation extends React.Component {
                           <FormField
                             label="Deadline"
                             input={
-                              <DropDown
-                                items={bountyDeadline}
+                              <DateInput
+                                name='deadline'
+                                value={bounties[issue.id]['deadline']}
                                 onChange={this.generateDeadlineChange(issue.id)}
-                                active={bounties[issue.id]['deadline']}
                               />
                             }
                           />
                         </IBDeadline>
                         <IBAvail>
                           <FormField
-                            label="Num. Available"
+                            label="Slots Available"
                             input={
                               <DropDown
-                                items={bountyAvail}
-                                onChange={this.generateAvailChange(issue.id)}
-                                active={bounties[issue.id]['avail']}
+                                items={bountySlots}
+                                onChange={this.generateSlotsChange(issue.id)}
+                                active={bounties[issue.id]['slotsIndex']}
                               />
                             }
                           />
@@ -242,6 +241,17 @@ class NewBountyAllocation extends React.Component {
   }
 }
 
+const HoursInput = styled(TextInput.Number).attrs({
+  mode: 'strong',
+  step: '1',
+  min: '0',
+  max: '1000',
+})`
+  width: 100px;
+  height: 32px;
+  display: inline-block;
+  padding-top: 3px;
+`
 const Cell = styled(TableCell)`
   padding: 0;
 `
@@ -278,13 +288,13 @@ const IBDetails = styled.div`
   grid-template-rows: auto;
   grid-template-areas:
     '.     exp   dline'
-    '.     avail .    ';
+    '.     slots .    ';
 `
 const IBDeadline = styled.div`
   grid-area: dline;
 `
 const IBAvail = styled.div`
-  grid-area: avail;
+  grid-area: slots;
 `
 const IBValue = styled.div`
   grid-area: value;

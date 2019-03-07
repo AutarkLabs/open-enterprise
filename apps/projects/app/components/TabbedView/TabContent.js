@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import PropTypes from 'prop-types'
 
 const StyledTabContent = styled.main`
-  overflow: hidden;
+  overflow: auto;
   flex-grow: 1;
 `
 
@@ -14,7 +14,7 @@ export default class TabContent extends PureComponent {
   }
 
   static defaultProps = {
-    activeIndex: { tabIndex: 0, tabData: {}},
+    activeIndex: { tabIndex: 0, tabData: {} },
   }
 
   render() {
