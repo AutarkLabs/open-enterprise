@@ -75,5 +75,5 @@ codealike.json
 .DS_Store
 
 # Personal Scratch and notes
-*/**/examples
-*/**/scratch
+**/examples/
+**/scratch/
