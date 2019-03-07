@@ -12,8 +12,10 @@ export const onEntryAdded = async ({ entries = [], addressBook }, { addr }) => {
   } else {
     // entry not cached
     const data = await loadEntryData(addr, addressBook) // async load data from contract
-    const entry = { addr, data } // transform for the frontend to understand
-    entries.push(entry) // add to the state object received as param
+    if (data) { // just perform transform and push if data was found (entry was not removed)
+      const entry = { addr, data } // transform for the frontend to understand
+      entries.push(entry) // add to the state object received as param
+    }
   }
   // return the (un)modified entries array
   return entries
@@ -42,13 +44,11 @@ const loadEntryData = async (addr, addressBook) => {
     .map(
       entry =>
         // cover removed entries
-        entry === undefined
-          ? 'removed'
-          : {
-            entryAddress: entry[0],
-            name: entry[1],
-            entryType: entry[2],
-          }
+        !entry ? null : {
+          entryAddress: entry[0],
+          name: entry[1],
+          entryType: entry[2],
+        }
     )
     .toPromise()
 }
