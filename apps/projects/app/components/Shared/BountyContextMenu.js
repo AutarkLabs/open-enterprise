@@ -42,6 +42,10 @@ BountyContextMenu.propTypes = {
   onReviewApplication: PropTypes.func.isRequired,
   onReviewWork: PropTypes.func.isRequired,
   workStatus: PropTypes.oneOf([undefined, 'new', 'review-applicants', 'submit-work', 'review-work', 'finished']),
+  work: PropTypes.oneOf([
+     undefined,
+     PropTypes.object,
+  ]),
 }
 
 export default BountyContextMenu
