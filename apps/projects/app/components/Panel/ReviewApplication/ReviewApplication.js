@@ -29,19 +29,19 @@ class ReviewApplication extends React.Component {
 
   onReviewApplication = () => {
     console.log('Accepted', this.state.feedback, this.props.issue)
-    this.props.onReviewApplication(this.props.issue)
+    this.props.onReviewApplication(this.props.issue, this.state.requestIndex)
   }
 
   changeRequest = (index) => {
-    this.setState({requestIndex: index})
-  } 
+    this.setState({ requestIndex: index })
+  }
 
 
   render() {
     const { issue } = this.props
 
     const request = issue.requestsData[this.state.requestIndex]
-    
+
     const application = {
       user: {
         login: request.user.login,
@@ -64,7 +64,7 @@ class ReviewApplication extends React.Component {
         noSeparator
       >
         <IssueTitle>{issue.title}</IssueTitle>
-        
+
         <DropDown
           name="Applicant"
           items={issue.requestsData.map( request => request.user.login)}
@@ -80,13 +80,13 @@ class ReviewApplication extends React.Component {
         >
           <IssueLinkRow>
             <IconGitHub color="#21AAE7" width='14px' height='14px' />
-            <Text style={{ marginLeft: '6px'}}>{issue.repo} #{issue.number}</Text>
+            <Text style={{ marginLeft: '6px' }}>{issue.repo} #{issue.number}</Text>
           </IssueLinkRow>
         </SafeLink>
 
         <ApplicationDetails>
           <UserLink>
-            <img src={applicant.avatar} style={{ width: '32px', height: '32px', marginRight: '10px'}} />
+            <img src={applicant.avatar} style={{ width: '32px', height: '32px', marginRight: '10px' }} />
             <SafeLink
               href={applicant.url}
               target="_blank"

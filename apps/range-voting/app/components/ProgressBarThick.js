@@ -29,13 +29,13 @@ ProgressBar.defaultProps = {
 
 ProgressBar.propTypes = {
   // type: PropTypes.oneOf(['positive', 'negative']).isRequired,
-  type: PropTypes.oneOf(['positive', 'negative']),
+  type: PropTypes.oneOf([ 'positive', 'negative' ]),
   progress: PropTypes.number,
 }
 
 const Label = styled.p`
   margin-top: 1rem;
-  margin-bottom: .5rem;
+  margin-bottom: 0.5rem;
 `
 
 const Main = styled.div`
@@ -49,7 +49,6 @@ const Base = styled.div`
   border-radius: 2px;
   text-align: right;
   line-height: 14px;
-  padding-right: 6px;
 `
 const Progress = styled.div`
   height: 20px;

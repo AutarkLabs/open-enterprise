@@ -18,6 +18,16 @@
     "linebreak-style": ["error", "unix"],
     "quotes": ["error", "single"],
     "react/no-typos": 1,
-    "semi": ["error", "never"]
+    "semi": ["error", "never"],
+    "array-bracket-spacing": [
+      "error",
+      "always",
+      {
+        "objectsInArrays": false,
+        "arraysInArrays": false,
+        "singleValue": false
+      }
+    ],
+    "object-curly-spacing": ["error", "always"]
   }
 }

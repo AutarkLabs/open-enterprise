@@ -56,7 +56,7 @@ class Issues extends React.PureComponent {
     this.props.onCurateIssues(this.state.selectedIssues)
     // this is called from ActionMenu, on selected Issues -
     // return to default state where nothing is selected
-    this.setState({selectedIssues: [], allSelected: false})
+    this.setState({ selectedIssues: [], allSelected: false })
   }
 
   handleAllocateSingleBounty = issue => {
@@ -68,7 +68,7 @@ class Issues extends React.PureComponent {
     this.props.onAllocateBounties(this.state.selectedIssues)
     // this is called from ActionMenu, on selected Issues -
     // return to default state where nothing is selected
-    this.setState({selectedIssues: [], allSelected: false})
+    this.setState({ selectedIssues: [], allSelected: false })
   }
 
   handleReviewApplication = issue => {
