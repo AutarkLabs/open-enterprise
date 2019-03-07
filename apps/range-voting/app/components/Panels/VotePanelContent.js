@@ -81,7 +81,7 @@ class VotePanelContent extends React.Component {
     if (tokenContract && user) {
       combineLatest(tokenContract.balanceOf(user), tokenContract.decimals())
         .first()
-        .subscribe(([balance, decimals]) => {
+        .subscribe(([ balance, decimals ]) => {
           this.setState({
             userBalance: balance,
             decimals: decimals
