@@ -101,7 +101,7 @@ class NewIssue extends React.PureComponent {
     const items =
       typeof reposManaged === 'string'
         ? 'No repos'
-        : ['Select a project', ...reposManaged.map(repo => repo.name)]
+        : [ 'Select a project', ...reposManaged.map(repo => repo.name) ]
     
     const reposIds =
       typeof reposManaged === 'string'

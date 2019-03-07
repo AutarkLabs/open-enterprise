@@ -19,7 +19,7 @@ const AddressDropDownOptions = ({
   const addOption = () => {
     onChange({
       target: validated
-        ? { name, value: [...values, input] }
+        ? { name, value: [ ...values, input ] }
         : { name: 'addressError', value: true }, // enable error msg if needed
     })
     resetDropDown()

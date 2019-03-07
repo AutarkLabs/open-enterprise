@@ -38,7 +38,7 @@ class ReviewApplication extends React.Component {
   }
 
   changeRequest = (index) => {
-    this.setState({requestIndex: index})
+    this.setState({ requestIndex: index })
   } 
 
 
@@ -73,7 +73,7 @@ class ReviewApplication extends React.Component {
         >
           <IssueLinkRow>
             <IconGitHub color="#21AAE7" width='14px' height='14px' />
-            <Text style={{ marginLeft: '6px'}}>{issue.repo} #{issue.number}</Text>
+            <Text style={{ marginLeft: '6px' }}>{issue.repo} #{issue.number}</Text>
           </IssueLinkRow>
         </SafeLink>
 
@@ -88,7 +88,7 @@ class ReviewApplication extends React.Component {
 
         <ApplicationDetails>
           <UserLink>
-            <img src={applicant.avatar} style={{ width: '32px', height: '32px', marginRight: '10px'}} />
+            <img src={applicant.avatar} style={{ width: '32px', height: '32px', marginRight: '10px' }} />
             <SafeLink
               href={applicant.url}
               target="_blank"
