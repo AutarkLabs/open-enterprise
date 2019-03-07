@@ -19,7 +19,7 @@ import {
 import { Form, FormField, FieldTitle, DateInput } from '../../Form'
 import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
 
-const bountySlots = ['1', '2', '3']
+const bountySlots = [ '1', '2', '3' ]
 
 class NewBountyAllocation extends React.Component {
   static propTypes = {
@@ -84,15 +84,10 @@ class NewBountyAllocation extends React.Component {
     bounties[id]['size'] = size
 
     this.setState({ bounties })
-    console.log('configBounty: ', bounties)
+    //console.log('configBounty: ', bounties)
   }
 
-  generateHoursChange = id => ({ target: {value}}) => {
-    value < 0 ?
-      this.configBounty(id, 'hours', 0)
-      :
-      this.configBounty(id, 'hours', parseInt(value))
-  }
+  generateHoursChange = id => ({ target: { value } }) => this.configBounty(id, 'hours', parseInt(value))
 
   generateExpChange = id => index => {
     this.configBounty(id, 'exp', index)
@@ -246,7 +241,12 @@ class NewBountyAllocation extends React.Component {
   }
 }
 
-const HoursInput = styled(TextInput.Number)`
+const HoursInput = styled(TextInput.Number).attrs({
+  mode: 'strong',
+  step: '1',
+  min: '0',
+  max: '1000',
+})`
   width: 100px;
   height: 32px;
   display: inline-block;
