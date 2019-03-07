@@ -7,16 +7,22 @@ context('Aragon', () => {
     cy.on("window:before:load", (win) => {
       const provider = new PrivateKeyProvider(
         "A8A54B2D8197BC0B19BB8A084031BE71835580A01E70A45A13BABD16C9BC1563",
-        "http://127.0.0.1:8545"
+        "http://localhost:8545"
       );
       win.web3 = new Web3(provider);
     });
-    cy.visit('http://127.0.0.1:3000/#/0x5b6a3301a67A4bfda9D3a528CaD34cac6e7F8070')
+    cy.visit('http://localhost:3000/#/0x5b6a3301a67A4bfda9D3a528CaD34cac6e7F8070')
   })
 
   context('Address Book', ()=> {
     it('creates Address Entry', () =>{
       cy.contains('span.item.MenuPanelAppGroup__ButtonItem-sc-1ahx3fh-1','Address Book',{ timeout: 150000 }).wait(1000).click()
+      .get('iframe').iframe().contains('New Entity').click()
+      .get('iframe').iframe().find('input[name="name"]').type('Hello World')
+      .get('iframe').iframe().find('input[name="address"]').type('0xb4124ceb3451635dacedd11767f004d8a28c6ee7')
+      .get('iframe').iframe().contains('button','Submit Entity').click()
+
+      //cy.contains('span.item.MenuPanelAppGroup__ButtonItem-sc-1ahx3fh-1','Range Voting')
     })
   })
 /*
