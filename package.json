@@ -4,7 +4,9 @@
   "devDependencies": {
     "@aragon/cli": "5.3.3",
     "coveralls": "3.0.2",
-    "lerna": "^3.10.8"
+    "cypress": "^3.1.5",
+    "lerna": "^3.10.8",
+    "truffle-privatekey-provider": "^1.1.0"
   },
   "scripts": {
     "bootstrap": "lerna bootstrap --hoist",
@@ -15,6 +17,7 @@
     "clean:build": "git clean -ffdx --exclude=node_modules/",
     "coverage": "npx lerna run coverage --no-bail",
     "coveralls": "cat apps/*/coverage/lcov.info | npx coveralls",
+    "cypress:open": "cypress open",
     "dev": "apps/shared/test-helpers/develop-kit.sh",
     "dev:address": "cd apps/address-book && npm run dev",
     "dev:allocations": "cd apps/allocations && npm run dev",
