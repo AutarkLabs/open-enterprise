@@ -29,12 +29,12 @@ class ReviewApplication extends React.Component {
 
   onAccept = () => {
     console.log('Accepted', this.state.feedback, this.props.issue)
-    this.props.onReviewApplication(this.props.issue)
+    this.props.onReviewApplication(this.props.issue, true)
   }
 
   onReject = () => {
     console.log('Rejected', this.state.feedback, this.props.issue)
-    this.props.onReviewApplication(this.props.issue)
+    this.props.onReviewApplication(this.props.issue, false)
   }
 
   changeRequest = (index) => {
@@ -128,14 +128,12 @@ class ReviewApplication extends React.Component {
         <ReviewRow>
           <ReviewButton
             emphasis="negative"
-            mode="strong"
             onClick={this.onReject}
           >
             Reject
           </ReviewButton>
           <ReviewButton
             emphasis="positive"
-            mode="strong"
             onClick={this.onAccept}
           >
             Accept
@@ -165,6 +163,7 @@ const ApplicationDetails = styled.div`
   border: 1px solid #DAEAEF;
   background-color: #F3F9FB;
   padding: 14px;
+  margin-top: 8px;
   margin-bottom: 14px;
 `
 const IssueTitle = styled(Text)`
@@ -190,9 +189,6 @@ const IssueLinkRow = styled.div`
   display: flex;
   align-items: center;
   margin-bottom: 10px;
-`
-const ReviewButton = styled(Button)`
-  width: 48%;
 `
 
 export default ReviewApplication

@@ -339,20 +339,22 @@ class App extends React.PureComponent {
     }))
   }
 
-  onReviewApplication = issue => {
+  onReviewApplication = (issue, approved) => {
     this.closePanel()
     console.log('onReviewApplication Issue:', issue)
     console.log(
       'onReviewApplication submission:',
       web3.toHex(issue.repoId),
       issue.number,
-      issue.requestsData[0].contributorAddr
+      issue.requestsData[0].contributorAddr,
+      approved,
     )
 
     this.props.app.approveAssignment(
       web3.toHex(issue.repoId),
       issue.number,
-      issue.requestsData[0].contributorAddr
+      issue.requestsData[0].contributorAddr,
+      approved,
     )
   }
 

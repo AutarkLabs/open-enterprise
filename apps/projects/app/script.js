@@ -345,7 +345,7 @@ function getRequest(repoId, issueNumber, applicantId) {
         for(const file of files) {
           contentJSON = JSON.parse(file.content.toString('utf8'))
         }
-        resolve({ contributorAddr: response.applicant, ...contentJSON })
+        resolve({ contributorAddr: response.applicant, status: response.status, ...contentJSON })
       })
     })
   })
