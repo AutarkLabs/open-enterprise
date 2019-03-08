@@ -17,7 +17,9 @@ context('Aragon', () => {
   context('Address Book', ()=> {
     it('creates Address Entry', () =>{
       cy.contains('span.item.MenuPanelAppGroup__ButtonItem-sc-1ahx3fh-1','Address Book',{ timeout: 150000 }).wait(1000).click()
-      .get('iframe').iframe().contains('New Entity').click().wait(1000)
+      // This might be a less verbose way to interact with elements inside an
+      // iframe: https://github.com/cypress-io/cypress/issues/136#issuecomment-328100955
+      .get('iframe').iframe().contains('button','New Entity').click().wait(1000)
       .get('iframe').iframe().find('input[name="name"]').type('Hello World')
       .get('iframe').iframe().find('input[name="address"]').type('0xb4124ceb3451635dacedd11767f004d8a28c6ee7')
       .get('iframe').iframe().contains('button','Submit Entity').click().wait(1000)

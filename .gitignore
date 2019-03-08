@@ -77,3 +77,7 @@ codealike.json
 # Personal Scratch and notes
 **/examples/
 **/scratch/
+
+# Cypress
+**/cypress/screenshots/
+**/cypress/videos/

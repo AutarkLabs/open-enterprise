@@ -42,10 +42,6 @@ jobs:
       script: npm run test
       node_js: "lts/*"
 
-    - # E2E testing
-      script: npm run cypress:run
-      node_js: "lts/*"
-
     - stage: lint
       script: npm run lint
 
