@@ -43,7 +43,7 @@ interface Fundable {
 contract FundForwarder {
     Fundable fundable;
     uint256 id;
-    
+
     constructor(uint256 _id, Fundable _fundable) public {
         fundable = _fundable;
         id = _id;
@@ -255,7 +255,7 @@ contract Allocations is AragonApp, Fundable {
             // minimum granularity is a single day
             // This check is disabled currently to enable testing of shorter times
             //require(payout.period > 86399);
-            payout.startTime = block.timestamp;
+            payout.startTime = block.timestamp; // solium-disable-line security/no-block-members
         } else {
             payout.period = 0;
         }
