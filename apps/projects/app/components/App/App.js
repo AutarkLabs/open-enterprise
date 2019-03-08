@@ -339,20 +339,22 @@ class App extends React.PureComponent {
     }))
   }
 
-  onReviewApplication = issue => {
+  onReviewApplication = (issue, requestIndex) => {
     this.closePanel()
     console.log('onReviewApplication Issue:', issue)
     console.log(
       'onReviewApplication submission:',
       web3.toHex(issue.repoId),
       issue.number,
-      issue.requestsData[0].contributorAddr
+      issue.requestsData[requestIndex].contributorAddr,
+      issue
     )
 
     this.props.app.approveAssignment(
       web3.toHex(issue.repoId),
       issue.number,
-      issue.requestsData[0].contributorAddr
+      issue.requestsData[requestIndex].contributorAddr,
+      issue.requestsData[requestIndex].requestIPFSHash
     )
   }
 
@@ -372,15 +374,17 @@ class App extends React.PureComponent {
       'onReviewWork',
       web3.toHex(issue.repoId),
       issue.number,
-      issue.assignee,
-      state.accepted
+      issue.workSubmissions[issue.workSubmissions.length - 1],
+      state.accepted,
+      issue.workSubmissions[issue.workSubmissions.length - 1].submissionIPFSHash
     )
     this.closePanel()
     this.props.app.reviewSubmission(
       web3.toHex(issue.repoId),
       issue.number,
-      issue.assignee,
-      state.accepted
+      issue.workSubmissions.length - 1,
+      state.accepted,
+      issue.workSubmissions[issue.workSubmissions.length - 1].submissionIPFSHash
     )
   }
 
