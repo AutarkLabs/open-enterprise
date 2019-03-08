@@ -19,7 +19,7 @@
     "coverage": "npx lerna run coverage --no-bail",
     "coveralls": "cat apps/*/coverage/lcov.info | npx coveralls",
     "cypress:open": "cypress open",
-    "cypress:run": "npm run start:dev & wait-on http://localhost:3000/#/0x5b6a3301a67A4bfda9D3a528CaD34cac6e7F8070 && cypress run",
+    "cypress:run": "npm run start & wait-on http://localhost:3000/#/0x5b6a3301a67A4bfda9D3a528CaD34cac6e7F8070 && cypress run",
     "dev": "apps/shared/test-helpers/develop-kit.sh",
     "dev:address": "cd apps/address-book && npm run dev",
     "dev:allocations": "cd apps/allocations && npm run dev",
