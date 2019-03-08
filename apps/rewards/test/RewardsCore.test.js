@@ -16,7 +16,7 @@ const ANY_ADDR = '0xffffffffffffffffffffffffffffffffffffffff'
 const NULL_ADDRESS = '0x00'
 
 const rewardAdded = receipt =>
-  receipt.logs.filter(x => x.event == 'RewardAdded')[0].args.rewardId
+  receipt.logs.filter(x => x.event == 'RewardAdded').map(reward => reward.args.rewardId)
 
 const rewardClaimed = receipt =>
   receipt.logs.filter(x => x.event == 'RewardClaimed')[0].args.rewardId
@@ -115,60 +115,65 @@ contract('Rewards App', accounts => {
 
     let dividendRewardId, meritRewardId, rewardInformation
     it('creates a dividend reward', async () => {
-      dividendRewardId = rewardAdded(
+      dividendRewardIds = rewardAdded(
         await app.newReward(
           false,
           referenceToken.address,
           rewardToken.address,
           4e18,
           1,
-          1,
+          2,
           0
         )
       )
-      assert(dividendRewardId == 0, 'first reward should be id 0')
+      await mineBlock()
+      assert(dividendRewardIds[0] == 0, 'first reward should be id 0')
+      assert(dividendRewardIds[1] == 1, 'second reward should be id 0')
     })
 
     it('creates a merit reward', async () => {
-      meritRewardId = rewardAdded(
+      meritRewardIds = rewardAdded(
         await app.newReward(
           true,
           referenceToken.address,
           rewardToken.address,
           4e18,
-          5,
+          6,
           1,
           0
         )
       )
+      let meritRewardId = meritRewardIds[0]
       await referenceToken.generateTokens(root, 1e18)
       await referenceToken.generateTokens(contributor1, 1e18)
       await referenceToken.generateTokens(contributor2, 1e18)
       await referenceToken.generateTokens(contributor3, 1e18)
       await mineBlock()
       await mineBlock()
-      assert(meritRewardId == 1, 'second reward should be id 1')
+      assert(meritRewardId == 2, 'third reward should be id 2')
     })
 
     it('gets information on the dividend reward', async () => {
-      rewardInformation = await app.getReward(dividendRewardId)
+      rewardInformation = await app.getReward(dividendRewardIds[0])
       assert(rewardInformation[0] ===false, 'First reward should be dividend')
     })
 
     it('gets information on the merit reward', async () => {
-      rewardInformation = await app.getReward(meritRewardId)
-      assert(rewardInformation[0] === true, 'Second reward should be merit')
+      rewardInformation = await app.getReward(meritRewardIds[0])
+      assert(rewardInformation[0] === true, 'third reward should be merit')
     })
 
     it('receives rewards dividends', async () => {
-      await app.claimReward(dividendRewardId)
+      await app.claimReward(dividendRewardIds[0])
       const balance = await rewardToken.balanceOf(root)
+      console.log(balance)
       assert(balance == 1e18, 'reward should be 1e18 or 1eth equivalant')
     })
 
     it('receives rewards merit', async () => {
-      await app.claimReward(meritRewardId)
+      await app.claimReward(meritRewardIds[0])
       const balance = await rewardToken.balanceOf(root)
+      console.log(balance)
       assert(balance == 2e18, 'reward should be 2e18 or 2eth equivalant; 1 for each reward')
     })
 
