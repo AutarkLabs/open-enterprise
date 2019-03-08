@@ -46,6 +46,7 @@ const labelsBadges = labels =>
   ))
 
 const Issue = ({
+  work,
   workStatus,
   title,
   repo,
@@ -121,6 +122,7 @@ const Issue = ({
         {workStatus !== 'finished' && (
           <ContextMenu>
             <BountyContextMenu
+              work={work}
               workStatus={workStatus}
               requestsData={requestsData}
               onAllocateSingleBounty={onAllocateSingleBounty}
@@ -150,6 +152,10 @@ Issue.propTypes = {
     'submit-work',
     'review-work',
     'finished',
+  ]),
+  work: PropTypes.oneOf([
+    undefined,
+    PropTypes.object,
   ]),
 }
 
