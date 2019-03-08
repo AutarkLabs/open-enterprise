@@ -44,6 +44,7 @@
     "test:allocations": "cd apps/allocations && npm test",
     "test:projects": "cd apps/projects && npm test",
     "test:range": "cd apps/range-voting && npm test",
+    "test:rewards": "cd apps/rewards && npm test",
     "lint": "lerna run lint --no-bail && lerna exec --scope=@tps/apps-* --stream -- npx eslint app",
     "lint:fix": "lerna exec --scope=@tps/apps-* --stream -- npx eslint app --fix",
     "lint:address": "cd apps/address-book && npm run lint",
