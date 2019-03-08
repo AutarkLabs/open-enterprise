@@ -17,12 +17,21 @@ context('Aragon', () => {
   context('Address Book', ()=> {
     it('creates Address Entry', () =>{
       cy.contains('span.item.MenuPanelAppGroup__ButtonItem-sc-1ahx3fh-1','Address Book',{ timeout: 150000 }).wait(1000).click()
-      .get('iframe').iframe().contains('New Entity').click()
+      .get('iframe').iframe().contains('New Entity').click().wait(1000)
       .get('iframe').iframe().find('input[name="name"]').type('Hello World')
       .get('iframe').iframe().find('input[name="address"]').type('0xb4124ceb3451635dacedd11767f004d8a28c6ee7')
-      .get('iframe').iframe().contains('button','Submit Entity').click()
+      .get('iframe').iframe().contains('button','Submit Entity').click().wait(1000)
 
-      //cy.contains('span.item.MenuPanelAppGroup__ButtonItem-sc-1ahx3fh-1','Range Voting')
+      cy.contains('button','Create transaction').click()
+      cy.contains('button','Close').click().wait(1000)
+      cy.get('iframe').iframe().contains('div','Hello World')
+    })
+    it('removes Address Entry', () => {
+      cy.get('iframe').iframe().find('div.ContextMenu__BaseButton-ris724-1').click()
+      .get('iframe').iframe().contains('div','Remove').click().wait(1000)
+
+      cy.contains('button','Create transaction').click()
+      cy.contains('button','Close').click().wait(1000)
     })
   })
 /*
