@@ -203,10 +203,10 @@ class App extends React.PureComponent {
   // TODO: Review
   // This is breaking RepoList loading sometimes preventing show repos after login
   newProject = () => {
-     const reposAlreadyAdded = this.props.repos ?
-       this.props.repos.map(repo => repo.data._repo)
-       :
-       []
+    const reposAlreadyAdded = this.props.repos ?
+      this.props.repos.map(repo => repo.data._repo)
+      :
+      []
 
     this.setState((_prevState, { github: { status } }) => ({
       panel: PANELS.NewProject,
