@@ -20,6 +20,7 @@
     "dev:allocations": "cd apps/allocations && npm run dev",
     "dev:projects": "cd apps/projects && npm run dev",
     "dev:range": "cd apps/range-voting && npm run dev",
+    "dev:rewards": "cd apps/rewards && npm run dev",
     "devchain": "aragon devchain",
     "devchain:reset": "aragon devchain --reset",
     "publish:apps": "lerna run publish",

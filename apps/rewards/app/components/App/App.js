@@ -1,4 +1,4 @@
-import { AragonApp, observe, SidePanel } from '@aragon/ui'
+import { AragonApp, observe, SidePanel, TabBar } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
@@ -12,8 +12,16 @@ class App extends React.Component {
     accounts: PropTypes.arrayOf(PropTypes.object),
   }
 
+  state = {
+    selected: 0,
+  }
+
   closePanel = () => {
     this.setState({ panel: { visible: false } })
+  }
+
+  selectTab = idx => {
+    this.setState({selected: idx})
   }
 
   render() {
@@ -21,6 +29,11 @@ class App extends React.Component {
     return (
       <StyledAragonApp>
         <Title text="Rewards" />
+        <TabBar
+          items={['Overview', 'My Rewards']}
+          selected={this.state.selected}
+          onSelect={this.selectTab}
+        />
 
       </StyledAragonApp>
     )
