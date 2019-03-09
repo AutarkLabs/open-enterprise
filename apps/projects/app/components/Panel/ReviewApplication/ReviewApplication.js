@@ -65,13 +65,6 @@ class ReviewApplication extends React.Component {
     return (
       <div>
         <IssueTitle>{issue.title}</IssueTitle>
-        <DropDown
-          name="Applicant"
-          items={issue.requestsData.map( request => request.user.login)}
-          onChange={this.changeRequest}
-          active={this.state.requestIndex}
-          wide
-        />
 
         <SafeLink
           href={issue.url}
