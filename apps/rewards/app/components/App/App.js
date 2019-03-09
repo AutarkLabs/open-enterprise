@@ -3,17 +3,19 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { Title } from '../Shared'
+import { Empty } from '../Card'
 
 const ASSETS_URL = 'aragon-ui-assets/'
 
 class App extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
-    accounts: PropTypes.arrayOf(PropTypes.object),
+    rewards: PropTypes.arrayOf(PropTypes.object),
   }
 
   state = {
     selected: 0,
+    rewardsEmpty: this.props.rewards === undefined || this.props.rewards === []
   }
 
   closePanel = () => {
@@ -21,7 +23,11 @@ class App extends React.Component {
   }
 
   selectTab = idx => {
-    this.setState({selected: idx})
+    this.setState({ selected: idx })
+  }
+
+  onNewReward = () => {
+    console.log('Create New Reward')
   }
 
   render() {
@@ -30,11 +36,16 @@ class App extends React.Component {
       <StyledAragonApp>
         <Title text="Rewards" />
         <TabBar
-          items={['Overview', 'My Rewards']}
+          items={[ 'Overview', 'My Rewards' ]}
           selected={this.state.selected}
           onSelect={this.selectTab}
         />
 
+        {this.state.rewardsEmpty ?
+          <Empty action={this.onNewReward} />
+          :
+          'Rewards Exist'
+        }
       </StyledAragonApp>
     )
   }
