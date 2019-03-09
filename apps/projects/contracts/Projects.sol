@@ -301,7 +301,7 @@ contract Projects is IsContract, AragonApp {
 // Repository functions
 ///////////////////////
     /**
-     * @notice Add repository to Projects app
+     * @notice Add repository to the Projects app
      * @param _owner Github id of the entity that owns the repo to add
      * @param _repoId Github id of the repo to add
      * @return index for the added repo at the registry
