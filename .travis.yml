@@ -1,6 +1,6 @@
 # ensure running in a container for fast boot, travis has these requirements:
 sudo: false
-dist: "trusty"
+dist: 'trusty'
 
 # these are executed in order. each must pass for the next to be run
 stages:
@@ -10,43 +10,56 @@ stages:
 
 # defaults
 language: node_js
-node_js: "node" # equivalent to stable, node 10
-
-# `nvm install` happens before the cache is restored, which means
-# we must install our own npm elsewhere (`~/cached-bins`)
-before_install: |
-  # Evaluate with Bash if the npm in cached_bins path has NOT execution permission,
-  [[ ! -x ~/cached-bins/node_modules/.bin/npm ]] && {
-  # then we assume cache missed and install npm@latest and lerna
-  # caching feature creates `~/cached-bins` for us, the private:true is to avoid annoying npm warnings about package.json
-    cd ~/cached-bins && echo '{"private":true}' > package.json && npm install npm@latest lerna --no-package-lock
-    cd -
-  } || true
-  # avoids bugs around https://github.com/travis-ci/travis-ci/issues/5092
-  export PATH=~/cached-bins/node_modules/.bin:$PATH
-
-install: npm run postinstall
+node_js: 'node' # equivalent to stable, node 11
 
 cache:
   directories:
-    - ~/.npm # cache npm's cache
-    - ~/cached-bins # cache latest npm and lerna
+    - $HOME/.npm
+    - node_modules
 
 jobs:
   include:
-    - script: travis_wait 60 npm run coverage
-      after_success: npm run coveralls
-      env: "COVERAGE=true"
-
-    - &node
-      script: npm run test
-      node_js: "lts/*"
-
-    - stage: lint
-      script: npm run lint
-
     - stage: precache
       script: true
+      install:
+        - npm i
+
+    - stage: lint
+      name: Lint contracts and frontend apps
+      install: pwd # override to avoid npm i again
+      script: npm run lint
+
+    - stage: test
+      script: travis_wait 60 npm run coverage -- --scope=@tps/apps-address-book
+      name: Address Book app tests and coverage report
+      install: npm run bootstrap
+      after_success: npm run coveralls
+      env: 'COVERAGE=true'
+
+    - stage: test
+      script: travis_wait 60 npm run coverage -- --scope=@tps/apps-allocations
+      name: Allocations app tests and coverage report
+      install: npm run bootstrap
+      after_success: npm run coveralls
+      env: 'COVERAGE=true'
+
+    - stage: test
+      script: travis_wait 60 npm run coverage -- --scope=@tps/apps-projects
+      name: Projects app tests and coverage report
+      install: npm run bootstrap
+      after_success: npm run coveralls
+      env: 'COVERAGE=true'
+
+    - stage: test
+      script: travis_wait 60 npm run coverage -- --scope=@tps/apps-range-voting
+      name: Range Voting app tests and coverage report
+      install: npm run bootstrap
+      after_success: npm run coveralls
+      env: 'COVERAGE=true'
+
+    # - &node
+    #   script: npm run test
+    #   node_js: 'lts/*'
 
 notifications:
   email: false
