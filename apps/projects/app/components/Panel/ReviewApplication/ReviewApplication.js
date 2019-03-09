@@ -29,24 +29,24 @@ class ReviewApplication extends React.Component {
 
   onAccept = () => {
     console.log('Accepted', this.state.feedback, this.props.issue)
-    this.props.onReviewApplication(this.props.issue, true)
+    this.props.onReviewApplication(this.props.issue, this.state.requestIndex, true)
   }
 
   onReject = () => {
     console.log('Rejected', this.state.feedback, this.props.issue)
-    this.props.onReviewApplication(this.props.issue, false)
+    this.props.onReviewApplication(this.props.issue, this.state.requestIndex, false)
   }
 
   changeRequest = (index) => {
     this.setState({ requestIndex: index })
-  } 
+  }
 
 
   render() {
     const { issue } = this.props
 
     const request = issue.requestsData[this.state.requestIndex]
-    
+
     const application = {
       user: {
         login: request.user.login,
@@ -65,6 +65,13 @@ class ReviewApplication extends React.Component {
     return (
       <div>
         <IssueTitle>{issue.title}</IssueTitle>
+        <DropDown
+          name="Applicant"
+          items={issue.requestsData.map( request => request.user.login)}
+          onChange={this.changeRequest}
+          active={this.state.requestIndex}
+          wide
+        />
 
         <SafeLink
           href={issue.url}
