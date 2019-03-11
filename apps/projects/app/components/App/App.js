@@ -12,6 +12,7 @@ import PanelManager, { PANELS } from '../Panel'
 import { STATUS } from '../../utils/github'
 import ErrorBoundary from './ErrorBoundary'
 import BigNumber from 'bignumber.js'
+import { networkContextType } from '../../../../../shared/ui'
 
 const ASSETS_URL = './aragon-ui-assets/'
 
@@ -117,9 +118,26 @@ class App extends React.PureComponent {
     repos: PropTypes.arrayOf(PropTypes.object),
   }
 
+  static defaultProps = {
+    network: {},
+  }
+
+  static childContextTypes = {
+    network: networkContextType,
+  }
+
   state = {
     repos: [],
     activeIndex: { tabIndex: 0, tabData: {} },
+  }
+
+  getChildContext() {
+    const { network } = this.props
+    return {
+      network: {
+        type: network.type,
+      },
+    }
   }
 
   componentDidMount() {
@@ -231,9 +249,9 @@ class App extends React.PureComponent {
     this.props.tokens.forEach(
       token => {
         if(token.symbol === bountySymbol) {
-          bountyToken = token.addr
-          bountyDecimals = token.decimals
-        }
+        bountyToken = token.addr
+        bountyDecimals = token.decimals
+      }
       }
     )
 
@@ -461,48 +479,48 @@ class App extends React.PureComponent {
 
     return (
       <Root.Provider>
-      <StyledAragonApp publicUrl={ASSETS_URL}>
-        <BaseStyles />
+        <StyledAragonApp publicUrl={ASSETS_URL}>
+          <BaseStyles />
           <ToastHub>
-        <Title text="Projects" />
-        <ApolloProvider client={client}>
-          <ErrorBoundary>
-            <AppContent
-              onLogin={this.handleGithubSignIn}
-              status={this.props.github.status || STATUS.INITIAL}
-              app={this.props.app}
-              bountySettings={bountySettings}
-              githubCurrentUser={githubCurrentUser || {}}
+            <Title text="Projects" />
+            <ApolloProvider client={client}>
+              <ErrorBoundary>
+                <AppContent
+                  onLogin={this.handleGithubSignIn}
+                  status={this.props.github.status || STATUS.INITIAL}
+                  app={this.props.app}
+                  bountySettings={bountySettings}
+                  githubCurrentUser={githubCurrentUser || {}}
               projects={this.props.repos !== undefined ? this.props.repos : []}
-              bountyIssues={
-                this.props.issues !== undefined ? this.props.issues : []
-              }
-              bountySettings={
-                bountySettings !== undefined ? bountySettings : {}
-              }
+                  bountyIssues={
+                    this.props.issues !== undefined ? this.props.issues : []
+                  }
+                  bountySettings={
+                    bountySettings !== undefined ? bountySettings : {}
+                  }
               tokens={this.props.tokens !== undefined ? this.props.tokens : []}
-              onNewProject={this.newProject}
-              onRemoveProject={this.removeProject}
-              onNewIssue={this.newIssue}
-              onCurateIssues={this.curateIssues}
-              onAllocateBounties={this.newBountyAllocation}
-              onSubmitWork={this.submitWork}
-              onRequestAssignment={this.requestAssignment}
-              activeIndex={activeIndex}
-              changeActiveIndex={this.changeActiveIndex}
-              onReviewApplication={this.reviewApplication}
-              onReviewWork={this.reviewWork}
-            />
+                  onNewProject={this.newProject}
+                  onRemoveProject={this.removeProject}
+                  onNewIssue={this.newIssue}
+                  onCurateIssues={this.curateIssues}
+                  onAllocateBounties={this.newBountyAllocation}
+                  onSubmitWork={this.submitWork}
+                  onRequestAssignment={this.requestAssignment}
+                  activeIndex={activeIndex}
+                  changeActiveIndex={this.changeActiveIndex}
+                  onReviewApplication={this.reviewApplication}
+                  onReviewWork={this.reviewWork}
+                />
 
-            <PanelManager
-              onClose={this.closePanel}
-              activePanel={panel}
-              {...panelProps}
-            />
-          </ErrorBoundary>
-        </ApolloProvider>
+                <PanelManager
+                  onClose={this.closePanel}
+                  activePanel={panel}
+                  {...panelProps}
+                />
+              </ErrorBoundary>
+            </ApolloProvider>
           </ToastHub>
-      </StyledAragonApp>
+        </StyledAragonApp>
       </Root.Provider>
     )
   }

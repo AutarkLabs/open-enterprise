@@ -7,6 +7,7 @@ import Entities from './Entities'
 import NewEntityButton from './NewEntityButton'
 import NewEntity from '../Panel/NewEntity'
 import { Title } from '../Shared'
+import { networkContextType } from '../../../../../shared/ui'
 
 const ASSETS_URL = 'aragon-ui-assets/'
 
@@ -17,8 +18,25 @@ class App extends React.Component {
     entities: PropTypes.arrayOf(PropTypes.object),
   }
 
+  static defaultProps = {
+    network: {},
+  }
+
+  static childContextTypes = {
+    network: networkContextType,
+  }
+
   state = {
     panelVisible: false,
+  }
+
+  getChildContext() {
+    const { network } = this.props
+    return {
+      network: {
+        type: network.type,
+      },
+    }
   }
 
   createEntity = entity => {
@@ -46,30 +64,30 @@ class App extends React.Component {
 
     return (
       <Root.Provider>
-      <StyledAragonApp>
-        <ToastHub>
-          <Title text="Address Book" />
-          <NewEntityButton onClick={this.newEntity} />
+        <StyledAragonApp>
+          <ToastHub>
+            <Title text="Address Book" />
+            <NewEntityButton onClick={this.newEntity} />
 
-          <ScrollWrapper>
-            <Content>
-              <Entities
-                entities={entries ? entries : []}
-                onNewEntity={this.newEntity}
-                onRemoveEntity={this.removeEntity}
-              />
-            </Content>
-          </ScrollWrapper>
+            <ScrollWrapper>
+              <Content>
+                <Entities
+                  entities={entries ? entries : []}
+                  onNewEntity={this.newEntity}
+                  onRemoveEntity={this.removeEntity}
+                />
+              </Content>
+            </ScrollWrapper>
 
-          <SidePanel
-            title="New entity"
-            opened={panelVisible}
-            onClose={this.closePanel}
-          >
-            <NewEntity onCreateEntity={this.createEntity} />
-          </SidePanel>
-        </ToastHub>
-      </StyledAragonApp>
+            <SidePanel
+              title="New entity"
+              opened={panelVisible}
+              onClose={this.closePanel}
+            >
+              <NewEntity onCreateEntity={this.createEntity} />
+            </SidePanel>
+          </ToastHub>
+        </StyledAragonApp>
       </Root.Provider>
     )
   }
