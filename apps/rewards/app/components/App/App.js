@@ -16,7 +16,6 @@ class App extends React.Component {
   state = {
     selected: 0,
     tabs: [ 'Overview', 'My Rewards' ],
-    rewardsEmpty: this.props.rewards === undefined || this.props.rewards === []
   }
 
   closePanel = () => {
