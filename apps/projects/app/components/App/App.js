@@ -249,9 +249,9 @@ class App extends React.PureComponent {
     this.props.tokens.forEach(
       token => {
         if(token.symbol === bountySymbol) {
-        bountyToken = token.addr
-        bountyDecimals = token.decimals
-      }
+          bountyToken = token.addr
+          bountyDecimals = token.decimals
+        }
       }
     )
 
@@ -491,14 +491,14 @@ class App extends React.PureComponent {
                   app={this.props.app}
                   bountySettings={bountySettings}
                   githubCurrentUser={githubCurrentUser || {}}
-              projects={this.props.repos !== undefined ? this.props.repos : []}
+                  projects={this.props.repos !== undefined ? this.props.repos : []}
                   bountyIssues={
                     this.props.issues !== undefined ? this.props.issues : []
                   }
                   bountySettings={
                     bountySettings !== undefined ? bountySettings : {}
                   }
-              tokens={this.props.tokens !== undefined ? this.props.tokens : []}
+                  tokens={this.props.tokens !== undefined ? this.props.tokens : []}
                   onNewProject={this.newProject}
                   onRemoveProject={this.removeProject}
                   onNewIssue={this.newIssue}

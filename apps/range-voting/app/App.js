@@ -114,7 +114,9 @@ class App extends React.Component {
                   <Decisions
                     onActivate={this.handlePanelOpen}
                     app={this.props.app}
-                votes={this.props.votes !== undefined ? this.props.votes : []}
+                    votes={
+                      this.props.votes !== undefined ? this.props.votes : []
+                    }
                     voteTime={this.props.voteTime}
                     minParticipationPct={
                       this.props.minParticipationPct
