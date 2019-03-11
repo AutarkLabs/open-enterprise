@@ -7,10 +7,12 @@ import {
   AragonApp,
   AppBar,
   Button,
+  Root,
   SidePanel,
   IconAdd,
   observe,
   theme,
+  ToastHub,
 } from '@aragon/ui'
 import AppLayout from './components/AppLayout'
 import Decisions from './Decisions'
@@ -79,7 +81,9 @@ class App extends React.Component {
     )
 
     return (
+      <Root.Provider>
       <AragonApp publicUrl="aragon-ui-assets/">
+          <ToastHub>
         <AppLayout>
           <AppLayout.Header>
             <AppBar
@@ -112,7 +116,9 @@ class App extends React.Component {
         >
           <NewPayoutVotePanelContent />
         </SidePanel>
+          </ToastHub>
       </AragonApp>
+      </Root.Provider>
     )
   }
 }

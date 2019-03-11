@@ -1,4 +1,4 @@
-import { AragonApp, observe, SidePanel, ToastHub } from '@aragon/ui'
+import { AragonApp, observe, SidePanel, Root, ToastHub } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
@@ -113,6 +113,7 @@ class App extends React.Component {
     const PanelContent = panel.content
     return (
       // TODO: Profile App with React.StrictMode, perf and why-did-you-update, apply memoization
+      <Root.Provider>
       <StyledAragonApp>
         <ToastHub>
           <Title text="Allocations" />
@@ -137,6 +138,7 @@ class App extends React.Component {
           </SidePanel>
         </ToastHub>
       </StyledAragonApp>
+      </Root.Provider>
     )
   }
 }

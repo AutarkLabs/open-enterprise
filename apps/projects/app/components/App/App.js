@@ -1,4 +1,4 @@
-import { BaseStyles, PublicUrl, observe } from '@aragon/ui'
+import { BaseStyles, PublicUrl, observe, Root, ToastHub } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { hot } from 'react-hot-loader'
@@ -460,8 +460,10 @@ class App extends React.PureComponent {
     const { client, bountySettings, githubCurrentUser } = this.props
 
     return (
+      <Root.Provider>
       <StyledAragonApp publicUrl={ASSETS_URL}>
         <BaseStyles />
+          <ToastHub>
         <Title text="Projects" />
         <ApolloProvider client={client}>
           <ErrorBoundary>
@@ -499,7 +501,9 @@ class App extends React.PureComponent {
             />
           </ErrorBoundary>
         </ApolloProvider>
+          </ToastHub>
       </StyledAragonApp>
+      </Root.Provider>
     )
   }
 }

@@ -1,4 +1,4 @@
-import { AragonApp, observe, SidePanel, ToastHub } from '@aragon/ui'
+import { AragonApp, observe, SidePanel, Root, ToastHub } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { hot } from 'react-hot-loader'
@@ -45,6 +45,7 @@ class App extends React.Component {
     const { entries } = this.props
 
     return (
+      <Root.Provider>
       <StyledAragonApp>
         <ToastHub>
           <Title text="Address Book" />
@@ -69,6 +70,7 @@ class App extends React.Component {
           </SidePanel>
         </ToastHub>
       </StyledAragonApp>
+      </Root.Provider>
     )
   }
 }
