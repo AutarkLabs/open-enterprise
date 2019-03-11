@@ -2,8 +2,8 @@ import { AragonApp, observe, SidePanel, TabBar } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import { Overview, MyRewards } from '../Content'
 import { Title } from '../Shared'
-import { Empty } from '../Card'
 
 const ASSETS_URL = 'aragon-ui-assets/'
 
@@ -15,6 +15,7 @@ class App extends React.Component {
 
   state = {
     selected: 0,
+    tabs: [ 'Overview', 'My Rewards' ],
     rewardsEmpty: this.props.rewards === undefined || this.props.rewards === []
   }
 
@@ -36,16 +37,22 @@ class App extends React.Component {
       <StyledAragonApp>
         <Title text="Rewards" />
         <TabBar
-          items={[ 'Overview', 'My Rewards' ]}
+          items={this.state.tabs}
           selected={this.state.selected}
           onSelect={this.selectTab}
         />
 
-        {this.state.rewardsEmpty ?
-          <Empty action={this.onNewReward} />
-          :
-          'Rewards Exist'
-        }
+        { this.state.selected === 1 ? (
+          <MyRewards
+            rewards={this.props.rewards === undefined ? [] : this.props.rewards}
+            onNewReward={this.onNewReward}
+          />
+        ) : (
+          <Overview
+            rewards={this.props.rewards === undefined ? [] : this.props.rewards}
+            onNewReward={this.onNewReward}
+          />
+        )}
       </StyledAragonApp>
     )
   }
