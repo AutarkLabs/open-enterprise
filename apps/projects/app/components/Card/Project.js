@@ -100,7 +100,7 @@ const StyledCard = styled(Card)`
   flex-direction: column;
   justify-content: flex-start;
   padding: 12px;
-  height: 220px;
+  height: 240px;
   width: 249px;
   transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
   :hover {
@@ -132,14 +132,14 @@ const CardDescriptionText = styled(Text.Block).attrs({
 })`
   display: block;
   display: -webkit-box;
-  height: 7.1em;
+  height: 8.1em;
   margin: 0 auto;
   line-height: 1.5em;
   -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin: 8px 0;
+  margin: 14px 0;
   text-align: center;
   color: ${theme.textPrimary};
 `
