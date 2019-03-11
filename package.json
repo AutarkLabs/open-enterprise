@@ -10,7 +10,7 @@
     "wait-on": "^3.2.0"
   },
   "scripts": {
-    "bootstrap": "lerna bootstrap --hoist",
+    "bootstrap": "npx lerna bootstrap --hoist",
     "postinstall": "npm run bootstrap",
     "clean": "git clean -ffdx",
     "clean:commit": "rm -f package-lock.json && npm run bootstrap",
