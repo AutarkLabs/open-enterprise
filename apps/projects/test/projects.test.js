@@ -368,6 +368,21 @@ contract('Projects App', accounts => {
         assert.strictEqual(issue[6], root, 'assignee address incorrect')
       })
 
+      it('approve and reject assignment request', async () => {
+        await app.requestAssignment(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd', { from: root })
+        applicantQty = await app.getApplicantsLength(repoId, 1)
+        applicant = await app.getApplicant(repoId, issueNumber, applicantQty.toNumber() - 1)
+        assert.strictEqual(applicant[2].toNumber(), 0, 'assignment request status is not Unreviewed')
+
+        await app.approveAssignment(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', true, { from: bountyAdder })
+        applicant = await app.getApplicant(repoId, issueNumber, applicantQty.toNumber() - 1)
+        assert.strictEqual(applicant[2].toNumber(), 1, 'assignment request status is not Accepted')
+
+        await app.approveAssignment(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', false, { from: bountyAdder })
+        applicant = await app.getApplicant(repoId, issueNumber, applicantQty.toNumber() - 1)
+        assert.strictEqual(applicant[2].toNumber(), 2, 'assignment request status is not Rejected')
+      })
+
       it('users can submit work', async () => {
         await app.requestAssignment(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd', { from: root })
         applicantQty = await app.getApplicantsLength(repoId, 1)
