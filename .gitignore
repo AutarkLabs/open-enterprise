@@ -70,4 +70,14 @@ codealike.json
 */**/coverageEnv
 */**/coverage.json
 */**/coverage
+
+# macOS env file
 .DS_Store
+
+# Personal Scratch and notes
+**/examples/
+**/scratch/
+
+# Cypress
+**/cypress/screenshots/
+**/cypress/videos/
