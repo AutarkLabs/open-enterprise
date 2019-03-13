@@ -301,7 +301,7 @@ contract Projects is IsContract, AragonApp {
 // Repository functions
 ///////////////////////
     /**
-     * @notice Add selected repository to Managed Projects
+     * @notice Add repository to the Projects app
      * @param _owner Github id of the entity that owns the repo to add
      * @param _repoId Github id of the repo to add
      * @return index for the added repo at the registry
@@ -319,7 +319,7 @@ contract Projects is IsContract, AragonApp {
     }
 
     /**
-     * @notice Remove an entry from the projects registry.
+     * @notice Remove repository from the Projects app
      * @param _repoId The id of the Github repo in the projects registry
      */
     function removeRepo(
@@ -345,7 +345,7 @@ contract Projects is IsContract, AragonApp {
 ///////////////////
 
     /**
-     * @notice apply to be assigned to this issue by submitting timeline and workplan
+     * @notice Request assignment for issue `_issueNumber`
      * @param _repoId the github repo id of the issue
      * @param _issueNumber the github issue up for assignment
      * @param _application IPFS hash for the applicant's proposed timeline and strategy
@@ -365,7 +365,7 @@ contract Projects is IsContract, AragonApp {
     }
 
     /**
-     * @notice approve a request for assignment to a single requestor
+     * @notice Approve assignment for issue `_issueNumber`
      * @param _repoId the github repo id of the issue
      * @param _issueNumber the github issue up for assignment
      * @param _requestor address of user that will be assigned the issue
@@ -386,7 +386,7 @@ contract Projects is IsContract, AragonApp {
     }
 
     /**
-     * @notice Submit work for issue `_issueNumber`.
+     * @notice Submit work for issue `_issueNumber`
      * @dev add a submission to local state after it's been added to StandardBounties.sol
      * @param _repoId the github repo id of the issue
      * @param _issueNumber the github issue up for assignment
@@ -419,7 +419,7 @@ contract Projects is IsContract, AragonApp {
     }
 
     /**
-     * @notice Review work submission.
+     * @notice Review work for issue `_issueNumber`
      * @dev add a submission to local state after it's been added to StandardBounties.sol
      * @param _repoId the github repo id of the issue
      * @param _issueNumber the github issue up for resolution
@@ -456,7 +456,7 @@ contract Projects is IsContract, AragonApp {
     }
 
     /**
-     * @notice add bulk bounties
+     * @notice Fund bounties for the selected issues
      * @param _repoIds The ids of the Github repos in the projects registry
      * @param _issueNumbers an array of bounty indexes
      * @param _bountySizes an array of bounty sizes
