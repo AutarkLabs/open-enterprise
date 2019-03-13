@@ -1,7 +1,8 @@
-import { AragonApp, observe, SidePanel } from '@aragon/ui'
+import { AragonApp, observe, SidePanel, TabBar } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import { Overview, MyRewards } from '../Content'
 import { Title } from '../Shared'
 
 const ASSETS_URL = 'aragon-ui-assets/'
@@ -9,11 +10,24 @@ const ASSETS_URL = 'aragon-ui-assets/'
 class App extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
-    accounts: PropTypes.arrayOf(PropTypes.object),
+    rewards: PropTypes.arrayOf(PropTypes.object),
+  }
+
+  state = {
+    selected: 0,
+    tabs: [ 'Overview', 'My Rewards' ],
   }
 
   closePanel = () => {
     this.setState({ panel: { visible: false } })
+  }
+
+  selectTab = idx => {
+    this.setState({ selected: idx })
+  }
+
+  onNewReward = () => {
+    console.log('Create New Reward')
   }
 
   render() {
@@ -21,7 +35,23 @@ class App extends React.Component {
     return (
       <StyledAragonApp>
         <Title text="Rewards" />
+        <TabBar
+          items={this.state.tabs}
+          selected={this.state.selected}
+          onSelect={this.selectTab}
+        />
 
+        { this.state.selected === 1 ? (
+          <MyRewards
+            rewards={this.props.rewards === undefined ? [] : this.props.rewards}
+            onNewReward={this.onNewReward}
+          />
+        ) : (
+          <Overview
+            rewards={this.props.rewards === undefined ? [] : this.props.rewards}
+            onNewReward={this.onNewReward}
+          />
+        )}
       </StyledAragonApp>
     )
   }
