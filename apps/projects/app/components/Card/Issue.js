@@ -13,6 +13,7 @@ import {
 
 import { formatDistance } from 'date-fns'
 import { BountyContextMenu } from '../Shared'
+import { BOUNTY_STATUS, BOUNTY_BADGE_COLOR } from '../../utils/bounty-status'
 
 const ClickArea = styled.div`
   height: 100%;
@@ -113,13 +114,13 @@ const Issue = ({
         {balance > 0 && (
           <Badge
             style={{ padding: '10px', marginRight: '20px', textSize: 'large' }}
-            background={'#e7f8ec'}
-            foreground={theme.positive}
+            background={BOUNTY_BADGE_COLOR[workStatus].bg}
+            foreground={BOUNTY_BADGE_COLOR[workStatus].fg}
           >
             {balance + ' ' + symbol}
           </Badge>
         )}
-        {workStatus !== 'finished' && (
+        {workStatus !== 'fulfilled' && (
           <ContextMenu>
             <BountyContextMenu
               work={work}
@@ -145,14 +146,7 @@ Issue.propTypes = {
   isSelected: PropTypes.bool,
   onClick: PropTypes.func.isRequired,
   onSelect: PropTypes.func,
-  workStatus: PropTypes.oneOf([
-    undefined,
-    'new',
-    'review-applicants',
-    'submit-work',
-    'review-work',
-    'finished',
-  ]),
+  workStatus: PropTypes.oneOf([ undefined, 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]),
   work: PropTypes.oneOf([
     undefined,
     PropTypes.object,

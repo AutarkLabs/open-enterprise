@@ -12,7 +12,7 @@ const tokenAbi = [].concat(tokenDecimalsAbi, tokenSymbolAbi)
 
 let ipfs = ipfsClient({ host: 'localhost', port: '5001', protocol: 'http' })
 
-const status = [ 'new', 'review-applicants', 'submit-work', 'review-work', 'finished' ]
+const status = [ 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]
 
 const SUBMISSION_STAGE = 2
 

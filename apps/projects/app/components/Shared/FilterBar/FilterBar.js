@@ -12,15 +12,7 @@ import Overflow from './Overflow'
 import FilterButton from './FilterButton'
 import FilterDropDown from './FilterDropDown'
 import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
-
-const bountyStatus = {
-  'not-funded': 'Not funded',
-  'funded': 'Accepting applicants',
-  'review-applicants': 'Pending application review',
-  'in-progress': 'Work in progress',
-  'review-work': 'Work ready for review',
-  'fulfilled': 'Fulfilled',
-}
+import { BOUNTY_STATUS } from '../../../utils/bounty-status'
 
 const StyledFilterBar = styled.div`
   width: 100%;
@@ -112,7 +104,7 @@ class FilterBar extends React.Component {
     }
 
     filters.statuses['not-funded'] = {
-      name: bountyStatus['not-funded'],
+      name: BOUNTY_STATUS['not-funded'],
       count: issues.length - bountyIssues.length,
     }
     bountyIssues.map(issue => {
@@ -120,7 +112,7 @@ class FilterBar extends React.Component {
         filters.statuses[issue.data.workStatus].count++
       } else {
         filters.statuses[issue.data.workStatus] = {
-          name: bountyStatus[issue.data.workStatus],
+          name: BOUNTY_STATUS[issue.data.workStatus],
           count: 1,
         }
       }
