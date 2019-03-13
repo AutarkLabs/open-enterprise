@@ -4,6 +4,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { Overview, MyRewards } from '../Content'
 import { Title } from '../Shared'
+import { ViewReward } from '../Panel'
 
 const ASSETS_URL = 'aragon-ui-assets/'
 
@@ -16,6 +17,11 @@ class App extends React.Component {
   state = {
     selected: 0,
     tabs: [ 'Overview', 'My Rewards' ],
+    panel: {
+      visible: true,
+      content: ViewReward,
+      data: { heading: 'Reward #0' }
+    }
   }
 
   closePanel = () => {
@@ -30,8 +36,20 @@ class App extends React.Component {
     console.log('Create New Reward')
   }
 
-  render() {
+  viewReward = (reward) => {
+    this.setState({
+      panel: {
+        visible: true,
+        content: ViewReward,
+        data: { heading: reward.title, reward: reward }
 
+      }
+    })
+  }
+
+  render() {
+    const { panel } = this.state
+    const PanelContent = panel.content
     return (
       <StyledAragonApp>
         <Title text="Rewards" />
@@ -52,6 +70,13 @@ class App extends React.Component {
             onNewReward={this.onNewReward}
           />
         )}
+        <SidePanel
+          title={(panel.data && panel.data.heading) || ''}
+          opened={panel.visible}
+          onClose={this.closePanel}
+        >
+          {panel.content && <PanelContent {...panel.data} />}
+        </SidePanel>
       </StyledAragonApp>
     )
   }
