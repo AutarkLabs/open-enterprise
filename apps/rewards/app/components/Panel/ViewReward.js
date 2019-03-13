@@ -239,7 +239,7 @@ const Part = styled.div`
 
 const Summary = styled.div`
   padding: 0px;
-  padding-left: 10%;
+  padding-left: 35px;
   p {
     padding-block-end: 11pt;
   }

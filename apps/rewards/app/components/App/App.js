@@ -18,9 +18,7 @@ class App extends React.Component {
     selected: 0,
     tabs: [ 'Overview', 'My Rewards' ],
     panel: {
-      visible: true,
-      content: ViewReward,
-      data: { heading: 'Reward #0' }
+      visible: false,
     }
   }
 
