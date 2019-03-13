@@ -11,6 +11,7 @@ import {
   IconAdd,
 } from '@aragon/ui'
 import BigNumber from 'bignumber.js'
+import { compareAsc, compareDesc } from 'date-fns'
 
 import { STATUS } from '../../utils/github'
 import { GET_ISSUES } from '../../utils/gql-queries.js'
@@ -332,6 +333,13 @@ class Issues extends React.PureComponent {
         return i1.title.toUpperCase() < i2.title.toUpperCase()
           ? direction
           : direction * -1
+      }
+    else if (what === 'Creation Date')
+      return (i1, i2) => {
+        return direction == 1 ? 
+          compareAsc(new Date(i1.createdAt), new Date(i2.createdAt))
+          :
+          compareDesc(new Date(i1.createdAt), new Date(i2.createdAt))
       }
   }
 

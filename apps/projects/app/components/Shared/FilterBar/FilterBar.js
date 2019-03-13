@@ -66,7 +66,7 @@ class FilterBar extends React.Component {
     // direction: -1: .oO; 1: Oo.; 0: disabled
     sortBy: [
       { what: 'Name', direction: -1 },
-      //{ what: 'Creation Date', direction: 1 },
+      { what: 'Creation Date', direction: 1 },
       //{ what: 'Label', direction: 0 },
       //{ what: 'Milestone', direction: 0 },
       //{ what: 'Status', direction: 0 },
