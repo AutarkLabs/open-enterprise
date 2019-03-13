@@ -13,8 +13,12 @@ import {
   Countdown,
   Text,
   theme,
+  IconTime,
+  IconCheck,
+  IconFundraising,
 } from '@aragon/ui'
-import { ETH_DECIMALS } from '../../utils/constants'
+import { MONTHS } from '../../utils/constants'
+import { displayCurrency } from '../../utils/helpers'
 
 
 const reward = {
@@ -24,8 +28,9 @@ const reward = {
   rewardToken: 0x0,
   amount: BigNumber(17e18),
   startDate: new Date('December 17, 2018'),
-  endDate: new Date('January 17, 2018'),
+  endDate: new Date('January 17, 2019'),
   description: 'Q1 Reward for Space Decentral Contributors',
+  delay: 0
 
 }
 
@@ -53,7 +58,8 @@ class ViewReward extends React.Component {
         amount,
         startDate,
         endDate,
-        description
+        description,
+        delay,
       } = reward
       const truncatedCreator = `${creator.slice(0, 6)}...${creator.slice(-4)}`
       const translateToken = (token) => {
@@ -91,7 +97,19 @@ class ViewReward extends React.Component {
                 <Label>Status</Label>
               </h2>
               <div>
-                Pending dev work
+                {
+                  (
+                    Date.now() > endDate
+                  ) ? (
+                      <div>
+                        <IconCheck /> Available
+                      </div>
+                    ) : (
+                      <div>
+                        <IconTime /> Pending
+                      </div>
+                    )
+                }
               </div>
             </div>
           </SidePanelSplit>
@@ -127,7 +145,7 @@ class ViewReward extends React.Component {
                 <Label>Amount</Label>
               </h2>
               <p>
-                {amount.div(ETH_DECIMALS).dp(3).toString()}{' '}{translateToken(rewardToken)}
+                {displayCurrency(amount)}{' '}{translateToken(rewardToken)}
               </p>
             </div>
             <div>
@@ -141,6 +159,41 @@ class ViewReward extends React.Component {
               </div>
             </div>
           </SidePanelSplit>
+          <Part>
+            <Text size='large' weight='bold' >Reward Summary</Text>
+          </Part>
+          <Info>
+            <TokenIcon />
+            <Summary>
+              <p>
+                {'A total of '}
+                <SummaryVar>{displayCurrency(amount)} {translateToken(rewardToken)}</SummaryVar>
+                {' will be distributed as a reward to addresses that earned '}
+                <SummaryVar>{referenceToken}</SummaryVar>
+                {' from '}
+                <SummaryVar>
+                  {startDate.getDate().toString() + '-' + MONTHS[startDate.getMonth()] + '-' + startDate.getFullYear()}
+                </SummaryVar>
+                {' to '}
+                <SummaryVar>
+                  {endDate.getDate().toString() + '-' + MONTHS[endDate.getMonth()] + '-' + endDate.getFullYear()}
+                </SummaryVar>
+                {'.'}
+              </p>
+              <p>
+                {'The reward amount will be in proportion to the '}
+                <SummaryVar>{referenceToken}</SummaryVar>
+                {' earned by each account in the specified period.'}
+              </p>
+              <p>
+                {'The reward will be dispersed '}
+                <SummaryVar>
+                  {delay === 0?'immediately': (delay + ' day' + (delay > 1 ? 's' : ''))}
+                </SummaryVar>
+                {' after the end of the period.'}
+              </p>
+            </Summary>
+          </Info>
         </div>
       )
     }
@@ -182,6 +235,24 @@ const Part = styled.div`
       margin-top: 0;
     }
   }
+`
+
+const Summary = styled.div`
+  padding: 0px;
+  padding-left: 10%;
+  p {
+    padding-block-end: 11pt;
+  }
+  p:last-of-type {
+    padding-block-end: 0px;
+  }
+`
+const SummaryVar = styled.span`
+  font-weight: bold;
+  text-decoration: underline;
+`
+const TokenIcon = styled(IconFundraising)`
+float: left;
 `
 
 export default ViewReward
