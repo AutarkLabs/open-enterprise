@@ -1,1 +1,1 @@
-export { default as ViewReward } from './ViewReward'
+export { default, PANELS } from './PanelManager'

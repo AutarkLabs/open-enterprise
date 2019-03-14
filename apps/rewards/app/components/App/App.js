@@ -4,7 +4,10 @@ import React from 'react'
 import styled from 'styled-components'
 import { Overview, MyRewards } from '../Content'
 import { Title } from '../Shared'
-import { ViewReward } from '../Panel'
+import { Empty } from '../Card'
+import PanelManager, { PANELS } from '../Panel'
+import NewRewardButton from './NewRewardButton'
+import BigNumber from 'bignumber.js'
 
 const ASSETS_URL = 'aragon-ui-assets/'
 
@@ -14,43 +17,61 @@ class App extends React.Component {
     rewards: PropTypes.arrayOf(PropTypes.object),
   }
 
+  onNewReward = reward => {
+    console.log('Create New Reward from', reward)
+    this.closePanel()
+  }
+
   state = {
     selected: 0,
     tabs: [ 'Overview', 'My Rewards' ],
-    panel: {
-      visible: false,
-    }
   }
 
   closePanel = () => {
-    this.setState({ panel: { visible: false } })
+    this.setState({ panel: undefined, panelProps: undefined })
   }
 
   selectTab = idx => {
     this.setState({ selected: idx })
   }
 
-  onNewReward = () => {
-    console.log('Create New Reward')
-  }
-
-  viewReward = (reward) => {
+  newReward = () => {
     this.setState({
-      panel: {
-        visible: true,
-        content: ViewReward,
-        data: { heading: reward.title, reward: reward }
-
-      }
+      panel: PANELS.NewReward,
+      panelProps: {
+        onNewReward: this.onNewReward,
+        vaultBalance: '432.9 ETH',
+      },
     })
   }
 
+  reward = {
+    creator: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
+    isMerit: true,
+    referenceToken: 'SDN',
+    rewardToken: 0x0,
+    amount: BigNumber(17e18),
+    startDate: new Date('December 17, 2018'),
+    endDate: new Date('January 17, 2019'),
+    description: 'Q1 Reward for Space Decentral Contributors',
+    delay: 0,
+    index: 0
+  }
+  viewReward = (reward) => {
+    this.setState({
+      panel: PANELS.ViewReward,
+      panelProps: {
+        reward: reward,
+      }
+    })
+  }
   render() {
-    const { panel } = this.state
-    const PanelContent = panel.content
+    const { panel, panelProps } = this.state
+
     return (
       <StyledAragonApp>
         <Title text="Rewards" />
+        <NewRewardButton onClick={this.newReward} />
         <TabBar
           items={this.state.tabs}
           selected={this.state.selected}
@@ -68,13 +89,12 @@ class App extends React.Component {
             onNewReward={this.onNewReward}
           />
         )}
-        <SidePanel
-          title={(panel.data && panel.data.heading) || ''}
-          opened={panel.visible}
+
+        <PanelManager
           onClose={this.closePanel}
-        >
-          {panel.content && <PanelContent {...panel.data} />}
-        </SidePanel>
+          activePanel={panel}
+          {...panelProps}
+        />
       </StyledAragonApp>
     )
   }
