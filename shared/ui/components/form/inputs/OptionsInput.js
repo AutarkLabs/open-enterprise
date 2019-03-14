@@ -48,9 +48,10 @@ const OptionsInput = ({
     <StyledOption key={i}>
       <StyledInput readOnly value={option.addr} />
       <IconContainer
+        style={{ transform: 'scale(.8)' }}
         onClick={() => removeOption(option)}
         title="Click to remove the option"
-        children={<IconRemove height={10} width={10} />}
+        children={<IconRemove />}
       />
     </StyledOption>
   ))

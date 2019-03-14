@@ -30,9 +30,10 @@ const AddressDropDownOptions = ({
     <StyledOption key={i}>
       <StyledLockedInput children={entities[v.index].data.name} />
       <IconContainer
+        style={{ transform: 'scale(.8)' }}
         onClick={() => removeOption(v)}
         title="Click to remove"
-        children={<IconRemove height={10} width={10} />}
+        children={<IconRemove />}
       />
     </StyledOption>
   ))
