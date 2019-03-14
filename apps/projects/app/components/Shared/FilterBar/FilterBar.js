@@ -265,30 +265,6 @@ class FilterBar extends React.Component {
           </FilterDropDown>
 
           <FilterDropDown
-            caption="Status"
-            enabled={true}
-          >
-            {Object.keys(filtersData.statuses).map(status => (
-              <FilterMenuItem
-                key={status}
-                onClick={this.filter('statuses', status)}
-                style={{ display: 'flex', alignItems: 'flex-start' }}
-              >
-                <div>
-                  <Checkbox
-                    onChange={this.noop}
-                    checked={status in filters.statuses}
-                  />
-                </div>
-                <ActionLabel>
-                  {filtersData.statuses[status].name} (
-                  {filtersData.statuses[status].count})
-                </ActionLabel>
-              </FilterMenuItem>
-            ))}
-          </FilterDropDown>
-
-          <FilterDropDown
             caption="Milestones"
             enabled={Object.keys(filtersData.milestones).length > 0}
           >
@@ -319,6 +295,30 @@ class FilterBar extends React.Component {
                   </ActionLabel>
                 </FilterMenuItem>
               ))}
+          </FilterDropDown>
+
+          <FilterDropDown
+            caption="Status"
+            enabled={true}
+          >
+            {Object.keys(filtersData.statuses).map(status => (
+              <FilterMenuItem
+                key={status}
+                onClick={this.filter('statuses', status)}
+                style={{ display: 'flex', alignItems: 'flex-start' }}
+              >
+                <div>
+                  <Checkbox
+                    onChange={this.noop}
+                    checked={status in filters.statuses}
+                  />
+                </div>
+                <ActionLabel>
+                  {filtersData.statuses[status].name} (
+                  {filtersData.statuses[status].count})
+                </ActionLabel>
+              </FilterMenuItem>
+            ))}
           </FilterDropDown>
 
           {/*
