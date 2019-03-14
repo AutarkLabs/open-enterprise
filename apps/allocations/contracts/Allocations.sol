@@ -219,12 +219,14 @@ contract Allocations is AragonApp, Fundable {
     * @param _recurring boolean used to indicate whether this is a recurring or one-time payout
     * @param _period time interval between each recurring payout
     * @param _amount The quantity of funds to be allocated
+    * @param _description The distributions description
     */
     function setDistribution(
         address[] _candidateAddresses,
         uint256[] _supports,
         uint256[] /*unused_infoIndices*/,
         string /*unused_candidateInfo*/,
+        string _description,
         uint256[] /*unused_level 1 ID - converted to bytes32*/,
         uint256[] /*unused_level 2 ID - converted to bytes32*/,
         uint256 _payoutId,

@@ -200,18 +200,20 @@ contract Projects is IsContract, AragonApp {
         uint256[] issuePriorities,
         uint256[] issueDescriptionIndices,
         string /* unused_issueDescriptions*/,
+        string description,
         uint256[] issueRepos,
         uint256[] issueNumbers,
         uint256 /* unused_curationId */
-    ) external isInitialized auth(CURATE_ISSUES_ROLE)
+    ) public isInitialized auth(CURATE_ISSUES_ROLE)
     {
         bytes32 repoId;
+        uint256 issueLength = issuePriorities.length;
         //require(issuePriorities.length == unusedAddresses.length, "length mismatch: issuePriorites and unusedAddresses");
-        require(issuePriorities.length == issueDescriptionIndices.length, "length mismatch: issuePriorites and issueDescriptionIdx");
-        require(issueRepos.length == issueDescriptionIndices.length, "length mismatch: issueRepos and issueDescriptionIdx");
-        require(issueRepos.length == issueNumbers.length, "length mismatch: issueRepos and issueNumbers");
+        require(issueLength == issueDescriptionIndices.length, "length mismatch: issuePriorites and issueDescriptionIdx");
+        require(issueLength == issueRepos.length, "length mismatch: issuePriorites and issueRepos");
+        require(issueLength == issueNumbers.length, "length mismatch: issuePriorites and issueNumbers");
 
-        for (uint256 i = 0; i < issuePriorities.length; i++) {
+        for (uint256 i = 0; i < issueLength; i++) {
             repoId = bytes32(issueRepos[i]);
             repos[repoId].issues[uint256(issueNumbers[i])].priority = issuePriorities[i];
             emit IssueCurated(repoId);

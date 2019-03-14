@@ -399,7 +399,7 @@ class App extends React.PureComponent {
     }))
   }
 
-  onSubmitCuration = issues => {
+  onSubmitCuration = (issues, description) => {
     this.closePanel()
     // TODO: maybe assign this to issueDescriptionIndices, not clear
     let issueDescriptionIndices = []
@@ -437,6 +437,7 @@ class App extends React.PureComponent {
       emptyIntArray,
       issueDescriptionIndices,
       issueDescriptions,
+      description,
       emptyIntArray,
       issueNumbers,
       1
