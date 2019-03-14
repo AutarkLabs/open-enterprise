@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { IconAdd, IconRemove, theme, unselectable } from '@aragon/ui'
+import { IconRemove, theme, unselectable } from '@aragon/ui'
 
 import AddressDropDown from './AddressDropDown'
 
@@ -14,26 +14,16 @@ const AddressDropDownOptions = ({
   validator,
   values,
 }) => {
-  const validated = activeItem > 0 && validator(values, input.addr)
-
-  const addOption = () => {
+  const addOption = ({ target: { value } }) => {
     onChange({
-      target: validated
-        ? { name, value: [ ...values, input ] }
+      target: validator(values, value.addr)
+        ? { name, value: [ ...values, value ] }
         : { name: 'addressError', value: true }, // enable error msg if needed
     })
-    resetDropDown()
   }
-
   const removeOption = option => {
     // perform the change on the parent by using onChange prop without modifying value prop
     onChange({ target: { name, value: values.filter(v => v !== option) } })
-  }
-
-  const resetDropDown = () => {
-    onChange({
-      target: { name: 'addressBookInput', value: { addr: 0, index: 0 } },
-    })
   }
 
   const loadOptions = values.map((v, i) => (
@@ -42,7 +32,7 @@ const AddressDropDownOptions = ({
       <IconContainer
         onClick={() => removeOption(v)}
         title="Click to remove"
-        children={<IconRemove />}
+        children={<IconRemove height={10} width={10} />}
       />
     </StyledOption>
   ))
@@ -55,20 +45,16 @@ const AddressDropDownOptions = ({
           activeItem={activeItem}
           entities={entities}
           name="addressBookInput"
-          onChange={onChange}
+          onChange={addOption}
           validator={validator}
           values={values}
-        />
-        <IconContainer
-          disabled={!validated}
-          onClick={addOption}
-          title={validated ? 'Click to add' : ''}
-          children={<IconAdd />}
+          title={'Click to select an Address Book entry'}
         />
       </StyledOption>
     </div>
   )
 }
+
 AddressDropDownOptions.propTypes = {
   activeItem: PropTypes.number.isRequired,
   entities: PropTypes.array.isRequired,
