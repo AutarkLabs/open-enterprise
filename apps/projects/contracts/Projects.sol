@@ -87,7 +87,7 @@ contract Projects is IsContract, AragonApp {
         uint256 bountyDeadline;
         string bountyCurrency;
         address bountyAllocator;
-        address bountyArbiter;
+        //address bountyArbiter;
     }
 
     BountySettings settings;
@@ -107,6 +107,12 @@ contract Projects is IsContract, AragonApp {
         address submitter;
     }
 
+    struct AssignmentRequest {
+        SubmissionStatus status;
+        string requestHash; //IPFS hash of the application data
+        bool exists;
+    }
+
     struct GithubIssue {
         bytes32 repo;  // This is the internal repo identifier
         uint256 number; // May be redundant tracking this
@@ -120,7 +126,7 @@ contract Projects is IsContract, AragonApp {
         address[] applicants;
         //uint256 submissionQty;
         uint256[] submissionIndices;
-        mapping(address => string) assignmentRequests;
+        mapping(address => AssignmentRequest) assignmentRequests;
         //mapping(address => WorkSubmission) workSubmissions;
     }
 
@@ -190,8 +196,8 @@ contract Projects is IsContract, AragonApp {
             1, // baseRate
             336, // bountyDeadline
             "autark", // bountyCurrency
-            _bountiesAddr, // bountyAllocator
-            0x0000000000000000000000000000000000000000 //bountyArbiter
+            _bountiesAddr // bountyAllocator
+            //0x0000000000000000000000000000000000000000 //bountyArbiter
         );
     }
 
@@ -227,11 +233,12 @@ contract Projects is IsContract, AragonApp {
         uint256 baseRate,
         uint256 bountyDeadline,
         string bountyCurrency,
-        address bountyAllocator,
-        address bountyArbiter
+        address bountyAllocator
+        //address bountyArbiter
     ) external auth(CHANGE_SETTINGS_ROLE)
     {
-        _changeBountySettings(expLevels, baseRate, bountyDeadline, bountyCurrency, bountyAllocator, bountyArbiter);
+        //_changeBountySettings(expLevels, baseRate, bountyDeadline, bountyCurrency, bountyAllocator, bountyArbiter);
+        _changeBountySettings(expLevels, baseRate, bountyDeadline, bountyCurrency, bountyAllocator);
     }
 
 ///////////////////////
@@ -283,8 +290,8 @@ contract Projects is IsContract, AragonApp {
         uint256 baseRate,
         uint256 bountyDeadline,
         string bountyCurrency,
-        address bountyAllocator,
-        address bountyArbiter
+        address bountyAllocator
+        //address bountyArbiter
     )
     {
         return (
@@ -292,8 +299,8 @@ contract Projects is IsContract, AragonApp {
             settings.baseRate,
             settings.bountyDeadline,
             settings.bountyCurrency,
-            settings.bountyAllocator,
-            settings.bountyArbiter
+            settings.bountyAllocator
+            //settings.bountyArbiter
         );
     }
 
@@ -301,7 +308,7 @@ contract Projects is IsContract, AragonApp {
 // Repository functions
 ///////////////////////
     /**
-     * @notice Add selected repository to Managed Projects
+     * @notice Add repository to the Projects app
      * @param _owner Github id of the entity that owns the repo to add
      * @param _repoId Github id of the repo to add
      * @return index for the added repo at the registry
@@ -319,7 +326,7 @@ contract Projects is IsContract, AragonApp {
     }
 
     /**
-     * @notice Remove an entry from the projects registry.
+     * @notice Remove repository from the Projects app
      * @param _repoId The id of the Github repo in the projects registry
      */
     function removeRepo(
@@ -345,7 +352,7 @@ contract Projects is IsContract, AragonApp {
 ///////////////////
 
     /**
-     * @notice apply to be assigned to this issue by submitting timeline and workplan
+     * @notice Request assignment for issue `_issueNumber`
      * @param _repoId the github repo id of the issue
      * @param _issueNumber the github issue up for assignment
      * @param _application IPFS hash for the applicant's proposed timeline and strategy
@@ -356,16 +363,19 @@ contract Projects is IsContract, AragonApp {
         string _application
     ) external isInitialized
     {
-        require(bytes(repos[_repoId].issues[_issueNumber].assignmentRequests[msg.sender]).length == 0, "User already applied for this issue");
-
-        repos[_repoId].issues[_issueNumber].applicants.push(msg.sender);
-        repos[_repoId].issues[_issueNumber].assignmentRequests[msg.sender] = _application;
-
+        GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
+        require(issue.assignmentRequests[msg.sender].exists == false, "User already applied for this issue");
+        issue.applicants.push(msg.sender);
+        issue.assignmentRequests[msg.sender] = AssignmentRequest(
+            SubmissionStatus.Unreviewed,
+            _application,
+            true
+        );
         emit AssignmentRequested(_repoId, _issueNumber);
     }
 
     /**
-     * @notice approve a request for assignment to a single requestor
+     * @notice Approve assignment for issue `_issueNumber`
      * @param _repoId the github repo id of the issue
      * @param _issueNumber the github issue up for assignment
      * @param _requestor address of user that will be assigned the issue
@@ -375,18 +385,25 @@ contract Projects is IsContract, AragonApp {
         bytes32 _repoId,
         uint256 _issueNumber,
         address _requestor,
-        string _updatedApplication
+        string _updatedApplication,
+        bool _approved
     ) external isInitialized auth(TASK_ASSIGNMENT_ROLE)
     {
-        require(bytes(repos[_repoId].issues[_issueNumber].assignmentRequests[_requestor]).length != 0, "User has not applied for this issue");
-        repos[_repoId].issues[_issueNumber].assignee = _requestor;
-        repos[_repoId].issues[_issueNumber].assignmentRequests[_requestor] = _updatedApplication;
+        GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
+        require(issue.assignmentRequests[_requestor].exists == true, "User has not applied for this issue");
+        issue.assignee = _requestor;
+        issue.assignmentRequests[_requestor].requestHash = _updatedApplication;
 
+        if (_approved) {
+            issue.assignmentRequests[_requestor].status = SubmissionStatus.Accepted;
+        } else {
+            issue.assignmentRequests[_requestor].status = SubmissionStatus.Rejected;
+        }
         emit AssignmentApproved(_requestor, _repoId, _issueNumber);
     }
 
     /**
-     * @notice Submit work for issue `_issueNumber`.
+     * @notice Submit work for issue `_issueNumber`
      * @dev add a submission to local state after it's been added to StandardBounties.sol
      * @param _repoId the github repo id of the issue
      * @param _issueNumber the github issue up for assignment
@@ -419,7 +436,7 @@ contract Projects is IsContract, AragonApp {
     }
 
     /**
-     * @notice Review work submission.
+     * @notice Review work for issue `_issueNumber`
      * @dev add a submission to local state after it's been added to StandardBounties.sol
      * @param _repoId the github repo id of the issue
      * @param _issueNumber the github issue up for resolution
@@ -456,7 +473,7 @@ contract Projects is IsContract, AragonApp {
     }
 
     /**
-     * @notice add bulk bounties
+     * @notice Fund bounties for the selected issues
      * @param _repoIds The ids of the Github repos in the projects registry
      * @param _issueNumbers an array of bounty indexes
      * @param _bountySizes an array of bounty sizes
@@ -551,10 +568,12 @@ contract Projects is IsContract, AragonApp {
         bytes32 _repoId,
         uint256 _issueNumber,
         uint256 _idx
-    ) public view returns(address applicant,string application)
+    ) public view returns(address applicant, string application, SubmissionStatus status)
     {
-        applicant = repos[_repoId].issues[_issueNumber].applicants[_idx];
-        application = repos[_repoId].issues[_issueNumber].assignmentRequests[applicant];
+        GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
+        applicant = issue.applicants[_idx];
+        application = issue.assignmentRequests[applicant].requestHash;
+        status = issue.assignmentRequests[applicant].status;
     }
 
         /**
@@ -600,8 +619,8 @@ contract Projects is IsContract, AragonApp {
         uint256 baseRate,
         uint256 bountyDeadline,
         string bountyCurrency,
-        address bountyAllocator,
-        address bountyArbiter
+        address bountyAllocator
+        //address bountyArbiter
     ) internal
     {
         settings.expLevels = expLevels;
@@ -609,7 +628,7 @@ contract Projects is IsContract, AragonApp {
         settings.bountyDeadline = bountyDeadline;
         settings.bountyCurrency = bountyCurrency;
         settings.bountyAllocator = bountyAllocator;
-        settings.bountyArbiter = bountyArbiter;
+        //settings.bountyArbiter = bountyArbiter;
 
         emit BountySettingsChanged();
     }

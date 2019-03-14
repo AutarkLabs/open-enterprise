@@ -345,7 +345,7 @@ class App extends React.PureComponent {
     }))
   }
 
-  onReviewApplication = (issue, requestIndex) => {
+  onReviewApplication = (issue, requestIndex, approved) => {
     this.closePanel()
     console.log('onReviewApplication Issue:', issue)
     console.log(
@@ -353,6 +353,7 @@ class App extends React.PureComponent {
       web3.toHex(issue.repoId),
       issue.number,
       issue.requestsData[requestIndex].contributorAddr,
+      approved,
       issue
     )
 
@@ -360,7 +361,8 @@ class App extends React.PureComponent {
       web3.toHex(issue.repoId),
       issue.number,
       issue.requestsData[requestIndex].contributorAddr,
-      issue.requestsData[requestIndex].requestIPFSHash
+      issue.requestsData[requestIndex].requestIPFSHash,
+      approved,
     )
   }
 

@@ -58,8 +58,8 @@ contract AddressBook is AragonApp {
         address _addr,
         string _name,
         string _entryType
-    ) public auth(ADD_ENTRY_ROLE) 
-    { 
+    ) public auth(ADD_ENTRY_ROLE)
+    {
         require(entries[_addr].entryAddress == 0, "entry exists with that address");
         require(!nameUsed[keccak256(abi.encodePacked(_name))], "name already in use");
 
@@ -70,7 +70,7 @@ contract AddressBook is AragonApp {
 
         nameUsed[keccak256(abi.encodePacked(entries[_addr].name))] = true;
 
-        emit EntryAdded(_addr); 
+        emit EntryAdded(_addr);
     }
 
     /**
@@ -79,13 +79,16 @@ contract AddressBook is AragonApp {
      */
     function removeEntry(
         address _addr
-    ) public auth(REMOVE_ENTRY_ROLE) 
-    { 
+    ) public auth(REMOVE_ENTRY_ROLE)
+    {
         require(entries[_addr].entryAddress != 0, "entry does not exist");
-        assert(nameUsed[keccak256(abi.encodePacked(entries[_addr].name))]); // the name MUST be used
+        // The below assertion will always be shadowed by the above requirement.
+        // Because there is no way for it to fail independently of this requirement
+        // it is unnecessary
+        // assert(nameUsed[keccak256(abi.encodePacked(entries[_addr].name))]); // the name MUST be used
         nameUsed[keccak256(abi.encodePacked(entries[_addr].name))] = false;
         delete entries[_addr];
-        emit EntryRemoved(_addr); 
+        emit EntryRemoved(_addr);
     }
 
     /**
@@ -94,7 +97,7 @@ contract AddressBook is AragonApp {
      */
     function getEntry(
         address _addr
-    ) public view returns (address _entryAddress, string _name, string _entryType) 
+    ) public view returns (address _entryAddress, string _name, string _entryType)
     {
         Entry storage entry = entries[_addr];
         require(nameUsed[keccak256(abi.encodePacked(entry.name))], "entry does not exist");
