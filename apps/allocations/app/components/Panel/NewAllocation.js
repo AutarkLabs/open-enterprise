@@ -250,6 +250,8 @@ class NewAllocation extends React.Component {
 
     const addressBookField = (
       <FormField
+        label="Address Book Options"
+        required
         visible={state.addressSetting}
         separator
         input={
@@ -268,6 +270,8 @@ class NewAllocation extends React.Component {
 
     const userOptionsField = (
       <FormField
+        label="Options"
+        required
         visible={!state.addressSetting}
         separator
         input={
