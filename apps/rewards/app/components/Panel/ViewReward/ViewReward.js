@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import Blockies from 'react-blockies'
 import { BigNumber } from 'bignumber.js'
+import { format } from 'date-fns'
 import {
   Badge,
   Button,
@@ -17,23 +18,9 @@ import {
   IconCheck,
   IconFundraising,
 } from '@aragon/ui'
-import { MONTHS } from '../../utils/constants'
-import { displayCurrency } from '../../utils/helpers'
-
-
-const reward = {
-  creator: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
-  isMerit: true,
-  referenceToken: 'SDN',
-  rewardToken: 0x0,
-  amount: BigNumber(17e18),
-  startDate: new Date('December 17, 2018'),
-  endDate: new Date('January 17, 2019'),
-  description: 'Q1 Reward for Space Decentral Contributors',
-  delay: 0
-
-}
-
+import { FieldTitle, FormField } from '../../Form'
+import { MONTHS } from '../../../utils/constants'
+import { displayCurrency } from '../../../utils/helpers'
 
 
 class ViewReward extends React.Component {
@@ -60,7 +47,7 @@ class ViewReward extends React.Component {
         endDate,
         description,
         delay,
-      } = reward
+      } = this.props.reward
       const truncatedCreator = `${creator.slice(0, 6)}...${creator.slice(-4)}`
       const translateToken = (token) => {
         if (token == 0x0) {
@@ -71,9 +58,7 @@ class ViewReward extends React.Component {
         <div>
           <SidePanelSplit>
             <div>
-              <h2>
-                <Label>Created by</Label>
-              </h2>
+              <FieldTitle>Created by</FieldTitle>
               <Creator>
                 <CreatorImg>
                   <Blockies seed={creator} size={8} />
@@ -93,9 +78,7 @@ class ViewReward extends React.Component {
               </Creator>
             </div>
             <div>
-              <h2>
-                <Label>Status</Label>
-              </h2>
+              <FieldTitle>Status</FieldTitle>
               <div>
                 {
                   (
@@ -116,42 +99,32 @@ class ViewReward extends React.Component {
           {description && (
             <Part>
               <React.Fragment>
-                <h2>
-                  <Label>Description:</Label>
-                </h2>
+                <FieldTitle>Description</FieldTitle>
                 <p>{this.renderDescription(description)}</p>
               </React.Fragment>
             </Part>
           )}
           <SidePanelSplit>
             <div>
-              <h2>
-                <Label>Reference Asset</Label>
-              </h2>
+              <FieldTitle>Reference Asset</FieldTitle>
               <p>{referenceToken}</p>
             </div>
             <div>
-              <h2>
-                <Label>Type</Label>
-              </h2>
+              <FieldTitle>Type</FieldTitle>
               <div>
                 {isMerit?'Merit Reward':'Dividend Reward'}
               </div>
             </div>
           </SidePanelSplit>
-          <SidePanelSplit>
+          <SidePanelSplit style={{ borderTop: '0' }}>
             <div>
-              <h2>
-                <Label>Amount</Label>
-              </h2>
+              <FieldTitle>Amount</FieldTitle>
               <p>
                 {displayCurrency(amount)}{' '}{translateToken(rewardToken)}
               </p>
             </div>
             <div>
-              <h2>
-                <Label>Period</Label>
-              </h2>
+              <FieldTitle>Period</FieldTitle>
               <div>
                 {Intl.DateTimeFormat().format(startDate)}
                 {' - '}
@@ -172,11 +145,11 @@ class ViewReward extends React.Component {
                 <SummaryVar>{referenceToken}</SummaryVar>
                 {' from '}
                 <SummaryVar>
-                  {startDate.getDate().toString() + '-' + MONTHS[startDate.getMonth()] + '-' + startDate.getFullYear()}
+                  {format(startDate,'dd-MMM-yyyy')}
                 </SummaryVar>
                 {' to '}
                 <SummaryVar>
-                  {endDate.getDate().toString() + '-' + MONTHS[endDate.getMonth()] + '-' + endDate.getFullYear()}
+                  {format(endDate,'dd-MMM-yyyy')}
                 </SummaryVar>
                 {'.'}
               </p>
