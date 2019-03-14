@@ -2,6 +2,7 @@ import { AragonApp, observe, SidePanel, TabBar } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import { Overview, MyRewards } from '../Content'
 import { Title } from '../Shared'
 import { Empty } from '../Card'
 import PanelManager, { PANELS } from '../Panel'
@@ -22,7 +23,7 @@ class App extends React.Component {
 
   state = {
     selected: 0,
-    rewardsEmpty: this.props.rewards === undefined || this.props.rewards === [],
+    tabs: [ 'Overview', 'My Rewards' ],
   }
 
   closePanel = () => {
@@ -51,16 +52,22 @@ class App extends React.Component {
         <Title text="Rewards" />
         <NewRewardButton onClick={this.newReward} />
         <TabBar
-          items={[ 'Overview', 'My Rewards' ]}
+          items={this.state.tabs}
           selected={this.state.selected}
           onSelect={this.selectTab}
         />
 
-        {this.state.rewardsEmpty ?
-          <Empty action={this.newReward} />
-          :
-          'Rewards Exist'
-        }
+        { this.state.selected === 1 ? (
+          <MyRewards
+            rewards={this.props.rewards === undefined ? [] : this.props.rewards}
+            onNewReward={this.onNewReward}
+          />
+        ) : (
+          <Overview
+            rewards={this.props.rewards === undefined ? [] : this.props.rewards}
+            onNewReward={this.onNewReward}
+          />
+        )}
 
         <PanelManager
           onClose={this.closePanel}
