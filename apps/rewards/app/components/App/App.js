@@ -4,6 +4,9 @@ import React from 'react'
 import styled from 'styled-components'
 import { Overview, MyRewards } from '../Content'
 import { Title } from '../Shared'
+import { Empty } from '../Card'
+import PanelManager, { PANELS } from '../Panel'
+import NewRewardButton from './NewRewardButton'
 
 const ASSETS_URL = 'aragon-ui-assets/'
 
@@ -13,28 +16,41 @@ class App extends React.Component {
     rewards: PropTypes.arrayOf(PropTypes.object),
   }
 
+  onNewReward = reward => {
+    console.log('Create New Reward from', reward)
+    this.closePanel()
+  }
+
   state = {
     selected: 0,
     tabs: [ 'Overview', 'My Rewards' ],
   }
 
   closePanel = () => {
-    this.setState({ panel: { visible: false } })
+    this.setState({ panel: undefined, panelProps: undefined })
   }
 
   selectTab = idx => {
     this.setState({ selected: idx })
   }
 
-  onNewReward = () => {
-    console.log('Create New Reward')
+  newReward = () => {
+    this.setState({
+      panel: PANELS.NewReward,
+      panelProps: {
+        onNewReward: this.onNewReward,
+        vaultBalance: '432.9 ETH',
+      },
+    })
   }
 
   render() {
+    const { panel, panelProps } = this.state
 
     return (
       <StyledAragonApp>
         <Title text="Rewards" />
+        <NewRewardButton onClick={this.newReward} />
         <TabBar
           items={this.state.tabs}
           selected={this.state.selected}
@@ -52,6 +68,12 @@ class App extends React.Component {
             onNewReward={this.onNewReward}
           />
         )}
+
+        <PanelManager
+          onClose={this.closePanel}
+          activePanel={panel}
+          {...panelProps}
+        />
       </StyledAragonApp>
     )
   }
