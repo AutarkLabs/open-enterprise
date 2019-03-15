@@ -10,6 +10,7 @@ const camel2title = camelCase =>
 const dynamicImport = Object.freeze({
   NewReward: () => import('./NewReward'),
   YourReward: () => import('./YourReward'),
+  ViewReward: () => import('./ViewReward'),
 })
 
 const PANELS = Object.keys(dynamicImport).reduce((obj, item) => {

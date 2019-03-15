@@ -7,7 +7,7 @@ import { Title } from '../Shared'
 import { Empty } from '../Card'
 import PanelManager, { PANELS } from '../Panel'
 import NewRewardButton from './NewRewardButton'
-//import BigNumber from 'bignumber.js'
+import BigNumber from 'bignumber.js'
 
 const ASSETS_URL = 'aragon-ui-assets/'
 
@@ -16,7 +16,7 @@ const reward = {
   isMerit: true,
   referenceToken: 'SDN',
   rewardToken: 0x0,
-  // amount: BigNumber(17e18),
+  amount: BigNumber(17e18),
   amount: 10,
   startDate: new Date('2018-12-17'),
   endDate: new Date('2019-01-17'),
@@ -73,6 +73,15 @@ class App extends React.Component {
         onClosePanel: this.closePanel,
         reward,
       },
+    })
+  }
+
+  viewReward = (reward) => {
+    this.setState({
+      panel: PANELS.ViewReward,
+      panelProps: {
+        reward: reward,
+      }
     })
   }
 
