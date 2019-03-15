@@ -1,4 +1,4 @@
-import { AragonApp, observe, SidePanel, TabBar } from '@aragon/ui'
+import { AragonApp, observe, SidePanel, TabBar, Button } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
@@ -82,6 +82,7 @@ class App extends React.Component {
     return (
       <StyledAragonApp>
         <Title text="Rewards" />
+        <Button mode="strong" onClick={this.yourReward}>test</Button>
         <NewRewardButton onClick={this.newReward} />
         <TabBar
           items={this.state.tabs}
