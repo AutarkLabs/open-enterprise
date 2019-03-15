@@ -1,12 +1,11 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import Blockies from 'react-blockies'
 import { BigNumber } from 'bignumber.js'
 import {
   Button,
+  IdentityBadge,
   Info,
-  SafeLink,
   SidePanelSplit,
   SidePanelSeparator,
   Countdown,
@@ -14,7 +13,7 @@ import {
   theme,
 } from '@aragon/ui'
 import { combineLatest } from '../../rxjs'
-import provideNetwork from '../../utils/provideNetwork'
+import { provideNetwork } from '../../../../../shared/ui'
 import { VOTE_NAY, VOTE_YEA } from '../../utils/vote-types'
 import { safeDiv } from '../../utils/math-utils'
 import VoteSummary from '../VoteSummary'
@@ -25,6 +24,7 @@ import Slider from '../Slider'
 class VotePanelContent extends React.Component {
   static propTypes = {
     app: PropTypes.object, // TODO: isRequired?
+    network: PropTypes.object,
   }
   state = {
     userCanVote: false,
@@ -130,7 +130,7 @@ class VotePanelContent extends React.Component {
     }
   }
   render() {
-    const { etherscanBaseUrl, vote, ready, minParticipationPct } = this.props
+    const { network, vote, ready, minParticipationPct } = this.props
     const {
       userBalance,
       userCanVote,
@@ -172,7 +172,6 @@ class VotePanelContent extends React.Component {
     })
 
     const showInfo = type === 'allocation' || type === 'curation'
-    const truncatedCreator = `${creator.slice(0, 6)}...${creator.slice(-4)}`
 
     return (
       <div>
@@ -182,21 +181,11 @@ class VotePanelContent extends React.Component {
               <Label>Created by</Label>
             </h2>
             <Creator>
-              <CreatorImg>
-                <Blockies seed={creator} size={8} />
-              </CreatorImg>
-              <div>
-                <p>
-                  {/* // TODO: Change to etherscanUrl constant for the selected network*/}
-                  <SafeLink
-                    href={`https://rinkeby.etherscan.io/address/${creator}`}
-                    target="_blank"
-                    title={creator}
-                  >
-                    {truncatedCreator}
-                  </SafeLink>
-                </p>
-              </div>
+              <IdentityBadge
+                networkType={network.type}
+                entity={creator}
+                shorten={true}
+              />
             </Creator>
           </div>
           <div>
@@ -425,19 +414,6 @@ const Question = styled.p`
 const Creator = styled.div`
   display: flex;
   align-items: center;
-`
-const CreatorImg = styled.div`
-  margin-right: 20px;
-  canvas {
-    display: block;
-    border: 1px solid ${theme.contentBorder};
-    border-radius: 16px;
-  }
-  & + div {
-    a {
-      color: ${theme.accent};
-    }
-  }
 `
 
 const VotingButtons = styled.div`

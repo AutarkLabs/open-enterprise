@@ -1,11 +1,19 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { DropDown, Button, Text, Field, TextInput, theme } from '@aragon/ui'
+import {
+  DropDown,
+  Button,
+  Field,
+  IdentityBadge,
+  Text,
+  TextInput,
+  theme,
+} from '@aragon/ui'
 import { FieldTitle } from '../Form'
 import NumberFormat from 'react-number-format'
-
 import { STATUS } from '../../utils/github'
+import { provideNetwork } from '../../../../../shared/ui'
 
 const bountyDeadlines = [ 'Weeks', 'Days', 'Hours' ]
 const bountyDeadlinesMul = [ 168, 24, 1 ] // it is one variable in contract, so number * multiplier = hours
@@ -14,6 +22,7 @@ class Settings extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
     githubCurrentUser: PropTypes.object, // TODO: is this required?
+    network: PropTypes.object,
     onLogin: PropTypes.func.isRequired,
     status: PropTypes.string.isRequired,
   }
@@ -154,6 +163,8 @@ class Settings extends React.Component {
       bountyArbiter,
     } = this.state
 
+    const { network } = this.props
+
     // TODO: hourglass in case settings are still being loaded
     if (!('baseRate' in this.props.bountySettings))
       return <div>Loading settings...</div>
@@ -186,11 +197,11 @@ class Settings extends React.Component {
         <div className="column">
           <BountyContractAddress
             bountyAllocator={bountyAllocator}
-            onChange={this.bountyAllocatorChange}
+            networkType={network.type}
           />
           <BountyArbiter
             bountyArbiter={bountyArbiter}
-            onChange={this.bountyArbiterChange}
+            networkType={network.type}
           />
           <BountyDeadline
             bountyDeadlineT={bountyDeadlineT}
@@ -236,38 +247,23 @@ const BountyDeadline = ({
   </div>
 )
 
-const BountyArbiter = ({ bountyArbiter, onChange }) => (
+const BountyArbiter = ({ bountyArbiter, networkType }) => (
   <div>
     <Text.Block size="large" weight="bold">
       Bounty Arbiter
     </Text.Block>
     <Text.Block>The entity responsible for dispute resolution.</Text.Block>
     <div style={{ display: 'flex' }}>
-      <TextInput
-        readOnly
-        style={{
-          width: '378px',
-          height: '40px',
-          fontSize: '15px',
-          textAlign: 'left',
-          marginRight: '10px',
-        }}
-        value="N/A"
+      <IdentityBadge
+        networkType={networkType}
+        entity={bountyArbiter}
+        shorten={false}
       />
-      <Button.Anchor
-        mode="outline"
-        style={{ height: '40px' }}
-        // href="https://etherscan.io/address/0x281055afc982d96fab65b3a49cac8b878184cb16"
-        target="_blank"
-        disabled
-      >
-        See on Etherscan
-      </Button.Anchor>
     </div>
   </div>
 )
 
-const BountyContractAddress = ({ bountyAllocator }) => (
+const BountyContractAddress = ({ bountyAllocator, networkType }) => (
   <div>
     <Text.Block size="large" weight="bold">
       Bounty Contract Address
@@ -276,25 +272,11 @@ const BountyContractAddress = ({ bountyAllocator }) => (
       This is the smart contract that is actually allocating bounties.
     </Text.Block>
     <div style={{ display: 'flex' }}>
-      <TextInput
-        readOnly
-        style={{
-          width: '378px',
-          height: '40px',
-          fontSize: '15px',
-          textAlign: 'center',
-          marginRight: '10px',
-        }}
-        value={bountyAllocator}
+      <IdentityBadge
+        networkType={networkType}
+        entity={bountyAllocator}
+        shorten={false}
       />
-      <Button.Anchor
-        mode="outline"
-        style={{ height: '40px' }}
-        href={`https://etherscan.io/address/${bountyAllocator}`}
-        target="_blank"
-      >
-        See on Etherscan
-      </Button.Anchor>
     </div>
   </div>
 )
@@ -476,4 +458,4 @@ const StyledContent = styled.div`
   }
 `
 
-export default Settings
+export default provideNetwork(Settings)
