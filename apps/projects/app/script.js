@@ -13,6 +13,7 @@ const tokenAbi = [].concat(tokenDecimalsAbi, tokenSymbolAbi)
 let ipfs = ipfsClient({ host: 'localhost', port: '5001', protocol: 'http' })
 
 const status = [ 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]
+const assignmentRequestStatus = [ 'Unreviewed', 'Accepted', 'Rejected' ]
 
 const SUBMISSION_STAGE = 2
 
@@ -367,7 +368,12 @@ function getRequest(repoId, issueNumber, applicantId) {
         for(const file of files) {
           contentJSON = JSON.parse(file.content.toString('utf8'))
         }
-        resolve({ contributorAddr: response.applicant, requestIPFSHash: response.application, ...contentJSON })
+        resolve({
+          contributorAddr: response.applicant,
+          status: assignmentRequestStatus[response.status],
+          requestIPFSHash: response.application,
+          ...contentJSON
+        })
       })
     })
   })
