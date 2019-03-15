@@ -10,12 +10,12 @@ import {
   ContextMenuItem,
   IconAdd,
   IconFundraising,
+  IdentityBadge,
   SafeLink,
   theme,
 } from '@aragon/ui'
 import { ETH_DECIMALS } from '../../utils/constants'
-
-import { ToastCopy } from '../../../../../shared/ui'
+import { provideNetwork } from '../../../../../shared/ui'
 
 const Account = ({
   id,
@@ -23,6 +23,7 @@ const Account = ({
   balance,
   description,
   limit,
+  network,
   onNewAllocation,
   onManageParameters,
   onExecutePayout,
@@ -49,10 +50,8 @@ const Account = ({
     }
   }
 
-  const truncatedProxy = `${proxy.slice(0, 6)}...${proxy.slice(-4)}`
   const translatedToken = translateToken(token)
 
-  //TODO: use {etherScanBaseUrl instead of hard coded rinkeby}
   return (
     <StyledCard>
       <MenuContainer>
@@ -71,14 +70,11 @@ const Account = ({
       <TitleContainer>
         <CardTitle>{description}</CardTitle>
         <CardAddress>
-          <SafeLink
-            href={`https://rinkeby.etherscan.io/address/${proxy}`}
-            target="_blank"
-            title={proxy}
-          >
-            {truncatedProxy}
-          </SafeLink>
-          <ToastCopy address={proxy} />
+          <IdentityBadge
+            networkType={network.type}
+            entity={proxy}
+            shorten={true}
+          />
         </CardAddress>
       </TitleContainer>
       <StatsContainer>
@@ -120,6 +116,7 @@ Account.propTypes = {
   description: PropTypes.string.isRequired,
   onNewAllocation: PropTypes.func.isRequired,
   onManageParameters: PropTypes.func.isRequired,
+  network: PropTypes.object,
 }
 
 const TitleContainer = styled.div`
@@ -165,7 +162,6 @@ const CardAddress = styled(Text.Block).attrs({
 })`
   display: flex;
   justify-content: center;
-  color: ${theme.accent};
 `
 
 const IconContainer = styled.img.attrs({
@@ -191,4 +187,4 @@ const StatsValue = styled.p`
   font-size: 14px;
 `
 
-export default Account
+export default provideNetwork(Account)
