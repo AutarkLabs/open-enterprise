@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { BigNumber } from 'bignumber.js'
 import {
+  Badge,
   Button,
   IdentityBadge,
   Info,
@@ -325,7 +326,20 @@ class VotePanelContent extends React.Component {
               <ProgressBarThick
                 key={index}
                 progress={safeDiv(parseInt(option.value, 10), totalSupport)}
-                label={option.label}
+                // TODO: Use IdentityBadge for addresses labels once it is integrated on dev branch
+                // (since we don't have a block explorer network context to plug-in yet)
+                // Then truncate the address
+                // TODO: check use case with issue curation
+                label={
+                  <div
+                    style={{ display: 'flex', justifyContent: 'space-between' }}
+                  >
+                    <span>{option.label}</span>
+                    <Badge.Identity style={{ padding: '3px 12.5px' }}>
+                      YOUR VOTE: {0}%
+                    </Badge.Identity>
+                  </div>
+                }
               />
             ))}
           {showResults && (
