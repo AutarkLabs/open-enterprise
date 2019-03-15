@@ -7,6 +7,7 @@ import { Title } from '../Shared'
 import { Empty } from '../Card'
 import PanelManager, { PANELS } from '../Panel'
 import NewRewardButton from './NewRewardButton'
+import BigNumber from 'bignumber.js'
 
 const ASSETS_URL = 'aragon-ui-assets/'
 
@@ -44,6 +45,26 @@ class App extends React.Component {
     })
   }
 
+  reward = {
+    creator: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
+    isMerit: true,
+    referenceToken: 'SDN',
+    rewardToken: 0x0,
+    amount: BigNumber(17e18),
+    startDate: new Date('December 17, 2018'),
+    endDate: new Date('January 17, 2019'),
+    description: 'Q1 Reward for Space Decentral Contributors',
+    delay: 0,
+    index: 0
+  }
+  viewReward = (reward) => {
+    this.setState({
+      panel: PANELS.ViewReward,
+      panelProps: {
+        reward: reward,
+      }
+    })
+  }
   render() {
     const { panel, panelProps } = this.state
 
