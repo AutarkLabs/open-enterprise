@@ -7,18 +7,29 @@ import { Title } from '../Shared'
 import { Empty } from '../Card'
 import PanelManager, { PANELS } from '../Panel'
 import NewRewardButton from './NewRewardButton'
+//import BigNumber from 'bignumber.js'
 
 const ASSETS_URL = 'aragon-ui-assets/'
+
+const reward = {
+  creator: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
+  isMerit: true,
+  referenceToken: 'SDN',
+  rewardToken: 0x0,
+  // amount: BigNumber(17e18),
+  amount: 10,
+  startDate: new Date('2018-12-17'),
+  endDate: new Date('2019-01-17'),
+  description: 'Q1 Reward for Space Decentral Contributors',
+  delay: 0,
+  index: 0,
+  claimed: true,
+}
 
 class App extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
     rewards: PropTypes.arrayOf(PropTypes.object),
-  }
-
-  onNewReward = reward => {
-    console.log('Create New Reward from', reward)
-    this.closePanel()
   }
 
   state = {
@@ -40,6 +51,27 @@ class App extends React.Component {
       panelProps: {
         onNewReward: this.onNewReward,
         vaultBalance: '432.9 ETH',
+      },
+    })
+  }
+
+  onNewReward = reward => {
+    console.log('onNewReward', reward)
+    this.closePanel()
+  }
+
+  onClaimReward = reward => {
+    console.log('onClaimReward', reward)
+    this.closePanel()
+  }
+
+  yourReward = () => {
+    this.setState({
+      panel: PANELS.YourReward,
+      panelProps: {
+        onClaimReward: this.onClaimReward,
+        onClosePanel: this.closePanel,
+        reward,
       },
     })
   }
