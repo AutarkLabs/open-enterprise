@@ -6,7 +6,6 @@ import icon from '../../assets/empty-rewards.svg'
 
 const Icon = () => <img src={icon} alt="Empty accounts icon" />
 
-
 const Empty = ({ action, tab }) => (
 
   <EmptyWrapper>
