@@ -203,11 +203,17 @@ class App extends React.PureComponent {
   // TODO: Review
   // This is breaking RepoList loading sometimes preventing show repos after login
   newProject = () => {
+    const reposAlreadyAdded = this.props.repos ?
+      this.props.repos.map(repo => repo.data._repo)
+      :
+      []
+
     this.setState((_prevState, { github: { status } }) => ({
       panel: PANELS.NewProject,
       panelProps: {
         onCreateProject: this.createProject,
         onGithubSignIn: this.handleGithubSignIn,
+        reposAlreadyAdded,
         status: status,
       },
     }))
@@ -339,7 +345,7 @@ class App extends React.PureComponent {
     }))
   }
 
-  onReviewApplication = (issue, requestIndex) => {
+  onReviewApplication = (issue, requestIndex, approved) => {
     this.closePanel()
     console.log('onReviewApplication Issue:', issue)
     console.log(
@@ -347,6 +353,7 @@ class App extends React.PureComponent {
       web3.toHex(issue.repoId),
       issue.number,
       issue.requestsData[requestIndex].contributorAddr,
+      approved,
       issue
     )
 
@@ -354,7 +361,8 @@ class App extends React.PureComponent {
       web3.toHex(issue.repoId),
       issue.number,
       issue.requestsData[requestIndex].contributorAddr,
-      issue.requestsData[requestIndex].requestIPFSHash
+      issue.requestsData[requestIndex].requestIPFSHash,
+      approved,
     )
   }
 
@@ -458,7 +466,6 @@ class App extends React.PureComponent {
   render() {
     const { activeIndex, panel, panelProps } = this.state
     const { client, bountySettings, githubCurrentUser } = this.props
-
     return (
       <StyledAragonApp publicUrl={ASSETS_URL}>
         <BaseStyles />

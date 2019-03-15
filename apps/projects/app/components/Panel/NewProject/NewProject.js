@@ -13,6 +13,8 @@ class NewProject extends React.Component {
     onGithubSignIn: PropTypes.func.isRequired,
     /** Req: Callback to handle project creation */
     onCreateProject: PropTypes.func.isRequired,
+    /** Req: repos already added as projects */
+    reposAlreadyAdded: PropTypes.array.isRequired,
   }
   state = { started: false }
 
@@ -27,7 +29,7 @@ class NewProject extends React.Component {
       : this.props.onGithubSignIn
 
     if (this.state.started)
-      return <RepoSelector onCreateProject={this.props.onCreateProject} />
+      return <RepoSelector onCreateProject={this.props.onCreateProject} reposAlreadyAdded={this.props.reposAlreadyAdded} />
 
     return (
       <React.Fragment>
