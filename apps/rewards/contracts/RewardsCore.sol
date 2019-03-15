@@ -67,7 +67,7 @@ contract RewardsCore is IsContract, AragonApp {
         referenceToken = reward.referenceToken;
         rewardToken = reward.rewardToken;
         amount = reward.amount;
-        endBlock = reward.blockStart + reward.duration + reward.delay;
+        endBlock = reward.blockStart + reward.duration;
         delay = reward.delay;
         if (reward.isMerit) {
             rewardAmount = calculateMeritReward(reward);
