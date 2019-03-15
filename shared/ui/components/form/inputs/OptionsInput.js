@@ -1,7 +1,14 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { IconAdd, IconRemove, TextInput, theme, unselectable } from '@aragon/ui'
+import {
+  Button,
+  IconAdd,
+  IconRemove,
+  TextInput,
+  theme,
+  unselectable,
+} from '@aragon/ui'
 
 const OptionsInput = ({
   input,
@@ -16,7 +23,7 @@ const OptionsInput = ({
   const addOption = () => {
     onChange({
       target: validated
-        ? { name, value: [...values, input] }
+        ? { name, value: [ ...values, input ] }
         : { name: 'addressError', value: true }, // enable error msg if needed
     })
     cleanInputBox()
@@ -41,6 +48,7 @@ const OptionsInput = ({
     <StyledOption key={i}>
       <StyledInput readOnly value={option.addr} />
       <IconContainer
+        style={{ transform: 'scale(.8)' }}
         onClick={() => removeOption(option)}
         title="Click to remove the option"
         children={<IconRemove />}
@@ -49,24 +57,34 @@ const OptionsInput = ({
   ))
 
   return (
-    <div style={flexColumn}>
-      {loadOptions}
-      <StyledOption>
-        <StyledInput
-          placeholder={placeholder}
-          value={input.addr}
-          onChange={onChangeInput}
-        />
-        <IconContainer
-          disabled={!validated}
-          onClick={addOption}
-          title="Click to add the option"
-          children={<IconAdd />}
-        />
-      </StyledOption>
+    <div>
+      <div style={flexColumn}>
+        {loadOptions}
+        <StyledOption>
+          <StyledInput
+            placeholder={placeholder}
+            value={input.addr}
+            onChange={onChangeInput}
+          />
+        </StyledOption>
+      </div>
+      <StyledButton
+        disabled={!validated}
+        compact
+        mode="secondary"
+        onClick={addOption}
+        children={'+ Add option'}
+        title={validated ? 'Click to add' : ''}
+      />
     </div>
   )
 }
+
+const StyledButton = styled(Button)`
+  font-size: 15px;
+  margin-top: 10px;
+  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+`
 
 OptionsInput.propTypes = {
   input: PropTypes.object.isRequired,

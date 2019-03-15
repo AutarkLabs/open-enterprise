@@ -43,6 +43,7 @@ class DropDownOptionsInput extends React.Component {
         <StyledOption key={issue.id}>
           <StyledInput readOnly wide value={issueString} />
           <IconContainer
+            style={{ transform: 'scale(.8)' }}
             onClick={() => removeOption(issue)}
             title="Click to remove the issue"
             children={<IconRemove />}
