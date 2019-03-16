@@ -29,9 +29,6 @@ const Main = styled.div`
 
 const Label = styled(Text)`
   overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
   line-height: 1.6em;
   text-overflow: ellipsis;
   margin-bottom: 0.2rem;
