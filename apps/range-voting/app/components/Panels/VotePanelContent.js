@@ -373,7 +373,7 @@ class VotePanelContent extends React.Component {
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
                         }}
-                  >
+                      >
                         {option.label}
                       </span>
                     )}
@@ -388,7 +388,7 @@ class VotePanelContent extends React.Component {
                         }}
                       >
                         YOUR VOTE: <span>{voteWeights[index]}%</span>
-                    </Badge.Identity>
+                      </Badge.Identity>
                     )}
                   </span>
                 }
