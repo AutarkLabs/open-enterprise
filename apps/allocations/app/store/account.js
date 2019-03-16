@@ -26,14 +26,15 @@ export const onFundedAccount = async (accounts = [], { accountId }) => {
   return accounts
 }
 
-export const syncAccounts = async (accounts = [], { accountId }) => {
-  const data = await loadAccountData(accountId) // async load data from contract
-  const account = { accountId, data, executed: true } // transform from the frontend to understand
-  // console.log('[Allocations script]', accountId, 'updating cache')
-  const nextAccounts = [ ...accounts, account ] // add to the state object received as param
-  // console.log('[Allocations script] nextAccounts', nextAccounts)
-
-  return nextAccounts
+export const onPayoutExecuted = async (accounts = [], { accountId }) => {
+  const index = accounts.findIndex(a => a.accountId === accountId)
+  if (index < 0) {
+    return onNewAccount(accounts, { accountId })
+  } else {
+    const nextId = accounts[index].accountId
+    accounts[index] = await getAccountById(nextId)
+  }
+  return accounts
 }
 
 /// /////////////////////////////////////
