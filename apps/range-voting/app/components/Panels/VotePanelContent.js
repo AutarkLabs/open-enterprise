@@ -37,6 +37,7 @@ class VotePanelContent extends React.Component {
   componentDidMount() {
     this.loadUserCanVote()
     this.loadUserBalance()
+    this.getVoterState()
   }
   componentWillReceiveProps(nextProps) {
     if (nextProps.user !== this.props.user) {
@@ -130,6 +131,29 @@ class VotePanelContent extends React.Component {
       this.setState({ remaining: 100 - total })
     }
   }
+
+  getVoterState = async () => {
+    const result = await this.props.app
+      .call('getVoterState', this.props.vote.voteId, this.props.user)
+      .toPromise()
+
+    // TODO: Bignumber.js vs >8.2 supports .sum function to initialize from a sum of bignumbers, replace when updating
+    const totalVotesCount = result.reduce(
+      (acc, vote) => acc.plus(vote),
+      new BigNumber(0)
+    )
+    //
+
+    const voteWeights = result.map(e =>
+      BigNumber(e)
+        .div(totalVotesCount)
+        .times(100)
+        .dp(2)
+        .toString()
+    )
+    this.setState({ voteWeights })
+  }
+
   render() {
     const { network, vote, ready, minParticipationPct } = this.props
     const {
@@ -138,6 +162,7 @@ class VotePanelContent extends React.Component {
       showResults,
       voteOptions,
       remaining,
+      voteWeights,
     } = this.state
     if (!vote) {
       return null
@@ -335,9 +360,11 @@ class VotePanelContent extends React.Component {
                     style={{ display: 'flex', justifyContent: 'space-between' }}
                   >
                     <span>{option.label}</span>
+                    {Boolean(voteWeights.length) && (
                     <Badge.Identity style={{ padding: '3px 12.5px' }}>
-                      YOUR VOTE: {0}%
+                        YOUR VOTE: {voteWeights[index]}%
                     </Badge.Identity>
+                    )}
                   </div>
                 }
               />
