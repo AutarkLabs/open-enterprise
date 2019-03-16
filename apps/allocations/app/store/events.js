@@ -14,8 +14,10 @@ export const handleEvent = async (state, { event, returnValues }) => {
     nextAccounts = await onNewAccount(accounts, returnValues)
     break
   case 'PayoutExecuted':
+    // console.log('[Allocations script] payout executed')
+    break
   case 'SetDistribution':
-    nextAccounts = await syncAccounts(accounts, returnValues)
+    // console.log('[Allocations script] setDistribution called')
     break
   case 'EntryAdded':
     nextEntries = await onEntryAdded({ entries, addressBook }, returnValues)
@@ -24,7 +26,7 @@ export const handleEvent = async (state, { event, returnValues }) => {
     nextEntries = await onEntryRemoved({ entries, addressBook }, returnValues)
     break
   default:
-    console.log('[Allocations script] Unknown event', event, returnValues) // Too spammy TODO: remove?
+    // console.log('[Allocations script] Unknown event', event, returnValues) // Too spammy TODO: remove?
     break
   }
   // If nextAccounts or nextEntries were not generated
