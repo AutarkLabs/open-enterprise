@@ -356,16 +356,41 @@ class VotePanelContent extends React.Component {
                 // Then truncate the address
                 // TODO: check use case with issue curation
                 label={
-                  <div
-                    style={{ display: 'flex', justifyContent: 'space-between' }}
+                  <span
+                    style={{ display: 'flex', justifyContent: 'flex-start' }}
                   >
-                    <span>{option.label}</span>
+                    {web3.isAddress(option.label) ? (
+                      <IdentityBadge
+                        networkType={network.type}
+                        entity={option.label}
+                        shorten={true}
+                      />
+                    ) : (
+                      <span
+                        style={{
+                          width: 'auto',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                  >
+                        {option.label}
+                      </span>
+                    )}
                     {Boolean(voteWeights.length) && (
-                    <Badge.Identity style={{ padding: '3px 12.5px' }}>
-                        YOUR VOTE: {voteWeights[index]}%
+                      <Badge.Identity
+                        style={{
+                          marginLeft: '12px',
+                          padding: '3px 12px',
+                          minWidth: '112px',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                        }}
+                      >
+                        YOUR VOTE: <span>{voteWeights[index]}%</span>
                     </Badge.Identity>
                     )}
-                  </div>
+                  </span>
                 }
               />
             ))}
