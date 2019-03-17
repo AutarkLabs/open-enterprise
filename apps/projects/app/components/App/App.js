@@ -1,4 +1,4 @@
-import { BaseStyles, PublicUrl, observe } from '@aragon/ui'
+import { BaseStyles, PublicUrl, observe, Root, ToastHub } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { hot } from 'react-hot-loader'
@@ -12,6 +12,7 @@ import PanelManager, { PANELS } from '../Panel'
 import { STATUS } from '../../utils/github'
 import ErrorBoundary from './ErrorBoundary'
 import BigNumber from 'bignumber.js'
+import { networkContextType } from '../../../../../shared/ui'
 
 const ASSETS_URL = './aragon-ui-assets/'
 
@@ -117,9 +118,26 @@ class App extends React.PureComponent {
     repos: PropTypes.arrayOf(PropTypes.object),
   }
 
+  static defaultProps = {
+    network: {},
+  }
+
+  static childContextTypes = {
+    network: networkContextType,
+  }
+
   state = {
     repos: [],
     activeIndex: { tabIndex: 0, tabData: {} },
+  }
+
+  getChildContext() {
+    const { network } = this.props
+    return {
+      network: {
+        type: network.type,
+      },
+    }
   }
 
   componentDidMount() {
@@ -203,11 +221,17 @@ class App extends React.PureComponent {
   // TODO: Review
   // This is breaking RepoList loading sometimes preventing show repos after login
   newProject = () => {
+    const reposAlreadyAdded = this.props.repos ?
+      this.props.repos.map(repo => repo.data._repo)
+      :
+      []
+
     this.setState((_prevState, { github: { status } }) => ({
       panel: PANELS.NewProject,
       panelProps: {
         onCreateProject: this.createProject,
         onGithubSignIn: this.handleGithubSignIn,
+        reposAlreadyAdded,
         status: status,
       },
     }))
@@ -339,7 +363,7 @@ class App extends React.PureComponent {
     }))
   }
 
-  onReviewApplication = (issue, requestIndex) => {
+  onReviewApplication = (issue, requestIndex, approved) => {
     this.closePanel()
     console.log('onReviewApplication Issue:', issue)
     console.log(
@@ -347,6 +371,7 @@ class App extends React.PureComponent {
       web3.toHex(issue.repoId),
       issue.number,
       issue.requestsData[requestIndex].contributorAddr,
+      approved,
       issue
     )
 
@@ -354,7 +379,8 @@ class App extends React.PureComponent {
       web3.toHex(issue.repoId),
       issue.number,
       issue.requestsData[requestIndex].contributorAddr,
-      issue.requestsData[requestIndex].requestIPFSHash
+      issue.requestsData[requestIndex].requestIPFSHash,
+      approved,
     )
   }
 
@@ -458,48 +484,51 @@ class App extends React.PureComponent {
   render() {
     const { activeIndex, panel, panelProps } = this.state
     const { client, bountySettings, githubCurrentUser } = this.props
-
     return (
-      <StyledAragonApp publicUrl={ASSETS_URL}>
-        <BaseStyles />
-        <Title text="Projects" />
-        <ApolloProvider client={client}>
-          <ErrorBoundary>
-            <AppContent
-              onLogin={this.handleGithubSignIn}
-              status={this.props.github.status || STATUS.INITIAL}
-              app={this.props.app}
-              bountySettings={bountySettings}
-              githubCurrentUser={githubCurrentUser || {}}
-              projects={this.props.repos !== undefined ? this.props.repos : []}
-              bountyIssues={
-                this.props.issues !== undefined ? this.props.issues : []
-              }
-              bountySettings={
-                bountySettings !== undefined ? bountySettings : {}
-              }
-              tokens={this.props.tokens !== undefined ? this.props.tokens : []}
-              onNewProject={this.newProject}
-              onRemoveProject={this.removeProject}
-              onNewIssue={this.newIssue}
-              onCurateIssues={this.curateIssues}
-              onAllocateBounties={this.newBountyAllocation}
-              onSubmitWork={this.submitWork}
-              onRequestAssignment={this.requestAssignment}
-              activeIndex={activeIndex}
-              changeActiveIndex={this.changeActiveIndex}
-              onReviewApplication={this.reviewApplication}
-              onReviewWork={this.reviewWork}
-            />
+      <Root.Provider>
+        <StyledAragonApp publicUrl={ASSETS_URL}>
+          <BaseStyles />
+          <ToastHub>
+            <Title text="Projects" />
+            <ApolloProvider client={client}>
+              <ErrorBoundary>
+                <AppContent
+                  onLogin={this.handleGithubSignIn}
+                  status={this.props.github.status || STATUS.INITIAL}
+                  app={this.props.app}
+                  bountySettings={bountySettings}
+                  githubCurrentUser={githubCurrentUser || {}}
+                  projects={this.props.repos !== undefined ? this.props.repos : []}
+                  bountyIssues={
+                    this.props.issues !== undefined ? this.props.issues : []
+                  }
+                  bountySettings={
+                    bountySettings !== undefined ? bountySettings : {}
+                  }
+                  tokens={this.props.tokens !== undefined ? this.props.tokens : []}
+                  onNewProject={this.newProject}
+                  onRemoveProject={this.removeProject}
+                  onNewIssue={this.newIssue}
+                  onCurateIssues={this.curateIssues}
+                  onAllocateBounties={this.newBountyAllocation}
+                  onSubmitWork={this.submitWork}
+                  onRequestAssignment={this.requestAssignment}
+                  activeIndex={activeIndex}
+                  changeActiveIndex={this.changeActiveIndex}
+                  onReviewApplication={this.reviewApplication}
+                  onReviewWork={this.reviewWork}
+                />
 
-            <PanelManager
-              onClose={this.closePanel}
-              activePanel={panel}
-              {...panelProps}
-            />
-          </ErrorBoundary>
-        </ApolloProvider>
-      </StyledAragonApp>
+                <PanelManager
+                  onClose={this.closePanel}
+                  activePanel={panel}
+                  {...panelProps}
+                />
+              </ErrorBoundary>
+            </ApolloProvider>
+          </ToastHub>
+        </StyledAragonApp>
+      </Root.Provider>
     )
   }
 }
