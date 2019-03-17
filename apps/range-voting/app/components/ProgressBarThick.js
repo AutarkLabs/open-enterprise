@@ -35,7 +35,7 @@ ProgressBar.propTypes = {
 
 const Label = styled.p`
   margin-top: 1rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.2rem;
 `
 
 const Main = styled.div`
@@ -45,10 +45,12 @@ const Main = styled.div`
 const Base = styled.div`
   width: 100%;
   height: 20px;
-  background: #edf3f6;
+  background-color: ${theme.contentBackgroundActive};
   border-radius: 2px;
   text-align: right;
   line-height: 14px;
+  margin-bottom: 18px;
+  padding-right: 4px;
 `
 const Progress = styled.div`
   height: 20px;
