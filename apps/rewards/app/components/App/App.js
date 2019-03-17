@@ -81,12 +81,12 @@ class App extends React.Component {
         { this.state.selected === 1 ? (
           <MyRewards
             rewards={this.props.rewards === undefined ? [] : this.props.rewards}
-            onNewReward={this.onNewReward}
+            onNewReward={this.newReward}
           />
         ) : (
           <Overview
             rewards={this.props.rewards === undefined ? [] : this.props.rewards}
-            onNewReward={this.onNewReward}
+            onNewReward={this.newReward}
           />
         )}
 

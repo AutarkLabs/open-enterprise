@@ -8,7 +8,7 @@ const MyRewards = (props) => {
   const rewardsEmpty = props.rewards.length === 0
 
   if (rewardsEmpty) {
-    return <Empty tab='MyRewards' action={props.onNewReward} />
+    return <Empty tab='MyRewards' action={props.newReward} />
   }
 
   return <StyledRewards>My Rewards Go Here</StyledRewards>

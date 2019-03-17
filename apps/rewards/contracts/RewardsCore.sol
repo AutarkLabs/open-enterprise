@@ -28,7 +28,7 @@ contract RewardsCore is IsContract, AragonApp {
     }
 
     Reward[] rewards;
-    Vault vault;
+    Vault public vault;
 
     function initialize( Vault _vault)
     external onlyInit // solium-disable-line visibility-first
