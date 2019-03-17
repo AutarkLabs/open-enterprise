@@ -13,7 +13,7 @@ const ToastCopy = ({ address }) =>
       {toast => (
         <span
           onClick={() => {
-            navigator.clipboard.writeText(address)
+            navigator.clipboard.writeText(address.toLowerCase())
             toast('Address copied')
           }}
           style={{ marginLeft: '.5rem', cursor: 'pointer' }}
