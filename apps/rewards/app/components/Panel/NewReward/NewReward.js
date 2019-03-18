@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 
-import { Info, Text, TextInput, theme, SafeLink, DropDown } from '@aragon/ui'
+import { Info, Text, TextInput, theme, SafeLink, DropDown, IconFundraising } from '@aragon/ui'
 
 import { Form, FormField } from '../../Form'
 import { DateInput, InputDropDown } from '../../../../../../shared/ui'
@@ -145,17 +145,20 @@ class NewReward extends React.Component {
 
       <Separator />
 
-      <Summary>
-        <p>
-          A total of <SummaryBold>{this.state.amount} {currencies[this.state.amountCurrency]}</SummaryBold> will be distributed as a reward to addresses that earned <SummaryBold>{referenceAssets[this.state.referenceAsset]}</SummaryBold> from <SummaryBold>{this.formatDate(this.state.dateStart)}</SummaryBold> to <SummaryBold>{this.formatDate(this.state.dateEnd)}</SummaryBold>.
-        </p>
-        <p>
-          The reward amount will be in proportion to the <SummaryBold>{referenceAssets[this.state.referenceAsset]}</SummaryBold> earned by each account in the specified period. 
-        </p>
-        <p>
-          The reward will be disbursed <SafeLink href="#" target="_blank"><SummaryBold>upon approval of this proposal</SummaryBold></SafeLink>.
-        </p>
-      </Summary>
+      <Info>
+        <TokenIcon />
+        <Summary>
+          <p>
+            A total of <SummaryBold>{this.state.amount} {currencies[this.state.amountCurrency]}</SummaryBold> will be distributed as a reward to addresses that earned <SummaryBold>{referenceAssets[this.state.referenceAsset]}</SummaryBold> from <SummaryBold>{this.formatDate(this.state.dateStart)}</SummaryBold> to <SummaryBold>{this.formatDate(this.state.dateEnd)}</SummaryBold>.
+          </p>
+          <p>
+            The reward amount will be in proportion to the <SummaryBold>{referenceAssets[this.state.referenceAsset]}</SummaryBold> earned by each account in the specified period. 
+          </p>
+          <p>
+            The reward will be disbursed <SafeLink href="#" target="_blank"><SummaryBold>upon approval of this proposal</SummaryBold></SafeLink>.
+          </p>
+        </Summary>
+      </Info>
     </div>
   )
 
@@ -245,17 +248,20 @@ class NewReward extends React.Component {
 
       <Separator />
 
-      <Summary>
-        <p>
-          A total of <SummaryBold>{this.state.amount} {currencies[this.state.amountCurrency]}</SummaryBold> will be distributed as a dividend to <SummaryBold>{referenceAssets[this.state.referenceAsset]}</SummaryBold> holders on a <SummaryBold>{disbursementCyclesSummary[this.state.disbursementCycle]}</SummaryBold>, from <SummaryBold>{this.formatDate(this.state.dateStart)}</SummaryBold> to <SummaryBold>{this.formatDate(this.state.dateEnd)}</SummaryBold>.
-        </p>
-        <p>
-          The dividend amount will be in proportion to the <SummaryBold>{referenceAssets[this.state.referenceAsset]}</SummaryBold> balance as of the last day of the cycle.
-        </p>
-        <p>
-          The dividend will be disbursed <SummaryBold>{disbursementDates[this.state.disbursementDate]}</SummaryBold> after the end of each cycle..
-        </p>
-      </Summary>
+      <Info>
+        <TokenIcon />
+        <Summary>
+          <p>
+            A total of <SummaryBold>{this.state.amount} {currencies[this.state.amountCurrency]}</SummaryBold> will be distributed as a dividend to <SummaryBold>{referenceAssets[this.state.referenceAsset]}</SummaryBold> holders on a <SummaryBold>{disbursementCyclesSummary[this.state.disbursementCycle]}</SummaryBold>, from <SummaryBold>{this.formatDate(this.state.dateStart)}</SummaryBold> to <SummaryBold>{this.formatDate(this.state.dateEnd)}</SummaryBold>.
+          </p>
+          <p>
+            The dividend amount will be in proportion to the <SummaryBold>{referenceAssets[this.state.referenceAsset]}</SummaryBold> balance as of the last day of the cycle.
+          </p>
+          <p>
+            The dividend will be disbursed <SummaryBold>{disbursementDates[this.state.disbursementDate]}</SummaryBold> after the end of each cycle..
+          </p>
+        </Summary>
+      </Info>
     </div>
   )
 
@@ -293,9 +299,10 @@ class NewReward extends React.Component {
     )
   }
 }
-const Summary = styled(Info)`
+const Summary = styled.div`
   margin-bottom: 10px;
   padding-bottom: 2px;
+  padding-left: 35px;
   > :not(:last-child) {
     margin-bottom: 10px;
   }
@@ -319,5 +326,8 @@ const Separator = styled.hr`
 const VaultBalance = styled.div`
   display: flex;
   align-items: center;
+`
+const TokenIcon = styled(IconFundraising)`
+float: left;
 `
 export default NewReward
