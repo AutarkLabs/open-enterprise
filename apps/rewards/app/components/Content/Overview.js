@@ -1,71 +1,126 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { Badge, Table, TableHeader, TableRow, TableCell, Text, breakpoint } from '@aragon/ui'
+import {
+  Badge,
+  Table,
+  TableHeader,
+  TableRow,
+  TableCell,
+  Text,
+  breakpoint,
+} from '@aragon/ui'
 import { FieldTitle } from '../Form'
 
 import { Empty } from '../Card'
 
 const rw = [
-{ isMerit: true, referenceToken: 'REF', rewardToken: 'ETH', amount: 0.1, endBlock: 0, delay: 200, rewardAmount: 2.1, description: 'Coral', },
-{ isMerit: true, referenceToken: 'REF', rewardToken: 'ETH', amount: 10, endBlock: 0, delay: 400, rewardAmount: 0.1, description: 'MJ', },
-{ isMerit: false, referenceToken: 'SCC', rewardToken: 'DAI', amount: 7.2, endBlock: 0, delay: 0, rewardAmount: 44, description: 'desc', },
-{ isMerit: true, referenceToken: 'REF', rewardToken: 'DAI', amount: 3.9, endBlock: 0, delay: 0, rewardAmount: 1, description: 'Coral', },
-{ isMerit: true, referenceToken: 'REF', rewardToken: 'ETH', amount: 100.1, endBlock: 0, delay: 200, rewardAmount: 200, description: 'Coral', },
-{ isMerit: true, referenceToken: 'REF', rewardToken: 'ETH', amount: 310, endBlock: 0, delay: 2000, rewardAmount: 3.98, description: 'SD', },
+  {
+    isMerit: true,
+    referenceToken: 'REF',
+    rewardToken: 'ETH',
+    amount: 0.1,
+    endBlock: 0,
+    delay: 200,
+    rewardAmount: 2.1,
+    description: 'Coral',
+  },
+  {
+    isMerit: true,
+    referenceToken: 'REF',
+    rewardToken: 'ETH',
+    amount: 10,
+    endBlock: 0,
+    delay: 400,
+    rewardAmount: 0.1,
+    description: 'MJ',
+  },
+  {
+    isMerit: false,
+    referenceToken: 'SCC',
+    rewardToken: 'DAI',
+    amount: 7.2,
+    endBlock: 0,
+    delay: 0,
+    rewardAmount: 44,
+    description: 'desc',
+  },
+  {
+    isMerit: true,
+    referenceToken: 'REF',
+    rewardToken: 'DAI',
+    amount: 3.9,
+    endBlock: 0,
+    delay: 0,
+    rewardAmount: 1,
+    description: 'Coral',
+  },
+  {
+    isMerit: true,
+    referenceToken: 'REF',
+    rewardToken: 'ETH',
+    amount: 100.1,
+    endBlock: 0,
+    delay: 200,
+    rewardAmount: 200,
+    description: 'Coral',
+  },
+  {
+    isMerit: true,
+    referenceToken: 'REF',
+    rewardToken: 'ETH',
+    amount: 310,
+    endBlock: 0,
+    delay: 2000,
+    rewardAmount: 3.98,
+    description: 'SD',
+  },
 ]
 
-const leaders = [
-{name: 'Aralah Beshenal', amount: 10},
-{name: 'Jix Gaian', amount: 0.8},
-{name: 'Jonathan Baric', amount: 230},
-{name: 'Kruineph Leandar', amount: 40},
-{name: 'Adam Jervada', amount: 4.02},
-{name: 'Raile Ores', amount: 9500},
-{name: 'Molan Gemini', amount: 63},
-{name: 'Cally Quamar', amount: 19},
-{name: 'Jaden Korrado', amount: 16.4},
-{name: 'Calaveylon Versio', amount: 16.3},
-{name: 'Jobal Antilles', amount: 9},
-{name: 'Fias Korror', amount: 31},
-{name: 'Dorian Eclissu	', amount: 3.9},
+const headersNames = fourth => [
+  'Description',
+  'Type',
+  'Cycle',
+  fourth,
+  'Amount',
 ]
 
-const rewardsTable = rewards => (
-  <Table
-    header={
-      <TableRow>
-        <TableHeader title="Description" />
-        <TableHeader title="Type" />
-        <TableHeader title="Cycle" />
-        <TableHeader title="Next payout" />
-        <TableHeader title="Amount" />
-      </TableRow>
-    }>
+const fourthColumns = [ 'Next Payout', 'Status', 'Last Payout' ]
 
-{rewards.map(reward => (
-    <TableRow>
+const RewardsTable = ({ children, fourthColumn }) => {
+  // const headers = headersNames.splice(3, 0, fourth)
+  return (
+    <Table
+      header={
+        <TableRow>
+          {headersNames(fourthColumn).map(header => (
+            <TableHeader key={header} title={header} />
+          ))}
+        </TableRow>
+      }
+    >
+      {children}
+    </Table>
+  )
+}
+
+const generatePendingRewards = rewards =>
+  rewards.map((reward, i) => (
+    <TableRow key={i}>
       <TableCell>
         <Text>{reward.description}</Text>
         <Badge>{reward.referenceToken}</Badge>
       </TableCell>
-      <TableCell>
-        {reward.isMerit ? 'Merit' : 'Dividend'}
-      </TableCell>
-      <TableCell>
-        Monthly
-      </TableCell>
-      <TableCell>
-        10/10/13
-      </TableCell>
-      <TableCell>
-         {reward.rewardAmount}
-      </TableCell>
+      <TableCell>{reward.isMerit ? 'Merit' : 'Dividend'}</TableCell>
+      <TableCell>Monthly</TableCell>
+      <TableCell>10/10/13</TableCell>
+      <TableCell>{reward.rewardAmount}</TableCell>
     </TableRow>
-))}
-  </Table>
-)
+  ))
 
+// const generateCurrentRewards = (rewards = rewards.map(reward => <TableRow />))
+
+/*
 const leadersList = leaders => (
   <LeadersLlist>
     {leaders.sort((l1, l2) => l1.amount < l2.amount ? 1 : -1).map(leader => (
@@ -73,13 +128,13 @@ const leadersList = leaders => (
     ))}
   </LeadersLlist>
 )
-
+*/
 const currentRewards = () => (
   <div>
     <Text.Block size="large" weight="bold">
       Current Rewards
     </Text.Block>
-    {rewardsTable(rw.splice(0,3))}
+    {rewardsTable(rw.splice(0, 3))}
   </div>
 )
 
@@ -88,61 +143,90 @@ const pendingRewards = () => (
     <Text.Block size="large" weight="bold">
       Pending Rewards
     </Text.Block>
-    {rewardsTable(rw.splice(1,2))}
+    {rewardsTable(rw.splice(1, 2))}
+  </div>
+)
+const pastRewards = () => (
+  <div>
+    <Text.Block size="large" weight="bold">
+      Pending Rewards
+    </Text.Block>
+    {rewardsTable(rw.splice(1, 2))}
   </div>
 )
 
 const averageAmount = amount => {
   const formatted = amount.toLocaleString().split('.')
-  return formatted[1] ?
-    <Text.Block size="xlarge" weight="bold">${formatted[0]}.<Text size="large" weight="bold">{formatted[1]}</Text></Text.Block>
-    :
-    <Text.Block size="xlarge" weight="bold">${formatted[0]}</Text.Block>
+  return formatted[1] ? (
+    <Text.Block size="xlarge" weight="bold">
+      ${formatted[0]}.
+      <Text size="large" weight="bold">
+        {formatted[1]}
+      </Text>
+    </Text.Block>
+  ) : (
+    <Text.Block size="xlarge" weight="bold">
+      ${formatted[0]}
+    </Text.Block>
+  )
 }
 
 const averageRewards = (avg, avgM, total) => (
   <AverageRewards>
     <AverageItem>
-        <FieldTitle>AVERAGE Reward</FieldTitle>
-        {averageAmount(avg)}
+      <FieldTitle>AVERAGE Reward</FieldTitle>
+      {averageAmount(avg)}
     </AverageItem>
     <AverageItem>
-        <FieldTitle>Monthly Average</FieldTitle>
-        {averageAmount(avgM)}
+      <FieldTitle>Monthly Average</FieldTitle>
+      {averageAmount(avgM)}
     </AverageItem>
     <AverageItem>
-        <FieldTitle>Total this year</FieldTitle>
-        {averageAmount(total)}
+      <FieldTitle>Total this year</FieldTitle>
+      {averageAmount(total)}
     </AverageItem>
   </AverageRewards>
 )
 
-const Overview = (props) => {
+const tableData = [
+  { title: 'Current', fourthColumn: 'Next Payout' },
+  { title: 'Pending', fourthColumn: 'Status' },
+  { title: 'Past', fourthColumn: 'Last Payout' },
+]
+
+// put condition inside: if is 3rd column -> sepccia
+
+const Overview = props => {
   const rewardsEmpty = props.rewards.length === 0
 
   return (
     <Main>
-
+      {averageRewards(145, 19989.88, 19989.87)}
       <RewardsWrap>
-        {averageRewards(145, 19989.88, 19989.87)}
-        {currentRewards()}
-        {pendingRewards()}
+        {tableData.map(({ title, fourthColumn }) => (
+          <RewardsTable
+            key={title}
+            title={title}
+            fourthColumn={fourthColumn}
+            fourthColumnContent={() => {}}
+          />
+        ))}
       </RewardsWrap>
 
-      <LeaderBoardWrap>
-        <FieldTitle style={{ borderBottom: '1px solid grey', marginBottom: '10px'}}>
+      {/* <LeaderBoardWrap>
+        <FieldTitle
+          style={{ borderBottom: '1px solid grey', marginBottom: '10px' }}
+        >
           Leaderboard
         </FieldTitle>
         {leadersList(leaders)}
-      </LeaderBoardWrap>
-
+      </LeaderBoardWrap> */}
     </Main>
   )
 
   //if (rewardsEmpty) {
   //  return <Empty tab='Overview' action={props.onNewReward} />
   //}
-  return <StyledRewards>Rewards Go Here</StyledRewards>
 }
 
 Overview.propTypes = {
