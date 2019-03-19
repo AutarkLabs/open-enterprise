@@ -76,6 +76,7 @@ class Overflow extends React.Component {
             <FilterDropDown
               caption="…"
               enabled={true}
+              overflow={true}
             >
               {overflowElements}
             </FilterDropDown>

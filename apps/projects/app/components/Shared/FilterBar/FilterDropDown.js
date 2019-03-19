@@ -120,7 +120,7 @@ const Main = styled(animated.div)`
 const Popup = styled(animated.div)`
   overflow: hidden;
   position: absolute;
-  top: ${BASE_HEIGHT - 2}px;
+  top: ${BASE_HEIGHT - 1}px;
   right: 0;
   padding: 10px 0;
   background: ${theme.contentBackground};
@@ -129,12 +129,14 @@ const Popup = styled(animated.div)`
 `
 const PopupOverflow = styled(animated.div)`
   position: absolute;
-  top: ${BASE_HEIGHT - 2}px;
+  top: ${BASE_HEIGHT - 1}px;
   right: 0;
   padding: 0;
   background: ${theme.contentBackground};
   border: 0px solid ${theme.contentBorder};
-  z-index: 4000;
+  > :not(:first-child) {
+    margin-top: -1px;
+  }
 `
 
 FilterDropDown.BASE_WIDTH = 46
