@@ -33,6 +33,9 @@ class VotePanelContent extends React.Component {
     showResults: false,
     voteOptions: [],
     remaining: 100,
+    voteWeightsToggled: true,
+    votesWeights: [],
+    voteAmounts: [],
   }
   componentDidMount() {
     this.loadUserCanVote()
@@ -151,7 +154,13 @@ class VotePanelContent extends React.Component {
         .dp(2)
         .toString()
     )
-    this.setState({ voteWeights })
+
+    const voteAmounts = result.map(e =>
+      BigNumber(e)
+        .div(BigNumber(10 ** this.state.decimals))
+        .toString()
+    )
+    this.setState({ voteAmounts, voteWeights })
   }
 
   render() {
@@ -162,8 +171,11 @@ class VotePanelContent extends React.Component {
       showResults,
       voteOptions,
       remaining,
+      voteAmounts,
       voteWeights,
+      voteWeightsToggled,
     } = this.state
+
     if (!vote) {
       return null
     }
@@ -379,15 +391,25 @@ class VotePanelContent extends React.Component {
                     )}
                     {Boolean(voteWeights.length) && (
                       <Badge.Identity
+                        onClick={() =>
+                          this.setState({
+                            voteWeightsToggled: !voteWeightsToggled,
+                          })
+                        }
                         style={{
+                          cursor: 'pointer',
                           marginLeft: '12px',
                           padding: '3px 12px',
-                          minWidth: '112px',
                           display: 'flex',
                           justifyContent: 'space-between',
                         }}
                       >
-                        YOUR VOTE: <span>{voteWeights[index]}%</span>
+                        YOUR VOTE:
+                        <span style={{ paddingLeft: '5px' }}>
+                          {voteWeightsToggled
+                            ? `${voteWeights[index]}%`
+                            : `${voteAmounts[index]}`}
+                        </span>
                       </Badge.Identity>
                     )}
                   </span>
