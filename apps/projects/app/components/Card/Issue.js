@@ -31,7 +31,7 @@ const ClickArea = styled.div`
 const DeadlineDistance = date =>
   formatDistance(new Date(date), new Date(), { addSuffix: true })
 
-const dot = <span style={{ margin: '0px 10px' }}>&middot;</span>
+const dot = <span style={{ margin: '0px 6px' }}>&middot;</span>
 
 const labelsBadges = labels =>
   labels.edges.map(label => (
@@ -84,11 +84,11 @@ const Issue = ({
       <Checkbox checked={isSelected} onChange={onSelect} />
       <IssueDesc>
         <div>
-          <Text color={theme.textPrimary} size="xlarge">
+          <Text color={theme.textPrimary} size="large">
             {title}
           </Text>
           {dot}
-          <Text color={theme.textSecondary} size="large">
+          <Text color={theme.textSecondary} size="normal">
             {repo} #{number}
           </Text>
         </div>
@@ -162,6 +162,7 @@ Issue.propTypes = {
 const StyledIssue = styled.div`
   flex: 1;
   width: 100%;
+  min-width: 600px;
   background: ${theme.contentBackground};
   display: flex;
   padding-left: 10px;
