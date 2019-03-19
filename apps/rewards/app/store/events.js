@@ -3,21 +3,23 @@ import { onFundedAccount, onNewAccount, onPayoutExecuted } from './account'
 import { onEntryAdded, onEntryRemoved } from './entry'
 import { initializeTokens, vaultLoadBalance } from './token'
 import { addressesEqual } from '../utils/web3-utils'
-import INITIALIZATION_TRIGGER from './'
+import { INITIALIZATION_TRIGGER } from './'
 export const handleEvent = async (state, event, settings) => {
   //const { addressBook, entries, accounts } = state
-  const { eventName, returnValues, address: eventAddress, } = event
+  const { event: eventName, returnValues, address: eventAddress, } = event
   const { vault } = settings
   let nextAccounts, nextEntries
   let nextState = { ...state, }
+  console.log('old state: ', state)
   console.log('nextState: ', nextState)
   console.log('trigger: ', eventName === INITIALIZATION_TRIGGER)
-  //]if (eventName === INITIALIZATION_TRIGGER) {
-  //]  nextState = await initializeTokens(nextState, settings)
-  //]}
-  if (addressesEqual(eventAddress, vault.address)) {
+  //console.log(eventName, INITIALIZATION_TRIGGER)
+  if (eventName === INITIALIZATION_TRIGGER) {
+    nextState = await initializeTokens(nextState, settings)
+  }
+  else if (addressesEqual(eventAddress, vault.address)) {
     // Vault event
-    console.log('vault event')
+    console.log('vault event: ', event)
     nextState = await vaultLoadBalance(nextState, event, settings)
   }
   else {

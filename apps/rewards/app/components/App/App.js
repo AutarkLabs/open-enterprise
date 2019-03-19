@@ -15,10 +15,21 @@ class App extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
     rewards: PropTypes.arrayOf(PropTypes.object),
+    balances: PropTypes.arrayOf(PropTypes.object),
   }
 
   onNewReward = reward => {
     console.log('Create New Reward from', reward)
+
+    this.props.app.newReward(
+      true,
+      '0xB1Aa712237895EF25fb8c6dA491Ba8662bB80256',
+      '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
+      1,
+      86400,
+      1,
+      0
+    )
     this.closePanel()
   }
 
@@ -67,6 +78,7 @@ class App extends React.Component {
   }
   render() {
     const { panel, panelProps } = this.state
+    console.log(this.props)
 
     return (
       <StyledAragonApp>
@@ -81,12 +93,12 @@ class App extends React.Component {
         { this.state.selected === 1 ? (
           <MyRewards
             rewards={this.props.rewards === undefined ? [] : this.props.rewards}
-            onNewReward={this.newReward}
+            newReward={this.newReward}
           />
         ) : (
           <Overview
             rewards={this.props.rewards === undefined ? [] : this.props.rewards}
-            onNewReward={this.newReward}
+            newReward={this.newReward}
           />
         )}
 

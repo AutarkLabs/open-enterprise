@@ -139,7 +139,8 @@ contract PlanningKit is KitBase {
         finance.initialize(vault, 1 days);
         token.approve(finance, 100 ether);
         voting.initialize(token, 50 * PCT64, 10 * PCT64, 1 days);
-        finance.deposit(token, 100 ether, "Initial token transfer");
+        finance.deposit(token, 50 ether, "Initial token transfer pt 1");
+        finance.deposit(token, 50 ether, "Initial token transfer pt 2");
     }
 
     function handleA1Permissions(

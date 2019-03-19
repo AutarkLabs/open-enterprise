@@ -1,4 +1,5 @@
 import {
+  ETHER_TOKEN_FAKE_ADDRESS,
   isTokenVerified,
   tokenDataFallback,
   getTokenSymbol,
@@ -15,10 +16,16 @@ import { app } from './'
 
 const tokenAbi = [].concat(tokenSymbolAbi, tokenNameAbi, tokenBalanceAbi, tokenDecimalsAbi)
 
+const ETH_CONTRACT = Symbol('ETH_CONTRACT')
+
 export async function initializeTokens(state, settings) {
   const nextState = {
     ...state,
     vaultAddress: settings.vault.address,
+    tokenContracts: new Map(), // Addr -> External contract
+    tokenDecimals: new Map(), // External contract -> decimals
+    tokenNames: new Map(), // External contract -> name
+    tokenSymbols: new Map(), // External contract -> symbol
   }
   console.log('initialize ', nextState)
   const withEthBalance = await loadEthBalance(nextState, settings)
@@ -26,7 +33,9 @@ export async function initializeTokens(state, settings) {
   return withEthBalance
 }
 
-export async function vaultLoadBalance(state, { returnValues: { token } }, settings) {
+export async function vaultLoadBalance(state, { returnValues }, settings) {
+  const { token } = returnValues
+  console.log('loadbalanceevent: ', token)
   const r = await updateBalances(
     state,
     token || settings.ethToken.address,
@@ -52,7 +61,10 @@ async function loadEthBalance(state, settings) {
     tokenNames,
     tokenSymbols
   } = await updateBalances(state, settings.ethToken.address, settings)
-  console.log()
+  const [ethBalance] = newBalances
+  ethBalance.symbol = 'ETH'
+  ethBalance.name = 'Ether'
+  ethBalance.decimals = '18'
   return {
     ...state,
     balances: newBalances,
@@ -72,7 +84,7 @@ async function updateBalances(
   const tokenContract = tokenContracts.has(tokenAddress)
     ? tokenContracts.get(tokenAddress)
     : app.external(tokenAddress, tokenAbi)
-  tokenContracts.set(tokenAddress, tokenContract)
+  //tokenContracts.set(tokenAddress, tokenContract)
 
   const balancesIndex = balances.findIndex(({ address }) =>
     addressesEqual(address, tokenAddress)
@@ -100,7 +112,7 @@ async function updateBalances(
     const newBalances = Array.from(balances)
     newBalances[balancesIndex] = {
       ...balances[balancesIndex],
-      amount: await loadTokenBalance(tokenAddress, settings, token),
+      amount: await loadTokenBalance(tokenAddress, settings),
     }
     console.log('tokenContracts: ', tokenContracts)
     return { newBalances, tokenContracts, tokenDecimals, tokenSymbols, tokenNames, }
@@ -122,9 +134,9 @@ async function newBalanceEntry(
     loadTokenName(tokenContract, tokenAddress, settings, tokenNames),
     loadTokenSymbol(tokenContract, tokenAddress, settings, tokenSymbols),
   ])
-  tokenDecimals.set(tokenContract, decimals)
-  tokenNames.set(tokenContract, name)
-  tokenSymbols.set(tokenContract, symbol)
+  //tokenDecimals.set(tokenContract, decimals)
+  //tokenNames.set(tokenContract, name)
+  //tokenSymbols.set(tokenContract, symbol)
   console.log('tokenDecimals after', tokenDecimals)
 
   return {

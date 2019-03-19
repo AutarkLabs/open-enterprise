@@ -15,7 +15,7 @@ const Overview = (props) => {
 }
 
 Overview.propTypes = {
-  onNewReward: PropTypes.func.isRequired,
+  newReward: PropTypes.func.isRequired,
   rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
 }
 
