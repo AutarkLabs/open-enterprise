@@ -14,6 +14,7 @@ import App from './components/App/App'
 class ConnectedApp extends React.Component {
   state = {
     app: new Aragon(new providers.WindowMessage(window.parent)),
+    network: {},
     observable: null,
     userAccount: '',
     // ...allocationsMockData
@@ -37,9 +38,10 @@ class ConnectedApp extends React.Component {
         observable: app.state(),
       })
       app.accounts().subscribe(accounts => {
-        this.setState({
-          userAccount: accounts[0],
-        })
+        this.setState({ userAccount: accounts[0] })
+      })
+      app.network().subscribe(network => {
+        this.setState({ network })
       })
     }
   }
