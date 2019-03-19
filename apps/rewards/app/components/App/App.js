@@ -11,20 +11,45 @@ import BigNumber from 'bignumber.js'
 
 const ASSETS_URL = 'aragon-ui-assets/'
 
-const reward = {
+const mockRewards = [{
   creator: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
   isMerit: true,
   referenceToken: 'SDN',
   rewardToken: 0x0,
   amount: BigNumber(17e18),
-  amount: 10,
   startDate: new Date('2018-12-17'),
   endDate: new Date('2019-01-17'),
   description: 'Q1 Reward for Space Decentral Contributors',
   delay: 0,
   index: 0,
   claimed: true,
-}
+},
+{
+  creator: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
+  isMerit: true,
+  referenceToken: 'SDN',
+  rewardToken: 0x0,
+  amount: BigNumber(18e18),
+  startDate: new Date('2018-12-10'),
+  endDate: new Date('2019-01-19'),
+  description: 'Q2 Reward for Space Decentral Contributors',
+  delay: 0,
+  index: 0,
+  claimed: true,
+},
+{
+  creator: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
+  isMerit: false,
+  referenceToken: 'SDN',
+  rewardToken: 0x0,
+  amount: BigNumber(19e18),
+  startDate: new Date('2018-12-19'),
+  endDate: new Date('2019-01-20'),
+  description: 'Q3 Reward for Space Decentral Contributors',
+  delay: 0,
+  index: 0,
+  claimed: true,
+}]
 
 class App extends React.Component {
   static propTypes = {
@@ -65,18 +90,19 @@ class App extends React.Component {
     this.closePanel()
   }
 
-  yourReward = () => {
+  myReward = reward => {
     this.setState({
-      panel: PANELS.YourReward,
+      panel: PANELS.MyReward,
       panelProps: {
         onClaimReward: this.onClaimReward,
         onClosePanel: this.closePanel,
+        vaultBalance: '432.9 ETH',
         reward,
       },
     })
   }
 
-  viewReward = (reward) => {
+  viewReward = reward => {
     this.setState({
       panel: PANELS.ViewReward,
       panelProps: {
@@ -85,7 +111,14 @@ class App extends React.Component {
     })
   }
   
-  onOpenDetails = reward => console.log('App open details', reward)
+  openDetailsView = reward => {
+    console.log('App open details', reward)
+    this.viewReward(reward)
+  }
+  openDetailsMy = reward => {
+    console.log('App open details (my)', reward)
+    this.myReward(reward)
+  }
 
   render() {
     const { panel, panelProps } = this.state
@@ -102,14 +135,15 @@ class App extends React.Component {
 
         { this.state.selected === 1 ? (
           <MyRewards
-            rewards={this.props.rewards === undefined ? [] : this.props.rewards}
+            rewards={this.props.rewards === undefined ? mockRewards : this.props.rewards}
             onNewReward={this.onNewReward}
+            openDetails={this.openDetailsMy}
           />
         ) : (
           <Overview
-            rewards={this.props.rewards === undefined ? [] : this.props.rewards}
-            onNewReward={this.onNewReward}
-            onOpenDetails={this.onOpenDetails}
+            rewards={this.props.rewards === undefined ? mockRewards : this.props.rewards}
+            newReward={this.newReward}
+            openDetails={this.openDetailsView}
           />
         )}
 
