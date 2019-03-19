@@ -65,6 +65,9 @@ class App extends React.Component {
       }
     })
   }
+  
+  onOpenDetails = reward => console.log('App open details', reward)
+
   render() {
     const { panel, panelProps } = this.state
 
@@ -87,6 +90,7 @@ class App extends React.Component {
           <Overview
             rewards={this.props.rewards === undefined ? [] : this.props.rewards}
             onNewReward={this.onNewReward}
+            onOpenDetails={this.onOpenDetails}
           />
         )}
 
