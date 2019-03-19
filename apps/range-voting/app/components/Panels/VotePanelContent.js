@@ -66,7 +66,13 @@ class VotePanelContent extends React.Component {
 
     //re-proportion the supports values so they don't exceed the total balance
     const valueTotal = optionsArray.reduce((a, b) => a + b, 0)
-    valueTotal > parseInt(this.state.userBalance) ? optionsArray = optionsArray.map(tokenSupport => ( tokenSupport / valueTotal ) * (parseInt(this.state.userBalance) * 0.9999) ) : 0
+    valueTotal > parseInt(this.state.userBalance)
+      ? (optionsArray = optionsArray.map(
+        tokenSupport =>
+          (tokenSupport / valueTotal) *
+            (parseInt(this.state.userBalance) * 0.9999)
+      ))
+      : 0
     // TODO: Let these comments here for a while to be sure we are working with correct values:
     console.log('Sum of values:', valueTotal)
     console.log('userBalance', this.state.userBalance)
@@ -89,7 +95,7 @@ class VotePanelContent extends React.Component {
         .subscribe(([ balance, decimals ]) => {
           this.setState({
             userBalance: balance,
-            decimals: decimals
+            decimals: decimals,
           })
         })
     }
@@ -197,8 +203,10 @@ class VotePanelContent extends React.Component {
       .dp(3)
       .toString()
     // TODO: Show decimals for vote participation only when needed
-    const displayParticipationPct = (participationPct).toFixed(2)
-    const displayMinParticipationPct = (minParticipationPct / 10 ** 16).toFixed(2)
+    const displayParticipationPct = participationPct.toFixed(2)
+    const displayMinParticipationPct = (minParticipationPct / 10 ** 16).toFixed(
+      2
+    )
     // TODO: This block is wrong and has no sense
     if (!voteOptions.length) {
       this.state.voteOptions = options
@@ -260,9 +268,7 @@ class VotePanelContent extends React.Component {
               <h2>
                 <Label>Amount</Label>
               </h2>
-              <p>
-                {' ' + displayBalance + ' ETH'}
-              </p>
+              <p>{' ' + displayBalance + ' ETH'}</p>
             </div>
             <div>
               <h2>
@@ -289,7 +295,7 @@ class VotePanelContent extends React.Component {
               <Label>Your voting tokens</Label>
             </h2>
             {BigNumber(this.state.userBalance)
-              .div(BigNumber(10 ** (this.state.decimals)))
+              .div(BigNumber(10 ** this.state.decimals))
               .dp(3)
               .toString()}
           </div>
