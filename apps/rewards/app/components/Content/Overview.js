@@ -24,6 +24,7 @@ const rw = [
     delay: 200,
     rewardAmount: 2.1,
     description: 'Coral',
+    date: '10/11/12',
   },
   {
     isMerit: true,
@@ -34,6 +35,7 @@ const rw = [
     delay: 400,
     rewardAmount: 0.1,
     description: 'MJ',
+    date: '09/11/12',
   },
   {
     isMerit: false,
@@ -44,6 +46,7 @@ const rw = [
     delay: 0,
     rewardAmount: 44,
     description: 'desc',
+    date: '10/13/12',
   },
   {
     isMerit: true,
@@ -54,6 +57,7 @@ const rw = [
     delay: 0,
     rewardAmount: 1,
     description: 'Coral',
+    date: '32/11/01',
   },
   {
     isMerit: true,
@@ -64,9 +68,10 @@ const rw = [
     delay: 200,
     rewardAmount: 200,
     description: 'Coral',
+    date: '10/11/12',
   },
   {
-    isMerit: true,
+    isMerit: false,
     referenceToken: 'REF',
     rewardToken: 'ETH',
     amount: 310,
@@ -74,6 +79,7 @@ const rw = [
     delay: 2000,
     rewardAmount: 3.98,
     description: 'SD',
+    date: '10/11/12',
   },
 ]
 
@@ -87,10 +93,35 @@ const headersNames = fourth => [
 
 const fourthColumns = [ 'Next Payout', 'Status', 'Last Payout' ]
 
-const RewardsTable = ({ children, fourthColumn }) => {
+const ClickArea = styled.div`
+  height: 100%;
+  left: 0;
+  position: absolute;
+  width: 100%;
+  z-index: 0;
+background: yellow;
+  :active {
+    border: 1px solid ${theme.accent};
+    z-index: 3;
+  }
+  :hover {
+    cursor: pointer;
+  }
+`
+//const generateOpenDetails = (reward, openDetails) => () => {
+//console.log('calling openDetails on', reward)
+//openDetails(reward)
+//}
+
+const RewardsTable = ({ title, data, fourthColumn, fourthColumnData, openDetails }) => {
   // const headers = headersNames.splice(3, 0, fourth)
   return (
+    <div>
+    <Text.Block size="large" weight="bold">
+      {title} Rewards
+    </Text.Block>
     <Table
+      style={{ width: '100%' }}
       header={
         <TableRow>
           {headersNames(fourthColumn).map(header => (
@@ -99,26 +130,28 @@ const RewardsTable = ({ children, fourthColumn }) => {
         </TableRow>
       }
     >
-      {children}
+    {data.map((reward, i) => (
+<div>
+<ClickArea onClick={generateOpenDetails(reward, openDetails)} />
+      <TableRow key={i}>
+        <TableCell>
+          <Text>{reward.description}</Text>
+        </TableCell>
+        <TableCell>
+          {reward.isMerit ? 'Merit' : 'Dividend'}
+        </TableCell>
+        <TableCell>Monthly</TableCell>
+        <TableCell>
+          {fourthColumnData(reward)}
+        </TableCell>
+        <TableCell>{reward.rewardAmount}</TableCell>
+      </TableRow>
+</div>
+    ))}
     </Table>
+    </div>
   )
 }
-
-const generatePendingRewards = rewards =>
-  rewards.map((reward, i) => (
-    <TableRow key={i}>
-      <TableCell>
-        <Text>{reward.description}</Text>
-        <Badge>{reward.referenceToken}</Badge>
-      </TableCell>
-      <TableCell>{reward.isMerit ? 'Merit' : 'Dividend'}</TableCell>
-      <TableCell>Monthly</TableCell>
-      <TableCell>10/10/13</TableCell>
-      <TableCell>{reward.rewardAmount}</TableCell>
-    </TableRow>
-  ))
-
-// const generateCurrentRewards = (rewards = rewards.map(reward => <TableRow />))
 
 /*
 const leadersList = leaders => (
@@ -129,31 +162,6 @@ const leadersList = leaders => (
   </LeadersLlist>
 )
 */
-const currentRewards = () => (
-  <div>
-    <Text.Block size="large" weight="bold">
-      Current Rewards
-    </Text.Block>
-    {rewardsTable(rw.splice(0, 3))}
-  </div>
-)
-
-const pendingRewards = () => (
-  <div>
-    <Text.Block size="large" weight="bold">
-      Pending Rewards
-    </Text.Block>
-    {rewardsTable(rw.splice(1, 2))}
-  </div>
-)
-const pastRewards = () => (
-  <div>
-    <Text.Block size="large" weight="bold">
-      Pending Rewards
-    </Text.Block>
-    {rewardsTable(rw.splice(1, 2))}
-  </div>
-)
 
 const averageAmount = amount => {
   const formatted = amount.toLocaleString().split('.')
@@ -188,32 +196,44 @@ const averageRewards = (avg, avgM, total) => (
   </AverageRewards>
 )
 
-const tableData = [
-  { title: 'Current', fourthColumn: 'Next Payout' },
-  { title: 'Pending', fourthColumn: 'Status' },
-  { title: 'Past', fourthColumn: 'Last Payout' },
+// TODO: apply logic
+const displayNextPayout = reward => '-' + reward.date + '-'
+const displayStatus = reward => 'Pending'
+const displayLastPayout = reward => '-' + reward.date + '-'
+
+const tableType = [
+  { title: 'Current', fourthColumn: 'Next Payout', data: rw.splice(2, 1), fourthColumnData: displayNextPayout },
+  { title: 'Pending', fourthColumn: 'Status', data: rw.splice(1, 2), fourthColumnData: displayStatus },
+  { title: 'Past', fourthColumn: 'Last Payout', data: rw.splice(0, 3), fourthColumnData: displayLastPayout },
 ]
 
 // put condition inside: if is 3rd column -> sepccia
 
-const Overview = props => {
-  const rewardsEmpty = props.rewards.length === 0
-
+const Overview = ({ rewards, openDetails }) => {
+  const rewardsEmpty = rewards.length === 0
+/*
+    if (rewardsEmpty) {
+      return <Empty tab='Overview' action={props.onNewReward} />
+    }
+*/
   return (
     <Main>
       {averageRewards(145, 19989.88, 19989.87)}
+
       <RewardsWrap>
-        {tableData.map(({ title, fourthColumn }) => (
+        {tableType.map(({ title, fourthColumn, data, fourthColumnData }) => (
           <RewardsTable
             key={title}
             title={title}
             fourthColumn={fourthColumn}
-            fourthColumnContent={() => {}}
+            fourthColumnData={fourthColumnData}
+            data={data}
+            openDetails={openDetails}
           />
         ))}
       </RewardsWrap>
 
-      {/* <LeaderBoardWrap>
+      {/*<LeaderBoardWrap>
         <FieldTitle
           style={{ borderBottom: '1px solid grey', marginBottom: '10px' }}
         >
@@ -224,9 +244,6 @@ const Overview = props => {
     </Main>
   )
 
-  //if (rewardsEmpty) {
-  //  return <Empty tab='Overview' action={props.onNewReward} />
-  //}
 }
 
 Overview.propTypes = {
@@ -244,18 +261,11 @@ const AverageRewards = styled.div`
   display: flex;
   justify-content: space-around;
   border: 1px solid grey;
+  background-color: white;
 `
 const Main = styled.div`
-  /*background: #FFF38E;*/
   padding: 10px;
-  display: flex;
-  ${breakpoint(
-    'medium',
-    `
-    flex-wrap: nowrap;
-    `
-  )};
-  flex-wrap: wrap;
+  background-color: #F8FCFD;
 `
 const RewardsWrap = styled.div`
   flex-grow: 1;
