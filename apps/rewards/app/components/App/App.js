@@ -19,7 +19,6 @@ class App extends React.Component {
   }
 
   onNewReward = reward => {
-    console.log('Create New Reward from', reward)
 
     this.props.app.newReward(
       reward.rewardType ? false : true, //bool _isMerit,
@@ -47,7 +46,6 @@ class App extends React.Component {
   }
 
   newReward = () => {
-    console.log('new reward props:', this.props)
     this.setState({
       panel: PANELS.NewReward,
       panelProps: {
@@ -80,7 +78,6 @@ class App extends React.Component {
   }
   render() {
     const { panel, panelProps } = this.state
-    console.log('props: ', this.props)
 
     return (
       <StyledAragonApp>

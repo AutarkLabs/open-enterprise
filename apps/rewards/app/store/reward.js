@@ -1,10 +1,8 @@
 import { app } from './'
 
 export async function onRewardAdded({ rewards = [] }, { rewardId }) {
-  console.log('rewardId ', rewardId)
   if (!rewards[rewardId]) {
     rewards[rewardId] = await getRewardById(rewardId)
-    console.log('rewards: ', rewards)
   }
 
   return { rewards }

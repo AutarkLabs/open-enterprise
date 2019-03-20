@@ -166,20 +166,18 @@ contract('Rewards App', accounts => {
     it('receives rewards dividends', async () => {
       await app.claimReward(dividendRewardIds[0])
       const balance = await rewardToken.balanceOf(root)
-      console.log(balance)
       assert(balance == 1e18, 'reward should be 1e18 or 1eth equivalant')
     })
 
     it('receives rewards merit', async () => {
       await app.claimReward(meritRewardIds[0])
       const balance = await rewardToken.balanceOf(root)
-      console.log(balance)
       assert(balance == 2e18, 'reward should be 2e18 or 2eth equivalant; 1 for each reward')
     })
 
   })
 
-  context('Check require statements', () => {
+  context('Check require statements and edge cases', () => {
 
     it('fails to create reward without permission', () => {
       assertRevert(async () => {
@@ -252,24 +250,25 @@ contract('Rewards App', accounts => {
       })
     })
 
-    it('fails to payout a merit reward with no token changes', async() => {
+    it('pays out a merit reward of zero with no token changes', async() => {
       const meritRewardId = rewardAdded(
         await app.newReward(
           true,
           referenceToken.address,
           rewardToken.address,
           4e18,
-          5,
+          1,
           1,
           0
         )
       )
-      assertRevert(async () => {
-        await app.claimReward(meritRewardId)
-      })
+      await mineBlock()
+      const award = await app.getReward(meritRewardId)
+      await app.claimReward(meritRewardId)
+      assert.strictEqual(award[6].toNumber(), 0, 'amount should be 0')
     })
 
-    it('fails to payout a merit reward with no token changes for the user', async() => {
+    it('pays out a merit reward of zero no token changes for the user', async() => {
       const meritRewardId = rewardAdded(
         await app.newReward(
           true,
@@ -281,12 +280,16 @@ contract('Rewards App', accounts => {
           0
         )
       )
+      const origBalance = await rewardToken.balanceOf(root)
       await referenceToken.generateTokens(contributor1, 1e18)
       await referenceToken.generateTokens(contributor2, 1e18)
 
-      assertRevert(async () => {
-        await app.claimReward(meritRewardId)
-      })
+      //assertRevert(async () => {
+      await app.claimReward(meritRewardId)
+      const newBalance = await rewardToken.balanceOf(root)
+      assert.strictEqual(newBalance.toNumber(), origBalance.toNumber(), 'balance awarded should be zero')
+
+      //})
     })
   })
 

@@ -27,15 +27,12 @@ export async function initializeTokens(state, settings) {
     tokenNames: new Map(), // External contract -> name
     tokenSymbols: new Map(), // External contract -> symbol
   }
-  console.log('initialize ', nextState)
   const withEthBalance = await loadEthBalance(nextState, settings)
-  console.log('withEthBalance: ',withEthBalance)
   return withEthBalance
 }
 
 export async function vaultLoadBalance(state, { returnValues }, settings) {
   const { token } = returnValues
-  console.log('loadbalanceevent: ', token)
   const r = await updateBalances(
     state,
     token || settings.ethToken.address,
@@ -89,8 +86,6 @@ async function updateBalances(
   const balancesIndex = balances.findIndex(({ address }) =>
     addressesEqual(address, tokenAddress)
   )
-  console.log('index: ', balancesIndex)
-  console.log(tokenDecimals)
   if (balancesIndex === -1) {
     const r = await newBalanceEntry(
       tokenContract,
@@ -100,7 +95,6 @@ async function updateBalances(
       tokenDecimals,
       tokenNames,
     )
-    console.log(tokenDecimals)
     return {
       newBalances: balances.concat(r.newBalance),
       tokenContracts,
@@ -114,7 +108,6 @@ async function updateBalances(
       ...balances[balancesIndex],
       amount: await loadTokenBalance(tokenAddress, settings),
     }
-    console.log('tokenContracts: ', tokenContracts)
     return { newBalances, tokenContracts, tokenDecimals, tokenSymbols, tokenNames, }
   }
 }
@@ -127,7 +120,6 @@ async function newBalanceEntry(
   tokenDecimals,
   tokenNames,
 ) {
-  console.log('tokenDecimals before', tokenDecimals)
   const [ balance, decimals, name, symbol ] = await Promise.all([
     loadTokenBalance(tokenAddress, settings),
     loadTokenDecimals(tokenContract, tokenAddress, settings, tokenDecimals),
@@ -137,7 +129,6 @@ async function newBalanceEntry(
   //tokenDecimals.set(tokenContract, decimals)
   //tokenNames.set(tokenContract, name)
   //tokenSymbols.set(tokenContract, symbol)
-  console.log('tokenDecimals after', tokenDecimals)
 
   return {
     newBalance: {
@@ -157,7 +148,6 @@ async function newBalanceEntry(
 }
 
 function loadTokenBalance(tokenAddress, { vault }) {
-  console.log('token balance')
   return vault.contract.balance(tokenAddress).toPromise()
 }
 

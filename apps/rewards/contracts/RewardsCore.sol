@@ -48,6 +48,9 @@ contract RewardsCore is IsContract, AragonApp {
         } else {
             rewardAmount = calculateDividendReward(reward);
         }
+        if (rewardAmount == 0) {
+            return 0;
+        }
         require(vault.balance(reward.rewardToken) > rewardAmount, "Vault does not have enough funds to cover this reward");
         vault.transfer(reward.rewardToken, msg.sender, rewardAmount);
     }
@@ -69,12 +72,12 @@ contract RewardsCore is IsContract, AragonApp {
         amount = reward.amount;
         endBlock = reward.blockStart + reward.duration;
         delay = reward.delay;
-        //if (reward.isMerit) {
-        //    rewardAmount = calculateMeritReward(reward);
-        //} else {
-        //    rewardAmount = calculateDividendReward(reward);
-        //}
-        rewardAmount = 50;
+        if (reward.isMerit) {
+            rewardAmount = calculateMeritReward(reward);
+        } else {
+            rewardAmount = calculateDividendReward(reward);
+        }
+        //rewardAmount = 50;
     }
 
     function newReward(
@@ -87,8 +90,10 @@ contract RewardsCore is IsContract, AragonApp {
         uint _delay
     ) public auth(ADD_REWARD_ROLE) returns (uint rewardId)
     {
-        //require(isContract(_referenceToken), "_referenceToken must be a contract");
-        //require(isContract(_rewardToken), "_referenceToken must be a contract");
+        require(isContract(_referenceToken), "_referenceToken must be a contract");
+        if (_rewardToken != address(0)) {
+            require(isContract(_rewardToken), "_referenceToken must be a contract");
+        }
         require(!_isMerit || _occurances == 1, "merit rewards must only occur once");
         require(_occurances < 42, "Maximum number of occurances is 41");
         rewardId = rewards.length++;
@@ -120,11 +125,16 @@ contract RewardsCore is IsContract, AragonApp {
         uint balance;
         uint initialSupply = reward.referenceToken.totalSupplyAt(reward.blockStart);
         uint endingSupply = reward.referenceToken.totalSupplyAt(reward.blockStart + reward.duration);
+        supply = endingSupply - initialSupply;
+        if (supply == 0) {
+            return 0;
+        }
+
         uint initialBalance = reward.referenceToken.balanceOfAt(msg.sender, reward.blockStart);
         uint endingBalance = reward.referenceToken.balanceOfAt(msg.sender, reward.blockStart + reward.duration);
-        // require(initialSupply < endingSupply, "The supply must have increased over the period");
-        // require(initialBalance < endingBalance, "The user must have earned tokens over the period");
-        supply = endingSupply - initialSupply;
+        //require(initialSupply < endingSupply, "The supply must have increased over the period");
+        //require(initialBalance < endingBalance, "The user must have earned tokens over the period");
+
         balance = endingBalance - initialBalance;
         rewardAmount = reward.amount * balance / supply;
     }

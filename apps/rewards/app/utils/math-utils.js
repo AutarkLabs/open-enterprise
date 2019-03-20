@@ -22,7 +22,7 @@ export function round(num, places = 2) {
  * @returns {Array<string>} array with the [<whole>, <decimal>] parts of the number
  */
 function splitDecimalNumber(num) {
-  const [whole = '', dec = ''] = num.split('.')
+  const [ whole = '', dec = '' ] = num.split('.')
   return [
     whole.replace(/^0*/, ''), // trim leading zeroes
     dec.replace(/0*$/, ''), // trim trailing zeroes
@@ -39,7 +39,7 @@ function splitDecimalNumber(num) {
  * @returns {string} formatted number
  */
 export function fromDecimals(num, decimals, { truncate = true } = {}) {
-  const [whole, dec] = splitDecimalNumber(num)
+  const [ whole, dec ] = splitDecimalNumber(num)
   if (!whole && !dec) {
     return '0'
   }
@@ -73,7 +73,7 @@ export function fromDecimals(num, decimals, { truncate = true } = {}) {
  * @returns {string} formatted number
  */
 export function toDecimals(num, decimals, { truncate = true } = {}) {
-  const [whole, dec] = splitDecimalNumber(num)
+  const [ whole, dec ] = splitDecimalNumber(num)
   if (!whole && !dec) {
     return '0'
   }
