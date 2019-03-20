@@ -102,3 +102,9 @@ export function random(min = 0, max = 1) {
 export function safeDiv(num, denom) {
   return denom ? num / denom : 0
 }
+
+//converts epoch time into Block Duration
+const MILLISECONDS_IN_A_SECOND = 1000
+export function secondsToBlocks(start, end, blockDuration = 15) {
+  return Math.round((end - start) / MILLISECONDS_IN_A_SECOND/ blockDuration)
+}

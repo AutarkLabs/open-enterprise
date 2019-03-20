@@ -21,11 +21,11 @@ class App extends React.Component {
   onNewReward = reward => {
 
     this.props.app.newReward(
-      reward.rewardType ? false : true, //bool _isMerit,
+      reward.isMerit, //bool _isMerit,
       reward.referenceAsset, //address _referenceToken,
       reward.currency, //address _rewardToken,
       reward.amount, //uint _amount,
-      reward.duration, //uint _duration,
+      reward.duration, //uint _duration, (number of blocks until reward will be available)
       1, //uint _occurances,
       0 //uint _delay
     )

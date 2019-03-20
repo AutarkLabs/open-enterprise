@@ -8,6 +8,7 @@ import { Form, FormField } from '../../Form'
 import { DateInput, InputDropDown } from '../../../../../../shared/ui'
 import { format } from 'date-fns'
 import BigNumber from 'bignumber.js'
+import { secondsToBlocks } from '../../../../../../shared/ui/utils'
 
 const rewardTypes = [ 'Merit Reward', 'Dividend' ]
 const referenceAssets = [ 'ABC', 'XYZ' ]
@@ -39,14 +40,14 @@ class NewReward extends React.Component {
     this.setState({ [name]: value })
 
   onSubmit = () => {
+    console.log(secondsToBlocks)
     const dataToSend = { ...this.state }
-    const BLOCK_DURATION = 15
-    const millisecondsInASecond = 1000
     dataToSend.currency = this.props.balances[this.state.amountCurrency].address
     dataToSend.disbursementCycle = disbursementCycles[this.state.disbursementCycle]
     dataToSend.disbursementDate = disbursementDates[this.state.disbursementDate]
+    dataToSend.isMerit = !dataToSend.rewardType ? true : false
     dataToSend.referenceAsset = this.props.balances[this.state.referenceAsset+1].address // account for no ETH in reference asset dropdown
-    dataToSend.duration = Math.round((this.state.dateEnd.valueOf() - this.state.dateStart.valueOf()) / millisecondsInASecond / BLOCK_DURATION)
+    dataToSend.duration = secondsToBlocks(this.state.dateStart, this.state.dateEnd)
     console.log('Submitting new reward: ', dataToSend)
     this.props.onNewReward(dataToSend)
   }
