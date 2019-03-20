@@ -2,6 +2,7 @@ import { filterEntries } from '../../../address-book/app/script'
 import { onFundedAccount, onNewAccount, onPayoutExecuted } from './account'
 import { onEntryAdded, onEntryRemoved } from './entry'
 import { initializeTokens, vaultLoadBalance } from './token'
+import { onRewardAdded } from './reward'
 import { addressesEqual } from '../utils/web3-utils'
 import { INITIALIZATION_TRIGGER } from './'
 export const handleEvent = async (state, event, settings) => {
@@ -24,6 +25,10 @@ export const handleEvent = async (state, event, settings) => {
   }
   else {
     switch (eventName) {
+    case 'RewardAdded':
+      nextState = await onRewardAdded(nextState, returnValues)
+      console.log('rewardAdded caught', nextState)
+      break
     //case 'FundAccount':
     //  nextAccounts = await onFundedAccount(accounts, returnValues)
     //  break
@@ -49,6 +54,6 @@ export const handleEvent = async (state, event, settings) => {
   //onst filteredState = {
   // accounts: nextAccounts || accounts,
   // entries: (nextEntries && filterEntries(nextEntries)) || entries,
-  //
+  nextState = { ...state, ...nextState }
   return nextState
 }

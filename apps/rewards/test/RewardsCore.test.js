@@ -128,7 +128,7 @@ contract('Rewards App', accounts => {
       )
       await mineBlock()
       assert(dividendRewardIds[0] == 0, 'first reward should be id 0')
-      assert(dividendRewardIds[1] == 1, 'second reward should be id 0')
+      assert(dividendRewardIds[1] == 1, 'second reward should be id 1')
     })
 
     it('creates a merit reward', async () => {

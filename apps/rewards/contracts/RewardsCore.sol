@@ -69,11 +69,12 @@ contract RewardsCore is IsContract, AragonApp {
         amount = reward.amount;
         endBlock = reward.blockStart + reward.duration;
         delay = reward.delay;
-        if (reward.isMerit) {
-            rewardAmount = calculateMeritReward(reward);
-        } else {
-            rewardAmount = calculateDividendReward(reward);
-        }
+        //if (reward.isMerit) {
+        //    rewardAmount = calculateMeritReward(reward);
+        //} else {
+        //    rewardAmount = calculateDividendReward(reward);
+        //}
+        rewardAmount = 50;
     }
 
     function newReward(
