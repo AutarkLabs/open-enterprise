@@ -195,31 +195,6 @@ contract Projects is IsContract, AragonApp {
         );
     }
 
-    function curateIssues(
-        address[] /*unused_Addresses*/,
-        uint256[] issuePriorities,
-        uint256[] issueDescriptionIndices,
-        string /* unused_issueDescriptions*/,
-        string description,
-        uint256[] issueRepos,
-        uint256[] issueNumbers,
-        uint256 /* unused_curationId */
-    ) public isInitialized auth(CURATE_ISSUES_ROLE)
-    {
-        bytes32 repoId;
-        uint256 issueLength = issuePriorities.length;
-        //require(issuePriorities.length == unusedAddresses.length, "length mismatch: issuePriorites and unusedAddresses");
-        require(issueLength == issueDescriptionIndices.length, "length mismatch: issuePriorites and issueDescriptionIdx");
-        require(issueLength == issueRepos.length, "length mismatch: issuePriorites and issueRepos");
-        require(issueLength == issueNumbers.length, "length mismatch: issuePriorites and issueNumbers");
-
-        for (uint256 i = 0; i < issueLength; i++) {
-            repoId = bytes32(issueRepos[i]);
-            repos[repoId].issues[uint256(issueNumbers[i])].priority = issuePriorities[i];
-            emit IssueCurated(repoId);
-        }
-    }
-
 ///////////////////////
 // Set state functions
 ///////////////////////
@@ -510,6 +485,31 @@ contract Projects is IsContract, AragonApp {
                 standardBountyId,
                 _bountySizes[i]
             );
+        }
+    }
+
+    function curateIssues(
+        address[] /*unused_Addresses*/,
+        uint256[] issuePriorities,
+        uint256[] issueDescriptionIndices,
+        string /* unused_issueDescriptions*/,
+        string description,
+        uint256[] issueRepos,
+        uint256[] issueNumbers,
+        uint256 /* unused_curationId */
+    ) public isInitialized auth(CURATE_ISSUES_ROLE)
+    {
+        bytes32 repoId;
+        uint256 issueLength = issuePriorities.length;
+        //require(issuePriorities.length == unusedAddresses.length, "length mismatch: issuePriorites and unusedAddresses");
+        require(issueLength == issueDescriptionIndices.length, "length mismatch: issuePriorites and issueDescriptionIdx");
+        require(issueLength == issueRepos.length, "length mismatch: issuePriorites and issueRepos");
+        require(issueLength == issueNumbers.length, "length mismatch: issuePriorites and issueNumbers");
+
+        for (uint256 i = 0; i < issueLength; i++) {
+            repoId = bytes32(issueRepos[i]);
+            repos[repoId].issues[uint256(issueNumbers[i])].priority = issuePriorities[i];
+            emit IssueCurated(repoId);
         }
     }
 
