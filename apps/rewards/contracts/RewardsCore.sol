@@ -122,8 +122,8 @@ contract RewardsCore is IsContract, AragonApp {
         uint endingSupply = reward.referenceToken.totalSupplyAt(reward.blockStart + reward.duration);
         uint initialBalance = reward.referenceToken.balanceOfAt(msg.sender, reward.blockStart);
         uint endingBalance = reward.referenceToken.balanceOfAt(msg.sender, reward.blockStart + reward.duration);
-        require(initialSupply < endingSupply, "The supply must have increased over the period");
-        require(initialBalance < endingBalance, "The user must have earned tokens over the period");
+        // require(initialSupply < endingSupply, "The supply must have increased over the period");
+        // require(initialBalance < endingBalance, "The user must have earned tokens over the period");
         supply = endingSupply - initialSupply;
         balance = endingBalance - initialBalance;
         rewardAmount = reward.amount * balance / supply;

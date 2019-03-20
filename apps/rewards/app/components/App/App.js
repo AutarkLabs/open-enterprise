@@ -22,13 +22,13 @@ class App extends React.Component {
     console.log('Create New Reward from', reward)
 
     this.props.app.newReward(
-      true,
-      '0xB1Aa712237895EF25fb8c6dA491Ba8662bB80256',
-      '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
-      1,
-      86400,
-      1,
-      0
+      reward.rewardType ? false : true, //bool _isMerit,
+      reward.referenceAsset, //address _referenceToken,
+      reward.currency, //address _rewardToken,
+      reward.amount, //uint _amount,
+      reward.duration, //uint _duration,
+      1, //uint _occurances,
+      0 //uint _delay
     )
     this.closePanel()
   }
@@ -47,11 +47,13 @@ class App extends React.Component {
   }
 
   newReward = () => {
+    console.log('new reward props:', this.props)
     this.setState({
       panel: PANELS.NewReward,
       panelProps: {
         onNewReward: this.onNewReward,
         vaultBalance: '432.9 ETH',
+        balances: this.props.balances,
       },
     })
   }
@@ -78,7 +80,7 @@ class App extends React.Component {
   }
   render() {
     const { panel, panelProps } = this.state
-    console.log(this.props)
+    console.log('props: ', this.props)
 
     return (
       <StyledAragonApp>
