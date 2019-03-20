@@ -1,7 +1,7 @@
 import Aragon from '@aragon/client'
 import { combineLatest } from './rxjs'
 import voteSettings, { hasLoadedVoteSettings } from './utils/vote-settings'
-import AddressBookJSON from '../../address-book/build/contracts/AddressBook.json'
+import AddressBookJSON from '../../shared/json-abis/AddressBook.json'
 import { EMPTY_CALLSCRIPT } from './utils/vote-utils'
 import AllocationJSON from '../../shared/json-abis/Allocations.json'
 import { filterEntries } from '../../address-book/app/script'
