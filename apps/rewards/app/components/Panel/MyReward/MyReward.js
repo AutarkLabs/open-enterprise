@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import { provideNetwork } from '../../../../../../shared/ui'
 
 import {
   Info,
@@ -10,7 +11,8 @@ import {
   IconCheck,
   IconTime,
   SidePanelSplit,
-  Button
+  Button,
+  IdentityBadge,
 } from '@aragon/ui'
 
 import { FieldTitle } from '../../Form'
@@ -125,4 +127,4 @@ const SummaryBold = styled.span`
 const TokenIcon = styled(IconFundraising)`
   float: left;
 `
-export default MyReward
+export default provideNetwork(MyReward)

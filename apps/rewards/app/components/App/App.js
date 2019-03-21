@@ -8,6 +8,7 @@ import { Empty } from '../Card'
 import PanelManager, { PANELS } from '../Panel'
 import NewRewardButton from './NewRewardButton'
 import BigNumber from 'bignumber.js'
+import { networkContextType } from '../../../../../shared/ui'
 
 const ASSETS_URL = 'aragon-ui-assets/'
 
@@ -55,6 +56,10 @@ class App extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
     rewards: PropTypes.arrayOf(PropTypes.object),
+  }
+
+  static defaultProps = {
+    network: {},
   }
 
   state = {
@@ -107,6 +112,7 @@ class App extends React.Component {
       panel: PANELS.ViewReward,
       panelProps: {
         reward: reward,
+        network: { type: 'rinkeby'}
       }
     })
   }
@@ -122,6 +128,7 @@ class App extends React.Component {
 
   render() {
     const { panel, panelProps } = this.state
+    const { network } = this.props
 
     return (
       <StyledAragonApp>
@@ -138,6 +145,7 @@ class App extends React.Component {
             rewards={this.props.rewards === undefined ? mockRewards : this.props.rewards}
             onNewReward={this.onNewReward}
             openDetails={this.openDetailsMy}
+            network={network}
           />
         ) : (
           <Overview

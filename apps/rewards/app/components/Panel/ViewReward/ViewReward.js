@@ -17,15 +17,17 @@ import {
   IconTime,
   IconCheck,
   IconFundraising,
+  IdentityBadge,
 } from '@aragon/ui'
 import { FieldTitle, FormField } from '../../Form'
 import { MONTHS } from '../../../utils/constants'
 import { displayCurrency } from '../../../utils/helpers'
-
+import { provideNetwork } from '../../../../../../shared/ui'
 
 class ViewReward extends React.Component {
     static propTypes = {
       reward: PropTypes.object,
+      network: PropTypes.object,
     }
     renderDescription = (description = '') => {
       // Make '\n's real breaks
@@ -37,6 +39,7 @@ class ViewReward extends React.Component {
       ))
     }
     render() {
+      const { network } = this.props
       const {
         creator,
         isMerit,
@@ -48,7 +51,7 @@ class ViewReward extends React.Component {
         description,
         delay,
       } = this.props.reward
-      const truncatedCreator = `${creator.slice(0, 6)}...${creator.slice(-4)}`
+
       const translateToken = (token) => {
         if (token == 0x0) {
           return 'ETH'
@@ -65,14 +68,11 @@ class ViewReward extends React.Component {
                 </CreatorImg>
                 <div>
                   <p>
-                    {/* // TODO: Change to etherscanUrl constant for the selected network*/}
-                    <SafeLink
-                      href={`https://rinkeby.etherscan.io/address/${creator}`}
-                      target="_blank"
-                      title={creator}
-                    >
-                      {truncatedCreator}
-                    </SafeLink>
+                    <IdentityBadge
+                      networkType={network.type}
+                      entity={creator + '-'}
+                      shorten={true}
+                    />
                   </p>
                 </div>
               </Creator>
@@ -228,4 +228,4 @@ const TokenIcon = styled(IconFundraising)`
 float: left;
 `
 
-export default ViewReward
+export default provideNetwork(ViewReward)

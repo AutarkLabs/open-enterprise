@@ -7,12 +7,13 @@ import {
   TableRow,
   TableCell,
   Text,
-  SafeLink,
   Button,
+  IdentityBadge,
 } from '@aragon/ui'
 import { displayCurrency } from '../../utils/helpers'
 import { AverageRewards, formatAvgAmount } from './RewardsTables'
 import { Empty } from '../Card'
+import { provideNetwork } from '../../../../../shared/ui'
 
 const averageRewardsTitles = [ 'My Unclaimed Rewards', 'Year to Date', 'Inception to Date' ]
 // TODO: these need to be actually calculated
@@ -34,7 +35,8 @@ const translateToken = (token) => {
   }
 }
 
-const MyRewardsTable = ({ claimed, data, openDetails }) => {
+               // entity="0x83750D4865AdC68D48bdCc78aEa70C1d79c18e15"
+const MyRewardsTable = ({ claimed, data, openDetails, network }) => {
   return (
     <div>
       <Text.Block size="large" weight="bold">
@@ -58,14 +60,11 @@ const MyRewardsTable = ({ claimed, data, openDetails }) => {
               <Text>{reward.description}</Text>
             </TableCell>
             <TableCell>
-              {/* // TODO: Change to etherscanUrl constant for the selected network*/}
-              <SafeLink
-                href={`https://rinkeby.etherscan.io/address/${reward.creator}`}
-                target="_blank"
-                title={reward.creator}
-              >
-                {truncateCreator(reward.creator)}
-              </SafeLink>
+              <IdentityBadge
+                networkType={network.type}
+                entity={reward.creator + '-'}
+                shorten={true}
+              />
             </TableCell>
             <TableCell>
               {claimed ? (<Button>Claim</Button>) : '10/11/12'}
@@ -85,6 +84,8 @@ const MyRewards = ({ rewards, newReward, openDetails }) => {
     return <Empty tab='MyRewards' action={onNewReward} />
   }
 
+const network = { type: 'type' }
+
   return (
     <Main>
       <RewardsWrap>
@@ -97,11 +98,13 @@ const MyRewards = ({ rewards, newReward, openDetails }) => {
           claimed={true}
           data={rewards}
           openDetails={openDetails}
+          network={network}
         />
         <MyRewardsTable
           claimed={false}
           data={rewards}
           openDetails={openDetails}
+          network={network}
         />
       </RewardsWrap>
     </Main>
@@ -131,4 +134,5 @@ const ClickableTableRow = styled(TableRow)`
   }
 `
 
-export default MyRewards
+export default provideNetwork(MyRewards)
+//export default MyRewards
