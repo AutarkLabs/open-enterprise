@@ -110,6 +110,7 @@ contract RewardsCore is IsContract, AragonApp {
         }
         require(!_isMerit || _occurances == 1, "merit rewards must only occur once");
         require(_occurances < 42, "Maximum number of occurances is 41");
+        require(_startBlock > MiniMeToken(_referenceToken).creationBlock(),"cannot start period prior to the creation block");
         rewardId = rewards.length++;
         Reward storage reward = rewards[rewards.length - 1];
         reward.isMerit = _isMerit;

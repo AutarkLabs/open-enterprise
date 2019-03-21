@@ -190,7 +190,7 @@ contract('Rewards App', accounts => {
           referenceToken.address,
           rewardToken.address,
           4e18,
-          minBlock + 1,
+          minBlock,
           blockNumber - minBlock,
           1,
           0
@@ -212,13 +212,29 @@ contract('Rewards App', accounts => {
           root,
           rewardToken.address,
           4e18,
-          5,
+          minBlock,
           1,
           1,
           0
         )
       })
     })
+
+    it('fails to create reward with period starting prior to token creation', () => {
+      assertRevert(async () => {
+        await app.newReward(
+          false,
+          root,
+          rewardToken.address,
+          4e18,
+          minBlock-1,
+          1,
+          1,
+          0
+        )
+      })
+    })
+
 
 
     it('fails to create reward with invalid reference token', () => {
@@ -228,7 +244,7 @@ contract('Rewards App', accounts => {
           root,
           rewardToken.address,
           4e18,
-          5,
+          minBlock,
           1,
           1,
           0
@@ -243,7 +259,7 @@ contract('Rewards App', accounts => {
           referenceToken.address,
           root,
           4e18,
-          5,
+          minBlock,
           1,
           1,
           0
@@ -259,7 +275,7 @@ contract('Rewards App', accounts => {
           rewardToken.address,
           6,
           4e18,
-          1,
+          minBlock,
           4,
           0
         )
@@ -274,7 +290,7 @@ contract('Rewards App', accounts => {
           rewardToken.address,
           6,
           4e18,
-          4,
+          minBlock,
           43,
           0
         )
