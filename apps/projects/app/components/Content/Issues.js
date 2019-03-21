@@ -11,6 +11,7 @@ import {
   IconAdd,
 } from '@aragon/ui'
 import BigNumber from 'bignumber.js'
+import { compareAsc, compareDesc } from 'date-fns'
 
 import { STATUS } from '../../utils/github'
 import { GET_ISSUES } from '../../utils/gql-queries.js'
@@ -34,6 +35,7 @@ class Issues extends React.PureComponent {
       milestones: {},
       deadlines: {},
       experiences: {},
+      statuses: {},
     },
     sortBy: { what: 'Name', direction: -1 },
     textFilter: '',
@@ -107,6 +109,11 @@ class Issues extends React.PureComponent {
 
   applyFilters = issues => {
     const { filters, textFilter } = this.state
+    const { bountyIssues } = this.props
+    const bountyIssueObj = {}
+    bountyIssues.forEach(issue => {
+      bountyIssueObj[issue.issueNumber] = issue.data.workStatus
+    })
 
     const issuesByProject = issues.filter(issue => {
       if (Object.keys(filters.projects).length === 0) return true
@@ -150,14 +157,30 @@ class Issues extends React.PureComponent {
     })
     //console.log('FILTER MS: ', issuesByMilestone)
 
+    const issuesByStatus = issuesByMilestone.filter(issue => {
+      // if there are no Status filters, all issues pass
+      if (Object.keys(filters.statuses).length === 0) return true
+      // should bountyless issues pass?
+
+      const status = bountyIssueObj[issue.number] ? bountyIssueObj[issue.number] : 'not-funded'
+      if ('not-funded' in filters.statuses && !bountyIssueObj[issue.number])
+        return true
+      // if issues without a status should not pass, they are rejected below
+      if (status === 'not-funded') return false
+      if (status in filters.statuses)
+        return true
+      return false
+    })
+    // console.log('FILTER STATUS: ', issuesByStatus)
+
     // last but not least, if there is any text in textFilter...
     if (textFilter) {
-      return issuesByMilestone.filter(issue =>
+      return issuesByStatus.filter(issue =>
         issue.title.toUpperCase().match(textFilter)
       )
     }
 
-    return issuesByMilestone
+    return issuesByStatus
   }
 
   handleIssueSelection = issue => {
@@ -222,6 +245,7 @@ class Issues extends React.PureComponent {
       handleFiltering={this.handleFiltering}
       handleSorting={this.handleSorting}
       activeIndex={this.props.activeIndex}
+      bountyIssues={this.props.bountyIssues}
     />
   )
 
@@ -309,6 +333,13 @@ class Issues extends React.PureComponent {
         return i1.title.toUpperCase() < i2.title.toUpperCase()
           ? direction
           : direction * -1
+      }
+    else if (what === 'Creation Date')
+      return (i1, i2) => {
+        return direction == 1 ? 
+          compareAsc(new Date(i1.createdAt), new Date(i2.createdAt))
+          :
+          compareDesc(new Date(i1.createdAt), new Date(i2.createdAt))
       }
   }
 

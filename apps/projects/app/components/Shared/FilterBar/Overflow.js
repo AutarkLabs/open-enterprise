@@ -2,6 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import FilterButton from './FilterButton'
+import FilterDropDown from './FilterDropDown'
 
 // TODO: document.querySelectorAll(".tab").forEach(e => console.log(e.clientWidth))
 
@@ -28,25 +29,24 @@ class Overflow extends React.Component {
 
   debounced = (delay, fn) => {
     let timerId
-    return () => {
-      if (timerId) {
-        clearTimeout(timerId)
-      }
-      timerId = setTimeout(() => {
-        fn()
-        timerId = null
-      }, delay)
+    if (timerId) {
+      clearTimeout(timerId)
     }
+
+    timerId = setTimeout(() => {
+      fn()
+      timerId = null
+    }, delay)
   }
 
   calculateItems = () => {
     const containerWidth = this.theRef.current
-      ? this.theRef.current.clientWidth
+      ? this.theRef.current.clientWidth -150
       : 0
-    // console.log(containerWidth)
+    // console.log('calculateItems, containerWidth:', containerWidth)
 
-    const itemWidth = 200
-    const shown = Math.floor(containerWidth / itemWidth)
+    const itemWidth = 150
+    const shown = Math.floor((containerWidth) / itemWidth)
     this.setState({ shown })
   }
 
@@ -68,29 +68,43 @@ class Overflow extends React.Component {
         }}
       >
         {visibleElements}
-        <OverflowPlaceholder />
-        {/*<FilterButton
-          style={{
-            display: 'inline-flex',
-            justifyContent: 'left',
-            width: '100%',
-            paddingLeft: '10px',
-          }}
-        >
-          …
-        </FilterButton>*/}
-        {/* <FilterButton>...</FilterButton> */}
-        {/* {overflowElements} */}
+
+        {overflowElements.length === 0 ? (
+          <OverflowPlaceholder />
+        ) : (
+          <OverflowVertical>
+            <FilterDropDown
+              caption="…"
+              enabled={true}
+              overflow={true}
+            >
+              {overflowElements}
+            </FilterDropDown>
+          </OverflowVertical>
+        )}
+        
+        {overflowElements.length > 0 && <OverflowPlaceholder />}
+
       </div>
     )
   }
 }
 
+const OverflowVertical = styled.div`
+  display: flex;
+  flex-direction: column;
+`
 const OverflowPlaceholder = styled(FilterButton)`
+  margin-left: -1px;
   width: 100%;
+  min-width: 1px;
+  box-shadow: none;
+  border-left: 0;
+  padding: 0;
   :hover {
     box-shadow: none;
   }
 `
 
 export default Overflow
+
