@@ -14,7 +14,11 @@ const ProgressBar = ({ progress, label }) => (
             color={theme.accent}
             style={{ width: `${progress * 100}%` }}
           />
-          <Text size="xsmall" color={theme.textSecondary}>
+          <Text
+            size="xsmall"
+            color={theme.textSecondary}
+            style={{ paddingRight: '4px' }}
+          >
             {Math.round(progress * 100)}%
           </Text>
         </Base>
@@ -50,7 +54,6 @@ const Base = styled.div`
   text-align: right;
   line-height: 14px;
   margin-bottom: 18px;
-  padding-right: 4px;
 `
 const Progress = styled.div`
   height: 20px;
