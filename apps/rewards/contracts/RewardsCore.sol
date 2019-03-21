@@ -80,6 +80,19 @@ contract RewardsCore is IsContract, AragonApp {
         //rewardAmount = 50;
     }
 
+    /**
+    * @dev This function creates a reward instance to be added to the rewards array. ID's
+    *      are assigned the new intance's index of that array
+    * @notice Create a new reward
+    * @param _isMerit Recurring dividend reward one-off merit reward
+    * @param _referenceToken the token used to calculate reward distributions for each holder
+    * @param _rewardToken currency received as reward
+    * @param _amount the reward amount to be distributed
+    * @param _duration the time duration over which reference token earnings are calculated
+    * @param _occurances the number of occurences of a dividend reward
+    * @param _delay the waiting time after the end of the period that the reward can be claimed
+    * @return the reward Id
+    */
     function newReward(
         bool _isMerit,
         address _referenceToken,
