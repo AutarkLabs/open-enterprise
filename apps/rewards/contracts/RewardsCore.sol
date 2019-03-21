@@ -98,6 +98,7 @@ contract RewardsCore is IsContract, AragonApp {
         address _referenceToken,
         address _rewardToken,
         uint _amount,
+        uint _startBlock,
         uint _duration,
         uint _occurances,
         uint _delay
@@ -115,13 +116,22 @@ contract RewardsCore is IsContract, AragonApp {
         reward.referenceToken = MiniMeToken(_referenceToken);
         reward.rewardToken = _rewardToken;
         reward.amount = _amount;
-        reward.duration = _duration * _occurances;
+        reward.duration = _duration;
         reward.occurances = _occurances;
         reward.delay = _delay;
-        reward.blockStart = block.number;
+        reward.blockStart = _startBlock;
         emit RewardAdded(rewardId);
         if (_occurances > 1) {
-            newReward(_isMerit, _referenceToken, _rewardToken, _amount, _duration, _occurances - 1, _delay);
+            newReward(
+                _isMerit,
+                _referenceToken,
+                _rewardToken,
+                _amount,
+                _startBlock + _duration,
+                _duration,
+                _occurances - 1,
+                _delay
+            );
         }
     }
 

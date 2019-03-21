@@ -11,6 +11,7 @@ const Vault = artifacts.require('Vault')
 const { assertRevert } = require('@tps/test-helpers/assertThrow')
 const { encodeCallScript } = require('@tps/test-helpers/evmScript')
 const mineBlock = require('@tps/test-helpers/mineBlock')(web3)
+const getBlockNumber = require('@tps/test-helpers/blockNumber')(web3)
 
 const ANY_ADDR = '0xffffffffffffffffffffffffffffffffffffffff'
 const NULL_ADDRESS = '0x00'
@@ -27,7 +28,8 @@ contract('Rewards App', accounts => {
     vaultBase,
     vault,
     referenceToken,
-    rewardToken
+    rewardToken,
+    minBlock
 
 
   const root = accounts[0]
@@ -100,6 +102,7 @@ contract('Rewards App', accounts => {
 
     referenceToken = await MiniMeToken.new(NULL_ADDRESS, NULL_ADDRESS, 0, 'one', 18, 'one', true) // empty parameters minime
     rewardToken = await MiniMeToken.new(NULL_ADDRESS, NULL_ADDRESS, 0, 'two', 18, 'two', true) // empty parameters minime
+    minBlock = await getBlockNumber()
   })
 
   context('Basic contract functions', () => {
@@ -115,12 +118,14 @@ contract('Rewards App', accounts => {
 
     let dividendRewardId, meritRewardId, rewardInformation
     it('creates a dividend reward', async () => {
+      let blockNumber = await getBlockNumber()
       dividendRewardIds = rewardAdded(
         await app.newReward(
           false,
           referenceToken.address,
           rewardToken.address,
           4e18,
+          blockNumber,
           1,
           2,
           0
@@ -132,12 +137,14 @@ contract('Rewards App', accounts => {
     })
 
     it('creates a merit reward', async () => {
+      let blockNumber = await getBlockNumber()
       meritRewardIds = rewardAdded(
         await app.newReward(
           true,
           referenceToken.address,
           rewardToken.address,
           4e18,
+          blockNumber,
           6,
           1,
           0
@@ -175,6 +182,25 @@ contract('Rewards App', accounts => {
       assert(balance == 2e18, 'reward should be 2e18 or 2eth equivalant; 1 for each reward')
     })
 
+    it('creates a merit reward that started in the past', async () => {
+      let blockNumber = await getBlockNumber()
+      meritRewardIds = rewardAdded(
+        await app.newReward(
+          true,
+          referenceToken.address,
+          rewardToken.address,
+          4e18,
+          minBlock + 1,
+          blockNumber - minBlock,
+          1,
+          0
+        )
+      )
+      let meritRewardId = meritRewardIds[0]
+
+      assert(meritRewardId == 3, 'fourth reward should be id 3')
+    })
+
   })
 
   context('Check require statements and edge cases', () => {
@@ -186,6 +212,7 @@ contract('Rewards App', accounts => {
           root,
           rewardToken.address,
           4e18,
+          5,
           1,
           1,
           0
@@ -201,6 +228,7 @@ contract('Rewards App', accounts => {
           root,
           rewardToken.address,
           4e18,
+          5,
           1,
           1,
           0
@@ -215,6 +243,7 @@ contract('Rewards App', accounts => {
           referenceToken.address,
           root,
           4e18,
+          5,
           1,
           1,
           0
@@ -228,6 +257,7 @@ contract('Rewards App', accounts => {
           true,
           referenceToken.address,
           rewardToken.address,
+          6,
           4e18,
           1,
           4,
@@ -242,6 +272,7 @@ contract('Rewards App', accounts => {
           false,
           referenceToken.address,
           rewardToken.address,
+          6,
           4e18,
           4,
           43,
@@ -251,30 +282,33 @@ contract('Rewards App', accounts => {
     })
 
     it('pays out a merit reward of zero with no token changes', async() => {
+      let blockNumber = await getBlockNumber()
       const meritRewardId = rewardAdded(
         await app.newReward(
           true,
           referenceToken.address,
           rewardToken.address,
           4e18,
+          blockNumber,
           1,
           1,
           0
         )
       )
-      await mineBlock()
       const award = await app.getReward(meritRewardId)
       await app.claimReward(meritRewardId)
       assert.strictEqual(award[6].toNumber(), 0, 'amount should be 0')
     })
 
-    it('pays out a merit reward of zero no token changes for the user', async() => {
+    it('pays out a merit reward of zero with no token changes for the user', async() => {
+      let blockNumber = await getBlockNumber()
       const meritRewardId = rewardAdded(
         await app.newReward(
           true,
           referenceToken.address,
           rewardToken.address,
           4e18,
+          blockNumber,
           2,
           1,
           0
@@ -283,13 +317,10 @@ contract('Rewards App', accounts => {
       const origBalance = await rewardToken.balanceOf(root)
       await referenceToken.generateTokens(contributor1, 1e18)
       await referenceToken.generateTokens(contributor2, 1e18)
-
-      //assertRevert(async () => {
+      await mineBlock()
       await app.claimReward(meritRewardId)
       const newBalance = await rewardToken.balanceOf(root)
       assert.strictEqual(newBalance.toNumber(), origBalance.toNumber(), 'balance awarded should be zero')
-
-      //})
     })
   })
 
