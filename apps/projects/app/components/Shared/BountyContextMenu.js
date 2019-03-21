@@ -18,22 +18,22 @@ const BountyContextMenu = ({
       <ActionLabel>Allocate Bounty</ActionLabel>
     </ContextMenuItem>
   }
-  {(workStatus === 'submit-work' || workStatus === 'review-work') &&
+  {workStatus === 'in-progress' &&
     <ContextMenuItem onClick={onSubmitWork}>
       <ActionLabel>Submit Work</ActionLabel>
     </ContextMenuItem>
   }
-  {work !== undefined &&
+  {workStatus === 'review-work' &&
     <ContextMenuItem onClick={onReviewWork}>
       <ActionLabel>Review Work</ActionLabel>
     </ContextMenuItem>
   }
-  {(workStatus === 'new' || workStatus === 'review-applicants') &&
+  {(workStatus === 'funded' || workStatus === 'review-applicants') &&
     <ContextMenuItem onClick={onRequestAssignment}>
       <ActionLabel>Request Assignment</ActionLabel>
     </ContextMenuItem>
   }
-  { workStatus === 'review-applicants' &&
+  {workStatus === 'review-applicants' &&
     <ContextMenuItem onClick={onReviewApplication}>
       <ActionLabel>Review Application ({requestsData.length})</ActionLabel>
     </ContextMenuItem>
@@ -54,7 +54,7 @@ BountyContextMenu.propTypes = {
     undefined,
     PropTypes.object,
   ]),
-  workStatus: PropTypes.oneOf([ undefined, 'new', 'review-applicants', 'submit-work', 'review-work', 'finished' ]),
+  workStatus: PropTypes.oneOf([ undefined, 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]),
 }
 
 export default BountyContextMenu
