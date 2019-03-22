@@ -47,6 +47,20 @@ contract KitBase is APMNamehash {
 
         return base;
     }
+
+    function cleanupDAOPermissions(Kernel dao, ACL acl, address root) internal {
+        // Kernel permission clean up
+        cleanupPermission(acl, root, dao, dao.APP_MANAGER_ROLE());
+
+        // ACL permission clean up
+        cleanupPermission(acl, root, acl, acl.CREATE_PERMISSIONS_ROLE());
+    }
+
+    function cleanupPermission(ACL acl, address root, address app, bytes32 permission) internal {
+        acl.grantPermission(root, app, permission);
+        acl.revokePermission(this, app, permission);
+        acl.setPermissionManager(root, app, permission);
+    }
 }
 
 
@@ -57,10 +71,9 @@ contract PlanningKit is KitBase {
     uint256 constant PCT256 = 10 ** 16;
     uint64 constant PCT64 = 10 ** 16;
     address constant ANY_ENTITY = address(-1);
-
     constructor(ENS ens) public KitBase(DAOFactory(0), ens) {
         address root = msg.sender;
-        
+
         tokenFactory = new MiniMeTokenFactory();
         registry = new StandardBounties(root);
 
@@ -88,11 +101,10 @@ contract PlanningKit is KitBase {
         token.generateTokens(address(root), 200 ether); // give root 100 autark tokens
         token.generateTokens(address(this), 100 ether); // give root 100 autark tokens
         token.changeController(tokenManager);
-
         // Initialize apps
         vault.initialize();
         addressBook.initialize();
-        projects.initialize(registry, vault);
+        projects.initialize(registry, vault, token.symbol());
         rangeVoting.initialize(token, 50 * PCT256, 0, 1 minutes);
         voting.initialize(token, 50 * PCT64, 10 * PCT64, 1 days);
         allocations.initialize(addressBook);
@@ -104,17 +116,16 @@ contract PlanningKit is KitBase {
         handlePermissions(
             dao,
             acl,
-            root, 
-            addressBook, 
-            projects, 
-            rangeVoting, 
-            allocations, 
-            tokenManager, 
-            vault, 
+            root,
+            addressBook,
+            projects,
+            rangeVoting,
+            allocations,
+            tokenManager,
+            vault,
             finance,
             voting
         );
-
         emit DeployInstance(dao);
     }
 
@@ -181,8 +192,6 @@ contract PlanningKit is KitBase {
     ) internal
     {
 
-        bytes32 appManagerRole = dao.APP_MANAGER_ROLE();
-
         // AddressBook permissions:
         acl.createPermission(ANY_ENTITY, addressBook, addressBook.ADD_ENTRY_ROLE(), root);
         acl.createPermission(ANY_ENTITY, addressBook, addressBook.REMOVE_ENTRY_ROLE(), root);
@@ -233,13 +242,6 @@ contract PlanningKit is KitBase {
         acl.createPermission(ANY_ENTITY, voting, voting.MODIFY_QUORUM_ROLE(), root);
 
         // Clean up template permissions
-        acl.grantPermission(root, dao, appManagerRole);
-        acl.revokePermission(this, dao, appManagerRole);
-        acl.setPermissionManager(root, dao, appManagerRole);
-
-        acl.grantPermission(root, acl, acl.CREATE_PERMISSIONS_ROLE());
-        acl.revokePermission(this, acl, acl.CREATE_PERMISSIONS_ROLE());
-        acl.setPermissionManager(root, acl, acl.CREATE_PERMISSIONS_ROLE());
-
+        cleanupDAOPermissions(dao, acl, root);
     }
 }

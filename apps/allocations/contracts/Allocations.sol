@@ -152,7 +152,7 @@ contract Allocations is AragonApp, Fundable {
         string _metadata,
         uint256 _limit,
         address _token
-    ) external isInitialized auth(START_PAYOUT_ROLE) returns(uint256 payoutId)
+    ) external auth(START_PAYOUT_ROLE) returns(uint256 payoutId)
     {
         payoutId = payouts.length++;
         Payout storage payout = payouts[payoutId];
@@ -177,7 +177,7 @@ contract Allocations is AragonApp, Fundable {
     * @notice Send payout amounts to the candidates in accordance with the distribution proportions
     * @param _payoutId Any relevent label for the payout
     */
-    function runPayout(uint256 _payoutId) external payable isInitialized auth(EXECUTE_PAYOUT_ROLE) returns(bool success) {
+    function runPayout(uint256 _payoutId) external payable auth(EXECUTE_PAYOUT_ROLE) returns(bool success) {
         Payout storage payout = payouts[_payoutId];
         uint256 totalSupport;
         uint i;
@@ -232,7 +232,7 @@ contract Allocations is AragonApp, Fundable {
         bool _recurring,
         uint256 _period,
         uint256 _amount
-    ) public payable isInitialized auth(SET_DISTRIBUTION_ROLE)
+    ) public payable auth(SET_DISTRIBUTION_ROLE)
     {
         Payout storage payout = payouts[_payoutId];
         payout.candidateAddresses = _candidateAddresses;
