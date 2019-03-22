@@ -104,7 +104,14 @@ export function safeDiv(num, denom) {
 }
 
 //converts epoch time into Block Duration
-const MILLISECONDS_IN_A_SECOND = 1000
-export function secondsToBlocks(start, end, blockDuration = 15) {
+export const MILLISECONDS_IN_A_SECOND = 1000
+export const MILLISECONDS_IN_A_MONTH = 2592000000
+export const WEEK = 604800000
+
+export function millisecondsToBlocks(start, end, blockDuration = 15) {
   return Math.round((end - start) / MILLISECONDS_IN_A_SECOND/ blockDuration)
+}
+
+export function millisecondsToQuarters(start,end) {
+  return Math.floor( (end - start) / ( 3 * MILLISECONDS_IN_A_MONTH ) )
 }
