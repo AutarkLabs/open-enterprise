@@ -8,6 +8,9 @@ import {
   TableRow,
   TableCell,
   Text,
+  Viewport,
+  theme,
+  Badge,
 } from '@aragon/ui'
 import { displayCurrency } from '../../utils/helpers'
 
@@ -29,6 +32,8 @@ const translateToken = (token) => {
   }
 }
 
+const dot = <span style={{ margin: '0px 6px' }}>&middot;</span>
+
 const averageRewardsTitles = [ 'Average Reward', 'Monthly Average', 'Total this year' ]
 // TODO: these need to be actually calculated
 const averageRewardsNumbers = [
@@ -42,42 +47,82 @@ const generateOpenDetails = (reward, openDetails) => () => {
   openDetails(reward)
 }
 
-const RewardsTable = ({ title, data, fourthColumn, fourthColumnData, openDetails }) => {
-  return (
-    <div>
-      <Text.Block size="large" weight="bold">
-        {title} Rewards
-      </Text.Block>
-    
-      <Table
-        style={{ width: '100%' }}
-        header={
-          <TableRow>
-            {headersNames(fourthColumn).map(header => (
-              <TableHeader key={header} title={header} />
-            ))}
-          </TableRow>
-        }
-      >
-        {data.map((reward, i) => (
-          <ClickableTableRow key={i} onClick={generateOpenDetails(reward, openDetails)}>
-            <TableCell>
-              <Text>{reward.description}</Text>
-            </TableCell>
-            <TableCell>
-              {reward.isMerit ? 'Merit' : 'Dividend'}
-            </TableCell>
-            <TableCell>Monthly</TableCell>
-            <TableCell>
-              {fourthColumnData(reward)}
-            </TableCell>
-            <TableCell>{displayCurrency(reward.amount)}{' '}{translateToken(reward.rewardToken)}</TableCell>
-          </ClickableTableRow>
+const RewardsTableNarrow = ({ title, data, fourthColumn, fourthColumnData, openDetails }) => (
+  <NarrowList>
+    {data.map((reward, i) => (
+      <NarrowListReward onClick={generateOpenDetails(reward, openDetails)} key={i}>
+        <div style={{ marginTop: '5px', marginRight: '10px' }}>
+          <RewardDescription>
+            {reward.description}
+          </RewardDescription>
+          <Text.Block size="small" color={theme.textTertiary} style={{ marginTop: '5px' }}>
+            {reward.isMerit ? 'Merit' : 'Dividend'}
+            {dot}
+            Monthly
+            {dot}
+            {fourthColumnData(reward)}
+          </Text.Block>
+        </div>
+        <div>
+          <AmountBadge>
+            {displayCurrency(reward.amount)}{' '}{translateToken(reward.rewardToken)}
+          </AmountBadge>
+        </div>
+      </NarrowListReward>
+    ))}
+  </NarrowList>
+)
+
+const RewardsTableWide = ({ title, data, fourthColumn, fourthColumnData, openDetails }) => (
+  <Table
+    style={{ width: '100%' }}
+    header={
+      <TableRow>
+        {headersNames(fourthColumn).map(header => (
+          <TableHeader key={header} title={header} />
         ))}
-      </Table>
-    </div>
-  )
-}
+      </TableRow>
+    }
+  >
+    {data.map((reward, i) => (
+      <ClickableTableRow key={i} onClick={generateOpenDetails(reward, openDetails)}>
+        <TableCell>
+          <RewardDescription>
+            {reward.description}
+          </RewardDescription>
+        </TableCell>
+        <TableCell>
+          {reward.isMerit ? 'Merit' : 'Dividend'}
+        </TableCell>
+        <TableCell>
+          Monthly
+        </TableCell>
+        <TableCell>
+          {fourthColumnData(reward)}
+        </TableCell>
+        <TableCell>{displayCurrency(reward.amount)}{' '}{translateToken(reward.rewardToken)}</TableCell>
+      </ClickableTableRow>
+    ))}
+  </Table>
+)
+
+const RewardsTable = props => (
+  <div>
+    <Text.Block size="large" weight="bold">
+      {props.title} Rewards
+    </Text.Block>
+
+    <Viewport>
+      {({ below }) => 
+        below('medium') ? (
+          <RewardsTableNarrow {...props} />
+        ) : (
+          <RewardsTableWide {...props} />
+        )
+      }
+    </Viewport>
+  </div>
+)
 
 /*
 const leadersList = leaders => (
@@ -107,10 +152,8 @@ const Overview = ({ rewards, newReward, openDetails }) => {
     return <Empty tab='Overview' action={newReward} />
   }
 
-
-
   return (
-    <Main>
+    <OverviewMain>
       <RewardsWrap>
         <AverageRewards
           titles={averageRewardsTitles}
@@ -137,9 +180,8 @@ const Overview = ({ rewards, newReward, openDetails }) => {
         </FieldTitle>
         {leadersList(leaders)}
       </LeaderBoardWrap> */}
-    </Main>
+    </OverviewMain>
   )
-
 }
 
 Overview.propTypes = {
@@ -148,7 +190,7 @@ Overview.propTypes = {
   rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
 }
 
-const Main = styled.div`
+const OverviewMain = styled.div`
   padding: 10px;
   background-color: #F8FCFD;
 `
@@ -164,6 +206,38 @@ const ClickableTableRow = styled(TableRow)`
   :hover {
     cursor: pointer;
   }
+`
+const NarrowList = styled.div`
+  display: flex;
+  flex-direction: column;
+  border: 1px solid ${theme.contentBorder};
+  border-radius: 3px;
+  > :not(:last-child) {
+    border-bottom: 1px solid ${theme.contentBorder};
+  }
+`
+const NarrowListReward = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 10px;
+`
+const AmountBadge = styled(Badge).attrs({
+  background: '#D1D1D1',
+  foreground: theme.textPrimary,
+})`
+  padding: 10px;
+  margin: 20px
+  text-size: large;
+`
+const RewardDescription = styled(Text.Block)`
+  display: block;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: ${theme.textPrimary};
 `
 /*
 const LeaderBoardWrap = styled.div`

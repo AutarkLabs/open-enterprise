@@ -9,6 +9,7 @@ import {
   Text,
   Button,
   IdentityBadge,
+  Viewport,
 } from '@aragon/ui'
 import { displayCurrency } from '../../utils/helpers'
 import { AverageRewards, formatAvgAmount } from './RewardsTables'
@@ -35,8 +36,7 @@ const translateToken = (token) => {
   }
 }
 
-               // entity="0x83750D4865AdC68D48bdCc78aEa70C1d79c18e15"
-const MyRewardsTable = ({ claimed, data, openDetails, network }) => {
+const MyRewardsWide = ({ claimed, data, openDetails, network }) => {
   return (
     <div>
       <Text.Block size="large" weight="bold">
@@ -62,7 +62,7 @@ const MyRewardsTable = ({ claimed, data, openDetails, network }) => {
             <TableCell>
               <IdentityBadge
                 networkType={network.type}
-                entity={reward.creator + '-'}
+                entity={reward.creator}
                 shorten={true}
               />
             </TableCell>
@@ -77,14 +77,33 @@ const MyRewardsTable = ({ claimed, data, openDetails, network }) => {
   )
 }
 
-const MyRewards = ({ rewards, newReward, openDetails }) => {
+const MyRewardsNarrow = ({ claimed, data, openDetails, network }) => {
+  return (
+    <div>
+      <Text.Block size="large" weight="bold">
+        {claimed ? 'Claimed' : 'Unclaimed'} Rewards
+      </Text.Block>
+    </div>
+  )
+}
+
+const MyRewardsTable = props => (
+  <Viewport>
+    {({ within, below, above }) => (
+      <div>
+        {below('medium') && <MyRewardsNarrow {...props} />}
+        {above('medium') && <MyRewardsWide {...props} />}
+      </div>
+    )}
+  </Viewport>
+)
+
+const MyRewards = ({ rewards, newReward, openDetails, network }) => {
   const rewardsEmpty = rewards.length === 0
 
   if (rewardsEmpty) {
     return <Empty tab='MyRewards' action={onNewReward} />
   }
-
-const network = { type: 'type' }
 
   return (
     <Main>
@@ -114,6 +133,7 @@ const network = { type: 'type' }
 MyRewards.propTypes = {
   onNewReward: PropTypes.func.isRequired,
   rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
+  network: PropTypes.object,
 }
 
 const Main = styled.div`
@@ -135,4 +155,4 @@ const ClickableTableRow = styled(TableRow)`
 `
 
 export default provideNetwork(MyRewards)
-//export default MyRewards
+

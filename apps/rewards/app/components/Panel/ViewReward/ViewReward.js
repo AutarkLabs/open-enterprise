@@ -70,7 +70,7 @@ class ViewReward extends React.Component {
                   <p>
                     <IdentityBadge
                       networkType={network.type}
-                      entity={creator + '-'}
+                      entity={creator}
                       shorten={true}
                     />
                   </p>
