@@ -24,6 +24,7 @@ const mockRewards = [{
   delay: 0,
   index: 0,
   claimed: true,
+  status: 1,
 },
 {
   creator: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
@@ -37,6 +38,7 @@ const mockRewards = [{
   delay: 0,
   index: 0,
   claimed: true,
+  status: 0,
 },
 {
   creator: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
@@ -50,6 +52,21 @@ const mockRewards = [{
   delay: 0,
   index: 0,
   claimed: true,
+  status: 2,
+},
+{
+  creator: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
+  isMerit: false,
+  referenceToken: 'SDN',
+  rewardToken: 0x0,
+  amount: BigNumber(19e18),
+  startDate: new Date('2018-12-19'),
+  endDate: new Date('2019-01-20'),
+  description: 'Q3 Reward for Space Decentral Contributors',
+  delay: 0,
+  index: 0,
+  claimed: true,
+  status: 3,
 }]
 
 class App extends React.Component {
@@ -125,6 +142,7 @@ class App extends React.Component {
       panel: PANELS.ViewReward,
       panelProps: {
         reward: reward,
+        onClosePanel: this.closePanel,
         network: { type: 'rinkeby' }
       }
     })

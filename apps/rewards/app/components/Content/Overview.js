@@ -13,8 +13,15 @@ import {
   Badge,
 } from '@aragon/ui'
 import { displayCurrency } from '../../utils/helpers'
-
-import { AverageRewards, formatAvgAmount } from './RewardsTables'
+import {
+  AverageRewards,
+  formatAvgAmount,
+  RewardDescription,
+  RewardsTable,
+  NarrowList,
+  NarrowListReward,
+  AmountBadge,
+} from './RewardsTables'
 import { Empty } from '../Card'
 
 const fourthColumns = [ 'Next Payout', 'Status', 'Last Payout' ]
@@ -55,7 +62,7 @@ const RewardsTableNarrow = ({ title, data, fourthColumn, fourthColumnData, openD
           <RewardDescription>
             {reward.description}
           </RewardDescription>
-          <Text.Block size="small" color={theme.textTertiary} style={{ marginTop: '5px' }}>
+          <Text.Block size="small" color={theme.textSecondary} style={{ marginTop: '5px' }}>
             {reward.isMerit ? 'Merit' : 'Dividend'}
             {dot}
             Monthly
@@ -106,24 +113,6 @@ const RewardsTableWide = ({ title, data, fourthColumn, fourthColumnData, openDet
   </Table>
 )
 
-const RewardsTable = props => (
-  <div>
-    <Text.Block size="large" weight="bold">
-      {props.title} Rewards
-    </Text.Block>
-
-    <Viewport>
-      {({ below }) => 
-        below('medium') ? (
-          <RewardsTableNarrow {...props} />
-        ) : (
-          <RewardsTableWide {...props} />
-        )
-      }
-    </Viewport>
-  </div>
-)
-
 /*
 const leadersList = leaders => (
   <LeadersLlist>
@@ -140,9 +129,9 @@ const displayStatus = reward => 'Pending'
 const displayLastPayout = reward => '-' + reward.date + '-'
 
 const tableType = [
-  { title: 'Current', fourthColumn: 'Next Payout', fourthColumnData: displayNextPayout },
-  { title: 'Pending', fourthColumn: 'Status', fourthColumnData: displayStatus },
-  { title: 'Past', fourthColumn: 'Last Payout', fourthColumnData: displayLastPayout },
+  { title: 'Current Rewards', fourthColumn: 'Next Payout', fourthColumnData: displayNextPayout },
+  { title: 'Pending Rewards', fourthColumn: 'Status', fourthColumnData: displayStatus },
+  { title: 'Past Rewards', fourthColumn: 'Last Payout', fourthColumnData: displayLastPayout },
 ]
 
 const Overview = ({ rewards, newReward, openDetails }) => {
@@ -168,6 +157,8 @@ const Overview = ({ rewards, newReward, openDetails }) => {
             fourthColumnData={fourthColumnData}
             data={rewards}
             openDetails={openDetails}
+            belowMedium={RewardsTableNarrow}
+            aboveMedium={RewardsTableWide}
           />
         ))}
       </RewardsWrap>
@@ -206,38 +197,6 @@ const ClickableTableRow = styled(TableRow)`
   :hover {
     cursor: pointer;
   }
-`
-const NarrowList = styled.div`
-  display: flex;
-  flex-direction: column;
-  border: 1px solid ${theme.contentBorder};
-  border-radius: 3px;
-  > :not(:last-child) {
-    border-bottom: 1px solid ${theme.contentBorder};
-  }
-`
-const NarrowListReward = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 10px;
-`
-const AmountBadge = styled(Badge).attrs({
-  background: '#D1D1D1',
-  foreground: theme.textPrimary,
-})`
-  padding: 10px;
-  margin: 20px
-  text-size: large;
-`
-const RewardDescription = styled(Text.Block)`
-  display: block;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: ${theme.textPrimary};
 `
 /*
 const LeaderBoardWrap = styled.div`

@@ -84,7 +84,7 @@ class MyReward extends React.Component {
 
         <Text.Block>Reward summary</Text.Block>
 
-        <Info>
+        <Info style={{ marginBottom: '10px' }}>
           <TokenIcon />
           <Summary>
             <p>
@@ -113,7 +113,6 @@ class MyReward extends React.Component {
 }
 
 const Summary = styled.div`
-  margin-bottom: 10px;
   padding-bottom: 2px;
   padding-left: 35px;
   > :not(:last-child) {

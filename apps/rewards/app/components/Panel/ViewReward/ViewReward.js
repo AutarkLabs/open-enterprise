@@ -29,6 +29,9 @@ class ViewReward extends React.Component {
       reward: PropTypes.object,
       network: PropTypes.object,
     }
+
+    onClosePanel = () => this.props.onClosePanel()
+
     renderDescription = (description = '') => {
       // Make '\n's real breaks
       return description.split('\n').map((line, i) => (
@@ -135,7 +138,7 @@ class ViewReward extends React.Component {
           <Part>
             <Text size='large' weight='bold' >Reward Summary</Text>
           </Part>
-          <Info>
+          <Info style={{ marginBottom: '10px' }}>
             <TokenIcon />
             <Summary>
               <p>
@@ -167,11 +170,10 @@ class ViewReward extends React.Component {
               </p>
             </Summary>
           </Info>
+          <Button mode="strong" wide onClick={this.onClosePanel}>Close</Button>
         </div>
       )
     }
-
-
 }
 
 const Label = styled(Text).attrs({
