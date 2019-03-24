@@ -1,4 +1,4 @@
-import addressBookAbi from '../../../shared/json-abis/address-book'
+import AddressBookJSON from '../../../shared/json-abis/address-book.json'
 import { app } from './'
 
 /// /////////////////////////////////////
@@ -36,7 +36,7 @@ export const onEntryRemoved = async ({ entries }, { addr }) => {
 /// /////////////////////////////////////
 
 const loadEntryData = async (addr, addressBook) => {
-  const addressBookApp = app.external(addressBook, addressBookAbi)
+  const addressBookApp = app.external(addressBook, AddressBookJSON.abi)
 
   return addressBookApp
     .getEntry(addr)
