@@ -137,13 +137,27 @@ contract Allocations is AragonApp, Fundable {
         proxy = account.proxy;
     }
 
-    function getNumberOfCandidates(uint _accountId, uint _payoutId) external view returns(uint256 numCandidates) {
-        Payout storage payout = payouts[_payoutId];
+    function getPayout(uint _accountId, uint _payoutId) external view
+    returns(uint amount, bool recurring, uint startTime, uint period)
+    {
+        Payout storage payout = accounts[_accountId].payouts[_payoutId];
+        amount = payout.amount;
+        startTime = payout.startTime;
+        recurring = payout.recurring;
+        period = payout.period;
+    }
+
+    function getNumberOfCandidates(uint _accountId, uint _payoutId) external view
+    returns(uint256 numCandidates)
+    {
+        Payout storage payout = accounts[_accountId].payouts[_payoutId];
         numCandidates = payout.supports.length;
     }
 
-    function getPayoutDistributionValue(uint _accountId, uint256 _payoutId, uint256 idx) external view returns(uint256 supports) {
-        Payout storage payout = payouts[_payoutId];
+    function getPayoutDistributionValue(uint _accountId, uint256 _payoutId, uint256 idx) external view
+    returns(uint256 supports)
+    {
+        Payout storage payout = accounts[_accountId].payouts[_payoutId];
         supports = payout.supports[idx];
     }
 
@@ -195,7 +209,8 @@ contract Allocations is AragonApp, Fundable {
         for (i = 0; i < payout.supports.length; i++) {
             totalSupport += payout.supports[i];
         }
-        require(payout.distSet, "setDistribution must be called first");
+        // Payouts are now instantiated on setDistribution
+        // require(payout.distSet, "setDistribution must be called first");
         if (payout.recurring) {
             // TDDO create payout execution counter to ensure payout time tracks payouts
             uint256 payoutTime = payout.startTime.add(payout.period);
@@ -263,7 +278,7 @@ contract Allocations is AragonApp, Fundable {
             payout.period = _period;
             // minimum granularity is a single day
             // This check is disabled currently to enable testing of shorter times
-            //require(payout.period > 86399);
+            //require(payout.period > 86399,"period too short");
             payout.startTime = block.timestamp; // solium-disable-line security/no-block-members
         } else {
             payout.period = 0;
