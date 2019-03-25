@@ -9,6 +9,7 @@ import {
   Checkbox,
   ContextMenu,
   ContextMenuItem,
+  Viewport,
 } from '@aragon/ui'
 
 import { formatDistance } from 'date-fns'
@@ -38,7 +39,7 @@ const labelsBadges = labels =>
   labels.edges.map(label => (
     <Badge
       key={label.node.id}
-      style={{ marginRight: '10px' }}
+      style={{ marginRight: '10px', width: 'auto' }}
       background={'#' + label.node.color}
       foreground={'#000'}
     >
@@ -71,70 +72,95 @@ const Issue = ({
 }) => {
   //console.log('CARD:', workStatus, title, repo, number, labels, isSelected, balance, symbol, deadline, requestsData, expLevel, slots)
 
-  // prepare display of number of slots vs number of applicants
+  // prepare display of number of slots vs number of applicants - leaving for reference, #528
+  /*
   const slotsAllocation =
     requestsData === undefined
       ? 'Unallocated (' + slots + ')'
       : requestsData.length < slots
         ? 'Slots available: ' + (slots - requestsData.length) + '/' + slots
         : 'Allocated'
+  */
 
   return (
     <StyledIssue>
-      <ClickArea onClick={onClick} />
-      <Checkbox checked={isSelected} onChange={onSelect} />
-      <IssueDesc>
-        <div>
-          <Text color={theme.textPrimary} size="large">
-            {title}
-          </Text>
-          {dot}
-          <Text color={theme.textSecondary} size="normal">
+      <div style={{ padding: '10px' }}>
+        <Checkbox checked={isSelected} onChange={onSelect} />
+      </div>
+
+      <IssueData>
+        <ClickArea onClick={onClick} />
+
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Text color={theme.textSecondary} size="small">
             {repo} #{number}
           </Text>
+          {workStatus !== 'fulfilled' && (
+            <ContextMenu>
+              <BountyContextMenu
+                work={work}
+                workStatus={workStatus}
+                requestsData={requestsData}
+                onAllocateSingleBounty={onAllocateSingleBounty}
+                onSubmitWork={onSubmitWork}
+                onRequestAssignment={onRequestAssignment}
+                onReviewApplication={onReviewApplication}
+                onReviewWork={onReviewWork}
+              />
+            </ContextMenu>
+          )}
         </div>
-        {(balance > 0 || labels.totalCount > 0) && (
-          <IssueDetails>
-            <Text size="small" color={theme.textTertiary}>
-              {balance > 0 && (
+
+        <IssueTitleDetailsBalance>
+          <IssueTitleDetails>
+            <IssueTitle>
+              {title}
+            </IssueTitle>
+
+            {(balance > 0) && (
+              <Text.Block size="small" color={theme.textTertiary}>
                 <span style={{ marginRight: '15px' }}>
+                  {BOUNTY_STATUS[workStatus]}
+                  {dot}
                   {expLevel}
                   {dot}
-                  {slotsAllocation}
-                  {dot}
-                  Due {DeadlineDistance(deadline)}
+                  Due in {DeadlineDistance(deadline)}
                 </span>
-              )}
-              {labels.totalCount ? labelsBadges(labels) : ''}
-            </Text>
-          </IssueDetails>
+              </Text.Block>
+            )}
+            {(balance > 0) && (
+              <Text.Block size="small" color={theme.textTertiary}>
+                <span style={{ marginRight: '15px' }}>
+                  {slots} Available
+                  {dot}
+                  {requestsData.length} Applicants
+                </span>
+              </Text.Block>
+            )}
+          </IssueTitleDetails>
+
+          <Balance>
+            {balance > 0 && (
+              <Badge
+                style={{ padding: '5px 10px' }}
+                background={BOUNTY_BADGE_COLOR[workStatus].bg}
+                foreground={BOUNTY_BADGE_COLOR[workStatus].fg}
+              >
+                <Text size="large">
+                  {balance + ' ' + symbol}
+                </Text>
+              </Badge>
+            )}
+          </Balance>
+        </IssueTitleDetailsBalance>
+
+        {(labels.totalCount > 0) && (
+          <div>
+            <Separator />
+            {labelsBadges(labels)}
+          </div>
         )}
-      </IssueDesc>
-      <BalanceAndContext>
-        {balance > 0 && (
-          <Badge
-            style={{ padding: '10px', marginRight: '20px', textSize: 'large' }}
-            background={BOUNTY_BADGE_COLOR[workStatus].bg}
-            foreground={BOUNTY_BADGE_COLOR[workStatus].fg}
-          >
-            {balance + ' ' + symbol}
-          </Badge>
-        )}
-        {workStatus !== 'fulfilled' && (
-          <ContextMenu>
-            <BountyContextMenu
-              work={work}
-              workStatus={workStatus}
-              requestsData={requestsData}
-              onAllocateSingleBounty={onAllocateSingleBounty}
-              onSubmitWork={onSubmitWork}
-              onRequestAssignment={onRequestAssignment}
-              onReviewApplication={onReviewApplication}
-              onReviewWork={onReviewWork}
-            />
-          </ContextMenu>
-        )}
-      </BalanceAndContext>
+      </IssueData>
     </StyledIssue>
   )
 }
@@ -156,37 +182,59 @@ Issue.propTypes = {
 const StyledIssue = styled.div`
   flex: 1;
   width: 100%;
-  min-width: 600px;
+  /*min-width: 600px;*/
   background: ${theme.contentBackground};
   display: flex;
-  padding-left: 10px;
-  height: 112px;
+  /*padding-left: 10px;*/
+  /*height: 112px;*/
+  height: auto;
   align-items: center;
   border-radius: 3px;
   border: 1px solid ${theme.contentBorder};
   margin-bottom: -1px;
   position: relative;
-  > :nth-child(2) {
-    /* checkbox */
-    margin-right: 21.5px;
-    justify-content: center;
-    z-index: 2;
+`
+const IssueTitleDetailsBalance = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`
+const IssueTitleDetails = styled.div`
+  display: flex;
+  flex-direction: column;
+  > :not(:last-child) {
+    margin-bottom: 6px;
   }
 `
-const IssueDetails = styled.div`
-  display: flex;
-`
-const IssueDesc = styled.div`
+const IssueData = styled.div`
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  height: 90px;
+  /*height: 90px;*/
   justify-content: space-around;
-  padding: 10px;
+  padding: 12px 12px 12px 0;
+  position: relative;
 `
-const BalanceAndContext = styled.div`
-  margin-right: 20px;
-  display: inline-flex;
+const Balance = styled.div`
+  margin-left: 10px;
+`
+const IssueTitle = styled(Text.Block).attrs({
+  size: 'large',
+})`
+  display: block;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: ${theme.textPrimary};
+`
+const Separator = styled.hr`
+  height: 1px;
+  width: 100%;
+  color: ${theme.contentBorder};
+  opacity: 0.1;
+  margin: 8px 0;
 `
 
 export default Issue

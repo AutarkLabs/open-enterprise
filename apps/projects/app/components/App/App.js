@@ -1,4 +1,4 @@
-import { BaseStyles, PublicUrl, observe, Root, ToastHub } from '@aragon/ui'
+import { Main, BaseStyles, observe, Root, ToastHub } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { hot } from 'react-hot-loader'
@@ -179,6 +179,12 @@ class App extends React.PureComponent {
         },
       })
     }
+  }
+
+  handleMenuPanelOpen = () => {
+    window.parent.postMessage(
+      { from: 'app', name: 'menuPanel', value: true }, '*'
+    )
   }
 
   changeActiveIndex = activeIndex => {
@@ -489,7 +495,7 @@ class App extends React.PureComponent {
         <StyledAragonApp publicUrl={ASSETS_URL}>
           <BaseStyles />
           <ToastHub>
-            <Title text="Projects" />
+            <Title text="Projects 3" handleMenuPanelOpen={this.handleMenuPanelOpen} />
             <ApolloProvider client={client}>
               <ErrorBoundary>
                 <AppContent
@@ -533,7 +539,8 @@ class App extends React.PureComponent {
   }
 }
 
-const StyledAragonApp = styled(PublicUrl.Provider).attrs({
+//const StyledAragonApp = styled(PublicUrl.Provider).attrs({
+const StyledAragonApp = styled(Main).attrs({
   url: ASSETS_URL,
 })`
   display: flex;
