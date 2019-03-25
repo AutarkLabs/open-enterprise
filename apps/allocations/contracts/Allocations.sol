@@ -210,7 +210,7 @@ contract Allocations is AragonApp, Fundable {
             totalSupport += payout.supports[i];
         }
         // Payouts are now instantiated on setDistribution
-        // require(payout.distSet, "setDistribution must be called first");
+        require(payout.distSet);
         if (payout.recurring) {
             // TDDO create payout execution counter to ensure payout time tracks payouts
             uint256 payoutTime = payout.startTime.add(payout.period);
