@@ -7,12 +7,14 @@ import { Info, Text, TextInput, theme, SafeLink, DropDown, IconFundraising } fro
 import { Form, FormField } from '../../Form'
 import { DateInput, InputDropDown } from '../../../../../../shared/ui'
 import { format } from 'date-fns'
+import BigNumber from 'bignumber.js'
+import { millisecondsToBlocks } from '../../../../../../shared/ui/utils'
 
 const rewardTypes = [ 'Merit Reward', 'Dividend' ]
 const referenceAssets = [ 'ABC', 'XYZ' ]
 const currencies = [ 'ETH', 'DAI' ]
 const disbursementCycles = ['Quarterly']
-const disbursementCyclesSummary = ['quartery cycle']
+const disbursementCyclesSummary = ['quarterly cycle']
 const disbursementDates = [ '1 week', '2 weeks' ]
 const disbursementDatesItems = disbursementDates.map(item => 'Cycle end + ' + item)
 
@@ -36,13 +38,14 @@ class NewReward extends React.Component {
 
   changeField = ({ target: { name, value } }) =>
     this.setState({ [name]: value })
-  
-  onSubmit = () => {
-    const dataToSend = this.state
-    dataToSend.currency = currencies[this.state.amountCurrency]
-    dataToSend.disbursementCycle = disbursementCycles[this.state.disbursementCycle]
-    dataToSend.disbursementDate = disbursementDates[this.state.disbursementDate]
 
+  onSubmit = () => {
+    const dataToSend = { ...this.state }
+    dataToSend.currency = this.props.balances[this.state.amountCurrency].address
+    dataToSend.disbursementCycle = disbursementCycles[this.state.disbursementCycle]
+    dataToSend.disbursementDelay = disbursementDates[this.state.disbursementDate]
+    dataToSend.isMerit = !dataToSend.rewardType ? true : false
+    dataToSend.referenceAsset = this.props.balances[this.state.referenceAsset+1].address // account for no ETH in reference asset dropdown
     console.log('Submitting new reward: ', dataToSend)
     this.props.onNewReward(dataToSend)
   }
@@ -50,7 +53,8 @@ class NewReward extends React.Component {
   canSubmit = () =>
     !(
       this.state.amount > 0 &&
-      this.state.description !== ''
+      this.state.description !== '' &&
+      this.state.dateEnd > this.state.dateStart
     )
 
   formatDate = date => format(date, 'yyyy-MM-dd')
@@ -64,7 +68,7 @@ class NewReward extends React.Component {
           input={
             <DropDown
               wide
-              items={referenceAssets}
+              items={this.props.balances.slice(1).map(token => token.name)}
               active={this.state.referenceAsset}
               onChange={referenceAsset => this.setState({ referenceAsset })}
             />
@@ -103,7 +107,7 @@ class NewReward extends React.Component {
               }}
               dropDown={{
                 name: 'amountCurrency',
-                items: currencies,
+                items: this.props.balances.map(token => token.symbol),
                 active: this.state.amountCurrency,
                 onChange: amountCurrency => this.setState({ amountCurrency }),
               }}
@@ -111,7 +115,10 @@ class NewReward extends React.Component {
           }
         />
         <VaultBalance>
-          Vault Balance: {this.props.vaultBalance}
+          Vault Balance: {
+            BigNumber(this.props.balances[this.state.amountCurrency].amount)
+              .div(10**(this.props.balances[this.state.amountCurrency].decimals)).dp(3).toString()
+          } {' '} {this.props.balances[this.state.amountCurrency].symbol}
         </VaultBalance>
       </RewardRow>
 
@@ -148,10 +155,10 @@ class NewReward extends React.Component {
         <TokenIcon />
         <Summary>
           <p>
-            A total of <SummaryBold>{this.state.amount} {currencies[this.state.amountCurrency]}</SummaryBold> will be distributed as a reward to addresses that earned <SummaryBold>{referenceAssets[this.state.referenceAsset]}</SummaryBold> from <SummaryBold>{this.formatDate(this.state.dateStart)}</SummaryBold> to <SummaryBold>{this.formatDate(this.state.dateEnd)}</SummaryBold>.
+            A total of <SummaryBold>{this.state.amount} {this.props.balances[this.state.amountCurrency].symbol}</SummaryBold> will be distributed as a reward to addresses that earned <SummaryBold>{this.props.balances[this.state.referenceAsset+1].name}</SummaryBold> from <SummaryBold>{this.formatDate(this.state.dateStart)}</SummaryBold> to <SummaryBold>{this.formatDate(this.state.dateEnd)}</SummaryBold>.
           </p>
           <p>
-            The reward amount will be in proportion to the <SummaryBold>{referenceAssets[this.state.referenceAsset]}</SummaryBold> earned by each account in the specified period. 
+            The reward amount will be in proportion to the <SummaryBold>{this.props.balances[this.state.referenceAsset+1].name}</SummaryBold> earned by each account in the specified period.
           </p>
           <p>
             The reward will be disbursed <SafeLink href="#" target="_blank"><SummaryBold>upon approval of this proposal</SummaryBold></SafeLink>.
@@ -178,7 +185,7 @@ class NewReward extends React.Component {
               }}
               dropDown={{
                 name: 'amountCurrency',
-                items: currencies,
+                items: this.props.balances.map(token => token.symbol),
                 active: this.state.amountCurrency,
                 onChange: amountCurrency => this.setState({ amountCurrency }),
               }}
@@ -186,7 +193,10 @@ class NewReward extends React.Component {
           }
         />
         <VaultBalance>
-          Vault Balance: {this.props.vaultBalance}
+          Vault Balance: {
+            BigNumber(this.props.balances[this.state.amountCurrency].amount)
+              .div(10**(this.props.balances[this.state.amountCurrency].decimals)).dp(3).toString()
+          } {' '} {this.props.balances[this.state.amountCurrency].symbol}
         </VaultBalance>
       </RewardRow>
 
@@ -251,13 +261,13 @@ class NewReward extends React.Component {
         <TokenIcon />
         <Summary>
           <p>
-            A total of <SummaryBold>{this.state.amount} {currencies[this.state.amountCurrency]}</SummaryBold> will be distributed as a dividend to <SummaryBold>{referenceAssets[this.state.referenceAsset]}</SummaryBold> holders on a <SummaryBold>{disbursementCyclesSummary[this.state.disbursementCycle]}</SummaryBold>, from <SummaryBold>{this.formatDate(this.state.dateStart)}</SummaryBold> to <SummaryBold>{this.formatDate(this.state.dateEnd)}</SummaryBold>.
+          A total of <SummaryBold>{this.state.amount} {this.props.balances[this.state.amountCurrency].symbol}</SummaryBold> will be distributed as a dividend to <SummaryBold>{this.props.balances[this.state.referenceAsset+1].name}</SummaryBold> holders on a <SummaryBold>{disbursementCyclesSummary[this.state.disbursementCycle]}</SummaryBold>, from <SummaryBold>{this.formatDate(this.state.dateStart)}</SummaryBold> to <SummaryBold>{this.formatDate(this.state.dateEnd)}</SummaryBold>.
           </p>
           <p>
-            The dividend amount will be in proportion to the <SummaryBold>{referenceAssets[this.state.referenceAsset]}</SummaryBold> balance as of the last day of the cycle.
+          The dividend amount will be in proportion to the <SummaryBold>{this.props.balances[this.state.referenceAsset].name}</SummaryBold> balance as of the last day of the cycle.
           </p>
           <p>
-            The dividend will be disbursed <SummaryBold>{disbursementDates[this.state.disbursementDate]}</SummaryBold> after the end of each cycle..
+          The dividend will be disbursed <SummaryBold>{disbursementDates[this.state.disbursementDate]}</SummaryBold> after the end of each cycle..
           </p>
         </Summary>
       </Info>
@@ -266,6 +276,7 @@ class NewReward extends React.Component {
 
 
   render() {
+
     return (
       <Form
         onSubmit={this.onSubmit}
