@@ -36,9 +36,7 @@ export const initStore = (vaultAddress, network) => {
     [
       // Always initialize the store with our own home-made event
       of({ event: INITIALIZATION_TRIGGER }),
-      //of({ event: 'test1' }),
-      //of({ event: 'test2' }),
-      //of({ event: 'test3' }),
+
       // handle vault events
       vaultContract.events(),
     ]
