@@ -177,10 +177,7 @@ const Overview = ({ rewards, newReward, openDetails }) => {
 
 Overview.propTypes = {
   newReward: PropTypes.func.isRequired,
-<<<<<<< HEAD
   openDetails: PropTypes.func.isRequired,
-=======
->>>>>>> d06195962762da25b0bfdf3dc4f94384e9e3a2be
   rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
 }
 
