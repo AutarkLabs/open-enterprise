@@ -28,7 +28,7 @@ contract RewardsCore is IsContract, AragonApp {
     }
 
     Reward[] rewards;
-    Vault vault;
+    Vault public vault;
 
     function initialize( Vault _vault)
     external onlyInit // solium-disable-line visibility-first
@@ -47,6 +47,9 @@ contract RewardsCore is IsContract, AragonApp {
             rewardAmount = calculateMeritReward(reward);
         } else {
             rewardAmount = calculateDividendReward(reward);
+        }
+        if (rewardAmount == 0) {
+            return 0;
         }
         require(vault.balance(reward.rewardToken) > rewardAmount, "Vault does not have enough funds to cover this reward");
         vault.transfer(reward.rewardToken, msg.sender, rewardAmount);
@@ -74,35 +77,62 @@ contract RewardsCore is IsContract, AragonApp {
         } else {
             rewardAmount = calculateDividendReward(reward);
         }
+        //rewardAmount = 50;
     }
 
+    /**
+    * @dev This function creates a reward instance to be added to the rewards array. ID's
+    *      are assigned the new intance's index of that array
+    * @notice Create a new reward
+    * @param _isMerit Recurring dividend reward one-off merit reward
+    * @param _referenceToken the token used to calculate reward distributions for each holder
+    * @param _rewardToken currency received as reward
+    * @param _amount the reward amount to be distributed
+    * @param _duration the time duration over which reference token earnings are calculated
+    * @param _occurances the number of occurences of a dividend reward
+    * @param _delay the waiting time after the end of the period that the reward can be claimed
+    * @return the reward Id
+    */
     function newReward(
         bool _isMerit,
-        MiniMeToken _referenceToken,
+        address _referenceToken,
         address _rewardToken,
         uint _amount,
+        uint _startBlock,
         uint _duration,
         uint _occurances,
         uint _delay
     ) public auth(ADD_REWARD_ROLE) returns (uint rewardId)
     {
         require(isContract(_referenceToken), "_referenceToken must be a contract");
-        require(isContract(_rewardToken), "_referenceToken must be a contract");
+        if (_rewardToken != address(0)) {
+            require(isContract(_rewardToken), "_referenceToken must be a contract");
+        }
         require(!_isMerit || _occurances == 1, "merit rewards must only occur once");
         require(_occurances < 42, "Maximum number of occurances is 41");
+        require(_startBlock > MiniMeToken(_referenceToken).creationBlock(),"cannot start period prior to the creation block");
         rewardId = rewards.length++;
         Reward storage reward = rewards[rewards.length - 1];
         reward.isMerit = _isMerit;
-        reward.referenceToken = _referenceToken;
+        reward.referenceToken = MiniMeToken(_referenceToken);
         reward.rewardToken = _rewardToken;
         reward.amount = _amount;
-        reward.duration = _duration * _occurances;
+        reward.duration = _duration;
         reward.occurances = _occurances;
         reward.delay = _delay;
-        reward.blockStart = block.number;
+        reward.blockStart = _startBlock;
         emit RewardAdded(rewardId);
         if (_occurances > 1) {
-            newReward(_isMerit, _referenceToken, _rewardToken, _amount, _duration, _occurances - 1, _delay);
+            newReward(
+                _isMerit,
+                _referenceToken,
+                _rewardToken,
+                _amount,
+                _startBlock + _duration,
+                _duration,
+                _occurances - 1,
+                _delay
+            );
         }
     }
 
@@ -119,11 +149,16 @@ contract RewardsCore is IsContract, AragonApp {
         uint balance;
         uint initialSupply = reward.referenceToken.totalSupplyAt(reward.blockStart);
         uint endingSupply = reward.referenceToken.totalSupplyAt(reward.blockStart + reward.duration);
+        supply = endingSupply - initialSupply;
+        if (supply == 0) {
+            return 0;
+        }
+
         uint initialBalance = reward.referenceToken.balanceOfAt(msg.sender, reward.blockStart);
         uint endingBalance = reward.referenceToken.balanceOfAt(msg.sender, reward.blockStart + reward.duration);
-        require(initialSupply < endingSupply, "The supply must have increased over the period");
-        require(initialBalance < endingBalance, "The user must have earned tokens over the period");
-        supply = endingSupply - initialSupply;
+        //require(initialSupply < endingSupply, "The supply must have increased over the period");
+        //require(initialBalance < endingBalance, "The user must have earned tokens over the period");
+
         balance = endingBalance - initialBalance;
         rewardAmount = reward.amount * balance / supply;
     }
