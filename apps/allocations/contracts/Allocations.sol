@@ -8,6 +8,9 @@ import "@aragon/os/contracts/lib/math/SafeMath.sol";
 
 import "@aragon/os/contracts/lib/math/SafeMath64.sol";
 
+import "@aragon/apps-vault/contracts/Vault.sol";
+
+
 /*******************************************************************************
     Copyright 2018, That Planning Suite
     This program is free software: you can redistribute it and/or modify
@@ -86,6 +89,7 @@ contract Allocations is AragonApp, Fundable {
 
 
     AddressBook public addressBook;
+    Vault public vault;
     Payout[] payouts;
 
     bytes32 constant public START_PAYOUT_ROLE = keccak256("START_PAYOUT_ROLE");
@@ -105,10 +109,12 @@ contract Allocations is AragonApp, Fundable {
     *         None of the distribution or payments are handled in this step.
     */
     function initialize(
-        AddressBook _addressBook
+        AddressBook _addressBook,
+        Vault _vault
     ) external onlyInit
     {
         addressBook = _addressBook;
+        vault = _vault;
         initialized();
     }
 
@@ -196,11 +202,20 @@ contract Allocations is AragonApp, Fundable {
         }
 
         uint individualPayout;
+        address token = payout.token;
+        uint length = payout.candidateAddresses.length;
         //handle vault
-        for (i = 0; i < payout.candidateAddresses.length; i++) {
-            individualPayout = payout.supports[i].mul(payout.amount).div(totalSupport);
-            payout.candidateAddresses[i].transfer(individualPayout);
-            payout.balance = payout.balance.sub(individualPayout);
+        if (token == 0x0) {
+            for (i = 0; i < length; i++) {
+                individualPayout = payout.supports[i].mul(payout.amount).div(totalSupport);
+                payout.candidateAddresses[i].transfer(individualPayout);
+                payout.balance = payout.balance.sub(individualPayout);
+            }
+        } else {
+            for (i = 0; i < length; i++) {
+                individualPayout = payout.supports[i].mul(payout.amount).div(totalSupport);
+                vault.transfer(token, payout.candidateAddresses[i], individualPayout);
+            }
         }
         success = true;
         emit PayoutExecuted(_payoutId);
@@ -239,10 +254,16 @@ contract Allocations is AragonApp, Fundable {
         // require(_amount <= payout.limit, "payout amount over account limit"); // This is unnecessary
         payout.informational = _informational;
         payout.recurring = _recurring;
+        address token = payout.token;
+        uint balance = payout.balance;
         if (!_informational) {
-            payout.balance.add(msg.value);
+            balance.add(msg.value);
             payout.amount = _amount;
-            require(payout.balance >= _amount, "payout account underfunded");
+            if (payout.token == 0x0) {
+                require(balance >= _amount, "payout account underfunded");
+            } else {
+                require(vault.balance(token) >= _amount, "vault underfunded");
+            }
             require(payout.limit >= _amount, "payout amount over account limit");
         } else {
             require(msg.value == 0, "cannot fund informational allocation");

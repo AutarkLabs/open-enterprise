@@ -47,7 +47,7 @@ class App extends React.Component {
   createAccount = ({ limit, ...account }) => {
     account.balance = 0
     account.limit = ETH_DECIMALS.times(limit).toString()
-    this.props.app.newPayout(account.description, account.limit, 0x0)
+    this.props.app.newPayout(account.description, account.limit, account.token.address)
     this.closePanel()
     console.info('App.js: Account Created:')
     console.table(account)
@@ -92,7 +92,7 @@ class App extends React.Component {
       panel: {
         visible: true,
         content: NewAccount,
-        data: { heading: 'New Account', onCreateAccount: this.createAccount },
+        data: { heading: 'New Account', onCreateAccount: this.createAccount, balances: this.props.balances ? this.props.balances : [] },
       },
     })
   }

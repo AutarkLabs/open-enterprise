@@ -5,7 +5,6 @@ import { DescriptionInput, Form, FormField, InputDropDown } from '../Form'
 import { isNumberString, isStringEmpty } from '../../utils/helpers'
 
 // TODO:: This should be votingTokens from account?
-const AVAILABLE_TOKENS = [ 'ETH', 'ANT', 'GIV', 'FTL', '🦄' ]
 const INITIAL_STATE = {
   address: '0xffffffffffffffffffffffffffffffffffffffff',
   description: '',
@@ -17,9 +16,10 @@ class NewAccount extends React.Component {
   static propTypes = {
     heading: PropTypes.string,
     onCreateAccount: PropTypes.func.isRequired,
+    balances: PropTypes.array.isRequired
   }
 
-  state = INITIAL_STATE
+  state =  INITIAL_STATE
 
   // TODO: improve field checking for input errors and sanitize
   changeField = e => {
@@ -41,7 +41,7 @@ class NewAccount extends React.Component {
       )
     }
 
-    const token = AVAILABLE_TOKENS[tokenIndex]
+    const token = this.props.balances[tokenIndex]
     this.props.onCreateAccount({
       address,
       description,
@@ -52,6 +52,8 @@ class NewAccount extends React.Component {
   }
 
   render() {
+    let availableTokens =  this.props.balances.map( balance => balance.symbol)
+
     return (
       <Form
         onSubmit={this.createAccount}
@@ -84,7 +86,7 @@ class NewAccount extends React.Component {
               }}
               dropDown={{
                 name: 'token',
-                items: AVAILABLE_TOKENS,
+                items: availableTokens,
                 active: this.state.token,
                 onChange: this.changeField,
               }}

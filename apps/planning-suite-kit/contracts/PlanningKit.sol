@@ -60,7 +60,7 @@ contract PlanningKit is KitBase {
 
     constructor(ENS ens) public KitBase(DAOFactory(0), ens) {
         address root = msg.sender;
-        
+
         tokenFactory = new MiniMeTokenFactory();
         registry = new StandardBounties(root);
 
@@ -95,7 +95,7 @@ contract PlanningKit is KitBase {
         projects.initialize(registry, vault);
         rangeVoting.initialize(token, 50 * PCT256, 0, 1 minutes);
         voting.initialize(token, 50 * PCT64, 10 * PCT64, 1 days);
-        allocations.initialize(addressBook);
+        allocations.initialize(addressBook, vault);
         tokenManager.initialize(token, true, 0);
         finance.initialize(vault, 1 days);
         token.approve(finance, 100 ether);
@@ -104,13 +104,13 @@ contract PlanningKit is KitBase {
         handlePermissions(
             dao,
             acl,
-            root, 
-            addressBook, 
-            projects, 
-            rangeVoting, 
-            allocations, 
-            tokenManager, 
-            vault, 
+            root,
+            addressBook,
+            projects,
+            rangeVoting,
+            allocations,
+            tokenManager,
+            vault,
             finance,
             voting
         );
