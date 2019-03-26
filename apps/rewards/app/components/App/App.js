@@ -7,6 +7,7 @@ import { Title } from '../Shared'
 import { Empty } from '../Card'
 import PanelManager, { PANELS } from '../Panel'
 import NewRewardButton from './NewRewardButton'
+import { millisecondsToBlocks, MILLISECONDS_IN_A_MONTH, millisecondsToQuarters, WEEK } from '../../../../../shared/ui/utils'
 import BigNumber from 'bignumber.js'
 
 const ASSETS_URL = 'aragon-ui-assets/'
@@ -30,6 +31,7 @@ class App extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
     rewards: PropTypes.arrayOf(PropTypes.object),
+    balances: PropTypes.arrayOf(PropTypes.object),
   }
 
   state = {
@@ -51,12 +53,66 @@ class App extends React.Component {
       panelProps: {
         onNewReward: this.onNewReward,
         vaultBalance: '432.9 ETH',
+        balances: this.props.balances,
       },
     })
   }
 
-  onNewReward = reward => {
-    console.log('onNewReward', reward)
+  onNewReward = async reward => {
+    let currentBlock = await this.props.app.web3Eth('getBlockNumber').first().toPromise()
+    let startBlock = currentBlock + millisecondsToBlocks(Date.now(), reward.dateStart)
+    console.log(startBlock)
+    if (!reward.isMerit) {
+      switch (reward.disbursementCycle) {
+      case 'Quarterly':
+        reward.occurances = millisecondsToQuarters(reward.dateStart, reward.dateEnd)
+        reward.duration = millisecondsToBlocks(Date.now(), 3 * MILLISECONDS_IN_A_MONTH + Date.now())
+        break
+      default: // Monthly
+        reward.occurances = 12
+        reward.duration = millisecondsToBlocks(Date.now(), MILLISECONDS_IN_A_MONTH + Date.now())
+      }
+      switch(reward.disbursementDelay) {
+      case '1 week':
+        reward.delay = millisecondsToBlocks(Date.now(), Date.now + WEEK)
+        break
+      case '2 weeks':
+        reward.delay = millisecondsToBlocks(Date.now(), Date.now + (2 * WEEK))
+        break
+      default:
+        reward.delay = 0
+        break
+      }
+    }
+    else {
+      reward.occurances = 1
+      reward.delay = 0
+      reward.duration = millisecondsToBlocks(reward.dateStart, reward.dateEnd)
+    }
+
+    console.log(
+      'isMerit ',reward.isMerit,
+      '\nreferenceAsset ', reward.referenceAsset,
+      '\ncurrency', reward.currency,
+      '\namount', reward.amount,
+      '\nstartBlock', startBlock,
+      '\nduration', reward.duration,
+      '\noccurances', reward.occurances,
+      '\ndelay', reward.delay
+    )
+
+
+
+    this.props.app.newReward(
+      reward.isMerit, //bool _isMerit,
+      reward.referenceAsset, //address _referenceToken,
+      reward.currency, //address _rewardToken,
+      reward.amount, //uint _amount,
+      startBlock, // uint _startBlock
+      reward.duration, //uint _duration, (number of blocks until reward will be available)
+      reward.occurances, //uint _occurances,
+      reward.delay //uint _delay
+    )
     this.closePanel()
   }
 
@@ -101,12 +157,12 @@ class App extends React.Component {
         { this.state.selected === 1 ? (
           <MyRewards
             rewards={this.props.rewards === undefined ? [] : this.props.rewards}
-            onNewReward={this.onNewReward}
+            newReward={this.newReward}
           />
         ) : (
           <Overview
             rewards={this.props.rewards === undefined ? [] : this.props.rewards}
-            onNewReward={this.onNewReward}
+            newReward={this.newReward}
           />
         )}
 

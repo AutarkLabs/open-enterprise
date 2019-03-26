@@ -8,14 +8,14 @@ const Overview = (props) => {
   const rewardsEmpty = props.rewards.length === 0
 
   if (rewardsEmpty) {
-    return <Empty tab='Overview' action={props.onNewReward} />
+    return <Empty tab='Overview' action={props.newReward} />
   }
 
   return <StyledRewards>Rewards Go Here</StyledRewards>
 }
 
 Overview.propTypes = {
-  onNewReward: PropTypes.func.isRequired,
+  newReward: PropTypes.func.isRequired,
   rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
 }
 
