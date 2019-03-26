@@ -141,7 +141,7 @@ const MyRewards = ({ rewards, newReward, openDetails, network }) => {
   const rewardsEmpty = rewards.length === 0
 
   if (rewardsEmpty) {
-    return <Empty tab='MyRewards' action={onNewReward} />
+    return <Empty tab='MyRewards' action={newReward} />
   }
 
   return (
@@ -176,7 +176,7 @@ const MyRewards = ({ rewards, newReward, openDetails, network }) => {
 }
 
 MyRewards.propTypes = {
-  onNewReward: PropTypes.func.isRequired,
+  newReward: PropTypes.func.isRequired,
   rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
   network: PropTypes.object,
 }
