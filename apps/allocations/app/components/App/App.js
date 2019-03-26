@@ -1,16 +1,43 @@
-import { AragonApp, observe, SidePanel, Root, ToastHub } from '@aragon/ui'
+import { Main, observe, SidePanel, Root, ToastHub } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 
-import { Accounts, NewAccountButton } from '.'
+import { Accounts, NewAccountButton, Payouts } from '.'
 import { Title } from '../Shared'
 import { NewAccount, NewAllocation } from '../Panel'
 import { ETH_DECIMALS } from '../../utils/constants'
 import { networkContextType } from '../../../../../shared/ui'
-// import { allocationsMockData } from '../../utils/mockData'
+import { BigNumber } from 'bignumber.js'
+import { allocationsMockData } from '../../utils/mockData'
 
 const ASSETS_URL = 'aragon-ui-assets/'
+
+const payouts = [{
+  rewardToken: 0x0,
+  amount: BigNumber(17e18),
+  StartTime: new Date('2018-12-17'),
+  recurring: false,
+  period: 86400,
+  description: 'Q1 Reward for Space Decentral Contributors',
+  index: 0,
+  distSet: false,
+},
+{
+  rewardToken: 0x0,
+  amount: BigNumber(17e18),
+  StartTime: new Date('2018-12-17'),
+  recurring: false,
+  period: 86400,
+  description: 'Q1 Reward for Space Decentral Contributors',
+  index: 0,
+  distSet: false,
+},
+]
+
+
+
+const network = { type: 'rinkeby' }
 
 class App extends React.Component {
   static propTypes = {
@@ -32,7 +59,7 @@ class App extends React.Component {
       visible: false,
     },
     // TODO: Don't use this in production
-    // ...allocationsMockData,
+    ...allocationsMockData,
   }
 
   getChildContext() {
@@ -42,6 +69,10 @@ class App extends React.Component {
         type: network.type,
       },
     }
+  }
+
+  openDetailsMy = reward => {
+    console.log('App open details (my)', reward)
   }
 
   createAccount = ({ limit, ...account }) => {
@@ -74,10 +105,10 @@ class App extends React.Component {
     this.closePanel()
   }
 
-  onExecutePayout = id => {
+  onExecutePayout = (accountId, payoutId) => {
     console.info('App.js: Executing Payout:')
-    console.info(id)
-    this.props.app.executePayout(id)
+    //console.info(id)
+    //this.props.app.executePayout(id)
   }
 
   manageParameters = address => {
@@ -133,14 +164,14 @@ class App extends React.Component {
     return (
       // TODO: Profile App with React.StrictMode, perf and why-did-you-update, apply memoization
       <Root.Provider>
-        <StyledAragonApp>
+        <Main>
           <ToastHub>
             <Title text="Allocations" />
             <NewAccountButton onClick={this.newAccount} />
             <Accounts
               accounts={
                 //TODO: Change back to this.props.accounts when done
-                this.props.accounts !== undefined ? this.props.accounts : []
+                this.state.accounts !== undefined ? this.state.accounts : []
               }
               onNewAccount={this.newAccount}
               onNewAllocation={this.newAllocation}
@@ -148,6 +179,14 @@ class App extends React.Component {
               onExecutePayout={this.onExecutePayout}
               app={this.props.app}
             />
+
+            <Payouts
+              payouts={payouts}
+              newReward={this.createAccount}
+              executePayout={this.onExecutePayout}
+              network={network}
+            />
+
             <SidePanel
               title={(panel.data && panel.data.heading) || ''}
               opened={panel.visible}
@@ -156,21 +195,21 @@ class App extends React.Component {
               {panel.content && <PanelContent {...panel.data} />}
             </SidePanel>
           </ToastHub>
-        </StyledAragonApp>
+        </Main>
       </Root.Provider>
     )
   }
 }
 
-const StyledAragonApp = styled(AragonApp).attrs({
-  publicUrl: ASSETS_URL,
-})`
-  display: flex;
-  height: 100vh;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: stretch;
-`
+//const StyledAragonApp = styled(Main).attrs({
+//  publicUrl: ASSETS_URL,
+//})`
+//  display: flex;
+//  height: 100vh;
+//  flex-direction: column;
+//  align-items: stretch;
+//  justify-content: stretch;
+//`
 
 export default observe(
   observable => observable.map(state => ({ ...state })),
