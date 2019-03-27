@@ -506,7 +506,7 @@ function checkIssuesLoaded(issues, issueNumber, data) {
 let unloadedRepoQueue = []
 async function updateState(state, id, transform) {
   console.log('update state: ' + state + ', id: ' + id)
-  const { repos, tokens, bountySettings } = determineStateVars
+  const { repos, tokens, bountySettings } = determineStateVars(state)
   let newRepos
   try {
     if (client && client.request) {
@@ -532,7 +532,7 @@ function updateIssueState(state, issueNumber, data) {
   if(data === undefined || data === null) {
     return state
   }
-  const { repos, tokens, bountySettings, issues } = determineStateVars
+  const { repos, tokens, bountySettings, issues } = determineStateVars(state)
 
   try {
     let newIssues = checkIssuesLoaded(issues, issueNumber, data)
