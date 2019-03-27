@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import { BigNumber } from 'bignumber.js'
 import {
   Table,
   TableHeader,
@@ -44,13 +45,25 @@ const generateOpenDetails = (reward, openDetails) => () => {
   openDetails(reward)
 }
 
-const translateToken = (token) => {
-  if (token == 0x0) {
-    return 'ETH'
-  }
-}
+const shortTransaction = transactionID =>
+  transactionID.substring(0,4) + '..' + transactionID.substring(transactionID.length - 4)
 
-const MyRewardsWide = ({ claimed, data, openDetails, network }) => (
+const mockReward = [{
+  creator: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
+  isMerit: true,
+  referenceToken: 'SDN',
+  rewardToken: 0x0,
+  amount: BigNumber(17e18),
+  transactionID: '0xb4124cEB3451635DAcedd11767f004',
+  startDate: new Date('2018-12-17'),
+  endDate: new Date('2019-01-17'),
+  description: 'Q1 Reward for Space Decentral Contributors',
+  delay: 0,
+  index: 0,
+  claimed: true,
+}]
+
+const MyRewardsWide = ({ claimed, dat, openDetails, network, tokens }) => (
   <Table
     style={{ width: '100%' }}
     header={
@@ -70,16 +83,12 @@ const MyRewardsWide = ({ claimed, data, openDetails, network }) => (
           </RewardDescription>
         </TableCell>
         <TableCell>
-          <IdentityBadge
-            networkType={network.type}
-            entity={reward.creator}
-            shorten={true}
-          />
+          {reward.transactionID}
         </TableCell>
         <TableCell>
           {claimed ? (<Button>Claim</Button>) : '10/11/12'}
         </TableCell>
-        <TableCell>{displayCurrency(reward.amount)}{' '}{translateToken(reward.rewardToken)}</TableCell>
+        <TableCell>{displayCurrency(reward.amount)}{' '}{tokens[reward.rewardToken]}</TableCell>
       </ClickableTableRow>
     ))}
   </Table>
@@ -109,7 +118,7 @@ const MyRewardStatus = styled(Text.Block).attrs({
 })`
   margin-top: 5px;
 `
-const MyRewardsNarrow = ({ claimed, data, openDetails, network }) => (
+const MyRewardsNarrow = ({ claimed, data, openDetails, network, tokens }) => (
   <NarrowList>
     {data.map((reward, i) => (
       <NarrowListReward onClick={generateOpenDetails(reward, openDetails)} key={i}>
@@ -124,7 +133,7 @@ const MyRewardsNarrow = ({ claimed, data, openDetails, network }) => (
         <div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center' }}>
           <div style={{ marginRight: '10px' }}>
             <AmountBadge>
-              {displayCurrency(reward.amount)}{' '}{translateToken(reward.rewardToken)}
+              {displayCurrency(reward.amount)}{' '}{tokens[reward.rewardToken]}
             </AmountBadge>
           </div>
           <div>
@@ -137,7 +146,7 @@ const MyRewardsNarrow = ({ claimed, data, openDetails, network }) => (
   </NarrowList>
 )
 
-const MyRewards = ({ rewards, newReward, openDetails, network }) => {
+const MyRewards = ({ rewards, newReward, openDetails, network, tokens }) => {
   const rewardsEmpty = rewards.length === 0
 
   if (rewardsEmpty) {
@@ -158,6 +167,7 @@ const MyRewards = ({ rewards, newReward, openDetails, network }) => {
           data={rewards}
           openDetails={openDetails}
           network={network}
+	  tokens={tokens}
           belowMedium={MyRewardsNarrow}
           aboveMedium={MyRewardsWide}
         />
@@ -167,6 +177,7 @@ const MyRewards = ({ rewards, newReward, openDetails, network }) => {
           data={rewards}
           openDetails={openDetails}
           network={network}
+	  tokens={tokens}
           belowMedium={MyRewardsNarrow}
           aboveMedium={MyRewardsWide}
         />
@@ -179,6 +190,7 @@ MyRewards.propTypes = {
   newReward: PropTypes.func.isRequired,
   rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
   network: PropTypes.object,
+  tokens: PropTypes.object,
 }
 
 const Main = styled.div`

@@ -166,6 +166,9 @@ class App extends React.Component {
     const { panel, panelProps } = this.state
     const { network } = this.props
 
+    // TODO: get tokens from vault
+    const tokens = { 0x0: 'ETH' }
+
     return (
       <Root.Provider>
         <StyledAragonApp>
@@ -198,6 +201,7 @@ class App extends React.Component {
               newReward={this.newReward}
               openDetails={this.openDetailsMy}
               network={network}
+              tokens={tokens}
             />
           ) : (
             <Overview
