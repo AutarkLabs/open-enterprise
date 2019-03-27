@@ -97,11 +97,7 @@ Hypothetical flow diagram. The components should be "plug and play" to design a 
 
 ## Contact
 
-We can generally be found in the [Aragon Planning riot room](https://riot.im/app/#/room/#aragon-planning:matrix.org)
-
-You may also reach out to us via email at: nest@space.coop
-
-If you have any questions or want to get involved in our development please let us know!
+We can  be found in the [`autark.community` keybase channel](https://keybase.io/team/autark.community). If you have any questions or want to get involved in our development please drop in.
 
 ## Special Thanks
 
