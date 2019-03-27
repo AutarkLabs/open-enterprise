@@ -120,7 +120,7 @@ class App extends React.Component {
                     voteTime={this.props.voteTime}
                     minParticipationPct={
                       this.props.minParticipationPct
-                        ? this.props.minParticipationPct.toFixed(2)
+                        ? (this.props.minParticipationPct / 10 ** 16)
                         : 'N/A'
                     }
                     tokenAddress={this.props.tokenAddress}

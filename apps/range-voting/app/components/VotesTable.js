@@ -3,7 +3,7 @@ import { compareDesc } from 'date-fns'
 import { Table, TableHeader, TableRow } from '@aragon/ui'
 import VoteRow from './VoteRow'
 
-const VotesTable = ({ votes, opened, onSelectVote }) => (
+const VotesTable = ({ votes, opened, onSelectVote, app }) => (
   <Table
     header={
       <TableRow>
@@ -24,7 +24,7 @@ const VotesTable = ({ votes, opened, onSelectVote }) => (
           compareDesc(startDateLeft, startDateRight)
       )
       .map(vote => (
-        <VoteRow key={vote.voteId} vote={vote} onSelectVote={onSelectVote} />
+        <VoteRow key={vote.voteId} vote={vote} onSelectVote={onSelectVote} app={app} />
       ))}
   </Table>
 )

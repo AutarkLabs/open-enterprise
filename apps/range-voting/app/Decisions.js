@@ -12,7 +12,7 @@ import { VOTE_YEA } from './utils/vote-types'
 import { isBefore } from 'date-fns'
 import { EmptyStateCard, SidePanel } from '@aragon/ui'
 import { VotePanelContent } from './components/Panels'
-import { EMPTY_CALLSCRIPT, getQuorumProgress } from './utils/vote-utils'
+import { EMPTY_CALLSCRIPT, getQuorumProgress, getTotalSupport } from './utils/vote-utils'
 
 const tokenAbi = [].concat(tokenBalanceOfAbi, tokenDecimalsAbi)
 
@@ -182,10 +182,12 @@ class Decisions extends React.Component {
           ...vote,
           endDate,
           // Open if not executed and now is still before end date
-          open: !vote.data.executed && isBefore(new Date(), endDate),
+          open: isBefore(new Date(), endDate),
           quorum: safeDiv(vote.data.minAcceptQuorum, pctBase),
           quorumProgress: getQuorumProgress(vote.data),
-          description: vote.data.metadata
+          minParticipationPct: minParticipationPct,
+          description: vote.data.metadata,
+          totalSupport: getTotalSupport(vote.data)
         }
       })
       : votes
@@ -199,7 +201,7 @@ class Decisions extends React.Component {
       <Main>
         <AppLayout.ScrollWrapper>
           {displayVotes ? (
-            <Votes votes={preparedVotes} onSelectVote={this.handleVoteOpen} />
+            <Votes votes={preparedVotes} onSelectVote={this.handleVoteOpen} app={app}/>
           ) : (
             <div
               style={{
