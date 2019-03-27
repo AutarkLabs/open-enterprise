@@ -97,6 +97,7 @@ const loadReposFromQueue = async () => {
 
     const repos = (appState && appState.repos) || []
     const newState = { ...appState, repos: [ ...repos, ...loadedRepoQueue ] }
+    unloadedRepoQueue = []
     app.cache('state', newState)
   }
 }
