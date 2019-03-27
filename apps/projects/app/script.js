@@ -86,12 +86,28 @@ const initClient = authToken => {
   })
 }
 
+const loadReposFromQueue = async () => {
+  if (unloadedRepoQueue && unloadedRepoQueue.length > 0) {
+    const loadedRepoQueue = await Promise.all(unloadedRepoQueue.map(
+      async repoId => {
+        const { repos } = await syncRepos(appState, { repoId })
+        return repos[0]
+      }
+    ))
+
+    const repos = (appState && appState.repos) || []
+    const newState = { ...appState, repos: [ ...repos, ...loadedRepoQueue ] }
+    app.cache('state', newState)
+  }
+}
+
 // TODO: Handle cases where checking validity of token fails (revoked, etc)
 
-github().subscribe(result => {
+github().subscribe(async result => {
   console.log('github object received from cache:', result)
   if (result) {
     result.token && initClient(result.token)
+    await loadReposFromQueue()
     return
   } else app.cache('github', { status: STATUS.INITIAL })
 })
@@ -122,6 +138,7 @@ async function handleEvents(response) {
   case 'RepoAdded':
     console.log('[Projects] event RepoAdded')
     nextState = await syncRepos(appState, response.returnValues)
+    appState = nextState
     break
   case 'RepoRemoved':
     console.log('[Projects] RepoRemoved', response.returnValues)
@@ -130,10 +147,12 @@ async function handleEvents(response) {
     if (repoIndex === -1) break
     appState.repos.splice(repoIndex,1)
     nextState = appState
+    appState = nextState
     break
   case 'RepoUpdated':
     console.log('[Projects] RepoUpdated', response.returnValues)
     nextState = await syncRepos(appState, response.returnValues)
+    appState = nextState
   case 'BountyAdded':
     console.log('[Projects] BountyAdded', appState, response.returnValues)
     if(!response.returnValues) {
@@ -468,13 +487,20 @@ function checkIssuesLoaded(issues, issueNumber, data) {
   }
 }
 
+let unloadedRepoQueue = []
 async function updateState(state, id, transform) {
   console.log('update state: ' + state + ', id: ' + id)
-  const { repos = [] } = state
+  const repos = (state && state.repos) || []
+  let newRepos
   try {
-    let newRepos = await checkReposLoaded(repos, id, transform)
-    let newState = { ...state, repos: newRepos }
-    return newState
+    if (client && client.request) {
+      newRepos = await checkReposLoaded(repos, id, transform)
+      let newState = { ...state, repos: newRepos }
+      return newState
+    } else {
+      unloadedRepoQueue.push(id)
+      return { ...state, repos }
+    }
   } catch (err) {
     console.error(
       'Update repos failed to return:',
