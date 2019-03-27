@@ -149,7 +149,6 @@ async function handleEvents(response) {
     if (repoIndex === -1) break
     appState.repos.splice(repoIndex,1)
     nextState = appState
-    appState = nextState
     break
   case 'RepoUpdated':
     console.log('[Projects] RepoUpdated', response.returnValues)
