@@ -93,7 +93,7 @@ contract('Allocations App', accounts => {
     //   receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
     // )
 
-    await app.initialize( 0x0, { from: accounts[0] })
+    await app.initialize( 0x0, 0x0, { from: accounts[0] })
   })
 
   context('app creation and funded Payout', () => {
@@ -155,7 +155,7 @@ contract('Allocations App', accounts => {
 
     it('can create a new Payout', async () => {
       payoutMembers = await app.getPayout(allocationId)
-      assert.equal(payoutMembers[2], 'Fett\'s vett', 'Payout metadata incorrect')
+      assert.equal(payoutMembers[1], 'Fett\'s vett', 'Payout metadata incorrect')
       assert.equal(
         payoutMembers[0].toNumber(),
         10000000000000000,
@@ -306,7 +306,7 @@ contract('Allocations App', accounts => {
     it('can create new Payout', async () => {
       payoutMembers = await app.getPayout(allocationId)
       assert.equal(
-        payoutMembers[2],
+        payoutMembers[1],
         'Fett\'s auto warranty',
         'Payout metadata incorrect'
       )
@@ -475,8 +475,8 @@ contract('Allocations App', accounts => {
         false,
         true,
         86400,
-        0x0,
-        web3.toWei(0.01, 'ether')
+        web3.toWei(0.01, 'ether'),
+        0x0
       )
       timetravel(86500)
       await app.runPayout(allocationId)
