@@ -100,6 +100,7 @@ const loadReposFromQueue = async () => {
     unloadedRepoQueue = []
     app.cache('state', newState)
   }
+  return
 }
 
 // TODO: Handle cases where checking validity of token fails (revoked, etc)
