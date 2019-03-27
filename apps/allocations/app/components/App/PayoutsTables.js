@@ -7,8 +7,7 @@ import { FieldTitle } from '../Form'
 
 
 const PayoutsTable = props => {
-  const Narrow = props.belowMedium
-  const Wide = props.aboveMedium
+  const List = props.list
 
   return (
     <div>
@@ -18,15 +17,7 @@ const PayoutsTable = props => {
         <Badge.Info>{props.data.length}</Badge.Info>
       </Text.Block>
 
-      <Viewport>
-        {({ below, }) =>
-          below('medium') ? (
-            <Narrow {...props} />
-          ) : (
-            <Wide {...props} />
-          )
-        }
-      </Viewport>
+      <List {...props} />
     </div>
   )
 }

@@ -119,8 +119,7 @@ const Payouts = ({ payouts, executePayout, network }) => {
           data={payouts}
           network={network}
           executePayout={executePayout}
-          belowMedium={PayoutsNarrow}
-          aboveMedium={PayoutsNarrow}
+          list={PayoutsNarrow}
         />
       </PayoutsWrap>
     </Main>
@@ -142,11 +141,6 @@ const PayoutsWrap = styled.div`
   /*background: #1DD9D5;*/
   > :not(:last-child) {
     margin-bottom: 20px;
-  }
-`
-const ClickableTableRow = styled(TableRow)`
-  :hover {
-    cursor: pointer;
   }
 `
 const ActionLabel = styled.span`
