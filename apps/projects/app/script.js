@@ -10,7 +10,7 @@ let ipfsClient = require('ipfs-http-client')
 
 const tokenAbi = [].concat(tokenDecimalsAbi, tokenSymbolAbi)
 
-let ipfs = ipfsClient({ host: 'localhost', port: '5001', protocol: 'http' })
+let ipfs = ipfsClient({ host: 'ipfs.infura.io', port: '5001', protocol: 'http' })
 
 const status = [ 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]
 const assignmentRequestStatus = [ 'Unreviewed', 'Accepted', 'Rejected' ]

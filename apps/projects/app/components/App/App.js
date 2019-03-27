@@ -28,7 +28,7 @@ let CLIENT_ID = ''
 let REDIRECT_URI = ''
 let AUTH_URI = ''
 
-let ipfs = ipfsClient({ host: 'localhost', port: '5001', protocol: 'http' })
+let ipfs = ipfsClient({ host: 'ipfs.infura.io', port: '5001', protocol: 'https' })
 
 switch (window.location.origin) {
 case 'http://localhost:3333':
