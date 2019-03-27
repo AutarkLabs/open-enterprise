@@ -118,7 +118,8 @@ app.events().subscribe(handleEvents)
 
 app.state().subscribe(state => {
   state && console.log('[Projects script] state subscription:\n', state)
-  appState = state ? state : { repos: [], bountySettings: {}, tokens: [] }
+  const { repos, bountySettings, tokens, issues } = determineStateVars(state)
+  appState = { repos, bountySettings, tokens, issues }
   if (!vault) {
     // this should be refactored to be a "setting"
     app.call('vault').subscribe(response => {
@@ -140,7 +141,7 @@ async function handleEvents(response) {
   case 'RepoAdded':
     console.log('[Projects] event RepoAdded')
     nextState = await syncRepos(appState, response.returnValues)
-    appState = nextState
+    appState = resetAppState(nextState)
     break
   case 'RepoRemoved':
     console.log('[Projects] RepoRemoved', response.returnValues)
@@ -153,7 +154,7 @@ async function handleEvents(response) {
   case 'RepoUpdated':
     console.log('[Projects] RepoUpdated', response.returnValues)
     nextState = await syncRepos(appState, response.returnValues)
-    appState = nextState
+    appState = resetAppState(nextState)
   case 'BountyAdded':
     console.log('[Projects] BountyAdded', appState, response.returnValues)
     if(!response.returnValues) {
@@ -162,7 +163,7 @@ async function handleEvents(response) {
     data = await loadIssueData(response.returnValues)
     data.workStatus = status[0]
     nextState = syncIssues(appState, response.returnValues, data, [])
-    appState = nextState
+    appState = resetAppState(nextState)
     break
   case 'AssignmentRequested':
     console.log('[Projects] AssignmentRequested', appState, response.returnValues)
@@ -173,7 +174,7 @@ async function handleEvents(response) {
     data.workStatus = status[1]
     newData = await updateIssueDetail(data, response)
     nextState = syncIssues(appState, response.returnValues, newData)
-    appState = nextState
+    appState = resetAppState(nextState)
     break
   case 'AssignmentApproved':
     console.log('[Projects] AssignmentApproved', appState, response.returnValues)
@@ -184,7 +185,7 @@ async function handleEvents(response) {
     data.workStatus = status[2]
     newData = await updateIssueDetail(data, response)
     nextState = syncIssues(appState, response.returnValues, newData)
-    appState = nextState
+    appState = resetAppState(nextState)
     break
   case 'SubmissionRejected':
     console.log('[Projects] SubmissionRejected', appState, response.returnValues)
@@ -196,7 +197,7 @@ async function handleEvents(response) {
     console.log('Data: ', data)
     newData = await updateIssueDetail(data, response)
     nextState = syncIssues(appState, response.returnValues, newData)
-    appState = nextState
+    appState = resetAppState(nextState)
     break
   case 'WorkSubmitted':
     console.log('[Projects] WorkSubmitted', appState, response.returnValues)
@@ -208,7 +209,7 @@ async function handleEvents(response) {
     console.log('Data: ', data)
     newData = await updateIssueDetail(data, response)
     nextState = syncIssues(appState, response.returnValues, newData)
-    appState = nextState
+    appState = resetAppState(nextState)
     break
   case 'SubmissionAccepted':
     console.log('[Projects] SubmissionAccepted', appState, response.returnValues)
@@ -221,19 +222,22 @@ async function handleEvents(response) {
     //const workFinishedData = await loadSubmissionData(response.returnValues)
     //data.work = workFinishedData
     nextState = syncIssues(appState, response.returnValues, data)
-    appState = nextState
+    appState = resetAppState(nextState)
     break
   case 'IssueCurated':
     console.log('[Projects] IssueCurated', response.returnValues)
     nextState = await syncRepos(appState, response.returnValues)
+    appState = resetAppState(nextState)
     break
   case 'BountySettingsChanged':
     console.log('[Projects] BountySettingsChanged')
     nextState = await syncSettings(appState) // No returnValues on this
+    appState = resetAppState(nextState)
     break
   case 'VaultDeposit':
     console.log('[Projects] VaultDeposit')
     nextState = await syncTokens(appState, response.returnValues)
+    appState = resetAppState(nextState)
   default:
     console.log('[Projects] Unknown event catched:', response)
   }
@@ -301,6 +305,17 @@ async function syncTokens(state, { token }) {
  *       Helpers       *
  *                     *
  ***********************/
+
+const resetAppState = (nextState) => Object.assign({}, nextState)
+
+const determineStateVars = (state) => {
+  const repos = (state && state.repos) || []
+  const tokens = (state && state.tokens) || []
+  const issues = (state && state.issues) || []
+  const bountySettings = (state && state.bountySettings) || {}
+
+  return { repos, tokens, bountySettings, issues }
+}
 
 async function updateIssueDetail(data, response) {
   let requestsData, submissionData
@@ -491,16 +506,16 @@ function checkIssuesLoaded(issues, issueNumber, data) {
 let unloadedRepoQueue = []
 async function updateState(state, id, transform) {
   console.log('update state: ' + state + ', id: ' + id)
-  const repos = (state && state.repos) || []
+  const { repos, tokens, bountySettings } = determineStateVars
   let newRepos
   try {
     if (client && client.request) {
       newRepos = await checkReposLoaded(repos, id, transform)
-      let newState = { ...state, repos: newRepos }
+      let newState = { tokens, repos: newRepos, bountySettings }
       return newState
     } else {
       unloadedRepoQueue.push(id)
-      return { ...state, repos }
+      return { tokens, repos, bountySettings }
     }
   } catch (err) {
     console.error(
@@ -517,10 +532,11 @@ function updateIssueState(state, issueNumber, data) {
   if(data === undefined || data === null) {
     return state
   }
-  const { issues = [] } = state
+  const { repos, tokens, bountySettings, issues } = determineStateVars
+
   try {
     let newIssues = checkIssuesLoaded(issues, issueNumber, data)
-    let newState = { ...state, issues: newIssues }
+    let newState = { repos, tokens, bountySettings, issues: newIssues }
     return newState
   } catch (err) {
     console.error(
