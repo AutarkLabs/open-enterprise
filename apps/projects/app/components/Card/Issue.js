@@ -13,6 +13,7 @@ import {
 
 import { formatDistance } from 'date-fns'
 import { BountyContextMenu } from '../Shared'
+import { BOUNTY_STATUS, BOUNTY_BADGE_COLOR } from '../../utils/bounty-status'
 
 const ClickArea = styled.div`
   height: 100%;
@@ -31,7 +32,7 @@ const ClickArea = styled.div`
 const DeadlineDistance = date =>
   formatDistance(new Date(date), new Date(), { addSuffix: true })
 
-const dot = <span style={{ margin: '0px 10px' }}>&middot;</span>
+const dot = <span style={{ margin: '0px 6px' }}>&middot;</span>
 
 const labelsBadges = labels =>
   labels.edges.map(label => (
@@ -84,11 +85,11 @@ const Issue = ({
       <Checkbox checked={isSelected} onChange={onSelect} />
       <IssueDesc>
         <div>
-          <Text color={theme.textPrimary} size="xlarge">
+          <Text color={theme.textPrimary} size="large">
             {title}
           </Text>
           {dot}
-          <Text color={theme.textSecondary} size="large">
+          <Text color={theme.textSecondary} size="normal">
             {repo} #{number}
           </Text>
         </div>
@@ -113,13 +114,13 @@ const Issue = ({
         {balance > 0 && (
           <Badge
             style={{ padding: '10px', marginRight: '20px', textSize: 'large' }}
-            background={'#e7f8ec'}
-            foreground={theme.positive}
+            background={BOUNTY_BADGE_COLOR[workStatus].bg}
+            foreground={BOUNTY_BADGE_COLOR[workStatus].fg}
           >
             {balance + ' ' + symbol}
           </Badge>
         )}
-        {workStatus !== 'finished' && (
+        {workStatus !== 'fulfilled' && (
           <ContextMenu>
             <BountyContextMenu
               work={work}
@@ -145,14 +146,7 @@ Issue.propTypes = {
   isSelected: PropTypes.bool,
   onClick: PropTypes.func.isRequired,
   onSelect: PropTypes.func,
-  workStatus: PropTypes.oneOf([
-    undefined,
-    'new',
-    'review-applicants',
-    'submit-work',
-    'review-work',
-    'finished',
-  ]),
+  workStatus: PropTypes.oneOf([ undefined, 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]),
   work: PropTypes.oneOf([
     undefined,
     PropTypes.object,
@@ -162,6 +156,7 @@ Issue.propTypes = {
 const StyledIssue = styled.div`
   flex: 1;
   width: 100%;
+  min-width: 600px;
   background: ${theme.contentBackground};
   display: flex;
   padding-left: 10px;

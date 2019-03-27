@@ -95,14 +95,14 @@ contract('AddressBook App', accounts => {
     })
   })
   context('invalid operations', () => {
-    let [borg, jeanluc] = accounts.splice(1, 2)
+    let [ borg, jeanluc ] = accounts.splice(1, 2)
     before(async () => {
       app.addEntry(borg, 'Borg', 'Individual')
     })
 
     it('should revert when adding duplicate address', async () => {
       assertRevert(async () => {
-        await app.addEnty(borg, 'Burg', 'N/A')
+        await app.addEntry(borg, 'Burg', 'N/A')
       })
     })
     it('should revert when adding duplicate name', async () => {
@@ -115,7 +115,7 @@ contract('AddressBook App', accounts => {
         await app.removeEntry(jeanluc)
       })
     })
-    it('should revert when getting not existant entry', async () => {
+    it('should revert when getting non-existant entry', async () => {
       assertRevert(async () => {
         await app.getEntry(jeanluc)
       })

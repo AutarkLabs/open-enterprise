@@ -41,7 +41,7 @@ FormField.propTypes = {
   label: PropTypes.string,
   required: PropTypes.bool,
   hint: PropTypes.string,
-  seeparator: PropTypes.bool,
+  separator: PropTypes.bool,
 }
 
 export default FormField

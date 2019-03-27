@@ -1,12 +1,12 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import Blockies from 'react-blockies'
 import { BigNumber } from 'bignumber.js'
 import {
+  Badge,
   Button,
+  IdentityBadge,
   Info,
-  SafeLink,
   SidePanelSplit,
   SidePanelSeparator,
   Countdown,
@@ -14,7 +14,7 @@ import {
   theme,
 } from '@aragon/ui'
 import { combineLatest } from '../../rxjs'
-import provideNetwork from '../../utils/provideNetwork'
+import { provideNetwork } from '../../../../../shared/ui'
 import { VOTE_NAY, VOTE_YEA } from '../../utils/vote-types'
 import { safeDiv } from '../../utils/math-utils'
 import VoteSummary from '../VoteSummary'
@@ -25,6 +25,7 @@ import Slider from '../Slider'
 class VotePanelContent extends React.Component {
   static propTypes = {
     app: PropTypes.object, // TODO: isRequired?
+    network: PropTypes.object,
   }
   state = {
     userCanVote: false,
@@ -32,10 +33,14 @@ class VotePanelContent extends React.Component {
     showResults: false,
     voteOptions: [],
     remaining: 100,
+    voteWeightsToggled: true,
+    votesWeights: [],
+    voteAmounts: [],
   }
   componentDidMount() {
     this.loadUserCanVote()
     this.loadUserBalance()
+    this.getVoterState()
   }
   componentWillReceiveProps(nextProps) {
     if (nextProps.user !== this.props.user) {
@@ -61,7 +66,13 @@ class VotePanelContent extends React.Component {
 
     //re-proportion the supports values so they don't exceed the total balance
     const valueTotal = optionsArray.reduce((a, b) => a + b, 0)
-    valueTotal > parseInt(this.state.userBalance) ? optionsArray = optionsArray.map(tokenSupport => ( tokenSupport / valueTotal ) * (parseInt(this.state.userBalance) * 0.9999) ) : 0
+    valueTotal > parseInt(this.state.userBalance)
+      ? (optionsArray = optionsArray.map(
+        tokenSupport =>
+          (tokenSupport / valueTotal) *
+            (parseInt(this.state.userBalance) * 0.9999)
+      ))
+      : 0
     // TODO: Let these comments here for a while to be sure we are working with correct values:
     console.log('Sum of values:', valueTotal)
     console.log('userBalance', this.state.userBalance)
@@ -84,7 +95,7 @@ class VotePanelContent extends React.Component {
         .subscribe(([ balance, decimals ]) => {
           this.setState({
             userBalance: balance,
-            decimals: decimals
+            decimals: decimals,
           })
         })
     }
@@ -129,15 +140,48 @@ class VotePanelContent extends React.Component {
       this.setState({ remaining: 100 - total })
     }
   }
+
+  getVoterState = async () => {
+    const result = await this.props.app
+      .call('getVoterState', this.props.vote.voteId, this.props.user)
+      .toPromise()
+
+    // TODO: Bignumber.js vs >8.2 supports .sum function to initialize from a sum of bignumbers, replace when updating
+    const totalVotesCount = result.reduce(
+      (acc, vote) => acc.plus(vote),
+      new BigNumber(0)
+    )
+    //
+
+    const voteWeights = result.map(e =>
+      BigNumber(e)
+        .div(totalVotesCount)
+        .times(100)
+        .dp(2)
+        .toString()
+    )
+
+    const voteAmounts = result.map(e =>
+      BigNumber(e)
+        .div(BigNumber(10 ** this.state.decimals))
+        .toString()
+    )
+    this.setState({ voteAmounts, voteWeights })
+  }
+
   render() {
-    const { etherscanBaseUrl, vote, ready, minParticipationPct } = this.props
+    const { network, vote, ready, minParticipationPct } = this.props
     const {
       userBalance,
       userCanVote,
       showResults,
       voteOptions,
       remaining,
+      voteAmounts,
+      voteWeights,
+      voteWeightsToggled,
     } = this.state
+
     if (!vote) {
       return null
     }
@@ -159,8 +203,10 @@ class VotePanelContent extends React.Component {
       .dp(3)
       .toString()
     // TODO: Show decimals for vote participation only when needed
-    const displayParticipationPct = (participationPct).toFixed(2)
-    const displayMinParticipationPct = (minParticipationPct / 10 ** 16).toFixed(2)
+    const displayParticipationPct = participationPct.toFixed(2)
+    const displayMinParticipationPct = (minParticipationPct / 10 ** 16).toFixed(
+      2
+    )
     // TODO: This block is wrong and has no sense
     if (!voteOptions.length) {
       this.state.voteOptions = options
@@ -172,7 +218,6 @@ class VotePanelContent extends React.Component {
     })
 
     const showInfo = type === 'allocation' || type === 'curation'
-    const truncatedCreator = `${creator.slice(0, 6)}...${creator.slice(-4)}`
 
     return (
       <div>
@@ -182,21 +227,11 @@ class VotePanelContent extends React.Component {
               <Label>Created by</Label>
             </h2>
             <Creator>
-              <CreatorImg>
-                <Blockies seed={creator} size={8} />
-              </CreatorImg>
-              <div>
-                <p>
-                  {/* // TODO: Change to etherscanUrl constant for the selected network*/}
-                  <SafeLink
-                    href={`https://rinkeby.etherscan.io/address/${creator}`}
-                    target="_blank"
-                    title={creator}
-                  >
-                    {truncatedCreator}
-                  </SafeLink>
-                </p>
-              </div>
+              <IdentityBadge
+                networkType={network.type}
+                entity={creator}
+                shorten={true}
+              />
             </Creator>
           </div>
           <div>
@@ -233,9 +268,7 @@ class VotePanelContent extends React.Component {
               <h2>
                 <Label>Amount</Label>
               </h2>
-              <p>
-                {' ' + displayBalance + ' ETH'}
-              </p>
+              <p>{' ' + displayBalance + ' ETH'}</p>
             </div>
             <div>
               <h2>
@@ -262,7 +295,7 @@ class VotePanelContent extends React.Component {
               <Label>Your voting tokens</Label>
             </h2>
             {BigNumber(this.state.userBalance)
-              .div(BigNumber(10 ** (this.state.decimals)))
+              .div(BigNumber(10 ** this.state.decimals))
               .dp(3)
               .toString()}
           </div>
@@ -336,7 +369,57 @@ class VotePanelContent extends React.Component {
               <ProgressBarThick
                 key={index}
                 progress={safeDiv(parseInt(option.value, 10), totalSupport)}
-                label={option.label}
+                // TODO: Use IdentityBadge for addresses labels once it is integrated on dev branch
+                // (since we don't have a block explorer network context to plug-in yet)
+                // Then truncate the address
+                // TODO: check use case with issue curation
+                label={
+                  <span
+                    style={{ display: 'flex', justifyContent: 'flex-start' }}
+                  >
+                    {web3.isAddress(option.label) ? (
+                      <IdentityBadge
+                        networkType={network.type}
+                        entity={option.label}
+                        shorten={true}
+                      />
+                    ) : (
+                      <span
+                        style={{
+                          width: 'auto',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {option.label}
+                      </span>
+                    )}
+                    {Boolean(voteWeights.length) && (
+                      <Badge.Identity
+                        onClick={() =>
+                          this.setState({
+                            voteWeightsToggled: !voteWeightsToggled,
+                          })
+                        }
+                        style={{
+                          cursor: 'pointer',
+                          marginLeft: '12px',
+                          padding: '3px 12px',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                        }}
+                      >
+                        YOUR VOTE:
+                        <span style={{ paddingLeft: '5px' }}>
+                          {voteWeightsToggled
+                            ? `${voteWeights[index]}%`
+                            : `${voteAmounts[index]}`}
+                        </span>
+                      </Badge.Identity>
+                    )}
+                  </span>
+                }
               />
             ))}
           {showResults && (
@@ -425,19 +508,6 @@ const Question = styled.p`
 const Creator = styled.div`
   display: flex;
   align-items: center;
-`
-const CreatorImg = styled.div`
-  margin-right: 20px;
-  canvas {
-    display: block;
-    border: 1px solid ${theme.contentBorder};
-    border-radius: 16px;
-  }
-  & + div {
-    a {
-      color: ${theme.accent};
-    }
-  }
 `
 
 const VotingButtons = styled.div`

@@ -51,7 +51,7 @@ class Votes extends React.Component {
 }
 
 const Main = styled.div`
-  min-width: 800px;
+  min-width: 600px;
 `
 
 const Title = styled.h1`

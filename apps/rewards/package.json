@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "description": "Rewards app from Planning Suite",
   "scripts": {
-    "build:app": "parcel build app/index.html -d dist/ --public-url '.'",
-    "build:script": "parcel build app/script.js -d dist/",
+    "build:app": "parcel build app/index.html -d dist/ --public-url \".\" --no-cache",
+    "build:script": "parcel build app/script.js -d dist/ --no-cache",
     "build": "npm run compile && npm run sync-assets && npm run build:app && npm run build:script",
     "compile": "truffle compile",
     "console": "truffle dev",
@@ -33,8 +33,6 @@
     "react-blockies": "1.3.0",
     "react-dom": "^16.7.0",
     "react-motion": "0.5.2",
-    "rxjs": "6.3.2",
-    "rxjs-compat": "6.3.2",
     "styled-components": "4.1.3"
   },
   "devDependencies": {

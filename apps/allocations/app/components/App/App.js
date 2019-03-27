@@ -1,4 +1,4 @@
-import { AragonApp, observe, SidePanel, ToastHub } from '@aragon/ui'
+import { AragonApp, observe, SidePanel, Root, ToastHub } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
@@ -7,6 +7,7 @@ import { Accounts, NewAccountButton } from '.'
 import { Title } from '../Shared'
 import { NewAccount, NewAllocation } from '../Panel'
 import { ETH_DECIMALS } from '../../utils/constants'
+import { networkContextType } from '../../../../../shared/ui'
 // import { allocationsMockData } from '../../utils/mockData'
 
 const ASSETS_URL = 'aragon-ui-assets/'
@@ -17,6 +18,14 @@ class App extends React.Component {
     accounts: PropTypes.arrayOf(PropTypes.object),
   }
 
+  static defaultProps = {
+    network: {},
+  }
+
+  static childContextTypes = {
+    network: networkContextType,
+  }
+
   state = {
     accounts: [],
     panel: {
@@ -25,6 +34,16 @@ class App extends React.Component {
     // TODO: Don't use this in production
     // ...allocationsMockData,
   }
+
+  getChildContext() {
+    const { network } = this.props
+    return {
+      network: {
+        type: network.type,
+      },
+    }
+  }
+
   createAccount = ({ limit, ...account }) => {
     account.balance = 0
     account.limit = ETH_DECIMALS.times(limit).toString()
@@ -114,30 +133,32 @@ class App extends React.Component {
     const PanelContent = panel.content
     return (
       // TODO: Profile App with React.StrictMode, perf and why-did-you-update, apply memoization
-      <StyledAragonApp>
-        <ToastHub>
-          <Title text="Allocations" />
-          <NewAccountButton onClick={this.newAccount} />
-          <Accounts
-            accounts={
-              //TODO: Change back to this.props.accounts when done
-              this.props.accounts !== undefined ? this.props.accounts : []
-            }
-            onNewAccount={this.newAccount}
-            onNewAllocation={this.newAllocation}
-            onManageParameters={this.manageParameters}
-            onExecutePayout={this.onExecutePayout}
-            app={this.props.app}
-          />
-          <SidePanel
-            title={(panel.data && panel.data.heading) || ''}
-            opened={panel.visible}
-            onClose={this.closePanel}
-          >
-            {panel.content && <PanelContent {...panel.data} />}
-          </SidePanel>
-        </ToastHub>
-      </StyledAragonApp>
+      <Root.Provider>
+        <StyledAragonApp>
+          <ToastHub>
+            <Title text="Allocations" />
+            <NewAccountButton onClick={this.newAccount} />
+            <Accounts
+              accounts={
+                //TODO: Change back to this.props.accounts when done
+                this.props.accounts !== undefined ? this.props.accounts : []
+              }
+              onNewAccount={this.newAccount}
+              onNewAllocation={this.newAllocation}
+              onManageParameters={this.manageParameters}
+              onExecutePayout={this.onExecutePayout}
+              app={this.props.app}
+            />
+            <SidePanel
+              title={(panel.data && panel.data.heading) || ''}
+              opened={panel.visible}
+              onClose={this.closePanel}
+            >
+              {panel.content && <PanelContent {...panel.data} />}
+            </SidePanel>
+          </ToastHub>
+        </StyledAragonApp>
+      </Root.Provider>
     )
   }
 }

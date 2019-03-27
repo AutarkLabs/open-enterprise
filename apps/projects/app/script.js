@@ -12,7 +12,8 @@ const tokenAbi = [].concat(tokenDecimalsAbi, tokenSymbolAbi)
 
 let ipfs = ipfsClient({ host: 'localhost', port: '5001', protocol: 'http' })
 
-const status = [ 'new', 'review-applicants', 'submit-work', 'review-work', 'finished' ]
+const status = [ 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]
+const assignmentRequestStatus = [ 'Unreviewed', 'Accepted', 'Rejected' ]
 
 const SUBMISSION_STAGE = 2
 
@@ -103,7 +104,7 @@ app.state().subscribe(state => {
   if (!vault) {
     // this should be refactored to be a "setting"
     app.call('vault').subscribe(response => {
-      vault = app.external(response, vaultAbi.abi)
+      vault = app.external(response, vaultAbi)
       vault.events().subscribe(handleEvents)
     })
   }
@@ -367,7 +368,12 @@ function getRequest(repoId, issueNumber, applicantId) {
         for(const file of files) {
           contentJSON = JSON.parse(file.content.toString('utf8'))
         }
-        resolve({ contributorAddr: response.applicant, requestIPFSHash: response.application, ...contentJSON })
+        resolve({
+          contributorAddr: response.applicant,
+          status: assignmentRequestStatus[response.status],
+          requestIPFSHash: response.application,
+          ...contentJSON
+        })
       })
     })
   })
