@@ -12,7 +12,7 @@ const tokenAbi = [].concat(tokenDecimalsAbi, tokenSymbolAbi)
 
 let ipfs = ipfsClient({ host: 'localhost', port: '5001', protocol: 'http' })
 
-const status = [ 'new', 'review-applicants', 'submit-work', 'review-work', 'finished' ]
+const status = [ 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]
 const assignmentRequestStatus = [ 'Unreviewed', 'Accepted', 'Rejected' ]
 
 const SUBMISSION_STAGE = 2
@@ -104,7 +104,7 @@ app.state().subscribe(state => {
   if (!vault) {
     // this should be refactored to be a "setting"
     app.call('vault').subscribe(response => {
-      vault = app.external(response, vaultAbi.abi)
+      vault = app.external(response, vaultAbi)
       vault.events().subscribe(handleEvents)
     })
   }

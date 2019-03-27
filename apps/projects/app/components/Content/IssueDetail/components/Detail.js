@@ -301,7 +301,7 @@ Detail.propTypes = {
   onRequestAssignment: PropTypes.func.isRequired,
   onReviewApplication: PropTypes.func.isRequired,
   onReviewWork: PropTypes.func.isRequired,
-  workStatus: PropTypes.oneOf([ undefined, 'new', 'review-applicants', 'submit-work', 'review-work', 'finished' ]),
+  workStatus: PropTypes.oneOf([ undefined, 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]),
   work: PropTypes.oneOf([
     undefined,
     PropTypes.object,
