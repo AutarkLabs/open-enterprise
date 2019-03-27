@@ -21,7 +21,6 @@ const Accounts = ({
       id={accountId}
       proxy={data.proxy}
       balance={data.balance}
-      limit={data.limit}
       token={data.token}
       description={data.metadata}
       onNewAllocation={onNewAllocation}

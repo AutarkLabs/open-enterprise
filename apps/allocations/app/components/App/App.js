@@ -44,10 +44,9 @@ class App extends React.Component {
     }
   }
 
-  createAccount = ({ limit, ...account }) => {
+  createAccount = (account) => {
     account.balance = 0
-    account.limit = ETH_DECIMALS.times(limit).toString()
-    this.props.app.newPayout(account.description, account.limit, account.token.address)
+    this.props.app.newPayout(account.description)
     this.closePanel()
     console.info('App.js: Account Created:')
     console.table(account)
@@ -67,7 +66,8 @@ class App extends React.Component {
       allocation.informational,
       allocation.recurring,
       allocation.period,
-      allocation.balance
+      allocation.balance,
+      allocation.token
     )
     console.info('App.js: Allocation submitted:')
     console.table(allocation)
@@ -92,12 +92,12 @@ class App extends React.Component {
       panel: {
         visible: true,
         content: NewAccount,
-        data: { heading: 'New Account', onCreateAccount: this.createAccount, balances: this.props.balances ? this.props.balances : [] },
+        data: { heading: 'New Account', onCreateAccount: this.createAccount },
       },
     })
   }
 
-  newAllocation = (address, description, id, limit) => {
+  newAllocation = (address, description, id) => {
     // The whole entries vs entities thing needs to be fixed; these are too close
     //const userEntity = {addr: '0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb', data: {entryAddress: '0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb', name: 'Bob', entryType: 'user'}}
     const promptEntity = {
@@ -113,11 +113,11 @@ class App extends React.Component {
         data: {
           address,
           id,
-          limit,
           heading: 'New Allocation',
           subHeading: description,
           onSubmitAllocation: this.submitAllocation,
           entities: entities,
+          balances: this.props.balances ? this.props.balances : []
         },
       },
     })

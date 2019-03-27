@@ -75,7 +75,6 @@ contract Allocations is AragonApp, Fundable {
         address[] candidateAddresses;
         uint256[] supports;
         string metadata;
-        uint256 limit;
         bool recurring;
         bool informational;
         uint256 period;
@@ -122,10 +121,9 @@ contract Allocations is AragonApp, Fundable {
 // Getter functions
 ///////////////////////
     function getPayout(uint256 _payoutId) external view
-    returns(uint256 balance, uint256 limit, string metadata, address token, address proxy, uint256 amount)
+    returns(uint256 balance, string metadata, address token, address proxy, uint256 amount)
     {
         Payout storage payout = payouts[_payoutId];
-        limit = payout.limit;
         balance = payout.balance;
         metadata = payout.metadata;
         token = payout.token;
@@ -155,16 +153,12 @@ contract Allocations is AragonApp, Fundable {
     *
     */
     function newPayout(
-        string _metadata,
-        uint256 _limit,
-        address _token
+        string _metadata
     ) external isInitialized auth(START_PAYOUT_ROLE) returns(uint256 payoutId)
     {
         payoutId = payouts.length++;
         Payout storage payout = payouts[payoutId];
         payout.metadata = _metadata;
-        payout.limit = _limit;
-        payout.token = _token;
         payout.balance = 0;
         FundForwarder fund = new FundForwarder(payoutId, this);
         payout.proxy = address(fund);
@@ -246,12 +240,13 @@ contract Allocations is AragonApp, Fundable {
         bool _informational,
         bool _recurring,
         uint256 _period,
-        uint256 _amount
+        uint256 _amount,
+        address _token
     ) public payable isInitialized auth(SET_DISTRIBUTION_ROLE)
     {
         Payout storage payout = payouts[_payoutId];
         payout.candidateAddresses = _candidateAddresses;
-        // require(_amount <= payout.limit, "payout amount over account limit"); // This is unnecessary
+        payout.token = _token;
         payout.informational = _informational;
         payout.recurring = _recurring;
         address token = payout.token;
@@ -264,7 +259,6 @@ contract Allocations is AragonApp, Fundable {
             } else {
                 require(vault.balance(token) >= _amount, "vault underfunded");
             }
-            require(payout.limit >= _amount, "payout amount over account limit");
         } else {
             require(msg.value == 0, "cannot fund informational allocation");
             // must set amount to zero
