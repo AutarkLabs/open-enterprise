@@ -119,7 +119,7 @@ app.events().subscribe(handleEvents)
 app.state().subscribe(state => {
   state && console.log('[Projects script] state subscription:\n', state)
   const { repos, bountySettings, tokens, issues } = determineStateVars(state)
-  appState = { repos, bountySettings, tokens, issues }
+  appState = resetAppState({ repos, bountySettings, tokens, issues })
   if (!vault) {
     // this should be refactored to be a "setting"
     app.call('vault').subscribe(response => {
