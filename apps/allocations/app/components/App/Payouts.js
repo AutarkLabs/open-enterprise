@@ -45,11 +45,21 @@ const PayoutStatusWrapper = ({ color, icon, title, posTop = 0 }) => {
   )
 }
 
-const showStatus = (status = 3) => {
+const showStatus = ({ distSet, recurring, startTime }) => {
+  let status
+  if (!recurring) {
+    if (distSet) status = 1
+    else if (!distSet) status = 2
+    else status = 3
+  }
+  else {
+    if(Date.now() < startTime) status = 0
+    else status = 1
+  }
   switch(status) {
-  case 0: return <PayoutStatusWrapper title="Claim in progress..." icon={IconTime} color={theme.textSecondary} posTop={1} />
-  case 1: return <PayoutStatusWrapper title="Ready to claim" icon={IconFundraising} color="#F5A623" posTop={7} />
-  case 2: return <PayoutStatusWrapper title="Claimed" icon={IconCheck} color={theme.positive} />
+  case 0: return <PayoutStatusWrapper title="Distribution in Progress..." icon={IconTime} color={theme.textSecondary} posTop={1} />
+  case 1: return <PayoutStatusWrapper title="Ready to Distribute" icon={IconFundraising} color="#F5A623" posTop={7} />
+  case 2: return <PayoutStatusWrapper title="Distributed" icon={IconCheck} color={theme.positive} />
   case 3: return <PayoutStatusWrapper title="Rejected" icon={IconCross} color={theme.negative} />
   }
 }
@@ -68,7 +78,7 @@ const PayoutsNarrow = ({ executePayout, claimed, data, openDetails, network }) =
             {payout.description}
           </PayoutDescription>
           <Text.Block size="small" color={theme.textTertiary} style={{ marginTop: '5px' }}>
-            {showStatus(payout.status)}
+            {showStatus(payout)}
           </Text.Block>
         </div>
         <div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center' }}>
@@ -78,12 +88,15 @@ const PayoutsNarrow = ({ executePayout, claimed, data, openDetails, network }) =
             </AmountBadge>
           </div>
           <div>
-            <ContextMenu>
-              <ContextMenuItem onClick={executePayout}>
-                <IconFundraising />
-                <ActionLabel>Distribute Allocation</ActionLabel>
-              </ContextMenuItem>
-            </ContextMenu>
+            {payout.distSet &&
+            (
+              <ContextMenu>
+                <ContextMenuItem onClick={executePayout}>
+                  <IconFundraising />
+                  <ActionLabel>Distribute Allocation</ActionLabel>
+                </ContextMenuItem>
+              </ContextMenu>
+            )}
           </div>
         </div>
       </NarrowListPayout>

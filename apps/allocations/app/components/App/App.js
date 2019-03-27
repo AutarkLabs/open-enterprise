@@ -21,7 +21,7 @@ const payouts = [{
   period: 86400,
   description: 'Q1 Reward for Space Decentral Contributors',
   index: 0,
-  distSet: false,
+  distSet: true,
 },
 {
   rewardToken: 0x0,

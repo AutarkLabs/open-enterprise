@@ -13,7 +13,9 @@ const PayoutsTable = props => {
   return (
     <div>
       <Text.Block size="large" weight="bold">
-        Payouts
+        Allocations
+        {' '}
+        <Badge.Info>{props.data.length}</Badge.Info>
       </Text.Block>
 
       <Viewport>
