@@ -17,16 +17,21 @@ import {
   IconTime,
   IconCheck,
   IconFundraising,
+  IdentityBadge,
 } from '@aragon/ui'
 import { FieldTitle, FormField } from '../../Form'
 import { MONTHS } from '../../../utils/constants'
 import { displayCurrency } from '../../../utils/helpers'
-
+import { provideNetwork } from '../../../../../../shared/ui'
 
 class ViewReward extends React.Component {
     static propTypes = {
       reward: PropTypes.object,
+      network: PropTypes.object,
     }
+
+    onClosePanel = () => this.props.onClosePanel()
+
     renderDescription = (description = '') => {
       // Make '\n's real breaks
       return description.split('\n').map((line, i) => (
@@ -37,6 +42,7 @@ class ViewReward extends React.Component {
       ))
     }
     render() {
+      const { network } = this.props
       const {
         creator,
         isMerit,
@@ -48,7 +54,7 @@ class ViewReward extends React.Component {
         description,
         delay,
       } = this.props.reward
-      const truncatedCreator = `${creator.slice(0, 6)}...${creator.slice(-4)}`
+
       const translateToken = (token) => {
         if (token == 0x0) {
           return 'ETH'
@@ -65,14 +71,11 @@ class ViewReward extends React.Component {
                 </CreatorImg>
                 <div>
                   <p>
-                    {/* // TODO: Change to etherscanUrl constant for the selected network*/}
-                    <SafeLink
-                      href={`https://rinkeby.etherscan.io/address/${creator}`}
-                      target="_blank"
-                      title={creator}
-                    >
-                      {truncatedCreator}
-                    </SafeLink>
+                    <IdentityBadge
+                      networkType={network.type}
+                      entity={creator}
+                      shorten={true}
+                    />
                   </p>
                 </div>
               </Creator>
@@ -128,14 +131,14 @@ class ViewReward extends React.Component {
               <div>
                 {Intl.DateTimeFormat().format(startDate)}
                 {' - '}
-                {Intl.DateTimeFormat().format(endDate)}
+                {Intl.DateTimeFormat().format(startDate)}
               </div>
             </div>
           </SidePanelSplit>
           <Part>
             <Text size='large' weight='bold' >Reward Summary</Text>
           </Part>
-          <Info>
+          <Info style={{ marginBottom: '10px' }}>
             <TokenIcon />
             <Summary>
               <p>
@@ -167,11 +170,10 @@ class ViewReward extends React.Component {
               </p>
             </Summary>
           </Info>
+          <Button mode="strong" wide onClick={this.onClosePanel}>Close</Button>
         </div>
       )
     }
-
-
 }
 
 const Label = styled(Text).attrs({
@@ -228,4 +230,4 @@ const TokenIcon = styled(IconFundraising)`
 float: left;
 `
 
-export default ViewReward
+export default provideNetwork(ViewReward)

@@ -10,7 +10,6 @@ import { IconCalendar } from '../../assets'
 const Container = styled.div`
   width: ${props => props.width};
   display: flex;
-  pad
 `
 const IconWrapper = styled.div`
   position: relative;
