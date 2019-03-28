@@ -1,15 +1,9 @@
-import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import {
-  Badge,
-  Text,
-  theme,
-  ContextMenu,
-  ContextMenuItem,
-  SafeLink,
-} from '@aragon/ui'
-import { format, formatDistance } from 'date-fns'
+import PropTypes from 'prop-types'
+
+import { Badge, Text, theme, ContextMenu, ContextMenuItem, SafeLink, Button } from '@aragon/ui'
+import { formatDistance } from 'date-fns'
 
 import { DropDownButton } from '../../../Shared'
 import { IconGitHub, BountyContextMenu } from '../../../Shared'
@@ -19,7 +13,7 @@ const StyledTable = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   border: solid ${theme.contentBorder};
-  border-width: 2px 0;
+  border-width: 1px 0;
   > :not(:first-child) {
     border-left: 1px solid ${theme.contentBorder};
     padding-left: 15px;
@@ -49,7 +43,7 @@ const SummaryTable = ({ expLevel, deadline, slots, workStatus }) => {
     'Slots Available',
     'Status',
   ]
-  const mappedTableFields = [expLevel, deadline, slots, workStatus].map(
+  const mappedTableFields = [ expLevel, deadline, slots, workStatus ].map(
     (field, i) => (
       <StyledCell key={i}>
         <FieldTitle>{FIELD_TITLES[i]}</FieldTitle>
@@ -85,103 +79,169 @@ const column = {
   flexBasis: '100%',
 }
 
-// TODO: Remove fake default value for img
-const Avatar = ({ size, img }) => {
-  // do something with the size...
-  const avatarStyle = () => {
-    switch (size) {
-    case 'small':
-      return { transform: 'scale(.6)' }
-    default:
-      return { transform: 'scale(.8)' }
+const mockRequestsData = [{
+  applicationDate: '2019-03-27T00:01:12.543Z',
+  contributorAddr: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
+  eta: '2019-03-27T00:00:14.924Z',
+  hours: '33',
+  requestIPFSHash: 'QmSwBgEPqFjbWRfzXiSNPznQp3J9vqpmNPcqfvWRXHaqGT',
+  status: 'Unreviewed',
+  user: {
+    id: 'MDQ6VXNlcjM0NDUyMTMx',
+    login: 'rkzel',
+    url: 'https://github.com/rkzel',
+    avatarUrl: 'https://avatars0.githubusercontent.com/u/34452131?v=4'
+  },
+  workplan: 'the grand plan',
+  review:{
+    reviewDate: '2019-03-27T14:30:06.197Z',
+    approved: true,
+    feedback: 'feedback',
+    user: {
+      avatarUrl: 'https://avatars0.githubusercontent.com/u/34452131?v=4',
+      id: 'MDQ6VXNlcjM0NDUyMTMx',
+      login: 'rkzel',
+      url: 'https://github.com/rkzel',
+    },
+  },
+  approved: true,
+}]
+const mockWorkSubmissions = [{
+  comments: 'comm',
+  fulfillmentId: '0',
+  hours: '3',
+  proof: 'proof of work',
+  review: {
+    feedback: 'nope', rating: 1, accepted: true,
+    user: { id: 'MDQ6VXNlcjM0NDUyMTMx', login: 'rkzel',
+      url: 'https://github.com/rkzel',
+      avatarUrl: 'https://avatars0.githubusercontent.com/u/34452131?v=4',
     }
-  }
+  },
+  status: '0',
+  submissionDate: '2019-03-27T22:03:04.589Z',
+  submissionIPFSHash: 'QmZ5N548rdGFn4nt8uLaXeahrZvanNW4FG4V9HmWv5iPni',
+  submitter: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
+  user: {
+    id: 'MDQ6VXNlcjM0NDUyMTMx',
+    login: 'rkzel', url: 'https://github.com/rkzel',
+    avatarUrl: 'https://avatars0.githubusercontent.com/u/34452131?v=4'
+  },
+}]
 
-  return (
-    <div>
-      <img src={img} alt="user avatar" style={avatarStyle()} />
-    </div>
-  )
+const IssueEventAvatar = styled.div`
+  width: 70px;
+  margin-right: 15px;
+`
+const IssueEventDetails = styled.div`
+  > margin-bottom: 10px;  
+`
+
+const IssueEvent = props => (
+  <div style={{ display: 'flex' }}>
+    <IssueEventAvatar>
+      <img src={props.avatarUrl} alt="user avatar" style={{ width: '66px' }} />
+    </IssueEventAvatar>
+    <IssueEventDetails>
+      <Text.Block>
+        <SafeLink
+          href={props.url}
+          target="_blank"
+          style={{ textDecoration: 'none', color: '#21AAE7' }}
+        >
+          {props.login}
+        </SafeLink> {props.eventDescription}
+      </Text.Block>
+
+      {props.eventMessage && (
+        <div>
+          {props.eventMessage}
+        </div>
+      )}
+      {props.eventAction && (
+        <div>
+          {props.eventAction}
+        </div>
+      )}
+      <Text.Block size="small" color={theme.textSecondary}>{calculateAgo(props.date)}</Text.Block>
+    </IssueEventDetails>
+  </div>
+)
+
+const calculateAgo = pastDate => {
+  const date = Date.now()
+  return formatDistance(pastDate, date, { addSuffix: true })
 }
 
-const MemberRow = ({ name, role, status, avatar }) => (
-  <Wrapper>
-    <Avatar size="normal" style={column}>
-      {avatar}
-    </Avatar>
-    <div style={{ ...column, flex: 2 }}>
-      <Text.Block>{name}</Text.Block>
-      <Text.Block>{role}</Text.Block>
-      <Text.Block>{status}</Text.Block>
-    </div>
-    <ContextMenu>
-      <ContextMenuItem>In progress...</ContextMenuItem>
-    </ContextMenu>
-  </Wrapper>
-)
+const activities = (requestsData, workSubmissions, onReviewApplication, onReviewWork) => {
+  const events = []
 
-const ActivityRow = ({ name, log, login, date, avatar, url }) => (
-  <React.Fragment>
-    <UserLink>
-      <img
-        src={avatar}
-        style={{ width: '49px', height: '49px', marginRight: '10px' }}
-      />
-      <div>
-        <SafeLink
-          href={url}
-          target="_blank"
-          style={{
-            textDecoration: 'none',
-            color: '#21AAE7',
-            marginRight: '6px',
-          }}
-        >
-          {name ? name : login}
-        </SafeLink>
-        {log}
-        <Text.Block color={theme.textSecondary} size="small">
-          {date}
-        </Text.Block>
-      </div>
-    </UserLink>
+  console.log('--activityRow:', requestsData)
+  if (requestsData) {
+    requestsData.forEach(data => {
+      
+      events[data.applicationDate] = {
+        date: data.applicationDate,
+        ...data.user,
+        eventDescription: 'requested assignment',
+        eventAction: ('review' in data) ?
+          null
+          :
+          <Button mode="outline" onClick={onReviewApplication}>Review Application</Button>,
+      }
+      
+      if ('review' in data) {
+        events[data.review.reviewDate] = {
+          date: data.review.reviewDate,
+          ...data.review.user,
+          eventDescription: data.approved ? 'assigned ' + data.user.login : 'rejected ' + data.user.login,
+          eventAction: data.review.feedback.length === 0 ?
+            null
+            :
+            <Text>{data.review.feedback}</Text>
+        }
+      }
+    })
+  }
 
-    <Separator />
-  </React.Fragment>
-)
+  if (workSubmissions) {
+    workSubmissions.forEach(data => {
 
-const UserLink = styled.div`
-  display: flex;
-  align-items: center;
-`
+      events[data.submissionDate] = {
+        date: data.submissionDate,
+        ...data.user,
+        eventDescription: 'submitted work for review',
+        eventAction: ('review' in data) ?
+          null
+          :
+          <Button mode="outline" onClick={onReviewWork}>Review Work</Button>,
+      }
 
-const Separator = styled.hr`
-  height: 1px;
-  width: 100%;
-  color: #d1d1d1;
-  opacity: 0.1;
-`
+      if ('review' in data) {
 
-const fakeMembers = [
-  {
-    name: 'Worf',
-    role: 'Contributor',
-    status: 'Pending assignment',
-    avatar: null,
-  },
-  {
-    name: 'Tasha Yar',
-    role: 'Contributor',
-    status: 'Assignment approved',
-    avatar: null,
-  },
-  {
-    name: 'Data',
-    role: 'Task Manager',
-    status: 'Last seen 4 hours ago',
-    avatar: null,
-  },
-]
+        events[data.review.reviewDate] = {
+          date: data.review.reviewDate,
+          ...data.review.user,
+          eventDescription: data.review.accepted ?
+            'accepted ' + data.user.login + '\'s work'
+            :
+            'rejected ' + data.user.login + '\'s work',
+          eventAction: data.review.feedback.length === 0 ?
+            <Badge>Quality: {data.review.rating}</Badge>
+            :
+            <div>
+              <div><Badge>Quality: {data.review.rating}</Badge></div>
+              <Text>{data.review.feedback}</Text>
+            </div>,
+        }
+      }
+    })
+  }
+  return events
+}
+
+const deadlineDistance = date =>
+  formatDistance(new Date(date), new Date(), { addSuffix: true })
 
 const Detail = ({
   requestsData,
@@ -193,57 +253,30 @@ const Detail = ({
   repo,
   body,
   createdAt,
-  team = fakeMembers, // TODO: Also this
   expLevel,
   deadline,
   slots,
+  work,
   workStatus,
   onReviewApplication,
   onReviewWork,
   onRequestAssignment,
   onSubmitWork,
   onAllocateSingleBounty,
+  workSubmissions,
 }) => {
-  //console.log('Detail props:', requestsData, balance, symbol, labels, title, number, repo, body, createdAt, expLevel, deadline, slots, workStatus)
 
   const summaryData = {
-    expLevel: expLevel === undefined ? '-' : expLevel,
-    deadline:
-      deadline === undefined ? '-' : format(deadline, 'yyyy-MM-dd HH:mm:ss'),
-    slots:
-      slots === undefined
-        ? '-'
-        : requestsData === undefined
-          ? 'Unallocated (' + slots + ')'
-          : requestsData.length < slots
-            ? 'Slots available: ' + (slots - requestsData.length) + '/' + slots
-            : 'Allocated',
-    workStatus: workStatus === undefined ? 'No bounty yet' : workStatus,
+    expLevel: (expLevel === undefined) ? '-' : expLevel,
+    deadline: (deadline === undefined) ? '-' : 'Due in ' + deadlineDistance(deadline),
+    slots: (slots === undefined) ? '-' :
+      (requestsData === undefined) ? 'Unallocated (' + slots + ')' :
+        (requestsData.length < slots) ? 'Slots available: ' + (slots - requestsData.length) + '/' + slots:
+          'Allocated',
+    workStatus: (workStatus === undefined) ? 'No bounty yet' : workStatus
   }
-  const calculatedDate = () => {
-    const date = Date.now()
-    return formatDistance(createdAt, date, { addSuffix: true })
-  }
-  // Some dynamically generated components
-  const teamRows = team.map((member, i) => <MemberRow key={i} {...member} />)
-  const activityData =
-    requestsData &&
-    requestsData.map((r, i) => {
-      const applicationDateDistance = formatDistance(
-        new Date(r.applicationDate),
-        new Date()
-      )
-      const activity = {
-        name: r.user.login,
-        log: 'requested assignment',
-        date: `${applicationDateDistance} ago`,
-        avatar: r.user.avatarUrl,
-      }
-      return activity
-    })
-  const activityRows = activityData
-    ? activityData.map((a, i) => <ActivityRow key={i} {...a} />)
-    : null
+
+  const issueEvents = activities(mockRequestsData, mockWorkSubmissions, onReviewApplication, onReviewWork)
 
   return (
     <Wrapper>
@@ -265,12 +298,13 @@ const Detail = ({
                 color={theme.textSecondary}
                 style={{ marginBottom: '10px' }}
               >
-                {calculatedDate()}
+                {calculateAgo(createdAt)}
               </Text.Block>
             </div>
             <div style={{ ...column, flex: 0, alignItems: 'flex-end' }}>
               <DropDownButton enabled>
                 <BountyContextMenu
+                  work={work}
                   workStatus={workStatus}
                   requestsData={requestsData}
                   onAllocateSingleBounty={onAllocateSingleBounty}
@@ -280,20 +314,15 @@ const Detail = ({
                   onReviewWork={onReviewWork}
                 />
               </DropDownButton>
-              {balance > 0 && (
+              { balance > 0 &&
                 <Badge
-                  style={{
-                    padding: '10px',
-                    marginRight: '20px',
-                    textSize: 'large',
-                    marginTop: '15px',
-                  }}
+                  style={{ padding: '10px', marginRight: '20px', textSize: 'large', marginTop: '15px' }}
                   background={'#e7f8ec'}
                   foreground={theme.positive}
                 >
                   {balance + ' ' + symbol}
                 </Badge>
-              )}
+              }
             </div>
           </Wrapper>
           <SummaryTable {...summaryData} />
@@ -317,19 +346,34 @@ const Detail = ({
           </Text>
         </div>
       </div>
-      {/* Activity and team not currently fully implemented */}
-      <div style={{ flex: 1, maxWidth: '359px' }}>
-        {/* <div style={cardStyle}>
-            <FieldTitle>Team</FieldTitle>
-            {teamRows}
-        </div> */}
+
+      <div style={{ flex: 1, maxWidth: '359px', width: '295px' }}>
         <div style={cardStyle}>
           <FieldTitle>Activity</FieldTitle>
-          {activityRows}
+          {Object.keys(issueEvents).sort((a,b) =>
+            new Date(a) - new Date(b)
+          ).map((eventDate, i) => {
+            return <IssueEvent key={i} {...issueEvents[eventDate]} />
+          }
+          )}
         </div>
       </div>
+
     </Wrapper>
   )
+}
+
+Detail.propTypes = {
+  onAllocateSingleBounty: PropTypes.func.isRequired,
+  onSubmitWork: PropTypes.func.isRequired,
+  onRequestAssignment: PropTypes.func.isRequired,
+  onReviewApplication: PropTypes.func.isRequired,
+  onReviewWork: PropTypes.func.isRequired,
+  workStatus: PropTypes.oneOf([ undefined, 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]),
+  work: PropTypes.oneOf([
+    undefined,
+    PropTypes.object,
+  ]),
 }
 
 export default Detail

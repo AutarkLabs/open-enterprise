@@ -27,21 +27,38 @@ class ReviewApplication extends React.Component {
 
   changeField = ({ target: { name, value } }) => this.setState({ [name]: value })
 
-  onReviewApplication = () => {
-    console.log('Accepted', this.state.feedback, this.props.issue)
-    this.props.onReviewApplication(this.props.issue)
+  buildReturnData = approved => {
+    let today = new Date()
+    return {
+      feedback: this.state.feedback,
+      approved,
+      user: this.props.githubCurrentUser,
+      reviewDate: today.toISOString(),
+    }
+  }
+
+  onAccept = () => {
+    const returnData = this.buildReturnData(true)
+    console.log('Accepted', returnData)
+    this.props.onReviewApplication(this.props.issue, this.state.requestIndex, true, returnData)
+  }
+
+  onReject = () => {
+    const returnData = this.buildReturnData(false)
+    console.log('Rejected', returnData)
+    this.props.onReviewApplication(this.props.issue, this.state.requestIndex, false, returnData)
   }
 
   changeRequest = (index) => {
-    this.setState({requestIndex: index})
-  } 
+    this.setState({ requestIndex: index })
+  }
 
 
   render() {
+    console.log('++ReviewApplic render', this.props.issue)
     const { issue } = this.props
-
     const request = issue.requestsData[this.state.requestIndex]
-    
+
     const application = {
       user: {
         login: request.user.login,
@@ -58,20 +75,8 @@ class ReviewApplication extends React.Component {
     const applicant = application.user
     const applicationDateDistance = formatDistance(new Date(application.applicationDate), new Date())
     return (
-      <Form
-        onSubmit={this.onReviewApplication}
-        submitText="Accept Assignment"
-        noSeparator
-      >
+      <div>
         <IssueTitle>{issue.title}</IssueTitle>
-        
-        <DropDown
-          name="Applicant"
-          items={issue.requestsData.map( request => request.user.login)}
-          onChange={this.changeRequest}
-          active={this.state.requestIndex}
-          wide
-        />
 
         <SafeLink
           href={issue.url}
@@ -80,13 +85,22 @@ class ReviewApplication extends React.Component {
         >
           <IssueLinkRow>
             <IconGitHub color="#21AAE7" width='14px' height='14px' />
-            <Text style={{ marginLeft: '6px'}}>{issue.repo} #{issue.number}</Text>
+            <Text style={{ marginLeft: '6px' }}>{issue.repo} #{issue.number}</Text>
           </IssueLinkRow>
         </SafeLink>
 
+        <FieldTitle>Applicant</FieldTitle>
+        <DropDown
+          name="Applicant"
+          items={issue.requestsData.map( request => request.user.login)}
+          onChange={this.changeRequest}
+          active={this.state.requestIndex}
+          wide
+        />
+
         <ApplicationDetails>
           <UserLink>
-            <img src={applicant.avatar} style={{ width: '32px', height: '32px', marginRight: '10px'}} />
+            <img src={applicant.avatar} style={{ width: '32px', height: '32px', marginRight: '10px' }} />
             <SafeLink
               href={applicant.url}
               target="_blank"
@@ -109,21 +123,37 @@ class ReviewApplication extends React.Component {
           <DetailText>{application.eta}</DetailText>
 
         </ApplicationDetails>
-        {/* There is currently nowhere to display this feedback to the user,
-            Will be re-implemented when github messaging is enabled.
-        <FormField
-          label="Feedback"
-          input={
-            <DescriptionInput
-              name='feedback'
-              rows={3}
-              onChange={this.changeField}
-              placeholder="Do you have any feedback to provide the applicant?"
-            />
-          }
-        />
-        */}
-      </Form>
+        {/* TODO: There is currently nowhere to display this feedback to the user,
+            Will be re-implemented when github messaging is enabled.*/
+          <FormField
+            label="Feedback"
+            input={
+              <DescriptionInput
+                name='feedback'
+                rows="3"
+                onChange={this.changeField}
+                placeholder="Do you have any feedback to provide the applicant?"
+                value={this.state.feedback}
+              />
+            }
+          />
+        }
+        <ReviewRow>
+          <ReviewButton
+            emphasis="negative"
+            onClick={this.onReject}
+          >
+            Reject
+          </ReviewButton>
+          <ReviewButton
+            emphasis="positive"
+            onClick={this.onAccept}
+          >
+            Accept
+          </ReviewButton>
+        </ReviewRow>
+
+      </div>
     )
   }
 }
@@ -146,6 +176,7 @@ const ApplicationDetails = styled.div`
   border: 1px solid #DAEAEF;
   background-color: #F3F9FB;
   padding: 14px;
+  margin-top: 8px;
   margin-bottom: 14px;
 `
 const IssueTitle = styled(Text)`

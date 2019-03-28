@@ -16,20 +16,6 @@ import {
 import { FormField, FieldTitle, DescriptionInput } from '../../Form'
 import { IconGitHub } from '../../Shared'
 
-// external Data
-const work = {
-  user: {
-    login: 'rkzel',
-    name: 'Radek',
-    avatar: 'https://avatars0.githubusercontent.com/u/34452131?v=4',
-    url: 'https://github.com/rkzel'
-  },
-  proof: 'https://github.com/AutarkLabs/planning-suite/pull/411',
-  comments: 'This was an interesting challenge',
-  hours: 13,
-  submissionDate: '2/9/2019'
-}
-
 class ReviewWork extends React.Component {
   static propTypes = {
     issue: PropTypes.object.isRequired
@@ -43,17 +29,25 @@ class ReviewWork extends React.Component {
   changeField = ({ target: { name, value } }) => this.setState({ [name]: value })
 
   onAccept = () => {
-    this.props.onReviewWork({...this.state, accepted: true}, this.props.issue)
+    this.props.onReviewWork({
+      ...this.state,
+      accepted: true,
+      user: this.props.githubCurrentUser,
+    }, this.props.issue)
   }
 
   canSubmit = () => !(this.state.rating > 0)
 
   onReject = () => {
-    this.props.onReviewWork({...this.state, accepted: false}, this.props.issue)
+    this.props.onReviewWork({
+      ...this.state,
+      accepted: false,
+      user: this.props.githubCurrentUser,
+    }, this.props.issue)
   }
 
   onRatingChange = index => {
-    this.setState({rating: index})
+    this.setState({ rating: index })
     console.log('index: ', index)
   }
 
@@ -84,13 +78,13 @@ class ReviewWork extends React.Component {
         >
           <IssueLinkRow>
             <IconGitHub color="#21AAE7" width='14px' height='14px' />
-            <Text style={{ marginLeft: '6px'}}>{issue.repo} #{issue.number}</Text>
+            <Text style={{ marginLeft: '6px' }}>{issue.repo} #{issue.number}</Text>
           </IssueLinkRow>
         </SafeLink>
 
         <SubmissionDetails>
           <UserLink>
-            <img src={submitter.avatarUrl} style={{ width: '32px', height: '32px', marginRight: '10px'}} />
+            <img src={submitter.avatarUrl} style={{ width: '32px', height: '32px', marginRight: '10px' }} />
             <SafeLink
               href={submitter.url}
               target="_blank"
@@ -175,7 +169,8 @@ const IssueTitle = styled(Text)`
   color: ${theme.textSecondary};
   font-size: 17px;
   font-weight: 300;
-  line-height: 38px;
+  line-height: 1.5;
+  margin-bottom: 10px;
 `
 const IssueLinkRow = styled.div`
   height: 31px;
