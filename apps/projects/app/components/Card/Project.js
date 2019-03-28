@@ -30,15 +30,15 @@ const Project = ({
 }) => {
 
   const removeProject = () => {
-    console.log('removeProject')
-    onRemoveProject(id)
+    console.log('removeProject', repoId)
+    onRemoveProject(repoId)
   }
 
   const clickMenu = e => e.stopPropagation()
 
   const clickContext = e => {
     e.stopPropagation()
-    changeActiveIndex({ tabIndex: 1, tabData: { filterIssuesByRepoId: repoId }})
+    changeActiveIndex({ tabIndex: 1, tabData: { filterIssuesByRepoId: repoId } })
   }
 
   return (
@@ -100,7 +100,7 @@ const StyledCard = styled(Card)`
   flex-direction: column;
   justify-content: flex-start;
   padding: 12px;
-  height: 220px;
+  height: 240px;
   width: 249px;
   transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
   :hover {
@@ -131,15 +131,11 @@ const CardDescriptionText = styled(Text.Block).attrs({
   size: 'xsmall',
 })`
   display: block;
-  display: -webkit-box;
-  height: 7.1em;
-  margin: 0 auto;
+  height: 8.1em;
   line-height: 1.5em;
-  -webkit-line-clamp: 5;
-  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin: 8px 0;
+  margin: 14px 0;
   text-align: center;
   color: ${theme.textPrimary};
 `

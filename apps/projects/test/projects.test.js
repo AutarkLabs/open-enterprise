@@ -21,7 +21,7 @@ const fulfilledBounty = receipt =>
 
 contract('Projects App', accounts => {
   let daoFact,
-    registry,
+    bounties,
     app = {}
 
   const root = accounts[0]
@@ -47,7 +47,7 @@ contract('Projects App', accounts => {
     const dao = Kernel.at(
       r.logs.filter(l => l.event == 'DeployDAO')[0].args.dao
     )
-      
+
     const acl = ACL.at(await dao.acl())
 
     //Create DAO admin role
@@ -105,9 +105,33 @@ contract('Projects App', accounts => {
       root,
       { from: root }
     )
-    
+
+    await acl.createPermission(
+      bountyAdder,
+      app.address,
+      await app.TASK_ASSIGNMENT_ROLE(),
+      root,
+      { from: root }
+    )
+
+    await acl.createPermission(
+      bountyAdder,
+      app.address,
+      await app.WORK_REVIEW_ROLE(),
+      root,
+      { from: root }
+    )
+
+    await acl.createPermission(
+      root,
+      app.address,
+      await app.CHANGE_SETTINGS_ROLE(),
+      root,
+      { from: root }
+    )
+
     // Deploy test Bounties contract
-    registry = await StandardBounties.new(web3.toBigNumber(owner1))
+    bounties = await StandardBounties.new(web3.toBigNumber(owner1))
     vault = await Vault.new()
 
     await acl.createPermission(
@@ -118,9 +142,9 @@ contract('Projects App', accounts => {
       { from: root }
     )
 
-    bounties = StandardBounties.at(registry.address)
+    //bounties = StandardBounties.at(registry.address)
 
-    await app.initialize(registry.address, vault.address)
+    await app.initialize(bounties.address, vault.address)
   })
 
   context('creating and retrieving repos and bounties', () => {
@@ -159,6 +183,18 @@ contract('Projects App', accounts => {
       )
     })
 
+    it('can remove repos', async () => {
+      repoId2 = addedRepo(
+        await app.addRepo(
+          'MDawOlJlcG9zaXRvcnk3NTM5NTIyNA==', // repoId
+          'MDQ6VXNlcjUwMzAwNTk=', // ownerId
+          { from: owner1 }
+        )
+      )
+      app.removeRepo(repoId, { from: repoRemover })
+      app.removeRepo(repoId2, { from: repoRemover })
+    })
+
     context('standard bounty verification tests', () => {
       beforeEach(async () => {
         await bounties.issueBounty(
@@ -173,8 +209,8 @@ contract('Projects App', accounts => {
         )
       })
 
-      it('verifies that the StandardBounties registry works', async () => {
-        let owner = await registry.owner()
+      it('StandardBounties Deployed Correctly', async () => {
+        let owner = await bounties.owner()
         assert(owner == accounts[0])
       })
 
@@ -188,20 +224,20 @@ contract('Projects App', accounts => {
       })
 
       it('verifies that basic fulfillment acceptance flow works', async () => {
-        await registry.activateBounty(0, 1000, {
+        await bounties.activateBounty(0, 1000, {
           from: accounts[0],
           value: 1000,
         })
-        await registry.fulfillBounty(0, 'data', { from: accounts[1] })
-        let fulfillment = await registry.getFulfillment(0, 0)
+        await bounties.fulfillBounty(0, 'data', { from: accounts[1] })
+        let fulfillment = await bounties.getFulfillment(0, 0)
         assert(fulfillment[0] === false)
-        await registry.acceptFulfillment(0, 0, { from: accounts[0] })
-        fulfillment = await registry.getFulfillment(0, 0)
+        await bounties.acceptFulfillment(0, 0, { from: accounts[0] })
+        fulfillment = await bounties.getFulfillment(0, 0)
         assert(fulfillment[0] === true)
       })
 
-      it('verifies that bounty fulfillment flow works to completion', async () => {
-        await registry.issueBounty(
+      it('verifies that bounty fulfillment completes', async () => {
+        await bounties.issueBounty(
           accounts[0],
           2528821098,
           'data',
@@ -211,22 +247,22 @@ contract('Projects App', accounts => {
           0x0,
           { from: accounts[0] }
         )
-        await registry.activateBounty(0, 1000, {
+        await bounties.activateBounty(0, 1000, {
           from: accounts[0],
           value: 1000,
         })
-        await registry.fulfillBounty(0, 'data', { from: accounts[1] })
-        let fulfillment = await registry.getFulfillment(0, 0)
+        await bounties.fulfillBounty(0, 'data', { from: accounts[1] })
+        let fulfillment = await bounties.getFulfillment(0, 0)
         assert(fulfillment[0] === false)
-        await registry.acceptFulfillment(0, 0, { from: accounts[0] })
-        fulfillment = await registry.getFulfillment(0, 0)
-        const bounty = await registry.getBounty(0)
+        await bounties.acceptFulfillment(0, 0, { from: accounts[0] })
+        fulfillment = await bounties.getFulfillment(0, 0)
+        const bounty = await bounties.getBounty(0)
         assert(fulfillment[0] === true)
         assert(bounty[5] == 0)
       })
 
       it('verifies that bounty fulfillment flow works to completion with several fulfillments', async () => {
-        await registry.issueBounty(
+        await bounties.issueBounty(
           accounts[0],
           2528821098,
           'data',
@@ -236,17 +272,17 @@ contract('Projects App', accounts => {
           0x0,
           { from: accounts[0] }
         )
-        await registry.activateBounty(0, 1000, {
+        await bounties.activateBounty(0, 1000, {
           from: accounts[0],
           value: 1000,
         })
-        await registry.fulfillBounty(0, 'data', { from: accounts[1] })
-        await registry.fulfillBounty(0, 'data2', { from: accounts[2] })
-        let fulfillment = await registry.getFulfillment(0, 0)
+        await bounties.fulfillBounty(0, 'data', { from: accounts[1] })
+        await bounties.fulfillBounty(0, 'data2', { from: accounts[2] })
+        let fulfillment = await bounties.getFulfillment(0, 0)
         assert(fulfillment[0] === false)
-        await registry.acceptFulfillment(0, 0, { from: accounts[0] })
-        fulfillment = await registry.getFulfillment(0, 0)
-        const bounty = await registry.getBounty(0)
+        await bounties.acceptFulfillment(0, 0, { from: accounts[0] })
+        fulfillment = await bounties.getFulfillment(0, 0)
+        const bounty = await bounties.getBounty(0)
         assert(fulfillment[0] === true)
         assert(bounty[5] == 0)
       })
@@ -254,16 +290,17 @@ contract('Projects App', accounts => {
 
     context('issue, fulfill, and accept fulfillment for bulk bounties', () => {
       let issue3Receipt
+      const issueNumber = 1
 
       beforeEach('issue bulk bounties', async () => {
         issue3Receipt = addedBounties(
           await app.addBounties(
             Array(3).fill(repoId),
-            [1, 2, 3],
-            [10, 20, 30],
-            [Date.now() + 86400, Date.now() + 86400, Date.now() + 86400],
-            [false, false, false],
-            [0, 0, 0],
+            [ 1, 2, 3 ],
+            [ 10, 20, 30 ],
+            [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
+            [ false, false, false ],
+            [ 0, 0, 0 ],
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
             { from: bountyAdder, value: 60 }
           )
@@ -299,13 +336,143 @@ contract('Projects App', accounts => {
         )
       })
 
-      it('fulfill bounties and accept fulfillment', async () => {
+      it('allows users to request assignment', async () => {
+        await app.requestAssignment(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd', { from: root })
+        response = await app.getApplicant(repoId, issueNumber, 0)
+        assert.strictEqual(
+          response[0],
+          root,
+          'applicant address incorrect'
+        )
+        assert.strictEqual(
+          response[1],
+          'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+          'application IPFS hash incorrect'
+        )
+      })
+
+      it('users cannot apply for a given issue more than once', async () => {
+        await app.requestAssignment(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd', { from: root })
+        assertRevert( async () =>{
+          await app.requestAssignment(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd', { from: root })
+        })
+      })
+
+      it('assign tasks to applicants', async () => {
+        await app.requestAssignment(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd', { from: root })
+        applicantQty = await app.getApplicantsLength(repoId, 1)
+        applicant = await app.getApplicant(repoId, issueNumber, applicantQty.toNumber() - 1)
+        await app.approveAssignment(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', true, { from: bountyAdder })
+
+        const issue = await app.getIssue(repoId, 1)
+        assert.strictEqual(issue[6], root, 'assignee address incorrect')
+      })
+
+      it('approve and reject assignment request', async () => {
+        await app.requestAssignment(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd', { from: root })
+        applicantQty = await app.getApplicantsLength(repoId, 1)
+        applicant = await app.getApplicant(repoId, issueNumber, applicantQty.toNumber() - 1)
+        assert.strictEqual(applicant[2].toNumber(), 0, 'assignment request status is not Unreviewed')
+
+        await app.approveAssignment(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', true, { from: bountyAdder })
+        applicant = await app.getApplicant(repoId, issueNumber, applicantQty.toNumber() - 1)
+        assert.strictEqual(applicant[2].toNumber(), 1, 'assignment request status is not Accepted')
+
+        await app.approveAssignment(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', false, { from: bountyAdder })
+        applicant = await app.getApplicant(repoId, issueNumber, applicantQty.toNumber() - 1)
+        assert.strictEqual(applicant[2].toNumber(), 2, 'assignment request status is not Rejected')
+      })
+
+      it('users can submit work', async () => {
+        await app.requestAssignment(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd', { from: root })
+        applicantQty = await app.getApplicantsLength(repoId, 1)
+        applicant = await app.getApplicant(repoId, issueNumber, applicantQty.toNumber() - 1)
+        await app.approveAssignment(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', true, { from: bountyAdder })
+
+        await app.submitWork(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDk')
+        submissionQty = await app.getSubmissionsLength(repoId, issueNumber)
+        submission = await app.getSubmission(repoId, issueNumber, submissionQty.toNumber() - 1)
+        assert.strictEqual(
+          submission[0],
+          'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDk',
+          'submission incorrect'
+        )
+
+      })
+
+      it('work can be rejected', async () => {
+        await app.requestAssignment(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd', { from: root })
+        applicantQty = await app.getApplicantsLength(repoId, 1)
+        applicant = await app.getApplicant(repoId, issueNumber, applicantQty.toNumber() - 1)
+        await app.approveAssignment(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', true, { from: bountyAdder })
+
+        await app.submitWork(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDk')
+        submissionQty = await app.getSubmissionsLength(repoId, issueNumber)
+        const submissionIndex = submissionQty.toNumber() - 1
+        submission = await app.getSubmission(repoId, issueNumber, submissionIndex)
+
+        await app.reviewSubmission(repoId, issueNumber, submissionIndex, false, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl', { from: bountyAdder })
+        submission = await app.getSubmission(repoId, issueNumber, submissionIndex)
+        assert.strictEqual(
+          submission[2].toNumber(),
+          2,
+          'submission status not rejected'
+        )
+      })
+
+      it('work can be accepted', async () => {
+        await app.requestAssignment(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd', { from: root })
+        applicantQty = await app.getApplicantsLength(repoId, 1)
+        applicant = await app.getApplicant(repoId, issueNumber, applicantQty.toNumber() - 1)
+        await app.approveAssignment(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', true, { from: bountyAdder })
+
+        await app.submitWork(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDk')
+        submissionQty = await app.getSubmissionsLength(repoId, issueNumber)
+        const submissionIndex = submissionQty.toNumber() - 1
+        submission = await app.getSubmission(repoId, issueNumber, submissionIndex)
+
+        await app.reviewSubmission(repoId, issueNumber, submissionIndex, true, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl', { from: bountyAdder })
+        submission = await app.getSubmission(repoId, issueNumber, submissionIndex)
+        assert.strictEqual(
+          submission[2].toNumber(),
+          1,
+          'submission status not accepted'
+        )
+      })
+
+      it('users cannot submit work for an issue they are not assigned to', async () => {
+        assertRevert( async () => {
+          await app.submitWork(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDk')
+        })
+      })
+
+      it('work cannot be accepted or submitted after bounty is fulfilled', async () => {
+        await app.requestAssignment(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd', { from: root })
+        applicantQty = await app.getApplicantsLength(repoId, 1)
+        applicant = await app.getApplicant(repoId, issueNumber, applicantQty.toNumber() - 1)
+        await app.approveAssignment(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', true, { from: bountyAdder })
+
+        await app.submitWork(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDk')
+        submissionQty = await app.getSubmissionsLength(repoId, issueNumber)
+        const submissionIndex = submissionQty.toNumber() - 1
+        submission = await app.getSubmission(repoId, issueNumber, submissionIndex)
+
+        await app.reviewSubmission(repoId, issueNumber, submissionIndex, true, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl', { from: bountyAdder })
+        assertRevert(async () => {
+          await app.submitWork(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDk')
+        })
+        assertRevert(async () => {
+          await app.reviewSubmission(repoId, issueNumber, submissionIndex, true, { from: bountyAdder })
+        })
+      })
+
+      xit('fulfill bounties and accept fulfillment', async () => {
         const IssueData1 = await app.getIssue(repoId, 1)
         const bountyId1 = IssueData1[1].toNumber()
         const fulfillmentId1 = fulfilledBounty(
-          await registry.fulfillBounty(bountyId1, 'findthemillenniumfalcon')
+          await bounties.fulfillBounty(bountyId1, 'findthemillenniumfalcon')
         )._fulfillmentId.toNumber()
-        let fulfillment1 = await registry.getFulfillment(
+        let fulfillment1 = await bounties.getFulfillment(
           bountyId1,
           fulfillmentId1
         )
@@ -313,15 +480,15 @@ contract('Projects App', accounts => {
         await app.acceptFulfillment(repoId, 1, fulfillmentId1, {
           from: bountyAdder,
         })
-        fulfillment1 = await registry.getFulfillment(bountyId1, fulfillmentId1)
+        fulfillment1 = await bounties.getFulfillment(bountyId1, fulfillmentId1)
         assert(fulfillment1[0] === true)
 
         const IssueData2 = await app.getIssue(repoId, 2)
         const bountyId2 = IssueData2[1].toNumber()
         const fulfillmentId2 = fulfilledBounty(
-          await registry.fulfillBounty(bountyId2, 'findthemillenniumfalcon')
+          await bounties.fulfillBounty(bountyId2, 'findthemillenniumfalcon')
         )._fulfillmentId.toNumber()
-        let fulfillment2 = await registry.getFulfillment(
+        let fulfillment2 = await bounties.getFulfillment(
           bountyId2,
           fulfillmentId2
         )
@@ -329,15 +496,15 @@ contract('Projects App', accounts => {
         await app.acceptFulfillment(repoId, 2, fulfillmentId2, {
           from: bountyAdder,
         })
-        fulfillment2 = await registry.getFulfillment(bountyId2, fulfillmentId2)
+        fulfillment2 = await bounties.getFulfillment(bountyId2, fulfillmentId2)
         assert(fulfillment2[0] === true)
 
         const IssueData3 = await app.getIssue(repoId, 3)
         const bountyId3 = IssueData3[1].toNumber()
         const fulfillmentId3 = fulfilledBounty(
-          await registry.fulfillBounty(bountyId3, 'findthemillenniumfalcon')
+          await bounties.fulfillBounty(bountyId3, 'findthemillenniumfalcon')
         )._fulfillmentId.toNumber()
-        let fulfillment3 = await registry.getFulfillment(
+        let fulfillment3 = await bounties.getFulfillment(
           bountyId3,
           fulfillmentId3
         )
@@ -345,69 +512,69 @@ contract('Projects App', accounts => {
         await app.acceptFulfillment(repoId, 3, fulfillmentId3, {
           from: bountyAdder,
         })
-        fulfillment3 = await registry.getFulfillment(bountyId3, fulfillmentId3)
+        fulfillment3 = await bounties.getFulfillment(bountyId3, fulfillmentId3)
         assert(fulfillment3[0] === true)
       })
 
-      it('verify balance is correct before and after accepting fulfillment in standard bounty', async () => {
+      xit('verify balance is correct before and after accepting fulfillment in standard bounty', async () => {
         const IssueData1 = await app.getIssue(repoId, 1)
         const bountyId1 = IssueData1[1].toNumber()
         const fulfillmentId1 = fulfilledBounty(
-          await registry.fulfillBounty(bountyId1, 'findthemillenniumfalcon')
+          await bounties.fulfillBounty(bountyId1, 'findthemillenniumfalcon')
         )._fulfillmentId.toNumber()
-        let fulfillment1 = await registry.getFulfillment(
+        let fulfillment1 = await bounties.getFulfillment(
           bountyId1,
           fulfillmentId1
         )
         assert(fulfillment1[0] === false)
-        let bounty1 = await registry.getBounty(bountyId1)
+        let bounty1 = await bounties.getBounty(bountyId1)
         assert.strictEqual(bounty1[5].toNumber(), 10)
         await app.acceptFulfillment(repoId, 1, fulfillmentId1, {
           from: bountyAdder,
         })
-        fulfillment1 = await registry.getFulfillment(bountyId1, fulfillmentId1)
+        fulfillment1 = await bounties.getFulfillment(bountyId1, fulfillmentId1)
         assert(fulfillment1[0] === true)
-        bounty1 = await registry.getBounty(bountyId1)
+        bounty1 = await bounties.getBounty(bountyId1)
         assert.strictEqual(bounty1[5].toNumber(), 0)
 
         const IssueData2 = await app.getIssue(repoId, 2)
         const bountyId2 = IssueData2[1].toNumber()
         const fulfillmentId2 = fulfilledBounty(
-          await registry.fulfillBounty(bountyId2, 'findthemillenniumfalcon')
+          await bounties.fulfillBounty(bountyId2, 'findthemillenniumfalcon')
         )._fulfillmentId.toNumber()
-        let fulfillment2 = await registry.getFulfillment(
+        let fulfillment2 = await bounties.getFulfillment(
           bountyId2,
           fulfillmentId2
         )
         assert(fulfillment2[0] === false)
-        let bounty2 = await registry.getBounty(bountyId2)
+        let bounty2 = await bounties.getBounty(bountyId2)
         assert.strictEqual(bounty2[5].toNumber(), 20)
         await app.acceptFulfillment(repoId, 2, fulfillmentId2, {
           from: bountyAdder,
         })
-        fulfillment2 = await registry.getFulfillment(bountyId2, fulfillmentId2)
+        fulfillment2 = await bounties.getFulfillment(bountyId2, fulfillmentId2)
         assert(fulfillment2[0] === true)
-        bounty2 = await registry.getBounty(bountyId2)
+        bounty2 = await bounties.getBounty(bountyId2)
         assert.strictEqual(bounty2[5].toNumber(), 0)
 
         const IssueData3 = await app.getIssue(repoId, 3)
         const bountyId3 = IssueData3[1].toNumber()
         const fulfillmentId3 = fulfilledBounty(
-          await registry.fulfillBounty(bountyId3, 'findthemillenniumfalcon')
+          await bounties.fulfillBounty(bountyId3, 'findthemillenniumfalcon')
         )._fulfillmentId.toNumber()
-        let fulfillment3 = await registry.getFulfillment(
+        let fulfillment3 = await bounties.getFulfillment(
           bountyId3,
           fulfillmentId3
         )
         assert(fulfillment3[0] === false)
-        let bounty3 = await registry.getBounty(bountyId3)
+        let bounty3 = await bounties.getBounty(bountyId3)
         assert.strictEqual(bounty3[5].toNumber(), 30)
         await app.acceptFulfillment(repoId, 3, fulfillmentId3, {
           from: bountyAdder,
         })
-        fulfillment3 = await registry.getFulfillment(bountyId3, fulfillmentId3)
+        fulfillment3 = await bounties.getFulfillment(bountyId3, fulfillmentId3)
         assert(fulfillment3[0] === true)
-        bounty3 = await registry.getBounty(bountyId3)
+        bounty3 = await bounties.getBounty(bountyId3)
         assert.strictEqual(bounty3[5].toNumber(), 0)
       })
     })
@@ -417,7 +584,7 @@ contract('Projects App', accounts => {
     // TODO: We should create every permission for every test this way to speed up testing
     // TODO: Create an external helper function that inits acl and sets permissions
     before(async () => {})
-    it('should curate a single issue', async () => {
+    it('should curate a multiple issues', async () => {
       const unusedAddresses = accounts.slice(0, 4)
       const zeros = new Array(unusedAddresses.length).fill(0)
       const issuePriorities = zeros
@@ -426,32 +593,88 @@ contract('Projects App', accounts => {
       const issueRepos = zeros
       const issueNumbers = zeros
       const unused_curationId = 0
+      const description = 'description'
       await app.curateIssues(
         unusedAddresses,
         issuePriorities,
         issueDescriptionIndices,
         unused_issueDescriptions,
+        description,
         issueRepos,
         issueNumbers,
         unused_curationId
       )
       // assert()
     })
-    xit('should curate multiple issues', async () => {
-      // assert()
-    })
     context('invalid issue curation operations', () => {
-      xit('should revert on unusedAddresses length mismatch', async () => {
-        // assert()
+      it('should revert on issueDescriptionindices and priorities array length mismatch', async () => {
+        const unusedAddresses = accounts.slice(0, 4)
+        const zeros = new Array(unusedAddresses.length).fill(0)
+        const issuePriorities = zeros
+        const issueDescriptionIndices = zeros.slice(0, 3)
+        const unused_issueDescriptions = ''
+        const issueRepos = zeros
+        const issueNumbers = zeros
+        const unused_curationId = 0
+        const description = 'description'
+        assertRevert(async () => {
+          await app.curateIssues(
+            unusedAddresses,
+            issuePriorities,
+            issueDescriptionIndices,
+            unused_issueDescriptions,
+            description,
+            issueRepos,
+            issueNumbers,
+            unused_curationId
+          )
+        })
       })
-      xit('should revert on unusedAddresses length mismatch', async () => {
-        // assert()
+      it('should revert on IssuedescriptionIndices and issueRepos array length mismatch', async () => {
+        const unusedAddresses = accounts.slice(0, 4)
+        const zeros = new Array(unusedAddresses.length).fill(0)
+        const issuePriorities = zeros
+        const issueDescriptionIndices = zeros
+        const unused_issueDescriptions = ''
+        const issueRepos = zeros.slice(0, 3)
+        const issueNumbers = zeros
+        const unused_curationId = 0
+        const description = 'description'
+        assertRevert(async () => {
+          await app.curateIssues(
+            unusedAddresses,
+            issuePriorities,
+            issueDescriptionIndices,
+            unused_issueDescriptions,
+            description,
+            issueRepos,
+            issueNumbers,
+            unused_curationId
+          )
+        })
       })
-      xit('should revert on unusedAddresses length mismatch', async () => {
-        // assert()
-      })
-      xit('should revert on unusedAddresses length mismatch', async () => {
-        // assert()
+      it('should revert on IssueRepos and IssuesNumbers array length mismatch', async () => {
+        const unusedAddresses = accounts.slice(0, 4)
+        const zeros = new Array(unusedAddresses.length).fill(0)
+        const issuePriorities = zeros
+        const issueDescriptionIndices = zeros
+        const unused_issueDescriptions = ''
+        const issueRepos = zeros
+        const issueNumbers = zeros.slice(0, 3)
+        const unused_curationId = 0
+        const description = 'description'
+        assertRevert(async () => {
+          await app.curateIssues(
+            unusedAddresses,
+            issuePriorities,
+            issueDescriptionIndices,
+            unused_issueDescriptions,
+            description,
+            issueRepos,
+            issueNumbers,
+            unused_curationId
+          )
+        })
       })
       xit('should revert if an issue has an already assigned bounty', async () => {
         // assert()
@@ -459,7 +682,65 @@ contract('Projects App', accounts => {
     })
   })
 
+  context('settings management', () => {
+    it('can change Bounty Settings', async () => {
+      await app.changeBountySettings(
+        '100\tBeginner\t300\tIntermediate\t500\tAdvanced',  // Experience Levels
+        1,  // baseRate
+        336,  // bountyDeadline
+        'autark',   // bountyCurrency
+        bounties.address  // bountyAllocator
+        //0x0000000000000000000000000000000000000000  //bountyArbiter
+      )
+
+      response = await app.getSettings()
+      assert.strictEqual(
+        response[0],
+        '100\tBeginner\t300\tIntermediate\t500\tAdvanced',
+        'experience levels stored incorrectly'
+      )
+
+      assert.strictEqual(
+        response[1].toNumber(),
+        1,
+        'baseRate Incorrect'
+      )
+      assert.strictEqual(
+        response[2].toNumber(),
+        336,
+        'bounty deadline inccorrect'
+      )
+      assert.strictEqual(
+        response[3],
+        'autark',
+        'currency name incorrect'
+      )
+      assert.strictEqual(
+        response[4],
+        bounties.address,
+        'StandardBounties Contract address incorrect'
+      )
+      //assert.strictEqual(
+      //  response[5],
+      //  '0x0000000000000000000000000000000000000000',
+      //  'arbiter incorrect'
+      //)
+    })
+  })
+
   context('invalid operations', () => {
+    it('cannot add a repo that is already present', async () => {
+      await app.addRepo('abc', String(123), { from: owner1 })
+
+      assertRevert(async () => {
+        await app.addRepo('abc', String(123), { from: owner1 })
+      })
+    })
+    it('cannot remove a repo that was never added', async() => {
+      assertRevert(async () => {
+        await app.removeRepo('99999', { from: repoRemover })
+      })
+    })
     it('cannot retrieve a removed Repo', async () => {
       const repoId = addedRepo(
         await app.addRepo('abc', String(123), { from: owner1 })
@@ -481,13 +762,13 @@ contract('Projects App', accounts => {
 
     it('cannot add bounties to unregistered repos', async () => {
       assertRevert(async () => {
-        await app.addBounties(Array(3).fill('0xdeadbeef'), [1, 2, 3], [10, 20, 30], {
+        await app.addBounties(Array(3).fill('0xdeadbeef'), [ 1, 2, 3 ], [ 10, 20, 30 ], {
           from: bountyAdder,
         })
       })
     })
 
-    it('cannot accept unfulfilled bounties', async () => {
+    xit('cannot accept unfulfilled bounties', async () => {
       let repoId = addedRepo(
         await app.addRepo(
           'MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5',
@@ -497,26 +778,26 @@ contract('Projects App', accounts => {
       )
       await app.addBounties(
         Array(3).fill(repoId),
-        [1, 2, 3],
-        [10, 20, 30],
-        [Date.now() + 86400, Date.now() + 86400, Date.now() + 86400],
-        [false, false, false],
-        [0, 0, 0],
+        [ 1, 2, 3 ],
+        [ 10, 20, 30 ],
+        [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
+        [ false, false, false ],
+        [ 0, 0, 0 ],
         'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
         { from: bountyAdder, value: 60 }
       )
       assertRevert(async () => {
         await app.acceptFulfillment(repoId, 0, 0, { from: bountyAdder })
       })
-      await registry.fulfillBounty(0, 'findthemillenniumfalcon')
-      let fulfillment1 = await registry.getFulfillment(0, 0)
+      await bounties.fulfillBounty(0, 'findthemillenniumfalcon')
+      let fulfillment1 = await bounties.getFulfillment(0, 0)
       assert(fulfillment1[0] === false)
       await app.acceptFulfillment(repoId, 0, 0, { from: bountyAdder })
-      fulfillment1 = await registry.getFulfillment(0, 0)
+      fulfillment1 = await bounties.getFulfillment(0, 0)
       assert(fulfillment1[0] === true)
     })
 
-    it('cannot issue bulk bounties with mismatched values', async () => {
+    xit('cannot issue bulk bounties with mismatched values', async () => {
       const bountyAdder = accounts[2]
       const repoId = addedRepo(
         await app.addRepo('abc', String(123), { from: owner1 })
@@ -524,11 +805,11 @@ contract('Projects App', accounts => {
       assertRevert(async () => {
         await app.addBounties(
           Array(3).fill(repoId),
-          [1, 2, 3],
-          [10, 20, 30], // 60 total Wei should be sent
-          [Date.now() + 86400, Date.now() + 86400, Date.now() + 86400],
-          [false, false, false],
-          [0, 0, 0],
+          [ 1, 2, 3 ],
+          [ 10, 20, 30 ], // 60 total Wei should be sent
+          [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
+          [ false, false, false ],
+          [ 0, 0, 0 ],
           'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
           { from: bountyAdder, value: 61 } // 61 Wei sent instead
         )

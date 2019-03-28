@@ -8,9 +8,9 @@ const ProgressBar = ({ progress, label }) => (
   <Motion defaultStyle={{ progress: 0 }} style={{ progress: spring(progress) }}>
     {({ progress }) => (
       <Main>
-        <Text size="xsmall" color={theme.textSecondary}>
+        <Label size="xsmall" color={theme.textSecondary}>
           {label}
-        </Text>
+        </Label>
         <Base>
           <Progress
             color={theme.accent}
@@ -22,19 +22,25 @@ const ProgressBar = ({ progress, label }) => (
   </Motion>
 )
 
-
 const Main = styled.div`
   width: 100%;
   align-items: center;
 `
+
+const Label = styled(Text)`
+  overflow: hidden;
+  line-height: 1.6em;
+  text-overflow: ellipsis;
+  margin-bottom: 0.2rem;
+`
 const Base = styled.div`
   width: 100%;
-  height: 6px;
-  background-color: ${theme.infoBackground};
+  height: 8px;
+  background-color: ${theme.contentBackgroundActive};
   border-radius: 2px;
   text-align: right;
   line-height: 14px;
-  padding-right: 6px;
+  margin-bottom: 12px;
 `
 const Progress = styled.div`
   height: 6px;

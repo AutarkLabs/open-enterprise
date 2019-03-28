@@ -123,7 +123,7 @@ const Cell = styled(TableCell)`
 
 const StatusCell = styled(Cell)`
   vertical-align: top;
-  width: 190px;
+  width: 180px;
 `
 
 const QuestionCell = styled(Cell)`
@@ -133,7 +133,7 @@ const QuestionCell = styled(Cell)`
 const BarsCell = styled(Cell)`
   flex-shrink: 0;
   width: 25%;
-  min-width: 200px;
+  min-width: 190px;
   cursor: auto;
 `
 
@@ -143,7 +143,6 @@ const ActionsCell = styled(Cell)`
 
 const QuestionWrapper = styled.p`
   margin-right: 20px;
-  word-break: break-all;
   hyphens: auto;
 `
 

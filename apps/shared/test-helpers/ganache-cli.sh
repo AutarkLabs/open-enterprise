@@ -33,7 +33,7 @@ start_testrpc() {
 		ganache-cli -i 15 --gasLimit 50000000 --port "$testrpc_port" >/dev/null &
 	elif [ "$START_KIT" = true ]; then
 		aragon devchain --port "$testrpc_port" &
-	elif [ "$RESTART_KIT" = true ]; then
+	elif [ "$RESTART_KIT" = true ] || [ "$CYPRESS" = true ]; then
 		rm -rf ~/.ipfs
 		aragon devchain --reset --port "$testrpc_port" &
 	elif [ "$DEV" = true ]; then
@@ -46,8 +46,7 @@ start_testrpc() {
 
 if testrpc_running; then
 	echo "Killing testrpc instance at port $testrpc_port"
-	#  TODO: Fails when multiple processes are open (should check for each)
-	kill -9 "$(lsof -i:"$testrpc_port" -t)"
+	kill -9 "$(lsof -i:"$testrpc_port" -sTCP:LISTEN -t)"
 fi
 
 echo "Starting our own testrpc instance at port $testrpc_port"
@@ -69,6 +68,12 @@ elif [ "$START_KIT" = true ] || [ "$RESTART_KIT" = true ]; then
 elif [ "$DEV" = true ]; then
 	npm run publish:http && npm run start:kit
 	result=$?
+elif [ "$CYPRESS" = true ]; then
+	npm run publish:apps && npm run start:kit &> /dev/null &
+	npm run cypress:run
+	result=$?
+	kill -9 "$(lsof -i:3000 -sTCP:LISTEN -t)" # kill parcel dev server
+	kill -9 "$(lsof -i:8080 -sTCP:LISTEN -t)" # kill IPFS daemon
 fi
 
 kill -9 $testrpc_pid

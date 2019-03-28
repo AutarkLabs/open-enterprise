@@ -185,7 +185,8 @@ class Decisions extends React.Component {
           open: !vote.data.executed && isBefore(new Date(), endDate),
           quorum: safeDiv(vote.data.minAcceptQuorum, pctBase),
           quorumProgress: getQuorumProgress(vote.data),
-          description: vote.data.metadata
+          description: vote.data.metadata,
+          type: vote.data.type,
         }
       })
       : votes

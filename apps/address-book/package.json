@@ -25,12 +25,11 @@
   },
   "dependencies": {
     "@aragon/client": "1.1.0",
-    "@aragon/ui": "0.30.1",
+    "@aragon/ui": "0.32.0",
+    "@tps/ui": "^0.0.1",
     "prop-types": "15.6.2",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
-    "rxjs": "6.3.2",
-    "rxjs-compat": "6.3.2",
     "styled-components": "4.1.3"
   },
   "devDependencies": {

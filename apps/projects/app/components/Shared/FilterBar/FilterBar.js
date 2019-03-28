@@ -1,13 +1,18 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Badge, theme, ContextMenuItem as FilterMenuItem } from '@aragon/ui'
+import {
+  Badge,
+  Checkbox,
+  ContextMenuItem as FilterMenuItem,
+  theme,
+} from '@aragon/ui'
 
 import Overflow from './Overflow'
 import FilterButton from './FilterButton'
-import { CheckButton } from '../'
 import FilterDropDown from './FilterDropDown'
 import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
+import { BOUNTY_STATUS } from '../../../utils/bounty-status'
 
 const StyledFilterBar = styled.div`
   width: 100%;
@@ -40,8 +45,6 @@ const ActionLabel = styled.span`
   margin-left: 15px;
 `
 
-
-
 class FilterBar extends React.Component {
   state = {
     filters: {
@@ -50,14 +53,16 @@ class FilterBar extends React.Component {
       milestones: {},
       deadlines: {},
       experiences: {},
+      statuses: {},
     },
     // direction: -1: .oO; 1: Oo.; 0: disabled
     sortBy: [
       { what: 'Name', direction: -1 },
+      { what: 'Creation Date', direction: 1 },
       //{ what: 'Label', direction: 0 },
       //{ what: 'Milestone', direction: 0 },
       //{ what: 'Status', direction: 0 },
-    ]
+    ],
   }
 
   componentWillMount() {
@@ -88,14 +93,31 @@ class FilterBar extends React.Component {
     prepareFilters builds data structure for displaying filterbar dropdowns
     data comes from complete issues array, issuesFiltered is used for counters
   */
-  prepareFilters = (issues, _issuesFiltered) => {
+  prepareFilters = (issues, bountyIssues) => {
     let filters = {
       projects: {},
       labels: {},
       milestones: {},
       deadlines: {},
       experiences: {},
+      statuses: {},
     }
+
+    filters.statuses['not-funded'] = {
+      name: BOUNTY_STATUS['not-funded'],
+      count: issues.length - bountyIssues.length,
+    }
+    bountyIssues.map(issue => {
+      if (issue.data.workStatus in filters.statuses) {
+        filters.statuses[issue.data.workStatus].count++
+      } else {
+        filters.statuses[issue.data.workStatus] = {
+          name: BOUNTY_STATUS[issue.data.workStatus],
+          count: 1,
+        }
+      }
+    })
+
     issues.map(issue => {
       if (issue.milestone) {
         if (issue.milestone.id in filters.milestones) {
@@ -162,107 +184,165 @@ class FilterBar extends React.Component {
   }
 
   render() {
-    const { handleSelectAll, allSelected, issues } = this.props
+    const { handleSelectAll, allSelected, issues, bountyIssues } = this.props
     // filters contain information about active filters (checked checkboxes)
     const { filters } = this.state
     // filtersData is about displayed checkboxes
-    const filtersData = this.prepareFilters(issues)
-
+    const filtersData = this.prepareFilters(issues, bountyIssues)
     return (
       <StyledFilterBar>
         <FilterButton>
-          <CheckButton onChange={handleSelectAll} checked={allSelected} />
+          <Checkbox onChange={handleSelectAll} checked={allSelected} />
         </FilterButton>
-        
+
         <Overflow>
-          <FilterDropDown caption="Projects" enabled={ Object.keys(filtersData.projects).length > 0}>
-            { Object.keys(filtersData.projects).sort(
-              (p1, p2) => filtersData.projects[p1].name < filtersData.projects[p2].name ? -1 : 1
-            ).map(
-              id => (
+          <FilterDropDown
+            caption="Projects"
+            enabled={Object.keys(filtersData.projects).length > 0}
+          >
+            {Object.keys(filtersData.projects)
+              .sort(
+                (p1, p2) =>
+                  filtersData.projects[p1].name < filtersData.projects[p2].name
+                    ? -1
+                    : 1
+              )
+              .map(id => (
                 <FilterMenuItem
                   key={id}
                   onClick={this.filter('projects', id)}
                   style={{ display: 'flex', alignItems: 'flex-start' }}
                 >
                   <div>
-                    <CheckButton onChange={this.noop} checked={id in filters.projects} />
+                    <Checkbox
+                      onChange={this.noop}
+                      checked={id in filters.projects}
+                    />
                   </div>
                   <ActionLabel>
-                    {filtersData.projects[id].name} ({filtersData.projects[id].count})
+                    {filtersData.projects[id].name} (
+                    {filtersData.projects[id].count})
                   </ActionLabel>
                 </FilterMenuItem>
-              ))
-            }
+              ))}
           </FilterDropDown>
 
-          <FilterDropDown caption="Labels" enabled={ Object.keys(filtersData.labels).length > 0}>
-            { Object.keys(filtersData.labels).sort(
-              (l1, l2) => {
+          <FilterDropDown
+            caption="Labels"
+            enabled={Object.keys(filtersData.labels).length > 0}
+          >
+            {Object.keys(filtersData.labels)
+              .sort((l1, l2) => {
                 if (l1 === 'labelless') return -1
                 if (l2 === 'labelless') return 1
-                return filtersData.labels[l1].name < filtersData.labels[l2].name ? -1 : 1
-              }).map(
-              id => (
+                return filtersData.labels[l1].name < filtersData.labels[l2].name
+                  ? -1
+                  : 1
+              })
+              .map(id => (
                 <FilterMenuItem
                   key={id}
                   onClick={this.filter('labels', id)}
                   style={{ display: 'flex', alignItems: 'flex-start' }}
                 >
                   <div>
-                    <CheckButton onChange={this.noop} checked={id in filters.labels} />
+                    <Checkbox
+                      onChange={this.noop}
+                      checked={id in filters.labels}
+                    />
                   </div>
                   <ActionLabel>
-                    <Badge background={'#'+filtersData.labels[id].color} foreground={'#000'}>{filtersData.labels[id].name}</Badge> ({filtersData.labels[id].count})
+                    <Badge
+                      background={'#' + filtersData.labels[id].color}
+                      foreground={'#000'}
+                    >
+                      {filtersData.labels[id].name}
+                    </Badge>{' '}
+                    ({filtersData.labels[id].count})
                   </ActionLabel>
                 </FilterMenuItem>
-              ))
-            }
+              ))}
           </FilterDropDown>
 
-          <FilterDropDown caption="Milestones" enabled={ Object.keys(filtersData.milestones).length > 0}>
-            { Object.keys(filtersData.milestones).sort(
-              (m1, m2) => {
+          <FilterDropDown
+            caption="Milestones"
+            enabled={Object.keys(filtersData.milestones).length > 0}
+          >
+            {Object.keys(filtersData.milestones)
+              .sort((m1, m2) => {
                 if (m1 === 'milestoneless') return -1
                 if (m2 === 'milestoneless') return 1
-                return filtersData.milestones[m1].title < filtersData.milestones[m2].title ? -1 : 1
-              }).map(
-              id => (
+                return filtersData.milestones[m1].title <
+                  filtersData.milestones[m2].title
+                  ? -1
+                  : 1
+              })
+              .map(id => (
                 <FilterMenuItem
                   key={id}
                   onClick={this.filter('milestones', id)}
                   style={{ display: 'flex', alignItems: 'flex-start' }}
                 >
                   <div>
-                    <CheckButton onChange={this.noop} checked={id in filters.milestones} />
+                    <Checkbox
+                      onChange={this.noop}
+                      checked={id in filters.milestones}
+                    />
                   </div>
                   <ActionLabel>
-                    {filtersData.milestones[id].title} ({filtersData.milestones[id].count})
+                    {filtersData.milestones[id].title} (
+                    {filtersData.milestones[id].count})
                   </ActionLabel>
                 </FilterMenuItem>
-              ))
-            }
+              ))}
           </FilterDropDown>
-          { /*
-          <FilterDropDown caption="Status" enabled={false}>
+
+          <FilterDropDown
+            caption="Status"
+            enabled={true}
+          >
+            {Object.keys(filtersData.statuses).map(status => (
+              <FilterMenuItem
+                key={status}
+                onClick={this.filter('statuses', status)}
+                style={{ display: 'flex', alignItems: 'flex-start' }}
+              >
+                <div>
+                  <Checkbox
+                    onChange={this.noop}
+                    checked={status in filters.statuses}
+                  />
+                </div>
+                <ActionLabel>
+                  {filtersData.statuses[status].name} (
+                  {filtersData.statuses[status].count})
+                </ActionLabel>
+              </FilterMenuItem>
+            ))}
           </FilterDropDown>
+
+          {/*
           <FilterDropDown caption="Deadline" enabled={false}>
           </FilterDropDown>
           <FilterDropDown caption="Experience" enabled={false}>
           </FilterDropDown>
-           */ }
+           */}
         </Overflow>
 
         <FilterDropDown caption="Sort by" enabled={true}>
-          { this.state.sortBy.map(s =>
-            <FilterMenuItem key={s.what} onClick={this.generateSort(s.what)} style={{ display: 'flex', alignItems: 'flex-start' }}>
+          {this.state.sortBy.map(s => (
+            <FilterMenuItem
+              key={s.what}
+              onClick={this.generateSort(s.what)}
+              style={{ display: 'flex', alignItems: 'flex-start' }}
+            >
               <div style={{ width: '20px' }}>
-                { s.direction === 1 && <IconBigArrowDown /> }
-                { s.direction === -1 && <IconBigArrowUp /> }
+                {s.direction === 1 && <IconBigArrowDown />}
+                {s.direction === -1 && <IconBigArrowUp />}
               </div>
               <ActionLabel>{s.what}</ActionLabel>
             </FilterMenuItem>
-          )}
+          ))}
         </FilterDropDown>
       </StyledFilterBar>
     )
@@ -273,7 +353,7 @@ FilterBar.propTypes = {
   issues: PropTypes.arrayOf(PropTypes.object).isRequired,
   handleSelectAll: PropTypes.func.isRequired,
   handleFiltering: PropTypes.func.isRequired,
-  handleSorting: PropTypes.func.isRequired
+  handleSorting: PropTypes.func.isRequired,
 }
 
 export default FilterBar

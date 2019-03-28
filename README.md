@@ -7,7 +7,7 @@
   <a href="#development-setup">Development Setup</a> •
   <a href="#background">Background</a> •
   <a href="#details">Details</a> •
-  <a href="#design-concepts">Design Concepts</a>
+  <a href="#design-concepts">Design Concepts</a> •
   <a href="#contact">Contact</a>
 </p>
 <!-- markdownlint-enable MD033 -->
@@ -34,7 +34,7 @@ $ npm run start:range
 
 # current app name aliases: {address, projects, payout, range}
 ```
- 
+
 ### Extra tips
 
 - Individual development is ultra-fast thanks to parcel and hot module replacement.
@@ -45,7 +45,7 @@ $ npm run start:range
 
 ## Background
 
-The proposal for an Aragon [Planning Suite](https://github.com/aragon/nest/pull/24) was developed by members of [Autark](https://autark.xyz, and received funding via [Aragon's Nest program](https://blog.aragon.one/introducing-aragon-nest-1aa8c91c0566): an example of decentralization at it's finest. We are developing this app as a collaborative unit because it is a crucial building block for any organization that aims to coordinate work and streamline management duties, without traditional managers. This app will work with any ERC-20 token or Aragon DAO.
+The proposal for an Aragon [Planning Suite](https://github.com/aragon/nest/pull/24) was developed by members of [Autark](https://autark.xyz), and received funding via [Aragon's Nest program](https://blog.aragon.one/introducing-aragon-nest-1aa8c91c0566): an example of decentralization at it's finest. We are developing this app as a collaborative unit because it is a crucial building block for any organization that aims to coordinate work and streamline management duties, without traditional managers. These apps will work with MiniMe ERC-20 tokens or Aragon DAOs.
 
 ## The Suite
 
@@ -97,11 +97,7 @@ Hypothetical flow diagram. The components should be "plug and play" to design a 
 
 ## Contact
 
-We can generally be found in the [Aragon Planning riot room](https://riot.im/app/#/room/#aragon-planning:matrix.org)
-
-You may also reach out to us via email at: nest@space.coop
-
-If you have any questions or want to get involved in our development please let us know!
+We can  be found in the [`autark.community` keybase channel](https://keybase.io/team/autark.community). If you have any questions or want to get involved in our development please drop in.
 
 ## Special Thanks
 

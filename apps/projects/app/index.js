@@ -18,6 +18,7 @@ import { CURRENT_USER } from './utils/gql-queries'
 class ConnectedApp extends React.Component {
   state = {
     app: new Aragon(new providers.WindowMessage(window.parent)),
+    network: {},
     observable: null,
     userAccount: '',
     // ...projectsMockData,
@@ -56,12 +57,13 @@ class ConnectedApp extends React.Component {
         observable: app.state(),
       })
       app.accounts().subscribe(accounts => {
-        this.setState({
-          userAccount: accounts[0] || '',
-        })
+        this.setState({ userAccount: accounts[0] || '' })
+      })
+      app.network().subscribe(network => {
+        this.setState({ network })
       })
       app.rpc
-        .sendAndObserveResponses('cache', ['get', 'github'])
+        .sendAndObserveResponses('cache', [ 'get', 'github' ])
         .pluck('result')
         .subscribe(github => {
           console.log('github object received from backend cache:', github)
@@ -71,14 +73,16 @@ class ConnectedApp extends React.Component {
           })
 
           if (this.state.github.token) {
-            this.state.client.query({
-              query: CURRENT_USER
-            }).then(({data}) => {
-              this.setState({
-                githubCurrentUser: data.viewer
+            this.state.client
+              .query({
+                query: CURRENT_USER,
               })
-              console.log('viewer: ', data)
-            })
+              .then(({ data }) => {
+                this.setState({
+                  githubCurrentUser: data.viewer,
+                })
+                console.log('viewer: ', data)
+              })
           }
         })
     }

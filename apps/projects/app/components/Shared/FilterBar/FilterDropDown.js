@@ -14,6 +14,10 @@ class FilterDropDown extends React.Component {
   static propTypes = {
     children: PropTypes.node,
     enabled: PropTypes.bool,
+    overflow: PropTypes.bool,
+  }
+  static defaultProps = {
+    overflow: false,
   }
   state = {
     opened: false,
@@ -34,7 +38,7 @@ class FilterDropDown extends React.Component {
 
   render() {
     const { opened } = this.state
-    const { caption, children, enabled } = this.props
+    const { caption, children, enabled, overflow } = this.props
     return (
       <ClickOutHandler onClickOut={this.handleClickOut}>
         <Spring
@@ -71,18 +75,34 @@ class FilterDropDown extends React.Component {
                   <IconArrowDown />
                 </animated.div>
               </FilterButton>
-              <Popup
-                onClick={this.handleClose}
-                style={{
-                  display: opened ? 'block' : 'none',
-                  opacity: openProgress,
-                  boxShadow: openProgress.interpolate(
-                    t => `0 4px 4px rgba(0, 0, 0, ${t * 0.03})`
-                  ),
-                }}
-              >
-                {opened && children}
-              </Popup>
+
+              {overflow ? (
+                <PopupOverflow
+                  onClick={this.handleClose}
+                  style={{
+                    display: opened ? 'block' : 'none',
+                    opacity: openProgress,
+                    boxShadow: openProgress.interpolate(
+                      t => `0 4px 4px rgba(0, 0, 0, ${t * 0.03})`
+                    ),
+                  }}
+                >
+                  {opened && children}
+                </PopupOverflow>
+              ) : (
+                <Popup
+                  onClick={this.handleClose}
+                  style={{
+                    display: opened ? 'block' : 'none',
+                    opacity: openProgress,
+                    boxShadow: openProgress.interpolate(
+                      t => `0 4px 4px rgba(0, 0, 0, ${t * 0.03})`
+                    ),
+                  }}
+                >
+                  {children}
+                </Popup>
+              )}
             </Main>
           )}
         </Spring>
@@ -100,12 +120,23 @@ const Main = styled(animated.div)`
 const Popup = styled(animated.div)`
   overflow: hidden;
   position: absolute;
-  top: ${BASE_HEIGHT - 2}px;
+  top: ${BASE_HEIGHT - 1}px;
   right: 0;
   padding: 10px 0;
   background: ${theme.contentBackground};
   border: 1px solid ${theme.contentBorder};
   border-radius: 3px 0 3px 3px;
+`
+const PopupOverflow = styled(animated.div)`
+  position: absolute;
+  top: ${BASE_HEIGHT - 1}px;
+  right: 0;
+  padding: 0;
+  background: ${theme.contentBackground};
+  border: 0px solid ${theme.contentBorder};
+  > :not(:first-child) {
+    margin-top: -1px;
+  }
 `
 
 FilterDropDown.BASE_WIDTH = 46

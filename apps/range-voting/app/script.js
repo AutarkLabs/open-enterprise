@@ -125,7 +125,7 @@ async function loadVoteData(voteId) {
       .first()
       .subscribe(voteData => {
         let funcSig = voteData.executionScript.slice(58, 66)
-        if (funcSig == 'f2122136') {
+        if (funcSig == 'b3670f9e') {
           console.log('Loading Projects Data')
           resolve(loadVoteDataProjects(voteData, voteId))
         } else {
@@ -144,7 +144,7 @@ async function loadVoteDataAllocation(vote, voteId) {
       app.call('canExecute', voteId)
     )
       .first()
-      .subscribe(([metadata, totalCandidates, canExecute, payout]) => {
+      .subscribe(([ metadata, totalCandidates, canExecute, payout ]) => {
         loadVoteDescription(vote).then(async vote => {
           let options = []
           for (let i = 0; i < totalCandidates; i++) {
@@ -165,13 +165,9 @@ async function loadVoteDataAllocation(vote, voteId) {
               resolve({
                 ...returnObject,
                 limit: parseInt(payout.limit, 10),
-                balance: parseInt(vote.executionScript.slice(706, 770), 16),
-                metadata:
-                  'Range Vote ' +
-                  voteId +
-                  ' - Allocation (' +
-                  payout.metadata +
-                  ')',
+                balance: parseInt(vote.executionScript.slice(770, 834), 16),
+                metadata: vote.voteDescription,
+                type: 'allocation',
               })
             })
         })
@@ -187,7 +183,7 @@ async function loadVoteDataProjects(vote, voteId) {
       app.call('canExecute', voteId)
     )
       .first()
-      .subscribe(([metadata, totalCandidates, canExecute]) => {
+      .subscribe(([ metadata, totalCandidates, canExecute ]) => {
         console.log('projects data:', metadata, totalCandidates, canExecute)
         loadVoteDescription(vote).then(async vote => {
           let options = []
@@ -200,7 +196,8 @@ async function loadVoteDataProjects(vote, voteId) {
           console.log(metadata)
           let returnObject = {
             ...marshallVote(vote),
-            metadata: 'Range Vote ' + voteId + ' - Issue Curation',
+            metadata: vote.voteDescription,
+            type: 'curation',
             canExecute,
             options: options,
           }
@@ -269,7 +266,7 @@ async function updateState(state, voteId, transform, candidate = null) {
 function loadVoteSettings() {
   return Promise.all(
     voteSettings.map(
-      ([name, key, type = 'string']) =>
+      ([ name, key, type = 'string' ]) =>
         new Promise((resolve, reject) =>
           app
             .call(name)

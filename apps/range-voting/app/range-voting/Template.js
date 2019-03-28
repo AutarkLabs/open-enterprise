@@ -49,7 +49,7 @@ class TemplateContent extends React.PureComponent {
         </Subtitle>
         <Templates>
           {[...this.props.templates.entries()].map(
-            ([template, { label, icon, description }], i) => (
+            ([ template, { label, icon, description }], i) => (
               <TemplateCardWrapper key={i}>
                 <TemplateCard
                   template={template}

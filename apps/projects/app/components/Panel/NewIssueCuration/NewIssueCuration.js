@@ -3,9 +3,9 @@ import React from 'react'
 
 import {
   DescriptionInput,
+  DropDownOptionsInput,
   Form,
   FormField,
-  DropDownOptionsInput,
 } from '../../Form'
 
 class NewIssueCuration extends React.Component {
@@ -32,14 +32,12 @@ class NewIssueCuration extends React.Component {
   }
 
   submitCuration = () => {
-    // console.info('Submitting new curation', this.state, this.props)
-    this.props.onSubmit(this.state.curatedIssues)
+    this.props.onSubmit(this.state.curatedIssues, this.state.description)
   }
 
   render() {
     return (
       <Form onSubmit={this.submitCuration} submitText="Submit Curation">
-        {false &&
         <FormField
           required
           label="Description"
@@ -52,7 +50,6 @@ class NewIssueCuration extends React.Component {
             />
           }
         />
-        }
         <FormField
           label="Issues"
           required
@@ -61,7 +58,7 @@ class NewIssueCuration extends React.Component {
               name="issues"
               placeholder="Select option..."
               onChange={this.changeField}
-              value={this.state.curatedIssues}
+              values={this.state.curatedIssues}
               input={this.state.issuesInput}
             />
           }

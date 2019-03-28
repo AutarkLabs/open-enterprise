@@ -1,22 +1,19 @@
 import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableCell,
-  Text,
-  SafeLink,
+  Badge,
   ContextMenu,
   ContextMenuItem,
-  Badge,
+  IdentityBadge,
+  Table,
+  TableCell,
+  TableHeader,
+  TableRow,
+  Text,
 } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { Empty } from '../Card'
-import isAddress from 'web3-utils'
-import icon from '../../assets/copy.svg'
-
-const CopyIcon = () => <img src={icon} alt="Copy address to the clipboard" />
+import { provideNetwork } from '../../../../../shared/ui'
 
 // TODO: colors taken directly from Invision
 const ENTITY_TYPES = [
@@ -25,7 +22,7 @@ const ENTITY_TYPES = [
   { name: 'Project', fg: '#EE5BF1', bg: '#EDD0F2' },
 ]
 
-const Entities = ({ entities, onNewEntity, onRemoveEntity }) => {
+const Entities = ({ entities, network, onNewEntity, onRemoveEntity }) => {
   const removeEntity = address => () => onRemoveEntity(address)
 
   if (entities.length === 0) {
@@ -46,25 +43,11 @@ const Entities = ({ entities, onNewEntity, onRemoveEntity }) => {
               <EntityCell>
                 <EntityWrapper>
                   <Text>{name}</Text>
-                  <div style={{ display: 'flex' }}>
-                    <SafeLink
-                      style={{ color: '#21AAE7' }}
-                      // TODO: Populate the rinkeby depending on the deployment network. TIP: use href.location for that
-                      href={`https://rinkeby.etherscan.io/address/${entryAddress}`}
-                      target="_blank"
-                      title={entryAddress}
-                    >
-                      {entryAddress}
-                    </SafeLink>
-                    <span
-                      onClick={() => {
-                        navigator.clipboard.writeText(entryAddress)
-                      }}
-                      style={{ marginLeft: '.5rem', cursor: 'pointer' }}
-                    >
-                      <CopyIcon />
-                    </span>
-                  </div>
+                  <IdentityBadge
+                    networkType={network.type}
+                    entity={entryAddress}
+                    shorten={false}
+                  />
                 </EntityWrapper>
               </EntityCell>
               <EntityCell align="center">
@@ -90,6 +73,7 @@ const Entities = ({ entities, onNewEntity, onRemoveEntity }) => {
 Entities.propTypes = {
   // TODO: shape better
   entities: PropTypes.array.isRequired,
+  network: PropTypes.object,
   onNewEntity: PropTypes.func.isRequired,
   onRemoveEntity: PropTypes.func.isRequired,
 }
@@ -102,4 +86,4 @@ const EntityWrapper = styled.div`
   flex-direction: column;
   margin-left: 10px;
 `
-export default Entities
+export default provideNetwork(Entities)
