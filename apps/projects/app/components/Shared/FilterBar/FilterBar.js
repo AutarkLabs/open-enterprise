@@ -12,6 +12,7 @@ import Overflow from './Overflow'
 import FilterButton from './FilterButton'
 import FilterDropDown from './FilterDropDown'
 import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
+import { BOUNTY_STATUS } from '../../../utils/bounty-status'
 
 const StyledFilterBar = styled.div`
   width: 100%;
@@ -52,10 +53,12 @@ class FilterBar extends React.Component {
       milestones: {},
       deadlines: {},
       experiences: {},
+      statuses: {},
     },
     // direction: -1: .oO; 1: Oo.; 0: disabled
     sortBy: [
       { what: 'Name', direction: -1 },
+      { what: 'Creation Date', direction: 1 },
       //{ what: 'Label', direction: 0 },
       //{ what: 'Milestone', direction: 0 },
       //{ what: 'Status', direction: 0 },
@@ -90,14 +93,31 @@ class FilterBar extends React.Component {
     prepareFilters builds data structure for displaying filterbar dropdowns
     data comes from complete issues array, issuesFiltered is used for counters
   */
-  prepareFilters = (issues, _issuesFiltered) => {
+  prepareFilters = (issues, bountyIssues) => {
     let filters = {
       projects: {},
       labels: {},
       milestones: {},
       deadlines: {},
       experiences: {},
+      statuses: {},
     }
+
+    filters.statuses['not-funded'] = {
+      name: BOUNTY_STATUS['not-funded'],
+      count: issues.length - bountyIssues.length,
+    }
+    bountyIssues.map(issue => {
+      if (issue.data.workStatus in filters.statuses) {
+        filters.statuses[issue.data.workStatus].count++
+      } else {
+        filters.statuses[issue.data.workStatus] = {
+          name: BOUNTY_STATUS[issue.data.workStatus],
+          count: 1,
+        }
+      }
+    })
+
     issues.map(issue => {
       if (issue.milestone) {
         if (issue.milestone.id in filters.milestones) {
@@ -164,12 +184,11 @@ class FilterBar extends React.Component {
   }
 
   render() {
-    const { handleSelectAll, allSelected, issues } = this.props
+    const { handleSelectAll, allSelected, issues, bountyIssues } = this.props
     // filters contain information about active filters (checked checkboxes)
     const { filters } = this.state
     // filtersData is about displayed checkboxes
-    const filtersData = this.prepareFilters(issues)
-
+    const filtersData = this.prepareFilters(issues, bountyIssues)
     return (
       <StyledFilterBar>
         <FilterButton>
@@ -277,9 +296,32 @@ class FilterBar extends React.Component {
                 </FilterMenuItem>
               ))}
           </FilterDropDown>
-          {/*
-          <FilterDropDown caption="Status" enabled={false}>
+
+          <FilterDropDown
+            caption="Status"
+            enabled={true}
+          >
+            {Object.keys(filtersData.statuses).map(status => (
+              <FilterMenuItem
+                key={status}
+                onClick={this.filter('statuses', status)}
+                style={{ display: 'flex', alignItems: 'flex-start' }}
+              >
+                <div>
+                  <Checkbox
+                    onChange={this.noop}
+                    checked={status in filters.statuses}
+                  />
+                </div>
+                <ActionLabel>
+                  {filtersData.statuses[status].name} (
+                  {filtersData.statuses[status].count})
+                </ActionLabel>
+              </FilterMenuItem>
+            ))}
           </FilterDropDown>
+
+          {/*
           <FilterDropDown caption="Deadline" enabled={false}>
           </FilterDropDown>
           <FilterDropDown caption="Experience" enabled={false}>

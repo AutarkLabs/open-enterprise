@@ -1,11 +1,11 @@
 import Aragon from '@aragon/client'
 
 const app = new Aragon()
-let appState = { entries: [] }
+let appState
 app.events().subscribe(handleEvents)
 
 app.state().subscribe(state => {
-  appState = state
+  appState = state ? state : { entries: [] }
 })
 
 /***********************
@@ -24,7 +24,7 @@ async function handleEvents({ event, returnValues }) {
     nextState = await onEntryRemoved(appState, returnValues)
     break
   default:
-    nextState = appState
+    nextState = appState || { entries: [] }
     console.log('[AddressBook script] unknown event', event, returnValues)
   }
   // purify the resulting state to handle duplication edge cases

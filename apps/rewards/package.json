@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "description": "Rewards app from Planning Suite",
   "scripts": {
-    "build:app": "parcel build app/index.html -d dist/ --public-url '.'",
-    "build:script": "parcel build app/script.js -d dist/",
+    "build:app": "parcel build app/index.html -d dist/ --public-url \".\" --no-cache",
+    "build:script": "parcel build app/script.js -d dist/ --no-cache",
     "build": "npm run compile && npm run sync-assets && npm run build:app && npm run build:script",
     "compile": "truffle compile",
     "console": "truffle dev",
@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "@aragon/client": "1.1.0",
-    "@aragon/ui": "0.30.1",
+    "@aragon/ui": "0.32.0",
     "polyfill": "0.1.0",
     "bignumber.js": "^7.2.1",
     "prop-types": "15.6.2",
