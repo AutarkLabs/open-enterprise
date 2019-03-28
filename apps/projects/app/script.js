@@ -5,12 +5,9 @@ import { STATUS } from './utils/github'
 import vaultAbi from '../../shared/json-abis/vault'
 import tokenSymbolAbi from './abi/token-symbol.json'
 import tokenDecimalsAbi from './abi/token-decimal.json'
-
-let ipfsClient = require('ipfs-http-client')
+import { ipfsGet } from './utils/ipfs-helpers'
 
 const tokenAbi = [].concat(tokenDecimalsAbi, tokenSymbolAbi)
-
-let ipfs = ipfsClient({ host: 'ipfs.infura.io', port: '5001', protocol: 'http' })
 
 const status = [ 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]
 const assignmentRequestStatus = [ 'Unreviewed', 'Accepted', 'Rejected' ]
@@ -335,14 +332,9 @@ function loadRepoData(id) {
 
 function loadIssueData({ repoId, issueNumber }) {
   return new Promise(resolve => {
-    app.call('getIssue', repoId, issueNumber).subscribe(({ hasBounty, standardBountyId, balance, token, dataHash, assignee }) => {
-      let contentJSON
-      ipfs.get(dataHash, (err, files) => {
-        for(const file of files) {
-          contentJSON = JSON.parse(file.content.toString('utf8'))
-        }
-        resolve({ balance, hasBounty, token, standardBountyId, assignee, ...contentJSON })
-      })
+    app.call('getIssue', repoId, issueNumber).subscribe(async ({ hasBounty, standardBountyId, balance, token, dataHash, assignee }) => {
+      const bountyData = await ipfsGet(dataHash)
+      resolve({ balance, hasBounty, token, standardBountyId, assignee, ...bountyData })
     })
   })
 }
@@ -361,19 +353,13 @@ function loadRequestsData({ repoId, issueNumber }) {
 
 function getRequest(repoId, issueNumber, applicantId) {
   return new Promise(resolve => {
-    app.call('getApplicant', repoId, issueNumber, applicantId).subscribe( async (response) => {
-      let contentJSON
-      console.log('getApplicant response: ', response)
-      ipfs.get(response.application, (err, files) => {
-        for(const file of files) {
-          contentJSON = JSON.parse(file.content.toString('utf8'))
-        }
-        resolve({
-          contributorAddr: response.applicant,
-          status: assignmentRequestStatus[response.status],
-          requestIPFSHash: response.application,
-          ...contentJSON
-        })
+    app.call('getApplicant', repoId, issueNumber, applicantId).subscribe(async (response) => {
+      const bountyData = await ipfsGet(response.application)
+      resolve({
+        contributorAddr: response.applicant,
+        status: assignmentRequestStatus[response.status],
+        requestIPFSHash: response.application,
+        ...bountyData
       })
     })
   })
@@ -396,13 +382,12 @@ function getSubmission(repoId, issueNumber, submissionIndex) {
   return new Promise(resolve => {
     console.log(repoId, issueNumber, submissionIndex)
     app.call('getSubmission', repoId, issueNumber, submissionIndex).subscribe(async ({ submissionHash, fulfillmentId, status, submitter }) => {
-      let contentJSON
-      ipfs.get(submissionHash, (err, files) => {
-        for(const file of files) {
-          contentJSON = JSON.parse(file.content.toString('utf8'))
-        }
-        console.log('submissionData: ', { status, fulfillmentId, submitter, ...contentJSON })
-        resolve({ status, fulfillmentId, submitter, submissionIPFSHash: submissionHash, ...contentJSON })
+      const bountyData = await ipfsGet(submissionHash)
+      resolve({ status,
+        fulfillmentId,
+        submitter,
+        submissionIPFSHash: submissionHash,
+        ...bountyData
       })
     })
   })
