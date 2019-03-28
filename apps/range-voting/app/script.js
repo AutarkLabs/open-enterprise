@@ -4,7 +4,6 @@ import voteSettings, { hasLoadedVoteSettings } from './utils/vote-settings'
 import AddressBookJSON from '../../shared/json-abis/address-book.json'
 import { EMPTY_CALLSCRIPT } from './utils/vote-utils'
 import AllocationJSON from '../../shared/json-abis/allocations.json'
-import { filterEntries } from '../../address-book/app/script'
 
 const app = new Aragon()
 let appState = {

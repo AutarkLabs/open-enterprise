@@ -1,11 +1,11 @@
 import Aragon from '@aragon/client'
 
 const app = new Aragon()
-let appState
+let appState = { entries: [] }
 app.events().subscribe(handleEvents)
 
 app.state().subscribe(state => {
-  appState = state ? state : { entries: [] }
+  appState = state
 })
 
 /***********************
