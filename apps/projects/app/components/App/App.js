@@ -248,10 +248,10 @@ class App extends React.PureComponent {
     }))
   }
 
-  onSubmitBountyAllocation = async issues => {
+  onSubmitBountyAllocation = async (issues, description) => {
     this.closePanel()
     let bountySymbol = this.props.bountySettings.bountyCurrency
-    let bountyToken, bountyDecimals
+    let bountyToken, bountyDecimals, ipfsString, issuesArray = []
     this.props.tokens.forEach(
       token => {
         if(token.symbol === bountySymbol) {
@@ -260,29 +260,11 @@ class App extends React.PureComponent {
         }
       }
     )
-
-    let issuesArray = []
-
     for (var key in issues) {
       issuesArray.push({ key: key, ...issues[key] })
     }
-
-    console.log('Submit issues:', issuesArray)
-
-    let ipfsString
     ipfsString = await this.getIpfsString(issuesArray)
-
     const tokenArray = new Array(issuesArray.length).fill(bountyToken)
-
-    console.log('Bounty data for app.addBounties',
-      issuesArray.map( (issue) => issue.repoId),
-      issuesArray.map( (issue) => issue.number),
-      issuesArray.map( (issue) => BigNumber(issue.size).times(10 ** bountyDecimals).toString()),
-      issuesArray.map( (issue) => issue.deadline),
-      new Array(issuesArray.length).fill(true),
-      tokenArray,
-      ipfsString
-    )
     this.props.app.addBounties(
       issuesArray.map( (issue) => web3.toHex(issue.repoId)),
       issuesArray.map( (issue) => issue.number),
@@ -292,7 +274,8 @@ class App extends React.PureComponent {
       }),
       new Array(issuesArray.length).fill(true),
       tokenArray,
-      ipfsString
+      ipfsString,
+      description
     )
   }
 
