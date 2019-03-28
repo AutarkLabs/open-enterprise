@@ -31,7 +31,7 @@ class NewBountyAllocation extends React.Component {
         title: PropTypes.string,
         number: PropTypes.number,
         repo: PropTypes.string,
-        repoId: PropTypes.string       
+        repoId: PropTypes.string
       })
     ),
     /** base rate in pennies */
@@ -65,7 +65,7 @@ class NewBountyAllocation extends React.Component {
       bounties,
     }
   }
-  
+
   configBounty = (id, key, val) => {
     const { bounties } = this.state
     // arrow clicked - it's simple value reversal case, 1 indicates details are open, 0 - closed
