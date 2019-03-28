@@ -190,7 +190,7 @@ const IssueTitle = styled(Text)`
 const ReviewButton = styled(Button).attrs({
   mode: 'strong',
 })`
-  width: 190px;
+  width: 48%;
 `
 const ReviewRow = styled.div`
   display: flex;

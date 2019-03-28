@@ -29,20 +29,24 @@ class ReviewWork extends React.Component {
   changeField = ({ target: { name, value } }) => this.setState({ [name]: value })
 
   onAccept = () => {
+    const today = new Date()
     this.props.onReviewWork({
       ...this.state,
       accepted: true,
       user: this.props.githubCurrentUser,
+      reviewDate: today.toISOString(),
     }, this.props.issue)
   }
 
   canSubmit = () => !(this.state.rating > 0)
 
   onReject = () => {
+    const today = new Date()
     this.props.onReviewWork({
       ...this.state,
       accepted: false,
       user: this.props.githubCurrentUser,
+      reviewDate: today.toISOString(),
     }, this.props.issue)
   }
 

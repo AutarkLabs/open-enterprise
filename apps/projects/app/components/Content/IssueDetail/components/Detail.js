@@ -8,34 +8,6 @@ import { formatDistance } from 'date-fns'
 import { DropDownButton } from '../../../Shared'
 import { IconGitHub, BountyContextMenu } from '../../../Shared'
 
-const StyledTable = styled.div`
-  margin-bottom: 20px;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  border: solid ${theme.contentBorder};
-  border-width: 1px 0;
-  > :not(:first-child) {
-    border-left: 1px solid ${theme.contentBorder};
-    padding-left: 15px;
-  }
-`
-
-const StyledCell = styled.div`
-  padding: 20px 0;
-  align-items: left;
-`
-
-// TODO: shared
-const FieldTitle = styled(Text.Block)`
-  color: ${theme.textSecondary};
-  text-transform: lowercase;
-  font-variant: small-caps;
-  font-weight: bold;
-  margin-bottom: 6px;
-`
-const ActionLabel = styled.span`
-  margin-left: 15px;
-`
 const SummaryTable = ({ expLevel, deadline, slots, workStatus }) => {
   const FIELD_TITLES = [
     'Experience Level',
@@ -53,32 +25,19 @@ const SummaryTable = ({ expLevel, deadline, slots, workStatus }) => {
   )
   return <StyledTable>{mappedTableFields}</StyledTable>
 }
-
-// this 10px padding and...
+  
 const Wrapper = styled.div`
   display: flex;
   height: 100%;
   padding: 10px;
-`
-// todo: wrapper component for different sizes (changes padding mostly)
-
-// ...that 10px margin result in a 20px gap
-const cardStyle = {
-  flex: '0 1 auto',
-  textAlign: 'left',
-  padding: '15px 30px',
-  margin: '10px',
-  background: theme.contentBackground,
-  border: `1px solid ${theme.contentBorder}`,
-  borderRadius: '3px',
-}
-
+  `
+  
 const column = {
   display: 'flex',
   flexDirection: 'column',
   flexBasis: '100%',
 }
-
+  
 const mockRequestsData = [{
   applicationDate: '2019-03-27T00:01:12.543Z',
   contributorAddr: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
@@ -112,7 +71,7 @@ const mockWorkSubmissions = [{
   hours: '3',
   proof: 'proof of work',
   review: {
-    feedback: 'nope', rating: 1, accepted: true,
+    feedback: 'nope', rating: 2, accepted: false,
     user: { id: 'MDQ6VXNlcjM0NDUyMTMx', login: 'rkzel',
       url: 'https://github.com/rkzel',
       avatarUrl: 'https://avatars0.githubusercontent.com/u/34452131?v=4',
@@ -130,11 +89,11 @@ const mockWorkSubmissions = [{
 }]
 
 const IssueEventAvatar = styled.div`
-  width: 70px;
-  margin-right: 15px;
+width: 70px;
+margin-right: 15px;
 `
 const IssueEventDetails = styled.div`
-  > margin-bottom: 10px;  
+> margin-bottom: 10px;  
 `
 
 const IssueEvent = props => (
@@ -175,7 +134,7 @@ const calculateAgo = pastDate => {
 
 const activities = (requestsData, workSubmissions, onReviewApplication, onReviewWork) => {
   const events = []
-
+  
   console.log('--activityRow:', requestsData)
   if (requestsData) {
     requestsData.forEach(data => {
@@ -194,7 +153,7 @@ const activities = (requestsData, workSubmissions, onReviewApplication, onReview
         events[data.review.reviewDate] = {
           date: data.review.reviewDate,
           ...data.review.user,
-          eventDescription: data.approved ? 'assigned ' + data.user.login : 'rejected ' + data.user.login,
+          eventDescription: data.review.approved ? 'assigned ' + data.user.login : 'rejected ' + data.user.login,
           eventAction: data.review.feedback.length === 0 ?
             null
             :
@@ -206,7 +165,7 @@ const activities = (requestsData, workSubmissions, onReviewApplication, onReview
 
   if (workSubmissions) {
     workSubmissions.forEach(data => {
-
+      
       events[data.submissionDate] = {
         date: data.submissionDate,
         ...data.user,
@@ -216,9 +175,8 @@ const activities = (requestsData, workSubmissions, onReviewApplication, onReview
           :
           <Button mode="outline" onClick={onReviewWork}>Review Work</Button>,
       }
-
+      
       if ('review' in data) {
-
         events[data.review.reviewDate] = {
           date: data.review.reviewDate,
           ...data.review.user,
@@ -227,10 +185,16 @@ const activities = (requestsData, workSubmissions, onReviewApplication, onReview
             :
             'rejected ' + data.user.login + '\'s work',
           eventAction: data.review.feedback.length === 0 ?
-            <Badge>Quality: {data.review.rating}</Badge>
+            <Badge
+              background={data.review.accepted ? '#e7f8ec' : '#f3c1c3' }
+              foreground={data.review.accepted ? theme.positive : theme.negative}
+            >Quality: {data.review.rating}</Badge>
             :
             <div>
-              <div><Badge>Quality: {data.review.rating}</Badge></div>
+              <Badge
+                background={data.review.accepted ? '#e7f8ec' : '#f3c1c3' }
+                foreground={data.review.accepted ? theme.positive : theme.negative}
+              >Quality: {data.review.rating}</Badge>
               <Text>{data.review.feedback}</Text>
             </div>,
         }
@@ -265,7 +229,7 @@ const Detail = ({
   onAllocateSingleBounty,
   workSubmissions,
 }) => {
-
+  
   const summaryData = {
     expLevel: (expLevel === undefined) ? '-' : expLevel,
     deadline: (deadline === undefined) ? '-' : 'Due in ' + deadlineDistance(deadline),
@@ -275,13 +239,14 @@ const Detail = ({
           'Allocated',
     workStatus: (workStatus === undefined) ? 'No bounty yet' : workStatus
   }
-
-  const issueEvents = activities(mockRequestsData, mockWorkSubmissions, onReviewApplication, onReviewWork)
-
+  
+  //const issueEvents = activities(mockRequestsData, mockWorkSubmissions, onReviewApplication, onReviewWork)
+  const issueEvents = activities(requestsData, workSubmissions, onReviewApplication, onReviewWork)
+  
   return (
     <Wrapper>
       <div style={{ flex: 3, maxWidth: '705px' }}>
-        <div style={cardStyle}>
+        <DetailsCard>
           <Wrapper style={{ justifyContent: 'space-between' }}>
             <div style={{ ...column, flex: 2, marginRight: '20px' }}>
               <Text.Block size="xlarge" style={{ marginBottom: '10px' }}>
@@ -344,11 +309,11 @@ const Detail = ({
               ))
               : ''}
           </Text>
-        </div>
+        </DetailsCard>
       </div>
 
       <div style={{ flex: 1, maxWidth: '359px', width: '295px' }}>
-        <ActivityTab>
+        <DetailsCard>
           <FieldTitle>Activity</FieldTitle>
           {Object.keys(issueEvents).sort((a,b) =>
             new Date(a) - new Date(b)
@@ -356,22 +321,49 @@ const Detail = ({
             return <IssueEvent key={i} {...issueEvents[eventDate]} />
           }
           )}
-        </ActivityTab>
+        </DetailsCard>
       </div>
 
     </Wrapper>
   )
 }
-const ActivityTab = styled.div`
-  flex: 0 1 auto;
-  text-align: left;
-  padding: 15px 30px;
-  margin: 10px;
-  background: ${theme.contentBackground};
-  border: 1px solid ${theme.contentBorder};
-  border-radius: 3px;
+const DetailsCard = styled.div`
+flex: 0 1 auto;
+text-align: left;
+padding: 15px 30px;
+margin: 10px;
+background: ${theme.contentBackground};
+border: 1px solid ${theme.contentBorder};
+border-radius: 3px;
+`
+const StyledTable = styled.div`
+  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border: solid ${theme.contentBorder};
+  border-width: 1px 0;
+  > :not(:first-child) {
+    border-left: 1px solid ${theme.contentBorder};
+    padding-left: 15px;
+  }
 `
 
+const StyledCell = styled.div`
+  padding: 20px 0;
+  align-items: left;
+`
+
+// TODO: shared
+const FieldTitle = styled(Text.Block)`
+  color: ${theme.textSecondary};
+  text-transform: lowercase;
+  font-variant: small-caps;
+  font-weight: bold;
+  margin-bottom: 6px;
+`
+const ActionLabel = styled.span`
+  margin-left: 15px;
+`
 Detail.propTypes = {
   onAllocateSingleBounty: PropTypes.func.isRequired,
   onSubmitWork: PropTypes.func.isRequired,
