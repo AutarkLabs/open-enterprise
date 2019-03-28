@@ -110,7 +110,7 @@ class NewBountyAllocation extends React.Component {
 
   submitBounties = () => {
     console.info('Submitting new Bounties', this.state.bounties)
-    this.props.onSubmit(this.state.bounties)
+    this.props.onSubmit(this.state.bounties, this.state.description)
   }
 
   // TODO: make it smarter. exp levels are quite constant, but they might not
@@ -134,7 +134,6 @@ class NewBountyAllocation extends React.Component {
         description={this.props.description}
         submitText="Submit Bounty Allocation"
       >
-        {/* Not currently implemented:
         <FormField
           label="Description"
           required
@@ -146,7 +145,7 @@ class NewBountyAllocation extends React.Component {
               wide
             />
           }
-        />*/}
+        />
         <FormField
           label="Issues"
           hint="Enter the estimated hours per issue"
