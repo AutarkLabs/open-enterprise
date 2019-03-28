@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import Aragon, { providers } from '@aragon/api'
 import ApolloClient from 'apollo-boost'
+import { pluck } from 'rxjs/operators'
 
 import App from './components/App/App'
 
@@ -64,7 +65,7 @@ class ConnectedApp extends React.Component {
       })
       app.rpc
         .sendAndObserveResponses('cache', [ 'get', 'github' ])
-        .pluck('result')
+        .pipe(pluck('result'))
         .subscribe(github => {
           console.log('github object received from backend cache:', github)
 
