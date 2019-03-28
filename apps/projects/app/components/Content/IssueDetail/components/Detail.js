@@ -348,7 +348,7 @@ const Detail = ({
       </div>
 
       <div style={{ flex: 1, maxWidth: '359px', width: '295px' }}>
-        <div style={cardStyle}>
+        <ActivityTab>
           <FieldTitle>Activity</FieldTitle>
           {Object.keys(issueEvents).sort((a,b) =>
             new Date(a) - new Date(b)
@@ -356,12 +356,21 @@ const Detail = ({
             return <IssueEvent key={i} {...issueEvents[eventDate]} />
           }
           )}
-        </div>
+        </ActivityTab>
       </div>
 
     </Wrapper>
   )
 }
+const ActivityTab = styled.div`
+  flex: 0 1 auto;
+  text-align: left;
+  padding: 15px 30px;
+  margin: 10px;
+  background: ${theme.contentBackground};
+  border: 1px solid ${theme.contentBorder};
+  border-radius: 3px;
+`
 
 Detail.propTypes = {
   onAllocateSingleBounty: PropTypes.func.isRequired,

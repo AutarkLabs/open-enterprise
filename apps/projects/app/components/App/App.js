@@ -12,7 +12,6 @@ import PanelManager, { PANELS } from '../Panel'
 import { STATUS } from '../../utils/github'
 import ErrorBoundary from './ErrorBoundary'
 import BigNumber from 'bignumber.js'
-import { networkContextType } from '../../../../../shared/ui'
 
 const ASSETS_URL = './aragon-ui-assets/'
 
@@ -120,10 +119,6 @@ class App extends React.PureComponent {
 
   static defaultProps = {
     network: {},
-  }
-
-  static childContextTypes = {
-    network: networkContextType,
   }
 
   state = {
