@@ -1,5 +1,6 @@
 import Aragon from '@aragon/api'
 import { combineLatest } from './rxjs'
+import 'rxjs/add/operator/first' // Make sure observables have .first
 import voteSettings, { hasLoadedVoteSettings } from './utils/vote-settings'
 import { EMPTY_CALLSCRIPT } from './utils/vote-utils'
 import AllocationJSON from '../../shared/json-abis/Allocations.json'
@@ -122,7 +123,7 @@ async function loadVoteData(voteId) {
   return new Promise((resolve, reject) => {
     app
       .call('getVote', voteId)
-      .first()
+      .pipe(first())
       .subscribe(voteData => {
         let funcSig = voteData.executionScript.slice(58, 66)
         if (funcSig == 'f2122136') {
@@ -143,7 +144,7 @@ async function loadVoteDataAllocation(vote, voteId) {
       app.call('getCandidateLength', voteId),
       app.call('canExecute', voteId)
     )
-      .first()
+      .pipe(first())
       .subscribe(([ metadata, totalCandidates, canExecute, payout ]) => {
         loadVoteDescription(vote).then(async vote => {
           let options = []
@@ -160,7 +161,7 @@ async function loadVoteDataAllocation(vote, voteId) {
           }
           allocations
             .getPayout(vote.externalId)
-            .first()
+            .pipe(first())
             .subscribe(payout => {
               resolve({
                 ...returnObject,
@@ -186,7 +187,7 @@ async function loadVoteDataProjects(vote, voteId) {
       app.call('getCandidateLength', voteId),
       app.call('canExecute', voteId)
     )
-      .first()
+      .pipe(first())
       .subscribe(([ metadata, totalCandidates, canExecute ]) => {
         console.log('projects data:', metadata, totalCandidates, canExecute)
         loadVoteDescription(vote).then(async vote => {
@@ -233,7 +234,7 @@ async function getAllocationCandidate(voteId, candidateIndex) {
   return new Promise(resolve => {
     app
       .call('getCandidate', voteId, candidateIndex)
-      .first()
+      .pipe(first())
       .subscribe(candidateData => {
         resolve({
           label: candidateData.candidateAddress,
@@ -247,7 +248,7 @@ async function getProjectCandidate(voteId, candidateIndex) {
   return new Promise(resolve => {
     app
       .call('getCandidate', voteId, candidateIndex)
-      .first()
+      .pipe(first())
       .subscribe(candidateData => {
         resolve({
           label: candidateData.metadata,
@@ -273,7 +274,7 @@ function loadVoteSettings() {
         new Promise((resolve, reject) =>
           app
             .call(name)
-            .first()
+            .pipe(first())
             .map(val => {
               if (type === 'number') {
                 return parseInt(val, 10)

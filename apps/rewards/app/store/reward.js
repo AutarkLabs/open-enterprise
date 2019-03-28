@@ -1,3 +1,5 @@
+import 'rxjs/add/operator/first' // Make sure observables have .first
+
 import { app } from './'
 
 export async function onRewardAdded({ rewards = [] }, { rewardId }) {
@@ -14,7 +16,7 @@ export async function onRewardAdded({ rewards = [] }, { rewardId }) {
 
 const getRewardById = async rewardId => {
   return await app.call('getReward', rewardId)
-    .first()
+    .pipe(first())
     .map(data => ({
       rewardId,
       isMerit: data.isMerit,

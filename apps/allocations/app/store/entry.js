@@ -1,3 +1,5 @@
+import 'rxjs/add/operator/first' // Make sure observables have .first
+
 import addressBookAbi from '../../../shared/json-abis/address-book'
 import { app } from './'
 
@@ -40,7 +42,7 @@ const loadEntryData = async (addr, addressBook) => {
 
   return addressBookApp
     .getEntry(addr)
-    .first()
+    .pipe(first())
     .map(
       entry =>
         // cover removed entries

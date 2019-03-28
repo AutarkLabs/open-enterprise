@@ -1,3 +1,6 @@
+import 'rxjs/add/operator/first' // Make sure observables have .first
+import 'rxjs/add/operator/map' // Make sure observables have .map
+
 import { app } from './'
 
 /// /////////////////////////////////////
@@ -44,7 +47,7 @@ export const onPayoutExecuted = async (accounts = [], { accountId }) => {
 const getAccountById = accountId => {
   return app
     .call('getPayout', accountId)
-    .first()
+    .pipe(first())
     .map(data => ({ accountId, data, executed: true }))
     .toPromise()
 }
@@ -54,8 +57,8 @@ const loadAccountData = async accountId => {
     // TODO: Should we standarize the naming and switch to getAccount instead of getPayout?
     app
       .call('getPayout', accountId)
-      .first()
-      .map()
+      .pipe(first())
+      .pipe(map())
       .subscribe(account => {
         // don't resolve when entry not found
         if (account) {
