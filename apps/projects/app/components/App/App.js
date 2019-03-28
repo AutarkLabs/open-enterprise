@@ -250,7 +250,6 @@ class App extends React.PureComponent {
   }
 
   onSubmitBountyAllocation = async issue => {
-    console.log('ISSUE', issue)
     this.closePanel()
     let bountySymbol = this.props.bountySettings.bountyCurrency
     let bountyToken, bountyDecimals
@@ -331,13 +330,11 @@ class App extends React.PureComponent {
 
   onRequestAssignment = async (state, issue) => {
     this.closePanel()
-    let content = ipfs.types.Buffer.from(JSON.stringify(state))
-    let results = await infuraIpfs.add(content)
-    let requestString = results[0].hash
+    const hash = await ipfsAdd(state)
     this.props.app.requestAssignment(
       web3.toHex(issue.repoId),
       issue.number,
-      requestString
+      hash
     )
   }
 
