@@ -1,4 +1,4 @@
-import Aragon from '@aragon/client'
+import Aragon from '@aragon/api'
 
 import { GraphQLClient } from 'graphql-request'
 import { STATUS } from './utils/github'

@@ -1,4 +1,4 @@
-import Aragon from '@aragon/client'
+import Aragon from '@aragon/api'
 import { combineLatest } from './rxjs'
 import voteSettings, { hasLoadedVoteSettings } from './utils/vote-settings'
 import { EMPTY_CALLSCRIPT } from './utils/vote-utils'

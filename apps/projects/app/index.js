@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import Aragon, { providers } from '@aragon/client'
+import Aragon, { providers } from '@aragon/api'
 import ApolloClient from 'apollo-boost'
 
 import App from './components/App/App'
