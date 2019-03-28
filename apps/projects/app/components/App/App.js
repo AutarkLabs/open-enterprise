@@ -307,13 +307,11 @@ class App extends React.PureComponent {
 
   onSubmitWork = async (state, issue) => {
     this.closePanel()
-    let content = ipfs.types.Buffer.from(JSON.stringify(state))
-    let results = await infuraIpfs.add(content)
-    let submissionString = results[0].hash
+    const hash = await ipfsAdd(state)
     this.props.app.submitWork(
       web3.toHex(issue.repoId),
       issue.number,
-      submissionString
+      hash
     )
   }
 
