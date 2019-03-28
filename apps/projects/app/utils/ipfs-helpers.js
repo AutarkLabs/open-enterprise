@@ -24,10 +24,6 @@ export const computeIpfsString = async issues => {
   return issueHashArray.join('')
 }
 
-export const computeIpfsHash = (content) => {
-
-}
-
 export const ipfsGet = async (hash) => {
   const endpoint = `${infura}/cat?arg=${hash}`
   try {
