@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import { hot } from 'react-hot-loader'
 import styled from 'styled-components'
+import { map } from 'rxjs/operators'
 
 import { ApolloProvider } from 'react-apollo'
 
@@ -544,6 +545,6 @@ const StyledAragonApp = styled(PublicUrl.Provider).attrs({
 `
 
 export default observe(
-  observable => observable.map(state => ({ ...state })),
+  observable => observable.pipe(map(state => ({ ...state }))),
   {}
 )(hot(module)(App))

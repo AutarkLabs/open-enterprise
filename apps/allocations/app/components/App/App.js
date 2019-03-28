@@ -2,6 +2,7 @@ import { AragonApp, observe, SidePanel, Root, ToastHub } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import { map } from 'rxjs/operators'
 
 import { Accounts, NewAccountButton } from '.'
 import { Title } from '../Shared'
@@ -173,6 +174,6 @@ const StyledAragonApp = styled(AragonApp).attrs({
 `
 
 export default observe(
-  observable => observable.map(state => ({ ...state })),
+  observable => observable.pipe(map(state => ({ ...state }))),
   {}
 )(App)

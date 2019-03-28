@@ -31,6 +31,7 @@
     "devchain:reset": "aragon devchain --reset",
     "publish:apps": "lerna run publish",
     "publish:http": "lerna run publish:http",
+    "reset-allocations-script": "lerna run build:script --scope=@tps/apps-allocations",
     "reset-rewards-script": "lerna run build:script --scope=@tps/apps-rewards",
     "restart": "RESTART_KIT=true apps/shared/test-helpers/ganache-cli.sh",
     "start": "START_KIT=true apps/shared/test-helpers/ganache-cli.sh",

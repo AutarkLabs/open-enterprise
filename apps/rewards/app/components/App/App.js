@@ -2,6 +2,7 @@ import { AppBar, Main, observe, SidePanel, TabBar, Root, Viewport, font, breakpo
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import { map } from 'rxjs/operators'
 import { Overview, MyRewards } from '../Content'
 import { Title } from '../Shared'
 import { Empty } from '../Card'
@@ -211,7 +212,7 @@ class App extends React.Component {
               network={network}
             />
           )}
- 
+
           <PanelManager
             onClose={this.closePanel}
             activePanel={panel}
@@ -250,6 +251,6 @@ const AppBarLabel = styled.span`
 `
 
 export default observe(
-  observable => observable.map(state => ({ ...state })),
+  observable => observable.pipe(map(state => ({ ...state }))),
   {}
 )(App)

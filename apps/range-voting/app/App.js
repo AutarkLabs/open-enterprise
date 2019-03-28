@@ -2,6 +2,7 @@ import React from 'react'
 import { hot } from 'react-hot-loader'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
+import { map } from 'rxjs/operators'
 
 import {
   AragonApp,
@@ -178,6 +179,6 @@ const CloseIcon = styled(IconAdd)`
 `
 
 export default observe(
-  observable => observable.map(state => ({ ...state })),
+  observable => observable.pipe(map(state => ({ ...state }))),
   {}
 )(hot(module)(App))

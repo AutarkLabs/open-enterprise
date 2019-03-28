@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import { hot } from 'react-hot-loader'
 import styled from 'styled-components'
+import { map } from 'rxjs/operators'
 import Entities from './Entities'
 import NewEntityButton from './NewEntityButton'
 import NewEntity from '../Panel/NewEntity'
@@ -116,6 +117,6 @@ const Content = styled.div`
   flex-grow: 1;
 `
 export default observe(
-  observable => observable.map(state => ({ ...state })),
+  observable => observable.pipe(map(state => ({ ...state }))),
   {}
 )(hot(module)(App))
