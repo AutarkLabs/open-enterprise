@@ -249,7 +249,7 @@ class App extends React.PureComponent {
     }))
   }
 
-  onSubmitBountyAllocation = async issue => {
+  onSubmitBountyAllocation = async issues => {
     this.closePanel()
     let bountySymbol = this.props.bountySettings.bountyCurrency
     let bountyToken, bountyDecimals
@@ -264,7 +264,7 @@ class App extends React.PureComponent {
 
     // computes an array of issues and denests the actual issue object for smart contract
     const issuesArray = []
-    for (let key in issue) issuesArray.push({ key: key, ...issue[key] })
+    for (let key in issues) issuesArray.push({ key: key, ...issues[key] })
 
     console.log('Submit issues:', issuesArray)
 
