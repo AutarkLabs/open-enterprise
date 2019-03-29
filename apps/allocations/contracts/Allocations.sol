@@ -212,7 +212,7 @@ contract Allocations is AragonApp, Fundable {
         // Payouts are now instantiated on setDistribution
         require(payout.distSet);
         if (payout.recurring) {
-            // TDDO create payout execution counter to ensure payout time tracks payouts
+            //TODO create payout execution counter to ensure payout time tracks payouts
             uint256 payoutTime = payout.startTime.add(payout.period);
             require(payoutTime < block.timestamp,"payout period not yet finished"); // solium-disable-line security/no-block-members
             payout.startTime = payoutTime;
