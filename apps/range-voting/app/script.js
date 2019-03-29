@@ -1,5 +1,5 @@
 import Aragon from '@aragon/api'
-import { combineLatest } from './rxjs'
+import { combineLatest } from 'rxjs'
 import { first, map, tap, combineAll } from 'rxjs/operators' // Make sure observables have first()
 import voteSettings, { hasLoadedVoteSettings } from './utils/vote-settings'
 import { EMPTY_CALLSCRIPT } from './utils/vote-utils'
