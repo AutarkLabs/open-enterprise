@@ -1,4 +1,4 @@
 // Load all RxJS requirements here
 
-import { first } from 'rxjs/operators' // Make sure observables have .first
+import { first } from 'rxjs/operators'
 export { combineLatest } from 'rxjs'

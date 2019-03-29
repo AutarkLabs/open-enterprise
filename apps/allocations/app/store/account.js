@@ -1,5 +1,4 @@
-import { first, map } from 'rxjs/operators' // Make sure observables have .first and .map
-//import 'rxjs/add/operator/map' // Make sure observables have .map
+import { first, map } from 'rxjs/operators'
 
 import { app } from './'
 
@@ -59,7 +58,10 @@ const loadAccountData = async accountId => {
     // TODO: Should we standarize the naming and switch to getAccount instead of getPayout?
     app
       .call('getPayout', accountId)
-      .pipe(first(), map())
+      .pipe(
+        first(),
+        map()
+      )
       .subscribe(account => {
         // don't resolve when entry not found
         if (account) {

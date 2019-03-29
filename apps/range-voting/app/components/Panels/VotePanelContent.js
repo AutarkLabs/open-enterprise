@@ -14,7 +14,7 @@ import {
   theme,
 } from '@aragon/ui'
 import { combineLatest } from '../../rxjs'
-import { first } from 'rxjs/operators' // Make sure observables have .first
+import { first } from 'rxjs/operators'
 import { provideNetwork } from '../../../../../shared/ui'
 import { VOTE_NAY, VOTE_YEA } from '../../utils/vote-types'
 import { safeDiv } from '../../utils/math-utils'
