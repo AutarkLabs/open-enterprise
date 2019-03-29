@@ -1,4 +1,4 @@
-import 'rxjs/add/operator/first' // Make sure observables have .first
+import { first } from 'rxjs/operators' // Make sure observables have .first
 
 import { app } from './'
 

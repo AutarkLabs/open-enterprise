@@ -1,5 +1,5 @@
-import 'rxjs/add/operator/first' // Make sure observables have .first
-import 'rxjs/add/operator/map' // Make sure observables have .map
+import { first, map } from 'rxjs/operators' // Make sure observables have .first and .map
+//import 'rxjs/add/operator/map' // Make sure observables have .map
 
 import { app } from './'
 
@@ -48,7 +48,7 @@ const getAccountById = accountId => {
   return app
     .call('getPayout', accountId)
     .pipe(first())
-    .map(data => ({ accountId, data, executed: true }))
+    .pipe(map(data => ({ accountId, data, executed: true })))
     .toPromise()
 }
 

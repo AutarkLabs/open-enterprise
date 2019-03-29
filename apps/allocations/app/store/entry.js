@@ -1,4 +1,4 @@
-import 'rxjs/add/operator/first' // Make sure observables have .first
+import { first, map } from 'rxjs/operators' // Make sure observables have first()
 
 import addressBookAbi from '../../../shared/json-abis/address-book'
 import { app } from './'
@@ -43,7 +43,7 @@ const loadEntryData = async (addr, addressBook) => {
   return addressBookApp
     .getEntry(addr)
     .pipe(first())
-    .map(
+    .pipe(map(
       entry =>
         // cover removed entries
         !entry ? null : {
@@ -51,6 +51,6 @@ const loadEntryData = async (addr, addressBook) => {
           name: entry[1],
           entryType: entry[2],
         }
-    )
+    ))
     .toPromise()
 }

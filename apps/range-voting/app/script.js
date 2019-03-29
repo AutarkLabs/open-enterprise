@@ -1,6 +1,6 @@
 import Aragon from '@aragon/api'
 import { combineLatest } from './rxjs'
-import 'rxjs/add/operator/first' // Make sure observables have .first
+import { first, map, tap, combineAll } from 'rxjs/operators' // Make sure observables have first()
 import voteSettings, { hasLoadedVoteSettings } from './utils/vote-settings'
 import { EMPTY_CALLSCRIPT } from './utils/vote-utils'
 import AllocationJSON from '../../shared/json-abis/Allocations.json'
@@ -120,6 +120,7 @@ async function loadVoteDescription(vote) {
 async function loadVoteData(voteId) {
   console.info('[RangeVoting > script]: loadVoteData')
   let vote
+  console.log('load vote data: ',await loadVoteDataAllocation(0, voteId))
   return new Promise((resolve, reject) => {
     app
       .call('getVote', voteId)
@@ -131,6 +132,7 @@ async function loadVoteData(voteId) {
           resolve(loadVoteDataProjects(voteData, voteId))
         } else {
           console.log('Loading Allocations Data')
+          console.log('vote data: ', loadVoteDataAllocation(voteData, voteId))
           resolve(loadVoteDataAllocation(voteData, voteId))
         }
       })
@@ -138,46 +140,47 @@ async function loadVoteData(voteId) {
 }
 // These functions arn't DRY make them better
 async function loadVoteDataAllocation(vote, voteId) {
-  return new Promise(resolve =>
-    combineLatest(
-      app.call('getVoteMetadata', voteId),
-      app.call('getCandidateLength', voteId),
-      app.call('canExecute', voteId)
-    )
-      .pipe(first())
-      .subscribe(([ metadata, totalCandidates, canExecute, payout ]) => {
-        loadVoteDescription(vote).then(async vote => {
-          let options = []
-          for (let i = 0; i < totalCandidates; i++) {
-            let candidateData = await getAllocationCandidate(voteId, i)
-            console.log(candidateData)
-            options.push(candidateData)
-          }
-          let returnObject = {
-            ...marshallVote(vote),
-            metadata,
-            canExecute,
-            options: options,
-          }
-          allocations
-            .getPayout(vote.externalId)
-            .pipe(first())
-            .subscribe(payout => {
-              resolve({
-                ...returnObject,
-                limit: parseInt(payout.limit, 10),
-                balance: parseInt(vote.executionScript.slice(706, 770), 16),
-                metadata:
-                  'Range Vote ' +
-                  voteId +
-                  ' - Allocation (' +
-                  payout.metadata +
-                  ')',
-              })
-            })
-        })
-      })
-  )
+  console.log('test', await app.call('getCandidateLength', voteId).toPromise())
+  //return new Promise(resolve =>
+  // combineLatest(
+  //   app.call('getVoteMetadata', voteId),
+  //   app.call('getCandidateLength', voteId),
+  return app.call('canExecute', voteId).toPromise()
+  //)
+  //  .toPromise()
+  //.subscribe(([ metadata, totalCandidates, canExecute, payout ]) => {
+  //  loadVoteDescription(vote).then(async vote => {
+  //    let options = []
+  //    for (let i = 0; i < totalCandidates; i++) {
+  //      let candidateData = await getAllocationCandidate(voteId, i)
+  //      console.log(candidateData)
+  //      options.push(candidateData)
+  //    }
+  //    let returnObject = {
+  //      ...marshallVote(vote),
+  //      metadata,
+  //      canExecute,
+  //      options: options,
+  //    }
+  //    allocations
+  //      .getPayout(vote.externalId)
+  //      .pipe(first())
+  //      .subscribe(payout => {
+  //        resolve({
+  //          ...returnObject,
+  //          limit: parseInt(payout.limit, 10),
+  //          balance: parseInt(vote.executionScript.slice(706, 770), 16),
+  //          metadata:
+  //              'Range Vote ' +
+  //              voteId +
+  //              ' - Allocation (' +
+  //              payout.metadata +
+  //              ')',
+  //        })
+  //      })
+  //  })
+  //})
+  //)
 }
 // These functions arn't DRY make them better
 async function loadVoteDataProjects(vote, voteId) {
@@ -274,17 +277,19 @@ function loadVoteSettings() {
         new Promise((resolve, reject) =>
           app
             .call(name)
-            .pipe(first())
-            .map(val => {
-              if (type === 'number') {
-                return parseInt(val, 10)
-              }
-              if (type === 'time') {
+            .pipe(
+              first(),
+              map(val => {
+                if (type === 'number') {
+                  return parseInt(val, 10)
+                }
+                if (type === 'time') {
                 // Adjust for js time (in ms vs s)
-                return parseInt(val, 10) * 1000
-              }
-              return val
-            })
+                  return parseInt(val, 10) * 1000
+                }
+                return val
+              })
+            )
             .subscribe(value => {
               resolve({ [key]: value })
             }, reject)
