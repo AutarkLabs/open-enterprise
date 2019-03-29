@@ -1,21 +1,17 @@
-import { BaseStyles, observe, Main, ToastHub } from '@aragon/ui'
+import { Main, observe } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { hot } from 'react-hot-loader'
-import styled from 'styled-components'
+import { ApolloProvider } from 'react-apollo'
+import BigNumber from 'bignumber.js'
 import { map } from 'rxjs/operators'
 
-import { ApolloProvider } from 'react-apollo'
-
-import { AppContent } from '.'
-import { Title } from '../Shared'
-import PanelManager, { PANELS } from '../Panel'
+import { appStyle, networkContextType } from '../../../../../shared/ui'
 import { STATUS } from '../../utils/github'
+import PanelManager, { PANELS } from '../Panel'
+import { Title } from '../Shared'
 import ErrorBoundary from './ErrorBoundary'
-import BigNumber from 'bignumber.js'
-import { networkContextType } from '../../../../../shared/ui'
-
-const ASSETS_URL = './aragon-ui-assets/'
+import { AppContent } from '.'
 
 const GITHUB_URI = 'https://github.com/login/oauth/authorize'
 
@@ -222,10 +218,9 @@ class App extends React.PureComponent {
   // TODO: Review
   // This is breaking RepoList loading sometimes preventing show repos after login
   newProject = () => {
-    const reposAlreadyAdded = this.props.repos ?
-      this.props.repos.map(repo => repo.data._repo)
-      :
-      []
+    const reposAlreadyAdded = this.props.repos
+      ? this.props.repos.map(repo => repo.data._repo)
+      : []
 
     this.setState((_prevState, { github: { status } }) => ({
       panel: PANELS.NewProject,
@@ -253,14 +248,12 @@ class App extends React.PureComponent {
     this.closePanel()
     let bountySymbol = this.props.bountySettings.bountyCurrency
     let bountyToken, bountyDecimals
-    this.props.tokens.forEach(
-      token => {
-        if(token.symbol === bountySymbol) {
-          bountyToken = token.addr
-          bountyDecimals = token.decimals
-        }
+    this.props.tokens.forEach(token => {
+      if (token.symbol === bountySymbol) {
+        bountyToken = token.addr
+        bountyDecimals = token.decimals
       }
-    )
+    })
 
     let issuesArray = []
 
@@ -275,19 +268,28 @@ class App extends React.PureComponent {
 
     const tokenArray = new Array(issuesArray.length).fill(bountyToken)
 
-    console.log('Bounty data for app.addBounties',
-      issuesArray.map( (issue) => issue.repoId),
-      issuesArray.map( (issue) => issue.number),
-      issuesArray.map( (issue) => BigNumber(issue.size).times(10 ** bountyDecimals).toString()),
-      issuesArray.map( (issue) => issue.deadline),
+    console.log(
+      'Bounty data for app.addBounties',
+      issuesArray.map(issue => issue.repoId),
+      issuesArray.map(issue => issue.number),
+      issuesArray.map(issue =>
+        BigNumber(issue.size)
+          .times(10 ** bountyDecimals)
+          .toString()
+      ),
+      issuesArray.map(issue => issue.deadline),
       new Array(issuesArray.length).fill(true),
       tokenArray,
       ipfsString
     )
     this.props.app.addBounties(
-      issuesArray.map( (issue) => web3.toHex(issue.repoId)),
-      issuesArray.map( (issue) => issue.number),
-      issuesArray.map( (issue) => BigNumber(issue.size).times(10 ** bountyDecimals).toString()),
+      issuesArray.map(issue => web3.toHex(issue.repoId)),
+      issuesArray.map(issue => issue.number),
+      issuesArray.map(issue =>
+        BigNumber(issue.size)
+          .times(10 ** bountyDecimals)
+          .toString()
+      ),
       issuesArray.map(issue => {
         return Date.now() + 8600
       }),
@@ -381,7 +383,7 @@ class App extends React.PureComponent {
       issue.number,
       issue.requestsData[requestIndex].contributorAddr,
       issue.requestsData[requestIndex].requestIPFSHash,
-      approved,
+      approved
     )
   }
 
@@ -486,59 +488,48 @@ class App extends React.PureComponent {
     const { activeIndex, panel, panelProps } = this.state
     const { client, bountySettings, githubCurrentUser } = this.props
     return (
-      <StyledAragonApp publicUrl={ASSETS_URL}>
-        <BaseStyles />
-        <ToastHub>
-          <Title text="Projects" />
-          <ApolloProvider client={client}>
-            <ErrorBoundary>
-              <AppContent
-                onLogin={this.handleGithubSignIn}
-                status={this.props.github.status || STATUS.INITIAL}
-                app={this.props.app}
-                bountySettings={bountySettings}
-                githubCurrentUser={githubCurrentUser || {}}
-                projects={this.props.repos !== undefined ? this.props.repos : []}
-                bountyIssues={
-                  this.props.issues !== undefined ? this.props.issues : []
-                }
-                bountySettings={
-                  bountySettings !== undefined ? bountySettings : {}
-                }
-                tokens={this.props.tokens !== undefined ? this.props.tokens : []}
-                onNewProject={this.newProject}
-                onRemoveProject={this.removeProject}
-                onNewIssue={this.newIssue}
-                onCurateIssues={this.curateIssues}
-                onAllocateBounties={this.newBountyAllocation}
-                onSubmitWork={this.submitWork}
-                onRequestAssignment={this.requestAssignment}
-                activeIndex={activeIndex}
-                changeActiveIndex={this.changeActiveIndex}
-                onReviewApplication={this.reviewApplication}
-                onReviewWork={this.reviewWork}
-              />
+      <Main style={appStyle}>
+        <Title text="Projects" />
+        <ApolloProvider client={client}>
+          <ErrorBoundary>
+            <AppContent
+              onLogin={this.handleGithubSignIn}
+              status={this.props.github.status || STATUS.INITIAL}
+              app={this.props.app}
+              bountySettings={bountySettings}
+              githubCurrentUser={githubCurrentUser || {}}
+              projects={this.props.repos !== undefined ? this.props.repos : []}
+              bountyIssues={
+                this.props.issues !== undefined ? this.props.issues : []
+              }
+              bountySettings={
+                bountySettings !== undefined ? bountySettings : {}
+              }
+              tokens={this.props.tokens !== undefined ? this.props.tokens : []}
+              onNewProject={this.newProject}
+              onRemoveProject={this.removeProject}
+              onNewIssue={this.newIssue}
+              onCurateIssues={this.curateIssues}
+              onAllocateBounties={this.newBountyAllocation}
+              onSubmitWork={this.submitWork}
+              onRequestAssignment={this.requestAssignment}
+              activeIndex={activeIndex}
+              changeActiveIndex={this.changeActiveIndex}
+              onReviewApplication={this.reviewApplication}
+              onReviewWork={this.reviewWork}
+            />
 
-              <PanelManager
-                onClose={this.closePanel}
-                activePanel={panel}
-                {...panelProps}
-              />
-            </ErrorBoundary>
-          </ApolloProvider>
-        </ToastHub>
-      </StyledAragonApp>
+            <PanelManager
+              onClose={this.closePanel}
+              activePanel={panel}
+              {...panelProps}
+            />
+          </ErrorBoundary>
+        </ApolloProvider>
+      </Main>
     )
   }
 }
-
-const StyledAragonApp = styled(Main)`
-  display: flex;
-  height: 100vh;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: stretch;
-`
 
 export default observe(
   observable => observable.pipe(map(state => ({ ...state }))),

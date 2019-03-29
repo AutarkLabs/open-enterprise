@@ -7,18 +7,17 @@ import { map } from 'rxjs/operators'
 import {
   AppBar,
   Button,
-  Main,
-  SidePanel,
   IconAdd,
+  Main,
   observe,
   theme,
-  ToastHub,
+  SidePanel,
 } from '@aragon/ui'
 import AppLayout from './components/AppLayout'
 import Decisions from './Decisions'
 import { hasLoadedVoteSettings } from './utils/vote-settings'
 import { NewPayoutVotePanelContent } from './components/Panels'
-import { networkContextType } from '../../../shared/ui'
+import { appStyle, networkContextType } from '../../../shared/ui'
 
 const initialState = {
   template: null,
@@ -99,55 +98,43 @@ class App extends React.Component {
     )
 
     return (
-      <StyledAragonApp publicUrl="aragon-ui-assets/">
-        <ToastHub>
-          <AppLayout>
-            <AppLayout.Header>
-              <AppBar
-                title="Range Voting"
-                // endContent={barButton}
+      <Main style={appStyle}>
+        <AppLayout>
+          <AppLayout.Header>
+            <AppBar
+              title="Range Voting"
+              // endContent={barButton}
+            />
+          </AppLayout.Header>
+          <AppLayout.ScrollWrapper>
+            <AppLayout.Content>
+              <Decisions
+                onActivate={this.handlePanelOpen}
+                app={this.props.app}
+                votes={this.props.votes !== undefined ? this.props.votes : []}
+                voteTime={this.props.voteTime}
+                minParticipationPct={
+                  this.props.minParticipationPct
+                    ? this.props.minParticipationPct.toFixed(2)
+                    : 'N/A'
+                }
+                tokenAddress={this.props.tokenAddress}
+                userAccount={this.props.userAccount}
               />
-            </AppLayout.Header>
-            <AppLayout.ScrollWrapper>
-              <AppLayout.Content>
-                <Decisions
-                  onActivate={this.handlePanelOpen}
-                  app={this.props.app}
-                  votes={
-                    this.props.votes !== undefined ? this.props.votes : []
-                  }
-                  voteTime={this.props.voteTime}
-                  minParticipationPct={
-                    this.props.minParticipationPct
-                      ? this.props.minParticipationPct.toFixed(2)
-                      : 'N/A'
-                  }
-                  tokenAddress={this.props.tokenAddress}
-                  userAccount={this.props.userAccount}
-                />
-              </AppLayout.Content>
-            </AppLayout.ScrollWrapper>
-          </AppLayout>
-          <SidePanel
-            title={''}
-            opened={this.state.panelActive}
-            onClose={this.handlePanelClose}
-          >
-            <NewPayoutVotePanelContent />
-          </SidePanel>
-        </ToastHub>
-      </StyledAragonApp>
+            </AppLayout.Content>
+          </AppLayout.ScrollWrapper>
+        </AppLayout>
+        <SidePanel
+          title={''}
+          opened={this.state.panelActive}
+          onClose={this.handlePanelClose}
+        >
+          <NewPayoutVotePanelContent />
+        </SidePanel>
+      </Main>
     )
   }
 }
-
-const StyledAragonApp = styled(Main)`
-  display: flex;
-  height: 100vh;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: stretch;
-`
 
 const DropDownContent = styled.div`
   display: none;

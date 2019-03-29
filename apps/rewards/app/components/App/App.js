@@ -1,16 +1,31 @@
-import { AppBar, Main, observe, SidePanel, TabBar, Viewport, font, breakpoint } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { map } from 'rxjs/operators'
+import {
+  AppBar,
+  Main,
+  observe,
+  TabBar,
+  Viewport,
+  font,
+  breakpoint,
+} from '@aragon/ui'
+
 import { Overview, MyRewards } from '../Content'
-import { Title } from '../Shared'
-import { Empty } from '../Card'
 import PanelManager, { PANELS } from '../Panel'
 import NewRewardButton from './NewRewardButton'
-import { millisecondsToBlocks, MILLISECONDS_IN_A_MONTH, millisecondsToQuarters, WEEK } from '../../../../../shared/ui/utils'
-import BigNumber from 'bignumber.js'
-import { networkContextType, MenuButton } from '../../../../../shared/ui'
+import {
+  millisecondsToBlocks,
+  MILLISECONDS_IN_A_MONTH,
+  millisecondsToQuarters,
+  WEEK,
+} from '../../../../../shared/ui/utils'
+import {
+  appStyle,
+  networkContextType,
+  MenuButton,
+} from '../../../../../shared/ui'
 
 class App extends React.Component {
   static propTypes = {
@@ -43,7 +58,8 @@ class App extends React.Component {
 
   handleMenuPanelOpen = () => {
     window.parent.postMessage(
-      { from: 'app', name: 'menuPanel', value: true }, '*'
+      { from: 'app', name: 'menuPanel', value: true },
+      '*'
     )
   }
 
@@ -67,49 +83,68 @@ class App extends React.Component {
   }
 
   onNewReward = async reward => {
-    let currentBlock = await this.props.app.web3Eth('getBlockNumber').first().toPromise()
-    let startBlock = currentBlock + millisecondsToBlocks(Date.now(), reward.dateStart)
+    let currentBlock = await this.props.app
+      .web3Eth('getBlockNumber')
+      .first()
+      .toPromise()
+    let startBlock =
+      currentBlock + millisecondsToBlocks(Date.now(), reward.dateStart)
     console.log(startBlock)
     if (!reward.isMerit) {
       switch (reward.disbursementCycle) {
       case 'Quarterly':
-        reward.occurances = millisecondsToQuarters(reward.dateStart, reward.dateEnd)
-        reward.duration = millisecondsToBlocks(Date.now(), 3 * MILLISECONDS_IN_A_MONTH + Date.now())
+        reward.occurances = millisecondsToQuarters(
+          reward.dateStart,
+          reward.dateEnd
+        )
+        reward.duration = millisecondsToBlocks(
+          Date.now(),
+          3 * MILLISECONDS_IN_A_MONTH + Date.now()
+        )
         break
-      default: // Monthly
+      default:
+        // Monthly
         reward.occurances = 12
-        reward.duration = millisecondsToBlocks(Date.now(), MILLISECONDS_IN_A_MONTH + Date.now())
+        reward.duration = millisecondsToBlocks(
+          Date.now(),
+          MILLISECONDS_IN_A_MONTH + Date.now()
+        )
       }
-      switch(reward.disbursementDelay) {
+      switch (reward.disbursementDelay) {
       case '1 week':
         reward.delay = millisecondsToBlocks(Date.now(), Date.now + WEEK)
         break
       case '2 weeks':
-        reward.delay = millisecondsToBlocks(Date.now(), Date.now + (2 * WEEK))
+        reward.delay = millisecondsToBlocks(Date.now(), Date.now + 2 * WEEK)
         break
       default:
         reward.delay = 0
         break
       }
-    }
-    else {
+    } else {
       reward.occurances = 1
       reward.delay = 0
       reward.duration = millisecondsToBlocks(reward.dateStart, reward.dateEnd)
     }
 
     console.log(
-      'isMerit ',reward.isMerit,
-      '\nreferenceAsset ', reward.referenceAsset,
-      '\ncurrency', reward.currency,
-      '\namount', reward.amount,
-      '\nstartBlock', startBlock,
-      '\nduration', reward.duration,
-      '\noccurances', reward.occurances,
-      '\ndelay', reward.delay
+      'isMerit ',
+      reward.isMerit,
+      '\nreferenceAsset ',
+      reward.referenceAsset,
+      '\ncurrency',
+      reward.currency,
+      '\namount',
+      reward.amount,
+      '\nstartBlock',
+      startBlock,
+      '\nduration',
+      reward.duration,
+      '\noccurances',
+      reward.occurances,
+      '\ndelay',
+      reward.delay
     )
-
-
 
     this.props.app.newReward(
       reward.isMerit, //bool _isMerit,
@@ -147,8 +182,8 @@ class App extends React.Component {
       panelProps: {
         reward: reward,
         onClosePanel: this.closePanel,
-        network: { type: 'rinkeby' }
-      }
+        network: { type: 'rinkeby' },
+      },
     })
   }
 
@@ -169,19 +204,18 @@ class App extends React.Component {
     const tokens = { 0x0: 'ETH' }
 
     return (
-      <StyledAragonApp>
+      <Main style={appStyle}>
         <AppBar
           endContent={
-            <NewRewardButton
-              title="New Reward"
-              onClick={this.newReward}
-            />
+            <NewRewardButton title="New Reward" onClick={this.newReward} />
           }
         >
           <AppBarTitle>
             <Viewport>
               {({ below }) =>
-                below('medium') && <MenuButton onClick={this.handleMenuPanelOpen} />
+                below('medium') && (
+                  <MenuButton onClick={this.handleMenuPanelOpen} />
+                )
               }
             </Viewport>
             <AppBarLabel>Rewards</AppBarLabel>
@@ -193,7 +227,7 @@ class App extends React.Component {
           selected={this.state.selected}
           onSelect={this.selectTab}
         />
-        { this.state.selected === 1 ? (
+        {this.state.selected === 1 ? (
           <MyRewards
             rewards={this.props.rewards === undefined ? [] : this.props.rewards}
             newReward={this.newReward}
@@ -215,18 +249,11 @@ class App extends React.Component {
           activePanel={panel}
           {...panelProps}
         />
-      </StyledAragonApp>
+      </Main>
     )
   }
 }
 
-const StyledAragonApp = styled(Main)`
-  display: flex;
-  height: 100vh;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: stretch;
-`
 const AppBarTitle = styled.span`
   display: flex;
   align-items: center;

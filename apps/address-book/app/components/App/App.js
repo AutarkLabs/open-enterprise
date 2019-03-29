@@ -1,14 +1,15 @@
-import { observe, SidePanel, Main, ToastHub } from '@aragon/ui'
+import { Main, observe, SidePanel } from '@aragon/ui'
+import { hot } from 'react-hot-loader'
 import PropTypes from 'prop-types'
 import React from 'react'
-import { hot } from 'react-hot-loader'
 import styled from 'styled-components'
 import { map } from 'rxjs/operators'
-import Entities from './Entities'
-import NewEntityButton from './NewEntityButton'
+
+import { appStyle, networkContextType } from '../../../../../shared/ui'
 import NewEntity from '../Panel/NewEntity'
 import { Title } from '../Shared'
-import { networkContextType } from '../../../../../shared/ui'
+import Entities from './Entities'
+import NewEntityButton from './NewEntityButton'
 
 class App extends React.Component {
   static propTypes = {
@@ -62,41 +63,32 @@ class App extends React.Component {
     const { entries } = this.props
 
     return (
-      <StyledAragonApp>
-        <ToastHub>
-          <Title text="Address Book" />
-          <NewEntityButton onClick={this.newEntity} />
+      <Main style={appStyle}>
+        <Title text="Address Book" />
+        <NewEntityButton onClick={this.newEntity} />
 
-          <ScrollWrapper>
-            <Content>
-              <Entities
-                entities={entries ? entries : []}
-                onNewEntity={this.newEntity}
-                onRemoveEntity={this.removeEntity}
-              />
-            </Content>
-          </ScrollWrapper>
+        <ScrollWrapper>
+          <Content>
+            <Entities
+              entities={entries ? entries : []}
+              onNewEntity={this.newEntity}
+              onRemoveEntity={this.removeEntity}
+            />
+          </Content>
+        </ScrollWrapper>
 
-          <SidePanel
-            title="New entity"
-            opened={panelVisible}
-            onClose={this.closePanel}
-          >
-            <NewEntity onCreateEntity={this.createEntity} />
-          </SidePanel>
-        </ToastHub>
-      </StyledAragonApp>
+        <SidePanel
+          title="New entity"
+          opened={panelVisible}
+          onClose={this.closePanel}
+        >
+          <NewEntity onCreateEntity={this.createEntity} />
+        </SidePanel>
+      </Main>
     )
   }
 }
 
-const StyledAragonApp = styled(Main)`
-  display: flex;
-  height: 100vh;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: stretch;
-`
 const ScrollWrapper = styled.div`
   display: flex;
   flex-direction: column;
