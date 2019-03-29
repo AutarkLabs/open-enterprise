@@ -141,46 +141,46 @@ async function loadVoteData(voteId) {
 // These functions arn't DRY make them better
 async function loadVoteDataAllocation(vote, voteId) {
   console.log('test', await app.call('getCandidateLength', voteId).toPromise())
-  //return new Promise(resolve =>
-  return combineLatest(
-    app.call('getVoteMetadata', voteId),
-    app.call('getCandidateLength', voteId),
-    app.call('canExecute', voteId)
+  return new Promise(resolve =>
+    combineLatest(
+      app.call('getVoteMetadata', voteId),
+      app.call('getCandidateLength', voteId),
+      app.call('canExecute', voteId)
+    )
+      .toPromise()
+      .subscribe(([ metadata, totalCandidates, canExecute, payout ]) => {
+        loadVoteDescription(vote).then(async vote => {
+          let options = []
+          for (let i = 0; i < totalCandidates; i++) {
+            let candidateData = await getAllocationCandidate(voteId, i)
+            console.log(candidateData)
+            options.push(candidateData)
+          }
+          let returnObject = {
+            ...marshallVote(vote),
+            metadata,
+            canExecute,
+            options: options,
+          }
+          allocations
+            .getPayout(vote.externalId)
+            .pipe(first())
+            .subscribe(payout => {
+              resolve({
+                ...returnObject,
+                limit: parseInt(payout.limit, 10),
+                balance: parseInt(vote.executionScript.slice(706, 770), 16),
+                metadata:
+               'Range Vote ' +
+               voteId +
+               ' - Allocation (' +
+               payout.metadata +
+               ')',
+              })
+            })
+        })
+      })
   )
-    .toPromise()
-  //.subscribe(([ metadata, totalCandidates, canExecute, payout ]) => {
-  //  loadVoteDescription(vote).then(async vote => {
-  //    let options = []
-  //    for (let i = 0; i < totalCandidates; i++) {
-  //      let candidateData = await getAllocationCandidate(voteId, i)
-  //      console.log(candidateData)
-  //      options.push(candidateData)
-  //    }
-  //    let returnObject = {
-  //      ...marshallVote(vote),
-  //      metadata,
-  //      canExecute,
-  //      options: options,
-  //    }
-  //    allocations
-  //      .getPayout(vote.externalId)
-  //      .pipe(first())
-  //      .subscribe(payout => {
-  //        resolve({
-  //          ...returnObject,
-  //          limit: parseInt(payout.limit, 10),
-  //          balance: parseInt(vote.executionScript.slice(706, 770), 16),
-  //          metadata:
-  //              'Range Vote ' +
-  //              voteId +
-  //              ' - Allocation (' +
-  //              payout.metadata +
-  //              ')',
-  //        })
-  //      })
-  //  })
-  //})
-  //)
 }
 // These functions arn't DRY make them better
 async function loadVoteDataProjects(vote, voteId) {
