@@ -1,4 +1,4 @@
-import { BaseStyles, PublicUrl, observe, Root, ToastHub } from '@aragon/ui'
+import { BaseStyles, observe, Main, ToastHub } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { hot } from 'react-hot-loader'
@@ -486,57 +486,53 @@ class App extends React.PureComponent {
     const { activeIndex, panel, panelProps } = this.state
     const { client, bountySettings, githubCurrentUser } = this.props
     return (
-      <Root.Provider>
-        <StyledAragonApp publicUrl={ASSETS_URL}>
-          <BaseStyles />
-          <ToastHub>
-            <Title text="Projects" />
-            <ApolloProvider client={client}>
-              <ErrorBoundary>
-                <AppContent
-                  onLogin={this.handleGithubSignIn}
-                  status={this.props.github.status || STATUS.INITIAL}
-                  app={this.props.app}
-                  bountySettings={bountySettings}
-                  githubCurrentUser={githubCurrentUser || {}}
-                  projects={this.props.repos !== undefined ? this.props.repos : []}
-                  bountyIssues={
-                    this.props.issues !== undefined ? this.props.issues : []
-                  }
-                  bountySettings={
-                    bountySettings !== undefined ? bountySettings : {}
-                  }
-                  tokens={this.props.tokens !== undefined ? this.props.tokens : []}
-                  onNewProject={this.newProject}
-                  onRemoveProject={this.removeProject}
-                  onNewIssue={this.newIssue}
-                  onCurateIssues={this.curateIssues}
-                  onAllocateBounties={this.newBountyAllocation}
-                  onSubmitWork={this.submitWork}
-                  onRequestAssignment={this.requestAssignment}
-                  activeIndex={activeIndex}
-                  changeActiveIndex={this.changeActiveIndex}
-                  onReviewApplication={this.reviewApplication}
-                  onReviewWork={this.reviewWork}
-                />
+      <StyledAragonApp publicUrl={ASSETS_URL}>
+        <BaseStyles />
+        <ToastHub>
+          <Title text="Projects" />
+          <ApolloProvider client={client}>
+            <ErrorBoundary>
+              <AppContent
+                onLogin={this.handleGithubSignIn}
+                status={this.props.github.status || STATUS.INITIAL}
+                app={this.props.app}
+                bountySettings={bountySettings}
+                githubCurrentUser={githubCurrentUser || {}}
+                projects={this.props.repos !== undefined ? this.props.repos : []}
+                bountyIssues={
+                  this.props.issues !== undefined ? this.props.issues : []
+                }
+                bountySettings={
+                  bountySettings !== undefined ? bountySettings : {}
+                }
+                tokens={this.props.tokens !== undefined ? this.props.tokens : []}
+                onNewProject={this.newProject}
+                onRemoveProject={this.removeProject}
+                onNewIssue={this.newIssue}
+                onCurateIssues={this.curateIssues}
+                onAllocateBounties={this.newBountyAllocation}
+                onSubmitWork={this.submitWork}
+                onRequestAssignment={this.requestAssignment}
+                activeIndex={activeIndex}
+                changeActiveIndex={this.changeActiveIndex}
+                onReviewApplication={this.reviewApplication}
+                onReviewWork={this.reviewWork}
+              />
 
-                <PanelManager
-                  onClose={this.closePanel}
-                  activePanel={panel}
-                  {...panelProps}
-                />
-              </ErrorBoundary>
-            </ApolloProvider>
-          </ToastHub>
-        </StyledAragonApp>
-      </Root.Provider>
+              <PanelManager
+                onClose={this.closePanel}
+                activePanel={panel}
+                {...panelProps}
+              />
+            </ErrorBoundary>
+          </ApolloProvider>
+        </ToastHub>
+      </StyledAragonApp>
     )
   }
 }
 
-const StyledAragonApp = styled(PublicUrl.Provider).attrs({
-  url: ASSETS_URL,
-})`
+const StyledAragonApp = styled(Main)`
   display: flex;
   height: 100vh;
   flex-direction: column;

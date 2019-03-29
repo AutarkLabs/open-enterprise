@@ -1,4 +1,4 @@
-import { AragonApp, observe, SidePanel, Root, ToastHub } from '@aragon/ui'
+import { observe, SidePanel, Main, ToastHub } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { hot } from 'react-hot-loader'
@@ -9,8 +9,6 @@ import NewEntityButton from './NewEntityButton'
 import NewEntity from '../Panel/NewEntity'
 import { Title } from '../Shared'
 import { networkContextType } from '../../../../../shared/ui'
-
-const ASSETS_URL = 'aragon-ui-assets/'
 
 class App extends React.Component {
   static propTypes = {
@@ -64,39 +62,35 @@ class App extends React.Component {
     const { entries } = this.props
 
     return (
-      <Root.Provider>
-        <StyledAragonApp>
-          <ToastHub>
-            <Title text="Address Book" />
-            <NewEntityButton onClick={this.newEntity} />
+      <StyledAragonApp>
+        <ToastHub>
+          <Title text="Address Book" />
+          <NewEntityButton onClick={this.newEntity} />
 
-            <ScrollWrapper>
-              <Content>
-                <Entities
-                  entities={entries ? entries : []}
-                  onNewEntity={this.newEntity}
-                  onRemoveEntity={this.removeEntity}
-                />
-              </Content>
-            </ScrollWrapper>
+          <ScrollWrapper>
+            <Content>
+              <Entities
+                entities={entries ? entries : []}
+                onNewEntity={this.newEntity}
+                onRemoveEntity={this.removeEntity}
+              />
+            </Content>
+          </ScrollWrapper>
 
-            <SidePanel
-              title="New entity"
-              opened={panelVisible}
-              onClose={this.closePanel}
-            >
-              <NewEntity onCreateEntity={this.createEntity} />
-            </SidePanel>
-          </ToastHub>
-        </StyledAragonApp>
-      </Root.Provider>
+          <SidePanel
+            title="New entity"
+            opened={panelVisible}
+            onClose={this.closePanel}
+          >
+            <NewEntity onCreateEntity={this.createEntity} />
+          </SidePanel>
+        </ToastHub>
+      </StyledAragonApp>
     )
   }
 }
 
-const StyledAragonApp = styled(AragonApp).attrs({
-  publicUrl: ASSETS_URL,
-})`
+const StyledAragonApp = styled(Main)`
   display: flex;
   height: 100vh;
   flex-direction: column;
