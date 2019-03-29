@@ -126,7 +126,7 @@ async function loadVoteData(voteId) {
       .pipe(first())
       .subscribe(async voteData => {
         let funcSig = voteData.executionScript.slice(58, 66)
-        if (funcSig == 'f2122136') {
+        if (funcSig == 'b3670f9e') {
           console.log('Loading Projects Data')
           resolve(loadVoteDataProjects(voteData, voteId))
         } else {

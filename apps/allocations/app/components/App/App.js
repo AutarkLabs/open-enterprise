@@ -60,6 +60,7 @@ class App extends React.Component {
       emptyIntArray, //[]
       emptyIntArray, //[]
       '',
+      allocation.description,
       emptyIntArray, // Issue with bytes32 handling
       emptyIntArray, // Issue with bytes32 handling
       allocation.payoutId,
