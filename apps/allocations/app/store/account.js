@@ -47,8 +47,10 @@ export const onPayoutExecuted = async (accounts = [], { accountId }) => {
 const getAccountById = accountId => {
   return app
     .call('getPayout', accountId)
-    .pipe(first())
-    .pipe(map(data => ({ accountId, data, executed: true })))
+    .pipe(
+      first(),
+      map(data => ({ accountId, data, executed: true }))
+    )
     .toPromise()
 }
 
@@ -57,8 +59,7 @@ const loadAccountData = async accountId => {
     // TODO: Should we standarize the naming and switch to getAccount instead of getPayout?
     app
       .call('getPayout', accountId)
-      .pipe(first())
-      .pipe(map())
+      .pipe(first(), map())
       .subscribe(account => {
         // don't resolve when entry not found
         if (account) {

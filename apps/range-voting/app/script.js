@@ -118,101 +118,93 @@ async function loadVoteDescription(vote) {
 }
 
 async function loadVoteData(voteId) {
-  console.info('[RangeVoting > script]: loadVoteData')
+  console.info('[RangeVoting > script]: loadVoteData', voteId)
   let vote
-  console.log('load vote data: ',await loadVoteDataAllocation(0, voteId))
   return new Promise((resolve, reject) => {
     app
       .call('getVote', voteId)
       .pipe(first())
-      .subscribe(voteData => {
+      .subscribe(async voteData => {
         let funcSig = voteData.executionScript.slice(58, 66)
         if (funcSig == 'f2122136') {
           console.log('Loading Projects Data')
           resolve(loadVoteDataProjects(voteData, voteId))
         } else {
           console.log('Loading Allocations Data')
-          console.log('vote data: ', loadVoteDataAllocation(voteData, voteId))
+          console.log('vote data: ', await loadVoteDataAllocation(voteData, voteId))
           resolve(loadVoteDataAllocation(voteData, voteId))
         }
       })
   })
 }
+
 // These functions arn't DRY make them better
-async function loadVoteDataAllocation(vote, voteId) {
-  console.log('test', await app.call('getCandidateLength', voteId).toPromise())
-  return new Promise(resolve =>
-    combineLatest(
-      app.call('getVoteMetadata', voteId),
-      app.call('getCandidateLength', voteId),
-      app.call('canExecute', voteId)
-    )
-      .toPromise()
-      .subscribe(([ metadata, totalCandidates, canExecute, payout ]) => {
-        loadVoteDescription(vote).then(async vote => {
-          let options = []
-          for (let i = 0; i < totalCandidates; i++) {
-            let candidateData = await getAllocationCandidate(voteId, i)
-            console.log(candidateData)
-            options.push(candidateData)
-          }
-          let returnObject = {
-            ...marshallVote(vote),
-            metadata,
-            canExecute,
-            options: options,
-          }
-          allocations
-            .getPayout(vote.externalId)
-            .pipe(first())
-            .subscribe(payout => {
-              resolve({
-                ...returnObject,
-                limit: parseInt(payout.limit, 10),
-                balance: parseInt(vote.executionScript.slice(706, 770), 16),
-                metadata:
-               'Range Vote ' +
-               voteId +
-               ' - Allocation (' +
-               payout.metadata +
-               ')',
-              })
-            })
-        })
-      })
-  )
-}
-// These functions arn't DRY make them better
-async function loadVoteDataProjects(vote, voteId) {
-  return new Promise(resolve =>
+function loadVoteDataAllocation(vote, voteId) {
+  return new Promise(resolve => {
     combineLatest(
       app.call('getVoteMetadata', voteId),
       app.call('getCandidateLength', voteId),
       app.call('canExecute', voteId)
     )
       .pipe(first())
-      .subscribe(([ metadata, totalCandidates, canExecute ]) => {
+      .subscribe(async ([ metadata, totalCandidates, canExecute, payout ]) => {
+        const voteDescription = await loadVoteDescription(vote)
+        let options = []
+        for (let i = 0; i < totalCandidates; i++) {
+          const candidateData = await getAllocationCandidate(voteId, i)
+          options.push(candidateData)
+        }
+        options = await Promise.all(options)
+
+        const returnObject = {
+          ...marshallVote(voteDescription),
+          metadata,
+          canExecute,
+          options,
+        }
+
+        allocations.getPayout(voteDescription.externalId)
+          .pipe(first())
+          .subscribe(payout => (resolve({
+            ...returnObject,
+            limit: parseInt(payout.limit, 10),
+            balance: parseInt(voteDescription.executionScript.slice(706, 770), 16),
+            metadata:
+                'Range Vote ' +
+                voteId +
+                ' - Allocation (' +
+                payout.metadata +
+                ')',
+          })))
+      })
+  })
+}
+
+// These functions arn't DRY make them better
+async function loadVoteDataProjects(vote, voteId) {
+  return new Promise(resolve => {
+    combineLatest(
+      app.call('getVoteMetadata', voteId),
+      app.call('getCandidateLength', voteId),
+      app.call('canExecute', voteId)
+    )
+      .pipe(first())
+      .subscribe(async ([ metadata, totalCandidates, canExecute ]) => {
         console.log('projects data:', metadata, totalCandidates, canExecute)
-        loadVoteDescription(vote).then(async vote => {
-          let options = []
-          console.log('Vote data:', voteId, vote)
-          for (let i = 0; i < totalCandidates; i++) {
-            let candidateData = await getProjectCandidate(voteId, i)
-            console.log('candidate data', candidateData)
-            options.push(candidateData)
-          }
-          console.log(metadata)
-          let returnObject = {
-            ...marshallVote(vote),
-            metadata: 'Range Vote ' + voteId + ' - Issue Curation',
-            canExecute,
-            options: options,
-          }
-          resolve(returnObject)
-          // Project specific code
+        const voteDescription = await loadVoteDescription(vote)
+        let options = []
+        for (let i = 0; i < totalCandidates; i++) {
+          let candidateData = await getProjectCandidate(voteId, i)
+          options.push(candidateData)
+        }
+        resolve({
+          ...marshallVote(voteDescription),
+          metadata: 'Range Vote ' + voteId + ' - Issue Curation',
+          canExecute,
+          options,
         })
       })
-  )
+  })
 }
 
 async function updateVotes(votes, voteId, transform) {
@@ -320,7 +312,6 @@ function marshallVote({
   executionScript,
   executed,
 }) {
-  let voteData = {}
   totalVoters = parseInt(totalVoters, 10)
   totalParticipation = parseInt(totalParticipation, 10)
   return {
