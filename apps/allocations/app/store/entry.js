@@ -42,15 +42,16 @@ const loadEntryData = async (addr, addressBook) => {
 
   return addressBookApp
     .getEntry(addr)
-    .pipe(first())
-    .pipe(map(
-      entry =>
+    .pipe(
+      first(),
+      map(
+        entry =>
         // cover removed entries
-        !entry ? null : {
-          entryAddress: entry[0],
-          name: entry[1],
-          entryType: entry[2],
-        }
-    ))
+          !entry ? null : {
+            entryAddress: entry[0],
+            name: entry[1],
+            entryType: entry[2],
+          }
+      ))
     .toPromise()
 }
