@@ -142,12 +142,12 @@ async function loadVoteData(voteId) {
 async function loadVoteDataAllocation(vote, voteId) {
   console.log('test', await app.call('getCandidateLength', voteId).toPromise())
   //return new Promise(resolve =>
-  // combineLatest(
-  //   app.call('getVoteMetadata', voteId),
-  //   app.call('getCandidateLength', voteId),
-  return app.call('canExecute', voteId).toPromise()
-  //)
-  //  .toPromise()
+  return combineLatest(
+    app.call('getVoteMetadata', voteId),
+    app.call('getCandidateLength', voteId),
+    app.call('canExecute', voteId)
+  )
+    .toPromise()
   //.subscribe(([ metadata, totalCandidates, canExecute, payout ]) => {
   //  loadVoteDescription(vote).then(async vote => {
   //    let options = []
