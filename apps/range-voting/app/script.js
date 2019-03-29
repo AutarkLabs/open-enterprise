@@ -131,7 +131,6 @@ async function loadVoteData(voteId) {
           resolve(loadVoteDataProjects(voteData, voteId))
         } else {
           console.log('Loading Allocations Data')
-          console.log('vote data: ', await loadVoteDataAllocation(voteData, voteId))
           resolve(loadVoteDataAllocation(voteData, voteId))
         }
       })
