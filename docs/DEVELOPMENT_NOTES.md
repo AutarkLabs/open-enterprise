@@ -96,18 +96,6 @@ Finally, the script launches the Aragon Wrapper with the complete planning suite
 - If Aragon Wrapper seems to be stuck loading the apps in the browser, what is known to be a solution is to change metamask provider, by switching the networks, to rinkeby, for example, and then switching to local rpc again, then refreshing the page, and Apps will load now.
 - The reason for this is that Metamask is not correctly updating the blockchain state from aragon devchain between the normal restarts and resets that happen in development.
 
-#### Wrong fonts, colors or browser console errors
-
-> _Tip: Look at letter g to quickly know if aragon fonts were loaded and applied_
-
-- Aragon puts all the files in the app in the ipfs folder, so files must be correctly built to the dist folder, this happens in all single apps.
-- Aragon provides the command `copy-aragon-ui-assets` and we use `npm run sync-assets` to call it. The problem is that is easy to have errors configuring the path in AragonApp component (from @aragon/ui), because is not documented where the slashes go or things like that, even some original Aragon apps have or had this error.
-- The right way to configure AragonApp is like this:
-
-```js
-<AragonApp publicUrl="aragon-ui-assets/">You App Here</>
-```
-
 So only one slash at the end, otherwise ipfs will probably fail reading asset paths and the app will not show fonts/colors the way it should, it will load the fallback then.
 
 - To inspect ipfs files for errors deploying, load ipfs ui: <http://localhost:5001/webui> while the Aragon Wrapper is running, and paste the ipfs hash from the app into the files tab to load its content.
