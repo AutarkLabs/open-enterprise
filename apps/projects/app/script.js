@@ -218,6 +218,7 @@ async function handleEvents(response) {
     console.log('[Projects] Unknown event catched:', response)
   }
   if(nextState) {
+    console.log('[Projects] current state: ',nextState)
     app.cache('state', nextState)
   }
 }

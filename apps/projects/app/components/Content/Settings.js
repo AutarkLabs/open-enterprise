@@ -164,6 +164,7 @@ class Settings extends React.Component {
     } = this.state
 
     const { network } = this.props
+    console.log(this.props)
 
     // TODO: hourglass in case settings are still being loaded
     if (!('baseRate' in this.props.bountySettings))
@@ -183,13 +184,17 @@ class Settings extends React.Component {
             onAddExpLevel={this.addExpLevel}
             generateExpLevelHandler={this.generateExpLevelHandler}
           />
-          <BaseRate
-            baseRate={baseRate}
-            onChangeRate={this.baseRateChange}
-            bountyCurrencies={bountyCurrencies}
-            bountyCurrency={bountyCurrency}
-            onChangeCurrency={this.bountyCurrencyChange}
-          />
+          {!this.props.tokens.length ? (
+            <EmptyBaseRate />
+          ) : (
+            <BaseRate
+              baseRate={baseRate}
+              onChangeRate={this.baseRateChange}
+              bountyCurrencies={bountyCurrencies}
+              bountyCurrency={bountyCurrency}
+              onChangeCurrency={this.bountyCurrencyChange}
+            />
+          )}
           <Button mode="strong" onClick={this.submitChanges} wide>
             Submit Changes
           </Button>
@@ -301,6 +306,17 @@ const StyledInputDropDown = styled.div`
     margin-left: -1px;
   }
 `
+const EmptyBaseRate = () => (
+  <div>
+    <Text.Block size="large" weight="bold">
+      Bounty Base Rate
+    </Text.Block>
+    <Text.Block>
+      Once you have tokens in your Finance App you will be able to set your
+      bounty base rate, which provides you with the ability to allocate bounties to issues.
+    </Text.Block>
+  </div>
+)
 const BaseRate = ({ baseRate, onChangeRate, bountyCurrency, onChangeCurrency, bountyCurrencies }) => (
   <div>
     <Text.Block size="large" weight="bold">

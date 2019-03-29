@@ -2,8 +2,10 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { addHours } from 'date-fns'
+import Icon from '../../Shared/assets/components/IconEmptyVault'
 
 import {
+  Button,
   Field,
   Text,
   TextInput,
@@ -31,11 +33,12 @@ class NewBountyAllocation extends React.Component {
         title: PropTypes.string,
         number: PropTypes.number,
         repo: PropTypes.string,
-        repoId: PropTypes.string
+        repoId: PropTypes.string,
       })
     ),
     /** base rate in pennies */
     baseRate: PropTypes.number,
+    tokens: PropTypes.array.isRequired,
     onSubmit: PropTypes.func.isRequired,
   }
 
@@ -125,8 +128,28 @@ class NewBountyAllocation extends React.Component {
 
   render() {
     const { bounties } = this.state
-    const { bountySettings } = this.props
+    const { bountySettings, tokens, closePanel } = this.props
     const expLevels = this.getExpLevels()
+
+    if (!tokens.length) {
+      return (
+        <div>
+          <VaultDiv><Icon /></VaultDiv>
+          <Text color={theme.textSecondary} size='large' >
+            <div>
+              <br />
+            Your base rate has not been set and you do not have
+            any tokens in your Finance app.
+              <br /> <br />
+            Once you have tokens in your Finance app, you will be
+            able to begin allocating tokens to issues.
+              <br /> <br />
+              <Button wide onClick={closePanel} mode="strong"  >Cancel</Button>
+            </div>
+          </Text>
+        </div>
+      )
+    }
 
     return (
       <Form
@@ -310,6 +333,9 @@ const IBValueShow = styled.div`
   > :last-child {
     margin: 10px 0;
   }
+`
+const VaultDiv = styled.div`
+text-align: center;
 `
 const IBArrow = styled.div`
   grid-area: arrow;
