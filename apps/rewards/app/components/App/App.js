@@ -12,8 +12,6 @@ import { millisecondsToBlocks, MILLISECONDS_IN_A_MONTH, millisecondsToQuarters, 
 import BigNumber from 'bignumber.js'
 import { networkContextType, MenuButton } from '../../../../../shared/ui'
 
-const ASSETS_URL = 'aragon-ui-assets/'
-
 class App extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
