@@ -32,27 +32,24 @@ class NewIssueCuration extends React.Component {
   }
 
   submitCuration = () => {
-    // console.info('Submitting new curation', this.state, this.props)
-    this.props.onSubmit(this.state.curatedIssues)
+    this.props.onSubmit(this.state.curatedIssues, this.state.description)
   }
 
   render() {
     return (
       <Form onSubmit={this.submitCuration} submitText="Submit Curation">
-        {false && (
-          <FormField
-            required
-            label="Description"
-            input={
-              <DescriptionInput
-                name="description"
-                onChange={this.changeField}
-                placeholder="Describe your proposal."
-                value={this.state.description}
-              />
-            }
-          />
-        )}
+        <FormField
+          required
+          label="Description"
+          input={
+            <DescriptionInput
+              name="description"
+              onChange={this.changeField}
+              placeholder="Describe your proposal."
+              value={this.state.description}
+            />
+          }
+        />
         <FormField
           label="Issues"
           required
