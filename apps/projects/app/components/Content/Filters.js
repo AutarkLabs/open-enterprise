@@ -16,6 +16,7 @@ export default class Filters extends Component {
     }),
     issues: PropTypes.array,
     bountyIssues: PropTypes.array,
+    disableFilter: PropTypes.func.isRequired,
   }
 
   static defaultProps = {
@@ -47,8 +48,8 @@ export default class Filters extends Component {
   /*
     creates one object that looks like this:
     {
-      filterName: [path, to, filter, on, parent],
-      filterName2: [path, to, filter, on, parent],
+      filter1Name: [path, to, filter1, on, parent],
+      filter2Name: [path, to, filter2, on, parent],
     }
 
     to make it easier to deselect filters from this view without multiple state objects
@@ -85,6 +86,7 @@ export default class Filters extends Component {
             <FilterTile
               key={pathToDisableFilter.join('')}
               text={alias}
+              disableFilter={() => this.props.disableFilter(pathToDisableFilter)}
             />
           )
         })}

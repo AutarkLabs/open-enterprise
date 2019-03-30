@@ -208,6 +208,12 @@ class Issues extends React.PureComponent {
     this.setState({ showIssueDetail: false, currentIssue: null })
   }
 
+  disableFilter = (pathToFilter) => {
+    let newFilters = { ...this.state.filters }
+    recursiveDeletePathFromObject(pathToFilter, newFilters)
+    this.setState({ filters: newFilters })
+  }
+
   actionsMenu = (issues) => (
     <div
       style={{
@@ -220,6 +226,7 @@ class Issues extends React.PureComponent {
         issues={issues}
         bountyIssues={this.props.bountyIssues}
         filters={this.state.filters}
+        disableFilter={this.disableFilter}
       />
       <ActionsMenu enabled={!!this.state.selectedIssues.length}>
         <ContextMenuItem
@@ -508,5 +515,15 @@ const IssuesScrollView = styled.div`
 const ActionLabel = styled.span`
   margin-left: 15px;
 `
+
+const recursiveDeletePathFromObject = (path, object) => {
+  if (path.length === 1) {
+    delete object[path[0]]
+  } else {
+    const key = path.shift()
+    const newObject = object[key]
+    recursiveDeletePathFromObject(path, newObject)
+  }
+}
 
 export default Issues

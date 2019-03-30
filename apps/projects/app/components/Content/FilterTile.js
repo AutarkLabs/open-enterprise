@@ -8,6 +8,7 @@ export default class FilterTile extends PureComponent {
   static propTypes = {
     text: PropTypes.string.isRequired,
     onClick: PropTypes.func.isRequired,
+    disableFilter: PropTypes.func.isRequired,
   }
   render() {
     return (
@@ -21,11 +22,15 @@ export default class FilterTile extends PureComponent {
             flexDirection: 'row'
           }}>
             {this.props.text}
-            <div style={{
-              marginLeft: '10px',
-              paddingRight: '4px',
-              cursor: 'pointer'
-            }}>
+            <div
+              style={{
+                marginLeft: '10px',
+                paddingRight: '4px',
+                cursor: 'pointer'
+              }}
+              role="button" aria-pressed="false"
+              onClick={this.props.disableFilter}
+            >
               <IconX height='8px' width='8px' />
             </div>
           </div>
