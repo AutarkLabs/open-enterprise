@@ -47,14 +47,6 @@ const ActionLabel = styled.span`
 
 class FilterBar extends React.Component {
   state = {
-    filters: {
-      projects: {},
-      labels: {},
-      milestones: {},
-      deadlines: {},
-      experiences: {},
-      statuses: {},
-    },
     // direction: -1: .oO; 1: Oo.; 0: disabled
     sortBy: [
       { what: 'Name', direction: -1 },
@@ -67,11 +59,12 @@ class FilterBar extends React.Component {
 
   componentWillMount() {
     if ('filterIssuesByRepoId' in this.props.activeIndex.tabData) {
-      let { filters } = this.state
-      filters.projects[
+      let { _filters } = this.props
+      console.log('COMPONENT WILL MOUNT', _filters, _filters.projects, this.props.activeIndex.tabData)
+      _filters.projects[
         this.props.activeIndex.tabData.filterIssuesByRepoId
       ] = true
-      this.setState({ filters })
+      this.props._setState({ _filters })
     }
   }
 
@@ -80,13 +73,14 @@ class FilterBar extends React.Component {
   noop = () => {}
 
   filter = (type, id) => () => {
-    const { filters } = this.state
-    if (id in filters[type]) delete filters[type][id]
-    else filters[type][id] = true
+    const { _filters } = this.props
+    console.log('THIS IS FILTERS IN THE FILTER BAR', _filters)
+    if (id in _filters[type]) delete _filters[type][id]
+    else _filters[type][id] = true
     // filters are in local state because of checkboxes
     // and sent to the parent (Issues) for actual display change
-    this.setState({ filters })
-    this.props.handleFiltering(filters)
+    this.props._setState({ _filters })
+    this.props.handleFiltering(_filters)
   }
 
   /*
@@ -184,9 +178,9 @@ class FilterBar extends React.Component {
   }
 
   render() {
-    const { handleSelectAll, allSelected, issues, bountyIssues } = this.props
+    const { handleSelectAll, allSelected, issues, bountyIssues, _filters } = this.props
     // filters contain information about active filters (checked checkboxes)
-    const { filters } = this.state
+    const filters = _filters
     // filtersData is about displayed checkboxes
     const filtersData = this.prepareFilters(issues, bountyIssues)
     return (

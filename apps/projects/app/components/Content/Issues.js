@@ -38,6 +38,14 @@ class Issues extends React.PureComponent {
       experiences: {},
       statuses: {},
     },
+    _filters: {
+      projects: {},
+      labels: {},
+      milestones: {},
+      deadlines: {},
+      experiences: {},
+      statuses: {},
+    },
     sortBy: { what: 'Name', direction: -1 },
     textFilter: '',
     reload: false,
@@ -100,7 +108,7 @@ class Issues extends React.PureComponent {
 
   handleFiltering = filters => {
     // TODO: why is reload necessary?
-    this.setState(prevState => ({ filters, reload: !prevState.reload }))
+    this.setState(prevState => ({ filters: filters, reload: !prevState.reload }))
   }
 
   handleSorting = sortBy => {
@@ -243,18 +251,22 @@ class Issues extends React.PureComponent {
     </div>
   )
 
-  filterBar = (issues, issuesFiltered) => (
-    <FilterBar
-      handleSelectAll={this.toggleSelectAll(issuesFiltered)}
-      allSelected={this.state.allSelected}
-      issues={issues}
-      issuesFiltered={issuesFiltered}
-      handleFiltering={this.handleFiltering}
-      handleSorting={this.handleSorting}
-      activeIndex={this.props.activeIndex}
-      bountyIssues={this.props.bountyIssues}
-    />
-  )
+  filterBar = (issues, issuesFiltered) => {
+    console.log('IN THE FILTER BAR', issues, issuesFiltered)
+    return (
+      <FilterBar
+        _setState={this.setState.bind(this)}
+        _filters={this.state._filters}
+        handleSelectAll={this.toggleSelectAll(issuesFiltered)}
+        allSelected={this.state.allSelected}
+        issues={issues}
+        issuesFiltered={issuesFiltered}
+        handleFiltering={this.handleFiltering}
+        handleSorting={this.handleSorting}
+        activeIndex={this.props.activeIndex}
+        bountyIssues={this.props.bountyIssues}
+      />
+    )}
 
   queryLoading = () => (
     <StyledIssues>
@@ -351,6 +363,7 @@ class Issues extends React.PureComponent {
   }
 
   render() {
+    console.log('THIS IS FILTERS IN THE ISSUE', this.state.filters)
     if (this.props.status === STATUS.INITIAL) {
       return <Unauthorized onLogin={this.props.onLogin} />
     }
