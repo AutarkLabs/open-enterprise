@@ -131,14 +131,17 @@ async function loadVoteData(voteId) {
           resolve(loadVoteDataProjects(voteData, voteId))
         } else {
           console.log('Loading Allocations Data')
-          console.log('vote data: ', await loadVoteDataAllocation(voteData, voteId))
+          console.log(
+            'vote data: ',
+            await loadVoteDataAllocation(voteData, voteId)
+          )
           resolve(loadVoteDataAllocation(voteData, voteId))
         }
       })
   })
 }
 
-// These functions arn't DRY make them better
+// These functions aren't DRY make them better
 function loadVoteDataAllocation(vote, voteId) {
   return new Promise(resolve => {
     combineLatest(
@@ -163,24 +166,30 @@ function loadVoteDataAllocation(vote, voteId) {
           options,
         }
 
-        allocations.getPayout(voteDescription.externalId)
+        allocations
+          .getPayout(voteDescription.externalId)
           .pipe(first())
-          .subscribe(payout => (resolve({
-            ...returnObject,
-            limit: parseInt(payout.limit, 10),
-            balance: parseInt(voteDescription.executionScript.slice(706, 770), 16),
-            metadata:
+          .subscribe(payout =>
+            resolve({
+              ...returnObject,
+              limit: parseInt(payout.limit, 10),
+              balance: parseInt(
+                voteDescription.executionScript.slice(706, 770),
+                16
+              ),
+              metadata:
                 'Range Vote ' +
                 voteId +
                 ' - Allocation (' +
                 payout.metadata +
                 ')',
-          })))
+            })
+          )
       })
   })
 }
 
-// These functions arn't DRY make them better
+// These functions aren't DRY make them better
 async function loadVoteDataProjects(vote, voteId) {
   return new Promise(resolve => {
     combineLatest(
@@ -276,7 +285,7 @@ function loadVoteSettings() {
                   return parseInt(val, 10)
                 }
                 if (type === 'time') {
-                // Adjust for js time (in ms vs s)
+                  // Adjust for js time (in ms vs s)
                   return parseInt(val, 10) * 1000
                 }
                 return val
