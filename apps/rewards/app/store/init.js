@@ -1,7 +1,7 @@
+import { of } from 'rxjs'
 import vaultAbi from '../../../shared/json-abis/vault'
 import { app, handleEvent, INITIALIZATION_TRIGGER } from './'
 import { ETHER_TOKEN_FAKE_ADDRESS } from '../utils/token-utils'
-import { of } from './rxjs'
 
 export const initStore = (vaultAddress, network) => {
   const vaultContract = app.external(vaultAddress, vaultAbi)

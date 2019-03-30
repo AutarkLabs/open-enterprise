@@ -2,6 +2,9 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { BigNumber } from 'bignumber.js'
+import { combineLatest } from 'rxjs'
+import { first } from 'rxjs/operators'
+
 import {
   Badge,
   Button,
@@ -13,8 +16,7 @@ import {
   Text,
   theme,
 } from '@aragon/ui'
-import { combineLatest } from '../../rxjs'
-import { first } from 'rxjs/operators'
+
 import { provideNetwork } from '../../../../../shared/ui'
 import { VOTE_NAY, VOTE_YEA } from '../../utils/vote-types'
 import { safeDiv } from '../../utils/math-utils'
