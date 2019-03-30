@@ -251,7 +251,14 @@ function syncIssues(state, { issueNumber, ...eventArgs }, data) {
 async function syncSettings(state) {
   try {
     let settings = await loadSettings()
-    state.bountySettings = settings
+
+    let expLvls = []
+    let a = settings.expLevels.split('\t')
+    for (let i = 0; i < a.length; i += 2)
+      expLvls.push({ mul: a[i] / 100, name: a[i + 1] })
+
+
+    state.bountySettings = { ...settings, expLvls }
     return state
   } catch (err) {
     console.error('[Projects script] syncSettings settings failed:', err)

@@ -276,19 +276,11 @@ class Issues extends React.PureComponent {
     </StyledIssues>
   )
 
-  getExpLevels = () => {
-    const expLevels = []
-    const a = this.props.bountySettings.expLevels.split('\t')
-    for (let i = 0; i < a.length; i += 2)
-      expLevels.push({ mul: a[i] / 100, name: a[i + 1] })
-    return expLevels
-  }
-
   shapeIssues = issues => {
-    const { tokens, bountyIssues } = this.props
+    const { tokens, bountyIssues, expLvls } = this.props
     const bountyIssueObj = {}
     const tokenObj = {}
-    const expLevels = this.getExpLevels()
+    const expLevels = expLvls
 
     bountyIssues.forEach(issue => {
       bountyIssueObj[issue.issueNumber] = issue
@@ -308,7 +300,7 @@ class Issues extends React.PureComponent {
           .div(BigNumber(10 ** tokenObj[data.token].decimals))
           .dp(3)
           .toString()
-        return { 
+        return {
           ...fields,
           ...bountyIssueObj[fields.number].data,
           repoId: id,
@@ -336,7 +328,7 @@ class Issues extends React.PureComponent {
       }
     else if (what === 'Creation Date')
       return (i1, i2) => {
-        return direction == 1 ? 
+        return direction == 1 ?
           compareAsc(new Date(i1.createdAt), new Date(i2.createdAt))
           :
           compareDesc(new Date(i1.createdAt), new Date(i2.createdAt))

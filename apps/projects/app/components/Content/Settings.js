@@ -52,7 +52,7 @@ class Settings extends React.Component {
       baseRate: s.baseRate,
       bountyAllocator: s.bountyAllocator,
       bountyArbiter: s.bountyArbiter,
-      expLevels: [],
+      expLevels: s.expLvls,
     }
 
     let found = bountyCurrencies.findIndex(el => el === s.bountyCurrency)
@@ -71,9 +71,6 @@ class Settings extends React.Component {
         break
       }
     }
-    let a = s.expLevels.split('\t')
-    for (let i = 0; i < a.length; i += 2)
-      n.expLevels.push({ mul: a[i] / 100, name: a[i + 1] })
 
     return n
   }
@@ -164,7 +161,6 @@ class Settings extends React.Component {
     } = this.state
 
     const { network } = this.props
-    console.log(this.props)
 
     // TODO: hourglass in case settings are still being loaded
     if (!('baseRate' in this.props.bountySettings))
