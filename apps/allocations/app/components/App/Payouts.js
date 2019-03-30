@@ -28,6 +28,8 @@ import {
 } from './PayoutsTables'
 import { Empty } from '../Card'
 import { provideNetwork } from '../../../../../shared/ui'
+import { BigNumber } from 'bignumber.js'
+
 
 const translateToken = (token) => {
   if (token == 0x0) {
@@ -84,7 +86,7 @@ const PayoutsNarrow = ({ executePayout, claimed, data, openDetails, network }) =
         <div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center' }}>
           <div style={{ marginRight: '10px' }}>
             <AmountBadge>
-              {displayCurrency(payout.amount)}{' '}{translateToken(payout.rewardToken)}
+              {displayCurrency(BigNumber(payout.amount))}{' '}{translateToken(payout.rewardToken)}
             </AmountBadge>
           </div>
           <div>

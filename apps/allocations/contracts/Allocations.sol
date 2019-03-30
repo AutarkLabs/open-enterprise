@@ -81,6 +81,7 @@ contract Allocations is AragonApp, Fundable {
         bool distSet;
         //address token;
         //address proxy;
+        string description;
     }
 
     struct Account {
@@ -138,13 +139,15 @@ contract Allocations is AragonApp, Fundable {
     }
 
     function getPayout(uint _accountId, uint _payoutId) external view
-    returns(uint amount, bool recurring, uint startTime, uint period)
+    returns(uint amount, bool recurring, uint startTime, uint period, bool distSet, string description)
     {
         Payout storage payout = accounts[_accountId].payouts[_payoutId];
         amount = payout.amount;
         startTime = payout.startTime;
         recurring = payout.recurring;
         period = payout.period;
+        distSet = payout.distSet;
+        description = payout.description;
     }
 
     function getNumberOfCandidates(uint _accountId, uint _payoutId) external view
@@ -288,6 +291,7 @@ contract Allocations is AragonApp, Fundable {
 
         payout.distSet = true;
         payout.supports = _supports;
+        payout.description = _description;
         emit SetDistribution(_accountId, account.payouts.length - 1);
     }
 

@@ -159,7 +159,7 @@ async function loadVoteDataAllocation(vote, voteId) {
             options: options,
           }
           allocations
-            .getPayout(vote.externalId)
+            .getAccount(vote.externalId)
             .first()
             .subscribe(payout => {
               resolve({

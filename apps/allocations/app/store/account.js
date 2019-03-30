@@ -1,4 +1,5 @@
 import { app } from './'
+import { combineLatest } from '../rxjs'
 
 /// /////////////////////////////////////
 /*    Allocations event handlers      */
@@ -15,6 +16,16 @@ export const onNewAccount = async (accounts = [], { accountId }) => {
   return accounts
 }
 
+export const onNewPayout = async (payouts = [], { accountId, payoutId }) => {
+  if (!payouts.some(a => a.index === payoutId && a.accountId === accountId)) {
+    const newPayout = await loadPayoutData(accountId, payoutId)
+    if (newPayout) {
+      payouts.push(newPayout)
+    }
+  }
+  return payouts
+}
+
 export const onFundedAccount = async (accounts = [], { accountId }) => {
   const index = accounts.findIndex(a => a.accountId === accountId)
   if (index < 0) {
@@ -26,15 +37,17 @@ export const onFundedAccount = async (accounts = [], { accountId }) => {
   return accounts
 }
 
-export const onPayoutExecuted = async (accounts = [], { accountId }) => {
-  const index = accounts.findIndex(a => a.accountId === accountId)
+export const onPayoutExecuted = async (payouts = [], accounts = [], { accountId, payoutId }) => {
+  const index = payouts.findIndex(a => a.index === payoutId && a.accountId === accountId)
+  const accountIndex = accounts.findIndex(a => a.accountId === accountId)
   if (index < 0) {
-    return onNewAccount(accounts, { accountId })
+    payouts = await onNewPayout(payouts, { accountId, payoutId })
   } else {
-    const nextId = accounts[index].accountId
-    accounts[index] = await getAccountById(nextId)
+    accounts[index] = await loadPayoutData(payouts[index].accountId, payouts[index].payoutId)
   }
-  return accounts
+  const nextId = accounts[accountIndex].accountId
+  accounts[accountIndex] = await getAccountById(nextId)
+  return { payouts: payouts, accounts: accounts }
 }
 
 /// /////////////////////////////////////
@@ -43,29 +56,34 @@ export const onPayoutExecuted = async (accounts = [], { accountId }) => {
 
 const getAccountById = accountId => {
   return app
-    .call('getPayout', accountId)
+    .call('getAccount', accountId)
     .first()
     .map(data => ({ accountId, data, executed: true }))
     .toPromise()
 }
 
-const loadAccountData = async accountId => {
+const loadPayoutData = async (accountId, payoutId) => {
   return new Promise(resolve => {
     // TODO: Should we standarize the naming and switch to getAccount instead of getPayout?
-    app
-      .call('getPayout', accountId)
+    combineLatest(
+      app.call('getPayout', accountId, payoutId),
+      app.call('getAccount', accountId)
+    )
       .first()
-      .map()
-      .subscribe(account => {
+      .subscribe(data => {
+        console.log('Payout:', data)
         // don't resolve when entry not found
-        if (account) {
+        if (data) {
           resolve({
-            balance: account[0],
-            limit: account[1],
-            metadata: account[2],
-            token: account[3],
-            proxy: account[4],
-            amount: account[5],
+            rewardToken: data[1].token,
+            amount: data[1].amount,
+            StartTime: new Date(data[0].startTime),
+            recurring: data[0].recurring,
+            period: data[0].period,
+            description: data[0].description,
+            index: payoutId,
+            distSet: data[0].distSet,
+            accountId: accountId,
           })
         }
       })

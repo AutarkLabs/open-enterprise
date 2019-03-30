@@ -78,7 +78,7 @@ class App extends React.Component {
   createAccount = ({ limit, ...account }) => {
     account.balance = 0
     account.limit = ETH_DECIMALS.times(limit).toString()
-    this.props.app.newPayout(account.description, account.limit, 0x0)
+    this.props.app.newAccount(account.description, account.limit, 0x0)
     this.closePanel()
     console.info('App.js: Account Created:')
     console.table(account)
@@ -96,7 +96,6 @@ class App extends React.Component {
       emptyIntArray, // Issue with bytes32 handling
       emptyIntArray, // Issue with bytes32 handling
       allocation.payoutId,
-      allocation.informational,
       allocation.recurring,
       allocation.period,
       allocation.balance
@@ -171,8 +170,7 @@ class App extends React.Component {
             <NewAccountButton onClick={this.newAccount} />
             <Accounts
               accounts={
-                //TODO: Change back to this.props.accounts when done
-                this.state.accounts !== undefined ? this.state.accounts : []
+                this.props.accounts !== undefined ? this.props.accounts : []
               }
               onNewAccount={this.newAccount}
               onNewAllocation={this.newAllocation}
@@ -182,7 +180,9 @@ class App extends React.Component {
             />
 
             <Payouts
-              payouts={payouts}
+              payouts={
+                this.props.payouts !== undefined ? this.props.payouts : []
+              }
               newReward={this.createAccount}
               executePayout={this.onExecutePayout}
               network={network}
