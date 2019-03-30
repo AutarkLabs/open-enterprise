@@ -43,12 +43,14 @@ export const onPayoutExecuted = async (accounts = [], { accountId }) => {
 /*    Allocations helper functions    */
 /// /////////////////////////////////////
 
+const accountTransform = data => ({ accountId, data, executed: true })
+
 const getAccountById = accountId => {
   return app
     .call('getPayout', accountId)
     .pipe(
       first(),
-      map(data => ({ accountId, data, executed: true }))
+      map(accountTransform)
     )
     .toPromise()
 }

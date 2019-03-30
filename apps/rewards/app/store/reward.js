@@ -13,20 +13,22 @@ export async function onRewardAdded({ rewards = [] }, { rewardId }) {
 /*      rewards helper functions       */
 /////////////////////////////////////////
 
+const rewardTransform = data => ({
+  rewardId,
+  isMerit: data.isMerit,
+  referenceToken: data.referenceToken,
+  rewardToken: data.rewardToken,
+  amount: data.amount,
+  endBlock: data.EndBlock,
+  delay: data.delay,
+})
+
 const getRewardById = async rewardId => {
   return await app
     .call('getReward', rewardId)
     .pipe(
       first(),
-      map(data => ({
-        rewardId,
-        isMerit: data.isMerit,
-        referenceToken: data.referenceToken,
-        rewardToken: data.rewardToken,
-        amount: data.amount,
-        endBlock: data.EndBlock,
-        delay: data.delay,
-      }))
+      map(rewardTransform)
     )
     .toPromise()
 }

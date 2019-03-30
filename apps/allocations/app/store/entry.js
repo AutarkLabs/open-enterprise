@@ -38,24 +38,24 @@ export const onEntryRemoved = async ({ entries }, { addr }) => {
 /*    AddressBook helper functions    */
 /// /////////////////////////////////////
 
+const entryTransform = entry =>
+  // cover removed entries
+  !entry
+    ? null
+    : {
+      entryAddress: entry[0],
+      name: entry[1],
+      entryType: entry[2],
+    }
+
 const loadEntryData = async (addr, addressBook) => {
   const addressBookApp = app.external(addressBook, addressBookAbi)
 
   return addressBookApp
     .getEntry(addr)
-    .pipe(first())
     .pipe(
-      map(
-        entry =>
-          // cover removed entries
-          !entry
-            ? null
-            : {
-              entryAddress: entry[0],
-              name: entry[1],
-              entryType: entry[2],
-            }
-      )
+      first(),
+      map(entryTransform)
     )
     .toPromise()
 }
