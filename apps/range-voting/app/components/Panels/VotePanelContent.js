@@ -18,9 +18,7 @@ import {
 } from '@aragon/ui'
 
 import { provideNetwork } from '../../../../../shared/ui'
-import { VOTE_NAY, VOTE_YEA } from '../../utils/vote-types'
 import { safeDiv } from '../../utils/math-utils'
-import VoteSummary from '../VoteSummary'
 import VoteStatus from '../VoteStatus'
 import ProgressBarThick from '../ProgressBarThick'
 import Slider from '../Slider'
