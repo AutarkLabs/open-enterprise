@@ -67,7 +67,7 @@ class FilterBar extends React.Component {
     else filters[type][id] = true
     // filters are in local state because of checkboxes
     // and sent to the parent (Issues) for actual display change
-    this.props._setState({ filters })
+    this.props.setParentFilters({ filters })
     this.props.handleFiltering(filters)
   }
 

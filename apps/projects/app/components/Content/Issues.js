@@ -239,10 +239,14 @@ class Issues extends React.PureComponent {
     </div>
   )
 
+  setParentFilters = (filters) => {
+    this.setState(filters)
+  }
+
   filterBar = (issues, issuesFiltered) => {
     return (
       <FilterBar
-        _setState={this.setState.bind(this)}
+        setParentFilters={this.setParentFilters}
         filters={this.state.filters}
         handleSelectAll={this.toggleSelectAll(issuesFiltered)}
         allSelected={this.state.allSelected}
