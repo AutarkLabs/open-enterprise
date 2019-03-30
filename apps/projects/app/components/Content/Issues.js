@@ -20,6 +20,7 @@ import { Issue, Empty } from '../Card'
 import { IssueDetail } from './IssueDetail'
 import Unauthorized from './Unauthorized'
 import ActiveFilters from './Filters'
+import { prepareFilters } from '../Shared/FilterBar'
 
 class Issues extends React.PureComponent {
   static propTypes = {
@@ -207,7 +208,7 @@ class Issues extends React.PureComponent {
     this.setState({ showIssueDetail: false, currentIssue: null })
   }
 
-  actionsMenu = () => (
+  actionsMenu = (issues) => (
     <div
       style={{
         display: 'flex',
@@ -215,7 +216,11 @@ class Issues extends React.PureComponent {
         alignItems: 'flex-end'
       }}>
       <TextInput placeholder="Search Issues" onChange={this.handleTextFilter} />
-      <ActiveFilters filters={this.state.filters} />
+      <ActiveFilters
+        issues={issues}
+        bountyIssues={this.props.bountyIssues}
+        filters={this.state.filters}
+      />
       <ActionsMenu enabled={!!this.state.selectedIssues.length}>
         <ContextMenuItem
           onClick={this.handleCurateIssues}
@@ -261,7 +266,7 @@ class Issues extends React.PureComponent {
 
   queryLoading = () => (
     <StyledIssues>
-      {this.actionsMenu()}
+      {this.actionsMenu([])}
       {this.filterBar([], [])}
       <IssuesScrollView>
         <div>Loading...</div>
@@ -271,7 +276,7 @@ class Issues extends React.PureComponent {
 
   queryError = (error, refetch) => (
     <StyledIssues>
-      {this.actionsMenu()}
+      {this.actionsMenu([])}
       {this.filterBar([], [])}
       <IssuesScrollView>
         <div>
@@ -417,7 +422,7 @@ class Issues extends React.PureComponent {
             const issuesFiltered = this.applyFilters(issues)
             return (
               <StyledIssues>
-                {this.actionsMenu()}
+                {this.actionsMenu(issues)}
                 {this.filterBar(issues, issuesFiltered)}
 
                 <IssuesScrollView>

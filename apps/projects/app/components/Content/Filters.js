@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react'
 import PropTypes from 'prop-types'
 
 import FilterTile from './FilterTile'
+import { prepareFilters } from '../Shared/FilterBar'
 
 export default class Filters extends Component {
   static propTypes = {
@@ -12,7 +13,9 @@ export default class Filters extends Component {
       deadlines: PropTypes.object.isRequired,
       experiences: PropTypes.object.isRequired,
       statuses: PropTypes.object.isRequired,
-    })
+    }),
+    issues: PropTypes.array,
+    bountyIssues: PropTypes.array,
   }
 
   static defaultProps = {
@@ -23,21 +26,52 @@ export default class Filters extends Component {
       deadlines: {},
       experiences: {},
       statuses: {}
-    }
+    },
+    issues: [],
+    bountyIssues: [],
   }
 
-  constructor(props) {
-    super(props)
-    this.state = {
-      filters: [ 1, 2, 3, 4, 5 ]
-    }
+  generateFilterNamesAndPaths = (filterInformation, type, textFieldToUse) => {
+    const { filters } = this.props
+    const appliedFilters = {}
+    Object.keys(filterInformation[type]).map(id => {
+      const filterApplied = id in filters[type]
+      const filterName = filterInformation[type][id][textFieldToUse]
+      if (filterApplied) {
+        appliedFilters[filterName] = [ type, id ]
+      }
+    })
+    return appliedFilters
   }
 
+  /*
+    creates one object that looks like this:
+    {
+      filterName: [path, to, filter, on, parent],
+      filterName2: [path, to, filter, on, parent],
+    }
+
+    to make it easier to deselect filters from this view without multiple state objects
+  */
   calculateFilters = () => {
+    const { issues, bountyIssues } = this.props
+    const filterInformation = prepareFilters(issues, bountyIssues)
 
+    const projectBasedFilters = this.generateFilterNamesAndPaths(filterInformation, 'projects', 'name')
+    const labelBasedFilters = this.generateFilterNamesAndPaths(filterInformation, 'labels', 'name')
+    const milestoneBasedFilters = this.generateFilterNamesAndPaths(filterInformation, 'milestones', 'title')
+    const statusBasedFilters = this.generateFilterNamesAndPaths(filterInformation, 'statuses', 'name')
+
+    return {
+      ...projectBasedFilters,
+      ...labelBasedFilters,
+      ...milestoneBasedFilters,
+      ...statusBasedFilters
+    }
   }
 
   render() {
+    const filterAliases = this.calculateFilters()
     return (
       <div style={{
         marginLeft: '8px',
@@ -45,9 +79,13 @@ export default class Filters extends Component {
         display: 'flex',
         flex: '1'
       }}>
-        {this.state.filters.map(filter => {
+        {Object.keys(filterAliases).map(alias => {
+          const pathToDisableFilter = filterAliases[alias]
           return (
-            <FilterTile />
+            <FilterTile
+              key={pathToDisableFilter.join('')}
+              text={alias}
+            />
           )
         })}
       </div>
