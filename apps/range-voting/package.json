@@ -4,7 +4,7 @@
   "description": "Range Voting app from Planning Suite",
   "scripts": {
     "build:app": "parcel build app/index.html -d dist/ --public-url '.'",
-    "build:script": "parcel build app/script.js -d dist/",
+    "build:script": "parcel build app/script.js -d dist/ --no-cache",
     "build": "npm run compile && npm run sync-assets && npm run build:app && npm run build:script",
     "compile": "truffle compile",
     "console": "truffle dev",
@@ -24,7 +24,7 @@
     "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
   },
   "dependencies": {
-    "@aragon/client": "1.1.0",
+    "@aragon/api": "1.0.0",
     "@aragon/ui": "0.32.0",
     "@tps/ui": "^0.0.1",
     "bignumber.js": "^7.2.1",

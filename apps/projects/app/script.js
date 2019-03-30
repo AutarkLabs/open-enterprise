@@ -1,4 +1,5 @@
-import Aragon from '@aragon/client'
+import Aragon from '@aragon/api'
+import { pluck } from 'rxjs/operators'
 
 import { GraphQLClient } from 'graphql-request'
 import { STATUS } from './utils/github'
@@ -65,7 +66,7 @@ let appState, vault, bounties, tokens
 const github = () => {
   return app.rpc
     .sendAndObserveResponses('cache', [ 'get', 'github' ])
-    .pluck('result')
+    .pipe(pluck('result'))
 }
 
 let client
