@@ -38,14 +38,6 @@ class Issues extends React.PureComponent {
       experiences: {},
       statuses: {},
     },
-    _filters: {
-      projects: {},
-      labels: {},
-      milestones: {},
-      deadlines: {},
-      experiences: {},
-      statuses: {},
-    },
     sortBy: { what: 'Name', direction: -1 },
     textFilter: '',
     reload: false,
@@ -130,7 +122,6 @@ class Issues extends React.PureComponent {
         return true
       return false
     })
-    //console.log('FILTER PROJECT: ', issuesByProject)
 
     const issuesByLabel = issuesByProject.filter(issue => {
       // if there are no labels to filter by, pass all
@@ -150,7 +141,6 @@ class Issues extends React.PureComponent {
         return true
       return false
     })
-    //console.log('FILTER LABEL: ', issuesByLabel)
 
     const issuesByMilestone = issuesByLabel.filter(issue => {
       // if there are no MS filters, all issues pass
@@ -164,7 +154,6 @@ class Issues extends React.PureComponent {
         return true
       return false
     })
-    //console.log('FILTER MS: ', issuesByMilestone)
 
     const issuesByStatus = issuesByMilestone.filter(issue => {
       // if there are no Status filters, all issues pass
@@ -180,7 +169,6 @@ class Issues extends React.PureComponent {
         return true
       return false
     })
-    // console.log('FILTER STATUS: ', issuesByStatus)
 
     // last but not least, if there is any text in textFilter...
     if (textFilter) {
@@ -252,11 +240,10 @@ class Issues extends React.PureComponent {
   )
 
   filterBar = (issues, issuesFiltered) => {
-    console.log('IN THE FILTER BAR', issues, issuesFiltered)
     return (
       <FilterBar
         _setState={this.setState.bind(this)}
-        _filters={this.state._filters}
+        filters={this.state.filters}
         handleSelectAll={this.toggleSelectAll(issuesFiltered)}
         allSelected={this.state.allSelected}
         issues={issues}
@@ -363,7 +350,6 @@ class Issues extends React.PureComponent {
   }
 
   render() {
-    console.log('THIS IS FILTERS IN THE ISSUE', this.state.filters)
     if (this.props.status === STATUS.INITIAL) {
       return <Unauthorized onLogin={this.props.onLogin} />
     }
@@ -376,10 +362,6 @@ class Issues extends React.PureComponent {
       bountySettings,
     } = this.props
     const { currentIssue, showIssueDetail } = this.state
-
-    console.log('FILTERS ARE SELECTED', this.state.filters)
-
-
 
     // better return early if we have no projects added?
     if (projects.length === 0) return <Empty action={onNewProject} />
@@ -415,8 +397,6 @@ class Issues extends React.PureComponent {
     // Build an array of plain issues by flattening the data obtained from github API
     const flattenIssues = nodes =>
       nodes && [].concat(...nodes.map(node => node.issues.nodes))
-
-    //console.log('current issues props:', this.props, 'and state:', this.state)
 
     const currentSorter = this.generateSorter()
 

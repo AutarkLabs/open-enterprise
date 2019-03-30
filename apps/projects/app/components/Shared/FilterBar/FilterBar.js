@@ -57,30 +57,18 @@ class FilterBar extends React.Component {
     ],
   }
 
-  componentWillMount() {
-    if ('filterIssuesByRepoId' in this.props.activeIndex.tabData) {
-      let { _filters } = this.props
-      console.log('COMPONENT WILL MOUNT', _filters, _filters.projects, this.props.activeIndex.tabData)
-      _filters.projects[
-        this.props.activeIndex.tabData.filterIssuesByRepoId
-      ] = true
-      this.props._setState({ _filters })
-    }
-  }
-
   // that's non-event for filters checkboxes to stop browser complaining about missing onChange handler
   // the point is to make the checkbox controlled by its FilterMenuItem parent
   noop = () => {}
 
   filter = (type, id) => () => {
-    const { _filters } = this.props
-    console.log('THIS IS FILTERS IN THE FILTER BAR', _filters)
-    if (id in _filters[type]) delete _filters[type][id]
-    else _filters[type][id] = true
+    const { filters } = this.props
+    if (id in filters[type]) delete filters[type][id]
+    else filters[type][id] = true
     // filters are in local state because of checkboxes
     // and sent to the parent (Issues) for actual display change
-    this.props._setState({ _filters })
-    this.props.handleFiltering(_filters)
+    this.props._setState({ filters })
+    this.props.handleFiltering(filters)
   }
 
   /*
@@ -178,9 +166,8 @@ class FilterBar extends React.Component {
   }
 
   render() {
-    const { handleSelectAll, allSelected, issues, bountyIssues, _filters } = this.props
+    const { handleSelectAll, allSelected, issues, bountyIssues, filters } = this.props
     // filters contain information about active filters (checked checkboxes)
-    const filters = _filters
     // filtersData is about displayed checkboxes
     const filtersData = this.prepareFilters(issues, bountyIssues)
     return (
