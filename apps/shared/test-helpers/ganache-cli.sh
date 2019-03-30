@@ -16,6 +16,8 @@ set -o errexit
 #      echo "$DIR/node_modules/.bin"
 # }
 
+READY_URL=http://localhost:3000/\#/0x5b6a3301a67A4bfda9D3a528CaD34cac6e7F8070
+
 if [ "$SOLIDITY_COVERAGE" = true ]; then
 	testrpc_port=8555
 else
@@ -24,6 +26,19 @@ fi
 
 testrpc_running() {
 	nc -z localhost "$testrpc_port"
+}
+
+apps_cleanup() {
+	kill -9 "$(lsof -i:1111 -sTCP:LISTEN -t)" # kill parcel adress book dev server
+	kill -9 "$(lsof -i:2222 -sTCP:LISTEN -t)" # kill parcel allocations dev server
+	kill -9 "$(lsof -i:3333 -sTCP:LISTEN -t)" # kill parcel projects dev server
+	kill -9 "$(lsof -i:4444 -sTCP:LISTEN -t)" # kill parcel range voting dev server
+	kill -9 "$(lsof -i:5555 -sTCP:LISTEN -t)" # kill parcel rewards dev server
+}
+
+services_cleanup() {
+	kill -9 "$(lsof -i:3000 -sTCP:LISTEN -t)" # kill parcel dev server
+	kill -9 "$(lsof -i:8080 -sTCP:LISTEN -t)" # kill IPFS daemon
 }
 
 start_testrpc() {
@@ -36,8 +51,12 @@ start_testrpc() {
 	elif [ "$RESTART_KIT" = true ] || [ "$CYPRESS" = true ]; then
 		rm -rf ~/.ipfs
 		aragon devchain --reset --port "$testrpc_port" &
-	elif [ "$DEV" = true ]; then
-		aragon devchain --reset --port "$testrpc_port" &
+	elif [ "$DEV" = true ] || [ "$CYPRESS_DEV" = true ]; then
+		if [ "$RESET" = true ]; then
+			aragon devchain --reset --port "$testrpc_port" &
+		else
+			aragon devchain --port "$testrpc_port" &
+		fi
 		lerna run dev --parallel --scope=@tps/apps-* &
 	fi
 
@@ -63,19 +82,29 @@ elif [ "$TRUFFLE_TEST" = true ]; then
 	truffle test --network rpc "$@" | grep -v 'Compiling'
 	result=$?
 elif [ "$START_KIT" = true ] || [ "$RESTART_KIT" = true ]; then
-	npm run publish:apps && npm run start:kit
+	npm run publish:apps && npm run start:kit "$@"
 	result=$?
 elif [ "$DEV" = true ]; then
-	npm run publish:http && npm run start:kit
+	npm run publish:http && npm run start:kit "$@"
 	result=$?
+elif [ "$CYPRESS_DEV" = true ]; then
+	npm run publish:http && npm run start:kit &
+	wait-on "$READY_URL" && npm run cypress:open "$@"
+	result=$?
+	services_cleanup
+	apps_cleanup
 elif [ "$CYPRESS" = true ]; then
 	npm run publish:apps && npm run start:kit &> /dev/null &
-	npm run cypress:run
+	npm run cypress:run "$@"
+	services_cleanup
 	result=$?
-	kill -9 "$(lsof -i:3000 -sTCP:LISTEN -t)" # kill parcel dev server
-	kill -9 "$(lsof -i:8080 -sTCP:LISTEN -t)" # kill IPFS daemon
 fi
 
 kill -9 $testrpc_pid
 
-exit $result
+if [ "$result" -eq 130 ]; then
+	echo "Script terminated by [control+c] . Goodbye! 👋"
+	exit 0
+else
+	exit $result
+fi
