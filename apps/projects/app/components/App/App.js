@@ -102,16 +102,9 @@ const getURLParam = param => {
  */
 const getToken = async code => {
   console.log('getToken entered')
-
-  // TODO: Manage when server does not respond
-  try {
-    let response = await fetch(`${AUTH_URI}/${code}`)
-    let json = await response.json()
-    if (json.token) return json.token
-    else throw Error(`${json.error}`)
-  } catch (e) {
-    console.error('Error from Authentication server:', e)
-  }
+  const response = await fetch(`${AUTH_URI}/${code}`)
+  const json = await response.json()
+  return json.token
 }
 
 class App extends React.PureComponent {
@@ -130,7 +123,9 @@ class App extends React.PureComponent {
 
   state = {
     repos: [],
+    panelProps: {},
     activeIndex: { tabIndex: 0, tabData: {} },
+    githubLoading: false,
   }
 
   getChildContext() {
@@ -160,6 +155,7 @@ class App extends React.PureComponent {
   handlePopupMessage = async message => {
     if (message.data.from !== 'popup') return
     if (message.data.name === 'code') {
+
       // TODO: Optimize the listeners lifecycle, ie: remove on unmount
       console.log('removing messageListener')
       window.removeEventListener('message', this.messageHandler)
@@ -167,19 +163,35 @@ class App extends React.PureComponent {
       const code = message.data.value
       console.log('AuthCode received from github:', code)
       console.log('Proceeding to token request...')
-      // TODO: Check token received correctly
-      const token = await getToken(code)
-      console.log('token obtained:', token)
-      this.props.app.cache('github', {
-        status: STATUS.AUTHENTICATED,
-        token: token,
-      })
-      this.setState({
-        panelProps: {
-          onCreateProject: this.createProject,
-          status: STATUS.AUTHENTICATED,
-        },
-      })
+      try {
+        const token = await getToken(code)
+        console.log('token obtained:', token)
+        this.setState({
+          githubLoading: false,
+          panelProps: {
+            onCreateProject: this.createProject,
+            status: STATUS.AUTHENTICATED,
+          },
+        }, () => {
+          this.props.app.cache('github', {
+            status: STATUS.AUTHENTICATED,
+            token,
+          })
+        })
+      } catch (err) {
+        this.setState({
+          githubLoading: false,
+          panelProps: {
+            onCreateProject: this.createProject,
+            status: STATUS.FAILED,
+          },
+        }, () => {
+          this.props.app.cache('github', {
+            status: STATUS.FAILED,
+            token: null,
+          })
+        })
+      }
     }
   }
 
@@ -460,7 +472,7 @@ class App extends React.PureComponent {
 
   handleGithubSignIn = () => {
     // The popup is launched, its ref is checked and saved in the state in one step
-    this.setState(({ oldPopup }) => ({ popup: githubPopup(oldPopup) }))
+    this.setState(({ oldPopup }) => ({ popup: githubPopup(oldPopup), githubLoading: true }))
     // Listen for the github redirection with the auth-code encoded as url param
     console.log('adding messageListener')
     window.addEventListener('message', this.handlePopupMessage)
@@ -482,6 +494,7 @@ class App extends React.PureComponent {
                 app={this.props.app}
                 bountySettings={bountySettings}
                 githubCurrentUser={githubCurrentUser || {}}
+                githubLoading={this.state.githubLoading}
                 projects={this.props.repos !== undefined ? this.props.repos : []}
                 bountyIssues={
                   this.props.issues !== undefined ? this.props.issues : []
