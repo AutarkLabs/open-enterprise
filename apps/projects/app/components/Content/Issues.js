@@ -19,6 +19,7 @@ import { DropDownButton as ActionsMenu, FilterBar } from '../Shared'
 import { Issue, Empty } from '../Card'
 import { IssueDetail } from './IssueDetail'
 import Unauthorized from './Unauthorized'
+import ActiveFilters from './Filters'
 
 class Issues extends React.PureComponent {
   static propTypes = {
@@ -211,8 +212,14 @@ class Issues extends React.PureComponent {
   }
 
   actionsMenu = () => (
-    <div>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'flex-end'
+      }}>
       <TextInput placeholder="Search Issues" onChange={this.handleTextFilter} />
+      <ActiveFilters filters={this.state.filters} />
       <ActionsMenu enabled={!!this.state.selectedIssues.length}>
         <ContextMenuItem
           onClick={this.handleCurateIssues}
@@ -308,7 +315,7 @@ class Issues extends React.PureComponent {
           .div(BigNumber(10 ** tokenObj[data.token].decimals))
           .dp(3)
           .toString()
-        return { 
+        return {
           ...fields,
           ...bountyIssueObj[fields.number].data,
           repoId: id,
@@ -336,7 +343,7 @@ class Issues extends React.PureComponent {
       }
     else if (what === 'Creation Date')
       return (i1, i2) => {
-        return direction == 1 ? 
+        return direction == 1 ?
           compareAsc(new Date(i1.createdAt), new Date(i2.createdAt))
           :
           compareDesc(new Date(i1.createdAt), new Date(i2.createdAt))
@@ -356,6 +363,10 @@ class Issues extends React.PureComponent {
       bountySettings,
     } = this.props
     const { currentIssue, showIssueDetail } = this.state
+
+    console.log('FILTERS ARE SELECTED', this.state.filters)
+
+
 
     // better return early if we have no projects added?
     if (projects.length === 0) return <Empty action={onNewProject} />
