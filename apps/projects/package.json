@@ -29,6 +29,7 @@
     "@aragon/ui": "0.32.0",
     "@tps/ui": "^0.0.1",
     "apollo-boost": "^0.1.22",
+    "axios": "^0.18.0",
     "graphql": "^14.0.2",
     "graphql-request": "^1.8.2",
     "graphql-tag": "^2.10.0",

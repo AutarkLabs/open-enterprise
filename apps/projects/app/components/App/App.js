@@ -14,6 +14,7 @@ import { STATUS } from '../../utils/github'
 import ErrorBoundary from './ErrorBoundary'
 import BigNumber from 'bignumber.js'
 import { networkContextType } from '../../../../../shared/ui'
+import { ipfsAdd, computeIpfsString } from '../../utils/ipfs-helpers'
 
 const ASSETS_URL = './aragon-ui-assets/'
 
@@ -29,7 +30,7 @@ let CLIENT_ID = ''
 let REDIRECT_URI = ''
 let AUTH_URI = ''
 
-let ipfs = ipfsClient({ host: 'localhost', port: '5001', protocol: 'http' })
+let infuraIpfs = ipfsClient({ host: 'ipfs.infura.io', port: '5001', protocol: 'https' })
 
 switch (window.location.origin) {
 case 'http://localhost:3333':
@@ -262,16 +263,13 @@ class App extends React.PureComponent {
       }
     )
 
-    let issuesArray = []
-
-    for (var key in issues) {
-      issuesArray.push({ key: key, ...issues[key] })
-    }
+    // computes an array of issues and denests the actual issue object for smart contract
+    const issuesArray = []
+    for (let key in issues) issuesArray.push({ key: key, ...issues[key] })
 
     console.log('Submit issues:', issuesArray)
 
-    let ipfsString
-    ipfsString = await this.getIpfsString(issuesArray)
+    const ipfsString = await computeIpfsString(issuesArray)
 
     const tokenArray = new Array(issuesArray.length).fill(bountyToken)
 
@@ -297,17 +295,6 @@ class App extends React.PureComponent {
     )
   }
 
-  getIpfsString = async issues => {
-    let ipfsString = ''
-    let content, results
-    for (const issue of issues) {
-      content = ipfs.types.Buffer.from(JSON.stringify(issue))
-      results = await ipfs.add(content)
-      ipfsString = ipfsString.concat(results[0].hash)
-    }
-    return ipfsString
-  }
-
   submitWork = issue => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.SubmitWork,
@@ -321,13 +308,11 @@ class App extends React.PureComponent {
 
   onSubmitWork = async (state, issue) => {
     this.closePanel()
-    let content = ipfs.types.Buffer.from(JSON.stringify(state))
-    let results = await ipfs.add(content)
-    let submissionString = results[0].hash
+    const hash = await ipfsAdd(state)
     this.props.app.submitWork(
       web3.toHex(issue.repoId),
       issue.number,
-      submissionString
+      hash
     )
   }
 
@@ -344,13 +329,11 @@ class App extends React.PureComponent {
 
   onRequestAssignment = async (state, issue) => {
     this.closePanel()
-    let content = ipfs.types.Buffer.from(JSON.stringify(state))
-    let results = await ipfs.add(content)
-    let requestString = results[0].hash
+    const hash = await ipfsAdd(state)
     this.props.app.requestAssignment(
       web3.toHex(issue.repoId),
       issue.number,
-      requestString
+      hash
     )
   }
 
