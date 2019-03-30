@@ -1,2 +1,2 @@
-import Aragon from '@aragon/client'
+import Aragon from '@aragon/api'
 export const app = new Aragon()

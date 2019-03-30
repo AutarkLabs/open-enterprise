@@ -1,20 +1,25 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import { provideNetwork } from '../../../../../../shared/ui'
 
-import { Info, Text, theme, SafeLink, IconFundraising, IconCheck, IconTime, SidePanelSplit, Button } from '@aragon/ui'
+import {
+  Info,
+  Text,
+  SafeLink,
+  IconFundraising,
+  IconCheck,
+  IconTime,
+  SidePanelSplit,
+  Button,
+  IdentityBadge,
+} from '@aragon/ui'
 
 import { FieldTitle } from '../../Form'
-import { DateInput, InputDropDown } from '../../../../../../shared/ui'
 import { format } from 'date-fns'
+import { displayCurrency } from '../../../utils/helpers'
 
-const rewardTypes = [ 'Merit Reward', 'Dividend' ]
-const referenceAssets = [ 'ABC', 'XYZ' ]
-const currencies = [ 'ETH', 'DAI' ]
-const disbursementCycles = ['Quarterly']
-const disbursementCyclesSummary = ['quartery cycle']
 const disbursementDates = [ '1 week', '2 weeks' ]
-const disbursementDatesItems = disbursementDates.map(item => 'Cycle end + ' + item)
 
 const translateToken = (token) => {
   if (token == 0x0) {
@@ -22,7 +27,7 @@ const translateToken = (token) => {
   }
 }
 
-class YourReward extends React.Component {
+class MyReward extends React.Component {
   static propTypes = {
     vaultBalance: PropTypes.string.isRequired,
     onClaimReward: PropTypes.func.isRequired,
@@ -79,11 +84,11 @@ class YourReward extends React.Component {
 
         <Text.Block>Reward summary</Text.Block>
 
-        <Info>
+        <Info style={{ marginBottom: '10px' }}>
           <TokenIcon />
           <Summary>
             <p>
-              You have been granted a one-time <SummaryBold>{amount} {translateToken(rewardToken)}</SummaryBold> reward, based on the <SummaryBold>{referenceToken}</SummaryBold> you earned from <SummaryBold>{this.formatDate(startDate)}</SummaryBold> to <SummaryBold>{this.formatDate(endDate)}</SummaryBold>.
+              You have been granted a one-time <SummaryBold>{displayCurrency(amount)} {translateToken(rewardToken)}</SummaryBold> reward, based on the <SummaryBold>{referenceToken}</SummaryBold> you earned from <SummaryBold>{this.formatDate(startDate)}</SummaryBold> to <SummaryBold>{this.formatDate(endDate)}</SummaryBold>.
             </p>
             <p>
               For more details, refer to the origin contract, <SafeLink
@@ -108,7 +113,6 @@ class YourReward extends React.Component {
 }
 
 const Summary = styled.div`
-  margin-bottom: 10px;
   padding-bottom: 2px;
   padding-left: 35px;
   > :not(:last-child) {
@@ -122,4 +126,4 @@ const SummaryBold = styled.span`
 const TokenIcon = styled(IconFundraising)`
   float: left;
 `
-export default YourReward
+export default provideNetwork(MyReward)

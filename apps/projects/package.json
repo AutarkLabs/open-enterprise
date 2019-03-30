@@ -24,9 +24,9 @@
     "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
   },
   "dependencies": {
+    "@aragon/api": "1.0.0",
     "@aragon/apps-vault": "^4.0.0",
-    "@aragon/client": "1.1.0",
-    "@aragon/ui": "0.30.1",
+    "@aragon/ui": "0.32.0",
     "@tps/ui": "^0.0.1",
     "apollo-boost": "^0.1.22",
     "graphql": "^14.0.2",

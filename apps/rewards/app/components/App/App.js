@@ -1,7 +1,8 @@
-import { AragonApp, observe, SidePanel, TabBar } from '@aragon/ui'
+import { AppBar, Main, observe, SidePanel, TabBar, Viewport, font, breakpoint } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import { map } from 'rxjs/operators'
 import { Overview, MyRewards } from '../Content'
 import { Title } from '../Shared'
 import { Empty } from '../Card'
@@ -9,23 +10,7 @@ import PanelManager, { PANELS } from '../Panel'
 import NewRewardButton from './NewRewardButton'
 import { millisecondsToBlocks, MILLISECONDS_IN_A_MONTH, millisecondsToQuarters, WEEK } from '../../../../../shared/ui/utils'
 import BigNumber from 'bignumber.js'
-
-const ASSETS_URL = 'aragon-ui-assets/'
-
-const reward = {
-  creator: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
-  isMerit: true,
-  referenceToken: 'SDN',
-  rewardToken: 0x0,
-  amount: BigNumber(17e18),
-  amount: 10,
-  startDate: new Date('2018-12-17'),
-  endDate: new Date('2019-01-17'),
-  description: 'Q1 Reward for Space Decentral Contributors',
-  delay: 0,
-  index: 0,
-  claimed: true,
-}
+import { networkContextType, MenuButton } from '../../../../../shared/ui'
 
 class App extends React.Component {
   static propTypes = {
@@ -34,9 +19,32 @@ class App extends React.Component {
     balances: PropTypes.arrayOf(PropTypes.object),
   }
 
+  static defaultProps = {
+    network: {},
+  }
+
   state = {
     selected: 0,
     tabs: [ 'Overview', 'My Rewards' ],
+  }
+
+  static childContextTypes = {
+    network: networkContextType,
+  }
+
+  getChildContext() {
+    const { network } = this.props
+    return {
+      network: {
+        type: network.type,
+      },
+    }
+  }
+
+  handleMenuPanelOpen = () => {
+    window.parent.postMessage(
+      { from: 'app', name: 'menuPanel', value: true }, '*'
+    )
   }
 
   closePanel = () => {
@@ -121,48 +129,84 @@ class App extends React.Component {
     this.closePanel()
   }
 
-  yourReward = () => {
+  myReward = reward => {
     this.setState({
-      panel: PANELS.YourReward,
+      panel: PANELS.MyReward,
       panelProps: {
         onClaimReward: this.onClaimReward,
         onClosePanel: this.closePanel,
+        vaultBalance: '432.9 ETH',
         reward,
       },
     })
   }
 
-  viewReward = (reward) => {
+  viewReward = reward => {
     this.setState({
       panel: PANELS.ViewReward,
       panelProps: {
         reward: reward,
+        onClosePanel: this.closePanel,
+        network: { type: 'rinkeby' }
       }
     })
   }
 
+  openDetailsView = reward => {
+    console.log('App open details', reward)
+    this.viewReward(reward)
+  }
+  openDetailsMy = reward => {
+    console.log('App open details (my)', reward)
+    this.myReward(reward)
+  }
+
   render() {
     const { panel, panelProps } = this.state
+    const { network } = this.props
+
+    // TODO: get tokens from vault
+    const tokens = { 0x0: 'ETH' }
 
     return (
       <StyledAragonApp>
-        <Title text="Rewards" />
-        <NewRewardButton onClick={this.newReward} />
+        <AppBar
+          endContent={
+            <NewRewardButton
+              title="New Reward"
+              onClick={this.newReward}
+            />
+          }
+        >
+          <AppBarTitle>
+            <Viewport>
+              {({ below }) =>
+                below('medium') && <MenuButton onClick={this.handleMenuPanelOpen} />
+              }
+            </Viewport>
+            <AppBarLabel>Rewards</AppBarLabel>
+          </AppBarTitle>
+        </AppBar>
+
         <TabBar
           items={this.state.tabs}
           selected={this.state.selected}
           onSelect={this.selectTab}
         />
-
         { this.state.selected === 1 ? (
           <MyRewards
             rewards={this.props.rewards === undefined ? [] : this.props.rewards}
             newReward={this.newReward}
+            openDetails={this.openDetailsMy}
+            network={network}
+            tokens={tokens}
           />
         ) : (
           <Overview
             rewards={this.props.rewards === undefined ? [] : this.props.rewards}
             newReward={this.newReward}
+            openDetails={this.openDetailsView}
+            network={network}
           />
         )}
 
@@ -176,17 +220,31 @@ class App extends React.Component {
   }
 }
 
-const StyledAragonApp = styled(AragonApp).attrs({
-  publicUrl: ASSETS_URL,
-})`
+const StyledAragonApp = styled(Main)`
   display: flex;
   height: 100vh;
   flex-direction: column;
   align-items: stretch;
   justify-content: stretch;
 `
+const AppBarTitle = styled.span`
+  display: flex;
+  align-items: center;
+`
+
+const AppBarLabel = styled.span`
+  margin: 0 10px 0 8px;
+  ${font({ size: 'xxlarge' })};
+
+  ${breakpoint(
+    'medium',
+    `
+      margin-left: 24px;
+    `
+  )};
+`
 
 export default observe(
-  observable => observable.map(state => ({ ...state })),
+  observable => observable.pipe(map(state => ({ ...state }))),
   {}
 )(App)
