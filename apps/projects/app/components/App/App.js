@@ -13,14 +13,11 @@ import PanelManager, { PANELS } from '../Panel'
 import { STATUS } from '../../utils/github'
 import ErrorBoundary from './ErrorBoundary'
 import BigNumber from 'bignumber.js'
-import { networkContextType } from '../../../../../shared/ui'
 import { ipfsAdd, computeIpfsString } from '../../utils/ipfs-helpers'
 
 const ASSETS_URL = './aragon-ui-assets/'
 
 const GITHUB_URI = 'https://github.com/login/oauth/authorize'
-
-let ipfsClient = require('ipfs-http-client')
 
 // TODO: let the user customize the github app on settings screen?
 // TODO: Extract to an external js utility to keep this file clean
@@ -29,8 +26,6 @@ let ipfsClient = require('ipfs-http-client')
 let CLIENT_ID = ''
 let REDIRECT_URI = ''
 let AUTH_URI = ''
-
-let infuraIpfs = ipfsClient({ host: 'ipfs.infura.io', port: '5001', protocol: 'https' })
 
 switch (window.location.origin) {
 case 'http://localhost:3333':
@@ -122,15 +117,6 @@ class App extends React.PureComponent {
     panelProps: {},
     activeIndex: { tabIndex: 0, tabData: {} },
     githubLoading: false,
-  }
-
-  getChildContext() {
-    const { network } = this.props
-    return {
-      network: {
-        type: network.type,
-      },
-    }
   }
 
   componentDidMount() {
