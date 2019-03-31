@@ -386,7 +386,6 @@ class Issues extends React.PureComponent {
           }}
         />
       )
-
     const { allSelected } = this.state
     const reposIds = projects.map(project => project.data._repo)
 
