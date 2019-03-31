@@ -302,13 +302,15 @@ class Issues extends React.PureComponent {
       console.log('tokenObj:', tokenObj)
     })
     return issues.map(({ __typename, repository: { id, name }, ...fields }) => {
-      if (bountyIssueObj[fields.number]) {
+      const bountyId = bountyIssueObj[fields.number]
+      const repoIdFromBounty = bountyId && bountyId.data.repoId
+      if (repoIdFromBounty === id) {
         const data = bountyIssueObj[fields.number].data
         const balance = BigNumber(bountyIssueObj[fields.number].data.balance)
           .div(BigNumber(10 ** tokenObj[data.token].decimals))
           .dp(3)
           .toString()
-        return { 
+        return {
           ...fields,
           ...bountyIssueObj[fields.number].data,
           repoId: id,
@@ -336,7 +338,7 @@ class Issues extends React.PureComponent {
       }
     else if (what === 'Creation Date')
       return (i1, i2) => {
-        return direction == 1 ? 
+        return direction == 1 ?
           compareAsc(new Date(i1.createdAt), new Date(i2.createdAt))
           :
           compareDesc(new Date(i1.createdAt), new Date(i2.createdAt))

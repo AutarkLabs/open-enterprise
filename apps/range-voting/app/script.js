@@ -1,5 +1,6 @@
-import Aragon from '@aragon/client'
-import { combineLatest } from './rxjs'
+import Aragon from '@aragon/api'
+import { combineLatest } from 'rxjs'
+import { first, map, tap, combineAll } from 'rxjs/operators' // Make sure observables have first()
 import voteSettings, { hasLoadedVoteSettings } from './utils/vote-settings'
 import { EMPTY_CALLSCRIPT } from './utils/vote-utils'
 import AllocationJSON from '../../shared/json-abis/Allocations.json'
@@ -117,13 +118,13 @@ async function loadVoteDescription(vote) {
 }
 
 async function loadVoteData(voteId) {
-  console.info('[RangeVoting > script]: loadVoteData')
+  console.info('[RangeVoting > script]: loadVoteData', voteId)
   let vote
   return new Promise((resolve, reject) => {
     app
       .call('getVote', voteId)
-      .first()
-      .subscribe(voteData => {
+      .pipe(first())
+      .subscribe(async voteData => {
         let funcSig = voteData.executionScript.slice(58, 66)
         if (funcSig == 'b3670f9e') {
           console.log('Loading Projects Data')
@@ -135,77 +136,74 @@ async function loadVoteData(voteId) {
       })
   })
 }
+
 // These functions arn't DRY make them better
-async function loadVoteDataAllocation(vote, voteId) {
-  return new Promise(resolve =>
+function loadVoteDataAllocation(vote, voteId) {
+  return new Promise(resolve => {
     combineLatest(
       app.call('getVoteMetadata', voteId),
       app.call('getCandidateLength', voteId),
       app.call('canExecute', voteId)
     )
-      .first()
-      .subscribe(([ metadata, totalCandidates, canExecute, payout ]) => {
-        loadVoteDescription(vote).then(async vote => {
-          let options = []
-          for (let i = 0; i < totalCandidates; i++) {
-            let candidateData = await getAllocationCandidate(voteId, i)
-            console.log(candidateData)
-            options.push(candidateData)
-          }
-          let returnObject = {
-            ...marshallVote(vote),
-            metadata,
-            canExecute,
-            options: options,
-          }
-          allocations
-            .getPayout(vote.externalId)
-            .first()
-            .subscribe(payout => {
-              resolve({
-                ...returnObject,
-                limit: parseInt(payout.limit, 10),
-                balance: parseInt(vote.executionScript.slice(770, 834), 16),
-                metadata: vote.voteDescription,
-                type: 'allocation',
-              })
-            })
-        })
+      .pipe(first())
+      .subscribe(async ([ metadata, totalCandidates, canExecute, payout ]) => {
+        const voteDescription = await loadVoteDescription(vote)
+        let options = []
+        for (let i = 0; i < totalCandidates; i++) {
+          const candidateData = await getAllocationCandidate(voteId, i)
+          options.push(candidateData)
+        }
+        options = await Promise.all(options)
+
+        const returnObject = {
+          ...marshallVote(voteDescription),
+          metadata,
+          canExecute,
+          options,
+        }
+
+        allocations.getPayout(voteDescription.externalId)
+          .pipe(first())
+          .subscribe(payout => (resolve({
+            ...returnObject,
+            limit: parseInt(payout.limit, 10),
+            balance: parseInt(voteDescription.executionScript.slice(706, 770), 16),
+            metadata:
+                'Range Vote ' +
+                voteId +
+                ' - Allocation (' +
+                payout.metadata +
+                ')',
+          })))
       })
-  )
+  })
 }
+
 // These functions arn't DRY make them better
 async function loadVoteDataProjects(vote, voteId) {
-  return new Promise(resolve =>
+  return new Promise(resolve => {
     combineLatest(
       app.call('getVoteMetadata', voteId),
       app.call('getCandidateLength', voteId),
       app.call('canExecute', voteId)
     )
-      .first()
-      .subscribe(([ metadata, totalCandidates, canExecute ]) => {
+      .pipe(first())
+      .subscribe(async ([ metadata, totalCandidates, canExecute ]) => {
         console.log('projects data:', metadata, totalCandidates, canExecute)
-        loadVoteDescription(vote).then(async vote => {
-          let options = []
-          console.log('Vote data:', voteId, vote)
-          for (let i = 0; i < totalCandidates; i++) {
-            let candidateData = await getProjectCandidate(voteId, i)
-            console.log('candidate data', candidateData)
-            options.push(candidateData)
-          }
-          console.log(metadata)
-          let returnObject = {
-            ...marshallVote(vote),
-            metadata: vote.voteDescription,
-            type: 'curation',
-            canExecute,
-            options: options,
-          }
-          resolve(returnObject)
-          // Project specific code
+        const voteDescription = await loadVoteDescription(vote)
+        let options = []
+        for (let i = 0; i < totalCandidates; i++) {
+          let candidateData = await getProjectCandidate(voteId, i)
+          options.push(candidateData)
+        }
+        resolve({
+          ...marshallVote(voteDescription),
+          metadata: 'Range Vote ' + voteId + ' - Issue Curation',
+          canExecute,
+          options,
         })
       })
-  )
+  })
 }
 
 async function updateVotes(votes, voteId, transform) {
@@ -230,7 +228,7 @@ async function getAllocationCandidate(voteId, candidateIndex) {
   return new Promise(resolve => {
     app
       .call('getCandidate', voteId, candidateIndex)
-      .first()
+      .pipe(first())
       .subscribe(candidateData => {
         resolve({
           label: candidateData.candidateAddress,
@@ -244,7 +242,7 @@ async function getProjectCandidate(voteId, candidateIndex) {
   return new Promise(resolve => {
     app
       .call('getCandidate', voteId, candidateIndex)
-      .first()
+      .pipe(first())
       .subscribe(candidateData => {
         resolve({
           label: candidateData.metadata,
@@ -270,17 +268,19 @@ function loadVoteSettings() {
         new Promise((resolve, reject) =>
           app
             .call(name)
-            .first()
-            .map(val => {
-              if (type === 'number') {
-                return parseInt(val, 10)
-              }
-              if (type === 'time') {
+            .pipe(
+              first(),
+              map(val => {
+                if (type === 'number') {
+                  return parseInt(val, 10)
+                }
+                if (type === 'time') {
                 // Adjust for js time (in ms vs s)
-                return parseInt(val, 10) * 1000
-              }
-              return val
-            })
+                  return parseInt(val, 10) * 1000
+                }
+                return val
+              })
+            )
             .subscribe(value => {
               resolve({ [key]: value })
             }, reject)
@@ -311,7 +311,6 @@ function marshallVote({
   executionScript,
   executed,
 }) {
-  let voteData = {}
   totalVoters = parseInt(totalVoters, 10)
   totalParticipation = parseInt(totalParticipation, 10)
   return {
