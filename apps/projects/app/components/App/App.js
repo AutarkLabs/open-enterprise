@@ -381,7 +381,6 @@ class App extends React.PureComponent {
   }
 
   onReviewWork = async (state, issue) => {
-    console.log('onReviewWork', state, issue)
     // new IPFS data is old data plus state returned from the panel
     const ipfsData = issue.workSubmissions[issue.workSubmissions.length - 1]
     ipfsData.review = state
