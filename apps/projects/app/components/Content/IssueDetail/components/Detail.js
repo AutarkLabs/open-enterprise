@@ -222,9 +222,6 @@ const activities = (requestsData, workSubmissions, onReviewApplication, onReview
 }
 
 const deadlineDistance = date =>
-  formatDistance(new Date(date), new Date(), { addSuffix: true })
-
-const deadlineDistance = date =>
   formatDistance(new Date(date), new Date())
 
 const Detail = ({
