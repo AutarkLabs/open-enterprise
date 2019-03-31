@@ -2,10 +2,9 @@ import React from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
 
-import { Badge, Text, theme, ContextMenu, ContextMenuItem, SafeLink, Button } from '@aragon/ui'
+import { Badge, Text, theme, ContextMenu, SafeLink, Button } from '@aragon/ui'
 import { formatDistance } from 'date-fns'
 
-import { DropDownButton } from '../../../Shared'
 import { IconGitHub, BountyContextMenu } from '../../../Shared'
 
 const SummaryTable = ({ expLevel, deadline, slots, workStatus }) => {
@@ -25,19 +24,37 @@ const SummaryTable = ({ expLevel, deadline, slots, workStatus }) => {
   )
   return <StyledTable>{mappedTableFields}</StyledTable>
 }
-  
+
 const Wrapper = styled.div`
   display: flex;
   height: 100%;
   padding: 10px;
-  `
-  
+`
+// todo: wrapper component for different sizes (changes padding mostly)
+
+// ...that 10px margin result in a 20px gap
+const cardStyle = {
+  flex: '0 1 auto',
+  textAlign: 'left',
+  padding: '15px 30px',
+  margin: '10px',
+  background: theme.contentBackground,
+  border: `1px solid ${theme.contentBorder}`,
+  borderRadius: '3px',
+}
+const IssueLinkRow = styled.div`
+  height: 31px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+`
+
 const column = {
   display: 'flex',
   flexDirection: 'column',
   flexBasis: '100%',
 }
-  
+
 const mockRequestsData = [{
   applicationDate: '2019-03-27T00:01:12.543Z',
   contributorAddr: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
@@ -93,7 +110,7 @@ width: 70px;
 margin-right: 15px;
 `
 const IssueEventDetails = styled.div`
-> margin-bottom: 10px;  
+> margin-bottom: 10px;
 `
 
 const IssueEvent = props => (
@@ -134,11 +151,11 @@ const calculateAgo = pastDate => {
 
 const activities = (requestsData, workSubmissions, onReviewApplication, onReviewWork) => {
   const events = []
-  
+
   console.log('--activityRow:', requestsData)
   if (requestsData) {
     requestsData.forEach(data => {
-      
+
       events[data.applicationDate] = {
         date: data.applicationDate,
         ...data.user,
@@ -148,7 +165,7 @@ const activities = (requestsData, workSubmissions, onReviewApplication, onReview
           :
           <Button mode="outline" onClick={onReviewApplication}>Review Application</Button>,
       }
-      
+
       if ('review' in data) {
         events[data.review.reviewDate] = {
           date: data.review.reviewDate,
@@ -165,7 +182,7 @@ const activities = (requestsData, workSubmissions, onReviewApplication, onReview
 
   if (workSubmissions) {
     workSubmissions.forEach(data => {
-      
+
       events[data.submissionDate] = {
         date: data.submissionDate,
         ...data.user,
@@ -175,7 +192,7 @@ const activities = (requestsData, workSubmissions, onReviewApplication, onReview
           :
           <Button mode="outline" onClick={onReviewWork}>Review Work</Button>,
       }
-      
+
       if ('review' in data) {
         events[data.review.reviewDate] = {
           date: data.review.reviewDate,
@@ -207,8 +224,12 @@ const activities = (requestsData, workSubmissions, onReviewApplication, onReview
 const deadlineDistance = date =>
   formatDistance(new Date(date), new Date(), { addSuffix: true })
 
+const deadlineDistance = date =>
+  formatDistance(new Date(date), new Date())
+
 const Detail = ({
   requestsData,
+  url,
   balance,
   symbol,
   labels,
@@ -229,35 +250,39 @@ const Detail = ({
   onAllocateSingleBounty,
   workSubmissions,
 }) => {
-  
+
   const summaryData = {
     expLevel: (expLevel === undefined) ? '-' : expLevel,
-    deadline: (deadline === undefined) ? '-' : 'Due in ' + deadlineDistance(deadline),
+    deadline: (deadline === undefined) ? '-' : deadlineDistance(deadline) + ' remaining',
     slots: (slots === undefined) ? '-' :
       (requestsData === undefined) ? 'Unallocated (' + slots + ')' :
         (requestsData.length < slots) ? 'Slots available: ' + (slots - requestsData.length) + '/' + slots:
           'Allocated',
     workStatus: (workStatus === undefined) ? 'No bounty yet' : workStatus
   }
-  
+
   //const issueEvents = activities(mockRequestsData, mockWorkSubmissions, onReviewApplication, onReviewWork)
   const issueEvents = activities(requestsData, workSubmissions, onReviewApplication, onReviewWork)
-  
+
   return (
     <Wrapper>
       <div style={{ flex: 3, maxWidth: '705px' }}>
         <DetailsCard>
           <Wrapper style={{ justifyContent: 'space-between' }}>
             <div style={{ ...column, flex: 2, marginRight: '20px' }}>
-              <Text.Block size="xlarge" style={{ marginBottom: '10px' }}>
+              <Text.Block size="xlarge" style={{ marginBottom: '5px' }}>
                 {title}
               </Text.Block>
-              <Text.Block color="#21AAE7" style={{ marginBottom: '10px' }}>
-                <IconGitHub color="#21AAE7" width="14px" height="14px" />
-                <span style={{ marginLeft: '5px ' }}>
-                  {repo} #{number}
-                </span>
-              </Text.Block>
+              <SafeLink
+                href={url}
+                target="_blank"
+                style={{ textDecoration: 'none', color: '#21AAE7' }}
+              >
+                <IssueLinkRow>
+                  <IconGitHub color="#21AAE7" width='14px' height='14px' />
+                  <Text style={{ marginLeft: '6px' }}>{repo} #{number}</Text>
+                </IssueLinkRow>
+              </SafeLink>
               <Text.Block
                 size="small"
                 color={theme.textSecondary}
@@ -267,7 +292,7 @@ const Detail = ({
               </Text.Block>
             </div>
             <div style={{ ...column, flex: 0, alignItems: 'flex-end' }}>
-              <DropDownButton enabled>
+              <ContextMenu>
                 <BountyContextMenu
                   work={work}
                   workStatus={workStatus}
@@ -278,10 +303,10 @@ const Detail = ({
                   onReviewApplication={onReviewApplication}
                   onReviewWork={onReviewWork}
                 />
-              </DropDownButton>
+              </ContextMenu>
               { balance > 0 &&
                 <Badge
-                  style={{ padding: '10px', marginRight: '20px', textSize: 'large', marginTop: '15px' }}
+                  style={{ padding: '10px', textSize: 'large', marginTop: '15px' }}
                   background={'#e7f8ec'}
                   foreground={theme.positive}
                 >
@@ -293,7 +318,7 @@ const Detail = ({
           <SummaryTable {...summaryData} />
           <FieldTitle>Description</FieldTitle>
           <Text.Block style={{ marginTop: '20px', marginBottom: '20px' }}>
-            {body}
+            {body ? body : 'No description available'}
           </Text.Block>
           <Text size="small" color={theme.textTertiary}>
             {labels.totalCount

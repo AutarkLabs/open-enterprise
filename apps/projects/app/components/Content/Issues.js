@@ -352,10 +352,6 @@ class Issues extends React.PureComponent {
     const {
       projects,
       onNewProject,
-      activeIndex,
-      tokens,
-      bountyIssues,
-      bountySettings,
     } = this.props
     const { currentIssue, showIssueDetail } = this.state
 
@@ -396,7 +392,6 @@ class Issues extends React.PureComponent {
       )
     }
 
-    const { allSelected } = this.state
     const reposIds = projects.map(project => project.data._repo)
 
     // Build an array of plain issues by flattening the data obtained from github API
