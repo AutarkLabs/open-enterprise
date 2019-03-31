@@ -340,7 +340,7 @@ class VotePanelContent extends React.Component {
                 {remaining} remaining
               </Text>
               <SubmitButton mode="strong" wide onClick={this.handleVoteSubmit}>
-                Submit Vroundote
+                Submit Vote
               </SubmitButton>
               {showInfo && (
                 <Info.Action title="Info">
