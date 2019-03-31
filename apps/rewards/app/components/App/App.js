@@ -1,7 +1,8 @@
-import { AppBar, Main, observe, SidePanel, TabBar, Root, Viewport, font, breakpoint } from '@aragon/ui'
+import { AppBar, Main, observe, SidePanel, TabBar, Viewport, font, breakpoint } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import { map } from 'rxjs/operators'
 import { Overview, MyRewards } from '../Content'
 import { Title } from '../Shared'
 import { Empty } from '../Card'
@@ -10,8 +11,6 @@ import NewRewardButton from './NewRewardButton'
 import { millisecondsToBlocks, MILLISECONDS_IN_A_MONTH, millisecondsToQuarters, WEEK } from '../../../../../shared/ui/utils'
 import BigNumber from 'bignumber.js'
 import { networkContextType, MenuButton } from '../../../../../shared/ui'
-
-const ASSETS_URL = 'aragon-ui-assets/'
 
 class App extends React.Component {
   static propTypes = {
@@ -170,62 +169,58 @@ class App extends React.Component {
     const tokens = { 0x0: 'ETH' }
 
     return (
-      <Root.Provider>
-        <StyledAragonApp>
-          <AppBar
-            endContent={
-              <NewRewardButton
-                title="New Reward"
-                onClick={this.newReward}
-              />
-            }
-          >
-            <AppBarTitle>
-              <Viewport>
-                {({ below }) =>
-                  below('medium') && <MenuButton onClick={this.handleMenuPanelOpen} />
-                }
-              </Viewport>
-              <AppBarLabel>Rewards</AppBarLabel>
-            </AppBarTitle>
-          </AppBar>
+      <StyledAragonApp>
+        <AppBar
+          endContent={
+            <NewRewardButton
+              title="New Reward"
+              onClick={this.newReward}
+            />
+          }
+        >
+          <AppBarTitle>
+            <Viewport>
+              {({ below }) =>
+                below('medium') && <MenuButton onClick={this.handleMenuPanelOpen} />
+              }
+            </Viewport>
+            <AppBarLabel>Rewards</AppBarLabel>
+          </AppBarTitle>
+        </AppBar>
 
-          <TabBar
-            items={this.state.tabs}
-            selected={this.state.selected}
-            onSelect={this.selectTab}
+        <TabBar
+          items={this.state.tabs}
+          selected={this.state.selected}
+          onSelect={this.selectTab}
+        />
+        { this.state.selected === 1 ? (
+          <MyRewards
+            rewards={this.props.rewards === undefined ? [] : this.props.rewards}
+            newReward={this.newReward}
+            openDetails={this.openDetailsMy}
+            network={network}
+            tokens={tokens}
           />
-          { this.state.selected === 1 ? (
-            <MyRewards
-              rewards={this.props.rewards === undefined ? [] : this.props.rewards}
-              newReward={this.newReward}
-              openDetails={this.openDetailsMy}
-              network={network}
-              tokens={tokens}
-            />
-          ) : (
-            <Overview
-              rewards={this.props.rewards === undefined ? [] : this.props.rewards}
-              newReward={this.newReward}
-              openDetails={this.openDetailsView}
-              network={network}
-            />
-          )}
- 
-          <PanelManager
-            onClose={this.closePanel}
-            activePanel={panel}
-            {...panelProps}
+        ) : (
+          <Overview
+            rewards={this.props.rewards === undefined ? [] : this.props.rewards}
+            newReward={this.newReward}
+            openDetails={this.openDetailsView}
+            network={network}
           />
-        </StyledAragonApp>
-      </Root.Provider>
+        )}
+
+        <PanelManager
+          onClose={this.closePanel}
+          activePanel={panel}
+          {...panelProps}
+        />
+      </StyledAragonApp>
     )
   }
 }
 
-const StyledAragonApp = styled(Main).attrs({
-  publicUrl: ASSETS_URL,
-})`
+const StyledAragonApp = styled(Main)`
   display: flex;
   height: 100vh;
   flex-direction: column;
@@ -250,6 +245,6 @@ const AppBarLabel = styled.span`
 `
 
 export default observe(
-  observable => observable.map(state => ({ ...state })),
+  observable => observable.pipe(map(state => ({ ...state }))),
   {}
 )(App)
