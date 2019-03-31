@@ -277,10 +277,11 @@ class Issues extends React.PureComponent {
   )
 
   shapeIssues = issues => {
-    const { tokens, bountyIssues, expLvls } = this.props
+    const { tokens, bountyIssues, bountySettings } = this.props
     const bountyIssueObj = {}
     const tokenObj = {}
-    const expLevels = expLvls
+    const expLevels = bountySettings.expLvls
+    console.log('expLevels', expLevels)
 
     bountyIssues.forEach(issue => {
       bountyIssueObj[issue.issueNumber] = issue
@@ -293,6 +294,7 @@ class Issues extends React.PureComponent {
       }
       console.log('tokenObj:', tokenObj)
     })
+    console.log('issues: ', bountyIssueObj)
     return issues.map(({ __typename, repository: { id, name }, ...fields }) => {
       const bountyId = bountyIssueObj[fields.number]
       const repoIdFromBounty = bountyId && bountyId.data.repoId
@@ -302,6 +304,7 @@ class Issues extends React.PureComponent {
           .div(BigNumber(10 ** tokenObj[data.token].decimals))
           .dp(3)
           .toString()
+        console.log('balance', expLevels)
         return {
           ...fields,
           ...bountyIssueObj[fields.number].data,
