@@ -364,7 +364,7 @@ class Issues extends React.PureComponent {
 
     // better return early if we have no projects added?
     if (projects.length === 0) return <Empty action={onNewProject} />
-    if (showIssueDetail)
+    if (showIssueDetail) {
       return (
         <IssueDetail
           issue={currentIssue}
@@ -386,7 +386,7 @@ class Issues extends React.PureComponent {
           }}
         />
       )
-
+        }
     const { allSelected } = this.state
     const reposIds = projects.map(project => project.data._repo)
 

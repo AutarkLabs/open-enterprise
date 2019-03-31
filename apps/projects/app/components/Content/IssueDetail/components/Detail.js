@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
 
-import { Badge, Text, theme, ContextMenu, ContextMenuItem } from '@aragon/ui'
+import { Badge, Text, theme, ContextMenu, ContextMenuItem, SafeLink } from '@aragon/ui'
 import { format, formatDistance } from 'date-fns'
 
 import { DropDownButton } from '../../../Shared'
@@ -72,6 +72,12 @@ const cardStyle = {
   border: `1px solid ${theme.contentBorder}`,
   borderRadius: '3px',
 }
+const IssueLinkRow = styled.div`
+  height: 31px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+`
 
 const column = {
   display: 'flex',
@@ -169,8 +175,12 @@ const fakeMembers = [
   },
 ]
 
+const deadlineDistance = date =>
+  formatDistance(new Date(date), new Date())
+
 const Detail = ({
   requestsData,
+  url,
   balance,
   symbol,
   labels,
@@ -195,7 +205,7 @@ const Detail = ({
 
   const summaryData = {
     expLevel: (expLevel === undefined) ? '-' : expLevel,
-    deadline: (deadline === undefined) ? '-' : format(deadline, 'yyyy-MM-dd HH:mm:ss'),
+    deadline: (deadline === undefined) ? '-' : deadlineDistance(deadline) + ' remaining',
     slots: (slots === undefined) ? '-' :
       (requestsData === undefined) ? 'Unallocated (' + slots + ')' :
         (requestsData.length < slots) ? 'Slots available: ' + (slots - requestsData.length) + '/' + slots:
@@ -217,15 +227,19 @@ const Detail = ({
         <div style={cardStyle}>
           <Wrapper style={{ justifyContent: 'space-between' }}>
             <div style={{ ...column, flex: 2, marginRight: '20px' }}>
-              <Text.Block size="xlarge" style={{ marginBottom: '10px' }}>
+              <Text.Block size="xlarge" style={{ marginBottom: '5px' }}>
                 {title}
               </Text.Block>
-              <Text.Block color="#21AAE7" style={{ marginBottom: '10px' }}>
-                <IconGitHub color="#21AAE7" width="14px" height="14px" />
-                <span style={{ marginLeft: '5px ' }}>
-                  {repo} #{number}
-                </span>
-              </Text.Block>
+              <SafeLink
+                href={url}
+                target="_blank"
+                style={{ textDecoration: 'none', color: '#21AAE7' }}
+              >
+                <IssueLinkRow>
+                  <IconGitHub color="#21AAE7" width='14px' height='14px' />
+                  <Text style={{ marginLeft: '6px' }}>{repo} #{number}</Text>
+                </IssueLinkRow>
+              </SafeLink>
               <Text.Block
                 size="small"
                 color={theme.textSecondary}
@@ -235,7 +249,7 @@ const Detail = ({
               </Text.Block>
             </div>
             <div style={{ ...column, flex: 0, alignItems: 'flex-end' }}>
-              <DropDownButton enabled>
+              <ContextMenu>
                 <BountyContextMenu
                   work={work}
                   workStatus={workStatus}
@@ -246,10 +260,10 @@ const Detail = ({
                   onReviewApplication={onReviewApplication}
                   onReviewWork={onReviewWork}
                 />
-              </DropDownButton>
+              </ContextMenu>
               { balance > 0 &&
                 <Badge
-                  style={{ padding: '10px', marginRight: '20px', textSize: 'large', marginTop: '15px' }}
+                  style={{ padding: '10px', textSize: 'large', marginTop: '15px' }}
                   background={'#e7f8ec'}
                   foreground={theme.positive}
                 >
@@ -261,7 +275,7 @@ const Detail = ({
           <SummaryTable {...summaryData} />
           <FieldTitle>Description</FieldTitle>
           <Text.Block style={{ marginTop: '20px', marginBottom: '20px' }}>
-            {body}
+            {body ? body : 'No description available'}
           </Text.Block>
           <Text size="small" color={theme.textTertiary}>
             {labels.totalCount
