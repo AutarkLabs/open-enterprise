@@ -172,13 +172,4 @@ const Bar = styled.div`
   }
 `
 
-const ShowMoreText = styled.p`
-  font-size: 12px;
-  color: ${theme.textTertiary};
-  font-style: italic;
-  margin-top: 0.5rem;
-  cursor: pointer;
-  pointer-events: auto;
-`
-
 export default VoteRow
