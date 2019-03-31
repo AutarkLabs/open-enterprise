@@ -1,14 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import {
-  Button,
-  IconAdd,
-  IconRemove,
-  TextInput,
-  theme,
-  unselectable,
-} from '@aragon/ui'
+import { Button, IconRemove, TextInput, theme, unselectable } from '@aragon/ui'
 
 const OptionsInput = ({
   input,
@@ -57,7 +50,7 @@ const OptionsInput = ({
   ))
 
   return (
-    <div>
+    <div style={{ paddingTop: '10px' }}>
       <div style={flexColumn}>
         {loadOptions}
         <StyledOption>

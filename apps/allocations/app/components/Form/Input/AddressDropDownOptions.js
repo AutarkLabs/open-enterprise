@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { IconRemove, theme, unselectable } from '@aragon/ui'
+import { Button, IconRemove, theme, unselectable } from '@aragon/ui'
 
 import AddressDropDown from './AddressDropDown'
 
@@ -14,9 +14,11 @@ const AddressDropDownOptions = ({
   validator,
   values,
 }) => {
+  const validated = !input || validator(values, value.addr)
+
   const addOption = ({ target: { value } }) => {
     onChange({
-      target: validator(values, value.addr)
+      target: validated
         ? { name, value: [ ...values, value ] }
         : { name: 'addressError', value: true }, // enable error msg if needed
     })
@@ -39,19 +41,29 @@ const AddressDropDownOptions = ({
   ))
 
   return (
-    <div style={flexColumn}>
-      {loadOptions}
-      <StyledOption>
-        <AddressDropDown
-          activeItem={activeItem}
-          entities={entities}
-          name="addressBookInput"
-          onChange={addOption}
-          validator={validator}
-          values={values}
-          title={'Click to select an Address Book entry'}
-        />
-      </StyledOption>
+    <div style={{ paddingTop: '10px' }}>
+      <div style={flexColumn}>
+        {loadOptions}
+        <StyledOption>
+          <AddressDropDown
+            activeItem={activeItem}
+            entities={entities}
+            name="addressBookInput"
+            onChange={addOption}
+            validator={validator}
+            values={values}
+            title={'Click to select an Address Book entry'}
+          />
+        </StyledOption>
+      </div>
+      <StyledButton
+        disabled={!validated}
+        compact
+        mode="secondary"
+        onClick={addOption}
+        children={'+ Add option'}
+        title={validated ? 'Click to add' : ''}
+      />
     </div>
   )
 }
@@ -67,6 +79,12 @@ AddressDropDownOptions.propTypes = {
 }
 
 const flexColumn = { display: 'flex', flexDirection: 'column' }
+
+const StyledButton = styled(Button)`
+  font-size: 15px;
+  margin-top: 10px;
+  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+`
 
 const StyledLockedInput = styled.div`
   box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.03);
