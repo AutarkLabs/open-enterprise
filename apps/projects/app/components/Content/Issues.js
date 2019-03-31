@@ -364,11 +364,11 @@ class Issues extends React.PureComponent {
 
     if (showIssueDetail) {
 
-      currentIssue.repository = [{
+      currentIssue.repository = {
         name: currentIssue.repo,
         id: currentIssue.repoId,
         __typename: 'Repository',
-      }]
+      }
 
       const currentIssueShaped = this.shapeIssues([currentIssue])[0]
 
