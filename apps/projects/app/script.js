@@ -119,7 +119,7 @@ app.state().subscribe(state => {
   const { repos, bountySettings, tokens, issues } = determineStateVars(state)
   appState = resetAppState({ repos, bountySettings, tokens, issues })
   if (!vault) {
-    // this should be refactored to be a "setting"
+    //TODO this should be refactored to be a "setting"
     app.call('vault').subscribe(response => {
       vaultAddress = response
       vault = app.external(response, vaultAbi)
@@ -303,6 +303,9 @@ async function syncTokens(state, { token }) {
         tokens.push(newToken)
       }
     }
+    else {
+      tokens[tokenIndex].balance = await loadTokenBalance(token, vault)
+    }
     return state
   } catch (err) {
     console.error('[Projects script] syncSettings settings failed:', err)
@@ -338,19 +341,27 @@ async function updateIssueDetail(data, response) {
   return data
 }
 
-function loadToken(token) {
-  let tokenContract = app.external(token, tokenAbi)
-  return new Promise(resolve => {
-    tokenContract.symbol().subscribe(symbol => {
-      tokenContract.decimals().subscribe(decimals => {
-        resolve({
-          addr: token,
-          symbol: symbol,
-          decimals: decimals,
-        })
-      })
-    })
+async function loadToken(tokenAddress) {
+  let tokenContract = app.external(tokenAddress, tokenAbi)
+
+  const [ balance, decimals, symbol ] = await Promise.all([
+    loadTokenBalance(tokenAddress, vault),
+    tokenContract.decimals().toPromise(),
+    tokenContract.symbol().toPromise(),
+  ])
+
+  console.log('balance ', balance, 'decimals ', decimals, 'symbol ', symbol)
+
+  return ({
+    addr: tokenAddress,
+    symbol: symbol,
+    decimals: decimals,
+    balance: balance,
   })
+}
+
+function loadTokenBalance(tokenAddress, vaultContract) {
+  return vaultContract.balance(tokenAddress).toPromise()
 }
 
 function loadRepoData(id) {
