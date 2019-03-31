@@ -56,7 +56,7 @@ const repoData = id => `{
 }`
 
 const app = new Aragon()
-let appState, vault, bounties, tokens
+let appState, vault, bounties, tokens, vaultAddress
 
 /**
  * Observe the github object.
@@ -104,6 +104,7 @@ app.state().subscribe(state => {
   if (!vault) {
     // this should be refactored to be a "setting"
     app.call('vault').subscribe(response => {
+      vaultAddress = response
       vault = app.external(response, vaultAbi)
       vault.events().subscribe(handleEvents)
     })
@@ -212,8 +213,10 @@ async function handleEvents(response) {
     nextState = await syncSettings(appState) // No returnValues on this
     break
   case 'VaultDeposit':
-    console.log('[Projects] VaultDeposit')
-    nextState = await syncTokens(appState, response.returnValues)
+    if (response.address === vaultAddress) {
+      console.log('[Projects] VaultDeposit', vault)
+      nextState = await syncTokens(appState, response.returnValues)
+    }
   default:
     console.log('[Projects] Unknown event catched:', response)
   }
