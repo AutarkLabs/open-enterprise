@@ -4,7 +4,7 @@ const IconX = () => (
   <svg width="9px" height="8px" viewBox="0 0 9 8" version="1.1" xmlns="http://www.w3.org/2000/svg">
     <title>x icon</title>
     <desc>Created with Sketch.</desc>
-    <g id="Planning-app---NEW" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+    <g id="Planning-app---NEW" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
       <g id="Projects---Issues---Multi-select" transform="translate(-582.000000, -136.000000)" fill="#445159">
         <g id="Group-15" transform="translate(490.000000, 127.000000)">
           <g id="x-icon" transform="translate(96.424621, 13.424621) rotate(45.000000) translate(-96.424621, -13.424621) translate(90.924621, 8.424621)">

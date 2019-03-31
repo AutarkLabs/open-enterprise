@@ -20,7 +20,6 @@ import { Issue, Empty } from '../Card'
 import { IssueDetail } from './IssueDetail'
 import Unauthorized from './Unauthorized'
 import ActiveFilters from './Filters'
-import { prepareFilters } from '../Shared/FilterBar'
 
 class Issues extends React.PureComponent {
   static propTypes = {
@@ -214,6 +213,19 @@ class Issues extends React.PureComponent {
     this.setState({ filters: newFilters })
   }
 
+  disableAllFilters = () => {
+    this.setState({
+      filters: {
+        projects: {},
+        labels: {},
+        milestones: {},
+        deadlines: {},
+        experiences: {},
+        statuses: {},
+      }
+    })
+  }
+
   actionsMenu = (issues) => (
     <div
       style={{
@@ -227,6 +239,7 @@ class Issues extends React.PureComponent {
         bountyIssues={this.props.bountyIssues}
         filters={this.state.filters}
         disableFilter={this.disableFilter}
+        disableAllFilters={this.disableAllFilters}
       />
       <ActionsMenu enabled={!!this.state.selectedIssues.length}>
         <ContextMenuItem

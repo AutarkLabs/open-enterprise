@@ -1,5 +1,6 @@
-import React, { Component, Fragment } from 'react'
+import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { Text } from '@aragon/ui'
 
 import FilterTile from './FilterTile'
 import { prepareFilters } from '../Shared/FilterBar'
@@ -17,6 +18,7 @@ export default class Filters extends Component {
     issues: PropTypes.array,
     bountyIssues: PropTypes.array,
     disableFilter: PropTypes.func.isRequired,
+    disableAllFilters: PropTypes.func.isRequired,
   }
 
   static defaultProps = {
@@ -90,6 +92,23 @@ export default class Filters extends Component {
             />
           )
         })}
+        {Object.keys(filterAliases).length > 0 &&
+          <div
+            onClick={this.props.disableAllFilters}
+            role='button'
+            style={{
+              cursor: 'pointer',
+              marginLeft: '18px'
+            }}
+          >
+            <Text
+              size='large'
+              weight='bold'
+              color='#80abe3'
+            >Clear Filters
+            </Text>
+          </div>
+        }
       </div>
     )
   }

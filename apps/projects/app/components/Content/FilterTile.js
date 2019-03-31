@@ -7,7 +7,6 @@ import IconX from '../shared/assets/components/IconX'
 export default class FilterTile extends PureComponent {
   static propTypes = {
     text: PropTypes.string.isRequired,
-    onClick: PropTypes.func.isRequired,
     disableFilter: PropTypes.func.isRequired,
   }
   render() {
