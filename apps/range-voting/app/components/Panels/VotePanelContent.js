@@ -337,7 +337,7 @@ class VotePanelContent extends React.Component {
                   float: 'right',
                 }}
               >
-                {remaining} percentage points remaining
+                {remaining} remaining
               </Text>
               <SubmitButton mode="strong" wide onClick={this.handleVoteSubmit}>
                 Submit Vroundote
