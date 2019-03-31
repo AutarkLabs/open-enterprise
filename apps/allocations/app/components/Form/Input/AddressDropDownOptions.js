@@ -14,18 +14,36 @@ const AddressDropDownOptions = ({
   validator,
   values,
 }) => {
-  const validated = !input || validator(values, value.addr)
+  const validated = addr => !input || validator(values, addr)
 
   const addOption = ({ target: { value } }) => {
     onChange({
-      target: validated
+      target: validated(value.addr)
         ? { name, value: [ ...values, value ] }
         : { name: 'addressError', value: true }, // enable error msg if needed
     })
   }
-  const removeOption = option => {
+
+  const onRemoveOption = option => {
     // perform the change on the parent by using onChange prop without modifying value prop
-    onChange({ target: { name, value: values.filter(v => v !== option) } })
+    option &&
+      onChange({ target: { name, value: values.filter(v => v !== option) } })
+  }
+
+  const onChangeInput = ({ target: { value } }) => {
+    const position = values.indexOf(v => v !== option)
+    const activeIndex = values[position]
+    console.log('hola', value, values, position, activeIndex)
+
+    onChange({
+      target: {
+        name: 'addressBookInput',
+        value: {
+          addr: value,
+          index: activeIndex,
+        },
+      },
+    })
   }
 
   const loadOptions = values.map((v, i) => (
@@ -33,7 +51,7 @@ const AddressDropDownOptions = ({
       <StyledLockedInput children={entities[v.index].data.name} />
       <IconContainer
         style={{ transform: 'scale(.8)' }}
-        onClick={() => removeOption(v)}
+        onClick={() => onRemoveOption(v)}
         title="Click to remove"
         children={<IconRemove />}
       />
@@ -49,20 +67,23 @@ const AddressDropDownOptions = ({
             activeItem={activeItem}
             entities={entities}
             name="addressBookInput"
-            onChange={addOption}
+            onChange={onChangeInput}
             validator={validator}
             values={values}
             title={'Click to select an Address Book entry'}
           />
+          <IconContainer
+            style={{ transform: 'scale(.8)' }}
+            children={<IconRemove />}
+          />
         </StyledOption>
       </div>
       <StyledButton
-        disabled={!validated}
         compact
         mode="secondary"
         onClick={addOption}
         children={'+ Add option'}
-        title={validated ? 'Click to add' : ''}
+        title={'Click to add'}
       />
     </div>
   )

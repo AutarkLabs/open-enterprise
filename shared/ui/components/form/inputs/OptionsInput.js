@@ -24,7 +24,8 @@ const OptionsInput = ({
 
   const removeOption = option => {
     // perform the change on the parent by using onChange prop without modifying value prop
-    onChange({ target: { name, value: values.filter(v => v !== option) } })
+    option &&
+      onChange({ target: { name, value: values.filter(v => v !== option) } })
   }
 
   const cleanInputBox = () => {
@@ -58,6 +59,12 @@ const OptionsInput = ({
             placeholder={placeholder}
             value={input.addr}
             onChange={onChangeInput}
+          />
+          <IconContainer
+            style={{ transform: 'scale(.8)' }}
+            onClick={() => removeOption()}
+            title="Click to remove the option"
+            children={<IconRemove />}
           />
         </StyledOption>
       </div>
