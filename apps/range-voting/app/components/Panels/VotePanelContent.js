@@ -397,10 +397,7 @@ class VotePanelContent extends React.Component {
                       </span>
                     )}
                     {Boolean(voteWeights.length) && (
-                      <Badge
-                        shape="compact"
-                        background={theme.badgeInfoBackground}
-                        foreground={theme.badgeInfoForeground}
+                      <Badge.Identity
                         onClick={() =>
                           this.setState({
                             voteWeightsToggled: !voteWeightsToggled,
@@ -420,7 +417,7 @@ class VotePanelContent extends React.Component {
                             ? `${voteWeights[index]}%`
                             : `${voteAmounts[index]}`}
                         </span>
-                      </Badge>
+                      </Badge.Identity>
                     )}
                   </span>
                 }
