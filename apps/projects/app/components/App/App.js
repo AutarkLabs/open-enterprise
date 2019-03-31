@@ -362,10 +362,7 @@ class App extends React.PureComponent {
     const ipfsData = issue.requestsData[requestIndex]
     ipfsData.review = review
 
-    let content = ipfs.types.Buffer.from(JSON.stringify(ipfsData))
-    let results = await ipfs.add(content)
-    let requestIPFSHash = results[0].hash
-
+    const requestIPFSHash = await ipfsAdd(ipfsData)
 
     console.log('onReviewApplication Issue:', issue)
     console.log(
@@ -402,9 +399,7 @@ class App extends React.PureComponent {
     // new IPFS data is old data plus state returned from the panel
     const ipfsData = issue.workSubmissions[issue.workSubmissions.length - 1]
     ipfsData.review = state
-    let content = ipfs.types.Buffer.from(JSON.stringify(ipfsData))
-    let results = await ipfs.add(content)
-    let requestIPFSHash = results[0].hash
+    const requestIPFSHash = await ipfsAdd(ipfsData)
 
     console.log(
       'onReviewWork',
