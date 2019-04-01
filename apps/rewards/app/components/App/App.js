@@ -1,4 +1,4 @@
-import { AppBar, Main, observe, SidePanel, TabBar, Viewport, font, breakpoint } from '@aragon/ui'
+import { AppBar, Main, observe, SidePanel, TabBar, Root, Viewport, font, breakpoint } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
@@ -169,53 +169,55 @@ class App extends React.Component {
     const tokens = { 0x0: 'ETH' }
 
     return (
-      <StyledAragonApp>
-        <AppBar
-          endContent={
-            <NewRewardButton
-              title="New Reward"
-              onClick={this.newReward}
+      <Root.Provider>
+        <StyledAragonApp>
+          <AppBar
+            endContent={
+              <NewRewardButton
+                title="New Reward"
+                onClick={this.newReward}
+              />
+            }
+          >
+            <AppBarTitle>
+              <Viewport>
+                {({ below }) =>
+                  below('medium') && <MenuButton onClick={this.handleMenuPanelOpen} />
+                }
+              </Viewport>
+              <AppBarLabel>Rewards</AppBarLabel>
+            </AppBarTitle>
+          </AppBar>
+
+          <TabBar
+            items={this.state.tabs}
+            selected={this.state.selected}
+            onSelect={this.selectTab}
+          />
+          { this.state.selected === 1 ? (
+            <MyRewards
+              rewards={this.props.rewards === undefined ? [] : this.props.rewards}
+              newReward={this.newReward}
+              openDetails={this.openDetailsMy}
+              network={network}
+              tokens={tokens}
             />
-          }
-        >
-          <AppBarTitle>
-            <Viewport>
-              {({ below }) =>
-                below('medium') && <MenuButton onClick={this.handleMenuPanelOpen} />
-              }
-            </Viewport>
-            <AppBarLabel>Rewards</AppBarLabel>
-          </AppBarTitle>
-        </AppBar>
+          ) : (
+            <Overview
+              rewards={this.props.rewards === undefined ? [] : this.props.rewards}
+              newReward={this.newReward}
+              openDetails={this.openDetailsView}
+              network={network}
+            />
+          )}
 
-        <TabBar
-          items={this.state.tabs}
-          selected={this.state.selected}
-          onSelect={this.selectTab}
-        />
-        { this.state.selected === 1 ? (
-          <MyRewards
-            rewards={this.props.rewards === undefined ? [] : this.props.rewards}
-            newReward={this.newReward}
-            openDetails={this.openDetailsMy}
-            network={network}
-            tokens={tokens}
+          <PanelManager
+            onClose={this.closePanel}
+            activePanel={panel}
+            {...panelProps}
           />
-        ) : (
-          <Overview
-            rewards={this.props.rewards === undefined ? [] : this.props.rewards}
-            newReward={this.newReward}
-            openDetails={this.openDetailsView}
-            network={network}
-          />
-        )}
-
-        <PanelManager
-          onClose={this.closePanel}
-          activePanel={panel}
-          {...panelProps}
-        />
-      </StyledAragonApp>
+        </StyledAragonApp>
+      </Root.Provider>
     )
   }
 }

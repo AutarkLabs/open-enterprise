@@ -16,20 +16,6 @@ import {
 import { FormField, FieldTitle, DescriptionInput } from '../../Form'
 import { IconGitHub } from '../../Shared'
 
-// external Data
-const work = {
-  user: {
-    login: 'rkzel',
-    name: 'Radek',
-    avatar: 'https://avatars0.githubusercontent.com/u/34452131?v=4',
-    url: 'https://github.com/rkzel'
-  },
-  proof: 'https://github.com/AutarkLabs/planning-suite/pull/411',
-  comments: 'This was an interesting challenge',
-  hours: 13,
-  submissionDate: '2/9/2019'
-}
-
 class ReviewWork extends React.Component {
   static propTypes = {
     issue: PropTypes.object.isRequired
@@ -43,13 +29,25 @@ class ReviewWork extends React.Component {
   changeField = ({ target: { name, value } }) => this.setState({ [name]: value })
 
   onAccept = () => {
-    this.props.onReviewWork({ ...this.state, accepted: true }, this.props.issue)
+    const today = new Date()
+    this.props.onReviewWork({
+      ...this.state,
+      accepted: true,
+      user: this.props.githubCurrentUser,
+      reviewDate: today.toISOString(),
+    }, this.props.issue)
   }
 
   canSubmit = () => !(this.state.rating > 0)
 
   onReject = () => {
-    this.props.onReviewWork({ ...this.state, accepted: false }, this.props.issue)
+    const today = new Date()
+    this.props.onReviewWork({
+      ...this.state,
+      accepted: false,
+      user: this.props.githubCurrentUser,
+      reviewDate: today.toISOString(),
+    }, this.props.issue)
   }
 
   onRatingChange = index => {

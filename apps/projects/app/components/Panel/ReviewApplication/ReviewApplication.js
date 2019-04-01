@@ -27,14 +27,26 @@ class ReviewApplication extends React.Component {
 
   changeField = ({ target: { name, value } }) => this.setState({ [name]: value })
 
+  buildReturnData = approved => {
+    let today = new Date()
+    return {
+      feedback: this.state.feedback,
+      approved,
+      user: this.props.githubCurrentUser,
+      reviewDate: today.toISOString(),
+    }
+  }
+
   onAccept = () => {
-    console.log('Accepted', this.state.feedback, this.props.issue)
-    this.props.onReviewApplication(this.props.issue, this.state.requestIndex, true)
+    const returnData = this.buildReturnData(true)
+    console.log('Accepted', returnData)
+    this.props.onReviewApplication(this.props.issue, this.state.requestIndex, true, returnData)
   }
 
   onReject = () => {
-    console.log('Rejected', this.state.feedback, this.props.issue)
-    this.props.onReviewApplication(this.props.issue, this.state.requestIndex, false)
+    const returnData = this.buildReturnData(false)
+    console.log('Rejected', returnData)
+    this.props.onReviewApplication(this.props.issue, this.state.requestIndex, false, returnData)
   }
 
   changeRequest = (index) => {
@@ -43,8 +55,8 @@ class ReviewApplication extends React.Component {
 
 
   render() {
+    console.log('++ReviewApplic render', this.props.issue)
     const { issue } = this.props
-
     const request = issue.requestsData[this.state.requestIndex]
 
     const application = {
@@ -118,9 +130,10 @@ class ReviewApplication extends React.Component {
             input={
               <DescriptionInput
                 name='feedback'
-                rows={3}
+                rows="3"
                 onChange={this.changeField}
                 placeholder="Do you have any feedback to provide the applicant?"
+                value={this.state.feedback}
               />
             }
           />
@@ -177,7 +190,7 @@ const IssueTitle = styled(Text)`
 const ReviewButton = styled(Button).attrs({
   mode: 'strong',
 })`
-  width: 190px;
+  width: 48%;
 `
 const ReviewRow = styled.div`
   display: flex;

@@ -11,8 +11,8 @@ import {
 import Overflow from './Overflow'
 import FilterButton from './FilterButton'
 import FilterDropDown from './FilterDropDown'
+import prepareFilters from './prepareFilters'
 import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
-import { BOUNTY_STATUS } from '../../../utils/bounty-status'
 
 const StyledFilterBar = styled.div`
   width: 100%;
@@ -47,14 +47,6 @@ const ActionLabel = styled.span`
 
 class FilterBar extends React.Component {
   state = {
-    filters: {
-      projects: {},
-      labels: {},
-      milestones: {},
-      deadlines: {},
-      experiences: {},
-      statuses: {},
-    },
     // direction: -1: .oO; 1: Oo.; 0: disabled
     sortBy: [
       { what: 'Name', direction: -1 },
@@ -65,111 +57,18 @@ class FilterBar extends React.Component {
     ],
   }
 
-  componentWillMount() {
-    if ('filterIssuesByRepoId' in this.props.activeIndex.tabData) {
-      let { filters } = this.state
-      filters.projects[
-        this.props.activeIndex.tabData.filterIssuesByRepoId
-      ] = true
-      this.setState({ filters })
-    }
-  }
-
   // that's non-event for filters checkboxes to stop browser complaining about missing onChange handler
   // the point is to make the checkbox controlled by its FilterMenuItem parent
   noop = () => {}
 
   filter = (type, id) => () => {
-    const { filters } = this.state
+    const { filters } = this.props
     if (id in filters[type]) delete filters[type][id]
     else filters[type][id] = true
     // filters are in local state because of checkboxes
     // and sent to the parent (Issues) for actual display change
-    this.setState({ filters })
+    this.props.setParentFilters({ filters })
     this.props.handleFiltering(filters)
-  }
-
-  /*
-    prepareFilters builds data structure for displaying filterbar dropdowns
-    data comes from complete issues array, issuesFiltered is used for counters
-  */
-  prepareFilters = (issues, bountyIssues) => {
-    let filters = {
-      projects: {},
-      labels: {},
-      milestones: {},
-      deadlines: {},
-      experiences: {},
-      statuses: {},
-    }
-
-    filters.statuses['not-funded'] = {
-      name: BOUNTY_STATUS['not-funded'],
-      count: issues.length - bountyIssues.length,
-    }
-    bountyIssues.map(issue => {
-      if (issue.data.workStatus in filters.statuses) {
-        filters.statuses[issue.data.workStatus].count++
-      } else {
-        filters.statuses[issue.data.workStatus] = {
-          name: BOUNTY_STATUS[issue.data.workStatus],
-          count: 1,
-        }
-      }
-    })
-
-    issues.map(issue => {
-      if (issue.milestone) {
-        if (issue.milestone.id in filters.milestones) {
-          filters.milestones[issue.milestone.id].count++
-        } else {
-          filters.milestones[issue.milestone.id] = {
-            ...issue.milestone,
-            count: 1,
-          }
-        }
-      } else {
-        if ('milestoneless' in filters.milestones) {
-          filters.milestones['milestoneless'].count++
-        } else {
-          filters.milestones['milestoneless'] = {
-            title: 'Issues without milestones',
-            id: 'milestoneless',
-            count: 1,
-          }
-        }
-      }
-
-      if (issue.labels.totalCount) {
-        issue.labels.edges.map(label => {
-          if (label.node.id in filters.labels) {
-            filters.labels[label.node.id].count++
-          } else {
-            filters.labels[label.node.id] = { ...label.node, count: 1 }
-          }
-        })
-      } else {
-        if ('labelless' in filters.labels) {
-          filters.labels['labelless'].count++
-        } else {
-          filters.labels['labelless'] = {
-            name: 'Issues without labels',
-            id: 'labelless',
-            count: 1,
-          }
-        }
-      }
-      // TODO: shouldn't it be reporitory.id?
-      if (issue.repository.id in filters.projects) {
-        filters.projects[issue.repository.id].count++
-      } else {
-        filters.projects[issue.repository.id] = {
-          name: issue.repository.name,
-          count: 1,
-        }
-      }
-    })
-    return filters
   }
 
   generateSort = what => () => {
@@ -184,11 +83,10 @@ class FilterBar extends React.Component {
   }
 
   render() {
-    const { handleSelectAll, allSelected, issues, bountyIssues } = this.props
+    const { handleSelectAll, allSelected, issues, bountyIssues, filters } = this.props
     // filters contain information about active filters (checked checkboxes)
-    const { filters } = this.state
     // filtersData is about displayed checkboxes
-    const filtersData = this.prepareFilters(issues, bountyIssues)
+    const filtersData = prepareFilters(issues, bountyIssues)
     return (
       <StyledFilterBar>
         <FilterButton>
