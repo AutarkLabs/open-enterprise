@@ -82,12 +82,17 @@ class FilterBar extends React.Component {
 
   filter = (type, id) => () => {
     const { filters } = this.state
-    if (id in filters[type]) delete filters[type][id]
-    else filters[type][id] = true
+    const newFilters = { ...filters }
+
+    if (id in filters[type])
+      delete newFilters[type][id]
+    else
+      newFilters[type][id] = true
+
     // filters are in local state because of checkboxes
     // and sent to the parent (Issues) for actual display change
-    this.setState({ filters })
-    this.props.handleFiltering(filters)
+    this.setState({ filters: newFilters })
+    this.props.handleFiltering(newFilters)
   }
 
   /*
@@ -190,8 +195,6 @@ class FilterBar extends React.Component {
     const { filters } = this.state
     // filtersData is about displayed checkboxes
     const filtersData = this.prepareFilters(issues, bountyIssues)
-    //console.log('FILTERS', filters)
-    //console.log('FILTERS DATA', filtersData)
     return (
       <StyledFilterBar>
         <FilterButton>
