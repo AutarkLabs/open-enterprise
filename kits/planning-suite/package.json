@@ -4,9 +4,9 @@
   "description": "Aragon Planning Suite developed by Autark",
   "scripts": {
     "coverage": "SOLIDITY_COVERAGE=true npm run ganache-cli:test",
-    "ganache-cli:test": "../shared/test-helpers/ganache-cli.sh",
+    "ganache-cli:test": "../../apps/shared/test-helpers/ganache-cli.sh",
     "lint": "solium --dir ./contracts",
-    "start:kit": "aragon run --kit PlanningKit --kit-init @ARAGON_ENS",
+    "start:kit": "node ./scripts/start-kit",
     "test:gas": "GAS_REPORTER=true npm test",
     "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
   },
