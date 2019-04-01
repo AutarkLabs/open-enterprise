@@ -1,15 +1,14 @@
-import addressBookAbi from '../../../shared/json-abis/address-book'
+import AddressBookJSON from '../../../shared/json-abis/address-book.json'
 import { app, handleEvent } from './'
 
 export const initStore = addressBookAddress => {
-  const addressBookApp = app.external(addressBookAddress, addressBookAbi)
+  const addressBookApp = app.external(addressBookAddress, AddressBookJSON.abi)
 
   const initialState = {
     accounts: [],
     entries: [],
     addressBook: addressBookAddress,
   }
-
   return app.store(
     async (state, event) => {
       // ensure there are initial placeholder values

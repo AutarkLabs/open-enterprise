@@ -22,79 +22,6 @@ class Decisions extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
   }
-  static defaultProps = {
-    pctBase: 100,
-    tokenAddress: null,
-    supportRequiredPct: 0,
-    userAccount: '',
-    votes: [
-      {
-        voteId: 1,
-        data: {
-          type: 'allocation',
-          creator: '0x123342',
-          executed: false,
-          minAcceptQuorum: 70,
-          snapshotBlock: 10,
-          startDate: 2123222340356,
-          totalVoters: 30,
-          script: 'v_script',
-          description: 'this is the first hardcoded vote',
-          options: [
-            {
-              label: 'not necessarily',
-              value: 12,
-            },
-            {
-              label: 'possibly',
-              value: 3,
-            },
-            {
-              label: 'maybe',
-              value: 9,
-            },
-            {
-              label: 'perhaps',
-              value: 0,
-            },
-          ],
-        },
-      },
-      {
-        voteId: 3,
-        data: {
-          type: 'informational',
-          creator: '0x123342',
-          executed: true,
-          minAcceptQuorum: 98,
-          snapshotBlock: 11,
-          startDate: 1123222340356,
-          totalVoters: 33,
-          script: 'v_script 2',
-          description: 'this is second hardcoded vote',
-          options: [
-            {
-              label: 'orange',
-              value: 120,
-            },
-            {
-              label: 'octarine',
-              value: 13,
-            },
-            {
-              label: 'darkish grey',
-              value: 339,
-            },
-            {
-              label: 'almost blue',
-              value: 0,
-            },
-          ],
-        },
-      },
-    ],
-    voteTime: -1,
-  }
   constructor(props) {
     super(props)
     this.state = {
@@ -160,6 +87,7 @@ class Decisions extends React.Component {
       minParticipationPct,
       userAccount,
       votes,
+      entries,
       voteTime,
       tokenAddress,
     } = this.props
@@ -178,6 +106,12 @@ class Decisions extends React.Component {
     const preparedVotes = displayVotes
       ? votes.map(vote => {
         const endDate = new Date(vote.data.startDate + voteTime)
+        vote.data.options = vote.data.options.map(option => {
+          return {
+            ...option,
+            label: entries[option.label] ? entries[option.label].data.name : option.label
+          }
+        })
         return {
           ...vote,
           endDate,
@@ -190,7 +124,6 @@ class Decisions extends React.Component {
         }
       })
       : votes
-
     const currentVote =
       currentVoteId === -1
         ? null
