@@ -7,6 +7,7 @@ import { format, formatDistance } from 'date-fns'
 
 import { DropDownButton } from '../../../Shared'
 import { IconGitHub, BountyContextMenu } from '../../../Shared'
+import { BOUNTY_STATUS, BOUNTY_BADGE_COLOR } from '../../../../utils/bounty-status'
 
 const StyledTable = styled.div`
   margin-bottom: 20px;
@@ -36,18 +37,28 @@ const FieldTitle = styled(Text.Block)`
 const ActionLabel = styled.span`
   margin-left: 15px;
 `
-const SummaryTable = ({ expLevel, deadline, slots, workStatus }) => {
+
+const determineFieldText = (fieldTitle, fieldText, balance) => {
+  const isStatusField = fieldTitle.toLowerCase() === 'status'
+  const isFulfilled = isStatusField && Number(balance) === 0
+  if (isFulfilled) return BOUNTY_STATUS['fulfilled']
+  else if (isStatusField) return BOUNTY_STATUS[fieldText]
+  return fieldText
+}
+
+const SummaryTable = ({ expLevel, deadline, slots, workStatus, balance }) => {
   const FIELD_TITLES = [
     'Experience Level',
     'Deadline',
-    'Slots Available',
     'Status',
   ]
-  const mappedTableFields = [ expLevel, deadline, slots, workStatus ].map(
+  const mappedTableFields = [ expLevel, deadline, workStatus ].map(
     (field, i) => (
       <StyledCell key={i}>
         <FieldTitle>{FIELD_TITLES[i]}</FieldTitle>
-        <Text color={theme.textPrimary}>{field}</Text>
+        <Text color={theme.textPrimary}>
+          {determineFieldText(FIELD_TITLES[i], field, balance)}
+        </Text>
       </StyledCell>
     )
   )
@@ -196,11 +207,8 @@ const Detail = ({
   const summaryData = {
     expLevel: (expLevel === undefined) ? '-' : expLevel,
     deadline: (deadline === undefined) ? '-' : format(deadline, 'yyyy-MM-dd HH:mm:ss'),
-    slots: (slots === undefined) ? '-' :
-      (requestsData === undefined) ? 'Unallocated (' + slots + ')' :
-        (requestsData.length < slots) ? 'Slots available: ' + (slots - requestsData.length) + '/' + slots:
-          'Allocated',
-    workStatus: (workStatus === undefined) ? 'No bounty yet' : workStatus
+    workStatus: (workStatus === undefined) ? 'No bounty yet' : workStatus,
+    balance
   }
   const calculatedDate = () => {
     const date = Date.now()
@@ -250,15 +258,15 @@ const Detail = ({
               { balance > 0 &&
                 <Badge
                   style={{ padding: '10px', marginRight: '20px', textSize: 'large', marginTop: '15px' }}
-                  background={'#e7f8ec'}
-                  foreground={theme.positive}
+                  background={BOUNTY_BADGE_COLOR[workStatus].bg}
+                  foreground={BOUNTY_BADGE_COLOR[workStatus].fg}
                 >
                   {balance + ' ' + symbol}
                 </Badge>
               }
             </div>
           </Wrapper>
-          <SummaryTable {...summaryData} />
+          {workStatus && <SummaryTable {...summaryData} />}
           <FieldTitle>Description</FieldTitle>
           <Text.Block style={{ marginTop: '20px', marginBottom: '20px' }}>
             {body}
