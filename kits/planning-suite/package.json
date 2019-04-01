@@ -34,9 +34,11 @@
     "dotenv": "^7.0.0",
     "eth-ens-namehash": "^2.0.8"
   },
+  "author": "Autark LLC <autark.xyz>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/AutarkLabs/planning-suite"
+    "url": "https://github.com/AutarkLabs/planning-suite",
+    "directory": "kits/planning-suite"
   },
   "keywords": [],
   "license": "GPL-3.0"
