@@ -43,7 +43,6 @@ class VoteRow extends React.Component {
       participationPct,
       type,
     } = vote.data
-    const remOptions = options.length - 2
     let totalSupport = 0
     options.forEach(option => {
       totalSupport = totalSupport + parseFloat(option.value, 10)
@@ -114,7 +113,7 @@ class VoteRow extends React.Component {
               >
                 {showMore
                   ? 'Show less...'
-                  : ' + ' + remOptions + ' more'}
+                  : ' + ' + (options.length - 2) + ' more'}
               </Badge>
             )}
           </BarsGroup>
