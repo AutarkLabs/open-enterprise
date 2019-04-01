@@ -12,9 +12,7 @@ import ProgressBar from './ProgressBar'
 import VoteStatus from './VoteStatus'
 import { safeDiv } from '../utils/math-utils'
 import BigNumber from 'bignumber.js'
-import {
-  VOTE_STATUS_SUCCESSFUL,
-} from '../utils/vote-types'
+import { VOTE_STATUS_SUCCESSFUL } from '../utils/vote-types'
 import { getVoteStatus } from '../utils/vote-utils'
 
 const generateBadge = (foreground, background, text) => (
@@ -50,9 +48,8 @@ class VoteRow extends React.Component {
       options,
       participationPct,
       type,
-      executed
+      executed,
     } = vote.data
-
 
     // TODO: Hardcode colors into constants or extend aragon ui theme if needed
     let typeBadge
@@ -71,13 +68,19 @@ class VoteRow extends React.Component {
             <div>
               {open ? <Countdown end={endDate} /> : <VoteStatus vote={vote} />}
             </div>
-            {!open && getVoteStatus(vote) === VOTE_STATUS_SUCCESSFUL &&
+            {!open &&
+              getVoteStatus(vote) === VOTE_STATUS_SUCCESSFUL && (
               <div>
-                <Button mode="strong" wide onClick={this.handleExecuteVote}>
-                  Execute Vote
+                <Button
+                  style={{ marginTop: '20px' }}
+                  mode="outline"
+                  wide
+                  onClick={this.handleExecuteVote}
+                >
+                    Execute Vote
                 </Button>
               </div>
-            }
+            )}
           </div>
         </StatusCell>
         <QuestionCell onClick={this.handleVoteClick}>
