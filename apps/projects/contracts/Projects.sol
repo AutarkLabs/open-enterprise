@@ -507,7 +507,7 @@ contract Projects is IsContract, AragonApp {
         uint256[] issueRepos,
         uint256[] issueNumbers,
         uint256 /* unused_curationId */
-    ) public isInitialized auth(CURATE_ISSUES_ROLE)
+    ) public auth(CURATE_ISSUES_ROLE)
     {
         bytes32 repoId;
         uint256 issueLength = issuePriorities.length;
