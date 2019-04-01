@@ -24,11 +24,7 @@
     "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@aragon/client": "1.1.0",
-=======
     "@aragon/api": "1.0.0",
->>>>>>> ff18d648bfd4a4fdf7589e51d7340c8049393fee
     "@aragon/ui": "0.32.0",
     "@tps/ui": "^0.0.1",
     "prop-types": "15.6.2",
