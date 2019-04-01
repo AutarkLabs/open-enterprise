@@ -373,12 +373,14 @@ const Detail = ({
       <div style={{ flex: 1, maxWidth: '359px', width: '295px' }}>
         <DetailsCard>
           <FieldTitle>Activity</FieldTitle>
-          {Object.keys(issueEvents).sort((a,b) =>
-            new Date(a) - new Date(b)
-          ).map((eventDate, i) => {
-            return <IssueEvent key={i} {...issueEvents[eventDate]} />
+          {Object.keys(issueEvents).length > 0
+            ? Object.keys(issueEvents).sort((a,b) =>
+              new Date(a) - new Date(b)
+            ).map((eventDate, i) => {
+              return <IssueEvent key={i} {...issueEvents[eventDate]} />
+            })
+            : 'This issue has no activity'
           }
-          )}
         </DetailsCard>
       </div>
     </Wrapper>
