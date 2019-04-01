@@ -474,7 +474,6 @@ class App extends React.PureComponent {
     const { activeIndex, panel, panelProps } = this.state
     const { client, bountySettings, githubCurrentUser } = this.props
     return (
-<<<<<<< HEAD
       <Root.Provider>
         <StyledAragonApp publicUrl={ASSETS_URL}>
           <BaseStyles />
