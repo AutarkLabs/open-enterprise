@@ -87,7 +87,7 @@ class FilterDropDown extends React.Component {
                     ),
                   }}
                 >
-                  {children}
+                  {opened && children}
                 </PopupOverflow>
               ) : (
                 <Popup
