@@ -1,8 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import styled from 'styled-components'
-import { EmptyStateCard, Text, unselectable } from '@aragon/ui'
-import { IconGitHub } from '../Shared'
+import { EmptyStateCard, Text } from '@aragon/ui'
+import { IconGitHub, EmptyWrapper } from '../Shared'
 
 const Unauthorized = ({ onLogin }) => (
   <EmptyWrapper>
@@ -25,15 +24,5 @@ const Unauthorized = ({ onLogin }) => (
 Unauthorized.propTypes = {
   onLogin: PropTypes.func.isRequired,
 }
-
-const EmptyWrapper = styled.div`
-  ${unselectable};
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-`
 
 export default Unauthorized
