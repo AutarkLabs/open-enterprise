@@ -12,7 +12,6 @@ import PanelManager, { PANELS } from '../Panel'
 import { STATUS } from '../../utils/github'
 import ErrorBoundary from './ErrorBoundary'
 import BigNumber from 'bignumber.js'
-import { networkContextType } from '../../../../../shared/ui'
 
 const ASSETS_URL = './aragon-ui-assets/'
 
@@ -122,22 +121,9 @@ class App extends React.PureComponent {
     network: {},
   }
 
-  static childContextTypes = {
-    network: networkContextType,
-  }
-
   state = {
     repos: [],
     activeIndex: { tabIndex: 0, tabData: {} },
-  }
-
-  getChildContext() {
-    const { network } = this.props
-    return {
-      network: {
-        type: network.type,
-      },
-    }
   }
 
   componentDidMount() {
@@ -495,7 +481,7 @@ class App extends React.PureComponent {
         <StyledAragonApp publicUrl={ASSETS_URL}>
           <BaseStyles />
           <ToastHub>
-            <Title text="Projects 3" handleMenuPanelOpen={this.handleMenuPanelOpen} />
+            <Title text="Projects" handleMenuPanelOpen={this.handleMenuPanelOpen} />
             <ApolloProvider client={client}>
               <ErrorBoundary>
                 <AppContent
