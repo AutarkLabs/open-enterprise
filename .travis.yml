@@ -19,7 +19,7 @@ cache:
 
 jobs:
   include:
-  
+
     - stage: precache
       script: true
       install:
@@ -31,32 +31,32 @@ jobs:
       script: npm run lint
 
     - stage: test
-      script: travis_wait 60 npm run coverage -- --scope=@tps/apps-address-book
-      name: Address Book app tests and coverage report
+      script: travis_wait 60 npm run test -- --scope=@tps/apps-address-book
+      name: Address Book app tests # and coverage report
       install: npm run bootstrap
-      after_success: npm run coveralls
-      env: 'COVERAGE=true'
+      # after_success: npm run coveralls
+      # env: 'COVERAGE=true'
 
     - stage: test
-      script: travis_wait 60 npm run coverage -- --scope=@tps/apps-allocations
-      name: Allocations app tests and coverage report
+      script: travis_wait 60 npm run test -- --scope=@tps/apps-allocations
+      name: Allocations app tests # and coverage report
       install: npm run bootstrap
-      after_success: npm run coveralls
-      env: 'COVERAGE=true'
+      # after_success: npm run coveralls
+      # env: 'COVERAGE=true'
 
     - stage: test
-      script: travis_wait 60 npm run coverage -- --scope=@tps/apps-projects
-      name: Projects app tests and coverage report
+      script: travis_wait 60 npm run test -- --scope=@tps/apps-projects
+      name: Projects app tests # and coverage report
       install: npm run bootstrap
-      after_success: npm run coveralls
-      env: 'COVERAGE=true'
+      # after_success: npm run coveralls
+      # env: 'COVERAGE=true'
 
     - stage: test
-      script: travis_wait 60 npm run coverage -- --scope=@tps/apps-range-voting
-      name: Range Voting app tests and coverage report
+      script: travis_wait 60 npm run test -- --scope=@tps/apps-range-voting
+      name: Range Voting app tests # and coverage report
       install: npm run bootstrap
-      after_success: npm run coveralls
-      env: 'COVERAGE=true'
+      # after_success: npm run coveralls
+      # env: 'COVERAGE=true'
 
     # - &node
     #   script: npm run test
