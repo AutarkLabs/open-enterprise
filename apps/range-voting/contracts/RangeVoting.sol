@@ -80,6 +80,7 @@ contract RangeVoting is IForwarder, AragonApp {
         uint256 totalParticipation;
         uint256 externalId;
         string metadata;
+        string voteDescription;
         uint256 infoStringLength;
         bytes executionScript;
         uint256 scriptOffset;
@@ -358,7 +359,8 @@ contract RangeVoting is IForwarder, AragonApp {
         uint256 totalParticipation,
         uint256 externalId,
         bytes executionScript, // script,
-        bool executed
+        bool executed,
+        string voteDescription
     ) { // solium-disable-line lbrace
         Vote storage voteInstance = votes[_voteId];
 
@@ -372,6 +374,7 @@ contract RangeVoting is IForwarder, AragonApp {
         executionScript = voteInstance.executionScript;
         executed = voteInstance.executed;
         externalId = voteInstance.externalId;
+        voteDescription = voteInstance.voteDescription;
     }
 
         /**
@@ -455,7 +458,7 @@ contract RangeVoting is IForwarder, AragonApp {
             voteInstance.scriptRemainder = scriptRemainder;
         }
         // First Static Parameter in script parsed for the externalId
-        voteInstance.externalId = _executionScript.uint256At(224);
+        voteInstance.externalId = _goToParamOffset(8, _executionScript) - 0x20;
         emit ExternalContract(voteId, _executionScript.addressAt(0x4),_executionScript.bytes32At(0x0));
         emit StartVote(voteId);
     }
@@ -467,8 +470,9 @@ contract RangeVoting is IForwarder, AragonApp {
         2. Supports values
         3. Info String indexes
         4. Info String length
-        5. Level 1 external references
-        6. level 2 external references
+        5. Description
+        6. Level 1 external references
+        7. level 2 external references
         */
         uint256 startOffset = 0x04 + 0x14 + 0x04;
         paramOffset = _executionScript.uint256At(startOffset + 0x04 + (0x20 * (_paramNum - 1) )) + 0x20;
@@ -528,6 +532,7 @@ contract RangeVoting is IForwarder, AragonApp {
             //TODO Update the above dev info
     */
     function _extractCandidates(bytes _executionScript, uint256 _voteId) internal returns(uint256 currentOffset, uint256 calldataLength) {
+        Vote storage voteInstance = votes[_voteId];
         // in order to find out the total length of our call data we take the 3rd
         // relevent byte chunk (after the specid and the target address)
         calldataLength = uint256(_executionScript.uint32At(0x4 + 0x14));
@@ -539,6 +544,8 @@ contract RangeVoting is IForwarder, AragonApp {
         // start offset (spec id + address + calldataLength) + param offset + function signature
         // note:function signature length (0x04) added in both contexts: grabbing the offset value and the outer offset calculation
         uint256 firstParamOffset = _goToParamOffset(1, _executionScript);
+        uint256 fifthParamOffset = _goToParamOffset(5, _executionScript);
+
         currentOffset = firstParamOffset;
 
         // compute end of script / next location and ensure there's no
@@ -556,12 +563,14 @@ contract RangeVoting is IForwarder, AragonApp {
         // This has the potential to be too gas expensive to ever happen.
         // Upper limit of candidates should be checked against this function
         _iterateExtraction(_voteId, _executionScript, currentOffset, candidateLength);
-
+        uint256 descriptionStart = fifthParamOffset + 0x20;
+        uint256 descriptionEnd = descriptionStart + (_executionScript.uint256At(fifthParamOffset));
+        voteInstance.voteDescription = substring(_executionScript, descriptionStart, descriptionEnd);
         // Skip the next param since it's also determined by this contract
         // In order to do this we move the offset one word for the length of the param
         // and we move the offset one word for each param.
         //currentOffset = currentOffset.add(_executionScript.uint256At(currentOffset).mul(0x20));
-        currentOffset = _goToParamOffset(4, _executionScript);
+        currentOffset = fifthParamOffset;
         // The offset represents the data we've already accounted for; the rest is what will later
         // need to be copied over.
 

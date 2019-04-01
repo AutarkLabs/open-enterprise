@@ -120,6 +120,7 @@ class Decisions extends React.Component {
           quorum: safeDiv(vote.data.minAcceptQuorum, pctBase),
           quorumProgress: getQuorumProgress(vote.data),
           description: vote.data.metadata,
+          type: vote.data.type,
         }
       })
       : votes
