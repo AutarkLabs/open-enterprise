@@ -1,8 +1,9 @@
-import { BaseStyles, PublicUrl, observe, Root, ToastHub } from '@aragon/ui'
+import { BaseStyles, observe, Main, ToastHub } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { hot } from 'react-hot-loader'
 import styled from 'styled-components'
+import { map } from 'rxjs/operators'
 
 import { ApolloProvider } from 'react-apollo'
 
@@ -12,13 +13,12 @@ import PanelManager, { PANELS } from '../Panel'
 import { STATUS } from '../../utils/github'
 import ErrorBoundary from './ErrorBoundary'
 import BigNumber from 'bignumber.js'
+import { ipfsAdd, computeIpfsString } from '../../utils/ipfs-helpers'
 import { networkContextType } from '../../../../../shared/ui'
 
 const ASSETS_URL = './aragon-ui-assets/'
 
 const GITHUB_URI = 'https://github.com/login/oauth/authorize'
-
-let ipfsClient = require('ipfs-http-client')
 
 // TODO: let the user customize the github app on settings screen?
 // TODO: Extract to an external js utility to keep this file clean
@@ -27,8 +27,6 @@ let ipfsClient = require('ipfs-http-client')
 let CLIENT_ID = ''
 let REDIRECT_URI = ''
 let AUTH_URI = ''
-
-let ipfs = ipfsClient({ host: 'localhost', port: '5001', protocol: 'http' })
 
 switch (window.location.origin) {
 case 'http://localhost:3333':
@@ -100,16 +98,9 @@ const getURLParam = param => {
  */
 const getToken = async code => {
   console.log('getToken entered')
-
-  // TODO: Manage when server does not respond
-  try {
-    let response = await fetch(`${AUTH_URI}/${code}`)
-    let json = await response.json()
-    if (json.token) return json.token
-    else throw Error(`${json.error}`)
-  } catch (e) {
-    console.error('Error from Authentication server:', e)
-  }
+  const response = await fetch(`${AUTH_URI}/${code}`)
+  const json = await response.json()
+  return json.token
 }
 
 class App extends React.PureComponent {
@@ -128,7 +119,9 @@ class App extends React.PureComponent {
 
   state = {
     repos: [],
+    panelProps: {},
     activeIndex: { tabIndex: 0, tabData: {} },
+    githubLoading: false,
   }
 
   getChildContext() {
@@ -158,6 +151,7 @@ class App extends React.PureComponent {
   handlePopupMessage = async message => {
     if (message.data.from !== 'popup') return
     if (message.data.name === 'code') {
+
       // TODO: Optimize the listeners lifecycle, ie: remove on unmount
       console.log('removing messageListener')
       window.removeEventListener('message', this.messageHandler)
@@ -165,19 +159,35 @@ class App extends React.PureComponent {
       const code = message.data.value
       console.log('AuthCode received from github:', code)
       console.log('Proceeding to token request...')
-      // TODO: Check token received correctly
-      const token = await getToken(code)
-      console.log('token obtained:', token)
-      this.props.app.cache('github', {
-        status: STATUS.AUTHENTICATED,
-        token: token,
-      })
-      this.setState({
-        panelProps: {
-          onCreateProject: this.createProject,
-          status: STATUS.AUTHENTICATED,
-        },
-      })
+      try {
+        const token = await getToken(code)
+        console.log('token obtained:', token)
+        this.setState({
+          githubLoading: false,
+          panelProps: {
+            onCreateProject: this.createProject,
+            status: STATUS.AUTHENTICATED,
+          },
+        }, () => {
+          this.props.app.cache('github', {
+            status: STATUS.AUTHENTICATED,
+            token,
+          })
+        })
+      } catch (err) {
+        this.setState({
+          githubLoading: false,
+          panelProps: {
+            onCreateProject: this.createProject,
+            status: STATUS.FAILED,
+          },
+        }, () => {
+          this.props.app.cache('github', {
+            status: STATUS.FAILED,
+            token: null,
+          })
+        })
+      }
     }
   }
 
@@ -261,16 +271,13 @@ class App extends React.PureComponent {
       }
     )
 
-    let issuesArray = []
-
-    for (var key in issues) {
-      issuesArray.push({ key: key, ...issues[key] })
-    }
+    // computes an array of issues and denests the actual issue object for smart contract
+    const issuesArray = []
+    for (let key in issues) issuesArray.push({ key: key, ...issues[key] })
 
     console.log('Submit issues:', issuesArray)
 
-    let ipfsString
-    ipfsString = await this.getIpfsString(issuesArray)
+    const ipfsString = await computeIpfsString(issuesArray)
 
     const tokenArray = new Array(issuesArray.length).fill(bountyToken)
 
@@ -296,17 +303,6 @@ class App extends React.PureComponent {
     )
   }
 
-  getIpfsString = async issues => {
-    let ipfsString = ''
-    let content, results
-    for (const issue of issues) {
-      content = ipfs.types.Buffer.from(JSON.stringify(issue))
-      results = await ipfs.add(content)
-      ipfsString = ipfsString.concat(results[0].hash)
-    }
-    return ipfsString
-  }
-
   submitWork = issue => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.SubmitWork,
@@ -320,13 +316,11 @@ class App extends React.PureComponent {
 
   onSubmitWork = async (state, issue) => {
     this.closePanel()
-    let content = ipfs.types.Buffer.from(JSON.stringify(state))
-    let results = await ipfs.add(content)
-    let submissionString = results[0].hash
+    const hash = await ipfsAdd(state)
     this.props.app.submitWork(
       web3.toHex(issue.repoId),
       issue.number,
-      submissionString
+      hash
     )
   }
 
@@ -343,13 +337,11 @@ class App extends React.PureComponent {
 
   onRequestAssignment = async (state, issue) => {
     this.closePanel()
-    let content = ipfs.types.Buffer.from(JSON.stringify(state))
-    let results = await ipfs.add(content)
-    let requestString = results[0].hash
+    const hash = await ipfsAdd(state)
     this.props.app.requestAssignment(
       web3.toHex(issue.repoId),
       issue.number,
-      requestString
+      hash
     )
   }
 
@@ -359,12 +351,19 @@ class App extends React.PureComponent {
       panelProps: {
         issue,
         onReviewApplication: this.onReviewApplication,
+        githubCurrentUser: this.props.githubCurrentUser,
       },
     }))
   }
 
-  onReviewApplication = (issue, requestIndex, approved) => {
+  onReviewApplication = async (issue, requestIndex, approved, review) => {
     this.closePanel()
+    // new IPFS data is old data plus state returned from the panel
+    const ipfsData = issue.requestsData[requestIndex]
+    ipfsData.review = review
+
+    const requestIPFSHash = await ipfsAdd(ipfsData)
+
     console.log('onReviewApplication Issue:', issue)
     console.log(
       'onReviewApplication submission:',
@@ -379,7 +378,7 @@ class App extends React.PureComponent {
       web3.toHex(issue.repoId),
       issue.number,
       issue.requestsData[requestIndex].contributorAddr,
-      issue.requestsData[requestIndex].requestIPFSHash,
+      requestIPFSHash,
       approved,
     )
   }
@@ -390,19 +389,25 @@ class App extends React.PureComponent {
       panelProps: {
         issue,
         onReviewWork: this.onReviewWork,
+        githubCurrentUser: this.props.githubCurrentUser,
       },
     }))
   }
 
-  onReviewWork = (state, issue) => {
-    console.log('onReviewWork', issue)
+  onReviewWork = async (state, issue) => {
+    // new IPFS data is old data plus state returned from the panel
+    const ipfsData = issue.workSubmissions[issue.workSubmissions.length - 1]
+    ipfsData.review = state
+    const requestIPFSHash = await ipfsAdd(ipfsData)
+
     console.log(
       'onReviewWork',
+      ipfsData.review,
       web3.toHex(issue.repoId),
       issue.number,
       issue.workSubmissions[issue.workSubmissions.length - 1],
       state.accepted,
-      issue.workSubmissions[issue.workSubmissions.length - 1].submissionIPFSHash
+      requestIPFSHash,
     )
     this.closePanel()
     this.props.app.reviewSubmission(
@@ -410,7 +415,7 @@ class App extends React.PureComponent {
       issue.number,
       issue.workSubmissions.length - 1,
       state.accepted,
-      issue.workSubmissions[issue.workSubmissions.length - 1].submissionIPFSHash
+      requestIPFSHash,
     )
   }
 
@@ -425,7 +430,7 @@ class App extends React.PureComponent {
     }))
   }
 
-  onSubmitCuration = issues => {
+  onSubmitCuration = (issues, description) => {
     this.closePanel()
     // TODO: maybe assign this to issueDescriptionIndices, not clear
     let issueDescriptionIndices = []
@@ -463,6 +468,7 @@ class App extends React.PureComponent {
       emptyIntArray,
       issueDescriptionIndices,
       issueDescriptions,
+      description,
       emptyIntArray,
       issueNumbers,
       1
@@ -475,7 +481,7 @@ class App extends React.PureComponent {
 
   handleGithubSignIn = () => {
     // The popup is launched, its ref is checked and saved in the state in one step
-    this.setState(({ oldPopup }) => ({ popup: githubPopup(oldPopup) }))
+    this.setState(({ oldPopup }) => ({ popup: githubPopup(oldPopup), githubLoading: true }))
     // Listen for the github redirection with the auth-code encoded as url param
     console.log('adding messageListener')
     window.addEventListener('message', this.handlePopupMessage)
@@ -485,57 +491,54 @@ class App extends React.PureComponent {
     const { activeIndex, panel, panelProps } = this.state
     const { client, bountySettings, githubCurrentUser } = this.props
     return (
-      <Root.Provider>
-        <StyledAragonApp publicUrl={ASSETS_URL}>
-          <BaseStyles />
-          <ToastHub>
-            <Title text="Projects" />
-            <ApolloProvider client={client}>
-              <ErrorBoundary>
-                <AppContent
-                  onLogin={this.handleGithubSignIn}
-                  status={this.props.github.status || STATUS.INITIAL}
-                  app={this.props.app}
-                  bountySettings={bountySettings}
-                  githubCurrentUser={githubCurrentUser || {}}
-                  projects={this.props.repos !== undefined ? this.props.repos : []}
-                  bountyIssues={
-                    this.props.issues !== undefined ? this.props.issues : []
-                  }
-                  bountySettings={
-                    bountySettings !== undefined ? bountySettings : {}
-                  }
-                  tokens={this.props.tokens !== undefined ? this.props.tokens : []}
-                  onNewProject={this.newProject}
-                  onRemoveProject={this.removeProject}
-                  onNewIssue={this.newIssue}
-                  onCurateIssues={this.curateIssues}
-                  onAllocateBounties={this.newBountyAllocation}
-                  onSubmitWork={this.submitWork}
-                  onRequestAssignment={this.requestAssignment}
-                  activeIndex={activeIndex}
-                  changeActiveIndex={this.changeActiveIndex}
-                  onReviewApplication={this.reviewApplication}
-                  onReviewWork={this.reviewWork}
-                />
+      <StyledAragonApp publicUrl={ASSETS_URL}>
+        <BaseStyles />
+        <ToastHub>
+          <Title text="Projects" />
+          <ApolloProvider client={client}>
+            <ErrorBoundary>
+              <AppContent
+                onLogin={this.handleGithubSignIn}
+                status={this.props.github.status || STATUS.INITIAL}
+                app={this.props.app}
+                bountySettings={bountySettings}
+                githubCurrentUser={githubCurrentUser || {}}
+                githubLoading={this.state.githubLoading}
+                projects={this.props.repos !== undefined ? this.props.repos : []}
+                bountyIssues={
+                  this.props.issues !== undefined ? this.props.issues : []
+                }
+                bountySettings={
+                  bountySettings !== undefined ? bountySettings : {}
+                }
+                tokens={this.props.tokens !== undefined ? this.props.tokens : []}
+                onNewProject={this.newProject}
+                onRemoveProject={this.removeProject}
+                onNewIssue={this.newIssue}
+                onCurateIssues={this.curateIssues}
+                onAllocateBounties={this.newBountyAllocation}
+                onSubmitWork={this.submitWork}
+                onRequestAssignment={this.requestAssignment}
+                activeIndex={activeIndex}
+                changeActiveIndex={this.changeActiveIndex}
+                onReviewApplication={this.reviewApplication}
+                onReviewWork={this.reviewWork}
+              />
 
-                <PanelManager
-                  onClose={this.closePanel}
-                  activePanel={panel}
-                  {...panelProps}
-                />
-              </ErrorBoundary>
-            </ApolloProvider>
-          </ToastHub>
-        </StyledAragonApp>
-      </Root.Provider>
+              <PanelManager
+                onClose={this.closePanel}
+                activePanel={panel}
+                {...panelProps}
+              />
+            </ErrorBoundary>
+          </ApolloProvider>
+        </ToastHub>
+      </StyledAragonApp>
     )
   }
 }
 
-const StyledAragonApp = styled(PublicUrl.Provider).attrs({
-  url: ASSETS_URL,
-})`
+const StyledAragonApp = styled(Main)`
   display: flex;
   height: 100vh;
   flex-direction: column;
@@ -544,6 +547,6 @@ const StyledAragonApp = styled(PublicUrl.Provider).attrs({
 `
 
 export default observe(
-  observable => observable.map(state => ({ ...state })),
+  observable => observable.pipe(map(state => ({ ...state }))),
   {}
 )(hot(module)(App))

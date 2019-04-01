@@ -1,16 +1,14 @@
-import Aragon from '@aragon/client'
+import Aragon from '@aragon/api'
+import { pluck } from 'rxjs/operators'
 
 import { GraphQLClient } from 'graphql-request'
 import { STATUS } from './utils/github'
 import vaultAbi from '../../shared/json-abis/vault'
 import tokenSymbolAbi from './abi/token-symbol.json'
 import tokenDecimalsAbi from './abi/token-decimal.json'
-
-let ipfsClient = require('ipfs-http-client')
+import { ipfsGet } from './utils/ipfs-helpers'
 
 const tokenAbi = [].concat(tokenDecimalsAbi, tokenSymbolAbi)
-
-let ipfs = ipfsClient({ host: 'localhost', port: '5001', protocol: 'http' })
 
 const status = [ 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]
 const assignmentRequestStatus = [ 'Unreviewed', 'Accepted', 'Rejected' ]
@@ -55,8 +53,18 @@ const repoData = id => `{
     }
 }`
 
+const determineStateVars = (state) => {
+  const repos = (!!state && state.repos) || []
+  const tokens = (!!state && state.tokens) || []
+  const issues = (!!state && state.issues) || []
+  const bountySettings = (!!state && state.bountySettings) || {}
+
+  return { repos, tokens, bountySettings, issues }
+}
+
 const app = new Aragon()
-let appState, vault, bounties, tokens
+let appState = determineStateVars()
+let vault, bounties, tokens
 
 /**
  * Observe the github object.
@@ -65,7 +73,7 @@ let appState, vault, bounties, tokens
 const github = () => {
   return app.rpc
     .sendAndObserveResponses('cache', [ 'get', 'github' ])
-    .pluck('result')
+    .pipe(pluck('result'))
 }
 
 let client
@@ -86,12 +94,30 @@ const initClient = authToken => {
   })
 }
 
+const loadReposFromQueue = async () => {
+  if (unloadedRepoQueue && unloadedRepoQueue.length > 0) {
+    const loadedRepoQueue = await Promise.all(unloadedRepoQueue.map(
+      async repoId => {
+        const { repos } = await syncRepos(appState, { repoId })
+        return repos[0]
+      }
+    ))
+
+    const repos = (appState && appState.repos) || []
+    const newState = { ...appState, repos: [ ...repos, ...loadedRepoQueue ] }
+    unloadedRepoQueue = []
+    app.cache('state', newState)
+  }
+  return
+}
+
 // TODO: Handle cases where checking validity of token fails (revoked, etc)
 
-github().subscribe(result => {
+github().subscribe(async result => {
   console.log('github object received from cache:', result)
   if (result) {
     result.token && initClient(result.token)
+    await loadReposFromQueue()
     return
   } else app.cache('github', { status: STATUS.INITIAL })
 })
@@ -100,7 +126,8 @@ app.events().subscribe(handleEvents)
 
 app.state().subscribe(state => {
   state && console.log('[Projects script] state subscription:\n', state)
-  appState = state ? state : { repos: [], bountySettings: {}, tokens: [] }
+  const { repos, bountySettings, tokens, issues } = determineStateVars(state)
+  appState = cloneAppState({ repos, bountySettings, tokens, issues })
   if (!vault) {
     // this should be refactored to be a "setting"
     app.call('vault').subscribe(response => {
@@ -120,20 +147,22 @@ async function handleEvents(response) {
   let nextState, data, newData
   switch (response.event) {
   case 'RepoAdded':
-    console.log('[Projects] event RepoAdded')
-    nextState = await syncRepos(appState, response.returnValues)
+    console.log('[Projects] event RepoAdded', cloneAppState(appState))
+    nextState = await syncRepos(cloneAppState(appState), response.returnValues)
+    appState = cloneAppState(nextState)
     break
   case 'RepoRemoved':
     console.log('[Projects] RepoRemoved', response.returnValues)
     const id = response.returnValues.repoId
-    const repoIndex = appState.repos.findIndex(repo => repo.id === id)
+    const repoIndex = cloneAppState(appState).repos.findIndex(repo => repo.id === id)
     if (repoIndex === -1) break
     appState.repos.splice(repoIndex,1)
-    nextState = appState
+    nextState = cloneAppState(appState)
     break
   case 'RepoUpdated':
     console.log('[Projects] RepoUpdated', response.returnValues)
-    nextState = await syncRepos(appState, response.returnValues)
+    nextState = await syncRepos(cloneAppState(appState), response.returnValues)
+    appState = cloneAppState(nextState)
   case 'BountyAdded':
     console.log('[Projects] BountyAdded', appState, response.returnValues)
     if(!response.returnValues) {
@@ -141,8 +170,8 @@ async function handleEvents(response) {
     }
     data = await loadIssueData(response.returnValues)
     data.workStatus = status[0]
-    nextState = syncIssues(appState, response.returnValues, data, [])
-    appState = nextState
+    nextState = syncIssues(cloneAppState(appState), response.returnValues, data, [])
+    appState = cloneAppState(nextState)
     break
   case 'AssignmentRequested':
     console.log('[Projects] AssignmentRequested', appState, response.returnValues)
@@ -152,8 +181,8 @@ async function handleEvents(response) {
     data = await loadIssueData(response.returnValues)
     data.workStatus = status[1]
     newData = await updateIssueDetail(data, response)
-    nextState = syncIssues(appState, response.returnValues, newData)
-    appState = nextState
+    nextState = syncIssues(cloneAppState(appState), response.returnValues, newData)
+    appState = cloneAppState(nextState)
     break
   case 'AssignmentApproved':
     console.log('[Projects] AssignmentApproved', appState, response.returnValues)
@@ -163,8 +192,8 @@ async function handleEvents(response) {
     data = await loadIssueData(response.returnValues)
     data.workStatus = status[2]
     newData = await updateIssueDetail(data, response)
-    nextState = syncIssues(appState, response.returnValues, newData)
-    appState = nextState
+    nextState = syncIssues(cloneAppState(appState), response.returnValues, newData)
+    appState = cloneAppState(nextState)
     break
   case 'SubmissionRejected':
     console.log('[Projects] SubmissionRejected', appState, response.returnValues)
@@ -175,11 +204,11 @@ async function handleEvents(response) {
     data.workStatus = status[3]
     console.log('Data: ', data)
     newData = await updateIssueDetail(data, response)
-    nextState = syncIssues(appState, response.returnValues, newData)
-    appState = nextState
+    nextState = syncIssues(cloneAppState(appState), response.returnValues, newData)
+    appState = cloneAppState(nextState)
     break
   case 'WorkSubmitted':
-    console.log('[Projects] WorkSubmitted', appState, response.returnValues)
+    console.log('[Projects] WorkSubmitted', cloneAppState(appState), response.returnValues)
     if(!response.returnValues) {
       break
     }
@@ -187,8 +216,8 @@ async function handleEvents(response) {
     data.workStatus = status[3]
     console.log('Data: ', data)
     newData = await updateIssueDetail(data, response)
-    nextState = syncIssues(appState, response.returnValues, newData)
-    appState = nextState
+    nextState = syncIssues(cloneAppState(appState), response.returnValues, newData)
+    appState = cloneAppState(nextState)
     break
   case 'SubmissionAccepted':
     console.log('[Projects] SubmissionAccepted', appState, response.returnValues)
@@ -200,26 +229,28 @@ async function handleEvents(response) {
     data.workStatus = status[4]
     //const workFinishedData = await loadSubmissionData(response.returnValues)
     //data.work = workFinishedData
-    nextState = syncIssues(appState, response.returnValues, data)
-    appState = nextState
+    nextState = syncIssues(cloneAppState(appState), response.returnValues, data)
+    appState = cloneAppState(nextState)
     break
   case 'IssueCurated':
     console.log('[Projects] IssueCurated', response.returnValues)
-    nextState = await syncRepos(appState, response.returnValues)
+    nextState = await syncRepos(cloneAppState(appState), response.returnValues)
+    appState = cloneAppState(nextState)
     break
   case 'BountySettingsChanged':
     console.log('[Projects] BountySettingsChanged')
-    nextState = await syncSettings(appState) // No returnValues on this
+    nextState = await syncSettings(cloneAppState(appState)) // No returnValues on this
+    appState = cloneAppState(nextState)
     break
   case 'VaultDeposit':
     console.log('[Projects] VaultDeposit')
-    nextState = await syncTokens(appState, response.returnValues)
+    nextState = await syncTokens(cloneAppState(appState), response.returnValues)
+    appState = cloneAppState(nextState)
   default:
     console.log('[Projects] Unknown event catched:', response)
+    nextState = cloneAppState(appState)
   }
-  if(nextState) {
-    app.cache('state', nextState)
-  }
+  app.cache('state', nextState)
 }
 
 async function syncRepos(state, { repoId, ...eventArgs }) {
@@ -273,6 +304,7 @@ async function syncTokens(state, { token }) {
     return state
   } catch (err) {
     console.error('[Projects script] syncSettings settings failed:', err)
+    return state
   }
 }
 
@@ -281,6 +313,8 @@ async function syncTokens(state, { token }) {
  *       Helpers       *
  *                     *
  ***********************/
+
+const cloneAppState = (nextState) => Object.assign({}, nextState)
 
 async function updateIssueDetail(data, response) {
   let requestsData, submissionData
@@ -335,14 +369,9 @@ function loadRepoData(id) {
 
 function loadIssueData({ repoId, issueNumber }) {
   return new Promise(resolve => {
-    app.call('getIssue', repoId, issueNumber).subscribe(({ hasBounty, standardBountyId, balance, token, dataHash, assignee }) => {
-      let contentJSON
-      ipfs.get(dataHash, (err, files) => {
-        for(const file of files) {
-          contentJSON = JSON.parse(file.content.toString('utf8'))
-        }
-        resolve({ balance, hasBounty, token, standardBountyId, assignee, ...contentJSON })
-      })
+    app.call('getIssue', repoId, issueNumber).subscribe(async ({ hasBounty, standardBountyId, balance, token, dataHash, assignee }) => {
+      const bountyData = await ipfsGet(dataHash)
+      resolve({ balance, hasBounty, token, standardBountyId, assignee, ...bountyData })
     })
   })
 }
@@ -361,19 +390,13 @@ function loadRequestsData({ repoId, issueNumber }) {
 
 function getRequest(repoId, issueNumber, applicantId) {
   return new Promise(resolve => {
-    app.call('getApplicant', repoId, issueNumber, applicantId).subscribe( async (response) => {
-      let contentJSON
-      console.log('getApplicant response: ', response)
-      ipfs.get(response.application, (err, files) => {
-        for(const file of files) {
-          contentJSON = JSON.parse(file.content.toString('utf8'))
-        }
-        resolve({
-          contributorAddr: response.applicant,
-          status: assignmentRequestStatus[response.status],
-          requestIPFSHash: response.application,
-          ...contentJSON
-        })
+    app.call('getApplicant', repoId, issueNumber, applicantId).subscribe(async (response) => {
+      const bountyData = await ipfsGet(response.application)
+      resolve({
+        contributorAddr: response.applicant,
+        status: assignmentRequestStatus[response.status],
+        requestIPFSHash: response.application,
+        ...bountyData
       })
     })
   })
@@ -396,13 +419,12 @@ function getSubmission(repoId, issueNumber, submissionIndex) {
   return new Promise(resolve => {
     console.log(repoId, issueNumber, submissionIndex)
     app.call('getSubmission', repoId, issueNumber, submissionIndex).subscribe(async ({ submissionHash, fulfillmentId, status, submitter }) => {
-      let contentJSON
-      ipfs.get(submissionHash, (err, files) => {
-        for(const file of files) {
-          contentJSON = JSON.parse(file.content.toString('utf8'))
-        }
-        console.log('submissionData: ', { status, fulfillmentId, submitter, ...contentJSON })
-        resolve({ status, fulfillmentId, submitter, submissionIPFSHash: submissionHash, ...contentJSON })
+      const bountyData = await ipfsGet(submissionHash)
+      resolve({ status,
+        fulfillmentId,
+        submitter,
+        submissionIPFSHash: submissionHash,
+        ...bountyData
       })
     })
   })
@@ -468,13 +490,20 @@ function checkIssuesLoaded(issues, issueNumber, data) {
   }
 }
 
+let unloadedRepoQueue = []
 async function updateState(state, id, transform) {
   console.log('update state: ' + state + ', id: ' + id)
-  const { repos = [] } = state
+  const { repos, tokens, bountySettings, issues } = determineStateVars(state)
+  let newRepos
   try {
-    let newRepos = await checkReposLoaded(repos, id, transform)
-    let newState = { ...state, repos: newRepos }
-    return newState
+    if (client && client.request) {
+      newRepos = await checkReposLoaded(repos, id, transform)
+      const newState = { tokens, repos: newRepos, bountySettings, issues }
+      return newState
+    } else {
+      unloadedRepoQueue.push(id)
+      return { tokens, repos, bountySettings, issues }
+    }
   } catch (err) {
     console.error(
       'Update repos failed to return:',
@@ -490,10 +519,11 @@ function updateIssueState(state, issueNumber, data) {
   if(data === undefined || data === null) {
     return state
   }
-  const { issues = [] } = state
+  const { repos, tokens, bountySettings, issues } = determineStateVars(state)
+
   try {
     let newIssues = checkIssuesLoaded(issues, issueNumber, data)
-    let newState = { ...state, issues: newIssues }
+    let newState = { repos, tokens, bountySettings, issues: newIssues }
     return newState
   } catch (err) {
     console.error(

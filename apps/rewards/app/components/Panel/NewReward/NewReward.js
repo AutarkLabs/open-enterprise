@@ -65,7 +65,6 @@ class NewReward extends React.Component {
         <FormField
           required
           label="Reference Asset"
-          width="180px"
           input={
             <DropDown
               wide
@@ -78,7 +77,6 @@ class NewReward extends React.Component {
         <FormField
           required
           label="Type"
-          width="180px"
           input={
             <DropDown
               wide
@@ -98,7 +96,6 @@ class NewReward extends React.Component {
         <FormField
           required
           label="Amount"
-          width="180px"
           input={
             <InputDropDown
               textInput={{
@@ -131,6 +128,7 @@ class NewReward extends React.Component {
           required
           input={
             <DateInput
+              width="100%"
               name="dateStart"
               value={this.state.dateStart}
               onChange={dateStart => this.setState({ dateStart })}
@@ -142,6 +140,7 @@ class NewReward extends React.Component {
           required
           input={
             <DateInput
+              width="100%"
               name="periodEnd"
               value={this.state.dateEnd}
               onChange={dateEnd => this.setState({ dateEnd })}
@@ -152,7 +151,7 @@ class NewReward extends React.Component {
 
       <Separator />
 
-      <Info>
+      <Info style={{ marginBottom: '10px' }}>
         <TokenIcon />
         <Summary>
           <p>
@@ -175,7 +174,6 @@ class NewReward extends React.Component {
         <FormField
           required
           label="Amount per cycle"
-          width="180px"
           input={
             <InputDropDown
               textInput={{
@@ -208,6 +206,7 @@ class NewReward extends React.Component {
           required
           input={
             <DateInput
+              width="100%"
               name="dateStart"
               value={this.state.dateStart}
               onChange={dateStart => this.setState({ dateStart })}
@@ -219,6 +218,7 @@ class NewReward extends React.Component {
           required
           input={
             <DateInput
+              width="100%"
               name="dateEnd"
               value={this.state.dateEnd}
               onChange={dateEnd => this.setState({ dateEnd })}
@@ -231,7 +231,6 @@ class NewReward extends React.Component {
         <FormField
           required
           label="Disbursement cycle"
-          width="180px"
           input={
             <DropDown
               wide
@@ -258,7 +257,7 @@ class NewReward extends React.Component {
 
       <Separator />
 
-      <Info>
+      <Info style={{ marginBottom: '10px' }}>
         <TokenIcon />
         <Summary>
           <p>
@@ -311,7 +310,6 @@ class NewReward extends React.Component {
   }
 }
 const Summary = styled.div`
-  margin-bottom: 10px;
   padding-bottom: 2px;
   padding-left: 35px;
   > :not(:last-child) {
@@ -322,10 +320,18 @@ const SummaryBold = styled.span`
   font-weight: bold;
   text-decoration: underline;
 `
+// RewardRow is supposed to have only two elements
 const RewardRow = styled.div`
   display: flex;
-  justify-content: space-between;
   align-content: stretch;
+  > :first-child {
+    width: 50%;
+    padding-right: 10px;
+  }
+  > :last-child {
+    width: 50%;
+    padding-left: 10px;
+  }
 `
 const Separator = styled.hr`
   height: 1px;
