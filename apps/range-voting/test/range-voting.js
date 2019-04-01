@@ -7,6 +7,7 @@ const {
 } = require('@tps/test-helpers/artifacts')
 
 const RangeVoting = artifacts.require('RangeVotingMock')
+const AddressBook = artifacts.require('AddressBook')
 const ExecutionTarget = artifacts.require('ExecutionTarget')
 
 const { assertRevert } = require('@tps/test-helpers/assertThrow')
@@ -28,6 +29,7 @@ const NULL_ADDRESS = '0x00'
 contract('RangeVoting App', accounts => {
   let daoFact = {}
   let app = {}
+  let book = {}
   let token = {}
   let executionTarget = {}
 
@@ -63,7 +65,7 @@ contract('RangeVoting App', accounts => {
 
     // TODO: Revert to only use 2 params when truffle is updated
     // read: https://github.com/AutarkLabs/planning-suite/pull/243
-    const receipt = await dao.newAppInstance(
+    let receipt = await dao.newAppInstance(
       '0x1234',
       (await RangeVoting.new()).address,
       0x0,
@@ -73,6 +75,34 @@ contract('RangeVoting App', accounts => {
 
     app = RangeVoting.at(
       receipt.logs.filter(l => l.event === 'NewAppProxy')[0].args.proxy
+    )
+
+    receipt = await dao.newAppInstance(
+      '0x5678',
+      (await AddressBook.new()).address,
+      0x0,
+      false,
+      { from: root }
+    )
+    book = AddressBook.at(
+      receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
+    )
+
+    await book.initialize()
+
+    await acl.createPermission(
+      ANY_ADDR,
+      book.address,
+      await book.ADD_ENTRY_ROLE(),
+      root,
+      { from: root }
+    )
+    await acl.createPermission(
+      ANY_ADDR,
+      book.address,
+      await book.REMOVE_ENTRY_ROLE(),
+      root,
+      { from: root }
     )
 
     await acl.createPermission(
@@ -123,6 +153,7 @@ contract('RangeVoting App', accounts => {
       await token.generateTokens(holder50, 50)
 
       await app.initialize(
+        book.address,
         token.address,
         minimumParticipation,
         candidateSupportPct,
@@ -135,6 +166,7 @@ contract('RangeVoting App', accounts => {
     it('fails on reinitialization', async () => {
       return assertRevert(async () => {
         await app.initialize(
+          book.address,
           token.address,
           minimumParticipation,
           candidateSupportPct,
@@ -148,13 +180,13 @@ contract('RangeVoting App', accounts => {
         to: executionTarget.address,
         calldata: executionTarget.contract.setSignal.getData(
           // original args: address[], uint256[] supports
-          //  updated args: address[], uint256[] _supports, uint256[] infoIndex, string Info 
-          [accounts[7], accounts[8], accounts[9]],
-          [0, 0, 0],
-          [4, 4, 4],
+          //  updated args: address[], uint256[] _supports, uint256[] infoIndex, string Info
+          [ accounts[7], accounts[8], accounts[9] ],
+          [ 0, 0, 0 ],
+          [ 4, 4, 4 ],
           'arg1arg2arg3',
-          [0x61, 0x61, 0x61],
-          [0x61, 0x61, 0x61],
+          [ 0x61, 0x61, 0x61 ],
+          [ 0x61, 0x61, 0x61 ],
           5,
           false
         )
@@ -172,12 +204,12 @@ contract('RangeVoting App', accounts => {
         calldata: executionTarget.contract.setSignal.getData(
           // original args: address[], uint256[] supports
           //  updated args: address[], uint256[] supports, uint256[] infoIndex, string Info
-          [accounts[7], accounts[8], accounts[9]],
-          [0, 0, 0],
-          [4, 4, 4],
+          [ accounts[7], accounts[8], accounts[9] ],
+          [ 0, 0, 0 ],
+          [ 4, 4, 4 ],
           'arg1arg2arg3',
-          ['0x0', '0x0', '0x0'],
-          ['0x0', '0x0', '0x0'],
+          [ '0x0', '0x0', '0x0' ],
+          [ '0x0', '0x0', '0x0' ],
           5,
           false
         )
@@ -187,7 +219,7 @@ contract('RangeVoting App', accounts => {
         await app.newVote(script, '', { from: holder50 })
       )
       assert.equal(voteId, 1, 'A vote should be created with empty script')
-      let vote = [10, 15, 25]
+      let vote = [ 10, 15, 25 ]
       let voter = holder50
       const castedvoteId = castedVoteId(
         await app.vote(voteId, vote, { from: voter })
@@ -200,12 +232,12 @@ contract('RangeVoting App', accounts => {
         calldata: executionTarget.contract.setSignal.getData(
           // original args: address[], uint256[] supports
           //  updated args: address[], uint256[] supports, uint256[] infoIndex, string Info
-          [accounts[7], accounts[8], accounts[9]],
-          [0, 0, 0],
-          [4, 4, 4],
+          [ accounts[7], accounts[8], accounts[9] ],
+          [ 0, 0, 0 ],
+          [ 4, 4, 4 ],
           'arg1arg2arg3',
-          [1, 2, 3],
-          [2, 4, 6],
+          [ 1, 2, 3 ],
+          [ 2, 4, 6 ],
           5,
           true
         )
@@ -214,7 +246,7 @@ contract('RangeVoting App', accounts => {
       const voteId = createdVoteId(
         await app.newVote(script, '', { from: holder50 })
       )
-      let vote = [10, 15, 25]
+      let vote = [ 10, 15, 25 ]
       let voter = holder50
       await app.vote(voteId, vote, { from: voter })
       timeTravel(RangeVotingTime + 1)
@@ -259,7 +291,7 @@ contract('RangeVoting App', accounts => {
       const voteId = createdVoteId(
         await app.newVote(script, '', { from: holder50 })
       )
-      let vote = [10, 15, 25]
+      let vote = [ 10, 15, 25 ]
       await app.addCandidate(voteId, '0x', accounts[7],0x0,0x0)
       await app.addCandidate(voteId, '0x', accounts[8],0x0,0x0)
       await app.addCandidate(voteId, '0x', accounts[9],0x0,0x0)
@@ -276,12 +308,12 @@ contract('RangeVoting App', accounts => {
         calldata: executionTarget.contract.setSignal.getData(
           // original args: address[], uint256[] supports
           //  updated args: address[], uint256[] supports, uint256[] infoIndex, string Info
-          [accounts[7], accounts[8], accounts[9]],
-          [0, 0, 0],
-          [4, 4, 4],
+          [ accounts[7], accounts[8], accounts[9] ],
+          [ 0, 0, 0 ],
+          [ 4, 4, 4 ],
           'arg1arg2arg3',
-          ['0x0', '0x0', '0x0'],
-          ['0x0', '0x0', '0x0'],
+          [ '0x0', '0x0', '0x0' ],
+          [ '0x0', '0x0', '0x0' ],
           5,
           false
         )
@@ -299,8 +331,8 @@ contract('RangeVoting App', accounts => {
       let voteId = {}
       let script = ''
       let candidateState
-      let [, , ...candidates] = accounts.slice(0, 5)
-      let [apple, orange, banana] = candidates
+      let [ , , ...candidates ] = accounts.slice(0, 5)
+      let [ apple, orange, banana ] = candidates
 
       beforeEach(async () => {
         let action = {
@@ -308,11 +340,11 @@ contract('RangeVoting App', accounts => {
           calldata: executionTarget.contract.setSignal.getData(
             // TODO: Candidates need to be added in reverse order to keep their initial index
             candidates,
-            [0, 0, 0],
-            [4, 4, 4],
+            [ 0, 0, 0 ],
+            [ 4, 4, 4 ],
             'arg1arg2arg3',
-            [0x1, 0x2, 0x3],
-            [0x1, 0x2, 0x3],
+            [ 0x1, 0x2, 0x3 ],
+            [ 0x1, 0x2, 0x3 ],
             5,
             false
           )
@@ -381,7 +413,7 @@ contract('RangeVoting App', accounts => {
       })
 
       it('holder can vote', async () => {
-        let vote = [1, 2, 3]
+        let vote = [ 1, 2, 3 ]
         let voter = holder19
 
         await app.vote(voteId, vote, { from: voter })
@@ -434,7 +466,7 @@ contract('RangeVoting App', accounts => {
       })
 
       it('holder can modify vote', async () => {
-        let voteTwo = [6, 5, 4]
+        let voteTwo = [ 6, 5, 4 ]
 
         let voter = holder31
 
@@ -488,7 +520,7 @@ contract('RangeVoting App', accounts => {
       })
 
       it('token transfers dont affect RangeVoting', async () => {
-        let vote = [10, 9, 12]
+        let vote = [ 10, 9, 12 ]
         let voter = holder31
         await token.transfer(nonHolder, 31, { from: voter })
         await app.vote(voteId, vote, { from: voter })
@@ -515,9 +547,9 @@ contract('RangeVoting App', accounts => {
         assert.equal(canExecute, false, 'canExecute should be false')
       })
       it('cannot execute if vote instance executed', async () => {
-        let voteOne = [4, 15, 0]
-        let voteTwo = [20, 10, 1]
-        let voteThree = [30, 15, 5]
+        let voteOne = [ 4, 15, 0 ]
+        let voteTwo = [ 20, 10, 1 ]
+        let voteThree = [ 30, 15, 5 ]
         await app.vote(voteId, voteOne, { from: holder19 })
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
@@ -528,9 +560,9 @@ contract('RangeVoting App', accounts => {
         assert.equal(canExecute, false, 'canExecute should be false')
       })
       it('can execute if vote has sufficient candidate support', async () => {
-        let voteOne = [4, 15, 0]
-        let voteTwo = [20, 10, 1]
-        let voteThree = [30, 15, 5]
+        let voteOne = [ 4, 15, 0 ]
+        let voteTwo = [ 20, 10, 1 ]
+        let voteThree = [ 30, 15, 5 ]
         await app.vote(voteId, voteOne, { from: holder19 })
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
@@ -540,9 +572,9 @@ contract('RangeVoting App', accounts => {
         assert.equal(canExecute, true, 'canExecute should be true')
       })
       it('cannot execute if vote has 0 candidate support', async () => {
-        let voteOne = [0, 0, 0]
-        let voteTwo = [0, 0, 0]
-        let voteThree = [0, 0, 0]
+        let voteOne = [ 0, 0, 0 ]
+        let voteTwo = [ 0, 0, 0 ]
+        let voteThree = [ 0, 0, 0 ]
         await app.vote(voteId, voteOne, { from: holder19 })
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
@@ -551,9 +583,9 @@ contract('RangeVoting App', accounts => {
         assert.equal(canExecute, false, 'canExecute should be false')
       })
       it('cannot execute if vote has insufficient candidate support', async () => {
-        let voteOne = [2, 17, 0]
-        let voteTwo = [18, 12, 1]
-        let voteThree = [30, 19, 1]
+        let voteOne = [ 2, 17, 0 ]
+        let voteTwo = [ 18, 12, 1 ]
+        let voteThree = [ 30, 19, 1 ]
         await app.vote(voteId, voteOne, { from: holder19 })
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
@@ -562,9 +594,9 @@ contract('RangeVoting App', accounts => {
         assert.equal(canExecute, false, 'canExecute should be false')
       })
       it('can execute vote if minimum participation (quorum) has been met', async () => {
-        let voteOne = [10, 0, 0]
-        let voteTwo = [0, 20, 0]
-        let voteThree = [0, 0, 40]
+        let voteOne = [ 10, 0, 0 ]
+        let voteTwo = [ 0, 20, 0 ]
+        let voteThree = [ 0, 0, 40 ]
         await app.vote(voteId, voteOne, { from: holder19 })
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
@@ -573,9 +605,9 @@ contract('RangeVoting App', accounts => {
         assert.equal(canExecute, true, 'canExecute should be true')
       })
       it('cannot execute vote if minimum participation (quorum) not met', async () => {
-        let voteOne = [10, 0, 0]
-        let voteTwo = [0, 9, 0]
-        let voteThree = [0, 0, 10]
+        let voteOne = [ 10, 0, 0 ]
+        let voteTwo = [ 0, 9, 0 ]
+        let voteThree = [ 0, 0, 10 ]
         await app.vote(voteId, voteOne, { from: holder19 })
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
@@ -632,6 +664,7 @@ contract('RangeVoting App', accounts => {
       const candidateSupportPct = pct16(0)
       return assertRevert(async () => {
         await app.initialize(
+          book.address,
           token.address,
           minimumParticipation,
           candidateSupportPct,
@@ -645,6 +678,7 @@ contract('RangeVoting App', accounts => {
       const candidateSupportPct = pct16(50)
       return assertRevert(async () => {
         await app.initialize(
+          book.address,
           token.address,
           minimumParticipation,
           candidateSupportPct,
@@ -658,6 +692,7 @@ contract('RangeVoting App', accounts => {
       const candidateSupportPct = pct16(20)
       return assertRevert(async () => {
         await app.initialize(
+          book.address,
           token.address,
           minimumParticipation,
           candidateSupportPct,
