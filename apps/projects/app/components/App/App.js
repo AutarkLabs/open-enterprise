@@ -14,6 +14,7 @@ import { STATUS } from '../../utils/github'
 import ErrorBoundary from './ErrorBoundary'
 import BigNumber from 'bignumber.js'
 import { ipfsAdd, computeIpfsString } from '../../utils/ipfs-helpers'
+import { networkContextType } from '../../../../../shared/ui'
 
 const ASSETS_URL = './aragon-ui-assets/'
 
@@ -112,11 +113,24 @@ class App extends React.PureComponent {
     network: {},
   }
 
+  static childContextTypes = {
+    network: networkContextType,
+  }
+
   state = {
     repos: [],
     panelProps: {},
     activeIndex: { tabIndex: 0, tabData: {} },
     githubLoading: false,
+  }
+
+  getChildContext() {
+    const { network } = this.props
+    return {
+      network: {
+        type: network.type,
+      },
+    }
   }
 
   componentDidMount() {
