@@ -13,14 +13,12 @@ import PanelManager, { PANELS } from '../Panel'
 import { STATUS } from '../../utils/github'
 import ErrorBoundary from './ErrorBoundary'
 import BigNumber from 'bignumber.js'
-import { networkContextType } from '../../../../../shared/ui'
 import { ipfsAdd, computeIpfsString } from '../../utils/ipfs-helpers'
+import { networkContextType } from '../../../../../shared/ui'
 
 const ASSETS_URL = './aragon-ui-assets/'
 
 const GITHUB_URI = 'https://github.com/login/oauth/authorize'
-
-let ipfsClient = require('ipfs-http-client')
 
 // TODO: let the user customize the github app on settings screen?
 // TODO: Extract to an external js utility to keep this file clean
@@ -29,8 +27,6 @@ let ipfsClient = require('ipfs-http-client')
 let CLIENT_ID = ''
 let REDIRECT_URI = ''
 let AUTH_URI = ''
-
-let infuraIpfs = ipfsClient({ host: 'ipfs.infura.io', port: '5001', protocol: 'https' })
 
 switch (window.location.origin) {
 case 'http://localhost:3333':
@@ -355,12 +351,19 @@ class App extends React.PureComponent {
       panelProps: {
         issue,
         onReviewApplication: this.onReviewApplication,
+        githubCurrentUser: this.props.githubCurrentUser,
       },
     }))
   }
 
-  onReviewApplication = (issue, requestIndex, approved) => {
+  onReviewApplication = async (issue, requestIndex, approved, review) => {
     this.closePanel()
+    // new IPFS data is old data plus state returned from the panel
+    const ipfsData = issue.requestsData[requestIndex]
+    ipfsData.review = review
+
+    const requestIPFSHash = await ipfsAdd(ipfsData)
+
     console.log('onReviewApplication Issue:', issue)
     console.log(
       'onReviewApplication submission:',
@@ -375,7 +378,7 @@ class App extends React.PureComponent {
       web3.toHex(issue.repoId),
       issue.number,
       issue.requestsData[requestIndex].contributorAddr,
-      issue.requestsData[requestIndex].requestIPFSHash,
+      requestIPFSHash,
       approved,
     )
   }
@@ -386,19 +389,25 @@ class App extends React.PureComponent {
       panelProps: {
         issue,
         onReviewWork: this.onReviewWork,
+        githubCurrentUser: this.props.githubCurrentUser,
       },
     }))
   }
 
-  onReviewWork = (state, issue) => {
-    console.log('onReviewWork', issue)
+  onReviewWork = async (state, issue) => {
+    // new IPFS data is old data plus state returned from the panel
+    const ipfsData = issue.workSubmissions[issue.workSubmissions.length - 1]
+    ipfsData.review = state
+    const requestIPFSHash = await ipfsAdd(ipfsData)
+
     console.log(
       'onReviewWork',
+      ipfsData.review,
       web3.toHex(issue.repoId),
       issue.number,
       issue.workSubmissions[issue.workSubmissions.length - 1],
       state.accepted,
-      issue.workSubmissions[issue.workSubmissions.length - 1].submissionIPFSHash
+      requestIPFSHash,
     )
     this.closePanel()
     this.props.app.reviewSubmission(
@@ -406,7 +415,7 @@ class App extends React.PureComponent {
       issue.number,
       issue.workSubmissions.length - 1,
       state.accepted,
-      issue.workSubmissions[issue.workSubmissions.length - 1].submissionIPFSHash
+      requestIPFSHash,
     )
   }
 
