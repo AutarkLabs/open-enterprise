@@ -129,9 +129,9 @@ class ViewReward extends React.Component {
             <div>
               <FieldTitle>Period</FieldTitle>
               <div>
-                {format(startDate, 'd-m-yyyy')}
+                {Intl.DateTimeFormat().format(startDate)}
                 {' - '}
-                {format(endDate, 'd-m-yyyy')}
+                {Intl.DateTimeFormat().format(endDate)}
               </div>
             </div>
           </SidePanelSplit>

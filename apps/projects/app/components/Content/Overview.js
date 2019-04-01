@@ -3,8 +3,10 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { STATUS } from '../../utils/github'
-import { Project, Empty } from '../Card'
+import { Project, Empty, Error } from '../Card'
 import Unauthorized from './Unauthorized'
+import { LoadingAnimation } from '../Shared'
+import { EmptyWrapper } from '../Shared'
 
 const Overview = ({
   changeActiveIndex,
@@ -13,9 +15,14 @@ const Overview = ({
   onRemoveProject,
   projects,
   status,
+  githubLoading,
 }) => {
-  if (status === STATUS.INITIAL) {
+  if (githubLoading) {
+    return <EmptyWrapper><LoadingAnimation /></EmptyWrapper>
+  } else if (status === STATUS.INITIAL) {
     return <Unauthorized onLogin={onLogin} />
+  } else if (status === STATUS.FAILED) {
+    return <Error action={() => {}} />
   }
   const projectsEmpty = projects.length === 0
   // console.log('Overview projects:', projects)

@@ -182,11 +182,8 @@ Issue.propTypes = {
 const StyledIssue = styled.div`
   flex: 1;
   width: 100%;
-  /*min-width: 600px;*/
   background: ${theme.contentBackground};
   display: flex;
-  /*padding-left: 10px;*/
-  /*height: 112px;*/
   height: auto;
   align-items: center;
   border-radius: 3px;
@@ -210,7 +207,6 @@ const IssueData = styled.div`
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  /*height: 90px;*/
   justify-content: space-around;
   padding: 12px 12px 12px 0;
   position: relative;
