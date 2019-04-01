@@ -53,8 +53,18 @@ const repoData = id => `{
     }
 }`
 
+const determineStateVars = (state) => {
+  const repos = (!!state && state.repos) || []
+  const tokens = (!!state && state.tokens) || []
+  const issues = (!!state && state.issues) || []
+  const bountySettings = (!!state && state.bountySettings) || {}
+
+  return { repos, tokens, bountySettings, issues }
+}
+
 const app = new Aragon()
-let appState, vault, bounties, tokens
+let appState = determineStateVars()
+let vault, bounties, tokens
 
 /**
  * Observe the github object.
@@ -306,15 +316,6 @@ async function syncTokens(state, { token }) {
 
 const resetAppState = (nextState) => Object.assign({}, nextState)
 
-const determineStateVars = (state) => {
-  const repos = (state && state.repos) || []
-  const tokens = (state && state.tokens) || []
-  const issues = (state && state.issues) || []
-  const bountySettings = (state && state.bountySettings) || {}
-
-  return { repos, tokens, bountySettings, issues }
-}
-
 async function updateIssueDetail(data, response) {
   let requestsData, submissionData
   requestsData = await loadRequestsData(response.returnValues)
@@ -492,16 +493,16 @@ function checkIssuesLoaded(issues, issueNumber, data) {
 let unloadedRepoQueue = []
 async function updateState(state, id, transform) {
   console.log('update state: ' + state + ', id: ' + id)
-  const { repos, tokens, bountySettings } = determineStateVars(state)
+  const { repos, tokens, bountySettings, issues } = determineStateVars(state)
   let newRepos
   try {
     if (client && client.request) {
       newRepos = await checkReposLoaded(repos, id, transform)
-      let newState = { tokens, repos: newRepos, bountySettings }
+      const newState = { tokens, repos: newRepos, bountySettings, issues }
       return newState
     } else {
       unloadedRepoQueue.push(id)
-      return { tokens, repos, bountySettings }
+      return { tokens, repos, bountySettings, issues }
     }
   } catch (err) {
     console.error(
