@@ -1,4 +1,5 @@
-import addressBookAbi from '../../../shared/json-abis/address-book'
+import AddressBookJSON from '../../../shared/json-abis/address-book.json'
+import { first, map } from 'rxjs/operators' // Make sure observables have first()
 import { app } from './'
 
 /// /////////////////////////////////////
@@ -36,19 +37,20 @@ export const onEntryRemoved = async ({ entries }, { addr }) => {
 /// /////////////////////////////////////
 
 const loadEntryData = async (addr, addressBook) => {
-  const addressBookApp = app.external(addressBook, addressBookAbi)
+  const addressBookApp = app.external(addressBook, AddressBookJSON.abi)
 
   return addressBookApp
     .getEntry(addr)
-    .first()
-    .map(
-      entry =>
+    .pipe(
+      first(),
+      map(
+        entry =>
         // cover removed entries
-        !entry ? null : {
-          entryAddress: entry[0],
-          name: entry[1],
-          entryType: entry[2],
-        }
-    )
+          !entry ? null : {
+            entryAddress: entry[0],
+            name: entry[1],
+            entryType: entry[2],
+          }
+      ))
     .toPromise()
 }

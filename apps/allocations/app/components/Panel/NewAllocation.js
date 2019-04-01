@@ -6,7 +6,7 @@ import { OptionsInput, SettingsInput } from '../../../../../shared/ui'
 
 import {
   AddressDropDownOptions,
-  // DescriptionInput,
+  DescriptionInput,
   Form,
   FormField,
   InputDropDown,
@@ -119,6 +119,7 @@ class NewAllocation extends React.Component {
       recurring: recurring,
       period: recurring ? 86400 * 31 : 0,
       balance: this.state.amount * 10e17,
+      description: this.state.allocationDescription,
     }
     const overLimit = allocation.balance > props.limit
 
@@ -168,21 +169,21 @@ class NewAllocation extends React.Component {
       <ErrorMessage key={i} hasError={state[e]} type={e} />
     ))
 
-    // const descriptionField = (
-    //   <FormField
-    //     visible={false}
-    //     required
-    //     label="Description"
-    //     input={
-    //       <DescriptionInput
-    //         name="allocationDescription"
-    //         onChange={this.changeField}
-    //         placeholder="Describe your allocation."
-    //         value={state.allocationDescription}
-    //       />
-    //     }
-    //   />
-    // )
+    const descriptionField = (
+      <FormField
+        visible={true}
+        required
+        label="Description"
+        input={
+          <DescriptionInput
+            name="allocationDescription"
+            onChange={this.changeField}
+            placeholder="Describe your allocation."
+            value={state.allocationDescription}
+          />
+        }
+      />
+    )
 
     const allocationTypeField = (
       <FormField
@@ -297,7 +298,7 @@ class NewAllocation extends React.Component {
           submitText="Submit Allocation"
         >
           {warningMessages}
-          {/* {descriptionField} */}
+          {descriptionField}
           {allocationTypeField}
           {settingsField}
           {amountField}

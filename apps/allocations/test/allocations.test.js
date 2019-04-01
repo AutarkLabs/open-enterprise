@@ -112,7 +112,7 @@ contract('Allocations App', accounts => {
       bobafettInitialBalance = await web3.eth.getBalance(bobafett)
       dengarInitialBalance = await web3.eth.getBalance(dengar)
       bosskInitialBalance = await web3.eth.getBalance(bossk)
-      candidateAddresses = [bobafett, dengar, bossk]
+      candidateAddresses = [ bobafett, dengar, bossk ]
     })
 
     beforeEach(async () => {
@@ -127,13 +127,14 @@ contract('Allocations App', accounts => {
         value: web3.toWei(0.01, 'ether'),
       })
 
-      supports = [500, 200, 300]
+      supports = [ 500, 200, 300 ]
       totalsupport = 1000
       const zeros = new Array(candidateAddresses.length).fill(0)
       await app.setDistribution(
         candidateAddresses,
         supports,
         zeros,
+        '',
         '',
         zeros,
         zeros,
@@ -224,7 +225,7 @@ contract('Allocations App', accounts => {
         0x0
       )).logs[0].args.accountId.toNumber()
 
-      supports = [300, 300, 400]
+      supports = [ 300, 300, 400 ]
       totalsupport = 1000
 
       return assertRevert(async () => {
@@ -233,6 +234,7 @@ contract('Allocations App', accounts => {
           candidateAddresses,
           supports,
           zeros,
+          '',
           '',
           zeros,
           zeros,
@@ -261,7 +263,7 @@ contract('Allocations App', accounts => {
       })
 
       it('cannot set Distribution before funding the account', async () => {
-        supports = [500, 200, 300]
+        supports = [ 500, 200, 300 ]
         totalsupport = 1000
         const zeros = new Array(candidateAddresses.length).fill(0)
         return assertRevert(async () => {
@@ -269,6 +271,7 @@ contract('Allocations App', accounts => {
             candidateAddresses,
             supports,
             zeros,
+            '',
             '',
             zeros,
             zeros,
@@ -286,7 +289,7 @@ contract('Allocations App', accounts => {
           value: web3.toWei(3.00, 'ether'),
         })
 
-        supports = [500, 200, 300]
+        supports = [ 500, 200, 300 ]
         totalsupport = 1000
         const zeros = new Array(candidateAddresses.length).fill(0)
         return assertRevert(async () => {
@@ -294,6 +297,7 @@ contract('Allocations App', accounts => {
             candidateAddresses,
             supports,
             zeros,
+            '',
             '',
             zeros,
             zeros,
@@ -327,7 +331,7 @@ contract('Allocations App', accounts => {
     let supports
 
     before(async () => {
-      candidateAddresses = [bobafett, dengar, bossk]
+      candidateAddresses = [ bobafett, dengar, bossk ]
     })
 
     beforeEach(async () => {
@@ -350,13 +354,14 @@ contract('Allocations App', accounts => {
     })
 
     it('sets the distribution', async () => {
-      supports = [300, 400, 300]
+      supports = [ 300, 400, 300 ]
       totalsupport = 1000
       const zeros = new Array(candidateAddresses.length).fill(0)
       await app.setDistribution(
         candidateAddresses,
         supports,
         zeros,
+        '',
         '',
         zeros,
         zeros,
@@ -392,12 +397,13 @@ contract('Allocations App', accounts => {
       )
     })
     it('cannot accept funds via a fund call', async () => {
-      supports = [300, 400, 300]
+      supports = [ 300, 400, 300 ]
       const zeros = new Array(candidateAddresses.length).fill(0)
       await app.setDistribution(
         candidateAddresses,
         supports,
         zeros,
+        '',
         '',
         zeros,
         zeros,
@@ -409,12 +415,12 @@ contract('Allocations App', accounts => {
         { from: empire }
       )
       return assertRevert(async () => {
-        await app.fund(allocationId, {from: empire, value: web3.toWei(0.01, 'ether')})
+        await app.fund(allocationId, { from: empire, value: web3.toWei(0.01, 'ether') })
       })
     })
     it('cannot accept funds via setDistribution', async () => {
       //assertrevert when attempt to add funds
-      supports = [300, 400, 300]
+      supports = [ 300, 400, 300 ]
       totalsupport = 1000
       const zeros = new Array(candidateAddresses.length).fill(0)
       return assertRevert(async () => {
@@ -422,6 +428,7 @@ contract('Allocations App', accounts => {
           candidateAddresses,
           supports,
           zeros,
+          '',
           '',
           zeros,
           zeros,
@@ -458,7 +465,7 @@ contract('Allocations App', accounts => {
       bobafettInitialBalance = await web3.eth.getBalance(bobafett)
       dengarInitialBalance = await web3.eth.getBalance(dengar)
       bosskInitialBalance = await web3.eth.getBalance(bossk)
-      candidateAddresses = [bobafett, dengar, bossk]
+      candidateAddresses = [ bobafett, dengar, bossk ]
     })
 
     beforeEach(async () => {
@@ -469,7 +476,7 @@ contract('Allocations App', accounts => {
       )).logs[0].args.accountId.toNumber()
     })
     it('cannot occur more frequently than daily', async () => {
-      supports = [300, 400, 300]
+      supports = [ 300, 400, 300 ]
       totalsupport = 1000
       const zeros = new Array(candidateAddresses.length).fill(0)
       return assertRevert(async () => {
@@ -477,6 +484,7 @@ contract('Allocations App', accounts => {
           candidateAddresses,
           supports,
           zeros,
+          '',
           '',
           zeros,
           zeros,
@@ -491,7 +499,7 @@ contract('Allocations App', accounts => {
     })
 
     it('will not execute more frequently than the specified period', async () => {
-      supports = [300, 400, 300]
+      supports = [ 300, 400, 300 ]
       totalsupport = 1000
       const zeros = new Array(candidateAddresses.length).fill(0)
       await app.fund(allocationId, {
@@ -502,6 +510,7 @@ contract('Allocations App', accounts => {
         candidateAddresses,
         supports,
         zeros,
+        '',
         '',
         zeros,
         zeros,

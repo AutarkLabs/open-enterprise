@@ -593,11 +593,13 @@ contract('Projects App', accounts => {
       const issueRepos = zeros
       const issueNumbers = zeros
       const unused_curationId = 0
+      const description = 'description'
       await app.curateIssues(
         unusedAddresses,
         issuePriorities,
         issueDescriptionIndices,
         unused_issueDescriptions,
+        description,
         issueRepos,
         issueNumbers,
         unused_curationId
@@ -614,12 +616,14 @@ contract('Projects App', accounts => {
         const issueRepos = zeros
         const issueNumbers = zeros
         const unused_curationId = 0
+        const description = 'description'
         assertRevert(async () => {
           await app.curateIssues(
             unusedAddresses,
             issuePriorities,
             issueDescriptionIndices,
             unused_issueDescriptions,
+            description,
             issueRepos,
             issueNumbers,
             unused_curationId
@@ -635,12 +639,14 @@ contract('Projects App', accounts => {
         const issueRepos = zeros.slice(0, 3)
         const issueNumbers = zeros
         const unused_curationId = 0
+        const description = 'description'
         assertRevert(async () => {
           await app.curateIssues(
             unusedAddresses,
             issuePriorities,
             issueDescriptionIndices,
             unused_issueDescriptions,
+            description,
             issueRepos,
             issueNumbers,
             unused_curationId
@@ -656,12 +662,14 @@ contract('Projects App', accounts => {
         const issueRepos = zeros
         const issueNumbers = zeros.slice(0, 3)
         const unused_curationId = 0
+        const description = 'description'
         assertRevert(async () => {
           await app.curateIssues(
             unusedAddresses,
             issuePriorities,
             issueDescriptionIndices,
             unused_issueDescriptions,
+            description,
             issueRepos,
             issueNumbers,
             unused_curationId

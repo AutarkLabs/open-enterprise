@@ -14,6 +14,7 @@ import {
   theme,
 } from '@aragon/ui'
 import { combineLatest } from '../../rxjs'
+import { first } from 'rxjs/operators' // Make sure observables have .first
 import { provideNetwork } from '../../../../../shared/ui'
 import { VOTE_NAY, VOTE_YEA } from '../../utils/vote-types'
 import { safeDiv } from '../../utils/math-utils'
@@ -91,7 +92,7 @@ class VotePanelContent extends React.Component {
     const { tokenContract, user } = this.props
     if (tokenContract && user) {
       combineLatest(tokenContract.balanceOf(user), tokenContract.decimals())
-        .first()
+        .pipe(first())
         .subscribe(([ balance, decimals ]) => {
           this.setState({
             userBalance: balance,
@@ -106,7 +107,7 @@ class VotePanelContent extends React.Component {
       // Get if user can vote
       app
         .call('canVote', vote.voteId, user)
-        .first()
+        .pipe(first())
         .subscribe(canVote => {
           this.setState({
             userCanVote: canVote,
