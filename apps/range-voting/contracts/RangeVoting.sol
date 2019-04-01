@@ -4,6 +4,8 @@ import "@aragon/os/contracts/apps/AragonApp.sol";
 
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 
+import "@tps/apps-address-book/contracts/AddressBook.sol";
+
 import "@aragon/os/contracts/lib/math/SafeMath.sol";
 
 import "@aragon/os/contracts/lib/math/SafeMath64.sol";
@@ -57,6 +59,7 @@ contract RangeVoting is IForwarder, AragonApp {
     using SafeMath64 for uint64;
 
     MiniMeToken public token;
+    AddressBook public addressBook;
     uint256 public globalCandidateSupportPct; //supportRequiredPct;
     uint256 public minParticipationPct; //minAcceptQuorumPct;
     uint64 public voteTime;
@@ -137,6 +140,7 @@ contract RangeVoting is IForwarder, AragonApp {
     *        vote (unless it is impossible for the fate of the vote to change)
     */
     function initialize(
+        AddressBook _addressBook,
         MiniMeToken _token,
         uint256 _minParticipationPct,
         uint256 _candidateSupportPct,
@@ -148,6 +152,7 @@ contract RangeVoting is IForwarder, AragonApp {
         require(_minParticipationPct <= PCT_BASE); // solium-disable-line error-reason
         require(_minParticipationPct >= _candidateSupportPct); // solium-disable-line error-reason
         token = _token;
+        addressBook = _addressBook;
         minParticipationPct = _minParticipationPct;
         globalCandidateSupportPct = _candidateSupportPct;
         voteTime = _voteTime;
@@ -461,7 +466,7 @@ contract RangeVoting is IForwarder, AragonApp {
     function _goToParamOffset(uint256 _paramNum, bytes _executionScript) internal pure returns(uint256 paramOffset) {
         /*
         param numbers and what they map to:
-        1. Candidate addresses
+        1. candidate addresses
         2. Supports values
         3. Info String indexes
         4. Info String length
