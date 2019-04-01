@@ -304,7 +304,7 @@ class Issues extends React.PureComponent {
     return issues.map(({ __typename, repository: { id, name }, ...fields }) => {
       const bountyId = bountyIssueObj[fields.number]
       const repoIdFromBounty = bountyId && bountyId.data.repoId
-      if (repoIdFromBounty === id) {
+      if (bountyId && repoIdFromBounty === id) {
         const data = bountyIssueObj[fields.number].data
         const balance = BigNumber(bountyIssueObj[fields.number].data.balance)
           .div(BigNumber(10 ** tokenObj[data.token].decimals))
@@ -352,42 +352,46 @@ class Issues extends React.PureComponent {
     const {
       projects,
       onNewProject,
-      activeIndex,
-      tokens,
-      bountyIssues,
-      bountySettings,
     } = this.props
     const { currentIssue, showIssueDetail } = this.state
 
     // better return early if we have no projects added?
     if (projects.length === 0) return <Empty action={onNewProject} />
 
-    // better return early if we have no projects added?
-    if (projects.length === 0) return <Empty action={onNewProject} />
-    if (showIssueDetail)
+    if (showIssueDetail) {
+
+      currentIssue.repository = {
+        name: currentIssue.repo,
+        id: currentIssue.repoId,
+        __typename: 'Repository',
+      }
+
+      const currentIssueShaped = this.shapeIssues([currentIssue])[0]
+
       return (
         <IssueDetail
-          issue={currentIssue}
+          issue={currentIssueShaped}
+
           onClose={this.handleIssueDetailClose}
           onReviewApplication={() => {
-            this.handleReviewApplication(currentIssue)
+            this.handleReviewApplication(currentIssueShaped)
           }}
           onRequestAssignment={() => {
-            this.handleRequestAssignment(currentIssue)
+            this.handleRequestAssignment(currentIssueShaped)
           }}
           onSubmitWork={() => {
-            this.handleSubmitWork(currentIssue)
+            this.handleSubmitWork(currentIssueShaped)
           }}
           onAllocateSingleBounty={() => {
-            this.handleAllocateSingleBounty(currentIssue)
+            this.handleAllocateSingleBounty(currentIssueShaped)
           }}
           onReviewWork={() => {
-            this.handleReviewWork(currentIssue)
+            this.handleReviewWork(currentIssueShaped)
           }}
         />
       )
+    }
 
-    const { allSelected } = this.state
     const reposIds = projects.map(project => project.data._repo)
 
     // Build an array of plain issues by flattening the data obtained from github API
