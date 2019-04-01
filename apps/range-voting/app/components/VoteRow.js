@@ -109,7 +109,7 @@ class VoteRow extends React.Component {
                   cursor: 'pointer',
                   padding: '2px 8px',
                   pointerEvents: 'auto'
-                  }}                
+                }}                
                 onClick={() => this.setState({ showMore: !showMore })}
               >
                 {showMore
