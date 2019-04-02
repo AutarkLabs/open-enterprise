@@ -11,7 +11,7 @@ import { BOUNTY_STATUS, BOUNTY_BADGE_COLOR } from '../../../../utils/bounty-stat
 const StyledTable = styled.div`
   margin-bottom: 20px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   border: solid ${theme.contentBorder};
   border-width: 1px 0;
   > :not(:first-child) {
@@ -67,7 +67,7 @@ const SummaryTable = ({ expLevel, deadline, workStatus, balance }) => {
 const Wrapper = styled.div`
   display: flex;
   height: 100%;
-  padding: 10px;
+  padding-top: 10px;
 `
 // todo: wrapper component for different sizes (changes padding mostly)
 
@@ -417,7 +417,7 @@ const EventsCard = styled(DetailsCard)`
     padding: 16px 0 6px 16px;
   }
   > :not(:last-child) :not(:first-child) {
-    border-bottom: 1px solid #d1d1d1;
+    border-bottom: 1px solid ${theme.contentBorder};;
   }
   > :not(:last-child) {
     margin-bottom: 0;
