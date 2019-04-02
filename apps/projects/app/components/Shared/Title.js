@@ -24,7 +24,6 @@ const Title = ({ text, shadow, handleMenuPanelOpen }) => (
         below('small') && <MenuButton onClick={handleMenuPanelOpen} />
       }
     </Viewport>
-    {/**/}
     <StyledTitle size="xxlarge" shadow={shadow}>
       {text}
     </StyledTitle>

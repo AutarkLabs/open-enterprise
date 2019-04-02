@@ -8,8 +8,6 @@ import {
   Badge,
   Checkbox,
   ContextMenu,
-  ContextMenuItem,
-  Viewport,
 } from '@aragon/ui'
 
 import { formatDistance } from 'date-fns'
@@ -117,18 +115,18 @@ const Issue = ({
               {title}
             </IssueTitle>
 
-            {(balance > 0) && (
+            {(BOUNTY_STATUS[workStatus]) && (
               <Text.Block size="small" color={theme.textTertiary}>
                 <span style={{ marginRight: '15px' }}>
-                  {BOUNTY_STATUS[workStatus]}
-                  {dot}
                   {expLevel}
                   {dot}
-                  Due in {DeadlineDistance(deadline)}
+                  {balance > 0 ? BOUNTY_STATUS[workStatus] : BOUNTY_STATUS['fulfilled']}
+                  {dot}
+                    Due {DeadlineDistance(deadline)}
                 </span>
               </Text.Block>
             )}
-            {(balance > 0) && (
+            {/*(BOUNTY_STATUS[workStatus]) && (
               <Text.Block size="small" color={theme.textTertiary}>
                 <span style={{ marginRight: '15px' }}>
                   {slots} Available
@@ -136,11 +134,11 @@ const Issue = ({
                   {requestsData.length} Applicants
                 </span>
               </Text.Block>
-            )}
+            )*/}
           </IssueTitleDetails>
 
           <Balance>
-            {balance > 0 && (
+            {(BOUNTY_STATUS[workStatus]) && (
               <Badge
                 style={{ padding: '5px 10px' }}
                 background={BOUNTY_BADGE_COLOR[workStatus].bg}

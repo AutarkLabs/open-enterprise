@@ -201,7 +201,6 @@ const calculateAgo = pastDate => {
 const activities = (requestsData, workSubmissions, onReviewApplication, onReviewWork) => {
   const events = []
 
-  //console.log('--activityRow:', requestsData)
   if (requestsData) {
     requestsData.forEach(data => {
 
