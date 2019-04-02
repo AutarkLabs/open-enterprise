@@ -90,7 +90,7 @@ const Issue = ({
         <ClickArea onClick={onClick} />
 
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Text color={theme.textSecondary} size="small">
+          <Text color={theme.textSecondary} size="xsmall">
             {repo} #{number}
           </Text>
           {workStatus !== 'fulfilled' && (
@@ -116,7 +116,7 @@ const Issue = ({
             </IssueTitle>
 
             {(BOUNTY_STATUS[workStatus]) && (
-              <Text.Block size="small" color={theme.textTertiary}>
+              <Text.Block color={theme.textSecondary} style={{ fontSize: '0.87em' }}>
                 <span style={{ marginRight: '15px' }}>
                   {expLevel}
                   {dot}
@@ -127,7 +127,7 @@ const Issue = ({
               </Text.Block>
             )}
             {/*(BOUNTY_STATUS[workStatus]) && (
-              <Text.Block size="small" color={theme.textTertiary}>
+              <Text.Block color={theme.textSecondary} style={{ fontSize: '0.87em' }}>
                 <span style={{ marginRight: '15px' }}>
                   {slots} Available
                   {dot}
@@ -140,11 +140,11 @@ const Issue = ({
           <Balance>
             {(BOUNTY_STATUS[workStatus]) && (
               <Badge
-                style={{ padding: '5px 10px' }}
+                style={{ padding: '10px' }}
                 background={BOUNTY_BADGE_COLOR[workStatus].bg}
                 foreground={BOUNTY_BADGE_COLOR[workStatus].fg}
               >
-                <Text size="large">
+                <Text>
                   {balance + ' ' + symbol}
                 </Text>
               </Badge>
@@ -206,11 +206,12 @@ const IssueData = styled.div`
   flex: 1 1 auto;
   flex-direction: column;
   justify-content: space-around;
-  padding: 12px 12px 12px 0;
+  padding: 18px 18px 18px 0;
   position: relative;
 `
 const Balance = styled.div`
   margin-left: 10px;
+  padding-top: 5px;
 `
 const IssueTitle = styled(Text.Block).attrs({
   size: 'large',
@@ -222,6 +223,7 @@ const IssueTitle = styled(Text.Block).attrs({
   overflow: hidden;
   text-overflow: ellipsis;
   color: ${theme.textPrimary};
+  font-size: 1.2em;
 `
 const Separator = styled.hr`
   height: 1px;
