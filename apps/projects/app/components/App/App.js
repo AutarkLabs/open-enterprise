@@ -15,6 +15,9 @@ import ErrorBoundary from './ErrorBoundary'
 import BigNumber from 'bignumber.js'
 import { ipfsAdd, computeIpfsString } from '../../utils/ipfs-helpers'
 import { networkContextType } from '../../../../../shared/ui'
+import { REQUESTING_GITHUB_TOKEN,
+  REQUESTED_GITHUB_TOKEN_SUCCESS,
+  REQUESTED_GITHUB_TOKEN_FAILURE } from '../../store/eventTypes'
 
 const ASSETS_URL = './aragon-ui-assets/'
 
@@ -170,6 +173,7 @@ class App extends React.PureComponent {
           },
         }, () => {
           this.props.app.cache('github', {
+            event: REQUESTED_GITHUB_TOKEN_SUCCESS,
             status: STATUS.AUTHENTICATED,
             token,
           })
@@ -183,6 +187,7 @@ class App extends React.PureComponent {
           },
         }, () => {
           this.props.app.cache('github', {
+            event: REQUESTED_GITHUB_TOKEN_FAILURE,
             status: STATUS.FAILED,
             token: null,
           })
@@ -499,7 +504,7 @@ class App extends React.PureComponent {
             <ErrorBoundary>
               <AppContent
                 onLogin={this.handleGithubSignIn}
-                status={this.props.github.status || STATUS.INITIAL}
+                status={(this.props.github && this.props.github.status) || STATUS.INITIAL}
                 app={this.props.app}
                 bountySettings={bountySettings}
                 githubCurrentUser={githubCurrentUser || {}}
@@ -547,6 +552,9 @@ const StyledAragonApp = styled(Main)`
 `
 
 export default observe(
-  observable => observable.pipe(map(state => ({ ...state }))),
+  observable => observable.pipe(map(state => {
+    console.log('STATE ', state)
+    return { ...state }
+  })),
   {}
-)(hot(module)(App))
+)(App)
