@@ -43,7 +43,6 @@ class VoteRow extends React.Component {
       participationPct,
       type,
     } = vote.data
-
     let totalSupport = 0
     options.forEach(option => {
       totalSupport = totalSupport + parseFloat(option.value, 10)
@@ -101,13 +100,21 @@ class VoteRow extends React.Component {
                 </Bar>
               ))}
             {options.length > 2 && (
-              <ShowMoreText
+              <Badge
+                shape="compact"
+                background={theme.badgeInfoBackground}
+                foreground={theme.badgeInfoForeground}
+                style={{
+                  cursor: 'pointer',
+                  padding: '2px 8px',
+                  pointerEvents: 'auto'
+                }}                
                 onClick={() => this.setState({ showMore: !showMore })}
               >
                 {showMore
-                  ? 'Show less options...'
-                  : options.length - 2 + ' more options...'}
-              </ShowMoreText>
+                  ? 'Show less...'
+                  : ' + ' + (options.length - 2) + ' more'}
+              </Badge>
             )}
           </BarsGroup>
         </BarsCell>
@@ -162,15 +169,6 @@ const Bar = styled.div`
   &:not(:first-child) {
     margin-top: 0.5rem;
   }
-`
-
-const ShowMoreText = styled.p`
-  font-size: 12px;
-  color: ${theme.textTertiary};
-  font-style: italic;
-  margin-top: 0.5rem;
-  cursor: pointer;
-  pointer-events: auto;
 `
 
 export default VoteRow

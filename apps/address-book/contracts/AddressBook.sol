@@ -49,7 +49,7 @@ contract AddressBook is AragonApp {
     bytes32 public constant REMOVE_ENTRY_ROLE = keccak256("REMOVE_ENTRY_ROLE");
 
     /**
-     * @notice Add entity '`_name`' with the address '`_addr`' to the registry.
+     * @notice Add entity '`_name`' with the address `_addr` to the registry.
      * @param _addr The address of the entry to add to the registry
      * @param _name The name of the entry to add to the registry
      * @param _entryType The type of the entry to add to the registry
@@ -74,7 +74,7 @@ contract AddressBook is AragonApp {
     }
 
     /**
-     * @notice Remove entity with address '`_addr`' from the registry.
+     * @notice Remove entity `_addr` from the registry.
      * @param _addr The ID of the entry to remove
      */
     function removeEntry(

@@ -206,7 +206,7 @@ class VotePanelContent extends React.Component {
     // TODO: Show decimals for vote participation only when needed
     const displayParticipationPct = participationPct.toFixed(2)
     const displayMinParticipationPct = (minParticipationPct / 10 ** 16).toFixed(
-      2
+      0
     )
     // TODO: This block is wrong and has no sense
     if (!voteOptions.length) {
@@ -222,7 +222,7 @@ class VotePanelContent extends React.Component {
 
     return (
       <div>
-        <SidePanelSplit>
+        <SidePanelSplit style={{ borderBottom: 'none' }}>
           <div>
             <h2>
               <Label>Created by</Label>
@@ -286,8 +286,8 @@ class VotePanelContent extends React.Component {
             </h2>
             <p>
               {displayParticipationPct}%{' '}
-              <Text size="small" color={theme.negative}>
-                ({displayMinParticipationPct}% required)
+              <Text size="small" color={theme.textSecondary}>
+                ({displayMinParticipationPct}% needed)
               </Text>
             </p>
           </div>
@@ -305,7 +305,7 @@ class VotePanelContent extends React.Component {
           <div>
             <AdjustContainer>
               <FirstLabel>Options</FirstLabel>
-              <SecondLabel>Votes</SecondLabel>
+              <SecondLabel>Percentage</SecondLabel>
               {this.state.voteOptions.map((option, idx) => (
                 <div key={idx}>
                   <SliderAndValueContainer>
@@ -332,7 +332,7 @@ class VotePanelContent extends React.Component {
               ))}
               <Text
                 size="small"
-                color={theme.negative}
+                color={theme.textSecondary}
                 style={{
                   float: 'right',
                 }}
@@ -405,13 +405,13 @@ class VotePanelContent extends React.Component {
                         }
                         style={{
                           cursor: 'pointer',
-                          marginLeft: '12px',
-                          padding: '3px 12px',
+                          marginLeft: '8px',
+                          padding: '3px 8px',
                           display: 'flex',
                           justifyContent: 'space-between',
                         }}
                       >
-                        YOUR VOTE:
+                        YOU:
                         <span style={{ paddingLeft: '5px' }}>
                           {voteWeightsToggled
                             ? `${voteWeights[index]}%`
@@ -485,7 +485,7 @@ const ShowText = styled.p`
   color: ${theme.accent};
   font-size: 15px;
   text-decoration: underline;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   cursor: pointer;
 `
 
