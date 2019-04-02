@@ -116,6 +116,9 @@ class App extends React.Component {
                   votes={
                     this.props.votes !== undefined ? this.props.votes : []
                   }
+                  entries={
+                    this.props.entries !== undefined ? this.props.entries : []
+                  }
                   voteTime={this.props.voteTime}
                   minParticipationPct={
                     this.props.minParticipationPct

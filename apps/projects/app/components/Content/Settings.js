@@ -200,10 +200,12 @@ class Settings extends React.Component {
             bountyAllocator={bountyAllocator}
             networkType={network.type}
           />
+          {/*}
           <BountyArbiter
             bountyArbiter={bountyArbiter}
             networkType={network.type}
           />
+          */}
           <BountyDeadline
             bountyDeadlineT={bountyDeadlineT}
             onChangeT={this.bountyDeadlineChangeT}
@@ -224,7 +226,7 @@ const BountyDeadline = ({
 }) => (
   <div>
     <Text.Block size="large" weight="bold">
-      BountyDeadline
+      Bounty Deadline
     </Text.Block>
     <Text.Block>
       The default amount of time contributors have to submit work once a bounty
@@ -238,6 +240,7 @@ const BountyDeadline = ({
         value={bountyDeadlineT}
         allowNegative={false}
         onChange={onChangeT}
+        style={{ marginRight: '0' }}
       />
       <DropDown
         items={bountyDeadlines}
