@@ -69,7 +69,7 @@ const mockRequestsData = [{
     avatarUrl: 'https://avatars0.githubusercontent.com/u/34452131?v=4'
   },
   workplan: 'the grand plan',
-  review:{
+  xreview:{
     reviewDate: '2019-03-27T14:30:06.197Z',
     approved: true,
     feedback: 'feedback',
@@ -106,20 +106,30 @@ const mockWorkSubmissions = [{
 }]
 
 const IssueEventAvatar = styled.div`
-width: 70px;
-margin-right: 15px;
+  width: 70px;
+  margin-right: 10px;
+`
+const IssueEventMain = styled.div`
+  display: flex;
 `
 const IssueEventDetails = styled.div`
-> margin-bottom: 10px;
+  > * {
+    margin-bottom: 10px;
+  }
+`
+const EventButton = styled(Button)`
+  padding: 5px 20px 2px 20px;
+  font-size: 15px;
+  border-radius: 5px;
 `
 
 const IssueEvent = props => (
-  <div style={{ display: 'flex' }}>
+  <IssueEventMain>
     <IssueEventAvatar>
-      <img src={props.avatarUrl} alt="user avatar" style={{ width: '66px' }} />
+      <img src={props.avatarUrl} alt="user avatar" style={{ width: '50px' }} />
     </IssueEventAvatar>
     <IssueEventDetails>
-      <Text.Block>
+      <Text.Block size="small">
         <SafeLink
           href={props.url}
           target="_blank"
@@ -130,18 +140,18 @@ const IssueEvent = props => (
       </Text.Block>
 
       {props.eventMessage && (
-        <div>
+        <Text.Block size="large">
           {props.eventMessage}
-        </div>
+        </Text.Block>
       )}
       {props.eventAction && (
         <div>
           {props.eventAction}
         </div>
       )}
-      <Text.Block size="small" color={theme.textSecondary}>{calculateAgo(props.date)}</Text.Block>
+      <Text.Block size="xsmall" color={theme.textSecondary}>{calculateAgo(props.date)}</Text.Block>
     </IssueEventDetails>
-  </div>
+  </IssueEventMain>
 )
 
 const calculateAgo = pastDate => {
@@ -152,7 +162,7 @@ const calculateAgo = pastDate => {
 const activities = (requestsData, workSubmissions, onReviewApplication, onReviewWork) => {
   const events = []
 
-  console.log('--activityRow:', requestsData)
+  //console.log('--activityRow:', requestsData)
   if (requestsData) {
     requestsData.forEach(data => {
 
@@ -163,7 +173,9 @@ const activities = (requestsData, workSubmissions, onReviewApplication, onReview
         eventAction: ('review' in data) ?
           null
           :
-          <Button mode="outline" onClick={onReviewApplication}>Review Application</Button>,
+          <EventButton mode="outline" onClick={onReviewApplication}>
+            Review Application
+          </EventButton>,
       }
 
       if ('review' in data) {
@@ -190,7 +202,9 @@ const activities = (requestsData, workSubmissions, onReviewApplication, onReview
         eventAction: ('review' in data) ?
           null
           :
-          <Button mode="outline" onClick={onReviewWork}>Review Work</Button>,
+          <EventButton mode="outline" onClick={onReviewWork}>
+            Review Work
+          </EventButton>,
       }
 
       if ('review' in data) {
@@ -208,11 +222,13 @@ const activities = (requestsData, workSubmissions, onReviewApplication, onReview
             >Quality: {data.review.rating}</Badge>
             :
             <div>
+              <Text.Block size="large" style={{ marginBottom: '8px' }}>
+                {data.review.feedback}
+              </Text.Block>
               <Badge
                 background={data.review.accepted ? '#e7f8ec' : '#f3c1c3' }
                 foreground={data.review.accepted ? theme.positive : theme.negative}
               >Quality: {data.review.rating}</Badge>
-              <Text>{data.review.feedback}</Text>
             </div>,
         }
       }
@@ -258,8 +274,8 @@ const Detail = ({
     workStatus: (workStatus === undefined) ? 'No bounty yet' : workStatus
   }
 
-  //const issueEvents = activities(mockRequestsData, mockWorkSubmissions, onReviewApplication, onReviewWork)
-  const issueEvents = activities(requestsData, workSubmissions, onReviewApplication, onReviewWork)
+  const issueEvents = activities(mockRequestsData, mockWorkSubmissions, onReviewApplication, onReviewWork)
+  //const issueEvents = activities(requestsData, workSubmissions, onReviewApplication, onReviewWork)
 
   return (
     <Wrapper>
@@ -335,7 +351,7 @@ const Detail = ({
       </div>
 
       <div style={{ flex: 1, maxWidth: '359px', width: '295px' }}>
-        <DetailsCard>
+        <EventsCard>
           <FieldTitle>Activity</FieldTitle>
           {Object.keys(issueEvents).sort((a,b) =>
             new Date(a) - new Date(b)
@@ -343,20 +359,33 @@ const Detail = ({
             return <IssueEvent key={i} {...issueEvents[eventDate]} />
           }
           )}
-        </DetailsCard>
+        </EventsCard>
       </div>
 
     </Wrapper>
   )
 }
+
 const DetailsCard = styled.div`
-flex: 0 1 auto;
-text-align: left;
-padding: 15px 30px;
-margin: 10px;
-background: ${theme.contentBackground};
-border: 1px solid ${theme.contentBorder};
-border-radius: 3px;
+  flex: 0 1 auto;
+  text-align: left;
+  padding: 15px 30px;
+  margin: 10px;
+  background: ${theme.contentBackground};
+  border: 1px solid ${theme.contentBorder};
+  border-radius: 3px;
+`
+const EventsCard = styled(DetailsCard)`
+  padding: 0 10px;
+  > * {
+    padding: 16px 0 6px 16px;
+  }
+  > :not(:last-child) :not(:first-child) {
+    border-bottom: 1px solid #d1d1d1;
+  }
+  > :not(:last-child) {
+    margin-bottom: 0;
+  }
 `
 const StyledTable = styled.div`
   margin-bottom: 20px;
