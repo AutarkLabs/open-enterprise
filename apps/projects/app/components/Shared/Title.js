@@ -17,7 +17,7 @@ const StyledTitle = styled(Text)`
 `
 
 const Title = ({ text, shadow, handleMenuPanelOpen }) => (
-  <div style={{ display: 'flex', alignItems: 'center' }}>
+  <div style={{ display: 'flex', alignItems: 'center', background: 'white' }}>
     {/* TODO: issue #528*/}
     <Viewport>
       {({ below }) =>
