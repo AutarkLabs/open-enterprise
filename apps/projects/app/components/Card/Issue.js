@@ -93,18 +93,16 @@ const Issue = ({
             {repo} #{number}
           </Text>
         </div>
-        {(balance > 0 || labels.totalCount > 0) && (
+        {(BOUNTY_STATUS[workStatus]) && (
           <IssueDetails>
             <Text size="small" color={theme.textTertiary}>
-              {balance > 0 && (
-                <span style={{ marginRight: '15px' }}>
-                  {expLevel}
-                  {dot}
-                  {slotsAllocation}
-                  {dot}
+              <span style={{ marginRight: '15px' }}>
+                {expLevel}
+                {dot}
+                {balance > 0 ? BOUNTY_STATUS[workStatus] : BOUNTY_STATUS['fulfilled']}
+                {dot}
                   Due {DeadlineDistance(deadline)}
-                </span>
-              )}
+              </span>
               {labels.totalCount ? labelsBadges(labels) : ''}
             </Text>
           </IssueDetails>
