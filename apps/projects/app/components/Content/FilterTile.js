@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react'
 import PropTypes from 'prop-types'
 import { Badge } from '@aragon/ui'
 
-import IconX from '../shared/assets/components/IconX'
+import IconX from '../Shared/assets/components/IconX'
 
 export default class FilterTile extends PureComponent {
   static propTypes = {
