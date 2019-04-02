@@ -4,8 +4,11 @@
   "description": "Aragon Planning Suite developed by Autark",
   "scripts": {
     "coverage": "SOLIDITY_COVERAGE=true npm run ganache-cli:test",
+    "deploy:rpc": "truffle exec --network rpc scripts/deploy.js",
     "ganache-cli:test": "../../apps/shared/test-helpers/ganache-cli.sh",
     "lint": "solium --dir ./contracts",
+    "publish:rpc": "aragon apm publish major $(yarn deploy:kit:rpc | tail -n 1) --environment default",
+    "deploy:kit:rpc": "aragon contracts compile --all && aragon contracts exec --network rpc scripts/planning-suite-deploy.js",
     "start:kit": "node ./scripts/start-kit",
     "test:gas": "GAS_REPORTER=true npm test",
     "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
