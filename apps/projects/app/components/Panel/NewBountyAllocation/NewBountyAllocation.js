@@ -16,7 +16,13 @@ import {
   TableCell,
 } from '@aragon/ui'
 
-import { Form, FormField, FieldTitle, DateInput } from '../../Form'
+import {
+  DateInput,
+  DescriptionInput,
+  Form,
+  FormField,
+  FieldTitle,
+} from '../../Form'
 import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
 
 const bountySlots = [ '1', '2', '3' ]
@@ -138,7 +144,7 @@ class NewBountyAllocation extends React.Component {
           label="Description"
           required
           input={
-            <TextInput.Multiline
+            <DescriptionInput
               rows={3}
               style={{ resize: 'none' }}
               onChange={this.descriptionChange}

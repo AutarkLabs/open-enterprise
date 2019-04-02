@@ -5,7 +5,7 @@ import { Mutation } from 'react-apollo'
 import { gql } from 'apollo-boost'
 import { theme, Field, Info, TextInput, Button, DropDown } from '@aragon/ui'
 import { NEW_ISSUE, GET_ISSUES } from '../../../utils/gql-queries.js'
-import { Form } from '../../Form'
+import { DescriptionInput, Form } from '../../Form'
 import { LoadingAnimation } from '../../Shared'
 
 // TODO: labels
@@ -146,9 +146,14 @@ class NewIssue extends React.PureComponent {
                   <TextInput onChange={titleChange} required wide />
                 </Field>
                 <Field label="Description">
-                  <TextInput.Multiline
+                  <DescriptionInput
                     rows={3}
-                    style={{ resize: 'none', height: 'auto', paddingTop: '5px', paddingBottom: '5px' }}
+                    style={{
+                      resize: 'none',
+                      height: 'auto',
+                      paddingTop: '5px',
+                      paddingBottom: '5px',
+                    }}
                     onChange={descriptionChange}
                     wide
                   />
