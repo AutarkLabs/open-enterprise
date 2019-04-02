@@ -151,7 +151,6 @@ class App extends React.PureComponent {
   handlePopupMessage = async message => {
     if (message.data.from !== 'popup') return
     if (message.data.name === 'code') {
-
       // TODO: Optimize the listeners lifecycle, ie: remove on unmount
       console.log('removing messageListener')
       window.removeEventListener('message', this.messageHandler)
@@ -162,33 +161,39 @@ class App extends React.PureComponent {
       try {
         const token = await getToken(code)
         console.log('token obtained:', token)
-        this.setState({
+        this.setState(
+          {
           githubLoading: false,
           panelProps: {
             onCreateProject: this.createProject,
             status: STATUS.AUTHENTICATED,
           },
-        }, () => {
+          },
+          () => {
           this.props.app.cache('github', {
             status: STATUS.AUTHENTICATED,
             token,
           })
-        })
+          }
+        )
       } catch (err) {
-        this.setState({
+        this.setState(
+          {
           githubLoading: false,
           panelProps: {
             onCreateProject: this.createProject,
             status: STATUS.FAILED,
           },
-        }, () => {
+          },
+          () => {
           this.props.app.cache('github', {
             status: STATUS.FAILED,
             token: null,
           })
-        })
       }
+        )
     }
+  }
   }
 
   changeActiveIndex = activeIndex => {
@@ -231,10 +236,9 @@ class App extends React.PureComponent {
   // TODO: Review
   // This is breaking RepoList loading sometimes preventing show repos after login
   newProject = () => {
-    const reposAlreadyAdded = this.props.repos ?
-      this.props.repos.map(repo => repo.data._repo)
-      :
-      []
+    const reposAlreadyAdded = this.props.repos
+      ? this.props.repos.map(repo => repo.data._repo)
+      : []
 
     this.setState((_prevState, { github: { status } }) => ({
       panel: PANELS.NewProject,
@@ -308,11 +312,7 @@ class App extends React.PureComponent {
   onSubmitWork = async (state, issue) => {
     this.closePanel()
     const hash = await ipfsAdd(state)
-    this.props.app.submitWork(
-      web3.toHex(issue.repoId),
-      issue.number,
-      hash
-    )
+    this.props.app.submitWork(web3.toHex(issue.repoId), issue.number, hash)
   }
 
   requestAssignment = issue => {
@@ -370,7 +370,7 @@ class App extends React.PureComponent {
       issue.number,
       issue.requestsData[requestIndex].contributorAddr,
       requestIPFSHash,
-      approved,
+      approved
     )
   }
 
@@ -398,7 +398,7 @@ class App extends React.PureComponent {
       issue.number,
       issue.workSubmissions[issue.workSubmissions.length - 1],
       state.accepted,
-      requestIPFSHash,
+      requestIPFSHash
     )
     this.closePanel()
     this.props.app.reviewSubmission(
@@ -406,7 +406,7 @@ class App extends React.PureComponent {
       issue.number,
       issue.workSubmissions.length - 1,
       state.accepted,
-      requestIPFSHash,
+      requestIPFSHash
     )
   }
 
@@ -472,7 +472,10 @@ class App extends React.PureComponent {
 
   handleGithubSignIn = () => {
     // The popup is launched, its ref is checked and saved in the state in one step
-    this.setState(({ oldPopup }) => ({ popup: githubPopup(oldPopup), githubLoading: true }))
+    this.setState(({ oldPopup }) => ({
+      popup: githubPopup(oldPopup),
+      githubLoading: true,
+    }))
     // Listen for the github redirection with the auth-code encoded as url param
     console.log('adding messageListener')
     window.addEventListener('message', this.handlePopupMessage)
@@ -495,14 +498,18 @@ class App extends React.PureComponent {
                 bountySettings={bountySettings}
                 githubCurrentUser={githubCurrentUser || {}}
                 githubLoading={this.state.githubLoading}
-                projects={this.props.repos !== undefined ? this.props.repos : []}
+                projects={
+                  this.props.repos !== undefined ? this.props.repos : []
+                }
                 bountyIssues={
                   this.props.issues !== undefined ? this.props.issues : []
                 }
                 bountySettings={
                   bountySettings !== undefined ? bountySettings : {}
                 }
-                tokens={this.props.tokens !== undefined ? this.props.tokens : []}
+                tokens={
+                  this.props.tokens !== undefined ? this.props.tokens : []
+                }
                 onNewProject={this.newProject}
                 onRemoveProject={this.removeProject}
                 onNewIssue={this.newIssue}
