@@ -55,7 +55,7 @@ export const githubPopup = (popup = null) => {
   if (popup === null || popup.closed) {
     popup = window.open(
       // TODO: Improve readability here: encode = (params: Object) => (JSON.stringify(params).replace(':', '=').trim())
-      // encode uurl params
+      // encode url params
       `${GITHUB_URI}?client_id=${CLIENT_ID}&scope=public_repo&redirect_uri=${REDIRECT_URI}`,
       // `${REDIRECT_URI}/?code=232r3423`, // <= use this to avoid spamming github for testing purposes
       'githubAuth',
@@ -94,7 +94,7 @@ const getURLParam = param => {
 /**
  * Sends an http request to the AUTH_URI with the auth code obtained from the oauth flow
  * @param {string} code
- * @returns {string} The authentation token obtained from the auth server
+ * @returns {string} The authentication token obtained from the auth server
  */
 const getToken = async code => {
   console.log('getToken entered')
@@ -436,7 +436,7 @@ class App extends React.PureComponent {
     // TODO: splitting of descriptions needs to be fixed at smart contract level
     const issueDescriptions = issues.map(issue => issue.title).join('')
     /* TODO: The numbers below are supposedly coming from an eventual:
-     issues.map(issue => web3.utils.hextToNum(web3.toHex(issue.repoId))) */
+     issues.map(issue => web3.utils.hexToNum(web3.toHex(issue.repoId))) */
     const issueNumbers = issues.map(issue => issue.number)
     const emptyIntArray = new Array(issues.length).fill(0)
     const emptyAddrArray = [
