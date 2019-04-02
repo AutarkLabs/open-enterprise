@@ -79,8 +79,6 @@ const Issue = ({
         ? 'Slots available: ' + (slots - requestsData.length) + '/' + slots
         : 'Allocated'
 
-  console.log('REQUESTS SDATAA', requestsData)
-
   return (
     <StyledIssue>
       <ClickArea onClick={onClick} />

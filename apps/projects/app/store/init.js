@@ -1,7 +1,10 @@
-import vaultAbi from '../../../shared/json-abis/vault'
-import { app, handleEvent, INITIALIZATION_TRIGGER, INITIAL_STATE } from './'
 import { of } from 'rxjs'
 import { pluck } from 'rxjs/operators'
+
+import vaultAbi from '../../../shared/json-abis/vault'
+import { app, handleEvent, INITIAL_STATE } from './'
+import { INITIALIZE_STORE } from './eventTypes'
+
 
 const github = () => {
   return app.rpc
@@ -15,7 +18,7 @@ export const initStore = (vaultAddress, network) => {
   return app.store(
     async (state, event) => {
       console.dir(`[PROJECTS] BEFORE STATE UPDATE:
-      event: ${JSON.stringify(event, null, 4)}
+      event: ${JSON.stringify(event.event, null, 4)}
       state: ${JSON.stringify(state, null, 4)}
       `)
 
@@ -30,7 +33,7 @@ export const initStore = (vaultAddress, network) => {
         return nextState
       } catch (err) {
         console.error(`[PROJECTS] store error:
-        event: ${JSON.stringify(event, null, 4)}
+        event: ${JSON.stringify(event.event, null, 4)}
         state: ${JSON.stringify(err, null, 4)}
         `)
       }
@@ -39,7 +42,7 @@ export const initStore = (vaultAddress, network) => {
     },
     [
       // Always initialize the store with our own home-made event
-      of({ event: INITIALIZATION_TRIGGER }),
+      of({ event: INITIALIZE_STORE }),
       github(),
       // handle vault events
       vaultContract.events(),

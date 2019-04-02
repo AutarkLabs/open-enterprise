@@ -7,11 +7,11 @@ import { ipfsGet } from '../utils/ipfs-helpers'
 
 import { REQUESTING_GITHUB_TOKEN,
   REQUESTED_GITHUB_TOKEN_SUCCESS,
-  REQUESTED_GITHUB_TOKEN_FAILURE } from './eventTypes'
+  REQUESTED_GITHUB_TOKEN_FAILURE,
+  INITIALIZE_STORE } from './eventTypes'
 import { INITIAL_STATE } from './'
 
 import { STATUS } from '../utils/github'
-import { fromPromise } from 'apollo-link'
 
 const tokenAbi = [].concat(tokenDecimalsAbi, tokenSymbolAbi)
 
@@ -72,7 +72,6 @@ let appState = determineStateVars()
 
 let apolloClient = null
 const getRepoData = repo => {
-  console.log('getting repo data')
   try {
     let data = apolloClient.request(repoData(repo))
     return data
@@ -90,7 +89,6 @@ const initializeApolloClient = token => {
 }
 
 const loadReposFromQueue = async (state) => {
-  console.log('UNLOADED REPO QUEUE', unloadedRepoQueue)
   if (unloadedRepoQueue && unloadedRepoQueue.length > 0) {
     const loadedRepoQueue = await Promise.all(unloadedRepoQueue.map(
       async repoId => {
@@ -98,9 +96,9 @@ const loadReposFromQueue = async (state) => {
         return repos[0]
       }
     ))
-    console.log('LOADED REPO QUEUE', loadedRepoQueue)
     return loadedRepoQueue
   }
+  return []
 }
 
 
@@ -113,12 +111,11 @@ async function syncRepos(state, { repoId }) {
     return updatedState
   } catch (err) {
     console.error('updateState failed to return:', err)
+    return state
   }
 }
 
 function syncIssues(state, { issueNumber, ...eventArgs }, data) {
-  console.log('syncIssues: arguments from events:', eventArgs, 'state: ', state)
-
   try {
     let updatedState = updateIssueState(state, issueNumber, data)
     return updatedState
@@ -166,15 +163,15 @@ async function syncTokens(state, { token }) {
 const cloneAppState = (nextState) => Object.assign({}, nextState)
 
 async function updateIssueDetail(data, response) {
-  let requestsData, submissionData
-  requestsData = await loadRequestsData(response.returnValues)
-  data.requestsData = requestsData
+  let returnData = { ...data }
+  let requestsData = await loadRequestsData(response.returnValues)
+  returnData.requestsData = requestsData
   if (status.indexOf(data.workStatus) >= SUBMISSION_STAGE) {
-    submissionData = await loadSubmissionData(response.returnValues)
-    data.workSubmissions = submissionData
-    data.work = submissionData[submissionData.length - 1]
+    let submissionData = await loadSubmissionData(response.returnValues)
+    returnData.workSubmissions = submissionData
+    returnData.work = submissionData[submissionData.length - 1]
   }
-  return data
+  return returnData
 }
 
 function loadToken(token) {
@@ -255,7 +252,6 @@ function loadSubmissionData({ repoId, issueNumber }) {
   return new Promise(resolve => {
     app.call('getSubmissionsLength', repoId, issueNumber).subscribe(async (response) => {
       let submissions = []
-      console.log('number of submissions: ', response)
       for(let submissionId = 0; submissionId < response; submissionId++){
         submissions.push(await getSubmission(repoId, issueNumber, submissionId))
       }
@@ -266,7 +262,6 @@ function loadSubmissionData({ repoId, issueNumber }) {
 
 function getSubmission(repoId, issueNumber, submissionIndex) {
   return new Promise(resolve => {
-    console.log(repoId, issueNumber, submissionIndex)
     app.call('getSubmission', repoId, issueNumber, submissionIndex).subscribe(async ({ submissionHash, fulfillmentId, status, submitter }) => {
       const bountyData = await ipfsGet(submissionHash)
       resolve({ status,
@@ -289,13 +284,10 @@ function loadSettings() {
 
 async function checkReposLoaded(repos, id, transform) {
   const repoIndex = repos.findIndex(repo => repo.id === id)
-  console.log('this is the repo index:', repoIndex)
-  console.log('checkReposLoaded, repoIndex:', repos, id)
   const { metadata, ...data } = await loadRepoData(id)
 
   if (repoIndex === -1) {
     // If we can't find it, load its data, perform the transformation, and concat
-    console.log('repo not found in the cache: retrieving from chain')
     return repos.concat(
       await transform({
         id,
@@ -304,7 +296,6 @@ async function checkReposLoaded(repos, id, transform) {
       })
     )
   } else {
-    console.log('repo found: ' + repoIndex)
     const nextRepos = Array.from(repos)
     nextRepos[repoIndex] = await transform({
       id,
@@ -317,19 +308,14 @@ async function checkReposLoaded(repos, id, transform) {
 
 function checkIssuesLoaded(issues, issueNumber, data) {
   const issueIndex = issues.findIndex(issue => issue.issueNumber === issueNumber)
-  console.log('this is the issue index:', issueIndex)
-  console.log('checkIssuesLoaded, issueNumber:', issues, issueNumber)
-  console.log('loadIssueData:', data)
 
   if (issueIndex === -1) {
     // If we can't find it, load its data, perform the transformation, and concat
-    console.log('issue not found in the cache: retrieving from chain')
     return issues.concat({
       issueNumber,
       data: data
     })
   } else {
-    console.log('issue found: ' + issueIndex)
     const nextIssues = Array.from(issues)
     nextIssues[issueIndex] = {
       issueNumber,
@@ -362,7 +348,6 @@ async function updateState(state, id, transform) {
 }
 
 function updateIssueState(state, issueNumber, data) {
-  console.log('update state: ', state, ', data: ', data)
   if(data === undefined || data === null) {
     return state
   }
@@ -386,14 +371,13 @@ function updateIssueState(state, issueNumber, data) {
 export const handleEvent = async (state, action) => {
   // if (eventName === INITIALIZATION_TRIGGER) {
   //   // nextState = await initializeTokens(nextState, settings)
-  //   console.log('STARTING')
   // }
 
   const { event, returnValues, address } = action
   let nextState = { ...state }
 
   switch (event) {
-  case 'INITIALIZATION_TRIGGER': {
+  case INITIALIZE_STORE: {
     nextState = { ...INITIAL_STATE, ...state }
     if (nextState.github.token) {
       initializeApolloClient(nextState.github.token)
@@ -408,8 +392,6 @@ export const handleEvent = async (state, action) => {
     if (token) {
       initializeApolloClient(token)
     }
-
-    console.log('LOADING REPOS', state.repos)
 
     const loadedRepos = await loadReposFromQueue(state)
 
@@ -451,7 +433,7 @@ export const handleEvent = async (state, action) => {
     if(!returnValues) return nextState
     const issueData = await loadIssueData(returnValues)
     issueData.workStatus = status[1]
-    const newData = await updateIssueDetail(issue, response)
+    const newData = await updateIssueDetail(issueData, action)
     nextState = syncIssues(nextState, returnValues, newData)
     return nextState
   }
@@ -459,7 +441,7 @@ export const handleEvent = async (state, action) => {
     if(!returnValues) return nextState
     const issueData = await loadIssueData(returnValues)
     issueData.workStatus = status[2]
-    const newData = await updateIssueDetail(issueData, response)
+    const newData = await updateIssueDetail(issueData, action)
     nextState = syncIssues(nextState, returnValues, newData)
     return nextState
   }
@@ -467,7 +449,7 @@ export const handleEvent = async (state, action) => {
     if(!returnValues) return nextState
     const issueData = await loadIssueData(returnValues)
     issueData.workStatus = status[3]
-    const newData = await updateIssueDetail(issueData, response)
+    const newData = await updateIssueDetail(issueData, action)
     nextState = syncIssues(nextState, returnValues, newData)
     return nextState
   }
@@ -475,15 +457,15 @@ export const handleEvent = async (state, action) => {
     if(!returnValues) return nextState
     const issueData = await loadIssueData(returnValues)
     issueData.workStatus = status[3]
-    const newData = await updateIssueDetail(issueData, response)
+    const newData = await updateIssueDetail(issueData, action)
     nextState = syncIssues(nextState, returnValues, newData)
     return nextState
   }
   case 'SubmissionAccepted': {
     if (!returnValues) return nextState
-    data = await loadIssueData(returnValues)
-    data.workStatus = status[4]
-    nextState = syncIssues(nextState, returnValues, data)
+    const issueData = await loadIssueData(returnValues)
+    issueData.workStatus = status[4]
+    nextState = syncIssues(nextState, returnValues, issueData)
     return nextState
   }
   case 'IssueCurated': {
