@@ -226,6 +226,8 @@ class NewBountyAllocation extends React.Component {
                             }
                           />
                         </IBDeadline>
+                        {/*
+                        Can add back in when we support multiple slots
                         <IBAvail>
                           <FormField
                             label="Slots Available"
@@ -237,7 +239,7 @@ class NewBountyAllocation extends React.Component {
                               />
                             }
                           />
-                        </IBAvail>
+                        </IBAvail> */}
                       </IBDetails>
                     </IBMain>
                   </Cell>

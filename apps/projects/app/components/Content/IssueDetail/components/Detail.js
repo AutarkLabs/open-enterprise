@@ -6,19 +6,58 @@ import { Badge, Text, theme, ContextMenu, SafeLink, Button } from '@aragon/ui'
 import { formatDistance } from 'date-fns'
 
 import { IconGitHub, BountyContextMenu } from '../../../Shared'
+import { BOUNTY_STATUS, BOUNTY_BADGE_COLOR } from '../../../../utils/bounty-status'
 
-const SummaryTable = ({ expLevel, deadline, slots, workStatus }) => {
+const StyledTable = styled.div`
+  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border: solid ${theme.contentBorder};
+  border-width: 1px 0;
+  > :not(:first-child) {
+    border-left: 1px solid ${theme.contentBorder};
+    padding-left: 15px;
+  }
+`
+
+const StyledCell = styled.div`
+  padding: 20px 0;
+  align-items: left;
+`
+
+// TODO: shared
+const FieldTitle = styled(Text.Block)`
+  color: ${theme.textSecondary};
+  text-transform: lowercase;
+  font-variant: small-caps;
+  font-weight: bold;
+  margin-bottom: 6px;
+`
+const ActionLabel = styled.span`
+  margin-left: 15px;
+`
+
+const determineFieldText = (fieldTitle, fieldText, balance) => {
+  const isStatusField = fieldTitle.toLowerCase() === 'status'
+  const isFulfilled = isStatusField && Number(balance) === 0
+  if (isFulfilled) return BOUNTY_STATUS['fulfilled']
+  else if (isStatusField) return BOUNTY_STATUS[fieldText]
+  return fieldText
+}
+
+const SummaryTable = ({ expLevel, deadline, workStatus, balance }) => {
   const FIELD_TITLES = [
     'Experience Level',
     'Deadline',
-    'Slots Available',
     'Status',
   ]
-  const mappedTableFields = [ expLevel, deadline, slots, workStatus ].map(
+  const mappedTableFields = [ expLevel, deadline, workStatus ].map(
     (field, i) => (
       <StyledCell key={i}>
         <FieldTitle>{FIELD_TITLES[i]}</FieldTitle>
-        <Text color={theme.textPrimary}>{field}</Text>
+        <Text color={theme.textPrimary}>
+          {determineFieldText(FIELD_TITLES[i], field, balance)}
+        </Text>
       </StyledCell>
     )
   )
@@ -251,11 +290,8 @@ const Detail = ({
   const summaryData = {
     expLevel: (expLevel === undefined) ? '-' : expLevel,
     deadline: (deadline === undefined) ? '-' : deadlineDistance(deadline) + ' remaining',
-    slots: (slots === undefined) ? '-' :
-      (requestsData === undefined) ? 'Unallocated (' + slots + ')' :
-        (requestsData.length < slots) ? 'Slots available: ' + (slots - requestsData.length) + '/' + slots:
-          'Allocated',
-    workStatus: (workStatus === undefined) ? 'No bounty yet' : workStatus
+    workStatus: (workStatus === undefined) ? 'No bounty yet' : workStatus,
+    balance
   }
 
   //const issueEvents = activities(mockRequestsData, mockWorkSubmissions, onReviewApplication, onReviewWork)
@@ -304,15 +340,15 @@ const Detail = ({
               { balance > 0 &&
                 <Badge
                   style={{ padding: '10px', textSize: 'large', marginTop: '15px' }}
-                  background={'#e7f8ec'}
-                  foreground={theme.positive}
+                  background={BOUNTY_BADGE_COLOR[workStatus].bg}
+                  foreground={BOUNTY_BADGE_COLOR[workStatus].fg}
                 >
                   {balance + ' ' + symbol}
                 </Badge>
               }
             </div>
           </Wrapper>
-          <SummaryTable {...summaryData} />
+          {workStatus && <SummaryTable {...summaryData} />}
           <FieldTitle>Description</FieldTitle>
           <Text.Block style={{ marginTop: '20px', marginBottom: '20px' }}>
             {body ? body : 'No description available'}
@@ -337,15 +373,16 @@ const Detail = ({
       <div style={{ flex: 1, maxWidth: '359px', width: '295px' }}>
         <DetailsCard>
           <FieldTitle>Activity</FieldTitle>
-          {Object.keys(issueEvents).sort((a,b) =>
-            new Date(a) - new Date(b)
-          ).map((eventDate, i) => {
-            return <IssueEvent key={i} {...issueEvents[eventDate]} />
+          {Object.keys(issueEvents).length > 0
+            ? Object.keys(issueEvents).sort((a,b) =>
+              new Date(a) - new Date(b)
+            ).map((eventDate, i) => {
+              return <IssueEvent key={i} {...issueEvents[eventDate]} />
+            })
+            : 'This issue has no activity'
           }
-          )}
         </DetailsCard>
       </div>
-
     </Wrapper>
   )
 }
@@ -358,34 +395,7 @@ background: ${theme.contentBackground};
 border: 1px solid ${theme.contentBorder};
 border-radius: 3px;
 `
-const StyledTable = styled.div`
-  margin-bottom: 20px;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  border: solid ${theme.contentBorder};
-  border-width: 1px 0;
-  > :not(:first-child) {
-    border-left: 1px solid ${theme.contentBorder};
-    padding-left: 15px;
-  }
-`
 
-const StyledCell = styled.div`
-  padding: 20px 0;
-  align-items: left;
-`
-
-// TODO: shared
-const FieldTitle = styled(Text.Block)`
-  color: ${theme.textSecondary};
-  text-transform: lowercase;
-  font-variant: small-caps;
-  font-weight: bold;
-  margin-bottom: 6px;
-`
-const ActionLabel = styled.span`
-  margin-left: 15px;
-`
 Detail.propTypes = {
   onAllocateSingleBounty: PropTypes.func.isRequired,
   onSubmitWork: PropTypes.func.isRequired,
