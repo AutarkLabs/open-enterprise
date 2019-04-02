@@ -43,7 +43,7 @@ const Base = styled.div`
   margin-bottom: 12px;
 `
 const Progress = styled.div`
-  height: 6px;
+  height: 8px;
   background: ${({ color }) => color};
   border-radius: 2px;
   float: left;

@@ -2,24 +2,34 @@ import Aragon from '@aragon/api'
 import { combineLatest } from 'rxjs'
 import { first, map, tap, combineAll } from 'rxjs/operators' // Make sure observables have first()
 import voteSettings, { hasLoadedVoteSettings } from './utils/vote-settings'
+import AddressBookJSON from '../../shared/json-abis/address-book.json'
 import { EMPTY_CALLSCRIPT } from './utils/vote-utils'
-import AllocationJSON from '../../shared/json-abis/Allocations.json'
+import AllocationJSON from '../../shared/json-abis/allocations.json'
 
 const app = new Aragon()
-let allocations
 let appState = {
   votes: [],
+  entries: {}
 }
+let addressBook, allocations, nextEntries
 app.events().subscribe(handleEvents)
-app.state().subscribe(state => {
-  appState = state
-})
 
+app.state().subscribe(state => {
+  appState = state ? state : { accounts: [], entries: {} }
+  if (!addressBook) {
+    // this should be refactored to be a "setting"
+    app.call('addressBook').subscribe(response => {
+      addressBook = app.external(response, AddressBookJSON.abi)
+      addressBook.events().subscribe(handleEvents)
+    })
+  }
+})
 async function handleEvents(response) {
   let nextState = {
     ...appState,
     ...(!hasLoadedVoteSettings(appState) ? await loadVoteSettings() : {}),
   }
+  const { entries } = appState
   switch (response.event) {
   case 'CastVote':
     console.info('[RangeVoting > script]: received CastVote')
@@ -51,13 +61,23 @@ async function handleEvents(response) {
         AllocationJSON.abi
       )
     }
+  case 'EntryAdded':
+    nextEntries = await onEntryAdded(entries, response.returnValues)
+    break
+  case 'EntryRemoved':
+    nextEntries = await onEntryRemoved(entries, response.returnValues)
   default:
     break
   }
   console.log('[RangeVoting > script]: end state')
-  console.log(nextState)
-  appState = nextState
-  app.cache('state', nextState)
+  // If nextAccounts or nextEntries were not generated
+  // then return each original array
+  const filteredState = {
+    ...nextState,
+    entries: entries,
+  }
+  appState = filteredState
+  app.cache('state', filteredState)
 }
 
 /***********************
@@ -295,6 +315,47 @@ function loadVoteSettings() {
       // Return an empty object to try again later
       return {}
     })
+}
+
+/** AddressBook management */
+const onEntryAdded = async (entries, { addr }) => {
+  // is addr already in the state?
+  if (entries && entries[addr]) {
+    // entry already cached, do nothing
+    console.log('[RangeVoting script]', addr, 'already cached')
+  } else {
+    // entry not cached
+    const data = await loadEntryData(addr) // async load data from contract
+    const entry = { addr, data } // transform for the frontend to understand
+    entries[addr] = entry // add to the state object received as param
+    console.log('[RangeVoting script] caching new contract entry', entries)
+    // console.log('[AddressBook script] at position', addedIndex) // in case we need the index
+  }
+  return entries // return the (un)modified entries array
+}
+
+const onEntryRemoved = async (entries = [], { addr }) => {
+  if(entries[addr]) delete entries[addr]
+  return entries // return the (un)modified entries array
+}
+
+/***********************
+ *     AddressBook     *
+ *       Helpers       *
+ ***********************/
+const loadEntryData = async addr => {
+  return new Promise(resolve => {
+    // this is why we cannot import methods without binding proxy caller
+    addressBook.getEntry(addr).subscribe(entry => {
+      // don't resolve when entry not found
+      entry &&
+        resolve({
+          entryAddress: entry[0],
+          name: entry[1],
+          entryType: entry[2],
+        })
+    })
+  })
 }
 
 // Apply transmations to a vote received from web3
