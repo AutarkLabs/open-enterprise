@@ -163,37 +163,37 @@ class App extends React.PureComponent {
         console.log('token obtained:', token)
         this.setState(
           {
-          githubLoading: false,
-          panelProps: {
-            onCreateProject: this.createProject,
-            status: STATUS.AUTHENTICATED,
-          },
+            githubLoading: false,
+            panelProps: {
+              onCreateProject: this.createProject,
+              status: STATUS.AUTHENTICATED,
+            },
           },
           () => {
-          this.props.app.cache('github', {
-            status: STATUS.AUTHENTICATED,
-            token,
-          })
+            this.props.app.cache('github', {
+              status: STATUS.AUTHENTICATED,
+              token,
+            })
           }
         )
       } catch (err) {
         this.setState(
           {
-          githubLoading: false,
-          panelProps: {
-            onCreateProject: this.createProject,
-            status: STATUS.FAILED,
-          },
+            githubLoading: false,
+            panelProps: {
+              onCreateProject: this.createProject,
+              status: STATUS.FAILED,
+            },
           },
           () => {
-          this.props.app.cache('github', {
-            status: STATUS.FAILED,
-            token: null,
-          })
-      }
+            this.props.app.cache('github', {
+              status: STATUS.FAILED,
+              token: null,
+            })
+          }
         )
+      }
     }
-  }
   }
 
   changeActiveIndex = activeIndex => {
@@ -264,34 +264,42 @@ class App extends React.PureComponent {
 
   onSubmitBountyAllocation = async (issues, description) => {
     this.closePanel()
-    let bountySymbol = this.props.bountySettings.bountyCurrency
-    let bountyToken, bountyDecimals, ipfsString, issuesArray = []
-    this.props.tokens.forEach(
-      token => {
-        if(token.symbol === bountySymbol) {
-          bountyToken = token.addr
-          bountyDecimals = token.decimals
-        }
-      }
-    )
 
     // computes an array of issues and denests the actual issue object for smart contract
     const issuesArray = []
-    for (let key in issues) issuesArray.push({ key: key, ...issues[key] })
+    const bountySymbol = this.props.bountySettings.bountyCurrency
 
-    console.log('Submit issues:', issuesArray)
+    let bountyToken, bountyDecimals
+
+    this.props.tokens.forEach(token => {
+      if (token.symbol === bountySymbol) {
+        bountyToken = token.addr
+        bountyDecimals = token.decimals
+      }
+    })
+
+    for (let key in issues) issuesArray.push({ key: key, ...issues[key] })
 
     const ipfsString = await computeIpfsString(issuesArray)
 
+    const idArray = issuesArray.map(issue => web3.toHex(issue.repoId))
+    const numberArray = issuesArray.map(issue => issue.number)
+    const bountyArray = issuesArray.map(issue =>
+      BigNumber(issue.size)
+        .times(10 ** bountyDecimals)
+        .toString()
+    )
     const tokenArray = new Array(issuesArray.length).fill(bountyToken)
+    const dateArray = new Array(issuesArray.length).fill(Date.now() + 8600)
+    const booleanArray = new Array(issuesArray.length).fill(true)
+
+    console.log('Submit issues:', issuesArray)
     this.props.app.addBounties(
-      issuesArray.map( (issue) => web3.toHex(issue.repoId)),
-      issuesArray.map( (issue) => issue.number),
-      issuesArray.map( (issue) => BigNumber(issue.size).times(10 ** bountyDecimals).toString()),
-      issuesArray.map(issue => {
-        return Date.now() + 8600
-      }),
-      new Array(issuesArray.length).fill(true),
+      idArray,
+      numberArray,
+      bountyArray,
+      dateArray,
+      booleanArray,
       tokenArray,
       ipfsString,
       description
