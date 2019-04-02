@@ -4,14 +4,12 @@ import styled from 'styled-components'
 import { addHours } from 'date-fns'
 
 import {
-  Field,
   Text,
   TextInput,
   DropDown,
   theme,
   Badge,
   Table,
-  TableHeader,
   TableRow,
   TableCell,
 } from '@aragon/ui'
