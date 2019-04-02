@@ -106,8 +106,8 @@ const mockWorkSubmissions = [{
 }]
 
 const IssueEventAvatar = styled.div`
-  width: 70px;
-  margin-right: 10px;
+  width: 66px;
+  margin: 0;
 `
 const IssueEventMain = styled.div`
   display: flex;
@@ -217,8 +217,8 @@ const activities = (requestsData, workSubmissions, onReviewApplication, onReview
             'rejected ' + data.user.login + '\'s work',
           eventAction: data.review.feedback.length === 0 ?
             <Badge
-              background={data.review.accepted ? '#e7f8ec' : '#f3c1c3' }
-              foreground={data.review.accepted ? theme.positive : theme.negative}
+              foreground={theme.textSecondary}
+              background={theme.contentBorder}
             >Quality: {data.review.rating}</Badge>
             :
             <div>
@@ -226,8 +226,8 @@ const activities = (requestsData, workSubmissions, onReviewApplication, onReview
                 {data.review.feedback}
               </Text.Block>
               <Badge
-                background={data.review.accepted ? '#e7f8ec' : '#f3c1c3' }
-                foreground={data.review.accepted ? theme.positive : theme.negative}
+                foreground={theme.textSecondary}
+                background={theme.contentBorder}
               >Quality: {data.review.rating}</Badge>
             </div>,
         }
