@@ -310,8 +310,8 @@ const Detail = ({
     balance
   }
 
-  const issueEvents = activities(mockRequestsData, mockWorkSubmissions, onReviewApplication, onReviewWork)
-  //const issueEvents = activities(requestsData, workSubmissions, onReviewApplication, onReviewWork)
+  //const issueEvents = activities(mockRequestsData, mockWorkSubmissions, onReviewApplication, onReviewWork)
+  const issueEvents = activities(requestsData, workSubmissions, onReviewApplication, onReviewWork)
 
   return (
     <Wrapper>

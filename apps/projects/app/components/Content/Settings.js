@@ -314,7 +314,7 @@ const BaseRate = ({ baseRate, onChangeRate, bountyCurrency, onChangeCurrency, bo
       size and converted into the bounty currency under the hood.
     </Text.Block>
     <FieldTitle style={{ marginBottom: '0' }}>Rate per hour</FieldTitle>
-    <StyledInputDropDown style={{ marginBottom: '0' }}>
+    <StyledInputDropDown>
       <NumberFormat
         customInput={StyledNumberInput}
         fixedDecimalScale

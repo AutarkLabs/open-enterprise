@@ -113,11 +113,24 @@ class App extends React.PureComponent {
     network: {},
   }
 
+  static childContextTypes = {
+    network: networkContextType,
+  }
+
   state = {
     repos: [],
     panelProps: {},
     activeIndex: { tabIndex: 0, tabData: {} },
     githubLoading: false,
+  }
+
+  getChildContext() {
+    const { network } = this.props
+    return {
+      network: {
+        type: network.type,
+      },
+    }
   }
 
   componentDidMount() {
