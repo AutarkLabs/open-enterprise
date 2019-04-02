@@ -31,28 +31,28 @@ jobs:
       script: npm run lint
 
     - stage: test
-      script: travis_wait 60 npm run test -- --scope=@tps/apps-address-book
+      script: travis_wait 60 npm run test:address
       name: Address Book app tests # and coverage report
       install: npm run bootstrap
       # after_success: npm run coveralls
       # env: 'COVERAGE=true'
 
     - stage: test
-      script: travis_wait 60 npm run test -- --scope=@tps/apps-allocations
+      script: travis_wait 60 npm run test:allocations
       name: Allocations app tests # and coverage report
       install: npm run bootstrap
       # after_success: npm run coveralls
       # env: 'COVERAGE=true'
 
     - stage: test
-      script: travis_wait 60 npm run test -- --scope=@tps/apps-projects
+      script: travis_wait 60 npm run test:projects
       name: Projects app tests # and coverage report
       install: npm run bootstrap
       # after_success: npm run coveralls
       # env: 'COVERAGE=true'
 
     - stage: test
-      script: travis_wait 60 npm run test -- --scope=@tps/apps-range-voting
+      script: travis_wait 60 npm run test:range
       name: Range Voting app tests # and coverage report
       install: npm run bootstrap
       # after_success: npm run coveralls
