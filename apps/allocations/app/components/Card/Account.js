@@ -22,7 +22,6 @@ const Account = ({
   proxy,
   balance,
   description,
-  limit,
   network,
   onNewAllocation,
   onManageParameters,
@@ -31,7 +30,7 @@ const Account = ({
   app,
 }) => {
   const newAllocation = () => {
-    onNewAllocation(proxy, description, id, limit)
+    onNewAllocation(proxy, description, id)
   }
 
   const manageParameters = () => {
@@ -90,18 +89,6 @@ const Account = ({
             {translatedToken}
           </StatsValue>
         </StyledStats>
-        <StyledStats>
-          <Text smallcaps color={theme.textSecondary}>
-            Limit
-          </Text>
-          <StatsValue>
-            {' ' + BigNumber(limit)
-              .div(ETH_DECIMALS)
-              .dp(3)
-              .toString()}{' '}
-            {translatedToken} / Allocation
-          </StatsValue>
-        </StyledStats>
       </StatsContainer>
     </StyledCard>
   )
@@ -110,7 +97,6 @@ const Account = ({
 Account.propTypes = {
   proxy: PropTypes.string.isRequired,
   app: PropTypes.object.isRequired,
-  limit: PropTypes.string.isRequired, // We are receiving this as string, parseInt if needed
   token: PropTypes.string.isRequired,
   balance: PropTypes.string.isRequired, // We are receiving this as string, parseInt if needed
   description: PropTypes.string.isRequired,

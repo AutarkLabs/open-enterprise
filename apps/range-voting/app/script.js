@@ -164,7 +164,6 @@ async function loadVoteDataAllocation(vote, voteId) {
             .subscribe(payout => {
               resolve({
                 ...returnObject,
-                limit: parseInt(payout.limit, 10),
                 balance: parseInt(vote.executionScript.slice(706, 770), 16),
                 metadata:
                   'Range Vote ' +

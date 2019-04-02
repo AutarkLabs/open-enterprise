@@ -61,11 +61,10 @@ const loadAccountData = async accountId => {
         if (account) {
           resolve({
             balance: account[0],
-            limit: account[1],
-            metadata: account[2],
-            token: account[3],
-            proxy: account[4],
-            amount: account[5],
+            metadata: account[1],
+            token: account[2],
+            proxy: account[3],
+            amount: account[4],
           })
         }
       })

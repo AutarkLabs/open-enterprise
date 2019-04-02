@@ -104,7 +104,7 @@ app.state().subscribe(state => {
   if (!vault) {
     // this should be refactored to be a "setting"
     app.call('vault').subscribe(response => {
-      vault = app.external(response, vaultAbi)
+      vault = app.external(response, vaultAbi.abi)
       vault.events().subscribe(handleEvents)
     })
   }
