@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 
 import { Badge, Text, theme, ContextMenu, SafeLink, Button } from '@aragon/ui'
 import { formatDistance } from 'date-fns'
-
+import Markdown from 'react-markdown'
 import { IconGitHub, BountyContextMenu } from '../../../Shared'
 import { BOUNTY_STATUS, BOUNTY_BADGE_COLOR } from '../../../../utils/bounty-status'
 
@@ -351,7 +351,17 @@ const Detail = ({
           {workStatus && <SummaryTable {...summaryData} />}
           <FieldTitle>Description</FieldTitle>
           <Text.Block style={{ marginTop: '20px', marginBottom: '20px' }}>
+          <div>
             {body ? body : 'No description available'}
+            </div>
+            <div style={{ background: 'yellow'}}>
+            <Markdown 
+    escapeHtml={true}
+    source={body}
+/>
+
+            </div>
+            
           </Text.Block>
           <Text size="small" color={theme.textTertiary}>
             {labels.totalCount
