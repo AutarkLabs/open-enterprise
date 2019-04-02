@@ -183,6 +183,11 @@ class Settings extends React.Component {
             onAddExpLevel={this.addExpLevel}
             generateExpLevelHandler={this.generateExpLevelHandler}
           />
+          <Button mode="strong" onClick={this.submitChanges} wide>
+            Submit Changes
+          </Button>
+        </div>
+        <div className="column">
           <BaseRate
             baseRate={baseRate}
             onChangeRate={this.baseRateChange}
@@ -190,11 +195,12 @@ class Settings extends React.Component {
             bountyCurrency={bountyCurrency}
             onChangeCurrency={this.bountyCurrencyChange}
           />
-          <Button mode="strong" onClick={this.submitChanges} wide>
-            Submit Changes
-          </Button>
-        </div>
-        <div className="column">
+          <BountyDeadline
+            bountyDeadlineT={bountyDeadlineT}
+            onChangeT={this.bountyDeadlineChangeT}
+            bountyDeadlineD={bountyDeadlineD}
+            onChangeD={this.bountyDeadlineChangeD}
+          />
           <BountyContractAddress
             bountyAllocator={bountyAllocator}
             networkType={network.type}
@@ -205,12 +211,6 @@ class Settings extends React.Component {
             networkType={network.type}
           />
           */}
-          <BountyDeadline
-            bountyDeadlineT={bountyDeadlineT}
-            onChangeT={this.bountyDeadlineChangeT}
-            bountyDeadlineD={bountyDeadlineD}
-            onChangeD={this.bountyDeadlineChangeD}
-          />
         </div>
       </StyledContent>
     )
