@@ -35,7 +35,7 @@ class NewBountyAllocation extends React.Component {
         title: PropTypes.string,
         number: PropTypes.number,
         repo: PropTypes.string,
-        repoId: PropTypes.string
+        repoId: PropTypes.string,
       })
     ),
     /** base rate in pennies */
@@ -57,11 +57,14 @@ class NewBountyAllocation extends React.Component {
         repoId: issue.repoId,
         hours: 0,
         exp: 0,
-        deadline: addHours(new Date(), this.props.bountySettings.bountyDeadline),
+        deadline: addHours(
+          new Date(),
+          this.props.bountySettings.bountyDeadline
+        ),
         slots: 1,
         slotsIndex: 0,
         detailsOpen: 0,
-        size: 0
+        size: 0,
       }
     })
     this.state = {
@@ -84,14 +87,18 @@ class NewBountyAllocation extends React.Component {
     }
     // just do it, recalculate size
     const expLevels = this.getExpLevels()
-    let size = bounties[id]['hours'] * this.props.bountySettings.baseRate * expLevels[bounties[id]['exp']].mul
+    let size =
+      bounties[id]['hours'] *
+      this.props.bountySettings.baseRate *
+      expLevels[bounties[id]['exp']].mul
     bounties[id]['size'] = size
 
     this.setState({ bounties })
     //console.log('configBounty: ', bounties)
   }
 
-  generateHoursChange = id => ({ target: { value } }) => this.configBounty(id, 'hours', parseInt(value))
+  generateHoursChange = id => ({ target: { value } }) =>
+    this.configBounty(id, 'hours', parseInt(value))
 
   generateExpChange = id => index => {
     this.configBounty(id, 'exp', index)
@@ -212,7 +219,7 @@ class NewBountyAllocation extends React.Component {
                             label="Deadline"
                             input={
                               <DateInput
-                                name='deadline'
+                                name="deadline"
                                 value={bounties[issue.id]['deadline']}
                                 onChange={this.generateDeadlineChange(issue.id)}
                               />

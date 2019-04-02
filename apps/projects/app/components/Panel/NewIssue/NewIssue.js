@@ -80,13 +80,7 @@ class NewIssue extends React.PureComponent {
   canSubmit = () => !(this.state.title !== '' && this.state.selectedProject > 0)
 
   render() {
-    const {
-      title,
-      description,
-      labels,
-      isValid,
-      selectedProject,
-    } = this.state
+    const { title, description, labels, isValid, selectedProject } = this.state
     const { reposManaged } = this.props
     const {
       projectChange,
@@ -100,18 +94,18 @@ class NewIssue extends React.PureComponent {
       typeof reposManaged === 'string'
         ? 'No repos'
         : [ 'Select a project', ...reposManaged.map(repo => repo.name) ]
-    
+
     const reposIds =
-      typeof reposManaged === 'string'
-        ? []
-        : reposManaged.map(repo => repo.id)
-    
+      typeof reposManaged === 'string' ? [] : reposManaged.map(repo => repo.id)
+
     const id = selectedProject > 0 ? reposIds[selectedProject - 1] : ''
 
-    const reGet = [{
-      query: GET_ISSUES,
-      variables: { reposIds }
-    }]
+    const reGet = [
+      {
+        query: GET_ISSUES,
+        variables: { reposIds },
+      },
+    ]
 
     return (
       <Mutation
