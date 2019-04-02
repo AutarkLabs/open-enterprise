@@ -191,7 +191,6 @@ class NewBountyAllocation extends React.Component {
             />
           }
         />*/}
-<<<<<<< HEAD
           <FormField
             label="Issues"
             hint="Enter the estimated hours per issue"
@@ -298,100 +297,6 @@ class NewBountyAllocation extends React.Component {
             ) : null
         }
       </div>
-=======
-        <FormField
-          label="Issues"
-          hint="Enter the estimated hours per issue"
-          required
-          input={
-            <Table>
-              {this.props.issues.map(issue => (
-                <TableRow key={issue.id}>
-                  <Cell>
-                    <IBMain>
-                      <IssueBounty>
-                        <IBArrow onClick={this.generateArrowChange(issue.id)}>
-                          {bounties[issue.id]['detailsOpen'] ? (
-                            <IconBigArrowUp />
-                          ) : (
-                            <IconBigArrowDown />
-                          )}
-                        </IBArrow>
-                        <IBTitle size="normal" weight="bold">
-                          {issue.title}
-                        </IBTitle>
-                        <IBHours>
-                          <IBHoursInput>
-                            <FieldTitle>Hours</FieldTitle>
-                            <HoursInput
-                              name="hours"
-                              value={bounties[issue.id]['hours']}
-                              onChange={this.generateHoursChange(issue.id)}
-                            />
-                          </IBHoursInput>
-                        </IBHours>
-                        <IBValue>
-                          {issue.id in bounties &&
-                            bounties[issue.id]['hours'] > 0 && (
-                            <IBValueShow>
-                              <FieldTitle>Value</FieldTitle>
-                              <Badge style={{ marginLeft: '5px' }}>
-                                {bounties[issue.id]['size'].toFixed(2)}{' '}
-                                {bountySettings.bountyCurrency}
-                              </Badge>
-                            </IBValueShow>
-                          )}
-                        </IBValue>
-                      </IssueBounty>
-                      <IBDetails open={bounties[issue.id]['detailsOpen']}>
-                        <IBExp>
-                          <FormField
-                            label="Experience level"
-                            input={
-                              <DropDown
-                                items={expLevels.map(exp => exp.name)}
-                                onChange={this.generateExpChange(issue.id)}
-                                active={bounties[issue.id]['exp']}
-                              />
-                            }
-                          />
-                        </IBExp>
-                        <IBDeadline>
-                          <FormField
-                            label="Deadline"
-                            input={
-                              <DateInput
-                                name='deadline'
-                                value={bounties[issue.id]['deadline']}
-                                onChange={this.generateDeadlineChange(issue.id)}
-                              />
-                            }
-                          />
-                        </IBDeadline>
-                        {/*
-                        Can add back in when we support multiple slots
-                        <IBAvail>
-                          <FormField
-                            label="Slots Available"
-                            input={
-                              <DropDown
-                                items={bountySlots}
-                                onChange={this.generateSlotsChange(issue.id)}
-                                active={bounties[issue.id]['slotsIndex']}
-                              />
-                            }
-                          />
-                        </IBAvail> */}
-                      </IBDetails>
-                    </IBMain>
-                  </Cell>
-                </TableRow>
-              ))}
-            </Table>
-          }
-        />
-      </Form>
->>>>>>> dev
     )
   }
 }

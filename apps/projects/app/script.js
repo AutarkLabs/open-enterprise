@@ -7,6 +7,7 @@ import vaultAbi from '../../shared/json-abis/vault'
 import tokenSymbolAbi from './abi/token-symbol.json'
 import tokenDecimalsAbi from './abi/token-decimal.json'
 import { ipfsGet } from './utils/ipfs-helpers'
+import { toUtf8 } from './utils/web3-utils'
 
 const tokenAbi = [].concat(tokenDecimalsAbi, tokenSymbolAbi)
 
@@ -287,11 +288,12 @@ function syncIssues(state, { issueNumber, ...eventArgs }, data) {
 async function syncSettings(state) {
   try {
     let settings = await loadSettings()
+    const { expLevels, expMultipliers } = settings
 
     let expLvls = []
-    let a = settings.expLevels.split('\t')
-    for (let i = 0; i < a.length; i += 2)
-      expLvls.push({ mul: a[i] / 100, name: a[i + 1] })
+    console.log(settings)
+    for (let i = 0; i < expLevels.length; i++ )
+      expLvls.push({ mul: expMultipliers[i] / 100, name: toUtf8(expLevels[i]) })
 
 
     state.bountySettings = { ...settings, expLvls }
