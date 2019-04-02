@@ -148,7 +148,7 @@ class NewIssue extends React.PureComponent {
                 <Field label="Description">
                   <TextInput.Multiline
                     rows={3}
-                    style={{ resize: 'none', height: 'auto' }}
+                    style={{ resize: 'none', height: 'auto', paddingTop: '5px', paddingBottom: '5px' }}
                     onChange={descriptionChange}
                     wide
                   />
