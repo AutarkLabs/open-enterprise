@@ -72,36 +72,36 @@ const Wrapper = styled.div`
 
 const MarkdownWrapper = styled.div`
   h1, h2, h3, h4, h5, h6 {
-  	font-weight: 700;
-  	line-height: 1.0;
-  	cursor: text;
-  	position: relative;
-  	margin: 1em 0 15px;
-  	padding: 0;
+    font-weight: 700;
+    line-height: 1.0;
+    cursor: text;
+    position: relative;
+    margin: 1em 0 15px;
+    padding: 0;
   }
   h1 {
-  	font-size: 2.5em;
-  	border-bottom: 1px solid ${theme.contentBorder};
+    font-size: 2.5em;
+    border-bottom: 1px solid ${theme.contentBorder};
   }
   h2 {
-  	font-size: 2em;
-  	border-bottom: 1px solid ${theme.contentBorder};
+    font-size: 2em;
+    border-bottom: 1px solid ${theme.contentBorder};
   }
   h3 {
     font-size: 1.55em;
   }
   h4 {
-  	font-size: 1.2em;
+    font-size: 1.2em;
   }
   h5 {
-  	font-size: 1em;
+    font-size: 1em;
   }
   h6 {
-  	color: ${theme.textSecondary};
-  	font-size: 1em;
+    color: ${theme.textSecondary};
+    font-size: 1em;
   }
   p, blockquote, table, pre {
-  	margin: 3px 0;
+    margin: 3px 0;
   }
   blockquote {
     padding: 0 15px;
@@ -150,14 +150,14 @@ const MarkdownWrapper = styled.div`
     padding: 16px;
   }
   ul {
-  	padding-left: 30px; }
-  	li:last-of-type {
-  	padding-bottom: 1rem;
+    padding-left: 30px; }
+    li:last-of-type {
+    padding-bottom: 1rem;
   }
   ol {
-  	padding-left: 30px;
-  	padding-bottom: 1rem; }
-  	ol li ul:first-of-type {
+    padding-left: 30px;
+    padding-bottom: 1rem; }
+    ol li ul:first-of-type {
     margin-top: 0px;
   }
 `
