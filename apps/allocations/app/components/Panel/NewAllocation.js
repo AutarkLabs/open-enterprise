@@ -41,7 +41,6 @@ const INITIAL_STATE = {
 const message = {
   addressError: 'All options must be addresses and cannot be duplicates.',
   addressSetting: 'Use address book for options',
-  allocationError: 'Amount must be more than zero and less than limit.',
   balanceSetting: 'Must vote with entire balance',
   transferWarning:
     'This will create a Range Vote and after it closes, it will result in a financial transfer.',
@@ -121,12 +120,11 @@ class NewAllocation extends React.Component {
       balance: this.state.amount * 10e17,
       description: this.state.allocationDescription,
     }
-    const overLimit = allocation.balance > props.limit
 
     if (state.addressError || state.allocationError) {
       return
     }
-    if (!informational && (overLimit || allocation.balance === 0)) {
+    if (!informational && allocation.balance === 0) {
       this.setState({ allocationError: true })
       return
     }
@@ -145,18 +143,19 @@ class NewAllocation extends React.Component {
     const { props, state } = this
     const transferEnabled = state.allocationTypeIndex === 1
 
+    let availableTokens =  this.props.balances.map( balance => balance.symbol)
+
     const amountInput = {
       name: 'amount',
       value: state.amount || '',
       onChange: this.changeField,
       type: 'number',
       min: '0',
-      max: props.limit,
     }
 
     const amountDropDown = {
       name: 'token',
-      items: AVAILABLE_TOKENS,
+      items: availableTokens,
       active: state.payoutTokenIndex,
       onChange: this.changePayoutToken,
     }
