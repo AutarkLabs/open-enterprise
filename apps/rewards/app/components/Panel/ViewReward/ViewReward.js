@@ -131,7 +131,7 @@ class ViewReward extends React.Component {
               <div>
                 {Intl.DateTimeFormat().format(startDate)}
                 {' - '}
-                {Intl.DateTimeFormat().format(startDate)}
+                {Intl.DateTimeFormat().format(endDate)}
               </div>
             </div>
           </SidePanelSplit>
