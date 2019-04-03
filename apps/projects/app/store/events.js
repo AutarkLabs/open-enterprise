@@ -124,8 +124,7 @@ async function syncRepos(state, { repoId }) {
 
 function syncIssues(state, { issueNumber, ...eventArgs }, data) {
   try {
-    let updatedState = updateIssueState(state, issueNumber, data)
-    return updatedState
+    return updateIssueState(state, issueNumber, data)
   } catch (err) {
     console.error('updateIssueState failed to return:', err)
   }
@@ -133,7 +132,7 @@ function syncIssues(state, { issueNumber, ...eventArgs }, data) {
 
 async function syncSettings(state) {
   try {
-    let settings = await loadSettings()
+    const settings = await loadSettings()
     state.bountySettings = settings
     return state
   } catch (err) {
@@ -143,10 +142,10 @@ async function syncSettings(state) {
 
 async function syncTokens(state, { token }) {
   try {
-    let tokens = state.tokens
-    let tokenIndex = tokens.findIndex(currentToken => currentToken.addr === token)
+    const tokens = state.tokens
+    const tokenIndex = tokens.findIndex(currentToken => currentToken.addr === token)
     if(tokenIndex == -1) {
-      let newToken = await loadToken(token)
+      const newToken = await loadToken(token)
       tokenIndex = tokens.findIndex(currentToken => currentToken.symbol === newToken.symbol)
       if(tokenIndex !== -1){
         tokens[tokenIndex] = newToken
@@ -167,11 +166,9 @@ async function syncTokens(state, { token }) {
  *                     *
  ***********************/
 
-const cloneAppState = (nextState) => Object.assign({}, nextState)
-
 async function updateIssueDetail(data, response) {
   let returnData = { ...data }
-  let requestsData = await loadRequestsData(response.returnValues)
+  const requestsData = await loadRequestsData(response.returnValues)
   returnData.requestsData = requestsData
   const status = data.workStatus
   if (status && reverseWorkStatus[status].step >= SUBMISSION_STAGE) {

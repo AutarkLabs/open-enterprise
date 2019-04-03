@@ -5,7 +5,6 @@ import vaultAbi from '../../../shared/json-abis/vault'
 import { app, handleEvent, INITIAL_STATE } from './'
 import { INITIALIZE_STORE } from './eventTypes'
 
-
 const github = () => {
   return app.rpc
     .sendAndObserveResponses('cache', [ 'get', 'github' ])
@@ -14,22 +13,10 @@ const github = () => {
 
 export const initStore = (vaultAddress, network) => {
   const vaultContract = app.external(vaultAddress, vaultAbi)
-  console.log('INITING THE STORE')
   return app.store(
     async (state, event) => {
-      console.dir(`[PROJECTS] BEFORE STATE UPDATE:
-      event: ${JSON.stringify(event.event, null, 4)}
-      state: ${JSON.stringify(state, null, 4)}
-      `)
-
       try {
         const nextState = await handleEvent(state, event)
-        // Debug point
-        //console.log('[Rewards store]', nextState)
-        console.dir(`[PROJECTS] AFTER SUCCESSFUL STATE UPDATE:
-        event: ${JSON.stringify(event.event, null, 4)}
-        state: ${JSON.stringify(nextState, null, 4)}
-        `)
         return nextState
       } catch (err) {
         console.error(`[PROJECTS] store error:

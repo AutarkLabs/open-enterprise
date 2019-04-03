@@ -4,6 +4,7 @@ import React from 'react'
 import { hot } from 'react-hot-loader'
 import styled from 'styled-components'
 import { map } from 'rxjs/operators'
+import ApolloClient from 'apollo-boost'
 
 import { ApolloProvider } from 'react-apollo'
 
@@ -18,6 +19,7 @@ import { networkContextType } from '../../../../../shared/ui'
 import { REQUESTING_GITHUB_TOKEN,
   REQUESTED_GITHUB_TOKEN_SUCCESS,
   REQUESTED_GITHUB_TOKEN_FAILURE } from '../../store/eventTypes'
+import { CURRENT_USER } from '../../utils/gql-queries'
 
 const ASSETS_URL = './aragon-ui-assets/'
 
@@ -94,6 +96,21 @@ const getURLParam = param => {
   return searchParam.get(param)
 }
 
+const initApolloClient = (token) =>
+  new ApolloClient({
+    uri: 'https://api.github.com/graphql',
+    request: operation => {
+      if (token) {
+        operation.setContext({
+          headers: {
+            accept: 'application/vnd.github.starfire-preview+json', // needed to create issues
+            authorization: `bearer ${token}`,
+          },
+        })
+      }
+    }
+  })
+
 /**
  * Sends an http request to the AUTH_URI with the auth code obtained from the oauth flow
  * @param {string} code
@@ -120,11 +137,16 @@ class App extends React.PureComponent {
     network: networkContextType,
   }
 
-  state = {
-    repos: [],
-    panelProps: {},
-    activeIndex: { tabIndex: 0, tabData: {} },
-    githubLoading: false,
+  constructor(props) {
+    super(props)
+    this.state = {
+      repos: [],
+      panelProps: {},
+      activeIndex: { tabIndex: 0, tabData: {} },
+      githubLoading: false,
+      githubCurrentUser: {},
+      client: initApolloClient(props.github && props.github.token || '')
+    }
   }
 
   getChildContext() {
@@ -149,6 +171,25 @@ class App extends React.PureComponent {
         '*'
       )
     window.close()
+  }
+
+  componentDidUpdate(prevProps) {
+    const hasGithubToken = this.props.github && this.props.github.token
+    const hadGithubToken = prevProps.github && prevProps.github.token
+    const receivedGithubToken = hasGithubToken && !hadGithubToken
+    if (receivedGithubToken) {
+      const client = initApolloClient(this.props.github.token)
+      client
+        .query({
+          query: CURRENT_USER,
+        })
+        .then(({ data }) => {
+          this.setState({
+            client,
+            githubCurrentUser: data.viewer,
+          })
+        })
+    }
   }
 
   handlePopupMessage = async message => {
@@ -313,7 +354,7 @@ class App extends React.PureComponent {
       panel: PANELS.SubmitWork,
       panelProps: {
         onSubmitWork: this.onSubmitWork,
-        githubCurrentUser: this.props.githubCurrentUser,
+        githubCurrentUser: this.state.githubCurrentUser,
         issue,
       },
     }))
@@ -334,7 +375,7 @@ class App extends React.PureComponent {
       panel: PANELS.RequestAssignment,
       panelProps: {
         onRequestAssignment: this.onRequestAssignment,
-        githubCurrentUser: this.props.githubCurrentUser,
+        githubCurrentUser: this.state.githubCurrentUser,
         issue,
       },
     }))
@@ -356,7 +397,7 @@ class App extends React.PureComponent {
       panelProps: {
         issue,
         onReviewApplication: this.onReviewApplication,
-        githubCurrentUser: this.props.githubCurrentUser,
+        githubCurrentUser: this.state.githubCurrentUser,
       },
     }))
   }
@@ -394,7 +435,7 @@ class App extends React.PureComponent {
       panelProps: {
         issue,
         onReviewWork: this.onReviewWork,
-        githubCurrentUser: this.props.githubCurrentUser,
+        githubCurrentUser: this.state.githubCurrentUser,
       },
     }))
   }
@@ -493,21 +534,21 @@ class App extends React.PureComponent {
   }
 
   render() {
-    const { activeIndex, panel, panelProps } = this.state
-    const { client, bountySettings, githubCurrentUser } = this.props
+    const { activeIndex, panel, panelProps, githubCurrentUser } = this.state
+    const { bountySettings } = this.props
     return (
       <StyledAragonApp publicUrl={ASSETS_URL}>
         <BaseStyles />
         <ToastHub>
           <Title text="Projects" />
-          <ApolloProvider client={client}>
+          <ApolloProvider client={this.state.client}>
             <ErrorBoundary>
               <AppContent
                 onLogin={this.handleGithubSignIn}
                 status={(this.props.github && this.props.github.status) || STATUS.INITIAL}
                 app={this.props.app}
                 bountySettings={bountySettings}
-                githubCurrentUser={githubCurrentUser || {}}
+                githubCurrentUser={githubCurrentUser}
                 githubLoading={this.state.githubLoading}
                 projects={this.props.repos !== undefined ? this.props.repos : []}
                 bountyIssues={
