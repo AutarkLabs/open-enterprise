@@ -1,8 +1,7 @@
 import { of } from 'rxjs'
-import { pluck } from 'rxjs/operators'
 
 import vaultAbi from '../../../shared/json-abis/vault'
-import { app, handleEvent, INITIAL_STATE } from './'
+import { app, handleEvent } from './'
 import { INITIALIZE_STORE } from './eventTypes'
 
 const github = () => {
@@ -19,9 +18,9 @@ export const initStore = (vaultAddress, network) => {
         const nextState = await handleEvent(state, event)
         return nextState
       } catch (err) {
-        console.error(`[PROJECTS] store error:
+        console.error(`[PROJECTS] store error: ${err}
         event: ${JSON.stringify(event.event, null, 4)}
-        state: ${JSON.stringify(err, null, 4)}
+        state: ${JSON.stringify(state, null, 4)}
         `)
       }
       // always return the state even unmodified
