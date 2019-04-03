@@ -19,16 +19,17 @@ const workStatus = {
   BountyAdded: { step: 0, status: 'funded' },
   AssignmentRequested : { step: 1, status: 'review-applicants' },
   AssignmentApproved: { step: 2, status: 'in-progress' },
-  SubmissionRejected: { step: 3, status: 'review-work' },
-  SubmissionAccepted: { step: 3, status: 'fulfilled' }
+  WorkSubmitted: { step: 3, status: 'review-work' },
+  SubmissionRejected: { step: 4, status: 'review-work' },
+  SubmissionAccepted: { step: 4, status: 'fulfilled' }
 }
 
 const reverseWorkStatus = {
-  'funded': 'BountyAdded',
-  'review-applicants': 'AssignmentRequested',
-  'in-progress': 'AssignmentApproved',
-  'review-work': 'SubmissionRejected',
-  'fulfilled': 'SubmissionAccepted',
+  'funded': { step: 0, event: 'BountyAdded' },
+  'review-applicants': { step: 1, event: 'AssignmentRequested' },
+  'in-progress': { step: 2, event: 'AssignmentApproved' },
+  'review-work': { step: 3, event: 'WorkSubmitted' },
+  'fulfilled': { step: 4, event: 'SubmissionAccepted' },
 }
 
 const assignmentRequestStatus = [ 'Unreviewed', 'Accepted', 'Rejected' ]
@@ -182,7 +183,8 @@ async function updateIssueDetail(data, response) {
   let returnData = { ...data }
   let requestsData = await loadRequestsData(response.returnValues)
   returnData.requestsData = requestsData
-  if (status.indexOf(data.workStatus) >= SUBMISSION_STAGE) {
+  const status = data.workStatus
+  if (status && reverseWorkStatus[status].step >= SUBMISSION_STAGE) {
     let submissionData = await loadSubmissionData(response.returnValues)
     returnData.workSubmissions = submissionData
     returnData.work = submissionData[submissionData.length - 1]
@@ -389,7 +391,7 @@ function updateIssueState(state, issueNumber, data) {
 // protects against eth events coming back in the wrong order for bounties
 const determineWorkStatus = (issue, event) => {
   const currentStatus = issue.workStatus
-  const currentStep = currentStatus ? reverseWorkStatus[currentStatus] : -1
+  const currentStep = currentStatus ? reverseWorkStatus[currentStatus].step : -1
   const { step, status } = workStatus[event]
 
   if (step > currentStep) issue.workStatus = status
