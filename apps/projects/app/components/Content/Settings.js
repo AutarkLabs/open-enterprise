@@ -182,37 +182,32 @@ class Settings extends React.Component {
             onAddExpLevel={this.addExpLevel}
             generateExpLevelHandler={this.generateExpLevelHandler}
           />
-          {!this.props.tokens.length ? (
-            <EmptyBaseRate />
-          ) : (
-            <BaseRate
-              baseRate={baseRate}
-              onChangeRate={this.baseRateChange}
-              bountyCurrencies={bountyCurrencies}
-              bountyCurrency={bountyCurrency}
-              onChangeCurrency={this.bountyCurrencyChange}
-            />
-          )}
+
           <Button mode="strong" onClick={this.submitChanges} wide>
-            Submit Changes
+              Submit Changes
           </Button>
         </div>
         <div className="column">
-          <BountyContractAddress
-            bountyAllocator={bountyAllocator}
-            networkType={network.type}
+          {!this.props.tokens.length ? (
+            <EmptyBaseRate />
+          ) : (
+          <BaseRate
+            baseRate={baseRate}
+            onChangeRate={this.baseRateChange}
+            bountyCurrencies={bountyCurrencies}
+            bountyCurrency={bountyCurrency}
+            onChangeCurrency={this.bountyCurrencyChange}
           />
-          {/*}
-          <BountyArbiter
-            bountyArbiter={bountyArbiter}
-            networkType={network.type}
-          />
-          */}
+        )}
           <BountyDeadline
             bountyDeadlineT={bountyDeadlineT}
             onChangeT={this.bountyDeadlineChangeT}
             bountyDeadlineD={bountyDeadlineD}
             onChangeD={this.bountyDeadlineChangeD}
+          />
+          <BountyContractAddress
+            bountyAllocator={bountyAllocator}
+            networkType={network.type}
           />
         </div>
       </StyledContent>
@@ -328,7 +323,7 @@ const BaseRate = ({ baseRate, onChangeRate, bountyCurrency, onChangeCurrency, bo
       size and converted into the bounty currency under the hood.
     </Text.Block>
     <FieldTitle style={{ marginBottom: '0' }}>Rate per hour</FieldTitle>
-    <StyledInputDropDown style={{ marginBottom: '0' }}>
+    <StyledInputDropDown>
       <NumberFormat
         customInput={StyledNumberInput}
         fixedDecimalScale
@@ -364,7 +359,7 @@ const GitHubConnect = ({ onLogin, onLogout, status, user }) => {
       <Text.Block
         size="large"
         weight="bold"
-        children={'GitHub authorization'}
+        children={'GitHub Authorization'}
       />
       <Text.Block children={bodyText} />
       <StyledButton
@@ -444,8 +439,7 @@ const StyledTextInput = styled(TextInput).attrs({
 `
 
 const StyledButton = styled(Button)`
-  font-size: 15px;
-  margin-top: 10px;
+  margin-top: 8px;
 `
 // padding-left: 30px;
 // background: url(${cross}) no-repeat 10px calc(50% - 1px);
@@ -461,15 +455,10 @@ const StyledContent = styled.div`
       flex: 0 0 464px;
       margin-right: 20px;
     }
-    :last-child {
-      > :not(:last-child) {
-        border-bottom: 1px solid ${theme.contentBorder};
-      }
-    }
     > * {
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       > * {
-        margin-bottom: 20px;
+        margin-bottom: 10px;
       }
     }
   }

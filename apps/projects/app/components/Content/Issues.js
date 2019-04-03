@@ -521,7 +521,6 @@ const ScrollWrapper = styled.div`
 // TODO: Calculate height with flex (maybe to add pagination at bottom?)
 const IssuesScrollView = styled.div`
   height: 75vh;
-  min-width: 600px;
   position: relative;
   overflow-y: auto;
 `
