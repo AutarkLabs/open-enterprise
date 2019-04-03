@@ -15,30 +15,35 @@ import { CURRENT_USER } from './utils/gql-queries'
 //   whyDidYouUpdate(React)
 // }
 
+const initApolloClient = (token) =>
+  new ApolloClient({
+    uri: 'https://api.github.com/graphql',
+    request: operation => {
+      if (token) {
+        operation.setContext({
+          headers: {
+            accept: 'application/vnd.github.starfire-preview+json', // needed to create issues
+            authorization: `bearer ${token}`,
+          },
+        })
+      }
+    }
+  })
+
+
 // TODO: Convert to stateless functional component
 class ConnectedApp extends React.Component {
-  state = {
-    app: new Aragon(new providers.WindowMessage(window.parent)),
-    network: {},
-    observable: null,
-    userAccount: '',
-    // ...projectsMockData,
-    github: { token: null },
-    client: new ApolloClient({
-      uri: 'https://api.github.com/graphql',
-      request: operation => {
-        const { token } = this.state.github
-        if (token) {
-          operation.setContext({
-            headers: {
-              accept: 'application/vnd.github.starfire-preview+json', // needed to create issues
-              authorization: `bearer ${token}`,
-            },
-          })
-        }
-      },
-    }),
+  constructor(props) {
+    super(props)
+    this.state = {
+      app: new Aragon(new providers.WindowMessage(window.parent)),
+      network: {},
+      observable: null,
+      userAccount: '',
+      client: initApolloClient(),
+    }
   }
+
   componentDidMount() {
     window.addEventListener('message', this.handleWrapperMessage)
   }
@@ -69,17 +74,16 @@ class ConnectedApp extends React.Component {
         .subscribe(github => {
           console.log('github object received from backend cache:', github)
 
-          this.setState({
-            github: github,
-          })
+          if (github.token) {
+            const client = initApolloClient(github.token)
 
-          if (this.state.github.token) {
-            this.state.client
+            client
               .query({
                 query: CURRENT_USER,
               })
               .then(({ data }) => {
                 this.setState({
+                  client,
                   githubCurrentUser: data.viewer,
                 })
                 console.log('viewer: ', data)
