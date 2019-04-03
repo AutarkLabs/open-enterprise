@@ -111,7 +111,8 @@ const loadReposFromQueue = async (state) => {
         return repos[0]
       }
     ))
-    return loadedRepoQueue
+    // don't put a remoed repo in state as `null`
+    return loadedRepoQueue.filter(repo => !!repo)
   }
   return []
 }
@@ -206,8 +207,11 @@ function loadToken(token) {
 
 function loadRepoData(id) {
   return new Promise(resolve => {
-    app.call('getRepo', id).subscribe(({ owner, index }) => {
-      const [ _repo, _owner ] = [ toAscii(id), toAscii(owner) ]
+    app.call('getRepo', id).subscribe((response) => {
+      // handle repo removed case
+      if (!response) return resolve({ repoRemoved: true })
+
+      const [ _repo, _owner ] = [ toAscii(id), toAscii(response.owner) ]
       getRepoData(_repo).then(({ node }) => {
         const commits = node.defaultBranchRef
           ? node.defaultBranchRef.target.history.totalCount
@@ -222,7 +226,7 @@ function loadRepoData(id) {
           collaborators: node.collaborators.totalCount,
           commits,
         }
-        resolve({ _repo, _owner, index, metadata })
+        return resolve({ _repo, _owner, index: response.index, metadata, repoRemoved: false })
       })
     })
   })
@@ -299,7 +303,9 @@ function loadSettings() {
 
 async function checkReposLoaded(repos, id, transform) {
   const repoIndex = repos.findIndex(repo => repo.id === id)
-  const { metadata, ...data } = await loadRepoData(id)
+  const { metadata, repoRemoved, ...data } = await loadRepoData(id)
+
+  if (repoRemoved) return repos
 
   if (repoIndex === -1) {
     // If we can't find it, load its data, perform the transformation, and concat
@@ -441,9 +447,6 @@ export const handleEvent = async (state, action) => {
     const repoIndex = nextState.repos.findIndex(repo => repo.id === id)
     if (repoIndex === -1) return nextState
     nextState.repos.splice(repoIndex,1)
-    return nextState
-  case 'RepoUpdated':
-    nextState = await syncRepos(cloneAppState(appState), returnValues)
     return nextState
   case 'BountyAdded': {
     if(!returnValues) return nextState
