@@ -74,30 +74,20 @@ const repoData = id => `{
     }
 }`
 
-const determineStateVars = (state) => {
-  const repos = (!!state && state.repos) || []
-  const tokens = (!!state && state.tokens) || []
-  const issues = (!!state && state.issues) || []
-  const bountySettings = (!!state && state.bountySettings) || {}
-
-  return { repos, tokens, bountySettings, issues }
-}
-
 const app = new Aragon()
-let appState = determineStateVars()
 
-let apolloClient = null
+let graphQLClient = null
 const getRepoData = repo => {
   try {
-    let data = apolloClient.request(repoData(repo))
+    let data = graphQLClient.request(repoData(repo))
     return data
   } catch (err) {
     console.error('getRepoData failed: ', err)
   }
 }
 
-const initializeApolloClient = token => {
-  apolloClient = new GraphQLClient('https://api.github.com/graphql', {
+const initializeGraphQLClient = token => {
+  graphQLClient = new GraphQLClient('https://api.github.com/graphql', {
     headers: {
       Authorization: 'Bearer ' + token,
     },
@@ -351,7 +341,7 @@ function checkIssuesLoaded(issues, issueNumber, data) {
 let unloadedRepoQueue = []
 async function updateState(state, id, transform) {
   try {
-    if (apolloClient) {
+    if (graphQLClient) {
       const repos = await checkReposLoaded(state.repos, id, transform)
       const newState = { ...state, repos }
       return newState
@@ -372,11 +362,11 @@ async function updateState(state, id, transform) {
 
 function updateIssueState(state, issueNumber, data) {
   if(!data) return state
-  const { repos, tokens, bountySettings, issues } = determineStateVars(state)
-
+  const issues = state.issues || []
+  let newIssues
   try {
-    let newIssues = checkIssuesLoaded(issues, issueNumber, data)
-    let newState = { repos, tokens, bountySettings, issues: newIssues }
+    newIssues = checkIssuesLoaded(issues, issueNumber, data)
+    let newState = { ...state, issues: newIssues }
     return newState
   } catch (err) {
     console.error(
@@ -411,7 +401,7 @@ export const handleEvent = async (state, action) => {
   case INITIALIZE_STORE: {
     nextState = { ...INITIAL_STATE, ...state }
     if (nextState.github.token) {
-      initializeApolloClient(nextState.github.token)
+      initializeGraphQLClient(nextState.github.token)
     }
     return nextState
   }
@@ -421,7 +411,7 @@ export const handleEvent = async (state, action) => {
   case REQUESTED_GITHUB_TOKEN_SUCCESS: {
     const { token } = action
     if (token) {
-      initializeApolloClient(token)
+      initializeGraphQLClient(token)
     }
 
     const loadedRepos = await loadReposFromQueue(state)
