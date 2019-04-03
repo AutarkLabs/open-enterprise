@@ -122,7 +122,8 @@ export const handleEvent = async (state, action) => {
     if (!returnValues) return nextState
     let issueData = await loadIssueData(returnValues)
     issueData = determineWorkStatus(issueData, SUBMISSION_ACCEPTED)
-    nextState = syncIssues(nextState, returnValues, issueData)
+    const newData = await updateIssueDetail(issueData, action)
+    nextState = syncIssues(nextState, returnValues, newData)
     return nextState
   }
   case ISSUE_CURATED: {

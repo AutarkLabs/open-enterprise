@@ -334,7 +334,6 @@ class Issues extends React.PureComponent {
         symbol: token.symbol,
         decimals: token.decimals,
       }
-      console.log('tokenObj:', tokenObj)
     })
     return issues.map(({ __typename, repository: { id, name }, ...fields }) => {
       const bountyId = bountyIssueObj[fields.number]
