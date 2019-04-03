@@ -8,6 +8,9 @@ import "@aragon/os/contracts/lib/math/SafeMath.sol";
 
 import "@aragon/os/contracts/lib/math/SafeMath64.sol";
 
+import "@aragon/apps-vault/contracts/Vault.sol";
+
+
 /*******************************************************************************
     Copyright 2018, That Planning Suite
     This program is free software: you can redistribute it and/or modify
@@ -71,6 +74,8 @@ contract Allocations is AragonApp, Fundable {
         bytes32[] candidateKeys;
         address[] candidateAddresses;
         uint256[] supports;
+        string metadata;
+        address token;
         //uint256 limit;
         bool recurring;
         //bool informational;
@@ -87,14 +92,14 @@ contract Allocations is AragonApp, Fundable {
     struct Account {
         Payout[] payouts;
         string metadata;
-        uint limit;
+        //uint limit;
         uint balance;
-        address token;
         address proxy;
     }
 
 
     AddressBook public addressBook;
+    Vault public vault;
     Account[] accounts;
     Payout[] payouts;
     mapping(address => uint) accountProxies; // proxy address -> account Id
@@ -116,10 +121,12 @@ contract Allocations is AragonApp, Fundable {
     *         None of the distribution or payments are handled in this step.
     */
     function initialize(
-        AddressBook _addressBook
+        AddressBook _addressBook,
+        Vault _vault
     ) external onlyInit
     {
         addressBook = _addressBook;
+        vault = _vault;
         accounts.length++;  // position 0 is reserved and unused
         initialized();
     }
@@ -128,25 +135,29 @@ contract Allocations is AragonApp, Fundable {
 // Getter functions
 ///////////////////////
     function getAccount(uint256 _accountId) external view
-    returns(uint256 balance, uint256 limit, string metadata, address token, address proxy, uint256 amount)
+    returns(uint256 balance, string metadata, address proxy)
     {
         Account storage account = accounts[_accountId];
-        limit = account.limit;
+        //limit = account.limit;
         balance = account.balance;
         metadata = account.metadata;
-        token = account.token;
         proxy = account.proxy;
     }
 
     function getPayout(uint _accountId, uint _payoutId) external view
-    returns(uint amount, bool recurring, uint startTime, uint period, bool distSet, string description)
+    returns(uint amount, bool recurring, uint startTime, uint period, bool distSet, address token)
     {
         Payout storage payout = accounts[_accountId].payouts[_payoutId];
+        token = payout.token;
         amount = payout.amount;
         startTime = payout.startTime;
         recurring = payout.recurring;
         period = payout.period;
         distSet = payout.distSet;
+    }
+
+    function getPayoutDescription(uint _accountId, uint _payoutId) external view returns(string description) {
+        Payout storage payout = accounts[_accountId].payouts[_payoutId];
         description = payout.description;
     }
 
@@ -176,16 +187,12 @@ contract Allocations is AragonApp, Fundable {
     *
     */
     function newAccount(
-        string _metadata,
-        uint256 _limit,
-        address _token
+        string _metadata
     ) external auth(START_PAYOUT_ROLE) returns(uint256 accountId)
     {
         accountId = accounts.length++;
         Account storage account = accounts[accountId];
         account.metadata = _metadata;
-        account.limit = _limit;
-        account.token = _token;
         account.balance = 0;
         FundForwarder fund = new FundForwarder(accountId, this);
         account.proxy = address(fund);
@@ -224,17 +231,28 @@ contract Allocations is AragonApp, Fundable {
         }
 
         uint individualPayout;
+        address token = payout.token;
+        uint length = payout.candidateAddresses.length;
         //handle vault
-        for (i = 0; i < payout.candidateAddresses.length; i++) {
-            individualPayout = payout.supports[i].mul(payout.amount).div(totalSupport);
+        if (token == 0x0) {
+            for (i = 0; i < payout.candidateAddresses.length; i++) {
+                individualPayout = payout.supports[i].mul(payout.amount).div(totalSupport);
 
-            if ( accountProxies[payout.candidateAddresses[i]] > 0 ) {
-                Account storage candidateAccount = accounts[accountProxies[payout.candidateAddresses[i]]];
-                candidateAccount.balance = candidateAccount.balance.add(individualPayout);
-                account.balance = account.balance.sub(individualPayout);
-            } else {
-                payout.candidateAddresses[i].transfer(individualPayout);
-                account.balance = account.balance.sub(individualPayout);
+                if ( accountProxies[payout.candidateAddresses[i]] > 0 ) {
+                    Account storage candidateAccount = accounts[accountProxies[payout.candidateAddresses[i]]];
+                    candidateAccount.balance = candidateAccount.balance.add(individualPayout);
+                    account.balance = account.balance.sub(individualPayout);
+                } else {
+                    payout.candidateAddresses[i].transfer(individualPayout);
+                    account.balance = account.balance.sub(individualPayout);
+                }
+            }
+        } else {
+            for (i = 0; i < length; i++) {
+                if ( accountProxies[payout.candidateAddresses[i]] == 0 ) {
+                    individualPayout = payout.supports[i].mul(payout.amount).div(totalSupport);
+                    vault.transfer(token, payout.candidateAddresses[i], individualPayout);
+                }
             }
         }
         success = true;
@@ -266,24 +284,30 @@ contract Allocations is AragonApp, Fundable {
         uint256 _accountId,
         bool _recurring,
         uint256 _period,
-        uint256 _amount
+        uint256 _amount,
+        address _token
     ) public auth(SET_DISTRIBUTION_ROLE) returns(uint payoutId)
     {
         Account storage account = accounts[_accountId];
         Payout storage payout = account.payouts[account.payouts.length++];
 
-        require(account.balance >= _amount, "payout account underfunded");
-        require(account.limit >= _amount, "payout amount over account limit");
-
+        payout.token = _token;
         payout.amount = _amount;
+
+        if (payout.token == address(0)) {
+            require(account.balance >= _amount, "payout account underfunded");
+        } else {
+            require(vault.balance(_token) >= _amount, "vault underfunded");
+        }
+
         payout.recurring = _recurring;
         payout.candidateAddresses = _candidateAddresses;
 
         if (_recurring) {
             payout.period = _period;
             // minimum granularity is a single day
-            // This check is disabled currently to enable testing of shorter times
-            //require(payout.period > 86399,"period too short");
+            // This check can be disabled currently to enable testing of shorter times
+            require(payout.period > 86399,"period too short");
             payout.startTime = block.timestamp; // solium-disable-line security/no-block-members
         } else {
             payout.period = 0;

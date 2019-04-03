@@ -73,7 +73,7 @@ class App extends React.Component {
 
   createAccount = (account) => {
     account.balance = 0
-    this.props.app.newPayout(account.description)
+    this.props.app.newAccount(account.description)
     this.closePanel()
     console.info('App.js: Account Created:')
     console.table(account)

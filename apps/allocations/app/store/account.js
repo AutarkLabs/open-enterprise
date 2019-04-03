@@ -10,7 +10,6 @@ export const onNewAccount = async (accounts = [], { accountId }) => {
     const newAccount = await getAccountById(accountId)
     if (newAccount) {
       accounts.push(newAccount)
-      // console.log('[Allocations] caching', newAccount.data.metadata, 'account')
     }
   }
   return accounts
@@ -67,7 +66,8 @@ const loadPayoutData = async (accountId, payoutId) => {
     // TODO: Should we standarize the naming and switch to getAccount instead of getPayout?
     combineLatest(
       app.call('getPayout', accountId, payoutId),
-      app.call('getAccount', accountId)
+      app.call('getAccount', accountId),
+      app.call('getPayoutDescription', accountId, payoutId),
     )
       .first()
       .subscribe(data => {
@@ -75,12 +75,12 @@ const loadPayoutData = async (accountId, payoutId) => {
         // don't resolve when entry not found
         if (data) {
           resolve({
-            rewardToken: data[1].token,
-            amount: data[1].amount,
+            rewardToken: data[0].token,
+            amount: data[0].amount,
             StartTime: new Date(data[0].startTime),
             recurring: data[0].recurring,
             period: data[0].period,
-            description: data[0].description,
+            description: data[2],
             index: payoutId,
             distSet: data[0].distSet,
             accountId: accountId,
