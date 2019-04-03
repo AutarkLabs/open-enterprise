@@ -15,7 +15,22 @@ import { STATUS } from '../utils/github'
 
 const tokenAbi = [].concat(tokenDecimalsAbi, tokenSymbolAbi)
 
-const status = [ 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]
+const workStatus = {
+  BountyAdded: { step: 0, status: 'funded' },
+  AssignmentRequested : { step: 1, status: 'review-applicants' },
+  AssignmentApproved: { step: 2, status: 'in-progress' },
+  SubmissionRejected: { step: 3, status: 'review-work' },
+  SubmissionAccepted: { step: 3, status: 'fulfilled' }
+}
+
+const reverseWorkStatus = {
+  'funded': 'BountyAdded',
+  'review-applicants': 'AssignmentRequested',
+  'in-progress': 'AssignmentApproved',
+  'review-work': 'SubmissionRejected',
+  'fulfilled': 'SubmissionAccepted',
+}
+
 const assignmentRequestStatus = [ 'Unreviewed', 'Accepted', 'Rejected' ]
 
 const SUBMISSION_STAGE = 2
@@ -348,9 +363,7 @@ async function updateState(state, id, transform) {
 }
 
 function updateIssueState(state, issueNumber, data) {
-  if(data === undefined || data === null) {
-    return state
-  }
+  if(!data) return state
   const { repos, tokens, bountySettings, issues } = determineStateVars(state)
 
   try {
@@ -367,6 +380,16 @@ function updateIssueState(state, issueNumber, data) {
   }
 }
 
+// protects against eth events coming back in the wrong order for bounties
+const determineWorkStatus = (issue, event) => {
+  const currentStatus = issue.workStatus
+  const currentStep = currentStatus ? reverseWorkStatus[currentStatus] : -1
+  const { step, status } = workStatus[event]
+
+  if (step > currentStep) issue.workStatus = status
+
+  return issue
+}
 
 export const handleEvent = async (state, action) => {
   // if (eventName === INITIALIZATION_TRIGGER) {
@@ -424,47 +447,47 @@ export const handleEvent = async (state, action) => {
     return nextState
   case 'BountyAdded': {
     if(!returnValues) return nextState
-    const issueData = await loadIssueData(returnValues)
-    issueData.workStatus = status[0]
+    let issueData = await loadIssueData(returnValues)
+    issueData = determineWorkStatus(issueData, 'BountyAdded')
     nextState = syncIssues(nextState, returnValues, issueData, [])
     return nextState
   }
   case 'AssignmentRequested': {
     if(!returnValues) return nextState
-    const issueData = await loadIssueData(returnValues)
-    issueData.workStatus = status[1]
+    let issueData = await loadIssueData(returnValues)
+    issueData = determineWorkStatus(issueData, 'AssignmentRequested')
     const newData = await updateIssueDetail(issueData, action)
     nextState = syncIssues(nextState, returnValues, newData)
     return nextState
   }
   case 'AssignmentApproved': {
     if(!returnValues) return nextState
-    const issueData = await loadIssueData(returnValues)
-    issueData.workStatus = status[2]
+    let issueData = await loadIssueData(returnValues)
+    issueData = determineWorkStatus(issueData, 'AssignmentApproved')
     const newData = await updateIssueDetail(issueData, action)
     nextState = syncIssues(nextState, returnValues, newData)
     return nextState
   }
   case 'SubmissionRejected': {
     if(!returnValues) return nextState
-    const issueData = await loadIssueData(returnValues)
-    issueData.workStatus = status[3]
+    let issueData = await loadIssueData(returnValues)
+    issueData = determineWorkStatus(issueData, 'SubmissionRejected')
     const newData = await updateIssueDetail(issueData, action)
     nextState = syncIssues(nextState, returnValues, newData)
     return nextState
   }
   case 'WorkSubmitted': {
     if(!returnValues) return nextState
-    const issueData = await loadIssueData(returnValues)
-    issueData.workStatus = status[3]
+    let issueData = await loadIssueData(returnValues)
+    issueData = determineWorkStatus(issueData, 'WorkSubmitted')
     const newData = await updateIssueDetail(issueData, action)
     nextState = syncIssues(nextState, returnValues, newData)
     return nextState
   }
   case 'SubmissionAccepted': {
     if (!returnValues) return nextState
-    const issueData = await loadIssueData(returnValues)
-    issueData.workStatus = status[4]
+    let issueData = await loadIssueData(returnValues)
+    issueData = determineWorkStatus(issueData, 'SubmissionAccepted')
     nextState = syncIssues(nextState, returnValues, issueData)
     return nextState
   }
