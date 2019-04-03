@@ -350,7 +350,7 @@ const GitHubConnect = ({ onLogin, onLogout, status, user }) => {
       <Text.Block
         size="large"
         weight="bold"
-        children={'GitHub authorization'}
+        children={'GitHub Authorization'}
       />
       <Text.Block children={bodyText} />
       <StyledButton
@@ -430,8 +430,7 @@ const StyledTextInput = styled(TextInput).attrs({
 `
 
 const StyledButton = styled(Button)`
-  font-size: 15px;
-  margin-top: 10px;
+  margin-top: 8px;
 `
 // padding-left: 30px;
 // background: url(${cross}) no-repeat 10px calc(50% - 1px);
@@ -447,15 +446,10 @@ const StyledContent = styled.div`
       flex: 0 0 464px;
       margin-right: 20px;
     }
-    :last-child {
-      > :not(:last-child) {
-        border-bottom: 1px solid ${theme.contentBorder};
-      }
-    }
     > * {
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       > * {
-        margin-bottom: 20px;
+        margin-bottom: 10px;
       }
     }
   }
