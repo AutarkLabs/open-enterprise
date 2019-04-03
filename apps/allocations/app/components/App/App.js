@@ -102,9 +102,8 @@ class App extends React.Component {
   }
 
   onExecutePayout = (accountId, payoutId) => {
-    console.info('App.js: Executing Payout:')
-    //console.info(id)
-    //this.props.app.executePayout(id)
+    console.info('App.js: Executing Payout:', accountId, payoutId)
+    this.props.app.runPayout(accountId, payoutId)
   }
 
   manageParameters = address => {
@@ -171,7 +170,6 @@ class App extends React.Component {
               onNewAccount={this.newAccount}
               onNewAllocation={this.newAllocation}
               onManageParameters={this.manageParameters}
-              onExecutePayout={this.onExecutePayout}
               app={this.props.app}
             />
 

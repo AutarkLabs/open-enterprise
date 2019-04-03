@@ -93,7 +93,7 @@ const PayoutsNarrow = ({ executePayout, claimed, data, openDetails, network }) =
             {payout.distSet &&
             (
               <ContextMenu>
-                <ContextMenuItem onClick={executePayout}>
+                <ContextMenuItem onClick={() => {executePayout(payout.accountId, payout.index)}}>
                   <IconFundraising />
                   <ActionLabel>Distribute Allocation</ActionLabel>
                 </ContextMenuItem>

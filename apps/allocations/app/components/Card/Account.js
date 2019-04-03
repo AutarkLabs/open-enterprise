@@ -25,7 +25,6 @@ const Account = ({
   network,
   onNewAllocation,
   onManageParameters,
-  onExecutePayout,
   token,
   app,
 }) => {
@@ -37,10 +36,6 @@ const Account = ({
     onManageParameters(proxy)
   }
 
-  const executePayout = () => {
-    console.info('App.js: Executing Payout:')
-    app.runPayout(id)
-  }
   /*Need a better solution that this, should be handled in
   App.js using token manager once more tokens are supported */
   function translateToken(token) {
@@ -58,10 +53,6 @@ const Account = ({
           <ContextMenuItem onClick={newAllocation}>
             <IconAdd />
             <ActionLabel>New Allocation</ActionLabel>
-          </ContextMenuItem>
-          <ContextMenuItem onClick={executePayout}>
-            <IconFundraising />
-            <ActionLabel>Distribute Allocation</ActionLabel>
           </ContextMenuItem>
         </ContextMenu>
       </MenuContainer>
