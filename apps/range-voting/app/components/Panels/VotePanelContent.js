@@ -186,7 +186,7 @@ class VotePanelContent extends React.Component {
       return null
     }
 
-    const { endDate, open, quorum, support } = vote
+    const { endDate, open, quorum, support, candidateSupport } = vote
     const {
       participationPct,
       canExecute,
@@ -422,9 +422,9 @@ class VotePanelContent extends React.Component {
                 }
               />
             ))}
-          {showResults && (
+          {showResults && candidateSupport!== 0 (
             <Text size="xsmall" color={theme.textSecondary}>
-              A minimum of 5% is required for an option to become validated
+              {'A minimum of ' + candidateSupport + ' is required for an option to become validated'}
             </Text>
           )}
         </div>

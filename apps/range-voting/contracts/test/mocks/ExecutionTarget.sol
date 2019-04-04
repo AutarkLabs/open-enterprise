@@ -6,12 +6,13 @@ contract ExecutionTarget {
     uint256[] public level1Id;
     uint256[] public level2Id;
     /// @dev The first 6 arguments in setSignal are necessary in a function that will be forwarded to rangeVoting.
-    /// Any additional parameters must not e an array type of any form, or the function will not be forwardable.
+    /// Any additional parameters must not be an array type of any form (strings included), or the function will not be forwardable.
     function setSignal(
         address[] /*_addr*/, 
         uint256[] _signal,
         uint256[] /*_infoIndices*/, 
         string /*_candidateInfo*/,
+        string /*description*/,
         uint256[] _level1Id,
         uint256[] _level2Id,
         uint256 /*external vote Identifier*/,
@@ -38,18 +39,3 @@ contract ExecutionTarget {
 
     event Executed(uint length);
 }
-
-// contract ExecutionTarget {
-//     uint public counter;
-
-//     function execute() {
-//         counter += 1;
-//         Executed(counter);
-//     }
-
-//     function setCounter(uint x) {
-//         counter = x;
-//     }
-
-//     event Executed(uint x);
-// }

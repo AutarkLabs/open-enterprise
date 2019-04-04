@@ -151,6 +151,7 @@ contract('Allocations App', accounts => {
         supports,
         zeros,
         '',
+        '',
         zeros,
         zeros,
         accountId,
@@ -163,6 +164,7 @@ contract('Allocations App', accounts => {
         candidateAddresses,
         supports,
         zeros,
+        '',
         '',
         zeros,
         zeros,
@@ -324,6 +326,7 @@ contract('Allocations App', accounts => {
         supports,
         zeros,
         '',
+        'description',
         zeros,
         zeros,
         accountId2,
@@ -340,7 +343,6 @@ contract('Allocations App', accounts => {
         web3.toWei(0.15, 'ether'),
         'account balance difference doesn\'t match transferred amount'
       )
-
 
     })
 
@@ -366,6 +368,7 @@ contract('Allocations App', accounts => {
         testCandidates,
         supports,
         zeros,
+        '',
         '',
         zeros,
         zeros,
@@ -412,6 +415,7 @@ contract('Allocations App', accounts => {
         supports,
         zeros,
         '',
+        'description',
         zeros,
         zeros,
         accountId,
@@ -458,6 +462,7 @@ contract('Allocations App', accounts => {
             supports,
             zeros,
             '',
+            '',
             zeros,
             zeros,
             accountId,
@@ -478,6 +483,7 @@ contract('Allocations App', accounts => {
             candidateAddresses,
             supports,
             zeros,
+            '',
             '',
             zeros,
             zeros,
@@ -532,6 +538,7 @@ contract('Allocations App', accounts => {
           supports,
           zeros,
           '',
+          '',
           zeros,
           zeros,
           accountId,
@@ -556,6 +563,7 @@ contract('Allocations App', accounts => {
         candidateAddresses,
         supports,
         zeros,
+        '',
         '',
         zeros,
         zeros,

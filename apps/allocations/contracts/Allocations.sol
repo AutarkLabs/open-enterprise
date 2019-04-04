@@ -86,6 +86,7 @@ contract Allocations is AragonApp, Fundable {
         bool distSet;
         //address token;
         //address proxy;
+        string description;
     }
 
     struct Account {
@@ -144,7 +145,7 @@ contract Allocations is AragonApp, Fundable {
     }
 
     function getPayout(uint _accountId, uint _payoutId) external view
-    returns(uint amount, bool recurring, uint startTime, uint period, address token)
+    returns(uint amount, bool recurring, uint startTime, uint period, bool distSet, address token)
     {
         Payout storage payout = accounts[_accountId].payouts[_payoutId];
         token = payout.token;
@@ -152,6 +153,12 @@ contract Allocations is AragonApp, Fundable {
         startTime = payout.startTime;
         recurring = payout.recurring;
         period = payout.period;
+        distSet = payout.distSet;
+    }
+
+    function getPayoutDescription(uint _accountId, uint _payoutId) external view returns(string description) {
+        Payout storage payout = accounts[_accountId].payouts[_payoutId];
+        description = payout.description;
     }
 
     function getNumberOfCandidates(uint _accountId, uint _payoutId) external view
@@ -264,12 +271,14 @@ contract Allocations is AragonApp, Fundable {
     * @param _recurring boolean used to indicate whether this is a recurring or one-time payout
     * @param _period time interval between each recurring payout
     * @param _amount The quantity of funds to be allocated
+    * @param _description The distributions description
     */
     function setDistribution(
         address[] _candidateAddresses,
         uint256[] _supports,
         uint256[] /*unused_infoIndices*/,
         string /*unused_candidateInfo*/,
+        string _description,
         uint256[] /*unused_level 1 ID - converted to bytes32*/,
         uint256[] /*unused_level 2 ID - converted to bytes32*/,
         uint256 _accountId,
@@ -306,6 +315,7 @@ contract Allocations is AragonApp, Fundable {
 
         payout.distSet = true;
         payout.supports = _supports;
+        payout.description = _description;
         emit SetDistribution(_accountId, account.payouts.length - 1);
     }
 

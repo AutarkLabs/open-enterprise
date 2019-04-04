@@ -73,7 +73,7 @@ class App extends React.Component {
 
   createAccount = (account) => {
     account.balance = 0
-    this.props.app.newPayout(account.description)
+    this.props.app.newAccount(account.description)
     this.closePanel()
     console.info('App.js: Account Created:')
     console.table(account)
@@ -87,10 +87,10 @@ class App extends React.Component {
       emptyIntArray, //[]
       emptyIntArray, //[]
       '',
+      allocation.description,
       emptyIntArray, // Issue with bytes32 handling
       emptyIntArray, // Issue with bytes32 handling
       allocation.payoutId,
-      allocation.informational,
       allocation.recurring,
       allocation.period,
       allocation.balance,
@@ -102,9 +102,8 @@ class App extends React.Component {
   }
 
   onExecutePayout = (accountId, payoutId) => {
-    console.info('App.js: Executing Payout:')
-    //console.info(id)
-    //this.props.app.executePayout(id)
+    console.info('App.js: Executing Payout:', accountId, payoutId)
+    this.props.app.runPayout(accountId, payoutId)
   }
 
   manageParameters = address => {
@@ -166,18 +165,18 @@ class App extends React.Component {
             <NewAccountButton onClick={this.newAccount} />
             <Accounts
               accounts={
-                //TODO: Change back to this.props.accounts when done
-                this.state.accounts !== undefined ? this.state.accounts : []
+                this.props.accounts !== undefined ? this.props.accounts : []
               }
               onNewAccount={this.newAccount}
               onNewAllocation={this.newAllocation}
               onManageParameters={this.manageParameters}
-              onExecutePayout={this.onExecutePayout}
               app={this.props.app}
             />
 
             <Payouts
-              payouts={payouts}
+              payouts={
+                this.props.payouts !== undefined ? this.props.payouts : []
+              }
               newReward={this.createAccount}
               executePayout={this.onExecutePayout}
               network={network}

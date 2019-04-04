@@ -1,29 +1,39 @@
 import React from 'react'
 import styled from 'styled-components'
-import PropTypes from 'prop-types'
-import { Button } from '@aragon/ui'
+import { theme, Button, Viewport } from '@aragon/ui'
 
-const NewRewardButton = ({ onClick, disabled }) => (
-  <StyledButton mode="strong" onClick={onClick} disabled={disabled}>
-    New Reward
-  </StyledButton>
-)
+const StyledButton = styled.button`
+  border: none;
+  background: none;
+  height: 24px;
+  width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
 
-NewRewardButton.propTypes = {
-  disabled: PropTypes.bool,
-  onClick: PropTypes.func.isRequired,
-}
+  &:focus {
+    border: 2px solid ${theme.accent};
+  }
 
-NewRewardButton.defaultProps = {
-  disabled: false,
-}
-
-const StyledButton = styled(Button)`
-  position: absolute;
-  top: 10px;
-  right: 30px;
-  z-index: 2;
+  &:active {
+    border: none;
+  }
 `
 
-export default NewRewardButton
-
+export default props => (
+  <Viewport>
+    {({ below }) => below('medium') ? (
+      <StyledButton {...props}>
+        <svg width="24px" height="24px" viewBox="0 0 24 24" {...props}>
+          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+          <path d="M0 0h24v24H0z" fill="none" />
+        </svg>
+      </StyledButton>
+    ) : (
+      <Button mode="strong" {...props}>
+        New Reward
+      </Button>
+    )}
+  </Viewport>
+)
