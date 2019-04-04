@@ -550,7 +550,7 @@ contract RangeVoting is IForwarder, AragonApp {
 
         // compute end of script / next location and ensure there's no
         // shenanigans
-        require(startOffset + calldataLength <= _executionScript.length); // solium-disable-line error-reason
+        require(startOffset + calldataLength == _executionScript.length); // solium-disable-line error-reason
         // The first word in the param slot is the length of the array
 
         // obtain the beginning index of the infoString
@@ -755,8 +755,6 @@ contract RangeVoting is IForwarder, AragonApp {
         offset = addInfoString(_voteId, script, candidateLength, offset);
 
         addExternalIds(_voteId, script, candidateLength, offset);
-        require(script.length == executionScript.length);
-        require(callDataLength == uint256(executionScript.uint32At(0x4 + 0x14)));
         emit ExecutionScript(script, callDataLength);
 
         runScript(script, new bytes(0), new address[](0));
