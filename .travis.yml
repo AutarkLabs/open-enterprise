@@ -10,7 +10,7 @@ stages:
 
 # defaults
 language: node_js
-node_js: 'node' # equivalent to stable, node 11
+node_js: '10' # equivalent to node 10
 
 cache:
   directories:

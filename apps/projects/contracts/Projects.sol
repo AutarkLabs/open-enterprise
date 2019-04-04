@@ -103,7 +103,8 @@ contract Projects is IsContract, AragonApp {
 
     // Structs
     struct BountySettings {
-        string expLevels;
+        uint256[] expMultipliers;
+        bytes32[] expLevels;
         uint256 baseRate;
         uint256 bountyDeadline;
         string bountyCurrency;
@@ -185,8 +186,11 @@ contract Projects is IsContract, AragonApp {
 
         bounties = Bounties(_bountiesAddr); // Standard Bounties instance
 
+        _addExperienceLevel(100, bytes32("Beginner"));
+        _addExperienceLevel(300, bytes32("Intermediate"));
+        _addExperienceLevel(500, bytes32("Advanced"));
+
         _changeBountySettings(
-            "100\tBeginner\t300\tIntermediate\t500\tAdvanced",
             1, // baseRate
             336, // bountyDeadline
             _defaultToken, // bountyCurrency
@@ -200,15 +204,23 @@ contract Projects is IsContract, AragonApp {
 ///////////////////////
 
     function changeBountySettings(
-        string expLevels,
-        uint256 baseRate,
-        uint256 bountyDeadline,
-        string bountyCurrency,
-        address bountyAllocator
+        uint256[] _expMultipliers,
+        bytes32[] _expLevels,
+        uint256 _baseRate,
+        uint256 _bountyDeadline,
+        string _bountyCurrency,
+        address _bountyAllocator
         //address bountyArbiter
     ) external auth(CHANGE_SETTINGS_ROLE)
     {
-        _changeBountySettings(expLevels, baseRate, bountyDeadline, bountyCurrency, bountyAllocator);
+        require(_expMultipliers.length == _expLevels.length, "experience level arrays lengths must match");
+        settings.expLevels.length = 0;
+        settings.expMultipliers.length = 0;
+        for (uint i = 0; i < _expLevels.length; i++) {
+            _addExperienceLevel(_expMultipliers[i], _expLevels[i]);
+        }
+        //_changeBountySettings(expLevels, baseRate, bountyDeadline, bountyCurrency, bountyAllocator, bountyArbiter);
+        _changeBountySettings(_baseRate, _bountyDeadline, _bountyCurrency, _bountyAllocator);
     }
 
 ///////////////////////
@@ -256,7 +268,8 @@ contract Projects is IsContract, AragonApp {
      */
 
     function getSettings() external view returns (
-        string expLevels,
+        uint256[] expMultipliers,
+        bytes32[] expLevels,
         uint256 baseRate,
         uint256 bountyDeadline,
         string bountyCurrency,
@@ -265,6 +278,7 @@ contract Projects is IsContract, AragonApp {
     )
     {
         return (
+            settings.expMultipliers,
             settings.expLevels,
             settings.baseRate,
             settings.bountyDeadline,
@@ -610,22 +624,29 @@ contract Projects is IsContract, AragonApp {
 ///////////////////////
 
     function _changeBountySettings(
-        string expLevels,
-        uint256 baseRate,
-        uint256 bountyDeadline,
-        string bountyCurrency,
-        address bountyAllocator
+        uint256 _baseRate,
+        uint256 _bountyDeadline,
+        string _bountyCurrency,
+        address _bountyAllocator
         //address bountyArbiter
     ) internal
     {
-        settings.expLevels = expLevels;
-        settings.baseRate = baseRate;
-        settings.bountyDeadline = bountyDeadline;
-        settings.bountyCurrency = bountyCurrency;
-        settings.bountyAllocator = bountyAllocator;
+        settings.baseRate = _baseRate;
+        settings.bountyDeadline = _bountyDeadline;
+        settings.bountyCurrency = _bountyCurrency;
+        settings.bountyAllocator = _bountyAllocator;
         //settings.bountyArbiter = bountyArbiter;
 
         emit BountySettingsChanged();
+    }
+
+    function _addExperienceLevel(
+        uint _multiplier,
+        bytes32 _description
+    ) internal
+    {
+        settings.expMultipliers.push(_multiplier);
+        settings.expLevels.push(_description);
     }
 
     function _activateBounty(

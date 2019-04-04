@@ -311,19 +311,12 @@ class Issues extends React.PureComponent {
     </StyledIssues>
   )
 
-  getExpLevels = () => {
-    const expLevels = []
-    const a = this.props.bountySettings.expLevels.split('\t')
-    for (let i = 0; i < a.length; i += 2)
-      expLevels.push({ mul: a[i] / 100, name: a[i + 1] })
-    return expLevels
-  }
-
   shapeIssues = issues => {
-    const { tokens, bountyIssues } = this.props
+    const { tokens, bountyIssues, bountySettings } = this.props
     const bountyIssueObj = {}
     const tokenObj = {}
-    const expLevels = this.getExpLevels()
+    const expLevels = bountySettings.expLvls
+    console.log('expLevels', expLevels)
 
     bountyIssues.forEach(issue => {
       bountyIssueObj[issue.issueNumber] = issue
@@ -336,6 +329,7 @@ class Issues extends React.PureComponent {
       }
       console.log('tokenObj:', tokenObj)
     })
+    console.log('issues: ', bountyIssueObj)
     return issues.map(({ __typename, repository: { id, name }, ...fields }) => {
       const bountyId = bountyIssueObj[fields.number]
       const repoIdFromBounty = bountyId && bountyId.data.repoId
@@ -345,6 +339,7 @@ class Issues extends React.PureComponent {
           .div(BigNumber(10 ** tokenObj[data.token].decimals))
           .dp(3)
           .toString()
+        console.log('balance', expLevels)
         return {
           ...fields,
           ...bountyIssueObj[fields.number].data,
@@ -526,7 +521,6 @@ const ScrollWrapper = styled.div`
 // TODO: Calculate height with flex (maybe to add pagination at bottom?)
 const IssuesScrollView = styled.div`
   height: 75vh;
-  min-width: 600px;
   position: relative;
   overflow-y: auto;
 `

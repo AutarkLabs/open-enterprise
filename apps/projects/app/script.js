@@ -7,6 +7,7 @@ import vaultAbi from '../../shared/json-abis/vault'
 import tokenSymbolAbi from './abi/token-symbol.json'
 import tokenDecimalsAbi from './abi/token-decimal.json'
 import { ipfsGet } from './utils/ipfs-helpers'
+import { toUtf8 } from './utils/web3-utils'
 
 const tokenAbi = [].concat(tokenDecimalsAbi, tokenSymbolAbi)
 
@@ -64,7 +65,7 @@ const determineStateVars = (state) => {
 
 const app = new Aragon()
 let appState = determineStateVars()
-let vault, bounties, tokens
+let vault, bounties, tokens, vaultAddress
 
 /**
  * Observe the github object.
@@ -129,8 +130,9 @@ app.state().subscribe(state => {
   const { repos, bountySettings, tokens, issues } = determineStateVars(state)
   appState = cloneAppState({ repos, bountySettings, tokens, issues })
   if (!vault) {
-    // this should be refactored to be a "setting"
+    //TODO this should be refactored to be a "setting"
     app.call('vault').subscribe(response => {
+      vaultAddress = response
       vault = app.external(response, vaultAbi)
       vault.events().subscribe(handleEvents)
     })
@@ -243,14 +245,19 @@ async function handleEvents(response) {
     appState = cloneAppState(nextState)
     break
   case 'VaultDeposit':
-    console.log('[Projects] VaultDeposit')
-    nextState = await syncTokens(cloneAppState(appState), response.returnValues)
-    appState = cloneAppState(nextState)
+    if (response.address === vaultAddress) {
+      console.log('[Projects] VaultDeposit', vault)
+      nextState = await syncTokens(cloneAppState(appState), response.returnValues)
+      appState = cloneAppState(nextState)
+    }
   default:
     console.log('[Projects] Unknown event catched:', response)
     nextState = cloneAppState(appState)
   }
-  app.cache('state', nextState)
+  if(nextState) {
+    console.log('[Projects] current state: ',nextState)
+    app.cache('state', nextState)
+  }
 }
 
 async function syncRepos(state, { repoId, ...eventArgs }) {
@@ -281,7 +288,15 @@ function syncIssues(state, { issueNumber, ...eventArgs }, data) {
 async function syncSettings(state) {
   try {
     let settings = await loadSettings()
-    state.bountySettings = settings
+    const { expLevels, expMultipliers } = settings
+
+    let expLvls = []
+    console.log(settings)
+    for (let i = 0; i < expLevels.length; i++ )
+      expLvls.push({ mul: expMultipliers[i] / 100, name: toUtf8(expLevels[i]) })
+
+
+    state.bountySettings = { ...settings, expLvls }
     return state
   } catch (err) {
     console.error('[Projects script] syncSettings settings failed:', err)
@@ -300,6 +315,9 @@ async function syncTokens(state, { token }) {
       } else {
         tokens.push(newToken)
       }
+    }
+    else {
+      tokens[tokenIndex].balance = await loadTokenBalance(token, vault)
     }
     return state
   } catch (err) {
@@ -328,19 +346,27 @@ async function updateIssueDetail(data, response) {
   return data
 }
 
-function loadToken(token) {
-  let tokenContract = app.external(token, tokenAbi)
-  return new Promise(resolve => {
-    tokenContract.symbol().subscribe(symbol => {
-      tokenContract.decimals().subscribe(decimals => {
-        resolve({
-          addr: token,
-          symbol: symbol,
-          decimals: decimals,
-        })
-      })
-    })
+async function loadToken(tokenAddress) {
+  let tokenContract = app.external(tokenAddress, tokenAbi)
+
+  const [ balance, decimals, symbol ] = await Promise.all([
+    loadTokenBalance(tokenAddress, vault),
+    tokenContract.decimals().toPromise(),
+    tokenContract.symbol().toPromise(),
+  ])
+
+  console.log('balance ', balance, 'decimals ', decimals, 'symbol ', symbol)
+
+  return ({
+    addr: tokenAddress,
+    symbol: symbol,
+    decimals: decimals,
+    balance: balance,
   })
+}
+
+function loadTokenBalance(tokenAddress, vaultContract) {
+  return vaultContract.balance(tokenAddress).toPromise()
 }
 
 function loadRepoData(id) {
