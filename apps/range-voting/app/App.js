@@ -99,43 +99,43 @@ class App extends React.Component {
 
     return (
       <StyledAragonApp>
-          <AppLayout>
-            <AppLayout.Header>
-              <AppBar
-                title="Range Voting"
-                // endContent={barButton}
-              />
-            </AppLayout.Header>
-            <AppLayout.ScrollWrapper>
-              <AppLayout.Content>
-                <Decisions
-                  onActivate={this.handlePanelOpen}
-                  app={this.props.app}
-                  votes={
-                    this.props.votes !== undefined ? this.props.votes : []
-                  }
-                  entries={
-                    this.props.entries !== undefined ? this.props.entries : []
-                  }
-                  voteTime={this.props.voteTime}
-                  minParticipationPct={
-                    this.props.minParticipationPct
+        <AppLayout>
+          <AppLayout.Header>
+            <AppBar
+              title="Range Voting"
+              // endContent={barButton}
+            />
+          </AppLayout.Header>
+          <AppLayout.ScrollWrapper>
+            <AppLayout.Content>
+              <Decisions
+                onActivate={this.handlePanelOpen}
+                app={this.props.app}
+                votes={
+                  this.props.votes !== undefined ? this.props.votes : []
+                }
+                entries={
+                  this.props.entries !== undefined ? this.props.entries : []
+                }
+                voteTime={this.props.voteTime}
+                minParticipationPct={
+                  this.props.minParticipationPct
                     ? (this.props.minParticipationPct / 10 ** 16)
-                      : 'N/A'
-                  }
-                  tokenAddress={this.props.tokenAddress}
-                  userAccount={this.props.userAccount}
-                />
-              </AppLayout.Content>
-            </AppLayout.ScrollWrapper>
-          </AppLayout>
-          <SidePanel
-            title={''}
-            opened={this.state.panelActive}
-            onClose={this.handlePanelClose}
-          >
-            <NewPayoutVotePanelContent />
-          </SidePanel>
+                    : 'N/A'
+                }
+                tokenAddress={this.props.tokenAddress}
+                userAccount={this.props.userAccount}
+              />
+            </AppLayout.Content>
+          </AppLayout.ScrollWrapper>
+        </AppLayout>
+        <SidePanel
+          title={''}
+          opened={this.state.panelActive}
+          onClose={this.handlePanelClose}
+        >
+          <NewPayoutVotePanelContent />
+        </SidePanel>
       </StyledAragonApp>
     )
   }
