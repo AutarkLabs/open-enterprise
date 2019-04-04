@@ -33,6 +33,21 @@ class Decisions extends React.Component {
       voteSidebarOpened: false,
     }
   }
+
+  componentWillMount() {
+    this.setState({
+      now : new Date()
+    })
+  }
+
+  componentDidMount() {
+    setInterval( () => {
+      this.setState({
+        now : new Date()
+      })
+    },1000)
+  }
+
   UNSAFE_componentWillReceiveProps(nextProps) {
     const { settingsLoaded } = this.state
     // Is this the first time we've loaded the settings?
@@ -115,8 +130,7 @@ class Decisions extends React.Component {
         return {
           ...vote,
           endDate,
-          // Open if not executed and now is still before end date
-          open: isBefore(new Date(), endDate),
+          open: isBefore(this.state.now, endDate),
           quorum: safeDiv(vote.data.minAcceptQuorum, pctBase),
           quorumProgress: getQuorumProgress(vote.data),
           minParticipationPct: minParticipationPct,
@@ -150,8 +164,6 @@ class Decisions extends React.Component {
                 title="You have not created any range votes."
                 text="Use the Allocations app to get started."
                 actionButton={() => <div />}
-                // actionText="New Vote"
-                // onActivate={this.handleCreateVoteOpen}
               />
             </div>
           )}
