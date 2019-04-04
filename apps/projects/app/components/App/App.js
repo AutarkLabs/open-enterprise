@@ -262,6 +262,7 @@ class App extends React.PureComponent {
         onSubmit: this.onSubmitBountyAllocation,
         bountySettings: this.props.bountySettings,
         closePanel: this.closePanel,
+        tokens: this.props.tokens !== undefined ? this.props.tokens : [],
       },
     }))
   }
@@ -275,8 +276,8 @@ class App extends React.PureComponent {
         mode: 'update',
         onSubmit: this.onSubmitBountyAllocation,
         bountySettings: this.props.bountySettings,
-        tokens: this.props.tokens ? this.props.tokens : [],
         closePanel: this.cancelBounties,
+        tokens: this.props.tokens !== undefined ? this.props.tokens : [],
       },
     }))
   }

@@ -134,7 +134,6 @@ class NewBountyAllocation extends React.Component {
 
   generateExpChange = id => index => {
     this.configBounty(id, 'exp', index)
-    console.log('generateExpChange: id: ', id, ', index: ', index)
   }
 
   generateDeadlineChange = id => deadline => {
@@ -143,21 +142,18 @@ class NewBountyAllocation extends React.Component {
 
   generateSlotsChange = id => index => {
     this.configBounty(id, 'slotsIndex', index)
-    console.log('generateExpChange: id: ', id, ', index: ', index)
   }
 
   generateArrowChange = id => () => {
     this.configBounty(id, 'detailsOpen')
-    console.log('generateArrowChange: id: ', id)
   }
 
   submitBounties = () => {
-    console.info('Submitting new Bounties', this.state.bounties)
     this.props.onSubmit(this.state.bounties)
   }
 
   renderUpdateForm = (issue, bounties, bountySettings) => {
-    const expLevels = this.getExpLevels()
+    const expLevels = this.props.bountySettings.expLvls
 
     return (
       <React.Fragment>
@@ -361,7 +357,7 @@ class NewBountyAllocation extends React.Component {
         The following issues already have bounties and cannot be updated on a bulk basis. To update an individual issue, select “Update Bounty” from the issue’s context menu.
       </p>
       <WarningIssueList>
-        {issues.map(issue => <li>{issue.title}</li>)}
+        {issues.map(issue => <li key={issue.id}>{issue.title}</li>)}
       </WarningIssueList>
     </Info.Action>
   )
