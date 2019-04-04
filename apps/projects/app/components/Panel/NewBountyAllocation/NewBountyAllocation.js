@@ -98,7 +98,7 @@ class NewBountyAllocation extends React.Component {
       }
     }
     // just do it, recalculate size
-    const expLevels = this.getExpLevels()
+    const expLevels = this.props.bountySettings.expLvls
     let size = bounties[id]['hours'] * this.props.bountySettings.baseRate * expLevels[bounties[id]['exp']].mul
     bounties[id]['size'] = size
     const bountyValues = Object.values(this.state.bounties)
@@ -135,20 +135,10 @@ class NewBountyAllocation extends React.Component {
     this.props.onSubmit(this.state.bounties)
   }
 
-  // TODO: make it smarter. exp levels are quite constant, but they might not
-  // be immediately available
-  getExpLevels = () => {
-    let expLevels = []
-    let a = this.props.bountySettings.expLevels.split('\t')
-    for (let i = 0; i < a.length; i += 2)
-      expLevels.push({ mul: a[i] / 100, name: a[i + 1] })
-    return expLevels
-  }
-
   render() {
     const { bounties } = this.state
     const { bountySettings, tokens, closePanel } = this.props
-    const expLevels = this.getExpLevels()
+    const expLevels = this.props.bountySettings.expLvls
 
     if (!tokens.length) {
       return (
