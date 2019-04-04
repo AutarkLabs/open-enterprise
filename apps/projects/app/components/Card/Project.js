@@ -28,7 +28,6 @@ const Project = ({
   onRemoveProject,
   changeActiveIndex
 }) => {
-
   const removeProject = () => {
     console.log('removeProject', repoId)
     onRemoveProject(repoId)
@@ -123,21 +122,28 @@ const CardTitle = styled(Text.Block).attrs({
   weight: 'bold',
 })`
   margin-top: 15px;
+  margin-bottom: 5px;
   text-align: center;
   color: ${theme.textPrimary};
+  display: block;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `
 
 const CardDescriptionText = styled(Text.Block).attrs({
   size: 'xsmall',
 })`
   display: block;
-  height: 8.1em;
-  line-height: 1.5em;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin: 14px 0;
-  text-align: center;
   color: ${theme.textPrimary};
+  text-align: center;
 `
 
 const CardDescription = styled.div`
