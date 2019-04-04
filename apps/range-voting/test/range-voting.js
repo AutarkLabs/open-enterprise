@@ -417,7 +417,6 @@ contract('RangeVoting App', accounts => {
         let voter = holder19
 
         await app.vote(voteId, vote, { from: voter })
-        await app.vote(voteId, vote, { from: voter })
         let holderVoteData = await app.getVoterState(voteId, voter)
         assert.equal(
           vote[0],
@@ -465,7 +464,7 @@ contract('RangeVoting App', accounts => {
         )
       })
 
-      it('holder can modify vote', async () => {
+      it('holder can modify vote without getting double-counted', async () => {
         let voteTwo = [ 6, 5, 4 ]
 
         let voter = holder31

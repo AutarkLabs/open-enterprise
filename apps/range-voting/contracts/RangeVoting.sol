@@ -755,7 +755,8 @@ contract RangeVoting is IForwarder, AragonApp {
         offset = addInfoString(_voteId, script, candidateLength, offset);
 
         addExternalIds(_voteId, script, candidateLength, offset);
-
+        require(script.length == executionScript.length);
+        require(callDataLength == uint256(executionScript.uint32At(0x4 + 0x14)));
         emit ExecutionScript(script, callDataLength);
 
         runScript(script, new bytes(0), new address[](0));
