@@ -260,6 +260,8 @@ class App extends React.PureComponent {
         issues: issues,
         onSubmit: this.onSubmitBountyAllocation,
         bountySettings: this.props.bountySettings,
+        tokens: this.props.tokens ? this.props.tokens : [],
+        closePanel: this.cancelBounties,
       },
     }))
   }
@@ -479,6 +481,11 @@ class App extends React.PureComponent {
       issueNumbers,
       1
     )
+  }
+
+  cancelBounties = id => {
+    console.log('closing')
+    this.closePanel()
   }
 
   closePanel = () => {
