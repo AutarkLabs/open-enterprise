@@ -1,22 +1,33 @@
 {
-  "roles": [{ "name": "dummy", "params": [], "id": "DUMMY_ROLE" }],
   "environments": {
     "default": {
       "registry": "0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1",
-      "appName": "planning-kit.aragonpm.eth",
+      "appName": "planning-suite.aragonpm.eth",
       "network": "rpc"
     },
-    "openrinkeby": {
+    "rinkeby": {
       "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
-      "appName": "planning-kit.open.aragonpm.eth",
-      "network": "rinkeby"
+      "appName": "planning-suite.open.aragonpm.eth",
+      "network": "rinkeby",
+      "wsRPC": "wss://rinkeby.eth.aragon.network/ws"
     },
     "staging": {
-      "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
-      "appName": "planning-kit.open.aragonpm.eth",
-      "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
+      "registry": "0xfe03625ea880a8cba336f9b5ad6e15b0a3b5a939",
+      "appName": "planning-suite-staging.open.aragonpm.eth",
+      "network": "rinkeby",
+      "wsRPC": "wss://rinkeby.eth.aragon.network/ws"
+    },
+    "mainnet": {
+      "registry": "0x314159265dd8dbb310642f98f50c066173c1259b",
+      "appName": "planning-suite.open.aragonpm.eth",
+      "network": "mainnet"
+    },
+    "rinkeby-old": {
+      "registry": "0xfbae32d1cde62858bc45f51efc8cc4fa1415447e",
+      "appName": "planning-suite.open.aragonpm.eth",
       "network": "rinkeby"
     }
   },
-  "path": "contracts/PlanningDummy.sol"
+  "roles": [],
+  "path": "contracts/PlanningSuite.sol"
 }
