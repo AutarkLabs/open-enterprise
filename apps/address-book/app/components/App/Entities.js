@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
   Text,
+  theme,
 } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
@@ -42,20 +43,32 @@ const Entities = ({ entities, network, onNewEntity, onRemoveEntity }) => {
             <TableRow key={entryAddress}>
               <EntityCell>
                 <EntityWrapper>
-                  <Text>{name}</Text>
+                  <Text
+                    size="xlarge"
+                    style={{
+                      paddingBottom: '5px',
+                    }}
+                  >
+                    {name}
+                  </Text>
                   <IdentityBadge
                     networkType={network.type}
                     entity={entryAddress}
-                    shorten={false}
+                    shorten={true}
                   />
                 </EntityWrapper>
               </EntityCell>
-              <EntityCell align="center">
+              <EntityCell align="right">
                 <Badge foreground={typeRow.fg} background={typeRow.bg}>
                   {typeRow.name}
                 </Badge>
               </EntityCell>
-              <EntityCell>
+              <EntityCell
+                align="right"
+                style={{
+                  width: '30px',
+                }}
+              >
                 <ContextMenu>
                   <ContextMenuItem onClick={removeEntity(entryAddress)}>
                     Remove
@@ -79,7 +92,7 @@ Entities.propTypes = {
 }
 
 const EntityCell = styled(TableCell)`
-  padding: 10px;
+  padding: 15px;
 `
 const EntityWrapper = styled.div`
   display: flex;
