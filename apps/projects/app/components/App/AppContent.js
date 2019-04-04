@@ -22,6 +22,7 @@ import AppTitleButton from '../App/AppTitleButton'
 // TODO: Dynamic component loading
 
 const AppContent = props => {
+  console.log('AppContent tokens: ', props.tokens)
   const contentData = [
     {
       tabName: 'Overview',

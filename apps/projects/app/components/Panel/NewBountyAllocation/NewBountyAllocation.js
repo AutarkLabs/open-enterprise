@@ -2,6 +2,8 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { addHours } from 'date-fns'
+import BigNumber from 'bignumber.js'
+import Icon from '../../Shared/assets/components/IconEmptyVault'
 
 import {
   Text,
@@ -10,10 +12,10 @@ import {
   theme,
   Badge,
   Table,
-  Info,
   TableRow,
   TableCell,
   Button,
+  Info,
 } from '@aragon/ui'
 
 import { Form, FormField, FieldTitle } from '../../Form'
@@ -32,11 +34,12 @@ class NewBountyAllocation extends React.Component {
         title: PropTypes.string,
         number: PropTypes.number,
         repo: PropTypes.string,
-        repoId: PropTypes.string
+        repoId: PropTypes.string,
       })
     ),
     /** base rate in pennies */
     baseRate: PropTypes.number,
+    tokens: PropTypes.array.isRequired,
     onSubmit: PropTypes.func.isRequired,
   }
 
@@ -79,14 +82,28 @@ class NewBountyAllocation extends React.Component {
       })
     }
 
+    let bountySymbol = this.props.bountySettings.bountyCurrency
+    let bountyToken, tokenDecimals, tokenBalance
+    this.props.tokens.forEach(
+      token => {
+        if(token.symbol === bountySymbol) {
+          bountyToken = token.addr
+          tokenDecimals = token.decimals
+          tokenBalance = token.balance
+        }
+      }
+    )
     this.state = {
       description: '',
       bounties,
+      tokenBalance,
+      tokenDecimals,
+      totalSize: 0,
     }
   }
 
   calculateSize = issue => {
-    const expLevels = this.getExpLevels()
+    const expLevels = this.props.bountySettings.expLvls
     return issue['hours'] *
       this.props.bountySettings.baseRate *
       expLevels[issue['exp']].mul
@@ -106,9 +123,11 @@ class NewBountyAllocation extends React.Component {
     }
     // just do it, recalculate size
     bounties[id]['size'] = this.calculateSize(bounties[id])
-
-    this.setState({ bounties })
-    //console.log('configBounty: ', bounties)
+    const bountyValues = Object.values(this.state.bounties)
+    const bountyTotal = bountyValues.reduce((acc,val) => BigNumber(val.size).plus(acc), 0)
+      .times(10 ** this.state.tokenDecimals)
+      .toNumber()
+    this.setState({ bounties, totalSize: bountyTotal })
   }
 
   generateHoursChange = id => ({ target: { value } }) => this.configBounty(id, 'hours', parseInt(value))
@@ -135,16 +154,6 @@ class NewBountyAllocation extends React.Component {
   submitBounties = () => {
     console.info('Submitting new Bounties', this.state.bounties)
     this.props.onSubmit(this.state.bounties)
-  }
-
-  // TODO: make it smarter. exp levels are quite constant, but they might not
-  // be immediately available
-  getExpLevels = () => {
-    let expLevels = []
-    let a = this.props.bountySettings.expLevels.split('\t')
-    for (let i = 0; i < a.length; i += 2)
-      expLevels.push({ mul: a[i] / 100, name: a[i + 1] })
-    return expLevels
   }
 
   renderUpdateForm = (issue, bounties, bountySettings) => {
@@ -228,106 +237,121 @@ class NewBountyAllocation extends React.Component {
   }
 
   renderForm = (issues, bounties, bountySettings) => {
-    const expLevels = this.getExpLevels()
+    const expLevels = this.props.bountySettings.expLvls
 
     return (
-      <Form
-        onSubmit={this.submitBounties}
-        description={this.props.description}
-        submitText="Submit Bounty Allocation"
-      >
-        <FormField
-          label="Issues"
-          hint="Enter the estimated hours per issue"
-          required
-          input={
-            <Table>
-              {issues.map(issue => (
-                <TableRow key={issue.id}>
-                  <Cell>
-                    <IBMain>
-                      <IssueBounty>
-                        <IBArrow onClick={this.generateArrowChange(issue.id)}>
-                          {bounties[issue.id]['detailsOpen'] ? (
-                            <IconBigArrowUp />
-                          ) : (
-                            <IconBigArrowDown />
-                          )}
-                        </IBArrow>
-                        <IBTitle size="normal" weight="bold">
-                          {issue.title}
-                        </IBTitle>
-                        <IBHours>
-                          <IBHoursInput>
-                            <FieldTitle>Hours</FieldTitle>
-                            <HoursInput
-                              name="hours"
-                              value={bounties[issue.id]['hours']}
-                              onChange={this.generateHoursChange(issue.id)}
+      <div>
+        <Form
+          onSubmit={this.submitBounties}
+          description={this.props.description}
+          submitText="Submit Bounty Allocation"
+        >
+          <FormField
+            label="Issues"
+            hint="Enter the estimated hours per issue"
+            required
+            input={
+              <Table>
+                {issues.map(issue => (
+                  <TableRow key={issue.id}>
+                    <Cell>
+                      <IBMain>
+                        <IssueBounty>
+                          <IBArrow onClick={this.generateArrowChange(issue.id)}>
+                            {bounties[issue.id]['detailsOpen'] ? (
+                              <IconBigArrowUp />
+                            ) : (
+                              <IconBigArrowDown />
+                            )}
+                          </IBArrow>
+                          <IBTitle size="normal" weight="bold">
+                            {issue.title}
+                          </IBTitle>
+                          <IBHours>
+                            <IBHoursInput>
+                              <FieldTitle>Hours</FieldTitle>
+                              <HoursInput
+                                name="hours"
+                                value={bounties[issue.id]['hours']}
+                                onChange={this.generateHoursChange(issue.id)}
+                              />
+                            </IBHoursInput>
+                          </IBHours>
+                          <IBValue>
+                            {issue.id in bounties &&
+                          bounties[issue.id]['hours'] > 0 && (
+                              <IBValueShow>
+                                <FieldTitle>Value</FieldTitle>
+                                <Badge style={{ marginLeft: '5px' }}>
+                                  {bounties[issue.id]['size'].toFixed(2)}{' '}
+                                  {bountySettings.bountyCurrency}
+                                </Badge>
+                              </IBValueShow>
+                            )}
+                          </IBValue>
+                        </IssueBounty>
+                        <IBDetails open={bounties[issue.id]['detailsOpen']}>
+                          <IBExp>
+                            <FormField
+                              label="Experience level"
+                              input={
+                                <DropDown
+                                  items={expLevels.map(exp => exp.name)}
+                                  onChange={this.generateExpChange(issue.id)}
+                                  active={bounties[issue.id]['exp']}
+                                />
+                              }
                             />
-                          </IBHoursInput>
-                        </IBHours>
-                        <IBValue>
-                          {issue.id in bounties &&
-                            bounties[issue.id]['hours'] > 0 && (
-                            <IBValueShow>
-                              <FieldTitle>Value</FieldTitle>
-                              <Badge style={{ marginLeft: '5px' }}>
-                                {bounties[issue.id]['size'].toFixed(2)}{' '}
-                                {bountySettings.bountyCurrency}
-                              </Badge>
-                            </IBValueShow>
-                          )}
-                        </IBValue>
-                      </IssueBounty>
-                      <IBDetails open={bounties[issue.id]['detailsOpen']}>
-                        <IBExp>
-                          <FormField
-                            label="Experience level"
-                            input={
-                              <DropDown
-                                items={expLevels.map(exp => exp.name)}
-                                onChange={this.generateExpChange(issue.id)}
-                                active={bounties[issue.id]['exp']}
+                          </IBExp>
+                          <IBDeadline>
+                            <FormField
+                              label="Deadline"
+                              input={
+                                <DateInput
+                                  name='deadline'
+                                  value={bounties[issue.id]['deadline']}
+                                  onChange={this.generateDeadlineChange(issue.id)}
+                                />
+                              }
+                            />
+                          </IBDeadline>
+                          {/*
+                          Can add back in when we support multiple slots
+                            <IBAvail>
+                              <FormField
+                                label="Slots Available"
+                                input={
+                                  <DropDown
+                                    items={bountySlots}
+                                    onChange={this.generateSlotsChange(issue.id)}
+                                    active={bounties[issue.id]['slotsIndex']}
+                                  />
+                                }
                               />
-                            }
-                          />
-                        </IBExp>
-                        <IBDeadline>
-                          <FormField
-                            label="Deadline"
-                            input={
-                              <DateInput
-                                name='deadline'
-                                value={bounties[issue.id]['deadline']}
-                                onChange={this.generateDeadlineChange(issue.id)}
-                              />
-                            }
-                          />
-                        </IBDeadline>
-                        {/*
-                        Can add back in when we support multiple slots
-                        <IBAvail>
-                          <FormField
-                            label="Slots Available"
-                            input={
-                              <DropDown
-                                items={bountySlots}
-                                onChange={this.generateSlotsChange(issue.id)}
-                                active={bounties[issue.id]['slotsIndex']}
-                              />
-                            }
-                          />
-                        </IBAvail> */}
-                      </IBDetails>
-                    </IBMain>
-                  </Cell>
-                </TableRow>
-              ))}
-            </Table>
-          }
-        />
-      </Form>
+                            </IBAvail>
+                         */}
+                        </IBDetails>
+                      </IBMain>
+                    </Cell>
+                  </TableRow>
+                ))}
+              </Table>
+            }
+          />
+        </Form>
+        {
+          (
+            this.state.totalSize > this.state.tokenBalance
+          ) ? (
+              <div>
+                <br />
+                <Info.Action title="Insufficient Token Balance">
+              Please either mint more tokens or stake fewer tokens against these bounties
+                </Info.Action>
+              </div>
+            ) : null
+        }
+      </div>
     )
   }
 
@@ -344,9 +368,32 @@ class NewBountyAllocation extends React.Component {
 
   render() {
     const { bounties } = this.state
-    const { bountySettings, mode, issues } = this.props
+    const { bountySettings, tokens, mode, issues } = this.props
     const bountylessIssues = []
     const alreadyAdded = []
+
+
+    const expLevels = this.props.bountySettings.expLvls
+
+    if (!tokens.length) {
+      return (
+        <div>
+          <VaultDiv><Icon /></VaultDiv>
+          <Text color={theme.textSecondary} size='large' >
+            <div>
+              <br />
+            Your base rate has not been set and you do not have
+            any tokens in your Finance app.
+              <br /> <br />
+            Once you have tokens in your Finance app, you will be
+            able to begin allocating tokens to issues.
+              <br /> <br />
+              <Button wide onClick={this.props.closePanel} mode="strong"  >Cancel</Button>
+            </div>
+          </Text>
+        </div>
+      )
+    }
 
     // in 'update' mode there is only one issue
     if (mode === 'update') {
@@ -470,6 +517,9 @@ const IBValueShow = styled.div`
   > :last-child {
     margin: 10px 0;
   }
+`
+const VaultDiv = styled.div`
+text-align: center;
 `
 const IBArrow = styled.div`
   grid-area: arrow;

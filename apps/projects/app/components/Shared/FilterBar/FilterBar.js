@@ -16,6 +16,7 @@ import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
 
 const StyledFilterBar = styled.div`
   width: 100%;
+  min-width: 346px;
   display: flex;
   margin: 12px 0;
   height: 40px;
@@ -197,7 +198,7 @@ class FilterBar extends React.Component {
 
           <FilterDropDown
             caption="Status"
-            enabled={true}
+            enabled={Object.keys(filtersData.milestones).length > 0}
           >
             {Object.keys(filtersData.statuses).map(status => (
               <FilterMenuItem
