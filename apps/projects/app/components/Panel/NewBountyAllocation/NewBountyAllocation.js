@@ -4,19 +4,20 @@ import styled from 'styled-components'
 import { addHours } from 'date-fns'
 
 import {
-  Field,
   Text,
   TextInput,
   DropDown,
   theme,
   Badge,
   Table,
-  TableHeader,
+  Info,
   TableRow,
   TableCell,
+  Button,
 } from '@aragon/ui'
 
-import { Form, FormField, FieldTitle, DateInput } from '../../Form'
+import { Form, FormField, FieldTitle } from '../../Form'
+import { DateInput } from '../../../../../../shared/ui'
 import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
 
 const bountySlots = [ '1', '2', '3' ]
@@ -46,24 +47,49 @@ class NewBountyAllocation extends React.Component {
   constructor(props) {
     super(props)
     let bounties = {}
-    this.props.issues.map(issue => {
+
+    if (this.props.mode === 'update') {
+      const issue = this.props.issues[0]
       bounties[issue.id] = {
         repo: issue.repo,
         number: issue.number,
         repoId: issue.repoId,
-        hours: 0,
-        exp: 0,
-        deadline: addHours(new Date(), this.props.bountySettings.bountyDeadline),
+        hours: issue.hours,
+        exp: issue.exp,
+        deadline: new Date(issue.deadline),
         slots: 1,
         slotsIndex: 0,
-        detailsOpen: 0,
         size: 0
       }
-    })
+      bounties[issue.id].size = this.calculateSize(bounties[issue.id])
+    } else {
+      this.props.issues.map(issue => {
+        bounties[issue.id] = {
+          repo: issue.repo,
+          number: issue.number,
+          repoId: issue.repoId,
+          hours: 0,
+          exp: 0,
+          deadline: addHours(new Date(), this.props.bountySettings.bountyDeadline),
+          slots: 1,
+          slotsIndex: 0,
+          detailsOpen: 0,
+          size: 0
+        }
+      })
+    }
+
     this.state = {
       description: '',
       bounties,
     }
+  }
+
+  calculateSize = issue => {
+    const expLevels = this.getExpLevels()
+    return issue['hours'] *
+      this.props.bountySettings.baseRate *
+      expLevels[issue['exp']].mul
   }
 
   configBounty = (id, key, val) => {
@@ -79,9 +105,7 @@ class NewBountyAllocation extends React.Component {
       }
     }
     // just do it, recalculate size
-    const expLevels = this.getExpLevels()
-    let size = bounties[id]['hours'] * this.props.bountySettings.baseRate * expLevels[bounties[id]['exp']].mul
-    bounties[id]['size'] = size
+    bounties[id]['size'] = this.calculateSize(bounties[id])
 
     this.setState({ bounties })
     //console.log('configBounty: ', bounties)
@@ -123,9 +147,87 @@ class NewBountyAllocation extends React.Component {
     return expLevels
   }
 
-  render() {
-    const { bounties } = this.state
-    const { bountySettings } = this.props
+  renderUpdateForm = (issue, bounties, bountySettings) => {
+    const expLevels = this.getExpLevels()
+
+    return (
+      <React.Fragment>
+        <Info.Action title="Warning" style={{ marginBottom: '16px' }}>
+          <p style={{ marginTop: '10px' }}>
+            The updates you specify will overwrite the existing settings for the bounty.
+          </p>
+        </Info.Action>
+
+        <Form
+          onSubmit={this.submitBounties}
+          description={this.props.description}
+          submitText="Submit Update"
+        >
+          <FormField
+            label="Issue"
+            input={
+              <React.Fragment>
+                <Text.Block size="xxlarge" style={{ marginBottom: '16px' }}>
+                  {issue.title}
+                </Text.Block>
+                <UpdateRow>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <FormField
+                      label="Hours"
+                      input={
+                        <HoursInput
+                          width="100%"
+                          name="hours"
+                          value={bounties[issue.id]['hours']}
+                          onChange={this.generateHoursChange(issue.id)}
+                        />
+                      }
+                    />
+                    {bounties[issue.id]['hours'] > 0 && (
+                      <Badge style={{ padding: '6px', marginTop: '14px', marginLeft: '6px' }}>
+                        <Text size="large">
+                          {bounties[issue.id]['size'].toFixed(2)}{' '}
+                          {bountySettings.bountyCurrency}
+                        </Text>
+                      </Badge>
+                    )}
+                  </div>
+
+                  <FormField
+                    label="Experience level"
+                    input={
+                      <DropDown
+                        items={expLevels.map(exp => exp.name)}
+                        onChange={this.generateExpChange(issue.id)}
+                        active={bounties[issue.id]['exp']}
+                      />
+                    }
+                  />
+                </UpdateRow>
+                <UpdateRow>
+                  <FormField
+                    label="Deadline"
+                    input={
+                      <DateInput
+                        width="120px"
+                        name='deadline'
+                        value={bounties[issue.id]['deadline']}
+                        onChange={this.generateDeadlineChange(issue.id)}
+                      />
+                    }
+                  />
+                  {/* second child needed - should be Slots in the future */}
+                  <div></div>
+                </UpdateRow>
+              </React.Fragment>
+            }
+          />
+        </Form>
+      </React.Fragment>
+    )
+  }
+
+  renderForm = (issues, bounties, bountySettings) => {
     const expLevels = this.getExpLevels()
 
     return (
@@ -134,26 +236,13 @@ class NewBountyAllocation extends React.Component {
         description={this.props.description}
         submitText="Submit Bounty Allocation"
       >
-        {/* Not currently implemented:
-        <FormField
-          label="Description"
-          required
-          input={
-            <TextInput.Multiline
-              rows={3}
-              style={{ resize: 'none' }}
-              onChange={this.descriptionChange}
-              wide
-            />
-          }
-        />*/}
         <FormField
           label="Issues"
           hint="Enter the estimated hours per issue"
           required
           input={
             <Table>
-              {this.props.issues.map(issue => (
+              {issues.map(issue => (
                 <TableRow key={issue.id}>
                   <Cell>
                     <IBMain>
@@ -241,16 +330,85 @@ class NewBountyAllocation extends React.Component {
       </Form>
     )
   }
-}
 
+  renderWarning = issues => (
+    <Info.Action title="Warning">
+      <p style={{ margin: '10px 0' }}>
+        The following issues already have bounties and cannot be updated on a bulk basis. To update an individual issue, select “Update Bounty” from the issue’s context menu.
+      </p>
+      <WarningIssueList>
+        {issues.map(issue => <li>{issue.title}</li>)}
+      </WarningIssueList>
+    </Info.Action>
+  )
+
+  render() {
+    const { bounties } = this.state
+    const { bountySettings, mode, issues } = this.props
+    const bountylessIssues = []
+    const alreadyAdded = []
+
+    // in 'update' mode there is only one issue
+    if (mode === 'update') {
+      return this.renderUpdateForm(issues[0], bounties, bountySettings)
+    }
+
+    issues.forEach(issue => {
+      if (issue.hasBounty)
+        alreadyAdded.push(issue)
+      else
+        bountylessIssues.push(issue)
+    })
+
+    if (bountylessIssues.length > 0 && alreadyAdded.length > 0) {
+      return (
+        <DivSeparator>
+          {this.renderForm(bountylessIssues, bounties, bountySettings)}
+          {this.renderWarning(alreadyAdded)}
+        </DivSeparator>
+      )
+    } else if (bountylessIssues.length > 0) {
+      return this.renderForm(bountylessIssues, bounties, bountySettings)
+    } else return (
+      <DivSeparator>
+        {this.renderWarning(alreadyAdded)}
+        <Button mode="strong" wide onClick={this.props.closePanel}>Close</Button>
+      </DivSeparator>
+    )
+  }
+}
+const DivSeparator = styled.div`
+  > :last-child {
+    margin-top: 15px;
+  }
+`
+const UpdateRow = styled.div`
+  display: flex;
+  align-content: stretch;
+  margin-bottom: 10px;
+  > :first-child {
+    width: 50%;
+    padding-right: 10px;
+  }
+  > :last-child {
+    width: 50%;
+    padding-left: 10px;
+  }
+`
+const WarningIssueList = styled.ul`
+  padding: 10px 30px;
+  font-size: 13px;
+  > :not(:last-child) {
+    margin-bottom: 10px;
+  }
+`
 const HoursInput = styled(TextInput.Number).attrs({
   mode: 'strong',
   step: '1',
   min: '0',
   max: '1000',
 })`
-  width: 100px;
-  height: 32px;
+  width: ${ props => props.width ? props.width: '100px' };
   display: inline-block;
   padding-top: 3px;
 `

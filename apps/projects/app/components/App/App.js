@@ -251,7 +251,22 @@ class App extends React.PureComponent {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.NewBountyAllocation,
       panelProps: {
-        issues: issues,
+        issues,
+        mode: 'new',
+        onSubmit: this.onSubmitBountyAllocation,
+        bountySettings: this.props.bountySettings,
+        closePanel: this.closePanel,
+      },
+    }))
+  }
+
+  updateBounty = issues => {
+    this.setState((_prevState, _prevProps) => ({
+      panel: PANELS.NewBountyAllocation,
+      panelProps: {
+        title: 'Update Bounty',
+        issues,
+        mode: 'update',
         onSubmit: this.onSubmitBountyAllocation,
         bountySettings: this.props.bountySettings,
       },
@@ -517,6 +532,7 @@ class App extends React.PureComponent {
                 onNewIssue={this.newIssue}
                 onCurateIssues={this.curateIssues}
                 onAllocateBounties={this.newBountyAllocation}
+                onUpdateBounty={this.updateBounty}
                 onSubmitWork={this.submitWork}
                 onRequestAssignment={this.requestAssignment}
                 activeIndex={activeIndex}

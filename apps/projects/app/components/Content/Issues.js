@@ -66,6 +66,10 @@ class Issues extends React.PureComponent {
     this.props.onAllocateBounties([issue])
   }
 
+  handleUpdateBounty = issue => {
+    this.props.onUpdateBounty([issue])
+  }
+
   handleAllocateBounties = () => {
     console.log('handleAllocationBounties:', this.state.selectedIssues)
     this.props.onAllocateBounties(this.state.selectedIssues)
@@ -94,7 +98,7 @@ class Issues extends React.PureComponent {
     if (this.state.allSelected) {
       this.setState({ allSelected: false, selectedIssues: [] })
     } else {
-      this.setState({ allSelected: true, selectedIssues: issuesFiltered })
+      this.setState({ allSelected: true, selectedIssues: this.shapeIssues(issuesFiltered) })
     }
   }
 
@@ -420,6 +424,9 @@ class Issues extends React.PureComponent {
           onAllocateSingleBounty={() => {
             this.handleAllocateSingleBounty(currentIssueShaped)
           }}
+          onUpdateBounty={() => {
+            this.handleUpdateBounty(currentIssueShaped)
+          }}
           onReviewWork={() => {
             this.handleReviewWork(currentIssueShaped)
           }}
@@ -477,6 +484,9 @@ class Issues extends React.PureComponent {
                           }}
                           onAllocateSingleBounty={() => {
                             this.handleAllocateSingleBounty(issue)
+                          }}
+                          onUpdateBounty={() => {
+                            this.handleUpdateBounty(issue)
                           }}
                           onReviewWork={() => {
                             this.handleReviewWork(issue)

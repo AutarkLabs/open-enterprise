@@ -284,6 +284,7 @@ const Detail = ({
   onRequestAssignment,
   onSubmitWork,
   onAllocateSingleBounty,
+  onUpdateBounty,
   workSubmissions,
 }) => {
 
@@ -335,6 +336,7 @@ const Detail = ({
                   onRequestAssignment={onRequestAssignment}
                   onReviewApplication={onReviewApplication}
                   onReviewWork={onReviewWork}
+                  onUpdateBounty={onUpdateBounty}
                 />
               </ContextMenu>
               { balance > 0 &&
