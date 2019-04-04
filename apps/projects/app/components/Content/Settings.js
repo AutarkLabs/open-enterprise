@@ -191,14 +191,14 @@ class Settings extends React.Component {
           {!this.props.tokens.length ? (
             <EmptyBaseRate />
           ) : (
-          <BaseRate
-            baseRate={baseRate}
-            onChangeRate={this.baseRateChange}
-            bountyCurrencies={bountyCurrencies}
-            bountyCurrency={bountyCurrency}
-            onChangeCurrency={this.bountyCurrencyChange}
-          />
-        )}
+            <BaseRate
+              baseRate={baseRate}
+              onChangeRate={this.baseRateChange}
+              bountyCurrencies={bountyCurrencies}
+              bountyCurrency={bountyCurrency}
+              onChangeCurrency={this.bountyCurrencyChange}
+            />
+          )}
           <BountyDeadline
             bountyDeadlineT={bountyDeadlineT}
             onChangeT={this.bountyDeadlineChangeT}
