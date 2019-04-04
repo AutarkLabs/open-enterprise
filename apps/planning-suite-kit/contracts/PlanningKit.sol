@@ -48,6 +48,20 @@ contract KitBase is APMNamehash {
 
         return base;
     }
+
+    function cleanupDAOPermissions(Kernel dao, ACL acl, address root) internal {
+        // Kernel permission clean up
+        cleanupPermission(acl, root, dao, dao.APP_MANAGER_ROLE());
+
+        // ACL permission clean up
+        cleanupPermission(acl, root, acl, acl.CREATE_PERMISSIONS_ROLE());
+    }
+
+    function cleanupPermission(ACL acl, address root, address app, bytes32 permission) internal {
+        acl.grantPermission(root, app, permission);
+        acl.revokePermission(this, app, permission);
+        acl.setPermissionManager(root, app, permission);
+    }
 }
 
 
@@ -59,7 +73,6 @@ contract PlanningKit is KitBase {
     uint256 constant PCT256 = 10 ** 16;
     uint64 constant PCT64 = 10 ** 16;
     address constant ANY_ENTITY = address(-1);
-
     constructor(ENS ens) public KitBase(DAOFactory(0), ens) {
         address root = msg.sender;
 
@@ -226,7 +239,7 @@ contract PlanningKit is KitBase {
     {
         address root = msg.sender;
         addressBook.initialize();
-        projects.initialize(registry, vault);
+        projects.initialize(registry, vault, "autark");
         rangeVoting.initialize(addressBook, token, 50 * PCT256, 0, 1 minutes);
         allocations.initialize(addressBook);
         rewards.initialize(vault);

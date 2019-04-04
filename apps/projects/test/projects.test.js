@@ -144,7 +144,7 @@ contract('Projects App', accounts => {
 
     //bounties = StandardBounties.at(registry.address)
 
-    await app.initialize(bounties.address, vault.address)
+    await app.initialize(bounties.address, vault.address, '')
   })
 
   context('creating and retrieving repos and bounties', () => {
