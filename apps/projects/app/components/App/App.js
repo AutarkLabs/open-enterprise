@@ -55,7 +55,7 @@ export const githubPopup = (popup = null) => {
   if (popup === null || popup.closed) {
     popup = window.open(
       // TODO: Improve readability here: encode = (params: Object) => (JSON.stringify(params).replace(':', '=').trim())
-      // encode uurl params
+      // encode url params
       `${GITHUB_URI}?client_id=${CLIENT_ID}&scope=public_repo&redirect_uri=${REDIRECT_URI}`,
       // `${REDIRECT_URI}/?code=232r3423`, // <= use this to avoid spamming github for testing purposes
       'githubAuth',
@@ -94,7 +94,7 @@ const getURLParam = param => {
 /**
  * Sends an http request to the AUTH_URI with the auth code obtained from the oauth flow
  * @param {string} code
- * @returns {string} The authentation token obtained from the auth server
+ * @returns {string} The authentication token obtained from the auth server
  */
 const getToken = async code => {
   console.log('getToken entered')
@@ -151,7 +151,6 @@ class App extends React.PureComponent {
   handlePopupMessage = async message => {
     if (message.data.from !== 'popup') return
     if (message.data.name === 'code') {
-
       // TODO: Optimize the listeners lifecycle, ie: remove on unmount
       console.log('removing messageListener')
       window.removeEventListener('message', this.messageHandler)
@@ -162,31 +161,37 @@ class App extends React.PureComponent {
       try {
         const token = await getToken(code)
         console.log('token obtained:', token)
-        this.setState({
-          githubLoading: false,
-          panelProps: {
-            onCreateProject: this.createProject,
-            status: STATUS.AUTHENTICATED,
+        this.setState(
+          {
+            githubLoading: false,
+            panelProps: {
+              onCreateProject: this.createProject,
+              status: STATUS.AUTHENTICATED,
+            },
           },
-        }, () => {
-          this.props.app.cache('github', {
-            status: STATUS.AUTHENTICATED,
-            token,
-          })
-        })
+          () => {
+            this.props.app.cache('github', {
+              status: STATUS.AUTHENTICATED,
+              token,
+            })
+          }
+        )
       } catch (err) {
-        this.setState({
-          githubLoading: false,
-          panelProps: {
-            onCreateProject: this.createProject,
-            status: STATUS.FAILED,
+        this.setState(
+          {
+            githubLoading: false,
+            panelProps: {
+              onCreateProject: this.createProject,
+              status: STATUS.FAILED,
+            },
           },
-        }, () => {
-          this.props.app.cache('github', {
-            status: STATUS.FAILED,
-            token: null,
-          })
-        })
+          () => {
+            this.props.app.cache('github', {
+              status: STATUS.FAILED,
+              token: null,
+            })
+          }
+        )
       }
     }
   }
@@ -237,10 +242,9 @@ class App extends React.PureComponent {
   // TODO: Review
   // This is breaking RepoList loading sometimes preventing show repos after login
   newProject = () => {
-    const reposAlreadyAdded = this.props.repos ?
-      this.props.repos.map(repo => repo.data._repo)
-      :
-      []
+    const reposAlreadyAdded = this.props.repos
+      ? this.props.repos.map(repo => repo.data._repo)
+      : []
 
     this.setState((_prevState, { github: { status } }) => ({
       panel: PANELS.NewProject,
@@ -266,48 +270,47 @@ class App extends React.PureComponent {
     }))
   }
 
-  onSubmitBountyAllocation = async issues => {
+  onSubmitBountyAllocation = async (issues, description) => {
     this.closePanel()
-    let bountySymbol = this.props.bountySettings.bountyCurrency
-    let bountyToken, bountyDecimals
-    this.props.tokens.forEach(
-      token => {
-        if(token.symbol === bountySymbol) {
-          bountyToken = token.addr
-          bountyDecimals = token.decimals
-        }
-      }
-    )
 
     // computes an array of issues and denests the actual issue object for smart contract
     const issuesArray = []
-    for (let key in issues) issuesArray.push({ key: key, ...issues[key] })
+    const bountySymbol = this.props.bountySettings.bountyCurrency
 
-    console.log('Submit issues:', issuesArray)
+    let bountyToken, bountyDecimals
+
+    this.props.tokens.forEach(token => {
+      if (token.symbol === bountySymbol) {
+        bountyToken = token.addr
+        bountyDecimals = token.decimals
+      }
+    })
+
+    for (let key in issues) issuesArray.push({ key: key, ...issues[key] })
 
     const ipfsString = await computeIpfsString(issuesArray)
 
-    const tokenArray = new Array(issuesArray.length).fill(bountyToken)
-
-    console.log('Bounty data for app.addBounties',
-      issuesArray.map( (issue) => issue.repoId),
-      issuesArray.map( (issue) => issue.number),
-      issuesArray.map( (issue) => BigNumber(issue.size).times(10 ** bountyDecimals).toString()),
-      issuesArray.map( (issue) => issue.deadline),
-      new Array(issuesArray.length).fill(true),
-      tokenArray,
-      ipfsString
+    const idArray = issuesArray.map(issue => web3.toHex(issue.repoId))
+    const numberArray = issuesArray.map(issue => issue.number)
+    const bountyArray = issuesArray.map(issue =>
+      BigNumber(issue.size)
+        .times(10 ** bountyDecimals)
+        .toString()
     )
+    const tokenArray = new Array(issuesArray.length).fill(bountyToken)
+    const dateArray = new Array(issuesArray.length).fill(Date.now() + 8600)
+    const booleanArray = new Array(issuesArray.length).fill(true)
+
+    console.log('Submit issues:', issuesArray)
     this.props.app.addBounties(
-      issuesArray.map( (issue) => web3.toHex(issue.repoId)),
-      issuesArray.map( (issue) => issue.number),
-      issuesArray.map( (issue) => BigNumber(issue.size).times(10 ** bountyDecimals).toString()),
-      issuesArray.map(issue => {
-        return Date.now() + 8600
-      }),
-      new Array(issuesArray.length).fill(true),
+      idArray,
+      numberArray,
+      bountyArray,
+      dateArray,
+      booleanArray,
       tokenArray,
-      ipfsString
+      ipfsString,
+      description
     )
   }
 
@@ -325,11 +328,7 @@ class App extends React.PureComponent {
   onSubmitWork = async (state, issue) => {
     this.closePanel()
     const hash = await ipfsAdd(state)
-    this.props.app.submitWork(
-      web3.toHex(issue.repoId),
-      issue.number,
-      hash
-    )
+    this.props.app.submitWork(web3.toHex(issue.repoId), issue.number, hash)
   }
 
   requestAssignment = issue => {
@@ -387,7 +386,7 @@ class App extends React.PureComponent {
       issue.number,
       issue.requestsData[requestIndex].contributorAddr,
       requestIPFSHash,
-      approved,
+      approved
     )
   }
 
@@ -415,7 +414,7 @@ class App extends React.PureComponent {
       issue.number,
       issue.workSubmissions[issue.workSubmissions.length - 1],
       state.accepted,
-      requestIPFSHash,
+      requestIPFSHash
     )
     this.closePanel()
     this.props.app.reviewSubmission(
@@ -423,7 +422,7 @@ class App extends React.PureComponent {
       issue.number,
       issue.workSubmissions.length - 1,
       state.accepted,
-      requestIPFSHash,
+      requestIPFSHash
     )
   }
 
@@ -453,7 +452,7 @@ class App extends React.PureComponent {
     // TODO: splitting of descriptions needs to be fixed at smart contract level
     const issueDescriptions = issues.map(issue => issue.title).join('')
     /* TODO: The numbers below are supposedly coming from an eventual:
-     issues.map(issue => web3.utils.hextToNum(web3.toHex(issue.repoId))) */
+     issues.map(issue => web3.utils.hexToNum(web3.toHex(issue.repoId))) */
     const issueNumbers = issues.map(issue => issue.number)
     const emptyIntArray = new Array(issues.length).fill(0)
     const emptyAddrArray = [
@@ -494,7 +493,10 @@ class App extends React.PureComponent {
 
   handleGithubSignIn = () => {
     // The popup is launched, its ref is checked and saved in the state in one step
-    this.setState(({ oldPopup }) => ({ popup: githubPopup(oldPopup), githubLoading: true }))
+    this.setState(({ oldPopup }) => ({
+      popup: githubPopup(oldPopup),
+      githubLoading: true,
+    }))
     // Listen for the github redirection with the auth-code encoded as url param
     console.log('adding messageListener')
     window.addEventListener('message', this.handlePopupMessage)
@@ -523,7 +525,9 @@ class App extends React.PureComponent {
                 bountySettings={
                   bountySettings !== undefined ? bountySettings : {}
                 }
-                tokens={this.props.tokens !== undefined ? this.props.tokens : []}
+                tokens={
+                  this.props.tokens !== undefined ? this.props.tokens : []
+                }
                 onNewProject={this.newProject}
                 onRemoveProject={this.removeProject}
                 onNewIssue={this.newIssue}

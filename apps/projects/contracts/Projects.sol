@@ -457,7 +457,7 @@ contract Projects is IsContract, AragonApp {
     }
 
     /**
-     * @notice Fund bounties for the selected issues
+     * @notice Fund bounties for the selected issues (`_description`)
      * @param _repoIds The ids of the Github repos in the projects registry
      * @param _issueNumbers an array of bounty indexes
      * @param _bountySizes an array of bounty sizes
@@ -473,8 +473,9 @@ contract Projects is IsContract, AragonApp {
         uint256[] _deadlines,
         bool[] _tokenBounties,
         address[] _tokenContracts,
-        string _ipfsAddresses
-    ) public payable auth(ADD_BOUNTY_ROLE)
+        string _ipfsAddresses,
+        string _description
+    ) public auth(ADD_BOUNTY_ROLE)
     {
         // ensure the transvalue passed equals transaction value
         //checkTransValueEqualsMessageValue(msg.value, _bountySizes,_tokenBounties);
@@ -500,7 +501,6 @@ contract Projects is IsContract, AragonApp {
                 _bountySizes[i],
                 standardBountyId
             );
-            // Implement case for ETH
 
             //Add bounty to local registry
             _addBounty(

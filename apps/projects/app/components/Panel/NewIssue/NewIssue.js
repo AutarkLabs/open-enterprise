@@ -1,11 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import styled from 'styled-components'
 import { Mutation } from 'react-apollo'
-import { gql } from 'apollo-boost'
-import { theme, Field, Info, TextInput, Button, DropDown } from '@aragon/ui'
+import { Field, TextInput, DropDown } from '@aragon/ui'
 import { NEW_ISSUE, GET_ISSUES } from '../../../utils/gql-queries.js'
-import { Form } from '../../Form'
+import { DescriptionInput, Form } from '../../Form'
 import { LoadingAnimation } from '../../Shared'
 
 // TODO: labels
@@ -82,13 +80,7 @@ class NewIssue extends React.PureComponent {
   canSubmit = () => !(this.state.title !== '' && this.state.selectedProject > 0)
 
   render() {
-    const {
-      title,
-      description,
-      labels,
-      isValid,
-      selectedProject,
-    } = this.state
+    const { title, description, labels, isValid, selectedProject } = this.state
     const { reposManaged } = this.props
     const {
       projectChange,
@@ -102,18 +94,18 @@ class NewIssue extends React.PureComponent {
       typeof reposManaged === 'string'
         ? 'No repos'
         : [ 'Select a project', ...reposManaged.map(repo => repo.name) ]
-    
+
     const reposIds =
-      typeof reposManaged === 'string'
-        ? []
-        : reposManaged.map(repo => repo.id)
-    
+      typeof reposManaged === 'string' ? [] : reposManaged.map(repo => repo.id)
+
     const id = selectedProject > 0 ? reposIds[selectedProject - 1] : ''
 
-    const reGet = [{
-      query: GET_ISSUES,
-      variables: { reposIds }
-    }]
+    const reGet = [
+      {
+        query: GET_ISSUES,
+        variables: { reposIds },
+      },
+    ]
 
     return (
       <Mutation
@@ -146,9 +138,14 @@ class NewIssue extends React.PureComponent {
                   <TextInput onChange={titleChange} required wide />
                 </Field>
                 <Field label="Description">
-                  <TextInput.Multiline
+                  <DescriptionInput
                     rows={3}
-                    style={{ resize: 'none', height: 'auto', paddingTop: '5px', paddingBottom: '5px' }}
+                    style={{
+                      resize: 'none',
+                      height: 'auto',
+                      paddingTop: '5px',
+                      paddingBottom: '5px',
+                    }}
                     onChange={descriptionChange}
                     wide
                   />

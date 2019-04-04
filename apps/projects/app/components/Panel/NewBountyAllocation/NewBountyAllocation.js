@@ -7,20 +7,23 @@ import Icon from '../../Shared/assets/components/IconEmptyVault'
 
 import {
   Button,
-  Field,
   Text,
   TextInput,
   DropDown,
   theme,
   Badge,
   Table,
-  TableHeader,
   TableRow,
   TableCell,
   Info
 } from '@aragon/ui'
 
-import { Form, FormField, FieldTitle, DateInput } from '../../Form'
+import {
+  DateInput,
+  Form,
+  FormField,
+  FieldTitle,
+} from '../../Form'
 import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
 
 const bountySlots = [ '1', '2', '3' ]
@@ -58,11 +61,14 @@ class NewBountyAllocation extends React.Component {
         repoId: issue.repoId,
         hours: 0,
         exp: 0,
-        deadline: addHours(new Date(), this.props.bountySettings.bountyDeadline),
+        deadline: addHours(
+          new Date(),
+          this.props.bountySettings.bountyDeadline
+        ),
         slots: 1,
         slotsIndex: 0,
         detailsOpen: 0,
-        size: 0
+        size: 0,
       }
     })
     let bountySymbol = this.props.bountySettings.bountyCurrency
@@ -109,7 +115,8 @@ class NewBountyAllocation extends React.Component {
     //console.log('configBounty: ', bounties)
   }
 
-  generateHoursChange = id => ({ target: { value } }) => this.configBounty(id, 'hours', parseInt(value))
+  generateHoursChange = id => ({ target: { value } }) =>
+    this.configBounty(id, 'hours', parseInt(value))
 
   generateExpChange = id => index => {
     this.configBounty(id, 'exp', index)
@@ -132,7 +139,7 @@ class NewBountyAllocation extends React.Component {
 
   submitBounties = () => {
     console.info('Submitting new Bounties', this.state.bounties)
-    this.props.onSubmit(this.state.bounties)
+    this.props.onSubmit(this.state.bounties, this.state.description)
   }
 
   render() {
@@ -173,7 +180,7 @@ class NewBountyAllocation extends React.Component {
           label="Description"
           required
           input={
-            <TextInput.Multiline
+            <DescriptionInput
               rows={3}
               style={{ resize: 'none' }}
               onChange={this.descriptionChange}
