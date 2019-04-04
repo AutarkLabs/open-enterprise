@@ -58,7 +58,7 @@
     "lint:range": "cd apps/range-voting && npm run lint"
   },
   "dependencies": {
-    "ipfs-http-client": "^30.1.1",
+    "ipfs-http-client": "29.1.0",
     "rxjs": "^6.4.0",
     "rxjs-compat": "^6.4.0"
   }
