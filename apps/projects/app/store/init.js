@@ -16,12 +16,8 @@ export const initStore = (vaultAddress, network) => {
   const vaultContract = app.external(vaultAddress, vaultAbi)
   return app.store(
     async (state, action) => {
-      const vaultDepositEvent = action && action.event === 'VaultDeposit'
-      const addressMismatch = action && action.address !== vaultAddress
-      if (vaultDepositEvent && addressMismatch) return state
-
       try {
-        const nextState = await handleEvent(state, action)
+        const nextState = await handleEvent(state, action, vaultAddress)
         return nextState
       } catch (err) {
         console.error(`[PROJECTS] store error: ${err}
