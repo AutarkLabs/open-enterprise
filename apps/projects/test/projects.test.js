@@ -686,7 +686,13 @@ contract('Projects App', accounts => {
   context('settings management', () => {
     it('can change Bounty Settings', async () => {
       await app.changeBountySettings(
-        '100\tBeginner\t300\tIntermediate\t500\tAdvanced',  // Experience Levels
+        [ 100,300,500, 1000 ],            // xp multipliers
+        [                                 // Experience Levels
+          web3.fromAscii('Beginner'),
+          web3.fromAscii('Intermediate'),
+          web3.fromAscii('Advanced'),
+          web3.fromAscii('Expert'),
+        ],
         1,  // baseRate
         336,  // bountyDeadline
         'autark',   // bountyCurrency
@@ -695,29 +701,37 @@ contract('Projects App', accounts => {
       )
 
       response = await app.getSettings()
-      assert.strictEqual(
-        response[0],
-        '100\tBeginner\t300\tIntermediate\t500\tAdvanced',
-        'experience levels stored incorrectly'
+
+      expect(response[0].map(x => x.toNumber())).to.have.ordered.members(
+        [ 100,300,500,1000 ]
+      )
+      const xpLvlDescs = response[1].map(x => web3.toUtf8(x))
+      expect(xpLvlDescs).to.have.ordered.members(
+        [
+          'Beginner',
+          'Intermediate',
+          'Advanced',
+          'Expert'
+        ]
       )
 
       assert.strictEqual(
-        response[1].toNumber(),
+        response[2].toNumber(),
         1,
         'baseRate Incorrect'
       )
       assert.strictEqual(
-        response[2].toNumber(),
+        response[3].toNumber(),
         336,
         'bounty deadline inccorrect'
       )
       assert.strictEqual(
-        response[3],
+        response[4],
         'autark',
         'currency name incorrect'
       )
       assert.strictEqual(
-        response[4],
+        response[5],
         bounties.address,
         'StandardBounties Contract address incorrect'
       )
