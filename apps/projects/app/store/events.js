@@ -32,7 +32,7 @@ import {
 
 import { STATUS } from '../utils/github'
 
-export const handleEvent = async (state, action, vaultAddress) => {
+export const handleEvent = async (state, action, vaultAddress, vaultContract) => {
   const { event, returnValues, address } = action
   let nextState = { ...state }
 
@@ -135,7 +135,7 @@ export const handleEvent = async (state, action, vaultAddress) => {
     return nextState
   case VAULT_DEPOSIT:
     if (vaultAddress !== address) return nextState
-    nextState = await syncTokens(nextState, returnValues)
+    nextState = await syncTokens(nextState, returnValues, vaultContract)
     return nextState
   default:
     return nextState

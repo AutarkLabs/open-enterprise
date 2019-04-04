@@ -17,7 +17,7 @@ export const initStore = (vaultAddress, network) => {
   return app.store(
     async (state, action) => {
       try {
-        const nextState = await handleEvent(state, action, vaultAddress)
+        const nextState = await handleEvent(state, action, vaultAddress, vaultContract)
         return nextState
       } catch (err) {
         console.error(`[PROJECTS] store error: ${err}
