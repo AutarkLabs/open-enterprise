@@ -1,4 +1,4 @@
-import { BaseStyles, observe, Main, ToastHub } from '@aragon/ui'
+import { Main, BaseStyles, observe, ToastHub } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { hot } from 'react-hot-loader'
@@ -232,6 +232,12 @@ class App extends React.PureComponent {
     }
   }
 
+  handleMenuPanelOpen = () => {
+    window.parent.postMessage(
+      { from: 'app', name: 'menuPanel', value: true }, '*'
+    )
+  }
+
   changeActiveIndex = activeIndex => {
     this.setState({ activeIndex })
   }
@@ -293,6 +299,8 @@ class App extends React.PureComponent {
         issues: issues,
         onSubmit: this.onSubmitBountyAllocation,
         bountySettings: this.props.bountySettings,
+        tokens: this.props.tokens ? this.props.tokens : [],
+        closePanel: this.cancelBounties,
       },
     }))
   }
@@ -484,6 +492,11 @@ class App extends React.PureComponent {
     )
   }
 
+  cancelBounties = id => {
+    console.log('closing')
+    this.closePanel()
+  }
+
   closePanel = () => {
     this.setState({ panel: undefined, panelProps: undefined })
   }
@@ -502,7 +515,7 @@ class App extends React.PureComponent {
       <StyledAragonApp publicUrl={ASSETS_URL}>
         <BaseStyles />
         <ToastHub>
-          <Title text="Projects" />
+          <Title text="Projects" handleMenuPanelOpen={this.handleMenuPanelOpen} />
           <ApolloProvider client={this.state.client}>
             <ErrorBoundary>
               <AppContent

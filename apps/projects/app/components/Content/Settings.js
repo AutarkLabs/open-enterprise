@@ -14,6 +14,7 @@ import { FieldTitle } from '../Form'
 import NumberFormat from 'react-number-format'
 import { STATUS } from '../../utils/github'
 import { provideNetwork } from '../../../../../shared/ui'
+import { fromUtf8 } from '../../utils/web3-utils'
 
 const bountyDeadlines = [ 'Weeks', 'Days', 'Hours' ]
 const bountyDeadlinesMul = [ 168, 24, 1 ] // it is one variable in contract, so number * multiplier = hours
@@ -52,7 +53,7 @@ class Settings extends React.Component {
       baseRate: s.baseRate,
       bountyAllocator: s.bountyAllocator,
       bountyArbiter: s.bountyArbiter,
-      expLevels: [],
+      expLevels: s.expLvls,
     }
 
     let found = bountyCurrencies.findIndex(el => el === s.bountyCurrency)
@@ -71,9 +72,6 @@ class Settings extends React.Component {
         break
       }
     }
-    let a = s.expLevels.split('\t')
-    for (let i = 0; i < a.length; i += 2)
-      n.expLevels.push({ mul: a[i] / 100, name: a[i + 1] })
 
     return n
   }
@@ -92,26 +90,27 @@ class Settings extends React.Component {
     // flatten deadline
     let bountyDeadline = bountyDeadlinesMul[bountyDeadlineD] * bountyDeadlineT
     // flatten expLevels
-    let expLevelsStr = expLevels
-      .map(l => l.mul * 100 + '\t' + l.name)
-      .join('\t')
+    const expLevelsDesc = expLevels.map(l => fromUtf8(l.name))
+    let expLevelsMul = expLevels.map(l => web3.toHex(l.mul))
     console.log('Submitting new Settings: ', {
-      lvl: expLevelsStr,
+      lvlMul:expLevelsMul,
+      lvl: expLevelsDesc,
       rate: web3.toHex(baseRate),
       ddl: web3.toHex(bountyDeadline),
       cur: bountyCurrencies[bountyCurrency],
-      bountyArbiter,
       bountyAllocator,
+      //bountyArbiter,
     })
 
     //expLevels, baseRate, bountyDeadline, bountyCurrency, bountyAllocator, bountyArbiter
     this.props.app.changeBountySettings(
-      expLevelsStr,
+      expLevelsMul,
+      expLevelsDesc,
       web3.toHex(baseRate),
       web3.toHex(bountyDeadline),
       bountyCurrencies[bountyCurrency],
-      bountyArbiter,
-      bountyAllocator
+      bountyAllocator,
+      //bountyArbiter,
     )
   }
 
@@ -183,33 +182,32 @@ class Settings extends React.Component {
             onAddExpLevel={this.addExpLevel}
             generateExpLevelHandler={this.generateExpLevelHandler}
           />
-          <BaseRate
-            baseRate={baseRate}
-            onChangeRate={this.baseRateChange}
-            bountyCurrencies={bountyCurrencies}
-            bountyCurrency={bountyCurrency}
-            onChangeCurrency={this.bountyCurrencyChange}
-          />
+
           <Button mode="strong" onClick={this.submitChanges} wide>
-            Submit Changes
+              Submit Changes
           </Button>
         </div>
         <div className="column">
-          <BountyContractAddress
-            bountyAllocator={bountyAllocator}
-            networkType={network.type}
-          />
-          {/*}
-          <BountyArbiter
-            bountyArbiter={bountyArbiter}
-            networkType={network.type}
-          />
-          */}
+          {!this.props.tokens.length ? (
+            <EmptyBaseRate />
+          ) : (
+            <BaseRate
+              baseRate={baseRate}
+              onChangeRate={this.baseRateChange}
+              bountyCurrencies={bountyCurrencies}
+              bountyCurrency={bountyCurrency}
+              onChangeCurrency={this.bountyCurrencyChange}
+            />
+          )}
           <BountyDeadline
             bountyDeadlineT={bountyDeadlineT}
             onChangeT={this.bountyDeadlineChangeT}
             bountyDeadlineD={bountyDeadlineD}
             onChangeD={this.bountyDeadlineChangeD}
+          />
+          <BountyContractAddress
+            bountyAllocator={bountyAllocator}
+            networkType={network.type}
           />
         </div>
       </StyledContent>
@@ -304,6 +302,17 @@ const StyledInputDropDown = styled.div`
     margin-left: -1px;
   }
 `
+const EmptyBaseRate = () => (
+  <div>
+    <Text.Block size="large" weight="bold">
+      Bounty Base Rate
+    </Text.Block>
+    <Text.Block>
+      Once you have tokens in your Finance App you will be able to set your
+      bounty base rate, which provides you with the ability to allocate bounties to issues.
+    </Text.Block>
+  </div>
+)
 const BaseRate = ({ baseRate, onChangeRate, bountyCurrency, onChangeCurrency, bountyCurrencies }) => (
   <div>
     <Text.Block size="large" weight="bold">
@@ -314,7 +323,7 @@ const BaseRate = ({ baseRate, onChangeRate, bountyCurrency, onChangeCurrency, bo
       size and converted into the bounty currency under the hood.
     </Text.Block>
     <FieldTitle style={{ marginBottom: '0' }}>Rate per hour</FieldTitle>
-    <StyledInputDropDown style={{ marginBottom: '0' }}>
+    <StyledInputDropDown>
       <NumberFormat
         customInput={StyledNumberInput}
         fixedDecimalScale
@@ -350,7 +359,7 @@ const GitHubConnect = ({ onLogin, onLogout, status, user }) => {
       <Text.Block
         size="large"
         weight="bold"
-        children={'GitHub authorization'}
+        children={'GitHub Authorization'}
       />
       <Text.Block children={bodyText} />
       <StyledButton
@@ -430,8 +439,7 @@ const StyledTextInput = styled(TextInput).attrs({
 `
 
 const StyledButton = styled(Button)`
-  font-size: 15px;
-  margin-top: 10px;
+  margin-top: 8px;
 `
 // padding-left: 30px;
 // background: url(${cross}) no-repeat 10px calc(50% - 1px);
@@ -447,15 +455,10 @@ const StyledContent = styled.div`
       flex: 0 0 464px;
       margin-right: 20px;
     }
-    :last-child {
-      > :not(:last-child) {
-        border-bottom: 1px solid ${theme.contentBorder};
-      }
-    }
     > * {
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       > * {
-        margin-bottom: 20px;
+        margin-bottom: 10px;
       }
     }
   }
