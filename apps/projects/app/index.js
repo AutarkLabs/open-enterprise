@@ -1,12 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import Aragon, { providers } from '@aragon/api'
-import ApolloClient from 'apollo-boost'
-import { pluck } from 'rxjs/operators'
-
 import App from './components/App/App'
-
-import { CURRENT_USER } from './utils/gql-queries'
 
 // import { projectsMockData } from './utils/mockData'
 
@@ -17,28 +12,16 @@ import { CURRENT_USER } from './utils/gql-queries'
 
 // TODO: Convert to stateless functional component
 class ConnectedApp extends React.Component {
-  state = {
-    app: new Aragon(new providers.WindowMessage(window.parent)),
-    network: {},
-    observable: null,
-    userAccount: '',
-    // ...projectsMockData,
-    github: { token: null },
-    client: new ApolloClient({
-      uri: 'https://api.github.com/graphql',
-      request: operation => {
-        const { token } = this.state.github
-        if (token) {
-          operation.setContext({
-            headers: {
-              accept: 'application/vnd.github.starfire-preview+json', // needed to create issues
-              authorization: `bearer ${token}`,
-            },
-          })
-        }
-      },
-    }),
+  constructor(props) {
+    super(props)
+    this.state = {
+      app: new Aragon(new providers.WindowMessage(window.parent)),
+      network: {},
+      observable: null,
+      userAccount: '',
+    }
   }
+
   componentDidMount() {
     window.addEventListener('message', this.handleWrapperMessage)
   }
@@ -63,29 +46,6 @@ class ConnectedApp extends React.Component {
       app.network().subscribe(network => {
         this.setState({ network })
       })
-      app.rpc
-        .sendAndObserveResponses('cache', [ 'get', 'github' ])
-        .pipe(pluck('result'))
-        .subscribe(github => {
-          console.log('github object received from backend cache:', github)
-
-          this.setState({
-            github: github,
-          })
-
-          if (this.state.github.token) {
-            this.state.client
-              .query({
-                query: CURRENT_USER,
-              })
-              .then(({ data }) => {
-                this.setState({
-                  githubCurrentUser: data.viewer,
-                })
-                console.log('viewer: ', data)
-              })
-          }
-        })
     }
   }
   sendMessageToWrapper = (name, value) => {
