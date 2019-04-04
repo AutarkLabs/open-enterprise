@@ -15,13 +15,17 @@ const github = () => {
 export const initStore = (vaultAddress, network) => {
   const vaultContract = app.external(vaultAddress, vaultAbi)
   return app.store(
-    async (state, event) => {
+    async (state, action) => {
+      const vaultDepositEvent = action && action.event === 'VaultDeposit'
+      const addressMismatch = action && action.address !== vaultAddress
+      if (vaultDepositEvent && addressMismatch) return state
+
       try {
-        const nextState = await handleEvent(state, event)
+        const nextState = await handleEvent(state, action)
         return nextState
       } catch (err) {
         console.error(`[PROJECTS] store error: ${err}
-        event: ${JSON.stringify(event.event, null, 4)}
+        event: ${JSON.stringify(action.event, null, 4)}
         state: ${JSON.stringify(state, null, 4)}
         `)
       }
