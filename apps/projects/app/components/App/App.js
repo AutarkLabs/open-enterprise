@@ -4,6 +4,7 @@ import React from 'react'
 import { hot } from 'react-hot-loader'
 import styled from 'styled-components'
 import { map } from 'rxjs/operators'
+import ApolloClient from 'apollo-boost'
 
 import { ApolloProvider } from 'react-apollo'
 
@@ -15,6 +16,12 @@ import ErrorBoundary from './ErrorBoundary'
 import BigNumber from 'bignumber.js'
 import { ipfsAdd, computeIpfsString } from '../../utils/ipfs-helpers'
 import { networkContextType } from '../../../../../shared/ui'
+import {
+  REQUESTING_GITHUB_TOKEN,
+  REQUESTED_GITHUB_TOKEN_SUCCESS,
+  REQUESTED_GITHUB_TOKEN_FAILURE
+} from '../../store/eventTypes'
+import { CURRENT_USER } from '../../utils/gql-queries'
 
 const ASSETS_URL = './aragon-ui-assets/'
 
@@ -30,7 +37,6 @@ let AUTH_URI = ''
 
 switch (window.location.origin) {
 case 'http://localhost:3333':
-  console.log('GitHub OAuth: Using local http provider deployment')
   CLIENT_ID = 'd556542aa7a03e640409'
   REDIRECT_URI = 'http://localhost:3333'
   AUTH_URI = 'https://tps-github-auth.now.sh/authenticate'
@@ -38,7 +44,6 @@ case 'http://localhost:3333':
   // AUTH_URI = 'https://dev-tps-github-auth.now.sh/authenticate'
   break
 case 'http://localhost:8080':
-  console.log('GitHub OAuth: Using local IPFS deployment')
   CLIENT_ID = '686f96197cc9bb07a43d'
   REDIRECT_URI = window.location.href
   AUTH_URI = 'https://local-tps-github-auth.now.sh/authenticate'
@@ -91,13 +96,27 @@ const getURLParam = param => {
   return searchParam.get(param)
 }
 
+const initApolloClient = (token) =>
+  new ApolloClient({
+    uri: 'https://api.github.com/graphql',
+    request: operation => {
+      if (token) {
+        operation.setContext({
+          headers: {
+            accept: 'application/vnd.github.starfire-preview+json', // needed to create issues
+            authorization: `bearer ${token}`,
+          },
+        })
+      }
+    }
+  })
+
 /**
  * Sends an http request to the AUTH_URI with the auth code obtained from the oauth flow
  * @param {string} code
  * @returns {string} The authentation token obtained from the auth server
  */
 const getToken = async code => {
-  console.log('getToken entered')
   const response = await fetch(`${AUTH_URI}/${code}`)
   const json = await response.json()
   return json.token
@@ -117,11 +136,16 @@ class App extends React.PureComponent {
     network: networkContextType,
   }
 
-  state = {
-    repos: [],
-    panelProps: {},
-    activeIndex: { tabIndex: 0, tabData: {} },
-    githubLoading: false,
+  constructor(props) {
+    super(props)
+    this.state = {
+      repos: [],
+      panelProps: {},
+      activeIndex: { tabIndex: 0, tabData: {} },
+      githubLoading: false,
+      githubCurrentUser: {},
+      client: initApolloClient(props.github && props.github.token || '')
+    }
   }
 
   getChildContext() {
@@ -148,20 +172,35 @@ class App extends React.PureComponent {
     window.close()
   }
 
+  componentDidUpdate(prevProps) {
+    const hasGithubToken = this.props.github && this.props.github.token
+    const hadGithubToken = prevProps.github && prevProps.github.token
+    const receivedGithubToken = hasGithubToken && !hadGithubToken
+    if (receivedGithubToken) {
+      const client = initApolloClient(this.props.github.token)
+      client
+        .query({
+          query: CURRENT_USER,
+        })
+        .then(({ data }) => {
+          this.setState({
+            client,
+            githubCurrentUser: data.viewer,
+          })
+        })
+    }
+  }
+
   handlePopupMessage = async message => {
     if (message.data.from !== 'popup') return
     if (message.data.name === 'code') {
 
       // TODO: Optimize the listeners lifecycle, ie: remove on unmount
-      console.log('removing messageListener')
       window.removeEventListener('message', this.messageHandler)
 
       const code = message.data.value
-      console.log('AuthCode received from github:', code)
-      console.log('Proceeding to token request...')
       try {
         const token = await getToken(code)
-        console.log('token obtained:', token)
         this.setState({
           githubLoading: false,
           panelProps: {
@@ -170,6 +209,7 @@ class App extends React.PureComponent {
           },
         }, () => {
           this.props.app.cache('github', {
+            event: REQUESTED_GITHUB_TOKEN_SUCCESS,
             status: STATUS.AUTHENTICATED,
             token,
           })
@@ -183,6 +223,7 @@ class App extends React.PureComponent {
           },
         }, () => {
           this.props.app.cache('github', {
+            event: REQUESTED_GITHUB_TOKEN_FAILURE,
             status: STATUS.FAILED,
             token: null,
           })
@@ -202,13 +243,11 @@ class App extends React.PureComponent {
   }
 
   createProject = ({ owner, project }) => {
-    console.info('App.js: createProject', project, owner)
     this.closePanel()
     this.props.app.addRepo(web3.toHex(project), web3.toHex(owner))
   }
 
   removeProject = project => {
-    console.log('App.js: removeProject', project)
     this.props.app.removeRepo(web3.toHex(project))
     // TODO: Toast feedback here maybe
   }
@@ -299,21 +338,10 @@ class App extends React.PureComponent {
     const issuesArray = []
     for (let key in issues) issuesArray.push({ key: key, ...issues[key] })
 
-    console.log('Submit issues:', issuesArray)
-
     const ipfsString = await computeIpfsString(issuesArray)
 
     const tokenArray = new Array(issuesArray.length).fill(bountyToken)
 
-    console.log('Bounty data for app.addBounties',
-      issuesArray.map( (issue) => issue.repoId),
-      issuesArray.map( (issue) => issue.number),
-      issuesArray.map( (issue) => BigNumber(issue.size).times(10 ** bountyDecimals).toString()),
-      issuesArray.map( (issue) => issue.deadline),
-      new Array(issuesArray.length).fill(true),
-      tokenArray,
-      ipfsString
-    )
     this.props.app.addBounties(
       issuesArray.map( (issue) => web3.toHex(issue.repoId)),
       issuesArray.map( (issue) => issue.number),
@@ -332,7 +360,7 @@ class App extends React.PureComponent {
       panel: PANELS.SubmitWork,
       panelProps: {
         onSubmitWork: this.onSubmitWork,
-        githubCurrentUser: this.props.githubCurrentUser,
+        githubCurrentUser: this.state.githubCurrentUser,
         issue,
       },
     }))
@@ -353,7 +381,7 @@ class App extends React.PureComponent {
       panel: PANELS.RequestAssignment,
       panelProps: {
         onRequestAssignment: this.onRequestAssignment,
-        githubCurrentUser: this.props.githubCurrentUser,
+        githubCurrentUser: this.state.githubCurrentUser,
         issue,
       },
     }))
@@ -375,7 +403,7 @@ class App extends React.PureComponent {
       panelProps: {
         issue,
         onReviewApplication: this.onReviewApplication,
-        githubCurrentUser: this.props.githubCurrentUser,
+        githubCurrentUser: this.state.githubCurrentUser,
       },
     }))
   }
@@ -387,16 +415,6 @@ class App extends React.PureComponent {
     ipfsData.review = review
 
     const requestIPFSHash = await ipfsAdd(ipfsData)
-
-    console.log('onReviewApplication Issue:', issue)
-    console.log(
-      'onReviewApplication submission:',
-      web3.toHex(issue.repoId),
-      issue.number,
-      issue.requestsData[requestIndex].contributorAddr,
-      approved,
-      issue
-    )
 
     this.props.app.approveAssignment(
       web3.toHex(issue.repoId),
@@ -413,7 +431,7 @@ class App extends React.PureComponent {
       panelProps: {
         issue,
         onReviewWork: this.onReviewWork,
-        githubCurrentUser: this.props.githubCurrentUser,
+        githubCurrentUser: this.state.githubCurrentUser,
       },
     }))
   }
@@ -424,15 +442,6 @@ class App extends React.PureComponent {
     ipfsData.review = state
     const requestIPFSHash = await ipfsAdd(ipfsData)
 
-    console.log(
-      'onReviewWork',
-      ipfsData.review,
-      web3.toHex(issue.repoId),
-      issue.number,
-      issue.workSubmissions[issue.workSubmissions.length - 1],
-      state.accepted,
-      requestIPFSHash,
-    )
     this.closePanel()
     this.props.app.reviewSubmission(
       web3.toHex(issue.repoId),
@@ -512,26 +521,26 @@ class App extends React.PureComponent {
     // The popup is launched, its ref is checked and saved in the state in one step
     this.setState(({ oldPopup }) => ({ popup: githubPopup(oldPopup), githubLoading: true }))
     // Listen for the github redirection with the auth-code encoded as url param
-    console.log('adding messageListener')
     window.addEventListener('message', this.handlePopupMessage)
   }
 
   render() {
-    const { activeIndex, panel, panelProps } = this.state
-    const { client, bountySettings, githubCurrentUser } = this.props
+    const { activeIndex, panel, panelProps, githubCurrentUser } = this.state
+    const { bountySettings } = this.props
     return (
       <StyledAragonApp publicUrl={ASSETS_URL}>
         <BaseStyles />
         <ToastHub>
           <Title text="Projects" handleMenuPanelOpen={this.handleMenuPanelOpen} />
-          <ApolloProvider client={client}>
+          <ApolloProvider client={this.state.client}>
             <ErrorBoundary>
               <AppContent
                 onLogin={this.handleGithubSignIn}
-                status={this.props.github.status || STATUS.INITIAL}
+                status={(this.props.github && this.props.github.status) || STATUS.INITIAL}
                 app={this.props.app}
                 bountySettings={bountySettings}
-                githubCurrentUser={githubCurrentUser || {}}
+                githubCurrentUser={githubCurrentUser}
+                githubLoading={this.state.githubLoading}
                 projects={this.props.repos !== undefined ? this.props.repos : []}
                 bountyIssues={
                   this.props.issues !== undefined ? this.props.issues : []
