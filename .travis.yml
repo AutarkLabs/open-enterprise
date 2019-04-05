@@ -41,8 +41,8 @@ jobs:
       script: travis_wait 60 npm run coverage -- --scope=@tps/apps-allocations
       name: Allocations app tests and coverage report
       install: npm run bootstrap
-      # after_success: npm run coveralls
-      # env: 'COVERAGE=true'
+      after_success: npm run coveralls
+      env: 'COVERAGE=true'
 
     - stage: test
       script: travis_wait 60 npm run coverage -- --scope=@tps/apps-projects
