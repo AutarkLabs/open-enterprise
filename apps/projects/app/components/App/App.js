@@ -308,9 +308,9 @@ class App extends React.PureComponent {
 
   updateBounty = issues => {
     this.setState((_prevState, _prevProps) => ({
-      panel: PANELS.NewBountyAllocation,
+      panel: PANELS.FundIssues,
       panelProps: {
-        title: 'Update Bounty',
+        title: 'Update Funding',
         issues,
         mode: 'update',
         onSubmit: this.onSubmitBountyAllocation,

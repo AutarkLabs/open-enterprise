@@ -24,7 +24,7 @@ import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
 
 const bountySlots = [ '1', '2', '3' ]
 
-class NewBountyAllocation extends React.Component {
+class FundIssues extends React.Component {
   static propTypes = {
     /** array of issues to allocate bounties on */
     issues: PropTypes.arrayOf(
@@ -537,4 +537,4 @@ const IBHoursInput = styled.div`
   }
 `
 
-export default NewBountyAllocation
+export default FundIssues

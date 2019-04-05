@@ -32,7 +32,7 @@ const BountyContextMenu = ({
   {(workStatus === 'funded' || workStatus === 'review-applicants') &&
     <div>
       <ContextMenuItem onClick={onUpdateBounty}>
-        <ActionLabel>Update Bounty</ActionLabel>
+        <ActionLabel>Update Funding</ActionLabel>
       </ContextMenuItem>
       <ContextMenuItem onClick={onRequestAssignment}>
         <ActionLabel>Request Assignment</ActionLabel>
@@ -42,7 +42,7 @@ const BountyContextMenu = ({
   {workStatus === 'review-applicants' &&
     <div>
       <ContextMenuItem onClick={onUpdateBounty}>
-        <ActionLabel>Update Bounty</ActionLabel>
+        <ActionLabel>Update Fsunding</ActionLabel>
       </ContextMenuItem>
       <ContextMenuItem onClick={onReviewApplication}>
         <ActionLabel>Review Application ({requestsData.length})</ActionLabel>
