@@ -258,7 +258,7 @@ class Issues extends React.PureComponent {
           <div style={{ marginLeft: '4px' }}>
             <IconShare color={theme.textTertiary} />
           </div>
-          <ActionLabel>Allocate Bounties</ActionLabel>
+          <ActionLabel>Fund Issues</ActionLabel>
         </ContextMenuItem>
       </ActionsMenu>
     </div>
