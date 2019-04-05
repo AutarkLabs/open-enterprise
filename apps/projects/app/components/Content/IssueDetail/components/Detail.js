@@ -446,7 +446,7 @@ const Detail = issue => {
           </div>
         </CardWrapper>
       ) : (
-        <CardWrapper style={{ flexDirection: 'row'}}>
+        <CardWrapper style={{ flexDirection: 'row' }}>
           <div style={{ maxWidth: '705px', minWidth: '350px', width: '70%' }}>
             {detailsCard(issue)}
           </div>
