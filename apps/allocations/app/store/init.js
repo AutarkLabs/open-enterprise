@@ -1,12 +1,12 @@
 import vaultAbi from '../../../shared/json-abis/vault'
-import addressBookAbi from '../../../shared/json-abis/address-book'
+import AddressBookJSON from '../../../shared/json-abis/address-book.json'
 import { ETHER_TOKEN_FAKE_ADDRESS } from '../utils/token-utils'
 import { app, handleEvent, INITIALIZATION_TRIGGER } from './'
 import { of } from './rxjs'
 
 
 export const initStore = (vaultAddress, network, addressBookAddress) => {
-  const addressBookApp = app.external(addressBookAddress, addressBookAbi)
+  const addressBookApp = app.external(addressBookAddress, AddressBookJSON.abi)
   const vaultContract = app.external(vaultAddress, vaultAbi.abi)
 
   const initialState = {
@@ -14,7 +14,6 @@ export const initStore = (vaultAddress, network, addressBookAddress) => {
     entries: [],
     addressBook: addressBookAddress,
   }
-
   return app.store(
     async (state, event) => {
       // ensure there are initial placeholder values

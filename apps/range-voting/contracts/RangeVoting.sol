@@ -4,6 +4,8 @@ import "@aragon/os/contracts/apps/AragonApp.sol";
 
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 
+import "@tps/apps-address-book/contracts/AddressBook.sol";
+
 import "@aragon/os/contracts/lib/math/SafeMath.sol";
 
 import "@aragon/os/contracts/lib/math/SafeMath64.sol";
@@ -57,6 +59,7 @@ contract RangeVoting is IForwarder, AragonApp {
     using SafeMath64 for uint64;
 
     MiniMeToken public token;
+    AddressBook public addressBook;
     uint256 public globalCandidateSupportPct; //supportRequiredPct;
     uint256 public minParticipationPct; //minAcceptQuorumPct;
     uint64 public voteTime;
@@ -146,6 +149,7 @@ contract RangeVoting is IForwarder, AragonApp {
     *        vote (unless it is impossible for the fate of the vote to change)
     */
     function initialize(
+        AddressBook _addressBook,
         MiniMeToken _token,
         uint256 _minParticipationPct,
         uint256 _candidateSupportPct,
@@ -157,6 +161,7 @@ contract RangeVoting is IForwarder, AragonApp {
         require(_minParticipationPct <= PCT_BASE); // solium-disable-line error-reason
         require(_minParticipationPct >= _candidateSupportPct); // solium-disable-line error-reason
         token = _token;
+        addressBook = _addressBook;
         minParticipationPct = _minParticipationPct;
         globalCandidateSupportPct = _candidateSupportPct;
         voteTime = _voteTime;
@@ -196,7 +201,6 @@ contract RangeVoting is IForwarder, AragonApp {
     * @notice Execute a range vote. After this step, navigate to the Allocations app and select the Distribute Allocation action from an account to complete the execution.
     * @param _voteId Id for vote
     */
-    // function executeVote(uint256 _voteId) isInitialized external {
     function executeVote(uint256 _voteId) external {
         require(canExecute(_voteId), "vote not meeting execution requirements");
         _executeVote(_voteId);
@@ -471,7 +475,7 @@ contract RangeVoting is IForwarder, AragonApp {
     function _goToParamOffset(uint256 _paramNum, bytes _executionScript) internal pure returns(uint256 paramOffset) {
         /*
         param numbers and what they map to:
-        1. Candidate addresses
+        1. candidate addresses
         2. Supports values
         3. Info String indexes
         4. Info String length
@@ -550,12 +554,12 @@ contract RangeVoting is IForwarder, AragonApp {
         // note:function signature length (0x04) added in both contexts: grabbing the offset value and the outer offset calculation
         uint256 firstParamOffset = _goToParamOffset(CANDIDATE_ADDR_PARAM_LOC, _executionScript);
         uint256 fifthParamOffset = _goToParamOffset(DESCRIPTION_PARAM_LOC, _executionScript);
-
         currentOffset = firstParamOffset;
-
         // compute end of script / next location and ensure there's no
         // shenanigans
-        require(startOffset + calldataLength <= _executionScript.length); // solium-disable-line error-reason
+        require(startOffset + calldataLength == _executionScript.length); // solium-disable-line error-reason
+        // The first word in the param slot is the length of the array
+        // obtain the beginning index of the infoString
         uint256 candidateLength = _executionScript.uint256At(currentOffset);
         currentOffset = currentOffset + 0x20;
         // This has the potential to be too gas expensive to ever happen.
@@ -571,11 +575,7 @@ contract RangeVoting is IForwarder, AragonApp {
         currentOffset = fifthParamOffset;
         // The offset represents the data we've already accounted for; the rest is what will later
         // need to be copied over.
-
         calldataLength = calldataLength.sub(currentOffset);
-        /*
-
-        */
     }
 
     /*
@@ -709,12 +709,9 @@ contract RangeVoting is IForwarder, AragonApp {
     * @notice `_executeVote` executes the provided script for this vote and
     *         passes along the candidate data to the next function.
     * @return voteId The ID(or index) of this vote in the votes array.
-    * @dev This function needs to be cleaned up ALOT; also generalized
-    *      for functions that have an unknown number of params
     */
     function _executeVote(uint256 _voteId) internal {
         Vote storage voteInstance = votes[_voteId];
-
         voteInstance.executed = true;
         uint256 candidateLength = voteInstance.candidateKeys.length;
         //bytes memory infoString = getInfoString(_voteId);
@@ -728,8 +725,6 @@ contract RangeVoting is IForwarder, AragonApp {
         // and the two dynamic param locations
         // as well as additional space for the staticParameters
         // Seperate variable isn't used here to save storage space
-
-        //uint256 callDataLength = 32 * (3 * (candidateLength + 4)) + executionScript.uint256At(32) - 60;
         uint256 infoStrLength = voteInstance.infoStringLength;
         uint256 desStrLength = bytes(voteInstance.voteDescription).length;
         uint256 callDataLength = 196 + dynamicOffset + candidateLength * 160;
@@ -743,30 +738,23 @@ contract RangeVoting is IForwarder, AragonApp {
         bytes memory script = new bytes(callDataLength + 28);
         // Copy header information and first dynamic location as it's unchanged
         script.copy(executionScript.getPtr() + 32,0, 64);
-
         //fix the calldataLength
         memcpyshort((script.getPtr() + 56), callDataLengthMem.getPtr() + 60, 4);
-
         // Add second, 3rd and fourth dynamic element location as it may have changed
         addDynamicElements(script, dynamicOffset, candidateLength, infoStrLength, desStrLength);
-
         // Copy over all static parameters
         script.copy(executionScript.getPtr() + 288, 256, dynamicOffset - 256);
-
         // Copy over Address and Support information
         uint256 offset = addAddressesAndVotes(_voteId, script, candidateLength, dynamicOffset);
-
         // Copy over info indicies and string
         offset = _goToParamOffset(INDICIES_PARAM_LOC, executionScript) + 0x20;
         offset = addInfoString(_voteId, script, candidateLength, offset);
-
         //Copy over Description
         offset = _goToParamOffset(DESCRIPTION_PARAM_LOC, executionScript) + 0x20;
         assembly { // solium-disable-line security/no-inline-assembly
                 mstore(add(script, offset), desStrLength)
         }
         script.copy(bytes(voteInstance.voteDescription).getPtr() + 32, offset, desStrLength);
-
         // Copy over External References
         offset = _goToParamOffset(EX_ID1_PARAM_LOC, executionScript) + 0x20;
         addExternalIds(_voteId, script, candidateLength, offset);

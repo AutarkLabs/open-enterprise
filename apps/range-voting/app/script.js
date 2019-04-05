@@ -1,24 +1,35 @@
-import Aragon from '@aragon/client'
-import { combineLatest } from './rxjs'
+import Aragon from '@aragon/api'
+import { combineLatest } from 'rxjs'
+import { first, map, tap, combineAll } from 'rxjs/operators' // Make sure observables have first()
 import voteSettings, { hasLoadedVoteSettings } from './utils/vote-settings'
+import AddressBookJSON from '../../shared/json-abis/address-book.json'
 import { EMPTY_CALLSCRIPT } from './utils/vote-utils'
-import AllocationJSON from '../../shared/json-abis/Allocations.json'
+import AllocationJSON from '../../shared/json-abis/allocations.json'
 
 const app = new Aragon()
-let allocations
 let appState = {
   votes: [],
+  entries: {}
 }
+let addressBook, allocations, nextEntries
 app.events().subscribe(handleEvents)
-app.state().subscribe(state => {
-  appState = state
-})
 
+app.state().subscribe(state => {
+  appState = state ? state : { accounts: [], entries: {} }
+  if (!addressBook) {
+    // this should be refactored to be a "setting"
+    app.call('addressBook').subscribe(response => {
+      addressBook = app.external(response, AddressBookJSON.abi)
+      addressBook.events().subscribe(handleEvents)
+    })
+  }
+})
 async function handleEvents(response) {
   let nextState = {
     ...appState,
     ...(!hasLoadedVoteSettings(appState) ? await loadVoteSettings() : {}),
   }
+  const { entries } = appState
   switch (response.event) {
   case 'CastVote':
     console.info('[RangeVoting > script]: received CastVote')
@@ -50,13 +61,24 @@ async function handleEvents(response) {
         AllocationJSON.abi
       )
     }
+  case 'EntryAdded':
+    nextEntries = await onEntryAdded(entries, response.returnValues)
+    break
+  case 'EntryRemoved':
+    nextEntries = await onEntryRemoved(entries, response.returnValues)
+    break
   default:
     break
   }
   console.log('[RangeVoting > script]: end state')
-  console.log(nextState)
-  appState = nextState
-  app.cache('state', nextState)
+  // If nextAccounts or nextEntries were not generated
+  // then return each original array
+  const filteredState = {
+    ...nextState,
+    entries: { ...entries, ...nextEntries }
+  }
+  appState = filteredState
+  app.cache('state', filteredState)
 }
 
 /***********************
@@ -117,13 +139,13 @@ async function loadVoteDescription(vote) {
 }
 
 async function loadVoteData(voteId) {
-  console.info('[RangeVoting > script]: loadVoteData')
+  console.info('[RangeVoting > script]: loadVoteData', voteId)
   let vote
   return new Promise((resolve, reject) => {
     app
       .call('getVote', voteId)
-      .first()
-      .subscribe(voteData => {
+      .pipe(first())
+      .subscribe(async voteData => {
         let funcSig = voteData.executionScript.slice(58, 66)
         if (funcSig == 'b3670f9e') {
           console.log('Loading Projects Data')
@@ -135,76 +157,73 @@ async function loadVoteData(voteId) {
       })
   })
 }
+
 // These functions arn't DRY make them better
-async function loadVoteDataAllocation(vote, voteId) {
-  return new Promise(resolve =>
+function loadVoteDataAllocation(vote, voteId) {
+  return new Promise(resolve => {
     combineLatest(
       app.call('getVoteMetadata', voteId),
       app.call('getCandidateLength', voteId),
       app.call('canExecute', voteId)
     )
-      .first()
-      .subscribe(([ metadata, totalCandidates, canExecute, payout ]) => {
-        loadVoteDescription(vote).then(async vote => {
-          let options = []
-          for (let i = 0; i < totalCandidates; i++) {
-            let candidateData = await getAllocationCandidate(voteId, i)
-            console.log(candidateData)
-            options.push(candidateData)
-          }
-          let returnObject = {
-            ...marshallVote(vote),
-            metadata,
-            canExecute,
-            options: options,
-          }
-          allocations
-            .getAccount(vote.externalId)
-            .first()
-            .subscribe(payout => {
-              resolve({
-                ...returnObject,
-                balance: parseInt(vote.executionScript.slice(706, 770), 16),
-                metadata: vote.voteDescription,
-                type: 'allocation',
-              })
+      .pipe(first())
+      .subscribe(async ([ metadata, totalCandidates, canExecute, payout ]) => {
+        const voteDescription = await loadVoteDescription(vote)
+        let options = []
+        for (let i = 0; i < totalCandidates; i++) {
+          const candidateData = await getAllocationCandidate(voteId, i)
+          options.push(candidateData)
+        }
+        options = await Promise.all(options)
+
+        const returnObject = {
+          ...marshallVote(voteDescription),
+          metadata,
+          canExecute,
+          options,
+        }
+
+        allocations.getAccount(voteDescription.externalId)
+          .pipe(first())
+          .subscribe(payout => (
+            resolve({
+              ...returnObject,
+              // These numbers indicate the static param location of the setDistribution
+              // functions amount paramater 
+              balance: parseInt(vote.executionScript.slice(706, 770), 16),
+              metadata: vote.voteDescription,
+              type: 'allocation',
             })
-        })
+          ))
       })
-  )
+  })
 }
+
 // These functions arn't DRY make them better
 async function loadVoteDataProjects(vote, voteId) {
-  return new Promise(resolve =>
+  return new Promise(resolve => {
     combineLatest(
       app.call('getVoteMetadata', voteId),
       app.call('getCandidateLength', voteId),
       app.call('canExecute', voteId)
     )
-      .first()
-      .subscribe(([ metadata, totalCandidates, canExecute ]) => {
+      .pipe(first())
+      .subscribe(async ([ metadata, totalCandidates, canExecute ]) => {
         console.log('projects data:', metadata, totalCandidates, canExecute)
-        loadVoteDescription(vote).then(async vote => {
-          let options = []
-          console.log('Vote data:', voteId, vote)
-          for (let i = 0; i < totalCandidates; i++) {
-            let candidateData = await getProjectCandidate(voteId, i)
-            console.log('candidate data', candidateData)
-            options.push(candidateData)
-          }
-          console.log(metadata)
-          let returnObject = {
-            ...marshallVote(vote),
-            metadata: vote.voteDescription,
-            type: 'curation',
-            canExecute,
-            options: options,
-          }
-          resolve(returnObject)
-          // Project specific code
+        const voteDescription = await loadVoteDescription(vote)
+        let options = []
+        for (let i = 0; i < totalCandidates; i++) {
+          let candidateData = await getProjectCandidate(voteId, i)
+          options.push(candidateData)
+        }
+        resolve({
+          ...marshallVote(voteDescription),
+          metadata: 'Range Vote ' + voteId + ' - Issue Curation',
+          canExecute,
+          options,
         })
       })
-  )
+  })
 }
 
 async function updateVotes(votes, voteId, transform) {
@@ -229,7 +248,7 @@ async function getAllocationCandidate(voteId, candidateIndex) {
   return new Promise(resolve => {
     app
       .call('getCandidate', voteId, candidateIndex)
-      .first()
+      .pipe(first())
       .subscribe(candidateData => {
         resolve({
           label: candidateData.candidateAddress,
@@ -243,7 +262,7 @@ async function getProjectCandidate(voteId, candidateIndex) {
   return new Promise(resolve => {
     app
       .call('getCandidate', voteId, candidateIndex)
-      .first()
+      .pipe(first())
       .subscribe(candidateData => {
         resolve({
           label: candidateData.metadata,
@@ -269,17 +288,19 @@ function loadVoteSettings() {
         new Promise((resolve, reject) =>
           app
             .call(name)
-            .first()
-            .map(val => {
-              if (type === 'number') {
-                return parseInt(val, 10)
-              }
-              if (type === 'time') {
+            .pipe(
+              first(),
+              map(val => {
+                if (type === 'number') {
+                  return parseInt(val, 10)
+                }
+                if (type === 'time') {
                 // Adjust for js time (in ms vs s)
-                return parseInt(val, 10) * 1000
-              }
-              return val
-            })
+                  return parseInt(val, 10) * 1000
+                }
+                return val
+              })
+            )
             .subscribe(value => {
               resolve({ [key]: value })
             }, reject)
@@ -296,6 +317,47 @@ function loadVoteSettings() {
     })
 }
 
+/** AddressBook management */
+const onEntryAdded = async (entries, { addr }) => {
+  // is addr already in the state?
+  if (entries && entries[addr]) {
+    // entry already cached, do nothing
+    console.log('[RangeVoting script]', addr, 'already cached')
+  } else {
+    // entry not cached
+    const data = await loadEntryData(addr) // async load data from contract
+    const entry = { addr, data } // transform for the frontend to understand
+    entries[addr] = entry // add to the state object received as param
+    console.log('[RangeVoting script] caching new contract entry', entries)
+    // console.log('[AddressBook script] at position', addedIndex) // in case we need the index
+  }
+  return entries // return the (un)modified entries array
+}
+
+const onEntryRemoved = async (entries = [], { addr }) => {
+  if(entries[addr]) delete entries[addr]
+  return entries // return the (un)modified entries array
+}
+
+/***********************
+ *     AddressBook     *
+ *       Helpers       *
+ ***********************/
+const loadEntryData = async addr => {
+  return new Promise(resolve => {
+    // this is why we cannot import methods without binding proxy caller
+    addressBook.getEntry(addr).subscribe(entry => {
+      // don't resolve when entry not found
+      entry &&
+        resolve({
+          entryAddress: entry[0],
+          name: entry[1],
+          entryType: entry[2],
+        })
+    })
+  })
+}
+
 // Apply transmations to a vote received from web3
 // Note: ignores the 'open' field as we calculate that locally
 function marshallVote({
@@ -310,7 +372,6 @@ function marshallVote({
   executionScript,
   executed,
 }) {
-  let voteData = {}
   totalVoters = parseInt(totalVoters, 10)
   totalParticipation = parseInt(totalParticipation, 10)
   return {

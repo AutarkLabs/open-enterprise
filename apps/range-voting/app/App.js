@@ -2,17 +2,16 @@ import React from 'react'
 import { hot } from 'react-hot-loader'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
+import { map } from 'rxjs/operators'
 
 import {
-  AragonApp,
   AppBar,
   Button,
-  Root,
+  Main,
   SidePanel,
   IconAdd,
   observe,
   theme,
-  ToastHub,
 } from '@aragon/ui'
 import AppLayout from './components/AppLayout'
 import Decisions from './Decisions'
@@ -99,49 +98,56 @@ class App extends React.Component {
     )
 
     return (
-      <Root.Provider>
-        <AragonApp publicUrl="aragon-ui-assets/">
-          <ToastHub>
-            <AppLayout>
-              <AppLayout.Header>
-                <AppBar
-                  title="Range Voting"
-                  // endContent={barButton}
-                />
-              </AppLayout.Header>
-              <AppLayout.ScrollWrapper>
-                <AppLayout.Content>
-                  <Decisions
-                    onActivate={this.handlePanelOpen}
-                    app={this.props.app}
-                    votes={
-                      this.props.votes !== undefined ? this.props.votes : []
-                    }
-                    voteTime={this.props.voteTime}
-                    minParticipationPct={
-                      this.props.minParticipationPct
-                        ? this.props.minParticipationPct.toFixed(2)
-                        : 'N/A'
-                    }
-                    tokenAddress={this.props.tokenAddress}
-                    userAccount={this.props.userAccount}
-                  />
-                </AppLayout.Content>
-              </AppLayout.ScrollWrapper>
-            </AppLayout>
-            <SidePanel
-              title={''}
-              opened={this.state.panelActive}
-              onClose={this.handlePanelClose}
-            >
-              <NewPayoutVotePanelContent />
-            </SidePanel>
-          </ToastHub>
-        </AragonApp>
-      </Root.Provider>
+      <StyledAragonApp>
+        <AppLayout>
+          <AppLayout.Header>
+            <AppBar
+              title="Range Voting"
+              // endContent={barButton}
+            />
+          </AppLayout.Header>
+          <AppLayout.ScrollWrapper>
+            <AppLayout.Content>
+              <Decisions
+                onActivate={this.handlePanelOpen}
+                app={this.props.app}
+                votes={
+                  this.props.votes !== undefined ? this.props.votes : []
+                }
+                entries={
+                  this.props.entries !== undefined ? this.props.entries : []
+                }
+                voteTime={this.props.voteTime}
+                minParticipationPct={
+                  this.props.minParticipationPct
+                    ? (this.props.minParticipationPct / 10 ** 16)
+                    : 'N/A'
+                }
+                tokenAddress={this.props.tokenAddress}
+                userAccount={this.props.userAccount}
+              />
+            </AppLayout.Content>
+          </AppLayout.ScrollWrapper>
+        </AppLayout>
+        <SidePanel
+          title={''}
+          opened={this.state.panelActive}
+          onClose={this.handlePanelClose}
+        >
+          <NewPayoutVotePanelContent />
+        </SidePanel>
+      </StyledAragonApp>
     )
   }
 }
+
+const StyledAragonApp = styled(Main)`
+  display: flex;
+  height: 100vh;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+`
 
 const DropDownContent = styled.div`
   display: none;
@@ -178,6 +184,6 @@ const CloseIcon = styled(IconAdd)`
 `
 
 export default observe(
-  observable => observable.map(state => ({ ...state })),
+  observable => observable.pipe(map(state => ({ ...state }))),
   {}
 )(hot(module)(App))

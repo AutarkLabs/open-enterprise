@@ -19,6 +19,7 @@ import { DropDownButton as ActionsMenu, FilterBar } from '../Shared'
 import { Issue, Empty } from '../Card'
 import { IssueDetail } from './IssueDetail'
 import Unauthorized from './Unauthorized'
+import ActiveFilters from './Filters'
 
 class Issues extends React.PureComponent {
   static propTypes = {
@@ -99,7 +100,7 @@ class Issues extends React.PureComponent {
 
   handleFiltering = filters => {
     // TODO: why is reload necessary?
-    this.setState(prevState => ({ filters, reload: !prevState.reload }))
+    this.setState(prevState => ({ filters: filters, reload: !prevState.reload }))
   }
 
   handleSorting = sortBy => {
@@ -121,7 +122,6 @@ class Issues extends React.PureComponent {
         return true
       return false
     })
-    //console.log('FILTER PROJECT: ', issuesByProject)
 
     const issuesByLabel = issuesByProject.filter(issue => {
       // if there are no labels to filter by, pass all
@@ -141,7 +141,6 @@ class Issues extends React.PureComponent {
         return true
       return false
     })
-    //console.log('FILTER LABEL: ', issuesByLabel)
 
     const issuesByMilestone = issuesByLabel.filter(issue => {
       // if there are no MS filters, all issues pass
@@ -155,7 +154,6 @@ class Issues extends React.PureComponent {
         return true
       return false
     })
-    //console.log('FILTER MS: ', issuesByMilestone)
 
     const issuesByStatus = issuesByMilestone.filter(issue => {
       // if there are no Status filters, all issues pass
@@ -171,7 +169,6 @@ class Issues extends React.PureComponent {
         return true
       return false
     })
-    // console.log('FILTER STATUS: ', issuesByStatus)
 
     // last but not least, if there is any text in textFilter...
     if (textFilter) {
@@ -210,9 +207,40 @@ class Issues extends React.PureComponent {
     this.setState({ showIssueDetail: false, currentIssue: null })
   }
 
-  actionsMenu = () => (
-    <div>
+  disableFilter = (pathToFilter) => {
+    let newFilters = { ...this.state.filters }
+    recursiveDeletePathFromObject(pathToFilter, newFilters)
+    this.setState({ filters: newFilters })
+  }
+
+  disableAllFilters = () => {
+    this.setState({
+      filters: {
+        projects: {},
+        labels: {},
+        milestones: {},
+        deadlines: {},
+        experiences: {},
+        statuses: {},
+      }
+    })
+  }
+
+  actionsMenu = (issues) => (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'flex-end'
+      }}>
       <TextInput placeholder="Search Issues" onChange={this.handleTextFilter} />
+      <ActiveFilters
+        issues={issues}
+        bountyIssues={this.props.bountyIssues}
+        filters={this.state.filters}
+        disableFilter={this.disableFilter}
+        disableAllFilters={this.disableAllFilters}
+      />
       <ActionsMenu enabled={!!this.state.selectedIssues.length}>
         <ContextMenuItem
           onClick={this.handleCurateIssues}
@@ -230,28 +258,35 @@ class Issues extends React.PureComponent {
           <div style={{ marginLeft: '4px' }}>
             <IconShare color={theme.textTertiary} />
           </div>
-          <ActionLabel>Allocate Bounties</ActionLabel>
+          <ActionLabel>Fund Issues</ActionLabel>
         </ContextMenuItem>
       </ActionsMenu>
     </div>
   )
 
-  filterBar = (issues, issuesFiltered) => (
-    <FilterBar
-      handleSelectAll={this.toggleSelectAll(issuesFiltered)}
-      allSelected={this.state.allSelected}
-      issues={issues}
-      issuesFiltered={issuesFiltered}
-      handleFiltering={this.handleFiltering}
-      handleSorting={this.handleSorting}
-      activeIndex={this.props.activeIndex}
-      bountyIssues={this.props.bountyIssues}
-    />
-  )
+  setParentFilters = (filters) => {
+    this.setState(filters)
+  }
+
+  filterBar = (issues, issuesFiltered) => {
+    return (
+      <FilterBar
+        setParentFilters={this.setParentFilters}
+        filters={this.state.filters}
+        handleSelectAll={this.toggleSelectAll(issuesFiltered)}
+        allSelected={this.state.allSelected}
+        issues={issues}
+        issuesFiltered={issuesFiltered}
+        handleFiltering={this.handleFiltering}
+        handleSorting={this.handleSorting}
+        activeIndex={this.props.activeIndex}
+        bountyIssues={this.props.bountyIssues}
+      />
+    )}
 
   queryLoading = () => (
     <StyledIssues>
-      {this.actionsMenu()}
+      {this.actionsMenu([])}
       {this.filterBar([], [])}
       <IssuesScrollView>
         <div>Loading...</div>
@@ -261,7 +296,7 @@ class Issues extends React.PureComponent {
 
   queryError = (error, refetch) => (
     <StyledIssues>
-      {this.actionsMenu()}
+      {this.actionsMenu([])}
       {this.filterBar([], [])}
       <IssuesScrollView>
         <div>
@@ -276,19 +311,12 @@ class Issues extends React.PureComponent {
     </StyledIssues>
   )
 
-  getExpLevels = () => {
-    const expLevels = []
-    const a = this.props.bountySettings.expLevels.split('\t')
-    for (let i = 0; i < a.length; i += 2)
-      expLevels.push({ mul: a[i] / 100, name: a[i + 1] })
-    return expLevels
-  }
-
   shapeIssues = issues => {
-    const { tokens, bountyIssues } = this.props
+    const { tokens, bountyIssues, bountySettings } = this.props
     const bountyIssueObj = {}
     const tokenObj = {}
-    const expLevels = this.getExpLevels()
+    const expLevels = bountySettings.expLvls
+    console.log('expLevels', expLevels)
 
     bountyIssues.forEach(issue => {
       bountyIssueObj[issue.issueNumber] = issue
@@ -299,16 +327,19 @@ class Issues extends React.PureComponent {
         symbol: token.symbol,
         decimals: token.decimals,
       }
-      console.log('tokenObj:', tokenObj)
     })
+    console.log('issues: ', bountyIssueObj)
     return issues.map(({ __typename, repository: { id, name }, ...fields }) => {
-      if (bountyIssueObj[fields.number]) {
+      const bountyId = bountyIssueObj[fields.number]
+      const repoIdFromBounty = bountyId && bountyId.data.repoId
+      if (bountyId && repoIdFromBounty === id) {
         const data = bountyIssueObj[fields.number].data
         const balance = BigNumber(bountyIssueObj[fields.number].data.balance)
           .div(BigNumber(10 ** tokenObj[data.token].decimals))
           .dp(3)
           .toString()
-        return { 
+        console.log('balance', expLevels)
+        return {
           ...fields,
           ...bountyIssueObj[fields.number].data,
           repoId: id,
@@ -336,7 +367,7 @@ class Issues extends React.PureComponent {
       }
     else if (what === 'Creation Date')
       return (i1, i2) => {
-        return direction == 1 ? 
+        return direction == 1 ?
           compareAsc(new Date(i1.createdAt), new Date(i2.createdAt))
           :
           compareDesc(new Date(i1.createdAt), new Date(i2.createdAt))
@@ -350,49 +381,51 @@ class Issues extends React.PureComponent {
     const {
       projects,
       onNewProject,
-      activeIndex,
-      tokens,
-      bountyIssues,
-      bountySettings,
     } = this.props
     const { currentIssue, showIssueDetail } = this.state
 
     // better return early if we have no projects added?
     if (projects.length === 0) return <Empty action={onNewProject} />
 
-    // better return early if we have no projects added?
-    if (projects.length === 0) return <Empty action={onNewProject} />
-    if (showIssueDetail)
+    if (showIssueDetail) {
+
+      currentIssue.repository = {
+        name: currentIssue.repo,
+        id: currentIssue.repoId,
+        __typename: 'Repository',
+      }
+
+      const currentIssueShaped = this.shapeIssues([currentIssue])[0]
+
       return (
         <IssueDetail
-          issue={currentIssue}
+          issue={currentIssueShaped}
+
           onClose={this.handleIssueDetailClose}
           onReviewApplication={() => {
-            this.handleReviewApplication(currentIssue)
+            this.handleReviewApplication(currentIssueShaped)
           }}
           onRequestAssignment={() => {
-            this.handleRequestAssignment(currentIssue)
+            this.handleRequestAssignment(currentIssueShaped)
           }}
           onSubmitWork={() => {
-            this.handleSubmitWork(currentIssue)
+            this.handleSubmitWork(currentIssueShaped)
           }}
           onAllocateSingleBounty={() => {
-            this.handleAllocateSingleBounty(currentIssue)
+            this.handleAllocateSingleBounty(currentIssueShaped)
           }}
           onReviewWork={() => {
-            this.handleReviewWork(currentIssue)
+            this.handleReviewWork(currentIssueShaped)
           }}
         />
       )
+    }
 
-    const { allSelected } = this.state
     const reposIds = projects.map(project => project.data._repo)
 
     // Build an array of plain issues by flattening the data obtained from github API
     const flattenIssues = nodes =>
       nodes && [].concat(...nodes.map(node => node.issues.nodes))
-
-    //console.log('current issues props:', this.props, 'and state:', this.state)
 
     const currentSorter = this.generateSorter()
 
@@ -409,7 +442,7 @@ class Issues extends React.PureComponent {
             const issuesFiltered = this.applyFilters(issues)
             return (
               <StyledIssues>
-                {this.actionsMenu()}
+                {this.actionsMenu(issues)}
                 {this.filterBar(issues, issuesFiltered)}
 
                 <IssuesScrollView>
@@ -487,7 +520,6 @@ const ScrollWrapper = styled.div`
 // TODO: Calculate height with flex (maybe to add pagination at bottom?)
 const IssuesScrollView = styled.div`
   height: 75vh;
-  min-width: 600px;
   position: relative;
   overflow-y: auto;
 `
@@ -495,5 +527,15 @@ const IssuesScrollView = styled.div`
 const ActionLabel = styled.span`
   margin-left: 15px;
 `
+
+const recursiveDeletePathFromObject = (path, object) => {
+  if (path.length === 1) {
+    delete object[path[0]]
+  } else {
+    const key = path.shift()
+    const newObject = object[key]
+    recursiveDeletePathFromObject(path, newObject)
+  }
+}
 
 export default Issues

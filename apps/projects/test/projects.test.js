@@ -144,7 +144,7 @@ contract('Projects App', accounts => {
 
     //bounties = StandardBounties.at(registry.address)
 
-    await app.initialize(bounties.address, vault.address)
+    await app.initialize(bounties.address, vault.address, '')
   })
 
   context('creating and retrieving repos and bounties', () => {
@@ -302,6 +302,7 @@ contract('Projects App', accounts => {
             [ false, false, false ],
             [ 0, 0, 0 ],
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+            'something',
             { from: bountyAdder, value: 60 }
           )
         )
@@ -685,7 +686,13 @@ contract('Projects App', accounts => {
   context('settings management', () => {
     it('can change Bounty Settings', async () => {
       await app.changeBountySettings(
-        '100\tBeginner\t300\tIntermediate\t500\tAdvanced',  // Experience Levels
+        [ 100,300,500, 1000 ],            // xp multipliers
+        [                                 // Experience Levels
+          web3.fromAscii('Beginner'),
+          web3.fromAscii('Intermediate'),
+          web3.fromAscii('Advanced'),
+          web3.fromAscii('Expert'),
+        ],
         1,  // baseRate
         336,  // bountyDeadline
         'autark',   // bountyCurrency
@@ -694,29 +701,37 @@ contract('Projects App', accounts => {
       )
 
       response = await app.getSettings()
-      assert.strictEqual(
-        response[0],
-        '100\tBeginner\t300\tIntermediate\t500\tAdvanced',
-        'experience levels stored incorrectly'
+
+      expect(response[0].map(x => x.toNumber())).to.have.ordered.members(
+        [ 100,300,500,1000 ]
+      )
+      const xpLvlDescs = response[1].map(x => web3.toUtf8(x))
+      expect(xpLvlDescs).to.have.ordered.members(
+        [
+          'Beginner',
+          'Intermediate',
+          'Advanced',
+          'Expert'
+        ]
       )
 
       assert.strictEqual(
-        response[1].toNumber(),
+        response[2].toNumber(),
         1,
         'baseRate Incorrect'
       )
       assert.strictEqual(
-        response[2].toNumber(),
+        response[3].toNumber(),
         336,
         'bounty deadline inccorrect'
       )
       assert.strictEqual(
-        response[3],
+        response[4],
         'autark',
         'currency name incorrect'
       )
       assert.strictEqual(
-        response[4],
+        response[5],
         bounties.address,
         'StandardBounties Contract address incorrect'
       )
@@ -762,7 +777,7 @@ contract('Projects App', accounts => {
 
     it('cannot add bounties to unregistered repos', async () => {
       assertRevert(async () => {
-        await app.addBounties(Array(3).fill('0xdeadbeef'), [ 1, 2, 3 ], [ 10, 20, 30 ], {
+        await app.addBounties(Array(3).fill('0xdeadbeef'), [ 1, 2, 3 ], [ 10, 20, 30 ], 'something cool', {
           from: bountyAdder,
         })
       })
@@ -784,6 +799,7 @@ contract('Projects App', accounts => {
         [ false, false, false ],
         [ 0, 0, 0 ],
         'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+        'something else',
         { from: bountyAdder, value: 60 }
       )
       assertRevert(async () => {
@@ -811,6 +827,7 @@ contract('Projects App', accounts => {
           [ false, false, false ],
           [ 0, 0, 0 ],
           'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+          'something awesome',
           { from: bountyAdder, value: 61 } // 61 Wei sent instead
         )
       })

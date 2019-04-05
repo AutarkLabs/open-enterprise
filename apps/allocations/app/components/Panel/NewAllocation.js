@@ -13,7 +13,6 @@ import {
 } from '../Form'
 
 // TODO: Extract to shared
-const AVAILABLE_TOKENS = [ 'ETH', 'ANT', 'GIV', 'FTL', '🦄' ]
 const ALLOCATION_TYPES = [ 'Informational', 'Token Transfer' ]
 // const PAYOUT_TYPES = ['One-Time', 'Monthly']
 const INITIAL_STATE = {
@@ -135,6 +134,7 @@ class NewAllocation extends React.Component {
 
     // If everything is ok (no validation error) add candidates to allocation.addresses
     allocation.addresses = candidates.map(c => c.addr)
+    allocation.token = this.state.payoutToken
     props.onSubmitAllocation(allocation)
     this.setState(INITIAL_STATE)
   }

@@ -2,7 +2,7 @@
   "private": true,
   "name": "planning-suite-monorepo",
   "devDependencies": {
-    "@aragon/cli": "5.4.0",
+    "@aragon/cli": "5.6.1",
     "coveralls": "3.0.2",
     "cypress": "^3.1.5",
     "lerna": "^3.10.8",
@@ -31,6 +31,10 @@
     "devchain:reset": "aragon devchain --reset",
     "publish:apps": "lerna run publish",
     "publish:http": "lerna run publish:http",
+    "reset-allocations-script": "lerna run build:script --scope=@tps/apps-allocations",
+    "reset-projects-script": "lerna run build:script --scope=@tps/apps-projects",
+    "reset-range-voting-script": "lerna run build:script --scope=@tps/apps-range-voting",
+    "reset-rewards-script": "lerna run build:script --scope=@tps/apps-rewards",
     "restart": "RESTART_KIT=true apps/shared/test-helpers/ganache-cli.sh",
     "start": "START_KIT=true apps/shared/test-helpers/ganache-cli.sh",
     "start:dev": "DEV=true apps/shared/test-helpers/ganache-cli.sh",
@@ -52,5 +56,10 @@
     "lint:allocations": "cd apps/allocations && npm run lint",
     "lint:projects": "cd apps/projects && npm run lint",
     "lint:range": "cd apps/range-voting && npm run lint"
+  },
+  "dependencies": {
+    "ipfs-http-client": "29.1.0",
+    "rxjs": "^6.4.0",
+    "rxjs-compat": "^6.4.0"
   }
 }

@@ -1,14 +1,14 @@
 import '@babel/polyfill'
 
+import { first } from 'rxjs/operators'
 import { retryEvery } from '../../../shared/ui/utils'
 import { app, initStore } from './store'
-import { first } from 'rxjs/operators'
 
 retryEvery(async retry => {
   // get deployed address book address from contract
   const addressBookAddress = await app
     .call('addressBook')
-    .first()
+    .pipe(first())
     .toPromise()
 
   const network = await app
@@ -22,8 +22,5 @@ retryEvery(async retry => {
     .first()
     .toPromise()
 
-  initStore(vaultAddress, network, addressBookAddress).catch(err => {
-    console.error('[Allocations] worker failed', err)
-    retry()
-  })
+  initStore(vaultAddress, network, addressBookAddress)
 })

@@ -1,7 +1,9 @@
-import { Main, observe, SidePanel, Root, ToastHub } from '@aragon/ui'
+import { Main, observe, SidePanel} from '@aragon/ui'
+import { observe, SidePanel } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import { map } from 'rxjs/operators'
 
 import { Accounts, NewAccountButton, Payouts } from '.'
 import { Title } from '../Shared'
@@ -10,34 +12,6 @@ import { ETH_DECIMALS } from '../../utils/constants'
 import { networkContextType } from '../../../../../shared/ui'
 import { BigNumber } from 'bignumber.js'
 import { allocationsMockData } from '../../utils/mockData'
-
-const ASSETS_URL = 'aragon-ui-assets/'
-
-const payouts = [{
-  rewardToken: 0x0,
-  amount: BigNumber(17e18),
-  StartTime: new Date('2018-12-17'),
-  recurring: false,
-  period: 86400,
-  description: 'Q1 Reward for Space Decentral Contributors',
-  index: 0,
-  distSet: true,
-},
-{
-  rewardToken: 0x0,
-  amount: BigNumber(17e18),
-  StartTime: new Date('2018-12-17'),
-  recurring: false,
-  period: 86400,
-  description: 'Q1 Reward for Space Decentral Contributors',
-  index: 0,
-  distSet: false,
-},
-]
-
-
-
-const network = { type: 'rinkeby' }
 
 class App extends React.Component {
   static propTypes = {
@@ -158,9 +132,7 @@ class App extends React.Component {
     const PanelContent = panel.content
     return (
       // TODO: Profile App with React.StrictMode, perf and why-did-you-update, apply memoization
-      <Root.Provider>
         <Main>
-          <ToastHub>
             <Title text="Allocations" />
             <NewAccountButton onClick={this.newAccount} />
             <Accounts
@@ -189,24 +161,12 @@ class App extends React.Component {
             >
               {panel.content && <PanelContent {...panel.data} />}
             </SidePanel>
-          </ToastHub>
         </Main>
-      </Root.Provider>
     )
   }
 }
 
-//const StyledAragonApp = styled(Main).attrs({
-//  publicUrl: ASSETS_URL,
-//})`
-//  display: flex;
-//  height: 100vh;
-//  flex-direction: column;
-//  align-items: stretch;
-//  justify-content: stretch;
-//`
-
 export default observe(
-  observable => observable.map(state => ({ ...state })),
+  observable => observable.pipe(map(state => ({ ...state }))),
   {}
 )(App)

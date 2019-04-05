@@ -12,6 +12,8 @@ import ProgressBar from './ProgressBar'
 import VoteStatus from './VoteStatus'
 import { safeDiv } from '../utils/math-utils'
 import BigNumber from 'bignumber.js'
+import { VOTE_STATUS_SUCCESSFUL } from '../utils/vote-types'
+import { getVoteStatus } from '../utils/vote-utils'
 
 const generateBadge = (foreground, background, text) => (
   <Badge foreground={foreground} background={background}>
@@ -31,10 +33,14 @@ class VoteRow extends React.Component {
   handleVoteClick = () => {
     this.props.onSelectVote(this.props.vote.voteId)
   }
+
+  handleExecuteVote = () => {
+    this.props.app.executeVote(this.props.vote.voteId)
+  }
   render() {
     const { showMore } = this.state
     const { vote } = this.props
-    const { endDate, open } = vote
+    const { endDate, open, totalSupport } = vote
     const {
       metadata: question,
       description,
@@ -42,12 +48,8 @@ class VoteRow extends React.Component {
       options,
       participationPct,
       type,
+      executed,
     } = vote.data
-
-    let totalSupport = 0
-    options.forEach(option => {
-      totalSupport = totalSupport + parseFloat(option.value, 10)
-    })
 
     // TODO: Hardcode colors into constants or extend aragon ui theme if needed
     let typeBadge
@@ -62,7 +64,24 @@ class VoteRow extends React.Component {
     return (
       <TableRow>
         <StatusCell onClick={this.handleVoteClick}>
-          {open ? <Countdown end={endDate} /> : <VoteStatus vote={vote} />}
+          <div>
+            <div>
+              {open ? <Countdown end={endDate} /> : <VoteStatus vote={vote} />}
+            </div>
+            {!open &&
+              getVoteStatus(vote) === VOTE_STATUS_SUCCESSFUL && (
+              <div>
+                <Button
+                  style={{ marginTop: '20px' }}
+                  mode="outline"
+                  wide
+                  onClick={this.handleExecuteVote}
+                >
+                    Execute Vote
+                </Button>
+              </div>
+            )}
+          </div>
         </StatusCell>
         <QuestionCell onClick={this.handleVoteClick}>
           <div>
@@ -101,13 +120,21 @@ class VoteRow extends React.Component {
                 </Bar>
               ))}
             {options.length > 2 && (
-              <ShowMoreText
+              <Badge
+                shape="compact"
+                background={theme.badgeInfoBackground}
+                foreground={theme.badgeInfoForeground}
+                style={{
+                  cursor: 'pointer',
+                  padding: '2px 8px',
+                  pointerEvents: 'auto',
+                }}
                 onClick={() => this.setState({ showMore: !showMore })}
               >
                 {showMore
-                  ? 'Show less options...'
-                  : options.length - 2 + ' more options...'}
-              </ShowMoreText>
+                  ? 'Show less...'
+                  : ' + ' + (options.length - 2) + ' more'}
+              </Badge>
             )}
           </BarsGroup>
         </BarsCell>
@@ -162,15 +189,6 @@ const Bar = styled.div`
   &:not(:first-child) {
     margin-top: 0.5rem;
   }
-`
-
-const ShowMoreText = styled.p`
-  font-size: 12px;
-  color: ${theme.textTertiary};
-  font-style: italic;
-  margin-top: 0.5rem;
-  cursor: pointer;
-  pointer-events: auto;
 `
 
 export default VoteRow

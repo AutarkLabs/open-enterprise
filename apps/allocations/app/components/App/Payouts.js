@@ -2,14 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableCell,
   Text,
-  Button,
-  IdentityBadge,
-  Viewport,
   theme,
   IconCheck,
   IconCross,
@@ -26,7 +19,6 @@ import {
   NarrowListPayout,
   AmountBadge,
 } from './PayoutsTables'
-import { Empty } from '../Card'
 import { provideNetwork } from '../../../../../shared/ui'
 import { BigNumber } from 'bignumber.js'
 
@@ -71,7 +63,7 @@ const PayoutStatus = styled(Text.Block).attrs({
 })`
   margin-top: 5px;
 `
-const PayoutsNarrow = ({ executePayout, claimed, data, openDetails, network }) => (
+const PayoutsNarrow = ({ executePayout, data }) => (
   <NarrowList>
     {data.map((payout, i) => (
       <NarrowListPayout key={i}>

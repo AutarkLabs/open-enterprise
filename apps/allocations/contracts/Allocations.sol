@@ -182,7 +182,7 @@ contract Allocations is AragonApp, Fundable {
     * @dev This is the function that sets up who the candidates will be, and
     *      where the funds will go for the payout. This is where the payout
     *      object needs to be created in the payouts array.
-    * @notice Create a new account used for creating allocations
+    * @notice Create allocation account `_metadata`
     * @param _metadata Any relevent label for the payout
     *
     */
@@ -208,7 +208,7 @@ contract Allocations is AragonApp, Fundable {
 
     /**
     * @dev This function distributes the payouts to the candidates in accordance with the distribution values
-    * @notice Send payout amounts to the candidates in accordance with the distribution proportions
+    * @notice Distribute amt from ‘account_name' for ‘allocation_name’
     * @param _payoutId Any relevent label for the payout
     */
     function runPayout(uint _accountId, uint256 _payoutId) external auth(EXECUTE_PAYOUT_ROLE) returns(bool success) {
@@ -222,7 +222,7 @@ contract Allocations is AragonApp, Fundable {
         // Payouts are now instantiated on setDistribution
         require(payout.distSet);
         if (payout.recurring) {
-            //TODO create payout execution counter to ensure payout time tracks payouts
+            // TODO create payout execution counter to ensure payout time tracks payouts
             uint256 payoutTime = payout.startTime.add(payout.period);
             require(payoutTime < block.timestamp,"payout period not yet finished"); // solium-disable-line security/no-block-members
             payout.startTime = payoutTime;
@@ -264,7 +264,7 @@ contract Allocations is AragonApp, Fundable {
     *      to be called by a RangeVote (options get weird if it's not)
     *      but for our use case the “SET_DISTRIBUTION_ROLE” will be given to
     *      the RangeVote.
-    * @notice Sets the distribution proportion for this allocation
+    * @notice Create an `_amount` allocation range vote for `_description`
     * @param _candidateAddresses Array of candidates to be allocated a portion of the payouut
     * @param _supports The Array of all support values for the various candidates. These values are set in range voting
     * @param _accountId The Account used for the payout
@@ -297,6 +297,7 @@ contract Allocations is AragonApp, Fundable {
         if (payout.token == address(0)) {
             require(account.balance >= _amount, "payout account underfunded");
         } else {
+            // Look into this
             require(vault.balance(_token) >= _amount, "vault underfunded");
         }
 

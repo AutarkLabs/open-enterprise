@@ -1,4 +1,4 @@
-import 'rxjs/add/operator/first'
+import { first } from 'rxjs/operators'
 
-export { combineLatest } from 'rxjs/observable/combineLatest'
-export { of } from 'rxjs/observable/of'
+export { combineLatest } from 'rxjs'
+export { of } from 'rxjs'

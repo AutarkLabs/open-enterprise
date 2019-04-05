@@ -13,7 +13,9 @@ import {
   Text,
   theme,
 } from '@aragon/ui'
+import { format } from 'date-fns'
 import { combineLatest } from '../../rxjs'
+import { first } from 'rxjs/operators' // Make sure observables have .first
 import { provideNetwork } from '../../../../../shared/ui'
 import { VOTE_NAY, VOTE_YEA } from '../../utils/vote-types'
 import { safeDiv } from '../../utils/math-utils'
@@ -21,6 +23,10 @@ import VoteSummary from '../VoteSummary'
 import VoteStatus from '../VoteStatus'
 import ProgressBarThick from '../ProgressBarThick'
 import Slider from '../Slider'
+import { getVoteStatus } from '../../utils/vote-utils'
+import {
+  VOTE_STATUS_SUCCESSFUL
+} from '../../utils/vote-types'
 
 class VotePanelContent extends React.Component {
   static propTypes = {
@@ -86,12 +92,13 @@ class VotePanelContent extends React.Component {
   }
   executeVote = () => {
     this.props.app.executeVote(this.props.vote.voteId)
+    this.setState({ panel: { visible: false } })
   }
   loadUserBalance = () => {
     const { tokenContract, user } = this.props
     if (tokenContract && user) {
       combineLatest(tokenContract.balanceOf(user), tokenContract.decimals())
-        .first()
+        .pipe(first())
         .subscribe(([ balance, decimals ]) => {
           this.setState({
             userBalance: balance,
@@ -106,7 +113,7 @@ class VotePanelContent extends React.Component {
       // Get if user can vote
       app
         .call('canVote', vote.voteId, user)
-        .first()
+        .pipe(first())
         .subscribe(canVote => {
           this.setState({
             userCanVote: canVote,
@@ -205,7 +212,7 @@ class VotePanelContent extends React.Component {
     // TODO: Show decimals for vote participation only when needed
     const displayParticipationPct = participationPct.toFixed(2)
     const displayMinParticipationPct = (minParticipationPct / 10 ** 16).toFixed(
-      2
+      0
     )
     // TODO: This block is wrong and has no sense
     if (!voteOptions.length) {
@@ -221,7 +228,7 @@ class VotePanelContent extends React.Component {
 
     return (
       <div>
-        <SidePanelSplit>
+        <SidePanelSplit style={{ borderBottom: 'none' }}>
           <div>
             <h2>
               <Label>Created by</Label>
@@ -268,13 +275,15 @@ class VotePanelContent extends React.Component {
               <h2>
                 <Label>Amount</Label>
               </h2>
+              {//Change me
+              }
               <p>{' ' + displayBalance + ' ETH'}</p>
             </div>
             <div>
               <h2>
-                <Label>Dates</Label>
+                <Label>Date</Label>
               </h2>
-              <p>When vote is approved</p>
+              { open ? <p>When vote is approved</p>:<p> {format(endDate, 'dd-MMM-yyyy')} </p >}
             </div>
           </SidePanelSplit>
         )}
@@ -285,8 +294,8 @@ class VotePanelContent extends React.Component {
             </h2>
             <p>
               {displayParticipationPct}%{' '}
-              <Text size="small" color={theme.negative}>
-                ({displayMinParticipationPct}% required)
+              <Text size="small" color={theme.textSecondary}>
+                ({displayMinParticipationPct}% needed)
               </Text>
             </p>
           </div>
@@ -304,7 +313,7 @@ class VotePanelContent extends React.Component {
           <div>
             <AdjustContainer>
               <FirstLabel>Options</FirstLabel>
-              <SecondLabel>Votes</SecondLabel>
+              <SecondLabel>Percentage</SecondLabel>
               {this.state.voteOptions.map((option, idx) => (
                 <div key={idx}>
                   <SliderAndValueContainer>
@@ -331,7 +340,7 @@ class VotePanelContent extends React.Component {
               ))}
               <Text
                 size="small"
-                color={theme.negative}
+                color={theme.textSecondary}
                 style={{
                   float: 'right',
                 }}
@@ -351,7 +360,7 @@ class VotePanelContent extends React.Component {
             <SidePanelSeparator />
           </div>
         )}
-        {!open && (
+        {getVoteStatus(vote)===VOTE_STATUS_SUCCESSFUL && (
           <div>
             <SubmitButton mode="strong" wide onClick={this.executeVote}>
               Execute Vote
@@ -404,13 +413,13 @@ class VotePanelContent extends React.Component {
                         }
                         style={{
                           cursor: 'pointer',
-                          marginLeft: '12px',
-                          padding: '3px 12px',
+                          marginLeft: '8px',
+                          padding: '3px 8px',
                           display: 'flex',
                           justifyContent: 'space-between',
                         }}
                       >
-                        YOUR VOTE:
+                        YOU:
                         <span style={{ paddingLeft: '5px' }}>
                           {voteWeightsToggled
                             ? `${voteWeights[index]}%`
@@ -484,7 +493,7 @@ const ShowText = styled.p`
   color: ${theme.accent};
   font-size: 15px;
   text-decoration: underline;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   cursor: pointer;
 `
 
