@@ -174,7 +174,7 @@ contract Allocations is AragonApp, Fundable {
 
     /**
     * @dev This function distributes the payouts to the candidates in accordance with the distribution values
-    * @notice Send payout amounts to the candidates in accordance with the distribution proportions
+    * @notice Distribute amt from ‘account_name' for ‘allocation_name’
     * @param _payoutId Any relevent label for the payout
     */
     function runPayout(uint256 _payoutId) external payable auth(EXECUTE_PAYOUT_ROLE) returns(bool success) {

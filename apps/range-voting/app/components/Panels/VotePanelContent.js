@@ -280,7 +280,7 @@ class VotePanelContent extends React.Component {
               <h2>
                 <Label>Date</Label>
               </h2>
-              { open ? <p> format(endDate, 'dd-MMM-yyyy') </p >:<p>When vote is approved</p>}
+              { open ? <p>When vote is approved</p>:<p> {format(endDate, 'dd-MMM-yyyy')} </p >}
             </div>
           </SidePanelSplit>
         )}
