@@ -95,6 +95,7 @@ class NewAllocation extends React.Component {
       allocationError: false,
       payoutTokenIndex: index,
       payoutToken: items[index],
+      tokenAddress: this.props.balances[index].address
     })
   }
 
@@ -118,6 +119,7 @@ class NewAllocation extends React.Component {
       period: recurring ? 86400 * 31 : 0,
       balance: this.state.amount * 10e17,
       description: this.state.allocationDescription,
+      tokenAddress: this.state.tokenAddress,
     }
 
     if (state.addressError || state.allocationError) {
@@ -134,7 +136,6 @@ class NewAllocation extends React.Component {
 
     // If everything is ok (no validation error) add candidates to allocation.addresses
     allocation.addresses = candidates.map(c => c.addr)
-    allocation.token = this.state.payoutToken
     props.onSubmitAllocation(allocation)
     this.setState(INITIAL_STATE)
   }

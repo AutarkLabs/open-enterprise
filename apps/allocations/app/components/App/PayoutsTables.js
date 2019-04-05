@@ -24,8 +24,6 @@ const PayoutsTable = props => {
 
 PayoutsTable.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object).isRequired,
-  belowMedium: PropTypes.func.isRequired,
-  aboveMedium: PropTypes.func.isRequired,
 }
 
 const PayoutDescription = styled(Text.Block)`
@@ -41,6 +39,7 @@ const PayoutDescription = styled(Text.Block)`
 const NarrowList = styled.div`
   display: flex;
   flex-direction: column;
+  background: ${theme.contentBackground};
   border: 1px solid ${theme.contentBorder};
   border-radius: 3px;
   > :not(:last-child) {

@@ -23,10 +23,11 @@ import { provideNetwork } from '../../../../../shared/ui'
 import { BigNumber } from 'bignumber.js'
 
 
-const translateToken = (token) => {
-  if (token == 0x0) {
-    return 'ETH'
-  }
+const translateToken = (payoutToken,tokens) => {
+  let symbol = ''
+  return tokens.reduce((symbol, t) => {
+    if (t.address === payoutToken) return (t.symbol)
+  })
 }
 
 const PayoutStatusWrapper = ({ color, icon, title, posTop = 0 }) => {
@@ -63,7 +64,7 @@ const PayoutStatus = styled(Text.Block).attrs({
 })`
   margin-top: 5px;
 `
-const PayoutsNarrow = ({ executePayout, data }) => (
+const PayoutsNarrow = ({ executePayout, data, tokens }) => (
   <NarrowList>
     {data.map((payout, i) => (
       <NarrowListPayout key={i}>
@@ -78,7 +79,7 @@ const PayoutsNarrow = ({ executePayout, data }) => (
         <div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center' }}>
           <div style={{ marginRight: '10px' }}>
             <AmountBadge>
-              {displayCurrency(BigNumber(payout.amount))}{' '}{translateToken(payout.rewardToken)}
+              {displayCurrency(BigNumber(payout.amount))}{' '}{translateToken(payout.rewardToken,tokens)}
             </AmountBadge>
           </div>
           <div>
@@ -98,9 +99,8 @@ const PayoutsNarrow = ({ executePayout, data }) => (
   </NarrowList>
 )
 
-const Payouts = ({ payouts, executePayout, network }) => {
+const Payouts = ({ payouts, executePayout, network, tokens }) => {
   const payoutsEmpty = payouts.length === 0
-
   if (payoutsEmpty) {
     return null
   }
@@ -111,6 +111,7 @@ const Payouts = ({ payouts, executePayout, network }) => {
 
         <PayoutsTable
           data={payouts}
+          tokens={tokens}
           network={network}
           executePayout={executePayout}
           list={PayoutsNarrow}

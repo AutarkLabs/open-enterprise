@@ -1,5 +1,4 @@
-import { Main, observe, SidePanel} from '@aragon/ui'
-import { observe, SidePanel } from '@aragon/ui'
+import { Main, observe, SidePanel } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
@@ -68,7 +67,7 @@ class App extends React.Component {
       allocation.recurring,
       allocation.period,
       allocation.balance,
-      allocation.token
+      allocation.tokenAddress
     )
     console.info('App.js: Allocation submitted:')
     console.table(allocation)
@@ -132,36 +131,36 @@ class App extends React.Component {
     const PanelContent = panel.content
     return (
       // TODO: Profile App with React.StrictMode, perf and why-did-you-update, apply memoization
-        <Main>
-            <Title text="Allocations" />
-            <NewAccountButton onClick={this.newAccount} />
-            <Accounts
-              accounts={
-                this.props.accounts !== undefined ? this.props.accounts : []
-              }
-              onNewAccount={this.newAccount}
-              onNewAllocation={this.newAllocation}
-              onManageParameters={this.manageParameters}
-              app={this.props.app}
-            />
+      <Main>
+        <Title text="Allocations" />
+        <NewAccountButton onClick={this.newAccount} />
+        <Accounts
+          accounts={
+            this.props.accounts !== undefined ? this.props.accounts : []
+          }
+          onNewAccount={this.newAccount}
+          onNewAllocation={this.newAllocation}
+          onManageParameters={this.manageParameters}
+          app={this.props.app}
+        />
 
-            <Payouts
-              payouts={
-                this.props.payouts !== undefined ? this.props.payouts : []
-              }
-              newReward={this.createAccount}
-              executePayout={this.onExecutePayout}
-              network={network}
-            />
+        <Payouts
+          payouts={
+            this.props.payouts !== undefined ? this.props.payouts : []
+          }
+          executePayout={this.onExecutePayout}
+          network={this.props.network}
+          tokens={this.props.balances}
+        />
 
-            <SidePanel
-              title={(panel.data && panel.data.heading) || ''}
-              opened={panel.visible}
-              onClose={this.closePanel}
-            >
-              {panel.content && <PanelContent {...panel.data} />}
-            </SidePanel>
-        </Main>
+        <SidePanel
+          title={(panel.data && panel.data.heading) || ''}
+          opened={panel.visible}
+          onClose={this.closePanel}
+        >
+          {panel.content && <PanelContent {...panel.data} />}
+        </SidePanel>
+      </Main>
     )
   }
 }

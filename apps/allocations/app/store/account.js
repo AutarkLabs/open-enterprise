@@ -59,8 +59,10 @@ export const onPayoutExecuted = async (payouts = [], accounts = [], { accountId,
 const getAccountById = accountId => {
   return app
     .call('getAccount', accountId)
-    .first()
-    .map(data => ({ accountId, data, executed: true }))
+    .pipe(
+      first(),
+      map(data => ({ accountId, data, executed: true }))
+    )
     .toPromise()
 }
 
@@ -72,7 +74,7 @@ const loadPayoutData = async (accountId, payoutId) => {
       app.call('getAccount', accountId),
       app.call('getPayoutDescription', accountId, payoutId),
     )
-      .first()
+      .pipe(first())
       .subscribe(data => {
         console.log('Payout:', data)
         // don't resolve when entry not found

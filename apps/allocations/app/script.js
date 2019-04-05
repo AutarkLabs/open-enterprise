@@ -19,7 +19,7 @@ retryEvery(async retry => {
 
   const vaultAddress = await app
     .call('vault')
-    .first()
+    .pipe(first())
     .toPromise()
 
   initStore(vaultAddress, network, addressBookAddress)
