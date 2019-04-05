@@ -15,7 +15,7 @@ const BountyContextMenu = ({
 }) => <div>
   {workStatus === undefined &&
     <ContextMenuItem onClick={onAllocateSingleBounty}>
-      <ActionLabel>Allocate Bounty</ActionLabel>
+      <ActionLabel>Fund Issue</ActionLabel>
     </ContextMenuItem>
   }
   {workStatus === 'in-progress' &&
@@ -58,4 +58,3 @@ BountyContextMenu.propTypes = {
 }
 
 export default BountyContextMenu
-
