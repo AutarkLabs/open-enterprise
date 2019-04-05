@@ -476,7 +476,7 @@ contract Projects is IsContract, AragonApp {
         address[] _tokenContracts,
         string _ipfsAddresses,
         string _description
-    ) public auth(ADD_BOUNTY_ROLE)
+    ) public payable auth(ADD_BOUNTY_ROLE)
     {
         // ensure the transvalue passed equals transaction value
         //checkTransValueEqualsMessageValue(msg.value, _bountySizes,_tokenBounties);
