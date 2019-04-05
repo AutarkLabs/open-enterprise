@@ -240,7 +240,8 @@ class NewBountyAllocation extends React.Component {
         <Form
           onSubmit={this.submitBounties}
           description={this.props.description}
-          submitText="Submit Bounty Allocation"
+          submitText={this.props.issues.length > 1 ? 'Fund Issues' : 'Fund Issue'}
+          submitDisabled={this.state.totalSize > this.state.tokenBalance}
         >
           <FormField
             label="Issues"

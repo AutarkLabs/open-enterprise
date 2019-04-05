@@ -262,7 +262,7 @@ class Issues extends React.PureComponent {
           <div style={{ marginLeft: '4px' }}>
             <IconShare color={theme.textTertiary} />
           </div>
-          <ActionLabel>Allocate Bounties</ActionLabel>
+          <ActionLabel>Fund Issues</ActionLabel>
         </ContextMenuItem>
       </ActionsMenu>
     </div>
@@ -331,7 +331,6 @@ class Issues extends React.PureComponent {
         symbol: token.symbol,
         decimals: token.decimals,
       }
-      console.log('tokenObj:', tokenObj)
     })
     console.log('issues: ', bountyIssueObj)
     return issues.map(({ __typename, repository: { id, name }, ...fields }) => {
