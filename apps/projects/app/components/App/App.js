@@ -302,6 +302,7 @@ class App extends React.PureComponent {
         bountySettings: this.props.bountySettings,
         closePanel: this.closePanel,
         tokens: this.props.tokens !== undefined ? this.props.tokens : [],
+        githubCurrentUser: this.state.githubCurrentUser,
       },
     }))
   }
@@ -317,6 +318,7 @@ class App extends React.PureComponent {
         bountySettings: this.props.bountySettings,
         closePanel: this.cancelBounties,
         tokens: this.props.tokens !== undefined ? this.props.tokens : [],
+        githubCurrentUser: this.state.githubCurrentUser,
       },
     }))
   }

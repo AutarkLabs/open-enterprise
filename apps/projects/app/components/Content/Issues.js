@@ -71,7 +71,6 @@ class Issues extends React.PureComponent {
   }
 
   handleAllocateBounties = () => {
-    console.log('handleAllocationBounties:', this.state.selectedIssues)
     this.props.onAllocateBounties(this.state.selectedIssues)
     // this is called from ActionMenu, on selected Issues -
     // return to default state where nothing is selected
@@ -186,7 +185,6 @@ class Issues extends React.PureComponent {
 
   handleIssueSelection = issue => {
     this.setState(({ selectedIssues }) => {
-      console.log('handleIssueSelection', issue)
       const newSelectedIssues = selectedIssues
         .map(selectedIssue => selectedIssue.id)
         .includes(issue.id)
@@ -320,7 +318,6 @@ class Issues extends React.PureComponent {
     const bountyIssueObj = {}
     const tokenObj = {}
     const expLevels = bountySettings.expLvls
-    console.log('expLevels', expLevels)
 
     bountyIssues.forEach(issue => {
       bountyIssueObj[issue.issueNumber] = issue
@@ -332,7 +329,7 @@ class Issues extends React.PureComponent {
         decimals: token.decimals,
       }
     })
-    console.log('issues: ', bountyIssueObj)
+
     return issues.map(({ __typename, repository: { id, name }, ...fields }) => {
       const bountyId = bountyIssueObj[fields.number]
       const repoIdFromBounty = bountyId && bountyId.data.repoId
@@ -342,7 +339,6 @@ class Issues extends React.PureComponent {
           .div(BigNumber(10 ** tokenObj[data.token].decimals))
           .dp(3)
           .toString()
-        console.log('balance', expLevels)
         return {
           ...fields,
           ...bountyIssueObj[fields.number].data,

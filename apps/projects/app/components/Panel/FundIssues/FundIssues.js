@@ -62,7 +62,7 @@ class FundIssues extends React.Component {
         deadline: new Date(issue.deadline),
         slots: 1,
         slotsIndex: 0,
-        size: 0
+        size: 0,
       }
       bounties[issue.id].size = this.calculateSize(bounties[issue.id])
     } else {
@@ -149,6 +149,22 @@ class FundIssues extends React.Component {
   }
 
   submitBounties = () => {
+    const bounties = this.state.bounties
+    const today = new Date()
+    const activity = {
+      user: this.props.githubCurrentUser,
+      date: today.toISOString(),
+    }
+
+    Object.keys(bounties).map(id => {
+      // if it's an update, there is only one issue
+      if (this.props.mode === 'update') {
+        bounties[id]['fundingHistory'] = [ ...this.props.issues[0].fundingHistory, activity ]
+      } else {
+        bounties[id]['fundingHistory'] = [activity]
+      }
+    })
+
     this.props.onSubmit(this.state.bounties)
   }
 
