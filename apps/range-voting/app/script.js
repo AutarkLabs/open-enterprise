@@ -66,6 +66,7 @@ async function handleEvents(response) {
     break
   case 'EntryRemoved':
     nextEntries = await onEntryRemoved(entries, response.returnValues)
+    break
   default:
     break
   }
@@ -74,7 +75,7 @@ async function handleEvents(response) {
   // then return each original array
   const filteredState = {
     ...nextState,
-    entries: entries,
+    entries: { ...entries, ...nextEntries }
   }
   appState = filteredState
   app.cache('state', filteredState)

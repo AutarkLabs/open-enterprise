@@ -13,6 +13,7 @@ import {
   Text,
   theme,
 } from '@aragon/ui'
+import { format } from 'date-fns'
 import { combineLatest } from '../../rxjs'
 import { first } from 'rxjs/operators' // Make sure observables have .first
 import { provideNetwork } from '../../../../../shared/ui'
@@ -22,6 +23,10 @@ import VoteSummary from '../VoteSummary'
 import VoteStatus from '../VoteStatus'
 import ProgressBarThick from '../ProgressBarThick'
 import Slider from '../Slider'
+import { getVoteStatus } from '../../utils/vote-utils'
+import {
+  VOTE_STATUS_SUCCESSFUL
+} from '../../utils/vote-types'
 
 class VotePanelContent extends React.Component {
   static propTypes = {
@@ -87,6 +92,7 @@ class VotePanelContent extends React.Component {
   }
   executeVote = () => {
     this.props.app.executeVote(this.props.vote.voteId)
+    this.setState({ panel: { visible: false } })
   }
   loadUserBalance = () => {
     const { tokenContract, user } = this.props
@@ -273,9 +279,9 @@ class VotePanelContent extends React.Component {
             </div>
             <div>
               <h2>
-                <Label>Dates</Label>
+                <Label>Date</Label>
               </h2>
-              <p>When vote is approved</p>
+              { open ? <p>When vote is approved</p>:<p> {format(endDate, 'dd-MMM-yyyy')} </p >}
             </div>
           </SidePanelSplit>
         )}
@@ -352,7 +358,7 @@ class VotePanelContent extends React.Component {
             <SidePanelSeparator />
           </div>
         )}
-        {!open && (
+        {getVoteStatus(vote)===VOTE_STATUS_SUCCESSFUL && (
           <div>
             <SubmitButton mode="strong" wide onClick={this.executeVote}>
               Execute Vote

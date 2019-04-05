@@ -5,6 +5,7 @@ import {
   VOTE_STATUS_ONGOING,
   VOTE_STATUS_SUCCESSFUL,
   VOTE_STATUS_FAILED,
+  VOTE_STATUS_EXECUTED
 } from '../utils/vote-types'
 import { getVoteStatus } from '../utils/vote-utils'
 
@@ -19,6 +20,11 @@ const ATTRIBUTES = {
     Icon: IconCheck,
     color: theme.positive,
   },
+  [VOTE_STATUS_EXECUTED]: {
+    label: 'Approved and executed',
+    Icon: IconCheck,
+    color: theme.positive,
+  },
   [VOTE_STATUS_FAILED]: {
     label: 'Rejected',
     Icon: IconCross,
@@ -26,8 +32,8 @@ const ATTRIBUTES = {
   },
 }
 
-const VoteStatus = ({ vote: { data, support, quorum } }) => {
-  const status = getVoteStatus(data, support, quorum)
+const VoteStatus = ({ vote: vote }) => {
+  const status = getVoteStatus(vote)
   const { color, label, Icon } = ATTRIBUTES[status]
   return (
     <Main color={color}>
