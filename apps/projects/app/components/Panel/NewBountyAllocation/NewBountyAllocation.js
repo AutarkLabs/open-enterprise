@@ -23,6 +23,7 @@ import {
   Form,
   FormField,
   FieldTitle,
+  DescriptionInput
 } from '../../Form'
 import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
 
@@ -175,19 +176,18 @@ class NewBountyAllocation extends React.Component {
           submitText="Submit Bounty Allocation"
           submitDisabled={this.state.totalSize > this.state.tokenBalance}
         >
-          {/* Not currently implemented:
-        <FormField
-          label="Description"
-          required
-          input={
-            <DescriptionInput
-              rows={3}
-              style={{ resize: 'none' }}
-              onChange={this.descriptionChange}
-              wide
-            />
-          }
-        />*/}
+          <FormField
+            label="Description"
+            required
+            input={
+              <DescriptionInput
+                rows={3}
+                style={{ resize: 'none' }}
+                onChange={this.descriptionChange}
+                wide
+              />
+            }
+          />
           <FormField
             label="Issues"
             hint="Enter the estimated hours per issue"

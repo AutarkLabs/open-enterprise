@@ -465,6 +465,7 @@ contract Projects is IsContract, AragonApp {
      * @param _tokenBounties an array of token bounties
      * @param _tokenContracts an array of token contracts
      * @param _ipfsAddresses a string of ipfs addresses
+     * @param _description a string describing the bounties
      */
     function addBounties(
         bytes32[] _repoIds,
