@@ -7,9 +7,9 @@ import { addressesEqual } from '../utils/web3-utils'
 
 export const handleEvent = async (state, event, settings) => {
   const { event: eventName, address: eventAddress, returnValues: returnValues } = event
-  const { vault } = settings
-  const { addressBook, entries, accounts, payouts } = state
-  let nextAccounts, nextEntries, nextPayouts, nextBoth
+  const { addressBook, vault } = settings
+  const { entries, accounts, payouts } = state
+  let nextAccounts, nextEntries, nextBoth
   let nextState = { ...state, }
 
   if (eventName === INITIALIZATION_TRIGGER) {
@@ -17,10 +17,7 @@ export const handleEvent = async (state, event, settings) => {
   }
   else if (addressesEqual(eventAddress, vault.address)) {
     // Vault event
-    console.log('vault change', nextState, event, settings)
-
     nextState = await vaultLoadBalance(nextState, event, settings)
-    console.log('vault change', nextState)
   }
   
   switch (eventName) {

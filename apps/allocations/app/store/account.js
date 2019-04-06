@@ -19,12 +19,13 @@ export const onNewAccount = async (accounts = [], { accountId }) => {
 }
 
 export const onNewPayout = async (payouts = [], { accountId, payoutId }) => {
-  if (!payouts.some(a => a.index === payoutId && a.accountId === accountId)) {
+  if (!payouts.some(a => a.payoutId === payoutId && a.accountId === accountId)) {
     const newPayout = await loadPayoutData(accountId, payoutId)
     if (newPayout) {
       payouts.push(newPayout)
     }
   }
+  console.log('onNewPayout', payouts)
   return payouts
 }
 
@@ -40,12 +41,12 @@ export const onFundedAccount = async (accounts = [], { accountId }) => {
 }
 
 export const onPayoutExecuted = async (payouts = [], accounts = [], { accountId, payoutId }) => {
-  const index = payouts.findIndex(a => a.index === payoutId && a.accountId === accountId)
+  const index = payouts.findIndex(a => a.payoutId === payoutId && a.accountId === accountId)
   const accountIndex = accounts.findIndex(a => a.accountId === accountId)
   if (index < 0) {
     payouts = await onNewPayout(payouts, { accountId, payoutId })
   } else {
-    accounts[index] = await loadPayoutData(payouts[index].accountId, payouts[index].payoutId)
+    payouts[index] = await loadPayoutData(payouts[index].accountId, payouts[index].payoutId)
   }
   const nextId = accounts[accountIndex].accountId
   accounts[accountIndex] = await getAccountById(nextId)
@@ -76,8 +77,9 @@ const loadPayoutData = async (accountId, payoutId) => {
     )
       .pipe(first())
       .subscribe(data => {
-        console.log('Payout:', data)
         // don't resolve when entry not found
+        console.log('loadPayoutData', data)
+
         if (data) {
           resolve({
             rewardToken: data[0].token,
@@ -86,7 +88,7 @@ const loadPayoutData = async (accountId, payoutId) => {
             recurring: data[0].recurring,
             period: data[0].period,
             description: data[2],
-            index: payoutId,
+            payoutId: payoutId,
             distSet: data[0].distSet,
             accountId: accountId,
           })

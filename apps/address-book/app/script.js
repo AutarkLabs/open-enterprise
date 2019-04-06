@@ -25,7 +25,6 @@ async function handleEvents({ event, returnValues }) {
     break
   default:
     nextState = appState || { entries: [] }
-    console.log('[AddressBook script] unknown event', event, returnValues)
   }
   // purify the resulting state to handle duplication edge cases
   const filteredState = { entries: filterEntries(nextState.entries) }
@@ -36,7 +35,6 @@ const onEntryAdded = async ({ entries = [] }, { addr }) => {
   // is addr already in the state?
   if (entries.some(entry => entry.addr === addr)) {
     // entry already cached, do nothing
-    console.log('[AddressBook script]', addr, 'already cached')
   } else {
     // entry not cached
     const data = await loadEntryData(addr) // async load data from contract

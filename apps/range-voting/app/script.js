@@ -61,6 +61,7 @@ async function handleEvents(response) {
         AllocationJSON.abi
       )
     }
+    break
   case 'EntryAdded':
     nextEntries = await onEntryAdded(entries, response.returnValues)
     break

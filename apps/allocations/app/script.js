@@ -4,13 +4,13 @@ import { first } from 'rxjs/operators'
 import { retryEvery } from '../../../shared/ui/utils'
 import { app, initStore } from './store'
 
-retryEvery(async retry => {
+retryEvery(async () => {
   // get deployed address book address from contract
   const addressBookAddress = await app
     .call('addressBook')
     .pipe(first())
     .toPromise()
-
+  console.log('addressBook', addressBookAddress)
   const network = await app
     .network()
     .pipe(first())

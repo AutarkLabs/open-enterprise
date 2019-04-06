@@ -30,10 +30,13 @@ export const initStore = (vaultAddress, network, addressBookAddress) => {
             ethToken: {
               address: ETHER_TOKEN_FAKE_ADDRESS,
             },
+            addressBook: {
+              address: addressBookAddress,
+              contract: addressBookApp
+            }
           })
         const nextState = { ...initialState, ...next }
         // Debug point
-        console.log('[Allocations store]', nextState)
         return nextState
       } catch (err) {
         console.error('[Allocations script] initStore', event, err)

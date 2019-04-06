@@ -8,7 +8,6 @@ const Accounts = ({
   accounts,
   onNewAccount,
   onNewAllocation,
-  onManageParameters,
   onExecutePayout,
   app,
 }) => {
@@ -24,7 +23,6 @@ const Accounts = ({
       token={data.token}
       description={data.metadata}
       onNewAllocation={onNewAllocation}
-      onManageParameters={onManageParameters}
       onExecutePayout={onExecutePayout}
       app={app}
     />
@@ -41,7 +39,6 @@ Accounts.propTypes = {
   accounts: PropTypes.arrayOf(PropTypes.object).isRequired,
   onNewAccount: PropTypes.func.isRequired,
   onNewAllocation: PropTypes.func.isRequired,
-  onManageParameters: PropTypes.func.isRequired,
 }
 
 const StyledAccounts = styled.div`

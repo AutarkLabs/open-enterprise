@@ -17,9 +17,7 @@ import { format } from 'date-fns'
 import { combineLatest } from '../../rxjs'
 import { first } from 'rxjs/operators' // Make sure observables have .first
 import { provideNetwork } from '../../../../../shared/ui'
-import { VOTE_NAY, VOTE_YEA } from '../../utils/vote-types'
 import { safeDiv } from '../../utils/math-utils'
-import VoteSummary from '../VoteSummary'
 import VoteStatus from '../VoteStatus'
 import ProgressBarThick from '../ProgressBarThick'
 import Slider from '../Slider'
@@ -177,12 +175,11 @@ class VotePanelContent extends React.Component {
   }
 
   render() {
-    const { network, vote, ready, minParticipationPct } = this.props
+    const { network, vote, minParticipationPct } = this.props
     const {
-      userBalance,
-      userCanVote,
       showResults,
       voteOptions,
+
       remaining,
       voteAmounts,
       voteWeights,
@@ -192,18 +189,15 @@ class VotePanelContent extends React.Component {
     if (!vote) {
       return null
     }
-
-    const { endDate, open, quorum, support, candidateSupport } = vote
+    const { endDate, open, support } = vote
     const {
       participationPct,
-      canExecute,
       creator,
-      metadata,
       totalVoters,
       description,
-      candidates,
       options,
       type,
+      candidateSupport,
     } = vote.data
     const displayBalance = BigNumber(vote.data.balance)
       .div(BigNumber(10 ** this.state.decimals))
@@ -211,14 +205,11 @@ class VotePanelContent extends React.Component {
       .toString()
     // TODO: Show decimals for vote participation only when needed
     const displayParticipationPct = participationPct.toFixed(2)
-    const displayMinParticipationPct = (minParticipationPct / 10 ** 16).toFixed(
-      0
-    )
+    const displayMinParticipationPct = minParticipationPct.toFixed(0)
     // TODO: This block is wrong and has no sense
     if (!voteOptions.length) {
       this.state.voteOptions = options
     }
-
     let totalSupport = 0
     options.forEach(option => {
       totalSupport = totalSupport + parseFloat(option.value, 10)
@@ -431,7 +422,7 @@ class VotePanelContent extends React.Component {
                 }
               />
             ))}
-          {showResults && candidateSupport!== 0 (
+          {showResults && (candidateSupport > 0) && (
             <Text size="xsmall" color={theme.textSecondary}>
               {'A minimum of ' + candidateSupport + ' is required for an option to become validated'}
             </Text>

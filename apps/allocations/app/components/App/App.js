@@ -1,15 +1,12 @@
 import { Main, observe, SidePanel } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
-import styled from 'styled-components'
 import { map } from 'rxjs/operators'
 
 import { Accounts, NewAccountButton, Payouts } from '.'
 import { Title } from '../Shared'
 import { NewAccount, NewAllocation } from '../Panel'
-import { ETH_DECIMALS } from '../../utils/constants'
 import { networkContextType } from '../../../../../shared/ui'
-import { BigNumber } from 'bignumber.js'
 import { allocationsMockData } from '../../utils/mockData'
 
 class App extends React.Component {
@@ -48,8 +45,6 @@ class App extends React.Component {
     account.balance = 0
     this.props.app.newAccount(account.description)
     this.closePanel()
-    console.info('App.js: Account Created:')
-    console.table(account)
     this.setState({})
   }
 
@@ -69,22 +64,13 @@ class App extends React.Component {
       allocation.balance,
       allocation.tokenAddress
     )
-    console.info('App.js: Allocation submitted:')
-    console.table(allocation)
     this.closePanel()
   }
 
   onExecutePayout = (accountId, payoutId) => {
-    console.info('App.js: Executing Payout:', accountId, payoutId)
     this.props.app.runPayout(accountId, payoutId)
   }
 
-  manageParameters = address => {
-    // TODO: Implement
-    console.info(
-      `'App.js: Manage Parameters clicked from account with address: ${address}`
-    )
-  }
 
   newAccount = () => {
     this.setState({
@@ -140,7 +126,6 @@ class App extends React.Component {
           }
           onNewAccount={this.newAccount}
           onNewAllocation={this.newAllocation}
-          onManageParameters={this.manageParameters}
           app={this.props.app}
         />
 

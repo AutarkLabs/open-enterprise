@@ -24,10 +24,15 @@ import { BigNumber } from 'bignumber.js'
 
 
 const translateToken = (payoutToken,tokens) => {
-  let symbol = ''
-  return tokens.reduce((symbol, t) => {
-    if (t.address === payoutToken) return (t.symbol)
-  })
+  console.log('translate tokens', payoutToken, tokens)
+  if(payoutToken === '0x0000000000000000000000000000000000000000'){
+    return 'ETH'
+  }
+  const index = tokens.findIndex(a => a.address === payoutToken)
+  if(index > 0){
+    return tokens[index].symbol
+  }
+  return 'Undefined'
 }
 
 const PayoutStatusWrapper = ({ color, icon, title, posTop = 0 }) => {
@@ -86,7 +91,7 @@ const PayoutsNarrow = ({ executePayout, data, tokens }) => (
             {payout.distSet &&
             (
               <ContextMenu>
-                <ContextMenuItem onClick={() => {executePayout(payout.accountId, payout.index)}}>
+                <ContextMenuItem onClick={() => {executePayout(payout.accountId, payout.payoutId)}}>
                   <IconFundraising />
                   <ActionLabel>Distribute Allocation</ActionLabel>
                 </ContextMenuItem>

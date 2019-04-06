@@ -24,16 +24,11 @@ const Account = ({
   description,
   network,
   onNewAllocation,
-  onManageParameters,
   token,
   app,
 }) => {
   const newAllocation = () => {
     onNewAllocation(proxy, description, id)
-  }
-
-  const manageParameters = () => {
-    onManageParameters(proxy)
   }
 
   /*Need a better solution that this, should be handled in
@@ -91,7 +86,6 @@ Account.propTypes = {
   balance: PropTypes.string.isRequired, // We are receiving this as string, parseInt if needed
   description: PropTypes.string.isRequired,
   onNewAllocation: PropTypes.func.isRequired,
-  onManageParameters: PropTypes.func.isRequired,
   network: PropTypes.object,
 }
 

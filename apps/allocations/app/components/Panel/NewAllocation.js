@@ -79,7 +79,6 @@ class NewAllocation extends React.Component {
     resetAllocationsError && this.setState({ allocationError: false })
 
     this.setState({ [name]: value })
-    console.log('changeField', name, 'to', value)
   }
 
   // TODO: Manage dropdown to return a name and value as the rest of inputs
