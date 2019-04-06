@@ -192,7 +192,6 @@ contract RangeVoting is IForwarder, AragonApp {
     * @notice Execute a range vote. After this step, navigate to the Allocations app and select the Distribute Allocation action from an account to complete the execution.
     * @param _voteId Id for vote
     */
-    // function executeVote(uint256 _voteId) isInitialized external {
     function executeVote(uint256 _voteId) external {
         require(canExecute(_voteId), "vote not meeting execution requirements");
         _executeVote(_voteId);
@@ -702,8 +701,6 @@ contract RangeVoting is IForwarder, AragonApp {
     * @notice `_executeVote` executes the provided script for this vote and
     *         passes along the candidate data to the next function.
     * @return voteId The ID(or index) of this vote in the votes array.
-    * @dev This function needs to be cleaned up ALOT; also generalized
-    *      for functions that have an unknown number of params
     */
     function _executeVote(uint256 _voteId) internal {
         Vote storage voteInstance = votes[_voteId];
@@ -714,22 +711,6 @@ contract RangeVoting is IForwarder, AragonApp {
         bytes memory executionScript = new bytes(32);
         executionScript = voteInstance.executionScript;
         uint256 dynamicOffset = executionScript.uint256At(32);
-        // Doesn't fit in local storage but here for reference
-        //uint256 firstDynamicElementLocation = executionScript.uint256At(32);
-        //uint256 secondDynamicElementLocation = 32 + dynamicOffset + (candidateLength * 32);
-        //uint256 thirdDynamicElementLocation = secondDynamicElementLocation + 32 + (candidateLength * 32);
-        //uint256 fourthDynamicElementLocation = thirdDynamicElementLocation + 32 + (candidateLength * 32);
-        // Doesn't fit in local storage but here for reference
-        //uint256 staticParamLength = firstDynamicElementLocation - 64;
-        // The total length of the new script will be two 32 byte spaces
-        // for each candidate (one for support one for address)
-        // as well as 3 32 byte spaces for
-        // the header (specId 0x4, target address 0x14, calldata 0x4, function hash 0x4)
-        // and the two dynamic param locations
-        // as well as additional space for the staticParameters
-        // Seperate variable isn't used here to save storage space
-
-        //uint256 callDataLength = 32 * (3 * (candidateLength + 4)) + executionScript.uint256At(32) - 60;
         uint256 infoStrLength = voteInstance.infoStringLength;
         uint256 callDataLength = 196 + dynamicOffset + candidateLength * 160;
         callDataLength += (infoStrLength / 32) * 32 + (infoStrLength % 32 == 0 ? 0 : 32);
@@ -741,22 +722,18 @@ contract RangeVoting is IForwarder, AragonApp {
         bytes memory script = new bytes(callDataLength + 28);
         // Copy header information and first dynamic location as it's unchanged
         script.copy(executionScript.getPtr() + 32,0, 64);
-
         //fix the calldataLength
         memcpyshort((script.getPtr() + 56), callDataLengthMem.getPtr() + 60, 4);
-
         // Add second, 3rd and fourth dynamic element location as it may have changed
         addDynamicElements(script, dynamicOffset, candidateLength, infoStrLength);
         // Copy over all static parameters
         script.copy(executionScript.getPtr() + 256, 224, dynamicOffset - 224);
-
         uint256 offset = addAddressesAndVotes(_voteId, script, candidateLength, dynamicOffset);
-
         offset = addInfoString(_voteId, script, candidateLength, offset);
-
+        // Add external IDs 1 and 2 to the
         addExternalIds(_voteId, script, candidateLength, offset);
         emit ExecutionScript(script, callDataLength);
-
+        // Execute the script on the target contract
         runScript(script, new bytes(0), new address[](0));
         emit ExecuteVote(_voteId);
     }

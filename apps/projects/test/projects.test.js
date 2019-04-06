@@ -144,7 +144,7 @@ contract('Projects App', accounts => {
 
     //bounties = StandardBounties.at(registry.address)
 
-    await app.initialize(bounties.address, vault.address)
+    await app.initialize(bounties.address, vault.address, '')
   })
 
   context('creating and retrieving repos and bounties', () => {
@@ -302,6 +302,7 @@ contract('Projects App', accounts => {
             [ false, false, false ],
             [ 0, 0, 0 ],
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+            'something',
             { from: bountyAdder, value: 60 }
           )
         )
@@ -776,7 +777,7 @@ contract('Projects App', accounts => {
 
     it('cannot add bounties to unregistered repos', async () => {
       assertRevert(async () => {
-        await app.addBounties(Array(3).fill('0xdeadbeef'), [ 1, 2, 3 ], [ 10, 20, 30 ], {
+        await app.addBounties(Array(3).fill('0xdeadbeef'), [ 1, 2, 3 ], [ 10, 20, 30 ], 'something cool', {
           from: bountyAdder,
         })
       })
@@ -798,6 +799,7 @@ contract('Projects App', accounts => {
         [ false, false, false ],
         [ 0, 0, 0 ],
         'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+        'something else',
         { from: bountyAdder, value: 60 }
       )
       assertRevert(async () => {
@@ -825,6 +827,7 @@ contract('Projects App', accounts => {
           [ false, false, false ],
           [ 0, 0, 0 ],
           'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+          'something awesome',
           { from: bountyAdder, value: 61 } // 61 Wei sent instead
         )
       })

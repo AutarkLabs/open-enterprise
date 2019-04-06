@@ -130,7 +130,8 @@ class FundIssues extends React.Component {
     this.setState({ bounties, totalSize: bountyTotal })
   }
 
-  generateHoursChange = id => ({ target: { value } }) => this.configBounty(id, 'hours', parseInt(value))
+  generateHoursChange = id => ({ target: { value } }) =>
+    this.configBounty(id, 'hours', parseInt(value))
 
   generateExpChange = id => index => {
     this.configBounty(id, 'exp', index)
@@ -149,7 +150,8 @@ class FundIssues extends React.Component {
   }
 
   submitBounties = () => {
-    this.props.onSubmit(this.state.bounties)
+    console.info('Submitting new Bounties', this.state.bounties)
+    this.props.onSubmit(this.state.bounties, this.state.description)
   }
 
   renderUpdateForm = (issue, bounties, bountySettings) => {
@@ -243,6 +245,18 @@ class FundIssues extends React.Component {
           submitText={this.props.issues.length > 1 ? 'Fund Issues' : 'Fund Issue'}
           submitDisabled={this.state.totalSize > this.state.tokenBalance}
         >
+          <FormField
+            label="Description"
+            required
+            input={
+              <DescriptionInput
+                rows={3}
+                style={{ resize: 'none' }}
+                onChange={this.descriptionChange}
+                wide
+              />
+            }
+          />
           <FormField
             label="Issues"
             hint="Enter the estimated hours per issue"
