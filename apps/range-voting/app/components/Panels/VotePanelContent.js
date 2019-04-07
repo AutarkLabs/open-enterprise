@@ -90,7 +90,6 @@ class VotePanelContent extends React.Component {
   }
   executeVote = () => {
     this.props.app.executeVote(this.props.vote.voteId)
-    this.setState({ panel: { visible: false } })
   }
   loadUserBalance = () => {
     const { tokenContract, user } = this.props
@@ -351,7 +350,7 @@ class VotePanelContent extends React.Component {
             <SidePanelSeparator />
           </div>
         )}
-        {getVoteStatus(vote)===VOTE_STATUS_SUCCESSFUL && (
+        {(getVoteStatus(vote)===VOTE_STATUS_SUCCESSFUL && (endDate < Date.now()) ) && (
           <div>
             <SubmitButton mode="strong" wide onClick={this.executeVote}>
               Execute Vote

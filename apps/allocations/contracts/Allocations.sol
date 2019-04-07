@@ -242,6 +242,7 @@ contract Allocations is AragonApp, Fundable {
                     Account storage candidateAccount = accounts[accountProxies[payout.candidateAddresses[i]]];
                     candidateAccount.balance = candidateAccount.balance.add(individualPayout);
                     account.balance = account.balance.sub(individualPayout);
+                    emit FundAccount(accountProxies[payout.candidateAddresses[i]]);
                 } else {
                     payout.candidateAddresses[i].transfer(individualPayout);
                     account.balance = account.balance.sub(individualPayout);
