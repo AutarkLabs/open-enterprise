@@ -39,6 +39,8 @@ const INITIAL_STATE = {
 
 const message = {
   addressError: 'All options must be addresses and cannot be duplicates.',
+  descriptionError: 'A description of the allocation is required.',
+  allocationError: 'Amount must be set.',
   addressSetting: 'Use address book for options',
   balanceSetting: 'Must vote with entire balance',
   transferWarning:
@@ -73,10 +75,12 @@ class NewAllocation extends React.Component {
       'userInputCandidates',
     ].includes(name)
     const resetAllocationsError = name === 'amount'
+    const resetDescriptionError = name === 'allocationDescription'
 
     // react chains the state changes asynchronously
     resetAddressError && this.setState({ addressError: false })
     resetAllocationsError && this.setState({ allocationError: false })
+    resetDescriptionError && this.setState({ descriptionError: false })
 
     this.setState({ [name]: value })
   }
@@ -121,11 +125,15 @@ class NewAllocation extends React.Component {
       tokenAddress: this.state.tokenAddress,
     }
 
-    if (state.addressError || state.allocationError) {
+    if (state.addressError || state.allocationError || state.descriptionError) {
       return
     }
     if (!informational && allocation.balance === 0) {
       this.setState({ allocationError: true })
+      return
+    }
+    if(allocation.description === ''){
+      this.setState({ descriptionError: true })
       return
     }
     if (!candidates.length) {
@@ -164,7 +172,7 @@ class NewAllocation extends React.Component {
       <WarningMessage hasWarning={transferEnabled} type={'transferWarning'} />
     )
 
-    const errorMessages = [ 'allocationError', 'addressError' ].map((e, i) => (
+    const errorMessages = [ 'allocationError', 'addressError', 'descriptionError' ].map((e, i) => (
       <ErrorMessage key={i} hasError={state[e]} type={e} />
     ))
 
