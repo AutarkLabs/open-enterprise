@@ -10,7 +10,7 @@ retryEvery(async () => {
     .call('addressBook')
     .pipe(first())
     .toPromise()
-  console.log('addressBook', addressBookAddress)
+
   const network = await app
     .network()
     .pipe(first())
