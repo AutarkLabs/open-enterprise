@@ -48,11 +48,11 @@ class NewAccount extends React.Component {
       >
         <FormField
           required
-          label="Description"
+          label="Name"
           input={
             <DescriptionInput
               name="description"
-              placeholder="Describe your account/project for which you will be creating allocation votes."
+              placeholder="Name the account that will be used for allocations."
               value={this.state.description}
               onChange={this.changeField}
             />

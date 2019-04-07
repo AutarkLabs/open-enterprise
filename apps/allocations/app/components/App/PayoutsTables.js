@@ -11,7 +11,7 @@ const PayoutsTable = props => {
 
   return (
     <div>
-      <Text.Block size="large" weight="bold">
+      <Text.Block size="large" weight="bold" style={{ marginBottom: '10px' }}>
         Allocations
         {' '}
         <Badge.Info>{props.data.length}</Badge.Info>
@@ -50,14 +50,14 @@ const NarrowListPayout = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 10px;
+  padding: 18px;
 `
 const AmountBadge = styled(Badge).attrs({
-  background: '#D1D1D1',
+  background: theme.contentBorder,
   foreground: theme.textPrimary,
 })`
   padding: 10px;
-  margin: 20px;
+  margin: 10px;
   text-size: large;
 `
 export { PayoutDescription, PayoutsTable, NarrowList, NarrowListPayout, AmountBadge }
