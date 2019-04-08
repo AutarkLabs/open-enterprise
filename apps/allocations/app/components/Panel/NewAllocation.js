@@ -27,7 +27,6 @@ const INITIAL_STATE = {
   allocationType: '',
   allocationTypeIndex: 1,
   amount: null,
-  balanceSetting: false,
   payoutToken: '',
   payoutTokenIndex: 0,
   payoutType: '',
@@ -42,7 +41,6 @@ const message = {
   descriptionError: 'A description of the allocation is required.',
   allocationError: 'Amount must be set.',
   addressSetting: 'Use address book for options',
-  balanceSetting: 'Must vote with entire balance',
   transferWarning:
     'This will create a Range Vote and after it closes, it will result in a financial transfer.',
 }
@@ -86,13 +84,7 @@ class NewAllocation extends React.Component {
   }
 
   // TODO: Manage dropdown to return a name and value as the rest of inputs
-  changeAllocationType = (index, items) => {
-    this.setState({
-      allocationError: false,
-      allocationTypeIndex: index,
-      allocationType: items[index],
-    })
-  }
+
   changePayoutToken = (index, items) => {
     this.setState({
       allocationError: false,
@@ -101,11 +93,6 @@ class NewAllocation extends React.Component {
       tokenAddress: this.props.balances[index].address
     })
   }
-
-  // TODO: Temporarily unused
-  // changePayoutType = (index, items) => {
-  //   this.setState({ payoutTypeIndex: index, payoutType: items[index] })
-  // }
 
   // TODO: fix contract to accept regular strings(informational vote)
   submitAllocation = () => {
@@ -192,24 +179,7 @@ class NewAllocation extends React.Component {
       />
     )
 
-    const allocationTypeField = (
-      <FormField
-        required
-        separator
-        label="Allocation type"
-        input={
-          <DropDown
-            active={state.allocationTypeIndex}
-            items={ALLOCATION_TYPES}
-            name="allocationType"
-            onChange={this.changeAllocationType}
-          />
-        }
-      />
-    )
-
     const settingsInputs = [
-      { name: 'balanceSetting', visible: true },
       { name: 'addressSetting', visible: props.entities.length > 1 },
     ].map((s, i) => (
       <SettingsInput
@@ -221,7 +191,7 @@ class NewAllocation extends React.Component {
       />
     ))
 
-    const settingsField = (
+    const settingsField = props.entities.length > 1 && (
       <FormField
         label="Settings"
         input={<React.Fragment children={settingsInputs} />}
@@ -306,7 +276,6 @@ class NewAllocation extends React.Component {
         >
           {warningMessages}
           {descriptionField}
-          {/*{allocationTypeField}*/}
           {settingsField}
           {amountField}
           {addressBookField}
