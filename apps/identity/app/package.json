@@ -1,0 +1,31 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@aragon/api": "^1.0.0-beta.1",
+    "@aragon/api-react": "^1.0.0-beta.1",
+    "@aragon/ui": "^0.32.0",
+    "@babel/polyfill": "^7.2.5",
+    "react": "^16.8.4",
+    "react-dom": "^16.8.4",
+    "rxjs": "^6.2.1",
+    "styled-components": "^4.1.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.3.4",
+    "@babel/plugin-proposal-class-properties": "^7.3.4",
+    "@babel/preset-env": "^7.3.4",
+    "parcel-bundler": "^1.12.3"
+  },
+  "scripts": {
+    "build": "npm run sync-assets && npm run build:app && npm run build:script",
+    "build:app": "parcel build index.html -d ../dist/ --public-url \".\" --no-cache",
+    "build:script": "parcel build src/script.js --out-dir ../dist/ --no-cache",
+    "watch:script": "parcel watch src/script.js --out-dir ../dist/ --no-hmr",
+    "devserver": "parcel serve index.html -p 8001 --out-dir ../dist/ --no-cache",
+    "start": "npm run sync-assets && npm run build:script -- --no-minify && npm run devserver",
+    "sync-assets": "copy-aragon-ui-assets ../dist"
+  }
+}
