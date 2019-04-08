@@ -83,7 +83,7 @@ const PayoutsNarrow = ({ executePayout, data, tokens }) => (
         <div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center' }}>
           <div style={{ marginRight: '10px' }}>
             <AmountBadge>
-              {displayCurrency(BigNumber(payout.amount))}{' '}{translateToken(payout.rewardToken,tokens)}
+              {displayCurrency(BigNumber(payout.amount))}{' '}{translateToken(payout.token,tokens)}
             </AmountBadge>
           </div>
           <div>

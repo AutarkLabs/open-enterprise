@@ -36,8 +36,11 @@ export const onEntryRemoved = async ({ entries }, { addr }) => {
 
 const loadEntryData = async (addr, addressBook) => {
   const addressBookApp = addressBook.contract
-
+  return addressBookApp
     .getEntry(addr)
+    .pipe(
+      first(),
+      map(
         entry =>
         // cover removed entries
           !entry ? null : {

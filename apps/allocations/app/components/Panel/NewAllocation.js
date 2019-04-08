@@ -306,7 +306,7 @@ class NewAllocation extends React.Component {
         >
           {warningMessages}
           {descriptionField}
-          {allocationTypeField}
+          {/*{allocationTypeField}*/}
           {settingsField}
           {amountField}
           {addressBookField}
