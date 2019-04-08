@@ -25,16 +25,30 @@ planningSuite.newInstance(
   stakes,
   supportNeeded,
   minAcceptanceQuorum,
+  candidateSupportPct,
+  minParticipationPct,
   voteDuration
 )
 ```
 
-- `name`: Name for org, will assign `[name].aragonid.eth` (check capitalization and forbidden characters)
-- `holders`: Array of token holder addresses
-- `stakes`: Array of token stakes for holders (token has 18 decimals, multiply token amount `* 10^18`)
-- `supportNeeded, minAcceptanceQuorum, voteDuration`: Check [Voting app spec](https://wiki.aragon.org/dev/apps/voting/)
+## Parameter Definitions
 
-_Note: `supportNeeded` , `minAcceptanceQuorum` and `voteDuration` will also be taken as Range Voting app initialization params at this moment, but it could be set independently if needed_
+
+
+| Parameter             | Description |  Example (human-readable) |  Contract input |
+| -------------- | ---------------  |  ------- |  ------- | 
+| `name`         | Name for org, will assign `[name].aragonid.eth` (check capitalization and forbidden characters) | autark | autark |
+| `symbol`         | Symbol for token | AUT | AUT |
+| `holders`         | Array of token holder addresses | 0xA... and 0xB... | '["0xA...", "0xB..." ]' |
+| `stakes`         | Array of token stakes for holders (token has 18 decimals, multiply token amount `* 10^18`) | 10 | 100000000000000000 |
+| `supportNeeded`         | Voting App: % of Yes votes needed for the vote to be executed. Making it 50% would be a 'simple democracy'. | 50% | 500000000000000000 |
+| `minAcceptanceQuorum`   | Voting App: Minimum % of all token supply that needs to approve in order for the vote to be executed.  |  30% | 300000000000000000 |
+| `candidateSupportPct`   | Range Voting App: Minimum % of an option needs for it be considered valid. | 50% | 50000000000000000 |
+| `minParticipationPct`    | Range Voting App: Minimum % of all token supply that needs to participate in the Range Vote in order for the vote to be executed. |  30% | 300000000000000000 |
+| `voteDuration`    | The amount of time a Voting or Range Voting proposal will be open. |
+
+Check [Voting app spec](https://wiki.aragon.org/dev/apps/voting/) for some details and examples
+
 
 ## Deploying templates
 
