@@ -249,7 +249,7 @@ contract('Allocations App', accounts => {
       const payoutInfo = await app.getPayout(accountId,ethPayoutId)
       assert.strictEqual(payoutInfo[0].toNumber(), 1e16, 'payout amount incorrect')
       assert.strictEqual(payoutInfo[1], false, 'payout Should not be recurring')
-      assert.strictEqual(payoutInfo[2].toNumber(), 0, 'recurring payout start time incorrect')
+      assert.isAbove(payoutInfo[2].toNumber(), 0, 'recurring payout start time incorrect')
       assert.strictEqual(payoutInfo[3].toNumber(), 0, 'recurring payout period length incorrect')
     })
 
