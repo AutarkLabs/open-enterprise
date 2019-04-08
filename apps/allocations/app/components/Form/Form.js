@@ -7,8 +7,8 @@ const Form = ({ children, onSubmit, submitText, heading, subHeading }) => {
     // TODO: Fix the SidePanel 2 lines heading thing
     <React.Fragment>
       {heading && <Text size="xxlarge">{heading}</Text>}
-      {subHeading && <Text color={theme.textTertiary}>{subHeading}</Text>}
-      <div style={{ height: '1rem', height: 'fit-content' }} />
+      {subHeading && <Text size="large" color={theme.textSecondary}>{subHeading}</Text>}
+      <div style={{ height: '10px' }} />
       {children}
       <Button
         style={{ userSelect: 'none' }}

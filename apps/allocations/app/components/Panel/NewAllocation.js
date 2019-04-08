@@ -298,7 +298,6 @@ class NewAllocation extends React.Component {
         >
           {warningMessages}
           {descriptionField}
-          {allocationTypeField}
           {settingsField}
           {amountField}
           {addressBookField}
@@ -326,7 +325,7 @@ ErrorMessage.propTypes = {
 }
 
 const WarningMessage = ({ hasWarning, type }) =>
-  hasWarning ? <Info.Action title="Warning" children={message[type]} /> : null
+  hasWarning ? <Info.Action title="Warning" children={message[type]} style={{ marginBottom: '10px' }} /> : null
 
 // TODO: unused
 // const RecurringDropDown = ({ dropDown }) => {

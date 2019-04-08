@@ -71,7 +71,8 @@ const Account = ({
             {' ' + BigNumber(balance)
               .div(ETH_DECIMALS)
               .dp(3)
-              .toString()}{' ETH'}
+              .toString()}
+            <Text size="small">{' ETH'}</Text>
           </StatsValue>
         </StyledStats>
       </StatsContainer>
@@ -96,7 +97,7 @@ const StyledCard = styled.div`
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 20px 30px;
+  padding: 14px;
   background: #ffffff;
   border: 1px solid ${theme.contentBorder};
   border-radius: 3px;
@@ -112,7 +113,7 @@ const ActionLabel = styled.span`
 `
 
 const CardTitle = styled(Text.Block).attrs({
-  size: 'large',
+  size: 'xlarge',
 })`
   text-align: center;
   color: ${theme.textPrimary};
@@ -145,7 +146,6 @@ const StatsContainer = styled.div`
   display: flex;
   justify-content: center;
   align-content: stretch;
-  margin-bottom: 6px;
 `
 
 const StyledStats = styled.div`
