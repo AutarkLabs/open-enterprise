@@ -21,6 +21,7 @@ You can find more information about kit deployments and their addresses in the [
 ```js
 planningSuite.newInstance(
   name,
+  symbol,
   holders,
   stakes,
   supportNeeded,
@@ -41,11 +42,11 @@ planningSuite.newInstance(
 | `symbol`         | Symbol for token | AUT | AUT |
 | `holders`         | Array of token holder addresses | 0xA... and 0xB... | '["0xA...", "0xB..." ]' |
 | `stakes`         | Array of token stakes for holders (token has 18 decimals, multiply token amount `* 10^18`) | 10 each | '["100000000000000000", "100000000000000000"] |
-| `supportNeeded`         | Voting App: % of Yes votes needed for the vote to be executed. Making it 50% would be a 'simple democracy'. | 50% | 500000000000000000 |
-| `minAcceptanceQuorum`   | Voting App: Minimum % of all token supply that needs to approve in order for the vote to be executed.  |  30% | 300000000000000000 |
+| `supportNeeded`         | Voting App: Percentage of Yeas in casted votes for a vote to succeed . | 50% | 500000000000000000 |
+| `minAcceptanceQuorum`   | Voting App: Percentage of Yeas in total possible votes for a vote to succeed.  |  30% | 300000000000000000 |
 | `candidateSupportPct`   | Range Voting App: Minimum % of an option needs for it be considered valid. | 50% | 50000000000000000 |
 | `minParticipationPct`    | Range Voting App: Minimum % of all token supply that needs to participate in the Range Vote in order for the vote to be executed. |  30% | 300000000000000000 |
-| `voteDuration`    | The amount of time a Voting or Range Voting proposal will be open. |
+| `voteDuration`    | The amount of time a Voting or Range Voting proposal will be open (in seconds). | 7 days | 604800 |
 
 Check [Voting app spec](https://wiki.aragon.org/dev/apps/voting/) for some details and examples
 
