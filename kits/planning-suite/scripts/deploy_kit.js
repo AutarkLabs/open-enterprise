@@ -16,15 +16,18 @@ const planningApps = [
   'allocations',
   'projects',
   'range-voting',
-  'rewards',
+  // 'rewards',
 ]
 const planningAppIds = planningApps.map(app => namehash(`${app}.aragonpm.eth`))
 
 const globalArtifacts = this.artifacts // Not injected unless called directly via truffle
-const defaultOwner = process.env.OWNER
-const defaultENSAddress = process.env.ENS
+const defaultOwner =
+  process.env.OWNER || '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7'
+const defaultENSAddress =
+  process.env.ENS || '0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1'
 const defaultDAOFactoryAddress = process.env.DAO_FACTORY
 const defaultMinimeTokenFactoryAddress = process.env.MINIME_TOKEN_FACTORY
+const defaultRegistryAddress = process.env.STANDARD_BOUNTIES_REGISTRY
 
 module.exports = async (
   truffleExecCallback,
@@ -34,6 +37,7 @@ module.exports = async (
     ensAddress = defaultENSAddress,
     daoFactoryAddress = defaultDAOFactoryAddress,
     minimeTokenFactoryAddress = defaultMinimeTokenFactoryAddress,
+    registryAddress = defaultRegistryAddress,
     kitName,
     kitContractName = kitName,
     network,
@@ -54,6 +58,7 @@ module.exports = async (
   const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory')
   const DAOFactory = artifacts.require('DAOFactory')
   const ENS = artifacts.require('ENS')
+  const StandardBounties = artifacts.require('StandardBounties')
 
   const newRepo = async (apm, name, acc, contract) => {
     log(`Creating Repo for ${contract}`)
@@ -69,7 +74,7 @@ module.exports = async (
 
   let arappFileName
   if (!returnKit) {
-    if (network != 'rpc' && network != 'devnet') {
+    if (network !== 'rpc' && network !== 'devnet') {
       arappFileName = 'arapp.json'
     } else {
       arappFileName = 'arapp_local.json'
@@ -79,6 +84,8 @@ module.exports = async (
       ensAddress = betaArapp.environments[network].registry
     }
   }
+
+  console.log('arappFileName', arappFileName)
 
   if (!ensAddress) {
     errorOut('ENS environment variable not passed, aborting.')
@@ -106,16 +113,32 @@ module.exports = async (
 
   const aragonid = await ens.owner(namehash('aragonid.eth'))
 
-  const kit = await artifacts
-    .require(kitContractName)
-    .new(
+  let registry
+  if (registryAddress) {
+    log(`Using provided StandardBounties: ${registryAddress}`)
+    registry = StandardBounties.at(registryAddress)
+  } else {
+    registry = await StandardBounties.new(owner)
+    log('Deployed StandardBounties:', registry.address)
+  }
+
+  const kitContract = artifacts.require(kitContractName)
+  let kit
+  try {
+    kit = await kitContract.new(
       daoFactory.address,
       ens.address,
       minimeFac.address,
       aragonid,
       appIds,
-      planningAppIds
+      planningAppIds,
+      registry.address
     )
+  } catch (err) {
+    log('error with kit', err)
+  }
+
+  log('Deployed Planning Suite Kit:', kit.address)
 
   await logDeploy(kit)
 
@@ -131,7 +154,7 @@ module.exports = async (
       .at(await ens.resolver(namehash('aragonpm.eth')))
       .addr(namehash('aragonpm.eth'))
     const apm = artifacts.require('APMRegistry').at(apmAddr)
-    log('APM', apmAddr)
+    log('Created APM at', apmAddr)
 
     if (
       (await ens.owner(appIds[0])) ==
@@ -153,7 +176,7 @@ module.exports = async (
       await newRepo(apm, 'allocations', owner, 'Allocation')
       await newRepo(apm, 'projects', owner, 'Projects')
       await newRepo(apm, 'range-voting', owner, 'RangeVoting')
-      await newRepo(apm, 'rewards', owner, 'Rewards')
+      // await newRepo(apm, 'rewards', owner, 'Rewards')
     }
 
     if (
@@ -170,6 +193,7 @@ module.exports = async (
       )
     } else {
       // TODO: update APM Repo?
+      log(`using deployed APM package for ${kitName} at ${kit.address}`)
     }
   }
 

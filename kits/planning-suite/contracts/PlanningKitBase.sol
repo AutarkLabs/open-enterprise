@@ -9,19 +9,19 @@ import "@tps/apps-address-book/contracts/AddressBook.sol";
 import "@tps/apps-allocations/contracts/Allocations.sol";
 import "@tps/apps-projects/contracts/Projects.sol";
 import { RangeVoting as Range } from "@tps/apps-range-voting/contracts/RangeVoting.sol";
-import { RewardsCore as Rewards } from "@tps/apps-rewards/contracts/RewardsCore.sol";
+// import { RewardsCore as Rewards } from "@tps/apps-rewards/contracts/RewardsCore.sol";
 
 
 contract PlanningKitBase is BetaKitBase {
     StandardBounties public registry;
-    bytes32[5] public planningAppIds;
+    bytes32[4] public planningAppIds; // TODO: 5 when adding rewards
     uint256 constant PCT256 = 10 ** 16;
     address constant ANY_ENTITY = address(-1);
 
     mapping (address => address) tokenCache;
 
     // ensure alphabetic order
-    enum PlanningApps { AddressBook, Allocations, Projects, Range, Rewards }
+    enum PlanningApps { AddressBook, Allocations, Projects, Range } // TODO: Add Rewards here
 
     // TODO: Do we need events here? (we have 2 inherited from betakitbase)
     event DeployInstance(address dao, address indexed token);
@@ -32,7 +32,7 @@ contract PlanningKitBase is BetaKitBase {
         MiniMeTokenFactory _minimeFac,
         IFIFSResolvingRegistrar _aragonID,
         bytes32[4] _appIds,
-        bytes32[5] _planningAppIds,
+        bytes32[4] _planningAppIds,
         StandardBounties _registry
     )
         BetaKitBase(_fac, _ens, _minimeFac, _aragonID, _appIds)
@@ -97,8 +97,8 @@ contract PlanningKitBase is BetaKitBase {
             AddressBook addressBook,
             Allocations allocations,
             Projects projects,
-            Range rangeVoting,
-            Rewards rewards
+            Range rangeVoting
+            // Rewards rewards
         )
     {
         ACL acl = ACL(dao.acl());
@@ -138,21 +138,21 @@ contract PlanningKitBase is BetaKitBase {
         );
         emit InstalledApp(rangeVoting, planningAppIds[uint8(PlanningApps.Range)]);
 
-        rewards = Rewards(
-            dao.newAppInstance(
-                planningAppIds[uint8(PlanningApps.Rewards)],
-                latestVersionAppBase(planningAppIds[uint8(PlanningApps.Rewards)])
-            )
-        );
-        emit InstalledApp(rewards, planningAppIds[uint8(PlanningApps.Rewards)]);
+        // rewards = Rewards(
+        //     dao.newAppInstance(
+        //         planningAppIds[uint8(PlanningApps.Rewards)],
+        //         latestVersionAppBase(planningAppIds[uint8(PlanningApps.Rewards)])
+        //     )
+        // );
+        // emit InstalledApp(rewards, planningAppIds[uint8(PlanningApps.Rewards)]);
 
         // Handle permissions creation
         acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
-        handleTPSPermissions(acl, addressBook, allocations, projects, rangeVoting, rewards, voting);
-        handleVaultPermissions(acl, projects, rewards, vault);
+        handleTPSPermissions(acl, addressBook, allocations, projects, rangeVoting, /*rewards,*/ voting);
+        handleVaultPermissions(acl, projects, /*rewards,*/ vault);
 
         // Initialize the Planning Suite apps
-        initTPSApps(addressBook, allocations, projects, rangeVoting, rewards, token, vault);
+        initTPSApps(addressBook, allocations, projects, rangeVoting, /*rewards,*/ token, vault);
     }
 
     function handleTPSPermissions(
@@ -161,7 +161,7 @@ contract PlanningKitBase is BetaKitBase {
         Allocations allocations,
         Projects projects,
         Range rangeVoting,
-        Rewards rewards,
+        // Rewards rewards,
         Voting voting
         ) internal
     {
@@ -191,16 +191,16 @@ contract PlanningKitBase is BetaKitBase {
         acl.createPermission(ANY_ENTITY, allocations, allocations.EXECUTE_PAYOUT_ROLE(), root);
 
         // Rewards Permissions
-        acl.createPermission(ANY_ENTITY, rewards, rewards.ADD_REWARD_ROLE(), root);
+        // acl.createPermission(ANY_ENTITY, rewards, rewards.ADD_REWARD_ROLE(), root);
     }
 
-    function handleVaultPermissions(ACL acl, Projects projects, Rewards rewards, Vault vault) internal {
+    function handleVaultPermissions(ACL acl, Projects projects, /*Rewards rewards,*/ Vault vault) internal {
         address root = msg.sender;
 
         // Vault permissions
         acl.createPermission(root, vault, vault.TRANSFER_ROLE(), this);
         acl.grantPermission(projects, vault, vault.TRANSFER_ROLE());
-        acl.grantPermission(rewards, vault, vault.TRANSFER_ROLE());
+        // acl.grantPermission(rewards, vault, vault.TRANSFER_ROLE());
     }
 
     function initTPSApps(
@@ -208,7 +208,7 @@ contract PlanningKitBase is BetaKitBase {
         Allocations allocations,
         Projects projects,
         Range rangeVoting,
-        Rewards rewards,
+        // Rewards rewards,
         MiniMeToken token,
         Vault vault
         ) internal
@@ -217,7 +217,7 @@ contract PlanningKitBase is BetaKitBase {
         projects.initialize(registry, vault);
         rangeVoting.initialize(addressBook, token, 50 * PCT256, 0, 1 minutes);
         allocations.initialize(addressBook);
-        rewards.initialize(vault);
+        // rewards.initialize(vault);
     }
 
     function doCleanup(Kernel dao, Voting voting) internal {

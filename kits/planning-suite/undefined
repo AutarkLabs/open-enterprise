@@ -1,0 +1,11 @@
+{
+  "environments": {
+    "rpc": {
+      "registry": "0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1",
+      "appName": "planning-suite.aragonpm.eth",
+      "address": "0x4b66c91dc1e632880ecc35fcc1e1ad957a7ed25f",
+      "network": "rpc"
+    }
+  },
+  "path": "contracts/PlanningSuite.sol"
+}

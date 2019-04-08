@@ -12,7 +12,7 @@ contract PlanningSuite is PlanningKitBase {
         MiniMeTokenFactory _minimeFac,
         IFIFSResolvingRegistrar _aragonID,
         bytes32[4] _appIds,
-        bytes32[5] _planningAppIds,
+        bytes32[4] _planningAppIds, // TODO: 5 when adding rewards
         StandardBounties _registry
     )
         PlanningKitBase(_fac, _ens, _minimeFac, _aragonID, _appIds, _planningAppIds, _registry)
@@ -21,7 +21,7 @@ contract PlanningSuite is PlanningKitBase {
         // solium-disable-previous-line no-empty-blocks
     }
 
-    function newTemplateInstance(string aragonId) public {
+    // function newTemplateInstance(string aragonId) public {
         // MiniMeToken token = newToken("Autark Token", "autark");
         // Kernel dao;
         // ACL acl;
@@ -57,7 +57,7 @@ contract PlanningSuite is PlanningKitBase {
         // TODO: customizable range voting time also
 
         // TODO: Handle any extra permission or cleanup here
-    }
+    // }
 
     function newTokenAndInstance(
         string tokenName,
