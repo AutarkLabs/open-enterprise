@@ -40,7 +40,7 @@ planningSuite.newInstance(
 | `name`         | Name for org, will assign `[name].aragonid.eth` (check capitalization and forbidden characters) | autark | autark |
 | `symbol`         | Symbol for token | AUT | AUT |
 | `holders`         | Array of token holder addresses | 0xA... and 0xB... | '["0xA...", "0xB..." ]' |
-| `stakes`         | Array of token stakes for holders (token has 18 decimals, multiply token amount `* 10^18`) | 10 | 100000000000000000 |
+| `stakes`         | Array of token stakes for holders (token has 18 decimals, multiply token amount `* 10^18`) | 10 each | '["100000000000000000", "100000000000000000"] |
 | `supportNeeded`         | Voting App: % of Yes votes needed for the vote to be executed. Making it 50% would be a 'simple democracy'. | 50% | 500000000000000000 |
 | `minAcceptanceQuorum`   | Voting App: Minimum % of all token supply that needs to approve in order for the vote to be executed.  |  30% | 300000000000000000 |
 | `candidateSupportPct`   | Range Voting App: Minimum % of an option needs for it be considered valid. | 50% | 50000000000000000 |
