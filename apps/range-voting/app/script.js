@@ -80,7 +80,6 @@ async function handleEvents(response) {
     entries: { ...entries, ...nextEntries }
   }
   appState = filteredState
-  console.log('state: ',filteredState)
   app.cache('state', filteredState)
 }
 
