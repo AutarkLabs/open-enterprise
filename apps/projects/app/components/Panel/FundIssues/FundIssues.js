@@ -18,7 +18,6 @@ import {
   Info,
 } from '@aragon/ui'
 
-<<<<<<< HEAD
 import { Form, FormField, FieldTitle, DescriptionInput } from '../../Form'
 import { DateInput } from '../../../../../../shared/ui'
 import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
