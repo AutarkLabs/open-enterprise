@@ -235,7 +235,7 @@ class Issues extends React.PureComponent {
         flexDirection: 'row',
         alignItems: 'flex-end'
       }}>
-      <TextInput placeholder="Search Issues" onChange={this.handleTextFilter} />
+      <TextInput type="search" placeholder="Search issue titles" onChange={this.handleTextFilter} />
       <ActiveFilters
         issues={issues}
         bountyIssues={this.props.bountyIssues}
