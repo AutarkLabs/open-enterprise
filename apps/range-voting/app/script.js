@@ -3,6 +3,7 @@ import { combineLatest } from 'rxjs'
 import { first, map, tap, combineAll } from 'rxjs/operators' // Make sure observables have first()
 import voteSettings, { hasLoadedVoteSettings } from './utils/vote-settings'
 import AddressBookJSON from '../../shared/json-abis/address-book.json'
+import { getTokenSymbol, ETHER_TOKEN_FAKE_ADDRESS } from './utils/token-utils'
 import { EMPTY_CALLSCRIPT } from './utils/vote-utils'
 import AllocationJSON from '../../shared/json-abis/allocations.json'
 
@@ -79,6 +80,7 @@ async function handleEvents(response) {
     entries: { ...entries, ...nextEntries }
   }
   appState = filteredState
+  console.log('state: ',filteredState)
   app.cache('state', filteredState)
 }
 
@@ -183,6 +185,15 @@ function loadVoteDataAllocation(vote, voteId) {
           canExecute,
           options,
         }
+        let symbol
+        const tokenAddress = '0x' + vote.executionScript.slice(794,834)
+        if (tokenAddress === ETHER_TOKEN_FAKE_ADDRESS) {
+          symbol = 'ETH'
+        }
+        else {
+          symbol =  await getTokenSymbol(app, tokenAddress)
+        }
+
 
         allocations.getAccount(voteDescription.externalId)
           .pipe(first())
@@ -190,8 +201,9 @@ function loadVoteDataAllocation(vote, voteId) {
             resolve({
               ...returnObject,
               // These numbers indicate the static param location of the setDistribution
-              // functions amount paramater 
+              // functions amount paramater
               balance: parseInt(vote.executionScript.slice(706, 770), 16),
+              tokenSymbol:  symbol,
               metadata: vote.voteDescription,
               type: 'allocation',
             })

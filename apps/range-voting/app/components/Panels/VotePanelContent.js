@@ -268,7 +268,7 @@ class VotePanelContent extends React.Component {
               </h2>
               {//Change me
               }
-              <p>{' ' + displayBalance + ' ETH'}</p>
+              <p>{' ' + displayBalance + ' ' + vote.data.tokenSymbol}</p>
             </div>
             <div>
               <h2>
