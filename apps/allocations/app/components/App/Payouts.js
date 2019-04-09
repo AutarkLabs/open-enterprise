@@ -96,7 +96,7 @@ const PayoutsNarrow = ({ executePayout, data, tokens }) => (
                 </ContextMenuItem>
               </ContextMenu>
             )}
-            </div>
+          </div>
         </div>
       </NarrowListPayout>
     ))}
