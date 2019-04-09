@@ -182,7 +182,7 @@ contract Allocations is AragonApp, Fundable {
     * @dev This is the function that sets up who the candidates will be, and
     *      where the funds will go for the payout. This is where the payout
     *      object needs to be created in the payouts array.
-    * @notice Create allocation account `_metadata`
+    * @notice Create allocation account '`_metadata`'
     * @param _metadata Any relevent label for the payout
     *
     */
@@ -208,7 +208,7 @@ contract Allocations is AragonApp, Fundable {
 
     /**
     * @dev This function distributes the payouts to the candidates in accordance with the distribution values
-    * @notice Distribute an allocation
+    * @notice Distribute allocation `_payoutId`
     * @param _payoutId Any relevent label for the payout
     */
     function runPayout(uint _accountId, uint256 _payoutId) external auth(EXECUTE_PAYOUT_ROLE) returns(bool success) {
@@ -265,7 +265,7 @@ contract Allocations is AragonApp, Fundable {
     *      to be called by a RangeVote (options get weird if it's not)
     *      but for our use case the “SET_DISTRIBUTION_ROLE” will be given to
     *      the RangeVote.
-    * @notice Create an `_amount` allocation range vote for `_description`
+    * @notice Create a `_amount` allocation range vote for '`_description`'
     * @param _candidateAddresses Array of candidates to be allocated a portion of the payouut
     * @param _supports The Array of all support values for the various candidates. These values are set in range voting
     * @param _accountId The Account used for the payout

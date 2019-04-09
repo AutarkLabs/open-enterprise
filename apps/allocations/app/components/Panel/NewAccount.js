@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types'
 import React from 'react'
+import { Info } from '@aragon/ui'
 
 import { DescriptionInput, Form, FormField, InputDropDown } from '../Form'
 import { isStringEmpty } from '../../utils/helpers'
@@ -41,26 +42,33 @@ class NewAccount extends React.Component {
   render() {
 
     return (
-      <Form
-        onSubmit={this.createAccount}
-        // heading={this.props.heading}
-        submitText="Create Account"
-      >
-        <FormField
-          required
-          label="Description"
-          input={
-            <DescriptionInput
-              name="description"
-              placeholder="Describe your account/project for which you will be creating allocation votes."
-              value={this.state.description}
-              onChange={this.changeField}
-            />
-          }
-        />
-      </Form>
+      <React.Fragment>
+        <Form
+          onSubmit={this.createAccount}
+          // heading={this.props.heading}
+          submitText="Create Account"
+        >
+          <FormField
+            required
+            label="Name"
+            input={
+              <DescriptionInput
+                name="description"
+                placeholder="Name the account that will be used for allocations."
+                value={this.state.description}
+                onChange={this.changeField}
+              />
+            }
+          />
+        </Form>
+
+        <Info.Action title="Warning" style={{ marginTop: '20px' }}>
+          Allocation accounts can hold and transfer ETH, and while they cannot hold tokens, they have the ability to send tokens that your organization holds in the Finance app. Use wisely!
+        </Info.Action>
+      </React.Fragment>
     )
   }
 }
+
 
 export default NewAccount

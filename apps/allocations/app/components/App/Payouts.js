@@ -56,8 +56,8 @@ const showStatus = ({ distSet, recurring, startTime }) => {
     else status = 1
   }
   switch(status) {
-  case 0: return <PayoutStatusWrapper title="Distribution in Progress..." icon={IconTime} color={theme.textSecondary} posTop={1} />
-  case 1: return <PayoutStatusWrapper title="Ready to Distribute" icon={IconFundraising} color="#F5A623" posTop={7} />
+  case 0: return <PayoutStatusWrapper title="Distribution in progress..." icon={IconTime} color={theme.textSecondary} posTop={1} />
+  case 1: return <PayoutStatusWrapper title="Ready to distribute" icon={IconFundraising} color="#F5A623" posTop={7} />
   case 2: return <PayoutStatusWrapper title="Distributed" icon={IconCheck} color={theme.positive} />
   case 3: return <PayoutStatusWrapper title="Rejected" icon={IconCross} color={theme.negative} />
   }
@@ -76,7 +76,7 @@ const PayoutsNarrow = ({ executePayout, data, tokens }) => (
           <PayoutDescription>
             {payout.description}
           </PayoutDescription>
-          <Text.Block size="small" color={theme.textTertiary} style={{ marginTop: '5px' }}>
+          <Text.Block size="small" color={theme.textTertiary}>
             {showStatus(payout)}
           </Text.Block>
         </div>
@@ -96,7 +96,7 @@ const PayoutsNarrow = ({ executePayout, data, tokens }) => (
                 </ContextMenuItem>
               </ContextMenu>
             )}
-          </div>
+            </div>
         </div>
       </NarrowListPayout>
     ))}
@@ -111,18 +111,15 @@ const Payouts = ({ payouts, executePayout, network, tokens }) => {
   payouts.sort(sortByDateKey('startTime'))
 
   return (
-    <Main>
-      <PayoutsWrap>
-
-        <PayoutsTable
-          data={payouts}
-          tokens={tokens}
-          network={network}
-          executePayout={executePayout}
-          list={PayoutsNarrow}
-        />
-      </PayoutsWrap>
-    </Main>
+    <PayoutsWrap>
+      <PayoutsTable
+        data={payouts}
+        tokens={tokens}
+        network={network}
+        executePayout={executePayout}
+        list={PayoutsNarrow}
+      />
+    </PayoutsWrap>
   )
 }
 
@@ -131,14 +128,9 @@ Payouts.propTypes = {
   network: PropTypes.object,
 }
 
-const Main = styled.div`
-  padding: 10px;
-  background-color: #F8FCFD;
-`
 const PayoutsWrap = styled.div`
   flex-grow: 1;
-  padding: 10px;
-  /*background: #1DD9D5;*/
+  padding: 0px 30px 20px 30px;
   > :not(:last-child) {
     margin-bottom: 20px;
   }
