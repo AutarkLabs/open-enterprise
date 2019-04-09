@@ -1,5 +1,4 @@
 import { initializeTokens, vaultLoadBalance } from './token'
-import { filterEntries } from '../../../address-book/app/script'
 import { onFundedAccount, onNewAccount, onPayoutExecuted } from './account'
 import { onEntryAdded, onEntryRemoved } from './entry'
 import { INITIALIZATION_TRIGGER } from './'
@@ -40,12 +39,10 @@ export const handleEvent = async (state, event, settings) => {
     nextState.payouts = nextBoth.payouts
     break
   case 'EntryAdded':
-    nextEntries = await onEntryAdded({ entries, addressBook }, returnValues)
-    nextState.entries = filterEntries(nextEntries)
+    nextState.entries = await onEntryAdded({ entries, addressBook }, returnValues)
     break
   case 'EntryRemoved':
-    nextEntries = await onEntryRemoved({ entries, addressBook }, returnValues)
-    nextState.entries = filterEntries(nextEntries)
+    nextState.entries = await onEntryRemoved({ entries, addressBook }, returnValues)
     break
   default:
     break

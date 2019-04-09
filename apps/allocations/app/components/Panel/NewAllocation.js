@@ -43,6 +43,10 @@ const message = {
   addressSetting: 'Use address book for options',
   transferWarning:
     'This will create a Range Vote and after it closes, it will result in a financial transfer.',
+  tokenTransferWarning:
+    'Since you are proposing an allocation with tokens, it will be withdrawn from your Finance app if approved, since Accounts do not hold tokens.',
+  ethBalanceError: 'Amount is greater than ETH balance held by Account',
+  tokenBalanceError: 'Amount is greater than token balance held by Vault',
 }
 
 const uniqueAddressValidation = (entries, addr) => {
@@ -77,7 +81,7 @@ class NewAllocation extends React.Component {
 
     // react chains the state changes asynchronously
     resetAddressError && this.setState({ addressError: false })
-    resetAllocationsError && this.setState({ allocationError: false })
+    resetAllocationsError && this.setState({ allocationError: false, ethBalanceError: false, tokenBalanceError: false })
     resetDescriptionError && this.setState({ descriptionError: false })
 
     this.setState({ [name]: value })
@@ -115,12 +119,20 @@ class NewAllocation extends React.Component {
     if (state.addressError || state.allocationError || state.descriptionError) {
       return
     }
+    if(allocation.description === ''){
+      this.setState({ descriptionError: true })
+      return
+    }
     if (!informational && allocation.balance === 0) {
       this.setState({ allocationError: true })
       return
     }
-    if(allocation.description === ''){
-      this.setState({ descriptionError: true })
+    if(state.payoutTokenIndex === 0 && state.amount * 10e17 > props.balance) {
+      this.setState({ ethBalanceError: true })
+      return
+    }
+    if(state.payoutTokenIndex !== 0 && state.amount * 10e17 > this.props.balances[state.payoutTokenIndex].amount) {
+      this.setState({ tokenBalanceError: true })
       return
     }
     if (!candidates.length) {
@@ -137,7 +149,6 @@ class NewAllocation extends React.Component {
   render() {
     const { props, state } = this
     const transferEnabled = state.allocationTypeIndex === 1
-
     let availableTokens =  this.props.balances.map( balance => balance.symbol)
 
     const amountInput = {
@@ -155,12 +166,14 @@ class NewAllocation extends React.Component {
       onChange: this.changePayoutToken,
     }
 
-    const warningMessages = (
-      <WarningMessage hasWarning={transferEnabled} type={'transferWarning'} />
+    const amountWarningMessages = (
+      <WarningMessage hasWarning={state.payoutTokenIndex !== 0} type={'tokenTransferWarning'} />
     )
 
-    const errorMessages = [ 'allocationError', 'addressError', 'descriptionError' ].map((e, i) => (
-      <ErrorMessage key={i} hasError={state[e]} type={e} />
+    const errorMessages = [ 'allocationError', 'addressError', 'descriptionError', 'ethBalanceError', 'tokenBalanceError' ].map((e, i) => (
+      <div>
+        <ErrorMessage key={i} hasError={state[e]} type={e} />
+      </div>
     ))
 
     const descriptionField = (
@@ -274,10 +287,10 @@ class NewAllocation extends React.Component {
           description={props.description}
           submitText="Submit Allocation"
         >
-          {warningMessages}
           {descriptionField}
           {settingsField}
           {amountField}
+          {amountWarningMessages}
           {addressBookField}
           {userOptionsField}
           {errorMessages}

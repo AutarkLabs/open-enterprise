@@ -79,7 +79,7 @@ class App extends React.Component {
     })
   }
 
-  newAllocation = (address, description, id) => {
+  newAllocation = (address, description, id, balance) => {
     // The whole entries vs entities thing needs to be fixed; these are too close
     //const userEntity = {addr: '0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb', data: {entryAddress: '0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb', name: 'Bob', entryType: 'user'}}
     const promptEntity = {
@@ -95,6 +95,7 @@ class App extends React.Component {
         data: {
           address,
           id,
+          balance,
           heading: 'New Allocation',
           subHeading: description,
           onSubmitAllocation: this.submitAllocation,
