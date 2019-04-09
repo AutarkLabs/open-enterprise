@@ -7,7 +7,6 @@ import { Accounts, NewAccountButton, Payouts } from '.'
 import { Title } from '../Shared'
 import { NewAccount, NewAllocation } from '../Panel'
 import { networkContextType } from '../../../../../shared/ui'
-import { allocationsMockData } from '../../utils/mockData'
 
 class App extends React.Component {
   static propTypes = {
@@ -27,9 +26,7 @@ class App extends React.Component {
     accounts: [],
     panel: {
       visible: false,
-    },
-    // TODO: Don't use this in production
-    ...allocationsMockData,
+    }
   }
 
   getChildContext() {

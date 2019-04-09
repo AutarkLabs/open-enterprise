@@ -279,6 +279,7 @@ contract('RangeVoting App', accounts => {
           [ 0, 0, 0 ],
           [ 4, 4, 4 ],
           'arg1arg2arg3',
+          'vote description',
           [ 1, 2, 3 ],
           [ 2, 4, 6 ],
           5,

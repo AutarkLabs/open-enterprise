@@ -58,10 +58,10 @@ class VotePanelContent extends React.Component {
     let optionsArray = []
 
     this.state.voteOptions.forEach(element => {
-      let voteWeight = element.sliderValue
+      let voteWeight = element.trueValue
         ? Math.round(
           parseFloat(
-            (element.sliderValue * this.state.userBalance).toFixed(2)
+            (element.trueValue * this.state.userBalance).toFixed(2)
           )
         )
         : 0
@@ -130,18 +130,19 @@ class VotePanelContent extends React.Component {
   }
   sliderUpdate = (value, idx) => {
     const total = this.state.voteOptions.reduce(
-      (acc, { sliderValue }, index) => {
+      (acc, { trueValue }, index) => {
         return (
           acc +
           (idx === index
             ? Math.round(value * 100) || 0
-            : Math.round(sliderValue * 100) || 0)
+            : trueValue || 0)
         )
       },
       0
     )
     if (total <= 100) {
       this.state.voteOptions[idx].sliderValue = value
+      this.state.voteOptions[idx].trueValue = Math.round(value * 100)
       this.setState({ remaining: 100 - total })
     }
   }
@@ -179,7 +180,6 @@ class VotePanelContent extends React.Component {
     const {
       showResults,
       voteOptions,
-
       remaining,
       voteAmounts,
       voteWeights,
@@ -268,7 +268,7 @@ class VotePanelContent extends React.Component {
               </h2>
               {//Change me
               }
-              <p>{' ' + displayBalance + ' ETH'}</p>
+              <p>{' ' + displayBalance + ' ' + vote.data.tokenSymbol}</p>
             </div>
             <div>
               <h2>
@@ -322,7 +322,7 @@ class VotePanelContent extends React.Component {
                           onUpdate={value => this.sliderUpdate(value, idx)}
                         />
                         <ValueContainer>
-                          {Math.round(option.sliderValue * 100) || 0}
+                          {option.trueValue || 0}
                         </ValueContainer>
                       </div>
                     </div>
@@ -351,7 +351,7 @@ class VotePanelContent extends React.Component {
             <SidePanelSeparator />
           </div>
         )}
-        {getVoteStatus(vote)===VOTE_STATUS_SUCCESSFUL && (
+        {(getVoteStatus(vote)===VOTE_STATUS_SUCCESSFUL && (endDate < Date.now()) ) && (
           <div>
             <SubmitButton mode="strong" wide onClick={this.executeVote}>
               Execute Vote

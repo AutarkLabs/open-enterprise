@@ -11,7 +11,7 @@ import {
   ContextMenu,
   ContextMenuItem,
 } from '@aragon/ui'
-import { displayCurrency } from '../../utils/helpers'
+import { displayCurrency, sortByDateKey } from '../../utils/helpers'
 import {
   PayoutDescription,
   PayoutsTable,
@@ -24,7 +24,6 @@ import { BigNumber } from 'bignumber.js'
 
 
 const translateToken = (payoutToken,tokens) => {
-  console.log('translate tokens', payoutToken, tokens)
   if(payoutToken === '0x0000000000000000000000000000000000000000'){
     return 'ETH'
   }
@@ -84,7 +83,7 @@ const PayoutsNarrow = ({ executePayout, data, tokens }) => (
         <div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center' }}>
           <div style={{ marginRight: '10px' }}>
             <AmountBadge>
-              {displayCurrency(BigNumber(payout.amount))}{' '}{translateToken(payout.rewardToken,tokens)}
+              {displayCurrency(BigNumber(payout.amount))}{' '}{translateToken(payout.token,tokens)}
             </AmountBadge>
           </div>
           <div>
@@ -109,6 +108,7 @@ const Payouts = ({ payouts, executePayout, network, tokens }) => {
   if (payoutsEmpty) {
     return null
   }
+  payouts.sort(sortByDateKey('startTime'))
 
   return (
     <PayoutsWrap>

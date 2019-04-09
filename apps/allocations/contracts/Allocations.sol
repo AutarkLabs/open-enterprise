@@ -242,6 +242,7 @@ contract Allocations is AragonApp, Fundable {
                     Account storage candidateAccount = accounts[accountProxies[payout.candidateAddresses[i]]];
                     candidateAccount.balance = candidateAccount.balance.add(individualPayout);
                     account.balance = account.balance.sub(individualPayout);
+                    emit FundAccount(accountProxies[payout.candidateAddresses[i]]);
                 } else {
                     payout.candidateAddresses[i].transfer(individualPayout);
                     account.balance = account.balance.sub(individualPayout);
@@ -309,10 +310,10 @@ contract Allocations is AragonApp, Fundable {
             // minimum granularity is a single day
             // This check can be disabled currently to enable testing of shorter times
             require(payout.period > 86399,"period too short");
-            payout.startTime = block.timestamp; // solium-disable-line security/no-block-members
         } else {
             payout.period = 0;
         }
+        payout.startTime = block.timestamp; // solium-disable-line security/no-block-members
 
         payout.distSet = true;
         payout.supports = _supports;

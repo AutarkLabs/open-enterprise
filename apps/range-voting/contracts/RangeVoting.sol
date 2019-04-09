@@ -510,7 +510,7 @@ contract RangeVoting is IForwarder, AragonApp {
         bytes32 externalId1;
         bytes32 externalId2;
         uint256 idOffset;
-        uint256 infoStart = _goToParamOffset(INDICIES_PARAM_LOC,_executionScript) + 0x20;
+        uint256 infoStart = _goToParamOffset(CANDIDATE_INFO_PARAM_LOC,_executionScript) + 0x20;
         //Location(infoStart);
         emit CandidateQty(_candidateLength);
         for (uint256 i = 0 ; i < _candidateLength; i++) {

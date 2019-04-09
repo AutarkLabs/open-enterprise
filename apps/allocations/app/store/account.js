@@ -82,9 +82,9 @@ const loadPayoutData = async (accountId, payoutId) => {
 
         if (data) {
           resolve({
-            rewardToken: data[0].token,
+            token: data[0].token,
             amount: data[0].amount,
-            StartTime: new Date(data[0].startTime),
+            startTime: new Date(data[0].startTime * 1000),
             recurring: data[0].recurring,
             period: data[0].period,
             description: data[2],

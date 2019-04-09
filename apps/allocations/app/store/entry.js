@@ -36,7 +36,6 @@ export const onEntryRemoved = async ({ entries }, { addr }) => {
 
 const loadEntryData = async (addr, addressBook) => {
   const addressBookApp = addressBook.contract
-
   return addressBookApp
     .getEntry(addr)
     .pipe(
