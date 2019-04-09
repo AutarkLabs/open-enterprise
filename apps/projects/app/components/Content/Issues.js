@@ -14,7 +14,7 @@ import BigNumber from 'bignumber.js'
 import { compareAsc, compareDesc } from 'date-fns'
 
 import { STATUS } from '../../utils/github'
-import { GET_ISSUES } from '../../utils/gql-queries.js'
+import { GET_ISSUES, getIssuesGQL } from '../../utils/gql-queries.js'
 import { DropDownButton as ActionsMenu, FilterBar } from '../Shared'
 import { Issue, Empty } from '../Card'
 import { IssueDetail } from './IssueDetail'
@@ -43,6 +43,7 @@ class Issues extends React.PureComponent {
     reload: false,
     currentIssue: {},
     showIssueDetail: false,
+    repos: {},
   }
 
   componentWillMount() {
@@ -374,6 +375,16 @@ class Issues extends React.PureComponent {
       }
   }
 
+  showMoreIssues = repos => {
+    console.log('showMoreIssues' + repos)
+    this.setState(({ prevState }) => {
+      Object.keys(repos).forEach(repoId => repos[repoId] = {
+        endCursor: repos[repoId].endCursor,
+        showMore: true,
+      })
+    })
+  }
+
   render() {
     if (this.props.status === STATUS.INITIAL) {
       return <Unauthorized onLogin={this.props.onLogin} />
@@ -421,24 +432,55 @@ class Issues extends React.PureComponent {
       )
     }
 
-    const reposIds = projects.map(project => project.data._repo)
-
+    // TODO: this will be true if there are more issues to show in any repos - 
+    // regardless of filtering by repo
+    let moreIssuesToShow = false
+    
     // Build an array of plain issues by flattening the data obtained from github API
-    const flattenIssues = nodes =>
-      nodes && [].concat(...nodes.map(node => node.issues.nodes))
+    const flattenIssues = data => {
+      console.log('DATA', data)
+      let issues = []
+      let totalCount = 0
+      projects.forEach((project, i) => {
+        if (data['node' + i]) {
+          repos[project.data._repo] = {
+            totalCount: data['node' + i].issues.totalCount,
+            endCursor: data['node' + i].issues.pageInfo.endCursor,
+          }
+          totalCount += data['node' + i].issues.totalCount
+          issues = issues.concat(...data['node' + i].issues.nodes)
+        }
+      })
+      moreIssuesToShow = issues.length < totalCount
+      console.log('REPOS', repos)
+      console.log('ISSUES', issues)
+      return issues
+    }
 
     const currentSorter = this.generateSorter()
+
+    // totalCount means all issues (per repo), endCursor is the beginning
+    // of a new batch (returned by GitHub), showMore is for requesting
+    // more data
+    const repos = {}
+    projects.forEach(project => repos[project.data._repo] = {
+      totalCount: 0,
+      endCursor: this.state.repos[project] ? this.state.repos[project].endCursor : '',
+      showMore: this.state.repos[project] ? this.state.repos[project].showMore : false,
+      fetch: 3,
+    })
+
+    const GET_ISSUES2 = getIssuesGQL(repos)
 
     return (
       <Query
         fetchPolicy="cache-first"
-        query={GET_ISSUES}
-        variables={{ reposIds }}
+        query={GET_ISSUES2}
         onError={console.error}
       >
         {({ data, loading, error, refetch }) => {
-          if (data && data.nodes) {
-            const issues = flattenIssues(data.nodes)
+          if (data) {
+            const issues = flattenIssues(data)
             const issuesFiltered = this.applyFilters(issues)
             return (
               <StyledIssues>
@@ -480,6 +522,9 @@ class Issues extends React.PureComponent {
                         />
                       ))}
                   </ScrollWrapper>
+                  <div style={{ textAlign: 'center' }}>
+                    {moreIssuesToShow && <Button mode="strong" onClick={repos => this.showMoreIssues(repos)}>Show More</Button>}
+                  </div>
                 </IssuesScrollView>
               </StyledIssues>
             )

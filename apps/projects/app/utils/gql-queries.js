@@ -38,6 +38,59 @@ export const GET_ISSUES = gql`
     }
   }
 `
+export const getIssuesGQL = repos => {
+  let q = `
+    query getIssuesForRepos {
+  `
+  Object.keys(repos).forEach((repoId, i) => {
+    q += 'node' + i + ': node(id: "' + repoId + `") {
+      ... on Repository {
+        issues(last: ` + repos[repoId].fetch + `) {
+          totalCount
+          pageInfo {
+            endCursor
+            hasNextPage
+          }    
+          nodes {
+            number
+            id
+            title
+            body
+            createdAt
+            repository {
+              id
+              name
+            }
+            labels(first: 30) {
+              totalCount
+              edges {
+                node {
+                  id
+                  name
+                  description
+                  color
+                }
+              }
+            }
+            milestone {
+              id
+              title
+            }
+            state
+            url
+          }
+        }
+      }
+    }
+    `
+  })
+  q += `
+}
+  `
+  console.log('---',q)
+  return gql`${q}`
+}
+
 export const NEW_ISSUE = gql`
   mutation create($title: String!, $description: String, $id: ID!) {
     createIssue(
