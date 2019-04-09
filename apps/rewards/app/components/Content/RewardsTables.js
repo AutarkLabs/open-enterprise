@@ -19,7 +19,7 @@ const formatAvgAmount = (amount, symbol, color = 'black') => {
     </Text.Block>
   )
 }
-  
+
 const AverageRewards = ({ titles, numbers }) => (
   <AverageRewardsTable>
     <AverageItem>
@@ -40,11 +40,12 @@ AverageRewards.propTypes = {
   titles: PropTypes.arrayOf(PropTypes.string).isRequired,
   numbers: PropTypes.arrayOf(PropTypes.object).isRequired,
 }
-  
+
 const RewardsTable = props => {
   const Narrow = props.belowMedium
   const Wide = props.aboveMedium
 
+  console.log('props: ', props)
   return (
     <div>
       <Text.Block size="large" weight="bold">
@@ -66,7 +67,7 @@ const RewardsTable = props => {
 
 RewardsTable.propTypes = {
   title: PropTypes.string.isRequired,
-  data: PropTypes.arrayOf(PropTypes.object).isRequired,
+  rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
   belowMedium: PropTypes.func.isRequired,
   aboveMedium: PropTypes.func.isRequired,
 }
@@ -118,4 +119,3 @@ const AmountBadge = styled(Badge).attrs({
   text-size: large;
 `
 export { AverageRewards, formatAvgAmount, RewardDescription, RewardsTable, NarrowList, NarrowListReward, AmountBadge }
-

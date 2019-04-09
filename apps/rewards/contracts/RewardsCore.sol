@@ -24,6 +24,7 @@ contract RewardsCore is IsContract, AragonApp {
         uint delay;
         uint value;
         uint blockStart;
+        string description;
         mapping (address => bool) claimed;
     }
 
@@ -56,21 +57,27 @@ contract RewardsCore is IsContract, AragonApp {
     }
 
     function getReward(uint rewardID) external view returns(
+        string description,
         bool isMerit,
         address referenceToken,
         address rewardToken,
         uint amount,
+        uint startBlock,
         uint endBlock,
+        uint duration,
         uint delay,
         uint rewardAmount
     )
     {
         Reward storage reward = rewards[rewardID];
+        description = reward.description;
         isMerit = reward.isMerit;
         referenceToken = reward.referenceToken;
         rewardToken = reward.rewardToken;
         amount = reward.amount;
         endBlock = reward.blockStart + reward.duration;
+        startBlock = reward.blockStart;
+        duration = reward.duration;
         delay = reward.delay;
         if (reward.isMerit) {
             rewardAmount = calculateMeritReward(reward);
@@ -94,6 +101,7 @@ contract RewardsCore is IsContract, AragonApp {
     * @return the reward Id
     */
     function newReward(
+        string _description,
         bool _isMerit,
         address _referenceToken,
         address _rewardToken,
@@ -113,6 +121,7 @@ contract RewardsCore is IsContract, AragonApp {
         require(_startBlock > MiniMeToken(_referenceToken).creationBlock(),"cannot start period prior to the creation block");
         rewardId = rewards.length++;
         Reward storage reward = rewards[rewards.length - 1];
+        reward.description = _description;
         reward.isMerit = _isMerit;
         reward.referenceToken = MiniMeToken(_referenceToken);
         reward.rewardToken = _rewardToken;
@@ -124,6 +133,7 @@ contract RewardsCore is IsContract, AragonApp {
         emit RewardAdded(rewardId);
         if (_occurances > 1) {
             newReward(
+                _description,
                 _isMerit,
                 _referenceToken,
                 _rewardToken,

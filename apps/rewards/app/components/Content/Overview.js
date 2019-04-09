@@ -65,7 +65,7 @@ const RewardsTableNarrow = ({ title, data, fourthColumn, fourthColumnData, openD
           <Text.Block size="small" color={theme.textSecondary} style={{ marginTop: '5px' }}>
             {reward.isMerit ? 'Merit' : 'Dividend'}
             {dot}
-            Monthly
+            {reward.isMerit ? 'One-Time' : 'Monthly'}
             {dot}
             {fourthColumnData(reward)}
           </Text.Block>
@@ -80,38 +80,44 @@ const RewardsTableNarrow = ({ title, data, fourthColumn, fourthColumnData, openD
   </NarrowList>
 )
 
-const RewardsTableWide = ({ title, data, fourthColumn, fourthColumnData, openDetails }) => (
-  <Table
-    style={{ width: '100%' }}
-    header={
-      <TableRow>
-        {headersNames(fourthColumn).map(header => (
-          <TableHeader key={header} title={header} />
-        ))}
-      </TableRow>
-    }
-  >
-    {data.map((reward, i) => (
-      <ClickableTableRow key={i} onClick={generateOpenDetails(reward, openDetails)}>
-        <TableCell>
-          <RewardDescription>
-            {reward.description}
-          </RewardDescription>
-        </TableCell>
-        <TableCell>
-          {reward.isMerit ? 'Merit' : 'Dividend'}
-        </TableCell>
-        <TableCell>
-          Monthly
-        </TableCell>
-        <TableCell>
-          {fourthColumnData(reward)}
-        </TableCell>
-        <TableCell>{displayCurrency(reward.amount)}{' '}{translateToken(reward.rewardToken)}</TableCell>
-      </ClickableTableRow>
-    ))}
-  </Table>
-)
+const RewardsTableWide = ({ title, rewards, fourthColumn, fourthColumnData, openDetails }) => {
+  console.log(rewards)
+  return (
+    <Table
+      style={{ width: '100%' }}
+      header={
+        <TableRow>
+          {headersNames(fourthColumn).map(header => (
+            <TableHeader key={header} title={header} />
+          ))}
+        </TableRow>
+      }
+    >
+      {rewards.map((reward, i) => (
+        <ClickableTableRow key={i} onClick={generateOpenDetails(reward, openDetails)}>
+          <TableCell>
+            <RewardDescription>
+              {reward.description}
+            </RewardDescription>
+          </TableCell>
+          <TableCell>
+            {reward.isMerit ? 'Merit Reward' : 'Dividend'}
+          </TableCell>
+          <TableCell>
+            {reward.isMerit ? 'One-Time' : 'Monthly'}
+          </TableCell>
+          <TableCell>
+            {fourthColumnData(reward)}
+          </TableCell>
+          <TableCell>
+            <AmountBadge style={{ margin: '0px', padding: '5px', paddingRight: '10px', paddingLeft: '10px', }}>
+              {displayCurrency(reward.amount)}{' '}{translateToken(reward.rewardToken)}
+            </AmountBadge>
+          </TableCell>
+        </ClickableTableRow>
+      ))}
+    </Table>
+  )}
 
 /*
 const leadersList = leaders => (
@@ -123,24 +129,26 @@ const leadersList = leaders => (
 )
 */
 
-// TODO: apply logic
-const displayNextPayout = reward => '-' + reward.date + '-'
+const displayNextPayout = reward => Intl.DateTimeFormat().format(reward.endDate)
 const displayStatus = reward => 'Pending'
-const displayLastPayout = reward => '-' + reward.date + '-'
+const displayLastPayout = reward => Intl.DateTimeFormat().format(reward.endDate)
+const futureRewards = rewards => rewards.filter(reward => reward.endDate > Date.now())
+const pastRewards = rewards => rewards.filter(reward => reward.endDate <= Date.now())
 
 const tableType = [
-  { title: 'Current Rewards', fourthColumn: 'Next Payout', fourthColumnData: displayNextPayout },
-  { title: 'Pending Rewards', fourthColumn: 'Status', fourthColumnData: displayStatus },
-  { title: 'Past Rewards', fourthColumn: 'Last Payout', fourthColumnData: displayLastPayout },
+  { title: 'Current Rewards', fourthColumn: 'Next Payout', fourthColumnData: displayNextPayout, filterRewards: futureRewards },
+  // This will be implemented after advanced forwarding is implemented in the Aragon API
+  //{ title: 'Pending Rewards', fourthColumn: 'Status', fourthColumnData: displayStatus },
+  { title: 'Past Rewards', fourthColumn: 'Last Payout', fourthColumnData: displayLastPayout, filterRewards: pastRewards },
 ]
 
 const Overview = ({ rewards, newReward, openDetails }) => {
   const rewardsEmpty = rewards.length === 0
-  
+
   if (rewardsEmpty) {
     return <Empty tab='Overview' action={newReward} />
   }
-
+  console.log('rewards: ',rewards)
   return (
     <OverviewMain>
       <RewardsWrap>
@@ -149,13 +157,15 @@ const Overview = ({ rewards, newReward, openDetails }) => {
           numbers={averageRewardsNumbers}
         />
 
-        {tableType.map(({ title, fourthColumn, fourthColumnData }) => (
+        {tableType.map(({ title, fourthColumn, fourthColumnData, filterRewards }) => (
+          filterRewards(rewards).length > 0
+          &&
           <RewardsTable
             key={title}
             title={title}
             fourthColumn={fourthColumn}
             fourthColumnData={fourthColumnData}
-            data={rewards}
+            rewards={filterRewards(rewards)}
             openDetails={openDetails}
             belowMedium={RewardsTableNarrow}
             aboveMedium={RewardsTableWide}

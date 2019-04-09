@@ -67,7 +67,7 @@ class App extends React.Component {
   }
 
   onNewReward = async reward => {
-    let currentBlock = await this.props.app.web3Eth('getBlockNumber').first().toPromise()
+    let currentBlock = await this.props.app.web3Eth('getBlockNumber').toPromise()
     let startBlock = currentBlock + millisecondsToBlocks(Date.now(), reward.dateStart)
     console.log(startBlock)
     if (!reward.isMerit) {
@@ -99,7 +99,8 @@ class App extends React.Component {
     }
 
     console.log(
-      'isMerit ',reward.isMerit,
+      'description', reward.description,
+      '\nisMerit ',reward.isMerit,
       '\nreferenceAsset ', reward.referenceAsset,
       '\ncurrency', reward.currency,
       '\namount', reward.amount,
@@ -112,6 +113,7 @@ class App extends React.Component {
 
 
     this.props.app.newReward(
+      reward.description, //string _description
       reward.isMerit, //bool _isMerit,
       reward.referenceAsset, //address _referenceToken,
       reward.currency, //address _rewardToken,

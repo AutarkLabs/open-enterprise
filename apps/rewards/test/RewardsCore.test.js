@@ -121,6 +121,7 @@ contract('Rewards App', accounts => {
       let blockNumber = await getBlockNumber()
       dividendRewardIds = rewardAdded(
         await app.newReward(
+          'testReward',
           false,
           referenceToken.address,
           rewardToken.address,
@@ -140,6 +141,7 @@ contract('Rewards App', accounts => {
       let blockNumber = await getBlockNumber()
       meritRewardIds = rewardAdded(
         await app.newReward(
+          'testReward',
           true,
           referenceToken.address,
           rewardToken.address,
@@ -162,12 +164,12 @@ contract('Rewards App', accounts => {
 
     it('gets information on the dividend reward', async () => {
       rewardInformation = await app.getReward(dividendRewardIds[0])
-      assert(rewardInformation[0] ===false, 'First reward should be dividend')
+      assert(rewardInformation[1] === false, 'First reward should be dividend')
     })
 
     it('gets information on the merit reward', async () => {
       rewardInformation = await app.getReward(meritRewardIds[0])
-      assert(rewardInformation[0] === true, 'third reward should be merit')
+      assert(rewardInformation[1] === true, 'third reward should be merit')
     })
 
     it('receives rewards dividends', async () => {
@@ -186,6 +188,7 @@ contract('Rewards App', accounts => {
       let blockNumber = await getBlockNumber()
       meritRewardIds = rewardAdded(
         await app.newReward(
+          'testReward',
           true,
           referenceToken.address,
           rewardToken.address,
@@ -208,6 +211,7 @@ contract('Rewards App', accounts => {
     it('fails to create reward without permission', () => {
       assertRevert(async () => {
         await app.newReward(
+          'testReward',
           false,
           root,
           rewardToken.address,
@@ -223,6 +227,7 @@ contract('Rewards App', accounts => {
     it('fails to create reward with period starting prior to token creation', () => {
       assertRevert(async () => {
         await app.newReward(
+          'testReward',
           false,
           root,
           rewardToken.address,
@@ -240,6 +245,7 @@ contract('Rewards App', accounts => {
     it('fails to create reward with invalid reference token', () => {
       assertRevert(async () => {
         await app.newReward(
+          'testReward',
           false,
           root,
           rewardToken.address,
@@ -255,6 +261,7 @@ contract('Rewards App', accounts => {
     it('fails to create reward with invalid reward token', () => {
       assertRevert(async () => {
         await app.newReward(
+          'testReward',
           false,
           referenceToken.address,
           root,
@@ -270,6 +277,7 @@ contract('Rewards App', accounts => {
     it('fails to create merit reward multiple occurances', () => {
       assertRevert(async () => {
         await app.newReward(
+          'testReward',
           true,
           referenceToken.address,
           rewardToken.address,
@@ -285,6 +293,7 @@ contract('Rewards App', accounts => {
     it('fails to create dividend reward too many occurances', () => {
       assertRevert(async () => {
         await app.newReward(
+          'testReward',
           false,
           referenceToken.address,
           rewardToken.address,
@@ -301,6 +310,7 @@ contract('Rewards App', accounts => {
       let blockNumber = await getBlockNumber()
       const meritRewardId = rewardAdded(
         await app.newReward(
+          'testReward',
           true,
           referenceToken.address,
           rewardToken.address,
@@ -313,13 +323,14 @@ contract('Rewards App', accounts => {
       )
       const award = await app.getReward(meritRewardId)
       await app.claimReward(meritRewardId)
-      assert.strictEqual(award[6].toNumber(), 0, 'amount should be 0')
+      assert.strictEqual(award[9].toNumber(), 0, 'amount should be 0')
     })
 
     it('pays out a merit reward of zero with no token changes for the user', async() => {
       let blockNumber = await getBlockNumber()
       const meritRewardId = rewardAdded(
         await app.newReward(
+          'testReward',
           true,
           referenceToken.address,
           rewardToken.address,

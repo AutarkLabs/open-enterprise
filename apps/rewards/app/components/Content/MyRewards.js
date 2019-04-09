@@ -63,7 +63,7 @@ const mockReward = [{
   claimed: true,
 }]
 
-const MyRewardsWide = ({ claimed, dat, openDetails, network, tokens }) => (
+const MyRewardsWide = ({ claimed, rewards, openDetails, network, tokens }) => (
   <Table
     style={{ width: '100%' }}
     header={
@@ -75,7 +75,7 @@ const MyRewardsWide = ({ claimed, dat, openDetails, network, tokens }) => (
       </TableRow>
     }
   >
-    {data.map((reward, i) => (
+    {rewards.map((reward, i) => (
       <ClickableTableRow key={i} onClick={generateOpenDetails(reward, openDetails)}>
         <TableCell>
           <RewardDescription>
@@ -164,20 +164,20 @@ const MyRewards = ({ rewards, newReward, openDetails, network, tokens }) => {
         <RewardsTable
           title="Claimed Rewards"
           claimed={true}
-          data={rewards}
+          rewards={rewards}
           openDetails={openDetails}
           network={network}
-	  tokens={tokens}
+	        tokens={tokens}
           belowMedium={MyRewardsNarrow}
           aboveMedium={MyRewardsWide}
         />
         <RewardsTable
           title="Unclaimed Rewards"
           claimed={false}
-          data={rewards}
+          rewards={rewards}
           openDetails={openDetails}
           network={network}
-	  tokens={tokens}
+	        tokens={tokens}
           belowMedium={MyRewardsNarrow}
           aboveMedium={MyRewardsWide}
         />
@@ -212,4 +212,3 @@ const ClickableTableRow = styled(TableRow)`
 `
 
 export default provideNetwork(MyRewards)
-

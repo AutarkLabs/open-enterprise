@@ -28,5 +28,6 @@ export const handleEvent = async (state, event, settings) => {
   }
 
   nextState = { ...state, ...nextState }
+  console.log('nextState: ', nextState)
   return nextState
 }
