@@ -31,14 +31,109 @@ export const loadIssueData = ({ repoId, issueNumber }) => {
   })
 }
 
-// protects against eth events coming back in the wrong order for bounties
+const existPendingApplications = issue => {
+  console.log('existPendingApplications 1', issue)
+  if (!('requestsData' in issue) || issue.requestsData.length === 0) return false
+  console.log('existPendingApplications 2', issue)
+
+  let exists = false
+  
+  issue.requestsData.forEach(rd => {
+    if (!('review' in rd)) exists = true
+    console.log('existPendingApplications 3', exists)
+  })
+
+  console.log('existPendingApplications 4', exists)
+
+  return exists
+}
+
+const existWorkInProgress = issue => {
+  console.log('exist WIP 1', issue)
+  if (!('requestsData' in issue) || issue.requestsData.length === 0) return false
+  console.log('exist WIP 2', issue)
+
+  let exists = false
+
+  // each accepted request can have work submitted already
+  issue.requestsData.forEach(request => {
+    if ('review' in request && request.review.approved) {
+      if (!('workSubmissions' in issue) || issue.workSubmissions.length === 0) {
+        exists = true
+        console.log('exist WIP 3', exists)
+        return
+      }
+      console.log('exist WIP 4', issue)
+
+      issue.workSubmissions.forEach(work => {
+        if (work.user.login === request.user.login && !('review' in work)) {
+          exists = true
+          console.log('exist WIP 5', exists)
+
+        }
+      })
+      // return true if there is any approved application with no work submitted
+      if (exists) return exists
+    }
+  })
+  console.log('exist WIP 6', exists)
+
+  return exists
+}
+
+const workReadyForReview = issue => {
+  console.log('exist ready for rev 1', issue)
+  if (!('workSubmissions' in issue) || issue.workSubmissions.length === 0) return false
+
+  let exists = false
+
+  issue.workSubmissions.forEach(work => {
+    if (!('review' in work)) {
+      exists = true
+      console.log('exist ready for rev 2', exists)
+    }
+  })
+  return exists
+}
+'review'
+
+
+// protects against eth events coming back in the wrong order for bountiesrequest.
 export const determineWorkStatus = (issue, event) => {
   const currentStatus = issue.workStatus
   const currentStep = currentStatus ? reverseWorkStatus[currentStatus].step : -1
   const { step, status } = workStatus[event]
-
+  
   if (step > currentStep) issue.workStatus = status
+  
+  console.log('determine status', issue)
 
+  if (!existPendingApplications(issue) && !(existWorkInProgress(issue)) && !(workReadyForReview(issue))) {
+    issue.workStatus = 'funded'
+    console.log('determine status: funded!')
+    return issue
+  }
+
+  if (existPendingApplications(issue) && !(existWorkInProgress(issue)) && !(workReadyForReview(issue))) {
+    issue.workStatus = 'review-applicants'
+    console.log('determine status: review-applicants!')
+    return issue
+  }
+
+  if (workReadyForReview(issue)) {
+    issue.workStatus = 'review-work'
+    console.log('determine status: review-work!')
+    return issue
+  }
+
+  if (existWorkInProgress(issue)) {
+    issue.workStatus = 'in-progress'
+    console.log('determine status: in-progress!')
+    return issue
+  }
+  console.log('determine status: done!')
+
+  issue.workStatus = 'fulfilled'
   return issue
 }
 
@@ -46,9 +141,10 @@ const getRequest = (repoId, issueNumber, applicantId) => {
   return new Promise(resolve => {
     app.call('getApplicant', repoId, issueNumber, applicantId).subscribe(async (response) => {
       const bountyData = await ipfsGet(response.application)
+      console.log('getRequest:', response)
       resolve({
         contributorAddr: response.applicant,
-        status: assignmentRequestStatus[response.status],
+        status: assignmentRequestStatus[parseInt(response.status)],
         requestIPFSHash: response.application,
         ...bountyData
       })
@@ -63,6 +159,7 @@ const loadRequestsData = ({ repoId, issueNumber }) => {
       for(let applicantId = 0; applicantId < response; applicantId++){
         applicants.push(await getRequest(repoId, issueNumber, applicantId))
       }
+      console.log('loadRequestsData:',applicants)
       resolve(applicants)
     })
   })
@@ -100,11 +197,11 @@ export const updateIssueDetail = async (data, response) => {
   const requestsData = await loadRequestsData(response.returnValues)
   returnData.requestsData = requestsData
   const status = data.workStatus
-  if (status && reverseWorkStatus[status].step >= SUBMISSION_STAGE) {
-    let submissionData = await loadSubmissionData(response.returnValues)
-    returnData.workSubmissions = submissionData
-    returnData.work = submissionData[submissionData.length - 1]
-  }
+  //if (status && reverseWorkStatus[status].step >= SUBMISSION_STAGE) {
+  let submissionData = await loadSubmissionData(response.returnValues)
+  returnData.workSubmissions = submissionData
+  returnData.work = submissionData[submissionData.length - 1]
+  //}
   return returnData
 }
 

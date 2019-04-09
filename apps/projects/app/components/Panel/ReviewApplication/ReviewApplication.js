@@ -55,9 +55,10 @@ class ReviewApplication extends React.Component {
 
 
   render() {
-    console.log('++ReviewApplic render', this.props.issue)
     const { issue } = this.props
     const request = issue.requestsData[this.state.requestIndex]
+
+    console.log('RevApp #' + this.state.requestIndex, request)
 
     const application = {
       user: {
@@ -121,37 +122,43 @@ class ReviewApplication extends React.Component {
 
           <FieldTitle>Estimated Completion</FieldTitle>
           <DetailText>{application.eta}</DetailText>
-
         </ApplicationDetails>
-        {/* TODO: There is currently nowhere to display this feedback to the user,
-            Will be re-implemented when github messaging is enabled.*/
-          <FormField
-            label="Feedback"
-            input={
-              <DescriptionInput
-                name='feedback'
-                rows="3"
-                onChange={this.changeField}
-                placeholder="Do you have any feedback to provide the applicant?"
-                value={this.state.feedback}
-              />
-            }
-          />
-        }
-        <ReviewRow>
-          <ReviewButton
-            emphasis="negative"
-            onClick={this.onReject}
-          >
+
+        {('review' in request) ? (
+          <FieldTitle>Application Status</FieldTitle>
+          
+        ) : (
+          <React.Fragment>
+
+            <FormField
+              label="Feedback"
+              input={
+                <DescriptionInput
+                  name='feedback'
+                  rows="3"
+                  onChange={this.changeField}
+                  placeholder="Do you have any feedback to provide the applicant?"
+                  value={this.state.feedback}
+                />
+              }
+            />
+
+            <ReviewRow>
+              <ReviewButton
+                emphasis="negative"
+                onClick={this.onReject}
+              >
             Reject
-          </ReviewButton>
-          <ReviewButton
-            emphasis="positive"
-            onClick={this.onAccept}
-          >
+              </ReviewButton>
+              <ReviewButton
+                emphasis="positive"
+                onClick={this.onAccept}
+              >
             Accept
-          </ReviewButton>
-        </ReviewRow>
+              </ReviewButton>
+            </ReviewRow>
+          </React.Fragment>
+        )}
 
       </div>
     )

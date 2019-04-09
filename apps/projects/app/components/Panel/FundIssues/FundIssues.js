@@ -181,9 +181,11 @@ class NewBountyAllocation extends React.Component {
             required
             input={
               <DescriptionInput
-                rows={3}
+                rows="3"
+                name="description"
                 style={{ resize: 'none' }}
                 onChange={this.descriptionChange}
+                value={this.state.description}
                 wide
               />
             }

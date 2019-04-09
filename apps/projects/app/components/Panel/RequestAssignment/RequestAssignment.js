@@ -77,8 +77,9 @@ class RequestAssignment extends React.Component {
           required
           input={
             <DescriptionInput
+              value={this.state.workplan}
               name="workplan"
-              rows={3}
+              rows="3"
               onChange={this.changeField}
               placeholder="Describe how you plan to accomplish the task and any questions you may have."
             />
