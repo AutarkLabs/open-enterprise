@@ -230,7 +230,8 @@ async function loadVoteDataProjects(vote, voteId) {
         }
         resolve({
           ...marshallVote(voteDescription),
-          metadata: 'Range Vote ' + voteId + ' - Issue Curation',
+          metadata: vote.voteDescription,
+          type: 'curation',
           canExecute,
           options,
         })
