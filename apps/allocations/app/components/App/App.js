@@ -1,15 +1,12 @@
-import { observe, SidePanel, Main, ToastHub } from '@aragon/ui'
+import { Main, observe, SidePanel } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
-import styled from 'styled-components'
 import { map } from 'rxjs/operators'
 
-import { Accounts, NewAccountButton } from '.'
+import { Accounts, NewAccountButton, Payouts } from '.'
 import { Title } from '../Shared'
 import { NewAccount, NewAllocation } from '../Panel'
-import { ETH_DECIMALS } from '../../utils/constants'
 import { networkContextType } from '../../../../../shared/ui'
-// import { allocationsMockData } from '../../utils/mockData'
 
 class App extends React.Component {
   static propTypes = {
@@ -29,9 +26,7 @@ class App extends React.Component {
     accounts: [],
     panel: {
       visible: false,
-    },
-    // TODO: Don't use this in production
-    // ...allocationsMockData,
+    }
   }
 
   getChildContext() {
@@ -43,13 +38,10 @@ class App extends React.Component {
     }
   }
 
-  createAccount = ({ limit, ...account }) => {
+  createAccount = (account) => {
     account.balance = 0
-    account.limit = ETH_DECIMALS.times(limit).toString()
-    this.props.app.newPayout(account.description, account.limit, 0x0)
+    this.props.app.newAccount(account.description)
     this.closePanel()
-    console.info('App.js: Account Created:')
-    console.table(account)
     this.setState({})
   }
 
@@ -64,28 +56,18 @@ class App extends React.Component {
       emptyIntArray, // Issue with bytes32 handling
       emptyIntArray, // Issue with bytes32 handling
       allocation.payoutId,
-      allocation.informational,
       allocation.recurring,
       allocation.period,
-      allocation.balance
+      allocation.balance,
+      allocation.tokenAddress
     )
-    console.info('App.js: Allocation submitted:')
-    console.table(allocation)
     this.closePanel()
   }
 
-  onExecutePayout = id => {
-    console.info('App.js: Executing Payout:')
-    console.info(id)
-    this.props.app.executePayout(id)
+  onExecutePayout = (accountId, payoutId) => {
+    this.props.app.runPayout(accountId, payoutId)
   }
 
-  manageParameters = address => {
-    // TODO: Implement
-    console.info(
-      `'App.js: Manage Parameters clicked from account with address: ${address}`
-    )
-  }
 
   newAccount = () => {
     this.setState({
@@ -97,7 +79,7 @@ class App extends React.Component {
     })
   }
 
-  newAllocation = (address, description, id, limit) => {
+  newAllocation = (address, description, id) => {
     // The whole entries vs entities thing needs to be fixed; these are too close
     //const userEntity = {addr: '0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb', data: {entryAddress: '0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb', name: 'Bob', entryType: 'user'}}
     const promptEntity = {
@@ -113,11 +95,11 @@ class App extends React.Component {
         data: {
           address,
           id,
-          limit,
           heading: 'New Allocation',
           subHeading: description,
           onSubmitAllocation: this.submitAllocation,
           entities: entities,
+          balances: this.props.balances ? this.props.balances : []
         },
       },
     })
@@ -132,41 +114,38 @@ class App extends React.Component {
     const PanelContent = panel.content
     return (
       // TODO: Profile App with React.StrictMode, perf and why-did-you-update, apply memoization
-      <StyledAragonApp>
-        <ToastHub>
-          <Title text="Allocations" />
-          <NewAccountButton onClick={this.newAccount} />
-          <Accounts
-            accounts={
-              //TODO: Change back to this.props.accounts when done
-              this.props.accounts !== undefined ? this.props.accounts : []
-            }
-            onNewAccount={this.newAccount}
-            onNewAllocation={this.newAllocation}
-            onManageParameters={this.manageParameters}
-            onExecutePayout={this.onExecutePayout}
-            app={this.props.app}
-          />
-          <SidePanel
-            title={(panel.data && panel.data.heading) || ''}
-            opened={panel.visible}
-            onClose={this.closePanel}
-          >
-            {panel.content && <PanelContent {...panel.data} />}
-          </SidePanel>
-        </ToastHub>
-      </StyledAragonApp>
+      <Main>
+        <Title text="Allocations" />
+        <NewAccountButton onClick={this.newAccount} />
+        <Accounts
+          accounts={
+            this.props.accounts !== undefined ? this.props.accounts : []
+          }
+          onNewAccount={this.newAccount}
+          onNewAllocation={this.newAllocation}
+          app={this.props.app}
+        />
+
+        <Payouts
+          payouts={
+            this.props.payouts !== undefined ? this.props.payouts : []
+          }
+          executePayout={this.onExecutePayout}
+          network={this.props.network}
+          tokens={this.props.balances}
+        />
+
+        <SidePanel
+          title={(panel.data && panel.data.heading) || ''}
+          opened={panel.visible}
+          onClose={this.closePanel}
+        >
+          {panel.content && <PanelContent {...panel.data} />}
+        </SidePanel>
+      </Main>
     )
   }
 }
-
-const StyledAragonApp = styled(Main)`
-  display: flex;
-  height: 100vh;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: stretch;
-`
 
 export default observe(
   observable => observable.pipe(map(state => ({ ...state }))),

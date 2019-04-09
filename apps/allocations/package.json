@@ -15,7 +15,7 @@
     "prepublishOnly": "truffle compile --all",
     "publish:http": "npm run publish:http-copy-files && aragon apm publish patch --http localhost:2222 --http-served-from ./dist",
     "publish:http-copy-files": "npm run build:script && mkdir -p dist/images && cp images/icon.svg dist/images/",
-    "publish": "aragon apm publish patch && sleep 3",
+    "publish": "aragon apm publish major && sleep 3",
     "publish:major": "aragon apm publish major",
     "deploy:rinkeby": "npm run publish:major -- --environment staging",
     "start": "aragon run",
@@ -24,6 +24,7 @@
     "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
   },
   "dependencies": {
+    "@aragon/apps-vault": "^4.0.0",
     "@aragon/api": "1.0.0",
     "@aragon/ui": "0.32.0",
     "@babel/polyfill": "^7.2.5",
