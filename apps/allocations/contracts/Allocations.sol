@@ -265,7 +265,7 @@ contract Allocations is AragonApp, Fundable {
     *      to be called by a RangeVote (options get weird if it's not)
     *      but for our use case the “SET_DISTRIBUTION_ROLE” will be given to
     *      the RangeVote.
-    * @notice Create a `_amount` allocation range vote for '`_description`'
+    * @notice Create a @tokenAmount(_token, _amount) allocation range vote for '`_description`'
     * @param _candidateAddresses Array of candidates to be allocated a portion of the payouut
     * @param _supports The Array of all support values for the various candidates. These values are set in range voting
     * @param _accountId The Account used for the payout
