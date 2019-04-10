@@ -7,7 +7,10 @@ import {
   Text,
   Button,
   SafeLink,
-  DropDown
+  DropDown,
+  IconCheck,
+  IconCross,
+  theme,
 } from '@aragon/ui'
 
 import { Form, FormField, FieldTitle, DescriptionInput } from '../../Form'
@@ -74,6 +77,7 @@ class ReviewApplication extends React.Component {
     }
 
     const applicant = application.user
+    const applicantName = applicant.name ? applicant.name : applicant.login
     const applicationDateDistance = formatDistance(new Date(application.applicationDate), new Date())
     return (
       <div>
@@ -107,7 +111,7 @@ class ReviewApplication extends React.Component {
               target="_blank"
               style={{ textDecoration: 'none', color: '#21AAE7', marginRight: '6px' }}
             >
-              {applicant.name ? applicant.name : applicant.login}
+              {applicantName}
             </SafeLink>
             applied {applicationDateDistance} ago
           </UserLink>
@@ -125,8 +129,50 @@ class ReviewApplication extends React.Component {
         </ApplicationDetails>
 
         {('review' in request) ? (
-          <FieldTitle>Application Status</FieldTitle>
+          <React.Fragment>
+
+            <FieldTitle>Application Status</FieldTitle>
           
+            <div style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
+              {request.review.approved ? (
+                <div>
+                  <IconCheck /> <Text size="small" color={theme.positive}>Accepted</Text>
+                </div>
+              ) : (
+                <div>
+                  <IconCross /> <Text size="small" color={theme.negative}>Rejected</Text>
+                </div>
+              )}
+              <div>
+                {formatDistance(new Date(request.review.reviewDate), new Date())} ago
+              </div>
+            
+            </div>
+
+            <ReviewCard>
+              <IssueEventAvatar>
+                <img src={request.review.user.avatarUrl} alt="user avatar" style={{ width: '50px' }} />
+              </IssueEventAvatar>
+              
+              <div>
+                <Text.Block size="small">
+                  <SafeLink
+                    href={request.review.user.url}
+                    target="_blank"
+                    style={{ textDecoration: 'none', color: '#21AAE7' }}
+                  >
+                    {request.review.user.login}
+                  </SafeLink> {
+                    request.review.approved ? 'assigned ' + applicantName : 'rejected ' + applicantName}
+                </Text.Block>
+                {request.review.feedback.length === 0 ?
+                  null
+                  :
+                  <Text>{request.review.feedback}</Text>
+                }
+              </div>
+            </ReviewCard>
+          </React.Fragment>
         ) : (
           <React.Fragment>
 
@@ -209,6 +255,19 @@ const IssueLinkRow = styled.div`
   display: flex;
   align-items: center;
   margin-bottom: 10px;
+`
+const ReviewCard = styled.div`
+  display: flex;
+  text-align: left;
+  padding: 15px 30px;
+  margin: 0;
+  background: ${theme.contentBackground};
+  border: 1px solid ${theme.contentBorder};
+  border-radius: 3px;
+`
+const IssueEventAvatar = styled.div`
+  width: 66px;
+  margin: 0;
 `
 
 export default ReviewApplication
