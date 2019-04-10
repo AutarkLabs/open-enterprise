@@ -77,15 +77,6 @@ class VotePanelContent extends React.Component {
             (parseInt(this.state.userBalance) * 0.9999)
       ))
       : 0
-    // TODO: Let these comments here for a while to be sure we are working with correct values:
-    console.log('Sum of values:', valueTotal)
-    console.log('userBalance', this.state.userBalance)
-    console.log(
-      'onVote voteId:',
-      this.props.vote.voteId,
-      'optionsArray',
-      optionsArray
-    )
     this.props.onVote(this.props.vote.voteId, optionsArray)
   }
   executeVote = () => {
@@ -152,12 +143,10 @@ class VotePanelContent extends React.Component {
       .call('getVoterState', this.props.vote.voteId, this.props.user)
       .toPromise()
 
-    // TODO: Bignumber.js vs >8.2 supports .sum function to initialize from a sum of bignumbers, replace when updating
     const totalVotesCount = result.reduce(
       (acc, vote) => acc.plus(vote),
       new BigNumber(0)
     )
-    //
 
     const voteWeights = result.map(e =>
       BigNumber(e)

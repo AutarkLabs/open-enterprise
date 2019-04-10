@@ -113,7 +113,6 @@ class NewBountyAllocation extends React.Component {
       .times(10 ** this.state.tokenDecimals)
       .toNumber()
     this.setState({ bounties, totalSize: bountyTotal })
-    //console.log('configBounty: ', bounties)
   }
 
   generateHoursChange = id => ({ target: { value } }) =>
@@ -121,7 +120,6 @@ class NewBountyAllocation extends React.Component {
 
   generateExpChange = id => index => {
     this.configBounty(id, 'exp', index)
-    console.log('generateExpChange: id: ', id, ', index: ', index)
   }
 
   generateDeadlineChange = id => deadline => {
@@ -130,16 +128,13 @@ class NewBountyAllocation extends React.Component {
 
   generateSlotsChange = id => index => {
     this.configBounty(id, 'slotsIndex', index)
-    console.log('generateExpChange: id: ', id, ', index: ', index)
   }
 
   generateArrowChange = id => () => {
     this.configBounty(id, 'detailsOpen')
-    console.log('generateArrowChange: id: ', id)
   }
 
   submitBounties = () => {
-    console.info('Submitting new Bounties', this.state.bounties)
     this.props.onSubmit(this.state.bounties, this.state.description)
   }
 

@@ -68,17 +68,6 @@ const Issue = ({
   expLevel,
   slots,
 }) => {
-  //console.log('CARD:', workStatus, title, repo, number, labels, isSelected, balance, symbol, deadline, requestsData, expLevel, slots)
-
-  // prepare display of number of slots vs number of applicants - leaving for reference, #528
-  /*
-  const slotsAllocation =
-    requestsData === undefined
-      ? 'Unallocated (' + slots + ')'
-      : requestsData.length < slots
-        ? 'Slots available: ' + (slots - requestsData.length) + '/' + slots
-        : 'Allocated'
-  */
 
   return (
     <StyledIssue>

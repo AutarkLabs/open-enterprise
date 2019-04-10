@@ -22,15 +22,12 @@ export const initStore = (vaultAddress, network) => {
             address: ETHER_TOKEN_FAKE_ADDRESS,
           },
         })
-        //console.log('initial state: ', initialState,'next: ', next)
         const nextState = { ...initialState, ...next }
         // Debug point
-        //console.log('[Rewards store]', nextState)
         return nextState
       } catch (err) {
         console.error('[Rewards script] initStore', event, err)
       }
-      // always return the state even unmodified
       return state
     },
     [

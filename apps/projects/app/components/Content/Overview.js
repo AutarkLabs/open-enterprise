@@ -25,7 +25,6 @@ const Overview = ({
     return <Error action={() => {}} />
   }
   const projectsEmpty = projects.length === 0
-  // console.log('Overview projects:', projects)
   if (projectsEmpty) {
     return <Empty action={onNewProject} />
   }

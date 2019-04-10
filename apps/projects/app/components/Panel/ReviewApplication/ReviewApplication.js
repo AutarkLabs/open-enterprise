@@ -39,13 +39,11 @@ class ReviewApplication extends React.Component {
 
   onAccept = () => {
     const returnData = this.buildReturnData(true)
-    console.log('Accepted', returnData)
     this.props.onReviewApplication(this.props.issue, this.state.requestIndex, true, returnData)
   }
 
   onReject = () => {
     const returnData = this.buildReturnData(false)
-    console.log('Rejected', returnData)
     this.props.onReviewApplication(this.props.issue, this.state.requestIndex, false, returnData)
   }
 
@@ -55,7 +53,6 @@ class ReviewApplication extends React.Component {
 
 
   render() {
-    console.log('++ReviewApplic render', this.props.issue)
     const { issue } = this.props
     const request = issue.requestsData[this.state.requestIndex]
 
