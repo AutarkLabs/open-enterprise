@@ -3,6 +3,7 @@ import { combineLatest } from 'rxjs'
 import { first, map, tap, combineAll } from 'rxjs/operators' // Make sure observables have first()
 import voteSettings, { hasLoadedVoteSettings } from './utils/vote-settings'
 import AddressBookJSON from '../../shared/json-abis/address-book.json'
+import { getTokenSymbol, ETHER_TOKEN_FAKE_ADDRESS } from './utils/token-utils'
 import { EMPTY_CALLSCRIPT } from './utils/vote-utils'
 import AllocationJSON from '../../shared/json-abis/allocations.json'
 
@@ -61,6 +62,7 @@ async function handleEvents(response) {
         AllocationJSON.abi
       )
     }
+    break
   case 'EntryAdded':
     nextEntries = await onEntryAdded(entries, response.returnValues)
     break
@@ -182,20 +184,29 @@ function loadVoteDataAllocation(vote, voteId) {
           canExecute,
           options,
         }
+        let symbol
+        const tokenAddress = '0x' + vote.executionScript.slice(794,834)
+        if (tokenAddress === ETHER_TOKEN_FAKE_ADDRESS) {
+          symbol = 'ETH'
+        }
+        else {
+          symbol =  await getTokenSymbol(app, tokenAddress)
+        }
 
-        allocations.getPayout(voteDescription.externalId)
+
+        allocations.getAccount(voteDescription.externalId)
           .pipe(first())
-          .subscribe(payout => (resolve({
-            ...returnObject,
-            limit: parseInt(payout.limit, 10),
-            balance: parseInt(voteDescription.executionScript.slice(706, 770), 16),
-            metadata:
-                'Range Vote ' +
-                voteId +
-                ' - Allocation (' +
-                payout.metadata +
-                ')',
-          })))
+          .subscribe(payout => (
+            resolve({
+              ...returnObject,
+              // These numbers indicate the static param location of the setDistribution
+              // functions amount paramater
+              balance: parseInt(vote.executionScript.slice(706, 770), 16),
+              tokenSymbol:  symbol,
+              metadata: vote.voteDescription,
+              type: 'allocation',
+            })
+          ))
       })
   })
 }
@@ -219,7 +230,8 @@ async function loadVoteDataProjects(vote, voteId) {
         }
         resolve({
           ...marshallVote(voteDescription),
-          metadata: 'Range Vote ' + voteId + ' - Issue Curation',
+          metadata: vote.voteDescription,
+          type: 'curation',
           canExecute,
           options,
         })

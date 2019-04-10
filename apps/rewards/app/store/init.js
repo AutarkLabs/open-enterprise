@@ -4,7 +4,7 @@ import { ETHER_TOKEN_FAKE_ADDRESS } from '../utils/token-utils'
 import { of } from './rxjs'
 
 export const initStore = (vaultAddress, network) => {
-  const vaultContract = app.external(vaultAddress, vaultAbi)
+  const vaultContract = app.external(vaultAddress, vaultAbi.abi)
 
   return app.store(
     async (state, event) => {

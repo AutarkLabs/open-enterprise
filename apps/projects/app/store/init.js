@@ -13,7 +13,7 @@ const github = () => {
 }
 
 export const initStore = (vaultAddress, network) => {
-  const vaultContract = app.external(vaultAddress, vaultAbi)
+  const vaultContract = app.external(vaultAddress, vaultAbi.abi)
   return app.store(
     async (state, action) => {
       try {

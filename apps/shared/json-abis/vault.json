@@ -1,4 +1,6 @@
-[
+{
+  "contractName": "Vault",
+  "abi": [
     {
       "constant": true,
       "inputs": [],
@@ -348,4 +350,12 @@
       "stateMutability": "view",
       "type": "function"
     }
-  ]
+  ],
+  "compiler": {
+    "name": "solc",
+    "version": "0.4.24+commit.e67f0147.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "2.0.1",
+  "updatedAt": "2019-02-21T23:09:50.150Z"
+}
