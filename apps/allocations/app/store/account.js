@@ -25,7 +25,6 @@ export const onNewPayout = async (payouts = [], { accountId, payoutId }) => {
       payouts.push(newPayout)
     }
   }
-  console.log('onNewPayout', payouts)
   return payouts
 }
 
@@ -78,8 +77,6 @@ const loadPayoutData = async (accountId, payoutId) => {
       .pipe(first())
       .subscribe(data => {
         // don't resolve when entry not found
-        console.log('loadPayoutData', data)
-
         if (data) {
           resolve({
             token: data[0].token,
