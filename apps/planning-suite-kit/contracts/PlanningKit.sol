@@ -222,6 +222,7 @@ contract PlanningKit is KitBase {
         handleVaultPermissions(
             dao,
             projects,
+            allocations,
             rewards,
             vault
         );
@@ -241,7 +242,7 @@ contract PlanningKit is KitBase {
         addressBook.initialize();
         projects.initialize(registry, vault, "autark");
         rangeVoting.initialize(addressBook, token, 50 * PCT256, 0, 1 minutes);
-        allocations.initialize(addressBook);
+        allocations.initialize(addressBook, vault);
         rewards.initialize(vault);
     }
 
@@ -292,13 +293,14 @@ contract PlanningKit is KitBase {
 
     }
 
-    function handleVaultPermissions(Kernel dao, Projects projects, Rewards rewards, Vault vault) internal {
+    function handleVaultPermissions(Kernel dao, Projects projects, Allocations allocations, Rewards rewards, Vault vault) internal {
         address root = msg.sender;
 
         ACL acl = ACL(dao.acl());
         // Vault permissions
         acl.createPermission(root, vault, vault.TRANSFER_ROLE(), this);
         acl.grantPermission(projects, vault, vault.TRANSFER_ROLE());
+        acl.grantPermission(allocations, vault, vault.TRANSFER_ROLE());
         acl.grantPermission(rewards, vault, vault.TRANSFER_ROLE());
     }
 

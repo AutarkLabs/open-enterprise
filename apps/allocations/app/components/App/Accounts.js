@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import { Text, Badge, breakpoint } from '@aragon/ui'
 
 import { Account, Empty } from '../Card'
 
@@ -8,7 +9,6 @@ const Accounts = ({
   accounts,
   onNewAccount,
   onNewAllocation,
-  onManageParameters,
   onExecutePayout,
   app,
 }) => {
@@ -21,11 +21,9 @@ const Accounts = ({
       id={accountId}
       proxy={data.proxy}
       balance={data.balance}
-      limit={data.limit}
       token={data.token}
       description={data.metadata}
       onNewAllocation={onNewAllocation}
-      onManageParameters={onManageParameters}
       onExecutePayout={onExecutePayout}
       app={app}
     />
@@ -34,7 +32,16 @@ const Accounts = ({
   if (accountsEmpty) {
     return <Empty action={onNewAccount} />
   }
-  return <StyledAccounts>{accountsMap}</StyledAccounts>
+  return (
+    <Main>
+      <Text.Block size="large" weight="bold" style={{ marginBottom: '10px' }}>
+        Accounts
+        {' '}
+        <Badge.Info>{accounts.length}</Badge.Info>
+      </Text.Block>
+      <StyledAccounts>{accountsMap}</StyledAccounts>
+    </Main>  
+  )
 }
 
 Accounts.propTypes = {
@@ -42,16 +49,25 @@ Accounts.propTypes = {
   accounts: PropTypes.arrayOf(PropTypes.object).isRequired,
   onNewAccount: PropTypes.func.isRequired,
   onNewAllocation: PropTypes.func.isRequired,
-  onManageParameters: PropTypes.func.isRequired,
 }
+
+const Main = styled.section`
+  padding: 30px;
+` 
 
 const StyledAccounts = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, auto);
-  grid-auto-rows: auto;
-  grid-gap: 2rem;
+  grid-template-columns: 1fr;
+  grid-auto-rows: 290px;
+  grid-gap: 20px;
   justify-content: start;
-  padding: 30px;
+  
+  ${breakpoint(
+    'medium',
+    `
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    `
+  )};
 `
 
 export default Accounts

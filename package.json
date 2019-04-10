@@ -35,6 +35,7 @@
     "reset-projects-script": "lerna run build:script --scope=@tps/apps-projects",
     "reset-range-voting-script": "lerna run build:script --scope=@tps/apps-range-voting",
     "reset-rewards-script": "lerna run build:script --scope=@tps/apps-rewards",
+    "reset-address-script": "lerna run build:script --scope=@tps/apps-address-book",
     "restart": "RESTART_KIT=true apps/shared/test-helpers/ganache-cli.sh",
     "start": "START_KIT=true apps/shared/test-helpers/ganache-cli.sh",
     "start:dev": "DEV=true apps/shared/test-helpers/ganache-cli.sh",
