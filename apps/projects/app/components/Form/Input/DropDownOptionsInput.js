@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { IconAdd, IconRemove, TextInput, theme, unselectable } from '@aragon/ui'
+import { IconRemove, TextInput, theme, unselectable, Button } from '@aragon/ui'
 
 class DropDownOptionsInput extends React.Component {
   static propTypes = {
@@ -9,9 +9,10 @@ class DropDownOptionsInput extends React.Component {
     name: PropTypes.string.isRequired,
     onChange: PropTypes.func.isRequired,
     values: PropTypes.array.isRequired,
+    allOptions: PropTypes.array.isRequired,
   }
 
-  addOption = () => {
+  addOption2 = () => {
     // TODO: Implement some rules about what an 'Option can be' duplicates, etc
     const { input, name, values } = this.props
     if (input && !values.includes(input)) {
@@ -24,40 +25,174 @@ class DropDownOptionsInput extends React.Component {
       )
     }
   }
+  
+  state = {
+    showAddOption: false,
+    addOptionText: '',
+    found: [],
+    editableItem: -1,
+  }
 
-  removeOption = option => {
+  addOption = () => {
+    this.setState({ showAddOption: true })
+  }
+
+  clearState = () => this.setState({ showAddOption: false, addOptionText: '', found: [], editableItem: -1 })
+
+  addToCurated = issue => () => {
+console.log('add', issue)
     this.props.onChange({
-      target: { name, value: values.filter(v => v !== option) },
+      target: { name, value:
+        this.state.editableItem !== -1 ?
+          this.props.values.splice(this.state.editableItem, 1, issue)
+          :
+          this.props.values.push(issue)
+      },
     })
+    this.clearState()
+  }
+
+  searchOptions = ({ target: { name, value } }) => {
+    const found = this.props.allOptions.filter(
+      issue => {
+        if (!issue.title.includes(value) ||''.toString(issue.number).includes(value)) return false
+        return (this.props.values.findIndex(i => i.id === issue.id) === -1)
+        //return f
+      }
+    ).splice(0,10)
+      
+    this.setState({
+      [name]: value,
+      found
+    })
+  }
+
+  removeOption = index => () => {
+    this.props.onChange({
+      target: { name, value: this.props.values.splice(index, 1) },
+    })
+    this.clearState()
   }
 
   onChangeInput = ({ target: { value } }) => {
     this.props.onChange({ target: { name: 'optionsInput', value } })
   }
 
-  render() {
-    const loadOptions = this.props.values.map(issue => {
-      const { repo, number, title } = issue
-      const issueString = `${repo} #${number} - ${title}`
-      return (
-        <StyledOption key={issue.id}>
-          <StyledInput readOnly wide value={issueString} />
-          <IconContainer
-            style={{ transform: 'scale(.8)' }}
-            onClick={() => removeOption(issue)}
-            title="Click to remove the issue"
-            children={<IconRemove />}
-          />
-        </StyledOption>
-      )
-    })
+  makeEditable = index => () => {
+    this.setState({ editableItem: index })
+  }
 
-    return <div style={flexColumn}>{loadOptions}</div>
+  issueToString = issue =>
+    `${'repo' in issue ? issue.repo : issue.repository.name} #${issue.number} - ${issue.title}`
+
+
+  renderEditable = () => (
+    <div style={{position: 'relative'}}>
+      <StyledInput
+        wide
+        autoFocus
+        value={this.state.addOptionText}
+        onChange={this.searchOptions} name="addOptionText"
+        onBlur={() => { console.log('blur');this.clearState()}}
+      />
+      {(this.state.found.length > 0) && (
+        <OptionsPopup>
+          {this.state.found.map((issue, index) => {
+            return (
+              <IssueOption key={index} onClick={this.addToCurated(issue)}>
+                {this.issueToString(issue)}
+              </IssueOption>
+            )
+          }
+          )}
+        </OptionsPopup>
+      )}
+    </div>
+  )
+
+  renderReadOnly = (index, issue) => (
+    <StyledInput
+      onClick={this.makeEditable(index)}
+      readOnly
+      wide
+      value={this.issueToString(issue)}
+    />
+  )
+
+  render() {
+    const { values } = this.props
+
+    const loadOptions = values.length === 1 ? (
+      <StyledOption>
+        {this.state.editableItem === 0 ?
+          this.renderEditable()
+          :
+          this.renderReadOnly(0, values[0])
+        }
+      </StyledOption>
+    )
+      : 
+      values.map((issue, index) => {
+        return (
+          <StyledOption key={issue.id}>
+            {this.state.editableItem !== index ?
+              this.renderReadOnly(index, issue)
+              :
+              this.renderEditable()
+            }
+            <IconContainer
+              style={{ transform: 'scale(.8)' }}
+              onClick={this.removeOption(index)}
+              title="Click to remove the issue"
+              children={<IconRemove />}
+            />
+          </StyledOption>
+        )
+      })
+
+    return (
+      <Options>
+        {loadOptions}
+        {this.state.showAddOption ?
+          this.renderEditable()
+          :
+          <div>
+            <Button compact mode="secondary" onClick={this.addOption}>+ Add Another</Button>
+          </div>
+        }
+      </Options>
+    )
   }
 }
+const IssueOption = styled.div`
+  padding: 5px;
+  :hover {
+    color: ${theme.accent};
+  }
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  `
 
-const flexColumn = { display: 'flex', flexDirection: 'column' }
+const BASE_HEIGHT = 32
 
+const OptionsPopup = styled.div`
+  overflow: hidden;
+  position: absolute;
+  top: ${BASE_HEIGHT + 5}px;
+  width: 100%;
+  right: 0;
+  padding: 0;
+  background: ${theme.contentBackground};
+  border: 1px solid ${theme.contentBorder};
+  border-radius: 0 0 3px 3px;
+  z-index: 3;
+  cursor: pointer;
+`
+const Options = styled.div`
+  display: flex;
+  flex-direction: column;
+`
 const StyledOption = styled.div`
   display: flex;
   margin-bottom: 0.625rem;
@@ -65,7 +200,6 @@ const StyledOption = styled.div`
     flex-grow: 1;
   }
 `
-
 const StyledInput = styled(TextInput)`
   flex-grow: 1;
   ${unselectable}; /* it is possible to select the placeholder without this */
@@ -85,7 +219,6 @@ const StyledInput = styled(TextInput)`
     }
   }
 `
-
 const IconContainer = styled.span`
   cursor: pointer;
   display: flex;
