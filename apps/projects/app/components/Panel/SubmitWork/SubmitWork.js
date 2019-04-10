@@ -109,7 +109,7 @@ class SubmitWork extends React.Component {
             />
           }
         />
-
+        <VSpace size={1} />
         <AckRow>
           <div style={{ width: '23px' }}>
             <Checkbox checked={this.state.ack1} onChange={this.setAck1} />
@@ -130,6 +130,7 @@ class SubmitWork extends React.Component {
             of future tasks.
           </AckText>
         </AckRow>
+        <VSpace size={2} />
 
         { /* TODO: restore when GitHub commenting works
         <Info.Alert
@@ -165,7 +166,10 @@ const IssueTitle = styled(Text)`
   font-size: 17px;
   font-weight: 300;
   line-height: 1.5;
-  margin-bottom: 10px;
+`
+
+const VSpace = styled.div`
+  height: ${p => (p.size || 1) * 5}px;
 `
 
 export default SubmitWork
