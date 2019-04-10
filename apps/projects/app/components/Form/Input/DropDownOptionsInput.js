@@ -30,24 +30,17 @@ class DropDownOptionsInput extends React.Component {
     showAddOption: false,
     addOptionText: '',
     found: [],
-    editableItem: -1,
   }
 
   addOption = () => {
     this.setState({ showAddOption: true })
   }
 
-  clearState = () => this.setState({ showAddOption: false, addOptionText: '', found: [], editableItem: -1 })
+  clearState = () =>    this.setState({ showAddOption: false, addOptionText: '', found: [] })
 
   addToCurated = issue => () => {
-console.log('add', issue)
     this.props.onChange({
-      target: { name, value:
-        this.state.editableItem !== -1 ?
-          this.props.values.splice(this.state.editableItem, 1, issue)
-          :
-          this.props.values.push(issue)
-      },
+      target: { name, value: this.props.values.push(issue) },
     })
     this.clearState()
   }
@@ -67,7 +60,7 @@ console.log('add', issue)
     })
   }
 
-  removeOption = index => () => {
+  removeOption = index => {
     this.props.onChange({
       target: { name, value: this.props.values.splice(index, 1) },
     })
@@ -78,71 +71,26 @@ console.log('add', issue)
     this.props.onChange({ target: { name: 'optionsInput', value } })
   }
 
-  makeEditable = index => () => {
-    this.setState({ editableItem: index })
-  }
-
   issueToString = issue =>
     `${'repo' in issue ? issue.repo : issue.repository.name} #${issue.number} - ${issue.title}`
 
-
-  renderEditable = () => (
-    <div style={{position: 'relative'}}>
-      <StyledInput
-        wide
-        autoFocus
-        value={this.state.addOptionText}
-        onChange={this.searchOptions} name="addOptionText"
-        onBlur={() => { console.log('blur');this.clearState()}}
-      />
-      {(this.state.found.length > 0) && (
-        <OptionsPopup>
-          {this.state.found.map((issue, index) => {
-            return (
-              <IssueOption key={index} onClick={this.addToCurated(issue)}>
-                {this.issueToString(issue)}
-              </IssueOption>
-            )
-          }
-          )}
-        </OptionsPopup>
-      )}
-    </div>
-  )
-
-  renderReadOnly = (index, issue) => (
-    <StyledInput
-      onClick={this.makeEditable(index)}
-      readOnly
-      wide
-      value={this.issueToString(issue)}
-    />
-  )
-
   render() {
     const { values } = this.props
-
+    //console.log('RENDER', values)
     const loadOptions = values.length === 1 ? (
-      <StyledOption>
-        {this.state.editableItem === 0 ?
-          this.renderEditable()
-          :
-          this.renderReadOnly(0, values[0])
-        }
+      <StyledOption key={values[0].id}>
+        <StyledInput readOnly wide value={this.issueToString(values[0])} />
       </StyledOption>
     )
       : 
       values.map((issue, index) => {
+        const { repo, number, title } = issue
         return (
           <StyledOption key={issue.id}>
-            {this.state.editableItem !== index ?
-              this.renderReadOnly(index, issue)
-              :
-              this.renderEditable()
-            }
+            <StyledInput readOnly wide value={this.issueToString(issue)} />
             <IconContainer
               style={{ transform: 'scale(.8)' }}
-              onClick={this.removeOption(index)}
+              onClick={() => this.removeOption(index)}
               title="Click to remove the issue"
               children={<IconRemove />}
             />
@@ -154,7 +102,27 @@ console.log('add', issue)
       <Options>
         {loadOptions}
         {this.state.showAddOption ?
-          this.renderEditable()
+        
+          <div style={{ position: 'relative' }}>
+            <StyledInput
+              wide
+              autoFocus
+              value={this.state.addOptionText}
+              onChange={this.searchOptions} name="addOptionText"
+            />
+            {(this.state.found.length > 0) && (
+              <OptionsPopup>
+                {this.state.found.map((issue, index) => {
+                  return (
+                    <IssueOption key={index} onClick={this.addToCurated(issue)}>
+                      {this.issueToString(issue)}
+                    </IssueOption>
+                  )
+                }
+                )}
+              </OptionsPopup>
+            )}
+          </div>
           :
           <div>
             <Button compact mode="secondary" onClick={this.addOption}>+ Add Another</Button>
@@ -172,7 +140,7 @@ const IssueOption = styled.div`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  `
+`
 
 const BASE_HEIGHT = 32
 

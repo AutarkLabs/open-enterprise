@@ -24,7 +24,11 @@ class NewIssueCuration extends React.Component {
     // onSubmit: PropTypes.func,
   }
   // TODO: Work with only id fields when possible and read rest of data from cache with a context helper
-  state = { curatedIssues: this.props.issues, issuesInput: '' }
+  state = {
+    curatedIssues: this.props.issues,
+    issuesInput: '',
+    description: '',
+  }
 
   // TODO: improve field checking for input errors and sanitize
   changeField = ({ target: { name, value } }) => {
@@ -44,6 +48,7 @@ class NewIssueCuration extends React.Component {
           input={
             <DescriptionInput
               name="description"
+              value={this.state.description}
               onChange={this.changeField}
               placeholder="Describe your proposal."
               value={this.state.description}
@@ -60,6 +65,7 @@ class NewIssueCuration extends React.Component {
               onChange={this.changeField}
               values={this.state.curatedIssues}
               input={this.state.issuesInput}
+              allOptions={this.props.allIssues}
             />
           }
         />

@@ -55,8 +55,8 @@ class Issues extends React.PureComponent {
     }
   }
 
-  handleCurateIssues = () => {
-    this.props.onCurateIssues(this.state.selectedIssues)
+  handleCurateIssues = issuesFiltered => () => {
+    this.props.onCurateIssues(this.state.selectedIssues, issuesFiltered)
     // this is called from ActionMenu, on selected Issues -
     // return to default state where nothing is selected
     this.setState({ selectedIssues: [], allSelected: false })
@@ -67,7 +67,6 @@ class Issues extends React.PureComponent {
   }
 
   handleAllocateBounties = () => {
-    console.log('handleAllocationBounties:', this.state.selectedIssues)
     this.props.onAllocateBounties(this.state.selectedIssues)
     // this is called from ActionMenu, on selected Issues -
     // return to default state where nothing is selected
@@ -226,7 +225,7 @@ class Issues extends React.PureComponent {
     })
   }
 
-  actionsMenu = (issues) => (
+  actionsMenu = (issues, issuesFiltered) => (
     <div
       style={{
         display: 'flex',
@@ -243,7 +242,7 @@ class Issues extends React.PureComponent {
       />
       <ActionsMenu enabled={!!this.state.selectedIssues.length}>
         <ContextMenuItem
-          onClick={this.handleCurateIssues}
+          onClick={this.handleCurateIssues(issuesFiltered)}
           style={{ display: 'flex', alignItems: 'flex-start' }}
         >
           <div>
@@ -286,7 +285,7 @@ class Issues extends React.PureComponent {
 
   queryLoading = () => (
     <StyledIssues>
-      {this.actionsMenu([])}
+      {this.actionsMenu([], [])}
       {this.filterBar([], [])}
       <IssuesScrollView>
         <div>Loading...</div>
@@ -296,7 +295,7 @@ class Issues extends React.PureComponent {
 
   queryError = (error, refetch) => (
     <StyledIssues>
-      {this.actionsMenu([])}
+      {this.actionsMenu([], [])}
       {this.filterBar([], [])}
       <IssuesScrollView>
         <div>
@@ -442,7 +441,7 @@ class Issues extends React.PureComponent {
             const issuesFiltered = this.applyFilters(issues)
             return (
               <StyledIssues>
-                {this.actionsMenu(issues)}
+                {this.actionsMenu(issues, issuesFiltered)}
                 {this.filterBar(issues, issuesFiltered)}
 
                 <IssuesScrollView>
