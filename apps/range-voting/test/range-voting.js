@@ -179,12 +179,11 @@ contract('RangeVoting App', accounts => {
       let action = {
         to: executionTarget.address,
         calldata: executionTarget.contract.setSignal.getData(
-          // original args: address[], uint256[] supports
-          //  updated args: address[], uint256[] _supports, uint256[] infoIndex, string Info
           [ accounts[7], accounts[8], accounts[9] ],
           [ 0, 0, 0 ],
           [ 4, 4, 4 ],
           'arg1arg2arg3',
+          'description',
           [ 0x61, 0x61, 0x61 ],
           [ 0x61, 0x61, 0x61 ],
           5,
@@ -192,7 +191,6 @@ contract('RangeVoting App', accounts => {
         )
       }
       const script = encodeCallScript([action])
-      //console.log(script)
       const voteId = createdVoteId(
         await app.newVote(script, '', { from: holder50 })
       )
@@ -202,12 +200,11 @@ contract('RangeVoting App', accounts => {
       let action = {
         to: executionTarget.address,
         calldata: executionTarget.contract.setSignal.getData(
-          // original args: address[], uint256[] supports
-          //  updated args: address[], uint256[] supports, uint256[] infoIndex, string Info
           [ accounts[7], accounts[8], accounts[9] ],
           [ 0, 0, 0 ],
           [ 4, 4, 4 ],
           'arg1arg2arg3',
+          'description',
           [ '0x0', '0x0', '0x0' ],
           [ '0x0', '0x0', '0x0' ],
           5,
@@ -230,12 +227,11 @@ contract('RangeVoting App', accounts => {
       let action = {
         to: executionTarget.address,
         calldata: executionTarget.contract.setSignal.getData(
-          // original args: address[], uint256[] supports
-          //  updated args: address[], uint256[] supports, uint256[] infoIndex, string Info
           [ accounts[7], accounts[8], accounts[9] ],
           [ 0, 0, 0 ],
           [ 4, 4, 4 ],
           'arg1arg2arg3',
+          'description',
           [ 1, 2, 3 ],
           [ 2, 4, 6 ],
           5,
@@ -283,6 +279,7 @@ contract('RangeVoting App', accounts => {
           [ 0, 0, 0 ],
           [ 4, 4, 4 ],
           'arg1arg2arg3',
+          'vote description',
           [ 1, 2, 3 ],
           [ 2, 4, 6 ],
           5,
@@ -309,10 +306,9 @@ contract('RangeVoting App', accounts => {
     it('execution throws if any action on script throws', async () => {
       let action = {
         to: executionTarget.address,
-        calldata: executionTarget.contract.setSignal.getData([], [], [], '',[],[],0,true)
+        calldata: executionTarget.contract.setSignal.getData([], [], [], '', '', [],[],0,true)
       }
       const script = encodeCallScript([action])
-      //console.log(script)
       const voteId = createdVoteId(
         await app.newVote(script, '', { from: holder50 })
       )
@@ -331,12 +327,11 @@ contract('RangeVoting App', accounts => {
       let action = {
         to: executionTarget.address,
         calldata: executionTarget.contract.setSignal.getData(
-          // original args: address[], uint256[] supports
-          //  updated args: address[], uint256[] supports, uint256[] infoIndex, string Info
           [ accounts[7], accounts[8], accounts[9] ],
           [ 0, 0, 0 ],
           [ 4, 4, 4 ],
           'arg1arg2arg3',
+          'description',
           [ '0x0', '0x0', '0x0' ],
           [ '0x0', '0x0', '0x0' ],
           5,
@@ -368,6 +363,7 @@ contract('RangeVoting App', accounts => {
             [ 0, 0, 0 ],
             [ 4, 4, 4 ],
             'arg1arg2arg3',
+            'description',
             [ 0x1, 0x2, 0x3 ],
             [ 0x1, 0x2, 0x3 ],
             5,

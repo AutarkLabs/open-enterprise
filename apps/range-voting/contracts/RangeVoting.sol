@@ -71,6 +71,15 @@ contract RangeVoting is IForwarder, AragonApp {
     // TODO: Unused ROLE
     bytes32 constant public MODIFY_PARTICIPATION_ROLE = keccak256("MODIFY_PARTICIPATION_ROLE");
 
+    uint256 constant public CANDIDATE_ADDR_PARAM_LOC = 1;
+    uint256 constant public CANDIDATE_SUPPORT_PARAM_LOC = 2;
+    uint256 constant public INDICIES_PARAM_LOC = 3;
+    uint256 constant public CANDIDATE_INFO_PARAM_LOC = 4;
+    uint256 constant public DESCRIPTION_PARAM_LOC = 5;
+    uint256 constant public EX_ID1_PARAM_LOC = 6;
+    uint256 constant public EX_ID2_PARAM_LOC = 7;
+    uint256 constant public TOTAL_DYNAMIC_PARAMS = 7;
+
     struct Vote {
         address creator;
         uint64 startDate;
@@ -457,9 +466,10 @@ contract RangeVoting is IForwarder, AragonApp {
             voteInstance.scriptRemainder = scriptRemainder;
         }
         // First Static Parameter in script parsed for the externalId
-        voteInstance.externalId = _goToParamOffset(8, _executionScript) - 0x20;
+        voteInstance.externalId = _goToParamOffset(TOTAL_DYNAMIC_PARAMS + 1, _executionScript) - 0x20;
         emit ExternalContract(voteId, _executionScript.addressAt(0x4),_executionScript.bytes32At(0x0));
         emit StartVote(voteId);
+        emit ExecutionScript(_executionScript, 0);
     }
 
     function _goToParamOffset(uint256 _paramNum, bytes _executionScript) internal pure returns(uint256 paramOffset) {
@@ -500,7 +510,7 @@ contract RangeVoting is IForwarder, AragonApp {
         bytes32 externalId1;
         bytes32 externalId2;
         uint256 idOffset;
-        uint256 infoStart = _goToParamOffset(4,_executionScript) + 0x20;
+        uint256 infoStart = _goToParamOffset(CANDIDATE_INFO_PARAM_LOC,_executionScript) + 0x20;
         //Location(infoStart);
         emit CandidateQty(_candidateLength);
         for (uint256 i = 0 ; i < _candidateLength; i++) {
@@ -515,9 +525,9 @@ contract RangeVoting is IForwarder, AragonApp {
             // update the index for the next iteration
             infoStart = infoEnd;
             // store candidate external IDs
-            idOffset = _goToParamOffset(5, _executionScript) + 0x20 * (i + 1);
+            idOffset = _goToParamOffset(EX_ID1_PARAM_LOC, _executionScript) + 0x20 * (i + 1);
             externalId1 = bytes32(_executionScript.uint256At(idOffset));
-            idOffset = _goToParamOffset(6, _executionScript) + 0x20 * (i + 1);
+            idOffset = _goToParamOffset(EX_ID2_PARAM_LOC, _executionScript) + 0x20 * (i + 1);
             externalId2 = bytes32(_executionScript.uint256At(idOffset));
 
             addCandidate(_voteId, info, currentCandidate, externalId1, externalId2);
@@ -542,22 +552,15 @@ contract RangeVoting is IForwarder, AragonApp {
         // so we have:
         // start offset (spec id + address + calldataLength) + param offset + function signature
         // note:function signature length (0x04) added in both contexts: grabbing the offset value and the outer offset calculation
-        uint256 firstParamOffset = _goToParamOffset(1, _executionScript);
-        uint256 fifthParamOffset = _goToParamOffset(5, _executionScript);
-
+        uint256 firstParamOffset = _goToParamOffset(CANDIDATE_ADDR_PARAM_LOC, _executionScript);
+        uint256 fifthParamOffset = _goToParamOffset(DESCRIPTION_PARAM_LOC, _executionScript);
         currentOffset = firstParamOffset;
-
         // compute end of script / next location and ensure there's no
         // shenanigans
         require(startOffset + calldataLength == _executionScript.length); // solium-disable-line error-reason
         // The first word in the param slot is the length of the array
-
         // obtain the beginning index of the infoString
-        //uint256 infoStart = _goToParamOffset(4,_executionScript) + 0x20;
-        //Location(infoStart);
         uint256 candidateLength = _executionScript.uint256At(currentOffset);
-
-
         currentOffset = currentOffset + 0x20;
         // This has the potential to be too gas expensive to ever happen.
         // Upper limit of candidates should be checked against this function
@@ -572,11 +575,7 @@ contract RangeVoting is IForwarder, AragonApp {
         currentOffset = fifthParamOffset;
         // The offset represents the data we've already accounted for; the rest is what will later
         // need to be copied over.
-
         calldataLength = calldataLength.sub(currentOffset);
-        /*
-
-        */
     }
 
     /*
@@ -635,12 +634,20 @@ contract RangeVoting is IForwarder, AragonApp {
         voteInstance.voters[msg.sender] = _supports;
     }
 
-    function addDynamicElements(bytes script, uint256 offset, uint256 numberOfCandidates,uint256 strLength) internal returns(bytes) {
+    function addDynamicElements(
+        bytes script,
+        uint256 offset,
+        uint256 numberOfCandidates,
+        uint256 strLength,
+        uint256 desLength
+    ) internal returns(bytes) 
+    {
         uint256 secondDynamicElementLocation = 32 + offset + (numberOfCandidates * 32);
         uint256 thirdDynamicElementLocation = secondDynamicElementLocation + 32 + (numberOfCandidates * 32);
         uint256 fourthDynamicElementLocation = thirdDynamicElementLocation + 32 + (numberOfCandidates * 32);
-        uint256 fifthDynamicElementLocation = fourthDynamicElementLocation + strLength / 32 * 32 + (strLength % 32 == 0 ? 32 : 64);
-        uint256 sixthDynamicElementLocation = fifthDynamicElementLocation + 32 + (numberOfCandidates * 32);
+        uint256 fifthDynamicElementLocation = fourthDynamicElementLocation + (strLength / 32) * 32 + (strLength % 32 == 0 ? 32 : 64);
+        uint256 sixthDynamicElementLocation = fifthDynamicElementLocation + (desLength / 32) * 32 + (desLength % 32 == 0 ? 32 : 64);
+        uint256 seventhDynamicElementLocation = sixthDynamicElementLocation + 32 + (numberOfCandidates * 32);
 
         assembly {
             mstore(add(script, 96), secondDynamicElementLocation)
@@ -648,6 +655,7 @@ contract RangeVoting is IForwarder, AragonApp {
             mstore(add(script, 160), fourthDynamicElementLocation)
             mstore(add(script, 192), fifthDynamicElementLocation)
             mstore(add(script, 224), sixthDynamicElementLocation)
+            mstore(add(script, 256), seventhDynamicElementLocation)
         }
 
         return script;
@@ -704,16 +712,24 @@ contract RangeVoting is IForwarder, AragonApp {
     */
     function _executeVote(uint256 _voteId) internal {
         Vote storage voteInstance = votes[_voteId];
-
         voteInstance.executed = true;
         uint256 candidateLength = voteInstance.candidateKeys.length;
         //bytes memory infoString = getInfoString(_voteId);
         bytes memory executionScript = new bytes(32);
         executionScript = voteInstance.executionScript;
         uint256 dynamicOffset = executionScript.uint256At(32);
+        // The total length of the new script will be two 32 byte spaces
+        // for each candidate (one for support one for address)
+        // as well as 3 32 byte spaces for
+        // the header (specId 0x4, target address 0x14, calldata 0x4, function hash 0x4)
+        // and the two dynamic param locations
+        // as well as additional space for the staticParameters
+        // Seperate variable isn't used here to save storage space
         uint256 infoStrLength = voteInstance.infoStringLength;
+        uint256 desStrLength = bytes(voteInstance.voteDescription).length;
         uint256 callDataLength = 196 + dynamicOffset + candidateLength * 160;
-        callDataLength += (infoStrLength / 32) * 32 + (infoStrLength % 32 == 0 ? 0 : 32);
+        callDataLength += (infoStrLength / 32) * 32 + (infoStrLength % 32 == 0 ? 32 : 64);
+        callDataLength += (desStrLength / 32) * 32 + (desStrLength % 32 == 0 ? 32 : 64);
         bytes memory callDataLengthMem = new bytes(32);
         assembly { // solium-disable-line security/no-inline-assembly
             mstore(add(callDataLengthMem, 32), callDataLength)
@@ -725,15 +741,24 @@ contract RangeVoting is IForwarder, AragonApp {
         //fix the calldataLength
         memcpyshort((script.getPtr() + 56), callDataLengthMem.getPtr() + 60, 4);
         // Add second, 3rd and fourth dynamic element location as it may have changed
-        addDynamicElements(script, dynamicOffset, candidateLength, infoStrLength);
+        addDynamicElements(script, dynamicOffset, candidateLength, infoStrLength, desStrLength);
         // Copy over all static parameters
-        script.copy(executionScript.getPtr() + 256, 224, dynamicOffset - 224);
+        script.copy(executionScript.getPtr() + 288, 256, dynamicOffset - 256);
+        // Copy over Address and Support information
         uint256 offset = addAddressesAndVotes(_voteId, script, candidateLength, dynamicOffset);
+        // Copy over info indicies and string
+        offset = _goToParamOffset(INDICIES_PARAM_LOC, executionScript) + 0x20;
         offset = addInfoString(_voteId, script, candidateLength, offset);
-        // Add external IDs 1 and 2 to the
+        //Copy over Description
+        offset = _goToParamOffset(DESCRIPTION_PARAM_LOC, executionScript) + 0x20;
+        assembly { // solium-disable-line security/no-inline-assembly
+                mstore(add(script, offset), desStrLength)
+        }
+        script.copy(bytes(voteInstance.voteDescription).getPtr() + 32, offset, desStrLength);
+        // Copy over External References
+        offset = _goToParamOffset(EX_ID1_PARAM_LOC, executionScript) + 0x20;
         addExternalIds(_voteId, script, candidateLength, offset);
-        emit ExecutionScript(script, callDataLength);
-        // Execute the script on the target contract
+        emit ExecutionScript(script, offset);
         runScript(script, new bytes(0), new address[](0));
         emit ExecuteVote(_voteId);
     }
@@ -746,11 +771,11 @@ contract RangeVoting is IForwarder, AragonApp {
         uint256 metaDataLength;
         uint256 strOffset = 0;
         newOffset = _offset;
-
+        // Add number of candidates for array size of "infoIndicies"
         assembly { // solium-disable-line security/no-inline-assembly
             mstore(add(script, newOffset), numberOfCandidates)
         }
-
+        // Offset "infoIndicies" size
         newOffset += 32;
 
         for (uint256 i = 0; i < numberOfCandidates; i++) {
@@ -771,11 +796,10 @@ contract RangeVoting is IForwarder, AragonApp {
                 mstore(add(script, newOffset), infoStringLength)
         }
 
-        //newOffset += 1;
 
         script.copy(infoString.getPtr() + 32, newOffset, infoStringLength);
 
-        newOffset += infoStringLength / 32 * 32 + (infoStringLength % 32 == 0 ? 0 : 32);
+        newOffset += (infoStringLength / 32) * 32 + (infoStringLength % 32 == 0 ? 0 : 32);
     }
 
     function addExternalIds(
@@ -785,9 +809,7 @@ contract RangeVoting is IForwarder, AragonApp {
         uint256 _offset
         ) internal returns(uint256 offset)
         {
-                // Set the initial offest after the static parameters
-        offset = _offset + 32;
-
+        offset = _offset;
         assembly { // solium-disable-line security/no-inline-assembly
             mstore(add(script, offset), numberOfCandidates)
         }
@@ -802,6 +824,7 @@ contract RangeVoting is IForwarder, AragonApp {
                 mstore(add(script, offset), externalId1)
             }
             offset += 32;
+
         }
 
         assembly { // solium-disable-line security/no-inline-assembly
@@ -818,6 +841,7 @@ contract RangeVoting is IForwarder, AragonApp {
                 mstore(add(script, offset), externalId2)
             }
             offset += 32;
+
         }
         return offset;
     }
