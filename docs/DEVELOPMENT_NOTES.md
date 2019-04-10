@@ -25,17 +25,6 @@ lerna info versioning independent
 
 ### Then, run one of the handy scripts depending on your needs
 
-#### To start frontend development
-
-- `npm run dev:<app_name>`
-
-  - where `<app_name>` can be one of:
-    - `address` for Address Book App (`npm run dev:address`)
-    - `projects` for Projects App (`npm run dev:projects`)
-    - `allocations` for Allocations App (`npm run dev:allocations`)
-    - `range` for Range Voting App (`npm run dev:range`)
-    - `rewards` for Rewards App (`npm run dev:rewards`)
-
 #### To run everything working together in the Aragon Wrapper with a Development Blockchain
 
 - `npm start:dev`
@@ -61,19 +50,21 @@ require a republish to view changes in the browser.
 
 ## Troubleshooting
 
-- If something stops working because, you know, things break, the right way to debug the problem is to run the same `npm start` steps one by one:
+- If something stops working because, you know, things break, the right way to debug the problem is to run the same `npm start:dev` steps one by one:
 - `npm run bootstrap`
   Check if some dependency is not installed or available
 - `npm run publish:apps`
-  To debug if the individual apps are being published, if more control is needed, individual app publishing can be called by `cd apps/app_folder && npm run publish`
+  To debug if the individual apps are being published, if more control is needed, individual app publishing can be called by `cd apps/app_folder && npm run publish`. Any build-time errors should display in the bash console during this stage
 - `npm run devchain or npm run devchain:reset`
-  Is needed to be run in another terminal window to be able to deploy all apps together. `npm start` script does this by using concurrently npm package.
+  Can be run in another terminal window to be able to deploy all apps together. `npm start` script does this by calling this concurrently.
 - If previous steps where succesful, then run: `aragon run --kit PlanningKit --kit-init @ARAGON_ENS`
   To deploy the kit and launch the Aragon Wrapper in the browser.
-  It needs the same local blockchain to find the locally deployed apps, so better to keep the devchain open and running (Again, with `npm start` is not needed (but allowed) because is launched in parallel with concurrently).
+  It needs the same local blockchain to find the locally deployed apps, so better to keep the devchain open and running (Again, with `npm start` this step is not needed (but allowed) because is launched concurrently).
 
 - `npm run clean`
   Just if the other steps don't work call this and start over with a clean state, maybe combined with `npm run clean:aragon` to delete the local machine state (this does not delete any key, just local data that then will be downloaded again).
+
+  > __Tip__ to completely reset your environment run `npm run clean && npm run clean:aragon` and then reinstall with `npm i`
 
 - `npm run reset-<app>-script` These commands are used to republish the webworker scripts while
   running the `npm run start:dev`environment. These changes are only applied after clearing the DAO's cache in DAO Settings. A page refresh alone will not suffice.
@@ -109,7 +100,7 @@ require a republish to view changes in the browser.
 
 #### Wrong fonts, colors or browser console errors
 
-> _Tip: Look at letter "g" to quickly know if aragon fonts were loaded and applied_
+> __Tip__ Look at letter "g" to quickly know if aragon fonts were loaded and applied
 
 - Aragon puts all the files in the app in the ipfs folder, so files must be correctly built to the dist folder, this happens in all single apps.
 - Aragon provides the command `copy-aragon-ui-assets` and we use `npm run sync-assets` to call it. The problem is that is easy to have errors configuring the path in AragonApp component (from @aragon/ui), because is not documented where the slashes go or things like that, even some original Aragon apps have or had this error.
