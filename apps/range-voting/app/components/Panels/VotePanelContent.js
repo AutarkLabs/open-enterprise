@@ -234,17 +234,25 @@ class VotePanelContent extends React.Component {
           </div>
           <div>
             <h2>
-              <Label>{open ? 'Time Remaining:' : 'Status'}</Label>
+              <Label>{open ? 'Time Remaining' : 'Status'}</Label>
             </h2>
             <div>
               {open ? (
                 <Countdown end={endDate} />
               ) : (
-                <VoteStatus
-                  vote={vote}
-                  support={support}
-                  tokenSupply={totalVoters}
-                />
+                    <React.Fragment>
+                      <VoteStatus
+                        vote={vote}
+                        support={support}
+                        tokenSupply={totalVoters}
+                      />
+                      <PastDate
+                        dateTime={format(endDate, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx")}
+                      >
+                        {format(endDate, 'MMM dd yyyy HH:mm')}
+                      </PastDate>
+                    
+                    </React.Fragment>  
               )}
             </div>
           </div>
@@ -260,28 +268,28 @@ class VotePanelContent extends React.Component {
           </Part>
         )}
 
-        {vote.data.balance !== undefined && (
-          <SidePanelSplit style={{ borderBottom: 'none' }}>
+       
+          <SidePanelSplit>
             <div>
-              <h2>
-                <Label>Amount</Label>
-              </h2>
-              {//Change me
-              }
-              <p>{' ' + displayBalance + ' ' + vote.data.tokenSymbol}</p>
+              {vote.data.balance !== undefined ? (
+                <React.Fragment>
+                  <h2>
+                    <Label>Allocation Amount</Label>
+                  </h2>
+                  <p>{' ' + displayBalance + ' ' + vote.data.tokenSymbol}</p>
+                </React.Fragment>
+              ) : (
+                <React.Fragment>
+                  <h2>
+                    <Label>Total Issues</Label>
+                  </h2>
+                  <p>{options.length}</p>
+                </React.Fragment>
+              )}
             </div>
             <div>
-              <h2>
-                <Label>Date</Label>
-              </h2>
-              { open ? <p>When vote is approved</p>:<p> {format(endDate, 'dd-MMM-yyyy')} </p >}
-            </div>
-          </SidePanelSplit>
-        )}
-        <SidePanelSplit>
-          <div>
             <h2>
-              <Label>Voter participation</Label>
+              <Label>Voter Participation</Label>
             </h2>
             <p>
               {displayParticipationPct}%{' '}
@@ -290,16 +298,8 @@ class VotePanelContent extends React.Component {
               </Text>
             </p>
           </div>
-          <div>
-            <h2>
-              <Label>Your voting tokens</Label>
-            </h2>
-            {BigNumber(this.state.userBalance)
-              .div(BigNumber(10 ** this.state.decimals))
-              .dp(3)
-              .toString()}
-          </div>
-        </SidePanelSplit>
+          </SidePanelSplit>
+
         {open && (
           <div>
             <AdjustContainer>
@@ -343,8 +343,12 @@ class VotePanelContent extends React.Component {
               </SubmitButton>
               {showInfo && (
                 <Info.Action title="Info">
-                  Vote carefully. After this vote closes, it will result in a
-                  financial payment.
+                  {'Your vote will be weighted by '}
+                  {BigNumber(this.state.userBalance)
+                    .div(BigNumber(10 ** this.state.decimals))
+                    .dp(3)
+                    .toString()}
+                  {', which is your token balance. No tokens will be spent.'}
                 </Info.Action>
               )}
             </AdjustContainer>
@@ -353,9 +357,9 @@ class VotePanelContent extends React.Component {
         )}
         {(getVoteStatus(vote)===VOTE_STATUS_SUCCESSFUL && (endDate < Date.now()) ) && (
           <div>
-            <SubmitButton mode="strong" wide onClick={this.executeVote}>
+            <ExecuteButton mode="strong" wide onClick={this.executeVote}>
               Execute Vote
-            </SubmitButton>
+            </ExecuteButton>
           </div>
         )}
         <div>
@@ -480,11 +484,14 @@ const SubmitButton = styled(Button)`
   margin: 1rem 0;
 `
 
+const ExecuteButton = styled(Button)`
+  margin-top: 1rem;
+`
+
 const ShowText = styled.p`
   color: ${theme.accent};
-  font-size: 15px;
   text-decoration: underline;
-  margin-top: 0.5rem;
+  margin-top: 1rem;
   cursor: pointer;
 `
 
@@ -520,5 +527,13 @@ const VotingButtons = styled.div`
     }
   }
 `
+
+const PastDate = styled.time`
+  font-size: 13px;
+  color: #98a0a2;
+  margin-top: 6px;
+  display: block;
+`
+
 
 export default provideNetwork(VotePanelContent)

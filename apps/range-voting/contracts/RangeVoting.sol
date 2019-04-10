@@ -198,7 +198,7 @@ contract RangeVoting is IForwarder, AragonApp {
     }
 
     /**
-    * @notice Execute a range vote. After this step, navigate to the Allocations app and select the Distribute Allocation action from an account to complete the execution.
+    * @notice Execute a range vote `_voteID`
     * @param _voteId Id for vote
     */
     function executeVote(uint256 _voteId) external {

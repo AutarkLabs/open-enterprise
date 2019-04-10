@@ -210,6 +210,7 @@ contract Allocations is AragonApp, Fundable {
     * @dev This function distributes the payouts to the candidates in accordance with the distribution values
     * @notice Distribute allocation `_payoutId`
     * @param _payoutId Any relevent label for the payout
+    * @param _accountId Account the payout belongs to
     */
     function runPayout(uint _accountId, uint256 _payoutId) external auth(EXECUTE_PAYOUT_ROLE) returns(bool success) {
         Account storage account = accounts[_accountId];

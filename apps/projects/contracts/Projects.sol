@@ -513,6 +513,10 @@ contract Projects is IsContract, AragonApp {
         }
     }
 
+    /**
+     * @notice Issue curation: `description`
+     * @param description The description of the issue curation
+     */
     function curateIssues(
         address[] /*unused_Addresses*/,
         uint256[] issuePriorities,
