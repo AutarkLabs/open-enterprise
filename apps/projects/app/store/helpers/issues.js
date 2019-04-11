@@ -151,12 +151,9 @@ export const updateIssueDetail = async (data, response) => {
   let returnData = { ...data }
   const requestsData = await loadRequestsData(response.returnValues)
   returnData.requestsData = requestsData
-  const status = data.workStatus
-  //if (status && reverseWorkStatus[status].step >= SUBMISSION_STAGE) {
   let submissionData = await loadSubmissionData(response.returnValues)
   returnData.workSubmissions = submissionData
   returnData.work = submissionData[submissionData.length - 1]
-  //}
   return returnData
 }
 
