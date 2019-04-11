@@ -27,7 +27,7 @@ class Issues extends React.PureComponent {
   }
 
   state = {
-    selectedIssues: [],
+    selectedIssues: {},
     allSelected: false,
     filters: {
       projects: {},
@@ -55,8 +55,11 @@ class Issues extends React.PureComponent {
     }
   }
 
+  selectedIssuesArray = () =>
+    Object.keys(this.state.selectedIssues).map(id => this.state.selectedIssues[id])
+
   handleCurateIssues = () => {
-    this.props.onCurateIssues(this.state.selectedIssues)
+    this.props.onCurateIssues(this.selectedIssuesArray())
     // this is called from ActionMenu, on selected Issues -
     // return to default state where nothing is selected
     this.setState({ selectedIssues: [], allSelected: false })
@@ -71,35 +74,20 @@ class Issues extends React.PureComponent {
   }
 
   handleAllocateBounties = () => {
-    console.log('handleAllocationBounties:', this.state.selectedIssues)
-    this.props.onAllocateBounties(this.state.selectedIssues)
+    this.props.onAllocateBounties(this.selectedIssuesArray())
     // this is called from ActionMenu, on selected Issues -
     // return to default state where nothing is selected
     this.setState({ selectedIssues: [], allSelected: false })
   }
 
-  handleReviewApplication = issue => {
-    this.props.onReviewApplication(issue)
-  }
-
-  handleReviewWork = issue => {
-    this.props.onReviewWork(issue)
-  }
-
-  handleSubmitWork = issue => {
-    this.props.onSubmitWork(issue)
-  }
-
-  handleRequestAssignment = issue => {
-    this.props.onRequestAssignment(issue)
-  }
-
   toggleSelectAll = issuesFiltered => () => {
-    if (this.state.allSelected) {
-      this.setState({ allSelected: false, selectedIssues: [] })
-    } else {
-      this.setState({ allSelected: true, selectedIssues: this.shapeIssues(issuesFiltered) })
+    const selectedIssues = {}
+    const allSelected = !this.state.allSelected
+    const reload = !this.state.reload
+    if (!this.state.allSelected) {
+      this.shapeIssues(issuesFiltered).forEach(issue => selectedIssues[issue.id] = issue)
     }
+    this.setState({ allSelected, selectedIssues, reload })
   }
 
   handleFiltering = filters => {
@@ -184,14 +172,14 @@ class Issues extends React.PureComponent {
   }
 
   handleIssueSelection = issue => {
-    this.setState(({ selectedIssues }) => {
-      console.log('handleIssueSelection', issue)
-      const newSelectedIssues = selectedIssues
-        .map(selectedIssue => selectedIssue.id)
-        .includes(issue.id)
-        ? selectedIssues.filter(selectedIssue => selectedIssue.id !== issue.id)
-        : [...new Set([].concat(...selectedIssues, issue))]
-      return { selectedIssues: newSelectedIssues }
+    this.setState(prevState => {
+      const newSelectedIssues = prevState.selectedIssues
+      if (issue.id in newSelectedIssues) {
+        delete newSelectedIssues[issue.id]
+      } else {
+        newSelectedIssues[issue.id] = issue
+      }
+      return { selectedIssues: newSelectedIssues, reload: !prevState.reload }
     })
   }
 
@@ -244,13 +232,14 @@ class Issues extends React.PureComponent {
         disableFilter={this.disableFilter}
         disableAllFilters={this.disableAllFilters}
       />
-      <ActionsMenu enabled={!!this.state.selectedIssues.length}>
+      <ActionsMenu enabled={Object.keys(this.state.selectedIssues).length > 0}>
         <ContextMenuItem
           onClick={this.handleCurateIssues}
           style={{ display: 'flex', alignItems: 'flex-start' }}
         >
-          <div>
+          <div>{/*}
             <IconCurate color={theme.textTertiary} />
+    */}
           </div>
           <ActionLabel>Curate Issues</ActionLabel>
         </ContextMenuItem>
@@ -319,7 +308,6 @@ class Issues extends React.PureComponent {
     const bountyIssueObj = {}
     const tokenObj = {}
     const expLevels = bountySettings.expLvls
-    console.log('expLevels', expLevels)
 
     bountyIssues.forEach(issue => {
       bountyIssueObj[issue.issueNumber] = issue
@@ -331,7 +319,7 @@ class Issues extends React.PureComponent {
         decimals: token.decimals,
       }
     })
-    console.log('issues: ', bountyIssueObj)
+
     return issues.map(({ __typename, repository: { id, name }, ...fields }) => {
       const bountyId = bountyIssueObj[fields.number]
       const repoIdFromBounty = bountyId && bountyId.data.repoId
@@ -341,7 +329,7 @@ class Issues extends React.PureComponent {
           .div(BigNumber(10 ** tokenObj[data.token].decimals))
           .dp(3)
           .toString()
-        console.log('balance', expLevels)
+
         return {
           ...fields,
           ...bountyIssueObj[fields.number].data,
@@ -394,6 +382,10 @@ class Issues extends React.PureComponent {
     const {
       projects,
       onNewProject,
+      onRequestAssignment,
+      onReviewApplication,
+      onSubmitWork,
+      onReviewWork,
     } = this.props
     const { currentIssue, showIssueDetail } = this.state
 
@@ -415,24 +407,12 @@ class Issues extends React.PureComponent {
           issue={currentIssueShaped}
 
           onClose={this.handleIssueDetailClose}
-          onReviewApplication={() => {
-            this.handleReviewApplication(currentIssueShaped)
-          }}
-          onRequestAssignment={() => {
-            this.handleRequestAssignment(currentIssueShaped)
-          }}
-          onSubmitWork={() => {
-            this.handleSubmitWork(currentIssueShaped)
-          }}
-          onAllocateSingleBounty={() => {
-            this.handleAllocateSingleBounty(currentIssueShaped)
-          }}
-          onUpdateBounty={() => {
-            this.handleUpdateBounty(currentIssueShaped)
-          }}
-          onReviewWork={() => {
-            this.handleReviewWork(currentIssueShaped)
-          }}
+          onReviewApplication={onReviewApplication}
+          onRequestAssignment={onRequestAssignment}
+          onSubmitWork={onSubmitWork}
+          onAllocateSingleBounty={this.handleAllocateSingleBounty}
+          onUpdateBounty={this.handleUpdateBounty}
+          onReviewWork={onReviewWork}
         />
       )
     }
@@ -443,7 +423,7 @@ class Issues extends React.PureComponent {
     
     // Build an array of plain issues by flattening the data obtained from github API
     const flattenIssues = data => {
-      console.log('DATA', data)
+      //console.log('DATA', data)
       let issues = []
       let totalCount = 0
       projects.forEach((project, i) => {
@@ -457,8 +437,8 @@ class Issues extends React.PureComponent {
         }
       })
       moreIssuesToShow = issues.length < totalCount
-      console.log('REPOS', repos)
-      console.log('ISSUES', issues)
+      //console.log('REPOS', repos)
+      //console.log('ISSUES', issues)
       return issues
     }
 
@@ -472,7 +452,7 @@ class Issues extends React.PureComponent {
       totalCount: 0,
       endCursor: this.state.repos[project] ? this.state.repos[project].endCursor : '',
       showMore: this.state.repos[project] ? this.state.repos[project].showMore : false,
-      fetch: 3,
+      fetch: 100,
     })
 
     const GET_ISSUES2 = getIssuesGQL(repos)
@@ -485,8 +465,10 @@ class Issues extends React.PureComponent {
       >
         {({ data, loading, error, refetch }) => {
           if (data) {
+            console.log('Is data, render list')
             const issues = flattenIssues(data)
             const issuesFiltered = this.applyFilters(issues)
+
             return (
               <StyledIssues>
                 {this.actionsMenu(issues)}
@@ -496,39 +478,24 @@ class Issues extends React.PureComponent {
                   <ScrollWrapper>
                     {this.shapeIssues(issuesFiltered)
                       .sort(currentSorter)
-                      .map(issue => (
-                        <Issue
-                          isSelected={this.state.selectedIssues
-                            .map(selectedIssue => selectedIssue.id)
-                            .includes(issue.id)}
-                          onClick={() => {
-                            this.handleIssueClick(issue)
-                          }}
-                          onSelect={() => {
-                            this.handleIssueSelection(issue)
-                          }}
-                          onReviewApplication={() => {
-                            this.handleReviewApplication(issue)
-                          }}
-                          onSubmitWork={() => {
-                            this.handleSubmitWork(issue)
-                          }}
-                          onRequestAssignment={() => {
-                            this.handleRequestAssignment(issue)
-                          }}
-                          onAllocateSingleBounty={() => {
-                            this.handleAllocateSingleBounty(issue)
-                          }}
-                          onUpdateBounty={() => {
-                            this.handleUpdateBounty(issue)
-                          }}
-                          onReviewWork={() => {
-                            this.handleReviewWork(issue)
-                          }}
-                          key={issue.id}
-                          {...issue}
-                        />
-                      ))}
+                      .map((issue, index) => {
+                        return (
+                          <Issue
+                            isSelected={issue.id in this.state.selectedIssues}
+                            key={issue.id}
+                            {...issue}
+
+                            onClick={this.handleIssueClick}
+                            onSelect={this.handleIssueSelection}
+                            onReviewApplication={onReviewApplication}
+                            onSubmitWork={onSubmitWork}
+                            onRequestAssignment={onRequestAssignment}
+                            onAllocateSingleBounty={this.handleAllocateSingleBounty}
+                            onUpdateBounty={this.handleUpdateBounty}
+                            onReviewWork={onReviewWork}
+                          />
+                        )
+                      })}
                   </ScrollWrapper>
                   <div style={{ textAlign: 'center' }}>
                     {moreIssuesToShow && <Button mode="strong" onClick={repos => this.showMoreIssues(repos)}>Show More</Button>}

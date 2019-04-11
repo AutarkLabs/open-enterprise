@@ -403,7 +403,7 @@ class App extends React.PureComponent {
     )
   }
 
-  reviewApplication = issue => {
+  reviewApplication = (issue, index = 0) => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.ReviewApplication,
       panelProps: {
@@ -431,7 +431,7 @@ class App extends React.PureComponent {
     )
   }
 
-  reviewWork = issue => {
+  reviewWork = (issue, index = 0) => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.ReviewWork,
       panelProps: {

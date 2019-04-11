@@ -87,7 +87,6 @@ export const getIssuesGQL = repos => {
   q += `
 }
   `
-  console.log('---',q)
   return gql`${q}`
 }
 

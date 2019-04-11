@@ -34,7 +34,7 @@ export default class IssueDetail extends React.Component {
       <div style={issueDetailStyle}>
         <Navigation onClose={onClose} />
         <Detail 
-          {...issue}
+          issue={issue}
           onReviewApplication={onReviewApplication}
           onRequestAssignment={onRequestAssignment}
           onSubmitWork={onSubmitWork}

@@ -297,11 +297,11 @@ const calculateAgo = pastDate => {
   return formatDistance(pastDate, date, { addSuffix: true })
 }
 
-const activities = (requestsData, workSubmissions, onReviewApplication, onReviewWork) => {
+const activities = (issue, requestsData, workSubmissions, onReviewApplication, onReviewWork) => {
   const events = []
 
   if (requestsData) {
-    requestsData.forEach(data => {
+    requestsData.forEach((data, index) => {
 
       events[data.applicationDate] = {
         date: data.applicationDate,
@@ -310,7 +310,7 @@ const activities = (requestsData, workSubmissions, onReviewApplication, onReview
         eventAction: ('review' in data) ?
           null
           :
-          <EventButton mode="outline" onClick={onReviewApplication}>
+          <EventButton mode="outline" onClick={() => onReviewApplication(issue, index)}>
             Review Application
           </EventButton>,
       }
@@ -330,7 +330,7 @@ const activities = (requestsData, workSubmissions, onReviewApplication, onReview
   }
 
   if (workSubmissions) {
-    workSubmissions.forEach(data => {
+    workSubmissions.forEach((data, index) => {
 
       events[data.submissionDate] = {
         date: data.submissionDate,
@@ -339,7 +339,7 @@ const activities = (requestsData, workSubmissions, onReviewApplication, onReview
         eventAction: ('review' in data) ?
           null
           :
-          <EventButton mode="outline" onClick={onReviewWork}>
+          <EventButton mode="outline" onClick={() => onReviewWork(issue, index)}>
             Review Work
           </EventButton>,
       }
@@ -378,38 +378,41 @@ const deadlineDistance = date =>
   formatDistance(new Date(date), new Date())
 
 const Detail = ({
-  requestsData,
-  url,
-  balance,
-  symbol,
-  labels,
-  title,
-  number,
-  repo,
-  body,
-  createdAt,
-  expLevel,
-  deadline,
-  work,
-  workStatus,
+  issue,
   onReviewApplication,
   onReviewWork,
   onUpdateBounty,
   onRequestAssignment,
   onSubmitWork,
   onAllocateSingleBounty,
-  workSubmissions,
 }) => {
-
+  const {
+    workSubmissions,
+    requestsData,
+    url,
+    balance,
+    symbol,
+    labels,
+    title,
+    number,
+    repo,
+    body,
+    createdAt,
+    expLevel,
+    deadline,
+    work,
+    workStatus,
+  } = issue
+  
   const summaryData = {
     expLevel: (expLevel === undefined) ? '-' : expLevel,
     deadline: (deadline === undefined) ? '-' : deadlineDistance(deadline) + ' remaining',
     workStatus: (workStatus === undefined) ? 'No bounty yet' : workStatus,
     balance
   }
-
+console.log('DET', issue)
   //const issueEvents = activities(mockRequestsData, mockWorkSubmissions, onReviewApplication, onReviewWork)
-  const issueEvents = activities(requestsData, workSubmissions, onReviewApplication, onReviewWork)
+  const issueEvents = activities(issue, requestsData, workSubmissions, onReviewApplication, onReviewWork)
 
   return (
     <Content>
@@ -446,11 +449,11 @@ const Detail = ({
                     workStatus={workStatus}
                     requestsData={requestsData}
                     onUpdateBounty={onUpdateBounty}
-                    onAllocateSingleBounty={onAllocateSingleBounty}
-                    onSubmitWork={onSubmitWork}
-                    onRequestAssignment={onRequestAssignment}
-                    onReviewApplication={onReviewApplication}
-                    onReviewWork={onReviewWork}
+                    onAllocateSingleBounty={() => onAllocateSingleBounty(issue)}
+                    onSubmitWork={() => onSubmitWork(issue)}
+                    onRequestAssignment={() => onRequestAssignment(issue)}
+                    onReviewApplication={() => onReviewApplication(issue)}
+                    onReviewWork={() => onReviewWork(issue)}
                   />
                 </ContextMenu>
                 { balance > 0 &&
