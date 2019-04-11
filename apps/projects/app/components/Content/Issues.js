@@ -162,15 +162,14 @@ class Issues extends React.PureComponent {
       // if there are no Status filters, all issues pass
       if (Object.keys(filters.statuses).length === 0) return true
       // should bountyless issues pass?
-
       const status = bountyIssueObj[issue.number] ? bountyIssueObj[issue.number] : 'not-funded'
-      if ('not-funded' in filters.statuses && !bountyIssueObj[issue.number])
-        return true
-      // if issues without a status should not pass, they are rejected below
-      if (status === 'not-funded') return false
-      if (status in filters.statuses)
-        return true
-      return false
+      // if we look for all funded issues, regardless of stage...
+      let filterPass = 
+        status in filters.statuses ||
+          ('all-funded' in filters.statuses && status !== 'not-funded') ?
+          true : false
+      // ...or at specific stages
+      return filterPass
     })
 
     // last but not least, if there is any text in textFilter...
