@@ -121,7 +121,7 @@ const CardTitle = styled(Text.Block).attrs({
   size: 'large',
   weight: 'bold',
 })`
-  margin-top: 15px;
+  margin-top: 10px;
   margin-bottom: 5px;
   text-align: center;
   color: ${theme.textPrimary};
