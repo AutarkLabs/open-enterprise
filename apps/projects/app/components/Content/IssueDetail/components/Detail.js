@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
-import { Badge, Text, theme, ContextMenu, SafeLink, Button } from '@aragon/ui'
+import { Badge, Text, theme, ContextMenu, SafeLink, Button, Viewport } from '@aragon/ui'
 import { formatDistance } from 'date-fns'
 import marked from 'marked'
 import renderHTML from 'react-render-html'
@@ -66,15 +66,15 @@ const SummaryTable = ({ expLevel, deadline, workStatus, balance }) => {
 
 const Wrapper = styled.div`
   display: flex;
-  height: 100%;
   padding-top: 10px;
 `
 
+
 const Content = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: 15px 30px;
+display: flex;
+flex-direction: column;
+height: 100%;
+padding: 15px 30px;
 `
 
 const MarkdownWrapper = styled.div`
@@ -193,56 +193,6 @@ const column = {
   flexBasis: '100%',
 }
 
-const mockRequestsData = [{
-  applicationDate: '2019-03-27T00:01:12.543Z',
-  contributorAddr: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
-  eta: '2019-03-27T00:00:14.924Z',
-  hours: '33',
-  requestIPFSHash: 'QmSwBgEPqFjbWRfzXiSNPznQp3J9vqpmNPcqfvWRXHaqGT',
-  status: 'Unreviewed',
-  user: {
-    id: 'MDQ6VXNlcjM0NDUyMTMx',
-    login: 'rkzel',
-    url: 'https://github.com/rkzel',
-    avatarUrl: 'https://avatars0.githubusercontent.com/u/34452131?v=4'
-  },
-  workplan: 'the grand plan',
-  xreview:{
-    reviewDate: '2019-03-27T14:30:06.197Z',
-    approved: true,
-    feedback: 'feedback',
-    user: {
-      avatarUrl: 'https://avatars0.githubusercontent.com/u/34452131?v=4',
-      id: 'MDQ6VXNlcjM0NDUyMTMx',
-      login: 'rkzel',
-      url: 'https://github.com/rkzel',
-    },
-  },
-  approved: true,
-}]
-const mockWorkSubmissions = [{
-  comments: 'comm',
-  fulfillmentId: '0',
-  hours: '3',
-  proof: 'proof of work',
-  review: {
-    feedback: 'nope', rating: 2, accepted: false,
-    user: { id: 'MDQ6VXNlcjM0NDUyMTMx', login: 'rkzel',
-      url: 'https://github.com/rkzel',
-      avatarUrl: 'https://avatars0.githubusercontent.com/u/34452131?v=4',
-    }
-  },
-  status: '0',
-  submissionDate: '2019-03-27T22:03:04.589Z',
-  submissionIPFSHash: 'QmZ5N548rdGFn4nt8uLaXeahrZvanNW4FG4V9HmWv5iPni',
-  submitter: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
-  user: {
-    id: 'MDQ6VXNlcjM0NDUyMTMx',
-    login: 'rkzel', url: 'https://github.com/rkzel',
-    avatarUrl: 'https://avatars0.githubusercontent.com/u/34452131?v=4'
-  },
-}]
-
 const IssueEventAvatar = styled.div`
   width: 66px;
   margin: 0;
@@ -297,7 +247,7 @@ const calculateAgo = pastDate => {
   return formatDistance(pastDate, date, { addSuffix: true })
 }
 
-const activities = (requestsData, workSubmissions, onReviewApplication, onReviewWork) => {
+const activities = (requestsData, workSubmissions, fundingHistory, onReviewApplication, onReviewWork) => {
   const events = []
 
   if (requestsData) {
@@ -371,156 +321,171 @@ const activities = (requestsData, workSubmissions, onReviewApplication, onReview
       }
     })
   }
+
+  if (fundingHistory) {
+    fundingHistory.forEach((data, i) => {
+      events[data.date] = {
+        date: data.date,
+        ...data.user,
+        eventDescription: (i === 0 ? ' added' : ' updated' ) + ' funding',
+      }
+    })
+  }
+
   return events
 }
 
 const deadlineDistance = date =>
   formatDistance(new Date(date), new Date())
-
-const Detail = ({
-  requestsData,
-  url,
-  balance,
-  symbol,
-  labels,
-  title,
-  number,
-  repo,
-  body,
-  createdAt,
-  expLevel,
-  deadline,
-  work,
-  workStatus,
-  onReviewApplication,
-  onReviewWork,
-  onUpdateBounty,
-  onRequestAssignment,
-  onSubmitWork,
-  onAllocateSingleBounty,
-  workSubmissions,
-}) => {
-
+    
+const detailsCard = issue => {
   const summaryData = {
-    expLevel: (expLevel === undefined) ? '-' : expLevel,
-    deadline: (deadline === undefined) ? '-' : deadlineDistance(deadline) + ' remaining',
-    workStatus: (workStatus === undefined) ? 'No bounty yet' : workStatus,
-    balance
+    expLevel: (issue.expLevel === undefined) ? '-' : issue.expLevel,
+    deadline: (issue.deadline === undefined) ? '-' : deadlineDistance(issue.deadline) + ' remaining',
+    workStatus: (issue.workStatus === undefined) ? 'No bounty yet' : issue.workStatus,
+    balance: issue.balance,
   }
-
-  //const issueEvents = activities(mockRequestsData, mockWorkSubmissions, onReviewApplication, onReviewWork)
-  const issueEvents = activities(requestsData, workSubmissions, onReviewApplication, onReviewWork)
-
   return (
-    <Content>
-      <Wrapper>
-        <div style={{ flex: 3, maxWidth: '705px' }}>
-          <DetailsCard>
-            <Wrapper style={{ justifyContent: 'space-between' }}>
-              <div style={{ ...column, flex: 2, marginRight: '20px' }}>
-                <Text.Block size="xlarge" style={{ marginBottom: '5px' }}>
-                  {title}
-                </Text.Block>
-                <SafeLink
-                  href={url}
-                  target="_blank"
-                  style={{ textDecoration: 'none', color: '#21AAE7' }}
-                >
-                  <IssueLinkRow>
-                    <IconGitHub color="#21AAE7" width='14px' height='14px' />
-                    <Text style={{ marginLeft: '6px' }}>{repo} #{number}</Text>
-                  </IssueLinkRow>
-                </SafeLink>
-                <Text.Block
-                  size="small"
-                  color={theme.textSecondary}
-                  style={{ marginBottom: '10px' }}
-                >
-                  {calculateAgo(createdAt)}
-                </Text.Block>
-              </div>
-              <div style={{ ...column, flex: 0, alignItems: 'flex-end' }}>
-                <ContextMenu>
-                  <BountyContextMenu
-                    work={work}
-                    workStatus={workStatus}
-                    requestsData={requestsData}
-                    onUpdateBounty={onUpdateBounty}
-                    onAllocateSingleBounty={onAllocateSingleBounty}
-                    onSubmitWork={onSubmitWork}
-                    onRequestAssignment={onRequestAssignment}
-                    onReviewApplication={onReviewApplication}
-                    onReviewWork={onReviewWork}
-                  />
-                </ContextMenu>
-                { balance > 0 &&
-                  <Badge
-                    style={{ padding: '10px', textSize: 'large', marginTop: '15px' }}
-                    background={BOUNTY_BADGE_COLOR[workStatus].bg}
-                    foreground={BOUNTY_BADGE_COLOR[workStatus].fg}
-                  >
-                    {balance + ' ' + symbol}
-                  </Badge>
-                }
-              </div>
-            </Wrapper>
-            {workStatus ? (
-              <SummaryTable {...summaryData} />
-            ) : (
-              <Separator />
-            )}
-            <FieldTitle>Description</FieldTitle>
-            <Text.Block style={{ marginTop: '15px', marginBottom: '15px' }}>
-              <MarkdownWrapper>
-                {body ? renderHTML(marked(body)) : 'No description available'}
-              </MarkdownWrapper>
-            </Text.Block>
-            <Separator />
-            <Text size="small" color={theme.textTertiary}>
-              {labels.totalCount
-                ? labels.edges.map(label => (
-                  <Badge
-                    key={label.node.id}
-                    style={{ marginRight: '5px' }}
-                    background={'#' + label.node.color + '99'}
-                    foreground={theme.textPrimary}
-                  >
-                    {label.node.name}
-                  </Badge>
-                ))
-                : ''}
-            </Text>
-          </DetailsCard>
+    <StyledDetailsCard>
+      <Wrapper style={{ justifyContent: 'space-between' }}>
+        <div style={{ ...column, flex: 2, marginRight: '20px' }}>
+          <Text.Block size="xlarge" style={{ marginBottom: '5px' }}>
+            {issue.title}
+          </Text.Block>
+          <SafeLink
+            href={issue.url}
+            target="_blank"
+            style={{ textDecoration: 'none', color: '#21AAE7' }}
+          >
+            <IssueLinkRow>
+              <IconGitHub color="#21AAE7" width='14px' height='14px' />
+              <Text style={{ marginLeft: '6px' }}>{issue.repo} #{issue.number}</Text>
+            </IssueLinkRow>
+          </SafeLink>
+          <Text.Block
+            size="small"
+            color={theme.textSecondary}
+            style={{ marginBottom: '10px' }}
+          >
+            {calculateAgo(issue.createdAt)}
+          </Text.Block>
         </div>
-
-        <div style={{ flex: 1, maxWidth: '359px', width: '295px' }}>
-          <EventsCard>
-            <FieldTitle>Activity</FieldTitle>
-            {Object.keys(issueEvents).length > 0
-              ? Object.keys(issueEvents).sort((a,b) =>
-                new Date(a) - new Date(b)
-              ).map((eventDate, i) => {
-                return <IssueEvent key={i} {...issueEvents[eventDate]} />
-              })
-              : 'This issue has no activity'
-            }
-          </EventsCard>
+        <div style={{ ...column, flex: 0, alignItems: 'flex-end' }}>
+          <ContextMenu>
+            <BountyContextMenu
+              work={issue.work}
+              workStatus={issue.workStatus}
+              requestsData={issue.requestsData}
+              onAllocateSingleBounty={issue.onAllocateSingleBounty}
+              onSubmitWork={issue.onSubmitWork}
+              onRequestAssignment={issue.onRequestAssignment}
+              onReviewApplication={issue.onReviewApplication}
+              onReviewWork={issue.onReviewWork}
+              onUpdateBounty={issue.onUpdateBounty}
+            />
+          </ContextMenu>
+          { issue.balance > 0 &&
+          <Badge
+            style={{ padding: '10px', textSize: 'large', marginTop: '15px' }}
+            background={BOUNTY_BADGE_COLOR[issue.workStatus].bg}
+            foreground={BOUNTY_BADGE_COLOR[issue.workStatus].fg}
+          >
+            {issue.balance + ' ' + issue.symbol}
+          </Badge>
+          }
         </div>
       </Wrapper>
-    </Content>
+      {issue.workStatus ? <SummaryTable {...summaryData} /> : <Separator /> }
+      <FieldTitle>Description</FieldTitle>
+      <Text.Block style={{ marginTop: '20px', marginBottom: '20px' }}>
+        <MarkdownWrapper>
+          {issue.body ? renderHTML(marked(issue.body)) : 'No description available'}
+        </MarkdownWrapper>
+      </Text.Block>
+      <Text size="small" color={theme.textTertiary}>
+        {issue.labels.totalCount
+          ? issue.labels.edges.map(label => (
+            <Badge
+              key={label.node.id}
+              style={{ marginRight: '5px' }}
+              background={'#' + label.node.color  + '99'}
+              foreground={'#000'}
+            >
+              {label.node.name}
+            </Badge>
+          ))
+          : ''}
+      </Text>
+    </StyledDetailsCard>
   )
 }
-const DetailsCard = styled.div`
+
+const eventsCard = issue => {
+  const issueEvents = activities(issue.requestsData, issue.workSubmissions, issue.fundingHistory, issue.onReviewApplication, issue.onReviewWork)
+
+  return (
+    <StyledEventsCard>
+      <FieldTitle>Activity</FieldTitle>
+      {Object.keys(issueEvents).length > 0
+        ? Object.keys(issueEvents).sort((a,b) =>
+          new Date(a) - new Date(b)
+        ).map((eventDate, i) => {
+          return <IssueEvent key={i} {...issueEvents[eventDate]} />
+        })
+        :
+        <div style={{ padding: '6px 0 16px 16px' }}>
+          This issue has no activity
+        </div>
+      }
+    </StyledEventsCard>
+  )
+}
+
+const Detail = issue => {
+
+  const issueEvents = activities(issue.requestsData, issue.workSubmissions, issue.fundingHistory, issue.onReviewApplication, issue.onReviewWork)
+  return (
+    
+    <Viewport>
+      {({ below }) => below('medium') ? (
+        <CardWrapper style={{ flexDirection: 'column' }}>
+          <div style={{ minWidth: '350px', width: '100%' }}>
+            {detailsCard(issue)}
+          </div>
+          <div style={{ minWidth: '350px', width: '100%' }}>
+            {eventsCard(issue)}
+          </div>
+        </CardWrapper>
+      ) : (
+        <CardWrapper style={{ flexDirection: 'row' }}>
+          <div style={{ maxWidth: '705px', minWidth: '350px', width: '70%' }}>
+            {detailsCard(issue)}
+          </div>
+          <div style={{ maxWidth: '400px', minWidth: '350px', width: '30%' }}>
+            {eventsCard(issue)}
+          </div>
+        </CardWrapper>
+      )}
+    </Viewport>
+
+
+  )
+}
+const CardWrapper = styled.div`
+  display: flex;
+  padding: 15px 30px;
+`
+const StyledDetailsCard = styled.div`
   flex: 0 1 auto;
   text-align: left;
   padding: 15px 30px;
+  margin: 10px;
   background: ${theme.contentBackground};
   border: 1px solid ${theme.contentBorder};
   border-radius: 3px;
 `
-const EventsCard = styled(DetailsCard)`
+const StyledEventsCard = styled(StyledDetailsCard)`
   padding: 0 10px;
-  margin-left: 20px;
   > * {
     padding: 16px 0 6px 16px;
   }
@@ -548,6 +513,7 @@ Detail.propTypes = {
     undefined,
     PropTypes.object,
   ]),
+  fundingHistory: PropTypes.array,
 }
 
 export default Detail
