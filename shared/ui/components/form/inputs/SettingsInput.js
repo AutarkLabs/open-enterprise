@@ -19,7 +19,6 @@ const SettingsInput = ({
         <Checkbox checked={value} onChange={changeChecked} />
         <Text>{text}</Text>
       </label>
-      <Badge.Info small>?</Badge.Info>
     </StyledSettingsInput>
   ) : null
 }
