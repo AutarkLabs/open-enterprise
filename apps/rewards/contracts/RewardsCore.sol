@@ -25,6 +25,7 @@ contract RewardsCore is IsContract, AragonApp {
         uint value;
         uint blockStart;
         string description;
+        address creator;
         mapping (address => bool) claimed;
         mapping (address => uint) timeClaimed;
     }
@@ -70,7 +71,8 @@ contract RewardsCore is IsContract, AragonApp {
         uint delay,
         uint rewardAmount,
         bool claimed,
-        uint timeClaimed
+        uint timeClaimed,
+        address creator
     )
     {
         Reward storage reward = rewards[rewardID];
@@ -85,6 +87,7 @@ contract RewardsCore is IsContract, AragonApp {
         delay = reward.delay;
         claimed = reward.claimed[msg.sender];
         timeClaimed = reward.timeClaimed[msg.sender];
+        creator = reward.creator;
         if (reward.isMerit) {
             rewardAmount = calculateMeritReward(reward);
         } else {
@@ -136,6 +139,7 @@ contract RewardsCore is IsContract, AragonApp {
         reward.occurances = _occurances;
         reward.delay = _delay;
         reward.blockStart = _startBlock;
+        reward.creator = msg.sender;
         emit RewardAdded(rewardId);
         if (_occurances > 1) {
             newReward(

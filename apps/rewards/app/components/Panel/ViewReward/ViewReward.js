@@ -32,6 +32,14 @@ class ViewReward extends React.Component {
 
     onClosePanel = () => this.props.onClosePanel()
 
+    getSymbol = (tokens, referenceToken) => {
+      return tokens
+        .reduce((symbol, token) => {
+          if (token.address === referenceToken) return token.symbol
+          else return symbol
+        },'')
+    }
+
     renderDescription = (description = '') => {
       // Make '\n's real breaks
       return description.split('\n').map((line, i) => (
@@ -42,7 +50,7 @@ class ViewReward extends React.Component {
       ))
     }
     render() {
-      const { network } = this.props
+      const { network, tokens } = this.props
       const {
         creator,
         isMerit,
@@ -55,11 +63,7 @@ class ViewReward extends React.Component {
         delay,
       } = this.props.reward
 
-      const translateToken = (token) => {
-        if (token == 0x0) {
-          return 'ETH'
-        }
-      }
+
       return (
         <div>
           <SidePanelSplit>
@@ -110,7 +114,7 @@ class ViewReward extends React.Component {
           <SidePanelSplit>
             <div>
               <FieldTitle>Reference Asset</FieldTitle>
-              <p>{referenceToken}</p>
+              <p>{this.getSymbol(tokens,referenceToken)}</p>
             </div>
             <div>
               <FieldTitle>Type</FieldTitle>
@@ -123,7 +127,7 @@ class ViewReward extends React.Component {
             <div>
               <FieldTitle>Amount</FieldTitle>
               <p>
-                {displayCurrency(amount)}{' '}{translateToken(rewardToken)}
+                {displayCurrency(amount)}{' '}{this.getSymbol(tokens, rewardToken)}
               </p>
             </div>
             <div>
@@ -143,9 +147,9 @@ class ViewReward extends React.Component {
             <Summary>
               <p>
                 {'A total of '}
-                <SummaryVar>{displayCurrency(amount)} {translateToken(rewardToken)}</SummaryVar>
+                <SummaryVar>{displayCurrency(amount)} {this.getSymbol(tokens,rewardToken)}</SummaryVar>
                 {' will be distributed as a reward to addresses that earned '}
-                <SummaryVar>{referenceToken}</SummaryVar>
+                <SummaryVar>{this.getSymbol(tokens,referenceToken)}</SummaryVar>
                 {' from '}
                 <SummaryVar>
                   {format(startDate,'dd-MMM-yyyy')}
@@ -158,13 +162,13 @@ class ViewReward extends React.Component {
               </p>
               <p>
                 {'The reward amount will be in proportion to the '}
-                <SummaryVar>{referenceToken}</SummaryVar>
+                <SummaryVar>{this.getSymbol(tokens,referenceToken)}</SummaryVar>
                 {' earned by each account in the specified period.'}
               </p>
               <p>
                 {'The reward will be dispersed '}
                 <SummaryVar>
-                  {delay === 0?'immediately': (delay + ' day' + (delay > 1 ? 's' : ''))}
+                  {delay === '0'?'immediately': (delay + ' day' + (delay > 1 ? 's' : ''))}
                 </SummaryVar>
                 {' after the end of the period.'}
               </p>

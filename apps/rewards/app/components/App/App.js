@@ -24,7 +24,7 @@ class App extends React.Component {
   }
 
   state = {
-    selected: 1,
+    selected: 0,
     tabs: [ 'Overview', 'My Rewards' ],
   }
 
@@ -148,6 +148,7 @@ class App extends React.Component {
       panel: PANELS.ViewReward,
       panelProps: {
         reward: reward,
+        tokens: this.props.balances,
         onClosePanel: this.closePanel,
         network: { type: 'rinkeby' }
       }

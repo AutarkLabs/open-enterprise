@@ -38,6 +38,7 @@ const getRewardById = async rewardId => {
         userRewardAmount: data.rewardAmount,
         claimed: data.claimed,
         timeClaimed: data.timeClaimed,
+        creator: data.creator,
       }))
     )
     .toPromise()
