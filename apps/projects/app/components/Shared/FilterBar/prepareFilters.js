@@ -14,20 +14,21 @@ const prepareFilters = (issues, bountyIssues) => {
     statuses: {},
   }
 
+  Object.keys(BOUNTY_STATUS).forEach(status =>
+    filters.statuses[status] = {
+      name: BOUNTY_STATUS[status],
+      count: 0,
+    }
+  )
+  filters.statuses['all-funded'] = {
+    name: BOUNTY_STATUS['all-funded'],
+    count: bountyIssues.length,
+  }
   filters.statuses['not-funded'] = {
     name: BOUNTY_STATUS['not-funded'],
     count: issues.length - bountyIssues.length,
   }
-  bountyIssues.map(issue => {
-    if (issue.data.workStatus in filters.statuses) {
-      filters.statuses[issue.data.workStatus].count++
-    } else {
-      filters.statuses[issue.data.workStatus] = {
-        name: BOUNTY_STATUS[issue.data.workStatus],
-        count: 1,
-      }
-    }
-  })
+  bountyIssues.map(issue => filters.statuses[issue.data.workStatus].count++)
 
   issues.map(issue => {
     if (issue.milestone) {
