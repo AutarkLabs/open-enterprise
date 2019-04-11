@@ -77,15 +77,6 @@ class VotePanelContent extends React.Component {
             (parseInt(this.state.userBalance) * 0.9999)
       ))
       : 0
-    // TODO: Let these comments here for a while to be sure we are working with correct values:
-    console.log('Sum of values:', valueTotal)
-    console.log('userBalance', this.state.userBalance)
-    console.log(
-      'onVote voteId:',
-      this.props.vote.voteId,
-      'optionsArray',
-      optionsArray
-    )
     this.props.onVote(this.props.vote.voteId, optionsArray)
   }
   executeVote = () => {
@@ -119,15 +110,7 @@ class VotePanelContent extends React.Component {
         })
     }
   }
-  renderDescription = (description = '') => {
-    // Make '\n's real breaks
-    return description.split('\n').map((line, i) => (
-      <React.Fragment key={i}>
-        {line}
-        <br />
-      </React.Fragment>
-    ))
-  }
+
   sliderUpdate = (value, idx) => {
     const total = this.state.voteOptions.reduce(
       (acc, { trueValue }, index) => {
@@ -157,7 +140,6 @@ class VotePanelContent extends React.Component {
       (acc, vote) => acc.plus(vote),
       new BigNumber(0)
     )
-    //
 
     const voteWeights = result.map(e =>
       BigNumber(e)
@@ -166,7 +148,6 @@ class VotePanelContent extends React.Component {
         .dp(2)
         .toString()
     )
-
     const voteAmounts = result.map(e =>
       BigNumber(e)
         .div(BigNumber(10 ** this.state.decimals))
@@ -189,12 +170,11 @@ class VotePanelContent extends React.Component {
     if (!vote) {
       return null
     }
-    const { endDate, open, support } = vote
+    const { endDate, open, support, description } = vote
     const {
       participationPct,
       creator,
       totalVoters,
-      description,
       options,
       type,
       candidateSupport,
@@ -219,7 +199,7 @@ class VotePanelContent extends React.Component {
 
     return (
       <div>
-        <SidePanelSplit style={{ borderBottom: 'none' }}>
+        <SidePanelSplit>
           <div>
             <h2>
               <Label>Created by</Label>
@@ -240,19 +220,19 @@ class VotePanelContent extends React.Component {
               {open ? (
                 <Countdown end={endDate} />
               ) : (
-                    <React.Fragment>
-                      <VoteStatus
-                        vote={vote}
-                        support={support}
-                        tokenSupply={totalVoters}
-                      />
-                      <PastDate
-                        dateTime={format(endDate, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx")}
-                      >
-                        {format(endDate, 'MMM dd yyyy HH:mm')}
-                      </PastDate>
+                <React.Fragment>
+                  <VoteStatus
+                    vote={vote}
+                    support={support}
+                    tokenSupply={totalVoters}
+                  />
+                  <PastDate
+                    dateTime={format(endDate, 'yyyy-MM-dd\'T\'HH:mm:ss.SSSxxx')}
+                  >
+                    {format(endDate, 'MMM dd yyyy HH:mm')}
+                  </PastDate>
                     
-                    </React.Fragment>  
+                </React.Fragment>  
               )}
             </div>
           </div>
@@ -261,33 +241,31 @@ class VotePanelContent extends React.Component {
           <Part>
             <React.Fragment>
               <h2>
-                <Label>Description:</Label>
+                <Label>Description</Label>
               </h2>
-              <p>{this.renderDescription(description)}</p>
+              <p>{description}</p>
             </React.Fragment>
           </Part>
         )}
-
-       
-          <SidePanelSplit>
-            <div>
-              {vote.data.balance !== undefined ? (
-                <React.Fragment>
-                  <h2>
-                    <Label>Allocation Amount</Label>
-                  </h2>
-                  <p>{' ' + displayBalance + ' ' + vote.data.tokenSymbol}</p>
-                </React.Fragment>
-              ) : (
-                <React.Fragment>
-                  <h2>
-                    <Label>Total Issues</Label>
-                  </h2>
-                  <p>{options.length}</p>
-                </React.Fragment>
-              )}
-            </div>
-            <div>
+        <SidePanelSplit>
+          <div>
+            {vote.data.balance !== undefined ? (
+              <React.Fragment>
+                <h2>
+                  <Label>Allocation Amount</Label>
+                </h2>
+                <p>{' ' + displayBalance + ' ' + vote.data.tokenSymbol}</p>
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                <h2>
+                  <Label>Total Issues</Label>
+                </h2>
+                <p>{options.length}</p>
+              </React.Fragment>
+            )}
+          </div>
+          <div>
             <h2>
               <Label>Voter Participation</Label>
             </h2>
@@ -298,7 +276,7 @@ class VotePanelContent extends React.Component {
               </Text>
             </p>
           </div>
-          </SidePanelSplit>
+        </SidePanelSplit>
 
         {open && (
           <div>
@@ -363,12 +341,14 @@ class VotePanelContent extends React.Component {
           </div>
         )}
         <div>
-          <ShowText
-            onClick={() => this.setState({ showResults: !showResults })}
-          >
-            {showResults ? 'Hide Voting Results' : 'Show Voting Results'}
-          </ShowText>
-          {showResults &&
+          {open &&
+            <ShowText
+              onClick={() => this.setState({ showResults: !showResults })}
+            >
+              {showResults ? 'Hide Voting Results' : 'Show Voting Results'}
+            </ShowText>
+          }
+          {(showResults || !open) && voteWeights &&
             options.map((option, index) => (
               <ProgressBarThick
                 key={index}

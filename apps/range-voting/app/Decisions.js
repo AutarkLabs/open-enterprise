@@ -169,30 +169,22 @@ class Decisions extends React.Component {
           )}
         </AppLayout.ScrollWrapper>
 
-        {displayVotes && (
+        {displayVotes && currentVote &&(
           <SidePanel
-            title={
-              currentVote
-                ? `${currentVote.description} (${
-                  currentVote.open ? 'Open' : 'Closed'
-                })`
-                : 'currentVote'
-            }
+            title={'Range Vote #' + currentVote.voteId}
             opened={Boolean(!createVoteVisible && voteVisible)}
             onClose={this.handleVoteClose}
             onTransitionEnd={this.handleVoteTransitionEnd}
           >
-            {currentVote && (
-              <VotePanelContent
-                app={app}
-                vote={currentVote}
-                user={userAccount}
-                ready={voteSidebarOpened}
-                tokenContract={tokenContract}
-                onVote={this.handleVote}
-                minParticipationPct={minParticipationPct}
-              />
-            )}
+            <VotePanelContent
+              app={app}
+              vote={currentVote}
+              user={userAccount}
+              ready={voteSidebarOpened}
+              tokenContract={tokenContract}
+              onVote={this.handleVote}
+              minParticipationPct={minParticipationPct}
+            />
           </SidePanel>
         )}
       </Main>
