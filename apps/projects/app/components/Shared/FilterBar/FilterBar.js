@@ -152,8 +152,8 @@ class FilterBar extends React.Component {
                   </div>
                   <ActionLabel>
                     <Badge
-                      background={'#' + filtersData.labels[id].color}
-                      foreground={'#000'}
+                      background={'#' + filtersData.labels[id].color + '99'}
+                      foreground={theme.textPrimary}
                     >
                       {filtersData.labels[id].name}
                     </Badge>{' '}

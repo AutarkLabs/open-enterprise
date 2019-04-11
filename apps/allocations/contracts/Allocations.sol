@@ -210,6 +210,7 @@ contract Allocations is AragonApp, Fundable {
     * @dev This function distributes the payouts to the candidates in accordance with the distribution values
     * @notice Distribute allocation `_payoutId`
     * @param _payoutId Any relevent label for the payout
+    * @param _accountId Account the payout belongs to
     */
     function runPayout(uint _accountId, uint256 _payoutId) external auth(EXECUTE_PAYOUT_ROLE) returns(bool success) {
         Account storage account = accounts[_accountId];
@@ -265,7 +266,7 @@ contract Allocations is AragonApp, Fundable {
     *      to be called by a RangeVote (options get weird if it's not)
     *      but for our use case the “SET_DISTRIBUTION_ROLE” will be given to
     *      the RangeVote.
-    * @notice Create a `_amount` allocation range vote for '`_description`'
+    * @notice Create a `@tokenAmount(_token, _amount)` allocation for ' `_description` '
     * @param _candidateAddresses Array of candidates to be allocated a portion of the payouut
     * @param _supports The Array of all support values for the various candidates. These values are set in range voting
     * @param _accountId The Account used for the payout

@@ -7,10 +7,10 @@ const VotesTable = ({ votes, opened, onSelectVote, app }) => (
   <Table
     header={
       <TableRow>
-        <TableHeader title={opened ? 'Time Remaining' : 'Status'} />
         <TableHeader title="Description" />
-        <TableHeader title="Participation" align="right" />
         <TableHeader title={'Results'} />
+        <TableHeader title="Participation" align="right" />
+        <TableHeader title={opened ? 'Time Remaining' : 'Status'} />
       </TableRow>
     }
   >
