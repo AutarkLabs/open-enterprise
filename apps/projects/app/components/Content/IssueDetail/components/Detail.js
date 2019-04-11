@@ -465,8 +465,8 @@ const Detail = ({
             </Wrapper>
             {workStatus ? (
               <SummaryTable {...summaryData} />
-              ) : (
-                <Separator />
+            ) : (
+              <Separator />
             )}
             <FieldTitle>Description</FieldTitle>
             <Text.Block style={{ marginTop: '15px', marginBottom: '15px' }}>
