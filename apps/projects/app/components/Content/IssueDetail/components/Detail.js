@@ -69,6 +69,14 @@ const Wrapper = styled.div`
   padding-top: 10px;
 `
 
+
+const Content = styled.div`
+display: flex;
+flex-direction: column;
+height: 100%;
+padding: 15px 30px;
+`
+
 const MarkdownWrapper = styled.div`
   h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
@@ -120,7 +128,7 @@ const MarkdownWrapper = styled.div`
   }
   a > code,
   p > code {
-    background-color: ${theme.textSecondary};
+    background-color: rgba(27,31,35,.05);
     border-radius: 3px;
     padding: 0.2em 0.4em;
   }
@@ -139,7 +147,7 @@ const MarkdownWrapper = styled.div`
     padding: 6px 13px;
   }
   img {
-  	max-width: 100%;
+  	max-width: 95%;
   }
   pre {
     margin: 0;
@@ -387,7 +395,7 @@ const detailsCard = issue => {
           }
         </div>
       </Wrapper>
-      {issue.workStatus && <SummaryTable {...summaryData} />}
+      {issue.workStatus ? <SummaryTable {...summaryData} /> : <Separator /> }
       <FieldTitle>Description</FieldTitle>
       <Text.Block style={{ marginTop: '20px', marginBottom: '20px' }}>
         <MarkdownWrapper>
@@ -400,7 +408,7 @@ const detailsCard = issue => {
             <Badge
               key={label.node.id}
               style={{ marginRight: '5px' }}
-              background={'#' + label.node.color}
+              background={'#' + label.node.color  + '99'}
               foreground={'#000'}
             >
               {label.node.name}
@@ -484,6 +492,11 @@ const StyledEventsCard = styled(StyledDetailsCard)`
   > :not(:last-child) {
     margin-bottom: 0;
   }
+`
+const Separator = styled.hr`
+  height: 1px;
+  width: 100%;
+  opacity: 0.2;
 `
 
 Detail.propTypes = {

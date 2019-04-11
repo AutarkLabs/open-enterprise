@@ -166,7 +166,7 @@ class FundIssues extends React.Component {
       }
     })
 
-    this.props.onSubmit(this.state.bounties)
+    this.props.onSubmit(this.state.bounties, this.state.description)
   }
 
   renderUpdateForm = (issue, bounties, bountySettings) => {

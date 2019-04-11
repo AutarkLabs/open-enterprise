@@ -7,15 +7,14 @@ import {
   TextInput,
   theme,
   ContextMenuItem,
-  IconShare,
-  IconAdd,
+  IconFundraising,
 } from '@aragon/ui'
 import BigNumber from 'bignumber.js'
 import { compareAsc, compareDesc } from 'date-fns'
 
 import { STATUS } from '../../utils/github'
 import { GET_ISSUES } from '../../utils/gql-queries.js'
-import { DropDownButton as ActionsMenu, FilterBar } from '../Shared'
+import { DropDownButton as ActionsMenu, FilterBar, IconCurate } from '../Shared'
 import { Issue, Empty } from '../Card'
 import { IssueDetail } from './IssueDetail'
 import Unauthorized from './Unauthorized'
@@ -235,7 +234,7 @@ class Issues extends React.PureComponent {
         flexDirection: 'row',
         alignItems: 'flex-end'
       }}>
-      <TextInput placeholder="Search Issues" onChange={this.handleTextFilter} />
+      <TextInput placeholder="Search issue titles" type="search" onChange={this.handleTextFilter} />
       <ActiveFilters
         issues={issues}
         bountyIssues={this.props.bountyIssues}
@@ -249,7 +248,7 @@ class Issues extends React.PureComponent {
           style={{ display: 'flex', alignItems: 'flex-start' }}
         >
           <div>
-            <IconAdd color={theme.textTertiary} />
+            <IconCurate color={theme.textTertiary} />
           </div>
           <ActionLabel>Curate Issues</ActionLabel>
         </ContextMenuItem>
@@ -258,7 +257,7 @@ class Issues extends React.PureComponent {
           style={{ display: 'flex', alignItems: 'flex-start' }}
         >
           <div style={{ marginLeft: '4px' }}>
-            <IconShare color={theme.textTertiary} />
+            <IconFundraising color={theme.textTertiary} />
           </div>
           <ActionLabel>Fund Issues</ActionLabel>
         </ContextMenuItem>

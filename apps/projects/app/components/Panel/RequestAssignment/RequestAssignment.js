@@ -107,7 +107,7 @@ class RequestAssignment extends React.Component {
             }
           />
         </Estimations>
-
+        <VSpace size={1} />
         <AckRow>
           <div style={{ width: '23px' }}>
             <Checkbox checked={this.state.ack1} onChange={this.setAck1} />
@@ -127,6 +127,7 @@ class RequestAssignment extends React.Component {
             days.
           </AckText>
         </AckRow>
+        <VSpace size={2} />
         {/* Github commenting is not currently implemented
         <Info.Alert title="Submission note" background="#FFFAEE" style={{ marginBottom: '10px' }}>
           Your inputs will be added as a comment to the Github issue from your “{login}” account.
@@ -161,13 +162,16 @@ const IssueLinkRow = styled.div`
   display: flex;
   align-items: center;
   margin-bottom: 10px;
+  cursor: pointer;
 `
 const IssueTitle = styled(Text)`
   color: #717171;
   font-size: 17px;
   font-weight: 300;
   line-height: 1.5;
-  margin-bottom: 10px;
+`
+const VSpace = styled.div`
+  height: ${p => (p.size || 1) * 5}px;
 `
 
 export default RequestAssignment

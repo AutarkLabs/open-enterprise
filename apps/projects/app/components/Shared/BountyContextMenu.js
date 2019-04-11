@@ -42,7 +42,7 @@ const BountyContextMenu = ({
   {workStatus === 'review-applicants' &&
     <div>
       <ContextMenuItem onClick={onUpdateBounty}>
-        <ActionLabel>Update Fsunding</ActionLabel>
+        <ActionLabel>Update Funding</ActionLabel>
       </ContextMenuItem>
       <ContextMenuItem onClick={onReviewApplication}>
         <ActionLabel>Review Application ({requestsData.length})</ActionLabel>
