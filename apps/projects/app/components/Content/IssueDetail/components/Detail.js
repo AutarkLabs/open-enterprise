@@ -168,18 +168,6 @@ const MarkdownWrapper = styled.div`
     margin-top: 0px;
   }
 `
-// todo: wrapper component for different sizes (changes padding mostly)
-
-// ...that 10px margin result in a 20px gap
-const cardStyle = {
-  flex: '0 1 auto',
-  textAlign: 'left',
-  padding: '15px 30px',
-  margin: '10px',
-  background: theme.contentBackground,
-  border: `1px solid ${theme.contentBorder}`,
-  borderRadius: '3px',
-}
 const IssueLinkRow = styled.div`
   height: 31px;
   display: flex;
@@ -257,12 +245,11 @@ const activities = (requestsData, workSubmissions, fundingHistory, onReviewAppli
         date: data.applicationDate,
         ...data.user,
         eventDescription: 'requested assignment',
-        eventAction: ('review' in data) ?
-          null
-          :
+        eventAction: (
           <EventButton mode="outline" onClick={onReviewApplication}>
-            Review Application
-          </EventButton>,
+            {('review' in data) ? 'View' : 'Review'} Application
+          </EventButton>
+        ),
       }
 
       if ('review' in data) {
@@ -286,12 +273,11 @@ const activities = (requestsData, workSubmissions, fundingHistory, onReviewAppli
         date: data.submissionDate,
         ...data.user,
         eventDescription: 'submitted work for review',
-        eventAction: ('review' in data) ?
-          null
-          :
+        eventAction: (
           <EventButton mode="outline" onClick={onReviewWork}>
-            Review Work
-          </EventButton>,
+            {('review' in data) ? 'View' : 'Review'} Work
+          </EventButton>
+        ),
       }
 
       if ('review' in data) {

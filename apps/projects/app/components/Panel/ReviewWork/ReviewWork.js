@@ -5,11 +5,12 @@ import { formatDistance } from 'date-fns'
 
 import {
   Text,
-  TextInput,
   Button,
-  Info,
   SafeLink,
   DropDown,
+  IconCheck,
+  IconCross,
+  Badge,
   theme,
 } from '@aragon/ui'
 
@@ -61,7 +62,7 @@ class ReviewWork extends React.Component {
     const work = issue.work
     const submitter = issue.work.user
     const submissionDateDistance = formatDistance(new Date(work.submissionDate), new Date())
-
+    const submitterName = submitter.name ? submitter.name : submitter.login
     const ratings = [
       'Select a Rating',
       '1 - Unusable', 
@@ -94,7 +95,7 @@ class ReviewWork extends React.Component {
               target="_blank"
               style={{ textDecoration: 'none', color: '#21AAE7', marginRight: '6px' }}
             >
-              {submitter.name ? submitter.name : submitter.login}
+              {submitterName}
             </SafeLink>
             applied {submissionDateDistance} ago
           </UserLink>
@@ -102,13 +103,7 @@ class ReviewWork extends React.Component {
           <Separator/>
 
           <FieldTitle>Proof of Work</FieldTitle>
-          <SafeLink
-            href={work.proof}
-            target="_blank"
-            style={{ textDecoration: 'none', color: '#21AAE7' }}
-          >
-            <DetailText>{work.proof}</DetailText>
-          </SafeLink>
+          <DetailText>{work.proof}</DetailText>
 
           {work.comments && <FieldTitle>Additional Comments</FieldTitle>}
           {work.comments && <DetailText>{work.comments}</DetailText>}
@@ -118,52 +113,112 @@ class ReviewWork extends React.Component {
 
         </SubmissionDetails>
 
-        <FormField
-          label="Quality Rating" 
-          required
-          input={
-            <DropDown
-              items={ratings}
-              onChange={this.onRatingChange}
-              active={this.state.rating}
-            />
-          }
-        />
+        {('review' in work) ? (
+          <React.Fragment>
 
-        <FormField
-          label="Feedback"
-          input={
-            <DescriptionInput
-              name='feedback'
-              rows={'5'}
-              style={{ resize: 'none', height: 'auto' }}
-              onChange={this.changeField}
-              value={this.state.feedback}
-              placeholder="Do you have any feedback to provide the contributor?"
-              wide
-            />
-          }
-        />
+            <FieldTitle>Submission Status</FieldTitle>
+          
+            <div style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
+              {work.review.accepted ? (
+                <div>
+                  <IconCheck /> <Text size="small" color={theme.positive}>Accepted</Text>
+                </div>
+              ) : (
+                <div>
+                  <IconCross /> <Text size="small" color={theme.negative}>Rejected</Text>
+                </div>
+              )}
+              <div>
+                {formatDistance(new Date(work.review.reviewDate), new Date())} ago
+              </div>
+            
+            </div>
 
-        <ReviewRow>
-          <ReviewButton
-            disabled={this.canSubmit()}
-            emphasis="negative"
-            mode={this.canSubmit() ? 'secondary' : 'strong'}
-            onClick={this.onReject}
-          >
+            <ReviewCard>
+              <IssueEventAvatar>
+                <img src={work.review.user.avatarUrl} alt="user avatar" style={{ width: '50px' }} />
+              </IssueEventAvatar>
+              
+              <div>
+                <Text.Block size="small">
+                  <SafeLink
+                    href={work.review.user.url}
+                    target="_blank"
+                    style={{ textDecoration: 'none', color: '#21AAE7' }}
+                  >
+                    {work.review.user.login}
+                  </SafeLink> {
+                    work.review.accepted ?
+                      'accepted ' + submitterName + '\'s work'
+                      :
+                      'rejected ' + submitterName + '\'s work'
+                  }
+                </Text.Block>
+                {work.review.feedback.length === 0 ?
+                  null
+                  :
+                  <Text.Block style={{ marginBottom: '8px' }}>
+                    {work.review.feedback}
+                  </Text.Block>
+                }
+                <Badge
+                  foreground={theme.textSecondary}
+                  background={theme.contentBorder}
+                >Quality: {work.review.rating}</Badge>
+              </div>
+            </ReviewCard>
+          </React.Fragment>
+        ) : (
+          <React.Fragment>
+
+            <FormField
+              label="Quality Rating" 
+              required
+              input={
+                <DropDown
+                  items={ratings}
+                  onChange={this.onRatingChange}
+                  active={this.state.rating}
+                />
+              }
+            />
+
+            <FormField
+              label="Feedback"
+              input={
+                <DescriptionInput
+                  name="feedback"
+                  rows="5"
+                  style={{ resize: 'none', height: 'auto' }}
+                  onChange={this.changeField}
+                  value={this.state.feedback}
+                  placeholder="Do you have any feedback to provide the contributor?"
+                  wide
+                />
+              }
+            />
+
+            <ReviewRow>
+              <ReviewButton
+                disabled={this.canSubmit()}
+                emphasis="negative"
+                mode={this.canSubmit() ? 'secondary' : 'strong'}
+                onClick={this.onReject}
+              >
             Reject
-          </ReviewButton>
-          <ReviewButton
-            disabled={this.canSubmit()}
-            emphasis="positive"
-            mode={this.canSubmit() ? 'secondary' : 'strong'}
-            onClick={this.onAccept}
-          >
+              </ReviewButton>
+              <ReviewButton
+                disabled={this.canSubmit()}
+                emphasis="positive"
+                mode={this.canSubmit() ? 'secondary' : 'strong'}
+                onClick={this.onAccept}
+              >
             Accept
-          </ReviewButton>
-        </ReviewRow>
-        
+              </ReviewButton>
+            </ReviewRow>
+          </React.Fragment>
+        )}
+
       </div>
     )
   }
@@ -212,6 +267,19 @@ const ReviewRow = styled.div`
 `
 const ReviewButton = styled(Button)`
   width: 48%;
+`
+const ReviewCard = styled.div`
+  display: flex;
+  text-align: left;
+  padding: 15px 30px;
+  margin: 0;
+  background: ${theme.contentBackground};
+  border: 1px solid ${theme.contentBorder};
+  border-radius: 3px;
+`
+const IssueEventAvatar = styled.div`
+  width: 66px;
+  margin: 0;
 `
 
 export default ReviewWork
