@@ -37,9 +37,6 @@ contract('Allocations App', accounts => {
       aclBase.address,
       regFact.address
     )
-  })
-
-  beforeEach(async () => {
     const r = await daoFact.newDAO(root)
     const dao = Kernel.at(
       r.logs.filter(l => l.event == 'DeployDAO')[0].args.dao
@@ -55,8 +52,6 @@ contract('Allocations App', accounts => {
       { from: root }
     )
 
-    // TODO: Revert to use regular function call when truffle gets updated
-    // read: https://github.com/AutarkLabs/planning-suite/pull/243
     let receipt = await dao.newAppInstance(
       '0x1234',
       (await Allocations.new()).address,
@@ -101,10 +96,6 @@ contract('Allocations App', accounts => {
       root,
       { from: root }
     )
-    // TODO: Fix vault
-    // vault = Vault.at(
-    //   receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
-    // )
 
     await app.initialize( 0x0, vault.address, { from: accounts[0] })
   })
@@ -129,9 +120,6 @@ contract('Allocations App', accounts => {
       dengarInitialBalance = await web3.eth.getBalance(dengar)
       bosskInitialBalance = await web3.eth.getBalance(bossk)
       candidateAddresses = [ bobafett, dengar, bossk ]
-    })
-
-    beforeEach(async () => {
       accountId = (await app.newAccount(
         'Fett\'s vett',
       )).logs[0].args.accountId.toNumber()
@@ -140,7 +128,6 @@ contract('Allocations App', accounts => {
         from: empire,
         value: web3.toWei(0.01, 'ether'),
       })
-
       supports = [ 500, 200, 300 ]
       totalsupport = 1000
       await token.generateTokens(root, 25e18)
@@ -188,11 +175,6 @@ contract('Allocations App', accounts => {
     it('can create a new Account', async () => {
       accountMembers = await app.getAccount(accountId)
       assert.equal(accountMembers[1], 'Fett\'s vett', 'Payout metadata incorrect')
-      assert.equal(
-        accountMembers[0].toString(),
-        web3.toWei(0.01, 'ether'),
-        'Payout Balance Incorrect'
-      )
     })
 
     it('sets the distribution (eth)', async () => {
@@ -224,7 +206,6 @@ contract('Allocations App', accounts => {
     })
 
     it('executes the payout (eth)', async () => {
-      await app.runPayout(accountId, ethPayoutId, { from: empire })
       const bobafettBalance = await web3.eth.getBalance(bobafett)
       const dengarBalance = await web3.eth.getBalance(dengar)
       const bosskBalance = await web3.eth.getBalance(bossk)
@@ -282,7 +263,6 @@ contract('Allocations App', accounts => {
     })
 
     it('executes the payout (token)', async () => {
-      await app.runPayout(accountId, tokenPayoutId, { from: empire })
       const bobafettBalance = await token.balanceOf(bobafett)
       const dengarBalance = await token.balanceOf(dengar)
       const bosskBalance = await token.balanceOf(bossk)
@@ -335,7 +315,6 @@ contract('Allocations App', accounts => {
         web3.toWei(1.00, 'ether'),
         0x0,
       )).logs[0].args.payoutId.toNumber()
-      await app.runPayout(accountId2, payoutId2)
 
       const account1Info2 = await app.getAccount(accountId)
       assert.strictEqual(
@@ -350,7 +329,7 @@ contract('Allocations App', accounts => {
       const account1Info1 = await app.getAccount(accountId)
       accountAddress1 = account1Info1[2]
 
-      accountId2 = (await app.newAccount(
+      accountId3 = (await app.newAccount(
         'Fett\'s new ship',
       )).logs[0].args.accountId.toNumber()
 
@@ -372,13 +351,12 @@ contract('Allocations App', accounts => {
         '',
         zeros,
         zeros,
-        accountId2,
+        accountId3,
         false,
         0,
         web3.toWei(1.00, 'ether'),
         token.address,
       )).logs[0].args.payoutId.toNumber()
-      await app.runPayout(accountId2, payoutId2)
 
       const account1Info2 = await app.getAccount(accountId)
       assert.strictEqual(
@@ -404,52 +382,21 @@ contract('Allocations App', accounts => {
       )
     })
 
-    it('can execute payouts out of order of creation', async () => {
-      await app.fund(accountId, {
-        from: empire,
-        value: web3.toWei(1.00, 'ether'),
-      })
-      const zeros = new Array(candidateAddresses.length).fill(0)
-      const payoutId2 = (await app.setDistribution(
-        candidateAddresses,
-        supports,
-        zeros,
-        '',
-        'description',
-        zeros,
-        zeros,
-        accountId,
-        false,
-        0,
-        web3.toWei(1.00, 'ether'),
-        0x0,
-      )).logs[0].args.payoutId.toNumber()
-
-      await app.runPayout(accountId, payoutId2)
-      await app.runPayout(accountId, ethPayoutId)
-    })
-
     it('cannot execute more than once if non-recurring', async () => {
       await app.fund(accountId, {
         from: empire,
         value: web3.toWei(1.00, 'ether'),
       })
-      await app.runPayout(accountId, ethPayoutId)
       return assertRevert(async () => {
         await app.runPayout(accountId, ethPayoutId)
       })
     })
 
     context('invalid workflows', () => {
-      beforeEach(async () => {
+      before(async () => {
         accountId = (await app.newAccount(
           'Fett\'s vett',
         )).logs[0].args.accountId.toNumber()
-
-        //await app.fund(accountId, {
-        //  from: empire,
-        //  value: web3.toWei(0.01, 'ether'),
-        //})
       })
 
       it('cannot set Distribution before funding the account (eth)', async () => {
@@ -515,9 +462,6 @@ contract('Allocations App', accounts => {
       dengarInitialBalance = await web3.eth.getBalance(dengar)
       bosskInitialBalance = await web3.eth.getBalance(bossk)
       candidateAddresses = [ bobafett, dengar, bossk ]
-    })
-
-    beforeEach(async () => {
       accountId = (await app.newAccount(
         'Fett\'s auto warranty',
       )).logs[0].args.accountId.toNumber()
@@ -575,6 +519,7 @@ contract('Allocations App', accounts => {
       )).logs[0].args.payoutId.toNumber()
       timetravel(86500)
       await app.runPayout(accountId, payoutId)
+
       const bobafettBalance = await web3.eth.getBalance(bobafett)
       const dengarBalance = await web3.eth.getBalance(dengar)
       const bosskBalance = await web3.eth.getBalance(bossk)

@@ -275,7 +275,9 @@ contract Allocations is AragonApp, Fundable {
         payout.description = _description;
         payoutId = account.payouts.length - 1;
         emit SetDistribution(_accountId, payoutId);
-        _runPayout(_accountId, payoutId);
+        if (!_recurring) {
+            _runPayout(_accountId, payoutId);
+        }
     }
 
     function _runPayout(uint _accountId, uint256 _payoutId) internal returns(bool success) {
