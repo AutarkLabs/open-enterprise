@@ -394,6 +394,7 @@ const Detail = ({
   workStatus,
   onReviewApplication,
   onReviewWork,
+  onUpdateBounty,
   onRequestAssignment,
   onSubmitWork,
   onAllocateSingleBounty,
