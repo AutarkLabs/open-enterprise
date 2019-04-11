@@ -38,8 +38,8 @@ const labelsBadges = labels =>
     <Badge
       key={label.node.id}
       style={{ marginRight: '10px', width: 'auto' }}
-      background={'#' + label.node.color}
-      foreground={'#000'}
+      background={'#' + label.node.color + '99'}
+      foreground={theme.textPrimary}
     >
       {label.node.name}
     </Badge>
@@ -59,6 +59,7 @@ const Issue = ({
   onRequestAssignment,
   onReviewApplication,
   onAllocateSingleBounty,
+  onUpdateBounty,
   onReviewWork,
   balance,
   symbol,
@@ -104,11 +105,11 @@ const Issue = ({
                 onRequestAssignment={onRequestAssignment}
                 onReviewApplication={onReviewApplication}
                 onReviewWork={onReviewWork}
+                onUpdateBounty={onUpdateBounty}
               />
             </ContextMenu>
           )}
         </div>
-
         <IssueTitleDetailsBalance>
           <IssueTitleDetails>
             <IssueTitle>
