@@ -1,7 +1,8 @@
 import { theme } from '@aragon/ui'
 
 const BOUNTY_STATUS = {
-  'not-funded': 'Not funded',
+  'not-funded': 'Issues without funding',
+  'all-funded': 'Funded issues',
   'funded': 'Accepting applicants',
   'review-applicants': 'Pending application review',
   'in-progress': 'Work in progress',
