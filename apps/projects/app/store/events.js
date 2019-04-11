@@ -89,41 +89,41 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
   case ASSIGNMENT_REQUESTED: {
     if(!returnValues) return nextState
     let issueData = await loadIssueData(returnValues)
+    issueData = await updateIssueDetail(issueData, action)
     issueData = determineWorkStatus(issueData, ASSIGNMENT_REQUESTED)
-    const newData = await updateIssueDetail(issueData, action)
-    nextState = syncIssues(nextState, returnValues, newData)
+    nextState = syncIssues(nextState, returnValues, issueData)
     return nextState
   }
   case ASSIGNMENT_APPROVED: {
     if(!returnValues) return nextState
     let issueData = await loadIssueData(returnValues)
+    issueData = await updateIssueDetail(issueData, action)
     issueData = determineWorkStatus(issueData, ASSIGNMENT_APPROVED)
-    const newData = await updateIssueDetail(issueData, action)
-    nextState = syncIssues(nextState, returnValues, newData)
+    nextState = syncIssues(nextState, returnValues, issueData)
     return nextState
   }
   case SUBMISSION_REJECTED: {
     if(!returnValues) return nextState
     let issueData = await loadIssueData(returnValues)
+    issueData = await updateIssueDetail(issueData, action)
     issueData = determineWorkStatus(issueData, SUBMISSION_REJECTED)
-    const newData = await updateIssueDetail(issueData, action)
-    nextState = syncIssues(nextState, returnValues, newData)
+    nextState = syncIssues(nextState, returnValues, issueData)
     return nextState
   }
   case WORK_SUBMITTED: {
     if(!returnValues) return nextState
     let issueData = await loadIssueData(returnValues)
+    issueData = await updateIssueDetail(issueData, action)
     issueData = determineWorkStatus(issueData, WORK_SUBMITTED)
-    const newData = await updateIssueDetail(issueData, action)
-    nextState = syncIssues(nextState, returnValues, newData)
+    nextState = syncIssues(nextState, returnValues, issueData)
     return nextState
   }
   case SUBMISSION_ACCEPTED: {
     if (!returnValues) return nextState
     let issueData = await loadIssueData(returnValues)
+    issueData = await updateIssueDetail(issueData, action)
     issueData = determineWorkStatus(issueData, SUBMISSION_ACCEPTED)
-    const newData = await updateIssueDetail(issueData, action)
-    nextState = syncIssues(nextState, returnValues, newData)
+    nextState = syncIssues(nextState, returnValues, issueData)
     return nextState
   }
   case ISSUE_CURATED: {
