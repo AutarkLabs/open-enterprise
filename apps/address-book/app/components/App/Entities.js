@@ -18,9 +18,9 @@ import { provideNetwork } from '../../../../../shared/ui'
 
 // TODO: colors taken directly from Invision
 const ENTITY_TYPES = [
-  { name: 'Individual', fg: '#76A4E5', bg: '#CDECFF' },
-  { name: 'Organization', fg: '#E5B243', bg: '#F6E4B0' },
-  { name: 'Project', fg: '#EE5BF1', bg: '#EDD0F2' },
+  { name: 'Individual', fg: '#76A4E5', bg: '#76A4E533' },
+  { name: 'Organization', fg: '#F78308', bg: '#F7830833' },
+  { name: 'Project', fg: '#B30FB3', bg: '#B30FB333' },
 ]
 
 const Entities = ({ entities, network, onNewEntity, onRemoveEntity }) => {

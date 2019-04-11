@@ -70,6 +70,13 @@ const Wrapper = styled.div`
   padding-top: 10px;
 `
 
+const Content = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 15px 30px;
+`
+
 const MarkdownWrapper = styled.div`
   h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
@@ -121,7 +128,7 @@ const MarkdownWrapper = styled.div`
   }
   a > code,
   p > code {
-    background-color: ${theme.textSecondary};
+    background-color: rgba(27,31,35,.05);
     border-radius: 3px;
     padding: 0.2em 0.4em;
   }
@@ -140,7 +147,7 @@ const MarkdownWrapper = styled.div`
     padding: 6px 13px;
   }
   img {
-  	max-width: 100%;
+  	max-width: 95%;
   }
   pre {
     margin: 0;
@@ -383,7 +390,6 @@ const Detail = ({
   createdAt,
   expLevel,
   deadline,
-  slots,
   work,
   workStatus,
   onReviewApplication,
@@ -391,7 +397,6 @@ const Detail = ({
   onRequestAssignment,
   onSubmitWork,
   onAllocateSingleBounty,
-  onUpdateBounty,
   workSubmissions,
 }) => {
 
@@ -406,109 +411,115 @@ const Detail = ({
   const issueEvents = activities(requestsData, workSubmissions, onReviewApplication, onReviewWork)
 
   return (
-    <Wrapper>
-      <div style={{ flex: 3, maxWidth: '705px' }}>
-        <DetailsCard>
-          <Wrapper style={{ justifyContent: 'space-between' }}>
-            <div style={{ ...column, flex: 2, marginRight: '20px' }}>
-              <Text.Block size="xlarge" style={{ marginBottom: '5px' }}>
-                {title}
-              </Text.Block>
-              <SafeLink
-                href={url}
-                target="_blank"
-                style={{ textDecoration: 'none', color: '#21AAE7' }}
-              >
-                <IssueLinkRow>
-                  <IconGitHub color="#21AAE7" width='14px' height='14px' />
-                  <Text style={{ marginLeft: '6px' }}>{repo} #{number}</Text>
-                </IssueLinkRow>
-              </SafeLink>
-              <Text.Block
-                size="small"
-                color={theme.textSecondary}
-                style={{ marginBottom: '10px' }}
-              >
-                {calculateAgo(createdAt)}
-              </Text.Block>
-            </div>
-            <div style={{ ...column, flex: 0, alignItems: 'flex-end' }}>
-              <ContextMenu>
-                <BountyContextMenu
-                  work={work}
-                  workStatus={workStatus}
-                  requestsData={requestsData}
-                  onAllocateSingleBounty={onAllocateSingleBounty}
-                  onSubmitWork={onSubmitWork}
-                  onRequestAssignment={onRequestAssignment}
-                  onReviewApplication={onReviewApplication}
-                  onReviewWork={onReviewWork}
-                  onUpdateBounty={onUpdateBounty}
-                />
-              </ContextMenu>
-              { balance > 0 &&
-                <Badge
-                  style={{ padding: '10px', textSize: 'large', marginTop: '15px' }}
-                  background={BOUNTY_BADGE_COLOR[workStatus].bg}
-                  foreground={BOUNTY_BADGE_COLOR[workStatus].fg}
+    <Content>
+      <Wrapper>
+        <div style={{ flex: 3, maxWidth: '705px' }}>
+          <DetailsCard>
+            <Wrapper style={{ justifyContent: 'space-between' }}>
+              <div style={{ ...column, flex: 2, marginRight: '20px' }}>
+                <Text.Block size="xlarge" style={{ marginBottom: '5px' }}>
+                  {title}
+                </Text.Block>
+                <SafeLink
+                  href={url}
+                  target="_blank"
+                  style={{ textDecoration: 'none', color: '#21AAE7' }}
                 >
-                  {balance + ' ' + symbol}
-                </Badge>
-              }
-            </div>
-          </Wrapper>
-          {workStatus && <SummaryTable {...summaryData} />}
-          <FieldTitle>Description</FieldTitle>
-          <Text.Block style={{ marginTop: '20px', marginBottom: '20px' }}>
-            <MarkdownWrapper>
-            	{body ? renderHTML(marked(body)) : 'No description available'}
-        	  </MarkdownWrapper>
-          </Text.Block>
-          <Text size="small" color={theme.textTertiary}>
-            {labels.totalCount
-              ? labels.edges.map(label => (
-                <Badge
-                  key={label.node.id}
-                  style={{ marginRight: '5px' }}
-                  background={'#' + label.node.color}
-                  foreground={'#000'}
+                  <IssueLinkRow>
+                    <IconGitHub color="#21AAE7" width='14px' height='14px' />
+                    <Text style={{ marginLeft: '6px' }}>{repo} #{number}</Text>
+                  </IssueLinkRow>
+                </SafeLink>
+                <Text.Block
+                  size="small"
+                  color={theme.textSecondary}
+                  style={{ marginBottom: '10px' }}
                 >
-                  {label.node.name}
-                </Badge>
-              ))
-              : ''}
-          </Text>
-        </DetailsCard>
-      </div>
+                  {calculateAgo(createdAt)}
+                </Text.Block>
+              </div>
+              <div style={{ ...column, flex: 0, alignItems: 'flex-end' }}>
+                <ContextMenu>
+                  <BountyContextMenu
+                    work={work}
+                    workStatus={workStatus}
+                    requestsData={requestsData}
+                    onUpdateBounty={onUpdateBounty}
+                    onAllocateSingleBounty={onAllocateSingleBounty}
+                    onSubmitWork={onSubmitWork}
+                    onRequestAssignment={onRequestAssignment}
+                    onReviewApplication={onReviewApplication}
+                    onReviewWork={onReviewWork}
+                  />
+                </ContextMenu>
+                { balance > 0 &&
+                  <Badge
+                    style={{ padding: '10px', textSize: 'large', marginTop: '15px' }}
+                    background={BOUNTY_BADGE_COLOR[workStatus].bg}
+                    foreground={BOUNTY_BADGE_COLOR[workStatus].fg}
+                  >
+                    {balance + ' ' + symbol}
+                  </Badge>
+                }
+              </div>
+            </Wrapper>
+            {workStatus ? (
+              <SummaryTable {...summaryData} />
+            ) : (
+              <Separator />
+            )}
+            <FieldTitle>Description</FieldTitle>
+            <Text.Block style={{ marginTop: '15px', marginBottom: '15px' }}>
+              <MarkdownWrapper>
+                {body ? renderHTML(marked(body)) : 'No description available'}
+              </MarkdownWrapper>
+            </Text.Block>
+            <Separator />
+            <Text size="small" color={theme.textTertiary}>
+              {labels.totalCount
+                ? labels.edges.map(label => (
+                  <Badge
+                    key={label.node.id}
+                    style={{ marginRight: '5px' }}
+                    background={'#' + label.node.color + '99'}
+                    foreground={theme.textPrimary}
+                  >
+                    {label.node.name}
+                  </Badge>
+                ))
+                : ''}
+            </Text>
+          </DetailsCard>
+        </div>
 
-      <div style={{ flex: 1, maxWidth: '359px', width: '295px' }}>
-        <EventsCard>
-          <FieldTitle>Activity</FieldTitle>
-          {Object.keys(issueEvents).length > 0
-            ? Object.keys(issueEvents).sort((a,b) =>
-              new Date(a) - new Date(b)
-            ).map((eventDate, i) => {
-              return <IssueEvent key={i} {...issueEvents[eventDate]} />
-            })
-            : 'This issue has no activity'
-          }
-        </EventsCard>
-      </div>
-    </Wrapper>
-  )
-}
+        <div style={{ flex: 1, maxWidth: '359px', width: '295px' }}>
+          <EventsCard>
+            <FieldTitle>Activity</FieldTitle>
+            {Object.keys(issueEvents).length > 0
+              ? Object.keys(issueEvents).sort((a,b) =>
+                new Date(a) - new Date(b)
+              ).map((eventDate, i) => {
+                return <IssueEvent key={i} {...issueEvents[eventDate]} />
+              })
+              : 'This issue has no activity'
+            }
+          </EventsCard>
+        </div>
+      </Wrapper>
+    </Content>
+ )
 
 const DetailsCard = styled.div`
   flex: 0 1 auto;
   text-align: left;
   padding: 15px 30px;
-  margin: 10px;
   background: ${theme.contentBackground};
   border: 1px solid ${theme.contentBorder};
   border-radius: 3px;
 `
 const EventsCard = styled(DetailsCard)`
   padding: 0 10px;
+  margin-left: 20px;
   > * {
     padding: 16px 0 6px 16px;
   }
@@ -518,6 +529,11 @@ const EventsCard = styled(DetailsCard)`
   > :not(:last-child) {
     margin-bottom: 0;
   }
+`
+const Separator = styled.hr`
+  height: 1px;
+  width: 100%;
+  opacity: 0.2;
 `
 
 Detail.propTypes = {
