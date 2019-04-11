@@ -7,7 +7,10 @@ import {
   Text,
   Button,
   SafeLink,
-  DropDown
+  DropDown,
+  IconCheck,
+  IconCross,
+  theme,
 } from '@aragon/ui'
 
 import { Form, FormField, FieldTitle, DescriptionInput } from '../../Form'
@@ -39,13 +42,11 @@ class ReviewApplication extends React.Component {
 
   onAccept = () => {
     const returnData = this.buildReturnData(true)
-    console.log('Accepted', returnData)
     this.props.onReviewApplication(this.props.issue, this.state.requestIndex, true, returnData)
   }
 
   onReject = () => {
     const returnData = this.buildReturnData(false)
-    console.log('Rejected', returnData)
     this.props.onReviewApplication(this.props.issue, this.state.requestIndex, false, returnData)
   }
 
@@ -55,10 +56,8 @@ class ReviewApplication extends React.Component {
 
 
   render() {
-    console.log('++ReviewApplic render', this.props.issue)
     const { issue } = this.props
     const request = issue.requestsData[this.state.requestIndex]
-
     const application = {
       user: {
         login: request.user.login,
@@ -73,6 +72,7 @@ class ReviewApplication extends React.Component {
     }
 
     const applicant = application.user
+    const applicantName = applicant.name ? applicant.name : applicant.login
     const applicationDateDistance = formatDistance(new Date(application.applicationDate), new Date())
     return (
       <div>
@@ -106,7 +106,7 @@ class ReviewApplication extends React.Component {
               target="_blank"
               style={{ textDecoration: 'none', color: '#21AAE7', marginRight: '6px' }}
             >
-              {applicant.name ? applicant.name : applicant.login}
+              {applicantName}
             </SafeLink>
             applied {applicationDateDistance} ago
           </UserLink>
@@ -121,37 +121,85 @@ class ReviewApplication extends React.Component {
 
           <FieldTitle>Estimated Completion</FieldTitle>
           <DetailText>{application.eta}</DetailText>
-
         </ApplicationDetails>
-        {/* TODO: There is currently nowhere to display this feedback to the user,
-            Will be re-implemented when github messaging is enabled.*/
-          <FormField
-            label="Feedback"
-            input={
-              <DescriptionInput
-                name='feedback'
-                rows="3"
-                onChange={this.changeField}
-                placeholder="Do you have any feedback to provide the applicant?"
-                value={this.state.feedback}
-              />
-            }
-          />
-        }
-        <ReviewRow>
-          <ReviewButton
-            emphasis="negative"
-            onClick={this.onReject}
-          >
+
+        {('review' in request) ? (
+          <React.Fragment>
+
+            <FieldTitle>Application Status</FieldTitle>
+          
+            <div style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
+              {request.review.approved ? (
+                <div>
+                  <IconCheck /> <Text size="small" color={theme.positive}>Accepted</Text>
+                </div>
+              ) : (
+                <div>
+                  <IconCross /> <Text size="small" color={theme.negative}>Rejected</Text>
+                </div>
+              )}
+              <div>
+                {formatDistance(new Date(request.review.reviewDate), new Date())} ago
+              </div>
+            
+            </div>
+
+            <ReviewCard>
+              <IssueEventAvatar>
+                <img src={request.review.user.avatarUrl} alt="user avatar" style={{ width: '50px' }} />
+              </IssueEventAvatar>
+              
+              <div>
+                <Text.Block size="small">
+                  <SafeLink
+                    href={request.review.user.url}
+                    target="_blank"
+                    style={{ textDecoration: 'none', color: '#21AAE7' }}
+                  >
+                    {request.review.user.login}
+                  </SafeLink> {
+                    request.review.approved ? 'assigned ' + applicantName : 'rejected ' + applicantName}
+                </Text.Block>
+                {request.review.feedback.length === 0 ?
+                  null
+                  :
+                  <Text>{request.review.feedback}</Text>
+                }
+              </div>
+            </ReviewCard>
+          </React.Fragment>
+        ) : (
+          <React.Fragment>
+
+            <FormField
+              label="Feedback"
+              input={
+                <DescriptionInput
+                  name='feedback'
+                  rows="3"
+                  onChange={this.changeField}
+                  placeholder="Do you have any feedback to provide the applicant?"
+                  value={this.state.feedback}
+                />
+              }
+            />
+
+            <ReviewRow>
+              <ReviewButton
+                emphasis="negative"
+                onClick={this.onReject}
+              >
             Reject
-          </ReviewButton>
-          <ReviewButton
-            emphasis="positive"
-            onClick={this.onAccept}
-          >
+              </ReviewButton>
+              <ReviewButton
+                emphasis="positive"
+                onClick={this.onAccept}
+              >
             Accept
-          </ReviewButton>
-        </ReviewRow>
+              </ReviewButton>
+            </ReviewRow>
+          </React.Fragment>
+        )}
 
       </div>
     )
@@ -202,6 +250,19 @@ const IssueLinkRow = styled.div`
   display: flex;
   align-items: center;
   margin-bottom: 10px;
+`
+const ReviewCard = styled.div`
+  display: flex;
+  text-align: left;
+  padding: 15px 30px;
+  margin: 0;
+  background: ${theme.contentBackground};
+  border: 1px solid ${theme.contentBorder};
+  border-radius: 3px;
+`
+const IssueEventAvatar = styled.div`
+  width: 66px;
+  margin: 0;
 `
 
 export default ReviewApplication

@@ -81,7 +81,8 @@ class SubmitWork extends React.Component {
           input={
             <DescriptionInput
               name="proof"
-              rows={3}
+              value={this.state.proof}
+              rows="3"
               onChange={this.changeField}
               placeholder="Please link the Github Pull Request or an alternative proof of work if requested."
             />
@@ -92,7 +93,8 @@ class SubmitWork extends React.Component {
           input={
             <DescriptionInput
               name="comments"
-              rows={5}
+              rows="5"
+              value={this.state.comments}
               onChange={this.changeField}
               placeholder="Comments or details that haven’t already been described elsewhere."
             />
