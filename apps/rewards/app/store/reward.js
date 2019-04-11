@@ -36,6 +36,8 @@ const getRewardById = async rewardId => {
         startDate: Date.now() + blocksToMilliseconds(currentBlock,data.startBlock),
         endDate: Date.now() + blocksToMilliseconds(currentBlock, data.endBlock),
         userRewardAmount: data.rewardAmount,
+        claimed: data.claimed,
+        timeClaimed: data.timeClaimed,
       }))
     )
     .toPromise()

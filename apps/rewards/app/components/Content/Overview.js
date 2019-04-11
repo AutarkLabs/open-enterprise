@@ -81,7 +81,6 @@ const RewardsTableNarrow = ({ title, data, fourthColumn, fourthColumnData, openD
 )
 
 const RewardsTableWide = ({ title, rewards, fourthColumn, fourthColumnData, openDetails }) => {
-  console.log(rewards)
   return (
     <Table
       style={{ width: '100%' }}
@@ -148,7 +147,6 @@ const Overview = ({ rewards, newReward, openDetails }) => {
   if (rewardsEmpty) {
     return <Empty tab='Overview' action={newReward} />
   }
-  console.log('rewards: ',rewards)
   return (
     <OverviewMain>
       <RewardsWrap>

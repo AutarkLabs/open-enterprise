@@ -24,7 +24,7 @@ class App extends React.Component {
   }
 
   state = {
-    selected: 0,
+    selected: 1,
     tabs: [ 'Overview', 'My Rewards' ],
   }
 
@@ -202,7 +202,7 @@ class App extends React.Component {
               newReward={this.newReward}
               openDetails={this.openDetailsMy}
               network={network}
-              tokens={tokens}
+              tokens={this.props.balances}
             />
           ) : (
             <Overview

@@ -173,15 +173,20 @@ contract('Rewards App', accounts => {
     })
 
     it('receives rewards dividends', async () => {
+      rewardInformation = await app.getReward(dividendRewardIds[0])
       await app.claimReward(dividendRewardIds[0])
       const balance = await rewardToken.balanceOf(root)
       assert(balance == 1e18, 'reward should be 1e18 or 1eth equivalant')
+      rewardInformation = await app.getReward(dividendRewardIds[0])
+      assert.strictEqual(rewardInformation[10], true, 'reward is claimed')
     })
 
     it('receives rewards merit', async () => {
       await app.claimReward(meritRewardIds[0])
       const balance = await rewardToken.balanceOf(root)
       assert(balance == 2e18, 'reward should be 2e18 or 2eth equivalant; 1 for each reward')
+      rewardInformation = await app.getReward(meritRewardIds[0])
+      assert.strictEqual(rewardInformation[10], true, 'reward is claimed')
     })
 
     it('creates a merit reward that started in the past', async () => {

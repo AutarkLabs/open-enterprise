@@ -26,13 +26,14 @@ contract RewardsCore is IsContract, AragonApp {
         uint blockStart;
         string description;
         mapping (address => bool) claimed;
+        mapping (address => uint) timeClaimed;
     }
 
     Reward[] rewards;
     Vault public vault;
 
     function initialize( Vault _vault)
-    external onlyInit // solium-disable-line visibility-first
+    external onlyInit
     {
         initialized();
         require(isContract(_vault), "Vault must be a contract");
@@ -43,6 +44,7 @@ contract RewardsCore is IsContract, AragonApp {
         Reward storage reward = rewards[_rewardID];
         require(block.number > reward.blockStart + reward.duration + reward.delay, "reward must be claimed after the reward duration and delay");
         reward.claimed[msg.sender] = true;
+        reward.timeClaimed[msg.sender] = block.timestamp; // solium-disable-line security/no-block-members
         // Need to implement solution to occurances
         if (reward.isMerit) {
             rewardAmount = calculateMeritReward(reward);
@@ -66,7 +68,9 @@ contract RewardsCore is IsContract, AragonApp {
         uint endBlock,
         uint duration,
         uint delay,
-        uint rewardAmount
+        uint rewardAmount,
+        bool claimed,
+        uint timeClaimed
     )
     {
         Reward storage reward = rewards[rewardID];
@@ -79,6 +83,8 @@ contract RewardsCore is IsContract, AragonApp {
         startBlock = reward.blockStart;
         duration = reward.duration;
         delay = reward.delay;
+        claimed = reward.claimed[msg.sender];
+        timeClaimed = reward.timeClaimed[msg.sender];
         if (reward.isMerit) {
             rewardAmount = calculateMeritReward(reward);
         } else {

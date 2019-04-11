@@ -44,8 +44,7 @@ AverageRewards.propTypes = {
 const RewardsTable = props => {
   const Narrow = props.belowMedium
   const Wide = props.aboveMedium
-
-  console.log('props: ', props)
+  console.log(props)
   return (
     <div>
       <Text.Block size="large" weight="bold">
