@@ -507,8 +507,8 @@ const Detail = ({
         </div>
       </Wrapper>
     </Content>
- )
-
+  )
+}
 const DetailsCard = styled.div`
   flex: 0 1 auto;
   text-align: left;
