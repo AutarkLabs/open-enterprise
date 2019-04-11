@@ -70,28 +70,16 @@ const workReadyForReview = issue => {
 
 // protects against eth events coming back in the wrong order for bountiesrequest.
 export const determineWorkStatus = (issue, event) => {
-  if (step > currentStep) issue.workStatus = status
-  
   if (isWorkDone(issue)) {
     issue.workStatus = 'fulfilled'
     return issue  
   }
-
   if (!(existWorkInProgress(issue)) && !(workReadyForReview(issue))) {
-    if (existPendingApplications(issue)) {
-      issue.workStatus = 'review-applicants'
-    } else {
-      issue.workStatus = 'funded'
-    }
-    return issue
-  } else if (workReadyForReview(issue)) {
-    issue.workStatus = 'review-work'
-    return issue
-  } else {
-    issue.workStatus = 'in-progress'
-    return issue
+    issue.workStatus = existPendingApplications(issue) ? 'review-applicants' : 'funded'
+  } else{
+    issue.workStatus = workReadyForReview(issue) ? 'review-work': 'in-progress'
   }
-
+  return issue
 }
 
 const getRequest = (repoId, issueNumber, applicantId) => {
