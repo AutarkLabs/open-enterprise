@@ -70,9 +70,6 @@ class ViewReward extends React.Component {
             <div>
               <FieldTitle>Created by</FieldTitle>
               <Creator>
-                <CreatorImg>
-                  <Blockies seed={creator} size={8} />
-                </CreatorImg>
                 <div>
                   <p>
                     <IdentityBadge

@@ -39,6 +39,14 @@ const translateToken = (token) => {
   }
 }
 
+const getSymbol = (tokens, rewardToken) => {
+  return tokens
+    .reduce((symbol, token) => {
+      if (token.address === rewardToken) return token.symbol
+      else return symbol
+    },'')
+}
+
 const dot = <span style={{ margin: '0px 6px' }}>&middot;</span>
 
 const averageRewardsTitles = [ 'Average Reward', 'Monthly Average', 'Total this year' ]
@@ -54,9 +62,9 @@ const generateOpenDetails = (reward, openDetails) => () => {
   openDetails(reward)
 }
 
-const RewardsTableNarrow = ({ title, data, fourthColumn, fourthColumnData, openDetails }) => (
+const RewardsTableNarrow = ({ title, tokens, rewards, fourthColumn, fourthColumnData, openDetails }) => (
   <NarrowList>
-    {data.map((reward, i) => (
+    {rewards.map((reward, i) => (
       <NarrowListReward onClick={generateOpenDetails(reward, openDetails)} key={i}>
         <div style={{ marginTop: '5px', marginRight: '10px' }}>
           <RewardDescription>
@@ -72,7 +80,7 @@ const RewardsTableNarrow = ({ title, data, fourthColumn, fourthColumnData, openD
         </div>
         <div>
           <AmountBadge>
-            {displayCurrency(reward.amount)}{' '}{translateToken(reward.rewardToken)}
+            {displayCurrency(reward.amount)}{' '}{getSymbol(tokens, reward.rewardToken)}
           </AmountBadge>
         </div>
       </NarrowListReward>
@@ -80,7 +88,7 @@ const RewardsTableNarrow = ({ title, data, fourthColumn, fourthColumnData, openD
   </NarrowList>
 )
 
-const RewardsTableWide = ({ title, rewards, fourthColumn, fourthColumnData, openDetails }) => {
+const RewardsTableWide = ({ title, tokens, rewards, fourthColumn, fourthColumnData, openDetails }) => {
   return (
     <Table
       style={{ width: '100%' }}
@@ -110,7 +118,7 @@ const RewardsTableWide = ({ title, rewards, fourthColumn, fourthColumnData, open
           </TableCell>
           <TableCell>
             <AmountBadge style={{ margin: '0px', padding: '5px', paddingRight: '10px', paddingLeft: '10px', }}>
-              {displayCurrency(reward.amount)}{' '}{translateToken(reward.rewardToken)}
+              {displayCurrency(reward.amount)}{' '}{getSymbol(tokens, reward.rewardToken)}
             </AmountBadge>
           </TableCell>
         </ClickableTableRow>
@@ -141,7 +149,7 @@ const tableType = [
   { title: 'Past Rewards', fourthColumn: 'Last Payout', fourthColumnData: displayLastPayout, filterRewards: pastRewards },
 ]
 
-const Overview = ({ rewards, newReward, openDetails }) => {
+const Overview = ({ tokens, rewards, newReward, openDetails }) => {
   const rewardsEmpty = rewards.length === 0
 
   if (rewardsEmpty) {
@@ -164,6 +172,7 @@ const Overview = ({ rewards, newReward, openDetails }) => {
             fourthColumn={fourthColumn}
             fourthColumnData={fourthColumnData}
             rewards={filterRewards(rewards)}
+            tokens={tokens}
             openDetails={openDetails}
             belowMedium={RewardsTableNarrow}
             aboveMedium={RewardsTableWide}

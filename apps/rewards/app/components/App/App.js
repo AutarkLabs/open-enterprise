@@ -189,7 +189,7 @@ class App extends React.Component {
                   <TabBar
                     items={this.state.tabs}
                     selected={this.state.selected}
-                    onSelect={this.selectTab}
+                    onChange={this.selectTab}
                   />
                 }
               >
@@ -220,6 +220,7 @@ class App extends React.Component {
                 newReward={this.newReward}
                 openDetails={this.openDetailsView}
                 network={network}
+                tokens={this.props.balances}
               />
             )}
 

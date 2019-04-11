@@ -218,7 +218,7 @@ MyRewards.propTypes = {
   newReward: PropTypes.func.isRequired,
   rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
   network: PropTypes.object,
-  tokens: PropTypes.object,
+  tokens: PropTypes.arrayOf(PropTypes.object).isRequired,
 }
 
 const Main = styled.div`
