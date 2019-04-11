@@ -432,8 +432,7 @@ const eventsCard = issue => {
         ).map((eventDate, i) => {
           return <IssueEvent key={i} {...issueEvents[eventDate]} />
         })
-        : 'This issue has no activity'
-      }
+        : 'This issue has no activity'}
     </StyledEventsCard>
   )
 }
