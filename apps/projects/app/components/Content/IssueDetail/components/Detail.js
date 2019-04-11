@@ -390,11 +390,11 @@ const Detail = ({
   createdAt,
   expLevel,
   deadline,
-  slots,
   work,
   workStatus,
   onReviewApplication,
   onReviewWork,
+  onUpdateBounty,
   onRequestAssignment,
   onSubmitWork,
   onAllocateSingleBounty,
@@ -445,6 +445,7 @@ const Detail = ({
                     work={work}
                     workStatus={workStatus}
                     requestsData={requestsData}
+                    onUpdateBounty={onUpdateBounty}
                     onAllocateSingleBounty={onAllocateSingleBounty}
                     onSubmitWork={onSubmitWork}
                     onRequestAssignment={onRequestAssignment}
@@ -509,7 +510,6 @@ const Detail = ({
     </Content>
   )
 }
-
 const DetailsCard = styled.div`
   flex: 0 1 auto;
   text-align: left;

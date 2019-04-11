@@ -59,6 +59,7 @@ const Issue = ({
   onRequestAssignment,
   onReviewApplication,
   onAllocateSingleBounty,
+  onUpdateBounty,
   onReviewWork,
   balance,
   symbol,
@@ -104,11 +105,11 @@ const Issue = ({
                 onRequestAssignment={onRequestAssignment}
                 onReviewApplication={onReviewApplication}
                 onReviewWork={onReviewWork}
+                onUpdateBounty={onUpdateBounty}
               />
             </ContextMenu>
           )}
         </div>
-
         <IssueTitleDetailsBalance>
           <IssueTitleDetails>
             <IssueTitle>
