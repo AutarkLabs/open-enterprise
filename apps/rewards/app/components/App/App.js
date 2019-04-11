@@ -1,4 +1,4 @@
-import { AppBar, Main, observe, SidePanel, TabBar, Root, Viewport, font, breakpoint } from '@aragon/ui'
+import { AppView, AppBar, Main, observe, SidePanel, TabBar, Root, Viewport, font, breakpoint } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
@@ -173,46 +173,56 @@ class App extends React.Component {
     return (
       <Root.Provider>
         <StyledAragonApp>
-          <AppBar
-            endContent={
-              <NewRewardButton
-                title="New Reward"
-                onClick={this.newReward}
-              />
+          <AppView
+            title="Rewards"
+
+            appBar={
+              <AppBar
+                endContent={
+                  <NewRewardButton
+                    title="New Reward"
+                    onClick={this.newReward}
+                  />
+                }
+                tabs={
+                  <TabBar
+                    items={this.state.tabs}
+                    selected={this.state.selected}
+                    onSelect={this.selectTab}
+                  />
+                }
+              >
+                <AppBarTitle>
+                  <Viewport>
+                    {({ below }) =>
+                      below('medium') && <MenuButton onClick={this.handleMenuPanelOpen} />
+                    }
+                  </Viewport>
+                  <AppBarLabel>Rewards</AppBarLabel>
+                </AppBarTitle>
+              </AppBar>
             }
           >
-            <AppBarTitle>
-              <Viewport>
-                {({ below }) =>
-                  below('medium') && <MenuButton onClick={this.handleMenuPanelOpen} />
-                }
-              </Viewport>
-              <AppBarLabel>Rewards</AppBarLabel>
-            </AppBarTitle>
-          </AppBar>
 
-          <TabBar
-            items={this.state.tabs}
-            selected={this.state.selected}
-            onSelect={this.selectTab}
-          />
-          { this.state.selected === 1 ? (
-            <MyRewards
-              rewards={this.props.rewards === undefined ? [] : this.props.rewards}
-              newReward={this.newReward}
-              openDetails={this.openDetailsMy}
-              network={network}
-              tokens={this.props.balances}
-            />
-          ) : (
-            <Overview
-              rewards={this.props.rewards === undefined ? [] : this.props.rewards}
-              newReward={this.newReward}
-              openDetails={this.openDetailsView}
-              network={network}
-            />
-          )}
 
+            { this.state.selected === 1 ? (
+              <MyRewards
+                rewards={this.props.rewards === undefined ? [] : this.props.rewards}
+                newReward={this.newReward}
+                openDetails={this.openDetailsMy}
+                network={network}
+                tokens={this.props.balances}
+              />
+            ) : (
+              <Overview
+                rewards={this.props.rewards === undefined ? [] : this.props.rewards}
+                newReward={this.newReward}
+                openDetails={this.openDetailsView}
+                network={network}
+              />
+            )}
+
+          </AppView>
           <PanelManager
             onClose={this.closePanel}
             activePanel={panel}
