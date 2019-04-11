@@ -7,15 +7,14 @@ import {
   TextInput,
   theme,
   ContextMenuItem,
-  IconShare,
-  IconAdd,
+  IconFundraising,
 } from '@aragon/ui'
 import BigNumber from 'bignumber.js'
 import { compareAsc, compareDesc } from 'date-fns'
 
 import { STATUS } from '../../utils/github'
 import { GET_ISSUES, getIssuesGQL } from '../../utils/gql-queries.js'
-import { DropDownButton as ActionsMenu, FilterBar } from '../Shared'
+import { DropDownButton as ActionsMenu, FilterBar, IconCurate } from '../Shared'
 import { Issue, Empty } from '../Card'
 import { IssueDetail } from './IssueDetail'
 import Unauthorized from './Unauthorized'
@@ -67,6 +66,10 @@ class Issues extends React.PureComponent {
     this.props.onAllocateBounties([issue])
   }
 
+  handleUpdateBounty = issue => {
+    this.props.onUpdateBounty([issue])
+  }
+
   handleAllocateBounties = () => {
     console.log('handleAllocationBounties:', this.state.selectedIssues)
     this.props.onAllocateBounties(this.state.selectedIssues)
@@ -95,7 +98,7 @@ class Issues extends React.PureComponent {
     if (this.state.allSelected) {
       this.setState({ allSelected: false, selectedIssues: [] })
     } else {
-      this.setState({ allSelected: true, selectedIssues: issuesFiltered })
+      this.setState({ allSelected: true, selectedIssues: this.shapeIssues(issuesFiltered) })
     }
   }
 
@@ -160,15 +163,14 @@ class Issues extends React.PureComponent {
       // if there are no Status filters, all issues pass
       if (Object.keys(filters.statuses).length === 0) return true
       // should bountyless issues pass?
-
       const status = bountyIssueObj[issue.number] ? bountyIssueObj[issue.number] : 'not-funded'
-      if ('not-funded' in filters.statuses && !bountyIssueObj[issue.number])
-        return true
-      // if issues without a status should not pass, they are rejected below
-      if (status === 'not-funded') return false
-      if (status in filters.statuses)
-        return true
-      return false
+      // if we look for all funded issues, regardless of stage...
+      let filterPass = 
+        status in filters.statuses ||
+          ('all-funded' in filters.statuses && status !== 'not-funded') ?
+          true : false
+      // ...or at specific stages
+      return filterPass
     })
 
     // last but not least, if there is any text in textFilter...
@@ -234,7 +236,7 @@ class Issues extends React.PureComponent {
         flexDirection: 'row',
         alignItems: 'flex-end'
       }}>
-      <TextInput placeholder="Search Issues" onChange={this.handleTextFilter} />
+      <TextInput placeholder="Search issue titles" type="search" onChange={this.handleTextFilter} />
       <ActiveFilters
         issues={issues}
         bountyIssues={this.props.bountyIssues}
@@ -248,7 +250,7 @@ class Issues extends React.PureComponent {
           style={{ display: 'flex', alignItems: 'flex-start' }}
         >
           <div>
-            <IconAdd color={theme.textTertiary} />
+            <IconCurate color={theme.textTertiary} />
           </div>
           <ActionLabel>Curate Issues</ActionLabel>
         </ContextMenuItem>
@@ -257,7 +259,7 @@ class Issues extends React.PureComponent {
           style={{ display: 'flex', alignItems: 'flex-start' }}
         >
           <div style={{ marginLeft: '4px' }}>
-            <IconShare color={theme.textTertiary} />
+            <IconFundraising color={theme.textTertiary} />
           </div>
           <ActionLabel>Fund Issues</ActionLabel>
         </ContextMenuItem>
@@ -425,6 +427,9 @@ class Issues extends React.PureComponent {
           onAllocateSingleBounty={() => {
             this.handleAllocateSingleBounty(currentIssueShaped)
           }}
+          onUpdateBounty={() => {
+            this.handleUpdateBounty(currentIssueShaped)
+          }}
           onReviewWork={() => {
             this.handleReviewWork(currentIssueShaped)
           }}
@@ -513,6 +518,9 @@ class Issues extends React.PureComponent {
                           }}
                           onAllocateSingleBounty={() => {
                             this.handleAllocateSingleBounty(issue)
+                          }}
+                          onUpdateBounty={() => {
+                            this.handleUpdateBounty(issue)
                           }}
                           onReviewWork={() => {
                             this.handleReviewWork(issue)
