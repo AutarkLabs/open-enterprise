@@ -38,6 +38,7 @@ export const GET_ISSUES = gql`
     }
   }
 `
+
 export const getIssuesGQL = repos => {
   let q = `
     query getIssuesForRepos {
@@ -90,7 +91,6 @@ export const getIssuesGQL = repos => {
   q += `
 }
   `
-   console.log('---', q)
   return gql`${q}`
 }
 

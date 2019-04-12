@@ -96,8 +96,6 @@ class Issue extends React.PureComponent {
     ]
     propsToDelete.forEach(f => delete issue[f])
 
-    console.log('N CARD', issue)
-
     return (
       <StyledIssue>
         <div style={{ padding: '10px' }}>
@@ -145,15 +143,6 @@ class Issue extends React.PureComponent {
                   </span>
                 </Text.Block>
               )}
-              {/*(BOUNTY_STATUS[workStatus]) && (
-              <Text.Block color={theme.textSecondary} style={{ fontSize: '0.87em' }}>
-                <span style={{ marginRight: '15px' }}>
-                  {slots} Available
-                  {dot}
-                  {requestsData.length} Applicants
-                </span>
-              </Text.Block>
-            )*/}
             </IssueTitleDetails>
 
             <Balance>

@@ -13,7 +13,7 @@ import BigNumber from 'bignumber.js'
 import { compareAsc, compareDesc } from 'date-fns'
 
 import { STATUS } from '../../utils/github'
-import { GET_ISSUES, getIssuesGQL } from '../../utils/gql-queries.js'
+import { getIssuesGQL } from '../../utils/gql-queries.js'
 import { DropDownButton as ActionsMenu, FilterBar, IconCurate } from '../Shared'
 import { Issue, Empty } from '../Card'
 import { IssueDetail } from './IssueDetail'
@@ -42,9 +42,8 @@ class Issues extends React.PureComponent {
     reload: false,
     currentIssue: {},
     showIssueDetail: false,
-    repos: {},
     downloadedRepos: {},
-    issuesPerCall: 1,
+    issuesPerCall: 100,
   }
 
   componentWillMount() {
@@ -398,47 +397,41 @@ class Issues extends React.PureComponent {
   }
 
   /*
-   Data obtained from github API is data{repo}.issues.[nodes] and it needs
+   Data obtained from github API is data.{repo}.issues.[nodes] and it needs
    flattening into one simple array of issues  before it can be used
-   should return array of issues and hash of repos{downloaded, totalCount}
+
+   Returns array of issues and object of repos numbers: how many issues
+   in repo in total, how many downloaded, how many to fetch next time
+   (for "show more")
   */
   flattenIssues = data => {
-
-console.log('DATA', data)
-
-
     let downloadedIssues = []
     const downloadedRepos = {}
     let totalCount = 0
 
-    data.forEach((repo, i) => {
-      const repoId = repo.id
-        // totalCount means all issues (per repo),
-        // downloadedCount is what got downloaded this time
-        // fetch is for remembering how many issues need
-        // to be dowloaded next time when query runs again
-        // (it is affected by ShowMore button)
+    Object.keys(data).forEach(nodeName => {
+      const repo = data[nodeName]
 
-        const fetchNextTime = repo.issues.nodes.length < repo.issues.totalCount ? repo.issues.nodes.length : repo.issues.totalCount
-        downloadedRepos[repoId] = {
-          downloadedCount: repo.issues.nodes.length,
-          totalCount: repo.issues.totalCount,
-          fetch: fetchNextTime,
-        }
+      const fetchNextTime = repo.issues.nodes.length < repo.issues.totalCount ?
+        repo.issues.nodes.length
+        :
+        repo.issues.totalCount
 
-        downloadedIssues = downloadedIssues.concat(...repo.issues.nodes)
+      downloadedRepos[repo.id] = {
+        downloadedCount: repo.issues.nodes.length,
+        totalCount: repo.issues.totalCount,
+        fetch: fetchNextTime,
       }
-    )
 
-    console.log('REPOS', downloadedRepos)
-    console.log('ISSUES', downloadedIssues)
-    console.log('issues.length < totalCount', downloadedIssues.length, totalCount)
-  
+      downloadedIssues = downloadedIssues.concat(...repo.issues.nodes)
+    })
+
     return { downloadedIssues, downloadedRepos }
   }
 
   showMoreIssues = downloadedRepos => {
     let newDownloadedRepos = { ...downloadedRepos }
+
     Object.keys(downloadedRepos).forEach(repoId => {
       newDownloadedRepos[repoId].fetch += this.state.issuesPerCall
     })
@@ -446,10 +439,17 @@ console.log('DATA', data)
     this.setState({ downloadedRepos: newDownloadedRepos })
   }
 
+  getFetchCountFromState = repoId =>
+    repoId in this.state.downloadedRepos ?
+      this.state.downloadedRepos[repoId].fetch
+      :
+      this.state.issuesPerCall
+
   render() {
     if (this.props.status === STATUS.INITIAL) {
       return <Unauthorized onLogin={this.props.onLogin} />
     }
+
     const {
       projects,
       onNewProject,
@@ -458,54 +458,53 @@ console.log('DATA', data)
       onSubmitWork,
       onReviewWork,
     } = this.props
-    const { currentIssue, showIssueDetail, filters } = this.state
 
-    // better return early if we have no projects added?
+    const {
+      currentIssue,
+      showIssueDetail,
+      filters
+    } = this.state
+
+    // better return early if we have no projects added
     if (projects.length === 0) return <Empty action={onNewProject} />
-    // return early if we show Issue's Details scree
-    if (showIssueDetail) return renderCurrentIssue(currentIssue, this.props)
+
+    // same if we only need to show Issue's Details screen
+    if (showIssueDetail) return this.renderCurrentIssue(currentIssue, this.props)
 
     const currentSorter = this.generateSorter()
 
-    // build map of params for GQL, repoId => how many issues to get
+    // build params for GQL query, { repoId: { how many issues to fetch }}
     const reposQueryParams = {}
     if (Object.keys(filters.projects).length > 0) {
       Object.keys(filters.projects).forEach(repoId => {
-        reposQueryParams[repoId] = { fetch: repoId in this.state.downloadedRepos ? this.state.downloadedRepos[repoId].fetch : this.state.issuesPerCall }
+        reposQueryParams[repoId] = { fetch: this.getFetchCountFromState(repoId) }
       })
     } else {
       projects.forEach(project => {
         const repoId = project.data._repo
-        reposQueryParams[projectId] = { fetch: repoId in this.state.downloadedRepos ? this.state.downloadedRepos[repoId].fetch : this.state.issuesPerCall }
+        reposQueryParams[repoId] = { fetch: this.getFetchCountFromState(repoId) }
       })
     }
-console.log('PARAMS', reposQueryParams)
 
-    let GET_ISSUES2 = getIssuesGQL(reposQueryParams)
-    console.log('Q', GET_ISSUES)
-
-    const reposIds = projects.map(project => project.data._repo)
+    // previous GET_ISSUES is deliberately left in place for reference
+    const GET_ISSUES2 = getIssuesGQL(reposQueryParams)
 
     return (
       <Query
         fetchPolicy="cache-first"
-        query={GET_ISSUES}
-
-        variables={{ reposIds }}
-
-         onError={console.error}
+        query={GET_ISSUES2}
+        onError={console.error}
       >
         {({ data, loading, error, refetch }) => {
-          if (data) {
-            console.log('Is data, render list', data)
+          if (data && data.node0) {
+            // first, flatten data structure into array of issues
             const { downloadedIssues, downloadedRepos } = this.flattenIssues(data)
+            // then apply filtering
             const issuesFiltered = this.applyFilters(downloadedIssues)
-console.log('REN checking if there is more issues to show', downloadedRepos)
-
-            const moreIssuesToShow = Object.keys(downloadedIssues).filter(repoId =>
-              downloadedIssues[repoId].totalCount === downloadedIssues[repoId].downloadedCount
+            // then determine whether any shown repos have more issues to fetch
+            const moreIssuesToShow = Object.keys(downloadedRepos).filter(repoId =>
+              downloadedRepos[repoId].totalCount > downloadedRepos[repoId].downloadedCount
             ).length > 0
-
 
             return (
               <StyledIssues>
@@ -535,6 +534,7 @@ console.log('REN checking if there is more issues to show', downloadedRepos)
                         )
                       })}
                   </ScrollWrapper>
+
                   <div style={{ textAlign: 'center' }}>
                     {moreIssuesToShow && (
                       <Button
