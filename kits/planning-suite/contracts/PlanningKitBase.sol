@@ -208,7 +208,6 @@ contract PlanningKitBase is BetaKitBase {
     }
 
     function initTPSApps(
-        AddressBook addressBook,
         Allocations allocations,
         Projects projects,
         // Rewards rewards,
@@ -216,7 +215,6 @@ contract PlanningKitBase is BetaKitBase {
         Vault vault
         ) internal
     {
-        addressBook.initialize();
         projects.initialize(registry, vault);
         allocations.initialize(addressBook);
         // rewards.initialize(vault);
