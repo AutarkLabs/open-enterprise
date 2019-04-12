@@ -161,15 +161,14 @@ class Issues extends React.PureComponent {
       // if there are no Status filters, all issues pass
       if (Object.keys(filters.statuses).length === 0) return true
       // should bountyless issues pass?
-
       const status = bountyIssueObj[issue.number] ? bountyIssueObj[issue.number] : 'not-funded'
-      if ('not-funded' in filters.statuses && !bountyIssueObj[issue.number])
-        return true
-      // if issues without a status should not pass, they are rejected below
-      if (status === 'not-funded') return false
-      if (status in filters.statuses)
-        return true
-      return false
+      // if we look for all funded issues, regardless of stage...
+      let filterPass = 
+        status in filters.statuses ||
+          ('all-funded' in filters.statuses && status !== 'not-funded') ?
+          true : false
+      // ...or at specific stages
+      return filterPass
     })
 
     // last but not least, if there is any text in textFilter...
@@ -184,7 +183,6 @@ class Issues extends React.PureComponent {
 
   handleIssueSelection = issue => {
     this.setState(({ selectedIssues }) => {
-      console.log('handleIssueSelection', issue)
       const newSelectedIssues = selectedIssues
         .map(selectedIssue => selectedIssue.id)
         .includes(issue.id)
@@ -318,7 +316,6 @@ class Issues extends React.PureComponent {
     const bountyIssueObj = {}
     const tokenObj = {}
     const expLevels = bountySettings.expLvls
-    console.log('expLevels', expLevels)
 
     bountyIssues.forEach(issue => {
       bountyIssueObj[issue.issueNumber] = issue
@@ -330,7 +327,7 @@ class Issues extends React.PureComponent {
         decimals: token.decimals,
       }
     })
-    console.log('issues: ', bountyIssueObj)
+
     return issues.map(({ __typename, repository: { id, name }, ...fields }) => {
       const bountyId = bountyIssueObj[fields.number]
       const repoIdFromBounty = bountyId && bountyId.data.repoId
@@ -340,7 +337,6 @@ class Issues extends React.PureComponent {
           .div(BigNumber(10 ** tokenObj[data.token].decimals))
           .dp(3)
           .toString()
-        console.log('balance', expLevels)
         return {
           ...fields,
           ...bountyIssueObj[fields.number].data,
