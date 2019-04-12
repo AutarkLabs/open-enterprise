@@ -17,14 +17,6 @@ import "@tps/test-helpers/contracts/common/IForwarder.sol";
 
 import "@tps/test-helpers/contracts/lib/misc/Migrations.sol";
 
-// import "@tps/test-helpers/contracts/common/IForwarder.sol";
-/* Temp hack to pass coverage until further research */
-// interface IForwarderFixed {
-//     function isForwarder() external returns (bool);
-//     function canForward(address sender, bytes evmCallScript) external returns (bool);
-//     function forward(bytes evmCallScript) external;
-// }
-
 
 /*******************************************************************************
     Copyright 2018, That Planning Suite
@@ -198,7 +190,7 @@ contract RangeVoting is IForwarder, AragonApp {
     }
 
     /**
-    * @notice Execute a range vote. After this step, navigate to the Allocations app and select the Distribute Allocation action from an account to complete the execution.
+    * @notice Execute range vote `_voteId`
     * @param _voteId Id for vote
     */
     function executeVote(uint256 _voteId) external {
