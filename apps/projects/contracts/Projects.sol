@@ -238,7 +238,7 @@ contract Projects is IsContract, AragonApp {
         hasBounty = issue.hasBounty;
         fulfilled = issue.fulfilled;
         standardBountyId = issue.standardBountyId;
-        ( , , , , ,balance) = bounties.getBounty(standardBountyId);
+        balance = issue.bountySize;
         dataHash = bounties.getBountyData(standardBountyId);
         token = bounties.getBountyToken(standardBountyId);
         assignee = issue.assignee;
