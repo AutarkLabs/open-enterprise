@@ -156,7 +156,7 @@ contract PlanningKitBase is BetaKitBase {
         handleVaultPermissions(acl, projects, /*rewards,*/ vault);
 
         // Initialize the Planning Suite apps
-        initTPSApps(addressBook, allocations, projects, rangeVoting, /*rewards,*/ token, vault);
+        initTPSApps(addressBook, allocations, projects, /*rewards,*/ token, vault);
     }
 
     function handleTPSPermissions(
@@ -208,6 +208,7 @@ contract PlanningKitBase is BetaKitBase {
     }
 
     function initTPSApps(
+        AddressBook addressBook,
         Allocations allocations,
         Projects projects,
         // Rewards rewards,
