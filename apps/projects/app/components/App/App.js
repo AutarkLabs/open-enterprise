@@ -354,7 +354,6 @@ class App extends React.PureComponent {
     const dateArray = new Array(issuesArray.length).fill(Date.now() + 8600)
     const booleanArray = new Array(issuesArray.length).fill(true)
 
-    console.log('Submit issues:', issuesArray)
     this.props.app.addBounties(
       idArray,
       numberArray,
@@ -363,7 +362,7 @@ class App extends React.PureComponent {
       booleanArray,
       tokenArray,
       ipfsString,
-      description
+      description,
     )
   }
 
@@ -405,11 +404,12 @@ class App extends React.PureComponent {
     )
   }
 
-  reviewApplication = (issue, index = 0) => {
+  reviewApplication = (issue, requestIndex = 0) => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.ReviewApplication,
       panelProps: {
         issue,
+        requestIndex,
         onReviewApplication: this.onReviewApplication,
         githubCurrentUser: this.state.githubCurrentUser,
       },
@@ -438,6 +438,7 @@ class App extends React.PureComponent {
       panel: PANELS.ReviewWork,
       panelProps: {
         issue,
+        index,
         onReviewWork: this.onReviewWork,
         githubCurrentUser: this.state.githubCurrentUser,
       },
@@ -517,7 +518,6 @@ class App extends React.PureComponent {
   }
 
   cancelBounties = id => {
-    console.log('closing')
     this.closePanel()
   }
 

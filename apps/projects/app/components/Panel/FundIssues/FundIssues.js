@@ -400,9 +400,6 @@ class FundIssues extends React.Component {
     const bountylessIssues = []
     const alreadyAdded = []
 
-
-    const expLevels = this.props.bountySettings.expLvls
-
     if (!tokens.length) {
       return (
         <div>

@@ -43,9 +43,13 @@ export const getIssuesGQL = repos => {
     query getIssuesForRepos {
   `
   Object.keys(repos).forEach((repoId, i) => {
+    const endCursor = repos[repoId].endCursor
     q += 'node' + i + ': node(id: "' + repoId + `") {
       ... on Repository {
-        issues(last: ` + repos[repoId].fetch + `) {
+        issues(last: ` +
+          repos[repoId].fetch +
+          (endCursor ? ', before: "' + endCursor + '"' : '') +
+        `) {
           totalCount
           pageInfo {
             endCursor
@@ -87,6 +91,7 @@ export const getIssuesGQL = repos => {
   q += `
 }
   `
+  // console.log('---', q)
   return gql`${q}`
 }
 

@@ -340,8 +340,6 @@ const detailsCard = ({
     balance: issue.balance,
   }
 
-  console.log('DET', issue)
-
   return (
     <StyledDetailsCard>
       <Wrapper style={{ justifyContent: 'space-between' }}>
@@ -368,22 +366,21 @@ const detailsCard = ({
           </Text.Block>
         </div>
         <div style={{ ...column, flex: 0, alignItems: 'flex-end' }}>
-          <ContextMenu>
-            <BountyContextMenu
-              work={issue.work}
-              workStatus={issue.workStatus}
-
-              work={work}
-              workStatus={workStatus}
-              requestsData={requestsData}
-              onUpdateBounty={onUpdateBounty}
-              onAllocateSingleBounty={() => onAllocateSingleBounty(issue)}
-              onSubmitWork={() => onSubmitWork(issue)}
-              onRequestAssignment={() => onRequestAssignment(issue)}
-              onReviewApplication={() => onReviewApplication(issue)}
-              onReviewWork={() => onReviewWork(issue)}
-            />
-          </ContextMenu>
+          {issue.workStatus !== 'fulfilled' && (
+            <ContextMenu>
+              <BountyContextMenu
+                work={issue.work}
+                workStatus={issue.workStatus}
+                requestsData={issue.requestsData}
+                onUpdateBounty={() => onUpdateBounty(issue)}
+                onAllocateSingleBounty={() => onAllocateSingleBounty(issue)}
+                onSubmitWork={() => onSubmitWork(issue)}
+                onRequestAssignment={() => onRequestAssignment(issue)}
+                onReviewApplication={() => onReviewApplication(issue)}
+                onReviewWork={() => onReviewWork(issue)}
+              />
+            </ContextMenu>
+          )}
           { issue.balance > 0 &&
           <Badge
             style={{ padding: '10px', textSize: 'large', marginTop: '15px' }}
@@ -420,8 +417,15 @@ const detailsCard = ({
   )
 }
 
-const eventsCard = issue => {
-  const issueEvents = activities(issue.requestsData, issue.workSubmissions, issue.fundingHistory, issue.onReviewApplication, issue.onReviewWork)
+const eventsCard = ({ issue, onReviewApplication, onReviewWork }) => {
+  const issueEvents = activities(
+    issue,
+    issue.requestsData,
+    issue.workSubmissions,
+    issue.fundingHistory,
+    onReviewApplication,
+    onReviewWork
+  )
 
   return (
     <StyledEventsCard>
@@ -441,27 +445,8 @@ const eventsCard = issue => {
   )
 }
 
-const Detail = ({
-  issue,
-  onReviewApplication,
-  onReviewWork,
-  onUpdateBounty,
-  onRequestAssignment,
-  onSubmitWork,
-  onAllocateSingleBounty,
-}) => {
-
-  const issueEvents = activities(
-    issue,
-    requestsData,
-    workSubmissions,
-    fundingHistory,
-    onReviewApplication,
-    onReviewWork
-  )
-
+const Detail = issue => {
   return (
-    
     <Viewport>
       {({ below }) => below('medium') ? (
         <CardWrapper style={{ flexDirection: 'column' }}>
@@ -483,8 +468,6 @@ const Detail = ({
         </CardWrapper>
       )}
     </Viewport>
-
-
   )
 }
 const CardWrapper = styled.div`

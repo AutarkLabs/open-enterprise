@@ -43,6 +43,9 @@ class Issues extends React.PureComponent {
     currentIssue: {},
     showIssueDetail: false,
     repos: {},
+    downloadedIssues: [],
+    downloadedRepos: {},
+    issuesPerCall: 1,
   }
 
   componentWillMount() {
@@ -365,13 +368,13 @@ class Issues extends React.PureComponent {
       }
   }
 
-  showMoreIssues = repos => {
-    console.log('showMoreIssues' + repos)
-    this.setState(({ prevState }) => {
-      Object.keys(repos).forEach(repoId => repos[repoId] = {
-        endCursor: repos[repoId].endCursor,
-        showMore: true,
-      })
+  showMoreIssues = (downloadedRepos, downloadedIssues) => {
+    this.setState(prevState => {
+      return {
+        downloadedIssues,
+        downloadedRepos,
+        issuesPerCall: prevState.issuesPerCall + 1,
+      }
     })
   }
 
@@ -417,29 +420,29 @@ class Issues extends React.PureComponent {
       )
     }
 
-    // TODO: this will be true if there are more issues to show in any repos - 
-    // regardless of filtering by repo
-    let moreIssuesToShow = false
-    
     // Build an array of plain issues by flattening the data obtained from github API
     const flattenIssues = data => {
-      //console.log('DATA', data)
-      let issues = []
+      let downloadedIssues = []
+      const downloadedRepos = {}
       let totalCount = 0
       projects.forEach((project, i) => {
         if (data['node' + i]) {
-          repos[project.data._repo] = {
+          downloadedRepos[project.data._repo] = {
             totalCount: data['node' + i].issues.totalCount,
             endCursor: data['node' + i].issues.pageInfo.endCursor,
           }
           totalCount += data['node' + i].issues.totalCount
-          issues = issues.concat(...data['node' + i].issues.nodes)
+          downloadedIssues = downloadedIssues.concat(...data['node' + i].issues.nodes)
         }
       })
-      moreIssuesToShow = issues.length < totalCount
-      //console.log('REPOS', repos)
-      //console.log('ISSUES', issues)
-      return issues
+      // in case "Show More" was clicked
+      // downloadedIssues = downloadedIssues.concat(this.state.downloadedIssues)
+      const moreIssuesToShow = downloadedIssues.length < totalCount
+      console.log('REPOS', downloadedRepos)
+      console.log('ISSUES', downloadedIssues)
+      console.log('issues.length < totalCount', downloadedIssues.length, totalCount)
+
+      return { downloadedIssues, downloadedRepos, moreIssuesToShow }
     }
 
     const currentSorter = this.generateSorter()
@@ -448,11 +451,13 @@ class Issues extends React.PureComponent {
     // of a new batch (returned by GitHub), showMore is for requesting
     // more data
     const repos = {}
-    projects.forEach(project => repos[project.data._repo] = {
-      totalCount: 0,
-      endCursor: this.state.repos[project] ? this.state.repos[project].endCursor : '',
-      showMore: this.state.repos[project] ? this.state.repos[project].showMore : false,
-      fetch: 100,
+    projects.forEach(project => {
+      const projectId = project.data._repo
+      repos[projectId] = {
+        // endCursor: this.state.downloadedRepos[projectId] ? this.state.downloadedRepos[projectId].endCursor : '',
+        endCursor: '',
+        fetch: this.state.issuesPerCall,
+      }
     })
 
     const GET_ISSUES2 = getIssuesGQL(repos)
@@ -465,14 +470,14 @@ class Issues extends React.PureComponent {
       >
         {({ data, loading, error, refetch }) => {
           if (data) {
-            console.log('Is data, render list')
-            const issues = flattenIssues(data)
-            const issuesFiltered = this.applyFilters(issues)
+            console.log('Is data, render list', data)
+            const { downloadedIssues, downloadedRepos, moreIssuesToShow } = flattenIssues(data)
+            const issuesFiltered = this.applyFilters(downloadedIssues)
 
             return (
               <StyledIssues>
-                {this.actionsMenu(issues)}
-                {this.filterBar(issues, issuesFiltered)}
+                {this.actionsMenu(downloadedIssues)}
+                {this.filterBar(downloadedIssues, issuesFiltered)}
 
                 <IssuesScrollView>
                   <ScrollWrapper>
@@ -482,7 +487,7 @@ class Issues extends React.PureComponent {
                         return (
                           <Issue
                             isSelected={issue.id in this.state.selectedIssues}
-                            key={issue.id}
+                            key={index}
                             {...issue}
 
                             onClick={this.handleIssueClick}
@@ -498,7 +503,13 @@ class Issues extends React.PureComponent {
                       })}
                   </ScrollWrapper>
                   <div style={{ textAlign: 'center' }}>
-                    {moreIssuesToShow && <Button mode="strong" onClick={repos => this.showMoreIssues(repos)}>Show More</Button>}
+                    {moreIssuesToShow && (
+                      <Button
+                        mode="strong"
+                        onClick={() => this.showMoreIssues(downloadedRepos, downloadedIssues)}>
+                        Show More Issues
+                      </Button>
+                    )}
                   </div>
                 </IssuesScrollView>
               </StyledIssues>

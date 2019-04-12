@@ -26,8 +26,6 @@ class SubmitWork extends React.Component {
   setAck2 = () => this.setState(prevState => ({ ack2: !prevState.ack2 }))
 
   onSubmitWork = () => {
-    console.log('Submit', this.state)
-    console.log('issue: ', this.props.issue)
     let today = new Date()
     this.props.onSubmitWork(
       {
@@ -49,9 +47,7 @@ class SubmitWork extends React.Component {
     )
 
   render() {
-    // TODO: replace with props
     const { login } = this.props.githubCurrentUser
-
     const { title, repo, number, url } = this.props.issue
 
     return (
