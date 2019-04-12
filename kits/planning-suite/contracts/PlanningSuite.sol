@@ -64,9 +64,11 @@ contract PlanningSuite is PlanningKitBase {
         string tokenSymbol,
         string aragonId,
         address[] holders,
-        uint256[] tokens,
+        uint256[] stakes,
         uint64 supportNeeded,
         uint64 minAcceptanceQuorum,
+        uint64 candidateSupportPct,
+        uint64 minParticipationPct,
         uint64 voteDuration
     ) public
     {
@@ -74,9 +76,11 @@ contract PlanningSuite is PlanningKitBase {
         newInstance(
             aragonId,
             holders,
-            tokens,
+            stakes,
             supportNeeded,
             minAcceptanceQuorum,
+            candidateSupportPct,
+            minParticipationPct,
             voteDuration
         );
     }
@@ -99,6 +103,8 @@ contract PlanningSuite is PlanningKitBase {
         uint256[] stakes,
         uint64 supportNeeded,
         uint64 minAcceptanceQuorum,
+        uint64 candidateSupportPct,
+        uint64 minParticipationPct,
         uint64 voteDuration
     )
         public
@@ -109,7 +115,7 @@ contract PlanningSuite is PlanningKitBase {
         Kernel dao;
         ACL acl;
         Voting voting;
-        // RangeVoting rangeVoting;
+        RangeVoting rangeVoting;
 
         (dao, acl, , , , voting) = createPlanningDAO(
             aragonId,
@@ -123,6 +129,13 @@ contract PlanningSuite is PlanningKitBase {
             token,
             supportNeeded,
             minAcceptanceQuorum,
+            voteDuration
+        );
+
+        rangeVoting.initialize(
+            token,
+            candidateSupportPct,
+            minParticipationPct,
             voteDuration
         );
 
