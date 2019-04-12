@@ -11,20 +11,6 @@ class DropDownOptionsInput extends React.Component {
     values: PropTypes.array.isRequired,
     allOptions: PropTypes.array.isRequired,
   }
-
-  addOption2 = () => {
-    // TODO: Implement some rules about what an 'Option can be' duplicates, etc
-    const { input, name, values } = this.props
-    if (input && !values.includes(input)) {
-      this.props.onChange({ target: { name, value: [ ...values, input ] } })
-      this.props.onChange({ target: { name: 'optionsInput', value: '' } })
-      console.log('Option Added')
-    } else {
-      console.log(
-        'DropDownOptionsInput: The option is empty or already present'
-      )
-    }
-  }
   
   state = {
     showAddOption: false,
@@ -36,7 +22,7 @@ class DropDownOptionsInput extends React.Component {
     this.setState({ showAddOption: true })
   }
 
-  clearState = () =>    this.setState({ showAddOption: false, addOptionText: '', found: [] })
+  clearState = () => this.setState({ showAddOption: false, addOptionText: '', found: [] })
 
   addToCurated = issue => () => {
     this.props.onChange({
@@ -46,11 +32,15 @@ class DropDownOptionsInput extends React.Component {
   }
 
   searchOptions = ({ target: { name, value } }) => {
+    let searchTokens = value.split(' ')
     const found = this.props.allOptions.filter(
       issue => {
-        if (!issue.title.includes(value) ||''.toString(issue.number).includes(value)) return false
-        return (this.props.values.findIndex(i => i.id === issue.id) === -1)
-        //return f
+        let searchSpace = issue.title + issue.number
+        for( let token of searchTokens) {
+          if (!searchSpace.includes(token))
+            return false
+        }
+        return !this.props.values.some(i => i.id === issue.id)
       }
     ).splice(0,10)
       
@@ -77,57 +67,56 @@ class DropDownOptionsInput extends React.Component {
   render() {
     const { values } = this.props
     //console.log('RENDER', values)
-    const loadOptions = values.length === 1 ? (
-      <StyledOption key={values[0].id}>
-        <StyledInput readOnly wide value={this.issueToString(values[0])} />
-      </StyledOption>
-    )
-      : 
-      values.map((issue, index) => {
-        const { repo, number, title } = issue
-        return (
-          <StyledOption key={issue.id}>
-            <StyledInput readOnly wide value={this.issueToString(issue)} />
-            <IconContainer
-              style={{ transform: 'scale(.8)' }}
-              onClick={() => this.removeOption(index)}
-              title="Click to remove the issue"
-              children={<IconRemove />}
-            />
-          </StyledOption>
-        )
-      })
+    const multipleOptions = values.map((issue, index) => {
+      return (
+        <StyledOption key={issue.id}>
+          <StyledInput readOnly wide value={this.issueToString(issue)} />
+          <IconContainer
+            style={{ transform: 'scale(.8)' }}
+            onClick={() => this.removeOption(index)}
+            title="Click to remove the issue"
+            children={<IconRemove />}
+          />
+        </StyledOption>
+      )
+    })
+    
+    const singleOption = <StyledOption key={values[0].id}>
+      <StyledInput readOnly wide value={this.issueToString(values[0])} />
+    </StyledOption>
+
+    const loadOptions = values.length === 1 ? singleOption:multipleOptions 
+    
+    const showOption = <div style={{ position: 'relative' }}>
+      <StyledInput
+        wide
+        autoFocus
+        value={this.state.addOptionText}
+        onChange={this.searchOptions} name="addOptionText"
+      />
+      {(this.state.found.length > 0) && (
+        <OptionsPopup>
+          {this.state.found.map((issue, index) => {
+            return (
+              <IssueOption key={index} onClick={this.addToCurated(issue)}>
+                {this.issueToString(issue)}
+              </IssueOption>
+            )
+          }
+          )}
+        </OptionsPopup>
+      )}
+    </div>
+
+    const hideOption = <div>
+      <Button compact mode="secondary" onClick={this.addOption}>+ Add Another</Button>
+    </div>
+
 
     return (
       <Options>
         {loadOptions}
-        {this.state.showAddOption ?
-        
-          <div style={{ position: 'relative' }}>
-            <StyledInput
-              wide
-              autoFocus
-              value={this.state.addOptionText}
-              onChange={this.searchOptions} name="addOptionText"
-            />
-            {(this.state.found.length > 0) && (
-              <OptionsPopup>
-                {this.state.found.map((issue, index) => {
-                  return (
-                    <IssueOption key={index} onClick={this.addToCurated(issue)}>
-                      {this.issueToString(issue)}
-                    </IssueOption>
-                  )
-                }
-                )}
-              </OptionsPopup>
-            )}
-          </div>
-          :
-          <div>
-            <Button compact mode="secondary" onClick={this.addOption}>+ Add Another</Button>
-          </div>
-        }
+        {this.state.showAddOption ? showOption : hideOption}
       </Options>
     )
   }

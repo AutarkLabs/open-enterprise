@@ -458,11 +458,11 @@ class App extends React.PureComponent {
     )
   }
 
-  curateIssues = (issues, allIssues) => {
+  curateIssues = (selectedIssues, allIssues) => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.NewIssueCuration,
       panelProps: {
-        issues,
+        selectedIssues,
         allIssues,
         onSubmit: this.onSubmitCuration,
       },
