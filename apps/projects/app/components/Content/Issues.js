@@ -218,7 +218,7 @@ class Issues extends React.PureComponent {
     })
   }
 
-  actionsMenu = (issues) => (
+  actionsMenu = (issues, issuesFiltered) => (
     <div
       style={{
         display: 'flex',
@@ -279,7 +279,7 @@ class Issues extends React.PureComponent {
 
   queryLoading = () => (
     <StyledIssues>
-      {this.actionsMenu([])}
+      {this.actionsMenu([], [])}
       {this.filterBar([], [])}
       <IssuesScrollView>
         <div>Loading...</div>
@@ -289,7 +289,7 @@ class Issues extends React.PureComponent {
 
   queryError = (error, refetch) => (
     <StyledIssues>
-      {this.actionsMenu([])}
+      {this.actionsMenu([], [])}
       {this.filterBar([], [])}
       <IssuesScrollView>
         <div>
@@ -508,7 +508,7 @@ class Issues extends React.PureComponent {
 
             return (
               <StyledIssues>
-                {this.actionsMenu(downloadedIssues)}
+                {this.actionsMenu(downloadedIssues, issuesFiltered)}
                 {this.filterBar(downloadedIssues, issuesFiltered)}
 
                 <IssuesScrollView>
