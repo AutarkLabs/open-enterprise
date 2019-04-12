@@ -57,6 +57,7 @@ contract RewardsCore is IsContract, AragonApp {
         }
         require(vault.balance(reward.rewardToken) > rewardAmount, "Vault does not have enough funds to cover this reward");
         vault.transfer(reward.rewardToken, msg.sender, rewardAmount);
+        emit RewardClaimed(_rewardID);
     }
 
     function getReward(uint rewardID) external view returns(

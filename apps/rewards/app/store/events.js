@@ -18,6 +18,7 @@ export const handleEvent = async (state, event, settings) => {
   }
   else {
     switch (eventName) {
+    case 'RewardClaimed':
     case 'RewardAdded':
       nextState = await onRewardAdded(nextState, returnValues)
       break

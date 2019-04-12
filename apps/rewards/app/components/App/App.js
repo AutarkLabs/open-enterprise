@@ -128,6 +128,7 @@ class App extends React.Component {
 
   onClaimReward = reward => {
     console.log('onClaimReward', reward)
+    this.props.app.claimReward(Number(reward.rewardId))
     this.closePanel()
   }
 
@@ -139,6 +140,7 @@ class App extends React.Component {
         onClosePanel: this.closePanel,
         vaultBalance: '432.9 ETH',
         reward,
+        tokens: this.props.balances,
       },
     })
   }

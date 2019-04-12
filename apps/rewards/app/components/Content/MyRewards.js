@@ -101,7 +101,7 @@ const MyRewardsWide = ({ claimed, rewards, openDetails, network, tokens }) => (
         <TableCell>
           {!reward.claimed ? (
             <Button mode="outline" >
-              <IconFundraising color={theme.positive} style={{ 'padding-top': '10px', 'padding-bottom': '5px' }} />
+              <IconFundraising color={theme.positive} />
 
               <Text size="normal" weight="bold">Claim</Text>
             </Button>) : Intl.DateTimeFormat().format(reward.timeClaimed)}
