@@ -58,11 +58,13 @@ contract PlanningKitBase is BetaKitBase {
             Finance finance,
             TokenManager tokenManager,
             Vault vault,
-            Voting voting
+            Voting voting,
+            AddressBook addressBook,
+            Range rangeVoting
         )
     {
         // Create the base DAO with every aragon app
-        (dao, acl, finance, tokenManager, vault, voting) = createDAO(
+        (dao, acl, finance, tokenManager, vault, voting, addressBook, rangeVoting) = createDAO(
             aragonId,
             token,
             holders,
@@ -82,7 +84,9 @@ contract PlanningKitBase is BetaKitBase {
             finance,
             tokenManager,
             vault,
-            voting
+            voting,
+            addressBook,
+            rangeVoting
         );
     }
 
@@ -207,7 +211,6 @@ contract PlanningKitBase is BetaKitBase {
         AddressBook addressBook,
         Allocations allocations,
         Projects projects,
-        Range rangeVoting,
         // Rewards rewards,
         MiniMeToken token,
         Vault vault
@@ -215,7 +218,6 @@ contract PlanningKitBase is BetaKitBase {
     {
         addressBook.initialize();
         projects.initialize(registry, vault);
-        rangeVoting.initialize(addressBook, token, 50 * PCT256, 0, 1 minutes);
         allocations.initialize(addressBook);
         // rewards.initialize(vault);
     }

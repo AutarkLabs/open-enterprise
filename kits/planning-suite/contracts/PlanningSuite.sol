@@ -21,44 +21,6 @@ contract PlanningSuite is PlanningKitBase {
         // solium-disable-previous-line no-empty-blocks
     }
 
-    // function newTemplateInstance(string aragonId) public {
-        // MiniMeToken token = newToken("Autark Token", "autark");
-        // Kernel dao;
-        // ACL acl;
-        // Finance finance;
-        // Voting voting;
-
-        // // TODO: Improve this to avoid storage
-        // address[] memory holders;
-        // uint256[] memory stakes;
-
-        // holders[0] = address(msg.sender);
-        // holders[1] = address(this);
-
-        // stakes[0] = uint256(200 ether);
-        // stakes[1] = uint256(100 ether);
-
-
-        // (dao, acl, finance, , , voting) = createPlanningDAO(
-        //     aragonId,
-        //     token,
-        //     holders,
-        //     stakes,
-        //     uint256(-1)
-        // );
-
-        // TODO:
-        // finance.initialize(vault, 1 days);
-        // token.approve(finance, 100 ether);
-        // voting.initialize(token, 50 * PCT64, 10 * PCT64, 1 days);
-        // finance.deposit(token, 50 ether, "Initial token transfer pt 1");
-        // finance.deposit(token, 50 ether, "Initial token transfer pt 2");
-        
-        // TODO: customizable range voting time also
-
-        // TODO: Handle any extra permission or cleanup here
-    // }
-
     function newTokenAndInstance(
         string tokenName,
         string tokenSymbol,
@@ -67,8 +29,8 @@ contract PlanningSuite is PlanningKitBase {
         uint256[] stakes,
         uint64 supportNeeded,
         uint64 minAcceptanceQuorum,
-        uint64 candidateSupportPct,
         uint64 minParticipationPct,
+        uint64 candidateSupportPct,
         uint64 voteDuration
     ) public
     {
@@ -79,8 +41,8 @@ contract PlanningSuite is PlanningKitBase {
             stakes,
             supportNeeded,
             minAcceptanceQuorum,
-            candidateSupportPct,
             minParticipationPct,
+            candidateSupportPct,
             voteDuration
         );
     }
@@ -103,8 +65,8 @@ contract PlanningSuite is PlanningKitBase {
         uint256[] stakes,
         uint64 supportNeeded,
         uint64 minAcceptanceQuorum,
-        uint64 candidateSupportPct,
         uint64 minParticipationPct,
+        uint64 candidateSupportPct,
         uint64 voteDuration
     )
         public
@@ -115,9 +77,10 @@ contract PlanningSuite is PlanningKitBase {
         Kernel dao;
         ACL acl;
         Voting voting;
-        RangeVoting rangeVoting;
+        AddressBook addressBook;
+        Range rangeVoting;
 
-        (dao, acl, , , , voting) = createPlanningDAO(
+        (dao, acl, , , , voting, addressBook, rangeVoting) = createPlanningDAO(
             aragonId,
             token,
             holders,
@@ -132,16 +95,15 @@ contract PlanningSuite is PlanningKitBase {
             voteDuration
         );
 
+        addressBook.initialize();
+
         rangeVoting.initialize(
+            addressBook,
             token,
-            candidateSupportPct,
             minParticipationPct,
+            candidateSupportPct,
             voteDuration
         );
-
-        // TODO: Here we should initialize custom range Voting params:
-        // rangeVoting.initialize(token, 50 * PCT256, 0, 1 minutes);
-        // (currently handled upstream by PlanningKitBase)
 
         // burn support modification permission
         acl.createBurnedPermission(voting, voting.MODIFY_SUPPORT_ROLE());
