@@ -7,3 +7,6 @@
 console.log('Starting Planning Suite Kit... 🚀')
 
 // execute(buildCommand, { stdio: 'inherit' })
+
+const networks = require('@aragon/os/truffle-config').networks
+const getNetwork = require('../helpers/networks.js')

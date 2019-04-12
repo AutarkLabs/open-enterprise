@@ -53,7 +53,7 @@ const getVoteId = receipt => {
 const getAppProxy = (receipt, id) =>
   receipt.logs.filter(l => l.event == 'InstalledApp' && l.args.appId == id)[0]
     .args.appProxy
-const networks = require('@aragon/os/truffle-config').networks
+const networks = require('../truffle-config').networks
 const getNetwork = require('../helpers/networks.js')
 const getKitConfiguration = async networkName => {
   let arappFilename
@@ -63,6 +63,7 @@ const getKitConfiguration = async networkName => {
     arappFilename = 'arapp'
   }
   const arappFile = require('../' + arappFilename)
+  //console.log(arappFile, networkName)
   const ensAddress = arappFile.environments[networkName].registry
   const ens = getContract('ENS').at(ensAddress)
   const kitEnsName = arappFile.environments[networkName].appName
@@ -71,13 +72,13 @@ const getKitConfiguration = async networkName => {
     .at(await ens.resolver(namehash('aragonpm.eth')))
     .addr(namehash(kitEnsName))
   const repo = getContract('Repo').at(repoAddr)
+  console.log(repoAddr)
   const kitAddress = (await repo.getLatest())[1]
   const kitContractName = arappFile.path
     .split('/')
     .pop()
     .split('.sol')[0]
   const kit = getContract(kitContractName).at(kitAddress)
-
   return { ens, kit }
 }
 
@@ -85,7 +86,7 @@ contract('Planning Suite', accounts => {
   const ETH = '0x0'
   let ens
   let daoAddress, tokenAddress
-  
+
   let financeAddress, tokenManagerAddress, vaultAddress, votingAddress
   let finance, tokenManager, vault, voting
 
@@ -106,30 +107,31 @@ contract('Planning Suite', accounts => {
 
   before(async () => {
     // create Planning Suite Kit
+    console.log(networks)
     const networkName = (await getNetwork(networks)).name
-    if (networkName == 'devnet' || networkName == 'rpc') {
-      // transfer some ETH to other accounts
-      await web3.eth.sendTransaction({
-        from: owner,
-        to: holder20,
-        value: web3.toWei(10, 'ether'),
-      })
-      await web3.eth.sendTransaction({
-        from: owner,
-        to: holder29,
-        value: web3.toWei(10, 'ether'),
-      })
-      await web3.eth.sendTransaction({
-        from: owner,
-        to: holder51,
-        value: web3.toWei(10, 'ether'),
-      })
-      await web3.eth.sendTransaction({
-        from: owner,
-        to: nonHolder,
-        value: web3.toWei(10, 'ether'),
-      })
-    }
+    //if (networkName == 'devnet' || networkName == 'rpc') {
+    //  // transfer some ETH to other accounts
+    //  await web3.eth.sendTransaction({
+    //    from: owner,
+    //    to: holder20,
+    //    value: web3.toWei(10, 'ether'),
+    //  })
+    //  await web3.eth.sendTransaction({
+    //    from: owner,
+    //    to: holder29,
+    //    value: web3.toWei(10, 'ether'),
+    //  })
+    //  await web3.eth.sendTransaction({
+    //    from: owner,
+    //    to: holder51,
+    //    value: web3.toWei(10, 'ether'),
+    //  })
+    //  await web3.eth.sendTransaction({
+    //    from: owner,
+    //    to: nonHolder,
+    //    value: web3.toWei(10, 'ether'),
+    //  })
+    //}
     const configuration = await getKitConfiguration(networkName)
     ens = configuration.ens
     kit = configuration.kit
@@ -167,6 +169,8 @@ contract('Planning Suite', accounts => {
         } else if (creationStyle === 'separate') {
           // create Token
           const receiptToken = await kit.newToken(tokenName, tokenSymbol)
+          console.log('got here')
+          console.log(accounts)
           tokenAddress = getEventResult(receiptToken, 'DeployToken', 'token')
 
           // create Instance
@@ -176,7 +180,8 @@ contract('Planning Suite', accounts => {
             stakes,
             neededSupport,
             minimumAcceptanceQuorum,
-            votingTime
+            votingTime,
+            { from: accounts[0] }
           )
           daoAddress = getEventResult(receiptInstance, 'DeployInstance', 'dao')
         }

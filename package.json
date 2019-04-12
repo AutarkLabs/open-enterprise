@@ -27,7 +27,7 @@
     "dev:projects": "cd apps/projects && npm run dev",
     "dev:range": "cd apps/range-voting && npm run dev",
     "dev:rewards": "cd apps/rewards && npm run dev",
-    "devchain": "aragon devchain",
+    "devchain": "lerna run devchain --stream",
     "devchain:reset": "aragon devchain --reset",
     "deploy:apps:rpc": "lerna run --scope='@tps/apps-*' deploy:rpc --stream",
     "deploy:kit:rpc": "lerna run --scope='@tps/kits-*' deploy:kit:rpc --stream",

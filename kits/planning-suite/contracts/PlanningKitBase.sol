@@ -62,19 +62,19 @@ contract PlanningKitBase is BetaKitBase {
         )
     {
         // Create the base DAO with every aragon app
-        (dao, acl, finance, tokenManager, vault, voting) = createDAO(
+        (dao, acl, finance, tokenManager, vault, voting) = createNewDAO(
             aragonId,
             token,
             holders,
             stakes,
             maxTokens
         );
-        
+
         // Install the Planning Suite apps
         createTPSApps(dao, token, vault, voting);
 
         // Cleanup
-        doCleanup(dao, voting);
+        doCleanup(dao, voting, tokenManager);
 
         return (
             dao,
@@ -84,6 +84,105 @@ contract PlanningKitBase is BetaKitBase {
             vault,
             voting
         );
+    }
+
+    function createNewDAO(
+        string name,
+        MiniMeToken token,
+        address[] holders,
+        uint256[] stakes,
+        uint256 _maxTokens
+    )
+        internal
+        returns (
+            Kernel dao,
+            ACL acl,
+            Finance finance,
+            TokenManager tokenManager,
+            Vault vault,
+            Voting voting
+        )
+    {
+        require(holders.length == stakes.length);
+
+        dao = fac.newDAO(this);
+
+        acl = ACL(dao.acl());
+
+        acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
+
+        voting = Voting(
+            dao.newAppInstance(
+                appIds[uint8(Apps.Voting)],
+                latestVersionAppBase(appIds[uint8(Apps.Voting)])
+            )
+        );
+        emit InstalledApp(voting, appIds[uint8(Apps.Voting)]);
+
+        vault = Vault(
+            dao.newAppInstance(
+                appIds[uint8(Apps.Vault)],
+                latestVersionAppBase(appIds[uint8(Apps.Vault)]),
+                new bytes(0),
+                true
+            )
+        );
+        emit InstalledApp(vault, appIds[uint8(Apps.Vault)]);
+
+        finance = Finance(
+            dao.newAppInstance(
+                appIds[uint8(Apps.Finance)],
+                latestVersionAppBase(appIds[uint8(Apps.Finance)])
+            )
+        );
+        emit InstalledApp(finance, appIds[uint8(Apps.Finance)]);
+
+        tokenManager = TokenManager(
+            dao.newAppInstance(
+                appIds[uint8(Apps.TokenManager)],
+                latestVersionAppBase(appIds[uint8(Apps.TokenManager)])
+            )
+        );
+        emit InstalledApp(tokenManager, appIds[uint8(Apps.TokenManager)]);
+
+        // Required for initializing the Token Manager
+        token.changeController(tokenManager);
+
+        // permissions
+        acl.createPermission(tokenManager, voting, voting.CREATE_VOTES_ROLE(), voting);
+        acl.createPermission(voting, voting, voting.MODIFY_QUORUM_ROLE(), voting);
+        acl.createPermission(finance, vault, vault.TRANSFER_ROLE(), voting);
+        acl.createPermission(voting, finance, finance.CREATE_PAYMENTS_ROLE(), voting);
+        acl.createPermission(voting, finance, finance.EXECUTE_PAYMENTS_ROLE(), voting);
+        acl.createPermission(voting, finance, finance.MANAGE_PAYMENTS_ROLE(), voting);
+        acl.createPermission(voting, tokenManager, tokenManager.ASSIGN_ROLE(), voting);
+        acl.createPermission(voting, tokenManager, tokenManager.REVOKE_VESTINGS_ROLE(), voting);
+
+        // App inits
+        vault.initialize();
+        finance.initialize(vault, 30 days);
+        tokenManager.initialize(token, _maxTokens > 1, _maxTokens);
+
+        // Set up the token stakes
+        acl.createPermission(this, tokenManager, tokenManager.MINT_ROLE(), this);
+
+        for (uint256 i = 0; i < holders.length; i++) {
+            tokenManager.mint(holders[i], stakes[i]);
+        }
+
+        // EVMScriptRegistry permissions
+        EVMScriptRegistry reg = EVMScriptRegistry(acl.getEVMScriptRegistry());
+        acl.createPermission(voting, reg, reg.REGISTRY_ADD_EXECUTOR_ROLE(), voting);
+        acl.createPermission(voting, reg, reg.REGISTRY_MANAGER_ROLE(), voting);
+
+        // clean-up
+        //cleanupPermission(acl, voting, dao, dao.APP_MANAGER_ROLE());
+        //cleanupPermission(acl, voting, tokenManager, tokenManager.MINT_ROLE());
+
+        registerAragonID(name, dao);
+        emit DeployInstance(dao, token);
+
+        return (dao, acl, finance, tokenManager, vault, voting);
     }
 
     function createTPSApps(
@@ -102,7 +201,7 @@ contract PlanningKitBase is BetaKitBase {
         )
     {
         ACL acl = ACL(dao.acl());
-        
+
         addressBook = AddressBook(
             dao.newAppInstance(
                 planningAppIds[uint8(PlanningApps.AddressBook)],
@@ -220,8 +319,9 @@ contract PlanningKitBase is BetaKitBase {
         // rewards.initialize(vault);
     }
 
-    function doCleanup(Kernel dao, Voting voting) internal {
+    function doCleanup(Kernel dao, Voting voting, TokenManager tokenManager) internal {
         ACL acl = ACL(dao.acl());
         cleanupPermission(acl, voting, dao, dao.APP_MANAGER_ROLE());
+        cleanupPermission(acl, voting, tokenManager, tokenManager.MINT_ROLE());
     }
 }

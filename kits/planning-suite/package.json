@@ -4,6 +4,7 @@
   "description": "Planning Suite Kit for Aragon organizations",
   "scripts": {
     "abi:extract": "truffle-extract --output abi/ --keys abi",
+    "devchain": "aragon devchain --environment default --reset",
     "console": "truffle dev",
     "coverage": "./node_modules/@aragon/test-helpers/run-coverage.sh",
     "deploy:devnet": "truffle exec --network devnet scripts/deploy.js",

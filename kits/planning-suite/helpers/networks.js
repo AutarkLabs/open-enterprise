@@ -1,5 +1,5 @@
 const getNetworkNameFromId = (networks, id) => {
-  const defaultNetwork = 'devnet'
+  const defaultNetwork = 'rpc'
   for (let n in networks) {
     if (networks[n].network_id == id) {
       return n
@@ -17,6 +17,7 @@ const getNetworkId = () =>
 
 module.exports = async (networks) => {
   const id = await getNetworkId()
+  console.log('id: ', id)
   const name = getNetworkNameFromId(networks, id)
   return { id, name }
 }
