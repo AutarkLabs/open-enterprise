@@ -11,7 +11,7 @@ import {
 class NewIssueCuration extends React.Component {
   static propTypes = {
     /** array of issues to allocate bounties on */
-    issues: PropTypes.arrayOf(
+    selectedIssues: PropTypes.arrayOf(
       PropTypes.shape({
         id: PropTypes.string,
         title: PropTypes.string,
@@ -24,7 +24,11 @@ class NewIssueCuration extends React.Component {
     // onSubmit: PropTypes.func,
   }
   // TODO: Work with only id fields when possible and read rest of data from cache with a context helper
-  state = { curatedIssues: this.props.issues, issuesInput: '' }
+  state = {
+    selectedIssues: this.props.selectedIssues,
+    issuesInput: '',
+    description: '',
+  }
 
   // TODO: improve field checking for input errors and sanitize
   changeField = ({ target: { name, value } }) => {
@@ -44,6 +48,7 @@ class NewIssueCuration extends React.Component {
           input={
             <DescriptionInput
               name="description"
+              value={this.state.description}
               onChange={this.changeField}
               placeholder="Describe your proposal."
               value={this.state.description}
@@ -58,8 +63,9 @@ class NewIssueCuration extends React.Component {
               name="issues"
               placeholder="Select option..."
               onChange={this.changeField}
-              values={this.state.curatedIssues}
+              values={this.state.selectedIssues}
               input={this.state.issuesInput}
+              allOptions={this.props.allIssues}
             />
           }
         />
