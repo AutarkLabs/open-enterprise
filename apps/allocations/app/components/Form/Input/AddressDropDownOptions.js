@@ -16,10 +16,10 @@ const AddressDropDownOptions = ({
 }) => {
   const validated = addr => !input || validator(values, addr)
 
-  const addOption = ({ target: { value } }) => {
+  const addOption = () => {
     onChange({
-      target: validated(value.addr)
-        ? { name, value: [ ...values, value ] }
+      target: validated(input.addr)
+        ? { name, value: [ ...values, input ] }
         : { name: 'addressError', value: true }, // enable error msg if needed
     })
   }
@@ -31,16 +31,13 @@ const AddressDropDownOptions = ({
   }
 
   const onChangeInput = ({ target: { value } }) => {
-    const position = values.indexOf(v => v !== option)
-    const activeIndex = values[position]
-    console.log('hola', value, values, position, activeIndex)
 
     onChange({
       target: {
         name: 'addressBookInput',
         value: {
-          addr: value,
-          index: activeIndex,
+          addr: value.addr,
+          index: value.index,
         },
       },
     })
