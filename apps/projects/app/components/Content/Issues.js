@@ -59,8 +59,8 @@ class Issues extends React.PureComponent {
   selectedIssuesArray = () =>
     Object.keys(this.state.selectedIssues).map(id => this.state.selectedIssues[id])
 
-  handleCurateIssues = () => {
-    this.props.onCurateIssues(this.selectedIssuesArray())
+  handleCurateIssues = issuesFiltered => () => {
+    this.props.onCurateIssues(this.selectedIssuesArray(), issuesFiltered)
     // this is called from ActionMenu, on selected Issues -
     // return to default state where nothing is selected
     this.setState({ selectedIssues: [], allSelected: false })
@@ -235,12 +235,11 @@ class Issues extends React.PureComponent {
       />
       <ActionsMenu enabled={Object.keys(this.state.selectedIssues).length > 0}>
         <ContextMenuItem
-          onClick={this.handleCurateIssues}
+          onClick={this.handleCurateIssues(issuesFiltered)}
           style={{ display: 'flex', alignItems: 'flex-start' }}
         >
-          <div>{/*}
+          <div>
             <IconCurate color={theme.textTertiary} />
-    */}
           </div>
           <ActionLabel>Curate Issues</ActionLabel>
         </ContextMenuItem>

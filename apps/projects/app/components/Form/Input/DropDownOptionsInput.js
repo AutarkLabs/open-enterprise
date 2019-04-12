@@ -55,6 +55,7 @@ class DropDownOptionsInput extends React.Component {
       target: { name, value: this.props.values.splice(index, 1) },
     })
     this.clearState()
+
   }
 
   onChangeInput = ({ target: { value } }) => {
