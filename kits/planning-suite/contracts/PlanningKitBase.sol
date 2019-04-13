@@ -8,7 +8,7 @@ import "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
 import "@tps/apps-address-book/contracts/AddressBook.sol";
 import "@tps/apps-allocations/contracts/Allocations.sol";
 import "@tps/apps-projects/contracts/Projects.sol";
-import { RangeVoting as Range } from "@tps/apps-range-voting/contracts/RangeVoting.sol";
+import { RangeVoting } from "@tps/apps-range-voting/contracts/RangeVoting.sol";
 // import { RewardsCore as Rewards } from "@tps/apps-rewards/contracts/RewardsCore.sol";
 
 
@@ -21,7 +21,7 @@ contract PlanningKitBase is BetaKitBase {
     mapping (address => address) tokenCache;
 
     // ensure alphabetic order
-    enum PlanningApps { AddressBook, Allocations, Projects, Range } // TODO: Add Rewards here
+    enum PlanningApps { AddressBook, Allocations, Projects, RangeVoting } // TODO: Add Rewards here
 
     // TODO: Do we need events here? (we have 2 inherited from betakitbase)
     event DeployInstance(address dao, address indexed token);
@@ -202,7 +202,7 @@ contract PlanningKitBase is BetaKitBase {
             // AddressBook addressBook,
             // Allocations allocations,
             // Projects projects,
-            // Range rangeVoting
+            // RangeVoting rangeVoting
             // Rewards rewards
         // )
     {
@@ -232,13 +232,13 @@ contract PlanningKitBase is BetaKitBase {
         );
         emit InstalledApp(projects, planningAppIds[uint8(PlanningApps.Projects)]);
 
-        Range rangeVoting = Range(
+        RangeVoting rangeVoting = RangeVoting(
             dao.newAppInstance(
-                planningAppIds[uint8(PlanningApps.Range)],
-                latestVersionAppBase(planningAppIds[uint8(PlanningApps.Range)])
+                planningAppIds[uint8(PlanningApps.RangeVoting)],
+                latestVersionAppBase(planningAppIds[uint8(PlanningApps.RangeVoting)])
             )
         );
-        emit InstalledApp(rangeVoting, planningAppIds[uint8(PlanningApps.Range)]);
+        emit InstalledApp(rangeVoting, planningAppIds[uint8(PlanningApps.RangeVoting)]);
 
         // rewards = Rewards(
         //     dao.newAppInstance(
@@ -262,7 +262,7 @@ contract PlanningKitBase is BetaKitBase {
         AddressBook addressBook,
         Allocations allocations,
         Projects projects,
-        Range rangeVoting,
+        RangeVoting rangeVoting,
         // Rewards rewards,
         Voting voting
         ) internal
@@ -307,7 +307,7 @@ contract PlanningKitBase is BetaKitBase {
         AddressBook addressBook,
         Allocations allocations,
         Projects projects,
-        Range rangeVoting,
+        RangeVoting rangeVoting,
         // Rewards rewards,
         MiniMeToken token,
         Vault vault
