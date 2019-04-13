@@ -61,11 +61,12 @@ contract PlanningKitBase is BetaKitBase {
             // Voting voting
         )
     {
+        TokenManager tokenManager;
         Vault vault;
         Voting voting;
         // Create the base DAO with every aragon app
         // (dao, acl, finance, tokenManager, vault, voting) = createNewDAO(
-        (dao, vault, voting) = createNewDAO(
+        (dao, tokenManager, vault, voting) = createNewDAO(
             aragonId,
             token,
             holders,
@@ -77,7 +78,7 @@ contract PlanningKitBase is BetaKitBase {
         createTPSApps(dao, token, vault, voting);
 
         // Cleanup
-        // doCleanup(dao, voting, tokenManager);
+        doCleanup(dao, tokenManager, voting);
 
         return (
             dao//,
@@ -101,7 +102,7 @@ contract PlanningKitBase is BetaKitBase {
             Kernel dao,
             // ACL acl,
             // Finance finance,
-            // TokenManager tokenManager,
+            TokenManager tokenManager,
             Vault vault,
             Voting voting
         )
@@ -178,15 +179,11 @@ contract PlanningKitBase is BetaKitBase {
         acl.createPermission(voting, reg, reg.REGISTRY_ADD_EXECUTOR_ROLE(), voting);
         acl.createPermission(voting, reg, reg.REGISTRY_MANAGER_ROLE(), voting);
 
-        // clean-up
-        cleanupPermission(acl, voting, dao, dao.APP_MANAGER_ROLE());
-        cleanupPermission(acl, voting, tokenManager, tokenManager.MINT_ROLE());
-
         registerAragonID(name, dao);
         emit DeployInstance(dao, token);
 
         // return (dao, /*acl,*/ finance, tokenManager, vault, voting);
-        return (dao, vault, voting);
+        return (dao, tokenManager, vault, voting);
     }
 
     function createTPSApps(
@@ -206,16 +203,16 @@ contract PlanningKitBase is BetaKitBase {
     {
         ACL acl = ACL(dao.acl());
 
-        // AddressBook addressBook = AddressBook(
-        //     dao.newAppInstance(
-        //         planningAppIds[uint8(PlanningApps.AddressBook)],
-        //         latestVersionAppBase(planningAppIds[uint8(PlanningApps.AddressBook)]),
-        //         // TODO: check what are this extra params:
-        //         new bytes(0),
-        //         true
-        //     )
-        // );
-        // emit InstalledApp(addressBook, planningAppIds[uint8(PlanningApps.AddressBook)]);
+        AddressBook addressBook = AddressBook(
+            dao.newAppInstance(
+                planningAppIds[uint8(PlanningApps.AddressBook)],
+                latestVersionAppBase(planningAppIds[uint8(PlanningApps.AddressBook)]),
+                // TODO: check what are this extra params:
+                new bytes(0),
+                true
+            )
+        );
+        emit InstalledApp(addressBook, planningAppIds[uint8(PlanningApps.AddressBook)]);
 
         // allocations = Allocations(
         //     dao.newAppInstance(
@@ -323,7 +320,7 @@ contract PlanningKitBase is BetaKitBase {
         // rewards.initialize(vault);
     }
 
-    function doCleanup(Kernel dao, Voting voting, TokenManager tokenManager) internal {
+    function doCleanup(Kernel dao, TokenManager, tokenManager, Voting voting) internal {
         ACL acl = ACL(dao.acl());
         cleanupPermission(acl, voting, dao, dao.APP_MANAGER_ROLE());
         cleanupPermission(acl, voting, tokenManager, tokenManager.MINT_ROLE());
