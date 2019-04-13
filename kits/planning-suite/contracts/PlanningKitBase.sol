@@ -78,7 +78,7 @@ contract PlanningKitBase is BetaKitBase {
         createTPSApps(dao, token, vault, voting);
 
         // Cleanup
-        doCleanup(dao, voting);
+        // doCleanup(dao, voting);
 
         return (
             dao//,
@@ -108,6 +108,7 @@ contract PlanningKitBase is BetaKitBase {
         )
     {
         require(holders.length == stakes.length);
+        address root = msg.sender;
 
         dao = fac.newDAO(this);
 
@@ -155,7 +156,8 @@ contract PlanningKitBase is BetaKitBase {
         // permissions
         acl.createPermission(tokenManager, voting, voting.CREATE_VOTES_ROLE(), voting);
         acl.createPermission(voting, voting, voting.MODIFY_QUORUM_ROLE(), voting);
-        acl.createPermission(finance, vault, vault.TRANSFER_ROLE(), voting);
+        // acl.createPermission(finance, vault, vault.TRANSFER_ROLE(), voting);
+        acl.createPermission(root, vault, vault.TRANSFER_ROLE(), this);
         acl.createPermission(voting, finance, finance.CREATE_PAYMENTS_ROLE(), voting);
         acl.createPermission(voting, finance, finance.EXECUTE_PAYMENTS_ROLE(), voting);
         acl.createPermission(voting, finance, finance.MANAGE_PAYMENTS_ROLE(), voting);
@@ -249,10 +251,10 @@ contract PlanningKitBase is BetaKitBase {
         // Handle permissions creation
         // acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
         handleTPSPermissions(dao, addressBook, allocations, projects, rangeVoting, /*rewards,*/ voting);
-        // handleVaultPermissions(acl, projects, /*rewards,*/ vault);
+        handleVaultPermissions(acl, projects, /*rewards,*/ vault);
 
         // Initialize the Planning Suite apps
-        // initTPSApps(addressBook, allocations, projects, rangeVoting, /*rewards,*/ token, vault);
+        initTPSApps(addressBook, allocations, projects, rangeVoting, /*rewards,*/ token, vault);
     }
 
     function handleTPSPermissions(
@@ -275,18 +277,18 @@ contract PlanningKitBase is BetaKitBase {
         // // Projects permissions:
         // acl.createPermission(voting, projects, projects.ADD_BOUNTY_ROLE(), root);
         // acl.createPermission(ANY_ENTITY, projects, projects.ADD_REPO_ROLE(), root);
-        // acl.createPermission(ANY_ENTITY, projects, projects.CHANGE_SETTINGS_ROLE(), root);
+        // // acl.createPermission(ANY_ENTITY, projects, projects.CHANGE_SETTINGS_ROLE(), root);
         // acl.createPermission(rangeVoting, projects, projects.CURATE_ISSUES_ROLE(), root);
-        // acl.createPermission(ANY_ENTITY, projects, projects.REMOVE_REPO_ROLE(), root);
-        // acl.createPermission(ANY_ENTITY, projects, projects.TASK_ASSIGNMENT_ROLE(), root);
+        // // acl.createPermission(ANY_ENTITY, projects, projects.REMOVE_REPO_ROLE(), root);
+        // // acl.createPermission(ANY_ENTITY, projects, projects.TASK_ASSIGNMENT_ROLE(), root);
         // acl.createPermission(ANY_ENTITY, projects, projects.WORK_REVIEW_ROLE(), root);
 
-        // // Range-voting permissions
-        // acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.CREATE_VOTES_ROLE(), root);
-        // acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.ADD_CANDIDATES_ROLE(), root);
-        // acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.MODIFY_PARTICIPATION_ROLE(), root);
+        // Range-voting permissions
+        acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.CREATE_VOTES_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.ADD_CANDIDATES_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.MODIFY_PARTICIPATION_ROLE(), root);
 
-        // // Allocations permissions:
+        // Allocations permissions:
         // acl.createPermission(ANY_ENTITY, allocations, allocations.START_PAYOUT_ROLE(), root);
         // acl.createPermission(rangeVoting, allocations, allocations.SET_DISTRIBUTION_ROLE(), root);
         // acl.createPermission(ANY_ENTITY, allocations, allocations.EXECUTE_PAYOUT_ROLE(), root);
@@ -296,10 +298,7 @@ contract PlanningKitBase is BetaKitBase {
     }
 
     function handleVaultPermissions(ACL acl, Projects projects, /*Rewards rewards,*/ Vault vault) internal {
-        address root = msg.sender;
-
         // Vault permissions
-        acl.createPermission(root, vault, vault.TRANSFER_ROLE(), this);
         acl.grantPermission(projects, vault, vault.TRANSFER_ROLE());
         // acl.grantPermission(rewards, vault, vault.TRANSFER_ROLE());
     }
@@ -315,9 +314,9 @@ contract PlanningKitBase is BetaKitBase {
         ) internal
     {
         addressBook.initialize();
-        projects.initialize(registry, vault);
-        rangeVoting.initialize(addressBook, token, 50 * PCT256, 0, 1 minutes);
-        allocations.initialize(addressBook);
+        // projects.initialize(registry, vault);
+        // rangeVoting.initialize(addressBook, token, 50 * PCT256, 0, 1 minutes);
+        // allocations.initialize(addressBook);
         // rewards.initialize(vault);
     }
 
