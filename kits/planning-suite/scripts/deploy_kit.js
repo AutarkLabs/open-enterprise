@@ -173,7 +173,7 @@ module.exports = async (
     ) {
       log('Deploying Planning apps in local network')
       await newRepo(apm, 'address-book', owner, 'AddressBook')
-      await newRepo(apm, 'allocations', owner, 'Allocation')
+      await newRepo(apm, 'allocations', owner, 'Allocations')
       await newRepo(apm, 'projects', owner, 'Projects')
       await newRepo(apm, 'range-voting', owner, 'RangeVoting')
       // await newRepo(apm, 'rewards', owner, 'Rewards')

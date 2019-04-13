@@ -53,16 +53,19 @@ contract PlanningKitBase is BetaKitBase {
     )
         internal
         returns (
-            Kernel dao,
-            ACL acl,
-            Finance finance,
-            TokenManager tokenManager,
-            Vault vault,
-            Voting voting
+            Kernel dao//,
+            // ACL acl,
+            // Finance finance,
+            // TokenManager tokenManager,
+            // Vault vault,
+            // Voting voting
         )
     {
+        Vault vault;
+        Voting voting;
         // Create the base DAO with every aragon app
-        (dao, acl, finance, tokenManager, vault, voting) = createNewDAO(
+        // (dao, acl, finance, tokenManager, vault, voting) = createNewDAO(
+        (dao, vault, voting) = createNewDAO(
             aragonId,
             token,
             holders,
@@ -74,15 +77,15 @@ contract PlanningKitBase is BetaKitBase {
         createTPSApps(dao, token, vault, voting);
 
         // Cleanup
-        doCleanup(dao, voting, tokenManager);
+        // doCleanup(dao, voting, tokenManager);
 
         return (
-            dao,
-            acl,
-            finance,
-            tokenManager,
-            vault,
-            voting
+            dao//,
+            // acl,
+            // finance,
+            // tokenManager,
+            // // vault,
+            // voting
         );
     }
 
@@ -96,9 +99,9 @@ contract PlanningKitBase is BetaKitBase {
         internal
         returns (
             Kernel dao,
-            ACL acl,
-            Finance finance,
-            TokenManager tokenManager,
+            // ACL acl,
+            // Finance finance,
+            // TokenManager tokenManager,
             Vault vault,
             Voting voting
         )
@@ -107,7 +110,7 @@ contract PlanningKitBase is BetaKitBase {
 
         dao = fac.newDAO(this);
 
-        acl = ACL(dao.acl());
+        ACL acl = ACL(dao.acl());
 
         acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
 
@@ -129,7 +132,7 @@ contract PlanningKitBase is BetaKitBase {
         );
         emit InstalledApp(vault, appIds[uint8(Apps.Vault)]);
 
-        finance = Finance(
+        Finance finance = Finance(
             dao.newAppInstance(
                 appIds[uint8(Apps.Finance)],
                 latestVersionAppBase(appIds[uint8(Apps.Finance)])
@@ -137,7 +140,7 @@ contract PlanningKitBase is BetaKitBase {
         );
         emit InstalledApp(finance, appIds[uint8(Apps.Finance)]);
 
-        tokenManager = TokenManager(
+        TokenManager tokenManager = TokenManager(
             dao.newAppInstance(
                 appIds[uint8(Apps.TokenManager)],
                 latestVersionAppBase(appIds[uint8(Apps.TokenManager)])
@@ -176,13 +179,14 @@ contract PlanningKitBase is BetaKitBase {
         acl.createPermission(voting, reg, reg.REGISTRY_MANAGER_ROLE(), voting);
 
         // clean-up
-        //cleanupPermission(acl, voting, dao, dao.APP_MANAGER_ROLE());
-        //cleanupPermission(acl, voting, tokenManager, tokenManager.MINT_ROLE());
+        cleanupPermission(acl, voting, dao, dao.APP_MANAGER_ROLE());
+        cleanupPermission(acl, voting, tokenManager, tokenManager.MINT_ROLE());
 
         registerAragonID(name, dao);
         emit DeployInstance(dao, token);
 
-        return (dao, acl, finance, tokenManager, vault, voting);
+        // return (dao, /*acl,*/ finance, tokenManager, vault, voting);
+        return (dao, vault, voting);
     }
 
     function createTPSApps(
@@ -192,50 +196,50 @@ contract PlanningKitBase is BetaKitBase {
         Voting voting
         )
         internal
-        returns (
-            AddressBook addressBook,
-            Allocations allocations,
-            Projects projects,
-            Range rangeVoting
+        // returns ()
+            // AddressBook addressBook,
+            // Allocations allocations,
+            // Projects projects,
+            // Range rangeVoting
             // Rewards rewards
-        )
+        // )
     {
         ACL acl = ACL(dao.acl());
 
-        addressBook = AddressBook(
-            dao.newAppInstance(
-                planningAppIds[uint8(PlanningApps.AddressBook)],
-                latestVersionAppBase(planningAppIds[uint8(PlanningApps.AddressBook)]),
-                // TODO: check what are this extra params:
-                new bytes(0),
-                true
-            )
-        );
-        emit InstalledApp(addressBook, planningAppIds[uint8(PlanningApps.AddressBook)]);
+        // AddressBook addressBook = AddressBook(
+        //     dao.newAppInstance(
+        //         planningAppIds[uint8(PlanningApps.AddressBook)],
+        //         latestVersionAppBase(planningAppIds[uint8(PlanningApps.AddressBook)]),
+        //         // TODO: check what are this extra params:
+        //         new bytes(0),
+        //         true
+        //     )
+        // );
+        // emit InstalledApp(addressBook, planningAppIds[uint8(PlanningApps.AddressBook)]);
 
-        allocations = Allocations(
-            dao.newAppInstance(
-                planningAppIds[uint8(PlanningApps.Allocations)],
-                latestVersionAppBase(planningAppIds[uint8(PlanningApps.Allocations)])
-            )
-        );
-        emit InstalledApp(allocations, planningAppIds[uint8(PlanningApps.Allocations)]);
+        // allocations = Allocations(
+        //     dao.newAppInstance(
+        //         planningAppIds[uint8(PlanningApps.Allocations)],
+        //         latestVersionAppBase(planningAppIds[uint8(PlanningApps.Allocations)])
+        //     )
+        // );
+        // emit InstalledApp(allocations, planningAppIds[uint8(PlanningApps.Allocations)]);
 
-        projects = Projects(
-            dao.newAppInstance(
-                planningAppIds[uint8(PlanningApps.Projects)],
-                latestVersionAppBase(planningAppIds[uint8(PlanningApps.Projects)])
-            )
-        );
-        emit InstalledApp(projects, planningAppIds[uint8(PlanningApps.Projects)]);
+        // projects = Projects(
+        //     dao.newAppInstance(
+        //         planningAppIds[uint8(PlanningApps.Projects)],
+        //         latestVersionAppBase(planningAppIds[uint8(PlanningApps.Projects)])
+        //     )
+        // );
+        // emit InstalledApp(projects, planningAppIds[uint8(PlanningApps.Projects)]);
 
-        rangeVoting = Range(
-            dao.newAppInstance(
-                planningAppIds[uint8(PlanningApps.Range)],
-                latestVersionAppBase(planningAppIds[uint8(PlanningApps.Range)])
-            )
-        );
-        emit InstalledApp(rangeVoting, planningAppIds[uint8(PlanningApps.Range)]);
+        // rangeVoting = Range(
+        //     dao.newAppInstance(
+        //         planningAppIds[uint8(PlanningApps.Range)],
+        //         latestVersionAppBase(planningAppIds[uint8(PlanningApps.Range)])
+        //     )
+        // );
+        // emit InstalledApp(rangeVoting, planningAppIds[uint8(PlanningApps.Range)]);
 
         // rewards = Rewards(
         //     dao.newAppInstance(
@@ -246,12 +250,12 @@ contract PlanningKitBase is BetaKitBase {
         // emit InstalledApp(rewards, planningAppIds[uint8(PlanningApps.Rewards)]);
 
         // Handle permissions creation
-        acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
-        handleTPSPermissions(acl, addressBook, allocations, projects, rangeVoting, /*rewards,*/ voting);
-        handleVaultPermissions(acl, projects, /*rewards,*/ vault);
+        // acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
+        // handleTPSPermissions(acl, addressBook, allocations, projects, rangeVoting, /*rewards,*/ voting);
+        // handleVaultPermissions(acl, projects, /*rewards,*/ vault);
 
         // Initialize the Planning Suite apps
-        initTPSApps(addressBook, allocations, projects, rangeVoting, /*rewards,*/ token, vault);
+        // initTPSApps(addressBook, allocations, projects, rangeVoting, /*rewards,*/ token, vault);
     }
 
     function handleTPSPermissions(

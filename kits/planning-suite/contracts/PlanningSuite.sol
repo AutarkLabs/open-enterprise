@@ -107,11 +107,12 @@ contract PlanningSuite is PlanningKitBase {
 
         MiniMeToken token = popTokenCache(msg.sender);
         Kernel dao;
-        ACL acl;
-        Voting voting;
+        // ACL acl;
+        // Voting voting;
         // RangeVoting rangeVoting;
 
-        (dao, acl, , , , voting) = createPlanningDAO(
+        // (dao, acl, , , , voting) = createPlanningDAO(
+        (dao/*, , , , voting*/) = createPlanningDAO(
             aragonId,
             token,
             holders,
@@ -119,20 +120,20 @@ contract PlanningSuite is PlanningKitBase {
             uint256(-1)
         );
 
-        voting.initialize(
-            token,
-            supportNeeded,
-            minAcceptanceQuorum,
-            voteDuration
-        );
+        // voting.initialize(
+        //     token,
+        //     supportNeeded,
+        //     minAcceptanceQuorum,
+        //     voteDuration
+        // );
 
         // TODO: Here we should initialize custom range Voting params:
         // rangeVoting.initialize(token, 50 * PCT256, 0, 1 minutes);
         // (currently handled upstream by PlanningKitBase)
 
         // burn support modification permission
-        acl.createBurnedPermission(voting, voting.MODIFY_SUPPORT_ROLE());
+        // acl.createBurnedPermission(voting, voting.MODIFY_SUPPORT_ROLE());
 
-        cleanupPermission(acl, voting, acl, acl.CREATE_PERMISSIONS_ROLE());
+        // cleanupPermission(acl, voting, acl, acl.CREATE_PERMISSIONS_ROLE());
     }
 }
