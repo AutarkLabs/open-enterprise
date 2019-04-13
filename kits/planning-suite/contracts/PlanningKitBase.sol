@@ -320,7 +320,7 @@ contract PlanningKitBase is BetaKitBase {
         // rewards.initialize(vault);
     }
 
-    function doCleanup(Kernel dao, TokenManager, tokenManager, Voting voting) internal {
+    function doCleanup(Kernel dao, TokenManager tokenManager, Voting voting) internal {
         ACL acl = ACL(dao.acl());
         cleanupPermission(acl, voting, dao, dao.APP_MANAGER_ROLE());
         cleanupPermission(acl, voting, tokenManager, tokenManager.MINT_ROLE());
