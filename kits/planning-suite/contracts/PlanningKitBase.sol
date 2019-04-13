@@ -66,7 +66,7 @@ contract PlanningKitBase is BetaKitBase {
         Voting voting;
         // Create the base DAO with every aragon app
         // (dao, acl, finance, tokenManager, vault, voting) = createNewDAO(
-        (dao, tokenManager, vault, voting) = createNewDAO(
+        (dao, vault, voting) = createNewDAO(
             aragonId,
             token,
             holders,
@@ -78,7 +78,7 @@ contract PlanningKitBase is BetaKitBase {
         createTPSApps(dao, token, vault, voting);
 
         // Cleanup
-        doCleanup(dao, tokenManager, voting);
+        doCleanup(dao, voting);
 
         return (
             dao//,
@@ -102,7 +102,7 @@ contract PlanningKitBase is BetaKitBase {
             Kernel dao,
             // ACL acl,
             // Finance finance,
-            TokenManager tokenManager,
+            // TokenManager tokenManager,
             Vault vault,
             Voting voting
         )
@@ -174,6 +174,9 @@ contract PlanningKitBase is BetaKitBase {
             tokenManager.mint(holders[i], stakes[i]);
         }
 
+        // Clean right now since the mint role is not needed anymore
+        cleanupPermission(acl, voting, tokenManager, tokenManager.MINT_ROLE());
+
         // EVMScriptRegistry permissions
         EVMScriptRegistry reg = EVMScriptRegistry(acl.getEVMScriptRegistry());
         acl.createPermission(voting, reg, reg.REGISTRY_ADD_EXECUTOR_ROLE(), voting);
@@ -183,7 +186,7 @@ contract PlanningKitBase is BetaKitBase {
         emit DeployInstance(dao, token);
 
         // return (dao, /*acl,*/ finance, tokenManager, vault, voting);
-        return (dao, tokenManager, vault, voting);
+        return (dao, vault, voting);
     }
 
     function createTPSApps(
@@ -206,37 +209,34 @@ contract PlanningKitBase is BetaKitBase {
         AddressBook addressBook = AddressBook(
             dao.newAppInstance(
                 planningAppIds[uint8(PlanningApps.AddressBook)],
-                latestVersionAppBase(planningAppIds[uint8(PlanningApps.AddressBook)]),
-                // TODO: check what are this extra params:
-                new bytes(0),
-                true
+                latestVersionAppBase(planningAppIds[uint8(PlanningApps.AddressBook)])
             )
         );
         emit InstalledApp(addressBook, planningAppIds[uint8(PlanningApps.AddressBook)]);
 
-        // allocations = Allocations(
-        //     dao.newAppInstance(
-        //         planningAppIds[uint8(PlanningApps.Allocations)],
-        //         latestVersionAppBase(planningAppIds[uint8(PlanningApps.Allocations)])
-        //     )
-        // );
-        // emit InstalledApp(allocations, planningAppIds[uint8(PlanningApps.Allocations)]);
+        Allocations allocations = Allocations(
+            dao.newAppInstance(
+                planningAppIds[uint8(PlanningApps.Allocations)],
+                latestVersionAppBase(planningAppIds[uint8(PlanningApps.Allocations)])
+            )
+        );
+        emit InstalledApp(allocations, planningAppIds[uint8(PlanningApps.Allocations)]);
 
-        // projects = Projects(
-        //     dao.newAppInstance(
-        //         planningAppIds[uint8(PlanningApps.Projects)],
-        //         latestVersionAppBase(planningAppIds[uint8(PlanningApps.Projects)])
-        //     )
-        // );
-        // emit InstalledApp(projects, planningAppIds[uint8(PlanningApps.Projects)]);
+        Projects projects = Projects(
+            dao.newAppInstance(
+                planningAppIds[uint8(PlanningApps.Projects)],
+                latestVersionAppBase(planningAppIds[uint8(PlanningApps.Projects)])
+            )
+        );
+        emit InstalledApp(projects, planningAppIds[uint8(PlanningApps.Projects)]);
 
-        // rangeVoting = Range(
-        //     dao.newAppInstance(
-        //         planningAppIds[uint8(PlanningApps.Range)],
-        //         latestVersionAppBase(planningAppIds[uint8(PlanningApps.Range)])
-        //     )
-        // );
-        // emit InstalledApp(rangeVoting, planningAppIds[uint8(PlanningApps.Range)]);
+        Range rangeVoting = Range(
+            dao.newAppInstance(
+                planningAppIds[uint8(PlanningApps.Range)],
+                latestVersionAppBase(planningAppIds[uint8(PlanningApps.Range)])
+            )
+        );
+        emit InstalledApp(rangeVoting, planningAppIds[uint8(PlanningApps.Range)]);
 
         // rewards = Rewards(
         //     dao.newAppInstance(
@@ -248,7 +248,7 @@ contract PlanningKitBase is BetaKitBase {
 
         // Handle permissions creation
         // acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
-        // handleTPSPermissions(acl, addressBook, allocations, projects, rangeVoting, /*rewards,*/ voting);
+        handleTPSPermissions(dao, addressBook, allocations, projects, rangeVoting, /*rewards,*/ voting);
         // handleVaultPermissions(acl, projects, /*rewards,*/ vault);
 
         // Initialize the Planning Suite apps
@@ -256,7 +256,7 @@ contract PlanningKitBase is BetaKitBase {
     }
 
     function handleTPSPermissions(
-        ACL acl,
+        Kernel dao,
         AddressBook addressBook,
         Allocations allocations,
         Projects projects,
@@ -265,30 +265,31 @@ contract PlanningKitBase is BetaKitBase {
         Voting voting
         ) internal
     {
+        ACL acl = ACL(dao.acl());
         address root = msg.sender;
 
         // AddressBook permissions:
         acl.createPermission(ANY_ENTITY, addressBook, addressBook.ADD_ENTRY_ROLE(), root);
         acl.createPermission(ANY_ENTITY, addressBook, addressBook.REMOVE_ENTRY_ROLE(), root);
 
-        // Projects permissions:
-        acl.createPermission(voting, projects, projects.ADD_BOUNTY_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, projects, projects.ADD_REPO_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, projects, projects.CHANGE_SETTINGS_ROLE(), root);
-        acl.createPermission(rangeVoting, projects, projects.CURATE_ISSUES_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, projects, projects.REMOVE_REPO_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, projects, projects.TASK_ASSIGNMENT_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, projects, projects.WORK_REVIEW_ROLE(), root);
+        // // Projects permissions:
+        // acl.createPermission(voting, projects, projects.ADD_BOUNTY_ROLE(), root);
+        // acl.createPermission(ANY_ENTITY, projects, projects.ADD_REPO_ROLE(), root);
+        // acl.createPermission(ANY_ENTITY, projects, projects.CHANGE_SETTINGS_ROLE(), root);
+        // acl.createPermission(rangeVoting, projects, projects.CURATE_ISSUES_ROLE(), root);
+        // acl.createPermission(ANY_ENTITY, projects, projects.REMOVE_REPO_ROLE(), root);
+        // acl.createPermission(ANY_ENTITY, projects, projects.TASK_ASSIGNMENT_ROLE(), root);
+        // acl.createPermission(ANY_ENTITY, projects, projects.WORK_REVIEW_ROLE(), root);
 
-        // Range-voting permissions
-        acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.CREATE_VOTES_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.ADD_CANDIDATES_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.MODIFY_PARTICIPATION_ROLE(), root);
+        // // Range-voting permissions
+        // acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.CREATE_VOTES_ROLE(), root);
+        // acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.ADD_CANDIDATES_ROLE(), root);
+        // acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.MODIFY_PARTICIPATION_ROLE(), root);
 
-        // Allocations permissions:
-        acl.createPermission(ANY_ENTITY, allocations, allocations.START_PAYOUT_ROLE(), root);
-        acl.createPermission(rangeVoting, allocations, allocations.SET_DISTRIBUTION_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, allocations, allocations.EXECUTE_PAYOUT_ROLE(), root);
+        // // Allocations permissions:
+        // acl.createPermission(ANY_ENTITY, allocations, allocations.START_PAYOUT_ROLE(), root);
+        // acl.createPermission(rangeVoting, allocations, allocations.SET_DISTRIBUTION_ROLE(), root);
+        // acl.createPermission(ANY_ENTITY, allocations, allocations.EXECUTE_PAYOUT_ROLE(), root);
 
         // Rewards Permissions
         // acl.createPermission(ANY_ENTITY, rewards, rewards.ADD_REWARD_ROLE(), root);
@@ -320,9 +321,9 @@ contract PlanningKitBase is BetaKitBase {
         // rewards.initialize(vault);
     }
 
-    function doCleanup(Kernel dao, TokenManager tokenManager, Voting voting) internal {
+    function doCleanup(Kernel dao, Voting voting) internal {
         ACL acl = ACL(dao.acl());
         cleanupPermission(acl, voting, dao, dao.APP_MANAGER_ROLE());
-        cleanupPermission(acl, voting, tokenManager, tokenManager.MINT_ROLE());
+        
     }
 }
