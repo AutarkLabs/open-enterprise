@@ -48,6 +48,7 @@ export const getIssuesGQL = repos => {
       id
       ... on Repository {
         issues(
+          states: [OPEN],
           first: ` + repos[repoId].fetch + ', ' +
           (repos[repoId].showMore ? 'after: "' + repos[repoId].endCursor + '", ' : '') +
           `
