@@ -91,7 +91,7 @@ class Settings extends React.Component {
     let bountyDeadline = bountyDeadlinesMul[bountyDeadlineD] * bountyDeadlineT
     // flatten expLevels
     const expLevelsDesc = expLevels.map(l => fromUtf8(l.name))
-    let expLevelsMul = expLevels.map(l => web3.toHex(l.mul))
+    let expLevelsMul = expLevels.map(l => web3.toHex(l.mul) * 100)
     console.log('Submitting new Settings: ', {
       lvlMul:expLevelsMul,
       lvl: expLevelsDesc,
