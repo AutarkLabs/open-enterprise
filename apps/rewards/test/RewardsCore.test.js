@@ -189,6 +189,15 @@ contract('Rewards App', accounts => {
       assert.strictEqual(rewardInformation[10], true, 'reward is claimed')
     })
 
+    it('gets total rewards claimed', async () => {
+      const totalClaimed = await app.getTotalClaimed(rewardToken.address)
+      assert.strictEqual(
+        web3.fromWei(totalClaimed.toNumber(),'ether'),
+        '2',
+        'total claims incorrect: should be 2 Eth'
+      )
+    })
+
     it('creates a merit reward that started in the past', async () => {
       let blockNumber = await getBlockNumber()
       meritRewardIds = rewardAdded(
