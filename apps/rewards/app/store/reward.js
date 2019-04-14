@@ -11,6 +11,25 @@ export async function onRewardAdded({ rewards = [] }, { rewardId }) {
   return { rewards }
 }
 
+export async function onRewardClaimed({ rewards = [], totalClaims = {} }, { rewardId }) {
+  rewards[rewardId] = await getRewardById(rewardId)
+
+  const { tokenAddresses = [], amounts = [] } = totalClaims
+
+  tokenIndex = tokenAddresses.findIndex(token => token === rewards[rewardId].rewardToken)
+
+  if (tokenIndex === -1) {
+    tokenAddresses.push(rewards[rewardId].rewardToken)
+    amounts.push(await getTotalClaimed(rewards[rewardId].rewardToken))
+  }
+  else {
+    amounts[tokenIndex] = await getTotalClaimed(rewards[rewardId].rewardToken)
+  }
+
+  return { rewards, totalClaims:{ tokenAddresses, amounts } }
+
+}
+
 /////////////////////////////////////////
 /*      rewards helper functions       */
 /////////////////////////////////////////
@@ -42,4 +61,8 @@ const getRewardById = async rewardId => {
       }))
     )
     .toPromise()
+}
+
+const getTotalClaimed = async tokenAddress => {
+  return await app.call('getTotalClaimed', tokenAddress)
 }
