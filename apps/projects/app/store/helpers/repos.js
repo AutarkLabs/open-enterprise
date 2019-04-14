@@ -156,6 +156,8 @@ export const loadReposFromQueue = async (state) => {
       async repoId => {
         const { repos } = await syncRepos(state, { repoId })
         return repos[0]
+      })
+    )
     // don't put a removed repo in state as `null`
     return loadedRepoQueue.filter(repo => !!repo)
   }
