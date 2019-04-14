@@ -203,6 +203,10 @@ contract Projects is IsContract, AragonApp {
 // Set state functions
 ///////////////////////
 
+
+    /**
+     * @notice Update settings for the Projects app 
+     */
     function changeBountySettings(
         uint256[] _expMultipliers,
         bytes32[] _expLevels,
