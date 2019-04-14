@@ -49,6 +49,7 @@ class Issue extends React.PureComponent {
  
   render() {
     const {
+      id,
       work,
       workStatus,
       title,

@@ -47,9 +47,12 @@ export const getIssuesGQL = repos => {
     q += 'node' + i + ': node(id: "' + repoId + `") {
       id
       ... on Repository {
-        issues(last: ` +
-          repos[repoId].fetch +
-        `) {
+        issues(
+          first: ` + repos[repoId].fetch + ', ' +
+          (repos[repoId].showMore ? 'after: "' + repos[repoId].endCursor + '", ' : '') +
+          `
+         orderBy: {field: CREATED_AT, direction: DESC}
+        ) {
           totalCount
           pageInfo {
             endCursor
@@ -138,5 +141,3 @@ export const GET_REPOSITORIES = gql`
    }
  }
 `
-
-

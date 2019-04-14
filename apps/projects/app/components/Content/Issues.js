@@ -43,6 +43,7 @@ class Issues extends React.PureComponent {
     currentIssue: {},
     showIssueDetail: false,
     downloadedRepos: {},
+    downloadedIssues: [],
     issuesPerCall: 100,
   }
 
@@ -411,38 +412,34 @@ class Issues extends React.PureComponent {
     Object.keys(data).forEach(nodeName => {
       const repo = data[nodeName]
 
-      const fetchNextTime = repo.issues.nodes.length < repo.issues.totalCount ?
-        repo.issues.nodes.length
-        :
-        repo.issues.totalCount
-
       downloadedRepos[repo.id] = {
         downloadedCount: repo.issues.nodes.length,
         totalCount: repo.issues.totalCount,
-        fetch: fetchNextTime,
+        fetch: this.state.issuesPerCall,
+        hasNextPage: repo.issues.pageInfo.hasNextPage,
+        endCursor: repo.issues.pageInfo.endCursor,
       }
-
       downloadedIssues = downloadedIssues.concat(...repo.issues.nodes)
     })
+
+    if (this.state.downloadedIssues.length > 0) {
+      downloadedIssues = downloadedIssues.concat(this.state.downloadedIssues)
+    }
 
     return { downloadedIssues, downloadedRepos }
   }
 
-  showMoreIssues = downloadedRepos => {
+  showMoreIssues = (downloadedIssues, downloadedRepos) => {
     let newDownloadedRepos = { ...downloadedRepos }
 
     Object.keys(downloadedRepos).forEach(repoId => {
-      newDownloadedRepos[repoId].fetch += this.state.issuesPerCall
+      newDownloadedRepos[repoId].showMore = downloadedRepos[repoId].hasNextPage
     })
-
-    this.setState({ downloadedRepos: newDownloadedRepos })
+    this.setState({
+      downloadedRepos: newDownloadedRepos,
+      downloadedIssues,
+    })
   }
-
-  getFetchCountFromState = repoId =>
-    repoId in this.state.downloadedRepos ?
-      this.state.downloadedRepos[repoId].fetch
-      :
-      this.state.issuesPerCall
 
   render() {
     if (this.props.status === STATUS.INITIAL) {
@@ -472,17 +469,32 @@ class Issues extends React.PureComponent {
 
     const currentSorter = this.generateSorter()
 
-    // build params for GQL query, { repoId: { how many issues to fetch }}
-    const reposQueryParams = {}
-    if (Object.keys(filters.projects).length > 0) {
-      Object.keys(filters.projects).forEach(repoId => {
-        reposQueryParams[repoId] = { fetch: this.getFetchCountFromState(repoId) }
+    // build params for GQL query, each repo to fetch has number of items to download,
+    // and a cursor in there are 100+ issues and "Show More" was clicked.
+    let reposQueryParams = {}
+
+    if (Object.keys(this.state.downloadedRepos).length > 0) {
+      Object.keys(this.state.downloadedRepos).forEach(repoId => {
+        if (this.state.downloadedRepos[repoId].hasNextPage)
+          reposQueryParams[repoId] = this.state.downloadedRepos[repoId]
       })
     } else {
-      projects.forEach(project => {
-        const repoId = project.data._repo
-        reposQueryParams[repoId] = { fetch: this.getFetchCountFromState(repoId) }
-      })
+      if (Object.keys(filters.projects).length > 0) {
+        Object.keys(filters.projects).forEach(repoId => {
+          reposQueryParams[repoId] = {
+            fetch: this.state.issuesPerCall,
+            showMore: false,
+          }
+        })
+      } else {
+        projects.forEach(project => {
+          const repoId = project.data._repo
+          reposQueryParams[repoId] = {
+            fetch: this.state.issuesPerCall,
+            showMore: false,
+          }
+        })
+      }
     }
 
     // previous GET_ISSUES is deliberately left in place for reference
@@ -498,11 +510,12 @@ class Issues extends React.PureComponent {
           if (data && data.node0) {
             // first, flatten data structure into array of issues
             const { downloadedIssues, downloadedRepos } = this.flattenIssues(data)
+
             // then apply filtering
             const issuesFiltered = this.applyFilters(downloadedIssues)
             // then determine whether any shown repos have more issues to fetch
             const moreIssuesToShow = Object.keys(downloadedRepos).filter(repoId =>
-              downloadedRepos[repoId].totalCount > downloadedRepos[repoId].downloadedCount
+              downloadedRepos[repoId].hasNextPage
             ).length > 0
 
             return (
@@ -537,9 +550,9 @@ class Issues extends React.PureComponent {
                   <div style={{ textAlign: 'center' }}>
                     {moreIssuesToShow && (
                       <Button
-                        mode="strong"
-                        onClick={() => this.showMoreIssues(downloadedRepos, downloadedIssues)}>
-                        Show More Issues
+                        mode="secondary"
+                        onClick={() => this.showMoreIssues(downloadedIssues, downloadedRepos)}>
+                        Show More
                       </Button>
                     )}
                   </div>
