@@ -21,10 +21,14 @@ const Finance = artifacts.require('Finance')
 const TokenManager = artifacts.require('TokenManager')
 const Vault = artifacts.require('Vault')
 const Voting = artifacts.require('Voting')
+const AddressBook = artifacts.require('AddressBook')
+const RangeVoting = artifacts.require('RangeVoting')
+const Allocations = artifacts.require('Allocations')
+const Projects = artifacts.require('Projects')
 
 const apps = ['finance', 'token-manager', 'vault', 'voting']
 const appIds = apps.map(app =>
-  namehash(require(`@aragon/apps-${app}/arapp`).environments.default.appName)
+  namehash(`${app}.aragonpm.eth`)
 )
 
 const planningApps = [
@@ -35,7 +39,7 @@ const planningApps = [
   'rewards',
 ]
 const planningAppIds = planningApps.map(app =>
-  namehash(require(`@tps/apps-${app}/arapp`).environments.default.appName)
+  namehash(`${app}.aragonpm.eth`)
 )
 
 const getContract = name => artifacts.require(name)
@@ -107,6 +111,8 @@ contract('Planning Suite', accounts => {
 
   const neededSupport = pct16(50)
   const minimumAcceptanceQuorum = pct16(20)
+  const minParticipationPct = pct16(50)
+  const candidateSupportPct = pct16(10)
   const votingTime = 60
 
   before(async () => {
@@ -154,7 +160,7 @@ contract('Planning Suite', accounts => {
         tokenName = 'AutarkToken'
         tokenSymbol = 'autark'
 
-        const holders = [holder20, holder29, holder51]
+        const holders = [owner, holder29, holder51]
         const stakes = [20e18, 29e18, 51e18]
 
         if (creationStyle === 'single') {
@@ -182,7 +188,7 @@ contract('Planning Suite', accounts => {
             aragonId,
             holders,
             stakes,
-            neededSupport,
+            candidateSupportPct,
             minimumAcceptanceQuorum,
             votingTime,
             owner,
@@ -198,30 +204,43 @@ contract('Planning Suite', accounts => {
             votingTime,
             { from: owner }
           )
-          daoAddress = getEventResult(receiptInstance, 'DeployInstance', 'dao')
+
+          
+
         }
-
-        // // generated apps
-        // financeAddress = getAppProxy(receiptInstance, appIds[0])
-        // finance = await Finance.at(financeAddress)
-        // tokenManagerAddress = getAppProxy(receiptInstance, appIds[1])
-        // tokenManager = TokenManager.at(tokenManagerAddress)
-        // vaultAddress = getAppProxy(receiptInstance, appIds[2])
-        // vault = await Vault.at(vaultAddress)
-        // votingAddress = getAppProxy(receiptInstance, appIds[3])
-        // voting = Voting.at(votingAddress)
-
-        // // generated apps
-        // addressBookAddress = getAppProxy(receiptInstance, planningAppIds[0])
-        // addressBook = await AddressBook.at(addressBookAddress)
-        // allocationsAddress = getAppProxy(receiptInstance, planningAppIds[1])
-        // allocations = Allocations.at(allocationsAddress)
-        // projectsAddress = getAppProxy(receiptInstance, planningAppIds[2])
-        // projects = await Projects.at(projectsAddress)
-        // rangeVotingAddress = getAppProxy(receiptInstance, planningAppIds[3])
-        // rangeVoting = RangeVoting.at(rangeVotingAddress)
-        // rewardsAddress = getAppProxy(receiptInstance, planningAppIds[4])
-        // rewards = Rewards.at(rewardsAddress)
+        // generated apps from dao creation
+        financeAddress = getAppProxy(receiptInstance, appIds[0])
+        finance = await Finance.at(financeAddress)
+        tokenManagerAddress = getAppProxy(receiptInstance, appIds[1])
+        tokenManager = TokenManager.at(tokenManagerAddress)
+        votingAddress = getAppProxy(receiptInstance, appIds[3])
+        voting = Voting.at(votingAddress)
+        daoAddress = getEventResult(receiptInstance, 'DeployInstance', 'dao')
+        vaultAddress = getEventResult(receiptInstance, 'DeployInstance', 'vault')
+        votingAddress = getEventResult(receiptInstance, 'DeployInstance', 'voting')
+        tokenAddress = getEventResult(receiptInstance, 'DeployInstance', 'token')
+        console.log('Dao Created', daoAddress)
+        // Add PlanningSuite Apps to DAO
+        receiptInstance = await kit.newPlanningApps(
+          daoAddress,
+          vaultAddress,
+          votingAddress,
+          tokenAddress,
+          candidateSupportPct,
+          minParticipationPct,
+          votingTime
+        )
+        // generated apps from TPS
+        vaultAddress = getAppProxy(receiptInstance, appIds[2])
+        vault = await Vault.at(vaultAddress)
+        addressBookAddress = getAppProxy(receiptInstance, planningAppIds[0])
+        addressBook = await AddressBook.at(addressBookAddress)
+        allocationsAddress = getAppProxy(receiptInstance, planningAppIds[1])
+        allocations = Allocations.at(allocationsAddress)
+        projectsAddress = getAppProxy(receiptInstance, planningAppIds[2])
+        projects = await Projects.at(projectsAddress)
+        rangeVotingAddress = getAppProxy(receiptInstance, planningAppIds[3])
+        rangeVoting = RangeVoting.at(rangeVotingAddress)
       })
 
       it('creates and initializes a DAO with its Token', async () => {
@@ -252,7 +271,7 @@ contract('Planning Suite', accounts => {
         )
       })
 
-      xit('has initialized all apps', async () => {
+      it('has initialized all apps', async () => {
         assert.isTrue(await finance.hasInitialized(), 'finance not initialized')
         assert.isTrue(
           await tokenManager.hasInitialized(),
@@ -262,7 +281,7 @@ contract('Planning Suite', accounts => {
         assert.isTrue(await voting.hasInitialized(), 'voting not initialized')
       })
 
-      xit('has correct permissions', async () => {
+      it('has correct permissions', async () => {
         const dao = await getContract('Kernel').at(daoAddress)
         const acl = await getContract('ACL').at(await dao.acl())
 
@@ -400,7 +419,7 @@ contract('Planning Suite', accounts => {
         )
       })
 
-      xit("fails creating a DAO if holders and stakes don't match", async () => {
+      it("fails creating a DAO if holders and stakes don't match", async () => {
         const aragonId = 'bad-planning-suite-dao'
         const tokenName = 'BadAutarkToken'
         const tokenSymbol = 'BDT'

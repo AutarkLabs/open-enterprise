@@ -16,7 +16,6 @@ const planningApps = [
   'allocations',
   'projects',
   'range-voting',
-  // 'rewards',
 ]
 const planningAppIds = planningApps.map(app => namehash(`${app}.aragonpm.eth`))
 
