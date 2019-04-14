@@ -374,7 +374,7 @@ class FundIssues extends React.Component {
               <div>
                 <br />
                 <Info.Action title="Insufficient Token Balance">
-              Please either mint more tokens or stake fewer tokens against these bounties
+                  Please either mint more tokens or stake fewer tokens against these issues.
                 </Info.Action>
               </div>
             ) : null
