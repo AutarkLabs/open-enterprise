@@ -80,15 +80,15 @@ const Project = ({
             </Text>
           </Text>
         </StatsContainer>
-        <StatsContainer>
-          <IconContributors />
-          <Text weight="bold">
+        {/* <StatsContainer> */}
+        {/* <IconContributors /> */}
+        {/* <Text weight="bold">
             {contributors}{' '}
             <Text weight="normal" color={theme.textSecondary}>
               {parseInt(contributors) === 1 ? 'contributor' : 'contributors'}
             </Text>
-          </Text>
-        </StatsContainer>
+          </Text> */}
+        {/* </StatsContainer> */}
       </StyledStats>
     </StyledCard>
   )
@@ -152,7 +152,7 @@ const CardDescription = styled.div`
 
 const StyledStats = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-content: stretch;
 `
 

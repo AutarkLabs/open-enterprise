@@ -35,12 +35,13 @@ const repoData = id => `{
               }
             }
           }
-        collaborators {
-          totalCount
         }
       }
-    }
 }`
+
+// collaborators {
+//   totalCount
+// }
 
 let graphQLClient = null
 
@@ -79,7 +80,8 @@ const loadRepoData = (id) => {
           name: node.name,
           url: node.url,
           description: description,
-          collaborators: node.collaborators.totalCount,
+          // TODO: disabled for now (apparently needs push permission on the repo to work)
+          collaborators: 0, //node.collaborators.totalCount,
           commits,
         }
         return resolve({ _repo, _owner, index: response.index, metadata, repoRemoved: false })
