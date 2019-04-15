@@ -37,7 +37,7 @@ class Issues extends React.PureComponent {
       experiences: {},
       statuses: {},
     },
-    sortBy: { what: 'Name', direction: -1 },
+    sortBy: { what: 'Creation Date', direction: -1 },
     textFilter: '',
     reload: false,
     currentIssue: {},
