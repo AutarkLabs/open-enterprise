@@ -1,5 +1,5 @@
 import { initializeTokens, vaultLoadBalance } from './token'
-import { onRewardAdded } from './reward'
+import { onRewardAdded, onRewardClaimed } from './reward'
 import { addressesEqual } from '../utils/web3-utils'
 import { INITIALIZATION_TRIGGER } from './'
 export const handleEvent = async (state, event, settings) => {

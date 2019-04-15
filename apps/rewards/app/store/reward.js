@@ -11,22 +11,26 @@ export async function onRewardAdded({ rewards = [] }, { rewardId }) {
   return { rewards }
 }
 
-export async function onRewardClaimed({ rewards = [], totalClaims = {} }, { rewardId }) {
+export async function onRewardClaimed({ rewards = [], claims = {} }, { rewardId }) {
   rewards[rewardId] = await getRewardById(rewardId)
 
-  const { tokenAddresses = [], amounts = [] } = totalClaims
+  let { claimsByToken = [], totalClaimsMade = 0 } = claims
 
-  tokenIndex = tokenAddresses.findIndex(token => token === rewards[rewardId].rewardToken)
+  const tokenIndex = claimsByToken.findIndex(token => token.address === rewards[rewardId].rewardToken)
 
   if (tokenIndex === -1) {
-    tokenAddresses.push(rewards[rewardId].rewardToken)
-    amounts.push(await getTotalClaimed(rewards[rewardId].rewardToken))
+    claimsByToken.push({
+      address: rewards[rewardId].rewardToken,
+      amount: await getTotalClaimed(rewards[rewardId].rewardToken)
+    })
   }
   else {
-    amounts[tokenIndex] = await getTotalClaimed(rewards[rewardId].rewardToken)
+    claimsByToken[tokenIndex].amount = await getTotalClaimed(rewards[rewardId].rewardToken)
   }
 
-  return { rewards, totalClaims:{ tokenAddresses, amounts } }
+  totalClaimsMade = await getTotalClaims()
+
+  return { rewards, claims:{ claimsByToken, totalClaimsMade } }
 
 }
 
@@ -64,5 +68,15 @@ const getRewardById = async rewardId => {
 }
 
 const getTotalClaimed = async tokenAddress => {
-  return await app.call('getTotalClaimed', tokenAddress)
+  return await app.call('getTotalAmountClaimed', tokenAddress)
+    .pipe(
+      first(),
+    ).toPromise()
+}
+
+const getTotalClaims = async () => {
+  return await app.call('totalClaimsEach')
+    .pipe(
+      first(),
+    ).toPromise()
 }

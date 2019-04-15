@@ -138,7 +138,8 @@ async function newBalanceEntry(
       address: tokenAddress,
       amount: balance,
       verified:
-      isTokenVerified(tokenAddress, settings.network.type) ||
+      // TODO reenable isTOkenVerified for deployment
+      //isTokenVerified(tokenAddress, settings.network.type) ||
       addressesEqual(tokenAddress, settings.ethToken.address),
     },
     tokenDecimals,

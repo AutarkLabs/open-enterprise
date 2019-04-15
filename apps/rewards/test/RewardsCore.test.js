@@ -189,13 +189,18 @@ contract('Rewards App', accounts => {
       assert.strictEqual(rewardInformation[10], true, 'reward is claimed')
     })
 
-    it('gets total rewards claimed', async () => {
-      const totalClaimed = await app.getTotalClaimed(rewardToken.address)
+    it('gets total rewards amount claimed', async () => {
+      const totalClaimed = await app.getTotalAmountClaimed(rewardToken.address)
       assert.strictEqual(
         web3.fromWei(totalClaimed.toNumber(),'ether'),
         '2',
         'total claims incorrect: should be 2 Eth'
       )
+    })
+
+    it('gets total claims made', async () => {
+      const totalClaims = await app.totalClaimsEach()
+      assert.strictEqual(totalClaims.toString(), '2', 'total individual claims should be 2')
     })
 
     it('creates a merit reward that started in the past', async () => {

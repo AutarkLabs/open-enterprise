@@ -30,7 +30,8 @@ contract RewardsCore is IsContract, AragonApp {
         mapping (address => uint) timeClaimed;
     }
 
-    mapping (address => uint) totalClaimed;
+    mapping (address => uint) totalClaimedAmount;
+    uint public totalClaimsEach;
 
     Reward[] rewards;
     Vault public vault;
@@ -59,7 +60,8 @@ contract RewardsCore is IsContract, AragonApp {
         }
         require(vault.balance(reward.rewardToken) > rewardAmount, "Vault does not have enough funds to cover this reward");
         vault.transfer(reward.rewardToken, msg.sender, rewardAmount);
-        totalClaimed[reward.rewardToken] += rewardAmount;
+        totalClaimedAmount[reward.rewardToken] += rewardAmount;
+        totalClaimsEach++;
         emit RewardClaimed(_rewardID);
     }
 
@@ -100,10 +102,10 @@ contract RewardsCore is IsContract, AragonApp {
         //rewardAmount = 50;
     }
 
-    function getTotalClaimed(address _token)
+    function getTotalAmountClaimed(address _token)
     external view isInitialized returns (uint totalAmountClaimed)
     {
-        totalAmountClaimed = totalClaimed[_token];
+        totalAmountClaimed = totalClaimedAmount[_token];
     }
 
     /**
