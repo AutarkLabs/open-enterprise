@@ -1,6 +1,6 @@
 {
   "name": "Address Book",
   "description": "Manage contacts",
-  "start_url": "dist/index.html",
-  "script": "dist/script.js"
+  "start_url": "index.html",
+  "script": "script.js"
 }
