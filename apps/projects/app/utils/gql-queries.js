@@ -4,7 +4,7 @@ export const GET_ISSUES = gql`
   query getIssuesForRepos($reposIds: [ID!]!) {
     nodes(ids: $reposIds) {
       ... on Repository {
-        issues(last: 100) {
+        issues(last: 100, states:open) {
           nodes {
             number
             id
@@ -15,13 +15,12 @@ export const GET_ISSUES = gql`
               id
               name
             }
-            labels(first: 30) {
+            labels(first: 50) {
               totalCount
               edges {
                 node {
                   id
                   name
-                  description
                   color
                 }
               }
@@ -48,7 +47,7 @@ export const getIssuesGQL = repos => {
       id
       ... on Repository {
         issues(
-          states: [OPEN],
+          states:OPEN,
           first: ` + repos[repoId].fetch + ', ' +
           (repos[repoId].showMore ? 'after: "' + repos[repoId].endCursor + '", ' : '') +
           `
@@ -69,13 +68,12 @@ export const getIssuesGQL = repos => {
               id
               name
             }
-            labels(first: 30) {
+            labels(first: 50) {
               totalCount
               edges {
                 node {
                   id
                   name
-                  description
                   color
                 }
               }
