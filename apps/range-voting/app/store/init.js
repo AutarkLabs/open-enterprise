@@ -8,7 +8,7 @@ export const initStore = (addressBookAddress) => {
 
   const initialState = {
     votes: [],
-    entries: {}
+    entries: [],
   }
   return app.store(
     async (state, event) => {
