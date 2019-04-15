@@ -7,9 +7,10 @@
     },
     "rinkeby": {
       "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
-      "appName": "planning-suite.open.aragonpm.eth",
+      "appName": "planning-suite-staging.open.aragonpm.eth",
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
-      "network": "rinkeby"
+      "network": "rinkeby",
+      "address": "0x5af1f5b515bffa41ac0aedbae081adc6a6154d04"
     },
     "staging": {
       "registry": "0x98df287b6c145399aaa709692c8d308357bc085d",

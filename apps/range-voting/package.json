@@ -21,7 +21,7 @@
     "publish:patch": "aragon apm publish patch --files dist/",
     "deploy:rinkeby": "npm run publish:patch -- --environment rinkeby",
     "deploy:rpc": "npm run publish:patch -- --environment default",
-    "deploy:staging": "npm run publish:patch -- --environment staging",
+    "deploy:staging": "npm run publish:major -- --environment staging",
     "start": "aragon run",
     "sync-assets": "copy-aragon-ui-assets ./dist",
     "test:gas": "GAS_REPORTER=true npm test",

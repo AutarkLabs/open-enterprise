@@ -80,5 +80,7 @@ module.exports = async (
       minParticipationPct,
       votingTime
     )
+    console.log('Apps added')
+
 }
 
