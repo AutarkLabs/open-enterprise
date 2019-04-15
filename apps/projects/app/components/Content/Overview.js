@@ -37,7 +37,8 @@ const Overview = ({
       id={project.id}
       repoId={project.data._repo}
       commits={project.metadata.commits}
-      contributors={project.metadata.collaborators}
+      // TODO: Disabled for now
+      // contributors={project.metadata.collaborators}
       url={project.metadata.url}
       changeActiveIndex={changeActiveIndex}
     />
