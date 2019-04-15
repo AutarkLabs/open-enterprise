@@ -55,7 +55,7 @@ module.exports = {
       network_id: 15,
       host: 'localhost',
       port: 8545,
-      gas: 8.2e6,
+      gas: 6.7e6,
     },
     development: {
       host: 'localhost',
@@ -74,6 +74,7 @@ module.exports = {
     rinkeby: {
       network_id: 4,
       provider: providerForNetwork('rinkeby'),
+      gasPrice: 6000000000,
     },
     mainnet: {
       network_id: 1,

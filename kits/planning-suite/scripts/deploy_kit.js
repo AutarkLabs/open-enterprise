@@ -41,6 +41,7 @@ module.exports = async (
     kitContractName = kitName,
     network,
     verbose = true,
+    flattenContracts = false,
     returnKit = false,
   } = {}
 ) => {
@@ -50,7 +51,7 @@ module.exports = async (
     }
   }
 
-  log(`${kitName} in ${network} network with ENS ${ensAddress}`)
+  log(`${kitName} in ${network} network with ENS ${ensAddress} and owner ${owner}`)
 
   const kitEnsName = kitName + '.aragonpm.eth'
 
@@ -139,7 +140,7 @@ module.exports = async (
 
   log('Deployed Planning Suite Kit:', kit.address)
 
-  await logDeploy(kit)
+  await logDeploy(kit, {verbose})
 
   if (returnKit) {
     return kit
