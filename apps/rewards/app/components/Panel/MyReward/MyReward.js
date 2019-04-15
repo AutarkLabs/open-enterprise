@@ -116,7 +116,9 @@ class MyReward extends React.Component {
         {claimed ? (
           <Button mode="strong" wide onClick={this.onClosePanel}>Close</Button>
         ) : (
-          <Button mode="strong" wide onClick={this.onClaimReward}>Claim Reward</Button>
+          Date.now() > endDate ?
+            <Button mode="strong" wide onClick={this.onClaimReward}>Claim Reward</Button>
+            : null
         )}
       </div>
     )

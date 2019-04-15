@@ -197,6 +197,7 @@ class App extends React.Component {
   render() {
     const { panel, panelProps } = this.state
     const { network, balances } = this.props
+    console.log('props: ', this.props)
 
     return (
       <Root.Provider>
@@ -249,6 +250,8 @@ class App extends React.Component {
                 openDetails={this.openDetailsView}
                 network={network}
                 tokens={this.props.balances}
+                convertRates={this.state.convertRates}
+                claims={this.props.claims}
               />
             )}
 

@@ -31,6 +31,7 @@ import {
 } from './RewardsTables'
 import { Empty } from '../Card'
 import { provideNetwork } from '../../../../../shared/ui'
+import { MILLISECONDS_IN_A_SECOND } from '../../../../../shared/ui/utils'
 
 const averageRewardsTitles = [ 'My Unclaimed Rewards', 'Year to Date', 'Inception to Date' ]
 // TODO: these need to be actually calculated
@@ -43,24 +44,25 @@ const averageRewardsNumbers = [
 const calculateMyRewardsSummary = (rewards, balances, convertRates) => {
   console.log(rewards, balances, convertRates)
   return [
-    formatAvgAmount(
-      balances.reduce((balAcc, balance) => {
-        console.log('balAcc ', balAcc)
-        if (convertRates[balance.symbol]) {
-          return rewards.reduce((rewAcc,reward) => {
-            return (!reward.claimed && reward.rewardToken === balance.address)
-              ?
-              rewAcc + reward.userRewardAmount / Math.pow(10, balance.decimals) / convertRates[balance.symbol]
-              :
-              rewAcc
-          },0) + balAcc
-        }
-        else return balAcc
-      },0)
-      ,'+$', 'green'),
+    formatAvgAmount(calculateUnclaimedRewards(rewards, balances, convertRates),'+$', 'green'),
     formatAvgAmount(calculateAllRewards(rewards, balances, convertRates), '$'),
     formatAvgAmount(calculateYTDRewards(rewards, balances, convertRates), '$'),
   ]
+}
+
+const calculateUnclaimedRewards = (rewards, balances, convertRates) => {
+  return balances.reduce((balAcc, balance) => {
+    if (convertRates[balance.symbol]) {
+      return rewards.reduce((rewAcc,reward) => {
+        return (!reward.claimed && reward.rewardToken === balance.address)
+          ?
+          rewAcc + reward.userRewardAmount / Math.pow(10, balance.decimals) / convertRates[balance.symbol]
+          :
+          rewAcc
+      },0) + balAcc
+    }
+    else return balAcc
+  },0)
 }
 
 const calculateAllRewards = (rewards, balances, convertRates) => {
@@ -162,7 +164,7 @@ const MyRewardsWide = ({ claimed, rewards, openDetails, network, tokens }) => (
 
                 <Text size="normal" weight="bold">Claim</Text>
               </Button>) : <Text size="normal" weight="bold">Pending...</Text>
-          ) : Intl.DateTimeFormat().format(reward.timeClaimed)}
+          ) : Intl.DateTimeFormat().format(reward.timeClaimed * MILLISECONDS_IN_A_SECOND)}
         </TableCell>
         <TableCell>
           <AmountBadge style={{ margin: '0px', padding: '5px', paddingRight: '10px', paddingLeft: '10px', }}>
