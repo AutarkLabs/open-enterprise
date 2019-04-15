@@ -29,7 +29,6 @@ const Project = ({
   changeActiveIndex
 }) => {
   const removeProject = () => {
-    console.log('removeProject', repoId)
     onRemoveProject(repoId)
   }
 

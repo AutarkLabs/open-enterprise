@@ -354,7 +354,6 @@ class App extends React.PureComponent {
     const dateArray = new Array(issuesArray.length).fill(Date.now() + 8600)
     const booleanArray = new Array(issuesArray.length).fill(true)
 
-    console.log('Submit issues:', issuesArray)
     this.props.app.addBounties(
       idArray,
       numberArray,
@@ -517,7 +516,6 @@ class App extends React.PureComponent {
   }
 
   cancelBounties = id => {
-    console.log('closing')
     this.closePanel()
   }
 

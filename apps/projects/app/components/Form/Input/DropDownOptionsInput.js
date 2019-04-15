@@ -66,7 +66,6 @@ class DropDownOptionsInput extends React.Component {
 
   render() {
     const { values } = this.props
-    //console.log('RENDER', values)
     const multipleOptions = values.map((issue, index) => {
       return (
         <StyledOption key={issue.id}>

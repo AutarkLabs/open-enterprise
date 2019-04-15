@@ -27,6 +27,7 @@
     "@aragon/api": "1.0.0",
     "@aragon/apps-vault": "^4.0.0",
     "@aragon/ui": "0.32.0",
+    "@babel/polyfill": "^7.2.5",
     "@tps/ui": "^0.0.1",
     "apollo-boost": "^0.1.22",
     "axios": "^0.18.0",
