@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 import { Text, theme, unselectable } from '@aragon/ui'
 
-const FieldTitle = styled(Text.Block)`
+const FieldTitle = styled.label`
   ${unselectable};
   color: ${theme.textSecondary};
   text-transform: lowercase;

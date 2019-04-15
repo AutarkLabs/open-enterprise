@@ -5,7 +5,7 @@ import VotesTable from '../components/VotesTable'
 
 class Votes extends React.Component {
   render() {
-    const { votes, onSelectVote } = this.props
+    const { votes, onSelectVote, app } = this.props
     const openedVotes = votes.filter(({ open }) => open)
     const closedVotes = votes.filter(vote => !openedVotes.includes(vote))
     return (
@@ -38,6 +38,7 @@ class Votes extends React.Component {
               opened={false}
               votes={closedVotes}
               onSelectVote={onSelectVote}
+              app={app}
             />
           </VotesTableWrapper>
         )}

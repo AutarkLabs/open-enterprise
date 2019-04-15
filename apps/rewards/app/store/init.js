@@ -4,7 +4,7 @@ import { ETHER_TOKEN_FAKE_ADDRESS } from '../utils/token-utils'
 import { of } from './rxjs'
 
 export const initStore = (vaultAddress, network) => {
-  const vaultContract = app.external(vaultAddress, vaultAbi)
+  const vaultContract = app.external(vaultAddress, vaultAbi.abi)
 
   return app.store(
     async (state, event) => {
@@ -22,15 +22,12 @@ export const initStore = (vaultAddress, network) => {
             address: ETHER_TOKEN_FAKE_ADDRESS,
           },
         })
-        //console.log('initial state: ', initialState,'next: ', next)
         const nextState = { ...initialState, ...next }
         // Debug point
-        //console.log('[Rewards store]', nextState)
         return nextState
       } catch (err) {
         console.error('[Rewards script] initStore', event, err)
       }
-      // always return the state even unmodified
       return state
     },
     [

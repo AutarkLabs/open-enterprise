@@ -4,6 +4,7 @@ import {
   VOTE_STATUS_ONGOING,
   VOTE_STATUS_FAILED,
   VOTE_STATUS_SUCCESSFUL,
+  VOTE_STATUS_EXECUTED
 } from './vote-types'
 
 export const EMPTY_CALLSCRIPT = '0x00000001'
@@ -11,23 +12,23 @@ export const EMPTY_CALLSCRIPT = '0x00000001'
 export const getAccountVote = (account, voters) =>
   voters[account] || VOTE_ABSENT
 
-export const getVoteStatus = (vote, support, quorum) => {
-  if (vote.executed) {
-    return VOTE_STATUS_SUCCESSFUL
+export const getVoteStatus = (vote) => {
+  if (vote.data.executed) {
+    return VOTE_STATUS_EXECUTED
   }
-
-  const totalVotes = vote.yea + vote.nay
-  const hasSupport = vote.yea / totalVotes >= support
-  const hasMinQuorum = getQuorumProgress(vote) >= quorum
-
-  if (vote.open) {
-    return VOTE_STATUS_ONGOING
-  }
-
-  return hasSupport && hasMinQuorum
+  const hasMinParticipation = vote.quorumProgress >= vote.minParticipationPct
+  return hasMinParticipation
     ? VOTE_STATUS_SUCCESSFUL
     : VOTE_STATUS_FAILED
 }
 
-export const getQuorumProgress = ({ yea, totalVoters }) =>
-  safeDiv(yea, totalVoters)
+export const getQuorumProgress = ({ participationPct }) =>
+  participationPct
+
+export const getTotalSupport = ({ options }) => {
+  let totalSupport = 0
+  options.forEach(option => {
+    totalSupport = totalSupport + parseFloat(option.value, 10)
+  })
+  return totalSupport
+}

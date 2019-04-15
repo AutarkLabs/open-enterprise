@@ -375,13 +375,9 @@ contract PlanningSuite is BetaKitBase {
     ) internal
     {
         addressBook.initialize();
-        projects.initialize(registry, vault);
-        // TODO: new projects version:
-        // projects.initialize(registry, vault, "autark");
+        projects.initialize(registry, vault, "autark");
         rangeVoting.initialize(addressBook, token, minParticipationPct, candidateSupportPct, voteDuration * 1000);
-        allocations.initialize(addressBook);
-        // TODO: new allocations version:
-        // allocations.initialize(addressBook, vault);
+        allocations.initialize(addressBook, vault);
     }
 
     function handleTPSPermissions(

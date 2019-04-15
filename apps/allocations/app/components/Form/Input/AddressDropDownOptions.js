@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { IconRemove, theme, unselectable } from '@aragon/ui'
+import { Button, IconRemove, theme, unselectable } from '@aragon/ui'
 
 import AddressDropDown from './AddressDropDown'
 
@@ -14,16 +14,33 @@ const AddressDropDownOptions = ({
   validator,
   values,
 }) => {
-  const addOption = ({ target: { value } }) => {
+  const validated = addr => !input || validator(values, addr)
+
+  const addOption = () => {
     onChange({
-      target: validator(values, value.addr)
-        ? { name, value: [ ...values, value ] }
+      target: validated(input.addr)
+        ? { name, value: [ ...values, input ] }
         : { name: 'addressError', value: true }, // enable error msg if needed
     })
   }
-  const removeOption = option => {
+
+  const onRemoveOption = option => {
     // perform the change on the parent by using onChange prop without modifying value prop
-    onChange({ target: { name, value: values.filter(v => v !== option) } })
+    option &&
+      onChange({ target: { name, value: values.filter(v => v !== option) } })
+  }
+
+  const onChangeInput = ({ target: { value } }) => {
+
+    onChange({
+      target: {
+        name: 'addressBookInput',
+        value: {
+          addr: value.addr,
+          index: value.index,
+        },
+      },
+    })
   }
 
   const loadOptions = values.map((v, i) => (
@@ -31,7 +48,7 @@ const AddressDropDownOptions = ({
       <StyledLockedInput children={entities[v.index].data.name} />
       <IconContainer
         style={{ transform: 'scale(.8)' }}
-        onClick={() => removeOption(v)}
+        onClick={() => onRemoveOption(v)}
         title="Click to remove"
         children={<IconRemove />}
       />
@@ -39,19 +56,32 @@ const AddressDropDownOptions = ({
   ))
 
   return (
-    <div style={flexColumn}>
-      {loadOptions}
-      <StyledOption>
-        <AddressDropDown
-          activeItem={activeItem}
-          entities={entities}
-          name="addressBookInput"
-          onChange={addOption}
-          validator={validator}
-          values={values}
-          title={'Click to select an Address Book entry'}
-        />
-      </StyledOption>
+    <div style={{ paddingTop: '10px' }}>
+      <div style={flexColumn}>
+        {loadOptions}
+        <StyledOption>
+          <AddressDropDown
+            activeItem={activeItem}
+            entities={entities}
+            name="addressBookInput"
+            onChange={onChangeInput}
+            validator={validator}
+            values={values}
+            title={'Click to select an Address Book entry'}
+          />
+          <IconContainer
+            style={{ transform: 'scale(.8)' }}
+            children={<IconRemove />}
+          />
+        </StyledOption>
+      </div>
+      <StyledButton
+        compact
+        mode="secondary"
+        onClick={addOption}
+        children={'+ Add option'}
+        title={'Click to add'}
+      />
     </div>
   )
 }
@@ -67,6 +97,12 @@ AddressDropDownOptions.propTypes = {
 }
 
 const flexColumn = { display: 'flex', flexDirection: 'column' }
+
+const StyledButton = styled(Button)`
+  font-size: 15px;
+  margin-top: 10px;
+  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+`
 
 const StyledLockedInput = styled.div`
   box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.03);

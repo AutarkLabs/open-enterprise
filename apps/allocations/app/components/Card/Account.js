@@ -22,26 +22,15 @@ const Account = ({
   proxy,
   balance,
   description,
-  limit,
   network,
   onNewAllocation,
-  onManageParameters,
-  onExecutePayout,
   token,
   app,
 }) => {
   const newAllocation = () => {
-    onNewAllocation(proxy, description, id, limit)
+    onNewAllocation(proxy, description, id)
   }
 
-  const manageParameters = () => {
-    onManageParameters(proxy)
-  }
-
-  const executePayout = () => {
-    console.info('App.js: Executing Payout:')
-    app.runPayout(id)
-  }
   /*Need a better solution that this, should be handled in
   App.js using token manager once more tokens are supported */
   function translateToken(token) {
@@ -59,10 +48,6 @@ const Account = ({
           <ContextMenuItem onClick={newAllocation}>
             <IconAdd />
             <ActionLabel>New Allocation</ActionLabel>
-          </ContextMenuItem>
-          <ContextMenuItem onClick={executePayout}>
-            <IconFundraising />
-            <ActionLabel>Distribute Allocation</ActionLabel>
           </ContextMenuItem>
         </ContextMenu>
       </MenuContainer>
@@ -86,20 +71,8 @@ const Account = ({
             {' ' + BigNumber(balance)
               .div(ETH_DECIMALS)
               .dp(3)
-              .toString()}{' '}
-            {translatedToken}
-          </StatsValue>
-        </StyledStats>
-        <StyledStats>
-          <Text smallcaps color={theme.textSecondary}>
-            Limit
-          </Text>
-          <StatsValue>
-            {' ' + BigNumber(limit)
-              .div(ETH_DECIMALS)
-              .dp(3)
-              .toString()}{' '}
-            {translatedToken} / Allocation
+              .toString()}
+            <Text size="small">{' ETH'}</Text>
           </StatsValue>
         </StyledStats>
       </StatsContainer>
@@ -110,12 +83,9 @@ const Account = ({
 Account.propTypes = {
   proxy: PropTypes.string.isRequired,
   app: PropTypes.object.isRequired,
-  limit: PropTypes.string.isRequired, // We are receiving this as string, parseInt if needed
-  token: PropTypes.string.isRequired,
   balance: PropTypes.string.isRequired, // We are receiving this as string, parseInt if needed
   description: PropTypes.string.isRequired,
   onNewAllocation: PropTypes.func.isRequired,
-  onManageParameters: PropTypes.func.isRequired,
   network: PropTypes.object,
 }
 
@@ -123,13 +93,14 @@ const TitleContainer = styled.div`
   flex-grow: 1;
 `
 
-const StyledCard = styled(Card)`
-  height: 300px;
-  width: 300px;
+const StyledCard = styled.div`
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  padding: 12px;
+  height: 100%;
+  padding: 14px;
+  background: #ffffff;
+  border: 1px solid ${theme.contentBorder};
+  border-radius: 3px;
 `
 
 const MenuContainer = styled.div`
@@ -142,15 +113,15 @@ const ActionLabel = styled.span`
 `
 
 const CardTitle = styled(Text.Block).attrs({
-  size: 'xxlarge',
+  size: 'xlarge',
 })`
   text-align: center;
-  font-weight: bold;
   color: ${theme.textPrimary};
   display: block;
   max-height: 3em;
   line-height: 1.5em;
   overflow: hidden;
+  padding-top: 4px;
   text-overflow: ellipsis;
 `
 
@@ -159,6 +130,7 @@ const CardAddress = styled(Text.Block).attrs({
 })`
   display: flex;
   justify-content: center;
+  padding-top: 5px;
 `
 
 const IconContainer = styled.img.attrs({
@@ -172,16 +144,17 @@ const IconContainer = styled.img.attrs({
 
 const StatsContainer = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-content: stretch;
 `
 
 const StyledStats = styled.div`
   display: inline-block;
+  text-align: center;
 `
 
 const StatsValue = styled.p`
-  font-size: 14px;
+  font-size: 1.1em;
 `
 
 export default provideNetwork(Account)

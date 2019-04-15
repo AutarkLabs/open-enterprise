@@ -10,6 +10,7 @@ const AppLayout = styled.div`
 
 AppLayout.Header = styled.div`
   flex-shrink: 0;
+  border-bottom: 1px solid #E6E6E6;
 `
 
 AppLayout.ScrollWrapper = styled.div`

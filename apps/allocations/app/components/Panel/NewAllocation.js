@@ -13,7 +13,6 @@ import {
 } from '../Form'
 
 // TODO: Extract to shared
-const AVAILABLE_TOKENS = [ 'ETH', 'ANT', 'GIV', 'FTL', '🦄' ]
 const ALLOCATION_TYPES = [ 'Informational', 'Token Transfer' ]
 // const PAYOUT_TYPES = ['One-Time', 'Monthly']
 const INITIAL_STATE = {
@@ -28,7 +27,6 @@ const INITIAL_STATE = {
   allocationType: '',
   allocationTypeIndex: 1,
   amount: null,
-  balanceSetting: false,
   payoutToken: '',
   payoutTokenIndex: 0,
   payoutType: '',
@@ -40,9 +38,9 @@ const INITIAL_STATE = {
 
 const message = {
   addressError: 'All options must be addresses and cannot be duplicates.',
+  descriptionError: 'A description of the allocation is required.',
+  allocationError: 'Amount must be set.',
   addressSetting: 'Use address book for options',
-  allocationError: 'Amount must be more than zero and less than limit.',
-  balanceSetting: 'Must vote with entire balance',
   transferWarning:
     'This will create a Range Vote and after it closes, it will result in a financial transfer.',
 }
@@ -75,44 +73,43 @@ class NewAllocation extends React.Component {
       'userInputCandidates',
     ].includes(name)
     const resetAllocationsError = name === 'amount'
+    const resetDescriptionError = name === 'allocationDescription'
 
     // react chains the state changes asynchronously
     resetAddressError && this.setState({ addressError: false })
     resetAllocationsError && this.setState({ allocationError: false })
+    resetDescriptionError && this.setState({ descriptionError: false })
 
     this.setState({ [name]: value })
-    console.log('changeField', name, 'to', value)
   }
 
   // TODO: Manage dropdown to return a name and value as the rest of inputs
-  changeAllocationType = (index, items) => {
-    this.setState({
-      allocationError: false,
-      allocationTypeIndex: index,
-      allocationType: items[index],
-    })
-  }
+
   changePayoutToken = (index, items) => {
     this.setState({
       allocationError: false,
       payoutTokenIndex: index,
       payoutToken: items[index],
+      tokenAddress: this.props.balances[index].address
     })
   }
-
-  // TODO: Temporarily unused
-  // changePayoutType = (index, items) => {
-  //   this.setState({ payoutTypeIndex: index, payoutType: items[index] })
-  // }
 
   // TODO: fix contract to accept regular strings(informational vote)
   submitAllocation = () => {
     const { props, state } = this
+    const { addressBookInput, addressBookCandidates, addressSetting, userInput, userInputCandidates } = state
     const informational = state.allocationTypeIndex === 0
     const recurring = state.payoutTypeIndex !== 0
-    const candidates = state.addressSetting
-      ? state.addressBookCandidates
-      : state.userInputCandidates
+    let candidates
+    if (addressSetting) {
+      candidates = uniqueAddressValidation(addressBookCandidates, addressBookInput.addr) ?
+        [ addressBookInput, ...addressBookCandidates ] :
+        addressBookCandidates
+    } else {
+      candidates = uniqueAddressValidation(userInputCandidates, userInput.addr) ?
+        [ userInput, ...userInputCandidates ] :
+        userInputCandidates
+    }
     const allocation = {
       payoutId: this.props.id,
       informational: informational,
@@ -120,14 +117,18 @@ class NewAllocation extends React.Component {
       period: recurring ? 86400 * 31 : 0,
       balance: this.state.amount * 10e17,
       description: this.state.allocationDescription,
+      tokenAddress: this.state.tokenAddress,
     }
-    const overLimit = allocation.balance > props.limit
 
-    if (state.addressError || state.allocationError) {
+    if (state.addressError || state.allocationError || state.descriptionError) {
       return
     }
-    if (!informational && (overLimit || allocation.balance === 0)) {
+    if (!informational && allocation.balance === 0) {
       this.setState({ allocationError: true })
+      return
+    }
+    if(allocation.description === ''){
+      this.setState({ descriptionError: true })
       return
     }
     if (!candidates.length) {
@@ -145,18 +146,19 @@ class NewAllocation extends React.Component {
     const { props, state } = this
     const transferEnabled = state.allocationTypeIndex === 1
 
+    let availableTokens =  this.props.balances.map( balance => balance.symbol)
+
     const amountInput = {
       name: 'amount',
       value: state.amount || '',
       onChange: this.changeField,
       type: 'number',
       min: '0',
-      max: props.limit,
     }
 
     const amountDropDown = {
       name: 'token',
-      items: AVAILABLE_TOKENS,
+      items: availableTokens,
       active: state.payoutTokenIndex,
       onChange: this.changePayoutToken,
     }
@@ -165,7 +167,7 @@ class NewAllocation extends React.Component {
       <WarningMessage hasWarning={transferEnabled} type={'transferWarning'} />
     )
 
-    const errorMessages = [ 'allocationError', 'addressError' ].map((e, i) => (
+    const errorMessages = [ 'allocationError', 'addressError', 'descriptionError' ].map((e, i) => (
       <ErrorMessage key={i} hasError={state[e]} type={e} />
     ))
 
@@ -185,24 +187,7 @@ class NewAllocation extends React.Component {
       />
     )
 
-    const allocationTypeField = (
-      <FormField
-        required
-        separator
-        label="Allocation type"
-        input={
-          <DropDown
-            active={state.allocationTypeIndex}
-            items={ALLOCATION_TYPES}
-            name="allocationType"
-            onChange={this.changeAllocationType}
-          />
-        }
-      />
-    )
-
     const settingsInputs = [
-      { name: 'balanceSetting', visible: true },
       { name: 'addressSetting', visible: props.entities.length > 1 },
     ].map((s, i) => (
       <SettingsInput
@@ -214,7 +199,7 @@ class NewAllocation extends React.Component {
       />
     ))
 
-    const settingsField = (
+    const settingsField = props.entities.length > 1 && (
       <FormField
         label="Settings"
         input={<React.Fragment children={settingsInputs} />}
@@ -257,7 +242,7 @@ class NewAllocation extends React.Component {
         separator
         input={
           <AddressDropDownOptions
-            activeItem={state.addressBookInput.index}
+            activeItem={this.state.addressBookInput.index}
             entities={props.entities}
             input={state.addressBookInput}
             name="addressBookCandidates"
@@ -268,6 +253,7 @@ class NewAllocation extends React.Component {
         }
       />
     )
+
 
     const userOptionsField = (
       <FormField
@@ -299,7 +285,6 @@ class NewAllocation extends React.Component {
         >
           {warningMessages}
           {descriptionField}
-          {allocationTypeField}
           {settingsField}
           {amountField}
           {addressBookField}
@@ -327,7 +312,7 @@ ErrorMessage.propTypes = {
 }
 
 const WarningMessage = ({ hasWarning, type }) =>
-  hasWarning ? <Info.Action title="Warning" children={message[type]} /> : null
+  hasWarning ? <Info.Action title="Warning" children={message[type]} style={{ marginBottom: '10px' }} /> : null
 
 // TODO: unused
 // const RecurringDropDown = ({ dropDown }) => {

@@ -35,12 +35,13 @@ const repoData = id => `{
               }
             }
           }
-        collaborators {
-          totalCount
         }
       }
-    }
 }`
+
+// collaborators {
+//   totalCount
+// }
 
 let graphQLClient = null
 
@@ -79,7 +80,8 @@ const loadRepoData = (id) => {
           name: node.name,
           url: node.url,
           description: description,
-          collaborators: node.collaborators.totalCount,
+          // TODO: disabled for now (apparently needs push permission on the repo to work)
+          collaborators: 0, //node.collaborators.totalCount,
           commits,
         }
         return resolve({ _repo, _owner, index: response.index, metadata, repoRemoved: false })
@@ -154,9 +156,9 @@ export const loadReposFromQueue = async (state) => {
       async repoId => {
         const { repos } = await syncRepos(state, { repoId })
         return repos[0]
-      }
-    ))
-    // don't put a remoed repo in state as `null`
+      })
+    )
+    // don't put a removed repo in state as `null`
     return loadedRepoQueue.filter(repo => !!repo)
   }
   return []

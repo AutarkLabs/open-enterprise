@@ -38,8 +38,8 @@ const labelsBadges = labels =>
     <Badge
       key={label.node.id}
       style={{ marginRight: '10px', width: 'auto' }}
-      background={'#' + label.node.color}
-      foreground={'#000'}
+      background={'#' + label.node.color + '99'}
+      foreground={theme.textPrimary}
     >
       {label.node.name}
     </Badge>
@@ -59,6 +59,7 @@ const Issue = ({
   onRequestAssignment,
   onReviewApplication,
   onAllocateSingleBounty,
+  onUpdateBounty,
   onReviewWork,
   balance,
   symbol,
@@ -68,17 +69,6 @@ const Issue = ({
   expLevel,
   slots,
 }) => {
-  //console.log('CARD:', workStatus, title, repo, number, labels, isSelected, balance, symbol, deadline, requestsData, expLevel, slots)
-
-  // prepare display of number of slots vs number of applicants - leaving for reference, #528
-  /*
-  const slotsAllocation =
-    requestsData === undefined
-      ? 'Unallocated (' + slots + ')'
-      : requestsData.length < slots
-        ? 'Slots available: ' + (slots - requestsData.length) + '/' + slots
-        : 'Allocated'
-  */
 
   return (
     <StyledIssue>
@@ -104,11 +94,11 @@ const Issue = ({
                 onRequestAssignment={onRequestAssignment}
                 onReviewApplication={onReviewApplication}
                 onReviewWork={onReviewWork}
+                onUpdateBounty={onUpdateBounty}
               />
             </ContextMenu>
           )}
         </div>
-
         <IssueTitleDetailsBalance>
           <IssueTitleDetails>
             <IssueTitle>

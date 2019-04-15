@@ -13,15 +13,18 @@ import {
   Text,
   theme,
 } from '@aragon/ui'
+import { format } from 'date-fns'
 import { combineLatest } from '../../rxjs'
 import { first } from 'rxjs/operators' // Make sure observables have .first
 import { provideNetwork } from '../../../../../shared/ui'
-import { VOTE_NAY, VOTE_YEA } from '../../utils/vote-types'
 import { safeDiv } from '../../utils/math-utils'
-import VoteSummary from '../VoteSummary'
 import VoteStatus from '../VoteStatus'
 import ProgressBarThick from '../ProgressBarThick'
 import Slider from '../Slider'
+import { getVoteStatus } from '../../utils/vote-utils'
+import {
+  VOTE_STATUS_SUCCESSFUL
+} from '../../utils/vote-types'
 
 class VotePanelContent extends React.Component {
   static propTypes = {
@@ -55,10 +58,10 @@ class VotePanelContent extends React.Component {
     let optionsArray = []
 
     this.state.voteOptions.forEach(element => {
-      let voteWeight = element.sliderValue
+      let voteWeight = element.trueValue
         ? Math.round(
           parseFloat(
-            (element.sliderValue * this.state.userBalance).toFixed(2)
+            (element.trueValue * this.state.userBalance).toFixed(2)
           )
         )
         : 0
@@ -74,19 +77,11 @@ class VotePanelContent extends React.Component {
             (parseInt(this.state.userBalance) * 0.9999)
       ))
       : 0
-    // TODO: Let these comments here for a while to be sure we are working with correct values:
-    console.log('Sum of values:', valueTotal)
-    console.log('userBalance', this.state.userBalance)
-    console.log(
-      'onVote voteId:',
-      this.props.vote.voteId,
-      'optionsArray',
-      optionsArray
-    )
     this.props.onVote(this.props.vote.voteId, optionsArray)
   }
   executeVote = () => {
     this.props.app.executeVote(this.props.vote.voteId)
+    this.setState({ panel: { visible: false } })
   }
   loadUserBalance = () => {
     const { tokenContract, user } = this.props
@@ -115,29 +110,22 @@ class VotePanelContent extends React.Component {
         })
     }
   }
-  renderDescription = (description = '') => {
-    // Make '\n's real breaks
-    return description.split('\n').map((line, i) => (
-      <React.Fragment key={i}>
-        {line}
-        <br />
-      </React.Fragment>
-    ))
-  }
+
   sliderUpdate = (value, idx) => {
     const total = this.state.voteOptions.reduce(
-      (acc, { sliderValue }, index) => {
+      (acc, { trueValue }, index) => {
         return (
           acc +
           (idx === index
             ? Math.round(value * 100) || 0
-            : Math.round(sliderValue * 100) || 0)
+            : trueValue || 0)
         )
       },
       0
     )
     if (total <= 100) {
       this.state.voteOptions[idx].sliderValue = value
+      this.state.voteOptions[idx].trueValue = Math.round(value * 100)
       this.setState({ remaining: 100 - total })
     }
   }
@@ -147,12 +135,10 @@ class VotePanelContent extends React.Component {
       .call('getVoterState', this.props.vote.voteId, this.props.user)
       .toPromise()
 
-    // TODO: Bignumber.js vs >8.2 supports .sum function to initialize from a sum of bignumbers, replace when updating
     const totalVotesCount = result.reduce(
       (acc, vote) => acc.plus(vote),
       new BigNumber(0)
     )
-    //
 
     const voteWeights = result.map(e =>
       BigNumber(e)
@@ -161,7 +147,6 @@ class VotePanelContent extends React.Component {
         .dp(2)
         .toString()
     )
-
     const voteAmounts = result.map(e =>
       BigNumber(e)
         .div(BigNumber(10 ** this.state.decimals))
@@ -171,10 +156,8 @@ class VotePanelContent extends React.Component {
   }
 
   render() {
-    const { network, vote, ready, minParticipationPct } = this.props
+    const { network, vote, minParticipationPct } = this.props
     const {
-      userBalance,
-      userCanVote,
       showResults,
       voteOptions,
       remaining,
@@ -186,18 +169,14 @@ class VotePanelContent extends React.Component {
     if (!vote) {
       return null
     }
-
-    const { endDate, open, quorum, support } = vote
+    const { endDate, open, support, description } = vote
     const {
       participationPct,
-      canExecute,
       creator,
-      metadata,
       totalVoters,
-      description,
-      candidates,
       options,
       type,
+      candidateSupport,
     } = vote.data
     const displayBalance = BigNumber(vote.data.balance)
       .div(BigNumber(10 ** this.state.decimals))
@@ -205,14 +184,11 @@ class VotePanelContent extends React.Component {
       .toString()
     // TODO: Show decimals for vote participation only when needed
     const displayParticipationPct = participationPct.toFixed(2)
-    const displayMinParticipationPct = (minParticipationPct / 10 ** 16).toFixed(
-      0
-    )
+    const displayMinParticipationPct = minParticipationPct.toFixed(0)
     // TODO: This block is wrong and has no sense
     if (!voteOptions.length) {
       this.state.voteOptions = options
     }
-
     let totalSupport = 0
     options.forEach(option => {
       totalSupport = totalSupport + parseFloat(option.value, 10)
@@ -222,7 +198,7 @@ class VotePanelContent extends React.Component {
 
     return (
       <div>
-        <SidePanelSplit style={{ borderBottom: 'none' }}>
+        <SidePanelSplit>
           <div>
             <h2>
               <Label>Created by</Label>
@@ -237,17 +213,25 @@ class VotePanelContent extends React.Component {
           </div>
           <div>
             <h2>
-              <Label>{open ? 'Time Remaining:' : 'Status'}</Label>
+              <Label>{open ? 'Time Remaining' : 'Status'}</Label>
             </h2>
             <div>
               {open ? (
                 <Countdown end={endDate} />
               ) : (
-                <VoteStatus
-                  vote={vote}
-                  support={support}
-                  tokenSupply={totalVoters}
-                />
+                <React.Fragment>
+                  <VoteStatus
+                    vote={vote}
+                    support={support}
+                    tokenSupply={totalVoters}
+                  />
+                  <PastDate
+                    dateTime={format(endDate, 'yyyy-MM-dd\'T\'HH:mm:ss.SSSxxx')}
+                  >
+                    {format(endDate, 'MMM dd yyyy HH:mm')}
+                  </PastDate>
+                    
+                </React.Fragment>  
               )}
             </div>
           </div>
@@ -256,33 +240,33 @@ class VotePanelContent extends React.Component {
           <Part>
             <React.Fragment>
               <h2>
-                <Label>Description:</Label>
+                <Label>Description</Label>
               </h2>
-              <p>{this.renderDescription(description)}</p>
+              <p>{description}</p>
             </React.Fragment>
           </Part>
         )}
-
-        {vote.data.balance !== undefined && (
-          <SidePanelSplit style={{ borderBottom: 'none' }}>
-            <div>
-              <h2>
-                <Label>Amount</Label>
-              </h2>
-              <p>{' ' + displayBalance + ' ETH'}</p>
-            </div>
-            <div>
-              <h2>
-                <Label>Dates</Label>
-              </h2>
-              <p>When vote is approved</p>
-            </div>
-          </SidePanelSplit>
-        )}
         <SidePanelSplit>
           <div>
+            {vote.data.balance !== undefined ? (
+              <React.Fragment>
+                <h2>
+                  <Label>Allocation Amount</Label>
+                </h2>
+                <p>{' ' + displayBalance + ' ' + vote.data.tokenSymbol}</p>
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                <h2>
+                  <Label>Total Issues</Label>
+                </h2>
+                <p>{options.length}</p>
+              </React.Fragment>
+            )}
+          </div>
+          <div>
             <h2>
-              <Label>Voter participation</Label>
+              <Label>Voter Participation</Label>
             </h2>
             <p>
               {displayParticipationPct}%{' '}
@@ -291,16 +275,8 @@ class VotePanelContent extends React.Component {
               </Text>
             </p>
           </div>
-          <div>
-            <h2>
-              <Label>Your voting tokens</Label>
-            </h2>
-            {BigNumber(this.state.userBalance)
-              .div(BigNumber(10 ** this.state.decimals))
-              .dp(3)
-              .toString()}
-          </div>
         </SidePanelSplit>
+
         {open && (
           <div>
             <AdjustContainer>
@@ -323,7 +299,7 @@ class VotePanelContent extends React.Component {
                           onUpdate={value => this.sliderUpdate(value, idx)}
                         />
                         <ValueContainer>
-                          {Math.round(option.sliderValue * 100) || 0}
+                          {option.trueValue || 0}
                         </ValueContainer>
                       </div>
                     </div>
@@ -344,28 +320,34 @@ class VotePanelContent extends React.Component {
               </SubmitButton>
               {showInfo && (
                 <Info.Action title="Info">
-                  Vote carefully. After this vote closes, it will result in a
-                  financial payment.
+                  {'Your vote will be weighted by '}
+                  {BigNumber(this.state.userBalance)
+                    .div(BigNumber(10 ** this.state.decimals))
+                    .dp(3)
+                    .toString()}
+                  {', which is your token balance. No tokens will be spent.'}
                 </Info.Action>
               )}
             </AdjustContainer>
             <SidePanelSeparator />
           </div>
         )}
-        {!open && (
+        {(getVoteStatus(vote)===VOTE_STATUS_SUCCESSFUL && (endDate < Date.now()) ) && (
           <div>
-            <SubmitButton mode="strong" wide onClick={this.executeVote}>
+            <ExecuteButton mode="strong" wide onClick={this.executeVote}>
               Execute Vote
-            </SubmitButton>
+            </ExecuteButton>
           </div>
         )}
         <div>
-          <ShowText
-            onClick={() => this.setState({ showResults: !showResults })}
-          >
-            {showResults ? 'Hide Voting Results' : 'Show Voting Results'}
-          </ShowText>
-          {showResults &&
+          {open &&
+            <ShowText
+              onClick={() => this.setState({ showResults: !showResults })}
+            >
+              {showResults ? 'Hide Voting Results' : 'Show Voting Results'}
+            </ShowText>
+          }
+          {(showResults || !open) && voteWeights &&
             options.map((option, index) => (
               <ProgressBarThick
                 key={index}
@@ -423,9 +405,9 @@ class VotePanelContent extends React.Component {
                 }
               />
             ))}
-          {showResults && (
+          {showResults && (candidateSupport > 0) && (
             <Text size="xsmall" color={theme.textSecondary}>
-              A minimum of 5% is required for an option to become validated
+              {'A minimum of ' + candidateSupport + ' is required for an option to become validated'}
             </Text>
           )}
         </div>
@@ -481,11 +463,14 @@ const SubmitButton = styled(Button)`
   margin: 1rem 0;
 `
 
+const ExecuteButton = styled(Button)`
+  margin-top: 1rem;
+`
+
 const ShowText = styled.p`
   color: ${theme.accent};
-  font-size: 15px;
   text-decoration: underline;
-  margin-top: 0.5rem;
+  margin-top: 1rem;
   cursor: pointer;
 `
 
@@ -521,5 +506,13 @@ const VotingButtons = styled.div`
     }
   }
 `
+
+const PastDate = styled.time`
+  font-size: 13px;
+  color: #98a0a2;
+  margin-top: 6px;
+  display: block;
+`
+
 
 export default provideNetwork(VotePanelContent)

@@ -32,7 +32,7 @@
     "test:rinkeby": "truffle test --network rinkeby test/planning-suite.test.js",
     "test:rpc": "truffle test --network rpc test/planning-suite.test.js",
     "test": "npm run test:local",
-    "start:rinkeby": "ENS=0x98Df287B6C145399Aaa709692c8D308357bC085D aragon contracts exec --network rinkeby scripts/start-kit.js" 
+    "start:staging": "ENS=0x98Df287B6C145399Aaa709692c8D308357bC085D aragon contracts exec --network rinkeby scripts/start-kit.js" 
   },
   "files": [
     "abi/",

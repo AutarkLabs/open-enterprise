@@ -203,7 +203,6 @@ class RangeVoting extends React.Component {
     const templateData = Templates.get(template)
     const data = templateData.prepareData(this.state.templateData)
 
-    console.log('onCreateContract ', data)
     this.props.onCreateContract(templateData.name, data)
   }
 

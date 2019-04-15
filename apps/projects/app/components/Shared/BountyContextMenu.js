@@ -8,6 +8,7 @@ const BountyContextMenu = ({
   workStatus,
   requestsData,
   onAllocateSingleBounty,
+  onUpdateBounty,
   onSubmitWork,
   onRequestAssignment,
   onReviewApplication,
@@ -15,7 +16,7 @@ const BountyContextMenu = ({
 }) => <div>
   {workStatus === undefined &&
     <ContextMenuItem onClick={onAllocateSingleBounty}>
-      <ActionLabel>Allocate Bounty</ActionLabel>
+      <ActionLabel>Fund Issue</ActionLabel>
     </ContextMenuItem>
   }
   {workStatus === 'in-progress' &&
@@ -29,14 +30,24 @@ const BountyContextMenu = ({
     </ContextMenuItem>
   }
   {(workStatus === 'funded' || workStatus === 'review-applicants') &&
-    <ContextMenuItem onClick={onRequestAssignment}>
-      <ActionLabel>Request Assignment</ActionLabel>
-    </ContextMenuItem>
+    <div>
+      <ContextMenuItem onClick={onUpdateBounty}>
+        <ActionLabel>Update Funding</ActionLabel>
+      </ContextMenuItem>
+      <ContextMenuItem onClick={onRequestAssignment}>
+        <ActionLabel>Request Assignment</ActionLabel>
+      </ContextMenuItem>
+    </div>
   }
   {workStatus === 'review-applicants' &&
-    <ContextMenuItem onClick={onReviewApplication}>
-      <ActionLabel>Review Application ({requestsData.length})</ActionLabel>
-    </ContextMenuItem>
+    <div>
+      <ContextMenuItem onClick={onUpdateBounty}>
+        <ActionLabel>Update Funding</ActionLabel>
+      </ContextMenuItem>
+      <ContextMenuItem onClick={onReviewApplication}>
+        <ActionLabel>Review Application ({requestsData.length})</ActionLabel>
+      </ContextMenuItem>
+    </div>
   }
 </div>
 
@@ -50,6 +61,7 @@ BountyContextMenu.propTypes = {
   onRequestAssignment: PropTypes.func.isRequired,
   onReviewApplication: PropTypes.func.isRequired,
   onReviewWork: PropTypes.func.isRequired,
+  onUpdateBounty: PropTypes.func.isRequired,
   work: PropTypes.oneOf([
     undefined,
     PropTypes.object,
@@ -58,4 +70,3 @@ BountyContextMenu.propTypes = {
 }
 
 export default BountyContextMenu
-

@@ -17,7 +17,7 @@ const planningApps = [
   'projects',
   'range-voting',
 ]
-const planningAppIds = planningApps.map(app => namehash(`${app}.aragonpm.eth`))
+const planningAppIds = planningApps.map(app => namehash(`${app}-staging.open.aragonpm.eth`))
 
 const globalArtifacts = this.artifacts // Not injected unless called directly via truffle
 const defaultOwner =
@@ -53,7 +53,7 @@ module.exports = async (
 
   log(`${kitName} in ${network} network with ENS ${ensAddress} and owner ${owner}`)
 
-  const kitEnsName = kitName + '.aragonpm.eth'
+  const kitEnsName = kitName + '-staging.open.aragonpm.eth'
 
   const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory')
   const DAOFactory = artifacts.require('DAOFactory')
@@ -140,7 +140,7 @@ module.exports = async (
 
   log('Deployed Planning Suite Kit:', kit.address)
 
-  await logDeploy(kit, {verbose})
+  await logDeploy(kit, {verbose, flattenContracts})
 
   if (returnKit) {
     return kit

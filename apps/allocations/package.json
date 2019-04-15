@@ -19,15 +19,16 @@
     "publish:major": "aragon apm publish major --files dist/",
     "publish:minor": "aragon apm publish minor --files dist/",
     "publish:patch": "aragon apm publish patch --files dist/",
-    "deploy:rinkeby": "npm run publish:patch -- --environment rinkeby",
     "deploy:staging": "npm run publish:patch -- --environment staging",
     "deploy:rpc": "npm run publish:patch -- --environment default",
+    "deploy:rinkeby": "npm run publish:major -- --environment staging",
     "start": "aragon run",
     "sync-assets": "copy-aragon-ui-assets ./dist",
     "test:gas": "GAS_REPORTER=true npm test",
     "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
   },
   "dependencies": {
+    "@aragon/apps-vault": "^4.0.0",
     "@aragon/api": "1.0.0",
     "@aragon/ui": "0.32.0",
     "@babel/polyfill": "^7.2.5",

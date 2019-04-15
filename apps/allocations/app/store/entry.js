@@ -1,6 +1,4 @@
-import AddressBookJSON from '../../../shared/json-abis/address-book.json'
 import { first, map } from 'rxjs/operators' // Make sure observables have first()
-import { app } from './'
 
 /// /////////////////////////////////////
 /*     AddressBook event handlers      */
@@ -37,8 +35,7 @@ export const onEntryRemoved = async ({ entries }, { addr }) => {
 /// /////////////////////////////////////
 
 const loadEntryData = async (addr, addressBook) => {
-  const addressBookApp = app.external(addressBook, AddressBookJSON.abi)
-
+  const addressBookApp = addressBook.contract
   return addressBookApp
     .getEntry(addr)
     .pipe(
