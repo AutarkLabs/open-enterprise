@@ -53,7 +53,6 @@ class ReviewWork extends React.Component {
 
   onRatingChange = index => {
     this.setState({ rating: index })
-    console.log('index: ', index)
   }
 
   render() {
