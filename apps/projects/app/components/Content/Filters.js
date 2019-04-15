@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { Text } from '@aragon/ui'
+import { Text, theme } from '@aragon/ui'
 
 import FilterTile from './FilterTile'
 import { prepareFilters } from '../Shared/FilterBar'
@@ -102,9 +102,9 @@ export default class Filters extends Component {
             }}
           >
             <Text
-              size='large'
+              size='small'
               weight='bold'
-              color='#80abe3'
+              color={theme.gradientStart}
             >Clear Filters
             </Text>
           </div>

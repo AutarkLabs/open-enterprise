@@ -15,39 +15,19 @@ lerna info versioning independent
 
 - Planning-suite is the base monorepo.
 - Frontend packages were merged with individual aragon apps, it added complexity and was not needed.
-- Aragon/cli should be used to bump package versions with `aragon apm version` (more info in Aragon hack documentation). It needs to have a devhchain running.
+- Aragon/cli should be used to bump package versions with `aragon apm publish` (more info in Aragon hack documentation). It needs to have a devhchain running.
 
 ## Recommended instructions
 
-### Before doing anything run the install script to avoid dependency errors
+### Before doing anything, run the install script to avoid dependency errors
 
 - `npm i` : Installs root project dependencies and then bootstraps all independent app dependencies.
 
-### Then, run one of the handy scripts depending of the needs
+### Then, run one of the handy scripts depending on your needs
 
-#### To start frontend development
+#### To run everything working together in the Aragon Wrapper with a Development Blockchain
 
-- `npm run dev:<app_name>`
-
-  - where `<app_name>` can be one of:
-    - `address` for Address Book App (`npm run dev:address`)
-    - `projects` for Projects App (`npm run dev:projects`)
-    - `allocations` for Allocations App (`npm run dev:allocations`)
-    - `range` for Range Voting App (`npm run dev:range`)
-
-#### To start blockchain, smart contract or Aragon os development
-
-- `npm run start:<app_name>`
-
-  - where `<app_name>` can be one of:
-    - `address` for Address Book App (`npm run start:address`)
-    - `projects` for Projects App (`npm run start:projects`)
-    - `allocations` for Allocations App (`npm run start:allocations`)
-    - `range` for Range Voting App (`npm run start:range`)
-
-#### To run everything working together in the Aragon Wrapper
-
-- `npm start`
+- `npm start:dev`
 
 This script checks/install dependencies through lerna bootstrap, then concurrently starts a local development blockchain to deploy the individual apps there calling `aragon apm publish` on each app, also with help of lerna.
 When individual apps are deployed, the aragon/cli --kit option compiles and deploys the PlanningKit dao template sitting in contracts folder.
@@ -56,23 +36,45 @@ This folder contains also a PlanningDummy smart contract. This is needed to conf
 
 The PlanningKit smart contract takes care of installing individual apps along with native Aragon official apps, and also setting the roles and permissions.
 
-Finally, the script launches the Aragon Wrapper with the complete planning suite.
+Finally, the script launches the Aragon Wrapper with the complete planning suite. In this
+environment javascript files can be updated and saved. Each save will trigger a hot-reload in the
+browser.
+
+#### To run everything together inside the wrapper with web files and assets served via IPFS
+
+- `npm run start`
+
+This is the same as above, only all javascript files are published via IPFS.
+This more closely emulates a production environment, but any frontend or worker script changes will
+require a republish to view changes in the browser.
 
 ## Troubleshooting
 
-- If something stops working because, you know, things break, the right way to debug the problem is to run the same `npm start` steps one by one:
+- If something stops working because, you know, things break, the right way to debug the problem is to run the same `npm start:dev` steps one by one:
 - `npm run bootstrap`
   Check if some dependency is not installed or available
 - `npm run publish:apps`
-  To debug if the individual apps are being published, if more control is needed, individual app publishing can be called by `cd apps/app_folder && npm run publish`
+  To debug if the individual apps are being published, if more control is needed, individual app publishing can be called by `cd apps/app_folder && npm run publish`. Any build-time errors should display in the bash console during this stage
 - `npm run devchain or npm run devchain:reset`
-  Is needed to be run in another terminal window to be able to deploy all apps together. `npm start` script does this by using concurrently npm package.
+  Can be run in another terminal window to be able to deploy all apps together. `npm start` script does this by calling this concurrently.
 - If previous steps where succesful, then run: `aragon run --kit PlanningKit --kit-init @ARAGON_ENS`
   To deploy the kit and launch the Aragon Wrapper in the browser.
-  It needs the same local blockchain to find the locally deployed apps, so better to keep the devchain open and running (Again, with `npm start` is not needed (but allowed) because is launched in parallel with concurrently).
+  It needs the same local blockchain to find the locally deployed apps, so better to keep the devchain open and running (Again, with `npm start` this step is not needed (but allowed) because is launched concurrently).
 
 - `npm run clean`
-  Just if the other steps don't work call this and start over with a clean state, maybe combined with `rm -rf ~/.ipfs ~/.aragon` to delete the local machine state (this does not delete any key, just local data that then will be downloaded again).
+  Just if the other steps don't work call this and start over with a clean state, maybe combined with `npm run clean:aragon` to delete the local machine state (this does not delete any key, just local data that then will be downloaded again).
+
+  > __Tip__ to completely reset your environment run `npm run clean && npm run clean:aragon` and then reinstall with `npm i`
+
+- `npm run reset-<app>-script` These commands are used to republish the webworker scripts while
+  running the `npm run start:dev`environment. These changes are only applied after clearing the DAO's cache in DAO Settings. A page refresh alone will not suffice.
+
+  - where `<app_name>` can be one of:
+    - `address` for Address Book App (`npm run reset-address-script`)
+    - `projects` for Projects App (`npm run npm run reset-projects-script`)
+    - `allocations` for Allocations App (`npm run npm run reset-allocations-script`)
+    - `range` for Range Voting App (`npm run reset-range-voting-script`)
+    - `rewards` for Rewards App (`npm run npm run reset-rewards-script`)
 
 ### Incomplete npm script list
 
@@ -98,18 +100,10 @@ Finally, the script launches the Aragon Wrapper with the complete planning suite
 
 #### Wrong fonts, colors or browser console errors
 
-> _Tip: Look at letter g to quickly know if aragon fonts were loaded and applied_
+> __Tip__ Look at letter "g" to quickly know if aragon fonts were loaded and applied
 
 - Aragon puts all the files in the app in the ipfs folder, so files must be correctly built to the dist folder, this happens in all single apps.
 - Aragon provides the command `copy-aragon-ui-assets` and we use `npm run sync-assets` to call it. The problem is that is easy to have errors configuring the path in AragonApp component (from @aragon/ui), because is not documented where the slashes go or things like that, even some original Aragon apps have or had this error.
-- The right way to configure AragonApp is like this:
-
-```js
-<AragonApp publicUrl="aragon-ui-assets/">You App Here</>
-```
-
-So only one slash at the end, otherwise ipfs will probably fail reading asset paths and the app will not show fonts/colors the way it should, it will load the fallback then.
-
 - To inspect ipfs files for errors deploying, load ipfs ui: <http://localhost:5001/webui> while the Aragon Wrapper is running, and paste the ipfs hash from the app into the files tab to load its content.
 
 #### Additional info

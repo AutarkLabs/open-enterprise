@@ -79,7 +79,8 @@ class SubmitWork extends React.Component {
           input={
             <DescriptionInput
               name="proof"
-              rows={3}
+              value={this.state.proof}
+              rows="3"
               onChange={this.changeField}
               placeholder="Please link the Github Pull Request or an alternative proof of work if requested."
             />
@@ -90,7 +91,8 @@ class SubmitWork extends React.Component {
           input={
             <DescriptionInput
               name="comments"
-              rows={5}
+              rows="5"
+              value={this.state.comments}
               onChange={this.changeField}
               placeholder="Comments or details that haven’t already been described elsewhere."
             />
@@ -107,7 +109,7 @@ class SubmitWork extends React.Component {
             />
           }
         />
-
+        <VSpace size={1} />
         <AckRow>
           <div style={{ width: '23px' }}>
             <Checkbox checked={this.state.ack1} onChange={this.setAck1} />
@@ -128,6 +130,7 @@ class SubmitWork extends React.Component {
             of future tasks.
           </AckText>
         </AckRow>
+        <VSpace size={2} />
 
         { /* TODO: restore when GitHub commenting works
         <Info.Alert
@@ -163,7 +166,10 @@ const IssueTitle = styled(Text)`
   font-size: 17px;
   font-weight: 300;
   line-height: 1.5;
-  margin-bottom: 10px;
+`
+
+const VSpace = styled.div`
+  height: ${p => (p.size || 1) * 5}px;
 `
 
 export default SubmitWork

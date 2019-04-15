@@ -54,35 +54,15 @@ class VoteRow extends React.Component {
     // TODO: Hardcode colors into constants or extend aragon ui theme if needed
     let typeBadge
     if (type === 'allocation') {
-      typeBadge = generateBadge('#AF499A', '#EED3F4', 'Allocation')
+      typeBadge = generateBadge('#AF499AFF', '#AF499A33', 'Allocation')
     } else if (type === 'curation') {
-      typeBadge = generateBadge('#4B5EBF', '#9FD2F1', 'Curation')
+      typeBadge = generateBadge('#4B5EBFFF', '#4B5EBF33', 'Issue Curation')
     } else if (type === 'informational') {
-      typeBadge = generateBadge('#C1B95B', '#F1EB9F', 'Informational')
+      typeBadge = generateBadge('#C1B95BFF', '#C1B95B33', 'Informational')
     }
 
     return (
       <TableRow>
-        <StatusCell onClick={this.handleVoteClick}>
-          <div>
-            <div>
-              {open ? <Countdown end={endDate} /> : <VoteStatus vote={vote} />}
-            </div>
-            {!open &&
-              getVoteStatus(vote) === VOTE_STATUS_SUCCESSFUL && (
-              <div>
-                <Button
-                  style={{ marginTop: '20px' }}
-                  mode="outline"
-                  wide
-                  onClick={this.handleExecuteVote}
-                >
-                    Execute Vote
-                </Button>
-              </div>
-            )}
-          </div>
-        </StatusCell>
         <QuestionCell onClick={this.handleVoteClick}>
           <div>
             {question && (
@@ -90,15 +70,9 @@ class VoteRow extends React.Component {
                 {description ? <strong>{question}</strong> : question}
               </QuestionWrapper>
             )}
-            {description && (
-              <DescriptionWrapper>{description}</DescriptionWrapper>
-            )}
             {typeBadge}
           </div>
         </QuestionCell>
-        <Cell align="right" onClick={this.handleVoteClick}>
-          {participationPct.toFixed(2)}%
-        </Cell>
         <BarsCell>
           <BarsGroup>
             {showMore &&
@@ -138,6 +112,29 @@ class VoteRow extends React.Component {
             )}
           </BarsGroup>
         </BarsCell>
+        <Cell align="right" onClick={this.handleVoteClick}>
+          {participationPct.toFixed(2)}%
+        </Cell>
+        <StatusCell onClick={this.handleVoteClick}>
+          <div>
+            <div>
+              {open ? <Countdown end={endDate} /> : <VoteStatus vote={vote} />}
+            </div>
+            {!open &&
+              getVoteStatus(vote) === VOTE_STATUS_SUCCESSFUL && (
+              <div>
+                <Button
+                  style={{ marginTop: '20px' }}
+                  mode="outline"
+                  wide
+                  onClick={this.handleExecuteVote}
+                >
+                    Execute Vote
+                </Button>
+              </div>
+            )}
+          </div>
+        </StatusCell>
       </TableRow>
     )
   }
@@ -170,15 +167,9 @@ const ActionsCell = styled(Cell)`
 
 const QuestionWrapper = styled.p`
   margin-right: 20px;
+  margin-bottom: 4px;
   hyphens: auto;
-`
-
-const DescriptionWrapper = styled.p`
-  margin-right: 20px;
-
-  ${QuestionWrapper} + & {
-    margin-top: 10px;
-  }
+  font-size: 1.2em;
 `
 
 const BarsGroup = styled.div`
