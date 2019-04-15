@@ -135,7 +135,6 @@ class VotePanelContent extends React.Component {
       .call('getVoterState', this.props.vote.voteId, this.props.user)
       .toPromise()
 
-    // TODO: Bignumber.js vs >8.2 supports .sum function to initialize from a sum of bignumbers, replace when updating
     const totalVotesCount = result.reduce(
       (acc, vote) => acc.plus(vote),
       new BigNumber(0)

@@ -50,7 +50,6 @@ const averageRewardsNumbers = [
 ]
 
 const generateOpenDetails = (reward, openDetails) => () => {
-  console.log('calling openDetails on', reward)
   openDetails(reward)
 }
 

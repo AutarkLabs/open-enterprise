@@ -2,6 +2,7 @@ import {
   REQUESTING_GITHUB_TOKEN,
   REQUESTED_GITHUB_TOKEN_SUCCESS,
   REQUESTED_GITHUB_TOKEN_FAILURE,
+  REQUESTED_GITHUB_DISCONNECT,
   INITIALIZE_STORE,
   REPO_ADDED,
   REPO_REMOVED,
@@ -68,6 +69,11 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
   }
   case REQUESTED_GITHUB_TOKEN_FAILURE: {
     return state
+  }
+  case REQUESTED_GITHUB_DISCONNECT: {
+    const { github } = INITIAL_STATE
+    nextState = { ...state, github }
+    return nextState
   }
   case REPO_ADDED: {
     nextState = await syncRepos(nextState, returnValues)

@@ -23,17 +23,14 @@ class FilterDropDown extends React.Component {
     opened: false,
   }
   handleClose = () => {
-    //console.log('handle CLOSE')
   }
 
   handleClickOut = () => {
     this.setState({ opened: false })
-    //console.log('handle CLOSE handleClickOut')
   }
 
   handleBaseButtonClick = () => {
     this.setState(({ opened }, { enabled }) => enabled && { opened: !opened })
-    //console.log('handleBaseButtonClick')
   }
 
   render() {

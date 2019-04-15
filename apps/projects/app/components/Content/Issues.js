@@ -320,7 +320,6 @@ class Issues extends React.PureComponent {
         decimals: token.decimals,
       }
     })
-
     return issues.map(({ __typename, repository: { id, name }, ...fields }) => {
       const bountyId = bountyIssueObj[fields.number]
       const repoIdFromBounty = bountyId && bountyId.data.repoId

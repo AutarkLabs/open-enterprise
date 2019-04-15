@@ -15,6 +15,7 @@ import NumberFormat from 'react-number-format'
 import { STATUS } from '../../utils/github'
 import { provideNetwork } from '../../../../../shared/ui'
 import { fromUtf8 } from '../../utils/web3-utils'
+import { REQUESTED_GITHUB_DISCONNECT } from '../../store/eventTypes'
 
 const bountyDeadlines = [ 'Weeks', 'Days', 'Hours' ]
 const bountyDeadlinesMul = [ 168, 24, 1 ] // it is one variable in contract, so number * multiplier = hours
@@ -91,18 +92,8 @@ class Settings extends React.Component {
     let bountyDeadline = bountyDeadlinesMul[bountyDeadlineD] * bountyDeadlineT
     // flatten expLevels
     const expLevelsDesc = expLevels.map(l => fromUtf8(l.name))
-    let expLevelsMul = expLevels.map(l => web3.toHex(l.mul) * 100)
-    console.log('Submitting new Settings: ', {
-      lvlMul:expLevelsMul,
-      lvl: expLevelsDesc,
-      rate: web3.toHex(baseRate),
-      ddl: web3.toHex(bountyDeadline),
-      cur: bountyCurrencies[bountyCurrency],
-      bountyAllocator,
-      //bountyArbiter,
-    })
+    let expLevelsMul = expLevels.map(l => web3.toHex(l.mul))
 
-    //expLevels, baseRate, bountyDeadline, bountyCurrency, bountyAllocator, bountyArbiter
     this.props.app.changeBountySettings(
       expLevelsMul,
       expLevelsDesc,
@@ -147,7 +138,11 @@ class Settings extends React.Component {
   }
 
   handleLogout = () => {
-    this.props.app.cache('github', { status: STATUS.INITIAL })
+    this.props.app.cache('github', {
+      event: REQUESTED_GITHUB_DISCONNECT,
+      status: STATUS.INITIAL,
+      token: null,
+    })
   }
 
   render() {

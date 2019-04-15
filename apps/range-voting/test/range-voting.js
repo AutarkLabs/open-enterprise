@@ -372,7 +372,6 @@ contract('RangeVoting App', accounts => {
         }
 
         script = encodeCallScript([action])
-        //console.log(script)
         let newvote = await app.newVote(script, 'metadata', { from: nonHolder })
         voteId = createdVoteId(newvote)
       })
@@ -386,7 +385,6 @@ contract('RangeVoting App', accounts => {
           voteId,
           candidates.indexOf(apple)
         ))
-        //console.log(appleState)
         let orangeState = (await app.getCandidate(
           voteId,
           candidates.indexOf(orange)
