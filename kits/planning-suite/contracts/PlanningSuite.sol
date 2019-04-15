@@ -204,7 +204,9 @@ contract PlanningSuite is BetaKitBase {
         vault = Vault(
             dao.newAppInstance(
                 appIds[uint8(Apps.Vault)],
-                latestVersionAppBase(appIds[uint8(Apps.Vault)])
+                latestVersionAppBase(appIds[uint8(Apps.Vault)]),
+                new bytes(0),
+                true
             )
         );
         finance = Finance(
