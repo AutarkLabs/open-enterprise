@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { map } from 'rxjs/operators'
+import throttle from 'lodash.throttle'
 import { Overview, MyRewards } from '../Content'
 import { Title } from '../Shared'
 import { Empty } from '../Card'
@@ -11,6 +12,12 @@ import NewRewardButton from './NewRewardButton'
 import { millisecondsToBlocks, MILLISECONDS_IN_A_MONTH, millisecondsToQuarters, WEEK } from '../../../../../shared/ui/utils'
 import BigNumber from 'bignumber.js'
 import { networkContextType, MenuButton } from '../../../../../shared/ui'
+
+const CONVERT_API_BASE = 'https://min-api.cryptocompare.com/data'
+const CONVERT_THROTTLE_TIME = 5000
+
+const convertApiUrl = symbols =>
+  `${CONVERT_API_BASE}/price?fsym=USD&tsyms=${symbols.join(',')}`
 
 class App extends React.Component {
   static propTypes = {
@@ -40,6 +47,27 @@ class App extends React.Component {
       },
     }
   }
+
+  componentWillReceiveProps(nextProps) {
+    if(nextProps.balances) {
+      this.updateConvertedRates(nextProps)
+    }
+  }
+
+  updateConvertedRates = throttle(async ({ balances }) => {
+    const verifiedSymbols = balances
+      .filter(({ verified }) => verified)
+      .map(({ symbol }) => symbol)
+
+    if (!verifiedSymbols.length) {
+      return
+    }
+
+    const res = await fetch(convertApiUrl(verifiedSymbols))
+    const convertRates = await res.json()
+    this.setState({ convertRates })
+    //console.log('conversion rates: ', convertRates)
+  }, CONVERT_THROTTLE_TIME)
 
   handleMenuPanelOpen = () => {
     window.parent.postMessage(
@@ -168,10 +196,7 @@ class App extends React.Component {
 
   render() {
     const { panel, panelProps } = this.state
-    const { network } = this.props
-
-    // TODO: get tokens from vault
-    const tokens = { 0x0: 'ETH' }
+    const { network, balances } = this.props
 
     return (
       <Root.Provider>
@@ -215,6 +240,7 @@ class App extends React.Component {
                 openDetails={this.openDetailsMy}
                 network={network}
                 tokens={this.props.balances}
+                convertRates={this.state.convertRates}
               />
             ) : (
               <Overview

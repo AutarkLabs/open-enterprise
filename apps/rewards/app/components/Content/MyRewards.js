@@ -40,7 +40,64 @@ const averageRewardsNumbers = [
   formatAvgAmount(799.87, '$'),
 ]
 
-const rewardVisible = reward => reward.endDate < Date.now() && Number(reward.userRewardAmount) !== '0'
+const calculateMyRewardsSummary = (rewards, balances, convertRates) => {
+  console.log(rewards, balances, convertRates)
+  return [
+    formatAvgAmount(
+      balances.reduce((balAcc, balance) => {
+        console.log('balAcc ', balAcc)
+        if (convertRates[balance.symbol]) {
+          return rewards.reduce((rewAcc,reward) => {
+            return (!reward.claimed && reward.rewardToken === balance.address)
+              ?
+              rewAcc + reward.userRewardAmount / Math.pow(10, balance.decimals) / convertRates[balance.symbol]
+              :
+              rewAcc
+          },0) + balAcc
+        }
+        else return balAcc
+      },0)
+      ,'+$', 'green'),
+    formatAvgAmount(calculateAllRewards(rewards, balances, convertRates), '$'),
+    formatAvgAmount(calculateYTDRewards(rewards, balances, convertRates), '$'),
+  ]
+}
+
+const calculateAllRewards = (rewards, balances, convertRates) => {
+  return balances.reduce((balAcc, balance) => {
+    console.log('balAcc ', balAcc)
+    if (convertRates[balance.symbol]) {
+      return rewards.reduce((rewAcc,reward) => {
+        return (reward.claimed && reward.rewardToken === balance.address)
+          ?
+          rewAcc + reward.userRewardAmount / Math.pow(10, balance.decimals) / convertRates[balance.symbol]
+          :
+          rewAcc
+      },0) + balAcc
+    }
+    else return balAcc
+  },0)
+}
+
+const calculateYTDRewards = (rewards, balances, convertRates) => {
+  const yearBeginning = new Date(new Date(Date.now()).getFullYear(), 0)
+  return balances.reduce((balAcc, balance) => {
+    console.log('balAcc ', balAcc)
+    if (convertRates[balance.symbol]) {
+      return rewards.reduce((rewAcc,reward) => {
+        return (reward.claimed && reward.rewardToken === balance.address && reward.endDate >= yearBeginning)
+          ?
+          rewAcc + reward.userRewardAmount / Math.pow(10, balance.decimals) / convertRates[balance.symbol]
+          :
+          rewAcc
+      },0) + balAcc
+    }
+    else return balAcc
+  },0)
+}
+
+
+const rewardVisible = reward => reward.startDate < Date.now() && Number(reward.userRewardAmount) !== '0'
 
 const claimedRewards = rewards => rewards.filter(reward => reward.claimed)
 const unclaimedRewards = rewards => rewards.filter(reward => !reward.claimed && rewardVisible(reward))
@@ -67,7 +124,6 @@ const mockReward = [{
   index: 0,
   claimed: true,
 }]
-
 
 const getSymbol = (tokens, reward) => {
   return tokens
@@ -100,11 +156,13 @@ const MyRewardsWide = ({ claimed, rewards, openDetails, network, tokens }) => (
         </TableCell>*/}
         <TableCell>
           {!reward.claimed ? (
-            <Button mode="outline" >
-              <IconFundraising color={theme.positive} />
+            reward.endDate < Date.now() ? (
+              <Button mode="outline" >
+                <IconFundraising color={theme.positive} />
 
-              <Text size="normal" weight="bold">Claim</Text>
-            </Button>) : Intl.DateTimeFormat().format(reward.timeClaimed)}
+                <Text size="normal" weight="bold">Claim</Text>
+              </Button>) : <Text size="normal" weight="bold">Pending...</Text>
+          ) : Intl.DateTimeFormat().format(reward.timeClaimed)}
         </TableCell>
         <TableCell>
           <AmountBadge style={{ margin: '0px', padding: '5px', paddingRight: '10px', paddingLeft: '10px', }}>
@@ -168,10 +226,12 @@ const MyRewardsNarrow = ({ claimed, rewards, openDetails, network, tokens }) => 
   </NarrowList>
 )
 
-const MyRewards = ({ rewards, newReward, openDetails, network, tokens }) => {
+const MyRewards = ({ rewards, newReward, openDetails, network, tokens, convertRates }) => {
   const rewardsEmpty = rewards.length === 0 || (
     claimedRewards(rewards).length === 0 && unclaimedRewards(rewards).length === 0
   )
+
+  const summarizedRewards = calculateMyRewardsSummary(rewards, tokens, convertRates)
 
   if (rewardsEmpty) {
     return <Empty tab='MyRewards' action={newReward} />
@@ -182,7 +242,7 @@ const MyRewards = ({ rewards, newReward, openDetails, network, tokens }) => {
       <RewardsWrap>
         <AverageRewards
           titles={averageRewardsTitles}
-          numbers={averageRewardsNumbers}
+          numbers={summarizedRewards}
         />
 
         {claimedRewards(rewards).length > 0
