@@ -98,6 +98,10 @@ const calculateYTDRewards = (rewards, balances, convertRates) => {
   },0)
 }
 
+const generateOnClaimReward = (onClaimReward, reward) => (e) => {
+  onClaimReward(reward)
+  e.stopPropagation()
+}
 
 const rewardVisible = reward => reward.startDate < Date.now() && Number(reward.userRewardAmount) !== '0'
 
@@ -133,7 +137,7 @@ const getSymbol = (tokens, reward) => {
       else return symbol
     },'')
 }
-const MyRewardsWide = ({ claimed, rewards, openDetails, network, tokens }) => (
+const MyRewardsWide = ({ onClaimReward, claimed, rewards, openDetails, network, tokens }) => (
   <Table
     style={{ width: '100%' }}
     header={
@@ -158,7 +162,7 @@ const MyRewardsWide = ({ claimed, rewards, openDetails, network, tokens }) => (
         <TableCell>
           {!reward.claimed ? (
             reward.endDate < Date.now() ? (
-              <Button mode="outline" >
+              <Button mode="outline" onClick={generateOnClaimReward(onClaimReward, reward)}>
                 <IconFundraising color={theme.positive} />
 
                 <Text size="normal" weight="bold">Claim</Text>
@@ -227,7 +231,7 @@ const MyRewardsNarrow = ({ claimed, rewards, openDetails, network, tokens }) => 
   </NarrowList>
 )
 
-const MyRewards = ({ rewards, newReward, openDetails, network, tokens, convertRates }) => {
+const MyRewards = ({ onClaimReward, rewards, newReward, openDetails, network, tokens, convertRates }) => {
   const rewardsEmpty = rewards.length === 0 || (
     claimedRewards(rewards).length === 0 && unclaimedRewards(rewards).length === 0
   )
@@ -269,6 +273,7 @@ const MyRewards = ({ rewards, newReward, openDetails, network, tokens, convertRa
 	        tokens={tokens}
           belowMedium={MyRewardsNarrow}
           aboveMedium={MyRewardsWide}
+          onClaimReward={onClaimReward}
         />}
       </RewardsWrap>
     </Main>

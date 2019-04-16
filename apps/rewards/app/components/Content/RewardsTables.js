@@ -116,4 +116,4 @@ const AmountBadge = styled(Badge).attrs({
   margin: 20px;
   text-size: large;
 `
-export { AverageRewards, formatAvgAmount, RewardDescription, RewardsTable, NarrowList, NarrowListReward, AmountBadge }
+export { AverageRewards, AverageRewardsTable, formatAvgAmount, RewardDescription, RewardsTable, NarrowList, NarrowListReward, AmountBadge }

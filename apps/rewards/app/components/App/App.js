@@ -221,6 +221,7 @@ class App extends React.Component {
                 newReward={this.newReward}
                 openDetails={this.openDetailsMy}
                 network={network}
+                onClaimReward={this.onClaimReward}
                 tokens={this.props.balances}
                 convertRates={this.state.convertRates}
               />

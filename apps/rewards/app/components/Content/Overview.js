@@ -15,6 +15,7 @@ import {
 import { displayCurrency } from '../../utils/helpers'
 import {
   AverageRewards,
+  AverageRewardsTable,
   formatAvgAmount,
   RewardDescription,
   RewardsTable,
@@ -60,23 +61,24 @@ const calculateAverageRewardsNumbers = ( rewards, claims, balances, convertRates
       formatAvgAmount(calculateYTDRewards(rewards,balances, convertRates), '$'),
     ]
   }
+  else {
+    return Array(3).fill(formatAvgAmount(0, '$'))
+  }
 }
 
 const calculateAvgClaim = (claims, balances, convertRates) => {
-  if (claims && balances && convertRates) {
-    return balances.reduce((balAcc, balance) => {
-      if (convertRates[balance.symbol]) {
-        return claims.claimsByToken.reduce((claimAcc, claim) => {
-          return (claim.address === balance.address)
-            ?
-            claimAcc + claim.amount / Math.pow(10, balance.decimals) / convertRates[balance.symbol]
-            :
-            claimAcc
-        },0) + balAcc
-      }
-      else return balAcc
-    },0) / claims.totalClaimsMade
-  }
+  return balances.reduce((balAcc, balance) => {
+    if (convertRates[balance.symbol]) {
+      return claims.claimsByToken.reduce((claimAcc, claim) => {
+        return (claim.address === balance.address)
+          ?
+          claimAcc + claim.amount / Math.pow(10, balance.decimals) / convertRates[balance.symbol]
+          :
+          claimAcc
+      },0) + balAcc
+    }
+    else return balAcc
+  },0) / claims.totalClaimsMade
 }
 
 const calculateMonthlyAvg = (rewards, balances, convertRates) => {
@@ -210,7 +212,6 @@ const tableType = [
 
 const Overview = ({ tokens, rewards, convertRates, claims, newReward, openDetails }) => {
   const rewardsEmpty = rewards.length === 0
-  console.log(calculateAvgClaim(claims, tokens, convertRates), claims)
   const averageRewardsNumbers = calculateAverageRewardsNumbers(rewards, claims, tokens, convertRates)
 
   if (rewardsEmpty) {
@@ -220,14 +221,18 @@ const Overview = ({ tokens, rewards, convertRates, claims, newReward, openDetail
     <OverviewMain>
       <RewardsWrap>
 
-        {(claims && tokens && convertRates)
+        {(tokens && convertRates)
           ?
           <AverageRewards
             titles={averageRewardsTitles}
             numbers={averageRewardsNumbers}
           />
           :
-          'Calculating Summary...'
+          <AverageRewardsTable>
+            <Text.Block size="large" weight="bold">
+              Calculating Summary...
+            </Text.Block>
+          </AverageRewardsTable>
         }
 
         {tableType.map(({ title, fourthColumn, fourthColumnData, filterRewards }) => (
