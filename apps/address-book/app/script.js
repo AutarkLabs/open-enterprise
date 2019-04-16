@@ -38,10 +38,11 @@ const onEntryAdded = async ({ entries = [] }, { addr }) => {
   } else {
     // entry not cached
     const data = await loadEntryData(addr) // async load data from contract
-    const entry = { addr, data } // transform for the frontend to understand
-    entries.push(entry) // add to the state object received as param
-    console.log('[AddressBook script] caching new contract entry', data.name)
-    // console.log('[AddressBook script] at position', addedIndex) // in case we need the index
+    if (data) {
+      // just perform transform and push if data was found (entry was not removed)
+      const entry = { addr, data } // transform for the frontend to understand
+      entries.push(entry) // add to the state object received as param
+    }
   }
   const state = { entries } // return the (un)modified entries array
   return state
@@ -51,11 +52,10 @@ const onEntryRemoved = async ({ entries = [] }, { addr }) => {
   const removeIndex = entries.findIndex(entry => entry.addr === addr)
   if (removeIndex > -1) {
     // entry already cached, remove from state
-    console.log('[AddressBook script] removing', addr.name, 'cached copy')
     entries.splice(removeIndex, 1)
   }
-
   const state = { entries } // return the (un)modified entries array
+
   return state
 }
 
@@ -68,9 +68,12 @@ const onEntryRemoved = async ({ entries = [] }, { addr }) => {
 const loadEntryData = async addr => {
   return new Promise(resolve => {
     app.call('getEntry', addr).subscribe(entry => {
+      const emptyAddr = '0x0000000000000000000000000000000000000000'
       // don't resolve when entry not found
-      entry &&
-        resolve({
+      // return null handles cases when syncing deleted addresses
+      entry[0] === emptyAddr
+        ? resolve(null)
+        : resolve({
           entryAddress: entry[0],
           name: entry[1],
           entryType: entry[2],

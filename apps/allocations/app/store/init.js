@@ -1,54 +1,85 @@
-import vaultAbi from '../../../shared/json-abis/vault'
 import AddressBookJSON from '../../../shared/json-abis/address-book.json'
-import { ETHER_TOKEN_FAKE_ADDRESS } from '../utils/token-utils'
 import { app, handleEvent, INITIALIZATION_TRIGGER } from './'
 import { of } from './rxjs'
+import { first } from 'rxjs/operators'
 
+import vaultBalanceAbi from '../../../shared/json-abis/vault/vault-balance.json'
+import vaultGetInitializationBlockAbi from '../../../shared/json-abis/vault/vault-getinitializationblock.json'
+import vaultEventAbi from '../../../shared/json-abis/vault/vault-events.json'
 
-export const initStore = (vaultAddress, network, addressBookAddress) => {
-  const addressBookApp = app.external(addressBookAddress, AddressBookJSON.abi)
-  const vaultContract = app.external(vaultAddress, vaultAbi.abi)
+const vaultAbi = [].concat(
+  vaultBalanceAbi,
+  vaultGetInitializationBlockAbi,
+  vaultEventAbi
+)
 
-  const initialState = {
-    accounts: [],
-    entries: [],
-    addressBook: addressBookAddress,
+const initialState = { accounts: [], entries: [], payouts: [] }
+
+export const initialize = async (
+  addressBookAddress,
+  vaultAddress,
+  ethAddress
+) => {
+  const addressBookContract = app.external(
+    addressBookAddress,
+    AddressBookJSON.abi
+  )
+  const vaultContract = app.external(vaultAddress, vaultAbi)
+
+  const network = await app
+    .network()
+    .pipe(first())
+    .toPromise()
+
+  return createStore({
+    network,
+    addressBook: {
+      address: addressBookAddress,
+      contract: addressBookContract,
+    },
+    ethToken: {
+      address: ethAddress,
+    },
+    vault: {
+      address: vaultAddress,
+      contract: vaultContract,
+    },
+  })
+}
+
+const createStore = async settings => {
+  let vaultInitializationBlock
+
+  try {
+    vaultInitializationBlock = await settings.vault.contract
+      .getInitializationBlock()
+      .toPromise()
+  } catch (err) {
+    console.error(
+      '[allocations script] could not get attached vault\'s initialization block',
+      err
+    )
   }
+
   return app.store(
     async (state, event) => {
-      // ensure there are initial placeholder values
-      if (!state) state = initialState
-
+      const prevState = state || initialState
+      let nextState
       try {
-        const next = await handleEvent(state, event,
-          {
-            network,
-            vault: {
-              address: vaultAddress,
-              contract: vaultContract,
-            },
-            ethToken: {
-              address: ETHER_TOKEN_FAKE_ADDRESS,
-            },
-            addressBook: {
-              address: addressBookAddress,
-              contract: addressBookApp
-            }
-          })
-        const nextState = { ...initialState, ...next }
-        // Debug point
-        return nextState
+        nextState = await handleEvent(prevState, event, settings)
       } catch (err) {
-        console.error('[Allocations script] initStore', event, err)
+        console.error('[allocations script] initStore', event, err)
       }
       // always return the state even unmodified
-      return state
+      return nextState
     },
     [
-      of({ event: INITIALIZATION_TRIGGER }),
+      // of({ event: INITIALIZATION_TRIGGER }),
       // handle address book events
-      addressBookApp.events(),
-      vaultContract.events(),
+      // TODO: Start from AddrBook initialization block as Vault
+      settings.addressBook.contract.events(),
+      // handle vault events
+      settings.vault.contract.events(vaultInitializationBlock),
     ]
   )
 }
