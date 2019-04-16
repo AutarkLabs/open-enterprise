@@ -4,6 +4,7 @@
   "main": "src/index.js",
   "license": "MIT",
   "dependencies": {
+    "3box": "^1.7.0",
     "@aragon/api": "^1.0.0-beta.1",
     "@aragon/api-react": "^1.0.0-beta.1",
     "@aragon/ui": "^0.32.0",

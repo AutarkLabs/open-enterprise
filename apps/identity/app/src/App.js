@@ -3,8 +3,10 @@ import { useAragonApi } from '@aragon/api-react'
 import { Main, Button } from '@aragon/ui'
 import styled from 'styled-components'
 
+import { Profile } from '../modules/3box-aragon'
+
 function App() {
-  const { api, appState } = useAragonApi()
+  const { api, appState, connectedAccount } = useAragonApi()
   const { count, syncing } = appState
   return (
     <Main>
@@ -12,11 +14,18 @@ function App() {
         {syncing && <Syncing />}
         <Count>Count: {count}</Count>
         <Buttons>
-          <Button mode="secondary" onClick={() => api.decrement(1)}>
-            Decrement
-          </Button>
-          <Button mode="secondary" onClick={() => api.increment(1)}>
-            Increment
+          <Button
+            mode="secondary"
+            onClick={async () => {
+              const profile = new Profile(connectedAccount, api)
+              const publicProfile = await profile.getPublic()
+              console.log('PUBLIC PROFILE', publicProfile)
+              await profile.unlockOrCreate()
+              const privateData = await profile.getPrivate()
+              console.log('PRIVATE DATA', privateData)
+            }}
+          >
+            Open Box for {connectedAccount}
           </Button>
         </Buttons>
       </BaseLayout>

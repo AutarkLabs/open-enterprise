@@ -30,7 +30,7 @@
   "scripts": {
     "start": "npm run start:ipfs",
     "start:ipfs": "aragon run",
-    "start:http": "aragon run --no-client --http localhost:8001 --http-served-from ./dist",
+    "start:http:no:client": "aragon run --no-client --http localhost:8001 --http-served-from ./dist",
     "start:ipfs:template": "npm run start:ipfs -- --template Template --template-init @ARAGON_ENS",
     "start:http:template": "npm run start:http -- --template Template --template-init @ARAGON_ENS",
     "prepare": "cd app && npm install && cd ..",
