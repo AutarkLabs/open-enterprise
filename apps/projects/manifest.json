@@ -1,6 +1,12 @@
 {
   "name": "Projects",
   "description": "Manage Github projects",
+  "icons": [
+    {
+      "src": "images/icon.svg",
+      "sizes": "22x22"
+    }
+  ],
   "start_url": "index.html",
   "script": "script.js"
 }

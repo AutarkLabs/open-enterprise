@@ -3,10 +3,10 @@
   "description": "Create Rewards Distributions",
   "icons": [
     {
-      "src": "images/icon.png",
-      "sizes": "192x192"
+      "src": "images/icon.svg",
+      "sizes": "22x22"
     }
   ],
-  "script": "dist/script.js",
-  "start_url": "dist/index.html"
+  "script": "script.js",
+  "start_url": "index.html"
 }
