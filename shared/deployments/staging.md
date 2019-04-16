@@ -1,4 +1,4 @@
-AddressBook
+# AddressBook
 
 ```sh
  ✔ Successfully published address-book-staging.open.aragonpm.eth v6.0.2:
@@ -14,7 +14,7 @@ files hashes:
 
 ```
 
-Allocations
+# Allocations
 
 ```sh
 ✔ Successfully published allocations-staging.open.aragonpm.eth v1.0.3:
@@ -30,7 +30,21 @@ files hashes:
 
 ```
 
-Projects
+## Projects
+
+### 1.0.4
+
+```sh
+ ✔ Successfully published projects-staging.open.aragonpm.eth v1.0.4:
+ ℹ Contract address: 0xd20D9907AfC2CfbdeC83Cc75E248e7FFa1f56C2A
+ ℹ Content (ipfs): Qmczv4WCprFtBiTcXq3U9mUTzjec3CPvBM5FCzvW9aLTbr
+ ℹ Transaction hash: 0x03295cf88eb2cb9fcbaef99192658010f99bde52853cad62ba4f683121c22a38
+```
+
+command: `aragon apm publish patch --files dist/ --environment staging`
+commit: 674f0c9d
+
+### 1.0.3
 
 ```sh
  ✔ Successfully published projects-staging.open.aragonpm.eth v1.0.3:
@@ -41,7 +55,7 @@ Projects
 
 command: `aragon apm publish patch --files dist/ --environment staging`
 
-RangeVoting
+## RangeVoting
 
 ```sh
  ✔ Successfully published range-voting-staging.open.aragonpm.eth v1.0.3:
