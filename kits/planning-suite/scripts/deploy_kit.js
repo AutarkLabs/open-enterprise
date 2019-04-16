@@ -23,7 +23,7 @@ const globalArtifacts = this.artifacts // Not injected unless called directly vi
 const defaultOwner =
   process.env.OWNER || '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7'
 const defaultENSAddress =
-  process.env.ENS || '0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1'
+  process.env.ENS || '0x98Df287B6C145399Aaa709692c8D308357bC085D'
 const defaultDAOFactoryAddress = process.env.DAO_FACTORY
 const defaultMinimeTokenFactoryAddress = process.env.MINIME_TOKEN_FACTORY
 const defaultRegistryAddress = process.env.STANDARD_BOUNTIES_REGISTRY
@@ -138,7 +138,7 @@ module.exports = async (
     log('error with kit', err)
   }
 
-  log('Deployed Planning Suite Kit:', kit.address)
+  log('Deployed Planning Suite Kit:', kit.address, planningAppIds)
 
   await logDeploy(kit, {verbose, flattenContracts})
 

@@ -19,7 +19,7 @@
     "publish:major": "aragon apm publish major --files dist/",
     "publish:minor": "aragon apm publish minor --files dist/",
     "publish:patch": "aragon apm publish patch --files dist/",
-    "deploy:staging": "npm run publish:patch -- --environment staging",
+    "deploy:staging": "npm run publish:major -- --environment staging",
     "deploy:rpc": "npm run publish:patch -- --environment default",
     "deploy:rinkeby": "npm run publish:major -- --environment staging",
     "start": "aragon run",

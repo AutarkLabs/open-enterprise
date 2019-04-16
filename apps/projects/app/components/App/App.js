@@ -19,7 +19,7 @@ import { networkContextType } from '../../../../../shared/ui'
 import {
   REQUESTING_GITHUB_TOKEN,
   REQUESTED_GITHUB_TOKEN_SUCCESS,
-  REQUESTED_GITHUB_TOKEN_FAILURE
+  REQUESTED_GITHUB_TOKEN_FAILURE,
 } from '../../store/eventTypes'
 import { CURRENT_USER } from '../../utils/gql-queries'
 
@@ -31,21 +31,29 @@ const GITHUB_URI = 'https://github.com/login/oauth/authorize'
 // TODO: Extract to an external js utility to keep this file clean
 // Variable fields depending on the execution environment:
 // TODO: This should be dynamically set depending on the execution environment (dev, prod...)
+const REDIRECT_URI = window.location.href
 let CLIENT_ID = ''
-let REDIRECT_URI = ''
 let AUTH_URI = ''
 
+const ENV = {
+  STAGING: 'https://ipfs.eth.aragon.network',
+  LOCAL_IPFS: 'http://localhost:8080',
+  LOCAL_HTTP: 'http://localhost:3333',
+}
+
 switch (window.location.origin) {
-case 'http://localhost:3333':
+case ENV.STAGING:
+  CLIENT_ID = '91270cab68d23695c1bd'
+  AUTH_URI = 'https://tps-github-auth-staging.now.sh/authenticate'
+  break
+case ENV.LOCAL_HTTP:
   CLIENT_ID = 'd556542aa7a03e640409'
-  REDIRECT_URI = 'http://localhost:3333'
   AUTH_URI = 'https://tps-github-auth.now.sh/authenticate'
   // TODO: change auth service to be more explicit to:
   // AUTH_URI = 'https://dev-tps-github-auth.now.sh/authenticate'
   break
-case 'http://localhost:8080':
+case ENV.LOCAL_IPFS:
   CLIENT_ID = '686f96197cc9bb07a43d'
-  REDIRECT_URI = window.location.href
   AUTH_URI = 'https://local-tps-github-auth.now.sh/authenticate'
   break
 default:
@@ -96,7 +104,7 @@ const getURLParam = param => {
   return searchParam.get(param)
 }
 
-const initApolloClient = (token) =>
+const initApolloClient = token =>
   new ApolloClient({
     uri: 'https://api.github.com/graphql',
     request: operation => {
@@ -108,7 +116,7 @@ const initApolloClient = (token) =>
           },
         })
       }
-    }
+    },
   })
 
 /**
@@ -144,7 +152,7 @@ class App extends React.PureComponent {
       activeIndex: { tabIndex: 0, tabData: {} },
       githubLoading: false,
       githubCurrentUser: {},
-      client: initApolloClient(props.github && props.github.token || '')
+      client: initApolloClient((props.github && props.github.token) || ''),
     }
   }
 
@@ -200,19 +208,22 @@ class App extends React.PureComponent {
       const code = message.data.value
       try {
         const token = await getToken(code)
-        this.setState({
-          githubLoading: false,
-          panelProps: {
-            onCreateProject: this.createProject,
-            status: STATUS.AUTHENTICATED,
+        this.setState(
+          {
+            githubLoading: false,
+            panelProps: {
+              onCreateProject: this.createProject,
+              status: STATUS.AUTHENTICATED,
+            },
           },
-        }, () => {
-          this.props.app.cache('github', {
-            event: REQUESTED_GITHUB_TOKEN_SUCCESS,
-            status: STATUS.AUTHENTICATED,
-            token,
-          })
-        })
+          () => {
+            this.props.app.cache('github', {
+              event: REQUESTED_GITHUB_TOKEN_SUCCESS,
+              status: STATUS.AUTHENTICATED,
+              token,
+            })
+          }
+        )
       } catch (err) {
         this.setState(
           {
@@ -228,14 +239,16 @@ class App extends React.PureComponent {
               status: STATUS.FAILED,
               token: null,
             })
-          })
+          }
+        )
       }
     }
   }
 
   handleMenuPanelOpen = () => {
     window.parent.postMessage(
-      { from: 'app', name: 'menuPanel', value: true }, '*'
+      { from: 'app', name: 'menuPanel', value: true },
+      '*'
     )
   }
 
@@ -540,17 +553,25 @@ class App extends React.PureComponent {
       <StyledAragonApp publicUrl={ASSETS_URL}>
         <BaseStyles />
         <ToastHub>
-          <Title text="Projects" handleMenuPanelOpen={this.handleMenuPanelOpen} />
+          <Title
+            text="Projects"
+            handleMenuPanelOpen={this.handleMenuPanelOpen}
+          />
           <ApolloProvider client={this.state.client}>
             <ErrorBoundary>
               <AppContent
                 onLogin={this.handleGithubSignIn}
-                status={(this.props.github && this.props.github.status) || STATUS.INITIAL}
+                status={
+                  (this.props.github && this.props.github.status) ||
+                  STATUS.INITIAL
+                }
                 app={this.props.app}
                 bountySettings={bountySettings}
                 githubCurrentUser={githubCurrentUser}
                 githubLoading={this.state.githubLoading}
-                projects={this.props.repos !== undefined ? this.props.repos : []}
+                projects={
+                  this.props.repos !== undefined ? this.props.repos : []
+                }
                 bountyIssues={
                   this.props.issues !== undefined ? this.props.issues : []
                 }
