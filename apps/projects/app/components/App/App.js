@@ -44,17 +44,23 @@ const ENV = {
 switch (window.location.origin) {
 case ENV.STAGING:
   CLIENT_ID = '91270cab68d23695c1bd'
-  AUTH_URI = 'https://tps-github-auth-staging.now.sh/authenticate'
+    AUTH_URI = 'https://tps-github-auth-staging.now.sh/authenticate'
+    console.log('tps github auth using staging')
+    
   break
 case ENV.LOCAL_HTTP:
   CLIENT_ID = 'd556542aa7a03e640409'
-  AUTH_URI = 'https://tps-github-auth.now.sh/authenticate'
+    AUTH_URI = 'https://tps-github-auth.now.sh/authenticate'
+    console.log('tps github auth using http provider')
+    
   // TODO: change auth service to be more explicit to:
   // AUTH_URI = 'https://dev-tps-github-auth.now.sh/authenticate'
   break
 case ENV.LOCAL_IPFS:
   CLIENT_ID = '686f96197cc9bb07a43d'
-  AUTH_URI = 'https://local-tps-github-auth.now.sh/authenticate'
+    AUTH_URI = 'https://local-tps-github-auth.now.sh/authenticate'
+    console.log('tps github auth using local ipfs')
+    
   break
 default:
   console.log(
@@ -125,8 +131,12 @@ const initApolloClient = token =>
  * @returns {string} The authentication token obtained from the auth server
  */
 const getToken = async code => {
+  console.log('getToken: github auth code arrived!', code)
+  
   const response = await fetch(`${AUTH_URI}/${code}`)
   const json = await response.json()
+  console.log('getToken: returning json token!', json.token)
+  
   return json.token
 }
 
@@ -172,12 +182,14 @@ class App extends React.PureComponent {
      * via postMessage with 'popup' as origin and close the window (usually a popup)
      */
     const code = getURLParam('code')
+    console.log('Sending code:', code)
     code &&
       window.opener.postMessage(
         { from: 'popup', name: 'code', value: code },
         '*'
       )
-    window.close()
+    
+    // window.close()
   }
 
   componentDidUpdate(prevProps) {
@@ -200,6 +212,7 @@ class App extends React.PureComponent {
   }
 
   handlePopupMessage = async message => {
+    console.log('message arrived', message)
     if (message.data.from !== 'popup') return
     if (message.data.name === 'code') {
       // TODO: Optimize the listeners lifecycle, ie: remove on unmount
@@ -208,6 +221,7 @@ class App extends React.PureComponent {
       const code = message.data.value
       try {
         const token = await getToken(code)
+        console.log('token arrived, settings to state', token)
         this.setState(
           {
             githubLoading: false,
