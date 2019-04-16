@@ -35,9 +35,9 @@ const mineToBlock = async (blockNumber) => {
     process.exit()
 }
 
-if (process.argv[3]){
-    mineToBlock(process.argv[2])
+if (!Number(process.argv[2])) {
+    mineToBlock(process.argv[3])
 }
-else{
+else {
     mineBlocks(process.argv[2])
 }
