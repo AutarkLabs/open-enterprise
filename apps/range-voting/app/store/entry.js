@@ -37,18 +37,22 @@ export const onEntryRemoved = async ({ entries }, { addr }) => {
 
 const loadEntryData = async (addr, addressBook) => {
   const addressBookApp = addressBook.contract
+  const emptyAddr = '0x0000000000000000000000000000000000000000'
   return addressBookApp
     .getEntry(addr)
     .pipe(
       first(),
       map(
         entry =>
-        // cover removed entries
-          !entry ? null : {
-            entryAddress: entry[0],
-            name: entry[1],
-            entryType: entry[2],
-          }
+          // don't resolve when entry not found
+          // return null handles cases when syncing deleted addresses
+          entry[0] === emptyAddr
+            ? null
+            : {
+              entryAddress: entry[0],
+              name: entry[1],
+              entryType: entry[2],
+            }
       )
     )
     .toPromise()
