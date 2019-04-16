@@ -57,7 +57,6 @@ export class Profile {
     this.unlockedBox = null
   }
 
-  // loads public information and sets state variables
   getPublic = () => {
     return Box.getProfile(this.ethereumAddress)
   }
@@ -87,6 +86,43 @@ export class Profile {
   getPrivate = () => {
     if (this.boxState.opened && this.boxState.synced) {
       return this.unlockedBox.private.all()
+    }
+  }
+
+  checkForErrorsBeforeSetting = (fields, values) => {
+    if (!this.boxState.opened || !this.boxState.synced) {
+      throw new Error('box was not unlocked or has not finished syncing')
+    }
+    if (!Array.isArray(fields) || !Array.isArray(values)) {
+      throw new Error('must pass two arrays')
+    }
+  }
+
+  setPublicFields = async (fields, values) => {
+    this.checkForErrorsBeforeSetting(fields, values)
+
+    try {
+      await Promise.all(
+        fields.map((field, idx) =>
+          this.unlockedBox.public.set(field, values[idx])
+        )
+      )
+    } catch (err) {
+      throw new Error(`Error setting in box: ${err}`)
+    }
+  }
+
+  setPrivateFields = async (fields, values) => {
+    this.checkForErrorsBeforeSetting(fields, values)
+
+    try {
+      await Promise.all(
+        fields.map((field, idx) =>
+          this.unlockedBox.private.set(field, values[idx])
+        )
+      )
+    } catch (err) {
+      throw new Error(`Error setting in box: ${err}`)
     }
   }
 }
