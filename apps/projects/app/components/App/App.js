@@ -296,11 +296,29 @@ class App extends React.PureComponent {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.FundIssues,
       panelProps: {
-        issues: issues,
+        issues,
+        mode: 'new',
         onSubmit: this.onSubmitBountyAllocation,
         bountySettings: this.props.bountySettings,
-        tokens: this.props.tokens ? this.props.tokens : [],
+        closePanel: this.closePanel,
+        tokens: this.props.tokens !== undefined ? this.props.tokens : [],
+        githubCurrentUser: this.state.githubCurrentUser,
+      },
+    }))
+  }
+
+  updateBounty = issues => {
+    this.setState((_prevState, _prevProps) => ({
+      panel: PANELS.FundIssues,
+      panelProps: {
+        title: 'Update Funding',
+        issues,
+        mode: 'update',
+        onSubmit: this.onSubmitBountyAllocation,
+        bountySettings: this.props.bountySettings,
         closePanel: this.cancelBounties,
+        tokens: this.props.tokens !== undefined ? this.props.tokens : [],
+        githubCurrentUser: this.state.githubCurrentUser,
       },
     }))
   }
@@ -336,7 +354,6 @@ class App extends React.PureComponent {
     const dateArray = new Array(issuesArray.length).fill(Date.now() + 8600)
     const booleanArray = new Array(issuesArray.length).fill(true)
 
-    console.log('Submit issues:', issuesArray)
     this.props.app.addBounties(
       idArray,
       numberArray,
@@ -442,13 +459,13 @@ class App extends React.PureComponent {
     )
   }
 
-  curateIssues = issues => {
+  curateIssues = (selectedIssues, allIssues) => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.NewIssueCuration,
       panelProps: {
-        issues: issues,
+        selectedIssues,
+        allIssues,
         onSubmit: this.onSubmitCuration,
-        // rate: getSetting(SETTINGS.rate),
       },
     }))
   }
@@ -499,7 +516,6 @@ class App extends React.PureComponent {
   }
 
   cancelBounties = id => {
-    console.log('closing')
     this.closePanel()
   }
 
@@ -549,6 +565,7 @@ class App extends React.PureComponent {
                 onNewIssue={this.newIssue}
                 onCurateIssues={this.curateIssues}
                 onAllocateBounties={this.newBountyAllocation}
+                onUpdateBounty={this.updateBounty}
                 onSubmitWork={this.submitWork}
                 onRequestAssignment={this.requestAssignment}
                 activeIndex={activeIndex}

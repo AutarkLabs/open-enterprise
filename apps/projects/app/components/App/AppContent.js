@@ -1,8 +1,9 @@
 import PropTypes from 'prop-types'
 import React from 'react'
+import { TabBar, theme } from '@aragon/ui'
 
 import { STATUS } from '../../utils/github'
-import { TabbedView, TabBar, TabContent, Tab } from '../TabbedView'
+import { TabbedView, TabContent } from '../TabbedView'
 import { Issues, Overview, Settings } from '../Content'
 import AppTitleButton from '../App/AppTitleButton'
 
@@ -21,15 +22,22 @@ import AppTitleButton from '../App/AppTitleButton'
 
 // TODO: Dynamic component loading
 
-const AppContent = props => {
-  console.log('AppContent tokens: ', props.tokens)
+const AppContent = ({
+  activeIndex,
+  changeActiveIndex,
+  onNewIssue,
+  onNewProject,
+  projects,
+  status,
+  ...otherProps
+}) => {
   const contentData = [
     {
       tabName: 'Overview',
       TabComponent: Overview,
       tabButton: {
         caption: 'New Project',
-        onClick: props.onNewProject,
+        onClick: onNewProject,
         disabled: () => false,
         hidden: () => false,
       },
@@ -39,9 +47,10 @@ const AppContent = props => {
       TabComponent: Issues,
       tabButton: {
         caption: 'New Issue',
-        onClick: props.onNewIssue,
-        disabled: () => (props.projects.length ? false : true),
-        hidden: () => (props.projects.length ? false : true),
+        onClick: onNewIssue,
+        // TODO: check this, not very readable, and why do we need two variables doing exactly the same?
+        disabled: () => (projects.length ? false : true),
+        hidden: () => (projects.length ? false : true),
       },
     },
     {
@@ -51,10 +60,22 @@ const AppContent = props => {
   ]
 
   const appTitleButton =
-    props.status === STATUS.AUTHENTICATED &&
-    contentData[props.activeIndex.tabIndex].tabButton
-      ? contentData[props.activeIndex.tabIndex].tabButton
+    status === STATUS.AUTHENTICATED &&
+    contentData[activeIndex.tabIndex].tabButton
+      ? contentData[activeIndex.tabIndex].tabButton
       : null
+
+  const handleSelect = index =>
+    changeActiveIndex({ tabIndex: index, tabData: {} })
+  const tabNames = contentData.map(t => t.tabName)
+  const contentProps = {
+    activeIndex,
+    changeActiveIndex,
+    onNewProject,
+    projects,
+    status,
+    ...otherProps,
+  }
 
   return (
     <React.Fragment>
@@ -68,17 +89,19 @@ const AppContent = props => {
       )}
 
       <TabbedView
-        activeIndex={props.activeIndex}
-        changeActiveIndex={props.changeActiveIndex}
+        activeIndex={activeIndex}
+        changeActiveIndex={changeActiveIndex}
       >
-        <TabBar>
-          {contentData.map(({ tabName }) => (
-            <Tab key={tabName}>{tabName}</Tab>
-          ))}
-        </TabBar>
+        <Wrap>
+          <TabBar
+            items={tabNames}
+            onSelect={handleSelect}
+            selected={activeIndex.tabIndex}
+          />
+        </Wrap>
         <TabContent>
           {contentData.map(({ TabComponent }, i) => (
-            <TabComponent key={i} {...props} />
+            <TabComponent key={i} {...contentProps} />
           ))}
         </TabContent>
       </TabbedView>
@@ -86,15 +109,26 @@ const AppContent = props => {
   )
 }
 
+const Wrap = ({ children }) => (
+  <div
+    style={{
+      backgroundColor: theme.contentBackground,
+    }}
+  >
+    {children}
+  </div>
+)
+
 AppContent.propTypes = {
+  activeIndex: PropTypes.shape({
+    tabIndex: PropTypes.number,
+    tabData: PropTypes.object,
+  }).isRequired,
+  changeActiveIndex: PropTypes.func.isRequired,
+  onNewIssue: PropTypes.func.isRequired,
+  onNewProject: PropTypes.func.isRequired,
   projects: PropTypes.arrayOf(PropTypes.object).isRequired,
   bountyIssues: PropTypes.arrayOf(PropTypes.object).isRequired,
-  tokens: PropTypes.arrayOf(PropTypes.object).isRequired,
-  bountySettings: PropTypes.object.isRequired,
-  onNewProject: PropTypes.func.isRequired,
-  onNewIssue: PropTypes.func.isRequired,
-  activeIndex: PropTypes.object.isRequired,
-  changeActiveIndex: PropTypes.func.isRequired,
   status: PropTypes.string.isRequired,
 }
 

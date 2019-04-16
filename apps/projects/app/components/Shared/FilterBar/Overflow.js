@@ -4,7 +4,6 @@ import styled from 'styled-components'
 import FilterButton from './FilterButton'
 import FilterDropDown from './FilterDropDown'
 
-// TODO: document.querySelectorAll(".tab").forEach(e => console.log(e.clientWidth))
 
 class Overflow extends React.Component {
   state = {
@@ -43,7 +42,6 @@ class Overflow extends React.Component {
     const containerWidth = this.theRef.current
       ? this.theRef.current.clientWidth -150
       : 0
-    // console.log('calculateItems, containerWidth:', containerWidth)
 
     const itemWidth = 150
     const shown = Math.floor((containerWidth) / itemWidth)

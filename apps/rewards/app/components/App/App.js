@@ -97,7 +97,6 @@ class App extends React.Component {
   onNewReward = async reward => {
     let currentBlock = await this.props.app.web3Eth('getBlockNumber').toPromise()
     let startBlock = currentBlock + millisecondsToBlocks(Date.now(), reward.dateStart)
-    console.log(startBlock)
     if (!reward.isMerit) {
       switch (reward.disbursementCycle) {
       case 'Quarterly':
@@ -125,21 +124,6 @@ class App extends React.Component {
       reward.delay = 0
       reward.duration = millisecondsToBlocks(reward.dateStart, reward.dateEnd)
     }
-
-    console.log(
-      'description', reward.description,
-      '\nisMerit ',reward.isMerit,
-      '\nreferenceAsset ', reward.referenceAsset,
-      '\ncurrency', reward.currency,
-      '\namount', reward.amount,
-      '\nstartBlock', startBlock,
-      '\nduration', reward.duration,
-      '\noccurances', reward.occurances,
-      '\ndelay', reward.delay
-    )
-
-
-
     this.props.app.newReward(
       reward.description, //string _description
       reward.isMerit, //bool _isMerit,
@@ -155,7 +139,6 @@ class App extends React.Component {
   }
 
   onClaimReward = reward => {
-    console.log('onClaimReward', reward)
     this.props.app.claimReward(Number(reward.rewardId))
     this.closePanel()
   }
@@ -186,11 +169,9 @@ class App extends React.Component {
   }
 
   openDetailsView = reward => {
-    console.log('App open details', reward)
     this.viewReward(reward)
   }
   openDetailsMy = reward => {
-    console.log('App open details (my)', reward)
     this.myReward(reward)
   }
 

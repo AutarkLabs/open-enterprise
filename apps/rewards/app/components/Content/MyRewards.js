@@ -105,7 +105,6 @@ const claimedRewards = rewards => rewards.filter(reward => reward.claimed)
 const unclaimedRewards = rewards => rewards.filter(reward => !reward.claimed && rewardVisible(reward))
 
 const generateOpenDetails = (reward, openDetails) => () => {
-  console.log('calling openDetails on', reward)
   openDetails(reward)
 }
 

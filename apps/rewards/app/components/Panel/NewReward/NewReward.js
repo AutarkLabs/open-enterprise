@@ -49,7 +49,6 @@ class NewReward extends React.Component {
     dataToSend.disbursementDelay = disbursementDates[this.state.disbursementDate]
     dataToSend.isMerit = !dataToSend.rewardType ? true : false
     dataToSend.referenceAsset = this.props.balances[this.state.referenceAsset+1].address // account for no ETH in reference asset dropdown
-    console.log('Submitting new reward: ', dataToSend)
     this.props.onNewReward(dataToSend)
   }
 

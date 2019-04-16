@@ -118,7 +118,6 @@ const calculateYTDRewards = (rewards, balances, convertRates) => {
 }
 
 const generateOpenDetails = (reward, openDetails) => () => {
-  console.log('calling openDetails on', reward)
   openDetails(reward)
 }
 

@@ -1,14 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import {
-  Button,
-  IconAdd,
-  IconRemove,
-  TextInput,
-  theme,
-  unselectable,
-} from '@aragon/ui'
+import { Button, IconRemove, TextInput, theme, unselectable } from '@aragon/ui'
 
 const OptionsInput = ({
   input,
@@ -31,7 +24,8 @@ const OptionsInput = ({
 
   const removeOption = option => {
     // perform the change on the parent by using onChange prop without modifying value prop
-    onChange({ target: { name, value: values.filter(v => v !== option) } })
+    option &&
+      onChange({ target: { name, value: values.filter(v => v !== option) } })
   }
 
   const cleanInputBox = () => {
@@ -57,7 +51,7 @@ const OptionsInput = ({
   ))
 
   return (
-    <div>
+    <div style={{ paddingTop: '10px' }}>
       <div style={flexColumn}>
         {loadOptions}
         <StyledOption>
@@ -65,6 +59,12 @@ const OptionsInput = ({
             placeholder={placeholder}
             value={input.addr}
             onChange={onChangeInput}
+          />
+          <IconContainer
+            style={{ transform: 'scale(.8)' }}
+            onClick={() => removeOption()}
+            title="Click to remove the option"
+            children={<IconRemove />}
           />
         </StyledOption>
       </div>

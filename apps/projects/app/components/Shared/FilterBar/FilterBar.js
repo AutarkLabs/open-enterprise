@@ -41,9 +41,14 @@ const StyledFilterBar = styled.div`
     }
   }
 `
-
 const ActionLabel = styled.span`
   margin-left: 15px;
+`
+const Separator = styled.hr`
+  height: 1px;
+  border: 0;
+  width: 100%;
+  background: ${theme.contentBorder};
 `
 
 class FilterBar extends React.Component {
@@ -87,6 +92,9 @@ class FilterBar extends React.Component {
     const { handleSelectAll, allSelected, issues, bountyIssues, filters } = this.props
     // filters contain information about active filters (checked checkboxes)
     // filtersData is about displayed checkboxes
+    const allFundedIssues = [ 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]
+    const allIssues = [ 'all-funded', 'not-funded' ]
+
     const filtersData = prepareFilters(issues, bountyIssues)
     return (
       <StyledFilterBar>
@@ -152,8 +160,8 @@ class FilterBar extends React.Component {
                   </div>
                   <ActionLabel>
                     <Badge
-                      background={'#' + filtersData.labels[id].color}
-                      foreground={'#000'}
+                      background={'#' + filtersData.labels[id].color + '99'}
+                      foreground={theme.textPrimary}
                     >
                       {filtersData.labels[id].name}
                     </Badge>{' '}
@@ -196,11 +204,31 @@ class FilterBar extends React.Component {
               ))}
           </FilterDropDown>
 
+
           <FilterDropDown
             caption="Status"
             enabled={Object.keys(filtersData.milestones).length > 0}
           >
-            {Object.keys(filtersData.statuses).map(status => (
+            {allFundedIssues.map(status => (
+              <FilterMenuItem
+                key={status}
+                onClick={this.filter('statuses', status)}
+                style={{ display: 'flex', alignItems: 'flex-start' }}
+              >
+                <div>
+                  <Checkbox
+                    onChange={this.noop}
+                    checked={status in filters.statuses}
+                  />
+                </div>
+                <ActionLabel>
+                  {filtersData.statuses[status].name} (
+                  {filtersData.statuses[status].count})
+                </ActionLabel>
+              </FilterMenuItem>
+            ))}
+            <Separator />
+            {allIssues.map(status => (
               <FilterMenuItem
                 key={status}
                 onClick={this.filter('statuses', status)}
