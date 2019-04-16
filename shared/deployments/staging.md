@@ -52,9 +52,9 @@ files hashes:
  ℹ Content (ipfs): QmdDXSpGwvVi163QFiE41zU8V9iPAXQxuDTCZezfWFNABe
  ℹ Transaction hash: 0x2e686b91682a996427809d9ed356fbe3a092247344e7001386f19bdc8964a026
 ```
-- commit: [b5a5dd0](https://github.com/AutarkLabs/planning-suite/commit/b5a5dd0685e0a66e8124c9901e4f1f6249ed0d11)
 
-command: `aragon apm publish patch --files dist/ --environment staging`
+- command: `aragon apm publish patch --files dist/ --environment staging`
+- commit: [b5a5dd0](https://github.com/AutarkLabs/planning-suite/commit/b5a5dd0685e0a66e8124c9901e4f1f6249ed0d11)
 
 ## RangeVoting
 
