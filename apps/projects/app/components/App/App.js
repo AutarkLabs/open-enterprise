@@ -233,12 +233,6 @@ class App extends React.PureComponent {
     }
   }
 
-  handleMenuPanelOpen = () => {
-    window.parent.postMessage(
-      { from: 'app', name: 'menuPanel', value: true }, '*'
-    )
-  }
-
   changeActiveIndex = activeIndex => {
     this.setState({ activeIndex })
   }
@@ -540,7 +534,10 @@ class App extends React.PureComponent {
       <StyledAragonApp publicUrl={ASSETS_URL}>
         <BaseStyles />
         <ToastHub>
-          <Title text="Projects" handleMenuPanelOpen={this.handleMenuPanelOpen} />
+          <Title text="Projects"
+            displayMenuButton={this.props.displayMenuButton}
+            handleMenuPanelOpen={this.handleMenuPanelOpen}
+          />
           <ApolloProvider client={this.state.client}>
             <ErrorBoundary>
               <AppContent

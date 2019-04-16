@@ -26,7 +26,8 @@ const Project = ({
   url,
   contributors,
   onRemoveProject,
-  changeActiveIndex
+  changeActiveIndex,
+  screenSize,
 }) => {
   const removeProject = () => {
     onRemoveProject(repoId)
@@ -40,7 +41,7 @@ const Project = ({
   }
 
   return (
-    <StyledCard onClick={clickContext}>
+    <StyledCard onClick={clickContext} screenSize={screenSize}>
       <MenuContainer onClick={clickMenu}>
         <ContextMenu>
           <ContextMenuItem>
@@ -95,11 +96,12 @@ const Project = ({
 
 const StyledCard = styled(Card)`
   display: flex;
+  margin: ${props => props.screenSize < 600 ? '0.2rem' : '1rem' };
   flex-direction: column;
   justify-content: flex-start;
   padding: 12px;
   height: 240px;
-  width: 249px;
+  width: ${props => props.screenSize < 540 ? '100%' : '249px' };
   transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
   :hover {
     cursor: pointer;
