@@ -1,5 +1,4 @@
 import { initializeTokens, vaultLoadBalance } from './token'
-import { filterEntries } from '../../../address-book/app/script'
 import { onFundedAccount, onNewAccount, onPayoutExecuted } from './account'
 import { onEntryAdded, onEntryRemoved } from './entry'
 import { INITIALIZATION_TRIGGER } from './'
@@ -16,51 +15,37 @@ export const handleEvent = async (state, event, settings) => {
 
   let nextAccounts, nextEntries, nextBoth
   let nextState = { ...state }
-
   if (eventName === INITIALIZATION_TRIGGER) {
     nextState = await initializeTokens(nextState, settings)
   } else if (addressesEqual(eventAddress, vault.address)) {
     // Vault event
     nextState = await vaultLoadBalance(nextState, event, settings)
-    // TODO: handle events by eventAddress, to difference addressBook, allocations, vault events
   } else {
+    
     switch (eventName) {
     case 'FundAccount':
       nextAccounts = await onFundedAccount(accounts, returnValues)
-      console.log('nextAstate:', nextState)
-
       nextState.accounts = nextAccounts
       break
     case 'NewAccount':
       nextAccounts = await onNewAccount(accounts, returnValues)
-      console.log('nextAstate2:', nextState)
-
       nextState.accounts = nextAccounts
       break
     case 'PayoutExecuted':
       nextBoth = await onPayoutExecuted(payouts, accounts, returnValues)
-      console.log('nextAstate:3', nextState, nextBoth)
-
       nextState.accounts = nextBoth.accounts
       nextState.payouts = nextBoth.payouts
       break
     case 'SetDistribution':
       nextBoth = await onPayoutExecuted(payouts, accounts, returnValues)
-      console.log('nextAstate:4', nextState, nextBoth)
-
       nextState.accounts = nextBoth.accounts
       nextState.payouts = nextBoth.payouts
       break
     case 'EntryAdded':
-      nextEntries = await onEntryAdded({ entries, addressBook }, returnValues)
-      nextState.entries = filterEntries(nextEntries)
+      nextState.entries = await onEntryAdded({ entries, addressBook }, returnValues)
       break
     case 'EntryRemoved':
-      nextEntries = await onEntryRemoved(
-        { entries, addressBook },
-        returnValues
-      )
-      nextState.entries = filterEntries(nextEntries)
+      nextState.entries = await onEntryRemoved({ entries, addressBook }, returnValues)
       break
     default:
       break

@@ -203,6 +203,10 @@ contract Projects is IsContract, AragonApp {
 // Set state functions
 ///////////////////////
 
+
+    /**
+     * @notice Update settings for the Projects app 
+     */
     function changeBountySettings(
         uint256[] _expMultipliers,
         bytes32[] _expLevels,
@@ -238,7 +242,7 @@ contract Projects is IsContract, AragonApp {
         hasBounty = issue.hasBounty;
         fulfilled = issue.fulfilled;
         standardBountyId = issue.standardBountyId;
-        ( , , , , ,balance) = bounties.getBounty(standardBountyId);
+        balance = issue.bountySize;
         dataHash = bounties.getBountyData(standardBountyId);
         token = bounties.getBountyToken(standardBountyId);
         assignee = issue.assignee;

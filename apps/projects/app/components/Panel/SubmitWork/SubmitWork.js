@@ -47,9 +47,7 @@ class SubmitWork extends React.Component {
     )
 
   render() {
-    // TODO: replace with props
     const { login } = this.props.githubCurrentUser
-
     const { title, repo, number, url } = this.props.issue
 
     return (

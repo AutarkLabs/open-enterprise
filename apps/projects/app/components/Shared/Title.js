@@ -16,14 +16,9 @@ const StyledTitle = styled(Text)`
   z-index: 1;
 `
 
-const Title = ({ text, shadow, handleMenuPanelOpen }) => (
+const Title = ({ text, shadow, displayMenuButton, handleMenuPanelOpen }) => (
   <div style={{ display: 'flex', alignItems: 'center', background: 'white' }}>
-    {/* TODO: issue #528*/}
-    <Viewport>
-      {({ below }) =>
-        below('small') && <MenuButton onClick={handleMenuPanelOpen} />
-      }
-    </Viewport>
+    {displayMenuButton && <MenuButton onClick={handleMenuPanelOpen} />}
     <StyledTitle size="xxlarge" shadow={shadow}>
       {text}
     </StyledTitle>
@@ -32,7 +27,8 @@ const Title = ({ text, shadow, handleMenuPanelOpen }) => (
 
 Title.propTypes = {
   text: PropTypes.string.isRequired,
-  handleMenuPanelOpen : PropTypes.func.isRequired,
+  handleMenuPanelOpen: PropTypes.func.isRequired,
+  displayMenuButton: PropTypes.bool,
   shadow: PropTypes.bool,
 }
 

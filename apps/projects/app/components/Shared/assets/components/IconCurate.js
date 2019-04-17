@@ -14,9 +14,9 @@ const StyledIcon = styled.div`
 const IconCurate = props => (
   <StyledIcon>
     <svg aria-hidden="true" width="22px" height="22px" viewBox="0 0 22 22"  {...props}>
-      <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+      <g id="Page-1" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
         <polygon id="Shape" points="0 0 22 0 22 22 0 22"></polygon>
-        <g id="Group-3" transform="translate(3.000000, 5.000000)" fill="#8B9396" fill-rule="nonzero">
+        <g id="Group-3" transform="translate(3.000000, 5.000000)" fill="#8B9396" fillRule="nonzero">
           <g id="noun_Settings_20638">
             <rect id="line" x="0" y="2.41171404" width="7.35817388" height="1.06115418" rx="0.530577089"></rect>
             <rect id="line" x="0" y="9.30921619" width="4.09801947" height="1.06115418" rx="0.530577089"></rect>

@@ -13,7 +13,7 @@ import BigNumber from 'bignumber.js'
 import { compareAsc, compareDesc } from 'date-fns'
 
 import { STATUS } from '../../utils/github'
-import { GET_ISSUES } from '../../utils/gql-queries.js'
+import { getIssuesGQL } from '../../utils/gql-queries.js'
 import { DropDownButton as ActionsMenu, FilterBar, IconCurate } from '../Shared'
 import { Issue, Empty } from '../Card'
 import { IssueDetail } from './IssueDetail'
@@ -27,7 +27,7 @@ class Issues extends React.PureComponent {
   }
 
   state = {
-    selectedIssues: [],
+    selectedIssues: {},
     allSelected: false,
     filters: {
       projects: {},
@@ -37,11 +37,14 @@ class Issues extends React.PureComponent {
       experiences: {},
       statuses: {},
     },
-    sortBy: { what: 'Name', direction: -1 },
+    sortBy: { what: 'Creation Date', direction: -1 },
     textFilter: '',
     reload: false,
     currentIssue: {},
     showIssueDetail: false,
+    downloadedRepos: {},
+    downloadedIssues: [],
+    issuesPerCall: 100,
   }
 
   componentWillMount() {
@@ -54,8 +57,11 @@ class Issues extends React.PureComponent {
     }
   }
 
+  selectedIssuesArray = () =>
+    Object.keys(this.state.selectedIssues).map(id => this.state.selectedIssues[id])
+
   handleCurateIssues = issuesFiltered => () => {
-    this.props.onCurateIssues(this.state.selectedIssues, issuesFiltered)
+    this.props.onCurateIssues(this.selectedIssuesArray(), issuesFiltered)
     // this is called from ActionMenu, on selected Issues -
     // return to default state where nothing is selected
     this.setState({ selectedIssues: [], allSelected: false })
@@ -70,34 +76,20 @@ class Issues extends React.PureComponent {
   }
 
   handleAllocateBounties = () => {
-    this.props.onAllocateBounties(this.state.selectedIssues)
+    this.props.onAllocateBounties(this.selectedIssuesArray())
     // this is called from ActionMenu, on selected Issues -
     // return to default state where nothing is selected
     this.setState({ selectedIssues: [], allSelected: false })
   }
 
-  handleReviewApplication = issue => {
-    this.props.onReviewApplication(issue)
-  }
-
-  handleReviewWork = issue => {
-    this.props.onReviewWork(issue)
-  }
-
-  handleSubmitWork = issue => {
-    this.props.onSubmitWork(issue)
-  }
-
-  handleRequestAssignment = issue => {
-    this.props.onRequestAssignment(issue)
-  }
-
   toggleSelectAll = issuesFiltered => () => {
-    if (this.state.allSelected) {
-      this.setState({ allSelected: false, selectedIssues: [] })
-    } else {
-      this.setState({ allSelected: true, selectedIssues: this.shapeIssues(issuesFiltered) })
+    const selectedIssues = {}
+    const allSelected = !this.state.allSelected
+    const reload = !this.state.reload
+    if (!this.state.allSelected) {
+      this.shapeIssues(issuesFiltered).forEach(issue => selectedIssues[issue.id] = issue)
     }
+    this.setState({ allSelected, selectedIssues, reload })
   }
 
   handleFiltering = filters => {
@@ -182,13 +174,14 @@ class Issues extends React.PureComponent {
   }
 
   handleIssueSelection = issue => {
-    this.setState(({ selectedIssues }) => {
-      const newSelectedIssues = selectedIssues
-        .map(selectedIssue => selectedIssue.id)
-        .includes(issue.id)
-        ? selectedIssues.filter(selectedIssue => selectedIssue.id !== issue.id)
-        : [...new Set([].concat(...selectedIssues, issue))]
-      return { selectedIssues: newSelectedIssues }
+    this.setState(prevState => {
+      const newSelectedIssues = prevState.selectedIssues
+      if (issue.id in newSelectedIssues) {
+        delete newSelectedIssues[issue.id]
+      } else {
+        newSelectedIssues[issue.id] = issue
+      }
+      return { selectedIssues: newSelectedIssues, reload: !prevState.reload }
     })
   }
 
@@ -241,7 +234,7 @@ class Issues extends React.PureComponent {
         disableFilter={this.disableFilter}
         disableAllFilters={this.disableAllFilters}
       />
-      <ActionsMenu enabled={!!this.state.selectedIssues.length}>
+      <ActionsMenu enabled={Object.keys(this.state.selectedIssues).length > 0}>
         <ContextMenuItem
           onClick={this.handleCurateIssues(issuesFiltered)}
           style={{ display: 'flex', alignItems: 'flex-start' }}
@@ -336,6 +329,7 @@ class Issues extends React.PureComponent {
           .div(BigNumber(10 ** tokenObj[data.token].decimals))
           .dp(3)
           .toString()
+
         return {
           ...fields,
           ...bountyIssueObj[fields.number].data,
@@ -371,118 +365,196 @@ class Issues extends React.PureComponent {
       }
   }
 
+  renderCurrentIssue = currentIssue => {
+    const {
+      onRequestAssignment,
+      onReviewApplication,
+      onSubmitWork,
+      onReviewWork,
+    } = this.props
+
+    currentIssue.repository = {
+      name: currentIssue.repo,
+      id: currentIssue.repoId,
+      __typename: 'Repository',
+    }
+
+    const currentIssueShaped = this.shapeIssues([currentIssue])[0]
+
+    return (
+      <IssueDetail
+        issue={currentIssueShaped}
+        onClose={this.handleIssueDetailClose}
+        onReviewApplication={onReviewApplication}
+        onRequestAssignment={onRequestAssignment}
+        onSubmitWork={onSubmitWork}
+        onAllocateSingleBounty={this.handleAllocateSingleBounty}
+        onUpdateBounty={this.handleUpdateBounty}
+        onReviewWork={onReviewWork}
+      />
+    )
+  }
+
+  /*
+   Data obtained from github API is data.{repo}.issues.[nodes] and it needs
+   flattening into one simple array of issues  before it can be used
+
+   Returns array of issues and object of repos numbers: how many issues
+   in repo in total, how many downloaded, how many to fetch next time
+   (for "show more")
+  */
+  flattenIssues = data => {
+    let downloadedIssues = []
+    const downloadedRepos = {}
+    let totalCount = 0
+
+    Object.keys(data).forEach(nodeName => {
+      const repo = data[nodeName]
+
+      downloadedRepos[repo.id] = {
+        downloadedCount: repo.issues.nodes.length,
+        totalCount: repo.issues.totalCount,
+        fetch: this.state.issuesPerCall,
+        hasNextPage: repo.issues.pageInfo.hasNextPage,
+        endCursor: repo.issues.pageInfo.endCursor,
+      }
+      downloadedIssues = downloadedIssues.concat(...repo.issues.nodes)
+    })
+
+    if (this.state.downloadedIssues.length > 0) {
+      downloadedIssues = downloadedIssues.concat(this.state.downloadedIssues)
+    }
+
+    return { downloadedIssues, downloadedRepos }
+  }
+
+  showMoreIssues = (downloadedIssues, downloadedRepos) => {
+    let newDownloadedRepos = { ...downloadedRepos }
+
+    Object.keys(downloadedRepos).forEach(repoId => {
+      newDownloadedRepos[repoId].showMore = downloadedRepos[repoId].hasNextPage
+    })
+    this.setState({
+      downloadedRepos: newDownloadedRepos,
+      downloadedIssues,
+    })
+  }
+
   render() {
     if (this.props.status === STATUS.INITIAL) {
       return <Unauthorized onLogin={this.props.onLogin} />
     }
+
     const {
       projects,
       onNewProject,
+      onRequestAssignment,
+      onReviewApplication,
+      onSubmitWork,
+      onReviewWork,
     } = this.props
-    const { currentIssue, showIssueDetail } = this.state
 
-    // better return early if we have no projects added?
+    const {
+      currentIssue,
+      showIssueDetail,
+      filters
+    } = this.state
+
+    // better return early if we have no projects added
     if (projects.length === 0) return <Empty action={onNewProject} />
 
-    if (showIssueDetail) {
-
-      currentIssue.repository = {
-        name: currentIssue.repo,
-        id: currentIssue.repoId,
-        __typename: 'Repository',
-      }
-
-      const currentIssueShaped = this.shapeIssues([currentIssue])[0]
-
-      return (
-        <IssueDetail
-          issue={currentIssueShaped}
-
-          onClose={this.handleIssueDetailClose}
-          onReviewApplication={() => {
-            this.handleReviewApplication(currentIssueShaped)
-          }}
-          onRequestAssignment={() => {
-            this.handleRequestAssignment(currentIssueShaped)
-          }}
-          onSubmitWork={() => {
-            this.handleSubmitWork(currentIssueShaped)
-          }}
-          onAllocateSingleBounty={() => {
-            this.handleAllocateSingleBounty(currentIssueShaped)
-          }}
-          onUpdateBounty={() => {
-            this.handleUpdateBounty(currentIssueShaped)
-          }}
-          onReviewWork={() => {
-            this.handleReviewWork(currentIssueShaped)
-          }}
-        />
-      )
-    }
-
-    const reposIds = projects.map(project => project.data._repo)
-
-    // Build an array of plain issues by flattening the data obtained from github API
-    const flattenIssues = nodes =>
-      nodes && [].concat(...nodes.map(node => node.issues.nodes))
+    // same if we only need to show Issue's Details screen
+    if (showIssueDetail) return this.renderCurrentIssue(currentIssue, this.props)
 
     const currentSorter = this.generateSorter()
+
+    // build params for GQL query, each repo to fetch has number of items to download,
+    // and a cursor in there are 100+ issues and "Show More" was clicked.
+    let reposQueryParams = {}
+
+    if (Object.keys(this.state.downloadedRepos).length > 0) {
+      Object.keys(this.state.downloadedRepos).forEach(repoId => {
+        if (this.state.downloadedRepos[repoId].hasNextPage)
+          reposQueryParams[repoId] = this.state.downloadedRepos[repoId]
+      })
+    } else {
+      if (Object.keys(filters.projects).length > 0) {
+        Object.keys(filters.projects).forEach(repoId => {
+          reposQueryParams[repoId] = {
+            fetch: this.state.issuesPerCall,
+            showMore: false,
+          }
+        })
+      } else {
+        projects.forEach(project => {
+          const repoId = project.data._repo
+          reposQueryParams[repoId] = {
+            fetch: this.state.issuesPerCall,
+            showMore: false,
+          }
+        })
+      }
+    }
+
+    // previous GET_ISSUES is deliberately left in place for reference
+    const GET_ISSUES2 = getIssuesGQL(reposQueryParams)
 
     return (
       <Query
         fetchPolicy="cache-first"
-        query={GET_ISSUES}
-        variables={{ reposIds }}
+        query={GET_ISSUES2}
         onError={console.error}
       >
         {({ data, loading, error, refetch }) => {
-          if (data && data.nodes) {
-            const issues = flattenIssues(data.nodes)
-            const issuesFiltered = this.applyFilters(issues)
+          if (data && data.node0) {
+            // first, flatten data structure into array of issues
+            const { downloadedIssues, downloadedRepos } = this.flattenIssues(data)
+
+            // then apply filtering
+            const issuesFiltered = this.applyFilters(downloadedIssues)
+            // then determine whether any shown repos have more issues to fetch
+            const moreIssuesToShow = Object.keys(downloadedRepos).filter(repoId =>
+              downloadedRepos[repoId].hasNextPage
+            ).length > 0
+
             return (
               <StyledIssues>
-                {this.actionsMenu(issues, issuesFiltered)}
-                {this.filterBar(issues, issuesFiltered)}
+                {this.actionsMenu(downloadedIssues, issuesFiltered)}
+                {this.filterBar(downloadedIssues, issuesFiltered)}
 
                 <IssuesScrollView>
                   <ScrollWrapper>
                     {this.shapeIssues(issuesFiltered)
                       .sort(currentSorter)
-                      .map(issue => (
-                        <Issue
-                          isSelected={this.state.selectedIssues
-                            .map(selectedIssue => selectedIssue.id)
-                            .includes(issue.id)}
-                          onClick={() => {
-                            this.handleIssueClick(issue)
-                          }}
-                          onSelect={() => {
-                            this.handleIssueSelection(issue)
-                          }}
-                          onReviewApplication={() => {
-                            this.handleReviewApplication(issue)
-                          }}
-                          onSubmitWork={() => {
-                            this.handleSubmitWork(issue)
-                          }}
-                          onRequestAssignment={() => {
-                            this.handleRequestAssignment(issue)
-                          }}
-                          onAllocateSingleBounty={() => {
-                            this.handleAllocateSingleBounty(issue)
-                          }}
-                          onUpdateBounty={() => {
-                            this.handleUpdateBounty(issue)
-                          }}
-                          onReviewWork={() => {
-                            this.handleReviewWork(issue)
-                          }}
-                          key={issue.id}
-                          {...issue}
-                        />
-                      ))}
+                      .map((issue, index) => {
+                        return (
+                          <Issue
+                            isSelected={issue.id in this.state.selectedIssues}
+                            key={index}
+                            {...issue}
+
+                            onClick={this.handleIssueClick}
+                            onSelect={this.handleIssueSelection}
+                            onReviewApplication={onReviewApplication}
+                            onSubmitWork={onSubmitWork}
+                            onRequestAssignment={onRequestAssignment}
+                            onAllocateSingleBounty={this.handleAllocateSingleBounty}
+                            onUpdateBounty={this.handleUpdateBounty}
+                            onReviewWork={onReviewWork}
+                          />
+                        )
+                      })}
                   </ScrollWrapper>
+
+                  <div style={{ textAlign: 'center' }}>
+                    {moreIssuesToShow && (
+                      <Button
+                        mode="secondary"
+                        onClick={() => this.showMoreIssues(downloadedIssues, downloadedRepos)}>
+                        Show More
+                      </Button>
+                    )}
+                  </div>
                 </IssuesScrollView>
               </StyledIssues>
             )
