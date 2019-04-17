@@ -10,7 +10,7 @@ const formatAvgAmount = (amount, symbol, color = 'black') => {
     <Text.Block size="xlarge" weight="bold" color={color}>
       {symbol}{formatted[0]}.
       <Text size="large" weight="bold">
-        {formatted[1]}
+        {formatted[1].slice(0,2).padEnd(2,'0')}
       </Text>
     </Text.Block>
   ) : (

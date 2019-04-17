@@ -21,7 +21,7 @@ import {
 } from '@aragon/ui'
 import { FieldTitle, FormField } from '../../Form'
 import { MONTHS } from '../../../utils/constants'
-import { displayCurrency } from '../../../utils/helpers'
+import { displayCurrency, getSymbol } from '../../../utils/helpers'
 import { provideNetwork } from '../../../../../../shared/ui'
 
 class ViewReward extends React.Component {
@@ -31,14 +31,6 @@ class ViewReward extends React.Component {
     }
 
     onClosePanel = () => this.props.onClosePanel()
-
-    getSymbol = (tokens, referenceToken) => {
-      return tokens
-        .reduce((symbol, token) => {
-          if (token.address === referenceToken) return token.symbol
-          else return symbol
-        },'')
-    }
 
     renderDescription = (description = '') => {
       // Make '\n's real breaks
@@ -111,7 +103,7 @@ class ViewReward extends React.Component {
           <SidePanelSplit>
             <div>
               <FieldTitle>Reference Asset</FieldTitle>
-              <p>{this.getSymbol(tokens,referenceToken)}</p>
+              <p>{getSymbol(tokens,referenceToken)}</p>
             </div>
             <div>
               <FieldTitle>Type</FieldTitle>
@@ -124,7 +116,7 @@ class ViewReward extends React.Component {
             <div>
               <FieldTitle>Amount</FieldTitle>
               <p>
-                {displayCurrency(amount)}{' '}{this.getSymbol(tokens, rewardToken)}
+                {displayCurrency(amount)}{' '}{getSymbol(tokens, rewardToken)}
               </p>
             </div>
             <div>
@@ -144,9 +136,9 @@ class ViewReward extends React.Component {
             <Summary>
               <p>
                 {'A total of '}
-                <SummaryVar>{displayCurrency(amount)} {this.getSymbol(tokens,rewardToken)}</SummaryVar>
+                <SummaryVar>{displayCurrency(amount)} {getSymbol(tokens,rewardToken)}</SummaryVar>
                 {' will be distributed as a reward to addresses that earned '}
-                <SummaryVar>{this.getSymbol(tokens,referenceToken)}</SummaryVar>
+                <SummaryVar>{getSymbol(tokens,referenceToken)}</SummaryVar>
                 {' from '}
                 <SummaryVar>
                   {format(startDate,'dd-MMM-yyyy')}
@@ -159,7 +151,7 @@ class ViewReward extends React.Component {
               </p>
               <p>
                 {'The reward amount will be in proportion to the '}
-                <SummaryVar>{this.getSymbol(tokens,referenceToken)}</SummaryVar>
+                <SummaryVar>{getSymbol(tokens,referenceToken)}</SummaryVar>
                 {' earned by each account in the specified period.'}
               </p>
               <p>

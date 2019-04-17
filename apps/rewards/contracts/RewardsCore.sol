@@ -99,7 +99,6 @@ contract RewardsCore is IsContract, AragonApp {
         } else {
             rewardAmount = calculateDividendReward(reward);
         }
-        //rewardAmount = 50;
     }
 
     function getTotalAmountClaimed(address _token)

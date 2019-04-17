@@ -77,7 +77,8 @@ const sumUserRewards = (rewards, balances, convertRates, rewardFilter) => {
       return rewards.reduce((rewAcc,reward) => {
         return (rewardFilter(reward, balance))
           ?
-          rewAcc + reward.userRewardAmount / Math.pow(10, balance.decimals) / convertRates[balance.symbol]
+          BigNumber(reward.userRewardAmount).div(Math.pow(10, balance.decimals)).div(convertRates[balance.symbol]).plus(rewAcc)
+            .toNumber()
           :
           rewAcc
       },0) + balAcc
@@ -131,9 +132,8 @@ const MyRewardsWide = ({ onClaimReward, claimed, rewards, openDetails, network, 
     header={
       <TableRow>
         <TableHeader key="1" title="Description" />
-        {/*<TableHeader key="2" title="Transaction" />*/}
-        <TableHeader key="3" title={!claimed ? 'Status': 'Transaction Date'} />
-        <TableHeader key="4" title="Amount" />
+        <TableHeader key="2" title={!claimed ? 'Status': 'Transaction Date'} />
+        <TableHeader key="3" title="Amount" />
       </TableRow>
     }
   >
@@ -144,9 +144,6 @@ const MyRewardsWide = ({ onClaimReward, claimed, rewards, openDetails, network, 
             {reward.description}
           </RewardDescription>
         </TableCell>
-        {/*<TableCell>
-          {reward.transactionID}
-        </TableCell>*/}
         <TableCell>
           {!reward.claimed ? (
             reward.endDate < Date.now() ? (
@@ -225,6 +222,8 @@ const MyRewards = ({ onClaimReward, rewards, newReward, openDetails, network, to
   )
 
   const summarizedRewards = calculateMyRewardsSummary(rewards, tokens, convertRates)
+  const unclaimedRewardsLength = unclaimedRewards(rewards).length
+  const claimedRewardsLength = claimedRewards(rewards).length
 
   if (rewardsEmpty) {
     return <Empty tab='MyRewards' action={newReward} />
@@ -238,19 +237,19 @@ const MyRewards = ({ onClaimReward, rewards, newReward, openDetails, network, to
           numbers={summarizedRewards}
         />
 
-        {claimedRewards(rewards).length > 0
+        {claimedRewardsLength > 0
         &&
         <RewardsTable
           title="Claimed Rewards"
           claimed={true}
-          rewards={rewards.filter(reward => reward.claimed)}
+          rewards={claimedRewards(rewards)}
           openDetails={openDetails}
           network={network}
 	        tokens={tokens}
           belowMedium={MyRewardsNarrow}
           aboveMedium={MyRewardsWide}
         />}
-        {unclaimedRewards(rewards).length > 0
+        {unclaimedRewardsLength > 0
         &&
         <RewardsTable
           title="Unclaimed Rewards"

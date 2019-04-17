@@ -12,7 +12,7 @@ import {
   theme,
   Badge,
 } from '@aragon/ui'
-import { displayCurrency } from '../../utils/helpers'
+import { displayCurrency, getSymbol } from '../../utils/helpers'
 import {
   AverageRewards,
   AverageRewardsTable,
@@ -34,20 +34,6 @@ const headersNames = fourth => [
   fourth,
   'Amount',
 ]
-
-const translateToken = (token) => {
-  if (token == 0x0) {
-    return 'ETH'
-  }
-}
-
-const getSymbol = (tokens, rewardToken) => {
-  return tokens
-    .reduce((symbol, token) => {
-      if (token.address === rewardToken) return token.symbol
-      else return symbol
-    },'')
-}
 
 const dot = <span style={{ margin: '0px 6px' }}>&middot;</span>
 
@@ -104,7 +90,8 @@ const sumTotalRewards = (rewards, balances, convertRates, rewardFilter) => {
       return rewards.reduce((rewAcc,reward) => {
         return (rewardFilter(reward, balance))
           ?
-          rewAcc + reward.amount / Math.pow(10, balance.decimals) / convertRates[balance.symbol]
+          BigNumber(reward.amount).div(Math.pow(10, balance.decimals)).div(convertRates[balance.symbol]).plus(rewAcc)
+            .toNumber()
           :
           rewAcc
       },0) + balAcc

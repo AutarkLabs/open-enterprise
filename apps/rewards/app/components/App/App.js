@@ -48,13 +48,11 @@ class App extends React.Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
-    if(nextProps.balances) {
-      this.updateConvertedRates(nextProps)
-    }
+  componentDidUpdate(prevProps) {
+    this.updateConvertedRates(this.props)
   }
 
-  updateConvertedRates = throttle(async ({ balances }) => {
+  updateConvertedRates = throttle(async ({ balances = [] }) => {
     const verifiedSymbols = balances
       .filter(({ verified }) => verified)
       .map(({ symbol }) => symbol)
@@ -65,8 +63,11 @@ class App extends React.Component {
 
     const res = await fetch(convertApiUrl(verifiedSymbols))
     const convertRates = await res.json()
-    this.setState({ convertRates })
-    //console.log('conversion rates: ', convertRates)
+    console.log(this.state.convertRates, convertRates)
+    if (JSON.stringify(this.state.convertRates) !== JSON.stringify(convertRates)) {
+      console.log('updating')
+      this.setState({ convertRates })
+    }
   }, CONVERT_THROTTLE_TIME)
 
   handleMenuPanelOpen = () => {
@@ -81,6 +82,10 @@ class App extends React.Component {
 
   selectTab = idx => {
     this.setState({ selected: idx })
+  }
+
+  getRewards = (rewards) => {
+    return rewards === undefined ? [] : rewards
   }
 
   newReward = () => {
@@ -216,7 +221,7 @@ class App extends React.Component {
 
             { this.state.selected === 1 ? (
               <MyRewards
-                rewards={this.props.rewards === undefined ? [] : this.props.rewards}
+                rewards={this.getRewards(this.props.rewards)}
                 newReward={this.newReward}
                 openDetails={this.openDetailsMy}
                 network={network}
@@ -226,7 +231,7 @@ class App extends React.Component {
               />
             ) : (
               <Overview
-                rewards={this.props.rewards === undefined ? [] : this.props.rewards}
+                rewards={this.getRewards(this.props.rewards)}
                 newReward={this.newReward}
                 openDetails={this.openDetailsView}
                 network={network}
