@@ -16,7 +16,6 @@ export const handleEvent = async (state, event, settings) => {
 
   let nextAccounts, nextEntries, nextBoth
   let nextState = { ...state }
-
   if (eventName === INITIALIZATION_TRIGGER) {
     nextState = await initializeTokens(nextState, settings)
   } else if (addressesEqual(eventAddress, vault.address)) {
@@ -27,26 +26,22 @@ export const handleEvent = async (state, event, settings) => {
     switch (eventName) {
     case 'FundAccount':
       nextAccounts = await onFundedAccount(accounts, returnValues)
-      console.log('nextAstate:', nextState)
 
       nextState.accounts = nextAccounts
       break
     case 'NewAccount':
       nextAccounts = await onNewAccount(accounts, returnValues)
-      console.log('nextAstate2:', nextState)
 
       nextState.accounts = nextAccounts
       break
     case 'PayoutExecuted':
       nextBoth = await onPayoutExecuted(payouts, accounts, returnValues)
-      console.log('nextAstate:3', nextState, nextBoth)
 
       nextState.accounts = nextBoth.accounts
       nextState.payouts = nextBoth.payouts
       break
     case 'SetDistribution':
       nextBoth = await onPayoutExecuted(payouts, accounts, returnValues)
-      console.log('nextAstate:4', nextState, nextBoth)
 
       nextState.accounts = nextBoth.accounts
       nextState.payouts = nextBoth.payouts
