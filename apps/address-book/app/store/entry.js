@@ -1,18 +1,17 @@
 import { first, map } from 'rxjs/operators' // Make sure observables have first()
-
+import { app } from './app'
 /// /////////////////////////////////////
 /*     AddressBook event handlers      */
 /// /////////////////////////////////////
 
-export const onEntryAdded = async ({ entries = [], addressBook }, { addr }) => {
+export const onEntryAdded = async ({ entries = [] }, { addr }) => {
   // is addr already in the state?
   if (entries.some(entry => entry.addr === addr)) {
     // entry already cached, do nothing
   } else {
     // entry not cached
-    const data = await loadEntryData(addr, addressBook) // async load data from contract
-    if (data) {
-      // just perform transform and push if data was found (entry was not removed)
+    const data = await loadEntryData(addr) // async load data from contract
+    if (data) { // just perform transform and push if data was found (entry was not removed)
       const entry = { addr, data } // transform for the frontend to understand
       entries.push(entry) // add to the state object received as param
     }
@@ -35,24 +34,16 @@ export const onEntryRemoved = async ({ entries }, { addr }) => {
 /*    AddressBook helper functions    */
 /// /////////////////////////////////////
 
-const loadEntryData = async (addr, addressBook) => {
-  const addressBookApp = addressBook.contract
-  return addressBookApp
-    .getEntry(addr)
-    .pipe(
-      first(),
-      map(
-        entry =>
-          // don't resolve when entry not found
-          // return null handles cases when syncing deleted addresses
-          entry[0] === 0
-            ? null
-            : {
-              entryAddress: entry[0],
-              name: entry[1],
-              entryType: entry[2],
-            }
-      )
-    )
-    .toPromise()
+const loadEntryData = (addr) => {
+  return new Promise(resolve => {
+    app.call('getEntry', addr).subscribe(entry => {
+      // don't resolve when entry not found
+      entry &&
+        resolve({
+          entryAddress: entry[0],
+          name: entry[1],
+          entryType: entry[2],
+        })
+    })
+  })
 }

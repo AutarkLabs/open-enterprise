@@ -537,8 +537,8 @@ class App extends React.PureComponent {
       <StyledAragonApp publicUrl={ASSETS_URL}>
         <BaseStyles />
         <ToastHub>
-          <Title
-            text="Projects"
+          <Title text="Projects"
+            displayMenuButton={this.props.displayMenuButton}
             handleMenuPanelOpen={this.handleMenuPanelOpen}
           />
           <ApolloProvider client={this.state.client}>

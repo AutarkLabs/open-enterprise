@@ -632,7 +632,7 @@ contract RangeVoting is IForwarder, AragonApp {
         uint256 numberOfCandidates,
         uint256 strLength,
         uint256 desLength
-    ) internal returns(bytes) 
+    ) internal pure returns(bytes) 
     {
         uint256 secondDynamicElementLocation = 32 + offset + (numberOfCandidates * 32);
         uint256 thirdDynamicElementLocation = secondDynamicElementLocation + 32 + (numberOfCandidates * 32);
@@ -658,7 +658,7 @@ contract RangeVoting is IForwarder, AragonApp {
         bytes script,
         uint256 numberOfCandidates,
         uint256 dynamicOffset
-        ) internal returns(uint256 offset)
+        ) internal view returns(uint256 offset)
         {
                 // Set the initial offest after the static parameters
         offset = 64 + dynamicOffset;
@@ -755,7 +755,13 @@ contract RangeVoting is IForwarder, AragonApp {
         emit ExecuteVote(_voteId);
     }
 
-    function addInfoString(uint256 _voteId, bytes script, uint256 numberOfCandidates, uint256 _offset) internal returns (uint256 newOffset) {
+    function addInfoString(
+        uint256 _voteId,
+        bytes script,
+        uint256 numberOfCandidates,
+        uint256 _offset)
+        internal view returns (uint256 newOffset)
+    {
         Vote storage voteInstance = votes[_voteId];
         uint256 infoStringLength = voteInstance.infoStringLength;
         bytes memory infoString = new bytes(infoStringLength);
@@ -799,7 +805,7 @@ contract RangeVoting is IForwarder, AragonApp {
         bytes script,
         uint256 numberOfCandidates,
         uint256 _offset
-        ) internal returns(uint256 offset)
+        ) internal view returns(uint256 offset)
         {
         offset = _offset;
         assembly { // solium-disable-line security/no-inline-assembly

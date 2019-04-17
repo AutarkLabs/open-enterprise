@@ -7,6 +7,7 @@ import { Project, Empty, Error } from '../Card'
 import Unauthorized from './Unauthorized'
 import { LoadingAnimation } from '../Shared'
 import { EmptyWrapper } from '../Shared'
+import { Viewport } from '@aragon/ui'
 
 const Overview = ({
   changeActiveIndex,
@@ -24,26 +25,40 @@ const Overview = ({
   } else if (status === STATUS.FAILED) {
     return <Error action={() => {}} />
   }
+
   const projectsEmpty = projects.length === 0
   if (projectsEmpty) {
     return <Empty action={onNewProject} />
   }
-  const projectsMap = projects.map((project, index) => (
-    <Project
-      key={index}
-      label={project.metadata.name}
-      description={project.metadata.description}
-      onRemoveProject={onRemoveProject}
-      id={project.id}
-      repoId={project.data._repo}
-      commits={project.metadata.commits}
-      // TODO: Disabled for now
-      // contributors={project.metadata.collaborators}
-      url={project.metadata.url}
-      changeActiveIndex={changeActiveIndex}
-    />
-  ))
-  return <StyledProjects>{projectsMap}</StyledProjects>
+
+  return (
+    <Viewport>
+      {({ width }) => {
+        const screenSize = width
+
+        return (
+          <StyledProjects screenSize={screenSize}>
+            {projects.map((project, index) => (
+              <Project
+                key={index}
+                label={project.metadata.name}
+                description={project.metadata.description}
+                onRemoveProject={onRemoveProject}
+                id={project.id}
+                repoId={project.data._repo}
+                commits={project.metadata.commits}
+                screenSize={screenSize}
+                // TODO: Disabled for now
+                // contributors={project.metadata.collaborators}
+                url={project.metadata.url}
+                changeActiveIndex={changeActiveIndex}
+              />
+            ))}
+          </StyledProjects>
+        )
+      }}
+    </Viewport>
+  )
 }
 
 Overview.propTypes = {
@@ -56,12 +71,8 @@ Overview.propTypes = {
 }
 
 const StyledProjects = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, auto);
-  grid-auto-rows: auto;
-  grid-gap: 2rem;
-  justify-content: start;
-  padding: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  padding: ${props => props.screenSize < 600 ? '0.2rem' : '1rem'};
 `
-
 export default Overview

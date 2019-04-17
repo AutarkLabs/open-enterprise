@@ -101,10 +101,12 @@ contract AddressBook is AragonApp {
     ) public view returns (address _entryAddress, string _name, string _entryType)
     {
         Entry storage entry = entries[_addr];
-        require(nameUsed[keccak256(abi.encodePacked(entry.name))], "entry does not exist");
-
-        _entryAddress = entry.entryAddress;
-        _name = entry.name;
-        _entryType = entry.entryType;
+        if (!nameUsed[keccak256(abi.encodePacked(entry.name))]) {
+            return(address(0), "", "");
+        } else {
+            _entryAddress = entry.entryAddress;
+            _name = entry.name;
+            _entryType = entry.entryType;
+        }
     }
 }

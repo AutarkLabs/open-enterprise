@@ -14,18 +14,31 @@ import tokenBalanceAbi from '../../../shared/json-abis/token-balanceof.json'
 import tokenDecimalsAbi from '../../../shared/json-abis/token-decimals.json'
 import { app } from './'
 
-const tokenAbi = [].concat(tokenSymbolAbi, tokenNameAbi, tokenBalanceAbi, tokenDecimalsAbi)
+const tokenAbi = [].concat(
+  tokenSymbolAbi,
+  tokenNameAbi,
+  tokenBalanceAbi,
+  tokenDecimalsAbi
+)
+
+const tokenContracts = new Map() // Addr -> External contract
+const tokenDecimals = new Map() // External contract -> decimals
+const tokenName = new Map() // External contract -> name
+const tokenSymbols = new Map() // External contract -> symbol
 
 const ETH_CONTRACT = Symbol('ETH_CONTRACT')
 
 export async function initializeTokens(state, settings) {
+  // Set up ETH placeholders
+  tokenContracts.set(settings.ethToken.address, ETH_CONTRACT)
+  tokenDecimals.set(ETH_CONTRACT, '18')
+  tokenName.set(ETH_CONTRACT, 'Ether')
+  tokenSymbols.set(ETH_CONTRACT, 'ETH')
+
   const nextState = {
     ...state,
+    addressBookAddress: settings.addressBook.address,
     vaultAddress: settings.vault.address,
-    tokenContracts: new Map(), // Addr -> External contract
-    tokenDecimals: new Map(), // External contract -> decimals
-    tokenNames: new Map(), // External contract -> name
-    tokenSymbols: new Map(), // External contract -> symbol
   }
   const withEthBalance = await loadEthBalance(nextState, settings)
   return withEthBalance
@@ -40,110 +53,64 @@ export async function vaultLoadBalance(state, { returnValues }, settings) {
   )
   return {
     ...state,
-    balances: r.newBalances,
+    balances: r,
   }
 }
 
 /***********************
-   *                     *
-   *       Helpers       *
-   *                     *
-   ***********************/
+ *                     *
+ *       Helpers       *
+ *                     *
+ ***********************/
 
 async function loadEthBalance(state, settings) {
-  const {
-    newBalances,
-    tokenContracts,
-    tokenDecimals,
-    tokenNames,
-    tokenSymbols
-  } = await updateBalances(state, settings.ethToken.address, settings)
-  const [ethBalance] = newBalances
-  ethBalance.symbol = 'ETH'
-  ethBalance.name = 'Ether'
-  ethBalance.decimals = '18'
   return {
     ...state,
-    balances: newBalances,
-    tokenContracts: tokenContracts,
-    tokenSymbols: tokenSymbols,
-    tokenNames: tokenNames,
-    tokenDecimals: tokenDecimals,
+    balances: await updateBalances(state, settings.ethToken.address, settings),
   }
-
 }
 
-async function updateBalances(
-  { balances = [],  tokenContracts, tokenSymbols, tokenDecimals, tokenNames },
-  tokenAddress,
-  settings
-) {
+async function updateBalances({ balances = [] }, tokenAddress, settings) {
   const tokenContract = tokenContracts.has(tokenAddress)
     ? tokenContracts.get(tokenAddress)
     : app.external(tokenAddress, tokenAbi)
-    //tokenContracts.set(tokenAddress, tokenContract)
+  tokenContracts.set(tokenAddress, tokenContract)
 
   const balancesIndex = balances.findIndex(({ address }) =>
     addressesEqual(address, tokenAddress)
   )
   if (balancesIndex === -1) {
-    const r = await newBalanceEntry(
-      tokenContract,
-      tokenAddress,
-      settings,
-      tokenSymbols,
-      tokenDecimals,
-      tokenNames,
+    return balances.concat(
+      await newBalanceEntry(tokenContract, tokenAddress, settings)
     )
-    return {
-      newBalances: balances.concat(r.newBalance),
-      tokenContracts,
-      tokenDecimals: r.tokenDecimals,
-      tokenNames: r.tokenNames,
-      tokenSymbols: r.tokenSymbols,
-    }
   } else {
     const newBalances = Array.from(balances)
     newBalances[balancesIndex] = {
       ...balances[balancesIndex],
       amount: await loadTokenBalance(tokenAddress, settings),
     }
-    return { newBalances, tokenContracts, tokenDecimals, tokenSymbols, tokenNames, }
+    return newBalances
   }
 }
 
-async function newBalanceEntry(
-  tokenContract,
-  tokenAddress,
-  settings,
-  tokenSymbols,
-  tokenDecimals,
-  tokenNames,
-) {
+async function newBalanceEntry(tokenContract, tokenAddress, settings) {
   const [ balance, decimals, name, symbol ] = await Promise.all([
     loadTokenBalance(tokenAddress, settings),
-    loadTokenDecimals(tokenContract, tokenAddress, settings, tokenDecimals),
-    loadTokenName(tokenContract, tokenAddress, settings, tokenNames),
-    loadTokenSymbol(tokenContract, tokenAddress, settings, tokenSymbols),
+    loadTokenDecimals(tokenContract, tokenAddress, settings),
+    loadTokenName(tokenContract, tokenAddress, settings),
+    loadTokenSymbol(tokenContract, tokenAddress, settings),
   ])
-  //tokenDecimals.set(tokenContract, decimals)
-  //tokenNames.set(tokenContract, name)
-  //tokenSymbols.set(tokenContract, symbol)
+  console.log('we got network:', settings.network)
 
   return {
-    newBalance: {
-      decimals,
-      name,
-      symbol,
-      address: tokenAddress,
-      amount: balance,
-      verified:
-        isTokenVerified(tokenAddress, settings.network.type) ||
-        addressesEqual(tokenAddress, settings.ethToken.address),
-    },
-    tokenDecimals,
-    tokenNames,
-    tokenSymbols
+    decimals,
+    name,
+    symbol,
+    address: tokenAddress,
+    amount: balance,
+    verified:
+      isTokenVerified(tokenAddress, settings.network.type) ||
+      addressesEqual(tokenAddress, settings.ethToken.address),
   }
 }
 
@@ -151,15 +118,17 @@ function loadTokenBalance(tokenAddress, { vault }) {
   return vault.contract.balance(tokenAddress).toPromise()
 }
 
-function loadTokenDecimals(tokenContract, tokenAddress, { network }, tokenDecimals) {
-  return new Promise((resolve, reject) => {
+function loadTokenDecimals(tokenContract, tokenAddress, { network }) {
+  return new Promise((resolve, _reject) => {
     if (tokenDecimals.has(tokenContract)) {
       resolve(tokenDecimals.get(tokenContract))
     } else {
       const fallback =
-          tokenDataFallback(tokenAddress, 'decimals', network.type) || '0'
+        tokenDataFallback(tokenAddress, 'decimals', network.type) || '0'
+
       tokenContract.decimals().subscribe(
         (decimals = fallback) => {
+          tokenDecimals.set(tokenContract, decimals)
           resolve(decimals)
         },
         () => {
@@ -171,26 +140,26 @@ function loadTokenDecimals(tokenContract, tokenAddress, { network }, tokenDecima
   })
 }
 
-function loadTokenName(tokenContract, tokenAddress, { network }, tokenNames) {
+function loadTokenName(tokenContract, tokenAddress, { network }) {
   return new Promise((resolve, reject) => {
-    if (tokenNames.has(tokenContract)) {
-      resolve(tokenNames.get(tokenContract))
+    if (tokenName.has(tokenContract)) {
+      resolve(tokenName.get(tokenContract))
     } else {
       const fallback =
-          tokenDataFallback(tokenAddress, 'name', network.type) || ''
+        tokenDataFallback(tokenAddress, 'name', network.type) || ''
       const name = getTokenName(app, tokenAddress)
       resolve(name || fallback)
     }
   })
 }
 
-function loadTokenSymbol(tokenContract, tokenAddress, { network }, tokenSymbols) {
+function loadTokenSymbol(tokenContract, tokenAddress, { network }) {
   return new Promise((resolve, reject) => {
     if (tokenSymbols.has(tokenContract)) {
       resolve(tokenSymbols.get(tokenContract))
     } else {
       const fallback =
-          tokenDataFallback(tokenAddress, 'symbol', network.type) || ''
+        tokenDataFallback(tokenAddress, 'symbol', network.type) || ''
       const tokenSymbol = getTokenSymbol(app, tokenAddress)
       resolve(tokenSymbol || fallback)
     }
