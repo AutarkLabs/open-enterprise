@@ -230,12 +230,6 @@ class App extends React.PureComponent {
     }
   }
 
-  handleMenuPanelOpen = () => {
-    window.parent.postMessage(
-      { from: 'app', name: 'menuPanel', value: true }, '*'
-    )
-  }
-
   changeActiveIndex = activeIndex => {
     this.setState({ activeIndex })
   }

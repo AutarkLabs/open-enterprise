@@ -9,6 +9,7 @@ import {
   Text,
   TextInput,
   theme,
+  Viewport,
 } from '@aragon/ui'
 import { FieldTitle } from '../Form'
 import NumberFormat from 'react-number-format'
@@ -163,48 +164,80 @@ class Settings extends React.Component {
     if (!('baseRate' in this.props.bountySettings))
       return <div>Loading settings...</div>
 
+    const gitHubConnect = <GitHubConnect
+      onLogin={this.props.onLogin}
+      onLogout={this.handleLogout}
+      status={this.props.status}
+      user={this.props.githubCurrentUser.login}
+    />
+
+    const experienceLevel = <ExperienceLevel
+      expLevels={expLevels}
+      onAddExpLevel={this.addExpLevel}
+      generateExpLevelHandler={this.generateExpLevelHandler}
+    />
+    const showBaseRate = !this.props.tokens.length ? (
+      <EmptyBaseRate />
+    ) : (
+      <BaseRate
+        baseRate={baseRate}
+        onChangeRate={this.baseRateChange}
+        bountyCurrencies={bountyCurrencies}
+        bountyCurrency={bountyCurrency}
+        onChangeCurrency={this.bountyCurrencyChange}
+      />
+    )
+    const bountyDeadline = <BountyDeadline
+      bountyDeadlineT={bountyDeadlineT}
+      onChangeT={this.bountyDeadlineChangeT}
+      bountyDeadlineD={bountyDeadlineD}
+      onChangeD={this.bountyDeadlineChangeD}
+    />
+
+    const bountyContractAddress = <BountyContractAddress
+      bountyAllocator={bountyAllocator}
+      networkType={network.type}
+    />
+
+    const saveButton = <Button mode="strong" onClick={this.submitChanges} wide>
+      Submit Changes
+    </Button>
+
+
     return (
       <StyledContent>
-        <div className="column">
-          <GitHubConnect
-            onLogin={this.props.onLogin}
-            onLogout={this.handleLogout}
-            gitHubStatus={this.props.gitHubStatus}
-            user={this.props.githubCurrentUser.login}
-          />
-          <ExperienceLevel
-            expLevels={expLevels}
-            onAddExpLevel={this.addExpLevel}
-            generateExpLevelHandler={this.generateExpLevelHandler}
-          />
-
-          <Button mode="strong" onClick={this.submitChanges} wide>
-              Submit Changes
-          </Button>
-        </div>
-        <div className="column">
-          {!this.props.tokens.length ? (
-            <EmptyBaseRate />
+        <Viewport>
+          {({ above }) => above(900) ? (
+            <React.Fragment>
+              <div className="column">
+                {gitHubConnect}
+                <Separator />
+                {experienceLevel}
+                {saveButton}
+              </div>
+              <div className="column">
+                {showBaseRate}
+                <Separator />
+                {bountyDeadline}
+                <Separator />
+                {bountyContractAddress}
+              </div>
+            </React.Fragment>
           ) : (
-            <BaseRate
-              baseRate={baseRate}
-              onChangeRate={this.baseRateChange}
-              bountyCurrencies={bountyCurrencies}
-              bountyCurrency={bountyCurrency}
-              onChangeCurrency={this.bountyCurrencyChange}
-            />
+            <div className="column">
+              {gitHubConnect}
+              <Separator />
+              {experienceLevel}
+              <Separator />
+              {showBaseRate}
+              <Separator />
+              {bountyDeadline}
+              <Separator />
+              {bountyContractAddress}
+              {saveButton}
+            </div>
           )}
-          <BountyDeadline
-            bountyDeadlineT={bountyDeadlineT}
-            onChangeT={this.bountyDeadlineChangeT}
-            bountyDeadlineD={bountyDeadlineD}
-            onChangeD={this.bountyDeadlineChangeD}
-          />
-          <BountyContractAddress
-            bountyAllocator={bountyAllocator}
-            networkType={network.type}
-          />
-        </div>
+        </Viewport>
       </StyledContent>
     )
   }
@@ -311,7 +344,7 @@ const EmptyBaseRate = () => (
 const BaseRate = ({ baseRate, onChangeRate, bountyCurrency, onChangeCurrency, bountyCurrencies }) => (
   <div>
     <Text.Block size="large" weight="bold">
-      Base Rate
+      Bounty Base Rate
     </Text.Block>
     <Text.Block>
       Define your organization’s hourly rate. This is multiplied by the bounty
@@ -442,20 +475,32 @@ const StyledButton = styled(Button)`
 const StyledContent = styled.div`
   display: flex;
   height: fit-content;
+  width: 100%;
   > .column {
     display: flex;
     flex-direction: column;
+    min-width: 364px;
+    max-width: 464px;
     :first-child {
-      flex: 0 0 464px;
-      margin-right: 20px;
+      width: 100%;
+      margin-right: 30px;
+    }
+    :last-child {
+      width: 100%;
     }
     > * {
-      margin-bottom: 20px;
       > * {
         margin-bottom: 10px;
       }
     }
   }
+`
+const Separator = styled.hr`
+  height: 1px;
+  border: 0;
+  width: 100%;
+  margin: 10px 0;
+  background: ${theme.contentBorder};
 `
 
 export default provideNetwork(Settings)
