@@ -49,6 +49,21 @@ class Issue extends React.PureComponent {
  
   render() {
     const {
+      isSelected,
+      onClick,
+      onSelect,
+      onSubmitWork,
+      onRequestAssignment,
+      onReviewApplication,
+      onAllocateSingleBounty,
+      onUpdateBounty,
+      onReviewWork,
+      ...restOfData
+    } = this.props
+
+    const issue = restOfData.issue
+
+    const {
       id,
       work,
       workStatus,
@@ -61,41 +76,7 @@ class Issue extends React.PureComponent {
       deadline,
       requestsData,
       expLevel,
-      isSelected,
-    } = this.props
-
-    const {
-      onClick,
-      onSelect,
-      onSubmitWork,
-      onRequestAssignment,
-      onReviewApplication,
-      onAllocateSingleBounty,
-      onUpdateBounty,
-      onReviewWork,
-    } = this.props
-
-    const issue = { ...this.props }
-    /*
-      issue is recreated from props to avoid re-rendering caused by extensive
-      data manipulation in Issues.js. there are some additional props passed down
-      from there, and they are best removed immediately, so they don't propagate
-      any further.
-      TODO: refactor!
-    */
-
-    const propsToDelete = [
-      'isSelected',
-      'onClick',
-      'onSelect',
-      'onSubmitWork',
-      'onRequestAssignment',
-      'onReviewApplication',
-      'onAllocateSingleBounty',
-      'onUpdateBounty',
-      'onReviewWork'
-    ]
-    propsToDelete.forEach(f => delete issue[f])
+    } = issue
 
     return (
       <StyledIssue>
