@@ -13,7 +13,7 @@ class Votes extends React.Component {
         {openedVotes.length > 0 && (
           <VotesTableWrapper>
             <Title>
-              <span>Open Range Votes</span>
+              <span>Open Dot Votes</span>
               <BadgeNumber
                 background={colors.Rain['Rain Sky']}
                 color={colors.Rain.Slate}
@@ -32,7 +32,7 @@ class Votes extends React.Component {
         {closedVotes.length > 0 && (
           <VotesTableWrapper>
             <Title>
-              <span>Closed Range Votes</span>
+              <span>Closed Dot Votes</span>
             </Title>
             <VotesTable
               opened={false}
@@ -44,7 +44,7 @@ class Votes extends React.Component {
         )}
 
         {/* <SeeMoreWrapper>
-          <Button mode="secondary">Show Older Range Votes</Button>
+          <Button mode="secondary">Show Older Dot Votes</Button>
         </SeeMoreWrapper> */}
       </Main>
     )

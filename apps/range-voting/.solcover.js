@@ -6,6 +6,6 @@ module.exports = {
   skipFiles: [
     'test/TestImports.sol',
     'test/mocks/ExecutionTarget.sol',
-    'test/mocks/RangeVotingMock.sol',
+    'test/mocks/DotVotingMock.sol',
   ]
 }

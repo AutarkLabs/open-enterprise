@@ -80,7 +80,7 @@ class App extends React.Component {
         <AppLayout>
           <AppLayout.Header>
             <AppBar
-              title="Range Voting"
+              title="Dot Voting"
             />
           </AppLayout.Header>
           <AppLayout.ScrollWrapper>

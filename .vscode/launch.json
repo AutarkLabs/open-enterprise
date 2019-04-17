@@ -1,38 +1,32 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "rangeVoting truffle test (debuggable)",
-            "cwd": "${workspaceFolder}/apps/range-voting",
-            "program": "${workspaceRoot}/node_modules/truffle/build/cli.bundled.js",
-            "args": [
-                "test"
-            ]
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Allocations truffle test (debuggable)",
-            "cwd": "${workspaceFolder}/apps/allocations",
-            "program": "${workspaceRoot}/node_modules/truffle/build/cli.bundled.js",
-            "args": [
-                "test"
-            ]
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Projects truffle test (debuggable)",
-            "cwd": "${workspaceFolder}/apps/projects",
-            "program": "${workspaceRoot}/node_modules/truffle/build/cli.bundled.js",
-            "args": [
-                "test"
-            ]
-        }
-    ]
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "dotVoting truffle test (debuggable)",
+      "cwd": "${workspaceFolder}/apps/dot-voting",
+      "program": "${workspaceRoot}/node_modules/truffle/build/cli.bundled.js",
+      "args": ["test"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Allocations truffle test (debuggable)",
+      "cwd": "${workspaceFolder}/apps/allocations",
+      "program": "${workspaceRoot}/node_modules/truffle/build/cli.bundled.js",
+      "args": ["test"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Projects truffle test (debuggable)",
+      "cwd": "${workspaceFolder}/apps/projects",
+      "program": "${workspaceRoot}/node_modules/truffle/build/cli.bundled.js",
+      "args": ["test"]
+    }
+  ]
 }

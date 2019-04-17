@@ -56,7 +56,7 @@ files hashes:
 - command: `aragon apm publish patch --files dist/ --environment staging`
 - commit: [b5a5dd0](https://github.com/AutarkLabs/planning-suite/commit/b5a5dd0685e0a66e8124c9901e4f1f6249ed0d11)
 
-## RangeVoting
+## DotVoting (formerly RangeVoting)
 
 ```sh
  ✔ Successfully published range-voting-staging.open.aragonpm.eth v1.0.3:

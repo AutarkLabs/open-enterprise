@@ -20,26 +20,26 @@
     "default": {
       "registry": "0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1",
       "network": "rpc",
-      "appName": "range-voting.aragonpm.eth"
+      "appName": "dot-voting.aragonpm.eth"
     },
     "rinkeby": {
       "registry": "0x98df287b6c145399aaa709692c8d308357bc085d",
-      "appName": "range-voting.open.aragonpm.eth",
+      "appName": "dot-voting.open.aragonpm.eth",
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
       "network": "rinkeby"
     },
     "staging": {
       "registry": "0x98df287b6c145399aaa709692c8d308357bc085d",
-      "appName": "range-voting-staging.open.aragonpm.eth",
+      "appName": "dot-voting-staging.open.aragonpm.eth",
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
       "network": "rinkeby"
     },
     "production": {
       "registry": "0x314159265dd8dbb310642f98f50c066173c1259b",
-      "appName": "range-voting.open.aragonpm.eth",
+      "appName": "dot-voting.open.aragonpm.eth",
       "wsRPC": "wss://mainnet.eth.aragon.network/ws",
       "network": "mainnet"
     }
   },
-  "path": "contracts/RangeVoting.sol"
+  "path": "contracts/DotVoting.sol"
 }

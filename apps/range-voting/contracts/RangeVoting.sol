@@ -35,7 +35,7 @@ import "@tps/test-helpers/contracts/lib/misc/Migrations.sol";
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *******************************************************************************/
 /*******************************************************************************
-* @title RangeVoting Contract
+* @title DotVoting Contract
 * @author Arthur Lunn
 * @dev This vote is meant to take a set of options and then let
 *  holders of a specific token distribute their current voting
@@ -44,7 +44,7 @@ import "@tps/test-helpers/contracts/lib/misc/Migrations.sol";
 *  but could easily be adapted to other systems.
 *  Attention was paid to make the program as generalized as possible.
 *******************************************************************************/
-contract RangeVoting is IForwarder, AragonApp {
+contract DotVoting is IForwarder, AragonApp {
     using ScriptHelpers for bytes;
 
     using SafeMath for uint256;
@@ -123,7 +123,7 @@ contract RangeVoting is IForwarder, AragonApp {
 ////////////////
 
    /**
-    * @notice Initializes RangeVoting app with `_token.symbol(): string` for
+    * @notice Initializes DotVoting app with `_token.symbol(): string` for
     *         governance, minimum participation of
     *         `(_minParticipationPct - _minParticipationPct % 10^14)
     *         / 10^16`, minimal candidate acceptance of
@@ -166,7 +166,7 @@ contract RangeVoting is IForwarder, AragonApp {
 
 
     /**
-    * @notice Create a new range vote about "`_metadata`"
+    * @notice Create a new dot vote about "`_metadata`"
     * @param _executionScript EVM script to be executed on approval
     * @param _metadata Vote metadata
     * @return voteId Id for newly created vote
@@ -178,7 +178,7 @@ contract RangeVoting is IForwarder, AragonApp {
     }
 
     /**
-    * @notice Cast a range vote.
+    * @notice Cast a dot vote.
     * @param _voteId id for vote structure this 'ballot action' is connected to
     * @param _supports Array of support weights in order of their order in
     *                  `votes[_voteId].candidateKeys`, sum of all supports
@@ -190,7 +190,7 @@ contract RangeVoting is IForwarder, AragonApp {
     }
 
     /**
-    * @notice Execute range vote `_voteId`
+    * @notice Execute dot vote `_voteId`
     * @param _voteId Id for vote
     */
     function executeVote(uint256 _voteId) external {
@@ -200,7 +200,7 @@ contract RangeVoting is IForwarder, AragonApp {
 
     /**
     * @notice `addCandidate` allows the `ADD_CANDIDATES_ROLE` to add candidates
-    *         (or options) to the current range vote.
+    *         (or options) to the current dot vote.
     * @param _voteId id for vote structure this 'ballot action' is connected to
     * @param _metadata Any additional information about the candidate.
     *        Base implementation does not use this parameter.
@@ -276,7 +276,7 @@ contract RangeVoting is IForwarder, AragonApp {
 
     /**
     * @notice Used to ensure that the permissions are being handled properly
-    *         for the range vote forwarding
+    *         for the dot vote forwarding
     * @dev IForwarder interface conformance
     * @param _sender Address of the entity trying to forward
     * @return True is `_sender` has correct permissions
@@ -303,7 +303,7 @@ contract RangeVoting is IForwarder, AragonApp {
 
     /**
     * @notice `canVote` is used to check whether an address is elligible to
-    *         cast a range vote in a given range vote action.
+    *         cast a dot vote in a given dot vote action.
     * @param _voteId The ID of the Vote on which the vote would be cast.
     * @param _voter The address of the entity trying to vote
     * @return True is `_voter` has a vote token balance and vote is open
@@ -421,7 +421,7 @@ contract RangeVoting is IForwarder, AragonApp {
     *            [calldataLength (uint32: 4 bytes) ]
     *            [ function hash (uint32: 4 bytes) ]
     *            [ calldata (calldataLength bytes) ]
-    *        In order to work with a range vote the execution script must contain
+    *        In order to work with a dot vote the execution script must contain
     *        Arrays as its first six parameters. Non-string array lengths must all equal candidateLength
     *        The first Array is generally a list of identifiers (bytes32 or address)
     *        The second array will be composed of support value (uint256).

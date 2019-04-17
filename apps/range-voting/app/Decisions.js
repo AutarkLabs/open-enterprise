@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import AppLayout from './components/AppLayout'
-import emptyIcon from './assets/new_range_vote.svg'
+import emptyIcon from './assets/new_dot_vote.svg'
 import Votes from './components/Votes'
 import tokenBalanceOfAbi from './abi/token-balanceof.json'
 import tokenDecimalsAbi from './abi/token-decimals.json'
@@ -166,7 +166,7 @@ class Decisions extends React.Component {
             >
               <EmptyStateCard
                 icon={<EmptyIcon />}
-                title="You do not have any range votes."
+                title="You do not have any dot votes."
                 text="Use the Allocations app to get started."
                 actionButton={() => <div />}
               />
@@ -176,7 +176,7 @@ class Decisions extends React.Component {
 
         {displayVotes && currentVote &&(
           <SidePanel
-            title={'Range Vote #' + currentVote.voteId}
+            title={'Dot Vote #' + currentVote.voteId}
             opened={Boolean(!createVoteVisible && voteVisible)}
             onClose={this.handleVoteClose}
             onTransitionEnd={this.handleVoteTransitionEnd}

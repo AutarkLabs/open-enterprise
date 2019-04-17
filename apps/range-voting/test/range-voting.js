@@ -6,7 +6,7 @@ const {
   MiniMeToken
 } = require('@tps/test-helpers/artifacts')
 
-const RangeVoting = artifacts.require('RangeVotingMock')
+const DotVoting = artifacts.require('DotVotingMock')
 const AddressBook = artifacts.require('AddressBook')
 const ExecutionTarget = artifacts.require('ExecutionTarget')
 
@@ -26,14 +26,14 @@ const ANY_ADDR = '0xffffffffffffffffffffffffffffffffffffffff'
 const NULL_ADDRESS = '0x00'
 
 
-contract('RangeVoting App', accounts => {
+contract('DotVoting App', accounts => {
   let daoFact = {}
   let app = {}
   let book = {}
   let token = {}
   let executionTarget = {}
 
-  const RangeVotingTime = 1000
+  const DotVotingTime = 1000
   const root = accounts[0]
 
   before(async () => {
@@ -67,13 +67,13 @@ contract('RangeVoting App', accounts => {
     // read: https://github.com/AutarkLabs/planning-suite/pull/243
     let receipt = await dao.newAppInstance(
       '0x1234',
-      (await RangeVoting.new()).address,
+      (await DotVoting.new()).address,
       0x0,
       false,
       { from: root }
     )
 
-    app = RangeVoting.at(
+    app = DotVoting.at(
       receipt.logs.filter(l => l.event === 'NewAppProxy')[0].args.proxy
     )
 
@@ -157,7 +157,7 @@ contract('RangeVoting App', accounts => {
         token.address,
         minimumParticipation,
         candidateSupportPct,
-        RangeVotingTime
+        DotVotingTime
       )
 
       executionTarget = await ExecutionTarget.new()
@@ -170,7 +170,7 @@ contract('RangeVoting App', accounts => {
           token.address,
           minimumParticipation,
           candidateSupportPct,
-          RangeVotingTime
+          DotVotingTime
         )
       })
     })
@@ -245,7 +245,7 @@ contract('RangeVoting App', accounts => {
       let vote = [ 10, 15, 25 ]
       let voter = holder50
       await app.vote(voteId, vote, { from: voter })
-      timeTravel(RangeVotingTime + 1)
+      timeTravel(DotVotingTime + 1)
       await app.executeVote(voteId)
       //assert.equal(1,0)
       let signal
@@ -342,7 +342,7 @@ contract('RangeVoting App', accounts => {
       const voteId = createdVoteId(
         await app.forward(script, { from: holder50 })
       )
-      assert.equal(voteId, 1, 'RangeVoting should have been created')
+      assert.equal(voteId, 1, 'DotVoting should have been created')
     })
 
     xit('can change minimum candidate support', async () => { })
@@ -537,7 +537,7 @@ contract('RangeVoting App', accounts => {
         )
       })
 
-      it('token transfers dont affect RangeVoting', async () => {
+      it('token transfers dont affect DotVoting', async () => {
         let vote = [ 10, 9, 12 ]
         let voter = holder31
         await token.transfer(nonHolder, 31, { from: voter })
@@ -571,7 +571,7 @@ contract('RangeVoting App', accounts => {
         await app.vote(voteId, voteOne, { from: holder19 })
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
-        timeTravel(RangeVotingTime + 1)
+        timeTravel(DotVotingTime + 1)
         await app.executeVote(voteId)
         const canExecute = await app.canExecute(voteId)
 
@@ -584,7 +584,7 @@ contract('RangeVoting App', accounts => {
         await app.vote(voteId, voteOne, { from: holder19 })
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
-        timeTravel(RangeVotingTime + 1)
+        timeTravel(DotVotingTime + 1)
         const canExecute = await app.canExecute(voteId)
 
         assert.equal(canExecute, true, 'canExecute should be true')
@@ -596,7 +596,7 @@ contract('RangeVoting App', accounts => {
         await app.vote(voteId, voteOne, { from: holder19 })
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
-        timeTravel(RangeVotingTime + 1)
+        timeTravel(DotVotingTime + 1)
         const canExecute = await app.canExecute(voteId)
         assert.equal(canExecute, false, 'canExecute should be false')
       })
@@ -607,7 +607,7 @@ contract('RangeVoting App', accounts => {
         await app.vote(voteId, voteOne, { from: holder19 })
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
-        timeTravel(RangeVotingTime + 1)
+        timeTravel(DotVotingTime + 1)
         const canExecute = await app.canExecute(voteId)
         assert.equal(canExecute, false, 'canExecute should be false')
       })
@@ -618,7 +618,7 @@ contract('RangeVoting App', accounts => {
         await app.vote(voteId, voteOne, { from: holder19 })
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
-        timeTravel(RangeVotingTime + 1)
+        timeTravel(DotVotingTime + 1)
         const canExecute = await app.canExecute(voteId)
         assert.equal(canExecute, true, 'canExecute should be true')
       })
@@ -629,7 +629,7 @@ contract('RangeVoting App', accounts => {
         await app.vote(voteId, voteOne, { from: holder19 })
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
-        timeTravel(RangeVotingTime + 1)
+        timeTravel(DotVotingTime + 1)
         const canExecute = await app.canExecute(voteId)
         assert.equal(canExecute, false, 'canExecute should be false')
       })
@@ -686,7 +686,7 @@ contract('RangeVoting App', accounts => {
           token.address,
           minimumParticipation,
           candidateSupportPct,
-          RangeVotingTime
+          DotVotingTime
         )
       })
     })
@@ -700,7 +700,7 @@ contract('RangeVoting App', accounts => {
           token.address,
           minimumParticipation,
           candidateSupportPct,
-          RangeVotingTime
+          DotVotingTime
         )
       })
     })
@@ -714,7 +714,7 @@ contract('RangeVoting App', accounts => {
           token.address,
           minimumParticipation,
           candidateSupportPct,
-          RangeVotingTime
+          DotVotingTime
         )
       })
     })

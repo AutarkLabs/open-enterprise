@@ -7,7 +7,7 @@ import "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
 import "@tps/apps-address-book/contracts/AddressBook.sol";
 import "@tps/apps-allocations/contracts/Allocations.sol";
 import "@tps/apps-projects/contracts/Projects.sol";
-import { RangeVoting } from "@tps/apps-range-voting/contracts/RangeVoting.sol";
+import { DotVoting } from "@tps/apps-dot-voting/contracts/DotVoting.sol";
 
 
 contract PlanningSuite is BetaKitBase {
@@ -20,7 +20,7 @@ contract PlanningSuite is BetaKitBase {
     mapping (address => address) tokenCache;
 
     // ensure alphabetic order
-    enum PlanningApps { AddressBook, Allocations, Projects, RangeVoting } 
+    enum PlanningApps { AddressBook, Allocations, Projects, DotVoting } 
 
     // Overload the DeployInstance event for easy grabing of all the things
     event DeployInstance(address dao, address indexed token, address vault, address voting);
@@ -308,7 +308,7 @@ contract PlanningSuite is BetaKitBase {
     {
         AddressBook addressBook;
         Projects projects;
-        RangeVoting rangeVoting;
+        DotVoting dotVoting;
         Allocations allocations;
 
         // Planning Apps
@@ -324,10 +324,10 @@ contract PlanningSuite is BetaKitBase {
                 latestVersionAppBase(planningAppIds[uint8(PlanningApps.Projects)])
             )
         );
-        rangeVoting = RangeVoting(
+        dotVoting = DotVoting(
             dao.newAppInstance(
-                planningAppIds[uint8(PlanningApps.RangeVoting)],
-                latestVersionAppBase(planningAppIds[uint8(PlanningApps.RangeVoting)])
+                planningAppIds[uint8(PlanningApps.DotVoting)],
+                latestVersionAppBase(planningAppIds[uint8(PlanningApps.DotVoting)])
             )
         );
         allocations = Allocations(
@@ -339,7 +339,7 @@ contract PlanningSuite is BetaKitBase {
         initializeTPSApps(
             addressBook,
             projects,
-            rangeVoting,
+            dotVoting,
             allocations,
             vault,
             token,
@@ -351,7 +351,7 @@ contract PlanningSuite is BetaKitBase {
             dao,
             addressBook,
             projects,
-            rangeVoting,
+            dotVoting,
             allocations,
             voting
         );
@@ -367,7 +367,7 @@ contract PlanningSuite is BetaKitBase {
     function initializeTPSApps(
         AddressBook addressBook,
         Projects projects,
-        RangeVoting rangeVoting,
+        DotVoting dotVoting,
         Allocations allocations,
         Vault vault,
         MiniMeToken token,
@@ -378,7 +378,7 @@ contract PlanningSuite is BetaKitBase {
     {
         addressBook.initialize();
         projects.initialize(registry, vault, "autark");
-        rangeVoting.initialize(addressBook, token, minParticipationPct, candidateSupportPct, voteDuration * 1000);
+        dotVoting.initialize(addressBook, token, minParticipationPct, candidateSupportPct, voteDuration * 1000);
         allocations.initialize(addressBook, vault);
     }
 
@@ -386,7 +386,7 @@ contract PlanningSuite is BetaKitBase {
         Kernel dao,
         AddressBook addressBook,
         Projects projects,
-        RangeVoting rangeVoting,
+        DotVoting dotVoting,
         Allocations allocations,
         Voting voting
     ) internal
@@ -404,21 +404,21 @@ contract PlanningSuite is BetaKitBase {
         acl.createPermission(voting, projects, projects.ADD_BOUNTY_ROLE(), root);
         acl.createPermission(ANY_ENTITY, projects, projects.ADD_REPO_ROLE(), root);
         acl.createPermission(ANY_ENTITY, projects, projects.CHANGE_SETTINGS_ROLE(), root);
-        acl.createPermission(rangeVoting, projects, projects.CURATE_ISSUES_ROLE(), root);
+        acl.createPermission(dotVoting, projects, projects.CURATE_ISSUES_ROLE(), root);
         acl.createPermission(ANY_ENTITY, projects, projects.REMOVE_REPO_ROLE(), root);
         acl.createPermission(ANY_ENTITY, projects, projects.TASK_ASSIGNMENT_ROLE(), root);
         acl.createPermission(ANY_ENTITY, projects, projects.WORK_REVIEW_ROLE(), root);
         emit InstalledApp(projects, planningAppIds[uint8(PlanningApps.Projects)]);
 
-        // Range-voting permissions
-        acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.CREATE_VOTES_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.ADD_CANDIDATES_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, rangeVoting, rangeVoting.MODIFY_PARTICIPATION_ROLE(), root);
-        emit InstalledApp(rangeVoting, planningAppIds[uint8(PlanningApps.RangeVoting)]);
+        // Dot-voting permissions
+        acl.createPermission(ANY_ENTITY, dotVoting, dotVoting.CREATE_VOTES_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, dotVoting, dotVoting.ADD_CANDIDATES_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, dotVoting, dotVoting.MODIFY_PARTICIPATION_ROLE(), root);
+        emit InstalledApp(dotVoting, planningAppIds[uint8(PlanningApps.DotVoting)]);
 
         // Allocations permissions:
         acl.createPermission(ANY_ENTITY, allocations, allocations.START_PAYOUT_ROLE(), root);
-        acl.createPermission(rangeVoting, allocations, allocations.SET_DISTRIBUTION_ROLE(), root);
+        acl.createPermission(dotVoting, allocations, allocations.SET_DISTRIBUTION_ROLE(), root);
         acl.createPermission(ANY_ENTITY, allocations, allocations.EXECUTE_PAYOUT_ROLE(), root);
         emit InstalledApp(allocations, planningAppIds[uint8(PlanningApps.Allocations)]);
 

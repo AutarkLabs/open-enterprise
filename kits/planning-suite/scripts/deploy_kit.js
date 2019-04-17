@@ -11,13 +11,10 @@ const logDeploy = require('@aragon/os/scripts/helpers/deploy-logger')
 const apps = ['finance', 'token-manager', 'vault', 'voting']
 const appIds = apps.map(app => namehash(`${app}.aragonpm.eth`))
 
-const planningApps = [
-  'address-book',
-  'allocations',
-  'projects',
-  'range-voting',
-]
-const planningAppIds = planningApps.map(app => namehash(`${app}-staging.open.aragonpm.eth`))
+const planningApps = ['address-book', 'allocations', 'projects', 'dot-voting']
+const planningAppIds = planningApps.map(app =>
+  namehash(`${app}-staging.open.aragonpm.eth`)
+)
 
 const globalArtifacts = this.artifacts // Not injected unless called directly via truffle
 const defaultOwner =
@@ -51,7 +48,9 @@ module.exports = async (
     }
   }
 
-  log(`${kitName} in ${network} network with ENS ${ensAddress} and owner ${owner}`)
+  log(
+    `${kitName} in ${network} network with ENS ${ensAddress} and owner ${owner}`
+  )
 
   const kitEnsName = kitName + '-staging.open.aragonpm.eth'
 
@@ -140,7 +139,7 @@ module.exports = async (
 
   log('Deployed Planning Suite Kit:', kit.address, planningAppIds)
 
-  await logDeploy(kit, {verbose, flattenContracts})
+  await logDeploy(kit, { verbose, flattenContracts })
 
   if (returnKit) {
     return kit
@@ -175,7 +174,7 @@ module.exports = async (
       await newRepo(apm, 'address-book', owner, 'AddressBook')
       await newRepo(apm, 'allocations', owner, 'Allocations')
       await newRepo(apm, 'projects', owner, 'Projects')
-      await newRepo(apm, 'range-voting', owner, 'RangeVoting')
+      await newRepo(apm, 'dot-voting', owner, 'DotVoting')
       // await newRepo(apm, 'rewards', owner, 'Rewards')
     }
 

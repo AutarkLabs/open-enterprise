@@ -1,7 +1,7 @@
 {
-  "name": "@tps/apps-range-voting",
+  "name": "@tps/apps-dot-voting",
   "version": "0.0.1",
-  "description": "Range Voting app from Planning Suite",
+  "description": "Dot Voting app from Planning Suite",
   "scripts": {
     "build:app": "parcel build app/index.html -d dist/ --public-url '.'",
     "build:script": "parcel build app/script.js -d dist/ --no-cache",

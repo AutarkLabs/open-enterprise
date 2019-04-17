@@ -19,7 +19,6 @@ cache:
 
 jobs:
   include:
-
     - stage: precache
       script: true
       install:
@@ -52,8 +51,8 @@ jobs:
       env: 'COVERAGE=true'
 
     - stage: test
-      script: travis_wait 60 npm run coverage -- --scope=@tps/apps-range-voting
-      name: Range Voting app tests and coverage report
+      script: travis_wait 60 npm run coverage -- --scope=@tps/apps-dot-voting
+      name: Dot Voting app tests and coverage report
       install: npm run bootstrap
       after_success: npm run coveralls
       env: 'COVERAGE=true'

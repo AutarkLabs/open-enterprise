@@ -22,25 +22,21 @@ const TokenManager = artifacts.require('TokenManager')
 const Vault = artifacts.require('Vault')
 const Voting = artifacts.require('Voting')
 const AddressBook = artifacts.require('AddressBook')
-const RangeVoting = artifacts.require('RangeVoting')
+const DotVoting = artifacts.require('DotVoting')
 const Allocations = artifacts.require('Allocations')
 const Projects = artifacts.require('Projects')
 
 const apps = ['finance', 'token-manager', 'vault', 'voting']
-const appIds = apps.map(app =>
-  namehash(`${app}.aragonpm.eth`)
-)
+const appIds = apps.map(app => namehash(`${app}.aragonpm.eth`))
 
 const planningApps = [
   'address-book',
   'allocations',
   'projects',
-  'range-voting',
+  'dot-voting',
   'rewards',
 ]
-const planningAppIds = planningApps.map(app =>
-  namehash(`${app}.aragonpm.eth`)
-)
+const planningAppIds = planningApps.map(app => namehash(`${app}.aragonpm.eth`))
 
 const getContract = name => artifacts.require(name)
 
@@ -97,9 +93,9 @@ contract('Planning Suite', accounts => {
   let addressBookAddress,
     allocationsAddress,
     projectsAddress,
-    rangeVotingAddress,
+    dotVotingAddress,
     rewardsAddress
-  let addressBook, allocations, projects, rangeVoting, rewards
+  let addressBook, allocations, projects, dotVoting, rewards
 
   let kit, receiptInstance
 
@@ -204,9 +200,6 @@ contract('Planning Suite', accounts => {
             votingTime,
             { from: owner }
           )
-
-          
-
         }
         // generated apps from dao creation
         financeAddress = getAppProxy(receiptInstance, appIds[0])
@@ -216,9 +209,21 @@ contract('Planning Suite', accounts => {
         votingAddress = getAppProxy(receiptInstance, appIds[3])
         voting = Voting.at(votingAddress)
         daoAddress = getEventResult(receiptInstance, 'DeployInstance', 'dao')
-        vaultAddress = getEventResult(receiptInstance, 'DeployInstance', 'vault')
-        votingAddress = getEventResult(receiptInstance, 'DeployInstance', 'voting')
-        tokenAddress = getEventResult(receiptInstance, 'DeployInstance', 'token')
+        vaultAddress = getEventResult(
+          receiptInstance,
+          'DeployInstance',
+          'vault'
+        )
+        votingAddress = getEventResult(
+          receiptInstance,
+          'DeployInstance',
+          'voting'
+        )
+        tokenAddress = getEventResult(
+          receiptInstance,
+          'DeployInstance',
+          'token'
+        )
         console.log('Dao Created', daoAddress)
         // Add PlanningSuite Apps to DAO
         receiptInstance = await kit.newPlanningApps(
@@ -239,8 +244,8 @@ contract('Planning Suite', accounts => {
         allocations = Allocations.at(allocationsAddress)
         projectsAddress = getAppProxy(receiptInstance, planningAppIds[2])
         projects = await Projects.at(projectsAddress)
-        rangeVotingAddress = getAppProxy(receiptInstance, planningAppIds[3])
-        rangeVoting = RangeVoting.at(rangeVotingAddress)
+        dotVotingAddress = getAppProxy(receiptInstance, planningAppIds[3])
+        dotVoting = DotVoting.at(dotVotingAddress)
       })
 
       it('creates and initializes a DAO with its Token', async () => {

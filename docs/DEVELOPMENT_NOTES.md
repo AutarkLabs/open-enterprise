@@ -10,12 +10,12 @@ lerna info versioning independent
 @tps/apps-address-book v0.0.1
 @tps/apps-allocations   v0.0.1
 @tps/apps-projects     v0.0.1
-@tps/apps-range-voting v0.0.1
+@tps/apps-dot-voting v0.0.1
 ```
 
 - Planning-suite is the base monorepo.
 - Frontend packages were merged with individual aragon apps, it added complexity and was not needed.
-- Aragon/cli should be used to bump package versions with `aragon apm publish` (more info in Aragon hack documentation). It needs to have a devhchain running.
+- Aragon/cli should be used to bump package versions with `aragon apm publish` (more info in Aragon hack documentation). It needs to have a devchain running.
 
 ## Recommended instructions
 
@@ -57,14 +57,14 @@ require a republish to view changes in the browser.
   To debug if the individual apps are being published, if more control is needed, individual app publishing can be called by `cd apps/app_folder && npm run publish`. Any build-time errors should display in the bash console during this stage
 - `npm run devchain or npm run devchain:reset`
   Can be run in another terminal window to be able to deploy all apps together. `npm start` script does this by calling this concurrently.
-- If previous steps where succesful, then run: `aragon run --kit PlanningKit --kit-init @ARAGON_ENS`
+- If previous steps where successful, then run: `aragon run --kit PlanningKit --kit-init @ARAGON_ENS`
   To deploy the kit and launch the Aragon Wrapper in the browser.
   It needs the same local blockchain to find the locally deployed apps, so better to keep the devchain open and running (Again, with `npm start` this step is not needed (but allowed) because is launched concurrently).
 
 - `npm run clean`
   Just if the other steps don't work call this and start over with a clean state, maybe combined with `npm run clean:aragon` to delete the local machine state (this does not delete any key, just local data that then will be downloaded again).
 
-  > __Tip__ to completely reset your environment run `npm run clean && npm run clean:aragon` and then reinstall with `npm i`
+  > **Tip** to completely reset your environment run `npm run clean && npm run clean:aragon` and then reinstall with `npm i`
 
 - `npm run reset-<app>-script` These commands are used to republish the webworker scripts while
   running the `npm run start:dev`environment. These changes are only applied after clearing the DAO's cache in DAO Settings. A page refresh alone will not suffice.
@@ -73,7 +73,7 @@ require a republish to view changes in the browser.
     - `address` for Address Book App (`npm run reset-address-script`)
     - `projects` for Projects App (`npm run npm run reset-projects-script`)
     - `allocations` for Allocations App (`npm run npm run reset-allocations-script`)
-    - `range` for Range Voting App (`npm run reset-range-voting-script`)
+    - `dot` for Dot Voting App (`npm run reset-dot-voting-script`)
     - `rewards` for Rewards App (`npm run npm run reset-rewards-script`)
 
 ### Incomplete npm script list
@@ -84,8 +84,8 @@ require a republish to view changes in the browser.
 | `npm run clean`           | Delete temp git state (build and dep folders) |
 | `npm run dev:address`     | Start Address Book app frontend development   |
 | `npm run dev:projects`    | Start Projects app frontend development       |
-| `npm run dev:allocations` | Start Allocatioons app frontend development   |
-| `npm run dev:range`       | Start Range Voting app frontend development   |
+| `npm run dev:allocations` | Start Allocations app frontend development    |
+| `npm run dev:dot`         | Start Dot Voting app frontend development     |
 | `npm run devchain`        | Start a local development blockchain          |
 | `npm run devchain:reset`  | Reset local blockchain and start new one      |
 | `npm i` or `npm install`  | Launch the bootstrap script                   |
@@ -100,7 +100,7 @@ require a republish to view changes in the browser.
 
 #### Wrong fonts, colors or browser console errors
 
-> __Tip__ Look at letter "g" to quickly know if aragon fonts were loaded and applied
+> **Tip** Look at letter "g" to quickly know if aragon fonts were loaded and applied
 
 - Aragon puts all the files in the app in the ipfs folder, so files must be correctly built to the dist folder, this happens in all single apps.
 - Aragon provides the command `copy-aragon-ui-assets` and we use `npm run sync-assets` to call it. The problem is that is easy to have errors configuring the path in AragonApp component (from @aragon/ui), because is not documented where the slashes go or things like that, even some original Aragon apps have or had this error.

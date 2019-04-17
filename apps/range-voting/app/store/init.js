@@ -25,7 +25,7 @@ export const initStore = addressBookAddress => {
         // Debug point
         return nextState
       } catch (err) {
-        console.error('[Range Voting script] initStore', event, err)
+        console.error('[Dot Voting script] initStore', event, err)
       }
       // always return the state even unmodified
       return state

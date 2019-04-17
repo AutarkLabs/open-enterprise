@@ -37,7 +37,7 @@ const SPRING_HIDE = {
 }
 const SPRING_SCREEN = springConf('slow')
 
-class RangeVoting extends React.Component {
+class DotVoting extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
     handleClose: PropTypes.func.isRequired
@@ -281,12 +281,12 @@ class RangeVoting extends React.Component {
           >
             <View>
               <Window>
-                <RangeWizardCloseButton
+                <DotWizardCloseButton
                   type="button"
                   onClick={this.props.handleClose}
                 >
                   <img src={close} alt="Close" />
-                </RangeWizardCloseButton>
+                </DotWizardCloseButton>
 
                 <Motion
                   style={{ screenProgress: spring(stepIndex, SPRING_SCREEN) }}
@@ -432,7 +432,7 @@ const Screen = styled.div`
   pointer-events: ${({ active }) => (active ? 'auto' : 'none')};
 `
 
-const RangeWizardCloseButton = styled.button`
+const DotWizardCloseButton = styled.button`
   ${Window} & {
     position: absolute;
     padding: 20px;
@@ -449,4 +449,4 @@ const RangeWizardCloseButton = styled.button`
   }
 `
 
-export default RangeVoting
+export default DotVoting
