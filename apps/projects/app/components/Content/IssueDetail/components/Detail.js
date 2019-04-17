@@ -235,18 +235,18 @@ const calculateAgo = pastDate => {
   return formatDistance(pastDate, date, { addSuffix: true })
 }
 
-const activities = (requestsData, workSubmissions, fundingHistory, onReviewApplication, onReviewWork) => {
+const activities = (issue, requestsData, workSubmissions, fundingHistory, onReviewApplication, onReviewWork) => {
   const events = []
 
   if (requestsData) {
-    requestsData.forEach(data => {
+    requestsData.forEach((data, index) => {
 
       events[data.applicationDate] = {
         date: data.applicationDate,
         ...data.user,
         eventDescription: 'requested assignment',
         eventAction: (
-          <EventButton mode="outline" onClick={onReviewApplication}>
+          <EventButton mode="outline" onClick={() => onReviewApplication(issue, index)}>
             {('review' in data) ? 'View' : 'Review'} Application
           </EventButton>
         ),
@@ -267,14 +267,14 @@ const activities = (requestsData, workSubmissions, fundingHistory, onReviewAppli
   }
 
   if (workSubmissions) {
-    workSubmissions.forEach(data => {
+    workSubmissions.forEach((data, index) => {
 
       events[data.submissionDate] = {
         date: data.submissionDate,
         ...data.user,
         eventDescription: 'submitted work for review',
         eventAction: (
-          <EventButton mode="outline" onClick={onReviewWork}>
+          <EventButton mode="outline" onClick={() => onReviewWork(issue, index)}>
             {('review' in data) ? 'View' : 'Review'} Work
           </EventButton>
         ),
@@ -324,13 +324,22 @@ const activities = (requestsData, workSubmissions, fundingHistory, onReviewAppli
 const deadlineDistance = date =>
   formatDistance(new Date(date), new Date())
     
-const detailsCard = issue => {
+const detailsCard = ({
+  issue,
+  onReviewApplication,
+  onReviewWork,
+  onUpdateBounty,
+  onRequestAssignment,
+  onSubmitWork,
+  onAllocateSingleBounty,
+}) => {
   const summaryData = {
     expLevel: (issue.expLevel === undefined) ? '-' : issue.expLevel,
     deadline: (issue.deadline === undefined) ? '-' : deadlineDistance(issue.deadline) + ' remaining',
     workStatus: (issue.workStatus === undefined) ? 'No bounty yet' : issue.workStatus,
     balance: issue.balance,
   }
+
   return (
     <StyledDetailsCard>
       <Wrapper style={{ justifyContent: 'space-between' }}>
@@ -357,19 +366,21 @@ const detailsCard = issue => {
           </Text.Block>
         </div>
         <div style={{ ...column, flex: 0, alignItems: 'flex-end' }}>
-          <ContextMenu>
-            <BountyContextMenu
-              work={issue.work}
-              workStatus={issue.workStatus}
-              requestsData={issue.requestsData}
-              onAllocateSingleBounty={issue.onAllocateSingleBounty}
-              onSubmitWork={issue.onSubmitWork}
-              onRequestAssignment={issue.onRequestAssignment}
-              onReviewApplication={issue.onReviewApplication}
-              onReviewWork={issue.onReviewWork}
-              onUpdateBounty={issue.onUpdateBounty}
-            />
-          </ContextMenu>
+          {issue.workStatus !== 'fulfilled' && (
+            <ContextMenu>
+              <BountyContextMenu
+                work={issue.work}
+                workStatus={issue.workStatus}
+                requestsData={issue.requestsData}
+                onUpdateBounty={() => onUpdateBounty(issue)}
+                onAllocateSingleBounty={() => onAllocateSingleBounty(issue)}
+                onSubmitWork={() => onSubmitWork(issue)}
+                onRequestAssignment={() => onRequestAssignment(issue)}
+                onReviewApplication={() => onReviewApplication(issue)}
+                onReviewWork={() => onReviewWork(issue)}
+              />
+            </ContextMenu>
+          )}
           { issue.balance > 0 &&
           <Badge
             style={{ padding: '10px', textSize: 'large', marginTop: '15px' }}
@@ -406,8 +417,15 @@ const detailsCard = issue => {
   )
 }
 
-const eventsCard = issue => {
-  const issueEvents = activities(issue.requestsData, issue.workSubmissions, issue.fundingHistory, issue.onReviewApplication, issue.onReviewWork)
+const eventsCard = ({ issue, onReviewApplication, onReviewWork }) => {
+  const issueEvents = activities(
+    issue,
+    issue.requestsData,
+    issue.workSubmissions,
+    issue.fundingHistory,
+    onReviewApplication,
+    onReviewWork
+  )
 
   return (
     <StyledEventsCard>
@@ -428,10 +446,7 @@ const eventsCard = issue => {
 }
 
 const Detail = issue => {
-
-  const issueEvents = activities(issue.requestsData, issue.workSubmissions, issue.fundingHistory, issue.onReviewApplication, issue.onReviewWork)
   return (
-    
     <Viewport>
       {({ below }) => below('medium') ? (
         <CardWrapper style={{ flexDirection: 'column' }}>
@@ -453,8 +468,6 @@ const Detail = issue => {
         </CardWrapper>
       )}
     </Viewport>
-
-
   )
 }
 const CardWrapper = styled.div`

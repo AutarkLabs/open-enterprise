@@ -233,12 +233,6 @@ class App extends React.PureComponent {
     }
   }
 
-  handleMenuPanelOpen = () => {
-    window.parent.postMessage(
-      { from: 'app', name: 'menuPanel', value: true }, '*'
-    )
-  }
-
   changeActiveIndex = activeIndex => {
     this.setState({ activeIndex })
   }
@@ -362,7 +356,7 @@ class App extends React.PureComponent {
       booleanArray,
       tokenArray,
       ipfsString,
-      description
+      description,
     )
   }
 
@@ -404,11 +398,12 @@ class App extends React.PureComponent {
     )
   }
 
-  reviewApplication = issue => {
+  reviewApplication = (issue, requestIndex = 0) => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.ReviewApplication,
       panelProps: {
         issue,
+        requestIndex,
         onReviewApplication: this.onReviewApplication,
         githubCurrentUser: this.state.githubCurrentUser,
       },
@@ -432,11 +427,12 @@ class App extends React.PureComponent {
     )
   }
 
-  reviewWork = issue => {
+  reviewWork = (issue, index = 0) => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.ReviewWork,
       panelProps: {
         issue,
+        index,
         onReviewWork: this.onReviewWork,
         githubCurrentUser: this.state.githubCurrentUser,
       },
@@ -540,7 +536,10 @@ class App extends React.PureComponent {
       <StyledAragonApp publicUrl={ASSETS_URL}>
         <BaseStyles />
         <ToastHub>
-          <Title text="Projects" handleMenuPanelOpen={this.handleMenuPanelOpen} />
+          <Title text="Projects"
+            displayMenuButton={this.props.displayMenuButton}
+            handleMenuPanelOpen={this.handleMenuPanelOpen}
+          />
           <ApolloProvider client={this.state.client}>
             <ErrorBoundary>
               <AppContent

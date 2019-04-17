@@ -36,7 +36,7 @@ class NewIssueCuration extends React.Component {
   }
 
   submitCuration = () => {
-    this.props.onSubmit(this.state.curatedIssues, this.state.description)
+    this.props.onSubmit(this.state.selectedIssues, this.state.description)
   }
 
   render() {

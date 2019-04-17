@@ -28,7 +28,7 @@ const Account = ({
   app,
 }) => {
   const newAllocation = () => {
-    onNewAllocation(proxy, description, id)
+    onNewAllocation(proxy, description, id, balance)
   }
 
   /*Need a better solution that this, should be handled in
