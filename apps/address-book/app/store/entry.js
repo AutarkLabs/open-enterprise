@@ -6,19 +6,15 @@ import { app } from './app'
 
 export const onEntryAdded = async ({ entries = [] }, { addr }) => {
   // is addr already in the state?
-  console.log('1')
   if (entries.some(entry => entry.addr === addr)) {
     // entry already cached, do nothing
-    console.log('2')
   } else {
     // entry not cached
-    console.log('3', addr)
     const data = await loadEntryData(addr) // async load data from contract
     if (data) { // just perform transform and push if data was found (entry was not removed)
       const entry = { addr, data } // transform for the frontend to understand
       entries.push(entry) // add to the state object received as param
     }
-    console.log('4', data)
   }
   // return the (un)modified entries array
   return entries
