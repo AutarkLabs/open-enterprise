@@ -178,7 +178,6 @@ class App extends React.Component {
   render() {
     const { panel, panelProps } = this.state
     const { network, balances } = this.props
-    console.log('props: ', this.props)
 
     return (
       <Root.Provider>

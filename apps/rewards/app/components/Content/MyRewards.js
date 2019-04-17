@@ -36,7 +36,6 @@ import { MILLISECONDS_IN_A_SECOND } from '../../../../../shared/ui/utils'
 const averageRewardsTitles = [ 'My Unclaimed Rewards', 'Year to Date', 'Inception to Date' ]
 
 const calculateMyRewardsSummary = (rewards, balances, convertRates) => {
-  console.log(rewards, balances, convertRates)
   return [
     formatAvgAmount(calculateUnclaimedRewards(rewards, balances, convertRates),'+$', 'green'),
     formatAvgAmount(calculateAllRewards(rewards, balances, convertRates), '$'),
