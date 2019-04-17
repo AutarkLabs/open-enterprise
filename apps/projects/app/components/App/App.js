@@ -25,49 +25,19 @@ import { CURRENT_USER } from '../../utils/gql-queries'
 
 const ASSETS_URL = './aragon-ui-assets/'
 
-const GITHUB_URI = 'https://github.com/login/oauth/authorize'
-
 // TODO: let the user customize the github app on settings screen?
 // TODO: Extract to an external js utility to keep this file clean
 // Variable fields depending on the execution environment:
 // TODO: This should be dynamically set depending on the execution environment (dev, prod...)
-const REDIRECT_URI = window.location.href
-let CLIENT_ID = ''
-let AUTH_URI = ''
 
-const ENV = {
-  STAGING: 'https://ipfs.eth.aragon.network',
-  LOCAL_IPFS: 'http://localhost:8080',
-  LOCAL_HTTP: 'http://localhost:3333',
-}
-
-switch (window.location.origin) {
-case ENV.STAGING:
-  CLIENT_ID = '91270cab68d23695c1bd'
-    AUTH_URI = 'https://tps-github-auth-staging.now.sh/authenticate'
-    console.log('tps github auth using staging')
-    
-  break
-case ENV.LOCAL_HTTP:
-  CLIENT_ID = 'd556542aa7a03e640409'
-    AUTH_URI = 'https://tps-github-auth.now.sh/authenticate'
-    console.log('tps github auth using http provider')
-    
-  // TODO: change auth service to be more explicit to:
-  // AUTH_URI = 'https://dev-tps-github-auth.now.sh/authenticate'
-  break
-case ENV.LOCAL_IPFS:
-  CLIENT_ID = '686f96197cc9bb07a43d'
-    AUTH_URI = 'https://local-tps-github-auth.now.sh/authenticate'
-    console.log('tps github auth using local ipfs')
-    
-  break
-default:
-  console.log(
-    'GitHub OAuth: Scenario not implemented yet, GitHub API disabled for the current Projects App deployment'
-  )
-  break
-}
+// github: https://ipfs.eth.aragon.network/ipfs/QmejDQpcaXWo6ZZy7kGT1KEk9Qgi4yPNzjjT4rnkzB8xDq
+const AUTH_URI = 'https://local-tps-github-auth.now.sh/authenticate'
+const GITHUB_URI = 'https://github.com/login/oauth/authorize'
+const PROJECTS_AUTH_IPFS_HASH = 'QmejDQpcaXWo6ZZy7kGT1KEk9Qgi4yPNzjjT4rnkzB8xDq'
+// const REDIRECT_URI = `https://ipfs.eth.aragon.network/ipfs/${PROJECTS_AUTH_IPFS_HASH}`
+const REDIRECT_URI = 'https://csb-9ylrrl780r-idzumjlwhp.now.sh'
+// const REDIRECT_URI = 'https://didnotwork.com'
+const CLIENT_ID = '686f96197cc9bb07a43d'
 
 export const githubPopup = (popup = null) => {
   // Checks to save some memory if the popup exists as a window object
@@ -132,11 +102,11 @@ const initApolloClient = token =>
  */
 const getToken = async code => {
   console.log('getToken: github auth code arrived!', code)
-  
+
   const response = await fetch(`${AUTH_URI}/${code}`)
   const json = await response.json()
   console.log('getToken: returning json token!', json.token)
-  
+
   return json.token
 }
 
@@ -188,7 +158,7 @@ class App extends React.PureComponent {
         { from: 'popup', name: 'code', value: code },
         '*'
       )
-    
+
     // window.close()
   }
 
