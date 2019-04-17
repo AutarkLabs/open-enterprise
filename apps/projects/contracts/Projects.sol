@@ -457,7 +457,7 @@ contract Projects is IsContract, AragonApp {
     }
 
     /**
-     * @notice Fund bounties for the selected issues (`_description`)
+     * @notice Fund issues: `_description`
      * @param _repoIds The ids of the Github repos in the projects registry
      * @param _issueNumbers an array of bounty indexes
      * @param _bountySizes an array of bounty sizes
@@ -513,6 +513,10 @@ contract Projects is IsContract, AragonApp {
         }
     }
 
+    /**
+     * @notice Issue curation: `description`
+     * @param description The description of the issue curation
+     */
     function curateIssues(
         address[] /*unused_Addresses*/,
         uint256[] issuePriorities,

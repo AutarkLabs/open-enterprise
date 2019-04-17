@@ -17,14 +17,6 @@ import "@tps/test-helpers/contracts/common/IForwarder.sol";
 
 import "@tps/test-helpers/contracts/lib/misc/Migrations.sol";
 
-// import "@tps/test-helpers/contracts/common/IForwarder.sol";
-/* Temp hack to pass coverage until further research */
-// interface IForwarderFixed {
-//     function isForwarder() external returns (bool);
-//     function canForward(address sender, bytes evmCallScript) external returns (bool);
-//     function forward(bytes evmCallScript) external;
-// }
-
 
 /*******************************************************************************
     Copyright 2018, That Planning Suite
@@ -198,7 +190,7 @@ contract RangeVoting is IForwarder, AragonApp {
     }
 
     /**
-    * @notice Execute a range vote. After this step, navigate to the Allocations app and select the Distribute Allocation action from an account to complete the execution.
+    * @notice Execute range vote `_voteId`
     * @param _voteId Id for vote
     */
     function executeVote(uint256 _voteId) external {
@@ -640,7 +632,7 @@ contract RangeVoting is IForwarder, AragonApp {
         uint256 numberOfCandidates,
         uint256 strLength,
         uint256 desLength
-    ) internal returns(bytes) 
+    ) internal pure returns(bytes) 
     {
         uint256 secondDynamicElementLocation = 32 + offset + (numberOfCandidates * 32);
         uint256 thirdDynamicElementLocation = secondDynamicElementLocation + 32 + (numberOfCandidates * 32);
@@ -666,7 +658,7 @@ contract RangeVoting is IForwarder, AragonApp {
         bytes script,
         uint256 numberOfCandidates,
         uint256 dynamicOffset
-        ) internal returns(uint256 offset)
+        ) internal view returns(uint256 offset)
         {
                 // Set the initial offest after the static parameters
         offset = 64 + dynamicOffset;
@@ -763,7 +755,13 @@ contract RangeVoting is IForwarder, AragonApp {
         emit ExecuteVote(_voteId);
     }
 
-    function addInfoString(uint256 _voteId, bytes script, uint256 numberOfCandidates, uint256 _offset) internal returns (uint256 newOffset) {
+    function addInfoString(
+        uint256 _voteId,
+        bytes script,
+        uint256 numberOfCandidates,
+        uint256 _offset)
+        internal view returns (uint256 newOffset)
+    {
         Vote storage voteInstance = votes[_voteId];
         uint256 infoStringLength = voteInstance.infoStringLength;
         bytes memory infoString = new bytes(infoStringLength);
@@ -807,7 +805,7 @@ contract RangeVoting is IForwarder, AragonApp {
         bytes script,
         uint256 numberOfCandidates,
         uint256 _offset
-        ) internal returns(uint256 offset)
+        ) internal view returns(uint256 offset)
         {
         offset = _offset;
         assembly { // solium-disable-line security/no-inline-assembly

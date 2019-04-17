@@ -79,6 +79,8 @@ class App extends React.Component {
     })
   }
 
+  entitiesSort = (a,b) => a.data.name.toUpperCase() > b.data.name.toUpperCase() ? 1 : -1
+
   newAllocation = (address, description, id, balance) => {
     // The whole entries vs entities thing needs to be fixed; these are too close
     //const userEntity = {addr: '0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb', data: {entryAddress: '0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb', name: 'Bob', entryType: 'user'}}
@@ -86,8 +88,8 @@ class App extends React.Component {
       addr: 0x0,
       data: { entryAddress: 0x0, name: 'Select an entry', entryType: 'prompt' },
     }
-    const entriesList = [promptEntity].concat(this.props.entries)
-    let entities = this.props.entries !== undefined ? entriesList : []
+    let entities = this.props.entries !== undefined ? this.props.entries.sort(this.entitiesSort) : []
+    const entriesList = [promptEntity].concat(entities)
     this.setState({
       panel: {
         visible: true,
@@ -99,7 +101,7 @@ class App extends React.Component {
           heading: 'New Allocation',
           subHeading: description,
           onSubmitAllocation: this.submitAllocation,
-          entities: entities,
+          entities: entriesList,
           balances: this.props.balances ? this.props.balances : []
         },
       },

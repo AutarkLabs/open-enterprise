@@ -210,54 +210,10 @@ contract Allocations is AragonApp, Fundable {
     * @dev This function distributes the payouts to the candidates in accordance with the distribution values
     * @notice Distribute allocation `_payoutId`
     * @param _payoutId Any relevent label for the payout
+    * @param _accountId Account the payout belongs to
     */
-    function runPayout(uint _accountId, uint256 _payoutId) external auth(EXECUTE_PAYOUT_ROLE) returns(bool success) {
-        Account storage account = accounts[_accountId];
-        Payout storage payout = account.payouts[_payoutId];
-        uint256 totalSupport;
-        uint i;
-        for (i = 0; i < payout.supports.length; i++) {
-            totalSupport += payout.supports[i];
-        }
-        // Payouts are now instantiated on setDistribution
-        require(payout.distSet);
-        if (payout.recurring) {
-            // TODO create payout execution counter to ensure payout time tracks payouts
-            uint256 payoutTime = payout.startTime.add(payout.period);
-            require(payoutTime < block.timestamp,"payout period not yet finished"); // solium-disable-line security/no-block-members
-            payout.startTime = payoutTime;
-        } else {
-            payout.distSet = false;
-        }
-
-        uint individualPayout;
-        address token = payout.token;
-        uint length = payout.candidateAddresses.length;
-        //handle vault
-        if (token == 0x0) {
-            for (i = 0; i < payout.candidateAddresses.length; i++) {
-                individualPayout = payout.supports[i].mul(payout.amount).div(totalSupport);
-
-                if ( accountProxies[payout.candidateAddresses[i]] > 0 ) {
-                    Account storage candidateAccount = accounts[accountProxies[payout.candidateAddresses[i]]];
-                    candidateAccount.balance = candidateAccount.balance.add(individualPayout);
-                    account.balance = account.balance.sub(individualPayout);
-                    emit FundAccount(accountProxies[payout.candidateAddresses[i]]);
-                } else {
-                    payout.candidateAddresses[i].transfer(individualPayout);
-                    account.balance = account.balance.sub(individualPayout);
-                }
-            }
-        } else {
-            for (i = 0; i < length; i++) {
-                if ( accountProxies[payout.candidateAddresses[i]] == 0 ) {
-                    individualPayout = payout.supports[i].mul(payout.amount).div(totalSupport);
-                    vault.transfer(token, payout.candidateAddresses[i], individualPayout);
-                }
-            }
-        }
-        success = true;
-        emit PayoutExecuted(_accountId, _payoutId);
+    function runPayout(uint _accountId, uint256 _payoutId) public auth(EXECUTE_PAYOUT_ROLE) returns(bool success) {
+        success = _runPayout(_accountId, _payoutId);
     }
 
     /**
@@ -265,7 +221,7 @@ contract Allocations is AragonApp, Fundable {
     *      to be called by a RangeVote (options get weird if it's not)
     *      but for our use case the “SET_DISTRIBUTION_ROLE” will be given to
     *      the RangeVote.
-    * @notice Create a @tokenAmount(_token, _amount) allocation range vote for '`_description`'
+    * @notice Create a `@tokenAmount(_token, _amount)` allocation for ' `_description` '
     * @param _candidateAddresses Array of candidates to be allocated a portion of the payouut
     * @param _supports The Array of all support values for the various candidates. These values are set in range voting
     * @param _accountId The Account used for the payout
@@ -318,7 +274,60 @@ contract Allocations is AragonApp, Fundable {
         payout.distSet = true;
         payout.supports = _supports;
         payout.description = _description;
-        emit SetDistribution(_accountId, account.payouts.length - 1);
+        payoutId = account.payouts.length - 1;
+        emit SetDistribution(_accountId, payoutId);
+        if (!_recurring) {
+            _runPayout(_accountId, payoutId);
+        }
+    }
+
+    function _runPayout(uint _accountId, uint256 _payoutId) internal returns(bool success) {
+        Account storage account = accounts[_accountId];
+        Payout storage payout = account.payouts[_payoutId];
+        uint256 totalSupport;
+        uint i;
+        for (i = 0; i < payout.supports.length; i++) {
+            totalSupport += payout.supports[i];
+        }
+        // Payouts are now instantiated on setDistribution
+        require(payout.distSet);
+        if (payout.recurring) {
+            // TODO create payout execution counter to ensure payout time tracks payouts
+            uint256 payoutTime = payout.startTime.add(payout.period);
+            require(payoutTime < block.timestamp,"payout period not yet finished"); // solium-disable-line security/no-block-members
+            payout.startTime = payoutTime;
+        } else {
+            payout.distSet = false;
+        }
+
+        uint individualPayout;
+        address token = payout.token;
+        uint length = payout.candidateAddresses.length;
+        //handle vault
+        if (token == 0x0) {
+            for (i = 0; i < payout.candidateAddresses.length; i++) {
+                individualPayout = payout.supports[i].mul(payout.amount).div(totalSupport);
+
+                if ( accountProxies[payout.candidateAddresses[i]] > 0 ) {
+                    Account storage candidateAccount = accounts[accountProxies[payout.candidateAddresses[i]]];
+                    candidateAccount.balance = candidateAccount.balance.add(individualPayout);
+                    account.balance = account.balance.sub(individualPayout);
+                    emit FundAccount(accountProxies[payout.candidateAddresses[i]]);
+                } else {
+                    payout.candidateAddresses[i].transfer(individualPayout);
+                    account.balance = account.balance.sub(individualPayout);
+                }
+            }
+        } else {
+            for (i = 0; i < length; i++) {
+                if ( accountProxies[payout.candidateAddresses[i]] == 0 ) {
+                    individualPayout = payout.supports[i].mul(payout.amount).div(totalSupport);
+                    vault.transfer(token, payout.candidateAddresses[i], individualPayout);
+                }
+            }
+        }
+        success = true;
+        emit PayoutExecuted(_accountId, _payoutId);
     }
 
 }

@@ -101,11 +101,19 @@ class NewAllocation extends React.Component {
   // TODO: fix contract to accept regular strings(informational vote)
   submitAllocation = () => {
     const { props, state } = this
+    const { addressBookInput, addressBookCandidates, addressSetting, userInput, userInputCandidates } = state
     const informational = state.allocationTypeIndex === 0
     const recurring = state.payoutTypeIndex !== 0
-    const candidates = state.addressSetting
-      ? state.addressBookCandidates
-      : state.userInputCandidates
+    let candidates
+    if (addressSetting) {
+      candidates = uniqueAddressValidation(addressBookCandidates, addressBookInput.addr) ?
+        [ addressBookInput, ...addressBookCandidates ] :
+        addressBookCandidates
+    } else {
+      candidates = uniqueAddressValidation(userInputCandidates, userInput.addr) ?
+        [ userInput, ...userInputCandidates ] :
+        userInputCandidates
+    }
     const allocation = {
       payoutId: this.props.id,
       informational: informational,
@@ -247,7 +255,7 @@ class NewAllocation extends React.Component {
         separator
         input={
           <AddressDropDownOptions
-            activeItem={state.addressBookInput.index}
+            activeItem={this.state.addressBookInput.index}
             entities={props.entities}
             input={state.addressBookInput}
             name="addressBookCandidates"
@@ -258,6 +266,7 @@ class NewAllocation extends React.Component {
         }
       />
     )
+
 
     const userOptionsField = (
       <FormField

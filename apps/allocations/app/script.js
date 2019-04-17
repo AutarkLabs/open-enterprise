@@ -1,26 +1,12 @@
 import '@babel/polyfill'
 
-import { first } from 'rxjs/operators'
-import { retryEvery } from '../../../shared/ui/utils'
-import { app, initStore } from './store'
+import { getContractAddress, retryEvery } from '../../../shared/ui/utils'
+import { initialize } from './store'
+import { ETHER_TOKEN_FAKE_ADDRESS } from './utils/token-utils'
 
-retryEvery(async () => {
-  // get deployed address book address from contract
-  const addressBookAddress = await app
-    .call('addressBook')
-    .pipe(first())
-    .toPromise()
+retryEvery(async retry => {
+  const addressBookAddress = await getContractAddress('addressBook', retry)
+  const vaultAddress = await getContractAddress('vault', retry)
 
-  const network = await app
-    .network()
-    .pipe(first())
-    .toPromise()
-
-
-  const vaultAddress = await app
-    .call('vault')
-    .pipe(first())
-    .toPromise()
-
-  initStore(vaultAddress, network, addressBookAddress)
+  initialize(addressBookAddress, vaultAddress, ETHER_TOKEN_FAKE_ADDRESS)
 })

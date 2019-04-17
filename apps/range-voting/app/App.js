@@ -75,35 +75,12 @@ class App extends React.Component {
   }
 
   render() {
-    const barButton = (
-      <DropDownButton>
-        <Button Button mode="strong">
-          Actions
-        </Button>
-        <DropDownContent>
-          <DropDownItem>
-            <CloseIcon />
-            New Payout Engine
-          </DropDownItem>
-          <DropDownItem>
-            <CloseIcon />
-            New Issue Curation
-          </DropDownItem>
-          <DropDownItem>
-            <CloseIcon />
-            New Budget Engine
-          </DropDownItem>
-        </DropDownContent>
-      </DropDownButton>
-    )
-
     return (
       <StyledAragonApp>
         <AppLayout>
           <AppLayout.Header>
             <AppBar
               title="Range Voting"
-              // endContent={barButton}
             />
           </AppLayout.Header>
           <AppLayout.ScrollWrapper>

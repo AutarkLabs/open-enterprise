@@ -95,6 +95,11 @@ class Decisions extends React.Component {
   handleVoteTransitionEnd = opened => {
     this.setState(opened ? { voteSidebarOpened: true } : { currentVoteId: -1 })
   }
+
+  getAddressLabel = (entries, option) => {
+    const index = entries.findIndex(entry => entry.addr === option.label)
+    return index > -1 ? entries[index].data.name : option.label
+  }
   render() {
     const {
       app,
@@ -124,7 +129,7 @@ class Decisions extends React.Component {
         vote.data.options = vote.data.options.map(option => {
           return {
             ...option,
-            label: entries[option.label] ? entries[option.label].data.name : option.label
+            label: this.getAddressLabel(entries, option)
           }
         })
         return {
@@ -161,7 +166,7 @@ class Decisions extends React.Component {
             >
               <EmptyStateCard
                 icon={<EmptyIcon />}
-                title="You have not created any range votes."
+                title="You do not have any range votes."
                 text="Use the Allocations app to get started."
                 actionButton={() => <div />}
               />
@@ -169,30 +174,22 @@ class Decisions extends React.Component {
           )}
         </AppLayout.ScrollWrapper>
 
-        {displayVotes && (
+        {displayVotes && currentVote &&(
           <SidePanel
-            title={
-              currentVote
-                ? `${currentVote.description} (${
-                  currentVote.open ? 'Open' : 'Closed'
-                })`
-                : 'currentVote'
-            }
+            title={'Range Vote #' + currentVote.voteId}
             opened={Boolean(!createVoteVisible && voteVisible)}
             onClose={this.handleVoteClose}
             onTransitionEnd={this.handleVoteTransitionEnd}
           >
-            {currentVote && (
-              <VotePanelContent
-                app={app}
-                vote={currentVote}
-                user={userAccount}
-                ready={voteSidebarOpened}
-                tokenContract={tokenContract}
-                onVote={this.handleVote}
-                minParticipationPct={minParticipationPct}
-              />
-            )}
+            <VotePanelContent
+              app={app}
+              vote={currentVote}
+              user={userAccount}
+              ready={voteSidebarOpened}
+              tokenContract={tokenContract}
+              onVote={this.handleVote}
+              minParticipationPct={minParticipationPct}
+            />
           </SidePanel>
         )}
       </Main>

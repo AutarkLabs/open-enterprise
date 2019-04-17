@@ -19,13 +19,14 @@ export const onNewAccount = async (accounts = [], { accountId }) => {
 }
 
 export const onNewPayout = async (payouts = [], { accountId, payoutId }) => {
-  if (!payouts.some(a => a.payoutId === payoutId && a.accountId === accountId)) {
+  if (
+    !payouts.some(a => a.payoutId === payoutId && a.accountId === accountId)
+  ) {
     const newPayout = await loadPayoutData(accountId, payoutId)
     if (newPayout) {
       payouts.push(newPayout)
     }
   }
-  console.log('onNewPayout', payouts)
   return payouts
 }
 
@@ -40,17 +41,26 @@ export const onFundedAccount = async (accounts = [], { accountId }) => {
   return accounts
 }
 
-export const onPayoutExecuted = async (payouts = [], accounts = [], { accountId, payoutId }) => {
-  const index = payouts.findIndex(a => a.payoutId === payoutId && a.accountId === accountId)
+export const onPayoutExecuted = async (
+  payouts = [],
+  accounts = [],
+  { accountId, payoutId }
+) => {
+  const index = payouts.findIndex(
+    a => a.payoutId === payoutId && a.accountId === accountId
+  )
   const accountIndex = accounts.findIndex(a => a.accountId === accountId)
   if (index < 0) {
     payouts = await onNewPayout(payouts, { accountId, payoutId })
   } else {
-    payouts[index] = await loadPayoutData(payouts[index].accountId, payouts[index].payoutId)
+    payouts[index] = await loadPayoutData(
+      payouts[index].accountId,
+      payouts[index].payoutId
+    )
   }
   const nextId = accounts[accountIndex].accountId
   accounts[accountIndex] = await getAccountById(nextId)
-  return { payouts: payouts, accounts: accounts }
+  return { accounts, payouts }
 }
 
 /// /////////////////////////////////////
@@ -73,13 +83,11 @@ const loadPayoutData = async (accountId, payoutId) => {
     combineLatest(
       app.call('getPayout', accountId, payoutId),
       app.call('getAccount', accountId),
-      app.call('getPayoutDescription', accountId, payoutId),
+      app.call('getPayoutDescription', accountId, payoutId)
     )
       .pipe(first())
       .subscribe(data => {
         // don't resolve when entry not found
-        console.log('loadPayoutData', data)
-
         if (data) {
           resolve({
             token: data[0].token,

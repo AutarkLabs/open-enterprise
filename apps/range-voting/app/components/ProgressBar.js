@@ -29,7 +29,7 @@ const Main = styled.div`
 
 const Label = styled(Text)`
   overflow: hidden;
-  line-height: 1.6em;
+  line-height: 1.2em;
   text-overflow: ellipsis;
   margin-bottom: 0.2rem;
 `
