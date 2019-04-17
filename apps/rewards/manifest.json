@@ -1,6 +1,6 @@
 {
   "name": "Rewards",
-  "description": "Create Rewards Distributions",
+  "description": "Distribute rewards to token holders in proportion to either tokens earned in a specific period or total token balance.",
   "author": "Autark",
   "changelog_url": "https://github.com/AutarkLabs/planning-suite/releases",
   "source_url": "https://github.com/AutarkLabs/planning-suite/blob/dev/apps/rewards",
