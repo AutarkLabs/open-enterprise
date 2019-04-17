@@ -1,6 +1,6 @@
 {
   "name": "Allocations",
-  "description": "Determine the distribution of funds",
+  "description": "Create multi-party financial allocations which are forwarded to the Dot Voting app.",
   "author": "Autark",
   "changelog_url": "https://github.com/AutarkLabs/planning-suite/releases",
   "source_url": "https://github.com/AutarkLabs/planning-suite/blob/dev/apps/allocations",
