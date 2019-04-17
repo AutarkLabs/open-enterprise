@@ -9,5 +9,5 @@ export const INITIAL_STATE = {
   tokens: [],
   issues: [],
   bountySettings: {},
-  github: { status: STATUS.INITIAL, token: null, event: '' }
+  github: { gitHubStatus: STATUS.INITIAL, token: null, event: '' }
 }

@@ -33,14 +33,14 @@ const Accounts = ({
     return <Empty action={onNewAccount} />
   }
   return (
-    <Main>
+    <React.Fragment>
       <Text.Block size="large" weight="bold" style={{ marginBottom: '10px' }}>
         Accounts
         {' '}
         <Badge.Info>{accounts.length}</Badge.Info>
       </Text.Block>
       <StyledAccounts>{accountsMap}</StyledAccounts>
-    </Main>  
+    </React.Fragment>
   )
 }
 
@@ -50,10 +50,6 @@ Accounts.propTypes = {
   onNewAccount: PropTypes.func.isRequired,
   onNewAllocation: PropTypes.func.isRequired,
 }
-
-const Main = styled.section`
-  padding: 30px;
-` 
 
 const StyledAccounts = styled.div`
   display: grid;

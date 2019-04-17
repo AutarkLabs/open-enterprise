@@ -1,21 +1,18 @@
-import { Main, BaseStyles, observe, ToastHub } from '@aragon/ui'
+import { Main, TabBar, BaseStyles, observe, AppView, AppBar, font } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { hot } from 'react-hot-loader'
 import styled from 'styled-components'
 import { map } from 'rxjs/operators'
 import ApolloClient from 'apollo-boost'
-
 import { ApolloProvider } from 'react-apollo'
-
-import { AppContent } from '.'
-import { Title } from '../Shared'
+import { Issues, Overview, Settings } from '../Content'
 import PanelManager, { PANELS } from '../Panel'
 import { STATUS } from '../../utils/github'
 import ErrorBoundary from './ErrorBoundary'
 import BigNumber from 'bignumber.js'
 import { ipfsAdd, computeIpfsString } from '../../utils/ipfs-helpers'
-import { networkContextType } from '../../../../../shared/ui'
+import { networkContextType, MenuButton, AppTitleButton } from '../../../../../shared/ui'
 import {
   REQUESTING_GITHUB_TOKEN,
   REQUESTED_GITHUB_TOKEN_SUCCESS,
@@ -204,12 +201,12 @@ class App extends React.PureComponent {
           githubLoading: false,
           panelProps: {
             onCreateProject: this.createProject,
-            status: STATUS.AUTHENTICATED,
+            githubCurrentUser: STATUS.AUTHENTICATED,
           },
         }, () => {
           this.props.app.cache('github', {
             event: REQUESTED_GITHUB_TOKEN_SUCCESS,
-            status: STATUS.AUTHENTICATED,
+            githubCurrentUser: STATUS.AUTHENTICATED,
             token,
           })
         })
@@ -219,13 +216,13 @@ class App extends React.PureComponent {
             githubLoading: false,
             panelProps: {
               onCreateProject: this.createProject,
-              status: STATUS.FAILED,
+              githubCurrentUser: STATUS.FAILED,
             },
           },
           () => {
             this.props.app.cache('github', {
               event: REQUESTED_GITHUB_TOKEN_FAILURE,
-              status: STATUS.FAILED,
+              githubCurrentUser: STATUS.FAILED,
               token: null,
             })
           })
@@ -281,13 +278,13 @@ class App extends React.PureComponent {
       ? this.props.repos.map(repo => repo.data._repo)
       : []
 
-    this.setState((_prevState, { github: { status } }) => ({
+    this.setState((_prevState, { github: { githubCurrentUser } }) => ({
       panel: PANELS.NewProject,
       panelProps: {
         onCreateProject: this.createProject,
         onGithubSignIn: this.handleGithubSignIn,
         reposAlreadyAdded,
-        status: status,
+        githubCurrentUser,
       },
     }))
   }
@@ -533,19 +530,90 @@ class App extends React.PureComponent {
     window.addEventListener('message', this.handlePopupMessage)
   }
 
+
+  handleSelect = index =>
+    this.changeActiveIndex({ tabIndex: index, tabData: {} })
+
   render() {
     const { activeIndex, panel, panelProps, githubCurrentUser } = this.state
-    const { bountySettings } = this.props
+    const { bountySettings, displayMenuButton } = this.props
+
+    const contentData = [
+      {
+        tabName: 'Overview',
+        TabComponent: Overview,
+        tabButton: {
+          caption: 'New Project',
+          onClick: this.newProject,
+          disabled: () => false,
+          hidden: () => false,
+        },
+      },
+      {
+        tabName: 'Issues',
+        TabComponent: Issues,
+        tabButton: {
+          caption: 'New Issue',
+          onClick: this.newIssue,
+          // TODO: check this, not very readable, and why do we need two variables doing exactly the same?
+          disabled: () => (projects.length ? false : true),
+          hidden: () => (projects.length ? false : true),
+        },
+      },
+      {
+        tabName: 'Settings',
+        TabComponent: Settings,
+      },
+    ]
+
+    const gitHubStatus = this.props.github ? this.props.github.gitHubStatus : STATUS.INITIAL
+
+    const appTitleButton =
+      gitHubStatus === STATUS.AUTHENTICATED &&
+      contentData[activeIndex.tabIndex].tabButton
+        ? contentData[activeIndex.tabIndex].tabButton
+        : null
+
+    console.log(appTitleButton)
+    const tabNames = contentData.map(t => t.tabName)
+
+    const TabComponent = contentData[activeIndex.tabIndex].TabComponent
+
     return (
-      <StyledAragonApp publicUrl={ASSETS_URL}>
+      <Main publicUrl={ASSETS_URL}>
         <BaseStyles />
-        <ToastHub>
-          <Title text="Projects" handleMenuPanelOpen={this.handleMenuPanelOpen} />
+        <AppView
+          appBar={
+            <AppBar
+              endContent={
+                appTitleButton && !appTitleButton.hidden() && (
+                  <AppTitleButton
+                    caption={appTitleButton.caption}
+                    onClick={appTitleButton.onClick}
+                    disabled={appTitleButton.disabled()}
+                  />
+                )
+              }
+              tabs={
+                <TabBar
+                  items={tabNames}
+                  onSelect={this.handleSelect}
+                  selected={activeIndex.tabIndex}
+                />
+              }
+            >
+              <AppBarTitle>
+                {displayMenuButton && <MenuButton />}
+                <AppBarLabel>Projects</AppBarLabel>
+              </AppBarTitle>
+            </AppBar>
+          }
+        >
           <ApolloProvider client={this.state.client}>
             <ErrorBoundary>
-              <AppContent
+              <TabComponent
                 onLogin={this.handleGithubSignIn}
-                status={(this.props.github && this.props.github.status) || STATUS.INITIAL}
+                gitHubStatus={gitHubStatus}
                 app={this.props.app}
                 bountySettings={bountySettings}
                 githubCurrentUser={githubCurrentUser}
@@ -574,25 +642,27 @@ class App extends React.PureComponent {
                 onReviewWork={this.reviewWork}
               />
 
-              <PanelManager
-                onClose={this.closePanel}
-                activePanel={panel}
-                {...panelProps}
-              />
             </ErrorBoundary>
           </ApolloProvider>
-        </ToastHub>
-      </StyledAragonApp>
+          <PanelManager
+            onClose={this.closePanel}
+            activePanel={panel}
+            {...panelProps}
+          />
+        </AppView>
+      </Main>
     )
   }
 }
 
-const StyledAragonApp = styled(Main)`
+const AppBarTitle = styled.span`
   display: flex;
-  height: 100vh;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: stretch;
+  align-items: center;
+`
+
+const AppBarLabel = styled.span`
+  margin: 0 30px;
+  ${font({ size: 'xxlarge' })};
 `
 
 export default observe(

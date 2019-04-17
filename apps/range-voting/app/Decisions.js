@@ -146,7 +146,7 @@ class Decisions extends React.Component {
         : preparedVotes.find(vote => vote.voteId === currentVoteId)
 
     return (
-      <Main>
+      <React.Fragment>
         <AppLayout.ScrollWrapper>
           {displayVotes ? (
             <Votes votes={preparedVotes} onSelectVote={this.handleVoteOpen} app={app}/>
@@ -156,7 +156,7 @@ class Decisions extends React.Component {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                height: '100vh',
+                flexGrow: 1
               }}
             >
               <EmptyStateCard
@@ -187,7 +187,7 @@ class Decisions extends React.Component {
             />
           </SidePanel>
         )}
-      </Main>
+      </React.Fragment>
     )
   }
 }

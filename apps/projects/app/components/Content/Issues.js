@@ -23,7 +23,7 @@ import ActiveFilters from './Filters'
 class Issues extends React.PureComponent {
   static propTypes = {
     onLogin: PropTypes.func.isRequired,
-    status: PropTypes.string.isRequired,
+    githubCurrentUser: PropTypes.object.isRequired,
   }
 
   state = {
@@ -372,7 +372,7 @@ class Issues extends React.PureComponent {
   }
 
   render() {
-    if (this.props.status === STATUS.INITIAL) {
+    if (this.props.githubCurrentUser === STATUS.INITIAL) {
       return <Unauthorized onLogin={this.props.onLogin} />
     }
     const {
@@ -498,7 +498,6 @@ class Issues extends React.PureComponent {
 }
 
 const StyledIssues = styled.div`
-  padding: 15px 30px;
   > :first-child {
     display: flex;
     justify-content: space-between;

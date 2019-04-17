@@ -56,13 +56,12 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
 
     const loadedRepos = await loadReposFromQueue(state)
 
-    const status = STATUS.AUTHENTICATED
+    const gitHubStatus = STATUS.AUTHENTICATED
     const github = {
       token,
-      status,
+      gitHubStatus,
       event: null
     }
-
     const repos = [ ...state.repos, ...loadedRepos ]
 
     return { ...nextState, github, repos }

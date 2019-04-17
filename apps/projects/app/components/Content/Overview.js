@@ -14,14 +14,14 @@ const Overview = ({
   onNewProject,
   onRemoveProject,
   projects,
-  status,
+  githubCurrentUser,
   githubLoading,
 }) => {
   if (githubLoading) {
     return <EmptyWrapper><LoadingAnimation /></EmptyWrapper>
-  } else if (status === STATUS.INITIAL) {
+  } else if (githubCurrentUser === STATUS.INITIAL) {
     return <Unauthorized onLogin={onLogin} />
-  } else if (status === STATUS.FAILED) {
+  } else if (githubCurrentUser === STATUS.FAILED) {
     return <Error action={() => {}} />
   }
   const projectsEmpty = projects.length === 0
@@ -52,7 +52,7 @@ Overview.propTypes = {
   onNewProject: PropTypes.func.isRequired,
   onRemoveProject: PropTypes.func.isRequired,
   projects: PropTypes.arrayOf(PropTypes.object).isRequired,
-  status: PropTypes.string.isRequired,
+  githubCurrentUser: PropTypes.object.isRequired,
 }
 
 const StyledProjects = styled.div`
@@ -61,7 +61,6 @@ const StyledProjects = styled.div`
   grid-auto-rows: auto;
   grid-gap: 2rem;
   justify-content: start;
-  padding: 30px;
 `
 
 export default Overview

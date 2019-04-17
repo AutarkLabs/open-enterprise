@@ -1,16 +1,12 @@
-import { AppBar, Main, observe, SidePanel, TabBar, Root, Viewport, font, breakpoint } from '@aragon/ui'
+import { AppBar, AppView, Main, observe, TabBar, font } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { map } from 'rxjs/operators'
 import { Overview, MyRewards } from '../Content'
-import { Title } from '../Shared'
-import { Empty } from '../Card'
 import PanelManager, { PANELS } from '../Panel'
-import NewRewardButton from './NewRewardButton'
 import { millisecondsToBlocks, MILLISECONDS_IN_A_MONTH, millisecondsToQuarters, WEEK } from '../../../../../shared/ui/utils'
-import BigNumber from 'bignumber.js'
-import { networkContextType, MenuButton } from '../../../../../shared/ui'
+import { networkContextType, MenuButton, AppTitleButton } from '../../../../../shared/ui'
 
 class App extends React.Component {
   static propTypes = {
@@ -145,37 +141,37 @@ class App extends React.Component {
 
   render() {
     const { panel, panelProps } = this.state
-    const { network } = this.props
+    const { network, displayMenuButton } = this.props
 
     // TODO: get tokens from vault
     const tokens = { 0x0: 'ETH' }
 
     return (
-      <Root.Provider>
-        <StyledAragonApp>
-          <AppBar
-            endContent={
-              <NewRewardButton
-                title="New Reward"
-                onClick={this.newReward}
-              />
-            }
-          >
-            <AppBarTitle>
-              <Viewport>
-                {({ below }) =>
-                  below('medium') && <MenuButton onClick={this.handleMenuPanelOpen} />
-                }
-              </Viewport>
-              <AppBarLabel>Rewards</AppBarLabel>
-            </AppBarTitle>
-          </AppBar>
-
-          <TabBar
-            items={this.state.tabs}
-            selected={this.state.selected}
-            onSelect={this.selectTab}
-          />
+      <Main>
+        <AppView
+          appBar={
+            <AppBar
+              endContent={
+                <AppTitleButton
+                  caption="New Reward"
+                  onClick={this.newReward}
+                />
+              }
+              tabs={
+                <TabBar
+                  items={this.state.tabs}
+                  selected={this.state.selected}
+                  onSelect={this.selectTab}
+                />
+              }
+            >
+              <AppBarTitle>
+                {displayMenuButton && <MenuButton />}
+                <AppBarLabel>Rewards</AppBarLabel>
+              </AppBarTitle>
+            </AppBar>
+          }
+        >
           { this.state.selected === 1 ? (
             <MyRewards
               rewards={this.props.rewards === undefined ? [] : this.props.rewards}
@@ -192,40 +188,26 @@ class App extends React.Component {
               network={network}
             />
           )}
+        </AppView>
 
-          <PanelManager
-            onClose={this.closePanel}
-            activePanel={panel}
-            {...panelProps}
-          />
-        </StyledAragonApp>
-      </Root.Provider>
+        <PanelManager
+          onClose={this.closePanel}
+          activePanel={panel}
+          {...panelProps}
+        />
+      </Main>
     )
   }
 }
 
-const StyledAragonApp = styled(Main)`
-  display: flex;
-  height: 100vh;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: stretch;
-`
 const AppBarTitle = styled.span`
   display: flex;
   align-items: center;
 `
 
 const AppBarLabel = styled.span`
-  margin: 0 10px 0 8px;
+  margin: 0 30px;
   ${font({ size: 'xxlarge' })};
-
-  ${breakpoint(
-    'medium',
-    `
-      margin-left: 24px;
-    `
-  )};
 `
 
 export default observe(
