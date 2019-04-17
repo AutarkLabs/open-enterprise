@@ -27,16 +27,9 @@ const ASSETS_URL = './aragon-ui-assets/'
 
 // TODO: let the user customize the github app on settings screen?
 // TODO: Extract to an external js utility to keep this file clean
-// Variable fields depending on the execution environment:
-// TODO: This should be dynamically set depending on the execution environment (dev, prod...)
-
-// github: https://ipfs.eth.aragon.network/ipfs/QmejDQpcaXWo6ZZy7kGT1KEk9Qgi4yPNzjjT4rnkzB8xDq
 const AUTH_URI = 'https://local-tps-github-auth.now.sh/authenticate'
 const GITHUB_URI = 'https://github.com/login/oauth/authorize'
-const PROJECTS_AUTH_IPFS_HASH = 'QmejDQpcaXWo6ZZy7kGT1KEk9Qgi4yPNzjjT4rnkzB8xDq'
-// const REDIRECT_URI = `https://ipfs.eth.aragon.network/ipfs/${PROJECTS_AUTH_IPFS_HASH}`
-const REDIRECT_URI = 'https://csb-9ylrrl780r-idzumjlwhp.now.sh'
-// const REDIRECT_URI = 'https://didnotwork.com'
+const REDIRECT_URI = 'https://tps-auth.now.sh'
 const CLIENT_ID = '686f96197cc9bb07a43d'
 
 export const githubPopup = (popup = null) => {
@@ -75,11 +68,6 @@ const getPopupOffset = ({ width, height }) => {
   return { top, left }
 }
 
-const getURLParam = param => {
-  const searchParam = new URLSearchParams(window.location.search)
-  return searchParam.get(param)
-}
-
 const initApolloClient = token =>
   new ApolloClient({
     uri: 'https://api.github.com/graphql',
@@ -101,11 +89,8 @@ const initApolloClient = token =>
  * @returns {string} The authentication token obtained from the auth server
  */
 const getToken = async code => {
-  console.log('getToken: github auth code arrived!', code)
-
   const response = await fetch(`${AUTH_URI}/${code}`)
   const json = await response.json()
-  console.log('getToken: returning json token!', json.token)
 
   return json.token
 }
@@ -145,23 +130,6 @@ class App extends React.PureComponent {
     }
   }
 
-  componentDidMount() {
-    /**
-     * Acting as the redirect target it looks up for 'code' URL param on component mount
-     * if it detects the code then sends to the opener window
-     * via postMessage with 'popup' as origin and close the window (usually a popup)
-     */
-    const code = getURLParam('code')
-    console.log('Sending code:', code)
-    code &&
-      window.opener.postMessage(
-        { from: 'popup', name: 'code', value: code },
-        '*'
-      )
-
-    // window.close()
-  }
-
   componentDidUpdate(prevProps) {
     const hasGithubToken = this.props.github && this.props.github.token
     const hadGithubToken = prevProps.github && prevProps.github.token
@@ -182,7 +150,6 @@ class App extends React.PureComponent {
   }
 
   handlePopupMessage = async message => {
-    console.log('message arrived', message)
     if (message.data.from !== 'popup') return
     if (message.data.name === 'code') {
       // TODO: Optimize the listeners lifecycle, ie: remove on unmount
@@ -191,7 +158,6 @@ class App extends React.PureComponent {
       const code = message.data.value
       try {
         const token = await getToken(code)
-        console.log('token arrived, settings to state', token)
         this.setState(
           {
             githubLoading: false,
@@ -359,7 +325,7 @@ class App extends React.PureComponent {
       booleanArray,
       tokenArray,
       ipfsString,
-      description,
+      description
     )
   }
 
@@ -539,7 +505,8 @@ class App extends React.PureComponent {
       <StyledAragonApp publicUrl={ASSETS_URL}>
         <BaseStyles />
         <ToastHub>
-          <Title text="Projects"
+          <Title
+            text="Projects"
             displayMenuButton={this.props.displayMenuButton}
             handleMenuPanelOpen={this.handleMenuPanelOpen}
           />
