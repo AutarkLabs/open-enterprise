@@ -74,7 +74,7 @@ const createStore = async settings => {
       return nextState
     },
     [
-      // of({ event: INITIALIZATION_TRIGGER }),
+      of({ event: INITIALIZATION_TRIGGER }),
       // handle address book events
       // TODO: Start from AddrBook initialization block as Vault
       settings.addressBook.contract.events(),

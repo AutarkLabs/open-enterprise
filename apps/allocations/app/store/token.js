@@ -53,7 +53,7 @@ export async function vaultLoadBalance(state, { returnValues }, settings) {
   )
   return {
     ...state,
-    balances: r.newBalances,
+    balances: r,
   }
 }
 
