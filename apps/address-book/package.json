@@ -8,6 +8,7 @@
     "build": "npm run compile && npm run sync-assets && npm run build:app && npm run build:script",
     "compile": "truffle compile",
     "console": "truffle dev",
+    "copy-public-assets": "rsync -rtu ./public/ ./dist",
     "coverage": "SOLIDITY_COVERAGE=true npm run ganache-cli:test",
     "dev": "npm run sync-assets && parcel app/index.html --port 1111",
     "ganache-cli:test": "../shared/test-helpers/ganache-cli.sh",
@@ -23,7 +24,7 @@
     "deploy:staging": "npm run publish:major -- --environment staging",
     "deploy:rpc": "npm run publish:patch -- --environment default",
     "start": "aragon run",
-    "sync-assets": "copy-aragon-ui-assets -n aragon-ui ./dist && rsync -rtu ./public/ ./dist && rsync -rtu ./images ./dist",
+    "sync-assets": "copy-aragon-ui-assets -n aragon-ui ./dist && copy-public-assets",
     "test:gas": "GAS_REPORTER=true npm test",
     "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
   },
