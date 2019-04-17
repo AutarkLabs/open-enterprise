@@ -7,7 +7,7 @@ const getEventResult = (receipt, event, param) =>
 // ensure alphabetic order
 const defaultOwner =
   process.env.OWNER || '0xD11225188CacD25989F4007eb88b81D40093d222'
-const defaultPlanningSuiteAddr = process.env.PLANNING_SUITE_KIT || '0x7c7d384d147a03cce8ddf47d520f3f1c5e25a59f'
+const defaultPlanningSuiteAddr = process.env.PLANNING_SUITE_KIT || '0x0230cbe89af18f5a5aab1d16827ea450b49ddf55'
 
 module.exports = async (
   truffleExecCallback,
@@ -70,6 +70,7 @@ module.exports = async (
     votingAddress = getEventResult(receiptInstance, 'DeployInstance', 'voting')
     tokenAddress = getEventResult(receiptInstance, 'DeployInstance', 'token')
     console.log('Dao Created', daoAddress)
+    console.log('Vault address', vaultAddress)
     // Add PlanningSuite Apps to DAO
     receiptInstance = await kit.newPlanningApps(
       daoAddress,
