@@ -24,7 +24,7 @@
     "deploy:staging": "npm run publish:major -- --environment staging",
     "deploy:rpc": "npm run publish:patch -- --environment default",
     "start": "aragon run",
-    "sync-assets": "copy-aragon-ui-assets -n aragon-ui ./dist && copy-public-assets",
+    "sync-assets": "copy-aragon-ui-assets -n aragon-ui ./dist && npm run copy-public-assets",
     "test:gas": "GAS_REPORTER=true npm test",
     "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
   },
