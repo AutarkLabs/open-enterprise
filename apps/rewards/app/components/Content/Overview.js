@@ -66,49 +66,43 @@ const calculateAverageRewardsNumbers = ( rewards, claims, balances, convertRates
   }
 }
 
-const calculateAvgClaim = (claims, balances, convertRates) => {
-  return balances.reduce((balAcc, balance) => {
-    if (convertRates[balance.symbol]) {
-      return claims.claimsByToken.reduce((claimAcc, claim) => {
-        return (claim.address === balance.address)
-          ?
-          claimAcc + claim.amount / Math.pow(10, balance.decimals) / convertRates[balance.symbol]
-          :
-          claimAcc
-      },0) + balAcc
-    }
-    else return balAcc
-  },0) / claims.totalClaimsMade
+const calculateAvgClaim = ({ claimsByToken, totalClaimsMade }, balances, convertRates) => {
+  return sumTotalRewards(
+    claimsByToken,
+    balances,
+    convertRates,
+    (claim, bal) => claim.address === bal.address
+  ) / totalClaimsMade
 }
 
 const calculateMonthlyAvg = (rewards, balances, convertRates) => {
-  console.log(rewards)
   let monthCount = Math.ceil((Date.now() - rewards.reduce((minDate, reward) => {
     return reward.endDate < minDate.endDate ? reward: minDate
   }).endDate) / MILLISECONDS_IN_A_MONTH)
 
-  return balances.reduce((balAcc, balance) => {
-    console.log('balAcc ', balAcc)
-    if (convertRates[balance.symbol]) {
-      return rewards.reduce((rewAcc,reward) => {
-        return (reward.claimed && reward.rewardToken === balance.address)
-          ?
-          rewAcc + reward.amount / Math.pow(10, balance.decimals) / convertRates[balance.symbol]
-          :
-          rewAcc
-      },0) + balAcc
-    }
-    else return balAcc
-  },0) / monthCount
+  return sumTotalRewards(
+    rewards,
+    balances,
+    convertRates,
+    (rew, bal) => rew.claimed && rew.rewardToken === bal.address
+  ) / monthCount
 }
 
 const calculateYTDRewards = (rewards, balances, convertRates) => {
   const yearBeginning = new Date(new Date(Date.now()).getFullYear(), 0)
+  return sumTotalRewards(
+    rewards,
+    balances,
+    convertRates,
+    (rew, bal) => rew.claimed && rew.rewardToken === bal.address && rew.endDate >= yearBeginning
+  )
+}
+
+const sumTotalRewards = (rewards, balances, convertRates, rewardFilter) => {
   return balances.reduce((balAcc, balance) => {
-    console.log('balAcc ', balAcc)
     if (convertRates[balance.symbol]) {
       return rewards.reduce((rewAcc,reward) => {
-        return (reward.claimed && reward.rewardToken === balance.address && reward.endDate >= yearBeginning)
+        return (rewardFilter(reward, balance))
           ?
           rewAcc + reward.amount / Math.pow(10, balance.decimals) / convertRates[balance.symbol]
           :

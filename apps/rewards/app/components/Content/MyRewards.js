@@ -34,60 +34,49 @@ import { provideNetwork } from '../../../../../shared/ui'
 import { MILLISECONDS_IN_A_SECOND } from '../../../../../shared/ui/utils'
 
 const averageRewardsTitles = [ 'My Unclaimed Rewards', 'Year to Date', 'Inception to Date' ]
-// TODO: these need to be actually calculated
-const averageRewardsNumbers = [
-  formatAvgAmount(146, '+$', 'green'),
-  formatAvgAmount(19989.88, '$'),
-  formatAvgAmount(799.87, '$'),
-]
 
 const calculateMyRewardsSummary = (rewards, balances, convertRates) => {
   console.log(rewards, balances, convertRates)
   return [
     formatAvgAmount(calculateUnclaimedRewards(rewards, balances, convertRates),'+$', 'green'),
     formatAvgAmount(calculateAllRewards(rewards, balances, convertRates), '$'),
-    formatAvgAmount(calculateYTDRewards(rewards, balances, convertRates), '$'),
+    formatAvgAmount(calculateYTDUserRewards(rewards, balances, convertRates), '$'),
   ]
 }
 
 const calculateUnclaimedRewards = (rewards, balances, convertRates) => {
-  return balances.reduce((balAcc, balance) => {
-    if (convertRates[balance.symbol]) {
-      return rewards.reduce((rewAcc,reward) => {
-        return (!reward.claimed && reward.rewardToken === balance.address)
-          ?
-          rewAcc + reward.userRewardAmount / Math.pow(10, balance.decimals) / convertRates[balance.symbol]
-          :
-          rewAcc
-      },0) + balAcc
-    }
-    else return balAcc
-  },0)
+  return sumUserRewards(
+    rewards,
+    balances,
+    convertRates,
+    (rew, bal) => !rew.claimed && rew.rewardToken === bal.address // rewardFilter
+  )
 }
 
 const calculateAllRewards = (rewards, balances, convertRates) => {
-  return balances.reduce((balAcc, balance) => {
-    console.log('balAcc ', balAcc)
-    if (convertRates[balance.symbol]) {
-      return rewards.reduce((rewAcc,reward) => {
-        return (reward.claimed && reward.rewardToken === balance.address)
-          ?
-          rewAcc + reward.userRewardAmount / Math.pow(10, balance.decimals) / convertRates[balance.symbol]
-          :
-          rewAcc
-      },0) + balAcc
-    }
-    else return balAcc
-  },0)
+  return sumUserRewards(
+    rewards,
+    balances,
+    convertRates,
+    (rew, bal) => rew.claimed && rew.rewardToken === bal.address, // RewardFilter
+  )
 }
 
-const calculateYTDRewards = (rewards, balances, convertRates) => {
+const calculateYTDUserRewards = (rewards, balances, convertRates) => {
   const yearBeginning = new Date(new Date(Date.now()).getFullYear(), 0)
+  return sumUserRewards(
+    rewards,
+    balances,
+    convertRates,
+    (rew, bal) => rew.claimed && rew.rewardToken === bal.address && rew.endDate >= yearBeginning
+  )
+}
+
+const sumUserRewards = (rewards, balances, convertRates, rewardFilter) => {
   return balances.reduce((balAcc, balance) => {
-    console.log('balAcc ', balAcc)
     if (convertRates[balance.symbol]) {
       return rewards.reduce((rewAcc,reward) => {
-        return (reward.claimed && reward.rewardToken === balance.address && reward.endDate >= yearBeginning)
+        return (rewardFilter(reward, balance))
           ?
           rewAcc + reward.userRewardAmount / Math.pow(10, balance.decimals) / convertRates[balance.symbol]
           :
