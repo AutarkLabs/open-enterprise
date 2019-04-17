@@ -1,6 +1,6 @@
 {
   "name": "Dot Voting",
-  "description": "Create and manage multiple projects",
+  "description": "Vote on the percentage of funds that distinct entities from an Allocation proposal should receive or on issue curation proposals.",
   "author": "Autark",
   "changelog_url": "https://github.com/AutarkLabs/planning-suite/releases",
   "source_url": "https://github.com/AutarkLabs/planning-suite/blob/dev/apps/dot-voting",
