@@ -58,10 +58,8 @@ class Issue extends React.PureComponent {
       onAllocateSingleBounty,
       onUpdateBounty,
       onReviewWork,
-      ...restOfData
+      ...issue
     } = this.props
-
-    const issue = restOfData.issue
 
     const {
       id,
