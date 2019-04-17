@@ -3,8 +3,8 @@
   "description": "Create and manage multiple projects",
   "icons": [
     {
-      "src": "images/icon.png",
-      "sizes": "192x192"
+      "src": "images/icon.svg",
+      "sizes": "22x22"
     }
   ],
   "script": "script.js",
