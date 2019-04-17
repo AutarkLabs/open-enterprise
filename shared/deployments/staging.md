@@ -1,4 +1,19 @@
-# AddressBook
+# Staging Deployments
+
+## AddressBook
+
+### 8.0.0
+
+```sh
+✔ Successfully published address-book-staging.open.aragonpm.eth v8.0.0:
+ℹ Contract address: 0x045b5A4032F4Ba4b1044c7ed670682326D416476
+ℹ Content (ipfs): QmWj3bo9agtagAjgdoVeYxfXabviSbuWpSqdxbpkMxWCa7
+ℹ Transaction hash: 0x0b4bef766abb49543810a242902fe9cea3d534184f8001ade47f341559982c2b
+```
+
+- command: `./node_modules/.bin/lerna exec --scope="@tps/apps-address-book" --stream aragon apm publish major -- --files dist/ --environment staging`
+
+### 6.0.2
 
 ```sh
  ✔ Successfully published address-book-staging.open.aragonpm.eth v6.0.2:
@@ -7,14 +22,16 @@
  ℹ Transaction hash: 0xa290a14d9172c2e6949c9932e29c680abef67c2a104152b6519cb5100dab7d71
 ```
 
-command: `aragon apm publish patch --files dist/ --environment staging`
-files hashes:
+- command: `aragon apm publish patch --files dist/ --environment staging`
+- files hashes:
 
 ```sh
 
 ```
 
-# Allocations
+## Allocations
+
+### 1.0.3
 
 ```sh
 ✔ Successfully published allocations-staging.open.aragonpm.eth v1.0.3:
@@ -23,14 +40,23 @@ files hashes:
 ℹ Transaction hash: 0xfbc36651ca39a8a1d12143c9a9a6a528d64a8d7e8da970935e4c0900152a8e77
 ```
 
-command: `aragon apm publish patch --files dist/ --environment staging`
-files hashes:
+- command: `aragon apm publish patch --files dist/ --environment staging`
+- files hashes:
 
 ```sh
 
 ```
 
 ## Projects
+
+### 2.0.0
+
+```sh
+ ✔ Successfully published projects-staging.open.aragonpm.eth v2.0.0:
+ ℹ Contract address: 0x041B3931Edbb1f1a282656d8547eBf79A8ccC187
+ ℹ Content (ipfs): QmVXVSN8pTut2rhvKsH9R7KwNAptEXCWHKw7firPy7dLFY
+ ℹ Transaction hash: 0xcc7995c7607d01c2aeeef3b58f433e69a7c2f6b9402bc5e4c8c6395c5f2de0a8
+```
 
 ### 1.0.4
 
@@ -58,6 +84,21 @@ files hashes:
 
 ## DotVoting (formerly RangeVoting)
 
+### 1.0.0
+
+```sh
+✔ Successfully published dot-voting-staging.open.aragonpm.eth v1.0.0:
+ℹ Contract address: 0xAf1cE8DEB90bba9C2C5C077cdfbd6eD67d824F96
+ℹ Content (ipfs): QmQsWpUkrLV8QMkLhHtZkUV9joCJfwfS1S695cMS2NCCyT
+ℹ Transaction hash: 0xc361863e7ccdde3d6d04d26494ba276d863b1025cebfea15b345c95a1fab7cbe
+```
+
+- command: `./node_modules/.bin/lerna exec --scope="@tps/apps-address-book" --stream aragon apm publish major -- --files dist/ --environment staging`
+
+---
+
+### Range-Voting 1.0.3
+
 ```sh
  ✔ Successfully published range-voting-staging.open.aragonpm.eth v1.0.3:
  ℹ Contract address: 0x78BE5da6223Eb1834EFe47ad0ACe42132D0b5494
@@ -65,8 +106,8 @@ files hashes:
  ℹ Transaction hash: 0x7e9965d351fa4446d8983b089b644f6b981b40c8fe073a74c2fcac7e8bde2d7f
 ```
 
-command: `aragon apm publish patch --files dist/ --environment staging`
-files hashes:
+- command: `aragon apm publish patch --files dist/ --environment staging`
+- files hashes:
 
 ```sh
 
