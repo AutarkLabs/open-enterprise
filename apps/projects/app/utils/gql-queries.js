@@ -4,7 +4,7 @@ export const GET_ISSUES = gql`
   query getIssuesForRepos($reposIds: [ID!]!) {
     nodes(ids: $reposIds) {
       ... on Repository {
-        issues(last: 100) {
+        issues(last: 100, states:open) {
           nodes {
             number
             id
@@ -15,13 +15,12 @@ export const GET_ISSUES = gql`
               id
               name
             }
-            labels(first: 30) {
+            labels(first: 50) {
               totalCount
               edges {
                 node {
                   id
                   name
-                  description
                   color
                 }
               }
@@ -38,6 +37,65 @@ export const GET_ISSUES = gql`
     }
   }
 `
+
+export const getIssuesGQL = repos => {
+  let q = `
+    query getIssuesForRepos {
+  `
+  Object.keys(repos).forEach((repoId, i) => {
+    q += 'node' + i + ': node(id: "' + repoId + `") {
+      id
+      ... on Repository {
+        issues(
+          states:OPEN,
+          first: ` + repos[repoId].fetch + ', ' +
+          (repos[repoId].showMore ? 'after: "' + repos[repoId].endCursor + '", ' : '') +
+          `
+         orderBy: {field: CREATED_AT, direction: DESC}
+        ) {
+          totalCount
+          pageInfo {
+            endCursor
+            hasNextPage
+          }    
+          nodes {
+            number
+            id
+            title
+            body
+            createdAt
+            repository {
+              id
+              name
+            }
+            labels(first: 50) {
+              totalCount
+              edges {
+                node {
+                  id
+                  name
+                  color
+                }
+              }
+            }
+            milestone {
+              id
+              title
+            }
+            state
+            url
+          }
+        }
+      }
+    }
+    `
+  })
+  q += `
+}
+  `
+  return gql`${q}`
+}
+
 export const NEW_ISSUE = gql`
   mutation create($title: String!, $description: String, $id: ID!) {
     createIssue(
@@ -82,5 +140,3 @@ export const GET_REPOSITORIES = gql`
    }
  }
 `
-
-

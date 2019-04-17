@@ -25,7 +25,7 @@ class ReviewApplication extends React.Component {
 
   state = {
     feedback: '',
-    requestIndex: 0
+    requestIndex: this.props.requestIndex,
   }
 
   changeField = ({ target: { name, value } }) => this.setState({ [name]: value })
