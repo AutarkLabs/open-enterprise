@@ -44,113 +44,112 @@ const labelsBadges = labels =>
       {label.node.name}
     </Badge>
   ))
+ 
+class Issue extends React.PureComponent {
+ 
+  render() {
+    const {
+      isSelected,
+      onClick,
+      onSelect,
+      onSubmitWork,
+      onRequestAssignment,
+      onReviewApplication,
+      onAllocateSingleBounty,
+      onUpdateBounty,
+      onReviewWork,
+      ...issue
+    } = this.props
 
-const Issue = ({
-  work,
-  workStatus,
-  title,
-  repo,
-  number,
-  labels,
-  isSelected,
-  onSelect,
-  onClick,
-  onSubmitWork,
-  onRequestAssignment,
-  onReviewApplication,
-  onAllocateSingleBounty,
-  onUpdateBounty,
-  onReviewWork,
-  balance,
-  symbol,
-  deadline,
-  requestsData,
-  bountySettings,
-  expLevel,
-  slots,
-}) => {
+    const {
+      id,
+      work,
+      workStatus,
+      title,
+      repo,
+      number,
+      labels,
+      balance,
+      symbol,
+      deadline,
+      requestsData,
+      expLevel,
+    } = issue
 
-  return (
-    <StyledIssue>
-      <div style={{ padding: '10px' }}>
-        <Checkbox checked={isSelected} onChange={onSelect} />
-      </div>
-
-      <IssueData>
-        <ClickArea onClick={onClick} />
-
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Text color={theme.textSecondary} size="xsmall">
-            {repo} #{number}
-          </Text>
-          {workStatus !== 'fulfilled' && (
-            <ContextMenu>
-              <BountyContextMenu
-                work={work}
-                workStatus={workStatus}
-                requestsData={requestsData}
-                onAllocateSingleBounty={onAllocateSingleBounty}
-                onSubmitWork={onSubmitWork}
-                onRequestAssignment={onRequestAssignment}
-                onReviewApplication={onReviewApplication}
-                onReviewWork={onReviewWork}
-                onUpdateBounty={onUpdateBounty}
-              />
-            </ContextMenu>
-          )}
+    return (
+      <StyledIssue>
+        <div style={{ padding: '10px' }}>
+          <Checkbox checked={isSelected} onChange={() => onSelect(issue)} />
         </div>
-        <IssueTitleDetailsBalance>
-          <IssueTitleDetails>
-            <IssueTitle>
-              {title}
-            </IssueTitle>
 
-            {(BOUNTY_STATUS[workStatus]) && (
-              <Text.Block color={theme.textSecondary} style={{ fontSize: '0.87em' }}>
-                <span style={{ marginRight: '15px' }}>
-                  {expLevel}
-                  {dot}
-                  {balance > 0 ? BOUNTY_STATUS[workStatus] : BOUNTY_STATUS['fulfilled']}
-                  {dot}
-                    Due {DeadlineDistance(deadline)}
-                </span>
-              </Text.Block>
+        <IssueData>
+          <ClickArea onClick={() => onClick(issue)} />
+
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Text color={theme.textSecondary} size="xsmall">
+              {repo} #{number}
+            </Text>
+            {workStatus !== 'fulfilled' && (
+              <ContextMenu>
+                <BountyContextMenu
+                  work={work}
+                  workStatus={workStatus}
+                  requestsData={requestsData}
+                  onAllocateSingleBounty={() => onAllocateSingleBounty(issue)}
+                  onSubmitWork={() => onSubmitWork(issue)}
+                  onRequestAssignment={() => onRequestAssignment(issue)}
+                  onReviewApplication={() => onReviewApplication(issue)}
+                  onReviewWork={() => onReviewWork(issue)}
+                  onUpdateBounty={() => onUpdateBounty(issue)}
+                />
+              </ContextMenu>
             )}
-            {/*(BOUNTY_STATUS[workStatus]) && (
-              <Text.Block color={theme.textSecondary} style={{ fontSize: '0.87em' }}>
-                <span style={{ marginRight: '15px' }}>
-                  {slots} Available
-                  {dot}
-                  {requestsData.length} Applicants
-                </span>
-              </Text.Block>
-            )*/}
-          </IssueTitleDetails>
 
-          <Balance>
-            {(BOUNTY_STATUS[workStatus]) && (
-              <Badge
-                style={{ padding: '10px' }}
-                background={BOUNTY_BADGE_COLOR[workStatus].bg}
-                foreground={BOUNTY_BADGE_COLOR[workStatus].fg}
-              >
-                <Text>
-                  {balance + ' ' + symbol}
-                </Text>
-              </Badge>
-            )}
-          </Balance>
-        </IssueTitleDetailsBalance>
-
-        {(labels.totalCount > 0) && (
-          <div>
-            <Separator />
-            {labelsBadges(labels)}
           </div>
-        )}
-      </IssueData>
-    </StyledIssue>
-  )
+          <IssueTitleDetailsBalance>
+            <IssueTitleDetails>
+              <IssueTitle>
+                {title}
+              </IssueTitle>
+
+              {(BOUNTY_STATUS[workStatus]) && (
+                <Text.Block color={theme.textSecondary} style={{ fontSize: '0.87em' }}>
+                  <span style={{ marginRight: '15px' }}>
+                    {expLevel}
+                    {dot}
+                    {balance > 0 ? BOUNTY_STATUS[workStatus] : BOUNTY_STATUS['fulfilled']}
+                    {dot}
+                    Due {DeadlineDistance(deadline)}
+                  </span>
+                </Text.Block>
+              )}
+            </IssueTitleDetails>
+
+            <Balance>
+              {(BOUNTY_STATUS[workStatus]) && (
+                <Badge
+                  style={{ padding: '10px' }}
+                  background={BOUNTY_BADGE_COLOR[workStatus].bg}
+                  foreground={BOUNTY_BADGE_COLOR[workStatus].fg}
+                >
+                  <Text>
+                    {balance + ' ' + symbol}
+                  </Text>
+                </Badge>
+              )}
+            </Balance>
+          </IssueTitleDetailsBalance>
+
+          {(labels.totalCount > 0) && (
+            <div>
+              <Separator />
+              {labelsBadges(labels)}
+            </div>
+          )}
+        </IssueData>
+      </StyledIssue>
+    )
+  }
 }
 
 Issue.propTypes = {
@@ -159,14 +158,20 @@ Issue.propTypes = {
   number: PropTypes.number.isRequired,
   isSelected: PropTypes.bool,
   onClick: PropTypes.func.isRequired,
-  onSelect: PropTypes.func,
+  onSelect: PropTypes.func.isRequired,
+  onSubmitWork: PropTypes.func.isRequired,
+  onRequestAssignment: PropTypes.func.isRequired,
+  onReviewApplication: PropTypes.func.isRequired,
+  onAllocateSingleBounty: PropTypes.func.isRequired,
+  onUpdateBounty: PropTypes.func.isRequired,
+  onReviewWork: PropTypes.func.isRequired,
   workStatus: PropTypes.oneOf([ undefined, 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]),
   work: PropTypes.oneOf([
     undefined,
     PropTypes.object,
   ]),
 }
-
+  
 const StyledIssue = styled.div`
   flex: 1;
   width: 100%;
