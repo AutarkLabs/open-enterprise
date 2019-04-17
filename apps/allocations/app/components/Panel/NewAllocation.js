@@ -171,8 +171,8 @@ class NewAllocation extends React.Component {
     )
 
     const errorMessages = [ 'allocationError', 'addressError', 'descriptionError', 'ethBalanceError', 'tokenBalanceError' ].map((e, i) => (
-      <div>
-        <ErrorMessage key={i} hasError={state[e]} type={e} />
+      <div key={i}>
+        <ErrorMessage hasError={state[e]} type={e} />
       </div>
     ))
 
