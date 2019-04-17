@@ -95,6 +95,11 @@ class Decisions extends React.Component {
   handleVoteTransitionEnd = opened => {
     this.setState(opened ? { voteSidebarOpened: true } : { currentVoteId: -1 })
   }
+
+  getAddressLabel = (entries, option) => {
+    const index = entries.findIndex(entry => entry.addr === option.label)
+    return index > -1 ? entries[index].data.name : option.label
+  }
   render() {
     const {
       app,
@@ -124,7 +129,7 @@ class Decisions extends React.Component {
         vote.data.options = vote.data.options.map(option => {
           return {
             ...option,
-            label: entries[option.label] ? entries[option.label].data.name : option.label
+            label: this.getAddressLabel(entries, option)
           }
         })
         return {
