@@ -574,7 +574,6 @@ class App extends React.PureComponent {
         ? contentData[activeIndex.tabIndex].tabButton
         : null
 
-    console.log(appTitleButton)
     const tabNames = contentData.map(t => t.tabName)
 
     const TabComponent = contentData[activeIndex.tabIndex].TabComponent
