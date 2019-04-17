@@ -30,9 +30,9 @@ $ npm start
 $ npm run dev:projects
 
 # Develop single app with backend and aragon wrapper:
-$ npm run start:range
+$ npm run start:dot
 
-# current app name aliases: {address, projects, payout, range}
+# current app name aliases: {address, projects, payout, dot}
 ```
 
 ### Extra tips
@@ -51,18 +51,18 @@ The proposal for an Aragon [Planning Suite](https://github.com/aragon/nest/pull/
 
 The Planning Suite is a collection of six Aragon Apps that supports the following:
 
-- **Allocations:** Propose new multi-party financial allocations, which are forwarded to the Range Voting app.
-  - **Dynamic Payout:** Payroll contract that allows for dynamic allocations that are determined using range voting.
-  - **Payout Engine:** Pay sharing contract using a percentage-based distribution system, where the percentages are determined using range voting.
+- **Allocations:** Propose new multi-party financial allocations, which are forwarded to the Dot Voting app.
+  - **Dynamic Payout:** Payroll contract that allows for dynamic allocations that are determined using dot voting.
+  - **Payout Engine:** Pay sharing contract using a percentage-based distribution system, where the percentages are determined using dot voting.
 - **Address Book:** Maintain a list of Ethereum addresses (external contacts/collaborators) mapped to human-readable names.
   - **Fixed Payout:** The address book will enable a more user-friendly way to access common addresses a DAO uses, making it easier to setup Fixed Payouts in various Aragon apps.
-- **Range Voting:** Vote on the percentage of an allocation that distinct tasks, projects, or people should receive. Unique forwarding pattern allows for data to be added to EVM scripts within Aragon.
+- **Dot Voting:** Vote on the percentage of an allocation that distinct tasks, projects, or people should receive. Unique forwarding pattern allows for data to be added to EVM scripts within Aragon.
 - **Projects:** Allow Github issues to be collectively prioritized in addition to applying bulk bounties.
   - **Github Integration:** Before we can utilize the decentralized git tool, it would be ideal to have an integration with a Github-based bounty system to provide immediate utility to Aragon DAOs.
   - **Issue Curation:** In the Planning app, token holders or project members will be able to curate / prioritize the top issues that should be developed.
   - **Bulk Bounties:** Allow bounties to be allocated to issues in a bulk-fashion.
     - **Off-Chain Estimates:** The bounty estimates are determined off-chain or are input by a single party, yet require an approval vote from the DAO (Forwards to Voting app)
-    - **On-Chain Estimates:** Consensus or range voting contract is utilized for members to collectively estimate the value of task bounties. (Forwards to Consensus app).
+    - **On-Chain Estimates:** Consensus or dot voting contract is utilized for members to collectively estimate the value of task bounties. (Forwards to Consensus app).
 - **Consensus:** Allow for special voting sessions to be created, where the aim is to reach consensus among the voting session participants.
 - **Rewards:** Distributes payments to token holders based on the number of tokens one has earned in a specific cycle of time (one-time reward) or based on the total tokens one holds (dividend).
 
@@ -84,9 +84,9 @@ These are some initial concepts. We expect to refine them and gather community f
 
 ![ara_planning3](docs/screenshots/Rewards_app.jpg)
 
-#### Issue Curation using Range Voting
+#### Issue Curation using Dot Voting
 
-![ara_planning4](docs/screenshots/Range_vote_issue.jpg)
+![ara_planning4](docs/screenshots/dot_vote_issue.jpg)
 
 ### Flow Diagram
 

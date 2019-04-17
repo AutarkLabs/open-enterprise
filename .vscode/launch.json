@@ -7,8 +7,8 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "rangeVoting truffle test (debuggable)",
-            "cwd": "${workspaceFolder}/apps/range-voting",
+            "name": "dotVoting truffle test (debuggable)",
+            "cwd": "${workspaceFolder}/apps/dot-voting",
             "program": "${workspaceRoot}/node_modules/truffle/build/cli.bundled.js",
             "args": [
                 "test"
