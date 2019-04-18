@@ -8,7 +8,7 @@ const getEventResult = (receipt, event, param) =>
 const defaultOwner =
   process.env.OWNER || '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7'
 const defaultPlanningSuiteAddr =
-  process.env.PLANNING_SUITE_KIT || '0x3FA2934a61c1DcC080dA2a0535a678c3A5d070aD'
+  process.env.PLANNING_SUITE_KIT || '0x3d7034e6cb36ebda9485bf8788f6d1015824fcf9'
 
 module.exports = async (
   truffleExecCallback,

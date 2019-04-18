@@ -116,6 +116,15 @@
 
 ## Planning-Suite Template (kit)
 
+### planning-suite-staging v3.0.0
+
+```sh
+ ✔ Successfully published planning-suite-staging.open.aragonpm.eth v3.0.0:
+ ℹ Contract address: 0x3D7034e6cB36ebDA9485Bf8788F6d1015824fCf9
+ ℹ Content (ipfs): QmfP81ZFijzayaWBDfKd9nH6avtXKbtHyV8kov5A7eVQxH
+ ℹ Transaction hash: 0x15d96c4a9d063a89c7d4bcf6c18bbbc62335ce92e5e0af37e3255fe939299f58
+```
+
 ### planning-suite-staging v2.0.0
 
 ```sh

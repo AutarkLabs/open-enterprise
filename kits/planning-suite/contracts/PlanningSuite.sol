@@ -336,11 +336,11 @@ contract PlanningSuite is BetaKitBase {
         );
         initializeTPSApps(
             addressBook,
-            projects,
-            dotVoting,
             allocations,
-            vault,
+            dotVoting,
+            projects,
             token,
+            vault,
             candidateSupportPct,
             minParticipationPct,
             voteDuration
@@ -348,9 +348,9 @@ contract PlanningSuite is BetaKitBase {
         handleTPSPermissions(
             dao,
             addressBook,
-            projects,
-            dotVoting,
             allocations,
+            dotVoting,
+            projects,
             voting
         );
         handleVaultPermissions(
@@ -367,17 +367,18 @@ contract PlanningSuite is BetaKitBase {
         Allocations allocations,
         DotVoting dotVoting,
         Projects projects,
-        Vault vault,
         MiniMeToken token,
+        Vault vault,
         uint candidateSupportPct,
         uint minParticipationPct,
         uint64 voteDuration
     ) internal
     {
+        string memory tokenSymbol = token.symbol();
         addressBook.initialize();
         allocations.initialize(addressBook, vault);
         dotVoting.initialize(addressBook, token, minParticipationPct, candidateSupportPct, voteDuration * 1000);
-        projects.initialize(registry, vault, token.symbol);
+        projects.initialize(registry, vault, tokenSymbol);
     }
 
     function handleTPSPermissions(
