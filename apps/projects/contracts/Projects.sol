@@ -107,7 +107,7 @@ contract Projects is IsContract, AragonApp {
         bytes32[] expLevels;
         uint256 baseRate;
         uint256 bountyDeadline;
-        string bountyCurrency;
+        address bountyCurrency;
         address bountyAllocator;
         //address bountyArbiter;
     }
@@ -175,7 +175,7 @@ contract Projects is IsContract, AragonApp {
 ////////////////
 // Constructor
 ////////////////
-    function initialize(address _bountiesAddr, Vault _vault, string _defaultToken)
+    function initialize(address _bountiesAddr, Vault _vault, address _defaultToken)
     external onlyInit // solium-disable-line visibility-first
     {
         initialized();
@@ -212,9 +212,8 @@ contract Projects is IsContract, AragonApp {
         bytes32[] _expLevels,
         uint256 _baseRate,
         uint256 _bountyDeadline,
-        string _bountyCurrency,
+        address _bountyCurrency,
         address _bountyAllocator
-        //address bountyArbiter
     ) external auth(CHANGE_SETTINGS_ROLE)
     {
         require(_expMultipliers.length == _expLevels.length, "experience level arrays lengths must match");
@@ -223,7 +222,6 @@ contract Projects is IsContract, AragonApp {
         for (uint i = 0; i < _expLevels.length; i++) {
             _addExperienceLevel(_expMultipliers[i], _expLevels[i]);
         }
-        //_changeBountySettings(expLevels, baseRate, bountyDeadline, bountyCurrency, bountyAllocator, bountyArbiter);
         _changeBountySettings(_baseRate, _bountyDeadline, _bountyCurrency, _bountyAllocator);
     }
 
@@ -276,7 +274,7 @@ contract Projects is IsContract, AragonApp {
         bytes32[] expLevels,
         uint256 baseRate,
         uint256 bountyDeadline,
-        string bountyCurrency,
+        address bountyCurrency,
         address bountyAllocator
         //address bountyArbiter
     )
@@ -635,16 +633,14 @@ contract Projects is IsContract, AragonApp {
     function _changeBountySettings(
         uint256 _baseRate,
         uint256 _bountyDeadline,
-        string _bountyCurrency,
+        address _bountyCurrency,
         address _bountyAllocator
-        //address bountyArbiter
     ) internal
     {
         settings.baseRate = _baseRate;
         settings.bountyDeadline = _bountyDeadline;
         settings.bountyCurrency = _bountyCurrency;
         settings.bountyAllocator = _bountyAllocator;
-        //settings.bountyArbiter = bountyArbiter;
 
         emit BountySettingsChanged();
     }

@@ -82,13 +82,13 @@ class FundIssues extends React.Component {
       })
     }
 
-    let bountySymbol = this.props.bountySettings.bountyCurrency
-    let bountyToken, tokenDecimals, tokenBalance
+    const bountyAddr = this.props.bountySettings.bountyCurrency
+    let tokenSymbol, tokenDecimals, tokenBalance
     this.props.tokens.forEach(
       token => {
-        if(token.symbol === bountySymbol) {
-          bountyToken = token.addr
+        if(token.addr === bountyAddr) {
           tokenDecimals = token.decimals
+          tokenSymbol = token.symbol
           tokenBalance = token.balance
         }
       }
@@ -98,6 +98,7 @@ class FundIssues extends React.Component {
       bounties,
       tokenBalance,
       tokenDecimals,
+      tokenSymbol,
       totalSize: 0,
     }
   }
@@ -209,7 +210,7 @@ class FundIssues extends React.Component {
                       <Badge style={{ padding: '6px', marginTop: '14px', marginLeft: '6px' }}>
                         <Text size="large">
                           {bounties[issue.id]['size'].toFixed(2)}{' '}
-                          {bountySettings.bountyCurrency}
+                          {this.state.tokenSymbol}
                         </Text>
                       </Badge>
                     )}
@@ -312,7 +313,7 @@ class FundIssues extends React.Component {
                                 <FieldTitle>Value</FieldTitle>
                                 <Badge style={{ marginLeft: '5px' }}>
                                   {bounties[issue.id]['size'].toFixed(2)}{' '}
-                                  {bountySettings.bountyCurrency}
+                                  {this.state.tokenSymbol}
                                 </Badge>
                               </IBValueShow>
                             )}
