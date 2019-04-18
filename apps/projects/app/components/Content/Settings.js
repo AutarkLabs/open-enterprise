@@ -27,7 +27,7 @@ class Settings extends React.Component {
     githubCurrentUser: PropTypes.object, // TODO: is this required?
     network: PropTypes.object,
     onLogin: PropTypes.func.isRequired,
-    gitHubStatus: PropTypes.string.isRequired,
+    status: PropTypes.string.isRequired,
   }
   state = {
     bountyCurrencies: this.props.tokens.map(token => token.symbol),
@@ -141,7 +141,7 @@ class Settings extends React.Component {
   handleLogout = () => {
     this.props.app.cache('github', {
       event: REQUESTED_GITHUB_DISCONNECT,
-      gitHubStatus: STATUS.INITIAL,
+      status: STATUS.INITIAL,
       token: null,
     })
   }
@@ -370,8 +370,8 @@ const BaseRate = ({ baseRate, onChangeRate, bountyCurrency, onChangeCurrency, bo
   </div>
 )
 
-const GitHubConnect = ({ onLogin, onLogout, gitHubStatus, user }) => {
-  const auth = gitHubStatus === STATUS.AUTHENTICATED
+const GitHubConnect = ({ onLogin, onLogout, status, user }) => {
+  const auth = status === STATUS.AUTHENTICATED
   const bodyText = auth ? (
     <span>
       Logged in as
@@ -403,7 +403,7 @@ const GitHubConnect = ({ onLogin, onLogout, gitHubStatus, user }) => {
 GitHubConnect.propTypes = {
   onLogin: PropTypes.func.isRequired,
   onLogout: PropTypes.func.isRequired,
-  gitHubStatus: PropTypes.string.isRequired,
+  status: PropTypes.string.isRequired,
   user: PropTypes.string, // TODO: is this required?
 }
 

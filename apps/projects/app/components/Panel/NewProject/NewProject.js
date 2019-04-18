@@ -7,8 +7,8 @@ import { STATUS } from '../../../utils/github'
 
 class NewProject extends React.Component {
   static propTypes = {
-    /** The current github auth gitHubStatus */
-    gitHubStatus: PropTypes.string,
+    /** The current github auth status */
+    status: PropTypes.string,
     /** Req: Callback to handle Sign In */
     onGithubSignIn: PropTypes.func.isRequired,
     /** Req: Callback to handle project creation */
@@ -19,7 +19,7 @@ class NewProject extends React.Component {
   state = { started: false }
 
   render() {
-    const auth = this.props.gitHubStatus === STATUS.AUTHENTICATED
+    const auth = this.props.status === STATUS.AUTHENTICATED
     const bodyText = auth
       ? 'Projects in Aragon are a one-to-one mapping to a Github repo. By adding a new project, you will be able to use Aragon to:'
       : 'Sign in with GitHub to start managing your repos with Aragon'

@@ -1,4 +1,4 @@
-import { Main, TabBar, BaseStyles, observe, AppView, AppBar, font } from '@aragon/ui'
+import { Main, TabBar, BaseStyles, observe, AppView, AppBar, font, Viewport } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { hot } from 'react-hot-loader'
@@ -201,12 +201,12 @@ class App extends React.PureComponent {
           githubLoading: false,
           panelProps: {
             onCreateProject: this.createProject,
-            githubCurrentUser: STATUS.AUTHENTICATED,
+            status: STATUS.AUTHENTICATED,
           },
         }, () => {
           this.props.app.cache('github', {
             event: REQUESTED_GITHUB_TOKEN_SUCCESS,
-            githubCurrentUser: STATUS.AUTHENTICATED,
+            status: STATUS.AUTHENTICATED,
             token,
           })
         })
@@ -216,13 +216,13 @@ class App extends React.PureComponent {
             githubLoading: false,
             panelProps: {
               onCreateProject: this.createProject,
-              githubCurrentUser: STATUS.FAILED,
+              status: STATUS.FAILED,
             },
           },
           () => {
             this.props.app.cache('github', {
               event: REQUESTED_GITHUB_TOKEN_FAILURE,
-              githubCurrentUser: STATUS.FAILED,
+              status: STATUS.FAILED,
               token: null,
             })
           })
@@ -272,13 +272,13 @@ class App extends React.PureComponent {
       ? this.props.repos.map(repo => repo.data._repo)
       : []
 
-    this.setState((_prevState, { github: { githubCurrentUser } }) => ({
+    this.setState((_prevState, { github: { status } }) => ({
       panel: PANELS.NewProject,
       panelProps: {
         onCreateProject: this.createProject,
         onGithubSignIn: this.handleGithubSignIn,
         reposAlreadyAdded,
-        githubCurrentUser,
+        status,
       },
     }))
   }
@@ -560,89 +560,93 @@ class App extends React.PureComponent {
       },
     ]
 
-    const gitHubStatus = this.props.github ? this.props.github.gitHubStatus : STATUS.INITIAL
+    const status = this.props.github ? this.props.github.status : STATUS.INITIAL
 
     const appTitleButton =
-      gitHubStatus === STATUS.AUTHENTICATED &&
+      status === STATUS.AUTHENTICATED &&
       contentData[activeIndex.tabIndex].tabButton
         ? contentData[activeIndex.tabIndex].tabButton
         : null
 
     const tabNames = contentData.map(t => t.tabName)
-
     const TabComponent = contentData[activeIndex.tabIndex].TabComponent
 
     return (
       <Main publicUrl={ASSETS_URL}>
         <BaseStyles />
-        <AppView
-          appBar={
-            <AppBar
-              endContent={
-                appTitleButton && !appTitleButton.hidden() && (
-                  <AppTitleButton
-                    caption={appTitleButton.caption}
-                    onClick={appTitleButton.onClick}
-                    disabled={appTitleButton.disabled()}
+        <Viewport>
+          {({ below }) => (
+            <ApolloProvider client={this.state.client}>
+              <AppView
+                padding={0}
+                appBar={
+                  <AppBar
+                    endContent={
+                      appTitleButton && !appTitleButton.hidden() && (
+                        <AppTitleButton
+                          caption={appTitleButton.caption}
+                          onClick={appTitleButton.onClick}
+                          disabled={appTitleButton.disabled()}
+                        />
+                      )
+                    }
+                    tabs={
+                      <TabBar
+                        items={tabNames}
+                        onSelect={this.handleSelect}
+                        selected={activeIndex.tabIndex}
+                      />
+                    }
+                  >
+                    <AppBarTitle>
+                      {displayMenuButton && <MenuButton />}
+                      <AppBarLabel>Projects</AppBarLabel>
+                    </AppBarTitle>
+                  </AppBar>
+                }
+              >
+                <ErrorBoundary>
+                  <TabComponent
+                    onLogin={this.handleGithubSignIn}
+                    status={status}
+                    app={this.props.app}
+                    bountySettings={bountySettings}
+                    githubCurrentUser={githubCurrentUser}
+                    githubLoading={this.state.githubLoading}
+                    projects={this.props.repos !== undefined ? this.props.repos : []}
+                    bountyIssues={
+                      this.props.issues !== undefined ? this.props.issues : []
+                    }
+                    bountySettings={
+                      bountySettings !== undefined ? bountySettings : {}
+                    }
+                    tokens={
+                      this.props.tokens !== undefined ? this.props.tokens : []
+                    }
+                    onNewProject={this.newProject}
+                    onRemoveProject={this.removeProject}
+                    onNewIssue={this.newIssue}
+                    onCurateIssues={this.curateIssues}
+                    onAllocateBounties={this.newBountyAllocation}
+                    onUpdateBounty={this.updateBounty}
+                    onSubmitWork={this.submitWork}
+                    onRequestAssignment={this.requestAssignment}
+                    activeIndex={activeIndex}
+                    changeActiveIndex={this.changeActiveIndex}
+                    onReviewApplication={this.reviewApplication}
+                    onReviewWork={this.reviewWork}
                   />
-                )
-              }
-              tabs={
-                <TabBar
-                  items={tabNames}
-                  onSelect={this.handleSelect}
-                  selected={activeIndex.tabIndex}
-                />
-              }
-            >
-              <AppBarTitle>
-                {displayMenuButton && <MenuButton />}
-                <AppBarLabel>Projects</AppBarLabel>
-              </AppBarTitle>
-            </AppBar>
-          }
-        >
-          <ApolloProvider client={this.state.client}>
-            <ErrorBoundary>
-              <TabComponent
-                onLogin={this.handleGithubSignIn}
-                gitHubStatus={gitHubStatus}
-                app={this.props.app}
-                bountySettings={bountySettings}
-                githubCurrentUser={githubCurrentUser}
-                githubLoading={this.state.githubLoading}
-                projects={this.props.repos !== undefined ? this.props.repos : []}
-                bountyIssues={
-                  this.props.issues !== undefined ? this.props.issues : []
-                }
-                bountySettings={
-                  bountySettings !== undefined ? bountySettings : {}
-                }
-                tokens={
-                  this.props.tokens !== undefined ? this.props.tokens : []
-                }
-                onNewProject={this.newProject}
-                onRemoveProject={this.removeProject}
-                onNewIssue={this.newIssue}
-                onCurateIssues={this.curateIssues}
-                onAllocateBounties={this.newBountyAllocation}
-                onUpdateBounty={this.updateBounty}
-                onSubmitWork={this.submitWork}
-                onRequestAssignment={this.requestAssignment}
-                activeIndex={activeIndex}
-                changeActiveIndex={this.changeActiveIndex}
-                onReviewApplication={this.reviewApplication}
-                onReviewWork={this.reviewWork}
-              />
 
-            </ErrorBoundary>
-          </ApolloProvider>
-          <PanelManager
-            onClose={this.closePanel}
-            activePanel={panel}
-            {...panelProps}
-          />
-        </AppView>
+                </ErrorBoundary>
+              </AppView>
+              <PanelManager
+                onClose={this.closePanel}
+                activePanel={panel}
+                {...panelProps}
+              />
+            </ApolloProvider>
+          )}
+        </Viewport>
       </Main>
     )
   }

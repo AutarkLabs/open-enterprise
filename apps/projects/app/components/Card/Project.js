@@ -10,7 +10,9 @@ import {
   IconHome,
   SafeLink,
   theme,
+  breakpoint,
 } from '@aragon/ui'
+import { BASE_CARD_WIDTH, CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
 
 const colors = {
   iconColor: theme.textTertiary,
@@ -96,12 +98,19 @@ const Project = ({
 
 const StyledCard = styled(Card)`
   display: flex;
-  margin: ${props => props.screenSize < 600 ? '0.2rem' : '1rem' };
+  ${breakpoint(
+    'small',
+    `
+    margin-bottom: 2rem;
+    `
+  )};
+  margin-bottom: 0.3rem;
+  margin-right: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? '0.6rem' : '2rem' };
   flex-direction: column;
   justify-content: flex-start;
   padding: 12px;
   height: 240px;
-  width: ${props => props.screenSize < 540 ? '100%' : '249px' };
+  width: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? '100%' : BASE_CARD_WIDTH + 'px' };
   transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
   :hover {
     cursor: pointer;

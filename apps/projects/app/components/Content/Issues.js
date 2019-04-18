@@ -8,6 +8,7 @@ import {
   theme,
   ContextMenuItem,
   IconFundraising,
+  breakpoint,
 } from '@aragon/ui'
 import BigNumber from 'bignumber.js'
 import { compareAsc, compareDesc } from 'date-fns'
@@ -227,12 +228,7 @@ class Issues extends React.PureComponent {
   }
 
   actionsMenu = (issues, issuesFiltered) => (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'flex-end'
-      }}>
+    <ActionsContainer>
       <TextInput placeholder="Search issue titles" type="search" onChange={this.handleTextFilter} />
       <ActiveFilters
         issues={issues}
@@ -261,7 +257,7 @@ class Issues extends React.PureComponent {
           <ActionLabel>Fund Issues</ActionLabel>
         </ContextMenuItem>
       </ActionsMenu>
-    </div>
+    </ActionsContainer>
   )
 
   setParentFilters = (filters) => {
@@ -497,11 +493,30 @@ class Issues extends React.PureComponent {
   }
 }
 
+const ActionsContainer = styled.div`
+  display: flex;
+  ${breakpoint(
+    'small',
+    `
+    flex-direction: row;
+    `
+  )};
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+`
+
 const StyledIssues = styled.div`
-  > :first-child {
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
-  }
+    ${breakpoint(
+    'small',
+    `
+      padding: 1rem 2rem;
+    `
+    )};
+    padding: 0.3rem;
 `
 
 const ScrollWrapper = styled.div`

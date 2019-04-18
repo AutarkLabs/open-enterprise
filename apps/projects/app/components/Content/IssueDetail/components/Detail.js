@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
-import { Badge, Text, theme, ContextMenu, SafeLink, Button, Viewport } from '@aragon/ui'
+import { Badge, Text, theme, ContextMenu, SafeLink, Button, Viewport, breakpoint } from '@aragon/ui'
 import { formatDistance } from 'date-fns'
 import marked from 'marked'
 import renderHTML from 'react-render-html'
@@ -435,16 +435,16 @@ const Detail = issue => {
     <Viewport>
       {({ below }) => below('medium') ? (
         <CardWrapper style={{ flexDirection: 'column' }}>
-          <div style={{ minWidth: '350px', width: '100%' }}>
+          <div style={{ minWidth: '330px', width: '100%', marginBottom: below('small') ? '0.2rem' : '2rem' }}>
             {detailsCard(issue)}
           </div>
-          <div style={{ minWidth: '350px', width: '100%' }}>
+          <div style={{ minWidth: '330px', width: '100%' }}>
             {eventsCard(issue)}
           </div>
         </CardWrapper>
       ) : (
         <CardWrapper style={{ flexDirection: 'row' }}>
-          <div style={{ maxWidth: '705px', minWidth: '350px', width: '70%' }}>
+          <div style={{ maxWidth: '705px', minWidth: '350px', width: '70%', marginRight: '2rem' }}>
             {detailsCard(issue)}
           </div>
           <div style={{ maxWidth: '400px', minWidth: '350px', width: '30%' }}>
@@ -459,13 +459,18 @@ const Detail = issue => {
 }
 const CardWrapper = styled.div`
   display: flex;
-  padding: 15px 30px;
+  ${breakpoint(
+    'small',
+    `
+    padding: 1.5rem 3rem;
+    `
+  )};
+  padding: 0.2rem;
 `
 const StyledDetailsCard = styled.div`
   flex: 0 1 auto;
   text-align: left;
   padding: 15px 30px;
-  margin: 10px;
   background: ${theme.contentBackground};
   border: 1px solid ${theme.contentBorder};
   border-radius: 3px;
