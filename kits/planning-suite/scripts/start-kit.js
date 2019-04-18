@@ -6,9 +6,9 @@ const getEventResult = (receipt, event, param) =>
 
 // ensure alphabetic order
 const defaultOwner =
-  process.env.OWNER || '0xD11225188CacD25989F4007eb88b81D40093d222'
+  process.env.OWNER || '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7'
 const defaultPlanningSuiteAddr =
-  process.env.PLANNING_SUITE_KIT || '0x0230cbe89af18f5a5aab1d16827ea450b49ddf55'
+  process.env.PLANNING_SUITE_KIT || '0x3FA2934a61c1DcC080dA2a0535a678c3A5d070aD'
 
 module.exports = async (
   truffleExecCallback,
