@@ -45,7 +45,9 @@ const getButtonClickHandler = ({
   if (editingProfile) return () => console.log('SAVE YOUR PROFILE')
   if (unlockedProfSuccess) return editProfile
   if (loadedPublicProfSuccess) return unlockOrCreateProfile
-  return () => console.log('HI')
+  return () => {
+    throw new Error('Error thrown in the click handler, unmanaged state')
+  }
 }
 
 const AuthButton = () => {

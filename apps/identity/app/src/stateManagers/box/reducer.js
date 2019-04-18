@@ -6,6 +6,7 @@ import {
   PROFILE_UNLOCK_SUCCESS,
   PROFILE_UNLOCK_FAILURE,
   REQUEST_EDIT_PROFILE,
+  EDIT_FIELD,
 } from './actionTypes'
 
 import {
@@ -16,6 +17,7 @@ import {
   profileUnlocked,
   profileUnlockFailed,
   requestProfileEdit,
+  editedField,
 } from './states'
 
 import { log } from '../../../utils'
@@ -86,6 +88,19 @@ const boxReducer = (prevState, action) => {
       const ethereumAddress = action.meta.ethereumAddress
       nextState[ethereumAddress] = requestProfileEdit(
         prevState[ethereumAddress]
+      )
+      logStateUpdate(action, prevState, nextState)
+      return nextState
+    }
+    case EDIT_FIELD: {
+      const nextState = { ...prevState }
+      const ethereumAddress = action.meta.ethereumAddress
+      const field = action.meta.field
+      const value = action.payload.value
+      nextState[ethereumAddress] = editedField(
+        prevState[ethereumAddress],
+        field,
+        value
       )
       logStateUpdate(action, prevState, nextState)
       return nextState

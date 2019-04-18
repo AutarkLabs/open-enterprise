@@ -6,6 +6,7 @@ import {
   PROFILE_UNLOCK_SUCCESS,
   PROFILE_UNLOCK_FAILURE,
   REQUEST_EDIT_PROFILE,
+  EDIT_FIELD,
 } from './actionTypes'
 
 export const fetchingProfile = ethereumAddress => ({
@@ -63,5 +64,16 @@ export const requestProfileEdit = ethereumAddress => ({
   type: REQUEST_EDIT_PROFILE,
   meta: {
     ethereumAddress,
+  },
+})
+
+export const editField = (ethereumAddress, field, value) => ({
+  type: EDIT_FIELD,
+  meta: {
+    ethereumAddress,
+    field,
+  },
+  payload: {
+    value,
   },
 })

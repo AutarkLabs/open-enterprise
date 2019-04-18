@@ -10,6 +10,9 @@ export const fetchingPublicProfile = () => ({
   editingProfile: false,
   unlockedBox: {},
   publicProfile: {},
+  forms: {
+    name,
+  },
 })
 
 export const fetchedPublicProfileSuccess = (state, publicProfile) => {
@@ -19,6 +22,15 @@ export const fetchedPublicProfileSuccess = (state, publicProfile) => {
     loadedPublicProf: true,
     loadedPublicProfSuccess: true,
     publicProfile,
+    forms: {
+      name: publicProfile.name,
+      job: publicProfile.job,
+      location: publicProfile.location,
+      school: publicProfile.school,
+      website: publicProfile.website,
+      description: publicProfile.description,
+    },
+    changed: [],
   }
 }
 
@@ -58,4 +70,20 @@ export const profileUnlockFailed = (state, error) => ({
 export const requestProfileEdit = state => ({
   ...state,
   editingProfile: true,
+})
+
+const calculateChanged = (changed, field) => {
+  if (!changed) return [field]
+
+  if (!changed.includes(field)) return [...changed, field]
+  return changed
+}
+
+export const editedField = (state, field, value) => ({
+  ...state,
+  forms: {
+    ...state.forms,
+    [field]: value,
+  },
+  changed: calculateChanged(state.changed, field),
 })

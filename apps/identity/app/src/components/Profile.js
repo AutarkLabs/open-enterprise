@@ -18,7 +18,7 @@ const Profile = ({ ethereumAddress }) => {
   return (
     <div>
       <PanelSeparator>
-        <LeftPanel />
+        <LeftPanel ethereumAddress={ethereumAddress} />
         <RightPanel />
       </PanelSeparator>
     </div>
