@@ -10,10 +10,9 @@ import {
   fetchedPublicProfileErrorState,
 } from './states'
 
-import { log } from '../../utils'
+import { log } from '../../../utils'
 
 // TODO: Fix lint
-/* eslint-disable standard/computed-property-even-spacing */
 
 const logStateUpdate = (action, prevState, nextState) => {
   log('ACTION: ', action, 'PREV STATE: ', prevState, 'NEXT STATE:', nextState)
@@ -31,9 +30,11 @@ const boxReducer = (prevState, action) => {
     }
     case FETCHED_PUBLIC_PROFILE_SUCCESS: {
       const nextState = { ...prevState }
-      nextState.boxes[
-        action.meta.ethereumAddress
-      ] = fetchedPublicProfileSuccessState(action.payload.publicProfile)
+      const ethereumAddress = action.meta.ethereumAddress
+      nextState.boxes[ethereumAddress] = fetchedPublicProfileSuccessState(
+        prevState.boxes[ethereumAddress],
+        action.payload.publicProfile
+      )
       logStateUpdate(action, prevState, nextState)
       return nextState
     }

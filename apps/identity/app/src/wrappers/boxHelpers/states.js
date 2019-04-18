@@ -13,13 +13,15 @@ export const fetchingPublicProfileState = () => ({
   publicProfile: {},
 })
 
-export const fetchedPublicProfileSuccessState = (state, publicProfile) => ({
-  ...state,
-  loadingPublicProf: false,
-  loadedPublicProf: true,
-  loadedPublicProfSuccess: true,
-  publicProfile,
-})
+export const fetchedPublicProfileSuccessState = (state, publicProfile) => {
+  return {
+    ...state,
+    loadingPublicProf: false,
+    loadedPublicProf: true,
+    loadedPublicProfSuccess: true,
+    publicProfile,
+  }
+}
 
 export const fetchedPublicProfileErrorState = (state, error) => ({
   ...state,

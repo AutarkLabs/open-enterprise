@@ -1,7 +1,7 @@
 import React, { useEffect, useReducer } from 'react'
 import PropTypes from 'prop-types'
 
-import { Profile } from '../../modules/3box-aragon'
+import { Profile } from '../../../modules/3box-aragon'
 import { boxReducer, initialState, BoxContext } from './'
 import { fetchingProfile, fetchedPublicProfile } from './actions'
 
