@@ -32,19 +32,25 @@ planningSuite.newInstance(
 )
 ```
 
+## Steps to publish and deploy
+
+1. Deploy template contracts to the desired environment
+2. Publish the template to APM
+3. Create new dao with start-kit or reuse an existing one
+
 ## Parameter Definitions
 
-| Parameter             | Description                                                                                                                     | Example (human-readable) | Contract input                                |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------ | --------------------------------------------- |
-| `name`                | Name for org, will assign `[name].aragonid.eth` (check capitalization and forbidden characters)                                 | autark                   | autark                                        |
-| `symbol`              | Symbol for token                                                                                                                | AUT                      | AUT                                           |
-| `holders`             | Array of token holder addresses                                                                                                 | 0xA... and 0xB...        | '["0xA...", "0xB..." ]'                       |
-| `stakes`              | Array of token stakes for holders (token has 18 decimals, multiply token amount `* 10^18`)                                      | 10 each                  | '["100000000000000000", "100000000000000000"] |
-| `supportNeeded`       | Voting App: Percentage of Yeas in casted votes for a vote to succeed .                                                          | 50%                      | 500000000000000000                            |
-| `minAcceptanceQuorum` | Voting App: Percentage of Yeas in total possible votes for a vote to succeed.                                                   | 30%                      | 300000000000000000                            |
-| `candidateSupportPct` | Dot Voting App: Minimum % of an option needs for it be considered valid.                                                        | 50%                      | 50000000000000000                             |
+| Parameter             | Description                                                                                                                   | Example (human-readable) | Contract input                                |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------ | --------------------------------------------- |
+| `name`                | Name for org, will assign `[name].aragonid.eth` (check capitalization and forbidden characters)                               | autark                   | autark                                        |
+| `symbol`              | Symbol for token                                                                                                              | AUT                      | AUT                                           |
+| `holders`             | Array of token holder addresses                                                                                               | 0xA... and 0xB...        | '["0xA...", "0xB..." ]'                       |
+| `stakes`              | Array of token stakes for holders (token has 18 decimals, multiply token amount `* 10^18`)                                    | 10 each                  | '["100000000000000000", "100000000000000000"] |
+| `supportNeeded`       | Voting App: Percentage of Yeas in casted votes for a vote to succeed .                                                        | 50%                      | 500000000000000000                            |
+| `minAcceptanceQuorum` | Voting App: Percentage of Yeas in total possible votes for a vote to succeed.                                                 | 30%                      | 300000000000000000                            |
+| `candidateSupportPct` | Dot Voting App: Minimum % of an option needs for it be considered valid.                                                      | 50%                      | 50000000000000000                             |
 | `minParticipationPct` | Dot Voting App: Minimum % of all token supply that needs to participate in the Dot Vote in order for the vote to be executed. | 30%                      | 300000000000000000                            |
-| `voteDuration`        | The amount of time a Voting or Dot Voting proposal will be open (in seconds).                                                   | 7 days                   | 604800                                        |
+| `voteDuration`        | The amount of time a Voting or Dot Voting proposal will be open (in seconds).                                                 | 7 days                   | 604800                                        |
 
 Check [Voting app spec](https://wiki.aragon.org/dev/apps/voting/) for some details and examples
 
