@@ -114,11 +114,15 @@
 
 ```
 
-Planning-Suite Template (kit)
+## Planning-Suite Template (kit)
 
-@tps/kits-planning-suite: ✔ Successfully published planning-suite-staging.open.aragonpm.eth v2.0.0:
-@tps/kits-planning-suite: ℹ Contract address: 0x3FA2934a61c1DcC080dA2a0535a678c3A5d070aD
-@tps/kits-planning-suite: ℹ Content (ipfs): QmQFm8NmWYDJMkU3nM1HMFoQeLfoBU4ah3898SyyQNczAB
-@tps/kits-planning-suite: ℹ Transaction hash: 0x3073d4685701245cb1a9f2693afbe786f7f3e93fe118981c03815bdc7f8503fc
+### planning-suite-staging v2.0.0
+
+```sh
+✔ Successfully published planning-suite-staging.open.aragonpm.eth v2.0.0:
+ℹ Contract address: 0x3FA2934a61c1DcC080dA2a0535a678c3A5d070aD
+ℹ Content (ipfs): QmQFm8NmWYDJMkU3nM1HMFoQeLfoBU4ah3898SyyQNczAB
+ℹ Transaction hash: 0x3073d4685701245cb1a9f2693afbe786f7f3e93fe118981c03815bdc7f8503fc
+```
 
 - command: `./node_modules/.bin/lerna exec --scope="@tps/kits-*" --stream ENS=0x98Df287B6C145399Aaa709692c8D308357bC085D aragon apm publish major 0x3fa2934a61c1dcc080da2a0535a678c3a5d070ad -- --environment staging`
