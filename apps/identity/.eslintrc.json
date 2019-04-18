@@ -3,7 +3,13 @@
     "browser": true,
     "es6": true
   },
-  "extends": ["standard", "standard-react", "prettier", "prettier/react"],
+  "extends": [
+    "standard",
+    "standard-react",
+    "prettier",
+    "prettier/standard",
+    "prettier/react"
+  ],
   "parser": "babel-eslint",
   "parserOptions": {
     "ecmaVersion": 6,
@@ -12,10 +18,12 @@
     },
     "sourceType": "module"
   },
-  "plugins": ["prettier", "react"],
+  "plugins": ["prettier", "react", "react-hooks"],
   "rules": {
     "valid-jsdoc": "error",
     "react/prop-types": 0,
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
     "prettier/prettier": [
       "error",
       {
