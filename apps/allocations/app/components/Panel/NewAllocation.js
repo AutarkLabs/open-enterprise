@@ -42,7 +42,7 @@ const message = {
   allocationError: 'Amount must be set.',
   addressSetting: 'Use address book for options',
   transferWarning:
-    'This will create a Range Vote and after it closes, it will result in a financial transfer.',
+    'This will create a Dot Vote and after it closes, it will result in a financial transfer.',
   tokenTransferWarning:
     'Since you are proposing an allocation with tokens, it will be withdrawn from your Finance app if approved, since Accounts do not hold tokens.',
   ethBalanceError: 'Amount is greater than ETH balance held by Account',

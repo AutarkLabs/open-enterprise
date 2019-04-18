@@ -94,7 +94,7 @@ class Settings extends React.Component {
     // flatten expLevels
     const expLevelsDesc = expLevels.map(l => fromUtf8(l.name))
     let expLevelsMul = expLevels.map(l => web3.toHex(l.mul))
-    //expLevels, baseRate, bountyDeadline, bountyCurrency, bountyAllocator, bountyArbiter
+
     this.props.app.changeBountySettings(
       expLevelsMul,
       expLevelsDesc,

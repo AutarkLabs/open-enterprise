@@ -6,7 +6,7 @@ const {
   MiniMeToken
 } = require('@tps/test-helpers/artifacts')
 
-//const RangeVoting = artifacts.require('RangeVotingMock')
+//const DotVoting = artifacts.require('DotVotingMock')
 //const ExecutionTarget = artifacts.require('ExecutionTarget')
 const RewardToken = artifacts.require('RewardToken')
 
@@ -69,7 +69,7 @@ contract('Rewards App', accounts => {
   let token = {}
   //let executionTarget = {}
 
-  //const RangeVotingTime = 1000
+  //const DotVotingTime = 1000
   const root = accounts[0]
 
   before(async () => {
@@ -164,7 +164,7 @@ contract('Rewards App', accounts => {
         token.address,
         minimumParticipation,
         candidateSupportPct,
-        RangeVotingTime
+        DotVotingTime
       )
 
       //executionTarget = await ExecutionTarget.new()

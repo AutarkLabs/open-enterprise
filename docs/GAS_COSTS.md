@@ -138,10 +138,10 @@ Contract: Projects App
   6 pending
 ```
 
-## Range Voting
+## Dot Voting
 
 ```sh
-Contract: RangeVoting App
+Contract: DotVoting App
     normal token supply
       ✓ fails on reinitialization (32779 gas)
       ✓ can create new vote (1434771 gas)
@@ -157,7 +157,7 @@ Contract: RangeVoting App
         ✓ has correct state
         ✓ holder can vote (346393 gas)
         ✓ holder can modify vote (346393 gas)
-        ✓ token transfers dont affect RangeVoting (335872 gas)
+        ✓ token transfers dont affect DotVoting (335872 gas)
         ✓ cannot execute during open vote
         ✓ cannot execute if vote instance executed (971330 gas)
         ✓ can execute if vote has sufficient candidate support (534650 gas)
@@ -184,25 +184,25 @@ Contract: RangeVoting App
 ····················|···················|··········|···········|···········|···············|··············
 |  ExecutionTarget  ·  setSignal        ·       -  ·        -  ·        -  ·            0  ·          -  │
 ····················|···················|··········|···········|···········|···············|··············
-|  RangeVotingMock  ·  addCandidate     ·  195800  ·   236974  ·   209844  ·            4  ·       0.07  │
+|  DotVotingMock  ·  addCandidate     ·  195800  ·   236974  ·   209844  ·            4  ·       0.07  │
 ····················|···················|··········|···········|···········|···············|··············
-|  RangeVotingMock  ·  executeVote      ·  436680  ·   436701  ·   436691  ·            2  ·       0.15  │
+|  DotVotingMock  ·  executeVote      ·  436680  ·   436701  ·   436691  ·            2  ·       0.15  │
 ····················|···················|··········|···········|···········|···············|··············
-|  RangeVotingMock  ·  forward          ·       -  ·        -  ·  1268763  ·            1  ·       0.45  │
+|  DotVotingMock  ·  forward          ·       -  ·        -  ·  1268763  ·            1  ·       0.45  │
 ····················|···················|··········|···········|···········|···············|··············
-|  RangeVotingMock  ·  initialize       ·       -  ·        -  ·        -  ·            0  ·          -  │
+|  DotVotingMock  ·  initialize       ·       -  ·        -  ·        -  ·            0  ·          -  │
 ····················|···················|··········|···········|···········|···············|··············
-|  RangeVotingMock  ·  newVote          ·  214803  ·  1449835  ·   959300  ·            5  ·       0.34  │
+|  DotVotingMock  ·  newVote          ·  214803  ·  1449835  ·   959300  ·            5  ·       0.34  │
 ····················|···················|··········|···········|···········|···············|··············
-|  RangeVotingMock  ·  transferToVault  ·       -  ·        -  ·        -  ·            0  ·          -  │
+|  DotVotingMock  ·  transferToVault  ·       -  ·        -  ·        -  ·            0  ·          -  │
 ····················|···················|··········|···········|···········|···············|··············
-|  RangeVotingMock  ·  vote             ·  118046  ·   225756  ·   171731  ·           26  ·       0.06  │
+|  DotVotingMock  ·  vote             ·  118046  ·   225756  ·   171731  ·           26  ·       0.06  │
 ····················|···················|··········|···········|···········|···············|··············
 |  Deployments                          ·                                  ·  % of limit   ·             │
 ········································|··········|···········|···········|···············|··············
 |  ExecutionTarget                      ·       -  ·        -  ·   457299  ·        0.9 %  ·       0.16  │
 ········································|··········|···········|···········|···············|··············
-|  RangeVotingMock                      ·       -  ·        -  ·  5358581  ·       10.7 %  ·       1.89  │
+|  DotVotingMock                      ·       -  ·        -  ·  5358581  ·       10.7 %  ·       1.89  │
 ·---------------------------------------|----------|-----------|-----------|---------------|-------------·
 
   27 passing (1m)

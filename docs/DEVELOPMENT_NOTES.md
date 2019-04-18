@@ -10,7 +10,7 @@ lerna info versioning independent
 @tps/apps-address-book v0.0.1
 @tps/apps-allocations   v0.0.1
 @tps/apps-projects     v0.0.1
-@tps/apps-range-voting v0.0.1
+@tps/apps-dot-voting v0.0.1
 ```
 
 - Planning-suite is the base monorepo.
@@ -73,7 +73,7 @@ require a republish to view changes in the browser.
     - `address` for Address Book App (`npm run reset-address-script`)
     - `projects` for Projects App (`npm run npm run reset-projects-script`)
     - `allocations` for Allocations App (`npm run npm run reset-allocations-script`)
-    - `range` for Range Voting App (`npm run reset-range-voting-script`)
+    - `dot` for Dot Voting App (`npm run reset-dot-voting-script`)
     - `rewards` for Rewards App (`npm run npm run reset-rewards-script`)
 
 ### Incomplete npm script list
@@ -85,7 +85,7 @@ require a republish to view changes in the browser.
 | `npm run dev:address`     | Start Address Book app frontend development   |
 | `npm run dev:projects`    | Start Projects app frontend development       |
 | `npm run dev:allocations` | Start Allocatioons app frontend development   |
-| `npm run dev:range`       | Start Range Voting app frontend development   |
+| `npm run dev:dot`       | Start Dot Voting app frontend development   |
 | `npm run devchain`        | Start a local development blockchain          |
 | `npm run devchain:reset`  | Reset local blockchain and start new one      |
 | `npm i` or `npm install`  | Launch the bootstrap script                   |

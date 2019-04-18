@@ -374,7 +374,7 @@ class FundIssues extends React.Component {
               <div>
                 <br />
                 <Info.Action title="Insufficient Token Balance">
-              Please either mint more tokens or stake fewer tokens against these bounties
+                  Please either mint more tokens or stake fewer tokens against these issues.
                 </Info.Action>
               </div>
             ) : null
@@ -399,9 +399,6 @@ class FundIssues extends React.Component {
     const { bountySettings, tokens, mode, issues } = this.props
     const bountylessIssues = []
     const alreadyAdded = []
-
-
-    const expLevels = this.props.bountySettings.expLvls
 
     if (!tokens.length) {
       return (
