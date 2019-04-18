@@ -24,25 +24,14 @@ const Account = ({
   description,
   network,
   onNewAllocation,
-  token,
-  app,
+  screenSize,
 }) => {
   const newAllocation = () => {
     onNewAllocation(proxy, description, id, balance)
   }
 
-  /*Need a better solution that this, should be handled in
-  App.js using token manager once more tokens are supported */
-  function translateToken(token) {
-    if (token == 0x0) {
-      return 'ETH'
-    }
-  }
-
-  const translatedToken = translateToken(token)
-
   return (
-    <StyledCard>
+    <StyledCard screenSize={screenSize}>
       <MenuContainer>
         <ContextMenu>
           <ContextMenuItem onClick={newAllocation}>
@@ -94,10 +83,12 @@ const TitleContainer = styled.div`
 `
 
 const StyledCard = styled.div`
+  width: ${props => props.screenSize < 540 ? '100%' : '249px' };
   display: flex;
   flex-direction: column;
   height: 100%;
   padding: 14px;
+  margin: ${props => props.screenSize < 600 ? '0.2rem' : '1rem' };
   background: #ffffff;
   border: 1px solid ${theme.contentBorder};
   border-radius: 3px;

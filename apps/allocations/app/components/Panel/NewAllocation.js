@@ -136,7 +136,7 @@ class NewAllocation extends React.Component {
       return
     }
     if(state.payoutTokenIndex === 0 && state.amount * 10e17 > props.balance) {
-      this.setState({ ethBalanceError: true })
+      //this.setState({ ethBalanceError: true })
       return
     }
     if(state.payoutTokenIndex !== 0 && state.amount * 10e17 > this.props.balances[state.payoutTokenIndex].amount) {

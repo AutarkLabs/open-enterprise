@@ -1,7 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
-import { BadgeNumber, colors } from '@aragon/ui'
+import { BadgeNumber, colors, Viewport } from '@aragon/ui'
 import VotesTable from '../components/VotesTable'
+import VotesList from '../components/VotesList'
 
 class Votes extends React.Component {
   render() {
@@ -9,7 +10,7 @@ class Votes extends React.Component {
     const openedVotes = votes.filter(({ open }) => open)
     const closedVotes = votes.filter(vote => !openedVotes.includes(vote))
     return (
-      <Main>
+      <React.Fragment>
         {openedVotes.length > 0 && (
           <VotesTableWrapper>
             <Title>
@@ -21,11 +22,20 @@ class Votes extends React.Component {
                 inline
               />
             </Title>
-            <VotesTable
-              opened
-              votes={openedVotes}
-              onSelectVote={onSelectVote}
-            />
+            <Viewport>
+              {({ below, width }) => below('small') ? (
+                <VotesList
+                  votes={openedVotes}
+                  onSelectVote={onSelectVote}
+                />
+              ) : (
+                <VotesTable
+                  opened
+                  votes={openedVotes}
+                  onSelectVote={onSelectVote}
+                />
+              )}
+            </Viewport>
           </VotesTableWrapper>
         )}
 
@@ -34,26 +44,31 @@ class Votes extends React.Component {
             <Title>
               <span>Closed Range Votes</span>
             </Title>
-            <VotesTable
-              opened={false}
-              votes={closedVotes}
-              onSelectVote={onSelectVote}
-              app={app}
-            />
+            <Viewport>
+              {({ below, width }) => below('small') ? (
+                <VotesList
+                  votes={closedVotes}
+                  onSelectVote={onSelectVote}
+                />
+              ) : (
+                <VotesTable
+                  opened={false}
+                  votes={closedVotes}
+                  onSelectVote={onSelectVote}
+                  app={app}
+                />
+              )}
+            </Viewport>
           </VotesTableWrapper>
         )}
 
         {/* <SeeMoreWrapper>
           <Button mode="secondary">Show Older Range Votes</Button>
         </SeeMoreWrapper> */}
-      </Main>
+      </React.Fragment>
     )
   }
 }
-
-const Main = styled.div`
-  min-width: 600px;
-`
 
 const Title = styled.h1`
   display: flex;

@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { Text, Badge, breakpoint } from '@aragon/ui'
+import { Text, Badge, Viewport } from '@aragon/ui'
 
 import { Account, Empty } from '../Card'
 
@@ -13,25 +13,11 @@ const Accounts = ({
   app,
 }) => {
   if (!accounts) return
-  const accountsEmpty = accounts.length === 0
-  const accountsMap = accounts.map(({ data, accountId }) => (
-    <Account
-      // TODO: Make this more unique by other id?
-      key={accountId}
-      id={accountId}
-      proxy={data.proxy}
-      balance={data.balance}
-      token={data.token}
-      description={data.metadata}
-      onNewAllocation={onNewAllocation}
-      onExecutePayout={onExecutePayout}
-      app={app}
-    />
-  ))
 
-  if (accountsEmpty) {
+  if (accounts.length === 0) {
     return <Empty action={onNewAccount} />
   }
+
   return (
     <React.Fragment>
       <Text.Block size="large" weight="bold" style={{ marginBottom: '10px' }}>
@@ -39,7 +25,30 @@ const Accounts = ({
         {' '}
         <Badge.Info>{accounts.length}</Badge.Info>
       </Text.Block>
-      <StyledAccounts>{accountsMap}</StyledAccounts>
+      <Viewport>
+        {({ width }) => {
+          const screenSize = width
+
+          return (
+            <StyledAccounts screenSize={screenSize}> 
+              {accounts.map(({ data, accountId }) => (
+                <Account
+                  screenSize={screenSize}
+                  key={accountId}
+                  id={accountId}
+                  proxy={data.proxy}
+                  balance={data.balance}
+                  token={data.token}
+                  description={data.metadata}
+                  onNewAllocation={onNewAllocation}
+                  onExecutePayout={onExecutePayout}
+                  app={app}
+                />
+              ))}
+            </StyledAccounts>
+          )
+        }}
+      </Viewport>
     </React.Fragment>
   )
 }
@@ -52,18 +61,8 @@ Accounts.propTypes = {
 }
 
 const StyledAccounts = styled.div`
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-auto-rows: 290px;
-  grid-gap: 20px;
-  justify-content: start;
-  
-  ${breakpoint(
-    'medium',
-    `
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    `
-  )};
+  display: flex;
+  flex-wrap: wrap;
+  padding: ${props => props.screenSize < 600 ? '0' : '1rem'};
 `
-
 export default Accounts

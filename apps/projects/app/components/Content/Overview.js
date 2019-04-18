@@ -73,6 +73,6 @@ Overview.propTypes = {
 const StyledProjects = styled.div`
   display: flex;
   flex-wrap: wrap;
-  padding: ${props => props.screenSize < 600 ? '0.2rem' : '1rem'};
+  padding: ${props => props.screenSize < 600 ? '0' : '1rem'};
 `
 export default Overview
