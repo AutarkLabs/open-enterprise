@@ -24,16 +24,16 @@
     "publish:mainnet": "aragon apm publish patch $(npm run deploy:kit:mainnet | tail -n 1) --environment mainnet",
     "publish:rinkeby": "aragon apm publish patch $(npm run deploy:kit:rinkeby | tail -n 1) --environment rinkeby",
     "publish:rpc": "aragon apm publish patch $(npm run deploy:kit:rpc | tail -n 1) --environment default",
-    "publish:staging": "aragon apm publish patch $(npm run deploy:kit:staging | tail -n 1) --environment staging",
+    "publish:staging": "aragon apm publish major $(npm run deploy:kit:staging | tail -n 1) --environment staging",
+    "start:staging": "ENS=0x98Df287B6C145399Aaa709692c8D308357bC085D aragon contracts exec --network rinkeby scripts/start-kit.js",
+    "start:rpc": "ENS=0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1 aragon contracts exec --network rpc scripts/start-kit.js",
     "test:devnet": "truffle test --network devnet test/planning-suite.test.js",
     "test:docker": "truffle compile && npm run docker:run && npm run docker:wait-gas && npm run deploy:devnet && npm run test:devnet && npm run docker:stop",
     "test:gas": "GAS_REPORTER=true npm test",
     "test:local": "truffle compile && npm run deploy:rpc && npm run test:rpc",
     "test:rinkeby": "truffle test --network rinkeby test/planning-suite.test.js",
     "test:rpc": "truffle test --network rpc test/planning-suite.test.js",
-    "test": "npm run test:local",
-    "start:staging": "ENS=0x98Df287B6C145399Aaa709692c8D308357bC085D aragon contracts exec --network rinkeby scripts/start-kit.js",
-    "start:rpc": "ENS=0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1 aragon contracts exec --network rpc scripts/start-kit.js"
+    "test": "npm run test:local"
   },
   "files": [
     "abi/",
