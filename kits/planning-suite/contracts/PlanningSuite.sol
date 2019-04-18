@@ -233,7 +233,6 @@ contract PlanningSuite is BetaKitBase {
         handleA1Permissions(
             dao,
             tokenManager,
-            vault,
             finance,
             voting
         );
@@ -262,7 +261,6 @@ contract PlanningSuite is BetaKitBase {
     function handleA1Permissions(
         Kernel dao,
         TokenManager tokenManager,
-        Vault vault,
         Finance finance,
         Voting voting
     ) internal
@@ -379,7 +377,7 @@ contract PlanningSuite is BetaKitBase {
         addressBook.initialize();
         allocations.initialize(addressBook, vault);
         dotVoting.initialize(addressBook, token, minParticipationPct, candidateSupportPct, voteDuration * 1000);
-        projects.initialize(registry, vault, tokenSymbol);
+        projects.initialize(registry, vault, token.symbol);
     }
 
     function handleTPSPermissions(
