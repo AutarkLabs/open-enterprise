@@ -1,4 +1,4 @@
-import { observe, SidePanel, Main, AppBar, AppView, font } from '@aragon/ui'
+import { observe, SidePanel, Main, AppBar, AppView, font, breakpoint } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { hot } from 'react-hot-loader'
@@ -62,6 +62,7 @@ class App extends React.Component {
     return (
       <Main>
         <AppView
+          padding={0}
           appBar={
             <AppBar
               endContent={
@@ -102,25 +103,28 @@ class App extends React.Component {
   }
 }
 
-
 const AppBarTitle = styled.span`
   display: flex;
   align-items: center;
 `
-
 const AppBarLabel = styled.span`
   margin: 0 30px;
   ${font({ size: 'xxlarge' })};
 `
-
 const ScrollWrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: stretch;
   overflow: auto;
   flex-grow: 1;
+  ${breakpoint(
+    'small',
+    `
+      padding: 1rem 2rem;
+    `
+  )};
+  padding: 0.3rem;
 `
-
 export default observe(
   observable => observable.pipe(map(state => ({ ...state }))),
   {}

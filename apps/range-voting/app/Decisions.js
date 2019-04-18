@@ -9,7 +9,7 @@ import tokenDecimalsAbi from './abi/token-decimals.json'
 import { safeDiv } from './utils/math-utils'
 import { hasLoadedVoteSettings } from './utils/vote-settings'
 import { isBefore } from 'date-fns'
-import { EmptyStateCard, SidePanel } from '@aragon/ui'
+import { EmptyStateCard, SidePanel, breakpoint } from '@aragon/ui'
 import { VotePanelContent } from './components/Panels'
 import { EMPTY_CALLSCRIPT, getQuorumProgress, getTotalSupport } from './utils/vote-utils'
 
@@ -149,7 +149,7 @@ class Decisions extends React.Component {
         : preparedVotes.find(vote => vote.voteId === currentVoteId)
 
     return (
-      <React.Fragment>
+      <StyledDecisions>
         <AppLayout.ScrollWrapper>
           {displayVotes ? (
             <Votes votes={preparedVotes} onSelectVote={this.handleVoteOpen} app={app}/>
@@ -190,13 +190,24 @@ class Decisions extends React.Component {
             />
           </SidePanel>
         )}
-      </React.Fragment>
+      </StyledDecisions>
     )
   }
 }
 
-const Main = styled.div`
+const StyledDecisions = styled.div`
+  ${breakpoint(
+    'small',
+    `
+    padding: 2rem;
+    `
+  )};
+  padding: 0.3rem;
   display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+  overflow: auto;
+  flex-grow: 1;
 `
 
 export default Decisions

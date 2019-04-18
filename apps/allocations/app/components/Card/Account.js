@@ -11,11 +11,12 @@ import {
   IconAdd,
   IconFundraising,
   IdentityBadge,
-  SafeLink,
+  breakpoint,
   theme,
 } from '@aragon/ui'
 import { ETH_DECIMALS } from '../../utils/constants'
 import { provideNetwork } from '../../../../../shared/ui'
+import { BASE_CARD_WIDTH, CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
 
 const Account = ({
   id,
@@ -82,16 +83,26 @@ const TitleContainer = styled.div`
   flex-grow: 1;
 `
 
-const StyledCard = styled.div`
-  width: ${props => props.screenSize < 540 ? '100%' : '249px' };
+const StyledCard = styled(Card)`
   display: flex;
+  ${breakpoint(
+    'small',
+    `
+    margin-bottom: 2rem;
+    `
+  )};
+  margin-bottom: 0.3rem;
+  margin-right: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? '0.6rem' : '2rem' };
   flex-direction: column;
-  height: 100%;
-  padding: 14px;
-  margin: ${props => props.screenSize < 600 ? '0.2rem' : '1rem' };
-  background: #ffffff;
-  border: 1px solid ${theme.contentBorder};
-  border-radius: 3px;
+  justify-content: flex-start;
+  padding: 12px;
+  height: 240px;
+  width: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? '100%' : BASE_CARD_WIDTH + 'px' };
+  transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+  :hover {
+    cursor: pointer;
+    box-shadow: 0 9px 10px 0 rgba(101, 148, 170, 0.1);
+  }
 `
 
 const MenuContainer = styled.div`
@@ -104,15 +115,18 @@ const ActionLabel = styled.span`
 `
 
 const CardTitle = styled(Text.Block).attrs({
-  size: 'xlarge',
+  size: 'large',
+  weight: 'bold',
 })`
+  margin-top: 10px;
+  margin-bottom: 5px;
   text-align: center;
   color: ${theme.textPrimary};
   display: block;
-  max-height: 3em;
-  line-height: 1.5em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  padding-top: 4px;
   text-overflow: ellipsis;
 `
 
@@ -129,7 +143,6 @@ const IconContainer = styled.img.attrs({
   src: icon,
 })`
   alt: ${({ description }) => description} 'icon';
-  margin-top: 1em;
   align-content: center;
 `
 

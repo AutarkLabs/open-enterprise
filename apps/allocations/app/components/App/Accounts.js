@@ -1,7 +1,8 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { Text, Badge, Viewport } from '@aragon/ui'
+import { Text, Badge, Viewport, breakpoint } from '@aragon/ui'
+import { CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
 
 import { Account, Empty } from '../Card'
 
@@ -19,37 +20,35 @@ const Accounts = ({
   }
 
   return (
-    <React.Fragment>
-      <Text.Block size="large" weight="bold" style={{ marginBottom: '10px' }}>
-        Accounts
-        {' '}
-        <Badge.Info>{accounts.length}</Badge.Info>
-      </Text.Block>
-      <Viewport>
-        {({ width }) => {
-          const screenSize = width
+    <Viewport>
+      {({ width }) => {
+        const screenSize = width
 
-          return (
-            <StyledAccounts screenSize={screenSize}> 
-              {accounts.map(({ data, accountId }) => (
-                <Account
-                  screenSize={screenSize}
-                  key={accountId}
-                  id={accountId}
-                  proxy={data.proxy}
-                  balance={data.balance}
-                  token={data.token}
-                  description={data.metadata}
-                  onNewAllocation={onNewAllocation}
-                  onExecutePayout={onExecutePayout}
-                  app={app}
-                />
-              ))}
-            </StyledAccounts>
-          )
-        }}
-      </Viewport>
-    </React.Fragment>
+        return (
+          <StyledAccounts screenSize={screenSize}>
+            <Text.Block size="large" weight="bold" style={{ marginBottom: '10px', width: '100%' }}>
+              Accounts
+              {' '}
+              <Badge.Info>{accounts.length}</Badge.Info>
+            </Text.Block>
+            {accounts.map(({ data, accountId }) => (
+              <Account
+                screenSize={screenSize}
+                key={accountId}
+                id={accountId}
+                proxy={data.proxy}
+                balance={data.balance}
+                token={data.token}
+                description={data.metadata}
+                onNewAllocation={onNewAllocation}
+                onExecutePayout={onExecutePayout}
+                app={app}
+              />
+            ))}
+          </StyledAccounts>
+        )
+      }}
+    </Viewport>
   )
 }
 
@@ -61,8 +60,16 @@ Accounts.propTypes = {
 }
 
 const StyledAccounts = styled.div`
+  ${breakpoint(
+    'small',
+    `
+    padding: 2rem;
+    `
+  )};
+  padding: 0.3rem;
   display: flex;
+  flex-direction: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? 'column' : 'row' };
   flex-wrap: wrap;
-  padding: ${props => props.screenSize < 600 ? '0' : '1rem'};
 `
+
 export default Accounts

@@ -119,6 +119,7 @@ class App extends React.Component {
       // TODO: Profile App with React.StrictMode, perf and why-did-you-update, apply memoization
       <Main>
         <AppView
+          padding={0}
           appBar={
             <AppBar
               endContent={

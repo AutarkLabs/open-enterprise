@@ -78,6 +78,7 @@ class App extends React.Component {
     return (
       <Main>
         <AppView
+          padding={0}
           appBar={
             <AppBar>
               <AppBarTitle>

@@ -8,7 +8,7 @@ import Unauthorized from './Unauthorized'
 import { LoadingAnimation } from '../Shared'
 import { EmptyWrapper } from '../Shared'
 import { Viewport, breakpoint } from '@aragon/ui'
-import { BASE_CARD_WIDTH, CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
+import { CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
 
 const Overview = ({
   changeActiveIndex,

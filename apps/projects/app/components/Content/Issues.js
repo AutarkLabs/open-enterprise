@@ -9,6 +9,7 @@ import {
   ContextMenuItem,
   IconFundraising,
   breakpoint,
+  Viewport,
 } from '@aragon/ui'
 import BigNumber from 'bignumber.js'
 import { compareAsc, compareDesc } from 'date-fns'
@@ -227,37 +228,71 @@ class Issues extends React.PureComponent {
     })
   }
 
+  actionsContextMenu = issuesFiltered => (
+    <ActionsMenu enabled={!!this.state.selectedIssues.length}>
+      <ContextMenuItem
+        onClick={this.handleCurateIssues(issuesFiltered)}
+        style={{ display: 'flex', alignItems: 'flex-start' }}
+      >
+        <div>
+          <IconCurate color={theme.textTertiary} />
+        </div>
+        <ActionLabel>Curate Issues</ActionLabel>
+      </ContextMenuItem>
+      <ContextMenuItem
+        onClick={this.handleAllocateBounties}
+        style={{ display: 'flex', alignItems: 'flex-start' }}
+      >
+        <div style={{ marginLeft: '4px' }}>
+          <IconFundraising color={theme.textTertiary} />
+        </div>
+        <ActionLabel>Fund Issues</ActionLabel>
+      </ContextMenuItem>
+    </ActionsMenu>
+  )
+
   actionsMenu = (issues, issuesFiltered) => (
-    <ActionsContainer>
-      <TextInput placeholder="Search issue titles" type="search" onChange={this.handleTextFilter} />
-      <ActiveFilters
-        issues={issues}
-        bountyIssues={this.props.bountyIssues}
-        filters={this.state.filters}
-        disableFilter={this.disableFilter}
-        disableAllFilters={this.disableAllFilters}
-      />
-      <ActionsMenu enabled={!!this.state.selectedIssues.length}>
-        <ContextMenuItem
-          onClick={this.handleCurateIssues(issuesFiltered)}
-          style={{ display: 'flex', alignItems: 'flex-start' }}
-        >
-          <div>
-            <IconCurate color={theme.textTertiary} />
+    <Viewport>
+      {({ below }) => below('small') ? (
+        <React.Fragment>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            padding: '0',
+            justifyContent: 'space-between',
+            alignContent: 'stretch',
+            marginTop: '10px'
+          }}>
+            <TextInput placeholder="Search issue titles" type="search" onChange={this.handleTextFilter} style={{ marginRight: '6px' }}/>
+            {this.actionsContextMenu(issuesFiltered)}
           </div>
-          <ActionLabel>Curate Issues</ActionLabel>
-        </ContextMenuItem>
-        <ContextMenuItem
-          onClick={this.handleAllocateBounties}
-          style={{ display: 'flex', alignItems: 'flex-start' }}
-        >
-          <div style={{ marginLeft: '4px' }}>
-            <IconFundraising color={theme.textTertiary} />
-          </div>
-          <ActionLabel>Fund Issues</ActionLabel>
-        </ContextMenuItem>
-      </ActionsMenu>
-    </ActionsContainer>
+          <ActiveFilters
+            issues={issues}
+            bountyIssues={this.props.bountyIssues}
+            filters={this.state.filters}
+            disableFilter={this.disableFilter}
+            disableAllFilters={this.disableAllFilters}
+          />
+        </React.Fragment>
+      ) : (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          padding: '0',
+          justifyContent: 'space-between'
+        }}>
+          <TextInput placeholder="Search issue titles" type="search" onChange={this.handleTextFilter} />
+          <ActiveFilters
+            issues={issues}
+            bountyIssues={this.props.bountyIssues}
+            filters={this.state.filters}
+            disableFilter={this.disableFilter}
+            disableAllFilters={this.disableAllFilters}
+          />
+          {this.actionsContextMenu(issuesFiltered)}
+        </div>
+      )}
+    </Viewport>
   )
 
   setParentFilters = (filters) => {
@@ -493,30 +528,17 @@ class Issues extends React.PureComponent {
   }
 }
 
-const ActionsContainer = styled.div`
+const StyledIssues = styled.div`
   display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   ${breakpoint(
     'small',
     `
-    flex-direction: row;
-    `
+    padding: 1rem 2rem;
+  `
   )};
-  flex-direction: column;
-  align-items: center;
-  padding: 0;
-`
-
-const StyledIssues = styled.div`
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    ${breakpoint(
-    'small',
-    `
-      padding: 1rem 2rem;
-    `
-    )};
-    padding: 0.3rem;
+  padding: 0.3rem;
 `
 
 const ScrollWrapper = styled.div`
@@ -538,7 +560,7 @@ const ScrollWrapper = styled.div`
 const IssuesScrollView = styled.div`
   height: 75vh;
   position: relative;
-  overflow-y: auto;
+  overflow-y: hidden;
 `
 
 const ActionLabel = styled.span`

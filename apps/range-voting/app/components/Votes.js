@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { BadgeNumber, colors, Viewport } from '@aragon/ui'
+import { BadgeNumber, colors, Viewport, Badge } from '@aragon/ui'
 import VotesTable from '../components/VotesTable'
 import VotesList from '../components/VotesList'
 
@@ -16,13 +16,8 @@ class Votes extends React.Component {
         {openedVotes.length > 0 && (
           <VotesTableWrapper>
             <Title>
-              <span>Open Range Votes</span>
-              <BadgeNumber
-                background={colors.Rain['Rain Sky']}
-                color={colors.Rain.Slate}
-                number={openedVotes.length}
-                inline
-              />
+              <span>Open Range Votes</span>{' '}
+              <Badge.Info>{openedVotes.length}</Badge.Info>
             </Title>
             <Viewport>
               {({ below, width }) => below(TABLE_CARD_BREAKPOINT) ? (
@@ -44,7 +39,8 @@ class Votes extends React.Component {
         {closedVotes.length > 0 && (
           <VotesTableWrapper>
             <Title>
-              <span>Closed Range Votes</span>
+              <span>Closed Range Votes</span>{' '}
+              <Badge.Info>{closedVotes.length}</Badge.Info>
             </Title>
             <Viewport>
               {({ below, width }) => below(TABLE_CARD_BREAKPOINT) ? (
@@ -75,7 +71,7 @@ class Votes extends React.Component {
 const Title = styled.h1`
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   font-weight: 600;
   font-size: 16px;
   & > span:first-child {
