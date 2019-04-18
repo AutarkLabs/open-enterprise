@@ -10,14 +10,20 @@ import {
   requestedProfileUnlock,
   profileUnlockSuccess,
   profileUnlockFailure,
+  requestProfileEdit,
 } from '../stateManagers/box'
 
-const getButtonTitle = ({ unlockedProfSuccess, loadedPublicProfSuccess }) => {
+const getButtonTitle = ({
+  unlockedProfSuccess,
+  loadedPublicProfSuccess,
+  editingProfile,
+}) => {
+  if (editingProfile) return 'Save Profile'
   if (unlockedProfSuccess) return 'Edit Profile'
   if (loadedPublicProfSuccess) return 'Log In'
 }
 
-const unlockOrCreateProfile = async (connectedAccount, api, dispatch) => {
+const unlockOrCreateProfile = async (connectedAccount, dispatch, api) => {
   dispatch(requestedProfileUnlock(connectedAccount))
   try {
     const profile = new Profile(connectedAccount, api)
@@ -28,11 +34,16 @@ const unlockOrCreateProfile = async (connectedAccount, api, dispatch) => {
   }
 }
 
+const editProfile = (connectedAccount, dispatch) =>
+  dispatch(requestProfileEdit(connectedAccount))
+
 const getButtonClickHandler = ({
   unlockedProfSuccess,
   loadedPublicProfSuccess,
+  editingProfile,
 }) => {
-  if (unlockedProfSuccess) return () => console.log('EDIT YOUR PROFILE!')
+  if (editingProfile) return () => console.log('SAVE YOUR PROFILE')
+  if (unlockedProfSuccess) return editProfile
   if (loadedPublicProfSuccess) return unlockOrCreateProfile
   return () => console.log('HI')
 }
@@ -54,7 +65,7 @@ const AuthButton = () => {
     <StyledButton
       disabled={buttonDisabled}
       mode="strong"
-      onClick={() => buttonClickHandler(connectedAccount, api, dispatch)}
+      onClick={() => buttonClickHandler(connectedAccount, dispatch, api)}
     >
       {buttonTitle}
     </StyledButton>

@@ -7,6 +7,7 @@ export const fetchingPublicProfile = () => ({
   unlockingProf: false,
   unlockedProf: false,
   unlockedProfSuccess: false,
+  editingProfile: false,
   unlockedBox: {},
   publicProfile: {},
 })
@@ -42,6 +43,7 @@ export const profileUnlocked = (state, unlockedBox) => ({
   unlockingProf: false,
   unlockedProf: true,
   unlockedProfSuccess: true,
+  editedProfile: false,
   unlockedBox,
 })
 
@@ -51,4 +53,9 @@ export const profileUnlockFailed = (state, error) => ({
   unlockedProf: true,
   unlockedProfSuccess: false,
   error,
+})
+
+export const requestProfileEdit = state => ({
+  ...state,
+  editingProfile: true,
 })

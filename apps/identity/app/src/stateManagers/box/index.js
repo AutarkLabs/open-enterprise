@@ -1,3 +1,3 @@
 export * from './actions'
 export { default as boxReducer } from './reducer'
-export * from './states'
+export { initialState } from './states'
