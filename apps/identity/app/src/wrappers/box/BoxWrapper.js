@@ -1,19 +1,31 @@
 import React, { useEffect, useReducer } from 'react'
 import PropTypes from 'prop-types'
+import { useAragonApi } from '@aragon/api-react'
 
 import { Profile } from '../../../modules/3box-aragon'
-import { boxReducer, initialState, BoxContext } from './'
-import { fetchingProfile, fetchedPublicProfile } from './actions'
+import { BoxContext } from '.'
+import {
+  fetchingProfile,
+  fetchedPublicProfile,
+  boxReducer,
+  initialState,
+  fetchedPublicProfileError,
+} from '../../stateManagers/box'
 
-const BoxWrapper = ({ children, api, connectedAccount }) => {
-  const [boxState, dispatch] = useReducer(boxReducer, initialState)
+const BoxWrapper = ({ children }) => {
+  const { api, connectedAccount } = useAragonApi()
+  const [boxes, dispatch] = useReducer(boxReducer, initialState)
   useEffect(() => {
     const getBox = async () => {
       if (connectedAccount && api) {
         dispatch(fetchingProfile(connectedAccount))
-        const profile = new Profile(connectedAccount, api)
-        const publicProfile = await profile.getPublic()
-        dispatch(fetchedPublicProfile(connectedAccount, publicProfile))
+        try {
+          const profile = new Profile(connectedAccount, api)
+          const publicProfile = await profile.getPublic()
+          dispatch(fetchedPublicProfile(connectedAccount, publicProfile))
+        } catch (error) {
+          dispatch(fetchedPublicProfileError(connectedAccount, error))
+        }
       }
     }
 
@@ -21,7 +33,7 @@ const BoxWrapper = ({ children, api, connectedAccount }) => {
   }, [api, connectedAccount])
 
   return (
-    <BoxContext.Provider value={{ boxState, dispatch }}>
+    <BoxContext.Provider value={{ boxes, dispatch }}>
       {children}
     </BoxContext.Provider>
   )
@@ -29,8 +41,6 @@ const BoxWrapper = ({ children, api, connectedAccount }) => {
 
 BoxWrapper.propTypes = {
   children: PropTypes.node.isRequired,
-  api: PropTypes.object,
-  connectedAccount: PropTypes.string,
 }
 
 export default BoxWrapper

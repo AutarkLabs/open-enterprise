@@ -3,20 +3,24 @@ import { useAragonApi } from '@aragon/api-react'
 import { Main } from '@aragon/ui'
 import styled from 'styled-components'
 
-import { BoxWrapper } from './wrappers/boxHelpers'
+import { BoxWrapper } from './wrappers/box'
+import AppContainer from './wrappers/styleWrappers/AppContainer'
 import LoadAndErrorWrapper from './wrappers/loadAndErrorWrapper'
+import Profile from './components/Profile'
 
 function App() {
-  const { api, connectedAccount } = useAragonApi()
+  const { connectedAccount } = useAragonApi()
   return (
     <Main>
-      <BaseLayout>
-        <BoxWrapper api={api} connectedAccount={connectedAccount}>
-          <LoadAndErrorWrapper ethereumAddress={connectedAccount}>
-            <div>yo</div>
-          </LoadAndErrorWrapper>
-        </BoxWrapper>
-      </BaseLayout>
+      <BoxWrapper>
+        <AppContainer>
+          <BaseLayout>
+            <LoadAndErrorWrapper ethereumAddress={connectedAccount}>
+              <Profile ethereumAddress={connectedAccount} />
+            </LoadAndErrorWrapper>
+          </BaseLayout>
+        </AppContainer>
+      </BoxWrapper>
     </Main>
   )
 }
@@ -24,8 +28,6 @@ function App() {
 const BaseLayout = styled.div`
   display: flex;
   align-items: center;
-  justify-content: center;
-  height: 100vh;
   flex-direction: column;
 `
 

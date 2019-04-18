@@ -2,6 +2,9 @@ import {
   FETCHING_PUBLIC_PROFILE,
   FETCHED_PUBLIC_PROFILE_SUCCESS,
   FETCHED_PUBLIC_PROFILE_ERROR,
+  REQUESTED_PROFILE_UNLOCK,
+  PROFILE_UNLOCK_SUCCESS,
+  PROFILE_UNLOCK_FAILURE,
 } from './actionTypes'
 
 export const fetchingProfile = ethereumAddress => ({
@@ -26,7 +29,31 @@ export const fetchedPublicProfileError = (ethereumAddress, error) => ({
   meta: {
     ethereumAddress,
   },
-  payload: {
-    error,
+  payload: {},
+  error,
+})
+
+export const requestedProfileUnlock = ethereumAddress => ({
+  type: REQUESTED_PROFILE_UNLOCK,
+  meta: {
+    ethereumAddress,
   },
+})
+
+export const profileUnlockSuccess = (ethereumAddress, unlockedProfile) => ({
+  type: PROFILE_UNLOCK_SUCCESS,
+  meta: {
+    ethereumAddress,
+  },
+  payload: {
+    unlockedProfile,
+  },
+})
+
+export const profileUnlockFailure = (ethereumAddress, error) => ({
+  type: PROFILE_UNLOCK_FAILURE,
+  meta: {
+    ethereumAddress,
+  },
+  error,
 })

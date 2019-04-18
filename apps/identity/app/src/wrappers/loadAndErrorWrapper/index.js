@@ -2,7 +2,7 @@ import React, { Fragment, useContext } from 'react'
 import PropTypes from 'prop-types'
 import { useAragonApi } from '@aragon/api-react'
 
-import { BoxContext } from '../boxHelpers'
+import { BoxContext } from '../box'
 import Initializing from './Initializing'
 import LoadingPublicProfile from './LoadingPublicProfile'
 import ErrorState from './Error'
@@ -13,9 +13,9 @@ const LoadAndErrorWrapper = props => {
     appState: { syncing },
   } = useAragonApi()
 
-  const { boxState } = useContext(BoxContext)
+  const { boxes } = useContext(BoxContext)
 
-  const usersBox = boxState.boxes[props.ethereumAddress]
+  const usersBox = boxes[props.ethereumAddress]
 
   const loadingPublicProf = usersBox && usersBox.loadingPublicProf
   const unlockingProf = usersBox && usersBox.unlockingProf

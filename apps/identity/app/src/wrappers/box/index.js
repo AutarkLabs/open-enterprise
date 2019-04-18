@@ -1,5 +1,2 @@
 export { default as BoxWrapper } from './BoxWrapper'
 export { default as BoxContext } from './BoxContext'
-export * from './actions'
-export { default as boxReducer } from './reducer'
-export * from './states'
