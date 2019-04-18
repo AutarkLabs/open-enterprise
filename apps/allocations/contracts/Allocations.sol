@@ -217,13 +217,13 @@ contract Allocations is AragonApp, Fundable {
     }
 
     /**
-    * @dev This is the function that the RangeVote will call. It doesn’t need
-    *      to be called by a RangeVote (options get weird if it's not)
+    * @dev This is the function that the DotVote will call. It doesn’t need
+    *      to be called by a DotVote (options get weird if it's not)
     *      but for our use case the “SET_DISTRIBUTION_ROLE” will be given to
-    *      the RangeVote.
+    *      the DotVote.
     * @notice Create a `@tokenAmount(_token, _amount)` allocation for ' `_description` '
     * @param _candidateAddresses Array of candidates to be allocated a portion of the payouut
-    * @param _supports The Array of all support values for the various candidates. These values are set in range voting
+    * @param _supports The Array of all support values for the various candidates. These values are set in dot voting
     * @param _accountId The Account used for the payout
     * @param _recurring boolean used to indicate whether this is a recurring or one-time payout
     * @param _period time interval between each recurring payout

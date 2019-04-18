@@ -545,7 +545,7 @@ const savedRepos = {
                 },
                 {
                   node: {
-                    name: '27-range_voting_wizard',
+                    name: '27-dot_voting_wizard',
                     target: {
                       history: {
                         totalCount: 87,
@@ -652,7 +652,7 @@ const savedRepos = {
                 {
                   node: {
                     id: 'MDU6SXNzdWUzMDg3NzQ3NzU=',
-                    title: 'Range Voting - Smart contracts',
+                    title: 'Dot Voting - Smart contracts',
                     state: 'OPEN',
                     url: 'https://github.com/AutarkLabs/planning-suite/issues/3',
                     createdAt: '2018-03-26T23:55:40Z',
@@ -835,7 +835,7 @@ const savedRepos = {
                 {
                   node: {
                     id: 'MDU6SXNzdWUzMTAxOTY2NDE=',
-                    title: 'Design UML for range voting smart contracts',
+                    title: 'Design UML for dot voting smart contracts',
                     state: 'OPEN',
                     url: 'https://github.com/AutarkLabs/planning-suite/issues/9',
                     createdAt: '2018-03-31T00:19:12Z',
@@ -856,7 +856,7 @@ const savedRepos = {
                   node: {
                     id: 'MDU6SXNzdWUzMTAxOTgyMDg=',
                     title:
-                      'Range voting comments, variables, and function signatures',
+                      'Dot voting comments, variables, and function signatures',
                     state: 'CLOSED',
                     url: 'https://github.com/AutarkLabs/planning-suite/issues/10',
                     createdAt: '2018-03-31T00:37:29Z',
