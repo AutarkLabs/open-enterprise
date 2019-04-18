@@ -20,7 +20,7 @@ contract PlanningSuite is BetaKitBase {
     mapping (address => address) tokenCache;
 
     // ensure alphabetic order
-    enum PlanningApps { AddressBook, Allocations, Projects, DotVoting } 
+    enum PlanningApps { AddressBook, Allocations, DotVoting, Projects } 
 
     // Overload the DeployInstance event for easy grabing of all the things
     event DeployInstance(address dao, address indexed token, address vault, address voting);
@@ -111,7 +111,7 @@ contract PlanningSuite is BetaKitBase {
         Kernel dao,
         Vault vault,
         Voting voting,
-        MiniMeToken token,        
+        MiniMeToken token,
         uint candidateSupportPct,
         uint minParticipationPct,
         uint64 voteDuration) public
@@ -366,9 +366,9 @@ contract PlanningSuite is BetaKitBase {
 
     function initializeTPSApps(
         AddressBook addressBook,
-        Projects projects,
-        DotVoting dotVoting,
         Allocations allocations,
+        DotVoting dotVoting,
+        Projects projects,
         Vault vault,
         MiniMeToken token,
         uint candidateSupportPct,
@@ -377,17 +377,17 @@ contract PlanningSuite is BetaKitBase {
     ) internal
     {
         addressBook.initialize();
-        projects.initialize(registry, vault, "autark");
-        dotVoting.initialize(addressBook, token, minParticipationPct, candidateSupportPct, voteDuration * 1000);
         allocations.initialize(addressBook, vault);
+        dotVoting.initialize(addressBook, token, minParticipationPct, candidateSupportPct, voteDuration * 1000);
+        projects.initialize(registry, vault, tokenSymbol);
     }
 
     function handleTPSPermissions(
         Kernel dao,
         AddressBook addressBook,
-        Projects projects,
-        DotVoting dotVoting,
         Allocations allocations,
+        DotVoting dotVoting,
+        Projects projects,
         Voting voting
     ) internal
     {
