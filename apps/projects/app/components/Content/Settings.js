@@ -93,7 +93,7 @@ class Settings extends React.Component {
     let bountyDeadline = bountyDeadlinesMul[bountyDeadlineD] * bountyDeadlineT
     // flatten expLevels
     const expLevelsDesc = expLevels.map(l => fromUtf8(l.name))
-    let expLevelsMul = expLevels.map(l => web3.toHex(l.mul))
+    const expLevelsMul = expLevels.map(l => web3.toHex(l.mul) * 100)
 
     this.props.app.changeBountySettings(
       expLevelsMul,
@@ -101,7 +101,7 @@ class Settings extends React.Component {
       web3.toHex(baseRate),
       web3.toHex(bountyDeadline),
       bountyCurrencies[bountyCurrency],
-      bountyAllocator,
+      bountyAllocator
       //bountyArbiter,
     )
   }
@@ -164,18 +164,22 @@ class Settings extends React.Component {
     if (!('baseRate' in this.props.bountySettings))
       return <div>Loading settings...</div>
 
-    const gitHubConnect = <GitHubConnect
-      onLogin={this.props.onLogin}
-      onLogout={this.handleLogout}
-      status={this.props.status}
-      user={this.props.githubCurrentUser.login}
-    />
+    const gitHubConnect = (
+      <GitHubConnect
+        onLogin={this.props.onLogin}
+        onLogout={this.handleLogout}
+        status={this.props.status}
+        user={this.props.githubCurrentUser.login}
+      />
+    )
 
-    const experienceLevel = <ExperienceLevel
-      expLevels={expLevels}
-      onAddExpLevel={this.addExpLevel}
-      generateExpLevelHandler={this.generateExpLevelHandler}
-    />
+    const experienceLevel = (
+      <ExperienceLevel
+        expLevels={expLevels}
+        onAddExpLevel={this.addExpLevel}
+        generateExpLevelHandler={this.generateExpLevelHandler}
+      />
+    )
     const showBaseRate = !this.props.tokens.length ? (
       <EmptyBaseRate />
     ) : (
@@ -187,56 +191,63 @@ class Settings extends React.Component {
         onChangeCurrency={this.bountyCurrencyChange}
       />
     )
-    const bountyDeadline = <BountyDeadline
-      bountyDeadlineT={bountyDeadlineT}
-      onChangeT={this.bountyDeadlineChangeT}
-      bountyDeadlineD={bountyDeadlineD}
-      onChangeD={this.bountyDeadlineChangeD}
-    />
+    const bountyDeadline = (
+      <BountyDeadline
+        bountyDeadlineT={bountyDeadlineT}
+        onChangeT={this.bountyDeadlineChangeT}
+        bountyDeadlineD={bountyDeadlineD}
+        onChangeD={this.bountyDeadlineChangeD}
+      />
+    )
 
-    const bountyContractAddress = <BountyContractAddress
-      bountyAllocator={bountyAllocator}
-      networkType={network.type}
-    />
+    const bountyContractAddress = (
+      <BountyContractAddress
+        bountyAllocator={bountyAllocator}
+        networkType={network.type}
+      />
+    )
 
-    const saveButton = <Button mode="strong" onClick={this.submitChanges} wide>
-      Submit Changes
-    </Button>
-
+    const saveButton = (
+      <Button mode="strong" onClick={this.submitChanges} wide>
+        Submit Changes
+      </Button>
+    )
 
     return (
       <StyledContent>
         <Viewport>
-          {({ above }) => above(900) ? (
-            <React.Fragment>
+          {({ above }) =>
+            above(900) ? (
+              <React.Fragment>
+                <div className="column">
+                  {gitHubConnect}
+                  <Separator />
+                  {experienceLevel}
+                  {saveButton}
+                </div>
+                <div className="column">
+                  {showBaseRate}
+                  <Separator />
+                  {bountyDeadline}
+                  <Separator />
+                  {bountyContractAddress}
+                </div>
+              </React.Fragment>
+            ) : (
               <div className="column">
                 {gitHubConnect}
                 <Separator />
                 {experienceLevel}
-                {saveButton}
-              </div>
-              <div className="column">
+                <Separator />
                 {showBaseRate}
                 <Separator />
                 {bountyDeadline}
                 <Separator />
                 {bountyContractAddress}
+                {saveButton}
               </div>
-            </React.Fragment>
-          ) : (
-            <div className="column">
-              {gitHubConnect}
-              <Separator />
-              {experienceLevel}
-              <Separator />
-              {showBaseRate}
-              <Separator />
-              {bountyDeadline}
-              <Separator />
-              {bountyContractAddress}
-              {saveButton}
-            </div>
-          )}
+            )
+          }
         </Viewport>
       </StyledContent>
     )
@@ -337,11 +348,18 @@ const EmptyBaseRate = () => (
     </Text.Block>
     <Text.Block>
       Once you have tokens in your Finance App you will be able to set your
-      bounty base rate, which provides you with the ability to allocate bounties to issues.
+      bounty base rate, which provides you with the ability to allocate bounties
+      to issues.
     </Text.Block>
   </div>
 )
-const BaseRate = ({ baseRate, onChangeRate, bountyCurrency, onChangeCurrency, bountyCurrencies }) => (
+const BaseRate = ({
+  baseRate,
+  onChangeRate,
+  bountyCurrency,
+  onChangeCurrency,
+  bountyCurrencies,
+}) => (
   <div>
     <Text.Block size="large" weight="bold">
       Bounty Base Rate
