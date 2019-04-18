@@ -8,7 +8,6 @@ import tokenBalanceOfAbi from './abi/token-balanceof.json'
 import tokenDecimalsAbi from './abi/token-decimals.json'
 import { safeDiv } from './utils/math-utils'
 import { hasLoadedVoteSettings } from './utils/vote-settings'
-import { VOTE_YEA } from './utils/vote-types'
 import { isBefore } from 'date-fns'
 import { EmptyStateCard, SidePanel } from '@aragon/ui'
 import { VotePanelContent } from './components/Panels'
@@ -109,7 +108,6 @@ class Decisions extends React.Component {
       votes,
       entries,
       voteTime,
-      tokenAddress,
     } = this.props
     const {
       createVoteVisible,

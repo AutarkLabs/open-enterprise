@@ -7,6 +7,7 @@ import {
   Button,
   theme,
   Badge,
+  Countdown,
 } from '@aragon/ui'
 import ProgressBar from '../ProgressBar'
 import VoteStatus from '../VoteStatus'
@@ -46,11 +47,9 @@ class Vote extends React.Component {
     const {
       metadata: question,
       description,
-      candidates,
       options,
       participationPct,
       type,
-      executed,
     } = vote.data
 
     let typeBadge
@@ -130,7 +129,9 @@ class Vote extends React.Component {
         <Separator />
 
         {open ?
-          <Countdown end={endDate} />
+          <div style={{ textAlign: 'center', width: '100%' }}>
+            <Countdown end={endDate} />
+          </div>
           :
           (
             <React.Fragment>

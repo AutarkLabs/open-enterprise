@@ -4,6 +4,8 @@ import { BadgeNumber, colors, Viewport } from '@aragon/ui'
 import VotesTable from '../components/VotesTable'
 import VotesList from '../components/VotesList'
 
+const TABLE_CARD_BREAKPOINT = 710
+
 class Votes extends React.Component {
   render() {
     const { votes, onSelectVote, app } = this.props
@@ -23,7 +25,7 @@ class Votes extends React.Component {
               />
             </Title>
             <Viewport>
-              {({ below, width }) => below('small') ? (
+              {({ below, width }) => below(TABLE_CARD_BREAKPOINT) ? (
                 <VotesList
                   votes={openedVotes}
                   onSelectVote={onSelectVote}
@@ -45,7 +47,7 @@ class Votes extends React.Component {
               <span>Closed Range Votes</span>
             </Title>
             <Viewport>
-              {({ below, width }) => below('small') ? (
+              {({ below, width }) => below(TABLE_CARD_BREAKPOINT) ? (
                 <VotesList
                   votes={closedVotes}
                   onSelectVote={onSelectVote}
