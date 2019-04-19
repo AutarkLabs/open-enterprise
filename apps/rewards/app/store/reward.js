@@ -34,6 +34,14 @@ export async function onRewardClaimed({ rewards = [], claims = {} }, { rewardId 
 
 }
 
+export async function onRefreshRewards(nextState) {
+  const rewardsLength = Number(await getRewardsLength())
+  const rewards = await Promise.all(
+    [...Array(rewardsLength).keys()].map(async rewardId => await getRewardById(rewardId))
+  )
+  return { ...nextState, rewards }
+}
+
 /////////////////////////////////////////
 /*      rewards helper functions       */
 /////////////////////////////////////////
@@ -76,6 +84,13 @@ const getTotalClaimed = async tokenAddress => {
 
 const getTotalClaims = async () => {
   return await app.call('totalClaimsEach')
+    .pipe(
+      first(),
+    ).toPromise()
+}
+
+const getRewardsLength = async () => {
+  return await app.call('getRewardsLength')
     .pipe(
       first(),
     ).toPromise()

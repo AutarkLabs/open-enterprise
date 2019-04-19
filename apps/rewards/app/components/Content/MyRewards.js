@@ -36,11 +36,16 @@ import { MILLISECONDS_IN_A_SECOND } from '../../../../../shared/ui/utils'
 const averageRewardsTitles = [ 'My Unclaimed Rewards', 'Year to Date', 'Inception to Date' ]
 
 const calculateMyRewardsSummary = (rewards, balances, convertRates) => {
-  return [
-    formatAvgAmount(calculateUnclaimedRewards(rewards, balances, convertRates),'+$', 'green'),
-    formatAvgAmount(calculateAllRewards(rewards, balances, convertRates), '$'),
-    formatAvgAmount(calculateYTDUserRewards(rewards, balances, convertRates), '$'),
-  ]
+  if (balances && convertRates) {
+    return [
+      formatAvgAmount(calculateUnclaimedRewards(rewards, balances, convertRates),'+$', 'green'),
+      formatAvgAmount(calculateAllRewards(rewards, balances, convertRates), '$'),
+      formatAvgAmount(calculateYTDUserRewards(rewards, balances, convertRates), '$'),
+    ]
+  }
+  else {
+    return Array(3).fill(formatAvgAmount(0, '$'))
+  }
 }
 
 const calculateUnclaimedRewards = (rewards, balances, convertRates) => {
@@ -221,21 +226,31 @@ const MyRewards = ({ onClaimReward, rewards, newReward, openDetails, network, to
     claimedRewards(rewards).length === 0 && unclaimedRewards(rewards).length === 0
   )
 
-  const summarizedRewards = calculateMyRewardsSummary(rewards, tokens, convertRates)
-  const unclaimedRewardsLength = unclaimedRewards(rewards).length
-  const claimedRewardsLength = claimedRewards(rewards).length
-
   if (rewardsEmpty) {
     return <Empty tab='MyRewards' action={newReward} />
   }
 
+  const summarizedRewards = calculateMyRewardsSummary(rewards, tokens, convertRates)
+  const unclaimedRewardsLength = unclaimedRewards(rewards).length
+  const claimedRewardsLength = claimedRewards(rewards).length
+
+
   return (
     <Main>
       <RewardsWrap>
-        <AverageRewards
-          titles={averageRewardsTitles}
-          numbers={summarizedRewards}
-        />
+        {(tokens && convertRates)
+          ?
+          <AverageRewards
+            titles={averageRewardsTitles}
+            numbers={summarizedRewards}
+          />
+          :
+          <AverageRewardsTable>
+            <Text.Block size="large" weight="bold">
+              Calculating Summary...
+            </Text.Block>
+          </AverageRewardsTable>
+        }
 
         {claimedRewardsLength > 0
         &&

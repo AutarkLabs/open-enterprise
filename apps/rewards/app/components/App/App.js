@@ -26,13 +26,18 @@ class App extends React.Component {
     balances: PropTypes.arrayOf(PropTypes.object),
   }
 
-  static defaultProps = {
-    network: {},
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      selected: 0,
+      tabs: [ 'Overview', 'My Rewards' ],
+    }
+    this.updateRewards()
   }
 
-  state = {
-    selected: 0,
-    tabs: [ 'Overview', 'My Rewards' ],
+  static defaultProps = {
+    network: {},
   }
 
   static childContextTypes = {
@@ -65,10 +70,16 @@ class App extends React.Component {
     const convertRates = await res.json()
     console.log(this.state.convertRates, convertRates)
     if (JSON.stringify(this.state.convertRates) !== JSON.stringify(convertRates)) {
-      console.log('updating')
+      console.log('updating conversion rates')
       this.setState({ convertRates })
     }
   }, CONVERT_THROTTLE_TIME)
+
+  updateRewards = async () => {
+    this.props.app.cache('requestRefresh', {
+      event: 'RefreshRewards'
+    })
+  }
 
   handleMenuPanelOpen = () => {
     window.parent.postMessage(
@@ -82,6 +93,7 @@ class App extends React.Component {
 
   selectTab = idx => {
     this.setState({ selected: idx })
+    this.updateRewards()
   }
 
   getRewards = (rewards) => {

@@ -1,5 +1,5 @@
 import { initializeTokens, vaultLoadBalance } from './token'
-import { onRewardAdded, onRewardClaimed } from './reward'
+import { onRewardAdded, onRewardClaimed, onRefreshRewards } from './reward'
 import { addressesEqual } from '../utils/web3-utils'
 import { INITIALIZATION_TRIGGER } from './'
 export const handleEvent = async (state, event, settings) => {
@@ -23,6 +23,9 @@ export const handleEvent = async (state, event, settings) => {
       break
     case 'RewardAdded':
       nextState = await onRewardAdded(nextState, returnValues)
+      break
+    case 'RefreshRewards':
+      nextState = await onRefreshRewards(nextState)
       break
     default:
       console.log('[Rewards reducer] unhandled event:', event, returnValues)

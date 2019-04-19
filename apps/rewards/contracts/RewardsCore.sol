@@ -65,6 +65,10 @@ contract RewardsCore is IsContract, AragonApp {
         emit RewardClaimed(_rewardID);
     }
 
+    function getRewardsLength() external view returns (uint rewardsLength) {
+        rewardsLength = rewards.length;
+    }
+
     function getReward(uint rewardID) external view returns(
         string description,
         bool isMerit,

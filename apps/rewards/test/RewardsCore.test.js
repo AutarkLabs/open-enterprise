@@ -223,6 +223,11 @@ contract('Rewards App', accounts => {
       assert(meritRewardId == 3, 'fourth reward should be id 3')
     })
 
+    it('can read rewards array length', async () => {
+      const rewardsLength = await app.getRewardsLength()
+      assert.strictEqual(rewardsLength.toNumber(), 4, 'rewards array length incorrect')
+    })
+
   })
 
   context('Check require statements and edge cases', () => {
