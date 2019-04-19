@@ -49,21 +49,14 @@ The proposal for an Aragon [Planning Suite](https://github.com/aragon/nest/pull/
 
 ## The Suite
 
-The Planning Suite is a collection of six Aragon Apps that supports the following:
+The Planning Suite is a collection of five Aragon Apps that supports the following:
 
-- **Allocations:** Propose new multi-party financial allocations, which are forwarded to the Dot Voting app.
-  - **Dynamic Payout:** Payroll contract that allows for dynamic allocations that are determined using dot voting.
-  - **Payout Engine:** Pay sharing contract using a percentage-based distribution system, where the percentages are determined using dot voting.
-- **Address Book:** Maintain a list of Ethereum addresses (external contacts/collaborators) mapped to human-readable names.
-  - **Fixed Payout:** The address book will enable a more user-friendly way to access common addresses a DAO uses, making it easier to setup Fixed Payouts in various Aragon apps.
-- **Dot Voting:** Vote on the percentage of an allocation that distinct tasks, projects, or people should receive. Unique forwarding pattern allows for data to be added to EVM scripts within Aragon.
-- **Projects:** Allow Github issues to be collectively prioritized in addition to applying bulk bounties.
-  - **Github Integration:** Before we can utilize the decentralized git tool, it would be ideal to have an integration with a Github-based bounty system to provide immediate utility to Aragon DAOs.
-  - **Issue Curation:** In the Planning app, token holders or project members will be able to curate / prioritize the top issues that should be developed.
-  - **Bulk Bounties:** Allow bounties to be allocated to issues in a bulk-fashion.
-    - **Off-Chain Estimates:** The bounty estimates are determined off-chain or are input by a single party, yet require an approval vote from the DAO (Forwards to Voting app)
-    - **On-Chain Estimates:** Consensus or dot voting contract is utilized for members to collectively estimate the value of task bounties. (Forwards to Consensus app).
-- **Consensus:** Allow for special voting sessions to be created, where the aim is to reach consensus among the voting session participants.
+- **Allocations:** The Allocations app is used to propose a financial allocation meant to be distributed to multiple parties. Allocation proposals are forwarded to the Dot Voting app. The percentage of the allocation amount distributed to each party is determined based on the results of the Dot Vote.
+- **Address Book:** Maintain a list of Ethereum addresses mapped to human-readable names. The Address Book will enable a more user-friendly way to access and review common addresses a DAO uses for Allocations and Dot Voting.
+- **Projects:** Allocate funding to multiple Github issues in a single action and collectively curate issues.
+  - **Curate Issues:** Token holders will be able to curate / prioritize the top issues that should be developed. Issue Curation proposals are forwarded to the Dot Voting app.
+  - **Fund Issues:** Fund issues in a bulk-fashion, with the possibility to require DAO approval before funding is allocated.
+- **Dot Voting:** Dot Voting is used to cast votes for Allocation or Issue Curation proposals. Members can vote on how to distribute an allocation across distinct entities or prioritize a list of Github issues by specifying a percentage of votes per option.
 - **Rewards:** Distributes payments to token holders based on the number of tokens one has earned in a specific cycle of time (one-time reward) or based on the total tokens one holds (dividend).
 
 ### Please review the [White Paper](http://goo.gl/eXAybm) for full details

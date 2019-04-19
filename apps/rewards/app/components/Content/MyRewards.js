@@ -31,14 +31,76 @@ import {
 } from './RewardsTables'
 import { Empty } from '../Card'
 import { provideNetwork } from '../../../../../shared/ui'
+import { MILLISECONDS_IN_A_SECOND } from '../../../../../shared/ui/utils'
 
 const averageRewardsTitles = [ 'My Unclaimed Rewards', 'Year to Date', 'Inception to Date' ]
-// TODO: these need to be actually calculated
-const averageRewardsNumbers = [
-  formatAvgAmount(146, '+$', 'green'),
-  formatAvgAmount(19989.88, '$'),
-  formatAvgAmount(799.87, '$'),
-]
+
+const calculateMyRewardsSummary = (rewards, balances, convertRates) => {
+  if (balances && convertRates) {
+    return [
+      formatAvgAmount(calculateUnclaimedRewards(rewards, balances, convertRates),'+$', 'green'),
+      formatAvgAmount(calculateAllRewards(rewards, balances, convertRates), '$'),
+      formatAvgAmount(calculateYTDUserRewards(rewards, balances, convertRates), '$'),
+    ]
+  }
+  else {
+    return Array(3).fill(formatAvgAmount(0, '$'))
+  }
+}
+
+const calculateUnclaimedRewards = (rewards, balances, convertRates) => {
+  return sumUserRewards(
+    rewards,
+    balances,
+    convertRates,
+    (rew, bal) => !rew.claimed && rew.rewardToken === bal.address // rewardFilter
+  )
+}
+
+const calculateAllRewards = (rewards, balances, convertRates) => {
+  return sumUserRewards(
+    rewards,
+    balances,
+    convertRates,
+    (rew, bal) => rew.claimed && rew.rewardToken === bal.address, // RewardFilter
+  )
+}
+
+const calculateYTDUserRewards = (rewards, balances, convertRates) => {
+  const yearBeginning = new Date(new Date(Date.now()).getFullYear(), 0)
+  return sumUserRewards(
+    rewards,
+    balances,
+    convertRates,
+    (rew, bal) => rew.claimed && rew.rewardToken === bal.address && rew.endDate >= yearBeginning
+  )
+}
+
+const sumUserRewards = (rewards, balances, convertRates, rewardFilter) => {
+  return balances.reduce((balAcc, balance) => {
+    if (convertRates[balance.symbol]) {
+      return rewards.reduce((rewAcc,reward) => {
+        return (rewardFilter(reward, balance))
+          ?
+          BigNumber(reward.userRewardAmount).div(Math.pow(10, balance.decimals)).div(convertRates[balance.symbol]).plus(rewAcc)
+            .toNumber()
+          :
+          rewAcc
+      },0) + balAcc
+    }
+    else return balAcc
+  },0)
+}
+
+const generateOnClaimReward = (onClaimReward, reward) => (e) => {
+  onClaimReward(reward)
+  e.stopPropagation()
+}
+
+const rewardVisible = reward => reward.startDate < Date.now() && Number(reward.userRewardAmount) !== '0'
+
+const claimedRewards = rewards => rewards.filter(reward => reward.claimed)
+const unclaimedRewards = rewards => rewards.filter(reward => !reward.claimed && rewardVisible(reward))
 
 const generateOpenDetails = (reward, openDetails) => () => {
   openDetails(reward)
@@ -62,19 +124,25 @@ const mockReward = [{
   claimed: true,
 }]
 
-const MyRewardsWide = ({ claimed, dat, openDetails, network, tokens }) => (
+const getSymbol = (tokens, reward) => {
+  return tokens
+    .reduce((symbol, token) => {
+      if (token.address === reward.rewardToken) return token.symbol
+      else return symbol
+    },'')
+}
+const MyRewardsWide = ({ onClaimReward, claimed, rewards, openDetails, network, tokens }) => (
   <Table
     style={{ width: '100%' }}
     header={
       <TableRow>
         <TableHeader key="1" title="Description" />
-        <TableHeader key="2" title="Transaction" />
-        <TableHeader key="3" title={claimed ? 'Status': 'Transaction Date'} />
-        <TableHeader key="4" title="Amount" />
+        <TableHeader key="2" title={!claimed ? 'Status': 'Transaction Date'} />
+        <TableHeader key="3" title="Amount" />
       </TableRow>
     }
   >
-    {data.map((reward, i) => (
+    {rewards.map((reward, i) => (
       <ClickableTableRow key={i} onClick={generateOpenDetails(reward, openDetails)}>
         <TableCell>
           <RewardDescription>
@@ -82,12 +150,20 @@ const MyRewardsWide = ({ claimed, dat, openDetails, network, tokens }) => (
           </RewardDescription>
         </TableCell>
         <TableCell>
-          {reward.transactionID}
+          {!reward.claimed ? (
+            reward.endDate < Date.now() ? (
+              <Button mode="outline" onClick={generateOnClaimReward(onClaimReward, reward)}>
+                <IconFundraising color={theme.positive} />
+
+                <Text size="normal" weight="bold">Claim</Text>
+              </Button>) : <Text size="normal" weight="bold">Pending...</Text>
+          ) : Intl.DateTimeFormat().format(reward.timeClaimed * MILLISECONDS_IN_A_SECOND)}
         </TableCell>
         <TableCell>
-          {claimed ? (<Button>Claim</Button>) : '10/11/12'}
+          <AmountBadge style={{ margin: '0px', padding: '5px', paddingRight: '10px', paddingLeft: '10px', }}>
+            {displayCurrency(reward.userRewardAmount)}{' '}{getSymbol(tokens, reward)}
+          </AmountBadge>
         </TableCell>
-        <TableCell>{displayCurrency(reward.amount)}{' '}{tokens[reward.rewardToken]}</TableCell>
       </ClickableTableRow>
     ))}
   </Table>
@@ -103,9 +179,9 @@ const RewardStatus = ({ color, icon, title, posTop = 0 }) => {
   )
 }
 
-const showStatus = (status = 3) => {
+const showStatus = (status = 1) => {
   switch(status) {
-  case 0: return <RewardStatus title="Claim in progress..." icon={IconTime} color={theme.textSecondary} posTop={1} />
+  case 0: return <RewardStatus title="Pending..." icon={IconTime} color={theme.textSecondary} posTop={1} />
   case 1: return <RewardStatus title="Ready to claim" icon={IconFundraising} color="#F5A623" posTop={7} />
   case 2: return <RewardStatus title="Claimed" icon={IconCheck} color={theme.positive} />
   case 3: return <RewardStatus title="Rejected" icon={IconCross} color={theme.negative} />
@@ -117,9 +193,9 @@ const MyRewardStatus = styled(Text.Block).attrs({
 })`
   margin-top: 5px;
 `
-const MyRewardsNarrow = ({ claimed, data, openDetails, network, tokens }) => (
+const MyRewardsNarrow = ({ claimed, rewards, openDetails, network, tokens }) => (
   <NarrowList>
-    {data.map((reward, i) => (
+    {rewards.map((reward, i) => (
       <NarrowListReward onClick={generateOpenDetails(reward, openDetails)} key={i}>
         <div style={{ marginTop: '5px', marginRight: '10px' }}>
           <RewardDescription>
@@ -132,7 +208,7 @@ const MyRewardsNarrow = ({ claimed, data, openDetails, network, tokens }) => (
         <div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center' }}>
           <div style={{ marginRight: '10px' }}>
             <AmountBadge>
-              {displayCurrency(reward.amount)}{' '}{tokens[reward.rewardToken]}
+              {displayCurrency(reward.userRewardAmount)}{' '}{getSymbol(tokens,reward)}
             </AmountBadge>
           </div>
           <div>
@@ -145,41 +221,62 @@ const MyRewardsNarrow = ({ claimed, data, openDetails, network, tokens }) => (
   </NarrowList>
 )
 
-const MyRewards = ({ rewards, newReward, openDetails, network, tokens }) => {
-  const rewardsEmpty = rewards.length === 0
+const MyRewards = ({ onClaimReward, rewards, newReward, openDetails, network, tokens, convertRates }) => {
+  const rewardsEmpty = rewards.length === 0 || (
+    claimedRewards(rewards).length === 0 && unclaimedRewards(rewards).length === 0
+  )
 
   if (rewardsEmpty) {
     return <Empty tab='MyRewards' action={newReward} />
   }
 
+  const summarizedRewards = calculateMyRewardsSummary(rewards, tokens, convertRates)
+  const unclaimedRewardsLength = unclaimedRewards(rewards).length
+  const claimedRewardsLength = claimedRewards(rewards).length
+
+
   return (
     <Main>
       <RewardsWrap>
-        <AverageRewards
-          titles={averageRewardsTitles}
-          numbers={averageRewardsNumbers}
-        />
+        {(tokens && convertRates)
+          ?
+          <AverageRewards
+            titles={averageRewardsTitles}
+            numbers={summarizedRewards}
+          />
+          :
+          <AverageRewardsTable>
+            <Text.Block size="large" weight="bold">
+              Calculating Summary...
+            </Text.Block>
+          </AverageRewardsTable>
+        }
 
+        {claimedRewardsLength > 0
+        &&
         <RewardsTable
           title="Claimed Rewards"
           claimed={true}
-          data={rewards}
+          rewards={claimedRewards(rewards)}
           openDetails={openDetails}
           network={network}
-	  tokens={tokens}
+	        tokens={tokens}
           belowMedium={MyRewardsNarrow}
           aboveMedium={MyRewardsWide}
-        />
+        />}
+        {unclaimedRewardsLength > 0
+        &&
         <RewardsTable
           title="Unclaimed Rewards"
           claimed={false}
-          data={rewards}
+          rewards={unclaimedRewards(rewards)}
           openDetails={openDetails}
           network={network}
-	  tokens={tokens}
+	        tokens={tokens}
           belowMedium={MyRewardsNarrow}
           aboveMedium={MyRewardsWide}
-        />
+          onClaimReward={onClaimReward}
+        />}
       </RewardsWrap>
     </Main>
   )
@@ -189,7 +286,7 @@ MyRewards.propTypes = {
   newReward: PropTypes.func.isRequired,
   rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
   network: PropTypes.object,
-  tokens: PropTypes.object,
+  tokens: PropTypes.arrayOf(PropTypes.object).isRequired,
 }
 
 const Main = styled.div`
@@ -209,6 +306,10 @@ const ClickableTableRow = styled(TableRow)`
     cursor: pointer;
   }
 `
+const ClaimButtonText = styled(Text.Block).attrs({
+  size: 'small'
+})`
+  margin: 0px;
+`
 
 export default provideNetwork(MyRewards)
-

@@ -29,7 +29,7 @@
     "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
   },
   "dependencies": {
-    "@aragon/apps-vault": "^4.0.0",
+    "@aragon/apps-vault": "^4.1.0",
     "@aragon/api": "1.0.0",
     "@aragon/ui": "0.32.0",
     "@babel/polyfill": "^7.2.5",

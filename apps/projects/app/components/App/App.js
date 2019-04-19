@@ -291,12 +291,12 @@ class App extends React.PureComponent {
 
     // computes an array of issues and denests the actual issue object for smart contract
     const issuesArray = []
-    const bountySymbol = this.props.bountySettings.bountyCurrency
+    const bountyAddr = this.props.bountySettings.bountyCurrency
 
     let bountyToken, bountyDecimals
 
     this.props.tokens.forEach(token => {
-      if (token.symbol === bountySymbol) {
+      if (token.addr === bountyAddr) {
         bountyToken = token.addr
         bountyDecimals = token.decimals
       }

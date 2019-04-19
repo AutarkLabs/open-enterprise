@@ -121,6 +121,7 @@ contract('Rewards App', accounts => {
       let blockNumber = await getBlockNumber()
       dividendRewardIds = rewardAdded(
         await app.newReward(
+          'testReward',
           false,
           referenceToken.address,
           rewardToken.address,
@@ -140,6 +141,7 @@ contract('Rewards App', accounts => {
       let blockNumber = await getBlockNumber()
       meritRewardIds = rewardAdded(
         await app.newReward(
+          'testReward',
           true,
           referenceToken.address,
           rewardToken.address,
@@ -162,30 +164,50 @@ contract('Rewards App', accounts => {
 
     it('gets information on the dividend reward', async () => {
       rewardInformation = await app.getReward(dividendRewardIds[0])
-      assert(rewardInformation[0] ===false, 'First reward should be dividend')
+      assert(rewardInformation[1] === false, 'First reward should be dividend')
     })
 
     it('gets information on the merit reward', async () => {
       rewardInformation = await app.getReward(meritRewardIds[0])
-      assert(rewardInformation[0] === true, 'third reward should be merit')
+      assert(rewardInformation[1] === true, 'third reward should be merit')
     })
 
     it('receives rewards dividends', async () => {
+      rewardInformation = await app.getReward(dividendRewardIds[0])
       await app.claimReward(dividendRewardIds[0])
       const balance = await rewardToken.balanceOf(root)
       assert(balance == 1e18, 'reward should be 1e18 or 1eth equivalant')
+      rewardInformation = await app.getReward(dividendRewardIds[0])
+      assert.strictEqual(rewardInformation[10], true, 'reward is claimed')
     })
 
     it('receives rewards merit', async () => {
       await app.claimReward(meritRewardIds[0])
       const balance = await rewardToken.balanceOf(root)
       assert(balance == 2e18, 'reward should be 2e18 or 2eth equivalant; 1 for each reward')
+      rewardInformation = await app.getReward(meritRewardIds[0])
+      assert.strictEqual(rewardInformation[10], true, 'reward is claimed')
+    })
+
+    it('gets total rewards amount claimed', async () => {
+      const totalClaimed = await app.getTotalAmountClaimed(rewardToken.address)
+      assert.strictEqual(
+        web3.fromWei(totalClaimed.toNumber(),'ether'),
+        '2',
+        'total claims incorrect: should be 2 Eth'
+      )
+    })
+
+    it('gets total claims made', async () => {
+      const totalClaims = await app.totalClaimsEach()
+      assert.strictEqual(totalClaims.toString(), '2', 'total individual claims should be 2')
     })
 
     it('creates a merit reward that started in the past', async () => {
       let blockNumber = await getBlockNumber()
       meritRewardIds = rewardAdded(
         await app.newReward(
+          'testReward',
           true,
           referenceToken.address,
           rewardToken.address,
@@ -201,6 +223,11 @@ contract('Rewards App', accounts => {
       assert(meritRewardId == 3, 'fourth reward should be id 3')
     })
 
+    it('can read rewards array length', async () => {
+      const rewardsLength = await app.getRewardsLength()
+      assert.strictEqual(rewardsLength.toNumber(), 4, 'rewards array length incorrect')
+    })
+
   })
 
   context('Check require statements and edge cases', () => {
@@ -208,6 +235,7 @@ contract('Rewards App', accounts => {
     it('fails to create reward without permission', () => {
       assertRevert(async () => {
         await app.newReward(
+          'testReward',
           false,
           root,
           rewardToken.address,
@@ -223,6 +251,7 @@ contract('Rewards App', accounts => {
     it('fails to create reward with period starting prior to token creation', () => {
       assertRevert(async () => {
         await app.newReward(
+          'testReward',
           false,
           root,
           rewardToken.address,
@@ -240,6 +269,7 @@ contract('Rewards App', accounts => {
     it('fails to create reward with invalid reference token', () => {
       assertRevert(async () => {
         await app.newReward(
+          'testReward',
           false,
           root,
           rewardToken.address,
@@ -255,6 +285,7 @@ contract('Rewards App', accounts => {
     it('fails to create reward with invalid reward token', () => {
       assertRevert(async () => {
         await app.newReward(
+          'testReward',
           false,
           referenceToken.address,
           root,
@@ -270,6 +301,7 @@ contract('Rewards App', accounts => {
     it('fails to create merit reward multiple occurances', () => {
       assertRevert(async () => {
         await app.newReward(
+          'testReward',
           true,
           referenceToken.address,
           rewardToken.address,
@@ -285,6 +317,7 @@ contract('Rewards App', accounts => {
     it('fails to create dividend reward too many occurances', () => {
       assertRevert(async () => {
         await app.newReward(
+          'testReward',
           false,
           referenceToken.address,
           rewardToken.address,
@@ -301,6 +334,7 @@ contract('Rewards App', accounts => {
       let blockNumber = await getBlockNumber()
       const meritRewardId = rewardAdded(
         await app.newReward(
+          'testReward',
           true,
           referenceToken.address,
           rewardToken.address,
@@ -313,13 +347,14 @@ contract('Rewards App', accounts => {
       )
       const award = await app.getReward(meritRewardId)
       await app.claimReward(meritRewardId)
-      assert.strictEqual(award[6].toNumber(), 0, 'amount should be 0')
+      assert.strictEqual(award[9].toNumber(), 0, 'amount should be 0')
     })
 
     it('pays out a merit reward of zero with no token changes for the user', async() => {
       let blockNumber = await getBlockNumber()
       const meritRewardId = rewardAdded(
         await app.newReward(
+          'testReward',
           true,
           referenceToken.address,
           rewardToken.address,

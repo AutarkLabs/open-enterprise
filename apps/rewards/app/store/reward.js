@@ -1,6 +1,7 @@
 import { first, map } from 'rxjs/operators' // Make sure observables have .first
-
+import BigNumber from 'bignumber.js'
 import { app } from './'
+import { blocksToMilliseconds } from '../../../../shared/ui/utils'
 
 export async function onRewardAdded({ rewards = [] }, { rewardId }) {
   if (!rewards[rewardId]) {
@@ -10,23 +11,87 @@ export async function onRewardAdded({ rewards = [] }, { rewardId }) {
   return { rewards }
 }
 
+export async function onRewardClaimed({ rewards = [], claims = {} }, { rewardId }) {
+  rewards[rewardId] = await getRewardById(rewardId)
+
+  let { claimsByToken = [], totalClaimsMade = 0 } = claims
+
+  const tokenIndex = claimsByToken.findIndex(token => token.address === rewards[rewardId].rewardToken)
+
+  if (tokenIndex === -1) {
+    claimsByToken.push({
+      address: rewards[rewardId].rewardToken,
+      amount: await getTotalClaimed(rewards[rewardId].rewardToken)
+    })
+  }
+  else {
+    claimsByToken[tokenIndex].amount = await getTotalClaimed(rewards[rewardId].rewardToken)
+  }
+
+  totalClaimsMade = await getTotalClaims()
+
+  return { rewards, claims:{ claimsByToken, totalClaimsMade } }
+
+}
+
+export async function onRefreshRewards(nextState) {
+  const rewardsLength = Number(await getRewardsLength())
+  const rewards = await Promise.all(
+    [...Array(rewardsLength).keys()].map(async rewardId => await getRewardById(rewardId))
+  )
+  return { ...nextState, rewards }
+}
+
 /////////////////////////////////////////
 /*      rewards helper functions       */
 /////////////////////////////////////////
 
 const getRewardById = async rewardId => {
+  const currentBlock = await app.web3Eth('getBlockNumber').toPromise()
+  console.log('current Block: ', currentBlock)
+
   return await app.call('getReward', rewardId)
     .pipe(
       first(),
       map(data => ({
         rewardId,
+        description: data.description,
         isMerit: data.isMerit,
         referenceToken: data.referenceToken,
         rewardToken: data.rewardToken,
         amount: data.amount,
-        endBlock: data.EndBlock,
+        startBlock: data.startBlock,
+        endBlock: data.endBlock,
+        duration: data.duration,
         delay: data.delay,
+        startDate: Date.now() + blocksToMilliseconds(currentBlock,data.startBlock),
+        endDate: Date.now() + blocksToMilliseconds(currentBlock, data.endBlock),
+        userRewardAmount: data.rewardAmount,
+        claimed: data.claimed,
+        timeClaimed: data.timeClaimed,
+        creator: data.creator,
       }))
     )
     .toPromise()
+}
+
+const getTotalClaimed = async tokenAddress => {
+  return await app.call('getTotalAmountClaimed', tokenAddress)
+    .pipe(
+      first(),
+    ).toPromise()
+}
+
+const getTotalClaims = async () => {
+  return await app.call('totalClaimsEach')
+    .pipe(
+      first(),
+    ).toPromise()
+}
+
+const getRewardsLength = async () => {
+  return await app.call('getRewardsLength')
+    .pipe(
+      first(),
+    ).toPromise()
 }

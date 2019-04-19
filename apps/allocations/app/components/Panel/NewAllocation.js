@@ -3,6 +3,7 @@ import React from 'react'
 import { DropDown, Info } from '@aragon/ui'
 import web3Utils from 'web3-utils'
 import { OptionsInput, SettingsInput } from '../../../../../shared/ui'
+import { BigNumber } from 'bignumber.js'
 
 import {
   AddressDropDownOptions,
@@ -44,7 +45,7 @@ const message = {
   transferWarning:
     'This will create a Dot Vote and after it closes, it will result in a financial transfer.',
   tokenTransferWarning:
-    'Since you are proposing an allocation with tokens, it will be withdrawn from your Finance app if approved, since Accounts do not hold tokens.',
+    'Since you are proposing an allocation with tokens, it will be withdrawn from the Vault if approved, since Accounts do not hold tokens. Vault Balance: ' ,
   ethBalanceError: 'Amount is greater than ETH balance held by Account',
   tokenBalanceError: 'Amount is greater than token balance held by Vault',
 }
@@ -101,6 +102,7 @@ class NewAllocation extends React.Component {
   // TODO: fix contract to accept regular strings(informational vote)
   submitAllocation = () => {
     const { props, state } = this
+    const token  = props.balances[state.payoutTokenIndex]
     const { addressBookInput, addressBookCandidates, addressSetting, userInput, userInputCandidates } = state
     const informational = state.allocationTypeIndex === 0
     const recurring = state.payoutTypeIndex !== 0
@@ -139,7 +141,7 @@ class NewAllocation extends React.Component {
       this.setState({ ethBalanceError: true })
       return
     }
-    if(state.payoutTokenIndex !== 0 && state.amount * 10e17 > this.props.balances[state.payoutTokenIndex].amount) {
+    if(state.payoutTokenIndex !== 0 && state.amount * 10**token.decimals > token.amount) {
       this.setState({ tokenBalanceError: true })
       return
     }
@@ -152,6 +154,22 @@ class NewAllocation extends React.Component {
     allocation.addresses = candidates.map(c => c.addr)
     props.onSubmitAllocation(allocation)
     this.setState(INITIAL_STATE)
+  }
+  WarningMessage = (hasWarning, type ) =>{
+    if(hasWarning){
+      let specificMessage = message[type]
+      if(type === 'tokenTransferWarning'){
+        let token = this.props.balances[this.state.payoutTokenIndex]
+        let tokenDisplay = BigNumber(token.amount)
+          .div(
+            BigNumber(10).pow(token.decimals)
+          ).dp(3)
+        console.log('token', token)
+        specificMessage = specificMessage + tokenDisplay
+      }
+      return <Info.Action title="Warning" children={specificMessage} style={{ marginBottom: '10px' }} />
+    }
+    return null
   }
 
   render() {
@@ -175,7 +193,7 @@ class NewAllocation extends React.Component {
     }
 
     const amountWarningMessages = (
-      <WarningMessage hasWarning={state.payoutTokenIndex !== 0} type={'tokenTransferWarning'} />
+      this.WarningMessage(state.payoutTokenIndex !== 0, 'tokenTransferWarning')
     )
 
     const errorMessages = [ 'allocationError', 'addressError', 'descriptionError', 'ethBalanceError', 'tokenBalanceError' ].map((e, i) => (
@@ -324,8 +342,7 @@ ErrorMessage.propTypes = {
   type: PropTypes.string,
 }
 
-const WarningMessage = ({ hasWarning, type }) =>
-  hasWarning ? <Info.Action title="Warning" children={message[type]} style={{ marginBottom: '10px' }} /> : null
+
 
 // TODO: unused
 // const RecurringDropDown = ({ dropDown }) => {

@@ -58,13 +58,6 @@ class Settings extends React.Component {
       expLevels: s.expLvls,
     }
 
-    let found = bountyCurrencies.findIndex(el => el === s.bountyCurrency)
-
-    if (found === -1) {
-      bountyCurrencies.push(s.bountyCurrency)
-      n.bountyCurrency = bountyCurrencies.length - 1
-    } else n.bountyCurrency = found
-
     // bountyDeadlinesMul = [168, 24, 1]
     // in order to store the deadline as one number instead of two
     for (let i = 0; i < bountyDeadlinesMul.length; i++) {
@@ -100,7 +93,7 @@ class Settings extends React.Component {
       expLevelsDesc,
       web3.toHex(baseRate),
       web3.toHex(bountyDeadline),
-      bountyCurrencies[bountyCurrency],
+      this.props.tokens[bountyCurrency].addr,
       bountyAllocator
       //bountyArbiter,
     )

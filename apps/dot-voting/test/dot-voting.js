@@ -377,7 +377,7 @@ contract('DotVoting App', accounts => {
       })
 
       it('has correct vote ID', async () => {
-        assert.equal(voteId, 1, 'RangeVote should have been created')
+        assert.equal(voteId, 1, 'DotVote should have been created')
       })
 
       it('stored the candidate addresses correctly', async () => {
