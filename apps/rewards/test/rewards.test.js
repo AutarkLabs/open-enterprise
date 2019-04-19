@@ -127,13 +127,6 @@ contract('Rewards App', accounts => {
     //  root,
     //  { from: root }
     //)
-    //await acl.createPermission(
-    //  ANY_ADDR,
-    //  app.address,
-    //  await app.MODIFY_PARTICIPATION_ROLE(),
-    //  root,
-    //  { from: root }
-    //)
   })
 
   context('normal token supply', () => {

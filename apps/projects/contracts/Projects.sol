@@ -85,12 +85,12 @@ contract Projects is IsContract, AragonApp {
     //holds all work submissions
     WorkSubmission[] workSubmissions;
     // Auth roles
-    bytes32 public constant ADD_BOUNTY_ROLE =  keccak256("ADD_BOUNTY_ROLE");
+    bytes32 public constant FUND_ISSUES_ROLE =  keccak256("FUND_ISSUES_ROLE");
     bytes32 public constant ADD_REPO_ROLE = keccak256("ADD_REPO_ROLE");
     bytes32 public constant CHANGE_SETTINGS_ROLE =  keccak256("CHANGE_SETTINGS_ROLE");
     bytes32 public constant CURATE_ISSUES_ROLE = keccak256("CURATE_ISSUES_ROLE");
     bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
-    bytes32 public constant TASK_ASSIGNMENT_ROLE = keccak256("TASK_ASSIGNMENT_ROLE");
+    bytes32 public constant REVIEW_APPLICATION_ROLE = keccak256("REVIEW_APPLICATION_ROLE");
     bytes32 public constant WORK_REVIEW_ROLE = keccak256("WORK_REVIEW_ROLE");
     string private constant ERROR_VAULT_NOT_CONTRACT = "PROJECTS_VAULT_NOT_CONTRACT";
     string private constant ERROR_STANDARD_BOUNTIES_NOT_CONTRACT = "STANDARD_BOUNTIES_NOT_CONTRACT";
@@ -367,13 +367,13 @@ contract Projects is IsContract, AragonApp {
      * @param _requestor address of user that will be assigned the issue
      * @param _updatedApplication IPFS hash of the application containing optional feedback
      */
-    function approveAssignment(
+    function reviewApplication(
         bytes32 _repoId,
         uint256 _issueNumber,
         address _requestor,
         string _updatedApplication,
         bool _approved
-    ) external auth(TASK_ASSIGNMENT_ROLE)
+    ) external auth(REVIEW_APPLICATION_ROLE)
     {
         GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
         require(issue.assignmentRequests[_requestor].exists == true, "User has not applied for this issue");
@@ -478,7 +478,7 @@ contract Projects is IsContract, AragonApp {
         address[] _tokenContracts,
         string _ipfsAddresses,
         string _description
-    ) public payable auth(ADD_BOUNTY_ROLE)
+    ) public payable auth(FUND_ISSUES_ROLE)
     {
         // ensure the transvalue passed equals transaction value
         //checkTransValueEqualsMessageValue(msg.value, _bountySizes,_tokenBounties);

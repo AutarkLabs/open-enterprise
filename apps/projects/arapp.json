@@ -1,17 +1,17 @@
 {
   "roles": [
     {
-      "name": "Add bounties",
-      "id": "ADD_BOUNTY_ROLE",
+      "name": "Fund issues",
+      "id": "FUND_ISSUES_ROLE",
       "params": []
     },
     {
-      "name": "Add repos",
+      "name": "Add project repos",
       "id": "ADD_REPO_ROLE",
       "params": []
     },
     {
-      "name": "Update settings for Projects app",
+      "name": "Update project settings",
       "id": "CHANGE_SETTINGS_ROLE",
       "params": []
     },
@@ -21,17 +21,17 @@
       "params": []
     },
     {
-      "name": "Remove repos from the registry",
+      "name": "Remove project repos",
       "id": "REMOVE_REPO_ROLE",
       "params": []
     },
     {
-      "name": "Assign tasks based on review of applicants",
-      "id": "TASK_ASSIGNMENT_ROLE",
+      "name": "Approve or reject applications to work on issues",
+      "id": "REVIEW_APPLICATION_ROLE",
       "params": []
     },
     {
-      "name": "Review and accept or reject work done on tasks",
+      "name": "Approve or reject work submissions on issues",
       "id": "WORK_REVIEW_ROLE",
       "params": []
     }

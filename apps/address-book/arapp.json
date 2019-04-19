@@ -1,12 +1,12 @@
 {
   "roles": [
     {
-      "name": "Add entry",
+      "name": "Add address book entry",
       "id": "ADD_ENTRY_ROLE",
       "params": []
     },
     {
-      "name": "Remove entry",
+      "name": "Remove address book entry",
       "id": "REMOVE_ENTRY_ROLE",
       "params": []
     }

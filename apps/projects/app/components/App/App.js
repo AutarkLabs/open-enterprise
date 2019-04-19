@@ -397,7 +397,7 @@ class App extends React.PureComponent {
 
     const requestIPFSHash = await ipfsAdd(ipfsData)
 
-    this.props.app.approveAssignment(
+    this.props.app.reviewApplication(
       web3.toHex(issue.repoId),
       issue.number,
       issue.requestsData[requestIndex].contributorAddr,

@@ -1,7 +1,7 @@
 {
   "roles": [
     {
-      "name": "Initiate a reward",
+      "name": "Create rewards",
       "id": "ADD_REWARD_ROLE",
       "params": []
     }

@@ -85,7 +85,7 @@ contract('Projects App', accounts => {
     await acl.createPermission(
       bountyAdder,
       app.address,
-      await app.ADD_BOUNTY_ROLE(),
+      await app.FUND_ISSUES_ROLE(),
       root,
       { from: root }
     )
@@ -109,7 +109,7 @@ contract('Projects App', accounts => {
     await acl.createPermission(
       bountyAdder,
       app.address,
-      await app.TASK_ASSIGNMENT_ROLE(),
+      await app.REVIEW_APPLICATION_ROLE(),
       root,
       { from: root }
     )
@@ -363,7 +363,7 @@ contract('Projects App', accounts => {
         await app.requestAssignment(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd', { from: root })
         applicantQty = await app.getApplicantsLength(repoId, 1)
         applicant = await app.getApplicant(repoId, issueNumber, applicantQty.toNumber() - 1)
-        await app.approveAssignment(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', true, { from: bountyAdder })
+        await app.reviewApplication(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', true, { from: bountyAdder })
 
         const issue = await app.getIssue(repoId, 1)
         assert.strictEqual(issue[6], root, 'assignee address incorrect')
@@ -375,11 +375,11 @@ contract('Projects App', accounts => {
         applicant = await app.getApplicant(repoId, issueNumber, applicantQty.toNumber() - 1)
         assert.strictEqual(applicant[2].toNumber(), 0, 'assignment request status is not Unreviewed')
 
-        await app.approveAssignment(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', true, { from: bountyAdder })
+        await app.reviewApplication(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', true, { from: bountyAdder })
         applicant = await app.getApplicant(repoId, issueNumber, applicantQty.toNumber() - 1)
         assert.strictEqual(applicant[2].toNumber(), 1, 'assignment request status is not Accepted')
 
-        await app.approveAssignment(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', false, { from: bountyAdder })
+        await app.reviewApplication(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', false, { from: bountyAdder })
         applicant = await app.getApplicant(repoId, issueNumber, applicantQty.toNumber() - 1)
         assert.strictEqual(applicant[2].toNumber(), 2, 'assignment request status is not Rejected')
       })
@@ -388,7 +388,7 @@ contract('Projects App', accounts => {
         await app.requestAssignment(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd', { from: root })
         applicantQty = await app.getApplicantsLength(repoId, 1)
         applicant = await app.getApplicant(repoId, issueNumber, applicantQty.toNumber() - 1)
-        await app.approveAssignment(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', true, { from: bountyAdder })
+        await app.reviewApplication(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', true, { from: bountyAdder })
 
         await app.submitWork(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDk')
         submissionQty = await app.getSubmissionsLength(repoId, issueNumber)
@@ -405,7 +405,7 @@ contract('Projects App', accounts => {
         await app.requestAssignment(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd', { from: root })
         applicantQty = await app.getApplicantsLength(repoId, 1)
         applicant = await app.getApplicant(repoId, issueNumber, applicantQty.toNumber() - 1)
-        await app.approveAssignment(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', true, { from: bountyAdder })
+        await app.reviewApplication(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', true, { from: bountyAdder })
 
         await app.submitWork(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDk')
         submissionQty = await app.getSubmissionsLength(repoId, issueNumber)
@@ -425,7 +425,7 @@ contract('Projects App', accounts => {
         await app.requestAssignment(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd', { from: root })
         applicantQty = await app.getApplicantsLength(repoId, 1)
         applicant = await app.getApplicant(repoId, issueNumber, applicantQty.toNumber() - 1)
-        await app.approveAssignment(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', true, { from: bountyAdder })
+        await app.reviewApplication(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', true, { from: bountyAdder })
 
         await app.submitWork(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDk')
         submissionQty = await app.getSubmissionsLength(repoId, issueNumber)
@@ -451,7 +451,7 @@ contract('Projects App', accounts => {
         await app.requestAssignment(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd', { from: root })
         applicantQty = await app.getApplicantsLength(repoId, 1)
         applicant = await app.getApplicant(repoId, issueNumber, applicantQty.toNumber() - 1)
-        await app.approveAssignment(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', true, { from: bountyAdder })
+        await app.reviewApplication(repoId, issueNumber, applicant[0], 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe', true, { from: bountyAdder })
 
         await app.submitWork(repoId, issueNumber, 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDk')
         submissionQty = await app.getSubmissionsLength(repoId, issueNumber)
