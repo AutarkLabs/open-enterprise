@@ -32,9 +32,9 @@ module.exports = async (
   // aragonId = 'planning-suite-dao-' + Math.floor(Math.random() * 1000)
   // tokenName = 'AutarkToken1'
   // tokenSymbol = 'autark1'
-  aragonId = 'atreides'
+  aragonId = 'testing-dao-xyz'
   tokenName = 'Spice'
-  tokenSymbol = 'SPC'
+  tokenSymbol = 'spice'
 
   const holders = [owner]
   const stakes = [200e18]

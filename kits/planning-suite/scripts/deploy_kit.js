@@ -11,7 +11,13 @@ const logDeploy = require('@aragon/os/scripts/helpers/deploy-logger')
 const apps = ['finance', 'token-manager', 'vault', 'voting']
 const appIds = apps.map(app => namehash(`${app}.aragonpm.eth`))
 
-const planningApps = ['address-book', 'allocations', 'dot-voting', 'projects']
+const planningApps = [
+  'address-book',
+  'allocations',
+  'dot-voting',
+  'projects',
+  'rewards',
+]
 const planningAppIds = planningApps.map(app =>
   namehash(`${app}-staging.open.aragonpm.eth`)
 )
@@ -175,7 +181,7 @@ module.exports = async (
       await newRepo(apm, 'allocations', owner, 'Allocations')
       await newRepo(apm, 'dot-voting', owner, 'DotVoting')
       await newRepo(apm, 'projects', owner, 'Projects')
-      // await newRepo(apm, 'rewards', owner, 'Rewards')
+      await newRepo(apm, 'rewards', owner, 'Rewards')
     }
 
     if (
