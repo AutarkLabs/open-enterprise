@@ -8,6 +8,8 @@ import {
   theme,
   ContextMenuItem,
   IconFundraising,
+  breakpoint,
+  Viewport,
 } from '@aragon/ui'
 import BigNumber from 'bignumber.js'
 import { compareAsc, compareDesc } from 'date-fns'
@@ -23,7 +25,7 @@ import ActiveFilters from './Filters'
 class Issues extends React.PureComponent {
   static propTypes = {
     onLogin: PropTypes.func.isRequired,
-    status: PropTypes.string.isRequired,
+    githubCurrentUser: PropTypes.object.isRequired,
   }
 
   state = {
@@ -219,42 +221,71 @@ class Issues extends React.PureComponent {
     })
   }
 
+  actionsContextMenu = issuesFiltered => (
+    <ActionsMenu enabled={!!this.state.selectedIssues.length}>
+      <ContextMenuItem
+        onClick={this.handleCurateIssues(issuesFiltered)}
+        style={{ display: 'flex', alignItems: 'flex-start' }}
+      >
+        <div>
+          <IconCurate color={theme.textTertiary} />
+        </div>
+        <ActionLabel>Curate Issues</ActionLabel>
+      </ContextMenuItem>
+      <ContextMenuItem
+        onClick={this.handleAllocateBounties}
+        style={{ display: 'flex', alignItems: 'flex-start' }}
+      >
+        <div style={{ marginLeft: '4px' }}>
+          <IconFundraising color={theme.textTertiary} />
+        </div>
+        <ActionLabel>Fund Issues</ActionLabel>
+      </ContextMenuItem>
+    </ActionsMenu>
+  )
+
   actionsMenu = (issues, issuesFiltered) => (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'flex-end'
-      }}>
-      <TextInput placeholder="Search issue titles" type="search" onChange={this.handleTextFilter} />
-      <ActiveFilters
-        issues={issues}
-        bountyIssues={this.props.bountyIssues}
-        filters={this.state.filters}
-        disableFilter={this.disableFilter}
-        disableAllFilters={this.disableAllFilters}
-      />
-      <ActionsMenu enabled={Object.keys(this.state.selectedIssues).length > 0}>
-        <ContextMenuItem
-          onClick={this.handleCurateIssues(issuesFiltered)}
-          style={{ display: 'flex', alignItems: 'flex-start' }}
-        >
-          <div>
-            <IconCurate color={theme.textTertiary} />
+    <Viewport>
+      {({ below }) => below('small') ? (
+        <React.Fragment>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            padding: '0',
+            justifyContent: 'space-between',
+            alignContent: 'stretch',
+            marginTop: '10px'
+          }}>
+            <TextInput placeholder="Search issue titles" type="search" onChange={this.handleTextFilter} style={{ marginRight: '6px' }}/>
+            {this.actionsContextMenu(issuesFiltered)}
           </div>
-          <ActionLabel>Curate Issues</ActionLabel>
-        </ContextMenuItem>
-        <ContextMenuItem
-          onClick={this.handleAllocateBounties}
-          style={{ display: 'flex', alignItems: 'flex-start' }}
-        >
-          <div style={{ marginLeft: '4px' }}>
-            <IconFundraising color={theme.textTertiary} />
-          </div>
-          <ActionLabel>Fund Issues</ActionLabel>
-        </ContextMenuItem>
-      </ActionsMenu>
-    </div>
+          <ActiveFilters
+            issues={issues}
+            bountyIssues={this.props.bountyIssues}
+            filters={this.state.filters}
+            disableFilter={this.disableFilter}
+            disableAllFilters={this.disableAllFilters}
+          />
+        </React.Fragment>
+      ) : (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          padding: '0',
+          justifyContent: 'space-between'
+        }}>
+          <TextInput placeholder="Search issue titles" type="search" onChange={this.handleTextFilter} />
+          <ActiveFilters
+            issues={issues}
+            bountyIssues={this.props.bountyIssues}
+            filters={this.state.filters}
+            disableFilter={this.disableFilter}
+            disableAllFilters={this.disableAllFilters}
+          />
+          {this.actionsContextMenu(issuesFiltered)}
+        </div>
+      )}
+    </Viewport>
   )
 
   setParentFilters = (filters) => {
@@ -441,7 +472,7 @@ class Issues extends React.PureComponent {
   }
 
   render() {
-    if (this.props.status === STATUS.INITIAL) {
+    if (this.props.githubCurrentUser === STATUS.INITIAL) {
       return <Unauthorized onLogin={this.props.onLogin} />
     }
 
@@ -570,11 +601,16 @@ class Issues extends React.PureComponent {
 }
 
 const StyledIssues = styled.div`
-  padding: 15px 30px;
-  > :first-child {
-    display: flex;
-    justify-content: space-between;
-  }
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  ${breakpoint(
+    'small',
+    `
+    padding: 1rem 2rem;
+  `
+  )};
+  padding: 0.3rem;
 `
 
 const ScrollWrapper = styled.div`
@@ -596,7 +632,7 @@ const ScrollWrapper = styled.div`
 const IssuesScrollView = styled.div`
   height: 75vh;
   position: relative;
-  overflow-y: auto;
+  overflow-y: hidden;
 `
 
 const ActionLabel = styled.span`

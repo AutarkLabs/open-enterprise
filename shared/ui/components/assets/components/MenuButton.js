@@ -1,31 +1,23 @@
 import React from 'react'
-import styled from 'styled-components'
-import { theme, IconMenu } from '@aragon/ui'
-
-const StyledButton = styled.button`
-  border: none;
-  background: none;
-  margin-left: 24px;
-  height: 32px;
-  width: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  cursor: pointer;
-  outline: none;
-
-  &:focus {
-    border: 2px solid ${theme.accent};
-  }
-  &:active {
-    border: none;
-  }
-`
+import { ButtonIcon, IconMenu } from '@aragon/ui'
 
 export default props => (
-  <StyledButton {...props}>
+  <ButtonIcon
+    {...props}
+    onClick={() => {
+      window.parent.postMessage(
+        { from: 'app', name: 'menuPanel', value: true }, '*'
+      )
+    }}
+    label="Menu"
+    css={`
+      width: auto;
+      height: 100%;
+      padding: 0 8px 0 16px;
+      margin: 0 8px 0 -30px;
+    `}
+  >
     <IconMenu />
-  </StyledButton>
+  </ButtonIcon>
 )
 

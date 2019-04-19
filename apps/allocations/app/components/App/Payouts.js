@@ -10,6 +10,7 @@ import {
   IconTime,
   ContextMenu,
   ContextMenuItem,
+  breakpoint,
 } from '@aragon/ui'
 import { displayCurrency, sortByDateKey } from '../../utils/helpers'
 import {
@@ -129,8 +130,14 @@ Payouts.propTypes = {
 }
 
 const PayoutsWrap = styled.div`
+  ${breakpoint(
+    'small',
+    `
+    padding: 0 2rem 2rem 2rem;
+    `
+  )};
+  padding: 0.3rem;
   flex-grow: 1;
-  padding: 0px 30px 20px 30px;
   > :not(:last-child) {
     margin-bottom: 20px;
   }

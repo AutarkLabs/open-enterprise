@@ -62,7 +62,6 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
       status,
       event: null
     }
-
     const repos = [ ...state.repos, ...loadedRepos ]
 
     return { ...nextState, github, repos }

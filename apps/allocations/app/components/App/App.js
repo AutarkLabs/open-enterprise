@@ -1,12 +1,11 @@
-import { Main, observe, SidePanel } from '@aragon/ui'
+import { font, Main, observe, AppBar, AppView, SidePanel } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { map } from 'rxjs/operators'
-
-import { Accounts, NewAccountButton, Payouts } from '.'
-import { Title } from '../Shared'
+import styled from 'styled-components'
+import { Accounts, Payouts } from '.'
 import { NewAccount, NewAllocation } from '../Panel'
-import { networkContextType } from '../../../../../shared/ui'
+import { networkContextType, MenuButton, AppTitleButton } from '../../../../../shared/ui'
 
 class App extends React.Component {
   static propTypes = {
@@ -114,29 +113,46 @@ class App extends React.Component {
 
   render() {
     const { panel } = this.state
+    const { displayMenuButton } = this.props
     const PanelContent = panel.content
     return (
       // TODO: Profile App with React.StrictMode, perf and why-did-you-update, apply memoization
       <Main>
-        <Title text="Allocations" />
-        <NewAccountButton onClick={this.newAccount} />
-        <Accounts
-          accounts={
-            this.props.accounts !== undefined ? this.props.accounts : []
+        <AppView
+          padding={0}
+          appBar={
+            <AppBar
+              endContent={
+                <AppTitleButton
+                  caption="New Account"
+                  onClick={this.newAccount}
+                />
+              }
+            >
+              <AppBarTitle>
+                {displayMenuButton && <MenuButton />}
+                <AppBarLabel>Allocations</AppBarLabel>
+              </AppBarTitle>
+            </AppBar>
           }
-          onNewAccount={this.newAccount}
-          onNewAllocation={this.newAllocation}
-          app={this.props.app}
-        />
-
-        <Payouts
-          payouts={
-            this.props.payouts !== undefined ? this.props.payouts : []
-          }
-          executePayout={this.onExecutePayout}
-          network={this.props.network}
-          tokens={this.props.balances}
-        />
+        >
+          <Accounts
+            accounts={
+              this.props.accounts !== undefined ? this.props.accounts : []
+            }
+            onNewAccount={this.newAccount}
+            onNewAllocation={this.newAllocation}
+            app={this.props.app}
+          />
+          <Payouts
+            payouts={
+              this.props.payouts !== undefined ? this.props.payouts : []
+            }
+            executePayout={this.onExecutePayout}
+            network={this.props.network}
+            tokens={this.props.balances}
+          />
+        </AppView>
 
         <SidePanel
           title={(panel.data && panel.data.heading) || ''}
@@ -149,6 +165,16 @@ class App extends React.Component {
     )
   }
 }
+
+const AppBarTitle = styled.span`
+  display: flex;
+  align-items: center;
+`
+
+const AppBarLabel = styled.span`
+  margin: 0 30px;
+  ${font({ size: 'xxlarge' })};
+`
 
 export default observe(
   observable => observable.pipe(map(state => ({ ...state }))),
