@@ -1,4 +1,3 @@
-export { default as Title } from './Title'
 export { default as DropDown } from './DropDown'
 export { default as SearchBar } from './SearchBar'
 export { default as FilterBar } from './FilterBar'

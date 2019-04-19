@@ -10,6 +10,7 @@ import {
   TextInput,
   theme,
   Viewport,
+  breakpoint,
 } from '@aragon/ui'
 import { FieldTitle } from '../Form'
 import NumberFormat from 'react-number-format'
@@ -301,11 +302,17 @@ const BountyContractAddress = ({ bountyAllocator, networkType }) => (
       This is the smart contract that is actually allocating bounties.
     </Text.Block>
     <div style={{ display: 'flex' }}>
-      <IdentityBadge
-        networkType={networkType}
-        entity={bountyAllocator}
-        shorten={false}
-      />
+      <Viewport>
+        {({ below }) => {
+          const shorten = below('small')
+          return (
+            <IdentityBadge
+              networkType={networkType}
+              entity={bountyAllocator}
+              shorten={shorten}
+            />
+          )}}
+      </Viewport>
     </div>
   </div>
 )
@@ -473,7 +480,13 @@ const StyledButton = styled(Button)`
 // background: url(${cross}) no-repeat 10px calc(50% - 1px);
 
 const StyledContent = styled.div`
-  padding: 30px;
+  ${breakpoint(
+    'small',
+    `
+    padding: 2rem;
+    `
+  )};
+  padding: 0.3rem;
   display: flex;
   height: fit-content;
   width: 100%;
