@@ -21,6 +21,7 @@ import {
 } from './states'
 
 import { log } from '../../../utils'
+import { format } from '../../../modules/3box-LD'
 
 const logStateUpdate = (action, prevState, nextState) => {
   log('ACTION: ', action, 'PREV STATE: ', prevState, 'NEXT STATE:', nextState)
@@ -37,9 +38,10 @@ const boxReducer = (prevState, action) => {
     case FETCHED_PUBLIC_PROFILE_SUCCESS: {
       const nextState = { ...prevState }
       const ethereumAddress = action.meta.ethereumAddress
+      const publicProfile = format(action.payload.publicProfile)
       nextState[ethereumAddress] = fetchedPublicProfileSuccess(
         prevState[ethereumAddress],
-        action.payload.publicProfile
+        publicProfile
       )
       logStateUpdate(action, prevState, nextState)
       return nextState
