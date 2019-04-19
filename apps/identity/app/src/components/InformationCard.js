@@ -1,5 +1,6 @@
 import React, { useContext } from 'react'
 import PropTypes from 'prop-types'
+import styled from 'styled-components'
 import { Card } from '@aragon/ui'
 
 import { BoxContext } from '../wrappers/box'
@@ -22,36 +23,47 @@ const InformationCard = ({ ethereumAddress }) => {
 
   const getValue = field => {
     const valueFromPublicProfile = userLoaded
-      ? boxes[ethereumAddress].publicProfile[field]
+      ? boxes[ethereumAddress].publicProfile[field] || ''
       : ''
     const valueFromForm = userLoaded ? boxes[ethereumAddress].forms[field] : ''
 
     return editing ? valueFromForm : valueFromPublicProfile
   }
 
-  const preparedFields = userLoaded
-    ? Object.keys(boxes[ethereumAddress].forms).filter(
-        field => field !== 'image'
-      )
-    : []
-
   return (
     <div>
-      <Card height="110%">
-        {preparedFields.map(field => (
-          <div key={field}>
-            <br />
-            <ReadOrEditTextField
-              value={getValue(field)}
-              placeholder={field}
-              onChange={e => onChange(e.target.value, field)}
-              wide
-              type="text"
-              editing={editing}
-              disabled={!userLoaded}
-            />
-          </div>
-        ))}
+      <Card height="500px">
+        <AlignItemsCenter>
+          <ReadOrEditTextField
+            value={getValue('name')}
+            placeholder={'Name'}
+            onChange={e => onChange(e.target.value, 'name')}
+            type="text"
+            editing={editing}
+            disabled={!userLoaded}
+            size="xxlarge"
+          />
+          <SmallMargin />
+          <ReadOrEditTextField
+            value={getValue('job')}
+            placeholder={'Job'}
+            onChange={e => onChange(e.target.value, 'job')}
+            type="text"
+            editing={editing}
+            disabled={!userLoaded}
+            size="normal"
+          />
+          <SmallMargin />
+          <ReadOrEditTextField
+            value={getValue('location')}
+            placeholder={'Location'}
+            onChange={e => onChange(e.target.value, 'location')}
+            type="text"
+            editing={editing}
+            disabled={!userLoaded}
+            size="normal"
+          />
+        </AlignItemsCenter>
       </Card>
     </div>
   )
@@ -62,3 +74,14 @@ InformationCard.propTypes = {
 }
 
 export default InformationCard
+
+const AlignItemsCenter = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 50px;
+`
+
+const SmallMargin = styled.div`
+  margin-top: 10px;
+`

@@ -7,16 +7,15 @@ const ReadOrEditTextField = ({
   editing,
   disabled,
   onChange,
-  wide,
   value,
   placeholder,
+  size,
 }) => {
   if (editing) {
     return (
       <TextInput
         type={type}
         disabled={disabled}
-        wide={wide}
         onChange={onChange}
         value={value}
         placeholder={placeholder}
@@ -24,7 +23,17 @@ const ReadOrEditTextField = ({
     )
   }
 
-  return <Text>{value}</Text>
+  return (
+    <div>
+      {value ? (
+        <Text size={size}>{value}</Text>
+      ) : (
+        <Text size={size} color="grey">
+          {placeholder}
+        </Text>
+      )}
+    </div>
+  )
 }
 
 ReadOrEditTextField.propTypes = {
@@ -34,7 +43,6 @@ ReadOrEditTextField.propTypes = {
   editing: PropTypes.bool,
   disabled: PropTypes.bool,
   type: PropTypes.string,
-  wide: PropTypes.bool,
 }
 
 ReadOrEditTextField.defaultProps = {

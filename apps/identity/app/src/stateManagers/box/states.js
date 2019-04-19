@@ -11,8 +11,14 @@ export const fetchingPublicProfile = () => ({
   unlockedBox: {},
   publicProfile: {},
   forms: {
-    name,
+    name: '',
+    job: '',
+    location: '',
+    school: '',
+    website: '',
+    description: '',
   },
+  changed: [],
 })
 
 export const fetchedPublicProfileSuccess = (state, publicProfile) => {
@@ -23,12 +29,12 @@ export const fetchedPublicProfileSuccess = (state, publicProfile) => {
     loadedPublicProfSuccess: true,
     publicProfile,
     forms: {
-      name: publicProfile.name,
-      job: publicProfile.job,
-      location: publicProfile.location,
-      school: publicProfile.school,
-      website: publicProfile.website,
-      description: publicProfile.description,
+      name: publicProfile.name || '',
+      job: publicProfile.job || '',
+      location: publicProfile.location || '',
+      school: publicProfile.school || '',
+      website: publicProfile.website || '',
+      description: publicProfile.description || '',
     },
     changed: [],
   }
