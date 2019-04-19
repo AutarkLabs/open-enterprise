@@ -27,6 +27,14 @@ const translateToken = (token) => {
   }
 }
 
+const getSymbol = (tokens, rewardToken) => {
+  return tokens
+    .reduce((symbol, token) => {
+      if (token.address === rewardToken) return token.symbol
+      else return symbol
+    },'')
+}
+
 class MyReward extends React.Component {
   static propTypes = {
     vaultBalance: PropTypes.string.isRequired,
@@ -36,9 +44,9 @@ class MyReward extends React.Component {
 
   onClosePanel = () => this.props.onClosePanel()
 
-  onClaimReward = reward => this.props.onClaimReward(reward)
+  onClaimReward = () => this.props.onClaimReward(this.props.reward)
 
-  formatDate = date => format(new Date(date), 'dd-MMM-yyyy')
+  formatDate = date => Intl.DateTimeFormat().format(date)
 
   render() {
     const {
@@ -52,7 +60,10 @@ class MyReward extends React.Component {
       description,
       delay,
       claimed,
+      userRewardAmount
     } = this.props.reward
+
+    const { tokens } = this.props
 
     return (
       <div>
@@ -88,7 +99,7 @@ class MyReward extends React.Component {
           <TokenIcon />
           <Summary>
             <p>
-              You have been granted a one-time <SummaryBold>{displayCurrency(amount)} {translateToken(rewardToken)}</SummaryBold> reward, based on the <SummaryBold>{referenceToken}</SummaryBold> you earned from <SummaryBold>{this.formatDate(startDate)}</SummaryBold> to <SummaryBold>{this.formatDate(endDate)}</SummaryBold>.
+              You have been granted a one-time <SummaryBold>{displayCurrency(userRewardAmount)} {getSymbol(tokens,rewardToken)}</SummaryBold> reward, based on the <SummaryBold>{getSymbol(tokens, referenceToken)}</SummaryBold> you earned from <SummaryBold>{this.formatDate(startDate)}</SummaryBold> to <SummaryBold>{this.formatDate(endDate)}</SummaryBold>.
             </p>
             <p>
               For more details, refer to the origin contract, <SafeLink
@@ -105,7 +116,9 @@ class MyReward extends React.Component {
         {claimed ? (
           <Button mode="strong" wide onClick={this.onClosePanel}>Close</Button>
         ) : (
-          <Button mode="strong" wide onClick={this.onClaimReward}>Claim Reward</Button>
+          Date.now() > endDate ?
+            <Button mode="strong" wide onClick={this.onClaimReward}>Claim Reward</Button>
+            : null
         )}
       </div>
     )

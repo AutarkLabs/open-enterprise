@@ -108,10 +108,14 @@ export const MILLISECONDS_IN_A_SECOND = 1000
 export const MILLISECONDS_IN_A_MONTH = 2592000000
 export const WEEK = 604800000
 
-export function millisecondsToBlocks(start, end, blockDuration = 15) {
-  return Math.round((end - start) / MILLISECONDS_IN_A_SECOND/ blockDuration)
+export function millisecondsToBlocks(start, end, blockDuration = 15000) {
+  return Math.round((end - start) / blockDuration)
 }
 
 export function millisecondsToQuarters(start,end) {
   return Math.floor( (end - start) / ( 3 * MILLISECONDS_IN_A_MONTH ) )
+}
+
+export function blocksToMilliseconds(startBlock, endBlock, blockDuration = 15000) {
+  return (endBlock - startBlock) * blockDuration
 }

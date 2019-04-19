@@ -58,6 +58,13 @@ jobs:
       after_success: npm run coveralls
       env: 'COVERAGE=true'
 
+    - stage: test
+      script: travis_wait 60 npm run coverage -- --scope=@tps/apps-rewards
+      name: Rewards app tests and coverage report
+      install: npm run bootstrap
+      after_success: npm run coveralls
+      env: 'COVERAGE=true'
+
     # - &node
     #   script: npm run test
     #   node_js: 'lts/*'
