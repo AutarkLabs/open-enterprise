@@ -247,7 +247,7 @@ const MyRewards = ({ onClaimReward, rewards, newReward, openDetails, network, to
           :
           <AverageRewardsTable>
             <Text.Block size="large" weight="bold">
-              Calculating Summary...
+              Calculating summaries...
             </Text.Block>
           </AverageRewardsTable>
         }
@@ -290,12 +290,10 @@ MyRewards.propTypes = {
 }
 
 const Main = styled.div`
-  padding: 10px;
   background-color: #F8FCFD;
 `
 const RewardsWrap = styled.div`
   flex-grow: 1;
-  padding: 10px;
   /*background: #1DD9D5;*/
   > :not(:last-child) {
     margin-bottom: 20px;

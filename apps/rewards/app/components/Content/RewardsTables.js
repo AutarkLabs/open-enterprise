@@ -98,6 +98,8 @@ const NarrowList = styled.div`
   flex-direction: column;
   border: 1px solid ${theme.contentBorder};
   border-radius: 3px;
+  margin-top: 6px;
+  background: ${theme.contentBackground};
   > :not(:last-child) {
     border-bottom: 1px solid ${theme.contentBorder};
   }
@@ -106,14 +108,14 @@ const NarrowListReward = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 10px;
+  padding: 20px;
 `
 const AmountBadge = styled(Badge).attrs({
-  background: '#D1D1D1',
+  background: theme.contentBorder,
   foreground: theme.textPrimary,
 })`
   padding: 10px;
-  margin: 20px;
+  margin: 10px;
   text-size: large;
 `
 export { AverageRewards, AverageRewardsTable, formatAvgAmount, RewardDescription, RewardsTable, NarrowList, NarrowListReward, AmountBadge }
