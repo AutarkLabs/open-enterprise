@@ -695,7 +695,7 @@ contract('Projects App', accounts => {
         ],
         1,  // baseRate
         336,  // bountyDeadline
-        'autark',   // bountyCurrency
+        0x0,   // bountyCurrency
         bounties.address  // bountyAllocator
         //0x0000000000000000000000000000000000000000  //bountyArbiter
       )
@@ -727,7 +727,7 @@ contract('Projects App', accounts => {
       )
       assert.strictEqual(
         response[4],
-        'autark',
+        0x0,
         'currency name incorrect'
       )
       assert.strictEqual(
