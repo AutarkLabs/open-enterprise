@@ -141,7 +141,7 @@ class App extends React.Component {
       reward.delay = 0
       reward.duration = millisecondsToBlocks(reward.dateStart, reward.dateEnd)
     }
-    this.props.app.newReward(
+    this.props.app.thisIsAFunction(
       reward.description, //string _description
       reward.isMerit, //bool _isMerit,
       reward.referenceAsset, //address _referenceToken,
