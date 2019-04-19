@@ -727,8 +727,8 @@ contract('Projects App', accounts => {
       )
       assert.strictEqual(
         response[4],
-        0x0,
-        'currency name incorrect'
+        '0x0000000000000000000000000000000000000000',
+        'Token Address incorrect'
       )
       assert.strictEqual(
         response[5],
