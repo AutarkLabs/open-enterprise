@@ -29,7 +29,7 @@
     },
     "staging": {
       "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
-      "appName": "dot-voting.open.aragonpm.eth",
+      "appName": "dot-voting-staging.open.aragonpm.eth",
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
       "network": "rinkeby"
     }
