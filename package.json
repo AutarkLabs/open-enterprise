@@ -29,6 +29,7 @@
     "dev:rewards": "cd apps/rewards && npm run dev",
     "devchain": "aragon devchain",
     "devchain:reset": "aragon devchain --reset",
+    "mine": "node ./apps/shared/test-helpers/mine.js",
     "publish:apps": "lerna run publish",
     "publish:http": "lerna run publish:http",
     "build:script:allocations": "lerna run build:script --scope=@tps/apps-allocations",

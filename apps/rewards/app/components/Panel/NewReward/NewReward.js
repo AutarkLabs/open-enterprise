@@ -9,6 +9,7 @@ import { DateInput, InputDropDown } from '../../../../../../shared/ui'
 import { format } from 'date-fns'
 import BigNumber from 'bignumber.js'
 import { millisecondsToBlocks } from '../../../../../../shared/ui/utils'
+import { displayCurrency, toCurrency } from '../../../utils/helpers'
 
 const rewardTypes = [ 'Merit Reward', 'Dividend' ]
 const referenceAssets = [ 'ABC', 'XYZ' ]
@@ -41,6 +42,8 @@ class NewReward extends React.Component {
 
   onSubmit = () => {
     const dataToSend = { ...this.state }
+    console.log(this.props, this.state)
+    dataToSend.amount = toCurrency(this.state.amount,this.props.balances[this.state.amountCurrency].decimals)
     dataToSend.currency = this.props.balances[this.state.amountCurrency].address
     dataToSend.disbursementCycle = disbursementCycles[this.state.disbursementCycle]
     dataToSend.disbursementDelay = disbursementDates[this.state.disbursementDate]
