@@ -34,7 +34,10 @@ class ConnectedApp extends React.Component {
       app.network().subscribe(network => {
         this.setState({ network })
       })
+    } else if (data.name === 'displayMenuButton') {
+      this.setState({ displayMenuButton: data.value })
     }
+
   }
   sendMessageToWrapper = (name, value) => {
     window.parent.postMessage({ from: 'app', name, value }, '*')

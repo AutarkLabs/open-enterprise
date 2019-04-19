@@ -75,12 +75,17 @@ export default class Filters extends Component {
 
   render() {
     const filterAliases = this.calculateFilters()
+
+    if (Object.keys(filterAliases).length === 0) return null
+
     return (
       <div style={{
         marginLeft: '8px',
+        marginTop: '10px',
         flexDirection: 'row',
         display: 'flex',
-        flex: '1'
+        flex: '1',
+        flexWrap: 'wrap'
       }}>
         {Object.keys(filterAliases).map(alias => {
           const pathToDisableFilter = filterAliases[alias]

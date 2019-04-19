@@ -159,7 +159,7 @@ const RewardsTableWide = ({ title, tokens, rewards, fourthColumn, fourthColumnDa
             {fourthColumnData(reward)}
           </TableCell>
           <TableCell>
-            <AmountBadge style={{ margin: '0px', padding: '5px', paddingRight: '10px', paddingLeft: '10px', }}>
+            <AmountBadge>
               {displayCurrency(reward.amount)}{' '}{getSymbol(tokens, reward.rewardToken)}
             </AmountBadge>
           </TableCell>
@@ -211,7 +211,7 @@ const Overview = ({ tokens, rewards, convertRates, claims, newReward, openDetail
           :
           <AverageRewardsTable>
             <Text.Block size="large" weight="bold">
-              Calculating Summary...
+              Calculating summaries...
             </Text.Block>
           </AverageRewardsTable>
         }
@@ -252,12 +252,10 @@ Overview.propTypes = {
 }
 
 const OverviewMain = styled.div`
-  padding: 10px;
   background-color: #F8FCFD;
 `
 const RewardsWrap = styled.div`
   flex-grow: 1;
-  padding: 10px;
   /*background: #1DD9D5;*/
   > :not(:last-child) {
     margin-bottom: 20px;

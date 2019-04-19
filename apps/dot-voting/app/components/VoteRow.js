@@ -44,11 +44,9 @@ class VoteRow extends React.Component {
     const {
       metadata: question,
       description,
-      candidates,
       options,
       participationPct,
       type,
-      executed,
     } = vote.data
 
     // TODO: Hardcode colors into constants or extend aragon ui theme if needed
@@ -144,38 +142,28 @@ const Cell = styled(TableCell)`
   vertical-align: top;
   cursor: pointer;
 `
-
 const StatusCell = styled(Cell)`
   vertical-align: top;
   width: 180px;
 `
-
 const QuestionCell = styled(Cell)`
   width: 40%;
 `
-
 const BarsCell = styled(Cell)`
   flex-shrink: 0;
   width: 25%;
   min-width: 190px;
   cursor: auto;
 `
-
-const ActionsCell = styled(Cell)`
-  width: 0;
-`
-
 const QuestionWrapper = styled.p`
   margin-right: 20px;
   margin-bottom: 4px;
   hyphens: auto;
   font-size: 1.2em;
 `
-
 const BarsGroup = styled.div`
   width: 100%;
 `
-
 const Bar = styled.div`
   &:not(:first-child) {
     margin-top: 0.5rem;

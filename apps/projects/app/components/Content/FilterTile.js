@@ -11,7 +11,7 @@ export default class FilterTile extends PureComponent {
   }
   render() {
     return (
-      <div style={{ marginLeft: '4px' }}>
+      <div style={{ margin: '1px 4px 1px 0' }}>
         <Badge.Identity>
           <div style={{
             paddingLeft: '10px',

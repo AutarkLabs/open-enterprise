@@ -9,9 +9,8 @@ import tokenDecimalsAbi from './abi/token-decimals.json'
 import tokenSymbolAbi from './abi/token-symbol.json'
 import { safeDiv } from './utils/math-utils'
 import { hasLoadedVoteSettings } from './utils/vote-settings'
-import { VOTE_YEA } from './utils/vote-types'
 import { isBefore } from 'date-fns'
-import { EmptyStateCard, SidePanel } from '@aragon/ui'
+import { EmptyStateCard, SidePanel, breakpoint } from '@aragon/ui'
 import { VotePanelContent } from './components/Panels'
 import { EMPTY_CALLSCRIPT, getQuorumProgress, getTotalSupport } from './utils/vote-utils'
 
@@ -110,7 +109,6 @@ class Decisions extends React.Component {
       votes,
       entries,
       voteTime,
-      tokenAddress,
     } = this.props
     const {
       createVoteVisible,
@@ -152,7 +150,7 @@ class Decisions extends React.Component {
         : preparedVotes.find(vote => vote.voteId === currentVoteId)
 
     return (
-      <Main>
+      <StyledDecisions>
         <AppLayout.ScrollWrapper>
           {displayVotes ? (
             <Votes votes={preparedVotes} onSelectVote={this.handleVoteOpen} app={app}/>
@@ -162,7 +160,7 @@ class Decisions extends React.Component {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                height: '100vh',
+                flexGrow: 1
               }}
             >
               <EmptyStateCard
@@ -193,13 +191,24 @@ class Decisions extends React.Component {
             />
           </SidePanel>
         )}
-      </Main>
+      </StyledDecisions>
     )
   }
 }
 
-const Main = styled.div`
+const StyledDecisions = styled.div`
+  ${breakpoint(
+    'small',
+    `
+    padding: 2rem;
+    `
+  )};
+  padding: 0.3rem;
   display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+  overflow: auto;
+  flex-grow: 1;
 `
 
 export default Decisions
