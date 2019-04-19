@@ -1,3 +1,6 @@
+import { populateFormValue } from '../../../modules/3box-LD'
+import { worksFor, homeLocation } from '../../../modules/things'
+
 export const initialState = {}
 
 export const fetchingPublicProfile = () => ({
@@ -12,10 +15,11 @@ export const fetchingPublicProfile = () => ({
   publicProfile: {},
   forms: {
     name: '',
-    job: '',
-    location: '',
-    school: '',
-    website: '',
+    jobTitle: '',
+    worksFor: worksFor({}),
+    homeLocation: homeLocation(''),
+    affiliation: [{}],
+    url: '',
     description: '',
   },
   changed: [],
@@ -28,14 +32,7 @@ export const fetchedPublicProfileSuccess = (state, publicProfile) => {
     loadedPublicProf: true,
     loadedPublicProfSuccess: true,
     publicProfile,
-    forms: {
-      name: publicProfile.name || '',
-      job: publicProfile.job || '',
-      location: publicProfile.location || '',
-      school: publicProfile.school || '',
-      website: publicProfile.website || '',
-      description: publicProfile.description || '',
-    },
+    forms: populateFormValue(publicProfile),
     changed: [],
   }
 }
@@ -85,11 +82,35 @@ const calculateChanged = (changed, field) => {
   return changed
 }
 
-export const editedField = (state, field, value) => ({
-  ...state,
-  forms: {
-    ...state.forms,
-    [field]: value,
-  },
-  changed: calculateChanged(state.changed, field),
-})
+export const editedField = (state, field, value) => {
+  if (field === 'homeLocation') {
+    return {
+      ...state,
+      forms: {
+        ...state.forms,
+        homeLocation: homeLocation(value),
+      },
+      changed: calculateChanged(state.changed, field),
+    }
+  }
+
+  if (field === 'worksFor') {
+    return {
+      ...state,
+      forms: {
+        ...state.forms,
+        worksFor: worksFor(value),
+      },
+      changed: calculateChanged(state.changed, field),
+    }
+  }
+
+  return {
+    ...state,
+    forms: {
+      ...state.forms,
+      [field]: value,
+    },
+    changed: calculateChanged(state.changed, field),
+  }
+}

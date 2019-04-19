@@ -2,6 +2,17 @@ import isIPFS from 'is-ipfs'
 
 import { worksFor, schoolAffiliation, homeLocation } from './things'
 
+const usedFields = new Set([
+  'name',
+  'jobTitle',
+  'homeLocation',
+  'affiliation',
+  'url',
+  'description',
+  'image',
+  'worksFor',
+])
+
 const handleJobTitle = publicProfile => {
   if (publicProfile.jobTitle) return publicProfile
   if (publicProfile.job)
@@ -61,7 +72,7 @@ const handleLocation = publicProfile => {
   if (publicProfile.location) {
     return {
       ...publicProfile,
-      homeLocation: homeLocation(publicProfile.employer),
+      homeLocation: homeLocation(publicProfile.location),
     }
   }
   return publicProfile
@@ -109,3 +120,21 @@ export const format = publicProfile => {
                 handleJobTitle(publicProfile))))))
   return formattedProfile
 }
+
+export const populateFormValue = publicProfile => {
+  const strippedObject = {}
+  Object.keys(publicProfile)
+    .filter(field => usedFields.has(field))
+    .forEach(field => (strippedObject[field] = publicProfile[field]))
+
+  return strippedObject
+}
+
+/*
+      name: publicProfile.name || '',
+      job: publicProfile.job || '',
+      location: publicProfile.location || '',
+      school: publicProfile.school || '',
+      website: publicProfile.website || '',
+      description: publicProfile.description || '',
+*/

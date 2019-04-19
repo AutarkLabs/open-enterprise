@@ -5,7 +5,11 @@ import { Card } from '@aragon/ui'
 
 import { BoxContext } from '../wrappers/box'
 import { editField } from '../stateManagers/box'
-import ReadOrEditTextField from './ReadOrEditTextField'
+import {
+  ReadOrEditTextField,
+  ReadOrEditSafeLink,
+  ReadOrEditTextArea,
+} from './readOrEditFields'
 
 const InformationCard = ({ ethereumAddress }) => {
   const { boxes, dispatch } = useContext(BoxContext)
@@ -22,10 +26,46 @@ const InformationCard = ({ ethereumAddress }) => {
   const editing = isEditing(ethereumAddress, boxes)
 
   const getValue = field => {
-    const valueFromPublicProfile = userLoaded
-      ? boxes[ethereumAddress].publicProfile[field] || ''
-      : ''
-    const valueFromForm = userLoaded ? boxes[ethereumAddress].forms[field] : ''
+    if (!userLoaded) return ''
+    const valueFromPublicProfile =
+      boxes[ethereumAddress].publicProfile[field] || ''
+
+    const valueFromForm = boxes[ethereumAddress].forms[field] || ''
+
+    return editing ? valueFromForm : valueFromPublicProfile
+  }
+
+  const getSingleLevelNestedField = field => {
+    if (!userLoaded) return ''
+
+    const valueFromPublicProfile =
+      boxes[ethereumAddress].publicProfile[field].name || ''
+
+    const valueFromForm = boxes[ethereumAddress].forms[field].name || ''
+
+    return editing ? valueFromForm : valueFromPublicProfile
+  }
+
+  const getSchoolValue = () => {
+    if (!userLoaded) return ''
+
+    const { publicProfile, forms } = boxes[ethereumAddress]
+
+    if (!publicProfile.affiliation) return ''
+
+    const schoolAffiliation = publicProfile.affiliation.filter(
+      affiliation => affiliation['@type'] === 'School'
+    )
+
+    const hasSchool = schoolAffiliation.length > 0
+
+    if (!hasSchool) return ''
+
+    const valueFromPublicProfile = schoolAffiliation[0].name
+
+    const valueFromForm = forms.affiliation.filter(
+      affiliation => affiliation['@type'] === 'School'
+    )[0].name
 
     return editing ? valueFromForm : valueFromPublicProfile
   }
@@ -45,9 +85,9 @@ const InformationCard = ({ ethereumAddress }) => {
           />
           <SmallMargin />
           <ReadOrEditTextField
-            value={getValue('job')}
+            value={getValue('jobTitle')}
             placeholder={'Job'}
-            onChange={e => onChange(e.target.value, 'job')}
+            onChange={e => onChange(e.target.value, 'jobTitle')}
             type="text"
             editing={editing}
             disabled={!userLoaded}
@@ -55,9 +95,49 @@ const InformationCard = ({ ethereumAddress }) => {
           />
           <SmallMargin />
           <ReadOrEditTextField
-            value={getValue('location')}
+            value={getSingleLevelNestedField('worksFor')}
+            placeholder={'Employer'}
+            onChange={e => onChange(e.target.value, 'worksFor')}
+            type="text"
+            editing={editing}
+            disabled={!userLoaded}
+            size="normal"
+          />
+          <SmallMargin />
+          <ReadOrEditTextField
+            value={getSingleLevelNestedField('homeLocation')}
             placeholder={'Location'}
-            onChange={e => onChange(e.target.value, 'location')}
+            onChange={e => onChange(e.target.value, 'homeLocation')}
+            type="text"
+            editing={editing}
+            disabled={!userLoaded}
+            size="normal"
+          />
+          <SmallMargin />
+          <ReadOrEditSafeLink
+            value={getValue('url')}
+            placeholder={'Website'}
+            onChange={e => onChange(e.target.value, 'url')}
+            type="url"
+            editing={editing}
+            disabled={!userLoaded}
+            size="normal"
+          />
+          <SmallMargin />
+          <ReadOrEditTextArea
+            value={getValue('description')}
+            placeholder={'Description'}
+            onChange={e => onChange(e.target.value, 'description')}
+            type="text"
+            editing={editing}
+            disabled={!userLoaded}
+            size="normal"
+          />
+          <SmallMargin />
+          <ReadOrEditTextArea
+            value={getSchoolValue()}
+            placeholder={'Education'}
+            onChange={e => onChange(e.target.value, 'school')}
             type="text"
             editing={editing}
             disabled={!userLoaded}
