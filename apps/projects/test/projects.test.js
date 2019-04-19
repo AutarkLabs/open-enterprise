@@ -695,7 +695,7 @@ contract('Projects App', accounts => {
         ],
         1,  // baseRate
         336,  // bountyDeadline
-        0x0,   // bountyCurrency
+        '0x0000000000000000000000000000000000000000',   // bountyCurrency
         bounties.address  // bountyAllocator
         //0x0000000000000000000000000000000000000000  //bountyArbiter
       )
