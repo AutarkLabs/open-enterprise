@@ -24,7 +24,7 @@ module.exports = async (
   const minimumAcceptanceQuorum = pct16(20)
   const minParticipationPct = pct16(50)
   const candidateSupportPct = pct16(10)
-  const votingTime = 60
+  const votingTime = 900
   console.log('Creating kit instance at ', planningSuiteAddr)
 
   kit = await PlanningSuite.at(planningSuiteAddr)

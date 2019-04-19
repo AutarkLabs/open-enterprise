@@ -389,7 +389,7 @@ contract PlanningSuite is BetaKitBase {
         string memory tokenSymbol = token.symbol();
         addressBook.initialize();
         allocations.initialize(addressBook, vault);
-        dotVoting.initialize(addressBook, token, minParticipationPct, candidateSupportPct, voteDuration * 1000);
+        dotVoting.initialize(addressBook, token, minParticipationPct, candidateSupportPct, voteDuration);
         projects.initialize(registry, vault, tokenSymbol);
         rewards.initialize(vault);
     }
