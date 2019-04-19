@@ -16,7 +16,5 @@ retryEvery(async retry => {
     .pipe(first())
     .toPromise()
 
-  console.log('rewards store is disabled:', vaultAddress, network)
-
-  // initStore(vaultAddress, network)
+  initStore(vaultAddress, network)
 })
