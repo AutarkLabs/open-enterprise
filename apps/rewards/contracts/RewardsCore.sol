@@ -24,14 +24,20 @@ contract RewardsCore is IsContract, AragonApp {
         uint delay;
         uint value;
         uint blockStart;
+        string description;
+        address creator;
         mapping (address => bool) claimed;
+        mapping (address => uint) timeClaimed;
     }
+
+    mapping (address => uint) totalClaimedAmount;
+    uint public totalClaimsEach;
 
     Reward[] rewards;
     Vault public vault;
 
     function initialize( Vault _vault)
-    external onlyInit // solium-disable-line visibility-first
+    external onlyInit
     {
         initialized();
         require(isContract(_vault), "Vault must be a contract");
@@ -42,6 +48,7 @@ contract RewardsCore is IsContract, AragonApp {
         Reward storage reward = rewards[_rewardID];
         require(block.number > reward.blockStart + reward.duration + reward.delay, "reward must be claimed after the reward duration and delay");
         reward.claimed[msg.sender] = true;
+        reward.timeClaimed[msg.sender] = block.timestamp; // solium-disable-line security/no-block-members
         // Need to implement solution to occurances
         if (reward.isMerit) {
             rewardAmount = calculateMeritReward(reward);
@@ -53,31 +60,55 @@ contract RewardsCore is IsContract, AragonApp {
         }
         require(vault.balance(reward.rewardToken) > rewardAmount, "Vault does not have enough funds to cover this reward");
         vault.transfer(reward.rewardToken, msg.sender, rewardAmount);
+        totalClaimedAmount[reward.rewardToken] += rewardAmount;
+        totalClaimsEach++;
+        emit RewardClaimed(_rewardID);
+    }
+
+    function getRewardsLength() external view returns (uint rewardsLength) {
+        rewardsLength = rewards.length;
     }
 
     function getReward(uint rewardID) external view returns(
+        string description,
         bool isMerit,
         address referenceToken,
         address rewardToken,
         uint amount,
+        uint startBlock,
         uint endBlock,
+        uint duration,
         uint delay,
-        uint rewardAmount
+        uint rewardAmount,
+        bool claimed,
+        uint timeClaimed,
+        address creator
     )
     {
         Reward storage reward = rewards[rewardID];
+        description = reward.description;
         isMerit = reward.isMerit;
         referenceToken = reward.referenceToken;
         rewardToken = reward.rewardToken;
         amount = reward.amount;
         endBlock = reward.blockStart + reward.duration;
+        startBlock = reward.blockStart;
+        duration = reward.duration;
         delay = reward.delay;
+        claimed = reward.claimed[msg.sender];
+        timeClaimed = reward.timeClaimed[msg.sender];
+        creator = reward.creator;
         if (reward.isMerit) {
             rewardAmount = calculateMeritReward(reward);
         } else {
             rewardAmount = calculateDividendReward(reward);
         }
-        //rewardAmount = 50;
+    }
+
+    function getTotalAmountClaimed(address _token)
+    external view isInitialized returns (uint totalAmountClaimed)
+    {
+        totalAmountClaimed = totalClaimedAmount[_token];
     }
 
     /**
@@ -94,6 +125,7 @@ contract RewardsCore is IsContract, AragonApp {
     * @return the reward Id
     */
     function newReward(
+        string _description,
         bool _isMerit,
         address _referenceToken,
         address _rewardToken,
@@ -113,6 +145,7 @@ contract RewardsCore is IsContract, AragonApp {
         require(_startBlock > MiniMeToken(_referenceToken).creationBlock(),"cannot start period prior to the creation block");
         rewardId = rewards.length++;
         Reward storage reward = rewards[rewards.length - 1];
+        reward.description = _description;
         reward.isMerit = _isMerit;
         reward.referenceToken = MiniMeToken(_referenceToken);
         reward.rewardToken = _rewardToken;
@@ -121,9 +154,11 @@ contract RewardsCore is IsContract, AragonApp {
         reward.occurances = _occurances;
         reward.delay = _delay;
         reward.blockStart = _startBlock;
+        reward.creator = msg.sender;
         emit RewardAdded(rewardId);
         if (_occurances > 1) {
             newReward(
+                _description,
                 _isMerit,
                 _referenceToken,
                 _rewardToken,
