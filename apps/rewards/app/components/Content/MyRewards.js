@@ -160,7 +160,7 @@ const MyRewardsWide = ({ onClaimReward, claimed, rewards, openDetails, network, 
           ) : Intl.DateTimeFormat().format(reward.timeClaimed * MILLISECONDS_IN_A_SECOND)}
         </TableCell>
         <TableCell>
-          <AmountBadge style={{ margin: '0px', padding: '5px', paddingRight: '10px', paddingLeft: '10px', }}>
+          <AmountBadge>
             {displayCurrency(reward.userRewardAmount)}{' '}{getSymbol(tokens, reward)}
           </AmountBadge>
         </TableCell>

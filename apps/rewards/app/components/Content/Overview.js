@@ -159,7 +159,7 @@ const RewardsTableWide = ({ title, tokens, rewards, fourthColumn, fourthColumnDa
             {fourthColumnData(reward)}
           </TableCell>
           <TableCell>
-            <AmountBadge style={{ margin: '0px' }}>
+            <AmountBadge>
               {displayCurrency(reward.amount)}{' '}{getSymbol(tokens, reward.rewardToken)}
             </AmountBadge>
           </TableCell>

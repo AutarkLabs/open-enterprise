@@ -115,7 +115,6 @@ const AmountBadge = styled(Badge).attrs({
   foreground: theme.textPrimary,
 })`
   padding: 10px;
-  margin: 10px;
   text-size: large;
 `
 export { AverageRewards, AverageRewardsTable, formatAvgAmount, RewardDescription, RewardsTable, NarrowList, NarrowListReward, AmountBadge }
