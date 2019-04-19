@@ -32,7 +32,7 @@ const InformationCard = ({ ethereumAddress }) => {
 
   return (
     <div>
-      <Card height="500px">
+      <Card width="350px" height="500px">
         <AlignItemsCenter>
           <ReadOrEditTextField
             value={getValue('name')}
