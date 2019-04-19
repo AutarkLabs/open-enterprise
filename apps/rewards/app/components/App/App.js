@@ -126,10 +126,10 @@ class App extends React.Component {
       }
       switch(reward.disbursementDelay) {
       case '1 week':
-        reward.delay = millisecondsToBlocks(Date.now(), Date.now + WEEK)
+        reward.delay = millisecondsToBlocks(Date.now(), Date.now() + WEEK)
         break
       case '2 weeks':
-        reward.delay = millisecondsToBlocks(Date.now(), Date.now + (2 * WEEK))
+        reward.delay = millisecondsToBlocks(Date.now(), Date.now() + (2 * WEEK))
         break
       default:
         reward.delay = 0
