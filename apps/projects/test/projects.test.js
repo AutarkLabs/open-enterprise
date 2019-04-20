@@ -85,7 +85,7 @@ contract('Projects App', accounts => {
     await acl.createPermission(
       bountyAdder,
       app.address,
-      await app.ADD_BOUNTY_ROLE(),
+      await app.FUND_ISSUES_ROLE(),
       root,
       { from: root }
     )
@@ -109,7 +109,7 @@ contract('Projects App', accounts => {
     await acl.createPermission(
       bountyAdder,
       app.address,
-      await app.TASK_ASSIGNMENT_ROLE(),
+      await app.REVIEW_APPLICATION_ROLE(),
       root,
       { from: root }
     )
@@ -399,7 +399,7 @@ contract('Projects App', accounts => {
           issueNumber,
           applicantQty.toNumber() - 1
         )
-        await app.approveAssignment(
+        await app.reviewApplication(
           repoId,
           issueNumber,
           applicant[0],
@@ -431,7 +431,7 @@ contract('Projects App', accounts => {
           'assignment request status is not Unreviewed'
         )
 
-        await app.approveAssignment(
+        await app.reviewApplication(
           repoId,
           issueNumber,
           applicant[0],
@@ -450,7 +450,7 @@ contract('Projects App', accounts => {
           'assignment request status is not Accepted'
         )
 
-        await app.approveAssignment(
+        await app.reviewApplication(
           repoId,
           issueNumber,
           applicant[0],
@@ -483,7 +483,7 @@ contract('Projects App', accounts => {
           issueNumber,
           applicantQty.toNumber() - 1
         )
-        await app.approveAssignment(
+        await app.reviewApplication(
           repoId,
           issueNumber,
           applicant[0],
@@ -523,7 +523,7 @@ contract('Projects App', accounts => {
           issueNumber,
           applicantQty.toNumber() - 1
         )
-        await app.approveAssignment(
+        await app.reviewApplication(
           repoId,
           issueNumber,
           applicant[0],
@@ -578,7 +578,7 @@ contract('Projects App', accounts => {
           issueNumber,
           applicantQty.toNumber() - 1
         )
-        await app.approveAssignment(
+        await app.reviewApplication(
           repoId,
           issueNumber,
           applicant[0],
@@ -643,7 +643,7 @@ contract('Projects App', accounts => {
           issueNumber,
           applicantQty.toNumber() - 1
         )
-        await app.approveAssignment(
+        await app.reviewApplication(
           repoId,
           issueNumber,
           applicant[0],

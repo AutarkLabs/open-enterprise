@@ -1,18 +1,18 @@
 {
   "roles": [
     {
-      "name": "Initiate an allocations payout",
-      "id": "START_PAYOUT_ROLE",
+      "name": "Create allocations account",
+      "id": "CREATE_ACCOUNT_ROLE",
       "params": []
     },
     {
-      "name": "Set the distribution that will correspond to this allocation",
-      "id": "SET_DISTRIBUTION_ROLE",
+      "name": "Create allocation dot vote",
+      "id": "CREATE_ALLOCATION_ROLE",
       "params": []
     },
     {
-      "name": "Execute a set payout",
-      "id": "EXECUTE_PAYOUT_ROLE",
+      "name": "Execute allocation",
+      "id": "EXECUTE_ALLOCATION_ROLE",
       "params": []
     }
   ],

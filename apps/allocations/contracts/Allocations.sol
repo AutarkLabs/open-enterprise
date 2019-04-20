@@ -104,9 +104,9 @@ contract Allocations is AragonApp, Fundable {
     Payout[] payouts;
     mapping(address => uint) accountProxies; // proxy address -> account Id
 
-    bytes32 constant public START_PAYOUT_ROLE = keccak256("START_PAYOUT_ROLE");
-    bytes32 constant public SET_DISTRIBUTION_ROLE = keccak256("SET_DISTRIBUTION_ROLE");
-    bytes32 constant public EXECUTE_PAYOUT_ROLE = keccak256("EXECUTE_PAYOUT_ROLE");
+    bytes32 constant public CREATE_ACCOUNT_ROLE = keccak256("CREATE_ACCOUNT_ROLE");
+    bytes32 constant public CREATE_ALLOCATION_ROLE = keccak256("CREATE_ALLOCATION_ROLE");
+    bytes32 constant public EXECUTE_ALLOCATION_ROLE = keccak256("EXECUTE_ALLOCATION_ROLE");
 
     event PayoutExecuted(uint256 accountId, uint payoutId);
     event NewAccount(uint256 accountId);
@@ -188,7 +188,7 @@ contract Allocations is AragonApp, Fundable {
     */
     function newAccount(
         string _metadata
-    ) external auth(START_PAYOUT_ROLE) returns(uint256 accountId)
+    ) external auth(CREATE_ACCOUNT_ROLE) returns(uint256 accountId)
     {
         accountId = accounts.length++;
         Account storage account = accounts[accountId];
@@ -212,14 +212,14 @@ contract Allocations is AragonApp, Fundable {
     * @param _payoutId Any relevent label for the payout
     * @param _accountId Account the payout belongs to
     */
-    function runPayout(uint _accountId, uint256 _payoutId) public auth(EXECUTE_PAYOUT_ROLE) returns(bool success) {
+    function runPayout(uint _accountId, uint256 _payoutId) public auth(EXECUTE_ALLOCATION_ROLE) returns(bool success) {
         success = _runPayout(_accountId, _payoutId);
     }
 
     /**
     * @dev This is the function that the DotVote will call. It doesn’t need
     *      to be called by a DotVote (options get weird if it's not)
-    *      but for our use case the “SET_DISTRIBUTION_ROLE” will be given to
+    *      but for our use case the “CREATE_ALLOCATION_ROLE” will be given to
     *      the DotVote.
     * @notice Create a `@tokenAmount(_token, _amount)` allocation for ' `_description` '
     * @param _candidateAddresses Array of candidates to be allocated a portion of the payouut
@@ -243,7 +243,7 @@ contract Allocations is AragonApp, Fundable {
         uint256 _period,
         uint256 _amount,
         address _token
-    ) public auth(SET_DISTRIBUTION_ROLE) returns(uint payoutId)
+    ) public auth(CREATE_ALLOCATION_ROLE) returns(uint payoutId)
     {
         Account storage account = accounts[_accountId];
         Payout storage payout = account.payouts[account.payouts.length++];
