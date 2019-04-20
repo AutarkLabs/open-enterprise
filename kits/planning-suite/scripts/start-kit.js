@@ -8,7 +8,7 @@ const getEventResult = (receipt, event, param) =>
 const defaultOwner =
   process.env.OWNER || '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7'
 const defaultPlanningSuiteAddr =
-  process.env.PLANNING_SUITE_KIT || '0x3d7034e6cb36ebda9485bf8788f6d1015824fcf9'
+  process.env.PLANNING_SUITE_KIT || '0xf9531f7e84600db4bac3c03f9eb706fdc6b06e98'
 
 module.exports = async (
   truffleExecCallback,
@@ -32,7 +32,7 @@ module.exports = async (
   // aragonId = 'planning-suite-dao-' + Math.floor(Math.random() * 1000)
   // tokenName = 'AutarkToken1'
   // tokenSymbol = 'autark1'
-  aragonId = 'testing-dao-xyz'
+  aragonId = 'duneatreides'
   tokenName = 'Spice'
   tokenSymbol = 'spice'
 

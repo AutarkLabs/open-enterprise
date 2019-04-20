@@ -166,14 +166,24 @@ contract PlanningSuite is BetaKitBase {
         uint64 voteDuration
     ) internal
     {
-        createTPSApps(
+        AddressBook addressBook;
+        DotVoting dotVoting;
+
+        (addressBook, dotVoting) = createDotVoting(
             dao,
-            vault,
             voting,
             token,
             candidateSupportPct,
             minParticipationPct,
             voteDuration
+        );
+        createOtherTPSApps(
+            dao,
+            vault,
+            voting,
+            token,
+            addressBook,
+            dotVoting
         );
         handleCleanupPermissions(dao);
     }
@@ -296,39 +306,53 @@ contract PlanningSuite is BetaKitBase {
     //////////////////////////////////////////////////////////////
     // TPS Apps Internal Functions
     //////////////////////////////////////////////////////////////
-    function createTPSApps (
+    function createDotVoting (
         Kernel dao,
-        Vault vault,
         Voting voting,
         MiniMeToken token,
         uint candidateSupportPct,
         uint minParticipationPct,
         uint64 voteDuration
+    )   
+        internal returns (AddressBook addressBook, DotVoting dotVoting) 
+        
+        {
+            addressBook = AddressBook(
+                dao.newAppInstance(
+                    planningAppIds[uint8(PlanningApps.AddressBook)],
+                    latestVersionAppBase(planningAppIds[uint8(PlanningApps.AddressBook)])
+                )
+            );
+            dotVoting = DotVoting(
+                dao.newAppInstance(
+                    planningAppIds[uint8(PlanningApps.DotVoting)],
+                    latestVersionAppBase(planningAppIds[uint8(PlanningApps.DotVoting)])
+                )
+            );
+
+            addressBook.initialize();
+            dotVoting.initialize(addressBook, token, minParticipationPct, candidateSupportPct, voteDuration);
+        }
+    
+    function createOtherTPSApps (
+        Kernel dao,
+        Vault vault,
+        Voting voting,
+        MiniMeToken token,
+        AddressBook addressBook,
+        DotVoting dotVoting
+
     ) internal
     {
-        AddressBook addressBook;
         Allocations allocations;
-        DotVoting dotVoting;
         Projects projects;
         Rewards rewards;
 
         // Planning Apps
-        addressBook = AddressBook(
-            dao.newAppInstance(
-                planningAppIds[uint8(PlanningApps.AddressBook)],
-                latestVersionAppBase(planningAppIds[uint8(PlanningApps.AddressBook)])
-            )
-        );
         projects = Projects(
             dao.newAppInstance(
                 planningAppIds[uint8(PlanningApps.Projects)],
                 latestVersionAppBase(planningAppIds[uint8(PlanningApps.Projects)])
-            )
-        );
-        dotVoting = DotVoting(
-            dao.newAppInstance(
-                planningAppIds[uint8(PlanningApps.DotVoting)],
-                latestVersionAppBase(planningAppIds[uint8(PlanningApps.DotVoting)])
             )
         );
         allocations = Allocations(
@@ -346,14 +370,10 @@ contract PlanningSuite is BetaKitBase {
         initializeTPSApps(
             addressBook,
             allocations,
-            dotVoting,
             projects,
             rewards,
             token,
-            vault,
-            candidateSupportPct,
-            minParticipationPct,
-            voteDuration
+            vault
         );
         handleTPSPermissions(
             dao,
@@ -378,27 +398,21 @@ contract PlanningSuite is BetaKitBase {
     function initializeTPSApps(
         AddressBook addressBook,
         Allocations allocations,
-        DotVoting dotVoting,
         Projects projects,
         Rewards rewards,
         MiniMeToken token,
-        Vault vault,
-        uint candidateSupportPct,
-        uint minParticipationPct,
-        uint64 voteDuration
+        Vault vault
     ) internal
     {
-        addressBook.initialize();
         allocations.initialize(addressBook, vault);
-        dotVoting.initialize(addressBook, token, minParticipationPct, candidateSupportPct, voteDuration);
         projects.initialize(registry, vault, token);
         rewards.initialize(vault);
     }
 
     function handleTPSPermissions(
         Kernel dao,
-        Allocations allocations,
         AddressBook addressBook,
+        Allocations allocations,
         DotVoting dotVoting,
         Projects projects,
         Rewards rewards,
