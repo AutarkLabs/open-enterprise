@@ -334,7 +334,6 @@ class VotePanelContent extends React.Component {
               >
                 {remaining} remaining
               </Text>
-              {remaining === 0 &&
               <div>
                 <SubmitButton mode="strong" wide onClick={this.handleVoteSubmit}>
                 Submit Vote
@@ -351,8 +350,6 @@ class VotePanelContent extends React.Component {
                   )}
                 </div>
               </div>
-                
-              }
             </AdjustContainer>
             <SidePanelSeparator />
           </div>
