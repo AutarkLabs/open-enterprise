@@ -2,6 +2,17 @@
 
 ## AddressBook
 
+### 8.0.1
+
+```sh
+✔ Successfully published address-book-staging.open.aragonpm.eth v8.0.1:
+ℹ Contract address: 0x045b5A4032F4Ba4b1044c7ed670682326D416476
+ℹ Content (ipfs): QmQZYwB2WeUcSkNWV4A27XYVRqbEamNGCXEMy72fNWxHmf
+ℹ Transaction hash: 0xd8f48b475837729571cfda9b8934e5237ca8db72e65ea3db63a2ec0a4771e17d
+```
+
+- command: `./node_modules/.bin/lerna exec --scope="@tps/apps-address-book" --stream aragon apm publish patch -- --files dist/ --environment staging`
+
 ### 8.0.0
 
 ```sh
@@ -30,6 +41,17 @@
 ```
 
 ## Allocations
+
+### 2.0.1
+
+```sh
+✔ Successfully published allocations-staging.open.aragonpm.eth v2.0.1:
+ℹ Contract address: 0x3cCCFD8925B0E7A217BBd1d1CFd237deD334cda3
+ℹ Content (ipfs): Qmbn3B4fmrfjKgPryMJcEontTCmQdmuPjgnSPcLmn5YTmG
+ℹ Transaction hash: 0xb1b3dddb45389624ceb23bfc30a751066ff0efeb6bc62341e0f47be9633c785f
+```
+
+- command: `aragon apm publish patch --files dist/ --environment staging`
 
 ### 1.0.3
 
@@ -107,6 +129,25 @@
 ```
 
 - command: `aragon apm publish patch --files dist/ --environment staging`
+- files hashes:
+
+```sh
+
+
+```
+
+## Rewards
+
+### 1.0.0
+
+```sh
+✔ Successfully published rewards-staging.open.aragonpm.eth v1.0.0
+ℹ Contract address: 0x632E513cDd748030D2577EdeD86c83FCD58fBC9e
+ℹ Content (ipfs): QmaBD88NoiJYHFdeFZgoNdDc83zGC2Z9ztxncp6zG5LXWW
+ℹ Transaction hash: 0x8cf89e5d3eb89cd9573b80e3ac4375c9504267d01617cced610e4ec483ac3280
+```
+
+- command: `aragon apm publish major --files dist/ --environment staging`
 - files hashes:
 
 ```sh
