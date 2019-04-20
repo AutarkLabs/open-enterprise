@@ -154,25 +154,8 @@ contract('Projects App', accounts => {
       repoId = addedRepo(
         await app.addRepo(
           'MDEwOIJlcG9zaXRvcnkxNjY3MjlyMjY=', // repoId
-          'MDEyOk9yZ2FuaXphdGlvbjQ2ODc2MjA3', // ownerId
           { from: owner1 }
         )
-      )
-    })
-
-    it('creates and retrieves 20 chars owner ids', async () => {
-      repoId = addedRepo(
-        await app.addRepo(
-          'MDEwOlJlcG9zaXRvcnk3NTM5NTIyNA==', // repoId
-          'MDQ6VXNlcjUwMzAwNTk=', // ownerId 20 chars case
-          { from: owner1 }
-        )
-      )
-
-      assert.equal(
-        repoId,
-        'MDQ6VXNlcjUwMzAwNTk=', // TODO: extract to a variable
-        'repo is created and ID is returned'
       )
     })
 
@@ -191,10 +174,10 @@ contract('Projects App', accounts => {
 
     it('retrieve repo information successfully', async () => {
       const repoInfo = await app.getRepo(repoId, { from: owner1 })
-      const result = web3.toAscii(repoInfo[0]) // get repo owner id
+      const result = repoInfo // get repo index on the registry
       assert.equal(
         result,
-        'MDEyOk9yZ2FuaXphdGlvbjQ2ODc2MjA3', // TODO: Extract to a variable (owner)
+        0, // repoIndex
         'valid repo info returned'
       )
     })
@@ -203,7 +186,6 @@ contract('Projects App', accounts => {
       repoId2 = addedRepo(
         await app.addRepo(
           'MDawOlJlcG9zaXRvcnk3NTM5NTIyNA==', // repoId
-          'MDEyOk9yZ2FuaXphdGlvbjQ2ODc2MjA3', // ownerId
           { from: owner1 }
         )
       )
@@ -967,10 +949,10 @@ contract('Projects App', accounts => {
 
   context('invalid operations', () => {
     it('cannot add a repo that is already present', async () => {
-      await app.addRepo('abc', String(123), { from: owner1 })
+      await app.addRepo('abc', { from: owner1 })
 
       assertRevert(async () => {
-        await app.addRepo('abc', String(123), { from: owner1 })
+        await app.addRepo('abc', { from: owner1 })
       })
     })
     it('cannot remove a repo that was never added', async () => {
@@ -980,7 +962,7 @@ contract('Projects App', accounts => {
     })
     it('cannot retrieve a removed Repo', async () => {
       const repoId = addedRepo(
-        await app.addRepo('abc', String(123), { from: owner1 })
+        await app.addRepo('abc', { from: owner1 })
       )
       await app.removeRepo(repoId, { from: repoRemover })
       // const result = await app.getRepo(repoId)
@@ -1015,7 +997,6 @@ contract('Projects App', accounts => {
       let repoId = addedRepo(
         await app.addRepo(
           'MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5',
-          'MDEwOlJlcG9zaXRvcnkxMTYyNzE4MDk=',
           { from: owner1 }
         )
       )
@@ -1044,7 +1025,7 @@ contract('Projects App', accounts => {
     xit('cannot issue bulk bounties with mismatched values', async () => {
       const bountyAdder = accounts[2]
       const repoId = addedRepo(
-        await app.addRepo('abc', String(123), { from: owner1 })
+        await app.addRepo('abc', { from: owner1 })
       )
       assertRevert(async () => {
         await app.addBounties(
