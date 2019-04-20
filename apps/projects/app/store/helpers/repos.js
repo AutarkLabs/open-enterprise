@@ -53,7 +53,7 @@ export const initializeGraphQLClient = token => {
   })
 }
 
-const getRepoData = (repo) => {
+const getRepoData = repo => {
   try {
     let data = graphQLClient.request(repoData(repo))
     return data
@@ -62,13 +62,13 @@ const getRepoData = (repo) => {
   }
 }
 
-const loadRepoData = (id) => {
+const loadRepoData = id => {
   return new Promise(resolve => {
-    app.call('getRepo', id).subscribe((response) => {
+    app.call('getRepo', id).subscribe(response => {
       // handle repo removed case
       if (!response) return resolve({ repoRemoved: true })
 
-      const [ _repo, _owner ] = [ toAscii(id), toAscii(response.owner) ]
+      const _repo = toAscii(id)
       getRepoData(_repo).then(({ node }) => {
         const commits = node.defaultBranchRef
           ? node.defaultBranchRef.target.history.totalCount
@@ -84,7 +84,12 @@ const loadRepoData = (id) => {
           collaborators: 0, //node.collaborators.totalCount,
           commits,
         }
-        return resolve({ _repo, _owner, index: response.index, metadata, repoRemoved: false })
+        return resolve({
+          _repo,
+          index: response.index,
+          metadata,
+          repoRemoved: false,
+        })
       })
     })
   })
@@ -131,8 +136,7 @@ const updateState = async (state, id, transform) => {
     console.error(
       'Update repos failed to return:',
       err,
-      'here\'s what returned in NewRepos',
-
+      'here\'s what returned in NewRepos'
     )
   }
 }
@@ -150,10 +154,10 @@ export const syncRepos = async (state, { repoId }) => {
   }
 }
 
-export const loadReposFromQueue = async (state) => {
+export const loadReposFromQueue = async state => {
   if (unloadedRepoQueue && unloadedRepoQueue.length > 0) {
-    const loadedRepoQueue = await Promise.all(unloadedRepoQueue.map(
-      async repoId => {
+    const loadedRepoQueue = await Promise.all(
+      unloadedRepoQueue.map(async repoId => {
         const { repos } = await syncRepos(state, { repoId })
         return repos[0]
       })

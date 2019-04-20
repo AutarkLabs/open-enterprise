@@ -216,9 +216,9 @@ class App extends React.PureComponent {
     this.setState({ activeIndex })
   }
 
-  createProject = ({ owner, project }) => {
+  createProject = ({ project }) => {
     this.closePanel()
-    this.props.app.addRepo(web3.toHex(project), web3.toHex(owner))
+    this.props.app.addRepo(web3.toHex(project))
   }
 
   removeProject = project => {
