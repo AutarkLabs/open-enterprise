@@ -17,8 +17,6 @@
     "payable": false,
     "stateMutability": "view",
     "type": "function"
-<<<<<<< HEAD
-=======
   },
   {
     "constant": true,
@@ -42,6 +40,5 @@
     "payable": false,
     "stateMutability": "view",
     "type": "function"
->>>>>>> upstream/hotfix-dev-errors
   }
 ]
