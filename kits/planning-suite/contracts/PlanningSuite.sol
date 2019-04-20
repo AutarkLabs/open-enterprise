@@ -453,15 +453,14 @@ contract PlanningSuite is BetaKitBase {
         Voting voting
     ) internal
     {
-        address root = msg.sender;
-
         ACL acl = ACL(dao.acl());
+        bytes 32 vaultTransferRole = vault.TRANSFER_ROLE();
         // Vault permissions
         
-        acl.grantPermission(projects, vault, vault.TRANSFER_ROLE());
-        acl.grantPermission(allocations, vault, vault.TRANSFER_ROLE());
-        acl.grantPermission(rewards, vault, vault.TRANSFER_ROLE());
-        acl.grantPermission(voting, vault, vault.TRANSFER_ROLE(), voting);
+        acl.grantPermission(projects, vault, vaultTransferRole);
+        acl.grantPermission(allocations, vault, vvaultTransferRole);
+        acl.grantPermission(rewards, vault, vaultTransferRole);
+        cleanupPermission(acl, voting, vault, vaultTransferRole);
         emit InstalledApp(vault, appIds[uint8(Apps.Vault)]);
     }
 
