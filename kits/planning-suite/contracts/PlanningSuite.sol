@@ -146,8 +146,7 @@ contract PlanningSuite is BetaKitBase {
     {
         dao = fac.newDAO(this);
         ACL acl = ACL(dao.acl());
-        bytes32 appManagerRole = dao.APP_MANAGER_ROLE();
-        acl.createPermission(this, dao, appManagerRole, this);
+        acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
         (vault, voting) = createA1Apps(
             dao,
             holders,
@@ -445,7 +444,15 @@ contract PlanningSuite is BetaKitBase {
     // Additional Internal Helpers
     //////////////////////////////////////////////////////////////
     
-    function handleVaultPermissions(Kernel dao, Allocations allocations, Projects projects, Rewards rewards, Vault vault, Voting voting) internal {
+    function handleVaultPermissions(
+        Kernel dao,
+        Allocations allocations,
+        Projects projects,
+        Rewards rewards,
+        Vault vault,
+        Voting voting
+    ) internal
+    {
         address root = msg.sender;
 
         ACL acl = ACL(dao.acl());
@@ -461,9 +468,6 @@ contract PlanningSuite is BetaKitBase {
     function handleCleanupPermissions(Kernel dao) internal {
         ACL acl = ACL(dao.acl());
         address root = msg.sender;
-        bytes32 appManagerRole = dao.APP_MANAGER_ROLE();
-        
-        
 
         // Clean up template permissions
         cleanupPermission(acl, root, dao, dao.APP_MANAGER_ROLE());
