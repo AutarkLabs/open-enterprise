@@ -22,6 +22,7 @@ import {
 import { displayCurrency } from '../../utils/helpers'
 import {
   AverageRewards,
+  AverageRewardsTable,
   formatAvgAmount,
   RewardDescription,
   RewardsTable,
