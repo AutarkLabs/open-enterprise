@@ -14,6 +14,5 @@ export const handleEvent = async (state, event) => {
   default:
     break
   }
-  console.log('handleEvent',event,nextState)
   return nextState
 }

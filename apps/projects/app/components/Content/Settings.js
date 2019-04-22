@@ -416,7 +416,6 @@ const ExperienceLevel = ({
 }) => {
   let last = expLevels[expLevels.length - 1]
   let disableAdd = last.mul != '' && last.name != '' ? false : true
-  console.log(generateExpLevelHandler(0, 'M'))
   return (
     <div>
       <Text.Block size="large" weight="bold">

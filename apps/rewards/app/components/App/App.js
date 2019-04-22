@@ -64,9 +64,7 @@ class App extends React.Component {
 
     const res = await fetch(convertApiUrl(verifiedSymbols))
     const convertRates = await res.json()
-    console.log(this.state.convertRates, convertRates)
     if (JSON.stringify(this.state.convertRates) !== JSON.stringify(convertRates)) {
-      console.log('updating conversion rates')
       this.setState({ convertRates })
     }
   }, CONVERT_THROTTLE_TIME)

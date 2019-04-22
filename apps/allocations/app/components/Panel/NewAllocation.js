@@ -164,7 +164,6 @@ class NewAllocation extends React.Component {
           .div(
             BigNumber(10).pow(token.decimals)
           ).dp(3)
-        console.log('token', token)
         specificMessage = specificMessage + tokenDisplay
       }
       return <Info.Action title="Warning" children={specificMessage} style={{ marginBottom: '10px' }} />

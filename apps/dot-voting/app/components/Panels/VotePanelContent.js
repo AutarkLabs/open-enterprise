@@ -209,7 +209,6 @@ class VotePanelContent extends React.Component {
     options.forEach(option => {
       totalSupport = totalSupport + parseFloat(option.value, 10)
     })
-    console.log('userbalance', userBalance)
     const showInfo = type === 'allocation' || type === 'curation'
 
     const formatDate = date =>
