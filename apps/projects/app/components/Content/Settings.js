@@ -52,11 +52,13 @@ class Settings extends React.Component {
 
     // data has just became available
     let s = props.bountySettings
+    let bountyCurrency = props.tokens.findIndex(bounty => bounty.addr === s.bountyCurrency)
     let n = {
       baseRate: s.baseRate,
       bountyAllocator: s.bountyAllocator,
       bountyArbiter: s.bountyArbiter,
       expLevels: s.expLvls,
+      bountyCurrency: bountyCurrency,
     }
 
     // bountyDeadlinesMul = [168, 24, 1]
@@ -87,7 +89,8 @@ class Settings extends React.Component {
     let bountyDeadline = bountyDeadlinesMul[bountyDeadlineD] * bountyDeadlineT
     // flatten expLevels
     const expLevelsDesc = expLevels.map(l => fromUtf8(l.name))
-    let expLevelsMul = expLevels.map(l => web3.toHex(l.mul))
+    // uint-ify EXP levels
+    let expLevelsMul = expLevels.map(l => web3.toHex(l.mul * 10.0 ** 2))
     this.props.app.changeBountySettings(
       expLevelsMul,
       expLevelsDesc,
@@ -413,6 +416,7 @@ const ExperienceLevel = ({
 }) => {
   let last = expLevels[expLevels.length - 1]
   let disableAdd = last.mul != '' && last.name != '' ? false : true
+  console.log(generateExpLevelHandler(0, 'M'))
   return (
     <div>
       <Text.Block size="large" weight="bold">
