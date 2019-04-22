@@ -409,10 +409,10 @@ class FundIssues extends React.Component {
             <div>
               <br />
             Your base rate has not been set and you do not have
-            any tokens in your Finance app.
+            any tokens in your Vault.
               <br /> <br />
-            Once you have tokens in your Finance app, you will be
-            able to begin allocating tokens to issues.
+            Once you have tokens in your Vault, you will be
+            able to begin funding issues.
               <br /> <br />
               <Button wide onClick={this.props.closePanel} mode="strong"  >Cancel</Button>
             </div>

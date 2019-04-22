@@ -22,35 +22,15 @@ import { CURRENT_USER } from '../../utils/gql-queries'
 
 const ASSETS_URL = './aragon-ui-assets/'
 
-const GITHUB_URI = 'https://github.com/login/oauth/authorize'
 
 // TODO: let the user customize the github app on settings screen?
 // TODO: Extract to an external js utility to keep this file clean
 // Variable fields depending on the execution environment:
 // TODO: This should be dynamically set depending on the execution environment (dev, prod...)
-let CLIENT_ID = ''
-let REDIRECT_URI = ''
-let AUTH_URI = ''
-
-switch (window.location.origin) {
-case 'http://localhost:3333':
-  CLIENT_ID = 'd556542aa7a03e640409'
-  REDIRECT_URI = 'http://localhost:3333'
-  AUTH_URI = 'https://tps-github-auth.now.sh/authenticate'
-  // TODO: change auth service to be more explicit to:
-  // AUTH_URI = 'https://dev-tps-github-auth.now.sh/authenticate'
-  break
-case 'http://localhost:8080':
-  CLIENT_ID = '686f96197cc9bb07a43d'
-  REDIRECT_URI = window.location.href
-  AUTH_URI = 'https://local-tps-github-auth.now.sh/authenticate'
-  break
-default:
-  console.log(
-    'GitHub OAuth: Scenario not implemented yet, GitHub API disabled for the current Projects App deployment'
-  )
-  break
-}
+const AUTH_URI = 'https://local-tps-github-auth.now.sh/authenticate'
+const GITHUB_URI = 'https://github.com/login/oauth/authorize'
+const REDIRECT_URI = 'https://tps-auth.now.sh'
+const CLIENT_ID = '686f96197cc9bb07a43d'
 
 export const githubPopup = (popup = null) => {
   // Checks to save some memory if the popup exists as a window object

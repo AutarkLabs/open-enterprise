@@ -83,7 +83,7 @@ class App extends React.Component {
             <AppBar>
               <AppBarTitle>
                 {displayMenuButton && <MenuButton />}
-                <AppBarLabel>Range Voting</AppBarLabel>
+                <AppBarLabel>Dot Voting</AppBarLabel>
               </AppBarTitle>
             </AppBar>
           }

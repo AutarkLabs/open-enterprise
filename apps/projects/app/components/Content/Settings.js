@@ -338,7 +338,7 @@ const EmptyBaseRate = () => (
       Bounty Base Rate
     </Text.Block>
     <Text.Block>
-      Once you have tokens in your Finance App you will be able to set your
+      Once you have tokens in your Vault you will be able to set your
       bounty base rate, which provides you with the ability to allocate bounties to issues.
     </Text.Block>
   </div>
