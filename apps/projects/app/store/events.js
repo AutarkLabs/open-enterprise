@@ -131,10 +131,6 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
     nextState = syncIssues(nextState, returnValues, issueData)
     return nextState
   }
-  case ISSUE_CURATED: {
-    nextState = await syncRepos(nextState, returnValues)
-    return nextState
-  }
   case BOUNTY_SETTINGS_CHANGED:
     nextState = await syncSettings(nextState) // No returnValues on this
     return nextState
