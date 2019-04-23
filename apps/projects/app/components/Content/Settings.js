@@ -52,19 +52,14 @@ class Settings extends React.Component {
 
     // data has just became available
     let s = props.bountySettings
+    let bountyCurrency = props.tokens.findIndex(bounty => bounty.addr === s.bountyCurrency)
     let n = {
       baseRate: s.baseRate,
       bountyAllocator: s.bountyAllocator,
       bountyArbiter: s.bountyArbiter,
       expLevels: s.expLvls,
+      bountyCurrency: bountyCurrency,
     }
-
-    let found = bountyCurrencies.findIndex(el => el === s.bountyCurrency)
-
-    if (found === -1) {
-      bountyCurrencies.push(s.bountyCurrency)
-      n.bountyCurrency = bountyCurrencies.length - 1
-    } else n.bountyCurrency = found
 
     // bountyDeadlinesMul = [168, 24, 1]
     // in order to store the deadline as one number instead of two
@@ -94,14 +89,14 @@ class Settings extends React.Component {
     let bountyDeadline = bountyDeadlinesMul[bountyDeadlineD] * bountyDeadlineT
     // flatten expLevels
     const expLevelsDesc = expLevels.map(l => fromUtf8(l.name))
-    let expLevelsMul = expLevels.map(l => web3.toHex(l.mul))
-
+    // uint-ify EXP levels
+    let expLevelsMul = expLevels.map(l => web3.toHex(l.mul * 10.0 ** 2))
     this.props.app.changeBountySettings(
       expLevelsMul,
       expLevelsDesc,
       web3.toHex(baseRate),
       web3.toHex(bountyDeadline),
-      bountyCurrencies[bountyCurrency],
+      this.props.tokens[bountyCurrency].addr,
       bountyAllocator,
       //bountyArbiter,
     )
@@ -343,7 +338,7 @@ const EmptyBaseRate = () => (
       Bounty Base Rate
     </Text.Block>
     <Text.Block>
-      Once you have tokens in your Finance App you will be able to set your
+      Once you have tokens in your Vault you will be able to set your
       bounty base rate, which provides you with the ability to allocate bounties to issues.
     </Text.Block>
   </div>
