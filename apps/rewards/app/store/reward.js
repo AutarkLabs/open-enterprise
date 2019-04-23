@@ -34,10 +34,10 @@ export async function onRewardClaimed({ rewards = [], claims = {} }, { rewardId 
 
 }
 
-export async function onRefreshRewards(nextState) {
+export async function onRefreshRewards(nextState, { userAddress }) {
   const rewardsLength = Number(await getRewardsLength())
   const rewards = await Promise.all(
-    [...Array(rewardsLength).keys()].map(async rewardId => await getRewardById(rewardId))
+    [...Array(rewardsLength).keys()].map(async rewardId => await getRewardById(rewardId, userAddress))
   )
   return { ...nextState, rewards }
 }
@@ -46,10 +46,10 @@ export async function onRefreshRewards(nextState) {
 /*      rewards helper functions       */
 /////////////////////////////////////////
 
-const getRewardById = async rewardId => {
+const getRewardById = async (rewardId, userAddress) => {
   const currentBlock = await app.web3Eth('getBlockNumber').toPromise()
 
-  return await app.call('getReward', rewardId)
+  return await app.call('getReward', rewardId, { from: userAddress })
     .pipe(
       first(),
       map(data => ({

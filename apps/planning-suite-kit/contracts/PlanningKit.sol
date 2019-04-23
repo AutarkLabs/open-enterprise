@@ -15,7 +15,7 @@ import "@tps/apps-address-book/contracts/AddressBook.sol";
 import "@tps/apps-allocations/contracts/Allocations.sol";
 import "@tps/apps-projects/contracts/Projects.sol";
 import {DotVoting as DotVotingApp} from "@tps/apps-dot-voting/contracts/DotVoting.sol";
-import {RewardsCore as Rewards} from "@tps/apps-rewards/contracts/RewardsCore.sol";
+import "@tps/apps-rewards/contracts/Rewards.sol";
 import "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
 import "@aragon/apps-finance/contracts/Finance.sol";
