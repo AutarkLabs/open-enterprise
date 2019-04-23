@@ -6,18 +6,16 @@ import { map } from 'rxjs/operators'
 
 import {
   AppBar,
-  Button,
+  AppView,
   Main,
   SidePanel,
-  IconAdd,
   observe,
-  theme,
+  font,
 } from '@aragon/ui'
-import AppLayout from './components/AppLayout'
 import Decisions from './Decisions'
 import { hasLoadedVoteSettings } from './utils/vote-settings'
 import { NewPayoutVotePanelContent } from './components/Panels'
-import { networkContextType } from '../../../shared/ui'
+import { networkContextType, MenuButton } from '../../../shared/ui'
 
 const initialState = {
   template: null,
@@ -75,37 +73,41 @@ class App extends React.Component {
   }
 
   render() {
+    const { displayMenuButton } = this.props
+
     return (
-      <StyledAragonApp>
-        <AppLayout>
-          <AppLayout.Header>
-            <AppBar
-              title="Dot Voting"
-            />
-          </AppLayout.Header>
-          <AppLayout.ScrollWrapper>
-            <AppLayout.Content>
-              <Decisions
-                onActivate={this.handlePanelOpen}
-                app={this.props.app}
-                votes={
-                  this.props.votes !== undefined ? this.props.votes : []
-                }
-                entries={
-                  this.props.entries !== undefined ? this.props.entries : []
-                }
-                voteTime={this.props.voteTime}
-                minParticipationPct={
-                  this.props.minParticipationPct
-                    ? (this.props.minParticipationPct / 10 ** 16)
-                    : 'N/A'
-                }
-                tokenAddress={this.props.tokenAddress}
-                userAccount={this.props.userAccount}
-              />
-            </AppLayout.Content>
-          </AppLayout.ScrollWrapper>
-        </AppLayout>
+      <Main>
+        <AppView
+          padding={0}
+          appBar={
+            <AppBar>
+              <AppBarTitle>
+                {displayMenuButton && <MenuButton />}
+                <AppBarLabel>Range Voting</AppBarLabel>
+              </AppBarTitle>
+            </AppBar>
+          }
+        >
+          <Decisions
+            onActivate={this.handlePanelOpen}
+            app={this.props.app}
+            votes={
+              this.props.votes !== undefined ? this.props.votes : []
+            }
+            entries={
+              this.props.entries !== undefined ? this.props.entries : []
+            }
+            voteTime={this.props.voteTime}
+            minParticipationPct={
+              this.props.minParticipationPct
+                ? (this.props.minParticipationPct / 10 ** 16)
+                : 'N/A'
+            }
+            tokenAddress={this.props.tokenAddress}
+            userAccount={this.props.userAccount}
+          />
+        </AppView>
+
         <SidePanel
           title={''}
           opened={this.state.panelActive}
@@ -113,51 +115,19 @@ class App extends React.Component {
         >
           <NewPayoutVotePanelContent />
         </SidePanel>
-      </StyledAragonApp>
+      </Main>
     )
   }
 }
 
-const StyledAragonApp = styled(Main)`
+const AppBarTitle = styled.span`
   display: flex;
-  height: 100vh;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: stretch;
+  align-items: center;
 `
 
-const DropDownContent = styled.div`
-  display: none;
-  position: absolute;
-  background-color: ${theme.contentBackground};
-  border: 1px solid · ${theme.contentBorder};
-  box-shadow: 0 4px 4px 0 ${theme.shadow};
-  border-radius: 3px;
-  padding: 0.5rem 0;
-  z-index: 1;
-  margin-left: -8rem;
-  white-space: nowrap;
-`
-const DropDownItem = styled.div`
-  padding: 0.5rem 1rem;
-  display: flex;
-  &:hover {
-    color: ${theme.mainBgGradientStart};
-    cursor: pointer;
-  }
-`
-
-const DropDownButton = styled.div`
-  position: relative;
-  display: inline-block;
-  &:hover ${DropDownContent} {
-    display: block;
-  }
-`
-
-const CloseIcon = styled(IconAdd)`
-  color: ${theme.textSecondary};
-  margin-right: 0.5rem;
+const AppBarLabel = styled.span`
+  margin: 0 30px;
+  ${font({ size: 'xxlarge' })};
 `
 
 export default observe(
