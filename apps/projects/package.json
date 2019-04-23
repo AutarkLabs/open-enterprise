@@ -15,7 +15,7 @@
     "lint": "solium --dir ./contracts",
     "prepublishOnly": "truffle compile --all",
     "publish:http": "npm run publish:http-copy-files && aragon apm publish patch --http localhost:3333 --http-served-from ./dist",
-    "publish:http-copy-files": "npm run build:script && mkdir -p dist/images && cp images/icon.svg dist/images/",
+    "publish:http-copy-files": "npm run build:script",
     "publish": "aragon apm publish patch && sleep 3",
     "publish:major": "aragon apm publish major --files dist/",
     "publish:minor": "aragon apm publish minor --files dist/",
