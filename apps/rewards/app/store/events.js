@@ -25,7 +25,7 @@ export const handleEvent = async (state, event, settings) => {
       nextState = await onRewardAdded(nextState, returnValues)
       break
     case 'RefreshRewards':
-      nextState = await onRefreshRewards(nextState)
+      nextState = await onRefreshRewards(nextState, returnValues)
       break
     default:
       console.log('[Rewards reducer] unhandled event:', event, returnValues)

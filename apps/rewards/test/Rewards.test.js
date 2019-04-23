@@ -6,7 +6,7 @@ const {
   MiniMeToken
 } = require('@tps/test-helpers/artifacts')
 
-const Rewards = artifacts.require('RewardsCore')
+const Rewards = artifacts.require('Rewards')
 const Vault = artifacts.require('Vault')
 const { assertRevert } = require('@tps/test-helpers/assertThrow')
 const { encodeCallScript } = require('@tps/test-helpers/evmScript')

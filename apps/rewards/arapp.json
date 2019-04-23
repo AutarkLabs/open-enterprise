@@ -1,7 +1,7 @@
 {
   "roles": [
     {
-      "name": "Create rewards",
+      "name": "Create a new reward",
       "id": "ADD_REWARD_ROLE",
       "params": []
     }
@@ -31,5 +31,5 @@
       "network": "mainnet"
     }
   },
-  "path": "contracts/RewardsCore.sol"
+  "path": "contracts/Rewards.sol"
 }
