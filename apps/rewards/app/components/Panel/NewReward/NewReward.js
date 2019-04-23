@@ -8,7 +8,7 @@ import { Form, FormField } from '../../Form'
 import { DateInput, InputDropDown } from '../../../../../../shared/ui'
 import { format } from 'date-fns'
 import BigNumber from 'bignumber.js'
-import { millisecondsToBlocks } from '../../../../../../shared/ui/utils'
+import { millisecondsToBlocks, millisecondsToQuarters, MILLISECONDS_IN_A_QUARTER } from '../../../../../../shared/ui/utils'
 import { displayCurrency, toCurrency } from '../../../utils/helpers'
 
 const rewardTypes = [ 'Merit Reward', 'Dividend' ]
@@ -35,6 +35,7 @@ class NewReward extends React.Component {
     referenceAsset: 0,
     disbursementCycle: 0,
     disbursementDate: 0,
+    occurances: 0,
   }
 
   changeField = ({ target: { name, value } }) =>
@@ -60,6 +61,15 @@ class NewReward extends React.Component {
     )
 
   formatDate = date => format(date, 'yyyy-MM-dd')
+  changeDate = (dateStart, dateEnd) => {
+    const occurances = millisecondsToQuarters(dateStart, dateEnd)
+    this.setState({
+      dateEnd,
+      occurances,
+      quarterEndDates: [...Array(occurances).keys()]
+        .map(occurance => Date.now() + ((occurance + 1) * MILLISECONDS_IN_A_QUARTER)),
+    })
+  }
 
   rewardMain = () => (
     <div>
@@ -211,7 +221,7 @@ class NewReward extends React.Component {
               width="100%"
               name="dateStart"
               value={this.state.dateStart}
-              onChange={dateStart => this.setState({ dateStart })}
+              onChange={dateStart => this.changeDate(dateStart, this.state.dateEnd)}
             />
           }
         />
@@ -223,7 +233,7 @@ class NewReward extends React.Component {
               width="100%"
               name="dateEnd"
               value={this.state.dateEnd}
-              onChange={dateEnd => this.setState({ dateEnd })}
+              onChange={dateEnd =>this.changeDate(this.state.dateStart,dateEnd)}
             />
           }
         />
@@ -258,26 +268,69 @@ class NewReward extends React.Component {
       </RewardRow>
 
       <Separator />
-
-      <Info style={{ marginBottom: '10px' }}>
-        <TokenIcon />
-        <Summary>
-          <p>
-          A total of <SummaryBold>{this.state.amount} {this.props.balances[this.state.amountCurrency].symbol}</SummaryBold> will be distributed as a dividend to <SummaryBold>{this.props.balances[this.state.referenceAsset+1].name}</SummaryBold> holders on a <SummaryBold>{disbursementCyclesSummary[this.state.disbursementCycle]}</SummaryBold>, from <SummaryBold>{this.formatDate(this.state.dateStart)}</SummaryBold> to <SummaryBold>{this.formatDate(this.state.dateEnd)}</SummaryBold>.
-          </p>
-          <p>
-          The dividend amount will be in proportion to the <SummaryBold>{this.props.balances[this.state.referenceAsset].name}</SummaryBold> balance as of the last day of the cycle.
-          </p>
-          <p>
-          The dividend will be disbursed <SummaryBold>{disbursementDates[this.state.disbursementDate]}</SummaryBold> after the end of each cycle..
-          </p>
-        </Summary>
-      </Info>
+      { this.state.occurances ?
+        <Info style={{ marginBottom: '10px' }}>
+          <TokenIcon />
+          <Summary>
+            <p>
+              {'A total of '}
+              <SummaryBold>
+                {this.state.amount} {this.props.balances[this.state.amountCurrency].symbol}
+              </SummaryBold>
+              {' will be distributed as a dividend to '}
+              <SummaryBold>
+                {this.props.balances[this.state.referenceAsset+1].name}
+              </SummaryBold>
+              {' holders on a '}
+              <SummaryBold>
+                {disbursementCyclesSummary[this.state.disbursementCycle]}
+              </SummaryBold>
+              {', from '}
+              <SummaryBold>
+                {this.formatDate(this.state.dateStart)}
+              </SummaryBold>
+              {' to '}
+              <SummaryBold>
+                {this.formatDate(this.state.dateEnd)}
+              </SummaryBold>
+              {'with cycles ending on:'}
+              {
+                this.state.quarterEndDates.map((endTimeStamp, idx) => (
+                  <React.Fragment key={idx}>
+                    <br />
+                    <SummaryBold>
+                      {this.formatDate(endTimeStamp)}
+                    </SummaryBold>
+                  </React.Fragment>
+                ))
+              }.
+            </p>
+            <p>
+          The dividend amount will be in proportion to the <SummaryBold>{this.props.balances[this.state.referenceAsset+1].name}</SummaryBold> balance as of the last day of each cycle.
+            </p>
+            <p>
+          The dividend will be disbursed <SummaryBold>{disbursementDates[this.state.disbursementDate]}</SummaryBold> after the end of each cycle.
+            </p>
+          </Summary>
+        </Info>
+        :
+        <React.Fragment>
+          <Info.Alert>
+            Please select a start and end date that are at least as long as the cycle period selected
+          </Info.Alert>
+          <br />
+        </React.Fragment>
+      }
     </div>
   )
 
 
   render() {
+    const { dateStart, dateEnd, rewardType, occurances } = this.state
+    //if (rewardType === 1) {
+    //  console.log('occurances: ', occurances)
+    //  console.log('quarter end dates: ', this.state.quarterEndDates)
+    //}
 
     return (
       <Form

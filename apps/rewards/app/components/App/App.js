@@ -9,7 +9,7 @@ import { Title } from '../Shared'
 import { Empty } from '../Card'
 import PanelManager, { PANELS } from '../Panel'
 import NewRewardButton from './NewRewardButton'
-import { millisecondsToBlocks, MILLISECONDS_IN_A_MONTH, millisecondsToQuarters, WEEK } from '../../../../../shared/ui/utils'
+import { millisecondsToBlocks, MILLISECONDS_IN_A_MONTH, MILLISECONDS_IN_A_QUARTER, millisecondsToQuarters, WEEK } from '../../../../../shared/ui/utils'
 import BigNumber from 'bignumber.js'
 import { networkContextType, MenuButton } from '../../../../../shared/ui'
 
@@ -53,8 +53,20 @@ class App extends React.Component {
     }
   }
 
+  shouldComponentUpdate(nextProps, nextState) {
+    // do not bring props into state if the NewReward
+    // panel is open
+    if (this.state.panel && nextState.panel) {
+      return false
+    }
+    return true
+  }
+
   componentDidUpdate(prevProps) {
     this.updateConvertedRates(this.props)
+    if (prevProps.userAccount !== this.props.userAccount) {
+      this.updateRewards()
+    }
   }
 
   updateConvertedRates = throttle(async ({ balances = [] }) => {
@@ -76,8 +88,12 @@ class App extends React.Component {
   }, CONVERT_THROTTLE_TIME)
 
   updateRewards = async () => {
+    console.log('props: ', this.props.userAccount)
     this.props.app.cache('requestRefresh', {
-      event: 'RefreshRewards'
+      event: 'RefreshRewards',
+      returnValues: {
+        userAddress: this.props.userAccount
+      },
     })
   }
 
@@ -118,7 +134,7 @@ class App extends React.Component {
       switch (reward.disbursementCycle) {
       case 'Quarterly':
         reward.occurances = millisecondsToQuarters(reward.dateStart, reward.dateEnd)
-        reward.duration = millisecondsToBlocks(Date.now(), 3 * MILLISECONDS_IN_A_MONTH + Date.now())
+        reward.duration = millisecondsToBlocks(Date.now(), MILLISECONDS_IN_A_QUARTER + Date.now())
         break
       default: // Monthly
         reward.occurances = 12
@@ -141,7 +157,7 @@ class App extends React.Component {
       reward.delay = 0
       reward.duration = millisecondsToBlocks(reward.dateStart, reward.dateEnd)
     }
-    this.props.app.thisIsAFunction(
+    this.props.app.newReward(
       reward.description, //string _description
       reward.isMerit, //bool _isMerit,
       reward.referenceAsset, //address _referenceToken,

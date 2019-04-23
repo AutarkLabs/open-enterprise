@@ -22,6 +22,7 @@ import {
 import { displayCurrency } from '../../utils/helpers'
 import {
   AverageRewards,
+  AverageRewardsTable,
   formatAvgAmount,
   RewardDescription,
   RewardsTable,
@@ -222,18 +223,19 @@ const MyRewardsNarrow = ({ claimed, rewards, openDetails, network, tokens }) => 
 )
 
 const MyRewards = ({ onClaimReward, rewards, newReward, openDetails, network, tokens, convertRates }) => {
-  const rewardsEmpty = rewards.length === 0 || (
-    claimedRewards(rewards).length === 0 && unclaimedRewards(rewards).length === 0
+
+  const myRewards = rewards.filter(reward => reward.userRewardAmount > 0)
+  const summarizedRewards = calculateMyRewardsSummary(myRewards, tokens, convertRates)
+  const unclaimedRewardsLength = unclaimedRewards(myRewards).length
+  const claimedRewardsLength = claimedRewards(myRewards).length
+
+  const myRewardsEmpty = myRewards.length === 0 || (
+    claimedRewards(myRewards).length === 0 && unclaimedRewards(myRewards).length === 0
   )
 
-  if (rewardsEmpty) {
+  if (myRewardsEmpty) {
     return <Empty tab='MyRewards' action={newReward} />
   }
-
-  const summarizedRewards = calculateMyRewardsSummary(rewards, tokens, convertRates)
-  const unclaimedRewardsLength = unclaimedRewards(rewards).length
-  const claimedRewardsLength = claimedRewards(rewards).length
-
 
   return (
     <Main>
@@ -257,7 +259,7 @@ const MyRewards = ({ onClaimReward, rewards, newReward, openDetails, network, to
         <RewardsTable
           title="Claimed Rewards"
           claimed={true}
-          rewards={claimedRewards(rewards)}
+          rewards={claimedRewards(myRewards)}
           openDetails={openDetails}
           network={network}
 	        tokens={tokens}
@@ -269,7 +271,7 @@ const MyRewards = ({ onClaimReward, rewards, newReward, openDetails, network, to
         <RewardsTable
           title="Unclaimed Rewards"
           claimed={false}
-          rewards={unclaimedRewards(rewards)}
+          rewards={unclaimedRewards(myRewards)}
           openDetails={openDetails}
           network={network}
 	        tokens={tokens}

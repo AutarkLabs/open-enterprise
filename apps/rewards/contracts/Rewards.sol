@@ -131,7 +131,7 @@ contract Rewards is IsContract, AragonApp {
     /**
     * @dev This function creates a reward instance to be added to the rewards array. ID's
     *      are assigned the new intance's index of that array
-    * @notice Your Face
+    * @notice Create a new reward
     * @param _description description of the reward
     * @param _isMerit Recurring dividend reward one-off merit reward
     * @param _referenceToken the token used to calculate reward distributions for each holder
@@ -142,7 +142,7 @@ contract Rewards is IsContract, AragonApp {
     * @param _occurances the number of occurences of a dividend reward
     * @param _delay the waiting time after the end of the period that the reward can be claimed
     */
-    function thisIsAFunction(
+    function newReward(
         string _description,
         bool _isMerit,
         address _referenceToken,
@@ -175,7 +175,7 @@ contract Rewards is IsContract, AragonApp {
         reward.creator = msg.sender;
         emit RewardAdded(rewardId);
         if (_occurances > 1) {
-            thisIsAFunction(
+            newReward(
                 _description,
                 _isMerit,
                 _referenceToken,
