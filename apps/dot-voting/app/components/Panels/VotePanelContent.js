@@ -429,7 +429,7 @@ class VotePanelContent extends React.Component {
           {open && (userBalance === '0') &&
         <div>
           <Info.Action title="Warning">
-          This account cannot cast a vote because it did not hold any{' '} {voteTokenSymbol} at the time this vote was created(
+          This account cannot cast a vote because it did not hold any{' '} {voteTokenSymbol} at the time this vote was created (
             {formatDate(vote.data.startDate)}
             )
           </Info.Action>
