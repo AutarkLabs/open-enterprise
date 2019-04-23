@@ -70,7 +70,7 @@ const calculateMonthlyAvg = (rewards, balances, convertRates) => {
     rewards,
     balances,
     convertRates,
-    (rew, bal) => rew.claimed && rew.rewardToken === bal.address
+    (rew, bal) => rew.rewardToken === bal.address
   ) / monthCount
 }
 
@@ -80,7 +80,7 @@ const calculateYTDRewards = (rewards, balances, convertRates) => {
     rewards,
     balances,
     convertRates,
-    (rew, bal) => rew.claimed && rew.rewardToken === bal.address && rew.endDate >= yearBeginning
+    (rew, bal) => rew.rewardToken === bal.address && rew.endDate >= yearBeginning
   )
 }
 
@@ -115,7 +115,7 @@ const RewardsTableNarrow = ({ title, tokens, rewards, fourthColumn, fourthColumn
           <Text.Block size="small" color={theme.textSecondary} style={{ marginTop: '5px' }}>
             {reward.isMerit ? 'Merit' : 'Dividend'}
             {dot}
-            {reward.isMerit ? 'One-Time' : 'Monthly'}
+            {reward.isMerit ? 'One-Time' : 'Quarterly'}
             {dot}
             {fourthColumnData(reward)}
           </Text.Block>
