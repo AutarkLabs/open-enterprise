@@ -5,9 +5,6 @@ import { INITIALIZATION_TRIGGER } from './'
 import { addressesEqual } from '../utils/web3-utils'
 
 export const handleEvent = async (state, event, settings) => {
-  // Debug here please:
-  // console.log('handling event:', { state, event, settings })
-
   const { address: eventAddress, event: eventName, returnValues } = event
   const { addressBook, vault } = settings
   const { accounts, entries, payouts } = state

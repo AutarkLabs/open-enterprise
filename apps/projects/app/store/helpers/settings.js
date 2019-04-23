@@ -15,7 +15,8 @@ export const syncSettings = async state => {
     const { expLevels, expMultipliers } = settings
 
     const expLvls = expLevels.map(
-      (expLevel, i) => ({ mul: expMultipliers[i] / 100, name: toUtf8(expLevel) })
+      // Float-ify exp levels
+      (expLevel, i) => ({ mul: expMultipliers[i] / 100.0, name: toUtf8(expLevel) })
     )
 
     state.bountySettings = { ...settings, expLvls }

@@ -18,12 +18,17 @@ const Overview = ({
   projects,
   githubCurrentUser,
   githubLoading,
+  status,
 }) => {
   if (githubLoading) {
-    return <EmptyWrapper><LoadingAnimation /></EmptyWrapper>
-  } else if (githubCurrentUser === STATUS.INITIAL) {
+    return (
+      <EmptyWrapper>
+        <LoadingAnimation />
+      </EmptyWrapper>
+    )
+  } else if (status === STATUS.INITIAL) {
     return <Unauthorized onLogin={onLogin} />
-  } else if (githubCurrentUser === STATUS.FAILED) {
+  } else if (status === STATUS.FAILED) {
     return <Error action={() => {}} />
   }
 
@@ -65,8 +70,16 @@ Overview.propTypes = {
   onRemoveProject: PropTypes.func.isRequired,
   projects: PropTypes.arrayOf(PropTypes.object).isRequired,
   githubCurrentUser: PropTypes.object.isRequired,
+  github: PropTypes.shape({
+    status: PropTypes.oneOf([
+      STATUS.AUTHENTICATED,
+      STATUS.FAILED,
+      STATUS.INITIAL,
+    ]).isRequired,
+    token: PropTypes.string,
+    event: PropTypes.string,
+  }),
 }
-
 
 const StyledProjects = styled.div`
   ${breakpoint(
@@ -77,7 +90,8 @@ const StyledProjects = styled.div`
   )};
   padding: 0.3rem;
   display: flex;
-  flex-direction: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? 'column' : 'row' };
+  flex-direction: ${props =>
+    props.screenSize < CARD_STRETCH_BREAKPOINT ? 'column' : 'row'};
   flex-wrap: wrap;
 `
 export default Overview

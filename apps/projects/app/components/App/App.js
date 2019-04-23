@@ -1,7 +1,6 @@
 import {
   Main,
   TabBar,
-  BaseStyles,
   observe,
   AppView,
   AppBar,
@@ -27,7 +26,6 @@ import {
   AppTitleButton,
 } from '../../../../../shared/ui'
 import {
-  REQUESTING_GITHUB_TOKEN,
   REQUESTED_GITHUB_TOKEN_SUCCESS,
   REQUESTED_GITHUB_TOKEN_FAILURE,
 } from '../../store/eventTypes'
@@ -35,8 +33,11 @@ import { CURRENT_USER } from '../../utils/gql-queries'
 
 const ASSETS_URL = './aragon-ui-assets/'
 
+
 // TODO: let the user customize the github app on settings screen?
 // TODO: Extract to an external js utility to keep this file clean
+// Variable fields depending on the execution environment:
+// TODO: This should be dynamically set depending on the execution environment (dev, prod...)
 const AUTH_URI = 'https://local-tps-github-auth.now.sh/authenticate'
 const GITHUB_URI = 'https://github.com/login/oauth/authorize'
 const REDIRECT_URI = 'https://tps-auth.now.sh'
@@ -78,6 +79,11 @@ const getPopupOffset = ({ width, height }) => {
   return { top, left }
 }
 
+const getURLParam = param => {
+  const searchParam = new URLSearchParams(window.location.search)
+  return searchParam.get(param)
+}
+
 const initApolloClient = token =>
   new ApolloClient({
     uri: 'https://api.github.com/graphql',
@@ -109,6 +115,15 @@ class App extends React.PureComponent {
   static propTypes = {
     app: PropTypes.object.isRequired,
     repos: PropTypes.arrayOf(PropTypes.object),
+    github: PropTypes.shape({
+      status: PropTypes.oneOf([
+        STATUS.AUTHENTICATED,
+        STATUS.FAILED,
+        STATUS.INITIAL,
+      ]).isRequired,
+      token: PropTypes.string,
+      event: PropTypes.string,
+    }),
   }
 
   static defaultProps = {
@@ -138,6 +153,22 @@ class App extends React.PureComponent {
         type: network.type,
       },
     }
+  }
+
+  componentDidMount() {
+    /**
+     * Acting as the redirect target it looks up for 'code' URL param on component mount
+     * if it detects the code then sends to the opener window
+     * via postMessage with 'popup' as origin and close the window (usually a popup)
+     */
+    const code = getURLParam('code')
+    code &&
+      window.opener.postMessage(
+        { from: 'popup', name: 'code', value: code },
+        '*'
+      )
+    window.close()
+
   }
 
   componentDidUpdate(prevProps) {
@@ -511,10 +542,10 @@ class App extends React.PureComponent {
   handleSelect = index =>
     this.changeActiveIndex({ tabIndex: index, tabData: {} })
 
+
   render() {
     const { activeIndex, panel, panelProps, githubCurrentUser } = this.state
     const { bountySettings, displayMenuButton } = this.props
-
     const contentData = [
       {
         tabName: 'Overview',
@@ -533,8 +564,8 @@ class App extends React.PureComponent {
           caption: 'New Issue',
           onClick: this.newIssue,
           // TODO: check this, not very readable, and why do we need two variables doing exactly the same?
-          disabled: () => (projects.length ? false : true),
-          hidden: () => (projects.length ? false : true),
+          disabled: () => (this.props.repos.length ? false : true),
+          hidden: () => (this.props.repos.length ? false : true),
         },
       },
       {
@@ -544,6 +575,7 @@ class App extends React.PureComponent {
     ]
 
     const status = this.props.github ? this.props.github.status : STATUS.INITIAL
+    console.log('statuss', { state: this.state, props: this.props })
 
     const appTitleButton =
       status === STATUS.AUTHENTICATED &&

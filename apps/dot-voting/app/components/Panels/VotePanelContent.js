@@ -209,7 +209,6 @@ class VotePanelContent extends React.Component {
     options.forEach(option => {
       totalSupport = totalSupport + parseFloat(option.value, 10)
     })
-    console.log('userbalance', userBalance)
     const showInfo = type === 'allocation' || type === 'curation'
 
     const formatDate = date =>
@@ -334,7 +333,6 @@ class VotePanelContent extends React.Component {
               >
                 {remaining} remaining
               </Text>
-              {remaining === 0 &&
               <div>
                 <SubmitButton mode="strong" wide onClick={this.handleVoteSubmit}>
                 Submit Vote
@@ -351,8 +349,6 @@ class VotePanelContent extends React.Component {
                   )}
                 </div>
               </div>
-                
-              }
             </AdjustContainer>
             <SidePanelSeparator />
           </div>
@@ -433,7 +429,7 @@ class VotePanelContent extends React.Component {
           {open && (userBalance === '0') &&
         <div>
           <Info.Action title="Warning">
-          This account cannot cast a vote because it did not hold any{' '} {voteTokenSymbol} at the time this vote was created(
+          This account cannot cast a vote because it did not hold any{' '} {voteTokenSymbol} at the time this vote was created (
             {formatDate(vote.data.startDate)}
             )
           </Info.Action>
