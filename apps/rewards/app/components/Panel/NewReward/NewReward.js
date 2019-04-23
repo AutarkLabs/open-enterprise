@@ -66,12 +66,20 @@ class NewReward extends React.Component {
     !(
       this.state.amount > 0 &&
       this.state.description !== '' &&
-      this.state.dateEnd > this.state.dateStart
+      this.state.dateEnd > this.state.dateStart &&
+      !this.errorPrompt()
     )
+
+  startBeforeTokenCreation = () => this.props.balances[this.state.referenceAsset+1].startBlock > this.state.startBlock
+  disbursementOverflow = () => (this.state.quarterEndDates ? this.state.quarterEndDates.length > 41 : false)
+  lowVaultBalance = () => this.props.balances[this.state.amountCurrency].amount / Math.pow(10,this.props.balances[this.state.amountCurrency].decimals) < this.state.amount
+
+  errorPrompt = () => (this.startBeforeTokenCreation() || this.disbursementOverflow() ||this.lowVaultBalance())
 
   formatDate = date => format(date, 'yyyy-MM-dd')
   changeDate = (dateStart, dateEnd) => {
     const occurances = millisecondsToQuarters(dateStart, dateEnd)
+    this.getCurrentBlock()
     this.setState({
       dateEnd,
       occurances,
@@ -79,6 +87,28 @@ class NewReward extends React.Component {
         .map(occurance => Date.now() + ((occurance + 1) * MILLISECONDS_IN_A_QUARTER)),
     })
   }
+
+  ErrorBox = () => (
+    this.errorPrompt() &&
+      <React.Fragment>
+        <Info.Alert>
+          {this.startBeforeTokenCreation() && `The selected start date occurs
+          before your reference asset ${this.props.balances[this.state.referenceAsset+1].symbol}
+          was created. Please choose another date.`}
+
+          {this.disbursementOverflow() && `You have specified a date range that results in
+          ${this.state.quarterEndDates.length} disbursements, yet our system can only handle 41.
+          Choose an end date no later than ${this.formatDate(this.state.quarterEndDates[40])}.`}
+
+          {this.lowVaultBalance() && `You have specified a reward for
+          ${this.state.amount} ${this.props.balances[this.state.amountCurrency].symbol}, yet your vault balance
+          is ${this.props.balances[this.state.amountCurrency].amount / Math.pow(10,this.props.balances[this.state.amountCurrency].decimals)}
+          ${this.props.balances[this.state.amountCurrency].symbol}. To ensure successful
+          execution, specify another amount that does not exceed your balance.`}
+        </Info.Alert>
+        <br />
+      </React.Fragment>
+  )
 
   rewardMain = () => (
     <div>
@@ -89,7 +119,7 @@ class NewReward extends React.Component {
           input={
             <DropDown
               wide
-              items={this.props.balances.slice(1).map(token => token.name)}
+              items={this.props.balances.slice(1).map(token => token.symbol)}
               active={this.state.referenceAsset}
               onChange={referenceAsset => this.setState({ referenceAsset })}
             />
@@ -152,7 +182,10 @@ class NewReward extends React.Component {
               width="100%"
               name="dateStart"
               value={this.state.dateStart}
-              onChange={dateStart => this.setState({ dateStart })}
+              onChange={dateStart => {
+                this.getCurrentBlock()
+                this.setState({ dateStart })
+              }}
             />
           }
         />
@@ -176,10 +209,10 @@ class NewReward extends React.Component {
         <TokenIcon />
         <Summary>
           <p>
-            A total of <SummaryBold>{this.state.amount} {this.props.balances[this.state.amountCurrency].symbol}</SummaryBold> will be distributed as a reward to addresses that earned <SummaryBold>{this.props.balances[this.state.referenceAsset+1].name}</SummaryBold> from <SummaryBold>{this.formatDate(this.state.dateStart)}</SummaryBold> to <SummaryBold>{this.formatDate(this.state.dateEnd)}</SummaryBold>.
+            A total of <SummaryBold>{this.state.amount} {this.props.balances[this.state.amountCurrency].symbol}</SummaryBold> will be distributed as a reward to addresses that earned <SummaryBold>{this.props.balances[this.state.referenceAsset+1].symbol}</SummaryBold> from <SummaryBold>{this.formatDate(this.state.dateStart)}</SummaryBold> to <SummaryBold>{this.formatDate(this.state.dateEnd)}</SummaryBold>.
           </p>
           <p>
-            The reward amount will be in proportion to the <SummaryBold>{this.props.balances[this.state.referenceAsset+1].name}</SummaryBold> earned by each account in the specified period.
+            The reward amount will be in proportion to the <SummaryBold>{this.props.balances[this.state.referenceAsset+1].symbol}</SummaryBold> earned by each account in the specified period.
           </p>
           <p>
             The reward will be disbursed <SafeLink href="#" target="_blank"><SummaryBold>upon approval of this proposal</SummaryBold></SafeLink>.
@@ -288,7 +321,7 @@ class NewReward extends React.Component {
               </SummaryBold>
               {' will be distributed as a dividend to '}
               <SummaryBold>
-                {this.props.balances[this.state.referenceAsset+1].name}
+                {this.props.balances[this.state.referenceAsset+1].symbol}
               </SummaryBold>
               {' holders on a '}
               <SummaryBold>
@@ -315,7 +348,7 @@ class NewReward extends React.Component {
               }.
             </p>
             <p>
-          The dividend amount will be in proportion to the <SummaryBold>{this.props.balances[this.state.referenceAsset+1].name}</SummaryBold> balance as of the last day of each cycle.
+          The dividend amount will be in proportion to the <SummaryBold>{this.props.balances[this.state.referenceAsset+1].symbol}</SummaryBold> balance as of the last day of each cycle.
             </p>
             <p>
           The dividend will be disbursed <SummaryBold>{disbursementDates[this.state.disbursementDate]}</SummaryBold> after the end of each cycle.
@@ -341,7 +374,9 @@ class NewReward extends React.Component {
     //  console.log('quarter end dates: ', this.state.quarterEndDates)
     //}
     console.log('state: ',this.state)
-
+    console.log('reference Asset: ', this.startBeforeTokenCreation())
+    console.log('too many rewards: ', this.disbursementOverflow())
+    console.log('low vault balance: ', this.lowVaultBalance())
     return (
       <Form
         onSubmit={this.onSubmit}
@@ -369,7 +404,7 @@ class NewReward extends React.Component {
         <Separator />
 
         {this.state.rewardType === 0 ? this.meritDetails() : this.dividendDetails()}
-
+        {this.ErrorBox()}
       </Form>
     )
   }
