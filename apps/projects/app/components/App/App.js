@@ -32,8 +32,12 @@ import {
 import { CURRENT_USER } from '../../utils/gql-queries'
 
 const ASSETS_URL = './aragon-ui-assets/'
+
+
 // TODO: let the user customize the github app on settings screen?
 // TODO: Extract to an external js utility to keep this file clean
+// Variable fields depending on the execution environment:
+// TODO: This should be dynamically set depending on the execution environment (dev, prod...)
 const AUTH_URI = 'https://local-tps-github-auth.now.sh/authenticate'
 const GITHUB_URI = 'https://github.com/login/oauth/authorize'
 const REDIRECT_URI = 'https://tps-auth.now.sh'
@@ -320,12 +324,12 @@ class App extends React.PureComponent {
 
     // computes an array of issues and denests the actual issue object for smart contract
     const issuesArray = []
-    const bountySymbol = this.props.bountySettings.bountyCurrency
+    const bountyAddr = this.props.bountySettings.bountyCurrency
 
     let bountyToken, bountyDecimals
 
     this.props.tokens.forEach(token => {
-      if (token.symbol === bountySymbol) {
+      if (token.addr === bountyAddr) {
         bountyToken = token.addr
         bountyDecimals = token.decimals
       }

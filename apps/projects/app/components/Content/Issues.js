@@ -241,7 +241,7 @@ class Issues extends React.PureComponent {
   }
 
   actionsContextMenu = issuesFiltered => (
-    <ActionsMenu enabled={!!this.state.selectedIssues.length}>
+    <ActionsMenu enabled={(Object.keys(this.state.selectedIssues).length !== 0)}>
       <ContextMenuItem
         onClick={this.handleCurateIssues(issuesFiltered)}
         style={{ display: 'flex', alignItems: 'flex-start' }}

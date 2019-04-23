@@ -63,7 +63,7 @@ class NewAccount extends React.Component {
         </Form>
 
         <Info.Action title="Warning" style={{ marginTop: '20px' }}>
-          Allocation accounts can hold and transfer ETH, and while they cannot hold tokens, they have the ability to send tokens that your organization holds in the Finance app. Use wisely!
+          Allocation accounts can hold and transfer ETH, and while they cannot hold tokens, they have the ability to send tokens that your organization holds in the connected Vault. Use wisely!
         </Info.Action>
       </React.Fragment>
     )

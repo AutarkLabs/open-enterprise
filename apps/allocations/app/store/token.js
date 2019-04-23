@@ -100,7 +100,6 @@ async function newBalanceEntry(tokenContract, tokenAddress, settings) {
     loadTokenName(tokenContract, tokenAddress, settings),
     loadTokenSymbol(tokenContract, tokenAddress, settings),
   ])
-  console.log('we got network:', settings.network)
 
   return {
     decimals,
