@@ -163,6 +163,7 @@ class App extends React.PureComponent {
         '*'
       )
     window.close()
+
   }
 
   componentDidUpdate(prevProps) {
@@ -529,10 +530,10 @@ class App extends React.PureComponent {
   handleSelect = index =>
     this.changeActiveIndex({ tabIndex: index, tabData: {} })
 
+
   render() {
     const { activeIndex, panel, panelProps, githubCurrentUser } = this.state
     const { bountySettings, displayMenuButton } = this.props
-
     const contentData = [
       {
         tabName: 'Overview',
@@ -551,8 +552,8 @@ class App extends React.PureComponent {
           caption: 'New Issue',
           onClick: this.newIssue,
           // TODO: check this, not very readable, and why do we need two variables doing exactly the same?
-          disabled: () => (projects.length ? false : true),
-          hidden: () => (projects.length ? false : true),
+          disabled: () => (this.props.repos.length ? false : true),
+          hidden: () => (this.props.repos.length ? false : true),
         },
       },
       {
