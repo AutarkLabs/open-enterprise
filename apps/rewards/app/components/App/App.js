@@ -51,7 +51,7 @@ class App extends React.Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    // do not bring props into state if the NewReward
+    // do not re-render if the NewReward
     // panel is open
     if (this.state.panel && nextState.panel) {
       return false
@@ -119,6 +119,7 @@ class App extends React.Component {
         onNewReward: this.onNewReward,
         vaultBalance: '432.9 ETH',
         balances: this.props.balances,
+        app: this.props.app,
       },
     })
   }

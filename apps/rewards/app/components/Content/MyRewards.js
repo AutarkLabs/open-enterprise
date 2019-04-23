@@ -225,7 +225,6 @@ const MyRewardsNarrow = ({ claimed, rewards, openDetails, network, tokens }) => 
 const MyRewards = ({ onClaimReward, rewards, newReward, openDetails, network, tokens, convertRates }) => {
 
   const myRewards = rewards.filter(reward => reward.userRewardAmount > 0)
-  const summarizedRewards = calculateMyRewardsSummary(myRewards, tokens, convertRates)
   const unclaimedRewardsLength = unclaimedRewards(myRewards).length
   const claimedRewardsLength = claimedRewards(myRewards).length
 
@@ -236,6 +235,8 @@ const MyRewards = ({ onClaimReward, rewards, newReward, openDetails, network, to
   if (myRewardsEmpty) {
     return <Empty tab='MyRewards' action={newReward} />
   }
+
+  const summarizedRewards = calculateMyRewardsSummary(myRewards, tokens, convertRates)
 
   return (
     <Main>

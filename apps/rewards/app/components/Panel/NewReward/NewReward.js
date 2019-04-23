@@ -25,17 +25,27 @@ class NewReward extends React.Component {
     onNewReward: PropTypes.func.isRequired,
   }
 
-  state = {
-    description: '',
-    amount: 0,
-    amountCurrency: 0,
-    dateStart: new Date(),
-    dateEnd: new Date(),
-    rewardType: 0,
-    referenceAsset: 0,
-    disbursementCycle: 0,
-    disbursementDate: 0,
-    occurances: 0,
+  constructor(props) {
+    super(props)
+    this.getCurrentBlock()
+    this.state = {
+      description: '',
+      amount: 0,
+      amountCurrency: 0,
+      dateStart: new Date(),
+      dateEnd: new Date(),
+      rewardType: 0,
+      referenceAsset: 0,
+      disbursementCycle: 0,
+      disbursementDate: 0,
+      occurances: 0,
+    }
+  }
+
+  getCurrentBlock = async () => {
+    const currentBlock = await this.props.app.web3Eth('getBlockNumber').toPromise()
+    const startBlock = currentBlock + millisecondsToBlocks(Date.now(), this.state.dateStart)
+    this.setState({ currentBlock, startBlock })
   }
 
   changeField = ({ target: { name, value } }) =>
@@ -331,6 +341,7 @@ class NewReward extends React.Component {
     //  console.log('occurances: ', occurances)
     //  console.log('quarter end dates: ', this.state.quarterEndDates)
     //}
+    console.log('state: ',this.state)
 
     return (
       <Form

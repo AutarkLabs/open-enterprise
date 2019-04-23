@@ -4,6 +4,7 @@ import {
   tokenDataFallback,
   getTokenSymbol,
   getTokenName,
+  getTokenStartBlock,
 } from '../utils/token-utils'
 import { addressesEqual } from '../utils/web3-utils'
 import tokenSymbolAbi from '../../../shared/json-abis/token-symbol.json'
@@ -25,6 +26,7 @@ const tokenContracts = new Map() // Addr -> External contract
 const tokenDecimals = new Map() // External contract -> decimals
 const tokenName = new Map() // External contract -> name
 const tokenSymbols = new Map() // External contract -> symbol
+const tokenStartBlock = new Map() // External contract -> creationBlock (uint)
 
 const ETH_CONTRACT = Symbol('ETH_CONTRACT')
 
@@ -34,6 +36,7 @@ export async function initializeTokens(state, settings) {
   tokenDecimals.set(ETH_CONTRACT, '18')
   tokenName.set(ETH_CONTRACT, 'Ether')
   tokenSymbols.set(ETH_CONTRACT, 'ETH')
+  tokenStartBlock.set(ETH_CONTRACT, null)
 
   const nextState = {
     ...state,
@@ -93,11 +96,12 @@ async function updateBalances({ balances = [] }, tokenAddress, settings) {
 }
 
 async function newBalanceEntry(tokenContract, tokenAddress, settings) {
-  const [ balance, decimals, name, symbol ] = await Promise.all([
+  const [ balance, decimals, name, symbol, startBlock ] = await Promise.all([
     loadTokenBalance(tokenAddress, settings),
     loadTokenDecimals(tokenContract, tokenAddress, settings),
     loadTokenName(tokenContract, tokenAddress, settings),
     loadTokenSymbol(tokenContract, tokenAddress, settings),
+    loadTokenStartBlock(tokenContract, tokenAddress, settings),
   ])
   console.log('we got network:', settings.network)
 
@@ -107,6 +111,7 @@ async function newBalanceEntry(tokenContract, tokenAddress, settings) {
     symbol,
     address: tokenAddress,
     amount: balance,
+    startBlock,
     verified:
       isTokenVerified(tokenAddress, settings.network.type) ||
       addressesEqual(tokenAddress, settings.ethToken.address),
@@ -161,6 +166,17 @@ function loadTokenSymbol(tokenContract, tokenAddress, { network }) {
         tokenDataFallback(tokenAddress, 'symbol', network.type) || ''
       const tokenSymbol = getTokenSymbol(app, tokenAddress)
       resolve(tokenSymbol || fallback)
+    }
+  })
+}
+
+function loadTokenStartBlock(tokenContract, tokenAddress, { network }) {
+  return new Promise((resolve, reject) => {
+    if (tokenStartBlock.has(tokenContract)) {
+      resolve(tokenStartBlock.get(tokenContract))
+    } else {
+      const tokenStartBlock = getTokenStartBlock(app, tokenAddress)
+      resolve(tokenStartBlock)
     }
   })
 }
