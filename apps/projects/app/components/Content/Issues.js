@@ -26,6 +26,15 @@ class Issues extends React.PureComponent {
   static propTypes = {
     onLogin: PropTypes.func.isRequired,
     githubCurrentUser: PropTypes.object.isRequired,
+    github: PropTypes.shape({
+      status: PropTypes.oneOf([
+        STATUS.AUTHENTICATED,
+        STATUS.FAILED,
+        STATUS.INITIAL,
+      ]).isRequired,
+      token: PropTypes.string,
+      event: PropTypes.string,
+    }),
   }
 
   state = {
@@ -60,7 +69,9 @@ class Issues extends React.PureComponent {
   }
 
   selectedIssuesArray = () =>
-    Object.keys(this.state.selectedIssues).map(id => this.state.selectedIssues[id])
+    Object.keys(this.state.selectedIssues).map(
+      id => this.state.selectedIssues[id]
+    )
 
   handleCurateIssues = issuesFiltered => () => {
     this.props.onCurateIssues(this.selectedIssuesArray(), issuesFiltered)
@@ -89,14 +100,19 @@ class Issues extends React.PureComponent {
     const allSelected = !this.state.allSelected
     const reload = !this.state.reload
     if (!this.state.allSelected) {
-      this.shapeIssues(issuesFiltered).forEach(issue => selectedIssues[issue.id] = issue)
+      this.shapeIssues(issuesFiltered).forEach(
+        issue => (selectedIssues[issue.id] = issue)
+      )
     }
     this.setState({ allSelected, selectedIssues, reload })
   }
 
   handleFiltering = filters => {
     // TODO: why is reload necessary?
-    this.setState(prevState => ({ filters: filters, reload: !prevState.reload }))
+    this.setState(prevState => ({
+      filters: filters,
+      reload: !prevState.reload,
+    }))
   }
 
   handleSorting = sortBy => {
@@ -155,12 +171,15 @@ class Issues extends React.PureComponent {
       // if there are no Status filters, all issues pass
       if (Object.keys(filters.statuses).length === 0) return true
       // should bountyless issues pass?
-      const status = bountyIssueObj[issue.number] ? bountyIssueObj[issue.number] : 'not-funded'
+      const status = bountyIssueObj[issue.number]
+        ? bountyIssueObj[issue.number]
+        : 'not-funded'
       // if we look for all funded issues, regardless of stage...
-      let filterPass = 
+      let filterPass =
         status in filters.statuses ||
-          ('all-funded' in filters.statuses && status !== 'not-funded') ?
-          true : false
+        ('all-funded' in filters.statuses && status !== 'not-funded')
+          ? true
+          : false
       // ...or at specific stages
       return filterPass
     })
@@ -202,7 +221,7 @@ class Issues extends React.PureComponent {
     this.setState({ showIssueDetail: false, currentIssue: null })
   }
 
-  disableFilter = (pathToFilter) => {
+  disableFilter = pathToFilter => {
     let newFilters = { ...this.state.filters }
     recursiveDeletePathFromObject(pathToFilter, newFilters)
     this.setState({ filters: newFilters })
@@ -217,7 +236,7 @@ class Issues extends React.PureComponent {
         deadlines: {},
         experiences: {},
         statuses: {},
-      }
+      },
     })
   }
 
@@ -246,49 +265,64 @@ class Issues extends React.PureComponent {
 
   actionsMenu = (issues, issuesFiltered) => (
     <Viewport>
-      {({ below }) => below('small') ? (
-        <React.Fragment>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            padding: '0',
-            justifyContent: 'space-between',
-            alignContent: 'stretch',
-            marginTop: '10px'
-          }}>
-            <TextInput placeholder="Search issue titles" type="search" onChange={this.handleTextFilter} style={{ marginRight: '6px' }}/>
+      {({ below }) =>
+        below('small') ? (
+          <React.Fragment>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0',
+                justifyContent: 'space-between',
+                alignContent: 'stretch',
+                marginTop: '10px',
+              }}
+            >
+              <TextInput
+                placeholder="Search issue titles"
+                type="search"
+                onChange={this.handleTextFilter}
+                style={{ marginRight: '6px' }}
+              />
+              {this.actionsContextMenu(issuesFiltered)}
+            </div>
+            <ActiveFilters
+              issues={issues}
+              bountyIssues={this.props.bountyIssues}
+              filters={this.state.filters}
+              disableFilter={this.disableFilter}
+              disableAllFilters={this.disableAllFilters}
+            />
+          </React.Fragment>
+        ) : (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0',
+              justifyContent: 'space-between',
+            }}
+          >
+            <TextInput
+              placeholder="Search issue titles"
+              type="search"
+              onChange={this.handleTextFilter}
+            />
+            <ActiveFilters
+              issues={issues}
+              bountyIssues={this.props.bountyIssues}
+              filters={this.state.filters}
+              disableFilter={this.disableFilter}
+              disableAllFilters={this.disableAllFilters}
+            />
             {this.actionsContextMenu(issuesFiltered)}
           </div>
-          <ActiveFilters
-            issues={issues}
-            bountyIssues={this.props.bountyIssues}
-            filters={this.state.filters}
-            disableFilter={this.disableFilter}
-            disableAllFilters={this.disableAllFilters}
-          />
-        </React.Fragment>
-      ) : (
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          padding: '0',
-          justifyContent: 'space-between'
-        }}>
-          <TextInput placeholder="Search issue titles" type="search" onChange={this.handleTextFilter} />
-          <ActiveFilters
-            issues={issues}
-            bountyIssues={this.props.bountyIssues}
-            filters={this.state.filters}
-            disableFilter={this.disableFilter}
-            disableAllFilters={this.disableAllFilters}
-          />
-          {this.actionsContextMenu(issuesFiltered)}
-        </div>
-      )}
+        )
+      }
     </Viewport>
   )
 
-  setParentFilters = (filters) => {
+  setParentFilters = filters => {
     this.setState(filters)
   }
 
@@ -306,7 +340,8 @@ class Issues extends React.PureComponent {
         activeIndex={this.props.activeIndex}
         bountyIssues={this.props.bountyIssues}
       />
-    )}
+    )
+  }
 
   queryLoading = () => (
     <StyledIssues>
@@ -368,7 +403,7 @@ class Issues extends React.PureComponent {
           repo: name,
           symbol: tokenObj[data.token].symbol,
           expLevel: expLevels[data.exp].name,
-          balance: balance
+          balance: balance,
         }
       }
       return {
@@ -389,10 +424,9 @@ class Issues extends React.PureComponent {
       }
     else if (what === 'Creation Date')
       return (i1, i2) => {
-        return direction == 1 ?
-          compareAsc(new Date(i1.createdAt), new Date(i2.createdAt))
-          :
-          compareDesc(new Date(i1.createdAt), new Date(i2.createdAt))
+        return direction == 1
+          ? compareAsc(new Date(i1.createdAt), new Date(i2.createdAt))
+          : compareDesc(new Date(i1.createdAt), new Date(i2.createdAt))
       }
   }
 
@@ -472,7 +506,7 @@ class Issues extends React.PureComponent {
   }
 
   render() {
-    if (this.props.githubCurrentUser === STATUS.INITIAL) {
+    if (this.props.status === STATUS.INITIAL) {
       return <Unauthorized onLogin={this.props.onLogin} />
     }
 
@@ -485,17 +519,14 @@ class Issues extends React.PureComponent {
       onReviewWork,
     } = this.props
 
-    const {
-      currentIssue,
-      showIssueDetail,
-      filters
-    } = this.state
+    const { currentIssue, showIssueDetail, filters } = this.state
 
     // better return early if we have no projects added
     if (projects.length === 0) return <Empty action={onNewProject} />
 
     // same if we only need to show Issue's Details screen
-    if (showIssueDetail) return this.renderCurrentIssue(currentIssue, this.props)
+    if (showIssueDetail)
+      return this.renderCurrentIssue(currentIssue, this.props)
 
     const currentSorter = this.generateSorter()
 
@@ -539,14 +570,17 @@ class Issues extends React.PureComponent {
         {({ data, loading, error, refetch }) => {
           if (data && data.node0) {
             // first, flatten data structure into array of issues
-            const { downloadedIssues, downloadedRepos } = this.flattenIssues(data)
+            const { downloadedIssues, downloadedRepos } = this.flattenIssues(
+              data
+            )
 
             // then apply filtering
             const issuesFiltered = this.applyFilters(downloadedIssues)
             // then determine whether any shown repos have more issues to fetch
-            const moreIssuesToShow = Object.keys(downloadedRepos).filter(repoId =>
-              downloadedRepos[repoId].hasNextPage
-            ).length > 0
+            const moreIssuesToShow =
+              Object.keys(downloadedRepos).filter(
+                repoId => downloadedRepos[repoId].hasNextPage
+              ).length > 0
 
             return (
               <StyledIssues>
@@ -563,13 +597,14 @@ class Issues extends React.PureComponent {
                             isSelected={issue.id in this.state.selectedIssues}
                             key={index}
                             {...issue}
-
                             onClick={this.handleIssueClick}
                             onSelect={this.handleIssueSelection}
                             onReviewApplication={onReviewApplication}
                             onSubmitWork={onSubmitWork}
                             onRequestAssignment={onRequestAssignment}
-                            onAllocateSingleBounty={this.handleAllocateSingleBounty}
+                            onAllocateSingleBounty={
+                              this.handleAllocateSingleBounty
+                            }
                             onUpdateBounty={this.handleUpdateBounty}
                             onReviewWork={onReviewWork}
                           />
@@ -581,7 +616,10 @@ class Issues extends React.PureComponent {
                     {moreIssuesToShow && (
                       <Button
                         mode="secondary"
-                        onClick={() => this.showMoreIssues(downloadedIssues, downloadedRepos)}>
+                        onClick={() =>
+                          this.showMoreIssues(downloadedIssues, downloadedRepos)
+                        }
+                      >
                         Show More
                       </Button>
                     )}
