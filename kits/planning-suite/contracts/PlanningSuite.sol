@@ -8,7 +8,7 @@ import "@tps/apps-address-book/contracts/AddressBook.sol";
 import "@tps/apps-allocations/contracts/Allocations.sol";
 import "@tps/apps-projects/contracts/Projects.sol";
 import { DotVoting } from "@tps/apps-dot-voting/contracts/DotVoting.sol";
-import { RewardsCore as Rewards } from "@tps/apps-rewards/contracts/RewardsCore.sol";
+import { Rewards as Rewards } from "@tps/apps-rewards/contracts/Rewards.sol";
 
 
 contract PlanningSuite is BetaKitBase {
