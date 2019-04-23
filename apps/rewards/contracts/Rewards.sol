@@ -120,17 +120,6 @@ contract Rewards is IsContract, AragonApp {
     /**
     * @dev This function creates a reward instance to be added to the rewards array. ID's
     *      are assigned the new intance's index of that array
-    * @notice Your Face
-    */
-    function getTotal()
-    external isInitialized
-    {
-        //totalAmountClaimed = totalClaimedAmount[_token];
-    }
-
-    /**
-    * @dev This function creates a reward instance to be added to the rewards array. ID's
-    *      are assigned the new intance's index of that array
     * @notice Create a new reward
     * @param _description description of the reward
     * @param _isMerit Recurring dividend reward one-off merit reward
@@ -152,7 +141,7 @@ contract Rewards is IsContract, AragonApp {
         uint _duration,
         uint _occurances,
         uint _delay
-    ) public isInitialized //auth(ADD_REWARD_ROLE) returns (uint rewardId)
+    ) public auth(ADD_REWARD_ROLE) returns (uint rewardId)	
     {
         require(isContract(_referenceToken), "_referenceToken must be a contract");
         if (_rewardToken != address(0)) {
@@ -161,7 +150,7 @@ contract Rewards is IsContract, AragonApp {
         require(!_isMerit || _occurances == 1, "merit rewards must only occur once");
         require(_occurances < 42, "Maximum number of occurances is 41");
         require(_startBlock > MiniMeToken(_referenceToken).creationBlock(),"cannot start period prior to the creation block");
-        uint rewardId = rewards.length++;
+        rewardId = rewards.length++;
         Reward storage reward = rewards[rewards.length - 1];
         reward.description = _description;
         reward.isMerit = _isMerit;
