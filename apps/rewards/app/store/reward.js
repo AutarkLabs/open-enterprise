@@ -48,7 +48,6 @@ export async function onRefreshRewards(nextState, { userAddress }) {
 
 const getRewardById = async (rewardId, userAddress) => {
   const currentBlock = await app.web3Eth('getBlockNumber').toPromise()
-  console.log('current Block: ', currentBlock)
 
   return await app.call('getReward', rewardId, { from: userAddress })
     .pipe(

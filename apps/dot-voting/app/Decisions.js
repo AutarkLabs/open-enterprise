@@ -6,6 +6,7 @@ import emptyIcon from './assets/new_dot_vote.svg'
 import Votes from './components/Votes'
 import tokenBalanceOfAbi from './abi/token-balanceof.json'
 import tokenDecimalsAbi from './abi/token-decimals.json'
+import tokenSymbolAbi from './abi/token-symbol.json'
 import { safeDiv } from './utils/math-utils'
 import { hasLoadedVoteSettings } from './utils/vote-settings'
 import { isBefore } from 'date-fns'
@@ -13,7 +14,7 @@ import { EmptyStateCard, SidePanel, breakpoint } from '@aragon/ui'
 import { VotePanelContent } from './components/Panels'
 import { EMPTY_CALLSCRIPT, getQuorumProgress, getTotalSupport } from './utils/vote-utils'
 
-const tokenAbi = [].concat(tokenBalanceOfAbi, tokenDecimalsAbi)
+const tokenAbi = [].concat(tokenBalanceOfAbi, tokenDecimalsAbi, tokenSymbolAbi)
 
 const EmptyIcon = () => <img src={emptyIcon} alt="" />
 

@@ -4,18 +4,12 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { map } from 'rxjs/operators'
 
-import {
-  AppBar,
-  AppView,
-  Main,
-  SidePanel,
-  observe,
-  font,
-} from '@aragon/ui'
+import { AppBar, Main, SidePanel, observe, font } from '@aragon/ui'
 import Decisions from './Decisions'
 import { hasLoadedVoteSettings } from './utils/vote-settings'
 import { NewPayoutVotePanelContent } from './components/Panels'
 import { networkContextType, MenuButton } from '../../../shared/ui'
+import AppView from './components/AppView'
 
 const initialState = {
   template: null,
@@ -83,7 +77,7 @@ class App extends React.Component {
             <AppBar>
               <AppBarTitle>
                 {displayMenuButton && <MenuButton />}
-                <AppBarLabel>Range Voting</AppBarLabel>
+                <AppBarLabel>Dot Voting</AppBarLabel>
               </AppBarTitle>
             </AppBar>
           }
@@ -91,16 +85,12 @@ class App extends React.Component {
           <Decisions
             onActivate={this.handlePanelOpen}
             app={this.props.app}
-            votes={
-              this.props.votes !== undefined ? this.props.votes : []
-            }
-            entries={
-              this.props.entries !== undefined ? this.props.entries : []
-            }
+            votes={this.props.votes !== undefined ? this.props.votes : []}
+            entries={this.props.entries !== undefined ? this.props.entries : []}
             voteTime={this.props.voteTime}
             minParticipationPct={
               this.props.minParticipationPct
-                ? (this.props.minParticipationPct / 10 ** 16)
+                ? this.props.minParticipationPct / 10 ** 16
                 : 'N/A'
             }
             tokenAddress={this.props.tokenAddress}

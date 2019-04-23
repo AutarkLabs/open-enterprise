@@ -1,4 +1,12 @@
-import { Main, TabBar, BaseStyles, observe, AppView, AppBar, font, Viewport } from '@aragon/ui'
+import {
+  Main,
+  TabBar,
+  observe,
+  AppView,
+  AppBar,
+  font,
+  Viewport,
+} from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { hot } from 'react-hot-loader'
@@ -12,45 +20,28 @@ import { STATUS } from '../../utils/github'
 import ErrorBoundary from './ErrorBoundary'
 import BigNumber from 'bignumber.js'
 import { ipfsAdd, computeIpfsString } from '../../utils/ipfs-helpers'
-import { networkContextType, MenuButton, AppTitleButton } from '../../../../../shared/ui'
 import {
-  REQUESTING_GITHUB_TOKEN,
+  networkContextType,
+  MenuButton,
+  AppTitleButton,
+} from '../../../../../shared/ui'
+import {
   REQUESTED_GITHUB_TOKEN_SUCCESS,
-  REQUESTED_GITHUB_TOKEN_FAILURE
+  REQUESTED_GITHUB_TOKEN_FAILURE,
 } from '../../store/eventTypes'
 import { CURRENT_USER } from '../../utils/gql-queries'
 
 const ASSETS_URL = './aragon-ui-assets/'
 
-const GITHUB_URI = 'https://github.com/login/oauth/authorize'
 
 // TODO: let the user customize the github app on settings screen?
 // TODO: Extract to an external js utility to keep this file clean
 // Variable fields depending on the execution environment:
 // TODO: This should be dynamically set depending on the execution environment (dev, prod...)
-let CLIENT_ID = ''
-let REDIRECT_URI = ''
-let AUTH_URI = ''
-
-switch (window.location.origin) {
-case 'http://localhost:3333':
-  CLIENT_ID = 'd556542aa7a03e640409'
-  REDIRECT_URI = 'http://localhost:3333'
-  AUTH_URI = 'https://tps-github-auth.now.sh/authenticate'
-  // TODO: change auth service to be more explicit to:
-  // AUTH_URI = 'https://dev-tps-github-auth.now.sh/authenticate'
-  break
-case 'http://localhost:8080':
-  CLIENT_ID = '686f96197cc9bb07a43d'
-  REDIRECT_URI = window.location.href
-  AUTH_URI = 'https://local-tps-github-auth.now.sh/authenticate'
-  break
-default:
-  console.log(
-    'GitHub OAuth: Scenario not implemented yet, GitHub API disabled for the current Projects App deployment'
-  )
-  break
-}
+const AUTH_URI = 'https://local-tps-github-auth.now.sh/authenticate'
+const GITHUB_URI = 'https://github.com/login/oauth/authorize'
+const REDIRECT_URI = 'https://tps-auth.now.sh'
+const CLIENT_ID = '686f96197cc9bb07a43d'
 
 export const githubPopup = (popup = null) => {
   // Checks to save some memory if the popup exists as a window object
@@ -93,7 +84,7 @@ const getURLParam = param => {
   return searchParam.get(param)
 }
 
-const initApolloClient = (token) =>
+const initApolloClient = token =>
   new ApolloClient({
     uri: 'https://api.github.com/graphql',
     request: operation => {
@@ -105,7 +96,7 @@ const initApolloClient = (token) =>
           },
         })
       }
-    }
+    },
   })
 
 /**
@@ -123,6 +114,15 @@ class App extends React.PureComponent {
   static propTypes = {
     app: PropTypes.object.isRequired,
     repos: PropTypes.arrayOf(PropTypes.object),
+    github: PropTypes.shape({
+      status: PropTypes.oneOf([
+        STATUS.AUTHENTICATED,
+        STATUS.FAILED,
+        STATUS.INITIAL,
+      ]).isRequired,
+      token: PropTypes.string,
+      event: PropTypes.string,
+    }),
   }
 
   static defaultProps = {
@@ -141,7 +141,7 @@ class App extends React.PureComponent {
       activeIndex: { tabIndex: 0, tabData: {} },
       githubLoading: false,
       githubCurrentUser: {},
-      client: initApolloClient(props.github && props.github.token || '')
+      client: initApolloClient((props.github && props.github.token) || ''),
     }
   }
 
@@ -167,6 +167,7 @@ class App extends React.PureComponent {
         '*'
       )
     window.close()
+
   }
 
   componentDidUpdate(prevProps) {
@@ -197,19 +198,22 @@ class App extends React.PureComponent {
       const code = message.data.value
       try {
         const token = await getToken(code)
-        this.setState({
-          githubLoading: false,
-          panelProps: {
-            onCreateProject: this.createProject,
-            status: STATUS.AUTHENTICATED,
+        this.setState(
+          {
+            githubLoading: false,
+            panelProps: {
+              onCreateProject: this.createProject,
+              status: STATUS.AUTHENTICATED,
+            },
           },
-        }, () => {
-          this.props.app.cache('github', {
-            event: REQUESTED_GITHUB_TOKEN_SUCCESS,
-            status: STATUS.AUTHENTICATED,
-            token,
-          })
-        })
+          () => {
+            this.props.app.cache('github', {
+              event: REQUESTED_GITHUB_TOKEN_SUCCESS,
+              status: STATUS.AUTHENTICATED,
+              token,
+            })
+          }
+        )
       } catch (err) {
         this.setState(
           {
@@ -225,7 +229,8 @@ class App extends React.PureComponent {
               status: STATUS.FAILED,
               token: null,
             })
-          })
+          }
+        )
       }
     }
   }
@@ -319,12 +324,12 @@ class App extends React.PureComponent {
 
     // computes an array of issues and denests the actual issue object for smart contract
     const issuesArray = []
-    const bountySymbol = this.props.bountySettings.bountyCurrency
+    const bountyAddr = this.props.bountySettings.bountyCurrency
 
     let bountyToken, bountyDecimals
 
     this.props.tokens.forEach(token => {
-      if (token.symbol === bountySymbol) {
+      if (token.addr === bountyAddr) {
         bountyToken = token.addr
         bountyDecimals = token.decimals
       }
@@ -353,7 +358,7 @@ class App extends React.PureComponent {
       booleanArray,
       tokenArray,
       ipfsString,
-      description,
+      description
     )
   }
 
@@ -526,14 +531,13 @@ class App extends React.PureComponent {
     window.addEventListener('message', this.handlePopupMessage)
   }
 
-
   handleSelect = index =>
     this.changeActiveIndex({ tabIndex: index, tabData: {} })
+
 
   render() {
     const { activeIndex, panel, panelProps, githubCurrentUser } = this.state
     const { bountySettings, displayMenuButton } = this.props
-
     const contentData = [
       {
         tabName: 'Overview',
@@ -552,8 +556,8 @@ class App extends React.PureComponent {
           caption: 'New Issue',
           onClick: this.newIssue,
           // TODO: check this, not very readable, and why do we need two variables doing exactly the same?
-          disabled: () => (projects.length ? false : true),
-          hidden: () => (projects.length ? false : true),
+          disabled: () => (this.props.repos.length ? false : true),
+          hidden: () => (this.props.repos.length ? false : true),
         },
       },
       {
@@ -563,6 +567,7 @@ class App extends React.PureComponent {
     ]
 
     const status = this.props.github ? this.props.github.status : STATUS.INITIAL
+    console.log('statuss', { state: this.state, props: this.props })
 
     const appTitleButton =
       status === STATUS.AUTHENTICATED &&
@@ -575,7 +580,6 @@ class App extends React.PureComponent {
 
     return (
       <Main publicUrl={ASSETS_URL}>
-        <BaseStyles />
         <Viewport>
           {({ below }) => (
             <ApolloProvider client={this.state.client}>
@@ -584,7 +588,8 @@ class App extends React.PureComponent {
                 appBar={
                   <AppBar
                     endContent={
-                      appTitleButton && !appTitleButton.hidden() && (
+                      appTitleButton &&
+                      !appTitleButton.hidden() && (
                         <AppTitleButton
                           caption={appTitleButton.caption}
                           onClick={appTitleButton.onClick}
@@ -615,7 +620,9 @@ class App extends React.PureComponent {
                     bountySettings={bountySettings}
                     githubCurrentUser={githubCurrentUser}
                     githubLoading={this.state.githubLoading}
-                    projects={this.props.repos !== undefined ? this.props.repos : []}
+                    projects={
+                      this.props.repos !== undefined ? this.props.repos : []
+                    }
                     bountyIssues={
                       this.props.issues !== undefined ? this.props.issues : []
                     }
@@ -638,7 +645,6 @@ class App extends React.PureComponent {
                     onReviewApplication={this.reviewApplication}
                     onReviewWork={this.reviewWork}
                   />
-
                 </ErrorBoundary>
               </AppView>
               <PanelManager

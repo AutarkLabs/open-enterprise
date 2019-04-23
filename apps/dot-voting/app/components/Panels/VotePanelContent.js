@@ -85,13 +85,15 @@ class VotePanelContent extends React.Component {
   }
   loadUserBalance = () => {
     const { tokenContract, user } = this.props
+    const { snapshotBlock } = this.props.vote.data
     if (tokenContract && user) {
-      combineLatest(tokenContract.balanceOf(user), tokenContract.decimals())
+      combineLatest(tokenContract.balanceOfAt(user, snapshotBlock), tokenContract.decimals(), tokenContract.symbol())
         .pipe(first())
-        .subscribe(([ balance, decimals ]) => {
+        .subscribe(([ balance, decimals, symbol ]) => {
           this.setState({
             userBalance: balance,
             decimals: decimals,
+            voteTokenSymbol: symbol,
           })
         })
     }
@@ -153,17 +155,21 @@ class VotePanelContent extends React.Component {
         .toString()
     )
     this.setState({ voteAmounts, voteWeights })
+
   }
 
   render() {
     const { network, vote, minParticipationPct } = this.props
     const {
       showResults,
-      voteOptions,
       remaining,
       voteAmounts,
       voteWeights,
       voteWeightsToggled,
+      userBalance,
+      voteOptions,
+      decimals,
+      voteTokenSymbol
     } = this.state
 
     if (!vote) {
@@ -177,9 +183,19 @@ class VotePanelContent extends React.Component {
       options,
       type,
       candidateSupport,
+      tokenSymbol
     } = vote.data
     const displayBalance = BigNumber(vote.data.balance)
-      .div(BigNumber(10 ** this.state.decimals))
+      .div(BigNumber(10 ** decimals))
+      .dp(3)
+      .toString()
+
+    const displayUserBalance = BigNumber(userBalance)
+      .div(BigNumber(10 ** decimals))
+      .dp(3)
+      .toString()
+    const displayCandidateSupport = BigNumber(candidateSupport)
+      .div(BigNumber(10 ** 16))
       .dp(3)
       .toString()
     // TODO: Show decimals for vote participation only when needed
@@ -193,8 +209,10 @@ class VotePanelContent extends React.Component {
     options.forEach(option => {
       totalSupport = totalSupport + parseFloat(option.value, 10)
     })
-
     const showInfo = type === 'allocation' || type === 'curation'
+
+    const formatDate = date =>
+      format(date, 'dd/MM/yy') + ' at '  + format(date, 'HH:mm') + 'UTC'
 
     return (
       <div>
@@ -253,7 +271,7 @@ class VotePanelContent extends React.Component {
                 <h2>
                   <Label>Allocation Amount</Label>
                 </h2>
-                <p>{' ' + displayBalance + ' ' + vote.data.tokenSymbol}</p>
+                <p>{' ' + displayBalance + ' ' + tokenSymbol}</p>
               </React.Fragment>
             ) : (
               <React.Fragment>
@@ -277,7 +295,7 @@ class VotePanelContent extends React.Component {
           </div>
         </SidePanelSplit>
 
-        {open && (
+        {open && (userBalance !== '0') && (
           <div>
             <AdjustContainer>
               <FirstLabel>Options</FirstLabel>
@@ -315,19 +333,22 @@ class VotePanelContent extends React.Component {
               >
                 {remaining} remaining
               </Text>
-              <SubmitButton mode="strong" wide onClick={this.handleVoteSubmit}>
+              <div>
+                <SubmitButton mode="strong" wide onClick={this.handleVoteSubmit}>
                 Submit Vote
-              </SubmitButton>
-              {showInfo && (
-                <Info.Action title="Info">
-                  {'Your vote will be weighted by '}
-                  {BigNumber(this.state.userBalance)
-                    .div(BigNumber(10 ** this.state.decimals))
-                    .dp(3)
-                    .toString()}
-                  {', which is your token balance. No tokens will be spent.'}
-                </Info.Action>
-              )}
+                </SubmitButton>
+                <div>
+                  {showInfo && (
+                    <Info.Action title="Info">
+                      You will cast your vote with{' '}
+                      {displayUserBalance + ' ' + voteTokenSymbol}
+                      , since it was your balance when the vote was created (
+                      {formatDate(vote.data.startDate)}
+                      )
+                    </Info.Action>
+                  )}
+                </div>
+              </div>
             </AdjustContainer>
             <SidePanelSeparator />
           </div>
@@ -340,14 +361,14 @@ class VotePanelContent extends React.Component {
           </div>
         )}
         <div>
-          {open &&
+          {open && (userBalance !== '0') &&
             <ShowText
               onClick={() => this.setState({ showResults: !showResults })}
             >
               {showResults ? 'Hide Voting Results' : 'Show Voting Results'}
             </ShowText>
           }
-          {(showResults || !open) && voteWeights &&
+          {(showResults || !open || (userBalance === '0')) && voteWeights &&
             options.map((option, index) => (
               <ProgressBarThick
                 key={index}
@@ -405,9 +426,17 @@ class VotePanelContent extends React.Component {
                 }
               />
             ))}
+          {open && (userBalance === '0') &&
+        <div>
+          <Info.Action title="Warning">
+          This account cannot cast a vote because it did not hold any{' '} {voteTokenSymbol} at the time this vote was created (
+            {formatDate(vote.data.startDate)}
+            )
+          </Info.Action>
+        </div>}
           {showResults && (candidateSupport > 0) && (
             <Text size="xsmall" color={theme.textSecondary}>
-              {'A minimum of ' + candidateSupport + ' is required for an option to become validated'}
+              {'A minimum of ' + displayCandidateSupport + '% is required for an option to become validated'}
             </Text>
           )}
         </div>

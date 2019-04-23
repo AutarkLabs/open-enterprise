@@ -53,7 +53,6 @@ class NewReward extends React.Component {
 
   onSubmit = () => {
     const dataToSend = { ...this.state }
-    console.log(this.props, this.state)
     dataToSend.amount = toCurrency(this.state.amount,this.props.balances[this.state.amountCurrency].decimals)
     dataToSend.currency = this.props.balances[this.state.amountCurrency].address
     dataToSend.disbursementCycle = disbursementCycles[this.state.disbursementCycle]
