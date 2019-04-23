@@ -133,6 +133,7 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
   }
   case BOUNTY_SETTINGS_CHANGED:
     nextState = await syncSettings(nextState) // No returnValues on this
+    nextState = await syncTokens(nextState, { token: nextState.bountySettings.bountyCurrency }, vaultContract )
     return nextState
   case VAULT_DEPOSIT:
     if (vaultAddress !== address) return nextState
