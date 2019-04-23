@@ -24,7 +24,7 @@ const planningAppIds = planningApps.map(app =>
 
 const globalArtifacts = this.artifacts // Not injected unless called directly via truffle
 const defaultOwner =
-  process.env.OWNER || '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7'
+  process.env.OWNER || '0x8d1EEa0Ae8BB40B192F6671293D08888450D9580'
 const defaultENSAddress =
   process.env.ENS || '0x98Df287B6C145399Aaa709692c8D308357bC085D'
 const defaultDAOFactoryAddress = process.env.DAO_FACTORY

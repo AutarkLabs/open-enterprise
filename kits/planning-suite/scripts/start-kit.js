@@ -6,7 +6,7 @@ const getEventResult = (receipt, event, param) =>
 
 // ensure alphabetic order
 const defaultOwner =
-  process.env.OWNER || '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7'
+  process.env.OWNER || '0x8d1EEa0Ae8BB40B192F6671293D08888450D9580'
 const defaultPlanningSuiteAddr =
   process.env.PLANNING_SUITE_KIT || '0xf9531f7e84600db4bac3c03f9eb706fdc6b06e98'
 
@@ -23,7 +23,7 @@ module.exports = async (
   const neededSupport = pct16(50)
   const minimumAcceptanceQuorum = pct16(20)
   const minParticipationPct = pct16(50)
-  const candidateSupportPct = pct16(10)
+  const candidateSupportPct = 0
   const votingTime = 900
   console.log('Creating kit instance at ', planningSuiteAddr)
 
@@ -32,7 +32,7 @@ module.exports = async (
   // aragonId = 'planning-suite-dao-' + Math.floor(Math.random() * 1000)
   // tokenName = 'AutarkToken1'
   // tokenSymbol = 'autark1'
-  aragonId = 'duneatreides'
+  aragonId = 'atreidesdao'
   tokenName = 'Spice'
   tokenSymbol = 'spice'
 
