@@ -78,6 +78,11 @@ const ProfilePicture = ({ ethereumAddress }) => {
           imageCid,
         })}
       >
+        {isEditing && (
+          <TransparentEditOverlay>
+            <EditIcon />
+          </TransparentEditOverlay>
+        )}
         <input {...getInputProps({ disabled: !isEditing })} />
       </Container>
     </Fragment>
@@ -114,19 +119,13 @@ const getBorderStyle = props => {
 
 const Container = styled.div`
   cursor: ${props => props.isEditing && 'pointer'};
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   padding: 20px;
   border-width: 2px;
-  border-radius: 2px;
   border-color: ${props => getBorderColor(props)};
   border-style: ${props => getBorderStyle(props)};
-  background: ${props => getBackground(props)};
+  background-image: ${props => getBackground(props)};
   background-size: 150px 150px;
-  color: #bdbdbd;
-  outline: none;
+  background-color: rgba(0, 0, 0, ${props => (props.isEditing ? '.2' : '1')});
   transition: border 0.24s ease-in-out;
   border-radius: 50%;
   width: 150px;
@@ -135,7 +134,19 @@ const Container = styled.div`
   top: 30px;
 `
 
-const EditIcon = styled.img`
+const TransparentEditOverlay = styled.div`
+  width: 146px;
+  height: 146px;
+  cursor: pointer;
+  background-color: white;
+  position: absolute;
+  opacity: 0.5;
+  top: 0px;
+  left: 0px;
+  border-radius: 50%;
+`
+
+const EditIcon = styled.img.attrs({ src: editImage })`
   width: 25px;
   position: absolute;
   right: 15px;
