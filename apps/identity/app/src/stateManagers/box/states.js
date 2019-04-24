@@ -11,6 +11,9 @@ export const fetchingPublicProfile = () => ({
   unlockedProf: false,
   unlockedProfSuccess: false,
   editingProfile: false,
+  savingProfile: false,
+  savedProfile: false,
+  savedProfileSucess: false,
   unlockedBox: {},
   publicProfile: {},
   forms: {
@@ -143,4 +146,33 @@ export const uploadedImageError = (state, error) => ({
   uploadedImageSuccess: false,
   uploadedImage: true,
   image_error: error,
+})
+
+export const requestedSaveProfile = state => ({
+  ...state,
+  savingProfile: true,
+  savedProfile: false,
+  savedProfileSucess: false,
+})
+
+export const requestedSaveProfileSuccess = (state, profile) => ({
+  ...state,
+  savingProfile: false,
+  savedProfile: true,
+  savedProfileSucess: true,
+  editingProfile: false,
+  publicProfile: {
+    ...state.publicProfile,
+    ...profile,
+  },
+  changed: [],
+})
+
+export const requestedSaveProfileError = (state, error) => ({
+  ...state,
+  savingProfile: false,
+  savedProfile: true,
+  savedProfileSucess: true,
+  editingProfile: false,
+  error,
 })

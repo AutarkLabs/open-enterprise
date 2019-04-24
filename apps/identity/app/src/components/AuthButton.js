@@ -11,7 +11,11 @@ import {
   profileUnlockSuccess,
   profileUnlockFailure,
   requestProfileEdit,
+  savingProfile,
+  savedProfile,
+  saveProfileError,
 } from '../stateManagers/box'
+import { calculateChanged } from '../../modules/3box-LD'
 
 const getButtonTitle = ({
   unlockedProfSuccess,
@@ -23,38 +27,53 @@ const getButtonTitle = ({
   if (loadedPublicProfSuccess) return 'Log In'
 }
 
-const unlockOrCreateProfile = async (connectedAccount, dispatch, api) => {
-  dispatch(requestedProfileUnlock(connectedAccount))
-  try {
-    const profile = new Profile(connectedAccount, api)
-    await profile.unlockOrCreate()
-    dispatch(profileUnlockSuccess(connectedAccount, profile))
-  } catch (error) {
-    dispatch(profileUnlockFailure(connectedAccount, error))
-  }
-}
-
-const editProfile = (connectedAccount, dispatch) =>
-  dispatch(requestProfileEdit(connectedAccount))
-
-const getButtonClickHandler = ({
-  unlockedProfSuccess,
-  loadedPublicProfSuccess,
-  editingProfile,
-}) => {
-  if (editingProfile) return () => console.log('SAVE YOUR PROFILE')
-  if (unlockedProfSuccess) return editProfile
-  if (loadedPublicProfSuccess) return unlockOrCreateProfile
-  return () => {
-    throw new Error('Error thrown in the click handler, unmanaged state')
-  }
-}
-
 const AuthButton = () => {
   const { boxes, dispatch } = useContext(BoxContext)
   const { api, connectedAccount } = useAragonApi()
 
   const buttonDisabled = !boxes[connectedAccount]
+
+  const unlockOrCreateProfile = async connectedAccount => {
+    dispatch(requestedProfileUnlock(connectedAccount))
+    try {
+      const profile = new Profile(connectedAccount, api)
+      await profile.unlockOrCreate()
+      dispatch(profileUnlockSuccess(connectedAccount, profile))
+    } catch (error) {
+      dispatch(profileUnlockFailure(connectedAccount, error))
+    }
+  }
+
+  const editProfile = connectedAccount =>
+    dispatch(requestProfileEdit(connectedAccount))
+
+  const saveProfile = async connectedAccount => {
+    dispatch(savingProfile(connectedAccount))
+
+    try {
+      const { changed, forms, unlockedBox } = boxes[connectedAccount]
+
+      const [changedFields, changedValues] = calculateChanged(changed, forms)
+      await unlockedBox.setPublicFields(changedFields, changedValues)
+      dispatch(savedProfile(connectedAccount, forms))
+    } catch (error) {
+      dispatch(saveProfileError(connectedAccount, error))
+    }
+  }
+
+  const getButtonClickHandler = ({
+    unlockedProfSuccess,
+    loadedPublicProfSuccess,
+    editingProfile,
+  }) => {
+    if (editingProfile) return saveProfile
+    if (unlockedProfSuccess) return editProfile
+    if (loadedPublicProfSuccess) return unlockOrCreateProfile
+    return () => {
+      throw new Error('Error thrown in the click handler, unmanaged state')
+    }
+  }
+
   const buttonTitle = buttonDisabled
     ? 'Log In'
     : getButtonTitle(boxes[connectedAccount])
@@ -67,7 +86,7 @@ const AuthButton = () => {
     <StyledButton
       disabled={buttonDisabled}
       mode="strong"
-      onClick={() => buttonClickHandler(connectedAccount, dispatch, api)}
+      onClick={() => buttonClickHandler(connectedAccount)}
     >
       {buttonTitle}
     </StyledButton>

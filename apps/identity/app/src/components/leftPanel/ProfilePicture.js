@@ -63,8 +63,13 @@ const ProfilePicture = ({ ethereumAddress }) => {
     boxes[ethereumAddress].publicProfile.image &&
     boxes[ethereumAddress].publicProfile.image.length > 0
 
-  const imageCid =
-    hasImage && boxes[ethereumAddress].forms.image[0].contentUrl['/']
+  const publicProfileImageCid =
+    hasImage && boxes[ethereumAddress].publicProfile.image[0].contentUrl['/']
+
+  const addedImage = userLoaded && boxes[ethereumAddress].uploadedImageSuccess
+
+  const uploadedImageCid =
+    addedImage && boxes[ethereumAddress].forms.image[0].contentUrl['/']
 
   return (
     <Fragment>
@@ -75,7 +80,8 @@ const ProfilePicture = ({ ethereumAddress }) => {
           isDragAccept,
           isDragReject,
           isEditing,
-          imageCid,
+          publicProfileImageCid,
+          uploadedImageCid,
         })}
       >
         {isEditing && (
@@ -106,8 +112,10 @@ const getBorderColor = props => {
 }
 
 const getBackground = props => {
-  if (props.imageCid)
-    return `url(https://ipfs.infura.io/ipfs/${props.imageCid})`
+  const imageCid = props.isEditing
+    ? props.uploadedImageCid
+    : props.publicProfileImageCid
+  if (imageCid) return `url(https://ipfs.infura.io/ipfs/${imageCid})`
 
   return `url(${addImage})`
 }
@@ -125,7 +133,6 @@ const Container = styled.div`
   border-style: ${props => getBorderStyle(props)};
   background-image: ${props => getBackground(props)};
   background-size: 150px 150px;
-  background-color: rgba(0, 0, 0, ${props => (props.isEditing ? '.2' : '1')});
   transition: border 0.24s ease-in-out;
   border-radius: 50%;
   width: 150px;

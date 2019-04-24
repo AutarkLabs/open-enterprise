@@ -10,6 +10,9 @@ import {
   UPLOADING_IMAGE,
   UPLOADED_IMAGE_SUCCESS,
   UPLOADED_IMAGE_FAILURE,
+  REQUESTED_PROFILE_SAVE,
+  REQUESTED_PROFILE_SAVE_SUCCESS,
+  REQUESTED_PROFILE_SAVE_ERROR,
 } from './actionTypes'
 
 import {
@@ -24,6 +27,9 @@ import {
   uploadingImage,
   uploadedImage,
   uploadedImageError,
+  requestedSaveProfile,
+  requestedSaveProfileSuccess,
+  requestedSaveProfileError,
 } from './states'
 
 import { log } from '../../../utils'
@@ -135,6 +141,35 @@ const boxReducer = (prevState, action) => {
       const nextState = { ...prevState }
       const ethereumAddress = action.meta.ethereumAddress
       nextState[ethereumAddress] = uploadedImageError(
+        prevState[ethereumAddress],
+        action.error
+      )
+      logStateUpdate(action, prevState, nextState)
+      return nextState
+    }
+    case REQUESTED_PROFILE_SAVE: {
+      const nextState = { ...prevState }
+      const ethereumAddress = action.meta.ethereumAddress
+      nextState[ethereumAddress] = requestedSaveProfile(
+        prevState[ethereumAddress]
+      )
+      logStateUpdate(action, prevState, nextState)
+      return nextState
+    }
+    case REQUESTED_PROFILE_SAVE_SUCCESS: {
+      const nextState = { ...prevState }
+      const ethereumAddress = action.meta.ethereumAddress
+      nextState[ethereumAddress] = requestedSaveProfileSuccess(
+        prevState[ethereumAddress],
+        action.payload.profile
+      )
+      logStateUpdate(action, prevState, nextState)
+      return nextState
+    }
+    case REQUESTED_PROFILE_SAVE_ERROR: {
+      const nextState = { ...prevState }
+      const ethereumAddress = action.meta.ethereumAddress
+      nextState[ethereumAddress] = requestedSaveProfileError(
         prevState[ethereumAddress],
         action.error
       )

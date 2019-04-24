@@ -10,6 +10,9 @@ import {
   UPLOADING_IMAGE,
   UPLOADED_IMAGE_SUCCESS,
   UPLOADED_IMAGE_FAILURE,
+  REQUESTED_PROFILE_SAVE,
+  REQUESTED_PROFILE_SAVE_SUCCESS,
+  REQUESTED_PROFILE_SAVE_ERROR,
 } from './actionTypes'
 
 export const fetchingProfile = ethereumAddress => ({
@@ -100,6 +103,31 @@ export const uploadedImage = (ethereumAddress, imageContentHash) => ({
 
 export const uploadedImageFailure = (ethereumAddress, error) => ({
   type: UPLOADED_IMAGE_FAILURE,
+  meta: {
+    ethereumAddress,
+  },
+  error,
+})
+
+export const savingProfile = (ethereumAddress, profile) => ({
+  type: REQUESTED_PROFILE_SAVE,
+  meta: {
+    ethereumAddress,
+  },
+})
+
+export const savedProfile = (ethereumAddress, profile) => ({
+  type: REQUESTED_PROFILE_SAVE_SUCCESS,
+  meta: {
+    ethereumAddress,
+  },
+  payload: {
+    profile,
+  },
+})
+
+export const saveProfileError = (ethereumAddress, error) => ({
+  type: REQUESTED_PROFILE_SAVE_ERROR,
   meta: {
     ethereumAddress,
   },
