@@ -1,7 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
-import AppLayout from './components/AppLayout'
 import emptyIcon from './assets/new_dot_vote.svg'
 import Votes from './components/Votes'
 import tokenBalanceOfAbi from './abi/token-balanceof.json'
@@ -151,7 +150,7 @@ class Decisions extends React.Component {
 
     return (
       <StyledDecisions>
-        <AppLayout.ScrollWrapper>
+        <ScrollWrapper>
           {displayVotes ? (
             <Votes votes={preparedVotes} onSelectVote={this.handleVoteOpen} app={app}/>
           ) : (
@@ -171,7 +170,7 @@ class Decisions extends React.Component {
               />
             </div>
           )}
-        </AppLayout.ScrollWrapper>
+        </ScrollWrapper>
 
         {displayVotes && currentVote &&(
           <SidePanel
@@ -209,6 +208,12 @@ const StyledDecisions = styled.div`
   justify-content: stretch;
   overflow: auto;
   flex-grow: 1;
+`
+const ScrollWrapper = styled.div`
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  overflow: auto;
 `
 
 export default Decisions
