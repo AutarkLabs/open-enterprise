@@ -7,6 +7,9 @@ import {
   PROFILE_UNLOCK_FAILURE,
   REQUEST_EDIT_PROFILE,
   EDIT_FIELD,
+  UPLOADING_IMAGE,
+  UPLOADED_IMAGE_SUCCESS,
+  UPLOADED_IMAGE_FAILURE,
 } from './actionTypes'
 
 import {
@@ -18,6 +21,9 @@ import {
   profileUnlockFailed,
   requestProfileEdit,
   editedField,
+  uploadingImage,
+  uploadedImage,
+  uploadedImageError,
 } from './states'
 
 import { log } from '../../../utils'
@@ -103,6 +109,34 @@ const boxReducer = (prevState, action) => {
         prevState[ethereumAddress],
         field,
         value
+      )
+      logStateUpdate(action, prevState, nextState)
+      return nextState
+    }
+    case UPLOADING_IMAGE: {
+      const nextState = { ...prevState }
+      const ethereumAddress = action.meta.ethereumAddress
+      nextState[ethereumAddress] = uploadingImage(prevState[ethereumAddress])
+      logStateUpdate(action, prevState, nextState)
+      return nextState
+    }
+    case UPLOADED_IMAGE_SUCCESS: {
+      const nextState = { ...prevState }
+      const ethereumAddress = action.meta.ethereumAddress
+      const { cid } = action.payload
+      nextState[ethereumAddress] = uploadedImage(
+        prevState[ethereumAddress],
+        cid
+      )
+      logStateUpdate(action, prevState, nextState)
+      return nextState
+    }
+    case UPLOADED_IMAGE_FAILURE: {
+      const nextState = { ...prevState }
+      const ethereumAddress = action.meta.ethereumAddress
+      nextState[ethereumAddress] = uploadedImageError(
+        prevState[ethereumAddress],
+        action.error
       )
       logStateUpdate(action, prevState, nextState)
       return nextState

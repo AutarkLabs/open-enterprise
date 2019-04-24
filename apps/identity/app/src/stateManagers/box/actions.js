@@ -7,6 +7,9 @@ import {
   PROFILE_UNLOCK_FAILURE,
   REQUEST_EDIT_PROFILE,
   EDIT_FIELD,
+  UPLOADING_IMAGE,
+  UPLOADED_IMAGE_SUCCESS,
+  UPLOADED_IMAGE_FAILURE,
 } from './actionTypes'
 
 export const fetchingProfile = ethereumAddress => ({
@@ -76,4 +79,29 @@ export const editField = (ethereumAddress, field, value) => ({
   payload: {
     value,
   },
+})
+
+export const uploadingImage = ethereumAddress => ({
+  type: UPLOADING_IMAGE,
+  meta: {
+    ethereumAddress,
+  },
+})
+
+export const uploadedImage = (ethereumAddress, imageContentHash) => ({
+  type: UPLOADED_IMAGE_SUCCESS,
+  meta: {
+    ethereumAddress,
+  },
+  payload: {
+    cid: imageContentHash,
+  },
+})
+
+export const uploadedImageFailure = (ethereumAddress, error) => ({
+  type: UPLOADED_IMAGE_FAILURE,
+  meta: {
+    ethereumAddress,
+  },
+  error,
 })

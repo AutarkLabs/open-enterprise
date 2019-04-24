@@ -3,13 +3,13 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Card } from '@aragon/ui'
 
-import { BoxContext } from '../wrappers/box'
-import { editField } from '../stateManagers/box'
+import { BoxContext } from '../../wrappers/box'
+import { editField } from '../../stateManagers/box'
 import {
   ReadOrEditTextField,
   ReadOrEditSafeLink,
   ReadOrEditTextArea,
-} from './readOrEditFields'
+} from '../readOrEditFields'
 
 const InformationCard = ({ ethereumAddress }) => {
   const { boxes, dispatch } = useContext(BoxContext)
@@ -37,6 +37,10 @@ const InformationCard = ({ ethereumAddress }) => {
 
   const getSingleLevelNestedField = field => {
     if (!userLoaded) return ''
+
+    const hasValue = !!boxes[ethereumAddress].publicProfile[field]
+
+    if (!hasValue) return ''
 
     const valueFromPublicProfile =
       boxes[ethereumAddress].publicProfile[field].name || ''
@@ -124,10 +128,10 @@ const InformationCard = ({ ethereumAddress }) => {
             size="normal"
           />
           <SmallMargin />
-          <ReadOrEditTextArea
-            value={getValue('description')}
-            placeholder={'Description'}
-            onChange={e => onChange(e.target.value, 'description')}
+          <ReadOrEditTextField
+            value={getSchoolValue()}
+            placeholder={'Education'}
+            onChange={e => onChange(e.target.value, 'school')}
             type="text"
             editing={editing}
             disabled={!userLoaded}
@@ -135,9 +139,9 @@ const InformationCard = ({ ethereumAddress }) => {
           />
           <SmallMargin />
           <ReadOrEditTextArea
-            value={getSchoolValue()}
-            placeholder={'Education'}
-            onChange={e => onChange(e.target.value, 'school')}
+            value={getValue('description')}
+            placeholder={'Description'}
+            onChange={e => onChange(e.target.value, 'description')}
             type="text"
             editing={editing}
             disabled={!userLoaded}

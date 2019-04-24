@@ -8,7 +8,7 @@ import InformationCard from './InformationCard'
 const LeftPanel = ({ ethereumAddress }) => {
   return (
     <AlignCenter>
-      <ProfilePicture />
+      <ProfilePicture ethereumAddress={ethereumAddress} />
       <InformationCard ethereumAddress={ethereumAddress} />
     </AlignCenter>
   )

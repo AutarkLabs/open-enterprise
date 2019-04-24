@@ -14,3 +14,13 @@ export const homeLocation = locationName => ({
   '@type': 'Residence',
   name: locationName,
 })
+
+export const image = imageHash => {
+  return [
+    {
+      '@type': 'ImageObject',
+      '@context': 'http://schema.org/',
+      contentUrl: { '/': imageHash },
+    },
+  ]
+}

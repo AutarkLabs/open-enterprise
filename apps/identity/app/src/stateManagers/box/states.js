@@ -1,5 +1,5 @@
 import { populateFormValue } from '../../../modules/3box-LD'
-import { worksFor, homeLocation } from '../../../modules/things'
+import { worksFor, homeLocation, image } from '../../../modules/things'
 
 export const initialState = {}
 
@@ -23,6 +23,9 @@ export const fetchingPublicProfile = () => ({
     description: '',
   },
   changed: [],
+  uploadingImage: false,
+  uploadedImageSuccess: false,
+  uploadedImage: false,
 })
 
 export const fetchedPublicProfileSuccess = (state, publicProfile) => {
@@ -114,3 +117,30 @@ export const editedField = (state, field, value) => {
     changed: calculateChanged(state.changed, field),
   }
 }
+
+export const uploadingImage = state => ({
+  ...state,
+  uploadingImage: true,
+  uploadedImageSuccess: false,
+  uploadedImage: false,
+})
+
+export const uploadedImage = (state, imageHash) => ({
+  ...state,
+  uploadingImage: false,
+  uploadedImageSuccess: true,
+  uploadedImage: true,
+  forms: {
+    ...state.forms,
+    image: image(imageHash),
+  },
+  changed: calculateChanged(state.changed, 'image'),
+})
+
+export const uploadedImageError = (state, error) => ({
+  ...state,
+  uploadingImage: false,
+  uploadedImageSuccess: false,
+  uploadedImage: true,
+  image_error: error,
+})

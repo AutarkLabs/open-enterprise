@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
-import LeftPanel from './LeftPanel'
+import LeftPanel from './leftPanel'
 import RightPanel from './RightPanel'
 
 const PanelSeparator = styled.div`
