@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "dependencies": {
-    "@aragon/os": "^4.0.1",
     "@aragon/apps-shared-minime": "^1.0.0",
     "@aragon/apps-token-manager": "2.0.0",
-    "@aragon/apps-voting": "2.0.0"
+    "@aragon/apps-voting": "2.0.0",
+    "@aragon/os": "^4.0.1"
   },
   "devDependencies": {
     "@aragon/cli": "^5.4.0",
