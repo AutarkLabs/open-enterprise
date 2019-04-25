@@ -61,13 +61,20 @@ class DateInput extends React.PureComponent {
     }
   }
 
+  handleChange = ({ target: { name, value } }) => {
+    const l = value.length
+    console.log('+', name, value, value.charCodeAt(l - 1))
+    this.setState({ [name]: value })
+  }
+
   handleSelect = date => {
     this.props.onChange(date)
+console.log('date picked: ', date)
     this.setState({ showPicker: false })
   }
 
   render () {
-    const { value, width } = this.props
+    const { value, width, name } = this.props
     const formattedValue = formatDate(value, this.props.format)
 
     return (
@@ -78,7 +85,9 @@ class DateInput extends React.PureComponent {
         <TextInputDate
           value={formattedValue}
           onClick={this.handleClick}
+          onChange={this.handleChange}
           width={width}
+          name={name}
         />
 
         <IconWrapper onClick={this.handleClick}>
@@ -102,6 +111,7 @@ DateInput.propTypes = {
   onChange: PropTypes.func.isRequired,
   value: PropTypes.any,
   width: PropTypes.string,
+  name: PropTypes.string,
 }
 
 DateInput.defaultProps = {
