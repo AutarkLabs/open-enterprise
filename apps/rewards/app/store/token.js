@@ -48,14 +48,15 @@ export async function initializeTokens(state, settings) {
 
 export async function vaultLoadBalance(state, { returnValues }, settings) {
   const { token } = returnValues
-  const r = await updateBalances(
+  const { balances, refTokens } = await updateBalancesAndRefTokens(
     state,
     token || settings.ethToken.address,
     settings
   )
   return {
     ...state,
-    balances: r,
+    balances,
+    refTokens,
   }
 }
 
@@ -66,13 +67,14 @@ export async function vaultLoadBalance(state, { returnValues }, settings) {
  ***********************/
 
 async function loadEthBalance(state, settings) {
+  const { balances } = await updateBalancesAndRefTokens(state, settings.ethToken.address, settings)
   return {
     ...state,
-    balances: await updateBalances(state, settings.ethToken.address, settings),
+    balances,
   }
 }
 
-async function updateBalances({ balances = [] }, tokenAddress, settings) {
+export async function updateBalancesAndRefTokens({ balances = [], refTokens = [] }, tokenAddress, settings) {
   const tokenContract = tokenContracts.has(tokenAddress)
     ? tokenContracts.get(tokenAddress)
     : app.external(tokenAddress, tokenAbi)
@@ -82,16 +84,30 @@ async function updateBalances({ balances = [] }, tokenAddress, settings) {
     addressesEqual(address, tokenAddress)
   )
   if (balancesIndex === -1) {
-    return balances.concat(
-      await newBalanceEntry(tokenContract, tokenAddress, settings)
-    )
+    const newBalance = await newBalanceEntry(tokenContract, tokenAddress, settings)
+    let newRefTokens = Array.from(refTokens)
+    console.log('startBlock: ',newBalance.startBlock)
+    if (newBalance.startBlock) {
+      console.log('refupdate entered')
+      const refIndex = refTokens.findIndex(({ address }) =>
+        addressesEqual(address, tokenAddress)
+      )
+      console.log(refIndex)
+      if (refIndex === -1) {
+        const { name, symbol, address, startBlock } = newBalance
+        newRefTokens = newRefTokens.concat({ name, symbol, address, startBlock })
+      }
+    }
+    const newBalances = balances.concat(newBalance)
+    return { balances: newBalances, refTokens: newRefTokens }
   } else {
     const newBalances = Array.from(balances)
     newBalances[balancesIndex] = {
       ...balances[balancesIndex],
       amount: await loadTokenBalance(tokenAddress, settings),
     }
-    return newBalances
+
+    return { balances: newBalances, refTokens }
   }
 }
 

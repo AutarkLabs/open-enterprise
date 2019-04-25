@@ -117,6 +117,7 @@ class App extends React.Component {
         onNewReward: this.onNewReward,
         vaultBalance: '432.9 ETH',
         balances: this.props.balances,
+        refTokens: this.props.refTokens,
         app: this.props.app,
         network: this.props.network,
       },
@@ -153,6 +154,7 @@ class App extends React.Component {
       reward.delay = 0
       reward.duration = millisecondsToBlocks(reward.dateStart, reward.dateEnd)
     }
+    console.log('submitting: ',reward)
     this.props.app.newReward(
       reward.description, //string _description
       reward.isMerit, //bool _isMerit,
@@ -207,6 +209,7 @@ class App extends React.Component {
   render() {
     const { panel, panelProps } = this.state
     const { network, displayMenuButton } = this.props
+    console.log('reference tokens: ',this.props.refTokens)
 
     return (
       <Main>

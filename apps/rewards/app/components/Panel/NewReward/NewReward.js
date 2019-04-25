@@ -80,7 +80,7 @@ class NewReward extends React.Component {
     dataToSend.disbursementCycle = disbursementCycles[this.state.disbursementCycle]
     dataToSend.disbursementDelay = disbursementDates[this.state.disbursementDate]
     dataToSend.isMerit = !dataToSend.rewardType ? true : false
-    dataToSend.referenceAsset = this.state.customToken.isVerified?this.state.customToken.address:this.state.refTokens[this.state.referenceAsset-2].address // account for no ETH in reference asset dropdown
+    dataToSend.referenceAsset = this.state.customToken.isVerified?this.state.customToken.address:this.props.refTokens[this.state.referenceAsset-2].address
     this.props.onNewReward(dataToSend)
   }
 
@@ -96,23 +96,23 @@ class NewReward extends React.Component {
       !this.errorPrompt()
     )
 
-  startBeforeTokenCreation = () => (this.state.customToken.startBlock?this.state.customToken.startBlock:this.state.refTokens[this.state.referenceAsset - 2].startBlock) > this.state.startBlock
+  startBeforeTokenCreation = () => (this.state.customToken.startBlock?this.state.customToken.startBlock:this.props.refTokens[this.state.referenceAsset - 2].startBlock) > this.state.startBlock
   disbursementOverflow = () => (this.state.quarterEndDates ? this.state.quarterEndDates.length > 41 : false)
   lowVaultBalance = () => this.props.balances[this.state.amountCurrency].amount / Math.pow(10,this.props.balances[this.state.amountCurrency].decimals) < this.state.amount
-
-  errorPrompt = () => (this.showSummary() && (this.startBeforeTokenCreation() || this.disbursementOverflow() || this.lowVaultBalance()))
+  dividendPeriodTooShort = () => (this.state.rewardType > 0 && this.state.occurances === 0)
+  errorPrompt = () => (this.showSummary() && (this.startBeforeTokenCreation() || this.disbursementOverflow() || this.lowVaultBalance() || this.dividendPeriodTooShort()))
 
   showSummary = () => (this.state.referenceAsset > 1 || this.state.customToken.symbol)
 
   getItems() {
-    if (!this.state.refTokens) {
-      this.setState({ refTokens: this.props.balances.filter(token => token.startBlock?true:false) })
+    if (!this.props.refTokens) {
+      return ['Tokens Loading...']
     }
     return [ 'Select a token', 'Other…', ...this.getTokenItems() ]
   }
 
   getTokenItems() {
-    return this.props.balances
+    return this.props.refTokens
       .filter(token => token.startBlock ? true : false)
       .map(({ address, name, symbol, verified }) => (
         <TokenSelectorInstance
@@ -190,6 +190,7 @@ class NewReward extends React.Component {
     const occurances = millisecondsToQuarters(dateStart, dateEnd)
     this.getCurrentBlock()
     this.setState({
+      dateStart,
       dateEnd,
       occurances,
       quarterEndDates: [...Array(occurances).keys()]
@@ -202,7 +203,7 @@ class NewReward extends React.Component {
       <React.Fragment>
         <Info.Alert>
           {this.startBeforeTokenCreation() && `The selected start date occurs
-          before your reference asset ${this.props.balances[this.state.referenceAsset+1].symbol}
+          before your reference asset ${(this.state.customToken.symbol ? this.state.customToken.symbol:this.props.refTokens[this.state.referenceAsset-2].symbol)}
           was created. Please choose another date.`}
 
           {this.disbursementOverflow() && `You have specified a date range that results in
@@ -214,6 +215,9 @@ class NewReward extends React.Component {
           is ${this.props.balances[this.state.amountCurrency].amount / Math.pow(10,this.props.balances[this.state.amountCurrency].decimals)}
           ${this.props.balances[this.state.amountCurrency].symbol}. To ensure successful
           execution, specify another amount that does not exceed your balance.`}
+
+          {this.dividendPeriodTooShort() &&
+          'Please select a start and end date that are at least as long as the cycle period selected'}
         </Info.Alert>
         <br />
       </React.Fragment>
@@ -332,10 +336,10 @@ class NewReward extends React.Component {
         <Summary>
           <p>
             A total of <SummaryBold>{this.state.amount} {this.props.balances[this.state.amountCurrency].symbol}</SummaryBold> will
-            be distributed as a reward to addresses that earned <SummaryBold>{(this.state.customToken.symbol ? this.state.customToken.symbol:this.state.refTokens[this.state.referenceAsset-2].symbol)}</SummaryBold> from <SummaryBold>{this.formatDate(this.state.dateStart)}</SummaryBold> to <SummaryBold>{this.formatDate(this.state.dateEnd)}</SummaryBold>.
+            be distributed as a reward to addresses that earned <SummaryBold>{(this.state.customToken.symbol ? this.state.customToken.symbol:this.props.refTokens[this.state.referenceAsset-2].symbol)}</SummaryBold> from <SummaryBold>{this.formatDate(this.state.dateStart)}</SummaryBold> to <SummaryBold>{this.formatDate(this.state.dateEnd)}</SummaryBold>.
           </p>
           <p>
-            The reward amount will be in proportion to the <SummaryBold>{(this.state.customToken.symbol ? this.state.customToken.symbol:this.state.refTokens[this.state.referenceAsset-2].symbol)}</SummaryBold> earned by each account in the specified period.
+            The reward amount will be in proportion to the <SummaryBold>{(this.state.customToken.symbol ? this.state.customToken.symbol:this.props.refTokens[this.state.referenceAsset-2].symbol)}</SummaryBold> earned by each account in the specified period.
           </p>
           <p>
             The reward will be disbursed <SafeLink href="#" target="_blank"><SummaryBold>upon approval of this proposal</SummaryBold></SafeLink>.
@@ -433,7 +437,7 @@ class NewReward extends React.Component {
       </RewardRow>
 
       <Separator />
-      { this.state.occurances ?
+      { (this.showSummary() && this.state.occurances > 0) &&
         <Info style={{ marginBottom: '10px' }}>
           <TokenIcon />
           <Summary>
@@ -444,7 +448,7 @@ class NewReward extends React.Component {
               </SummaryBold>
               {' will be distributed as a dividend to '}
               <SummaryBold>
-                {this.props.balances[this.state.referenceAsset+1].symbol}
+                {(this.state.customToken.symbol ? this.state.customToken.symbol:this.props.refTokens[this.state.referenceAsset-2].symbol)}
               </SummaryBold>
               {' holders on a '}
               <SummaryBold>
@@ -471,20 +475,14 @@ class NewReward extends React.Component {
               }.
             </p>
             <p>
-          The dividend amount will be in proportion to the <SummaryBold>{this.props.balances[this.state.referenceAsset+1].symbol}</SummaryBold> balance as of the last day of each cycle.
+          The dividend amount will be in proportion to the <SummaryBold>{(this.state.customToken.symbol ? this.state.customToken.symbol:this.props.refTokens[this.state.referenceAsset-2].symbol)}</SummaryBold> balance as of the last day of each cycle.
             </p>
             <p>
           The dividend will be disbursed <SummaryBold>{disbursementDates[this.state.disbursementDate]}</SummaryBold> after the end of each cycle.
             </p>
           </Summary>
         </Info>
-        :
-        <React.Fragment>
-          <Info.Alert>
-            Please select a start and end date that are at least as long as the cycle period selected
-          </Info.Alert>
-          <br />
-        </React.Fragment>
+
       }
     </div>
   )
@@ -498,6 +496,11 @@ class NewReward extends React.Component {
     //}
     console.log('state: ',this.state)
     console.log('props: ', this.props)
+    if (this.state.customToken.isVerified) {
+      console.log('startblock error', this.startBeforeTokenCreation())
+      console.log('token startblock: ', this.state.customToken.startBlock)
+      console.log('period startBlock: ', this.state.startBlock)
+    }
     //console.log('refItems: ',this.getItems())
     const showCustomToken = this.state.referenceAsset === 1
     console.log(showCustomToken)
