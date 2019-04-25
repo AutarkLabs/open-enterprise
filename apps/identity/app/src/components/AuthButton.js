@@ -22,9 +22,9 @@ const getButtonTitle = ({
   editingProfile,
   publicProfile,
 }) => {
-  if (editingProfile) return 'Save Profile'
-  if (unlockedProfSuccess && Object.keys(publicProfile).length === 0)
+  if (editingProfile && Object.keys(publicProfile).length === 0)
     return 'Create Profile'
+  if (editingProfile) return 'Save Profile'
   if (unlockedProfSuccess) return 'Edit Profile'
   if (loadedPublicProfSuccess) return 'Log In'
 }
@@ -62,21 +62,12 @@ const AuthButton = () => {
     }
   }
 
-  const createProfile = async connectedAccount => {
-    const { unlockedBox } = boxes[connectedAccount]
-
-    await unlockedBox.createProfile()
-  }
-
   const getButtonClickHandler = ({
     unlockedProfSuccess,
     loadedPublicProfSuccess,
     editingProfile,
-    publicProfile,
   }) => {
     if (editingProfile) return saveProfile
-    if (unlockedProfSuccess && Object.keys(publicProfile).length === 0)
-      return createProfile
     if (unlockedProfSuccess) return editProfile
     if (loadedPublicProfSuccess) return unlockProfile
     return () => {
