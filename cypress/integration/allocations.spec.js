@@ -1,5 +1,5 @@
-import Web3 from "@aragon/wrapper/node_modules/web3";
 const PrivateKeyProvider = require ("truffle-privatekey-provider")
+/*import Web3 from "@aragon/wrapper/node_modules/web3";
 
 const ProviderEngine = require('truffle-privatekey-provider/node_modules/web3-provider-engine')
 const CacheSubprovider = require('truffle-privatekey-provider/node_modules/web3-provider-engine/subproviders/cache.js')
@@ -51,8 +51,9 @@ engine.addProvider(new HookedWalletSubprovider({
   approveTransaction: function(cb){ ... },
   signTransaction: function(cb){ ... },
 }))
-*/
+//*/
 // data source
+/*
 engine.addProvider(new RpcSubprovider({
   rpcUrl: 'http://localhost:8545',
 }))
@@ -72,14 +73,14 @@ engine.on('error', function(err){
 
 // start polling for blocks
 engine.start()
-
+*/
 
 
 const KEY1 = '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7'
 const KEY2 = '0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb'
 const ACC1 = 'Account 1'
 const ALLOC1 = 'Allocation 3'
-
+/*
 const provider1 = new PrivateKeyProvider(
   "A8A54B2D8197BC0B19BB8A084031BE71835580A01E70A45A13BABD16C9BC1563",
   "http://localhost:8545"
@@ -89,6 +90,7 @@ const provider2 = new PrivateKeyProvider(
   "ce8e3bda3b44269c147747a373646393b1504bfcbb73fc9564f5d753d8116608",
   "http://localhost:8545"
 );
+*/
 /*
 cy.on("window:before:load", (win) => {
   const provider = new PrivateKeyProvider(provider1);
@@ -98,22 +100,23 @@ cy.on("window:before:load", (win) => {
 context('Aragon', () => {
   before(() => {
     cy.on("window:before:load", (win) => {
-      /*
       const provider = new PrivateKeyProvider(
         "A8A54B2D8197BC0B19BB8A084031BE71835580A01E70A45A13BABD16C9BC1563",
         "http://localhost:8545"
       );
-      */
+/*     
       win.web3 = web3; //new Web3(provider);
-      var hashrate = win.web3.version.api;
-      console.log(hashrate); // 493736
+//      var ver = win.web3.version.api;
+      console.log(ver); // 493736
       var x = win.web3.utils.asciiToHex('test')
       console.log(x)
+      */
     });
     cy.visit('http://localhost:3000/#/0x5b6a3301a67A4bfda9D3a528CaD34cac6e7F8070')
 
 
   })
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // new account
