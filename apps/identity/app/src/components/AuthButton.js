@@ -15,7 +15,6 @@ import {
   savedProfile,
   saveProfileError,
 } from '../stateManagers/box'
-import { calculateChanged } from '../../modules/3box-LD'
 
 const getButtonTitle = ({
   unlockedProfSuccess,
@@ -52,9 +51,8 @@ const AuthButton = () => {
 
     try {
       const { changed, forms, unlockedBox } = boxes[connectedAccount]
-
-      const [changedFields, changedValues] = calculateChanged(changed, forms)
-      await unlockedBox.setPublicFields(changedFields, changedValues)
+      const changedValues = changed.map(field => forms[field])
+      await unlockedBox.setPublicFields(changed, changedValues)
       dispatch(savedProfile(connectedAccount, forms))
     } catch (error) {
       dispatch(saveProfileError(connectedAccount, error))

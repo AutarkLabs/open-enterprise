@@ -35,45 +35,6 @@ const InformationCard = ({ ethereumAddress }) => {
     return editing ? valueFromForm : valueFromPublicProfile
   }
 
-  const getSingleLevelNestedField = field => {
-    if (!userLoaded) return ''
-
-    const hasValue = !!boxes[ethereumAddress].publicProfile[field]
-
-    if (!hasValue) return ''
-
-    const valueFromPublicProfile =
-      boxes[ethereumAddress].publicProfile[field].name || ''
-
-    const valueFromForm = boxes[ethereumAddress].forms[field].name || ''
-
-    return editing ? valueFromForm : valueFromPublicProfile
-  }
-
-  const getSchoolValue = () => {
-    if (!userLoaded) return ''
-
-    const { publicProfile, forms } = boxes[ethereumAddress]
-
-    if (!publicProfile.affiliation) return ''
-
-    const schoolAffiliation = publicProfile.affiliation.filter(
-      affiliation => affiliation['@type'] === 'School'
-    )
-
-    const hasSchool = schoolAffiliation.length > 0
-
-    if (!hasSchool) return ''
-
-    const valueFromPublicProfile = schoolAffiliation[0].name
-
-    const valueFromForm = forms.affiliation.filter(
-      affiliation => affiliation['@type'] === 'School'
-    )[0].name
-
-    return editing ? valueFromForm : valueFromPublicProfile
-  }
-
   return (
     <div>
       <Card width="350px" height="500px">
@@ -89,9 +50,9 @@ const InformationCard = ({ ethereumAddress }) => {
           />
           <SmallMargin />
           <ReadOrEditTextField
-            value={getValue('jobTitle')}
+            value={getValue('job')}
             placeholder={'Job'}
-            onChange={e => onChange(e.target.value, 'jobTitle')}
+            onChange={e => onChange(e.target.value, 'job')}
             type="text"
             editing={editing}
             disabled={!userLoaded}
@@ -99,9 +60,9 @@ const InformationCard = ({ ethereumAddress }) => {
           />
           <SmallMargin />
           <ReadOrEditTextField
-            value={getSingleLevelNestedField('worksFor')}
+            value={getValue('employer')}
             placeholder={'Employer'}
-            onChange={e => onChange(e.target.value, 'worksFor')}
+            onChange={e => onChange(e.target.value, 'employer')}
             type="text"
             editing={editing}
             disabled={!userLoaded}
@@ -109,9 +70,9 @@ const InformationCard = ({ ethereumAddress }) => {
           />
           <SmallMargin />
           <ReadOrEditTextField
-            value={getSingleLevelNestedField('homeLocation')}
+            value={getValue('location')}
             placeholder={'Location'}
-            onChange={e => onChange(e.target.value, 'homeLocation')}
+            onChange={e => onChange(e.target.value, 'location')}
             type="text"
             editing={editing}
             disabled={!userLoaded}
@@ -119,9 +80,9 @@ const InformationCard = ({ ethereumAddress }) => {
           />
           <SmallMargin />
           <ReadOrEditSafeLink
-            value={getValue('url')}
+            value={getValue('website')}
             placeholder={'Website'}
-            onChange={e => onChange(e.target.value, 'url')}
+            onChange={e => onChange(e.target.value, 'website')}
             type="url"
             editing={editing}
             disabled={!userLoaded}
@@ -129,7 +90,7 @@ const InformationCard = ({ ethereumAddress }) => {
           />
           <SmallMargin />
           <ReadOrEditTextField
-            value={getSchoolValue()}
+            value={getValue('school')}
             placeholder={'Education'}
             onChange={e => onChange(e.target.value, 'school')}
             type="text"

@@ -129,33 +129,3 @@ export const populateFormValue = publicProfile => {
 
   return strippedObject
 }
-
-const mappingNewFieldToOld = {
-  jobTitle: 'job',
-  homeLocation: 'location',
-  // affiliation: '',
-  url: 'website',
-  worksFor: 'employer',
-}
-
-export const calculateChanged = (changed, forms) => {
-  const allChangedFields = changed.reduce((accum, ele) => {
-    if (mappingNewFieldToOld[ele]) {
-      accum.push(mappingNewFieldToOld[ele])
-    }
-    accum.push(ele)
-    return accum
-  }, [])
-
-  const allChangedValues = allChangedFields.map(field => {
-    if (usedFields.has(field)) return forms[field]
-    if (field === 'website') return forms.url
-    if (field === 'job') return forms.jobTitle
-    if (field === 'location') return forms.homeLocation.name
-    if (field === 'employer') return forms.worksFor.name
-
-    return forms[field]
-  })
-
-  return [allChangedFields, allChangedValues]
-}

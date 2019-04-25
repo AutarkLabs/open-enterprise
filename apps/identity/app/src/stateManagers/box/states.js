@@ -1,5 +1,4 @@
-import { populateFormValue } from '../../../modules/3box-LD'
-import { worksFor, homeLocation, image } from '../../../modules/things'
+import { image } from '../../../modules/things'
 
 export const initialState = {}
 
@@ -18,11 +17,11 @@ export const fetchingPublicProfile = () => ({
   publicProfile: {},
   forms: {
     name: '',
-    jobTitle: '',
-    worksFor: worksFor({}),
-    homeLocation: homeLocation(''),
-    affiliation: [{}],
-    url: '',
+    job: '',
+    employer: '',
+    location: '',
+    school: '',
+    website: '',
     description: '',
   },
   changed: [],
@@ -38,7 +37,7 @@ export const fetchedPublicProfileSuccess = (state, publicProfile) => {
     loadedPublicProf: true,
     loadedPublicProfSuccess: true,
     publicProfile,
-    forms: populateFormValue(publicProfile),
+    forms: { ...publicProfile },
     changed: [],
   }
 }
@@ -89,28 +88,6 @@ const calculateChanged = (changed, field) => {
 }
 
 export const editedField = (state, field, value) => {
-  if (field === 'homeLocation') {
-    return {
-      ...state,
-      forms: {
-        ...state.forms,
-        homeLocation: homeLocation(value),
-      },
-      changed: calculateChanged(state.changed, field),
-    }
-  }
-
-  if (field === 'worksFor') {
-    return {
-      ...state,
-      forms: {
-        ...state.forms,
-        worksFor: worksFor(value),
-      },
-      changed: calculateChanged(state.changed, field),
-    }
-  }
-
   return {
     ...state,
     forms: {
