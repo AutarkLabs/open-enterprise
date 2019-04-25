@@ -61,6 +61,7 @@
     "start:projects": "cd apps/projects && npm start",
     "start:rpc": "lerna run --scope='@tps/kits-*' start:rpc --stream",
     "start:staging": "lerna run --scope='@tps/kits-*' start:staging --stream",
+    "start:rinkeby": "lerna run --scope='@tps/kits-*' start:rinkeby --stream",
     "start": "npm run start:rpc",
     "test:address": "cd apps/address-book && npm test",
     "test:allocations": "cd apps/allocations && npm test",

@@ -15,8 +15,8 @@ import "@aragon/apps-vault/contracts/Vault.sol";
 *******************************************************************************/
 contract Rewards is IsContract, AragonApp {
 
-    event RewardAdded(uint rewardId);
-    event RewardClaimed(uint rewardId);
+    event RewardAdded(uint256 rewardId);
+    event RewardClaimed(uint256 rewardId);
 
     bytes32 public constant ADD_REWARD_ROLE =  keccak256("ADD_REWARD_ROLE");
 
@@ -24,12 +24,12 @@ contract Rewards is IsContract, AragonApp {
         bool isMerit;
         MiniMeToken referenceToken;
         address rewardToken;
-        uint amount;
-        uint duration;
-        uint occurances;
-        uint delay;
-        uint value;
-        uint blockStart;
+        uint256 amount;
+        uint256 duration;
+        uint256 occurances;
+        uint256 delay;
+        uint256 value;
+        uint256 blockStart;
         string description;
         address creator;
         mapping (address => bool) claimed;
@@ -37,7 +37,7 @@ contract Rewards is IsContract, AragonApp {
     }
 
     mapping (address => uint) totalClaimedAmount;
-    uint public totalClaimsEach;
+    uint256 public totalClaimsEach;
 
     Reward[] rewards;
     Vault public vault;
@@ -50,7 +50,12 @@ contract Rewards is IsContract, AragonApp {
         vault = _vault;
     }
 
-    function claimReward(uint _rewardID) external returns(uint rewardAmount) {
+    /**
+    * @dev This function allows a user to claim their reward (if one is available)
+    * @notice Claim my reward for #`_rewardID`
+    * @param _rewardID The ID of the reward
+    */
+    function claimReward(uint256 _rewardID) external returns(uint256 rewardAmount) {
         Reward storage reward = rewards[_rewardID];
         require(block.number > reward.blockStart + reward.duration + reward.delay, "reward must be claimed after the reward duration and delay");
         reward.claimed[msg.sender] = true;
@@ -71,23 +76,23 @@ contract Rewards is IsContract, AragonApp {
         emit RewardClaimed(_rewardID);
     }
 
-    function getRewardsLength() external view returns (uint rewardsLength) {
+    function getRewardsLength() external view returns (uint256 rewardsLength) {
         rewardsLength = rewards.length;
     }
 
-    function getReward(uint rewardID) external view returns(
+    function getReward(uint256 rewardID) external view returns(
         string description,
         bool isMerit,
         address referenceToken,
         address rewardToken,
-        uint amount,
-        uint startBlock,
-        uint endBlock,
-        uint duration,
-        uint delay,
-        uint rewardAmount,
+        uint256 amount,
+        uint256 startBlock,
+        uint256 endBlock,
+        uint256 duration,
+        uint256 delay,
+        uint256 rewardAmount,
         bool claimed,
-        uint timeClaimed,
+        uint256 timeClaimed,
         address creator
     )
     {
@@ -112,7 +117,7 @@ contract Rewards is IsContract, AragonApp {
     }
 
     function getTotalAmountClaimed(address _token)
-    external view isInitialized returns (uint totalAmountClaimed)
+    external view isInitialized returns (uint256 totalAmountClaimed)
     {
         totalAmountClaimed = totalClaimedAmount[_token];
     }
@@ -120,9 +125,9 @@ contract Rewards is IsContract, AragonApp {
     /**
     * @dev This function creates a reward instance to be added to the rewards array. ID's
     *      are assigned the new intance's index of that array
-    * @notice Create a new reward
+    * @notice Create a new `_isMerit ? 'merit reward' : 'dividend'` of `@tokenAmount(_rewardToken, _amount)` for `_referenceToken.symbol(): string` holders (`_description`)
     * @param _description description of the reward
-    * @param _isMerit Recurring dividend reward one-off merit reward
+    * @param _isMerit Recurring dividend reward or one-off merit reward
     * @param _referenceToken the token used to calculate reward distributions for each holder
     * @param _rewardToken currency received as reward
     * @param _amount the reward amount to be distributed
@@ -136,12 +141,12 @@ contract Rewards is IsContract, AragonApp {
         bool _isMerit,
         address _referenceToken,
         address _rewardToken,
-        uint _amount,
-        uint _startBlock,
-        uint _duration,
-        uint _occurances,
-        uint _delay
-    ) public auth(ADD_REWARD_ROLE) returns (uint rewardId)	
+        uint256 _amount,
+        uint256 _startBlock,
+        uint256 _duration,
+        uint256 _occurances,
+        uint256 _delay
+    ) public auth(ADD_REWARD_ROLE) returns (uint256 rewardId)	
     {
         require(isContract(_referenceToken), "_referenceToken must be a contract");
         if (_rewardToken != address(0)) {
@@ -178,26 +183,26 @@ contract Rewards is IsContract, AragonApp {
         }
     }
 
-    function calculateDividendReward(Reward reward) internal view returns(uint rewardAmount) {
-        uint balance;
-        uint supply;
+    function calculateDividendReward(Reward reward) internal view returns(uint256 rewardAmount) {
+        uint256 balance;
+        uint256 supply;
         balance = reward.referenceToken.balanceOfAt(msg.sender, reward.blockStart + reward.duration);
         supply = reward.referenceToken.totalSupplyAt(reward.blockStart + reward.duration);
         rewardAmount = reward.amount * balance / supply;
     }
 
-    function calculateMeritReward(Reward reward)internal view returns(uint rewardAmount) {
-        uint supply;
-        uint balance;
-        uint initialSupply = reward.referenceToken.totalSupplyAt(reward.blockStart);
-        uint endingSupply = reward.referenceToken.totalSupplyAt(reward.blockStart + reward.duration);
+    function calculateMeritReward(Reward reward)internal view returns(uint256 rewardAmount) {
+        uint256 supply;
+        uint256 balance;
+        uint256 initialSupply = reward.referenceToken.totalSupplyAt(reward.blockStart);
+        uint256 endingSupply = reward.referenceToken.totalSupplyAt(reward.blockStart + reward.duration);
         supply = endingSupply - initialSupply;
         if (supply == 0) {
             return 0;
         }
 
-        uint initialBalance = reward.referenceToken.balanceOfAt(msg.sender, reward.blockStart);
-        uint endingBalance = reward.referenceToken.balanceOfAt(msg.sender, reward.blockStart + reward.duration);
+        uint256 initialBalance = reward.referenceToken.balanceOfAt(msg.sender, reward.blockStart);
+        uint256 endingBalance = reward.referenceToken.balanceOfAt(msg.sender, reward.blockStart + reward.duration);
         //require(initialSupply < endingSupply, "The supply must have increased over the period");
         //require(initialBalance < endingBalance, "The user must have earned tokens over the period");
 

@@ -7,14 +7,14 @@
     },
     "rinkeby": {
       "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
-      "appName": "planning-suite.open.aragonpm.eth",
+      "appName": "tps.open.aragonpm.eth",
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
       "network": "rinkeby",
-      "address": "0x2bf04f6f1cabdb1964f0960de0b60720ef24f51a"
+      "address": "0x3dbe3e16364fae0a65b203550a9d1619c6c965cf"
     },
     "staging": {
       "registry": "0x98df287b6c145399aaa709692c8d308357bc085d",
-      "appName": "planning-suite-staging.open.aragonpm.eth",
+      "appName": "tps-staging.open.aragonpm.eth",
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
       "network": "rinkeby"
     },

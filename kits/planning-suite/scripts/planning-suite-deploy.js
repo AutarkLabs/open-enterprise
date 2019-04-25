@@ -8,7 +8,7 @@ module.exports = async callback => {
   const network = environment === 'default' ? 'rpc' : 'rinkeby'
   const deployConfig = {
     artifacts,
-    kitName: 'planning-suite',
+    kitName: 'tps',
     kitContractName: 'PlanningSuite',
     // returnKit: true,
     network: network,

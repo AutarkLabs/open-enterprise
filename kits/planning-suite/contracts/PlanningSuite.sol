@@ -113,8 +113,8 @@ contract PlanningSuite is BetaKitBase {
         Vault vault,
         Voting voting,
         MiniMeToken token,
-        uint candidateSupportPct,
-        uint minParticipationPct,
+        uint256 candidateSupportPct,
+        uint256 minParticipationPct,
         uint64 voteDuration) public
     {
         addPlanningApps(
@@ -161,8 +161,8 @@ contract PlanningSuite is BetaKitBase {
         Vault vault,
         Voting voting,
         MiniMeToken token,
-        uint candidateSupportPct,
-        uint minParticipationPct,
+        uint256 candidateSupportPct,
+        uint256 minParticipationPct,
         uint64 voteDuration
     ) internal
     {
@@ -171,7 +171,6 @@ contract PlanningSuite is BetaKitBase {
 
         (addressBook, dotVoting) = createDotVoting(
             dao,
-            voting,
             token,
             candidateSupportPct,
             minParticipationPct,
@@ -185,7 +184,7 @@ contract PlanningSuite is BetaKitBase {
             addressBook,
             dotVoting
         );
-        handleCleanupPermissions(dao);
+        handleCleanupPermissions(dao, voting);
     }
 
     //////////////////////////////////////////////////////////////
@@ -279,7 +278,6 @@ contract PlanningSuite is BetaKitBase {
         Vault vault
     ) internal
     {
-        address root = msg.sender;
         ACL acl = ACL(dao.acl());
         // Token Manager permissions
         acl.createPermission(this, tokenManager, tokenManager.MINT_ROLE(), this);
@@ -296,7 +294,7 @@ contract PlanningSuite is BetaKitBase {
         emit InstalledApp(finance, appIds[uint8(Apps.Finance)]);
 
         // // Voting Permissions
-        acl.createPermission(tokenManager, voting, voting.CREATE_VOTES_ROLE(), voting);
+        acl.createPermission(ANY_ENTITY, voting, voting.CREATE_VOTES_ROLE(), voting);
         acl.createPermission(voting, voting, voting.MODIFY_QUORUM_ROLE(), voting);
         emit InstalledApp(voting, appIds[uint8(Apps.Voting)]);
 
@@ -308,31 +306,28 @@ contract PlanningSuite is BetaKitBase {
     //////////////////////////////////////////////////////////////
     function createDotVoting (
         Kernel dao,
-        Voting voting,
         MiniMeToken token,
-        uint candidateSupportPct,
-        uint minParticipationPct,
+        uint256 candidateSupportPct,
+        uint256 minParticipationPct,
         uint64 voteDuration
-    )   
-        internal returns (AddressBook addressBook, DotVoting dotVoting) 
-        
-        {
-            addressBook = AddressBook(
-                dao.newAppInstance(
-                    planningAppIds[uint8(PlanningApps.AddressBook)],
-                    latestVersionAppBase(planningAppIds[uint8(PlanningApps.AddressBook)])
-                )
-            );
-            dotVoting = DotVoting(
-                dao.newAppInstance(
-                    planningAppIds[uint8(PlanningApps.DotVoting)],
-                    latestVersionAppBase(planningAppIds[uint8(PlanningApps.DotVoting)])
-                )
-            );
+    ) internal returns (AddressBook addressBook, DotVoting dotVoting) 
+    {
+        addressBook = AddressBook(
+            dao.newAppInstance(
+                planningAppIds[uint8(PlanningApps.AddressBook)],
+                latestVersionAppBase(planningAppIds[uint8(PlanningApps.AddressBook)])
+            )
+        );
+        dotVoting = DotVoting(
+            dao.newAppInstance(
+                planningAppIds[uint8(PlanningApps.DotVoting)],
+                latestVersionAppBase(planningAppIds[uint8(PlanningApps.DotVoting)])
+            )
+        );
 
-            addressBook.initialize();
-            dotVoting.initialize(addressBook, token, minParticipationPct, candidateSupportPct, voteDuration);
-        }
+        addressBook.initialize();
+        dotVoting.initialize(addressBook, token, minParticipationPct, candidateSupportPct, voteDuration);
+    }
     
     function createOtherTPSApps (
         Kernel dao,
@@ -419,7 +414,6 @@ contract PlanningSuite is BetaKitBase {
         Voting voting
     ) internal
     {
-        address root = msg.sender;
         ACL acl = ACL(dao.acl());
 
         // AddressBook permissions:
@@ -429,13 +423,13 @@ contract PlanningSuite is BetaKitBase {
 
 
         // Projects permissions:
-        acl.createPermission(root, projects, projects.FUND_ISSUES_ROLE(), voting);
+        acl.createPermission(voting, projects, projects.FUND_ISSUES_ROLE(), voting);
         acl.createPermission(voting, projects, projects.ADD_REPO_ROLE(), voting);
         acl.createPermission(voting, projects, projects.CHANGE_SETTINGS_ROLE(), voting);
         acl.createPermission(dotVoting, projects, projects.CURATE_ISSUES_ROLE(), voting);
         acl.createPermission(voting, projects, projects.REMOVE_REPO_ROLE(), voting);
-        acl.createPermission(root, projects, projects.REVIEW_APPLICATION_ROLE(), voting);
-        acl.createPermission(root, projects, projects.WORK_REVIEW_ROLE(), voting);
+        acl.createPermission(voting, projects, projects.REVIEW_APPLICATION_ROLE(), voting);
+        acl.createPermission(voting, projects, projects.WORK_REVIEW_ROLE(), voting);
         emit InstalledApp(projects, planningAppIds[uint8(PlanningApps.Projects)]);
 
         // Dot-voting permissions
@@ -478,16 +472,13 @@ contract PlanningSuite is BetaKitBase {
         emit InstalledApp(vault, appIds[uint8(Apps.Vault)]);
     }
 
-    function handleCleanupPermissions(Kernel dao) internal {
+    function handleCleanupPermissions(Kernel dao, Voting voting) internal {
         ACL acl = ACL(dao.acl());
-        address root = msg.sender;
+
 
         // Clean up template permissions
-        cleanupPermission(acl, root, dao, dao.APP_MANAGER_ROLE());
-
-        acl.grantPermission(root, acl, acl.CREATE_PERMISSIONS_ROLE());
-        acl.revokePermission(this, acl, acl.CREATE_PERMISSIONS_ROLE());
-        acl.setPermissionManager(root, acl, acl.CREATE_PERMISSIONS_ROLE());
+        cleanupPermission(acl, voting, dao, dao.APP_MANAGER_ROLE());
+        cleanupPermission(acl, voting, acl, acl.CREATE_PERMISSIONS_ROLE());
     }
 
 }

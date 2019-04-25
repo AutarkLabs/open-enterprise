@@ -8,7 +8,7 @@ const getEventResult = (receipt, event, param) =>
 const defaultOwner =
   process.env.OWNER || '0x8d1EEa0Ae8BB40B192F6671293D08888450D9580'
 const defaultPlanningSuiteAddr =
-  process.env.PLANNING_SUITE_KIT || '0xf9531f7e84600db4bac3c03f9eb706fdc6b06e98'
+  process.env.PLANNING_SUITE_KIT || '0x3dbe3e16364fae0a65b203550a9d1619c6c965cf'
 
 module.exports = async (
   truffleExecCallback,
@@ -19,34 +19,30 @@ module.exports = async (
   let daoAddress, tokenAddress
   let vaultAddress, votingAddress
 
-  console.log('setting up support values')
+  console.log('Setting up parameters')
   const neededSupport = pct16(50)
   const minimumAcceptanceQuorum = pct16(20)
   const minParticipationPct = pct16(50)
   const candidateSupportPct = 0
   const votingTime = 900
-  console.log('Creating kit instance at ', planningSuiteAddr)
-
-  kit = await PlanningSuite.at(planningSuiteAddr)
-  console.log('kit instance created')
+  const holders = [owner]
+  const stakes = [200e18]
+  aragonId = 'test-tps-dao-' + Math.floor(Math.random() * 1000)
+  tokenName = 'Test Token'
+  tokenSymbol = 'test'
   // aragonId = 'planning-suite-dao-' + Math.floor(Math.random() * 1000)
   // tokenName = 'AutarkToken1'
   // tokenSymbol = 'autark1'
-  aragonId = 'atreidesdao'
-  tokenName = 'Spice'
-  tokenSymbol = 'spice'
 
-  const holders = [owner]
-  const stakes = [200e18]
+  
+  console.log('Creating kit instance at ', planningSuiteAddr)
+  kit = await PlanningSuite.at(planningSuiteAddr)
+  console.log('kit instance created')
 
-  // create Token
-  console.log('Creating token')
-  const receiptToken = await kit.newToken(tokenName, tokenSymbol)
-  console.log('got here')
-  // console.log(accounts)
-  tokenAddress = getEventResult(receiptToken, 'DeployToken', 'token')
 
-  console.log('Creating instance:', {
+  console.log('Creating token and instance:', {
+    tokenName,
+    tokenSymbol,
     aragonId,
     holders,
     stakes,
@@ -57,7 +53,9 @@ module.exports = async (
   })
 
   // create Instance
-  receiptInstance = await kit.newInstance(
+  receiptInstance = await kit.newTokenAndInstance(
+    tokenName,
+    tokenSymbol,
     aragonId,
     holders,
     stakes,
@@ -65,13 +63,17 @@ module.exports = async (
     minimumAcceptanceQuorum,
     votingTime
   )
+  
   // generated apps from dao creation
   daoAddress = getEventResult(receiptInstance, 'DeployInstance', 'dao')
   vaultAddress = getEventResult(receiptInstance, 'DeployInstance', 'vault')
   votingAddress = getEventResult(receiptInstance, 'DeployInstance', 'voting')
   tokenAddress = getEventResult(receiptInstance, 'DeployInstance', 'token')
-  console.log('Dao Created', daoAddress)
-  console.log('Vault address', vaultAddress)
+  console.log('DAO Created:', daoAddress)
+  console.log('Vault Address:', vaultAddress)
+  console.log('Token Address:', tokenAddress)
+  console.log('Aragon Core apps added...')
+  
   // Add PlanningSuite Apps to DAO
   receiptInstance = await kit.newPlanningApps(
     daoAddress,
@@ -82,5 +84,7 @@ module.exports = async (
     minParticipationPct,
     votingTime
   )
-  console.log('Apps added')
+  console.log('Planning Suite apps added...')
+  console.log('Finished!')
+  console.log('Visit your DAO at https://rinkeby.aragon.org/#/' + aragonId + '.aragonid.eth')
 }
