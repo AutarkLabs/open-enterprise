@@ -8,7 +8,7 @@ import { AppBar, Main, SidePanel, observe, font } from '@aragon/ui'
 import Decisions from './Decisions'
 import { hasLoadedVoteSettings } from './utils/vote-settings'
 import { NewPayoutVotePanelContent } from './components/Panels'
-import { networkContextType, MenuButton } from '../../../shared/ui'
+import { networkContextType, AppTitle } from '../../../shared/ui'
 import AppView from './components/AppView'
 
 const initialState = {
@@ -67,7 +67,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { displayMenuButton } = this.props
+    const { displayMenuButton = false } = this.props
 
     return (
       <Main>
@@ -75,10 +75,7 @@ class App extends React.Component {
           padding={0}
           appBar={
             <AppBar>
-              <AppBarTitle>
-                {displayMenuButton && <MenuButton />}
-                <AppBarLabel>Dot Voting</AppBarLabel>
-              </AppBarTitle>
+              <AppTitle title="Dot Voting" displayMenuButton={displayMenuButton} />
             </AppBar>
           }
         >
@@ -109,16 +106,6 @@ class App extends React.Component {
     )
   }
 }
-
-const AppBarTitle = styled.span`
-  display: flex;
-  align-items: center;
-`
-
-const AppBarLabel = styled.span`
-  margin: 0 30px;
-  ${font({ size: 'xxlarge' })};
-`
 
 export default observe(
   observable => observable.pipe(map(state => ({ ...state }))),

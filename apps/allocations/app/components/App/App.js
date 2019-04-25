@@ -1,11 +1,10 @@
-import { font, Main, observe, AppBar, AppView, SidePanel } from '@aragon/ui'
+import { Main, observe, AppBar, AppView, SidePanel } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { map } from 'rxjs/operators'
-import styled from 'styled-components'
 import { Accounts, Payouts } from '.'
 import { NewAccount, NewAllocation } from '../Panel'
-import { networkContextType, MenuButton, AppTitleButton } from '../../../../../shared/ui'
+import { networkContextType, AppTitle, AppTitleButton } from '../../../../../shared/ui'
 
 class App extends React.Component {
   static propTypes = {
@@ -113,7 +112,7 @@ class App extends React.Component {
 
   render() {
     const { panel } = this.state
-    const { displayMenuButton } = this.props
+    const { displayMenuButton = false } = this.props
     const PanelContent = panel.content
     return (
       // TODO: Profile App with React.StrictMode, perf and why-did-you-update, apply memoization
@@ -129,10 +128,7 @@ class App extends React.Component {
                 />
               }
             >
-              <AppBarTitle>
-                {displayMenuButton && <MenuButton />}
-                <AppBarLabel>Allocations</AppBarLabel>
-              </AppBarTitle>
+              <AppTitle title="Allocations" displayMenuButton={displayMenuButton} />
             </AppBar>
           }
         >
@@ -165,16 +161,6 @@ class App extends React.Component {
     )
   }
 }
-
-const AppBarTitle = styled.span`
-  display: flex;
-  align-items: center;
-`
-
-const AppBarLabel = styled.span`
-  margin: 0 30px;
-  ${font({ size: 'xxlarge' })};
-`
 
 export default observe(
   observable => observable.pipe(map(state => ({ ...state }))),
