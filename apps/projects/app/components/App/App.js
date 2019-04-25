@@ -22,7 +22,7 @@ import BigNumber from 'bignumber.js'
 import { ipfsAdd, computeIpfsString } from '../../utils/ipfs-helpers'
 import {
   networkContextType,
-  MenuButton,
+  AppTitle,
   AppTitleButton,
 } from '../../../../../shared/ui'
 import {
@@ -537,7 +537,7 @@ class App extends React.PureComponent {
 
   render() {
     const { activeIndex, panel, panelProps, githubCurrentUser } = this.state
-    const { bountySettings, displayMenuButton } = this.props
+    const { bountySettings, displayMenuButton = false } = this.props
     const contentData = [
       {
         tabName: 'Overview',
@@ -605,10 +605,7 @@ class App extends React.PureComponent {
                       />
                     }
                   >
-                    <AppBarTitle>
-                      {displayMenuButton && <MenuButton />}
-                      <AppBarLabel>Projects</AppBarLabel>
-                    </AppBarTitle>
+                    <AppTitle title="Projects" displayMenuButton={displayMenuButton} />
                   </AppBar>
                 }
               >
@@ -659,16 +656,6 @@ class App extends React.PureComponent {
     )
   }
 }
-
-const AppBarTitle = styled.span`
-  display: flex;
-  align-items: center;
-`
-
-const AppBarLabel = styled.span`
-  margin: 0 30px;
-  ${font({ size: 'xxlarge' })};
-`
 
 export default observe(
   observable => observable.pipe(map(state => ({ ...state }))),
