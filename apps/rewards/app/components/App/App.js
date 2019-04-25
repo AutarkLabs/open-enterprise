@@ -118,6 +118,7 @@ class App extends React.Component {
         vaultBalance: '432.9 ETH',
         balances: this.props.balances,
         app: this.props.app,
+        network: this.props.network,
       },
     })
   }

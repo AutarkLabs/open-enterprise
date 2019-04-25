@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 
-import { Info, Text, TextInput, theme, SafeLink, DropDown, IconFundraising } from '@aragon/ui'
+import { Info, Text, TextInput, theme, SafeLink, DropDown, IconFundraising, Field } from '@aragon/ui'
 
 import { Form, FormField } from '../../Form'
 import { DateInput, InputDropDown } from '../../../../../../shared/ui'
@@ -10,6 +10,9 @@ import { format } from 'date-fns'
 import BigNumber from 'bignumber.js'
 import { millisecondsToBlocks, millisecondsToQuarters, MILLISECONDS_IN_A_QUARTER } from '../../../../../../shared/ui/utils'
 import { displayCurrency, toCurrency } from '../../../utils/helpers'
+import { isAddress } from '../../../utils/web3-utils'
+import { ETHER_TOKEN_VERIFIED_BY_SYMBOL } from '../../../utils/verified-tokens'
+import TokenSelectorInstance from './TokenSelectorInstance'
 
 const rewardTypes = [ 'Merit Reward', 'Dividend' ]
 const referenceAssets = [ 'ABC', 'XYZ' ]
@@ -19,11 +22,20 @@ const disbursementCyclesSummary = ['quarterly cycle']
 const disbursementDates = [ '1 week', '2 weeks' ]
 const disbursementDatesItems = disbursementDates.map(item => 'Cycle end + ' + item)
 
+const INTIAL_STATE = {
+  customToken: {
+    address: '',
+    value: '',
+  },
+}
+
 class NewReward extends React.Component {
   static propTypes = {
     vaultBalance: PropTypes.string.isRequired,
     onNewReward: PropTypes.func.isRequired,
   }
+
+
 
   constructor(props) {
     super(props)
@@ -39,6 +51,9 @@ class NewReward extends React.Component {
       disbursementCycle: 0,
       disbursementDate: 0,
       occurances: 0,
+      label: 'Token',
+      labelCustomToken: 'Token address or symbol',
+      ...INTIAL_STATE,
     }
   }
 
@@ -58,7 +73,7 @@ class NewReward extends React.Component {
     dataToSend.disbursementCycle = disbursementCycles[this.state.disbursementCycle]
     dataToSend.disbursementDelay = disbursementDates[this.state.disbursementDate]
     dataToSend.isMerit = !dataToSend.rewardType ? true : false
-    dataToSend.referenceAsset = this.props.balances[this.state.referenceAsset+1].address // account for no ETH in reference asset dropdown
+    dataToSend.referenceAsset = this.state.refTokens[this.state.referenceAsset-2].address // account for no ETH in reference asset dropdown
     this.props.onNewReward(dataToSend)
   }
 
@@ -67,14 +82,59 @@ class NewReward extends React.Component {
       this.state.amount > 0 &&
       this.state.description !== '' &&
       this.state.dateEnd > this.state.dateStart &&
+      (
+        this.state.referenceAsset > 1 ||
+        this.state.customToken.address
+      ) &&
       !this.errorPrompt()
     )
 
-  startBeforeTokenCreation = () => this.props.balances[this.state.referenceAsset+1].startBlock > this.state.startBlock
+  startBeforeTokenCreation = () => this.state.refTokens[this.state.referenceAsset - 2].startBlock > this.state.startBlock
   disbursementOverflow = () => (this.state.quarterEndDates ? this.state.quarterEndDates.length > 41 : false)
   lowVaultBalance = () => this.props.balances[this.state.amountCurrency].amount / Math.pow(10,this.props.balances[this.state.amountCurrency].decimals) < this.state.amount
 
-  errorPrompt = () => (this.startBeforeTokenCreation() || this.disbursementOverflow() ||this.lowVaultBalance())
+  errorPrompt = () => this.showSummary() && (this.startBeforeTokenCreation() || this.disbursementOverflow() ||this.lowVaultBalance())
+
+  showSummary = () => this.state.referenceAsset > 1
+
+  getItems() {
+    if (!this.state.refTokens) {
+      this.setState({ refTokens: this.props.balances.filter(token => token.startBlock?true:false) })
+    }
+    return [ 'Select a token', 'Other…', ...this.getTokenItems() ]
+  }
+
+  getTokenItems() {
+    return this.props.balances.filter(token => token.startBlock?true:false).map(({ address, name, symbol, verified }) => (
+      <TokenSelectorInstance
+        address={address}
+        name={name}
+        showIcon={verified}
+        symbol={symbol}
+      />
+    ))
+  }
+
+  handleCustomTokenChange = event => {
+    const { value } = event.target
+    const { network } = this.props
+
+    // Use the verified token address if provided a symbol and it matches
+    // The symbols in the verified map are all capitalized
+    const resolvedAddress =
+      !isAddress(value) && network.type === 'main'
+        ? ETHER_TOKEN_VERIFIED_BY_SYMBOL.get(value.toUpperCase()) || ''
+        : ''
+
+    this.setState(
+      {
+        customToken: {
+          value,
+          address: resolvedAddress,
+        },
+      },
+    )
+  }
 
   formatDate = date => format(date, 'yyyy-MM-dd')
   changeDate = (dateStart, dateEnd) => {
@@ -110,34 +170,46 @@ class NewReward extends React.Component {
       </React.Fragment>
   )
 
-  rewardMain = () => (
+  rewardMain = (showCustomToken) => (
     <div>
-      <RewardRow>
-        <FormField
-          required
-          label="Reference Asset"
-          input={
-            <DropDown
-              wide
-              items={this.props.balances.slice(1).map(token => token.symbol)}
-              active={this.state.referenceAsset}
-              onChange={referenceAsset => this.setState({ referenceAsset })}
-            />
-          }
-        />
-        <FormField
-          required
-          label="Type"
-          input={
-            <DropDown
-              wide
-              items={rewardTypes}
-              active={this.state.rewardType}
-              onChange={rewardType => this.setState({ rewardType })}
-            />
-          }
-        />
-      </RewardRow>
+      <FormField
+        required
+        wide
+        label="Reference Asset"
+        input={
+          <DropDown
+            wide
+            items={this.getItems()}//this.props.balances.slice(1).map(token => token.symbol)}
+            active={this.state.referenceAsset}
+            onChange={referenceAsset => this.setState({ referenceAsset })}
+          />
+        }
+      />
+
+      {showCustomToken && (
+        <Field label={this.state.labelCustomToken}>
+          <TextInput
+            placeholder="SYM…"
+            value={this.state.customToken.value}
+            onChange={this.handleCustomTokenChange}
+            required
+            wide
+          />
+        </Field>
+      )}
+
+      <FormField
+        required
+        label="Type"
+        input={
+          <DropDown
+            wide
+            items={rewardTypes}
+            active={this.state.rewardType}
+            onChange={rewardType => this.setState({ rewardType })}
+          />
+        }
+      />
     </div>
   )
 
@@ -205,20 +277,21 @@ class NewReward extends React.Component {
 
       <Separator />
 
+      {this.showSummary() &&
       <Info style={{ marginBottom: '10px' }}>
         <TokenIcon />
         <Summary>
           <p>
-            A total of <SummaryBold>{this.state.amount} {this.props.balances[this.state.amountCurrency].symbol}</SummaryBold> will be distributed as a reward to addresses that earned <SummaryBold>{this.props.balances[this.state.referenceAsset+1].symbol}</SummaryBold> from <SummaryBold>{this.formatDate(this.state.dateStart)}</SummaryBold> to <SummaryBold>{this.formatDate(this.state.dateEnd)}</SummaryBold>.
+            A total of <SummaryBold>{this.state.amount} {this.props.balances[this.state.amountCurrency].symbol}</SummaryBold> will be distributed as a reward to addresses that earned <SummaryBold>{this.state.refTokens[this.state.referenceAsset-2].symbol}</SummaryBold> from <SummaryBold>{this.formatDate(this.state.dateStart)}</SummaryBold> to <SummaryBold>{this.formatDate(this.state.dateEnd)}</SummaryBold>.
           </p>
           <p>
-            The reward amount will be in proportion to the <SummaryBold>{this.props.balances[this.state.referenceAsset+1].symbol}</SummaryBold> earned by each account in the specified period.
+            The reward amount will be in proportion to the <SummaryBold>{this.state.refTokens[this.state.referenceAsset-2].symbol}</SummaryBold> earned by each account in the specified period.
           </p>
           <p>
             The reward will be disbursed <SafeLink href="#" target="_blank"><SummaryBold>upon approval of this proposal</SummaryBold></SafeLink>.
           </p>
         </Summary>
-      </Info>
+      </Info>}
     </div>
   )
 
@@ -374,9 +447,10 @@ class NewReward extends React.Component {
     //  console.log('quarter end dates: ', this.state.quarterEndDates)
     //}
     console.log('state: ',this.state)
-    console.log('reference Asset: ', this.startBeforeTokenCreation())
-    console.log('too many rewards: ', this.disbursementOverflow())
-    console.log('low vault balance: ', this.lowVaultBalance())
+    console.log('props: ', this.props)
+    //console.log('refItems: ',this.getItems())
+    const showCustomToken = this.state.referenceAsset === 1
+    console.log(showCustomToken)
     return (
       <Form
         onSubmit={this.onSubmit}
@@ -399,7 +473,7 @@ class NewReward extends React.Component {
 
         <Separator />
 
-        {this.rewardMain()}
+        {this.rewardMain(showCustomToken)}
 
         <Separator />
 
