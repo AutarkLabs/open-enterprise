@@ -61,7 +61,7 @@ export class Profile {
     return Box.getProfile(this.ethereumAddress)
   }
 
-  unlockOrCreate = () => {
+  unlock = () => {
     return new Promise(async (resolve, reject) => {
       const openedBox = await Box.openBox(
         this.ethereumAddress,
@@ -84,6 +84,8 @@ export class Profile {
   }
 
   isLoggedIn = () => Box.isLoggedIn(this.ethereumAddress)
+
+  createProfile = () => this.unlockedBox.public.set()
 
   getPrivate = () => {
     if (this.boxState.opened && this.boxState.synced) {

@@ -20,8 +20,11 @@ const getButtonTitle = ({
   unlockedProfSuccess,
   loadedPublicProfSuccess,
   editingProfile,
+  publicProfile,
 }) => {
   if (editingProfile) return 'Save Profile'
+  if (unlockedProfSuccess && Object.keys(publicProfile).length === 0)
+    return 'Create Profile'
   if (unlockedProfSuccess) return 'Edit Profile'
   if (loadedPublicProfSuccess) return 'Log In'
 }
@@ -32,11 +35,11 @@ const AuthButton = () => {
 
   const buttonDisabled = !boxes[connectedAccount]
 
-  const unlockOrCreateProfile = async connectedAccount => {
+  const unlockProfile = async connectedAccount => {
     dispatch(requestedProfileUnlock(connectedAccount))
     try {
       const profile = new Profile(connectedAccount, api)
-      await profile.unlockOrCreate()
+      await profile.unlock()
       dispatch(profileUnlockSuccess(connectedAccount, profile))
     } catch (error) {
       dispatch(profileUnlockFailure(connectedAccount, error))
@@ -59,14 +62,23 @@ const AuthButton = () => {
     }
   }
 
+  const createProfile = async connectedAccount => {
+    const { unlockedBox } = boxes[connectedAccount]
+
+    await unlockedBox.createProfile()
+  }
+
   const getButtonClickHandler = ({
     unlockedProfSuccess,
     loadedPublicProfSuccess,
     editingProfile,
+    publicProfile,
   }) => {
     if (editingProfile) return saveProfile
+    if (unlockedProfSuccess && Object.keys(publicProfile).length === 0)
+      return createProfile
     if (unlockedProfSuccess) return editProfile
-    if (loadedPublicProfSuccess) return unlockOrCreateProfile
+    if (loadedPublicProfSuccess) return unlockProfile
     return () => {
       throw new Error('Error thrown in the click handler, unmanaged state')
     }

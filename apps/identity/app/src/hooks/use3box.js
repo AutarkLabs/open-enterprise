@@ -21,11 +21,10 @@ const use3Box = () => {
     const unlockIfLoggedIn = async profile => {
       const isLoggedIn = await profile.isLoggedIn()
 
-      dispatch(requestedProfileUnlock(connectedAccount))
-
       if (isLoggedIn) {
+        dispatch(requestedProfileUnlock(connectedAccount))
         try {
-          await profile.unlockOrCreate()
+          await profile.unlock()
           dispatch(profileUnlockSuccess(connectedAccount, profile))
         } catch (error) {
           dispatch(profileUnlockFailure(connectedAccount, error))

@@ -68,8 +68,9 @@ const ProfilePicture = ({ ethereumAddress }) => {
 
   const addedImage = userLoaded && boxes[ethereumAddress].uploadedImageSuccess
 
-  const uploadedImageCid =
-    addedImage && boxes[ethereumAddress].forms.image[0].contentUrl['/']
+  const editProfileImageCid = addedImage
+    ? boxes[ethereumAddress].forms.image[0].contentUrl['/']
+    : publicProfileImageCid
 
   return (
     <Fragment>
@@ -81,7 +82,7 @@ const ProfilePicture = ({ ethereumAddress }) => {
           isDragReject,
           isEditing,
           publicProfileImageCid,
-          uploadedImageCid,
+          editProfileImageCid,
         })}
       >
         {isEditing && (
@@ -113,8 +114,9 @@ const getBorderColor = props => {
 
 const getBackground = props => {
   const imageCid = props.isEditing
-    ? props.uploadedImageCid
+    ? props.editProfileImageCid
     : props.publicProfileImageCid
+
   if (imageCid) return `url(https://ipfs.infura.io/ipfs/${imageCid})`
 
   return `url(${addImage})`
