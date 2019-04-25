@@ -83,6 +83,8 @@ export class Profile {
     })
   }
 
+  isLoggedIn = () => Box.isLoggedIn(this.ethereumAddress)
+
   getPrivate = () => {
     if (this.boxState.opened && this.boxState.synced) {
       return this.unlockedBox.private.all()
