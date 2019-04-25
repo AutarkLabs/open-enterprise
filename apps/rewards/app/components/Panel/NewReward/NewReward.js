@@ -21,11 +21,17 @@ const disbursementCycles = ['Quarterly']
 const disbursementCyclesSummary = ['quarterly cycle']
 const disbursementDates = [ '1 week', '2 weeks' ]
 const disbursementDatesItems = disbursementDates.map(item => 'Cycle end + ' + item)
+import tokenBalanceOfAbi from '../../../../../shared/json-abis/token-balanceof.json'
+import tokenBalanceOfAtAbi from '../../../../../shared/json-abis/token-balanceofat.json'
+import tokenCreationBlockAbi from '../../../../../shared/json-abis/token-creationblock.json'
+import tokenSymbolAbi from '../../../../../shared/json-abis/token-symbol.json'
+const tokenAbi = [].concat(tokenBalanceOfAbi, tokenBalanceOfAtAbi, tokenCreationBlockAbi, tokenSymbolAbi)
 
 const INTIAL_STATE = {
   customToken: {
     address: '',
     value: '',
+    isVerified: null,
   },
 }
 
@@ -47,6 +53,7 @@ class NewReward extends React.Component {
       dateStart: new Date(),
       dateEnd: new Date(),
       rewardType: 0,
+      refTokens: undefined,
       referenceAsset: 0,
       disbursementCycle: 0,
       disbursementDate: 0,
@@ -73,7 +80,7 @@ class NewReward extends React.Component {
     dataToSend.disbursementCycle = disbursementCycles[this.state.disbursementCycle]
     dataToSend.disbursementDelay = disbursementDates[this.state.disbursementDate]
     dataToSend.isMerit = !dataToSend.rewardType ? true : false
-    dataToSend.referenceAsset = this.state.refTokens[this.state.referenceAsset-2].address // account for no ETH in reference asset dropdown
+    dataToSend.referenceAsset = this.state.customToken.isVerified?this.state.customToken.address:this.state.refTokens[this.state.referenceAsset-2].address // account for no ETH in reference asset dropdown
     this.props.onNewReward(dataToSend)
   }
 
@@ -89,13 +96,13 @@ class NewReward extends React.Component {
       !this.errorPrompt()
     )
 
-  startBeforeTokenCreation = () => this.state.refTokens[this.state.referenceAsset - 2].startBlock > this.state.startBlock
+  startBeforeTokenCreation = () => (this.state.customToken.startBlock?this.state.customToken.startBlock:this.state.refTokens[this.state.referenceAsset - 2].startBlock) > this.state.startBlock
   disbursementOverflow = () => (this.state.quarterEndDates ? this.state.quarterEndDates.length > 41 : false)
   lowVaultBalance = () => this.props.balances[this.state.amountCurrency].amount / Math.pow(10,this.props.balances[this.state.amountCurrency].decimals) < this.state.amount
 
-  errorPrompt = () => this.showSummary() && (this.startBeforeTokenCreation() || this.disbursementOverflow() ||this.lowVaultBalance())
+  errorPrompt = () => (this.showSummary() && (this.startBeforeTokenCreation() || this.disbursementOverflow() || this.lowVaultBalance()))
 
-  showSummary = () => this.state.referenceAsset > 1
+  showSummary = () => (this.state.referenceAsset > 1 || this.state.customToken.symbol)
 
   getItems() {
     if (!this.state.refTokens) {
@@ -105,14 +112,16 @@ class NewReward extends React.Component {
   }
 
   getTokenItems() {
-    return this.props.balances.filter(token => token.startBlock?true:false).map(({ address, name, symbol, verified }) => (
-      <TokenSelectorInstance
-        address={address}
-        name={name}
-        showIcon={verified}
-        symbol={symbol}
-      />
-    ))
+    return this.props.balances
+      .filter(token => token.startBlock ? true : false)
+      .map(({ address, name, symbol, verified }) => (
+        <TokenSelectorInstance
+          address={address}
+          name={name}
+          showIcon={verified}
+          symbol={symbol}
+        />
+      ))
   }
 
   handleCustomTokenChange = event => {
@@ -126,6 +135,10 @@ class NewReward extends React.Component {
         ? ETHER_TOKEN_VERIFIED_BY_SYMBOL.get(value.toUpperCase()) || ''
         : ''
 
+    if(isAddress(value) || isAddress(resolvedAddress)) {
+      this.verifyMinime(resolvedAddress || value, this.props.app, { address: resolvedAddress || value, value })
+    }
+
     this.setState(
       {
         customToken: {
@@ -134,6 +147,42 @@ class NewReward extends React.Component {
         },
       },
     )
+  }
+
+  verifyMinime = async (tokenAddress, app, tokenState) => {
+    console.log('entered verify')
+    const token = app.external(tokenAddress, tokenAbi)
+    const testAddress = '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7'
+    const currentBlock = await app.web3Eth('getBlockNumber').toPromise()
+    try {
+      const verifiedTests = (await Promise.all([
+        await token.balanceOf(testAddress).toPromise(),
+        await token.creationBlock().toPromise(),
+        await token.balanceOfAt(testAddress,currentBlock).toPromise(),
+      ]))
+      const isVerified = verifiedTests
+        .every(val => Number.isInteger(Number(val)))
+      if (verifiedTests[0] !== verifiedTests[2]) {
+        console.log('shouldnt be verified: ',false)
+        this.setState({ customToken: { ...tokenState, isVerified: false } })
+        return false
+      }
+      console.log('should be verified: ',isVerified)
+      this.setState({
+        customToken: {
+          ...tokenState,
+          isVerified: true,
+          symbol: await token.symbol().toPromise(),
+          startBlock: await token.creationBlock().toPromise(),
+        }
+      })
+      return true
+    }
+    catch (error) {
+      console.log('Is Verified: ', false)
+      this.setState({ customToken: { ...tokenState, isVerified: false } })
+      return false
+    }
   }
 
   formatDate = date => format(date, 'yyyy-MM-dd')
@@ -181,7 +230,7 @@ class NewReward extends React.Component {
             wide
             items={this.getItems()}//this.props.balances.slice(1).map(token => token.symbol)}
             active={this.state.referenceAsset}
-            onChange={referenceAsset => this.setState({ referenceAsset })}
+            onChange={referenceAsset => this.setState({ referenceAsset, ...INTIAL_STATE })}
           />
         }
       />
@@ -282,10 +331,11 @@ class NewReward extends React.Component {
         <TokenIcon />
         <Summary>
           <p>
-            A total of <SummaryBold>{this.state.amount} {this.props.balances[this.state.amountCurrency].symbol}</SummaryBold> will be distributed as a reward to addresses that earned <SummaryBold>{this.state.refTokens[this.state.referenceAsset-2].symbol}</SummaryBold> from <SummaryBold>{this.formatDate(this.state.dateStart)}</SummaryBold> to <SummaryBold>{this.formatDate(this.state.dateEnd)}</SummaryBold>.
+            A total of <SummaryBold>{this.state.amount} {this.props.balances[this.state.amountCurrency].symbol}</SummaryBold> will
+            be distributed as a reward to addresses that earned <SummaryBold>{(this.state.customToken.symbol ? this.state.customToken.symbol:this.state.refTokens[this.state.referenceAsset-2].symbol)}</SummaryBold> from <SummaryBold>{this.formatDate(this.state.dateStart)}</SummaryBold> to <SummaryBold>{this.formatDate(this.state.dateEnd)}</SummaryBold>.
           </p>
           <p>
-            The reward amount will be in proportion to the <SummaryBold>{this.state.refTokens[this.state.referenceAsset-2].symbol}</SummaryBold> earned by each account in the specified period.
+            The reward amount will be in proportion to the <SummaryBold>{(this.state.customToken.symbol ? this.state.customToken.symbol:this.state.refTokens[this.state.referenceAsset-2].symbol)}</SummaryBold> earned by each account in the specified period.
           </p>
           <p>
             The reward will be disbursed <SafeLink href="#" target="_blank"><SummaryBold>upon approval of this proposal</SummaryBold></SafeLink>.
@@ -451,6 +501,9 @@ class NewReward extends React.Component {
     //console.log('refItems: ',this.getItems())
     const showCustomToken = this.state.referenceAsset === 1
     console.log(showCustomToken)
+    console.log('show summary: ', this.showSummary())
+    //this.state.refTokens && this.state.refTokens.length > 0 && this.verifyMinime(this.state.refTokens[0].address, this.props.app)
+    //this.props.app && this.verifyMinime('0x730deb4bfe825EDe71F032FbA5373a6961B0387b', this.props.app)
     return (
       <Form
         onSubmit={this.onSubmit}
