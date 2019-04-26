@@ -47,6 +47,7 @@ class Votes extends React.Component {
                 <VotesList
                   votes={closedVotes}
                   onSelectVote={onSelectVote}
+                  app={app}
                 />
               ) : (
                 <VotesTable
