@@ -32,15 +32,14 @@ context('Aragon', () => {
     });
     cy.visit('http://localhost:3000/#/0x5b6a3301a67A4bfda9D3a528CaD34cac6e7F8070')
   })
-
 ////////////////////////////////////////////////////////////////////////////////////////
-// new account
+// Allocations
 ////////////////////////////////////////////////////////////////////////////////////////
-
-///*
   context('Allocations', () => {
+    ////////////////////////////////////////////////////////////////////////////////////////
+    // new account
+    ////////////////////////////////////////////////////////////////////////////////////////
     it('creates New Account', () => {
-
       cy.on('uncaught:exception', (err, runnable) => {
         expect(err.message).to.include('convertible string')
         console.log('uncaught')
@@ -58,13 +57,9 @@ context('Aragon', () => {
 
       cy.get('iframe').iframe().contains('div', ACC1)
     })
-//*/
-
-////////////////////////////////////////////////////////////////////////////////////////
-// new allocation
-////////////////////////////////////////////////////////////////////////////////////////
-
-
+    ////////////////////////////////////////////////////////////////////////////////////////
+    // new allocation
+    ////////////////////////////////////////////////////////////////////////////////////////
     it('creates New Allocation', () => {
 
       cy.on('uncaught:exception', (err, runnable) => {
@@ -73,7 +68,6 @@ context('Aragon', () => {
         return false
       })
 
-///*
       cy.contains('span', 'Allocations', { timeout: 150000 }).wait(1000).click()
       .get('iframe').iframe().wait(1000).find('div').each((el) => {
 
@@ -83,7 +77,7 @@ context('Aragon', () => {
         }
       }
       ).wait(1000)
-      .get('iframe').iframe().contains('span', 'New Allocation', { timeout: 150000 }).wait(1000).click()
+      .get('iframe').iframe().contains('span', 'New Allocation', { timeout: 150000 }).click({force: true})
       .get('iframe').iframe().find('textarea[name="allocationDescription"]').type(ALLOC1)
       .get('iframe').iframe().find('input[name="amount"]').type('13')
       .get('iframe').iframe().wait(1000).find('div').each((el) => {
@@ -94,67 +88,14 @@ context('Aragon', () => {
         }
       }
       ).wait(1000)
-      .get('iframe').iframe().contains('div','autark').click().wait(1000)
+      .get('iframe').iframe().contains('div','autark').click().wait(200)
       .get('iframe').iframe().find('input[placeholder="Enter an address option"]').type(KEY1)
-      .get('iframe').iframe().contains('button','+ Add option').click().wait(1000)
+      .get('iframe').iframe().contains('button','+ Add option').click().wait(200)
       .get('iframe').iframe().find('input[placeholder="Enter an address option"]').type(KEY2)
-      .get('iframe').iframe().contains('button','Submit Allocation').click().wait(1000)
+      .get('iframe').iframe().contains('button','Submit Allocation').click().wait(200)
 
       cy.contains('button','Create transaction').click()
-      cy.contains('button','Close').click().wait(3000)
-//*/
-////////////////////////////////////////////////////////////////////////////////////////
-// vote for allocation
-////////////////////////////////////////////////////////////////////////////////////////
-
-})
-///*
-  })
-  context('Dot Voting', () => {
-    it('votes for Allocation', () => {
-
-      cy.contains('span', 'Dot Voting', { timeout: 150000 }).wait(1000).click()
-      cy.get('iframe').iframe().contains('p', ALLOC1).click()
-      .get('iframe').iframe().wait(1000).find('div').each((el) => {
-        if (/Slider__Area/.test(el[0].className)) {
-          console.log('++', el[0].className, el)
-          cy.wrap(el[0]).trigger('mousedown', { which: 1, x: 60, y: 5})
-        }
-      })
-      .get('iframe').iframe().contains('button','Submit Vote').click().wait(1000)
-
-      cy.contains('button','Create transaction').click()
-      cy.contains('button','Close').click().wait(3000)
-//*/
-////////////////////////////////////////////////////////////////////////////////////////
-// vote for allocation
-////////////////////////////////////////////////////////////////////////////////////////
-/*
-
-      .get('iframe').iframe().contains('p', ALLOC1).click()
-      .get('iframe').iframe().wait(1000).find('div').each((el) => {
-        if (/VoteStatus__StatusLabel/.test(el[0].className)) {
-          console.log('++ found sidepanel', el[0])
-          cy.wrap(el[0]).within(($el) => {
-
-            cy.find('span').each((el) => {
-              if (/VoteStatus__StatusLabel/.test(el[0].className)) {
-                console.log('+!!!+', el[0])
-              }
-            })
-            
-          })
-        }
-      })
-/*
-      .get('iframe').iframe().find('input').each((el) => {
-        if (/TextInput/.test(el[0].className)) {
-          console.log('--', el[0].className)
-          el[0].click()
-        }
-      })
-      
-      */
+      cy.contains('button','Close').click()
     })
   })
 })

@@ -85,6 +85,7 @@ class Decisions extends React.Component {
     })
   }
   handleVote = (voteId, supports) => {
+    console.log('handle vote', voteId, supports)
     this.props.app.vote(voteId, supports)
     this.handleVoteClose()
   }

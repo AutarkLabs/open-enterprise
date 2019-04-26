@@ -77,6 +77,7 @@ class VotePanelContent extends React.Component {
             (parseInt(this.state.userBalance) * 0.9999)
       ))
       : 0
+    console.log('options', optionsArray)
     this.props.onVote(this.props.vote.voteId, optionsArray)
   }
   executeVote = () => {
