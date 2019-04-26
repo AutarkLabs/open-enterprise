@@ -1,7 +1,6 @@
 import React, { useContext } from 'react'
 import styled from 'styled-components'
 import { useAragonApi } from '@aragon/api-react'
-
 import { Button } from '@aragon/ui'
 
 import { BoxContext } from '../wrappers/box'

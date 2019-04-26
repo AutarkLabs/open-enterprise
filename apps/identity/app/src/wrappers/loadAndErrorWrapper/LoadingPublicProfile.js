@@ -1,7 +1,7 @@
 import React from 'react'
 
 const LoadingPublicProfile = props => {
-  return <div>Initializing</div>
+  return <div>Loading public profile...</div>
 }
 
 export default LoadingPublicProfile

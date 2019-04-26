@@ -2,8 +2,23 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
-import LeftPanel from './leftPanel'
-import RightPanel from './RightPanel'
+import InformationPanel from './informationPanel'
+import OrganizationPanel from './OrganizationPanel'
+
+const Profile = ({ ethereumAddress }) => {
+  return (
+    <div>
+      <PanelSeparator>
+        <InformationPanel ethereumAddress={ethereumAddress} />
+        <OrganizationPanel />
+      </PanelSeparator>
+    </div>
+  )
+}
+
+Profile.propTypes = {
+  ethereumAddress: PropTypes.string.isRequired,
+}
 
 const PanelSeparator = styled.div`
   display: flex;
@@ -13,20 +28,5 @@ const PanelSeparator = styled.div`
   padding-right: 50px;
   width: 100vw;
 `
-
-const Profile = ({ ethereumAddress }) => {
-  return (
-    <div>
-      <PanelSeparator>
-        <LeftPanel ethereumAddress={ethereumAddress} />
-        <RightPanel />
-      </PanelSeparator>
-    </div>
-  )
-}
-
-Profile.propTypes = {
-  ethereumAddress: PropTypes.string.isRequired,
-}
 
 export default Profile

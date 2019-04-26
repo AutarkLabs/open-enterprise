@@ -37,6 +37,22 @@ const ReadOrEditTextArea = ({
   )
 }
 
+ReadOrEditTextArea.propTypes = {
+  onChange: PropTypes.func.isRequired,
+  value: PropTypes.string.isRequired,
+  placeholder: PropTypes.string.isRequired,
+  editing: PropTypes.bool,
+  disabled: PropTypes.bool,
+  type: PropTypes.string,
+}
+
+ReadOrEditTextArea.defaultProps = {
+  editing: false,
+  disabled: false,
+  type: 'text',
+  wide: false,
+}
+
 const baseStyles = css`
   ${font({ size: 'small', weight: 'normal' })};
   width: ${({ wide }) => (wide ? '100%' : 'auto')};
@@ -63,21 +79,5 @@ const baseStyles = css`
 const TextArea = styled.textarea`
   ${baseStyles};
 `
-
-ReadOrEditTextArea.propTypes = {
-  onChange: PropTypes.func.isRequired,
-  value: PropTypes.string.isRequired,
-  placeholder: PropTypes.string.isRequired,
-  editing: PropTypes.bool,
-  disabled: PropTypes.bool,
-  type: PropTypes.string,
-}
-
-ReadOrEditTextArea.defaultProps = {
-  editing: false,
-  disabled: false,
-  type: 'text',
-  wide: false,
-}
 
 export default ReadOrEditTextArea

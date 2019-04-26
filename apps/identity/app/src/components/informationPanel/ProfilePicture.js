@@ -32,8 +32,7 @@ const ProfilePicture = ({ ethereumAddress }) => {
 
       reader.onload = async () => {
         try {
-          const arrayBuffer = reader.result
-          const file = Buffer.from(arrayBuffer)
+          const file = Buffer.from(reader.result)
           const result = await infuraIpfs.add(file)
           dispatch(uploadedImage(ethereumAddress, result[0].hash))
         } catch (error) {
@@ -41,9 +40,7 @@ const ProfilePicture = ({ ethereumAddress }) => {
         }
       }
 
-      acceptedFiles.forEach(file => {
-        reader.readAsArrayBuffer(file)
-      })
+      acceptedFiles.forEach(file => reader.readAsArrayBuffer(file))
     },
     [dispatch, ethereumAddress]
   )
@@ -99,8 +96,6 @@ const ProfilePicture = ({ ethereumAddress }) => {
 ProfilePicture.propTypes = {
   ethereumAddress: PropTypes.string.isRequired,
 }
-
-export default ProfilePicture
 
 const getBorderColor = props => {
   if (props.isEditing) {
@@ -161,3 +156,5 @@ const EditIcon = styled.img.attrs({ src: editImage })`
   right: 15px;
   top: 5px;
 `
+
+export default ProfilePicture

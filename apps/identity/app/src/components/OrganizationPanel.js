@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { Card, Text } from '@aragon/ui'
 
-const RightPanel = () => {
+const OrganizationPanel = () => {
   return (
     <Spacing>
       <Card width="700px" height="200px">
@@ -16,8 +16,6 @@ const RightPanel = () => {
     </Spacing>
   )
 }
-
-export default RightPanel
 
 const Spacing = styled.div`
   margin-top: 170px;
@@ -37,3 +35,5 @@ const Center = styled.div`
   justify-content: center;
   line-height: 7;
 `
+
+export default OrganizationPanel

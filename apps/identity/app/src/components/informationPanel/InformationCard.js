@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { Fragment, useContext } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Card } from '@aragon/ui'
@@ -16,14 +16,10 @@ const InformationCard = ({ ethereumAddress }) => {
 
   const userLoaded = !!boxes[ethereumAddress]
 
-  const isEditing = (ethereumAddress, boxes) => {
-    return userLoaded ? boxes[ethereumAddress].editingProfile : false
-  }
-
   const onChange = (value, field) => {
     dispatch(editField(ethereumAddress, field, value))
   }
-  const editing = isEditing(ethereumAddress, boxes)
+  const isEditing = userLoaded ? boxes[ethereumAddress].editingProfile : false
 
   const getValue = field => {
     if (!userLoaded) return ''
@@ -32,11 +28,11 @@ const InformationCard = ({ ethereumAddress }) => {
 
     const valueFromForm = boxes[ethereumAddress].forms[field] || ''
 
-    return editing ? valueFromForm : valueFromPublicProfile
+    return isEditing ? valueFromForm : valueFromPublicProfile
   }
 
   return (
-    <div>
+    <Fragment>
       <Card width="350px" height="500px">
         <AlignItemsCenter>
           <ReadOrEditTextField
@@ -44,7 +40,7 @@ const InformationCard = ({ ethereumAddress }) => {
             placeholder={'Name'}
             onChange={e => onChange(e.target.value, 'name')}
             type="text"
-            editing={editing}
+            editing={isEditing}
             disabled={!userLoaded}
             size="xxlarge"
           />
@@ -54,7 +50,7 @@ const InformationCard = ({ ethereumAddress }) => {
             placeholder={'Job'}
             onChange={e => onChange(e.target.value, 'job')}
             type="text"
-            editing={editing}
+            editing={isEditing}
             disabled={!userLoaded}
             size="normal"
           />
@@ -64,7 +60,7 @@ const InformationCard = ({ ethereumAddress }) => {
             placeholder={'Employer'}
             onChange={e => onChange(e.target.value, 'employer')}
             type="text"
-            editing={editing}
+            editing={isEditing}
             disabled={!userLoaded}
             size="normal"
           />
@@ -74,7 +70,7 @@ const InformationCard = ({ ethereumAddress }) => {
             placeholder={'Location'}
             onChange={e => onChange(e.target.value, 'location')}
             type="text"
-            editing={editing}
+            editing={isEditing}
             disabled={!userLoaded}
             size="normal"
           />
@@ -84,7 +80,7 @@ const InformationCard = ({ ethereumAddress }) => {
             placeholder={'Website'}
             onChange={e => onChange(e.target.value, 'website')}
             type="url"
-            editing={editing}
+            editing={isEditing}
             disabled={!userLoaded}
             size="normal"
           />
@@ -94,7 +90,7 @@ const InformationCard = ({ ethereumAddress }) => {
             placeholder={'Education'}
             onChange={e => onChange(e.target.value, 'school')}
             type="text"
-            editing={editing}
+            editing={isEditing}
             disabled={!userLoaded}
             size="normal"
           />
@@ -104,21 +100,19 @@ const InformationCard = ({ ethereumAddress }) => {
             placeholder={'Description'}
             onChange={e => onChange(e.target.value, 'description')}
             type="text"
-            editing={editing}
+            editing={isEditing}
             disabled={!userLoaded}
             size="normal"
           />
         </AlignItemsCenter>
       </Card>
-    </div>
+    </Fragment>
   )
 }
 
 InformationCard.propTypes = {
   ethereumAddress: PropTypes.string.isRequired,
 }
-
-export default InformationCard
 
 const AlignItemsCenter = styled.div`
   display: flex;
@@ -130,3 +124,5 @@ const AlignItemsCenter = styled.div`
 const SmallMargin = styled.div`
   margin-top: 10px;
 `
+
+export default InformationCard

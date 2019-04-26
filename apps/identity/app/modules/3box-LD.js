@@ -1,4 +1,4 @@
-import isIPFS from 'is-ipfs'
+import { isIPFS } from 'ipfs-http-client'
 
 import { worksFor, schoolAffiliation, homeLocation } from './things'
 

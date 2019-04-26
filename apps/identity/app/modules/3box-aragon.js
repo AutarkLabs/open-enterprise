@@ -57,12 +57,10 @@ export class Profile {
     this.unlockedBox = null
   }
 
-  getPublic = () => {
-    return Box.getProfile(this.ethereumAddress)
-  }
+  getPublic = () => Box.getProfile(this.ethereumAddress)
 
-  unlock = () => {
-    return new Promise(async (resolve, reject) => {
+  unlock = () =>
+    new Promise(async (resolve, reject) => {
       const openedBox = await Box.openBox(
         this.ethereumAddress,
         this.boxAragonBridge
@@ -81,16 +79,15 @@ export class Profile {
         }
       })
     })
-  }
 
   isLoggedIn = () => Box.isLoggedIn(this.ethereumAddress)
-
-  createProfile = () => this.unlockedBox.public.set()
 
   getPrivate = () => {
     if (this.boxState.opened && this.boxState.synced) {
       return this.unlockedBox.private.all()
     }
+
+    throw new Error('box was not unlocked or has not finished syncing')
   }
 
   checkForErrorsBeforeSetting = (fields, values) => {
