@@ -58,7 +58,7 @@ The address book does not require passing any initialization parameters.
 #### Sample install command
 
 ```
-dao install <dao-address> tps-address-book.open.aragonpm.eth
+dao install <dao-address> tps-address-book.open.aragonpm.eth --environment aragon:rinkeby
 ```
 
 ## Install Dot Voting App
