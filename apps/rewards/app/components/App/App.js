@@ -209,7 +209,6 @@ class App extends React.Component {
   render() {
     const { panel, panelProps } = this.state
     const { network, displayMenuButton } = this.props
-    console.log('reference tokens: ',this.props.refTokens)
 
     return (
       <Main>

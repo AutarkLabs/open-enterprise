@@ -35,6 +35,10 @@ const INTIAL_STATE = {
   },
 }
 
+function getRefToken({ refTokens }, { referenceAsset }) {
+  return refTokens[referenceAsset - 2]
+}
+
 class NewReward extends React.Component {
   static propTypes = {
     vaultBalance: PropTypes.string.isRequired,
@@ -84,6 +88,10 @@ class NewReward extends React.Component {
     this.props.onNewReward(dataToSend)
   }
 
+  getTokenProp(prop, { refTokens }, { customToken, referenceAsset }, check = prop) {
+    return customToken[check]?customToken[prop]:refTokens[referenceAsset-2][prop]
+  }
+
   canSubmit = () =>
     !(
       this.state.amount > 0 &&
@@ -96,7 +104,7 @@ class NewReward extends React.Component {
       !this.errorPrompt()
     )
 
-  startBeforeTokenCreation = () => (this.state.customToken.startBlock?this.state.customToken.startBlock:this.props.refTokens[this.state.referenceAsset - 2].startBlock) > this.state.startBlock
+  startBeforeTokenCreation = () => (this.getTokenProp('startBlock',this.props,this.state)) > this.state.startBlock
   disbursementOverflow = () => (this.state.quarterEndDates ? this.state.quarterEndDates.length > 41 : false)
   lowVaultBalance = () => this.props.balances[this.state.amountCurrency].amount / Math.pow(10,this.props.balances[this.state.amountCurrency].decimals) < this.state.amount
   dividendPeriodTooShort = () => (this.state.rewardType > 0 && this.state.occurances === 0)
@@ -136,7 +144,7 @@ class NewReward extends React.Component {
         : ''
 
     if(isAddress(value) || isAddress(resolvedAddress)) {
-      this.verifyMinime(resolvedAddress || value, this.props.app, { address: resolvedAddress || value, value })
+      this.verifyMinime(this.props.app, { address: resolvedAddress || value, value })
     }
 
     this.setState(
@@ -149,7 +157,8 @@ class NewReward extends React.Component {
     )
   }
 
-  verifyMinime = async (tokenAddress, app, tokenState) => {
+  verifyMinime = async (app, tokenState) => {
+    const tokenAddress = tokenState.address
     console.log('entered verify')
     const token = app.external(tokenAddress, tokenAbi)
     const testAddress = '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7'
@@ -194,7 +203,7 @@ class NewReward extends React.Component {
       dateEnd,
       occurances,
       quarterEndDates: [...Array(occurances).keys()]
-        .map(occurance => Date.now() + ((occurance + 1) * MILLISECONDS_IN_A_QUARTER)),
+        .map(occurance => Number(dateStart) + ((occurance + 1) * MILLISECONDS_IN_A_QUARTER)),
     })
   }
 
@@ -203,7 +212,7 @@ class NewReward extends React.Component {
       <React.Fragment>
         <Info.Alert>
           {this.startBeforeTokenCreation() && `The selected start date occurs
-          before your reference asset ${(this.state.customToken.symbol ? this.state.customToken.symbol:this.props.refTokens[this.state.referenceAsset-2].symbol)}
+          before your reference asset ${(this.getTokenProp('symbol',this.props,this.state))}
           was created. Please choose another date.`}
 
           {this.disbursementOverflow() && `You have specified a date range that results in
@@ -240,15 +249,19 @@ class NewReward extends React.Component {
       />
 
       {showCustomToken && (
-        <Field label={this.state.labelCustomToken}>
-          <TextInput
-            placeholder="SYM…"
-            value={this.state.customToken.value}
-            onChange={this.handleCustomTokenChange}
-            required
-            wide
-          />
-        </Field>
+        <FormField
+          label={this.state.labelCustomToken}
+          required
+          input={
+            <TextInput
+              name="description"
+              placeholder="SYM…"
+              wide
+              value={this.state.customToken.value}
+              onChange={this.handleCustomTokenChange}
+            />
+          }
+        />
       )}
 
       <FormField
@@ -335,14 +348,37 @@ class NewReward extends React.Component {
         <TokenIcon />
         <Summary>
           <p>
-            A total of <SummaryBold>{this.state.amount} {this.props.balances[this.state.amountCurrency].symbol}</SummaryBold> will
-            be distributed as a reward to addresses that earned <SummaryBold>{(this.state.customToken.symbol ? this.state.customToken.symbol:this.props.refTokens[this.state.referenceAsset-2].symbol)}</SummaryBold> from <SummaryBold>{this.formatDate(this.state.dateStart)}</SummaryBold> to <SummaryBold>{this.formatDate(this.state.dateEnd)}</SummaryBold>.
+            {'A total of '}
+            <SummaryBold>
+              {this.state.amount} {this.props.balances[this.state.amountCurrency].symbol}
+            </SummaryBold>
+            {' will be distributed as a reward to addresses that earned '}
+            <SummaryBold>
+              {(this.getTokenProp('symbol',this.props,this.state))}
+            </SummaryBold>
+            {' from '}
+            <SummaryBold>
+              {this.formatDate(this.state.dateStart)}
+            </SummaryBold>
+            {' to '}
+            <SummaryBold>
+              {this.formatDate(this.state.dateEnd)}
+            </SummaryBold>.
           </p>
           <p>
-            The reward amount will be in proportion to the <SummaryBold>{(this.state.customToken.symbol ? this.state.customToken.symbol:this.props.refTokens[this.state.referenceAsset-2].symbol)}</SummaryBold> earned by each account in the specified period.
+            {'The reward amount will be in proportion to the '}
+            <SummaryBold>
+              {(this.getTokenProp('symbol',this.props,this.state))}
+            </SummaryBold>
+            {' earned by each account in the specified period.'}
           </p>
           <p>
-            The reward will be disbursed <SafeLink href="#" target="_blank"><SummaryBold>upon approval of this proposal</SummaryBold></SafeLink>.
+            {'The reward will be disbursed '}
+            <SafeLink href="#" target="_blank">
+              <SummaryBold>
+                {'upon approval of this proposal'}
+              </SummaryBold>
+            </SafeLink>.
           </p>
         </Summary>
       </Info>}
@@ -448,7 +484,7 @@ class NewReward extends React.Component {
               </SummaryBold>
               {' will be distributed as a dividend to '}
               <SummaryBold>
-                {(this.state.customToken.symbol ? this.state.customToken.symbol:this.props.refTokens[this.state.referenceAsset-2].symbol)}
+                {(this.getTokenProp('symbol',this.props,this.state))}
               </SummaryBold>
               {' holders on a '}
               <SummaryBold>
@@ -475,7 +511,7 @@ class NewReward extends React.Component {
               }.
             </p>
             <p>
-          The dividend amount will be in proportion to the <SummaryBold>{(this.state.customToken.symbol ? this.state.customToken.symbol:this.props.refTokens[this.state.referenceAsset-2].symbol)}</SummaryBold> balance as of the last day of each cycle.
+          The dividend amount will be in proportion to the <SummaryBold>{(this.getTokenProp('symbol',this.props,this.state))}</SummaryBold> balance as of the last day of each cycle.
             </p>
             <p>
           The dividend will be disbursed <SummaryBold>{disbursementDates[this.state.disbursementDate]}</SummaryBold> after the end of each cycle.
@@ -489,24 +525,9 @@ class NewReward extends React.Component {
 
 
   render() {
-    const { dateStart, dateEnd, rewardType, occurances } = this.state
-    //if (rewardType === 1) {
-    //  console.log('occurances: ', occurances)
-    //  console.log('quarter end dates: ', this.state.quarterEndDates)
-    //}
-    console.log('state: ',this.state)
-    console.log('props: ', this.props)
-    if (this.state.customToken.isVerified) {
-      console.log('startblock error', this.startBeforeTokenCreation())
-      console.log('token startblock: ', this.state.customToken.startBlock)
-      console.log('period startBlock: ', this.state.startBlock)
-    }
-    //console.log('refItems: ',this.getItems())
+
     const showCustomToken = this.state.referenceAsset === 1
-    console.log(showCustomToken)
-    console.log('show summary: ', this.showSummary())
-    //this.state.refTokens && this.state.refTokens.length > 0 && this.verifyMinime(this.state.refTokens[0].address, this.props.app)
-    //this.props.app && this.verifyMinime('0x730deb4bfe825EDe71F032FbA5373a6961B0387b', this.props.app)
+
     return (
       <Form
         onSubmit={this.onSubmit}
