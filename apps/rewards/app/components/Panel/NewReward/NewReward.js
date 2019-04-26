@@ -35,8 +35,8 @@ const INTIAL_STATE = {
   },
 }
 
-function getRefToken({ refTokens }, { referenceAsset }) {
-  return refTokens[referenceAsset - 2]
+function getTokenProp(prop, { refTokens }, { customToken, referenceAsset }, check = prop) {
+  return customToken[check]?customToken[prop]:refTokens[referenceAsset-2][prop]
 }
 
 class NewReward extends React.Component {
@@ -84,12 +84,8 @@ class NewReward extends React.Component {
     dataToSend.disbursementCycle = disbursementCycles[this.state.disbursementCycle]
     dataToSend.disbursementDelay = disbursementDates[this.state.disbursementDate]
     dataToSend.isMerit = !dataToSend.rewardType ? true : false
-    dataToSend.referenceAsset = this.state.customToken.isVerified?this.state.customToken.address:this.props.refTokens[this.state.referenceAsset-2].address
+    dataToSend.referenceAsset = getTokenProp('address', this.props, this.state,'isVerified')
     this.props.onNewReward(dataToSend)
-  }
-
-  getTokenProp(prop, { refTokens }, { customToken, referenceAsset }, check = prop) {
-    return customToken[check]?customToken[prop]:refTokens[referenceAsset-2][prop]
   }
 
   canSubmit = () =>
@@ -104,7 +100,7 @@ class NewReward extends React.Component {
       !this.errorPrompt()
     )
 
-  startBeforeTokenCreation = () => (this.getTokenProp('startBlock',this.props,this.state)) > this.state.startBlock
+  startBeforeTokenCreation = () => (getTokenProp('startBlock',this.props,this.state)) > this.state.startBlock
   disbursementOverflow = () => (this.state.quarterEndDates ? this.state.quarterEndDates.length > 41 : false)
   lowVaultBalance = () => this.props.balances[this.state.amountCurrency].amount / Math.pow(10,this.props.balances[this.state.amountCurrency].decimals) < this.state.amount
   dividendPeriodTooShort = () => (this.state.rewardType > 0 && this.state.occurances === 0)
@@ -203,7 +199,7 @@ class NewReward extends React.Component {
       dateEnd,
       occurances,
       quarterEndDates: [...Array(occurances).keys()]
-        .map(occurance => Number(dateStart) + ((occurance + 1) * MILLISECONDS_IN_A_QUARTER)),
+        .map(occurance => dateStart.valueOf() + ((occurance + 1) * MILLISECONDS_IN_A_QUARTER)),
     })
   }
 
@@ -212,7 +208,7 @@ class NewReward extends React.Component {
       <React.Fragment>
         <Info.Alert>
           {this.startBeforeTokenCreation() && `The selected start date occurs
-          before your reference asset ${(this.getTokenProp('symbol',this.props,this.state))}
+          before your reference asset ${(getTokenProp('symbol',this.props,this.state))}
           was created. Please choose another date.`}
 
           {this.disbursementOverflow() && `You have specified a date range that results in
@@ -354,7 +350,7 @@ class NewReward extends React.Component {
             </SummaryBold>
             {' will be distributed as a reward to addresses that earned '}
             <SummaryBold>
-              {(this.getTokenProp('symbol',this.props,this.state))}
+              {(getTokenProp('symbol',this.props,this.state))}
             </SummaryBold>
             {' from '}
             <SummaryBold>
@@ -368,7 +364,7 @@ class NewReward extends React.Component {
           <p>
             {'The reward amount will be in proportion to the '}
             <SummaryBold>
-              {(this.getTokenProp('symbol',this.props,this.state))}
+              {(getTokenProp('symbol',this.props,this.state))}
             </SummaryBold>
             {' earned by each account in the specified period.'}
           </p>
@@ -484,7 +480,7 @@ class NewReward extends React.Component {
               </SummaryBold>
               {' will be distributed as a dividend to '}
               <SummaryBold>
-                {(this.getTokenProp('symbol',this.props,this.state))}
+                {(getTokenProp('symbol',this.props,this.state))}
               </SummaryBold>
               {' holders on a '}
               <SummaryBold>
@@ -511,7 +507,7 @@ class NewReward extends React.Component {
               }.
             </p>
             <p>
-          The dividend amount will be in proportion to the <SummaryBold>{(this.getTokenProp('symbol',this.props,this.state))}</SummaryBold> balance as of the last day of each cycle.
+          The dividend amount will be in proportion to the <SummaryBold>{(getTokenProp('symbol',this.props,this.state))}</SummaryBold> balance as of the last day of each cycle.
             </p>
             <p>
           The dividend will be disbursed <SummaryBold>{disbursementDates[this.state.disbursementDate]}</SummaryBold> after the end of each cycle.
