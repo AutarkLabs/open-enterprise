@@ -6,7 +6,7 @@ import styled from 'styled-components'
 import { map } from 'rxjs/operators'
 import Entities from './Entities'
 import NewEntity from '../Panel/NewEntity'
-import { networkContextType, MenuButton, AppTitleButton } from '../../../../../shared/ui'
+import { networkContextType, AppTitle, AppTitleButton } from '../../../../../shared/ui'
 
 class App extends React.Component {
   static propTypes = {
@@ -57,7 +57,7 @@ class App extends React.Component {
 
   render() {
     const { panelVisible } = this.state
-    const { entries, displayMenuButton } = this.props
+    const { entries, displayMenuButton = false } = this.props
 
     return (
       <Main>
@@ -72,10 +72,7 @@ class App extends React.Component {
                 />
               }
             >
-              <AppBarTitle>
-                {displayMenuButton && <MenuButton />}
-                <AppBarLabel>Address Book</AppBarLabel>
-              </AppBarTitle>
+              <AppTitle title="Address Book" displayMenuButton={displayMenuButton} />
             </AppBar>
           }
         >
@@ -103,14 +100,6 @@ class App extends React.Component {
   }
 }
 
-const AppBarTitle = styled.span`
-  display: flex;
-  align-items: center;
-`
-const AppBarLabel = styled.span`
-  margin: 0 30px;
-  ${font({ size: 'xxlarge' })};
-`
 const ScrollWrapper = styled.div`
   display: flex;
   flex-direction: column;

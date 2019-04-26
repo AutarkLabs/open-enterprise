@@ -1,14 +1,13 @@
 import { AppBar, AppView, Main, observe, TabBar, font } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
-import styled from 'styled-components'
 import { map } from 'rxjs/operators'
 import throttle from 'lodash.throttle'
 import { Overview, MyRewards } from '../Content'
 import PanelManager, { PANELS } from '../Panel'
 import { millisecondsToBlocks, MILLISECONDS_IN_A_MONTH, MILLISECONDS_IN_A_QUARTER, millisecondsToQuarters, WEEK } from '../../../../../shared/ui/utils'
 import BigNumber from 'bignumber.js'
-import { networkContextType, MenuButton, AppTitleButton } from '../../../../../shared/ui'
+import { networkContextType, AppTitle, AppTitleButton } from '../../../../../shared/ui'
 
 const CONVERT_API_BASE = 'https://min-api.cryptocompare.com/data'
 const CONVERT_THROTTLE_TIME = 5000
@@ -208,7 +207,7 @@ class App extends React.Component {
 
   render() {
     const { panel, panelProps } = this.state
-    const { network, displayMenuButton } = this.props
+    const { network, displayMenuButton = false } = this.props
 
     return (
       <Main>
@@ -229,10 +228,7 @@ class App extends React.Component {
                 />
               }
             >
-              <AppBarTitle>
-                {displayMenuButton && <MenuButton />}
-                <AppBarLabel>Rewards</AppBarLabel>
-              </AppBarTitle>
+              <AppTitle title="Rewards" displayMenuButton={displayMenuButton} />
             </AppBar>
           }
         >
@@ -268,16 +264,6 @@ class App extends React.Component {
     )
   }
 }
-
-const AppBarTitle = styled.span`
-  display: flex;
-  align-items: center;
-`
-
-const AppBarLabel = styled.span`
-  margin: 0 30px;
-  ${font({ size: 'xxlarge' })};
-`
 
 export default observe(
   observable => observable.pipe(map(state => ({ ...state }))),
