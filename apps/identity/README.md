@@ -1,3 +1,38 @@
+# Running this code
+
+Clone the TPS repo:
+`git clone git@github.com:AutarkLabs/planning-suite.git`
+`cd planning-suite`
+
+fetch jon/identity branch
+`git fetch origin jon/identity`
+
+navigate to identity app
+`cd apps/identity`
+
+install deps
+`npm i`
+
+start the app - note, the address used to access your DAO from the browser should appear at the bottom of this process. You will need this in a few steps.
+`npm run start:app`
+
+in another, separate terminal process"
+`npm run start:http:no:client`
+
+In order for this repository to run, you will need to run a custom version of aragon/aragon
+
+`cd ../../../`
+`git clone git@github.com:openworklabs/aragon.git`
+`cd aragon`
+`git fetch origin allow-iframe-same-origin`
+`git checkout allow-iframe-same-origin`
+`git pull origin allow-iframe-same-origin`
+`npm i`
+`npm run start:local`
+
+Open your browser at
+`http://localhost:3000/#/<DAO ADDRESS>`
+
 # Aragon React Boilerplate
 
 > 🕵️ [Find more boilerplates using GitHub](https://github.com/search?q=topic:aragon-boilerplate) |
