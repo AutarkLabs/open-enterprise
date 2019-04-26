@@ -2,6 +2,17 @@
 
 ## AddressBook
 
+### 9.0.2
+
+```sh
+✔ Successfully published address-book-staging.open.aragonpm.eth v9.0.2:
+ℹ Contract address: 0xa589117a35b1A67788a8136A9309Bd80e76AC001
+ℹ Content (ipfs): QmY84BXfeRowmQXDqiRHaSScfDPvDmV5B3oyt1xNN7hFXz
+ℹ Transaction hash: 0x4231262285244a475668e8dda953917a64cb9367885c822ca02eea3cae69bac4
+```
+
+- command: `./node_modules/.bin/lerna exec --scope="@tps/apps-address-book" --stream aragon apm publish patch -- --files dist/ --environment staging`
+
 ### 8.0.0
 
 ```sh
@@ -31,6 +42,11 @@
 
 ## Allocations
 
+✔ Successfully published allocations-staging.open.aragonpm.eth v6.0.1:
+ℹ Contract address: 0xD786be2EC77E850CFDeea504c71d06A1C435B488
+ℹ Content (ipfs): QmVemTqFMWKNk8p8ubVwRH2jjxuA49XnfGSvMSLGbfMcgH
+ℹ Transaction hash: 0xf3c7f45711c25af3460ec9e820e382a992f850cc9ef9a8cabeaf791361892982
+
 ### 1.0.3
 
 ```sh
@@ -48,6 +64,10 @@
 ```
 
 ## Projects
+
+✔ Successfully published projects-staging.open.aragonpm.eth v8.0.1:
+ℹ Content (ipfs): QmSZfLewUP4Dd78mrz7VZ4vxZKya9GrV3y445jGTzJj7kF
+ℹ Transaction hash: 0xb185469072e8fa4df0f71ad99007253f36464830fbf133c2a7fa97e58f0e6af4
 
 ### 2.0.0
 
@@ -84,6 +104,10 @@
 
 ## DotVoting (formerly RangeVoting)
 
+✔ Successfully published dot-voting-staging.open.aragonpm.eth v5.0.1:
+ℹ Content (ipfs): QmZxrbUm2ikedkMB3i1wqm8v4UGPVKaK1SWSTJk89fRQD1
+ℹ Transaction hash: 0x4c3c4a37f31846819c8ee4cfb88cc6a6edfa48040f832afb97088f6ef2440861
+
 ### 1.0.0
 
 ```sh
@@ -113,6 +137,12 @@
 
 
 ```
+
+## Rewards
+
+✔ Successfully published rewards-staging.open.aragonpm.eth v3.0.1:
+ℹ Content (ipfs): QmUFGf5xo5LrY4BZqWFtAxLMnJ4epT3jZ3vh4FVcSJ6v9B
+ℹ Transaction hash: 0x76270761916bd94caba2b8c0e1ccd7ad2c6161d0119e3c9cd41440810cda85d8
 
 ## Planning-Suite Template (kit)
 

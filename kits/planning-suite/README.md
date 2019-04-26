@@ -37,6 +37,7 @@ planningSuite.newInstance(
 1. Deploy template contracts to the desired environment
 2. Publish the template to APM
 3. Create new dao with start-kit or reuse an existing one
+4. Propagate and IPFS pin
 
 ## Parameter Definitions
 
