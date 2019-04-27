@@ -86,7 +86,7 @@ class Decisions extends React.Component {
   }
   handleVote = (voteId, supports) => {
     console.log('handle vote', voteId, supports)
-    this.props.app.vote(voteId, supports)
+    this.props.app.vote(voteId, supports, { gas: '0x131e71' })
     this.handleVoteClose()
   }
   handleVoteClose = () => {

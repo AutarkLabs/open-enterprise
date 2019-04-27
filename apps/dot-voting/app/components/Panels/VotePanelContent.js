@@ -22,6 +22,7 @@ import VoteStatus from '../VoteStatus'
 import ProgressBarThick from '../ProgressBarThick'
 import Slider from '../Slider'
 import { getVoteStatus } from '../../utils/vote-utils'
+import { isAddress } from '../../utils/web3-utils'
 import {
   VOTE_STATUS_SUCCESSFUL
 } from '../../utils/vote-types'
@@ -249,8 +250,8 @@ class VotePanelContent extends React.Component {
                   >
                     {format(endDate, 'MMM dd yyyy HH:mm')}
                   </PastDate>
-                    
-                </React.Fragment>  
+
+                </React.Fragment>
               )}
             </div>
           </div>
@@ -382,7 +383,7 @@ class VotePanelContent extends React.Component {
                   <span
                     style={{ display: 'flex', justifyContent: 'flex-start' }}
                   >
-                    {web3.isAddress(option.label) ? (
+                    {isAddress(option.label) ? (
                       <IdentityBadge
                         networkType={network.type}
                         entity={option.label}

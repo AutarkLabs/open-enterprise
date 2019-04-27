@@ -6,21 +6,7 @@ const KEY2 = '0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb'
 const ACC1 = 'Account 1'
 const ALLOC1 = 'Allocation 3'
 
-const provider1 = new PrivateKeyProvider(
-  "A8A54B2D8197BC0B19BB8A084031BE71835580A01E70A45A13BABD16C9BC1563",
-  "http://localhost:8545"
-);
 
-const provider2 = new PrivateKeyProvider(
-  "ce8e3bda3b44269c147747a373646393b1504bfcbb73fc9564f5d753d8116608",
-  "http://localhost:8545"
-);
-/*
-cy.on("window:before:load", (win) => {
-  const provider = new PrivateKeyProvider(provider1);
-  win.web3 = new Web3(provider); // eslint-disable-line no-param-reassign
-});
-*/
 context('Aragon', () => {
   before(() => {
     cy.on("window:before:load", (win) => {
@@ -39,7 +25,7 @@ context('Aragon', () => {
         it('votes for Allocation', () => {
 
         cy.contains('span', 'Dot Voting', { timeout: 150000 }).wait(1000).click()
-        cy.get('iframe').iframe().contains('p', ALLOC1).click()
+        cy.get('iframe').iframe().wait(10000).contains('p', ALLOC1).click()
         .get('iframe').iframe().wait(1000).find('div').each((el) => {
             if (/Slider__Area/.test(el[0].className)) {
             console.log('++', el[0].className, el)
@@ -53,4 +39,3 @@ context('Aragon', () => {
         })
     })
 })
-
