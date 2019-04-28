@@ -1,3 +1,10 @@
+# Installing That Planning Suite via Template
+You can create a new organization that comes preconfigured with That Planning Suite by visiting [tps.autark.xyz](https://tps.autark.xyz)
+
+## Configure voting settings
+The Dot Voting "quorum" requirement is the `minParticipationPct`, or minimum percentage of total votes required for a Dot Vote to succeed. This is different than the [Voting app's minimum acceptance quorum](https://wiki.aragon.org/dev/apps/voting/) which is the minimum % of all token supply that needs to vote "yes" in order for the vote to be succeed.
+
+
 # Installing That Planning Suite to an Existing DAO
 The following are instructions to install That Planning Suite. 
 
