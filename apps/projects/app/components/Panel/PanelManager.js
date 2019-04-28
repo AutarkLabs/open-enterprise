@@ -8,7 +8,7 @@ const camel2title = camelCase =>
     .replace(/^./, match => match.toUpperCase())
 
 const dynamicImport = Object.freeze({
-  NewBountyAllocation: () => import('./NewBountyAllocation'),
+  FundIssues: () => import('./FundIssues'),
   NewIssueCuration: () => import('./NewIssueCuration'),
   NewIssue: () => import('./NewIssue'),
   NewProject: () => import('./NewProject'),
@@ -24,7 +24,7 @@ const PANELS = Object.keys(dynamicImport).reduce((obj, item) => {
 }, {})
 
 const PanelManager = ({ activePanel = null, onClose, ...panelProps }) => {
-  const panelTitle = activePanel && camel2title(activePanel)
+  const panelTitle = panelProps.title ? panelProps.title : activePanel && camel2title(activePanel)
   const PanelComponent = activePanel && React.lazy(dynamicImport[activePanel])
   return (
     <SidePanel

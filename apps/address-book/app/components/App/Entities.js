@@ -1,31 +1,31 @@
 import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableCell,
-  Text,
-  SafeLink,
+  Badge,
   ContextMenu,
   ContextMenuItem,
-  Badge,
+  IdentityBadge,
+  Table,
+  TableCell,
+  TableHeader,
+  TableRow,
+  Text,
+  theme,
 } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { Empty } from '../Card'
-import isAddress from 'web3-utils'
-import icon from '../../assets/copy.svg'
-
-const CopyIcon = () => <img src={icon} alt="Copy address to the clipboard" />
+import { provideNetwork } from '../../../../../shared/ui'
 
 // TODO: colors taken directly from Invision
 const ENTITY_TYPES = [
-  { name: 'Individual', fg: '#76A4E5', bg: '#CDECFF' },
-  { name: 'Organisation', fg: '#E5B243', bg: '#F6E4B0' },
-  { name: 'Project', fg: '#EE5BF1', bg: '#EDD0F2' },
+  { name: 'Individual', fg: '#76A4E5', bg: '#76A4E533' },
+  { name: 'Organization', fg: '#F78308', bg: '#F7830833' },
+  { name: 'Project', fg: '#B30FB3', bg: '#B30FB333' },
 ]
 
-const Entities = ({ entities, onNewEntity, onRemoveEntity }) => {
+const entitiesSort = (a,b) => a.data.name.toUpperCase() > b.data.name.toUpperCase() ? 1 : -1
+
+const Entities = ({ entities, network, onNewEntity, onRemoveEntity }) => {
   const removeEntity = address => () => onRemoveEntity(address)
 
   if (entities.length === 0) {
@@ -39,40 +39,38 @@ const Entities = ({ entities, onNewEntity, onRemoveEntity }) => {
           </TableRow>
         }
       >
-        {entities.map(({ data: { name, entryAddress, entryType } }) => {
+        {entities.sort(entitiesSort).map(({ data: { name, entryAddress, entryType } }) => {
           const typeRow = ENTITY_TYPES.filter(row => row.name === entryType)[0]
           return (
             <TableRow key={entryAddress}>
               <EntityCell>
                 <EntityWrapper>
-                  <Text>{name}</Text>
-                  <div style={{ display: 'flex' }}>
-                    <SafeLink
-                      style={{ color: '#21AAE7' }}
-                      // TODO: Populate the rinkeby depending on the deployment network. TIP: use href.location for that
-                      href={`https://rinkeby.etherscan.io/address/${entryAddress}`}
-                      target="_blank"
-                      title={entryAddress}
-                    >
-                      {entryAddress}
-                    </SafeLink>
-                    <span
-                      onClick={() => {
-                        navigator.clipboard.writeText(entryAddress)
-                      }}
-                      style={{ marginLeft: '.5rem', cursor: 'pointer' }}
-                    >
-                      <CopyIcon />
-                    </span>
-                  </div>
+                  <Text
+                    size="xlarge"
+                    style={{
+                      paddingBottom: '5px',
+                    }}
+                  >
+                    {name}
+                  </Text>
+                  <IdentityBadge
+                    networkType={network.type}
+                    entity={entryAddress}
+                    shorten={true}
+                  />
                 </EntityWrapper>
               </EntityCell>
-              <EntityCell align="center">
+              <EntityCell align="right">
                 <Badge foreground={typeRow.fg} background={typeRow.bg}>
                   {typeRow.name}
                 </Badge>
               </EntityCell>
-              <EntityCell>
+              <EntityCell
+                align="right"
+                style={{
+                  width: '30px',
+                }}
+              >
                 <ContextMenu>
                   <ContextMenuItem onClick={removeEntity(entryAddress)}>
                     Remove
@@ -90,16 +88,17 @@ const Entities = ({ entities, onNewEntity, onRemoveEntity }) => {
 Entities.propTypes = {
   // TODO: shape better
   entities: PropTypes.array.isRequired,
+  network: PropTypes.object,
   onNewEntity: PropTypes.func.isRequired,
   onRemoveEntity: PropTypes.func.isRequired,
 }
 
 const EntityCell = styled(TableCell)`
-  padding: 10px;
+  padding: 15px;
 `
 const EntityWrapper = styled.div`
   display: flex;
   flex-direction: column;
   margin-left: 10px;
 `
-export default Entities
+export default provideNetwork(Entities)

@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import Aragon, { providers } from '@aragon/client'
+import Aragon, { providers } from '@aragon/api'
 import App from './components/App/App'
 
 //import { allocationsMockData } from './utils/mockData'
@@ -14,6 +14,7 @@ import App from './components/App/App'
 class ConnectedApp extends React.Component {
   state = {
     app: new Aragon(new providers.WindowMessage(window.parent)),
+    network: {},
     observable: null,
     userAccount: '',
     // ...allocationsMockData
@@ -37,10 +38,13 @@ class ConnectedApp extends React.Component {
         observable: app.state(),
       })
       app.accounts().subscribe(accounts => {
-        this.setState({
-          userAccount: accounts[0],
-        })
+        this.setState({ userAccount: accounts[0] })
       })
+      app.network().subscribe(network => {
+        this.setState({ network })
+      })
+    } else if (data.name === 'displayMenuButton') {
+      this.setState({ displayMenuButton: data.value })
     }
   }
   sendMessageToWrapper = (name, value) => {

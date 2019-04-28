@@ -1,7 +1,8 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { Text, theme, unselectable } from '@aragon/ui'
+import { Text, theme, unselectable, Viewport } from '@aragon/ui'
+import { MenuButton } from '../../../../../shared/ui'
 
 const StyledTitle = styled(Text)`
   ${unselectable};
@@ -15,14 +16,19 @@ const StyledTitle = styled(Text)`
   z-index: 1;
 `
 
-const Title = ({ text, shadow }) => (
-  <StyledTitle size="xxlarge" shadow={shadow}>
-    {text}
-  </StyledTitle>
+const Title = ({ text, shadow, displayMenuButton, handleMenuPanelOpen }) => (
+  <div style={{ display: 'flex', alignItems: 'center', background: 'white' }}>
+    {displayMenuButton && <MenuButton onClick={handleMenuPanelOpen} />}
+    <StyledTitle size="xxlarge" shadow={shadow}>
+      {text}
+    </StyledTitle>
+  </div>
 )
 
 Title.propTypes = {
   text: PropTypes.string.isRequired,
+  handleMenuPanelOpen: PropTypes.func.isRequired,
+  displayMenuButton: PropTypes.bool,
   shadow: PropTypes.bool,
 }
 

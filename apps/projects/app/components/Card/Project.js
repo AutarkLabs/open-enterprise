@@ -10,7 +10,9 @@ import {
   IconHome,
   SafeLink,
   theme,
+  breakpoint,
 } from '@aragon/ui'
+import { BASE_CARD_WIDTH, CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
 
 const colors = {
   iconColor: theme.textTertiary,
@@ -19,33 +21,42 @@ const colors = {
 
 const Project = ({
   id,
+  repoId,
   label,
   description,
   commits,
+  url,
   contributors,
   onRemoveProject,
+  changeActiveIndex,
+  screenSize,
 }) => {
   const removeProject = () => {
-    console.log('removeProject')
-    onRemoveProject(id)
+    onRemoveProject(repoId)
   }
 
-  const clickProject = () => {
-    console.log('clickProject')
-  }
+  const clickMenu = e => e.stopPropagation()
 
-  const clickContext = () => {
-    event.stopPropagation()
-    console.log('clickContext')
+  const clickContext = e => {
+    e.stopPropagation()
+    changeActiveIndex({ tabIndex: 1, tabData: { filterIssuesByRepoId: repoId } })
   }
 
   return (
-    <StyledCard>
-      <MenuContainer>
+    <StyledCard onClick={clickContext} screenSize={screenSize}>
+      <MenuContainer onClick={clickMenu}>
         <ContextMenu>
           <ContextMenuItem>
             <IconHome />
-            <ActionLabel>View on GitHub</ActionLabel>
+            <ActionLabel>
+              <SafeLink
+                href={url}
+                target="_blank"
+                style={{ textDecoration: 'none' }}
+              >
+                View on GitHub
+              </SafeLink>
+            </ActionLabel>
           </ContextMenuItem>
           <ContextMenuItem onClick={removeProject}>
             <IconCross
@@ -56,7 +67,11 @@ const Project = ({
         </ContextMenu>
       </MenuContainer>
       <CardTitle>{label}</CardTitle>
-      <CardDescription>{description}</CardDescription>
+      <CardDescription>
+        <CardDescriptionText>
+          {description}
+        </CardDescriptionText>
+      </CardDescription>
       <StyledStats>
         <StatsContainer>
           <IconHistory />
@@ -67,15 +82,15 @@ const Project = ({
             </Text>
           </Text>
         </StatsContainer>
-        <StatsContainer>
-          <IconContributors />
-          <Text weight="bold">
+        {/* <StatsContainer> */}
+        {/* <IconContributors /> */}
+        {/* <Text weight="bold">
             {contributors}{' '}
             <Text weight="normal" color={theme.textSecondary}>
               {parseInt(contributors) === 1 ? 'contributor' : 'contributors'}
             </Text>
-          </Text>
-        </StatsContainer>
+          </Text> */}
+        {/* </StatsContainer> */}
       </StyledStats>
     </StyledCard>
   )
@@ -83,11 +98,19 @@ const Project = ({
 
 const StyledCard = styled(Card)`
   display: flex;
+  ${breakpoint(
+    'small',
+    `
+    margin-bottom: 2rem;
+    `
+  )};
+  margin-bottom: 0.3rem;
+  margin-right: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? '0.6rem' : '2rem' };
   flex-direction: column;
   justify-content: flex-start;
   padding: 12px;
-  height: 220px;
-  width: 249px;
+  height: 240px;
+  width: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? '100%' : BASE_CARD_WIDTH + 'px' };
   transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
   :hover {
     cursor: pointer;
@@ -108,25 +131,39 @@ const CardTitle = styled(Text.Block).attrs({
   size: 'large',
   weight: 'bold',
 })`
-  margin-top: 15px;
+  margin-top: 10px;
+  margin-bottom: 5px;
   text-align: center;
   color: ${theme.textPrimary};
+  display: block;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `
 
-const CardDescription = styled(Text.Block).attrs({
+const CardDescriptionText = styled(Text.Block).attrs({
   size: 'xsmall',
 })`
-  flex-grow: 1;
-  margin: 8px 0;
-  text-align: center;
+  display: block;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: ${theme.textPrimary};
+  text-align: center;
+`
+
+const CardDescription = styled.div`
+  flex-grow: 1;
 `
 
 const StyledStats = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-content: stretch;
-  position: relative;
 `
 
 const StatsContainer = styled(Text).attrs({
@@ -134,139 +171,5 @@ const StatsContainer = styled(Text).attrs({
 })`
   display: inline-block;
 `
-
-// class Project extends React.Component {
-//   render() {
-//     const {
-//       active,
-//       label,
-//       description,
-//       commits,
-//       collaborators,
-//       url,
-//     } = this.props
-
-//     return (
-//       <StyledCard onClick={this.handleClick}>
-//         <div onClick={this.handleContextClick}>
-//           <ContextMenu>
-//             <StyledMenuItem key="cm1" colors={colors}>
-//               {React.createElement(IconHome)}
-//               <SafeLink
-//                 href={url}
-//                 target="_blank"
-//                 style={{ textDecoration: 'none' }}
-//               >
-//                 View on GitHub
-//               </SafeLink>
-//             </StyledMenuItem>
-//             <StyledMenuItem key="cm2" onClick={this.removeRepo} colors={colors}>
-//               {React.createElement(IconCross)}
-//               Remove Project
-//             </StyledMenuItem>
-//           </ContextMenu>
-//         </div>
-//         <Text size="large" color={theme.textPrimary}>
-//           {label}
-//         </Text>
-//         <Text size="small" color={theme.textTertiary}>
-//           {description}
-//         </Text>
-
-//         <StatsItem>
-//           <IconHistory />
-//           <StatsNumber>{commits}</StatsNumber>
-//           commits
-//         </StatsItem>
-//         <StatsItem>
-//           <IconContributors />
-//           <StatsNumber>{collaborators}</StatsNumber>
-//           contributors
-//         </StatsItem>
-//       </StyledCard>
-//     )
-//   }
-// }
-
-// const StatsItem = styled.div`
-//   color: ${theme.textTertiary};
-//   font-size: small;
-// `
-// const StatsNumber = styled(Text)`
-//   font-weight: bold;
-//   margin-right: 2px;
-// `
-// const StyledMenuItem = styled(ContextMenuItem).attrs({
-//   iconColor: props => props.colors.iconColor || theme.textPrimary,
-//   labelColor: props => props.colors.labelColor || props.colors.iconColor,
-// })`
-//   color: ${props => props.labelColor};
-//   font-weight: bold;
-//   width: 248px;
-//   & > :first-child {
-//     margin-right: 15px;
-//     color: ${props => props.iconColor};
-//   }
-// `
-// const StyledCard = styled(Card)`
-//   height: 220px;
-//   width: 249px;
-//   border-radius: 3px;
-//   background-color: ${theme.contentBackground};
-//   padding: 10px 14px 10px 14px;
-//   :hover {
-//     /* // border: 1px solid rgba(209, 209, 209, 0.5); */
-//     box-shadow: 0 9px 10px 0 rgba(101, 148, 170, 0.1);
-//   }
-
-//   transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-//   margin-right: 30px;
-//   cursor: pointer;
-//   display: grid;
-//   grid-template-columns: repeat(4, 25%);
-//   grid-template-rows: 50px 20px auto 36px;
-//   grid-template-areas:
-//     '.    .    .    menu'
-//     'labl labl labl labl'
-//     'desc desc desc desc'
-//     'sta1 sta1 sta2 sta2';
-//   grid-gap: 12px 0;
-
-//   & > :nth-child(1) {
-//     grid-area: menu;
-//     justify-self: end;
-//   }
-//   & > :nth-child(2) {
-//     grid-area: labl;
-//     justify-self: center;
-//     font-weight: bold;
-//   }
-//   & > :nth-child(3) {
-//     grid-area: desc;
-//     font-size: 12px;
-//     font-weight: 300;
-//     line-height: 14px;
-//     justify-self: center;
-//     align-items: start;
-//     display: flex;
-//     text-align: center;
-//     overflow-y: hidden;
-//     color: ${theme.textPrimary};
-//   }
-//   & > :nth-child(4) {
-//     grid-area: sta1;
-//     display: flex;
-//     align-items: end;
-//     justify-content: flex-start;
-//     color: ${theme.textPrimary};
-//   }
-//   & > :nth-child(5) {
-//     grid-area: sta2;
-//     display: flex;
-//     align-items: end;
-//     justify-content: flex-end;
-//     color: ${theme.textPrimary};
-//   }
-// `
 
 export default Project

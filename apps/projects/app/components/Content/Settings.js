@@ -1,20 +1,46 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { DropDown, Button, Text, Field, TextInput, theme } from '@aragon/ui'
+import {
+  DropDown,
+  Button,
+  Field,
+  IdentityBadge,
+  Text,
+  TextInput,
+  theme,
+  Viewport,
+  breakpoint,
+} from '@aragon/ui'
+import { FieldTitle } from '../Form'
 import NumberFormat from 'react-number-format'
+import { STATUS } from '../../utils/github'
+import { provideNetwork } from '../../../../../shared/ui'
+import { fromUtf8 } from '../../utils/web3-utils'
+import { REQUESTED_GITHUB_DISCONNECT } from '../../store/eventTypes'
 
-const bountyDeadlines = ['Weeks', 'Days', 'Hours']
-const bountyDeadlinesMul = [168, 24, 1] // it is one variable in contract, so number * multiplier = hours
-const bountyCurrencies = ['BTC', 'ETH', 'TL', 'ANT', '🦄']
+const bountyDeadlines = [ 'Weeks', 'Days', 'Hours' ]
+const bountyDeadlinesMul = [ 168, 24, 1 ] // it is one variable in contract, so number * multiplier = hours
 
 class Settings extends React.Component {
-  state = {}
+  static propTypes = {
+    app: PropTypes.object.isRequired,
+    githubCurrentUser: PropTypes.object, // TODO: is this required?
+    network: PropTypes.object,
+    onLogin: PropTypes.func.isRequired,
+    status: PropTypes.string.isRequired,
+  }
+  state = {
+    bountyCurrencies: this.props.tokens.map(token => token.symbol),
+  }
+
   /*
     props pass data directly from contract. Settings form needs that data to be modified
     before use. and then it is simpler to keep them in state, and adjusted before sending
     back to contract.
   */
   static getDerivedStateFromProps(props, state) {
+    let bountyCurrencies = state.bountyCurrencies
     // is all configured already? TODO: it might be useful to check
     // if there was no update to settings (on chain) in the meantime,
     // and what to do in that case. as of now: changes are ignored.
@@ -26,19 +52,14 @@ class Settings extends React.Component {
 
     // data has just became available
     let s = props.bountySettings
+    let bountyCurrency = props.tokens.findIndex(bounty => bounty.addr === s.bountyCurrency)
     let n = {
       baseRate: s.baseRate,
       bountyAllocator: s.bountyAllocator,
       bountyArbiter: s.bountyArbiter,
-      expLevels: [],
+      expLevels: s.expLvls,
+      bountyCurrency: bountyCurrency,
     }
-
-    let found = bountyCurrencies.findIndex(el => el === s.bountyCurrency)
-
-    if (found === -1) {
-      bountyCurrencies.push(s.bountyCurrency)
-      n.bountyCurrency = bountyCurrencies.length - 1
-    } else n.bountyCurrency = found
 
     // bountyDeadlinesMul = [168, 24, 1]
     // in order to store the deadline as one number instead of two
@@ -49,9 +70,6 @@ class Settings extends React.Component {
         break
       }
     }
-    let a = s.expLevels.split('\t')
-    for (let i = 0; i < a.length; i += 2)
-      n.expLevels.push({ mul: a[i] / 100, name: a[i + 1] })
 
     return n
   }
@@ -64,31 +82,23 @@ class Settings extends React.Component {
       bountyDeadlineD,
       bountyCurrency,
       bountyAllocator,
+      bountyCurrencies,
       bountyArbiter,
     } = this.state
     // flatten deadline
     let bountyDeadline = bountyDeadlinesMul[bountyDeadlineD] * bountyDeadlineT
     // flatten expLevels
-    let expLevelsStr = expLevels
-      .map(l => l.mul * 100 + '\t' + l.name)
-      .join('\t')
-    console.log('Submitting new Settings: ', {
-      lvl: expLevelsStr,
-      rate: web3.toHex(baseRate),
-      ddl: web3.toHex(bountyDeadline),
-      cur: bountyCurrencies[bountyCurrency],
-      bountyArbiter,
-      bountyAllocator,
-    })
-
-    //expLevels, baseRate, bountyDeadline, bountyCurrency, bountyAllocator, bountyArbiter
+    const expLevelsDesc = expLevels.map(l => fromUtf8(l.name))
+    // uint-ify EXP levels
+    let expLevelsMul = expLevels.map(l => web3.toHex(l.mul * 10.0 ** 2))
     this.props.app.changeBountySettings(
-      expLevelsStr,
+      expLevelsMul,
+      expLevelsDesc,
       web3.toHex(baseRate),
       web3.toHex(bountyDeadline),
-      bountyCurrencies[bountyCurrency],
-      bountyArbiter,
-      bountyAllocator
+      this.props.tokens[bountyCurrency].addr,
+      bountyAllocator,
+      //bountyArbiter,
     )
   }
 
@@ -124,10 +134,19 @@ class Settings extends React.Component {
     this.setState({ expLevels })
   }
 
+  handleLogout = () => {
+    this.props.app.cache('github', {
+      event: REQUESTED_GITHUB_DISCONNECT,
+      status: STATUS.INITIAL,
+      token: null,
+    })
+  }
+
   render() {
     const {
       baseRate,
       expLevels,
+      bountyCurrencies,
       bountyCurrency,
       bountyDeadlineT,
       bountyDeadlineD,
@@ -135,66 +154,90 @@ class Settings extends React.Component {
       bountyArbiter,
     } = this.state
 
-    console.log('bounteysee', bountyCurrency)
+    const { network } = this.props
 
     // TODO: hourglass in case settings are still being loaded
     if (!('baseRate' in this.props.bountySettings))
       return <div>Loading settings...</div>
 
+    const gitHubConnect = <GitHubConnect
+      onLogin={this.props.onLogin}
+      onLogout={this.handleLogout}
+      status={this.props.status}
+      user={this.props.githubCurrentUser.login}
+    />
+
+    const experienceLevel = <ExperienceLevel
+      expLevels={expLevels}
+      onAddExpLevel={this.addExpLevel}
+      generateExpLevelHandler={this.generateExpLevelHandler}
+    />
+    const showBaseRate = !this.props.tokens.length ? (
+      <EmptyBaseRate />
+    ) : (
+      <BaseRate
+        baseRate={baseRate}
+        onChangeRate={this.baseRateChange}
+        bountyCurrencies={bountyCurrencies}
+        bountyCurrency={bountyCurrency}
+        onChangeCurrency={this.bountyCurrencyChange}
+      />
+    )
+    const bountyDeadline = <BountyDeadline
+      bountyDeadlineT={bountyDeadlineT}
+      onChangeT={this.bountyDeadlineChangeT}
+      bountyDeadlineD={bountyDeadlineD}
+      onChangeD={this.bountyDeadlineChangeD}
+    />
+
+    const bountyContractAddress = <BountyContractAddress
+      bountyAllocator={bountyAllocator}
+      networkType={network.type}
+    />
+
+    const saveButton = <Button mode="strong" onClick={this.submitChanges} wide>
+      Submit Changes
+    </Button>
+
+
     return (
       <StyledContent>
-        <div className="column">
-          <ExperienceLevel
-            expLevels={expLevels}
-            onAddExpLevel={this.addExpLevel}
-            generateExpLevelHandler={this.generateExpLevelHandler}
-          />
-          <BaseRate baseRate={baseRate} onChange={this.baseRateChange} />
-          <Button mode="strong" onClick={this.submitChanges} wide>
-            Submit Changes
-          </Button>
-        </div>
-        <div className="column">
-          <BountyContractAddress
-            bountyAllocator={bountyAllocator}
-            onChange={this.bountyAllocatorChange}
-          />
-          <BountyCurrency
-            bountyCurrency={bountyCurrency}
-            onChange={this.bountyCurrencyChange}
-          />
-          <BountyArbiter
-            bountyArbiter={bountyArbiter}
-            onChange={this.bountyArbiterChange}
-          />
-          <BountyDeadline
-            bountyDeadlineT={bountyDeadlineT}
-            onChangeT={this.bountyDeadlineChangeT}
-            bountyDeadlineD={bountyDeadlineD}
-            onChangeD={this.bountyDeadlineChangeD}
-          />
-        </div>
+        <Viewport>
+          {({ above }) => above(900) ? (
+            <React.Fragment>
+              <div className="column">
+                {gitHubConnect}
+                <Separator />
+                {experienceLevel}
+                {saveButton}
+              </div>
+              <div className="column">
+                {showBaseRate}
+                <Separator />
+                {bountyDeadline}
+                <Separator />
+                {bountyContractAddress}
+              </div>
+            </React.Fragment>
+          ) : (
+            <div className="column">
+              {gitHubConnect}
+              <Separator />
+              {experienceLevel}
+              <Separator />
+              {showBaseRate}
+              <Separator />
+              {bountyDeadline}
+              <Separator />
+              {bountyContractAddress}
+              {saveButton}
+            </div>
+          )}
+        </Viewport>
       </StyledContent>
     )
   }
 }
-
-// TODO: Inset shadow for DropDown? (as in address book entity type)
-const StyledInputDropDown = styled.div`
-  display: inline-flex;
-  position: relative;
-  justify-content: center;
-  > :first-child {
-    height: 40px;
-    width: 75px;
-    z-index: 2;
-  }
-  > :last-child {
-    left: -11px;
-    width: 130px;
-    z-index: 1;
-  }
-`
 
 const BountyDeadline = ({
   bountyDeadlineT,
@@ -204,7 +247,7 @@ const BountyDeadline = ({
 }) => (
   <div>
     <Text.Block size="large" weight="bold">
-      BountyDeadline
+      Bounty Deadline
     </Text.Block>
     <Text.Block>
       The default amount of time contributors have to submit work once a bounty
@@ -218,6 +261,7 @@ const BountyDeadline = ({
         value={bountyDeadlineT}
         allowNegative={false}
         onChange={onChangeT}
+        style={{ marginRight: '0' }}
       />
       <DropDown
         items={bountyDeadlines}
@@ -228,53 +272,23 @@ const BountyDeadline = ({
   </div>
 )
 
-const BountyArbiter = ({ bountyArbiter, onChange }) => (
+const BountyArbiter = ({ bountyArbiter, networkType }) => (
   <div>
     <Text.Block size="large" weight="bold">
       Bounty Arbiter
     </Text.Block>
     <Text.Block>The entity responsible for dispute resolution.</Text.Block>
-    <TextInput
-      readOnly
-      style={{
-        width: '375px',
-        height: '40px',
-        fontSize: '15px',
-        textAlign: 'left',
-        marginRight: '10px',
-      }}
-      value="N/A"
-    />
-    {/* // TODO: not vertical aligned with the input field */}
-    <Button.Anchor
-      mode="outline"
-      style={{ height: '40px' }}
-      href="https://etherscan.io/address/0x281055afc982d96fab65b3a49cac8b878184cb16"
-      target="_blank"
-    >
-      See on Etherscan
-    </Button.Anchor>
-  </div>
-)
-
-const BountyCurrency = ({ bountyCurrency, onChange }) => (
-  <div>
-    <Text.Block size="large" weight="bold">
-      Bounty Currency
-    </Text.Block>
-    <Text.Block>The default currency used when allocating bounties.</Text.Block>
-    <Field label="Select currency">
-      <DropDown
-        items={bountyCurrencies}
-        active={bountyCurrency}
-        onChange={onChange}
+    <div style={{ display: 'flex' }}>
+      <IdentityBadge
+        networkType={networkType}
+        entity={bountyArbiter}
+        shorten={false}
       />
-      <StyledInputDropDown style={{ paddingLeft: '11px' }} />
-    </Field>
+    </div>
   </div>
 )
 
-const BountyContractAddress = ({ bountyAllocator, onChange }) => (
+const BountyContractAddress = ({ bountyAllocator, networkType }) => (
   <div>
     <Text.Block size="large" weight="bold">
       Bounty Contract Address
@@ -282,51 +296,118 @@ const BountyContractAddress = ({ bountyAllocator, onChange }) => (
     <Text.Block>
       This is the smart contract that is actually allocating bounties.
     </Text.Block>
-    <TextInput
-      readOnly
-      style={{
-        width: '375px',
-        height: '40px',
-        fontSize: '15px',
-        textAlign: 'center',
-        marginRight: '10px',
-      }}
-      value={bountyAllocator}
-    />
-    {/* // TODO: not vertical aligned with the input field */}
-    <Button.Anchor
-      mode="outline"
-      style={{ height: '40px' }}
-      href="https://etherscan.io/address/0x281055afc982d96fab65b3a49cac8b878184cb16"
-      target="_blank"
-    >
-      See on Etherscan
-    </Button.Anchor>
+    <div style={{ display: 'flex' }}>
+      <Viewport>
+        {({ below }) => {
+          const shorten = below('small')
+          return (
+            <IdentityBadge
+              networkType={networkType}
+              entity={bountyAllocator}
+              shorten={shorten}
+            />
+          )}}
+      </Viewport>
+    </div>
   </div>
 )
 
-const BaseRate = ({ baseRate, onChange }) => (
+const StyledInputDropDown = styled.div`
+  display: flex;
+  min-width: 0;
+  > :first-child {
+    border-radius: 3px 0 0 3px;
+    border: 1px solid ${theme.contentBorder};
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.03);
+    min-width: 84px;
+    flex: ${({ wide }) => (wide ? 1 : 0)};
+    z-index: 1;
+    :focus {
+      outline: 0;
+      border: 1px solid ${theme.contentBorderActive};
+    }
+  }
+  > :last-child > :first-child {
+    border-radius: 0 3px 3px 0;
+    margin-left: -1px;
+  }
+`
+const EmptyBaseRate = () => (
   <div>
     <Text.Block size="large" weight="bold">
-      Base Rate
+      Bounty Base Rate
+    </Text.Block>
+    <Text.Block>
+      Once you have tokens in your Vault you will be able to set your
+      bounty base rate, which provides you with the ability to allocate bounties to issues.
+    </Text.Block>
+  </div>
+)
+const BaseRate = ({ baseRate, onChangeRate, bountyCurrency, onChangeCurrency, bountyCurrencies }) => (
+  <div>
+    <Text.Block size="large" weight="bold">
+      Bounty Base Rate
     </Text.Block>
     <Text.Block>
       Define your organization’s hourly rate. This is multiplied by the bounty
       size and converted into the bounty currency under the hood.
     </Text.Block>
-    <Field label="RATE PER HOUR">
+    <FieldTitle style={{ marginBottom: '0' }}>Rate per hour</FieldTitle>
+    <StyledInputDropDown>
       <NumberFormat
         customInput={StyledNumberInput}
         fixedDecimalScale
         decimalScale={2}
         value={baseRate}
         allowNegative={false}
-        onChange={onChange}
+        onChange={onChangeRate}
+        style={{ marginRight: '0' }}
       />
-      <Text>DAI</Text>
-    </Field>
+      <DropDown
+        items={bountyCurrencies}
+        active={bountyCurrency}
+        onChange={onChangeCurrency}
+      />
+    </StyledInputDropDown>
   </div>
 )
+
+const GitHubConnect = ({ onLogin, onLogout, status, user }) => {
+  const auth = status === STATUS.AUTHENTICATED
+  const bodyText = auth ? (
+    <span>
+      Logged in as
+      <Text weight="bold"> {user}</Text>
+    </span>
+  ) : (
+    'The Projects app uses GitHub to interact with issues.'
+  )
+  const buttonText = auth ? 'Disconnect Account' : 'Connect my GitHub'
+  const buttonAction = auth ? onLogout : onLogin
+  return (
+    <div>
+      <Text.Block
+        size="large"
+        weight="bold"
+        children={'GitHub Authorization'}
+      />
+      <Text.Block children={bodyText} />
+      <StyledButton
+        compact
+        mode="secondary"
+        onClick={buttonAction}
+        children={buttonText}
+      />
+    </div>
+  )
+}
+
+GitHubConnect.propTypes = {
+  onLogin: PropTypes.func.isRequired,
+  onLogout: PropTypes.func.isRequired,
+  status: PropTypes.string.isRequired,
+  user: PropTypes.string, // TODO: is this required?
+}
 
 const ExperienceLevel = ({
   expLevels,
@@ -369,15 +450,6 @@ const ExperienceLevel = ({
   )
 }
 
-// const StyledNumberInput = styled(TextInput)`
-//   height: 40px;
-//   /* // width: ${props => (props.type === 'number' ? '131' : '185')}px; */
-//   width: 131px;
-//   margin-right: 10px;
-//   text-align: right;
-//   /* // -moz-appearance: textfield; */
-//   font-size: 16px;
-// `
 const StyledNumberInput = styled(TextInput)`
   height: 40px;
   width: 131px;
@@ -397,34 +469,47 @@ const StyledTextInput = styled(TextInput).attrs({
 `
 
 const StyledButton = styled(Button)`
-  font-size: 15px;
-  margin-top: 10px;
+  margin-top: 8px;
 `
 // padding-left: 30px;
 // background: url(${cross}) no-repeat 10px calc(50% - 1px);
 
 const StyledContent = styled.div`
-  padding: 30px;
+  ${breakpoint(
+    'small',
+    `
+    padding: 2rem;
+    `
+  )};
+  padding: 0.3rem;
   display: flex;
+  height: fit-content;
+  width: 100%;
   > .column {
     display: flex;
     flex-direction: column;
+    min-width: 364px;
+    max-width: 464px;
     :first-child {
-      flex: 0 0 464px;
-      margin-right: 20px;
+      width: 100%;
+      margin-right: 30px;
     }
     :last-child {
-      > :not(:last-child) {
-        border-bottom: 1px solid ${theme.contentBorder};
-      }
+      width: 100%;
     }
     > * {
-      margin-bottom: 30px;
       > * {
-        margin-bottom: 20px;
+        margin-bottom: 10px;
       }
     }
   }
 `
+const Separator = styled.hr`
+  height: 1px;
+  border: 0;
+  width: 100%;
+  margin: 10px 0;
+  background: ${theme.contentBorder};
+`
 
-export default Settings
+export default provideNetwork(Settings)

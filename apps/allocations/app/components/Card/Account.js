@@ -10,92 +10,61 @@ import {
   ContextMenuItem,
   IconAdd,
   IconFundraising,
-  SafeLink,
+  IdentityBadge,
+  breakpoint,
   theme,
 } from '@aragon/ui'
+import { ETH_DECIMALS } from '../../utils/constants'
+import { provideNetwork } from '../../../../../shared/ui'
+import { BASE_CARD_WIDTH, CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
 
 const Account = ({
   id,
   proxy,
   balance,
   description,
-  limit,
+  network,
   onNewAllocation,
-  onManageParameters,
-  onExecutePayout,
-  token,
-  app,
+  screenSize,
 }) => {
   const newAllocation = () => {
-    onNewAllocation(proxy, description, id, limit)
+    onNewAllocation(proxy, description, id, balance)
   }
 
-  const manageParameters = () => {
-    onManageParameters(proxy)
-  }
-
-  const executePayout = () => {
-    console.info('App.js: Executing Payout:')
-    app.runPayout(id)
-  }
-  /*Need a better solution that this, should be handled in
-  App.js using token manager once more tokens are supported */
-  function translateToken(token) {
-    if (token == 0x0) {
-      return 'ETH'
-    }
-  }
-
-  const truncatedProxy = `${proxy.slice(0, 6)}...${proxy.slice(-4)}`
-  const translatedToken = translateToken(token)
-
-  //TODO: use {etherScanBaseUrl instead of hard coded rinkeby}
   return (
-    <StyledCard>
+    <StyledCard screenSize={screenSize}>
       <MenuContainer>
         <ContextMenu>
           <ContextMenuItem onClick={newAllocation}>
             <IconAdd />
             <ActionLabel>New Allocation</ActionLabel>
           </ContextMenuItem>
-          <ContextMenuItem onClick={executePayout}>
-            <IconFundraising />
-            <ActionLabel>Distribute Allocation</ActionLabel>
-          </ContextMenuItem>
         </ContextMenu>
       </MenuContainer>
       <IconContainer />
-      <CardTitle>{description}</CardTitle>
-      <CardAddress>
-        <SafeLink
-          href={`https://rinkeby.etherscan.io/address/${proxy}`}
-          target="_blank"
-          title={proxy}
-        >
-          {truncatedProxy}
-        </SafeLink>
-      </CardAddress>
+      <TitleContainer>
+        <CardTitle>{description}</CardTitle>
+        <CardAddress>
+          <IdentityBadge
+            networkType={network.type}
+            entity={proxy}
+            shorten={true}
+          />
+        </CardAddress>
+      </TitleContainer>
       <StatsContainer>
-        <Text smallcaps color={theme.textSecondary}>
-          Balance
-        </Text>
-        <StatsValue>
-          {' ' + BigNumber(balance)
-            .div(BigNumber(10e17))
-            .dp(3)
-            .toString()} {translatedToken}
-        </StatsValue>
-      </StatsContainer>
-      <StatsContainer>
-        <Text smallcaps color={theme.textSecondary}>
-          Limit
-        </Text>
-        <StatsValue>
-          {' ' + BigNumber(limit)
-            .div(BigNumber(10e17))
-            .dp(3)
-            .toString()} {translatedToken}/ Allocation
-        </StatsValue>
+        <StyledStats>
+          <Text smallcaps color={theme.textSecondary}>
+            Balance
+          </Text>
+          <StatsValue>
+            {' ' + BigNumber(balance)
+              .div(ETH_DECIMALS)
+              .dp(3)
+              .toString()}
+            <Text size="small">{' ETH'}</Text>
+          </StatsValue>
+        </StyledStats>
       </StatsContainer>
     </StyledCard>
   )
@@ -104,23 +73,40 @@ const Account = ({
 Account.propTypes = {
   proxy: PropTypes.string.isRequired,
   app: PropTypes.object.isRequired,
-  limit: PropTypes.string.isRequired, // We are receiving this as string, parseInt if needed
-  token: PropTypes.string.isRequired,
   balance: PropTypes.string.isRequired, // We are receiving this as string, parseInt if needed
   description: PropTypes.string.isRequired,
   onNewAllocation: PropTypes.func.isRequired,
-  onManageParameters: PropTypes.func.isRequired,
+  network: PropTypes.object,
 }
 
+const TitleContainer = styled.div`
+  flex-grow: 1;
+`
+
 const StyledCard = styled(Card)`
-  height: 300px;
-  width: 300px;
+  display: flex;
+  ${breakpoint(
+    'small',
+    `
+    margin-bottom: 2rem;
+    `
+  )};
+  margin-bottom: 0.3rem;
+  margin-right: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? '0.6rem' : '2rem' };
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 12px;
+  height: 240px;
+  width: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? '100%' : BASE_CARD_WIDTH + 'px' };
+  transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+  :hover {
+    cursor: pointer;
+    box-shadow: 0 9px 10px 0 rgba(101, 148, 170, 0.1);
+  }
 `
 
 const MenuContainer = styled.div`
-  float: right;
-  margin-top: 1rem;
-  margin-right: 1rem;
+  align-self: flex-end;
   align-items: center;
 `
 
@@ -129,19 +115,27 @@ const ActionLabel = styled.span`
 `
 
 const CardTitle = styled(Text.Block).attrs({
-  size: 'xxlarge',
+  size: 'large',
+  weight: 'bold',
 })`
+  margin-top: 10px;
+  margin-bottom: 5px;
   text-align: center;
-  font-weight: bold;
   color: ${theme.textPrimary};
+  display: block;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `
 
 const CardAddress = styled(Text.Block).attrs({
   size: 'small',
 })`
-  text-align: center;
-  width: 300px;
-  color: ${theme.accent};
+  display: flex;
+  justify-content: center;
+  padding-top: 5px;
 `
 
 const IconContainer = styled.img.attrs({
@@ -149,19 +143,22 @@ const IconContainer = styled.img.attrs({
   src: icon,
 })`
   alt: ${({ description }) => description} 'icon';
-  margin-top: 4rem;
-  margin-left: 120px;
+  align-content: center;
 `
 
 const StatsContainer = styled.div`
-  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-content: stretch;
+`
+
+const StyledStats = styled.div`
   display: inline-block;
-  margin-top: 3rem;
-  padding-left: 1rem;
+  text-align: center;
 `
 
 const StatsValue = styled.p`
-  font-size: 14px;
+  font-size: 1.1em;
 `
 
-export default Account
+export default provideNetwork(Account)

@@ -1,22 +1,28 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import styled from 'styled-components'
 import { Mutation } from 'react-apollo'
-import { gql } from 'apollo-boost'
-import { theme, Field, Info, TextInput, Button, DropDown } from '@aragon/ui'
+import { Field, TextInput, DropDown } from '@aragon/ui'
 import { NEW_ISSUE, GET_ISSUES } from '../../../utils/gql-queries.js'
+import { DescriptionInput, Form } from '../../Form'
+import { LoadingAnimation } from '../../Shared'
 
 // TODO: labels
 // TODO: import validator from '../data/validation'
 
-const Form = styled.form`
-  display: grid;
-  grid-template-columns: 1fr;
-  column-gap: 20px;
-  > :last-child {
-    margin-top: 20px;
-  }
-`
+const Creating = () => (
+  <div
+    style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100%',
+      flexDirection: 'column',
+    }}
+  >
+    <LoadingAnimation style={{ marginBottom: '32px' }} />
+    Creating issue...
+  </div>
+)
 
 class NewIssue extends React.PureComponent {
   state = NewIssue.initialState
@@ -55,35 +61,8 @@ class NewIssue extends React.PureComponent {
     }
   }
 
-  // focusFirstEmptyField = () => {
-  //   const { project, title, description, labels } = this.state
-
-  //   // if (!project) {
-  //   //   this.entitySearch.input.focus()
-  //   // } else if (!salary) {
-  //   //   this.salaryInput.focus()
-  //   // }
-  // }
-
-  // handleEntityChange = (accountAddress, entity) => {
-  //   this.setState({ entity }, () => {
-  //     this.focusFirstEmptyField()
-  //   })
-  // }
-
-  formSubmit = event => {
-    event.preventDefault()
-
-    console.log('form submitted:', this.state)
-    // TODO: change to status.loading animation
-
-    // const { onHandleAddRepos } = this.props
-    // const { reposToAdd } = this.state
-    // onHandleAddRepos(reposToAdd)
-  }
-
   projectChange = index => {
-    index > 0 && this.setState({ project: index - 1, selectedProject: index })
+    this.setState({ selectedProject: index })
   }
 
   titleChange = e => {
@@ -98,22 +77,11 @@ class NewIssue extends React.PureComponent {
     this.setState({ labels: e.target.value })
   }
 
-  // handlePanelToggle = (opened) => {
-  //   if (opened) { // When side panel is shown
-  //     this.focusFirstEmptyField()
-  //   }
-  // }
+  canSubmit = () => !(this.state.title !== '' && this.state.selectedProject > 0)
 
   render() {
-    const {
-      project,
-      title,
-      description,
-      labels,
-      isValid,
-      selectedProject,
-    } = this.state
-    const { reposManaged, reposIds } = this.props
+    const { title, description, labels, isValid, selectedProject } = this.state
+    const { reposManaged } = this.props
     const {
       projectChange,
       titleChange,
@@ -122,23 +90,22 @@ class NewIssue extends React.PureComponent {
       formSubmit,
     } = this
 
-    const { id } = reposManaged[project]
-    console.log('current id:', id)
-
-    const names =
+    const items =
       typeof reposManaged === 'string'
         ? 'No repos'
-        : reposManaged.map(repo => repo.name)
-    // const items = reposManaged.length > 1 ? ['Choose Project', ...names] : names // TODO: Manage single repo case
-    const items = ['Choose Project', ...names]
+        : [ 'Select a project', ...reposManaged.map(repo => repo.name) ]
 
-    // TODO: hide button when no repos managed: prompt to create new project
-    // TODO: Put SidePanel inside the component?
+    const reposIds =
+      typeof reposManaged === 'string' ? [] : reposManaged.map(repo => repo.id)
 
-    const reGet = [{
-      query: GET_ISSUES,
-      variables: { reposIds }
-    }]
+    const id = selectedProject > 0 ? reposIds[selectedProject - 1] : ''
+
+    const reGet = [
+      {
+        query: GET_ISSUES,
+        variables: { reposIds },
+      },
+    ]
 
     return (
       <Mutation
@@ -153,37 +120,41 @@ class NewIssue extends React.PureComponent {
           const { data, loading, error, called } = result
           if (!called) {
             return (
-              <Form onSubmit={formSubmit}>
+              <Form
+                onSubmit={newIssue}
+                submitText="Submit Issue"
+                submitDisabled={this.canSubmit()}
+              >
                 <Field label="Project">
                   <DropDown
                     items={items}
                     active={selectedProject}
                     onChange={projectChange}
                     wide
+                    required
                   />
                 </Field>
                 <Field label="Title">
                   <TextInput onChange={titleChange} required wide />
                 </Field>
                 <Field label="Description">
-                  <TextInput.Multiline
-                    rows={5}
-                    style={{ resize: 'none' }}
+                  <DescriptionInput
+                    rows={3}
+                    style={{
+                      resize: 'none',
+                      height: 'auto',
+                      paddingTop: '5px',
+                      paddingBottom: '5px',
+                    }}
                     onChange={descriptionChange}
                     wide
                   />
                 </Field>
-                <Field label="Labels">
-                  <TextInput onChange={labelsChange} wide />
-                </Field>
-                <Button mode="strong" onClick={newIssue} wide>
-                  Submit Issue
-                </Button>
               </Form>
             )
           } // end if(!called)
           if (loading) {
-            return <div>Loading...</div>
+            return <Creating />
           }
           if (error) {
             return <div>Error</div>
