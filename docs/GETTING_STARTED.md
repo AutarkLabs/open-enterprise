@@ -85,7 +85,7 @@ The Dot Voting app requires the following initialization parameters:
 #### Sample install command
 This will install a Dot Voting instance with a participation requirement of 50% and a voting period of 7 days.
 ```
-dao install <dao-address> tps-dot-voting.open.aragonpm.eth --environment aragon:rinkeby --app-init-args [AddressBook] [MinimeToken] 500000000000000000 0 3600
+dao install <dao-address> tps-dot-voting.open.aragonpm.eth --environment aragon:rinkeby --app-init-args [AddressBook] [MinimeToken] 500000000000000000 0 604800
 ```
 
 
