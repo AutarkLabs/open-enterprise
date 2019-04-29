@@ -11,11 +11,41 @@
 
 ## Allocations
 
+```sh
+✔ Successfully published tps-allocations.open.aragonpm.eth v1.0.1: 
+ℹ Contract address: 0x2f9A75f6e81F8cF3711b482CD56aAC029B6843d1
+ℹ Content (ipfs): QmVW23vYVyjTw7b1nG8YrwYVxkMXUPaJDo2VgorNFEipNQ
+ℹ Transaction hash: 0x12d6f818b44bf68328d719ae48a8505061685fefa159b36c36a68d60c78abb3d
+```
+
 ## Projects
 
-## DotVoting (formerly RangeVoting)
+```sh
+✔ Successfully published tps-projects.open.aragonpm.eth v1.0.2: 
+ℹ Contract address: 0x341706591aDE66ea57D02c471e8aAa0C484DE861
+ℹ Content (ipfs): QmQnAfrMYrWNoQR8HFRKFQZZHMuMz5edPYWDMzQnP9i88Y
+ℹ Transaction hash: 0x0756df9c7b8d3f09b4ca6c16ac03d33351c4e214cff1f4100430bd41d203e332
+```
 
+Command:
+`./node_modules/.bin/lerna exec --scope="@tps/apps-projects" --stream aragon apm publish patch -- --files dist/ --environment rinkeby`
+
+
+## DotVoting (formerly RangeVoting)
+```sh
+✔ Successfully published tps-dot-voting.open.aragonpm.eth v1.0.1: 
+ℹ Contract address: 0xd191581d372a07d83E8e06Da5a0678b845E638A1
+ℹ Content (ipfs): QmUcyfhx2tHs2tepyWAZ9jjSKUSwxVKYHm7GAnYNA7StFw
+ℹ Transaction hash: 0x05d61cea5324f9e0424876fbcab4c7778b30d85e9abff6fc8f88cf49de7aecc0
+```
 ## Rewards
+
+```sh
+✔ Successfully published tps-rewards.open.aragonpm.eth v1.0.1: 
+ℹ Contract address: 0xD22010C362Ac01b6371c0ca3Eebf98e8b586c5B8
+ℹ Content (ipfs): QmSovs2sw821JmmT52Se37dbQarbDW6Df8JoyhXwqBbNdY
+ℹ Transaction hash: 0x20e7e88081c41f4b07c7ddd0e29a9071747bb9bdd422f56c7a865d939f44ae04
+```
 
 ## Planning-Suite Template (kit)
 
