@@ -22,7 +22,7 @@ import BigNumber from 'bignumber.js'
 import { ipfsAdd, computeIpfsString } from '../../utils/ipfs-helpers'
 import {
   networkContextType,
-  MenuButton,
+  AppTitle,
   AppTitleButton,
 } from '../../../../../shared/ui'
 import {
@@ -38,10 +38,10 @@ const ASSETS_URL = './aragon-ui-assets/'
 // TODO: Extract to an external js utility to keep this file clean
 // Variable fields depending on the execution environment:
 // TODO: This should be dynamically set depending on the execution environment (dev, prod...)
-const AUTH_URI = 'https://local-tps-github-auth.now.sh/authenticate'
 const GITHUB_URI = 'https://github.com/login/oauth/authorize'
-const REDIRECT_URI = 'https://tps-auth.now.sh'
 const CLIENT_ID = '686f96197cc9bb07a43d'
+const AUTH_URI = 'https://tps.autark.xyz/authenticate'
+const REDIRECT_URI = 'https://tps.autark.xyz/tps-auth'
 
 export const githubPopup = (popup = null) => {
   // Checks to save some memory if the popup exists as a window object
@@ -537,7 +537,7 @@ class App extends React.PureComponent {
 
   render() {
     const { activeIndex, panel, panelProps, githubCurrentUser } = this.state
-    const { bountySettings, displayMenuButton } = this.props
+    const { bountySettings, displayMenuButton = false } = this.props
     const contentData = [
       {
         tabName: 'Overview',
@@ -605,10 +605,7 @@ class App extends React.PureComponent {
                       />
                     }
                   >
-                    <AppBarTitle>
-                      {displayMenuButton && <MenuButton />}
-                      <AppBarLabel>Projects</AppBarLabel>
-                    </AppBarTitle>
+                    <AppTitle title="Projects" displayMenuButton={displayMenuButton} />
                   </AppBar>
                 }
               >
@@ -659,16 +656,6 @@ class App extends React.PureComponent {
     )
   }
 }
-
-const AppBarTitle = styled.span`
-  display: flex;
-  align-items: center;
-`
-
-const AppBarLabel = styled.span`
-  margin: 0 30px;
-  ${font({ size: 'xxlarge' })};
-`
 
 export default observe(
   observable => observable.pipe(map(state => ({ ...state }))),
