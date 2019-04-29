@@ -109,7 +109,7 @@ contract('DotVoting App', accounts => {
     )
 
     await acl.createPermission(
-      ANY_ADDR,
+      accounts[2],
       app.address,
       await app.CREATE_VOTES_ROLE(),
       root,
@@ -136,6 +136,11 @@ contract('DotVoting App', accounts => {
       return assertRevert(async () => {
         await app.newVote(encodeCallScript([]), '')
       })
+    })
+
+    it('is a forwarder contract', async () => {
+      const result = await app.isForwarder()
+      assert.isTrue(result, 'contract must return true for isForwarder call')
     })
   })
 
@@ -207,7 +212,7 @@ contract('DotVoting App', accounts => {
       )
       assert.equal(getVoteId(voteId), 1, 'A vote should be created with empty script')
     })
-    it('can cast votes', async () => {
+    it('tokenholders can cast votes', async () => {
       let action = {
         to: executionTarget.address,
         calldata: executionTarget.contract.setSignal.getData(
@@ -356,6 +361,27 @@ contract('DotVoting App', accounts => {
       assert.equal(getVoteId(voteId), 6, 'DotVoting should have been created')
     })
 
+    it('unauthorized entities cannot forward to contract', () => {
+      let action = {
+        to: executionTarget.address,
+        calldata: executionTarget.contract.setSignal.getData(
+          [ accounts[7], accounts[8], accounts[9] ],
+          [ 0, 0, 0 ],
+          [ 4, 4, 4 ],
+          'arg1arg2arg3',
+          'description',
+          [ '0x0', '0x0', '0x0' ],
+          [ '0x0', '0x0', '0x0' ],
+          5,
+          false
+        )
+      }
+      const script = encodeCallScript([action])
+      return assertRevert(async () => {
+        await app.forward(script, { from: nonHolder })
+      })
+    })
+
     xit('can change minimum candidate support', async () => { })
 
     context('creating vote with normal distributions', () => {
@@ -365,7 +391,7 @@ contract('DotVoting App', accounts => {
       let [ , , ...candidates ] = accounts.slice(0, 5)
       let [ apple, orange, banana ] = candidates
 
-      beforeEach(async () => {
+      before(async () => {
         let action = {
           to: executionTarget.address,
           calldata: executionTarget.contract.setSignal.getData(
@@ -382,7 +408,7 @@ contract('DotVoting App', accounts => {
         }
 
         script = encodeCallScript([action])
-        let newvote = await app.newVote(script, 'metadata', { from: nonHolder })
+        let newvote = await app.newVote(script, 'metadata', { from: holder50 })
         voteId = createdVoteId(newvote)
       })
 
@@ -423,7 +449,7 @@ contract('DotVoting App', accounts => {
         let voteState = await app.getVote(voteId)
         let tokenBalance = await token.totalSupply()
         assert.equal(voteState[0], true, 'is true')
-        assert.equal(voteState[1], nonHolder, 'is nonHolder')
+        assert.equal(voteState[1], holder50, 'is holder50')
         assert.equal(
           voteState[4].toNumber(),
           candidateSupportPct.toNumber(),
@@ -532,19 +558,26 @@ contract('DotVoting App', accounts => {
 
         assert.equal(
           appleInfo[1].toNumber(),
-          voteTwo[0],
+          7,
           'The correct amount of support should be logged for Apple'
         )
         assert.equal(
           orangeInfo[1].toNumber(),
-          voteTwo[1],
+          7,
           'The correct amount of support should be logged for Orange'
         )
         assert.equal(
           bananaInfo[1].toNumber(),
-          voteTwo[2],
+          7,
           'The correct amount of support should be logged for Banana'
         )
+      })
+
+      it('non-tokenholders cannot cast votes', async () => {
+        let vote = [ 0, 0, 0 ]
+        return assertRevert(async () => {
+          await app.vote(voteId, vote, { from: nonHolder })
+        })
       })
 
       it('token transfers dont affect DotVoting', async () => {
@@ -589,6 +622,8 @@ contract('DotVoting App', accounts => {
         assert.equal(canExecute, false, 'canExecute should be false')
       })
       it('can execute if vote has sufficient candidate support', async () => {
+        let newvote = await app.newVote(script, 'metadata', { from: holder50 })
+        voteId = createdVoteId(newvote)
         let voteOne = [ 4, 15, 0 ]
         let voteTwo = [ 20, 10, 1 ]
         let voteThree = [ 30, 15, 5 ]
@@ -601,6 +636,8 @@ contract('DotVoting App', accounts => {
         assert.equal(canExecute, true, 'canExecute should be true')
       })
       it('cannot execute if vote has 0 candidate support', async () => {
+        let newvote = await app.newVote(script, 'metadata', { from: holder50 })
+        voteId = createdVoteId(newvote)
         let voteOne = [ 0, 0, 0 ]
         let voteTwo = [ 0, 0, 0 ]
         let voteThree = [ 0, 0, 0 ]
@@ -612,6 +649,8 @@ contract('DotVoting App', accounts => {
         assert.equal(canExecute, false, 'canExecute should be false')
       })
       it('cannot execute if vote has insufficient candidate support', async () => {
+        let newvote = await app.newVote(script, 'metadata', { from: holder50 })
+        voteId = createdVoteId(newvote)
         let voteOne = [ 2, 17, 0 ]
         let voteTwo = [ 18, 12, 1 ]
         let voteThree = [ 30, 19, 1 ]
@@ -623,6 +662,8 @@ contract('DotVoting App', accounts => {
         assert.equal(canExecute, false, 'canExecute should be false')
       })
       it('can execute vote if minimum participation (quorum) has been met', async () => {
+        let newvote = await app.newVote(script, 'metadata', { from: holder50 })
+        voteId = createdVoteId(newvote)
         let voteOne = [ 10, 0, 0 ]
         let voteTwo = [ 0, 20, 0 ]
         let voteThree = [ 0, 0, 40 ]
@@ -634,6 +675,8 @@ contract('DotVoting App', accounts => {
         assert.equal(canExecute, true, 'canExecute should be true')
       })
       it('cannot execute vote if minimum participation (quorum) not met', async () => {
+        let newvote = await app.newVote(script, 'metadata', { from: holder50 })
+        voteId = createdVoteId(newvote)
         let voteOne = [ 10, 0, 0 ]
         let voteTwo = [ 0, 9, 0 ]
         let voteThree = [ 0, 0, 10 ]
@@ -645,6 +688,8 @@ contract('DotVoting App', accounts => {
         assert.equal(canExecute, false, 'canExecute should be false')
       })
       it('holder can add candidates', async () => {
+        let newvote = await app.newVote(script, 'metadata', { from: holder50 })
+        voteId = createdVoteId(newvote)
         mango = accounts[5]
         await app.addCandidate(voteId, '0xbeefdead', mango, 0x1, 0x1)
         candidates.push(mango)
@@ -664,11 +709,17 @@ contract('DotVoting App', accounts => {
         )
         candidates.pop()
       })
+      it('holder cannot add duplicate candidate', async () => {
+        mango = accounts[5]
+        return assertRevert(async () => {
+          await app.addCandidate(voteId, '0xbeefdead', mango, 0x1, 0x1)
+        })
+      })
       it('holder can get total number of candidates', async () => {
         const totalcandidates = await app.getCandidateLength(voteId)
         assert.equal(
           totalcandidates.toNumber(),
-          3,
+          4,
           'candidate array length is incorrect'
         )
       })
