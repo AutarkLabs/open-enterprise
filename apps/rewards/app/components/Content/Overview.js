@@ -193,11 +193,11 @@ const tableType = [
 
 const Overview = ({ tokens, rewards, convertRates, claims, newReward, openDetails }) => {
   const rewardsEmpty = rewards.length === 0
-  const averageRewardsNumbers = calculateAverageRewardsNumbers(rewards, claims, tokens, convertRates)
 
   if (rewardsEmpty) {
     return <Empty tab='Overview' action={newReward} />
   }
+  const averageRewardsNumbers = calculateAverageRewardsNumbers(rewards, claims, tokens, convertRates)
   return (
     <OverviewMain>
       <RewardsWrap>

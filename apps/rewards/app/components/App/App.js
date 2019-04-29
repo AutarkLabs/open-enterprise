@@ -50,7 +50,7 @@ class App extends React.Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    // do not bring props into state if the NewReward
+    // do not re-render if the NewReward
     // panel is open
     if (this.state.panel && nextState.panel) {
       return false
@@ -116,6 +116,9 @@ class App extends React.Component {
         onNewReward: this.onNewReward,
         vaultBalance: '432.9 ETH',
         balances: this.props.balances,
+        refTokens: this.props.refTokens,
+        app: this.props.app,
+        network: this.props.network,
       },
     })
   }
@@ -150,6 +153,7 @@ class App extends React.Component {
       reward.delay = 0
       reward.duration = millisecondsToBlocks(reward.dateStart, reward.dateEnd)
     }
+    console.log('submitting: ',reward)
     this.props.app.newReward(
       reward.description, //string _description
       reward.isMerit, //bool _isMerit,

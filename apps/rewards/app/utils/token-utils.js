@@ -4,6 +4,7 @@ import tokenSymbolAbi from '../../../shared/json-abis/token-symbol.json'
 import tokenSymbolBytesAbi from '../../../shared/json-abis/token-symbol-bytes.json'
 import tokenNameAbi from '../../../shared/json-abis/token-name.json'
 import tokenNameBytesAbi from '../../../shared/json-abis/token-name-bytes.json'
+import tokenCreationBlockAbi from '../../../shared/json-abis/token-creationblock.json'
 
 // Some known tokens don’t strictly follow ERC-20 and it would be difficult to
 // adapt to every situation. The data listed in this map is used as a fallback
@@ -72,4 +73,12 @@ export async function getTokenName(app, address) {
   tokenName = await token.name().toPromise()
 
   return tokenName ? toUtf8(tokenName) : null
+}
+
+export async function getTokenStartBlock(app, address) {
+  // creation block is optional; note that aragon.js doesn't return an error (only an falsey value) when
+  // getting this value fails. It's only available for MiniMe Tokens
+  let token = app.external(address, tokenCreationBlockAbi)
+  let tokenStartBlock = await token.creationBlock().toPromise()
+  return tokenStartBlock
 }

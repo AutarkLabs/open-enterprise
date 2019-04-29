@@ -4,6 +4,7 @@ import {
   tokenDataFallback,
   getTokenSymbol,
   getTokenName,
+  getTokenStartBlock,
 } from '../utils/token-utils'
 import { addressesEqual } from '../utils/web3-utils'
 import tokenSymbolAbi from '../../../shared/json-abis/token-symbol.json'
@@ -25,6 +26,7 @@ const tokenContracts = new Map() // Addr -> External contract
 const tokenDecimals = new Map() // External contract -> decimals
 const tokenName = new Map() // External contract -> name
 const tokenSymbols = new Map() // External contract -> symbol
+const tokenStartBlock = new Map() // External contract -> creationBlock (uint)
 
 const ETH_CONTRACT = Symbol('ETH_CONTRACT')
 
@@ -34,6 +36,7 @@ export async function initializeTokens(state, settings) {
   tokenDecimals.set(ETH_CONTRACT, '18')
   tokenName.set(ETH_CONTRACT, 'Ether')
   tokenSymbols.set(ETH_CONTRACT, 'ETH')
+  tokenStartBlock.set(ETH_CONTRACT, null)
 
   const nextState = {
     ...state,
@@ -45,14 +48,15 @@ export async function initializeTokens(state, settings) {
 
 export async function vaultLoadBalance(state, { returnValues }, settings) {
   const { token } = returnValues
-  const r = await updateBalances(
+  const { balances, refTokens } = await updateBalancesAndRefTokens(
     state,
     token || settings.ethToken.address,
     settings
   )
   return {
     ...state,
-    balances: r,
+    balances,
+    refTokens,
   }
 }
 
@@ -63,13 +67,14 @@ export async function vaultLoadBalance(state, { returnValues }, settings) {
  ***********************/
 
 async function loadEthBalance(state, settings) {
+  const { balances } = await updateBalancesAndRefTokens(state, settings.ethToken.address, settings)
   return {
     ...state,
-    balances: await updateBalances(state, settings.ethToken.address, settings),
+    balances,
   }
 }
 
-async function updateBalances({ balances = [] }, tokenAddress, settings) {
+export async function updateBalancesAndRefTokens({ balances = [], refTokens = [] }, tokenAddress, settings) {
   const tokenContract = tokenContracts.has(tokenAddress)
     ? tokenContracts.get(tokenAddress)
     : app.external(tokenAddress, tokenAbi)
@@ -79,25 +84,39 @@ async function updateBalances({ balances = [] }, tokenAddress, settings) {
     addressesEqual(address, tokenAddress)
   )
   if (balancesIndex === -1) {
-    return balances.concat(
-      await newBalanceEntry(tokenContract, tokenAddress, settings)
-    )
+    const newBalance = await newBalanceEntry(tokenContract, tokenAddress, settings)
+    let newRefTokens = Array.from(refTokens)
+
+    if (newBalance.startBlock) {
+      const refIndex = refTokens.findIndex(({ address }) =>
+        addressesEqual(address, tokenAddress)
+      )
+
+      if (refIndex === -1) {
+        const { name, symbol, address, startBlock } = newBalance
+        newRefTokens = newRefTokens.concat({ name, symbol, address, startBlock })
+      }
+    }
+    const newBalances = balances.concat(newBalance)
+    return { balances: newBalances, refTokens: newRefTokens }
   } else {
     const newBalances = Array.from(balances)
     newBalances[balancesIndex] = {
       ...balances[balancesIndex],
       amount: await loadTokenBalance(tokenAddress, settings),
     }
-    return newBalances
+
+    return { balances: newBalances, refTokens }
   }
 }
 
 async function newBalanceEntry(tokenContract, tokenAddress, settings) {
-  const [ balance, decimals, name, symbol ] = await Promise.all([
+  const [ balance, decimals, name, symbol, startBlock ] = await Promise.all([
     loadTokenBalance(tokenAddress, settings),
     loadTokenDecimals(tokenContract, tokenAddress, settings),
     loadTokenName(tokenContract, tokenAddress, settings),
     loadTokenSymbol(tokenContract, tokenAddress, settings),
+    loadTokenStartBlock(tokenContract, tokenAddress, settings),
   ])
 
   return {
@@ -106,6 +125,7 @@ async function newBalanceEntry(tokenContract, tokenAddress, settings) {
     symbol,
     address: tokenAddress,
     amount: balance,
+    startBlock,
     verified:
       isTokenVerified(tokenAddress, settings.network.type) ||
       addressesEqual(tokenAddress, settings.ethToken.address),
@@ -160,6 +180,17 @@ function loadTokenSymbol(tokenContract, tokenAddress, { network }) {
         tokenDataFallback(tokenAddress, 'symbol', network.type) || ''
       const tokenSymbol = getTokenSymbol(app, tokenAddress)
       resolve(tokenSymbol || fallback)
+    }
+  })
+}
+
+function loadTokenStartBlock(tokenContract, tokenAddress, { network }) {
+  return new Promise((resolve, reject) => {
+    if (tokenStartBlock.has(tokenContract)) {
+      resolve(tokenStartBlock.get(tokenContract))
+    } else {
+      const tokenStartBlock = getTokenStartBlock(app, tokenAddress)
+      resolve(tokenStartBlock)
     }
   })
 }
