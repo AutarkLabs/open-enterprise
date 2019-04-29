@@ -85,7 +85,7 @@ The Dot Voting app requires the following initialization parameters:
 #### Sample install command
 This will install a Dot Voting instance with a participation requirement of 50% and a voting period of 7 days.
 ```
-dao install <dao-address> tps-dot-voting.open.aragonpm.eth --environment aragon:rinkeby --app-init-args [AddressBook] [MinimeToken] 500000000000000000 0 604800
+dao install <dao-address> tps-dot-voting.open.aragonpm.eth --app-init-args [AddressBook] [MinimeToken] 500000000000000000 0 604800 --environment aragon:rinkeby
 ```
 
 
@@ -101,7 +101,7 @@ The Projects app requires the following initialization parameters:
 
 #### Sample install command
 ```
-dao install <dao-address> tps-projects.open.aragonpm.eth --environment aragon:rinkeby --app-init-args 0xcac024cb2ad5f22c3e92053b95c89f69442952d8 [Vault] [paymentToken] 
+dao install <dao-address> tps-projects.open.aragonpm.eth --app-init-args 0xcac024cb2ad5f22c3e92053b95c89f69442952d8 [Vault] [paymentToken] --environment aragon:rinkeby 
 ```
 
 ## Install the Rewards app
@@ -115,7 +115,7 @@ The Rewards app requires the following initialization parameter:
 
 #### Sample install command
 ```
-dao install <dao-address> tps-rewards.open.aragonpm.eth --environment aragon:rinkeby --app-init-args [Vault]
+dao install <dao-address> tps-rewards.open.aragonpm.eth --app-init-args [Vault] --environment aragon:rinkeby 
 ```
 
 ## Install the Allocations app
@@ -130,7 +130,7 @@ The Allocations app requires the following initialization parameter:
 
 #### Sample install command
 ```
-dao install <dao-address> tps-allocations.open.aragonpm.eth --environment aragon:rinkeby --app-init-args [AddressBook] [Vault]
+dao install <dao-address> tps-allocations.open.aragonpm.eth --app-init-args [AddressBook] [Vault] --environment aragon:rinkeby 
 ```
 
 
