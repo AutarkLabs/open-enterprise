@@ -131,6 +131,14 @@ contract('DotVoting App', accounts => {
     )
   })
 
+  context('before init', () => {
+    it('fails creating a vote before initialization', async () => {
+      return assertRevert(async () => {
+        await app.newVote(encodeCallScript([]), '')
+      })
+    })
+  })
+
   context('normal token supply', () => {
     const holder19 = accounts[0]
     const holder31 = accounts[1]
@@ -719,14 +727,6 @@ contract('DotVoting App', accounts => {
           candidateSupportPct,
           DotVotingTime
         )
-      })
-    })
-  })
-
-  xcontext('before init', () => {
-    it('fails creating a vote before initialization', async () => {
-      return assertRevert(async () => {
-        await app.newVote(encodeCallScript([]), '')
       })
     })
   })
