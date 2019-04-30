@@ -110,7 +110,9 @@ const RewardsTableNarrow = ({ title, tokens, rewards, fourthColumn, fourthColumn
       <NarrowListReward onClick={generateOpenDetails(reward, openDetails)} key={i}>
         <div style={{ marginTop: '5px', marginRight: '10px' }}>
           <RewardDescription>
-            {reward.description}
+            <span data-e2e-reward-description={i}>
+              {reward.description}
+            </span>
           </RewardDescription>
           <Text.Block size="small" color={theme.textSecondary} style={{ marginTop: '5px' }}>
             {reward.isMerit ? 'Merit' : 'Dividend'}
@@ -122,7 +124,9 @@ const RewardsTableNarrow = ({ title, tokens, rewards, fourthColumn, fourthColumn
         </div>
         <div>
           <AmountBadge>
-            {displayCurrency(reward.amount)}{' '}{getSymbol(tokens, reward.rewardToken)}
+            <span data-e2e-reward-badge={i}>
+              {displayCurrency(reward.amount)}{' '}{getSymbol(tokens, reward.rewardToken)}
+            </span>
           </AmountBadge>
         </div>
       </NarrowListReward>

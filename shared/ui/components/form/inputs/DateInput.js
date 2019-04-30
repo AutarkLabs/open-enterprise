@@ -35,7 +35,8 @@ class DateInput extends React.PureComponent {
 
   state = {
     showPicker: false,
-    value: this.props.value
+    value: this.props.value,
+    periodEnd: ''
   }
 
   componentWillUnmount () {
@@ -61,15 +62,13 @@ class DateInput extends React.PureComponent {
     }
   }
 
-  handleChange = ({ target: { name, value } }) => {
-    const l = value.length
-    console.log('+', name, value, value.charCodeAt(l - 1))
-    this.setState({ [name]: value })
+  handleKeyDown = ({ key }) => {
+    if (key === 'Enter') this.props.onChange(new Date(this.state.periodEnd))
+    this.setState(prevState => ({ periodEnd: prevState.periodEnd + key, showPicker: false}))
   }
 
   handleSelect = date => {
     this.props.onChange(date)
-console.log('date picked: ', date)
     this.setState({ showPicker: false })
   }
 
@@ -85,7 +84,7 @@ console.log('date picked: ', date)
         <TextInputDate
           value={formattedValue}
           onClick={this.handleClick}
-          onChange={this.handleChange}
+          onKeyDown={this.handleKeyDown}
           width={width}
           name={name}
         />

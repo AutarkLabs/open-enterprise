@@ -4,9 +4,9 @@ import { DropDown, TextInput, theme } from '@aragon/ui'
 import styled from 'styled-components'
 
 // TODO: Better naming
-const InputDropDown = ({ textInput, dropDown }) => {
+const InputDropDown = ({ textInput, dropDown, e2e = 'none' }) => {
   return (
-    <StyledInputDropDown>
+    <StyledInputDropDown data-e2e={e2e}>
       <TextInput {...textInput} />
       <DropDown {...dropDown} />
     </StyledInputDropDown>

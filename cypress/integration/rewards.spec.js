@@ -1,4 +1,5 @@
 import Web3 from "@aragon/wrapper/node_modules/web3";
+import { addDays } from "date-fns";
 const PrivateKeyProvider = require ("truffle-privatekey-provider")
 
 const ProviderEngine = require('truffle-privatekey-provider/node_modules/web3-provider-engine')
@@ -110,30 +111,30 @@ context('Aragon', () => {
       })
 */
 
-      const tomorrow = new Date() + 1;
+      const tomorrow = addDays(new Date(), 3) + ''
 
       cy.contains('span', 'Rewards', { timeout: 150000 }).click().wait(4000)
 
       .get('iframe').iframe().contains('button','New Reward').click().wait(1000)
       .get('iframe').iframe().find('input[name="description"]').type("Some Reward")
       .get('iframe').iframe().find('input[name="amount"]').type(3)
-      .get('iframe').iframe().wait(1000).find('div').each((el) => {
-
-        if (/DropDown__DropDownActiveItem/.test(el[0].className)) {
-          //console.log('--', el[0].className)
-          el[0].click()
-        }
-      }
-      ).wait(1000)
-      .get('iframe').iframe().contains('div','autark').click().wait(1000)
-      .get('iframe').iframe().find('input[name="periodEnd"]').type('X{del}X' + tomorrow + 'X{enter}X')
-
-      /*
-      .get('iframe').iframe().contains('button','Create Account').click().wait(1000)
+      .get('iframe').iframe().find('div[data-e2e="reward-amount-currency"]').click('right')
+      .within(($el) => {
+        cy.contains('div','autark').click().wait(1000)
+      })
+      
+      cy.get('iframe').iframe().contains('div','Select a token').click().wait(1000)
+      .get('iframe').iframe().find('span[data-e2e-token="autark"]').click({force: true}).wait(1000)
+      .get('iframe').iframe().find('input[name="periodEnd"]').type(tomorrow)
+      .get('iframe').iframe().find('input[name="periodEnd"]').trigger('keydown', {
+        keyCode: 13,
+        which: 13,
+        })
+      .get('iframe').iframe().contains('button','Submit Reward').click().wait(1000)
 
       cy.contains('button','Create transaction').click()
       cy.contains('button','Close').click().wait(3000)
-
+/*
       cy.get('iframe').iframe().contains('div', ACC1)
       */
     })

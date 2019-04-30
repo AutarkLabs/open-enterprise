@@ -9,15 +9,12 @@ import {
   TableCell,
   Text,
   Button,
-  IdentityBadge,
-  Viewport,
   theme,
   IconCheck,
   IconCross,
   IconFundraising,
   IconTime,
   ContextMenu,
-  ContextMenuItem,
 } from '@aragon/ui'
 import { displayCurrency } from '../../utils/helpers'
 import {
@@ -147,7 +144,9 @@ const MyRewardsWide = ({ onClaimReward, claimed, rewards, openDetails, network, 
       <ClickableTableRow key={i} onClick={generateOpenDetails(reward, openDetails)}>
         <TableCell>
           <RewardDescription>
-            {reward.description}
+            <span data-e2e-reward-description={i}>
+              {reward.description}
+            </span>
           </RewardDescription>
         </TableCell>
         <TableCell>
@@ -162,7 +161,9 @@ const MyRewardsWide = ({ onClaimReward, claimed, rewards, openDetails, network, 
         </TableCell>
         <TableCell>
           <AmountBadge>
-            {displayCurrency(reward.userRewardAmount)}{' '}{getSymbol(tokens, reward)}
+            <span data-e2e-reward-badge={i}>
+              {displayCurrency(reward.userRewardAmount)}{' '}{getSymbol(tokens, reward)}
+            </span>
           </AmountBadge>
         </TableCell>
       </ClickableTableRow>

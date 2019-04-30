@@ -15,7 +15,7 @@ class TokenSelectorInstance extends React.PureComponent {
           <IconSpacer />
         )}
         {symbol && <TokenSymbol>{symbol}</TokenSymbol>}
-        {name && <TokenName>({name})</TokenName>}
+        {name && <TokenName data-e2e-token={symbol}>({name})</TokenName>}
         {!addressesEqual(address, ETHER_TOKEN_FAKE_ADDRESS) && (
           <StyledAddressBadge>
             {shortenAddress(address, shorten ? 5 : 10)}

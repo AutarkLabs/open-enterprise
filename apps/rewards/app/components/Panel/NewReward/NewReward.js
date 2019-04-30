@@ -283,6 +283,7 @@ class NewReward extends React.Component {
           label="Amount"
           input={
             <InputDropDown
+              e2e="reward-amount-currency"
               textInput={{
                 name: 'amount',
                 value: this.state.amount,
