@@ -838,7 +838,8 @@ contract DotVoting is IForwarder, AragonApp {
         uint256 dest = _dest;
         uint256 len = _len;
 
-        require(_len < 32, "_len should be less than 32");
+        // this line is unnecessary since the _len passed in is hard-coded
+        //require(_len < 32, "_len should be less than 32");
         // Copy remaining bytes
         uint mask = 256 ** (32 - len) - 1;
         assembly { // solium-disable-line security/no-inline-assembly
