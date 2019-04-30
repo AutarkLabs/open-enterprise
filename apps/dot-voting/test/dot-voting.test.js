@@ -142,6 +142,45 @@ contract('DotVoting App', accounts => {
       const result = await app.isForwarder()
       assert.isTrue(result, 'contract must return true for isForwarder call')
     })
+
+    it('cannot initialize with min Participation pct equal to 0', async () => {
+      const candidateSupportPct = pct16(5)
+      return assertRevert(async () => {
+        await app.initialize(
+          book.address,
+          0,                    // token address
+          0,                    // minimumParticipation
+          candidateSupportPct,
+          DotVotingTime
+        )
+      })
+    })
+
+    it('cannot initialize with min Participation pct greater than PCT_BASE', async () => {
+      const candidateSupportPct = pct16(5)
+      return assertRevert(async () => {
+        await app.initialize(
+          book.address,
+          0,          // token address
+          1.1e18,     // minimumParticipation
+          candidateSupportPct,
+          DotVotingTime
+        )
+      })
+    })
+    it('cannot initialize with min Participation pct less than candidate support pct', async () => {
+      const candidateSupportPct = pct16(5)
+      const minimumParticipation = pct16(1)
+      return assertRevert(async () => {
+        await app.initialize(
+          book.address,
+          0,    // token address
+          minimumParticipation,
+          candidateSupportPct,
+          DotVotingTime
+        )
+      })
+    })
   })
 
   context('normal token supply', () => {
