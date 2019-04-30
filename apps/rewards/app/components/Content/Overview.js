@@ -24,6 +24,7 @@ import {
   AmountBadge,
 } from './RewardsTables'
 import { MILLISECONDS_IN_A_MONTH } from '../../../../../shared/ui/utils'
+import { e2eTag } from '../../../../../shared/ui/utils'
 import { Empty } from '../Card'
 
 const fourthColumns = [ 'Next Payout', 'Status', 'Last Payout' ]
@@ -110,23 +111,24 @@ const RewardsTableNarrow = ({ title, tokens, rewards, fourthColumn, fourthColumn
       <NarrowListReward onClick={generateOpenDetails(reward, openDetails)} key={i}>
         <div style={{ marginTop: '5px', marginRight: '10px' }}>
           <RewardDescription>
-            <span data-e2e-reward-description={i}>
-              {reward.description}
-            </span>
+            {e2eTag(reward.description, 'reward-description', i)}
           </RewardDescription>
           <Text.Block size="small" color={theme.textSecondary} style={{ marginTop: '5px' }}>
-            {reward.isMerit ? 'Merit' : 'Dividend'}
+            {e2eTag(
+              reward.isMerit ? 'Merit Reward' : 'Dividend',
+              'reward-type', i)}
+            }
             {dot}
-            {reward.isMerit ? 'One-Time' : 'Quarterly'}
+            {reward.isMerit ? 'One-Time' : 'Monthly'}
             {dot}
             {fourthColumnData(reward)}
           </Text.Block>
         </div>
         <div>
           <AmountBadge>
-            <span data-e2e-reward-badge={i}>
-              {displayCurrency(reward.amount)}{' '}{getSymbol(tokens, reward.rewardToken)}
-            </span>
+            {e2eTag(displayCurrency(reward.amount), 'reward-badge-amount', i)}
+            &nbsp;
+            {e2eTag(getSymbol(tokens, reward.rewardToken), 'reward-badge-symbol', i)}
           </AmountBadge>
         </div>
       </NarrowListReward>
@@ -150,11 +152,14 @@ const RewardsTableWide = ({ title, tokens, rewards, fourthColumn, fourthColumnDa
         <ClickableTableRow key={i} onClick={generateOpenDetails(reward, openDetails)}>
           <TableCell>
             <RewardDescription>
-              {reward.description}
+              {e2eTag(reward.description, 'reward-description', i)}
             </RewardDescription>
           </TableCell>
           <TableCell>
-            {reward.isMerit ? 'Merit Reward' : 'Dividend'}
+            {e2eTag(
+              reward.isMerit ? 'Merit Reward' : 'Dividend',
+              'reward-type', i
+            )}
           </TableCell>
           <TableCell>
             {reward.isMerit ? 'One-Time' : 'Monthly'}
@@ -164,7 +169,9 @@ const RewardsTableWide = ({ title, tokens, rewards, fourthColumn, fourthColumnDa
           </TableCell>
           <TableCell>
             <AmountBadge>
-              {displayCurrency(reward.amount)}{' '}{getSymbol(tokens, reward.rewardToken)}
+              {e2eTag(displayCurrency(reward.amount), 'reward-badge-amount', i)}
+              &nbsp;
+              {e2eTag(getSymbol(tokens, reward.rewardToken), 'reward-badge-symbol', i)}
             </AmountBadge>
           </TableCell>
         </ClickableTableRow>

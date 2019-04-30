@@ -266,6 +266,7 @@ class NewReward extends React.Component {
         input={
           <DropDown
             wide
+            name="rewardType"
             items={rewardTypes}
             active={this.state.rewardType}
             onChange={rewardType => this.setState({ rewardType })}

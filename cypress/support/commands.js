@@ -36,22 +36,6 @@ Cypress.Commands.add('getSiblings', { prevSubject: 'element' }, $element => {
   return siblings
 })
 
-Cypress.Commands.add('getButton', text => {
-  return cy.getIframeElement('button').contains(text)
-})
-
-Cypress.Commands.add('getInput', text => {
-  return cy.getIframeElement('input', `[name="${text}"]`)
-})
-
-Cypress.Commands.add('getIframeElement', element => {
-  debugger
-  return cy
-    .get('iframe')
-    .iframe()
-    .get(element)
-})
-
 Cypress.Commands.add('iframe', { prevSubject: 'element' }, $iframe => {
   Cypress.log({
     name: 'iframe',
@@ -124,3 +108,35 @@ function onIframeReady($iframe, successFn, errorFn) {
     errorFn()
   }
 }
+
+Cypress.Commands.add('appGet', element => {
+  return cy
+    .get('iframe')
+    .iframe()
+    .get(element)
+})
+
+Cypress.Commands.add('appContains', (element, text) => {
+  return cy
+  .get('iframe')
+  .iframe()
+  .contains(element, text)
+})
+
+Cypress.Commands.add('appFind', element => {
+  return cy
+  .get('iframe')
+  .iframe()
+  .find(element)
+})
+
+Cypress.Commands.add('getButton', text => {
+  return cy
+  .get('iframe')
+  .iframe()
+  .contains('button', text)
+})
+
+Cypress.Commands.add('getInput', text => {
+  return cy.appGet('input', `[name="${text}"]`)
+})

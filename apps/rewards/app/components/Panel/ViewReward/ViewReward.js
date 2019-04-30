@@ -1,17 +1,11 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import Blockies from 'react-blockies'
-import { BigNumber } from 'bignumber.js'
 import { format } from 'date-fns'
 import {
-  Badge,
   Button,
   Info,
-  SafeLink,
   SidePanelSplit,
-  SidePanelSeparator,
-  Countdown,
   Text,
   theme,
   IconTime,
@@ -19,10 +13,10 @@ import {
   IconFundraising,
   IdentityBadge,
 } from '@aragon/ui'
-import { FieldTitle, FormField } from '../../Form'
-import { MONTHS } from '../../../utils/constants'
+import { FieldTitle } from '../../Form'
 import { displayCurrency, getSymbol } from '../../../utils/helpers'
 import { provideNetwork } from '../../../../../../shared/ui'
+import { e2eTag } from '../../../../../../shared/ui/utils'
 
 class ViewReward extends React.Component {
     static propTypes = {
@@ -96,7 +90,13 @@ class ViewReward extends React.Component {
             <Part>
               <React.Fragment>
                 <FieldTitle>Description</FieldTitle>
-                <p>{this.renderDescription(description)}</p>
+                <p>{
+                  e2eTag(
+                    this.renderDescription(description),
+                    'reward-description',
+                    0
+                  )}
+                </p>
               </React.Fragment>
             </Part>
           )}
@@ -116,7 +116,9 @@ class ViewReward extends React.Component {
             <div>
               <FieldTitle>Amount</FieldTitle>
               <p>
-                {displayCurrency(amount)}{' '}{getSymbol(tokens, rewardToken)}
+                {e2eTag(displayCurrency(amount), 'reward-panel-amount', '0')}
+                &nbsp;
+                {e2eTag(getSymbol(tokens, rewardToken), 'reward-panel-symbol', '0')}
               </p>
             </div>
             <div>
