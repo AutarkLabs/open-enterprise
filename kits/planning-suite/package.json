@@ -34,7 +34,8 @@
     "test:local": "truffle compile && npm run deploy:rpc && npm run test:rpc",
     "test:rinkeby": "truffle test --network rinkeby test/planning-suite.test.js",
     "test:rpc": "truffle test --network rpc test/planning-suite.test.js",
-    "test": "npm run test:local"
+    "test:local": "npm run test:local",
+    "test": "echo nope"
   },
   "files": [
     "abi/",
