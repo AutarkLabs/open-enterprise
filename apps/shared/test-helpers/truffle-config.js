@@ -68,7 +68,7 @@ module.exports = {
       host: 'localhost',
       network_id: '*',
       port: 8555,
-      gas: 8.2e6,
+      gas: 0xfffffffffff,
       gasPrice: 0x01,
     },
     rinkeby: {
