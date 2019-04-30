@@ -1,6 +1,11 @@
 import { isIPFS } from 'ipfs-http-client'
 
-import { worksFor, schoolAffiliation, homeLocation } from './things'
+import {
+  worksFor,
+  schoolAffiliation,
+  homeLocation,
+  schemaDotOrgImage,
+} from './things'
 
 const usedFields = new Set([
   'name',
@@ -14,18 +19,19 @@ const usedFields = new Set([
 ])
 
 const handleJobTitle = publicProfile => {
-  if (publicProfile.jobTitle) return publicProfile
-  if (publicProfile.job)
-    return { ...publicProfile, jobTitle: publicProfile.job }
+  if (publicProfile.job) {
+    const { job } = publicProfile
+    delete publicProfile.job
+    return { ...publicProfile, jobTitle: job }
+  }
   return publicProfile
 }
 
 const handleEmployer = publicProfile => {
-  const isProperlyStructured =
-    publicProfile.worksFor && Object.keys(publicProfile.worksFor).length > 0
-  if (isProperlyStructured) return publicProfile
   if (publicProfile.employer) {
-    return { ...publicProfile, worksFor: worksFor(publicProfile.employer) }
+    const { employer } = publicProfile
+    delete publicProfile.employer
+    return { ...publicProfile, worksFor: worksFor(employer) }
   }
   return publicProfile
 }
@@ -34,47 +40,33 @@ const handleEducation = publicProfile => {
   const hasEducation = !!publicProfile.school
   if (!hasEducation) return publicProfile
 
-  const hasAffiliation =
-    publicProfile.affiliation && publicProfile.affiliation.length > 0
-
-  if (hasAffiliation) {
-    const isProperlyStructured = publicProfile.affiliation.some(
-      affiliation => affiliation['@type'] === 'School'
-    )
-    if (isProperlyStructured) return publicProfile
-    return {
-      ...publicProfile,
-      affiliation: schoolAffiliation(
-        publicProfile.school,
-        publicProfile.affiliation
-      ),
-    }
-  }
+  const affiliation = publicProfile.affiliation || []
 
   return {
     ...publicProfile,
-    affiliation: schoolAffiliation(publicProfile.school, []),
+    affiliation: schoolAffiliation(publicProfile.school, affiliation),
   }
 }
 
 const handleWebsite = publicProfile => {
-  if (publicProfile.url) return publicProfile
-  if (publicProfile.website)
-    return { ...publicProfile, url: publicProfile.website }
+  if (publicProfile.website) {
+    const { website } = publicProfile
+    delete publicProfile.website
+    return { ...publicProfile, url: website }
+  }
   return publicProfile
 }
 
 const handleLocation = publicProfile => {
-  const isProperlyStructured =
-    publicProfile.homeLocation &&
-    Object.keys(publicProfile.homeLocation).length > 0
-  if (isProperlyStructured) return publicProfile
   if (publicProfile.location) {
+    const { location } = publicProfile
+    delete publicProfile.location
     return {
       ...publicProfile,
-      homeLocation: homeLocation(publicProfile.location),
+      homeLocation: homeLocation(location),
     }
   }
+
   return publicProfile
 }
 
@@ -91,22 +83,23 @@ const handlePerson = publicProfile => {
   }
 }
 
-export const reformatImage = publicProfile => {
+export const handleImage = publicProfile => {
   const hasImage = !!publicProfile.image
   if (!hasImage) return publicProfile
   const isProperlyTyped =
-    publicProfile.image['@type'] === 'ImageObject' &&
-    publicProfile.image['@context'] === 'http://schema.org/' &&
     Array.isArray(publicProfile.image) &&
     publicProfile.image.length > 0 &&
-    publicProfile.image[0].contentUrl
+    publicProfile.image[0].contentUrl &&
+    typeof publicProfile.image[0].contentUrl === 'object'
 
-  const isIPLD =
-    typeof publicProfile.image[0].contentUrl === 'object' &&
-    isIPFS.cid(publicProfile.image[0].contentUrl['/'])
+  const cid = isProperlyTyped && publicProfile.image[0].contentUrl['/']
+  const isIPLD = isIPFS.cid(cid)
 
-  if (isProperlyTyped && !isIPLD) return publicProfile
-  return publicProfile
+  if (isIPLD) {
+    delete publicProfile.image
+    return { ...publicProfile, image: schemaDotOrgImage(cid) }
+  }
+  throw new Error('unknown image type passed')
 }
 
 /* prettier-ignore */
@@ -117,7 +110,8 @@ export const format = publicProfile => {
           handleWebsite(
             handleEducation(
               handleEmployer(
-                handleJobTitle(publicProfile))))))
+                handleJobTitle(
+                  handleImage({ ...publicProfile })))))))
   return formattedProfile
 }
 

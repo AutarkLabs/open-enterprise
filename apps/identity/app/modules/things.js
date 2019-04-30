@@ -24,3 +24,13 @@ export const image = imageHash => {
     },
   ]
 }
+
+export const schemaDotOrgImage = imageHash => {
+  return [
+    {
+      '@type': 'ImageObject',
+      '@context': 'http://schema.org/',
+      contentUrl: `https://ipfs.infura.io/ipfs/${imageHash}`,
+    },
+  ]
+}

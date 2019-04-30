@@ -101,13 +101,8 @@ export class Profile {
 
   setPublicFields = async (fields, values) => {
     this.checkForErrorsBeforeSetting(fields, values)
-
     try {
-      await Promise.all(
-        fields.map((field, idx) =>
-          this.unlockedBox.public.set(field, values[idx])
-        )
-      )
+      await this.unlockedBox.public.setMultiple(fields, values)
     } catch (err) {
       throw new Error(`Error setting in box: ${err}`)
     }
@@ -115,13 +110,8 @@ export class Profile {
 
   setPrivateFields = async (fields, values) => {
     this.checkForErrorsBeforeSetting(fields, values)
-
     try {
-      await Promise.all(
-        fields.map((field, idx) =>
-          this.unlockedBox.private.set(field, values[idx])
-        )
-      )
+      await this.unlockedBox.private.setMultiple(fields, values)
     } catch (err) {
       throw new Error(`Error setting in box: ${err}`)
     }
