@@ -105,6 +105,15 @@ class NewReward extends React.Component {
   lowVaultBalance = () => this.props.balances[this.state.amountCurrency].amount / Math.pow(10,this.props.balances[this.state.amountCurrency].decimals) < this.state.amount
   dividendPeriodTooShort = () => (this.state.rewardType > 0 && this.state.occurances === 0)
   errorPrompt = () => (this.showSummary() && (this.startBeforeTokenCreation() || this.disbursementOverflow() || this.lowVaultBalance() || this.dividendPeriodTooShort()))
+  customTokenPromptText = ({ address }, networkType) => {
+    if (networkType === 'main') {
+      if (address === 'not found') return 'Symbol not found. Please enter token\'s address'
+      return 'Enter a valid MiniMe token symbol or address'
+    }
+    return 'Enter a valid MiniMe token address'
+  }
+
+  onMainNet = () => this.props.network.type === 'main'
 
   showSummary = () => (this.state.referenceAsset > 1 || this.state.customToken.symbol)
 
@@ -131,21 +140,26 @@ class NewReward extends React.Component {
   handleCustomTokenChange = event => {
     const { value } = event.target
     const { network } = this.props
+    let isVerified = null
 
     // Use the verified token address if provided a symbol and it matches
     // The symbols in the verified map are all capitalized
     const resolvedAddress =
       !isAddress(value) && network.type === 'main'
-        ? ETHER_TOKEN_VERIFIED_BY_SYMBOL.get(value.toUpperCase()) || ''
+        ? ETHER_TOKEN_VERIFIED_BY_SYMBOL.get(value.toUpperCase()) || 'not found'
         : ''
 
-    if(isAddress(value) || isAddress(resolvedAddress)) {
+    if (isAddress(value) || isAddress(resolvedAddress)) {
       this.verifyMinime(this.props.app, { address: resolvedAddress || value, value })
+    }
+    else {
+      isVerified = false
     }
 
     this.setState(
       {
         customToken: {
+          isVerified,
           value,
           address: resolvedAddress,
         },
@@ -245,19 +259,24 @@ class NewReward extends React.Component {
       />
 
       {showCustomToken && (
-        <FormField
-          label={this.state.labelCustomToken}
-          required
-          input={
-            <TextInput
-              name="description"
-              placeholder="SYM…"
-              wide
-              value={this.state.customToken.value}
-              onChange={this.handleCustomTokenChange}
-            />
+        <React.Fragment>
+          <FormField
+            label={this.onMainNet() ? this.state.labelCustomToken : 'TOKEN ADDRESS'}
+            required
+            input={
+              <TextInput
+                name="description"
+                placeholder={this.onMainNet() ? 'SYM…' : ''}
+                wide
+                value={this.state.customToken.value}
+                onChange={this.handleCustomTokenChange}
+              />
+            }
+          />
+          {!this.state.customToken.isVerified &&
+            <Info>{this.customTokenPromptText(this.state.customToken, this.props.network.type)}</Info>
           }
-        />
+        </React.Fragment>
       )}
 
       <FormField
@@ -523,6 +542,9 @@ class NewReward extends React.Component {
   render() {
 
     const showCustomToken = this.state.referenceAsset === 1
+
+    console.log('custom Token: ',this.state.customToken)
+    console.log('Props:', this.props)
 
     return (
       <Form
