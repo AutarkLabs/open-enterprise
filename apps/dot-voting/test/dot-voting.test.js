@@ -382,6 +382,49 @@ contract('DotVoting App', accounts => {
       })
     })
 
+    it('rejects unequal script length and actual script length', async () => {
+      let action = {
+        to: executionTarget.address,
+        calldata: executionTarget.contract.setSignal.getData(
+          [ accounts[7], accounts[8], accounts[9] ],
+          [ 0, 0, 0 ],
+          [ 4, 4, 4 ],
+          'arg1arg2arg3',
+          'description',
+          [ '0x0', '0x0', '0x0' ],
+          [ '0x0', '0x0', '0x0' ],
+          5,
+          false
+        )
+      }
+      const script = encodeCallScript([action]) + '00'
+      return assertRevert(async () => {
+        await app.newVote(script, '', { from: holder50 })
+      })
+    })
+
+    it('only accepts scripts with a specID of 1', async () => {
+      let action = {
+        to: executionTarget.address,
+        calldata: executionTarget.contract.setSignal.getData(
+          [ accounts[7], accounts[8], accounts[9] ],
+          [ 0, 0, 0 ],
+          [ 4, 4, 4 ],
+          'arg1arg2arg3',
+          'description',
+          [ '0x0', '0x0', '0x0' ],
+          [ '0x0', '0x0', '0x0' ],
+          5,
+          false
+        )
+      }
+      let script = encodeCallScript([action])
+      const scriptNewSpec = script.replace('0x00000001','0x00000002')
+      return assertRevert(async () => {
+        await app.newVote(scriptNewSpec, '', { from: holder50 })
+      })
+    })
+
     xit('can change minimum candidate support', async () => { })
 
     context('creating vote with normal distributions', () => {
@@ -467,6 +510,14 @@ contract('DotVoting App', accounts => {
         assert.equal(voteState[9], false, 'is false')
       })
 
+      it('holders cannot vote with more tokens than they possess', async () => {
+        let vote = [ 6, 7, 7 ]
+        let voter = holder19
+        return assertRevert(async () => {
+          await app.vote(voteId, vote, { from: voter })
+        })
+      })
+
       it('holder can vote', async () => {
         let vote = [ 1, 2, 3 ]
         let voter = holder19
@@ -517,6 +568,14 @@ contract('DotVoting App', accounts => {
           vote[2],
           'The correct amount of support should be logged for Banana'
         )
+      })
+
+      it('holders cannot modify a prior vote with more tokens than they possess', async () => {
+        let vote = [ 6, 7, 7 ]
+        let voter = holder19
+        return assertRevert(async () => {
+          await app.vote(voteId, vote, { from: voter })
+        })
       })
 
       it('holder can modify vote without getting double-counted', async () => {
