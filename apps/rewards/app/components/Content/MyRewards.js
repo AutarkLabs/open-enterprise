@@ -30,6 +30,7 @@ import {
 import { Empty } from '../Card'
 import { provideNetwork } from '../../../../../shared/ui'
 import { MILLISECONDS_IN_A_SECOND } from '../../../../../shared/ui/utils'
+import { e2eTag } from '../../../../../shared/ui/utils'
 
 const averageRewardsTitles = [ 'My Unclaimed Rewards', 'Year to Date', 'Inception to Date' ]
 
@@ -144,9 +145,7 @@ const MyRewardsWide = ({ onClaimReward, claimed, rewards, openDetails, network, 
       <ClickableTableRow key={i} onClick={generateOpenDetails(reward, openDetails)}>
         <TableCell>
           <RewardDescription>
-            <span data-e2e-reward-description={i}>
-              {reward.description}
-            </span>
+            {e2eTag(reward.description, 'reward-description', i)}
           </RewardDescription>
         </TableCell>
         <TableCell>
@@ -154,16 +153,20 @@ const MyRewardsWide = ({ onClaimReward, claimed, rewards, openDetails, network, 
             reward.endDate < Date.now() ? (
               <Button mode="outline" onClick={generateOnClaimReward(onClaimReward, reward)}>
                 <IconFundraising color={theme.positive} />
-
                 <Text size="normal" weight="bold">Claim</Text>
-              </Button>) : <Text size="normal" weight="bold">Pending...</Text>
+              </Button>
+            ) : (
+              <Text size="normal" weight="bold">
+                {e2eTag('Pending...', 'reward-status', 'pending')}
+              </Text>
+            )
           ) : Intl.DateTimeFormat().format(reward.timeClaimed * MILLISECONDS_IN_A_SECOND)}
         </TableCell>
         <TableCell>
           <AmountBadge>
-            <span data-e2e-reward-badge={i}>
-              {displayCurrency(reward.userRewardAmount)}{' '}{getSymbol(tokens, reward)}
-            </span>
+            {e2eTag(displayCurrency(reward.userRewardAmount), 'reward-badge-amount', i)}
+            &nbsp;
+            {e2eTag(getSymbol(tokens, reward), 'reward-badge-symbol', i)}
           </AmountBadge>
         </TableCell>
       </ClickableTableRow>
@@ -238,6 +241,7 @@ const MyRewards = ({ onClaimReward, rewards, newReward, openDetails, network, to
   }
 
   const summarizedRewards = calculateMyRewardsSummary(myRewards, tokens, convertRates)
+
 
   return (
     <Main>

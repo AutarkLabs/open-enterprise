@@ -50,15 +50,10 @@ class MyReward extends React.Component {
 
   render() {
     const {
-      creator,
-      isMerit,
       referenceToken,
       rewardToken,
-      amount,
       startDate,
       endDate,
-      description,
-      delay,
       claimed,
       userRewardAmount
     } = this.props.reward

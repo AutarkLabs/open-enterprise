@@ -1,7 +1,7 @@
 import Web3 from '@aragon/wrapper/node_modules/web3'
 import { addDays } from 'date-fns'
-const PrivateKeyProvider = require('truffle-privatekey-provider')
 
+const PrivateKeyProvider = require('truffle-privatekey-provider')
 const ProviderEngine = require('truffle-privatekey-provider/node_modules/web3-provider-engine')
 const CacheSubprovider = require('truffle-privatekey-provider/node_modules/web3-provider-engine/subproviders/cache.js')
 const FixtureSubprovider = require('truffle-privatekey-provider/node_modules/web3-provider-engine/subproviders/fixture.js')
@@ -11,7 +11,9 @@ const NonceSubprovider = require('truffle-privatekey-provider/node_modules/web3-
 const RpcSubprovider = require('truffle-privatekey-provider/node_modules/web3-provider-engine/subproviders/rpc.js')
 
 var engine = new ProviderEngine()
-var web3 = new Web3(engine)
+
+var web3A = new Web3(engine)
+var web3B = new Web3(engine)
 
 engine.addProvider(
   new FixtureSubprovider({
@@ -34,7 +36,7 @@ engine.addProvider(
     rpcUrl: 'http://localhost:8545',
   })
 )
-
+/*
 engine.on('block', function(block) {
   console.log('================================')
   console.log(
@@ -44,7 +46,7 @@ engine.on('block', function(block) {
   )
   console.log('================================')
 })
-
+*/
 engine.on('error', function(err) {
   console.error(err.stack)
 })
@@ -61,19 +63,28 @@ const user2 = new PrivateKeyProvider(
   'http://localhost:8545'
 )
 
-web3.setProvider(user1)
+web3A.setProvider(user1)
+web3B.setProvider(user2)
+
 
 context('Aragon', () => {
+  context('Rewards', () => {
+
   before(() => {
     cy.on('window:before:load', win => {
-      win.web3 = web3
-    })
+      win.web3 = web3A
+      console.log('A', web3A.eth.accounts)
+      console.log('B', web3B.eth.accounts)
+          })
     cy.visit(
       'http://localhost:3000/#/0x5b6a3301a67A4bfda9D3a528CaD34cac6e7F8070'
     )
   })
 
-  context('Rewards', () => {
+/////////////////////////////////////////////////////////////////////////////
+// create new merit reward
+/////////////////////////////////////////////////////////////////////////////
+
     it('creates New Reward (Merit)', () => {
       const tomorrow = addDays(new Date(), 3) + ''
 
@@ -93,16 +104,13 @@ context('Aragon', () => {
         .within($el => {
           cy.contains('div', 'autark')
             .click()
-            .wait(1000)
         })
 
-      cy.appGet('div[data-e2e-reward-main="true"]')
+      cy.appContains('aside', 'New Reward')
         .appContains('div', 'Select a token')
         .click()
-        .wait(1000)
         .appFind('span[data-e2e-token="autark"]')
         .click({ force: true })
-        .wait(1000)
         .appFind('input[name="periodEnd"]')
         .type(tomorrow)
         .appFind('input[name="periodEnd"]')
@@ -110,7 +118,8 @@ context('Aragon', () => {
           keyCode: 13,
           which: 13,
         })
-        .getButton('Submit Reward')
+
+      cy.getButton('Submit Reward')
         .click()
         .wait(1000)
 
@@ -120,8 +129,12 @@ context('Aragon', () => {
         .wait(3000)
     })
 
-    it.only('creates New Reward (Dividend)', () => {
-      const tomorrow = addDays(new Date(), 3) + ''
+/////////////////////////////////////////////////////////////////////////////
+// create new dividend reward
+/////////////////////////////////////////////////////////////////////////////
+
+    it('creates New Reward (Dividend)', () => {
+      const tomorrow = addDays(new Date(), 98) + ''
 
       cy.contains('span', 'Rewards', { timeout: 150000 })
         .click()
@@ -129,55 +142,52 @@ context('Aragon', () => {
 
       cy.getButton('New Reward')
         .click()
-        .wait(1000)
+        .wait(500)
 
       cy.appContains('aside', 'New Reward')
         .contains('div', 'Merit Reward')
         .click()
-        .wait(1000)
         .siblings('[role="listbox"]')
         .children()
         .contains('div', 'Dividend')
         .click()
-      //   .wait(1000)
+        .appFind('input[name="description"]')
+        .type('Dividend Reward')
+        .appFind('input[name="amount"]')
+        .type(4)
+        .appFind('div[data-e2e="reward-amount-currency"]')
+        .click('right')
+        .within($el => {
+          cy.contains('div', 'autark')
+            .click()
+        })
 
-      // cy.getButton('New Reward')
-      //   .click()
-      //   .wait(1000)
-      //   .appFind('input[name="description"]')
-      //   .type('Dividend Reward')
-      //   .appFind('input[name="amount"]')
-      //   .type(4)
-      //   .appFind('div[data-e2e="reward-amount-currency"]')
-      //   .click('right')
-      //   .within($el => {
-      //     cy.contains('div', 'autark')
-      //       .click()
-      //       .wait(1000)
-      //   })
+      cy.appContains('aside', 'New Reward')
+        .appContains('div', 'Select a token')
+        .click()
+        .appFind('span[data-e2e-token="autark"]')
+        .click({ force: true })
+        .appFind('input[name="dateEnd"]')
+        .type(tomorrow)
+        .appFind('input[name="dateEnd"]')
+        .trigger('keydown', {
+          keyCode: 13,
+          which: 13,
+        })
+      
+      cy.getButton('Submit Reward')
+        .click()
+        .wait(1000)
 
-      // cy.appContains('div', 'Select a token')
-      //   .click()
-      //   .wait(1000)
-      //   .appFind('span[data-e2e-token="autark"]')
-      //   .click({ force: true })
-      //   .wait(1000)
-      //   .appFind('input[name="dateEnd"]')
-      //   .type(tomorrow)
-      //   .appFind('input[name="dateEnd"]')
-      //   .trigger('keydown', {
-      //     keyCode: 13,
-      //     which: 13,
-      //   })
-      //   .getButton('Submit Reward')
-      //   .click()
-      //   .wait(1000)
-
-      // cy.contains('button', 'Create transaction').click()
-      // cy.contains('button', 'Close')
-      // .click()
-      // .wait(3000)
+      cy.contains('button', 'Create transaction').click()
+      cy.contains('button', 'Close')
+        .click()
+        .wait(3000)
     })
+
+/////////////////////////////////////////////////////////////////////////////
+// show both rewards no page and in panels
+/////////////////////////////////////////////////////////////////////////////
 
     it('shows New Reward (Merit)', () => {
       cy.contains('span', 'Rewards', { timeout: 150000 })
@@ -199,16 +209,92 @@ context('Aragon', () => {
       cy.appContains('span[data-e2e-reward-type="1"]', 'Dividend')
     })
 
-    it('shows New Reward in Panel', () => {
+    it('shows New Reward (Merit) in Panel', () => {
       cy.contains('span', 'Rewards', { timeout: 150000 })
         .click()
         .wait(4000)
-      cy.appFind('span[data-e2e-reward-description="0"]', 'Some Reward')
+      cy.appFind('span[data-e2e-reward-description="0"]', 'Merit Reward')
         .click()
         .wait(500)
       cy.appContains('span[data-e2e-reward-badge-amount="0"]', 3)
       cy.appContains('span[data-e2e-reward-panel-symbol="0"]', 'autark')
-      //cy.getButton('Close').click()
+      cy.getButton('Close').click()
     })
+
+    it('shows New Reward (Dividend) in Panel', () => {
+      cy.contains('span', 'Rewards', { timeout: 150000 })
+        .click()
+        .wait(4000)
+      cy.appFind('span[data-e2e-reward-description="0"]', 'Dividend Reward')
+        .click()
+        .wait(500)
+      cy.appContains('span[data-e2e-reward-badge-amount="0"]', 3)
+      cy.appContains('span[data-e2e-reward-panel-symbol="0"]', 'autark')
+      cy.getButton('Close').click()
+    })
+
+/////////////////////////////////////////////////////////////////////////////
+// switch accounts - first should have no rewards
+/////////////////////////////////////////////////////////////////////////////
+
+    it('My Rewards is empty for the second account', () => {
+      cy.window()
+      .then((win) => {
+        console.log('---+$ web3', win.web3.eth.accounts._provider.address)
+      })
+
+      cy.on('window:before:load', win => {
+        win.web3 = web3B
+      })
+      cy.visit(
+        'http://localhost:3000/#/0x5b6a3301a67A4bfda9D3a528CaD34cac6e7F8070'
+      )
+      cy.reload()
+
+
+      cy.window()
+      .then((win) => {
+        console.log('---+^ web3', win.web3.eth.accounts._provider.address)
+      })
+
+      cy.contains('span', 'Rewards', { timeout: 150000 })
+        .click()
+        .wait(4000)
+      cy.appContains('span', 'My Rewards')
+        .click()
+        .wait(10000)
+      cy.appContains('span', 'You have not been awarded any rewards')
+    })
+
+    it('My Rewards is not empty for the first account', () => {
+
+      cy.window()
+      .then((win) => {
+        console.log('---+& web3', win.web3.eth.accounts._provider.address)
+      })
+
+      cy.on('window:before:load', win => {
+        win.web3 = web3A
+      })
+      cy.visit(
+        'http://localhost:3000/#/0x5b6a3301a67A4bfda9D3a528CaD34cac6e7F8070'
+      )
+      cy.reload()
+
+      cy.window()
+      .then((win) => {
+        console.log('---+* web3', win.web3.eth.accounts._provider.address)
+      })
+
+      cy.contains('span', 'Rewards', { timeout: 150000 })
+      .click()
+      .wait(4000)
+      cy.appContains('span', 'My Rewards')
+      .click()
+      .wait(10000)
+      .appContains('span[data-e2e-reward-status="pending"]', 'Pending...')
+      .appContains('span[data-e2e-reward-badge-amount="0"]', '2.667')
+    })
+
   })
 })

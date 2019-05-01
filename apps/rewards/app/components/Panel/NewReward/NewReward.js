@@ -2,21 +2,19 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 
-import { Info, Text, TextInput, theme, SafeLink, DropDown, IconFundraising, Field } from '@aragon/ui'
+import { Info, Text, TextInput, theme, SafeLink, DropDown, IconFundraising } from '@aragon/ui'
 
 import { Form, FormField } from '../../Form'
 import { DateInput, InputDropDown } from '../../../../../../shared/ui'
 import { format } from 'date-fns'
 import BigNumber from 'bignumber.js'
 import { millisecondsToBlocks, millisecondsToQuarters, MILLISECONDS_IN_A_QUARTER } from '../../../../../../shared/ui/utils'
-import { displayCurrency, toCurrency } from '../../../utils/helpers'
+import { toCurrency } from '../../../utils/helpers'
 import { isAddress } from '../../../utils/web3-utils'
 import { ETHER_TOKEN_VERIFIED_BY_SYMBOL } from '../../../utils/verified-tokens'
 import TokenSelectorInstance from './TokenSelectorInstance'
 
 const rewardTypes = [ 'Merit Reward', 'Dividend' ]
-const referenceAssets = [ 'ABC', 'XYZ' ]
-const currencies = [ 'ETH', 'DAI' ]
 const disbursementCycles = ['Quarterly']
 const disbursementCyclesSummary = ['quarterly cycle']
 const disbursementDates = [ '1 week', '2 weeks' ]
@@ -391,6 +389,7 @@ class NewReward extends React.Component {
           label="Amount per cycle"
           input={
             <InputDropDown
+              e2e="reward-amount-currency"
               textInput={{
                 name: 'amount',
                 value: this.state.amount,
