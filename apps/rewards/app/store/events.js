@@ -22,7 +22,7 @@ export const handleEvent = async (state, event, settings) => {
       nextState = await onRewardClaimed(nextState, returnValues)
       break
     case 'RewardAdded':
-      nextState = await onRewardAdded(nextState, returnValues)
+      nextState = await onRewardAdded(nextState, returnValues, settings)
       break
     case 'RefreshRewards':
       nextState = await onRefreshRewards(nextState, returnValues)
