@@ -107,6 +107,7 @@ const initApolloClient = token =>
 const getToken = async code => {
   const response = await fetch(`${AUTH_URI}/${code}`)
   const json = await response.json()
+
   return json.token
 }
 
@@ -235,13 +236,20 @@ class App extends React.PureComponent {
     }
   }
 
+  handleMenuPanelOpen = () => {
+    window.parent.postMessage(
+      { from: 'app', name: 'menuPanel', value: true },
+      '*'
+    )
+  }
+
   changeActiveIndex = activeIndex => {
     this.setState({ activeIndex })
   }
 
-  createProject = ({ owner, project }) => {
+  createProject = ({ project }) => {
     this.closePanel()
-    this.props.app.addRepo(web3.toHex(project), web3.toHex(owner))
+    this.props.app.addRepo(web3.toHex(project))
   }
 
   removeProject = project => {
@@ -420,7 +428,7 @@ class App extends React.PureComponent {
 
     const requestIPFSHash = await ipfsAdd(ipfsData)
 
-    this.props.app.approveAssignment(
+    this.props.app.reviewApplication(
       web3.toHex(issue.repoId),
       issue.number,
       issue.requestsData[requestIndex].contributorAddr,

@@ -19,7 +19,6 @@ cache:
 
 jobs:
   include:
-
     - stage: precache
       script: true
       install:

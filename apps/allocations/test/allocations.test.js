@@ -67,21 +67,21 @@ contract('Allocations App', accounts => {
     await acl.createPermission(
       ANY_ADDR,
       app.address,
-      await app.START_PAYOUT_ROLE(),
+      await app.CREATE_ACCOUNT_ROLE(),
       root,
       { from: root }
     )
     await acl.createPermission(
       ANY_ADDR,
       app.address,
-      await app.SET_DISTRIBUTION_ROLE(),
+      await app.CREATE_ALLOCATION_ROLE(),
       root,
       { from: root }
     )
     await acl.createPermission(
       ANY_ADDR,
       app.address,
-      await app.EXECUTE_PAYOUT_ROLE(),
+      await app.EXECUTE_ALLOCATION_ROLE(),
       root,
       { from: root }
     )

@@ -257,39 +257,38 @@ contract PlanningKit is KitBase {
     ) internal
     {
         address root = msg.sender;
-
         ACL acl = ACL(dao.acl());
 
         // AddressBook permissions:
-        acl.createPermission(ANY_ENTITY, addressBook, addressBook.ADD_ENTRY_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, addressBook, addressBook.REMOVE_ENTRY_ROLE(), root);
-        // emit InstalledApp(addressBook, addressBookAppId);
+        acl.createPermission(voting, addressBook, addressBook.ADD_ENTRY_ROLE(), voting);
+        acl.createPermission(voting, addressBook, addressBook.REMOVE_ENTRY_ROLE(), voting);
+        //emit InstalledApp(addressBook, planningAppIds[uint8(PlanningApps.AddressBook)]);
 
 
         // Projects permissions:
-        acl.createPermission(voting, projects, projects.ADD_BOUNTY_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, projects, projects.ADD_REPO_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, projects, projects.CHANGE_SETTINGS_ROLE(), root);
-        acl.createPermission(dotVoting, projects, projects.CURATE_ISSUES_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, projects, projects.REMOVE_REPO_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, projects, projects.TASK_ASSIGNMENT_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, projects, projects.WORK_REVIEW_ROLE(), root);
-        // emit InstalledApp(projects, apps[2]);
+        acl.createPermission(root, projects, projects.FUND_ISSUES_ROLE(), voting);
+        acl.createPermission(voting, projects, projects.ADD_REPO_ROLE(), voting);
+        acl.createPermission(voting, projects, projects.CHANGE_SETTINGS_ROLE(), voting);
+        acl.createPermission(dotVoting, projects, projects.CURATE_ISSUES_ROLE(), voting);
+        acl.createPermission(voting, projects, projects.REMOVE_REPO_ROLE(), voting);
+        acl.createPermission(root, projects, projects.REVIEW_APPLICATION_ROLE(), voting);
+        acl.createPermission(root, projects, projects.WORK_REVIEW_ROLE(), voting);
+        //emit InstalledApp(projects, planningAppIds[uint8(PlanningApps.Projects)]);
 
-        // Dot-Voting permissions
-        acl.createPermission(ANY_ENTITY, dotVoting, dotVoting.CREATE_VOTES_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, dotVoting, dotVoting.ADD_CANDIDATES_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, dotVoting, dotVoting.MODIFY_PARTICIPATION_ROLE(), root);
-        // emit InstalledApp(dotVoting, apps[3]);
+        // Dot-voting permissions
+        acl.createPermission(ANY_ENTITY, dotVoting, dotVoting.CREATE_VOTES_ROLE(), voting);
+        acl.createPermission(ANY_ENTITY, dotVoting, dotVoting.ADD_CANDIDATES_ROLE(), voting);
+        //emit InstalledApp(dotVoting, planningAppIds[uint8(PlanningApps.DotVoting)]);
 
         // Allocations permissions:
-        acl.createPermission(ANY_ENTITY, allocations, allocations.START_PAYOUT_ROLE(), root);
-        acl.createPermission(dotVoting, allocations, allocations.SET_DISTRIBUTION_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, allocations, allocations.EXECUTE_PAYOUT_ROLE(), root);
-        // emit InstalledApp(allocations, apps[1]);
+        acl.createPermission(voting, allocations, allocations.CREATE_ACCOUNT_ROLE(), voting);
+        acl.createPermission(dotVoting, allocations, allocations.CREATE_ALLOCATION_ROLE(), voting);
+        acl.createPermission(ANY_ENTITY, allocations, allocations.EXECUTE_ALLOCATION_ROLE(), voting);
+        //emit InstalledApp(allocations, planningAppIds[uint8(PlanningApps.Allocations)]);
 
-        // Rewards Permissions
-        acl.createPermission(ANY_ENTITY, rewards, rewards.ADD_REWARD_ROLE(), root);
+        // Rewards permissions:
+        acl.createPermission(voting, rewards, rewards.ADD_REWARD_ROLE(), voting);
+        //emit InstalledApp(rewards, planningAppIds[uint8(PlanningApps.Rewards)]);
 
     }
 
