@@ -118,6 +118,10 @@ export function millisecondsToQuarters(start,end) {
   return Math.floor( (end - start) / MILLISECONDS_IN_A_QUARTER )
 }
 
+export function millisecondsToMonths(start,end) {
+  return Math.floor( (end - start) / MILLISECONDS_IN_A_MONTH )
+}
+
 export function blocksToMilliseconds(startBlock, endBlock, blockDuration = 15000) {
   return (endBlock - startBlock) * blockDuration
 }

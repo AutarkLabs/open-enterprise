@@ -8,17 +8,21 @@ import { Form, FormField } from '../../Form'
 import { DateInput, InputDropDown } from '../../../../../../shared/ui'
 import { format } from 'date-fns'
 import BigNumber from 'bignumber.js'
-import { millisecondsToBlocks, millisecondsToQuarters, MILLISECONDS_IN_A_QUARTER } from '../../../../../../shared/ui/utils'
+import {
+  millisecondsToBlocks,
+  millisecondsToMonths,
+  millisecondsToQuarters,
+  MILLISECONDS_IN_A_QUARTER,
+  MILLISECONDS_IN_A_MONTH,
+} from '../../../../../../shared/ui/utils'
 import { displayCurrency, toCurrency } from '../../../utils/helpers'
 import { isAddress } from '../../../utils/web3-utils'
 import { ETHER_TOKEN_VERIFIED_BY_SYMBOL } from '../../../utils/verified-tokens'
 import TokenSelectorInstance from './TokenSelectorInstance'
 
 const rewardTypes = [ 'Merit Reward', 'Dividend' ]
-const referenceAssets = [ 'ABC', 'XYZ' ]
-const currencies = [ 'ETH', 'DAI' ]
-const disbursementCycles = ['Quarterly']
-const disbursementCyclesSummary = ['quarterly cycle']
+const disbursementCycleNames = [ 'Quarterly', 'Monthly' ]
+const disbursementCyclesSummary = [ 'quarterly cycle', 'monthly cycle' ]
 const disbursementDates = [ '1 week', '2 weeks' ]
 const disbursementDatesItems = disbursementDates.map(item => 'Cycle end + ' + item)
 import tokenBalanceOfAbi from '../../../../../shared/json-abis/token-balanceof.json'
@@ -81,7 +85,7 @@ class NewReward extends React.Component {
     const dataToSend = { ...this.state }
     dataToSend.amount = toCurrency(this.state.amount,this.props.balances[this.state.amountCurrency].decimals)
     dataToSend.currency = this.props.balances[this.state.amountCurrency].address
-    dataToSend.disbursementCycle = disbursementCycles[this.state.disbursementCycle]
+    dataToSend.disbursementCycle = disbursementCycleNames[this.state.disbursementCycle]
     dataToSend.disbursementDelay = disbursementDates[this.state.disbursementDate]
     dataToSend.isMerit = !dataToSend.rewardType ? true : false
     dataToSend.referenceAsset = getTokenProp('address', this.props, this.state,'isVerified')
@@ -205,15 +209,18 @@ class NewReward extends React.Component {
   }
 
   formatDate = date => format(date, 'yyyy-MM-dd')
-  changeDate = (dateStart, dateEnd) => {
-    const occurances = millisecondsToQuarters(dateStart, dateEnd)
+  changeDate = (dateStart, dateEnd, cycle) => {
+    const occurances = cycle === 0 ?
+      millisecondsToQuarters(dateStart, dateEnd) : millisecondsToMonths(dateStart, dateEnd)
     this.getCurrentBlock()
     this.setState({
       dateStart,
       dateEnd,
       occurances,
+      disbursementCycle: cycle,
       quarterEndDates: occurances > 0 ? [...Array(occurances).keys()]
-        .map(occurance => dateStart.valueOf() + ((occurance + 1) * MILLISECONDS_IN_A_QUARTER))
+        .map(occurance => dateStart.valueOf() + ((occurance + 1) * (cycle === 0 ?
+          MILLISECONDS_IN_A_QUARTER : MILLISECONDS_IN_A_MONTH)))
         : null
       ,
     })
@@ -443,7 +450,7 @@ class NewReward extends React.Component {
               width="100%"
               name="dateStart"
               value={this.state.dateStart}
-              onChange={dateStart => this.changeDate(dateStart, this.state.dateEnd)}
+              onChange={dateStart => this.changeDate(dateStart, this.state.dateEnd,this.state.disbursementCycle)}
             />
           }
         />
@@ -455,7 +462,7 @@ class NewReward extends React.Component {
               width="100%"
               name="dateEnd"
               value={this.state.dateEnd}
-              onChange={dateEnd =>this.changeDate(this.state.dateStart,dateEnd)}
+              onChange={dateEnd =>this.changeDate(this.state.dateStart,dateEnd,this.state.disbursementCycle)}
             />
           }
         />
@@ -468,9 +475,11 @@ class NewReward extends React.Component {
           input={
             <DropDown
               wide
-              items={disbursementCycles}
+              items={disbursementCycleNames}
               active={this.state.disbursementCycle}
-              onChange={disbursementCycle => this.setState({ disbursementCycle })}
+              onChange={disbursementCycle => {
+                this.changeDate(this.state.dateStart, this.state.dateEnd, disbursementCycle)
+              }}
             />
           }
         />

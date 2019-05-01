@@ -23,7 +23,7 @@ import {
   NarrowListReward,
   AmountBadge,
 } from './RewardsTables'
-import { MILLISECONDS_IN_A_MONTH } from '../../../../../shared/ui/utils'
+import { MILLISECONDS_IN_A_MONTH, blocksToMilliseconds, } from '../../../../../shared/ui/utils'
 import { Empty } from '../Card'
 
 const fourthColumns = [ 'Next Payout', 'Status', 'Last Payout' ]
@@ -104,6 +104,19 @@ const generateOpenDetails = (reward, openDetails) => () => {
   openDetails(reward)
 }
 
+const getDividendCycle = ({ startBlock, endBlock }) => {
+  const monthCount = Math.round(blocksToMilliseconds(startBlock, endBlock) / MILLISECONDS_IN_A_MONTH)
+
+  switch (monthCount) {
+  case 1:
+    return 'Monthly'
+  case 3:
+    return 'Quarterly'
+  default:
+    return 'Custom'
+  }
+}
+
 const RewardsTableNarrow = ({ title, tokens, rewards, fourthColumn, fourthColumnData, openDetails }) => (
   <NarrowList>
     {rewards.map((reward, i) => (
@@ -115,7 +128,7 @@ const RewardsTableNarrow = ({ title, tokens, rewards, fourthColumn, fourthColumn
           <Text.Block size="small" color={theme.textSecondary} style={{ marginTop: '5px' }}>
             {reward.isMerit ? 'Merit' : 'Dividend'}
             {dot}
-            {reward.isMerit ? 'One-Time' : 'Quarterly'}
+            {reward.isMerit ? 'One-Time' : getDividendCycle(reward)}
             {dot}
             {fourthColumnData(reward)}
           </Text.Block>
@@ -153,7 +166,7 @@ const RewardsTableWide = ({ title, tokens, rewards, fourthColumn, fourthColumnDa
             {reward.isMerit ? 'Merit Reward' : 'Dividend'}
           </TableCell>
           <TableCell>
-            {reward.isMerit ? 'One-Time' : 'Monthly'}
+            {reward.isMerit ? 'One-Time' : getDividendCycle(reward)}
           </TableCell>
           <TableCell>
             {fourthColumnData(reward)}
@@ -193,6 +206,8 @@ const tableType = [
 
 const Overview = ({ tokens, rewards, convertRates, claims, newReward, openDetails }) => {
   const rewardsEmpty = rewards.length === 0
+
+  console.log('reward props: ', rewards)
 
   if (rewardsEmpty) {
     return <Empty tab='Overview' action={newReward} />
