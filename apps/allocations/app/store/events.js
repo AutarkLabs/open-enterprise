@@ -5,9 +5,6 @@ import { INITIALIZATION_TRIGGER } from './'
 import { addressesEqual } from '../utils/web3-utils'
 
 export const handleEvent = async (state, event, settings) => {
-  // Debug here please:
-  debugger // un-comment this to debug on chrome sources tab
-
   const { address: eventAddress, event: eventName, returnValues } = event
   const { addressBook, vault } = settings
   const { accounts, entries, payouts } = state
@@ -20,7 +17,6 @@ export const handleEvent = async (state, event, settings) => {
     // Vault event
     nextState = await vaultLoadBalance(nextState, event, settings)
   } else {
-    
     switch (eventName) {
     case 'FundAccount':
       nextAccounts = await onFundedAccount(accounts, returnValues)
@@ -41,10 +37,16 @@ export const handleEvent = async (state, event, settings) => {
       nextState.payouts = nextBoth.payouts
       break
     case 'EntryAdded':
-      nextState.entries = await onEntryAdded({ entries, addressBook }, returnValues)
+      nextState.entries = await onEntryAdded(
+        { entries, addressBook },
+        returnValues
+      )
       break
     case 'EntryRemoved':
-      nextState.entries = await onEntryRemoved({ entries, addressBook }, returnValues)
+      nextState.entries = await onEntryRemoved(
+        { entries, addressBook },
+        returnValues
+      )
       break
     default:
       break

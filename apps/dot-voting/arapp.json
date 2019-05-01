@@ -1,18 +1,13 @@
 {
   "roles": [
     {
-      "name": "Create new votes",
+      "name": "Create new dot votes",
       "id": "CREATE_VOTES_ROLE",
       "params": []
     },
     {
-      "name": "Add candidates role",
+      "name": "Add options to an open dot vote",
       "id": "ADD_CANDIDATES_ROLE",
-      "params": []
-    },
-    {
-      "name": "Modify candidate support role",
-      "id": "MODIFY_PARTICIPATION_ROLE",
       "params": []
     }
   ],
@@ -22,14 +17,14 @@
       "appName": "dot-voting.aragonpm.eth",
       "network": "rpc"
     },
-    "openrinkeby": {
+    "rinkeby": {
       "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
-      "appName": "dot-voting.open.aragonpm.eth",
+      "appName": "tps-dot-voting.open.aragonpm.eth",
       "network": "rinkeby"
     },
     "staging": {
       "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
-      "appName": "dot-voting.open.aragonpm.eth",
+      "appName": "dot-voting-staging.open.aragonpm.eth",
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
       "network": "rinkeby"
     }

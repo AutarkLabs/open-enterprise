@@ -6,9 +6,9 @@
       "appName": "planning-kit.aragonpm.eth",
       "network": "rpc"
     },
-    "openrinkeby": {
+    "rinkeby": {
       "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
-      "appName": "planning-kit.open.aragonpm.eth",
+      "appName": "tps-planning-kit.open.aragonpm.eth",
       "network": "rinkeby"
     },
     "staging": {
