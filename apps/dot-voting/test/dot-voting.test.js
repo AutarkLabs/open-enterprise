@@ -16,13 +16,13 @@ const timeTravel = require('@tps/test-helpers/timeTravel')(web3)
 
 const pct16 = x =>
   new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))
-const createdVoteId = receipt =>
+const getCreatedVoteId = receipt =>
   receipt.logs.filter(x => x.event === 'StartVote')[0].args.voteId
 
 const getCastedVoteId = receipt =>
   receipt.logs.filter(x => x.event === 'CastVote')[0].args.voteId
 
-const getVoteId = voteId =>
+const parseVoteIdToNumber = voteId =>
   new web3.BigNumber(voteId).toNumber()
 
 const ANY_ADDR = '0xffffffffffffffffffffffffffffffffffffffff'
@@ -48,9 +48,6 @@ contract('DotVoting App', accounts => {
       aclBase.address,
       regFact.address
     )
-    //})
-
-    //beforeEach(async () => {
     const r = await daoFact.newDAO(root)
     const dao = Kernel.at(
       r.logs.filter(l => l.event == 'DeployDAO')[0].args.dao
@@ -119,13 +116,6 @@ contract('DotVoting App', accounts => {
       ANY_ADDR,
       app.address,
       await app.ADD_CANDIDATES_ROLE(),
-      root,
-      { from: root }
-    )
-    await acl.createPermission(
-      ANY_ADDR,
-      app.address,
-      await app.MODIFY_PARTICIPATION_ROLE(),
       root,
       { from: root }
     )
@@ -246,10 +236,10 @@ contract('DotVoting App', accounts => {
         )
       }
       const script = encodeCallScript([action])
-      const voteId = createdVoteId(
+      const voteId = getCreatedVoteId(
         await app.newVote(script, '', { from: holder50 })
       )
-      assert.equal(getVoteId(voteId), 1, 'A vote should be created with empty script')
+      assert.equal(parseVoteIdToNumber(voteId), 1, 'A vote should be created with empty script')
     })
     it('tokenholders can cast votes', async () => {
       let action = {
@@ -267,16 +257,16 @@ contract('DotVoting App', accounts => {
         )
       }
       const script = encodeCallScript([action])
-      const voteId = createdVoteId(
+      const voteId = getCreatedVoteId(
         await app.newVote(script, '', { from: holder50 })
       )
-      assert.equal(getVoteId(voteId), 2, 'A vote should be created with empty script')
+      assert.equal(parseVoteIdToNumber(voteId), 2, 'A vote should be created with empty script')
       let vote = [ 10, 15, 25 ]
       let voter = holder50
       const castedVoteId = getCastedVoteId(
         await app.vote(voteId, vote, { from: voter })
       )
-      assert.equal(getVoteId(castedVoteId), 2, 'A vote should have been casted to vote Id #2')
+      assert.equal(parseVoteIdToNumber(castedVoteId), 2, 'A vote should have been casted to vote Id #2')
     })
     it('execution scripts can execute actions', async () => {
       let action = {
@@ -294,7 +284,7 @@ contract('DotVoting App', accounts => {
         )
       }
       const script = encodeCallScript([action])
-      const voteId = createdVoteId(
+      const voteId = getCreatedVoteId(
         await app.newVote(script, '', { from: holder50 })
       )
       let vote = [ 10, 15, 25 ]
@@ -352,10 +342,10 @@ contract('DotVoting App', accounts => {
 
     it('execution script can be empty', async () => {
       let callScript = encodeCallScript([])
-      const voteId = createdVoteId(
+      const voteId = getCreatedVoteId(
         await app.newVote(callScript, '', { from: holder50 })
       )
-      assert.equal(getVoteId(voteId), 4, 'A vote should be created with empty script')
+      assert.equal(parseVoteIdToNumber(voteId), 4, 'A vote should be created with empty script')
     })
 
     it('execution throws if any action on script throws', async () => {
@@ -364,7 +354,7 @@ contract('DotVoting App', accounts => {
         calldata: executionTarget.contract.setSignal.getData([], [], [], '', '', [],[],0,true)
       }
       const script = encodeCallScript([action])
-      const voteId = createdVoteId(
+      const voteId = getCreatedVoteId(
         await app.newVote(script, '', { from: holder50 })
       )
       let vote = [ 10, 15, 25 ]
@@ -394,10 +384,10 @@ contract('DotVoting App', accounts => {
         )
       }
       const script = encodeCallScript([action])
-      const voteId = createdVoteId(
+      const voteId = getCreatedVoteId(
         await app.forward(script, { from: holder50 })
       )
-      assert.equal(getVoteId(voteId), 6, 'DotVoting should have been created')
+      assert.equal(parseVoteIdToNumber(voteId), 6, 'DotVoting should have been created')
     })
 
     it('unauthorized entities cannot forward to contract', () => {
@@ -421,7 +411,7 @@ contract('DotVoting App', accounts => {
       })
     })
 
-    it('rejects unequal script length and actual script length', async () => {
+    it('Rejects if supplied script length and actual script length are not equal', async () => {
       let action = {
         to: executionTarget.address,
         calldata: executionTarget.contract.setSignal.getData(
@@ -491,11 +481,11 @@ contract('DotVoting App', accounts => {
 
         script = encodeCallScript([action])
         let newvote = await app.newVote(script, 'metadata', { from: holder50 })
-        voteId = createdVoteId(newvote)
+        voteId = getCreatedVoteId(newvote)
       })
 
       it('has correct vote ID', async () => {
-        assert.equal(getVoteId(voteId), 7, 'DotVote should have been created')
+        assert.equal(parseVoteIdToNumber(voteId), 7, 'DotVote should have been created')
       })
 
       it('stored the candidate addresses correctly', async () => {
@@ -618,6 +608,8 @@ contract('DotVoting App', accounts => {
       })
 
       it('holder can modify vote without getting double-counted', async () => {
+        // holder19's vote from two tests prior
+        let voteOne = [ 1, 2, 3 ]
         let voteTwo = [ 6, 5, 4 ]
 
         let voter = holder31
@@ -656,17 +648,17 @@ contract('DotVoting App', accounts => {
 
         assert.equal(
           appleInfo[1].toNumber(),
-          7,
+          voteOne[0] + voteTwo[0],
           'The correct amount of support should be logged for Apple'
         )
         assert.equal(
           orangeInfo[1].toNumber(),
-          7,
+          voteOne[1] + voteTwo[1],
           'The correct amount of support should be logged for Orange'
         )
         assert.equal(
           bananaInfo[1].toNumber(),
-          7,
+          voteOne[2] + voteTwo[2],
           'The correct amount of support should be logged for Banana'
         )
       })
@@ -700,6 +692,8 @@ contract('DotVoting App', accounts => {
           'vote and voter state should match after casting ballot'
         )
         await token.transfer(voter, 31, { from: nonHolder })
+        const nonHolderBalance = new web3.BigNumber(await token.balanceOf(nonHolder)).toNumber()
+        assert.strictEqual(nonHolderBalance, 0, 'nonHolder should not possess any tokens')
       })
 
       it('cannot execute during open vote', async () => {
@@ -721,7 +715,7 @@ contract('DotVoting App', accounts => {
       })
       it('can execute if vote has sufficient candidate support', async () => {
         let newvote = await app.newVote(script, 'metadata', { from: holder50 })
-        voteId = createdVoteId(newvote)
+        voteId = getCreatedVoteId(newvote)
         let voteOne = [ 4, 15, 0 ]
         let voteTwo = [ 20, 10, 1 ]
         let voteThree = [ 30, 15, 5 ]
@@ -735,7 +729,7 @@ contract('DotVoting App', accounts => {
       })
       it('cannot execute if vote has 0 candidate support', async () => {
         let newvote = await app.newVote(script, 'metadata', { from: holder50 })
-        voteId = createdVoteId(newvote)
+        voteId = getCreatedVoteId(newvote)
         let voteOne = [ 0, 0, 0 ]
         let voteTwo = [ 0, 0, 0 ]
         let voteThree = [ 0, 0, 0 ]
@@ -748,7 +742,7 @@ contract('DotVoting App', accounts => {
       })
       it('cannot execute if vote has insufficient candidate support', async () => {
         let newvote = await app.newVote(script, 'metadata', { from: holder50 })
-        voteId = createdVoteId(newvote)
+        voteId = getCreatedVoteId(newvote)
         let voteOne = [ 2, 17, 0 ]
         let voteTwo = [ 18, 12, 1 ]
         let voteThree = [ 30, 19, 1 ]
@@ -761,7 +755,7 @@ contract('DotVoting App', accounts => {
       })
       it('can execute vote if minimum participation (quorum) has been met', async () => {
         let newvote = await app.newVote(script, 'metadata', { from: holder50 })
-        voteId = createdVoteId(newvote)
+        voteId = getCreatedVoteId(newvote)
         let voteOne = [ 10, 0, 0 ]
         let voteTwo = [ 0, 20, 0 ]
         let voteThree = [ 0, 0, 40 ]
@@ -774,7 +768,7 @@ contract('DotVoting App', accounts => {
       })
       it('cannot execute vote if minimum participation (quorum) not met', async () => {
         let newvote = await app.newVote(script, 'metadata', { from: holder50 })
-        voteId = createdVoteId(newvote)
+        voteId = getCreatedVoteId(newvote)
         let voteOne = [ 10, 0, 0 ]
         let voteTwo = [ 0, 9, 0 ]
         let voteThree = [ 0, 0, 10 ]
@@ -787,13 +781,15 @@ contract('DotVoting App', accounts => {
       })
       it('holder can add candidates', async () => {
         let newvote = await app.newVote(script, 'metadata', { from: holder50 })
-        voteId = createdVoteId(newvote)
+        voteId = getCreatedVoteId(newvote)
         mango = accounts[5]
+
+        const fourCandidates = [ ...candidates, mango ]
+
         await app.addCandidate(voteId, '0xbeefdead', mango, 0x1, 0x1)
-        candidates.push(mango)
         candidateState = await app.getCandidate(
           voteId,
-          candidates.indexOf(mango)
+          fourCandidates.indexOf(mango)
         )
         assert.equal(
           candidateState[0],
@@ -805,7 +801,6 @@ contract('DotVoting App', accounts => {
           0,
           'Support should start at 0'
         )
-        candidates.pop()
       })
       it('holder cannot add duplicate candidate', async () => {
         mango = accounts[5]
