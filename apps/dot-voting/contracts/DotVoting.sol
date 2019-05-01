@@ -60,8 +60,6 @@ contract DotVoting is IForwarder, AragonApp {
 
     bytes32 constant public CREATE_VOTES_ROLE = keccak256("CREATE_VOTES_ROLE");
     bytes32 constant public ADD_CANDIDATES_ROLE = keccak256("ADD_CANDIDATES_ROLE");
-    // TODO: Unused ROLE
-    bytes32 constant public MODIFY_PARTICIPATION_ROLE = keccak256("MODIFY_PARTICIPATION_ROLE");
 
     uint256 constant public CANDIDATE_ADDR_PARAM_LOC = 1;
     uint256 constant public CANDIDATE_SUPPORT_PARAM_LOC = 2;

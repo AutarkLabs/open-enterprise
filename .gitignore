@@ -81,3 +81,4 @@ codealike.json
 # Cypress
 **/cypress/screenshots/
 **/cypress/videos/
+flattened_contracts
