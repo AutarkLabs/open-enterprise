@@ -103,7 +103,7 @@ class NewReward extends React.Component {
   startBeforeTokenCreation = () => (getTokenProp('startBlock',this.props,this.state)) > this.state.startBlock
   disbursementOverflow = () => (this.state.quarterEndDates ? this.state.quarterEndDates.length > 41 : false)
   lowVaultBalance = () => this.props.balances[this.state.amountCurrency].amount / Math.pow(10,this.props.balances[this.state.amountCurrency].decimals) < this.state.amount
-  dividendPeriodTooShort = () => (this.state.rewardType > 0 && this.state.occurances === 0)
+  dividendPeriodTooShort = () => (this.state.rewardType > 0 && this.state.occurances <= 0)
   errorPrompt = () => (this.showSummary() && (this.startBeforeTokenCreation() || this.disbursementOverflow() || this.lowVaultBalance() || this.dividendPeriodTooShort()))
   customTokenPromptText = ({ address }, networkType) => {
     if (networkType === 'main') {
@@ -212,8 +212,10 @@ class NewReward extends React.Component {
       dateStart,
       dateEnd,
       occurances,
-      quarterEndDates: [...Array(occurances).keys()]
-        .map(occurance => dateStart.valueOf() + ((occurance + 1) * MILLISECONDS_IN_A_QUARTER)),
+      quarterEndDates: occurances > 0 ? [...Array(occurances).keys()]
+        .map(occurance => dateStart.valueOf() + ((occurance + 1) * MILLISECONDS_IN_A_QUARTER))
+        : null
+      ,
     })
   }
 
@@ -542,9 +544,6 @@ class NewReward extends React.Component {
   render() {
 
     const showCustomToken = this.state.referenceAsset === 1
-
-    console.log('custom Token: ',this.state.customToken)
-    console.log('Props:', this.props)
 
     return (
       <Form
