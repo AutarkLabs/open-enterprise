@@ -85,12 +85,12 @@ contract Projects is IsContract, AragonApp {
     //holds all work submissions
     WorkSubmission[] workSubmissions;
     // Auth roles
-    bytes32 public constant ADD_BOUNTY_ROLE =  keccak256("ADD_BOUNTY_ROLE");
+    bytes32 public constant FUND_ISSUES_ROLE =  keccak256("FUND_ISSUES_ROLE");
     bytes32 public constant ADD_REPO_ROLE = keccak256("ADD_REPO_ROLE");
     bytes32 public constant CHANGE_SETTINGS_ROLE =  keccak256("CHANGE_SETTINGS_ROLE");
     bytes32 public constant CURATE_ISSUES_ROLE = keccak256("CURATE_ISSUES_ROLE");
     bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
-    bytes32 public constant TASK_ASSIGNMENT_ROLE = keccak256("TASK_ASSIGNMENT_ROLE");
+    bytes32 public constant REVIEW_APPLICATION_ROLE = keccak256("REVIEW_APPLICATION_ROLE");
     bytes32 public constant WORK_REVIEW_ROLE = keccak256("WORK_REVIEW_ROLE");
     string private constant ERROR_VAULT_NOT_CONTRACT = "PROJECTS_VAULT_NOT_CONTRACT";
     string private constant ERROR_STANDARD_BOUNTIES_NOT_CONTRACT = "STANDARD_BOUNTIES_NOT_CONTRACT";
@@ -113,7 +113,6 @@ contract Projects is IsContract, AragonApp {
     }
 
     struct GithubRepo {
-        bytes20 owner; // repo owner's id on github
         mapping(uint256 => GithubIssue) issues;
         uint index;
     }
@@ -150,13 +149,13 @@ contract Projects is IsContract, AragonApp {
     }
 
     // Fired when a repository is added to the registry.
-    event RepoAdded(bytes32 indexed repoId, bytes20 owner, uint index);
+    event RepoAdded(bytes32 indexed repoId, uint index);
     // Fired when a repository is removed from the registry.
     event RepoRemoved(bytes32 indexed repoId, uint index);
     // Fired when a repo is updated in the registry
-    event RepoUpdated(bytes32 indexed repoId, bytes20 newOwner, uint newIndex);
+    event RepoUpdated(bytes32 indexed repoId, uint newIndex);
     // Fired when a bounty is added to a repo
-    event BountyAdded(bytes20 owner, bytes32 repoId, uint256 issueNumber, uint256 bountySize);
+    event BountyAdded(bytes32 repoId, uint256 issueNumber, uint256 bountySize);
     // Fired when an issue is curated
     event IssueCurated(bytes32 repoId);
     // Fired when settings are changed
@@ -256,12 +255,11 @@ contract Projects is IsContract, AragonApp {
     /**
      * @notice Get an entry from the registry.
      * @param _repoId The id of the Github repo in the projects registry
-     * @return owner repo's owner address
      * @return index the Github repo registry index
      */
-    function getRepo(bytes32 _repoId) external view returns (bytes20 owner, uint index) {
+    function getRepo(bytes32 _repoId) external view returns (uint index) {
         require(isRepoAdded(_repoId), "REPO_NOT_ADDED");
-        return(repos[_repoId].owner, repos[_repoId].index);
+        return(repos[_repoId].index);
     }
 
     /**
@@ -295,19 +293,16 @@ contract Projects is IsContract, AragonApp {
 ///////////////////////
     /**
      * @notice Add repository to the Projects app
-     * @param _owner Github id of the entity that owns the repo to add
      * @param _repoId Github id of the repo to add
      * @return index for the added repo at the registry
      */
     function addRepo(
-        bytes32 _repoId,
-        bytes20 _owner
+        bytes32 _repoId
     ) external auth(ADD_REPO_ROLE) returns (uint index)
     {
         require(!isRepoAdded(_repoId), "REPO_ALREADY_ADDED");
-        repos[_repoId].owner = _owner;
         repos[_repoId].index = repoIndex.push(_repoId) - 1;
-        emit RepoAdded(_repoId, _owner, repos[_repoId].index);
+        emit RepoAdded(_repoId, repos[_repoId].index);
         return repoIndex.length - 1;
     }
 
@@ -367,13 +362,13 @@ contract Projects is IsContract, AragonApp {
      * @param _requestor address of user that will be assigned the issue
      * @param _updatedApplication IPFS hash of the application containing optional feedback
      */
-    function approveAssignment(
+    function reviewApplication(
         bytes32 _repoId,
         uint256 _issueNumber,
         address _requestor,
         string _updatedApplication,
         bool _approved
-    ) external auth(TASK_ASSIGNMENT_ROLE)
+    ) external auth(REVIEW_APPLICATION_ROLE)
     {
         GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
         require(issue.assignmentRequests[_requestor].exists == true, "User has not applied for this issue");
@@ -478,7 +473,7 @@ contract Projects is IsContract, AragonApp {
         address[] _tokenContracts,
         string _ipfsAddresses,
         string _description
-    ) public payable auth(ADD_BOUNTY_ROLE)
+    ) public payable auth(FUND_ISSUES_ROLE)
     {
         // ensure the transvalue passed equals transaction value
         //checkTransValueEqualsMessageValue(msg.value, _bountySizes,_tokenBounties);
@@ -696,7 +691,6 @@ contract Projects is IsContract, AragonApp {
             emptySubmissionIndexArray
         );
         emit BountyAdded(
-            repos[_repoId].owner,
             _repoId,
             _issueNumber,
             _bountySize

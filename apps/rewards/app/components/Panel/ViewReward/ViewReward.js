@@ -17,6 +17,7 @@ import { FieldTitle } from '../../Form'
 import { displayCurrency, getSymbol } from '../../../utils/helpers'
 import { provideNetwork } from '../../../../../../shared/ui'
 import { e2eTag } from '../../../../../../shared/ui/utils'
+import { blocksToDays } from '../../../../../../shared/ui/utils'
 
 class ViewReward extends React.Component {
     static propTypes = {
@@ -135,35 +136,58 @@ class ViewReward extends React.Component {
           </Part>
           <Info style={{ marginBottom: '10px' }}>
             <TokenIcon />
-            <Summary>
-              <p>
-                {'A total of '}
-                <SummaryVar>{displayCurrency(amount)} {getSymbol(tokens,rewardToken)}</SummaryVar>
-                {' will be distributed as a reward to addresses that earned '}
-                <SummaryVar>{getSymbol(tokens,referenceToken)}</SummaryVar>
-                {' from '}
-                <SummaryVar>
-                  {format(startDate,'dd-MMM-yyyy')}
-                </SummaryVar>
-                {' to '}
-                <SummaryVar>
-                  {format(endDate,'dd-MMM-yyyy')}
-                </SummaryVar>
-                {'.'}
-              </p>
-              <p>
-                {'The reward amount will be in proportion to the '}
-                <SummaryVar>{getSymbol(tokens,referenceToken)}</SummaryVar>
-                {' earned by each account in the specified period.'}
-              </p>
-              <p>
-                {'The reward will be dispersed '}
-                <SummaryVar>
-                  {delay === '0'?'immediately': (delay + ' day' + (delay > 1 ? 's' : ''))}
-                </SummaryVar>
-                {' after the end of the period.'}
-              </p>
-            </Summary>
+            {isMerit ?
+              <Summary>
+                <p>
+                  {'A total of '}
+                  <SummaryVar>{displayCurrency(amount)} {getSymbol(tokens,rewardToken)}</SummaryVar>
+                  {' will be distributed as a reward to addresses that earned '}
+                  <SummaryVar>{getSymbol(tokens,referenceToken)}</SummaryVar>
+                  {' from '}
+                  <SummaryVar>
+                    {format(startDate,'dd-MMM-yyyy')}
+                  </SummaryVar>
+                  {' to '}
+                  <SummaryVar>
+                    {format(endDate,'dd-MMM-yyyy')}
+                  </SummaryVar>
+                  {'.'}
+                </p>
+                <p>
+                  {'The reward amount will be in proportion to the '}
+                  <SummaryVar>{getSymbol(tokens,referenceToken)}</SummaryVar>
+                  {' earned by each account in the specified period.'}
+                </p>
+                <p>
+                  {'The reward will be dispersed '}
+                  <SummaryVar>
+                    {blocksToDays(delay) === '0'?'immediately': (blocksToDays(delay) + ' day' + (blocksToDays(delay) > 1 ? 's' : ''))}
+                  </SummaryVar>
+                  {' after the end of the period.'}
+                </p>
+              </Summary>
+              :
+              <Summary>
+                <p>
+                  {'A total of '}
+                  <SummaryVar>{displayCurrency(amount)} {getSymbol(tokens,rewardToken)}</SummaryVar>
+                  {' will be distributed as a dividend to addresses that hold '}
+                  <SummaryVar>{getSymbol(tokens,referenceToken)}</SummaryVar>
+                  {' on '}
+                  <SummaryVar>
+                    {format(endDate,'dd-MMM-yyyy')}
+                  </SummaryVar>
+                  {'.'}
+                </p>
+                <p>
+                  {'The reward will be dispersed '}
+                  <SummaryVar>
+                    {blocksToDays(delay) === '0'?'immediately': (blocksToDays(delay) + ' day' + (blocksToDays(delay) > 1 ? 's' : ''))}
+                  </SummaryVar>
+                  {' after the end of the period.'}
+                </p>
+              </Summary>
+            }
           </Info>
           <Button mode="strong" wide onClick={this.onClosePanel}>Close</Button>
         </div>

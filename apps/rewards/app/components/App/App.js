@@ -5,7 +5,14 @@ import { map } from 'rxjs/operators'
 import throttle from 'lodash.throttle'
 import { Overview, MyRewards } from '../Content'
 import PanelManager, { PANELS } from '../Panel'
-import { millisecondsToBlocks, MILLISECONDS_IN_A_MONTH, MILLISECONDS_IN_A_QUARTER, millisecondsToQuarters, WEEK } from '../../../../../shared/ui/utils'
+import {
+  millisecondsToBlocks,
+  MILLISECONDS_IN_A_MONTH,
+  MILLISECONDS_IN_A_QUARTER,
+  millisecondsToMonths,
+  millisecondsToQuarters,
+  WEEK
+} from '../../../../../shared/ui/utils'
 import BigNumber from 'bignumber.js'
 import { networkContextType, AppTitle, AppTitleButton } from '../../../../../shared/ui'
 
@@ -133,7 +140,7 @@ class App extends React.Component {
         reward.duration = millisecondsToBlocks(Date.now(), MILLISECONDS_IN_A_QUARTER + Date.now())
         break
       default: // Monthly
-        reward.occurances = 12
+        reward.occurances = millisecondsToMonths(reward.dateStart, reward.dateEnd)
         reward.duration = millisecondsToBlocks(Date.now(), MILLISECONDS_IN_A_MONTH + Date.now())
       }
       switch(reward.disbursementDelay) {

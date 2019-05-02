@@ -32,7 +32,7 @@ $ npm run dev:projects
 # Develop single app with backend and aragon wrapper:
 $ npm run start:dot
 
-# current app name aliases: {address, projects, payout, dot}
+# current app name aliases: {address, allocations, dot, projects, rewards}
 ```
 
 ### Extra tips
@@ -79,7 +79,7 @@ These are some initial concepts. We expect to refine them and gather community f
 
 #### Issue Curation using Dot Voting
 
-![ara_planning4](docs/screenshots/dot_vote_issue.jpg)
+![ara_planning4](docs/screenshots/Dot_vote_issue.jpg)
 
 ### Flow Diagram
 
@@ -90,7 +90,7 @@ Hypothetical flow diagram. The components should be "plug and play" to design a 
 
 ## Contact
 
-We can  be found in the [`autark.community` keybase channel](https://keybase.io/team/autark.community). If you have any questions or want to get involved in our development please drop in.
+We can be found in the [`autark.community` keybase channel](https://keybase.io/team/autark.community). If you have any questions or want to get involved in our development please drop in.
 
 ## Special Thanks
 
