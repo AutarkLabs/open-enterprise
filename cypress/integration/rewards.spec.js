@@ -295,6 +295,5 @@ context('Aragon', () => {
       .appContains('span[data-e2e-reward-status="pending"]', 'Pending...')
       .appContains('span[data-e2e-reward-badge-amount="0"]', '2.667')
     })
-
   })
 })

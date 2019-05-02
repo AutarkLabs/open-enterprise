@@ -8,9 +8,7 @@ import {
   TableRow,
   TableCell,
   Text,
-  Viewport,
   theme,
-  Badge,
 } from '@aragon/ui'
 import { displayCurrency, getSymbol } from '../../utils/helpers'
 import {

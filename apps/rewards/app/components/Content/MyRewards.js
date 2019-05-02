@@ -242,7 +242,6 @@ const MyRewards = ({ onClaimReward, rewards, newReward, openDetails, network, to
 
   const summarizedRewards = calculateMyRewardsSummary(myRewards, tokens, convertRates)
 
-
   return (
     <Main>
       <RewardsWrap>
