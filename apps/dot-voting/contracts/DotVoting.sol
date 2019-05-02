@@ -247,17 +247,6 @@ contract DotVoting is IForwarder, AragonApp {
         externalId2 = candidate.externalId2;
     }
 
-    /**
-    * @notice `getCandidateDescription` serves as a basic getter using the key
-    *         to return the struct data.
-    * @param _key The bytes32 key used when adding the candidate.
-    */
-    function getCandidateDescription(bytes32 _key) // solium-disable-line function-order
-    external view returns(address)
-    {
-        return(candidateAddresses[_key]);
-    }
-
 ///////////////////////
 // IForwarder functions
 ///////////////////////
@@ -630,7 +619,7 @@ contract DotVoting is IForwarder, AragonApp {
         uint256 numberOfCandidates,
         uint256 strLength,
         uint256 desLength
-    ) internal pure returns(bytes) 
+    ) internal pure returns(bytes)
     {
         uint256 secondDynamicElementLocation = 32 + offset + (numberOfCandidates * 32);
         uint256 thirdDynamicElementLocation = secondDynamicElementLocation + 32 + (numberOfCandidates * 32);
@@ -847,7 +836,8 @@ contract DotVoting is IForwarder, AragonApp {
         uint256 dest = _dest;
         uint256 len = _len;
 
-        require(_len < 32, "_len should be less than 32");
+        // this line is unnecessary since the _len passed in is hard-coded
+        //require(_len < 32, "_len should be less than 32");
         // Copy remaining bytes
         uint mask = 256 ** (32 - len) - 1;
         assembly { // solium-disable-line security/no-inline-assembly

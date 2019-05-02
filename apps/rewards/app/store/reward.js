@@ -2,13 +2,17 @@ import { first, map } from 'rxjs/operators' // Make sure observables have .first
 import BigNumber from 'bignumber.js'
 import { app } from './'
 import { blocksToMilliseconds } from '../../../../shared/ui/utils'
+import { updateBalancesAndRefTokens } from './token'
 
-export async function onRewardAdded({ rewards = [] }, { rewardId }) {
+export async function onRewardAdded({ rewards = [], refTokens = [], balances = [] }, { rewardId }, settings) {
   if (!rewards[rewardId]) {
     rewards[rewardId] = await getRewardById(rewardId)
+    const { referenceToken } = rewards[rewardId]
+    const response = await updateBalancesAndRefTokens({ balances, refTokens }, referenceToken, settings)
+    return { rewards , refTokens: response.refTokens }
   }
 
-  return { rewards }
+  return { rewards, refTokens }
 }
 
 export async function onRewardClaimed({ rewards = [], claims = {} }, { rewardId }) {
