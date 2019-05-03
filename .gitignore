@@ -82,3 +82,5 @@ codealike.json
 **/cypress/screenshots/
 **/cypress/videos/
 flattened_contracts
+
+package-lock.json
