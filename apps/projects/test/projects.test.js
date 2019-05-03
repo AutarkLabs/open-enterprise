@@ -5,6 +5,7 @@ const {
   EVMScriptRegistryFactory,
   Kernel,
   StandardBounties,
+  MiniMeToken,
 } = require('@tps/test-helpers/artifacts')
 
 const Vault = artifacts.require('Vault')
@@ -22,7 +23,9 @@ const fulfilledBounty = receipt =>
 contract('Projects App', accounts => {
   let daoFact,
     bounties,
-    app = {}
+    app = {},
+    vaultBase = {},
+    vault = {}
 
   const root = accounts[0]
   const owner1 = accounts[0] // 0xb421
@@ -134,8 +137,10 @@ contract('Projects App', accounts => {
 
     // Deploy test Bounties contract
     bounties = await StandardBounties.new(web3.toBigNumber(owner1))
-    vault = await Vault.new()
-
+    vaultBase = await Vault.new()
+    const vaultReceipt = await dao.newAppInstance('0x5678', vaultBase.address, '0x', false, { from: root })
+    vault = Vault.at(vaultReceipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
+    await vault.initialize()
     await acl.createPermission(
       app.address,
       vault.address,
@@ -870,6 +875,63 @@ contract('Projects App', accounts => {
           bounty3 = await bounties.getBounty(bountyId3)
           assert.strictEqual(bounty3[5].toNumber(), 0)
         })
+
+        it('can issue bulk token bounties', async () => {
+          const issueNumber = 1
+          let issue3Receipt
+          let token = {}
+
+          token = await MiniMeToken.new(
+            ZERO_ADDR,
+            ZERO_ADDR,
+            0,
+            'n',
+            0,
+            'n',
+            true
+          ) // empty parameters minime
+          await token.generateTokens(vault.address, 6)
+          issue3Receipt = addedBounties(
+            await app.addBounties(
+              Array(3).fill(repoId),
+              [ 1, 2, 3 ],
+              [ 1, 2, 3 ],
+              [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
+              [ true, true, true ],
+              [ token.address, token.address, token.address ],
+              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+              'something',
+              { from: bountyAdder, }
+            )
+          )
+
+          const issue3Bounty = issue3Receipt.args.bountySize.toNumber()
+          assert.strictEqual(issue3Bounty, 3, 'bounty not added')
+          const IssueData1 = await app.getIssue(repoId, 1)
+          const bountyId1 = IssueData1[1].toNumber()
+          const bountyData1 = await bounties.getBountyData(bountyId1)
+          assert.strictEqual(
+            bountyData1,
+            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+            'IPFS hash stored correctly'
+          )
+          const IssueData2 = await app.getIssue(repoId, 2)
+          const bountyId2 = IssueData2[1].toNumber()
+          const bountyData2 = await bounties.getBountyData(bountyId2)
+          assert.strictEqual(
+            bountyData2,
+            'QmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWu',
+            'IPFS hash stored correctly'
+          )
+          const IssueData3 = await app.getIssue(repoId, 3)
+          const bountyId3 = IssueData3[1].toNumber()
+          const bountyData3 = await bounties.getBountyData(bountyId3)
+          assert.strictEqual(
+            bountyData3,
+            'QmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+            'IPFS hash stored correctly'
+          )
+        })
       })
     })
 
@@ -976,6 +1038,24 @@ contract('Projects App', accounts => {
     })
 
     context('settings management', () => {
+      it('cannot accept experience arrays of differenct length', async () => {
+        return assertRevert( async () => {
+          await app.changeBountySettings(
+            [ 100, 300, 500, 1000 ], // xp multipliers
+            [
+            // Experience Levels
+              web3.fromAscii('Beginner'),
+              web3.fromAscii('Intermediate'),
+              web3.fromAscii('Advanced'),
+            ],
+            1, // baseRate
+            336, // bountyDeadline
+            ZERO_ADDR, // bountyCurrency
+            bounties.address // bountyAllocator
+          //0x0000000000000000000000000000000000000000  //bountyArbiter
+          )
+        })
+      })
       it('can change Bounty Settings', async () => {
         await app.changeBountySettings(
           [ 100, 300, 500, 1000 ], // xp multipliers
