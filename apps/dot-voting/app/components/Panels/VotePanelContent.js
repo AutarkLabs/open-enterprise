@@ -183,9 +183,10 @@ class VotePanelContent extends React.Component {
       options,
       type,
       candidateSupport,
-      tokenSymbol
+      tokenSymbol,
+      balance: voteBalance,
     } = vote.data
-    const displayBalance = BigNumber(vote.data.balance)
+    const displayBalance = BigNumber(voteBalance)
       .div(BigNumber(10 ** decimals))
       .dp(3)
       .toString()
@@ -248,8 +249,8 @@ class VotePanelContent extends React.Component {
                   >
                     {format(endDate, 'MMM dd yyyy HH:mm')}
                   </PastDate>
-                    
-                </React.Fragment>  
+
+                </React.Fragment>
               )}
             </div>
           </div>
@@ -266,7 +267,7 @@ class VotePanelContent extends React.Component {
         )}
         <SidePanelSplit>
           <div>
-            {vote.data.balance !== undefined ? (
+            {voteBalance !== undefined ? (
               <React.Fragment>
                 <h2>
                   <Label>Allocation Amount</Label>
@@ -370,61 +371,73 @@ class VotePanelContent extends React.Component {
           }
           {(showResults || !open || (userBalance === '0')) && voteWeights &&
             options.map((option, index) => (
-              <ProgressBarThick
-                key={index}
-                progress={safeDiv(parseInt(option.value, 10), totalSupport)}
-                // TODO: Use IdentityBadge for addresses labels once it is integrated on dev branch
-                // (since we don't have a block explorer network context to plug-in yet)
-                // Then truncate the address
-                // TODO: check use case with issue curation
-                label={
-                  <span
-                    style={{ display: 'flex', justifyContent: 'flex-start' }}
-                  >
-                    {web3.isAddress(option.label) ? (
-                      <IdentityBadge
-                        networkType={network.type}
-                        entity={option.label}
-                        shorten={true}
-                      />
-                    ) : (
-                      <span
-                        style={{
-                          width: 'auto',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {option.label}
-                      </span>
-                    )}
-                    {Boolean(voteWeights.length) && (
-                      <Badge.Identity
-                        onClick={() =>
-                          this.setState({
-                            voteWeightsToggled: !voteWeightsToggled,
-                          })
-                        }
-                        style={{
-                          cursor: 'pointer',
-                          marginLeft: '8px',
-                          padding: '3px 8px',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                        }}
-                      >
-                        YOU:
-                        <span style={{ paddingLeft: '5px' }}>
-                          {voteWeightsToggled
-                            ? `${voteWeights[index]}%`
-                            : `${voteAmounts[index]}`}
+              <React.Fragment>
+                <ProgressBarThick
+                  key={index}
+                  progress={safeDiv(parseInt(option.value, 10), totalSupport)}
+                  hasBalance={voteBalance !== undefined}
+                  // TODO: Use IdentityBadge for addresses labels once it is integrated on dev branch
+                  // (since we don't have a block explorer network context to plug-in yet)
+                  // Then truncate the address
+                  // TODO: check use case with issue curation
+                  label={
+                    <span
+                      style={{ display: 'flex', justifyContent: 'flex-start' }}
+                    >
+                      {web3.isAddress(option.label) ? (
+                        <IdentityBadge
+                          networkType={network.type}
+                          entity={option.label}
+                          shorten={true}
+                        />
+                      ) : (
+                        <span
+                          style={{
+                            width: 'auto',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {option.label}
                         </span>
-                      </Badge.Identity>
-                    )}
-                  </span>
+                      )}
+                      {Boolean(voteWeights.length) && (
+                        <Badge.Identity
+                          onClick={() =>
+                            this.setState({
+                              voteWeightsToggled: !voteWeightsToggled,
+                            })
+                          }
+                          style={{
+                            cursor: 'pointer',
+                            marginLeft: '8px',
+                            padding: '3px 8px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                          }}
+                        >
+                        YOU:
+                          <span style={{ paddingLeft: '5px' }}>
+                            {voteWeightsToggled
+                              ? `${voteWeights[index]}%`
+                              : `${voteAmounts[index]}`}
+                          </span>
+                        </Badge.Identity>
+                      )}
+                    </span>
+                  }
+                />
+                {voteBalance !== undefined &&
+                  <BalanceSplit>
+                    {
+                      BigNumber(
+                        safeDiv(parseInt(option.value, 10), totalSupport) * displayBalance
+                      ).dp(2).toString() + ' ' + tokenSymbol
+                    }
+                  </BalanceSplit>
                 }
-              />
+              </React.Fragment>
             ))}
           {open && (userBalance === '0') &&
         <div>
@@ -518,6 +531,12 @@ const Question = styled.p`
   overflow: hidden;
   word-break: break-all;
   hyphens: auto;
+`
+
+const BalanceSplit = styled.div`
+  display: inline-block;
+  width: 25%;
+  text-align: right;
 `
 
 const Creator = styled.div`
