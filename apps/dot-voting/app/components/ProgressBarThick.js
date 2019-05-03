@@ -4,10 +4,10 @@ import styled from 'styled-components'
 import { Motion, spring } from 'react-motion'
 import { Text, theme } from '@aragon/ui'
 
-const ProgressBar = ({ progress, label }) => (
+const ProgressBar = ({ progress, label, hasBalance = false }) => (
   <Motion defaultStyle={{ progress: 0 }} style={{ progress: spring(progress) }}>
     {({ progress }) => (
-      <Main>
+      <Main hasBalance={hasBalance} >
         <Label>{label}</Label>
         <Base>
           <Progress
@@ -43,7 +43,8 @@ const Label = styled.p`
 `
 
 const Main = styled.div`
-  width: 100%;
+  display: inline-block;
+  width: ${props => props.hasBalance ? '75%' : '100%'};
   align-items: center;
 `
 const Base = styled.div`
