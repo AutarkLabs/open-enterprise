@@ -74,18 +74,18 @@ class FilterDropDown extends React.Component {
                 </animated.div>
               </FilterButton>
 
-                <Popup
-                  onClick={this.handleClose}
-                  style={{
-                    display: opened ? 'block' : 'none',
-                    opacity: openProgress,
-                    boxShadow: openProgress.interpolate(
-                      t => `0 4px 4px rgba(0, 0, 0, ${t * 0.03})`
-                    ),
-                  }}
-                >
-                  {opened && children}
-                </Popup>
+              <Popup
+                onClick={this.handleClose}
+                style={{
+                  display: opened ? 'block' : 'none',
+                  opacity: openProgress,
+                  boxShadow: openProgress.interpolate(
+                    t => `0 4px 4px rgba(0, 0, 0, ${t * 0.03})`
+                  ),
+                }}
+              >
+                {opened && children}
+              </Popup>
             </Main>
           )}
         </Spring>
