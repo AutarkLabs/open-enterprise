@@ -30,6 +30,7 @@ import {
   REQUESTED_GITHUB_TOKEN_FAILURE,
 } from '../../store/eventTypes'
 import { CURRENT_USER } from '../../utils/gql-queries'
+import { toHex } from '../../utils/web3-utils'
 
 const ASSETS_URL = './aragon-ui-assets/'
 
@@ -249,11 +250,11 @@ class App extends React.PureComponent {
 
   createProject = ({ project }) => {
     this.closePanel()
-    this.props.app.addRepo(web3.toHex(project))
+    this.props.app.addRepo(toHex(project))
   }
 
   removeProject = project => {
-    this.props.app.removeRepo(web3.toHex(project))
+    this.props.app.removeRepo(toHex(project))
     // TODO: Toast feedback here maybe
   }
 
@@ -347,7 +348,7 @@ class App extends React.PureComponent {
 
     const ipfsString = await computeIpfsString(issuesArray)
 
-    const idArray = issuesArray.map(issue => web3.toHex(issue.repoId))
+    const idArray = issuesArray.map(issue => toHex(issue.repoId))
     const numberArray = issuesArray.map(issue => issue.number)
     const bountyArray = issuesArray.map(issue =>
       BigNumber(issue.size)
@@ -384,7 +385,7 @@ class App extends React.PureComponent {
   onSubmitWork = async (state, issue) => {
     this.closePanel()
     const hash = await ipfsAdd(state)
-    this.props.app.submitWork(web3.toHex(issue.repoId), issue.number, hash)
+    this.props.app.submitWork(toHex(issue.repoId), issue.number, hash)
   }
 
   requestAssignment = issue => {
@@ -402,7 +403,7 @@ class App extends React.PureComponent {
     this.closePanel()
     const hash = await ipfsAdd(state)
     this.props.app.requestAssignment(
-      web3.toHex(issue.repoId),
+      toHex(issue.repoId),
       issue.number,
       hash
     )
@@ -429,7 +430,7 @@ class App extends React.PureComponent {
     const requestIPFSHash = await ipfsAdd(ipfsData)
 
     this.props.app.reviewApplication(
-      web3.toHex(issue.repoId),
+      toHex(issue.repoId),
       issue.number,
       issue.requestsData[requestIndex].contributorAddr,
       requestIPFSHash,
@@ -457,7 +458,7 @@ class App extends React.PureComponent {
 
     this.closePanel()
     this.props.app.reviewSubmission(
-      web3.toHex(issue.repoId),
+      toHex(issue.repoId),
       issue.number,
       issue.workSubmissions.length - 1,
       state.accepted,
@@ -491,7 +492,7 @@ class App extends React.PureComponent {
     // TODO: splitting of descriptions needs to be fixed at smart contract level
     const issueDescriptions = issues.map(issue => issue.title).join('')
     /* TODO: The numbers below are supposedly coming from an eventual:
-     issues.map(issue => web3.utils.hexToNum(web3.toHex(issue.repoId))) */
+     issues.map(issue => web3.utils.hexToNum(toHex(issue.repoId))) */
     const issueNumbers = issues.map(issue => issue.number)
     const emptyIntArray = new Array(issues.length).fill(0)
     const emptyAddrArray = [
@@ -579,7 +580,7 @@ class App extends React.PureComponent {
 
     const appTitleButton =
       status === STATUS.AUTHENTICATED &&
-      contentData[activeIndex.tabIndex].tabButton
+        contentData[activeIndex.tabIndex].tabButton
         ? contentData[activeIndex.tabIndex].tabButton
         : null
 
