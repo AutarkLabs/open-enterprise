@@ -11,15 +11,14 @@ import {
 import Overflow from './Overflow'
 import FilterButton from './FilterButton'
 import FilterDropDown from './FilterDropDown'
-import SortDropDown from './SortDropDown'
 import prepareFilters from './prepareFilters'
-import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
+import { IconArrow as IconArrowDown } from '../../../../../../shared/ui'
 
 class FilterBar extends React.Component {
   state = {
     // direction: -1: .oO; 1: Oo.; 0: disabled
     sortBy: [
-      { what: 'Name', direction: -1 },
+      { what: 'Name', direction: 0 },
       { what: 'Creation Date', direction: 1 },
       //{ what: 'Label', direction: 0 },
       //{ what: 'Milestone', direction: 0 },
@@ -205,37 +204,36 @@ class FilterBar extends React.Component {
   )
 
   sortDropDown = () => (
-    <SortDropDown caption={'Sort by ' + this.props.sortBy.what}>
-      {this.state.sortBy.map(s => (
+    <FilterDropDown
+      caption={'Sort by ' + this.props.sortBy.what}
+      enabled={true}
+      width="auto"
+      type="sorter"
+    >
+      {this.state.sortBy.map(sorter => (
         <FilterMenuItem
-          key={s.what}
-          onClick={this.generateSort(s.what)}
+          key={sorter.what}
+          onClick={this.generateSort(sorter.what)}
           style={{ display: 'flex', alignItems: 'flex-start' }}
         >
-          <div style={{ width: '20px' }}>
-            {s.direction === 1 && <IconBigArrowDown />}
-            {s.direction === -1 && <IconBigArrowUp />}
-          </div>
-          <ActionLabel>{s.what}</ActionLabel>
+          {sorter.direction === 1 && (
+            <SortArrow style={{ paddingTop: '3px' }}>
+              <IconArrowDown />
+            </SortArrow>
+          )}
+          {sorter.direction === -1 && (
+            <SortArrow>
+              <IconArrowDown style={{ transform: 'rotate(180deg)' }}/>
+            </SortArrow>
+          )}
+          {sorter.direction === 0 && (
+            <SortArrow />
+          )}
+          <ActionLabel>{sorter.what}</ActionLabel>
         </FilterMenuItem>
       ))}
-    </SortDropDown>
+    </FilterDropDown>
   )
-
-  calculateShownFilters = childrenLength => {
-    const containerWidth = this.theRef.current
-      ? this.theRef.current.clientWidth
-      : 0
-
-    const itemWidth = 150
-    let shown = Math.floor((containerWidth) / itemWidth)
-    if (shown < childrenLength) {
-      if (containerWidth < shown * itemWidth + 62) shown--
-    }
-    return shown
-  }
-
-  theRef = React.createRef()
 
   render() {
     const { handleSelectAll, allSelected, issues, bountyIssues, filters, sortBy } = this.props
@@ -252,7 +250,7 @@ class FilterBar extends React.Component {
           <Checkbox onChange={handleSelectAll} checked={allSelected} />
         </FilterButton>
 
-        <Overflow theRef={this.theRef} showFilters={this.calculateShownFilters(4)}>
+        <Overflow>
           {this.filterByProject(filters, filtersData)}
           {this.filterByLabel(filters, filtersData)}
           {this.filterByMilestone(filters, filtersData)}
@@ -274,6 +272,10 @@ FilterBar.propTypes = {
   handleSorting: PropTypes.func.isRequired,
 }
 
+const SortArrow = styled.div`
+  width: 15px;
+  height: 12px;
+`
 const StyledFilterBar = styled.div`
   width: 100%;
   min-width: 346px;

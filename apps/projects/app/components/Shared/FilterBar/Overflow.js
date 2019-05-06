@@ -2,22 +2,66 @@ import React from 'react'
 import styled from 'styled-components'
 
 import FilterButton from './FilterButton'
-import DotsDropDown from './DotsDropDown'
+import FilterDropDown from './FilterDropDown'
 
 
 class Overflow extends React.Component {
+  state = {
+    shown: Infinity,
+    childrenLength: React.Children.toArray(this.props.children).length,
+  }
+
+  // TODO: pass ref as prop?
+  theRef = React.createRef()
+
+  componentDidMount() {
+    window.addEventListener('resize', this.resize)
+    this.calculateItems()
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.resize)
+  }
+
+  resize = () => {
+    this.debounced(200, this.calculateItems)
+  }
+
+  debounced = (delay, fn) => {
+    let timerId
+    if (timerId) {
+      clearTimeout(timerId)
+    }
+
+    timerId = setTimeout(() => {
+      fn()
+      timerId = null
+    }, delay)
+  }
+
+  calculateItems = () => {
+    const containerWidth = this.theRef.current
+      ? this.theRef.current.clientWidth
+      : 0
+
+    const itemWidth = 150
+    let shown = Math.floor((containerWidth) / itemWidth)
+    if (shown < this.state.childrenLength) {
+      if (containerWidth < shown * itemWidth + 62) shown--
+    }
+    this.setState({ shown })
+  }
 
   // This splice does not directly mutate props since toArray generates new object
   splice = (...args) =>
     React.Children.toArray(this.props.children).splice(...args)
-
+ 
   render() {
-    const { showFilters } = this.props
-    const visibleElements = this.splice(0, showFilters)
-    const overflowElements = this.splice(showFilters)
+    const visibleElements = this.splice(0, this.state.shown)
+    const overflowElements = this.splice(this.state.shown)
     return (
       <div
-        ref={this.props.theRef}
+        ref={this.theRef}
         style={{
           width: '40px',
           height: '40px',
@@ -26,16 +70,18 @@ class Overflow extends React.Component {
         }}
       >
         {visibleElements}
-
+  
         {overflowElements.length === 0 ? (
           <OverflowPlaceholder />
         ) : (
           <OverflowVertical>
-            <DotsDropDown
+            <FilterDropDown
               enabled={true}
+              type="overflow"
+              width="212px"
             >
               {overflowElements}
-            </DotsDropDown>
+            </FilterDropDown>
           </OverflowVertical>
         )}
       </div>
