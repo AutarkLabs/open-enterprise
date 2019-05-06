@@ -49,7 +49,7 @@
     "eslint": "5.5.0",
     "eslint-config-prettier": "3.0.1",
     "eslint-plugin-react": "7.11.1",
-    "parcel-bundler": "1.12.3",
+    "parcel-bundler": "1.9.7",
     "prettier": "1.14.2",
     "react-hot-loader": "4.3.6",
     "stylelint": "9.5.0",
