@@ -1,6 +1,8 @@
 # ensure running in a container for fast boot, travis has these requirements:
 sudo: false
 dist: 'trusty'
+addons:
+  chrome: stable
 
 # these are executed in order. each must pass for the next to be run
 stages:
@@ -63,6 +65,13 @@ jobs:
       install: npm run bootstrap
       after_success: npm run coveralls
       env: 'COVERAGE=true'
+
+    - stage: test
+      script: npm run cypress
+      name: End-To-End App Testing
+      install:
+        - npm i -g @aragon/cli@5.6.2
+        - npm run bootstrap
 
     # - &node
     #   script: npm run test
