@@ -16,8 +16,9 @@ import { FieldTitle } from '../Form'
 import NumberFormat from 'react-number-format'
 import { STATUS } from '../../utils/github'
 import { provideNetwork } from '../../../../../shared/ui'
-import { fromUtf8 } from '../../utils/web3-utils'
+import { fromUtf8, toHex } from '../../utils/web3-utils'
 import { REQUESTED_GITHUB_DISCONNECT } from '../../store/eventTypes'
+
 
 const bountyDeadlines = [ 'Weeks', 'Days', 'Hours' ]
 const bountyDeadlinesMul = [ 168, 24, 1 ] // it is one variable in contract, so number * multiplier = hours
@@ -90,12 +91,12 @@ class Settings extends React.Component {
     // flatten expLevels
     const expLevelsDesc = expLevels.map(l => fromUtf8(l.name))
     // uint-ify EXP levels
-    let expLevelsMul = expLevels.map(l => web3.toHex(l.mul * 10.0 ** 2))
+    let expLevelsMul = expLevels.map(l => toHex(l.mul * 10.0 ** 2))
     this.props.app.changeBountySettings(
       expLevelsMul,
       expLevelsDesc,
-      web3.toHex(baseRate),
-      web3.toHex(bountyDeadline),
+      toHex(baseRate),
+      toHex(bountyDeadline),
       this.props.tokens[bountyCurrency].addr,
       bountyAllocator
       //bountyArbiter,

@@ -38,4 +38,4 @@ export function shortenAddress(address, charsLength = 4) {
 }
 
 // Re-export some web3-utils functions
-export { isAddress, toChecksumAddress, toUtf8, fromUtf8 } from 'web3-utils'
+export { isAddress, toChecksumAddress, toHex, toUtf8, fromUtf8 } from 'web3-utils'
