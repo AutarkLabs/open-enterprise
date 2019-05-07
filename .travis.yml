@@ -32,6 +32,14 @@ jobs:
       script: npm run lint
 
     - stage: test
+      name: End-To-End App Testing
+      script: npm run cypress
+      install:
+        - npm i -g @aragon/cli@5.6.2
+        - npx cypress install
+        - npm run bootstrap
+
+    - stage: test
       script: travis_wait 60 npm run coverage -- --scope=@tps/apps-address-book
       name: Address Book app tests and coverage report
       install: npm run bootstrap
@@ -65,13 +73,6 @@ jobs:
       install: npm run bootstrap
       after_success: npm run coveralls
       env: 'COVERAGE=true'
-
-    - stage: test
-      script: npm run cypress
-      name: End-To-End App Testing
-      install:
-        - npm i -g @aragon/cli@5.6.2
-        - npm run bootstrap
 
     # - &node
     #   script: npm run test
