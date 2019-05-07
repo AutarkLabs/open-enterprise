@@ -23,7 +23,7 @@
     "coverage": "npx lerna run coverage --no-bail",
     "coveralls": "cat apps/*/coverage/lcov.info | npx coveralls",
     "cypress:open": "cypress open",
-    "cypress:run": "wait-on http://localhost:3000/#/0x5b6a3301a67A4bfda9D3a528CaD34cac6e7F8070 && cypress run -b chrome",
+    "cypress:run": "wait-on http://localhost:3000/#/0x5b6a3301a67A4bfda9D3a528CaD34cac6e7F8070 && cypress run",
     "cypress": "CYPRESS=true apps/shared/test-helpers/ganache-cli.sh",
     "deploy:apps:rinkeby": "lerna run --scope='@tps/apps-*' deploy:rinkeby --stream",
     "deploy:apps:rpc": "lerna run --scope='@tps/apps-*' deploy:rpc --stream",
