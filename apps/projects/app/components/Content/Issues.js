@@ -615,6 +615,7 @@ class Issues extends React.PureComponent {
                   <div style={{ textAlign: 'center' }}>
                     {moreIssuesToShow && (
                       <Button
+                        style={{marginBottom: '30px'}}
                         mode="secondary"
                         onClick={() =>
                           this.showMoreIssues(downloadedIssues, downloadedRepos)
@@ -670,7 +671,7 @@ const ScrollWrapper = styled.div`
 const IssuesScrollView = styled.div`
   height: 75vh;
   position: relative;
-  overflow-y: hidden;
+  /* overflow-y: hidden; */
 `
 
 const ActionLabel = styled.span`
