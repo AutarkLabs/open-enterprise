@@ -1,8 +1,8 @@
 # ensure running in a container for fast boot, travis has these requirements:
 sudo: false
 dist: 'trusty'
-addons:
-  chrome: stable
+# addons:
+#   chrome: stable
 
 # these are executed in order. each must pass for the next to be run
 stages:
