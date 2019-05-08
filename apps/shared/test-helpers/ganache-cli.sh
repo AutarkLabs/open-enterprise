@@ -69,7 +69,7 @@ elif [ "$DEV" = true ]; then
 	npm run publish:http && npm run start:kit
 	result=$?
 elif [ "$CYPRESS" = true ]; then
-	npm run publish:apps && npm run start:kit &
+	npm run publish:apps && npm run start:kit &> /dev/null &
 	npm run cypress:run
 	result=$?
 	kill -9 "$(lsof -i:3000 -sTCP:LISTEN -t)" # kill parcel dev server
