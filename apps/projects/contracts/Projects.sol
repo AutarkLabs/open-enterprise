@@ -190,7 +190,7 @@ contract Projects is IsContract, AragonApp {
         _addExperienceLevel(500, bytes32("Advanced"));
 
         _changeBountySettings(
-            1, // baseRate
+            100, // baseRate
             336, // bountyDeadline
             _defaultToken, // bountyCurrency
             _bountiesAddr // bountyAllocator

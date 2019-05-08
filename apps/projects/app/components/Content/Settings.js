@@ -95,7 +95,7 @@ class Settings extends React.Component {
     this.props.app.changeBountySettings(
       expLevelsMul,
       expLevelsDesc,
-      toHex(baseRate),
+      toHex(baseRate * 100),
       toHex(bountyDeadline),
       this.props.tokens[bountyCurrency].addr,
       bountyAllocator
