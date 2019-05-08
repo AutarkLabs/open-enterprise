@@ -62,7 +62,7 @@
     "start:rpc": "lerna run --scope='@tps/kits-*' start:rpc --stream",
     "start:staging": "lerna run --scope='@tps/kits-*' start:staging --stream",
     "start:rinkeby": "lerna run --scope='@tps/kits-*' start:rinkeby --stream",
-    "start": "npm run start:rpc",
+    "start": "START_KIT=true apps/shared/test-helpers/ganache-cli.sh",
     "test:address": "cd apps/address-book && npm test",
     "test:allocations": "cd apps/allocations && npm test",
     "test:dot": "cd apps/dot-voting && npm test",
