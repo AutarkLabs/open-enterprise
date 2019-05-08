@@ -91,7 +91,7 @@ class Settings extends React.Component {
     // flatten expLevels
     const expLevelsDesc = expLevels.map(l => fromUtf8(l.name))
     // uint-ify EXP levels
-    let expLevelsMul = expLevels.map(l => toHex(l.mul * 10.0 ** 2))
+    let expLevelsMul = expLevels.map(l => toHex(l.mul * 100))
     this.props.app.changeBountySettings(
       expLevelsMul,
       expLevelsDesc,

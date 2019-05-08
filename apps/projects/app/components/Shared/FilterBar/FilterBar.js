@@ -284,6 +284,7 @@ const StyledFilterBar = styled.div`
   height: 40px;
   align-items: center;
   border-radius: 3px;
+  z-index: 3;
   > * {
     background: ${theme.contentBackground};
   }
@@ -295,7 +296,6 @@ const StyledFilterBar = styled.div`
   }
   > :nth-last-child(2) {
     flex: 1 1 auto;
-    z-index: 3;
   }
   > :last-child {
     > * {
