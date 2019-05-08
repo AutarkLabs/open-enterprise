@@ -1,6 +1,8 @@
 # ensure running in a container for fast boot, travis has these requirements:
 sudo: false
 dist: 'trusty'
+# addons:
+#   chrome: stable
 
 # these are executed in order. each must pass for the next to be run
 stages:
@@ -28,6 +30,14 @@ jobs:
       name: Lint contracts and frontend apps
       install: pwd # override to avoid npm i again
       script: npm run lint
+
+    - stage: test
+      name: End-To-End App Testing
+      script: npm run cypress
+      install:
+        - npm i -g @aragon/cli@5.6.2
+        - npx cypress install
+        - npm run bootstrap
 
     - stage: test
       script: travis_wait 60 npm run coverage -- --scope=@tps/apps-address-book
