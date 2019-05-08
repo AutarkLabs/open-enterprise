@@ -576,7 +576,6 @@ class App extends React.PureComponent {
     ]
 
     const status = this.props.github ? this.props.github.status : STATUS.INITIAL
-    console.log('statuss', { state: this.state, props: this.props })
 
     const appTitleButton =
       status === STATUS.AUTHENTICATED &&
