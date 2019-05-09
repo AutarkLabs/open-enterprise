@@ -266,8 +266,7 @@ const BountyDeadline = ({
       is activated.
     </Text.Block>
     <StyledInputDropDown>
-      <NumberFormat
-        customInput={StyledNumberInput}
+      <StyledNumberFormat
         fixedDecimalScale
         decimalScale={0}
         value={bountyDeadlineT}
@@ -372,8 +371,7 @@ const BaseRate = ({
     </Text.Block>
     <FieldTitle style={{ marginBottom: '0' }}>Rate per hour</FieldTitle>
     <StyledInputDropDown>
-      <NumberFormat
-        customInput={StyledNumberInput}
+      <StyledNumberFormat
         fixedDecimalScale
         decimalScale={2}
         value={baseRate}
@@ -442,8 +440,7 @@ const ExperienceLevel = ({
       <Text.Block>Define the experience level multipliers.</Text.Block>
       {expLevels.map((exp, index) => (
         <Field key={index} label={'LEVEL ' + index}>
-          <NumberFormat
-            customInput={StyledNumberInput}
+          <StyledNumberFormat
             fixedDecimalScale
             decimalScale={2}
             value={exp.mul}
@@ -468,12 +465,17 @@ const ExperienceLevel = ({
   )
 }
 
-const StyledNumberInput = styled(TextInput)`
-  height: 40px;
-  width: 131px;
-  margin-right: 10px;
-  text-align: right;
+const StyledNumberFormat = styled(NumberFormat)`
+  border-radius: 3px;
+  border: 1px solid #e6e6e6;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
   font-size: 16px;
+  height: 40px;
+  line-height: 1.5;
+  margin-right: 10px;
+  padding: 0 10px;
+  text-align: right;
+  width: 131px;
 `
 // https://stackoverflow.com/questions/3790935/can-i-hide-the-html5-number-input-s-spin-box
 
