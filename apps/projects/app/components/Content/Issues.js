@@ -21,6 +21,7 @@ import { Issue, Empty } from '../Card'
 import { IssueDetail } from './IssueDetail'
 import Unauthorized from './Unauthorized'
 import ActiveFilters from './Filters'
+import { FixedSizeList as List } from 'react-window'
 
 class Issues extends React.PureComponent {
   static propTypes = {
@@ -177,7 +178,7 @@ class Issues extends React.PureComponent {
       // if we look for all funded issues, regardless of stage...
       let filterPass =
         status in filters.statuses ||
-        ('all-funded' in filters.statuses && status !== 'not-funded')
+          ('all-funded' in filters.statuses && status !== 'not-funded')
           ? true
           : false
       // ...or at specific stages
@@ -583,34 +584,43 @@ class Issues extends React.PureComponent {
                 repoId => downloadedRepos[repoId].hasNextPage
               ).length > 0
 
+            const preparedIssues = this.shapeIssues(issuesFiltered)
+              .sort(currentSorter)
+            
             return (
               <StyledIssues>
                 {this.actionsMenu(downloadedIssues, issuesFiltered)}
                 {this.filterBar(downloadedIssues, issuesFiltered)}
-
                 <IssuesScrollView>
+
+                  <List
+                    height={700}
+                    itemCount={preparedIssues.length}
+                    itemSize={35}
+                  >
+                    {({ index }) => (
+                      <Issue
+                        isSelected={preparedIssues[index].id in this.state.selectedIssues}
+                        key={index}
+                        {...preparedIssues[index]}
+                        onClick={this.handleIssueClick}
+                        onSelect={this.handleIssueSelection}
+                        onReviewApplication={onReviewApplication}
+                        onSubmitWork={onSubmitWork}
+                        onRequestAssignment={onRequestAssignment}
+                        onAllocateSingleBounty={
+                          this.handleAllocateSingleBounty
+                        }
+                        onUpdateBounty={this.handleUpdateBounty}
+                        onReviewWork={onReviewWork}
+                      />
+                    )}
+                  </List>
+                </IssuesScrollView>
+
+                {/* <IssuesScrollView>
                   <ScrollWrapper>
-                    {this.shapeIssues(issuesFiltered)
-                      .sort(currentSorter)
-                      .map((issue, index) => {
-                        return (
-                          <Issue
-                            isSelected={issue.id in this.state.selectedIssues}
-                            key={index}
-                            {...issue}
-                            onClick={this.handleIssueClick}
-                            onSelect={this.handleIssueSelection}
-                            onReviewApplication={onReviewApplication}
-                            onSubmitWork={onSubmitWork}
-                            onRequestAssignment={onRequestAssignment}
-                            onAllocateSingleBounty={
-                              this.handleAllocateSingleBounty
-                            }
-                            onUpdateBounty={this.handleUpdateBounty}
-                            onReviewWork={onReviewWork}
-                          />
-                        )
-                      })}
+                  {}
                   </ScrollWrapper>
 
                   <div style={{ textAlign: 'center' }}>
@@ -626,7 +636,7 @@ class Issues extends React.PureComponent {
                       </Button>
                     )}
                   </div>
-                </IssuesScrollView>
+                </IssuesScrollView> */}
               </StyledIssues>
             )
           }
