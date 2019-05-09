@@ -351,22 +351,6 @@ contract('Rewards App', accounts => {
         })
       })
 
-      it('fails to create merit reward multiple occurances', async () => {
-        assertRevert(async () => {
-          await app.newReward(
-            'testReward',
-            true,
-            referenceToken.address,
-            rewardToken.address,
-            6,
-            4e18,
-            minBlock,
-            4,
-            0
-          )
-        })
-      })
-
       it('fails to create dividend reward too many occurances', async () => {
         assertRevert(async () => {
           await app.newReward(
@@ -450,9 +434,6 @@ contract('Rewards App', accounts => {
         return assertRevert(async () => {
           await app.claimReward(meritRewardId, { from: root })
         })
-        //await mineBlock()
-        //await mineBlock()
-        //assert(meritRewardId == 2, 'third reward should be id 2')
       })
 
       it('reverts if vault contains insufficient reward tokens', async () => {
