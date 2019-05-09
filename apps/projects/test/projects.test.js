@@ -764,118 +764,6 @@ contract('Projects App', accounts => {
           })
         })
 
-        xit('fulfill bounties and accept fulfillment', async () => {
-          const IssueData1 = await app.getIssue(repoId, 1)
-          const bountyId1 = IssueData1[1].toNumber()
-          const fulfillmentId1 = fulfilledBounty(
-            await bounties.fulfillBounty(bountyId1, 'findthemillenniumfalcon')
-          )._fulfillmentId.toNumber()
-          let fulfillment1 = await bounties.getFulfillment(
-            bountyId1,
-            fulfillmentId1
-          )
-          assert(fulfillment1[0] === false)
-          await app.acceptFulfillment(repoId, 1, fulfillmentId1, {
-            from: bountyAdder,
-          })
-          fulfillment1 = await bounties.getFulfillment(bountyId1, fulfillmentId1)
-          assert(fulfillment1[0] === true)
-
-          const IssueData2 = await app.getIssue(repoId, 2)
-          const bountyId2 = IssueData2[1].toNumber()
-          const fulfillmentId2 = fulfilledBounty(
-            await bounties.fulfillBounty(bountyId2, 'findthemillenniumfalcon')
-          )._fulfillmentId.toNumber()
-          let fulfillment2 = await bounties.getFulfillment(
-            bountyId2,
-            fulfillmentId2
-          )
-          assert(fulfillment2[0] === false)
-          await app.acceptFulfillment(repoId, 2, fulfillmentId2, {
-            from: bountyAdder,
-          })
-          fulfillment2 = await bounties.getFulfillment(bountyId2, fulfillmentId2)
-          assert(fulfillment2[0] === true)
-
-          const IssueData3 = await app.getIssue(repoId, 3)
-          const bountyId3 = IssueData3[1].toNumber()
-          const fulfillmentId3 = fulfilledBounty(
-            await bounties.fulfillBounty(bountyId3, 'findthemillenniumfalcon')
-          )._fulfillmentId.toNumber()
-          let fulfillment3 = await bounties.getFulfillment(
-            bountyId3,
-            fulfillmentId3
-          )
-          assert(fulfillment3[0] === false)
-          await app.acceptFulfillment(repoId, 3, fulfillmentId3, {
-            from: bountyAdder,
-          })
-          fulfillment3 = await bounties.getFulfillment(bountyId3, fulfillmentId3)
-          assert(fulfillment3[0] === true)
-        })
-
-        xit('verify balance is correct before and after accepting fulfillment in standard bounty', async () => {
-          const IssueData1 = await app.getIssue(repoId, 1)
-          const bountyId1 = IssueData1[1].toNumber()
-          const fulfillmentId1 = fulfilledBounty(
-            await bounties.fulfillBounty(bountyId1, 'findthemillenniumfalcon')
-          )._fulfillmentId.toNumber()
-          let fulfillment1 = await bounties.getFulfillment(
-            bountyId1,
-            fulfillmentId1
-          )
-          assert(fulfillment1[0] === false)
-          let bounty1 = await bounties.getBounty(bountyId1)
-          assert.strictEqual(bounty1[5].toNumber(), 10)
-          await app.acceptFulfillment(repoId, 1, fulfillmentId1, {
-            from: bountyAdder,
-          })
-          fulfillment1 = await bounties.getFulfillment(bountyId1, fulfillmentId1)
-          assert(fulfillment1[0] === true)
-          bounty1 = await bounties.getBounty(bountyId1)
-          assert.strictEqual(bounty1[5].toNumber(), 0)
-
-          const IssueData2 = await app.getIssue(repoId, 2)
-          const bountyId2 = IssueData2[1].toNumber()
-          const fulfillmentId2 = fulfilledBounty(
-            await bounties.fulfillBounty(bountyId2, 'findthemillenniumfalcon')
-          )._fulfillmentId.toNumber()
-          let fulfillment2 = await bounties.getFulfillment(
-            bountyId2,
-            fulfillmentId2
-          )
-          assert(fulfillment2[0] === false)
-          let bounty2 = await bounties.getBounty(bountyId2)
-          assert.strictEqual(bounty2[5].toNumber(), 20)
-          await app.acceptFulfillment(repoId, 2, fulfillmentId2, {
-            from: bountyAdder,
-          })
-          fulfillment2 = await bounties.getFulfillment(bountyId2, fulfillmentId2)
-          assert(fulfillment2[0] === true)
-          bounty2 = await bounties.getBounty(bountyId2)
-          assert.strictEqual(bounty2[5].toNumber(), 0)
-
-          const IssueData3 = await app.getIssue(repoId, 3)
-          const bountyId3 = IssueData3[1].toNumber()
-          const fulfillmentId3 = fulfilledBounty(
-            await bounties.fulfillBounty(bountyId3, 'findthemillenniumfalcon')
-          )._fulfillmentId.toNumber()
-          let fulfillment3 = await bounties.getFulfillment(
-            bountyId3,
-            fulfillmentId3
-          )
-          assert(fulfillment3[0] === false)
-          let bounty3 = await bounties.getBounty(bountyId3)
-          assert.strictEqual(bounty3[5].toNumber(), 30)
-          await app.acceptFulfillment(repoId, 3, fulfillmentId3, {
-            from: bountyAdder,
-          })
-          fulfillment3 = await bounties.getFulfillment(bountyId3, fulfillmentId3)
-          assert(fulfillment3[0] === true)
-          bounty3 = await bounties.getBounty(bountyId3)
-          assert.strictEqual(bounty3[5].toNumber(), 0)
-        })
-
         it('can issue bulk token bounties', async () => {
           const issueNumber = 1
           let issue3Receipt
@@ -1031,9 +919,6 @@ contract('Projects App', accounts => {
             )
           })
         })
-        xit('should revert if an issue has an already assigned bounty', async () => {
-        // assert()
-        })
       })
     })
 
@@ -1155,55 +1040,6 @@ contract('Projects App', accounts => {
             {
               from: bountyAdder,
             }
-          )
-        })
-      })
-
-      xit('cannot accept unfulfilled bounties', async () => {
-        let repoId = addedRepo(
-          await app.addRepo(
-            'MDEyOk9yZ2FuaXphdGlvbjM0MDE4MzU5',
-            { from: owner1 }
-          )
-        )
-        await app.addBounties(
-          Array(3).fill(repoId),
-          [ 1, 2, 3 ],
-          [ 10, 20, 30 ],
-          [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
-          [ false, false, false ],
-          [ 0, 0, 0 ],
-          'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
-          'something else',
-          { from: bountyAdder, value: 60 }
-        )
-        assertRevert(async () => {
-          await app.acceptFulfillment(repoId, 0, 0, { from: bountyAdder })
-        })
-        await bounties.fulfillBounty(0, 'findthemillenniumfalcon')
-        let fulfillment1 = await bounties.getFulfillment(0, 0)
-        assert(fulfillment1[0] === false)
-        await app.acceptFulfillment(repoId, 0, 0, { from: bountyAdder })
-        fulfillment1 = await bounties.getFulfillment(0, 0)
-        assert(fulfillment1[0] === true)
-      })
-
-      xit('cannot issue bulk bounties with mismatched values', async () => {
-        const bountyAdder = accounts[2]
-        const repoId = addedRepo(
-          await app.addRepo('abc', { from: owner1 })
-        )
-        assertRevert(async () => {
-          await app.addBounties(
-            Array(3).fill(repoId),
-            [ 1, 2, 3 ],
-            [ 10, 20, 30 ], // 60 total Wei should be sent
-            [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
-            [ false, false, false ],
-            [ 0, 0, 0 ],
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
-            'something awesome',
-            { from: bountyAdder, value: 61 } // 61 Wei sent instead
           )
         })
       })
