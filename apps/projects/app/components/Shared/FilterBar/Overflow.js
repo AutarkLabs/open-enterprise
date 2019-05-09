@@ -8,6 +8,7 @@ import FilterDropDown from './FilterDropDown'
 class Overflow extends React.Component {
   state = {
     shown: Infinity,
+    childrenLength: React.Children.toArray(this.props.children).length,
   }
 
   // TODO: pass ref as prop?
@@ -40,18 +41,21 @@ class Overflow extends React.Component {
 
   calculateItems = () => {
     const containerWidth = this.theRef.current
-      ? this.theRef.current.clientWidth -150
+      ? this.theRef.current.clientWidth
       : 0
 
     const itemWidth = 150
-    const shown = Math.floor((containerWidth) / itemWidth)
+    let shown = Math.floor((containerWidth) / itemWidth)
+    if (shown < this.state.childrenLength) {
+      if (containerWidth < shown * itemWidth + 62) shown--
+    }
     this.setState({ shown })
   }
 
   // This splice does not directly mutate props since toArray generates new object
   splice = (...args) =>
     React.Children.toArray(this.props.children).splice(...args)
-
+ 
   render() {
     const visibleElements = this.splice(0, this.state.shown)
     const overflowElements = this.splice(this.state.shown)
@@ -66,23 +70,20 @@ class Overflow extends React.Component {
         }}
       >
         {visibleElements}
-
+  
         {overflowElements.length === 0 ? (
           <OverflowPlaceholder />
         ) : (
           <OverflowVertical>
             <FilterDropDown
-              caption="…"
               enabled={true}
-              overflow={true}
+              type="overflow"
+              width="212px"
             >
               {overflowElements}
             </FilterDropDown>
           </OverflowVertical>
         )}
-        
-        {overflowElements.length > 0 && <OverflowPlaceholder />}
-
       </div>
     )
   }
@@ -93,7 +94,7 @@ const OverflowVertical = styled.div`
   flex-direction: column;
 `
 const OverflowPlaceholder = styled(FilterButton)`
-  margin-left: -1px;
+  /*margin-left: -1px;*/
   width: 100%;
   min-width: 1px;
   box-shadow: none;

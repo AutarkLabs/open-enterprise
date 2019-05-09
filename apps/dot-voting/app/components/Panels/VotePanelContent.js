@@ -25,6 +25,7 @@ import { getVoteStatus } from '../../utils/vote-utils'
 import {
   VOTE_STATUS_SUCCESSFUL
 } from '../../utils/vote-types'
+import { isAddress } from 'web3-utils'
 
 class VotePanelContent extends React.Component {
   static propTypes = {
@@ -384,7 +385,7 @@ class VotePanelContent extends React.Component {
                     <span
                       style={{ display: 'flex', justifyContent: 'flex-start' }}
                     >
-                      {web3.isAddress(option.label) ? (
+                      {isAddress(option.label) ? (
                         <IdentityBadge
                           networkType={network.type}
                           entity={option.label}
