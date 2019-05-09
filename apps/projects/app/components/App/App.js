@@ -4,7 +4,7 @@ import {
   observe,
   AppView,
   AppBar,
-  font,
+  NavigationBar,
   Viewport,
 } from '@aragon/ui'
 import PropTypes from 'prop-types'
@@ -22,8 +22,8 @@ import BigNumber from 'bignumber.js'
 import { ipfsAdd, computeIpfsString } from '../../utils/ipfs-helpers'
 import {
   networkContextType,
-  AppTitle,
   AppTitleButton,
+  MenuButton,
 } from '../../../../../shared/ui'
 import {
   REQUESTED_GITHUB_TOKEN_SUCCESS,
@@ -144,6 +144,7 @@ class App extends React.PureComponent {
       githubLoading: false,
       githubCurrentUser: {},
       client: initApolloClient((props.github && props.github.token) || ''),
+      issueDetail: false,
     }
   }
 
@@ -540,12 +541,17 @@ class App extends React.PureComponent {
     window.addEventListener('message', this.handlePopupMessage)
   }
 
-  handleSelect = index =>
+  handleSelect = index => {
     this.changeActiveIndex({ tabIndex: index, tabData: {} })
+  }
+
+  setIssueDetail = visible => {
+    this.setState({ issueDetail: visible })
+  }
 
 
   render() {
-    const { activeIndex, panel, panelProps, githubCurrentUser } = this.state
+    const { activeIndex, panel, panelProps, githubCurrentUser, issueDetail } = this.state
     const { bountySettings, displayMenuButton = false } = this.props
     const contentData = [
       {
@@ -586,14 +592,16 @@ class App extends React.PureComponent {
     const tabNames = contentData.map(t => t.tabName)
     const TabComponent = contentData[activeIndex.tabIndex].TabComponent
 
+    const navigationItems = [ 'Projects', ...(issueDetail ? ['Issue Detail'] : []) ]
+
     return (
       <Main publicUrl={ASSETS_URL}>
-        <Viewport>
-          {({ below }) => (
-            <ApolloProvider client={this.state.client}>
-              <AppView
-                padding={0}
-                appBar={
+        <ApolloProvider client={this.state.client}>
+          <AppView
+            style={{ height: '100%' }}
+            appBar={
+              <Viewport>
+                {({ below }) => (
                   <AppBar
                     endContent={
                       appTitleButton &&
@@ -606,60 +614,85 @@ class App extends React.PureComponent {
                       )
                     }
                     tabs={
-                      <TabBar
-                        items={tabNames}
-                        onSelect={this.handleSelect}
-                        selected={activeIndex.tabIndex}
-                      />
+                      issueDetail ? null : (
+                        <div
+                          css={`
+                                  margin-left: ${below('medium') ? '-14px' : '0'};
+                                `}
+                        >
+                          <TabBar
+                            items={tabNames}
+                            onSelect={this.handleSelect}
+                            selected={activeIndex.tabIndex}
+                          />
+                        </div>
+                      )
                     }
                   >
-                    <AppTitle title="Projects" displayMenuButton={displayMenuButton} />
+                    {below('medium') && navigationItems.length < 2 && (
+                      <MenuButton
+                        onClick={this.handleMenuPanelOpen}
+                        css={`
+                                position: relative;
+                                z-index: 2;
+                                margin-left: 8px;
+                                margin-right: -24px;
+                              `}
+                      />
+                    )}
+                    <NavigationBar
+                      items={navigationItems}
+                      onBack={() => this.setIssueDetail(false)}
+                    />
                   </AppBar>
+                )}
+              </Viewport>
+            }
+          >
+            <ErrorBoundary>
+              <TabComponent
+                onLogin={this.handleGithubSignIn}
+                status={status}
+                app={this.props.app}
+                bountySettings={bountySettings}
+                githubCurrentUser={githubCurrentUser}
+                githubLoading={this.state.githubLoading}
+                projects={
+                  this.props.repos !== undefined ? this.props.repos : []
                 }
-              >
-                <ErrorBoundary>
-                  <TabComponent
-                    onLogin={this.handleGithubSignIn}
-                    status={status}
-                    app={this.props.app}
-                    bountySettings={bountySettings}
-                    githubCurrentUser={githubCurrentUser}
-                    githubLoading={this.state.githubLoading}
-                    projects={
-                      this.props.repos !== undefined ? this.props.repos : []
-                    }
-                    bountyIssues={
-                      this.props.issues !== undefined ? this.props.issues : []
-                    }
-                    bountySettings={
-                      bountySettings !== undefined ? bountySettings : {}
-                    }
-                    tokens={
-                      this.props.tokens !== undefined ? this.props.tokens : []
-                    }
-                    onNewProject={this.newProject}
-                    onRemoveProject={this.removeProject}
-                    onNewIssue={this.newIssue}
-                    onCurateIssues={this.curateIssues}
-                    onAllocateBounties={this.newBountyAllocation}
-                    onUpdateBounty={this.updateBounty}
-                    onSubmitWork={this.submitWork}
-                    onRequestAssignment={this.requestAssignment}
-                    activeIndex={activeIndex}
-                    changeActiveIndex={this.changeActiveIndex}
-                    onReviewApplication={this.reviewApplication}
-                    onReviewWork={this.reviewWork}
-                  />
-                </ErrorBoundary>
-              </AppView>
-              <PanelManager
-                onClose={this.closePanel}
-                activePanel={panel}
-                {...panelProps}
+                bountyIssues={
+                  this.props.issues !== undefined ? this.props.issues : []
+                }
+                bountySettings={
+                  bountySettings !== undefined ? bountySettings : {}
+                }
+                tokens={
+                  this.props.tokens !== undefined ? this.props.tokens : []
+                }
+                onNewProject={this.newProject}
+                onRemoveProject={this.removeProject}
+                onNewIssue={this.newIssue}
+                onCurateIssues={this.curateIssues}
+                onAllocateBounties={this.newBountyAllocation}
+                onUpdateBounty={this.updateBounty}
+                onSubmitWork={this.submitWork}
+                onRequestAssignment={this.requestAssignment}
+                activeIndex={activeIndex}
+                changeActiveIndex={this.changeActiveIndex}
+                onReviewApplication={this.reviewApplication}
+                onReviewWork={this.reviewWork}
+                setIssueDetail={this.setIssueDetail}
+                issueDetail={issueDetail}
+
               />
-            </ApolloProvider>
-          )}
-        </Viewport>
+            </ErrorBoundary>
+          </AppView>
+          <PanelManager
+            onClose={this.closePanel}
+            activePanel={panel}
+            {...panelProps}
+          />
+        </ApolloProvider>
       </Main>
     )
   }
