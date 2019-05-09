@@ -35,6 +35,8 @@ class Issues extends React.PureComponent {
       token: PropTypes.string,
       event: PropTypes.string,
     }),
+    issueDetail: PropTypes.bool.isRequired,
+    setIssueDetail: PropTypes.func.isRequired
   }
 
   state = {
@@ -52,7 +54,6 @@ class Issues extends React.PureComponent {
     textFilter: '',
     reload: false,
     currentIssue: {},
-    showIssueDetail: false,
     downloadedRepos: {},
     downloadedIssues: [],
     issuesPerCall: 100,
@@ -214,11 +215,13 @@ class Issues extends React.PureComponent {
   }
 
   handleIssueClick = issue => {
-    this.setState({ showIssueDetail: true, currentIssue: issue })
+    this.props.setIssueDetail(true)
+    this.setState({ currentIssue: issue })
   }
 
   handleIssueDetailClose = () => {
-    this.setState({ showIssueDetail: false, currentIssue: null })
+    this.props.setIssueDetail(false)
+    this.setState({ currentIssue: null })
   }
 
   disableFilter = pathToFilter => {
@@ -517,9 +520,10 @@ class Issues extends React.PureComponent {
       onReviewApplication,
       onSubmitWork,
       onReviewWork,
+      showIssueDetail
     } = this.props
 
-    const { currentIssue, showIssueDetail, filters } = this.state
+    const { currentIssue, filters } = this.state
 
     // better return early if we have no projects added
     if (projects.length === 0) return <Empty action={onNewProject} />
