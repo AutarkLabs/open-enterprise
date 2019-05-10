@@ -204,7 +204,7 @@ contract Projects is IsContract, AragonApp {
 
 
     /**
-     * @notice Update settings for the Projects app 
+     * @notice Update settings for the Projects app
      */
     function changeBountySettings(
         uint256[] _expMultipliers,
@@ -441,9 +441,7 @@ contract Projects is IsContract, AragonApp {
         submission.submissionHash = _updatedSubmissionHash;
 
         if (_approved) {
-            if (issue.hasBounty) {
-                bounties.acceptFulfillment(issue.standardBountyId, submission.fulfillmentId);
-            }
+            bounties.acceptFulfillment(issue.standardBountyId, submission.fulfillmentId);
             issue.fulfilled = true;
             submission.status = SubmissionStatus.Accepted;
             emit SubmissionAccepted(_submissionNumber, _repoId, _issueNumber);
