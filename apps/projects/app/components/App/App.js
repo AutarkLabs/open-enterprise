@@ -546,6 +546,8 @@ class App extends React.PureComponent {
   }
 
   setIssueDetail = visible => {
+    console.log('issueDetail:', visible)
+
     this.setState({ issueDetail: visible })
   }
 
@@ -598,7 +600,8 @@ class App extends React.PureComponent {
       <Main publicUrl={ASSETS_URL}>
         <ApolloProvider client={this.state.client}>
           <AppView
-            style={{ height: '100%' }}
+            padding={0}
+            style={{ height: '100%', overflowY: 'hidden' }}
             appBar={
               <Viewport>
                 {({ below }) => (
