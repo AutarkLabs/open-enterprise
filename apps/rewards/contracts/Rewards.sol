@@ -146,7 +146,7 @@ contract Rewards is IsContract, AragonApp {
         uint256 _duration,
         uint256 _occurances,
         uint256 _delay
-    ) public auth(ADD_REWARD_ROLE) returns (uint256 rewardId)	
+    ) public auth(ADD_REWARD_ROLE) returns (uint256 rewardId)
     {
         require(isContract(_referenceToken), "_referenceToken must be a contract");
         if (_rewardToken != address(0)) {

@@ -138,7 +138,7 @@ contract('Allocations App', accounts => {
         supports,
         zeros,
         '',
-        '',
+        'ETH description',
         zeros,
         zeros,
         accountId,
@@ -152,7 +152,7 @@ contract('Allocations App', accounts => {
         supports,
         zeros,
         '',
-        '',
+        'token description',
         zeros,
         zeros,
         accountId,
@@ -232,6 +232,11 @@ contract('Allocations App', accounts => {
       assert.strictEqual(payoutInfo[1], false, 'payout Should not be recurring')
       assert.isAbove(payoutInfo[2].toNumber(), 0, 'recurring payout start time incorrect')
       assert.strictEqual(payoutInfo[3].toNumber(), 0, 'recurring payout period length incorrect')
+    })
+
+    it('retrieves payout description', async () =>{
+      const payoutDescription = await app.getPayoutDescription(accountId,ethPayoutId)
+      assert.strictEqual(payoutDescription, 'ETH description', 'Payout description incorrectly stored')
     })
 
     it('sets the distribution (token)', async () => {

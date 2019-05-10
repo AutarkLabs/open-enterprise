@@ -101,24 +101,25 @@ contract('AddressBook App', accounts => {
     })
 
     it('should revert when adding duplicate address', async () => {
-      assertRevert(async () => {
+      return assertRevert(async () => {
         await app.addEntry(borg, 'Burg', 'N/A')
       })
     })
     it('should revert when adding duplicate name', async () => {
-      assertRevert(async () => {
+      return assertRevert(async () => {
         await app.addEntry(jeanluc, 'Borg', 'Captain')
       })
     })
     it('should revert when removing not existant entry', async () => {
-      assertRevert(async () => {
+      return assertRevert(async () => {
         await app.removeEntry(jeanluc)
       })
     })
-    it('should revert when getting non-existant entry', async () => {
-      assertRevert(async () => {
-        await app.getEntry(jeanluc)
-      })
+    it('should return a zero-address when getting non-existant entry', async () => {
+      const [ entryAddress, name, entryType ] = await app.getEntry(jeanluc)
+      assert.strictEqual(entryAddress, '0x0000000000000000000000000000000000000000', 'address should be 0x0')
+      assert.strictEqual(name, '', 'name should be empty')
+      assert.strictEqual(entryType, '', 'entry Type should be empty')
     })
   })
 })
