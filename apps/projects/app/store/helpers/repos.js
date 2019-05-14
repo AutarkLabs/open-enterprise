@@ -63,32 +63,37 @@ const getRepoData = repo => {
 }
 
 const loadRepoData = id => {
-  return new Promise(resolve => {
-    app.call('getRepo', id).subscribe(response => {
+  return new Promise(async(resolve) => {
+    app.call('isRepoAdded', id).subscribe(isAddedResponse => {
+      if(!isAddedResponse) {
+        return resolve({ repoRemoved: true })
+      }
+      app.call('getRepo', id).subscribe(response => {
       // handle repo removed case
-      if (!response) return resolve({ repoRemoved: true })
+        if (!response) return resolve({ repoRemoved: true })
 
-      const _repo = toAscii(id)
-      getRepoData(_repo).then(({ node }) => {
-        const commits = node.defaultBranchRef
-          ? node.defaultBranchRef.target.history.totalCount
-          : 0
-        const description = node.description
-          ? node.description
-          : '(no description available)'
-        const metadata = {
-          name: node.name,
-          url: node.url,
-          description: description,
-          // TODO: disabled for now (apparently needs push permission on the repo to work)
-          collaborators: 0, //node.collaborators.totalCount,
-          commits,
-        }
-        return resolve({
-          _repo,
-          index: response.index,
-          metadata,
-          repoRemoved: false,
+        const _repo = toAscii(id)
+        getRepoData(_repo).then(({ node }) => {
+          const commits = node.defaultBranchRef
+            ? node.defaultBranchRef.target.history.totalCount
+            : 0
+          const description = node.description
+            ? node.description
+            : '(no description available)'
+          const metadata = {
+            name: node.name,
+            url: node.url,
+            description: description,
+            // TODO: disabled for now (apparently needs push permission on the repo to work)
+            collaborators: 0, //node.collaborators.totalCount,
+            commits,
+          }
+          return resolve({
+            _repo,
+            index: response.index,
+            metadata,
+            repoRemoved: false,
+          })
         })
       })
     })
