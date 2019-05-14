@@ -4,6 +4,7 @@ import {
   REQUESTED_GITHUB_TOKEN_FAILURE,
   REQUESTED_GITHUB_DISCONNECT,
   INITIALIZE_STORE,
+  INITIALIZE_VAULT,
   REPO_ADDED,
   REPO_REMOVED,
   BOUNTY_ADDED,
@@ -21,6 +22,7 @@ import { INITIAL_STATE } from './'
 
 import {
   initializeGraphQLClient,
+  initializeTokens,
   syncRepos,
   loadReposFromQueue,
   loadIssueData,
@@ -44,6 +46,9 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
       initializeGraphQLClient(nextState.github.token)
     }
     return nextState
+  }
+  case INITIALIZE_VAULT: {
+    return nextState = await initializeTokens(state, vaultContract)
   }
   case REQUESTING_GITHUB_TOKEN: {
     return state
