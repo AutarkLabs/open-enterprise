@@ -110,7 +110,7 @@ class ViewReward extends React.Component {
             <div>
               <FieldTitle>Type</FieldTitle>
               <div>
-                {isMerit?'Merit Reward':'Dividend #'+ rewardId}
+                {isMerit?'Merit Reward':'Dividend'}
               </div>
             </div>
           </SidePanelSplit>

@@ -167,7 +167,7 @@ const RewardsTableWide = ({ title, tokens, rewards, fourthColumn, fourthColumnDa
             {reward.isMerit ? 'Merit Reward' : 'Dividend'}
           </TableCell>
           <TableCell>
-            #{reward.rewardId}
+            Reward #{reward.rewardId}
           </TableCell>
           <TableCell>
             {reward.isMerit ? 'One-Time' : getDividendCycle(reward)}

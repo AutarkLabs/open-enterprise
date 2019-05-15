@@ -20,14 +20,6 @@ import { FieldTitle } from '../../Form'
 import { format } from 'date-fns'
 import { displayCurrency } from '../../../utils/helpers'
 
-const disbursementDates = [ '1 week', '2 weeks' ]
-
-const translateToken = (token) => {
-  if (token == 0x0) {
-    return 'ETH'
-  }
-}
-
 const getSymbol = (tokens, rewardToken) => {
   return tokens
     .reduce((symbol, token) => {
@@ -38,7 +30,6 @@ const getSymbol = (tokens, rewardToken) => {
 
 class MyReward extends React.Component {
   static propTypes = {
-    vaultBalance: PropTypes.string.isRequired,
     onClaimReward: PropTypes.func.isRequired,
     onClosePanel: PropTypes.func.isRequired,
   }
@@ -46,6 +37,11 @@ class MyReward extends React.Component {
   onClosePanel = () => this.props.onClosePanel()
 
   onClaimReward = () => this.props.onClaimReward(this.props.reward)
+
+  onViewOrigin = e => {
+    this.props.viewReward(this.props.reward)
+    e.preventDefault()
+  } 
 
   formatDate = date => Intl.DateTimeFormat().format(date)
 
@@ -64,7 +60,7 @@ class MyReward extends React.Component {
       claimed,
       userRewardAmount
     } = this.props.reward
-
+    
     const { tokens } = this.props
 
     return (
@@ -72,13 +68,13 @@ class MyReward extends React.Component {
         <SidePanelSplit>
           <div>
             <FieldTitle>Origin</FieldTitle>
-            {/*<SafeLink
+            <SafeLink
               href="#"
-              target="_blank"
+              onClick={this.onViewOrigin}
               style={{ textDecoration: 'none', color: '#21AAE7' }}
-            >*/}
-            {isMerit ? 'Reward ' :'Dividend '} #{rewardId}
-            {/*</SafeLink>*/}
+            >
+            Reward #{rewardId}
+            </SafeLink>
           </div>
           <div>
             <FieldTitle>Status</FieldTitle>
@@ -106,19 +102,19 @@ class MyReward extends React.Component {
               </p>
             ) : (
               <p>
-              A dividend, currently worth <SummaryBold>{displayCurrency(userRewardAmount)} {getSymbol(tokens,rewardToken)}</SummaryBold>, will be distributed to you based on your holdings of <SummaryBold>{getSymbol(tokens, referenceToken)}</SummaryBold> on <SummaryBold>{this.formatDate(startDate)}</SummaryBold>.
-              You will be able to claim it after <SummaryBold>{this.formatDate(endDate + blocksToMilliseconds(0,delay))}</SummaryBold>
+              A dividend, currently worth <SummaryBold>{displayCurrency(userRewardAmount)} {getSymbol(tokens,rewardToken)}</SummaryBold>, will be distributed to you based on your holdings of <SummaryBold>{getSymbol(tokens, referenceToken)}</SummaryBold> on <SummaryBold>{this.formatDate(endDate)}</SummaryBold>.
+              You will be able to claim it after <SummaryBold>{this.formatDate(endDate + blocksToMilliseconds(0,delay))}</SummaryBold>.
               </p>
             )}
             <p>
-              For more details, refer to the origin, {isMerit ?'Reward ':'Dividend '} #{rewardId} 
-              {/*<SafeLink
+              {'For more details, refer to the origin, '}
+              <SafeLink
                 href="#"
-                target="_blank"
+                onClick={this.onViewOrigin}
                 style={{ textDecoration: 'none', color: '#21AAE7' }}
               >
                 Reward #{rewardId}
-              </SafeLink>*/}
+              </SafeLink>
             </p>
           </Summary>
         </Info>
