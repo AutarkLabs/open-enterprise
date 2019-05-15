@@ -135,7 +135,7 @@ const updateState = async (state, id, transform) => {
     }
 
     // if the user hasn't logged in to github, add the repos to a queue to load later
-    unloadedRepoQueue.push(id)
+    if(!unloadedRepoQueue.includes(id)) unloadedRepoQueue.push(id)
     return state
   } catch (err) {
     console.error(
