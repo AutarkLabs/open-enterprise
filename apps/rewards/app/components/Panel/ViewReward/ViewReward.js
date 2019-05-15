@@ -54,6 +54,7 @@ class ViewReward extends React.Component {
         endDate,
         description,
         delay,
+        rewardId,
       } = this.props.reward
 
 
@@ -109,7 +110,7 @@ class ViewReward extends React.Component {
             <div>
               <FieldTitle>Type</FieldTitle>
               <div>
-                {isMerit?'Merit Reward':'Dividend Reward'}
+                {isMerit?'Merit Reward':'Dividend #'+ rewardId}
               </div>
             </div>
           </SidePanelSplit>

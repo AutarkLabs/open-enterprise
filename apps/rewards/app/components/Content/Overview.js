@@ -30,6 +30,7 @@ const fourthColumns = [ 'Next Payout', 'Status', 'Last Payout' ]
 const headersNames = fourth => [
   'Description',
   'Type',
+  'id',
   'Cycle',
   fourth,
   'Amount',
@@ -164,6 +165,9 @@ const RewardsTableWide = ({ title, tokens, rewards, fourthColumn, fourthColumnDa
           </TableCell>
           <TableCell>
             {reward.isMerit ? 'Merit Reward' : 'Dividend'}
+          </TableCell>
+          <TableCell>
+            #{reward.rewardId}
           </TableCell>
           <TableCell>
             {reward.isMerit ? 'One-Time' : getDividendCycle(reward)}

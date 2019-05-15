@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { provideNetwork } from '../../../../../../shared/ui'
+import { blocksToMilliseconds } from '../../../../../../shared/ui/utils'
 
 import {
   Info,
@@ -50,6 +51,7 @@ class MyReward extends React.Component {
 
   render() {
     const {
+      rewardId,
       creator,
       isMerit,
       referenceToken,
@@ -70,13 +72,13 @@ class MyReward extends React.Component {
         <SidePanelSplit>
           <div>
             <FieldTitle>Origin</FieldTitle>
-            <SafeLink
+            {/*<SafeLink
               href="#"
               target="_blank"
               style={{ textDecoration: 'none', color: '#21AAE7' }}
-            >
-              Reward #2
-            </SafeLink>
+            >*/}
+            {isMerit ? 'Reward ' :'Dividend '} #{rewardId}
+            {/*</SafeLink>*/}
           </div>
           <div>
             <FieldTitle>Status</FieldTitle>
@@ -92,23 +94,31 @@ class MyReward extends React.Component {
             )}
           </div>
         </SidePanelSplit>
-
-        <Text.Block>Reward summary</Text.Block>
-
+        <Part>
+          <Text size='large' weight='bold' >Reward Summary</Text>
+        </Part>
         <Info style={{ marginBottom: '10px' }}>
           <TokenIcon />
           <Summary>
+            {isMerit === true ? (
+              <p>
+                You have been granted a one-time <SummaryBold>{displayCurrency(userRewardAmount)} {getSymbol(tokens,rewardToken)}</SummaryBold> reward, based on the <SummaryBold>{getSymbol(tokens, referenceToken)}</SummaryBold> you earned from <SummaryBold>{this.formatDate(startDate)}</SummaryBold> to <SummaryBold>{this.formatDate(endDate)}</SummaryBold>.
+              </p>
+            ) : (
+              <p>
+              A dividend, currently worth <SummaryBold>{displayCurrency(userRewardAmount)} {getSymbol(tokens,rewardToken)}</SummaryBold>, will be distributed to you based on your holdings of <SummaryBold>{getSymbol(tokens, referenceToken)}</SummaryBold> on <SummaryBold>{this.formatDate(startDate)}</SummaryBold>.
+              You will be able to claim it after <SummaryBold>{this.formatDate(endDate + blocksToMilliseconds(0,delay))}</SummaryBold>
+              </p>
+            )}
             <p>
-              You have been granted a one-time <SummaryBold>{displayCurrency(userRewardAmount)} {getSymbol(tokens,rewardToken)}</SummaryBold> reward, based on the <SummaryBold>{getSymbol(tokens, referenceToken)}</SummaryBold> you earned from <SummaryBold>{this.formatDate(startDate)}</SummaryBold> to <SummaryBold>{this.formatDate(endDate)}</SummaryBold>.
-            </p>
-            <p>
-              For more details, refer to the origin contract, <SafeLink
+              For more details, refer to the origin, {isMerit ?'Reward ':'Dividend '} #{rewardId} 
+              {/*<SafeLink
                 href="#"
                 target="_blank"
                 style={{ textDecoration: 'none', color: '#21AAE7' }}
               >
-                Reward #2
-              </SafeLink>
+                Reward #{rewardId}
+              </SafeLink>*/}
             </p>
           </Summary>
         </Info>
@@ -124,6 +134,16 @@ class MyReward extends React.Component {
     )
   }
 }
+
+const Part = styled.div`
+  padding: 20px 0;
+  h2 {
+    margin-top: 20px;
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+`
 
 const Summary = styled.div`
   padding-bottom: 2px;
