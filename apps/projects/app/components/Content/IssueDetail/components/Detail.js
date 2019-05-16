@@ -182,13 +182,14 @@ const column = {
 }
 
 const IssueEventAvatar = styled.div`
-  width: 66px;
+  padding-right: 16px;
   margin: 0;
 `
 const IssueEventMain = styled.div`
   display: flex;
 `
 const IssueEventDetails = styled.div`
+  padding-right: 12px;
   > * {
     margin-bottom: 10px;
   }

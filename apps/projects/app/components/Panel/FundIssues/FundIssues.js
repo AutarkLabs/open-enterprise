@@ -495,7 +495,7 @@ const IBMain = styled.div`
 const IssueBounty = styled.div`
   clear: all;
   display: grid;
-  grid-template-columns: 41px auto auto;
+  grid-template-columns: 41px 173px auto;
   grid-template-rows: auto;
   grid-template-areas:
     'arrow title title'
