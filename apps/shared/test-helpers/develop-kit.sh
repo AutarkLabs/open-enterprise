@@ -38,6 +38,7 @@ replace_manifest_path() {
 
 export -f replace_manifest_path
 
+# TODO: This is not needed anymore and images/icon.svg needs to be replaced
 copy_assets() {
 	mkdir -p dist/images && cp images/icon.svg dist/images/
 }

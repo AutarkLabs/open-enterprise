@@ -35,6 +35,8 @@ class Issues extends React.PureComponent {
       token: PropTypes.string,
       event: PropTypes.string,
     }),
+    issueDetail: PropTypes.bool.isRequired,
+    setIssueDetail: PropTypes.func.isRequired
   }
 
   state = {
@@ -52,7 +54,6 @@ class Issues extends React.PureComponent {
     textFilter: '',
     reload: false,
     currentIssue: {},
-    showIssueDetail: false,
     downloadedRepos: {},
     downloadedIssues: [],
     issuesPerCall: 100,
@@ -177,7 +178,7 @@ class Issues extends React.PureComponent {
       // if we look for all funded issues, regardless of stage...
       let filterPass =
         status in filters.statuses ||
-        ('all-funded' in filters.statuses && status !== 'not-funded')
+          ('all-funded' in filters.statuses && status !== 'not-funded')
           ? true
           : false
       // ...or at specific stages
@@ -214,11 +215,16 @@ class Issues extends React.PureComponent {
   }
 
   handleIssueClick = issue => {
-    this.setState({ showIssueDetail: true, currentIssue: issue })
+    console.log('issue clicked')
+
+    this.props.setIssueDetail(true)
+    this.setState({ currentIssue: issue })
   }
 
+  // TODO: Not used, left here for reference (if we need to reset currentIssue)
   handleIssueDetailClose = () => {
-    this.setState({ showIssueDetail: false, currentIssue: null })
+    this.props.setIssueDetail(false)
+    this.setState({ currentIssue: null })
   }
 
   disableFilter = pathToFilter => {
@@ -450,7 +456,6 @@ class Issues extends React.PureComponent {
     return (
       <IssueDetail
         issue={currentIssueShaped}
-        onClose={this.handleIssueDetailClose}
         onReviewApplication={onReviewApplication}
         onRequestAssignment={onRequestAssignment}
         onSubmitWork={onSubmitWork}
@@ -518,15 +523,16 @@ class Issues extends React.PureComponent {
       onReviewApplication,
       onSubmitWork,
       onReviewWork,
+      issueDetail
     } = this.props
 
-    const { currentIssue, showIssueDetail, filters } = this.state
+    const { currentIssue, filters } = this.state
 
     // better return early if we have no projects added
     if (projects.length === 0) return <Empty action={onNewProject} />
 
     // same if we only need to show Issue's Details screen
-    if (showIssueDetail)
+    if (issueDetail)
       return this.renderCurrentIssue(currentIssue, this.props)
 
     const currentSorter = this.generateSorter()
