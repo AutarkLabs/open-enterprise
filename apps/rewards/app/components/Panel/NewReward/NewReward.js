@@ -524,7 +524,7 @@ class NewReward extends React.Component {
               <SummaryBold>
                 {this.formatDate(this.state.dateEnd)}
               </SummaryBold>
-              {'with cycles ending on:'}
+              {' with cycles ending on: '}
               {
                 this.state.quarterEndDates.map((endTimeStamp, idx) => (
                   <React.Fragment key={idx}>

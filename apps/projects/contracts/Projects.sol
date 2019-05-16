@@ -190,7 +190,7 @@ contract Projects is IsContract, AragonApp {
         _addExperienceLevel(500, bytes32("Advanced"));
 
         _changeBountySettings(
-            1, // baseRate
+            100, // baseRate
             336, // bountyDeadline
             _defaultToken, // bountyCurrency
             _bountiesAddr // bountyAllocator
@@ -547,7 +547,10 @@ contract Projects is IsContract, AragonApp {
      * @return _repoId Id for newly added repo
      */
     function isRepoAdded(bytes32 _repoId) public view returns(bool isAdded) {
+        uint256 repoIdxVal = repos[_repoId].index;
         if (repoIndex.length == 0)
+            return false;
+        if (repoIdxVal >= repoIndex.length)
             return false;
         return (repoIndex[repos[_repoId].index] == _repoId);
     }

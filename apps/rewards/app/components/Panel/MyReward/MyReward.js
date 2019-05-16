@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { provideNetwork } from '../../../../../../shared/ui'
+import { blocksToMilliseconds } from '../../../../../../shared/ui/utils'
 
 import {
   Info,
@@ -19,14 +20,6 @@ import { FieldTitle } from '../../Form'
 import { format } from 'date-fns'
 import { displayCurrency } from '../../../utils/helpers'
 
-const disbursementDates = [ '1 week', '2 weeks' ]
-
-const translateToken = (token) => {
-  if (token == 0x0) {
-    return 'ETH'
-  }
-}
-
 const getSymbol = (tokens, rewardToken) => {
   return tokens
     .reduce((symbol, token) => {
@@ -37,7 +30,6 @@ const getSymbol = (tokens, rewardToken) => {
 
 class MyReward extends React.Component {
   static propTypes = {
-    vaultBalance: PropTypes.string.isRequired,
     onClaimReward: PropTypes.func.isRequired,
     onClosePanel: PropTypes.func.isRequired,
   }
@@ -46,10 +38,16 @@ class MyReward extends React.Component {
 
   onClaimReward = () => this.props.onClaimReward(this.props.reward)
 
+  onViewOrigin = e => {
+    this.props.viewReward(this.props.reward)
+    e.preventDefault()
+  } 
+
   formatDate = date => Intl.DateTimeFormat().format(date)
 
   render() {
     const {
+      rewardId,
       creator,
       isMerit,
       referenceToken,
@@ -62,7 +60,7 @@ class MyReward extends React.Component {
       claimed,
       userRewardAmount
     } = this.props.reward
-
+    
     const { tokens } = this.props
 
     return (
@@ -72,10 +70,10 @@ class MyReward extends React.Component {
             <FieldTitle>Origin</FieldTitle>
             <SafeLink
               href="#"
-              target="_blank"
+              onClick={this.onViewOrigin}
               style={{ textDecoration: 'none', color: '#21AAE7' }}
             >
-              Reward #2
+            Reward #{rewardId}
             </SafeLink>
           </div>
           <div>
@@ -92,22 +90,30 @@ class MyReward extends React.Component {
             )}
           </div>
         </SidePanelSplit>
-
-        <Text.Block>Reward summary</Text.Block>
-
+        <Part>
+          <Text size='large' weight='bold' >Reward Summary</Text>
+        </Part>
         <Info style={{ marginBottom: '10px' }}>
           <TokenIcon />
           <Summary>
+            {isMerit === true ? (
+              <p>
+                You have been granted a one-time <SummaryBold>{displayCurrency(userRewardAmount)} {getSymbol(tokens,rewardToken)}</SummaryBold> reward, based on the <SummaryBold>{getSymbol(tokens, referenceToken)}</SummaryBold> you earned from <SummaryBold>{this.formatDate(startDate)}</SummaryBold> to <SummaryBold>{this.formatDate(endDate)}</SummaryBold>.
+              </p>
+            ) : (
+              <p>
+              A dividend, currently worth <SummaryBold>{displayCurrency(userRewardAmount)} {getSymbol(tokens,rewardToken)}</SummaryBold>, will be distributed to you based on your holdings of <SummaryBold>{getSymbol(tokens, referenceToken)}</SummaryBold> on <SummaryBold>{this.formatDate(endDate)}</SummaryBold>.
+              You will be able to claim it after <SummaryBold>{this.formatDate(endDate + blocksToMilliseconds(0,delay))}</SummaryBold>.
+              </p>
+            )}
             <p>
-              You have been granted a one-time <SummaryBold>{displayCurrency(userRewardAmount)} {getSymbol(tokens,rewardToken)}</SummaryBold> reward, based on the <SummaryBold>{getSymbol(tokens, referenceToken)}</SummaryBold> you earned from <SummaryBold>{this.formatDate(startDate)}</SummaryBold> to <SummaryBold>{this.formatDate(endDate)}</SummaryBold>.
-            </p>
-            <p>
-              For more details, refer to the origin contract, <SafeLink
+              {'For more details, refer to the origin, '}
+              <SafeLink
                 href="#"
-                target="_blank"
+                onClick={this.onViewOrigin}
                 style={{ textDecoration: 'none', color: '#21AAE7' }}
               >
-                Reward #2
+                Reward #{rewardId}
               </SafeLink>
             </p>
           </Summary>
@@ -124,6 +130,16 @@ class MyReward extends React.Component {
     )
   }
 }
+
+const Part = styled.div`
+  padding: 20px 0;
+  h2 {
+    margin-top: 20px;
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+`
 
 const Summary = styled.div`
   padding-bottom: 2px;

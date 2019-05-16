@@ -423,12 +423,12 @@ class App extends React.PureComponent {
   }
 
   onReviewApplication = async (issue, requestIndex, approved, review) => {
+    console.log('onReviewApplication', issue, requestIndex, approved, review)
+
     this.closePanel()
     // new IPFS data is old data plus state returned from the panel
     const ipfsData = issue.requestsData[requestIndex]
-    ipfsData.review = review
-
-    const requestIPFSHash = await ipfsAdd(ipfsData)
+    const requestIPFSHash = await ipfsAdd({ ...ipfsData, review: review })
 
     this.props.app.reviewApplication(
       toHex(issue.repoId),
@@ -454,8 +454,7 @@ class App extends React.PureComponent {
   onReviewWork = async (state, issue) => {
     // new IPFS data is old data plus state returned from the panel
     const ipfsData = issue.workSubmissions[issue.workSubmissions.length - 1]
-    ipfsData.review = state
-    const requestIPFSHash = await ipfsAdd(ipfsData)
+    const requestIPFSHash = await ipfsAdd({ ...ipfsData, review:state })
 
     this.closePanel()
     this.props.app.reviewSubmission(

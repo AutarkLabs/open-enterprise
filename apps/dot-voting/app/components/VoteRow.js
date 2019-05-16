@@ -34,8 +34,9 @@ class VoteRow extends React.Component {
     this.props.onSelectVote(this.props.vote.voteId)
   }
 
-  handleExecuteVote = () => {
+  handleExecuteVote = e => {
     this.props.app.executeVote(this.props.vote.voteId)
+    e.stopPropagation()
   }
   render() {
     const { showMore } = this.state

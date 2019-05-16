@@ -59,7 +59,7 @@ class App extends React.Component {
   shouldComponentUpdate(nextProps, nextState) {
     // do not re-render if the NewReward
     // panel is open
-    if (this.state.panel && nextState.panel) {
+    if (this.state.panel && this.state.panel === nextState.panel) {
       return false
     }
     return true
@@ -186,9 +186,9 @@ class App extends React.Component {
       panelProps: {
         onClaimReward: this.onClaimReward,
         onClosePanel: this.closePanel,
-        vaultBalance: '432.9 ETH',
         reward,
         tokens: this.props.balances,
+        viewReward: this.viewReward,
       },
     })
   }

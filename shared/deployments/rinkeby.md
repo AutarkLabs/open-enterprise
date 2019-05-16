@@ -20,6 +20,23 @@
 
 ## Projects
 
+### v1.0.3 (current)
+
+```sh
+✔ Successfully published tps-projects.open.aragonpm.eth v1.0.3: 
+ℹ Contract address: 0x341706591aDE66ea57D02c471e8aAa0C484DE861
+ℹ Content (ipfs): QmPxzWikJ4etLLrVZseuesNSwLFgmZFg49hxNNRYuEKtG7
+ℹ Transaction hash: 0x50cc90dd6480c8f33480f96fadf8e8025c50323b38b2240eb237c223d02efaa5
+```
+
+commit hash: 9890895240b237c1db1271264b2290d002eaf9d6
+
+Command:
+`./node_modules/.bin/lerna exec --scope="@tps/apps-projects" --stream aragon apm publish patch -- --files dist/ --environment rinkeby`
+
+
+### v1.0.2
+
 ```sh
 ✔ Successfully published tps-projects.open.aragonpm.eth v1.0.2: 
 ℹ Contract address: 0x341706591aDE66ea57D02c471e8aAa0C484DE861
