@@ -238,9 +238,8 @@ contract('Projects App', accounts => {
             { from: owner1 }
           )
         )
-
         await app.removeRepo(repoId, { from: repoRemover })
-        assert.isFalse(await app.isRepoAdded(repoId), 'repo at in the middle of the array should have been removed')
+        assert.isFalse(await app.isRepoAdded(repoId), 'repo in the middle of the array should have been removed')
         assert.isTrue(await app.isRepoAdded(repoId2), 'repo2 should still be accessible')
       })
 
