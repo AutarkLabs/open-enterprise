@@ -187,6 +187,7 @@ contract('Projects App', accounts => {
           repoIdString, // TODO: extract to a variable
           'repo is created and ID is returned'
         )
+        assert.isTrue(await app.isRepoAdded(repoId), 'repo should have been removed')
       })
 
       it('retrieve repo array length', async () => {
@@ -211,8 +212,36 @@ contract('Projects App', accounts => {
             { from: owner1 }
           )
         )
-        app.removeRepo(repoId, { from: repoRemover })
-        app.removeRepo(repoId2, { from: repoRemover })
+        repoId3 = addedRepo(
+          await app.addRepo(
+            'DRawOlJlcG9zaXRvcnk3NTM5NTIyNA==', // repoId
+            { from: owner1 }
+          )
+        )
+        await app.removeRepo(repoId3, { from: repoRemover })
+        assert.isFalse(await app.isRepoAdded(repoId3), 'repo at end of array should have been removed')
+        assert.isTrue(await app.isRepoAdded(repoId2), 'repo2 should still be accessible')
+
+        repoId3 = addedRepo(
+          await app.addRepo(
+            'DRawOlJlcG9zaXRvcnk3NTM5NTIyNA==', // repoId
+            { from: owner1 }
+          )
+        )
+        await app.removeRepo(repoId2, { from: repoRemover })
+        assert.isFalse(await app.isRepoAdded(repoId2), 'repo at in the middle of the array should have been removed')
+        assert.isTrue(await app.isRepoAdded(repoId3), 'repo3 should still be accessible')
+
+        repoId2 = addedRepo(
+          await app.addRepo(
+            'MDawOlJlcG9zaXRvcnk3NTM5NTIyNA==', // repoId
+            { from: owner1 }
+          )
+        )
+
+        await app.removeRepo(repoId, { from: repoRemover })
+        assert.isFalse(await app.isRepoAdded(repoId), 'repo at in the middle of the array should have been removed')
+        assert.isTrue(await app.isRepoAdded(repoId2), 'repo2 should still be accessible')
       })
 
       context('standard bounty verification tests', () => {

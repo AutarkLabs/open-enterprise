@@ -547,7 +547,10 @@ contract Projects is IsContract, AragonApp {
      * @return _repoId Id for newly added repo
      */
     function isRepoAdded(bytes32 _repoId) public view returns(bool isAdded) {
+        uint256 repoIdxVal = repos[_repoId].index;
         if (repoIndex.length == 0)
+            return false;
+        if (repoIdxVal >= repoIndex.length)
             return false;
         return (repoIndex[repos[_repoId].index] == _repoId);
     }
