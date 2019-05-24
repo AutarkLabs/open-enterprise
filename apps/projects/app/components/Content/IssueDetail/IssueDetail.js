@@ -416,6 +416,8 @@ const StyledEventsCard = styled(StyledDetailsCard)`
   }
 `
 const MarkdownWrapper = styled.div`
+  word-wrap:break-word;
+  
   h1,
   h2,
   h3,
