@@ -38,6 +38,8 @@ class Issues extends React.PureComponent {
     }),
   }
 
+  divRef = null
+
   state = {
     selectedIssues: {},
     allSelected: false,
@@ -350,7 +352,7 @@ class Issues extends React.PureComponent {
       {this.actionsMenu([], [])}
       {this.filterBar([], [])}
       <IssuesScrollView>
-        <div>Loading...</div>
+        <div style={{paddingLeft:30,paddingRight:30,paddingBottom:30}}>Loading...</div>
       </IssuesScrollView>
     </StyledIssues>
   )
@@ -360,7 +362,7 @@ class Issues extends React.PureComponent {
       {this.actionsMenu([], [])}
       {this.filterBar([], [])}
       <IssuesScrollView>
-        <div>
+        <div style={{paddingLeft:30,paddingRight:30,paddingBottom:30}}>
           Error {JSON.stringify(error)}
           <div>
             <Button mode="strong" onClick={() => refetch()}>
@@ -575,7 +577,6 @@ class Issues extends React.PureComponent {
             const { downloadedIssues, downloadedRepos } = this.flattenIssues(
               data
             )
-
             // then apply filtering
             const issuesFiltered = this.applyFilters(downloadedIssues)
             // then determine whether any shown repos have more issues to fetch
@@ -586,34 +587,38 @@ class Issues extends React.PureComponent {
 
             const preparedIssues = this.shapeIssues(issuesFiltered)
               .sort(currentSorter)
-            
+
             return (
               <StyledIssues>
                 {this.actionsMenu(downloadedIssues, issuesFiltered)}
                 {this.filterBar(downloadedIssues, issuesFiltered)}
-                <IssuesScrollView>
-
+                <IssuesScrollView ref={element => {this.divRef = element}}>
                   <List
-                    height={700}
+                    height={(this.divRef && this.divRef.clientHeight > 200 )?this.divRef.clientHeight:200}
                     itemCount={preparedIssues.length}
-                    itemSize={35}
+                    itemSize={92}
+                    style={{overflow: "overlay",paddingBottom:"30px"}}
                   >
-                    {({ index }) => (
-                      <Issue
-                        isSelected={preparedIssues[index].id in this.state.selectedIssues}
-                        key={index}
-                        {...preparedIssues[index]}
-                        onClick={this.handleIssueClick}
-                        onSelect={this.handleIssueSelection}
-                        onReviewApplication={onReviewApplication}
-                        onSubmitWork={onSubmitWork}
-                        onRequestAssignment={onRequestAssignment}
-                        onAllocateSingleBounty={
-                          this.handleAllocateSingleBounty
-                        }
-                        onUpdateBounty={this.handleUpdateBounty}
-                        onReviewWork={onReviewWork}
-                      />
+                    {({ index, style }) => (
+                      <div style={{paddingRight:"30px",paddingLeft:"30px",...style}} key={index}>
+                        <Issue
+
+                          isSelected={preparedIssues[index].id in this.state.selectedIssues}
+                          {...preparedIssues[index]}
+                          onClick={this.handleIssueClick}
+                          onSelect={this.handleIssueSelection}
+                          onReviewApplication={onReviewApplication}
+                          onSubmitWork={onSubmitWork}
+                          onRequestAssignment={onRequestAssignment}
+                          onAllocateSingleBounty={
+                            this.handleAllocateSingleBounty
+                          }
+                          onUpdateBounty={this.handleUpdateBounty}
+                          onReviewWork={onReviewWork}
+                        />
+
+                      </div>
+
                     )}
                   </List>
                 </IssuesScrollView>
@@ -680,8 +685,11 @@ const ScrollWrapper = styled.div`
 
 // TODO: Calculate height with flex (maybe to add pagination at bottom?)
 const IssuesScrollView = styled.div`
-  height: 75vh;
-  position: relative;
+  position: absolute;
+  top: 120px;
+  bottom: 0;
+  left: 0;
+  right: 0;
 `
 
 const ActionLabel = styled.span`
