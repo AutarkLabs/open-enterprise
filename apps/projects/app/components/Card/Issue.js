@@ -44,9 +44,9 @@ const labelsBadges = labels =>
       {label.node.name}
     </Badge>
   ))
- 
+
 class Issue extends React.PureComponent {
- 
+
   render() {
     const {
       isSelected,
@@ -86,7 +86,7 @@ class Issue extends React.PureComponent {
           <ClickArea onClick={() => onClick(issue)} />
 
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Text color={theme.textSecondary} size="xsmall">
+            <Text color={theme.textSecondary} size="xsmall" style={{wordWrap: "break-word"}}>
               {repo} #{number}
             </Text>
             {workStatus !== 'fulfilled' && (
@@ -171,7 +171,7 @@ Issue.propTypes = {
     PropTypes.object,
   ]),
 }
-  
+
 const StyledIssue = styled.div`
   flex: 1;
   width: 100%;
@@ -192,6 +192,8 @@ const IssueTitleDetailsBalance = styled.div`
 const IssueTitleDetails = styled.div`
   display: flex;
   flex-direction: column;
+  word-break: break-word;
+  padding-right: 47px;
   > :not(:last-child) {
     margin-bottom: 6px;
   }
@@ -213,10 +215,11 @@ const IssueTitle = styled(Text.Block).attrs({
 })`
   display: block;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+  word-wrap: break-word;
   color: ${theme.textPrimary};
   font-size: 1.2em;
 `
