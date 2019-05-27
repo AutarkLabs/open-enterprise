@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { unselectable } from '@aragon/ui'
+import { unselectable, theme } from '@aragon/ui'
 
 const FilterButton = styled.div`
   display: inline-flex;
@@ -17,7 +17,10 @@ const FilterButton = styled.div`
   transition: all 0.1s ease-out;
   ${unselectable};
   :hover {
-    box-shadow: 0 0 8px 4px rgba(0, 0, 0, 0.06);
+    box-shadow: ${({ type }) => type === 'overflow' ? '0' : '0 0 8px 4px rgba(0, 0, 0, 0.06)'};
+    > :first-child {
+      background: ${({ type }) => type === 'overflow' ? theme.secondaryBackground : 'default' };
+    }
   }
 `
 
