@@ -22,6 +22,7 @@ import { IssueDetail } from './IssueDetail'
 import Unauthorized from './Unauthorized'
 import ActiveFilters from './Filters'
 import { FixedSizeList as List } from 'react-window'
+import throttle from 'lodash.throttle'
 
 class Issues extends React.PureComponent {
   static propTypes = {
@@ -38,7 +39,6 @@ class Issues extends React.PureComponent {
     }),
   }
 
-  divRef = null
 
   state = {
     selectedIssues: {},
@@ -59,6 +59,14 @@ class Issues extends React.PureComponent {
     downloadedRepos: {},
     downloadedIssues: [],
     issuesPerCall: 100,
+    // Computed height of scroll element
+    scrollHeight: window.innerHeight,
+  }
+
+  constructor(props) {
+    super(props);
+
+    this.scrollElementRef = React.createRef()
   }
 
   componentWillMount() {
@@ -352,7 +360,7 @@ class Issues extends React.PureComponent {
       {this.actionsMenu([], [])}
       {this.filterBar([], [])}
       <IssuesScrollView>
-        <div style={{paddingLeft:30,paddingRight:30,paddingBottom:30}}>Loading...</div>
+        <IssuesScrollViewContainer>Loading...</IssuesScrollViewContainer>
       </IssuesScrollView>
     </StyledIssues>
   )
@@ -362,14 +370,14 @@ class Issues extends React.PureComponent {
       {this.actionsMenu([], [])}
       {this.filterBar([], [])}
       <IssuesScrollView>
-        <div style={{paddingLeft:30,paddingRight:30,paddingBottom:30}}>
+        <IssuesScrollViewContainer>
           Error {JSON.stringify(error)}
           <div>
             <Button mode="strong" onClick={() => refetch()}>
               Try refetching?
             </Button>
           </div>
-        </div>
+        </IssuesScrollViewContainer>
       </IssuesScrollView>
     </StyledIssues>
   )
@@ -509,6 +517,50 @@ class Issues extends React.PureComponent {
     })
   }
 
+  setScrollElementRef = (element) => {
+    this.scrollElementRef = element;
+    // NOTES: When you return from an issue card to issue list, clientHeight is null. Fixed with this timeout.
+    setTimeout(()=>{
+      this.updateScrollHeight();
+    },0)
+
+  }
+
+  updateScrollHeight = throttle(() => {
+      const minHeight = 200
+      let height = minHeight
+      if (this.scrollElementRef.clientHeight > minHeight ){
+        height = this.scrollElementRef.clientHeight
+      }
+      else{
+        height = window.innerHeight-100
+      }
+      this.setState({
+        scrollHeight: height
+      });
+
+  },300 )
+
+
+  resize = () => this.updateScrollHeight()
+
+  componentDidMount() {
+    window.addEventListener('resize', this.resize)
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.resize)
+  }
+
+  saveScroll = (element) => {
+    // NOTES: When you return from an issue card to issue list, clientHeight is null. Fixed with this timeout.
+    setTimeout(()=>{
+      this.setState({
+        scrollHeight: element.clientHeight
+      });
+    },0)
+  }
+
   render() {
     if (this.props.status === STATUS.INITIAL) {
       return <Unauthorized onLogin={this.props.onLogin} />
@@ -523,7 +575,7 @@ class Issues extends React.PureComponent {
       onReviewWork,
     } = this.props
 
-    const { currentIssue, showIssueDetail, filters } = this.state
+    const { currentIssue, showIssueDetail, filters, scrollHeight } = this.state
 
     // better return early if we have no projects added
     if (projects.length === 0) return <Empty action={onNewProject} />
@@ -592,17 +644,16 @@ class Issues extends React.PureComponent {
               <StyledIssues>
                 {this.actionsMenu(downloadedIssues, issuesFiltered)}
                 {this.filterBar(downloadedIssues, issuesFiltered)}
-                <IssuesScrollView ref={element => {this.divRef = element}}>
+                <IssuesScrollView ref={this.setScrollElementRef}>
                   <List
-                    height={(this.divRef && this.divRef.clientHeight > 200 )?this.divRef.clientHeight:200}
+                    height={scrollHeight}
                     itemCount={preparedIssues.length}
                     itemSize={92}
                     style={{overflow: "overlay",paddingBottom:"30px"}}
                   >
                     {({ index, style }) => (
-                      <div style={{paddingRight:"30px",paddingLeft:"30px",...style}} key={index}>
+                      <div style={{paddingRight:"30px",paddingLeft:"30px", ...style}} key={index}>
                         <Issue
-
                           isSelected={preparedIssues[index].id in this.state.selectedIssues}
                           {...preparedIssues[index]}
                           onClick={this.handleIssueClick}
@@ -690,6 +741,9 @@ const IssuesScrollView = styled.div`
   bottom: 0;
   left: 0;
   right: 0;
+`
+const IssuesScrollViewContainer = styled.div`
+  padding:30px 30px
 `
 
 const ActionLabel = styled.span`
