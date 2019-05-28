@@ -39,7 +39,6 @@ class Issues extends React.PureComponent {
     }),
   }
 
-
   state = {
     selectedIssues: {},
     allSelected: false,
@@ -64,7 +63,7 @@ class Issues extends React.PureComponent {
   }
 
   constructor(props) {
-    super(props);
+    super(props)
 
     this.scrollElementRef = React.createRef()
   }
@@ -188,7 +187,7 @@ class Issues extends React.PureComponent {
       // if we look for all funded issues, regardless of stage...
       let filterPass =
         status in filters.statuses ||
-          ('all-funded' in filters.statuses && status !== 'not-funded')
+        ('all-funded' in filters.statuses && status !== 'not-funded')
           ? true
           : false
       // ...or at specific stages
@@ -252,7 +251,7 @@ class Issues extends React.PureComponent {
   }
 
   actionsContextMenu = issuesFiltered => (
-    <ActionsMenu enabled={(Object.keys(this.state.selectedIssues).length !== 0)}>
+    <ActionsMenu enabled={Object.keys(this.state.selectedIssues).length !== 0}>
       <ContextMenuItem
         onClick={this.handleCurateIssues(issuesFiltered)}
         style={{ display: 'flex', alignItems: 'flex-start' }}
@@ -517,30 +516,29 @@ class Issues extends React.PureComponent {
     })
   }
 
-  setScrollElementRef = (element) => {
-    this.scrollElementRef = element;
+  setScrollElementRef = element => {
+    this.scrollElementRef = element
     // NOTES: When you return from an issue card to issue list, clientHeight is null. Fixed with this timeout.
-    setTimeout(()=>{
-      this.updateScrollHeight();
-    },0)
-
+    setTimeout(() => {
+      this.updateScrollHeight()
+    }, 0)
   }
 
   updateScrollHeight = throttle(() => {
-      const minHeight = 200
-      let height = minHeight
-      if (this.scrollElementRef.clientHeight > minHeight ){
-        height = this.scrollElementRef.clientHeight
-      }
-      else{
-        height = window.innerHeight-100
-      }
-      this.setState({
-        scrollHeight: height
-      });
-
-  },300 )
-
+    const minHeight = 200
+    let height = minHeight
+    if (
+      this.scrollElementRef &&
+      this.scrollElementRef.clientHeight > minHeight
+    ) {
+      height = this.scrollElementRef.clientHeight
+    } else {
+      height = window.innerHeight - 100
+    }
+    this.setState({
+      scrollHeight: height,
+    })
+  }, 300)
 
   resize = () => this.updateScrollHeight()
 
@@ -552,13 +550,13 @@ class Issues extends React.PureComponent {
     window.removeEventListener('resize', this.resize)
   }
 
-  saveScroll = (element) => {
+  saveScroll = element => {
     // NOTES: When you return from an issue card to issue list, clientHeight is null. Fixed with this timeout.
-    setTimeout(()=>{
+    setTimeout(() => {
       this.setState({
-        scrollHeight: element.clientHeight
-      });
-    },0)
+        scrollHeight: element.clientHeight,
+      })
+    }, 0)
   }
 
   render() {
@@ -637,8 +635,9 @@ class Issues extends React.PureComponent {
                 repoId => downloadedRepos[repoId].hasNextPage
               ).length > 0
 
-            const preparedIssues = this.shapeIssues(issuesFiltered)
-              .sort(currentSorter)
+            const preparedIssues = this.shapeIssues(issuesFiltered).sort(
+              currentSorter
+            )
 
             return (
               <StyledIssues>
@@ -649,12 +648,22 @@ class Issues extends React.PureComponent {
                     height={scrollHeight}
                     itemCount={preparedIssues.length}
                     itemSize={92}
-                    style={{overflow: "overlay",paddingBottom:"30px"}}
+                    style={{ overflow: 'overlay', paddingBottom: '30px' }}
                   >
                     {({ index, style }) => (
-                      <div style={{paddingRight:"30px",paddingLeft:"30px", ...style}} key={index}>
+                      <div
+                        style={{
+                          paddingRight: '30px',
+                          paddingLeft: '30px',
+                          ...style,
+                        }}
+                        key={index}
+                      >
                         <Issue
-                          isSelected={preparedIssues[index].id in this.state.selectedIssues}
+                          isSelected={
+                            preparedIssues[index].id in
+                            this.state.selectedIssues
+                          }
                           {...preparedIssues[index]}
                           onClick={this.handleIssueClick}
                           onSelect={this.handleIssueSelection}
@@ -667,9 +676,7 @@ class Issues extends React.PureComponent {
                           onUpdateBounty={this.handleUpdateBounty}
                           onReviewWork={onReviewWork}
                         />
-
                       </div>
-
                     )}
                   </List>
                 </IssuesScrollView>
@@ -743,7 +750,7 @@ const IssuesScrollView = styled.div`
   right: 0;
 `
 const IssuesScrollViewContainer = styled.div`
-  padding:30px 30px
+  padding: 30px 30px;
 `
 
 const ActionLabel = styled.span`
