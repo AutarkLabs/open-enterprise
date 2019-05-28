@@ -1,4 +1,4 @@
-import { first, map } from 'rxjs/operators' // Make sure observables have first()
+import { first, map } from 'rxjs/operators'
 
 /// /////////////////////////////////////
 /*     AddressBook event handlers      */

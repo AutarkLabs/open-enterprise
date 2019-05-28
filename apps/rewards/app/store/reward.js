@@ -1,5 +1,4 @@
-import { first, map } from 'rxjs/operators' // Make sure observables have .first
-import BigNumber from 'bignumber.js'
+import { first, map } from 'rxjs/operators'
 import { app } from './'
 import { blocksToMilliseconds } from '../../../../shared/ui/utils'
 import { updateBalancesAndRefTokens } from './token'

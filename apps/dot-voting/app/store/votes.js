@@ -1,8 +1,7 @@
-import { first } from 'rxjs/operators' // Make sure observables have .first and .map
-//import 'rxjs/add/operator/map' // Make sure observables have .map
+import { combineLatest } from 'rxjs'
+import { first } from 'rxjs/operators'
 
 import { app } from './'
-import { combineLatest } from '../rxjs'
 import { EMPTY_CALLSCRIPT } from '../utils/vote-utils'
 import { getTokenSymbol, ETHER_TOKEN_FAKE_ADDRESS } from '../utils/token-utils'
 

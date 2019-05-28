@@ -14,7 +14,7 @@ import {
   theme,
 } from '@aragon/ui'
 import { format } from 'date-fns'
-import { combineLatest } from '../../rxjs'
+import { combineLatest } from 'rxjs'
 import { first } from 'rxjs/operators' // Make sure observables have .first
 import { provideNetwork } from '../../../../../shared/ui'
 import { safeDiv } from '../../utils/math-utils'
