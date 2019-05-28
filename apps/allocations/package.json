@@ -33,6 +33,7 @@
     "@aragon/apps-vault": "^4.1.0",
     "@aragon/ui": "0.32.0",
     "@babel/polyfill": "^7.2.5",
+    "@tps/apps-address-book": "^0.0.1",
     "@tps/ui": "^0.0.1",
     "bignumber.js": "^7.2.1",
     "prop-types": "^15.7.2",
