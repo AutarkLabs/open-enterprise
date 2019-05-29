@@ -8,7 +8,7 @@ const EmptyWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  height: calc(100vh - 64px - 38px);
 `
 
 export default EmptyWrapper
