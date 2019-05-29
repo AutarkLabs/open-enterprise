@@ -75,7 +75,7 @@ class VotePanelContent extends React.Component {
       ? (optionsArray = optionsArray.map(
         tokenSupport =>
           (tokenSupport / valueTotal) *
-            (parseInt(this.state.userBalance) * 0.9999)
+          (parseInt(this.state.userBalance) * 0.9999)
       ))
       : 0
     this.props.onVote(this.props.vote.voteId, optionsArray)
@@ -214,7 +214,7 @@ class VotePanelContent extends React.Component {
     const showInfo = type === 'allocation' || type === 'curation'
 
     const formatDate = date =>
-      format(date, 'dd/MM/yy') + ' at '  + format(date, 'HH:mm') + 'UTC'
+      format(date, 'dd/MM/yy') + ' at ' + format(date, 'HH:mm') + 'UTC'
 
     return (
       <div>
@@ -337,7 +337,7 @@ class VotePanelContent extends React.Component {
               </Text>
               <div>
                 <SubmitButton mode="strong" wide onClick={this.handleVoteSubmit}>
-                Submit Vote
+                  Submit Vote
                 </SubmitButton>
                 <div>
                   {showInfo && (
@@ -355,7 +355,7 @@ class VotePanelContent extends React.Component {
             <SidePanelSeparator />
           </div>
         )}
-        {(getVoteStatus(vote)===VOTE_STATUS_SUCCESSFUL && (endDate < Date.now()) ) && (
+        {(getVoteStatus(vote) === VOTE_STATUS_SUCCESSFUL && (endDate < Date.now())) && (
           <div>
             <ExecuteButton mode="strong" wide onClick={this.executeVote}>
               Execute Vote
@@ -418,7 +418,7 @@ class VotePanelContent extends React.Component {
                             justifyContent: 'space-between',
                           }}
                         >
-                        YOU:
+                          YOU:
                           <span style={{ paddingLeft: '5px' }}>
                             {voteWeightsToggled
                               ? `${voteWeights[index]}%`
@@ -441,13 +441,13 @@ class VotePanelContent extends React.Component {
               </React.Fragment>
             ))}
           {open && (userBalance === '0') &&
-        <div>
-          <Info.Action title="Warning">
-          This account cannot cast a vote because it did not hold any{' '} {voteTokenSymbol} at the time this vote was created (
-            {formatDate(vote.data.startDate)}
-            )
-          </Info.Action>
-        </div>}
+            <div>
+              <Info.Action title="Warning">
+                This account cannot cast a vote because it did not hold any{' '} {voteTokenSymbol} at the time this vote was created (
+                {formatDate(vote.data.startDate)}
+                )
+              </Info.Action>
+            </div>}
           {showResults && (candidateSupport > 0) && (
             <Text size="xsmall" color={theme.textSecondary}>
               {'A minimum of ' + displayCandidateSupport + '% is required for an option to become validated'}

@@ -1,5 +1,4 @@
 import { of } from 'rxjs'
-
 import { pluck } from 'rxjs/operators'
 
 import vaultAbi from '../../../shared/json-abis/vault'
