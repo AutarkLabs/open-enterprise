@@ -1,6 +1,6 @@
 import AddressBookJSON from '../../../shared/json-abis/address-book.json'
 import { app, handleEvent, INITIALIZATION_TRIGGER } from './'
-import { of } from './rxjs'
+import { of } from 'rxjs'
 
 export const initStore = addressBookAddress => {
   const addressBookApp = app.external(addressBookAddress, AddressBookJSON.abi)
