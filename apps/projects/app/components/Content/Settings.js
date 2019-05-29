@@ -319,8 +319,7 @@ const BountyContractAddress = ({ bountyAllocator, networkType }) => (
             <LocalIdentityBadge
               networkType={networkType}
               entity={bountyAllocator}
-              // TODO:
-              // shorten={shorten}
+              shorten={shorten}
             />
           )
         }}
