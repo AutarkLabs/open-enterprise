@@ -1,7 +1,16 @@
 import React from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
-import { Badge, Text, theme, ContextMenu, SafeLink, Button, Viewport, breakpoint } from '@aragon/ui'
+import {
+  Badge,
+  Text,
+  theme,
+  ContextMenu,
+  SafeLink,
+  Button,
+  Viewport,
+  breakpoint,
+} from '@aragon/ui'
 import { formatDistance } from 'date-fns'
 import marked from 'marked'
 import renderHTML from 'react-render-html'
@@ -43,21 +52,15 @@ const determineFieldText = (fieldTitle, fieldText, balance) => {
 }
 
 const SummaryTable = ({ expLevel, deadline, workStatus, balance }) => {
-  const FIELD_TITLES = [
-    'Experience Level',
-    'Deadline',
-    'Status',
-  ]
-  const mappedTableFields = [ expLevel, deadline, workStatus ].map(
-    (field, i) => (
-      <StyledCell key={i}>
-        <FieldTitle>{FIELD_TITLES[i]}</FieldTitle>
-        <Text color={theme.textPrimary}>
-          {determineFieldText(FIELD_TITLES[i], field, balance)}
-        </Text>
-      </StyledCell>
-    )
-  )
+  const FIELD_TITLES = [ 'Experience Level', 'Deadline', 'Status' ]
+  const mappedTableFields = [ expLevel, deadline, workStatus ].map((field, i) => (
+    <StyledCell key={i}>
+      <FieldTitle>{FIELD_TITLES[i]}</FieldTitle>
+      <Text color={theme.textPrimary}>
+        {determineFieldText(FIELD_TITLES[i], field, balance)}
+      </Text>
+    </StyledCell>
+  ))
   return <StyledTable>{mappedTableFields}</StyledTable>
 }
 
@@ -65,7 +68,6 @@ const Wrapper = styled.div`
   display: flex;
   padding-top: 10px;
 `
-
 
 const IssueLinkRow = styled.div`
   height: 31px;
@@ -111,20 +113,17 @@ const IssueEvent = props => (
           style={{ textDecoration: 'none', color: '#21AAE7' }}
         >
           {props.login}
-        </SafeLink> {props.eventDescription}
+        </SafeLink>{' '}
+        {props.eventDescription}
       </Text.Block>
 
       {props.eventMessage && (
-        <Text.Block size="large">
-          {props.eventMessage}
-        </Text.Block>
+        <Text.Block size="large">{props.eventMessage}</Text.Block>
       )}
-      {props.eventAction && (
-        <div>
-          {props.eventAction}
-        </div>
-      )}
-      <Text.Block size="xsmall" color={theme.textSecondary}>{calculateAgo(props.date)}</Text.Block>
+      {props.eventAction && <div>{props.eventAction}</div>}
+      <Text.Block size="xsmall" color={theme.textSecondary}>
+        {calculateAgo(props.date)}
+      </Text.Block>
     </IssueEventDetails>
   </IssueEventMain>
 )
@@ -134,19 +133,28 @@ const calculateAgo = pastDate => {
   return formatDistance(pastDate, date, { addSuffix: true })
 }
 
-const activities = (issue, requestsData, workSubmissions, fundingHistory, onReviewApplication, onReviewWork) => {
+const activities = (
+  issue,
+  requestsData,
+  workSubmissions,
+  fundingHistory,
+  onReviewApplication,
+  onReviewWork
+) => {
   const events = []
 
   if (requestsData) {
     requestsData.forEach((data, index) => {
-
       events[data.applicationDate] = {
         date: data.applicationDate,
         ...data.user,
         eventDescription: 'requested assignment',
         eventAction: (
-          <EventButton mode="outline" onClick={() => onReviewApplication(issue, index)}>
-            {('review' in data) ? 'View' : 'Review'} Application
+          <EventButton
+            mode="outline"
+            onClick={() => onReviewApplication(issue, index)}
+          >
+            {'review' in data ? 'View' : 'Review'} Application
           </EventButton>
         ),
       }
@@ -155,11 +163,13 @@ const activities = (issue, requestsData, workSubmissions, fundingHistory, onRevi
         events[data.review.reviewDate] = {
           date: data.review.reviewDate,
           ...data.review.user,
-          eventDescription: data.review.approved ? 'assigned ' + data.user.login : 'rejected ' + data.user.login,
-          eventAction: data.review.feedback.length === 0 ?
-            null
-            :
-            <Text>{data.review.feedback}</Text>
+          eventDescription: data.review.approved
+            ? 'assigned ' + data.user.login
+            : 'rejected ' + data.user.login,
+          eventAction:
+            data.review.feedback.length === 0 ? null : (
+              <Text>{data.review.feedback}</Text>
+            ),
         }
       }
     })
@@ -167,14 +177,16 @@ const activities = (issue, requestsData, workSubmissions, fundingHistory, onRevi
 
   if (workSubmissions) {
     workSubmissions.forEach((data, index) => {
-
       events[data.submissionDate] = {
         date: data.submissionDate,
         ...data.user,
         eventDescription: 'submitted work for review',
         eventAction: (
-          <EventButton mode="outline" onClick={() => onReviewWork(issue, index)}>
-            {('review' in data) ? 'View' : 'Review'} Work
+          <EventButton
+            mode="outline"
+            onClick={() => onReviewWork(issue, index)}
+          >
+            {'review' in data ? 'View' : 'Review'} Work
           </EventButton>
         ),
       }
@@ -183,25 +195,30 @@ const activities = (issue, requestsData, workSubmissions, fundingHistory, onRevi
         events[data.review.reviewDate] = {
           date: data.review.reviewDate,
           ...data.review.user,
-          eventDescription: data.review.accepted ?
-            'accepted ' + data.user.login + '\'s work'
-            :
-            'rejected ' + data.user.login + '\'s work',
-          eventAction: data.review.feedback.length === 0 ?
-            <Badge
-              foreground={theme.textSecondary}
-              background={theme.contentBorder}
-            >Quality: {data.review.rating}</Badge>
-            :
-            <div>
-              <Text.Block size="large" style={{ marginBottom: '8px' }}>
-                {data.review.feedback}
-              </Text.Block>
+          eventDescription: data.review.accepted
+            ? 'accepted ' + data.user.login + '\'s work'
+            : 'rejected ' + data.user.login + '\'s work',
+          eventAction:
+            data.review.feedback.length === 0 ? (
               <Badge
                 foreground={theme.textSecondary}
                 background={theme.contentBorder}
-              >Quality: {data.review.rating}</Badge>
-            </div>,
+              >
+                Quality: {data.review.rating}
+              </Badge>
+            ) : (
+              <div>
+                <Text.Block size="large" style={{ marginBottom: '8px' }}>
+                  {data.review.feedback}
+                </Text.Block>
+                <Badge
+                  foreground={theme.textSecondary}
+                  background={theme.contentBorder}
+                >
+                  Quality: {data.review.rating}
+                </Badge>
+              </div>
+            ),
         }
       }
     })
@@ -220,8 +237,7 @@ const activities = (issue, requestsData, workSubmissions, fundingHistory, onRevi
   return events
 }
 
-const deadlineDistance = date =>
-  formatDistance(new Date(date), new Date())
+const deadlineDistance = date => formatDistance(new Date(date), new Date())
 
 const detailsCard = ({
   issue,
@@ -233,9 +249,13 @@ const detailsCard = ({
   onAllocateSingleBounty,
 }) => {
   const summaryData = {
-    expLevel: (issue.expLevel === undefined) ? '-' : issue.expLevel,
-    deadline: (issue.deadline === undefined) ? '-' : deadlineDistance(issue.deadline) + ' remaining',
-    workStatus: (issue.workStatus === undefined) ? 'No bounty yet' : issue.workStatus,
+    expLevel: issue.expLevel === undefined ? '-' : issue.expLevel,
+    deadline:
+      issue.deadline === undefined
+        ? '-'
+        : deadlineDistance(issue.deadline) + ' remaining',
+    workStatus:
+      issue.workStatus === undefined ? 'No bounty yet' : issue.workStatus,
     balance: issue.balance,
   }
 
@@ -252,8 +272,10 @@ const detailsCard = ({
             style={{ textDecoration: 'none', color: '#21AAE7' }}
           >
             <IssueLinkRow>
-              <IconGitHub color="#21AAE7" width='14px' height='14px' />
-              <Text style={{ marginLeft: '6px' }}>{issue.repo} #{issue.number}</Text>
+              <IconGitHub color="#21AAE7" width="14px" height="14px" />
+              <Text style={{ marginLeft: '6px' }}>
+                {issue.repo} #{issue.number}
+              </Text>
             </IssueLinkRow>
           </SafeLink>
           <Text.Block
@@ -280,7 +302,7 @@ const detailsCard = ({
               />
             </ContextMenu>
           )}
-          {issue.balance > 0 &&
+          {issue.balance > 0 && (
             <Badge
               style={{ padding: '10px', textSize: 'large', marginTop: '15px' }}
               background={BOUNTY_BADGE_COLOR[issue.workStatus].bg}
@@ -288,14 +310,16 @@ const detailsCard = ({
             >
               {issue.balance + ' ' + issue.symbol}
             </Badge>
-          }
+          )}
         </div>
       </Wrapper>
       {issue.workStatus ? <SummaryTable {...summaryData} /> : <Separator />}
       <FieldTitle>Description</FieldTitle>
       <Text.Block style={{ marginTop: '20px', marginBottom: '20px' }}>
         <MarkdownWrapper>
-          {issue.body ? renderHTML(marked(issue.body)) : 'No description available'}
+          {issue.body
+            ? renderHTML(marked(issue.body))
+            : 'No description available'}
         </MarkdownWrapper>
       </Text.Block>
       <Text size="small" color={theme.textTertiary}>
@@ -329,17 +353,17 @@ const eventsCard = ({ issue, onReviewApplication, onReviewWork }) => {
   return (
     <StyledEventsCard>
       <FieldTitle>Activity</FieldTitle>
-      {Object.keys(issueEvents).length > 0
-        ? Object.keys(issueEvents).sort((a, b) =>
-          new Date(a) - new Date(b)
-        ).map((eventDate, i) => {
-          return <IssueEvent key={i} {...issueEvents[eventDate]} />
-        })
-        :
+      {Object.keys(issueEvents).length > 0 ? (
+        Object.keys(issueEvents)
+          .sort((a, b) => new Date(a) - new Date(b))
+          .map((eventDate, i) => {
+            return <IssueEvent key={i} {...issueEvents[eventDate]} />
+          })
+      ) : (
         <div style={{ padding: '6px 0 16px 16px' }}>
           This issue has no activity
         </div>
-      }
+      )}
     </StyledEventsCard>
   )
 }
@@ -347,25 +371,40 @@ const eventsCard = ({ issue, onReviewApplication, onReviewWork }) => {
 const IssueDetail = issue => {
   return (
     <Viewport>
-      {({ below }) => below('medium') ? (
-        <CardWrapper style={{ flexDirection: 'column' }}>
-          <div style={{ minWidth: '330px', width: '100%', marginBottom: below('small') ? '0.2rem' : '2rem' }}>
-            {detailsCard(issue)}
-          </div>
-          <div style={{ minWidth: '330px', width: '100%' }}>
-            {eventsCard(issue)}
-          </div>
-        </CardWrapper>
-      ) : (
-        <CardWrapper style={{ flexDirection: 'row' }}>
-          <div style={{ maxWidth: '705px', minWidth: '350px', width: '70%', marginRight: '2rem' }}>
-            {detailsCard(issue)}
-          </div>
-          <div style={{ maxWidth: '400px', minWidth: '350px', width: '30%' }}>
-            {eventsCard(issue)}
-          </div>
-        </CardWrapper>
-      )}
+      {({ below }) =>
+        below('medium') ? (
+          <CardWrapper style={{ flexDirection: 'column' }}>
+            <div
+              style={{
+                minWidth: '330px',
+                width: '100%',
+                marginBottom: below('small') ? '0.2rem' : '2rem',
+              }}
+            >
+              {detailsCard(issue)}
+            </div>
+            <div style={{ minWidth: '330px', width: '100%' }}>
+              {eventsCard(issue)}
+            </div>
+          </CardWrapper>
+        ) : (
+          <CardWrapper style={{ flexDirection: 'row' }}>
+            <div
+              style={{
+                maxWidth: '705px',
+                minWidth: '350px',
+                width: '70%',
+                marginRight: '2rem',
+              }}
+            >
+              {detailsCard(issue)}
+            </div>
+            <div style={{ maxWidth: '400px', minWidth: '350px', width: '30%' }}>
+              {eventsCard(issue)}
+            </div>
+          </CardWrapper>
+        )
+      }
     </Viewport>
   )
 }
@@ -376,11 +415,15 @@ IssueDetail.propTypes = {
   onRequestAssignment: PropTypes.func.isRequired,
   onReviewApplication: PropTypes.func.isRequired,
   onReviewWork: PropTypes.func.isRequired,
-  workStatus: PropTypes.oneOf([ undefined, 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]),
-  work: PropTypes.oneOf([
+  workStatus: PropTypes.oneOf([
     undefined,
-    PropTypes.object,
+    'funded',
+    'review-applicants',
+    'in-progress',
+    'review-work',
+    'fulfilled',
   ]),
+  work: PropTypes.oneOf([ undefined, PropTypes.object ]),
   fundingHistory: PropTypes.array,
 }
 
@@ -390,8 +433,8 @@ const CardWrapper = styled.div`
     'small',
     `
     padding: 1.5rem 3rem;
-    `)
-};
+    `
+  )};
   padding: 0.2rem;
 `
 const StyledDetailsCard = styled.div`
@@ -416,6 +459,8 @@ const StyledEventsCard = styled(StyledDetailsCard)`
   }
 `
 const MarkdownWrapper = styled.div`
+  word-wrap: break-word;
+
   h1,
   h2,
   h3,
