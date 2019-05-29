@@ -1,21 +1,24 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import NumberFormat from 'react-number-format'
+
+import { useNetwork } from '@aragon/api-react'
 import {
   DropDown,
   Button,
   Field,
-  IdentityBadge,
+  // IdentityBadge,
   Text,
   TextInput,
   theme,
   Viewport,
   breakpoint,
 } from '@aragon/ui'
+
 import { FieldTitle } from '../Form'
-import NumberFormat from 'react-number-format'
+import LocalIdentityBadge from '../Shared/LocalIdentityBadge'
 import { STATUS } from '../../utils/github'
-import { provideNetwork } from '../../../../../shared/ui'
 import { fromUtf8, toHex } from '../../utils/web3-utils'
 import { REQUESTED_GITHUB_DISCONNECT } from '../../store/eventTypes'
 
@@ -259,11 +262,11 @@ const BountyDeadline = ({
 }) => (
   <div>
     <Text.Block size="large" weight="bold">
-      Bounty Deadline
+        Bounty Deadline
     </Text.Block>
     <Text.Block>
-      The default amount of time contributors have to submit work once a bounty
-      is activated.
+        The default amount of time contributors have to submit work once a bounty
+        is activated.
     </Text.Block>
     <StyledInputDropDown>
       <StyledNumberFormat
@@ -290,10 +293,11 @@ const BountyArbiter = ({ bountyArbiter, networkType }) => (
     </Text.Block>
     <Text.Block>The entity responsible for dispute resolution.</Text.Block>
     <div style={{ display: 'flex' }}>
-      <IdentityBadge
+      <LocalIdentityBadge
         networkType={networkType}
         entity={bountyArbiter}
-        shorten={false}
+        // TODO:
+        // shorten={false}
       />
     </div>
   </div>
@@ -312,12 +316,14 @@ const BountyContractAddress = ({ bountyAllocator, networkType }) => (
         {({ below }) => {
           const shorten = below('small')
           return (
-            <IdentityBadge
+            <LocalIdentityBadge
               networkType={networkType}
               entity={bountyAllocator}
-              shorten={shorten}
+              // TODO:
+              // shorten={shorten}
             />
-          )}}
+          )
+        }}
       </Viewport>
     </div>
   </div>
@@ -363,11 +369,11 @@ const BaseRate = ({
 }) => (
   <div>
     <Text.Block size="large" weight="bold">
-      Bounty Base Rate
+        Bounty Base Rate
     </Text.Block>
     <Text.Block>
-      Define your organization’s hourly rate. This is multiplied by the bounty
-      size and converted into the bounty currency under the hood.
+        Define your organization’s hourly rate. This is multiplied by the bounty
+        size and converted into the bounty currency under the hood.
     </Text.Block>
     <FieldTitle style={{ marginBottom: '0' }}>Rate per hour</FieldTitle>
     <StyledInputDropDown>
@@ -532,4 +538,7 @@ const Separator = styled.hr`
   background: ${theme.contentBorder};
 `
 
-export default provideNetwork(Settings)
+export default props => {
+  const network = useNetwork()
+  return <Settings network={network} {...props} />
+}
