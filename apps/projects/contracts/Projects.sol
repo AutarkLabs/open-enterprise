@@ -190,7 +190,7 @@ contract Projects is IsContract, AragonApp {
         _addExperienceLevel(500, bytes32("Advanced"));
 
         _changeBountySettings(
-            1, // baseRate
+            100, // baseRate
             336, // bountyDeadline
             _defaultToken, // bountyCurrency
             _bountiesAddr // bountyAllocator
@@ -204,7 +204,7 @@ contract Projects is IsContract, AragonApp {
 
 
     /**
-     * @notice Update settings for the Projects app 
+     * @notice Update settings for the Projects app
      */
     function changeBountySettings(
         uint256[] _expMultipliers,
@@ -441,9 +441,7 @@ contract Projects is IsContract, AragonApp {
         submission.submissionHash = _updatedSubmissionHash;
 
         if (_approved) {
-            if (issue.hasBounty) {
-                bounties.acceptFulfillment(issue.standardBountyId, submission.fulfillmentId);
-            }
+            bounties.acceptFulfillment(issue.standardBountyId, submission.fulfillmentId);
             issue.fulfilled = true;
             submission.status = SubmissionStatus.Accepted;
             emit SubmissionAccepted(_submissionNumber, _repoId, _issueNumber);
@@ -549,7 +547,10 @@ contract Projects is IsContract, AragonApp {
      * @return _repoId Id for newly added repo
      */
     function isRepoAdded(bytes32 _repoId) public view returns(bool isAdded) {
+        uint256 repoIdxVal = repos[_repoId].index;
         if (repoIndex.length == 0)
+            return false;
+        if (repoIdxVal >= repoIndex.length)
             return false;
         return (repoIndex[repos[_repoId].index] == _repoId);
     }

@@ -11,6 +11,7 @@ const INITIAL_STATE = {
   name: '',
   address: '',
   type: 'Individual',
+  error: {},
 }
 
 class NewEntity extends React.Component {

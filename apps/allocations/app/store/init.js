@@ -1,6 +1,6 @@
 import AddressBookJSON from '../../../shared/json-abis/address-book.json'
 import { app, handleEvent, INITIALIZATION_TRIGGER } from './'
-import { of } from './rxjs'
+import { of } from 'rxjs'
 import { first } from 'rxjs/operators'
 
 import vaultBalanceAbi from '../../../shared/json-abis/vault/vault-balance.json'

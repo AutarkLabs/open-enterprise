@@ -1,21 +1,24 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import NumberFormat from 'react-number-format'
+
+import { useNetwork } from '@aragon/api-react'
 import {
   DropDown,
   Button,
   Field,
-  IdentityBadge,
+  // IdentityBadge,
   Text,
   TextInput,
   theme,
   Viewport,
   breakpoint,
 } from '@aragon/ui'
+
 import { FieldTitle } from '../Form'
-import NumberFormat from 'react-number-format'
+import LocalIdentityBadge from '../Shared/LocalIdentityBadge'
 import { STATUS } from '../../utils/github'
-import { provideNetwork } from '../../../../../shared/ui'
 import { fromUtf8, toHex } from '../../utils/web3-utils'
 import { REQUESTED_GITHUB_DISCONNECT } from '../../store/eventTypes'
 
@@ -91,11 +94,11 @@ class Settings extends React.Component {
     // flatten expLevels
     const expLevelsDesc = expLevels.map(l => fromUtf8(l.name))
     // uint-ify EXP levels
-    let expLevelsMul = expLevels.map(l => toHex(l.mul * 10.0 ** 2))
+    let expLevelsMul = expLevels.map(l => toHex(l.mul * 100))
     this.props.app.changeBountySettings(
       expLevelsMul,
       expLevelsDesc,
-      toHex(baseRate),
+      toHex(baseRate * 100),
       toHex(bountyDeadline),
       this.props.tokens[bountyCurrency].addr,
       bountyAllocator
@@ -259,15 +262,14 @@ const BountyDeadline = ({
 }) => (
   <div>
     <Text.Block size="large" weight="bold">
-      Bounty Deadline
+        Bounty Deadline
     </Text.Block>
     <Text.Block>
-      The default amount of time contributors have to submit work once a bounty
-      is activated.
+        The default amount of time contributors have to submit work once a bounty
+        is activated.
     </Text.Block>
     <StyledInputDropDown>
-      <NumberFormat
-        customInput={StyledNumberInput}
+      <StyledNumberFormat
         fixedDecimalScale
         decimalScale={0}
         value={bountyDeadlineT}
@@ -291,10 +293,11 @@ const BountyArbiter = ({ bountyArbiter, networkType }) => (
     </Text.Block>
     <Text.Block>The entity responsible for dispute resolution.</Text.Block>
     <div style={{ display: 'flex' }}>
-      <IdentityBadge
+      <LocalIdentityBadge
         networkType={networkType}
         entity={bountyArbiter}
-        shorten={false}
+        // TODO:
+        // shorten={false}
       />
     </div>
   </div>
@@ -313,12 +316,13 @@ const BountyContractAddress = ({ bountyAllocator, networkType }) => (
         {({ below }) => {
           const shorten = below('small')
           return (
-            <IdentityBadge
+            <LocalIdentityBadge
               networkType={networkType}
               entity={bountyAllocator}
               shorten={shorten}
             />
-          )}}
+          )
+        }}
       </Viewport>
     </div>
   </div>
@@ -364,16 +368,15 @@ const BaseRate = ({
 }) => (
   <div>
     <Text.Block size="large" weight="bold">
-      Bounty Base Rate
+        Bounty Base Rate
     </Text.Block>
     <Text.Block>
-      Define your organization’s hourly rate. This is multiplied by the bounty
-      size and converted into the bounty currency under the hood.
+        Define your organization’s hourly rate. This is multiplied by the bounty
+        size and converted into the bounty currency under the hood.
     </Text.Block>
     <FieldTitle style={{ marginBottom: '0' }}>Rate per hour</FieldTitle>
     <StyledInputDropDown>
-      <NumberFormat
-        customInput={StyledNumberInput}
+      <StyledNumberFormat
         fixedDecimalScale
         decimalScale={2}
         value={baseRate}
@@ -442,8 +445,7 @@ const ExperienceLevel = ({
       <Text.Block>Define the experience level multipliers.</Text.Block>
       {expLevels.map((exp, index) => (
         <Field key={index} label={'LEVEL ' + index}>
-          <NumberFormat
-            customInput={StyledNumberInput}
+          <StyledNumberFormat
             fixedDecimalScale
             decimalScale={2}
             value={exp.mul}
@@ -468,12 +470,17 @@ const ExperienceLevel = ({
   )
 }
 
-const StyledNumberInput = styled(TextInput)`
-  height: 40px;
-  width: 131px;
-  margin-right: 10px;
-  text-align: right;
+const StyledNumberFormat = styled(NumberFormat)`
+  border-radius: 3px;
+  border: 1px solid #e6e6e6;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
   font-size: 16px;
+  height: 40px;
+  line-height: 1.5;
+  margin-right: 10px;
+  padding: 0 10px;
+  text-align: right;
+  width: 131px;
 `
 // https://stackoverflow.com/questions/3790935/can-i-hide-the-html5-number-input-s-spin-box
 
@@ -530,4 +537,7 @@ const Separator = styled.hr`
   background: ${theme.contentBorder};
 `
 
-export default provideNetwork(Settings)
+export default props => {
+  const network = useNetwork()
+  return <Settings network={network} {...props} />
+}

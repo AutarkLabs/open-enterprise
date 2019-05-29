@@ -110,20 +110,6 @@ const generateOpenDetails = (reward, openDetails) => () => {
 const shortTransaction = transactionID =>
   transactionID.substring(0,4) + '..' + transactionID.substring(transactionID.length - 4)
 
-const mockReward = [{
-  creator: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
-  isMerit: true,
-  referenceToken: 'SDN',
-  rewardToken: 0x0,
-  amount: BigNumber(17e18),
-  transactionID: '0xb4124cEB3451635DAcedd11767f004',
-  startDate: new Date('2018-12-17'),
-  endDate: new Date('2019-01-17'),
-  description: 'Q1 Reward for Space Decentral Contributors',
-  delay: 0,
-  index: 0,
-  claimed: true,
-}]
 
 const getSymbol = (tokens, reward) => {
   return tokens
@@ -157,7 +143,7 @@ const MyRewardsWide = ({ onClaimReward, claimed, rewards, openDetails, network, 
                 <IconFundraising color={theme.positive} />
 
                 <Text size="normal" weight="bold">Claim</Text>
-              </Button>) : <Text size="normal" weight="bold">Pending...</Text>
+              </Button>) : showStatus(reward)
           ) : Intl.DateTimeFormat().format(reward.timeClaimed * MILLISECONDS_IN_A_SECOND)}
         </TableCell>
         <TableCell>
@@ -180,7 +166,16 @@ const RewardStatus = ({ color, icon, title, posTop = 0 }) => {
   )
 }
 
-const showStatus = (status = 1) => {
+const showStatus = (reward) => {
+  let status = 0
+  if (reward.endDate < Date.now()) {
+    if (!reward.claimed) {
+      status = 1
+    }
+    else {
+      status = 2
+    }
+  }
   switch(status) {
   case 0: return <RewardStatus title="Pending..." icon={IconTime} color={theme.textSecondary} posTop={1} />
   case 1: return <RewardStatus title="Ready to claim" icon={IconFundraising} color="#F5A623" posTop={7} />
@@ -203,7 +198,7 @@ const MyRewardsNarrow = ({ claimed, rewards, openDetails, network, tokens }) => 
             {reward.description}
           </RewardDescription>
           <Text.Block size="small" color={theme.textTertiary} style={{ marginTop: '5px' }}>
-            {showStatus(reward.status)}
+            {showStatus(reward)}
           </Text.Block>
         </div>
         <div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center' }}>

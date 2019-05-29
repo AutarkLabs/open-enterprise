@@ -1,8 +1,7 @@
-import { first, map } from 'rxjs/operators' // Make sure observables have .first and .map
-//import 'rxjs/add/operator/map' // Make sure observables have .map
+import { combineLatest } from 'rxjs'
+import { first, map } from 'rxjs/operators'
 
 import { app } from './'
-import { combineLatest } from '../rxjs'
 
 /// /////////////////////////////////////
 /*    Allocations event handlers      */

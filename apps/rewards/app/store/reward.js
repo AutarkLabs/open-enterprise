@@ -1,5 +1,4 @@
-import { first, map } from 'rxjs/operators' // Make sure observables have .first
-import BigNumber from 'bignumber.js'
+import { first, map } from 'rxjs/operators'
 import { app } from './'
 import { blocksToMilliseconds } from '../../../../shared/ui/utils'
 import { updateBalancesAndRefTokens } from './token'
@@ -9,7 +8,7 @@ export async function onRewardAdded({ rewards = [], refTokens = [], balances = [
     rewards[rewardId] = await getRewardById(rewardId)
     const { referenceToken } = rewards[rewardId]
     const response = await updateBalancesAndRefTokens({ balances, refTokens }, referenceToken, settings)
-    return { rewards , refTokens: response.refTokens }
+    return { rewards, refTokens: response.refTokens }
   }
 
   return { rewards, refTokens }
@@ -34,7 +33,7 @@ export async function onRewardClaimed({ rewards = [], claims = {} }, { rewardId 
 
   totalClaimsMade = await getTotalClaims()
 
-  return { rewards, claims:{ claimsByToken, totalClaimsMade } }
+  return { rewards, claims: { claimsByToken, totalClaimsMade } }
 
 }
 
@@ -67,7 +66,7 @@ const getRewardById = async (rewardId, userAddress) => {
         endBlock: data.endBlock,
         duration: data.duration,
         delay: data.delay,
-        startDate: Date.now() + blocksToMilliseconds(currentBlock,data.startBlock),
+        startDate: Date.now() + blocksToMilliseconds(currentBlock, data.startBlock),
         endDate: Date.now() + blocksToMilliseconds(currentBlock, data.endBlock),
         userRewardAmount: data.rewardAmount,
         claimed: data.claimed,

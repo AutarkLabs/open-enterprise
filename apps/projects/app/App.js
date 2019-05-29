@@ -1,120 +1,49 @@
+// import { hot } from 'react-hot-loader'
+import React from 'react'
+import PropTypes from 'prop-types'
+import BigNumber from 'bignumber.js'
+import { ApolloProvider } from 'react-apollo'
+// import { map } from 'rxjs/operators'
+
+import { useAragonApi } from '@aragon/api-react'
 import {
   Main,
   TabBar,
-  observe,
+  // observe,
   AppView,
   AppBar,
-  font,
+  NavigationBar,
   Viewport,
 } from '@aragon/ui'
-import PropTypes from 'prop-types'
-import React from 'react'
-import { hot } from 'react-hot-loader'
-import styled from 'styled-components'
-import { map } from 'rxjs/operators'
-import ApolloClient from 'apollo-boost'
-import { ApolloProvider } from 'react-apollo'
-import { Issues, Overview, Settings } from '../Content'
-import PanelManager, { PANELS } from '../Panel'
-import { STATUS } from '../../utils/github'
-import ErrorBoundary from './ErrorBoundary'
-import BigNumber from 'bignumber.js'
-import { ipfsAdd, computeIpfsString } from '../../utils/ipfs-helpers'
+
 import {
-  networkContextType,
-  AppTitle,
+  // networkContextType,
   AppTitleButton,
-} from '../../../../../shared/ui'
+  MenuButton,
+} from '../../../shared/ui'
+
+import ErrorBoundary from './components/App/ErrorBoundary'
+import { Issues, Overview, Settings } from './components/Content'
+import PanelManager, { PANELS } from './components/Panel'
+
+import { IdentityProvider } from './components/Shared/IdentityManager'
 import {
   REQUESTED_GITHUB_TOKEN_SUCCESS,
   REQUESTED_GITHUB_TOKEN_FAILURE,
-} from '../../store/eventTypes'
-import { CURRENT_USER } from '../../utils/gql-queries'
-import { toHex } from '../../utils/web3-utils'
+} from './store/eventTypes'
 
-const ASSETS_URL = './aragon-ui-assets/'
+import { initApolloClient } from './utils/apollo-client'
+import { getToken, getURLParam, githubPopup, STATUS } from './utils/github'
+import { CURRENT_USER } from './utils/gql-queries'
+import { ipfsAdd, computeIpfsString } from './utils/ipfs-helpers'
+import { toHex } from './utils/web3-utils'
 
-
-// TODO: let the user customize the github app on settings screen?
-// TODO: Extract to an external js utility to keep this file clean
-// Variable fields depending on the execution environment:
-// TODO: This should be dynamically set depending on the execution environment (dev, prod...)
-const GITHUB_URI = 'https://github.com/login/oauth/authorize'
-const CLIENT_ID = '686f96197cc9bb07a43d'
-const AUTH_URI = 'https://tps.autark.xyz/authenticate'
-const REDIRECT_URI = 'https://tps.autark.xyz/tps-auth'
-
-export const githubPopup = (popup = null) => {
-  // Checks to save some memory if the popup exists as a window object
-  if (popup === null || popup.closed) {
-    popup = window.open(
-      // TODO: Improve readability here: encode = (params: Object) => (JSON.stringify(params).replace(':', '=').trim())
-      // encode url params
-      `${GITHUB_URI}?client_id=${CLIENT_ID}&scope=public_repo&redirect_uri=${REDIRECT_URI}`,
-      // `${REDIRECT_URI}/?code=232r3423`, // <= use this to avoid spamming github for testing purposes
-      'githubAuth',
-      // TODO: Improve readability here: encode = (fields: Object) => (JSON.stringify(fields).replace(':', '=').trim())
-      `scrollbars=no,toolbar=no,location=no,titlebar=no,directories=no,status=no,menubar=no, ${getPopupDimensions()}`
-    )
-  } else popup.focus()
-  return popup
-}
-
-const getPopupDimensions = () => {
-  const { width, height } = getPopupSize()
-  const { top, left } = getPopupOffset({ width, height })
-  return `width=${width},height=${height},top=${top},left=${left}`
-}
-
-const getPopupSize = () => {
-  return { width: 650, height: 850 }
-}
-
-const getPopupOffset = ({ width, height }) => {
-  const wLeft = window.screenLeft ? window.screenLeft : window.screenX
-  const wTop = window.screenTop ? window.screenTop : window.screenY
-
-  const left = wLeft + window.innerWidth / 2 - width / 2
-  const top = wTop + window.innerHeight / 2 - height / 2
-
-  return { top, left }
-}
-
-const getURLParam = param => {
-  const searchParam = new URLSearchParams(window.location.search)
-  return searchParam.get(param)
-}
-
-const initApolloClient = token =>
-  new ApolloClient({
-    uri: 'https://api.github.com/graphql',
-    request: operation => {
-      if (token) {
-        operation.setContext({
-          headers: {
-            accept: 'application/vnd.github.starfire-preview+json', // needed to create issues
-            authorization: `bearer ${token}`,
-          },
-        })
-      }
-    },
-  })
-
-/**
- * Sends an http request to the AUTH_URI with the auth code obtained from the oauth flow
- * @param {string} code
- * @returns {string} The authentication token obtained from the auth server
- */
-const getToken = async code => {
-  const response = await fetch(`${AUTH_URI}/${code}`)
-  const json = await response.json()
-
-  return json.token
-}
+const ASSETS_URL = './aragon-ui'
 
 class App extends React.PureComponent {
   static propTypes = {
-    app: PropTypes.object.isRequired,
+    // is not required, since it comes async
+    api: PropTypes.object,
     repos: PropTypes.arrayOf(PropTypes.object),
     github: PropTypes.shape({
       status: PropTypes.oneOf([
@@ -127,13 +56,9 @@ class App extends React.PureComponent {
     }),
   }
 
-  static defaultProps = {
-    network: {},
-  }
-
-  static childContextTypes = {
-    network: networkContextType,
-  }
+  // static childContextTypes = {
+  //   network: networkContextType,
+  // }
 
   constructor(props) {
     super(props)
@@ -144,17 +69,18 @@ class App extends React.PureComponent {
       githubLoading: false,
       githubCurrentUser: {},
       client: initApolloClient((props.github && props.github.token) || ''),
+      issueDetail: false,
     }
   }
 
-  getChildContext() {
-    const { network } = this.props
-    return {
-      network: {
-        type: network.type,
-      },
-    }
-  }
+  // getChildContext() {
+  //   const { network } = this.props
+  //   return {
+  //     network: {
+  //       type: network.type,
+  //     },
+  //   }
+  // }
 
   componentDidMount() {
     /**
@@ -209,7 +135,7 @@ class App extends React.PureComponent {
             },
           },
           () => {
-            this.props.app.cache('github', {
+            this.props.api.cache('github', {
               event: REQUESTED_GITHUB_TOKEN_SUCCESS,
               status: STATUS.AUTHENTICATED,
               token,
@@ -226,7 +152,7 @@ class App extends React.PureComponent {
             },
           },
           () => {
-            this.props.app.cache('github', {
+            this.props.api.cache('github', {
               event: REQUESTED_GITHUB_TOKEN_FAILURE,
               status: STATUS.FAILED,
               token: null,
@@ -250,11 +176,11 @@ class App extends React.PureComponent {
 
   createProject = ({ project }) => {
     this.closePanel()
-    this.props.app.addRepo(toHex(project))
+    this.props.api.addRepo(toHex(project))
   }
 
   removeProject = project => {
-    this.props.app.removeRepo(toHex(project))
+    this.props.api.removeRepo(toHex(project))
     // TODO: Toast feedback here maybe
   }
 
@@ -359,7 +285,7 @@ class App extends React.PureComponent {
     const dateArray = new Array(issuesArray.length).fill(Date.now() + 8600)
     const booleanArray = new Array(issuesArray.length).fill(true)
 
-    this.props.app.addBounties(
+    this.props.api.addBounties(
       idArray,
       numberArray,
       bountyArray,
@@ -385,7 +311,7 @@ class App extends React.PureComponent {
   onSubmitWork = async (state, issue) => {
     this.closePanel()
     const hash = await ipfsAdd(state)
-    this.props.app.submitWork(toHex(issue.repoId), issue.number, hash)
+    this.props.api.submitWork(toHex(issue.repoId), issue.number, hash)
   }
 
   requestAssignment = issue => {
@@ -402,7 +328,7 @@ class App extends React.PureComponent {
   onRequestAssignment = async (state, issue) => {
     this.closePanel()
     const hash = await ipfsAdd(state)
-    this.props.app.requestAssignment(
+    this.props.api.requestAssignment(
       toHex(issue.repoId),
       issue.number,
       hash
@@ -422,14 +348,14 @@ class App extends React.PureComponent {
   }
 
   onReviewApplication = async (issue, requestIndex, approved, review) => {
+    console.log('onReviewApplication', issue, requestIndex, approved, review)
+
     this.closePanel()
     // new IPFS data is old data plus state returned from the panel
     const ipfsData = issue.requestsData[requestIndex]
-    ipfsData.review = review
+    const requestIPFSHash = await ipfsAdd({ ...ipfsData, review: review })
 
-    const requestIPFSHash = await ipfsAdd(ipfsData)
-
-    this.props.app.reviewApplication(
+    this.props.api.reviewApplication(
       toHex(issue.repoId),
       issue.number,
       issue.requestsData[requestIndex].contributorAddr,
@@ -453,11 +379,10 @@ class App extends React.PureComponent {
   onReviewWork = async (state, issue) => {
     // new IPFS data is old data plus state returned from the panel
     const ipfsData = issue.workSubmissions[issue.workSubmissions.length - 1]
-    ipfsData.review = state
-    const requestIPFSHash = await ipfsAdd(ipfsData)
+    const requestIPFSHash = await ipfsAdd({ ...ipfsData, review: state })
 
     this.closePanel()
-    this.props.app.reviewSubmission(
+    this.props.api.reviewSubmission(
       toHex(issue.repoId),
       issue.number,
       issue.workSubmissions.length - 1,
@@ -510,7 +435,7 @@ class App extends React.PureComponent {
       '0xd7a5846dea118aa76f0001011e9dc91a8952bf19',
     ]
 
-    this.props.app.curateIssues(
+    this.props.api.curateIssues(
       emptyAddrArray.slice(0, issues.length),
       emptyIntArray,
       issueDescriptionIndices,
@@ -540,12 +465,28 @@ class App extends React.PureComponent {
     window.addEventListener('message', this.handlePopupMessage)
   }
 
-  handleSelect = index =>
+  handleSelect = index => {
     this.changeActiveIndex({ tabIndex: index, tabData: {} })
+  }
+
+  setIssueDetail = visible => {
+    console.log('issueDetail:', visible)
+
+    this.setState({ issueDetail: visible })
+  }
+
+  handleResolveLocalIdentity = address => {
+    return this.props.api.resolveAddressIdentity(address).toPromise()
+  }
+  handleShowLocalIdentityModal = address => {
+    return this.props.api
+      .requestAddressIdentityModification(address)
+      .toPromise()
+  }
 
 
   render() {
-    const { activeIndex, panel, panelProps, githubCurrentUser } = this.state
+    const { activeIndex, panel, panelProps, githubCurrentUser, issueDetail } = this.state
     const { bountySettings, displayMenuButton = false } = this.props
     const contentData = [
       {
@@ -586,86 +527,132 @@ class App extends React.PureComponent {
     const tabNames = contentData.map(t => t.tabName)
     const TabComponent = contentData[activeIndex.tabIndex].TabComponent
 
+    const navigationItems = [ 'Projects', ...(issueDetail ? ['Issue Detail'] : []) ]
+
+    // return (
+    //   <Main assetsUrl={ASSETS_URL}>
+
+
+    //   </Main>
+    // )
+
+    console.log(this.props)
+
     return (
-      <Main publicUrl={ASSETS_URL}>
-        <Viewport>
-          {({ below }) => (
-            <ApolloProvider client={this.state.client}>
-              <AppView
-                padding={0}
-                appBar={
-                  <AppBar
-                    endContent={
-                      appTitleButton &&
-                      !appTitleButton.hidden() && (
-                        <AppTitleButton
-                          caption={appTitleButton.caption}
-                          onClick={appTitleButton.onClick}
-                          disabled={appTitleButton.disabled()}
+      <Main assetsUrl={ASSETS_URL}>
+        <ApolloProvider client={this.state.client}>
+          <IdentityProvider
+            onResolve={this.handleResolveLocalIdentity}
+            onShowLocalIdentityModal={this.handleShowLocalIdentityModal}>
+            <AppView
+              padding={0}
+              style={{ height: '100%', overflowY: 'hidden' }}
+              appBar={
+                <Viewport>
+                  {({ below }) => (
+                    <AppBar
+                      endContent={
+                        appTitleButton &&
+                        !appTitleButton.hidden() && (
+                          <AppTitleButton
+                            caption={appTitleButton.caption}
+                            onClick={appTitleButton.onClick}
+                            disabled={appTitleButton.disabled()}
+                          />
+                        )
+                      }
+                      tabs={
+                        issueDetail ? null : (
+                          <div
+                            css={`
+                                  margin-left: ${below('medium') ? '-14px' : '0'};
+                                `}
+                          >
+                            <TabBar
+                              items={tabNames}
+                              onSelect={this.handleSelect}
+                              selected={activeIndex.tabIndex}
+                            />
+                          </div>
+                        )
+                      }
+                    >
+                      {below('medium') && navigationItems.length < 2 && (
+                        <MenuButton
+                          onClick={this.handleMenuPanelOpen}
+                          css={`
+                                position: relative;
+                                z-index: 2;
+                                margin-left: 8px;
+                                margin-right: -24px;
+                              `}
                         />
-                      )
-                    }
-                    tabs={
-                      <TabBar
-                        items={tabNames}
-                        onSelect={this.handleSelect}
-                        selected={activeIndex.tabIndex}
+                      )}
+                      <NavigationBar
+                        items={navigationItems}
+                        onBack={() => this.setIssueDetail(false)}
                       />
-                    }
-                  >
-                    <AppTitle title="Projects" displayMenuButton={displayMenuButton} />
-                  </AppBar>
-                }
-              >
-                <ErrorBoundary>
-                  <TabComponent
-                    onLogin={this.handleGithubSignIn}
-                    status={status}
-                    app={this.props.app}
-                    bountySettings={bountySettings}
-                    githubCurrentUser={githubCurrentUser}
-                    githubLoading={this.state.githubLoading}
-                    projects={
-                      this.props.repos !== undefined ? this.props.repos : []
-                    }
-                    bountyIssues={
-                      this.props.issues !== undefined ? this.props.issues : []
-                    }
-                    bountySettings={
-                      bountySettings !== undefined ? bountySettings : {}
-                    }
-                    tokens={
-                      this.props.tokens !== undefined ? this.props.tokens : []
-                    }
-                    onNewProject={this.newProject}
-                    onRemoveProject={this.removeProject}
-                    onNewIssue={this.newIssue}
-                    onCurateIssues={this.curateIssues}
-                    onAllocateBounties={this.newBountyAllocation}
-                    onUpdateBounty={this.updateBounty}
-                    onSubmitWork={this.submitWork}
-                    onRequestAssignment={this.requestAssignment}
-                    activeIndex={activeIndex}
-                    changeActiveIndex={this.changeActiveIndex}
-                    onReviewApplication={this.reviewApplication}
-                    onReviewWork={this.reviewWork}
-                  />
-                </ErrorBoundary>
-              </AppView>
-              <PanelManager
-                onClose={this.closePanel}
-                activePanel={panel}
-                {...panelProps}
-              />
-            </ApolloProvider>
-          )}
-        </Viewport>
-      </Main>
+                    </AppBar>
+                  )}
+                </Viewport>
+              }
+            >
+              <ErrorBoundary>
+                <TabComponent
+                  onLogin={this.handleGithubSignIn}
+                  status={status}
+                  app={this.props.api}
+                  bountySettings={bountySettings}
+                  githubCurrentUser={githubCurrentUser}
+                  githubLoading={this.state.githubLoading}
+                  projects={
+                    this.props.repos !== undefined ? this.props.repos : []
+                  }
+                  bountyIssues={
+                    this.props.issues !== undefined ? this.props.issues : []
+                  }
+                  bountySettings={
+                    bountySettings !== undefined ? bountySettings : {}
+                  }
+                  tokens={
+                    this.props.tokens !== undefined ? this.props.tokens : []
+                  }
+                  onNewProject={this.newProject}
+                  onRemoveProject={this.removeProject}
+                  onNewIssue={this.newIssue}
+                  onCurateIssues={this.curateIssues}
+                  onAllocateBounties={this.newBountyAllocation}
+                  onUpdateBounty={this.updateBounty}
+                  onSubmitWork={this.submitWork}
+                  onRequestAssignment={this.requestAssignment}
+                  activeIndex={activeIndex}
+                  changeActiveIndex={this.changeActiveIndex}
+                  onReviewApplication={this.reviewApplication}
+                  onReviewWork={this.reviewWork}
+                  setIssueDetail={this.setIssueDetail}
+                  issueDetail={issueDetail}
+
+                />
+              </ErrorBoundary>
+            </AppView>
+            <PanelManager
+              onClose={this.closePanel}
+              activePanel={panel}
+              {...panelProps}
+            />
+          </IdentityProvider>
+        </ApolloProvider>
+      </Main >
     )
   }
 }
 
-export default observe(
-  observable => observable.pipe(map(state => ({ ...state }))),
-  {}
-)(hot(module)(App))
+// export default observe(
+//   observable => observable.pipe(map(state => ({ ...state }))),
+//   {}
+// )(hot(module)(App))
+
+export default () => {
+  const { api, appState } = useAragonApi()
+  return <App api={api} {...appState} />
+}
