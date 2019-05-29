@@ -13,7 +13,7 @@ const IconArrow = props => (
         </feMerge>
       </filter>
     </defs>
-    <g id="Planning-app---NEW" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+    <g id="Planning-app---NEW" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
       <g id="Group-49" transform="translate(-178.000000, -60.332075)" fill="#B3B3B3">
         <g id="Overflow-menu-Copy" transform="translate(0.360000, 0.667925)">
           <g id="Group-15" filter="url(#filter-1)" transform="translate(0.000000, 41.000000)">

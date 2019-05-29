@@ -61,9 +61,11 @@ class FilterDropDown extends React.Component {
     </React.Fragment>
   )
 
-  buttonOverflow = caption => (
+  buttonOverflow = (caption, opened) => (
     <React.Fragment>
-      <IconDots />
+      <DotsWrapper opened={opened}>
+        <IconDots />
+      </DotsWrapper>
       <span style={{ marginLeft: '15px' }}>{caption}</span>
     </React.Fragment>
   )
@@ -126,12 +128,13 @@ class FilterDropDown extends React.Component {
                 mode={enabled ? 'secondary' : 'strong'}
                 onClick={this.handleBaseButtonClick}
                 opened={opened}
+                type={type}
                 disabled={!enabled}
                 wide
               >
                 {type === 'filter' ? this.buttonFilter(caption, openProgress) : ''}
                 {type === 'sorter' ? this.buttonSort(caption) : ''}
-                {type === 'overflow' ? this.buttonOverflow(caption) : ''}
+                {type === 'overflow' ? this.buttonOverflow(caption, opened) : ''}
               </FilterButton>
               {type === 'overflow' ?
                 this.popupOverflow(opened, openProgress, children)
@@ -171,6 +174,17 @@ const PopupOverflow = styled(animated.div)`
   > :not(:first-child) {
     margin-top: -1px;
   }
+`
+const DotsWrapper = styled.div`
+  width: 30px;
+  height: 30px;
+  margin-left: -15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background 0.5s;
+  border-radius: 3px;
+  background: ${({ opened }) => opened ? theme.secondaryBackground : 'default' }
 `
 
 export default FilterDropDown
