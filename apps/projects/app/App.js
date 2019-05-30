@@ -546,7 +546,6 @@ class App extends React.PureComponent {
             onShowLocalIdentityModal={this.handleShowLocalIdentityModal}>
             <AppView
               padding={0}
-              style={{ height: '100%', overflowY: 'hidden' }}
               appBar={
                 <Viewport>
                   {({ below }) => (
