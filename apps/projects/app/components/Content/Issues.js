@@ -579,7 +579,7 @@ class Issues extends React.PureComponent {
       issueDetail
     } = this.props
 
-    const { currentIssue, filters } = this.state
+    const { currentIssue, filters, scrollHeight } = this.state
 
     // better return early if we have no projects added
     if (projects.length === 0) return <Empty action={onNewProject} />
