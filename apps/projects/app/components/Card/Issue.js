@@ -86,7 +86,7 @@ class Issue extends React.PureComponent {
           <ClickArea onClick={() => onClick(issue)} />
 
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Text color={theme.textSecondary} size="xsmall" style={{wordWrap: "break-word"}}>
+            <Text color={theme.textSecondary} size="xsmall" style={{ wordWrap: 'break-word' }}>
               {repo} #{number}
             </Text>
             {workStatus !== 'fulfilled' && (
