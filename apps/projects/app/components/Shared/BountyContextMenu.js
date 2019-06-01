@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import styled from 'styled-components'
-import { ContextMenuItem } from '@aragon/ui'
+import styled, { css } from 'styled-components'
+import { ContextMenuItem, theme } from '@aragon/ui'
 
 const BountyContextMenu = ({
   work,
@@ -9,50 +9,66 @@ const BountyContextMenu = ({
   requestsData,
   onAllocateSingleBounty,
   onUpdateBounty,
+  onViewBounty,
   onSubmitWork,
   onRequestAssignment,
   onReviewApplication,
-  onReviewWork
-}) => <div>
-  {workStatus === undefined &&
-    <ContextMenuItem onClick={onAllocateSingleBounty}>
-      <ActionLabel>Fund Issue</ActionLabel>
-    </ContextMenuItem>
-  }
-  {workStatus === 'in-progress' &&
-    <ContextMenuItem onClick={onSubmitWork}>
-      <ActionLabel>Submit Work</ActionLabel>
-    </ContextMenuItem>
-  }
-  {workStatus === 'review-work' &&
-    <ContextMenuItem onClick={onReviewWork}>
-      <ActionLabel>Review Work</ActionLabel>
-    </ContextMenuItem>
-  }
-  {workStatus === 'funded' &&
-    <div>
-      <ContextMenuItem onClick={onUpdateBounty}>
-        <ActionLabel>Update Funding</ActionLabel>
-      </ContextMenuItem>
-      <ContextMenuItem onClick={onRequestAssignment}>
-        <ActionLabel>Request Assignment</ActionLabel>
-      </ContextMenuItem>
-    </div>
-  }
-  {workStatus === 'review-applicants' &&
-    <div>
-      <ContextMenuItem onClick={onUpdateBounty}>
-        <ActionLabel>Update Funding</ActionLabel>
-      </ContextMenuItem>
-      <ContextMenuItem onClick={onReviewApplication}>
-        <ActionLabel>Review Application ({requestsData.length})</ActionLabel>
-      </ContextMenuItem>
-    </div>
-  }
-</div>
+  onReviewWork,
+}) => (
+  <React.Fragment>
+    {workStatus === undefined && (
+      <Item onClick={onAllocateSingleBounty}>Fund Issue</Item>
+    )}
+    {workStatus === 'in-progress' && (
+      <React.Fragment>
+        <Item onClick={onSubmitWork}>Submit Work</Item>
+        <Item bordered onClick={onViewBounty}>
+          View Funding Proposal
+        </Item>
+      </React.Fragment>
+    )}
+    {workStatus === 'review-work' && (
+      <React.Fragment>
+        <Item onClick={onReviewWork}>Review Work</Item>
+        <Item bordered onClick={onViewBounty}>
+          View Funding Proposal
+        </Item>
+      </React.Fragment>
+    )}
+    {workStatus === 'funded' && (
+      <React.Fragment>
+        <Item onClick={onRequestAssignment}>Request Assignment</Item>
+        <Item bordered onClick={onUpdateBounty}>
+          Update Funding
+        </Item>
+        <Item onClick={onViewBounty}>View Funding Proposal</Item>
+      </React.Fragment>
+    )}
+    {workStatus === 'review-applicants' && (
+      <React.Fragment>
+        <Item onClick={onReviewApplication}>
+          Review Application ({requestsData.length})
+        </Item>
+        <Item bordered onClick={onUpdateBounty}>
+          Update Funding
+        </Item>
+        <Item onClick={onViewBounty}>View Funding Proposal</Item>
+      </React.Fragment>
+    )}
+    {workStatus === 'fulfilled' && (
+      <Item onClick={onViewBounty}>View Funding Proposal</Item>
+    )}
+  </React.Fragment>
+)
 
-const ActionLabel = styled.span`
-  margin-left: 15px;
+const Item = styled(ContextMenuItem)`
+  ${props =>
+    props.bordered &&
+    css`
+      border-top: 1px solid ${theme.shadow};
+      margin-top: 10px;
+      padding-top: 10px;
+    `};
 `
 
 BountyContextMenu.propTypes = {
@@ -62,11 +78,25 @@ BountyContextMenu.propTypes = {
   onReviewApplication: PropTypes.func.isRequired,
   onReviewWork: PropTypes.func.isRequired,
   onUpdateBounty: PropTypes.func.isRequired,
-  work: PropTypes.oneOf([
+  onViewBounty: PropTypes.func,
+  work: PropTypes.oneOf([ undefined, PropTypes.object ]),
+  workStatus: PropTypes.oneOf([
     undefined,
-    PropTypes.object,
+    'funded',
+    'review-applicants',
+    'in-progress',
+    'review-work',
+    'fulfilled',
   ]),
-  workStatus: PropTypes.oneOf([ undefined, 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]),
+}
+
+BountyContextMenu.defaultProps = {
+  onViewBounty: () => {
+    console.log(
+      '%c "View Funding Proposal" is coming soon!',
+      `color: ${theme.accent}; font-size: 2em;`
+    )
+  },
 }
 
 export default BountyContextMenu
