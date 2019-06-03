@@ -1,12 +1,9 @@
-/* global artifact, ... */
-const {
-  ACL,
-  DAOFactory,
-  EVMScriptRegistryFactory,
-  Kernel,
-  StandardBounties,
-  MiniMeToken,
-} = require('@tps/test-helpers/artifacts')
+const ACL = artifacts.require('ACL')
+const DAOFactory = artifacts.require('DAOFactory')
+const EVMScriptRegistryFactory = artifacts.require('EVMScriptRegistryFactory')
+const Kernel = artifacts.require('Kernel')
+const MiniMeToken = artifacts.require('MiniMeToken')
+const StandardBounties = artifacts.require('StandardBounties')
 
 const Vault = artifacts.require('Vault')
 const Projects = artifacts.require('Projects')
