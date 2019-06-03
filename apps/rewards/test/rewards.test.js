@@ -1,13 +1,12 @@
-const {
-  ACL,
-  DAOFactory,
-  EVMScriptRegistryFactory,
-  Kernel,
-  MiniMeToken
-} = require('@tps/test-helpers/artifacts')
+const ACL = artifacts.require('ACL')
+const DAOFactory = artifacts.require('DAOFactory')
+const EVMScriptRegistryFactory = artifacts.require('EVMScriptRegistryFactory')
+const Kernel = artifacts.require('Kernel')
+const MiniMeToken = artifacts.require('MiniMeToken')
 
 const Rewards = artifacts.require('Rewards')
 const Vault = artifacts.require('Vault')
+
 const { assertRevert } = require('@tps/test-helpers/assertThrow')
 const { encodeCallScript } = require('@tps/test-helpers/evmScript')
 const mineBlock = require('@tps/test-helpers/mineBlock')(web3)
@@ -17,7 +16,9 @@ const ANY_ADDR = '0xffffffffffffffffffffffffffffffffffffffff'
 const NULL_ADDRESS = '0x00'
 
 const rewardAdded = receipt =>
-  receipt.logs.filter(x => x.event == 'RewardAdded').map(reward => reward.args.rewardId)
+  receipt.logs
+    .filter(x => x.event == 'RewardAdded')
+    .map(reward => reward.args.rewardId)
 
 const rewardClaimed = receipt =>
   receipt.logs.filter(x => x.event == 'RewardClaimed')[0].args.rewardId
@@ -30,7 +31,6 @@ contract('Rewards App', accounts => {
     referenceToken,
     rewardToken,
     minBlock
-
 
   const root = accounts[0]
   const contributor1 = accounts[1]
@@ -76,7 +76,6 @@ contract('Rewards App', accounts => {
       receipt.logs.filter(l => l.event === 'NewAppProxy')[0].args.proxy
     )
 
-
     // create ACL permissions
     await acl.createPermission(
       root,
@@ -86,10 +85,17 @@ contract('Rewards App', accounts => {
       { from: root }
     )
 
-
     vaultBase = await Vault.new()
-    const receipt1 = await dao.newAppInstance('0x5678', vaultBase.address, '0x', false, { from: root })
-    vault = Vault.at(receipt1.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
+    const receipt1 = await dao.newAppInstance(
+      '0x5678',
+      vaultBase.address,
+      '0x',
+      false,
+      { from: root }
+    )
+    vault = Vault.at(
+      receipt1.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
+    )
     await vault.initialize()
     await acl.createPermission(
       app.address,
@@ -99,13 +105,29 @@ contract('Rewards App', accounts => {
       { from: root }
     )
 
-    referenceToken = await MiniMeToken.new(NULL_ADDRESS, NULL_ADDRESS, 0, 'one', 18, 'one', true) // empty parameters minime
-    rewardToken = await MiniMeToken.new(NULL_ADDRESS, NULL_ADDRESS, 0, 'two', 18, 'two', true) // empty parameters minime
+    referenceToken = await MiniMeToken.new(
+      NULL_ADDRESS,
+      NULL_ADDRESS,
+      0,
+      'one',
+      18,
+      'one',
+      true
+    ) // empty parameters minime
+    rewardToken = await MiniMeToken.new(
+      NULL_ADDRESS,
+      NULL_ADDRESS,
+      0,
+      'two',
+      18,
+      'two',
+      true
+    ) // empty parameters minime
     minBlock = await getBlockNumber()
   })
 
   context('pre-initialization', () => {
-    it('will not initialize with invalid vault address', async () =>{
+    it('will not initialize with invalid vault address', async () => {
       return assertRevert(async () => {
         await app.initialize(0x0)
       })
@@ -176,7 +198,10 @@ contract('Rewards App', accounts => {
 
       it('gets information on the dividend reward', async () => {
         rewardInformation = await app.getReward(dividendRewardIds[0])
-        assert(rewardInformation[1] === false, 'First reward should be dividend')
+        assert(
+          rewardInformation[1] === false,
+          'First reward should be dividend'
+        )
       })
 
       it('gets information on the merit reward', async () => {
@@ -196,15 +221,20 @@ contract('Rewards App', accounts => {
       it('receives rewards merit', async () => {
         await app.claimReward(meritRewardIds[0])
         const balance = await rewardToken.balanceOf(root)
-        assert(balance == 2e18, 'reward should be 2e18 or 2eth equivalant; 1 for each reward')
+        assert(
+          balance == 2e18,
+          'reward should be 2e18 or 2eth equivalant; 1 for each reward'
+        )
         rewardInformation = await app.getReward(meritRewardIds[0])
         assert.strictEqual(rewardInformation[10], true, 'reward is claimed')
       })
 
       it('gets total rewards amount claimed', async () => {
-        const totalClaimed = await app.getTotalAmountClaimed(rewardToken.address)
+        const totalClaimed = await app.getTotalAmountClaimed(
+          rewardToken.address
+        )
         assert.strictEqual(
-          web3.fromWei(totalClaimed.toNumber(),'ether'),
+          web3.fromWei(totalClaimed.toNumber(), 'ether'),
           '2',
           'total claims incorrect: should be 2 Eth'
         )
@@ -212,7 +242,11 @@ contract('Rewards App', accounts => {
 
       it('gets total claims made', async () => {
         const totalClaims = await app.totalClaimsEach()
-        assert.strictEqual(totalClaims.toString(), '2', 'total individual claims should be 2')
+        assert.strictEqual(
+          totalClaims.toString(),
+          '2',
+          'total individual claims should be 2'
+        )
       })
 
       it('creates a merit reward that started in the past', async () => {
@@ -237,7 +271,11 @@ contract('Rewards App', accounts => {
 
       it('can read rewards array length', async () => {
         const rewardsLength = await app.getRewardsLength()
-        assert.strictEqual(rewardsLength.toNumber(), 4, 'rewards array length incorrect')
+        assert.strictEqual(
+          rewardsLength.toNumber(),
+          4,
+          'rewards array length incorrect'
+        )
       })
 
       it('creates a ETH reward', async () => {
@@ -262,7 +300,11 @@ contract('Rewards App', accounts => {
         await referenceToken.generateTokens(contributor3, 1e18)
         await mineBlock()
         await mineBlock()
-        assert.strictEqual(meritRewardId.toNumber(), 4, 'fifth reward should be id 4')
+        assert.strictEqual(
+          meritRewardId.toNumber(),
+          4,
+          'fifth reward should be id 4'
+        )
       })
     })
 
@@ -293,15 +335,13 @@ contract('Rewards App', accounts => {
             referenceToken.address,
             rewardToken.address,
             4e18,
-            minBlock-1,
+            minBlock - 1,
             1,
             1,
             0
           )
         })
       })
-
-
 
       it('fails to create reward with invalid reference token', async () => {
         return assertRevert(async () => {
@@ -335,7 +375,7 @@ contract('Rewards App', accounts => {
         })
       })
 
-      it('fails to create merit reward multiple occurances', async  () => {
+      it('fails to create merit reward multiple occurances', async () => {
         return assertRevert(async () => {
           await app.newReward(
             'testReward',
@@ -367,7 +407,7 @@ contract('Rewards App', accounts => {
         })
       })
 
-      it('pays out a merit reward of zero with no token changes', async() => {
+      it('pays out a merit reward of zero with no token changes', async () => {
         let blockNumber = await getBlockNumber()
         const meritRewardId = rewardAdded(
           await app.newReward(
@@ -387,7 +427,7 @@ contract('Rewards App', accounts => {
         assert.strictEqual(award[9].toNumber(), 0, 'amount should be 0')
       })
 
-      it('pays out a merit reward of zero with no token changes for the user', async() => {
+      it('pays out a merit reward of zero with no token changes for the user', async () => {
         let blockNumber = await getBlockNumber()
         const meritRewardId = rewardAdded(
           await app.newReward(
@@ -408,7 +448,11 @@ contract('Rewards App', accounts => {
         await mineBlock()
         await app.claimReward(meritRewardId)
         const newBalance = await rewardToken.balanceOf(root)
-        assert.strictEqual(newBalance.toNumber(), origBalance.toNumber(), 'balance awarded should be zero')
+        assert.strictEqual(
+          newBalance.toNumber(),
+          origBalance.toNumber(),
+          'balance awarded should be zero'
+        )
       })
 
       it('cannot claim reward before period ends', async () => {
