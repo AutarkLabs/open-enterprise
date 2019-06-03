@@ -30,6 +30,7 @@
   "dependencies": {
     "@aragon/api": "1.1.0",
     "@aragon/api-react": "1.0.0-beta.2",
+    "@aragon/apps-shared-minime": "^1.0.1",
     "@aragon/ui": "0.33.0",
     "@babel/polyfill": "^7.2.5",
     "bignumber.js": "^7.2.1",
