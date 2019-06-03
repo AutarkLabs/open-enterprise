@@ -1,10 +1,8 @@
-const {
-  ACL,
-  DAOFactory,
-  EVMScriptRegistryFactory,
-  Kernel,
-  MiniMeToken
-} = require('@tps/test-helpers/artifacts')
+const ACL = artifacts.require('ACL')
+const DAOFactory = artifacts.require('DAOFactory')
+const EVMScriptRegistryFactory = artifacts.require('EVMScriptRegistryFactory')
+const Kernel = artifacts.require('Kernel')
+const MiniMeToken = artifacts.require('MiniMeToken')
 
 const DotVoting = artifacts.require('DotVotingMock')
 const AddressBook = artifacts.require('AddressBook')
