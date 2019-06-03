@@ -1,9 +1,7 @@
-const {
-  ACL,
-  DAOFactory,
-  EVMScriptRegistryFactory,
-  Kernel,
-} = require('@tps/test-helpers/artifacts')
+const ACL = artifacts.require('ACL')
+const DAOFactory = artifacts.require('DAOFactory')
+const EVMScriptRegistryFactory = artifacts.require('EVMScriptRegistryFactory')
+const Kernel = artifacts.require('Kernel')
 
 const AddressBook = artifacts.require('AddressBook')
 
@@ -117,7 +115,11 @@ contract('AddressBook App', accounts => {
     })
     it('should return a zero-address when getting non-existant entry', async () => {
       const [ entryAddress, name, entryType ] = await app.getEntry(jeanluc)
-      assert.strictEqual(entryAddress, '0x0000000000000000000000000000000000000000', 'address should be 0x0')
+      assert.strictEqual(
+        entryAddress,
+        '0x0000000000000000000000000000000000000000',
+        'address should be 0x0'
+      )
       assert.strictEqual(name, '', 'name should be empty')
       assert.strictEqual(entryType, '', 'entry Type should be empty')
     })
