@@ -16,7 +16,7 @@ import "@tps/apps-allocations/contracts/Allocations.sol";
 import "@tps/apps-projects/contracts/Projects.sol";
 import {DotVoting as DotVotingApp} from "@tps/apps-dot-voting/contracts/DotVoting.sol";
 import "@tps/apps-rewards/contracts/Rewards.sol";
-import "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
+import "@tps/apps-projects/bounties/StandardBounties.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
 import "@aragon/apps-finance/contracts/Finance.sol";
 import "@aragon/apps-voting/contracts/Voting.sol";
