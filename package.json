@@ -47,7 +47,7 @@
     "lint:dot": "cd apps/dot-voting && npm run lint",
     "lint:fix": "lerna exec --scope=@tps/apps-* --stream -- npx eslint app --fix",
     "lint:projects": "cd apps/projects && npm run lint",
-    "lint": "lerna run lint --no-bail && lerna exec --scope=@tps/apps-* --stream -- npx eslint app",
+    "lint": "npx lerna run lint --no-bail && lerna exec --scope=@tps/apps-* --stream -- npx eslint app",
     "mine": "node ./apps/shared/test-helpers/mine.js",
     "postinstall": "npm run bootstrap",
     "publish:apps": "lerna run publish",
@@ -70,7 +70,7 @@
     "test:projects": "cd apps/projects && npm test",
     "test:rewards": "cd apps/rewards && npm test",
     "test:tps": "lerna run --scope=@tps/kits-planning-suite --stream test",
-    "test": "lerna run test --no-bail"
+    "test": "npx lerna run test --no-bail"
   },
   "dependencies": {
     "ipfs-http-client": "29.1.0",
