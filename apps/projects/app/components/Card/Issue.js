@@ -44,9 +44,9 @@ const labelsBadges = labels =>
       {label.node.name}
     </Badge>
   ))
- 
+
 class Issue extends React.PureComponent {
- 
+
   render() {
     const {
       isSelected,
@@ -92,15 +92,15 @@ class Issue extends React.PureComponent {
             {workStatus !== 'fulfilled' && (
               <ContextMenu>
                 <BountyContextMenu
-                  work={work}
-                  workStatus={workStatus}
-                  requestsData={requestsData}
                   onAllocateSingleBounty={() => onAllocateSingleBounty(issue)}
-                  onSubmitWork={() => onSubmitWork(issue)}
                   onRequestAssignment={() => onRequestAssignment(issue)}
                   onReviewApplication={() => onReviewApplication(issue)}
                   onReviewWork={() => onReviewWork(issue)}
+                  onSubmitWork={() => onSubmitWork(issue)}
                   onUpdateBounty={() => onUpdateBounty(issue)}
+                  requestsData={requestsData}
+                  work={work}
+                  workStatus={workStatus}
                 />
               </ContextMenu>
             )}
@@ -171,7 +171,7 @@ Issue.propTypes = {
     PropTypes.object,
   ]),
 }
-  
+
 const StyledIssue = styled.div`
   flex: 1;
   width: 100%;

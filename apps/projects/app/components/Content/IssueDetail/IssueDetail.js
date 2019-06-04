@@ -290,15 +290,15 @@ const detailsCard = ({
           {issue.workStatus !== 'fulfilled' && (
             <ContextMenu>
               <BountyContextMenu
-                work={issue.work}
-                workStatus={issue.workStatus}
-                requestsData={issue.requestsData}
-                onUpdateBounty={() => onUpdateBounty(issue)}
                 onAllocateSingleBounty={() => onAllocateSingleBounty(issue)}
-                onSubmitWork={() => onSubmitWork(issue)}
                 onRequestAssignment={() => onRequestAssignment(issue)}
                 onReviewApplication={() => onReviewApplication(issue)}
                 onReviewWork={() => onReviewWork(issue)}
+                onSubmitWork={() => onSubmitWork(issue)}
+                onUpdateBounty={() => onUpdateBounty(issue)}
+                requestsData={issue.requestsData}
+                work={issue.work}
+                workStatus={issue.workStatus}
               />
             </ContextMenu>
           )}
