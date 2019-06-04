@@ -89,22 +89,19 @@ class Issue extends React.PureComponent {
             <Text color={theme.textSecondary} size="xsmall">
               {repo} #{number}
             </Text>
-            {workStatus !== 'fulfilled' && (
-              <ContextMenu>
-                <BountyContextMenu
-                  onAllocateSingleBounty={() => onAllocateSingleBounty(issue)}
-                  onRequestAssignment={() => onRequestAssignment(issue)}
-                  onReviewApplication={() => onReviewApplication(issue)}
-                  onReviewWork={() => onReviewWork(issue)}
-                  onSubmitWork={() => onSubmitWork(issue)}
-                  onUpdateBounty={() => onUpdateBounty(issue)}
-                  requestsData={requestsData}
-                  work={work}
-                  workStatus={workStatus}
-                />
-              </ContextMenu>
-            )}
-
+            <ContextMenu>
+              <BountyContextMenu
+                onAllocateSingleBounty={() => onAllocateSingleBounty(issue)}
+                onRequestAssignment={() => onRequestAssignment(issue)}
+                onReviewApplication={() => onReviewApplication(issue)}
+                onReviewWork={() => onReviewWork(issue)}
+                onSubmitWork={() => onSubmitWork(issue)}
+                onUpdateBounty={() => onUpdateBounty(issue)}
+                requestsData={requestsData}
+                work={work}
+                workStatus={workStatus}
+              />
+            </ContextMenu>
           </div>
           <IssueTitleDetailsBalance>
             <IssueTitleDetails>

@@ -287,21 +287,19 @@ const detailsCard = ({
           </Text.Block>
         </div>
         <div style={{ ...column, flex: 0, alignItems: 'flex-end' }}>
-          {issue.workStatus !== 'fulfilled' && (
-            <ContextMenu>
-              <BountyContextMenu
-                onAllocateSingleBounty={() => onAllocateSingleBounty(issue)}
-                onRequestAssignment={() => onRequestAssignment(issue)}
-                onReviewApplication={() => onReviewApplication(issue)}
-                onReviewWork={() => onReviewWork(issue)}
-                onSubmitWork={() => onSubmitWork(issue)}
-                onUpdateBounty={() => onUpdateBounty(issue)}
-                requestsData={issue.requestsData}
-                work={issue.work}
-                workStatus={issue.workStatus}
-              />
-            </ContextMenu>
-          )}
+          <ContextMenu>
+            <BountyContextMenu
+              onAllocateSingleBounty={() => onAllocateSingleBounty(issue)}
+              onRequestAssignment={() => onRequestAssignment(issue)}
+              onReviewApplication={() => onReviewApplication(issue)}
+              onReviewWork={() => onReviewWork(issue)}
+              onSubmitWork={() => onSubmitWork(issue)}
+              onUpdateBounty={() => onUpdateBounty(issue)}
+              requestsData={issue.requestsData}
+              work={issue.work}
+              workStatus={issue.workStatus}
+            />
+          </ContextMenu>
           {issue.balance > 0 && (
             <Badge
               style={{ padding: '10px', textSize: 'large', marginTop: '15px' }}
