@@ -344,6 +344,11 @@ class App extends React.PureComponent {
     this.props.api.requestAssignment(toHex(issue.repoId), issue.number, hash)
   }
 
+  viewFunding = issue => {
+    console.log('view funding for issue:')
+    console.table(issue)
+  }
+
   reviewApplication = (issue, requestIndex = 0) => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.ReviewApplication,
@@ -593,6 +598,7 @@ class App extends React.PureComponent {
                   onUpdateBounty={this.updateBounty}
                   onSubmitWork={this.submitWork}
                   onRequestAssignment={this.requestAssignment}
+                  onViewFunding={this.viewFunding}
                   activeIndex={activeIndex}
                   changeActiveIndex={this.changeActiveIndex}
                   onReviewApplication={this.reviewApplication}
