@@ -374,6 +374,7 @@ class App extends React.PureComponent {
       panelProps: {
         fundingProposal,
         title: `Issue Funding #${fundingProposal.id}`,
+        tokens: this.props.tokens || [],
       },
     }))
   }
