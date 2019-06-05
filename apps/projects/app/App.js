@@ -345,12 +345,35 @@ class App extends React.PureComponent {
   }
 
   viewFunding = issue => {
+    const fundingProposal = {
+      id: 'Unknown', // FIXME: how to retrieve this?
+      description:
+        'Funding Request cannot be retrieved at this time; this feature will be completed soon.', // FIXME: how to retrieve this?
+      createdBy: issue.fundingHistory[0].user, // FIXME: does not contain Eth address; how to retrieve it?
+      issues: this.props.issues
+        .filter(
+          i => i.data.key === issue.id // FIXME: what attribute links issues from the same funding event?
+        )
+        .map(i => ({
+          balance: i.data.balance,
+          exp: i.data.exp,
+          deadline: i.data.deadline,
+          hours: i.data.hours,
+          number: i.data.number,
+          repo: i.data.repo,
+          title:
+            i.data.title ||
+            'Issue list cannot be retrieved at this time; this feature will be completed soon.', // FIXME: this attr is in `issue` returned from Issues.js, but not in this.props.issues
+          tokenSymbol: tokens[i.data.token].symbol,
+          url: i.data.url || 'https://github.com/404', // FIXME: this attr is in `issue` returned from Issues.js, but not in this.props.issues
+          workStatus: i.data.workStatus,
+        })),
+    }
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.ViewFunding,
       panelProps: {
-        issue,
-        title: `Issue Funding #${issue.number}`,
-        githubCurrentUser: this.state.githubCurrentUser,
+        fundingProposal,
+        title: `Issue Funding #${fundingProposal.id}`,
       },
     }))
   }

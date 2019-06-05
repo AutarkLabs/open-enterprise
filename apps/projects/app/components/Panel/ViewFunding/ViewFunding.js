@@ -6,19 +6,36 @@ import { Text, theme } from '@aragon/ui'
 
 class ViewFunding extends React.Component {
   static propTypes = {
-    issue: PropTypes.shape({
-      title: PropTypes.string.isRequired,
-    }).isRequired,
+    fundingProposal: PropTypes.shape({
+      description: PropTypes.string.isRequired,
+      createdBy: PropTypes.shape({
+        avatarUrl: PropTypes.string.isRequired,
+        login: PropTypes.string.isRequired,
+        url: PropTypes.string.isRequired,
+      }).isRequired,
+      issues: PropTypes.arrayOf(
+        PropTypes.shape({
+          balance: PropTypes.string.isRequired,
+          exp: PropTypes.number.isRequired,
+          deadline: PropTypes.string.isRequired,
+          hours: PropTypes.number.isRequired,
+          number: PropTypes.number.isRequired,
+          repo: PropTypes.string.isRequired,
+          title: PropTypes.string.isRequired,
+          token: PropTypes.string.isRequired,
+          url: PropTypes.string.isRequired,
+          workStatus: PropTypes.string.isRequired,
+        })
+      ).isRequired,
+    }),
   }
 
   render() {
-    const { issue } = this.props
-
-    console.log({ component: 'ViewFunding', issue })
+    const { description } = this.props.fundingProposal
 
     return (
       <React.Fragment>
-        <IssueTitle>{issue.title}</IssueTitle>
+        <IssueTitle>{description}</IssueTitle>
       </React.Fragment>
     )
   }
