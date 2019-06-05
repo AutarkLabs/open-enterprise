@@ -345,8 +345,14 @@ class App extends React.PureComponent {
   }
 
   viewFunding = issue => {
-    console.log('view funding for issue:')
-    console.table(issue)
+    this.setState((_prevState, _prevProps) => ({
+      panel: PANELS.ViewFunding,
+      panelProps: {
+        issue,
+        title: `Issue Funding #${issue.number}`,
+        githubCurrentUser: this.state.githubCurrentUser,
+      },
+    }))
   }
 
   reviewApplication = (issue, requestIndex = 0) => {
