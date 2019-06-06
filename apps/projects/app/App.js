@@ -345,6 +345,14 @@ class App extends React.PureComponent {
   }
 
   viewFunding = issue => {
+    const tokens = this.props.tokens.reduce((tokenObj, token) => {
+      tokenObj[token.addr] = {
+        symbol: token.symbol,
+        decimals: token.decimals,
+      }
+      return tokenObj
+    }, {})
+
     const fundingProposal = {
       id: 'Unknown', // FIXME: how to retrieve this?
       description:
@@ -355,8 +363,10 @@ class App extends React.PureComponent {
           i => i.data.key === issue.id // FIXME: what attribute links issues from the same funding event?
         )
         .map(i => ({
-          balance: i.data.balance,
-          exp: i.data.exp,
+          balance: BigNumber(i.data.balance).div(
+            BigNumber(10 ** tokens[i.data.token].decimals)
+          ),
+          expLevel: this.props.bountySettings.expLvls[i.data.exp].name,
           deadline: i.data.deadline,
           hours: i.data.hours,
           number: i.data.number,
@@ -374,7 +384,6 @@ class App extends React.PureComponent {
       panelProps: {
         fundingProposal,
         title: `Issue Funding #${fundingProposal.id}`,
-        tokens: this.props.tokens || [],
       },
     }))
   }

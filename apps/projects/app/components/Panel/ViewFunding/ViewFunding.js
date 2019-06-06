@@ -5,66 +5,27 @@ import styled from 'styled-components'
 import { IdentityBadge, Text, theme } from '@aragon/ui'
 import BigNumber from 'bignumber.js'
 
-const issueShape = PropTypes.shape({
-  balance: PropTypes.string.isRequired,
-  exp: PropTypes.number.isRequired,
-  deadline: PropTypes.string.isRequired,
-  hours: PropTypes.number.isRequired,
-  number: PropTypes.number.isRequired,
-  repo: PropTypes.string.isRequired,
-  title: PropTypes.string.isRequired,
-  token: PropTypes.string.isRequired,
-  url: PropTypes.string.isRequired,
-  workStatus: PropTypes.string.isRequired,
-})
+import Issue, { issueShape, Dot } from './Issue'
 
-const Issue = ({
-  balance,
-  exp,
-  deadline,
-  hours,
-  number,
-  repo,
-  title,
-  token,
-  url,
-  workStatus,
-}) => (
-  <React.Fragment>
-    {repo} #{number}
-    {title}
-    {hours} hours
-    {exp}
-    {deadline}
-    {balance}
-  </React.Fragment>
-)
-
-Issue.propTypes = issueShape.isRequired
-
-const calcTotalFunding = ({ issues, tokens }) => {
-  const balancesByToken = issues.reduce((group, issue) => {
-    group[issue.token] = (group[issue.token] || 0) + Number(issue.balance)
+const calcTotalFunding = issues => {
+  const totalsByToken = issues.reduce((group, issue) => {
+    group[issue.tokenSymbol] = group[issue.tokenSymbol] || {
+      total: 0,
+      symbol: issue.tokenSymbol,
+    }
+    group[issue.tokenSymbol].total = issue.balance.plus(
+      group[issue.tokenSymbol]
+    )
     return group
   }, {})
 
-  const totals = Object.keys(balancesByToken).map(tokenAddr => {
-    const token = tokens.find(t => t.addr === tokenAddr)
-
-    const total = BigNumber(balancesByToken[tokenAddr])
-      .div(BigNumber(10 ** token.decimals))
-      .dp(3)
-      .toString()
-
-    return `${total} ${token.symbol}`
-  })
-
-  return totals
+  return Object.values(totalsByToken).map(
+    ({ total, symbol }) => `${total.dp(3).toString()} ${symbol}`
+  )
 }
 
 const ViewFunding = ({
   fundingProposal: { createdBy, description, issues },
-  tokens,
 }) => (
   <Grid>
     <Half>
@@ -81,7 +42,7 @@ const ViewFunding = ({
     </Full>
     <Half>
       <Label>Total Funding</Label>
-      {calcTotalFunding({ issues, tokens }).join(' • ')}
+      {calcTotalFunding(issues).join(<Dot />)}
     </Half>
     <Half>
       <Label>Total Issues</Label>
@@ -105,13 +66,6 @@ ViewFunding.propTypes = {
     }).isRequired,
     issues: PropTypes.arrayOf(issueShape).isRequired,
   }),
-  tokens: PropTypes.arrayOf(
-    PropTypes.shape({
-      addr: PropTypes.string.isRequired,
-      decimals: PropTypes.string.isRequired,
-      symbol: PropTypes.string.isRequired,
-    })
-  ).isRequired,
 }
 
 const Grid = styled.div`
@@ -138,6 +92,7 @@ const Label = styled(Text.Block).attrs({
 })`
   margin-bottom: 15px;
   text-transform: uppercase;
+  white-space: nowrap;
 `
 
 export default ViewFunding
