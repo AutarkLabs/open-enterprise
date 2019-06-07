@@ -21,7 +21,7 @@ import { Issue, Empty } from '../Card'
 import { IssueDetail } from './IssueDetail'
 import Unauthorized from './Unauthorized'
 import ActiveFilters from './Filters'
-import { FixedSizeList as List } from 'react-window'
+import { VariableSizeList as List } from 'react-window'
 import throttle from 'lodash.throttle'
 
 class Issues extends React.PureComponent {
@@ -38,7 +38,7 @@ class Issues extends React.PureComponent {
       event: PropTypes.string,
     }),
     issueDetail: PropTypes.bool.isRequired,
-    setIssueDetail: PropTypes.func.isRequired
+    setIssueDetail: PropTypes.func.isRequired,
   }
 
   state = {
@@ -188,7 +188,7 @@ class Issues extends React.PureComponent {
       // if we look for all funded issues, regardless of stage...
       let filterPass =
         status in filters.statuses ||
-          ('all-funded' in filters.statuses && status !== 'not-funded')
+        ('all-funded' in filters.statuses && status !== 'not-funded')
           ? true
           : false
       // ...or at specific stages
@@ -576,7 +576,7 @@ class Issues extends React.PureComponent {
       onReviewApplication,
       onSubmitWork,
       onReviewWork,
-      issueDetail
+      issueDetail,
     } = this.props
 
     const { currentIssue, filters, scrollHeight } = this.state
@@ -585,8 +585,7 @@ class Issues extends React.PureComponent {
     if (projects.length === 0) return <Empty action={onNewProject} />
 
     // same if we only need to show Issue's Details screen
-    if (issueDetail)
-      return this.renderCurrentIssue(currentIssue, this.props)
+    if (issueDetail) return this.renderCurrentIssue(currentIssue, this.props)
 
     const currentSorter = this.generateSorter()
 
@@ -653,18 +652,16 @@ class Issues extends React.PureComponent {
                   <List
                     height={scrollHeight}
                     itemCount={preparedIssues.length}
-                    itemSize={92}
+                    estimatedItemSize={index =>
+                      preparedIssues[index].labels.totalCount > 0 ? 137 : 97
+                    }
+                    itemSize={index =>
+                      preparedIssues[index].labels.totalCount > 0 ? 137 : 97
+                    }
                     style={{ overflow: 'overlay', paddingBottom: '30px' }}
                   >
                     {({ index, style }) => (
-                      <div
-                        style={{
-                          paddingRight: '30px',
-                          paddingLeft: '30px',
-                          ...style,
-                        }}
-                        key={index}
-                      >
+                      <div style={style} key={index}>
                         <Issue
                           isSelected={
                             preparedIssues[index].id in
@@ -733,7 +730,6 @@ const StyledIssues = styled.div`
 `
 
 const ScrollWrapper = styled.div`
-  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: stretch;
@@ -749,11 +745,7 @@ const ScrollWrapper = styled.div`
 
 // TODO: Calculate height with flex (maybe to add pagination at bottom?)
 const IssuesScrollView = styled.div`
-  position: absolute;
-  top: 120px;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: relative;
 `
 const IssuesScrollViewContainer = styled.div`
   padding: 30px 30px;
