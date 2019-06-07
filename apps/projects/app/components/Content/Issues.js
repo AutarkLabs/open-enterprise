@@ -186,8 +186,10 @@ class Issues extends React.PureComponent {
 
     // last but not least, if there is any text in textFilter...
     if (textFilter) {
-      return issuesByStatus.filter(issue =>
-        issue.title.toUpperCase().match(textFilter)
+      return issuesByStatus.filter(
+        issue =>
+          issue.title.toUpperCase().match(textFilter) ||
+          String(issue.number).match(textFilter)
       )
     }
 
@@ -271,7 +273,7 @@ class Issues extends React.PureComponent {
   actionsMenu = (issues, issuesFiltered) => (
     <SearchFilterAction>
       <TextInput
-        placeholder="Search issue titles"
+        placeholder="Search issues"
         type="search"
         onChange={this.handleTextFilter}
       />
