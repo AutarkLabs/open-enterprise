@@ -9,7 +9,6 @@ import {
   ContextMenuItem,
   IconFundraising,
   breakpoint,
-  Viewport,
 } from '@aragon/ui'
 import BigNumber from 'bignumber.js'
 import { compareAsc, compareDesc } from 'date-fns'
@@ -36,7 +35,7 @@ class Issues extends React.PureComponent {
       event: PropTypes.string,
     }),
     issueDetail: PropTypes.bool.isRequired,
-    setIssueDetail: PropTypes.func.isRequired
+    setIssueDetail: PropTypes.func.isRequired,
   }
 
   state = {
@@ -178,7 +177,7 @@ class Issues extends React.PureComponent {
       // if we look for all funded issues, regardless of stage...
       let filterPass =
         status in filters.statuses ||
-          ('all-funded' in filters.statuses && status !== 'not-funded')
+        ('all-funded' in filters.statuses && status !== 'not-funded')
           ? true
           : false
       // ...or at specific stages
@@ -247,7 +246,7 @@ class Issues extends React.PureComponent {
   }
 
   actionsContextMenu = issuesFiltered => (
-    <ActionsMenu enabled={(Object.keys(this.state.selectedIssues).length !== 0)}>
+    <ActionsMenu enabled={Object.keys(this.state.selectedIssues).length !== 0}>
       <ContextMenuItem
         onClick={this.handleCurateIssues(issuesFiltered)}
         style={{ display: 'flex', alignItems: 'flex-start' }}
@@ -270,62 +269,21 @@ class Issues extends React.PureComponent {
   )
 
   actionsMenu = (issues, issuesFiltered) => (
-    <Viewport>
-      {({ below }) =>
-        below('small') ? (
-          <React.Fragment>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '0',
-                justifyContent: 'space-between',
-                alignContent: 'stretch',
-                marginTop: '10px',
-              }}
-            >
-              <TextInput
-                placeholder="Search issue titles"
-                type="search"
-                onChange={this.handleTextFilter}
-                style={{ marginRight: '6px' }}
-              />
-              {this.actionsContextMenu(issuesFiltered)}
-            </div>
-            <ActiveFilters
-              issues={issues}
-              bountyIssues={this.props.bountyIssues}
-              filters={this.state.filters}
-              disableFilter={this.disableFilter}
-              disableAllFilters={this.disableAllFilters}
-            />
-          </React.Fragment>
-        ) : (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0',
-              justifyContent: 'space-between',
-            }}
-          >
-            <TextInput
-              placeholder="Search issue titles"
-              type="search"
-              onChange={this.handleTextFilter}
-            />
-            <ActiveFilters
-              issues={issues}
-              bountyIssues={this.props.bountyIssues}
-              filters={this.state.filters}
-              disableFilter={this.disableFilter}
-              disableAllFilters={this.disableAllFilters}
-            />
-            {this.actionsContextMenu(issuesFiltered)}
-          </div>
-        )
-      }
-    </Viewport>
+    <SearchFilterAction>
+      <TextInput
+        placeholder="Search issue titles"
+        type="search"
+        onChange={this.handleTextFilter}
+      />
+      <ActiveFilters
+        issues={issues}
+        bountyIssues={this.props.bountyIssues}
+        filters={this.state.filters}
+        disableFilter={this.disableFilter}
+        disableAllFilters={this.disableAllFilters}
+      />
+      {this.actionsContextMenu(issuesFiltered)}
+    </SearchFilterAction>
   )
 
   setParentFilters = filters => {
@@ -523,7 +481,7 @@ class Issues extends React.PureComponent {
       onReviewApplication,
       onSubmitWork,
       onReviewWork,
-      issueDetail
+      issueDetail,
     } = this.props
 
     const { currentIssue, filters } = this.state
@@ -532,8 +490,7 @@ class Issues extends React.PureComponent {
     if (projects.length === 0) return <Empty action={onNewProject} />
 
     // same if we only need to show Issue's Details screen
-    if (issueDetail)
-      return this.renderCurrentIssue(currentIssue, this.props)
+    if (issueDetail) return this.renderCurrentIssue(currentIssue, this.props)
 
     const currentSorter = this.generateSorter()
 
@@ -682,6 +639,32 @@ const IssuesScrollView = styled.div`
 
 const ActionLabel = styled.span`
   margin-left: 15px;
+`
+const SearchFilterAction = styled.div`
+  display: grid;
+  align-items: center;
+  padding: 0;
+  grid-gap: 10px;
+  > *:nth-child(1) {
+    grid-area: search;
+  }
+  > *:nth-child(2) {
+    grid-area: filter;
+  }
+  > *:nth-child(3) {
+    grid-area: action;
+  }
+  grid-template-areas:
+    'search action'
+    'filter filter';
+  grid-template-columns: 1fr auto;
+  ${breakpoint(
+    'small',
+    `
+      grid-template-areas: 'search filter action';
+      grid-template-columns: 1fr 1fr auto;
+    `
+  )}
 `
 
 const recursiveDeletePathFromObject = (path, object) => {
