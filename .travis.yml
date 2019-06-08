@@ -12,17 +12,17 @@ stages:
 language: node_js
 node_js: '10' # equivalent to node 10
 
-cache:
-  directories:
-    - $HOME/.npm
-    - node_modules
+#cache:
+#  directories:
+#    - $HOME/.npm
+#    - node_modules
 
 jobs:
   include:
     - stage: precache
       script: true
       install:
-        - npm i
+        - travis_wait npm i
 
     - stage: lint
       name: Lint contracts and frontend apps
