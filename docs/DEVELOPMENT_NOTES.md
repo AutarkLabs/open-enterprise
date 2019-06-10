@@ -48,6 +48,10 @@ This is the same as above, only all javascript files are published via IPFS.
 This more closely emulates a production environment, but any frontend or worker script changes will
 require a republish to view changes in the browser.
 
+### After doing your work, run the linter and the tests
+
+- `npm run lint`
+
 ## Troubleshooting
 
 ### Publishing and Dev environment
