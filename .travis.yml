@@ -10,12 +10,12 @@ stages:
 
 # defaults
 language: node_js
-node_js: '10' # equivalent to node 10
+node_js: '10.15' # equivalent to node 10.15.x
 
-#cache:
-#  directories:
+cache:
+  directories:
+    - node_modules
 #    - $HOME/.npm
-#    - node_modules
 
 jobs:
   include:
