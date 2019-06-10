@@ -1,15 +1,12 @@
-// import { hot } from 'react-hot-loader'
 import React from 'react'
 import PropTypes from 'prop-types'
 import BigNumber from 'bignumber.js'
 import { ApolloProvider } from 'react-apollo'
-// import { map } from 'rxjs/operators'
 
 import { useAragonApi } from '@aragon/api-react'
 import {
   Main,
   TabBar,
-  // observe,
   AppView,
   AppBar,
   NavigationBar,
@@ -17,7 +14,6 @@ import {
 } from '@aragon/ui'
 
 import {
-  // networkContextType,
   AppTitleButton,
   MenuButton,
 } from '../../../shared/ui'
@@ -528,13 +524,6 @@ class App extends React.PureComponent {
     const TabComponent = contentData[activeIndex.tabIndex].TabComponent
 
     const navigationItems = [ 'Projects', ...(issueDetail ? ['Issue Detail'] : []) ]
-
-    // return (
-    //   <Main assetsUrl={ASSETS_URL}>
-
-
-    //   </Main>
-    // )
 
     console.log(this.props)
 
