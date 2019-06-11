@@ -542,7 +542,7 @@ class App extends React.PureComponent {
                           >
                             <TabBar
                               items={tabNames}
-                              onSelect={this.handleSelect}
+                              onChange={this.handleSelect}
                               selected={activeIndex.tabIndex}
                             />
                           </div>
