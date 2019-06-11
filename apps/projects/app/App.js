@@ -1,26 +1,19 @@
-// import { hot } from 'react-hot-loader'
 import React from 'react'
 import PropTypes from 'prop-types'
 import BigNumber from 'bignumber.js'
 import { ApolloProvider } from 'react-apollo'
-// import { map } from 'rxjs/operators'
 
 import { useAragonApi } from '@aragon/api-react'
 import {
   Main,
   TabBar,
-  // observe,
   AppView,
   AppBar,
   NavigationBar,
   Viewport,
 } from '@aragon/ui'
 
-import {
-  // networkContextType,
-  AppTitleButton,
-  MenuButton,
-} from '../../../shared/ui'
+import { AppTitleButton, MenuButton } from '../../../shared/ui'
 
 import ErrorBoundary from './components/App/ErrorBoundary'
 import { Issues, Overview, Settings } from './components/Content'
@@ -42,8 +35,7 @@ const ASSETS_URL = './aragon-ui'
 
 class App extends React.PureComponent {
   static propTypes = {
-    // is not required, since it comes async
-    api: PropTypes.object,
+    api: PropTypes.object, // is not required, since it comes async
     repos: PropTypes.arrayOf(PropTypes.object),
     github: PropTypes.shape({
       status: PropTypes.oneOf([
@@ -55,10 +47,6 @@ class App extends React.PureComponent {
       event: PropTypes.string,
     }),
   }
-
-  // static childContextTypes = {
-  //   network: networkContextType,
-  // }
 
   constructor(props) {
     super(props)
@@ -73,15 +61,6 @@ class App extends React.PureComponent {
     }
   }
 
-  // getChildContext() {
-  //   const { network } = this.props
-  //   return {
-  //     network: {
-  //       type: network.type,
-  //     },
-  //   }
-  // }
-
   componentDidMount() {
     /**
      * Acting as the redirect target it looks up for 'code' URL param on component mount
@@ -95,7 +74,6 @@ class App extends React.PureComponent {
         '*'
       )
     window.close()
-
   }
 
   componentDidUpdate(prevProps) {
@@ -338,11 +316,7 @@ class App extends React.PureComponent {
   onRequestAssignment = async (state, issue) => {
     this.closePanel()
     const hash = await ipfsAdd(state)
-    this.props.api.requestAssignment(
-      toHex(issue.repoId),
-      issue.number,
-      hash
-    )
+    this.props.api.requestAssignment(toHex(issue.repoId), issue.number, hash)
   }
 
   reviewApplication = (issue, requestIndex = 0) => {
@@ -358,8 +332,6 @@ class App extends React.PureComponent {
   }
 
   onReviewApplication = async (issue, requestIndex, approved, review) => {
-    console.log('onReviewApplication', issue, requestIndex, approved, review)
-
     this.closePanel()
     // new IPFS data is old data plus state returned from the panel
     const ipfsData = issue.requestsData[requestIndex]
@@ -480,8 +452,6 @@ class App extends React.PureComponent {
   }
 
   setIssueDetail = visible => {
-    console.log('issueDetail:', visible)
-
     this.setState({ issueDetail: visible })
   }
 
@@ -494,9 +464,14 @@ class App extends React.PureComponent {
       .toPromise()
   }
 
-
   render() {
-    const { activeIndex, panel, panelProps, githubCurrentUser, issueDetail } = this.state
+    const {
+      activeIndex,
+      panel,
+      panelProps,
+      githubCurrentUser,
+      issueDetail,
+    } = this.state
     const { bountySettings, displayMenuButton = false } = this.props
     const contentData = [
       {
@@ -530,30 +505,25 @@ class App extends React.PureComponent {
 
     const appTitleButton =
       status === STATUS.AUTHENTICATED &&
-        contentData[activeIndex.tabIndex].tabButton
+      contentData[activeIndex.tabIndex].tabButton
         ? contentData[activeIndex.tabIndex].tabButton
         : null
 
     const tabNames = contentData.map(t => t.tabName)
     const TabComponent = contentData[activeIndex.tabIndex].TabComponent
 
-    const navigationItems = [ 'Projects', ...(issueDetail ? ['Issue Detail'] : []) ]
-
-    // return (
-    //   <Main assetsUrl={ASSETS_URL}>
-
-
-    //   </Main>
-    // )
-
-    console.log(this.props)
+    const navigationItems = [
+      'Projects',
+      ...(issueDetail ? ['Issue Detail'] : []),
+    ]
 
     return (
       <Main assetsUrl={ASSETS_URL}>
         <ApolloProvider client={this.state.client}>
           <IdentityProvider
             onResolve={this.handleResolveLocalIdentity}
-            onShowLocalIdentityModal={this.handleShowLocalIdentityModal}>
+            onShowLocalIdentityModal={this.handleShowLocalIdentityModal}
+          >
             <AppView
               padding={0}
               style={{ height: '100%', overflowY: 'hidden' }}
@@ -575,8 +545,8 @@ class App extends React.PureComponent {
                         issueDetail ? null : (
                           <div
                             css={`
-                                  margin-left: ${below('medium') ? '-14px' : '0'};
-                                `}
+                              margin-left: ${below('medium') ? '-14px' : '0'};
+                            `}
                           >
                             <TabBar
                               items={tabNames}
@@ -591,11 +561,11 @@ class App extends React.PureComponent {
                         <MenuButton
                           onClick={this.handleMenuPanelOpen}
                           css={`
-                                position: relative;
-                                z-index: 2;
-                                margin-left: 8px;
-                                margin-right: -24px;
-                              `}
+                            position: relative;
+                            z-index: 2;
+                            margin-left: 8px;
+                            margin-right: -24px;
+                          `}
                         />
                       )}
                       <NavigationBar
@@ -641,7 +611,6 @@ class App extends React.PureComponent {
                   onReviewWork={this.reviewWork}
                   setIssueDetail={this.setIssueDetail}
                   issueDetail={issueDetail}
-
                 />
               </ErrorBoundary>
             </AppView>
@@ -652,15 +621,10 @@ class App extends React.PureComponent {
             />
           </IdentityProvider>
         </ApolloProvider>
-      </Main >
+      </Main>
     )
   }
 }
-
-// export default observe(
-//   observable => observable.pipe(map(state => ({ ...state }))),
-//   {}
-// )(hot(module)(App))
 
 export default () => {
   const { api, appState } = useAragonApi()
