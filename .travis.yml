@@ -10,19 +10,19 @@ stages:
 
 # defaults
 language: node_js
-node_js: '10' # equivalent to node 10
+node_js: '10.15' # equivalent to node 10.15.x
 
 cache:
   directories:
-    - $HOME/.npm
     - node_modules
+#    - $HOME/.npm
 
 jobs:
   include:
     - stage: precache
       script: true
       install:
-        - npm i
+        - travis_wait npm i
 
     - stage: lint
       name: Lint contracts and frontend apps
