@@ -33,6 +33,31 @@ import { toHex } from './utils/web3-utils'
 
 const ASSETS_URL = './aragon-ui'
 
+const getTabs = ({ newProject, newIssue, repoCount }) => {
+  const tabs = [
+    {
+      name: 'Overview',
+      body: Overview,
+      action: <AppTitleButton caption="New Project" onClick={newProject} />,
+    },
+  ]
+
+  if (repoCount > 0) {
+    tabs.push({
+      name: 'Issues',
+      body: Issues,
+      action: <AppTitleButton caption="New Issue" onClick={newIssue} />,
+    })
+  }
+
+  tabs.push({
+    name: 'Settings',
+    body: Settings,
+  })
+
+  return tabs
+}
+
 class App extends React.PureComponent {
   static propTypes = {
     api: PropTypes.object, // is not required, since it comes async
@@ -473,44 +498,17 @@ class App extends React.PureComponent {
       issueDetail,
     } = this.state
     const { bountySettings, displayMenuButton = false } = this.props
-    const contentData = [
-      {
-        tabName: 'Overview',
-        TabComponent: Overview,
-        tabButton: {
-          caption: 'New Project',
-          onClick: this.newProject,
-          disabled: () => false,
-          hidden: () => false,
-        },
-      },
-      {
-        tabName: 'Issues',
-        TabComponent: Issues,
-        tabButton: {
-          caption: 'New Issue',
-          onClick: this.newIssue,
-          // TODO: check this, not very readable, and why do we need two variables doing exactly the same?
-          disabled: () => (this.props.repos.length ? false : true),
-          hidden: () => (this.props.repos.length ? false : true),
-        },
-      },
-      {
-        tabName: 'Settings',
-        TabComponent: Settings,
-      },
-    ]
 
     const status = this.props.github ? this.props.github.status : STATUS.INITIAL
 
-    const appTitleButton =
-      status === STATUS.AUTHENTICATED &&
-      contentData[activeIndex.tabIndex].tabButton
-        ? contentData[activeIndex.tabIndex].tabButton
-        : null
+    const tabs = getTabs({
+      newProject: this.newProject,
+      newIssue: this.newIssue,
+      repoCount: this.props.repos && this.props.repos.length,
+    })
 
-    const tabNames = contentData.map(t => t.tabName)
-    const TabComponent = contentData[activeIndex.tabIndex].TabComponent
+    const tabNames = tabs.map(t => t.name)
+    const TabComponent = tabs[activeIndex.tabIndex].body
 
     const navigationItems = [
       'Projects',
@@ -532,14 +530,8 @@ class App extends React.PureComponent {
                   {({ below }) => (
                     <AppBar
                       endContent={
-                        appTitleButton &&
-                        !appTitleButton.hidden() && (
-                          <AppTitleButton
-                            caption={appTitleButton.caption}
-                            onClick={appTitleButton.onClick}
-                            disabled={appTitleButton.disabled()}
-                          />
-                        )
+                        status === STATUS.AUTHENTICATED &&
+                        tabs[activeIndex.tabIndex].action
                       }
                       tabs={
                         issueDetail ? null : (
