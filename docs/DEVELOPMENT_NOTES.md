@@ -27,7 +27,7 @@ lerna info versioning independent
 
 #### To run everything working together in the Aragon Wrapper with a Development Blockchain
 
-- `npm start:dev`
+- `npm run start:dev`
 
 This script checks/install dependencies through lerna bootstrap, then concurrently starts a local development blockchain to deploy the individual apps there calling `aragon apm publish` on each app, also with help of lerna.
 When individual apps are deployed, the aragon/cli --kit option compiles and deploys the PlanningKit dao template sitting in contracts folder.
@@ -52,7 +52,7 @@ require a republish to view changes in the browser.
 
 ### Publishing and Dev environment
 
-- If something stops working because, you know, things break, the right way to debug the problem is to run the same `npm start:dev` steps one by one:
+- If something stops working because, you know, things break, the right way to debug the problem is to run the same `npm run start:dev` steps one by one:
 - `npm run bootstrap`
   Check if some dependency is not installed or available
 - `npm run publish:apps`
