@@ -14,6 +14,7 @@ class DropDownButton extends React.Component {
     children: PropTypes.node,
     enabled: PropTypes.bool,
     mode: PropTypes.string,
+    style: PropTypes.object,
   }
   state = {
     opened: false,
@@ -26,7 +27,7 @@ class DropDownButton extends React.Component {
   }
   render() {
     const { opened } = this.state
-    const { children, enabled, mode } = this.props
+    const { children, enabled, mode, style } = this.props
     const buttonMode = enabled ? mode || 'secondary' : 'strong'
     return (
       <ClickOutHandler onClickOut={this.handleClose}>
@@ -38,6 +39,7 @@ class DropDownButton extends React.Component {
           {({ openProgress }) => (
             <Main
               style={{
+                ...style,
                 zIndex: opened ? '4' : '1',
                 boxShadow: openProgress.interpolate(
                   t => `0 4px 4px rgba(0, 0, 0, ${t * 0.03})`
