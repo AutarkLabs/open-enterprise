@@ -186,8 +186,10 @@ class Issues extends React.PureComponent {
 
     // last but not least, if there is any text in textFilter...
     if (textFilter) {
-      return issuesByStatus.filter(issue =>
-        issue.title.toUpperCase().match(textFilter)
+      return issuesByStatus.filter(
+        issue =>
+          issue.title.toUpperCase().match(textFilter) ||
+          String(issue.number).match(textFilter)
       )
     }
 
