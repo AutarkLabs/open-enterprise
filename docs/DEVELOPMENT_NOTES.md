@@ -51,6 +51,7 @@ require a republish to view changes in the browser.
 ### After doing your work, run the linter and the tests
 
 - `npm run lint`
+- `npm run test`
 
 ## Troubleshooting
 
