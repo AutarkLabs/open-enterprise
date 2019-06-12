@@ -250,7 +250,7 @@ class App extends React.PureComponent {
         mode: 'update',
         onSubmit: this.onSubmitBountyAllocation,
         bountySettings: this.props.bountySettings,
-        closePanel: this.cancelBounties,
+        closePanel: this.closePanel,
         tokens: this.props.tokens !== undefined ? this.props.tokens : [],
         githubCurrentUser: this.state.githubCurrentUser,
       },
@@ -452,10 +452,6 @@ class App extends React.PureComponent {
       issueNumbers,
       1
     )
-  }
-
-  cancelBounties = id => {
-    this.closePanel()
   }
 
   closePanel = () => {
