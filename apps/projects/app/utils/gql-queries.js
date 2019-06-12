@@ -140,3 +140,14 @@ export const GET_REPOSITORIES = gql`
    }
  }
 `
+export const COMMENT = gql`
+  mutation comment($body: String!, $subjectId: ID!) {
+    addComment(
+      input: { body: $body, subjectId: $subjectId }
+    ) {
+      subject {
+        id
+      }
+    }
+  }
+`
