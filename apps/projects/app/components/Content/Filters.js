@@ -20,6 +20,7 @@ export default class Filters extends Component {
     bountyIssues: PropTypes.array,
     disableFilter: PropTypes.func.isRequired,
     disableAllFilters: PropTypes.func.isRequired,
+    style: PropTypes.object,
   }
 
   static defaultProps = {
@@ -92,11 +93,12 @@ export default class Filters extends Component {
 
   render() {
     const filterAliases = this.calculateFilters()
+    const { style } = this.props
 
     if (Object.keys(filterAliases).length === 0) return null
 
     return (
-      <Wrap>
+      <Wrap style={style}>
         <div>
           {Object.keys(filterAliases).map(alias => {
             const pathToDisableFilter = filterAliases[alias]

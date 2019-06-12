@@ -247,44 +247,45 @@ class Issues extends React.PureComponent {
     })
   }
 
-  actionsContextMenu = issuesFiltered => (
-    <ActionsMenu enabled={Object.keys(this.state.selectedIssues).length !== 0}>
-      <ContextMenuItem
-        onClick={this.handleCurateIssues(issuesFiltered)}
-        style={{ display: 'flex', alignItems: 'flex-start' }}
-      >
-        <div>
-          <IconCurate color={theme.textTertiary} />
-        </div>
-        <ActionLabel>Curate Issues</ActionLabel>
-      </ContextMenuItem>
-      <ContextMenuItem
-        onClick={this.handleAllocateBounties}
-        style={{ display: 'flex', alignItems: 'flex-start' }}
-      >
-        <div style={{ marginLeft: '4px' }}>
-          <IconFundraising color={theme.textTertiary} />
-        </div>
-        <ActionLabel>Fund Issues</ActionLabel>
-      </ContextMenuItem>
-    </ActionsMenu>
-  )
-
   actionsMenu = (issues, issuesFiltered) => (
     <SearchFilterAction>
       <TextInput
-        placeholder="Search issues"
+        style={{ gridArea: 'search' }}
+        placeholder="Search issue titles"
         type="search"
         onChange={this.handleTextFilter}
       />
       <ActiveFilters
+        style={{ gridArea: 'filter' }}
         issues={issues}
         bountyIssues={this.props.bountyIssues}
         filters={this.state.filters}
         disableFilter={this.disableFilter}
         disableAllFilters={this.disableAllFilters}
       />
-      {this.actionsContextMenu(issuesFiltered)}
+      <ActionsMenu
+        enabled={Object.keys(this.state.selectedIssues).length !== 0}
+        style={{ gridArea: 'action' }}
+      >
+        <ContextMenuItem
+          onClick={this.handleCurateIssues(issuesFiltered)}
+          style={{ display: 'flex', alignItems: 'flex-start' }}
+        >
+          <div>
+            <IconCurate color={theme.textTertiary} />
+          </div>
+          <ActionLabel>Curate Issues</ActionLabel>
+        </ContextMenuItem>
+        <ContextMenuItem
+          onClick={this.handleAllocateBounties}
+          style={{ display: 'flex', alignItems: 'flex-start' }}
+        >
+          <div style={{ marginLeft: '4px' }}>
+            <IconFundraising color={theme.textTertiary} />
+          </div>
+          <ActionLabel>Fund Issues</ActionLabel>
+        </ContextMenuItem>
+      </ActionsMenu>
     </SearchFilterAction>
   )
 
@@ -647,15 +648,6 @@ const SearchFilterAction = styled.div`
   align-items: center;
   padding: 0;
   grid-gap: 10px;
-  > *:nth-child(1) {
-    grid-area: search;
-  }
-  > *:nth-child(2) {
-    grid-area: filter;
-  }
-  > *:nth-child(3) {
-    grid-area: action;
-  }
   grid-template-areas:
     'search action'
     'filter filter';
