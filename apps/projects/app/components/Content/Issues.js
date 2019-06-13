@@ -9,7 +9,6 @@ import {
   ContextMenuItem,
   IconFundraising,
   breakpoint,
-  Viewport,
 } from '@aragon/ui'
 import BigNumber from 'bignumber.js'
 import { compareAsc, compareDesc } from 'date-fns'
@@ -36,7 +35,7 @@ class Issues extends React.PureComponent {
       event: PropTypes.string,
     }),
     issueDetail: PropTypes.bool.isRequired,
-    setIssueDetail: PropTypes.func.isRequired
+    setIssueDetail: PropTypes.func.isRequired,
   }
 
   state = {
@@ -178,7 +177,7 @@ class Issues extends React.PureComponent {
       // if we look for all funded issues, regardless of stage...
       let filterPass =
         status in filters.statuses ||
-          ('all-funded' in filters.statuses && status !== 'not-funded')
+        ('all-funded' in filters.statuses && status !== 'not-funded')
           ? true
           : false
       // ...or at specific stages
@@ -187,8 +186,10 @@ class Issues extends React.PureComponent {
 
     // last but not least, if there is any text in textFilter...
     if (textFilter) {
-      return issuesByStatus.filter(issue =>
-        issue.title.toUpperCase().match(textFilter)
+      return issuesByStatus.filter(
+        issue =>
+          issue.title.toUpperCase().indexOf(textFilter) !== -1 ||
+          String(issue.number).indexOf(textFilter) !== -1
       )
     }
 
@@ -246,86 +247,46 @@ class Issues extends React.PureComponent {
     })
   }
 
-  actionsContextMenu = issuesFiltered => (
-    <ActionsMenu enabled={(Object.keys(this.state.selectedIssues).length !== 0)}>
-      <ContextMenuItem
-        onClick={this.handleCurateIssues(issuesFiltered)}
-        style={{ display: 'flex', alignItems: 'flex-start' }}
-      >
-        <div>
-          <IconCurate color={theme.textTertiary} />
-        </div>
-        <ActionLabel>Curate Issues</ActionLabel>
-      </ContextMenuItem>
-      <ContextMenuItem
-        onClick={this.handleAllocateBounties}
-        style={{ display: 'flex', alignItems: 'flex-start' }}
-      >
-        <div style={{ marginLeft: '4px' }}>
-          <IconFundraising color={theme.textTertiary} />
-        </div>
-        <ActionLabel>Fund Issues</ActionLabel>
-      </ContextMenuItem>
-    </ActionsMenu>
-  )
-
   actionsMenu = (issues, issuesFiltered) => (
-    <Viewport>
-      {({ below }) =>
-        below('small') ? (
-          <React.Fragment>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '0',
-                justifyContent: 'space-between',
-                alignContent: 'stretch',
-                marginTop: '10px',
-              }}
-            >
-              <TextInput
-                placeholder="Search issue titles"
-                type="search"
-                onChange={this.handleTextFilter}
-                style={{ marginRight: '6px' }}
-              />
-              {this.actionsContextMenu(issuesFiltered)}
-            </div>
-            <ActiveFilters
-              issues={issues}
-              bountyIssues={this.props.bountyIssues}
-              filters={this.state.filters}
-              disableFilter={this.disableFilter}
-              disableAllFilters={this.disableAllFilters}
-            />
-          </React.Fragment>
-        ) : (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0',
-              justifyContent: 'space-between',
-            }}
-          >
-            <TextInput
-              placeholder="Search issue titles"
-              type="search"
-              onChange={this.handleTextFilter}
-            />
-            <ActiveFilters
-              issues={issues}
-              bountyIssues={this.props.bountyIssues}
-              filters={this.state.filters}
-              disableFilter={this.disableFilter}
-              disableAllFilters={this.disableAllFilters}
-            />
-            {this.actionsContextMenu(issuesFiltered)}
+    <SearchFilterAction>
+      <TextInput
+        style={{ gridArea: 'search' }}
+        placeholder="Search issue titles"
+        type="search"
+        onChange={this.handleTextFilter}
+      />
+      <ActiveFilters
+        style={{ gridArea: 'filter' }}
+        issues={issues}
+        bountyIssues={this.props.bountyIssues}
+        filters={this.state.filters}
+        disableFilter={this.disableFilter}
+        disableAllFilters={this.disableAllFilters}
+      />
+      <ActionsMenu
+        enabled={Object.keys(this.state.selectedIssues).length !== 0}
+        style={{ gridArea: 'action' }}
+      >
+        <ContextMenuItem
+          onClick={this.handleCurateIssues(issuesFiltered)}
+          style={{ display: 'flex', alignItems: 'flex-start' }}
+        >
+          <div>
+            <IconCurate color={theme.textTertiary} />
           </div>
-        )
-      }
-    </Viewport>
+          <ActionLabel>Curate Issues</ActionLabel>
+        </ContextMenuItem>
+        <ContextMenuItem
+          onClick={this.handleAllocateBounties}
+          style={{ display: 'flex', alignItems: 'flex-start' }}
+        >
+          <div style={{ marginLeft: '4px' }}>
+            <IconFundraising color={theme.textTertiary} />
+          </div>
+          <ActionLabel>Fund Issues</ActionLabel>
+        </ContextMenuItem>
+      </ActionsMenu>
+    </SearchFilterAction>
   )
 
   setParentFilters = filters => {
@@ -523,7 +484,7 @@ class Issues extends React.PureComponent {
       onReviewApplication,
       onSubmitWork,
       onReviewWork,
-      issueDetail
+      issueDetail,
     } = this.props
 
     const { currentIssue, filters } = this.state
@@ -532,8 +493,7 @@ class Issues extends React.PureComponent {
     if (projects.length === 0) return <Empty action={onNewProject} />
 
     // same if we only need to show Issue's Details screen
-    if (issueDetail)
-      return this.renderCurrentIssue(currentIssue, this.props)
+    if (issueDetail) return this.renderCurrentIssue(currentIssue, this.props)
 
     const currentSorter = this.generateSorter()
 
@@ -682,6 +642,23 @@ const IssuesScrollView = styled.div`
 
 const ActionLabel = styled.span`
   margin-left: 15px;
+`
+const SearchFilterAction = styled.div`
+  display: grid;
+  align-items: center;
+  padding: 0;
+  grid-gap: 10px;
+  grid-template-areas:
+    'search action'
+    'filter filter';
+  grid-template-columns: 1fr auto;
+  ${breakpoint(
+    'small',
+    `
+      grid-template-areas: 'search filter action';
+      grid-template-columns: 1fr 1fr auto;
+    `
+  )}
 `
 
 const recursiveDeletePathFromObject = (path, object) => {
