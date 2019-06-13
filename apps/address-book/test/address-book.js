@@ -10,6 +10,7 @@ const AddressBook = artifacts.require('AddressBook')
 const { assertRevert } = require('@tps/test-helpers/assertThrow')
 
 const ANY_ADDR = ' 0xffffffffffffffffffffffffffffffffffffffff'
+const exampleCid = 'QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco'
 
 contract('AddressBook App', accounts => {
   let daoFact = {},
@@ -73,7 +74,7 @@ contract('AddressBook App', accounts => {
     let starfleet = accounts[0]
 
     it('should add a new entry', async () => {
-      const receipt = await app.addEntry(starfleet, 'Starfleet', 'Group')
+      const receipt = await app.addEntry(starfleet, 'Starfleet', 'Group', exampleCid)
       const addedAddress = receipt.logs.filter(l => l.event == 'EntryAdded')[0]
         .args.addr
       assert.equal(addedAddress, starfleet)
@@ -83,31 +84,32 @@ contract('AddressBook App', accounts => {
       assert.equal(entry1[0], starfleet)
       assert.equal(entry1[1], 'Starfleet')
       assert.equal(entry1[2], 'Group')
+      assert.equal(entry1[3], exampleCid)
     })
     it('should remove the previously added entry', async () => {
       await app.removeEntry(starfleet)
     })
     it('should allow to use the same name from previously removed entry', async () => {
-      await app.addEntry(accounts[1], 'Starfleet', 'Dejavu')
+      await app.addEntry(accounts[1], 'Starfleet', 'Dejavu', exampleCid)
     })
     it('should allow to use the same address from previously removed entry', async () => {
-      await app.addEntry(starfleet, 'NewStar', 'Dejavu')
+      await app.addEntry(starfleet, 'NewStar', 'Dejavu', exampleCid)
     })
   })
   context('invalid operations', () => {
     let [ borg, jeanluc ] = accounts.splice(1, 2)
     before(async () => {
-      app.addEntry(borg, 'Borg', 'Individual')
+      app.addEntry(borg, 'Borg', 'Individual', exampleCid)
     })
 
     it('should revert when adding duplicate address', async () => {
       return assertRevert(async () => {
-        await app.addEntry(borg, 'Burg', 'N/A')
+        await app.addEntry(borg, 'Burg', 'N/A', exampleCid)
       })
     })
     it('should revert when adding duplicate name', async () => {
       return assertRevert(async () => {
-        await app.addEntry(jeanluc, 'Borg', 'Captain')
+        await app.addEntry(jeanluc, 'Borg', 'Captain', exampleCid)
       })
     })
     it('should revert when removing not existant entry', async () => {
@@ -116,10 +118,11 @@ contract('AddressBook App', accounts => {
       })
     })
     it('should return a zero-address when getting non-existant entry', async () => {
-      const [ entryAddress, name, entryType ] = await app.getEntry(jeanluc)
+      const [ entryAddress, name, entryType, entryCid ] = await app.getEntry(jeanluc)
       assert.strictEqual(entryAddress, '0x0000000000000000000000000000000000000000', 'address should be 0x0')
       assert.strictEqual(name, '', 'name should be empty')
       assert.strictEqual(entryType, '', 'entry Type should be empty')
+      assert.strictEqual(entryCid, '', 'CID should be an empty string')
     })
   })
 })
