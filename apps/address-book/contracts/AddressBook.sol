@@ -65,7 +65,7 @@ contract AddressBook is AragonApp {
     {
         require(entries[_addr].entryAddress == 0, "entry exists with that address");
         require(!nameUsed[keccak256(abi.encodePacked(_name))], "name already in use");
-        require(bytes(_cid).length == 46);
+        require(bytes(_cid).length == 46, "CID malformed");
 
         Entry storage entry = entries[_addr];
         entry.entryAddress = _addr;
