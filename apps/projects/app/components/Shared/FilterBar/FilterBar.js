@@ -15,11 +15,12 @@ import prepareFilters from './prepareFilters'
 import { IconArrow as IconArrowDown } from '../../../../../../shared/ui'
 
 class FilterBar extends React.Component {
+  // TODO: disentangle props.sortBy and state.sortBy
   state = {
     // direction: -1: .oO; 1: Oo.; 0: disabled
     sortBy: [
       { what: 'Name', direction: 0 },
-      { what: 'Creation Date', direction: 1 },
+      { what: 'Creation Date', direction: -1 },
       //{ what: 'Label', direction: 0 },
       //{ what: 'Milestone', direction: 0 },
       //{ what: 'Status', direction: 0 },
@@ -31,7 +32,7 @@ class FilterBar extends React.Component {
   noop = () => {}
 
   filter = (type, id) => () => {
-    const { filters } = this.props
+    const filters = { ...this.props.filters }
     if (id in filters[type]) delete filters[type][id]
     else filters[type][id] = true
     // filters are in local state because of checkboxes
@@ -45,7 +46,7 @@ class FilterBar extends React.Component {
     sortBy.map(s => {
       if (s.what === what) {
         s.direction = s.direction === 0 ? -1 : s.direction * -1
-        this.props.handleSorting(s)
+        this.props.handleSorting({ ...s })
       } else s.direction = 0
     })
     this.setState(sortBy)
@@ -57,11 +58,8 @@ class FilterBar extends React.Component {
       enabled={Object.keys(filtersData.projects).length > 0}
     >
       {Object.keys(filtersData.projects)
-        .sort(
-          (p1, p2) =>
-            filtersData.projects[p1].name < filtersData.projects[p2].name
-              ? -1
-              : 1
+        .sort((p1, p2) =>
+          filtersData.projects[p1].name < filtersData.projects[p2].name ? -1 : 1
         )
         .map(id => (
           <FilterMenuItem
@@ -70,14 +68,10 @@ class FilterBar extends React.Component {
             style={{ display: 'flex', alignItems: 'flex-start' }}
           >
             <div>
-              <Checkbox
-                onChange={this.noop}
-                checked={id in filters.projects}
-              />
+              <Checkbox onChange={this.noop} checked={id in filters.projects} />
             </div>
             <ActionLabel>
-              {filtersData.projects[id].name} (
-              {filtersData.projects[id].count})
+              {filtersData.projects[id].name} ({filtersData.projects[id].count})
             </ActionLabel>
           </FilterMenuItem>
         ))}
@@ -104,10 +98,7 @@ class FilterBar extends React.Component {
             style={{ display: 'flex', alignItems: 'flex-start' }}
           >
             <div>
-              <Checkbox
-                onChange={this.noop}
-                checked={id in filters.labels}
-              />
+              <Checkbox onChange={this.noop} checked={id in filters.labels} />
             </div>
             <ActionLabel>
               <Badge
@@ -116,7 +107,7 @@ class FilterBar extends React.Component {
               >
                 {filtersData.labels[id].name}
               </Badge>{' '}
-            ({filtersData.labels[id].count})
+              ({filtersData.labels[id].count})
             </ActionLabel>
           </FilterMenuItem>
         ))}
@@ -133,7 +124,7 @@ class FilterBar extends React.Component {
           if (m1 === 'milestoneless') return -1
           if (m2 === 'milestoneless') return 1
           return filtersData.milestones[m1].title <
-          filtersData.milestones[m2].title
+            filtersData.milestones[m2].title
             ? -1
             : 1
         })
@@ -223,12 +214,10 @@ class FilterBar extends React.Component {
           )}
           {sorter.direction === -1 && (
             <SortArrow>
-              <IconArrowDown style={{ transform: 'rotate(180deg)' }}/>
+              <IconArrowDown style={{ transform: 'rotate(180deg)' }} />
             </SortArrow>
           )}
-          {sorter.direction === 0 && (
-            <SortArrow />
-          )}
+          {sorter.direction === 0 && <SortArrow />}
           <ActionLabel>{sorter.what}</ActionLabel>
         </FilterMenuItem>
       ))}
@@ -236,16 +225,27 @@ class FilterBar extends React.Component {
   )
 
   render() {
-    const { handleSelectAll, allSelected, issues, bountyIssues, filters, sortBy } = this.props
+    const {
+      handleSelectAll,
+      allSelected,
+      issues,
+      bountyIssues,
+      filters,
+    } = this.props
     // filters contain information about active filters (checked checkboxes)
     // filtersData is about displayed checkboxes
-    const allFundedIssues = [ 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]
+    const allFundedIssues = [
+      'funded',
+      'review-applicants',
+      'in-progress',
+      'review-work',
+      'fulfilled',
+    ]
     const allIssues = [ 'all-funded', 'not-funded' ]
     const filtersData = prepareFilters(issues, bountyIssues)
 
     return (
       <StyledFilterBar>
-
         <FilterButton>
           <Checkbox onChange={handleSelectAll} checked={allSelected} />
         </FilterButton>
@@ -254,11 +254,15 @@ class FilterBar extends React.Component {
           {this.filterByProject(filters, filtersData)}
           {this.filterByLabel(filters, filtersData)}
           {this.filterByMilestone(filters, filtersData)}
-          {this.filterByStatus(filters, filtersData, allFundedIssues, allIssues)}
+          {this.filterByStatus(
+            filters,
+            filtersData,
+            allFundedIssues,
+            allIssues
+          )}
         </Overflow>
 
         {this.sortDropDown()}
-
       </StyledFilterBar>
     )
   }

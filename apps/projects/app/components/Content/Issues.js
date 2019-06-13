@@ -24,6 +24,8 @@ import ActiveFilters from './Filters'
 import { VariableSizeList as List } from 'react-window'
 import throttle from 'lodash.throttle'
 
+const listRef = React.createRef()
+
 class Issues extends React.PureComponent {
   static propTypes = {
     onLogin: PropTypes.func.isRequired,
@@ -555,6 +557,17 @@ class Issues extends React.PureComponent {
     window.removeEventListener('resize', this.resize)
   }
 
+  componentDidUpdate(_, prevState) {
+    if (
+      prevState.filters !== this.state.filters ||
+      prevState.sortBy !== this.state.sortBy
+    ) {
+      setTimeout(() => {
+        listRef.current.resetAfterIndex(0)
+      })
+    }
+  }
+
   saveScroll = element => {
     // NOTES: When you return from an issue card to issue list, clientHeight is null. Fixed with this timeout.
     setTimeout(() => {
@@ -625,6 +638,14 @@ class Issues extends React.PureComponent {
         fetchPolicy="cache-first"
         query={GET_ISSUES2}
         onError={console.error}
+        onCompleted={data => {
+          // We re-fire the query when some filters change;
+          // this requires recalculating item heights.
+          // Using setTimeout waits for "the next tick" after the data is loaded in
+          setTimeout(() => {
+            listRef.current && listRef.current.resetAfterIndex(0)
+          })
+        }}
       >
         {({ data, loading, error, refetch }) => {
           if (data && data.node0) {
@@ -650,59 +671,44 @@ class Issues extends React.PureComponent {
                 {this.filterBar(downloadedIssues, issuesFiltered)}
                 <IssuesScrollView ref={this.setScrollElementRef}>
                   <List
+                    ref={listRef}
                     height={scrollHeight}
                     itemCount={preparedIssues.length}
-                    estimatedItemSize={index =>
-                      preparedIssues[index].labels.totalCount > 0 ? 137 : 97
-                    }
-                    itemSize={index =>
-                      preparedIssues[index].labels.totalCount > 0 ? 137 : 97
-                    }
+                    estimatedItemSize={97}
+                    itemSize={index => {
+                      // TODO: this breaks on narrow screens or for issues with many labels
+                      const issue = preparedIssues[index]
+                      return (
+                        96 +
+                        (issue.labels.totalCount ? 40 : 0) +
+                        (issue.hasBounty ? 25 : 0)
+                      )
+                    }}
                     style={{ overflow: 'overlay', paddingBottom: '30px' }}
                   >
-                    {({ index, style }) => (
-                      <div style={style} key={index}>
-                        <Issue
-                          isSelected={
-                            preparedIssues[index].id in
-                            this.state.selectedIssues
-                          }
-                          {...preparedIssues[index]}
-                          onClick={this.handleIssueClick}
-                          onSelect={this.handleIssueSelection}
-                          onReviewApplication={onReviewApplication}
-                          onSubmitWork={onSubmitWork}
-                          onRequestAssignment={onRequestAssignment}
-                          onAllocateSingleBounty={
-                            this.handleAllocateSingleBounty
-                          }
-                          onUpdateBounty={this.handleUpdateBounty}
-                          onReviewWork={onReviewWork}
-                        />
-                      </div>
-                    )}
+                    {({ index, style }) => {
+                      const issue = preparedIssues[index]
+                      return (
+                        <Row style={style} key={issue.id}>
+                          <Issue
+                            isSelected={issue.id in this.state.selectedIssues}
+                            {...issue}
+                            onClick={this.handleIssueClick}
+                            onSelect={this.handleIssueSelection}
+                            onReviewApplication={onReviewApplication}
+                            onSubmitWork={onSubmitWork}
+                            onRequestAssignment={onRequestAssignment}
+                            onAllocateSingleBounty={
+                              this.handleAllocateSingleBounty
+                            }
+                            onUpdateBounty={this.handleUpdateBounty}
+                            onReviewWork={onReviewWork}
+                          />
+                        </Row>
+                      )
+                    }}
                   </List>
                 </IssuesScrollView>
-
-                {/* <IssuesScrollView>
-                  <ScrollWrapper>
-                  {}
-                  </ScrollWrapper>
-
-                  <div style={{ textAlign: 'center' }}>
-                    {moreIssuesToShow && (
-                      <Button
-                        style={{ margin: '12px 0 30px 0' }}
-                        mode="secondary"
-                        onClick={() =>
-                          this.showMoreIssues(downloadedIssues, downloadedRepos)
-                        }
-                      >
-                        Show More
-                      </Button>
-                    )}
-                  </div>
-                </IssuesScrollView> */}
               </StyledIssues>
             )
           }
@@ -715,6 +721,19 @@ class Issues extends React.PureComponent {
     )
   }
 }
+
+const Row = styled.div`
+  border: 1px solid ${theme.contentBorder};
+  border-bottom-width: 0;
+  overflow: hidden;
+  &:first-child {
+    border-radius: 3px 3px 0 0;
+  }
+  &:last-child {
+    border-radius: 0 0 3px 3px;
+    border-bottom-width: 1px;
+  }
+`
 
 const StyledIssues = styled.div`
   display: flex;
