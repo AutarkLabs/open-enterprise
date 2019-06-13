@@ -97,7 +97,7 @@ contract('AddressBook App', accounts => {
     })
   })
   context('invalid operations', () => {
-    let [ borg, jeanluc ] = accounts.splice(1, 2)
+    let [ borg, jeanluc, bates ] = accounts.splice(1, 3)
     before(async () => {
       app.addEntry(borg, 'Borg', 'Individual', exampleCid)
     })
@@ -115,6 +115,11 @@ contract('AddressBook App', accounts => {
     it('should revert when removing not existant entry', async () => {
       return assertRevert(async () => {
         await app.removeEntry(jeanluc)
+      })
+    })
+    it('should revert when a CID =/= 46 chars', async () => {
+      return assertRevert(async () => {
+        await app.addEntry(bates, 'Patrick Bateman', 'VP', 'test_CID')
       })
     })
     it('should return a zero-address when getting non-existant entry', async () => {
