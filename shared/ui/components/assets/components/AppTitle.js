@@ -1,19 +1,20 @@
 import { Text } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
+import styled from 'styled-components'
 import { MenuButton } from '.'
 
+const Wrap = styled.div`
+  display: flex;
+  align-items: center;
+  margin-left: 30px;
+`
+
 const AppTitle = props => (
-  <div style={{ display: 'flex', alignItems: 'center' }}>
-    {props.displayMenuButton ? (
-      <React.Fragment>
-        <MenuButton style={{ padding: '0 16px', width: 'auto' }} />
-        <Text size="xxlarge" style={{ margin: '0' }}>{props.title}</Text>
-      </React.Fragment>
-    ) : (
-      <Text size="xxlarge" style={{ margin: '0 30px' }}>{props.title}</Text>
-    )}
-  </div>
+  <Wrap>
+    {props.displayMenuButton && <MenuButton />}
+    <Text size="xxlarge">{props.title}</Text>
+  </Wrap>
 )
 
 AppTitle.propTypes = {
