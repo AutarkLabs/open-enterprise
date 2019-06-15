@@ -706,9 +706,9 @@ contract DotVoting is IForwarder, AragonApp {
         // Seperate variable isn't used here to save storage space
         uint256 infoStrLength = voteInstance.infoStringLength;
         uint256 desStrLength = bytes(voteInstance.voteDescription).length;
-        uint256 callDataLength = 196 + dynamicOffset + candidateLength * 160;
-        callDataLength += (infoStrLength / 32) * 32 + (infoStrLength % 32 == 0 ? 32 : 64);
-        callDataLength += (desStrLength / 32) * 32 + (desStrLength % 32 == 0 ? 32 : 64);
+        uint256 callDataLength = 228 + dynamicOffset + candidateLength * 160;
+        callDataLength += (infoStrLength / 32) * 32 + (infoStrLength % 32 == 0 ? 0 : 32);
+        callDataLength += (desStrLength / 32) * 32 + (desStrLength % 32 == 0 ? 0 : 32);
         bytes memory callDataLengthMem = new bytes(32);
         assembly { // solium-disable-line security/no-inline-assembly
             mstore(add(callDataLengthMem, 32), callDataLength)
@@ -726,16 +726,16 @@ contract DotVoting is IForwarder, AragonApp {
         // Copy over Address and Support information
         uint256 offset = addAddressesAndVotes(_voteId, script, candidateLength, dynamicOffset);
         // Copy over info indicies and string
-        offset = _goToParamOffset(INDICIES_PARAM_LOC, executionScript) + 0x20;
+        offset = _goToParamOffset(INDICIES_PARAM_LOC, script) + 0x20;
         offset = addInfoString(_voteId, script, candidateLength, offset);
         //Copy over Description
-        offset = _goToParamOffset(DESCRIPTION_PARAM_LOC, executionScript) + 0x20;
+        offset = _goToParamOffset(DESCRIPTION_PARAM_LOC, script) + 0x20;
         assembly { // solium-disable-line security/no-inline-assembly
                 mstore(add(script, offset), desStrLength)
         }
         script.copy(bytes(voteInstance.voteDescription).getPtr() + 32, offset, desStrLength);
         // Copy over External References
-        offset = _goToParamOffset(EX_ID1_PARAM_LOC, executionScript) + 0x20;
+        offset = _goToParamOffset(EX_ID1_PARAM_LOC, script) + 0x20;
         addExternalIds(_voteId, script, candidateLength, offset);
         emit ExecutionScript(script, offset);
         runScript(script, new bytes(0), new address[](0));

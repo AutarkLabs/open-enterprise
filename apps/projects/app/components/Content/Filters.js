@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { Text, theme } from '@aragon/ui'
+import styled from 'styled-components'
+import { Button, Text, theme } from '@aragon/ui'
 
 import FilterTile from './FilterTile'
 import { prepareFilters } from '../Shared/FilterBar'
@@ -19,6 +20,7 @@ export default class Filters extends Component {
     bountyIssues: PropTypes.array,
     disableFilter: PropTypes.func.isRequired,
     disableAllFilters: PropTypes.func.isRequired,
+    style: PropTypes.object,
   }
 
   static defaultProps = {
@@ -28,7 +30,7 @@ export default class Filters extends Component {
       milestones: {},
       deadlines: {},
       experiences: {},
-      statuses: {}
+      statuses: {},
     },
     issues: [],
     bountyIssues: [],
@@ -60,61 +62,75 @@ export default class Filters extends Component {
     const { issues, bountyIssues } = this.props
     const filterInformation = prepareFilters(issues, bountyIssues)
 
-    const projectBasedFilters = this.generateFilterNamesAndPaths(filterInformation, 'projects', 'name')
-    const labelBasedFilters = this.generateFilterNamesAndPaths(filterInformation, 'labels', 'name')
-    const milestoneBasedFilters = this.generateFilterNamesAndPaths(filterInformation, 'milestones', 'title')
-    const statusBasedFilters = this.generateFilterNamesAndPaths(filterInformation, 'statuses', 'name')
+    const projectBasedFilters = this.generateFilterNamesAndPaths(
+      filterInformation,
+      'projects',
+      'name'
+    )
+    const labelBasedFilters = this.generateFilterNamesAndPaths(
+      filterInformation,
+      'labels',
+      'name'
+    )
+    const milestoneBasedFilters = this.generateFilterNamesAndPaths(
+      filterInformation,
+      'milestones',
+      'title'
+    )
+    const statusBasedFilters = this.generateFilterNamesAndPaths(
+      filterInformation,
+      'statuses',
+      'name'
+    )
 
     return {
       ...projectBasedFilters,
       ...labelBasedFilters,
       ...milestoneBasedFilters,
-      ...statusBasedFilters
+      ...statusBasedFilters,
     }
   }
 
   render() {
     const filterAliases = this.calculateFilters()
+    const { style } = this.props
 
     if (Object.keys(filterAliases).length === 0) return null
 
     return (
-      <div style={{
-        marginLeft: '8px',
-        marginTop: '10px',
-        flexDirection: 'row',
-        display: 'flex',
-        flex: '1',
-        flexWrap: 'wrap'
-      }}>
-        {Object.keys(filterAliases).map(alias => {
-          const pathToDisableFilter = filterAliases[alias]
-          return (
-            <FilterTile
-              key={pathToDisableFilter.join('')}
-              text={alias}
-              disableFilter={() => this.props.disableFilter(pathToDisableFilter)}
-            />
-          )
-        })}
-        {Object.keys(filterAliases).length > 0 &&
-          <div
+      <Wrap style={style}>
+        <div>
+          {Object.keys(filterAliases).map(alias => {
+            const pathToDisableFilter = filterAliases[alias]
+            return (
+              <FilterTile
+                key={pathToDisableFilter.join('')}
+                text={alias}
+                disableFilter={() =>
+                  this.props.disableFilter(pathToDisableFilter)
+                }
+              />
+            )
+          })}
+        </div>
+        {Object.keys(filterAliases).length > 0 && (
+          <Button
+            mode="text"
+            size="small"
             onClick={this.props.disableAllFilters}
-            role='button'
             style={{
-              cursor: 'pointer',
-              marginLeft: '18px'
+              color: theme.accent,
+              marginLeft: '18px',
             }}
           >
-            <Text
-              size='small'
-              weight='bold'
-              color={theme.gradientStart}
-            >Clear Filters
-            </Text>
-          </div>
-        }
-      </div>
+            Clear Filters
+          </Button>
+        )}
+      </Wrap>
     )
   }
 }
+
+const Wrap = styled.div`
+  display: flex;
+`
