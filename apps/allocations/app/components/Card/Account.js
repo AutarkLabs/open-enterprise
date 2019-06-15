@@ -9,14 +9,13 @@ import {
   ContextMenu,
   ContextMenuItem,
   IconAdd,
-  IconFundraising,
-  IdentityBadge,
   breakpoint,
   theme,
 } from '@aragon/ui'
 import { ETH_DECIMALS } from '../../utils/constants'
 import { provideNetwork } from '../../../../../shared/ui'
 import { BASE_CARD_WIDTH, CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
+import LocalIdentityBadge from '../Shared/LocalIdentityBadge'
 
 const Account = ({
   id,
@@ -45,7 +44,7 @@ const Account = ({
       <TitleContainer>
         <CardTitle>{description}</CardTitle>
         <CardAddress>
-          <IdentityBadge
+          <LocalIdentityBadge
             networkType={network.type}
             entity={proxy}
             shorten={true}

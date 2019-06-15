@@ -5,6 +5,7 @@ import { Accounts, Payouts } from '.'
 import { NewAccount, NewAllocation } from '../Panel'
 import { networkContextType, AppTitle, AppTitleButton } from '../../../../../shared/ui'
 import { useAragonApi } from '@aragon/api-react'
+import { IdentityProvider } from '../Shared/IdentityManager'
 
 class App extends React.PureComponent {
   static propTypes = {
@@ -110,6 +111,16 @@ class App extends React.PureComponent {
     this.setState({ panel: { visible: false } })
   }
 
+  handleResolveLocalIdentity = address => {
+    return this.props.api.resolveAddressIdentity(address).toPromise()
+  }
+
+  handleShowLocalIdentityModal = address => {
+    return this.props.api
+      .requestAddressIdentityModification(address)
+      .toPromise()
+  }
+
   render() {
     const { panel } = this.state
     const { displayMenuButton = false } = this.props
@@ -120,46 +131,50 @@ class App extends React.PureComponent {
     return (
       // TODO: Profile App with React.StrictMode, perf and why-did-you-update, apply memoization
       <Main>
-        <AppView
-          padding={0}
-          appBar={
-            <AppBar
-              endContent={
-                <AppTitleButton
-                  caption="New Account"
-                  onClick={this.newAccount}
-                />
+        <IdentityProvider
+          onResolve={this.handleResolveLocalIdentity}
+          onShowLocalIdentityModal={this.handleShowLocalIdentityModal}>
+          <AppView
+            padding={0}
+            appBar={
+              <AppBar
+                endContent={
+                  <AppTitleButton
+                    caption="New Account"
+                    onClick={this.newAccount}
+                  />
+                }
+              >
+                <AppTitle title="Allocations" displayMenuButton={displayMenuButton} />
+              </AppBar>
+            }
+          >
+            <Accounts
+              accounts={
+                this.props.accounts !== undefined ? this.props.accounts : []
               }
-            >
-              <AppTitle title="Allocations" displayMenuButton={displayMenuButton} />
-            </AppBar>
-          }
-        >
-          <Accounts
-            accounts={
-              this.props.accounts !== undefined ? this.props.accounts : []
-            }
-            onNewAccount={this.newAccount}
-            onNewAllocation={this.newAllocation}
-            app={this.props.api}
-          />
-          <Payouts
-            payouts={
-              this.props.payouts !== undefined ? this.props.payouts : []
-            }
-            executePayout={this.onExecutePayout}
-            network={this.props.network}
-            tokens={this.props.balances}
-          />
-        </AppView>
+              onNewAccount={this.newAccount}
+              onNewAllocation={this.newAllocation}
+              app={this.props.api}
+            />
+            <Payouts
+              payouts={
+                this.props.payouts !== undefined ? this.props.payouts : []
+              }
+              executePayout={this.onExecutePayout}
+              network={this.props.network}
+              tokens={this.props.balances}
+            />
+          </AppView>
 
-        <SidePanel
-          title={(panel.data && panel.data.heading) || ''}
-          opened={panel.visible}
-          onClose={this.closePanel}
-        >
-          {panel.content && <PanelContent {...panel.data} />}
-        </SidePanel>
+          <SidePanel
+            title={(panel.data && panel.data.heading) || ''}
+            opened={panel.visible}
+            onClose={this.closePanel}
+          >
+            {panel.content && <PanelContent {...panel.data} />}
+          </SidePanel>
+        </IdentityProvider>
       </Main>
     )
   }
