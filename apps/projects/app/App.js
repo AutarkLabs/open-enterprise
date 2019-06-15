@@ -254,19 +254,20 @@ class App extends React.PureComponent {
     }))
   }
 
-  onSubmitBountyAllocation = async (issues, description) => {
+  onSubmitBountyAllocation = async (issues, description, post, resultData) => {
     this.closePanel()
 
     // computes an array of issues and denests the actual issue object for smart contract
     const issuesArray = []
     const bountyAddr = this.props.bountySettings.bountyCurrency
 
-    let bountyToken, bountyDecimals
+    let bountyToken, bountyDecimals, bountySymbol
 
     this.props.tokens.forEach(token => {
       if (token.addr === bountyAddr) {
         bountyToken = token.addr
         bountyDecimals = token.decimals
+        bountySymbol = token.symbol
       }
     })
 
@@ -294,6 +295,15 @@ class App extends React.PureComponent {
       tokenArray,
       ipfsString,
       description
+    ).subscribe(
+      txHash => {
+        issuesArray.forEach(issue => {
+          post({ variables: {
+            body: `This issue has a bounty attached to it.\nAmount: ${issue.size.toFixed(2)} ${bountySymbol}\nDeadline: ${issue.deadline.toUTCString()}`,
+            subjectId: issue.key } })
+        })
+      },
+      err => console.log(`error: ${err}`)
     )
   }
 
