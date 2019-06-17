@@ -235,7 +235,11 @@ class App extends React.Component {
                 />
               }
             >
-              <AppTitle title="Rewards" displayMenuButton={displayMenuButton} />
+              <AppTitle
+                title="Rewards"
+                displayMenuButton={displayMenuButton}
+                css="padding-left: 30px"
+              />
             </AppBar>
           }
         >
