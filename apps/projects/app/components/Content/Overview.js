@@ -7,7 +7,7 @@ import { Project, Empty, Error } from '../Card'
 import Unauthorized from './Unauthorized'
 import { LoadingAnimation } from '../Shared'
 import { EmptyWrapper } from '../Shared'
-import { Viewport, breakpoint } from '@aragon/ui'
+import { Viewport } from '@aragon/ui'
 import { CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
 
 const Overview = ({
@@ -82,13 +82,6 @@ Overview.propTypes = {
 }
 
 const StyledProjects = styled.div`
-  ${breakpoint(
-    'small',
-    `
-    padding: 2rem;
-    `
-  )};
-  padding: 0.3rem;
   display: flex;
   flex-direction: ${props =>
     props.screenSize < CARD_STRETCH_BREAKPOINT ? 'column' : 'row'};

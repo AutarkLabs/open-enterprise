@@ -7,11 +7,12 @@ import { MenuButton } from '.'
 const Wrap = styled.div`
   display: flex;
   align-items: center;
-  margin-left: 30px;
 `
 
+// TODO: Remove the className logic once aragonUI introduces new,
+// responsive-friendly components to replace AppBar and NavigationBar
 const AppTitle = props => (
-  <Wrap>
+  <Wrap className={props.className}>
     {props.displayMenuButton && <MenuButton />}
     <Text size="xxlarge">{props.title}</Text>
   </Wrap>
