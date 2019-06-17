@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { Text, Badge, Viewport, breakpoint } from '@aragon/ui'
+import { Text, Badge, Viewport } from '@aragon/ui'
 import { CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
 
 import { Account, Empty } from '../Card'
@@ -60,13 +60,6 @@ Accounts.propTypes = {
 }
 
 const StyledAccounts = styled.div`
-  ${breakpoint(
-    'small',
-    `
-    padding: 2rem;
-    `
-  )};
-  padding: 0.3rem;
   display: flex;
   flex-direction: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? 'column' : 'row' };
   flex-wrap: wrap;
