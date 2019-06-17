@@ -2,13 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 
-import {
-  Text,
-  theme,
-  Badge,
-  Checkbox,
-  ContextMenu,
-} from '@aragon/ui'
+import { Text, theme, Badge, Checkbox, ContextMenu } from '@aragon/ui'
 
 import { formatDistance } from 'date-fns'
 import { BountyContextMenu } from '../Shared'
@@ -44,9 +38,8 @@ const labelsBadges = labels =>
       {label.node.name}
     </Badge>
   ))
- 
+
 class Issue extends React.PureComponent {
- 
   render() {
     const {
       isSelected,
@@ -57,6 +50,7 @@ class Issue extends React.PureComponent {
       onReviewApplication,
       onAllocateSingleBounty,
       onUpdateBounty,
+      onViewFunding,
       onReviewWork,
       ...issue
     } = this.props
@@ -89,35 +83,36 @@ class Issue extends React.PureComponent {
             <Text color={theme.textSecondary} size="xsmall">
               {repo} #{number}
             </Text>
-            {workStatus !== 'fulfilled' && (
-              <ContextMenu>
-                <BountyContextMenu
-                  work={work}
-                  workStatus={workStatus}
-                  requestsData={requestsData}
-                  onAllocateSingleBounty={() => onAllocateSingleBounty(issue)}
-                  onSubmitWork={() => onSubmitWork(issue)}
-                  onRequestAssignment={() => onRequestAssignment(issue)}
-                  onReviewApplication={() => onReviewApplication(issue)}
-                  onReviewWork={() => onReviewWork(issue)}
-                  onUpdateBounty={() => onUpdateBounty(issue)}
-                />
-              </ContextMenu>
-            )}
-
+            <ContextMenu>
+              <BountyContextMenu
+                onAllocateSingleBounty={() => onAllocateSingleBounty(issue)}
+                onRequestAssignment={() => onRequestAssignment(issue)}
+                onReviewApplication={() => onReviewApplication(issue)}
+                onReviewWork={() => onReviewWork(issue)}
+                onSubmitWork={() => onSubmitWork(issue)}
+                onUpdateBounty={() => onUpdateBounty(issue)}
+                onViewFunding={() => onViewFunding(issue)}
+                requestsData={requestsData}
+                work={work}
+                workStatus={workStatus}
+              />
+            </ContextMenu>
           </div>
           <IssueTitleDetailsBalance>
             <IssueTitleDetails>
-              <IssueTitle>
-                {title}
-              </IssueTitle>
+              <IssueTitle>{title}</IssueTitle>
 
-              {(BOUNTY_STATUS[workStatus]) && (
-                <Text.Block color={theme.textSecondary} style={{ fontSize: '0.87em' }}>
+              {BOUNTY_STATUS[workStatus] && (
+                <Text.Block
+                  color={theme.textSecondary}
+                  style={{ fontSize: '0.87em' }}
+                >
                   <span style={{ marginRight: '15px' }}>
                     {expLevel}
                     {dot}
-                    {balance > 0 ? BOUNTY_STATUS[workStatus] : BOUNTY_STATUS['fulfilled']}
+                    {balance > 0
+                      ? BOUNTY_STATUS[workStatus]
+                      : BOUNTY_STATUS['fulfilled']}
                     {dot}
                     Due {DeadlineDistance(deadline)}
                   </span>
@@ -126,21 +121,19 @@ class Issue extends React.PureComponent {
             </IssueTitleDetails>
 
             <Balance>
-              {(BOUNTY_STATUS[workStatus]) && (
+              {BOUNTY_STATUS[workStatus] && (
                 <Badge
                   style={{ padding: '10px' }}
                   background={BOUNTY_BADGE_COLOR[workStatus].bg}
                   foreground={BOUNTY_BADGE_COLOR[workStatus].fg}
                 >
-                  <Text>
-                    {balance + ' ' + symbol}
-                  </Text>
+                  <Text>{balance + ' ' + symbol}</Text>
                 </Badge>
               )}
             </Balance>
           </IssueTitleDetailsBalance>
 
-          {(labels.totalCount > 0) && (
+          {labels.totalCount > 0 && (
             <div>
               <Separator />
               {labelsBadges(labels)}
@@ -164,14 +157,19 @@ Issue.propTypes = {
   onReviewApplication: PropTypes.func.isRequired,
   onAllocateSingleBounty: PropTypes.func.isRequired,
   onUpdateBounty: PropTypes.func.isRequired,
+  onViewFunding: PropTypes.func.isRequired,
   onReviewWork: PropTypes.func.isRequired,
-  workStatus: PropTypes.oneOf([ undefined, 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]),
-  work: PropTypes.oneOf([
+  workStatus: PropTypes.oneOf([
     undefined,
-    PropTypes.object,
+    'funded',
+    'review-applicants',
+    'in-progress',
+    'review-work',
+    'fulfilled',
   ]),
+  work: PropTypes.oneOf([ undefined, PropTypes.object ]),
 }
-  
+
 const StyledIssue = styled.div`
   flex: 1;
   width: 100%;

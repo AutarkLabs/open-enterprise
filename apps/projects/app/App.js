@@ -344,6 +344,50 @@ class App extends React.PureComponent {
     this.props.api.requestAssignment(toHex(issue.repoId), issue.number, hash)
   }
 
+  viewFunding = issue => {
+    const tokens = this.props.tokens.reduce((tokenObj, token) => {
+      tokenObj[token.addr] = {
+        symbol: token.symbol,
+        decimals: token.decimals,
+      }
+      return tokenObj
+    }, {})
+
+    const fundingProposal = {
+      id: 'Unknown', // FIXME: how to retrieve this?
+      description:
+        'Funding Request cannot be retrieved at this time; this feature will be completed soon.', // FIXME: how to retrieve this?
+      createdBy: issue.fundingHistory[0].user, // FIXME: does not contain Eth address; how to retrieve it?
+      issues: this.props.issues
+        .filter(
+          i => i.data.key === issue.id // FIXME: what attribute links issues from the same funding event?
+        )
+        .map(i => ({
+          balance: BigNumber(i.data.balance).div(
+            BigNumber(10 ** tokens[i.data.token].decimals)
+          ),
+          expLevel: this.props.bountySettings.expLvls[i.data.exp].name,
+          deadline: i.data.deadline,
+          hours: i.data.hours,
+          number: i.data.number,
+          repo: i.data.repo,
+          title:
+            i.data.title ||
+            'Issue list cannot be retrieved at this time; this feature will be completed soon.', // FIXME: this attr is in `issue` returned from Issues.js, but not in this.props.issues
+          tokenSymbol: tokens[i.data.token].symbol,
+          url: i.data.url || 'https://github.com/404', // FIXME: this attr is in `issue` returned from Issues.js, but not in this.props.issues
+          workStatus: i.data.workStatus,
+        })),
+    }
+    this.setState((_prevState, _prevProps) => ({
+      panel: PANELS.ViewFunding,
+      panelProps: {
+        fundingProposal,
+        title: `Issue Funding #${fundingProposal.id}`,
+      },
+    }))
+  }
+
   reviewApplication = (issue, requestIndex = 0) => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.ReviewApplication,
@@ -593,6 +637,7 @@ class App extends React.PureComponent {
                   onUpdateBounty={this.updateBounty}
                   onSubmitWork={this.submitWork}
                   onRequestAssignment={this.requestAssignment}
+                  onViewFunding={this.viewFunding}
                   activeIndex={activeIndex}
                   changeActiveIndex={this.changeActiveIndex}
                   onReviewApplication={this.reviewApplication}
