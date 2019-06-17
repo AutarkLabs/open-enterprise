@@ -1,26 +1,19 @@
-// import { hot } from 'react-hot-loader'
 import React from 'react'
 import PropTypes from 'prop-types'
 import BigNumber from 'bignumber.js'
 import { ApolloProvider } from 'react-apollo'
-// import { map } from 'rxjs/operators'
 
 import { useAragonApi } from '@aragon/api-react'
 import {
   Main,
   TabBar,
-  // observe,
   AppView,
   AppBar,
   NavigationBar,
   Viewport,
 } from '@aragon/ui'
 
-import {
-  // networkContextType,
-  AppTitleButton,
-  MenuButton,
-} from '../../../shared/ui'
+import { AppTitleButton, MenuButton } from '../../../shared/ui'
 
 import ErrorBoundary from './components/App/ErrorBoundary'
 import { Issues, Overview, Settings } from './components/Content'
@@ -40,10 +33,34 @@ import { toHex } from './utils/web3-utils'
 
 const ASSETS_URL = './aragon-ui'
 
+const getTabs = ({ newProject, newIssue, repoCount }) => {
+  const tabs = [
+    {
+      name: 'Overview',
+      body: Overview,
+      action: <AppTitleButton caption="New Project" onClick={newProject} />,
+    },
+  ]
+
+  if (repoCount > 0) {
+    tabs.push({
+      name: 'Issues',
+      body: Issues,
+      action: <AppTitleButton caption="New Issue" onClick={newIssue} />,
+    })
+  }
+
+  tabs.push({
+    name: 'Settings',
+    body: Settings,
+  })
+
+  return tabs
+}
+
 class App extends React.PureComponent {
   static propTypes = {
-    // is not required, since it comes async
-    api: PropTypes.object,
+    api: PropTypes.object, // is not required, since it comes async
     repos: PropTypes.arrayOf(PropTypes.object),
     github: PropTypes.shape({
       status: PropTypes.oneOf([
@@ -55,10 +72,6 @@ class App extends React.PureComponent {
       event: PropTypes.string,
     }),
   }
-
-  // static childContextTypes = {
-  //   network: networkContextType,
-  // }
 
   constructor(props) {
     super(props)
@@ -73,15 +86,6 @@ class App extends React.PureComponent {
     }
   }
 
-  // getChildContext() {
-  //   const { network } = this.props
-  //   return {
-  //     network: {
-  //       type: network.type,
-  //     },
-  //   }
-  // }
-
   componentDidMount() {
     /**
      * Acting as the redirect target it looks up for 'code' URL param on component mount
@@ -95,7 +99,6 @@ class App extends React.PureComponent {
         '*'
       )
     window.close()
-
   }
 
   componentDidUpdate(prevProps) {
@@ -247,7 +250,7 @@ class App extends React.PureComponent {
         mode: 'update',
         onSubmit: this.onSubmitBountyAllocation,
         bountySettings: this.props.bountySettings,
-        closePanel: this.cancelBounties,
+        closePanel: this.closePanel,
         tokens: this.props.tokens !== undefined ? this.props.tokens : [],
         githubCurrentUser: this.state.githubCurrentUser,
       },
@@ -338,11 +341,7 @@ class App extends React.PureComponent {
   onRequestAssignment = async (state, issue) => {
     this.closePanel()
     const hash = await ipfsAdd(state)
-    this.props.api.requestAssignment(
-      toHex(issue.repoId),
-      issue.number,
-      hash
-    )
+    this.props.api.requestAssignment(toHex(issue.repoId), issue.number, hash)
   }
 
   reviewApplication = (issue, requestIndex = 0) => {
@@ -358,8 +357,6 @@ class App extends React.PureComponent {
   }
 
   onReviewApplication = async (issue, requestIndex, approved, review) => {
-    console.log('onReviewApplication', issue, requestIndex, approved, review)
-
     this.closePanel()
     // new IPFS data is old data plus state returned from the panel
     const ipfsData = issue.requestsData[requestIndex]
@@ -457,10 +454,6 @@ class App extends React.PureComponent {
     )
   }
 
-  cancelBounties = id => {
-    this.closePanel()
-  }
-
   closePanel = () => {
     this.setState({ panel: undefined, panelProps: undefined })
   }
@@ -480,8 +473,6 @@ class App extends React.PureComponent {
   }
 
   setIssueDetail = visible => {
-    console.log('issueDetail:', visible)
-
     this.setState({ issueDetail: visible })
   }
 
@@ -494,66 +485,39 @@ class App extends React.PureComponent {
       .toPromise()
   }
 
-
   render() {
-    const { activeIndex, panel, panelProps, githubCurrentUser, issueDetail } = this.state
+    const {
+      activeIndex,
+      panel,
+      panelProps,
+      githubCurrentUser,
+      issueDetail,
+    } = this.state
     const { bountySettings, displayMenuButton = false } = this.props
-    const contentData = [
-      {
-        tabName: 'Overview',
-        TabComponent: Overview,
-        tabButton: {
-          caption: 'New Project',
-          onClick: this.newProject,
-          disabled: () => false,
-          hidden: () => false,
-        },
-      },
-      {
-        tabName: 'Issues',
-        TabComponent: Issues,
-        tabButton: {
-          caption: 'New Issue',
-          onClick: this.newIssue,
-          // TODO: check this, not very readable, and why do we need two variables doing exactly the same?
-          disabled: () => (this.props.repos.length ? false : true),
-          hidden: () => (this.props.repos.length ? false : true),
-        },
-      },
-      {
-        tabName: 'Settings',
-        TabComponent: Settings,
-      },
-    ]
 
     const status = this.props.github ? this.props.github.status : STATUS.INITIAL
 
-    const appTitleButton =
-      status === STATUS.AUTHENTICATED &&
-        contentData[activeIndex.tabIndex].tabButton
-        ? contentData[activeIndex.tabIndex].tabButton
-        : null
+    const tabs = getTabs({
+      newProject: this.newProject,
+      newIssue: this.newIssue,
+      repoCount: this.props.repos && this.props.repos.length,
+    })
 
-    const tabNames = contentData.map(t => t.tabName)
-    const TabComponent = contentData[activeIndex.tabIndex].TabComponent
+    const tabNames = tabs.map(t => t.name)
+    const TabComponent = tabs[activeIndex.tabIndex].body
 
-    const navigationItems = [ 'Projects', ...(issueDetail ? ['Issue Detail'] : []) ]
-
-    // return (
-    //   <Main assetsUrl={ASSETS_URL}>
-
-
-    //   </Main>
-    // )
-
-    console.log(this.props)
+    const navigationItems = [
+      'Projects',
+      ...(issueDetail ? ['Issue Detail'] : []),
+    ]
 
     return (
       <Main assetsUrl={ASSETS_URL}>
         <ApolloProvider client={this.state.client}>
           <IdentityProvider
             onResolve={this.handleResolveLocalIdentity}
-            onShowLocalIdentityModal={this.handleShowLocalIdentityModal}>
+            onShowLocalIdentityModal={this.handleShowLocalIdentityModal}
+          >
             <AppView
               padding={0}
               style={{ height: '100%', overflowY: 'hidden' }}
@@ -562,25 +526,19 @@ class App extends React.PureComponent {
                   {({ below }) => (
                     <AppBar
                       endContent={
-                        appTitleButton &&
-                        !appTitleButton.hidden() && (
-                          <AppTitleButton
-                            caption={appTitleButton.caption}
-                            onClick={appTitleButton.onClick}
-                            disabled={appTitleButton.disabled()}
-                          />
-                        )
+                        status === STATUS.AUTHENTICATED &&
+                        tabs[activeIndex.tabIndex].action
                       }
                       tabs={
                         issueDetail ? null : (
                           <div
                             css={`
-                                  margin-left: ${below('medium') ? '-14px' : '0'};
-                                `}
+                              margin-left: ${below('medium') ? '-14px' : '0'};
+                            `}
                           >
                             <TabBar
                               items={tabNames}
-                              onSelect={this.handleSelect}
+                              onChange={this.handleSelect}
                               selected={activeIndex.tabIndex}
                             />
                           </div>
@@ -591,11 +549,11 @@ class App extends React.PureComponent {
                         <MenuButton
                           onClick={this.handleMenuPanelOpen}
                           css={`
-                                position: relative;
-                                z-index: 2;
-                                margin-left: 8px;
-                                margin-right: -24px;
-                              `}
+                            position: relative;
+                            z-index: 2;
+                            margin-left: 8px;
+                            margin-right: -24px;
+                          `}
                         />
                       )}
                       <NavigationBar
@@ -641,7 +599,6 @@ class App extends React.PureComponent {
                   onReviewWork={this.reviewWork}
                   setIssueDetail={this.setIssueDetail}
                   issueDetail={issueDetail}
-
                 />
               </ErrorBoundary>
             </AppView>
@@ -652,15 +609,10 @@ class App extends React.PureComponent {
             />
           </IdentityProvider>
         </ApolloProvider>
-      </Main >
+      </Main>
     )
   }
 }
-
-// export default observe(
-//   observable => observable.pipe(map(state => ({ ...state }))),
-//   {}
-// )(hot(module)(App))
 
 export default () => {
   const { api, appState } = useAragonApi()
