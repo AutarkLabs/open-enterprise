@@ -1,4 +1,4 @@
-import { observe, SidePanel, Main, AppBar, AppView, font, breakpoint } from '@aragon/ui'
+import { observe, SidePanel, Main, AppBar, AppView } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { hot } from 'react-hot-loader'
@@ -62,7 +62,6 @@ class App extends React.Component {
     return (
       <Main>
         <AppView
-          padding={0}
           appBar={
             <AppBar
               endContent={
@@ -72,7 +71,11 @@ class App extends React.Component {
                 />
               }
             >
-              <AppTitle title="Address Book" displayMenuButton={displayMenuButton} />
+              <AppTitle
+                title="Address Book"
+                displayMenuButton={displayMenuButton}
+                css="padding-left: 30px"
+              />
             </AppBar>
           }
         >
@@ -106,13 +109,6 @@ const ScrollWrapper = styled.div`
   justify-content: stretch;
   overflow: auto;
   flex-grow: 1;
-  ${breakpoint(
-    'small',
-    `
-      padding: 1rem 2rem;
-    `
-  )};
-  padding: 0.3rem;
 `
 export default observe(
   observable => observable.pipe(map(state => ({ ...state }))),
