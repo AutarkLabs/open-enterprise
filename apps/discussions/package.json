@@ -1,5 +1,5 @@
 {
-  "name": "discussions",
+  "name": "@tps/apps-discussions",
   "version": "1.0.0",
   "description": "",
   "dependencies": {
@@ -28,6 +28,9 @@
     "solidity-coverage": "^0.5.11"
   },
   "scripts": {
+    "dev": "npm run sync-assets && parcel app/index.html --port 9999",
+    "copy-public-assets": "rsync -rtu ./public/ ./dist",
+    "sync-assets": "copy-aragon-ui-assets -n aragon-ui ./dist && npm run copy-public-assets",
     "devchain:reset": "aragon devchain  --reset",
     "clean:start": "aragon clean && rm -rf ~/.aragon && npm run start:http:template",
     "start": "npm run start:ipfs",
@@ -40,9 +43,12 @@
     "test": "cross-env TRUFFLE_TEST=true npm run ganache-cli:test",
     "compile": "aragon contracts compile",
     "build": "cd app && npm run build && cd ..",
+    "build:app": "parcel build ./app/index.html -d dist/ --public-url \".\" --no-cache",
+    "build:script": "parcel build ./app/script.js -d dist/ --no-cache",
     "publish:patch": "aragon apm publish patch",
     "publish:minor": "aragon apm publish minor",
     "publish:major": "aragon apm publish major",
+    "publish:http": "npm run build:script && aragon apm publish major --http localhost:9999 --http-served-from ./dist",
     "versions": "aragon apm versions",
     "lint": "eslint . & solium --dir ./contracts",
     "lint:fix": "eslint . --fix & solium --dir ./contracts --fix",

@@ -1,7 +1,7 @@
 {
   "name": "discussions-frontend",
   "version": "1.0.0",
-  "main": "src/index.js",
+  "main": "/index.js",
   "dependencies": {
     "@aragon/api": "^1.0.0-beta.1",
     "@aragon/api-react": "^1.0.0-beta.1",

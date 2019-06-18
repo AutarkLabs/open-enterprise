@@ -12,6 +12,8 @@ import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 // import "@aragon/apps-survey/contracts/Survey.sol";
 
 import "@tps/apps-address-book/contracts/AddressBook.sol";
+import "../../discussions/contracts/DiscussionApp.sol";
+
 import "@tps/apps-allocations/contracts/Allocations.sol";
 import "@tps/apps-projects/contracts/Projects.sol";
 import {DotVoting as DotVotingApp} from "@tps/apps-dot-voting/contracts/DotVoting.sol";
@@ -20,6 +22,7 @@ import "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
 import "@aragon/apps-finance/contracts/Finance.sol";
 import "@aragon/apps-voting/contracts/Voting.sol";
+
 
 
 
@@ -97,7 +100,7 @@ contract PlanningKit is KitBase {
         (vault, voting) = createA1Apps(root, acl, dao);
 
         createTPSApps(root, dao, vault, voting);
-        createDiscussionApp(acl, root);
+        createDiscussionApp(root, acl, dao);
 
         //handleCleanupPermissions(dao, acl, root);
 
@@ -304,7 +307,7 @@ contract PlanningKit is KitBase {
         acl.grantPermission(rewards, vault, vault.TRANSFER_ROLE());
     }
 
-    function createDiscussionApp(ACL acl, address root) internal {
+    function createDiscussionApp(address root, ACL acl, Kernel dao) internal {
         bytes32 appId = apmNamehash("discussions");
         DiscussionApp app = DiscussionApp(dao.newAppInstance(appId, latestVersionAppBase(appId)));
         app.initialize();

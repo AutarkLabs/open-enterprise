@@ -1,11 +1,10 @@
 pragma solidity ^0.4.24;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
-import "@aragon/os/contracts/common/IForwarder.sol";
 import "@aragon/os/contracts/lib/math/SafeMath.sol";
 
 
-contract DiscussionApp is IForwarder, AragonApp {
+contract DiscussionApp is AragonApp {
     using SafeMath for uint256;
 
     event Post(address indexed author, string postCid, string discussionId, uint postId, uint createdAt);
@@ -58,37 +57,5 @@ contract DiscussionApp is IForwarder, AragonApp {
         post.revisionCids.push(post.postCid);
         post.postCid = revisedPostCid;
         emit Revise(msg.sender, revisedPostCid, discussionId, postId, post.createdAt, now);
-    }
-
-    // Forwarding fns
-
-    /**
-    * @notice Tells whether the Voting app is a forwarder or not
-    * @dev IForwarder interface conformance
-    * @return Always true
-    */
-    function isForwarder() external pure returns (bool) {
-        return true;
-    }
-
-    /**
-    * @notice Creates a vote to execute the desired action, and casts a support vote if possible
-    * @dev IForwarder interface conformance
-    * @param _evmScript Start vote with script
-    */
-    function forward(bytes _evmScript) public {
-        require(canForward(msg.sender, _evmScript), ERROR_CAN_NOT_FORWARD);
-        // do something
-    }
-
-    /**
-    * @notice Tells whether `_sender` can forward actions or not
-    * @dev IForwarder interface conformance
-    * @param _sender Address of the account intending to forward an action
-    * @return True if the given address can create votes, false otherwise
-    */
-    function canForward(address _sender, bytes) public view returns (bool) {
-        // Note that `canPerform()` implicitly does an initialization check itself
-        return canPerform(_sender, CREATE_VOTES_ROLE, arr());
     }
 }
