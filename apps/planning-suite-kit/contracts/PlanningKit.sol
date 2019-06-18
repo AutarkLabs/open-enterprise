@@ -97,6 +97,7 @@ contract PlanningKit is KitBase {
         (vault, voting) = createA1Apps(root, acl, dao);
 
         createTPSApps(root, dao, vault, voting);
+        createDiscussionApp(acl, root);
 
         //handleCleanupPermissions(dao, acl, root);
 
@@ -301,6 +302,13 @@ contract PlanningKit is KitBase {
         acl.grantPermission(projects, vault, vault.TRANSFER_ROLE());
         acl.grantPermission(allocations, vault, vault.TRANSFER_ROLE());
         acl.grantPermission(rewards, vault, vault.TRANSFER_ROLE());
+    }
+
+    function createDiscussionApp(ACL acl, address root) internal {
+        bytes32 appId = apmNamehash("discussions");
+        DiscussionApp app = DiscussionApp(dao.newAppInstance(appId, latestVersionAppBase(appId)));
+        app.initialize();
+        acl.createPermission(ANY_ENTITY, app, app.DISCUSSION_POSTER_ROLE(), root);
     }
 
     function handleCleanupPermissions(Kernel dao, ACL acl, address root) internal {

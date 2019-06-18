@@ -1,0 +1,53 @@
+{
+  "name": "discussions",
+  "version": "1.0.0",
+  "description": "",
+  "dependencies": {
+    "@aragon/apps-shared-minime": "^1.0.0",
+    "@aragon/apps-token-manager": "2.0.0",
+    "@aragon/apps-voting": "2.0.0",
+    "@aragon/os": "^4.0.1"
+  },
+  "devDependencies": {
+    "@aragon/cli": "^5.4.0",
+    "@aragon/test-helpers": "^1.0.1",
+    "babel-eslint": "^10.0.1",
+    "cross-env": "^5.2.0",
+    "eslint": "^5.13.0",
+    "eslint-config-prettier": "^4.0.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-config-standard-react": "^7.0.2",
+    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-node": "^8.0.1",
+    "eslint-plugin-prettier": "^3.0.1",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-react": "^7.12.4",
+    "eslint-plugin-standard": "^4.0.0",
+    "ethlint": "^1.2.3",
+    "prettier": "^1.16.4",
+    "solidity-coverage": "^0.5.11"
+  },
+  "scripts": {
+    "devchain:reset": "aragon devchain  --reset",
+    "clean:start": "aragon clean && rm -rf ~/.aragon && npm run start:http:template",
+    "start": "npm run start:ipfs",
+    "start:ipfs": "aragon run",
+    "start:http": "aragon run --http localhost:8001 --http-served-from ./dist",
+    "start:ipfs:template": "npm run start:ipfs -- --template Template --template-init @ARAGON_ENS",
+    "start:http:template": "rm -rf build && npm run start:http -- --template Template --template-init @ARAGON_ENS",
+    "prepare": "cd app && npm install && cd ..",
+    "start:app": "cd app && npm start && cd ..",
+    "test": "cross-env TRUFFLE_TEST=true npm run ganache-cli:test",
+    "compile": "aragon contracts compile",
+    "build": "cd app && npm run build && cd ..",
+    "publish:patch": "aragon apm publish patch",
+    "publish:minor": "aragon apm publish minor",
+    "publish:major": "aragon apm publish major",
+    "versions": "aragon apm versions",
+    "lint": "eslint . & solium --dir ./contracts",
+    "lint:fix": "eslint . --fix & solium --dir ./contracts --fix",
+    "coverage": "cross-env SOLIDITY_COVERAGE=true npm run ganache-cli:test",
+    "ganache-cli:test": "sh ./node_modules/@aragon/test-helpers/ganache-cli.sh",
+    "watch:script": "cd app && npm run watch:script && cd .."
+  }
+}
