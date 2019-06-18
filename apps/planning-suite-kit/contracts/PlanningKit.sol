@@ -96,11 +96,12 @@ contract PlanningKit is KitBase {
         address root = msg.sender;
         Vault vault;
         Voting voting;
+        DiscussionApp discussions;
 
         (vault, voting) = createA1Apps(root, acl, dao);
+        (discussions) = createDiscussionApp(root, acl, dao);
 
-        createTPSApps(root, dao, vault, voting);
-        createDiscussionApp(root, acl, dao);
+        createTPSApps(root, dao, vault, voting, discussions);
 
         //handleCleanupPermissions(dao, acl, root);
 
@@ -191,7 +192,7 @@ contract PlanningKit is KitBase {
 
     }
 
-    function createTPSApps (address root, Kernel dao, Vault vault, Voting voting) internal {
+    function createTPSApps (address root, Kernel dao, Vault vault, Voting voting, DiscussionApp discussions) internal {
         AddressBook addressBook;
         Projects projects;
         DotVotingApp dotVoting;
@@ -221,7 +222,8 @@ contract PlanningKit is KitBase {
             dotVoting,
             allocations,
             rewards,
-            voting
+            voting,
+            discussions
         );
         handleVaultPermissions(
             dao,
@@ -257,14 +259,15 @@ contract PlanningKit is KitBase {
         DotVotingApp dotVoting,
         Allocations allocations,
         Rewards rewards,
-        Voting voting
+        Voting voting,
+        DiscussionApp discussions
     ) internal
     {
         address root = msg.sender;
         ACL acl = ACL(dao.acl());
 
         // AddressBook permissions:
-        acl.createPermission(voting, addressBook, addressBook.ADD_ENTRY_ROLE(), voting);
+        acl.createPermission(discussions, addressBook, addressBook.ADD_ENTRY_ROLE(), discussions);
         acl.createPermission(voting, addressBook, addressBook.REMOVE_ENTRY_ROLE(), voting);
         //emit InstalledApp(addressBook, planningAppIds[uint8(PlanningApps.AddressBook)]);
 
@@ -307,9 +310,9 @@ contract PlanningKit is KitBase {
         acl.grantPermission(rewards, vault, vault.TRANSFER_ROLE());
     }
 
-    function createDiscussionApp(address root, ACL acl, Kernel dao) internal {
+    function createDiscussionApp(address root, ACL acl, Kernel dao) internal returns (DiscussionApp app) {
         bytes32 appId = apmNamehash("discussions");
-        DiscussionApp app = DiscussionApp(dao.newAppInstance(appId, latestVersionAppBase(appId)));
+        app = DiscussionApp(dao.newAppInstance(appId, latestVersionAppBase(appId)));
         app.initialize();
         acl.createPermission(ANY_ENTITY, app, app.DISCUSSION_POSTER_ROLE(), root);
     }
