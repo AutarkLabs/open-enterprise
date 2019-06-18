@@ -4,7 +4,6 @@ const {
   DAOFactory,
   EVMScriptRegistryFactory,
   Kernel,
-  StandardBounties,
   MiniMeToken,
 } = require('@tps/test-helpers/artifacts')
 
@@ -136,7 +135,7 @@ contract('Projects App', accounts => {
     )
 
     // Deploy test Bounties contract
-    bounties = await StandardBounties.new(web3.toBigNumber(owner1))
+    bounties = { address: '0x72D1Ae1D6C8f3dd444b3D95bAd554Be483082e40' }
     vaultBase = await Vault.new()
     const vaultReceipt = await dao.newAppInstance('0x5678', vaultBase.address, '0x', false, { from: root })
     vault = Vault.at(vaultReceipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
@@ -166,6 +165,7 @@ contract('Projects App', accounts => {
   })
   context('post-initialization', () => {
     beforeEach(async () =>{
+      console.log('bounties address: ', bounties.address)
       await app.initialize(bounties.address, vault.address, '')
     })
 
@@ -243,7 +243,13 @@ contract('Projects App', accounts => {
         assert.isTrue(await app.isRepoAdded(repoId2), 'repo2 should still be accessible')
       })
 
-      context('standard bounty verification tests', () => {
+      context.only('new integration test', () =>{
+        it('passes', async () => {
+          console.log(await app.issueBountyTest())
+        })
+      })
+
+      xcontext('standard bounty verification tests', () => {
         beforeEach(async () => {
           await bounties.issueBounty(
             accounts[0],

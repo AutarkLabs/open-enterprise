@@ -25,7 +25,8 @@
     "start": "aragon run",
     "sync-assets": "copy-aragon-ui-assets -n aragon-ui ./dist && npm run copy-public-assets",
     "test:gas": "GAS_REPORTER=true npm test",
-    "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
+    "test": "TRUFFLE_TEST=true npm run ganache-cli:test",
+    "test:truffle":  "truffle test --network rpc"
   },
   "dependencies": {
     "@aragon/api": "1.1.0",

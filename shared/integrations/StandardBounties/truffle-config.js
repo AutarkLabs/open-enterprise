@@ -15,6 +15,19 @@ if (fs.existsSync('secrets.json')) {
 
 module.exports = {
   networks: {
+    rpc: {
+      network_id: 15,
+      host: 'localhost',
+      port: 8545,
+      gas: 8.2e6,
+    },
+    development: {
+      host: 'localhost',
+      port: 8545,
+      network_id: '*',
+      gas: 8.2e6,
+      gasPrice: 2000000000, // same as latest on Mainnet https://ethstats.net/
+    },
     live: {
       network_id: 1, // Ethereum public network,
       gas: 4600000

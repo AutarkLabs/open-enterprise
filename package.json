@@ -19,7 +19,7 @@
     "clean:aragon": "rm -rf ~/.aragon && rm -rf ~/.ipfs",
     "clean:build": "git clean -ffdx --exclude=node_modules/",
     "clean:commit": "rm -f package-lock.json && npm run bootstrap",
-    "clean": "git clean -ffdx",
+    "clean": "git clean -ffdX",
     "coverage": "npx lerna run coverage --no-bail",
     "coveralls": "cat apps/*/coverage/lcov.info | npx coveralls",
     "cypress:open": "cypress open",
