@@ -120,6 +120,7 @@ contract Projects is IsContract, AragonApp {
         uint256 bountyDeadline;
         address bountyCurrency;
         address bountyAllocator;
+        //address metaTxRelayer; TODO: Implement this interface 
         //address bountyArbiter;
     }
 
@@ -181,13 +182,17 @@ contract Projects is IsContract, AragonApp {
     event SubmissionAccepted(uint256 submissionNumber, bytes32 repoId, uint256 issueNumber);
     // Fired when a reviewer rejects a submission
     event SubmissionRejected(uint256 submissionNumber, bytes32 repoId, uint256 issueNumber);
-    event BountyTest(uint256 Id);
+    event BountyTest(uint256 id);
 
 ////////////////
 // Constructor
 ////////////////
-    function initialize(address _bountiesAddr, Vault _vault, address _defaultToken)
-    external onlyInit // solium-disable-line visibility-first
+    function initialize(
+        address _bountiesAddr,
+        //address _relayer, TODO: Implement this
+        Vault _vault,
+        address _defaultToken
+    ) external onlyInit // solium-disable-line visibility-first
     {
         initialized();
 
@@ -505,39 +510,19 @@ contract Projects is IsContract, AragonApp {
         //checkTransValueEqualsMessageValue(msg.value, _bountySizes,_tokenBounties);
         string memory ipfsHash;
         uint standardBountyId;
-        //address[] memory issuers = new address[](1);
-        //issuers[0] = address(this);
-        //address[] memory approvers = new address[](1);
-        //approvers[0] = address(0);
-        // submit the bounty to the StandardBounties contract
+
         for (uint i = 0; i < _bountySizes.length; i++) {
             ipfsHash = getHash(_ipfsAddresses, i);
 
+            // submit the bounty to the StandardBounties contract
             standardBountyId = _issueBounty(
                 ipfsHash,
                 _deadlines[i],
                 _tokenContracts[i],
                 _tokenTypes[i],
-                _bountySizes[i]
+                _bountySizes[i],
+                new address[](0)
             );
-
-            //standardBountyId = bounties.issueBounty(
-            //    address(this),
-            //    issuers,                           //    address[] _issuers
-            //    new address[](0),                   //    address[] _approvers
-            //    ipfsHash,                       //    parse input to get ipfs hash
-            //    _deadlines[i],                  //    uint256 _deadlines
-            //    _tokenContracts[i],              //    address _tokenContract
-            //    _tokenTypes[i]              //    bool _paysTokens
-            //    //_bountySizes[i],                //    uint256 _fulfillmentAmount
-            //);
-
-            //_activateBounty(
-            //    _tokenTypes[i],
-            //    _tokenContracts[i],
-            //    _bountySizes[i],
-            //    standardBountyId
-            //);
 
             //Add bounty to local registry
             _addBounty(
@@ -554,11 +539,39 @@ contract Projects is IsContract, AragonApp {
         uint256 _deadline,
         address _tokenContract,
         uint256 _tokenType,
-        uint256 _bountySize
+        uint256 _bountySize,
+        address[] _issuers
     ) internal returns (uint256 bountyId)
     {
-        address[] memory issuers = new address[](1);
-        issuers[0] = address(this);
+        require(_tokenType != 721);
+        address[] memory issuers = new address[](_issuers.length + 1);
+        issuers[issuers.length-1] = address(this);
+        if (_tokenType != 0) {
+            vault.transfer(_tokenContract, this, _bountySize);
+            TokenApproval(_tokenContract).approve(bounties, _bountySize);
+            // Activate the bounty so it can be fulfilled
+            bountyId = bounties.issueAndContribute(
+                address(this),      // address payable _sender
+                issuers,            // address payable [] memory _issuers
+                new address[](0),   // address [] memory _approvers
+                _ipfsHash,          // string memory _data
+                _deadline,          // uint _deadline
+                _tokenContract,     // address _token
+                _tokenType,         // uint _tokenVersion
+                _bountySize         // uint _depositAmount
+            );
+        } else {
+            bountyId = bounties.issueAndContribute.value(_bountySize)(
+                address(this),      // address payable _sender
+                issuers,            // address payable [] memory _issuers
+                new address[](0),   // address [] memory _approvers
+                _ipfsHash,          // string memory _data
+                _deadline,          // uint _deadline
+                _tokenContract,     // address _token
+                _tokenType,         // uint _tokenVersion
+                _bountySize         // uint _depositAmount
+            );
+        }
 
         bountyId = bounties.issueAndContribute(
             address(this),
@@ -716,14 +729,14 @@ contract Projects is IsContract, AragonApp {
 
     function _activateBounty(
         uint256 _tokenType,
-        address _tokenCountract,
+        address _tokenContract,
         uint _bountySize,
         uint _standardBountyId
     ) internal
     {
         if (_tokenType != 0) {
-            vault.transfer(_tokenCountract, this, _bountySize);
-            TokenApproval(_tokenCountract).approve(bounties, _bountySize);
+            vault.transfer(_tokenContract, this, _bountySize);
+            TokenApproval(_tokenContract).approve(bounties, _bountySize);
             // Activate the bounty so it can be fulfilled
             bounties.activateBounty(_standardBountyId, _bountySize);
         } else {
