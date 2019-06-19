@@ -33,12 +33,23 @@ interface Bounties {
     function issueBounty(
         address sender,
         address[] _issuers,
-        address[] _arbiters,
+        address[] _approvers,
         string _data,
         uint _deadline,
         address _token,
         uint _tokenVersion
-    ) public returns (uint);
+    ) external returns (uint);
+
+    function issueAndContribute(
+        address sender,
+        address[] _issuers,
+        address[] _approvers,
+        string _data,
+        uint _deadline,
+        address _token,
+        uint _tokenVersion,
+        uint _depositAmount
+    ) external payable returns (uint);
 
     function activateBounty(
         uint _bountyId,
@@ -48,7 +59,7 @@ interface Bounties {
     function fulfillBounty(
         uint _bountyId,
         string _data
-    ) public;
+    ) external;
 
     function acceptFulfillment(
         uint _bountyId,
@@ -506,7 +517,8 @@ contract Projects is IsContract, AragonApp {
                 ipfsHash,
                 _deadlines[i],
                 _tokenContracts[i],
-                _tokenTypes[i]
+                _tokenTypes[i],
+                _bountySizes[i]
             );
 
             //standardBountyId = bounties.issueBounty(
@@ -541,20 +553,22 @@ contract Projects is IsContract, AragonApp {
         string _ipfsHash,
         uint256 _deadline,
         address _tokenContract,
-        uint256 _tokenType
+        uint256 _tokenType,
+        uint256 _bountySize
     ) internal returns (uint256 bountyId)
     {
         address[] memory issuers = new address[](1);
         issuers[0] = address(this);
 
-        bountyId = bounties.issueBounty(
+        bountyId = bounties.issueAndContribute(
             address(this),
             issuers,
             new address[](0),
             _ipfsHash,
             _deadline,
             _tokenContract,
-            _tokenType
+            _tokenType,
+            _bountySize
         );
     }
 
