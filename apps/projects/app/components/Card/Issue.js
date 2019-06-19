@@ -39,110 +39,105 @@ const labelsBadges = labels =>
     </Badge>
   ))
 
-class Issue extends React.PureComponent {
-  render() {
-    const {
-      isSelected,
-      onClick,
-      onSelect,
-      onSubmitWork,
-      onRequestAssignment,
-      onReviewApplication,
-      onAllocateSingleBounty,
-      onUpdateBounty,
-      onViewFunding,
-      onReviewWork,
-      ...issue
-    } = this.props
+const Issue = ({
+  isSelected,
+  onClick,
+  onSelect,
+  onSubmitWork,
+  onRequestAssignment,
+  onReviewApplication,
+  onAllocateSingleBounty,
+  onUpdateBounty,
+  onReviewWork,
+  ...issue
+}) => {
+  const {
+    id,
+    work,
+    workStatus,
+    title,
+    repo,
+    number,
+    labels,
+    balance,
+    symbol,
+    deadline,
+    requestsData,
+    expLevel,
+  } = issue
 
-    const {
-      id,
-      work,
-      workStatus,
-      title,
-      repo,
-      number,
-      labels,
-      balance,
-      symbol,
-      deadline,
-      requestsData,
-      expLevel,
-    } = issue
+  return (
+    <StyledIssue>
+      <div style={{ padding: '10px' }}>
+        <Checkbox checked={isSelected} onChange={() => onSelect(issue)} />
+      </div>
 
-    return (
-      <StyledIssue>
-        <div style={{ padding: '10px' }}>
-          <Checkbox checked={isSelected} onChange={() => onSelect(issue)} />
+      <IssueData>
+        <ClickArea onClick={() => onClick(issue)} />
+
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Text color={theme.textSecondary} size="xsmall">
+            {repo} #{number}
+          </Text>
+          <ContextMenu>
+            <BountyContextMenu
+              onAllocateSingleBounty={() => onAllocateSingleBounty(issue)}
+              onRequestAssignment={() => onRequestAssignment(issue)}
+              onReviewApplication={() => onReviewApplication(issue)}
+              onReviewWork={() => onReviewWork(issue)}
+              onSubmitWork={() => onSubmitWork(issue)}
+              onUpdateBounty={() => onUpdateBounty(issue)}
+              requestsData={requestsData}
+              work={work}
+              workStatus={workStatus}
+              issue={issue}
+            />
+          </ContextMenu>
         </div>
+        <IssueTitleDetailsBalance>
+          <IssueTitleDetails>
+            <IssueTitle>{title}</IssueTitle>
 
-        <IssueData>
-          <ClickArea onClick={() => onClick(issue)} />
+            {BOUNTY_STATUS[workStatus] && (
+              <Text.Block
+                color={theme.textSecondary}
+                style={{ fontSize: '0.87em' }}
+              >
+                <span style={{ marginRight: '15px' }}>
+                  {expLevel}
+                  {dot}
+                  {balance > 0
+                    ? BOUNTY_STATUS[workStatus]
+                    : BOUNTY_STATUS['fulfilled']}
+                  {dot}
+                  Due {DeadlineDistance(deadline)}
+                </span>
+              </Text.Block>
+            )}
+          </IssueTitleDetails>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Text color={theme.textSecondary} size="xsmall">
-              {repo} #{number}
-            </Text>
-            <ContextMenu>
-              <BountyContextMenu
-                onAllocateSingleBounty={() => onAllocateSingleBounty(issue)}
-                onRequestAssignment={() => onRequestAssignment(issue)}
-                onReviewApplication={() => onReviewApplication(issue)}
-                onReviewWork={() => onReviewWork(issue)}
-                onSubmitWork={() => onSubmitWork(issue)}
-                onUpdateBounty={() => onUpdateBounty(issue)}
-                onViewFunding={() => onViewFunding(issue)}
-                requestsData={requestsData}
-                work={work}
-                workStatus={workStatus}
-              />
-            </ContextMenu>
+          <Balance>
+            {BOUNTY_STATUS[workStatus] && (
+              <Badge
+                style={{ padding: '10px' }}
+                background={BOUNTY_BADGE_COLOR[workStatus].bg}
+                foreground={BOUNTY_BADGE_COLOR[workStatus].fg}
+              >
+                <Text>{balance + ' ' + symbol}</Text>
+              </Badge>
+            )}
+          </Balance>
+        </IssueTitleDetailsBalance>
+
+        {labels.totalCount > 0 && (
+          <div>
+            <Separator />
+            {labelsBadges(labels)}
           </div>
-          <IssueTitleDetailsBalance>
-            <IssueTitleDetails>
-              <IssueTitle>{title}</IssueTitle>
-
-              {BOUNTY_STATUS[workStatus] && (
-                <Text.Block
-                  color={theme.textSecondary}
-                  style={{ fontSize: '0.87em' }}
-                >
-                  <span style={{ marginRight: '15px' }}>
-                    {expLevel}
-                    {dot}
-                    {balance > 0
-                      ? BOUNTY_STATUS[workStatus]
-                      : BOUNTY_STATUS['fulfilled']}
-                    {dot}
-                    Due {DeadlineDistance(deadline)}
-                  </span>
-                </Text.Block>
-              )}
-            </IssueTitleDetails>
-
-            <Balance>
-              {BOUNTY_STATUS[workStatus] && (
-                <Badge
-                  style={{ padding: '10px' }}
-                  background={BOUNTY_BADGE_COLOR[workStatus].bg}
-                  foreground={BOUNTY_BADGE_COLOR[workStatus].fg}
-                >
-                  <Text>{balance + ' ' + symbol}</Text>
-                </Badge>
-              )}
-            </Balance>
-          </IssueTitleDetailsBalance>
-
-          {labels.totalCount > 0 && (
-            <div>
-              <Separator />
-              {labelsBadges(labels)}
-            </div>
-          )}
-        </IssueData>
-      </StyledIssue>
-    )
-  }
+        )}
+      </IssueData>
+    </StyledIssue>
+  )
 }
 
 Issue.propTypes = {
@@ -157,7 +152,6 @@ Issue.propTypes = {
   onReviewApplication: PropTypes.func.isRequired,
   onAllocateSingleBounty: PropTypes.func.isRequired,
   onUpdateBounty: PropTypes.func.isRequired,
-  onViewFunding: PropTypes.func.isRequired,
   onReviewWork: PropTypes.func.isRequired,
   workStatus: PropTypes.oneOf([
     undefined,

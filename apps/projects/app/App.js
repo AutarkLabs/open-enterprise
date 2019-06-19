@@ -16,7 +16,7 @@ import { AppTitleButton, AppTitle } from '../../../shared/ui'
 
 import ErrorBoundary from './components/App/ErrorBoundary'
 import { Issues, Overview, Settings } from './components/Content'
-import PanelManager, { PANELS } from './components/Panel'
+import PanelManager, { PANELS, PanelContext } from './components/Panel'
 
 import { IdentityProvider } from './components/Shared/IdentityManager'
 import {
@@ -76,12 +76,13 @@ class App extends React.PureComponent {
     super(props)
     this.state = {
       repos: [],
-      panelProps: {},
       activeIndex: { tabIndex: 0, tabData: {} },
       githubLoading: false,
       githubCurrentUser: {},
       client: initApolloClient((props.github && props.github.token) || ''),
       issueDetail: false,
+      panel: null,
+      panelProps: null,
     }
   }
 
@@ -193,7 +194,6 @@ class App extends React.PureComponent {
       panel: PANELS.NewIssue,
       panelProps: {
         reposManaged: repoNames,
-        closePanel: this.closePanel,
         reposIds,
       },
     }))
@@ -223,7 +223,6 @@ class App extends React.PureComponent {
         mode: 'new',
         onSubmit: this.onSubmitBountyAllocation,
         bountySettings: this.props.bountySettings,
-        closePanel: this.closePanel,
         tokens: this.props.tokens !== undefined ? this.props.tokens : [],
         githubCurrentUser: this.state.githubCurrentUser,
       },
@@ -239,7 +238,6 @@ class App extends React.PureComponent {
         mode: 'update',
         onSubmit: this.onSubmitBountyAllocation,
         bountySettings: this.props.bountySettings,
-        closePanel: this.closePanel,
         tokens: this.props.tokens !== undefined ? this.props.tokens : [],
         githubCurrentUser: this.state.githubCurrentUser,
       },
@@ -331,18 +329,6 @@ class App extends React.PureComponent {
     this.closePanel()
     const hash = await ipfsAdd(state)
     this.props.api.requestAssignment(toHex(issue.repoId), issue.number, hash)
-  }
-
-  viewFunding = issue => {
-    const fundingEventId = issue.id // FIXME: what attribute links issues from the same funding event?
-    this.setState((_prevState, _prevProps) => ({
-      panel: PANELS.ViewFunding,
-      panelProps: {
-        createdBy: issue.fundingHistory[0].user, // FIXME: does not contain Eth address; how to retrieve it?
-        fundingEventId,
-        title: 'Issue Funding #Unknown',
-      },
-    }))
   }
 
   reviewApplication = (issue, requestIndex = 0) => {
@@ -456,7 +442,12 @@ class App extends React.PureComponent {
   }
 
   closePanel = () => {
-    this.setState({ panel: undefined, panelProps: undefined })
+    this.setState({ panel: null, panelProps: null })
+  }
+
+  setPanel = {
+    setActivePanel: p => this.setState({ panel: p }),
+    setPanelProps: p => this.setState({ panelProps: p }),
   }
 
   handleGithubSignIn = () => {
@@ -489,10 +480,10 @@ class App extends React.PureComponent {
   render() {
     const {
       activeIndex,
-      panel,
-      panelProps,
       githubCurrentUser,
       issueDetail,
+      panel,
+      panelProps,
     } = this.state
     const { bountySettings, displayMenuButton = false } = this.props
 
@@ -545,46 +536,47 @@ class App extends React.PureComponent {
               }
             >
               <ErrorBoundary>
-                <TabComponent
-                  onLogin={this.handleGithubSignIn}
-                  status={status}
-                  app={this.props.api}
-                  bountySettings={bountySettings}
-                  githubCurrentUser={githubCurrentUser}
-                  githubLoading={this.state.githubLoading}
-                  projects={
-                    this.props.repos !== undefined ? this.props.repos : []
-                  }
-                  bountyIssues={
-                    this.props.issues !== undefined ? this.props.issues : []
-                  }
-                  bountySettings={
-                    bountySettings !== undefined ? bountySettings : {}
-                  }
-                  tokens={
-                    this.props.tokens !== undefined ? this.props.tokens : []
-                  }
-                  onNewProject={this.newProject}
-                  onRemoveProject={this.removeProject}
-                  onNewIssue={this.newIssue}
-                  onCurateIssues={this.curateIssues}
-                  onAllocateBounties={this.newBountyAllocation}
-                  onUpdateBounty={this.updateBounty}
-                  onSubmitWork={this.submitWork}
-                  onRequestAssignment={this.requestAssignment}
-                  onViewFunding={this.viewFunding}
-                  activeIndex={activeIndex}
-                  changeActiveIndex={this.changeActiveIndex}
-                  onReviewApplication={this.reviewApplication}
-                  onReviewWork={this.reviewWork}
-                  setIssueDetail={this.setIssueDetail}
-                  issueDetail={issueDetail}
-                />
+                <PanelContext.Provider value={this.setPanel}>
+                  <TabComponent
+                    onLogin={this.handleGithubSignIn}
+                    status={status}
+                    app={this.props.api}
+                    bountySettings={bountySettings}
+                    githubCurrentUser={githubCurrentUser}
+                    githubLoading={this.state.githubLoading}
+                    projects={
+                      this.props.repos !== undefined ? this.props.repos : []
+                    }
+                    bountyIssues={
+                      this.props.issues !== undefined ? this.props.issues : []
+                    }
+                    bountySettings={
+                      bountySettings !== undefined ? bountySettings : {}
+                    }
+                    tokens={
+                      this.props.tokens !== undefined ? this.props.tokens : []
+                    }
+                    onNewProject={this.newProject}
+                    onRemoveProject={this.removeProject}
+                    onNewIssue={this.newIssue}
+                    onCurateIssues={this.curateIssues}
+                    onAllocateBounties={this.newBountyAllocation}
+                    onUpdateBounty={this.updateBounty}
+                    onSubmitWork={this.submitWork}
+                    onRequestAssignment={this.requestAssignment}
+                    activeIndex={activeIndex}
+                    changeActiveIndex={this.changeActiveIndex}
+                    onReviewApplication={this.reviewApplication}
+                    onReviewWork={this.reviewWork}
+                    setIssueDetail={this.setIssueDetail}
+                    issueDetail={issueDetail}
+                  />
+                </PanelContext.Provider>
               </ErrorBoundary>
             </AppView>
             <PanelManager
-              onClose={this.closePanel}
               activePanel={panel}
+              onClose={this.closePanel}
               {...panelProps}
             />
           </IdentityProvider>

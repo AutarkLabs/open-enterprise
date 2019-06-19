@@ -243,7 +243,6 @@ const detailsCard = ({
   onReviewApplication,
   onReviewWork,
   onUpdateBounty,
-  onViewFunding,
   onRequestAssignment,
   onSubmitWork,
   onAllocateSingleBounty,
@@ -295,10 +294,10 @@ const detailsCard = ({
               onReviewWork={() => onReviewWork(issue)}
               onSubmitWork={() => onSubmitWork(issue)}
               onUpdateBounty={() => onUpdateBounty(issue)}
-              onViewFunding={() => onViewFunding(issue)}
               requestsData={issue.requestsData}
               work={issue.work}
               workStatus={issue.workStatus}
+              issue={issue}
             />
           </ContextMenu>
           {issue.balance > 0 && (
@@ -412,7 +411,6 @@ IssueDetail.propTypes = {
   onReviewApplication: PropTypes.func.isRequired,
   onReviewWork: PropTypes.func.isRequired,
   onUpdateBounty: PropTypes.func.isRequired,
-  onViewFunding: PropTypes.func.isRequired,
   workStatus: PropTypes.oneOf([
     undefined,
     'funded',

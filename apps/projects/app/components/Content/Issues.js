@@ -41,7 +41,6 @@ class Issues extends React.PureComponent {
     onReviewWork: PropTypes.func.isRequired,
     onSubmitWork: PropTypes.func.isRequired,
     onUpdateBounty: PropTypes.func.isRequired,
-    onViewFunding: PropTypes.func.isRequired,
     setIssueDetail: PropTypes.func.isRequired,
   }
 
@@ -411,7 +410,6 @@ class Issues extends React.PureComponent {
       onReviewApplication,
       onSubmitWork,
       onReviewWork,
-      onViewFunding,
     } = this.props
 
     currentIssue.repository = {
@@ -430,7 +428,6 @@ class Issues extends React.PureComponent {
         onSubmitWork={onSubmitWork}
         onAllocateSingleBounty={this.handleAllocateSingleBounty}
         onUpdateBounty={this.handleUpdateBounty}
-        onViewFunding={onViewFunding}
         onReviewWork={onReviewWork}
       />
     )
@@ -493,7 +490,6 @@ class Issues extends React.PureComponent {
       onReviewApplication,
       onSubmitWork,
       onReviewWork,
-      onViewFunding,
       issueDetail,
     } = this.props
 
@@ -583,7 +579,6 @@ class Issues extends React.PureComponent {
                               this.handleAllocateSingleBounty
                             }
                             onUpdateBounty={this.handleUpdateBounty}
-                            onViewFunding={onViewFunding}
                             onReviewWork={onReviewWork}
                           />
                         )
