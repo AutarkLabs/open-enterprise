@@ -14,7 +14,7 @@ const calcTotalFunding = issues => {
       symbol: issue.tokenSymbol,
     }
     group[issue.tokenSymbol].total = issue.balance.plus(
-      group[issue.tokenSymbol]
+      group[issue.tokenSymbol].total
     )
     return group
   }, {})
