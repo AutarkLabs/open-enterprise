@@ -245,7 +245,10 @@ contract('Projects App', accounts => {
 
       context.only('new integration test', () =>{
         it('passes', async () => {
-          console.log(await app.issueBountyTest())
+          await app.issueBountyTest()
+          await app.issueBountyTest()
+          await app.issueBountyTest()
+          //assert(false, 'display events')
         })
       })
 

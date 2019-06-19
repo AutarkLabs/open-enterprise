@@ -486,32 +486,39 @@ contract Projects is IsContract, AragonApp {
         uint256[] _deadlines,
         uint256[] _tokenTypes,
         address[] _tokenContracts,
-        string _ipfsAddresses
-        //string _description
+        string _ipfsAddresses,
+        string _description
     ) public payable auth(FUND_ISSUES_ROLE)
     {
         // ensure the transvalue passed equals transaction value
         //checkTransValueEqualsMessageValue(msg.value, _bountySizes,_tokenBounties);
         string memory ipfsHash;
         uint standardBountyId;
-        address[] memory issuers = new address[](1);
-        issuers[0] = address(this);
+        //address[] memory issuers = new address[](1);
+        //issuers[0] = address(this);
         //address[] memory approvers = new address[](1);
         //approvers[0] = address(0);
         // submit the bounty to the StandardBounties contract
         for (uint i = 0; i < _bountySizes.length; i++) {
             ipfsHash = getHash(_ipfsAddresses, i);
 
-            standardBountyId = bounties.issueBounty(
-                address(this),
-                issuers,                           //    address[] _issuers
-                new address[](0),                   //    address[] _approvers
-                ipfsHash,                       //    parse input to get ipfs hash
-                _deadlines[i],                  //    uint256 _deadlines
-                _tokenContracts[i],              //    address _tokenContract
-                _tokenTypes[i]              //    bool _paysTokens
-                //_bountySizes[i],                //    uint256 _fulfillmentAmount
+            standardBountyId = _issueBounty(
+                ipfsHash,
+                _deadlines[i],
+                _tokenContracts[i],
+                _tokenTypes[i]
             );
+
+            //standardBountyId = bounties.issueBounty(
+            //    address(this),
+            //    issuers,                           //    address[] _issuers
+            //    new address[](0),                   //    address[] _approvers
+            //    ipfsHash,                       //    parse input to get ipfs hash
+            //    _deadlines[i],                  //    uint256 _deadlines
+            //    _tokenContracts[i],              //    address _tokenContract
+            //    _tokenTypes[i]              //    bool _paysTokens
+            //    //_bountySizes[i],                //    uint256 _fulfillmentAmount
+            //);
 
             //_activateBounty(
             //    _tokenTypes[i],
@@ -528,6 +535,27 @@ contract Projects is IsContract, AragonApp {
                 _bountySizes[i]
             );
         }
+    }
+
+    function _issueBounty(
+        string _ipfsHash,
+        uint256 _deadline,
+        address _tokenContract,
+        uint256 _tokenType
+    ) internal returns (uint256 bountyId)
+    {
+        address[] memory issuers = new address[](1);
+        issuers[0] = address(this);
+
+        bountyId = bounties.issueBounty(
+            address(this),
+            issuers,
+            new address[](0),
+            _ipfsHash,
+            _deadline,
+            _tokenContract,
+            _tokenType
+        );
     }
 
     /**
