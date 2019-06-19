@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 
+import { useAragonApi } from '@aragon/api-react'
 import { IdentityBadge, Text, theme } from '@aragon/ui'
 import BigNumber from 'bignumber.js'
 
@@ -24,48 +25,74 @@ const calcTotalFunding = issues => {
   )
 }
 
-const ViewFunding = ({
-  fundingProposal: { createdBy, description, issues },
-}) => (
-  <Grid>
-    <Half>
-      <Label>Created By</Label>
-      <IdentityBadge entity={createdBy.login} />
-    </Half>
-    <Half>
-      <Label>Status</Label>
-      {issues[0].workStatus}
-    </Half>
-    <Full>
-      <Label>Description</Label>
-      {description}
-    </Full>
-    <Half>
-      <Label>Total Funding</Label>
-      {calcTotalFunding(issues).join(<Dot />)}
-    </Half>
-    <Half>
-      <Label>Total Issues</Label>
-      {issues.length}
-    </Half>
-    {issues.map(issue => (
-      <Full key={issue.number}>
-        <Issue key={issue.number} {...issue} />
+const ViewFunding = ({ createdBy, fundingEventId }) => {
+  const { appState } = useAragonApi()
+  const tokens = appState.tokens.reduce((tokenObj, token) => {
+    tokenObj[token.addr] = {
+      symbol: token.symbol,
+      decimals: token.decimals,
+    }
+    return tokenObj
+  }, {})
+
+  const description = 'Funding Request cannot be retrieved at this time; this feature will be completed soon.' // FIXME: how to retrieve this?
+  const issues = appState.issues
+    .filter(i => i.data.key === fundingEventId)
+    .map(i => ({
+      balance: BigNumber(i.data.balance).div(
+        BigNumber(10 ** tokens[i.data.token].decimals)
+      ),
+      expLevel: appState.bountySettings.expLvls[i.data.exp].name,
+      deadline: i.data.deadline,
+      hours: i.data.hours,
+      number: i.data.number,
+      repo: i.data.repo,
+      title:
+        i.data.title ||
+        'Issue list cannot be retrieved at this time; this feature will be completed soon.', // FIXME: this attr is in `issue` returned from Issues.js, but not in appState.issues
+      tokenSymbol: tokens[i.data.token].symbol,
+      url: i.data.url || 'https://github.com/404', // FIXME: this attr is in `issue` returned from Issues.js, but not in appState.issues
+      workStatus: i.data.workStatus,
+    }))
+
+  return (
+    <Grid>
+      <Half>
+        <Label>Created By</Label>
+        <IdentityBadge entity={createdBy.login} />
+      </Half>
+      <Half>
+        <Label>Status</Label>
+        {issues[0].workStatus}
+      </Half>
+      <Full>
+        <Label>Description</Label>
+        {description}
       </Full>
-    ))}
-  </Grid>
-)
+      <Half>
+        <Label>Total Funding</Label>
+        {calcTotalFunding(issues).join(<Dot />)}
+      </Half>
+      <Half>
+        <Label>Total Issues</Label>
+        {issues.length}
+      </Half>
+      {issues.map(issue => (
+        <Full key={issue.number}>
+          <Issue key={issue.number} {...issue} />
+        </Full>
+      ))}
+    </Grid>
+  )
+}
 
 ViewFunding.propTypes = {
-  fundingProposal: PropTypes.shape({
-    description: PropTypes.string.isRequired,
-    createdBy: PropTypes.shape({
-      avatarUrl: PropTypes.string.isRequired,
-      login: PropTypes.string.isRequired,
-      url: PropTypes.string.isRequired,
-    }).isRequired,
-    issues: PropTypes.arrayOf(issueShape).isRequired,
-  }),
+  createdBy: PropTypes.shape({
+    avatarUrl: PropTypes.string.isRequired,
+    login: PropTypes.string.isRequired,
+    url: PropTypes.string.isRequired,
+  }).isRequired,
+  fundingEventId: PropTypes.string.isRequired,
 }
 
 const Grid = styled.div`
