@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import {
   Badge,
   Checkbox,
-  ContextMenuItem as FilterMenuItem,
+  ContextMenuItem,
   theme,
 } from '@aragon/ui'
 
@@ -67,7 +67,6 @@ class FilterBar extends React.Component {
           <FilterMenuItem
             key={id}
             onClick={this.filter('projects', id)}
-            style={{ display: 'flex', alignItems: 'flex-start' }}
           >
             <div>
               <Checkbox
@@ -101,7 +100,6 @@ class FilterBar extends React.Component {
           <FilterMenuItem
             key={id}
             onClick={this.filter('labels', id)}
-            style={{ display: 'flex', alignItems: 'flex-start' }}
           >
             <div>
               <Checkbox
@@ -141,7 +139,6 @@ class FilterBar extends React.Component {
           <FilterMenuItem
             key={id}
             onClick={this.filter('milestones', id)}
-            style={{ display: 'flex', alignItems: 'flex-start' }}
           >
             <div>
               <Checkbox
@@ -167,7 +164,6 @@ class FilterBar extends React.Component {
         <FilterMenuItem
           key={status}
           onClick={this.filter('statuses', status)}
-          style={{ display: 'flex', alignItems: 'flex-start' }}
         >
           <div>
             <Checkbox
@@ -186,7 +182,6 @@ class FilterBar extends React.Component {
         <FilterMenuItem
           key={status}
           onClick={this.filter('statuses', status)}
-          style={{ display: 'flex', alignItems: 'flex-start' }}
         >
           <div>
             <Checkbox
@@ -205,16 +200,16 @@ class FilterBar extends React.Component {
 
   sortDropDown = () => (
     <FilterDropDown
-      caption={'Sort by ' + this.props.sortBy.what}
+      caption="Sort"
       enabled={true}
       width="auto"
       type="sorter"
+      style={{ left: 'unset', right: 0 }}
     >
       {this.state.sortBy.map(sorter => (
         <FilterMenuItem
           key={sorter.what}
           onClick={this.generateSort(sorter.what)}
-          style={{ display: 'flex', alignItems: 'flex-start' }}
         >
           {sorter.direction === 1 && (
             <SortArrow style={{ paddingTop: '3px' }}>
@@ -246,9 +241,9 @@ class FilterBar extends React.Component {
     return (
       <StyledFilterBar>
 
-        <FilterButton>
+        <SelectAll>
           <Checkbox onChange={handleSelectAll} checked={allSelected} />
-        </FilterButton>
+        </SelectAll>
 
         <Overflow>
           {this.filterByProject(filters, filtersData)}
@@ -272,30 +267,36 @@ FilterBar.propTypes = {
   handleSorting: PropTypes.func.isRequired,
 }
 
+const FilterMenuItem = styled(ContextMenuItem)`
+  align-items: flex-start;
+  display: flex;
+  padding: 5px;
+  padding-right: 10px;
+`
 const SortArrow = styled.div`
   width: 15px;
   height: 12px;
 `
 const StyledFilterBar = styled.div`
-  width: 100%;
-  min-width: 346px;
-  display: flex;
+  background: ${theme.contentBorder};
+  display: grid;
+  grid-gap: 1px;
+  grid-template-columns: 48px repeat(auto-fit, minmax(20px, auto));
   margin: 12px 0;
-  height: 40px;
+  padding: 1px;
   align-items: center;
   border-radius: 3px;
-  z-index: 3;
   > * {
     background: ${theme.contentBackground};
+    height: 100%;
+    width: 100%;
+    z-index: 2;
+    :hover {
+      z-index: 3;
+    }
   }
   > :first-child {
-    width: 48px;
-    padding: 0;
-    justify-content: center;
     border-radius: 3px 0 0 3px;
-  }
-  > :nth-last-child(2) {
-    flex: 1 1 auto;
   }
   > :last-child {
     > * {
@@ -303,8 +304,13 @@ const StyledFilterBar = styled.div`
     }
   }
 `
+const SelectAll = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`
 const ActionLabel = styled.span`
-  margin-left: 15px;
+  margin-left: 5px;
 `
 const Separator = styled.hr`
   height: 1px;
