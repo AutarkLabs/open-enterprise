@@ -282,7 +282,7 @@ const StyledFilterBar = styled.div`
   display: grid;
   grid-gap: 1px;
   grid-template-columns: 48px repeat(auto-fit, minmax(20px, auto));
-  margin: 12px 0;
+  margin-bottom: 10px;
   padding: 1px;
   align-items: center;
   border-radius: 3px;
