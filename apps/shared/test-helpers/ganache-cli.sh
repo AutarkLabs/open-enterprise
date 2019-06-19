@@ -72,7 +72,7 @@ elif [ "$DEV" = true ]; then
 	npm run publish:http && npm run start:kit
 	result=$?
 elif [ "$NO_CLIENT" = true ]; then
-	npm run publish:http && npm run start:kit
+	npm run publish:http && npm run start:kit:no:client
 	result=$?
 elif [ "$CYPRESS" = true ]; then
 	npm run publish:apps && npm run start:kit &> /dev/null &
