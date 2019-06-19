@@ -39,6 +39,9 @@ start_testrpc() {
 	elif [ "$DEV" = true ]; then
 		aragon devchain --reset --port "$testrpc_port" &
 		lerna run dev --parallel --scope=@tps/apps-* &
+	elif [ "$NO_CLIENT" = true ]; then
+		aragon devchain --reset --port "$testrpc_port" &
+		lerna run dev --parallel --scope=@tps/apps-* &
 	fi
 
 	testrpc_pid=$!
@@ -66,6 +69,9 @@ elif [ "$START_KIT" = true ] || [ "$RESTART_KIT" = true ]; then
 	npm run publish:apps && npm run start:kit
 	result=$?
 elif [ "$DEV" = true ]; then
+	npm run publish:http && npm run start:kit
+	result=$?
+elif [ "$NO_CLIENT" = true ]; then
 	npm run publish:http && npm run start:kit
 	result=$?
 elif [ "$CYPRESS" = true ]; then
