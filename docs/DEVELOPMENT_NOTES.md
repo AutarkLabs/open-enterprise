@@ -85,6 +85,13 @@ require a republish to view changes in the browser.
 
 - There are now two kits: a `deploy kit` and a `dev kit`. The `deploy kit` exists in the root-level kits folder and isn't of much help with development, while the `dev kit` resides in the root-level apps folder. All of the above commands run out of the `dev kit`.
 
+### Invalid Arg Type
+If you get a
+
+    TypeError [ERR_INVALID_ARG_TYPE]: The "path" argument must be of type string. Received type object
+    
+, install Aragon CLI globally with `npm i -g @aragon/cli@5.6.2`.
+
 ### Backend
 
 Contract testing is run by executing `npm run test:<app_name>`. To run all contract tests just execute `npm run test`.
