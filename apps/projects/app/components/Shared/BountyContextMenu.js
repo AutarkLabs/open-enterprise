@@ -1,18 +1,8 @@
 import PropTypes from 'prop-types'
-import React, { useContext } from 'react'
+import React from 'react'
 import styled, { css } from 'styled-components'
 import { ContextMenuItem, theme } from '@aragon/ui'
-import { PANELS, PanelContext } from '../Panel'
-
-const onViewFunding = ({ issue, setActivePanel, setPanelProps }) => {
-  const fundingEventId = issue.id // FIXME: what attribute links issues from the same funding event?
-  setActivePanel(PANELS.ViewFunding)
-  setPanelProps({
-    createdBy: issue.fundingHistory[0].user, // FIXME: does not contain Eth address; how to retrieve it?
-    fundingEventId,
-    title: 'Issue Funding #Unknown',
-  })
-}
+import { usePanelManagement } from '../Panel'
 
 const BountyContextMenu = ({
   issue,
@@ -27,9 +17,7 @@ const BountyContextMenu = ({
   onReviewWork,
 }) => {
 
-  const { setActivePanel, setPanelProps } = useContext(PanelContext)
-
-  const viewFunding = () => onViewFunding({ issue, setActivePanel, setPanelProps })
+  const { viewFunding } = usePanelManagement()
 
   return (
     <React.Fragment>
@@ -39,7 +27,7 @@ const BountyContextMenu = ({
       {workStatus === 'in-progress' && (
         <React.Fragment>
           <Item onClick={onSubmitWork}>Submit Work</Item>
-          <Item bordered onClick={viewFunding}>
+          <Item bordered onClick={() => viewFunding(issue)}>
             View Funding Proposal
           </Item>
         </React.Fragment>
@@ -47,7 +35,7 @@ const BountyContextMenu = ({
       {workStatus === 'review-work' && (
         <React.Fragment>
           <Item onClick={onReviewWork}>Review Work</Item>
-          <Item bordered onClick={viewFunding}>
+          <Item bordered onClick={() => viewFunding(issue)}>
             View Funding Proposal
           </Item>
         </React.Fragment>
@@ -58,7 +46,7 @@ const BountyContextMenu = ({
           <Item bordered onClick={onUpdateBounty}>
             Update Funding
           </Item>
-          <Item onClick={viewFunding}>View Funding Proposal</Item>
+          <Item onClick={() => viewFunding(issue)}>View Funding Proposal</Item>
         </React.Fragment>
       )}
       {workStatus === 'review-applicants' && (
@@ -69,11 +57,11 @@ const BountyContextMenu = ({
           <Item bordered onClick={onUpdateBounty}>
             Update Funding
           </Item>
-          <Item onClick={viewFunding}>View Funding Proposal</Item>
+          <Item onClick={() => viewFunding(issue)}>View Funding Proposal</Item>
         </React.Fragment>
       )}
       {workStatus === 'fulfilled' && (
-        <Item onClick={viewFunding}>View Funding Proposal</Item>
+        <Item onClick={() => viewFunding(issue)}>View Funding Proposal</Item>
       )}
     </React.Fragment>
   )
