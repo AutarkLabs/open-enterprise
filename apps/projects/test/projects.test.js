@@ -162,7 +162,6 @@ contract('Projects App', accounts => {
         await app.initialize(
           bounties.address,
           ZERO_ADDR,
-          '',
         )
       })
     })
@@ -170,7 +169,7 @@ contract('Projects App', accounts => {
   context('post-initialization', () => {
     beforeEach(async () =>{
       console.log('bounties address: ', bounties.address)
-      await app.initialize(bounties.address, vault.address, '')
+      await app.initialize(bounties.address, vault.address)
     })
 
     context('creating and retrieving repos and bounties', () => {

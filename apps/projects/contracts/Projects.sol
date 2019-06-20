@@ -24,8 +24,8 @@ import "@aragon/os/contracts/common/IsContract.sol";
 *******************************************************************************/
 /*******************************************************************************
 * @title Projects Contract
-* @author Kevin Siegler
-* @dev This contract defines a registry for Github issues in addition to
+* @author Autark Labs
+* @dev This contract defines a registry for project tasks in addition to
 * applying bounties in bulk and accepting fulfillment via this contract
 *******************************************************************************/
 interface Bounties {
@@ -102,7 +102,7 @@ contract Projects is IsContract, AragonApp {
     string private constant ERROR_STANDARD_BOUNTIES_NOT_CONTRACT = "STANDARD_BOUNTIES_NOT_CONTRACT";
 
     // The entries in the repos registry.
-    mapping(bytes32 => GithubRepo) private repos;
+    mapping(bytes32 => Repo) private repos;
     // Gives us a repos array so we can actually iterate
     bytes32[] private repoIndex;
     enum SubmissionStatus { Unreviewed, Accepted, Rejected }  // 0: unreviewed 1: Accepted 2: Rejected
@@ -115,12 +115,12 @@ contract Projects is IsContract, AragonApp {
         uint256 bountyDeadline;
         address bountyCurrency;
         address bountyAllocator;
-        //address metaTxRelayer; TODO: Implement this interface 
+        //address metaTxRelayer; TODO: Implement this interface
         //address bountyArbiter;
     }
 
-    struct GithubRepo {
-        mapping(uint256 => GithubIssue) issues;
+    struct Repo {
+        mapping(uint256 => Issue) issues;
         uint index;
     }
 
@@ -138,7 +138,7 @@ contract Projects is IsContract, AragonApp {
         bool exists;
     }
 
-    struct GithubIssue {
+    struct Issue {
         bytes32 repo;  // This is the internal repo identifier
         uint256 number; // May be redundant tracking this
         bool hasBounty;
@@ -185,8 +185,7 @@ contract Projects is IsContract, AragonApp {
     function initialize(
         address _bountiesAddr,
         //address _relayer, TODO: Implement this
-        Vault _vault,
-        address _defaultToken
+        Vault _vault
     ) external onlyInit // solium-disable-line visibility-first
     {
         initialized();
@@ -204,7 +203,7 @@ contract Projects is IsContract, AragonApp {
         _changeBountySettings(
             100, // baseRate
             336, // bountyDeadline
-            _defaultToken, // bountyCurrency
+            address(0), // default bounty currency inits to zero
             _bountiesAddr // bountyAllocator
             //0x0000000000000000000000000000000000000000 //bountyArbiter
         );
@@ -242,12 +241,12 @@ contract Projects is IsContract, AragonApp {
 
     /**
      * @notice Get issue data from the registry.
-     * @param _repoId The id of the Github repo in the projects registry
+     * @param _repoId The id of the repo in the projects registry
      */
     function getIssue(bytes32 _repoId, uint256 _issueNumber) external view
     returns(bool hasBounty, uint standardBountyId, bool fulfilled, uint balance, address token, string dataHash, address assignee)
     {
-        GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
+        Issue storage issue = repos[_repoId].issues[_issueNumber];
         hasBounty = issue.hasBounty;
         fulfilled = issue.fulfilled;
         standardBountyId = issue.standardBountyId;
@@ -266,8 +265,8 @@ contract Projects is IsContract, AragonApp {
 
     /**
      * @notice Get an entry from the registry.
-     * @param _repoId The id of the Github repo in the projects registry
-     * @return index the Github repo registry index
+     * @param _repoId The id of the repo in the projects registry
+     * @return index the repo registry index
      */
     function getRepo(bytes32 _repoId) external view returns (uint index) {
         require(isRepoAdded(_repoId), "REPO_NOT_ADDED");
@@ -305,7 +304,7 @@ contract Projects is IsContract, AragonApp {
 ///////////////////////
     /**
      * @notice Add repository to the Projects app
-     * @param _repoId Github id of the repo to add
+     * @param _repoId id of the repo to be aadded
      * @return index for the added repo at the registry
      */
     function addRepo(
@@ -320,7 +319,7 @@ contract Projects is IsContract, AragonApp {
 
     /**
      * @notice Remove repository from the Projects app
-     * @param _repoId The id of the Github repo in the projects registry
+     * @param _repoId The id of the repo in the projects registry
      */
     function removeRepo(
         bytes32 _repoId
@@ -346,8 +345,8 @@ contract Projects is IsContract, AragonApp {
 
     /**
      * @notice Request assignment for issue `_issueNumber`
-     * @param _repoId the github repo id of the issue
-     * @param _issueNumber the github issue up for assignment
+     * @param _repoId the repo id of the issue
+     * @param _issueNumber the issue up for assignment
      * @param _application IPFS hash for the applicant's proposed timeline and strategy
      */
     function requestAssignment(
@@ -356,7 +355,7 @@ contract Projects is IsContract, AragonApp {
         string _application
     ) external isInitialized
     {
-        GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
+        Issue storage issue = repos[_repoId].issues[_issueNumber];
         require(issue.assignmentRequests[msg.sender].exists == false, "User already applied for this issue");
         issue.applicants.push(msg.sender);
         issue.assignmentRequests[msg.sender] = AssignmentRequest(
@@ -369,8 +368,8 @@ contract Projects is IsContract, AragonApp {
 
     /**
      * @notice Approve assignment for issue `_issueNumber`
-     * @param _repoId the github repo id of the issue
-     * @param _issueNumber the github issue up for assignment
+     * @param _repoId the repo id of the issue
+     * @param _issueNumber the issue up for assignment
      * @param _requestor address of user that will be assigned the issue
      * @param _updatedApplication IPFS hash of the application containing optional feedback
      */
@@ -382,7 +381,7 @@ contract Projects is IsContract, AragonApp {
         bool _approved
     ) external auth(REVIEW_APPLICATION_ROLE)
     {
-        GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
+        Issue storage issue = repos[_repoId].issues[_issueNumber];
         require(issue.assignmentRequests[_requestor].exists == true, "User has not applied for this issue");
         issue.assignee = _requestor;
         issue.assignmentRequests[_requestor].requestHash = _updatedApplication;
@@ -398,8 +397,8 @@ contract Projects is IsContract, AragonApp {
     /**
      * @notice Submit work for issue `_issueNumber`
      * @dev add a submission to local state after it's been added to StandardBounties.sol
-     * @param _repoId the github repo id of the issue
-     * @param _issueNumber the github issue up for assignment
+     * @param _repoId the repo id of the issue
+     * @param _issueNumber the issue up for assignment
      * @param _submissionAddress IPFS hash of the Pull Request
      * //param _fulfillmentId retrieved from event after the work is submitted to the bounties contract externally
      */
@@ -410,7 +409,7 @@ contract Projects is IsContract, AragonApp {
         //uint256 _fulfillmentId
     ) external isInitialized
     {
-        GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
+        Issue storage issue = repos[_repoId].issues[_issueNumber];
         require(!issue.fulfilled,"BOUNTY_FULFILLED");
         require(msg.sender == issue.assignee, "USER_NOT_ASSIGNED");
         bounties.fulfillBounty(issue.standardBountyId, _submissionAddress);
@@ -431,8 +430,8 @@ contract Projects is IsContract, AragonApp {
     /**
      * @notice Review work for issue `_issueNumber`
      * @dev add a submission to local state after it's been added to StandardBounties.sol
-     * @param _repoId the github repo id of the issue
-     * @param _issueNumber the github issue up for resolution
+     * @param _repoId the repo id of the issue
+     * @param _issueNumber the issue up for resolution
      * @param _submissionNumber submission index of the submitted work for review
      * @param _approved decision to accept the contribution
      * @param _updatedSubmissionHash IPFS hash of the submission containing optional feedback
@@ -445,7 +444,7 @@ contract Projects is IsContract, AragonApp {
         string _updatedSubmissionHash
     ) external auth(WORK_REVIEW_ROLE)
     {
-        GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
+        Issue storage issue = repos[_repoId].issues[_issueNumber];
 
         require(!issue.fulfilled,"BOUNTY_FULFILLED");
 
@@ -482,11 +481,11 @@ contract Projects is IsContract, AragonApp {
 
     /**
      * @notice Fund issues: `_description`
-     * @param _repoIds The ids of the Github repos in the projects registry
+     * @param _repoIds The ids of the repos in the projects registry
      * @param _issueNumbers an array of bounty indexes
      * @param _bountySizes an array of bounty sizes
      * @param _deadlines an array of bounty deadlines
-     * @param _tokenTypes array of currency types 0=ETH,20=ERC20
+     * @param _tokenTypes array of currency types: 0=ETH, 20=ERC20
      * @param _tokenContracts an array of token contracts
      * @param _ipfsAddresses a string of ipfs addresses
      */
@@ -567,17 +566,6 @@ contract Projects is IsContract, AragonApp {
                 _bountySize         // uint _depositAmount
             );
         }
-
-        bountyId = bounties.issueAndContribute(
-            address(this),
-            issuers,
-            new address[](0),
-            _ipfsHash,
-            _deadline,
-            _tokenContract,
-            _tokenType,
-            _bountySize
-        );
     }
 
     /**
@@ -615,7 +603,7 @@ contract Projects is IsContract, AragonApp {
 
     /**
      * @notice Checks if a repo exists in the registry
-     * @param _repoId the github repo id to check
+     * @param _repoId the repo id to check
      * @return _repoId Id for newly added repo
      */
     function isRepoAdded(bytes32 _repoId) public view returns(bool isAdded) {
@@ -629,8 +617,8 @@ contract Projects is IsContract, AragonApp {
 
     /**
      * @notice Returns Applicant array length
-     * @param _repoId the github repo id of the issue
-     * @param _issueNumber the github issue up for assignmen
+     * @param _repoId the repo id of the issue
+     * @param _issueNumber the issue up for assignmen
      * @return  array length of the applicants array
      */
     function getApplicantsLength(
@@ -643,8 +631,8 @@ contract Projects is IsContract, AragonApp {
 
     /**
      * @notice Returns Applicant Address
-     * @param _repoId the github repo id of the issue
-     * @param _issueNumber the github issue up for assignment
+     * @param _repoId the repo id of the issue
+     * @param _issueNumber the issue up for assignment
      * @param _idx the applicant's position in the array
      * @return  applicant address
      */
@@ -654,7 +642,7 @@ contract Projects is IsContract, AragonApp {
         uint256 _idx
     ) public view returns(address applicant, string application, SubmissionStatus status)
     {
-        GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
+        Issue storage issue = repos[_repoId].issues[_issueNumber];
         applicant = issue.applicants[_idx];
         application = issue.assignmentRequests[applicant].requestHash;
         status = issue.assignmentRequests[applicant].status;
@@ -662,8 +650,8 @@ contract Projects is IsContract, AragonApp {
 
         /**
      * @notice Returns Applicant array length
-     * @param _repoId the github repo id of the issue
-     * @param _issueNumber the github issue up for assignmen
+     * @param _repoId the repo id of the issue
+     * @param _issueNumber the issue up for assignmen
      * @return  array length of the applicants array
      */
     function getSubmissionsLength(
@@ -676,8 +664,8 @@ contract Projects is IsContract, AragonApp {
 
     /**
      * @notice Returns contributor's work submission
-     * @param _repoId the github repo id of the issue
-     * @param _issueNumber the github issue being worked on
+     * @param _repoId the repo id of the issue
+     * @param _issueNumber the issue being worked on
      * @param _submissionNumber the index of the contribution in the submissions Array
      * @return  application IPFS hash for the applicant's proposed timeline and strategy
      */
@@ -731,7 +719,7 @@ contract Projects is IsContract, AragonApp {
     {
         address[] memory emptyAddressArray = new address[](0);
         uint256[] memory emptySubmissionIndexArray = new uint256[](0);
-        repos[_repoId].issues[_issueNumber] = GithubIssue(
+        repos[_repoId].issues[_issueNumber] = Issue(
             _repoId,
             _issueNumber,
             true,
