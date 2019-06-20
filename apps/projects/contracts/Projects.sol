@@ -51,11 +51,6 @@ interface Bounties {
         uint _depositAmount
     ) external payable returns (uint);
 
-    function activateBounty(
-        uint _bountyId,
-        uint _value
-    ) external payable;
-
     function fulfillBounty(
         uint _bountyId,
         string _data
@@ -725,23 +720,6 @@ contract Projects is IsContract, AragonApp {
     {
         settings.expMultipliers.push(_multiplier);
         settings.expLevels.push(_description);
-    }
-
-    function _activateBounty(
-        uint256 _tokenType,
-        address _tokenContract,
-        uint _bountySize,
-        uint _standardBountyId
-    ) internal
-    {
-        if (_tokenType != 0) {
-            vault.transfer(_tokenContract, this, _bountySize);
-            TokenApproval(_tokenContract).approve(bounties, _bountySize);
-            // Activate the bounty so it can be fulfilled
-            bounties.activateBounty(_standardBountyId, _bountySize);
-        } else {
-            bounties.activateBounty.value(_bountySize)(_standardBountyId, _bountySize);
-        }
     }
 
     function _addBounty(
