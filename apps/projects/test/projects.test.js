@@ -5,6 +5,7 @@ const {
   EVMScriptRegistryFactory,
   Kernel,
   MiniMeToken,
+  BountiesEvents,
 } = require('@tps/test-helpers/artifacts')
 
 const Vault = artifacts.require('Vault')
@@ -36,6 +37,9 @@ contract('Projects App', accounts => {
   before(async () => {
     //Create Base DAO Contracts
     const kernelBase = await Kernel.new(true)
+    // implement bountiesEvents so the events are logged by Truffle
+    //console.log('Bounties Addresses: ', process.env.BOUNT_ADDR.split(' '))
+    const bountiesEvents = BountiesEvents.at('0x72D1Ae1D6C8f3dd444b3D95bAd554Be483082e40')
     const aclBase = await ACL.new()
     const regFact = await EVMScriptRegistryFactory.new()
     daoFact = await DAOFactory.new(
