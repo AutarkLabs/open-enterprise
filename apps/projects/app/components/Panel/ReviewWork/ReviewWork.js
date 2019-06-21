@@ -16,6 +16,7 @@ import {
 
 import { FormField, FieldTitle, DescriptionInput } from '../../Form'
 import { IconGitHub } from '../../Shared'
+import useGithubAuth from '../../../hooks/useGithubAuth'
 
 class ReviewWork extends React.Component {
   static propTypes = {
@@ -64,8 +65,8 @@ class ReviewWork extends React.Component {
     const submitterName = submitter.name ? submitter.name : submitter.login
     const ratings = [
       'Select a Rating',
-      '1 - Unusable', 
-      '2 - Needs Rework', 
+      '1 - Unusable',
+      '2 - Needs Rework',
       '3 - Acceptable',
       '4 - Exceeds Expectations',
       '5 - Excellent',
@@ -74,7 +75,7 @@ class ReviewWork extends React.Component {
     return(
       <div>
         <IssueTitle>{issue.title}</IssueTitle>
-        
+
         <SafeLink
           href={issue.url}
           target="_blank"
@@ -116,7 +117,7 @@ class ReviewWork extends React.Component {
           <React.Fragment>
 
             <FieldTitle>Submission Status</FieldTitle>
-          
+
             <div style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
               {work.review.accepted ? (
                 <div>
@@ -130,14 +131,14 @@ class ReviewWork extends React.Component {
               <div>
                 {formatDistance(new Date(work.review.reviewDate), new Date())} ago
               </div>
-            
+
             </div>
 
             <ReviewCard>
               <IssueEventAvatar>
                 <img src={work.review.user.avatarUrl} alt="user avatar" style={{ width: '50px' }} />
               </IssueEventAvatar>
-              
+
               <div>
                 <Text.Block size="small">
                   <SafeLink
@@ -171,7 +172,7 @@ class ReviewWork extends React.Component {
           <React.Fragment>
 
             <FormField
-              label="Quality Rating" 
+              label="Quality Rating"
               required
               input={
                 <DropDown
@@ -221,6 +222,13 @@ class ReviewWork extends React.Component {
       </div>
     )
   }
+}
+
+// TODO: move entire component to functional component
+// the following was a quick way to allow us to use hooks
+const ReviewWorkWrap = props => {
+  const { githubCurrentUser } = useGithubAuth()
+  return <ReviewWork githubCurrentUser={githubCurrentUser} {...props} />
 }
 
 const IssueTitle = styled(Text)`
@@ -281,4 +289,4 @@ const IssueEventAvatar = styled.div`
   margin: 0;
 `
 
-export default ReviewWork
+export default ReviewWorkWrap

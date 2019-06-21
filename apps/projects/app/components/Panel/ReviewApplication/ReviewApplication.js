@@ -15,6 +15,7 @@ import {
 
 import { Form, FormField, FieldTitle, DescriptionInput } from '../../Form'
 import { IconGitHub } from '../../Shared'
+import useGithubAuth from '../../../hooks/useGithubAuth'
 
 // external data, all of it
 
@@ -127,7 +128,7 @@ class ReviewApplication extends React.Component {
           <React.Fragment>
 
             <FieldTitle>Application Status</FieldTitle>
-          
+
             <div style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
               {request.review.approved ? (
                 <div>
@@ -141,14 +142,14 @@ class ReviewApplication extends React.Component {
               <div>
                 {formatDistance(new Date(request.review.reviewDate), new Date())} ago
               </div>
-            
+
             </div>
 
             <ReviewCard>
               <IssueEventAvatar>
                 <img src={request.review.user.avatarUrl} alt="user avatar" style={{ width: '50px' }} />
               </IssueEventAvatar>
-              
+
               <div>
                 <Text.Block size="small">
                   <SafeLink
@@ -204,6 +205,13 @@ class ReviewApplication extends React.Component {
       </div>
     )
   }
+}
+
+// TODO: move entire component to functional component
+// the following was a quick way to allow us to use hooks
+const ReviewApplicationWrap = props => {
+  const { githubCurrentUser } = useGithubAuth()
+  return <ReviewApplication githubCurrentUser={githubCurrentUser} {...props} />
 }
 
 const UserLink = styled.div`
@@ -265,4 +273,4 @@ const IssueEventAvatar = styled.div`
   margin: 0;
 `
 
-export default ReviewApplication
+export default ReviewApplicationWrap

@@ -24,9 +24,8 @@ import {
   REQUESTED_GITHUB_TOKEN_FAILURE,
 } from './store/eventTypes'
 
-import { initApolloClient } from './utils/apollo-client'
+import useGithubAuth from './hooks/useGithubAuth'
 import { getToken, getURLParam, githubPopup, STATUS } from './utils/github'
-import { CURRENT_USER } from './utils/gql-queries'
 import { ipfsAdd, computeIpfsString } from './utils/ipfs-helpers'
 import { toHex } from './utils/web3-utils'
 
@@ -78,8 +77,6 @@ class App extends React.PureComponent {
       repos: [],
       activeIndex: { tabIndex: 0, tabData: {} },
       githubLoading: false,
-      githubCurrentUser: {},
-      client: initApolloClient((props.github && props.github.token) || ''),
       issueDetail: false,
       panel: null,
       panelProps: null,
@@ -99,25 +96,6 @@ class App extends React.PureComponent {
         '*'
       )
     window.close()
-  }
-
-  componentDidUpdate(prevProps) {
-    const hasGithubToken = this.props.github && this.props.github.token
-    const hadGithubToken = prevProps.github && prevProps.github.token
-    const receivedGithubToken = hasGithubToken && !hadGithubToken
-    if (receivedGithubToken) {
-      const client = initApolloClient(this.props.github.token)
-      client
-        .query({
-          query: CURRENT_USER,
-        })
-        .then(({ data }) => {
-          this.setState({
-            client,
-            githubCurrentUser: data.viewer,
-          })
-        })
-    }
   }
 
   handlePopupMessage = async message => {
@@ -224,7 +202,6 @@ class App extends React.PureComponent {
         onSubmit: this.onSubmitBountyAllocation,
         bountySettings: this.props.bountySettings,
         tokens: this.props.tokens !== undefined ? this.props.tokens : [],
-        githubCurrentUser: this.state.githubCurrentUser,
       },
     }))
   }
@@ -239,7 +216,6 @@ class App extends React.PureComponent {
         onSubmit: this.onSubmitBountyAllocation,
         bountySettings: this.props.bountySettings,
         tokens: this.props.tokens !== undefined ? this.props.tokens : [],
-        githubCurrentUser: this.state.githubCurrentUser,
       },
     }))
   }
@@ -302,7 +278,6 @@ class App extends React.PureComponent {
       panel: PANELS.SubmitWork,
       panelProps: {
         onSubmitWork: this.onSubmitWork,
-        githubCurrentUser: this.state.githubCurrentUser,
         issue,
       },
     }))
@@ -319,7 +294,6 @@ class App extends React.PureComponent {
       panel: PANELS.RequestAssignment,
       panelProps: {
         onRequestAssignment: this.onRequestAssignment,
-        githubCurrentUser: this.state.githubCurrentUser,
         issue,
       },
     }))
@@ -338,7 +312,6 @@ class App extends React.PureComponent {
         issue,
         requestIndex,
         onReviewApplication: this.onReviewApplication,
-        githubCurrentUser: this.state.githubCurrentUser,
       },
     }))
   }
@@ -365,7 +338,6 @@ class App extends React.PureComponent {
         issue,
         index,
         onReviewWork: this.onReviewWork,
-        githubCurrentUser: this.state.githubCurrentUser,
       },
     }))
   }
@@ -480,7 +452,6 @@ class App extends React.PureComponent {
   render() {
     const {
       activeIndex,
-      githubCurrentUser,
       issueDetail,
       panel,
       panelProps,
@@ -505,7 +476,7 @@ class App extends React.PureComponent {
 
     return (
       <Main assetsUrl={ASSETS_URL}>
-        <ApolloProvider client={this.state.client}>
+        <ApolloProvider client={this.props.client}>
           <IdentityProvider
             onResolve={this.handleResolveLocalIdentity}
             onShowLocalIdentityModal={this.handleShowLocalIdentityModal}
@@ -542,7 +513,6 @@ class App extends React.PureComponent {
                     status={status}
                     app={this.props.api}
                     bountySettings={bountySettings}
-                    githubCurrentUser={githubCurrentUser}
                     githubLoading={this.state.githubLoading}
                     projects={
                       this.props.repos !== undefined ? this.props.repos : []
@@ -588,5 +558,13 @@ class App extends React.PureComponent {
 
 export default () => {
   const { api, appState, displayMenuButton } = useAragonApi()
-  return <App api={api} displayMenuButton={displayMenuButton} {...appState} />
+  const { client } = useGithubAuth()
+  return (
+    <App
+      api={api}
+      client={client}
+      displayMenuButton={displayMenuButton}
+      {...appState}
+    />
+  )
 }

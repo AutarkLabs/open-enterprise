@@ -17,7 +17,6 @@ import ActionsMenu from './ActionsMenu'
 class Issues extends React.PureComponent {
   static propTypes = {
     onLogin: PropTypes.func.isRequired,
-    githubCurrentUser: PropTypes.object.isRequired,
     github: PropTypes.shape({
       status: PropTypes.oneOf([
         STATUS.AUTHENTICATED,

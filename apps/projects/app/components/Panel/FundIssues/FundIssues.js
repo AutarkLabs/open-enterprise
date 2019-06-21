@@ -4,6 +4,7 @@ import styled from 'styled-components'
 import { addHours } from 'date-fns'
 import BigNumber from 'bignumber.js'
 import Icon from '../../Shared/assets/components/IconEmptyVault'
+import useGithubAuth from '../../../hooks/useGithubAuth'
 
 import {
   Text,
@@ -456,6 +457,14 @@ class FundIssues extends React.Component {
     )
   }
 }
+
+// TODO: move entire component to functional component
+// the following was a quick way to allow us to use hooks
+const FundIssuesWrap = props => {
+  const { githubCurrentUser } = useGithubAuth()
+  return <FundIssues githubCurrentUser={githubCurrentUser} {...props} />
+}
+
 const DivSeparator = styled.div`
   > :last-child {
     margin-top: 15px;
@@ -572,4 +581,4 @@ const IBHoursInput = styled.div`
   }
 `
 
-export default FundIssues
+export default FundIssuesWrap

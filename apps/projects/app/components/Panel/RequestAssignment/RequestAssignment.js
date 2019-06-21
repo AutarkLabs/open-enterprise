@@ -6,6 +6,7 @@ import { Checkbox, Text, TextInput, theme, SafeLink } from '@aragon/ui'
 
 import { Form, FormField, DateInput, DescriptionInput } from '../../Form'
 import { IconGitHub } from '../../Shared'
+import useGithubAuth from '../../../hooks/useGithubAuth'
 
 class RequestAssignment extends React.Component {
   static propTypes = {
@@ -139,6 +140,13 @@ class RequestAssignment extends React.Component {
   }
 }
 
+// TODO: move entire component to functional component
+// the following was a quick way to allow us to use hooks
+const RequestAssignmentWrap = props => {
+  const { githubCurrentUser } = useGithubAuth()
+  return <RequestAssignment githubCurrentUser={githubCurrentUser} {...props} />
+}
+
 const HoursInput = styled(TextInput.Number)`
   width: 100px;
   height: 32px;
@@ -175,4 +183,4 @@ const VSpace = styled.div`
   height: ${p => (p.size || 1) * 5}px;
 `
 
-export default RequestAssignment
+export default RequestAssignmentWrap

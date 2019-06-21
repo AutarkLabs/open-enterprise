@@ -6,6 +6,7 @@ import { Checkbox, Text, TextInput, theme, Info, SafeLink } from '@aragon/ui'
 
 import { Form, FormField, DescriptionInput } from '../../Form'
 import { IconGitHub } from '../../Shared'
+import useGithubAuth from '../../../hooks/useGithubAuth'
 
 class SubmitWork extends React.Component {
   static propTypes = {
@@ -145,6 +146,13 @@ class SubmitWork extends React.Component {
   }
 }
 
+// TODO: move entire component to functional component
+// the following was a quick way to allow us to use hooks
+const SubmitWorkWrap = props => {
+  const { githubCurrentUser } = useGithubAuth()
+  return <SubmitWork githubCurrentUser={githubCurrentUser} {...props} />
+}
+
 const AckText = styled(Text)`
   color: ${theme.textSecondary};
   margin-left: 6px;
@@ -170,4 +178,4 @@ const VSpace = styled.div`
   height: ${p => (p.size || 1) * 5}px;
 `
 
-export default SubmitWork
+export default SubmitWorkWrap

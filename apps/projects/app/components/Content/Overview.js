@@ -16,7 +16,6 @@ const Overview = ({
   onNewProject,
   onRemoveProject,
   projects,
-  githubCurrentUser,
   githubLoading,
   status,
 }) => {
@@ -69,7 +68,6 @@ Overview.propTypes = {
   onNewProject: PropTypes.func.isRequired,
   onRemoveProject: PropTypes.func.isRequired,
   projects: PropTypes.arrayOf(PropTypes.object).isRequired,
-  githubCurrentUser: PropTypes.object.isRequired,
   github: PropTypes.shape({
     status: PropTypes.oneOf([
       STATUS.AUTHENTICATED,
