@@ -26,7 +26,7 @@ import {
 
 import useGithubAuth from './hooks/useGithubAuth'
 import { getToken, getURLParam, githubPopup, STATUS } from './utils/github'
-import { ipfsAdd, computeIpfsString } from './utils/ipfs-helpers'
+import { ipfsAdd } from './utils/ipfs-helpers'
 import { toHex } from './utils/web3-utils'
 
 const ASSETS_URL = './aragon-ui'
@@ -199,9 +199,6 @@ class App extends React.PureComponent {
       panelProps: {
         issues,
         mode: 'new',
-        onSubmit: this.onSubmitBountyAllocation,
-        bountySettings: this.props.bountySettings,
-        tokens: this.props.tokens !== undefined ? this.props.tokens : [],
       },
     }))
   }
@@ -213,64 +210,8 @@ class App extends React.PureComponent {
         title: 'Update Funding',
         issues,
         mode: 'update',
-        onSubmit: this.onSubmitBountyAllocation,
-        bountySettings: this.props.bountySettings,
-        tokens: this.props.tokens !== undefined ? this.props.tokens : [],
       },
     }))
-  }
-
-  onSubmitBountyAllocation = async (issues, description, post, resultData) => {
-    this.closePanel()
-
-    // computes an array of issues and denests the actual issue object for smart contract
-    const issuesArray = []
-    const bountyAddr = this.props.bountySettings.bountyCurrency
-
-    let bountyToken, bountyDecimals, bountySymbol
-
-    this.props.tokens.forEach(token => {
-      if (token.addr === bountyAddr) {
-        bountyToken = token.addr
-        bountyDecimals = token.decimals
-        bountySymbol = token.symbol
-      }
-    })
-
-    for (let key in issues) issuesArray.push({ key: key, ...issues[key] })
-
-    const ipfsString = await computeIpfsString(issuesArray)
-
-    const idArray = issuesArray.map(issue => toHex(issue.repoId))
-    const numberArray = issuesArray.map(issue => issue.number)
-    const bountyArray = issuesArray.map(issue =>
-      BigNumber(issue.size)
-        .times(10 ** bountyDecimals)
-        .toString()
-    )
-    const tokenArray = new Array(issuesArray.length).fill(bountyToken)
-    const dateArray = new Array(issuesArray.length).fill(Date.now() + 8600)
-    const booleanArray = new Array(issuesArray.length).fill(true)
-
-    this.props.api.addBounties(
-      idArray,
-      numberArray,
-      bountyArray,
-      dateArray,
-      booleanArray,
-      tokenArray,
-      ipfsString,
-      description
-    ).subscribe(
-      txHash => {
-        issuesArray.forEach(issue => {
-          post({ variables: {
-            body: `This issue has a bounty attached to it.\nAmount: ${issue.size.toFixed(2)} ${bountySymbol}\nDeadline: ${issue.deadline.toUTCString()}`,
-            subjectId: issue.key } })
-        })
-      },
-      err => console.log(`error: ${err}`)
-    )
   }
 
   submitWork = issue => {
