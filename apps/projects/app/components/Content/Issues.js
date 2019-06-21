@@ -426,7 +426,6 @@ class Issues extends React.PureComponent {
 
     const {
       projects,
-      onNewProject,
       onReviewApplication,
       onSubmitWork,
       onReviewWork,
@@ -436,7 +435,7 @@ class Issues extends React.PureComponent {
     const { currentIssue, filters } = this.state
 
     // better return early if we have no projects added
-    if (projects.length === 0) return <Empty action={onNewProject} />
+    if (projects.length === 0) return <Empty />
 
     // same if we only need to show Issue's Details screen
     if (issueDetail) return this.renderCurrentIssue(currentIssue, this.props)

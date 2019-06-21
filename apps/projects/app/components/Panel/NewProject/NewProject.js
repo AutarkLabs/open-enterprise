@@ -6,8 +6,6 @@ import RepoSelector from './RepoSelector'
 
 class NewProject extends React.Component {
   static propTypes = {
-    /** Req: Callback to handle project creation */
-    onCreateProject: PropTypes.func.isRequired,
     /** Req: repos already added as projects */
     reposAlreadyAdded: PropTypes.array.isRequired,
   }
@@ -15,7 +13,7 @@ class NewProject extends React.Component {
 
   render() {
     if (this.state.started)
-      return <RepoSelector onCreateProject={this.props.onCreateProject} reposAlreadyAdded={this.props.reposAlreadyAdded} />
+      return <RepoSelector reposAlreadyAdded={this.props.reposAlreadyAdded} />
 
     return (
       <React.Fragment>

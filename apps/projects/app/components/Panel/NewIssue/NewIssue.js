@@ -5,6 +5,7 @@ import { Field, TextInput, DropDown } from '@aragon/ui'
 import { NEW_ISSUE, GET_ISSUES } from '../../../utils/gql-queries.js'
 import { DescriptionInput, Form } from '../../Form'
 import { LoadingAnimation } from '../../Shared'
+import { usePanelManagement } from '../../Panel'
 
 // TODO: labels
 // TODO: import validator from '../data/validation'
@@ -171,4 +172,11 @@ class NewIssue extends React.PureComponent {
   }
 }
 
-export default NewIssue
+// TODO: move entire component to functional component
+// the following was a quick way to allow us to use hooks
+const NewIssueWrap = props => {
+  const { closePanel } = usePanelManagement()
+  return <NewIssue closePanel={closePanel} {...props} />
+}
+
+export default NewIssueWrap

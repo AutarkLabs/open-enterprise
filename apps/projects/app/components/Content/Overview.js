@@ -13,7 +13,6 @@ import { CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
 const Overview = ({
   changeActiveIndex,
   onLogin,
-  onNewProject,
   onRemoveProject,
   projects,
   githubLoading,
@@ -33,7 +32,7 @@ const Overview = ({
 
   const projectsEmpty = projects.length === 0
   if (projectsEmpty) {
-    return <Empty action={onNewProject} />
+    return <Empty />
   }
 
   return (
@@ -65,7 +64,6 @@ const Overview = ({
 Overview.propTypes = {
   changeActiveIndex: PropTypes.func.isRequired,
   onLogin: PropTypes.func.isRequired,
-  onNewProject: PropTypes.func.isRequired,
   onRemoveProject: PropTypes.func.isRequired,
   projects: PropTypes.arrayOf(PropTypes.object).isRequired,
   github: PropTypes.shape({

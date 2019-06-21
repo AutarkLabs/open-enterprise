@@ -12,9 +12,13 @@ import {
   NavigationBar,
 } from '@aragon/ui'
 
-import { AppTitleButton, AppTitle } from '../../../shared/ui'
+import { AppTitle } from '../../../shared/ui'
 
-import ErrorBoundary from './components/App/ErrorBoundary'
+import {
+  ErrorBoundary,
+  NewIssueButton,
+  NewProjectButton,
+} from './components/App'
 import { Issues, Overview, Settings } from './components/Content'
 import PanelManager, { PANELS, PanelContext } from './components/Panel'
 
@@ -31,12 +35,12 @@ import { toHex } from './utils/web3-utils'
 
 const ASSETS_URL = './aragon-ui'
 
-const getTabs = ({ newProject, newIssue, repoCount }) => {
+const getTabs = ({ repoCount }) => {
   const tabs = [
     {
       name: 'Overview',
       body: Overview,
-      action: <AppTitleButton caption="New Project" onClick={newProject} />,
+      action: <NewProjectButton />,
     },
   ]
 
@@ -44,7 +48,7 @@ const getTabs = ({ newProject, newIssue, repoCount }) => {
     tabs.push({
       name: 'Issues',
       body: Issues,
-      action: <AppTitleButton caption="New Issue" onClick={newIssue} />,
+      action: <NewIssueButton />,
     })
   }
 
@@ -147,50 +151,9 @@ class App extends React.PureComponent {
     this.setState({ activeIndex })
   }
 
-  createProject = ({ project }) => {
-    this.closePanel()
-    this.props.api.addRepo(toHex(project))
-  }
-
   removeProject = project => {
     this.props.api.removeRepo(toHex(project))
     // TODO: Toast feedback here maybe
-  }
-
-  newIssue = () => {
-    const { repos } = this.props
-    const repoNames =
-      (repos &&
-        repos.map(repo => ({
-          name: repo.metadata.name,
-          id: repo.data._repo,
-        }))) ||
-      'No repos'
-    const reposIds = (repos && repos.map(repo => repo.data.repo)) || []
-
-    this.setState(() => ({
-      panel: PANELS.NewIssue,
-      panelProps: {
-        reposManaged: repoNames,
-        reposIds,
-      },
-    }))
-  }
-
-  // TODO: Review
-  // This is breaking RepoList loading sometimes preventing show repos after login
-  newProject = () => {
-    const reposAlreadyAdded = this.props.repos
-      ? this.props.repos.map(repo => repo.data._repo)
-      : []
-
-    this.setState((_prevState, { github: { status } }) => ({
-      panel: PANELS.NewProject,
-      panelProps: {
-        onCreateProject: this.createProject,
-        reposAlreadyAdded,
-      },
-    }))
   }
 
   updateBounty = issues => {
@@ -320,8 +283,6 @@ class App extends React.PureComponent {
     const status = this.props.github ? this.props.github.status : STATUS.INITIAL
 
     const tabs = getTabs({
-      newProject: this.newProject,
-      newIssue: this.newIssue,
       repoCount: this.props.repos && this.props.repos.length,
     })
 
@@ -336,37 +297,37 @@ class App extends React.PureComponent {
     return (
       <Main assetsUrl={ASSETS_URL}>
         <ApolloProvider client={this.props.client}>
-          <IdentityProvider
-            onResolve={this.handleResolveLocalIdentity}
-            onShowLocalIdentityModal={this.handleShowLocalIdentityModal}
-          >
-            <AppView
-              style={{ height: '100%', overflowY: 'hidden' }}
-              appBar={
-                <AppBar
-                  endContent={
-                    status === STATUS.AUTHENTICATED &&
-                    tabs[activeIndex.tabIndex].action
-                  }
-                  tabs={
-                    issueDetail ? null : (
-                      <TabBar
-                        items={tabNames}
-                        onChange={this.handleSelect}
-                        selected={activeIndex.tabIndex}
-                      />
-                    )
-                  }
-                >
-                  <NavigationBar
-                    items={navigationItems}
-                    onBack={() => this.setIssueDetail(false)}
-                  />
-                </AppBar>
-              }
+          <PanelContext.Provider value={this.setPanel}>
+            <IdentityProvider
+              onResolve={this.handleResolveLocalIdentity}
+              onShowLocalIdentityModal={this.handleShowLocalIdentityModal}
             >
-              <ErrorBoundary>
-                <PanelContext.Provider value={this.setPanel}>
+              <AppView
+                style={{ height: '100%', overflowY: 'hidden' }}
+                appBar={
+                  <AppBar
+                    endContent={
+                      status === STATUS.AUTHENTICATED &&
+                      tabs[activeIndex.tabIndex].action
+                    }
+                    tabs={
+                      issueDetail ? null : (
+                        <TabBar
+                          items={tabNames}
+                          onChange={this.handleSelect}
+                          selected={activeIndex.tabIndex}
+                        />
+                      )
+                    }
+                  >
+                    <NavigationBar
+                      items={navigationItems}
+                      onBack={() => this.setIssueDetail(false)}
+                    />
+                  </AppBar>
+                }
+              >
+                <ErrorBoundary>
                   <TabComponent
                     onLogin={this.handleGithubSignIn}
                     status={status}
@@ -385,9 +346,7 @@ class App extends React.PureComponent {
                     tokens={
                       this.props.tokens !== undefined ? this.props.tokens : []
                     }
-                    onNewProject={this.newProject}
                     onRemoveProject={this.removeProject}
-                    onNewIssue={this.newIssue}
                     onUpdateBounty={this.updateBounty}
                     onSubmitWork={this.submitWork}
                     activeIndex={activeIndex}
@@ -397,15 +356,15 @@ class App extends React.PureComponent {
                     setIssueDetail={this.setIssueDetail}
                     issueDetail={issueDetail}
                   />
-                </PanelContext.Provider>
-              </ErrorBoundary>
-            </AppView>
-            <PanelManager
-              activePanel={panel}
-              onClose={this.closePanel}
-              {...panelProps}
-            />
-          </IdentityProvider>
+                </ErrorBoundary>
+              </AppView>
+              <PanelManager
+                activePanel={panel}
+                onClose={this.closePanel}
+                {...panelProps}
+              />
+            </IdentityProvider>
+          </PanelContext.Provider>
         </ApolloProvider>
       </Main>
     )

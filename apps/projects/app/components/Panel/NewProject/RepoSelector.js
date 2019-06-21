@@ -6,6 +6,9 @@ import { Button, RadioList, Text, TextInput, theme } from '@aragon/ui'
 import { GET_REPOSITORIES } from '../../../utils/gql-queries.js'
 import { LoadingAnimation } from '../../Shared'
 import { Query } from 'react-apollo'
+import { useAragonApi } from '@aragon/api-react'
+import { usePanelManagement } from '../../Panel'
+import { toHex } from '../../../utils/web3-utils'
 
 const UNSELECT = {
   repoSelected: -1,
@@ -172,6 +175,23 @@ class Repo extends React.Component {
   }
 }
 
+const createProject = ({ closePanel, addRepo }) => ({ project }) => {
+  closePanel()
+  addRepo(toHex(project))
+}
+
+// TODO: move entire component to functional component
+// the following was a quick way to allow us to use hooks
+const RepoWrap = props => {
+  const {
+    api: { addRepo },
+  } = useAragonApi()
+  const { closePanel } = usePanelManagement()
+  return (
+    <Repo onCreateProject={createProject({ closePanel, addRepo })} {...props} />
+  )
+}
+
 const ScrollableList = styled.div`
   flex-grow: 1;
   overflow-y: auto;
@@ -261,4 +281,4 @@ const ClearSearch = styled(Text.Block).attrs({
 `
 
 // TODO: Use nodes instead of edges (the app should be adapted at some places)
-export default Repo
+export default RepoWrap
