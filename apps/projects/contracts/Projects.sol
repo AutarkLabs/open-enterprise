@@ -30,6 +30,7 @@ import "@aragon/os/contracts/common/IsContract.sol";
 *******************************************************************************/
 interface Bounties {
 
+    // issueBounty will be deleted once testing is reimplemented
     function issueBounty(
         address sender,
         address[] _issuers,
@@ -51,31 +52,23 @@ interface Bounties {
         uint _depositAmount
     ) external payable returns (uint);
 
-    function fulfillBounty(
-        uint _bountyId,
-        string _data
-    ) external;
-
     function acceptFulfillment(
+        address _sender,
         uint _bountyId,
-        uint _fulfillmentId
+        uint _fulfillmentId,
+        uint _approverId,
+        uint[] _tokenAmounts
     ) external;
+}
 
-
-  function getBounty(uint _bountyId)
-      external
-      view
-      returns (address, uint, uint, bool, uint, uint);
-
-    function getBountyToken(uint _bountyId)
-      external
-      view
-      returns (address);
-
-    function getBountyData(uint _bountyId)
-      external
-      view
-      returns (string);
+interface Relayer {
+    function metaFulfillBounty(
+        bytes _signature,
+        uint _bountyId,
+        address[] _fulfillers,
+        string _data,
+        uint256 _nonce
+    ) external;
 }
 
 interface TokenApproval {
@@ -86,6 +79,7 @@ interface TokenApproval {
 contract Projects is IsContract, AragonApp {
     using SafeMath for uint256;
     Bounties public bounties;
+    Relayer public relayer;
     BountySettings public settings;
     Vault public vault;
     //holds all work submissions
@@ -244,15 +238,13 @@ contract Projects is IsContract, AragonApp {
      * @param _repoId The id of the repo in the projects registry
      */
     function getIssue(bytes32 _repoId, uint256 _issueNumber) external view
-    returns(bool hasBounty, uint standardBountyId, bool fulfilled, uint balance, address token, string dataHash, address assignee)
+    returns(bool hasBounty, uint standardBountyId, bool fulfilled, uint balance, address assignee)
     {
         Issue storage issue = repos[_repoId].issues[_issueNumber];
         hasBounty = issue.hasBounty;
         fulfilled = issue.fulfilled;
         standardBountyId = issue.standardBountyId;
         balance = issue.bountySize;
-        dataHash = bounties.getBountyData(standardBountyId);
-        token = bounties.getBountyToken(standardBountyId);
         assignee = issue.assignee;
     }
 
@@ -405,14 +397,24 @@ contract Projects is IsContract, AragonApp {
     function submitWork(
         bytes32 _repoId,
         uint256 _issueNumber,
-        string _submissionAddress
+        string _submissionAddress,
+        bytes _signature,
+        uint256 _metaTxNonce
         //uint256 _fulfillmentId
     ) external isInitialized
     {
         Issue storage issue = repos[_repoId].issues[_issueNumber];
         require(!issue.fulfilled,"BOUNTY_FULFILLED");
         require(msg.sender == issue.assignee, "USER_NOT_ASSIGNED");
-        bounties.fulfillBounty(issue.standardBountyId, _submissionAddress);
+        address[] memory submitter = new address[](1);
+        submitter[0] = msg.sender;
+        relayer.metaFulfillBounty(
+            _signature,
+            issue.standardBountyId,
+            submitter,
+            _submissionAddress,
+            _metaTxNonce
+        );
         issue.submissionIndices.push(
             workSubmissions.push(
                 WorkSubmission(
@@ -441,7 +443,9 @@ contract Projects is IsContract, AragonApp {
         uint256 _issueNumber,
         uint256 _submissionNumber,
         bool _approved,
-        string _updatedSubmissionHash
+        string _updatedSubmissionHash,
+        uint256 _fulfillmentId,
+        uint256[] _tokenAmounts
     ) external auth(WORK_REVIEW_ROLE)
     {
         Issue storage issue = repos[_repoId].issues[_issueNumber];
@@ -452,7 +456,13 @@ contract Projects is IsContract, AragonApp {
         submission.submissionHash = _updatedSubmissionHash;
 
         if (_approved) {
-            bounties.acceptFulfillment(issue.standardBountyId, submission.fulfillmentId);
+            bounties.acceptFulfillment(
+                address(this),
+                issue.standardBountyId,
+                submission.fulfillmentId,
+                0,
+                _tokenAmounts
+            );
             issue.fulfilled = true;
             submission.status = SubmissionStatus.Accepted;
             emit SubmissionAccepted(_submissionNumber, _repoId, _issueNumber);
@@ -514,8 +524,7 @@ contract Projects is IsContract, AragonApp {
                 _deadlines[i],
                 _tokenContracts[i],
                 _tokenTypes[i],
-                _bountySizes[i],
-                new address[](0)
+                _bountySizes[i]
             );
 
             //Add bounty to local registry
@@ -533,13 +542,12 @@ contract Projects is IsContract, AragonApp {
         uint256 _deadline,
         address _tokenContract,
         uint256 _tokenType,
-        uint256 _bountySize,
-        address[] _issuers
+        uint256 _bountySize
     ) internal returns (uint256 bountyId)
     {
         require(_tokenType != 721);
-        address[] memory issuers = new address[](_issuers.length + 1);
-        issuers[issuers.length-1] = address(this);
+        address[] memory issuers = new address[](1);
+        issuers[0] = address(this);
         if (_tokenType != 0) {
             vault.transfer(_tokenContract, this, _bountySize);
             TokenApproval(_tokenContract).approve(bounties, _bountySize);
@@ -547,7 +555,7 @@ contract Projects is IsContract, AragonApp {
             bountyId = bounties.issueAndContribute(
                 address(this),      // address payable _sender
                 issuers,            // address payable [] memory _issuers
-                new address[](0),   // address [] memory _approvers
+                issuers,            // address [] memory _approvers
                 _ipfsHash,          // string memory _data
                 _deadline,          // uint _deadline
                 _tokenContract,     // address _token
@@ -558,7 +566,7 @@ contract Projects is IsContract, AragonApp {
             bountyId = bounties.issueAndContribute.value(_bountySize)(
                 address(this),      // address payable _sender
                 issuers,            // address payable [] memory _issuers
-                new address[](0),   // address [] memory _approvers
+                issuers,            // address [] memory _approvers
                 _ipfsHash,          // string memory _data
                 _deadline,          // uint _deadline
                 _tokenContract,     // address _token
