@@ -6,7 +6,11 @@ import { Checkbox, Text, TextInput, theme, SafeLink } from '@aragon/ui'
 
 import { Form, FormField, DateInput, DescriptionInput } from '../../Form'
 import { IconGitHub } from '../../Shared'
+import { useAragonApi } from '@aragon/api-react'
 import useGithubAuth from '../../../hooks/useGithubAuth'
+import { usePanelManagement } from '..'
+import { ipfsAdd } from '../../../utils/ipfs-helpers'
+import { toHex } from '../../../utils/web3-utils'
 
 class RequestAssignment extends React.Component {
   static propTypes = {
@@ -140,11 +144,31 @@ class RequestAssignment extends React.Component {
   }
 }
 
+const onRequestAssignment = ({ closePanel, requestAssignment }) => async (
+  state,
+  issue
+) => {
+  closePanel()
+  const hash = await ipfsAdd(state)
+  requestAssignment(toHex(issue.repoId), issue.number, hash)
+}
+
 // TODO: move entire component to functional component
 // the following was a quick way to allow us to use hooks
 const RequestAssignmentWrap = props => {
   const { githubCurrentUser } = useGithubAuth()
-  return <RequestAssignment githubCurrentUser={githubCurrentUser} {...props} />
+  const { api } = useAragonApi()
+  const { closePanel } = usePanelManagement()
+  return (
+    <RequestAssignment
+      githubCurrentUser={githubCurrentUser}
+      onRequestAssignment={onRequestAssignment({
+        closePanel,
+        requestAssignment: api.requestAssignment,
+      })}
+      {...props}
+    />
+  )
 }
 
 const HoursInput = styled(TextInput.Number)`

@@ -220,22 +220,6 @@ class App extends React.PureComponent {
     this.props.api.submitWork(toHex(issue.repoId), issue.number, hash)
   }
 
-  requestAssignment = issue => {
-    this.setState((_prevState, _prevProps) => ({
-      panel: PANELS.RequestAssignment,
-      panelProps: {
-        onRequestAssignment: this.onRequestAssignment,
-        issue,
-      },
-    }))
-  }
-
-  onRequestAssignment = async (state, issue) => {
-    this.closePanel()
-    const hash = await ipfsAdd(state)
-    this.props.api.requestAssignment(toHex(issue.repoId), issue.number, hash)
-  }
-
   reviewApplication = (issue, requestIndex = 0) => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.ReviewApplication,
@@ -406,7 +390,6 @@ class App extends React.PureComponent {
                     onNewIssue={this.newIssue}
                     onUpdateBounty={this.updateBounty}
                     onSubmitWork={this.submitWork}
-                    onRequestAssignment={this.requestAssignment}
                     activeIndex={activeIndex}
                     changeActiveIndex={this.changeActiveIndex}
                     onReviewApplication={this.reviewApplication}

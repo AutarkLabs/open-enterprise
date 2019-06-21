@@ -22,6 +22,10 @@ const usePanelManagement = () => {
         allIssues,
       })
     },
+    requestAssignment: issue => {
+      setActivePanel(PANELS.RequestAssignment)
+      setPanelProps({ issue })
+    },
     viewFunding: issue => {
       const fundingEventId = issue.id // FIXME: what attribute links issues from the same funding event?
       setActivePanel(PANELS.ViewFunding)

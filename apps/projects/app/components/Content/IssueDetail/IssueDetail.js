@@ -243,7 +243,6 @@ const detailsCard = ({
   onReviewApplication,
   onReviewWork,
   onUpdateBounty,
-  onRequestAssignment,
   onSubmitWork,
 }) => {
   const summaryData = {
@@ -287,7 +286,6 @@ const detailsCard = ({
         <div style={{ ...column, flex: 0, alignItems: 'flex-end' }}>
           <ContextMenu>
             <BountyContextMenu
-              onRequestAssignment={() => onRequestAssignment(issue)}
               onReviewApplication={() => onReviewApplication(issue)}
               onReviewWork={() => onReviewWork(issue)}
               onSubmitWork={() => onSubmitWork(issue)}
@@ -404,7 +402,6 @@ const IssueDetail = issue => {
 
 IssueDetail.propTypes = {
   onSubmitWork: PropTypes.func.isRequired,
-  onRequestAssignment: PropTypes.func.isRequired,
   onReviewApplication: PropTypes.func.isRequired,
   onReviewWork: PropTypes.func.isRequired,
   onUpdateBounty: PropTypes.func.isRequired,

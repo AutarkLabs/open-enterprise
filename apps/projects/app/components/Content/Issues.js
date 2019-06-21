@@ -27,7 +27,6 @@ class Issues extends React.PureComponent {
       event: PropTypes.string,
     }),
     issueDetail: PropTypes.bool.isRequired,
-    onRequestAssignment: PropTypes.func.isRequired,
     onReviewApplication: PropTypes.func.isRequired,
     onReviewWork: PropTypes.func.isRequired,
     onSubmitWork: PropTypes.func.isRequired,
@@ -351,7 +350,6 @@ class Issues extends React.PureComponent {
 
   renderCurrentIssue = currentIssue => {
     const {
-      onRequestAssignment,
       onReviewApplication,
       onSubmitWork,
       onReviewWork,
@@ -369,7 +367,6 @@ class Issues extends React.PureComponent {
       <IssueDetail
         issue={currentIssueShaped}
         onReviewApplication={onReviewApplication}
-        onRequestAssignment={onRequestAssignment}
         onSubmitWork={onSubmitWork}
         onUpdateBounty={this.handleUpdateBounty}
         onReviewWork={onReviewWork}
@@ -430,7 +427,6 @@ class Issues extends React.PureComponent {
     const {
       projects,
       onNewProject,
-      onRequestAssignment,
       onReviewApplication,
       onSubmitWork,
       onReviewWork,
@@ -518,7 +514,6 @@ class Issues extends React.PureComponent {
                             onSelect={this.handleIssueSelection}
                             onReviewApplication={onReviewApplication}
                             onSubmitWork={onSubmitWork}
-                            onRequestAssignment={onRequestAssignment}
                             onUpdateBounty={this.handleUpdateBounty}
                             onReviewWork={onReviewWork}
                           />
