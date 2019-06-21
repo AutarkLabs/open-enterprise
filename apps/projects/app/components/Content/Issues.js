@@ -2,24 +2,17 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { Query } from 'react-apollo'
-import {
-  Button,
-  TextInput,
-  theme,
-  ContextMenuItem,
-  IconFundraising,
-  breakpoint,
-} from '@aragon/ui'
+import { Button, breakpoint } from '@aragon/ui'
 import BigNumber from 'bignumber.js'
 import { compareAsc, compareDesc } from 'date-fns'
 
 import { STATUS } from '../../utils/github'
 import { getIssuesGQL } from '../../utils/gql-queries.js'
-import { DropDownButton as ActionsMenu, FilterBar, IconCurate } from '../Shared'
+import { FilterBar } from '../Shared'
 import { Issue, Empty } from '../Card'
 import { IssueDetail } from './IssueDetail'
 import Unauthorized from './Unauthorized'
-import ActiveFilters from './Filters'
+import ActionsMenu from './ActionsMenu'
 
 class Issues extends React.PureComponent {
   static propTypes = {
@@ -254,45 +247,17 @@ class Issues extends React.PureComponent {
   }
 
   actionsMenu = (issues, issuesFiltered) => (
-    <SearchFilterAction>
-      <TextInput
-        style={{ gridArea: 'search' }}
-        placeholder="Search issue titles"
-        type="search"
-        onChange={this.handleTextFilter}
-      />
-      <ActiveFilters
-        style={{ gridArea: 'filter' }}
-        issues={issues}
-        bountyIssues={this.props.bountyIssues}
-        filters={this.state.filters}
-        disableFilter={this.disableFilter}
-        disableAllFilters={this.disableAllFilters}
-      />
-      <ActionsMenu
-        enabled={Object.keys(this.state.selectedIssues).length !== 0}
-        style={{ gridArea: 'action' }}
-      >
-        <ContextMenuItem
-          onClick={this.handleCurateIssues(issuesFiltered)}
-          style={{ display: 'flex', alignItems: 'flex-start' }}
-        >
-          <div>
-            <IconCurate color={theme.textTertiary} />
-          </div>
-          <ActionLabel>Curate Issues</ActionLabel>
-        </ContextMenuItem>
-        <ContextMenuItem
-          onClick={this.handleAllocateBounties}
-          style={{ display: 'flex', alignItems: 'flex-start' }}
-        >
-          <div style={{ marginLeft: '4px' }}>
-            <IconFundraising color={theme.textTertiary} />
-          </div>
-          <ActionLabel>Fund Issues</ActionLabel>
-        </ContextMenuItem>
-      </ActionsMenu>
-    </SearchFilterAction>
+    <ActionsMenu
+      disableFilter={this.disableFilter}
+      disableAllFilters={this.disableAllFilters}
+      filters={this.state.filters}
+      issues={issues}
+      issuesFiltered={issuesFiltered}
+      onAllocateBounties={this.handleAllocateBounties}
+      onCurateIssues={this.handleCurateIssues}
+      onSearchChange={this.handleTextFilter}
+      selectedIssues={this.state.selectedIssues}
+    />
   )
 
   setParentFilters = filters => {
@@ -637,28 +602,6 @@ const ScrollWrapper = styled.div`
 const IssuesScrollView = styled.div`
   height: 75vh;
   position: relative;
-`
-
-const ActionLabel = styled.span`
-  margin-left: 15px;
-`
-const SearchFilterAction = styled.div`
-  display: grid;
-  align-items: center;
-  padding: 0;
-  grid-gap: 10px;
-  grid-template-areas:
-    'search action'
-    'filter filter';
-  grid-template-columns: 1fr auto;
-  grid-template-rows: auto auto;
-  ${breakpoint(
-    'small',
-    `
-      grid-template-areas: 'search filter action';
-      grid-template-columns: 1fr 1fr auto;
-    `
-  )}
 `
 
 const recursiveDeletePathFromObject = (path, object) => {
