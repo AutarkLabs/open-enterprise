@@ -46,7 +46,6 @@ const Issue = ({
   onSubmitWork,
   onRequestAssignment,
   onReviewApplication,
-  onAllocateSingleBounty,
   onUpdateBounty,
   onReviewWork,
   ...issue
@@ -81,7 +80,6 @@ const Issue = ({
           </Text>
           <ContextMenu>
             <BountyContextMenu
-              onAllocateSingleBounty={() => onAllocateSingleBounty(issue)}
               onRequestAssignment={() => onRequestAssignment(issue)}
               onReviewApplication={() => onReviewApplication(issue)}
               onReviewWork={() => onReviewWork(issue)}
@@ -150,7 +148,6 @@ Issue.propTypes = {
   onSubmitWork: PropTypes.func.isRequired,
   onRequestAssignment: PropTypes.func.isRequired,
   onReviewApplication: PropTypes.func.isRequired,
-  onAllocateSingleBounty: PropTypes.func.isRequired,
   onUpdateBounty: PropTypes.func.isRequired,
   onReviewWork: PropTypes.func.isRequired,
   workStatus: PropTypes.oneOf([

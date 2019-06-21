@@ -9,7 +9,6 @@ const BountyContextMenu = ({
   work,
   workStatus,
   requestsData,
-  onAllocateSingleBounty,
   onUpdateBounty,
   onSubmitWork,
   onRequestAssignment,
@@ -17,12 +16,12 @@ const BountyContextMenu = ({
   onReviewWork,
 }) => {
 
-  const { viewFunding } = usePanelManagement()
+  const { allocateBounty, viewFunding } = usePanelManagement()
 
   return (
     <React.Fragment>
       {workStatus === undefined && (
-        <Item onClick={onAllocateSingleBounty}>Fund Issue</Item>
+        <Item onClick={() => allocateBounty([issue])}>Fund Issue</Item>
       )}
       {workStatus === 'in-progress' && (
         <React.Fragment>
@@ -78,7 +77,6 @@ const Item = styled(ContextMenuItem)`
 `
 
 BountyContextMenu.propTypes = {
-  onAllocateSingleBounty: PropTypes.func.isRequired,
   onSubmitWork: PropTypes.func.isRequired,
   onRequestAssignment: PropTypes.func.isRequired,
   onReviewApplication: PropTypes.func.isRequired,

@@ -245,7 +245,6 @@ const detailsCard = ({
   onUpdateBounty,
   onRequestAssignment,
   onSubmitWork,
-  onAllocateSingleBounty,
 }) => {
   const summaryData = {
     expLevel: issue.expLevel === undefined ? '-' : issue.expLevel,
@@ -288,7 +287,6 @@ const detailsCard = ({
         <div style={{ ...column, flex: 0, alignItems: 'flex-end' }}>
           <ContextMenu>
             <BountyContextMenu
-              onAllocateSingleBounty={() => onAllocateSingleBounty(issue)}
               onRequestAssignment={() => onRequestAssignment(issue)}
               onReviewApplication={() => onReviewApplication(issue)}
               onReviewWork={() => onReviewWork(issue)}
@@ -405,7 +403,6 @@ const IssueDetail = issue => {
 }
 
 IssueDetail.propTypes = {
-  onAllocateSingleBounty: PropTypes.func.isRequired,
   onSubmitWork: PropTypes.func.isRequired,
   onRequestAssignment: PropTypes.func.isRequired,
   onReviewApplication: PropTypes.func.isRequired,

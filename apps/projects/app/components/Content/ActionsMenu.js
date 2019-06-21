@@ -11,19 +11,20 @@ import {
 } from '@aragon/ui'
 import { DropDownButton, IconCurate } from '../Shared'
 import ActiveFilters from './Filters'
+import { usePanelManagement } from '../Panel'
 
 const ActionsMenu = ({
+  deselectAllIssues,
   disableFilter,
   disableAllFilters,
   filters,
   issues,
-  onAllocateBounties,
-  onCurateIssues,
+  issuesFiltered,
   onSearchChange,
   selectedIssues,
 }) => {
-
   const { issues: bountyIssues } = useAragonApi().appState
+  const { curateIssues, allocateBounty } = usePanelManagement()
 
   return (
     <Wrap>
@@ -42,11 +43,14 @@ const ActionsMenu = ({
         disableAllFilters={disableAllFilters}
       />
       <DropDownButton
-        enabled={Object.keys(selectedIssues).length !== 0}
+        enabled={selectedIssues.length > 0}
         style={{ gridArea: 'action' }}
       >
         <ContextMenuItem
-          onClick={onCurateIssues}
+          onClick={() => {
+            curateIssues(selectedIssues, issuesFiltered)
+            deselectAllIssues()
+          }}
           style={{ display: 'flex', alignItems: 'flex-start' }}
         >
           <div>
@@ -55,7 +59,10 @@ const ActionsMenu = ({
           <ActionLabel>Curate Issues</ActionLabel>
         </ContextMenuItem>
         <ContextMenuItem
-          onClick={onAllocateBounties}
+          onClick={() => {
+            allocateBounty(selectedIssues)
+            deselectAllIssues()
+          }}
           style={{ display: 'flex', alignItems: 'flex-start' }}
         >
           <div style={{ marginLeft: '4px' }}>
@@ -69,14 +76,14 @@ const ActionsMenu = ({
 }
 
 ActionsMenu.propTypes = {
+  deselectAllIssues: PropTypes.func.isRequired,
   disableFilter: PropTypes.func.isRequired,
   disableAllFilters: PropTypes.func.isRequired,
   filters: PropTypes.object.isRequired,
-  issues: PropTypes.object.isRequired,
-  onAllocateBounties: PropTypes.func.isRequired,
-  onCurateIssues: PropTypes.func.isRequired,
+  issues: PropTypes.array.isRequired,
+  issuesFiltered: PropTypes.array.isRequired,
   onSearchChange: PropTypes.func.isRequired,
-  selectedIssues: PropTypes.object.isRequired,
+  selectedIssues: PropTypes.array.isRequired,
 }
 
 const Wrap = styled.div`

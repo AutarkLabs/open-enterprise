@@ -27,7 +27,6 @@ class Issues extends React.PureComponent {
       event: PropTypes.string,
     }),
     issueDetail: PropTypes.bool.isRequired,
-    onAllocateBounties: PropTypes.func.isRequired,
     onRequestAssignment: PropTypes.func.isRequired,
     onReviewApplication: PropTypes.func.isRequired,
     onReviewWork: PropTypes.func.isRequired,
@@ -66,31 +65,12 @@ class Issues extends React.PureComponent {
     }
   }
 
-  selectedIssuesArray = () =>
-    Object.keys(this.state.selectedIssues).map(
-      id => this.state.selectedIssues[id]
-    )
-
-  handleCurateIssues = issuesFiltered => () => {
-    this.props.onCurateIssues(this.selectedIssuesArray(), issuesFiltered)
-    // this is called from ActionMenu, on selected Issues -
-    // return to default state where nothing is selected
-    this.setState({ selectedIssues: [], allSelected: false })
-  }
-
-  handleAllocateSingleBounty = issue => {
-    this.props.onAllocateBounties([issue])
-  }
-
   handleUpdateBounty = issue => {
     this.props.onUpdateBounty([issue])
   }
 
-  handleAllocateBounties = () => {
-    this.props.onAllocateBounties(this.selectedIssuesArray())
-    // this is called from ActionMenu, on selected Issues -
-    // return to default state where nothing is selected
-    this.setState({ selectedIssues: [], allSelected: false })
+  deselectAllIssues = () => {
+    this.setState({ selectedIssues: {}, allSelected: false })
   }
 
   toggleSelectAll = issuesFiltered => () => {
@@ -247,15 +227,16 @@ class Issues extends React.PureComponent {
 
   actionsMenu = (issues, issuesFiltered) => (
     <ActionsMenu
+      deselectAllIssues={this.deselectAllIssues}
       disableFilter={this.disableFilter}
       disableAllFilters={this.disableAllFilters}
       filters={this.state.filters}
       issues={issues}
       issuesFiltered={issuesFiltered}
-      onAllocateBounties={this.handleAllocateBounties}
-      onCurateIssues={this.handleCurateIssues}
       onSearchChange={this.handleTextFilter}
-      selectedIssues={this.state.selectedIssues}
+      selectedIssues={Object.keys(this.state.selectedIssues).map(
+        id => this.state.selectedIssues[id]
+      )}
     />
   )
 
@@ -390,7 +371,6 @@ class Issues extends React.PureComponent {
         onReviewApplication={onReviewApplication}
         onRequestAssignment={onRequestAssignment}
         onSubmitWork={onSubmitWork}
-        onAllocateSingleBounty={this.handleAllocateSingleBounty}
         onUpdateBounty={this.handleUpdateBounty}
         onReviewWork={onReviewWork}
       />
@@ -539,9 +519,6 @@ class Issues extends React.PureComponent {
                             onReviewApplication={onReviewApplication}
                             onSubmitWork={onSubmitWork}
                             onRequestAssignment={onRequestAssignment}
-                            onAllocateSingleBounty={
-                              this.handleAllocateSingleBounty
-                            }
                             onUpdateBounty={this.handleUpdateBounty}
                             onReviewWork={onReviewWork}
                           />

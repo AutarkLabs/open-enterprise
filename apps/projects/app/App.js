@@ -193,16 +193,6 @@ class App extends React.PureComponent {
     }))
   }
 
-  newBountyAllocation = issues => {
-    this.setState((_prevState, _prevProps) => ({
-      panel: PANELS.FundIssues,
-      panelProps: {
-        issues,
-        mode: 'new',
-      },
-    }))
-  }
-
   updateBounty = issues => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.FundIssues,
@@ -296,16 +286,6 @@ class App extends React.PureComponent {
       state.accepted,
       requestIPFSHash
     )
-  }
-
-  curateIssues = (selectedIssues, allIssues) => {
-    this.setState((_prevState, _prevProps) => ({
-      panel: PANELS.NewIssueCuration,
-      panelProps: {
-        selectedIssues,
-        allIssues,
-      },
-    }))
   }
 
   closePanel = () => {
@@ -424,8 +404,6 @@ class App extends React.PureComponent {
                     onNewProject={this.newProject}
                     onRemoveProject={this.removeProject}
                     onNewIssue={this.newIssue}
-                    onCurateIssues={this.curateIssues}
-                    onAllocateBounties={this.newBountyAllocation}
                     onUpdateBounty={this.updateBounty}
                     onSubmitWork={this.submitWork}
                     onRequestAssignment={this.requestAssignment}
