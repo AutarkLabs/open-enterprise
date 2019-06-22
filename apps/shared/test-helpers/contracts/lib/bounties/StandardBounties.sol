@@ -52,6 +52,7 @@ contract StandardBounties {
 
   struct Bounty {
       address issuer;
+      address refundee;
       uint deadline;
       string data;
       uint fulfillmentAmount;
@@ -157,6 +158,7 @@ contract StandardBounties {
 
   /// @dev issueBounty(): instantiates a new draft bounty
   /// @param _issuer the address of the intended issuer of the bounty
+  /// @param _refundee the addreess of the refund recipient in case the bounty is killed
   /// @param _deadline the unix timestamp after which fulfillments will no longer be accepted
   /// @param _data the requirements of the bounty
   /// @param _fulfillmentAmount the amount of wei to be paid out for each successful fulfillment
@@ -165,6 +167,7 @@ contract StandardBounties {
   /// @param _tokenContract the address of the contract if _paysTokens is true
   function issueBounty(
       address _issuer,
+      address _refundee,
       uint _deadline,
       string _data,
       uint256 _fulfillmentAmount,
@@ -178,7 +181,7 @@ contract StandardBounties {
       validateNotTooManyBounties
       returns (uint)
   {
-      bounties.push(Bounty(_issuer, _deadline, _data, _fulfillmentAmount, _arbiter, _paysTokens, BountyStages.Draft, 0));
+      bounties.push(Bounty(_issuer, _refundee, _deadline, _data, _fulfillmentAmount, _arbiter, _paysTokens, BountyStages.Draft, 0));
       if (_paysTokens){
         tokenContracts[bounties.length - 1] = HumanStandardToken(_tokenContract);
       }
@@ -188,6 +191,7 @@ contract StandardBounties {
 
   /// @dev issueAndActivateBounty(): instantiates a new draft bounty
   /// @param _issuer the address of the intended issuer of the bounty
+  /// @param _refundee the address of the refund recipient in case the bounty is killed
   /// @param _deadline the unix timestamp after which fulfillments will no longer be accepted
   /// @param _data the requirements of the bounty
   /// @param _fulfillmentAmount the amount of wei to be paid out for each successful fulfillment
@@ -197,6 +201,7 @@ contract StandardBounties {
   /// @param _value the total number of tokens being deposited upon activation
   function issueAndActivateBounty(
       address _issuer,
+      address _refundee,
       uint _deadline,
       string _data,
       uint256 _fulfillmentAmount,
@@ -221,6 +226,7 @@ contract StandardBounties {
         require((_value * 1 wei) == msg.value);
       }
       bounties.push(Bounty(_issuer,
+                            _refundee,
                             _deadline,
                             _data,
                             _fulfillmentAmount,
@@ -359,6 +365,7 @@ contract StandardBounties {
   /// @dev killBounty(): drains the contract of it's remaining
   /// funds, and moves the bounty into stage 3 (dead) since it was
   /// either killed in draft stage, or never accepted any fulfillments
+  /// The funds are transferred to the refundee of the bounty, not the issuer
   /// @param _bountyId the index of the bounty
   function killBounty(uint _bountyId)
       public
@@ -370,9 +377,9 @@ contract StandardBounties {
       bounties[_bountyId].balance = 0;
       if (oldBalance > 0){
         if (bounties[_bountyId].paysTokens){
-          require(tokenContracts[_bountyId].transfer(bounties[_bountyId].issuer, oldBalance));
+          require(tokenContracts[_bountyId].transfer(bounties[_bountyId].refundee, oldBalance));
         } else {
-          bounties[_bountyId].issuer.transfer(oldBalance);
+          bounties[_bountyId].refundee.transfer(oldBalance);
         }
       }
       BountyKilled(_bountyId, msg.sender);

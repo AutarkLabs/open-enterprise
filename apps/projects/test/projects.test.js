@@ -1,3 +1,5 @@
+truffleAssert = require('truffle-assertions')
+
 /* global artifact, ... */
 const {
   ACL,
@@ -29,7 +31,7 @@ contract('Projects App', accounts => {
 
   const root = accounts[0]
   const owner1 = accounts[0] // 0xb421
-  const bountyAdder = accounts[2]
+  const bountyManager = accounts[2]
   const repoRemover = accounts[3]
   const repoIdString = 'MDEwOIJlcG9zaXRvcnkxNjY3MjlyMjY='
   const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
@@ -88,9 +90,17 @@ contract('Projects App', accounts => {
     )
 
     await acl.createPermission(
-      bountyAdder,
+      bountyManager,
       app.address,
       await app.FUND_ISSUES_ROLE(),
+      root,
+      { from: root }
+    )
+
+    await acl.createPermission(
+      bountyManager,
+      app.address,
+      await app.REMOVE_ISSUES_ROLE(),
       root,
       { from: root }
     )
@@ -112,7 +122,7 @@ contract('Projects App', accounts => {
     )
 
     await acl.createPermission(
-      bountyAdder,
+      bountyManager,
       app.address,
       await app.REVIEW_APPLICATION_ROLE(),
       root,
@@ -120,7 +130,7 @@ contract('Projects App', accounts => {
     )
 
     await acl.createPermission(
-      bountyAdder,
+      bountyManager,
       app.address,
       await app.WORK_REVIEW_ROLE(),
       root,
@@ -247,6 +257,7 @@ contract('Projects App', accounts => {
         beforeEach(async () => {
           await bounties.issueBounty(
             accounts[0],
+            bountyManager,
             2528821098,
             'data',
             1000,
@@ -287,6 +298,7 @@ contract('Projects App', accounts => {
         it('verifies that bounty fulfillment completes', async () => {
           await bounties.issueBounty(
             accounts[0],
+            bountyManager,
             2528821098,
             'data',
             1000,
@@ -312,6 +324,7 @@ contract('Projects App', accounts => {
         it('verifies that bounty fulfillment flow works to completion with several fulfillments', async () => {
           await bounties.issueBounty(
             accounts[0],
+            bountyManager,
             2528821098,
             'data',
             1000,
@@ -351,7 +364,7 @@ contract('Projects App', accounts => {
               [ 0, 0, 0 ],
               'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
               'something',
-              { from: bountyAdder, value: 60 }
+              { from: bountyManager, value: 60 }
             )
           )
         })
@@ -426,7 +439,7 @@ contract('Projects App', accounts => {
               ZERO_ADDR,
               'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
               true,
-              { from: bountyAdder }
+              { from: bountyManager }
             )
           })
         })
@@ -450,7 +463,7 @@ contract('Projects App', accounts => {
             applicant[0],
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
             true,
-            { from: bountyAdder }
+            { from: bountyManager }
           )
 
           const issue = await app.getIssue(repoId, 1)
@@ -482,7 +495,7 @@ contract('Projects App', accounts => {
             applicant[0],
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
             true,
-            { from: bountyAdder }
+            { from: bountyManager }
           )
           applicant = await app.getApplicant(
             repoId,
@@ -501,7 +514,7 @@ contract('Projects App', accounts => {
             applicant[0],
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
             false,
-            { from: bountyAdder }
+            { from: bountyManager }
           )
           applicant = await app.getApplicant(
             repoId,
@@ -534,7 +547,7 @@ contract('Projects App', accounts => {
             applicant[0],
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
             true,
-            { from: bountyAdder }
+            { from: bountyManager }
           )
 
           await app.submitWork(
@@ -574,7 +587,7 @@ contract('Projects App', accounts => {
             applicant[0],
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
             true,
-            { from: bountyAdder }
+            { from: bountyManager }
           )
 
           await app.submitWork(
@@ -596,7 +609,7 @@ contract('Projects App', accounts => {
             submissionIndex,
             false,
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
-            { from: bountyAdder }
+            { from: bountyManager }
           )
           submission = await app.getSubmission(
             repoId,
@@ -629,7 +642,7 @@ contract('Projects App', accounts => {
             applicant[0],
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
             true,
-            { from: bountyAdder }
+            { from: bountyManager }
           )
 
           await app.submitWork(
@@ -651,7 +664,7 @@ contract('Projects App', accounts => {
             submissionIndex,
             true,
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
-            { from: bountyAdder }
+            { from: bountyManager }
           )
           submission = await app.getSubmission(
             repoId,
@@ -684,7 +697,7 @@ contract('Projects App', accounts => {
             applicant[0],
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
             true,
-            { from: bountyAdder }
+            { from: bountyManager }
           )
 
           await app.submitWork(
@@ -706,7 +719,7 @@ contract('Projects App', accounts => {
             submissionIndex,
             true,
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
-            { from: bountyAdder }
+            { from: bountyManager }
           )
 
           return assertRevert(async () => {
@@ -716,7 +729,7 @@ contract('Projects App', accounts => {
               submissionIndex,
               true,
               'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
-              { from: bountyAdder }
+              { from: bountyManager }
             )
           })
         })
@@ -750,7 +763,7 @@ contract('Projects App', accounts => {
             applicant[0],
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
             true,
-            { from: bountyAdder }
+            { from: bountyManager }
           )
 
           await app.submitWork(
@@ -772,7 +785,7 @@ contract('Projects App', accounts => {
             submissionIndex,
             true,
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
-            { from: bountyAdder }
+            { from: bountyManager }
           )
           assertRevert(async () => {
             await app.submitWork(
@@ -787,7 +800,7 @@ contract('Projects App', accounts => {
               issueNumber,
               submissionIndex,
               true,
-              { from: bountyAdder }
+              { from: bountyManager }
             )
           })
         })
@@ -817,7 +830,7 @@ contract('Projects App', accounts => {
               [ token.address, token.address, token.address ],
               'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
               'something',
-              { from: bountyAdder, }
+              { from: bountyManager, }
             )
           )
 
@@ -849,6 +862,211 @@ contract('Projects App', accounts => {
           )
         })
       })
+
+      context('bounty killing', async () => {
+
+        it('`hasBounty` is set to `false` on issues with killed bounties', async () => {
+          const issueNumber = 6;
+          await app.addBounties(
+            [repoId], [issueNumber], [10], [Date.now() + 86400], [false], [0],
+            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+            'test description', {from: bountyManager, value: 10});
+          const liveIssue = await app.getIssue(repoId, issueNumber);
+          let hasBounty = liveIssue[0];
+          assert.isTrue(hasBounty);
+	  await app.removeBounties([repoId], [issueNumber], {
+            from: bountyManager
+          });
+          const deadIssue = await app.getIssue(repoId, issueNumber);
+          hasBounty = deadIssue[0];
+          assert.isFalse(hasBounty);
+        });
+
+        it('`bountySize` is set to `0` on issues with killed bounties', async () => {
+          const issueNumber = 6;
+          const initialBountySize = web3.toWei(1);
+          await app.addBounties(
+            [repoId], [issueNumber], [initialBountySize], [Date.now() + 86400],
+            [false], [0],
+            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+            'test description', {from: bountyManager, value: initialBountySize});
+          const liveIssue = await app.getIssue(repoId, issueNumber);
+          let bountySize = liveIssue[3];
+          assert.equal(bountySize, initialBountySize);
+	  await app.removeBounties([repoId], [issueNumber], {
+            from: bountyManager
+          });
+          const deadIssue = await app.getIssue(repoId, issueNumber);
+          bountySize = deadIssue[3];
+          assert.equal(bountySize, 0);
+        });
+
+        it('the refundee gets a refund', async () => {
+          const initialBalance = web3.eth.getBalance(bountyManager);
+          const issueNumber = 6;
+          const bountySize = web3.toWei(1);
+          const gasPrice = 21000;
+          const funding = await app.addBounties(
+            [repoId], [issueNumber], [bountySize], [Date.now() + 86400], [false],
+            [0],
+            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+            'test description', {from: bountyManager, value: bountySize,
+                                 gasPrice: gasPrice});
+          const spentBalance = web3.eth.getBalance(bountyManager);
+          const fundingFee = funding.receipt.gasUsed * gasPrice;
+          assert.isTrue(spentBalance.equals(initialBalance.minus(bountySize).minus(fundingFee)))
+	  killing = await app.removeBounties([repoId], [issueNumber], {
+            from: bountyManager, gasPrice: gasPrice});
+          const refundedBalance = web3.eth.getBalance(bountyManager);
+          const killingFee = killing.receipt.gasUsed * gasPrice;
+          assert.isTrue(refundedBalance.equals(initialBalance.minus(fundingFee).minus(killingFee)));
+        })
+
+        it('the refundee gets a refund in token', async () => {
+          // TODO
+        });
+
+        it('a BountyRemoved event is emitted', async () => {
+          const issueNumber = 6;
+          const bountySize = 10;
+          await app.addBounties(
+            [repoId], [issueNumber], [bountySize], [Date.now() + 86400],
+            [false], [0],
+            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+            'test description', {from: bountyManager, value: 10});
+          const result = await app.removeBounties([repoId], [issueNumber], {
+            from: bountyManager});
+          truffleAssert.eventEmitted(result, 'BountyRemoved');
+        });
+
+        it('two bounties are killed at once', async () => {
+          const initialBalance = web3.eth.getBalance(bountyManager);
+          const issueNumbers = [6, 7];
+          const bountySizes = [web3.toWei(1), web3.toWei(2)];
+          const value = web3.toWei(3);
+          const gasPrice = 21000;
+          const funding = await app.addBounties(
+            [repoId, repoId], issueNumbers, bountySizes,
+            [Date.now() + 86400, Date.now() + 86400], [false, false], [0, 0],
+            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+            'test description', {from: bountyManager, value: value,
+                                 gasPrice: gasPrice});
+          const spentBalance = web3.eth.getBalance(bountyManager);
+          const fundingFee = funding.receipt.gasUsed * gasPrice;
+          assert.isTrue(spentBalance.equals(initialBalance.minus(value).minus(fundingFee)))
+	  killing = await app.removeBounties([repoId, repoId], issueNumbers, {
+            from: bountyManager, gasPrice: gasPrice});
+          const refundedBalance = web3.eth.getBalance(bountyManager);
+          const killingFee = killing.receipt.gasUsed * gasPrice;
+          assert.isTrue(refundedBalance.equals(initialBalance.minus(fundingFee).minus(killingFee)));
+        });
+
+        it("bounty doesn't exist", async () => {
+          await truffleAssert.fails(
+            app.removeBounties([repoId], [1], {from: bountyManager}),
+            truffleAssert.ErrorType.REVERT);
+        });
+
+        it('only the issuer can kill a bounty', async () => {
+          const issueNumber = 6;
+          await app.addBounties(
+            [repoId], [issueNumber], [10], [Date.now() + 86400],
+            [false], [0],
+            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+            'test description', {from: bountyManager, value: 10});
+          await truffleAssert.fails(
+            app.removeBounties([repoId], [issueNumber]),
+            truffleAssert.ErrorType.REVERT,
+            // 'APP_AUTH_FAILED'
+          );
+        });
+
+        it("the array arguments can't exceed 256 in length", async () => {
+	  await truffleAssert.fails(
+            app.removeBounties([repoId, repoId], Array(256).fill(6),
+                               {from: bountyManager}),
+            truffleAssert.ErrorType.REVERT,
+            // 'LENGTH_EXCEEDED'
+          );
+        });
+
+        it('the array arguments must have the same length', async () => {
+          const issueNumbers = [6, 7];
+          const bountySizes = [web3.toWei(1), web3.toWei(2)];
+          const value = web3.toWei(3);
+          await app.addBounties(
+            [repoId, repoId], issueNumbers, bountySizes,
+            [Date.now() + 86400, Date.now() + 86400], [false, false], [0, 0],
+            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+            'test description', {from: bountyManager, value: value});
+	  await truffleAssert.fails(
+            app.removeBounties([repoId, repoId], [6], {from: bountyManager}),
+            truffleAssert.ErrorType.REVERT,
+            // 'LENGTH_MISMATCH'
+          );
+        });
+
+        it("can't kill a bounty twice", async () => {
+          const issueNumber = 6;
+          await app.addBounties(
+            [repoId], [issueNumber], [10], [Date.now() + 86400],
+            [false], [0],
+            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+            'test description', {from: bountyManager, value: 10});
+          await app.removeBounties([repoId],[issueNumber], {
+            from: bountyManager});
+          await truffleAssert.fails(
+            app.removeBounties([repoId], [issueNumber], {from: bountyManager}),
+            truffleAssert.ErrorType.REVERT,
+            // 'BOUNTY_REMOVED'
+          );
+        });
+
+        it("can't kill a fulfilled bounty", async () => {
+          const issueNumber = 6;
+          await app.addBounties(
+            [repoId], [issueNumber], [10], [Date.now() + 86400],
+            [false], [0],
+            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+            'test description', {from: bountyManager, value: 10});
+          await app.requestAssignment(
+            repoId,
+            issueNumber,
+            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+            { from: root }
+          )
+          applicantQty = await app.getApplicantsLength(repoId, issueNumber)
+          applicant = await app.getApplicant(
+            repoId,
+            issueNumber,
+            applicantQty.toNumber() - 1
+          )
+          await app.reviewApplication(
+            repoId,
+            issueNumber,
+            applicant[0],
+            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
+            true,
+            { from: bountyManager }
+          )
+          await app.submitWork(
+            repoId, issueNumber,
+            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDk');
+          const submissionQty = await app.getSubmissionsLength(
+            repoId, issueNumber);
+          const submissionIndex = submissionQty.toNumber() - 1;
+          await app.reviewSubmission(
+            repoId, issueNumber, submissionIndex, true,
+            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+            { from: bountyManager }
+          );
+          await truffleAssert.fails(
+            app.removeBounties([repoId], [issueNumber], {from: bountyManager}),
+            truffleAssert.ErrorType.REVERT,
+            // 'BOUNTY_FULFILLED'
+          );
+        });
+      });
     })
 
     context('issue curation', () => {
@@ -1066,7 +1284,7 @@ contract('Projects App', accounts => {
             [ 10, 20, 30 ],
             'something cool',
             {
-              from: bountyAdder,
+              from: bountyManager,
             }
           )
         })

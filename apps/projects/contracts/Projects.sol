@@ -32,6 +32,7 @@ interface Bounties {
 
     function issueBounty(
         address _issuer,
+        address _refundee,
         uint _deadline,
         string _data,
         uint256 _fulfillmentAmount,
@@ -55,6 +56,9 @@ interface Bounties {
         uint _fulfillmentId
     ) external;
 
+    function killBounty(
+        uint _bountyId
+    ) external;
 
   function getBounty(uint _bountyId)
       external
@@ -86,6 +90,7 @@ contract Projects is IsContract, AragonApp {
     WorkSubmission[] workSubmissions;
     // Auth roles
     bytes32 public constant FUND_ISSUES_ROLE =  keccak256("FUND_ISSUES_ROLE");
+    bytes32 public constant REMOVE_ISSUES_ROLE = keccak256("REMOVE_ISSUES_ROLE");
     bytes32 public constant ADD_REPO_ROLE = keccak256("ADD_REPO_ROLE");
     bytes32 public constant CHANGE_SETTINGS_ROLE =  keccak256("CHANGE_SETTINGS_ROLE");
     bytes32 public constant CURATE_ISSUES_ROLE = keccak256("CURATE_ISSUES_ROLE");
@@ -94,6 +99,10 @@ contract Projects is IsContract, AragonApp {
     bytes32 public constant WORK_REVIEW_ROLE = keccak256("WORK_REVIEW_ROLE");
     string private constant ERROR_VAULT_NOT_CONTRACT = "PROJECTS_VAULT_NOT_CONTRACT";
     string private constant ERROR_STANDARD_BOUNTIES_NOT_CONTRACT = "STANDARD_BOUNTIES_NOT_CONTRACT";
+    string private constant ERROR_LENGTH_EXCEEDED = "LENGTH_EXCEEDED";
+    string private constant ERROR_LENGTH_MISMATCH = "LENGTH_MISMATCH";
+    string private constant ERROR_BOUNTY_FULFILLED = "BOUNTY_FULFILLED";
+    string private constant ERROR_BOUNTY_REMOVED = "BOUNTY_REMOVED";
 
     // The entries in the repos registry.
     mapping(bytes32 => GithubRepo) private repos;
@@ -156,6 +165,8 @@ contract Projects is IsContract, AragonApp {
     event RepoUpdated(bytes32 indexed repoId, uint newIndex);
     // Fired when a bounty is added to a repo
     event BountyAdded(bytes32 repoId, uint256 issueNumber, uint256 bountySize);
+    // Fired when a bounty is removed
+    event BountyRemoved(bytes32 repoId, uint256 issueNumber, uint256 oldBountySize);
     // Fired when an issue is curated
     event IssueCurated(bytes32 repoId);
     // Fired when settings are changed
@@ -483,6 +494,7 @@ contract Projects is IsContract, AragonApp {
 
             standardBountyId = bounties.issueBounty(
                 this,                           //    address _issuer
+                msg.sender,                     //    address _refundee
                 _deadlines[i],                  //    uint256 _deadlines
                 ipfsHash,                       //    parse input to get ipfs hash
                 _bountySizes[i],                //    uint256 _fulfillmentAmount
@@ -505,6 +517,24 @@ contract Projects is IsContract, AragonApp {
                 standardBountyId,
                 _bountySizes[i]
             );
+        }
+    }
+
+    /**
+     * @notice Remove funding from issues: `_description`
+     * @param _repoIds The ids of the Github repos in the projects registry
+     * @param _issueNumbers an array of bounty indexes
+     */
+    function removeBounties(
+        bytes32[] _repoIds,
+        uint256[] _issueNumbers
+    ) public auth(REMOVE_ISSUES_ROLE)
+    {
+        require(_repoIds.length < 256, ERROR_LENGTH_EXCEEDED);
+        require(_issueNumbers.length < 256, ERROR_LENGTH_EXCEEDED);
+        require(_repoIds.length == _issueNumbers.length, ERROR_LENGTH_MISMATCH);
+        for (uint8 i = 0; i < _issueNumbers.length; i++) {
+            _removeBounty(_repoIds[i], _issueNumbers[i]);
         }
     }
 
@@ -696,6 +726,25 @@ contract Projects is IsContract, AragonApp {
             _issueNumber,
             _bountySize
         );
+    }
+
+    function _removeBounty(
+        bytes32 _repoId,
+        uint256 _issueNumber
+    ) internal
+    {
+        GithubIssue storage issue = repos[_repoId].issues[_issueNumber];
+        require(issue.hasBounty, ERROR_BOUNTY_REMOVED);
+        require(!issue.fulfilled, ERROR_BOUNTY_FULFILLED);
+        bounties.killBounty(issue.standardBountyId);
+        issue.hasBounty = false;
+        uint256 oldBountySize = issue.bountySize;
+        issue.bountySize = 0;
+        emit BountyRemoved(
+            _repoId,
+            _issueNumber,
+            oldBountySize
+        );            
     }
 
     function getHash(

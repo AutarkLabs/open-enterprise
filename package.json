@@ -7,7 +7,8 @@
     "cypress": "^3.1.5",
     "lerna": "^3.10.8",
     "truffle-privatekey-provider": "^1.1.0",
-    "wait-on": "^3.2.0"
+    "wait-on": "^3.2.0",
+    "truffle-assertions": "^0.9.1"
   },
   "scripts": {
     "bootstrap": "npx lerna bootstrap --hoist",
