@@ -59,8 +59,7 @@
     "lint": "eslint . & solium --dir ./contracts",
     "lint:fix": "eslint . --fix & solium --dir ./contracts --fix",
     "coverage": "cross-env SOLIDITY_COVERAGE=true npm run ganache-cli:test",
-    "ganache-cli:test": "sh ./node_modules/@aragon/test-helpers/ganache-cli.sh",
-    "watch:script": "cd app && npm run watch:script && cd .."
+    "ganache-cli:test": "sh ./node_modules/@aragon/test-helpers/ganache-cli.sh"
   },
   "browserslist": [
     "last 2 Chrome versions"

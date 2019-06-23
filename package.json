@@ -13,6 +13,7 @@
     "bootstrap": "npx lerna bootstrap --hoist",
     "build:script:address": "lerna run build:script --scope=@tps/apps-address-book",
     "build:script:allocations": "lerna run build:script --scope=@tps/apps-allocations",
+    "build:script:discussions": "lerna run build:script --scope=@tps/apps-discussions",
     "build:script:dot": "lerna run build:script --scope=@tps/apps-dot-voting",
     "build:script:projects": "lerna run build:script --scope=@tps/apps-projects",
     "build:script:rewards": "lerna run build:script --scope=@tps/apps-rewards",

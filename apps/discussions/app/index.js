@@ -5,7 +5,7 @@ import App from './App'
 import { initialState } from './state'
 
 const reducer = state => {
-  if (state === null) return initialState
+  if (state === null || Object.keys(state).length === 0) return initialState
   return state
 }
 

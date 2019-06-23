@@ -15,6 +15,15 @@ api.store(
       case INITIALIZATION_TRIGGER:
         newState = { ...initialState, syncing: false }
         return newState
+      case 'SYNC_STATUS_SYNCING':
+        newState = { ...initialState, syncing: true }
+        return newState
+      case 'SYNC_STATUS_SYNCED':
+        newState = { ...initialState, syncing: false }
+        return newState
+      case 'ACCOUNTS_TRIGGER':
+        newState = { ...initialState, syncing: false }
+        return newState
       case 'Post':
         newState = await handlePost(state, event)
         return newState
