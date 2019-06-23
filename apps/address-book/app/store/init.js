@@ -1,10 +1,12 @@
 import { app, handleEvent } from './'
-
+import testReturnAbi from '../../../shared/json-abis/testReturn'
 
 export const initStore = () => {
+  const testReturnContract = app.external('0x0f407b6532bb4092638ad5ced2b17bd34d521402', testReturnAbi.abi)
 
   const initialState = {
     entries: [],
+    testReturnContract
   }
   return app.store(
     async (state, event) => {
@@ -21,6 +23,9 @@ export const initStore = () => {
       }
       // always return the state even unmodified
       return state
-    }
+    },
+    [
+      testReturnContract.events(),
+    ]
   )
 }

@@ -1,0 +1,47 @@
+{
+	"constant": true,
+	"inputs": [
+		{
+			"name": "_idx",
+			"type": "uint256"
+		}
+	],
+	"name": "getInfo",
+	"outputs": [
+		{
+			"components": [
+				{
+					"name": "qty",
+					"type": "uint256"
+				},
+				{
+					"name": "location",
+					"type": "address"
+				},
+				{
+					"name": "vals",
+					"type": "uint256[]"
+				},
+				{
+					"components": [
+						{
+							"name": "name",
+							"type": "string"
+						},
+						{
+							"name": "shoop",
+							"type": "address[]"
+						}
+					],
+					"name": "subStructs",
+					"type": "tuple[]"
+				}
+			],
+			"name": "",
+			"type": "tuple"
+		}
+	],
+	"payable": false,
+	"stateMutability": "view",
+	"type": "function"
+}

@@ -1,0 +1,128 @@
+{
+	"abi": [
+		{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_idx",
+				"type": "uint256"
+			}
+		],
+		"name": "getInfo",
+		"outputs": [
+			{
+				"components": [
+					{
+						"name": "qty",
+						"type": "uint256"
+					},
+					{
+						"name": "location",
+						"type": "address"
+					},
+					{
+						"name": "vals",
+						"type": "uint256[]"
+					},
+					{
+						"components": [
+							{
+								"name": "name",
+								"type": "string"
+							},
+							{
+								"name": "shoop",
+								"type": "address[]"
+							}
+						],
+						"name": "subStructs",
+						"type": "tuple[]"
+					}
+				],
+				"name": "",
+				"type": "tuple"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [
+				{
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"name": "infoMap",
+			"outputs": [
+				{
+					"name": "qty",
+					"type": "uint256"
+				},
+				{
+					"name": "location",
+					"type": "address"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "counter",
+			"outputs": [
+				{
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [],
+			"name": "addInfo",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [
+				{
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"name": "calls",
+			"outputs": [
+				{
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": false,
+					"name": "counterValue",
+					"type": "uint256"
+				}
+			],
+			"name": "NewInfo",
+			"type": "event"
+		}
+	]
+}
