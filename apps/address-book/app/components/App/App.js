@@ -1,4 +1,4 @@
-import { observe, SidePanel, Main, AppBar, AppView, font, breakpoint } from '@aragon/ui'
+import { observe, SidePanel, Main, AppBar, AppView, font, breakpoint, Button } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { hot } from 'react-hot-loader'
@@ -83,6 +83,13 @@ class App extends React.Component {
               onNewEntity={this.newEntity}
               onRemoveEntity={this.removeEntity}
             />
+            <Button onClick={() => {
+              this.props.app.getApps().subscribe(async apps => {
+                const { abi, codeAddress, proxyAddress } = apps.find(app => app.name === 'Discussions')
+                const contract = this.props.app.external(codeAddress, abi, proxyAddress)
+                await contract.post('123', 'abc').toPromise()
+              })
+            }}>Post a discussion</Button>
           </ScrollWrapper>
 
         </AppView>
