@@ -182,32 +182,6 @@ class App extends React.PureComponent {
     )
   }
 
-  reviewWork = (issue, index = 0) => {
-    this.setState((_prevState, _prevProps) => ({
-      panel: PANELS.ReviewWork,
-      panelProps: {
-        issue,
-        index,
-        onReviewWork: this.onReviewWork,
-      },
-    }))
-  }
-
-  onReviewWork = async (state, issue) => {
-    // new IPFS data is old data plus state returned from the panel
-    const ipfsData = issue.workSubmissions[issue.workSubmissions.length - 1]
-    const requestIPFSHash = await ipfsAdd({ ...ipfsData, review: state })
-
-    this.closePanel()
-    this.props.api.reviewSubmission(
-      toHex(issue.repoId),
-      issue.number,
-      issue.workSubmissions.length - 1,
-      state.accepted,
-      requestIPFSHash
-    )
-  }
-
   closePanel = () => {
     this.setState({ panel: null, panelProps: null })
   }
@@ -323,7 +297,6 @@ class App extends React.PureComponent {
                     activeIndex={activeIndex}
                     changeActiveIndex={this.changeActiveIndex}
                     onReviewApplication={this.reviewApplication}
-                    onReviewWork={this.reviewWork}
                     setIssueDetail={this.setIssueDetail}
                     issueDetail={issueDetail}
                   />

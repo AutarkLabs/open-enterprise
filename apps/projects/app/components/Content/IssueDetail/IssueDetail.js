@@ -15,6 +15,7 @@ import { formatDistance } from 'date-fns'
 import { IconGitHub, BountyContextMenu } from '../../Shared'
 import { BOUNTY_STATUS, BOUNTY_BADGE_COLOR } from '../../../utils/bounty-status'
 import Markdown from './Markdown'
+import { usePanelManagement } from '../../Panel'
 
 const StyledTable = styled.div`
   margin-bottom: 20px;
@@ -241,7 +242,6 @@ const deadlineDistance = date => formatDistance(new Date(date), new Date())
 const detailsCard = ({
   issue,
   onReviewApplication,
-  onReviewWork,
 }) => {
   const summaryData = {
     expLevel: issue.expLevel === undefined ? '-' : issue.expLevel,
@@ -285,7 +285,6 @@ const detailsCard = ({
           <ContextMenu>
             <BountyContextMenu
               onReviewApplication={() => onReviewApplication(issue)}
-              onReviewWork={() => onReviewWork(issue)}
               requestsData={issue.requestsData}
               work={issue.work}
               workStatus={issue.workStatus}
@@ -327,14 +326,15 @@ const detailsCard = ({
   )
 }
 
-const eventsCard = ({ issue, onReviewApplication, onReviewWork }) => {
+const EventsCard = ({ issue, onReviewApplication }) => {
+  const { reviewWork } = usePanelManagement()
   const issueEvents = activities(
     issue,
     issue.requestsData,
     issue.workSubmissions,
     issue.fundingHistory,
     onReviewApplication,
-    onReviewWork
+    reviewWork
   )
 
   return (
@@ -355,7 +355,7 @@ const eventsCard = ({ issue, onReviewApplication, onReviewWork }) => {
   )
 }
 
-const IssueDetail = issue => {
+const IssueDetail = ({ issue, onReviewApplication }) => {
   return (
     <Viewport>
       {({ below }) =>
@@ -371,7 +371,7 @@ const IssueDetail = issue => {
               {detailsCard(issue)}
             </div>
             <div style={{ minWidth: '330px', width: '100%' }}>
-              {eventsCard(issue)}
+              <EventsCard issue={issue} onReviewApplication={onReviewApplication} />
             </div>
           </CardWrapper>
         ) : (
@@ -387,7 +387,7 @@ const IssueDetail = issue => {
               {detailsCard(issue)}
             </div>
             <div style={{ maxWidth: '400px', minWidth: '350px', width: '30%' }}>
-              {eventsCard(issue)}
+              <EventsCard issue={issue} onReviewApplication={onReviewApplication} />
             </div>
           </CardWrapper>
         )
@@ -398,7 +398,6 @@ const IssueDetail = issue => {
 
 IssueDetail.propTypes = {
   onReviewApplication: PropTypes.func.isRequired,
-  onReviewWork: PropTypes.func.isRequired,
   workStatus: PropTypes.oneOf([
     undefined,
     'funded',

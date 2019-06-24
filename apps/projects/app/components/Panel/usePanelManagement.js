@@ -36,6 +36,10 @@ const usePanelManagement = () => {
       setActivePanel(PANELS.RequestAssignment)
       setPanelProps({ issue })
     },
+    reviewWork: (issue, index = 0) => {
+      setActivePanel(PANELS.ReviewWork)
+      setPanelProps({ issue, index })
+    },
     setupNewIssue: () => {
       const repoNames =
         (appState.repos &&

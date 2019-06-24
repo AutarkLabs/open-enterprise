@@ -17,6 +17,10 @@ import {
 import { FormField, FieldTitle, DescriptionInput } from '../../Form'
 import { IconGitHub } from '../../Shared'
 import useGithubAuth from '../../../hooks/useGithubAuth'
+import { useAragonApi } from '@aragon/api-react'
+import { usePanelManagement } from '../../Panel'
+import { ipfsAdd } from '../../../utils/ipfs-helpers'
+import { toHex } from '../../../utils/web3-utils'
 
 class ReviewWork extends React.Component {
   static propTypes = {
@@ -224,11 +228,39 @@ class ReviewWork extends React.Component {
   }
 }
 
+const onReviewWork = ({ closePanel, reviewSubmission }) => async (
+  state,
+  issue
+) => {
+  // new IPFS data is old data plus state returned from the panel
+  const ipfsData = issue.workSubmissions[issue.workSubmissions.length - 1]
+  const requestIPFSHash = await ipfsAdd({ ...ipfsData, review: state })
+
+  closePanel()
+  reviewSubmission(
+    toHex(issue.repoId),
+    issue.number,
+    issue.workSubmissions.length - 1,
+    state.accepted,
+    requestIPFSHash
+  )
+}
+
 // TODO: move entire component to functional component
 // the following was a quick way to allow us to use hooks
 const ReviewWorkWrap = props => {
   const { githubCurrentUser } = useGithubAuth()
-  return <ReviewWork githubCurrentUser={githubCurrentUser} {...props} />
+  const {
+    api: { reviewSubmission },
+  } = useAragonApi()
+  const { closePanel } = usePanelManagement()
+  return (
+    <ReviewWork
+      githubCurrentUser={githubCurrentUser}
+      onReviewWork={onReviewWork({ closePanel, reviewSubmission })}
+      {...props}
+    />
+  )
 }
 
 const IssueTitle = styled(Text)`

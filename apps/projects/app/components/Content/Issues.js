@@ -28,7 +28,6 @@ class Issues extends React.PureComponent {
     }),
     issueDetail: PropTypes.bool.isRequired,
     onReviewApplication: PropTypes.func.isRequired,
-    onReviewWork: PropTypes.func.isRequired,
     setIssueDetail: PropTypes.func.isRequired,
   }
 
@@ -345,7 +344,6 @@ class Issues extends React.PureComponent {
   renderCurrentIssue = currentIssue => {
     const {
       onReviewApplication,
-      onReviewWork,
     } = this.props
 
     currentIssue.repository = {
@@ -360,7 +358,6 @@ class Issues extends React.PureComponent {
       <IssueDetail
         issue={currentIssueShaped}
         onReviewApplication={onReviewApplication}
-        onReviewWork={onReviewWork}
       />
     )
   }
@@ -418,7 +415,6 @@ class Issues extends React.PureComponent {
     const {
       projects,
       onReviewApplication,
-      onReviewWork,
       issueDetail,
     } = this.props
 
@@ -502,7 +498,6 @@ class Issues extends React.PureComponent {
                             onClick={this.handleIssueClick}
                             onSelect={this.handleIssueSelection}
                             onReviewApplication={onReviewApplication}
-                            onReviewWork={onReviewWork}
                           />
                         )
                       })}

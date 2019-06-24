@@ -44,7 +44,6 @@ const Issue = ({
   onClick,
   onSelect,
   onReviewApplication,
-  onReviewWork,
   ...issue
 }) => {
   const {
@@ -78,7 +77,6 @@ const Issue = ({
           <ContextMenu>
             <BountyContextMenu
               onReviewApplication={() => onReviewApplication(issue)}
-              onReviewWork={() => onReviewWork(issue)}
               requestsData={requestsData}
               work={work}
               workStatus={workStatus}
@@ -140,7 +138,6 @@ Issue.propTypes = {
   onClick: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,
   onReviewApplication: PropTypes.func.isRequired,
-  onReviewWork: PropTypes.func.isRequired,
   workStatus: PropTypes.oneOf([
     undefined,
     'funded',
