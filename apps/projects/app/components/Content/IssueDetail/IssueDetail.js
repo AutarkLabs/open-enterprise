@@ -244,6 +244,7 @@ const detailsCard = ({
   onReviewApplication,
   onReviewWork,
   onUpdateBounty,
+  onViewFunding,
   onRequestAssignment,
   onSubmitWork,
   onAllocateSingleBounty,
@@ -287,21 +288,20 @@ const detailsCard = ({
           </Text.Block>
         </div>
         <div style={{ ...column, flex: 0, alignItems: 'flex-end' }}>
-          {issue.workStatus !== 'fulfilled' && (
-            <ContextMenu>
-              <BountyContextMenu
-                work={issue.work}
-                workStatus={issue.workStatus}
-                requestsData={issue.requestsData}
-                onUpdateBounty={() => onUpdateBounty(issue)}
-                onAllocateSingleBounty={() => onAllocateSingleBounty(issue)}
-                onSubmitWork={() => onSubmitWork(issue)}
-                onRequestAssignment={() => onRequestAssignment(issue)}
-                onReviewApplication={() => onReviewApplication(issue)}
-                onReviewWork={() => onReviewWork(issue)}
-              />
-            </ContextMenu>
-          )}
+          <ContextMenu>
+            <BountyContextMenu
+              onAllocateSingleBounty={() => onAllocateSingleBounty(issue)}
+              onRequestAssignment={() => onRequestAssignment(issue)}
+              onReviewApplication={() => onReviewApplication(issue)}
+              onReviewWork={() => onReviewWork(issue)}
+              onSubmitWork={() => onSubmitWork(issue)}
+              onUpdateBounty={() => onUpdateBounty(issue)}
+              onViewFunding={() => onViewFunding(issue)}
+              requestsData={issue.requestsData}
+              work={issue.work}
+              workStatus={issue.workStatus}
+            />
+          </ContextMenu>
           {issue.balance > 0 && (
             <Badge
               style={{ padding: '10px', textSize: 'large', marginTop: '15px' }}
@@ -415,6 +415,8 @@ IssueDetail.propTypes = {
   onRequestAssignment: PropTypes.func.isRequired,
   onReviewApplication: PropTypes.func.isRequired,
   onReviewWork: PropTypes.func.isRequired,
+  onUpdateBounty: PropTypes.func.isRequired,
+  onViewFunding: PropTypes.func.isRequired,
   workStatus: PropTypes.oneOf([
     undefined,
     'funded',

@@ -16,6 +16,7 @@ const dynamicImport = Object.freeze({
   ReviewApplication: () => import('./ReviewApplication'),
   ReviewWork: () => import('./ReviewWork'),
   SubmitWork: () => import('./SubmitWork'),
+  ViewFunding: () => import('./ViewFunding'),
 })
 
 const PANELS = Object.keys(dynamicImport).reduce((obj, item) => {
@@ -24,7 +25,9 @@ const PANELS = Object.keys(dynamicImport).reduce((obj, item) => {
 }, {})
 
 const PanelManager = ({ activePanel = null, onClose, ...panelProps }) => {
-  const panelTitle = panelProps.title ? panelProps.title : activePanel && camel2title(activePanel)
+  const panelTitle = panelProps.title
+    ? panelProps.title
+    : activePanel && camel2title(activePanel)
   const PanelComponent = activePanel && React.lazy(dynamicImport[activePanel])
   return (
     <SidePanel
