@@ -239,10 +239,7 @@ const activities = (
 
 const deadlineDistance = date => formatDistance(new Date(date), new Date())
 
-const detailsCard = ({
-  issue,
-  onReviewApplication,
-}) => {
+const detailsCard = ({ issue }) => {
   const summaryData = {
     expLevel: issue.expLevel === undefined ? '-' : issue.expLevel,
     deadline:
@@ -284,7 +281,6 @@ const detailsCard = ({
         <div style={{ ...column, flex: 0, alignItems: 'flex-end' }}>
           <ContextMenu>
             <BountyContextMenu
-              onReviewApplication={() => onReviewApplication(issue)}
               requestsData={issue.requestsData}
               work={issue.work}
               workStatus={issue.workStatus}
@@ -326,14 +322,14 @@ const detailsCard = ({
   )
 }
 
-const EventsCard = ({ issue, onReviewApplication }) => {
-  const { reviewWork } = usePanelManagement()
+const EventsCard = ({ issue }) => {
+  const { reviewApplication, reviewWork } = usePanelManagement()
   const issueEvents = activities(
     issue,
     issue.requestsData,
     issue.workSubmissions,
     issue.fundingHistory,
-    onReviewApplication,
+    reviewApplication,
     reviewWork
   )
 
@@ -355,7 +351,7 @@ const EventsCard = ({ issue, onReviewApplication }) => {
   )
 }
 
-const IssueDetail = ({ issue, onReviewApplication }) => {
+const IssueDetail = ({ issue }) => {
   return (
     <Viewport>
       {({ below }) =>
@@ -371,7 +367,7 @@ const IssueDetail = ({ issue, onReviewApplication }) => {
               {detailsCard(issue)}
             </div>
             <div style={{ minWidth: '330px', width: '100%' }}>
-              <EventsCard issue={issue} onReviewApplication={onReviewApplication} />
+              <EventsCard issue={issue} />
             </div>
           </CardWrapper>
         ) : (
@@ -387,7 +383,7 @@ const IssueDetail = ({ issue, onReviewApplication }) => {
               {detailsCard(issue)}
             </div>
             <div style={{ maxWidth: '400px', minWidth: '350px', width: '30%' }}>
-              <EventsCard issue={issue} onReviewApplication={onReviewApplication} />
+              <EventsCard issue={issue} />
             </div>
           </CardWrapper>
         )
@@ -397,7 +393,6 @@ const IssueDetail = ({ issue, onReviewApplication }) => {
 }
 
 IssueDetail.propTypes = {
-  onReviewApplication: PropTypes.func.isRequired,
   workStatus: PropTypes.oneOf([
     undefined,
     'funded',

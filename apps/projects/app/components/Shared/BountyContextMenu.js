@@ -9,12 +9,12 @@ const BountyContextMenu = ({
   work,
   workStatus,
   requestsData,
-  onReviewApplication,
 }) => {
   const {
     allocateBounty,
     editBounty,
     requestAssignment,
+    reviewApplication,
     reviewWork,
     submitWork,
     viewFunding,
@@ -54,7 +54,7 @@ const BountyContextMenu = ({
       )}
       {workStatus === 'review-applicants' && (
         <React.Fragment>
-          <Item onClick={onReviewApplication}>
+          <Item onClick={() => reviewApplication(issue)}>
             Review Application ({requestsData.length})
           </Item>
           <Item bordered onClick={() => editBounty([issue])}>
@@ -81,7 +81,6 @@ const Item = styled(ContextMenuItem)`
 `
 
 BountyContextMenu.propTypes = {
-  onReviewApplication: PropTypes.func.isRequired,
   work: PropTypes.oneOf([ undefined, PropTypes.object ]),
   workStatus: PropTypes.oneOf([
     undefined,

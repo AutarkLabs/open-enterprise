@@ -156,32 +156,6 @@ class App extends React.PureComponent {
     // TODO: Toast feedback here maybe
   }
 
-  reviewApplication = (issue, requestIndex = 0) => {
-    this.setState((_prevState, _prevProps) => ({
-      panel: PANELS.ReviewApplication,
-      panelProps: {
-        issue,
-        requestIndex,
-        onReviewApplication: this.onReviewApplication,
-      },
-    }))
-  }
-
-  onReviewApplication = async (issue, requestIndex, approved, review) => {
-    this.closePanel()
-    // new IPFS data is old data plus state returned from the panel
-    const ipfsData = issue.requestsData[requestIndex]
-    const requestIPFSHash = await ipfsAdd({ ...ipfsData, review: review })
-
-    this.props.api.reviewApplication(
-      toHex(issue.repoId),
-      issue.number,
-      issue.requestsData[requestIndex].contributorAddr,
-      requestIPFSHash,
-      approved
-    )
-  }
-
   closePanel = () => {
     this.setState({ panel: null, panelProps: null })
   }
@@ -296,7 +270,6 @@ class App extends React.PureComponent {
                     onRemoveProject={this.removeProject}
                     activeIndex={activeIndex}
                     changeActiveIndex={this.changeActiveIndex}
-                    onReviewApplication={this.reviewApplication}
                     setIssueDetail={this.setIssueDetail}
                     issueDetail={issueDetail}
                   />

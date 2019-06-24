@@ -27,7 +27,6 @@ class Issues extends React.PureComponent {
       event: PropTypes.string,
     }),
     issueDetail: PropTypes.bool.isRequired,
-    onReviewApplication: PropTypes.func.isRequired,
     setIssueDetail: PropTypes.func.isRequired,
   }
 
@@ -342,10 +341,6 @@ class Issues extends React.PureComponent {
   }
 
   renderCurrentIssue = currentIssue => {
-    const {
-      onReviewApplication,
-    } = this.props
-
     currentIssue.repository = {
       name: currentIssue.repo,
       id: currentIssue.repoId,
@@ -354,12 +349,7 @@ class Issues extends React.PureComponent {
 
     const currentIssueShaped = this.shapeIssues([currentIssue])[0]
 
-    return (
-      <IssueDetail
-        issue={currentIssueShaped}
-        onReviewApplication={onReviewApplication}
-      />
-    )
+    return <IssueDetail issue={currentIssueShaped} />
   }
 
   /*
@@ -412,11 +402,7 @@ class Issues extends React.PureComponent {
       return <Unauthorized onLogin={this.props.onLogin} />
     }
 
-    const {
-      projects,
-      onReviewApplication,
-      issueDetail,
-    } = this.props
+    const { projects, issueDetail } = this.props
 
     const { currentIssue, filters } = this.state
 
@@ -497,7 +483,6 @@ class Issues extends React.PureComponent {
                             {...issue}
                             onClick={this.handleIssueClick}
                             onSelect={this.handleIssueSelection}
-                            onReviewApplication={onReviewApplication}
                           />
                         )
                       })}

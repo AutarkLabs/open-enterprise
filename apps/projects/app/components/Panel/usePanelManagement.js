@@ -36,6 +36,13 @@ const usePanelManagement = () => {
       setActivePanel(PANELS.RequestAssignment)
       setPanelProps({ issue })
     },
+    reviewApplication: (issue, requestIndex = 0) => {
+      setActivePanel(PANELS.ReviewApplication)
+      setPanelProps({
+        issue,
+        requestIndex,
+      })
+    },
     reviewWork: (issue, index = 0) => {
       setActivePanel(PANELS.ReviewWork)
       setPanelProps({ issue, index })
