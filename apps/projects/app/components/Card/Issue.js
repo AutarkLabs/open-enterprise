@@ -45,7 +45,6 @@ const Issue = ({
   onSelect,
   onSubmitWork,
   onReviewApplication,
-  onUpdateBounty,
   onReviewWork,
   ...issue
 }) => {
@@ -82,7 +81,6 @@ const Issue = ({
               onReviewApplication={() => onReviewApplication(issue)}
               onReviewWork={() => onReviewWork(issue)}
               onSubmitWork={() => onSubmitWork(issue)}
-              onUpdateBounty={() => onUpdateBounty(issue)}
               requestsData={requestsData}
               work={work}
               workStatus={workStatus}
@@ -145,7 +143,6 @@ Issue.propTypes = {
   onSelect: PropTypes.func.isRequired,
   onSubmitWork: PropTypes.func.isRequired,
   onReviewApplication: PropTypes.func.isRequired,
-  onUpdateBounty: PropTypes.func.isRequired,
   onReviewWork: PropTypes.func.isRequired,
   workStatus: PropTypes.oneOf([
     undefined,

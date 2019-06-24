@@ -156,17 +156,6 @@ class App extends React.PureComponent {
     // TODO: Toast feedback here maybe
   }
 
-  updateBounty = issues => {
-    this.setState((_prevState, _prevProps) => ({
-      panel: PANELS.FundIssues,
-      panelProps: {
-        title: 'Update Funding',
-        issues,
-        mode: 'update',
-      },
-    }))
-  }
-
   submitWork = issue => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.SubmitWork,
@@ -347,7 +336,6 @@ class App extends React.PureComponent {
                       this.props.tokens !== undefined ? this.props.tokens : []
                     }
                     onRemoveProject={this.removeProject}
-                    onUpdateBounty={this.updateBounty}
                     onSubmitWork={this.submitWork}
                     activeIndex={activeIndex}
                     changeActiveIndex={this.changeActiveIndex}

@@ -30,7 +30,6 @@ class Issues extends React.PureComponent {
     onReviewApplication: PropTypes.func.isRequired,
     onReviewWork: PropTypes.func.isRequired,
     onSubmitWork: PropTypes.func.isRequired,
-    onUpdateBounty: PropTypes.func.isRequired,
     setIssueDetail: PropTypes.func.isRequired,
   }
 
@@ -62,10 +61,6 @@ class Issues extends React.PureComponent {
       ] = true
       this.setState({ filters })
     }
-  }
-
-  handleUpdateBounty = issue => {
-    this.props.onUpdateBounty([issue])
   }
 
   deselectAllIssues = () => {
@@ -368,7 +363,6 @@ class Issues extends React.PureComponent {
         issue={currentIssueShaped}
         onReviewApplication={onReviewApplication}
         onSubmitWork={onSubmitWork}
-        onUpdateBounty={this.handleUpdateBounty}
         onReviewWork={onReviewWork}
       />
     )
@@ -513,7 +507,6 @@ class Issues extends React.PureComponent {
                             onSelect={this.handleIssueSelection}
                             onReviewApplication={onReviewApplication}
                             onSubmitWork={onSubmitWork}
-                            onUpdateBounty={this.handleUpdateBounty}
                             onReviewWork={onReviewWork}
                           />
                         )

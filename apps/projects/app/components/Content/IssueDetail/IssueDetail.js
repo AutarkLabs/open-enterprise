@@ -242,7 +242,6 @@ const detailsCard = ({
   issue,
   onReviewApplication,
   onReviewWork,
-  onUpdateBounty,
   onSubmitWork,
 }) => {
   const summaryData = {
@@ -289,7 +288,6 @@ const detailsCard = ({
               onReviewApplication={() => onReviewApplication(issue)}
               onReviewWork={() => onReviewWork(issue)}
               onSubmitWork={() => onSubmitWork(issue)}
-              onUpdateBounty={() => onUpdateBounty(issue)}
               requestsData={issue.requestsData}
               work={issue.work}
               workStatus={issue.workStatus}
@@ -404,7 +402,6 @@ IssueDetail.propTypes = {
   onSubmitWork: PropTypes.func.isRequired,
   onReviewApplication: PropTypes.func.isRequired,
   onReviewWork: PropTypes.func.isRequired,
-  onUpdateBounty: PropTypes.func.isRequired,
   workStatus: PropTypes.oneOf([
     undefined,
     'funded',

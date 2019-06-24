@@ -9,13 +9,12 @@ const BountyContextMenu = ({
   work,
   workStatus,
   requestsData,
-  onUpdateBounty,
   onSubmitWork,
   onReviewApplication,
   onReviewWork,
 }) => {
 
-  const { allocateBounty, requestAssignment, viewFunding } = usePanelManagement()
+  const { allocateBounty, editBounty, requestAssignment, viewFunding } = usePanelManagement()
 
   return (
     <React.Fragment>
@@ -43,7 +42,7 @@ const BountyContextMenu = ({
           <Item onClick={() => requestAssignment(issue)}>
             Request Assignment
           </Item>
-          <Item bordered onClick={onUpdateBounty}>
+          <Item bordered onClick={() => editBounty([issue])}>
             Update Funding
           </Item>
           <Item onClick={() => viewFunding(issue)}>View Funding Proposal</Item>
@@ -54,7 +53,7 @@ const BountyContextMenu = ({
           <Item onClick={onReviewApplication}>
             Review Application ({requestsData.length})
           </Item>
-          <Item bordered onClick={onUpdateBounty}>
+          <Item bordered onClick={() => editBounty([issue])}>
             Update Funding
           </Item>
           <Item onClick={() => viewFunding(issue)}>View Funding Proposal</Item>
@@ -81,7 +80,6 @@ BountyContextMenu.propTypes = {
   onSubmitWork: PropTypes.func.isRequired,
   onReviewApplication: PropTypes.func.isRequired,
   onReviewWork: PropTypes.func.isRequired,
-  onUpdateBounty: PropTypes.func.isRequired,
   work: PropTypes.oneOf([ undefined, PropTypes.object ]),
   workStatus: PropTypes.oneOf([
     undefined,

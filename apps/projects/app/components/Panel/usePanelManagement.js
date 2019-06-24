@@ -24,6 +24,14 @@ const usePanelManagement = () => {
         allIssues,
       })
     },
+    editBounty: issues => {
+      setActivePanel(PANELS.FundIssues)
+      setPanelProps({
+        title: 'Update Funding',
+        issues,
+        mode: 'update',
+      })
+    },
     requestAssignment: issue => {
       setActivePanel(PANELS.RequestAssignment)
       setPanelProps({ issue })
