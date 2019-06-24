@@ -61,6 +61,10 @@ const usePanelManagement = () => {
       setActivePanel(PANELS.NewProject)
       setPanelProps({ reposAlreadyAdded })
     },
+    submitWork: issue => {
+      setActivePanel(PANELS.SubmitWork)
+      setPanelProps({ issue })
+    },
     viewFunding: issue => {
       const fundingEventId = issue.id // FIXME: what attribute links issues from the same funding event?
       setActivePanel(PANELS.ViewFunding)

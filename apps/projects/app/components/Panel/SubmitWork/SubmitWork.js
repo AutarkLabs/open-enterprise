@@ -7,6 +7,10 @@ import { Checkbox, Text, TextInput, theme, Info, SafeLink } from '@aragon/ui'
 import { Form, FormField, DescriptionInput } from '../../Form'
 import { IconGitHub } from '../../Shared'
 import useGithubAuth from '../../../hooks/useGithubAuth'
+import { useAragonApi } from '@aragon/api-react'
+import { usePanelManagement } from '../../Panel'
+import { ipfsAdd } from '../../../utils/ipfs-helpers'
+import { toHex } from '../../../utils/web3-utils'
 
 class SubmitWork extends React.Component {
   static propTypes = {
@@ -146,11 +150,27 @@ class SubmitWork extends React.Component {
   }
 }
 
+const onSubmitWork = ({ closePanel, submitWork }) => async (state, issue) => {
+  closePanel()
+  const hash = await ipfsAdd(state)
+  submitWork(toHex(issue.repoId), issue.number, hash)
+}
+
 // TODO: move entire component to functional component
 // the following was a quick way to allow us to use hooks
 const SubmitWorkWrap = props => {
   const { githubCurrentUser } = useGithubAuth()
-  return <SubmitWork githubCurrentUser={githubCurrentUser} {...props} />
+  const { closePanel } = usePanelManagement()
+  const {
+    api: { submitWork }
+  } = useAragonApi()
+  return (
+    <SubmitWork
+      githubCurrentUser={githubCurrentUser}
+      onSubmitWork={onSubmitWork({ closePanel, submitWork })}
+      {...props}
+    />
+  )
 }
 
 const AckText = styled(Text)`

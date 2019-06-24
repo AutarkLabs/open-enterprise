@@ -242,7 +242,6 @@ const detailsCard = ({
   issue,
   onReviewApplication,
   onReviewWork,
-  onSubmitWork,
 }) => {
   const summaryData = {
     expLevel: issue.expLevel === undefined ? '-' : issue.expLevel,
@@ -287,7 +286,6 @@ const detailsCard = ({
             <BountyContextMenu
               onReviewApplication={() => onReviewApplication(issue)}
               onReviewWork={() => onReviewWork(issue)}
-              onSubmitWork={() => onSubmitWork(issue)}
               requestsData={issue.requestsData}
               work={issue.work}
               workStatus={issue.workStatus}
@@ -399,7 +397,6 @@ const IssueDetail = issue => {
 }
 
 IssueDetail.propTypes = {
-  onSubmitWork: PropTypes.func.isRequired,
   onReviewApplication: PropTypes.func.isRequired,
   onReviewWork: PropTypes.func.isRequired,
   workStatus: PropTypes.oneOf([

@@ -156,22 +156,6 @@ class App extends React.PureComponent {
     // TODO: Toast feedback here maybe
   }
 
-  submitWork = issue => {
-    this.setState((_prevState, _prevProps) => ({
-      panel: PANELS.SubmitWork,
-      panelProps: {
-        onSubmitWork: this.onSubmitWork,
-        issue,
-      },
-    }))
-  }
-
-  onSubmitWork = async (state, issue) => {
-    this.closePanel()
-    const hash = await ipfsAdd(state)
-    this.props.api.submitWork(toHex(issue.repoId), issue.number, hash)
-  }
-
   reviewApplication = (issue, requestIndex = 0) => {
     this.setState((_prevState, _prevProps) => ({
       panel: PANELS.ReviewApplication,
@@ -336,7 +320,6 @@ class App extends React.PureComponent {
                       this.props.tokens !== undefined ? this.props.tokens : []
                     }
                     onRemoveProject={this.removeProject}
-                    onSubmitWork={this.submitWork}
                     activeIndex={activeIndex}
                     changeActiveIndex={this.changeActiveIndex}
                     onReviewApplication={this.reviewApplication}
