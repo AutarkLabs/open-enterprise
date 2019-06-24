@@ -92,6 +92,7 @@ contract Projects is IsContract, AragonApp {
     bytes32 public constant REMOVE_REPO_ROLE =  keccak256("REMOVE_REPO_ROLE");
     bytes32 public constant REVIEW_APPLICATION_ROLE = keccak256("REVIEW_APPLICATION_ROLE");
     bytes32 public constant WORK_REVIEW_ROLE = keccak256("WORK_REVIEW_ROLE");
+    bytes32 public constant FUND_OPEN_ISSUES_ROLE = keccak256("FUND_OPEN_ISSUES_ROLE");
     string private constant ERROR_VAULT_NOT_CONTRACT = "PROJECTS_VAULT_NOT_CONTRACT";
     string private constant ERROR_STANDARD_BOUNTIES_NOT_CONTRACT = "STANDARD_BOUNTIES_NOT_CONTRACT";
 
@@ -171,6 +172,8 @@ contract Projects is IsContract, AragonApp {
     event SubmissionAccepted(uint256 submissionNumber, bytes32 repoId, uint256 issueNumber);
     // Fired when a reviewer rejects a submission
     event SubmissionRejected(uint256 submissionNumber, bytes32 repoId, uint256 issueNumber);
+    // Fired when a bounty is opened up to work submissions from anyone
+    event AwaitingSubmissions(bytes32 repoId, uint256 issueNumber);
     event BountyTest(uint256 id);
 
 ////////////////
@@ -405,7 +408,7 @@ contract Projects is IsContract, AragonApp {
     {
         Issue storage issue = repos[_repoId].issues[_issueNumber];
         require(!issue.fulfilled,"BOUNTY_FULFILLED");
-        require(msg.sender == issue.assignee, "USER_NOT_ASSIGNED");
+        require(msg.sender == issue.assignee || issue.assignee == address(-1), "USER_NOT_ASSIGNED");
         address[] memory submitter = new address[](1);
         submitter[0] = msg.sender;
         relayer.metaFulfillBounty(
@@ -498,6 +501,7 @@ contract Projects is IsContract, AragonApp {
      * @param _tokenTypes array of currency types: 0=ETH, 20=ERC20
      * @param _tokenContracts an array of token contracts
      * @param _ipfsAddresses a string of ipfs addresses
+     * @param _description parsed and display to user when this function is forwarded
      */
     function addBounties(
         bytes32[] _repoIds,
@@ -536,44 +540,56 @@ contract Projects is IsContract, AragonApp {
             );
         }
     }
-
-    function _issueBounty(
-        string _ipfsHash,
-        uint256 _deadline,
-        address _tokenContract,
-        uint256 _tokenType,
-        uint256 _bountySize
-    ) internal returns (uint256 bountyId)
+    
+    /**
+     * @notice Fund issues open to submissions from anyone: `_description`
+     * @param _repoIds The ids of the repos in the projects registry
+     * @param _issueNumbers an array of bounty indexes
+     * @param _bountySizes an array of bounty sizes
+     * @param _deadlines an array of bounty deadlines
+     * @param _tokenTypes array of currency types: 0=ETH, 20=ERC20
+     * @param _tokenContracts an array of token contracts
+     * @param _ipfsAddresses a string of ipfs addresses
+     * @param _description parsed and display to user when this function is forwarded
+     */
+    function addBountiesNoAssignment(
+        bytes32[] _repoIds,
+        uint256[] _issueNumbers,
+        uint256[] _bountySizes,
+        uint256[] _deadlines,
+        uint256[] _tokenTypes,
+        address[] _tokenContracts,
+        string _ipfsAddresses,
+        string _description
+    ) public payable auth(FUND_OPEN_ISSUES_ROLE)
     {
-        require(_tokenType != 721);
-        address[] memory issuers = new address[](1);
-        issuers[0] = address(this);
-        if (_tokenType != 0) {
-            vault.transfer(_tokenContract, this, _bountySize);
-            TokenApproval(_tokenContract).approve(bounties, _bountySize);
-            // Activate the bounty so it can be fulfilled
-            bountyId = bounties.issueAndContribute(
-                address(this),      // address payable _sender
-                issuers,            // address payable [] memory _issuers
-                issuers,            // address [] memory _approvers
-                _ipfsHash,          // string memory _data
-                _deadline,          // uint _deadline
-                _tokenContract,     // address _token
-                _tokenType,         // uint _tokenVersion
-                _bountySize         // uint _depositAmount
+        string memory ipfsHash;
+        uint standardBountyId;
+
+        for (uint i = 0; i < _bountySizes.length; i++) {
+            ipfsHash = getHash(_ipfsAddresses, i);
+
+            // submit the bounty to the StandardBounties contract
+            standardBountyId = _issueBounty(
+                ipfsHash,
+                _deadlines[i],
+                _tokenContracts[i],
+                _tokenTypes[i],
+                _bountySizes[i]
             );
-        } else {
-            bountyId = bounties.issueAndContribute.value(_bountySize)(
-                address(this),      // address payable _sender
-                issuers,            // address payable [] memory _issuers
-                issuers,            // address [] memory _approvers
-                _ipfsHash,          // string memory _data
-                _deadline,          // uint _deadline
-                _tokenContract,     // address _token
-                _tokenType,         // uint _tokenVersion
-                _bountySize         // uint _depositAmount
+
+            //Add bounty to local registry
+            _addBounty(
+                _repoIds[i],
+                _issueNumbers[i],
+                standardBountyId,
+                _bountySizes[i]
             );
+
+            repos[_repoIds[i]].issues[_issueNumbers[i]].assignee = address(-1);
+            emit AwaitingSubmissions(_repoIds[i], _issueNumbers[i]);
         }
+
     }
 
     /**
@@ -716,6 +732,45 @@ contract Projects is IsContract, AragonApp {
     {
         settings.expMultipliers.push(_multiplier);
         settings.expLevels.push(_description);
+    }
+
+    function _issueBounty(
+        string _ipfsHash,
+        uint256 _deadline,
+        address _tokenContract,
+        uint256 _tokenType,
+        uint256 _bountySize
+    ) internal returns (uint256 bountyId)
+    {
+        require(_tokenType != 721);
+        address[] memory issuers = new address[](1);
+        issuers[0] = address(this);
+        if (_tokenType != 0) {
+            vault.transfer(_tokenContract, this, _bountySize);
+            TokenApproval(_tokenContract).approve(bounties, _bountySize);
+            // Activate the bounty so it can be fulfilled
+            bountyId = bounties.issueAndContribute(
+                address(this),      // address payable _sender
+                issuers,            // address payable [] memory _issuers
+                issuers,            // address [] memory _approvers
+                _ipfsHash,          // string memory _data
+                _deadline,          // uint _deadline
+                _tokenContract,     // address _token
+                _tokenType,         // uint _tokenVersion
+                _bountySize         // uint _depositAmount
+            );
+        } else {
+            bountyId = bounties.issueAndContribute.value(_bountySize)(
+                address(this),      // address payable _sender
+                issuers,            // address payable [] memory _issuers
+                issuers,            // address [] memory _approvers
+                _ipfsHash,          // string memory _data
+                _deadline,          // uint _deadline
+                _tokenContract,     // address _token
+                _tokenType,         // uint _tokenVersion
+                _bountySize         // uint _depositAmount
+            );
+        }
     }
 
     function _addBounty(
