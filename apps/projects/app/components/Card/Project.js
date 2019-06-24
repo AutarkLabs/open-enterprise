@@ -12,6 +12,8 @@ import {
   theme,
 } from '@aragon/ui'
 import { BASE_CARD_WIDTH, CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
+import { useAragonApi } from '@aragon/api-react'
+import { toHex } from '../../utils/web3-utils'
 
 const colors = {
   iconColor: theme.textTertiary,
@@ -26,12 +28,16 @@ const Project = ({
   commits,
   url,
   contributors,
-  onRemoveProject,
   changeActiveIndex,
   screenSize,
 }) => {
+  const {
+    api: { removeRepo },
+  } = useAragonApi()
+
   const removeProject = () => {
-    onRemoveProject(repoId)
+    removeRepo(toHex(repoId))
+    // TODO: Toast feedback here maybe
   }
 
   const clickMenu = e => e.stopPropagation()

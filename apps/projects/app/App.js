@@ -151,11 +151,6 @@ class App extends React.PureComponent {
     this.setState({ activeIndex })
   }
 
-  removeProject = project => {
-    this.props.api.removeRepo(toHex(project))
-    // TODO: Toast feedback here maybe
-  }
-
   closePanel = () => {
     this.setState({ panel: null, panelProps: null })
   }
@@ -267,7 +262,6 @@ class App extends React.PureComponent {
                     tokens={
                       this.props.tokens !== undefined ? this.props.tokens : []
                     }
-                    onRemoveProject={this.removeProject}
                     activeIndex={activeIndex}
                     changeActiveIndex={this.changeActiveIndex}
                     setIssueDetail={this.setIssueDetail}
