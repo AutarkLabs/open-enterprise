@@ -1,6 +1,5 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import BigNumber from 'bignumber.js'
 import { ApolloProvider } from 'react-apollo'
 
 import { useAragonApi } from '@aragon/api-react'
@@ -20,7 +19,7 @@ import {
   NewProjectButton,
 } from './components/App'
 import { Issues, Overview, Settings } from './components/Content'
-import PanelManager, { PANELS, PanelContext } from './components/Panel'
+import PanelManager, { PanelContext } from './components/Panel'
 
 import { IdentityProvider } from './components/Shared/IdentityManager'
 import {
@@ -30,8 +29,6 @@ import {
 
 import useGithubAuth from './hooks/useGithubAuth'
 import { getToken, getURLParam, githubPopup, STATUS } from './utils/github'
-import { ipfsAdd } from './utils/ipfs-helpers'
-import { toHex } from './utils/web3-utils'
 
 const ASSETS_URL = './aragon-ui'
 
