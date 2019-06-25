@@ -267,6 +267,7 @@ contract PlanningKit is KitBase {
 
         // Projects permissions:
         acl.createPermission(root, projects, projects.FUND_ISSUES_ROLE(), voting);
+        acl.createPermission(root, projects, projects.REMOVE_ISSUES_ROLE(), voting);
         acl.createPermission(voting, projects, projects.ADD_REPO_ROLE(), voting);
         acl.createPermission(voting, projects, projects.CHANGE_SETTINGS_ROLE(), voting);
         acl.createPermission(dotVoting, projects, projects.CURATE_ISSUES_ROLE(), voting);

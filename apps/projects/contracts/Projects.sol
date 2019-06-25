@@ -59,6 +59,20 @@ interface Bounties {
         uint _approverId,
         uint[] _tokenAmounts
     ) external;
+
+    function drainBounty(
+        address _sender,
+        uint _bountyId,
+        uint _issuerId,
+        uint[] _amounts
+    ) external;
+    
+    function changeDeadline(
+        address _sender,
+        uint _bountyId,
+        uint _issuerId,
+        uint _deadline
+    ) external;
 }
 
 interface Relayer {
@@ -71,8 +85,9 @@ interface Relayer {
     ) external;
 }
 
-interface TokenApproval {
+interface ERC20Token {
     function approve(address _spender, uint256 _value) external returns (bool success);
+    function transfer(address to, uint tokens) external returns (bool success);
 }
 
 
@@ -86,6 +101,7 @@ contract Projects is IsContract, AragonApp {
     WorkSubmission[] workSubmissions;
     // Auth roles
     bytes32 public constant FUND_ISSUES_ROLE =  keccak256("FUND_ISSUES_ROLE");
+    bytes32 public constant REMOVE_ISSUES_ROLE = keccak256("REMOVE_ISSUES_ROLE");
     bytes32 public constant ADD_REPO_ROLE = keccak256("ADD_REPO_ROLE");
     bytes32 public constant CHANGE_SETTINGS_ROLE =  keccak256("CHANGE_SETTINGS_ROLE");
     bytes32 public constant CURATE_ISSUES_ROLE = keccak256("CURATE_ISSUES_ROLE");
@@ -95,6 +111,10 @@ contract Projects is IsContract, AragonApp {
     bytes32 public constant FUND_OPEN_ISSUES_ROLE = keccak256("FUND_OPEN_ISSUES_ROLE");
     string private constant ERROR_VAULT_NOT_CONTRACT = "PROJECTS_VAULT_NOT_CONTRACT";
     string private constant ERROR_STANDARD_BOUNTIES_NOT_CONTRACT = "STANDARD_BOUNTIES_NOT_CONTRACT";
+    string private constant ERROR_LENGTH_EXCEEDED = "LENGTH_EXCEEDED";
+    string private constant ERROR_LENGTH_MISMATCH = "LENGTH_MISMATCH";
+    string private constant ERROR_BOUNTY_FULFILLED = "BOUNTY_FULFILLED";
+    string private constant ERROR_BOUNTY_REMOVED = "BOUNTY_REMOVED";
 
     // The entries in the repos registry.
     mapping(bytes32 => Repo) private repos;
@@ -138,6 +158,7 @@ contract Projects is IsContract, AragonApp {
         uint256 number; // May be redundant tracking this
         bool hasBounty;
         bool fulfilled;
+        address tokenContract;
         uint256 bountySize;
         uint256 priority;
         address bountyWallet; // Not sure if we'll have a way to "retrieve" this value from status open bounties
@@ -158,6 +179,8 @@ contract Projects is IsContract, AragonApp {
     event RepoUpdated(bytes32 indexed repoId, uint newIndex);
     // Fired when a bounty is added to a repo
     event BountyAdded(bytes32 repoId, uint256 issueNumber, uint256 bountySize);
+    // Fired when a bounty is removed
+    event BountyRemoved(bytes32 repoId, uint256 issueNumber, uint256 oldBountySize);
     // Fired when an issue is curated
     event IssueCurated(bytes32 repoId);
     // Fired when settings are changed
@@ -536,6 +559,7 @@ contract Projects is IsContract, AragonApp {
                 _repoIds[i],
                 _issueNumbers[i],
                 standardBountyId,
+                _tokenContracts[i],
                 _bountySizes[i]
             );
         }
@@ -583,6 +607,7 @@ contract Projects is IsContract, AragonApp {
                 _repoIds[i],
                 _issueNumbers[i],
                 standardBountyId,
+                _tokenContracts[i],
                 _bountySizes[i]
             );
 
@@ -590,6 +615,24 @@ contract Projects is IsContract, AragonApp {
             emit AwaitingSubmissions(_repoIds[i], _issueNumbers[i]);
         }
 
+    }
+
+    /**
+     * @notice Remove funding from issues: `_description`
+     * @param _repoIds The ids of the Github repos in the projects registry
+     * @param _issueNumbers an array of bounty indexes
+     */
+    function removeBounties(
+        bytes32[] _repoIds,
+        uint256[] _issueNumbers
+    ) public auth(REMOVE_ISSUES_ROLE)
+    {
+        require(_repoIds.length < 256, ERROR_LENGTH_EXCEEDED);
+        require(_issueNumbers.length < 256, ERROR_LENGTH_EXCEEDED);
+        require(_repoIds.length == _issueNumbers.length, ERROR_LENGTH_MISMATCH);
+        for (uint8 i = 0; i < _issueNumbers.length; i++) {
+            _removeBounty(_repoIds[i], _issueNumbers[i]);
+        }
     }
 
     /**
@@ -743,11 +786,13 @@ contract Projects is IsContract, AragonApp {
     ) internal returns (uint256 bountyId)
     {
         require(_tokenType != 721);
+        if (_tokenType == 0)
+            require(_tokenContract == address(0));
         address[] memory issuers = new address[](1);
         issuers[0] = address(this);
         if (_tokenType != 0) {
             vault.transfer(_tokenContract, this, _bountySize);
-            TokenApproval(_tokenContract).approve(bounties, _bountySize);
+            ERC20Token(_tokenContract).approve(bounties, _bountySize);
             // Activate the bounty so it can be fulfilled
             bountyId = bounties.issueAndContribute(
                 address(this),      // address payable _sender
@@ -777,6 +822,7 @@ contract Projects is IsContract, AragonApp {
         bytes32 _repoId,
         uint256 _issueNumber,
         uint _standardBountyId,
+        address _tokenContract,
         uint256 _bountySize
     ) internal
     {
@@ -787,6 +833,7 @@ contract Projects is IsContract, AragonApp {
             _issueNumber,
             true,
             false,
+            _tokenContract,
             _bountySize,
             999,
             address(0),
@@ -802,6 +849,45 @@ contract Projects is IsContract, AragonApp {
             _issueNumber,
             _bountySize
         );
+    }
+
+    function _removeBounty(
+        bytes32 _repoId,
+        uint256 _issueNumber
+    ) internal
+    {
+        Issue storage issue = repos[_repoId].issues[_issueNumber];
+        require(issue.hasBounty, ERROR_BOUNTY_REMOVED);
+        require(!issue.fulfilled, ERROR_BOUNTY_FULFILLED);
+        uint256[] memory originalAmount = new uint256[](1);
+        originalAmount[0] = issue.bountySize;
+        bounties.drainBounty(
+            address(this),
+            issue.standardBountyId,
+            0,
+            originalAmount
+        );
+        _returnValueToVault(originalAmount[0], issue.tokenContract);
+        issue.hasBounty = false;
+        issue.bountySize = 0;
+        bounties.changeDeadline(
+            address(this),
+            issue.standardBountyId,
+            0,
+            now
+        );
+        emit BountyRemoved(
+            _repoId,
+            _issueNumber,
+            originalAmount[0]
+        );
+    }
+
+    function _returnValueToVault(uint256 _amount, address _token) internal {
+        if (_token == address(0))
+            address(vault).transfer(_amount);
+        else
+            require(ERC20Token(_token).transfer(address(vault), _amount), "Token Transfer Failed");
     }
 
     function getHash(
