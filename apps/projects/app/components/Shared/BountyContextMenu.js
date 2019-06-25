@@ -9,7 +9,7 @@ const BountyContextMenu = ({
   requestsData,
   onAllocateSingleBounty,
   onUpdateBounty,
-  onViewBounty,
+  onViewFunding,
   onSubmitWork,
   onRequestAssignment,
   onReviewApplication,
@@ -22,7 +22,7 @@ const BountyContextMenu = ({
     {workStatus === 'in-progress' && (
       <React.Fragment>
         <Item onClick={onSubmitWork}>Submit Work</Item>
-        <Item bordered onClick={onViewBounty}>
+        <Item bordered onClick={onViewFunding}>
           View Funding Proposal
         </Item>
       </React.Fragment>
@@ -30,7 +30,7 @@ const BountyContextMenu = ({
     {workStatus === 'review-work' && (
       <React.Fragment>
         <Item onClick={onReviewWork}>Review Work</Item>
-        <Item bordered onClick={onViewBounty}>
+        <Item bordered onClick={onViewFunding}>
           View Funding Proposal
         </Item>
       </React.Fragment>
@@ -41,7 +41,7 @@ const BountyContextMenu = ({
         <Item bordered onClick={onUpdateBounty}>
           Update Funding
         </Item>
-        <Item onClick={onViewBounty}>View Funding Proposal</Item>
+        <Item onClick={onViewFunding}>View Funding Proposal</Item>
       </React.Fragment>
     )}
     {workStatus === 'review-applicants' && (
@@ -52,11 +52,11 @@ const BountyContextMenu = ({
         <Item bordered onClick={onUpdateBounty}>
           Update Funding
         </Item>
-        <Item onClick={onViewBounty}>View Funding Proposal</Item>
+        <Item onClick={onViewFunding}>View Funding Proposal</Item>
       </React.Fragment>
     )}
     {workStatus === 'fulfilled' && (
-      <Item onClick={onViewBounty}>View Funding Proposal</Item>
+      <Item onClick={onViewFunding}>View Funding Proposal</Item>
     )}
   </React.Fragment>
 )
@@ -78,7 +78,7 @@ BountyContextMenu.propTypes = {
   onReviewApplication: PropTypes.func.isRequired,
   onReviewWork: PropTypes.func.isRequired,
   onUpdateBounty: PropTypes.func.isRequired,
-  onViewBounty: PropTypes.func,
+  onViewFunding: PropTypes.func.isRequired,
   work: PropTypes.oneOf([ undefined, PropTypes.object ]),
   workStatus: PropTypes.oneOf([
     undefined,
@@ -88,15 +88,6 @@ BountyContextMenu.propTypes = {
     'review-work',
     'fulfilled',
   ]),
-}
-
-BountyContextMenu.defaultProps = {
-  onViewBounty: () => {
-    console.log(
-      '%c "View Funding Proposal" is coming soon!',
-      `color: ${theme.accent}; font-size: 2em;`
-    )
-  },
 }
 
 export default BountyContextMenu
