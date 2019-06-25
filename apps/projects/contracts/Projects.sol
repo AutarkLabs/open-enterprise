@@ -66,7 +66,7 @@ interface Bounties {
         uint _issuerId,
         uint[] _amounts
     ) external;
-    
+
     function changeDeadline(
         address _sender,
         uint _bountyId,
@@ -564,7 +564,7 @@ contract Projects is IsContract, AragonApp {
             );
         }
     }
-    
+
     /**
      * @notice Fund issues open to submissions from anyone: `_description`
      * @param _repoIds The ids of the repos in the projects registry
@@ -621,10 +621,13 @@ contract Projects is IsContract, AragonApp {
      * @notice Remove funding from issues: `_description`
      * @param _repoIds The ids of the Github repos in the projects registry
      * @param _issueNumbers an array of bounty indexes
+     * @param _description Utilized when forwarded to give background to the
+     *                     issues up for removal
      */
     function removeBounties(
         bytes32[] _repoIds,
-        uint256[] _issueNumbers
+        uint256[] _issueNumbers,
+        string _description
     ) public auth(REMOVE_ISSUES_ROLE)
     {
         require(_repoIds.length < 256, ERROR_LENGTH_EXCEEDED);
@@ -636,15 +639,22 @@ contract Projects is IsContract, AragonApp {
     }
 
     /**
-     * @notice Issue curation: `description`
-     * @param description The description of the issue curation
+     * @notice Issue curation: `_description`
+     * @dev curateIssues(): This function conforms to the upcoming
+     *                      specId 2 forwarder interface
+     *                      and it is meant to be forwarded to a dot
+     *                      voting app instance or another voting app
+     *                      that utilizes dynamic forwarding.
+     *                      The unused parameters are in place to conform
+     *                      to the above specification.
+     * @param _description The description of the issue curation
      */
     function curateIssues(
         address[] /*unused_Addresses*/,
         uint256[] issuePriorities,
         uint256[] issueDescriptionIndices,
         string /* unused_issueDescriptions*/,
-        string description,
+        string _description,
         uint256[] issueRepos,
         uint256[] issueNumbers,
         uint256 /* unused_curationId */
@@ -715,7 +725,7 @@ contract Projects is IsContract, AragonApp {
         status = issue.assignmentRequests[applicant].status;
     }
 
-        /**
+    /**
      * @notice Returns Applicant array length
      * @param _repoId the repo id of the issue
      * @param _issueNumber the issue up for assignmen
@@ -753,6 +763,10 @@ contract Projects is IsContract, AragonApp {
 // Internal functions
 ///////////////////////
 
+    /**
+     * @notice update bounty setting values
+     * @dev _changeBountySettings(): update app settings by changing contract setting state
+     */
     function _changeBountySettings(
         uint256 _baseRate,
         uint256 _bountyDeadline,
@@ -768,6 +782,11 @@ contract Projects is IsContract, AragonApp {
         emit BountySettingsChanged();
     }
 
+    /**
+     * @notice create a new experience level containing the multiplier and description
+     * @dev _addExperienceLevel():  Push new entries into the expMultiplier and expLevel
+     *                              arrays
+     */
     function _addExperienceLevel(
         uint _multiplier,
         bytes32 _description
@@ -777,6 +796,12 @@ contract Projects is IsContract, AragonApp {
         settings.expLevels.push(_description);
     }
 
+    /**
+     * @notice passes provided info to the linked Standard Bounties contract
+     * @dev _issueBounty(): There are two forms of the issueAndContribute call.
+     *                      The first is used if an ERC20 token is the bounty currency
+     *                      The second is used if ETH is the bounty currency
+     */
     function _issueBounty(
         string _ipfsHash,
         uint256 _deadline,
@@ -818,6 +843,12 @@ contract Projects is IsContract, AragonApp {
         }
     }
 
+    /**
+     * @notice internal function that adds the bounty info to contract state
+     * @dev _addBounty():   Creates a new Issue instance in the specified Repo
+     *                      and initializes the the state parameters that aren't
+     *                      passed in
+     */
     function _addBounty(
         bytes32 _repoId,
         uint256 _issueNumber,
@@ -851,6 +882,15 @@ contract Projects is IsContract, AragonApp {
         );
     }
 
+    /**
+     * @notice remove bounty from StandardBounties and local registry
+     * @dev _removeBounty():    First transfers the bounty value from
+     *                          the StandardBounties registry back
+     *                          to the Project's integrated vault.
+     *                          Next resets the issue's contract state.
+     * @param _repoId the repo id of the issue
+     * @param _issueNumber the issue up for assignment
+     */
     function _removeBounty(
         bytes32 _repoId,
         uint256 _issueNumber
@@ -890,6 +930,15 @@ contract Projects is IsContract, AragonApp {
             require(ERC20Token(_token).transfer(address(vault), _amount), "Token Transfer Failed");
     }
 
+    /**
+     * @notice parses InfoStrings for the CID hash
+     * @dev getHash():  First copies over the first 32 bytes.
+     *                  Next copies the remaining 14 bytes and
+     *                  and masks the remainder of the word
+     * @param _str The raw string to be parsed by the function
+     * @param _hashIndex The index of the hash to be parsed from
+     *                   the string of combined hashes
+     */
     function getHash(
         string _str,
         uint256 _hashIndex
@@ -902,13 +951,20 @@ contract Projects is IsContract, AragonApp {
         bytes memory strBytes = bytes(_str);
         bytes memory result = new bytes(endIndex-startIndex);
         uint256 length = endIndex - startIndex;
+        // destination in memory for the returned hash
         uint256 dest;
+        // source location in memory for the returned hash
         uint256 src;
+        // need to offset by 0x20 (32 bytes) to account for the first
+        // 32 "header" bytes
+        // then copy the first 32 bytes of the hash into the destination location
         assembly {
           dest := add(result,0x20)
           src := add(strBytes,add(0x20,startIndex))
           mstore(dest, mload(src))
         }
+        // copy the remaining 14 bytes and ensure the remaining
+        // 18 bytes of the word are set to "00" using a mask
         src += 32;
         dest += 32;
         length -= 32;
