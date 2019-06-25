@@ -85,11 +85,25 @@ class App extends React.Component {
             />
             <Button onClick={() => {
               this.props.app.getApps().subscribe(async apps => {
-                const { abi, codeAddress, proxyAddress } = apps.find(app => app.name === 'Discussions')
-                const contract = this.props.app.external(codeAddress, abi, proxyAddress)
+                const { abi, proxyAddress } = apps.find(app => app.name === 'Discussions')
+                const contract = this.props.app.external(proxyAddress, abi)
                 await contract.post('123', 'abc').toPromise()
               })
             }}>Post a discussion</Button>
+            <Button onClick={() => {
+              this.props.app.getApps().subscribe(async apps => {
+                const { abi, proxyAddress } = apps.find(app => app.name === 'Discussions')
+                const contract = this.props.app.external(proxyAddress, abi)
+                console.log('HERE')
+                contract.pastEvents().subscribe(events => {
+                  console.log('HELLOOOOO', events)
+                })
+              })
+            }}>Get discussion events</Button>
+            <Button onClick={async () => {
+              const events = await this.props.app.getForwardedActions().subscribe(events => console.log('made it here', events))
+              console.log(events, 'EVENTS')
+            }}>Get my discussion threads</Button>
           </ScrollWrapper>
 
         </AppView>

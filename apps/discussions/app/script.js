@@ -33,6 +33,14 @@ api.store(
       case 'Hide':
         newState = await handleHide(state, event)
         return newState
+      case 'CreateDiscussionThread': {
+        api.newForwardedAction(
+          event.returnValues.actionId,
+          event.returnValues._evmScript
+        )
+        newState = { ...state }
+        return newState
+      }
       default:
         return state
     }

@@ -11,6 +11,13 @@
   },
   "scripts": {
     "bootstrap": "npx lerna bootstrap --hoist",
+    "build:apps": "npm run build:app:address && npm run build:app:allocations && npm run build:app:discussions && npm run build:app:dot && npm run build:app:projects && npm run build:app:rewards",
+    "build:app:address": "lerna run build:app --scope=@tps/apps-address-book",
+    "build:app:allocations": "lerna run build:app --scope=@tps/apps-allocations",
+    "build:app:discussions": "lerna run build:app --scope=@tps/apps-discussions",
+    "build:app:dot": "lerna run build:app --scope=@tps/apps-dot-voting",
+    "build:app:projects": "lerna run build:app --scope=@tps/apps-projects",
+    "build:app:rewards": "lerna run build:app --scope=@tps/apps-rewards",
     "build:script:address": "lerna run build:script --scope=@tps/apps-address-book",
     "build:script:allocations": "lerna run build:script --scope=@tps/apps-allocations",
     "build:script:discussions": "lerna run build:script --scope=@tps/apps-discussions",
@@ -76,6 +83,7 @@
     "test": "npx lerna run test --no-bail"
   },
   "dependencies": {
+    "@aragon/api": "^1.1.0",
     "ipfs-http-client": "29.1.0",
     "rxjs": "^6.4.0",
     "rxjs-compat": "^6.4.0"

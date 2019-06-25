@@ -8,9 +8,10 @@ import "@aragon/os/contracts/common/IForwarder.sol";
 contract DiscussionApp is IForwarder, AragonApp {
     using SafeMath for uint256;
 
-    event Post(address indexed author, string postCid, string discussionId, uint postId, uint createdAt);
-    event Revise(address indexed author, string revisedPostCid, string discussionId, uint postId, uint createdAt, uint revisedAt);
-    event Hide(address indexed author, string discussionId, uint postId, uint hiddenAt);
+    event Post(address indexed author, string postCid, string discussionThreadId, uint postId, uint createdAt);
+    event Revise(address indexed author, string revisedPostCid, string discussionThreadId, uint postId, uint createdAt, uint revisedAt);
+    event Hide(address indexed author, string discussionThreadId, uint postId, uint hiddenAt);
+    event CreateDiscussionThread(uint actionId, bytes _evmScript);
 
     bytes32 constant public DISCUSSION_POSTER_ROLE = keccak256("DISCUSSION_POSTER_ROLE");
     string private constant ERROR_CAN_NOT_FORWARD = "DISCUSSIONS_CAN_NOT_FORWARD";
@@ -18,47 +19,60 @@ contract DiscussionApp is IForwarder, AragonApp {
     struct DiscussionPost {
         address author;
         string postCid;
-        string discussionId;
+        string discussionThreadId;
         uint id;
         uint createdAt;
         bool show;
         string[] revisionCids;
     }
 
+    uint discussionThreadId;
+
     mapping(address => DiscussionPost[]) public userPosts;
 
     function initialize() public onlyInit {
+        discussionThreadId = 0;
         initialized();
     }
 
-    function post(string postCid, string discussionId) external auth(DISCUSSION_POSTER_ROLE) {
+    /**
+     * @notice Create discussion post with an IPFS content hash '`postCid`'.
+     * @param postCid The IPFS content hash of the discussion post data
+     * @param discussionThreadId The thread to post this discussion to
+     */
+    function post(string postCid, string discussionThreadId) external auth(DISCUSSION_POSTER_ROLE) {
         DiscussionPost storage post;
         post.author = msg.sender;
         post.postCid = postCid;
-        post.discussionId = discussionId;
+        post.discussionThreadId = discussionThreadId;
         post.createdAt = now;
         post.show = true;
         uint postId = userPosts[msg.sender].length;
         post.id = postId;
         userPosts[msg.sender].push(post);
-        emit Post(msg.sender, postCid, discussionId, postId, now);
+        emit Post(msg.sender, postCid, discussionThreadId, postId, now);
     }
 
-    function hide(uint postId, string discussionId) external auth(DISCUSSION_POSTER_ROLE) {
+    /**
+     * @notice Hide a discussion post with ID '`postId`'.
+     * @param postId The postId to hide
+     * @param discussionThreadId The thread to hide this discussion from
+     */
+    function hide(uint postId, string discussionThreadId) external auth(DISCUSSION_POSTER_ROLE) {
         DiscussionPost storage post = userPosts[msg.sender][postId];
         require(post.author == msg.sender, "You cannot hide a post you did not author.");
         post.show = false;
-        emit Hide(msg.sender, discussionId, postId, now);
+        emit Hide(msg.sender, discussionThreadId, postId, now);
     }
 
-    function revise(string revisedPostCid, uint postId, string discussionId) external auth(DISCUSSION_POSTER_ROLE) {
+    function revise(string revisedPostCid, uint postId, string discussionThreadId) external auth(DISCUSSION_POSTER_ROLE) {
         DiscussionPost storage post = userPosts[msg.sender][postId];
         require(post.author == msg.sender, "You cannot revise a post you did not author.");
         // add the current post to the revision history
         // should we limit the number of revisions you can make to save storage?
         post.revisionCids.push(post.postCid);
         post.postCid = revisedPostCid;
-        emit Revise(msg.sender, revisedPostCid, discussionId, postId, post.createdAt, now);
+        emit Revise(msg.sender, revisedPostCid, discussionThreadId, postId, post.createdAt, now);
     }
 
     // Forwarding fns
@@ -81,6 +95,8 @@ contract DiscussionApp is IForwarder, AragonApp {
         require(canForward(msg.sender, _evmScript), ERROR_CAN_NOT_FORWARD);
         bytes memory input = new bytes(0); // TODO: Consider input for this
         address[] memory blacklist = new address[](1);
+        CreateDiscussionThread(discussionThreadId, _evmScript);
+        discussionThreadId = discussionThreadId + 1;
         runScript(_evmScript, input, blacklist);
     }
 

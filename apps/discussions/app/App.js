@@ -81,6 +81,15 @@ function App() {
           <Button mode="secondary" onClick={hide}>
             Hide post
           </Button>
+          <Button
+            mode="secondary"
+            onClick={async () => {
+              const events = await api.pastEvents('0', 'latest').toPromise()
+              console.log(events, 'VENTS')
+            }}
+          >
+            PAST EVENT
+          </Button>
         </Buttons>
       </BaseLayout>
     </Main>
