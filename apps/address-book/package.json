@@ -69,5 +69,8 @@
     "url": "https://github.com/AutarkLabs/planning-suite"
   },
   "keywords": [],
-  "license": "GPL-3.0"
+  "license": "GPL-3.0",
+  "browserslist": [
+    "last 2 Chrome versions"
+  ]
 }

@@ -120,7 +120,8 @@ class App extends React.Component {
               onClick={async () => {
                 const discussions = new Discussions(this.props.app)
                 await discussions.init()
-                await discussions.compose()
+                const discussionData = await discussions.collect()
+                console.log(discussionData, 'DISCUSSION DATA')
               }}
             >
               Do the thing!
