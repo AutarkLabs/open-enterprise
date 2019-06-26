@@ -1,4 +1,13 @@
-import { observe, SidePanel, Main, AppBar, AppView, font, breakpoint, Button } from '@aragon/ui'
+import {
+  observe,
+  SidePanel,
+  Main,
+  AppBar,
+  AppView,
+  font,
+  breakpoint,
+  Button,
+} from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { hot } from 'react-hot-loader'
@@ -6,7 +15,12 @@ import styled from 'styled-components'
 import { map } from 'rxjs/operators'
 import Entities from './Entities'
 import NewEntity from '../Panel/NewEntity'
-import { networkContextType, AppTitle, AppTitleButton } from '../../../../../shared/ui'
+import {
+  networkContextType,
+  AppTitle,
+  AppTitleButton,
+} from '../../../../../shared/ui'
+import Discussions from '../../../../discussions/app/modules'
 
 class App extends React.Component {
   static propTypes = {
@@ -66,24 +80,23 @@ class App extends React.Component {
           appBar={
             <AppBar
               endContent={
-                <AppTitleButton
-                  caption="New Entity"
-                  onClick={this.newEntity}
-                />
+                <AppTitleButton caption="New Entity" onClick={this.newEntity} />
               }
             >
-              <AppTitle title="Address Book" displayMenuButton={displayMenuButton} />
+              <AppTitle
+                title="Address Book"
+                displayMenuButton={displayMenuButton}
+              />
             </AppBar>
           }
         >
-
           <ScrollWrapper>
             <Entities
               entities={entries ? entries : []}
               onNewEntity={this.newEntity}
               onRemoveEntity={this.removeEntity}
             />
-            <Button onClick={() => {
+            {/* <Button onClick={() => {
               this.props.app.getApps().subscribe(async apps => {
                 const { abi, proxyAddress } = apps.find(app => app.name === 'Discussions')
                 const contract = this.props.app.external(proxyAddress, abi)
@@ -101,11 +114,18 @@ class App extends React.Component {
               })
             }}>Get discussion events</Button>
             <Button onClick={async () => {
-              const events = await this.props.app.getForwardedActions().subscribe(events => console.log('made it here', events))
-              console.log(events, 'EVENTS')
-            }}>Get my discussion threads</Button>
+              this.props.app.getForwardedActions().subscribe(events => console.log('made it here', events))
+            }}>Get my discussion threads</Button> */}
+            <Button
+              onClick={async () => {
+                const discussions = new Discussions(this.props.app)
+                await discussions.init()
+                await discussions.compose()
+              }}
+            >
+              Do the thing!
+            </Button>
           </ScrollWrapper>
-
         </AppView>
 
         <SidePanel
@@ -115,7 +135,6 @@ class App extends React.Component {
         >
           <NewEntity onCreateEntity={this.createEntity} />
         </SidePanel>
-
       </Main>
     )
   }

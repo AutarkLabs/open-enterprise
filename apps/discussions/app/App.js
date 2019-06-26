@@ -21,9 +21,10 @@ function App() {
     }
 
     try {
+      if (id === -1) throw new Error('must enter iD')
       const result = await ipfs.dag.put(discussionPost, {})
       const cid = result.toBaseEncodedString()
-      await api.post(cid, '123').toPromise()
+      await api.post(cid, id.toString()).toPromise()
       setText('')
     } catch (error) {
       console.error(error)
