@@ -4,12 +4,11 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { map } from 'rxjs/operators'
 
-import { AppBar, Main, SidePanel, observe, font } from '@aragon/ui'
+import { AppBar, AppView, Main, SidePanel, observe, font } from '@aragon/ui'
 import Decisions from './Decisions'
 import { hasLoadedVoteSettings } from './utils/vote-settings'
 import { NewPayoutVotePanelContent } from './components/Panels'
 import { networkContextType, AppTitle } from '../../../shared/ui'
-import AppView from './components/AppView'
 
 const initialState = {
   template: null,
@@ -72,10 +71,13 @@ class App extends React.Component {
     return (
       <Main>
         <AppView
-          padding={0}
           appBar={
             <AppBar>
-              <AppTitle title="Dot Voting" displayMenuButton={displayMenuButton} />
+              <AppTitle
+                title="Dot Voting"
+                displayMenuButton={displayMenuButton}
+                css="padding-left: 30px"
+              />
             </AppBar>
           }
         >

@@ -10,7 +10,6 @@ import {
   IconHome,
   SafeLink,
   theme,
-  breakpoint,
 } from '@aragon/ui'
 import { BASE_CARD_WIDTH, CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
 
@@ -98,13 +97,7 @@ const Project = ({
 
 const StyledCard = styled(Card)`
   display: flex;
-  ${breakpoint(
-    'small',
-    `
-    margin-bottom: 2rem;
-    `
-  )};
-  margin-bottom: 0.3rem;
+  margin-bottom: 2rem;
   margin-right: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? '0.6rem' : '2rem' };
   flex-direction: column;
   justify-content: flex-start;

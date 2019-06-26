@@ -13,7 +13,6 @@ import {
   TextInput,
   theme,
   Viewport,
-  breakpoint,
 } from '@aragon/ui'
 
 import { FieldTitle } from '../Form'
@@ -500,13 +499,7 @@ const StyledButton = styled(Button)`
 // background: url(${cross}) no-repeat 10px calc(50% - 1px);
 
 const StyledContent = styled.div`
-  ${breakpoint(
-    'small',
-    `
-    padding: 2rem;
-    `
-  )};
-  padding: 0.3rem;
+  padding: 2rem;
   display: flex;
   height: fit-content;
   width: 100%;
