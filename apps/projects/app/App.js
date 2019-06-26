@@ -19,7 +19,7 @@ import ErrorBoundary from './components/App/ErrorBoundary'
 import { Issues, Overview, Settings } from './components/Content'
 import PanelManager, { PANELS } from './components/Panel'
 
-import { IdentityProvider } from './components/Shared/IdentityManager'
+import { IdentityProvider } from '../../../shared/identity'
 import {
   REQUESTED_GITHUB_TOKEN_SUCCESS,
   REQUESTED_GITHUB_TOKEN_FAILURE,
