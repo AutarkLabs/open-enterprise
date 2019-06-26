@@ -2,19 +2,18 @@ import {
   Badge,
   ContextMenu,
   ContextMenuItem,
-  IdentityBadge,
   Table,
   TableCell,
   TableHeader,
   TableRow,
   Text,
-  theme,
 } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { Empty } from '../Card'
 import { provideNetwork } from '../../../../../shared/ui'
+import { LocalIdentityBadge } from '../../../../../shared/identity'
 
 // TODO: colors taken directly from Invision
 const ENTITY_TYPES = [
@@ -53,7 +52,7 @@ const Entities = ({ entities, network, onNewEntity, onRemoveEntity }) => {
                   >
                     {name}
                   </Text>
-                  <IdentityBadge
+                  <LocalIdentityBadge
                     networkType={network.type}
                     entity={entryAddress}
                     shorten={true}

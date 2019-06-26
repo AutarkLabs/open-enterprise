@@ -5,7 +5,6 @@ import { BigNumber } from 'bignumber.js'
 import {
   Badge,
   Button,
-  IdentityBadge,
   Info,
   SidePanelSplit,
   SidePanelSeparator,
@@ -26,6 +25,7 @@ import {
   VOTE_STATUS_SUCCESSFUL
 } from '../../utils/vote-types'
 import { isAddress } from 'web3-utils'
+import { LocalIdentityBadge } from '../../../../../shared/identity'
 
 class VotePanelContent extends React.Component {
   static propTypes = {
@@ -224,7 +224,7 @@ class VotePanelContent extends React.Component {
               <Label>Created by</Label>
             </h2>
             <Creator>
-              <IdentityBadge
+              <LocalIdentityBadge
                 networkType={network.type}
                 entity={creator}
                 shorten={true}
@@ -386,7 +386,7 @@ class VotePanelContent extends React.Component {
                       style={{ display: 'flex', justifyContent: 'flex-start' }}
                     >
                       {isAddress(option.label) ? (
-                        <IdentityBadge
+                        <LocalIdentityBadge
                           networkType={network.type}
                           entity={option.label}
                           shorten={true}

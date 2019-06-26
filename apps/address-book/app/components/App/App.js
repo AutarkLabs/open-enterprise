@@ -1,17 +1,16 @@
-import { observe, SidePanel, Main, AppBar, AppView, font, breakpoint } from '@aragon/ui'
+import { observe, SidePanel, Main, AppBar, AppView, breakpoint } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
-import { hot } from 'react-hot-loader'
 import styled from 'styled-components'
-import { map } from 'rxjs/operators'
 import Entities from './Entities'
 import NewEntity from '../Panel/NewEntity'
 import { networkContextType, AppTitle, AppTitleButton } from '../../../../../shared/ui'
+import { useAragonApi } from '@aragon/api-react'
+import { IdentityProvider } from '../../../../../shared/identity'
 
 class App extends React.Component {
   static propTypes = {
-    app: PropTypes.object.isRequired,
-    // TODO: Shape this
+    api: PropTypes.object,
     entities: PropTypes.arrayOf(PropTypes.object),
   }
 
@@ -37,12 +36,12 @@ class App extends React.Component {
   }
 
   createEntity = entity => {
-    this.props.app.addEntry(entity.address, entity.name, entity.type)
+    this.props.api.addEntry(entity.address, entity.name, entity.type)
     this.closePanel()
   }
 
   removeEntity = address => {
-    this.props.app.removeEntry(address)
+    this.props.api.removeEntry(address)
   }
 
   newEntity = () => {
@@ -55,46 +54,59 @@ class App extends React.Component {
     this.setState({ panelVisible: false })
   }
 
+  handleResolveLocalIdentity = address => {
+    return this.props.api.resolveAddressIdentity(address).toPromise()
+  }
+
+  handleShowLocalIdentityModal = address => {
+    return this.props.api
+      .requestAddressIdentityModification(address)
+      .toPromise()
+  }
+
   render() {
     const { panelVisible } = this.state
     const { entries, displayMenuButton = false } = this.props
 
     return (
       <Main>
-        <AppView
-          padding={0}
-          appBar={
-            <AppBar
-              endContent={
-                <AppTitleButton
-                  caption="New Entity"
-                  onClick={this.newEntity}
-                />
-              }
-            >
-              <AppTitle title="Address Book" displayMenuButton={displayMenuButton} />
-            </AppBar>
-          }
-        >
+        <IdentityProvider
+          onResolve={this.handleResolveLocalIdentity}
+          onShowLocalIdentityModal={this.handleShowLocalIdentityModal}>
+          <AppView
+            padding={0}
+            appBar={
+              <AppBar
+                endContent={
+                  <AppTitleButton
+                    caption="New Entity"
+                    onClick={this.newEntity}
+                  />
+                }
+              >
+                <AppTitle title="Address Book" displayMenuButton={displayMenuButton} />
+              </AppBar>
+            }
+          >
 
-          <ScrollWrapper>
-            <Entities
-              entities={entries ? entries : []}
-              onNewEntity={this.newEntity}
-              onRemoveEntity={this.removeEntity}
-            />
-          </ScrollWrapper>
+            <ScrollWrapper>
+              <Entities
+                entities={entries ? entries : []}
+                onNewEntity={this.newEntity}
+                onRemoveEntity={this.removeEntity}
+              />
+            </ScrollWrapper>
 
-        </AppView>
+          </AppView>
 
-        <SidePanel
-          title="New entity"
-          opened={panelVisible}
-          onClose={this.closePanel}
-        >
-          <NewEntity onCreateEntity={this.createEntity} />
-        </SidePanel>
-
+          <SidePanel
+            title="New entity"
+            opened={panelVisible}
+            onClose={this.closePanel}
+          >
+            <NewEntity onCreateEntity={this.createEntity} />
+          </SidePanel>
+        </IdentityProvider>
       </Main>
     )
   }
@@ -114,7 +126,7 @@ const ScrollWrapper = styled.div`
   )};
   padding: 0.3rem;
 `
-export default observe(
-  observable => observable.pipe(map(state => ({ ...state }))),
-  {}
-)(hot(module)(App))
+export default () => {
+  const { api, appState } = useAragonApi()
+  return <App api={api} {...appState} />
+}

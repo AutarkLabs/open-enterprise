@@ -19,7 +19,7 @@ const EmptyIcon = () => <img src={emptyIcon} alt="" />
 
 class Decisions extends React.Component {
   static propTypes = {
-    app: PropTypes.object.isRequired,
+    app: PropTypes.object,
   }
   constructor(props) {
     super(props)
@@ -166,7 +166,7 @@ class Decisions extends React.Component {
                 icon={<EmptyIcon />}
                 title="You do not have any dot votes."
                 text="Use the Allocations app to get started."
-                actionButton={() => <div />}
+                onActivate={() => <div />}
               />
             </div>
           )}
