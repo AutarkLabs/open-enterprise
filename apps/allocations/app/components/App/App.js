@@ -1,14 +1,15 @@
-import { Main, observe, AppBar, AppView, SidePanel } from '@aragon/ui'
+import { Main, AppBar, AppView, SidePanel } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
-import { map } from 'rxjs/operators'
 import { Accounts, Payouts } from '.'
 import { NewAccount, NewAllocation } from '../Panel'
 import { networkContextType, AppTitle, AppTitleButton } from '../../../../../shared/ui'
+import { useAragonApi } from '@aragon/api-react'
+import { IdentityProvider } from '../../../../../shared/identity'
 
-class App extends React.Component {
+class App extends React.PureComponent {
   static propTypes = {
-    app: PropTypes.object.isRequired,
+    api: PropTypes.object,
     accounts: PropTypes.arrayOf(PropTypes.object),
   }
 
@@ -38,14 +39,14 @@ class App extends React.Component {
 
   createAccount = (account) => {
     account.balance = 0
-    this.props.app.newAccount(account.description)
+    this.props.api.newAccount(account.description)
     this.closePanel()
     this.setState({})
   }
 
   submitAllocation = allocation => {
     const emptyIntArray = new Array(allocation.addresses.length).fill(0)
-    this.props.app.setDistribution(
+    this.props.api.setDistribution(
       allocation.addresses,
       emptyIntArray, //[]
       emptyIntArray, //[]
@@ -63,7 +64,7 @@ class App extends React.Component {
   }
 
   onExecutePayout = (accountId, payoutId) => {
-    this.props.app.runPayout(accountId, payoutId)
+    this.props.api.runPayout(accountId, payoutId)
   }
 
 
@@ -110,59 +111,74 @@ class App extends React.Component {
     this.setState({ panel: { visible: false } })
   }
 
+  handleResolveLocalIdentity = address => {
+    return this.props.api.resolveAddressIdentity(address).toPromise()
+  }
+
+  handleShowLocalIdentityModal = address => {
+    return this.props.api
+      .requestAddressIdentityModification(address)
+      .toPromise()
+  }
+
   render() {
     const { panel } = this.state
     const { displayMenuButton = false } = this.props
     const PanelContent = panel.content
+
     return (
       // TODO: Profile App with React.StrictMode, perf and why-did-you-update, apply memoization
       <Main>
-        <AppView
-          padding={0}
-          appBar={
-            <AppBar
-              endContent={
-                <AppTitleButton
-                  caption="New Account"
-                  onClick={this.newAccount}
-                />
+        <IdentityProvider
+          onResolve={this.handleResolveLocalIdentity}
+          onShowLocalIdentityModal={this.handleShowLocalIdentityModal}>
+          <AppView
+            padding={0}
+            appBar={
+              <AppBar
+                endContent={
+                  <AppTitleButton
+                    caption="New Account"
+                    onClick={this.newAccount}
+                  />
+                }
+              >
+                <AppTitle title="Allocations" displayMenuButton={displayMenuButton} />
+              </AppBar>
+            }
+          >
+            <Accounts
+              accounts={
+                this.props.accounts || []
               }
-            >
-              <AppTitle title="Allocations" displayMenuButton={displayMenuButton} />
-            </AppBar>
-          }
-        >
-          <Accounts
-            accounts={
-              this.props.accounts !== undefined ? this.props.accounts : []
-            }
-            onNewAccount={this.newAccount}
-            onNewAllocation={this.newAllocation}
-            app={this.props.app}
-          />
-          <Payouts
-            payouts={
-              this.props.payouts !== undefined ? this.props.payouts : []
-            }
-            executePayout={this.onExecutePayout}
-            network={this.props.network}
-            tokens={this.props.balances}
-          />
-        </AppView>
+              onNewAccount={this.newAccount}
+              onNewAllocation={this.newAllocation}
+              app={this.props.api}
+            />
+            <Payouts
+              payouts={
+                this.props.payouts || []
+              }
+              executePayout={this.onExecutePayout}
+              network={this.props.network}
+              tokens={this.props.balances}
+            />
+          </AppView>
 
-        <SidePanel
-          title={(panel.data && panel.data.heading) || ''}
-          opened={panel.visible}
-          onClose={this.closePanel}
-        >
-          {panel.content && <PanelContent {...panel.data} />}
-        </SidePanel>
+          <SidePanel
+            title={(panel.data && panel.data.heading) || ''}
+            opened={panel.visible}
+            onClose={this.closePanel}
+          >
+            {panel.content && <PanelContent {...panel.data} />}
+          </SidePanel>
+        </IdentityProvider>
       </Main>
     )
   }
 }
 
-export default observe(
-  observable => observable.pipe(map(state => ({ ...state }))),
-  {}
-)(App)
+export default () => {
+  const { api, appState } = useAragonApi()
+  return <App api={api} {...appState} />
+}
