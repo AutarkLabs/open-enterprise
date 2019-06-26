@@ -9,15 +9,12 @@ import {
   TableCell,
   Text,
   Button,
-  IdentityBadge,
-  Viewport,
   theme,
   IconCheck,
   IconCross,
   IconFundraising,
   IconTime,
   ContextMenu,
-  ContextMenuItem,
 } from '@aragon/ui'
 import { displayCurrency } from '../../utils/helpers'
 import {

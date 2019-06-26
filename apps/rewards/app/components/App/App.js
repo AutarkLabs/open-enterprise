@@ -1,7 +1,6 @@
-import { AppBar, AppView, Main, observe, TabBar, font } from '@aragon/ui'
+import { AppBar, AppView, Main, TabBar } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
-import { map } from 'rxjs/operators'
 import throttle from 'lodash.throttle'
 import { Overview, MyRewards } from '../Content'
 import PanelManager, { PANELS } from '../Panel'
@@ -13,8 +12,9 @@ import {
   millisecondsToQuarters,
   WEEK
 } from '../../../../../shared/ui/utils'
-import BigNumber from 'bignumber.js'
 import { networkContextType, AppTitle, AppTitleButton } from '../../../../../shared/ui'
+import { useAragonApi } from '@aragon/api-react'
+import { IdentityProvider } from '../../../../../shared/identity'
 
 const CONVERT_API_BASE = 'https://min-api.cryptocompare.com/data'
 const CONVERT_THROTTLE_TIME = 5000
@@ -24,7 +24,7 @@ const convertApiUrl = symbols =>
 
 class App extends React.Component {
   static propTypes = {
-    app: PropTypes.object.isRequired,
+    api: PropTypes.object,
     rewards: PropTypes.arrayOf(PropTypes.object),
     balances: PropTypes.arrayOf(PropTypes.object),
   }
@@ -89,7 +89,7 @@ class App extends React.Component {
   }, CONVERT_THROTTLE_TIME)
 
   updateRewards = async () => {
-    this.props.app.cache('requestRefresh', {
+    this.props.api.cache('requestRefresh', {
       event: 'RefreshRewards',
       returnValues: {
         userAddress: this.props.userAccount
@@ -124,14 +124,14 @@ class App extends React.Component {
         vaultBalance: '432.9 ETH',
         balances: this.props.balances,
         refTokens: this.props.refTokens,
-        app: this.props.app,
+        app: this.props.api,
         network: this.props.network,
       },
     })
   }
 
   onNewReward = async reward => {
-    let currentBlock = await this.props.app.web3Eth('getBlockNumber').toPromise()
+    let currentBlock = await this.props.api.web3Eth('getBlockNumber').toPromise()
     let startBlock = currentBlock + millisecondsToBlocks(Date.now(), reward.dateStart)
     if (!reward.isMerit) {
       switch (reward.disbursementCycle) {
@@ -161,7 +161,7 @@ class App extends React.Component {
       reward.duration = millisecondsToBlocks(reward.dateStart, reward.dateEnd)
     }
     console.log('submitting: ',reward)
-    this.props.app.newReward(
+    this.props.api.newReward(
       reward.description, //string _description
       reward.isMerit, //bool _isMerit,
       reward.referenceAsset, //address _referenceToken,
@@ -176,7 +176,7 @@ class App extends React.Component {
   }
 
   onClaimReward = reward => {
-    this.props.app.claimReward(Number(reward.rewardId))
+    this.props.api.claimReward(Number(reward.rewardId))
     this.closePanel()
   }
 
@@ -212,67 +212,81 @@ class App extends React.Component {
     this.myReward(reward)
   }
 
+  handleResolveLocalIdentity = address => {
+    return this.props.api.resolveAddressIdentity(address).toPromise()
+  }
+
+  handleShowLocalIdentityModal = address => {
+    return this.props.api
+      .requestAddressIdentityModification(address)
+      .toPromise()
+  }
+
   render() {
     const { panel, panelProps } = this.state
     const { network, displayMenuButton = false } = this.props
 
     return (
       <Main>
-        <AppView
-          appBar={
-            <AppBar
-              endContent={
-                <AppTitleButton
-                  caption="New Reward"
-                  onClick={this.newReward}
-                />
-              }
-              tabs={
-                <TabBar
-                  items={this.state.tabs}
-                  selected={this.state.selected}
-                  onSelect={this.selectTab}
-                />
-              }
-            >
-              <AppTitle title="Rewards" displayMenuButton={displayMenuButton} />
-            </AppBar>
-          }
-        >
-          { this.state.selected === 1 ? (
-            <MyRewards
-              rewards={this.props.rewards === undefined ? [] : this.props.rewards}
-              newReward={this.newReward}
-              openDetails={this.openDetailsMy}
-              network={network}
-              onClaimReward={this.onClaimReward}
-              tokens={this.props.balances}
-              convertRates={this.state.convertRates}
-            />
-          ) : (
-            <Overview
-              rewards={this.props.rewards === undefined ? [] : this.props.rewards}
-              newReward={this.newReward}
-              openDetails={this.openDetailsView}
-              network={network}
-              tokens={this.props.balances}
-              convertRates={this.state.convertRates}
-              claims={this.props.claims}
-            />
-          )}
-        </AppView>
+        <IdentityProvider
+          onResolve={this.handleResolveLocalIdentity}
+          onShowLocalIdentityModal={this.handleShowLocalIdentityModal}>
+          <AppView
+            appBar={
+              <AppBar
+                endContent={
+                  <AppTitleButton
+                    caption="New Reward"
+                    onClick={this.newReward}
+                  />
+                }
+                tabs={
+                  <TabBar
+                    items={this.state.tabs}
+                    selected={this.state.selected}
+                    onSelect={this.selectTab}
+                  />
+                }
+              >
+                <AppTitle title="Rewards" displayMenuButton={displayMenuButton} />
+              </AppBar>
+            }
+          >
+            { this.state.selected === 1 ? (
+              <MyRewards
+                rewards={this.props.rewards === undefined ? [] : this.props.rewards}
+                newReward={this.newReward}
+                openDetails={this.openDetailsMy}
+                network={network}
+                onClaimReward={this.onClaimReward}
+                tokens={this.props.balances}
+                convertRates={this.state.convertRates}
+              />
+            ) : (
+              <Overview
+                rewards={this.props.rewards === undefined ? [] : this.props.rewards}
+                newReward={this.newReward}
+                openDetails={this.openDetailsView}
+                network={network}
+                tokens={this.props.balances}
+                convertRates={this.state.convertRates}
+                claims={this.props.claims}
+              />
+            )}
+          </AppView>
 
-        <PanelManager
-          onClose={this.closePanel}
-          activePanel={panel}
-          {...panelProps}
-        />
+          <PanelManager
+            onClose={this.closePanel}
+            activePanel={panel}
+            {...panelProps}
+          />
+        </IdentityProvider>
       </Main>
     )
   }
 }
 
-export default observe(
-  observable => observable.pipe(map(state => ({ ...state }))),
-  {}
-)(App)
+export default () => {
+  const { api, appState } = useAragonApi()
+  return <App api={api} {...appState} />
+}
