@@ -74,12 +74,7 @@ const Issue = ({
             {repo} #{number}
           </Text>
           <ContextMenu>
-            <BountyContextMenu
-              requestsData={requestsData}
-              work={work}
-              workStatus={workStatus}
-              issue={issue}
-            />
+            <BountyContextMenu issue={issue} />
           </ContextMenu>
         </div>
         <IssueTitleDetailsBalance>

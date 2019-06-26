@@ -4,12 +4,8 @@ import styled, { css } from 'styled-components'
 import { ContextMenuItem, theme } from '@aragon/ui'
 import { usePanelManagement } from '../Panel'
 
-const BountyContextMenu = ({
-  issue,
-  work,
-  workStatus,
-  requestsData,
-}) => {
+const BountyContextMenu = ({ issue }) => {
+  const { workStatus } = issue
   const {
     allocateBounty,
     editBounty,
@@ -55,7 +51,7 @@ const BountyContextMenu = ({
       {workStatus === 'review-applicants' && (
         <React.Fragment>
           <Item onClick={() => reviewApplication(issue)}>
-            Review Application ({requestsData.length})
+            Review Application ({issue.requestsData.length})
           </Item>
           <Item bordered onClick={() => editBounty([issue])}>
             Update Funding
@@ -81,15 +77,16 @@ const Item = styled(ContextMenuItem)`
 `
 
 BountyContextMenu.propTypes = {
-  work: PropTypes.oneOf([ undefined, PropTypes.object ]),
-  workStatus: PropTypes.oneOf([
-    undefined,
-    'funded',
-    'review-applicants',
-    'in-progress',
-    'review-work',
-    'fulfilled',
-  ]),
+  issue: PropTypes.shape({
+    workStatus: PropTypes.oneOf([
+      undefined,
+      'funded',
+      'review-applicants',
+      'in-progress',
+      'review-work',
+      'fulfilled',
+    ]),
+  }).isRequired,
 }
 
 export default BountyContextMenu

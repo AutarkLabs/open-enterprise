@@ -475,17 +475,15 @@ class Issues extends React.PureComponent {
                   <ScrollWrapper>
                     {this.shapeIssues(issuesFiltered)
                       .sort(currentSorter)
-                      .map((issue, index) => {
-                        return (
-                          <Issue
-                            isSelected={issue.id in this.state.selectedIssues}
-                            key={index}
-                            {...issue}
-                            onClick={this.handleIssueClick}
-                            onSelect={this.handleIssueSelection}
-                          />
-                        )
-                      })}
+                      .map(issue => (
+                        <Issue
+                          isSelected={issue.id in this.state.selectedIssues}
+                          key={issue.id}
+                          {...issue}
+                          onClick={this.handleIssueClick}
+                          onSelect={this.handleIssueSelection}
+                        />
+                      ))}
                   </ScrollWrapper>
 
                   <div style={{ textAlign: 'center' }}>

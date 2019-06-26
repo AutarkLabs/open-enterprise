@@ -280,12 +280,7 @@ const detailsCard = ({ issue }) => {
         </div>
         <div style={{ ...column, flex: 0, alignItems: 'flex-end' }}>
           <ContextMenu>
-            <BountyContextMenu
-              requestsData={issue.requestsData}
-              work={issue.work}
-              workStatus={issue.workStatus}
-              issue={issue}
-            />
+            <BountyContextMenu issue={issue} />
           </ContextMenu>
           {issue.balance > 0 && (
             <Badge
