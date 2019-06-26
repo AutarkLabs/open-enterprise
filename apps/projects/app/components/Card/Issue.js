@@ -39,88 +39,87 @@ const labelsBadges = labels =>
     </Badge>
   ))
 
-const Issue = ({
-  isSelected,
-  onClick,
-  onSelect,
-  ...issue
-}) => {
-  const {
-    id,
-    work,
-    workStatus,
-    title,
-    repo,
-    number,
-    labels,
-    balance,
-    symbol,
-    deadline,
-    requestsData,
-    expLevel,
-  } = issue
+class Issue extends React.PureComponent {
+  render() {
+    const { isSelected, onClick, onSelect, ...issue } = this.props
 
-  return (
-    <StyledIssue>
-      <div style={{ padding: '10px' }}>
-        <Checkbox checked={isSelected} onChange={() => onSelect(issue)} />
-      </div>
+    const {
+      id,
+      work,
+      workStatus,
+      title,
+      repo,
+      number,
+      labels,
+      balance,
+      symbol,
+      deadline,
+      requestsData,
+      expLevel,
+    } = issue
 
-      <IssueData>
-        <ClickArea onClick={() => onClick(issue)} />
-
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Text color={theme.textSecondary} size="xsmall">
-            {repo} #{number}
-          </Text>
-          <ContextMenu>
-            <BountyContextMenu issue={issue} />
-          </ContextMenu>
+    return (
+      <StyledIssue>
+        <div style={{ padding: '10px' }}>
+          <Checkbox checked={isSelected} onChange={() => onSelect(issue)} />
         </div>
-        <IssueTitleDetailsBalance>
-          <IssueTitleDetails>
-            <IssueTitle>{title}</IssueTitle>
 
-            {BOUNTY_STATUS[workStatus] && (
-              <Text.Block
-                color={theme.textSecondary}
-                style={{ fontSize: '0.87em' }}
-              >
-                <span style={{ marginRight: '15px' }}>
-                  {expLevel}
-                  {dot}
-                  {balance > 0
-                    ? BOUNTY_STATUS[workStatus]
-                    : BOUNTY_STATUS['fulfilled']}
-                  {dot}
-                  Due {DeadlineDistance(deadline)}
-                </span>
-              </Text.Block>
-            )}
-          </IssueTitleDetails>
+        <IssueData>
+          <ClickArea onClick={() => onClick(issue)} />
 
-          <Balance>
-            {BOUNTY_STATUS[workStatus] && (
-              <Badge
-                style={{ padding: '10px' }}
-                background={BOUNTY_BADGE_COLOR[workStatus].bg}
-                foreground={BOUNTY_BADGE_COLOR[workStatus].fg}
-              >
-                <Text>{balance + ' ' + symbol}</Text>
-              </Badge>
-            )}
-          </Balance>
-        </IssueTitleDetailsBalance>
-
-        {labels.totalCount > 0 && (
-          <div>
-            <Separator />
-            {labelsBadges(labels)}
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Text color={theme.textSecondary} size="xsmall">
+              {repo} #{number}
+            </Text>
+            <ContextMenu>
+              <BountyContextMenu issue={issue} />
+            </ContextMenu>
           </div>
-        )}
-      </IssueData>
-    </StyledIssue>
-  )
+          <IssueTitleDetailsBalance>
+            <IssueTitleDetails>
+              <IssueTitle>{title}</IssueTitle>
+
+              {BOUNTY_STATUS[workStatus] && (
+                <Text.Block
+                  color={theme.textSecondary}
+                  style={{ fontSize: '0.87em' }}
+                >
+                  <span style={{ marginRight: '15px' }}>
+                    {expLevel}
+                    {dot}
+                    {balance > 0
+                      ? BOUNTY_STATUS[workStatus]
+                      : BOUNTY_STATUS['fulfilled']}
+                    {dot}
+                    Due {DeadlineDistance(deadline)}
+                  </span>
+                </Text.Block>
+              )}
+            </IssueTitleDetails>
+
+            <Balance>
+              {BOUNTY_STATUS[workStatus] && (
+                <Badge
+                  style={{ padding: '10px' }}
+                  background={BOUNTY_BADGE_COLOR[workStatus].bg}
+                  foreground={BOUNTY_BADGE_COLOR[workStatus].fg}
+                >
+                  <Text>{balance + ' ' + symbol}</Text>
+                </Badge>
+              )}
+            </Balance>
+          </IssueTitleDetailsBalance>
+
+          {labels.totalCount > 0 && (
+            <div>
+              <Separator />
+              {labelsBadges(labels)}
+            </div>
+          )}
+        </IssueData>
+      </StyledIssue>
+    )
+  }
 }
 
 Issue.propTypes = {
