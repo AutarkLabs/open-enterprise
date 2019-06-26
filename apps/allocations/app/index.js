@@ -1,9 +1,9 @@
+import '@babel/polyfill'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { AragonApi } from '@aragon/api-react'
 import appStateReducer from './app-state-reducer'
 import App from './components/App/App'
-import '@babel/polyfill'
 
 ReactDOM.render(
   <AragonApi reducer={appStateReducer}>

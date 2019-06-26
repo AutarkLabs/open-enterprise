@@ -15,7 +15,7 @@ import {
 import { ETH_DECIMALS } from '../../utils/constants'
 import { provideNetwork } from '../../../../../shared/ui'
 import { BASE_CARD_WIDTH, CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
-import LocalIdentityBadge from '../Shared/LocalIdentityBadge'
+import { LocalIdentityBadge } from '../../../../../shared/identity'
 
 const Account = ({
   id,

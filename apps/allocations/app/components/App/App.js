@@ -5,7 +5,7 @@ import { Accounts, Payouts } from '.'
 import { NewAccount, NewAllocation } from '../Panel'
 import { networkContextType, AppTitle, AppTitleButton } from '../../../../../shared/ui'
 import { useAragonApi } from '@aragon/api-react'
-import { IdentityProvider } from '../Shared/IdentityManager'
+import { IdentityProvider } from '../../../../../shared/identity'
 
 class App extends React.PureComponent {
   static propTypes = {
@@ -126,8 +126,6 @@ class App extends React.PureComponent {
     const { displayMenuButton = false } = this.props
     const PanelContent = panel.content
 
-    console.log(this.props)
-
     return (
       // TODO: Profile App with React.StrictMode, perf and why-did-you-update, apply memoization
       <Main>
@@ -151,7 +149,7 @@ class App extends React.PureComponent {
           >
             <Accounts
               accounts={
-                this.props.accounts !== undefined ? this.props.accounts : []
+                this.props.accounts || []
               }
               onNewAccount={this.newAccount}
               onNewAllocation={this.newAllocation}
@@ -159,7 +157,7 @@ class App extends React.PureComponent {
             />
             <Payouts
               payouts={
-                this.props.payouts !== undefined ? this.props.payouts : []
+                this.props.payouts || []
               }
               executePayout={this.onExecutePayout}
               network={this.props.network}
