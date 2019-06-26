@@ -102,7 +102,7 @@ class App extends React.Component {
                   : 'N/A'
               }
               tokenAddress={this.props.tokenAddress}
-              userAccount={this.props.userAccount}
+              userAccount={this.props.connectedAccount}
             />
           </AppView>
 
@@ -120,6 +120,6 @@ class App extends React.Component {
 }
 
 export default () => {
-  const { api, appState } = useAragonApi()
-  return <App api={api} {...appState} />
+  const { api, appState, connectedAccount } = useAragonApi()
+  return <App api={api} {...appState} connectedAccount={connectedAccount} />
 }
