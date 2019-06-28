@@ -11,7 +11,7 @@ import "@aragon/apps-vault/contracts/Vault.sol";
 * @dev This contract is meant to distribute rewards in proportion to a reference
 *      asset, either as a one-off merit rewards or a scheduled dividend
 *******************************************************************************/
-contract Rewards is IsContract, AragonApp {
+contract Rewards is AragonApp {
 
     event RewardAdded(uint256 rewardId);
     event RewardClaimed(uint256 rewardId);
