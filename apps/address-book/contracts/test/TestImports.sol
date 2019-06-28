@@ -23,7 +23,7 @@ import "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
 
 
 contract TestImports {
-    constructor() public {
+    constructor() public { // solium-disable-line no-empty-blocks
     // to avoid lint error
     }
 }

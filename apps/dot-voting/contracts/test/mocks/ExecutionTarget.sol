@@ -8,16 +8,16 @@ contract ExecutionTarget {
     /// @dev The first 6 arguments in setSignal are necessary in a function that will be forwarded to dotVoting.
     /// Any additional parameters must not be an array type of any form (strings included), or the function will not be forwardable.
     function setSignal(
-        address[] /*_addr*/, 
+        address[] /*_addr*/,
         uint256[] _signal,
-        uint256[] /*_infoIndices*/, 
+        uint256[] /*_infoIndices*/,
         string /*_candidateInfo*/,
         string /*description*/,
         uint256[] _level1Id,
         uint256[] _level2Id,
         uint256 /*external vote Identifier*/,
         bool /*test param*/
-    ) public 
+    ) public
     {
         for (uint i = 0; i < _signal.length; i++) {
             signal.push(_signal[i]);
