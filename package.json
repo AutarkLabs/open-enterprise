@@ -6,7 +6,7 @@
     "cypress": "^3.1.5",
     "husky": "^3.0.0",
     "lerna": "^3.10.8",
-    "truffle-privatekey-provider": "^1.1.0",
+    "truffle-privatekey-provider": "1.1.0",
     "wait-on": "^3.2.0"
   },
   "scripts": {
