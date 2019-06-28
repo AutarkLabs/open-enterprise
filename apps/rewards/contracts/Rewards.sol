@@ -21,6 +21,7 @@ contract Rewards is AragonApp {
     /// bytes32 public constant ADD_REWARD_ROLE = keccak256("ADD_REWARD_ROLE");
     bytes32 public constant ADD_REWARD_ROLE = 0x7941efc179bdce37ebd8db3e2deb46ce5280bf6d2de2e50938a9e920494c1941;
 
+    /// Used to limit dividends occurrences for dividend rewards
     uint8 internal constant MAX_OCCURRENCES = uint8(42);
 
     /// Error string constants
@@ -50,10 +51,13 @@ contract Rewards is AragonApp {
         mapping (address => uint) timeClaimed;
     }
 
+    /// Amount claimed for each token
     mapping (address => uint) internal totalAmountClaimed;
     uint256 public totalClaimsEach;
 
+    /// Rewards internal registry
     Reward[] internal rewards;
+    /// Public vault that holds the funds
     Vault public vault;
 
     /// Events
@@ -198,8 +202,8 @@ contract Rewards is AragonApp {
         require(_rewardToken == address(0) || isContract(_rewardToken), ERROR_REWARD_TOKEN);
         require(!_isMerit || _occurrences == 1, ERROR_MERIT_OCCURRENCES);
         require(_occurrences < MAX_OCCURRENCES, ERROR_MAX_OCCURRENCES);
-        rewardId = rewards.length++; // increment the rewards array to create a new one
-        Reward storage reward = rewards[rewards.length - 1]; // lenght-1 takes the last, newly created "empty" reward
+        rewardId = rewards.length++; /// increment the rewards array to create a new one
+        Reward storage reward = rewards[rewards.length - 1]; /// lenght-1 takes the last, newly created "empty" reward
         reward.description = _description;
         reward.isMerit = _isMerit;
         reward.referenceToken = _referenceToken;
