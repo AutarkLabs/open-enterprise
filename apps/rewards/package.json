@@ -11,7 +11,7 @@
     "copy-public-assets": "rsync -rtu ./public/ ./dist",
     "coverage": "SOLIDITY_COVERAGE=true npm run ganache-cli:test",
     "frontend": "npm run sync-assets && parcel app/index.html --port 5555",
-    "ganache-cli:test": "../shared/test-helpers/ganache-cli.sh",
+    "ganache-cli:test": "sh ../../node_modules/@aragon/test-helpers/ganache-cli.sh",
     "lint": "solium --dir ./contracts",
     "precommit": "lint-staged",
     "prepublishOnly": "truffle compile --all",
@@ -27,7 +27,7 @@
     "start": "aragon run",
     "sync-assets": "copy-aragon-ui-assets -n aragon-ui ./dist && npm run copy-public-assets",
     "test:gas": "GAS_REPORTER=true npm test",
-    "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
+    "test": "cross-env TRUFFLE_TEST=true npm run ganache-cli:test"
   },
   "dependencies": {
     "@aragon/api": "AutarkLabs/aragon-api",
