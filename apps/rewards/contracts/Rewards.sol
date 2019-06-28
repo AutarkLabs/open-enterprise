@@ -56,16 +56,20 @@ contract Rewards is AragonApp {
     * @notice Claim my reward for #`_rewardID`
     * @param _rewardID The ID of the reward
     */
-    function claimReward(uint256 _rewardID) external returns(uint256 rewardAmount) {
+    function claimReward(uint256 _rewardID) external returns (uint256) {
         Reward storage reward = rewards[_rewardID];
-        require(block.number > reward.blockStart + reward.duration + reward.delay, "reward must be claimed after the reward duration and delay");
+        require(
+            getBlockNumber() > reward.blockStart + reward.duration + reward.delay, "reward must be claimed after the reward duration and delay"
+        );
         reward.claimed[msg.sender] = true;
+        reward.timeClaimed[msg.sender] = getTimestamp();
         uint256 rewardAmount = calculateRewardAmount(reward);
         require(vault.balance(reward.rewardToken) > rewardAmount, "Vault does not have enough funds to cover this reward");
-        vault.transfer(reward.rewardToken, msg.sender, rewardAmount);
-        totalClaimedAmount[reward.rewardToken] += rewardAmount;
-        totalClaimsEach++;
+        if (rewardAmount > 0) {
+            transferReward(reward, rewardAmount);
+        }
         emit RewardClaimed(_rewardID);
+        return rewardAmount;
     }
 
     function getRewardsLength() external view returns (uint256 rewardsLength) {
@@ -169,6 +173,10 @@ contract Rewards is AragonApp {
                 _delay
             );
         }
+    function transferReward(Reward reward, uint256 rewardAmount) private {
+        totalClaimsEach++;
+        totalClaimedAmount[reward.rewardToken] += rewardAmount;
+        vault.transfer(reward.rewardToken, msg.sender, rewardAmount);
     }
 
     function calculateRewardAmount(Reward reward) private view returns (uint256 rewardAmount) {
