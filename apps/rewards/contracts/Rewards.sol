@@ -184,30 +184,15 @@ contract Rewards is AragonApp {
         }
     }
 
-    function calculateDividendReward(Reward reward) internal view returns(uint256 rewardAmount) {
+    function calculateRewardAmount(Reward reward) private view returns (uint256 rewardAmount) {
         uint256 balance;
         uint256 supply;
         balance = reward.referenceToken.balanceOfAt(msg.sender, reward.blockStart + reward.duration);
         supply = reward.referenceToken.totalSupplyAt(reward.blockStart + reward.duration);
-        rewardAmount = reward.amount * balance / supply;
-    }
-
-    function calculateMeritReward(Reward reward)internal view returns(uint256 rewardAmount) {
-        uint256 supply;
-        uint256 balance;
-        uint256 initialSupply = reward.referenceToken.totalSupplyAt(reward.blockStart);
-        uint256 endingSupply = reward.referenceToken.totalSupplyAt(reward.blockStart + reward.duration);
-        supply = endingSupply - initialSupply;
-        if (supply == 0) {
-            return 0;
+        if (reward.isMerit) {
+            balance -= reward.referenceToken.balanceOfAt(msg.sender, reward.blockStart);
+            supply -= reward.referenceToken.totalSupplyAt(reward.blockStart);
         }
-
-        uint256 initialBalance = reward.referenceToken.balanceOfAt(msg.sender, reward.blockStart);
-        uint256 endingBalance = reward.referenceToken.balanceOfAt(msg.sender, reward.blockStart + reward.duration);
-        //require(initialSupply < endingSupply, "The supply must have increased over the period");
-        //require(initialBalance < endingBalance, "The user must have earned tokens over the period");
-
-        balance = endingBalance - initialBalance;
-        rewardAmount = reward.amount * balance / supply;
+        rewardAmount = supply == 0 ? 0 : reward.amount * balance / supply;
     }
 }
