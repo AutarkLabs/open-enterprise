@@ -60,16 +60,7 @@ contract Rewards is AragonApp {
         Reward storage reward = rewards[_rewardID];
         require(block.number > reward.blockStart + reward.duration + reward.delay, "reward must be claimed after the reward duration and delay");
         reward.claimed[msg.sender] = true;
-        reward.timeClaimed[msg.sender] = block.timestamp; // solium-disable-line security/no-block-members
-        // Need to implement solution to occurances
-        if (reward.isMerit) {
-            rewardAmount = calculateMeritReward(reward);
-        } else {
-            rewardAmount = calculateDividendReward(reward);
-        }
-        if (rewardAmount == 0) {
-            return 0;
-        }
+        uint256 rewardAmount = calculateRewardAmount(reward);
         require(vault.balance(reward.rewardToken) > rewardAmount, "Vault does not have enough funds to cover this reward");
         vault.transfer(reward.rewardToken, msg.sender, rewardAmount);
         totalClaimedAmount[reward.rewardToken] += rewardAmount;
@@ -110,12 +101,8 @@ contract Rewards is AragonApp {
         claimed = reward.claimed[msg.sender];
         timeClaimed = reward.timeClaimed[msg.sender];
         creator = reward.creator;
-        if (reward.isMerit) {
-            rewardAmount = calculateMeritReward(reward);
-        } else {
-            rewardAmount = calculateDividendReward(reward);
+        rewardAmount = calculateRewardAmount(reward);
         }
-    }
 
     function getTotalAmountClaimed(address _token)
     external view isInitialized returns (uint256 totalAmountClaimed)
