@@ -13,32 +13,48 @@ import "@aragon/apps-vault/contracts/Vault.sol";
 *******************************************************************************/
 contract Rewards is AragonApp {
 
-    event RewardAdded(uint256 rewardId);
-    event RewardClaimed(uint256 rewardId);
+    /// Hardcoded constants to save gas
+    /// bytes32 public constant ADD_REWARD_ROLE = keccak256("ADD_REWARD_ROLE");
+    bytes32 public constant ADD_REWARD_ROLE = 0x7941efc179bdce37ebd8db3e2deb46ce5280bf6d2de2e50938a9e920494c1941;
 
-    bytes32 public constant ADD_REWARD_ROLE = keccak256("ADD_REWARD_ROLE");
+    uint8 internal constant MAX_OCCURRENCES = uint8(42);
 
+    /// Error string constants
+    string private constant ERROR_VAULT = "VAULT_NOT_A_CONTRACT";
+    string private constant ERROR_REWARD_TIME_SPAN = "REWARD_CLAIMED_BEFORE_DURATION_AND_DELAY";
+    string private constant ERROR_VAULT_FUNDS = "VAULT_NOT_ENOUGH_FUNDS_TO_COVER_REWARD";
+    string private constant ERROR_REFERENCE_TOKEN = "REFERENCE_TOKEN_NOT_A_CONTRACT";
+    string private constant ERROR_REWARD_TOKEN = "REWARD_TOKEN_NOT_ETH_OR_CONTRACT";
+    string private constant ERROR_MERIT_OCCURRENCES = "MERIT_REWARD_MUST_ONLY_OCCUR_ONCE";
+    string private constant ERROR_MAX_OCCURRENCES = "OCURRENCES_LIMIT_HIT";
+    string private constant ERROR_START_BLOCK = "START_PERIOD_BEFORE_TOKEN_CREATION";
+
+    /// Order optimized for storage
     struct Reward {
-        bool isMerit;
-        MiniMeToken referenceToken;
+        address creator;
         address rewardToken;
+        bool isMerit;
         uint256 amount;
         uint256 duration;
         uint256 occurances;
         uint256 delay;
         uint256 value;
         uint256 blockStart;
+        MiniMeToken referenceToken;
         string description;
-        address creator;
         mapping (address => bool) claimed;
         mapping (address => uint) timeClaimed;
     }
 
-    mapping (address => uint) totalClaimedAmount;
+    mapping (address => uint) internal totalAmountClaimed;
     uint256 public totalClaimsEach;
 
-    Reward[] rewards;
+    Reward[] internal rewards;
     Vault public vault;
+
+    /// Events
+    event RewardAdded(uint256 rewardId); /// Emitted when a new reward is created
+    event RewardClaimed(uint256 rewardId); /// Emitted when a reward is claimed
 
     /**
     * @notice Initialize Rewards app for Vault at `_vault`
@@ -46,7 +62,7 @@ contract Rewards is AragonApp {
     * @param _vault Address of the vault Rewards will rely on (non changeable)
     */
     function initialize(Vault _vault) external onlyInit {
-        require(isContract(_vault), "ERROR_VAULT_NOT_CONTRACT");
+        require(isContract(_vault), ERROR_VAULT);
         vault = _vault;
         initialized();
     }
@@ -58,16 +74,20 @@ contract Rewards is AragonApp {
     */
     function claimReward(uint256 _rewardID) external returns (uint256) {
         Reward storage reward = rewards[_rewardID];
-        require(
-            getBlockNumber() > reward.blockStart + reward.duration + reward.delay, "reward must be claimed after the reward duration and delay"
-        );
+
+        uint256 rewardTimeSpan = reward.blockStart + reward.duration + reward.delay;
+        require(rewardTimeSpan < getBlockNumber(), ERROR_REWARD_TIME_SPAN);
+
         reward.claimed[msg.sender] = true;
         reward.timeClaimed[msg.sender] = getTimestamp();
+
         uint256 rewardAmount = calculateRewardAmount(reward);
-        require(vault.balance(reward.rewardToken) > rewardAmount, "Vault does not have enough funds to cover this reward");
+        require(vault.balance(reward.rewardToken) > rewardAmount, ERROR_VAULT_FUNDS);
+
         if (rewardAmount > 0) {
             transferReward(reward, rewardAmount);
         }
+
         emit RewardClaimed(_rewardID);
         return rewardAmount;
     }
@@ -109,9 +129,9 @@ contract Rewards is AragonApp {
     }
 
     function getTotalAmountClaimed(address _token)
-    external view isInitialized returns (uint256 totalAmountClaimed)
+    external view isInitialized returns (uint256)
     {
-        totalAmountClaimed = totalClaimedAmount[_token];
+        return totalAmountClaimed[_token];
     }
 
     /**
@@ -140,10 +160,10 @@ contract Rewards is AragonApp {
         uint256 _delay
     ) public auth(ADD_REWARD_ROLE) returns (uint256 rewardId)
     {
-        require(isContract(_referenceToken), "REFERENCE_TOKEN_NOT_CONTRACT");
-        require(_rewardToken == address(0) || isContract(_rewardToken), "REWARD_TOKEN_NOT_ETH_OR_CONTRACT");
-        require(!_isMerit || _occurrences == 1, "merit rewards must only occur once");
-        require(_occurrences < 42, "Maximum number of occurances is 41");
+        require(isContract(_referenceToken), ERROR_REFERENCE_TOKEN);
+        require(_rewardToken == address(0) || isContract(_rewardToken), ERROR_REWARD_TOKEN);
+        require(!_isMerit || _occurrences == 1, ERROR_MERIT_OCCURRENCES);
+        require(_occurrences < MAX_OCCURRENCES, ERROR_MAX_OCCURRENCES);
         rewardId = rewards.length++; // increment the rewards array to create a new one
         Reward storage reward = rewards[rewards.length - 1]; // lenght-1 takes the last, newly created "empty" reward
         reward.description = _description;
@@ -170,12 +190,12 @@ contract Rewards is AragonApp {
                 _delay
             );
         }
-        require(_startBlock > _referenceToken.creationBlock(), "cannot start period prior to the creation block");
+        require(_startBlock > _referenceToken.creationBlock(), ERROR_START_BLOCK);
     }
 
     function transferReward(Reward reward, uint256 rewardAmount) private {
         totalClaimsEach++;
-        totalClaimedAmount[reward.rewardToken] += rewardAmount;
+        totalAmountClaimed[reward.rewardToken] += rewardAmount;
         vault.transfer(reward.rewardToken, msg.sender, rewardAmount);
     }
 
