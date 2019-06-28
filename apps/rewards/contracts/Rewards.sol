@@ -111,9 +111,9 @@ contract Rewards is AragonApp {
     }
 
     /**
-     * @notice Gets information for the reward with ID #`_rewardID`
+     * @notice Gets information for the reward with ID #`rewardID`
      * @dev Allows a user to get information about a specific reward
-     * @param _rewardID The ID of the reward
+     * @param rewardID The ID of the reward
      * @return description message for this reward
      * @return isMerit true or false in case it is a dividend reward
      * @return referenceToken used as reference to weight the reward
