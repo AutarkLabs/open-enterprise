@@ -35,6 +35,7 @@ contract Rewards is AragonApp {
 
     /// Order optimized for storage
     struct Reward {
+        MiniMeToken referenceToken;
         address creator;
         address rewardToken;
         bool isMerit;
@@ -44,7 +45,6 @@ contract Rewards is AragonApp {
         uint256 delay;
         uint256 value;
         uint256 blockStart;
-        MiniMeToken referenceToken;
         string description;
         mapping (address => bool) claimed;
         mapping (address => uint) timeClaimed;
