@@ -61,17 +61,14 @@ const Overview = ({
 
 Overview.propTypes = {
   changeActiveIndex: PropTypes.func.isRequired,
+  githubLoading: PropTypes.bool.isRequired,
   onLogin: PropTypes.func.isRequired,
   projects: PropTypes.arrayOf(PropTypes.object).isRequired,
-  github: PropTypes.shape({
-    status: PropTypes.oneOf([
-      STATUS.AUTHENTICATED,
-      STATUS.FAILED,
-      STATUS.INITIAL,
-    ]).isRequired,
-    token: PropTypes.string,
-    event: PropTypes.string,
-  }),
+  status: PropTypes.oneOf([
+    STATUS.AUTHENTICATED,
+    STATUS.FAILED,
+    STATUS.INITIAL,
+  ]).isRequired,
 }
 
 const StyledProjects = styled.div`

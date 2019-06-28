@@ -14,7 +14,9 @@ import { toHex } from '../../../utils/web3-utils'
 
 class RequestAssignment extends React.Component {
   static propTypes = {
+    githubCurrentUser: PropTypes.object.isRequired,
     issue: PropTypes.object.isRequired,
+    onRequestAssignment: PropTypes.func.isRequired,
   }
 
   state = {
@@ -53,7 +55,6 @@ class RequestAssignment extends React.Component {
     )
 
   render() {
-    const { login } = this.props.githubCurrentUser
     const { title, repo, number, url } = this.props.issue
 
     return (

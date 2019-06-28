@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Badge } from '@aragon/ui'
+import { Badge, Button } from '@aragon/ui'
 
 import IconX from '../Shared/assets/components/IconX'
 
@@ -24,18 +24,17 @@ export default class FilterTile extends PureComponent {
             }}
           >
             {this.props.text}
-            <div
+            <Button
               style={{
                 marginLeft: '10px',
                 paddingRight: '4px',
                 cursor: 'pointer',
               }}
-              role="button"
-              aria-pressed="false"
+              mode="text"
               onClick={this.props.disableFilter}
             >
               <IconX height="8px" width="8px" />
-            </div>
+            </Button>
           </div>
         </Badge.Identity>
       </Tile>

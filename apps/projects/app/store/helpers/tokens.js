@@ -38,7 +38,7 @@ export const syncTokens = async (state, { token }, vaultContract) => {
     }
     return state
   } catch (err) {
-    console.error('[Projects script] syncSettings settings failed:', err)
+    console.error('[Projects script] syncSettings settings failed:', err) // eslint-disable-line no-console
     return state
   }
 }

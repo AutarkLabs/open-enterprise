@@ -1,23 +1,6 @@
 import { app } from '../app'
 import { ipfsGet } from '../../utils/ipfs-helpers'
 
-const workStatus = {
-  BountyAdded: { step: 0, status: 'funded' },
-  AssignmentRequested : { step: 1, status: 'review-applicants' },
-  AssignmentApproved: { step: 2, status: 'in-progress' },
-  WorkSubmitted: { step: 3, status: 'review-work' },
-  SubmissionRejected: { step: 4, status: 'review-work' },
-  SubmissionAccepted: { step: 4, status: 'fulfilled' }
-}
-
-const reverseWorkStatus = {
-  'funded': { step: 0, event: 'BountyAdded' },
-  'review-applicants': { step: 1, event: 'AssignmentRequested' },
-  'in-progress': { step: 2, event: 'AssignmentApproved' },
-  'review-work': { step: 3, event: 'WorkSubmitted' },
-  'fulfilled': { step: 4, event: 'SubmissionAccepted' },
-}
-
 const assignmentRequestStatus = [ 'Unreviewed', 'Accepted', 'Rejected' ]
 
 export const loadIssueData = ({ repoId, issueNumber }) => {
@@ -69,10 +52,10 @@ const workReadyForReview = issue => {
 }
 
 // protects against eth events coming back in the wrong order for bountiesrequest.
-export const determineWorkStatus = (issue, event) => {
+export const determineWorkStatus = issue => {
   if (isWorkDone(issue)) {
     issue.workStatus = 'fulfilled'
-    return issue  
+    return issue
   }
   if (!(existWorkInProgress(issue)) && !(workReadyForReview(issue))) {
     issue.workStatus = existPendingApplications(issue) ? 'review-applicants' : 'funded'
@@ -173,7 +156,7 @@ const updateIssueState = (state, issueNumber, data) => {
     let newState = { ...state, issues: newIssues }
     return newState
   } catch (err) {
-    console.error(
+    console.error( // eslint-disable-line no-console
       'Update issues failed to return:',
       err,
       'here\'s what returned in newIssues',
@@ -182,10 +165,10 @@ const updateIssueState = (state, issueNumber, data) => {
   }
 }
 
-export const syncIssues = (state, { issueNumber, ...eventArgs }, data) => {
+export const syncIssues = (state, { issueNumber }, data) => {
   try {
     return updateIssueState(state, issueNumber, data)
   } catch (err) {
-    console.error('updateIssueState failed to return:', err)
+    console.error('updateIssueState failed to return:', err) // eslint-disable-line no-console
   }
 }

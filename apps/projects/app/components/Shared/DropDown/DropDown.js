@@ -1,11 +1,11 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { theme, unselectable } from '@aragon/ui'
 
 import { IconArrowDown } from '../../Shared'
 
 const BASE_HEIGHT = 40
-const BASE_WIDTH = 193
 
 // TODO: This should extend the StyledDropDownItem
 // TODO: Fix shadow to 0.03 and hover
@@ -109,6 +109,11 @@ class DropDown extends React.PureComponent {
       </StyledDropDown>
     )
   }
+}
+
+DropDown.propTypes = {
+  className: PropTypes.string,
+  items: PropTypes.array.isRequired,
 }
 
 export default DropDown

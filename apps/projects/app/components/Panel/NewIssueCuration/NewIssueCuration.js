@@ -10,17 +10,19 @@ import {
 import { useAragonApi } from '@aragon/api-react'
 import { usePanelManagement } from '..'
 
+const issueShape = PropTypes.shape({
+  id: PropTypes.string,
+  title: PropTypes.string,
+  number: PropTypes.number,
+  repo: PropTypes.string,
+})
+
 class NewIssueCuration extends React.Component {
   static propTypes = {
+    allIssues: PropTypes.arrayOf(issueShape),
+    onSubmit: PropTypes.func.isRequired,
     /** array of issues to allocate bounties on */
-    selectedIssues: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.string,
-        title: PropTypes.string,
-        number: PropTypes.number,
-        repo: PropTypes.string,
-      })
-    ),
+    selectedIssues: PropTypes.arrayOf(issueShape),
     /** base rate in pennies */
     // rate: PropTypes.number,
     // onSubmit: PropTypes.func,
@@ -53,7 +55,6 @@ class NewIssueCuration extends React.Component {
               value={this.state.description}
               onChange={this.changeField}
               placeholder="Describe your proposal."
-              value={this.state.description}
             />
           }
         />

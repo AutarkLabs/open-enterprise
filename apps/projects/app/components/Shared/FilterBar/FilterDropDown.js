@@ -10,9 +10,11 @@ import { IconArrow as IconArrowDown } from '../../../../../../shared/ui'
 
 class FilterDropDown extends React.Component {
   static propTypes = {
+    caption: PropTypes.string,
     children: PropTypes.node,
     enabled: PropTypes.bool,
     type: PropTypes.string,
+    style: PropTypes.object,
   }
   static defaultProps = {
     type: 'filter',

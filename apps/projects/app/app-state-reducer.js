@@ -14,7 +14,7 @@
 
 function appStateReducer(state) {
   // const { balances, transactions } = state || {}
-  const { github, repos } = state || {}
+  // const { github, repos } = state || {}
 
   // const balancesBn = balances
   //   ? balances

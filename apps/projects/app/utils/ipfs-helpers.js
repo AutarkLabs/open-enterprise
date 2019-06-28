@@ -12,7 +12,7 @@ export const ipfsAdd = async (content) => {
     const result = await autarkIpfs.add(file)
     return result[0].hash
   } catch (err) {
-    console.error('Error pinning file to IPFS', err)
+    console.error('Error pinning file to IPFS', err) // eslint-disable-line no-console
   }
 }
 
@@ -30,6 +30,6 @@ export const ipfsGet = async (hash) => {
     const { data } = await axios.get(endpoint)
     return data
   } catch (err) {
-    console.error('Error getting data from IPFS', err)
+    console.error('Error getting data from IPFS', err) // eslint-disable-line no-console
   }
 }

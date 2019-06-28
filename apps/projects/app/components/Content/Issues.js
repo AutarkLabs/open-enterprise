@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { Query } from 'react-apollo'
-import { Button, breakpoint } from '@aragon/ui'
+import { Button } from '@aragon/ui'
 import BigNumber from 'bignumber.js'
 import { compareAsc, compareDesc } from 'date-fns'
 
@@ -16,6 +16,13 @@ import ActionsMenu from './ActionsMenu'
 
 class Issues extends React.PureComponent {
   static propTypes = {
+    activeIndex: PropTypes.shape({
+      tabData: PropTypes.object.isRequired,
+    }).isRequired,
+    bountyIssues: PropTypes.array.isRequired,
+    bountySettings: PropTypes.shape({
+      expLvls: PropTypes.array.isRequired,
+    }).isRequired,
     onLogin: PropTypes.func.isRequired,
     github: PropTypes.shape({
       status: PropTypes.oneOf([
@@ -27,7 +34,10 @@ class Issues extends React.PureComponent {
       event: PropTypes.string,
     }),
     issueDetail: PropTypes.bool.isRequired,
+    projects: PropTypes.array.isRequired,
     setIssueDetail: PropTypes.func.isRequired,
+    status: PropTypes.string.isRequired,
+    tokens: PropTypes.array.isRequired,
   }
 
   state = {
@@ -185,8 +195,6 @@ class Issues extends React.PureComponent {
   }
 
   handleIssueClick = issue => {
-    console.log('issue clicked')
-
     this.props.setIssueDetail(true)
     this.setState({ currentIssue: issue })
   }
@@ -296,7 +304,7 @@ class Issues extends React.PureComponent {
         decimals: token.decimals,
       }
     })
-    return issues.map(({ __typename, repository: { id, name }, ...fields }) => {
+    return issues.map(({ repository: { id, name }, ...fields }) => {
       const bountyId = bountyIssueObj[fields.number]
       const repoIdFromBounty = bountyId && bountyId.data.repoId
       if (bountyId && repoIdFromBounty === id) {
@@ -363,7 +371,6 @@ class Issues extends React.PureComponent {
   flattenIssues = data => {
     let downloadedIssues = []
     const downloadedRepos = {}
-    let totalCount = 0
 
     Object.keys(data).forEach(nodeName => {
       const repo = data[nodeName]
@@ -449,7 +456,7 @@ class Issues extends React.PureComponent {
       <Query
         fetchPolicy="cache-first"
         query={GET_ISSUES2}
-        onError={console.error}
+        onError={console.error /* eslint-disable-line no-console */}
       >
         {({ data, loading, error, refetch }) => {
           if (data && data.node0) {

@@ -78,6 +78,7 @@ const Item = styled(ContextMenuItem)`
 
 BountyContextMenu.propTypes = {
   issue: PropTypes.shape({
+    requestsData: PropTypes.array.isRequired,
     workStatus: PropTypes.oneOf([
       undefined,
       'funded',

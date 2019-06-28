@@ -64,6 +64,13 @@ const SummaryTable = ({ expLevel, deadline, workStatus, balance }) => {
   return <StyledTable>{mappedTableFields}</StyledTable>
 }
 
+SummaryTable.propTypes = {
+  expLevel: PropTypes.string.isRequired,
+  deadline: PropTypes.string.isRequired,
+  workStatus: PropTypes.string.isRequired,
+  balance: PropTypes.string.isRequired,
+}
+
 const Wrapper = styled.div`
   display: flex;
   padding-top: 10px;
@@ -127,6 +134,16 @@ const IssueEvent = props => (
     </IssueEventDetails>
   </IssueEventMain>
 )
+
+IssueEvent.propTypes = {
+  avatarUrl: PropTypes.string.isRequired,
+  url: PropTypes.string.isRequired,
+  login: PropTypes.string.isRequired,
+  eventDescription: PropTypes.string.isRequired,
+  eventMessage: PropTypes.string,
+  eventAction: PropTypes.string,
+  date: PropTypes.string.isRequired,
+}
 
 const calculateAgo = pastDate => {
   const date = Date.now()
@@ -317,6 +334,10 @@ const DetailsCard = ({ issue }) => {
   )
 }
 
+DetailsCard.propTypes = {
+  issue: PropTypes.object.isRequired,
+}
+
 const EventsCard = ({ issue }) => {
   const { reviewApplication, reviewWork } = usePanelManagement()
   const issueEvents = activities(
@@ -344,6 +365,10 @@ const EventsCard = ({ issue }) => {
       )}
     </StyledEventsCard>
   )
+}
+
+EventsCard.propTypes = {
+  issue: PropTypes.object.isRequired,
 }
 
 const IssueDetail = ({ issue }) => {

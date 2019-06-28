@@ -23,6 +23,6 @@ export const syncSettings = async state => {
     state.bountySettings = { ...settings, baseRate: baseRateDecimal, expLvls }
     return state
   } catch (err) {
-    console.error('[Projects script] syncSettings settings failed:', err)
+    console.error('[Projects script] syncSettings settings failed:', err) // eslint-disable-line no-console
   }
 }

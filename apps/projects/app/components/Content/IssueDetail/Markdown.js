@@ -11,7 +11,11 @@ const Link = ({ children, ...props }) => (
   </SafeLink>
 )
 
-const ListItem = ({ checked, children, ...props }) => {
+Link.propTypes = {
+  children: PropTypes.element.isRequired,
+}
+
+const ListItem = ({ checked, children }) => {
   let checkbox = null
   if (checked !== null) {
     checkbox = <Checkbox checked={checked} />
@@ -23,6 +27,11 @@ const ListItem = ({ checked, children, ...props }) => {
     checkbox,
     children
   )
+}
+
+ListItem.propTypes = {
+  checked: PropTypes.bool.isRequired,
+  children: PropTypes.element.isRequired,
 }
 
 const Markdown = ({ content, style }) => {
