@@ -16,7 +16,7 @@ contract Rewards is AragonApp {
     event RewardAdded(uint256 rewardId);
     event RewardClaimed(uint256 rewardId);
 
-    bytes32 public constant ADD_REWARD_ROLE =  keccak256("ADD_REWARD_ROLE");
+    bytes32 public constant ADD_REWARD_ROLE = keccak256("ADD_REWARD_ROLE");
 
     struct Reward {
         bool isMerit;
@@ -76,7 +76,7 @@ contract Rewards is AragonApp {
         rewardsLength = rewards.length;
     }
 
-    function getReward(uint256 rewardID) external view returns(
+    function getReward(uint256 rewardID) external view returns (
         string description,
         bool isMerit,
         address referenceToken,
@@ -106,7 +106,7 @@ contract Rewards is AragonApp {
         timeClaimed = reward.timeClaimed[msg.sender];
         creator = reward.creator;
         rewardAmount = calculateRewardAmount(reward);
-        }
+    }
 
     function getTotalAmountClaimed(address _token)
     external view isInitialized returns (uint256 totalAmountClaimed)
@@ -115,18 +115,18 @@ contract Rewards is AragonApp {
     }
 
     /**
-    * @dev This function creates a reward instance to be added to the rewards array. ID's
-    *      are assigned the new intance's index of that array
-    * @notice Create a new `_isMerit ? 'merit reward' : 'dividend'` of `@tokenAmount(_rewardToken, _amount)` for `_referenceToken.symbol(): string` holders (`_description`)
-    * @param _description description of the reward
-    * @param _isMerit Recurring dividend reward or one-off merit reward
-    * @param _referenceToken the token used to calculate reward distributions for each holder
+        * @dev This function creates a reward instance to be added to the rewards array. ID's
+        *      are assigned the new intance's index of that array
+        * @notice Create a new `_isMerit ? 'merit reward' : 'dividend'` of `@tokenAmount(_rewardToken, _amount)` for `_referenceToken.symbol(): string` holders (`_description`)
+        * @param _description description of the reward
+        * @param _isMerit Recurring dividend reward or one-off merit reward
+        * @param _referenceToken the token used to calculate reward distributions for each holder
         * @param _rewardToken currency received as reward, accepts address 0 for ETH reward
-    * @param _amount the reward amount to be distributed
-    * @param _startBlock block in which token transactions will begin to be tracked
-    * @param _duration the time duration over which reference token earnings are calculated
+        * @param _amount the reward amount to be distributed
+        * @param _startBlock block in which token transactions will begin to be tracked
+        * @param _duration the time duration over which reference token earnings are calculated
         * @param _occurrences the number of occurences of a dividend reward
-    * @param _delay the waiting time after the end of the period that the reward can be claimed
+        * @param _delay the waiting time after the end of the period that the reward can be claimed
     */
     function newReward(
         string _description,
