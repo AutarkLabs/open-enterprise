@@ -227,12 +227,19 @@ contract Rewards is AragonApp {
         require(_startBlock > _referenceToken.creationBlock(), ERROR_START_BLOCK);
     }
 
+    /**
+     * @dev Private intermediate function that does the actual vault transfer for a reward and reward amoun
+     */
     function transferReward(Reward reward, uint256 rewardAmount) private {
         totalClaimsEach++;
         totalAmountClaimed[reward.rewardToken] += rewardAmount;
         vault.transfer(reward.rewardToken, msg.sender, rewardAmount);
     }
 
+    /**
+     * @dev Private intermediate function to calculate reward amount dependending of the type, balance and supply
+     * @return rewardAmount calculated for that reward
+     */
     function calculateRewardAmount(Reward reward) private view returns (uint256 rewardAmount) {
         uint256 balance;
         uint256 supply;
