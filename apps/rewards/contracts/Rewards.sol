@@ -40,12 +40,15 @@ contract Rewards is AragonApp {
     Reward[] rewards;
     Vault public vault;
 
-    function initialize( Vault _vault)
-    external onlyInit
-    {
-        initialized();
-        require(isContract(_vault), "Vault must be a contract");
+    /**
+    * @notice Initialize Rewards app for Vault at `_vault`
+    * @dev Initializes the Rewards app
+    * @param _vault Address of the vault Rewards will rely on (non changeable)
+    */
+    function initialize(Vault _vault) external onlyInit {
+        require(isContract(_vault), "ERROR_VAULT_NOT_CONTRACT");
         vault = _vault;
+        initialized();
     }
 
     /**
