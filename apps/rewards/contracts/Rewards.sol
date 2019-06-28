@@ -121,46 +121,43 @@ contract Rewards is AragonApp {
     * @param _description description of the reward
     * @param _isMerit Recurring dividend reward or one-off merit reward
     * @param _referenceToken the token used to calculate reward distributions for each holder
-    * @param _rewardToken currency received as reward
+        * @param _rewardToken currency received as reward, accepts address 0 for ETH reward
     * @param _amount the reward amount to be distributed
     * @param _startBlock block in which token transactions will begin to be tracked
     * @param _duration the time duration over which reference token earnings are calculated
-    * @param _occurances the number of occurences of a dividend reward
+        * @param _occurrences the number of occurences of a dividend reward
     * @param _delay the waiting time after the end of the period that the reward can be claimed
     */
     function newReward(
         string _description,
         bool _isMerit,
-        address _referenceToken,
+        MiniMeToken _referenceToken,
         address _rewardToken,
         uint256 _amount,
         uint256 _startBlock,
         uint256 _duration,
-        uint256 _occurances,
+        uint256 _occurrences,
         uint256 _delay
     ) public auth(ADD_REWARD_ROLE) returns (uint256 rewardId)
     {
-        require(isContract(_referenceToken), "_referenceToken must be a contract");
-        if (_rewardToken != address(0)) {
-            require(isContract(_rewardToken), "_rewardToken must be a contract");
-        }
-        require(!_isMerit || _occurances == 1, "merit rewards must only occur once");
-        require(_occurances < 42, "Maximum number of occurances is 41");
-        require(_startBlock > MiniMeToken(_referenceToken).creationBlock(),"cannot start period prior to the creation block");
-        rewardId = rewards.length++;
-        Reward storage reward = rewards[rewards.length - 1];
+        require(isContract(_referenceToken), "REFERENCE_TOKEN_NOT_CONTRACT");
+        require(_rewardToken == address(0) || isContract(_rewardToken), "REWARD_TOKEN_NOT_ETH_OR_CONTRACT");
+        require(!_isMerit || _occurrences == 1, "merit rewards must only occur once");
+        require(_occurrences < 42, "Maximum number of occurances is 41");
+        rewardId = rewards.length++; // increment the rewards array to create a new one
+        Reward storage reward = rewards[rewards.length - 1]; // lenght-1 takes the last, newly created "empty" reward
         reward.description = _description;
         reward.isMerit = _isMerit;
-        reward.referenceToken = MiniMeToken(_referenceToken);
+        reward.referenceToken = _referenceToken;
         reward.rewardToken = _rewardToken;
         reward.amount = _amount;
         reward.duration = _duration;
-        reward.occurances = _occurances;
+        reward.occurances = _occurrences;
         reward.delay = _delay;
         reward.blockStart = _startBlock;
         reward.creator = msg.sender;
         emit RewardAdded(rewardId);
-        if (_occurances > 1) {
+        if (_occurrences > 1) {
             newReward(
                 _description,
                 _isMerit,
@@ -169,10 +166,13 @@ contract Rewards is AragonApp {
                 _amount,
                 _startBlock + _duration,
                 _duration,
-                _occurances - 1,
+                _occurrences - 1,
                 _delay
             );
         }
+        require(_startBlock > _referenceToken.creationBlock(), "cannot start period prior to the creation block");
+    }
+
     function transferReward(Reward reward, uint256 rewardAmount) private {
         totalClaimsEach++;
         totalClaimedAmount[reward.rewardToken] += rewardAmount;
