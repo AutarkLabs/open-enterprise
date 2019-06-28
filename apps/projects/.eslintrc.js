@@ -5,7 +5,12 @@ module.exports = {
     node: true,
     commonjs: true,
   },
-  extends: 'prettier/react',
+  extends: [
+    'prettier/react',
+    'eslint:recommended',
+    'plugin:react/recommended',
+    'plugin:jsx-a11y/recommended',
+  ],
   parser: 'babel-eslint',
   parserOptions: {
     ecmaFeatures: {
