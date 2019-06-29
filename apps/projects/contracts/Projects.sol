@@ -41,6 +41,12 @@ interface Bounties {
         uint _tokenVersion
     ) external returns (uint);
 
+    function contribute(
+        address _sender,
+        uint _bountyId,
+        uint _amount
+    ) external payable;
+
     function issueAndContribute(
         address sender,
         address[] _issuers,
@@ -91,7 +97,7 @@ interface ERC20Token {
 }
 
 
-contract Projects is IsContract, AragonApp {
+contract Projects is IsContract, AragonApp, DepositableStorage {
     using SafeMath for uint256;
     Bounties public bounties;
     Relayer public relayer;
@@ -178,7 +184,7 @@ contract Projects is IsContract, AragonApp {
     // Fired when a repo is updated in the registry
     event RepoUpdated(bytes32 indexed repoId, uint newIndex);
     // Fired when a bounty is added to a repo
-    event BountyAdded(bytes32 repoId, uint256 issueNumber, uint256 bountySize);
+    event BountyAdded(bytes32 repoId, uint256 issueNumber, uint256 bountySize, uint256 registryId);
     // Fired when a bounty is removed
     event BountyRemoved(bytes32 repoId, uint256 issueNumber, uint256 oldBountySize);
     // Fired when an issue is curated
@@ -209,6 +215,7 @@ contract Projects is IsContract, AragonApp {
     ) external onlyInit // solium-disable-line visibility-first
     {
         initialized();
+        setDepositable(true);
 
         require(isContract(_vault), ERROR_VAULT_NOT_CONTRACT);
 
@@ -521,7 +528,7 @@ contract Projects is IsContract, AragonApp {
      * @param _issueNumbers an array of bounty indexes
      * @param _bountySizes an array of bounty sizes
      * @param _deadlines an array of bounty deadlines
-     * @param _tokenTypes array of currency types: 0=ETH, 20=ERC20
+     * @param _tokenTypes array of currency types: 0=ETH, 1=ETH from vault 20=ERC20
      * @param _tokenContracts an array of token contracts
      * @param _ipfsAddresses a string of ipfs addresses
      * @param _description parsed and display to user when this function is forwarded
@@ -662,7 +669,6 @@ contract Projects is IsContract, AragonApp {
     {
         bytes32 repoId;
         uint256 issueLength = issuePriorities.length;
-        //require(issuePriorities.length == unusedAddresses.length, "length mismatch: issuePriorites and unusedAddresses");
         require(issueLength == issueDescriptionIndices.length, "length mismatch: issuePriorites and issueDescriptionIdx");
         require(issueLength == issueRepos.length, "length mismatch: issuePriorites and issueRepos");
         require(issueLength == issueNumbers.length, "length mismatch: issuePriorites and issueNumbers");
@@ -811,34 +817,48 @@ contract Projects is IsContract, AragonApp {
     ) internal returns (uint256 bountyId)
     {
         require(_tokenType != 721);
-        if (_tokenType == 0)
+        uint256 registryTokenType;
+        if (_tokenType == 0) {
             require(_tokenContract == address(0));
+            registryTokenType = _tokenType;
+        } else if (_tokenType == 1) {
+            require(_tokenContract == address(0));
+            registryTokenType = 0;
+        } else {
+            registryTokenType = _tokenType;
+        }
+        
         address[] memory issuers = new address[](1);
         issuers[0] = address(this);
-        if (_tokenType != 0) {
-            vault.transfer(_tokenContract, this, _bountySize);
-            ERC20Token(_tokenContract).approve(bounties, _bountySize);
-            // Activate the bounty so it can be fulfilled
-            bountyId = bounties.issueAndContribute(
+
+        bountyId = bounties.issueBounty(
                 address(this),      // address payable _sender
                 issuers,            // address payable [] memory _issuers
                 issuers,            // address [] memory _approvers
                 _ipfsHash,          // string memory _data
                 _deadline,          // uint _deadline
                 _tokenContract,     // address _token
-                _tokenType,         // uint _tokenVersion
-                _bountySize         // uint _depositAmount
+                registryTokenType   // uint _tokenVersion
+        );
+
+        if (_tokenType > 0) {
+            vault.transfer(_tokenContract, this, _bountySize);
+            if (registryTokenType != 0) {
+                ERC20Token(_tokenContract).approve(bounties, _bountySize);
+            }
+        }
+
+        if (registryTokenType == 0) {
+            bounties.contribute.value(_bountySize)(
+                address(this),
+                bountyId,
+                _bountySize
             );
         } else {
-            bountyId = bounties.issueAndContribute.value(_bountySize)(
-                address(this),      // address payable _sender
-                issuers,            // address payable [] memory _issuers
-                issuers,            // address [] memory _approvers
-                _ipfsHash,          // string memory _data
-                _deadline,          // uint _deadline
-                _tokenContract,     // address _token
-                _tokenType,         // uint _tokenVersion
-                _bountySize         // uint _depositAmount
+            bounties.contribute(
+                address(this),
+                bountyId,
+                _bountySize
             );
         }
     }
@@ -878,7 +898,8 @@ contract Projects is IsContract, AragonApp {
         emit BountyAdded(
             _repoId,
             _issueNumber,
-            _bountySize
+            _bountySize,
+            _standardBountyId
         );
     }
 
@@ -925,9 +946,11 @@ contract Projects is IsContract, AragonApp {
 
     function _returnValueToVault(uint256 _amount, address _token) internal {
         if (_token == address(0))
-            address(vault).transfer(_amount);
-        else
-            require(ERC20Token(_token).transfer(address(vault), _amount), "Token Transfer Failed");
+            vault.deposit.value(_amount)(_token, _amount);
+        else {
+            ERC20Token(_token).approve(vault, _amount);
+            vault.deposit(_token, _amount);
+        }
     }
 
     /**
