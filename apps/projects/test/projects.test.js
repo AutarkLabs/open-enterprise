@@ -934,6 +934,13 @@ contract('Projects App', accounts => {
           )
         })
 
+        it('can\'t kill a bounty that doesn\'t exist', async () => {
+          const issueNumber = 6
+          return assertRevert(async () => {
+            await app.removeBounties([repoId], [issueNumber], 'reasons', { from: bountyManager })
+          })
+        })
+
         xit('can\'t kill a fulfilled bounty', async () => {
           const issueNumber = 6
           await app.addBounties(
@@ -977,6 +984,56 @@ contract('Projects App', accounts => {
             truffleAssert.ErrorType.REVERT,
             // 'BOUNTY_FULFILLED'
           )
+        })
+
+        it('cannot create bounties with ERC 721 tokens', async () => {
+          const issueNumber = 7
+          return assertRevert(async () => {
+            await app.addBounties(
+              [repoId],
+              [issueNumber],
+              [5],
+              [Date.now() + 86400],
+              [721],
+              [0],
+              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+              'something',
+              { from: bountyManager, }
+            )
+          })
+        })
+
+        it('cannot create bounties with token type 0 and a non-zero token address', async () => {
+          const issueNumber = 7
+          return assertRevert(async () => {
+            await app.addBounties(
+              [repoId],
+              [issueNumber],
+              [5],
+              [Date.now() + 86400],
+              [1],
+              [1],
+              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+              'something',
+              { from: bountyManager, }
+            )
+          })
+        })
+        it('cannot create bounties with token type 1 and a non-zero token address', async () => {
+          const issueNumber = 7
+          return assertRevert(async () => {
+            await app.addBounties(
+              [repoId],
+              [issueNumber],
+              [5],
+              [Date.now() + 86400],
+              [0],
+              [1],
+              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+              'something',
+              { from: bountyManager, }
+            )
+          })
         })
       })
     })
@@ -1184,8 +1241,6 @@ contract('Projects App', accounts => {
       //   'repo returned'
       // )
       })
-
-      // TODO: settings tests
 
       it('cannot add bounties to unregistered repos', async () => {
         assertRevert(async () => {

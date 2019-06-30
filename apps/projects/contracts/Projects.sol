@@ -816,7 +816,7 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
         uint256 _bountySize
     ) internal returns (uint256 bountyId)
     {
-        require(_tokenType != 721);
+        require(_tokenType != 721, "No ERC 721");
         uint256 registryTokenType;
         if (_tokenType == 0) {
             require(_tokenContract == address(0));
