@@ -7,39 +7,32 @@ pragma solidity 0.4.24;
 import "@aragon/os/contracts/apps/AragonApp.sol";
 
 
-/*******************************************************************************
-    Copyright 2018, That Planning Suite
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*******************************************************************************/
-/*******************************************************************************
-* @title AddressBook Contract
-* @author Sean Marquez
-* @dev This contract defines an address book (registry) that allows the
-* association of a human-readable string to a type, and ethereum address.
-*******************************************************************************/
+/**
+  * @title AddressBook App
+  * @author Autark
+  * @dev Defines an address book (registry) that allows the
+  * association of an ethereum address with an IPFS cID pointing to JSON content
+  */
 contract AddressBook is AragonApp {
 
-    // The entries in the registry.
-    mapping(address => string) entries;
-    // Fired when an entry is added to the registry.
-    event EntryAdded(address addr);
-    // Fired when an entry is removed from the registry.
-    event EntryRemoved(address addr);
+    /// Hardcoded constants to save gas
+    /// bytes32 public constant ADD_ENTRY_ROLE = keccak256("ADD_ENTRY_ROLE");
+    bytes32 public constant ADD_ENTRY_ROLE = 0x4a167688760e93a8dd0a899c70e125af7d665ed37fd06496b8c83ce9fdac41bd;
+    /// bytes32 public constant REMOVE_ENTRY_ROLE = keccak256("REMOVE_ENTRY_ROLE");
+    bytes32 public constant REMOVE_ENTRY_ROLE = 0x4bf67e2ff5501162fc2ee020c851b17118c126a125e7f189b1c10056a35a8ed1;
 
-    bytes32 public constant ADD_ENTRY_ROLE = keccak256("ADD_ENTRY_ROLE");
-    bytes32 public constant REMOVE_ENTRY_ROLE = keccak256("REMOVE_ENTRY_ROLE");
+    /// Error string constants
+    string private constant ERROR_NOT_FOUND = "ENTRY_DOES_NOT_EXIST";
+    string private constant ERROR_EXISTS = "ENTRY_ALREADY_EXISTS";
+    string private constant ERROR_CID_MALFORMED = "CID_MALFORMED";
+
+    /// The entries in the registry
+    mapping(address => string) entries;
+
+    /// Events
+    event EntryAdded(address addr); /// Fired when an entry is added to the registry
+    event EntryRemoved(address addr); /// Fired when an entry is removed from the registry
+
 
     function initialize() external onlyInit {
         initialized();
