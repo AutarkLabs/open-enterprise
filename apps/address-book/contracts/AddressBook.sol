@@ -68,12 +68,7 @@ contract AddressBook is AragonApp {
      * @notice Remove address `_addr` from the registry.
      * @param _addr The ID of the entry to remove
      */
-    function removeEntry(
-        address _addr
-    ) public auth(REMOVE_ENTRY_ROLE)
-    {
-        require(bytes(entries[_addr]).length != 0, "entry does not exist");
-
+    function removeEntry(address _addr) public auth(REMOVE_ENTRY_ROLE) entryExists(_addr) {
         delete entries[_addr];
         emit EntryRemoved(_addr);
     }
