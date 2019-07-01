@@ -42,6 +42,10 @@ contract AddressBook is AragonApp {
         _;
     }
 
+    /**
+     * @notice Initialize AddressBook app`
+     * @dev Initializes the app, this is the Aragon custom constructor
+     */
     function initialize() external onlyInit {
         initialized();
     }
