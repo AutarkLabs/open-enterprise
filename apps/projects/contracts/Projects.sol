@@ -58,6 +58,12 @@ interface Bounties {
         uint _depositAmount
     ) external payable returns (uint);
 
+    function performAction(
+        address _sender,
+        uint _bountyId,
+        string _data
+    ) external;
+
     function acceptFulfillment(
         address _sender,
         uint _bountyId,
@@ -388,6 +394,11 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
             _application,
             true
         );
+        bounties.performAction(
+            address(this),
+            issue.standardBountyId,
+            _application
+        );
         emit AssignmentRequested(_repoId, _issueNumber);
     }
 
@@ -416,6 +427,11 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
         } else {
             issue.assignmentRequests[_requestor].status = SubmissionStatus.Rejected;
         }
+        bounties.performAction(
+            address(this),
+            issue.standardBountyId,
+            _updatedApplication
+        );
         emit AssignmentApproved(_requestor, _repoId, _issueNumber);
     }
 
@@ -458,7 +474,11 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
                 )
             ) - 1 // push returns array length so we need to subtract 1 to get the index value
         );
-
+        bounties.performAction(
+            address(this),
+            issue.standardBountyId,
+            _submissionAddress
+        );
         emit WorkSubmitted(_repoId, _issueNumber);
     }
 
@@ -498,9 +518,19 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
             );
             issue.fulfilled = true;
             submission.status = SubmissionStatus.Accepted;
+            bounties.performAction(
+                address(this),
+                issue.standardBountyId,
+                _updatedSubmissionHash
+            );
             emit SubmissionAccepted(_submissionNumber, _repoId, _issueNumber);
         } else {
             submission.status = SubmissionStatus.Rejected;
+            bounties.performAction(
+                address(this),
+                issue.standardBountyId,
+                _updatedSubmissionHash
+            );
             emit SubmissionRejected(_submissionNumber, _repoId, _issueNumber);
         }
     }
@@ -827,7 +857,7 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
         } else {
             registryTokenType = _tokenType;
         }
-        
+
         address[] memory issuers = new address[](1);
         issuers[0] = address(this);
 
