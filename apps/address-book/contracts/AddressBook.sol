@@ -21,7 +21,7 @@ import "@aragon/os/contracts/apps/AragonApp.sol";
 *******************************************************************************/
 /*******************************************************************************
 * @title AddressBook Contract
-* @author Sean Marquez
+* @author Autark Labs
 * @dev This contract defines an address book (registry) that allows the
 * association of a human-readable string to a type, and ethereum address.
 *******************************************************************************/
