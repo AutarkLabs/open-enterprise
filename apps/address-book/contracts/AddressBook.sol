@@ -33,6 +33,14 @@ contract AddressBook is AragonApp {
     event EntryAdded(address addr); /// Fired when an entry is added to the registry
     event EntryRemoved(address addr); /// Fired when an entry is removed from the registry
 
+    /**
+     * @dev Guard to check existence of address in the registry
+     * @param _addr The address to enforce its existence in the registry
+     */
+    modifier entryExists(address _addr) {
+        require(bytes(entries[_addr]).length != 0, ERROR_NOT_FOUND);
+        _;
+    }
 
     function initialize() external onlyInit {
         initialized();
