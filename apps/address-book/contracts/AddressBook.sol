@@ -51,16 +51,11 @@ contract AddressBook is AragonApp {
      * @param _addr The address of the entry to add to the registry
      * @param _cid The IPFS hash of the entry to add to the registry
      */
-    function addEntry(
-        address _addr,
-        string _cid
-    ) public auth(ADD_ENTRY_ROLE)
-    {
-        require(bytes(entries[_addr]).length == 0, "entry exists with that address");
-        require(bytes(_cid).length == 46, "CID malformed");
+    function addEntry(address _addr, string _cid) public auth(ADD_ENTRY_ROLE) {
+        require(bytes(entries[_addr]).length == 0, ERROR_EXISTS);
+        require(bytes(_cid).length == 46, ERROR_CID_MALFORMED);
 
         entries[_addr] = _cid;
-
         emit EntryAdded(_addr);
     }
 
