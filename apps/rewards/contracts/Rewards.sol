@@ -232,7 +232,7 @@ contract Rewards is AragonApp {
     }
 
     /**
-     * @dev Private intermediate function that does the actual vault transfer for a reward and reward amoun
+     * @dev Private intermediate function that does the actual vault transfer for a reward and reward amount
      */
     function transferReward(Reward reward, uint256 rewardAmount) private {
         totalClaimsEach++;

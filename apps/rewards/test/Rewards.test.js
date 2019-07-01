@@ -15,10 +15,6 @@ const rewardAdded = receipt => receipt.logs.filter(x => x.event == 'RewardAdded'
 const ANY_ADDRESS = '0xffffffffffffffffffffffffffffffffffffffff'
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
-
-// const rewardClaimed = receipt =>
-//   receipt.logs.filter(x => x.event == 'RewardClaimed')[0].args.rewardId
-
 contract('Rewards', accounts => {
   let APP_MANAGER_ROLE, ADD_REWARD_ROLE, TRANSFER_ROLE
   let daoFact, app, appBase, vault, vaultBase, referenceToken, rewardToken, minBlock
@@ -43,9 +39,8 @@ contract('Rewards', accounts => {
     APP_MANAGER_ROLE = await kernelBase.APP_MANAGER_ROLE()
     ADD_REWARD_ROLE = await appBase.ADD_REWARD_ROLE()
     TRANSFER_ROLE = await vaultBase.TRANSFER_ROLE()
-    // })
 
-    // beforeEach(async () => {
+
     /** Create the dao from the dao factory */
     const daoReceipt = await daoFact.newDAO(root)
     const dao = getContract('Kernel').at(getReceipt(daoReceipt, 'DeployDAO', 'dao'))
