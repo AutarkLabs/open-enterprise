@@ -79,13 +79,12 @@ contract AddressBook is AragonApp {
     }
 
     /**
-     * Get an entry from the registry.
+     * @notice Get data associated to entry `_addr` from the registry.
+     * @dev getter for the entries mapping for an addres
      * @param _addr The ID of the entry to get
+     * @return contentId pointing to the IPFS structured content object for the entry
      */
-    function getEntry(
-        address _addr
-    ) public view returns (string contentId)
-    {
+    function getEntry(address _addr) public view entryExists(_addr) returns (string contentId) {
         contentId = entries[_addr];
     }
 }
