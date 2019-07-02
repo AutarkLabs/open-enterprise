@@ -267,7 +267,7 @@ contract PlanningKit is KitBase {
         ACL acl = ACL(dao.acl());
 
         // AddressBook permissions:
-        acl.createPermission(discussions, addressBook, addressBook.ADD_ENTRY_ROLE(), discussions);
+        acl.createPermission(voting, addressBook, addressBook.ADD_ENTRY_ROLE(), voting);
         acl.createPermission(voting, addressBook, addressBook.REMOVE_ENTRY_ROLE(), voting);
         //emit InstalledApp(addressBook, planningAppIds[uint8(PlanningApps.AddressBook)]);
 
@@ -283,8 +283,8 @@ contract PlanningKit is KitBase {
         //emit InstalledApp(projects, planningAppIds[uint8(PlanningApps.Projects)]);
 
         // Dot-voting permissions
-        acl.createPermission(ANY_ENTITY, dotVoting, dotVoting.CREATE_VOTES_ROLE(), voting);
-        acl.createPermission(ANY_ENTITY, dotVoting, dotVoting.ADD_CANDIDATES_ROLE(), voting);
+        acl.createPermission(discussions, dotVoting, dotVoting.CREATE_VOTES_ROLE(), discussions);
+        acl.createPermission(discussions, dotVoting, dotVoting.ADD_CANDIDATES_ROLE(), discussions);
         //emit InstalledApp(dotVoting, planningAppIds[uint8(PlanningApps.DotVoting)]);
 
         // Allocations permissions:

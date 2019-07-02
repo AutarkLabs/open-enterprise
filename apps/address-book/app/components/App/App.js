@@ -20,7 +20,7 @@ import {
   AppTitle,
   AppTitleButton,
 } from '../../../../../shared/ui'
-import Discussions from '../../../../discussions/app/modules'
+import DiscussionsApi from '../../../../discussions/app/modules/DiscussionsApi'
 
 class App extends React.Component {
   static propTypes = {
@@ -118,10 +118,10 @@ class App extends React.Component {
             }}>Get my discussion threads</Button> */}
             <Button
               onClick={async () => {
-                const discussions = new Discussions(this.props.app)
+                const discussions = new DiscussionsApi(this.props.app)
                 await discussions.init()
-                const discussionData = await discussions.collect()
-                console.log(discussionData, 'DISCUSSION DATA')
+                // const discussionData = await discussions.collect()
+                // console.log(discussionData, 'DISCUSSION DATA')
               }}
             >
               Do the thing!

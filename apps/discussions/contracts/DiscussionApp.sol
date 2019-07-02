@@ -8,9 +8,9 @@ import "@aragon/os/contracts/common/IForwarder.sol";
 contract DiscussionApp is IForwarder, AragonApp {
     using SafeMath for uint256;
 
-    event Post(address indexed author, string postCid, string discussionThreadId, uint postId, uint createdAt);
-    event Revise(address indexed author, string revisedPostCid, string discussionThreadId, uint postId, uint createdAt, uint revisedAt);
-    event Hide(address indexed author, string discussionThreadId, uint postId, uint hiddenAt);
+    event Post(address indexed author, string postCid, uint discussionThreadId, uint postId, uint createdAt);
+    event Revise(address indexed author, string revisedPostCid, uint discussionThreadId, uint postId, uint createdAt, uint revisedAt);
+    event Hide(address indexed author, uint discussionThreadId, uint postId, uint hiddenAt);
     event CreateDiscussionThread(uint actionId, bytes _evmScript);
 
     bytes32 constant public DISCUSSION_POSTER_ROLE = keccak256("DISCUSSION_POSTER_ROLE");
@@ -19,7 +19,7 @@ contract DiscussionApp is IForwarder, AragonApp {
     struct DiscussionPost {
         address author;
         string postCid;
-        string discussionThreadId;
+        uint discussionThreadId;
         uint id;
         uint createdAt;
         bool show;
@@ -28,7 +28,7 @@ contract DiscussionApp is IForwarder, AragonApp {
 
     uint discussionThreadId;
 
-    mapping(address => DiscussionPost[]) public userPosts;
+    mapping(uint => DiscussionPost[]) public discussionThreadPosts;
 
     function initialize() public onlyInit {
         discussionThreadId = 0;
@@ -40,16 +40,16 @@ contract DiscussionApp is IForwarder, AragonApp {
      * @param postCid The IPFS content hash of the discussion post data
      * @param discussionThreadId The thread to post this discussion to
      */
-    function post(string postCid, string discussionThreadId) external auth(DISCUSSION_POSTER_ROLE) {
+    function post(string postCid, uint discussionThreadId) external auth(DISCUSSION_POSTER_ROLE) {
         DiscussionPost storage post;
         post.author = msg.sender;
         post.postCid = postCid;
         post.discussionThreadId = discussionThreadId;
         post.createdAt = now;
         post.show = true;
-        uint postId = userPosts[msg.sender].length;
+        uint postId = discussionThreadPosts[discussionThreadId].length;
         post.id = postId;
-        userPosts[msg.sender].push(post);
+        discussionThreadPosts[discussionThreadId].push(post);
         emit Post(msg.sender, postCid, discussionThreadId, postId, now);
     }
 
@@ -58,15 +58,15 @@ contract DiscussionApp is IForwarder, AragonApp {
      * @param postId The postId to hide
      * @param discussionThreadId The thread to hide this discussion from
      */
-    function hide(uint postId, string discussionThreadId) external auth(DISCUSSION_POSTER_ROLE) {
-        DiscussionPost storage post = userPosts[msg.sender][postId];
+    function hide(uint postId, uint discussionThreadId) external auth(DISCUSSION_POSTER_ROLE) {
+        DiscussionPost storage post = discussionThreadPosts[discussionThreadId][postId];
         require(post.author == msg.sender, "You cannot hide a post you did not author.");
         post.show = false;
         emit Hide(msg.sender, discussionThreadId, postId, now);
     }
 
-    function revise(string revisedPostCid, uint postId, string discussionThreadId) external auth(DISCUSSION_POSTER_ROLE) {
-        DiscussionPost storage post = userPosts[msg.sender][postId];
+    function revise(string revisedPostCid, uint postId, uint discussionThreadId) external auth(DISCUSSION_POSTER_ROLE) {
+        DiscussionPost storage post = discussionThreadPosts[discussionThreadId][postId];
         require(post.author == msg.sender, "You cannot revise a post you did not author.");
         // add the current post to the revision history
         // should we limit the number of revisions you can make to save storage?

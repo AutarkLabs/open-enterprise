@@ -10,6 +10,7 @@ import { hasLoadedVoteSettings } from './utils/vote-settings'
 import { NewPayoutVotePanelContent } from './components/Panels'
 import { networkContextType, AppTitle } from '../../../shared/ui'
 import AppView from './components/AppView'
+import { Discussions } from '../../discussions/app/modules'
 
 const initialState = {
   template: null,
@@ -71,37 +72,44 @@ class App extends React.Component {
 
     return (
       <Main>
-        <AppView
-          padding={0}
-          appBar={
-            <AppBar>
-              <AppTitle title="Dot Voting" displayMenuButton={displayMenuButton} />
-            </AppBar>
-          }
-        >
-          <Decisions
-            onActivate={this.handlePanelOpen}
-            app={this.props.app}
-            votes={this.props.votes !== undefined ? this.props.votes : []}
-            entries={this.props.entries !== undefined ? this.props.entries : []}
-            voteTime={this.props.voteTime}
-            minParticipationPct={
-              this.props.minParticipationPct
-                ? this.props.minParticipationPct / 10 ** 16
-                : 'N/A'
+        <Discussions ready={this.state.settingsLoaded} app={this.props.app}>
+          <AppView
+            padding={0}
+            appBar={
+              <AppBar>
+                <AppTitle
+                  title="Dot Voting"
+                  displayMenuButton={displayMenuButton}
+                />
+              </AppBar>
             }
-            tokenAddress={this.props.tokenAddress}
-            userAccount={this.props.userAccount}
-          />
-        </AppView>
+          >
+            <Decisions
+              onActivate={this.handlePanelOpen}
+              app={this.props.app}
+              votes={this.props.votes !== undefined ? this.props.votes : []}
+              entries={
+                this.props.entries !== undefined ? this.props.entries : []
+              }
+              voteTime={this.props.voteTime}
+              minParticipationPct={
+                this.props.minParticipationPct
+                  ? this.props.minParticipationPct / 10 ** 16
+                  : 'N/A'
+              }
+              tokenAddress={this.props.tokenAddress}
+              userAccount={this.props.userAccount}
+            />
+          </AppView>
 
-        <SidePanel
-          title={''}
-          opened={this.state.panelActive}
-          onClose={this.handlePanelClose}
-        >
-          <NewPayoutVotePanelContent />
-        </SidePanel>
+          <SidePanel
+            title={''}
+            opened={this.state.panelActive}
+            onClose={this.handlePanelClose}
+          >
+            <NewPayoutVotePanelContent />
+          </SidePanel>
+        </Discussions>
       </Main>
     )
   }
