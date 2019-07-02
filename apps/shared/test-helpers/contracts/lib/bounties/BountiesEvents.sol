@@ -1,9 +1,18 @@
 // solium-disable
 pragma solidity ^0.4.24;
 
-contract BountiesEvents {
+interface BountiesEvents {
 
+  /*
+   * Functions
+   */
 
+  function fulfillBounty(
+    address _sender,
+    uint _bountyId,
+    address[]  _fulfillers,
+    string _data
+  ) external;
   /*
    * Events
    */

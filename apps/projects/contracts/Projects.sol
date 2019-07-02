@@ -85,6 +85,13 @@ interface Bounties {
         uint _issuerId,
         uint _deadline
     ) external;
+
+    function changeData(
+        address _sender,
+        uint _bountyId,
+        uint _issuerId,
+        string _data
+    ) external;
 }
 
 interface Relayer {
@@ -121,6 +128,8 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
     bytes32 public constant REVIEW_APPLICATION_ROLE = keccak256("REVIEW_APPLICATION_ROLE");
     bytes32 public constant WORK_REVIEW_ROLE = keccak256("WORK_REVIEW_ROLE");
     bytes32 public constant FUND_OPEN_ISSUES_ROLE = keccak256("FUND_OPEN_ISSUES_ROLE");
+    bytes32 public constant UPDATE_BOUNTIES_ROLE = keccak256("UPDATE_BOUNTIES_ROLE");
+
     string private constant ERROR_VAULT_NOT_CONTRACT = "PROJECTS_VAULT_NOT_CONTRACT";
     string private constant ERROR_STANDARD_BOUNTIES_NOT_CONTRACT = "STANDARD_BOUNTIES_NOT_CONTRACT";
     string private constant ERROR_LENGTH_EXCEEDED = "LENGTH_EXCEEDED";
@@ -418,6 +427,7 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
     ) external auth(REVIEW_APPLICATION_ROLE)
     {
         Issue storage issue = repos[_repoId].issues[_issueNumber];
+        require(issue.assignee != 0xffffffffffffffffffffffffffffffffffffffff, "ISSUE_OPEN");
         require(issue.assignmentRequests[_requestor].exists == true, "User has not applied for this issue");
         issue.assignee = _requestor;
         issue.assignmentRequests[_requestor].requestHash = _updatedApplication;
@@ -436,53 +446,6 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
     }
 
     /**
-     * @notice Submit work for issue `_issueNumber`
-     * @dev add a submission to local state after it's been added to StandardBounties.sol
-     * @param _repoId the repo id of the issue
-     * @param _issueNumber the issue up for assignment
-     * @param _submissionAddress IPFS hash of the Pull Request
-     * //param _fulfillmentId retrieved from event after the work is submitted to the bounties contract externally
-     */
-    function submitWork(
-        bytes32 _repoId,
-        uint256 _issueNumber,
-        string _submissionAddress,
-        bytes _signature,
-        uint256 _metaTxNonce
-        //uint256 _fulfillmentId
-    ) external isInitialized
-    {
-        Issue storage issue = repos[_repoId].issues[_issueNumber];
-        require(!issue.fulfilled,"BOUNTY_FULFILLED");
-        require(msg.sender == issue.assignee || issue.assignee == address(-1), "USER_NOT_ASSIGNED");
-        address[] memory submitter = new address[](1);
-        submitter[0] = msg.sender;
-        relayer.metaFulfillBounty(
-            _signature,
-            issue.standardBountyId,
-            submitter,
-            _submissionAddress,
-            _metaTxNonce
-        );
-        issue.submissionIndices.push(
-            workSubmissions.push(
-                WorkSubmission(
-                    SubmissionStatus.Unreviewed,
-                    _submissionAddress,
-                    issue.submissionIndices.length,
-                    issue.assignee
-                )
-            ) - 1 // push returns array length so we need to subtract 1 to get the index value
-        );
-        bounties.performAction(
-            address(this),
-            issue.standardBountyId,
-            _submissionAddress
-        );
-        emit WorkSubmitted(_repoId, _issueNumber);
-    }
-
-    /**
      * @notice Review work for issue `_issueNumber`
      * @dev add a submission to local state after it's been added to StandardBounties.sol
      * @param _repoId the repo id of the issue
@@ -497,7 +460,6 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
         uint256 _submissionNumber,
         bool _approved,
         string _updatedSubmissionHash,
-        uint256 _fulfillmentId,
         uint256[] _tokenAmounts
     ) external auth(WORK_REVIEW_ROLE)
     {
@@ -505,19 +467,15 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
 
         require(!issue.fulfilled,"BOUNTY_FULFILLED");
 
-        WorkSubmission storage submission = workSubmissions[issue.submissionIndices[_submissionNumber]];
-        submission.submissionHash = _updatedSubmissionHash;
-
         if (_approved) {
             bounties.acceptFulfillment(
                 address(this),
                 issue.standardBountyId,
-                submission.fulfillmentId,
+                _submissionNumber,
                 0,
                 _tokenAmounts
             );
             issue.fulfilled = true;
-            submission.status = SubmissionStatus.Accepted;
             bounties.performAction(
                 address(this),
                 issue.standardBountyId,
@@ -525,7 +483,6 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
             );
             emit SubmissionAccepted(_submissionNumber, _repoId, _issueNumber);
         } else {
-            submission.status = SubmissionStatus.Rejected;
             bounties.performAction(
                 address(this),
                 issue.standardBountyId,
@@ -533,23 +490,6 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
             );
             emit SubmissionRejected(_submissionNumber, _repoId, _issueNumber);
         }
-    }
-
-    function issueBountyTest() public {
-        address[] memory issuers = new address[](1);
-        issuers[0] = address(this);
-
-        uint256 id = bounties.issueBounty(
-            this,
-            issuers,
-            new address[](0),
-            "test",
-            block.timestamp + 1000,
-            address(0),
-            0
-        );
-
-        emit BountyTest(id);
     }
 
     /**
@@ -652,6 +592,28 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
             emit AwaitingSubmissions(_repoIds[i], _issueNumbers[i]);
         }
 
+    }
+
+    function updateBounty(
+        bytes32 _repoId,
+        uint256 _issueNumber,
+        string _data,
+        uint256 _deadline
+    ) public auth(UPDATE_BOUNTIES_ROLE)
+    {
+        Issue storage issue = repos[_repoId].issues[_issueNumber];
+        bounties.changeData(
+            address(this),
+            issue.standardBountyId,
+            0,
+            _data
+        );
+        bounties.changeDeadline(
+            address(this),
+            issue.standardBountyId,
+            0,
+            _deadline
+        );
     }
 
     /**

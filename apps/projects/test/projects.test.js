@@ -27,6 +27,7 @@ const fulfilledBounty = receipt =>
 contract('Projects App', accounts => {
   let daoFact,
     bounties,
+    bountiesEvents = {},
     app = {},
     vaultBase = {},
     vault = {}
@@ -42,8 +43,8 @@ contract('Projects App', accounts => {
     //Create Base DAO Contracts
     const kernelBase = await Kernel.new(true)
     // implement bountiesEvents so the events are logged by Truffle
-    //console.log('Bounties Addresses: ', process.env.BOUNT_ADDR.split(' '))
-    const bountiesEvents = BountiesEvents.at('0x72D1Ae1D6C8f3dd444b3D95bAd554Be483082e40')
+    ////console.log('Bounties Addresses: ', process.env.BOUNT_ADDR.split(' '))
+    bountiesEvents = BountiesEvents.at('0x72D1Ae1D6C8f3dd444b3D95bAd554Be483082e40')
     const aclBase = await ACL.new()
     const regFact = await EVMScriptRegistryFactory.new()
     daoFact = await DAOFactory.new(
@@ -105,7 +106,23 @@ contract('Projects App', accounts => {
     await acl.createPermission(
       bountyManager,
       app.address,
+      await app.FUND_OPEN_ISSUES_ROLE(),
+      root,
+      { from: root }
+    )
+
+    await acl.createPermission(
+      bountyManager,
+      app.address,
       await app.REMOVE_ISSUES_ROLE(),
+      root,
+      { from: root }
+    )
+
+    await acl.createPermission(
+      bountyManager,
+      app.address,
+      await app.UPDATE_BOUNTIES_ROLE(),
       root,
       { from: root }
     )
@@ -257,7 +274,7 @@ contract('Projects App', accounts => {
         assert.isTrue(await app.isRepoAdded(repoId2), 'repo2 should still be accessible')
       })
 
-      context('issue, fulfill, and accept fulfillment for ETH bounties', () => {
+      context('issue, fulfill, and accept fulfillment for bounties', () => {
         let issueReceipt
         const issueNumber = 1
 
@@ -322,6 +339,16 @@ contract('Projects App', accounts => {
               '0x0000000000000000000000000000000000000000'
             ],
             issueData3
+          )
+        })
+
+        it('can update bounty information', async () => {
+          await app.updateBounty(
+            repoId,
+            issueNumber,
+            'example data',
+            Date.now() + 96400,
+            { from: bountyManager }
           )
         })
 
@@ -455,7 +482,9 @@ contract('Projects App', accounts => {
           )
         })
 
-        xit('users can submit work', async () => {
+        it('work can be rejected', async () => {
+          const bountyId = (await app.getIssue(repoId, issueNumber))[1].toString()
+          //console.log(bountyId)
           await app.requestAssignment(
             repoId,
             issueNumber,
@@ -477,80 +506,21 @@ contract('Projects App', accounts => {
             { from: bountyManager }
           )
 
-          await app.submitWork(
-            repoId,
-            issueNumber,
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDk'
-          )
-          submissionQty = await app.getSubmissionsLength(repoId, issueNumber)
-          submission = await app.getSubmission(
-            repoId,
-            issueNumber,
-            submissionQty.toNumber() - 1
-          )
-          assert.strictEqual(
-            submission[0],
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDk',
-            'submission incorrect'
-          )
-        })
-
-        xit('work can be rejected', async () => {
-          await app.requestAssignment(
-            repoId,
-            issueNumber,
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
-            { from: root }
-          )
-          applicantQty = await app.getApplicantsLength(repoId, 1)
-          applicant = await app.getApplicant(
-            repoId,
-            issueNumber,
-            applicantQty.toNumber() - 1
-          )
-          await app.reviewApplication(
-            repoId,
-            issueNumber,
-            applicant[0],
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
-            true,
-            { from: bountyManager }
-          )
-
-          await app.submitWork(
-            repoId,
-            issueNumber,
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDk'
-          )
-          submissionQty = await app.getSubmissionsLength(repoId, issueNumber)
-          const submissionIndex = submissionQty.toNumber() - 1
-          submission = await app.getSubmission(
-            repoId,
-            issueNumber,
-            submissionIndex
-          )
+          await bountiesEvents.fulfillBounty(root, bountyId, [root],'test')
 
           await app.reviewSubmission(
             repoId,
             issueNumber,
-            submissionIndex,
+            0,
             false,
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+            [0],
             { from: bountyManager }
           )
-          submission = await app.getSubmission(
-            repoId,
-            issueNumber,
-            submissionIndex
-          )
-          assert.strictEqual(
-            submission[2].toNumber(),
-            2,
-            'submission status not rejected'
-          )
+          //assert(false, 'show events')
         })
 
-        xit('work can be accepted', async () => {
+        it('work can be accepted', async () => {
           await app.requestAssignment(
             repoId,
             issueNumber,
@@ -571,41 +541,23 @@ contract('Projects App', accounts => {
             true,
             { from: bountyManager }
           )
-
-          await app.submitWork(
-            repoId,
-            issueNumber,
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDk'
-          )
-          submissionQty = await app.getSubmissionsLength(repoId, issueNumber)
-          const submissionIndex = submissionQty.toNumber() - 1
-          submission = await app.getSubmission(
-            repoId,
-            issueNumber,
-            submissionIndex
-          )
+          const bountyId = (await app.getIssue(repoId, issueNumber))[1].toString()
+          //console.log(bountyId)
+          await bountiesEvents.fulfillBounty(root, bountyId, [root],'test')
 
           await app.reviewSubmission(
             repoId,
             issueNumber,
-            submissionIndex,
+            0,
             true,
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+            [10],
             { from: bountyManager }
           )
-          submission = await app.getSubmission(
-            repoId,
-            issueNumber,
-            submissionIndex
-          )
-          assert.strictEqual(
-            submission[2].toNumber(),
-            1,
-            'submission status not accepted'
-          )
+          //assert(false, 'log events')
         })
 
-        xit('work cannot be accepted twice', async () => {
+        it('work cannot be accepted twice', async () => {
           await app.requestAssignment(
             repoId,
             issueNumber,
@@ -626,26 +578,17 @@ contract('Projects App', accounts => {
             true,
             { from: bountyManager }
           )
-
-          await app.submitWork(
-            repoId,
-            issueNumber,
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDk'
-          )
-          submissionQty = await app.getSubmissionsLength(repoId, issueNumber)
-          const submissionIndex = submissionQty.toNumber() - 1
-          submission = await app.getSubmission(
-            repoId,
-            issueNumber,
-            submissionIndex
-          )
+          const bountyId = (await app.getIssue(repoId, issueNumber))[1].toString()
+          //console.log(bountyId)
+          await bountiesEvents.fulfillBounty(root, bountyId, [root],'test')
 
           await app.reviewSubmission(
             repoId,
             issueNumber,
-            submissionIndex,
+            0,
             true,
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+            [10],
             { from: bountyManager }
           )
 
@@ -653,88 +596,16 @@ contract('Projects App', accounts => {
             await app.reviewSubmission(
               repoId,
               issueNumber,
-              submissionIndex,
+              0,
               true,
               'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
-              { from: bountyManager }
-            )
-          })
-        })
-
-        xit('users cannot submit work for an issue they are not assigned to', async () => {
-          assertRevert(async () => {
-            await app.submitWork(
-              repoId,
-              issueNumber,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDk'
-            )
-          })
-        })
-
-        xit('work cannot be accepted or submitted after bounty is fulfilled', async () => {
-          await app.requestAssignment(
-            repoId,
-            issueNumber,
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
-            { from: root }
-          )
-          applicantQty = await app.getApplicantsLength(repoId, 1)
-          applicant = await app.getApplicant(
-            repoId,
-            issueNumber,
-            applicantQty.toNumber() - 1
-          )
-          await app.reviewApplication(
-            repoId,
-            issueNumber,
-            applicant[0],
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
-            true,
-            { from: bountyManager }
-          )
-
-          await app.submitWork(
-            repoId,
-            issueNumber,
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDk'
-          )
-          submissionQty = await app.getSubmissionsLength(repoId, issueNumber)
-          const submissionIndex = submissionQty.toNumber() - 1
-          submission = await app.getSubmission(
-            repoId,
-            issueNumber,
-            submissionIndex
-          )
-
-          await app.reviewSubmission(
-            repoId,
-            issueNumber,
-            submissionIndex,
-            true,
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
-            { from: bountyManager }
-          )
-          assertRevert(async () => {
-            await app.submitWork(
-              repoId,
-              issueNumber,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDk'
-            )
-          })
-          assertRevert(async () => {
-            await app.reviewSubmission(
-              repoId,
-              issueNumber,
-              submissionIndex,
-              true,
+              [10],
               { from: bountyManager }
             )
           })
         })
 
         it('can issue bulk token bounties', async () => {
-          const issueNumber = 1
-          let issue3Receipt
           let token = {}
 
           token = await MiniMeToken.new(
@@ -774,6 +645,40 @@ contract('Projects App', accounts => {
           })
         })
       })
+
+      context('issue open bounties', () => {
+        let issueReceipt
+
+        beforeEach('issue bulk bounties', async () => {
+          issueReceipt = addedBountyInfo(
+            await app.addBountiesNoAssignment(
+              Array(3).fill(repoId),
+              [ 1, 2, 3 ],
+              [ 10, 20, 30 ],
+              [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
+              [ 0, 0, 0 ],
+              [ 0, 0, 0 ],
+              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+              'something',
+              { from: bountyManager, value: 60 }
+            )
+          )
+        })
+
+        it('verifies bounty data contains correct details in emitted event and contract state', async () => {
+          issueReceipt.forEach((bounty, index) => {
+            assert.deepEqual(
+              {
+                repoId: '0x4d4445774f494a6c6347397a61585276636e6b784e6a59334d6a6c794d6a593d',
+                issueNumber: new web3.BigNumber(index+1),
+                bountySize: new web3.BigNumber((index+1)*10),
+                registryId: new web3.BigNumber(bounty.registryId)
+              },
+              bounty
+            )
+          })
+        })
+      }) 
 
       context('bounty killing', async () => {
 
@@ -941,7 +846,7 @@ contract('Projects App', accounts => {
           })
         })
 
-        xit('can\'t kill a fulfilled bounty', async () => {
+        it('can\'t kill a fulfilled bounty', async () => {
           const issueNumber = 6
           await app.addBounties(
             [repoId], [issueNumber], [10], [Date.now() + 86400],
@@ -968,19 +873,21 @@ contract('Projects App', accounts => {
             true,
             { from: bountyManager }
           )
-          await app.submitWork(
-            repoId, issueNumber,
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDk')
-          const submissionQty = await app.getSubmissionsLength(
-            repoId, issueNumber)
-          const submissionIndex = submissionQty.toNumber() - 1
+          const bountyId = (await app.getIssue(repoId, issueNumber))[1].toString()
+          //console.log(bountyId)
+          await bountiesEvents.fulfillBounty(root, bountyId, [root],'test')
+
           await app.reviewSubmission(
-            repoId, issueNumber, submissionIndex, true,
+            repoId,
+            issueNumber,
+            0,
+            true,
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+            [10],
             { from: bountyManager }
           )
           await truffleAssert.fails(
-            app.removeBounties([repoId], [issueNumber], { from: bountyManager }),
+            app.removeBounties([repoId], [issueNumber], 'reasons', { from: bountyManager }),
             truffleAssert.ErrorType.REVERT,
             // 'BOUNTY_FULFILLED'
           )
