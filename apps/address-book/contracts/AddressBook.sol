@@ -33,9 +33,12 @@ contract AddressBook is AragonApp {
     event EntryAdded(address addr);
     // Fired when an entry is removed from the registry.
     event EntryRemoved(address addr);
+    // Fired when an entry is updated with a new CID.
+    event EntryUpdated(address addr);
 
     bytes32 public constant ADD_ENTRY_ROLE = keccak256("ADD_ENTRY_ROLE");
     bytes32 public constant REMOVE_ENTRY_ROLE = keccak256("REMOVE_ENTRY_ROLE");
+    bytes32 public constant UPDATE_ENTRY_ROLE = keccak256("UPDATE_ENTRY_ROLE");
 
     function initialize() external onlyInit {
         initialized();
@@ -71,6 +74,23 @@ contract AddressBook is AragonApp {
 
         delete entries[_addr];
         emit EntryRemoved(_addr);
+    }
+
+    /**
+     * @notice Remove address `_addr` from the registry.
+     * @param _addr The ID of the entry to update
+     * @param _cid The ID of the entry to update
+     */
+    function updateEntry(
+        address _addr,
+        string _cid
+    ) public auth(UPDATE_ENTRY_ROLE)
+    {
+        require(bytes(_cid).length == 46, "CID malformed");
+        require(bytes(entries[_addr]).length != 0, "entry does not exist");
+
+        entries[_addr] = _cid;
+        emit EntryUpdated(_addr);
     }
 
     /**

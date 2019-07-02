@@ -11,6 +11,7 @@ const { assertRevert } = require('@tps/test-helpers/assertThrow')
 
 const ANY_ADDR = ' 0xffffffffffffffffffffffffffffffffffffffff'
 const exampleCid = 'QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco'
+const updatedCid = 'QmxoypizzW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco'
 
 contract('AddressBook App', accounts => {
   let daoFact = {},
@@ -68,6 +69,13 @@ contract('AddressBook App', accounts => {
       root,
       { from: root }
     )
+    await acl.createPermission(
+      ANY_ADDR,
+      app.address,
+      await app.UPDATE_ENTRY_ROLE(),
+      root,
+      { from: root }
+    )
   })
 
   context('main context', () => {
@@ -88,6 +96,11 @@ contract('AddressBook App', accounts => {
     })
     it('should allow to re-add same address from previously removed entry', async () => {
       await app.addEntry(starfleet, exampleCid)
+    })
+    it('should allow entry updates', async () => {
+      await app.updateEntry(starfleet, updatedCid)
+      entry1 = await app.getEntry(starfleet)
+      assert.equal(entry1, updatedCid)
     })
   })
   context('invalid operations', () => {
@@ -114,6 +127,16 @@ contract('AddressBook App', accounts => {
     it('should return a zero-address when getting non-existant entry', async () => {
       const entryCid  = await app.getEntry(jeanluc)
       assert.strictEqual(entryCid, '', 'CID should be an empty string')
+    })
+    it('should revert when an updated CID =/= 46 chars', async () => {
+      return assertRevert(async () => {
+        await app.updateEntry(borg, 'test_CID')
+      })
+    })
+    it('should revert when updating a non-existant entry', async () => {
+      return assertRevert(async () => {
+        await app.updateEntry(jeanluc, updatedCid)
+      })
     })
   })
 })
