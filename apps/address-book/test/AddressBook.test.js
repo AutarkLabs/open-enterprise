@@ -9,6 +9,7 @@ const getReceipt = (receipt, event, arg) => receipt.logs.filter(l => l.event ===
 /** Useful constants */
 const ANY_ADDRESS = '0xffffffffffffffffffffffffffffffffffffffff'
 const exampleCid = 'QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco'
+const updatedCid = 'QmxoypizzW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco'
 
 contract('AddressBook', accounts => {
   let APP_MANAGER_ROLE, ADD_ENTRY_ROLE, REMOVE_ENTRY_ROLE
@@ -33,6 +34,7 @@ contract('AddressBook', accounts => {
     APP_MANAGER_ROLE = await kernelBase.APP_MANAGER_ROLE()
     ADD_ENTRY_ROLE = await appBase.ADD_ENTRY_ROLE()
     REMOVE_ENTRY_ROLE = await appBase.REMOVE_ENTRY_ROLE()
+    UPDATE_ENTRY_ROLE = await appBase.UPDATE_ENTRY_ROLE()
 
     /** Create the dao from the dao factory */
     const daoReceipt = await daoFact.newDAO(root)
@@ -51,6 +53,8 @@ contract('AddressBook', accounts => {
 
     /** Setup permission to remove address entries */
     await acl.createPermission(ANY_ADDRESS, app.address, REMOVE_ENTRY_ROLE, root)
+    /** Setup permission to update address entries */
+    await acl.createPermission( ANY_ADDRESS, app.address, UPDATE_ENTRY_ROLE, root)
 
     /** Initialize app */
     await app.initialize()
@@ -72,11 +76,17 @@ contract('AddressBook', accounts => {
     })
 
     it('should remove the previously added entry', async () => {
-      await app.removeEntry(starfleet)
+      await app.removeEntry(starfleet, '')
     })
 
     it('should allow to re-add same address from previously removed entry', async () => {
       await app.addEntry(starfleet, exampleCid)
+    })
+
+    it('should allow entry updates', async () => {
+      await app.updateEntry(starfleet, updatedCid)
+      entry1 = await app.getEntry(starfleet)
+      assert.equal(entry1, updatedCid)
     })
   })
 
@@ -94,7 +104,7 @@ contract('AddressBook', accounts => {
 
     it('should revert when removing not existent entry', async () => {
       return assertRevert(async () => {
-        await app.removeEntry(jeanluc)
+        await app.removeEntry(jeanluc, '')
       })
     })
 
@@ -104,9 +114,18 @@ contract('AddressBook', accounts => {
       })
     })
 
-    it('should revert when getting non-existent entry', async () => {
+    it('should return a zero-address when getting non-existant entry', async () => {
+      const entryCid  = await app.getEntry(jeanluc)
+      assert.strictEqual(entryCid, '', 'CID should be an empty string')
+    })
+    it('should revert when an updated CID =/= 46 chars', async () => {
       return assertRevert(async () => {
-        await app.getEntry(jeanluc)
+        await app.updateEntry(borg, 'test_CID')
+      })
+    })
+    it('should revert when updating a non-existant entry', async () => {
+      return assertRevert(async () => {
+        await app.updateEntry(jeanluc, updatedCid)
       })
     })
   })
