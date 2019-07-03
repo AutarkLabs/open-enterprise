@@ -9,9 +9,6 @@ import {
 
 export const EMPTY_CALLSCRIPT = '0x00000001'
 
-export const getAccountVote = (account, voters) =>
-  voters[account] || VOTE_ABSENT
-
 export const getVoteStatus = (vote) => {
   if (vote.data.executed) {
     return VOTE_STATUS_EXECUTED
