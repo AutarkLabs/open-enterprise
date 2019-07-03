@@ -8,7 +8,7 @@ const getDiscussion = (relativeDiscussionId, discussions) => {
     .map(discussionId => Number(discussionId))
     .sort()[relativeDiscussionId]
 
-  return discussions[absoluteDiscussionId]
+  return discussions[absoluteDiscussionId] || {}
 }
 
 export default getDiscussion
