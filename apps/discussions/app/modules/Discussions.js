@@ -12,12 +12,14 @@ Hacking state together until i figure out how to understand when the api is sync
 const Discussions = ({ children, app, ready }) => {
   const [hasInit, setHasInit] = useState(false)
   const [discussions, setDiscussions] = useState({})
+  const [discussionApi, setDiscussionApi] = useState({})
   useEffect(() => {
     const initDiscussions = async () => {
-      const discussionsApi = new DiscussionsApi(app)
-      await discussionsApi.init()
-      const discussionData = await discussionsApi.collect()
+      const api = new DiscussionsApi(app)
+      await api.init()
+      const discussionData = await api.collect()
       setDiscussions(discussionData)
+      setDiscussionApi(api)
     }
 
     if (!hasInit) {
@@ -26,17 +28,17 @@ const Discussions = ({ children, app, ready }) => {
     }
   })
   return (
-    <DiscussionsContext.Provider value={{ discussions }}>
+    <DiscussionsContext.Provider value={{ discussions, discussionApi }}>
       <button
         onClick={async () => {
-          const discussionsApi = new DiscussionsApi(app)
-          await discussionsApi.init()
-          const discussionData = await discussionsApi.collect()
-          console.log(discussionData)
+          const api = new DiscussionsApi(app)
+          await api.init()
+          const discussionData = await api.collect()
           setDiscussions(discussionData)
+          setDiscussionApi(api)
         }}
       >
-        yo
+        Sync discussion data
       </button>
       {children}
     </DiscussionsContext.Provider>

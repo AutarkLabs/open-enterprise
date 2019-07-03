@@ -5,10 +5,9 @@ import { Text, theme, Button, TextInput } from '@aragon/ui'
 import { useDiscussion } from './'
 import DiscussionPost from './DiscussionPost'
 
-const Discussion = ({ discussionId }) => {
-  const { discussion } = useDiscussion(discussionId)
+const Discussion = ({ discussionId, ethereumAddress }) => {
+  const { discussion, discussionApi } = useDiscussion(discussionId)
   const [post, setPost] = useState('')
-
   return (
     <div>
       <Label>Discussion</Label>
@@ -29,7 +28,16 @@ const Discussion = ({ discussionId }) => {
         value={post}
         onChange={e => setPost(e.target.value)}
       />
-      <Button mode="strong" wide>
+      <Button
+        mode="strong"
+        wide
+        onClick={async () => {
+          await discussionApi
+            .post(post, discussionId, ethereumAddress)
+            .toPromise()
+          setPost('')
+        }}
+      >
         Post Comment
       </Button>
     </div>
@@ -38,6 +46,7 @@ const Discussion = ({ discussionId }) => {
 
 Discussion.propTypes = {
   discussionId: PropTypes.number.isRequired,
+  ethereumAddress: PropTypes.string.isRequired,
 }
 
 const Label = styled(Text).attrs({

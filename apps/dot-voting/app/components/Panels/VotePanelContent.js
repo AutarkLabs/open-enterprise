@@ -154,7 +154,6 @@ class VotePanelContent extends React.Component {
   }
 
   render() {
-    console.log('HELLO')
     const { network, vote, minParticipationPct } = this.props
     const {
       showResults,
@@ -456,7 +455,10 @@ class VotePanelContent extends React.Component {
                 '% is required for an option to become validated'}
             </Text>
           )}
-          <Discussion discussionId={this.props.vote.voteId - 1} />
+          <Discussion
+            ethereumAddress={this.props.user}
+            discussionId={this.props.vote.voteId - 1}
+          />
         </div>
       </div>
     )

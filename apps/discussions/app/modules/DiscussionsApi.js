@@ -145,6 +145,18 @@ class Discussions {
     )
     return discussionsWithData
   }
+
+  post = async (text, discussionThreadId, ethereumAddress) => {
+    const discussionPost = {
+      author: ethereumAddress,
+      mentions: [],
+      type: 'Post',
+      text,
+    }
+    const result = await ipfs.dag.put(discussionPost, {})
+    const cid = result.toBaseEncodedString()
+    return this.contract.post(cid, discussionThreadId)
+  }
 }
 
 export default Discussions
