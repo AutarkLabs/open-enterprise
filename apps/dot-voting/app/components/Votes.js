@@ -60,10 +60,6 @@ class Votes extends React.Component {
             </Viewport>
           </VotesTableWrapper>
         )}
-
-        {/* <SeeMoreWrapper>
-          <Button mode="secondary">Show Older Dot Votes</Button>
-        </SeeMoreWrapper> */}
       </React.Fragment>
     )
   }
@@ -83,10 +79,5 @@ const Title = styled.h1`
 const VotesTableWrapper = styled.div`
   margin-bottom: 30px;
 `
-
-// const SeeMoreWrapper = styled.div`
-//   display: flex;
-//   justify-content: center;
-// `
 
 export default Votes

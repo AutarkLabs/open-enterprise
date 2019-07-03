@@ -563,5 +563,4 @@ const PastDate = styled.time`
   display: block;
 `
 
-
 export default provideNetwork(VotePanelContent)

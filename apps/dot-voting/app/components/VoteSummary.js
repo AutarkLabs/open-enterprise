@@ -164,7 +164,6 @@ const Candidate = styled.div`
     background: ${({ color }) => color};
   }
   span:first-child {
-    //width: 35px;
     color: ${theme.textSecondary};
   }
   span:last-child {

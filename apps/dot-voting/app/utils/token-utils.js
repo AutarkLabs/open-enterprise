@@ -1,4 +1,3 @@
-//import { ETHER_TOKEN_VERIFIED_ADDRESSES } from './verified-tokens'
 //import { toUtf8 } from './web3-utils'
 import tokenSymbolAbi from '../../../shared/json-abis/token-symbol.json'
 import tokenSymbolBytesAbi from '../../../shared/json-abis/token-symbol-bytes.json'
@@ -23,12 +22,6 @@ const KNOWN_TOKENS_FALLBACK = new Map([
 
 export const ETHER_TOKEN_FAKE_ADDRESS =
   '0x0000000000000000000000000000000000000000'
-
-//export const isTokenVerified = (tokenAddress, networkType) =>
-//  // The verified list is without checksums
-//  networkType === 'main'
-//    ? ETHER_TOKEN_VERIFIED_ADDRESSES.has(tokenAddress.toLowerCase())
-//    : true
 
 export const tokenDataFallback = (tokenAddress, fieldName, networkType) => {
   // The fallback list is without checksums

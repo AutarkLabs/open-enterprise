@@ -84,7 +84,7 @@ class Vote extends React.Component {
         </div>
 
         <Separator />
-        
+
         <Bars>
           {showMore &&
             options.map(option => (
@@ -230,6 +230,5 @@ const FieldTitle = styled(Text.Block)`
   padding-right: 20px;
   width: 35%;
 `
-
 
 export default Vote

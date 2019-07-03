@@ -32,7 +32,6 @@ ProgressBar.defaultProps = {
 }
 
 ProgressBar.propTypes = {
-  // type: PropTypes.oneOf(['positive', 'negative']).isRequired,
   type: PropTypes.oneOf([ 'positive', 'negative' ]),
   progress: PropTypes.number,
 }
