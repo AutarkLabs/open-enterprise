@@ -118,10 +118,11 @@ class Discussions {
 
   _buildState = async (state, discussionEvents) => {
     const events = cloneDeep(discussionEvents)
+    if (events.length === 0) return state
+
     // work our way backwards through the array of events recursively to avoid extra computation
     const event = events.pop()
     const newState = await this._updateState(state, event)
-    if (events.length === 0) return newState
     return this._buildState(newState, events)
   }
 
@@ -132,8 +133,14 @@ class Discussions {
       relevantDiscussionThreads,
       allDiscussionEvents
     )
+
+    const initialState = [...relevantDiscussionThreads].reduce(
+      (state, threadId) => ({ ...state, [threadId]: {} }),
+      {}
+    )
+
     const discussionsWithData = await this._buildState(
-      {},
+      initialState,
       relevantDiscussionEvents
     )
     return discussionsWithData
