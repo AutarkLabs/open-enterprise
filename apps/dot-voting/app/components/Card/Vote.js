@@ -217,7 +217,8 @@ const Separator = styled.hr`
   margin: 14px 0;
   background: ${theme.contentBorder};
 `
-// TODO: shared
+// TODO: extract to shared/ui
+// See https://github.com/AutarkLabs/planning-suite/issues/382
 const FieldTitle = styled(Text.Block)`
   color: ${theme.textSecondary};
   text-transform: lowercase;
