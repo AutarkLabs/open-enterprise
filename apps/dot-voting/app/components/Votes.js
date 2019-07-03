@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { BadgeNumber, colors, Viewport, Badge } from '@aragon/ui'
+import { Viewport, Badge } from '@aragon/ui'
 import VotesTable from '../components/VotesTable'
 import VotesList from '../components/VotesList'
 
@@ -20,7 +20,7 @@ class Votes extends React.Component {
               <Badge.Info>{openedVotes.length}</Badge.Info>
             </Title>
             <Viewport>
-              {({ below, width }) => below(TABLE_CARD_BREAKPOINT) ? (
+              {({ below }) => below(TABLE_CARD_BREAKPOINT) ? (
                 <VotesList
                   votes={openedVotes}
                   onSelectVote={onSelectVote}
@@ -43,7 +43,7 @@ class Votes extends React.Component {
               <Badge.Info>{closedVotes.length}</Badge.Info>
             </Title>
             <Viewport>
-              {({ below, width }) => below(TABLE_CARD_BREAKPOINT) ? (
+              {({ below }) => below(TABLE_CARD_BREAKPOINT) ? (
                 <VotesList
                   votes={closedVotes}
                   onSelectVote={onSelectVote}

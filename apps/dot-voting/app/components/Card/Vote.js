@@ -169,9 +169,6 @@ Vote.propTypes = {
   onSelectVote: PropTypes.func.isRequired,
 }
 
-const TitleContainer = styled.div`
-  flex-grow: 1;
-`
 const StyledCard = styled(Card)`
   margin: 0 0 8px 0;
   display: flex;

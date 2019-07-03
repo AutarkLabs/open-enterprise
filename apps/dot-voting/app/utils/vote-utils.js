@@ -1,7 +1,4 @@
-import { safeDiv } from './math-utils'
 import {
-  VOTE_ABSENT,
-  VOTE_STATUS_ONGOING,
   VOTE_STATUS_FAILED,
   VOTE_STATUS_SUCCESSFUL,
   VOTE_STATUS_EXECUTED

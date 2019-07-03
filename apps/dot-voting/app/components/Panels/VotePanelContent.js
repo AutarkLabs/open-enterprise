@@ -494,14 +494,6 @@ const SliderAndValueContainer = styled.div`
   align-items: center;
 `
 
-const SliderContainer = styled.div`
-  width: 320px;
-  & > :nth-child(2) {
-    padding: 0;
-    padding-right: 17px;
-  }
-`
-
 const SubmitButton = styled(Button)`
   margin: 1rem 0;
 `
@@ -527,13 +519,6 @@ const Part = styled.div`
   }
 `
 
-const Question = styled.p`
-  max-width: 100%;
-  overflow: hidden;
-  word-break: break-all;
-  hyphens: auto;
-`
-
 const BalanceSplit = styled.div`
   display: inline-block;
   width: 25%;
@@ -543,17 +528,6 @@ const BalanceSplit = styled.div`
 const Creator = styled.div`
   display: flex;
   align-items: center;
-`
-
-const VotingButtons = styled.div`
-  display: flex;
-  padding: 30px 0 20px;
-  & > * {
-    width: 50%;
-    &:first-child {
-      margin-right: 10px;
-    }
-  }
 `
 
 const PastDate = styled.time`
