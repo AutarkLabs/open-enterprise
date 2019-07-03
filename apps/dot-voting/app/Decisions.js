@@ -11,7 +11,11 @@ import { hasLoadedVoteSettings } from './utils/vote-settings'
 import { isBefore } from 'date-fns'
 import { EmptyStateCard, SidePanel, breakpoint } from '@aragon/ui'
 import { VotePanelContent } from './components/Panels'
-import { EMPTY_CALLSCRIPT, getQuorumProgress, getTotalSupport } from './utils/vote-utils'
+import {
+  EMPTY_CALLSCRIPT,
+  getQuorumProgress,
+  getTotalSupport,
+} from './utils/vote-utils'
 
 const tokenAbi = [].concat(tokenBalanceOfAbi, tokenDecimalsAbi, tokenSymbolAbi)
 
@@ -35,16 +39,16 @@ class Decisions extends React.Component {
 
   componentWillMount() {
     this.setState({
-      now : new Date()
+      now: new Date(),
     })
   }
 
   componentDidMount() {
-    setInterval( () => {
+    setInterval(() => {
       this.setState({
-        now : new Date()
+        now: new Date(),
       })
-    },1000)
+    }, 10000)
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -127,7 +131,7 @@ class Decisions extends React.Component {
         vote.data.options = vote.data.options.map(option => {
           return {
             ...option,
-            label: this.getAddressLabel(entries, option)
+            label: this.getAddressLabel(entries, option),
           }
         })
         return {
@@ -152,14 +156,18 @@ class Decisions extends React.Component {
       <StyledDecisions>
         <ScrollWrapper>
           {displayVotes ? (
-            <Votes votes={preparedVotes} onSelectVote={this.handleVoteOpen} app={app}/>
+            <Votes
+              votes={preparedVotes}
+              onSelectVote={this.handleVoteOpen}
+              app={app}
+            />
           ) : (
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                flexGrow: 1
+                flexGrow: 1,
               }}
             >
               <EmptyStateCard
@@ -172,7 +180,7 @@ class Decisions extends React.Component {
           )}
         </ScrollWrapper>
 
-        {displayVotes && currentVote &&(
+        {displayVotes && currentVote && (
           <SidePanel
             title={'Dot Vote #' + currentVote.voteId}
             opened={Boolean(!createVoteVisible && voteVisible)}

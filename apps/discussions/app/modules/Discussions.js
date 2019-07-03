@@ -2,7 +2,7 @@ import React, { useState, useEffect, createContext } from 'react'
 import PropTypes from 'prop-types'
 import DiscussionsApi from './DiscussionsApi'
 
-const DiscussionsContext = createContext({})
+export const DiscussionsContext = createContext({})
 
 /*
 Hacking state together until i figure out how to understand when the api is synced
