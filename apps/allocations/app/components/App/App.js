@@ -182,6 +182,6 @@ class App extends React.PureComponent {
 }
 
 export default () => {
-  const { api, appState } = useAragonApi()
-  return <App api={api} {...appState} />
+  const { api, appState, displayMenuButton } = useAragonApi()
+  return <App api={api} {...appState} displayMenuButton={displayMenuButton} />
 }

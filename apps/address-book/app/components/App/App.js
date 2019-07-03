@@ -124,6 +124,6 @@ const ScrollWrapper = styled.div`
   flex-grow: 1;
 `
 export default () => {
-  const { api, appState } = useAragonApi()
-  return <App api={api} {...appState} />
+  const { api, appState, displayMenuButton } = useAragonApi()
+  return <App api={api} {...appState} displayMenuButton={displayMenuButton} />
 }

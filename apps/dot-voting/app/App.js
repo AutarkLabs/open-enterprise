@@ -123,6 +123,6 @@ class App extends React.Component {
 }
 
 export default () => {
-  const { api, appState, connectedAccount } = useAragonApi()
-  return <App api={api} {...appState} connectedAccount={connectedAccount} />
+  const { api, appState, connectedAccount, displayMenuButton } = useAragonApi()
+  return <App api={api} {...appState} connectedAccount={connectedAccount} displayMenuButton={displayMenuButton} />
 }
