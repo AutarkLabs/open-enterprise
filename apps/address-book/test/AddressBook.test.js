@@ -53,7 +53,7 @@ contract('AddressBook', accounts => {
 
     /** Setup permission to remove address entries */
     await acl.createPermission(ANY_ADDRESS, app.address, REMOVE_ENTRY_ROLE, root)
-
+    /** Setup permission to update address entries */
     await acl.createPermission( ANY_ADDRESS, app.address, UPDATE_ENTRY_ROLE, root)
 
     /** Initialize app */
@@ -76,7 +76,7 @@ contract('AddressBook', accounts => {
     })
 
     it('should remove the previously added entry', async () => {
-      await app.removeEntry(starfleet)
+      await app.removeEntry(starfleet, '')
     })
 
     it('should allow to re-add same address from previously removed entry', async () => {
@@ -104,7 +104,7 @@ contract('AddressBook', accounts => {
 
     it('should revert when removing not existent entry', async () => {
       return assertRevert(async () => {
-        await app.removeEntry(jeanluc)
+        await app.removeEntry(jeanluc, '')
       })
     })
 
