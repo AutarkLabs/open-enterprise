@@ -10,10 +10,9 @@ import {
   AppView,
   AppBar,
   NavigationBar,
-  Viewport,
 } from '@aragon/ui'
 
-import { AppTitleButton, MenuButton } from '../../../shared/ui'
+import { AppTitleButton, AppTitle } from '../../../shared/ui'
 
 import ErrorBoundary from './components/App/ErrorBoundary'
 import { Issues, Overview, Settings } from './components/Content'
@@ -551,7 +550,7 @@ class App extends React.PureComponent {
     const TabComponent = tabs[activeIndex.tabIndex].body
 
     const navigationItems = [
-      'Projects',
+      <AppTitle title="Projects" displayMenuButton={displayMenuButton} />,
       ...(issueDetail ? ['Issue Detail'] : []),
     ]
 
@@ -563,50 +562,28 @@ class App extends React.PureComponent {
             onShowLocalIdentityModal={this.handleShowLocalIdentityModal}
           >
             <AppView
-              padding={0}
               style={{ height: '100%', overflowY: 'hidden' }}
               appBar={
-                <Viewport>
-                  {({ below }) => (
-                    <AppBar
-                      endContent={
-                        status === STATUS.AUTHENTICATED &&
-                        tabs[activeIndex.tabIndex].action
-                      }
-                      tabs={
-                        issueDetail ? null : (
-                          <div
-                            css={`
-                              margin-left: ${below('medium') ? '-14px' : '0'};
-                            `}
-                          >
-                            <TabBar
-                              items={tabNames}
-                              onChange={this.handleSelect}
-                              selected={activeIndex.tabIndex}
-                            />
-                          </div>
-                        )
-                      }
-                    >
-                      {below('medium') && navigationItems.length < 2 && (
-                        <MenuButton
-                          onClick={this.handleMenuPanelOpen}
-                          css={`
-                            position: relative;
-                            z-index: 2;
-                            margin-left: 8px;
-                            margin-right: -24px;
-                          `}
-                        />
-                      )}
-                      <NavigationBar
-                        items={navigationItems}
-                        onBack={() => this.setIssueDetail(false)}
+                <AppBar
+                  endContent={
+                    status === STATUS.AUTHENTICATED &&
+                    tabs[activeIndex.tabIndex].action
+                  }
+                  tabs={
+                    issueDetail ? null : (
+                      <TabBar
+                        items={tabNames}
+                        onChange={this.handleSelect}
+                        selected={activeIndex.tabIndex}
                       />
-                    </AppBar>
-                  )}
-                </Viewport>
+                    )
+                  }
+                >
+                  <NavigationBar
+                    items={navigationItems}
+                    onBack={() => this.setIssueDetail(false)}
+                  />
+                </AppBar>
               }
             >
               <ErrorBoundary>
@@ -660,6 +637,6 @@ class App extends React.PureComponent {
 }
 
 export default () => {
-  const { api, appState } = useAragonApi()
-  return <App api={api} {...appState} />
+  const { api, appState, displayMenuButton } = useAragonApi()
+  return <App api={api} displayMenuButton={displayMenuButton} {...appState} />
 }

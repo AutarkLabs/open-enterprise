@@ -1,11 +1,10 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { AppBar, Main, SidePanel } from '@aragon/ui'
+import { AppBar, AppView, Main, SidePanel } from '@aragon/ui'
 import Decisions from './Decisions'
 import { hasLoadedVoteSettings } from './utils/vote-settings'
 import { NewPayoutVotePanelContent } from './components/Panels'
 import { networkContextType, AppTitle } from '../../../shared/ui'
-import AppView from './components/AppView'
 import { useAragonApi } from '@aragon/api-react'
 import { IdentityProvider } from '../../../shared/identity'
 
@@ -86,7 +85,11 @@ class App extends React.Component {
             padding={0}
             appBar={
               <AppBar>
-                <AppTitle title="Dot Voting" displayMenuButton={displayMenuButton} />
+                <AppTitle
+                  title="Dot Voting"
+                  displayMenuButton={displayMenuButton}
+                  css="padding-left: 30px"
+                />
               </AppBar>
             }
           >

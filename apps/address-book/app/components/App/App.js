@@ -1,4 +1,4 @@
-import { observe, SidePanel, Main, AppBar, AppView, breakpoint } from '@aragon/ui'
+import { observe, SidePanel, Main, AppBar, AppView } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
@@ -84,7 +84,11 @@ class App extends React.Component {
                   />
                 }
               >
-                <AppTitle title="Address Book" displayMenuButton={displayMenuButton} />
+                <AppTitle
+                  title="Address Book"
+                  displayMenuButton={displayMenuButton}
+                  css="padding-left: 30px"
+                />
               </AppBar>
             }
           >
@@ -118,13 +122,6 @@ const ScrollWrapper = styled.div`
   justify-content: stretch;
   overflow: auto;
   flex-grow: 1;
-  ${breakpoint(
-    'small',
-    `
-      padding: 1rem 2rem;
-    `
-  )};
-  padding: 0.3rem;
 `
 export default () => {
   const { api, appState } = useAragonApi()

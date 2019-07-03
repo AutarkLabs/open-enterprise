@@ -9,7 +9,7 @@ import tokenSymbolAbi from './abi/token-symbol.json'
 import { safeDiv } from './utils/math-utils'
 import { hasLoadedVoteSettings } from './utils/vote-settings'
 import { isBefore } from 'date-fns'
-import { EmptyStateCard, SidePanel, breakpoint } from '@aragon/ui'
+import { EmptyStateCard, SidePanel } from '@aragon/ui'
 import { VotePanelContent } from './components/Panels'
 import { EMPTY_CALLSCRIPT, getQuorumProgress, getTotalSupport } from './utils/vote-utils'
 
@@ -202,13 +202,6 @@ const ScrollWrapper = styled.div`
   overflow: auto;
 `
 const StyledDecisions = styled.div`
-  ${breakpoint(
-    'small',
-    `
-    padding: 2rem;
-    `
-  )};
-  padding: 0.3rem;
   display: flex;
   flex-direction: column;
   justify-content: stretch;
