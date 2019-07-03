@@ -29,7 +29,7 @@ import { isAddress } from 'web3-utils'
 
 class VotePanelContent extends React.Component {
   static propTypes = {
-    app: PropTypes.object, // TODO: isRequired?
+    app: PropTypes.object.isRequired,
     network: PropTypes.object,
   }
   state = {
