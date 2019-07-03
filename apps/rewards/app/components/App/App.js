@@ -92,7 +92,7 @@ class App extends React.Component {
     this.props.api.cache('requestRefresh', {
       event: 'RefreshRewards',
       returnValues: {
-        userAddress: this.props.userAccount
+        userAddress: this.props.connectedAccount
       },
     })
   }
@@ -287,6 +287,6 @@ class App extends React.Component {
 }
 
 export default () => {
-  const { api, appState } = useAragonApi()
-  return <App api={api} {...appState} />
+  const { api, appState, connectedAccount } = useAragonApi()
+  return <App api={api} {...appState} connectedAccount={connectedAccount} />
 }
