@@ -1,10 +1,9 @@
-import React from '../../../../../../.cache/typescript/2.9/node_modules/@types/react'
-import styled from '../../../allocations/node_modules/styled-components'
-import { theme, Text, Button } from '../../../allocations/node_modules/@aragon/ui'
+import React from 'react'
+import styled from 'styled-components'
+import { theme, Text, Button } from '@aragon/ui'
 import { lerp } from '../utils/math-utils'
 import { Main, Content, Title } from '../style'
 import { BigNumber } from 'bignumber.js'
-import { addTool } from '../stores/AllocationStore'
 
 import imgPending from '../assets/transaction-pending.svg'
 import imgSuccess from '../assets/transaction-success.svg'
@@ -36,15 +35,6 @@ class Launch extends React.Component {
         (data) => {
           if (data) {
             this.setState({ contractCreationStatus: 'success' })
-            addTool({
-              label: 'Monthly Reward DAO',
-              description: 'Allocate our monthly reward DAO accross four circles: Governance, Dapp, Social Coding, and Comms',
-              address: '0x45f3...5567',
-              stats: [
-                { label: 'BALANCE', value: '10 ETH' },
-                { label: 'BUDGET', value: '5 ETH / Month' }
-              ]
-            })
           } else {
             this.setState({ contractCreationStatus: 'error' })
           }
