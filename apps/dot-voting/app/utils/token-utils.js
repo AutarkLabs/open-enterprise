@@ -1,4 +1,4 @@
-//import { toUtf8 } from './web3-utils'
+import { toUtf8 } from 'web3-utils'
 import tokenSymbolAbi from '../../../shared/json-abis/token-symbol.json'
 import tokenSymbolBytesAbi from '../../../shared/json-abis/token-symbol-bytes.json'
 import tokenNameAbi from '../../../shared/json-abis/token-name.json'
