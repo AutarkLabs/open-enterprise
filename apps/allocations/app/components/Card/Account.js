@@ -9,7 +9,6 @@ import {
   ContextMenu,
   ContextMenuItem,
   IconAdd,
-  breakpoint,
   theme,
 } from '@aragon/ui'
 import { ETH_DECIMALS } from '../../utils/constants'
@@ -84,13 +83,7 @@ const TitleContainer = styled.div`
 
 const StyledCard = styled(Card)`
   display: flex;
-  ${breakpoint(
-    'small',
-    `
-    margin-bottom: 2rem;
-    `
-  )};
-  margin-bottom: 0.3rem;
+  margin-bottom: 2rem;
   margin-right: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? '0.6rem' : '2rem' };
   flex-direction: column;
   justify-content: flex-start;

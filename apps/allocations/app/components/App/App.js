@@ -133,7 +133,6 @@ class App extends React.PureComponent {
           onResolve={this.handleResolveLocalIdentity}
           onShowLocalIdentityModal={this.handleShowLocalIdentityModal}>
           <AppView
-            padding={0}
             appBar={
               <AppBar
                 endContent={
@@ -143,7 +142,11 @@ class App extends React.PureComponent {
                   />
                 }
               >
-                <AppTitle title="Allocations" displayMenuButton={displayMenuButton} />
+                <AppTitle
+                  title="Allocations"
+                  displayMenuButton={displayMenuButton}
+                  css="padding-left: 30px"
+                />
               </AppBar>
             }
           >
