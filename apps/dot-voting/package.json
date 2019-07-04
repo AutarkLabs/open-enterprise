@@ -98,5 +98,11 @@
       "stylelint --fix",
       "git add"
     ]
-  }
+  },
+  "browserslist": [
+    ">2%",
+    "last 1 edge versions",
+    "not ie > 0",
+    "not op_mini all"
+  ]
 }
