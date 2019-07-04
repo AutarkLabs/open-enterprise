@@ -76,7 +76,7 @@ contract('AddressBook', accounts => {
     })
 
     it('should remove the previously added entry', async () => {
-      await app.removeEntry(starfleet, '')
+      await app.removeEntry(starfleet, exampleCid)
     })
 
     it('should allow to re-add same address from previously removed entry', async () => {
@@ -99,6 +99,12 @@ contract('AddressBook', accounts => {
     it('should revert when adding duplicate address', async () => {
       return assertRevert(async () => {
         await app.addEntry(borg, exampleCid)
+      })
+    })
+
+    it('should revert when removing address with non-matching CID', async () => {
+      return assertRevert(async () => {
+        await app.removeEntry(borg, '')
       })
     })
 

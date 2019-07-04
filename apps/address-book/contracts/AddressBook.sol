@@ -27,6 +27,7 @@ contract AddressBook is AragonApp {
     string private constant ERROR_NOT_FOUND = "ENTRY_DOES_NOT_EXIST";
     string private constant ERROR_EXISTS = "ENTRY_ALREADY_EXISTS";
     string private constant ERROR_CID_MALFORMED = "CID_MALFORMED";
+    string private constant ERROR_NO_CID = "CID_DOES_NOT_MATCH";
 
     /// The entries in the registry
     mapping(address => string) entries;
@@ -72,6 +73,7 @@ contract AddressBook is AragonApp {
      * @param _cid The IPFS hash of the entry to remove from the registry; used only for radpec here
      */
     function removeEntry(address _addr, string _cid) public auth(REMOVE_ENTRY_ROLE) entryExists(_addr) {
+        require(keccak256(_cid) == keccak256(entries[_addr]), ERROR_NO_CID);
         delete entries[_addr];
         emit EntryRemoved(_addr);
     }
