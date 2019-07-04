@@ -621,13 +621,6 @@ const StyledIssues = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  ${breakpoint(
-    'small',
-    `
-    padding: 1rem 2rem;
-  `
-  )};
-  padding: 0.3rem;
 `
 
 const ScrollWrapper = styled.div`
