@@ -239,7 +239,7 @@ const activities = (
 
 const deadlineDistance = date => formatDistance(new Date(date), new Date())
 
-const detailsCard = ({ issue }) => {
+const DetailsCard = ({ issue }) => {
   const summaryData = {
     expLevel: issue.expLevel === undefined ? '-' : issue.expLevel,
     deadline:
@@ -359,7 +359,7 @@ const IssueDetail = ({ issue }) => {
                 marginBottom: below('small') ? '0.2rem' : '2rem',
               }}
             >
-              {detailsCard(issue)}
+              <DetailsCard issue={issue} />
             </div>
             <div style={{ minWidth: '330px', width: '100%' }}>
               <EventsCard issue={issue} />
@@ -375,7 +375,7 @@ const IssueDetail = ({ issue }) => {
                 marginRight: '2rem',
               }}
             >
-              {detailsCard(issue)}
+              <DetailsCard issue={issue} />
             </div>
             <div style={{ maxWidth: '400px', minWidth: '350px', width: '30%' }}>
               <EventsCard issue={issue} />
@@ -388,16 +388,18 @@ const IssueDetail = ({ issue }) => {
 }
 
 IssueDetail.propTypes = {
-  workStatus: PropTypes.oneOf([
-    undefined,
-    'funded',
-    'review-applicants',
-    'in-progress',
-    'review-work',
-    'fulfilled',
-  ]),
-  work: PropTypes.oneOf([ undefined, PropTypes.object ]),
-  fundingHistory: PropTypes.array,
+  issue: PropTypes.shape({
+    workStatus: PropTypes.oneOf([
+      undefined,
+      'funded',
+      'review-applicants',
+      'in-progress',
+      'review-work',
+      'fulfilled',
+    ]),
+    work: PropTypes.oneOf([ undefined, PropTypes.object ]),
+    fundingHistory: PropTypes.array,
+  }).isRequired,
 }
 
 const CardWrapper = styled.div`
