@@ -74,7 +74,6 @@ class App extends React.Component {
           onResolve={this.handleResolveLocalIdentity}
           onShowLocalIdentityModal={this.handleShowLocalIdentityModal}>
           <AppView
-            padding={0}
             appBar={
               <AppBar
                 endContent={
