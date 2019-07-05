@@ -6,6 +6,7 @@ import { NEW_ISSUE, GET_ISSUES } from '../../../utils/gql-queries.js'
 import { DescriptionInput, Form } from '../../Form'
 import { LoadingAnimation } from '../../Shared'
 import { usePanelManagement } from '../../Panel'
+import { useAragonApi } from '@aragon/api-react'
 
 // TODO: labels
 // TODO: import validator from '../data/validation'
@@ -176,7 +177,22 @@ class NewIssue extends React.PureComponent {
 // the following was a quick way to allow us to use hooks
 const NewIssueWrap = props => {
   const { closePanel } = usePanelManagement()
-  return <NewIssue closePanel={closePanel} {...props} />
+  const { appState: { repos } } = useAragonApi()
+  const repoNames = repos
+    ? repos.map(repo => ({
+      name: repo.metadata.name,
+      id: repo.data._repo,
+    }))
+    : 'No repos'
+  const reposIds = (repos || []).map(repo => repo.data.repo)
+
+  return (
+    <NewIssue
+      closePanel={closePanel}
+      reposManaged={repoNames}
+      reposIds={reposIds}
+    />
+  )
 }
 
 export default NewIssueWrap

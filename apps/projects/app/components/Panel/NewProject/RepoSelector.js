@@ -185,10 +185,19 @@ const createProject = ({ closePanel, addRepo }) => ({ project }) => {
 const RepoWrap = props => {
   const {
     api: { addRepo },
+    appState: { repos },
   } = useAragonApi()
   const { closePanel } = usePanelManagement()
+
+  // TODO: Review
+  // This is breaking RepoList loading sometimes preventing show repos after login
+  const reposAlreadyAdded = (repos || []).map(repo => repo.data._repo)
+
   return (
-    <Repo onCreateProject={createProject({ closePanel, addRepo })} {...props} />
+    <Repo
+      onCreateProject={createProject({ closePanel, addRepo })}
+      reposAlreadyAdded={reposAlreadyAdded}
+    />
   )
 }
 
