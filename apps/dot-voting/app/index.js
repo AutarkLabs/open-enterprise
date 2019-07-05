@@ -3,6 +3,11 @@ import ReactDOM from 'react-dom'
 import Aragon, { providers } from '@aragon/api'
 import App from './App'
 
+if (process.env.NODE_ENV !== 'production') {
+  var axe = require('react-axe')
+  axe(React, ReactDOM, 1000)
+}
+
 class ConnectedApp extends React.Component {
   state = {
     app: new Aragon(new providers.WindowMessage(window.parent)),
