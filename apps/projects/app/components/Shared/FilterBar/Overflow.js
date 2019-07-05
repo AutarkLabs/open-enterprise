@@ -1,109 +1,56 @@
 import React from 'react'
-import styled from 'styled-components'
 
-import FilterButton from './FilterButton'
+import { theme, Viewport } from '@aragon/ui'
+
 import FilterDropDown from './FilterDropDown'
 
+const apprxItemWidth = 150
 
-class Overflow extends React.Component {
-  state = {
-    shown: Infinity,
-    childrenLength: React.Children.toArray(this.props.children).length,
-  }
+// If the available space is, say, 290 px wide, we would show one item in
+// addition to the overflow item (290 ÷ 150).
+// Instead, we subtract this number so that we show only the overflow starting
+// at 400px available width.
+// Note that Viewport measures the *page width*, not the *available space*
+// width, so this number needs to be large enough to account for page padding
+// and other buttons.
+const spacer = 250
 
-  // TODO: pass ref as prop?
-  theRef = React.createRef()
+const splice = (children, ...args) => (
+  React.Children.toArray(children).splice(...args)
+)
 
-  componentDidMount() {
-    window.addEventListener('resize', this.resize)
-    this.calculateItems()
-  }
+const Overflow = ({ children }) => (
+  <Viewport>
+    {({ width }) => {
+      const shown = Math.floor((width - spacer) / apprxItemWidth)
+      const elements = splice(children, 0, shown)
 
-  componentWillUnmount() {
-    window.removeEventListener('resize', this.resize)
-  }
+      if (children.length > shown) {
+        elements.push(
+          <FilterDropDown
+            key="overflow"
+            caption={shown ? 'More Filters' : 'Filters'}
+            enabled
+            type="overflow"
+            width="100%"
+            style={{
+              border: 'none',
+              display: 'grid',
+              padding: '1px',
+              gridGap: '1px',
+              background: theme.contentBorder,
+              gridTemplateRows: 'repeat(auto-fit, minmax(0, 1fr))',
+            }}
+          >
+            {splice(children, shown)}
+          </FilterDropDown>
+        )
+      }
 
-  resize = () => {
-    this.debounced(200, this.calculateItems)
-  }
-
-  debounced = (delay, fn) => {
-    let timerId
-    if (timerId) {
-      clearTimeout(timerId)
-    }
-
-    timerId = setTimeout(() => {
-      fn()
-      timerId = null
-    }, delay)
-  }
-
-  calculateItems = () => {
-    const containerWidth = this.theRef.current
-      ? this.theRef.current.clientWidth
-      : 0
-
-    const itemWidth = 150
-    let shown = Math.floor((containerWidth) / itemWidth)
-    if (shown < this.state.childrenLength) {
-      if (containerWidth < shown * itemWidth + 62) shown--
-    }
-    this.setState({ shown })
-  }
-
-  // This splice does not directly mutate props since toArray generates new object
-  splice = (...args) =>
-    React.Children.toArray(this.props.children).splice(...args)
- 
-  render() {
-    const visibleElements = this.splice(0, this.state.shown)
-    const overflowElements = this.splice(this.state.shown)
-    return (
-      <div
-        ref={this.theRef}
-        style={{
-          width: '40px',
-          height: '40px',
-          //overflow: 'hidden',
-          display: 'flex',
-        }}
-      >
-        {visibleElements}
-  
-        {overflowElements.length === 0 ? (
-          <OverflowPlaceholder />
-        ) : (
-          <OverflowVertical>
-            <FilterDropDown
-              enabled={true}
-              type="overflow"
-              width="212px"
-            >
-              {overflowElements}
-            </FilterDropDown>
-          </OverflowVertical>
-        )}
-      </div>
-    )
-  }
-}
-
-const OverflowVertical = styled.div`
-  display: flex;
-  flex-direction: column;
-`
-const OverflowPlaceholder = styled(FilterButton)`
-  /*margin-left: -1px;*/
-  width: 100%;
-  min-width: 1px;
-  box-shadow: none;
-  border-left: 0;
-  padding: 0;
-  :hover {
-    box-shadow: none;
-  }
-`
+      return elements
+    }}
+  </Viewport>
+)
 
 export default Overflow
 
