@@ -1,15 +1,15 @@
 import axios from 'axios'
 import ipfsClient from 'ipfs-http-client'
 
-let infuraIpfs = ipfsClient({ host: 'ipfs.infura.io', port: '5001', protocol: 'https' })
-const infura = 'https://ipfs.infura.io:5001/api/v0'
+let autarkIpfs = ipfsClient({ host: 'ipfs.autark.xyz', port: '5001', protocol: 'https' })
+const ipfsEndpoint = 'https://ipfs.autark.xyz:5001/api/v0'
 
-const bufferFile = (content) => infuraIpfs.types.Buffer.from(JSON.stringify(content))
+const bufferFile = (content) => autarkIpfs.types.Buffer.from(JSON.stringify(content))
 
 export const ipfsAdd = async (content) => {
   const file = bufferFile(content)
   try {
-    const result = await infuraIpfs.add(file)
+    const result = await autarkIpfs.add(file)
     return result[0].hash
   } catch (err) {
     console.error('Error pinning file to IPFS', err)
@@ -25,7 +25,7 @@ export const computeIpfsString = async issues => {
 }
 
 export const ipfsGet = async (hash) => {
-  const endpoint = `${infura}/cat?arg=${hash}`
+  const endpoint = `${ipfsEndpoint}/cat?arg=${hash}`
   try {
     const { data } = await axios.get(endpoint)
     return data

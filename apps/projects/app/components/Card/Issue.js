@@ -177,10 +177,15 @@ const StyledIssue = styled.div`
   display: flex;
   height: auto;
   align-items: center;
-  border-radius: 3px;
   border: 1px solid ${theme.contentBorder};
   margin-bottom: -1px;
   position: relative;
+  :first-child {
+    border-radius: 3px 3px 0 0;
+  }
+  :last-child {
+    border-radius: 0 0 3px 3px;
+  }
 `
 const IssueTitleDetailsBalance = styled.div`
   display: flex;

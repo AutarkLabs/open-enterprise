@@ -131,10 +131,6 @@ class App extends React.PureComponent {
         this.setState(
           {
             githubLoading: false,
-            panelProps: {
-              onCreateProject: this.createProject,
-              status: STATUS.AUTHENTICATED,
-            },
           },
           () => {
             this.props.api.cache('github', {
@@ -148,10 +144,6 @@ class App extends React.PureComponent {
         this.setState(
           {
             githubLoading: false,
-            panelProps: {
-              onCreateProject: this.createProject,
-              status: STATUS.FAILED,
-            },
           },
           () => {
             this.props.api.cache('github', {
@@ -218,9 +210,7 @@ class App extends React.PureComponent {
       panel: PANELS.NewProject,
       panelProps: {
         onCreateProject: this.createProject,
-        onGithubSignIn: this.handleGithubSignIn,
         reposAlreadyAdded,
-        status,
       },
     }))
   }

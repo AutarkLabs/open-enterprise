@@ -656,6 +656,7 @@ const SearchFilterAction = styled.div`
     'search action'
     'filter filter';
   grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
   ${breakpoint(
     'small',
     `
