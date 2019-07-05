@@ -1,26 +1,25 @@
 import styled from 'styled-components'
 import { unselectable, theme } from '@aragon/ui'
 
-const FilterButton = styled.div`
-  display: inline-flex;
-  flex-wrap: nowrap;
+const FilterButton = styled.button`
   align-items: center;
-  justify-content: space-between;
-  border: 1px solid rgba(209, 209, 209, 0.5);
-  padding: 15px 20px;
-  height: 40px;
-  margin-left: -1px;
-  font-size: 14px;
-  font-weight: 500;
+  background: ${theme.contentBackground};
+  border: none;
   cursor: pointer;
-  width: 150px;
-  transition: all 0.1s ease-out;
-  ${unselectable};
-  :hover {
-    box-shadow: ${({ type }) => type === 'overflow' ? '0' : '0 0 8px 4px rgba(0, 0, 0, 0.06)'};
-    > :first-child {
-      background: ${({ type }) => type === 'overflow' ? theme.secondaryBackground : 'default' };
-    }
+  display: flex;
+  height: 100%;
+  margin: 0;
+  padding: 8px 16px;
+  transition: box-shadow 0.1s ease-out;
+  white-space: nowrap;
+  width: 100%;
+  :hover, :focus, :active {
+    outline: none;
+    box-shadow: 0 0 8px 4px rgba(0, 0, 0, 0.06);
+  }
+
+  > *:not(:first-child) {
+    margin-left: 6px;
   }
 `
 
