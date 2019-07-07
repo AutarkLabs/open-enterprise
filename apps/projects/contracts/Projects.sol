@@ -5,7 +5,6 @@ import "@aragon/os/contracts/lib/math/SafeMath.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
 import "@aragon/os/contracts/common/IsContract.sol";
 
-
 /*******************************************************************************
     Copyright 2018, That Planning Suite
 
@@ -179,6 +178,8 @@ contract Projects is IsContract, AragonApp {
     {
         initialized();
 
+        // TODO: since we use Vault instance, it will always be a Vault contract no need to actually check
+        // TODO: we should check bountiesAddr instead...
         require(isContract(_vault), ERROR_VAULT_NOT_CONTRACT);
 
         vault = _vault;

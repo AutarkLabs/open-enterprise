@@ -1,18 +1,16 @@
-/* global artifact, ... */
-const {
-  ACL,
-  DAOFactory,
-  EVMScriptRegistryFactory,
-  Kernel,
-  MiniMeToken
-} = require('@tps/test-helpers/artifacts')
+const ACL = artifacts.require('ACL')
+const DAOFactory = artifacts.require('DAOFactory')
+const EVMScriptRegistryFactory = artifacts.require('EVMScriptRegistryFactory')
+const Kernel = artifacts.require('Kernel')
+const MiniMeToken = artifacts.require('MiniMeToken')
 
 const Allocations = artifacts.require('Allocations')
+const Vault = artifacts.require('Vault')
 
 const { assertRevert } = require('@tps/test-helpers/assertThrow')
-const timetravel = require('@tps/test-helpers/timeTravel')(web3)
-const Vault = artifacts.require('Vault')
+const timeTravel = require('@tps/test-helpers/timeTravel')(web3)
 const BigNumber = require('bignumber.js')
+
 const NULL_ADDRESS = '0x00'
 
 // const createdPayoutId = receipt =>
@@ -86,8 +84,16 @@ contract('Allocations App', accounts => {
       { from: root }
     )
     vaultBase = await Vault.new()
-    const receipt1 = await dao.newAppInstance('0x5678', vaultBase.address, '0x', false, { from: root })
-    vault = Vault.at(receipt1.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
+    const receipt1 = await dao.newAppInstance(
+      '0x5678',
+      vaultBase.address,
+      '0x',
+      false,
+      { from: root }
+    )
+    vault = Vault.at(
+      receipt1.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
+    )
     await vault.initialize()
     await acl.createPermission(
       app.address,
@@ -97,7 +103,7 @@ contract('Allocations App', accounts => {
       { from: root }
     )
 
-    await app.initialize( 0x0, vault.address, { from: accounts[0] })
+    await app.initialize(0x0, vault.address, { from: accounts[0] })
   })
 
   context('app creation and funded Payout', () => {
@@ -115,13 +121,21 @@ contract('Allocations App', accounts => {
       token
 
     before(async () => {
-      token = await MiniMeToken.new(NULL_ADDRESS, NULL_ADDRESS, 0, 'one', 18, 'one', true) // empty parameters minime
+      token = await MiniMeToken.new(
+        NULL_ADDRESS,
+        NULL_ADDRESS,
+        0,
+        'one',
+        18,
+        'one',
+        true
+      ) // empty parameters minime
       bobafettInitialBalance = await web3.eth.getBalance(bobafett)
       dengarInitialBalance = await web3.eth.getBalance(dengar)
       bosskInitialBalance = await web3.eth.getBalance(bossk)
       candidateAddresses = [ bobafett, dengar, bossk ]
       accountId = (await app.newAccount(
-        'Fett\'s vett',
+        'Fett\'s vett'
       )).logs[0].args.accountId.toNumber()
 
       await app.fund(accountId, {
@@ -174,7 +188,11 @@ contract('Allocations App', accounts => {
 
     it('can create a new Account', async () => {
       accountMembers = await app.getAccount(accountId)
-      assert.equal(accountMembers[1], 'Fett\'s vett', 'Payout metadata incorrect')
+      assert.equal(
+        accountMembers[1],
+        'Fett\'s vett',
+        'Payout metadata incorrect'
+      )
     })
 
     it('sets the distribution (eth)', async () => {
@@ -227,22 +245,41 @@ contract('Allocations App', accounts => {
     })
 
     it('retrieves payout info details (eth)', async () => {
-      const payoutInfo = await app.getPayout(accountId,ethPayoutId)
-      assert.strictEqual(payoutInfo[0].toNumber(), 1e16, 'payout amount incorrect')
+      const payoutInfo = await app.getPayout(accountId, ethPayoutId)
+      assert.strictEqual(
+        payoutInfo[0].toNumber(),
+        1e16,
+        'payout amount incorrect'
+      )
       assert.strictEqual(payoutInfo[1], false, 'payout Should not be recurring')
-      assert.isAbove(payoutInfo[2].toNumber(), 0, 'recurring payout start time incorrect')
-      assert.strictEqual(payoutInfo[3].toNumber(), 0, 'recurring payout period length incorrect')
+      assert.isAbove(
+        payoutInfo[2].toNumber(),
+        0,
+        'recurring payout start time incorrect'
+      )
+      assert.strictEqual(
+        payoutInfo[3].toNumber(),
+        0,
+        'recurring payout period length incorrect'
+      )
     })
 
-    it('retrieves payout description', async () =>{
-      const payoutDescription = await app.getPayoutDescription(accountId,ethPayoutId)
-      assert.strictEqual(payoutDescription, 'ETH description', 'Payout description incorrectly stored')
+    it('retrieves payout description', async () => {
+      const payoutDescription = await app.getPayoutDescription(
+        accountId,
+        ethPayoutId
+      )
+      assert.strictEqual(
+        payoutDescription,
+        'ETH description',
+        'Payout description incorrectly stored'
+      )
     })
 
     it('sets the distribution (token)', async () => {
       const candidateArrayLength = (await app.getNumberOfCandidates(
         accountId,
-        tokenPayoutId,
+        tokenPayoutId
       )).toNumber()
       let storedSupport = []
       let supportVal
@@ -273,17 +310,26 @@ contract('Allocations App', accounts => {
       const bosskBalance = await token.balanceOf(bossk)
       assert.equal(
         bobafettBalance.toNumber(),
-        BigNumber(25e18).times(supports[0]).div(totalsupport).toNumber(),
+        BigNumber(25e18)
+          .times(supports[0])
+          .div(totalsupport)
+          .toNumber(),
         'boba fett token balance inccorrect'
       )
       assert.equal(
         dengarBalance.toNumber(),
-        BigNumber(25e18).times(supports[1]).div(totalsupport).toNumber(),
+        BigNumber(25e18)
+          .times(supports[1])
+          .div(totalsupport)
+          .toNumber(),
         'dengar token balance inccorrect'
       )
       assert.equal(
         bosskBalance.toNumber(),
-        BigNumber(25e18).times(supports[2]).div(totalsupport).toNumber(),
+        BigNumber(25e18)
+          .times(supports[2])
+          .div(totalsupport)
+          .toNumber(),
         'bossk token balance inccorrect'
       )
     })
@@ -293,14 +339,13 @@ contract('Allocations App', accounts => {
       accountAddress1 = account1Info1[2]
 
       accountId2 = (await app.newAccount(
-        'Fett\'s new ship',
+        'Fett\'s new ship'
       )).logs[0].args.accountId.toNumber()
 
       await app.fund(accountId2, {
         from: empire,
-        value: web3.toWei(1.00, 'ether'),
+        value: web3.toWei(1.0, 'ether'),
       })
-
 
       testCandidates = [ ...candidateAddresses, accountAddress1 ]
       supports = [ 500, 200, 150, 150 ]
@@ -317,8 +362,8 @@ contract('Allocations App', accounts => {
         accountId2,
         false,
         0,
-        web3.toWei(1.00, 'ether'),
-        0x0,
+        web3.toWei(1.0, 'ether'),
+        0x0
       )).logs[0].args.payoutId.toNumber()
 
       const account1Info2 = await app.getAccount(accountId)
@@ -327,7 +372,6 @@ contract('Allocations App', accounts => {
         web3.toWei(0.15, 'ether'),
         'account balance difference doesn\'t match transferred amount'
       )
-
     })
 
     it('does not transfer tokens to other allocations accounts', async () => {
@@ -335,14 +379,13 @@ contract('Allocations App', accounts => {
       accountAddress1 = account1Info1[2]
 
       accountId3 = (await app.newAccount(
-        'Fett\'s new ship',
+        'Fett\'s new ship'
       )).logs[0].args.accountId.toNumber()
 
       await token.generateTokens(root, 25e18)
       await token.transfer(vault.address, 25e18)
 
       account1Balance1 = await token.balanceOf(account1Info1[2])
-
 
       testCandidates = [ ...candidateAddresses, accountAddress1 ]
       supports = [ 500, 200, 150, 150 ]
@@ -359,8 +402,8 @@ contract('Allocations App', accounts => {
         accountId3,
         false,
         0,
-        web3.toWei(1.00, 'ether'),
-        token.address,
+        web3.toWei(1.0, 'ether'),
+        token.address
       )).logs[0].args.payoutId.toNumber()
 
       const account1Info2 = await app.getAccount(accountId)
@@ -371,14 +414,16 @@ contract('Allocations App', accounts => {
         0,
         'account balance difference doesn\'t match transferred amount'
       )
-
-
     })
 
     it('can fund account via proxy address', async () => {
       const account1Info1 = await app.getAccount(accountId)
       const accountAddress1 = account1Info1[2]
-      await web3.eth.sendTransaction({ from: empire, to: accountAddress1, value: web3.toWei(1.00, 'ether'), })
+      await web3.eth.sendTransaction({
+        from: empire,
+        to: accountAddress1,
+        value: web3.toWei(1.0, 'ether'),
+      })
       const account1Info2 = await app.getAccount(accountId)
       assert.strictEqual(
         account1Info2[0].sub(account1Info1[0]).toString(),
@@ -390,7 +435,7 @@ contract('Allocations App', accounts => {
     it('cannot execute more than once if non-recurring', async () => {
       await app.fund(accountId, {
         from: empire,
-        value: web3.toWei(1.00, 'ether'),
+        value: web3.toWei(1.0, 'ether'),
       })
       return assertRevert(async () => {
         await app.runPayout(accountId, ethPayoutId)
@@ -400,7 +445,7 @@ contract('Allocations App', accounts => {
     context('invalid workflows', () => {
       before(async () => {
         accountId = (await app.newAccount(
-          'Fett\'s vett',
+          'Fett\'s vett'
         )).logs[0].args.accountId.toNumber()
       })
 
@@ -468,7 +513,7 @@ contract('Allocations App', accounts => {
       bosskInitialBalance = await web3.eth.getBalance(bossk)
       candidateAddresses = [ bobafett, dengar, bossk ]
       accountId = (await app.newAccount(
-        'Fett\'s auto warranty',
+        'Fett\'s auto warranty'
       )).logs[0].args.accountId.toNumber()
     })
 
@@ -495,7 +540,7 @@ contract('Allocations App', accounts => {
           86300,
           web3.toWei(0.01, 'ether'),
           0x0,
-          { from: empire, }
+          { from: empire }
         )
       })
     })
@@ -522,7 +567,7 @@ contract('Allocations App', accounts => {
         web3.toWei(0.01, 'ether'),
         0x0
       )).logs[0].args.payoutId.toNumber()
-      timetravel(86500)
+      timeTravel(86500)
       await app.runPayout(accountId, payoutId)
 
       const bobafettBalance = await web3.eth.getBalance(bobafett)
@@ -548,7 +593,7 @@ contract('Allocations App', accounts => {
         from: empire,
         value: web3.toWei(0.01, 'ether'),
       })
-      timetravel(43200)
+      timeTravel(43200)
       return assertRevert(async () => {
         await app.runPayout(accountId, payoutId)
       })

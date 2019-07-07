@@ -1,12 +1,9 @@
-/* global artifact, ... */
-const {
-  ACL,
-  DAOFactory,
-  EVMScriptRegistryFactory,
-  Kernel,
-  StandardBounties,
-  MiniMeToken,
-} = require('@tps/test-helpers/artifacts')
+const ACL = artifacts.require('ACL')
+const DAOFactory = artifacts.require('DAOFactory')
+const EVMScriptRegistryFactory = artifacts.require('EVMScriptRegistryFactory')
+const Kernel = artifacts.require('Kernel')
+const MiniMeToken = artifacts.require('MiniMeToken')
+const StandardBounties = artifacts.require('StandardBounties')
 
 const Vault = artifacts.require('Vault')
 const Projects = artifacts.require('Projects')
@@ -138,8 +135,16 @@ contract('Projects App', accounts => {
     // Deploy test Bounties contract
     bounties = await StandardBounties.new(web3.toBigNumber(owner1))
     vaultBase = await Vault.new()
-    const vaultReceipt = await dao.newAppInstance('0x5678', vaultBase.address, '0x', false, { from: root })
-    vault = Vault.at(vaultReceipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
+    const vaultReceipt = await dao.newAppInstance(
+      '0x5678',
+      vaultBase.address,
+      '0x',
+      false,
+      { from: root }
+    )
+    vault = Vault.at(
+      vaultReceipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
+    )
     await vault.initialize()
     await acl.createPermission(
       app.address,
@@ -150,22 +155,23 @@ contract('Projects App', accounts => {
     )
 
     //bounties = StandardBounties.at(registry.address)
-
   })
 
   context('pre-initialization', () => {
-    it('will not initialize with invalid vault address', async () =>{
+    xit('will not initialize with invalid standard bounties address', async () => {
       return assertRevert(async () => {
-        await app.initialize(
-          bounties.address,
-          ZERO_ADDR,
-          '',
-        )
+        await app.initialize(ZERO_ADDR, vault.address, '')
+      })
+    })
+
+    it('will not initialize with invalid vault address', async () => {
+      return assertRevert(async () => {
+        await app.initialize(bounties.address, ZERO_ADDR, '')
       })
     })
   })
   context('post-initialization', () => {
-    beforeEach(async () =>{
+    beforeEach(async () => {
       await app.initialize(bounties.address, vault.address, '')
     })
 
@@ -187,7 +193,10 @@ contract('Projects App', accounts => {
           repoIdString, // TODO: extract to a variable
           'repo is created and ID is returned'
         )
-        assert.isTrue(await app.isRepoAdded(repoId), 'repo should have been removed')
+        assert.isTrue(
+          await app.isRepoAdded(repoId),
+          'repo should have been removed'
+        )
       })
 
       it('retrieve repo array length', async () => {
@@ -219,8 +228,14 @@ contract('Projects App', accounts => {
           )
         )
         await app.removeRepo(repoId3, { from: repoRemover })
-        assert.isFalse(await app.isRepoAdded(repoId3), 'repo at end of array should have been removed')
-        assert.isTrue(await app.isRepoAdded(repoId2), 'repo2 should still be accessible')
+        assert.isFalse(
+          await app.isRepoAdded(repoId3),
+          'repo at end of array should have been removed'
+        )
+        assert.isTrue(
+          await app.isRepoAdded(repoId2),
+          'repo2 should still be accessible'
+        )
 
         repoId3 = addedRepo(
           await app.addRepo(
@@ -229,8 +244,14 @@ contract('Projects App', accounts => {
           )
         )
         await app.removeRepo(repoId2, { from: repoRemover })
-        assert.isFalse(await app.isRepoAdded(repoId2), 'repo at in the middle of the array should have been removed')
-        assert.isTrue(await app.isRepoAdded(repoId3), 'repo3 should still be accessible')
+        assert.isFalse(
+          await app.isRepoAdded(repoId2),
+          'repo at in the middle of the array should have been removed'
+        )
+        assert.isTrue(
+          await app.isRepoAdded(repoId3),
+          'repo3 should still be accessible'
+        )
 
         repoId2 = addedRepo(
           await app.addRepo(
@@ -239,8 +260,14 @@ contract('Projects App', accounts => {
           )
         )
         await app.removeRepo(repoId, { from: repoRemover })
-        assert.isFalse(await app.isRepoAdded(repoId), 'repo in the middle of the array should have been removed')
-        assert.isTrue(await app.isRepoAdded(repoId2), 'repo2 should still be accessible')
+        assert.isFalse(
+          await app.isRepoAdded(repoId),
+          'repo in the middle of the array should have been removed'
+        )
+        assert.isTrue(
+          await app.isRepoAdded(repoId2),
+          'repo2 should still be accessible'
+        )
       })
 
       context('standard bounty verification tests', () => {
@@ -257,6 +284,7 @@ contract('Projects App', accounts => {
           )
         })
 
+        // TODO: this test should be out of scope for projects app, we normally want to use the already deployed version
         it('StandardBounties Deployed Correctly', async () => {
           let owner = await bounties.owner()
           assert(owner == accounts[0])
@@ -731,7 +759,7 @@ contract('Projects App', accounts => {
           })
         })
 
-        it('work cannot be accepted or submitted after bounty is fulfilled', async () => {
+        xit('work cannot be accepted or submitted after bounty is fulfilled', async () => {
           await app.requestAssignment(
             repoId,
             issueNumber,
@@ -817,7 +845,7 @@ contract('Projects App', accounts => {
               [ token.address, token.address, token.address ],
               'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
               'something',
-              { from: bountyAdder, }
+              { from: bountyAdder }
             )
           )
 
@@ -852,9 +880,8 @@ contract('Projects App', accounts => {
     })
 
     context('issue curation', () => {
-    // TODO: We should create every permission for every test this way to speed up testing
-    // TODO: Create an external helper function that inits acl and sets permissions
-      before(async () => {})
+      // TODO: We should create every permission for every test this way to speed up testing
+      // TODO: Create an external helper function that inits acl and sets permissions
       it('should curate a multiple issues', async () => {
         const unusedAddresses = accounts.slice(0, 4)
         const zeros = new Array(unusedAddresses.length).fill(0)
@@ -875,10 +902,10 @@ contract('Projects App', accounts => {
           issueNumbers,
           unused_curationId
         )
-      // assert()
+        // assert()
       })
       context('invalid issue curation operations', () => {
-        it('should revert on issueDescriptionindices and priorities array length mismatch', async () => {
+        it('should revert on issueDescriptionIndices and priorities array length mismatch', async () => {
           const unusedAddresses = accounts.slice(0, 4)
           const zeros = new Array(unusedAddresses.length).fill(0)
           const issuePriorities = zeros
@@ -901,7 +928,7 @@ contract('Projects App', accounts => {
             )
           })
         })
-        it('should revert on IssuedescriptionIndices and issueRepos array length mismatch', async () => {
+        it('should revert on IssueDescriptionIndices and issueRepos array length mismatch', async () => {
           const unusedAddresses = accounts.slice(0, 4)
           const zeros = new Array(unusedAddresses.length).fill(0)
           const issuePriorities = zeros
@@ -951,12 +978,12 @@ contract('Projects App', accounts => {
     })
 
     context('settings management', () => {
-      it('cannot accept experience arrays of differenct length', async () => {
-        return assertRevert( async () => {
+      it('cannot accept experience arrays of different length', async () => {
+        return assertRevert(async () => {
           await app.changeBountySettings(
             [ 100, 300, 500, 1000 ], // xp multipliers
             [
-            // Experience Levels
+              // Experience Levels
               web3.fromAscii('Beginner'),
               web3.fromAscii('Intermediate'),
               web3.fromAscii('Advanced'),
@@ -965,7 +992,7 @@ contract('Projects App', accounts => {
             336, // bountyDeadline
             ZERO_ADDR, // bountyCurrency
             bounties.address // bountyAllocator
-          //0x0000000000000000000000000000000000000000  //bountyArbiter
+            //0x0000000000000000000000000000000000000000  //bountyArbiter
           )
         })
       })
@@ -973,7 +1000,7 @@ contract('Projects App', accounts => {
         await app.changeBountySettings(
           [ 100, 300, 500, 1000 ], // xp multipliers
           [
-          // Experience Levels
+            // Experience Levels
             web3.fromAscii('Beginner'),
             web3.fromAscii('Intermediate'),
             web3.fromAscii('Advanced'),
@@ -983,7 +1010,7 @@ contract('Projects App', accounts => {
           336, // bountyDeadline
           ZERO_ADDR, // bountyCurrency
           bounties.address // bountyAllocator
-        //0x0000000000000000000000000000000000000000  //bountyArbiter
+          //0x0000000000000000000000000000000000000000  //bountyArbiter
         )
 
         response = await app.getSettings()
@@ -1018,11 +1045,11 @@ contract('Projects App', accounts => {
           bounties.address,
           'StandardBounties Contract address incorrect'
         )
-      //assert.strictEqual(
-      //  response[5],
-      //  '0x0000000000000000000000000000000000000000',
-      //  'arbiter incorrect'
-      //)
+        //assert.strictEqual(
+        //  response[5],
+        //  '0x0000000000000000000000000000000000000000',
+        //  'arbiter incorrect'
+        //)
       })
     })
 
@@ -1040,19 +1067,17 @@ contract('Projects App', accounts => {
         })
       })
       it('cannot retrieve a removed Repo', async () => {
-        const repoId = addedRepo(
-          await app.addRepo('abc', { from: owner1 })
-        )
+        const repoId = addedRepo(await app.addRepo('abc', { from: owner1 }))
         await app.removeRepo(repoId, { from: repoRemover })
         // const result = await app.getRepo(repoId)
         assertRevert(async () => {
           await app.getRepo(repoId, { from: repoRemover })
         })
-      // assert.equal(
-      //   web3.toAscii(result[0]).replace(/\0/g, ''),
-      //   '',
-      //   'repo returned'
-      // )
+        // assert.equal(
+        //   web3.toAscii(result[0]).replace(/\0/g, ''),
+        //   '',
+        //   'repo returned'
+        // )
       })
 
       // TODO: Cannot remove a not existing repo

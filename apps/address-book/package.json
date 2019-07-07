@@ -25,7 +25,7 @@
     "start": "aragon run",
     "sync-assets": "copy-aragon-ui-assets -n aragon-ui ./dist && npm run copy-public-assets",
     "test:gas": "GAS_REPORTER=true npm test",
-    "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
+    "test": "cross-env TRUFFLE_TEST=true npm run ganache-cli:test"
   },
   "dependencies": {
     "@aragon/api": "1.1.0",
@@ -45,6 +45,7 @@
     "@babel/preset-react": "^7.0.0",
     "babel-eslint": "^10.0.1",
     "babel-plugin-styled-components": "^1.10.0",
+    "cross-env": "^5.2.0",
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^4.3.0",
     "eslint-config-standard": "^12.0.0",

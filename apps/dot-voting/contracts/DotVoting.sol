@@ -1,21 +1,15 @@
 pragma solidity ^0.4.24;
 
-import "@aragon/os/contracts/apps/AragonApp.sol";
-
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
+import "@aragon/os/contracts/apps/AragonApp.sol";
+import "@aragon/os/contracts/common/IForwarder.sol";
+import "@aragon/os/contracts/lib/math/SafeMath.sol";
+import "@aragon/os/contracts/lib/math/SafeMath64.sol";
 
 import "@tps/apps-address-book/contracts/AddressBook.sol";
 
-import "@aragon/os/contracts/lib/math/SafeMath.sol";
+import "./ScriptHelpers.sol";
 
-import "@aragon/os/contracts/lib/math/SafeMath64.sol";
-
-import "@tps/test-helpers/contracts/evmscript/ScriptHelpers.sol";
-
-
-import "@tps/test-helpers/contracts/common/IForwarder.sol";
-
-import "@tps/test-helpers/contracts/lib/misc/Migrations.sol";
 
 
 /*******************************************************************************
