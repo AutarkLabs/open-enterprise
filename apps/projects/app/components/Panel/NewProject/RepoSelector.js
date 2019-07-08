@@ -111,7 +111,7 @@ class Repo extends React.Component {
             <Query
               fetchPolicy="cache-first"
               query={GET_REPOSITORIES}
-              onError={console.error /* eslint-disable-line no-console */}
+              onError={console.error}
             >
               {({ data, loading, error, refetch }) => {
                 if (data && data.viewer) {

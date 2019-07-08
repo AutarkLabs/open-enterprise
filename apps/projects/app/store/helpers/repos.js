@@ -58,7 +58,7 @@ const getRepoData = repo => {
     let data = graphQLClient.request(repoData(repo))
     return data
   } catch (err) {
-    console.error('getRepoData failed: ', err) // eslint-disable-line no-console
+    console.error('getRepoData failed: ', err)
   }
 }
 
@@ -138,7 +138,7 @@ const updateState = async (state, id, transform) => {
     if(!unloadedRepoQueue.includes(id)) unloadedRepoQueue.push(id)
     return state
   } catch (err) {
-    console.error( // eslint-disable-line no-console
+    console.error(
       'Update repos failed to return:',
       err,
       'here\'s what returned in NewRepos'
@@ -154,7 +154,7 @@ export const syncRepos = async (state, { repoId }) => {
     let updatedState = await updateState(state, repoId, transform)
     return updatedState
   } catch (err) {
-    console.error('updateState failed to return:', err) // eslint-disable-line no-console
+    console.error('updateState failed to return:', err)
     return state
   }
 }

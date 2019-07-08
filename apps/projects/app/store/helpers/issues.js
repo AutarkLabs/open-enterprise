@@ -156,7 +156,7 @@ const updateIssueState = (state, issueNumber, data) => {
     let newState = { ...state, issues: newIssues }
     return newState
   } catch (err) {
-    console.error( // eslint-disable-line no-console
+    console.error(
       'Update issues failed to return:',
       err,
       'here\'s what returned in newIssues',
@@ -169,6 +169,6 @@ export const syncIssues = (state, { issueNumber }, data) => {
   try {
     return updateIssueState(state, issueNumber, data)
   } catch (err) {
-    console.error('updateIssueState failed to return:', err) // eslint-disable-line no-console
+    console.error('updateIssueState failed to return:', err)
   }
 }

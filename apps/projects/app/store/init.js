@@ -19,7 +19,7 @@ export const initStore = vaultAddress => {
         const nextState = await handleEvent(state, action, vaultAddress, vaultContract)
         return nextState
       } catch (err) {
-        console.error( // eslint-disable-line no-console
+        console.error(
           `[PROJECTS] store error: ${err}
           event: ${JSON.stringify(action.event, null, 4)}
           state: ${JSON.stringify(state, null, 4)}`

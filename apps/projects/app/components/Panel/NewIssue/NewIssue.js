@@ -113,7 +113,7 @@ class NewIssue extends React.PureComponent {
         mutation={NEW_ISSUE}
         refetchQueries={reGet}
         variables={{ title, description, id }}
-        onError={console.error /* eslint-disable-line no-console */}
+        onError={console.error}
       >
         {(newIssue, result) => {
           const { data, loading, error, called } = result

@@ -531,7 +531,7 @@ const submitBountyAllocation = ({
         })
       })
     },
-    err => console.error(`error: ${err}`) // eslint-disable-line no-console
+    err => console.error(`error: ${err}`)
   )
 }
 

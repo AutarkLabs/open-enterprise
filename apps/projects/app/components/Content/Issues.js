@@ -456,7 +456,7 @@ class Issues extends React.PureComponent {
       <Query
         fetchPolicy="cache-first"
         query={GET_ISSUES2}
-        onError={console.error /* eslint-disable-line no-console */}
+        onError={console.error}
       >
         {({ data, loading, error, refetch }) => {
           if (data && data.node0) {
