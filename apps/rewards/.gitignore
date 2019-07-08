@@ -1,16 +1,15 @@
-// TODO: Some cleaning
-node_modules
-build
-.cache
-
 # dependencies
 /node_modules
 
 # testing
 /coverage
+coverage.json
 
 # production
 /build
+
+# development
+.cache
 
 # misc
 .DS_Store
@@ -27,3 +26,5 @@ yarn-error.log*
 /public/aragon-ui
 /public/script.js
 /public/script.map
+
+package-lock.json
