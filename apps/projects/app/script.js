@@ -1,15 +1,10 @@
 import '@babel/polyfill'
 
-import { first } from 'rxjs/operators'
-import { retryEvery } from '../../../shared/ui/utils'
-import { app, initStore } from './store'
+import { getContractAddress, retryEvery } from '../../../shared/ui/utils'
+import { initStore } from './store'
 
-retryEvery(async () => {
-  // get deployed vault address from contract
-  const vaultAddress = await app
-    .call('vault')
-    .pipe(first())
-    .toPromise()
+retryEvery(async retry => {
+  const vaultAddress = await getContractAddress('vault', retry)
 
   initStore(vaultAddress)
 })
