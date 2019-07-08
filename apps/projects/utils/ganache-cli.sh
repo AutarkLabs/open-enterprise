@@ -15,7 +15,8 @@ testrpc_running() {
 
 start_testrpc() {
 	if [ "$SOLIDITY_COVERAGE" = true ]; then
-		testrpc-sc -i 16 --gasLimit 0xfffffffffff --port "$testrpc_port" >/dev/null &
+		testrpc-sc -i 16 --gasLimit 0xfffffffffff --port "$testrpc_port" -m \
+     'fat super pupil virus rather alpha man surface drive increase trap winter' > /dev/null &
 	elif [ "$TRUFFLE_TEST" = true ]; then
 		ganache-cli -i 15 --gasLimit 50000000 --port "$testrpc_port" -m \
      'fat super pupil virus rather alpha man surface drive increase trap winter' > /dev/null &
@@ -42,6 +43,7 @@ sleep 5
 set +e
 result=0
 if [ "$SOLIDITY_COVERAGE" = true ]; then
+	./utils/coverage-prep.sh
 	solidity-coverage "$@"
 	result=$?
 elif [ "$TRUFFLE_TEST" = true ]; then
