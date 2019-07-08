@@ -84,7 +84,7 @@ class Vote extends React.Component {
         </div>
 
         <Separator />
-        
+
         <Bars>
           {showMore &&
             options.map(option => (
@@ -169,9 +169,6 @@ Vote.propTypes = {
   onSelectVote: PropTypes.func.isRequired,
 }
 
-const TitleContainer = styled.div`
-  flex-grow: 1;
-`
 const StyledCard = styled(Card)`
   margin: 0 0 8px 0;
   display: flex;
@@ -220,7 +217,8 @@ const Separator = styled.hr`
   margin: 14px 0;
   background: ${theme.contentBorder};
 `
-// TODO: shared
+// TODO: extract to shared/ui
+// See https://github.com/AutarkLabs/planning-suite/issues/382
 const FieldTitle = styled(Text.Block)`
   color: ${theme.textSecondary};
   text-transform: lowercase;
@@ -230,6 +228,5 @@ const FieldTitle = styled(Text.Block)`
   padding-right: 20px;
   width: 35%;
 `
-
 
 export default Vote

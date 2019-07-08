@@ -11,7 +11,6 @@ import {
 import ProgressBar from './ProgressBar'
 import VoteStatus from './VoteStatus'
 import { safeDiv } from '../utils/math-utils'
-import BigNumber from 'bignumber.js'
 import { VOTE_STATUS_SUCCESSFUL } from '../utils/vote-types'
 import { getVoteStatus } from '../utils/vote-utils'
 

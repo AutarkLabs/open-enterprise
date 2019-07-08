@@ -6,7 +6,7 @@ const voteSettings = [
   [ 'voteTime', 'voteTime', 'time' ],
   [ 'PCT_BASE', 'pctBase', 'number' ],
   [ 'globalCandidateSupportPct', 'globalCandidateSupportPct', 'number' ],
-  [ 'minParticipationPct', 'minParticipationPct', 'number' ],  
+  [ 'minParticipationPct', 'minParticipationPct', 'number' ],
 ]
 
 export const hasLoadedVoteSettings = (state) => {
@@ -49,5 +49,3 @@ export const loadVoteSettings =  () => {
       return {}
     })
 }
-
-export default voteSettings
