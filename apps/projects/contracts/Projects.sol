@@ -723,40 +723,6 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
         status = issue.assignmentRequests[applicant].status;
     }
 
-    /**
-     * @notice Returns Applicant array length
-     * @param _repoId the repo id of the issue
-     * @param _issueNumber the issue up for assignmen
-     * @return  array length of the applicants array
-     */
-    function getSubmissionsLength(
-        bytes32 _repoId,
-        uint256 _issueNumber
-    ) public view returns(uint256 applicantQty)
-    {
-        applicantQty = repos[_repoId].issues[_issueNumber].submissionIndices.length;
-    }
-
-    /**
-     * @notice Returns contributor's work submission
-     * @param _repoId the repo id of the issue
-     * @param _issueNumber the issue being worked on
-     * @param _submissionNumber the index of the contribution in the submissions Array
-     * @return  application IPFS hash for the applicant's proposed timeline and strategy
-     */
-    function getSubmission(
-        bytes32 _repoId,
-        uint256 _issueNumber,
-        uint256 _submissionNumber
-    ) public view returns(string submissionHash, uint256 fulfillmentId, SubmissionStatus status, address submitter)
-    {
-        WorkSubmission memory submission = workSubmissions[repos[_repoId].issues[_issueNumber].submissionIndices[_submissionNumber]];
-        submissionHash = submission.submissionHash;
-        fulfillmentId = submission.fulfillmentId;
-        status = submission.status;
-        submitter = submission.submitter;
-    }
-
 ///////////////////////
 // Internal functions
 ///////////////////////

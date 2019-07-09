@@ -644,6 +644,35 @@ contract('Projects App', accounts => {
             assert.isAbove(Number(bounty.registryId), 0, 'a non-zero bounty Id should be returned from standard bounties')
           })
         })
+
+        it('can issue bulk ETH bounties from the vault', async () => {
+          await vault.deposit(0, 6, { value: 6 })
+          issueReceipt = await addedBountyInfo(
+            await app.addBounties(
+              Array(3).fill(repoId),
+              [ 1, 2, 3 ],
+              [ 1, 2, 3 ],
+              [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
+              Array(3).fill(1),
+              Array(3).fill(0),
+              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+              'something',
+              { from: bountyManager, }
+            )
+          )
+          issueReceipt.forEach((bounty, index) => {
+            assert.deepEqual(
+              {
+                repoId: '0x4d4445774f494a6c6347397a61585276636e6b784e6a59334d6a6c794d6a593d',
+                issueNumber: new web3.BigNumber(index+1),
+                bountySize: new web3.BigNumber(index+1),
+                registryId: new web3.BigNumber(bounty.registryId)
+              },
+              bounty
+            )
+            assert.isAbove(Number(bounty.registryId), 0, 'a non-zero bounty Id should be returned from standard bounties')
+          })
+        })
       })
 
       context('issue open bounties', () => {
@@ -675,6 +704,19 @@ contract('Projects App', accounts => {
                 registryId: new web3.BigNumber(bounty.registryId)
               },
               bounty
+            )
+          })
+        })
+
+        it('cannot assign an open bounty', async () => {
+          return assertRevert(async () => {
+            await app.reviewApplication(
+              repoId,
+              1,
+              0,
+              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
+              true,
+              { from: bountyManager }
             )
           })
         })
@@ -788,7 +830,19 @@ contract('Projects App', accounts => {
             truffleAssert.ErrorType.REVERT)
         })
 
-        it('the array arguments can\'t exceed 256 in length', async () => {
+        it('the repo array length can\'t exceed 256 in length', async () => {
+          await truffleAssert.fails(
+            app.removeBounties(
+              Array(256).fill(repoId), 
+              Array(256).fill(6),
+              'reasons',
+              { from: bountyManager }),
+            truffleAssert.ErrorType.REVERT,
+            // 'LENGTH_EXCEEDED'
+          )
+        })
+
+        it('the issue array length can\'t exceed 256 in length', async () => {
 	      await truffleAssert.fails(
             app.removeBounties(
               [ repoId, repoId ], 
