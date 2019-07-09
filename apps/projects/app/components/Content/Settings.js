@@ -20,7 +20,7 @@ import LocalIdentityBadge from '../Shared/LocalIdentityBadge'
 import { STATUS } from '../../utils/github'
 import { fromUtf8, toHex } from '../../utils/web3-utils'
 import { REQUESTED_GITHUB_DISCONNECT } from '../../store/eventTypes'
-
+import useGithubAuth from '../../hooks/useGithubAuth'
 
 const bountyDeadlines = [ 'Weeks', 'Days', 'Hours' ]
 const bountyDeadlinesMul = [ 168, 24, 1 ] // it is one variable in contract, so number * multiplier = hours
@@ -28,7 +28,6 @@ const bountyDeadlinesMul = [ 168, 24, 1 ] // it is one variable in contract, so 
 class Settings extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
-    githubCurrentUser: PropTypes.object, // TODO: is this required?
     network: PropTypes.object,
     onLogin: PropTypes.func.isRequired,
     status: PropTypes.string.isRequired,
@@ -168,7 +167,6 @@ class Settings extends React.Component {
         onLogin={this.props.onLogin}
         onLogout={this.handleLogout}
         status={this.props.status}
-        user={this.props.githubCurrentUser.login}
       />
     )
 
@@ -392,7 +390,8 @@ const BaseRate = ({
   </div>
 )
 
-const GitHubConnect = ({ onLogin, onLogout, status, user }) => {
+const GitHubConnect = ({ onLogin, onLogout, status }) => {
+  const { githubCurrentUser: { login: user } } = useGithubAuth()
   const auth = status === STATUS.AUTHENTICATED
   const bodyText = auth ? (
     <span>
@@ -426,7 +425,6 @@ GitHubConnect.propTypes = {
   onLogin: PropTypes.func.isRequired,
   onLogout: PropTypes.func.isRequired,
   status: PropTypes.string.isRequired,
-  user: PropTypes.string, // TODO: is this required?
 }
 
 const ExperienceLevel = ({

@@ -4,6 +4,11 @@ import styled from 'styled-components'
 import { addHours } from 'date-fns'
 import BigNumber from 'bignumber.js'
 import Icon from '../../Shared/assets/components/IconEmptyVault'
+import { useAragonApi } from '@aragon/api-react'
+import useGithubAuth from '../../../hooks/useGithubAuth'
+import { usePanelManagement } from '..'
+import { computeIpfsString } from '../../../utils/ipfs-helpers'
+import { toHex } from '../../../utils/web3-utils'
 
 import {
   Text,
@@ -456,6 +461,96 @@ class FundIssues extends React.Component {
     )
   }
 }
+
+const submitBountyAllocation = ({
+  addBounties,
+  bountySettings,
+  tokens,
+  closePanel,
+}) => async (issues, description, post) => {
+  closePanel()
+
+  // computes an array of issues and denests the actual issue object for smart contract
+  const issuesArray = []
+  const bountyAddr = bountySettings.bountyCurrency
+
+  let bountyToken, bountyDecimals, bountySymbol
+
+  tokens.forEach(token => {
+    if (token.addr === bountyAddr) {
+      bountyToken = token.addr
+      bountyDecimals = token.decimals
+      bountySymbol = token.symbol
+    }
+  })
+
+  for (let key in issues) issuesArray.push({ key: key, ...issues[key] })
+
+  const ipfsString = await computeIpfsString(issuesArray)
+
+  const idArray = issuesArray.map(issue => toHex(issue.repoId))
+  const numberArray = issuesArray.map(issue => issue.number)
+  const bountyArray = issuesArray.map(issue =>
+    BigNumber(issue.size)
+      .times(10 ** bountyDecimals)
+      .toString()
+  )
+  const tokenArray = new Array(issuesArray.length).fill(bountyToken)
+  const dateArray = new Array(issuesArray.length).fill(Date.now() + 8600)
+  const booleanArray = new Array(issuesArray.length).fill(true)
+
+  addBounties(
+    idArray,
+    numberArray,
+    bountyArray,
+    dateArray,
+    booleanArray,
+    tokenArray,
+    ipfsString,
+    description
+  ).subscribe(
+    () => {
+      issuesArray.forEach(issue => {
+        post({
+          variables: {
+            body:
+              'This issue has a bounty attached to it.\n' +
+              `Amount: ${issue.size.toFixed(2)} ${bountySymbol}\n` +
+              `Deadline: ${issue.deadline.toUTCString()}`,
+            subjectId: issue.key,
+          },
+        })
+      })
+    },
+    err => console.error(`error: ${err}`) // eslint-disable-line no-console
+  )
+}
+
+// TODO: move entire component to functional component
+// the following was a quick way to allow us to use hooks
+const FundIssuesWrap = props => {
+  const { githubCurrentUser } = useGithubAuth()
+  const {
+    api,
+    appState: { bountySettings, tokens },
+  } = useAragonApi()
+  const { closePanel } = usePanelManagement()
+  return (
+    <FundIssues
+      bountySettings={bountySettings}
+      githubCurrentUser={githubCurrentUser}
+      tokens={tokens || []}
+      onSubmit={submitBountyAllocation({
+        addBounties: api.addBounties,
+        bountySettings,
+        closePanel,
+        tokens,
+      })}
+      {...props}
+    />
+  )
+}
+
 const DivSeparator = styled.div`
   > :last-child {
     margin-top: 15px;
@@ -572,4 +667,4 @@ const IBHoursInput = styled.div`
   }
 `
 
-export default FundIssues
+export default FundIssuesWrap
