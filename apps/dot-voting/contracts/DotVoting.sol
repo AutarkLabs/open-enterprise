@@ -4,8 +4,6 @@ import "@aragon/os/contracts/apps/AragonApp.sol";
 
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 
-import "@tps/apps-address-book/contracts/AddressBook.sol";
-
 import "@aragon/os/contracts/lib/math/SafeMath.sol";
 
 import "@aragon/os/contracts/lib/math/SafeMath64.sol";
@@ -51,14 +49,15 @@ contract DotVoting is IForwarder, AragonApp {
     using SafeMath64 for uint64;
 
     MiniMeToken public token;
-    AddressBook public addressBook;
-    uint256 public globalCandidateSupportPct; //supportRequiredPct;
-    uint256 public minParticipationPct; //minAcceptQuorumPct;
+    uint256 public globalCandidateSupportPct;
+    uint256 public globalMinParticipationPct;
     uint64 public voteTime;
 
     uint256 constant public PCT_BASE = 10 ** 18; // 0% = 0; 1% = 10^16; 100% = 10^18
 
     bytes32 constant public CREATE_VOTES_ROLE = keccak256("CREATE_VOTES_ROLE");
+    bytes32 constant public MODIFY_QUORUM = keccak256("MODIFY_QUORUM");
+    bytes32 constant public MODIFY_CANDIDATE_SUPPORT = keccak256("MODIFY_CANDIDATE_SUPPORT");
     bytes32 constant public ADD_CANDIDATES_ROLE = keccak256("ADD_CANDIDATES_ROLE");
 
     uint256 constant public CANDIDATE_ADDR_PARAM_LOC = 1;
@@ -74,7 +73,8 @@ contract DotVoting is IForwarder, AragonApp {
         address creator;
         uint64 startDate;
         uint256 snapshotBlock;
-        uint256 candidateSupportPct; //aka minAcceptQuorumPct;
+        uint256 candidateSupportPct;
+        uint256 minParticipationPct;
         uint256 totalVoters;
         uint256 totalParticipation;
         uint256 externalId;
@@ -115,6 +115,8 @@ contract DotVoting is IForwarder, AragonApp {
     event Location(uint256 currentLocation);
     event Address(address candidate);
     event CandidateQty(uint256 numberOfCandidates);
+    event UpdateQuorum(uint256 quorum);
+    event UpdateMinimumSupport(uint256 minSupport);
 
 ////////////////
 // Constructor
@@ -139,7 +141,6 @@ contract DotVoting is IForwarder, AragonApp {
     *        vote (unless it is impossible for the fate of the vote to change)
     */
     function initialize(
-        AddressBook _addressBook,
         MiniMeToken _token,
         uint256 _minParticipationPct,
         uint256 _candidateSupportPct,
@@ -151,8 +152,7 @@ contract DotVoting is IForwarder, AragonApp {
         require(_minParticipationPct <= PCT_BASE); // solium-disable-line error-reason
         require(_minParticipationPct >= _candidateSupportPct); // solium-disable-line error-reason
         token = _token;
-        addressBook = _addressBook;
-        minParticipationPct = _minParticipationPct;
+        globalMinParticipationPct = _minParticipationPct;
         globalCandidateSupportPct = _candidateSupportPct;
         voteTime = _voteTime;
         votes.length += 1;
@@ -197,6 +197,55 @@ contract DotVoting is IForwarder, AragonApp {
     }
 
     /**
+    * @notice `getCandidate` serves as a basic getter using the description
+    *         to return the struct data.
+    * @param _voteId id for vote structure this 'ballot action' is connected to
+    * @param _candidateIndex The candidate descrciption of the candidate.
+    */
+    function getCandidate(uint256 _voteId, uint256 _candidateIndex)
+    external view returns(address candidateAddress, uint256 voteSupport, string metadata, bytes32 externalId1, bytes32 externalId2)
+    {
+        Vote storage voteInstance = votes[_voteId];
+        CandidateState storage candidate = voteInstance.candidates[voteInstance.candidateKeys[_candidateIndex]];
+        candidateAddress = candidateAddresses[voteInstance.candidateKeys[_candidateIndex]];
+        voteSupport = candidate.voteSupport;
+        metadata = candidate.metadata;
+        externalId1 = candidate.externalId1;
+        externalId2 = candidate.externalId2;
+    }
+
+    /**
+    * @notice `setglobalCandidateSupportPct` serves as a basic getter using the description
+    *         to return the struct data.
+    * @param _globalCandidateSupportPct Percentage of cast voting power that must
+    *        support a candidate for it to be counted (expressed as a 10^18
+    *        percentage, (eg 10^16 = 1%, 10^18 = 100%)
+    */
+    function setglobalCandidateSupportPct(uint256 _globalCandidateSupportPct)
+    external auth(MODIFY_CANDIDATE_SUPPORT)
+    {
+        require(globalMinParticipationPct >= _globalCandidateSupportPct); // solium-disable-line error-reason
+        globalCandidateSupportPct = _globalCandidateSupportPct;
+        emit UpdateMinimumSupport(globalCandidateSupportPct);
+    }
+
+    /**
+    * @notice `setGlobalQuorum` serves as a basic setter for the qourum.
+    * @param _minParticipationPct Percentage of voters that must participate in
+    *        a vote for it to succeed (expressed as a 10^18 percentage,
+    *        (eg 10^16 = 1%, 10^18 = 100%)
+    */
+    function setGlobalQuorum(uint256 _minParticipationPct)
+    external auth(MODIFY_QUORUM)
+    {
+        require(_minParticipationPct > 0); // solium-disable-line error-reason
+        require(_minParticipationPct <= PCT_BASE); // solium-disable-line error-reason
+        require(_minParticipationPct >= globalCandidateSupportPct); // solium-disable-line error-reason
+        globalMinParticipationPct = _minParticipationPct;
+        emit UpdateQuorum(globalMinParticipationPct);
+    }
+
+    /**
     * @notice `addCandidate` allows the `ADD_CANDIDATES_ROLE` to add candidates
     *         (or options) to the current dot vote.
     * @param _voteId id for vote structure this 'ballot action' is connected to
@@ -227,24 +276,6 @@ contract DotVoting is IForwarder, AragonApp {
         voteInstance.candidateKeys = keys;
         voteInstance.infoStringLength += bytes(_metadata).length;
         emit AddCandidate(_voteId, candidateAddresses[cKey], voteInstance.candidateKeys.length);
-    }
-
-    /**
-    * @notice `getCandidate` serves as a basic getter using the description
-    *         to return the struct data.
-    * @param _voteId id for vote structure this 'ballot action' is connected to
-    * @param _candidateIndex The candidate descrciption of the candidate.
-    */
-    function getCandidate(uint256 _voteId, uint256 _candidateIndex) // solium-disable-line function-order
-    external view returns(address candidateAddress, uint256 voteSupport, string metadata, bytes32 externalId1, bytes32 externalId2)
-    {
-        Vote storage voteInstance = votes[_voteId];
-        CandidateState storage candidate = voteInstance.candidates[voteInstance.candidateKeys[_candidateIndex]];
-        candidateAddress = candidateAddresses[voteInstance.candidateKeys[_candidateIndex]];
-        voteSupport = candidate.voteSupport;
-        metadata = candidate.metadata;
-        externalId1 = candidate.externalId1;
-        externalId2 = candidate.externalId2;
     }
 
 ///////////////////////
@@ -315,17 +346,8 @@ contract DotVoting is IForwarder, AragonApp {
          // vote ended?
         if (_isVoteOpen(voteInstance))
           return false;
-        bytes32[] storage cKeys = voteInstance.candidateKeys;
-        uint256 i = 0;
-        for (i; i < cKeys.length; i++) {
-            bytes32 cKey = cKeys[i];
-            CandidateState storage candidateState = voteInstance.candidates[cKey];
-             // has candidate support?
-            if (!_isValuePct(candidateState.voteSupport, voteInstance.totalParticipation, voteInstance.candidateSupportPct))
-                return false;
-        }
          // has minimum participation threshold been reached?
-        if (!_isValuePct(voteInstance.totalParticipation, voteInstance.totalVoters, minParticipationPct))
+        if (!_isValuePct(voteInstance.totalParticipation, voteInstance.totalVoters, voteInstance.minParticipationPct))
             return false;
         return true;
     }
@@ -434,6 +456,7 @@ contract DotVoting is IForwarder, AragonApp {
         voteInstance.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
         voteInstance.totalVoters = token.totalSupplyAt(voteInstance.snapshotBlock);
         voteInstance.candidateSupportPct = globalCandidateSupportPct;
+        voteInstance.minParticipationPct = globalMinParticipationPct;
         voteInstance.scriptOffset = 0;
         voteInstance.scriptRemainder = 0;
         require(_executionScript.uint32At(0x0) == 1); // solium-disable-line error-reason
@@ -685,6 +708,22 @@ contract DotVoting is IForwarder, AragonApp {
     }
 
     /**
+    * @notice `_pruneVotes` trims out options that don't meet the minimum support pct.
+    */
+    function _pruneVotes(uint256 _voteId, uint256 _candidateSupportPct) internal {
+        Vote storage voteInstance = votes[_voteId];
+        bytes32[] memory candidateKeys = votes[_voteId].candidateKeys;
+        for (uint256 i = 0; i < candidateKeys.length; i++) {
+            bytes32 key = candidateKeys[i];
+            CandidateState storage candidateState = voteInstance.candidates[key];
+            if (!_isValuePct(candidateState.voteSupport, voteInstance.totalParticipation, voteInstance.candidateSupportPct)) {
+                voteInstance.totalParticipation -= candidateState.voteSupport;
+                candidateState.voteSupport = 0;
+            }
+        }
+    }
+
+    /**
     * @notice `_executeVote` executes the provided script for this vote and
     *         passes along the candidate data to the next function.
     * @return voteId The ID(or index) of this vote in the votes array.
@@ -692,6 +731,10 @@ contract DotVoting is IForwarder, AragonApp {
     function _executeVote(uint256 _voteId) internal {
         Vote storage voteInstance = votes[_voteId];
         voteInstance.executed = true;
+        uint256 candidateSupportPct = voteInstance.candidateSupportPct;
+        if (candidateSupportPct > 0) {
+            _pruneVotes(_voteId, candidateSupportPct);
+        }
         uint256 candidateLength = voteInstance.candidateKeys.length;
         //bytes memory infoString = getInfoString(_voteId);
         bytes memory executionScript = new bytes(32);
