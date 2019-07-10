@@ -29,5 +29,10 @@ module.exports = {
       }
     ],
     'object-curly-spacing': ['error', 'always']
+  },
+  settings: {
+    react: {
+      version: 'detect',
+    },
   }
 }
