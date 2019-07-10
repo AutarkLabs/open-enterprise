@@ -18,7 +18,7 @@ function useIdentity(address) {
     // Emit an event whenever the modal is closed (when the promise resolves)
     return showLocalIdentityModal(address)
       .then(() => updates$.next(address))
-      .catch(e => null)
+      .catch(() => null)
   }
 
   React.useEffect(() => {

@@ -24,7 +24,9 @@ import { toHex } from '../../../utils/web3-utils'
 
 class ReviewWork extends React.Component {
   static propTypes = {
-    issue: PropTypes.object.isRequired
+    githubCurrentUser: PropTypes.object.isRequired,
+    issue: PropTypes.object.isRequired,
+    onReviewWork: PropTypes.func.isRequired,
   }
 
   state = {
@@ -93,7 +95,15 @@ class ReviewWork extends React.Component {
 
         <SubmissionDetails>
           <UserLink>
-            <img src={submitter.avatarUrl} style={{ width: '32px', height: '32px', marginRight: '10px' }} />
+            <img
+              alt=""
+              src={submitter.avatarUrl}
+              style={{
+                width: '32px',
+                height: '32px',
+                marginRight: '10px',
+              }}
+            />
             <SafeLink
               href={submitter.url}
               target="_blank"
@@ -295,9 +305,6 @@ const Separator = styled.hr`
 const DetailText = styled(Text)`
   display: block;
   margin-bottom: 10px;
-`
-const AlertArea = styled.div`
-  padding: 14px
 `
 const ReviewRow = styled.div`
   display: flex;

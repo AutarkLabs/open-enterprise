@@ -1,4 +1,5 @@
 import React, { PureComponent } from 'react'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
 const StyledTabbedView = styled.div`
@@ -11,6 +12,11 @@ const StyledTabbedView = styled.div`
 `
 
 export default class TabbedView extends PureComponent {
+  static propTypes = {
+    activeIndex: PropTypes.number.isRequired,
+    changeActiveIndex: PropTypes.func.isRequired,
+    children: PropTypes.node,
+  }
   render() {
     const children = React.Children.map(this.props.children, child => {
       return React.cloneElement(child, {

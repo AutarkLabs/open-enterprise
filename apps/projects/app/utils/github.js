@@ -14,9 +14,9 @@ const STATUS = {
 // Variable fields depending on the execution environment:
 // TODO: This should be dynamically set depending on the execution environment (dev, prod...)
 const AUTH_URI = 'https://tps.autark.xyz/authenticate'
-const CLIENT_ID = '686f96197cc9bb07a43d'
-const GITHUB_URI = 'https://github.com/login/oauth/authorize'
-const REDIRECT_URI = 'https://tps.autark.xyz/tps-auth'
+export const CLIENT_ID = '686f96197cc9bb07a43d'
+export const GITHUB_URI = 'https://github.com/login/oauth/authorize'
+export const REDIRECT_URI = 'https://tps.autark.xyz/tps-auth'
 
 const getPopupSize = () => {
   return { width: 650, height: 850 }

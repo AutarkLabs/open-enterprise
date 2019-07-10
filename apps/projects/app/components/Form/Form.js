@@ -28,6 +28,7 @@ Form.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   submitText: PropTypes.string.isRequired,
   heading: PropTypes.string,
+  separator: PropTypes.bool,
   subHeading: PropTypes.string,
   submitDisabled: PropTypes.bool,
 }

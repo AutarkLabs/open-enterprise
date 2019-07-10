@@ -44,8 +44,6 @@ class Issue extends React.PureComponent {
     const { isSelected, onClick, onSelect, ...issue } = this.props
 
     const {
-      id,
-      work,
       workStatus,
       title,
       repo,
@@ -54,7 +52,6 @@ class Issue extends React.PureComponent {
       balance,
       symbol,
       deadline,
-      requestsData,
       expLevel,
     } = issue
 

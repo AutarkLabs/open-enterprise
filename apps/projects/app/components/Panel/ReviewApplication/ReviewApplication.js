@@ -13,7 +13,7 @@ import {
   theme,
 } from '@aragon/ui'
 
-import { Form, FormField, FieldTitle, DescriptionInput } from '../../Form'
+import { FormField, FieldTitle, DescriptionInput } from '../../Form'
 import { IconGitHub } from '../../Shared'
 import useGithubAuth from '../../../hooks/useGithubAuth'
 import { useAragonApi } from '@aragon/api-react'
@@ -25,7 +25,10 @@ import { toHex } from '../../../utils/web3-utils'
 
 class ReviewApplication extends React.Component {
   static propTypes = {
-    issue: PropTypes.object.isRequired
+    issue: PropTypes.object.isRequired,
+    requestIndex: PropTypes.number.isRequired,
+    githubCurrentUser: PropTypes.object.isRequired,
+    onReviewApplication: PropTypes.func.isRequired,
   }
 
   state = {
@@ -105,7 +108,15 @@ class ReviewApplication extends React.Component {
 
         <ApplicationDetails>
           <UserLink>
-            <img src={applicant.avatar} style={{ width: '32px', height: '32px', marginRight: '10px' }} />
+            <img
+              alt=""
+              src={applicant.avatar}
+              style={{
+                width: '32px',
+                height: '32px',
+                marginRight: '10px',
+              }}
+            />
             <SafeLink
               href={applicant.url}
               target="_blank"

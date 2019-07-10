@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 
-import { Checkbox, Text, TextInput, theme, Info, SafeLink } from '@aragon/ui'
+import { Checkbox, Text, TextInput, theme, SafeLink } from '@aragon/ui'
 
 import { Form, FormField, DescriptionInput } from '../../Form'
 import { IconGitHub } from '../../Shared'
@@ -14,7 +14,9 @@ import { toHex } from '../../../utils/web3-utils'
 
 class SubmitWork extends React.Component {
   static propTypes = {
+    githubCurrentUser: PropTypes.object.isRequired,
     issue: PropTypes.object.isRequired,
+    onSubmitWork: PropTypes.func.isRequired,
   }
 
   state = {
@@ -52,7 +54,6 @@ class SubmitWork extends React.Component {
     )
 
   render() {
-    const { login } = this.props.githubCurrentUser
     const { title, repo, number, url } = this.props.issue
 
     return (

@@ -33,12 +33,18 @@ const bountySlots = [ '1', '2', '3' ]
 
 class FundIssues extends React.Component {
   static propTypes = {
+    closePanel: PropTypes.func.isRequired,
+    description: PropTypes.string,
     /** array of issues to allocate bounties on */
     issues: PropTypes.arrayOf(
       PropTypes.shape({
         id: PropTypes.string,
+        deadline: PropTypes.string,
+        exp: PropTypes.number,
+        hours: PropTypes.number,
         level: PropTypes.string,
         title: PropTypes.string,
+        fundingHistory: PropTypes.array,
         number: PropTypes.number,
         repo: PropTypes.string,
         repoId: PropTypes.string,
@@ -47,7 +53,10 @@ class FundIssues extends React.Component {
     /** base rate in pennies */
     baseRate: PropTypes.number,
     tokens: PropTypes.array.isRequired,
+    mode: PropTypes.oneOf([ 'new', 'update' ]).isRequired,
     onSubmit: PropTypes.func.isRequired,
+    bountySettings: PropTypes.object.isRequired,
+    githubCurrentUser: PropTypes.object.isRequired,
   }
 
   descriptionChange = e => {
@@ -177,7 +186,7 @@ class FundIssues extends React.Component {
     this.props.onSubmit(this.state.bounties, this.state.description, post, result)
   }
 
-  renderUpdateForm = (issue, bounties, bountySettings) => {
+  renderUpdateForm = (issue, bounties) => {
     const expLevels = this.props.bountySettings.expLvls
 
     return (
@@ -257,7 +266,7 @@ class FundIssues extends React.Component {
     )
   }
 
-  renderForm = (issues, bounties, bountySettings) => {
+  renderForm = (issues, bounties) => {
     const expLevels = this.props.bountySettings.expLvls
 
     return (
@@ -265,7 +274,7 @@ class FundIssues extends React.Component {
         <Mutation mutation={COMMENT}>
           {(post, result) => (
             <Form
-              onSubmit={e => this.submitBounties(post, result)}
+              onSubmit={() => this.submitBounties(post, result)}
               description={this.props.description}
               submitText={this.props.issues.length > 1 ? 'Fund Issues' : 'Fund Issue'}
               submitDisabled={this.state.totalSize > this.state.tokenBalance}
@@ -408,7 +417,7 @@ class FundIssues extends React.Component {
 
   render() {
     const { bounties } = this.state
-    const { bountySettings, tokens, mode, issues } = this.props
+    const { tokens, mode, issues } = this.props
     const bountylessIssues = []
     const alreadyAdded = []
 
@@ -434,7 +443,7 @@ class FundIssues extends React.Component {
 
     // in 'update' mode there is only one issue
     if (mode === 'update') {
-      return this.renderUpdateForm(issues[0], bounties, bountySettings)
+      return this.renderUpdateForm(issues[0], bounties)
     }
 
     issues.forEach(issue => {
@@ -447,12 +456,12 @@ class FundIssues extends React.Component {
     if (bountylessIssues.length > 0 && alreadyAdded.length > 0) {
       return (
         <DivSeparator>
-          {this.renderForm(bountylessIssues, bounties, bountySettings)}
+          {this.renderForm(bountylessIssues, bounties)}
           {this.renderWarning(alreadyAdded)}
         </DivSeparator>
       )
     } else if (bountylessIssues.length > 0) {
-      return this.renderForm(bountylessIssues, bounties, bountySettings)
+      return this.renderForm(bountylessIssues, bounties)
     } else return (
       <DivSeparator>
         {this.renderWarning(alreadyAdded)}
@@ -522,7 +531,7 @@ const submitBountyAllocation = ({
         })
       })
     },
-    err => console.error(`error: ${err}`) // eslint-disable-line no-console
+    err => console.error(`error: ${err}`)
   )
 }
 
@@ -538,6 +547,7 @@ const FundIssuesWrap = props => {
   return (
     <FundIssues
       bountySettings={bountySettings}
+      closePanel={closePanel}
       githubCurrentUser={githubCurrentUser}
       tokens={tokens || []}
       onSubmit={submitBountyAllocation({
@@ -626,9 +636,6 @@ const IBDetails = styled.div`
 `
 const IBDeadline = styled.div`
   grid-area: dline;
-`
-const IBAvail = styled.div`
-  grid-area: slots;
 `
 const IBValue = styled.div`
   grid-area: value;

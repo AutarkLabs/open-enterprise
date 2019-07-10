@@ -6,7 +6,7 @@ import { useAragonApi } from '@aragon/api-react'
 import { IdentityBadge, Text, theme } from '@aragon/ui'
 import BigNumber from 'bignumber.js'
 
-import Issue, { issueShape, Dot } from './Issue'
+import Issue, { Dot } from './Issue'
 
 const calcTotalFunding = issues => {
   const totalsByToken = issues.reduce((group, issue) => {

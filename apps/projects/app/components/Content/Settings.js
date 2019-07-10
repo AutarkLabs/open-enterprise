@@ -28,9 +28,11 @@ const bountyDeadlinesMul = [ 168, 24, 1 ] // it is one variable in contract, so 
 class Settings extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
+    bountySettings: PropTypes.object.isRequired,
     network: PropTypes.object,
     onLogin: PropTypes.func.isRequired,
     status: PropTypes.string.isRequired,
+    tokens: PropTypes.array.isRequired,
   }
   state = {
     bountyCurrencies: this.props.tokens.map(token => token.symbol),
@@ -42,7 +44,6 @@ class Settings extends React.Component {
     back to contract.
   */
   static getDerivedStateFromProps(props, state) {
-    let bountyCurrencies = state.bountyCurrencies
     // is all configured already? TODO: it might be useful to check
     // if there was no update to settings (on chain) in the meantime,
     // and what to do in that case. as of now: changes are ignored.
@@ -84,8 +85,6 @@ class Settings extends React.Component {
       bountyDeadlineD,
       bountyCurrency,
       bountyAllocator,
-      bountyCurrencies,
-      bountyArbiter,
     } = this.state
     // flatten deadline
     let bountyDeadline = bountyDeadlinesMul[bountyDeadlineD] * bountyDeadlineT
@@ -153,7 +152,6 @@ class Settings extends React.Component {
       bountyDeadlineT,
       bountyDeadlineD,
       bountyAllocator,
-      bountyArbiter,
     } = this.state
 
     const { network } = this.props
@@ -283,6 +281,13 @@ const BountyDeadline = ({
   </div>
 )
 
+BountyDeadline.propTypes = {
+  bountyDeadlineT: PropTypes.number.isRequired,
+  onChangeT: PropTypes.func.isRequired,
+  bountyDeadlineD: PropTypes.number.isRequired,
+  onChangeD: PropTypes.func.isRequired,
+}
+
 const BountyArbiter = ({ bountyArbiter, networkType }) => (
   <div>
     <Text.Block size="large" weight="bold">
@@ -299,6 +304,11 @@ const BountyArbiter = ({ bountyArbiter, networkType }) => (
     </div>
   </div>
 )
+
+BountyArbiter.propTypes = {
+  bountyArbiter: PropTypes.string.isRequired,
+  networkType: PropTypes.string.isRequired,
+}
 
 const BountyContractAddress = ({ bountyAllocator, networkType }) => (
   <div>
@@ -324,6 +334,11 @@ const BountyContractAddress = ({ bountyAllocator, networkType }) => (
     </div>
   </div>
 )
+
+BountyContractAddress.propTypes = {
+  bountyAllocator: PropTypes.string.isRequired,
+  networkType: PropTypes.string.isRequired,
+}
 
 const StyledInputDropDown = styled.div`
   display: flex;
@@ -356,6 +371,7 @@ const EmptyBaseRate = () => (
     </Text.Block>
   </div>
 )
+
 const BaseRate = ({
   baseRate,
   onChangeRate,
@@ -390,6 +406,14 @@ const BaseRate = ({
   </div>
 )
 
+BaseRate.propTypes = {
+  baseRate: PropTypes.number.isRequired,
+  onChangeRate: PropTypes.func.isRequired,
+  bountyCurrency: PropTypes.number.isRequired,
+  onChangeCurrency: PropTypes.func.isRequired,
+  bountyCurrencies: PropTypes.array.isRequired,
+}
+
 const GitHubConnect = ({ onLogin, onLogout, status }) => {
   const { githubCurrentUser: { login: user } } = useGithubAuth()
   const auth = status === STATUS.AUTHENTICATED
@@ -405,18 +429,17 @@ const GitHubConnect = ({ onLogin, onLogout, status }) => {
   const buttonAction = auth ? onLogout : onLogin
   return (
     <div>
-      <Text.Block
-        size="large"
-        weight="bold"
-        children={'GitHub Authorization'}
-      />
-      <Text.Block children={bodyText} />
+      <Text.Block size="large" weight="bold">
+        GitHub Authorization
+      </Text.Block>
+      <Text.Block>{bodyText}</Text.Block>
       <StyledButton
         compact
         mode="secondary"
         onClick={buttonAction}
-        children={buttonText}
-      />
+      >
+        {buttonText}
+      </StyledButton>
     </div>
   )
 }
@@ -465,6 +488,12 @@ const ExperienceLevel = ({
       </StyledButton>
     </div>
   )
+}
+
+ExperienceLevel.propTypes = {
+  expLevels: PropTypes.array.isRequired,
+  onAddExpLevel: PropTypes.func.isRequired,
+  generateExpLevelHandler: PropTypes.func.isRequired,
 }
 
 const StyledNumberFormat = styled(NumberFormat)`
@@ -528,7 +557,9 @@ const Separator = styled.hr`
   background: ${theme.contentBorder};
 `
 
-export default props => {
+const SettingsWrap = props => {
   const network = useNetwork()
   return <Settings network={network} {...props} />
 }
+
+export default SettingsWrap

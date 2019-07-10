@@ -61,6 +61,11 @@ class App extends React.PureComponent {
   static propTypes = {
     api: PropTypes.object, // is not required, since it comes async
     repos: PropTypes.arrayOf(PropTypes.object),
+    bountySettings: PropTypes.object,
+    displayMenuButton: PropTypes.bool,
+    client: PropTypes.object,
+    issues: PropTypes.array,
+    tokens: PropTypes.array,
     github: PropTypes.shape({
       status: PropTypes.oneOf([
         STATUS.AUTHENTICATED,
@@ -203,7 +208,11 @@ class App extends React.PureComponent {
     const TabComponent = tabs[activeIndex.tabIndex].body
 
     const navigationItems = [
-      <AppTitle title="Projects" displayMenuButton={displayMenuButton} />,
+      <AppTitle
+        key="title"
+        title="Projects"
+        displayMenuButton={displayMenuButton}
+      />,
       ...(issueDetail ? ['Issue Detail'] : []),
     ]
 
@@ -245,7 +254,6 @@ class App extends React.PureComponent {
                     onLogin={this.handleGithubSignIn}
                     status={status}
                     app={this.props.api}
-                    bountySettings={bountySettings}
                     githubLoading={this.state.githubLoading}
                     projects={
                       this.props.repos !== undefined ? this.props.repos : []
@@ -279,7 +287,7 @@ class App extends React.PureComponent {
   }
 }
 
-export default () => {
+const AppWrap = () => {
   const { api, appState, displayMenuButton } = useAragonApi()
   const { client } = useGithubAuth()
   return (
@@ -291,3 +299,5 @@ export default () => {
     />
   )
 }
+
+export default AppWrap
