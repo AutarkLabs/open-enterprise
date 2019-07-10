@@ -32,7 +32,24 @@ module.exports = {
         singleValue: false
       }
     ],
-    'object-curly-spacing': ['error', 'always']
+    'object-curly-spacing': ['error', 'always'],
+    'import/no-unused-modules': [
+      1,
+      {
+        unusedExports: true,
+        missingExports: true,
+        ignoreExports: [
+          'app/index.js', // no exports
+          'app/script.js', // no exports
+          'app/components/Content/MyRewards.js', // used by index.js and App.js but not detected by linter
+          'app/components/Content/Overview.js', // used by index.js and App.js but not detected by linter
+          'app/components/Panel/index.js', // used by App.js but not detected by linter
+          'app/components/Panel/MyReward/index.js', // used by PanelManager.js but not detected by linter
+          'app/components/Panel/NewReward/index.js', // used by PanelManager.js but not detected by linter
+          'app/components/Panel/ViewReward/index.js', // used by PanelManager.js but not detected by linter
+        ],
+      }
+    ],
   },
   settings: {
     react: {
