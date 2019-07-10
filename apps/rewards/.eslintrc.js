@@ -3,7 +3,11 @@ module.exports = {
     browser: true,
     es6: true
   },
-  extends: 'prettier/react',
+  extends: [
+    'plugin:import/errors',
+    'plugin:import/warnings',
+    'prettier/react',
+  ],
   parser: 'babel-eslint',
   parserOptions: {
     ecmaFeatures: {
