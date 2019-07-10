@@ -27,7 +27,7 @@ import {
   REQUESTED_GITHUB_TOKEN_FAILURE,
 } from './store/eventTypes'
 
-import useGithubAuth from './hooks/useGithubAuth'
+import { initApolloClient } from './utils/apollo-client'
 import { getToken, getURLParam, githubPopup, STATUS } from './utils/github'
 
 const ASSETS_URL = './aragon-ui'
@@ -281,7 +281,7 @@ class App extends React.PureComponent {
 
 export default () => {
   const { api, appState, displayMenuButton } = useAragonApi()
-  const { client } = useGithubAuth()
+  const client = initApolloClient(appState.github && appState.github.token)
   return (
     <App
       api={api}

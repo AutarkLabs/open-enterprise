@@ -249,7 +249,7 @@ const onReviewWork = ({ closePanel, reviewSubmission }) => async (
 // TODO: move entire component to functional component
 // the following was a quick way to allow us to use hooks
 const ReviewWorkWrap = props => {
-  const { githubCurrentUser } = useGithubAuth()
+  const githubCurrentUser = useGithubAuth()
   const {
     api: { reviewSubmission },
   } = useAragonApi()

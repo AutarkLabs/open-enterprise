@@ -156,7 +156,7 @@ const onRequestAssignment = ({ closePanel, requestAssignment }) => async (
 // TODO: move entire component to functional component
 // the following was a quick way to allow us to use hooks
 const RequestAssignmentWrap = props => {
-  const { githubCurrentUser } = useGithubAuth()
+  const githubCurrentUser = useGithubAuth()
   const { api } = useAragonApi()
   const { closePanel } = usePanelManagement()
   return (

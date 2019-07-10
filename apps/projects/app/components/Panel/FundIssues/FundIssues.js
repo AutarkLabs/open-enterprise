@@ -529,7 +529,7 @@ const submitBountyAllocation = ({
 // TODO: move entire component to functional component
 // the following was a quick way to allow us to use hooks
 const FundIssuesWrap = props => {
-  const { githubCurrentUser } = useGithubAuth()
+  const githubCurrentUser = useGithubAuth()
   const {
     api,
     appState: { bountySettings, tokens },
