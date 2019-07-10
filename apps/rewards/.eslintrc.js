@@ -50,6 +50,10 @@ module.exports = {
         ],
       }
     ],
+    'no-undef': 'error',
+    'no-unused-vars': ['warn', { 'vars': 'all', 'args': 'after-used', 'ignoreRestSiblings': false }],
+    'react/jsx-uses-react': 'warn',
+    'react/jsx-uses-vars': 'warn',
   },
   settings: {
     react: {
