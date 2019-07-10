@@ -196,16 +196,6 @@ RewardsTableWide.propTypes = {
   fourthColumn:PropTypes.string.isRequired,
   fourthColumnData: PropTypes.func.isRequired,
 }
-  
-/*
-const leadersList = leaders => (
-  <LeadersLlist>
-    {leaders.sort((l1, l2) => l1.amount < l2.amount ? 1 : -1).map(leader => (
-      <li><span>{leader.name}</span><span style={{ fontWeight: 'bold' }}>$ {leader.amount}</span></li>
-    ))}
-  </LeadersLlist>
-)
-*/
 
 const displayNextPayout = reward => Intl.DateTimeFormat().format(reward.endDate)
 const displayLastPayout = reward => Intl.DateTimeFormat().format(reward.endDate)
@@ -262,15 +252,6 @@ const Overview = ({ tokens, rewards, convertRates, claims, newReward, openDetail
           />
         ))}
       </RewardsWrap>
-
-      {/*<LeaderBoardWrap>
-        <FieldTitle
-          style={{ borderBottom: '1px solid grey', marginBottom: '10px' }}
-        >
-          Leaderboard
-        </FieldTitle>
-        {leadersList(leaders)}
-      </LeaderBoardWrap> */}
     </OverviewMain>
   )
 }
@@ -298,28 +279,6 @@ const ClickableTableRow = styled(TableRow)`
     cursor: pointer;
   }
 `
-/*
-const LeaderBoardWrap = styled.div`
-  ${breakpoint(
-    'medium',
-    `
-    width: 300px;
-    `
-  )};
-
-  width: 100%;
-  background: #8196FF;
-  padding: 10px;
-`
-
-const LeadersLlist = styled.ul`
-  list-style: none;
-  li {
-    display: flex;
-    justify-content: space-between;
-  }
-`
-*/
 
 // eslint-disable-next-line import/no-unused-modules
 export default Overview
