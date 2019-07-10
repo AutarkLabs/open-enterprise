@@ -52,8 +52,6 @@ class NewReward extends React.Component {
     refTokens: PropTypes.array,
   }
 
-
-
   constructor(props) {
     super(props)
     this.getCurrentBlock()

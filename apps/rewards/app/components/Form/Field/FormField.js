@@ -21,7 +21,7 @@ const FormField = ({ input, label, hint, required, separator, width }) => {
             color={theme.accent}
             title="Required"
             style={{ marginLeft: '0.3rem' }}
-          > 
+          >
             *
           </Text>
         )}

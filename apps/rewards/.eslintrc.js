@@ -54,6 +54,7 @@ module.exports = {
     'no-unused-vars': ['warn', { 'vars': 'all', 'args': 'after-used', 'ignoreRestSiblings': false }],
     'react/jsx-uses-react': 'warn',
     'react/jsx-uses-vars': 'warn',
+    'react/no-unused-prop-types': 'warn',
   },
   settings: {
     react: {
