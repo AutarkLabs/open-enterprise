@@ -200,6 +200,11 @@ contract('Projects App', accounts => {
       await app.initialize(bounties.address, vault.address)
     })
 
+    it.only('checks bounty contract', async () => {
+      await app._isBountiesContractValid(bounties.address)
+      assert(false)
+    })
+
     context('creating and retrieving repos and bounties', () => {
       let repoId
 

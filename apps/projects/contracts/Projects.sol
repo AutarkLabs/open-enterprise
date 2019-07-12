@@ -3,8 +3,7 @@ pragma solidity ^0.4.24;
 import "@aragon/os/contracts/apps/AragonApp.sol";
 import "@aragon/os/contracts/lib/math/SafeMath.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
-import "@aragon/os/contracts/common/IsContract.sol";
-
+import "@aragon/os/contracts/common/EtherTokenConstant.sol";
 
 /*******************************************************************************
     Copyright 2018, That Planning Suite
@@ -110,14 +109,12 @@ interface ERC20Token {
 }
 
 
-contract Projects is IsContract, AragonApp, DepositableStorage {
+contract Projects is AragonApp, DepositableStorage {
     using SafeMath for uint256;
     Bounties public bounties;
     Relayer public relayer;
     BountySettings public settings;
     Vault public vault;
-    //holds all work submissions
-    WorkSubmission[] workSubmissions;
     // Auth roles
     bytes32 public constant FUND_ISSUES_ROLE =  keccak256("FUND_ISSUES_ROLE");
     bytes32 public constant REMOVE_ISSUES_ROLE = keccak256("REMOVE_ISSUES_ROLE");
@@ -130,7 +127,7 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
     bytes32 public constant FUND_OPEN_ISSUES_ROLE = keccak256("FUND_OPEN_ISSUES_ROLE");
     bytes32 public constant UPDATE_BOUNTIES_ROLE = keccak256("UPDATE_BOUNTIES_ROLE");
 
-    string private constant ERROR_VAULT_NOT_CONTRACT = "PROJECTS_VAULT_NOT_CONTRACT";
+    string private constant ERROR_PROJECTS_VAULT_NOT_CONTRACT = "PROJECTS_VAULT_NOT_CONTRACT";
     string private constant ERROR_STANDARD_BOUNTIES_NOT_CONTRACT = "STANDARD_BOUNTIES_NOT_CONTRACT";
     string private constant ERROR_LENGTH_EXCEEDED = "LENGTH_EXCEEDED";
     string private constant ERROR_LENGTH_MISMATCH = "LENGTH_MISMATCH";
@@ -160,14 +157,6 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
         uint index;
     }
 
-
-    struct WorkSubmission {
-        SubmissionStatus status;
-        string submissionHash; //IPFS hash of the Pull Request
-        uint256 fulfillmentId; // Standard Bounties Fulfillment ID
-        address submitter;
-    }
-
     struct AssignmentRequest {
         SubmissionStatus status;
         string requestHash; //IPFS hash of the application data
@@ -189,7 +178,6 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
         //uint256 submissionQty;
         uint256[] submissionIndices;
         mapping(address => AssignmentRequest) assignmentRequests;
-        //mapping(address => WorkSubmission) workSubmissions;
     }
 
     // Fired when a repository is added to the registry.
@@ -210,29 +198,28 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
     event AssignmentRequested(bytes32 indexed repoId, uint256 issueNumber);
     // Fired when Task Manager approves assignment request
     event AssignmentApproved(address applicant, bytes32 indexed repoId, uint256 issueNumber);
-    // Fired when a user submits work towards an issue
-    event WorkSubmitted(bytes32 repoId, uint256 issueNumber);
     // Fired when a reviewer accepts accepts a submission
     event SubmissionAccepted(uint256 submissionNumber, bytes32 repoId, uint256 issueNumber);
     // Fired when a reviewer rejects a submission
     event SubmissionRejected(uint256 submissionNumber, bytes32 repoId, uint256 issueNumber);
     // Fired when a bounty is opened up to work submissions from anyone
     event AwaitingSubmissions(bytes32 repoId, uint256 issueNumber);
-    event BountyTest(uint256 id);
+    event BountyCode(bytes id);
+    event BountyHash(bytes32 id);
+    event BountySize(uint256 size);
 
 ////////////////
 // Constructor
 ////////////////
     function initialize(
         address _bountiesAddr,
-        //address _relayer, TODO: Implement this
         Vault _vault
     ) external onlyInit // solium-disable-line visibility-first
     {
         initialized();
         setDepositable(true);
 
-        require(isContract(_vault), ERROR_VAULT_NOT_CONTRACT);
+        require(isContract(_vault), ERROR_PROJECTS_VAULT_NOT_CONTRACT);
 
         vault = _vault;
 
@@ -245,9 +232,8 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
         _changeBountySettings(
             100, // baseRate
             336, // bountyDeadline
-            address(0), // default bounty currency inits to zero
+            ETH, // default bounty currency inits to ETH
             _bountiesAddr // bountyAllocator
-            //0x0000000000000000000000000000000000000000 //bountyArbiter
         );
     }
 
@@ -344,7 +330,7 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
 ///////////////////////
     /**
      * @notice Add repository to the Projects app
-     * @param _repoId id of the repo to be aadded
+     * @param _repoId id of the repo to be added
      * @return index for the added repo at the registry
      */
     function addRepo(
@@ -427,7 +413,7 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
     ) external auth(REVIEW_APPLICATION_ROLE)
     {
         Issue storage issue = repos[_repoId].issues[_issueNumber];
-        require(issue.assignee != 0xffffffffffffffffffffffffffffffffffffffff, "ISSUE_OPEN");
+        require(issue.assignee != address(-1), "ISSUE_OPEN");
         require(issue.assignmentRequests[_requestor].exists == true, "User has not applied for this issue");
         issue.assignee = _requestor;
         issue.assignmentRequests[_requestor].requestHash = _updatedApplication;
@@ -476,20 +462,16 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
                 _tokenAmounts
             );
             issue.fulfilled = true;
-            bounties.performAction(
-                address(this),
-                issue.standardBountyId,
-                _updatedSubmissionHash
-            );
             emit SubmissionAccepted(_submissionNumber, _repoId, _issueNumber);
         } else {
-            bounties.performAction(
-                address(this),
-                issue.standardBountyId,
-                _updatedSubmissionHash
-            );
             emit SubmissionRejected(_submissionNumber, _repoId, _issueNumber);
         }
+
+        bounties.performAction(
+            address(this),
+            issue.standardBountyId,
+            _updatedSubmissionHash
+        );
     }
 
     /**
@@ -728,6 +710,28 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
 ///////////////////////
 
     /**
+     * @dev checks the hashed contract code to ensure it matches the provided hash
+     */
+    function _isBountiesContractValid(address _bountyRegistry) public returns(bool) {
+        if (_bountyRegistry == address(0)) {
+            return false;
+        }
+        uint256 size;
+        assembly { size := extcodesize(_bountyRegistry) }
+        if (size != 23375) {
+            return false;
+        }
+        bytes memory registryCode = new bytes(size);
+        assembly{ extcodecopy(_bountyRegistry,add(0x20,registryCode),0,size) }
+        bytes32 validRegistryHash = 0x6b4e1d628daf631858f6b98fe7a46bc39a5519bcb11b151a53ab7248b3a6381f;
+        emit BountyCode(registryCode);
+        emit BountyHash(keccak256(registryCode));
+        emit BountyHash(validRegistryHash);
+        emit BountySize(size);
+        return validRegistryHash == keccak256(registryCode);
+    }
+
+    /**
      * @notice update bounty setting values
      * @dev _changeBountySettings(): update app settings by changing contract setting state
      */
@@ -762,9 +766,10 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
 
     /**
      * @notice passes provided info to the linked Standard Bounties contract
-     * @dev _issueBounty(): There are two forms of the issueAndContribute call.
-     *                      The first is used if an ERC20 token is the bounty currency
-     *                      The second is used if ETH is the bounty currency
+     * @dev _issueBounty(): There are three forms of the contribute call.
+     *                      The first is used if ETH from the user is used as the bounty contribution
+     *                      The second is used if ETH from the vault is the bounty currency
+     *                      The third is used if an ERC20 token from the vault is the bounty currency
      */
     function _issueBounty(
         string _ipfsHash,
@@ -777,10 +782,10 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
         require(_tokenType != 721, "No ERC 721");
         uint256 registryTokenType;
         if (_tokenType == 0) {
-            require(_tokenContract == address(0));
+            require(_tokenContract == ETH);
             registryTokenType = _tokenType;
         } else if (_tokenType == 1) {
-            require(_tokenContract == address(0));
+            require(_tokenContract == ETH);
             registryTokenType = 0;
         } else {
             registryTokenType = _tokenType;
@@ -845,9 +850,9 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
             _tokenContract,
             _bountySize,
             999,
-            address(0),
+            ETH,
             _standardBountyId,
-            address(0),
+            ETH,
             emptyAddressArray,
             //address(0),
             //0,
@@ -878,6 +883,7 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
         Issue storage issue = repos[_repoId].issues[_issueNumber];
         require(issue.hasBounty, ERROR_BOUNTY_REMOVED);
         require(!issue.fulfilled, ERROR_BOUNTY_FULFILLED);
+        issue.hasBounty = false;
         uint256[] memory originalAmount = new uint256[](1);
         originalAmount[0] = issue.bountySize;
         bounties.drainBounty(
@@ -887,7 +893,6 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
             originalAmount
         );
         _returnValueToVault(originalAmount[0], issue.tokenContract);
-        issue.hasBounty = false;
         issue.bountySize = 0;
         bounties.changeDeadline(
             address(this),
@@ -903,7 +908,7 @@ contract Projects is IsContract, AragonApp, DepositableStorage {
     }
 
     function _returnValueToVault(uint256 _amount, address _token) internal {
-        if (_token == address(0))
+        if (_token == ETH)
             vault.deposit.value(_amount)(_token, _amount);
         else {
             ERC20Token(_token).approve(vault, _amount);
