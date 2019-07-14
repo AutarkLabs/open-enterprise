@@ -167,8 +167,10 @@ contract('Projects App', accounts => {
       { from: root }
     )
 
-    // Deploy test Bounties contract
+    // Create mock Bounties contract object
+    // This address is generated using the seed phrase in the test command
     bounties = { address: '0x72D1Ae1D6C8f3dd444b3D95bAd554Be483082e40'.toLowerCase() }
+    alternateBounties = { address: '0xDAaA2f5fbF606dEfa793984bd3615c909B1a3C93'.toLowerCase() }
     vaultBase = await Vault.new()
     const vaultReceipt = await dao.newAppInstance('0x5678', vaultBase.address, '0x', false, { from: root })
     vault = Vault.at(vaultReceipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
@@ -194,15 +196,19 @@ contract('Projects App', accounts => {
         )
       })
     })
+    
+    it('will not initialize with invalid bounties address', async () =>{
+      return assertRevert(async () => {
+        await app.initialize(
+          ZERO_ADDR,
+          vault.address,
+        )
+      })
+    })
   })
   context('post-initialization', () => {
     beforeEach(async () =>{
       await app.initialize(bounties.address, vault.address)
-    })
-
-    it.only('checks bounty contract', async () => {
-      await app._isBountiesContractValid(bounties.address)
-      assert(false)
     })
 
     context('creating and retrieving repos and bounties', () => {
@@ -1118,7 +1124,6 @@ contract('Projects App', accounts => {
             336, // bountyDeadline
             ZERO_ADDR, // bountyCurrency
             bounties.address // bountyAllocator
-          //0x0000000000000000000000000000000000000000  //bountyArbiter
           )
         })
       })
@@ -1136,7 +1141,6 @@ contract('Projects App', accounts => {
           336, // bountyDeadline
           ZERO_ADDR, // bountyCurrency
           bounties.address // bountyAllocator
-        //0x0000000000000000000000000000000000000000  //bountyArbiter
         )
 
         response = await app.getSettings()
@@ -1171,11 +1175,61 @@ contract('Projects App', accounts => {
           bounties.address,
           'StandardBounties Contract address incorrect'
         )
-      //assert.strictEqual(
-      //  response[5],
-      //  '0x0000000000000000000000000000000000000000',
-      //  'arbiter incorrect'
-      //)
+      })
+
+      it('cannot update bounties contract with a 0x0 address', async () => {
+        return assertRevert( async () => {
+          await app.changeBountySettings(
+            [ 100, 300, 500, 1000 ], // xp multipliers
+            [
+              // Experience Levels
+              web3.fromAscii('Beginner'),
+              web3.fromAscii('Intermediate'),
+              web3.fromAscii('Advanced'),
+              web3.fromAscii('Expert'),
+            ],
+            1, // baseRate
+            336, // bountyDeadline
+            ZERO_ADDR, // bountyCurrency
+            0 // bountyAllocator
+          )
+        })
+      })
+
+      it('cannot update bounties contract with contract of invalid size', async () => {
+        return assertRevert( async () => {
+          await app.changeBountySettings(
+            [ 100, 300, 500, 1000 ], // xp multipliers
+            [
+              // Experience Levels
+              web3.fromAscii('Beginner'),
+              web3.fromAscii('Intermediate'),
+              web3.fromAscii('Advanced'),
+              web3.fromAscii('Expert'),
+            ],
+            1, // baseRate
+            336, // bountyDeadline
+            ZERO_ADDR, // bountyCurrency
+            app.address // bountyAllocator
+          )
+        })
+      })
+
+      it('can update bounties contract with a new valid contract instance', async () => {
+        await app.changeBountySettings(
+          [ 100, 300, 500, 1000 ], // xp multipliers
+          [
+            // Experience Levels
+            web3.fromAscii('Beginner'),
+            web3.fromAscii('Intermediate'),
+            web3.fromAscii('Advanced'),
+            web3.fromAscii('Expert'),
+          ],
+          1, // baseRate
+          336, // bountyDeadline
+          ZERO_ADDR, // bountyCurrency
+          alternateBounties.address // bountyAllocator
+        )
       })
     })
 

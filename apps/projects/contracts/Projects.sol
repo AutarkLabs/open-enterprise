@@ -1,7 +1,6 @@
 pragma solidity ^0.4.24;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
-import "@aragon/os/contracts/lib/math/SafeMath.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
 import "@aragon/os/contracts/common/EtherTokenConstant.sol";
 
@@ -93,16 +92,6 @@ interface Bounties {
     ) external;
 }
 
-interface Relayer {
-    function metaFulfillBounty(
-        bytes _signature,
-        uint _bountyId,
-        address[] _fulfillers,
-        string _data,
-        uint256 _nonce
-    ) external;
-}
-
 interface ERC20Token {
     function approve(address _spender, uint256 _value) external returns (bool success);
     function transfer(address to, uint tokens) external returns (bool success);
@@ -110,9 +99,7 @@ interface ERC20Token {
 
 
 contract Projects is AragonApp, DepositableStorage {
-    using SafeMath for uint256;
     Bounties public bounties;
-    Relayer public relayer;
     BountySettings public settings;
     Vault public vault;
     // Auth roles
@@ -148,8 +135,6 @@ contract Projects is AragonApp, DepositableStorage {
         uint256 bountyDeadline;
         address bountyCurrency;
         address bountyAllocator;
-        //address metaTxRelayer; TODO: Implement this interface
-        //address bountyArbiter;
     }
 
     struct Repo {
@@ -204,9 +189,6 @@ contract Projects is AragonApp, DepositableStorage {
     event SubmissionRejected(uint256 submissionNumber, bytes32 repoId, uint256 issueNumber);
     // Fired when a bounty is opened up to work submissions from anyone
     event AwaitingSubmissions(bytes32 repoId, uint256 issueNumber);
-    event BountyCode(bytes id);
-    event BountyHash(bytes32 id);
-    event BountySize(uint256 size);
 
 ////////////////
 // Constructor
@@ -220,6 +202,9 @@ contract Projects is AragonApp, DepositableStorage {
         setDepositable(true);
 
         require(isContract(_vault), ERROR_PROJECTS_VAULT_NOT_CONTRACT);
+        require(isContract(_bountiesAddr), ERROR_STANDARD_BOUNTIES_NOT_CONTRACT);
+        // We need to discuss whether or not we want to implement this here instead:
+        //require(_isBountiesContractValid(_bountiesAddr), ERROR_STANDARD_BOUNTIES_NOT_CONTRACT);
 
         vault = _vault;
 
@@ -255,6 +240,7 @@ contract Projects is AragonApp, DepositableStorage {
     ) external auth(CHANGE_SETTINGS_ROLE)
     {
         require(_expMultipliers.length == _expLevels.length, "experience level arrays lengths must match");
+        require(_isBountiesContractValid(_bountyAllocator), ERROR_STANDARD_BOUNTIES_NOT_CONTRACT);
         settings.expLevels.length = 0;
         settings.expMultipliers.length = 0;
         for (uint i = 0; i < _expLevels.length; i++) {
@@ -712,23 +698,39 @@ contract Projects is AragonApp, DepositableStorage {
     /**
      * @dev checks the hashed contract code to ensure it matches the provided hash
      */
-    function _isBountiesContractValid(address _bountyRegistry) public returns(bool) {
+    function _isBountiesContractValid(address _bountyRegistry) internal returns(bool) {
         if (_bountyRegistry == address(0)) {
             return false;
+        }
+        if (_bountyRegistry == settings.bountyAllocator) {
+            return true;
         }
         uint256 size;
         assembly { size := extcodesize(_bountyRegistry) }
         if (size != 23375) {
             return false;
         }
-        bytes memory registryCode = new bytes(size);
-        assembly{ extcodecopy(_bountyRegistry,add(0x20,registryCode),0,size) }
-        bytes32 validRegistryHash = 0x6b4e1d628daf631858f6b98fe7a46bc39a5519bcb11b151a53ab7248b3a6381f;
-        emit BountyCode(registryCode);
-        emit BountyHash(keccak256(registryCode));
-        emit BountyHash(validRegistryHash);
-        emit BountySize(size);
-        return validRegistryHash == keccak256(registryCode);
+        uint256 segments = 4;
+        uint256 segmentLength = size / segments;
+        bytes memory registryCode = new bytes(segmentLength);
+        bytes32[4] memory validRegistryHashes = [
+            bytes32(0xfc91efaeeeb7f0cc43f01b8cead464905b5f118e67d9f1308414d24785ae16d1),
+            bytes32(0xb5d9f74367256d83b058680a66f63782846105d68b8fb68340ce76c9237a3f0b),
+            bytes32(0x0f23f2b2b348e8fd656abc681cef6230496c5d117d288b898c8e6edf6476bce0),
+            bytes32(0x4096b2d76eb15fdbbd8e6ab3e7cabb4bfff876bf242c0731d6187fc76c21c52f)
+        ];
+        for (uint256 i = 0; i < segments; i++) {
+
+            assembly{ extcodecopy(_bountyRegistry,add(0x20,registryCode),div(mul(i,segmentLength),segments),segmentLength) }
+            if (validRegistryHashes[i] != keccak256(registryCode)) {
+                return false;
+            }
+        }
+        //bytes memory registryCode = new bytes(size / 2);
+        //assembly{ extcodecopy(_bountyRegistry,add(0x20,registryCode),div(size,2),div(size,2)) }
+        //bytes32 validRegistryHash = 0xf1d821748591de88239c2e66e956de5b732c5202ff72c44c879add9cf56aecc1;
+        //return validRegistryHash == keccak256(registryCode);
+        return true;
     }
 
     /**
