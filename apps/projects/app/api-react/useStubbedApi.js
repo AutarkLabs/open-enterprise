@@ -3,6 +3,10 @@ import { Observable } from 'rxjs'
 import { theme } from '@aragon/ui'
 import * as localStorage from './localStorage'
 import initialAppState from './mockedAppState'
+import {
+  initializeGraphQLClient,
+  getRepoData,
+} from '../store/helpers'
 
 const dbName = 'stubbedAragonApi'
 
@@ -44,6 +48,31 @@ const useStubbedApi = () => {
     getCache: key => {
       return appState[key]
     },
+    addRepo: async repoIdHex => {
+      const { token } = appState.github
+      if (!token) return
+
+      initializeGraphQLClient(token)
+      const { _repo, ...metadata } = await getRepoData(repoIdHex)
+
+      const newState = {
+        ...appState,
+        repos: [
+          ...appState.repos,
+          {
+            id: repoIdHex,
+            metadata,
+            data: {
+              _repo,
+              index: undefined,
+            },
+          },
+        ]
+      }
+
+      localStorage.save(dbName, newState)
+      setAppState(newState)
+    }
   }
 
   const apiProxy = new Proxy(apiOverride, {
