@@ -258,7 +258,7 @@ contract Projects is AragonApp, DepositableStorage {
      * @notice Get issue data from the registry.
      * @param _repoId The id of the repo in the projects registry
      */
-    function getIssue(bytes32 _repoId, uint256 _issueNumber) external view
+    function getIssue(bytes32 _repoId, uint256 _issueNumber) external view isInitialized
     returns(bool hasBounty, uint standardBountyId, bool fulfilled, uint balance, address assignee)
     {
         Issue storage issue = repos[_repoId].issues[_issueNumber];
@@ -272,7 +272,7 @@ contract Projects is AragonApp, DepositableStorage {
     /**
      * @notice Get registry size.
      */
-    function getReposCount() external view returns (uint count) {
+    function getReposCount() external view isInitialized returns (uint count) {
         return repoIndexLength;
     }
 
@@ -281,7 +281,7 @@ contract Projects is AragonApp, DepositableStorage {
      * @param _repoId The id of the repo in the projects registry
      * @return index the repo registry index
      */
-    function getRepo(bytes32 _repoId) external view returns (uint index) {
+    function getRepo(bytes32 _repoId) external view isInitialized returns (uint index) {
         require(isRepoAdded(_repoId), "REPO_NOT_ADDED");
         return(repos[_repoId].index);
     }
@@ -291,7 +291,7 @@ contract Projects is AragonApp, DepositableStorage {
      * @return BountySettings
      */
 
-    function getSettings() external view returns (
+    function getSettings() external view isInitialized returns (
         uint256[] expMultipliers,
         bytes32[] expLevels,
         uint256 baseRate,
@@ -355,7 +355,7 @@ contract Projects is AragonApp, DepositableStorage {
     }
 
 ///////////////////
-// Bounty functions
+// External Bounty functions
 ///////////////////
 
     /**
@@ -464,6 +464,100 @@ contract Projects is AragonApp, DepositableStorage {
     }
 
     /**
+     * @notice Update Bounty Information: `_description`
+     * @param _repoId The id of the Github repos in the projects registry
+     * @param _issueNumber issue number the bounty is assigned to
+     * @param _data Information hash stored in the bounty
+     * @param _deadline new deadline for bounty fulfillments
+     * @param _description Utilized when forwarded to give background to the
+     *                     issues up for removal
+     */
+    function updateBounty(
+        bytes32 _repoId,
+        uint256 _issueNumber,
+        string _data,
+        uint256 _deadline,
+        string _description
+    ) external auth(UPDATE_BOUNTIES_ROLE)
+    {
+        Issue storage issue = repos[_repoId].issues[_issueNumber];
+        bounties.changeData(
+            address(this),
+            issue.standardBountyId,
+            0,
+            _data
+        );
+        bounties.changeDeadline(
+            address(this),
+            issue.standardBountyId,
+            0,
+            _deadline
+        );
+    }
+
+    /**
+     * @notice Remove funding from issues: `_description`
+     * @param _repoIds The ids of the Github repos in the projects registry
+     * @param _issueNumbers an array of bounty indexes
+     * @param _description Utilized when forwarded to give background to the
+     *                     issues up for removal
+     */
+    function removeBounties(
+        bytes32[] _repoIds,
+        uint256[] _issueNumbers,
+        string _description
+    ) external auth(REMOVE_ISSUES_ROLE)
+    {
+        require(_repoIds.length < 256, ERROR_LENGTH_EXCEEDED);
+        require(_issueNumbers.length < 256, ERROR_LENGTH_EXCEEDED);
+        require(_repoIds.length == _issueNumbers.length, ERROR_LENGTH_MISMATCH);
+        for (uint8 i = 0; i < _issueNumbers.length; i++) {
+            _removeBounty(_repoIds[i], _issueNumbers[i]);
+        }
+    }
+
+///////////////////////
+// External utility functions
+///////////////////////
+
+    /**
+     * @notice Returns Applicant array length
+     * @param _repoId the repo id of the issue
+     * @param _issueNumber the issue up for assignmen
+     * @return  array length of the applicants array
+     */
+    function getApplicantsLength(
+        bytes32 _repoId,
+        uint256 _issueNumber
+    ) external view isInitialized returns(uint256 applicantQty)
+    {
+        applicantQty = repos[_repoId].issues[_issueNumber].applicants.length;
+    }
+
+    /**
+     * @notice Returns Applicant Address
+     * @param _repoId the repo id of the issue
+     * @param _issueNumber the issue up for assignment
+     * @param _idx the applicant's position in the array
+     * @return  applicant address
+     */
+    function getApplicant(
+        bytes32 _repoId,
+        uint256 _issueNumber,
+        uint256 _idx
+    ) external view isInitialized returns(address applicant, string application, SubmissionStatus status)
+    {
+        Issue storage issue = repos[_repoId].issues[_issueNumber];
+        applicant = issue.applicants[_idx];
+        application = issue.assignmentRequests[applicant].requestHash;
+        status = issue.assignmentRequests[applicant].status;
+    }
+
+///////////////////
+// Public Bounty functions
+///////////////////
+
+    /**
      * @notice Fund issues: `_description`
      * @param _repoIds The ids of the repos in the projects registry
      * @param _issueNumbers an array of bounty indexes
@@ -565,49 +659,6 @@ contract Projects is AragonApp, DepositableStorage {
 
     }
 
-    function updateBounty(
-        bytes32 _repoId,
-        uint256 _issueNumber,
-        string _data,
-        uint256 _deadline
-    ) public auth(UPDATE_BOUNTIES_ROLE)
-    {
-        Issue storage issue = repos[_repoId].issues[_issueNumber];
-        bounties.changeData(
-            address(this),
-            issue.standardBountyId,
-            0,
-            _data
-        );
-        bounties.changeDeadline(
-            address(this),
-            issue.standardBountyId,
-            0,
-            _deadline
-        );
-    }
-
-    /**
-     * @notice Remove funding from issues: `_description`
-     * @param _repoIds The ids of the Github repos in the projects registry
-     * @param _issueNumbers an array of bounty indexes
-     * @param _description Utilized when forwarded to give background to the
-     *                     issues up for removal
-     */
-    function removeBounties(
-        bytes32[] _repoIds,
-        uint256[] _issueNumbers,
-        string _description
-    ) public auth(REMOVE_ISSUES_ROLE)
-    {
-        require(_repoIds.length < 256, ERROR_LENGTH_EXCEEDED);
-        require(_issueNumbers.length < 256, ERROR_LENGTH_EXCEEDED);
-        require(_repoIds.length == _issueNumbers.length, ERROR_LENGTH_MISMATCH);
-        for (uint8 i = 0; i < _issueNumbers.length; i++) {
-            _removeBounty(_repoIds[i], _issueNumbers[i]);
-        }
-    }
-
     /**
      * @notice Issue curation: `_description`
      * @dev curateIssues(): This function conforms to the upcoming
@@ -652,46 +703,13 @@ contract Projects is AragonApp, DepositableStorage {
      * @param _repoId the repo id to check
      * @return _repoId Id for newly added repo
      */
-    function isRepoAdded(bytes32 _repoId) public view returns(bool isAdded) {
+    function isRepoAdded(bytes32 _repoId) public view isInitialized returns(bool isAdded) {
         uint256 repoIdxVal = repos[_repoId].index;
         if (repoIndexLength == 0)
             return false;
         if (repoIdxVal >= repoIndexLength)
             return false;
         return (repoIndex[repos[_repoId].index] == _repoId);
-    }
-
-    /**
-     * @notice Returns Applicant array length
-     * @param _repoId the repo id of the issue
-     * @param _issueNumber the issue up for assignmen
-     * @return  array length of the applicants array
-     */
-    function getApplicantsLength(
-        bytes32 _repoId,
-        uint256 _issueNumber
-    ) public view returns(uint256 applicantQty)
-    {
-        applicantQty = repos[_repoId].issues[_issueNumber].applicants.length;
-    }
-
-    /**
-     * @notice Returns Applicant Address
-     * @param _repoId the repo id of the issue
-     * @param _issueNumber the issue up for assignment
-     * @param _idx the applicant's position in the array
-     * @return  applicant address
-     */
-    function getApplicant(
-        bytes32 _repoId,
-        uint256 _issueNumber,
-        uint256 _idx
-    ) public view returns(address applicant, string application, SubmissionStatus status)
-    {
-        Issue storage issue = repos[_repoId].issues[_issueNumber];
-        applicant = issue.applicants[_idx];
-        application = issue.assignmentRequests[applicant].requestHash;
-        status = issue.assignmentRequests[applicant].status;
     }
 
 ///////////////////////

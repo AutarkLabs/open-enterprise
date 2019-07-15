@@ -359,6 +359,7 @@ contract('Projects App', accounts => {
             issueNumber,
             'example data',
             Date.now() + 96400,
+            'example description',
             { from: bountyManager }
           )
         })
