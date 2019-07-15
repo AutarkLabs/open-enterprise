@@ -27,7 +27,7 @@
     "sync-assets": "copy-aragon-ui-assets -n aragon-ui ./dist && npm run copy-public-assets",
     "test:gas": "GAS_REPORTER=true npm test",
     "test": "TRUFFLE_TEST=true npm run ganache-cli:test",
-    "test:truffle":  "./utils/test.sh"
+    "test:truffle": "./utils/test.sh"
   },
   "dependencies": {
     "@aragon/api": "1.1.0",
@@ -41,8 +41,8 @@
     "graphql": "^14.0.2",
     "graphql-request": "^1.8.2",
     "graphql-tag": "^2.10.0",
-    "marked": "0.6.1",
     "ipfs-http-client": "29.1.0",
+    "marked": "^0.6.1",
     "prop-types": "^15.7.2",
     "react": "^16.8.6",
     "react-apollo": "^2.3.2",
