@@ -123,8 +123,9 @@ contract Projects is AragonApp, DepositableStorage {
 
     // The entries in the repos registry.
     mapping(bytes32 => Repo) private repos;
-    // Gives us a repos array so we can actually iterate
-    bytes32[] private repoIndex;
+    // Gives us a repos array-like contruct so we can both "iterate" and upgrade gracefully
+    mapping(uint256 => bytes32) private repoIndex;
+    uint256 private repoIndexLength;
     enum SubmissionStatus { Unreviewed, Accepted, Rejected }  // 0: unreviewed 1: Accepted 2: Rejected
 
     // Structs
@@ -272,7 +273,7 @@ contract Projects is AragonApp, DepositableStorage {
      * @notice Get registry size.
      */
     function getReposCount() external view returns (uint count) {
-        return repoIndex.length;
+        return repoIndexLength;
     }
 
     /**
@@ -324,9 +325,11 @@ contract Projects is AragonApp, DepositableStorage {
     ) external auth(ADD_REPO_ROLE) returns (uint index)
     {
         require(!isRepoAdded(_repoId), "REPO_ALREADY_ADDED");
-        repos[_repoId].index = repoIndex.push(_repoId) - 1;
+        repoIndex[repoIndexLength] = _repoId;
+        repos[_repoId].index = repoIndexLength++;
+        //repos[_repoId].index = repoIndex.push(_repoId) - 1;
         emit RepoAdded(_repoId, repos[_repoId].index);
-        return repoIndex.length - 1;
+        return repoIndexLength - 1;
     }
 
     /**
@@ -340,13 +343,13 @@ contract Projects is AragonApp, DepositableStorage {
         require(isRepoAdded(_repoId), "REPO_NOT_ADDED");
         uint rowToDelete = repos[_repoId].index;
 
-        if (repoIndex.length != 1) {
-            bytes32 repoToMove = repoIndex[repoIndex.length - 1];
+        if (repoIndexLength != 1) {
+            bytes32 repoToMove = repoIndex[repoIndexLength - 1];
             repoIndex[rowToDelete] = repoToMove;
             repos[repoToMove].index = rowToDelete;
         }
 
-        repoIndex.length--;
+        repoIndexLength--;
         emit RepoRemoved(_repoId, rowToDelete);
         return true;
     }
@@ -651,9 +654,9 @@ contract Projects is AragonApp, DepositableStorage {
      */
     function isRepoAdded(bytes32 _repoId) public view returns(bool isAdded) {
         uint256 repoIdxVal = repos[_repoId].index;
-        if (repoIndex.length == 0)
+        if (repoIndexLength == 0)
             return false;
-        if (repoIdxVal >= repoIndex.length)
+        if (repoIdxVal >= repoIndexLength)
             return false;
         return (repoIndex[repos[_repoId].index] == _repoId);
     }
@@ -809,7 +812,7 @@ contract Projects is AragonApp, DepositableStorage {
         if (_tokenType > 0) {
             vault.transfer(_tokenContract, this, _bountySize);
             if (registryTokenType != 0) {
-                ERC20Token(_tokenContract).approve(bounties, _bountySize);
+                require(ERC20Token(_tokenContract).approve(bounties, _bountySize), "ERROR_ERC20_TRANSFER");
             }
         }
 
@@ -913,7 +916,7 @@ contract Projects is AragonApp, DepositableStorage {
         if (_token == ETH)
             vault.deposit.value(_amount)(_token, _amount);
         else {
-            ERC20Token(_token).approve(vault, _amount);
+            require(ERC20Token(_token).approve(vault, _amount), "ERROR_ERC20__APPROVAL");
             vault.deposit(_token, _amount);
         }
     }
