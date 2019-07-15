@@ -8,16 +8,16 @@ const useGithubAuth = () => {
   const token = appState.github && appState.github.token
 
   const [ githubCurrentUser, setGithubCurrentUser ] = useState({})
-  const [ client, setClient ] = useState(initApolloClient(token))
 
   useEffect(() => {
-    setClient(initApolloClient(token))
-    client
+    if (!token) return
+
+    initApolloClient(token)
       .query({ query: CURRENT_USER })
       .then(res => setGithubCurrentUser(res.data.viewer))
   }, [token])
 
-  return { githubCurrentUser, client }
+  return githubCurrentUser
 }
 
 export default useGithubAuth

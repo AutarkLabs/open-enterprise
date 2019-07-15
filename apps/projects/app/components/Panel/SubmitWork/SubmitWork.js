@@ -160,7 +160,7 @@ const onSubmitWork = ({ closePanel, submitWork }) => async (state, issue) => {
 // TODO: move entire component to functional component
 // the following was a quick way to allow us to use hooks
 const SubmitWorkWrap = props => {
-  const { githubCurrentUser } = useGithubAuth()
+  const githubCurrentUser = useGithubAuth()
   const { closePanel } = usePanelManagement()
   const {
     api: { submitWork }

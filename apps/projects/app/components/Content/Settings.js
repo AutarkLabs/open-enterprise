@@ -415,7 +415,7 @@ BaseRate.propTypes = {
 }
 
 const GitHubConnect = ({ onLogin, onLogout, status }) => {
-  const { githubCurrentUser: { login: user } } = useGithubAuth()
+  const { login: user } = useGithubAuth()
   const auth = status === STATUS.AUTHENTICATED
   const bodyText = auth ? (
     <span>
