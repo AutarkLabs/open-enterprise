@@ -375,6 +375,16 @@ class Issues extends React.PureComponent {
     return <IssueDetail issue={currentIssueShaped} />
   }
 
+  issuesFrom = data => {
+    // if new information is available, run it through flattenIssues to return appended this.state
+    if (data && data.node0) {
+      return this.flattenIssues(data)
+    }
+
+    // otherwise, return already-downloaded issues & repos
+    return this.state
+  }
+
   /*
    Data obtained from github API is data.{repo}.issues.[nodes] and it needs
    flattening into one simple array of issues  before it can be used
@@ -387,30 +397,23 @@ class Issues extends React.PureComponent {
     let downloadedIssues = []
     let downloadedRepos = {}
 
-    if (data && data.node0) {
+    Object.keys(data).forEach(nodeName => {
+      const repo = data[nodeName]
 
-      Object.keys(data).forEach(nodeName => {
-        const repo = data[nodeName]
-
-        downloadedRepos[repo.id] = {
-          downloadedCount: repo.issues.nodes.length,
-          totalCount: repo.issues.totalCount,
-          fetch: this.state.issuesPerCall,
-          hasNextPage: repo.issues.pageInfo.hasNextPage,
-          endCursor: repo.issues.pageInfo.endCursor,
-        }
-        downloadedIssues = downloadedIssues.concat(...repo.issues.nodes)
-      })
-
-      if (this.state.downloadedIssues.length > 0) {
-        downloadedIssues = downloadedIssues.concat(this.state.downloadedIssues)
+      downloadedRepos[repo.id] = {
+        downloadedCount: repo.issues.nodes.length,
+        totalCount: repo.issues.totalCount,
+        fetch: this.state.issuesPerCall,
+        hasNextPage: repo.issues.pageInfo.hasNextPage,
+        endCursor: repo.issues.pageInfo.endCursor,
       }
+      downloadedIssues = downloadedIssues.concat(...repo.issues.nodes)
+    })
 
-      return { downloadedIssues, downloadedRepos }
+    if (this.state.downloadedIssues.length > 0) {
+      downloadedIssues = downloadedIssues.concat(this.state.downloadedIssues)
     }
 
-    downloadedIssues = this.state.downloadedIssues
-    downloadedRepos = this.state.downloadedRepos
     return { downloadedIssues, downloadedRepos }
   }
 
@@ -522,63 +525,55 @@ class Issues extends React.PureComponent {
         onError={console.error}
       >
         {({ data, loading, error, refetch }) => {
-          if ((data && data.node0) ||
-              (this.state.downloadedIssues != [] &&
-               this.state.downloadedRepos != {})) {
-            // first, flatten data structure into array of issues
-            const { downloadedIssues, downloadedRepos } = this.flattenIssues(
-              data
-            )
-
-            // then apply filtering
-            const issuesFiltered = this.applyFilters(downloadedIssues)
-            const issuesSorted = this.shapeIssues(issuesFiltered).sort(currentSorter)
-
-            return (
-              <StyledIssues>
-                {this.actionsMenu(downloadedIssues, issuesFiltered)}
-                {this.filterBar(downloadedIssues, issuesFiltered)}
-
-                <IssuesScrollView>
-                  <AutoSizer
-                    defaultHeight={window.innerHeight}
-                    disableWidth={true}
-                  >
-                    {({ height }) => (
-                      <List
-                        style={{
-                          borderTopWidth: '1px',
-                          borderTopStyle: 'solid',
-                          borderTopColor: theme.contentBorder,
-                          borderBottomWidth: '1px',
-                          borderBottomStyle: 'solid',
-                          borderBottomColor: theme.contentBorder,
-                          borderRadius: '3px'
-                        }}
-                        autoWidth={true}
-                        width={window.innerWidth}
-                        height={height}
-                        rowCount={issuesSorted.length}
-                        deferredMeasurementCache={cache}
-                        estimatedRowSize={DEFAULT_CARD_HEIGHT}
-                        rowHeight={cache.rowHeight}
-                        // TODO: onScroll is where local variables downloadedIssues & downloadedRepos get saved to state
-                        //       put this somewhere more visible and expectable
-                        onScroll={this.getOnScroll({ downloadedIssues, downloadedRepos, issuesSorted })}
-                        rowRenderer={this.getRowRenderer(issuesSorted)}
-                      />
-
-                    )}
-                  </AutoSizer>
-
-                </IssuesScrollView>
-              </StyledIssues>
-            )
-          }
-
-          if (loading) return this.queryLoading()
+          if (loading && !this.state.downloadedIssues.length) return this.queryLoading()
 
           if (error) return this.queryError(error, refetch)
+
+          const { downloadedIssues, downloadedRepos } = this.issuesFrom(data)
+
+          const issuesFiltered = this.applyFilters(downloadedIssues)
+          const issuesSorted = this.shapeIssues(issuesFiltered).sort(currentSorter)
+
+          return (
+            <StyledIssues>
+              {this.actionsMenu(downloadedIssues, issuesFiltered)}
+              {this.filterBar(downloadedIssues, issuesFiltered)}
+
+              <IssuesScrollView>
+                <AutoSizer
+                  defaultHeight={window.innerHeight}
+                  disableWidth={true}
+                >
+                  {({ height }) => (
+                    <List
+                      style={{
+                        borderTopWidth: '1px',
+                        borderTopStyle: 'solid',
+                        borderTopColor: theme.contentBorder,
+                        borderBottomWidth: '1px',
+                        borderBottomStyle: 'solid',
+                        borderBottomColor: theme.contentBorder,
+                        borderRadius: '3px'
+                      }}
+                      autoWidth={true}
+                      width={window.innerWidth}
+                      height={height}
+                      rowCount={issuesSorted.length}
+                      deferredMeasurementCache={cache}
+                      estimatedRowSize={DEFAULT_CARD_HEIGHT}
+                      rowHeight={cache.rowHeight}
+                      // TODO: onScroll is where local variables downloadedIssues & downloadedRepos get saved to state
+                      //       put this somewhere more expectable
+                      onScroll={this.getOnScroll({ downloadedIssues, downloadedRepos, issuesSorted })}
+                      rowRenderer={this.getRowRenderer(issuesSorted)}
+                    />
+
+                  )}
+                </AutoSizer>
+
+              </IssuesScrollView>
+            </StyledIssues>
+          )
         }}
       </Query>
     )
