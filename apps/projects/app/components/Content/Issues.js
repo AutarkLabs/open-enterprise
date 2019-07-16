@@ -450,6 +450,23 @@ class Issues extends React.PureComponent {
       </CellMeasurer>
     )
   }
+
+  getOnScroll = ({ downloadedIssues, downloadedRepos, issuesSorted }) => ({
+    scrollTop
+  }) => {
+    const estimatedHeight = DEFAULT_CARD_HEIGHT * issuesSorted.length
+    const position = scrollTop / estimatedHeight
+
+    const moreIssuesToShow =
+      Object.keys(downloadedRepos).filter(
+        repoId => downloadedRepos[repoId].hasNextPage
+      ).length > 0
+
+    if(moreIssuesToShow && position >= LOAD_MORE_THRESHOLD) {
+      this.showMoreIssues(downloadedIssues, downloadedRepos)
+    }
+  }
+
   render() {
     if (this.props.status === STATUS.INITIAL) {
       return <Unauthorized onLogin={this.props.onLogin} />
@@ -515,23 +532,7 @@ class Issues extends React.PureComponent {
 
             // then apply filtering
             const issuesFiltered = this.applyFilters(downloadedIssues)
-            // then determine whether any shown repos have more issues to fetch
-            const moreIssuesToShow =
-              Object.keys(downloadedRepos).filter(
-                repoId => downloadedRepos[repoId].hasNextPage
-              ).length > 0
-
-            const issuesSorted = this.shapeIssues(issuesFiltered)
-              .sort(currentSorter)
-
-            const estimatedHeight = DEFAULT_CARD_HEIGHT * issuesSorted.length
-
-            const onScroll = ({ scrollTop }) => {
-              const position = scrollTop / estimatedHeight
-              if(moreIssuesToShow && position >= LOAD_MORE_THRESHOLD) {
-                this.showMoreIssues(downloadedIssues, downloadedRepos)
-              }
-            }
+            const issuesSorted = this.shapeIssues(issuesFiltered).sort(currentSorter)
 
             return (
               <StyledIssues>
@@ -539,7 +540,6 @@ class Issues extends React.PureComponent {
                 {this.filterBar(downloadedIssues, issuesFiltered)}
 
                 <IssuesScrollView>
-
                   <AutoSizer
                     defaultHeight={window.innerHeight}
                     disableWidth={true}
@@ -562,7 +562,9 @@ class Issues extends React.PureComponent {
                         deferredMeasurementCache={cache}
                         estimatedRowSize={DEFAULT_CARD_HEIGHT}
                         rowHeight={cache.rowHeight}
-                        onScroll={onScroll}
+                        // TODO: onScroll is where local variables downloadedIssues & downloadedRepos get saved to state
+                        //       put this somewhere more visible and expectable
+                        onScroll={this.getOnScroll({ downloadedIssues, downloadedRepos, issuesSorted })}
                         rowRenderer={this.getRowRenderer(issuesSorted)}
                       />
 
