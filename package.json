@@ -4,6 +4,7 @@
   "devDependencies": {
     "coveralls": "3.0.2",
     "cypress": "^3.1.5",
+    "husky": "^3.0.0",
     "lerna": "^3.10.8",
     "truffle-privatekey-provider": "^1.1.0",
     "wait-on": "^3.2.0"
@@ -77,5 +78,12 @@
     "ipfs-http-client": "29.1.0",
     "rxjs": "^6.4.0",
     "rxjs-compat": "^6.4.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lerna run --concurrency 1 --stream precommit",
+      "pre-push": "npm test",
+      "post-checkout": "npm prune && npm i"
+    }
   }
 }
