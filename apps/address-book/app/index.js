@@ -8,5 +8,5 @@ ReactDOM.render(
   <AragonApi reducer={appStateReducer}>
     <App />
   </AragonApi>,
-  document.querySelector('#addressbook')
+  document.querySelector('#address-book')
 )
