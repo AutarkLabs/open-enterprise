@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 
 import { theme, Viewport } from '@aragon/ui'
 
@@ -51,6 +52,10 @@ const Overflow = ({ children }) => (
     }}
   </Viewport>
 )
+
+Overflow.propTypes = {
+  children: PropTypes.node.isRequired,
+}
 
 export default Overflow
 

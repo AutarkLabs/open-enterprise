@@ -41,23 +41,9 @@ const labelsBadges = labels =>
 
 class Issue extends React.PureComponent {
   render() {
-    const {
-      isSelected,
-      onClick,
-      onSelect,
-      onSubmitWork,
-      onRequestAssignment,
-      onReviewApplication,
-      onAllocateSingleBounty,
-      onUpdateBounty,
-      onViewFunding,
-      onReviewWork,
-      ...issue
-    } = this.props
+    const { isSelected, onClick, onSelect, ...issue } = this.props
 
     const {
-      id,
-      work,
       workStatus,
       title,
       repo,
@@ -66,7 +52,6 @@ class Issue extends React.PureComponent {
       balance,
       symbol,
       deadline,
-      requestsData,
       expLevel,
     } = issue
 
@@ -84,18 +69,7 @@ class Issue extends React.PureComponent {
               {repo} #{number}
             </Text>
             <ContextMenu>
-              <BountyContextMenu
-                onAllocateSingleBounty={() => onAllocateSingleBounty(issue)}
-                onRequestAssignment={() => onRequestAssignment(issue)}
-                onReviewApplication={() => onReviewApplication(issue)}
-                onReviewWork={() => onReviewWork(issue)}
-                onSubmitWork={() => onSubmitWork(issue)}
-                onUpdateBounty={() => onUpdateBounty(issue)}
-                onViewFunding={() => onViewFunding(issue)}
-                requestsData={requestsData}
-                work={work}
-                workStatus={workStatus}
-              />
+              <BountyContextMenu issue={issue} />
             </ContextMenu>
           </div>
           <IssueTitleDetailsBalance>
@@ -152,13 +126,6 @@ Issue.propTypes = {
   isSelected: PropTypes.bool,
   onClick: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,
-  onSubmitWork: PropTypes.func.isRequired,
-  onRequestAssignment: PropTypes.func.isRequired,
-  onReviewApplication: PropTypes.func.isRequired,
-  onAllocateSingleBounty: PropTypes.func.isRequired,
-  onUpdateBounty: PropTypes.func.isRequired,
-  onViewFunding: PropTypes.func.isRequired,
-  onReviewWork: PropTypes.func.isRequired,
   workStatus: PropTypes.oneOf([
     undefined,
     'funded',

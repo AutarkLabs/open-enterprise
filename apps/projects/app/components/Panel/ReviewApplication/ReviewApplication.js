@@ -13,14 +13,22 @@ import {
   theme,
 } from '@aragon/ui'
 
-import { Form, FormField, FieldTitle, DescriptionInput } from '../../Form'
+import { FormField, FieldTitle, DescriptionInput } from '../../Form'
 import { IconGitHub } from '../../Shared'
+import useGithubAuth from '../../../hooks/useGithubAuth'
+import { useAragonApi } from '@aragon/api-react'
+import { usePanelManagement } from '../../Panel'
+import { ipfsAdd } from '../../../utils/ipfs-helpers'
+import { toHex } from '../../../utils/web3-utils'
 
 // external data, all of it
 
 class ReviewApplication extends React.Component {
   static propTypes = {
-    issue: PropTypes.object.isRequired
+    issue: PropTypes.object.isRequired,
+    requestIndex: PropTypes.number.isRequired,
+    githubCurrentUser: PropTypes.object.isRequired,
+    onReviewApplication: PropTypes.func.isRequired,
   }
 
   state = {
@@ -100,7 +108,15 @@ class ReviewApplication extends React.Component {
 
         <ApplicationDetails>
           <UserLink>
-            <img src={applicant.avatar} style={{ width: '32px', height: '32px', marginRight: '10px' }} />
+            <img
+              alt=""
+              src={applicant.avatar}
+              style={{
+                width: '32px',
+                height: '32px',
+                marginRight: '10px',
+              }}
+            />
             <SafeLink
               href={applicant.url}
               target="_blank"
@@ -127,7 +143,7 @@ class ReviewApplication extends React.Component {
           <React.Fragment>
 
             <FieldTitle>Application Status</FieldTitle>
-          
+
             <div style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
               {request.review.approved ? (
                 <div>
@@ -141,14 +157,14 @@ class ReviewApplication extends React.Component {
               <div>
                 {formatDistance(new Date(request.review.reviewDate), new Date())} ago
               </div>
-            
+
             </div>
 
             <ReviewCard>
               <IssueEventAvatar>
                 <img src={request.review.user.avatarUrl} alt="user avatar" style={{ width: '50px' }} />
               </IssueEventAvatar>
-              
+
               <div>
                 <Text.Block size="small">
                   <SafeLink
@@ -204,6 +220,46 @@ class ReviewApplication extends React.Component {
       </div>
     )
   }
+}
+
+const onReviewApplication = ({ closePanel, reviewApplication }) => async (
+  issue,
+  requestIndex,
+  approved,
+  review
+) => {
+  closePanel()
+  // new IPFS data is old data plus state returned from the panel
+  const ipfsData = issue.requestsData[requestIndex]
+  const requestIPFSHash = await ipfsAdd({ ...ipfsData, review: review })
+
+  reviewApplication(
+    toHex(issue.repoId),
+    issue.number,
+    issue.requestsData[requestIndex].contributorAddr,
+    requestIPFSHash,
+    approved
+  )
+}
+
+// TODO: move entire component to functional component
+// the following was a quick way to allow us to use hooks
+const ReviewApplicationWrap = props => {
+  const githubCurrentUser = useGithubAuth()
+  const {
+    api: { reviewApplication },
+  } = useAragonApi()
+  const { closePanel } = usePanelManagement()
+  return (
+    <ReviewApplication
+      githubCurrentUser={githubCurrentUser}
+      onReviewApplication={onReviewApplication({
+        closePanel,
+        reviewApplication,
+      })}
+      {...props}
+    />
+  )
 }
 
 const UserLink = styled.div`
@@ -265,4 +321,4 @@ const IssueEventAvatar = styled.div`
   margin: 0;
 `
 
-export default ReviewApplication
+export default ReviewApplicationWrap

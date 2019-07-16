@@ -2,29 +2,28 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { Query } from 'react-apollo'
-import {
-  Button,
-  TextInput,
-  theme,
-  ContextMenuItem,
-  IconFundraising,
-  breakpoint,
-} from '@aragon/ui'
+import { Button } from '@aragon/ui'
 import BigNumber from 'bignumber.js'
 import { compareAsc, compareDesc } from 'date-fns'
 
 import { STATUS } from '../../utils/github'
 import { getIssuesGQL } from '../../utils/gql-queries.js'
-import { DropDownButton as ActionsMenu, FilterBar, IconCurate } from '../Shared'
+import { FilterBar } from '../Shared'
 import { Issue, Empty } from '../Card'
 import { IssueDetail } from './IssueDetail'
 import Unauthorized from './Unauthorized'
-import ActiveFilters from './Filters'
+import ActionsMenu from './ActionsMenu'
 
 class Issues extends React.PureComponent {
   static propTypes = {
+    activeIndex: PropTypes.shape({
+      tabData: PropTypes.object.isRequired,
+    }).isRequired,
+    bountyIssues: PropTypes.array.isRequired,
+    bountySettings: PropTypes.shape({
+      expLvls: PropTypes.array.isRequired,
+    }).isRequired,
     onLogin: PropTypes.func.isRequired,
-    githubCurrentUser: PropTypes.object.isRequired,
     github: PropTypes.shape({
       status: PropTypes.oneOf([
         STATUS.AUTHENTICATED,
@@ -35,14 +34,10 @@ class Issues extends React.PureComponent {
       event: PropTypes.string,
     }),
     issueDetail: PropTypes.bool.isRequired,
-    onAllocateBounties: PropTypes.func.isRequired,
-    onRequestAssignment: PropTypes.func.isRequired,
-    onReviewApplication: PropTypes.func.isRequired,
-    onReviewWork: PropTypes.func.isRequired,
-    onSubmitWork: PropTypes.func.isRequired,
-    onUpdateBounty: PropTypes.func.isRequired,
-    onViewFunding: PropTypes.func.isRequired,
+    projects: PropTypes.array.isRequired,
     setIssueDetail: PropTypes.func.isRequired,
+    status: PropTypes.string.isRequired,
+    tokens: PropTypes.array.isRequired,
   }
 
   state = {
@@ -75,31 +70,8 @@ class Issues extends React.PureComponent {
     }
   }
 
-  selectedIssuesArray = () =>
-    Object.keys(this.state.selectedIssues).map(
-      id => this.state.selectedIssues[id]
-    )
-
-  handleCurateIssues = issuesFiltered => () => {
-    this.props.onCurateIssues(this.selectedIssuesArray(), issuesFiltered)
-    // this is called from ActionMenu, on selected Issues -
-    // return to default state where nothing is selected
-    this.setState({ selectedIssues: [], allSelected: false })
-  }
-
-  handleAllocateSingleBounty = issue => {
-    this.props.onAllocateBounties([issue])
-  }
-
-  handleUpdateBounty = issue => {
-    this.props.onUpdateBounty([issue])
-  }
-
-  handleAllocateBounties = () => {
-    this.props.onAllocateBounties(this.selectedIssuesArray())
-    // this is called from ActionMenu, on selected Issues -
-    // return to default state where nothing is selected
-    this.setState({ selectedIssues: [], allSelected: false })
+  deselectAllIssues = () => {
+    this.setState({ selectedIssues: {}, allSelected: false })
   }
 
   toggleSelectAll = issuesFiltered => () => {
@@ -223,8 +195,6 @@ class Issues extends React.PureComponent {
   }
 
   handleIssueClick = issue => {
-    console.log('issue clicked')
-
     this.props.setIssueDetail(true)
     this.setState({ currentIssue: issue })
   }
@@ -255,45 +225,18 @@ class Issues extends React.PureComponent {
   }
 
   actionsMenu = (issues, issuesFiltered) => (
-    <SearchFilterAction>
-      <TextInput
-        style={{ gridArea: 'search' }}
-        placeholder="Search issue titles"
-        type="search"
-        onChange={this.handleTextFilter}
-      />
-      <ActiveFilters
-        style={{ gridArea: 'filter' }}
-        issues={issues}
-        bountyIssues={this.props.bountyIssues}
-        filters={this.state.filters}
-        disableFilter={this.disableFilter}
-        disableAllFilters={this.disableAllFilters}
-      />
-      <ActionsMenu
-        enabled={Object.keys(this.state.selectedIssues).length !== 0}
-        style={{ gridArea: 'action' }}
-      >
-        <ContextMenuItem
-          onClick={this.handleCurateIssues(issuesFiltered)}
-          style={{ display: 'flex', alignItems: 'flex-start' }}
-        >
-          <div>
-            <IconCurate color={theme.textTertiary} />
-          </div>
-          <ActionLabel>Curate Issues</ActionLabel>
-        </ContextMenuItem>
-        <ContextMenuItem
-          onClick={this.handleAllocateBounties}
-          style={{ display: 'flex', alignItems: 'flex-start' }}
-        >
-          <div style={{ marginLeft: '4px' }}>
-            <IconFundraising color={theme.textTertiary} />
-          </div>
-          <ActionLabel>Fund Issues</ActionLabel>
-        </ContextMenuItem>
-      </ActionsMenu>
-    </SearchFilterAction>
+    <ActionsMenu
+      deselectAllIssues={this.deselectAllIssues}
+      disableFilter={this.disableFilter}
+      disableAllFilters={this.disableAllFilters}
+      filters={this.state.filters}
+      issues={issues}
+      issuesFiltered={issuesFiltered}
+      onSearchChange={this.handleTextFilter}
+      selectedIssues={Object.keys(this.state.selectedIssues).map(
+        id => this.state.selectedIssues[id]
+      )}
+    />
   )
 
   setParentFilters = filters => {
@@ -361,7 +304,7 @@ class Issues extends React.PureComponent {
         decimals: token.decimals,
       }
     })
-    return issues.map(({ __typename, repository: { id, name }, ...fields }) => {
+    return issues.map(({ repository: { id, name }, ...fields }) => {
       const bountyId = bountyIssueObj[fields.number]
       const repoIdFromBounty = bountyId && bountyId.data.repoId
       if (bountyId && repoIdFromBounty === id) {
@@ -406,14 +349,6 @@ class Issues extends React.PureComponent {
   }
 
   renderCurrentIssue = currentIssue => {
-    const {
-      onRequestAssignment,
-      onReviewApplication,
-      onSubmitWork,
-      onReviewWork,
-      onViewFunding,
-    } = this.props
-
     currentIssue.repository = {
       name: currentIssue.repo,
       id: currentIssue.repoId,
@@ -422,18 +357,7 @@ class Issues extends React.PureComponent {
 
     const currentIssueShaped = this.shapeIssues([currentIssue])[0]
 
-    return (
-      <IssueDetail
-        issue={currentIssueShaped}
-        onReviewApplication={onReviewApplication}
-        onRequestAssignment={onRequestAssignment}
-        onSubmitWork={onSubmitWork}
-        onAllocateSingleBounty={this.handleAllocateSingleBounty}
-        onUpdateBounty={this.handleUpdateBounty}
-        onViewFunding={onViewFunding}
-        onReviewWork={onReviewWork}
-      />
-    )
+    return <IssueDetail issue={currentIssueShaped} />
   }
 
   /*
@@ -447,7 +371,6 @@ class Issues extends React.PureComponent {
   flattenIssues = data => {
     let downloadedIssues = []
     const downloadedRepos = {}
-    let totalCount = 0
 
     Object.keys(data).forEach(nodeName => {
       const repo = data[nodeName]
@@ -486,21 +409,12 @@ class Issues extends React.PureComponent {
       return <Unauthorized onLogin={this.props.onLogin} />
     }
 
-    const {
-      projects,
-      onNewProject,
-      onRequestAssignment,
-      onReviewApplication,
-      onSubmitWork,
-      onReviewWork,
-      onViewFunding,
-      issueDetail,
-    } = this.props
+    const { projects, issueDetail } = this.props
 
     const { currentIssue, filters } = this.state
 
     // better return early if we have no projects added
-    if (projects.length === 0) return <Empty action={onNewProject} />
+    if (projects.length === 0) return <Empty />
 
     // same if we only need to show Issue's Details screen
     if (issueDetail) return this.renderCurrentIssue(currentIssue, this.props)
@@ -568,26 +482,15 @@ class Issues extends React.PureComponent {
                   <ScrollWrapper>
                     {this.shapeIssues(issuesFiltered)
                       .sort(currentSorter)
-                      .map((issue, index) => {
-                        return (
-                          <Issue
-                            isSelected={issue.id in this.state.selectedIssues}
-                            key={index}
-                            {...issue}
-                            onClick={this.handleIssueClick}
-                            onSelect={this.handleIssueSelection}
-                            onReviewApplication={onReviewApplication}
-                            onSubmitWork={onSubmitWork}
-                            onRequestAssignment={onRequestAssignment}
-                            onAllocateSingleBounty={
-                              this.handleAllocateSingleBounty
-                            }
-                            onUpdateBounty={this.handleUpdateBounty}
-                            onViewFunding={onViewFunding}
-                            onReviewWork={onReviewWork}
-                          />
-                        )
-                      })}
+                      .map(issue => (
+                        <Issue
+                          isSelected={issue.id in this.state.selectedIssues}
+                          key={issue.id}
+                          {...issue}
+                          onClick={this.handleIssueClick}
+                          onSelect={this.handleIssueSelection}
+                        />
+                      ))}
                   </ScrollWrapper>
 
                   <div style={{ textAlign: 'center' }}>
@@ -642,28 +545,6 @@ const ScrollWrapper = styled.div`
 const IssuesScrollView = styled.div`
   height: 75vh;
   position: relative;
-`
-
-const ActionLabel = styled.span`
-  margin-left: 15px;
-`
-const SearchFilterAction = styled.div`
-  display: grid;
-  align-items: center;
-  padding: 0;
-  grid-gap: 10px;
-  grid-template-areas:
-    'search action'
-    'filter filter';
-  grid-template-columns: 1fr auto;
-  grid-template-rows: auto auto;
-  ${breakpoint(
-    'small',
-    `
-      grid-template-areas: 'search filter action';
-      grid-template-columns: 1fr 1fr auto;
-    `
-  )}
 `
 
 const recursiveDeletePathFromObject = (path, object) => {

@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { Text, theme, unselectable, Viewport } from '@aragon/ui'
+import { Text, theme, unselectable } from '@aragon/ui'
 import { MenuButton } from '../../../../../shared/ui'
 
 const StyledTitle = styled(Text)`

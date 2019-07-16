@@ -1,6 +1,7 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { IconHistory, IconContributors } from '../Shared'
+import { IconHistory } from '../Shared'
 import {
   Card,
   Text,
@@ -11,34 +12,39 @@ import {
   SafeLink,
   theme,
 } from '@aragon/ui'
-import { BASE_CARD_WIDTH, CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
-
-const colors = {
-  iconColor: theme.textTertiary,
-  labelColor: theme.textPrimary,
-}
+import {
+  BASE_CARD_WIDTH,
+  CARD_STRETCH_BREAKPOINT,
+} from '../../utils/responsive'
+import { useAragonApi } from '@aragon/api-react'
+import { toHex } from '../../utils/web3-utils'
 
 const Project = ({
-  id,
   repoId,
   label,
   description,
   commits,
   url,
-  contributors,
-  onRemoveProject,
   changeActiveIndex,
   screenSize,
 }) => {
+  const {
+    api: { removeRepo },
+  } = useAragonApi()
+
   const removeProject = () => {
-    onRemoveProject(repoId)
+    removeRepo(toHex(repoId))
+    // TODO: Toast feedback here maybe
   }
 
   const clickMenu = e => e.stopPropagation()
 
   const clickContext = e => {
     e.stopPropagation()
-    changeActiveIndex({ tabIndex: 1, tabData: { filterIssuesByRepoId: repoId } })
+    changeActiveIndex({
+      tabIndex: 1,
+      tabData: { filterIssuesByRepoId: repoId },
+    })
   }
 
   return (
@@ -67,9 +73,7 @@ const Project = ({
       </MenuContainer>
       <CardTitle>{label}</CardTitle>
       <CardDescription>
-        <CardDescriptionText>
-          {description}
-        </CardDescriptionText>
+        <CardDescriptionText>{description}</CardDescriptionText>
       </CardDescription>
       <StyledStats>
         <StatsContainer>
@@ -95,15 +99,30 @@ const Project = ({
   )
 }
 
+Project.propTypes = {
+  repoId: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+  commits: PropTypes.number.isRequired,
+  url: PropTypes.string.isRequired,
+  contributors: PropTypes.array,
+  changeActiveIndex: PropTypes.func.isRequired,
+  screenSize: PropTypes.number.isRequired,
+}
+
 const StyledCard = styled(Card)`
   display: flex;
   margin-bottom: 2rem;
-  margin-right: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? '0.6rem' : '2rem' };
+  margin-right: ${props =>
+    props.screenSize < CARD_STRETCH_BREAKPOINT ? '0.6rem' : '2rem'};
   flex-direction: column;
   justify-content: flex-start;
   padding: 12px;
   height: 240px;
-  width: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? '100%' : BASE_CARD_WIDTH + 'px' };
+  width: ${props =>
+    props.screenSize < CARD_STRETCH_BREAKPOINT
+      ? '100%'
+      : BASE_CARD_WIDTH + 'px'};
   transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
   :hover {
     cursor: pointer;

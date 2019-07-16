@@ -1,3 +1,3 @@
-export { default as App } from './App'
-export { default as AppContent } from './AppContent'
-export { default as AppTitleButton } from './AppTitleButton'
+export { default as ErrorBoundary } from './ErrorBoundary'
+export { default as NewIssueButton } from './NewIssueButton'
+export { default as NewProjectButton } from './NewProjectButton'

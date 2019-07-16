@@ -15,6 +15,7 @@ import { formatDistance } from 'date-fns'
 import { IconGitHub, BountyContextMenu } from '../../Shared'
 import { BOUNTY_STATUS, BOUNTY_BADGE_COLOR } from '../../../utils/bounty-status'
 import Markdown from './Markdown'
+import { usePanelManagement } from '../../Panel'
 
 const StyledTable = styled.div`
   margin-bottom: 20px;
@@ -61,6 +62,13 @@ const SummaryTable = ({ expLevel, deadline, workStatus, balance }) => {
     </StyledCell>
   ))
   return <StyledTable>{mappedTableFields}</StyledTable>
+}
+
+SummaryTable.propTypes = {
+  expLevel: PropTypes.string.isRequired,
+  deadline: PropTypes.string.isRequired,
+  workStatus: PropTypes.string.isRequired,
+  balance: PropTypes.string.isRequired,
 }
 
 const Wrapper = styled.div`
@@ -126,6 +134,16 @@ const IssueEvent = props => (
     </IssueEventDetails>
   </IssueEventMain>
 )
+
+IssueEvent.propTypes = {
+  avatarUrl: PropTypes.string.isRequired,
+  url: PropTypes.string.isRequired,
+  login: PropTypes.string.isRequired,
+  eventDescription: PropTypes.string.isRequired,
+  eventMessage: PropTypes.string,
+  eventAction: PropTypes.string,
+  date: PropTypes.string.isRequired,
+}
 
 const calculateAgo = pastDate => {
   const date = Date.now()
@@ -238,16 +256,7 @@ const activities = (
 
 const deadlineDistance = date => formatDistance(new Date(date), new Date())
 
-const detailsCard = ({
-  issue,
-  onReviewApplication,
-  onReviewWork,
-  onUpdateBounty,
-  onViewFunding,
-  onRequestAssignment,
-  onSubmitWork,
-  onAllocateSingleBounty,
-}) => {
+const DetailsCard = ({ issue }) => {
   const summaryData = {
     expLevel: issue.expLevel === undefined ? '-' : issue.expLevel,
     deadline:
@@ -288,18 +297,7 @@ const detailsCard = ({
         </div>
         <div style={{ ...column, flex: 0, alignItems: 'flex-end' }}>
           <ContextMenu>
-            <BountyContextMenu
-              onAllocateSingleBounty={() => onAllocateSingleBounty(issue)}
-              onRequestAssignment={() => onRequestAssignment(issue)}
-              onReviewApplication={() => onReviewApplication(issue)}
-              onReviewWork={() => onReviewWork(issue)}
-              onSubmitWork={() => onSubmitWork(issue)}
-              onUpdateBounty={() => onUpdateBounty(issue)}
-              onViewFunding={() => onViewFunding(issue)}
-              requestsData={issue.requestsData}
-              work={issue.work}
-              workStatus={issue.workStatus}
-            />
+            <BountyContextMenu issue={issue} />
           </ContextMenu>
           {issue.balance > 0 && (
             <Badge
@@ -336,14 +334,19 @@ const detailsCard = ({
   )
 }
 
-const eventsCard = ({ issue, onReviewApplication, onReviewWork }) => {
+DetailsCard.propTypes = {
+  issue: PropTypes.object.isRequired,
+}
+
+const EventsCard = ({ issue }) => {
+  const { reviewApplication, reviewWork } = usePanelManagement()
   const issueEvents = activities(
     issue,
     issue.requestsData,
     issue.workSubmissions,
     issue.fundingHistory,
-    onReviewApplication,
-    onReviewWork
+    reviewApplication,
+    reviewWork
   )
 
   return (
@@ -364,7 +367,11 @@ const eventsCard = ({ issue, onReviewApplication, onReviewWork }) => {
   )
 }
 
-const IssueDetail = issue => {
+EventsCard.propTypes = {
+  issue: PropTypes.object.isRequired,
+}
+
+const IssueDetail = ({ issue }) => {
   return (
     <Viewport>
       {({ below }) =>
@@ -377,10 +384,10 @@ const IssueDetail = issue => {
                 marginBottom: below('small') ? '0.2rem' : '2rem',
               }}
             >
-              {detailsCard(issue)}
+              <DetailsCard issue={issue} />
             </div>
             <div style={{ minWidth: '330px', width: '100%' }}>
-              {eventsCard(issue)}
+              <EventsCard issue={issue} />
             </div>
           </CardWrapper>
         ) : (
@@ -393,10 +400,10 @@ const IssueDetail = issue => {
                 marginRight: '2rem',
               }}
             >
-              {detailsCard(issue)}
+              <DetailsCard issue={issue} />
             </div>
             <div style={{ maxWidth: '400px', minWidth: '350px', width: '30%' }}>
-              {eventsCard(issue)}
+              <EventsCard issue={issue} />
             </div>
           </CardWrapper>
         )
@@ -406,23 +413,18 @@ const IssueDetail = issue => {
 }
 
 IssueDetail.propTypes = {
-  onAllocateSingleBounty: PropTypes.func.isRequired,
-  onSubmitWork: PropTypes.func.isRequired,
-  onRequestAssignment: PropTypes.func.isRequired,
-  onReviewApplication: PropTypes.func.isRequired,
-  onReviewWork: PropTypes.func.isRequired,
-  onUpdateBounty: PropTypes.func.isRequired,
-  onViewFunding: PropTypes.func.isRequired,
-  workStatus: PropTypes.oneOf([
-    undefined,
-    'funded',
-    'review-applicants',
-    'in-progress',
-    'review-work',
-    'fulfilled',
-  ]),
-  work: PropTypes.oneOf([ undefined, PropTypes.object ]),
-  fundingHistory: PropTypes.array,
+  issue: PropTypes.shape({
+    workStatus: PropTypes.oneOf([
+      undefined,
+      'funded',
+      'review-applicants',
+      'in-progress',
+      'review-work',
+      'fulfilled',
+    ]),
+    work: PropTypes.oneOf([ undefined, PropTypes.object ]),
+    fundingHistory: PropTypes.array,
+  }).isRequired,
 }
 
 const CardWrapper = styled.div`

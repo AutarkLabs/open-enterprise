@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { unselectable, theme } from '@aragon/ui'
+import { theme } from '@aragon/ui'
 
 const FilterButton = styled.button`
   align-items: center;

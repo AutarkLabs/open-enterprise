@@ -9,7 +9,6 @@ import {
 } from '@aragon/ui'
 
 import Overflow from './Overflow'
-import FilterButton from './FilterButton'
 import FilterDropDown from './FilterDropDown'
 import prepareFilters from './prepareFilters'
 import { IconArrow as IconArrowDown } from '../../../../../../shared/ui'
@@ -231,7 +230,7 @@ class FilterBar extends React.Component {
   )
 
   render() {
-    const { handleSelectAll, allSelected, issues, bountyIssues, filters, sortBy } = this.props
+    const { handleSelectAll, allSelected, issues, bountyIssues, filters } = this.props
     // filters contain information about active filters (checked checkboxes)
     // filtersData is about displayed checkboxes
     const allFundedIssues = [ 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]
@@ -260,11 +259,15 @@ class FilterBar extends React.Component {
 }
 
 FilterBar.propTypes = {
+  allSelected: PropTypes.bool.isRequired,
+  filters: PropTypes.object.isRequired,
+  bountyIssues: PropTypes.arrayOf(PropTypes.object).isRequired,
   issues: PropTypes.arrayOf(PropTypes.object).isRequired,
   sortBy: PropTypes.object.isRequired,
   handleSelectAll: PropTypes.func.isRequired,
   handleFiltering: PropTypes.func.isRequired,
   handleSorting: PropTypes.func.isRequired,
+  setParentFilters: PropTypes.func.isRequired,
 }
 
 const FilterMenuItem = styled(ContextMenuItem)`
