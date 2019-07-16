@@ -15,7 +15,7 @@ import Unauthorized from './Unauthorized'
 import ActionsMenu from './ActionsMenu'
 
 import {
-  List,
+  List as VirtualizedList,
   CellMeasurer,
   CellMeasurerCache,
   AutoSizer
@@ -395,7 +395,7 @@ class Issues extends React.PureComponent {
   */
   flattenIssues = data => {
     let downloadedIssues = []
-    let downloadedRepos = {}
+    const downloadedRepos = {}
 
     Object.keys(data).forEach(nodeName => {
       const repo = data[nodeName]
@@ -546,15 +546,6 @@ class Issues extends React.PureComponent {
                 >
                   {({ height }) => (
                     <List
-                      style={{
-                        borderTopWidth: '1px',
-                        borderTopStyle: 'solid',
-                        borderTopColor: theme.contentBorder,
-                        borderBottomWidth: '1px',
-                        borderBottomStyle: 'solid',
-                        borderBottomColor: theme.contentBorder,
-                        borderRadius: '3px'
-                      }}
                       autoWidth={true}
                       width={window.innerWidth}
                       height={height}
@@ -593,6 +584,12 @@ const IssuesScrollView = styled.div`
   flex-direction: column;
   justify-content: stretch;
   flex-grow: 1;
+`
+
+const List = styled(VirtualizedList)`
+  border-top: 1px solid ${theme.contentBorder};
+  border-bottom: 1px solid ${theme.contentBorder};
+  border-radius: 3px;
 `
 
 const recursiveDeletePathFromObject = (path, object) => {
