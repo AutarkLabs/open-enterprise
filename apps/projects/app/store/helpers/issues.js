@@ -137,14 +137,14 @@ const checkIssuesLoaded = (issues, issueNumber, data) => {
       issueNumber,
       data: data
     })
-  } else {
-    const nextIssues = Array.from(issues)
-    nextIssues[issueIndex] = {
-      issueNumber,
-      data: data
-    }
-    return nextIssues
   }
+
+  const nextIssues = Array.from(issues)
+  nextIssues[issueIndex] = {
+    issueNumber,
+    data: data
+  }
+  return nextIssues
 }
 
 const updateIssueState = (state, issueNumber, data) => {
