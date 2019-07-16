@@ -41,7 +41,7 @@ const labelsBadges = labels =>
 
 class Issue extends React.PureComponent {
   render() {
-    const { isSelected, onClick, onSelect, ...issue } = this.props
+    const { isSelected, onClick, onSelect, style, ...issue } = this.props
 
     const {
       workStatus,
@@ -56,7 +56,7 @@ class Issue extends React.PureComponent {
     } = issue
 
     return (
-      <StyledIssue>
+      <StyledIssue style={style}>
         <div style={{ padding: '10px' }}>
           <Checkbox checked={isSelected} onChange={() => onSelect(issue)} />
         </div>
@@ -135,6 +135,7 @@ Issue.propTypes = {
     'fulfilled',
   ]),
   work: PropTypes.oneOf([ undefined, PropTypes.object ]),
+  style: PropTypes.object,
 }
 
 const StyledIssue = styled.div`
@@ -149,9 +150,11 @@ const StyledIssue = styled.div`
   position: relative;
   :first-child {
     border-radius: 3px 3px 0 0;
+    border-top: 0px;
   }
   :last-child {
     border-radius: 0 0 3px 3px;
+    border-bottom: 0px;
   }
 `
 const IssueTitleDetailsBalance = styled.div`

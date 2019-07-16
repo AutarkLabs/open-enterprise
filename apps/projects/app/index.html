@@ -2,10 +2,18 @@
 <html>
   <head>
     <title>Projects App</title>
+    <style>
+      #projects > div {
+          height: 100%;
+      }
+      div[class^="AppView__Content"] {
+          height: 100%;
+      }
+    </style>
   </head>
 
   <body>
-    <div id="projects" style="overflow: hidden"></div>
+    <div id="projects" style="overflow: hidden; height: 100%"></div>
     <script src="index.js"></script>
   </body>
 </html>

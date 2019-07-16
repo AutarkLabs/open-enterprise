@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { Query } from 'react-apollo'
-import { Button } from '@aragon/ui'
+import { Button, theme } from '@aragon/ui'
 import BigNumber from 'bignumber.js'
 import { compareAsc, compareDesc } from 'date-fns'
 
@@ -13,6 +13,21 @@ import { Issue, Empty } from '../Card'
 import { IssueDetail } from './IssueDetail'
 import Unauthorized from './Unauthorized'
 import ActionsMenu from './ActionsMenu'
+
+import {
+  List,
+  CellMeasurer,
+  CellMeasurerCache,
+  AutoSizer
+} from 'react-virtualized'
+
+const DEFAULT_CARD_HEIGHT = 100
+const LOAD_MORE_THRESHOLD = 0.7
+
+const cache = new CellMeasurerCache({
+  defaultHeight: DEFAULT_CARD_HEIGHT,
+  fixedWidth: true
+})
 
 class Issues extends React.PureComponent {
   static propTypes = {
@@ -370,25 +385,32 @@ class Issues extends React.PureComponent {
   */
   flattenIssues = data => {
     let downloadedIssues = []
-    const downloadedRepos = {}
+    let downloadedRepos = {}
 
-    Object.keys(data).forEach(nodeName => {
-      const repo = data[nodeName]
+    if (data && data.node0) {
 
-      downloadedRepos[repo.id] = {
-        downloadedCount: repo.issues.nodes.length,
-        totalCount: repo.issues.totalCount,
-        fetch: this.state.issuesPerCall,
-        hasNextPage: repo.issues.pageInfo.hasNextPage,
-        endCursor: repo.issues.pageInfo.endCursor,
+      Object.keys(data).forEach(nodeName => {
+        const repo = data[nodeName]
+
+        downloadedRepos[repo.id] = {
+          downloadedCount: repo.issues.nodes.length,
+          totalCount: repo.issues.totalCount,
+          fetch: this.state.issuesPerCall,
+          hasNextPage: repo.issues.pageInfo.hasNextPage,
+          endCursor: repo.issues.pageInfo.endCursor,
+        }
+        downloadedIssues = downloadedIssues.concat(...repo.issues.nodes)
+      })
+
+      if (this.state.downloadedIssues.length > 0) {
+        downloadedIssues = downloadedIssues.concat(this.state.downloadedIssues)
       }
-      downloadedIssues = downloadedIssues.concat(...repo.issues.nodes)
-    })
 
-    if (this.state.downloadedIssues.length > 0) {
-      downloadedIssues = downloadedIssues.concat(this.state.downloadedIssues)
+      return { downloadedIssues, downloadedRepos }
     }
 
+    downloadedIssues = this.state.downloadedIssues
+    downloadedRepos = this.state.downloadedRepos
     return { downloadedIssues, downloadedRepos }
   }
 
@@ -404,6 +426,30 @@ class Issues extends React.PureComponent {
     })
   }
 
+  getRowRenderer = issuesSorted => ({
+    index,
+    key,
+    parent,
+    style
+  }) => {
+    return (
+      <CellMeasurer
+        cache={cache}
+        columnIndex={0}
+        key={key}
+        parent={parent}
+        rowIndex={index}
+      >
+        <Issue
+          isSelected={issuesSorted[index].id in this.state.selectedIssues}
+          {...issuesSorted[index]}
+          onClick={this.handleIssueClick}
+          onSelect={this.handleIssueSelection}
+          style={style}
+        />
+      </CellMeasurer>
+    )
+  }
   render() {
     if (this.props.status === STATUS.INITIAL) {
       return <Unauthorized onLogin={this.props.onLogin} />
@@ -459,7 +505,9 @@ class Issues extends React.PureComponent {
         onError={console.error}
       >
         {({ data, loading, error, refetch }) => {
-          if (data && data.node0) {
+          if ((data && data.node0) ||
+              (this.state.downloadedIssues != [] &&
+               this.state.downloadedRepos != {})) {
             // first, flatten data structure into array of issues
             const { downloadedIssues, downloadedRepos } = this.flattenIssues(
               data
@@ -473,39 +521,54 @@ class Issues extends React.PureComponent {
                 repoId => downloadedRepos[repoId].hasNextPage
               ).length > 0
 
+            const issuesSorted = this.shapeIssues(issuesFiltered)
+              .sort(currentSorter)
+
+            const estimatedHeight = DEFAULT_CARD_HEIGHT * issuesSorted.length
+
+            const onScroll = ({ scrollTop }) => {
+              const position = scrollTop / estimatedHeight
+              if(moreIssuesToShow && position >= LOAD_MORE_THRESHOLD) {
+                this.showMoreIssues(downloadedIssues, downloadedRepos)
+              }
+            }
+
             return (
               <StyledIssues>
                 {this.actionsMenu(downloadedIssues, issuesFiltered)}
                 {this.filterBar(downloadedIssues, issuesFiltered)}
 
                 <IssuesScrollView>
-                  <ScrollWrapper>
-                    {this.shapeIssues(issuesFiltered)
-                      .sort(currentSorter)
-                      .map(issue => (
-                        <Issue
-                          isSelected={issue.id in this.state.selectedIssues}
-                          key={issue.id}
-                          {...issue}
-                          onClick={this.handleIssueClick}
-                          onSelect={this.handleIssueSelection}
-                        />
-                      ))}
-                  </ScrollWrapper>
 
-                  <div style={{ textAlign: 'center' }}>
-                    {moreIssuesToShow && (
-                      <Button
-                        style={{ margin: '12px 0 30px 0' }}
-                        mode="secondary"
-                        onClick={() =>
-                          this.showMoreIssues(downloadedIssues, downloadedRepos)
-                        }
-                      >
-                        Show More
-                      </Button>
+                  <AutoSizer
+                    defaultHeight={window.innerHeight}
+                    disableWidth={true}
+                  >
+                    {({ height }) => (
+                      <List
+                        style={{
+                          borderTopWidth: '1px',
+                          borderTopStyle: 'solid',
+                          borderTopColor: theme.contentBorder,
+                          borderBottomWidth: '1px',
+                          borderBottomStyle: 'solid',
+                          borderBottomColor: theme.contentBorder,
+                          borderRadius: '3px'
+                        }}
+                        autoWidth={true}
+                        width={window.innerWidth}
+                        height={height}
+                        rowCount={issuesSorted.length}
+                        deferredMeasurementCache={cache}
+                        estimatedRowSize={DEFAULT_CARD_HEIGHT}
+                        rowHeight={cache.rowHeight}
+                        onScroll={onScroll}
+                        rowRenderer={this.getRowRenderer(issuesSorted)}
+                      />
+
                     )}
-                  </div>
+                  </AutoSizer>
+
                 </IssuesScrollView>
               </StyledIssues>
             )
@@ -524,27 +587,15 @@ const StyledIssues = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  height: 100%;
 `
 
-const ScrollWrapper = styled.div`
+const IssuesScrollView = styled.div`
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: stretch;
   flex-grow: 1;
-  > :first-child {
-    border-radius: 3px 3px 0 0;
-  }
-  > :last-child {
-    border-radius: 0 0 3px 3px;
-    margin-bottom: 10px;
-  }
-`
-
-// TODO: Calculate height with flex (maybe to add pagination at bottom?)
-const IssuesScrollView = styled.div`
-  height: 75vh;
-  position: relative;
 `
 
 const recursiveDeletePathFromObject = (path, object) => {
