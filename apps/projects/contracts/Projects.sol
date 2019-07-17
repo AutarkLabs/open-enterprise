@@ -719,7 +719,7 @@ contract Projects is AragonApp, DepositableStorage {
     /**
      * @dev checks the hashed contract code to ensure it matches the provided hash
      */
-    function _isBountiesContractValid(address _bountyRegistry) internal returns(bool) {
+    function _isBountiesContractValid(address _bountyRegistry) internal view returns(bool) {
         if (_bountyRegistry == address(0)) {
             return false;
         }
