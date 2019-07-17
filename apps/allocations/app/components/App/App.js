@@ -1,187 +1,140 @@
-import { Main, AppBar, AppView, SidePanel } from '@aragon/ui'
-import PropTypes from 'prop-types'
-import React from 'react'
-import { Accounts, Payouts } from '.'
-import { NewAccount, NewAllocation } from '../Panel'
-import { networkContextType, AppTitle, AppTitleButton } from '../../../../../shared/ui'
+import React, { useState } from 'react'
+
 import { useAragonApi } from '@aragon/api-react'
+import { AppBar, AppView, Main, SidePanel } from '@aragon/ui'
+
+import { AppTitle, AppTitleButton } from '../../../../../shared/ui'
 import { IdentityProvider } from '../../../../../shared/identity'
+import { NewAccount, NewAllocation } from '../Panel'
+import { Accounts, Payouts } from '.'
 
-class App extends React.PureComponent {
-  static propTypes = {
-    api: PropTypes.object,
-    accounts: PropTypes.arrayOf(PropTypes.object),
+const ASSETS_URL = './aragon-ui'
+
+const nameSorter = (a, b) => a.data.name.toUpperCase() > b.data.name.toUpperCase() ? 1 : -1
+
+const App = () => {
+  const [ panel, setPanel ] = useState(null)
+  const { api, appState, displayMenuButton = false } = useAragonApi()
+  const { accounts = [], balances = [], entries = [], payouts = [] } = appState
+
+  const onCreateAccount = description => {
+    api.newAccount(description)
+    closePanel()
   }
 
-  static defaultProps = {
-    network: {},
-  }
-
-  static childContextTypes = {
-    network: networkContextType,
-  }
-
-  state = {
-    accounts: [],
-    panel: {
-      visible: false,
-    }
-  }
-
-  getChildContext() {
-    const { network } = this.props
-    return {
-      network: {
-        type: network.type,
-      },
-    }
-  }
-
-  createAccount = (account) => {
-    account.balance = 0
-    this.props.api.newAccount(account.description)
-    this.closePanel()
-    this.setState({})
-  }
-
-  submitAllocation = allocation => {
-    const emptyIntArray = new Array(allocation.addresses.length).fill(0)
-    this.props.api.setDistribution(
-      allocation.addresses,
+  const onSubmitAllocation = ({ addresses, description, payoutId, recurring, period, balance, tokenAddress }) => {
+    const emptyIntArray = new Array(addresses.length).fill(0)
+    api.setDistribution(
+      addresses,
       emptyIntArray, //[]
       emptyIntArray, //[]
       '',
-      allocation.description,
+      description,
       emptyIntArray, // Issue with bytes32 handling
       emptyIntArray, // Issue with bytes32 handling
-      allocation.payoutId,
-      allocation.recurring,
-      allocation.period,
-      allocation.balance,
-      allocation.tokenAddress
+      payoutId,
+      recurring,
+      period,
+      balance,
+      tokenAddress
     )
-    this.closePanel()
+    closePanel()
   }
 
-  onExecutePayout = (accountId, payoutId) => {
-    this.props.api.runPayout(accountId, payoutId)
+  const onExecutePayout = (accountId, payoutId) => {
+    api.runPayout(accountId, payoutId)
   }
 
-
-  newAccount = () => {
-    this.setState({
-      panel: {
-        visible: true,
-        content: NewAccount,
-        data: { heading: 'New Account', onCreateAccount: this.createAccount },
-      },
+  const onNewAccount = () => {
+    setPanel({
+      content: NewAccount,
+      data: { heading: 'New Account', onCreateAccount }
     })
   }
 
-  entitiesSort = (a,b) => a.data.name.toUpperCase() > b.data.name.toUpperCase() ? 1 : -1
 
-  newAllocation = (address, description, id, balance) => {
+  const onNewAllocation = (address, description, id, balance) => {
     // The whole entries vs entities thing needs to be fixed; these are too close
     //const userEntity = {addr: '0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb', data: {entryAddress: '0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb', name: 'Bob', entryType: 'user'}}
     const promptEntity = {
       addr: 0x0,
       data: { entryAddress: 0x0, name: 'Select an entry', entryType: 'prompt' },
     }
-    let entities = this.props.entries !== undefined ? this.props.entries.sort(this.entitiesSort) : []
-    const entriesList = [promptEntity].concat(entities)
-    this.setState({
-      panel: {
-        visible: true,
-        content: NewAllocation,
-        data: {
-          address,
-          id,
-          balance,
-          heading: 'New Allocation',
-          subHeading: description,
-          onSubmitAllocation: this.submitAllocation,
-          entities: entriesList,
-          balances: this.props.balances ? this.props.balances : []
-        },
+
+    const entities = [promptEntity].concat(entries.sort(nameSorter))
+    setPanel({
+      content: NewAllocation,
+      data: {
+        heading: 'New Allocation',
+        subHeading: description,
+        address,
+        balance,
+        balances,
+        entities,
+        id,
+        onSubmitAllocation,
       },
     })
   }
 
-  closePanel = () => {
-    this.setState({ panel: { visible: false } })
+  const closePanel = () => {
+    setPanel(null)
   }
 
-  handleResolveLocalIdentity = address => {
-    return this.props.api.resolveAddressIdentity(address).toPromise()
-  }
+  const handleResolveLocalIdentity = address => api.resolveAddressIdentity(address).toPromise()
 
-  handleShowLocalIdentityModal = address => {
-    return this.props.api
-      .requestAddressIdentityModification(address)
-      .toPromise()
-  }
+  const handleShowLocalIdentityModal = address => api
+    .requestAddressIdentityModification(address)
+    .toPromise()
 
-  render() {
-    const { panel } = this.state
-    const { displayMenuButton = false } = this.props
-    const PanelContent = panel.content
+  const PanelContent = panel.content
 
-    return (
-      // TODO: Profile App with React.StrictMode, perf and why-did-you-update, apply memoization
-      <Main>
-        <IdentityProvider
-          onResolve={this.handleResolveLocalIdentity}
-          onShowLocalIdentityModal={this.handleShowLocalIdentityModal}>
-          <AppView
-            appBar={
-              <AppBar
-                endContent={
-                  <AppTitleButton
-                    caption="New Account"
-                    onClick={this.newAccount}
-                  />
-                }
-              >
-                <AppTitle
-                  title="Allocations"
-                  displayMenuButton={displayMenuButton}
-                  css="padding-left: 30px"
+  return (
+    // TODO: Profile App with React.StrictMode, perf and why-did-you-update, apply memoization
+    <Main assetsUrl={ASSETS_URL}>
+      <IdentityProvider
+        onResolve={handleResolveLocalIdentity}
+        onShowLocalIdentityModal={handleShowLocalIdentityModal}>
+        <AppView
+          appBar={
+            <AppBar
+              endContent={
+                <AppTitleButton
+                  caption="New Account"
+                  onClick={onNewAccount}
                 />
-              </AppBar>
-            }
-          >
-            <Accounts
-              accounts={
-                this.props.accounts || []
               }
-              onNewAccount={this.newAccount}
-              onNewAllocation={this.newAllocation}
-              app={this.props.api}
-            />
-            <Payouts
-              payouts={
-                this.props.payouts || []
-              }
-              executePayout={this.onExecutePayout}
-              network={this.props.network}
-              tokens={this.props.balances}
-            />
-          </AppView>
+            >
+              <AppTitle
+                title="Allocations"
+                displayMenuButton={displayMenuButton}
+                css="padding-left: 30px"
+              />
+            </AppBar>
+          }
+        >
+          <Accounts
+            accounts={accounts}
+            onNewAccount={onNewAccount}
+            onNewAllocation={onNewAllocation}
+          />
+          <Payouts
+            payouts={payouts}
+            executePayout={onExecutePayout}
+            tokens={balances}
+          />
+        </AppView>
 
-          <SidePanel
-            title={(panel.data && panel.data.heading) || ''}
-            opened={panel.visible}
-            onClose={this.closePanel}
-          >
-            {panel.content && <PanelContent {...panel.data} />}
-          </SidePanel>
-        </IdentityProvider>
-      </Main>
-    )
-  }
+        <SidePanel
+          title={(panel.data && panel.data.heading) || ''}
+          opened={panel}
+          onClose={closePanel}
+        >
+          {panel.content && <PanelContent {...panel.data} />}
+        </SidePanel>
+      </IdentityProvider>
+    </Main>
+  )
 }
 
-export default () => {
-  const { api, appState, displayMenuButton } = useAragonApi()
-  return <App api={api} {...appState} displayMenuButton={displayMenuButton} />
-}
+export default App

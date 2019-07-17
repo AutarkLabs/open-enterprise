@@ -1,35 +1,32 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { Text, theme, Viewport, Badge } from '@aragon/ui'
-import { FieldTitle } from '../Form'
 
+import { Badge, Text, theme } from '@aragon/ui'
 
+const PayoutsTable = ({ list: List, data, ...listProps }) =>
+  <div>
+    <Text.Block size="large" weight="bold" style={{ marginBottom: '10px' }}>
+      Allocations
+      {' '}
+      <Badge.Info>{data.length}</Badge.Info>
+    </Text.Block>
 
-const PayoutsTable = props => {
-  const List = props.list
-
-  return (
-    <div>
-      <Text.Block size="large" weight="bold" style={{ marginBottom: '10px' }}>
-        Allocations
-        {' '}
-        <Badge.Info>{props.data.length}</Badge.Info>
-      </Text.Block>
-
-      <List {...props} />
-    </div>
-  )
-}
+    <List {...listProps} />
+  </div>
 
 PayoutsTable.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object).isRequired,
+  list: PropTypes.node.isRequired,
+  listProps: PropTypes.object.isRequired,
 }
 
 const PayoutDescription = styled(Text.Block)`
   display: block;
+  /* stylelint-disable-next-line */
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  /* stylelint-disable-next-line */
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -58,6 +55,6 @@ const AmountBadge = styled(Badge).attrs({
 })`
   padding: 10px;
   margin: 10px;
-  text-size: large;
+  font-size: large;
 `
 export { PayoutDescription, PayoutsTable, NarrowList, NarrowListPayout, AmountBadge }
