@@ -1,4 +1,6 @@
-pragma solidity ^0.4.24;
+/*
+ * SPDX-License-Identitifer: GPL-3.0-or-later
+ */
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
