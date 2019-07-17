@@ -6,13 +6,10 @@ module.exports = {
     commonjs: true,
   },
   extends: [
-    'eslint:all',
+    'eslint:recommended',
     'plugin:import/errors',
-    'plugin:react/all',
+    'plugin:react/recommended',
     'plugin:jsx-a11y/recommended',
-    "plugin:prettier/recommended",
-    "prettier/react",
-    "prettier/standard",
   ],
   parser: 'babel-eslint',
   parserOptions: {
