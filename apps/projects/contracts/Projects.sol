@@ -2,32 +2,16 @@
  * SPDX-License-Identitifer: GPL-3.0-or-later
  */
 
+pragma solidity 0.4.24;
+
 import "@aragon/os/contracts/apps/AragonApp.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
 import "@aragon/os/contracts/common/EtherTokenConstant.sol";
 
-/*******************************************************************************
-    Copyright 2018, That Planning Suite
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*******************************************************************************/
-/*******************************************************************************
-* @title Projects Contract
-* @author Autark Labs
-* @dev This contract defines a registry for project tasks in addition to
-* applying bounties in bulk and accepting fulfillment via this contract
-*******************************************************************************/
+/**
+  * @title Bounties Interface
+  * @dev Defines a minimal interface blueprint for the StandardBounties contract
+  */
 interface Bounties {
 
     // issueBounty will be deleted once testing is reimplemented
