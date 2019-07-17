@@ -1,2 +1,7 @@
-const appStateReducer = state => state
+const appStateReducer = state => {
+  return {
+    ...state
+  }
+}
+  
 export default appStateReducer
