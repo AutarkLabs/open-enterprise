@@ -205,6 +205,7 @@ contract Projects is AragonApp, DepositableStorage {
 
         vault = _vault;
 
+        require(isContract(_bountiesAddr), "ERROR_BOUNTIES_NOT_CONTRACT");
         bounties = Bounties(_bountiesAddr); // Standard Bounties instance
 
         _addExperienceLevel(100, bytes32("Beginner"));
