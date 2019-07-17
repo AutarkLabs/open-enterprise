@@ -116,6 +116,7 @@ contract Projects is AragonApp, DepositableStorage {
     string private constant ERROR_LENGTH_MISMATCH = "LENGTH_MISMATCH";
     string private constant ERROR_BOUNTY_FULFILLED = "BOUNTY_FULFILLED";
     string private constant ERROR_BOUNTY_REMOVED = "BOUNTY_REMOVED";
+    string private constant ERROR_ETH_CONTRACT = "WRONG_ETH_TOKEN";
 
     // The entries in the repos registry.
     mapping(bytes32 => Repo) private repos;
@@ -727,6 +728,7 @@ contract Projects is AragonApp, DepositableStorage {
             return true;
         }
         uint256 size;
+        // solium-disable-next-line security/no-inline-assembly
         assembly { size := extcodesize(_bountyRegistry) }
         if (size != 23375) {
             return false;
@@ -741,7 +743,7 @@ contract Projects is AragonApp, DepositableStorage {
             bytes32(0x4096b2d76eb15fdbbd8e6ab3e7cabb4bfff876bf242c0731d6187fc76c21c52f)
         ];
         for (uint256 i = 0; i < segments; i++) {
-
+            // solium-disable-next-line security/no-inline-assembly
             assembly{ extcodecopy(_bountyRegistry,add(0x20,registryCode),div(mul(i,segmentLength),segments),segmentLength) }
             if (validRegistryHashes[i] != keccak256(registryCode)) {
                 return false;
@@ -805,10 +807,10 @@ contract Projects is AragonApp, DepositableStorage {
         require(_tokenType != 721, "No ERC 721");
         uint256 registryTokenType;
         if (_tokenType == 0) {
-            require(_tokenContract == ETH);
+            require(_tokenContract == ETH, ERROR_ETH_CONTRACT);
             registryTokenType = _tokenType;
         } else if (_tokenType == 1) {
-            require(_tokenContract == ETH);
+            require(_tokenContract == ETH, ERROR_ETH_CONTRACT);
             registryTokenType = 0;
         } else {
             registryTokenType = _tokenType;
@@ -967,6 +969,7 @@ contract Projects is AragonApp, DepositableStorage {
         // need to offset by 0x20 (32 bytes) to account for the first
         // 32 "header" bytes
         // then copy the first 32 bytes of the hash into the destination location
+        // solium-disable-next-line security/no-inline-assembly
         assembly {
             dest := add(result,0x20)
             src := add(strBytes,add(0x20,startIndex))
@@ -978,6 +981,7 @@ contract Projects is AragonApp, DepositableStorage {
         dest += 32;
         length -= 32;
         uint mask = 256 ** (32 - length) - 1;
+        // solium-disable-next-line security/no-inline-assembly
         assembly {
             let srcpart := and(mload(src), not(mask))
             let destpart := and(mload(dest), mask)
