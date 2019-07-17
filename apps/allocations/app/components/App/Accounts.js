@@ -35,6 +35,7 @@ const Accounts = ({
                 balance={data.balance}
                 description={data.metadata}
                 key={accountId}
+                id={accountId}
                 onNewAllocation={onNewAllocation}
                 proxy={data.proxy}
                 screenSize={screenSize}

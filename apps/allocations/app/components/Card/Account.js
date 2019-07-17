@@ -21,14 +21,14 @@ import icon from '../../assets/account-card.svg'
 const Account = ({
   balance,
   description,
-  key,
+  id,
   onNewAllocation,
   proxy,
   screenSize,
 }) => {
   const { type } = useNetwork()
   const newAllocation = () => {
-    onNewAllocation(proxy, description, key, balance)
+    onNewAllocation(proxy, description, id, balance)
   }
 
   return (
@@ -73,7 +73,7 @@ const Account = ({
 Account.propTypes = {
   balance: PropTypes.string.isRequired, // We are receiving this as string, parseInt if needed
   description: PropTypes.string.isRequired,
-  key: PropTypes.number.isRequired,
+  id: PropTypes.number.isRequired,
   onNewAllocation: PropTypes.func.isRequired,
   proxy: PropTypes.string.isRequired,
   screenSize: PropTypes.object.isRequired

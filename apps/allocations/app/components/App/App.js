@@ -17,7 +17,7 @@ const App = () => {
   const { api, appState, displayMenuButton = false } = useAragonApi()
   const { accounts = [], balances = [], entries = [], payouts = [] } = appState
 
-  const onCreateAccount = description => {
+  const onCreateAccount = ({ description }) => {
     api.newAccount(description)
     closePanel()
   }
@@ -87,7 +87,7 @@ const App = () => {
     .requestAddressIdentityModification(address)
     .toPromise()
 
-  const PanelContent = panel.content
+  const PanelContent = panel ? panel.content : null
 
   return (
     // TODO: Profile App with React.StrictMode, perf and why-did-you-update, apply memoization
@@ -126,11 +126,11 @@ const App = () => {
         </AppView>
 
         <SidePanel
-          title={(panel.data && panel.data.heading) || ''}
-          opened={panel}
+          title={(panel && panel.data.heading) || ''}
+          opened={panel !== null}
           onClose={closePanel}
         >
-          {panel.content && <PanelContent {...panel.data} />}
+          {panel && <PanelContent {...panel.data} />}
         </SidePanel>
       </IdentityProvider>
     </Main>
