@@ -78,12 +78,22 @@ interface Bounties {
     ) external;
 }
 
+/**
+  * @title ERC20 Interface
+  * @dev Defines a minimal interface blueprint for ERC20 tokens interaction
+  */
 interface ERC20Token {
     function approve(address _spender, uint256 _value) external returns (bool success);
     function transfer(address to, uint tokens) external returns (bool success);
 }
 
 
+/**
+  * @title Projects App
+  * @author Autark
+  * @dev Defines a registry for project tasks in addition to
+  * applying bounties in bulk and accepting fulfillment via this contract
+  */
 contract Projects is AragonApp, DepositableStorage {
     Bounties public bounties;
     BountySettings public settings;
@@ -177,17 +187,17 @@ contract Projects is AragonApp, DepositableStorage {
     // Fired when a bounty is opened up to work submissions from anyone
     event AwaitingSubmissions(bytes32 repoId, uint256 issueNumber);
 
-////////////////
-// Constructor
-////////////////
+    /**
+     * @notice Initialize Projects app for StandardBounties at `_bountiesAddr`
+     * @dev Initializes the Projects app, this is the Aragon custom constructor
+     * @param _bountiesAddr Address of the StandardBounties deployed instance Projects will rely on (changeable)
+     * @param _vault Address of the vault Projects will rely on (non changeable)
+     */
     function initialize(
         address _bountiesAddr,
         Vault _vault
-    ) external onlyInit // solium-disable-line visibility-first
+    ) external onlyInit
     {
-        initialized();
-        setDepositable(true);
-
         require(isContract(_vault), ERROR_PROJECTS_VAULT_NOT_CONTRACT);
         require(isContract(_bountiesAddr), ERROR_STANDARD_BOUNTIES_NOT_CONTRACT);
         // We need to discuss whether or not we want to implement this here instead:
