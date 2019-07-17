@@ -137,7 +137,7 @@ class Issues extends React.PureComponent {
       // if there are no MS filters, all issues pass
       if (Object.keys(filters.milestones).length === 0) return true
       // should issues without milestones pass?
-      if ('milestoneless' in filters.milestones && issue.milestone == null)
+      if ('milestoneless' in filters.milestones && issue.milestone === null)
         return true
       // if issues without milestones should not pass, they are rejected below
       if (issue.milestone === null) return false
@@ -342,7 +342,7 @@ class Issues extends React.PureComponent {
       }
     else if (what === 'Creation Date')
       return (i1, i2) => {
-        return direction == 1
+        return direction === 1
           ? compareAsc(new Date(i1.createdAt), new Date(i2.createdAt))
           : compareDesc(new Date(i1.createdAt), new Date(i2.createdAt))
       }

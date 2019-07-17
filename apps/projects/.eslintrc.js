@@ -37,6 +37,8 @@ module.exports = {
     ],
     'object-curly-spacing': ['error', 'always'],
     'no-console': ['warn', { allow: ['warn', 'error'] }],
+    'no-else-return': 'warn',
+    eqeqeq: 'warn',
   },
   settings: {
     react: {
