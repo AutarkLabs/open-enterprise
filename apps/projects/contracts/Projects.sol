@@ -921,7 +921,7 @@ contract Projects is AragonApp, DepositableStorage {
             address(this),
             issue.standardBountyId,
             0,
-            now
+            getTimestamp()
         );
         emit BountyRemoved(
             _repoId,
