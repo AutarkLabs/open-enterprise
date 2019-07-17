@@ -1,19 +1,16 @@
-truffleAssert = require('truffle-assertions')
+const { assertRevert } = require('@aragon/test-helpers/assertThrow')
+const truffleAssert = require('truffle-assertions')
 
-/* global artifact, ... */
-const {
-  ACL,
-  DAOFactory,
-  EVMScriptRegistryFactory,
-  Kernel,
-  MiniMeToken,
-  BountiesEvents,
-} = require('@tps/test-helpers/artifacts')
+/** Helper function to import truffle contract artifacts */
+const getContract = name => artifacts.require(name)
 
-const Vault = artifacts.require('Vault')
-const Projects = artifacts.require('Projects')
+/** Helper function to read events from receipts */
+const getReceipt = (receipt, event, arg) => receipt.logs.filter(l => l.event === event)[0].args[arg]
 
-const { assertRevert } = require('@tps/test-helpers/assertThrow')
+
+/** Useful constants */
+const repoIdString = 'MDEwOIJlcG9zaXRvcnkxNjY3MjlyMjY='
+const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 const addedRepo = receipt =>
   web3.toAscii(receipt.logs.filter(x => x.event == 'RepoAdded')[0].args.repoId)
@@ -25,170 +22,89 @@ const fulfilledBounty = receipt =>
   receipt.logs.filter(x => x.event == 'BountyFulfilled')[0].args
 
 contract('Projects App', accounts => {
-  let daoFact,
-    bounties,
-    bountiesEvents = {},
-    app = {},
-    vaultBase = {},
-    vault = {}
+  let APP_MANAGER_ROLE, ADD_REPO_ROLE, CHANGE_SETTINGS_ROLE, CURATE_ISSUES_ROLE
+  let FUND_ISSUES_ROLE, FUND_OPEN_ISSUES_ROLE, REMOVE_ISSUES_ROLE, REMOVE_REPO_ROLE
+  let REVIEW_APPLICATION_ROLE, TRANSFER_ROLE, UPDATE_BOUNTIES_ROLE, WORK_REVIEW_ROLE
+  let daoFact, alternateBounties, bounties, bountiesEvents, app, vaultBase, vault
 
-  const root = accounts[0]
-  const owner1 = accounts[0] // 0xb421
-  const bountyManager = accounts[2]
-  const repoRemover = accounts[3]
-  const repoIdString = 'MDEwOIJlcG9zaXRvcnkxNjY3MjlyMjY='
-  const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
+  // Setup test actor accounts
+  const [root, bountyManager, repoRemover] = accounts
 
-  before(async () => {
+  beforeEach(async () => {
     //Create Base DAO Contracts
-    const kernelBase = await Kernel.new(true)
-    // implement bountiesEvents so the events are logged by Truffle
-    ////console.log('Bounties Addresses: ', process.env.BOUNT_ADDR.split(' '))
-    bountiesEvents = BountiesEvents.at('0x72D1Ae1D6C8f3dd444b3D95bAd554Be483082e40')
-    const aclBase = await ACL.new()
-    const regFact = await EVMScriptRegistryFactory.new()
-    daoFact = await DAOFactory.new(
+    const kernelBase = await getContract('Kernel').new(true) // petrify immediately
+    const aclBase = await getContract('ACL').new()
+    const regFact = await getContract('EVMScriptRegistryFactory').new()
+    daoFact = await getContract('DAOFactory').new(
       kernelBase.address,
       aclBase.address,
       regFact.address
     )
+
+    appBase = await getContract('Projects').new()
+    vaultBase = await getContract('Vault').new()
+
+    // Setup ACL roles constants
+    APP_MANAGER_ROLE = await kernelBase.APP_MANAGER_ROLE()
+    ADD_REPO_ROLE = await appBase.ADD_REPO_ROLE()
+    CHANGE_SETTINGS_ROLE = await appBase.CHANGE_SETTINGS_ROLE()
+    CURATE_ISSUES_ROLE = await appBase.CURATE_ISSUES_ROLE()
+    FUND_ISSUES_ROLE = await appBase.FUND_ISSUES_ROLE()
+    FUND_OPEN_ISSUES_ROLE = await appBase.FUND_OPEN_ISSUES_ROLE()
+    REMOVE_ISSUES_ROLE = await appBase.REMOVE_ISSUES_ROLE()
+    REMOVE_REPO_ROLE = await appBase.REMOVE_REPO_ROLE()
+    REVIEW_APPLICATION_ROLE = await appBase.REVIEW_APPLICATION_ROLE()
+    TRANSFER_ROLE = await vaultBase.TRANSFER_ROLE()
+    UPDATE_BOUNTIES_ROLE = await appBase.UPDATE_BOUNTIES_ROLE()
+    WORK_REVIEW_ROLE = await appBase.WORK_REVIEW_ROLE()
+
   })
-
+  
   beforeEach(async () => {
-    //Deploy Base DAO Contracts
-    const r = await daoFact.newDAO(root)
-    const dao = Kernel.at(
-      r.logs.filter(l => l.event == 'DeployDAO')[0].args.dao
-    )
+    /** Create the dao from the dao factory */
+    const daoReceipt = await daoFact.newDAO(root)
+    const dao = getContract('Kernel').at(getReceipt(daoReceipt, 'DeployDAO', 'dao'))
+  
+    /** Setup permission to install app */
+    const acl = getContract('ACL').at(await dao.acl())
+    await acl.createPermission(root, dao.address, APP_MANAGER_ROLE, root)
+    
+    /** Install an app instance to the dao */
+    const appReceipt = await dao.newAppInstance('0x1234', appBase.address, '0x', false)
+    app = getContract('Projects').at(getReceipt(appReceipt, 'NewAppProxy', 'proxy'))
 
-    const acl = ACL.at(await dao.acl())
+    /** Setup permission to create rewards */
+    await acl.createPermission(bountyManager, app.address, FUND_ISSUES_ROLE, root)
+    await acl.createPermission(bountyManager, app.address, FUND_OPEN_ISSUES_ROLE, root)
+    await acl.createPermission(bountyManager, app.address, REMOVE_ISSUES_ROLE, root)
+    await acl.createPermission(bountyManager, app.address, REVIEW_APPLICATION_ROLE, root)
+    await acl.createPermission(bountyManager, app.address, UPDATE_BOUNTIES_ROLE, root)
+    await acl.createPermission(bountyManager, app.address, WORK_REVIEW_ROLE, root)
+    await acl.createPermission(repoRemover, app.address, REMOVE_REPO_ROLE, root)
+    await acl.createPermission(root, app.address, ADD_REPO_ROLE, root)
+    await acl.createPermission(root, app.address, CURATE_ISSUES_ROLE, root)
+    await acl.createPermission(root, app.address, CHANGE_SETTINGS_ROLE, root)
 
-    //Create DAO admin role
-    await acl.createPermission(
-      root,
-      dao.address,
-      await dao.APP_MANAGER_ROLE(),
-      root,
-      { from: root }
-    )
+    /** Install a vault instance to the dao */
+    const vaultReceipt = await dao.newAppInstance('0x5678', vaultBase.address, '0x', false)
+    vault = getContract('Vault').at(getReceipt(vaultReceipt, 'NewAppProxy', 'proxy'))
+    await vault.initialize()
 
-    //Deploy Contract to be tested
-    // TODO: Revert to use regular function call when truffle gets updated
-    // read: https://github.com/AutarkLabs/planning-suite/pull/243
-    let receipt = await dao.newAppInstance(
-      '0x1234',
-      (await Projects.new()).address,
-      0x0,
-      false,
-      { from: root }
-    )
-    app = Projects.at(
-      receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
-    )
+    /** Setup permission to transfer funds */
+    await acl.createPermission(app.address, vault.address, TRANSFER_ROLE, root)
 
-    // create ACL permissions
-    await acl.createPermission(
-      owner1,
-      app.address,
-      await app.ADD_REPO_ROLE(),
-      root,
-      { from: root }
-    )
-
-    await acl.createPermission(
-      bountyManager,
-      app.address,
-      await app.FUND_ISSUES_ROLE(),
-      root,
-      { from: root }
-    )
-
-    await acl.createPermission(
-      bountyManager,
-      app.address,
-      await app.FUND_OPEN_ISSUES_ROLE(),
-      root,
-      { from: root }
-    )
-
-    await acl.createPermission(
-      bountyManager,
-      app.address,
-      await app.REMOVE_ISSUES_ROLE(),
-      root,
-      { from: root }
-    )
-
-    await acl.createPermission(
-      bountyManager,
-      app.address,
-      await app.UPDATE_BOUNTIES_ROLE(),
-      root,
-      { from: root }
-    )
-
-    await acl.createPermission(
-      repoRemover,
-      app.address,
-      await app.REMOVE_REPO_ROLE(),
-      root,
-      { from: root }
-    )
-
-    await acl.createPermission(
-      root,
-      app.address,
-      await app.CURATE_ISSUES_ROLE(),
-      root,
-      { from: root }
-    )
-
-    await acl.createPermission(
-      bountyManager,
-      app.address,
-      await app.REVIEW_APPLICATION_ROLE(),
-      root,
-      { from: root }
-    )
-
-    await acl.createPermission(
-      bountyManager,
-      app.address,
-      await app.WORK_REVIEW_ROLE(),
-      root,
-      { from: root }
-    )
-
-    await acl.createPermission(
-      root,
-      app.address,
-      await app.CHANGE_SETTINGS_ROLE(),
-      root,
-      { from: root }
-    )
-
+    // implement bountiesEvents so the events are logged by Truffle
+    // console.log('Bounties Addresses: ', process.env.BOUNTY_ADDR.split(' '))
     // Create mock Bounties contract object
     // This address is generated using the seed phrase in the test command
     bounties = { address: '0x72D1Ae1D6C8f3dd444b3D95bAd554Be483082e40'.toLowerCase() }
     alternateBounties = { address: '0xDAaA2f5fbF606dEfa793984bd3615c909B1a3C93'.toLowerCase() }
-    vaultBase = await Vault.new()
-    const vaultReceipt = await dao.newAppInstance('0x5678', vaultBase.address, '0x', false, { from: root })
-    vault = Vault.at(vaultReceipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
-    await vault.initialize()
-    await acl.createPermission(
-      app.address,
-      vault.address,
-      await vault.TRANSFER_ROLE(),
-      root,
-      { from: root }
-    )
-
+    bountiesEvents = getContract('BountiesEvents').at('0x72D1Ae1D6C8f3dd444b3D95bAd554Be483082e40')
     //bounties = StandardBounties.at(registry.address)
-
   })
 
   context('pre-initialization', () => {
-    it('will not initialize with invalid vault address', async () =>{
+    it('will not initialize with invalid vault address', async () => {
       return assertRevert(async () => {
         await app.initialize(
           bounties.address,
@@ -196,8 +112,8 @@ contract('Projects App', accounts => {
         )
       })
     })
-    
-    it('will not initialize with invalid bounties address', async () =>{
+
+    it('will not initialize with invalid bounties address', async () => {
       return assertRevert(async () => {
         await app.initialize(
           ZERO_ADDR,
@@ -206,8 +122,9 @@ contract('Projects App', accounts => {
       })
     })
   })
+
   context('post-initialization', () => {
-    beforeEach(async () =>{
+    beforeEach(async () => {
       await app.initialize(bounties.address, vault.address)
     })
 
@@ -218,7 +135,7 @@ contract('Projects App', accounts => {
         repoId = addedRepo(
           await app.addRepo(
             repoIdString, // repoId
-            { from: owner1 }
+            { from: root }
           )
         )
       })
@@ -238,7 +155,7 @@ contract('Projects App', accounts => {
       })
 
       it('retrieve repo information successfully', async () => {
-        const repoInfo = await app.getRepo(repoId, { from: owner1 })
+        const repoInfo = await app.getRepo(repoId, { from: root })
         const result = repoInfo // get repo index on the registry
         assert.equal(
           result,
@@ -251,13 +168,13 @@ contract('Projects App', accounts => {
         repoId2 = addedRepo(
           await app.addRepo(
             'MDawOlJlcG9zaXRvcnk3NTM5NTIyNA==', // repoId
-            { from: owner1 }
+            { from: root }
           )
         )
         repoId3 = addedRepo(
           await app.addRepo(
             'DRawOlJlcG9zaXRvcnk3NTM5NTIyNA==', // repoId
-            { from: owner1 }
+            { from: root }
           )
         )
         await app.removeRepo(repoId3, { from: repoRemover })
@@ -267,7 +184,7 @@ contract('Projects App', accounts => {
         repoId3 = addedRepo(
           await app.addRepo(
             'DRawOlJlcG9zaXRvcnk3NTM5NTIyNA==', // repoId
-            { from: owner1 }
+            { from: root }
           )
         )
         await app.removeRepo(repoId2, { from: repoRemover })
@@ -277,7 +194,7 @@ contract('Projects App', accounts => {
         repoId2 = addedRepo(
           await app.addRepo(
             'MDawOlJlcG9zaXRvcnk3NTM5NTIyNA==', // repoId
-            { from: owner1 }
+            { from: root }
           )
         )
         await app.removeRepo(repoId, { from: repoRemover })
@@ -293,11 +210,11 @@ contract('Projects App', accounts => {
           issueReceipt = addedBountyInfo(
             await app.addBounties(
               Array(3).fill(repoId),
-              [ 1, 2, 3 ],
-              [ 10, 20, 30 ],
-              [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
-              [ 0, 0, 0 ],
-              [ 0, 0, 0 ],
+              [1, 2, 3],
+              [10, 20, 30],
+              [Date.now() + 86400, Date.now() + 86400, Date.now() + 86400],
+              [0, 0, 0],
+              [0, 0, 0],
               'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
               'something',
               { from: bountyManager, value: 60 }
@@ -310,8 +227,8 @@ contract('Projects App', accounts => {
             assert.deepEqual(
               {
                 repoId: '0x4d4445774f494a6c6347397a61585276636e6b784e6a59334d6a6c794d6a593d',
-                issueNumber: new web3.BigNumber(index+1),
-                bountySize: new web3.BigNumber((index+1)*10),
+                issueNumber: new web3.BigNumber(index + 1),
+                bountySize: new web3.BigNumber((index + 1) * 10),
                 registryId: new web3.BigNumber(index)
               },
               bounty
@@ -518,7 +435,7 @@ contract('Projects App', accounts => {
             { from: bountyManager }
           )
 
-          await bountiesEvents.fulfillBounty(root, bountyId, [root],'test')
+          await bountiesEvents.fulfillBounty(root, bountyId, [root], 'test')
 
           await app.reviewSubmission(
             repoId,
@@ -555,7 +472,7 @@ contract('Projects App', accounts => {
           )
           const bountyId = (await app.getIssue(repoId, issueNumber))[1].toString()
           //console.log(bountyId)
-          await bountiesEvents.fulfillBounty(root, bountyId, [root],'test')
+          await bountiesEvents.fulfillBounty(root, bountyId, [root], 'test')
 
           await app.reviewSubmission(
             repoId,
@@ -592,7 +509,7 @@ contract('Projects App', accounts => {
           )
           const bountyId = (await app.getIssue(repoId, issueNumber))[1].toString()
           //console.log(bountyId)
-          await bountiesEvents.fulfillBounty(root, bountyId, [root],'test')
+          await bountiesEvents.fulfillBounty(root, bountyId, [root], 'test')
 
           await app.reviewSubmission(
             repoId,
@@ -620,7 +537,7 @@ contract('Projects App', accounts => {
         it('can issue bulk token bounties', async () => {
           let token = {}
 
-          token = await MiniMeToken.new(
+          token = await getContract('MiniMeToken').new(
             ZERO_ADDR,
             ZERO_ADDR,
             0,
@@ -633,11 +550,11 @@ contract('Projects App', accounts => {
           issueReceipt = await addedBountyInfo(
             await app.addBounties(
               Array(3).fill(repoId),
-              [ 1, 2, 3 ],
-              [ 1, 2, 3 ],
-              [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
-              [ 20, 20, 20 ],
-              [ token.address, token.address, token.address ],
+              [1, 2, 3],
+              [1, 2, 3],
+              [Date.now() + 86400, Date.now() + 86400, Date.now() + 86400],
+              [20, 20, 20],
+              [token.address, token.address, token.address],
               'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
               'something',
               { from: bountyManager, }
@@ -647,8 +564,8 @@ contract('Projects App', accounts => {
             assert.deepEqual(
               {
                 repoId: '0x4d4445774f494a6c6347397a61585276636e6b784e6a59334d6a6c794d6a593d',
-                issueNumber: new web3.BigNumber(index+1),
-                bountySize: new web3.BigNumber(index+1),
+                issueNumber: new web3.BigNumber(index + 1),
+                bountySize: new web3.BigNumber(index + 1),
                 registryId: new web3.BigNumber(bounty.registryId)
               },
               bounty
@@ -662,9 +579,9 @@ contract('Projects App', accounts => {
           issueReceipt = await addedBountyInfo(
             await app.addBounties(
               Array(3).fill(repoId),
-              [ 1, 2, 3 ],
-              [ 1, 2, 3 ],
-              [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
+              [1, 2, 3],
+              [1, 2, 3],
+              [Date.now() + 86400, Date.now() + 86400, Date.now() + 86400],
               Array(3).fill(1),
               Array(3).fill(0),
               'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
@@ -676,8 +593,8 @@ contract('Projects App', accounts => {
             assert.deepEqual(
               {
                 repoId: '0x4d4445774f494a6c6347397a61585276636e6b784e6a59334d6a6c794d6a593d',
-                issueNumber: new web3.BigNumber(index+1),
-                bountySize: new web3.BigNumber(index+1),
+                issueNumber: new web3.BigNumber(index + 1),
+                bountySize: new web3.BigNumber(index + 1),
                 registryId: new web3.BigNumber(bounty.registryId)
               },
               bounty
@@ -694,11 +611,11 @@ contract('Projects App', accounts => {
           issueReceipt = addedBountyInfo(
             await app.addBountiesNoAssignment(
               Array(3).fill(repoId),
-              [ 1, 2, 3 ],
-              [ 10, 20, 30 ],
-              [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
-              [ 0, 0, 0 ],
-              [ 0, 0, 0 ],
+              [1, 2, 3],
+              [10, 20, 30],
+              [Date.now() + 86400, Date.now() + 86400, Date.now() + 86400],
+              [0, 0, 0],
+              [0, 0, 0],
               'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
               'something',
               { from: bountyManager, value: 60 }
@@ -711,8 +628,8 @@ contract('Projects App', accounts => {
             assert.deepEqual(
               {
                 repoId: '0x4d4445774f494a6c6347397a61585276636e6b784e6a59334d6a6c794d6a593d',
-                issueNumber: new web3.BigNumber(index+1),
-                bountySize: new web3.BigNumber((index+1)*10),
+                issueNumber: new web3.BigNumber(index + 1),
+                bountySize: new web3.BigNumber((index + 1) * 10),
                 registryId: new web3.BigNumber(bounty.registryId)
               },
               bounty
@@ -732,29 +649,29 @@ contract('Projects App', accounts => {
             )
           })
         })
-      }) 
+      })
 
       context('bounty killing', async () => {
 
         it('Bounty Properties are reset on issues with killed bounties', async () => {
           const issueNumber = 6
           await app.addBounties(
-            [repoId], 
-            [issueNumber], 
+            [repoId],
+            [issueNumber],
             [10],
-            [Date.now() + 86400], 
-            [0], 
+            [Date.now() + 86400],
+            [0],
             [0],
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
-            'test description', 
+            'test description',
             { from: bountyManager, value: 10 }
           )
           const liveIssue = await app.getIssue(repoId, issueNumber)
           let hasBounty = liveIssue[0]
           assert.isTrue(hasBounty)
-	        await app.removeBounties(
-            [repoId], 
-            [issueNumber], 
+          await app.removeBounties(
+            [repoId],
+            [issueNumber],
             'test removal',
             { from: bountyManager }
           )
@@ -770,35 +687,35 @@ contract('Projects App', accounts => {
           const issueNumber = 6
           const initialBalance = web3.eth.getBalance(vault.address)
           await app.addBounties(
-            [repoId], 
-            [issueNumber], 
+            [repoId],
+            [issueNumber],
             [10],
-            [Date.now() + 86400], 
-            [0], 
+            [Date.now() + 86400],
+            [0],
             [0],
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
-            'test description', 
+            'test description',
             { from: bountyManager, value: 10 }
           )
           const liveIssue = await app.getIssue(repoId, issueNumber)
           let hasBounty = liveIssue[0]
           assert.isTrue(hasBounty)
-	        await app.removeBounties(
-            [repoId], 
-            [issueNumber], 
+          await app.removeBounties(
+            [repoId],
+            [issueNumber],
             'test removal',
             { from: bountyManager }
           )
 
           const finalBalance = web3.eth.getBalance(vault.address)
           assert.strictEqual(finalBalance.sub(initialBalance).toNumber(), 10)
-          
+
         })
 
         it('refunds tokens to vault', async () => {
           let token = {}
 
-          token = await MiniMeToken.new(
+          token = await getContract('MiniMeToken').new(
             ZERO_ADDR,
             ZERO_ADDR,
             0,
@@ -826,9 +743,9 @@ contract('Projects App', accounts => {
           const liveIssue = await app.getIssue(repoId, issueNumber)
           let hasBounty = liveIssue[0]
           assert.isTrue(hasBounty)
-	        await app.removeBounties(
-            [repoId], 
-            [issueNumber], 
+          await app.removeBounties(
+            [repoId],
+            [issueNumber],
             'test removal',
             { from: bountyManager }
           )
@@ -845,7 +762,7 @@ contract('Projects App', accounts => {
         it('the repo array length can\'t exceed 256 in length', async () => {
           await truffleAssert.fails(
             app.removeBounties(
-              Array(256).fill(repoId), 
+              Array(256).fill(repoId),
               Array(256).fill(6),
               'reasons',
               { from: bountyManager }),
@@ -855,9 +772,9 @@ contract('Projects App', accounts => {
         })
 
         it('the issue array length can\'t exceed 256 in length', async () => {
-	      await truffleAssert.fails(
+          await truffleAssert.fails(
             app.removeBounties(
-              [ repoId, repoId ], 
+              [repoId, repoId],
               Array(256).fill(6),
               'reasons',
               { from: bountyManager }),
@@ -867,19 +784,19 @@ contract('Projects App', accounts => {
         })
 
         it('the array arguments must have the same length', async () => {
-          const issueNumbers = [ 6, 7 ]
-          const bountySizes = [ web3.toWei(1), web3.toWei(2) ]
+          const issueNumbers = [6, 7]
+          const bountySizes = [web3.toWei(1), web3.toWei(2)]
           const value = web3.toWei(3)
           await app.addBounties(
-            [ repoId, repoId ], 
+            [repoId, repoId],
             issueNumbers, bountySizes,
-            [ Date.now() + 86400, Date.now() + 86400 ], 
-            [ 0, 0 ], 
-            [ 0, 0 ],
+            [Date.now() + 86400, Date.now() + 86400],
+            [0, 0],
+            [0, 0],
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
             'test description', { from: bountyManager, value: value })
-	        await truffleAssert.fails(
-            app.removeBounties([ repoId, repoId ], [6], 'reasons', { from: bountyManager }),
+          await truffleAssert.fails(
+            app.removeBounties([repoId, repoId], [6], 'reasons', { from: bountyManager }),
             truffleAssert.ErrorType.REVERT,
             // 'LENGTH_MISMATCH'
           )
@@ -888,16 +805,17 @@ contract('Projects App', accounts => {
         it('can\'t kill a bounty twice', async () => {
           const issueNumber = 6
           await app.addBounties(
-            [repoId], 
-            [issueNumber], 
-            [10], 
+            [repoId],
+            [issueNumber],
+            [10],
             [Date.now() + 86400],
-            [0], 
+            [0],
             [0],
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
             'test description', { from: bountyManager, value: 10 })
-          await app.removeBounties([repoId],[issueNumber], 'reasons', {
-            from: bountyManager })
+          await app.removeBounties([repoId], [issueNumber], 'reasons', {
+            from: bountyManager
+          })
           await truffleAssert.fails(
             app.removeBounties([repoId], [issueNumber], 'reasons', { from: bountyManager }),
             truffleAssert.ErrorType.REVERT,
@@ -941,7 +859,7 @@ contract('Projects App', accounts => {
           )
           const bountyId = (await app.getIssue(repoId, issueNumber))[1].toString()
           //console.log(bountyId)
-          await bountiesEvents.fulfillBounty(root, bountyId, [root],'test')
+          await bountiesEvents.fulfillBounty(root, bountyId, [root], 'test')
 
           await app.reviewSubmission(
             repoId,
@@ -1012,9 +930,9 @@ contract('Projects App', accounts => {
     })
 
     context('issue curation', () => {
-    // TODO: We should create every permission for every test this way to speed up testing
-    // TODO: Create an external helper function that inits acl and sets permissions
-      before(async () => {})
+      // TODO: We should create every permission for every test this way to speed up testing
+      // TODO: Create an external helper function that inits acl and sets permissions
+      before(async () => { })
       it('should curate a multiple issues', async () => {
         const unusedAddresses = accounts.slice(0, 4)
         const zeros = new Array(unusedAddresses.length).fill(0)
@@ -1035,7 +953,7 @@ contract('Projects App', accounts => {
           issueNumbers,
           unused_curationId
         )
-      // assert()
+        // assert()
       })
       context('invalid issue curation operations', () => {
         it('should revert on issueDescriptionindices and priorities array length mismatch', async () => {
@@ -1112,11 +1030,11 @@ contract('Projects App', accounts => {
 
     context('settings management', () => {
       it('cannot accept experience arrays of differenct length', async () => {
-        return assertRevert( async () => {
+        return assertRevert(async () => {
           await app.changeBountySettings(
-            [ 100, 300, 500, 1000 ], // xp multipliers
+            [100, 300, 500, 1000], // xp multipliers
             [
-            // Experience Levels
+              // Experience Levels
               web3.fromAscii('Beginner'),
               web3.fromAscii('Intermediate'),
               web3.fromAscii('Advanced'),
@@ -1130,9 +1048,9 @@ contract('Projects App', accounts => {
       })
       it('can change Bounty Settings', async () => {
         await app.changeBountySettings(
-          [ 100, 300, 500, 1000 ], // xp multipliers
+          [100, 300, 500, 1000], // xp multipliers
           [
-          // Experience Levels
+            // Experience Levels
             web3.fromAscii('Beginner'),
             web3.fromAscii('Intermediate'),
             web3.fromAscii('Advanced'),
@@ -1179,9 +1097,9 @@ contract('Projects App', accounts => {
       })
 
       it('cannot update bounties contract with a 0x0 address', async () => {
-        return assertRevert( async () => {
+        return assertRevert(async () => {
           await app.changeBountySettings(
-            [ 100, 300, 500, 1000 ], // xp multipliers
+            [100, 300, 500, 1000], // xp multipliers
             [
               // Experience Levels
               web3.fromAscii('Beginner'),
@@ -1198,9 +1116,9 @@ contract('Projects App', accounts => {
       })
 
       it('cannot update bounties contract with contract of invalid size', async () => {
-        return assertRevert( async () => {
+        return assertRevert(async () => {
           await app.changeBountySettings(
-            [ 100, 300, 500, 1000 ], // xp multipliers
+            [100, 300, 500, 1000], // xp multipliers
             [
               // Experience Levels
               web3.fromAscii('Beginner'),
@@ -1218,7 +1136,7 @@ contract('Projects App', accounts => {
 
       it('can update bounties contract with a new valid contract instance', async () => {
         await app.changeBountySettings(
-          [ 100, 300, 500, 1000 ], // xp multipliers
+          [100, 300, 500, 1000], // xp multipliers
           [
             // Experience Levels
             web3.fromAscii('Beginner'),
@@ -1236,10 +1154,10 @@ contract('Projects App', accounts => {
 
     context('invalid operations', () => {
       it('cannot add a repo that is already present', async () => {
-        await app.addRepo('abc', { from: owner1 })
+        await app.addRepo('abc', { from: root })
 
         assertRevert(async () => {
-          await app.addRepo('abc', { from: owner1 })
+          await app.addRepo('abc', { from: root })
         })
       })
       it('cannot remove a repo that was never added', async () => {
@@ -1249,26 +1167,26 @@ contract('Projects App', accounts => {
       })
       it('cannot retrieve a removed Repo', async () => {
         const repoId = addedRepo(
-          await app.addRepo('abc', { from: owner1 })
+          await app.addRepo('abc', { from: root })
         )
         await app.removeRepo(repoId, { from: repoRemover })
         // const result = await app.getRepo(repoId)
         assertRevert(async () => {
           await app.getRepo(repoId, { from: repoRemover })
         })
-      // assert.equal(
-      //   web3.toAscii(result[0]).replace(/\0/g, ''),
-      //   '',
-      //   'repo returned'
-      // )
+        // assert.equal(
+        //   web3.toAscii(result[0]).replace(/\0/g, ''),
+        //   '',
+        //   'repo returned'
+        // )
       })
 
       it('cannot add bounties to unregistered repos', async () => {
         assertRevert(async () => {
           await app.addBounties(
             Array(3).fill('0xdeadbeef'),
-            [ 1, 2, 3 ],
-            [ 10, 20, 30 ],
+            [1, 2, 3],
+            [10, 20, 30],
             'something cool',
             {
               from: bountyManager,

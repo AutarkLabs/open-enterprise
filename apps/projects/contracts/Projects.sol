@@ -968,9 +968,9 @@ contract Projects is AragonApp, DepositableStorage {
         // 32 "header" bytes
         // then copy the first 32 bytes of the hash into the destination location
         assembly {
-          dest := add(result,0x20)
-          src := add(strBytes,add(0x20,startIndex))
-          mstore(dest, mload(src))
+            dest := add(result,0x20)
+            src := add(strBytes,add(0x20,startIndex))
+            mstore(dest, mload(src))
         }
         // copy the remaining 14 bytes and ensure the remaining
         // 18 bytes of the word are set to "00" using a mask
