@@ -218,6 +218,9 @@ contract Projects is AragonApp, DepositableStorage {
             ETH, // default bounty currency inits to ETH
             _bountiesAddr // bountyAllocator
         );
+
+        setDepositable(true);
+        initialized();
     }
 
 ///////////////////////
