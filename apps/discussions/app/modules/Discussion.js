@@ -13,7 +13,12 @@ const Discussion = ({ discussionId, ethereumAddress }) => {
       <Label>Discussion</Label>
       {discussion.length === 0 && <p>No comments have been posted yet.</p>}
       {discussion.map(post => (
-        <DiscussionPost {...post} />
+        <DiscussionPost
+          onHide={() => {}}
+          onRevise={() => {}}
+          key={post.id}
+          {...post}
+        />
       ))}
       <TextInput
         css={`
@@ -30,9 +35,7 @@ const Discussion = ({ discussionId, ethereumAddress }) => {
         mode="strong"
         wide
         onClick={async () => {
-          await discussionApi
-            .post(post, discussionId, ethereumAddress)
-            .toPromise()
+          await discussionApi.post(post, discussionId, ethereumAddress)
           setPost('')
         }}
       >
