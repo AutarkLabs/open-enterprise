@@ -4,7 +4,7 @@ import { AppBar, AppView, Main, SidePanel } from '@aragon/ui'
 import Decisions from './Decisions'
 import { hasLoadedVoteSettings } from './utils/vote-settings'
 import { NewPayoutVotePanelContent } from './components/Panels'
-import { networkContextType, AppTitle } from '../../../shared/ui'
+import { AppTitle, networkContextType } from '../../../shared/ui'
 import { useAragonApi } from '@aragon/api-react'
 import { IdentityProvider } from '../../../shared/identity'
 
@@ -72,10 +72,8 @@ class App extends React.Component {
       .requestAddressIdentityModification(address)
       .toPromise()
   }
-
   render() {
     const { displayMenuButton = false } = this.props
-
     return (
       <Main>
         <IdentityProvider

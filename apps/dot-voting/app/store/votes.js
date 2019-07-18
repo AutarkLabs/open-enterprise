@@ -3,7 +3,7 @@ import { first } from 'rxjs/operators'
 
 import { app } from './'
 import { EMPTY_CALLSCRIPT } from '../utils/vote-utils'
-import { getTokenSymbol, ETHER_TOKEN_FAKE_ADDRESS } from '../utils/token-utils'
+import { ETHER_TOKEN_FAKE_ADDRESS, getTokenSymbol } from '../utils/token-utils'
 
 
 export const castVote = async (state, { voteId }) => {
@@ -118,7 +118,6 @@ const loadVoteDataAllocation = async (vote, voteId) => {
 const loadVoteDataProjects = async (vote, voteId) => {
   return new Promise(resolve => {
     combineLatest(
-      app.call('getVoteMetadata', voteId),
       app.call('getCandidateLength', voteId),
       app.call('canExecute', voteId)
     )
