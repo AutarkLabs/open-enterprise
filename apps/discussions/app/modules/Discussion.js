@@ -11,11 +11,9 @@ const Discussion = ({ discussionId, ethereumAddress }) => {
   return (
     <div>
       <Label>Discussion</Label>
-      {Object.keys(discussion).length === 0 && (
-        <p>No comments have been posted yet.</p>
-      )}
-      {Object.keys(discussion).map(postId => (
-        <DiscussionPost {...discussion[postId]} />
+      {discussion.length === 0 && <p>No comments have been posted yet.</p>}
+      {discussion.map(post => (
+        <DiscussionPost {...post} />
       ))}
       <TextInput
         css={`
