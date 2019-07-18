@@ -26,11 +26,12 @@ contract('Projects App', accounts => {
   let FUND_ISSUES_ROLE, FUND_OPEN_ISSUES_ROLE, REMOVE_ISSUES_ROLE, REMOVE_REPO_ROLE
   let REVIEW_APPLICATION_ROLE, TRANSFER_ROLE, UPDATE_BOUNTIES_ROLE, WORK_REVIEW_ROLE
   let daoFact, alternateBounties, bounties, bountiesEvents, app, vaultBase, vault
+  let dao, acl
 
   // Setup test actor accounts
-  const [root, bountyManager, repoRemover] = accounts
+  const [ root, bountyManager, repoRemover ] = accounts
 
-  beforeEach(async () => {
+  before(async () => {
     //Create Base DAO Contracts
     const kernelBase = await getContract('Kernel').new(true) // petrify immediately
     const aclBase = await getContract('ACL').new()
@@ -58,17 +59,22 @@ contract('Projects App', accounts => {
     UPDATE_BOUNTIES_ROLE = await appBase.UPDATE_BOUNTIES_ROLE()
     WORK_REVIEW_ROLE = await appBase.WORK_REVIEW_ROLE()
 
-  })
-  
-  beforeEach(async () => {
     /** Create the dao from the dao factory */
     const daoReceipt = await daoFact.newDAO(root)
-    const dao = getContract('Kernel').at(getReceipt(daoReceipt, 'DeployDAO', 'dao'))
-  
+    dao = getContract('Kernel').at(getReceipt(daoReceipt, 'DeployDAO', 'dao'))
+      
     /** Setup permission to install app */
-    const acl = getContract('ACL').at(await dao.acl())
+    acl = getContract('ACL').at(await dao.acl())
     await acl.createPermission(root, dao.address, APP_MANAGER_ROLE, root)
-    
+
+    /** Install a vault instance to the dao */
+    const vaultReceipt = await dao.newAppInstance('0x5678', vaultBase.address, '0x', false)
+    vault = getContract('Vault').at(getReceipt(vaultReceipt, 'NewAppProxy', 'proxy'))
+    await vault.initialize()
+    await acl.createPermission(root, vault.address, TRANSFER_ROLE, root)
+  })
+  
+  beforeEach(async () => {    
     /** Install an app instance to the dao */
     const appReceipt = await dao.newAppInstance('0x1234', appBase.address, '0x', false)
     app = getContract('Projects').at(getReceipt(appReceipt, 'NewAppProxy', 'proxy'))
@@ -85,13 +91,8 @@ contract('Projects App', accounts => {
     await acl.createPermission(root, app.address, CURATE_ISSUES_ROLE, root)
     await acl.createPermission(root, app.address, CHANGE_SETTINGS_ROLE, root)
 
-    /** Install a vault instance to the dao */
-    const vaultReceipt = await dao.newAppInstance('0x5678', vaultBase.address, '0x', false)
-    vault = getContract('Vault').at(getReceipt(vaultReceipt, 'NewAppProxy', 'proxy'))
-    await vault.initialize()
-
     /** Setup permission to transfer funds */
-    await acl.createPermission(app.address, vault.address, TRANSFER_ROLE, root)
+    await acl.grantPermission(app.address, vault.address, TRANSFER_ROLE)
 
     // implement bountiesEvents so the events are logged by Truffle
     // console.log('Bounties Addresses: ', process.env.BOUNTY_ADDR.split(' '))
@@ -210,11 +211,11 @@ contract('Projects App', accounts => {
           issueReceipt = addedBountyInfo(
             await app.addBounties(
               Array(3).fill(repoId),
-              [1, 2, 3],
-              [10, 20, 30],
-              [Date.now() + 86400, Date.now() + 86400, Date.now() + 86400],
-              [0, 0, 0],
-              [0, 0, 0],
+              [ 1, 2, 3 ],
+              [ 10, 20, 30 ],
+              [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
+              [ 0, 0, 0 ],
+              [ 0, 0, 0 ],
               'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
               'something',
               { from: bountyManager, value: 60 }
@@ -550,11 +551,11 @@ contract('Projects App', accounts => {
           issueReceipt = await addedBountyInfo(
             await app.addBounties(
               Array(3).fill(repoId),
-              [1, 2, 3],
-              [1, 2, 3],
-              [Date.now() + 86400, Date.now() + 86400, Date.now() + 86400],
-              [20, 20, 20],
-              [token.address, token.address, token.address],
+              [ 1, 2, 3 ],
+              [ 1, 2, 3 ],
+              [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
+              [ 20, 20, 20 ],
+              [ token.address, token.address, token.address ],
               'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
               'something',
               { from: bountyManager, }
@@ -579,9 +580,9 @@ contract('Projects App', accounts => {
           issueReceipt = await addedBountyInfo(
             await app.addBounties(
               Array(3).fill(repoId),
-              [1, 2, 3],
-              [1, 2, 3],
-              [Date.now() + 86400, Date.now() + 86400, Date.now() + 86400],
+              [ 1, 2, 3 ],
+              [ 1, 2, 3 ],
+              [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
               Array(3).fill(1),
               Array(3).fill(0),
               'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
@@ -611,11 +612,11 @@ contract('Projects App', accounts => {
           issueReceipt = addedBountyInfo(
             await app.addBountiesNoAssignment(
               Array(3).fill(repoId),
-              [1, 2, 3],
-              [10, 20, 30],
-              [Date.now() + 86400, Date.now() + 86400, Date.now() + 86400],
-              [0, 0, 0],
-              [0, 0, 0],
+              [ 1, 2, 3 ],
+              [ 10, 20, 30 ],
+              [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
+              [ 0, 0, 0 ],
+              [ 0, 0, 0 ],
               'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
               'something',
               { from: bountyManager, value: 60 }
@@ -774,7 +775,7 @@ contract('Projects App', accounts => {
         it('the issue array length can\'t exceed 256 in length', async () => {
           await truffleAssert.fails(
             app.removeBounties(
-              [repoId, repoId],
+              [ repoId, repoId ],
               Array(256).fill(6),
               'reasons',
               { from: bountyManager }),
@@ -784,19 +785,19 @@ contract('Projects App', accounts => {
         })
 
         it('the array arguments must have the same length', async () => {
-          const issueNumbers = [6, 7]
-          const bountySizes = [web3.toWei(1), web3.toWei(2)]
+          const issueNumbers = [ 6, 7 ]
+          const bountySizes = [ web3.toWei(1), web3.toWei(2) ]
           const value = web3.toWei(3)
           await app.addBounties(
-            [repoId, repoId],
+            [ repoId, repoId ],
             issueNumbers, bountySizes,
-            [Date.now() + 86400, Date.now() + 86400],
-            [0, 0],
-            [0, 0],
+            [ Date.now() + 86400, Date.now() + 86400 ],
+            [ 0, 0 ],
+            [ 0, 0 ],
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
             'test description', { from: bountyManager, value: value })
           await truffleAssert.fails(
-            app.removeBounties([repoId, repoId], [6], 'reasons', { from: bountyManager }),
+            app.removeBounties([ repoId, repoId ], [6], 'reasons', { from: bountyManager }),
             truffleAssert.ErrorType.REVERT,
             // 'LENGTH_MISMATCH'
           )
@@ -1032,7 +1033,7 @@ contract('Projects App', accounts => {
       it('cannot accept experience arrays of differenct length', async () => {
         return assertRevert(async () => {
           await app.changeBountySettings(
-            [100, 300, 500, 1000], // xp multipliers
+            [ 100, 300, 500, 1000 ], // xp multipliers
             [
               // Experience Levels
               web3.fromAscii('Beginner'),
@@ -1048,7 +1049,7 @@ contract('Projects App', accounts => {
       })
       it('can change Bounty Settings', async () => {
         await app.changeBountySettings(
-          [100, 300, 500, 1000], // xp multipliers
+          [ 100, 300, 500, 1000 ], // xp multipliers
           [
             // Experience Levels
             web3.fromAscii('Beginner'),
@@ -1099,7 +1100,7 @@ contract('Projects App', accounts => {
       it('cannot update bounties contract with a 0x0 address', async () => {
         return assertRevert(async () => {
           await app.changeBountySettings(
-            [100, 300, 500, 1000], // xp multipliers
+            [ 100, 300, 500, 1000 ], // xp multipliers
             [
               // Experience Levels
               web3.fromAscii('Beginner'),
@@ -1118,7 +1119,7 @@ contract('Projects App', accounts => {
       it('cannot update bounties contract with contract of invalid size', async () => {
         return assertRevert(async () => {
           await app.changeBountySettings(
-            [100, 300, 500, 1000], // xp multipliers
+            [ 100, 300, 500, 1000 ], // xp multipliers
             [
               // Experience Levels
               web3.fromAscii('Beginner'),
@@ -1136,7 +1137,7 @@ contract('Projects App', accounts => {
 
       it('can update bounties contract with a new valid contract instance', async () => {
         await app.changeBountySettings(
-          [100, 300, 500, 1000], // xp multipliers
+          [ 100, 300, 500, 1000 ], // xp multipliers
           [
             // Experience Levels
             web3.fromAscii('Beginner'),
@@ -1185,8 +1186,8 @@ contract('Projects App', accounts => {
         assertRevert(async () => {
           await app.addBounties(
             Array(3).fill('0xdeadbeef'),
-            [1, 2, 3],
-            [10, 20, 30],
+            [ 1, 2, 3 ],
+            [ 10, 20, 30 ],
             'something cool',
             {
               from: bountyManager,
