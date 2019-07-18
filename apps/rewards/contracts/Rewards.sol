@@ -39,6 +39,7 @@ contract Rewards is AragonApp {
     string private constant ERROR_START_BLOCK = "START_PERIOD_BEFORE_TOKEN_CREATION";
     string private constant ERROR_REWARD_CLAIMED = "REWARD_ALREADY_CLAIMED";
     string private constant ERROR_ZERO_DURATION = "DURATION_MUST_BE_AT_LEAST_ONE_BLOCK";
+    string private constant ERROR_ZERO_OCCURRENCE = "OCCURRENCES_LESS_THAN_ONE";
     string private constant ERROR_ZERO_REWARD = "NO_REWARD_TO_CLAIM";
     string private constant ERROR_EXISTS = "REWARD_DOES_NOT_EXIST";
 
@@ -203,10 +204,11 @@ contract Rewards is AragonApp {
     {
         require(isContract(_referenceToken), ERROR_REFERENCE_TOKEN);
         require(_rewardToken == address(0) || isContract(_rewardToken), ERROR_REWARD_TOKEN);
+        require(_duration > 0, ERROR_ZERO_DURATION);
+        require(_occurrences > 0, ERROR_ZERO_OCCURRENCE);
         require(!_isMerit || _occurrences == 1, ERROR_MERIT_OCCURRENCES);
         require(_occurrences < MAX_OCCURRENCES, ERROR_MAX_OCCURRENCES);
         require(_startBlock > _referenceToken.creationBlock(), ERROR_START_BLOCK);
-        require(_duration > 0, ERROR_ZERO_DURATION);
         rewardId = rewardsRegistryLength++; /// increment the rewards array to create a new one
         Reward storage reward = rewards[rewardsRegistryLength - 1]; /// length-1 takes the last, newly created "empty" reward
         reward.description = _description;

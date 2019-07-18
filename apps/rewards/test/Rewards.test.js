@@ -304,6 +304,22 @@ contract('Rewards', accounts => {
         })
       })
 
+      it('fails to create a reward with zero occurrences', async () => {
+        return assertRevert(async () => {
+          await app.newReward(
+            'testReward',
+            true,
+            referenceToken.address,
+            rewardToken.address,
+            6,
+            4e18,
+            minBlock,
+            0,
+            0
+          )
+        })
+      })
+
       it('fails to create merit reward multiple occurrences', async () => {
         return assertRevert(async () => {
           await app.newReward(
