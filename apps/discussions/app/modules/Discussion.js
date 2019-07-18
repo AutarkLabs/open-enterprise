@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
-import styled from 'styled-components'
-import { Text, theme, Button, TextInput } from '@aragon/ui'
+import { Button, TextInput } from '@aragon/ui'
 import { useDiscussion } from './'
 import DiscussionPost from './DiscussionPost'
 
@@ -10,8 +9,6 @@ const Discussion = ({ discussionId, ethereumAddress }) => {
   const [post, setPost] = useState('')
   return (
     <div>
-      <Label>Discussion</Label>
-      {discussion.length === 0 && <p>No comments have been posted yet.</p>}
       {discussion.map(post => (
         <DiscussionPost
           onHide={() => {}}
@@ -49,13 +46,5 @@ Discussion.propTypes = {
   discussionId: PropTypes.number.isRequired,
   ethereumAddress: PropTypes.string.isRequired,
 }
-
-const Label = styled(Text).attrs({
-  smallcaps: true,
-  color: theme.textSecondary,
-})`
-  display: block;
-  margin-bottom: 10px;
-`
 
 export default Discussion
