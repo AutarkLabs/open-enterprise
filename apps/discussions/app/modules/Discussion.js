@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { useDiscussion } from './'
-import DiscussionPost from './DiscussionPost'
+import Comment from './Comment'
 import CommentForm from './CommentForm'
 
 const Discussion = ({ discussionId, ethereumAddress }) => {
@@ -11,13 +11,8 @@ const Discussion = ({ discussionId, ethereumAddress }) => {
 
   return (
     <div>
-      {discussion.map(post => (
-        <DiscussionPost
-          onHide={() => {}}
-          onRevise={() => {}}
-          key={post.id}
-          {...post}
-        />
+      {discussion.map(comment => (
+        <Comment key={comment.id} comment={comment} />
       ))}
       <CommentForm save={save} />
     </div>
