@@ -1,12 +1,14 @@
-import React, { useState } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
-import { Button, TextInput } from '@aragon/ui'
 import { useDiscussion } from './'
 import DiscussionPost from './DiscussionPost'
+import CommentForm from './CommentForm'
 
 const Discussion = ({ discussionId, ethereumAddress }) => {
   const { discussion, discussionApi } = useDiscussion(discussionId)
-  const [post, setPost] = useState('')
+
+  const save = text => discussionApi.post(text, discussionId, ethereumAddress)
+
   return (
     <div>
       {discussion.map(post => (
@@ -17,27 +19,7 @@ const Discussion = ({ discussionId, ethereumAddress }) => {
           {...post}
         />
       ))}
-      <TextInput
-        css={`
-          margin-top: 20px;
-          margin-bottom: 20px;
-          height: 80px;
-          padding: 5px 10px;
-        `}
-        wide
-        value={post}
-        onChange={e => setPost(e.target.value)}
-      />
-      <Button
-        mode="strong"
-        wide
-        onClick={async () => {
-          await discussionApi.post(post, discussionId, ethereumAddress)
-          setPost('')
-        }}
-      >
-        Post Comment
-      </Button>
+      <CommentForm save={save} />
     </div>
   )
 }
