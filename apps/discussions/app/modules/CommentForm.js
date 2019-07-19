@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
-import { Button, TextInput } from '@aragon/ui'
+import { Button, Field, TextInput } from '@aragon/ui'
 
 const onSubmit = save => async e => {
   e.preventDefault()
@@ -13,16 +13,17 @@ const onSubmit = save => async e => {
 const Input = styled(TextInput.Multiline).attrs({
   wide: true,
 })`
-  margin-top: 20px;
-  margin-bottom: 20px;
+  margin-top: 15px;
   height: 80px;
-  padding: 5px 10px;
+  padding: 10px;
 `
 
 const CommentForm = ({ save }) => {
   return (
     <form onSubmit={onSubmit(save)}>
-      <Input name="text" />
+      <Field label="Your Comment">
+        <Input name="text" />
+      </Field>
       <Button mode="strong" wide type="submit">
         Post Comment
       </Button>
