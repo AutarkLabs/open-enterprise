@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { Text, theme, unselectable } from '@aragon/ui'
+import { theme, unselectable } from '@aragon/ui'
 
 const FieldTitle = styled.label`
   ${unselectable};

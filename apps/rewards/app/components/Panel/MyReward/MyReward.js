@@ -13,11 +13,9 @@ import {
   IconTime,
   SidePanelSplit,
   Button,
-  IdentityBadge,
 } from '@aragon/ui'
 
 import { FieldTitle } from '../../Form'
-import { format } from 'date-fns'
 import { displayCurrency } from '../../../utils/helpers'
 
 const getSymbol = (tokens, rewardToken) => {

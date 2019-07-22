@@ -1,17 +1,20 @@
 import React from 'react'
-import { graphql } from 'react-apollo'
-import gql from 'graphql-tag'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Button, RadioList, Text, TextInput, theme } from '@aragon/ui'
 import { GET_REPOSITORIES } from '../../../utils/gql-queries.js'
 import { LoadingAnimation } from '../../Shared'
 import { Query } from 'react-apollo'
+import { useAragonApi } from '@aragon/api-react'
+import { usePanelManagement } from '../../Panel'
+import { toHex } from '../../../utils/web3-utils'
 
 const UNSELECT = {
   repoSelected: -1,
   project: '',
   owner: '',
 }
+
 class Repo extends React.Component {
   state = {
     repos: [],
@@ -31,9 +34,8 @@ class Repo extends React.Component {
     const repos = queryRepos.filter(repo => {
       if (repo.node.nameWithOwner.indexOf(e.target.value) > -1) {
         return repo
-      } else {
-        return null
       }
+      return null
     })
 
     this.setState({
@@ -96,7 +98,7 @@ class Repo extends React.Component {
   )
 
   render() {
-    const { filteredRepos, filtered, filter, reposAlreadyAdded } = this.state
+    const { filteredRepos, filtered, filter } = this.state
 
     return (
       <React.Fragment>
@@ -172,6 +174,37 @@ class Repo extends React.Component {
   }
 }
 
+Repo.propTypes = {
+  reposAlreadyAdded: PropTypes.array.isRequired,
+  onCreateProject: PropTypes.func.isRequired,
+}
+
+const createProject = ({ closePanel, addRepo }) => ({ project }) => {
+  closePanel()
+  addRepo(toHex(project))
+}
+
+// TODO: move entire component to functional component
+// the following was a quick way to allow us to use hooks
+const RepoWrap = () => {
+  const {
+    api: { addRepo },
+    appState: { repos },
+  } = useAragonApi()
+  const { closePanel } = usePanelManagement()
+
+  // TODO: Review
+  // This is breaking RepoList loading sometimes preventing show repos after login
+  const reposAlreadyAdded = (repos || []).map(repo => repo.data._repo)
+
+  return (
+    <Repo
+      onCreateProject={createProject({ closePanel, addRepo })}
+      reposAlreadyAdded={reposAlreadyAdded}
+    />
+  )
+}
+
 const ScrollableList = styled.div`
   flex-grow: 1;
   overflow-y: auto;
@@ -179,71 +212,6 @@ const ScrollableList = styled.div`
   margin: 16px 0;
   // Hack needed to make the scrollable list, since the whole SidePanel is a scrollable container
   height: calc(100vh - 260px);
-`
-const RepoCard = styled.div`
-  border-bottom: 1px #d1d5da solid;
-  padding: 16px;
-  margin-bottom: 16px;
-`
-const SearchContainer = styled.div`
-  border-bottom: 1px solid #d1d5da;
-  padding: 16px 0 16px 0;
-`
-const SearchBox = styled.input`
-  min-height: 34px;
-  width: 300px;
-  font-size: 14px;
-  padding: 6px 8px;
-  background-color: #fff;
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  border: 1px solid #d1d5da;
-  border-radius: 3px;
-  outline: none;
-  box-shadow: inset 0 1px 2px rgba(27, 31, 35, 0.075);
-`
-const Date = styled.p`
-  font-size: 12px;
-  color: #586069;
-  margin-left: 10px;
-  margin-bottom: 0;
-`
-const InfoContainer = styled.div`
-  display: flex;
-`
-const Circle = styled.div`
-  height: 12px;
-  width: 12px;
-  border-radius: 50%;
-  background: #f1e05a;
-  margin-right: 5px;
-  top: 2px;
-  position: relative;
-`
-const RepoDescription = styled.p`
-  font-size: 14px;
-  color: #586069;
-  margin: 4px 0 10px 0;
-`
-const RepoLink = styled.a`
-  font-weight: 600;
-  color: #0366d6;
-  cursor: pointer;
-  font-size: 20px;
-`
-const RepoDetails = styled.span`
-  color: #586069;
-  font-size: 12px;
-  margin-bottom: 0;
-`
-const Icon = styled.i`
-  margin-left: 16px;
-`
-const ScrollWrapper = styled.div`
-  /* position: relative; */
-  /* z-index: 1; */
-  /* max-height: 40%; */
-  overflow: auto;
 `
 const RepoInfo = styled.div`
   margin: 20px 0;
@@ -261,4 +229,4 @@ const ClearSearch = styled(Text.Block).attrs({
 `
 
 // TODO: Use nodes instead of edges (the app should be adapted at some places)
-export default Repo
+export default RepoWrap

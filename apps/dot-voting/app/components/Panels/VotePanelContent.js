@@ -5,7 +5,6 @@ import { BigNumber } from 'bignumber.js'
 import {
   Badge,
   Button,
-  IdentityBadge,
   Info,
   SidePanelSplit,
   SidePanelSeparator,
@@ -25,10 +24,11 @@ import { getVoteStatus } from '../../utils/vote-utils'
 import { VOTE_STATUS_SUCCESSFUL } from '../../utils/vote-types'
 import { isAddress } from 'web3-utils'
 import Discussion from '../../../../discussions/app/modules/Discussion'
+import { LocalIdentityBadge } from '../../../../../shared/identity'
 
 class VotePanelContent extends React.Component {
   static propTypes = {
-    app: PropTypes.object, // TODO: isRequired?
+    app: PropTypes.object.isRequired,
     network: PropTypes.object,
   }
   state = {
@@ -218,7 +218,7 @@ class VotePanelContent extends React.Component {
               <Label>Created by</Label>
             </h2>
             <Creator>
-              <IdentityBadge
+              <LocalIdentityBadge
                 networkType={network.type}
                 entity={creator}
                 shorten={true}
@@ -382,7 +382,7 @@ class VotePanelContent extends React.Component {
                       style={{ display: 'flex', justifyContent: 'flex-start' }}
                     >
                       {isAddress(option.label) ? (
-                        <IdentityBadge
+                        <LocalIdentityBadge
                           networkType={network.type}
                           entity={option.label}
                           shorten={true}
@@ -500,14 +500,6 @@ const SliderAndValueContainer = styled.div`
   align-items: center;
 `
 
-const SliderContainer = styled.div`
-  width: 320px;
-  & > :nth-child(2) {
-    padding: 0;
-    padding-right: 17px;
-  }
-`
-
 const SubmitButton = styled(Button)`
   margin: 1rem 0;
 `
@@ -533,13 +525,6 @@ const Part = styled.div`
   }
 `
 
-const Question = styled.p`
-  max-width: 100%;
-  overflow: hidden;
-  word-break: break-all;
-  hyphens: auto;
-`
-
 const BalanceSplit = styled.div`
   display: inline-block;
   width: 25%;
@@ -549,17 +534,6 @@ const BalanceSplit = styled.div`
 const Creator = styled.div`
   display: flex;
   align-items: center;
-`
-
-const VotingButtons = styled.div`
-  display: flex;
-  padding: 30px 0 20px;
-  & > * {
-    width: 50%;
-    &:first-child {
-      margin-right: 10px;
-    }
-  }
 `
 
 const PastDate = styled.time`

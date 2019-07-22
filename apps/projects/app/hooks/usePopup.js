@@ -1,3 +1,5 @@
+import { GITHUB_URI, CLIENT_ID, REDIRECT_URI } from '../utils/github'
+
 export const githubPopup = (popup = null) => {
   // Checks to save some memory if the popup exists as a window object
   if (popup === null || popup.closed) {

@@ -4,6 +4,11 @@ import styled from 'styled-components'
 import { addHours } from 'date-fns'
 import BigNumber from 'bignumber.js'
 import Icon from '../../Shared/assets/components/IconEmptyVault'
+import { useAragonApi } from '@aragon/api-react'
+import useGithubAuth from '../../../hooks/useGithubAuth'
+import { usePanelManagement } from '..'
+import { computeIpfsString } from '../../../utils/ipfs-helpers'
+import { toHex } from '../../../utils/web3-utils'
 
 import {
   Text,
@@ -28,12 +33,18 @@ const bountySlots = [ '1', '2', '3' ]
 
 class FundIssues extends React.Component {
   static propTypes = {
+    closePanel: PropTypes.func.isRequired,
+    description: PropTypes.string,
     /** array of issues to allocate bounties on */
     issues: PropTypes.arrayOf(
       PropTypes.shape({
         id: PropTypes.string,
+        deadline: PropTypes.string,
+        exp: PropTypes.number,
+        hours: PropTypes.number,
         level: PropTypes.string,
         title: PropTypes.string,
+        fundingHistory: PropTypes.array,
         number: PropTypes.number,
         repo: PropTypes.string,
         repoId: PropTypes.string,
@@ -42,7 +53,10 @@ class FundIssues extends React.Component {
     /** base rate in pennies */
     baseRate: PropTypes.number,
     tokens: PropTypes.array.isRequired,
+    mode: PropTypes.oneOf([ 'new', 'update' ]).isRequired,
     onSubmit: PropTypes.func.isRequired,
+    bountySettings: PropTypes.object.isRequired,
+    githubCurrentUser: PropTypes.object.isRequired,
   }
 
   descriptionChange = e => {
@@ -172,7 +186,7 @@ class FundIssues extends React.Component {
     this.props.onSubmit(this.state.bounties, this.state.description, post, result)
   }
 
-  renderUpdateForm = (issue, bounties, bountySettings) => {
+  renderUpdateForm = (issue, bounties) => {
     const expLevels = this.props.bountySettings.expLvls
 
     return (
@@ -252,7 +266,7 @@ class FundIssues extends React.Component {
     )
   }
 
-  renderForm = (issues, bounties, bountySettings) => {
+  renderForm = (issues, bounties) => {
     const expLevels = this.props.bountySettings.expLvls
 
     return (
@@ -260,7 +274,7 @@ class FundIssues extends React.Component {
         <Mutation mutation={COMMENT}>
           {(post, result) => (
             <Form
-              onSubmit={e => this.submitBounties(post, result)}
+              onSubmit={() => this.submitBounties(post, result)}
               description={this.props.description}
               submitText={this.props.issues.length > 1 ? 'Fund Issues' : 'Fund Issue'}
               submitDisabled={this.state.totalSize > this.state.tokenBalance}
@@ -403,7 +417,7 @@ class FundIssues extends React.Component {
 
   render() {
     const { bounties } = this.state
-    const { bountySettings, tokens, mode, issues } = this.props
+    const { tokens, mode, issues } = this.props
     const bountylessIssues = []
     const alreadyAdded = []
 
@@ -429,7 +443,7 @@ class FundIssues extends React.Component {
 
     // in 'update' mode there is only one issue
     if (mode === 'update') {
-      return this.renderUpdateForm(issues[0], bounties, bountySettings)
+      return this.renderUpdateForm(issues[0], bounties)
     }
 
     issues.forEach(issue => {
@@ -442,13 +456,14 @@ class FundIssues extends React.Component {
     if (bountylessIssues.length > 0 && alreadyAdded.length > 0) {
       return (
         <DivSeparator>
-          {this.renderForm(bountylessIssues, bounties, bountySettings)}
+          {this.renderForm(bountylessIssues, bounties)}
           {this.renderWarning(alreadyAdded)}
         </DivSeparator>
       )
     } else if (bountylessIssues.length > 0) {
-      return this.renderForm(bountylessIssues, bounties, bountySettings)
-    } else return (
+      return this.renderForm(bountylessIssues, bounties)
+    }
+    return (
       <DivSeparator>
         {this.renderWarning(alreadyAdded)}
         <Button mode="strong" wide onClick={this.props.closePanel}>Close</Button>
@@ -456,6 +471,97 @@ class FundIssues extends React.Component {
     )
   }
 }
+
+const submitBountyAllocation = ({
+  addBounties,
+  bountySettings,
+  tokens,
+  closePanel,
+}) => async (issues, description, post) => {
+  closePanel()
+
+  // computes an array of issues and denests the actual issue object for smart contract
+  const issuesArray = []
+  const bountyAddr = bountySettings.bountyCurrency
+
+  let bountyToken, bountyDecimals, bountySymbol
+
+  tokens.forEach(token => {
+    if (token.addr === bountyAddr) {
+      bountyToken = token.addr
+      bountyDecimals = token.decimals
+      bountySymbol = token.symbol
+    }
+  })
+
+  for (let key in issues) issuesArray.push({ key: key, ...issues[key] })
+
+  const ipfsString = await computeIpfsString(issuesArray)
+
+  const idArray = issuesArray.map(issue => toHex(issue.repoId))
+  const numberArray = issuesArray.map(issue => issue.number)
+  const bountyArray = issuesArray.map(issue =>
+    BigNumber(issue.size)
+      .times(10 ** bountyDecimals)
+      .toString()
+  )
+  const tokenArray = new Array(issuesArray.length).fill(bountyToken)
+  const dateArray = new Array(issuesArray.length).fill(Date.now() + 8600)
+  const booleanArray = new Array(issuesArray.length).fill(true)
+
+  addBounties(
+    idArray,
+    numberArray,
+    bountyArray,
+    dateArray,
+    booleanArray,
+    tokenArray,
+    ipfsString,
+    description
+  ).subscribe(
+    () => {
+      issuesArray.forEach(issue => {
+        post({
+          variables: {
+            body:
+              'This issue has a bounty attached to it.\n' +
+              `Amount: ${issue.size.toFixed(2)} ${bountySymbol}\n` +
+              `Deadline: ${issue.deadline.toUTCString()}`,
+            subjectId: issue.key,
+          },
+        })
+      })
+    },
+    err => console.error(`error: ${err}`)
+  )
+}
+
+// TODO: move entire component to functional component
+// the following was a quick way to allow us to use hooks
+const FundIssuesWrap = props => {
+  const githubCurrentUser = useGithubAuth()
+  const {
+    api,
+    appState: { bountySettings, tokens },
+  } = useAragonApi()
+  const { closePanel } = usePanelManagement()
+  return (
+    <FundIssues
+      bountySettings={bountySettings}
+      closePanel={closePanel}
+      githubCurrentUser={githubCurrentUser}
+      tokens={tokens || []}
+      onSubmit={submitBountyAllocation({
+        addBounties: api.addBounties,
+        bountySettings,
+        closePanel,
+        tokens,
+      })}
+      {...props}
+    />
+  )
+}
+
 const DivSeparator = styled.div`
   > :last-child {
     margin-top: 15px;
@@ -532,9 +638,6 @@ const IBDetails = styled.div`
 const IBDeadline = styled.div`
   grid-area: dline;
 `
-const IBAvail = styled.div`
-  grid-area: slots;
-`
 const IBValue = styled.div`
   grid-area: value;
 `
@@ -572,4 +675,4 @@ const IBHoursInput = styled.div`
   }
 `
 
-export default FundIssues
+export default FundIssuesWrap

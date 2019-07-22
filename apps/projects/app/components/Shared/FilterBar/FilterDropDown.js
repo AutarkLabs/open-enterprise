@@ -5,21 +5,18 @@ import { Spring, animated } from 'react-spring'
 import ClickOutHandler from 'react-onclickout'
 import { springs, theme } from '@aragon/ui'
 import FilterButton from './FilterButton'
-import { IconSort, IconDots } from '../../../../../../shared/ui'
+import { IconFilter, IconSort } from '../../../../../../shared/ui'
 import { IconArrow as IconArrowDown } from '../../../../../../shared/ui'
-
-const BASE_WIDTH = 150
-const BASE_HEIGHT = 40
 
 class FilterDropDown extends React.Component {
   static propTypes = {
+    caption: PropTypes.string,
     children: PropTypes.node,
     enabled: PropTypes.bool,
-    width: PropTypes.string,
     type: PropTypes.string,
+    style: PropTypes.object,
   }
   static defaultProps = {
-    width: BASE_WIDTH + 'px',
     type: 'filter',
   }
 
@@ -39,10 +36,9 @@ class FilterDropDown extends React.Component {
 
   buttonFilter = (caption, openProgress) => (
     <React.Fragment>
-      {caption}
+      <span>{caption}</span>
       <animated.div
         style={{
-          margin: '0px',
           height: '12px',
           transform: openProgress.interpolate(
             t => `rotate(${t * 180}deg)`
@@ -57,54 +53,20 @@ class FilterDropDown extends React.Component {
   buttonSort = caption => (
     <React.Fragment>
       <IconSort />
-      <span style={{ marginLeft: '15px' }}>{caption}</span>
+      <span>{caption}</span>
     </React.Fragment>
   )
 
-  buttonOverflow = (caption, opened) => (
+  buttonOverflow = caption => (
     <React.Fragment>
-      <DotsWrapper opened={opened}>
-        <IconDots />
-      </DotsWrapper>
-      <span style={{ marginLeft: '15px' }}>{caption}</span>
+      <IconFilter />
+      <span>{caption}</span>
     </React.Fragment>
-  )
-
-  popupStandard = (opened, openProgress, children) => (
-    <Popup
-      onClick={this.handleClose}
-      style={{
-        display: opened ? 'block' : 'none',
-        opacity: openProgress,
-        boxShadow: openProgress.interpolate(
-          t => `0 4px 4px rgba(0, 0, 0, ${t * 0.03})`
-        ),
-      }}
-    >
-      {opened && children}
-    </Popup>
-  )
-
-  popupOverflow = (opened, openProgress, children) => (
-    <PopupOverflow
-      onClick={this.handleClose}
-      style={{
-        display: opened ? 'block' : 'none',
-        opacity: openProgress,
-        boxShadow: openProgress.interpolate(
-          t => `0 4px 4px rgba(0, 0, 0, ${t * 0.03})`
-        ),
-      }}
-    >
-      {opened && children}
-    </PopupOverflow>
   )
 
   render() {
     const { opened } = this.state
-    const { caption, children, enabled, width, type } = this.props
-    let zIndex = opened ? '2' : '1'
-    if (type === 'sorter') zIndex  = 4
+    const { caption, children, enabled, type, style } = this.props
 
     return (
       <ClickOutHandler onClickOut={this.handleClickOut}>
@@ -114,33 +76,21 @@ class FilterDropDown extends React.Component {
           native
         >
           {({ openProgress }) => (
-            <Main
-              width={width}
-              style={{
-                zIndex,
-                boxShadow: openProgress.interpolate(
-                  t => `0 4px 4px rgba(0, 0, 0, ${t * 0.03})`
-                ),
-              }}
-            >
+            <Main>
               <FilterButton
-                style={{ width: this.props.width }}
-                mode={enabled ? 'secondary' : 'strong'}
                 onClick={this.handleBaseButtonClick}
-                opened={opened}
-                type={type}
                 disabled={!enabled}
-                wide
               >
                 {type === 'filter' ? this.buttonFilter(caption, openProgress) : ''}
                 {type === 'sorter' ? this.buttonSort(caption) : ''}
-                {type === 'overflow' ? this.buttonOverflow(caption, opened) : ''}
+                {type === 'overflow' ? this.buttonOverflow(caption) : ''}
               </FilterButton>
-              {type === 'overflow' ?
-                this.popupOverflow(opened, openProgress, children)
-                :
-                this.popupStandard(opened, openProgress, children)
-              }
+              <Popup
+                onClick={this.handleClose}
+                style={{ ...style, opacity: openProgress }}
+              >
+                {opened && children}
+              </Popup>
             </Main>
           )}
         </Spring>
@@ -150,41 +100,20 @@ class FilterDropDown extends React.Component {
 }
 
 const Main = styled(animated.div)`
+  background: ${theme.contentBackground};
+  height: 100%;
   position: relative;
-  width: ${props => props.width};
-  height: ${BASE_HEIGHT}px;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0);
 `
 const Popup = styled(animated.div)`
-  overflow: hidden;
-  position: absolute;
-  top: ${BASE_HEIGHT - 1}px;
-  right: 0;
-  padding: 10px 0;
   background: ${theme.contentBackground};
   border: 1px solid ${theme.contentBorder};
   border-radius: 3px 0 3px 3px;
-`
-const PopupOverflow = styled(animated.div)`
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.3);
+  padding: 10px 0;
   position: absolute;
-  top: ${BASE_HEIGHT - 1}px;
+  top: 100%;
   left: 0;
-  padding: 0;
-  background: ${theme.contentBackground};
-  border: 0px solid ${theme.contentBorder};
-  > :not(:first-child) {
-    margin-top: -1px;
-  }
+  z-index: 1;
 `
-const DotsWrapper = styled.div`
-  width: 30px;
-  height: 30px;
-  margin-left: -15px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: background 0.5s;
-  border-radius: 3px;
-  background: ${({ opened }) => opened ? theme.secondaryBackground : 'default' }
-`
-
 export default FilterDropDown

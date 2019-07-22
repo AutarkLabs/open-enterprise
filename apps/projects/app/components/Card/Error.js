@@ -3,7 +3,13 @@ import PropTypes from 'prop-types'
 import { EmptyStateCard } from '@aragon/ui'
 import { EmptyWrapper } from '../Shared'
 
-const ExplodingHeadEmoji = () => <p style={{ 'font-size': '70px', 'line-height': '35px' }}>🤯</p>
+const ExplodingHeadEmoji = () => (
+  <p style={{ 'font-size': '70px', 'line-height': '35px' }}>
+    <span role="img" aria-label="oh no!">
+      🤯
+    </span>
+  </p>
+)
 
 const Error = ({ action }) => (
   <EmptyWrapper>

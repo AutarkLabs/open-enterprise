@@ -1,6 +1,6 @@
 import { SidePanel } from '@aragon/ui'
 import PropTypes from 'prop-types'
-import React, { Suspense } from 'react'
+import React, { Suspense, createContext } from 'react'
 
 const camel2title = camelCase =>
   camelCase
@@ -23,6 +23,11 @@ const PANELS = Object.keys(dynamicImport).reduce((obj, item) => {
   obj[item] = item
   return obj
 }, {})
+
+const PanelContext = createContext({
+  setActivePanel: () => {},
+  setPanelProps: () => {},
+})
 
 const PanelManager = ({ activePanel = null, onClose, ...panelProps }) => {
   const panelTitle = panelProps.title
@@ -48,4 +53,4 @@ PanelManager.propTypes = {
 }
 
 export default PanelManager
-export { PANELS }
+export { PANELS, PanelContext }

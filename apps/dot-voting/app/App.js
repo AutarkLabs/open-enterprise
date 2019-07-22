@@ -1,15 +1,12 @@
 import React from 'react'
-import { hot } from 'react-hot-loader'
 import PropTypes from 'prop-types'
-import styled from 'styled-components'
-import { map } from 'rxjs/operators'
-
-import { AppBar, Main, SidePanel, observe, font } from '@aragon/ui'
+import { AppBar, AppView, Main, SidePanel } from '@aragon/ui'
 import Decisions from './Decisions'
 import { hasLoadedVoteSettings } from './utils/vote-settings'
 import { NewPayoutVotePanelContent } from './components/Panels'
-import { networkContextType, AppTitle } from '../../../shared/ui'
-import AppView from './components/AppView'
+import { AppTitle, networkContextType } from '../../../shared/ui'
+import { useAragonApi } from '@aragon/api-react'
+import { IdentityProvider } from '../../../shared/identity'
 import { Discussions } from '../../discussions/app/modules'
 
 const initialState = {
@@ -22,7 +19,7 @@ const initialState = {
 
 class App extends React.Component {
   static propTypes = {
-    app: PropTypes.object.isRequired,
+    api: PropTypes.object,
   }
 
   static defaultProps = {
@@ -67,55 +64,65 @@ class App extends React.Component {
     this.setState({ panelActive: false })
   }
 
+  handleResolveLocalIdentity = address => {
+    return this.props.api.resolveAddressIdentity(address).toPromise()
+  }
+
+  handleShowLocalIdentityModal = address => {
+    return this.props.api
+      .requestAddressIdentityModification(address)
+      .toPromise()
+  }
   render() {
     const { displayMenuButton = false } = this.props
-
     return (
       <Main>
-        <Discussions ready={this.state.settingsLoaded} app={this.props.app}>
-          <AppView
-            padding={0}
-            appBar={
-              <AppBar>
-                <AppTitle
-                  title="Dot Voting"
-                  displayMenuButton={displayMenuButton}
-                />
-              </AppBar>
-            }
-          >
-            <Decisions
-              onActivate={this.handlePanelOpen}
-              app={this.props.app}
-              votes={this.props.votes !== undefined ? this.props.votes : []}
-              entries={
-                this.props.entries !== undefined ? this.props.entries : []
+        <IdentityProvider
+          onResolve={this.handleResolveLocalIdentity}
+          onShowLocalIdentityModal={this.handleShowLocalIdentityModal}>
+          <Discussions ready={this.state.settingsLoaded} app={this.props.app}>
+            <AppView
+              appBar={
+                <AppBar>
+                  <AppTitle
+                    title="Dot Voting"
+                    displayMenuButton={displayMenuButton}
+                    css="padding-left: 30px"
+                  />
+                </AppBar>
               }
-              voteTime={this.props.voteTime}
-              minParticipationPct={
-                this.props.minParticipationPct
-                  ? this.props.minParticipationPct / 10 ** 16
-                  : 'N/A'
-              }
-              tokenAddress={this.props.tokenAddress}
-              userAccount={this.props.userAccount}
-            />
-          </AppView>
+            >
+              <Decisions
+                onActivate={this.handlePanelOpen}
+                app={this.props.api}
+                votes={this.props.votes !== undefined ? this.props.votes : []}
+                entries={this.props.entries !== undefined ? this.props.entries : []}
+                voteTime={this.props.voteTime}
+                minParticipationPct={
+                  this.props.minParticipationPct
+                    ? this.props.minParticipationPct / 10 ** 16
+                    : 'N/A'
+                }
+                tokenAddress={this.props.tokenAddress}
+                userAccount={this.props.connectedAccount}
+              />
+            </AppView>
 
-          <SidePanel
-            title={''}
-            opened={this.state.panelActive}
-            onClose={this.handlePanelClose}
-          >
-            <NewPayoutVotePanelContent />
-          </SidePanel>
-        </Discussions>
+            <SidePanel
+              title={''}
+              opened={this.state.panelActive}
+              onClose={this.handlePanelClose}
+            >
+              <NewPayoutVotePanelContent />
+            </SidePanel>
+          </Discussions>
+        </IdentityProvider>
       </Main>
     )
   }
 }
 
-export default observe(
-  observable => observable.pipe(map(state => ({ ...state }))),
-  {}
-)(hot(module)(App))
+export default () => {
+  const { api, appState, connectedAccount, displayMenuButton } = useAragonApi()
+  return <App api={api} {...appState} connectedAccount={connectedAccount} displayMenuButton={displayMenuButton} />
+}
