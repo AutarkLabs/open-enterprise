@@ -13,6 +13,7 @@
     "dev": "npm run sync-assets && parcel app/index.html --port 3333",
     "ganache-cli:test": "../shared/test-helpers/ganache-cli.sh",
     "lint": "solium --dir ./contracts",
+    "precommit": "lint-staged",
     "prepublishOnly": "truffle compile --all",
     "publish:http": "npm run build:script && aragon apm publish major --http localhost:3333 --http-served-from ./dist",
     "publish": "aragon apm publish patch && sleep 3",
@@ -45,8 +46,9 @@
     "react-apollo": "^2.3.2",
     "react-dom": "^16.8.6",
     "react-markdown": "^4.1.0",
-    "react-number-format": "3.5.2",
-    "styled-components": "4.1.3"
+    "react-number-format": "^4.0.8",
+    "styled-components": "4.1.3",
+    "web3-utils": "^1.0.0"
   },
   "devDependencies": {
     "@tps/test-helpers": "^0.0.1",
@@ -57,18 +59,19 @@
     "babel-eslint": "^10.0.1",
     "babel-plugin-styled-components": "^1.10.0",
     "eslint": "^5.16.0",
-    "eslint-plugin-jsx-a11y": "^6.2.1",
     "eslint-config-standard": "^12.0.0",
     "eslint-config-standard-react": "^7.0.2",
     "eslint-plugin-import": "^2.17.3",
+    "eslint-plugin-jsx-a11y": "^6.2.1",
     "eslint-plugin-node": "^9.1.0",
     "eslint-plugin-promise": "^4.1.1",
     "eslint-plugin-react": "^7.13.0",
     "eslint-plugin-standard": "^4.0.0",
+    "lint-staged": "^9.2.0",
     "parcel-bundler": "1.12.3",
     "prettier-eslint": "^9.0.0",
     "react-axe": "^3.0.1",
-    "react-hot-loader": "^4.8.8",
+    "react-hot-loader": "^4.12.7",
     "stylelint": "^9.5.0",
     "stylelint-config-standard": "^18.3.0",
     "stylelint-config-styled-components": "^0.1.1",
@@ -80,5 +83,12 @@
     "url": "https://github.com/AutarkLabs/planning-suite"
   },
   "keywords": [],
-  "license": "GPL-3.0"
+  "license": "GPL-3.0",
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "stylelint --fix",
+      "git add"
+    ]
+  }
 }

@@ -48,8 +48,11 @@ module.exports = {
     "no-undef": "error",
     "no-unused-vars": ["warn", { "vars": "all", "args": "after-used", "ignoreRestSiblings": false }],
     'no-console': ['warn', { allow: ['warn', 'error'] }],
-    'no-else-return': 'warn',
-    eqeqeq: 'warn',
+    "react/jsx-uses-react": "warn",
+    "react/jsx-uses-vars": "warn",
+    "react/jsx-filename-extension": "off",
+    "react/no-unused-prop-types": "warn",
+    "sort-imports": ["warn", { "ignoreDeclarationSort": true }]
   },
   settings: {
     react: {

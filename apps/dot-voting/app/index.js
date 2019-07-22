@@ -1,54 +1,22 @@
+// eslint-disable-next-line import/no-unused-modules
 import React from 'react'
 import ReactDOM from 'react-dom'
-import Aragon, { providers } from '@aragon/api'
-import App from './App'
 
+// eslint-disable-next-line no-process-env
 if (process.env.NODE_ENV !== 'production') {
-  var axe = require('react-axe')
+  // eslint-disable-next-line global-require
+  const axe = require('react-axe')
+  // eslint-disable-next-line no-magic-numbers
   axe(React, ReactDOM, 1000)
 }
 
-class ConnectedApp extends React.Component {
-  state = {
-    app: new Aragon(new providers.WindowMessage(window.parent)),
-    network: {},
-    observable: null,
-    userAccount: '',
-  }
-  componentDidMount() {
-    window.addEventListener('message', this.handleWrapperMessage)
-  }
-  componentWillUnmount() {
-    window.removeEventListener('message', this.handleWrapperMessage)
-  }
-  // handshake between Aragon Core and the iframe,
-  // since iframes can lose messages that were sent before they were ready
-  handleWrapperMessage = ({ data }) => {
-    if (data.from !== 'wrapper') {
-      return
-    }
-    if (data.name === 'ready') {
-      const { app } = this.state
-      this.sendMessageToWrapper('ready', true)
-      this.setState({
-        observable: app.state(),
-      })
-      app.accounts().subscribe(accounts => {
-        this.setState({ userAccount: accounts[0] })
-      })
-      app.network().subscribe(network => {
-        this.setState({ network })
-      })
-    } else if (data.name === 'displayMenuButton') {
-      this.setState({ displayMenuButton: data.value })
-    }
+import { AragonApi } from '@aragon/api-react'
+import appStateReducer from './app-state-reducer'
+import App from './App'
 
-  }
-  sendMessageToWrapper = (name, value) => {
-    window.parent.postMessage({ from: 'app', name, value }, '*')
-  }
-  render() {
-    return <App {...this.state} />
-  }
-}
-ReactDOM.render(<ConnectedApp />, document.getElementById('root'))
+ReactDOM.render(
+  <AragonApi reducer={appStateReducer}>
+    <App />
+  </AragonApi>,
+  document.querySelector('#dot-voting')
+)

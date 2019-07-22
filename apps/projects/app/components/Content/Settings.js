@@ -16,7 +16,7 @@ import {
 } from '@aragon/ui'
 
 import { FieldTitle } from '../Form'
-import LocalIdentityBadge from '../Shared/LocalIdentityBadge'
+import { LocalIdentityBadge } from '../../../../../shared/identity'
 import { STATUS } from '../../utils/github'
 import { fromUtf8, toHex } from '../../utils/web3-utils'
 import { REQUESTED_GITHUB_DISCONNECT } from '../../store/eventTypes'

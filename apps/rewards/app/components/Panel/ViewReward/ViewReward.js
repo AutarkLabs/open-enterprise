@@ -5,25 +5,20 @@ import Blockies from 'react-blockies'
 import { BigNumber } from 'bignumber.js'
 import { format } from 'date-fns'
 import {
-  Badge,
   Button,
   Info,
-  SafeLink,
   SidePanelSplit,
-  SidePanelSeparator,
-  Countdown,
   Text,
   theme,
   IconTime,
   IconCheck,
   IconFundraising,
-  IdentityBadge,
 } from '@aragon/ui'
-import { FieldTitle, FormField } from '../../Form'
-import { MONTHS } from '../../../utils/constants'
+import { FieldTitle } from '../../Form'
 import { displayCurrency, getSymbol } from '../../../utils/helpers'
 import { provideNetwork } from '../../../../../../shared/ui'
 import { blocksToDays } from '../../../../../../shared/ui/utils'
+import { LocalIdentityBadge } from '../../../../../../shared/identity'
 
 class ViewReward extends React.Component {
     static propTypes = {
@@ -54,7 +49,6 @@ class ViewReward extends React.Component {
         endDate,
         description,
         delay,
-        rewardId,
       } = this.props.reward
 
 
@@ -66,7 +60,7 @@ class ViewReward extends React.Component {
               <Creator>
                 <div>
                   <p>
-                    <IdentityBadge
+                    <LocalIdentityBadge
                       networkType={network.type}
                       entity={creator}
                       shorten={true}

@@ -14,10 +14,10 @@ module.exports = {
   parser: 'babel-eslint',
   parserOptions: {
     ecmaFeatures: {
-      jsx: true
+      jsx: true,
     },
     ecmaVersion: 2018,
-    sourceType: 'module'
+    sourceType: 'module',
   },
   plugins: ['react'],
   rules: {
@@ -32,28 +32,34 @@ module.exports = {
       {
         objectsInArrays: false,
         arraysInArrays: false,
-        singleValue: false
-      }
+        singleValue: false,
+      },
     ],
-    'func-style': ["warn", "declaration", { "allowArrowFunctions": true }],
+    'func-style': ['warn', 'declaration', { allowArrowFunctions: true }],
     'object-curly-spacing': ['error', 'always'],
-    "import/no-unused-modules": [
-      "warn",
+    'import/no-unused-modules': [
+      'warn',
       {
         unusedExports: true,
         missingExports: true,
         ignoreExports: [],
-      }
+      },
     ],
-    "no-undef": "error",
-    "no-unused-vars": ["warn", { "vars": "all", "args": "after-used", "ignoreRestSiblings": false }],
+    'no-undef': 'error',
+    'no-unused-vars': [
+      'warn',
+      { vars: 'all', args: 'after-used', ignoreRestSiblings: false },
+    ],
     'no-console': ['warn', { allow: ['warn', 'error'] }],
-    'no-else-return': 'warn',
-    eqeqeq: 'warn',
+    'react/jsx-uses-react': 'warn',
+    'react/jsx-uses-vars': 'warn',
+    'react/jsx-filename-extension': 'off',
+    'react/no-unused-prop-types': 'warn',
+    'sort-imports': ['warn', { ignoreDeclarationSort: true }],
   },
   settings: {
     react: {
       version: 'detect',
-    }
-  }
+    },
+  },
 }

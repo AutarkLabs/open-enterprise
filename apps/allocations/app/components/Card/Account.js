@@ -1,30 +1,32 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import icon from '../../assets/account-card.svg'
-import PropTypes from 'prop-types'
 import { BigNumber } from 'bignumber.js'
+
+import { useNetwork } from '@aragon/api-react'
 import {
   Card,
-  Text,
   ContextMenu,
   ContextMenuItem,
   IconAdd,
+  Text,
   theme,
 } from '@aragon/ui'
 import { ETH_DECIMALS } from '../../utils/constants'
-import { provideNetwork } from '../../../../../shared/ui'
-import { BASE_CARD_WIDTH, CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
+
 import { LocalIdentityBadge } from '../../../../../shared/identity'
+import { BASE_CARD_WIDTH, CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
+import icon from '../../assets/account-card.svg'
 
 const Account = ({
-  id,
-  proxy,
   balance,
   description,
-  network,
+  id,
   onNewAllocation,
+  proxy,
   screenSize,
 }) => {
+  const { type } = useNetwork()
   const newAllocation = () => {
     onNewAllocation(proxy, description, id, balance)
   }
@@ -44,7 +46,7 @@ const Account = ({
         <CardTitle>{description}</CardTitle>
         <CardAddress>
           <LocalIdentityBadge
-            networkType={network.type}
+            networkType={type}
             entity={proxy}
             shorten={true}
           />
@@ -69,12 +71,12 @@ const Account = ({
 }
 
 Account.propTypes = {
-  proxy: PropTypes.string.isRequired,
-  app: PropTypes.object.isRequired,
   balance: PropTypes.string.isRequired, // We are receiving this as string, parseInt if needed
   description: PropTypes.string.isRequired,
+  id: PropTypes.number.isRequired,
   onNewAllocation: PropTypes.func.isRequired,
-  network: PropTypes.object,
+  proxy: PropTypes.string.isRequired,
+  screenSize: PropTypes.object.isRequired
 }
 
 const TitleContainer = styled.div`
@@ -84,12 +86,12 @@ const TitleContainer = styled.div`
 const StyledCard = styled(Card)`
   display: flex;
   margin-bottom: 2rem;
-  margin-right: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? '0.6rem' : '2rem' };
+  margin-right: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? '0.6rem' : '2rem'};
   flex-direction: column;
   justify-content: flex-start;
   padding: 12px;
   height: 240px;
-  width: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? '100%' : BASE_CARD_WIDTH + 'px' };
+  width: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? '100%' : BASE_CARD_WIDTH + 'px'};
   transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
   :hover {
     cursor: pointer;
@@ -115,8 +117,10 @@ const CardTitle = styled(Text.Block).attrs({
   text-align: center;
   color: ${theme.textPrimary};
   display: block;
+  /* stylelint-disable-next-line */
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  /* stylelint-disable-next-line */
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -153,4 +157,4 @@ const StatsValue = styled.p`
   font-size: 1.1em;
 `
 
-export default provideNetwork(Account)
+export default Account
