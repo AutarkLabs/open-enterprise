@@ -520,17 +520,17 @@ const submitBountyAllocation = ({
     description
   ).subscribe(
     () => {
-      issuesArray.forEach(issue => {
-        post({
-          variables: {
-            body:
-              'This issue has a bounty attached to it.\n' +
-              `Amount: ${issue.size.toFixed(2)} ${bountySymbol}\n` +
-              `Deadline: ${issue.deadline.toUTCString()}`,
-            subjectId: issue.key,
-          },
-        })
-      })
+      // issuesArray.forEach(issue => {
+      //   post({
+      //     variables: {
+      //       body:
+      //         'This issue has a bounty attached to it.\n' +
+      //         `Amount: ${issue.size.toFixed(2)} ${bountySymbol}\n` +
+      //         `Deadline: ${issue.deadline.toUTCString()}`,
+      //       subjectId: issue.key,
+      //     },
+      //   })
+      // })
     },
     err => console.error(`error: ${err}`)
   )
