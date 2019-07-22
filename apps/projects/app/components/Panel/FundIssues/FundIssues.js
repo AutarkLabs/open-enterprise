@@ -520,6 +520,8 @@ const submitBountyAllocation = ({
     description
   ).subscribe(
     () => {
+      // TODO: Temporarily disable commenting on github
+      // A better workaround in the future would be refactor into an opt-in feature, maybe with a checkbox in Settings?
       // issuesArray.forEach(issue => {
       //   post({
       //     variables: {
