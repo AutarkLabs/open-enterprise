@@ -1,7 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
-import { Button, Field, TextInput } from '@aragon/ui'
+import { Button, Field, TextInput, Text, theme } from '@aragon/ui'
+import { IconMarkdown } from '../../../../shared/ui'
 
 const onSubmit = save => async e => {
   e.preventDefault()
@@ -18,11 +19,31 @@ const Input = styled(TextInput.Multiline).attrs({
   padding: 10px;
 `
 
+const Hint = styled(Text.Block).attrs({
+  color: theme.textTertiary,
+  size: 'xsmall',
+})`
+  display: flex;
+  justify-content: space-between;
+`
+
 const CommentForm = ({ save }) => {
   return (
     <form onSubmit={onSubmit(save)}>
       <Field label="Your Comment">
         <Input name="text" />
+        <Hint>
+          <Text monospace>
+            *bold* &nbsp;&nbsp; _italics_ &nbsp;&nbsp; ### heading &nbsp;&nbsp;
+            &gt; quote
+          </Text>
+          <a
+            target="_blank"
+            href="https://guides.github.com/features/mastering-markdown/"
+          >
+            <IconMarkdown />
+          </a>
+        </Hint>
       </Field>
       <Button mode="strong" wide type="submit">
         Post Comment
