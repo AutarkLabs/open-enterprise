@@ -85,7 +85,7 @@ const onSubmitCuration = ({ closePanel, curateIssues }) => (
   // TODO: maybe assign this to issueDescriptionIndices, not clear
   let issueDescriptionIndices = []
   issues.forEach((issue, i) => {
-    if (i == 0) {
+    if (i === 0) {
       issueDescriptionIndices.push(issue.title.length)
     } else {
       issueDescriptionIndices.push(issue.title.length)

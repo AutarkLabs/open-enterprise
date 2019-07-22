@@ -67,7 +67,7 @@ class Settings extends React.Component {
     // bountyDeadlinesMul = [168, 24, 1]
     // in order to store the deadline as one number instead of two
     for (let i = 0; i < bountyDeadlinesMul.length; i++) {
-      if (s.bountyDeadline % bountyDeadlinesMul[i] == 0) {
+      if (s.bountyDeadline % bountyDeadlinesMul[i] === 0) {
         n.bountyDeadlineD = i
         n.bountyDeadlineT = s.bountyDeadline / bountyDeadlinesMul[i]
         break
@@ -130,7 +130,7 @@ class Settings extends React.Component {
 
   generateExpLevelHandler = (index, key) => e => {
     let { expLevels } = this.state
-    if (key == 'M') expLevels[index].mul = e.target.value
+    if (key === 'M') expLevels[index].mul = e.target.value
     else expLevels[index].name = e.target.value
     this.setState({ expLevels })
   }
@@ -456,7 +456,7 @@ const ExperienceLevel = ({
   generateExpLevelHandler,
 }) => {
   let last = expLevels[expLevels.length - 1]
-  let disableAdd = last.mul != '' && last.name != '' ? false : true
+  let disableAdd = last.mul !== '' && last.name !== '' ? false : true
   return (
     <div>
       <Text.Block size="large" weight="bold">

@@ -462,7 +462,8 @@ class FundIssues extends React.Component {
       )
     } else if (bountylessIssues.length > 0) {
       return this.renderForm(bountylessIssues, bounties)
-    } else return (
+    }
+    return (
       <DivSeparator>
         {this.renderWarning(alreadyAdded)}
         <Button mode="strong" wide onClick={this.props.closePanel}>Close</Button>

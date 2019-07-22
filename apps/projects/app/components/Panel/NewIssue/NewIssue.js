@@ -162,8 +162,8 @@ class NewIssue extends React.PureComponent {
           const { createIssue } = data
           if (createIssue) {
             this.props.closePanel()
-            return null
-          } else return null
+          }
+          return null
         }}
       </Mutation>
     )

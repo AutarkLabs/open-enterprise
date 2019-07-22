@@ -34,9 +34,8 @@ class Repo extends React.Component {
     const repos = queryRepos.filter(repo => {
       if (repo.node.nameWithOwner.indexOf(e.target.value) > -1) {
         return repo
-      } else {
-        return null
       }
+      return null
     })
 
     this.setState({
