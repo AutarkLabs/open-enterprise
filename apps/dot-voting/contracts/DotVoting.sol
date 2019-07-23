@@ -221,6 +221,8 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     *        Base implementation does not use this parameter.
     * @param _description This is the string that will be displayed along the
     *        option when voting
+    * @param _eId1 External ID 1, can be used for basic candidate information
+    * @param _eId2 External ID 2, can be used for basic candidate information    
     */
     function addCandidate(uint256 _voteId, string _metadata, address _description, bytes32 eId1, bytes32 eId2)
     public auth(ADD_CANDIDATES_ROLE)
@@ -393,10 +395,11 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     *        The sixth array is a second array of identification keys, usually mapping to a second level (optional uint256)
     *        The seventh parameter is used as the identifier for this vote. (uint256)
     *        See ExecutionTarget.sol in the test folder for an example  forwarded function (setSignal)
+    * @param _actionId The corresponding Dynamic Action ID for this vote
     * @param _metadata The metadata or vote information attached to this vote
     * @return voteId The ID(or index) of this vote in the votes array.
     */
-    function _newVote(bytes _executionScript, uint256 actionId, string _metadata) internal
+    function _newVote(bytes _executionScript, uint256 _actionId, string _metadata) internal
     isInitialized returns (uint256 voteId)
     {
         voteId = votes.length++;
@@ -404,7 +407,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
         Vote storage voteInstance = votes[voteId];
         voteInstance.creator = msg.sender;
         voteInstance.metadata = _metadata;
-        voteInstance.actionId = actionId;
+        voteInstance.actionId = _actionId;
         voteInstance.startDate = uint64(block.timestamp); // solium-disable-line security/no-block-members
         voteInstance.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
         voteInstance.totalVoters = token.totalSupplyAt(voteInstance.snapshotBlock);
