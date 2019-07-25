@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import { Info } from '@aragon/ui'
 
-import { DescriptionInput, Form, FormField, InputDropDown } from '../Form'
+import { DescriptionInput, Form, FormField } from '../Form'
 import { isStringEmpty } from '../../utils/helpers'
 
 // TODO:: This should be votingTokens from account?
@@ -12,7 +12,6 @@ const INITIAL_STATE = {
 
 class NewAccount extends React.Component {
   static propTypes = {
-    heading: PropTypes.string,
     onCreateAccount: PropTypes.func.isRequired
   }
 
@@ -28,6 +27,7 @@ class NewAccount extends React.Component {
   createAccount = () => {
     const { description, } = this.state
     if (isStringEmpty(description)) {
+      // eslint-disable-next-line no-console
       return console.info(
         'The Account was not added: Description is not valid or empty, review the inputs'
       )
@@ -70,5 +70,5 @@ class NewAccount extends React.Component {
   }
 }
 
-
+// eslint-disable-next-line import/no-unused-modules
 export default NewAccount

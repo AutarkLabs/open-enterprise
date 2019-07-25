@@ -7,7 +7,7 @@ import { LoadingAnimation } from '../../Shared'
 import { Query } from 'react-apollo'
 import { useAragonApi } from '@aragon/api-react'
 import { usePanelManagement } from '../../Panel'
-import { toHex } from '../../../utils/web3-utils'
+import { toHex } from 'web3-utils'
 
 const UNSELECT = {
   repoSelected: -1,

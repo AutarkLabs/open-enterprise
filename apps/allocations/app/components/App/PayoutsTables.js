@@ -4,21 +4,25 @@ import styled from 'styled-components'
 
 import { Badge, Text, theme } from '@aragon/ui'
 
-const PayoutsTable = ({ list: List, data, ...listProps }) =>
-  <div>
-    <Text.Block size="large" weight="bold" style={{ marginBottom: '10px' }}>
-      Allocations
-      {' '}
-      <Badge.Info>{data.length}</Badge.Info>
-    </Text.Block>
+const PayoutsTable = props => {
+  const List = props.list
 
-    <List {...listProps} />
-  </div>
+  return (
+    <div>
+      <Text.Block size="large" weight="bold" style={{ marginBottom: '10px' }}>
+        Allocations
+        {' '}
+        <Badge.Info>{props.data.length}</Badge.Info>
+      </Text.Block>
+
+      <List {...props} />
+    </div>
+  )
+}
 
 PayoutsTable.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object).isRequired,
-  list: PropTypes.node.isRequired,
-  listProps: PropTypes.object.isRequired,
+  list: PropTypes.func.isRequired,
 }
 
 const PayoutDescription = styled(Text.Block)`

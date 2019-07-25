@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unused-modules */
 import { GITHUB_URI, CLIENT_ID, REDIRECT_URI } from '../utils/github'
 
 export const githubPopup = (popup = null) => {

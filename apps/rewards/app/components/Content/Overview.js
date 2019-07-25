@@ -4,29 +4,26 @@ import styled from 'styled-components'
 import { BigNumber } from 'bignumber.js'
 import {
   Table,
+  TableCell,
   TableHeader,
   TableRow,
-  TableCell,
   Text,
-  Viewport,
   theme,
-  Badge,
 } from '@aragon/ui'
 import { displayCurrency, getSymbol } from '../../utils/helpers'
 import {
+  AmountBadge,
   AverageRewards,
   AverageRewardsTable,
-  formatAvgAmount,
-  RewardDescription,
-  RewardsTable,
   NarrowList,
   NarrowListReward,
-  AmountBadge,
+  RewardDescription,
+  RewardsTable,
+  formatAvgAmount,
 } from './RewardsTables'
 import { MILLISECONDS_IN_A_MONTH, blocksToMilliseconds, } from '../../../../../shared/ui/utils'
 import { Empty } from '../Card'
 
-const fourthColumns = [ 'Next Payout', 'Status', 'Last Payout' ]
 const headersNames = fourth => [
   'Description',
   'Type',
@@ -54,7 +51,11 @@ const calculateAverageRewardsNumbers = ( rewards, claims, balances, convertRates
 }
 
 const calculateAvgClaim = ({ claimsByToken, totalClaimsMade }, balances, convertRates) => {
-  return sumTotalRewards(
+  console.log('--calculateAvgClaim-', claimsByToken, totalClaimsMade, balances, convertRates)
+
+//return(13)
+
+return sumTotalRewards(
     claimsByToken,
     balances,
     convertRates,
@@ -63,6 +64,7 @@ const calculateAvgClaim = ({ claimsByToken, totalClaimsMade }, balances, convert
 }
 
 const calculateMonthlyAvg = (rewards, balances, convertRates) => {
+console.log('--calculateMonthlyAvg-', rewards, balances, convertRates)
   let monthCount = Math.ceil((Date.now() - rewards.reduce((minDate, reward) => {
     return reward.endDate < minDate.endDate ? reward: minDate
   }).endDate) / MILLISECONDS_IN_A_MONTH)
@@ -76,6 +78,7 @@ const calculateMonthlyAvg = (rewards, balances, convertRates) => {
 }
 
 const calculateYTDRewards = (rewards, balances, convertRates) => {
+console.log('---calculateYTDRewards-', rewards, balances, convertRates)
   const yearBeginning = new Date(new Date(Date.now()).getFullYear(), 0)
   return sumTotalRewards(
     rewards,
@@ -86,6 +89,9 @@ const calculateYTDRewards = (rewards, balances, convertRates) => {
 }
 
 const sumTotalRewards = (rewards, balances, convertRates, rewardFilter) => {
+
+console.log('---sumTotalRewards-', rewards, balances, convertRates, rewardFilter)
+
   return balances.reduce((balAcc, balance) => {
     if (convertRates[balance.symbol]) {
       return rewards.reduce((rewAcc,reward) => {
@@ -118,7 +124,7 @@ const getDividendCycle = ({ startBlock, endBlock }) => {
   }
 }
 
-const RewardsTableNarrow = ({ title, tokens, rewards, fourthColumn, fourthColumnData, openDetails }) => (
+const RewardsTableNarrow = ({ tokens, rewards, fourthColumnData, openDetails }) => (
   <NarrowList>
     {rewards.map((reward, i) => (
       <NarrowListReward onClick={generateOpenDetails(reward, openDetails)} key={i}>
@@ -144,7 +150,14 @@ const RewardsTableNarrow = ({ title, tokens, rewards, fourthColumn, fourthColumn
   </NarrowList>
 )
 
-const RewardsTableWide = ({ title, tokens, rewards, fourthColumn, fourthColumnData, openDetails }) => {
+RewardsTableNarrow.propTypes = {
+  tokens: PropTypes.arrayOf(PropTypes.object).isRequired,
+  openDetails: PropTypes.func.isRequired,
+  rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
+  fourthColumnData: PropTypes.func.isRequired,
+}
+
+const RewardsTableWide = ({ tokens, rewards, fourthColumn, fourthColumnData, openDetails }) => {
   return (
     <Table
       style={{ width: '100%' }}
@@ -185,6 +198,14 @@ const RewardsTableWide = ({ title, tokens, rewards, fourthColumn, fourthColumnDa
     </Table>
   )}
 
+RewardsTableWide.propTypes = {
+  tokens: PropTypes.arrayOf(PropTypes.object).isRequired,
+  openDetails: PropTypes.func.isRequired,
+  rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
+  fourthColumn:PropTypes.string.isRequired,
+  fourthColumnData: PropTypes.func.isRequired,
+}
+  
 /*
 const leadersList = leaders => (
   <LeadersLlist>
@@ -196,7 +217,6 @@ const leadersList = leaders => (
 */
 
 const displayNextPayout = reward => Intl.DateTimeFormat().format(reward.endDate)
-const displayStatus = reward => 'Pending'
 const displayLastPayout = reward => Intl.DateTimeFormat().format(reward.endDate)
 const futureRewards = rewards => rewards.filter(reward => reward.endDate > Date.now())
 const pastRewards = rewards => rewards.filter(reward => reward.endDate <= Date.now())
@@ -265,9 +285,12 @@ const Overview = ({ tokens, rewards, convertRates, claims, newReward, openDetail
 }
 
 Overview.propTypes = {
+  tokens: PropTypes.arrayOf(PropTypes.object).isRequired,
   newReward: PropTypes.func.isRequired,
   openDetails: PropTypes.func.isRequired,
   rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
+  convertRates: PropTypes.object,
+  claims: PropTypes.arrayOf(PropTypes.object).isRequired,
 }
 
 const OverviewMain = styled.div`
@@ -307,4 +330,6 @@ const LeadersLlist = styled.ul`
   }
 `
 */
+
+// eslint-disable-next-line import/no-unused-modules
 export default Overview

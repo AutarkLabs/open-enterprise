@@ -2,20 +2,20 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 
-import { Info, Text, TextInput, theme, SafeLink, DropDown, IconFundraising, Field } from '@aragon/ui'
+import { DropDown, IconFundraising, Info, SafeLink, TextInput, theme  } from '@aragon/ui'
 
 import { Form, FormField } from '../../Form'
 import { DateInput, InputDropDown } from '../../../../../../shared/ui'
 import { format } from 'date-fns'
 import BigNumber from 'bignumber.js'
 import {
+  MILLISECONDS_IN_A_MONTH,
+  MILLISECONDS_IN_A_QUARTER,
   millisecondsToBlocks,
   millisecondsToMonths,
   millisecondsToQuarters,
-  MILLISECONDS_IN_A_QUARTER,
-  MILLISECONDS_IN_A_MONTH,
 } from '../../../../../../shared/ui/utils'
-import { displayCurrency, toCurrency } from '../../../utils/helpers'
+import { toCurrency } from '../../../utils/helpers'
 import { isAddress } from '../../../utils/web3-utils'
 import { ETHER_TOKEN_VERIFIED_BY_SYMBOL } from '../../../utils/verified-tokens'
 import TokenSelectorInstance from './TokenSelectorInstance'
@@ -45,8 +45,11 @@ function getTokenProp(prop, { refTokens }, { customToken, referenceAsset }, chec
 
 class NewReward extends React.Component {
   static propTypes = {
-    vaultBalance: PropTypes.string.isRequired,
     onNewReward: PropTypes.func.isRequired,
+    app: PropTypes.object,
+    balances: PropTypes.array,
+    network: PropTypes.object,
+    refTokens: PropTypes.array,
   }
 
 
@@ -133,6 +136,7 @@ class NewReward extends React.Component {
       .filter(token => token.startBlock ? true : false)
       .map(({ address, name, symbol, verified }) => (
         <TokenSelectorInstance
+          key={address}
           address={address}
           name={name}
           showIcon={verified}
@@ -173,7 +177,6 @@ class NewReward extends React.Component {
 
   verifyMinime = async (app, tokenState) => {
     const tokenAddress = tokenState.address
-    console.log('entered verify')
     const token = app.external(tokenAddress, tokenAbi)
     const testAddress = '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7'
     const currentBlock = await app.web3Eth('getBlockNumber').toPromise()
@@ -183,14 +186,10 @@ class NewReward extends React.Component {
         await token.creationBlock().toPromise(),
         await token.balanceOfAt(testAddress,currentBlock).toPromise(),
       ]))
-      const isVerified = verifiedTests
-        .every(val => Number.isInteger(Number(val)))
       if (verifiedTests[0] !== verifiedTests[2]) {
-        console.log('shouldnt be verified: ',false)
         this.setState({ customToken: { ...tokenState, isVerified: false } })
         return false
       }
-      console.log('should be verified: ',isVerified)
       this.setState({
         customToken: {
           ...tokenState,
@@ -202,7 +201,6 @@ class NewReward extends React.Component {
       return true
     }
     catch (error) {
-      console.log('Is Verified: ', false)
       this.setState({ customToken: { ...tokenState, isVerified: false } })
       return false
     }

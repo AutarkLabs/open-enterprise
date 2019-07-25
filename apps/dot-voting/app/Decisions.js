@@ -20,6 +20,13 @@ const EmptyIcon = () => <img src={emptyIcon} alt="" />
 class Decisions extends React.Component {
   static propTypes = {
     app: PropTypes.object,
+    tokenAddress: PropTypes.string.isRequired,
+    userAccount: PropTypes.string.isRequired,
+    votes: PropTypes.arrayOf(PropTypes.object).isRequired,
+    entries: PropTypes.arrayOf(PropTypes.object).isRequired,
+    minParticipationPct: PropTypes.number.isRequired,
+    pctBase: PropTypes.number.isRequired,
+    voteTime: PropTypes.number.isRequired,
   }
   constructor(props) {
     super(props)

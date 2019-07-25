@@ -19,10 +19,25 @@ const initialState = {
 class App extends React.Component {
   static propTypes = {
     api: PropTypes.object,
+    displayMenuButton: PropTypes.bool.isRequired,
+    votes: PropTypes.arrayOf(PropTypes.object).isRequired,
+    entries: PropTypes.arrayOf(PropTypes.object).isRequired,
+    connectedAccount: PropTypes.string.isRequired,
+    network: PropTypes.object,
+    tokenAddress: PropTypes.string.isRequired,
+    minParticipationPct: PropTypes.number.isRequired,
+    pctBase: PropTypes.number.isRequired,
+    voteTime: PropTypes.number.isRequired,
   }
 
   static defaultProps = {
     network: {},
+    votes: [],
+    entries: [],
+    tokenAddress: '',
+    voteTime: 0,
+    minParticipationPct: 0,
+    pctBase: 0,
   }
 
   static childContextTypes = {
@@ -96,11 +111,8 @@ class App extends React.Component {
               votes={this.props.votes !== undefined ? this.props.votes : []}
               entries={this.props.entries !== undefined ? this.props.entries : []}
               voteTime={this.props.voteTime}
-              minParticipationPct={
-                this.props.minParticipationPct
-                  ? this.props.minParticipationPct / 10 ** 16
-                  : 'N/A'
-              }
+              minParticipationPct={this.props.minParticipationPct / 10 ** 16}
+              pctBase={this.props.pctBase / 10 ** 16}
               tokenAddress={this.props.tokenAddress}
               userAccount={this.props.connectedAccount}
             />
@@ -119,6 +131,7 @@ class App extends React.Component {
   }
 }
 
+// eslint-disable-next-line react/display-name
 export default () => {
   const { api, appState, connectedAccount, displayMenuButton } = useAragonApi()
   return <App api={api} {...appState} connectedAccount={connectedAccount} displayMenuButton={displayMenuButton} />

@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { Text, theme, Viewport, Badge } from '@aragon/ui'
+import { Badge, Text, Viewport, theme } from '@aragon/ui'
 import { FieldTitle } from '../Form'
 
 const formatAvgAmount = (amount, symbol, color = 'black') => {

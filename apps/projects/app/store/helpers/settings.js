@@ -1,5 +1,5 @@
 import { app } from '../app'
-import { toUtf8 } from '../../utils/web3-utils'
+import { toUtf8 } from 'web3-utils'
 
 const loadSettings = () => {
   return new Promise(resolve => {

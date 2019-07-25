@@ -1,13 +1,15 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 import React from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import {
-  Card,
-  Text,
-  Button,
-  theme,
   Badge,
+  Button,
+  Card,
   Countdown,
+  Text,
+  theme,
 } from '@aragon/ui'
 import ProgressBar from '../ProgressBar'
 import VoteStatus from '../VoteStatus'
@@ -23,6 +25,10 @@ const generateBadge = (foreground, background, text) => (
 )
 
 class Vote extends React.Component {
+  static propTypes = {
+    app: PropTypes.object
+  }
+
   static defaultProps = {
     onSelectVote: () => {},
   }
@@ -229,4 +235,5 @@ const FieldTitle = styled(Text.Block)`
   width: 35%;
 `
 
+// eslint-disable-next-line import/no-unused-modules
 export default Vote

@@ -8,4 +8,5 @@ const NewIssueButton = () => {
   return <AppTitleButton caption="New Issue" onClick={setupNewIssue} />
 }
 
+// eslint-disable-next-line import/no-unused-modules
 export default NewIssueButton

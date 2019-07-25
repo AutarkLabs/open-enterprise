@@ -19,17 +19,17 @@ const dynamicImport = Object.freeze({
   ViewFunding: () => import('./ViewFunding'),
 })
 
-const PANELS = Object.keys(dynamicImport).reduce((obj, item) => {
+export const PANELS = Object.keys(dynamicImport).reduce((obj, item) => {
   obj[item] = item
   return obj
 }, {})
 
-const PanelContext = createContext({
+export const PanelContext = createContext({
   setActivePanel: () => {},
   setPanelProps: () => {},
 })
 
-const PanelManager = ({ activePanel = null, onClose, ...panelProps }) => {
+export const PanelManager = ({ activePanel = null, onClose, ...panelProps }) => {
   const panelTitle = panelProps.title
     ? panelProps.title
     : activePanel && camel2title(activePanel)
@@ -51,6 +51,3 @@ PanelManager.propTypes = {
   activePanel: PropTypes.string,
   onClose: PropTypes.func,
 }
-
-export default PanelManager
-export { PANELS, PanelContext }

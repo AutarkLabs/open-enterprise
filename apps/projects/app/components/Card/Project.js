@@ -17,7 +17,7 @@ import {
   CARD_STRETCH_BREAKPOINT,
 } from '../../utils/responsive'
 import { useAragonApi } from '@aragon/api-react'
-import { toHex } from '../../utils/web3-utils'
+import { toHex } from 'web3-utils'
 
 const Project = ({
   repoId,
