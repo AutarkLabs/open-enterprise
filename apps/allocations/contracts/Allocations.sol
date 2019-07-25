@@ -114,6 +114,23 @@ contract Allocations is AragonApp {
         _;
     }
 
+    modifier periodExists(uint64 _periodId) {
+        require(_periodId < periodsLength, ERROR_NO_PERIOD);
+        _;
+    }
+
+    // Modifier used by all methods that impact accounting to make sure accounting period
+    // is changed before the operation if needed
+    // NOTE: its use **MUST** be accompanied by an initialization check
+    modifier transitionsPeriod {
+        //bool completeTransition = _tryTransitionAccountingPeriod(getMaxPeriodTransitions());
+        require(
+            _tryTransitionAccountingPeriod(getMaxPeriodTransitions()),
+            ERROR_COMPLETE_TRANSITION
+        );
+        _;
+    }
+
     /**
     * @dev On initialization the contract sets a vault, and initializes the periods
     *      and accounts.
@@ -235,6 +252,35 @@ contract Allocations is AragonApp {
 
         startTime = period.startTime;
         endTime = period.endTime;
+    }
+
+    /**
+    * @dev We have to check for initialization as periods are only valid after initializing
+    */
+    function getCurrentPeriodId() external view isInitialized returns (uint64) {
+        return _currentPeriodId();
+    }
+
+    function getPeriod(uint64 _periodId)
+    external
+    view
+    periodExists(_periodId)
+    returns (
+        bool isCurrent,
+        uint64 startTime,
+        uint64 endTime,
+        uint256 firstTransactionId,
+        uint256 lastTransactionId
+    )
+    {
+        Period storage period = periods[_periodId];
+
+        isCurrent = _currentPeriodId() == _periodId;
+
+        startTime = period.startTime;
+        endTime = period.endTime;
+        firstTransactionId = period.firstTransactionId;
+        lastTransactionId = period.lastTransactionId;
     }
 
 ///////////////////////
@@ -557,6 +603,7 @@ contract Allocations is AragonApp {
                 emit PaymentFailure(_accountId, _payoutId, i);
             }
         }
+    
         success = true;
     }
 
