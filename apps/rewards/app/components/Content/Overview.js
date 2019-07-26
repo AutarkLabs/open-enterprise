@@ -165,7 +165,6 @@ const RewardsTableWide = ({ tokens, rewards, fourthColumn, fourthColumnData, ope
           <TableCell>
             <RewardDescription>
               {reward.description}
-              {'To configure plugins inside of a configuration file, use the plugins key, which contains a list of plugin names. The eslint-plugin- prefix can be omitted from the plugin name.'}
             </RewardDescription>
           </TableCell>
           <TableCell>
