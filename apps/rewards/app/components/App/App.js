@@ -32,9 +32,9 @@ class App extends React.Component {
     connectedAccount: PropTypes.string.isRequired,
     displayMenuButton: PropTypes.bool.isRequired,
     refTokens: PropTypes.array.isRequired,
+    claims: PropTypes.object.isRequired,
   }
-//  claims: PropTypes.object.isRequired,
-  
+
   constructor(props) {
     super(props)
 
@@ -47,20 +47,12 @@ class App extends React.Component {
 
   static defaultProps = {
     network: {},
-    claims: {
-      claimsByToken: [],
-      totalClaimsMade: [],
-    },
+    claims: {},
     userAccount: '',
     refTokens: [],
     balances: [],
   }
-/*
-  claims: {
-    claimsByToken: [],
-    totalClaimsMade: [],
-  },
-*/
+
   static childContextTypes = {
     network: networkContextType,
   }
@@ -107,7 +99,7 @@ class App extends React.Component {
   }, CONVERT_THROTTLE_TIME)
 
   updateRewards = async () => {
-    this.props.api.cache('requestRefresh', {
+    this.props.api && this.props.api.cache('requestRefresh', {
       event: 'RefreshRewards',
       returnValues: {
         userAddress: this.props.connectedAccount

@@ -21,7 +21,7 @@ class ViewReward extends React.Component {
     static propTypes = {
       reward: PropTypes.object,
       network: PropTypes.object,
-      tokens: PropTypes.object,
+      tokens: PropTypes.arrayOf(PropTypes.object),
       onClosePanel: PropTypes.func.isRequired,
     }
 
@@ -201,13 +201,13 @@ const Part = styled.div`
   }
 `
 const Summary = styled.div`
-  padding: 0px;
+  padding: 0;
   padding-left: 35px;
   p {
     padding-block-end: 11pt;
   }
   p:last-of-type {
-    padding-block-end: 0px;
+    padding-block-end: 0;
   }
 `
 const SummaryVar = styled.span`
@@ -215,7 +215,7 @@ const SummaryVar = styled.span`
   text-decoration: underline;
 `
 const TokenIcon = styled(IconFundraising)`
-float: left;
+  float: left;
 `
 
 export default provideNetwork(ViewReward)

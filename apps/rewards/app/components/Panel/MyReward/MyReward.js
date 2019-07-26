@@ -32,7 +32,7 @@ class MyReward extends React.Component {
     onClosePanel: PropTypes.func.isRequired,
     viewReward: PropTypes.func.isRequired,
     reward: PropTypes.object.isRequired,
-    tokens: PropTypes.array.isRequired,
+    tokens: PropTypes.arrayOf(PropTypes.object).isRequired,
   }
 
   onClosePanel = () => this.props.onClosePanel()

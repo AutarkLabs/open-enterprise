@@ -68,24 +68,27 @@ RewardsTable.propTypes = {
   rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
   belowMedium: PropTypes.func.isRequired,
   aboveMedium: PropTypes.func.isRequired,
+  onClaimReward: PropTypes.func,
 }
 
 const RewardDescription = styled(Text.Block)`
   display: block;
+  /* stylelint-disable value-no-vendor-prefix, property-no-vendor-prefix */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  /* stylelint-enable */
   overflow: hidden;
   text-overflow: ellipsis;
   color: ${theme.textPrimary};
 `
+
+
 const AverageItem = styled.div`
   text-align: center;
   margin: 2px;
-  /*background: orange;*/
 `
 const AverageRewardsTable = styled.div`
-  /*background: #FFF38E;*/
   padding: 10px;
   display: flex;
   justify-content: space-around;
@@ -115,6 +118,6 @@ const AmountBadge = styled(Badge).attrs({
   foreground: theme.textPrimary,
 })`
   padding: 10px;
-  text-size: large;
+  font-size: large;
 `
 export { AverageRewards, AverageRewardsTable, formatAvgAmount, RewardDescription, RewardsTable, NarrowList, NarrowListReward, AmountBadge }

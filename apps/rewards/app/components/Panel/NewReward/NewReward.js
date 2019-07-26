@@ -620,6 +620,6 @@ const VaultBalance = styled.div`
   align-items: center;
 `
 const TokenIcon = styled(IconFundraising)`
-float: left;
+  float: left;
 `
 export default NewReward

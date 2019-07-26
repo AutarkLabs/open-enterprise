@@ -38,7 +38,7 @@ const dot = <span style={{ margin: '0px 6px' }}>&middot;</span>
 const averageRewardsTitles = [ 'Average Reward', 'Monthly Average', 'Total this year' ]
 // TODO: these need to be actually calculated
 const calculateAverageRewardsNumbers = ( rewards, claims, balances, convertRates ) => {
-  if (claims && balances && convertRates) {
+  if (Object.keys(claims).length > 0 && balances && convertRates) {
     return [
       formatAvgAmount(calculateAvgClaim(claims, balances, convertRates), '$'),
       formatAvgAmount(calculateMonthlyAvg(rewards, balances, convertRates), '$'),
@@ -51,11 +51,7 @@ const calculateAverageRewardsNumbers = ( rewards, claims, balances, convertRates
 }
 
 const calculateAvgClaim = ({ claimsByToken, totalClaimsMade }, balances, convertRates) => {
-  console.log('--calculateAvgClaim-', claimsByToken, totalClaimsMade, balances, convertRates)
-
-//return(13)
-
-return sumTotalRewards(
+  return sumTotalRewards(
     claimsByToken,
     balances,
     convertRates,
@@ -64,7 +60,6 @@ return sumTotalRewards(
 }
 
 const calculateMonthlyAvg = (rewards, balances, convertRates) => {
-console.log('--calculateMonthlyAvg-', rewards, balances, convertRates)
   let monthCount = Math.ceil((Date.now() - rewards.reduce((minDate, reward) => {
     return reward.endDate < minDate.endDate ? reward: minDate
   }).endDate) / MILLISECONDS_IN_A_MONTH)
@@ -78,7 +73,6 @@ console.log('--calculateMonthlyAvg-', rewards, balances, convertRates)
 }
 
 const calculateYTDRewards = (rewards, balances, convertRates) => {
-console.log('---calculateYTDRewards-', rewards, balances, convertRates)
   const yearBeginning = new Date(new Date(Date.now()).getFullYear(), 0)
   return sumTotalRewards(
     rewards,
@@ -89,9 +83,6 @@ console.log('---calculateYTDRewards-', rewards, balances, convertRates)
 }
 
 const sumTotalRewards = (rewards, balances, convertRates, rewardFilter) => {
-
-console.log('---sumTotalRewards-', rewards, balances, convertRates, rewardFilter)
-
   return balances.reduce((balAcc, balance) => {
     if (convertRates[balance.symbol]) {
       return rewards.reduce((rewAcc,reward) => {
@@ -174,6 +165,7 @@ const RewardsTableWide = ({ tokens, rewards, fourthColumn, fourthColumnData, ope
           <TableCell>
             <RewardDescription>
               {reward.description}
+              {'To configure plugins inside of a configuration file, use the plugins key, which contains a list of plugin names. The eslint-plugin- prefix can be omitted from the plugin name.'}
             </RewardDescription>
           </TableCell>
           <TableCell>
@@ -231,7 +223,8 @@ const tableType = [
 const Overview = ({ tokens, rewards, convertRates, claims, newReward, openDetails }) => {
   const rewardsEmpty = rewards.length === 0
 
-  console.log('reward props: ', rewards)
+  // For testing purposes uncomment the following line:
+  // console.log('reward props: ', rewards)
 
   if (rewardsEmpty) {
     return <Empty tab='Overview' action={newReward} />
@@ -290,15 +283,14 @@ Overview.propTypes = {
   openDetails: PropTypes.func.isRequired,
   rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
   convertRates: PropTypes.object,
-  claims: PropTypes.arrayOf(PropTypes.object).isRequired,
+  claims: PropTypes.object.isRequired,
 }
 
 const OverviewMain = styled.div`
-  background-color: #F8FCFD;
+  background-color: #f8fcfd;
 `
 const RewardsWrap = styled.div`
   flex-grow: 1;
-  /*background: #1DD9D5;*/
   > :not(:last-child) {
     margin-bottom: 20px;
   }

@@ -4,7 +4,6 @@ import styled from 'styled-components'
 import { BigNumber } from 'bignumber.js'
 import {
   Button,
-  ContextMenu,
   IconCheck,
   IconCross,
   IconFundraising,
@@ -133,9 +132,10 @@ const MyRewardsWide = ({ onClaimReward, claimed, rewards, openDetails, tokens })
           {!reward.claimed ? (
             reward.endDate < Date.now() ? (
               <Button mode="outline" onClick={generateOnClaimReward(onClaimReward, reward)}>
-                <IconFundraising color={theme.positive} />
-
-                <Text size="normal" weight="bold">Claim</Text>
+                <div css="display: flex">
+                  <IconFundraising color={theme.positive} style={{ marginRight: '6px' }} />
+                  <Text size="normal" weight="bold">Claim</Text>
+                </div>
               </Button>) : showStatus(reward)
           ) : Intl.DateTimeFormat().format(reward.timeClaimed * MILLISECONDS_IN_A_SECOND)}
         </TableCell>
@@ -157,7 +157,7 @@ MyRewardsWide.propTypes = {
   tokens: PropTypes.arrayOf(PropTypes.object).isRequired,
 }
 
-const RewardStatus = ({ color, icon, title, posTop = 0 }) => {
+const RewardStatus = ({ color, icon, title, posTop }) => {
   const Icon = icon
   return (
     <MyRewardStatus color={color}>
@@ -170,8 +170,12 @@ const RewardStatus = ({ color, icon, title, posTop = 0 }) => {
 RewardStatus.propTypes = {
   color: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
-  icon: PropTypes.node.isRequired,
+  icon: PropTypes.func.isRequired,
   posTop: PropTypes.number.isRequired,
+}
+
+RewardStatus.defaultProps = {
+  posTop: 0,
 }
 
 const showStatus = (reward) => {
@@ -214,10 +218,6 @@ const MyRewardsNarrow = ({ rewards, openDetails, tokens }) => (
             <AmountBadge>
               {displayCurrency(reward.userRewardAmount)}{' '}{getSymbol(tokens,reward)}
             </AmountBadge>
-          </div>
-          <div>
-            <ContextMenu>
-            </ContextMenu>
           </div>
         </div>
       </NarrowListReward>
@@ -275,6 +275,7 @@ const MyRewards = ({ onClaimReward, rewards, newReward, openDetails, network, to
           tokens={tokens}
           belowMedium={MyRewardsNarrow}
           aboveMedium={MyRewardsWide}
+          onClaimReward={onClaimReward}
         />}
         {unclaimedRewardsLength > 0
         &&
@@ -305,11 +306,10 @@ MyRewards.propTypes = {
 }
 
 const Main = styled.div`
-  background-color: #F8FCFD;
+  background-color: ##f8fcfd;
 `
 const RewardsWrap = styled.div`
   flex-grow: 1;
-  /*background: #1DD9D5;*/
   > :not(:last-child) {
     margin-bottom: 20px;
   }
