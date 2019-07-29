@@ -29,8 +29,17 @@ contract AddressBook is AragonApp {
     string private constant ERROR_CID_MALFORMED = "CID_MALFORMED";
     string private constant ERROR_NO_CID = "CID_DOES_NOT_MATCH";
 
+    struct Entry {
+        string data;
+        uint256 index;
+    }
+
     /// The entries in the registry
-    mapping(address => string) entries;
+    mapping(address => Entry) public entries;
+
+    /// Array-like struct to access all addresses
+    mapping(uint256 => address) public entryArr;
+    uint256 public entryArrLength;
 
     /// Events
     event EntryAdded(address addr); /// Fired when an entry is added to the registry
@@ -42,7 +51,16 @@ contract AddressBook is AragonApp {
      * @param _addr The address to enforce its existence in the registry
      */
     modifier entryExists(address _addr) {
-        require(bytes(entries[_addr]).length != 0, ERROR_NOT_FOUND);
+        require(bytes(entries[_addr].data).length != 0, ERROR_NOT_FOUND);
+        _;
+    }
+
+    /**
+     * @dev Guard to ensure the CID is 46 chars long
+     * @param _cid The IPFS hash of the entry to add to the registry
+     */
+    modifier cidIsValid(string _cid) {
+        require(bytes(_cid).length == 46, ERROR_CID_MALFORMED);
         _;
     }
 
@@ -56,51 +74,85 @@ contract AddressBook is AragonApp {
 
     /**
      * @notice Add the entity `_cid` with address `_addr` to the registry.
+     * @dev CID's must be base58-encoded in order to work with this function
      * @param _addr The address of the entry to add to the registry
      * @param _cid The IPFS hash of the entry to add to the registry
      */
-    function addEntry(address _addr, string _cid) public auth(ADD_ENTRY_ROLE) {
-        require(bytes(entries[_addr]).length == 0, ERROR_EXISTS);
-        require(bytes(_cid).length == 46, ERROR_CID_MALFORMED);
-
-        entries[_addr] = _cid;
+    function addEntry(address _addr, string _cid) external cidIsValid(_cid) auth(ADD_ENTRY_ROLE) {
+        require(bytes(entries[_addr].data).length == 0, ERROR_EXISTS);
+        // This is auth-guarded, so it'll overflow well after the app becomes unusable
+        // due to the quantity of entries
+        uint256 entryIndex = entryArrLength++;
+        entryArr[entryIndex] = _addr;
+        entries[_addr] = Entry(_cid, entryIndex);
         emit EntryAdded(_addr);
     }
 
     /**
      * @notice Remove entity `_cid` with address `_addr` from the registry.
+     * @dev CID's must be base58-encoded in order to work with this function
      * @param _addr The ID of the entry to remove
-     * @param _cid The IPFS hash of the entry to remove from the registry; used only for radpec here
+     * @param _oldCid The IPFS hash of the entry to remove from the registry; used only for radpec here
      */
-    function removeEntry(address _addr, string _cid) public auth(REMOVE_ENTRY_ROLE) entryExists(_addr) {
-        require(keccak256(_cid) == keccak256(entries[_addr]), ERROR_NO_CID);
+    function removeEntry(address _addr, string _oldCid) external entryExists(_addr) auth(REMOVE_ENTRY_ROLE) {
+        require(keccak256(bytes(_oldCid)) == keccak256(bytes(entries[_addr].data)), ERROR_NO_CID);
+        uint256 rowToDelete = entries[_addr].index;
+        if (entryArrLength != 1) {
+            address entryToMove = entryArr[entryArrLength - 1];
+            entryArr[rowToDelete] = entryToMove;
+            entries[entryToMove].index = rowToDelete;
+        }
         delete entries[_addr];
+        // Doesn't require underflow checking because entry existence is verified
+        entryArrLength--;
         emit EntryRemoved(_addr);
     }
 
     /**
      * @notice Update address `_addr` with new entity `_cid` in the registry.
+     * @dev CID's must be base58-encoded in order to work with this function
      * @param _addr The ID of the entry to update
      * @param _cid The new CID of updated entity info
      */
     function updateEntry(
         address _addr,
         string _cid
-    ) public auth(UPDATE_ENTRY_ROLE) entryExists(_addr)
+    ) external auth(UPDATE_ENTRY_ROLE) entryExists(_addr) cidIsValid(_cid)
     {
-        require(bytes(_cid).length == 46, "CID malformed");
-    
-        entries[_addr] = _cid;
+        entries[_addr].data = _cid;
         emit EntryUpdated(_addr);
     }
 
     /**
      * @notice Get data associated to entry `_addr` from the registry.
-     * @dev getter for the entries mapping for an addres
+     * @dev getter for the entries mapping to IPFS data
      * @param _addr The ID of the entry to get
      * @return contentId pointing to the IPFS structured content object for the entry
      */
-    function getEntry(address _addr) public view returns (string contentId) {
-        contentId = entries[_addr];
+    function getEntry(address _addr) external view isInitialized returns (string contentId) {
+        contentId = entries[_addr].data;
+    }
+
+    /**
+     * @notice Get index associated to entry `_addr` from the registry.
+     * @dev getter for the entries mapping for an index in entryArr
+     * @param _addr The ID of the entry to get
+     * @return contentId pointing to the IPFS structured content object for the entry
+     */
+    function getEntryIndex(address _addr) external view isInitialized entryExists(_addr) returns (uint256 index) {
+        index = entries[_addr].index;
+    }
+    
+    /**
+     * @notice Checks if a entry exists in the registry
+     * @param _entry the address to check
+     * @return _repoId Id for entry in entryArr
+     */
+    function isEntryAdded(address _entry) public view returns(bool isAdded) {
+        if (entryArrLength == 0) {
+            return false;
+        }
+
+        return (entryArr[entries[_entry].index] == _entry);
     }
 }

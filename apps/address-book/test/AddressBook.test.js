@@ -62,6 +62,12 @@ contract('AddressBook', accounts => {
 
   context('main context', () => {
     let starfleet = accounts[0]
+    let earth = accounts[1]
+    let moon = accounts[2]
+
+    it('can check if entry is added when the registry is empty', async () => {
+      assert.isFalse(await app.isEntryAdded(starfleet))
+    })
 
     it('should add a new entry', async () => {
       const receipt = await app.addEntry(starfleet, exampleCid)
@@ -87,6 +93,32 @@ contract('AddressBook', accounts => {
       await app.updateEntry(starfleet, updatedCid)
       entry1 = await app.getEntry(starfleet)
       assert.equal(entry1, updatedCid)
+    })
+
+    it('can obtain entries from the entryArr', async () => {
+      const entryArrLength = await app.entryArrLength()
+      const entryAddress = await app.entryArr(entryArrLength - 1)
+      assert.isTrue(await app.isEntryAdded(entryAddress))
+      const entryIndex = await app.getEntryIndex(entryAddress)
+      assert.strictEqual(entryIndex.toNumber(), 0, 'index value should be 0')
+    })
+    
+    it('isEntryAdded returns false when deleted or unadded entry is queried', async () => {
+      await app.addEntry(earth, exampleCid)
+      await app.removeEntry(earth, exampleCid)
+      assert.isFalse(await app.isEntryAdded(earth))
+      assert.isFalse(await app.isEntryAdded(moon))
+    })
+
+    it('removeEntry moves end array entry when shortening array length', async () => {
+      await app.addEntry(earth, exampleCid)
+      await app.addEntry(moon, exampleCid)
+      await app.removeEntry(starfleet, updatedCid)
+      const entryIndex = await app.getEntryIndex(moon)
+      assert.strictEqual(entryIndex.toNumber(), 0, 'moon\'s index should be zero')
+      assert.strictEqual(await app.entryArr(0), moon, 'index 0 should map to moon\'s address')
+      await app.removeEntry(earth, exampleCid)
+      await app.removeEntry(moon, exampleCid)
     })
   })
 
