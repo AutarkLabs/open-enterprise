@@ -20,26 +20,15 @@ const Discussions = ({ children, app, ready }) => {
       const discussionData = await api.collect()
       setDiscussions(discussionData)
       setDiscussionApi(api)
-    }
-
-    if (!hasInit) {
-      // initDiscussions()
       setHasInit(true)
     }
-  })
+
+    if (!hasInit && ready) {
+      initDiscussions()
+    }
+  }, [ready])
   return (
     <DiscussionsContext.Provider value={{ discussions, discussionApi }}>
-      <button
-        onClick={async () => {
-          const api = new DiscussionsApi(app)
-          await api.init()
-          const discussionData = await api.collect()
-          setDiscussions(discussionData)
-          setDiscussionApi(api)
-        }}
-      >
-        Sync discussion data
-      </button>
       {children}
     </DiscussionsContext.Provider>
   )
