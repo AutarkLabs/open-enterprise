@@ -27,38 +27,6 @@ import "@aragon/apps-vault/contracts/Vault.sol";
 *******************************************************************************/
 
 /*******************************************************************************
-* @title IsFundable
-* @author Arthur Lunn
-* @dev Basic interface to show something as fundable
-*******************************************************************************/
-interface Fundable {
-    function fund(uint256 id) external payable;
-}
-
-
-/*******************************************************************************
-* @title FundForwarder
-* @author Arthur Lunn
-* @dev This will 100% break if the contract is upgraded. Basically just a proxy
-*      to receive funds from an address and "piece it out" to a layered contract
-*      Any advice on best practice for this would be welcome.
-*******************************************************************************/
-contract FundForwarder {
-    Fundable fundable;
-    uint256 id;
-
-    constructor(uint256 _id, Fundable _fundable) public {
-        fundable = _fundable;
-        id = _id;
-    }
-
-    function () external payable {
-        fundable.fund.value(msg.value)(id);
-    }
-}
-
-
-/*******************************************************************************
 * @title Allocations Contract
 * @author Arthur Lunn
 * @dev This contract is meant to handle tasks like basic budgeting,
@@ -66,7 +34,7 @@ contract FundForwarder {
 *      percentage breakdown to an array of addresses. Currently it works with ETH
 *      needs to be adapted to work with tokens.
 *******************************************************************************/
-contract Allocations is AragonApp, Fundable {
+contract Allocations is AragonApp {
 
     using SafeMath for uint256;
     using SafeMath64 for uint64;
@@ -75,14 +43,18 @@ contract Allocations is AragonApp, Fundable {
     bytes32 constant public CREATE_ACCOUNT_ROLE = keccak256("CREATE_ACCOUNT_ROLE");
     bytes32 constant public CREATE_ALLOCATION_ROLE = keccak256("CREATE_ALLOCATION_ROLE");
     bytes32 constant public EXECUTE_ALLOCATION_ROLE = keccak256("EXECUTE_ALLOCATION_ROLE");
+    bytes32 constant public EXECUTE_PAYOUT_ROLE = keccak256("EXECUTE_PAYOUT_ROLE");
+    bytes32 public constant CHANGE_PERIOD_ROLE = keccak256("CHANGE_PERIOD_ROLE");
+    bytes32 public constant CHANGE_BUDGETS_ROLE = keccak256("CHANGE_BUDGETS_ROLE");
 
     uint256 internal constant MAX_UINT256 = uint256(-1);
     uint64 internal constant MAX_UINT64 = uint64(-1);
     uint64 internal constant MINIMUM_PERIOD = uint64(1 days);
+    uint256 internal constant MAX_SCHEDULED_PAYOUTS_PER_TX = 20;
 
-    string private constant ERROR_NO_PERIOD = "ALLOCATIONSs_NO_PERIOD";
-    string private constant ERROR_SET_PERIOD_TOO_SHORT = "FINANCE_SET_PERIOD_TOO_SHORT";
-    string private constant ERROR_COMPLETE_TRANSITION = "FINANCE_COMPLETE_TRANSITION";
+    string private constant ERROR_NO_PERIOD = "ALLOCATIONS_NO_PERIOD";
+    string private constant ERROR_SET_PERIOD_TOO_SHORT = "ALLOCATIONS_SET_PERIOD_TOO_SHORT";
+    string private constant ERROR_COMPLETE_TRANSITION = "ALLOCATIONS_COMPLETE_TRANSITION";
 
     struct Payout {
         bytes32[] candidateKeys;
@@ -94,10 +66,10 @@ contract Allocations is AragonApp, Fundable {
         uint64 recurrences;
         uint64[] executions;
         //bool informational;
-        uint256 period;
+        uint64 period;
         //uint256 balance;
         uint256 amount;
-        uint256 startTime;
+        uint64 startTime;
         bool distSet;
         //address token;
         //address proxy;
@@ -109,7 +81,7 @@ contract Allocations is AragonApp, Fundable {
         string metadata;
         //uint limit;
         uint256 balance;
-        address proxy;
+        //address proxy;
         address token;
         bool hasBudget;
         uint256 budget;
@@ -140,11 +112,15 @@ contract Allocations is AragonApp, Fundable {
     //Payout[] payouts;
     mapping(address => uint) accountProxies; // proxy address -> account Id
 
-    event PayoutExecuted(uint256 accountId, uint payoutId);
+    event PayoutExecuted(uint256 accountId, uint payoutId, uint candidateId);
     event NewAccount(uint256 accountId);
     event NewPeriod(uint64 indexed periodId, uint64 periodStarts, uint64 periodEnds);
     event FundAccount(uint256 accountId);
     event SetDistribution(uint256 accountId, uint payoutId);
+    event PaymentFailure(uint256 accountId, uint256 payoutId, uint256 candidateId);
+    event SetBudget(uint256 indexed accountId, uint256 amount, bool hasBudget);
+    event ChangePeriodDuration(uint64 newDuration);
+    event Time(uint64 time);
 
     modifier periodExists(uint64 _periodId) {
         require(_periodId < periodsLength, ERROR_NO_PERIOD);
@@ -167,8 +143,6 @@ contract Allocations is AragonApp, Fundable {
     * @dev This is the function that sets up who the candidates will be, and
     *      where the funds will go for the payout. This is where the payout
     *      object needs to be created in the payouts array.
-    * @notice Start a payout with the specified candidates and addresses.
-    *         None of the distribution or payments are handled in this step.
     */
     function initialize(
         AddressBook _addressBook,
@@ -189,13 +163,12 @@ contract Allocations is AragonApp, Fundable {
 // Getter functions
 ///////////////////////
     function getAccount(uint256 _accountId) external view
-    returns(uint256 balance, string metadata, address proxy, address token)
+    returns(uint256 balance, string metadata, address token)
     {
         Account storage account = accounts[_accountId];
         //limit = account.limit;
         balance = account.balance;
         metadata = account.metadata;
-        proxy = account.proxy;
         token = account.token;
     }
 
@@ -204,8 +177,8 @@ contract Allocations is AragonApp, Fundable {
     {
         Payout storage payout = accounts[_accountId].payouts[_payoutId];
         amount = payout.amount;
-        startTime = payout.startTime;
         recurrences = payout.recurrences;
+        startTime = payout.startTime;
         period = payout.period;
         distSet = payout.distSet;
     }
@@ -283,16 +256,55 @@ contract Allocations is AragonApp, Fundable {
         account.hasBudget = _hasBudget;
         account.budget = _budget;
         account.token = _token;
-        FundForwarder fund = new FundForwarder(accountId, this);
-        account.proxy = address(fund);
-        accountProxies[account.proxy] = accountId;
         emit NewAccount(accountId);
     }
 
-    function fund(uint256 id) external payable {
-        Account storage account = accounts[id];
-        account.balance = account.balance.add(msg.value);
-        emit FundAccount(id);
+    /**
+    * @notice Change period duration to `@transformTime(_periodDuration)`, effective for next accounting period
+    * @param _periodDuration Duration in seconds for accounting periods
+    */
+    function setPeriodDuration(uint64 _periodDuration)
+        external
+        auth(CHANGE_PERIOD_ROLE)
+        transitionsPeriod
+    {
+        require(_periodDuration >= MINIMUM_PERIOD, ERROR_SET_PERIOD_TOO_SHORT);
+        periodDuration = _periodDuration;
+        emit ChangePeriodDuration(_periodDuration);
+    }
+
+    /**
+    * @notice Set budget for account number `_accountId` to `@tokenAmount(0, _amount, false)`, effective immediately
+    * @param _accountId Account Identifier
+    * @param _amount New budget amount
+    */
+    function setBudget(
+        uint256 _accountId,
+        uint256 _amount
+    )
+        external
+        auth(CHANGE_BUDGETS_ROLE)
+        transitionsPeriod
+    {
+        accounts[_accountId].budget = _amount;
+        if (!accounts[_accountId].hasBudget) {
+            accounts[_accountId].hasBudget = true;
+        }
+        emit SetBudget(_accountId, _amount, true);
+    }
+
+    /**
+    * @notice Remove spending limit for  account number `_accountId`, effective immediately
+    * @param _accountId Address for token
+    */
+    function removeBudget(uint256 _accountId)
+        external
+        auth(CHANGE_BUDGETS_ROLE)
+        transitionsPeriod
+    {
+        accounts[_accountId].budget = 0;
+        accounts[_accountId].hasBudget = false;
+        emit SetBudget(_accountId, 0, false);
     }
 
     /**
@@ -330,7 +342,7 @@ contract Allocations is AragonApp, Fundable {
         uint256 _accountId,
         uint64 _recurrences,
         uint64 _startTime,
-        uint256 _period,
+        uint64 _period,
         uint256 _amount
     ) public auth(CREATE_ALLOCATION_ROLE) transitionsPeriod returns(uint payoutId)
     {
@@ -361,6 +373,53 @@ contract Allocations is AragonApp, Fundable {
         emit SetDistribution(_accountId, payoutId);
         if (_startTime <= getTimestamp64()) {
             _runPayout(_accountId, payoutId);
+        }
+    }
+
+    function candidateExecutePayout(
+        uint256 _accountId,
+        uint256 _payoutId,
+        uint256 _candidateId
+    ) external transitionsPeriod
+    {
+        Payout storage payout = accounts[_accountId].payouts[_payoutId];
+        require(payout.distSet);
+        require(msg.sender == payout.candidateAddresses[_candidateId], "candidate not receiver");
+        _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId);
+    }
+
+    function executePayout(
+        uint256 _accountId,
+        uint256 _payoutId,
+        uint256 _candidateId
+    ) external transitionsPeriod auth(EXECUTE_PAYOUT_ROLE)
+    {
+        Payout storage payout = accounts[_accountId].payouts[_payoutId];
+        require(payout.distSet);
+        //require(msg.sender == payout.candidateAddresses[_candidateId], "candidate not receiver");
+        _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId);
+    }
+
+    function _executePayoutAtLeastOnce(uint256 _accountId, uint256 _payoutId, uint256 _candidateId) internal {
+        Account storage account = accounts[_accountId];
+        Payout storage payout = account.payouts[_payoutId];
+        //require(!payout.inactive, ERROR_payout_INACTIVE);
+
+        uint64 paid = 0;
+        uint256 totalSupport = _getTotalSupport(payout);
+        uint256 individualPayout = payout.supports[_candidateId].mul(payout.amount).div(totalSupport);
+        emit Time(_nextPaymentTime(_accountId, _payoutId, _candidateId));
+        while (_nextPaymentTime(_accountId, _payoutId, _candidateId) <= getTimestamp64() && paid < MAX_SCHEDULED_PAYOUTS_PER_TX) {
+            if (!_canMakePayment(_accountId, individualPayout)) {
+                emit PaymentFailure(_accountId, _payoutId, _candidateId);
+                break;
+            }
+
+            // The while() predicate prevents these two from ever overflowing
+            paid += 1;
+
+            // We've already checked the remaining budget with `_canMakePayment()`
+            _executeCandidatePayout(_accountId, _payoutId, _candidateId, totalSupport);
         }
     }
 
@@ -443,7 +502,7 @@ contract Allocations is AragonApp, Fundable {
     function _runPayout(uint _accountId, uint256 _payoutId) internal returns(bool success) {
         Account storage account = accounts[_accountId];
         Payout storage payout = account.payouts[_payoutId];
-        uint256 totalSupport = _getTotalSupport(payout);
+        //uint256 totalSupport = _getTotalSupport(payout);
         uint i;
         //for (i = 0; i < payout.supports.length; i++) {
         //    totalSupport += payout.supports[i];
@@ -458,16 +517,12 @@ contract Allocations is AragonApp, Fundable {
         //handle vault
 
         for (i = 0; i < length; i++) {
-            require(payout.executions[i] < payout.recurrences, "Too many recurrences");
-            payout.executions[i] = payout.executions[i].add(1);
-            individualPayout = payout.supports[i].mul(payout.amount).div(totalSupport);
-            require(_canMakePayment(_accountId, individualPayout), "insufficient funds");
-            periods[_currentPeriodId()].accountStatement[_accountId].expenses[account.token] += individualPayout;
-            vault.transfer(token, payout.candidateAddresses[i], individualPayout);
+            //require(_nextPaymentTime(_accountId, _payoutId, i) < getTimestamp64(), "Too many recurrences");
+            _executePayoutAtLeastOnce(_accountId, _payoutId, i);
         }
     
         success = true;
-        emit PayoutExecuted(_accountId, _payoutId);
+        //emit PayoutExecuted(_accountId, _payoutId);
     }
 
     function _getTotalSupport(Payout storage payout) internal returns (uint256 totalSupport) {
@@ -476,8 +531,41 @@ contract Allocations is AragonApp, Fundable {
         }
     }
 
-    function _executeCandidatePayout(Payout storage _payout, uint256 _candidateIndex, uint256 _totalSupport) internal {
+    function _nextPaymentTime(uint256 _accountId, uint256 _payoutId, uint256 _candidateIndex) internal view returns (uint64) {
+        Account storage account = accounts[_accountId];
+        Payout storage payout = account.payouts[_payoutId];
 
+        if (payout.executions[_candidateIndex] >= payout.recurrences) {
+            return MAX_UINT64; // re-executes in some billions of years time... should not need to worry
+        }
+
+        // Split in multiple lines to circumvent linter warning
+        uint64 increase = payout.executions[_candidateIndex].mul(payout.period);
+        uint64 nextPayment = payout.startTime.add(increase);
+        //emit Time(nextPayment);
+        return nextPayment;
+    }
+
+    function _executeCandidatePayout(
+        uint256 _accountId,
+        uint256 _payoutId,
+        uint256 _candidateIndex,
+        uint256 _totalSupport
+    ) internal
+    {
+        Account storage account = accounts[_accountId];
+        Payout storage payout = account.payouts[_payoutId];
+
+        //payout.executions[_candidateIndex] = payout.executions[_candidateIndex].add(1);
+        uint256 individualPayout = payout.supports[_candidateIndex].mul(payout.amount).div(_totalSupport);
+
+        //require(_canMakePayment(_accountId, individualPayout), "insufficient funds");
+
+        address token = account.token;
+        periods[_currentPeriodId()].accountStatement[_accountId].expenses[token] += individualPayout;
+        payout.executions[_candidateIndex] += 1;
+        vault.transfer(token, payout.candidateAddresses[_candidateIndex], individualPayout);
+        emit PayoutExecuted(_accountId, _payoutId, _candidateIndex);
     }
 
     // Mocked fns (overrided during testing)
