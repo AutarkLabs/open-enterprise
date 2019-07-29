@@ -222,7 +222,6 @@ const tableType = [
 const Overview = ({ tokens, rewards, convertRates, claims, newReward, openDetails }) => {
   const rewardsEmpty = rewards.length === 0
 
-  // For testing purposes uncomment the following line:
   // console.log('reward props: ', rewards)
 
   if (rewardsEmpty) {

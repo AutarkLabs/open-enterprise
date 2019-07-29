@@ -8,6 +8,7 @@ import { isStringEmpty } from '../../utils/helpers'
 // TODO:: This should be votingTokens from account?
 const INITIAL_STATE = {
   description: '',
+  descriptionError: false,
 }
 
 class NewAccount extends React.Component {
@@ -28,9 +29,8 @@ class NewAccount extends React.Component {
     const { description, } = this.state
     if (isStringEmpty(description)) {
       // eslint-disable-next-line no-console
-      return console.info(
-        'The Account was not added: Description is not valid or empty, review the inputs'
-      )
+      this.setState({ descriptionError: true })
+      return
     }
 
     this.props.onCreateAccount({
@@ -43,6 +43,15 @@ class NewAccount extends React.Component {
 
     return (
       <React.Fragment>
+        {this.state.descriptionError && <Info
+          background="#fb79790f"
+          title="Error"
+          style={{ margin: '20px 0' }}
+        >
+          A description of the account is required.
+        </Info>
+        }
+
         <Form
           onSubmit={this.createAccount}
           // heading={this.props.heading}

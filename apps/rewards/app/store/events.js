@@ -29,7 +29,6 @@ export const handleEvent = async (state, event, settings) => {
       nextState = await onRefreshRewards(nextState, returnValues)
       break
     default:
-      // console.log('[Rewards reducer] unhandled event:', event, returnValues)
       break
     }
   }
