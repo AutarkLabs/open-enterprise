@@ -7,12 +7,16 @@ import CommentForm from './CommentForm'
 const Discussion = ({ discussionId, ethereumAddress }) => {
   const { discussion, discussionApi } = useDiscussion(discussionId)
 
-  const save = text => discussionApi.post(text, discussionId, ethereumAddress)
+  // TODO: add DiscussionsApi function for updating an existing comment
+  const save = ({ id, text }) =>
+    id
+      ? discussionApi.post(text, discussionId, ethereumAddress)
+      : discussionApi.post(text, discussionId, ethereumAddress)
 
   return (
     <div>
       {discussion.map(comment => (
-        <Comment key={comment.id} comment={comment} />
+        <Comment comment={comment} key={comment.id} save={save} />
       ))}
       <CommentForm save={save} />
     </div>

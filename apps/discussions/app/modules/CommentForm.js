@@ -7,7 +7,7 @@ import { IconMarkdown } from '../../../../shared/ui'
 const onSubmit = save => async e => {
   e.preventDefault()
   const input = e.target.elements.text
-  await save(input.value)
+  await save({ text: input.value })
   input.value = ''
 }
 
@@ -27,11 +27,15 @@ const Hint = styled(Text.Block).attrs({
   justify-content: space-between;
 `
 
-const CommentForm = ({ save }) => {
+const CommentForm = ({ defaultValue, save }) => {
   return (
     <form onSubmit={onSubmit(save)}>
       <Field label="Your Comment">
-        <Input name="text" />
+        <Input
+          autoFocus={!!defaultValue}
+          defaultValue={defaultValue}
+          name="text"
+        />
         <Hint>
           <Text monospace>
             *bold* &nbsp;&nbsp; _italics_ &nbsp;&nbsp; ### heading &nbsp;&nbsp;
@@ -46,13 +50,14 @@ const CommentForm = ({ save }) => {
         </Hint>
       </Field>
       <Button mode="strong" wide type="submit">
-        Post Comment
+        {defaultValue ? 'Save Changes' : 'Post Comment'}
       </Button>
     </form>
   )
 }
 
 CommentForm.propTypes = {
+  defaultValue: PropTypes.string,
   save: PropTypes.func.isRequired,
 }
 

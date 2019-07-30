@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { format, formatDistance } from 'date-fns'
 import { Card, IdentityBadge, theme } from '@aragon/ui'
 import { IconEdit, IconReply, showOnHover } from '../../../../shared/ui'
+import CommentForm from './CommentForm'
 
 const CURRENT_USER = '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7'
 
@@ -68,12 +69,12 @@ const Button = styled.button`
   }
 `
 
-const Bottom = ({ author }) => (
+const Bottom = ({ author, onEdit }) => (
   <Footer>
     <div>
       {author === CURRENT_USER && (
         <Actions>
-          <Button onClick={() => console.log('edit')}>
+          <Button onClick={onEdit}>
             <IconEdit height={22} />
           </Button>
         </Actions>
@@ -86,20 +87,39 @@ const Bottom = ({ author }) => (
   </Footer>
 )
 
-const Comment = ({ comment: { author, text, createdAt } }) => (
-  <CommentCard>
-    <Top author={author} createdAt={createdAt} />
-    {text}
-    <Bottom author={author} />
-  </CommentCard>
-)
+const Comment = ({ comment: { author, id, text, createdAt }, save }) => {
+  const [editing, setEditing] = useState(false)
+
+  if (editing) {
+    const update = async updated => {
+      await save({ id, text: updated.text })
+      setEditing(false)
+    }
+
+    return (
+      <CommentCard>
+        <CommentForm defaultValue={text} save={update} />
+      </CommentCard>
+    )
+  }
+
+  return (
+    <CommentCard>
+      <Top author={author} createdAt={createdAt} />
+      {text}
+      <Bottom author={author} onEdit={() => setEditing(true)} />
+    </CommentCard>
+  )
+}
 
 Comment.propTypes = {
   comment: PropTypes.shape({
+    id: PropTypes.string.isRequired,
     author: PropTypes.string.isRequired,
     createdAt: PropTypes.string.isRequired,
     text: PropTypes.string.isRequired,
   }).isRequired,
+  save: PropTypes.func.isRequired,
 }
 
 export default Comment
