@@ -18,7 +18,7 @@ const Discussions = ({ children, app, ready }) => {
       setDiscussionApi(api)
       setHasInit(true)
 
-      api.listenForUpdates(discussionData, setDiscussions)
+      api.listenForUpdates(setDiscussions)
     }
 
     if (!hasInit && ready) {

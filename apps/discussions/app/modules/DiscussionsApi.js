@@ -9,6 +9,7 @@ class Discussions {
     this.abi = []
     this.api = api
     this.contract = {}
+    this.discussions = {}
     this.lastEventBlock = -1
   }
 
@@ -148,21 +149,18 @@ class Discussions {
       {}
     )
 
-    const discussionsWithData = await this._buildState(
+    this.discussions = await this._buildState(
       initialState,
       relevantDiscussionEvents
     )
-    return discussionsWithData
+    return this.discussions
   }
 
-  listenForUpdates = (discussions, callback) => {
+  listenForUpdates = callback =>
     this.contract.events(this.lastEventBlock + 1).subscribe(async event => {
-      console.log(discussions)
-      const updatedDiscussions = await this._buildState(discussions, [event])
-      console.log(updatedDiscussions)
-      callback(updatedDiscussions)
+      this.discussions = await this._buildState(this.discussions, [event])
+      callback(this.discussions)
     })
-  }
 
   post = async (text, discussionThreadId, ethereumAddress) => {
     const discussionPost = {
