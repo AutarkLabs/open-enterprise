@@ -13,8 +13,12 @@ const Discussion = ({ discussionId, ethereumAddress }) => {
       ? discussionApi.post(text, discussionId, ethereumAddress)
       : discussionApi.post(text, discussionId, ethereumAddress)
 
+  // aragon wrapper currently places a question mark "help" icon at the bottom
+  // right of the page, which overlaps the form submit buttons, given its current
+  // location in the sidebar. If either of these factors change later, we may be
+  // able to remove this 40px spacer.
   return (
-    <div>
+    <div css="margin-bottom: 40px">
       {discussion.map(comment => (
         <Comment comment={comment} key={comment.id} onSave={save} />
       ))}

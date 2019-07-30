@@ -4,18 +4,11 @@ import PropTypes from 'prop-types'
 import { Button, Field, TextInput, Text, theme } from '@aragon/ui'
 import { IconMarkdown } from '../../../../shared/ui'
 
-// aragon wrapper currently places a question mark "help" icon at the bottom
-// right of the page, which overlaps the form submit buttons, given its current
-// location in the sidebar. If either of these factors change later, we may be
-// able to remove this spacer.
-const QUESTION_MARK_SPACER = '40px'
-
 const Buttons = styled.div`
   display: grid;
   grid-gap: 10px;
-  grid-template-columns: 1fr 1fr;
-  margin: 0 0 40px auto;
-  margin-bottom: ${QUESTION_MARK_SPACER};
+  grid-template-columns: ${props => (props.cancelling ? '1fr' : '1fr 1fr')};
+  margin-left: auto;
   max-width: 300px;
 `
 
@@ -37,9 +30,13 @@ const Hint = styled(Text.Block).attrs({
 
 const CommentForm = ({ defaultValue, onCancel, onSave }) => {
   const [text, setText] = React.useState(defaultValue || '')
+  const [cancelInProgress, setCancelInProgress] = React.useState(false)
+  const startCancel = () => setCancelInProgress(true)
+  const abortCancel = () => setCancelInProgress(false)
 
-  // TODO: confirm prior to clearing
   const clear = () => {
+    setCancelInProgress(false)
+
     if (defaultValue) setText(defaultValue)
     else setText('')
 
@@ -74,23 +71,31 @@ const CommentForm = ({ defaultValue, onCancel, onSave }) => {
           </a>
         </Hint>
       </Field>
-      <Buttons>
+      <Buttons cancelling={cancelInProgress}>
         <Button
           css={`
-            border: 1px solid ${theme.contentBorder};
+            ${cancelInProgress
+              ? ''
+              : `border: 1px solid ${theme.contentBorder};`}
             font-weight: bold;
           `}
-          onClick={clear}
+          disabled={!text && !onCancel}
+          mode={cancelInProgress && 'strong'}
+          emphasis={cancelInProgress && 'negative'}
+          onBlur={abortCancel}
+          onClick={cancelInProgress ? clear : startCancel}
         >
-          Cancel
+          {cancelInProgress ? 'Confirm Cancel' : 'Cancel'}
         </Button>
-        <Button
-          disabled={!text || text === defaultValue}
-          mode="strong"
-          type="submit"
-        >
-          {defaultValue ? 'Save' : 'Post'}
-        </Button>
+        {!cancelInProgress && (
+          <Button
+            disabled={!text || text === defaultValue}
+            mode="strong"
+            type="submit"
+          >
+            {defaultValue ? 'Save' : 'Post'}
+          </Button>
+        )}
       </Buttons>
     </form>
   )
