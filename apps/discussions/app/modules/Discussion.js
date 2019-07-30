@@ -26,6 +26,7 @@ const Discussion = ({ discussionId, ethereumAddress }) => {
       {discussion.map(comment => (
         <Comment
           comment={comment}
+          currentUser={ethereumAddress}
           key={comment.id}
           onSave={save}
           onReply={reply(comment)}

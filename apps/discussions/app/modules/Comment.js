@@ -6,8 +6,6 @@ import { Card, IdentityBadge, theme } from '@aragon/ui'
 import { IconEdit, IconReply, showOnHover } from '../../../../shared/ui'
 import CommentForm from './CommentForm'
 
-const CURRENT_USER = '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7'
-
 const Header = styled.header`
   display: flex;
   justify-content: space-between;
@@ -69,10 +67,10 @@ const Button = styled.button`
   }
 `
 
-const Bottom = ({ author, onEdit, onReply }) => (
+const Bottom = ({ author, currentUser, onEdit, onReply }) => (
   <Footer>
     <div>
-      {author === CURRENT_USER && (
+      {author === currentUser && (
         <Actions>
           <Button onClick={onEdit}>
             <IconEdit height={22} />
@@ -88,6 +86,7 @@ const Bottom = ({ author, onEdit, onReply }) => (
 )
 
 const Comment = ({
+  currentUser,
   comment: { author, id, text, createdAt },
   onReply,
   onSave,
@@ -117,6 +116,7 @@ const Comment = ({
       {text}
       <Bottom
         author={author}
+        currentUser={currentUser}
         onEdit={() => setEditing(true)}
         onReply={onReply}
       />
@@ -125,6 +125,7 @@ const Comment = ({
 }
 
 Comment.propTypes = {
+  currentUser: PropTypes.string.isRequired,
   comment: PropTypes.shape({
     id: PropTypes.string.isRequired,
     author: PropTypes.string.isRequired,
