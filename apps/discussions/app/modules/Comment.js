@@ -69,7 +69,7 @@ const Button = styled.button`
   }
 `
 
-const Bottom = ({ author, onEdit }) => (
+const Bottom = ({ author, onEdit, onReply }) => (
   <Footer>
     <div>
       {author === CURRENT_USER && (
@@ -80,14 +80,18 @@ const Bottom = ({ author, onEdit }) => (
         </Actions>
       )}
     </div>
-    <Button onClick={() => console.log('reply')}>
+    <Button onClick={onReply}>
       <IconReply alt="" height={16} />
       &nbsp; Reply
     </Button>
   </Footer>
 )
 
-const Comment = ({ comment: { author, id, text, createdAt }, onSave }) => {
+const Comment = ({
+  comment: { author, id, text, createdAt },
+  onReply,
+  onSave,
+}) => {
   const [editing, setEditing] = useState(false)
 
   if (editing) {
@@ -111,7 +115,11 @@ const Comment = ({ comment: { author, id, text, createdAt }, onSave }) => {
     <CommentCard>
       <Top author={author} createdAt={createdAt} />
       {text}
-      <Bottom author={author} onEdit={() => setEditing(true)} />
+      <Bottom
+        author={author}
+        onEdit={() => setEditing(true)}
+        onReply={onReply}
+      />
     </CommentCard>
   )
 }
@@ -123,6 +131,7 @@ Comment.propTypes = {
     createdAt: PropTypes.string.isRequired,
     text: PropTypes.string.isRequired,
   }).isRequired,
+  onReply: PropTypes.func.isRequired,
   onSave: PropTypes.func.isRequired,
 }
 

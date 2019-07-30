@@ -1,8 +1,10 @@
-import React from 'react'
+import React, { createRef, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import { Button, Field, TextInput, Text, theme } from '@aragon/ui'
 import { IconMarkdown } from '../../../../shared/ui'
+
+const input = createRef()
 
 const Buttons = styled.div`
   display: grid;
@@ -29,8 +31,14 @@ const Hint = styled(Text.Block).attrs({
 `
 
 const CommentForm = ({ defaultValue, onCancel, onSave }) => {
-  const [text, setText] = React.useState(defaultValue || '')
-  const [cancelInProgress, setCancelInProgress] = React.useState(false)
+  const [text, setText] = useState(defaultValue || '')
+
+  useEffect(() => {
+    setText(defaultValue)
+    if (defaultValue && input.current) input.current.focus()
+  }, [defaultValue])
+
+  const [cancelInProgress, setCancelInProgress] = useState(false)
   const startCancel = () => setCancelInProgress(true)
   const abortCancel = () => setCancelInProgress(false)
 
@@ -53,6 +61,7 @@ const CommentForm = ({ defaultValue, onCancel, onSave }) => {
     <form onSubmit={submit}>
       <Field label="Your Comment">
         <Input
+          ref={input}
           autoFocus={!!defaultValue}
           onChange={e => setText(e.target.value)}
           name="text"
