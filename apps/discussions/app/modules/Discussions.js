@@ -4,15 +4,11 @@ import DiscussionsApi from './DiscussionsApi'
 
 export const DiscussionsContext = createContext({})
 
-/*
-Hacking state together until i figure out how to understand when the api is synced
-
-*/
-
 const Discussions = ({ children, app, ready }) => {
   const [hasInit, setHasInit] = useState(false)
   const [discussions, setDiscussions] = useState({})
   const [discussionApi, setDiscussionApi] = useState({})
+
   useEffect(() => {
     const initDiscussions = async () => {
       const api = new DiscussionsApi(app)
@@ -21,6 +17,8 @@ const Discussions = ({ children, app, ready }) => {
       setDiscussions(discussionData)
       setDiscussionApi(api)
       setHasInit(true)
+
+      api.listenForUpdates(discussionData, setDiscussions)
     }
 
     if (!hasInit && ready) {
@@ -36,7 +34,7 @@ const Discussions = ({ children, app, ready }) => {
 
 Discussions.propTypes = {
   children: PropTypes.node.isRequired,
-  app: PropTypes.object.isRequired,
+  app: PropTypes.object,
   ready: PropTypes.bool.isRequired,
 }
 

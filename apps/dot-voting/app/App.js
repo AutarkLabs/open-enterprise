@@ -80,7 +80,7 @@ class App extends React.Component {
         <IdentityProvider
           onResolve={this.handleResolveLocalIdentity}
           onShowLocalIdentityModal={this.handleShowLocalIdentityModal}>
-          <Discussions ready={this.props.api} app={this.props.api}>
+          <Discussions ready={!!this.props.api} app={this.props.api}>
             <AppView
               appBar={
                 <AppBar>

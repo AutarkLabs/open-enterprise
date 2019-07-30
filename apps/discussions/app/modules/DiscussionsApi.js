@@ -9,6 +9,7 @@ class Discussions {
     this.abi = []
     this.api = api
     this.contract = {}
+    this.lastEventBlock = -1
   }
 
   init = async () => {
@@ -25,16 +26,24 @@ class Discussions {
 
   _fetchDiscussionAppInfo = api =>
     new Promise(resolve => {
-      this.api.getApps().subscribe(apps => {
-        const { abi, proxyAddress } = apps.find(
-          app => app.name === 'Discussions'
-        )
-        resolve({ abi, proxyAddress })
-      })
+      // temp hack to avoid race conditions bc getApps multi emission isnt working
+      setTimeout(() => {
+        this.api.getApps().subscribe(apps => {
+          const { abi, proxyAddress } = apps.find(
+            app => app.name === 'Discussions'
+          )
+          resolve({ abi, proxyAddress })
+        })
+      }, 500)
     })
 
   _pastEvents = () =>
-    new Promise(resolve => this.contract.pastEvents().subscribe(resolve))
+    new Promise(resolve =>
+      this.contract.pastEvents().subscribe(events => {
+        this.lastEventBlock = events[events.length - 1].blockNumber
+        resolve(events)
+      })
+    )
 
   _collectDiscussionThreadIds = () =>
     new Promise(resolve => {
@@ -144,6 +153,15 @@ class Discussions {
       relevantDiscussionEvents
     )
     return discussionsWithData
+  }
+
+  listenForUpdates = (discussions, callback) => {
+    this.contract.events(this.lastEventBlock + 1).subscribe(async event => {
+      console.log(discussions)
+      const updatedDiscussions = await this._buildState(discussions, [event])
+      console.log(updatedDiscussions)
+      callback(updatedDiscussions)
+    })
   }
 
   post = async (text, discussionThreadId, ethereumAddress) => {
