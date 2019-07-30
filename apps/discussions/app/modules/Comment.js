@@ -87,18 +87,22 @@ const Bottom = ({ author, onEdit }) => (
   </Footer>
 )
 
-const Comment = ({ comment: { author, id, text, createdAt }, save }) => {
+const Comment = ({ comment: { author, id, text, createdAt }, onSave }) => {
   const [editing, setEditing] = useState(false)
 
   if (editing) {
     const update = async updated => {
-      await save({ id, text: updated.text })
+      await onSave({ id, text: updated.text })
       setEditing(false)
     }
 
     return (
       <CommentCard>
-        <CommentForm defaultValue={text} save={update} />
+        <CommentForm
+          defaultValue={text}
+          onCancel={() => setEditing(false)}
+          onSave={update}
+        />
       </CommentCard>
     )
   }
@@ -119,7 +123,7 @@ Comment.propTypes = {
     createdAt: PropTypes.string.isRequired,
     text: PropTypes.string.isRequired,
   }).isRequired,
-  save: PropTypes.func.isRequired,
+  onSave: PropTypes.func.isRequired,
 }
 
 export default Comment

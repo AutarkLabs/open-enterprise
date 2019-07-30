@@ -16,9 +16,9 @@ const Discussion = ({ discussionId, ethereumAddress }) => {
   return (
     <div>
       {discussion.map(comment => (
-        <Comment comment={comment} key={comment.id} save={save} />
+        <Comment comment={comment} key={comment.id} onSave={save} />
       ))}
-      <CommentForm save={save} />
+      <CommentForm onSave={save} />
     </div>
   )
 }
