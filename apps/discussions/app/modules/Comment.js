@@ -3,7 +3,12 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { format, formatDistance } from 'date-fns'
 import { Card, IdentityBadge, theme } from '@aragon/ui'
-import { IconEdit, IconReply, showOnHover } from '../../../../shared/ui'
+import {
+  IconEdit,
+  IconDelete,
+  IconReply,
+  showOnHover,
+} from '../../../../shared/ui'
 import CommentForm from './CommentForm'
 
 const Header = styled.header`
@@ -67,7 +72,16 @@ const Button = styled.button`
   }
 `
 
-const Bottom = ({ author, currentUser, onEdit, onReply }) => (
+const DeleteButton = styled(Button)`
+  :hover,
+  :focus {
+    path {
+      fill: ${theme.negative};
+    }
+  }
+`
+
+const Bottom = ({ author, currentUser, onDelete, onEdit, onReply }) => (
   <Footer>
     <div>
       {author === currentUser && (
@@ -75,6 +89,9 @@ const Bottom = ({ author, currentUser, onEdit, onReply }) => (
           <Button onClick={onEdit}>
             <IconEdit height={22} />
           </Button>
+          <DeleteButton onClick={onDelete}>
+            <IconDelete height={22} />
+          </DeleteButton>
         </Actions>
       )}
     </div>
@@ -88,6 +105,7 @@ const Bottom = ({ author, currentUser, onEdit, onReply }) => (
 const Comment = ({
   currentUser,
   comment: { author, id, text, createdAt, revisions, postCid },
+  onDelete,
   onReply,
   onSave,
 }) => {
@@ -117,6 +135,7 @@ const Comment = ({
       <Bottom
         author={author}
         currentUser={currentUser}
+        onDelete={onDelete}
         onEdit={() => setEditing(true)}
         onReply={onReply}
       />
@@ -132,6 +151,7 @@ Comment.propTypes = {
     createdAt: PropTypes.string.isRequired,
     text: PropTypes.string.isRequired,
   }).isRequired,
+  onDelete: PropTypes.func.isRequired,
   onReply: PropTypes.func.isRequired,
   onSave: PropTypes.func.isRequired,
 }

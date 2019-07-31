@@ -26,6 +26,8 @@ const Discussion = ({ discussionId, ethereumAddress }) => {
   const reply = comment => () => setReplyText(`${comment.author} `)
   const cancelReply = () => setReplyText(undefined)
 
+  const hide = comment => () => {}
+
   // aragon wrapper currently places a question mark "help" icon at the bottom
   // right of the page, which overlaps the form submit buttons, given its current
   // location in the sidebar. If either of these factors change later, we may be
@@ -37,6 +39,7 @@ const Discussion = ({ discussionId, ethereumAddress }) => {
           comment={comment}
           currentUser={ethereumAddress}
           key={comment.id}
+          onDelete={hide(comment)}
           onSave={save}
           onRevise={revise}
           onReply={reply(comment)}
