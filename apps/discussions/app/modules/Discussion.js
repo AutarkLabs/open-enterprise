@@ -6,7 +6,7 @@ import CommentForm from './CommentForm'
 
 const Discussion = ({ discussionId, ethereumAddress }) => {
   const { discussion, discussionApi } = useDiscussion(discussionId)
-  const [replyText, setReplyText] = useState('')
+  const [replyText, setReplyText] = useState(undefined)
 
   // TODO: add DiscussionsApi function for updating an existing comment
   const save = ({ id, text }) =>
@@ -15,7 +15,7 @@ const Discussion = ({ discussionId, ethereumAddress }) => {
       : discussionApi.post(text, discussionId, ethereumAddress)
 
   const reply = comment => () => setReplyText(`${comment.author} `)
-  const cancelReply = () => setReplyText('')
+  const cancelReply = () => setReplyText(undefined)
 
   // aragon wrapper currently places a question mark "help" icon at the bottom
   // right of the page, which overlaps the form submit buttons, given its current

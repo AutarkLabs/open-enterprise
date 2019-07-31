@@ -89,8 +89,8 @@ const CommentForm = ({ defaultValue, onCancel, onSave }) => {
             font-weight: bold;
           `}
           disabled={!text && !onCancel}
-          mode={cancelInProgress && 'strong'}
-          emphasis={cancelInProgress && 'negative'}
+          mode={cancelInProgress ? 'strong' : undefined}
+          emphasis={cancelInProgress ? 'negative' : undefined}
           onBlur={abortCancel}
           onClick={cancelInProgress ? clear : startCancel}
         >
