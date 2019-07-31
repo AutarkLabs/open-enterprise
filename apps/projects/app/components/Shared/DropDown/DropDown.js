@@ -117,4 +117,3 @@ DropDown.propTypes = {
 }
 
 export default DropDown
-export { DropDownItems }

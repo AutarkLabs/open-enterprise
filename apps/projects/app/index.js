@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unused-modules */
 import React from 'react'
 import ReactDOM from 'react-dom'
 

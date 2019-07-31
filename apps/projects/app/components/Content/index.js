@@ -1,3 +1,6 @@
-export { default as Issues } from './Issues'
-export { default as Overview } from './Overview'
-export { default as Settings } from './Settings'
+import Issues from './Issues'
+import Overview from './Overview'
+import Settings from './Settings'
+
+export { Issues, Overview, Settings }
+

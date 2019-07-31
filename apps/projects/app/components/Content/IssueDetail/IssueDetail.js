@@ -465,4 +465,5 @@ const Separator = styled.hr`
   opacity: 0.2;
 `
 
+// eslint-disable-next-line import/no-unused-modules
 export default IssueDetail

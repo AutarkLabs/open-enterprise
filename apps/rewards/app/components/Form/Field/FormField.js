@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Text, theme, SidePanelSeparator } from '@aragon/ui'
+import { SidePanelSeparator, Text, theme,  } from '@aragon/ui'
 
 import { FieldTitle } from '.'
 
@@ -43,7 +43,7 @@ const FieldContainer = styled.div`
 `
 
 FormField.propTypes = {
-  children: PropTypes.node,
+  input: PropTypes.node,
   label: PropTypes.string,
   required: PropTypes.bool,
   hint: PropTypes.string,

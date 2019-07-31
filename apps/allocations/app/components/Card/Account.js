@@ -73,10 +73,10 @@ const Account = ({
 Account.propTypes = {
   balance: PropTypes.string.isRequired, // We are receiving this as string, parseInt if needed
   description: PropTypes.string.isRequired,
-  id: PropTypes.number.isRequired,
+  id: PropTypes.string.isRequired,
   onNewAllocation: PropTypes.func.isRequired,
   proxy: PropTypes.string.isRequired,
-  screenSize: PropTypes.object.isRequired
+  screenSize: PropTypes.number.isRequired
 }
 
 const TitleContainer = styled.div`
