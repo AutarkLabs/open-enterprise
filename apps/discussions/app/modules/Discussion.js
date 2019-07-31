@@ -8,11 +8,20 @@ const Discussion = ({ discussionId, ethereumAddress }) => {
   const { discussion, discussionApi } = useDiscussion(discussionId)
   const [replyText, setReplyText] = useState(undefined)
 
-  // TODO: add DiscussionsApi function for updating an existing comment
-  const save = ({ id, text }) =>
+  const save = ({ text, id, revisions, postCid }) =>
     id
-      ? discussionApi.post(text, discussionId, ethereumAddress)
+      ? discussionApi.revise(
+          text,
+          discussionId,
+          id,
+          postCid,
+          revisions,
+          ethereumAddress
+        )
       : discussionApi.post(text, discussionId, ethereumAddress)
+
+  const revise = ({ text, id, postCid }) =>
+    discussionApi.revise(text, discussionId, id, postCid, ethereumAddress)
 
   const reply = comment => () => setReplyText(`${comment.author} `)
   const cancelReply = () => setReplyText(undefined)
@@ -29,6 +38,7 @@ const Discussion = ({ discussionId, ethereumAddress }) => {
           currentUser={ethereumAddress}
           key={comment.id}
           onSave={save}
+          onRevise={revise}
           onReply={reply(comment)}
         />
       ))}

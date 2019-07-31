@@ -87,7 +87,7 @@ const Bottom = ({ author, currentUser, onEdit, onReply }) => (
 
 const Comment = ({
   currentUser,
-  comment: { author, id, text, createdAt },
+  comment: { author, id, text, createdAt, revisions, postCid },
   onReply,
   onSave,
 }) => {
@@ -95,7 +95,7 @@ const Comment = ({
 
   if (editing) {
     const update = async updated => {
-      await onSave({ id, text: updated.text })
+      await onSave({ id, text: updated.text, revisions, postCid })
       setEditing(false)
     }
 

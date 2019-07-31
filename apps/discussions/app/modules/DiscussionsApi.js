@@ -130,8 +130,7 @@ class Discussions {
     const events = cloneDeep(discussionEvents)
     if (events.length === 0) return state
 
-    // work our way backwards through the array of events recursively to avoid extra computation
-    const event = events.pop()
+    const event = events.shift()
     const newState = await this._updateState(state, event)
     return this._buildState(newState, events)
   }
@@ -168,10 +167,33 @@ class Discussions {
       mentions: [],
       type: 'Post',
       text,
+      revisions: [],
     }
     const result = await ipfs.dag.put(discussionPost, {})
     const cid = result.toBaseEncodedString()
     return this.contract.post(cid, discussionThreadId)
+  }
+
+  revise = async (
+    text,
+    discussionThreadId,
+    postId,
+    postCid,
+    revisions,
+    ethereumAddress
+  ) => {
+    const discussionPost = {
+      author: ethereumAddress,
+      mentions: [],
+      type: 'Revise',
+      text,
+      revisions: [...revisions, postCid],
+    }
+
+    const result = await ipfs.dag.put(discussionPost, {})
+    const cid = result.toBaseEncodedString()
+
+    return this.contract.revise(cid, postId, discussionThreadId)
   }
 }
 
