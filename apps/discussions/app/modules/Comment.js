@@ -3,12 +3,7 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { format, formatDistance } from 'date-fns'
 import { Card, IdentityBadge, theme } from '@aragon/ui'
-import {
-  IconEdit,
-  IconDelete,
-  IconReply,
-  showOnHover,
-} from '../../../../shared/ui'
+import { IconEdit, IconDelete } from '../../../../shared/ui'
 import CommentForm from './CommentForm'
 
 const Header = styled.header`
@@ -45,16 +40,18 @@ const CommentCard = styled(Card).attrs({
   margin-top: 15px;
   margin-bottom: 15px;
   padding: 15px 20px 10px;
+  position: relative;
 `
 
 const Footer = styled.footer`
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
-`
-
-const Actions = styled(showOnHover(CommentCard))`
-  line-height: 0;
+  background: white;
+  opacity: 0;
+  position: absolute;
+  right: 15px;
+  bottom: 5px;
+  ${CommentCard}:hover & {
+    opacity: 1;
+  }
 `
 
 const Button = styled.button`
@@ -81,24 +78,14 @@ const DeleteButton = styled(Button)`
   }
 `
 
-const Bottom = ({ author, currentUser, onDelete, onEdit, onReply }) => (
+const Bottom = ({ onDelete, onEdit }) => (
   <Footer>
-    <div>
-      {author === currentUser && (
-        <Actions>
-          <Button onClick={onEdit}>
-            <IconEdit height={22} />
-          </Button>
-          <DeleteButton onClick={onDelete}>
-            <IconDelete height={22} />
-          </DeleteButton>
-        </Actions>
-      )}
-    </div>
-    <Button onClick={onReply}>
-      <IconReply alt="" height={16} />
-      &nbsp; Reply
+    <Button onClick={onEdit}>
+      <IconEdit height={22} />
     </Button>
+    <DeleteButton onClick={onDelete}>
+      <IconDelete height={22} />
+    </DeleteButton>
   </Footer>
 )
 
@@ -106,7 +93,6 @@ const Comment = ({
   currentUser,
   comment: { author, id, text, createdAt, revisions, postCid },
   onDelete,
-  onReply,
   onSave,
 }) => {
   const [editing, setEditing] = useState(false)
@@ -132,13 +118,9 @@ const Comment = ({
     <CommentCard>
       <Top author={author} createdAt={createdAt} />
       {text}
-      <Bottom
-        author={author}
-        currentUser={currentUser}
-        onDelete={onDelete}
-        onEdit={() => setEditing(true)}
-        onReply={onReply}
-      />
+      {author === currentUser && (
+        <Bottom onDelete={onDelete} onEdit={() => setEditing(true)} />
+      )}
     </CommentCard>
   )
 }
@@ -152,7 +134,6 @@ Comment.propTypes = {
     text: PropTypes.string.isRequired,
   }).isRequired,
   onDelete: PropTypes.func.isRequired,
-  onReply: PropTypes.func.isRequired,
   onSave: PropTypes.func.isRequired,
 }
 
