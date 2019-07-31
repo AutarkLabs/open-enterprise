@@ -1,46 +1,42 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
-import styled from 'styled-components'
-import { Text, theme, Button, TextInput } from '@aragon/ui'
 import { useDiscussion } from './'
-import DiscussionPost from './DiscussionPost'
+import Comment from './Comment'
+import CommentForm from './CommentForm'
 
 const Discussion = ({ discussionId, ethereumAddress }) => {
   const { discussion, discussionApi } = useDiscussion(discussionId)
-  const [post, setPost] = useState('')
+  const [replyText, setReplyText] = useState(undefined)
+
+  // TODO: add DiscussionsApi function for updating an existing comment
+  const save = ({ id, text }) =>
+    id
+      ? discussionApi.post(text, discussionId, ethereumAddress)
+      : discussionApi.post(text, discussionId, ethereumAddress)
+
+  const reply = comment => () => setReplyText(`${comment.author} `)
+  const cancelReply = () => setReplyText(undefined)
+
+  // aragon wrapper currently places a question mark "help" icon at the bottom
+  // right of the page, which overlaps the form submit buttons, given its current
+  // location in the sidebar. If either of these factors change later, we may be
+  // able to remove this 40px spacer.
   return (
-    <div>
-      <Label>Discussion</Label>
-      {discussion.length === 0 && <p>No comments have been posted yet.</p>}
-      {discussion.map(post => (
-        <DiscussionPost
-          onHide={() => {}}
-          onRevise={() => {}}
-          key={post.id}
-          {...post}
+    <div css="margin-bottom: 40px">
+      {discussion.map(comment => (
+        <Comment
+          comment={comment}
+          currentUser={ethereumAddress}
+          key={comment.id}
+          onSave={save}
+          onReply={reply(comment)}
         />
       ))}
-      <TextInput
-        css={`
-          margin-top: 20px;
-          margin-bottom: 20px;
-          height: 80px;
-          padding: 5px 10px;
-        `}
-        wide
-        value={post}
-        onChange={e => setPost(e.target.value)}
+      <CommentForm
+        onSave={save}
+        defaultValue={replyText}
+        onCancel={replyText && cancelReply}
       />
-      <Button
-        mode="strong"
-        wide
-        onClick={async () => {
-          await discussionApi.post(post, discussionId, ethereumAddress)
-          setPost('')
-        }}
-      >
-        Post Comment
-      </Button>
     </div>
   )
 }
@@ -49,13 +45,5 @@ Discussion.propTypes = {
   discussionId: PropTypes.number.isRequired,
   ethereumAddress: PropTypes.string.isRequired,
 }
-
-const Label = styled(Text).attrs({
-  smallcaps: true,
-  color: theme.textSecondary,
-})`
-  display: block;
-  margin-bottom: 10px;
-`
 
 export default Discussion
