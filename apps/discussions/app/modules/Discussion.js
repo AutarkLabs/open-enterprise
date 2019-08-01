@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
 import { useDiscussion } from './'
 import Comment from './Comment'
@@ -6,7 +6,6 @@ import CommentForm from './CommentForm'
 
 const Discussion = ({ discussionId, ethereumAddress }) => {
   const { discussion, discussionApi } = useDiscussion(discussionId)
-  const [replyText, setReplyText] = useState(undefined)
 
   const save = ({ text, id, revisions, postCid }) =>
     id
@@ -19,9 +18,6 @@ const Discussion = ({ discussionId, ethereumAddress }) => {
           ethereumAddress
         )
       : discussionApi.post(text, discussionId, ethereumAddress)
-
-  const reply = comment => () => setReplyText(`${comment.author} `)
-  const cancelReply = () => setReplyText(undefined)
 
   const hide = comment => () => {}
 
@@ -38,14 +34,9 @@ const Discussion = ({ discussionId, ethereumAddress }) => {
           key={comment.id}
           onDelete={hide(comment)}
           onSave={save}
-          onReply={reply(comment)}
         />
       ))}
-      <CommentForm
-        onSave={save}
-        defaultValue={replyText}
-        onCancel={replyText && cancelReply}
-      />
+      <CommentForm onSave={save} />
     </div>
   )
 }
