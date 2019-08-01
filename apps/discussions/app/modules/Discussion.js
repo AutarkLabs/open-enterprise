@@ -20,9 +20,6 @@ const Discussion = ({ discussionId, ethereumAddress }) => {
         )
       : discussionApi.post(text, discussionId, ethereumAddress)
 
-  const revise = ({ text, id, postCid }) =>
-    discussionApi.revise(text, discussionId, id, postCid, ethereumAddress)
-
   const reply = comment => () => setReplyText(`${comment.author} `)
   const cancelReply = () => setReplyText(undefined)
 
@@ -41,7 +38,6 @@ const Discussion = ({ discussionId, ethereumAddress }) => {
           key={comment.id}
           onDelete={hide(comment)}
           onSave={save}
-          onRevise={revise}
           onReply={reply(comment)}
         />
       ))}
