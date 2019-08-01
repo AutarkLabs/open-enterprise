@@ -8,11 +8,11 @@ import "@aragon/os/contracts/apps/AragonApp.sol";
 
 
 /**
-  * @title AddressBook App
-  * @author Autark
-  * @dev Defines an address book (registry) that allows the
-  * association of an ethereum address with an IPFS cID pointing to JSON content
-  */
+ * @title AddressBook App
+ * @author Autark
+ * @dev Defines an address book (registry) that allows the
+ * association of an ethereum address with an IPFS cID pointing to JSON content
+ */
 contract AddressBook is AragonApp {
 
     /// Hardcoded constants to save gas
@@ -27,6 +27,7 @@ contract AddressBook is AragonApp {
     string private constant ERROR_NOT_FOUND = "ENTRY_DOES_NOT_EXIST";
     string private constant ERROR_EXISTS = "ENTRY_ALREADY_EXISTS";
     string private constant ERROR_CID_MALFORMED = "CID_MALFORMED";
+    string private constant ERROR_CID_LENGTH = "CID_LENGTH_INCORRECT";
     string private constant ERROR_NO_CID = "CID_DOES_NOT_MATCH";
 
     struct Entry {
@@ -56,11 +57,13 @@ contract AddressBook is AragonApp {
     }
 
     /**
-     * @dev Guard to ensure the CID is 46 chars long
+     * @dev Guard to ensure the CID is 46 chars long according to bse58 encoding
      * @param _cid The IPFS hash of the entry to add to the registry
      */
     modifier cidIsValid(string _cid) {
-        require(bytes(_cid).length == 46, ERROR_CID_MALFORMED);
+        bytes memory cidBytes = bytes(_cid);
+        require(cidBytes[0] == "Q" && cidBytes[1] == "m", ERROR_CID_MALFORMED);
+        require(cidBytes.length == 46, ERROR_CID_LENGTH);
         _;
     }
 
@@ -90,7 +93,7 @@ contract AddressBook is AragonApp {
 
     /**
      * @notice Remove entity `_cid` with address `_addr` from the registry.
-     * @dev CID's must be base58-encoded in order to work with this function
+     * @dev this function only supports CID's that are base58-encoded
      * @param _addr The ID of the entry to remove
      * @param _oldCid The IPFS hash of the entry to remove from the registry; used only for radpec here
      */
@@ -110,7 +113,7 @@ contract AddressBook is AragonApp {
 
     /**
      * @notice Update address `_addr` with new entity `_cid` in the registry.
-     * @dev CID's must be base58-encoded in order to work with this function
+     * @dev this function only supports CID's that are base58-encoded
      * @param _addr The ID of the entry to update
      * @param _cid The new CID of updated entity info
      */
@@ -142,7 +145,7 @@ contract AddressBook is AragonApp {
     function getEntryIndex(address _addr) external view isInitialized entryExists(_addr) returns (uint256 index) {
         index = entries[_addr].index;
     }
-    
+
     /**
      * @notice Checks if a entry exists in the registry
      * @param _entry the address to check

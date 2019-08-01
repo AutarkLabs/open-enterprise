@@ -148,6 +148,12 @@ contract('AddressBook', accounts => {
 
     it('should revert when a CID =/= 46 chars', async () => {
       return assertRevert(async () => {
+        await app.addEntry(bates, updatedCid.slice(0,-1))
+      })
+    })
+
+    it('should revert when a CID does not start with "Qm', async () => {
+      return assertRevert(async () => {
         await app.addEntry(bates, 'test_CID')
       })
     })
