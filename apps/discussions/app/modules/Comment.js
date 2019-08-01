@@ -47,8 +47,9 @@ const Footer = styled.footer`
   background: white;
   opacity: 0;
   position: absolute;
-  right: 15px;
-  bottom: 5px;
+  right: 20px;
+  bottom: 10px;
+  :focus-within,
   ${CommentCard}:hover & {
     opacity: 1;
   }
@@ -58,8 +59,13 @@ const Button = styled.button`
   background: transparent;
   border: none;
   cursor: pointer;
+  line-height: 0;
   outline: none;
   padding: 0;
+  vertical-align: middle;
+`
+
+const Edit = styled(Button)`
   :hover,
   :focus {
     color: ${theme.accent};
@@ -69,25 +75,40 @@ const Button = styled.button`
   }
 `
 
-const DeleteButton = styled(Button)`
+const Delete = styled(Button)`
+  :active,
   :hover,
   :focus {
+    color: ${theme.negative};
     path {
       fill: ${theme.negative};
     }
   }
+  // hack to make the svg flush with the right edge of CommentCard
+  ${Edit} + & {
+    margin-right: -5px;
+  }
 `
 
-const Bottom = ({ onDelete, onEdit }) => (
-  <Footer>
-    <Button onClick={onEdit}>
-      <IconEdit height={22} />
-    </Button>
-    <DeleteButton onClick={onDelete}>
-      <IconDelete height={22} />
-    </DeleteButton>
-  </Footer>
-)
+const Bottom = ({ onDelete, onEdit }) => {
+  const [deleting, setDeleting] = useState(false)
+
+  return (
+    <Footer>
+      {!deleting && (
+        <Edit onClick={onEdit}>
+          <IconEdit height={22} />
+        </Edit>
+      )}
+      <Delete
+        onBlur={() => setDeleting(false)}
+        onClick={deleting ? onDelete : () => setDeleting(true)}
+      >
+        {deleting ? 'Confirm delete' : <IconDelete height={22} />}
+      </Delete>
+    </Footer>
+  )
+}
 
 const Comment = ({
   currentUser,
