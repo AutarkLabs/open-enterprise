@@ -101,6 +101,7 @@ const Bottom = ({ onDelete, onEdit }) => {
         </Edit>
       )}
       <Delete
+        aria-live="polite"
         onBlur={() => setDeleting(false)}
         onClick={deleting ? onDelete : () => setDeleting(true)}
       >
@@ -118,29 +119,27 @@ const Comment = ({
 }) => {
   const [editing, setEditing] = useState(false)
 
-  if (editing) {
-    const update = async updated => {
-      await onSave({ id, text: updated.text, revisions, postCid })
-      setEditing(false)
-    }
+  const update = async updated => {
+    await onSave({ id, text: updated.text, revisions, postCid })
+    setEditing(false)
+  }
 
-    return (
-      <CommentCard>
+  return (
+    <CommentCard>
+      {editing ? (
         <CommentForm
           defaultValue={text}
           onCancel={() => setEditing(false)}
           onSave={update}
         />
-      </CommentCard>
-    )
-  }
-
-  return (
-    <CommentCard>
-      <Top author={author} createdAt={createdAt} />
-      {text}
-      {author === currentUser && (
-        <Bottom onDelete={onDelete} onEdit={() => setEditing(true)} />
+      ) : (
+        <React.Fragment>
+          <Top author={author} createdAt={createdAt} />
+          {text}
+          {author === currentUser && (
+            <Bottom onDelete={onDelete} onEdit={() => setEditing(true)} />
+          )}
+        </React.Fragment>
       )}
     </CommentCard>
   )
