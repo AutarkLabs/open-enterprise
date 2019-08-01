@@ -195,6 +195,9 @@ class Discussions {
 
     return this.contract.revise(cid, postId, discussionThreadId)
   }
+
+  hide = (postId, discussionThreadId) =>
+    this.contract.hide(postId, discussionThreadId)
 }
 
 export default Discussions

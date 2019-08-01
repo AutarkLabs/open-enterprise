@@ -19,7 +19,7 @@ const Discussion = ({ discussionId, ethereumAddress }) => {
         )
       : discussionApi.post(text, discussionId, ethereumAddress)
 
-  const hide = comment => () => {}
+  const hide = ({ id }) => () => discussionApi.hide(id, discussionId)
 
   // aragon wrapper currently places a question mark "help" icon at the bottom
   // right of the page, which overlaps the form submit buttons, given its current
