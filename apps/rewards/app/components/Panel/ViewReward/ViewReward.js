@@ -191,6 +191,7 @@ const Creator = styled.div`
   display: flex;
   align-items: center;
 `
+
 const Part = styled.div`
   padding: 20px 0;
   h2 {

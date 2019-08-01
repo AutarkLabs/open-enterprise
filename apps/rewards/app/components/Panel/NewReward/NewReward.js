@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 
-import { DropDown, IconFundraising, Info, SafeLink, TextInput, theme  } from '@aragon/ui'
+import { DropDown, IconFundraising, Info, SafeLink, TextInput, theme } from '@aragon/ui'
 
 import { Form, FormField } from '../../Form'
 import { DateInput, InputDropDown } from '../../../../../../shared/ui'
@@ -51,8 +51,6 @@ class NewReward extends React.Component {
     network: PropTypes.object,
     refTokens: PropTypes.array,
   }
-
-
 
   constructor(props) {
     super(props)
