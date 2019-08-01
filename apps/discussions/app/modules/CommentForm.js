@@ -69,8 +69,8 @@ const CommentForm = ({ defaultValue, onCancel, onSave }) => {
         />
         <Hint>
           <Text monospace aria-hidden>
-            *bold* &nbsp;&nbsp; _italics_ &nbsp;&nbsp; ### heading &nbsp;&nbsp;
-            &gt; quote
+            **bold** &nbsp;&nbsp; _italics_ &nbsp;&nbsp; ### heading
+            &nbsp;&nbsp; &gt; quote
           </Text>
           <a
             target="_blank"

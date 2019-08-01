@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { format, formatDistance } from 'date-fns'
 import { Card, IdentityBadge, theme } from '@aragon/ui'
-import { IconEdit, IconDelete } from '../../../../shared/ui'
+import { IconEdit, IconDelete, Markdown } from '../../../../shared/ui'
 import CommentForm from './CommentForm'
 
 const Header = styled.header`
@@ -135,7 +135,7 @@ const Comment = ({
       ) : (
         <React.Fragment>
           <Top author={author} createdAt={createdAt} />
-          {text}
+          <Markdown content={text} />
           {author === currentUser && (
             <Bottom onDelete={onDelete} onEdit={() => setEditing(true)} />
           )}
