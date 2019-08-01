@@ -21,7 +21,7 @@ const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 contract('Rewards', accounts => {
   let APP_MANAGER_ROLE, ADD_REWARD_ROLE, TRANSFER_ROLE
-  let daoFact, app, appBase, vault, vaultBase, referenceToken, rewardToken, minBlock
+  let daoFact, app, appBase, vault, vaultBase, referenceToken, transferrableMinime, rewardToken, minBlock
 
   // Setup test actor accounts
   const [ root, contributor1, contributor2, contributor3 ] = accounts
@@ -70,9 +70,10 @@ contract('Rewards', accounts => {
     await acl.createPermission(app.address, vault.address, TRANSFER_ROLE, root)
 
     /** Create tokens */
-    referenceToken = await getContract('MiniMeToken').new(NULL_ADDRESS, NULL_ADDRESS, 0, 'one', 18, 'one', true) // empty parameters minime
+    referenceToken = await getContract('MiniMeToken').new(NULL_ADDRESS, NULL_ADDRESS, 0, 'one', 18, 'one', false) // empty parameters minime
     rewardToken = await getContract('MiniMeToken').new(NULL_ADDRESS, NULL_ADDRESS, 0, 'two', 18, 'two', true) // empty parameters minime
     minBlock = await getBlockNumber()
+    transferrableMinime = await getContract('MiniMeToken').new(NULL_ADDRESS, NULL_ADDRESS, 0, 'one', 18, 'one', true) // empty parameters minime
   })
 
   context('pre-initialization', () => {
@@ -331,6 +332,22 @@ contract('Rewards', accounts => {
             4e18,
             minBlock,
             4,
+            0
+          )
+        })
+      })
+
+      it('fails to create merit reward with transferrable minime token', async () => {
+        return assertRevert(async () => {
+          await app.newReward(
+            'testReward',
+            true,
+            transferrableMinime.address,
+            rewardToken.address,
+            6,
+            4e18,
+            minBlock,
+            1,
             0
           )
         })

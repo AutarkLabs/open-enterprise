@@ -42,6 +42,7 @@ contract Rewards is AragonApp {
     string private constant ERROR_ZERO_OCCURRENCE = "OCCURRENCES_LESS_THAN_ONE";
     string private constant ERROR_ZERO_REWARD = "NO_REWARD_TO_CLAIM";
     string private constant ERROR_EXISTS = "REWARD_DOES_NOT_EXIST";
+    string private constant ERROR_NONTRANSFERRABLE = "MINIME_CANNOT_TRANSFER";
 
     /// Order optimized for storage
     struct Reward {
@@ -209,6 +210,9 @@ contract Rewards is AragonApp {
         require(!_isMerit || _occurrences == 1, ERROR_MERIT_OCCURRENCES);
         require(_occurrences < MAX_OCCURRENCES, ERROR_MAX_OCCURRENCES);
         require(_startBlock > _referenceToken.creationBlock(), ERROR_START_BLOCK);
+        if (_isMerit) {
+            require(!_referenceToken.transfersEnabled(), ERROR_NONTRANSFERRABLE);
+        }
         rewardId = rewardsRegistryLength++; /// increment the rewards array to create a new one
         Reward storage reward = rewards[rewardsRegistryLength - 1]; /// length-1 takes the last, newly created "empty" reward
         reward.description = _description;
