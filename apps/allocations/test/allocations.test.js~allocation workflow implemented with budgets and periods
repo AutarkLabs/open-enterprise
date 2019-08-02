@@ -191,7 +191,7 @@ contract('Allocations App', accounts => {
 
     it('can create a new Account', async () => {
       accountMembers = await app.getAccount(accountId)
-      assert.equal(accountMembers[1], 'Fett\'s vett', 'Payout metadata incorrect')
+      assert.equal(accountMembers[0], 'Fett\'s vett', 'Payout metadata incorrect')
     })
 
     it('can get period information', async () => {
