@@ -61,18 +61,12 @@ contract Allocations is AragonApp {
         address[] candidateAddresses;
         uint256[] supports;
         string metadata;
-        //address token;
-        //uint256 limit;
         uint64 recurrences;
         uint64[] executions;
-        //bool informational;
         uint64 period;
-        //uint256 balance;
         uint256 amount;
         uint64 startTime;
         bool distSet;
-        //address token;
-        //address proxy;
         string description;
     }
 
@@ -163,13 +157,13 @@ contract Allocations is AragonApp {
 // Getter functions
 ///////////////////////
     function getAccount(uint256 _accountId) external view
-    returns(uint256 balance, string metadata, address token)
+    returns(string metadata, address token, bool hasBudget, uint256 budget)
     {
         Account storage account = accounts[_accountId];
-        //limit = account.limit;
-        balance = account.balance;
         metadata = account.metadata;
         token = account.token;
+        hasBudget = account.hasBudget;
+        budget = account.budget;
     }
 
     function getPayout(uint _accountId, uint _payoutId) external view
@@ -252,7 +246,6 @@ contract Allocations is AragonApp {
         accountId = accounts.length++;
         Account storage account = accounts[accountId];
         account.metadata = _metadata;
-        account.balance = 0;
         account.hasBudget = _hasBudget;
         account.budget = _budget;
         account.token = _token;
