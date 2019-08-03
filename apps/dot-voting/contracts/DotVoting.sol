@@ -222,10 +222,10 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     * @param _eId1 External ID 1, can be used for basic candidate information
     * @param _eId2 External ID 2, can be used for basic candidate information    
     */
-    function addCandidate(uint256 _voteId, string _metadata, address _description, bytes32 eId1, bytes32 eId2)
+    function addCandidate(uint256 _voteId, string _metadata, address _description, bytes32 _eId1, bytes32 _eId2)
     public auth(ADD_CANDIDATES_ROLE)
     {
-        addOption(votes[_voteId].actionId, _metadata, _description, eId1, eId2);
+        addOption(votes[_voteId].actionId, _metadata, _description, _eId1, _eId2);
     }
     
 ///////////////////////
