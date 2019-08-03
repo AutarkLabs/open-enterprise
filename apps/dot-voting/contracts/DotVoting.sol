@@ -1,15 +1,13 @@
 pragma solidity ^0.4.24;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
-
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 
-import "@tps/test-helpers/contracts/evmscript/ScriptHelpers.sol";
-
-
-import "@tps/test-helpers/contracts/common/ADynamicForwarder.sol";
-
-import "@tps/test-helpers/contracts/lib/misc/Migrations.sol";
+// TODO: Revert import path when changes get merged into aragon/os
+// import "@aragon/os/contracts/common/ADynamicForwarder.sol";
+// import "@aragon/os/contracts/evmscript/ScriptHelpers.sol";
+import "./ADynamicForwarder.sol";
+import "./ScriptHelpers.sol";
 
 
 /*******************************************************************************
