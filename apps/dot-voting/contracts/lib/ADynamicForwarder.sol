@@ -8,7 +8,9 @@ import "@aragon/os/contracts/lib/math/SafeMath.sol";
 import "@aragon/os/contracts/lib/math/SafeMath64.sol";
 
 // TODO: Revert import path when changes get merged into aragon/os
+// import "@aragon/os/contracts/common/IForwarder.sol";
 // import "@aragon/os/contracts/evmscript/ScriptHelpers.sol";
+import "./IForwarder.sol";
 import "./ScriptHelpers.sol";
 
 
