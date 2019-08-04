@@ -10,8 +10,8 @@ import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 // TODO: Revert import path when changes get merged into aragon/os
 // import "@aragon/os/contracts/common/ADynamicForwarder.sol";
 // import "@aragon/os/contracts/evmscript/ScriptHelpers.sol";
-import "./ADynamicForwarder.sol";
-import "./ScriptHelpers.sol";
+import "./lib/ADynamicForwarder.sol";
+import "./lib/ScriptHelpers.sol";
 
 
 /*******************************************************************************
