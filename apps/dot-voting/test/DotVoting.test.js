@@ -1,20 +1,16 @@
-const {
-  ACL,
-  DAOFactory,
-  EVMScriptRegistryFactory,
-  Kernel,
-  MiniMeToken
-} = require('@tps/test-helpers/artifacts')
+const { assertRevert } = require('@aragon/test-helpers/assertThrow')
+const { encodeCallScript } = require('@aragon/test-helpers/evmScript')
+const timeTravel = require('@aragon/test-helpers/timeTravel')(web3)
 
-const DotVoting = artifacts.require('DotVotingMock')
-const ExecutionTarget = artifacts.require('ExecutionTarget')
+/** Helper function to import truffle contract artifacts */
+const getContract = name => artifacts.require(name)
 
-const { assertRevert } = require('@tps/test-helpers/assertThrow')
-const { encodeCallScript } = require('@tps/test-helpers/evmScript')
-const timeTravel = require('@tps/test-helpers/timeTravel')(web3)
+/** Helper function to read events from receipts */
+const getReceipt = (receipt, event, arg) => receipt.logs.filter(l => l.event === event)[0].args[arg]
 
 const pct16 = x =>
   new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))
+
 const getCreatedVoteId = receipt =>
   receipt.logs.filter(x => x.event === 'StartVote')[0].args.voteId
 
@@ -30,86 +26,53 @@ const getMinCandidateSupport = receipt =>
 const parseBigNumberToNumber = voteId =>
   new web3.BigNumber(voteId).toNumber()
 
-const ANY_ADDR = '0xffffffffffffffffffffffffffffffffffffffff'
-const NULL_ADDRESS = '0x00'
+/** Useful constants */
+const ANY_ADDRESS = '0xffffffffffffffffffffffffffffffffffffffff'
+const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
-
-contract('DotVoting App', accounts => {
-  let daoFact = {}
-  let app = {}
-  let book = {}
-  let token = {}
-  let executionTarget = {}
+contract('DotVoting', accounts => {
+  let APP_MANAGER_ROLE, ADD_CANDIDATES_ROLE, CREATE_VOTES_ROLE, MODIFY_CANDIDATE_SUPPORT, MODIFY_QUORUM
+  let daoFact, app, book, token, executionTarget
 
   const DotVotingTime = 1000
   const root = accounts[0]
 
   before(async () => {
-    const kernelBase = await Kernel.new(true)
-    const aclBase = await ACL.new()
-    const regFact = await EVMScriptRegistryFactory.new()
-    daoFact = await DAOFactory.new(
+    // Create Base DAO and App contracts
+    const kernelBase = await getContract('Kernel').new(true) // petrify immediately
+    const aclBase = await getContract('ACL').new()
+    const regFact = await getContract('EVMScriptRegistryFactory').new()
+    daoFact = await getContract('DAOFactory').new(
       kernelBase.address,
       aclBase.address,
       regFact.address
     )
-    const r = await daoFact.newDAO(root)
-    const dao = Kernel.at(
-      r.logs.filter(l => l.event == 'DeployDAO')[0].args.dao
-    )
+    appBase = await getContract('DotVotingMock').new()
 
-    const acl = ACL.at(await dao.acl())
+    // Setup ACL roles constants
+    APP_MANAGER_ROLE = await kernelBase.APP_MANAGER_ROLE()
+    ADD_CANDIDATES_ROLE = await appBase.ADD_CANDIDATES_ROLE()
+    CREATE_VOTES_ROLE = await appBase.CREATE_VOTES_ROLE()
+    MODIFY_CANDIDATE_SUPPORT = await appBase.MODIFY_CANDIDATE_SUPPORT()
+    MODIFY_QUORUM = await appBase.MODIFY_QUORUM()
+    
+    /** Create the dao from the dao factory */
+    const daoReceipt = await daoFact.newDAO(root)
+    const dao = getContract('Kernel').at(getReceipt(daoReceipt, 'DeployDAO', 'dao'))
+    
+    /** Setup permission to install app */
+    const acl = getContract('ACL').at(await dao.acl())
+    await acl.createPermission(root, dao.address, APP_MANAGER_ROLE, root)
 
-    await acl.createPermission(
-      root,
-      dao.address,
-      await dao.APP_MANAGER_ROLE(),
-      root,
-      { from: root }
-    )
-
-    // TODO: Revert to only use 2 params when truffle is updated
-    // read: https://github.com/AutarkLabs/planning-suite/pull/243
-    let receipt = await dao.newAppInstance(
-      '0x1234',
-      (await DotVoting.new()).address,
-      0x0,
-      false,
-      { from: root }
-    )
-
-    app = DotVoting.at(
-      receipt.logs.filter(l => l.event === 'NewAppProxy')[0].args.proxy
-    )
-
-    await acl.createPermission(
-      accounts[2],
-      app.address,
-      await app.MODIFY_CANDIDATE_SUPPORT(),
-      root,
-      { from: root }
-    )
-    await acl.createPermission(
-      accounts[2],
-      app.address,
-      await app.MODIFY_QUORUM(),
-      root,
-      { from: root }
-    )
-    await acl.createPermission(
-      accounts[2],
-      app.address,
-      await app.CREATE_VOTES_ROLE(),
-      root,
-      { from: root }
-    )
-    await acl.createPermission(
-      ANY_ADDR,
-      app.address,
-      await app.ADD_CANDIDATES_ROLE(),
-      root,
-      { from: root }
-    )
+    /** Install an app instance to the dao */
+    const appReceipt = await dao.newAppInstance('0x1234', appBase.address, '0x', false)
+    app = getContract('DotVotingMock').at(getReceipt(appReceipt, 'NewAppProxy', 'proxy'))
+    
+    /** Setup DotVoting permissions */
+    await acl.createPermission(accounts[2], app.address, MODIFY_CANDIDATE_SUPPORT, root)
+    await acl.createPermission(accounts[2], app.address, MODIFY_QUORUM, root)
+    await acl.createPermission(accounts[2], app.address, CREATE_VOTES_ROLE, root)
+    await acl.createPermission(ANY_ADDRESS, app.address, ADD_CANDIDATES_ROLE, root)
   })
 
   context('before init', () => {
@@ -168,13 +131,13 @@ contract('DotVoting App', accounts => {
     const nonHolder = accounts[4]
 
     const initialMinimumParticipation = pct16(29)
-    const initialiCandidateSupportPct = pct16(4)
+    const initialCandidateSupportPct = pct16(4)
 
     const minimumParticipation = pct16(30)
     const candidateSupportPct = pct16(5)
 
     before(async () => {
-      token = await MiniMeToken.new(
+      token = await getContract('MiniMeToken').new(
         NULL_ADDRESS,
         NULL_ADDRESS,
         0,
@@ -191,11 +154,11 @@ contract('DotVoting App', accounts => {
       await app.initialize(
         token.address,
         initialMinimumParticipation,
-        initialiCandidateSupportPct,
+        initialCandidateSupportPct,
         DotVotingTime
       )
 
-      executionTarget = await ExecutionTarget.new()
+      executionTarget = await getContract('ExecutionTarget').new()
     })
 
     it('fails on reinitialization', async () => {
@@ -860,7 +823,7 @@ contract('DotVoting App', accounts => {
   context('wrong initializations', () => {
     beforeEach(async () => {
       const n = '0x00'
-      token = await MiniMeToken.new(n, n, 0, 'n', 0, 'n', true) // empty parameters minime
+      token = await getContract('MiniMeToken').new(n, n, 0, 'n', 0, 'n', true) // empty parameters minime
     })
 
     it('fails if min participation is 0', () => {
