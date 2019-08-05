@@ -200,19 +200,6 @@ const Creator = styled.div`
   display: flex;
   align-items: center;
 `
-const CreatorImg = styled.div`
-  margin-right: 20px;
-  canvas {
-    display: block;
-    border: 1px solid ${theme.contentBorder};
-    border-radius: 16px;
-  }
-  & + div {
-    a {
-      color: ${theme.accent};
-    }
-  }
-`
 
 const Part = styled.div`
   padding: 20px 0;

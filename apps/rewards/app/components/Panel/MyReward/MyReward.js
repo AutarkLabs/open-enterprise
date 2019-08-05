@@ -39,7 +39,7 @@ class MyReward extends React.Component {
   onViewOrigin = e => {
     this.props.viewReward(this.props.reward)
     e.preventDefault()
-  } 
+  }
 
   formatDate = date => Intl.DateTimeFormat().format(date)
 
@@ -58,7 +58,7 @@ class MyReward extends React.Component {
       claimed,
       userRewardAmount
     } = this.props.reward
-    
+
     const { tokens } = this.props
 
     return (

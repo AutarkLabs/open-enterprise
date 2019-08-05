@@ -4,7 +4,6 @@ export const isNumberString = value => /^\d+(\.\d+)?$/.test(value)
 export const isStringEmpty = string => string.length === 0
 export const displayCurrency = amount => {
   return BigNumber(amount).div(ETH_DECIMALS).dp(3).toString()
-  //return BN(amount).dp(3).toString()
 }
 
 export const toCurrency = (amount, decimals) => {

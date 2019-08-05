@@ -137,7 +137,7 @@ function loadTokenBalance(tokenAddress, { vault }) {
 }
 
 function loadTokenDecimals(tokenContract, tokenAddress, { network }) {
-  return new Promise((resolve, _reject) => {
+  return new Promise(resolve => {
     if (tokenDecimals.has(tokenContract)) {
       resolve(tokenDecimals.get(tokenContract))
     } else {
@@ -159,7 +159,7 @@ function loadTokenDecimals(tokenContract, tokenAddress, { network }) {
 }
 
 function loadTokenName(tokenContract, tokenAddress, { network }) {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     if (tokenName.has(tokenContract)) {
       resolve(tokenName.get(tokenContract))
     } else {
@@ -172,7 +172,7 @@ function loadTokenName(tokenContract, tokenAddress, { network }) {
 }
 
 function loadTokenSymbol(tokenContract, tokenAddress, { network }) {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     if (tokenSymbols.has(tokenContract)) {
       resolve(tokenSymbols.get(tokenContract))
     } else {
@@ -184,8 +184,8 @@ function loadTokenSymbol(tokenContract, tokenAddress, { network }) {
   })
 }
 
-function loadTokenStartBlock(tokenContract, tokenAddress, { network }) {
-  return new Promise((resolve, reject) => {
+function loadTokenStartBlock(tokenContract, tokenAddress) {
+  return new Promise(resolve => {
     if (tokenStartBlock.has(tokenContract)) {
       resolve(tokenStartBlock.get(tokenContract))
     } else {
