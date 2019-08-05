@@ -73,9 +73,6 @@
   },
   "keywords": [],
   "license": "GPL-3.0",
-  "browserslist": [
-    "last 2 Chrome versions"
-  ],
   "lint-staged": {
     "*.js": [
       "eslint --fix",

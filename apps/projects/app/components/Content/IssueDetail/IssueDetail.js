@@ -14,7 +14,7 @@ import {
 import { formatDistance } from 'date-fns'
 import { IconGitHub, BountyContextMenu } from '../../Shared'
 import { BOUNTY_STATUS, BOUNTY_BADGE_COLOR } from '../../../utils/bounty-status'
-import { Markdown } from '../../../../../../shared/ui'
+import Markdown from './Markdown'
 import { usePanelManagement } from '../../Panel'
 
 const StyledTable = styled.div`
@@ -465,4 +465,5 @@ const Separator = styled.hr`
   opacity: 0.2;
 `
 
+// eslint-disable-next-line import/no-unused-modules
 export default IssueDetail

@@ -2,17 +2,17 @@ import { AppBar, AppView, Main, TabBar } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import throttle from 'lodash.throttle'
-import { Overview, MyRewards } from '../Content'
+import { MyRewards, Overview } from '../Content'
 import PanelManager, { PANELS } from '../Panel'
 import {
-  millisecondsToBlocks,
   MILLISECONDS_IN_A_MONTH,
   MILLISECONDS_IN_A_QUARTER,
+  WEEK,
+  millisecondsToBlocks,
   millisecondsToMonths,
-  millisecondsToQuarters,
-  WEEK
+  millisecondsToQuarters
 } from '../../../../../shared/ui/utils'
-import { networkContextType, AppTitle, AppTitleButton } from '../../../../../shared/ui'
+import { AppTitle, AppTitleButton, networkContextType } from '../../../../../shared/ui'
 import { useAragonApi } from '@aragon/api-react'
 import { IdentityProvider } from '../../../../../shared/identity'
 
@@ -27,6 +27,12 @@ class App extends React.Component {
     api: PropTypes.object,
     rewards: PropTypes.arrayOf(PropTypes.object),
     balances: PropTypes.arrayOf(PropTypes.object),
+    network: PropTypes.object,
+    userAccount: PropTypes.string.isRequired,
+    connectedAccount: PropTypes.string.isRequired,
+    displayMenuButton: PropTypes.bool.isRequired,
+    refTokens: PropTypes.array.isRequired,
+    claims: PropTypes.object.isRequired,
   }
 
   constructor(props) {
@@ -41,6 +47,10 @@ class App extends React.Component {
 
   static defaultProps = {
     network: {},
+    claims: {},
+    userAccount: '',
+    refTokens: [],
+    balances: [],
   }
 
   static childContextTypes = {
@@ -89,7 +99,7 @@ class App extends React.Component {
   }, CONVERT_THROTTLE_TIME)
 
   updateRewards = async () => {
-    this.props.api.cache('requestRefresh', {
+    this.props.api && this.props.api.cache('requestRefresh', {
       event: 'RefreshRewards',
       returnValues: {
         userAddress: this.props.connectedAccount
@@ -160,7 +170,7 @@ class App extends React.Component {
       reward.delay = 0
       reward.duration = millisecondsToBlocks(reward.dateStart, reward.dateEnd)
     }
-    console.log('submitting: ',reward)
+
     this.props.api.newReward(
       reward.description, //string _description
       reward.isMerit, //bool _isMerit,
@@ -290,6 +300,7 @@ class App extends React.Component {
   }
 }
 
+// eslint-disable-next-line react/display-name
 export default () => {
   const { api, appState, connectedAccount, displayMenuButton } = useAragonApi()
   return <App api={api} {...appState} connectedAccount={connectedAccount} displayMenuButton={displayMenuButton} />

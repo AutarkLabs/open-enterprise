@@ -35,8 +35,9 @@ const translateToken = (payoutToken, tokens) => {
   return 'Undefined'
 }
 
-const PayoutStatusWrapper = ({ color, icon, title, posTop = 0 }) => {
+const PayoutStatusWrapper = ({ color, icon, title, posTop }) => {
   const Icon = icon
+
   return (
     <PayoutStatus color={color}>
       <Icon style={{ position: 'relative', top: posTop, marginRight: '10px' }} />
@@ -47,9 +48,13 @@ const PayoutStatusWrapper = ({ color, icon, title, posTop = 0 }) => {
 
 PayoutStatusWrapper.propTypes = {
   color: PropTypes.string.isRequired,
-  icon: PropTypes.node.isRequired,
+  icon: PropTypes.func.isRequired,
   title: PropTypes.string.isRequired,
   posTop: PropTypes.number.isRequired
+}
+
+PayoutStatusWrapper.defaultProps = {
+  posTop: 0,
 }
 
 const ShowStatus = ({ distSet, recurring, startTime }) => {
@@ -90,8 +95,8 @@ const PayoutsNarrow = ({ executePayout, data, tokens }) => (
             {ShowStatus(payout)}
           </Text.Block>
         </div>
-        <div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center' }}>
-          <div style={{ marginRight: '10px' }}>
+        <div css="display: flex; flex-wrap: nowrap; align-items: center">
+          <div css="margin-right: 10px">
             <AmountBadge>
               {displayCurrency(BigNumber(payout.amount))}{' '}{translateToken(payout.token, tokens)}
             </AmountBadge>
@@ -163,7 +168,7 @@ const PayoutsWrap = styled.div`
   ${breakpoint(
     'small',
     `
-    padding: 0 2rem 2rem 2rem;
+    padding: 0 0 2rem 0;
     `
   )};
   padding: 0.3rem;
@@ -173,4 +178,5 @@ const PayoutsWrap = styled.div`
   }
 `
 
+// eslint-disable-next-line import/no-unused-modules
 export default Payouts

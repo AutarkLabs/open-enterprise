@@ -17,7 +17,7 @@ export const onNewAccount = async (accounts = [], { accountId }) => {
   return accounts
 }
 
-export const onNewPayout = async (payouts = [], { accountId, payoutId }) => {
+const onNewPayout = async (payouts = [], { accountId, payoutId }) => {
   if (
     !payouts.some(a => a.payoutId === payoutId && a.accountId === accountId)
   ) {

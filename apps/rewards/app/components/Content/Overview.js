@@ -4,29 +4,26 @@ import styled from 'styled-components'
 import { BigNumber } from 'bignumber.js'
 import {
   Table,
+  TableCell,
   TableHeader,
   TableRow,
-  TableCell,
   Text,
-  Viewport,
   theme,
-  Badge,
 } from '@aragon/ui'
 import { displayCurrency, getSymbol } from '../../utils/helpers'
 import {
+  AmountBadge,
   AverageRewards,
   AverageRewardsTable,
-  formatAvgAmount,
-  RewardDescription,
-  RewardsTable,
   NarrowList,
   NarrowListReward,
-  AmountBadge,
+  RewardDescription,
+  RewardsTable,
+  formatAvgAmount,
 } from './RewardsTables'
 import { MILLISECONDS_IN_A_MONTH, blocksToMilliseconds, } from '../../../../../shared/ui/utils'
 import { Empty } from '../Card'
 
-const fourthColumns = [ 'Next Payout', 'Status', 'Last Payout' ]
 const headersNames = fourth => [
   'Description',
   'Type',
@@ -41,7 +38,7 @@ const dot = <span style={{ margin: '0px 6px' }}>&middot;</span>
 const averageRewardsTitles = [ 'Average Reward', 'Monthly Average', 'Total this year' ]
 // TODO: these need to be actually calculated
 const calculateAverageRewardsNumbers = ( rewards, claims, balances, convertRates ) => {
-  if (claims && balances && convertRates) {
+  if (Object.keys(claims).length > 0 && balances && convertRates) {
     return [
       formatAvgAmount(calculateAvgClaim(claims, balances, convertRates), '$'),
       formatAvgAmount(calculateMonthlyAvg(rewards, balances, convertRates), '$'),
@@ -118,7 +115,7 @@ const getDividendCycle = ({ startBlock, endBlock }) => {
   }
 }
 
-const RewardsTableNarrow = ({ title, tokens, rewards, fourthColumn, fourthColumnData, openDetails }) => (
+const RewardsTableNarrow = ({ tokens, rewards, fourthColumnData, openDetails }) => (
   <NarrowList>
     {rewards.map((reward, i) => (
       <NarrowListReward onClick={generateOpenDetails(reward, openDetails)} key={i}>
@@ -144,7 +141,14 @@ const RewardsTableNarrow = ({ title, tokens, rewards, fourthColumn, fourthColumn
   </NarrowList>
 )
 
-const RewardsTableWide = ({ title, tokens, rewards, fourthColumn, fourthColumnData, openDetails }) => {
+RewardsTableNarrow.propTypes = {
+  tokens: PropTypes.arrayOf(PropTypes.object).isRequired,
+  openDetails: PropTypes.func.isRequired,
+  rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
+  fourthColumnData: PropTypes.func.isRequired,
+}
+
+const RewardsTableWide = ({ tokens, rewards, fourthColumn, fourthColumnData, openDetails }) => {
   return (
     <Table
       style={{ width: '100%' }}
@@ -194,7 +198,6 @@ RewardsTableWide.propTypes = {
 }
 
 const displayNextPayout = reward => Intl.DateTimeFormat().format(reward.endDate)
-const displayStatus = reward => 'Pending'
 const displayLastPayout = reward => Intl.DateTimeFormat().format(reward.endDate)
 const futureRewards = rewards => rewards.filter(reward => reward.endDate > Date.now())
 const pastRewards = rewards => rewards.filter(reward => reward.endDate <= Date.now())
@@ -209,7 +212,7 @@ const tableType = [
 const Overview = ({ tokens, rewards, convertRates, claims, newReward, openDetails }) => {
   const rewardsEmpty = rewards.length === 0
 
-  console.log('reward props: ', rewards)
+  // console.log('reward props: ', rewards)
 
   if (rewardsEmpty) {
     return <Empty tab='Overview' action={newReward} />
@@ -254,17 +257,19 @@ const Overview = ({ tokens, rewards, convertRates, claims, newReward, openDetail
 }
 
 Overview.propTypes = {
+  tokens: PropTypes.arrayOf(PropTypes.object).isRequired,
   newReward: PropTypes.func.isRequired,
   openDetails: PropTypes.func.isRequired,
   rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
+  convertRates: PropTypes.object,
+  claims: PropTypes.object.isRequired,
 }
 
 const OverviewMain = styled.div`
-  background-color: #F8FCFD;
+  background-color: #f8fcfd;
 `
 const RewardsWrap = styled.div`
   flex-grow: 1;
-  /*background: #1DD9D5;*/
   > :not(:last-child) {
     margin-bottom: 20px;
   }

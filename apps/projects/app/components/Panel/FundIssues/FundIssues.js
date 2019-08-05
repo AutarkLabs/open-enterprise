@@ -8,7 +8,7 @@ import { useAragonApi } from '@aragon/api-react'
 import useGithubAuth from '../../../hooks/useGithubAuth'
 import { usePanelManagement } from '..'
 import { computeIpfsString } from '../../../utils/ipfs-helpers'
-import { toHex } from '../../../utils/web3-utils'
+import { toHex } from 'web3-utils'
 
 import {
   Text,
@@ -477,6 +477,7 @@ const submitBountyAllocation = ({
   bountySettings,
   tokens,
   closePanel,
+  /* eslint-disable-next-line */
 }) => async (issues, description, post) => {
   closePanel()
 
@@ -484,6 +485,7 @@ const submitBountyAllocation = ({
   const issuesArray = []
   const bountyAddr = bountySettings.bountyCurrency
 
+  /* eslint-disable-next-line */
   let bountyToken, bountyDecimals, bountySymbol
 
   tokens.forEach(token => {
@@ -520,17 +522,19 @@ const submitBountyAllocation = ({
     description
   ).subscribe(
     () => {
-      issuesArray.forEach(issue => {
-        post({
-          variables: {
-            body:
-              'This issue has a bounty attached to it.\n' +
-              `Amount: ${issue.size.toFixed(2)} ${bountySymbol}\n` +
-              `Deadline: ${issue.deadline.toUTCString()}`,
-            subjectId: issue.key,
-          },
-        })
-      })
+      // TODO: Temporarily disable commenting on github. Linting was also disabled at lines 480 and 488 for this, to make CI pass
+      // A better workaround in the future would be refactor into an opt-in feature, maybe with a checkbox in Settings?
+      // issuesArray.forEach(issue => {
+      //   post({
+      //     variables: {
+      //       body:
+      //         'This issue has a bounty attached to it.\n' +
+      //         `Amount: ${issue.size.toFixed(2)} ${bountySymbol}\n` +
+      //         `Deadline: ${issue.deadline.toUTCString()}`,
+      //       subjectId: issue.key,
+      //     },
+      //   })
+      // })
     },
     err => console.error(`error: ${err}`)
   )

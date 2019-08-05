@@ -1,16 +1,13 @@
 import {
-  ETHER_TOKEN_FAKE_ADDRESS,
-  isTokenVerified,
-  tokenDataFallback,
-  getTokenSymbol,
   getTokenName,
   getTokenStartBlock,
+  getTokenSymbol,
+  isTokenVerified,
+  tokenDataFallback,
 } from '../utils/token-utils'
 import { addressesEqual } from '../utils/web3-utils'
 import tokenSymbolAbi from '../../../shared/json-abis/token-symbol.json'
-import tokenSymbolBytesAbi from '../../../shared/json-abis/token-symbol-bytes.json'
 import tokenNameAbi from '../../../shared/json-abis/token-name.json'
-import tokenNameBytesAbi from '../../../shared/json-abis/token-name-bytes.json'
 import tokenBalanceAbi from '../../../shared/json-abis/token-balanceof.json'
 import tokenDecimalsAbi from '../../../shared/json-abis/token-decimals.json'
 import { app } from './'
