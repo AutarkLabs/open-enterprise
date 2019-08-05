@@ -2,8 +2,6 @@ pragma solidity ^0.4.24;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
 
-import "@tps/apps-address-book/contracts/AddressBook.sol";
-
 import "@aragon/os/contracts/lib/math/SafeMath.sol";
 
 import "@aragon/os/contracts/lib/math/SafeMath64.sol";
@@ -97,7 +95,6 @@ contract Allocations is AragonApp {
         mapping (uint256 => AccountStatement) accountStatement;
     }
 
-    AddressBook public addressBook;
     Vault public vault;
     Account[] accounts;
     mapping (uint64 => Period) periods;
@@ -139,12 +136,10 @@ contract Allocations is AragonApp {
     *      object needs to be created in the payouts array.
     */
     function initialize(
-        AddressBook _addressBook,
         Vault _vault,
         uint64 _periodDuration
     ) external onlyInit
     {
-        addressBook = _addressBook;
         vault = _vault;
         require(_periodDuration >= MINIMUM_PERIOD, ERROR_SET_PERIOD_TOO_SHORT);
         periodDuration = _periodDuration;

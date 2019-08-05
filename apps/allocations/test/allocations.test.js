@@ -106,7 +106,7 @@ contract('Allocations App', accounts => {
       { from: root }
     )
 
-    await app.initialize( 0x0, vault.address, 864000, { from: accounts[0] })
+    await app.initialize(vault.address, 864000, { from: accounts[0] })
   })
 
   context('app creation and funded Payout', () => {
