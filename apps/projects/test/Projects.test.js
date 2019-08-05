@@ -7,7 +7,6 @@ const getContract = name => artifacts.require(name)
 /** Helper function to read events from receipts */
 const getReceipt = (receipt, event, arg) => receipt.logs.filter(l => l.event === event)[0].args[arg]
 
-
 /** Useful constants */
 const repoIdString = 'MDEwOIJlcG9zaXRvcnkxNjY3MjlyMjY='
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
