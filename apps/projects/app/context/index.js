@@ -1,2 +1,2 @@
-export { default as GithubProvider } from './Github'
+/* eslint-disable import/no-unused-modules */
 export * from './Github'

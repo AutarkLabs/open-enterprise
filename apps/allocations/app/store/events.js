@@ -9,7 +9,7 @@ export const handleEvent = async (state, event, settings) => {
   const { addressBook, vault } = settings
   const { accounts, entries, payouts } = state
 
-  let nextAccounts, nextEntries, nextBoth
+  let nextAccounts, nextBoth
   let nextState = { ...state }
   if (eventName === INITIALIZATION_TRIGGER) {
     nextState = await initializeTokens(nextState, settings)

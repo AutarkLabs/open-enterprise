@@ -5,14 +5,14 @@ import { provideNetwork } from '../../../../../../shared/ui'
 import { blocksToMilliseconds } from '../../../../../../shared/ui/utils'
 
 import {
-  Info,
-  Text,
-  SafeLink,
-  IconFundraising,
-  IconCheck,
-  IconTime,
-  SidePanelSplit,
   Button,
+  IconCheck,
+  IconFundraising,
+  IconTime,
+  Info,
+  SafeLink,
+  SidePanelSplit,
+  Text,
 } from '@aragon/ui'
 
 import { FieldTitle } from '../../Form'
@@ -30,6 +30,9 @@ class MyReward extends React.Component {
   static propTypes = {
     onClaimReward: PropTypes.func.isRequired,
     onClosePanel: PropTypes.func.isRequired,
+    viewReward: PropTypes.func.isRequired,
+    reward: PropTypes.object.isRequired,
+    tokens: PropTypes.arrayOf(PropTypes.object).isRequired,
   }
 
   onClosePanel = () => this.props.onClosePanel()
@@ -39,26 +42,23 @@ class MyReward extends React.Component {
   onViewOrigin = e => {
     this.props.viewReward(this.props.reward)
     e.preventDefault()
-  } 
+  }
 
   formatDate = date => Intl.DateTimeFormat().format(date)
 
   render() {
     const {
       rewardId,
-      creator,
       isMerit,
       referenceToken,
       rewardToken,
-      amount,
       startDate,
       endDate,
-      description,
       delay,
       claimed,
       userRewardAmount
     } = this.props.reward
-    
+
     const { tokens } = this.props
 
     return (

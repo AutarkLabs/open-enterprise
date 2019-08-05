@@ -19,7 +19,7 @@ import useGithubAuth from '../../../hooks/useGithubAuth'
 import { useAragonApi } from '@aragon/api-react'
 import { usePanelManagement } from '../../Panel'
 import { ipfsAdd } from '../../../utils/ipfs-helpers'
-import { toHex } from '../../../utils/web3-utils'
+import { toHex } from 'web3-utils'
 
 // external data, all of it
 

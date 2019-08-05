@@ -10,7 +10,7 @@ import { useAragonApi } from '@aragon/api-react'
 import useGithubAuth from '../../../hooks/useGithubAuth'
 import { usePanelManagement } from '..'
 import { ipfsAdd } from '../../../utils/ipfs-helpers'
-import { toHex } from '../../../utils/web3-utils'
+import { toHex } from 'web3-utils'
 
 class RequestAssignment extends React.Component {
   static propTypes = {

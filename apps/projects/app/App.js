@@ -19,7 +19,7 @@ import {
   NewProjectButton,
 } from './components/App'
 import { Issues, Overview, Settings } from './components/Content'
-import PanelManager, { PanelContext } from './components/Panel'
+import { PanelManager, PanelContext } from './components/Panel'
 
 import { IdentityProvider } from '../../../shared/identity'
 import {

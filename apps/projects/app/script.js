@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unused-modules */
 import '@babel/polyfill'
 
 import { getContractAddress, retryEvery } from '../../../shared/ui/utils'

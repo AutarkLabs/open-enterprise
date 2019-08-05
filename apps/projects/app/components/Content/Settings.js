@@ -18,7 +18,7 @@ import {
 import { FieldTitle } from '../Form'
 import { LocalIdentityBadge } from '../../../../../shared/identity'
 import { STATUS } from '../../utils/github'
-import { fromUtf8, toHex } from '../../utils/web3-utils'
+import { fromUtf8, toHex } from 'web3-utils'
 import { REQUESTED_GITHUB_DISCONNECT } from '../../store/eventTypes'
 import useGithubAuth from '../../hooks/useGithubAuth'
 

@@ -1,18 +1,15 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import Blockies from 'react-blockies'
-import { BigNumber } from 'bignumber.js'
 import { format } from 'date-fns'
 import {
   Button,
+  IconCheck,
+  IconFundraising,
+  IconTime,
   Info,
   SidePanelSplit,
   Text,
-  theme,
-  IconTime,
-  IconCheck,
-  IconFundraising,
 } from '@aragon/ui'
 import { FieldTitle } from '../../Form'
 import { displayCurrency, getSymbol } from '../../../utils/helpers'
@@ -24,6 +21,8 @@ class ViewReward extends React.Component {
     static propTypes = {
       reward: PropTypes.object,
       network: PropTypes.object,
+      tokens: PropTypes.arrayOf(PropTypes.object),
+      onClosePanel: PropTypes.func.isRequired,
     }
 
     onClosePanel = () => this.props.onClosePanel()
@@ -188,30 +187,9 @@ class ViewReward extends React.Component {
     }
 }
 
-const Label = styled(Text).attrs({
-  smallcaps: true,
-  color: theme.textSecondary,
-})`
-  display: block;
-  margin-bottom: 10px;
-`
-
 const Creator = styled.div`
   display: flex;
   align-items: center;
-`
-const CreatorImg = styled.div`
-  margin-right: 20px;
-  canvas {
-    display: block;
-    border: 1px solid ${theme.contentBorder};
-    border-radius: 16px;
-  }
-  & + div {
-    a {
-      color: ${theme.accent};
-    }
-  }
 `
 
 const Part = styled.div`
@@ -223,15 +201,14 @@ const Part = styled.div`
     }
   }
 `
-
 const Summary = styled.div`
-  padding: 0px;
+  padding: 0;
   padding-left: 35px;
   p {
     padding-block-end: 11pt;
   }
   p:last-of-type {
-    padding-block-end: 0px;
+    padding-block-end: 0;
   }
 `
 const SummaryVar = styled.span`
@@ -239,7 +216,7 @@ const SummaryVar = styled.span`
   text-decoration: underline;
 `
 const TokenIcon = styled(IconFundraising)`
-float: left;
+  float: left;
 `
 
 export default provideNetwork(ViewReward)

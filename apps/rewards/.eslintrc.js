@@ -1,15 +1,12 @@
 module.exports = {
   env: {
     browser: true,
-    es6: true,
-    node: true,
-    commonjs: true,
+    es6: true
   },
   extends: [
-    'eslint:recommended',
     'plugin:import/errors',
-    'plugin:react/recommended',
-    'plugin:jsx-a11y/recommended',
+    'plugin:import/warnings',
+    'prettier/react',
   ],
   parser: 'babel-eslint',
   parserOptions: {
@@ -35,28 +32,33 @@ module.exports = {
         singleValue: false
       }
     ],
-    'func-style': ["warn", "declaration", { "allowArrowFunctions": true }],
     'object-curly-spacing': ['error', 'always'],
-    "import/no-unused-modules": [
-      "warn",
+    'import/no-unused-modules': [
+      1,
       {
         unusedExports: true,
         missingExports: true,
-        ignoreExports: [],
+        ignoreExports: [
+          'app/index.js', // no exports
+          'app/script.js', // no exports
+          'app/components/Content/MyRewards.js', // used by index.js and App.js but not detected by linter
+          'app/components/Content/Overview.js', // used by index.js and App.js but not detected by linter
+          'app/components/Panel/index.js', // used by App.js but not detected by linter
+          'app/components/Panel/MyReward/index.js', // used by PanelManager.js but not detected by linter
+          'app/components/Panel/NewReward/index.js', // used by PanelManager.js but not detected by linter
+          'app/components/Panel/ViewReward/index.js', // used by PanelManager.js but not detected by linter
+        ],
       }
     ],
-    "no-undef": "error",
-    "no-unused-vars": ["warn", { "vars": "all", "args": "after-used", "ignoreRestSiblings": false }],
-    'no-console': ['warn', { allow: ['warn', 'error'] }],
-    "react/jsx-uses-react": "warn",
-    "react/jsx-uses-vars": "warn",
-    "react/jsx-filename-extension": "off",
-    "react/no-unused-prop-types": "warn",
-    "sort-imports": ["warn", { "ignoreDeclarationSort": true }]
+    'no-undef': 'error',
+    'no-unused-vars': ['warn', { 'vars': 'all', 'args': 'after-used', 'ignoreRestSiblings': false }],
+    'react/jsx-uses-react': 'warn',
+    'react/jsx-uses-vars': 'warn',
+    'react/no-unused-prop-types': 'warn',
   },
   settings: {
     react: {
       version: 'detect',
-    }
+    },
   }
 }
