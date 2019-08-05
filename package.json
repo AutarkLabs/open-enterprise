@@ -83,7 +83,8 @@
     "test": "lerna run test --no-bail"
   },
   "dependencies": {
-    "@aragon/api": "1.1.0",
+    "@aragon/api": "2.0.0-beta.5",
+    "@aragon/api-react": "2.0.0-beta.4",
     "date-fns": "^2.0.0-beta.3",
     "ipfs-http-client": "29.1.0",
     "rxjs": "^6.4.0",

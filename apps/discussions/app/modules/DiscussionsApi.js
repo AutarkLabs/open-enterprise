@@ -169,7 +169,7 @@ class Discussions {
     }
     const result = await ipfs.dag.put(discussionPost, {})
     const cid = result.toBaseEncodedString()
-    return this.contract.post(cid, discussionThreadId)
+    return this.contract.post(cid, discussionThreadId).toPromise()
   }
 
   revise = async (
@@ -191,11 +191,11 @@ class Discussions {
     const result = await ipfs.dag.put(discussionPost, {})
     const cid = result.toBaseEncodedString()
 
-    return this.contract.revise(cid, postId, discussionThreadId)
+    return this.contract.revise(cid, postId, discussionThreadId).toPromise()
   }
 
   hide = (postId, discussionThreadId) =>
-    this.contract.hide(postId, discussionThreadId)
+    this.contract.hide(postId, discussionThreadId).toPromise()
 }
 
 export default Discussions
