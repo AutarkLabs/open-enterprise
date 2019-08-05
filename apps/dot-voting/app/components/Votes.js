@@ -1,12 +1,19 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Viewport, Badge } from '@aragon/ui'
+import { Badge, Viewport } from '@aragon/ui'
 import VotesTable from '../components/VotesTable'
 import VotesList from '../components/VotesList'
 
 const TABLE_CARD_BREAKPOINT = 710
 
 class Votes extends React.Component {
+  static propTypes = {
+    app: PropTypes.object,
+    onSelectVote: PropTypes.func.isRequired,
+    votes: PropTypes.arrayOf(PropTypes.object).isRequired,
+  }
+
   render() {
     const { votes, onSelectVote, app } = this.props
     const openedVotes = votes.filter(({ open }) => open)
