@@ -1,5 +1,5 @@
 import vaultAbi from '../../../shared/json-abis/vault'
-import { app, handleEvent, INITIALIZATION_TRIGGER } from './'
+import { INITIALIZATION_TRIGGER, app, handleEvent } from './'
 import { ETHER_TOKEN_FAKE_ADDRESS } from '../utils/token-utils'
 import { of } from 'rxjs'
 import { pluck } from 'rxjs/operators'

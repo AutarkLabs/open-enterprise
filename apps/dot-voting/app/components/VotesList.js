@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import { compareDesc } from 'date-fns'
 import { Vote } from './Card'
 
@@ -17,5 +18,11 @@ const VotesList = ({ votes, onSelectVote, app }) => (
       ))}
   </React.Fragment>
 )
+
+VotesList.propTypes = {
+  app: PropTypes.object,
+  votes: PropTypes.arrayOf(PropTypes.object).isRequired,
+  onSelectVote: PropTypes.func.isRequired,
+}
 
 export default VotesList

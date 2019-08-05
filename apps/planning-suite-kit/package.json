@@ -7,6 +7,7 @@
     "ganache-cli:test": "../shared/test-helpers/ganache-cli.sh",
     "lint": "solium --dir ./contracts",
     "start:kit": "aragon run --template PlanningKit --template-init @ARAGON_ENS --client-version e08deb62080e17fe652fa83f60dc81a02c455c41",
+    "start:kit:no:client": "aragon run --template PlanningKit --template-init @ARAGON_ENS --no-client",
     "test:gas": "GAS_REPORTER=true npm test",
     "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
   },

@@ -40,7 +40,6 @@ contract('Rewards', accounts => {
     ADD_REWARD_ROLE = await appBase.ADD_REWARD_ROLE()
     TRANSFER_ROLE = await vaultBase.TRANSFER_ROLE()
 
-
     /** Create the dao from the dao factory */
     const daoReceipt = await daoFact.newDAO(root)
     const dao = getContract('Kernel').at(getReceipt(daoReceipt, 'DeployDAO', 'dao'))
@@ -156,7 +155,7 @@ contract('Rewards', accounts => {
         const balance = await rewardToken.balanceOf(root)
         assert(balance == 1e18, 'reward should be 1e18 or 1eth equivalent')
         rewardInformation = await app.getReward(dividendRewardIds[0])
-        assert.strictEqual(rewardInformation[10], true, 'reward is claimed')
+        assert.notEqual(rewardInformation[10].toNumber(), 0, 'reward should have nonzero timestamp')
       })
 
       it('receives rewards merit', async () => {
@@ -164,7 +163,7 @@ contract('Rewards', accounts => {
         const balance = await rewardToken.balanceOf(root)
         assert(balance == 2e18, 'reward should be 2e18 or 2eth equivalent; 1 for each reward')
         rewardInformation = await app.getReward(meritRewardIds[0])
-        assert.strictEqual(rewardInformation[10], true, 'reward is claimed')
+        assert.notEqual(rewardInformation[10].toNumber(), 0, 'reward should have nonzero timestamp')
       })
 
       it('gets total rewards amount claimed', async () => {
@@ -299,6 +298,22 @@ contract('Rewards', accounts => {
         })
       })
 
+      it('fails to create a reward with zero occurrences', async () => {
+        return assertRevert(async () => {
+          await app.newReward(
+            'testReward',
+            true,
+            referenceToken.address,
+            rewardToken.address,
+            6,
+            4e18,
+            minBlock,
+            0,
+            0
+          )
+        })
+      })
+
       it('fails to create merit reward multiple occurrences', async () => {
         return assertRevert(async () => {
           await app.newReward(
@@ -331,48 +346,20 @@ contract('Rewards', accounts => {
         })
       })
 
-      it('pays out a merit reward of zero with no token changes', async () => {
-        let blockNumber = await getBlockNumber()
-        const meritRewardId = rewardAdded(
+      it('fails to create reward with zero duration', async () => {
+        assertRevert(async () => {
           await app.newReward(
             'testReward',
-            true,
+            false,
             referenceToken.address,
             rewardToken.address,
+            6,
             4e18,
-            blockNumber,
-            1,
+            0,
             1,
             0
           )
-        )
-        const award = await app.getReward(meritRewardId)
-        await app.claimReward(meritRewardId)
-        assert.strictEqual(award[9].toNumber(), 0, 'amount should be 0')
-      })
-
-      it('pays out a merit reward of zero with no token changes for the user', async () => {
-        let blockNumber = await getBlockNumber()
-        const meritRewardId = rewardAdded(
-          await app.newReward(
-            'testReward',
-            true,
-            referenceToken.address,
-            rewardToken.address,
-            4e18,
-            blockNumber,
-            2,
-            1,
-            0
-          )
-        )
-        const origBalance = await rewardToken.balanceOf(root)
-        await referenceToken.generateTokens(contributor1, 1e18)
-        await referenceToken.generateTokens(contributor2, 1e18)
-        await mineBlock()
-        await app.claimReward(meritRewardId)
-        const newBalance = await rewardToken.balanceOf(root)
-        assert.strictEqual(newBalance.toNumber(), origBalance.toNumber(), 'balance awarded should be zero')
+        })
       })
 
       it('cannot claim reward before period ends', async () => {
@@ -407,7 +394,89 @@ contract('Rewards', accounts => {
           await app.claimReward(meritRewardId, { from: root })
         })
       })
+
+      it('cannot claim a reward of zero', async () => {
+        let blockNumber = await getBlockNumber()
+        meritRewardIds = rewardAdded(
+          await app.newReward(
+            'testReward',
+            true,
+            referenceToken.address,
+            rewardToken.address,
+            4e18,
+            blockNumber,
+            4,
+            1,
+            0
+          )
+        )
+        let meritRewardId = meritRewardIds[0]
+        //await referenceToken.generateTokens(root, 1e18)
+        await referenceToken.generateTokens(contributor1, 1e18)
+        await referenceToken.generateTokens(contributor2, 1e18)
+        await referenceToken.generateTokens(contributor3, 1e18)
+
+        return assertRevert(async () => {
+          await app.claimReward(meritRewardId, { from: root })
+        })
+      })
+
+      it('cannot claim same reward more than once', async () => {
+        await rewardToken.generateTokens(root, 4e18)
+        await rewardToken.transfer(vault.address, 4e18)
+        let blockNumber = await getBlockNumber()
+        meritRewardIds = rewardAdded(
+          await app.newReward(
+            'testReward',
+            true,
+            referenceToken.address,
+            rewardToken.address,
+            4e18,
+            blockNumber,
+            4,
+            1,
+            0
+          )
+        )
+        let meritRewardId = meritRewardIds[0]
+        await referenceToken.generateTokens(root, 1e18)
+        await referenceToken.generateTokens(contributor1, 1e18)
+        await referenceToken.generateTokens(contributor2, 1e18)
+        await referenceToken.generateTokens(contributor3, 1e18)
+        
+        await app.claimReward(meritRewardId, { from: root })
+        
+        return assertRevert(async () => {
+          await app.claimReward(meritRewardId, { from: root })
+        })
+      })
+
+      it('Merit reward is zero if balance is less than at start block', async () => {
+        await rewardToken.generateTokens(root, 4e18)
+        await rewardToken.transfer(vault.address, 4e18)
+        let blockNumber = await getBlockNumber()
+        meritRewardIds = rewardAdded(
+          await app.newReward(
+            'testReward',
+            true,
+            referenceToken.address,
+            rewardToken.address,
+            4e18,
+            blockNumber,
+            4,
+            1,
+            0
+          )
+        )
+        let meritRewardId = meritRewardIds[0]
+        await referenceToken.destroyTokens(root, 5e18)
+        await referenceToken.generateTokens(contributor1, 2e18)
+        
+        let rewardInfo = await app.getReward(meritRewardId)
+        assert.strictEqual(rewardInfo[9].toNumber(), 0, 'reward amount should be zero because balance < 0')
+        rewardInfo = await app.getReward(meritRewardId, { from: contributor1 })
+        assert.strictEqual(rewardInfo[9].toNumber(), 0, 'reward amount should be zero because supply < 0')
+      })
     })
   })
-
 })

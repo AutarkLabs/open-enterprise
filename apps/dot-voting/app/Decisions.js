@@ -9,7 +9,7 @@ import tokenSymbolAbi from './abi/token-symbol.json'
 import { safeDiv } from './utils/math-utils'
 import { hasLoadedVoteSettings } from './utils/vote-settings'
 import { isBefore } from 'date-fns'
-import { EmptyStateCard, SidePanel, breakpoint } from '@aragon/ui'
+import { EmptyStateCard, SidePanel } from '@aragon/ui'
 import { VotePanelContent } from './components/Panels'
 import { EMPTY_CALLSCRIPT, getQuorumProgress, getTotalSupport } from './utils/vote-utils'
 
@@ -19,7 +19,14 @@ const EmptyIcon = () => <img src={emptyIcon} alt="" />
 
 class Decisions extends React.Component {
   static propTypes = {
-    app: PropTypes.object.isRequired,
+    app: PropTypes.object,
+    tokenAddress: PropTypes.string.isRequired,
+    userAccount: PropTypes.string.isRequired,
+    votes: PropTypes.arrayOf(PropTypes.object).isRequired,
+    entries: PropTypes.arrayOf(PropTypes.object).isRequired,
+    minParticipationPct: PropTypes.number.isRequired,
+    pctBase: PropTypes.number.isRequired,
+    voteTime: PropTypes.number.isRequired,
   }
   constructor(props) {
     super(props)
@@ -166,7 +173,7 @@ class Decisions extends React.Component {
                 icon={<EmptyIcon />}
                 title="You do not have any dot votes."
                 text="Use the Allocations app to get started."
-                actionButton={() => <div />}
+                onActivate={() => <div />}
               />
             </div>
           )}
@@ -202,13 +209,6 @@ const ScrollWrapper = styled.div`
   overflow: auto;
 `
 const StyledDecisions = styled.div`
-  ${breakpoint(
-    'small',
-    `
-    padding: 2rem;
-    `
-  )};
-  padding: 0.3rem;
   display: flex;
   flex-direction: column;
   justify-content: stretch;

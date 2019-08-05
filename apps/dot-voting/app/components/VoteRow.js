@@ -1,17 +1,17 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import {
+  Badge,
   Button,
   Countdown,
   TableCell,
   TableRow,
-  Badge,
   theme,
 } from '@aragon/ui'
 import ProgressBar from './ProgressBar'
 import VoteStatus from './VoteStatus'
 import { safeDiv } from '../utils/math-utils'
-import BigNumber from 'bignumber.js'
 import { VOTE_STATUS_SUCCESSFUL } from '../utils/vote-types'
 import { getVoteStatus } from '../utils/vote-utils'
 
@@ -22,6 +22,11 @@ const generateBadge = (foreground, background, text) => (
 )
 
 class VoteRow extends React.Component {
+  static propTypes = {
+    app: PropTypes.object,
+    vote: PropTypes.object.isRequired,
+    onSelectVote: PropTypes.func.isRequired
+  }
   static defaultProps = {
     onSelectVote: () => {},
   }

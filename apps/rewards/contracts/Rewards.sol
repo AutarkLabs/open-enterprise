@@ -7,6 +7,8 @@ pragma solidity 0.4.24;
 import "@aragon/os/contracts/apps/AragonApp.sol";
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
+import "@aragon/os/contracts/lib/math/SafeMath.sol";
+import "@aragon/os/contracts/lib/math/SafeMath64.sol";
 
 
 /**
@@ -17,6 +19,8 @@ import "@aragon/apps-vault/contracts/Vault.sol";
   */
 contract Rewards is AragonApp {
 
+    using SafeMath for uint256;
+    using SafeMath64 for uint64;
     /// Hardcoded constants to save gas
     /// bytes32 public constant ADD_REWARD_ROLE = keccak256("ADD_REWARD_ROLE");
     bytes32 public constant ADD_REWARD_ROLE = 0x7941efc179bdce37ebd8db3e2deb46ce5280bf6d2de2e50938a9e920494c1941;
@@ -31,23 +35,25 @@ contract Rewards is AragonApp {
     string private constant ERROR_REFERENCE_TOKEN = "REFERENCE_TOKEN_NOT_A_CONTRACT";
     string private constant ERROR_REWARD_TOKEN = "REWARD_TOKEN_NOT_ETH_OR_CONTRACT";
     string private constant ERROR_MERIT_OCCURRENCES = "MERIT_REWARD_MUST_ONLY_OCCUR_ONCE";
-    string private constant ERROR_MAX_OCCURRENCES = "OCURRENCES_LIMIT_HIT";
+    string private constant ERROR_MAX_OCCURRENCES = "OCURRENCES_LIMIT_REACHED";
     string private constant ERROR_START_BLOCK = "START_PERIOD_BEFORE_TOKEN_CREATION";
+    string private constant ERROR_REWARD_CLAIMED = "REWARD_ALREADY_CLAIMED";
+    string private constant ERROR_ZERO_DURATION = "DURATION_MUST_BE_AT_LEAST_ONE_BLOCK";
+    string private constant ERROR_ZERO_OCCURRENCE = "OCCURRENCES_LESS_THAN_ONE";
+    string private constant ERROR_ZERO_REWARD = "NO_REWARD_TO_CLAIM";
+    string private constant ERROR_EXISTS = "REWARD_DOES_NOT_EXIST";
 
     /// Order optimized for storage
     struct Reward {
         MiniMeToken referenceToken;
+        bool isMerit;
+        uint64 blockStart;
+        uint64 duration;
+        uint64 delay;
+        uint256 amount;
         address creator;
         address rewardToken;
-        bool isMerit;
-        uint256 amount;
-        uint256 duration;
-        uint256 occurances;
-        uint256 delay;
-        uint256 value;
-        uint256 blockStart;
         string description;
-        mapping (address => bool) claimed;
         mapping (address => uint) timeClaimed;
     }
 
@@ -56,7 +62,9 @@ contract Rewards is AragonApp {
     uint256 public totalClaimsEach;
 
     /// Rewards internal registry
-    Reward[] internal rewards;
+    //Reward[] internal rewards; this implementation mimics an array but improves upgradability
+    mapping(uint256 => Reward) rewards;
+    uint256 rewardsRegistryLength;
     /// Public vault that holds the funds
     Vault public vault;
 
@@ -81,21 +89,20 @@ contract Rewards is AragonApp {
      * @param _rewardID The ID of the reward
      * @return rewardAmount calculated for that reward ID
      */
-    function claimReward(uint256 _rewardID) external returns (uint256) {
+    function claimReward(uint256 _rewardID) external isInitialized returns (uint256) {
         Reward storage reward = rewards[_rewardID];
-
-        uint256 rewardTimeSpan = reward.blockStart + reward.duration + reward.delay;
+        require(reward.blockStart > 0, ERROR_EXISTS);
+        uint256 rewardTimeSpan = reward.blockStart.add(reward.duration).add(reward.delay);
         require(rewardTimeSpan < getBlockNumber(), ERROR_REWARD_TIME_SPAN);
 
-        reward.claimed[msg.sender] = true;
+        require(reward.timeClaimed[msg.sender] == 0, ERROR_REWARD_CLAIMED);
         reward.timeClaimed[msg.sender] = getTimestamp();
 
         uint256 rewardAmount = calculateRewardAmount(reward);
-        require(vault.balance(reward.rewardToken) > rewardAmount, ERROR_VAULT_FUNDS);
+        require(rewardAmount > 0, ERROR_ZERO_REWARD);
+        require(vault.balance(reward.rewardToken) >= rewardAmount, ERROR_VAULT_FUNDS);
 
-        if (rewardAmount > 0) {
-            transferReward(reward, rewardAmount);
-        }
+        transferReward(reward, rewardAmount);
 
         emit RewardClaimed(_rewardID);
         return rewardAmount;
@@ -106,8 +113,8 @@ contract Rewards is AragonApp {
      * @dev Gets the lenght of the rewards registry array
      * @return rewardsLength the length of the rewards array
      */
-    function getRewardsLength() external view returns (uint256 rewardsLength) {
-        rewardsLength = rewards.length;
+    function getRewardsLength() external view isInitialized returns (uint256 rewardsLength) {
+        rewardsLength = rewardsRegistryLength;
     }
 
     /**
@@ -121,14 +128,13 @@ contract Rewards is AragonApp {
      * @return amount for this reward
      * @return startBlock when the reward went active
      * @return endBlock when the reward period ended
-     * @return duration timestamp for the reward duration
-     * @return delay in seconds? in case the reward start was postponed
-     * @return rewardAmount which amount is available to claim?
-     * @return claimed was it claimed by the msg.sender?
+     * @return duration number of blocks for the reward duration
+     * @return delay in number of blocks in case the reward claiming is postponed
+     * @return rewardAmount which amount is available to claim
      * @return timeClaimed when it was claimed by the msg.sender
      * @return creator the address of the reward creator
      */
-    function getReward(uint256 rewardID) external view returns (
+    function getReward(uint256 rewardID) external view isInitialized returns (
         string description,
         bool isMerit,
         address referenceToken,
@@ -139,7 +145,6 @@ contract Rewards is AragonApp {
         uint256 duration,
         uint256 delay,
         uint256 rewardAmount,
-        bool claimed,
         uint256 timeClaimed,
         address creator
     )
@@ -154,7 +159,6 @@ contract Rewards is AragonApp {
         startBlock = reward.blockStart;
         duration = reward.duration;
         delay = reward.delay;
-        claimed = reward.claimed[msg.sender];
         timeClaimed = reward.timeClaimed[msg.sender];
         creator = reward.creator;
         rewardAmount = calculateRewardAmount(reward);
@@ -181,9 +185,9 @@ contract Rewards is AragonApp {
      * @param _rewardToken currency received as reward, accepts address 0 for ETH reward
      * @param _amount the reward amount to be distributed
      * @param _startBlock block in which token transactions will begin to be tracked
-     * @param _duration the time duration over which reference token earnings are calculated
-     * @param _occurrences the number of occurences of a dividend reward
-     * @param _delay the waiting time after the end of the period that the reward can be claimed
+     * @param _duration the block duration over which reference token earnings are calculated
+     * @param _occurrences the number of occurrences of a dividend reward
+     * @param _delay the number of blocks to delay after the end of the period that the reward can be claimed
      * @return rewardId of the newly created Reward
      */
     function newReward(
@@ -192,25 +196,27 @@ contract Rewards is AragonApp {
         MiniMeToken _referenceToken,
         address _rewardToken,
         uint256 _amount,
-        uint256 _startBlock,
-        uint256 _duration,
-        uint256 _occurrences,
-        uint256 _delay
+        uint64 _startBlock,
+        uint64 _duration,
+        uint8 _occurrences,
+        uint64 _delay
     ) public auth(ADD_REWARD_ROLE) returns (uint256 rewardId)
     {
         require(isContract(_referenceToken), ERROR_REFERENCE_TOKEN);
         require(_rewardToken == address(0) || isContract(_rewardToken), ERROR_REWARD_TOKEN);
+        require(_duration > 0, ERROR_ZERO_DURATION);
+        require(_occurrences > 0, ERROR_ZERO_OCCURRENCE);
         require(!_isMerit || _occurrences == 1, ERROR_MERIT_OCCURRENCES);
         require(_occurrences < MAX_OCCURRENCES, ERROR_MAX_OCCURRENCES);
-        rewardId = rewards.length++; /// increment the rewards array to create a new one
-        Reward storage reward = rewards[rewards.length - 1]; /// lenght-1 takes the last, newly created "empty" reward
+        require(_startBlock > _referenceToken.creationBlock(), ERROR_START_BLOCK);
+        rewardId = rewardsRegistryLength++; /// increment the rewards array to create a new one
+        Reward storage reward = rewards[rewardsRegistryLength - 1]; /// length-1 takes the last, newly created "empty" reward
         reward.description = _description;
         reward.isMerit = _isMerit;
         reward.referenceToken = _referenceToken;
         reward.rewardToken = _rewardToken;
         reward.amount = _amount;
         reward.duration = _duration;
-        reward.occurances = _occurrences;
         reward.delay = _delay;
         reward.blockStart = _startBlock;
         reward.creator = msg.sender;
@@ -232,27 +238,34 @@ contract Rewards is AragonApp {
     }
 
     /**
-     * @dev Private intermediate function that does the actual vault transfer for a reward and reward amount
+     * @dev Private intermediate function that does the actual vault transfer for a reward and reward amoun
      */
-    function transferReward(Reward reward, uint256 rewardAmount) private {
+    function transferReward(Reward storage reward, uint256 rewardAmount) private {
         totalClaimsEach++;
-        totalAmountClaimed[reward.rewardToken] += rewardAmount;
+        totalAmountClaimed[reward.rewardToken] = totalAmountClaimed[reward.rewardToken].add(rewardAmount);
         vault.transfer(reward.rewardToken, msg.sender, rewardAmount);
     }
 
     /**
-     * @dev Private intermediate function to calculate reward amount dependending of the type, balance and supply
+     * @dev Private intermediate function to calculate reward amount depending of the type, balance and supply
      * @return rewardAmount calculated for that reward
      */
-    function calculateRewardAmount(Reward reward) private view returns (uint256 rewardAmount) {
+    function calculateRewardAmount(Reward storage reward) private view returns (uint256 rewardAmount) {
         uint256 balance;
         uint256 supply;
         balance = reward.referenceToken.balanceOfAt(msg.sender, reward.blockStart + reward.duration);
         supply = reward.referenceToken.totalSupplyAt(reward.blockStart + reward.duration);
         if (reward.isMerit) {
+            // This is a pending implementation. We need to look into a way to track earned tokens
+            // to better calculate merit reward amounts
+            uint256 originalBalance = balance;
+            uint256 originalSupply = supply;
             balance -= reward.referenceToken.balanceOfAt(msg.sender, reward.blockStart);
             supply -= reward.referenceToken.totalSupplyAt(reward.blockStart);
+            if (originalBalance <= balance || originalSupply < supply) {
+                return 0;
+            }
         }
-        rewardAmount = supply == 0 ? 0 : reward.amount * balance / supply;
+        rewardAmount = supply == 0 ? 0 : reward.amount.mul(balance).div(supply);
     }
 }

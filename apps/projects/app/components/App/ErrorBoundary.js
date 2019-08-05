@@ -1,9 +1,13 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 
 class ErrorBoundary extends React.Component {
+  static propTypes = {
+    children: PropTypes.element.isRequired,
+  }
   state = { hasError: false }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError() {
     // Update state so the next render will show the fallback UI.
     return { hasError: true }
   }
@@ -16,7 +20,7 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       const { error, errorInfo } = this.state
-      console.log('[ErrorBoundary] additional info', this.state)
+      console.log('[ErrorBoundary] additional info', this.state) // eslint-disable-line no-console
       // You can render any custom fallback UI
       return (
         <div
