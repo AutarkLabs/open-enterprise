@@ -29,8 +29,6 @@
     "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
   },
   "dependencies": {
-    "@aragon/api": "1.1.0",
-    "@aragon/api-react": "1.0.0-beta.2",
     "@aragon/ui": "0.33.0",
     "@babel/polyfill": "^7.2.5",
     "@tps/apps-address-book": "^0.0.1",
