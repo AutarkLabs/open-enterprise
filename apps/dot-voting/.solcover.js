@@ -1,4 +1,6 @@
 module.exports = {
+  copyPackages: ['@tps/test-helpers'],
+  deepSkip: true,
   norpc: true,
-  skipFiles: ['lib', 'test'],
+  skipFiles: ['test'],
 }
