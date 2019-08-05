@@ -15,8 +15,9 @@
 ## Development Setup
 
 Node.js LTS or greater required.
+**@aragon/cli is required to be installed as global dependency**
 
-- Note: @aragon/cli and truffle npm deps are automatically installed when bootstrapping.
+- Note: lerna and truffle npm deps are automatically installed when bootstrapping.
 
 ```bash
 # Bootstrap project dependencies:

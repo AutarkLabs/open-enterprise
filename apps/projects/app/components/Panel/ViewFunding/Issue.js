@@ -8,7 +8,7 @@ import BigNumber from 'bignumber.js'
 
 import { BOUNTY_STATUS, BOUNTY_BADGE_COLOR } from '../../../utils/bounty-status'
 
-export const issueShape = PropTypes.shape({
+const issueShape = PropTypes.shape({
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   expLevel: PropTypes.string.isRequired,
   deadline: PropTypes.string.isRequired,
@@ -30,7 +30,6 @@ const Issue = ({
   repo,
   tokenSymbol,
   title,
-  url,
   workStatus,
 }) => (
   <Wrap>

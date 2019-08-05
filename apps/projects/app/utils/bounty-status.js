@@ -1,5 +1,3 @@
-import { theme } from '@aragon/ui'
-
 const BOUNTY_STATUS = {
   'not-funded': 'Issues without funding',
   'all-funded': 'Funded issues',

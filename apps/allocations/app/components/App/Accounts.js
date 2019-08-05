@@ -1,18 +1,13 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { Text, Badge, Viewport } from '@aragon/ui'
-import { CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
 
+import { Badge, Text, Viewport } from '@aragon/ui'
+
+import { CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
 import { Account, Empty } from '../Card'
 
-const Accounts = ({
-  accounts,
-  onNewAccount,
-  onNewAllocation,
-  onExecutePayout,
-  app,
-}) => {
+const Accounts = ({ accounts, onNewAccount, onNewAllocation }) => {
   if (!accounts) return
 
   if (accounts.length === 0) {
@@ -26,23 +21,22 @@ const Accounts = ({
 
         return (
           <StyledAccounts screenSize={screenSize}>
-            <Text.Block size="large" weight="bold" style={{ marginBottom: '10px', width: '100%' }}>
-              Accounts
-              {' '}
-              <Badge.Info>{accounts.length}</Badge.Info>
+            <Text.Block
+              size="large"
+              weight="bold"
+              style={{ marginBottom: '10px', width: '100%' }}
+            >
+              Accounts <Badge.Info>{accounts.length}</Badge.Info>
             </Text.Block>
-            {accounts.map(({ data, accountId }) => (
+            {accounts.map(({ accountId, data }) => (
               <Account
-                screenSize={screenSize}
+                balance={data.balance}
+                description={data.metadata}
                 key={accountId}
                 id={accountId}
-                proxy={data.proxy}
-                balance={data.balance}
-                token={data.token}
-                description={data.metadata}
                 onNewAllocation={onNewAllocation}
-                onExecutePayout={onExecutePayout}
-                app={app}
+                proxy={data.proxy}
+                screenSize={screenSize}
               />
             ))}
           </StyledAccounts>
@@ -61,7 +55,8 @@ Accounts.propTypes = {
 
 const StyledAccounts = styled.div`
   display: flex;
-  flex-direction: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? 'column' : 'row' };
+  flex-direction: ${props =>
+    props.screenSize < CARD_STRETCH_BREAKPOINT ? 'column' : 'row'};
   flex-wrap: wrap;
 `
 

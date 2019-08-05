@@ -5,11 +5,10 @@ import { BigNumber } from 'bignumber.js'
 import {
   Badge,
   Button,
-  IdentityBadge,
-  Info,
-  SidePanelSplit,
-  SidePanelSeparator,
   Countdown,
+  Info,
+  SidePanelSeparator,
+  SidePanelSplit,
   Text,
   theme,
 } from '@aragon/ui'
@@ -26,11 +25,17 @@ import {
   VOTE_STATUS_SUCCESSFUL
 } from '../../utils/vote-types'
 import { isAddress } from 'web3-utils'
+import { LocalIdentityBadge } from '../../../../../shared/identity'
 
 class VotePanelContent extends React.Component {
   static propTypes = {
-    app: PropTypes.object, // TODO: isRequired?
+    app: PropTypes.object.isRequired,
     network: PropTypes.object,
+    user: PropTypes.string.isRequired,
+    tokenContract: PropTypes.object.isRequired,
+    vote: PropTypes.object.isRequired,
+    onVote: PropTypes.func.isRequired,
+    minParticipationPct: PropTypes.number.isRequired,
   }
   state = {
     userCanVote: false,
@@ -127,9 +132,17 @@ class VotePanelContent extends React.Component {
       0
     )
     if (total <= 100) {
-      this.state.voteOptions[idx].sliderValue = value
-      this.state.voteOptions[idx].trueValue = Math.round(value * 100)
-      this.setState({ remaining: 100 - total })
+      const option = { ...this.state.voteOptions[idx] }
+      option.sliderValue = value
+      option.trueValue = Math.round(value * 100)
+
+      const voteOptions = [...this.state.voteOptions]
+      voteOptions[idx] = option
+
+      this.setState({
+        remaining: 100 - total,
+        voteOptions,
+      })
     }
   }
 
@@ -201,11 +214,13 @@ class VotePanelContent extends React.Component {
       .dp(3)
       .toString()
     // TODO: Show decimals for vote participation only when needed
-    const displayParticipationPct = participationPct.toFixed(2)
-    const displayMinParticipationPct = minParticipationPct.toFixed(0)
+    const displayParticipationPct = participationPct ? participationPct.toFixed(2) : 'N/A'
+    const displayMinParticipationPct = minParticipationPct ? minParticipationPct.toFixed(0) : 'N/A'
     // TODO: This block is wrong and has no sense
     if (!voteOptions.length) {
-      this.state.voteOptions = options
+      this.setState({
+        voteOptions: options
+      })
     }
     let totalSupport = 0
     options.forEach(option => {
@@ -224,7 +239,7 @@ class VotePanelContent extends React.Component {
               <Label>Created by</Label>
             </h2>
             <Creator>
-              <IdentityBadge
+              <LocalIdentityBadge
                 networkType={network.type}
                 entity={creator}
                 shorten={true}
@@ -372,7 +387,7 @@ class VotePanelContent extends React.Component {
           }
           {(showResults || !open || (userBalance === '0')) && voteWeights &&
             options.map((option, index) => (
-              <React.Fragment>
+              <React.Fragment key={index}>
                 <ProgressBarThick
                   key={index}
                   progress={safeDiv(parseInt(option.value, 10), totalSupport)}
@@ -386,7 +401,7 @@ class VotePanelContent extends React.Component {
                       style={{ display: 'flex', justifyContent: 'flex-start' }}
                     >
                       {isAddress(option.label) ? (
-                        <IdentityBadge
+                        <LocalIdentityBadge
                           networkType={network.type}
                           entity={option.label}
                           shorten={true}
@@ -494,14 +509,6 @@ const SliderAndValueContainer = styled.div`
   align-items: center;
 `
 
-const SliderContainer = styled.div`
-  width: 320px;
-  & > :nth-child(2) {
-    padding: 0;
-    padding-right: 17px;
-  }
-`
-
 const SubmitButton = styled(Button)`
   margin: 1rem 0;
 `
@@ -527,13 +534,6 @@ const Part = styled.div`
   }
 `
 
-const Question = styled.p`
-  max-width: 100%;
-  overflow: hidden;
-  word-break: break-all;
-  hyphens: auto;
-`
-
 const BalanceSplit = styled.div`
   display: inline-block;
   width: 25%;
@@ -545,17 +545,6 @@ const Creator = styled.div`
   align-items: center;
 `
 
-const VotingButtons = styled.div`
-  display: flex;
-  padding: 30px 0 20px;
-  & > * {
-    width: 50%;
-    &:first-child {
-      margin-right: 10px;
-    }
-  }
-`
-
 const PastDate = styled.time`
   font-size: 13px;
   color: #98a0a2;
@@ -563,5 +552,5 @@ const PastDate = styled.time`
   display: block;
 `
 
-
+// eslint-disable-next-line import/no-unused-modules
 export default provideNetwork(VotePanelContent)

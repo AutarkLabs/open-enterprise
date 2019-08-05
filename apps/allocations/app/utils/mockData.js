@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unused-modules */
 export const allocationsMockData = {
   accounts: [
     { id: 0,

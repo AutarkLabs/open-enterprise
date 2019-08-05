@@ -1,5 +1,5 @@
 import AddressBookJSON from '../../../shared/json-abis/address-book.json'
-import { app, handleEvent, INITIALIZATION_TRIGGER } from './'
+import { INITIALIZATION_TRIGGER, app, handleEvent } from './'
 import { of } from 'rxjs'
 
 export const initStore = addressBookAddress => {

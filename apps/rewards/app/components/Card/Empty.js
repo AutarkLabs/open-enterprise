@@ -21,6 +21,7 @@ const Empty = ({ action, tab }) => (
 
 Empty.propTypes = {
   action: PropTypes.func.isRequired,
+  tab: PropTypes.string.isRequired,
 }
 
 const EmptyWrapper = styled.div`

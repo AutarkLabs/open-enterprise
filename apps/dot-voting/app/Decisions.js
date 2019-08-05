@@ -19,7 +19,14 @@ const EmptyIcon = () => <img src={emptyIcon} alt="" />
 
 class Decisions extends React.Component {
   static propTypes = {
-    app: PropTypes.object.isRequired,
+    app: PropTypes.object,
+    tokenAddress: PropTypes.string.isRequired,
+    userAccount: PropTypes.string.isRequired,
+    votes: PropTypes.arrayOf(PropTypes.object).isRequired,
+    entries: PropTypes.arrayOf(PropTypes.object).isRequired,
+    minParticipationPct: PropTypes.number.isRequired,
+    pctBase: PropTypes.number.isRequired,
+    voteTime: PropTypes.number.isRequired,
   }
   constructor(props) {
     super(props)
@@ -166,7 +173,7 @@ class Decisions extends React.Component {
                 icon={<EmptyIcon />}
                 title="You do not have any dot votes."
                 text="Use the Allocations app to get started."
-                actionButton={() => <div />}
+                onActivate={() => <div />}
               />
             </div>
           )}

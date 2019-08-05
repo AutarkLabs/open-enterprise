@@ -1,20 +1,21 @@
+import PropTypes from 'prop-types'
+import React from 'react'
+import styled from 'styled-components'
+
+import { useNetwork } from '@aragon/api-react'
 import {
   Badge,
   ContextMenu,
   ContextMenuItem,
-  IdentityBadge,
   Table,
   TableCell,
   TableHeader,
   TableRow,
   Text,
-  theme,
 } from '@aragon/ui'
-import PropTypes from 'prop-types'
-import React from 'react'
-import styled from 'styled-components'
+
+import { LocalIdentityBadge } from '../../../../../shared/identity'
 import { Empty } from '../Card'
-import { provideNetwork } from '../../../../../shared/ui'
 
 // TODO: colors taken directly from Invision
 const ENTITY_TYPES = [
@@ -23,9 +24,10 @@ const ENTITY_TYPES = [
   { name: 'Project', fg: '#B30FB3', bg: '#B30FB333' },
 ]
 
-const entitiesSort = (a,b) => a.data.name.toUpperCase() > b.data.name.toUpperCase() ? 1 : -1
+const entitiesSort = (a, b) => a.data.name.toUpperCase() > b.data.name.toUpperCase() ? 1 : -1
 
-const Entities = ({ entities, network, onNewEntity, onRemoveEntity }) => {
+const Entities = ({ entities, onNewEntity, onRemoveEntity }) => {
+  const network = useNetwork()
   const removeEntity = address => () => onRemoveEntity(address)
 
   if (entities.length === 0) {
@@ -53,8 +55,8 @@ const Entities = ({ entities, network, onNewEntity, onRemoveEntity }) => {
                   >
                     {name}
                   </Text>
-                  <IdentityBadge
-                    networkType={network.type}
+                  <LocalIdentityBadge
+                    networkType={network && network.type}
                     entity={entryAddress}
                     shorten={true}
                   />
@@ -88,7 +90,6 @@ const Entities = ({ entities, network, onNewEntity, onRemoveEntity }) => {
 Entities.propTypes = {
   // TODO: shape better
   entities: PropTypes.array.isRequired,
-  network: PropTypes.object,
   onNewEntity: PropTypes.func.isRequired,
   onRemoveEntity: PropTypes.func.isRequired,
 }
@@ -101,4 +102,4 @@ const EntityWrapper = styled.div`
   flex-direction: column;
   margin-left: 10px;
 `
-export default provideNetwork(Entities)
+export default Entities
