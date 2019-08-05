@@ -4,11 +4,13 @@
 
 pragma solidity ^0.4.24;
 
-import "./IForwarder.sol";
-import "../evmscript/ScriptHelpers.sol";
-import "../lib/math/SafeMath.sol";
-import "../lib/math/SafeMath64.sol";
+import "@aragon/os/contracts/lib/math/SafeMath.sol";
+import "@aragon/os/contracts/lib/math/SafeMath64.sol";
 
+// TODO: Use @aragon/os/contracts/ version when it gets merged
+import "../evmscript/ScriptHelpers.sol";
+// TODO: Research why using the @aragon/os version breaks coverage
+import "./IForwarder.sol";
 
 
 contract ADynamicForwarder is IForwarder {
@@ -498,11 +500,5 @@ contract ADynamicForwarder is IForwarder {
         // First Static Parameter in script parsed for the externalId
         actionInstance.externalId = _goToParamOffset(TOTAL_DYNAMIC_PARAMS + 1, _executionScript) - 0x20;
         emit OrigScript(_executionScript);
-    }
-
-    function getPtr(bytes memory _x) internal pure returns (uint256 ptr) {
-        assembly {
-            ptr := _x
-        }
     }
 }
