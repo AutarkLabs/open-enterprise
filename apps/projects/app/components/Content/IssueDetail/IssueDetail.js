@@ -14,7 +14,7 @@ import {
 import { formatDistance } from 'date-fns'
 import { IconGitHub, BountyContextMenu } from '../../Shared'
 import { BOUNTY_STATUS, BOUNTY_BADGE_COLOR } from '../../../utils/bounty-status'
-import Markdown from './Markdown'
+import { Markdown } from '../../../../../../shared/ui'
 import { usePanelManagement } from '../../Panel'
 
 const StyledTable = styled.div`
