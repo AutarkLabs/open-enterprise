@@ -68,9 +68,9 @@ const CommentForm = ({ defaultValue, onCancel, onSave }) => {
           value={text}
         />
         <Hint>
-          <Text monospace>
-            *bold* &nbsp;&nbsp; _italics_ &nbsp;&nbsp; ### heading &nbsp;&nbsp;
-            &gt; quote
+          <Text monospace aria-hidden>
+            **bold** &nbsp;&nbsp; _italics_ &nbsp;&nbsp; ### heading
+            &nbsp;&nbsp; &gt; quote
           </Text>
           <a
             target="_blank"
@@ -82,6 +82,7 @@ const CommentForm = ({ defaultValue, onCancel, onSave }) => {
       </Field>
       <Buttons cancelling={cancelInProgress}>
         <Button
+          aria-live="polite"
           css={`
             ${cancelInProgress
               ? ''

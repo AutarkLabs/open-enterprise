@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { format, formatDistance } from 'date-fns'
 import { Card, IdentityBadge, theme } from '@aragon/ui'
-import { IconEdit, IconDelete } from '../../../../shared/ui'
+import { IconEdit, IconDelete, Markdown } from '../../../../shared/ui'
 import CommentForm from './CommentForm'
 
 const Header = styled.header`
@@ -101,6 +101,7 @@ const Bottom = ({ onDelete, onEdit }) => {
         </Edit>
       )}
       <Delete
+        aria-live="polite"
         onBlur={() => setDeleting(false)}
         onClick={deleting ? onDelete : () => setDeleting(true)}
       >
@@ -118,29 +119,27 @@ const Comment = ({
 }) => {
   const [editing, setEditing] = useState(false)
 
-  if (editing) {
-    const update = async updated => {
-      await onSave({ id, text: updated.text, revisions, postCid })
-      setEditing(false)
-    }
+  const update = async updated => {
+    await onSave({ id, text: updated.text, revisions, postCid })
+    setEditing(false)
+  }
 
-    return (
-      <CommentCard>
+  return (
+    <CommentCard>
+      {editing ? (
         <CommentForm
           defaultValue={text}
           onCancel={() => setEditing(false)}
           onSave={update}
         />
-      </CommentCard>
-    )
-  }
-
-  return (
-    <CommentCard>
-      <Top author={author} createdAt={createdAt} />
-      {text}
-      {author === currentUser && (
-        <Bottom onDelete={onDelete} onEdit={() => setEditing(true)} />
+      ) : (
+        <React.Fragment>
+          <Top author={author} createdAt={createdAt} />
+          <Markdown content={text} />
+          {author === currentUser && (
+            <Bottom onDelete={onDelete} onEdit={() => setEditing(true)} />
+          )}
+        </React.Fragment>
       )}
     </CommentCard>
   )
