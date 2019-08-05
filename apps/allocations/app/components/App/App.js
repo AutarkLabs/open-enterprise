@@ -18,7 +18,7 @@ const App = () => {
   const { accounts = [], balances = [], entries = [], payouts = [] } = appState
 
   const onCreateAccount = ({ description }) => {
-    api.newAccount(description)
+    api.newAccount(description).toPromise()
     closePanel()
   }
 
@@ -37,12 +37,12 @@ const App = () => {
       period,
       balance,
       tokenAddress
-    )
+    ).toPromise()
     closePanel()
   }
 
   const onExecutePayout = (accountId, payoutId) => {
-    api.runPayout(accountId, payoutId)
+    api.runPayout(accountId, payoutId).toPromise()
   }
 
   const onNewAccount = () => {
