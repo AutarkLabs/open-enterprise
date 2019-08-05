@@ -25,17 +25,14 @@ class Discussions {
   getAbi = () => this.abi
   getContract = () => this.contract
 
-  _fetchDiscussionAppInfo = api =>
+  _fetchDiscussionAppInfo = () =>
     new Promise(resolve => {
-      // temp hack to avoid race conditions bc getApps multi emission isnt working
-      setTimeout(() => {
-        this.api.getApps().subscribe(apps => {
-          const { abi, proxyAddress } = apps.find(
-            app => app.name === 'Discussions'
-          )
-          resolve({ abi, proxyAddress })
-        })
-      }, 500)
+      this.api.getApps().subscribe(apps => {
+        const { abi, proxyAddress } = apps.find(
+          app => app.name === 'Discussions'
+        )
+        resolve({ abi, proxyAddress })
+      })
     })
 
   _pastEvents = () =>
@@ -48,9 +45,10 @@ class Discussions {
 
   _collectDiscussionThreadIds = () =>
     new Promise(resolve => {
-      this.api.getForwardedActions().subscribe(events => {
-        resolve(new Set(events.returnValues.map(({ actionId }) => actionId)))
-      })
+      resolve(new Set(['0', '1']))
+      // this.api.getForwardedActions().subscribe(events => {
+      //   resolve(new Set(events.returnValues.map(({ actionId }) => actionId)))
+      // })
     })
 
   _filterRelevantDiscussionEvents = (discussionThreadIds, discussionEvents) => {
