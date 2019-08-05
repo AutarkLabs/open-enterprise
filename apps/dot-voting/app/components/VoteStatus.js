@@ -1,11 +1,12 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { theme, IconTime, IconCross, IconCheck } from '@aragon/ui'
+import { IconCheck, IconCross, IconTime, theme } from '@aragon/ui'
 import {
-  VOTE_STATUS_ONGOING,
-  VOTE_STATUS_SUCCESSFUL,
+  VOTE_STATUS_EXECUTED,
   VOTE_STATUS_FAILED,
-  VOTE_STATUS_EXECUTED
+  VOTE_STATUS_ONGOING,
+  VOTE_STATUS_SUCCESSFUL
 } from '../utils/vote-types'
 import { getVoteStatus } from '../utils/vote-utils'
 
@@ -32,7 +33,7 @@ const ATTRIBUTES = {
   },
 }
 
-const VoteStatus = ({ vote: vote }) => {
+const VoteStatus = ({ vote }) => {
   const status = getVoteStatus(vote)
   const { color, label, Icon } = ATTRIBUTES[status]
   return (
@@ -41,6 +42,10 @@ const VoteStatus = ({ vote: vote }) => {
       <StatusLabel>{label}</StatusLabel>
     </Main>
   )
+}
+
+VoteStatus.propTypes = {
+  vote: PropTypes.object.isRequired,
 }
 
 const Main = styled.span`

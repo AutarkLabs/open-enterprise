@@ -1,12 +1,19 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { BadgeNumber, colors, Viewport, Badge } from '@aragon/ui'
+import { Badge, Viewport } from '@aragon/ui'
 import VotesTable from '../components/VotesTable'
 import VotesList from '../components/VotesList'
 
 const TABLE_CARD_BREAKPOINT = 710
 
 class Votes extends React.Component {
+  static propTypes = {
+    app: PropTypes.object,
+    onSelectVote: PropTypes.func.isRequired,
+    votes: PropTypes.arrayOf(PropTypes.object).isRequired,
+  }
+
   render() {
     const { votes, onSelectVote, app } = this.props
     const openedVotes = votes.filter(({ open }) => open)
@@ -20,7 +27,7 @@ class Votes extends React.Component {
               <Badge.Info>{openedVotes.length}</Badge.Info>
             </Title>
             <Viewport>
-              {({ below, width }) => below(TABLE_CARD_BREAKPOINT) ? (
+              {({ below }) => below(TABLE_CARD_BREAKPOINT) ? (
                 <VotesList
                   votes={openedVotes}
                   onSelectVote={onSelectVote}
@@ -43,7 +50,7 @@ class Votes extends React.Component {
               <Badge.Info>{closedVotes.length}</Badge.Info>
             </Title>
             <Viewport>
-              {({ below, width }) => below(TABLE_CARD_BREAKPOINT) ? (
+              {({ below }) => below(TABLE_CARD_BREAKPOINT) ? (
                 <VotesList
                   votes={closedVotes}
                   onSelectVote={onSelectVote}
@@ -60,10 +67,6 @@ class Votes extends React.Component {
             </Viewport>
           </VotesTableWrapper>
         )}
-
-        {/* <SeeMoreWrapper>
-          <Button mode="secondary">Show Older Dot Votes</Button>
-        </SeeMoreWrapper> */}
       </React.Fragment>
     )
   }
@@ -83,10 +86,5 @@ const Title = styled.h1`
 const VotesTableWrapper = styled.div`
   margin-bottom: 30px;
 `
-
-// const SeeMoreWrapper = styled.div`
-//   display: flex;
-//   justify-content: center;
-// `
 
 export default Votes

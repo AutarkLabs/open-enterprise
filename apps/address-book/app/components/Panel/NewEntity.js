@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Form, FormField } from '../Form'
-import { TextInput, DropDown } from '@aragon/ui'
+import { DropDown, TextInput } from '@aragon/ui'
 import web3Utils from 'web3-utils'
 
 // TODO: fields validation and error handling need improvement!

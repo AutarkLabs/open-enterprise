@@ -1,16 +1,10 @@
-import { safeDiv } from './math-utils'
 import {
-  VOTE_ABSENT,
-  VOTE_STATUS_ONGOING,
+  VOTE_STATUS_EXECUTED,
   VOTE_STATUS_FAILED,
-  VOTE_STATUS_SUCCESSFUL,
-  VOTE_STATUS_EXECUTED
+  VOTE_STATUS_SUCCESSFUL
 } from './vote-types'
 
 export const EMPTY_CALLSCRIPT = '0x00000001'
-
-export const getAccountVote = (account, voters) =>
-  voters[account] || VOTE_ABSENT
 
 export const getVoteStatus = (vote) => {
   if (vote.data.executed) {

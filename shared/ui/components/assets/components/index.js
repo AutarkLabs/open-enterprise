@@ -1,4 +1,5 @@
 export { default as IconCalendar } from './IconCalendar'
+export { default as IconFilter } from './IconFilter'
 export { default as IconSort } from './IconSort'
 export { default as IconDots } from './IconDots'
 export { default as IconArrow } from './IconArrow'

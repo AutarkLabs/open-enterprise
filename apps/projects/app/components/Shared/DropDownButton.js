@@ -1,9 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import styled, { css } from 'styled-components'
+import styled from 'styled-components'
 import { Spring, animated } from 'react-spring'
 import ClickOutHandler from 'react-onclickout'
-import { Button, springs, unselectable, theme } from '@aragon/ui'
+import { Button, springs, theme } from '@aragon/ui'
 import { IconArrowDown } from '../Shared'
 
 const BASE_WIDTH = 118

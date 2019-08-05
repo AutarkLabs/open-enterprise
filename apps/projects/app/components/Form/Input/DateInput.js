@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { isDate, format as formatDate } from 'date-fns'
+import { format as formatDate } from 'date-fns'
 
 import { TextInput } from '@aragon/ui'
 import DatePicker from './DatePicker'

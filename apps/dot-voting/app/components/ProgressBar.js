@@ -22,6 +22,11 @@ const ProgressBar = ({ progress, label }) => (
   </Motion>
 )
 
+ProgressBar.propTypes = {
+  progress: PropTypes.number.isRequired,
+  label: PropTypes.string.isRequired,
+}
+
 const Main = styled.div`
   width: 100%;
   align-items: center;

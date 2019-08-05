@@ -3,32 +3,28 @@ import React from 'react'
 import styled from 'styled-components'
 import { BigNumber } from 'bignumber.js'
 import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableCell,
-  Text,
   Button,
-  IdentityBadge,
-  Viewport,
-  theme,
   IconCheck,
   IconCross,
   IconFundraising,
   IconTime,
-  ContextMenu,
-  ContextMenuItem,
+  Table,
+  TableCell,
+  TableHeader,
+  TableRow,
+  Text,
+  theme,
 } from '@aragon/ui'
 import { displayCurrency } from '../../utils/helpers'
 import {
+  AmountBadge,
   AverageRewards,
   AverageRewardsTable,
-  formatAvgAmount,
-  RewardDescription,
-  RewardsTable,
   NarrowList,
   NarrowListReward,
-  AmountBadge,
+  RewardDescription,
+  RewardsTable,
+  formatAvgAmount,
 } from './RewardsTables'
 import { Empty } from '../Card'
 import { provideNetwork } from '../../../../../shared/ui'
@@ -107,10 +103,6 @@ const generateOpenDetails = (reward, openDetails) => () => {
   openDetails(reward)
 }
 
-const shortTransaction = transactionID =>
-  transactionID.substring(0,4) + '..' + transactionID.substring(transactionID.length - 4)
-
-
 const getSymbol = (tokens, reward) => {
   return tokens
     .reduce((symbol, token) => {
@@ -118,7 +110,7 @@ const getSymbol = (tokens, reward) => {
       else return symbol
     },'')
 }
-const MyRewardsWide = ({ onClaimReward, claimed, rewards, openDetails, network, tokens }) => (
+const MyRewardsWide = ({ onClaimReward, claimed, rewards, openDetails, tokens }) => (
   <Table
     style={{ width: '100%' }}
     header={
@@ -140,9 +132,10 @@ const MyRewardsWide = ({ onClaimReward, claimed, rewards, openDetails, network, 
           {!reward.claimed ? (
             reward.endDate < Date.now() ? (
               <Button mode="outline" onClick={generateOnClaimReward(onClaimReward, reward)}>
-                <IconFundraising color={theme.positive} />
-
-                <Text size="normal" weight="bold">Claim</Text>
+                <div css="display: flex">
+                  <IconFundraising color={theme.positive} style={{ marginRight: '6px' }} />
+                  <Text size="normal" weight="bold">Claim</Text>
+                </div>
               </Button>) : showStatus(reward)
           ) : Intl.DateTimeFormat().format(reward.timeClaimed * MILLISECONDS_IN_A_SECOND)}
         </TableCell>
@@ -156,7 +149,15 @@ const MyRewardsWide = ({ onClaimReward, claimed, rewards, openDetails, network, 
   </Table>
 )
 
-const RewardStatus = ({ color, icon, title, posTop = 0 }) => {
+MyRewardsWide.propTypes = {
+  onClaimReward: PropTypes.func.isRequired,
+  openDetails: PropTypes.func.isRequired,
+  claimed: PropTypes.bool.isRequired,
+  rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
+  tokens: PropTypes.arrayOf(PropTypes.object).isRequired,
+}
+
+const RewardStatus = ({ color, icon, title, posTop }) => {
   const Icon = icon
   return (
     <MyRewardStatus color={color}>
@@ -164,6 +165,17 @@ const RewardStatus = ({ color, icon, title, posTop = 0 }) => {
       {title}
     </MyRewardStatus>
   )
+}
+
+RewardStatus.propTypes = {
+  color: PropTypes.string.isRequired,
+  title: PropTypes.string.isRequired,
+  icon: PropTypes.func.isRequired,
+  posTop: PropTypes.number.isRequired,
+}
+
+RewardStatus.defaultProps = {
+  posTop: 0,
 }
 
 const showStatus = (reward) => {
@@ -189,7 +201,7 @@ const MyRewardStatus = styled(Text.Block).attrs({
 })`
   margin-top: 5px;
 `
-const MyRewardsNarrow = ({ claimed, rewards, openDetails, network, tokens }) => (
+const MyRewardsNarrow = ({ rewards, openDetails, tokens }) => (
   <NarrowList>
     {rewards.map((reward, i) => (
       <NarrowListReward onClick={generateOpenDetails(reward, openDetails)} key={i}>
@@ -207,15 +219,17 @@ const MyRewardsNarrow = ({ claimed, rewards, openDetails, network, tokens }) => 
               {displayCurrency(reward.userRewardAmount)}{' '}{getSymbol(tokens,reward)}
             </AmountBadge>
           </div>
-          <div>
-            <ContextMenu>
-            </ContextMenu>
-          </div>
         </div>
       </NarrowListReward>
     ))}
   </NarrowList>
 )
+
+MyRewardsNarrow.propTypes = {
+  openDetails: PropTypes.func.isRequired,
+  rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
+  tokens: PropTypes.arrayOf(PropTypes.object).isRequired,
+}
 
 const MyRewards = ({ onClaimReward, rewards, newReward, openDetails, network, tokens, convertRates }) => {
 
@@ -258,9 +272,10 @@ const MyRewards = ({ onClaimReward, rewards, newReward, openDetails, network, to
           rewards={claimedRewards(myRewards)}
           openDetails={openDetails}
           network={network}
-	        tokens={tokens}
+          tokens={tokens}
           belowMedium={MyRewardsNarrow}
           aboveMedium={MyRewardsWide}
+          onClaimReward={onClaimReward}
         />}
         {unclaimedRewardsLength > 0
         &&
@@ -270,7 +285,7 @@ const MyRewards = ({ onClaimReward, rewards, newReward, openDetails, network, to
           rewards={unclaimedRewards(myRewards)}
           openDetails={openDetails}
           network={network}
-	        tokens={tokens}
+          tokens={tokens}
           belowMedium={MyRewardsNarrow}
           aboveMedium={MyRewardsWide}
           onClaimReward={onClaimReward}
@@ -281,18 +296,20 @@ const MyRewards = ({ onClaimReward, rewards, newReward, openDetails, network, to
 }
 
 MyRewards.propTypes = {
+  onClaimReward: PropTypes.func.isRequired,
+  openDetails: PropTypes.func.isRequired,
   newReward: PropTypes.func.isRequired,
   rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
   network: PropTypes.object,
   tokens: PropTypes.arrayOf(PropTypes.object).isRequired,
+  convertRates: PropTypes.object,
 }
 
 const Main = styled.div`
-  background-color: #F8FCFD;
+  background-color: ##f8fcfd;
 `
 const RewardsWrap = styled.div`
   flex-grow: 1;
-  /*background: #1DD9D5;*/
   > :not(:last-child) {
     margin-bottom: 20px;
   }
@@ -302,10 +319,6 @@ const ClickableTableRow = styled(TableRow)`
     cursor: pointer;
   }
 `
-const ClaimButtonText = styled(Text.Block).attrs({
-  size: 'small'
-})`
-  margin: 0px;
-`
 
+// eslint-disable-next-line import/no-unused-modules
 export default provideNetwork(MyRewards)

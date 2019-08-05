@@ -88,7 +88,7 @@ contract AddressBook is AragonApp {
         string _cid
     ) public auth(UPDATE_ENTRY_ROLE) entryExists(_addr)
     {
-        require(bytes(_cid).length == 46, "CID malformed");
+        require(bytes(_cid).length == 46, ERROR_CID_MALFORMED);
 
         entries[_addr] = _cid;
         emit EntryUpdated(_addr);

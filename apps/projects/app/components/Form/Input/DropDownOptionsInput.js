@@ -11,7 +11,7 @@ class DropDownOptionsInput extends React.Component {
     values: PropTypes.array.isRequired,
     allOptions: PropTypes.array.isRequired,
   }
-  
+
   state = {
     showAddOption: false,
     addOptionText: '',
@@ -43,7 +43,7 @@ class DropDownOptionsInput extends React.Component {
         return !this.props.values.some(i => i.id === issue.id)
       }
     ).splice(0,10)
-      
+
     this.setState({
       [name]: value,
       found
@@ -75,22 +75,22 @@ class DropDownOptionsInput extends React.Component {
             style={{ transform: 'scale(.8)' }}
             onClick={() => this.removeOption(index)}
             title="Click to remove the issue"
-            children={<IconRemove />}
-          />
+          >
+            <IconRemove />
+          </IconContainer>
         </StyledOption>
       )
     })
-    
+
     const singleOption = <StyledOption key={values[0].id}>
       <StyledInput readOnly wide value={this.issueToString(values[0])} />
     </StyledOption>
 
-    const loadOptions = values.length === 1 ? singleOption:multipleOptions 
-    
+    const loadOptions = values.length === 1 ? singleOption:multipleOptions
+
     const showOption = <div style={{ position: 'relative' }}>
       <StyledInput
         wide
-        autoFocus
         value={this.state.addOptionText}
         onChange={this.searchOptions} name="addOptionText"
       />

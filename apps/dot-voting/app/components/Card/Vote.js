@@ -2,12 +2,12 @@ import React from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import {
-  Card,
-  Text,
-  Button,
-  theme,
   Badge,
+  Button,
+  Card,
   Countdown,
+  Text,
+  theme,
 } from '@aragon/ui'
 import ProgressBar from '../ProgressBar'
 import VoteStatus from '../VoteStatus'
@@ -23,6 +23,10 @@ const generateBadge = (foreground, background, text) => (
 )
 
 class Vote extends React.Component {
+  static propTypes = {
+    app: PropTypes.object
+  }
+
   static defaultProps = {
     onSelectVote: () => {},
   }
@@ -62,29 +66,23 @@ class Vote extends React.Component {
     }
 
     return (
-      <StyledCard>
-        <div onClick={this.handleVoteClick}>
+      <StyledCard onClick={this.handleVoteClick} css="cursor: pointer">
+        <div>
           {question && (
             <QuestionWrapper>
               {description ? <strong>{question}</strong> : question}
             </QuestionWrapper>
           )}
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div css="display: flex; justify-content: space-between">
           {typeBadge}
-
-          <span style={{
-            fontSize: '12px',
-            color: theme.textSecondary
-          }}
-          onClick={this.handleVoteClick}
-          >
+          <Text size="xsmall" color={theme.textSecondary}>
             {participationPct.toFixed(2)}% Participation
-          </span>
+          </Text>
         </div>
 
         <Separator />
-        
+
         <Bars>
           {showMore &&
             options.map(option => (
@@ -105,7 +103,7 @@ class Vote extends React.Component {
               </Bar>
             ))}
           {options.length > 2 && (
-            <div style={{ textAlign: 'center', width: '100%' }}>
+            <div css="text-align: center; width: 100%">
               <Badge
                 shape="compact"
                 background={theme.badgeInfoBackground}
@@ -116,8 +114,11 @@ class Vote extends React.Component {
                   pointerEvents: 'auto',
                   margin: '0 auto',
                 }}
-                onClick={() => this.setState({ showMore: !showMore })}
-              >
+                onClick={e => {
+                  this.setState({ showMore: !showMore })
+                  e.stopPropagation()
+                }
+                }>
                 {showMore
                   ? 'Show less...'
                   : ' + ' + (options.length - 2) + ' more'}
@@ -129,18 +130,17 @@ class Vote extends React.Component {
         <Separator />
 
         {open ?
-          <div style={{ textAlign: 'center', width: '100%' }}>
+          <div css="text-align: center; width: 100%">
             <Countdown end={endDate} />
           </div>
           :
           (
             <React.Fragment>
-
-              <Status onClick={this.handleVoteClick}>
+              <Status>
                 <FieldTitle>Status</FieldTitle>
                 <VoteStatus vote={vote} />
               </Status>
-              <Status onClick={this.handleVoteClick}>
+              <Status>
                 <FieldTitle>End date</FieldTitle>
                 <span>{format(endDate, 'MMM dd yyyy HH:mm')}</span>
               </Status>
@@ -148,7 +148,7 @@ class Vote extends React.Component {
           )}
 
         {!open && getVoteStatus(vote) === VOTE_STATUS_SUCCESSFUL && (
-          <div style={{ textAlign: 'center', width: '100%' }}>
+          <div css="text-align: center; width: 100%">
             <Separator />
             <Button
               style={{ margin: '0 auto' }}
@@ -169,16 +169,13 @@ Vote.propTypes = {
   onSelectVote: PropTypes.func.isRequired,
 }
 
-const TitleContainer = styled.div`
-  flex-grow: 1;
-`
 const StyledCard = styled(Card)`
   margin: 0 0 8px 0;
   display: flex;
   flex-direction: column;
   height: 100%;
   padding: 12px 16px 8px 16px;
-  background: #ffffff;
+  background: #fff;
   border: 1px solid ${theme.contentBorder};
   border-radius: 3px;
   width: 100%;
@@ -190,9 +187,11 @@ const QuestionWrapper = styled(Text.Block).attrs({
   text-align: left;
   color: ${theme.textPrimary};
   display: block;
+  /* stylelint-disable value-no-vendor-prefix, property-no-vendor-prefix */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  /* stylelint-enable */
   overflow: hidden;
   text-overflow: ellipsis;
 `
@@ -220,7 +219,8 @@ const Separator = styled.hr`
   margin: 14px 0;
   background: ${theme.contentBorder};
 `
-// TODO: shared
+// TODO: extract to shared/ui
+// See https://github.com/AutarkLabs/planning-suite/issues/382
 const FieldTitle = styled(Text.Block)`
   color: ${theme.textSecondary};
   text-transform: lowercase;
@@ -231,5 +231,5 @@ const FieldTitle = styled(Text.Block)`
   width: 35%;
 `
 
-
+// eslint-disable-next-line import/no-unused-modules
 export default Vote

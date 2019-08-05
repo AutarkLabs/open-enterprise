@@ -1,19 +1,21 @@
 import { Text } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
+import styled from 'styled-components'
 import { MenuButton } from '.'
 
+const Wrap = styled.div`
+  display: flex;
+  align-items: center;
+`
+
+// TODO: Remove the className logic once aragonUI introduces new,
+// responsive-friendly components to replace AppBar and NavigationBar
 const AppTitle = props => (
-  <div style={{ display: 'flex', alignItems: 'center' }}>
-    {props.displayMenuButton ? (
-      <React.Fragment>
-        <MenuButton style={{ padding: '0 16px', width: 'auto' }} />
-        <Text size="xxlarge" style={{ margin: '0' }}>{props.title}</Text>
-      </React.Fragment>
-    ) : (
-      <Text size="xxlarge" style={{ margin: '0 30px' }}>{props.title}</Text>
-    )}
-  </div>
+  <Wrap className={props.className}>
+    {props.displayMenuButton && <MenuButton />}
+    <Text size="xxlarge">{props.title}</Text>
+  </Wrap>
 )
 
 AppTitle.propTypes = {
