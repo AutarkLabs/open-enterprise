@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 
 import { useAragonApi } from '@aragon/api-react'
-import { AppBar, AppView, Main, SidePanel } from '@aragon/ui'
+import { AppBar, AppView, Main, SidePanel, Button } from '@aragon/ui'
 
-import { AppTitle, AppTitleButton } from '../../../../../shared/ui'
+import { AppTitle } from '../../../../../shared/ui'
 import { IdentityProvider } from '../../../../../shared/identity'
 import { NewAccount, NewAllocation } from '../Panel'
 import { Accounts, Payouts } from '.'
@@ -99,10 +99,7 @@ const App = () => {
           appBar={
             <AppBar
               endContent={
-                <AppTitleButton
-                  caption="New Account"
-                  onClick={onNewAccount}
-                />
+                <Button mode="strong" onClick={onNewAccount}>New Account</Button>
               }
             >
               <AppTitle
