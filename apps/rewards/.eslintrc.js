@@ -4,9 +4,10 @@ module.exports = {
     es6: true
   },
   extends: [
+    'eslint:recommended',
     'plugin:import/errors',
-    'plugin:import/warnings',
-    'prettier/react',
+    'plugin:react/recommended',
+    'plugin:jsx-a11y/recommended',
   ],
   parser: 'babel-eslint',
   parserOptions: {
@@ -51,6 +52,7 @@ module.exports = {
       }
     ],
     'no-undef': 'error',
+    'no-console': ['warn', { allow: ['warn', 'error'] }],
     'no-unused-vars': ['warn', { 'vars': 'all', 'args': 'after-used', 'ignoreRestSiblings': false }],
     'react/jsx-uses-react': 'warn',
     'react/jsx-uses-vars': 'warn',
