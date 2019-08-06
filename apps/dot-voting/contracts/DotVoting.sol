@@ -26,8 +26,9 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     
     MiniMeToken public token;
     uint256 public globalCandidateSupportPct;
-    uint256 public globalMinParticipationPct;
+    uint256 public globalMinQuorum;
     uint64 public voteTime;
+    uint256 voteLength;
 
     uint256 constant public PCT_BASE = 10 ** 18; // 0% = 0; 1% = 10^16; 100% = 10^18
 
@@ -42,16 +43,14 @@ contract DotVoting is ADynamicForwarder, AragonApp {
         uint64 startDate;
         uint256 snapshotBlock;
         uint256 candidateSupportPct;
-        uint256 minParticipationPct;
+        uint256 minQuorum;
         uint256 totalVoters;
         uint256 totalParticipation;
         mapping (address => uint256[]) voters;
         uint256 actionId;
     }
 
-    mapping (bytes32 => address ) candidateAddresses;
-
-    Vote[] votes;
+    mapping (uint256 => Vote) votes;
 
     event StartVote(uint256 indexed voteId);
     event CastVote(uint256 indexed voteId);
@@ -74,14 +73,14 @@ contract DotVoting is ADynamicForwarder, AragonApp {
 
    /**
     * @notice Initializes DotVoting app with `_token.symbol(): string` for
-    *         governance, minimum participation of
-    *         `(_minParticipationPct - _minParticipationPct % 10^14)
+    *         governance, minimum quorum of
+    *         `(_minQuorum - _minQuorum % 10^14)
     *         / 10^16`, minimal candidate acceptance of
     *         `(_candidateSupportPct - _candidateSupportPct % 10^14) / 10^16`
     *         and vote duations of `(_voteTime - _voteTime % 86400) / 86400`
     *         day `_voteTime >= 172800 ? 's' : ''`
     * @param _token MiniMeToken address that will be used as governance token
-    * @param _minParticipationPct Percentage of voters that must participate in
+    * @param _minQuorum Percentage of voters that must participate in
     *        a vote for it to succeed (expressed as a 10^18 percentage,
     *        (eg 10^16 = 1%, 10^18 = 100%)
     * @param _candidateSupportPct Percentage of cast voting power that must
@@ -92,20 +91,20 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     */
     function initialize(
         MiniMeToken _token,
-        uint256 _minParticipationPct,
+        uint256 _minQuorum,
         uint256 _candidateSupportPct,
         uint64 _voteTime
     ) external onlyInit
     {
         initialized();
-        require(_minParticipationPct > 0); // solium-disable-line error-reason
-        require(_minParticipationPct <= PCT_BASE); // solium-disable-line error-reason
-        require(_minParticipationPct >= _candidateSupportPct); // solium-disable-line error-reason
+        require(_minQuorum > 0); // solium-disable-line error-reason
+        require(_minQuorum <= PCT_BASE); // solium-disable-line error-reason
+        require(_minQuorum >= _candidateSupportPct); // solium-disable-line error-reason
         token = _token;
-        globalMinParticipationPct = _minParticipationPct;
+        globalMinQuorum = _minQuorum;
         globalCandidateSupportPct = _candidateSupportPct;
         voteTime = _voteTime;
-        votes.length += 1;
+        voteLength = 1;
     }
 
 ///////////////////////
@@ -122,8 +121,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     function newVote(bytes _executionScript, string _metadata)
         external auth(CREATE_VOTES_ROLE) returns (uint256 voteId)
     {
-        uint256 actionId = parseScript(_executionScript);
-        voteId = _newVote(_executionScript, actionId, _metadata); /*, true);*/
+        voteId = _newVote(_executionScript, _metadata); /*, true);*/
     }
 
     /**
@@ -176,25 +174,25 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     function setglobalCandidateSupportPct(uint256 _globalCandidateSupportPct)
     external auth(MODIFY_CANDIDATE_SUPPORT)
     {
-        require(globalMinParticipationPct >= _globalCandidateSupportPct); // solium-disable-line error-reason
+        require(globalMinQuorum >= _globalCandidateSupportPct); // solium-disable-line error-reason
         globalCandidateSupportPct = _globalCandidateSupportPct;
         emit UpdateMinimumSupport(globalCandidateSupportPct);
     }
 
     /**
     * @notice `setGlobalQuorum` serves as a basic setter for the qourum.
-    * @param _minParticipationPct Percentage of voters that must participate in
+    * @param _minQuorum Percentage of voters that must participate in
     *        a vote for it to succeed (expressed as a 10^18 percentage,
     *        (eg 10^16 = 1%, 10^18 = 100%)
     */
-    function setGlobalQuorum(uint256 _minParticipationPct)
+    function setGlobalQuorum(uint256 _minQuorum)
     external auth(MODIFY_QUORUM)
     {
-        require(_minParticipationPct > 0); // solium-disable-line error-reason
-        require(_minParticipationPct <= PCT_BASE); // solium-disable-line error-reason
-        require(_minParticipationPct >= globalCandidateSupportPct); // solium-disable-line error-reason
-        globalMinParticipationPct = _minParticipationPct;
-        emit UpdateQuorum(globalMinParticipationPct);
+        require(_minQuorum > 0); // solium-disable-line error-reason
+        require(_minQuorum <= PCT_BASE); // solium-disable-line error-reason
+        require(_minQuorum >= globalCandidateSupportPct); // solium-disable-line error-reason
+        globalMinQuorum = _minQuorum;
+        emit UpdateQuorum(globalMinQuorum);
     }
 
     /**
@@ -211,6 +209,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     function addCandidate(uint256 _voteId, string _metadata, address _description, bytes32 _eId1, bytes32 _eId2)
     public auth(ADD_CANDIDATES_ROLE)
     {
+        require(_voteId < voteLength);
         addOption(votes[_voteId].actionId, _metadata, _description, _eId1, _eId2);
     }
     
@@ -248,8 +247,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     */
     function forward(bytes _evmScript) public { // solium-disable-line function-order
         require(canForward(msg.sender, _evmScript)); // solium-disable-line error-reason
-        uint256 actionId = parseScript(_evmScript);
-        _newVote(_evmScript, actionId, ""); /*, true);*/
+        _newVote(_evmScript, ""); /*, true);*/
     }
 
 ///////////////////////
@@ -285,7 +283,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
         if (_isVoteOpen(voteInstance))
           return false;
          // has minimum participation threshold been reached?
-        if (!_isValuePct(voteInstance.totalParticipation, voteInstance.totalVoters, voteInstance.minParticipationPct))
+        if (!_isValuePct(voteInstance.totalParticipation, voteInstance.totalVoters, voteInstance.minQuorum))
             return false;
         return true;
     }
@@ -379,25 +377,24 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     *        The sixth array is a second array of identification keys, usually mapping to a second level (optional uint256)
     *        The seventh parameter is used as the identifier for this vote. (uint256)
     *        See ExecutionTarget.sol in the test folder for an example  forwarded function (setSignal)
-    * @param _actionId The corresponding Dynamic Action ID for this vote
     * @param _metadata The metadata or vote information attached to this vote
     * @return voteId The ID(or index) of this vote in the votes array.
     */
-    function _newVote(bytes _executionScript, uint256 _actionId, string _metadata) internal
+    function _newVote(bytes _executionScript, string _metadata) internal
     isInitialized returns (uint256 voteId)
     {
-        voteId = votes.length++;
-
+        require(_executionScript.uint32At(0x0) == 1); // solium-disable-line error-reason
+        uint256 actionId = parseScript(_executionScript);
+        voteId = voteLength++;
         Vote storage voteInstance = votes[voteId];
         voteInstance.creator = msg.sender;
         voteInstance.metadata = _metadata;
-        voteInstance.actionId = _actionId;
+        voteInstance.actionId = actionId;
         voteInstance.startDate = uint64(block.timestamp); // solium-disable-line security/no-block-members
         voteInstance.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
         voteInstance.totalVoters = token.totalSupplyAt(voteInstance.snapshotBlock);
         voteInstance.candidateSupportPct = globalCandidateSupportPct;
-        voteInstance.minParticipationPct = globalMinParticipationPct;
-        require(_executionScript.uint32At(0x0) == 1); // solium-disable-line error-reason
+        voteInstance.minQuorum = globalMinQuorum;
         // First Static Parameter in script parsed for the externalId
         emit ExternalContract(voteId, _executionScript.addressAt(0x4),_executionScript.bytes32At(0x0));
         emit StartVote(voteId);
@@ -469,7 +466,8 @@ contract DotVoting is ADynamicForwarder, AragonApp {
         uint256 actionId = voteInstance.actionId;
         Action storage action = actions[actionId];
         bytes32[] memory candidateKeys = actions[actionId].optionKeys;
-        for (uint256 i = 0; i < candidateKeys.length; i++) {
+        uint256 candidateLength = candidateKeys.length;
+        for (uint256 i = 0; i < candidateLength; i++) {
             bytes32 key = candidateKeys[i];
             OptionState storage candidateState = action.options[key];
             if (!_isValuePct(candidateState.actionSupport, voteInstance.totalParticipation, voteInstance.candidateSupportPct)) {
@@ -486,12 +484,15 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     */
     function _executeVote(uint256 _voteId) internal {
         Vote storage voteInstance = votes[_voteId];
+        uint256 actionId = voteInstance.actionId;
+        Action storage action = actions[actionId];
         uint256 candidateSupportPct = voteInstance.candidateSupportPct;
         if (candidateSupportPct > 0) {
             _pruneVotes(_voteId, candidateSupportPct);
         }
         bytes memory script = encodeInput(voteInstance.actionId);
         emit ExecutionScript(script, 0);
+        action.executed = true;
         runScript(script, new bytes(0), new address[](0));
         emit ExecuteVote(_voteId);
     }

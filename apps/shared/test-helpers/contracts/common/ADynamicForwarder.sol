@@ -12,7 +12,13 @@ import "../evmscript/ScriptHelpers.sol";
 // TODO: Research why using the @aragon/os version breaks coverage
 import "./IForwarder.sol";
 
-
+/**
+  * @title ADynamicForwarder App
+  * @author Autark
+  * @dev This serves as an abstract contract to facilitate any voting pattern where dynamic
+  *     results must be passed out of the contract. It provides options for the voting contract
+  *     to then act upon and helpers to parce and encode evmScripts from/to options.
+  */
 contract ADynamicForwarder is IForwarder {
     using ScriptHelpers for bytes;
     using SafeMath for uint256;
@@ -49,12 +55,12 @@ contract ADynamicForwarder is IForwarder {
     }
 
     mapping (bytes32 => address ) optionAddresses;
-    Action[] actions;
+    mapping (uint256 => Action) actions;
+    uint256 actionsLength = 0;
 
     event AddOption(uint256 actionId, address optionAddress, uint256 optionQty);
     event OptionQty(uint256 qty);
     event Address(address currentOption);
-    event LogVal(uint256 value);
     event OrigScript(bytes script);
 
     /**
@@ -156,8 +162,8 @@ contract ADynamicForwarder is IForwarder {
         6. Level 1 external references
         7. level 2 external references
         */
-        uint256 startOffset = 0x04 + 0x14 + 0x04;
-        paramOffset = _executionScript.uint256At(startOffset + 0x04 + (0x20 * (_paramNum - 1) )) + 0x20;
+        paramOffset = _executionScript.uint256At(0x20 + (0x20 * (_paramNum - 1) )) + 0x20;
+
     }
 
     function substring(
@@ -402,7 +408,6 @@ contract ADynamicForwarder is IForwarder {
 
     function encodeInput(uint256 _actionId) internal returns(bytes) {
         Action storage action = actions[_actionId];
-        action.executed = true;
         uint256 optionsLength = action.optionKeys.length;
 
         // initialize the pointer for the originally parsed script
@@ -413,7 +418,6 @@ contract ADynamicForwarder is IForwarder {
         // dynamic-length parameters will be encoded
         // This can probably be hard-coded now that we're nailing down this specification
         uint256 dynamicOffset = origExecScript.uint256At(32);
-        emit LogVal(dynamicOffset);
         // The total length of the new script will be two 32 byte spaces
         // for each candidate (one for support one for address)
         // as well as 3 32 byte spaces for
@@ -421,10 +425,7 @@ contract ADynamicForwarder is IForwarder {
         // and the two dynamic param locations
         // as well as additional space for the staticParameters
         uint256 infoStrLength = action.infoStringLength;
-        emit LogVal(infoStrLength);
-        emit LogVal(optionsLength);
         uint256 desStrLength = bytes(action.description).length;
-        emit LogVal(desStrLength);
         // Calculate the total length of the call script to be encoded
         // 228: The words needed to specify lengths of the various dynamic params
         //      There are  7 dynamic params in this spec so 7 * 32 + function hash = 228
@@ -433,12 +434,10 @@ contract ADynamicForwarder is IForwarder {
         // optionsLength: The quantity of options in the action script multiplied by 160
         //      aince each option will require 5 words for it's data (160 = 32 * 5)
         uint256 callDataLength = 228 + dynamicOffset + optionsLength * 160;
-        emit LogVal(callDataLength);
         // add the length of the info and description strings to the total length
         // string lengths that aren't cleanly divisible by 32 require an extra word
         callDataLength += (infoStrLength / 32) * 32 + (infoStrLength % 32 == 0 ? 0 : 32);
         callDataLength += (desStrLength / 32) * 32 + (desStrLength % 32 == 0 ? 0 : 32);
-        emit LogVal(callDataLength);
         // initialize a location in memory to copy in the call data length
         bytes memory callDataLengthMem = new bytes(32);
         // copy the call data length into the memory location
@@ -450,7 +449,6 @@ contract ADynamicForwarder is IForwarder {
         //  2. target address (20 bytes)
         //  3. callDataLength itself (4 bytes)
         bytes memory script = new bytes(callDataLength + 28);
-        emit LogVal(callDataLength + 28);
         // copy the header info plus the dynamicOffset entry into the first param
         // since it doesn't change
         script.copy(origExecScript.getPtr() + 32,0, 64);
@@ -482,13 +480,13 @@ contract ADynamicForwarder is IForwarder {
     }
 
     function parseScript(bytes _executionScript) internal returns(uint256 actionId) {
-        actionId = actions.length++;
+        actionId = actionsLength++;
         Action storage actionInstance = actions[actionId];
         actionInstance.executionScript = _executionScript;
         actionInstance.infoStringLength = 0;
         actionInstance.scriptOffset = 0;
         actionInstance.scriptRemainder = 0;
-        // Spec ID must be 2
+        // Spec ID must be 1
         require(_executionScript.uint32At(0x0) == 1); // solium-disable-line error-reason
         if (_executionScript.length != 4) {
             uint256 scriptOffset;
