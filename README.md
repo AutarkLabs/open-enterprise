@@ -1,5 +1,5 @@
 # Open Enterprise
-*Note: Open Enterprise is the new name of That Planning Suite. We still need to update the Github URL.*
+*Note: Open Enterprise is the new name of That Planning Suite. We still need to update the Github repo URL.*
 
 [![Build Status](https://img.shields.io/travis/AutarkLabs/planning-suite.svg?style=flat-square)](https://travis-ci.org/AutarkLabs/planning-suite) [![Coverage Status](https://img.shields.io/coveralls/github/AutarkLabs/planning-suite.svg?style=flat-square)](https://coveralls.io/github/AutarkLabs/planning-suite)
 
@@ -7,7 +7,6 @@
 <p align="center">
   <a href="#development-setup">Development Setup</a> •
   <a href="#app-overview">App Overview</a> •
-  <a href="#design-concepts">Design Concepts</a> •
   <a href="#contact">Contact</a>
 </p>
 <!-- markdownlint-enable MD033 -->
@@ -51,7 +50,7 @@ $ npm run start:dot
 
 ## App Overview
 
-The Planning Suite is a collection of five Aragon Apps that supports the following:
+Open Enterprise is a collection of five Aragon Apps that supports the following:
 
 - **Allocations:** The Allocations app is used to propose a financial allocation meant to be distributed to multiple parties. Allocation proposals are forwarded to the Dot Voting app. The percentage of the allocation amount distributed to each party is determined based on the results of the Dot Vote.
 - **Address Book:** Maintain a list of Ethereum addresses mapped to human-readable names. The Address Book will enable a more user-friendly way to access and review common addresses a DAO uses for Allocations and Dot Voting.
@@ -62,22 +61,6 @@ The Planning Suite is a collection of five Aragon Apps that supports the followi
 - **Rewards:** Distributes payments to token holders based on the number of tokens one has earned in a specific cycle of time (one-time reward) or based on the total tokens one holds (dividend).
 
 ### [Review more details](https://www.autark.xyz/apps)
-
-## Design Concepts
-
-These are some initial concepts. We expect to refine them and gather community feedback once approved.
-
-### Projects App
-
-![ara_planning1](https://uploads-ssl.webflow.com/5d1c488f1ded343e61367f25/5d3ed807b1eba412922190ce_Projects-1-p-1080.png)
-
-#### Allocations App
-
-![ara_planning2](https://uploads-ssl.webflow.com/5d1c488f1ded343e61367f25/5d3ed881cb7dfd5a9cf80747_Allocations-1-p-1080.png)
-
-#### Rewards App
-
-![ara_planning3](https://uploads-ssl.webflow.com/5d1c488f1ded343e61367f25/5d3ed90373102c7f44c763f1_Rewards-2-p-1080.png)
 
 
 ## Contact
