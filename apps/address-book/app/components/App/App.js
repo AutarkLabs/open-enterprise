@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import styled from 'styled-components'
 
 import { useAragonApi } from '@aragon/api-react'
 import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
@@ -49,13 +48,11 @@ const App = () => {
         onResolve={handleResolveLocalIdentity}
         onShowLocalIdentityModal={handleShowLocalIdentityModal}
       >
-        <ScrollWrapper>
-          <Entities
-            entities={entries}
-            onNewEntity={newEntity}
-            onRemoveEntity={removeEntity}
-          />
-        </ScrollWrapper>
+        <Entities
+          entities={entries}
+          onNewEntity={newEntity}
+          onRemoveEntity={removeEntity}
+        />
         <SidePanel onClose={closePanel} opened={panelVisible} title="New entity">
           <NewEntity onCreateEntity={createEntity} />
         </SidePanel>
@@ -64,11 +61,4 @@ const App = () => {
   )
 }
 
-const ScrollWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: stretch;
-  overflow: auto;
-  flex-grow: 1;
-`
 export default App

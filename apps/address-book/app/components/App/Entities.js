@@ -31,55 +31,53 @@ const Entities = ({ entities, onNewEntity, onRemoveEntity }) => {
     return <Empty action={onNewEntity} />
   } else {
     return (
-      <div css="margin-bottom: 10px">
-        <DataView
-          mode="table"
-          fields={[ 'Entity', '' ]}
-          entries={
-            entities.sort(entitiesSort).map(({ data: { name, entryAddress, entryType } }) =>
-              [ name, entryAddress, entryType ]
-            )
-          }
+      <DataView
+        mode="table"
+        fields={[ 'Entity', '' ]}
+        entries={
+          entities.sort(entitiesSort).map(({ data: { name, entryAddress, entryType } }) =>
+            [ name, entryAddress, entryType ]
+          )
+        }
 
-          renderEntry={([ name, entryAddress, entryType ]) => {
-            const typeRow = ENTITY_TYPES.filter(row => row.name === entryType)[0]
-            const values = [
+        renderEntry={([ name, entryAddress, entryType ]) => {
+          const typeRow = ENTITY_TYPES.filter(row => row.name === entryType)[0]
+          const values = [
             // eslint-disable-next-line react/jsx-key
-              <EntityWrapper>
-                <Text
-                  size="xlarge"
-                  css="padding-bottom: 5px"
-                >
-                  {name}
-                </Text>
-                <LocalIdentityBadge
-                  networkType={network && network.type}
-                  entity={entryAddress}
-                  shorten={true}
-                />
-              </EntityWrapper>,
-
-              // eslint-disable-next-line react/jsx-key
-              <Badge
-                foreground={typeRow.fg}
-                background={typeRow.bg}
-                css="text-align: right"
+            <EntityWrapper>
+              <Text
+                size="xlarge"
+                css="padding-bottom: 5px"
               >
-                {typeRow.name}
-              </Badge>
-            ]
-            return values
-          }}
+                {name}
+              </Text>
+              <LocalIdentityBadge
+                networkType={network && network.type}
+                entity={entryAddress}
+                shorten={true}
+              />
+            </EntityWrapper>,
 
-          renderEntryActions={([ , entryAddress ]) => (
-            <ContextMenu>
-              <ContextMenuItem onClick={removeEntity(entryAddress)}>
+            // eslint-disable-next-line react/jsx-key
+            <Badge
+              foreground={typeRow.fg}
+              background={typeRow.bg}
+              css="text-align: right"
+            >
+              {typeRow.name}
+            </Badge>
+          ]
+          return values
+        }}
+
+        renderEntryActions={([ , entryAddress ]) => (
+          <ContextMenu>
+            <ContextMenuItem onClick={removeEntity(entryAddress)}>
                 Remove
-              </ContextMenuItem>
-            </ContextMenu>
-          )}
-        />
-      </div>
+            </ContextMenuItem>
+          </ContextMenu>
+        )}
+      />
     )
   }
 }

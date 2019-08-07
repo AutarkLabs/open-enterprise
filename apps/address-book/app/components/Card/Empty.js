@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Button, EmptyStateCard, unselectable } from '@aragon/ui'
+import { Button, EmptyStateCard, GU, unselectable } from '@aragon/ui'
 import icon from '../../assets/empty-ab.svg'
 
 const Icon = () => <img src={icon} alt="Empty entities icon" />
@@ -26,10 +26,10 @@ Empty.propTypes = {
 
 const EmptyWrapper = styled.div`
   ${unselectable};
-  flex-grow: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  height: calc(100vh - ${14 * GU}px);
 `
 
 export default Empty
