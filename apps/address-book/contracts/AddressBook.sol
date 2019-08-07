@@ -112,17 +112,20 @@ contract AddressBook is AragonApp {
     }
 
     /**
-     * @notice Update address `_addr` with new entity `_cid` in the registry.
+     * @notice Update address `_addr` from `_oldCid` to `_newCid` in the registry.
      * @dev this function only supports CID's that are base58-encoded
      * @param _addr The ID of the entry to update
-     * @param _cid The new CID of updated entity info
+     * @param _oldCid The CID of the existing information
+     * @param _newCid The new CID of updated entity info
      */
     function updateEntry(
         address _addr,
-        string _cid
-    ) external auth(UPDATE_ENTRY_ROLE) entryExists(_addr) cidIsValid(_cid)
+        string _oldCid,
+        string _newCid
+    ) external auth(UPDATE_ENTRY_ROLE) entryExists(_addr) cidIsValid(_newCid)
     {
-        entries[_addr].data = _cid;
+        require(keccak256(bytes(_oldCid)) == keccak256(bytes(entries[_addr].data)), ERROR_NO_CID);
+        entries[_addr].data = _newCid;
         emit EntryUpdated(_addr);
     }
 

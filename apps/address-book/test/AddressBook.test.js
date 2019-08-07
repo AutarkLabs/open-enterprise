@@ -90,7 +90,7 @@ contract('AddressBook', accounts => {
     })
 
     it('should allow entry updates', async () => {
-      await app.updateEntry(starfleet, updatedCid)
+      await app.updateEntry(starfleet, exampleCid, updatedCid)
       entry1 = await app.getEntry(starfleet)
       assert.equal(entry1, updatedCid)
     })
@@ -164,12 +164,17 @@ contract('AddressBook', accounts => {
     })
     it('should revert when an updated CID =/= 46 chars', async () => {
       return assertRevert(async () => {
-        await app.updateEntry(borg, 'test_CID')
+        await app.updateEntry(borg, exampleCid, 'test_CID')
+      })
+    })
+    it('should revert when an updating a CID and the oldCID doesn\'t match what\'s stored', async () => {
+      return assertRevert(async () => {
+        await app.updateEntry(borg, updatedCid, 'test_CID')
       })
     })
     it('should revert when updating a non-existant entry', async () => {
       return assertRevert(async () => {
-        await app.updateEntry(jeanluc, updatedCid)
+        await app.updateEntry(jeanluc, exampleCid, updatedCid)
       })
     })
   })
