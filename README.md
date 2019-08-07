@@ -1,16 +1,22 @@
-# That Planning Suite
+# Open Enterprise
+*Note: Open Enterprise is the new name of That Planning Suite. We still need to update the Github URL.*
 
 [![Build Status](https://img.shields.io/travis/AutarkLabs/planning-suite.svg?style=flat-square)](https://travis-ci.org/AutarkLabs/planning-suite) [![Coverage Status](https://img.shields.io/coveralls/github/AutarkLabs/planning-suite.svg?style=flat-square)](https://coveralls.io/github/AutarkLabs/planning-suite)
 
 <!-- markdownlint-disable MD033 -->
 <p align="center">
   <a href="#development-setup">Development Setup</a> •
-  <a href="#background">Background</a> •
-  <a href="#details">Details</a> •
+  <a href="#app-overview">App Overview</a> •
   <a href="#design-concepts">Design Concepts</a> •
   <a href="#contact">Contact</a>
 </p>
 <!-- markdownlint-enable MD033 -->
+
+Open Enterprise is a collection of Aragon apps that enable organizations to curate issues, collectively budget, and design custom reward and bounty programs. If you are interested in viewing app demos or want to install them to your Rinkeby organizations, learn more here:
+https://www.autark.xyz/apps
+
+**Release status:** The apps are currently on Rinkeby and undergoing a security audit and UX enhancements. The apps will be released to mainnet in Q4 2019.
+
 
 ## Development Setup
 
@@ -43,11 +49,7 @@ $ npm run start:dot
 
 **Detailed information in the [DEVELOPMENT_NOTES.md](/docs/DEVELOPMENT_NOTES.md) document.**
 
-## Background
-
-The proposal for an Aragon [Planning Suite](https://github.com/aragon/nest/pull/24) was developed by members of [Autark](https://autark.xyz), and received funding via [Aragon's Nest program](https://blog.aragon.one/introducing-aragon-nest-1aa8c91c0566): an example of decentralization at it's finest. We are developing this app as a collaborative unit because it is a crucial building block for any organization that aims to coordinate work and streamline management duties, without traditional managers. These apps will work with MiniMe ERC-20 tokens or Aragon DAOs.
-
-## The Suite
+## App Overview
 
 The Planning Suite is a collection of five Aragon Apps that supports the following:
 
@@ -59,7 +61,7 @@ The Planning Suite is a collection of five Aragon Apps that supports the followi
 - **Dot Voting:** Dot Voting is used to cast votes for Allocation or Issue Curation proposals. Members can vote on how to distribute an allocation across distinct entities or prioritize a list of Github issues by specifying a percentage of votes per option.
 - **Rewards:** Distributes payments to token holders based on the number of tokens one has earned in a specific cycle of time (one-time reward) or based on the total tokens one holds (dividend).
 
-### Please review the [White Paper](http://goo.gl/eXAybm) for full details
+### [Review more details](https://www.autark.xyz/apps)
 
 ## Design Concepts
 
@@ -67,26 +69,16 @@ These are some initial concepts. We expect to refine them and gather community f
 
 ### Projects App
 
-![ara_planning1](docs/screenshots/Projects_app.jpg)
+![ara_planning1](https://uploads-ssl.webflow.com/5d1c488f1ded343e61367f25/5d3ed807b1eba412922190ce_Projects-1-p-1080.png)
 
 #### Allocations App
 
-![ara_planning2](docs/screenshots/Allocations_app.jpg)
+![ara_planning2](https://uploads-ssl.webflow.com/5d1c488f1ded343e61367f25/5d3ed881cb7dfd5a9cf80747_Allocations-1-p-1080.png)
 
 #### Rewards App
 
-![ara_planning3](docs/screenshots/Rewards_app.jpg)
+![ara_planning3](https://uploads-ssl.webflow.com/5d1c488f1ded343e61367f25/5d3ed90373102c7f44c763f1_Rewards-2-p-1080.png)
 
-#### Issue Curation using Dot Voting
-
-![ara_planning4](docs/screenshots/Dot_vote_issue.jpg)
-
-### Flow Diagram
-
-#### Financial Planning Toolkit
-
-Hypothetical flow diagram. The components should be "plug and play" to design a rewards system tailored to an organization's unique needs.
-![image](https://user-images.githubusercontent.com/2584493/36970345-91ff7ee6-2068-11e8-94a6-968f055b7ebc.png)
 
 ## Contact
 
@@ -94,4 +86,4 @@ We can be found in the [`autark.community` keybase channel](https://keybase.io/t
 
 ## Special Thanks
 
-Special thanks go to the Aragon team for much of the work this project is based on, as well as for allocating us this grant to build the tools we need to DAOify open source development!
+Special thanks to the Aragon Network for funding our work with three grants to date ([Nest](https://blog.aragon.one/introducing-aragon-nest-1aa8c91c0566), [AGP-19](https://github.com/aragon/AGPs/blob/master/AGPs/AGP-19.md), and [AGP-73](https://github.com/aragon/AGPs/blob/master/AGPs/AGP-73.md).
