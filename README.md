@@ -86,4 +86,4 @@ We can be found in the [`autark.community` keybase channel](https://keybase.io/t
 
 ## Special Thanks
 
-Special thanks to the Aragon Network for funding our work with three grants to date ([Nest](https://blog.aragon.one/introducing-aragon-nest-1aa8c91c0566), [AGP-19](https://github.com/aragon/AGPs/blob/master/AGPs/AGP-19.md), and [AGP-73](https://github.com/aragon/AGPs/blob/master/AGPs/AGP-73.md).
+Special thanks to the Aragon Network for funding our work with three grants to date ([Nest](https://blog.aragon.one/introducing-aragon-nest-1aa8c91c0566), [AGP-19](https://github.com/aragon/AGPs/blob/master/AGPs/AGP-19.md), and [AGP-73](https://github.com/aragon/AGPs/blob/master/AGPs/AGP-73.md)).
