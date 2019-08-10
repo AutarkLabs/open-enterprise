@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState }  from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import emptyIcon from './assets/new_dot_vote.svg'
@@ -7,53 +7,35 @@ import tokenBalanceOfAbi from './abi/token-balanceof.json'
 import tokenDecimalsAbi from './abi/token-decimals.json'
 import tokenSymbolAbi from './abi/token-symbol.json'
 import { safeDiv } from './utils/math-utils'
-import { hasLoadedVoteSettings } from './utils/vote-settings'
 import { isBefore } from 'date-fns'
-import { EmptyStateCard, SidePanel } from '@aragon/ui'
+import { BackButton, Bar, EmptyStateCard, SidePanel, } from '@aragon/ui'
 import { VotePanelContent } from './components/Panels'
-import { EMPTY_CALLSCRIPT, getQuorumProgress, getTotalSupport } from './utils/vote-utils'
+import { getQuorumProgress, getTotalSupport } from './utils/vote-utils'
 
 const tokenAbi = [].concat(tokenBalanceOfAbi, tokenDecimalsAbi, tokenSymbolAbi)
 
 const EmptyIcon = () => <img src={emptyIcon} alt="" />
 
-class Decisions extends React.Component {
-  static propTypes = {
-    app: PropTypes.object,
-    tokenAddress: PropTypes.string.isRequired,
-    userAccount: PropTypes.string.isRequired,
-    votes: PropTypes.arrayOf(PropTypes.object).isRequired,
-    entries: PropTypes.arrayOf(PropTypes.object).isRequired,
-    minParticipationPct: PropTypes.number.isRequired,
-    pctBase: PropTypes.number.isRequired,
-    voteTime: PropTypes.number.isRequired,
-  }
-  constructor(props) {
-    super(props)
-    this.state = {
-      createVoteVisible: false,
-      currentVoteId: 0,
-      settingsLoaded: true,
-      tokenContract: this.getTokenContract(props.tokenAddress),
-      voteVisible: false,
-      voteSidebarOpened: false,
-    }
-  }
+const Decisions = ({
+  app,
+  pctBase,
+  minParticipationPct,
+  userAccount,
+  votes,
+  entries,
+  voteTime,
+  tokenAddress,
+}) => {
+  const [ currentVoteId, setCurrentVoteId ] = useState(-1)
+  const [ now, setNow ] = useState(new Date())
 
-  componentWillMount() {
-    this.setState({
-      now : new Date()
-    })
-  }
+  const getTokenContract = (tokenAddress) => 
+    tokenAddress && app.external(tokenAddress, tokenAbi)
 
-  componentDidMount() {
-    setInterval( () => {
-      this.setState({
-        now : new Date()
-      })
-    },1000)
-  }
+  const tokenContract = getTokenContract(tokenAddress)
 
+  //setInterval( () => setNow(new Date(), 1000))
+  /*
   UNSAFE_componentWillReceiveProps(nextProps) {
     const { settingsLoaded } = this.state
     // Is this the first time we've loaded the settings?
@@ -68,138 +50,112 @@ class Decisions extends React.Component {
       })
     }
   }
+*/
 
-  getTokenContract(tokenAddress) {
-    return tokenAddress && this.props.app.external(tokenAddress, tokenAbi)
-  }
-  handleCreateVote = question => {
-    this.props.app.newVote(EMPTY_CALLSCRIPT, question)
-    this.handleCreateVoteClose()
-  }
-  handleCreateVoteOpen = () => {
-    this.setState({ createVoteVisible: true })
-  }
-  handleCreateVoteClose = () => {
-    this.setState({ createVoteVisible: false })
-  }
-  handleVoteOpen = voteId => {
-    const exists = this.props.votes.some(vote => voteId === vote.voteId)
+    
+  const handleVoteOpen = voteId => {
+    const exists = votes.some(vote => voteId === vote.voteId)
     if (!exists) return
-    this.setState({
-      currentVoteId: voteId,
-      voteVisible: true,
-      voteSidebarOpened: false,
-    })
-  }
-  handleVote = (voteId, supports) => {
-    this.props.app.vote(voteId, supports)
-    this.handleVoteClose()
-  }
-  handleVoteClose = () => {
-    this.setState({ voteVisible: false })
-  }
-  handleVoteTransitionEnd = opened => {
-    this.setState(opened ? { voteSidebarOpened: true } : { currentVoteId: -1 })
+    setCurrentVoteId(voteId)
   }
 
-  getAddressLabel = (entries, option) => {
+  const handleVote = (voteId, supports) => {
+    app.vote(voteId, supports)
+    handleVoteClose()
+  }
+  const handleVoteClose = () => {
+  }
+  
+  const getAddressLabel = (entries, option) => {
     const index = entries.findIndex(entry => entry.addr === option.label)
     return index > -1 ? entries[index].data.name : option.label
   }
-  render() {
-    const {
-      app,
-      pctBase,
-      minParticipationPct,
-      userAccount,
-      votes,
-      entries,
-      voteTime,
-    } = this.props
-    const {
-      createVoteVisible,
-      currentVoteId,
-      settingsLoaded,
-      tokenContract,
-      voteSidebarOpened,
-      voteVisible,
-    } = this.state
 
-    const displayVotes = settingsLoaded && votes.length > 0
+  const handleBackClick = () => setCurrentVoteId(-1)
 
-    // Add useful properties to the votes
-    const preparedVotes = displayVotes
-      ? votes.map(vote => {
-        const endDate = new Date(vote.data.startDate + voteTime)
-        vote.data.options = vote.data.options.map(option => {
-          return {
-            ...option,
-            label: this.getAddressLabel(entries, option)
-          }
-        })
+  const displayVotes = votes.length > 0
+
+  // Add useful properties to the votes
+  const preparedVotes = displayVotes
+    ? votes.map(vote => {
+      const endDate = new Date(vote.data.startDate + voteTime)
+      vote.data.options = vote.data.options.map(option => {
         return {
-          ...vote,
-          endDate,
-          open: isBefore(this.state.now, endDate),
-          quorum: safeDiv(vote.data.minAcceptQuorum, pctBase),
-          quorumProgress: getQuorumProgress(vote.data),
-          minParticipationPct: minParticipationPct,
-          description: vote.data.metadata,
-          totalSupport: getTotalSupport(vote.data),
-          type: vote.data.type,
+          ...option,
+          label: getAddressLabel(entries, option)
         }
       })
-      : votes
-    const currentVote =
+      return {
+        ...vote,
+        endDate,
+        open: isBefore(now, endDate),
+        quorum: safeDiv(vote.data.minAcceptQuorum, pctBase),
+        quorumProgress: getQuorumProgress(vote.data),
+        minParticipationPct: minParticipationPct,
+        description: vote.data.metadata,
+        totalSupport: getTotalSupport(vote.data),
+        type: vote.data.type,
+      }
+    })
+    : votes
+
+  const currentVote =
       currentVoteId === -1
         ? null
         : preparedVotes.find(vote => vote.voteId === currentVoteId)
 
-    return (
-      <StyledDecisions>
-        <ScrollWrapper>
-          {displayVotes ? (
-            <Votes votes={preparedVotes} onSelectVote={this.handleVoteOpen} app={app}/>
-          ) : (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexGrow: 1
-              }}
-            >
-              <EmptyStateCard
-                icon={<EmptyIcon />}
-                title="You do not have any dot votes."
-                text="Use the Allocations app to get started."
-                onActivate={() => <div />}
-              />
-            </div>
-          )}
-        </ScrollWrapper>
-
-        {displayVotes && currentVote &&(
-          <SidePanel
-            title={'Dot Vote #' + currentVote.voteId}
-            opened={Boolean(!createVoteVisible && voteVisible)}
-            onClose={this.handleVoteClose}
-            onTransitionEnd={this.handleVoteTransitionEnd}
-          >
+  return (
+    <StyledDecisions>
+      {
+        currentVote !== null ? (
+          <React.Fragment>
+            <Bar>
+              <BackButton onClick={handleBackClick} />
+            </Bar>
             <VotePanelContent
               app={app}
               vote={currentVote}
               user={userAccount}
-              ready={voteSidebarOpened}
               tokenContract={tokenContract}
-              onVote={this.handleVote}
+              onVote={handleVote}
               minParticipationPct={minParticipationPct}
             />
-          </SidePanel>
+          </React.Fragment>
+        ) : (
+          <ScrollWrapper>
+            {displayVotes ? (
+              <Votes votes={preparedVotes} onSelectVote={handleVoteOpen} app={app}/>
+            ) : (
+              <div css={`
+              display: flex;
+              align-atems: center;
+              justify-content: center;
+              flex-grow: 1;
+            `}
+              >
+                <EmptyStateCard
+                  icon={<EmptyIcon />}
+                  title="You do not have any dot votes."
+                  text="Use the Allocations app to get started."
+                  onActivate={() => <div />}
+                />
+              </div>
+            )}
+          </ScrollWrapper>
         )}
-      </StyledDecisions>
-    )
-  }
+    </StyledDecisions>
+  )
+}
+
+Decisions.propTypes = {
+  app: PropTypes.object,
+  tokenAddress: PropTypes.string.isRequired,
+  userAccount: PropTypes.string.isRequired,
+  votes: PropTypes.arrayOf(PropTypes.object).isRequired,
+  entries: PropTypes.arrayOf(PropTypes.object).isRequired,
+  minParticipationPct: PropTypes.number.isRequired,
+  pctBase: PropTypes.number.isRequired,
+  voteTime: PropTypes.number.isRequired,
 }
 
 const ScrollWrapper = styled.div`

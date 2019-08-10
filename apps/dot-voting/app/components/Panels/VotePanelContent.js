@@ -4,11 +4,12 @@ import styled from 'styled-components'
 import { BigNumber } from 'bignumber.js'
 import {
   Badge,
+  Box,
   Button,
   Countdown,
+  GU,
   Info,
   SidePanelSeparator,
-  SidePanelSplit,
   Text,
   theme,
 } from '@aragon/ui'
@@ -26,6 +27,7 @@ import {
 } from '../../utils/vote-types'
 import { isAddress } from 'web3-utils'
 import { LocalIdentityBadge } from '../../../../../shared/identity'
+import { useNetwork } from '@aragon/api-react'
 
 class VotePanelContent extends React.Component {
   static propTypes = {
@@ -174,6 +176,7 @@ class VotePanelContent extends React.Component {
 
   render() {
     const { network, vote, minParticipationPct } = this.props
+    console.log('-V-', network, vote, minParticipationPct)
     const {
       showResults,
       remaining,
@@ -232,8 +235,8 @@ class VotePanelContent extends React.Component {
       format(date, 'dd/MM/yy') + ' at ' + format(date, 'HH:mm') + 'UTC'
 
     return (
-      <div>
-        <SidePanelSplit>
+      <Box>
+        <React.Fragment>
           <div>
             <h2>
               <Label>Created by</Label>
@@ -270,7 +273,7 @@ class VotePanelContent extends React.Component {
               )}
             </div>
           </div>
-        </SidePanelSplit>
+        </React.Fragment>
         {description && (
           <Part>
             <React.Fragment>
@@ -281,7 +284,7 @@ class VotePanelContent extends React.Component {
             </React.Fragment>
           </Part>
         )}
-        <SidePanelSplit>
+        <React.Fragment>
           <div>
             {voteBalance !== undefined ? (
               <React.Fragment>
@@ -310,7 +313,7 @@ class VotePanelContent extends React.Component {
               </Text>
             </p>
           </div>
-        </SidePanelSplit>
+        </React.Fragment>
 
         {open && (userBalance !== '0') && (
           <div>
@@ -397,9 +400,7 @@ class VotePanelContent extends React.Component {
                   // Then truncate the address
                   // TODO: check use case with issue curation
                   label={
-                    <span
-                      style={{ display: 'flex', justifyContent: 'flex-start' }}
-                    >
+                    <span css="display: flex; justify-content: flex-start">
                       {isAddress(option.label) ? (
                         <LocalIdentityBadge
                           networkType={network.type}
@@ -407,13 +408,12 @@ class VotePanelContent extends React.Component {
                           shorten={true}
                         />
                       ) : (
-                        <span
-                          style={{
-                            width: 'auto',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
+                        <span css={`
+                            width: auto;
+                            overflow: hidden;
+                            textOverflow: ellipsis;
+                            whiteSpace: nowrap;
+                          `}
                         >
                           {option.label}
                         </span>
@@ -434,7 +434,7 @@ class VotePanelContent extends React.Component {
                           }}
                         >
                           YOU:
-                          <span style={{ paddingLeft: '5px' }}>
+                          <span css="padding-left: 5px">
                             {voteWeightsToggled
                               ? `${voteWeights[index]}%`
                               : `${voteAmounts[index]}`}
@@ -469,7 +469,7 @@ class VotePanelContent extends React.Component {
             </Text>
           )}
         </div>
-      </div>
+      </Box>
     )
   }
 }
@@ -553,4 +553,8 @@ const PastDate = styled.time`
 `
 
 // eslint-disable-next-line import/no-unused-modules
-export default provideNetwork(VotePanelContent)
+// eslint-disable-next-line react/display-name
+export default props => {
+  const network = useNetwork()
+  return <VotePanelContent network={network} {...props} />
+}
