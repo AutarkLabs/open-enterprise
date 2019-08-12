@@ -122,7 +122,7 @@ class App extends React.PureComponent {
               event: REQUESTED_GITHUB_TOKEN_SUCCESS,
               status: STATUS.AUTHENTICATED,
               token,
-            })
+            }).toPromise()
           }
         )
       } catch (err) {
@@ -135,7 +135,7 @@ class App extends React.PureComponent {
               event: REQUESTED_GITHUB_TOKEN_FAILURE,
               status: STATUS.FAILED,
               token: null,
-            })
+            }).toPromise()
           }
         )
       }

@@ -1,11 +1,6 @@
-import { of } from 'rxjs'
-import { pluck } from 'rxjs/operators'
-
 import vaultAbi from '../../../shared/json-abis/vault'
 import { app, handleEvent } from './'
 import { initializeTokens, initializeGraphQLClient } from './helpers'
-import { INITIAL_STATE } from './'
-import { INITIALIZE_STORE, INITIALIZE_VAULT } from './eventTypes'
 
 export const initStore = vaultAddress => {
   const vaultContract = app.external(vaultAddress, vaultAbi.abi)
@@ -35,11 +30,12 @@ export const initStore = vaultAddress => {
 }
 
 const initState = (vaultContract) => async (cachedState) => {
-  const github = await app.getCache().toPromise()
-  if (github) {
+  let nextState = await initializeTokens(cachedState, vaultContract)
+  const github = await app.getCache('github').toPromise()
+  if (github && github.token) {
+    nextState.github = github
     initializeGraphQLClient(github.token)
   }
 
-  const nextState = await initializeTokens(cachedState, vaultContract)
   return nextState
 }

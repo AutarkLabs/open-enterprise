@@ -3,8 +3,6 @@ import {
   REQUESTED_GITHUB_TOKEN_SUCCESS,
   REQUESTED_GITHUB_TOKEN_FAILURE,
   REQUESTED_GITHUB_DISCONNECT,
-  INITIALIZE_STORE,
-  INITIALIZE_VAULT,
   REPO_ADDED,
   REPO_REMOVED,
   BOUNTY_ADDED,
@@ -39,16 +37,6 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
   let nextState = { ...state }
 
   switch (event) {
-  case INITIALIZE_STORE: {
-    nextState = { ...INITIAL_STATE, ...state }
-    if (nextState.github.token) {
-      initializeGraphQLClient(nextState.github.token)
-    }
-    return nextState
-  }
-  case INITIALIZE_VAULT: {
-    return nextState = await initializeTokens(state, vaultContract)
-  }
   case REQUESTING_GITHUB_TOKEN: {
     return state
   }
