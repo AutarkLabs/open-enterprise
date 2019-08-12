@@ -64,7 +64,12 @@ contract DiscussionApp is IForwarder, AragonApp {
         post.show = false;
         emit Hide(msg.sender, discussionThreadId, postId, now);
     }
-
+    /**
+     * @notice Revise a discussion post with ID '`postId`'.
+     * @param revisedPostCid The cid of the pre-revised post
+     * @param postId The postId to revise
+     * @param discussionThreadId The thread to hide this discussion from
+     */
     function revise(string revisedPostCid, uint postId, uint discussionThreadId) external auth(DISCUSSION_POSTER_ROLE) {
         DiscussionPost storage post = discussionThreadPosts[discussionThreadId][postId];
         require(post.author == msg.sender, "You cannot revise a post you did not author.");
@@ -78,7 +83,7 @@ contract DiscussionApp is IForwarder, AragonApp {
     // Forwarding fns
 
     /**
-    * @notice Tells whether the Voting app is a forwarder or not
+    * @notice Tells whether the Discussion app is a forwarder or not
     * @dev IForwarder interface conformance
     * @return Always true
     */
@@ -87,7 +92,7 @@ contract DiscussionApp is IForwarder, AragonApp {
     }
 
     /**
-    * @notice Creates a vote to execute the desired action, and casts a support vote if possible
+    * @notice Creates a discussion thread around the desired action
     * @dev IForwarder interface conformance
     * @param _evmScript Start vote with script
     */
@@ -104,7 +109,7 @@ contract DiscussionApp is IForwarder, AragonApp {
     * @notice Tells whether `_sender` can forward actions or not
     * @dev IForwarder interface conformance
     * @param _sender Address of the account intending to forward an action
-    * @return True if the given address can create votes, false otherwise
+    * @return True (eventually we should return if the given address can create a discussion thread, false otherwise)
     */
     function canForward(address _sender, bytes) public view returns (bool) {
         return true;
