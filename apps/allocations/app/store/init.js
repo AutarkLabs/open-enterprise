@@ -75,8 +75,11 @@ const createStore = async settings => {
     },
     {
       externals: [
-        settings.addressBook.contract,
-        settings.vault.contract,
+        { contract: settings.addressBook.contract },
+        {
+          contract: settings.vault.contract,
+          initializationBlock: vaultInitializationBlock
+        },
 
       ],
       init: initState(settings)
