@@ -80,5 +80,10 @@
     "rxjs-compat": "^6.4.0"
   },
   "husky": {
+    "hooks": {
+      "pre-commit": "lerna run --concurrency 1 --stream precommit",
+      "pre-push": "npm test",
+      "post-checkout": "npm prune && npm i"
+    }
   }
 }
