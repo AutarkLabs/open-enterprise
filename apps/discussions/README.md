@@ -1,125 +1,96 @@
-# Aragon React Boilerplate
+# Contextual Aragon Discussions
 
-> 🕵️ [Find more boilerplates using GitHub](https://github.com/search?q=topic:aragon-boilerplate) |
-> ✨ [Official boilerplates](https://github.com/search?q=topic:aragon-boilerplate+org:aragon)
+This repository is the starting point of contextual aragon discussions, it's composed of a few core components that a developer wishing to incorporate discussions needs to be aware of:
 
-React boilerplate for Aragon applications.
+1. Contextual discussion smart contract - in charge of storing all the DAO's discussion data. Each discussion post is represented as an IPFS content hash to keep storage costs as efficient as possible.
+2. `DiscussionsWrapper` component - a redux-like provider that provides discussion data through React context to all nested children and grandchildren.
+3. `Discussion` component - a discussion thread component that displays all the discussion posts of a specific discussion thread and allows the user to take specific actions like post, hide, and revise.
 
-This boilerplate includes a fully working example app, complete with a background worker and a front-end in React (with Aragon UI). Also comes with a DAO Template which will allow for using your app to interact with other Aragon apps like the Voting app. You can read more about DAO Template [here](https://hack.aragon.org/docs/templates-intro).
+The purpose of this readme is to document how all the moving parts are working together, how a developer could use this code in their own DAO, and what still needs to be done.
 
-## Usage
+### Prerequisites
 
-To setup use the command `create-aragon-app`:
+You first need to be running your contextual discussioned app + [aragon client](https://github.com/aragon/aragon) with a very specific version of aragon.js. You will need a version with the following 3 features:
 
-```sh
-npx create-aragon-app <app-name> react
-```
+1. [External transaction intents](https://github.com/aragon/aragon.js/pull/328)
+2. [Ability to get information about the DAO's installed apps](https://github.com/aragon/aragon.js/pull/332)
+3. [New forwarder API changes](https://github.com/aragon/aragon.js/pull/314)
 
-## Structure
+We'd recommend running the latest master branch of the [aragon client](https://github.com/aragon/aragon).
 
-This boilerplate has the following structure:
+These features should be included by default in aragon.js and aragon client come October 2019.
 
-```md
-root
-├── app
-├ ├── src
-├ └── package.json
-├── contracts
-├ ├── CounterApp.sol
-├ └── Template.sol
-├── migration
-├── test
-├── arapp.json
-├── manifest.json
-├── truffle.js
-└── package.json
-```
+### Setup
 
-- **app**: Frontend folder. Completely encapsulated, has its own package.json and dependencies.
-  - **src**: Source files.
-  - [**package.json**](https://docs.npmjs.com/creating-a-package-json-file): Frontend npm configuration file.
-- **contracts**: Smart Constracts folder.
-  - `CounterApp.sol`: Aragon app contract example.
-  - `Template.sol`: [Aragon Template](https://hack.aragon.org/docs/templates-intro) to deploy a fully functional DAO.
-- [**migrations**](https://truffleframework.com/docs/truffle/getting-started/running-migrations): Migrations folder.
-- **test**: Tests folder.
-- [**arapp.json**](https://hack.aragon.org/docs/cli-global-confg#the-arappjson-file): Aragon configuration file. Includes Aragon-specific metadata for your app.
-- [**manifest.json**](https://hack.aragon.org/docs/cli-global-confg#the-manifestjson-file): Aragon configuration file. Includes web-specific configurations.
-- [**truffle.js**](https://truffleframework.com/docs/truffle/reference/configuration): Truffle configuration file.
-- [**package.json**](https://docs.npmjs.com/creating-a-package-json-file): Main npm configuration file.
+##### Including the discussions app in your repo
 
-## Make the template work with your app
+If there is more demand for including contextual discussions in applications, we're going to rip out the discussions in this repo and publish them as node module(s). For now, you should just copy and paste the `/apps/discussions` directory into your app, and look at the `apps/planning-suite-kit` as a reference for setup.
 
-- Edit the roles defined in the template to configure your DAO as you want!
+##### Installing the discussions app
 
-## Run the template
-
-```sh
-npx aragon run --template Template --template-init @ARAGON_ENS
-```
-
-## Running your app
-
-### Using HTTP
-
-Running your app using HTTP will allow for a faster development process of your app's front-end, as it can be hot-reloaded without the need to execute `aragon run` every time a change is made.
-
-- First start your app's development server running `npm run start:app`, and keep that process running. By default it will rebuild the app and reload the server when changes to the source are made.
-
-- After that, you can run `npm run start:http` or `npm run start:http:template` which will compile your app's contracts, publish the app locally and create a DAO. You will need to stop it and run it again after making changes to your smart contracts.
-
-Changes to the app's background script (`app/script.js`) cannot be hot-reloaded, after making changes to the script, you will need to either restart the development server (`npm run start:app`) or rebuild the script `npm run build:script`.
-
-### Using IPFS
-
-Running your app using IPFS will mimic the production environment that will be used for running your app. `npm run start:ipfs` will run your app using IPFS. Whenever a change is made to any file in your front-end, a new version of the app needs to be published, so the command needs to be restarted.
-
-## What's in this boilerplate?
-
-### npm Scripts
-
-- **start** or **start:ipfs**: Runs your app inside a DAO served from IPFS
-- **start:http**: Runs your app inside a DAO served with HTTP (hot reloading)
-- **start:ipfs:template**: Creates a DAO with the [Template](https://github.com/aragon/aragon-react-boilerplate/blob/master/contracts/Template.sol) and serves the app from IPFS
-- **start:http:template**: Creates a DAO with the [Template](https://github.com/aragon/aragon-react-boilerplate/blob/master/contracts/Template.sol) and serves the app with HTTP (hot reloading)
-- **prepare**: Installs dependencies of the front-end
-- **start:app**: Starts a development server for your app
-- **compile**: Compiles the smart contracts
-- **build**: Builds the front-end and background script
-- **test**: Runs tests for the contracts
-- **publish:patch**: Releases a patch version to aragonPM (only frontend/content changes allowed)
-- **publish:minor**: Releases a minor version to aragonPM (only frontend/content changes allowed)
-- **publish:major**: Releases a major version to aragonPM (frontend **and** contract changes)
-- **versions**: Checks the currently installed versions of the app
-- **lint**: Checks the app and the contracts for linting errors
-- **lint:fix**: Fixes the lint errors that can be resolved automatically
-- **coverage**: Runs the tests for the contracts and creates a report
-
-### Libraries
-
-- [**@aragon/os**](https://github.com/aragon/aragonos): Aragon interfaces
-- [**@aragon/api**](https://github.com/aragon/aragon.js/tree/master/packages/aragon-api): Wrapper for Aragon application RPC
-- [**@aragon/ui**](https://github.com/aragon/aragon-ui): Aragon UI components (in React)
-
-## What you can do with this boilerplate?
-
-### Publish
-
-You can publish you app on [aragonPM](https://hack.aragon.org/docs/apm). See how in our [publish guide](https://hack.aragon.org/docs/guides-publish).
-
-> **Note**<br>
-> The [Template](https://github.com/aragon/aragon-react-boilerplate/blob/master/contracts/Template.sol) will not be published.
-
-### Using a different Ethereum account
-
-You can use a different account to interact with you app. [Check the documentation](https://hack.aragon.org/docs/guides-faq#set-a-private-key).
-
-### Propagate content
-
-You can propagate the content of your app on IPFS. Learn more in our [troubleshooting guide](https://hack.aragon.org/docs/guides-faq#propagating-your-content-hash-through-ipfs) or use the `aragon ipfs propagate` command:
+Here's a function we use to install the discussion app within the DAO:
 
 ```
-npx aragon ipfs propagate <cid>
+function createDiscussionApp(address root, ACL acl, Kernel dao) internal returns (DiscussionApp app) {
+    bytes32 appId = apmNamehash("discussions");
+    app = DiscussionApp(dao.newAppInstance(appId, latestVersionAppBase(appId)));
+    app.initialize();
+    acl.createPermission(ANY_ENTITY, app, app.DISCUSSION_POSTER_ROLE(), root);
+}
 ```
 
-Where `cid` is your content id hash (this will be displayed after publishing).
+##### Setting up the discussions app as a forwarder
+
+Every action that gets forwarded through the discussions app creates a new discussion thread. So we need to add the discussions app to the forwarding chain of any action we want to trigger a discussion. In this example, we have a new discussion created whenever a new dot-vote gets created:
+
+```
+acl.createPermission(discussions, dotVoting, dotVoting.CREATE_VOTES_ROLE(), discussions);
+```
+
+When you send an intent to trigger the action that gets forwarded through the discussions app, you should see the appropriate radspec in the aragon client transaction confirmation panel.
+
+##### Displaying and adding to discussion threads in the application frontend
+
+You should first take the `discussions/app/modules/Discussions.js` component, and wrap your entire react tree inside of it. You need to pass your instance of [`AragonApp`](https://hack.aragon.org/docs/api-js-ref-api#examples) to it as well
+
+```js
+import { useAragonApi } from '@aragon/api-react'
+import { Discussions } from 'discussions/app/modules/Discussions'
+
+const App = () => {
+  const { api } = useAragonApi()
+  return {
+    <Discussions app={api}>
+      {...}
+    </Discussions>
+  }
+}
+```
+
+Then, wherever you want to render a contextual discussion thread, you render the `Discussion` component, passing in a `discussionId` and the `ethereumAddress` of the logged in user:
+
+```js
+import { Discussion } from 'discussions/app/modules/Discussion'
+
+const ComponentThatRendersDiscussionThread = ({ discussionId, ethereumAddress }) => {
+  return {
+    <Discussion discussionId={discussionId} ethereumAddress={ethereumAddress} />
+  }
+}
+
+```
+
+Where does the `discussionId` come from? This part is a little confusing, and something we're still trying to figure out the best way around.
+
+The `discussionId` is a `Number` that represents the relative order in which this specific transaction intent was forwarded through the discussion app. For example, let's say you had 5 transactions that were forwarded through the discussion app - the discussionId relative to these 5 transactions is the order in which they occured. It could be:
+
+1, 2, 3, 4, 5 or 14, 15, 16, 19, 20. The only thing that matters is the _order_ the transactions occured. The discussion app will figure out the rest for you.
+
+##### How this all works under the hood
+
+The discussions app generates a new discussion thread every time an action gets successfully forwarded. When the discussions app script loads, it uses the latest [forwarder api](https://github.com/aragon/aragon.js/pull/314) to [keep track of which discussion threads belong to which app](https://github.com/AutarkLabs/planning-suite/blob/discussions/apps/discussions/app/script.js#L36).
+
+On the frontend, the `Discussions.js` component senses when the handshake has been established between the front-end and client. [Once it does](https://github.com/AutarkLabs/planning-suite/blob/discussions/apps/discussions/app/modules/Discussions.js#L26), it initializes a new instance of the [`DiscussionApi`](https://github.com/AutarkLabs/planning-suite/blob/discussions/apps/discussions/app/modules/DiscussionsApi.js).
+
+The discussionApi is responsible for [keeping track of all the discussion threads and posts for your app](https://github.com/AutarkLabs/planning-suite/blob/discussions/apps/discussions/app/modules/DiscussionsApi.js#L136). Its also equipped with methods to [post](https://github.com/AutarkLabs/planning-suite/blob/discussions/apps/discussions/app/modules/DiscussionsApi.js#L162), [hide](https://github.com/AutarkLabs/planning-suite/blob/discussions/apps/discussions/app/modules/DiscussionsApi.js#L197), and [revise](https://github.com/AutarkLabs/planning-suite/blob/discussions/apps/discussions/app/modules/DiscussionsApi.js#L175) Discussion Posts.
+
