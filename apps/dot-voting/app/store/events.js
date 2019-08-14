@@ -1,10 +1,13 @@
 import { castVote, executeVote, startVote } from './votes'
 import { hasLoadedVoteSettings, loadVoteSettings } from '../utils/vote-settings'
+import { handleAction } from './'
 
 export const handleEvent = async (state, event, settings) => {
   const {
     event: eventName,
-    returnValues: returnValues,
+    // TODO: implement eventAddress:
+    // address: eventAddress,
+    returnValues
   } = event
   let nextState = {
     ...state,
@@ -31,10 +34,20 @@ export const handleEvent = async (state, event, settings) => {
   case 'ExecutionScript':
     break
   case 'ExecuteVote':
-    nextState = await executeVote(nextState, returnValues, settings)
+    nextState = await executeVote(nextState, returnValues)
+    handleAction(nextState, event)
     break
   case 'StartVote':
-    nextState = await startVote(nextState, returnValues, settings)
+    nextState = await startVote(nextState, returnValues)
+    handleAction(nextState, event)
+    break
+  case 'EntryAdded':
+    nextEntries = await onEntryAdded({ entries, addressBook }, returnValues)
+    nextState.entries = nextEntries
+    break
+  case 'EntryRemoved':
+    nextEntries = await onEntryRemoved({ entries, addressBook }, returnValues)
+    nextState.entries = nextEntries
     break
   case 'UpdateQuorum':
   case 'UpdateMinimumSupport':
