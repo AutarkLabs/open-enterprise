@@ -229,7 +229,7 @@ class VotePanelContent extends React.Component {
     const showInfo = type === 'allocation' || type === 'curation'
 
     const formatDate = date =>
-      format(date, 'dd/MM/yy') + ' at ' + format(date, 'HH:mm') + 'UTC'
+      format(date, 'DD/MM/YY') + ' at ' + format(date, 'HH:mm') + 'UTC'
 
     return (
       <div>
@@ -261,7 +261,7 @@ class VotePanelContent extends React.Component {
                     tokenSupply={totalVoters}
                   />
                   <PastDate
-                    dateTime={format(endDate, 'yyyy-MM-dd\'T\'HH:mm:ss.SSSxxx')}
+                    dateTime={format(endDate, 'YYYY-MM-DD\'T\'HH:mm:ss.SSSxxx')}
                   >
                     {format(endDate, 'MMM DD YYYY HH:mm')}
                   </PastDate>
@@ -323,13 +323,14 @@ class VotePanelContent extends React.Component {
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <Text size="small">{option.label}</Text>
                       <div
-                        style={{
-                          display: 'flex',
-                          margin: '0.5rem 0 1rem 0',
-                        }}
+                        css={`
+                          display: flex;
+                          margin: 0.5rem 0 1rem 0;
+                          justify-content: space-between;
+                          width: 100%;
+                        `}
                       >
                         <Slider
-                          width="270px"
                           value={option.sliderValue}
                           onUpdate={value => this.sliderUpdate(value, idx)}
                         />
@@ -502,7 +503,9 @@ const ValueContainer = styled.div`
 
 const SliderAndValueContainer = styled.div`
   display: flex;
+  flex-direction: column;
   align-items: center;
+  width: 100%
 `
 
 const SubmitButton = styled(Button)`
