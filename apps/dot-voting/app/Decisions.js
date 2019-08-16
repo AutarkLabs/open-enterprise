@@ -85,6 +85,10 @@ class Decisions extends React.Component {
   handleVoteOpen = voteId => {
     const exists = this.props.votes.some(vote => voteId === vote.voteId)
     if (!exists) return
+
+    const appHeader = document.getElementsByClassName("AppView__Header-bz2dbk-1")[0]
+    appHeader.style.zIndex = 0
+
     this.setState({
       currentVoteId: voteId,
       voteVisible: true,

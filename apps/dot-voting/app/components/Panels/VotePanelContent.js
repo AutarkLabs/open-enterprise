@@ -263,7 +263,7 @@ class VotePanelContent extends React.Component {
                   <PastDate
                     dateTime={format(endDate, 'yyyy-MM-dd\'T\'HH:mm:ss.SSSxxx')}
                   >
-                    {format(endDate, 'MMM dd yyyy HH:mm')}
+                    {format(endDate, 'MMM DD YYYY HH:mm')}
                   </PastDate>
 
                 </React.Fragment>
@@ -392,6 +392,11 @@ class VotePanelContent extends React.Component {
                   key={index}
                   progress={safeDiv(parseInt(option.value, 10), totalSupport)}
                   hasBalance={voteBalance !== undefined}
+                  balanceSplit={
+                    BigNumber(
+                      safeDiv(parseInt(option.value, 10), totalSupport) * displayBalance
+                    ).dp(2).toString() + ' ' + tokenSymbol
+                  }
                   // TODO: Use IdentityBadge for addresses labels once it is integrated on dev branch
                   // (since we don't have a block explorer network context to plug-in yet)
                   // Then truncate the address
@@ -444,15 +449,6 @@ class VotePanelContent extends React.Component {
                     </span>
                   }
                 />
-                {voteBalance !== undefined &&
-                  <BalanceSplit>
-                    {
-                      BigNumber(
-                        safeDiv(parseInt(option.value, 10), totalSupport) * displayBalance
-                      ).dp(2).toString() + ' ' + tokenSymbol
-                    }
-                  </BalanceSplit>
-                }
               </React.Fragment>
             ))}
           {open && (userBalance === '0') &&
@@ -532,12 +528,6 @@ const Part = styled.div`
       margin-top: 0;
     }
   }
-`
-
-const BalanceSplit = styled.div`
-  display: inline-block;
-  width: 25%;
-  text-align: right;
 `
 
 const Creator = styled.div`
