@@ -320,7 +320,7 @@ class VotePanelContent extends React.Component {
               {this.state.voteOptions.map((option, idx) => (
                 <div key={idx}>
                   <SliderAndValueContainer>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div css={'display: flex; flex-direction: column; width: 100%'}>
                       <Text size="small">{option.label}</Text>
                       <div
                         css={`
