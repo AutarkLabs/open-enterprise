@@ -20,7 +20,15 @@ const ProgressBar = ({ progress, label, hasBalance = false, balanceSplit = '' })
           color={theme.textSecondary}
           style={{ paddingRight: '4px', textAlign: 'right' }}
         >
-          {balanceSplit} • {Math.round(progress * 100)}%
+          {hasBalance ? (
+            <React.Fragment>
+              {balanceSplit} • {Math.round(progress * 100)}%
+            </React.Fragment>
+          ) : (
+            <React.Fragment>
+              {Math.round(progress * 100)}%
+            </React.Fragment>
+          )}
         </Text.Block>
       </Main>
     )}
