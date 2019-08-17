@@ -109,6 +109,15 @@
 
 ## DotVoting (formerly RangeVoting)
 
+### 5.0.4
+
+```sh
+✔ Successfully published dot-voting-staging.open.aragonpm.eth v5.0.4: 
+ℹ Contract address: 0x67f9E279f1eC6C126fA2Db3A51204583cE3A72AB
+ℹ Content (ipfs): QmVKwco5AHw5nPz2iWn43PE8hx1mccmkyzhmveXYoDbbLR
+ℹ Transaction hash: 0x2502298f3576e88dd28d6f6995e45cd2b56c2d916ffe970f499e69255b2eb09f
+```
+
 ### 5.0.2
 
 ```sh
