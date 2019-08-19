@@ -1,9 +1,7 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import styled from 'styled-components'
 import {
   Badge,
-  Button,
   Card,
   GU,
   IconCheck,
@@ -12,58 +10,64 @@ import {
   useTheme,
 } from '@aragon/ui'
 import VotingOptions from './VotingOptions'
-import { VOTE_STATUS_SUCCESSFUL } from '../utils/vote-types'
-import { getVoteStatus } from '../utils/vote-utils'
 import VoteStatus from './VoteStatus'
+import { GenerateBadge } from '../utils/vote-styled-components'
+import { BigNumber } from 'bignumber.js'
 
 function noop() {}
 
-const badgeDetails = {
-  'allocation': { fg: '#AF499AFF', bg: '#AF499A33', text: 'Allocation' },
-  'curation': { fg: '#4B5EBFFF', bg: '#4B5EBF33', text: 'Issue Curation' },
-  'informational': { fg: '#C1B95BFF', bg: '#C1B95B33', text: 'Informational' },
-}
-
-const generateBadge = type => (
-  <Badge.App foreground={badgeDetails[type].fg} background={badgeDetails[type].bg}>
-    {badgeDetails[type].text}
-  </Badge.App>
-)
-
-const VotingCard = ({ app, vote, onSelectVote }) => {
+const VotingCard = ({ app, vote, onSelectVote, userAccount }) => {
   const theme = useTheme()
-  const { endDate, open, totalSupport, voteId, support, userBalance } = vote
+  const [ voteWeights, setVoteWeights ] = useState([])
+  const { endDate, open, totalSupport, voteId, support } = vote
   const {
     metadata: question,
     description,
     options,
     totalVoters,
-    participationPct,
     type,
   } = vote.data
-
-  const handleExecuteVote = e => {
-    app.executeVote(this.props.vote.voteId)
-    e.stopPropagation()
-  }
-
-  const youVoted = false
 
   const handleOpen = useCallback(() => {
     onSelectVote(voteId)
   }, [ voteId, onSelectVote ])
-  const [ showMore, setShowMore ] = useState(false)
-  const toggleShowMore = () => setShowMore(!showMore)
+
+  useEffect(() => {
+    async function getVoterState() {
+      const result = await app
+        .call('getVoterState', voteId, userAccount)
+        .toPromise()
+      const totalVotesCount = result.reduce(
+        (acc, vote) => acc.plus(vote),
+        new BigNumber(0)
+      )
+      const voteWeights = result.map(e =>
+        BigNumber(e)
+          .div(totalVotesCount)
+          .times(100)
+          .dp(2)
+          .toString()
+      )
+      setVoteWeights(voteWeights)
+    }
+
+    getVoterState()
+  }, [userAccount])
+
+  let youVoted = voteWeights.length > 0
+  const showDescriptionLines = options.length > 2 ? 3 : 4
 
   return (
     <Card
       onClick={handleOpen}
       css={`
+        height 350px;
         display: grid;
         grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr auto auto;
-        grid-gap: 8px;
+        grid-template-rows: 20px auto auto 24px;
+        grid-gap: 12px;
         padding: ${3 * GU}px;
+        align-items: start;
       `}
     >
       <div
@@ -72,7 +76,7 @@ const VotingCard = ({ app, vote, onSelectVote }) => {
           justify-content: space-between;
         `}
       >
-        {generateBadge(type)}
+        <GenerateBadge type={type} />
 
         {youVoted && (
           <div
@@ -94,79 +98,58 @@ const VotingCard = ({ app, vote, onSelectVote }) => {
       <div
         css={`
           ${textStyle('body1')};
-          height: 56px;
+          height: ${28 * showDescriptionLines}px;
           display: -webkit-box;
           -webkit-box-orient: vertical;
-          -webkit-line-clamp: 2;
+          -webkit-line-clamp: ${showDescriptionLines};
           overflow: hidden;
         `}
       >
         <span css="font-weight: bold">#{voteId}</span>{' '}
         {question && (
-          description ? <strong>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
-            {question}</strong> : question + 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.'
-
+          description ? <strong>{question}</strong> : question
         )}
       </div>
 
       <div css="width: 100%">
-        {showMore ? (
-          <VotingOptions options={options} totalSupport={totalSupport} />
-        ) : (
+        {options.length > 2 ? (
           <React.Fragment>
+            <VotingOptions
+              options={options.slice(0, 2)}
+              totalSupport={totalSupport}
+              color={`${theme.accent}`}
+              voteWeights={voteWeights}
+            />
 
-            <VotingOptions options={options.slice(0, 2)} totalSupport={totalSupport} />
-
-            {options.length > 2 && (
-              <div css="text-align: center; width: 100%; padding: 4px">
-
-                <Badge
-                  shape="compact"
-                  css={`
+            <div css="text-align: center; width: 100%; margin-top: 10px">
+              <Badge
+                shape="compact"
+                foreground={`${theme.surfaceOpened}`}
+                background={`${theme.surfaceUnder}`}
+                css={`
                   cursor: pointer;
                   padding: 2px 8px;
                   pointer-events: auto;
-                  color: ${theme.surfaceOpened}
-                  background-color: ${theme.surfaceUnder}
-                  `}
-                  onClick={toggleShowMore}
-                >
-                  {showMore
-                    ? 'Show less...'
-                    : ' + ' + (options.length - 2) + ' more'}
-                </Badge>
-              </div>
-            )}
+                `}
+              >
+                {' + ' + (options.length - 2) + ' more'}
+              </Badge>
+            </div>
           </React.Fragment>
+        ) : (
+          <VotingOptions options={options} totalSupport={totalSupport} color={`${theme.accent}`} />
         )}
       </div>
 
-      <div
-        css={`
-          margin-top: ${2 * GU}px;
-        `}
-      >
+      <div>
         {open ? (
           <Timer end={endDate} maxUnits={4} />
         ) : (
-          !open && getVoteStatus(vote) === VOTE_STATUS_SUCCESSFUL ? (
-            <div>
-              <Button
-                mode="outline"
-                wide
-                onClick={handleExecuteVote}
-              >
-                  Execute Vote
-              </Button>
-            </div>
-          ) : (
-            <VoteStatus
-              vote={vote}
-              support={support}
-              tokenSupply={totalVoters}
-            />
-
-          )
+          <VoteStatus
+            vote={vote}
+            support={support}
+            tokenSupply={totalVoters}
+          />
         )}
       </div>
     </Card>
@@ -176,7 +159,8 @@ const VotingCard = ({ app, vote, onSelectVote }) => {
 VotingCard.propTypes = {
   app: PropTypes.object,
   vote: PropTypes.object.isRequired,
-  onSelectVote: PropTypes.func.isRequired
+  onSelectVote: PropTypes.func.isRequired,
+  userAccount: PropTypes.string.isRequired,
 }
 
 VotingCard.defaultProps = {

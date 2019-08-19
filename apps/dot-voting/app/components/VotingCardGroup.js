@@ -3,7 +3,6 @@ import PropTypes from 'prop-types'
 import {
   CardLayout,
   GU,
-  Tag,
   textStyle,
   unselectable,
   useLayout,
@@ -14,7 +13,7 @@ const VotingCardGroup = ({ title, count, children }) => {
   const theme = useTheme()
   const { layoutName } = useLayout()
   const compactMode = layoutName === 'small'
-  const rowHeight = compactMode ? null : 294
+  const rowHeight = compactMode ? null : 350
 
   return (
     <section>

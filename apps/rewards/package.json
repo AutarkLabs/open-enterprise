@@ -31,7 +31,7 @@
   "dependencies": {
     "@aragon/api": "1.1.0",
     "@aragon/api-react": "1.0.0-beta.2",
-    "@aragon/ui": "0.33.0",
+    "@aragon/ui": "1.0.0-alpha.9",
     "@babel/polyfill": "^7.2.5",
     "bignumber.js": "^7.2.1",
     "lodash.throttle": "^4.1.1",

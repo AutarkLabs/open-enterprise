@@ -1,17 +1,12 @@
 import React, { useState } from 'react'
-import { ASSETS_URL, Header, Main, SidePanel } from '@aragon/ui'
+import { ASSETS_URL, Header, Main } from '@aragon/ui'
 import Decisions from './Decisions'
-import { hasLoadedVoteSettings } from './utils/vote-settings'
-import { NewPayoutVotePanelContent } from './components/Panels'
-import { networkContextType } from '../../../shared/ui'
 import { useAragonApi } from '@aragon/api-react'
 import { IdentityProvider } from '../../../shared/identity'
-import { useNetwork } from '@aragon/api-react'
 
 const App = () => {
-  const [ panelVisible,setPanelVisible ] = useState(false)
   const { api, appState = {}, connectedAccount } = useAragonApi()
-  const network = useNetwork()
+  const [ now, setNow ] = useState(new Date().getTime())
 
   const {
     votes = [],
@@ -22,14 +17,6 @@ const App = () => {
     pctBase = 0,
   } = appState
 
-  const openPanel = () => {
-    setPanelVisible(true)
-  }
-
-  const closePanel = () => {
-    setPanelVisible(false)
-  }
-
   const handleResolveLocalIdentity = address => {
     return api.resolveAddressIdentity(address).toPromise()
   }
@@ -38,6 +25,18 @@ const App = () => {
     return api
       .requestAddressIdentityModification(address)
       .toPromise()
+  }
+
+  if (votes.length) {
+    let reloadTime = 0
+    {votes.map(vote => {
+      const voteEndTS = new Date(vote.data.startDate + voteTime).getTime()
+      const timeToEnd = voteEndTS - now
+      if (timeToEnd > 0 && (reloadTime === 0 || timeToEnd < reloadTime)) reloadTime = timeToEnd
+    })}
+    if (reloadTime) {
+      setInterval( () => setNow(new Date()), reloadTime + 5000)
+    }
   }
 
   return (
@@ -50,24 +49,15 @@ const App = () => {
         onShowLocalIdentityModal={handleShowLocalIdentityModal}>
 
         <Decisions
-          onActivate={openPanel}
           app={api}
-          votes={votes !== undefined ? votes : []}
-          entries={entries !== undefined ? entries : []}
+          votes={votes}
+          entries={entries}
           voteTime={voteTime}
           minParticipationPct={minParticipationPct / 10 ** 16}
           pctBase={pctBase / 10 ** 16}
           tokenAddress={tokenAddress}
           userAccount={connectedAccount}
         />
-
-        <SidePanel
-          title={''}
-          opened={panelVisible}
-          onClose={closePanel}
-        >
-          <NewPayoutVotePanelContent />
-        </SidePanel>
       </IdentityProvider>
     </Main>
   )
