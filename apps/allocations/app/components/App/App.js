@@ -1,9 +1,8 @@
 import React, { useState } from 'react'
 
 import { useAragonApi } from '@aragon/api-react'
-import { AppBar, AppView, Main, SidePanel } from '@aragon/ui'
+import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
 
-import { AppTitle, AppTitleButton } from '../../../../../shared/ui'
 import { IdentityProvider } from '../../../../../shared/identity'
 import { NewAccount, NewAllocation } from '../Panel'
 import { Accounts, Payouts } from '.'
@@ -14,7 +13,7 @@ const nameSorter = (a, b) => a.data.name.toUpperCase() > b.data.name.toUpperCase
 
 const App = () => {
   const [ panel, setPanel ] = useState(null)
-  const { api, appState, displayMenuButton = false } = useAragonApi()
+  const { api, appState } = useAragonApi()
   const { accounts = [], balances = [], entries = [], payouts = [] } = appState
 
   const onCreateAccount = ({ description }) => {
@@ -92,38 +91,27 @@ const App = () => {
   return (
     // TODO: Profile App with React.StrictMode, perf and why-did-you-update, apply memoization
     <Main assetsUrl={ASSETS_URL}>
+      <Header
+        primary="Allocations"
+        secondary={
+          <Button mode="strong" icon={<IconPlus />} onClick={onNewAccount} label="New Account" />
+        }
+      />
+
       <IdentityProvider
         onResolve={handleResolveLocalIdentity}
         onShowLocalIdentityModal={handleShowLocalIdentityModal}>
-        <AppView
-          appBar={
-            <AppBar
-              endContent={
-                <AppTitleButton
-                  caption="New Account"
-                  onClick={onNewAccount}
-                />
-              }
-            >
-              <AppTitle
-                title="Allocations"
-                displayMenuButton={displayMenuButton}
-                css="padding-left: 30px"
-              />
-            </AppBar>
-          }
-        >
-          <Accounts
-            accounts={accounts}
-            onNewAccount={onNewAccount}
-            onNewAllocation={onNewAllocation}
-          />
-          <Payouts
-            payouts={payouts}
-            executePayout={onExecutePayout}
-            tokens={balances}
-          />
-        </AppView>
+
+        <Accounts
+          accounts={accounts}
+          onNewAccount={onNewAccount}
+          onNewAllocation={onNewAllocation}
+        />
+        <Payouts
+          payouts={payouts}
+          executePayout={onExecutePayout}
+          tokens={balances}
+        />
 
         <SidePanel
           title={(panel && panel.data.heading) || ''}
