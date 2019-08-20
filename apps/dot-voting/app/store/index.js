@@ -9,10 +9,12 @@ export const handleAction = ({ votes }, { blockNumber, returnValues }) => {
   const { open, executed, canExecute, executionScript } = votes[voteIndex].data
   if (!(open || executed || canExecute )) {
     app.updateForwardedAction(voteId, blockNumber, executionScript, 'failed')
+    app.registerAppMetadata(blockNumber, voteId, 'failedHash')
   } else if (executed) {
     app.updateForwardedAction(voteId, blockNumber, executionScript, 'completed')
   } else {
     app.newForwardedAction(voteId, blockNumber, executionScript)
+    app.registerAppMetadata(blockNumber, voteId, 'pendingHash')
   }
 }
 

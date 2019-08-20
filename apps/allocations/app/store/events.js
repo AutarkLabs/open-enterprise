@@ -3,6 +3,7 @@ import { updateAccounts } from './account'
 import { updateAllocations } from './allocation'
 import { addressesEqual } from '../../../../shared/lib/web3-utils'
 import { events, vaultLoadBalance } from '../../../../shared/store-utils'
+import { app } from './app'
 
 const eventHandler = async eventData => {
   const {
@@ -37,6 +38,13 @@ const eventHandler = async eventData => {
       ...state,
       allocations: await updateAllocations(state.allocations, returnValues)
     }
+    
+  case 'ForwardedActions':
+    console.log('forwardedAction Caught: ', returnValues)
+    onForwardedActions(returnValues)
+    return {
+      ...state
+    }
 
   case 'PayoutExecuted':
     return {
@@ -51,3 +59,10 @@ const eventHandler = async eventData => {
 }
 
 export default eventHandler
+
+const onForwardedActions = async ({ failedActionKeys, actions }) => {
+  const action = actions[failedActionKeys[0]]
+  console.log(action)
+  console.log('Get the metadata: ',(await app.queryAppMetadata(action.currentApp, action.actionId).toPromise()))
+  app.emitTrigger('test trigger')
+}
