@@ -1,12 +1,39 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { ASSETS_URL, Header, Main } from '@aragon/ui'
 import Decisions from './Decisions'
 import { useAragonApi } from '@aragon/api-react'
 import { IdentityProvider } from '../../../shared/identity'
 
-const App = () => {
-  const { api, appState = {}, connectedAccount } = useAragonApi()
+const useVoteCloseWatcher = () => {
+  const { votes = [], voteTime = 0 } = useAragonApi().appState
   const [ now, setNow ] = useState(new Date().getTime())
+
+  useEffect(() => {
+    const timeouts = {}
+
+    votes.forEach(({ voteId: id, data: { startDate } }) => {
+      const endTime = new Date(startDate + voteTime).getTime()
+
+      if (endTime < now) return // ignore; voting has closed
+
+      timeouts[id] = setTimeout(
+        () => setNow(new Date().getTime()),
+        endTime - now
+      )
+    })
+
+    return function cleanup() {
+      for (let id in timeouts) {
+        clearTimeout(timeouts[id])
+      }
+    }
+  }, [ votes, voteTime ])
+}
+
+const App = () => {
+  useVoteCloseWatcher()
+
+  const { api, appState = {}, connectedAccount } = useAragonApi()
 
   const {
     votes = [],
@@ -25,18 +52,6 @@ const App = () => {
     return api
       .requestAddressIdentityModification(address)
       .toPromise()
-  }
-
-  if (votes.length) {
-    let reloadTime = 0
-    {votes.map(vote => {
-      const voteEndTS = new Date(vote.data.startDate + voteTime).getTime()
-      const timeToEnd = voteEndTS - now
-      if (timeToEnd > 0 && (reloadTime === 0 || timeToEnd < reloadTime)) reloadTime = timeToEnd
-    })}
-    if (reloadTime) {
-      setInterval( () => setNow(new Date()), reloadTime + 5000)
-    }
   }
 
   return (
