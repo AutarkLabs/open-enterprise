@@ -57,7 +57,7 @@
     "publish:patch": "aragon apm publish patch",
     "publish:minor": "aragon apm publish minor",
     "publish:major": "aragon apm publish major",
-    "publish:http": "npm run build:script && aragon apm publish major --http localhost:9999 --http-served-from ./dist",
+    "publish:http": "npm run build:script && yes | aragon apm publish major --http localhost:9999 --http-served-from ./dist --propagate-content false  --skip-confirmation true",
     "versions": "aragon apm versions",
     "lint": "solium --dir ./contracts",
     "lint:fix": "eslint . --fix && solium --dir ./contracts --fix",

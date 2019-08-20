@@ -17,7 +17,7 @@
     "prepublishOnly": "truffle compile --all",
     "publish": "aragon apm publish patch && sleep 3",
     "publish:cd": "aragon apm publish major --files dist/ --environment continuous-deployment --apm.ipfs.rpc https://ipfs.autark.xyz:5001 --ipfs-check false",
-    "publish:http": "npm run build:script && aragon apm publish major --http localhost:1111 --http-served-from ./dist",
+    "publish:http": "npm run build:script && yes | aragon apm publish major --http localhost:1111 --http-served-from ./dist --propagate-content false --skip-confirmation true",
     "publish:major": "aragon apm publish major --files dist/",
     "publish:minor": "aragon apm publish minor --files dist/",
     "publish:patch": "aragon apm publish patch --files dist/",
