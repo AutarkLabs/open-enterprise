@@ -25,9 +25,9 @@ const useFilterVotes = (votes, voteTime, minParticipationPct) => {
   const [ statusFilter, setStatusFilter ] = useState(-1)
   // Outcome - 0: All, 1: Passed, 2: Rejected, 3: Enacted, 4: Pending
   const [ outcomeFilter, setOutcomeFilter ] = useState(-1)
-  // 0: All, 1: Finance, 2: Tokens, 3: Voting
+  // 0: All, 1: Allocations, 2: Curation, 3: Informational
   const [ appFilter, setAppFilter ] = useState(-1)
-  //
+
   const handleClearFilters = useCallback(() => {
     setStatusFilter(-1)
     setOutcomeFilter(-1)
@@ -123,13 +123,13 @@ const Decisions = ({
   const { layoutName } = useLayout()
   const theme = useTheme()
 
-  const getTokenContract = (tokenAddress) => 
+  const getTokenContract = (tokenAddress) =>
     tokenAddress && app.external(tokenAddress, tokenAbi)
 
   const tokenContract = getTokenContract(tokenAddress)
 
   const now = new Date()
-    
+
   const handleVoteOpen = voteId => {
     const exists = votes.some(vote => voteId === vote.voteId)
     if (!exists) return
@@ -142,7 +142,7 @@ const Decisions = ({
   }
   const handleVoteClose = () => {
   }
-  
+
   const getAddressLabel = (entries, option) => {
     const index = entries.findIndex(entry => entry.addr === option.label)
     return index > -1 ? entries[index].data.name : option.label
