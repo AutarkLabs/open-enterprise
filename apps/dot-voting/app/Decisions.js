@@ -73,7 +73,7 @@ class Decisions extends React.Component {
     return tokenAddress && this.props.app.external(tokenAddress, tokenAbi)
   }
   handleCreateVote = question => {
-    this.props.app.newVote(EMPTY_CALLSCRIPT, question)
+    this.props.app.newVote(EMPTY_CALLSCRIPT, question).toPromise()
     this.handleCreateVoteClose()
   }
   handleCreateVoteOpen = () => {
@@ -92,7 +92,7 @@ class Decisions extends React.Component {
     })
   }
   handleVote = (voteId, supports) => {
-    this.props.app.vote(voteId, supports)
+    this.props.app.vote(voteId, supports).toPromise()
     this.handleVoteClose()
   }
   handleVoteClose = () => {
