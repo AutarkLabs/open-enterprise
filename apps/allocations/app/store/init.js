@@ -1,8 +1,8 @@
 import AddressBookJSON from '../../../shared/json-abis/address-book.json'
-import { INITIALIZATION_TRIGGER, app, handleEvent } from './'
-import { of } from 'rxjs'
+import { app, handleEvent } from './'
 import { first } from 'rxjs/operators'
 
+import { initializeTokens } from './token'
 import vaultBalanceAbi from '../../../shared/json-abis/vault/vault-balance.json'
 import vaultGetInitializationBlockAbi from '../../../shared/json-abis/vault/vault-getinitializationblock.json'
 import vaultEventAbi from '../../../shared/json-abis/vault/vault-events.json'
@@ -73,13 +73,21 @@ const createStore = async settings => {
       // always return the state even unmodified
       return nextState
     },
-    [
-      of({ event: INITIALIZATION_TRIGGER }),
-      // handle address book events
-      // TODO: Start from AddrBook initialization block as Vault
-      settings.addressBook.contract.events(),
-      // handle vault events
-      settings.vault.contract.events(vaultInitializationBlock),
-    ]
+    {
+      externals: [
+        { contract: settings.addressBook.contract },
+        {
+          contract: settings.vault.contract,
+          initializationBlock: vaultInitializationBlock
+        },
+
+      ],
+      init: initState(settings)
+    }
   )
+}
+
+const initState = (settings) => async (cachedState) => {
+  const nextState = await initializeTokens(cachedState, settings)
+  return nextState
 }
