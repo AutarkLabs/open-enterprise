@@ -26,11 +26,10 @@ import "@aragon/apps-vault/contracts/Vault.sol";
 
 /*******************************************************************************
 * @title Allocations Contract
-* @author Arthur Lunn
+* @author Autark Labs
 * @dev This contract is meant to handle tasks like basic budgeting,
-*      and any time that tokens need to be distributed based on a certain
-*      percentage breakdown to an array of addresses. Currently it works with ETH
-*      needs to be adapted to work with tokens.
+*      and fund distributions leveraging dot-voting. Currently it works with ETH
+*      and tokens by use of the Aragon Vault.
 *******************************************************************************/
 contract Allocations is AragonApp {
 
@@ -69,17 +68,13 @@ contract Allocations is AragonApp {
     }
 
     struct Account {
-        Payout[] payouts;
+        mapping (uint64 => Payout) payouts;
+        uint64 payoutsLength;
         string metadata;
-        //uint limit;
         uint256 balance;
-        //address proxy;
         address token;
         bool hasBudget;
         uint256 budget;
-        // future
-        //mapping(address => uint256)balances;
-
     }
 
     struct AccountStatement {
@@ -96,19 +91,19 @@ contract Allocations is AragonApp {
     }
 
     Vault public vault;
-    Account[] accounts;
+    mapping (uint64 => Account) accounts;
+    uint64 accountsLength;
     mapping (uint64 => Period) periods;
     uint64 periodsLength;
     uint64 periodDuration;
-    //Payout[] payouts;
     mapping(address => uint) accountProxies; // proxy address -> account Id
 
-    event PayoutExecuted(uint256 accountId, uint payoutId, uint candidateId);
-    event NewAccount(uint256 accountId);
+    event PayoutExecuted(uint64 accountId, uint64 payoutId, uint candidateId);
+    event NewAccount(uint64 accountId);
     event NewPeriod(uint64 indexed periodId, uint64 periodStarts, uint64 periodEnds);
-    event FundAccount(uint256 accountId);
-    event SetDistribution(uint256 accountId, uint payoutId);
-    event PaymentFailure(uint256 accountId, uint256 payoutId, uint256 candidateId);
+    event FundAccount(uint64 accountId);
+    event SetDistribution(uint64 accountId, uint64 payoutId);
+    event PaymentFailure(uint64 accountId, uint64 payoutId, uint256 candidateId);
     event SetBudget(uint256 indexed accountId, uint256 amount, bool hasBudget);
     event ChangePeriodDuration(uint64 newDuration);
     event Time(uint64 time);
@@ -122,7 +117,6 @@ contract Allocations is AragonApp {
     // is changed before the operation if needed
     // NOTE: its use **MUST** be accompanied by an initialization check
     modifier transitionsPeriod {
-        //bool completeTransition = _tryTransitionAccountingPeriod(getMaxPeriodTransitions());
         require(
             _tryTransitionAccountingPeriod(getMaxPeriodTransitions()),
             ERROR_COMPLETE_TRANSITION
@@ -134,6 +128,8 @@ contract Allocations is AragonApp {
     * @dev This is the function that sets up who the candidates will be, and
     *      where the funds will go for the payout. This is where the payout
     *      object needs to be created in the payouts array.
+    * @param _vault The Aragon vault to pull payments from.
+    * @param _periodDuration Base duration of a "period" used for value calculations.
     */
     function initialize(
         Vault _vault,
@@ -144,14 +140,17 @@ contract Allocations is AragonApp {
         require(_periodDuration >= MINIMUM_PERIOD, ERROR_SET_PERIOD_TOO_SHORT);
         periodDuration = _periodDuration;
         _newPeriod(getTimestamp64());
-        accounts.length++;  // position 0 is reserved and unused
+        accountsLength++;  // position 0 is reserved and unused
         initialized();
     }
 
 ///////////////////////
 // Getter functions
 ///////////////////////
-    function getAccount(uint256 _accountId) external view
+    /** @notice Basic getter for accounts.
+    *   @param _accountId The Id of the account you'd like to get.
+    */
+    function getAccount(uint64 _accountId) external view
     returns(string metadata, address token, bool hasBudget, uint256 budget)
     {
         Account storage account = accounts[_accountId];
@@ -161,7 +160,11 @@ contract Allocations is AragonApp {
         budget = account.budget;
     }
 
-    function getPayout(uint _accountId, uint _payoutId) external view
+    /** @notice Basic getter for payouts.
+    *   @param _accountId The Id of the account you'd like to get.
+    *   @param _payoutId The Id of the payout within the account you'd like to retrieve.
+    */
+    function getPayout(uint64 _accountId, uint64 _payoutId) external view
     returns(uint amount, uint64 recurrences, uint startTime, uint period, bool distSet)
     {
         Payout storage payout = accounts[_accountId].payouts[_payoutId];
@@ -172,23 +175,36 @@ contract Allocations is AragonApp {
         distSet = payout.distSet;
     }
 
-    function getPayoutDescription(uint _accountId, uint _payoutId) external view returns(string description) {
+    /** @notice Basic getter for payout descriptions.
+    *   @param _accountId The Id of the account you'd like to get.
+    *   @param _payoutId The Id of the payout within the account you'd like to retrieve.
+    */
+    function getPayoutDescription(uint64 _accountId, uint64 _payoutId) external view returns(string description) {
         Payout storage payout = accounts[_accountId].payouts[_payoutId];
         description = payout.description;
     }
 
-    function getNumberOfCandidates(uint _accountId, uint _payoutId) external view
+    /** @notice Basic getter for payout candidate length.
+    *   @param _accountId The Id of the account you'd like to get.
+    *   @param _payoutId The Id of the payout within the account you'd like to retrieve.
+    */
+    function getNumberOfCandidates(uint64 _accountId, uint64 _payoutId) external view
     returns(uint256 numCandidates)
     {
         Payout storage payout = accounts[_accountId].payouts[_payoutId];
         numCandidates = payout.supports.length;
     }
 
-    function getPayoutDistributionValue(uint _accountId, uint256 _payoutId, uint256 idx) external view
+    /** @notice Basic getter for payout value for a specific recipient.
+    *   @param _accountId The Id of the account you'd like to get.
+    *   @param _payoutId The Id of the payout within the account you'd like to retrieve.
+    *   @param _idx The Id of the specific recipient you'd like to retrieve information for.
+    */
+    function getPayoutDistributionValue(uint64 _accountId, uint64 _payoutId, uint256 _idx) external view
     returns(uint256 supports)
     {
         Payout storage payout = accounts[_accountId].payouts[_payoutId];
-        supports = payout.supports[idx];
+        supports = payout.supports[_idx];
     }
 
     /**
@@ -198,6 +214,9 @@ contract Allocations is AragonApp {
         return _currentPeriodId();
     }
 
+    /** @notice Basic getter for period information.
+    *   @param _periodId The Id of the account you'd like to get.
+    */
     function getPeriod(uint64 _periodId)
     external
     view
@@ -229,16 +248,18 @@ contract Allocations is AragonApp {
     *      object needs to be created in the payouts array.
     * @notice Create allocation account '`_metadata`'
     * @param _metadata Any relevent label for the payout
-    *
+    * @param _token Token used for account payouts.
+    * @param _hasBudget Whether the account uses budgetting
+    * @param _budget The budget for the account.
     */
     function newAccount(
         string _metadata,
         address _token,
         bool _hasBudget,
         uint256 _budget
-    ) external auth(CREATE_ACCOUNT_ROLE) returns(uint256 accountId)
+    ) external auth(CREATE_ACCOUNT_ROLE) returns(uint64 accountId)
     {
-        accountId = accounts.length++;
+        accountId = accountsLength++;
         Account storage account = accounts[accountId];
         account.metadata = _metadata;
         account.hasBudget = _hasBudget;
@@ -267,7 +288,7 @@ contract Allocations is AragonApp {
     * @param _amount New budget amount
     */
     function setBudget(
-        uint256 _accountId,
+        uint64 _accountId,
         uint256 _amount
     )
         external
@@ -285,7 +306,7 @@ contract Allocations is AragonApp {
     * @notice Remove spending limit for  account number `_accountId`, effective immediately
     * @param _accountId Address for token
     */
-    function removeBudget(uint256 _accountId)
+    function removeBudget(uint64 _accountId)
         external
         auth(CHANGE_BUDGETS_ROLE)
         transitionsPeriod
@@ -295,13 +316,46 @@ contract Allocations is AragonApp {
         emit SetBudget(_accountId, 0, false);
     }
 
+    /** @notice This transaction will execute the payout for the senders address for account #`_accountId`
+    *   @param _accountId The Id of the account you'd like to take action against
+    *   @param _payoutId The payout within the account you'd like to execute
+    *   @param _candidateId the Candidate whose payout you'll execute (must be sender)
+    */
+    function candidateExecutePayout(
+        uint64 _accountId,
+        uint64 _payoutId,
+        uint256 _candidateId
+    ) external transitionsPeriod isInitialized
+    {
+        Payout storage payout = accounts[_accountId].payouts[_payoutId];
+        require(payout.distSet);
+        require(msg.sender == payout.candidateAddresses[_candidateId], "candidate not receiver");
+        _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId);
+    }
+
+    /** @notice This transaction will execute the payout for candidate `_candidateId` within account #`_accountId`
+    *   @param _accountId The Id of the account you'd like to take action against
+    *   @param _payoutId The payout within the account you'd like to execute
+    *   @param _candidateId the Candidate whose payout you'll execute (must be sender)
+    */
+    function executePayout(
+        uint64 _accountId,
+        uint64 _payoutId,
+        uint256 _candidateId
+    ) external transitionsPeriod auth(EXECUTE_PAYOUT_ROLE)
+    {
+        Payout storage payout = accounts[_accountId].payouts[_payoutId];
+        require(payout.distSet);
+        _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId);
+    }
+
     /**
     * @dev This function distributes the payouts to the candidates in accordance with the distribution values
     * @notice Distribute allocation `_payoutId`
     * @param _payoutId Any relevent label for the payout
     * @param _accountId Account the payout belongs to
     */
-    function runPayout(uint _accountId, uint256 _payoutId) public auth(EXECUTE_ALLOCATION_ROLE) returns(bool success) {
+    function runPayout(uint64 _accountId, uint64 _payoutId) external auth(EXECUTE_ALLOCATION_ROLE) returns(bool success) {
         success = _runPayout(_accountId, _payoutId);
     }
 
@@ -309,7 +363,7 @@ contract Allocations is AragonApp {
     * @dev This is the function that the DotVote will call. It doesn’t need
     *      to be called by a DotVote (options get weird if it's not)
     *      but for our use case the “CREATE_ALLOCATION_ROLE” will be given to
-    *      the DotVote.
+    *      the DotVote. This function is public for stack-depth reasons
     * @notice Create a `@tokenAmount(_token, _amount)` allocation for ' `_description` '
     * @param _candidateAddresses Array of candidates to be allocated a portion of the payouut
     * @param _supports The Array of all support values for the various candidates. These values are set in dot voting
@@ -327,17 +381,17 @@ contract Allocations is AragonApp {
         string _description,
         uint256[] /*unused_level 1 ID - converted to bytes32*/,
         uint256[] /*unused_level 2 ID - converted to bytes32*/,
-        uint256 _accountId,
+        uint64 _accountId,
         uint64 _recurrences,
         uint64 _startTime,
         uint64 _period,
         uint256 _amount
-    ) public auth(CREATE_ALLOCATION_ROLE) transitionsPeriod returns(uint payoutId)
+    ) public auth(CREATE_ALLOCATION_ROLE) transitionsPeriod returns(uint64 payoutId)
     {
         Account storage account = accounts[_accountId];
         require(vault.balance(account.token) >= _amount, "vault underfunded");
         require(_recurrences > 0, "must execute payout at least once");
-        Payout storage payout = account.payouts[account.payouts.length++];
+        Payout storage payout = account.payouts[account.payoutsLength++];
 
         payout.amount = _amount;
         payout.recurrences = _recurrences;
@@ -357,41 +411,16 @@ contract Allocations is AragonApp {
         payout.supports = _supports;
         payout.description = _description;
         payout.executions.length = _supports.length;
-        payoutId = account.payouts.length - 1;
+        payoutId = account.payoutsLength - 1;
         emit SetDistribution(_accountId, payoutId);
         if (_startTime <= getTimestamp64()) {
             _runPayout(_accountId, payoutId);
         }
     }
 
-    function candidateExecutePayout(
-        uint256 _accountId,
-        uint256 _payoutId,
-        uint256 _candidateId
-    ) external transitionsPeriod
-    {
-        Payout storage payout = accounts[_accountId].payouts[_payoutId];
-        require(payout.distSet);
-        require(msg.sender == payout.candidateAddresses[_candidateId], "candidate not receiver");
-        _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId);
-    }
-
-    function executePayout(
-        uint256 _accountId,
-        uint256 _payoutId,
-        uint256 _candidateId
-    ) external transitionsPeriod auth(EXECUTE_PAYOUT_ROLE)
-    {
-        Payout storage payout = accounts[_accountId].payouts[_payoutId];
-        require(payout.distSet);
-        //require(msg.sender == payout.candidateAddresses[_candidateId], "candidate not receiver");
-        _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId);
-    }
-
-    function _executePayoutAtLeastOnce(uint256 _accountId, uint256 _payoutId, uint256 _candidateId) internal {
+    function _executePayoutAtLeastOnce(uint64 _accountId, uint64 _payoutId, uint256 _candidateId) internal {
         Account storage account = accounts[_accountId];
         Payout storage payout = account.payouts[_payoutId];
-        //require(!payout.inactive, ERROR_payout_INACTIVE);
 
         uint64 paid = 0;
         uint256 totalSupport = _getTotalSupport(payout);
@@ -433,17 +462,18 @@ contract Allocations is AragonApp {
 
     function _tryTransitionAccountingPeriod(uint64 _maxTransitions) internal returns (bool success) {
         Period storage currentPeriod = periods[_currentPeriodId()];
+        uint64 maxTransitions = _maxTransitions;
         uint64 timestamp = getTimestamp64();
 
         // Transition periods if necessary
         while (timestamp > currentPeriod.endTime) {
-            if (_maxTransitions == 0) {
+            if (maxTransitions == 0) {
                 // Required number of transitions is over allowed number, return false indicating
                 // it didn't fully transition
                 return false;
             }
             // We're already protected from underflowing above
-            _maxTransitions -= 1;
+            maxTransitions -= 1;
 
             // If there were any transactions in period, record which was the last
             // In case 0 transactions occured, first and last tx id will be 0
@@ -463,12 +493,12 @@ contract Allocations is AragonApp {
         return periodsLength - 1;
     }
 
-    function _canMakePayment(uint256 _accountId, uint256 _amount) internal view returns (bool) {
+    function _canMakePayment(uint64 _accountId, uint256 _amount) internal view returns (bool) {
         Account storage account = accounts[_accountId];
         return _getRemainingBudget(_accountId) >= _amount && vault.balance(account.token) >= _amount;
     }
 
-    function _getRemainingBudget(uint256 _accountId) internal view returns (uint256) {
+    function _getRemainingBudget(uint64 _accountId) internal view returns (uint256) {
         Account storage account = accounts[_accountId];
         if (!account.hasBudget) {
             return MAX_UINT256;
@@ -487,39 +517,27 @@ contract Allocations is AragonApp {
         return budget - spent;
     }
 
-    function _runPayout(uint _accountId, uint256 _payoutId) internal returns(bool success) {
+    function _runPayout(uint64 _accountId, uint64 _payoutId) internal returns(bool success) {
         Account storage account = accounts[_accountId];
         Payout storage payout = account.payouts[_payoutId];
-        //uint256 totalSupport = _getTotalSupport(payout);
-        uint i;
-        //for (i = 0; i < payout.supports.length; i++) {
-        //    totalSupport += payout.supports[i];
-        //}
-        // Payouts are now instantiated on setDistribution
+        uint64 i;
         require(payout.distSet);
-
-
-        uint individualPayout;
-        address token = account.token;
         uint256 length = payout.candidateAddresses.length;
         //handle vault
-
         for (i = 0; i < length; i++) {
-            //require(_nextPaymentTime(_accountId, _payoutId, i) < getTimestamp64(), "Too many recurrences");
+            require(_nextPaymentTime(_accountId, _payoutId, i) <= getTimestamp64(), "Too many recurrences");
             _executePayoutAtLeastOnce(_accountId, _payoutId, i);
         }
-    
         success = true;
-        //emit PayoutExecuted(_accountId, _payoutId);
     }
 
-    function _getTotalSupport(Payout storage payout) internal returns (uint256 totalSupport) {
+    function _getTotalSupport(Payout storage payout) internal view returns (uint256 totalSupport) {
         for (uint256 i = 0; i < payout.supports.length; i++) {
             totalSupport += payout.supports[i];
         }
     }
 
-    function _nextPaymentTime(uint256 _accountId, uint256 _payoutId, uint256 _candidateIndex) internal view returns (uint64) {
+    function _nextPaymentTime(uint64 _accountId, uint64 _payoutId, uint256 _candidateIndex) internal view returns (uint64) {
         Account storage account = accounts[_accountId];
         Payout storage payout = account.payouts[_payoutId];
 
@@ -530,28 +548,26 @@ contract Allocations is AragonApp {
         // Split in multiple lines to circumvent linter warning
         uint64 increase = payout.executions[_candidateIndex].mul(payout.period);
         uint64 nextPayment = payout.startTime.add(increase);
-        //emit Time(nextPayment);
+        emit Time(nextPayment);
         return nextPayment;
     }
 
     function _executeCandidatePayout(
-        uint256 _accountId,
-        uint256 _payoutId,
+        uint64 _accountId,
+        uint64 _payoutId,
         uint256 _candidateIndex,
         uint256 _totalSupport
     ) internal
     {
         Account storage account = accounts[_accountId];
         Payout storage payout = account.payouts[_payoutId];
-
-        //payout.executions[_candidateIndex] = payout.executions[_candidateIndex].add(1);
         uint256 individualPayout = payout.supports[_candidateIndex].mul(payout.amount).div(_totalSupport);
-
-        //require(_canMakePayment(_accountId, individualPayout), "insufficient funds");
+        require(_canMakePayment(_accountId, individualPayout), "insufficient funds");
 
         address token = account.token;
-        periods[_currentPeriodId()].accountStatement[_accountId].expenses[token] += individualPayout;
-        payout.executions[_candidateIndex] += 1;
+        uint256 expenses = periods[_currentPeriodId()].accountStatement[_accountId].expenses[token];
+        periods[_currentPeriodId()].accountStatement[_accountId].expenses[token] = expenses.add(individualPayout);
+        payout.executions[_candidateIndex] = payout.executions[_candidateIndex].add(1);
         vault.transfer(token, payout.candidateAddresses[_candidateIndex], individualPayout);
         emit PayoutExecuted(_accountId, _payoutId, _candidateIndex);
     }
