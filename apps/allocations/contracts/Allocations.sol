@@ -123,7 +123,6 @@ contract Allocations is AragonApp {
     // is changed before the operation if needed
     // NOTE: its use **MUST** be accompanied by an initialization check
     modifier transitionsPeriod {
-        //bool completeTransition = _tryTransitionAccountingPeriod(getMaxPeriodTransitions());
         require(
             _tryTransitionAccountingPeriod(getMaxPeriodTransitions()),
             ERROR_COMPLETE_TRANSITION
@@ -261,6 +260,9 @@ contract Allocations is AragonApp {
         return _currentPeriodId();
     }
 
+    /** @notice Basic getter for period information.
+    *   @param _periodId The Id of the account you'd like to get.
+    */
     function getPeriod(uint64 _periodId)
     external
     view
@@ -366,6 +368,39 @@ contract Allocations is AragonApp {
         accounts[_accountId].budget = 0;
         accounts[_accountId].hasBudget = false;
         emit SetBudget(_accountId, 0, false);
+    }
+
+    /** @notice This transaction will execute the payout for the senders address for account #`_accountId`
+    *   @param _accountId The Id of the account you'd like to take action against
+    *   @param _payoutId The payout within the account you'd like to execute
+    *   @param _candidateId the Candidate whose payout you'll execute (must be sender)
+    */
+    function candidateExecutePayout(
+        uint64 _accountId,
+        uint64 _payoutId,
+        uint256 _candidateId
+    ) external transitionsPeriod isInitialized
+    {
+        Payout storage payout = accounts[_accountId].payouts[_payoutId];
+        require(payout.distSet);
+        require(msg.sender == payout.candidateAddresses[_candidateId], "candidate not receiver");
+        _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId);
+    }
+
+    /** @notice This transaction will execute the payout for candidate `_candidateId` within account #`_accountId`
+    *   @param _accountId The Id of the account you'd like to take action against
+    *   @param _payoutId The payout within the account you'd like to execute
+    *   @param _candidateId the Candidate whose payout you'll execute (must be sender)
+    */
+    function executePayout(
+        uint64 _accountId,
+        uint64 _payoutId,
+        uint256 _candidateId
+    ) external transitionsPeriod auth(EXECUTE_PAYOUT_ROLE)
+    {
+        Payout storage payout = accounts[_accountId].payouts[_payoutId];
+        require(payout.distSet);
+        _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId);
     }
 
     /**
@@ -603,7 +638,6 @@ contract Allocations is AragonApp {
                 emit PaymentFailure(_accountId, _payoutId, i);
             }
         }
-    
         success = true;
     }
 
