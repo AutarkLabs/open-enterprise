@@ -21,9 +21,10 @@ import VoteStatus from '../VoteStatus'
 import ProgressBarThick from '../ProgressBarThick'
 import Slider from '../Slider'
 import { getVoteStatus } from '../../utils/vote-utils'
-import { VOTE_STATUS_SUCCESSFUL } from '../../utils/vote-types'
+import {
+  VOTE_STATUS_SUCCESSFUL
+} from '../../utils/vote-types'
 import { isAddress } from 'web3-utils'
-import Discussion from '../../../../discussions/app/modules/Discussion'
 import { LocalIdentityBadge } from '../../../../../shared/identity'
 
 class VotePanelContent extends React.Component {
@@ -65,7 +66,9 @@ class VotePanelContent extends React.Component {
     this.state.voteOptions.forEach(element => {
       let voteWeight = element.trueValue
         ? Math.round(
-          parseFloat((element.trueValue * this.state.userBalance).toFixed(2))
+          parseFloat(
+            (element.trueValue * this.state.userBalance).toFixed(2)
+          )
         )
         : 0
       optionsArray.push(voteWeight)
@@ -77,24 +80,20 @@ class VotePanelContent extends React.Component {
       ? (optionsArray = optionsArray.map(
         tokenSupport =>
           (tokenSupport / valueTotal) *
-            (parseInt(this.state.userBalance) * 0.9999)
+          (parseInt(this.state.userBalance) * 0.9999)
       ))
       : 0
     this.props.onVote(this.props.vote.voteId, optionsArray)
   }
   executeVote = () => {
-    this.props.app.executeVote(this.props.vote.voteId)
+    this.props.app.executeVote(this.props.vote.voteId).toPromise()
     this.setState({ panel: { visible: false } })
   }
   loadUserBalance = () => {
     const { tokenContract, user } = this.props
     const { snapshotBlock } = this.props.vote.data
     if (tokenContract && user) {
-      combineLatest(
-        tokenContract.balanceOfAt(user, snapshotBlock),
-        tokenContract.decimals(),
-        tokenContract.symbol()
-      )
+      combineLatest(tokenContract.balanceOfAt(user, snapshotBlock), tokenContract.decimals(), tokenContract.symbol())
         .pipe(first())
         .subscribe(([ balance, decimals, symbol ]) => {
           this.setState({
@@ -121,11 +120,17 @@ class VotePanelContent extends React.Component {
   }
 
   sliderUpdate = (value, idx) => {
-    const total = this.state.voteOptions.reduce((acc, { trueValue }, index) => {
-      return (
-        acc + (idx === index ? Math.round(value * 100) || 0 : trueValue || 0)
-      )
-    }, 0)
+    const total = this.state.voteOptions.reduce(
+      (acc, { trueValue }, index) => {
+        return (
+          acc +
+          (idx === index
+            ? Math.round(value * 100) || 0
+            : trueValue || 0)
+        )
+      },
+      0
+    )
     if (total <= 100) {
       const option = { ...this.state.voteOptions[idx] }
       option.sliderValue = value
@@ -164,6 +169,7 @@ class VotePanelContent extends React.Component {
         .toString()
     )
     this.setState({ voteAmounts, voteWeights })
+
   }
 
   render() {
@@ -177,7 +183,7 @@ class VotePanelContent extends React.Component {
       userBalance,
       voteOptions,
       decimals,
-      voteTokenSymbol,
+      voteTokenSymbol
     } = this.state
 
     if (!vote) {
@@ -212,7 +218,9 @@ class VotePanelContent extends React.Component {
     const displayMinParticipationPct = minParticipationPct ? minParticipationPct.toFixed(0) : 'N/A'
     // TODO: This block is wrong and has no sense
     if (!voteOptions.length) {
-      this.setState({ voteOptions: options })
+      this.setState({
+        voteOptions: options
+      })
     }
     let totalSupport = 0
     options.forEach(option => {
@@ -257,6 +265,7 @@ class VotePanelContent extends React.Component {
                   >
                     {format(endDate, 'MMM dd yyyy HH:mm')}
                   </PastDate>
+
                 </React.Fragment>
               )}
             </div>
@@ -303,7 +312,7 @@ class VotePanelContent extends React.Component {
           </div>
         </SidePanelSplit>
 
-        {open && userBalance !== '0' && (
+        {open && (userBalance !== '0') && (
           <div>
             <AdjustContainer>
               <FirstLabel>Options</FirstLabel>
@@ -324,7 +333,9 @@ class VotePanelContent extends React.Component {
                           value={option.sliderValue}
                           onUpdate={value => this.sliderUpdate(value, idx)}
                         />
-                        <ValueContainer>{option.trueValue || 0}</ValueContainer>
+                        <ValueContainer>
+                          {option.trueValue || 0}
+                        </ValueContainer>
                       </div>
                     </div>
                   </SliderAndValueContainer>
@@ -340,20 +351,17 @@ class VotePanelContent extends React.Component {
                 {remaining} remaining
               </Text>
               <div>
-                <SubmitButton
-                  mode="strong"
-                  wide
-                  onClick={this.handleVoteSubmit}
-                >
+                <SubmitButton mode="strong" wide onClick={this.handleVoteSubmit}>
                   Submit Vote
                 </SubmitButton>
                 <div>
                   {showInfo && (
                     <Info.Action title="Info">
                       You will cast your vote with{' '}
-                      {displayUserBalance + ' ' + voteTokenSymbol}, since it was
-                      your balance when the vote was created (
-                      {formatDate(vote.data.startDate)})
+                      {displayUserBalance + ' ' + voteTokenSymbol}
+                      , since it was your balance when the vote was created (
+                      {formatDate(vote.data.startDate)}
+                      )
                     </Info.Action>
                   )}
                 </div>
@@ -362,24 +370,22 @@ class VotePanelContent extends React.Component {
             <SidePanelSeparator />
           </div>
         )}
-        {getVoteStatus(vote) === VOTE_STATUS_SUCCESSFUL &&
-          endDate < Date.now() && (
+        {(getVoteStatus(vote) === VOTE_STATUS_SUCCESSFUL && (endDate < Date.now())) && (
           <div>
             <ExecuteButton mode="strong" wide onClick={this.executeVote}>
-                Execute Vote
+              Execute Vote
             </ExecuteButton>
           </div>
         )}
         <div>
-          {open && userBalance !== '0' && (
+          {open && (userBalance !== '0') &&
             <ShowText
               onClick={() => this.setState({ showResults: !showResults })}
             >
               {showResults ? 'Hide Voting Results' : 'Show Voting Results'}
             </ShowText>
-          )}
-          {(showResults || !open || userBalance === '0') &&
-            voteWeights &&
+          }
+          {(showResults || !open || (userBalance === '0')) && voteWeights &&
             options.map((option, index) => (
               <React.Fragment key={index}>
                 <ProgressBarThick
@@ -438,40 +444,30 @@ class VotePanelContent extends React.Component {
                     </span>
                   }
                 />
-                {voteBalance !== undefined && (
+                {voteBalance !== undefined &&
                   <BalanceSplit>
-                    {BigNumber(
-                      safeDiv(parseInt(option.value, 10), totalSupport) *
-                        displayBalance
-                    )
-                      .dp(2)
-                      .toString() +
-                      ' ' +
-                      tokenSymbol}
+                    {
+                      BigNumber(
+                        safeDiv(parseInt(option.value, 10), totalSupport) * displayBalance
+                      ).dp(2).toString() + ' ' + tokenSymbol
+                    }
                   </BalanceSplit>
-                )}
+                }
               </React.Fragment>
             ))}
-          {open && userBalance === '0' && (
+          {open && (userBalance === '0') &&
             <div>
               <Info.Action title="Warning">
-                This account cannot cast a vote because it did not hold any{' '}
-                {voteTokenSymbol} at the time this vote was created (
-                {formatDate(vote.data.startDate)})
+                This account cannot cast a vote because it did not hold any{' '} {voteTokenSymbol} at the time this vote was created (
+                {formatDate(vote.data.startDate)}
+                )
               </Info.Action>
-            </div>
-          )}
-          {showResults && candidateSupport > 0 && (
+            </div>}
+          {showResults && (candidateSupport > 0) && (
             <Text size="xsmall" color={theme.textSecondary}>
-              {'A minimum of ' +
-                displayCandidateSupport +
-                '% is required for an option to become validated'}
+              {'A minimum of ' + displayCandidateSupport + '% is required for an option to become validated'}
             </Text>
           )}
-          <Discussion
-            ethereumAddress={this.props.user}
-            discussionId={this.props.vote.voteId - 1}
-          />
         </div>
       </div>
     )
@@ -556,4 +552,5 @@ const PastDate = styled.time`
   display: block;
 `
 
+// eslint-disable-next-line import/no-unused-modules
 export default provideNetwork(VotePanelContent)

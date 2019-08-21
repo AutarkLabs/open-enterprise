@@ -7,7 +7,6 @@ import { NewPayoutVotePanelContent } from './components/Panels'
 import { AppTitle, networkContextType } from '../../../shared/ui'
 import { useAragonApi } from '@aragon/api-react'
 import { IdentityProvider } from '../../../shared/identity'
-import { Discussions } from '../../discussions/app/modules'
 
 const initialState = {
   template: null,
@@ -94,63 +93,46 @@ class App extends React.Component {
       <Main>
         <IdentityProvider
           onResolve={this.handleResolveLocalIdentity}
-          onShowLocalIdentityModal={this.handleShowLocalIdentityModal}
-        >
-          <Discussions app={this.props.api}>
-            <AppView
-              appBar={
-                <AppBar>
-                  <AppTitle
-                    title="Dot Voting"
-                    displayMenuButton={displayMenuButton}
-                    css="padding-left: 30px"
-                  />
-                </AppBar>
-              }
-            >
-              <Decisions
-                onActivate={this.handlePanelOpen}
-                app={this.props.api}
-                votes={this.props.votes !== undefined ? this.props.votes : []}
-                entries={
-                  this.props.entries !== undefined ? this.props.entries : []
-                }
-                voteTime={this.props.voteTime}
-                minParticipationPct={
-                  this.props.minParticipationPct
-                    ? this.props.minParticipationPct / 10 ** 16
-                    : 'N/A'
-                }
-                pctBase={this.props.pctBase / 10 ** 16}
-                tokenAddress={this.props.tokenAddress}
-                userAccount={this.props.connectedAccount}
-              />
-            </AppView>
+          onShowLocalIdentityModal={this.handleShowLocalIdentityModal}>
+          <AppView
+            appBar={
+              <AppBar>
+                <AppTitle
+                  title="Dot Voting"
+                  displayMenuButton={displayMenuButton}
+                  css="padding-left: 30px"
+                />
+              </AppBar>
+            }
+          >
+            <Decisions
+              onActivate={this.handlePanelOpen}
+              app={this.props.api}
+              votes={this.props.votes !== undefined ? this.props.votes : []}
+              entries={this.props.entries !== undefined ? this.props.entries : []}
+              voteTime={this.props.voteTime}
+              minParticipationPct={this.props.minParticipationPct / 10 ** 16}
+              pctBase={this.props.pctBase / 10 ** 16}
+              tokenAddress={this.props.tokenAddress}
+              userAccount={this.props.connectedAccount}
+            />
+          </AppView>
 
-            <SidePanel
-              title={''}
-              opened={this.state.panelActive}
-              onClose={this.handlePanelClose}
-            >
-              <NewPayoutVotePanelContent />
-            </SidePanel>
-          </Discussions>
+          <SidePanel
+            title={''}
+            opened={this.state.panelActive}
+            onClose={this.handlePanelClose}
+          >
+            <NewPayoutVotePanelContent />
+          </SidePanel>
         </IdentityProvider>
       </Main>
     )
   }
 }
 
-const AppWrapper = () => {
+// eslint-disable-next-line react/display-name
+export default () => {
   const { api, appState, connectedAccount, displayMenuButton } = useAragonApi()
-  return (
-    <App
-      api={api}
-      {...appState}
-      connectedAccount={connectedAccount}
-      displayMenuButton={displayMenuButton}
-    />
-  )
+  return <App api={api} {...appState} connectedAccount={connectedAccount} displayMenuButton={displayMenuButton} />
 }
-
-export default AppWrapper
