@@ -56,8 +56,8 @@
     "publish:major": "aragon apm publish major",
     "publish:http": "npm run build:script && aragon apm publish major --http localhost:9999 --http-served-from ./dist",
     "versions": "aragon apm versions",
-    "lint": "eslint . & solium --dir ./contracts",
-    "lint:fix": "eslint . --fix & solium --dir ./contracts --fix",
+    "lint": "eslint . && solium --dir ./contracts",
+    "lint:fix": "eslint . --fix && solium --dir ./contracts --fix",
     "coverage": "cross-env SOLIDITY_COVERAGE=true npm run ganache-cli:test",
     "ganache-cli:test": "sh ./node_modules/@aragon/test-helpers/ganache-cli.sh"
   },

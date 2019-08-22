@@ -45,12 +45,12 @@ contract DiscussionApp is IForwarder, AragonApp {
         post.author = msg.sender;
         post.postCid = postCid;
         post.discussionThreadId = discussionThreadId;
-        post.createdAt = now;
+        post.createdAt = now; // solium-disable-line security/no-block-members
         post.show = true;
         uint postId = discussionThreadPosts[discussionThreadId].length;
         post.id = postId;
         discussionThreadPosts[discussionThreadId].push(post);
-        emit Post(msg.sender, postCid, discussionThreadId, postId, now);
+        emit Post(msg.sender, postCid, discussionThreadId, postId, now); // solium-disable-line security/no-block-members
     }
 
     /**
@@ -62,8 +62,9 @@ contract DiscussionApp is IForwarder, AragonApp {
         DiscussionPost storage post = discussionThreadPosts[discussionThreadId][postId];
         require(post.author == msg.sender, "You cannot hide a post you did not author.");
         post.show = false;
-        emit Hide(msg.sender, discussionThreadId, postId, now);
+        emit Hide(msg.sender, discussionThreadId, postId, now); // solium-disable-line security/no-block-members
     }
+
     /**
      * @notice Revise a discussion post with ID '`postId`'.
      * @param revisedPostCid The cid of the pre-revised post
@@ -77,7 +78,14 @@ contract DiscussionApp is IForwarder, AragonApp {
         // should we limit the number of revisions you can make to save storage?
         post.revisionCids.push(post.postCid);
         post.postCid = revisedPostCid;
-        emit Revise(msg.sender, revisedPostCid, discussionThreadId, postId, post.createdAt, now);
+        emit Revise(
+            msg.sender,
+            revisedPostCid,
+            discussionThreadId,
+            postId,
+            post.createdAt,
+            now // solium-disable-line security/no-block-members
+        );
     }
 
     // Forwarding fns
@@ -100,7 +108,7 @@ contract DiscussionApp is IForwarder, AragonApp {
         require(canForward(msg.sender, _evmScript), ERROR_CAN_NOT_FORWARD);
         bytes memory input = new bytes(0); // TODO: Consider input for this
         address[] memory blacklist = new address[](1);
-        CreateDiscussionThread(discussionThreadId, _evmScript);
+        emit CreateDiscussionThread(discussionThreadId, _evmScript);
         discussionThreadId = discussionThreadId + 1;
         runScript(_evmScript, input, blacklist);
     }
