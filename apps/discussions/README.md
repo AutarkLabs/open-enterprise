@@ -24,7 +24,7 @@ These features should be included by default in aragon.js and aragon client come
 
 ##### Including the discussions app in your repo
 
-If there is more demand for including contextual discussions in applications, we're going to rip out the discussions in this repo and publish them as node module(s). For now, you should just copy and paste the `/apps/discussions` directory into your app, and look at the `apps/planning-suite-kit` as a reference for setup.
+If there is more demand for including contextual discussions in applications, we'll rip out the discussions app in this repo and publish it as a node module(s). For now, you should just copy and paste the `/apps/discussions` directory into your app, and look at the `apps/planning-suite-kit` as a reference for deploying it as a dependency for your own app.
 
 ##### Installing the discussions app
 
@@ -41,11 +41,12 @@ function createDiscussionApp(address root, ACL acl, Kernel dao) internal returns
 
 ##### Setting up the discussions app as a forwarder
 
-Every action that gets forwarded through the discussions app creates a new discussion thread. So we need to add the discussions app to the forwarding chain of any action we want to trigger a discussion. In this example, we have a new discussion created whenever a new dot-vote gets created:
+Every action that gets forwarded through the discussions app creates a new discussion thread. So we need to add the discussions app to the forwarding chain of any action we want to trigger a discussion. In this example, we have a new discussion created _before_ a new dot-vote gets created:
 
 ```
-acl.createPermission(discussions, dotVoting, dotVoting.CREATE_VOTES_ROLE(), discussions);
+acl.createPermission(discussions, dotVoting, dotVoting.CREATE_VOTES_ROLE(), voting);
 ```
+If discussions is the only app granted the `CREATE_VOTES_ROLE` permission, every new vote will have its own discussion thread.
 
 When you send an intent to trigger the action that gets forwarded through the discussions app, you should see the appropriate radspec in the aragon client transaction confirmation panel.
 
@@ -80,11 +81,16 @@ const ComponentThatRendersDiscussionThread = ({ discussionId, ethereumAddress })
 
 ```
 
-Where does the `discussionId` come from? This part is a little confusing, and something we're still trying to figure out the best way around.
+Where does the `discussionId` come from? It's basically the unique identifier used by the Discussions App to keep track off all the threads it has created.
+
+This id will be returned to your app context as a `ForwardedActions` event, similar to an external contract event, so it's important that it gets passed into the `<Discussion />` component successfully.
+
+###### DiscussionId In-depth
 
 The `discussionId` is a `Number` that represents the relative order in which this specific transaction intent was forwarded through the discussion app. For example, let's say you had 5 transactions that were forwarded through the discussion app - the discussionId relative to these 5 transactions is the order in which they occured. It could be:
 
 1, 2, 3, 4, 5 or 14, 15, 16, 19, 20. The only thing that matters is the _order_ the transactions occured. The discussion app will figure out the rest for you.
+
 
 ##### How this all works under the hood
 
