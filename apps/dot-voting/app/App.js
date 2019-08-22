@@ -1,8 +1,12 @@
-import React, { useEffect, useState } from 'react'
-import { ASSETS_URL, Header, Main } from '@aragon/ui'
+import React, { useCallback, useEffect, useState } from 'react'
+import PropTypes from 'prop-types'
+import { ASSETS_URL, EmptyStateCard, Header, Main } from '@aragon/ui'
 import Decisions from './Decisions'
 import { useAragonApi } from '@aragon/api-react'
 import { IdentityProvider } from '../../../shared/identity'
+import emptyStatePng from './assets/voting-empty-state.png'
+
+const illustration = <img src={emptyStatePng} alt="" height="160" />
 
 const useVoteCloseWatcher = () => {
   const { votes = [], voteTime = 0 } = useAragonApi().appState
@@ -30,10 +34,31 @@ const useVoteCloseWatcher = () => {
   }, [ votes, voteTime ])
 }
 
+const Wrap = ({ children }) => (
+  <Main assetsUrl={ASSETS_URL}>
+    <Header primary="Dot Voting" />
+    {children}
+  </Main>
+)
+
+Wrap.propTypes = {
+  children: PropTypes.node.isRequired,
+}
+
 const App = () => {
   useVoteCloseWatcher()
 
   const { api, appState = {}, connectedAccount } = useAragonApi()
+
+  const handleResolveLocalIdentity = useCallback(address => {
+    return api.resolveAddressIdentity(address).toPromise()
+  }, [api])
+
+  const handleShowLocalIdentityModal = useCallback(address => {
+    return api
+      .requestAddressIdentityModification(address)
+      .toPromise()
+  }, [api])
 
   const {
     votes = [],
@@ -44,21 +69,29 @@ const App = () => {
     pctBase = 0,
   } = appState
 
-  const handleResolveLocalIdentity = address => {
-    return api.resolveAddressIdentity(address).toPromise()
-  }
-
-  const handleShowLocalIdentityModal = address => {
-    return api
-      .requestAddressIdentityModification(address)
-      .toPromise()
-  }
+  if (!votes.length) return (
+    <Wrap>
+      <div
+        css={`
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          z-index: -1;
+        `}
+      >
+        <EmptyStateCard
+          title="You do not have any dot votes."
+          text="Use the Allocations app to get started."
+          onActivate={() => <div />}
+          illustration={illustration}
+        />
+      </div>
+    </Wrap>
+  )
 
   return (
-    <Main assetsUrl={ASSETS_URL}>
-      <Header
-        primary="Dot Voting"
-      />
+    <Wrap>
       <IdentityProvider
         onResolve={handleResolveLocalIdentity}
         onShowLocalIdentityModal={handleShowLocalIdentityModal}>
@@ -74,7 +107,7 @@ const App = () => {
           userAccount={connectedAccount}
         />
       </IdentityProvider>
-    </Main>
+    </Wrap>
   )
 }
 

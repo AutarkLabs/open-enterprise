@@ -1,14 +1,13 @@
 import React, { useCallback, useEffect, useState }  from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
-import emptyStatePng from './assets/voting-empty-state.png'
 import Votes from './components/Votes'
 import tokenBalanceOfAbi from './abi/token-balanceof.json'
 import tokenDecimalsAbi from './abi/token-decimals.json'
 import tokenSymbolAbi from './abi/token-symbol.json'
 import { safeDiv } from './utils/math-utils'
 import { isBefore } from 'date-fns'
-import { BackButton, Bar, DropDown, EmptyStateCard, GU, textStyle, useLayout, useTheme } from '@aragon/ui'
+import { BackButton, Bar, DropDown, GU, textStyle, useLayout, useTheme } from '@aragon/ui'
 import VoteDetails from './components/VoteDetails'
 import { getQuorumProgress, getTotalSupport } from './utils/vote-utils'
 import { getVoteStatus } from './utils/vote-utils'
@@ -119,36 +118,22 @@ const Decisions = ({
   voteTime,
   tokenAddress,
 }) => {
-  const [ currentVoteId, setCurrentVoteId ] = useState(-1)
   const { layoutName } = useLayout()
   const theme = useTheme()
 
-  const getTokenContract = (tokenAddress) =>
-    tokenAddress && app.external(tokenAddress, tokenAbi)
-
-  const tokenContract = getTokenContract(tokenAddress)
-
-  const now = new Date()
-
-  const handleVoteOpen = voteId => {
+  const [ currentVoteId, setCurrentVoteId ] = useState(-1)
+  const handleVote = useCallback((voteId, supports) => {
+    app.vote(voteId, supports)
+    setCurrentVoteId(-1) // is this correct?
+  }, [])
+  const handleBackClick = useCallback(() => {
+    setCurrentVoteId(-1)
+  }, [])
+  const handleVoteOpen = useCallback(voteId => {
     const exists = votes.some(vote => voteId === vote.voteId)
     if (!exists) return
     setCurrentVoteId(voteId)
-  }
-
-  const handleVote = (voteId, supports) => {
-    app.vote(voteId, supports)
-    handleVoteClose()
-  }
-  const handleVoteClose = () => {
-  }
-
-  const getAddressLabel = (entries, option) => {
-    const index = entries.findIndex(entry => entry.addr === option.label)
-    return index > -1 ? entries[index].data.name : option.label
-  }
-
-  const handleBackClick = () => setCurrentVoteId(-1)
+  }, [votes])
 
   const {
     filteredVotes,
@@ -161,72 +146,63 @@ const Decisions = ({
     handleClearFilters,
   } = useFilterVotes(votes, voteTime, minParticipationPct)
 
-  // Add useful properties to the votes
-  const preparedVotes = filteredVotes.map(vote => {
+  const getAddressLabel = useCallback(option => {
+    const entry = entries.find(entry => entry.addr === option.label)
+    return entry ? entry.data.name : option.label
+  }, [entries])
+
+  // TODO: move this logic to script.js so it's available app-wide by default
+  const decorateVote = useCallback(vote => {
     const endDate = new Date(vote.data.startDate + voteTime)
-    vote.data.options = vote.data.options.map(option => {
-      return {
-        ...option,
-        label: getAddressLabel(entries, option)
-      }
-    })
+    vote.data.options = vote.data.options.map(option => ({
+      ...option,
+      label: getAddressLabel(option)
+    }))
     return {
       ...vote,
       endDate,
-      open: isBefore(now, endDate),
+      open: isBefore(new Date(), endDate),
       quorum: safeDiv(vote.data.minAcceptQuorum, pctBase),
       quorumProgress: getQuorumProgress(vote.data),
-      minParticipationPct: minParticipationPct,
+      minParticipationPct,
       description: vote.data.metadata,
       totalSupport: getTotalSupport(vote.data),
       type: vote.data.type,
     }
-  })
+  }, [ voteTime, getAddressLabel, pctBase, minParticipationPct ])
 
   const currentVote =
       currentVoteId === -1
         ? null
-        : preparedVotes.find(vote => vote.voteId === currentVoteId)
+        : decorateVote(
+          filteredVotes.find(vote => vote.voteId === currentVoteId)
+        )
 
-  if (currentVote) return  (
-    <React.Fragment>
-      <Bar>
-        <BackButton onClick={handleBackClick} />
-      </Bar>
-      <VoteDetails
-        app={app}
-        vote={currentVote}
-        userAccount={userAccount}
-        tokenContract={tokenContract}
-        onVote={handleVote}
-        minParticipationPct={minParticipationPct}
-      />
-    </React.Fragment>
-  )
+  if (currentVote) {
+    const tokenContract = tokenAddress && app.external(tokenAddress, tokenAbi)
 
-  const illustration = <img src={emptyStatePng} alt="" height="160" />
-
-  if (!votes.length) return (
-    <div css={`
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: -1;
-    `}
-    >
-      <EmptyStateCard
-        title="You do not have any dot votes."
-        text="Use the Allocations app to get started."
-        onActivate={() => <div />}
-        illustration={illustration}
-      />
-    </div>
-  )
+    return (
+      <React.Fragment>
+        <Bar>
+          <BackButton onClick={handleBackClick} />
+        </Bar>
+        <VoteDetails
+          app={app}
+          vote={currentVote}
+          userAccount={userAccount}
+          tokenContract={tokenContract}
+          onVote={handleVote}
+          minParticipationPct={minParticipationPct}
+        />
+      </React.Fragment>
+    )
+  }
 
   if (!filteredVotes.length) return (
     <EmptyFilteredVotes onClear={handleClearFilters} />
   )
+
+  const preparedVotes = filteredVotes.map(decorateVote)
 
   return (
     <React.Fragment>
