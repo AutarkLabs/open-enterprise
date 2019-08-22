@@ -13,7 +13,7 @@ import { Rewards as Rewards } from "@tps/apps-rewards/contracts/Rewards.sol";
 
 contract PlanningSuite is BetaKitBase {
     StandardBounties public registry;
-    bytes32[5] public planningAppIds; 
+    bytes32[5] public planningAppIds;
     uint256 constant PCT256 = 10 ** 16;
     uint64 constant PCT64 = 10 ** 16;
     address constant ANY_ENTITY = address(-1);
@@ -21,7 +21,7 @@ contract PlanningSuite is BetaKitBase {
     mapping (address => address) tokenCache;
 
     // ensure alphabetic order
-    enum PlanningApps { AddressBook, Allocations, DotVoting, Projects, Rewards } 
+    enum PlanningApps { AddressBook, Allocations, DotVoting, Projects, Rewards }
 
     // Overload the DeployInstance event for easy grabing of all the things
     event DeployInstance(address dao, address indexed token, address vault, address voting);
@@ -95,7 +95,7 @@ contract PlanningSuite is BetaKitBase {
         public returns (Kernel dao, Vault vault, Voting voting)
     {
         require(voteDuration > 0, "VOTE_DURATION_IS_ZERO"); // TODO: remove it once we add it to Voting app
-        MiniMeToken token = popTokenCache(msg.sender);   
+        MiniMeToken token = popTokenCache(msg.sender);
         (dao, vault, voting) = createPlanningDAO(
             token,
             holders,
@@ -234,8 +234,8 @@ contract PlanningSuite is BetaKitBase {
         initializeA1Apps(
             tokenManager,
             vault,
-            finance, 
-            voting, 
+            finance,
+            voting,
             voteParams,
             token
         );
@@ -310,7 +310,7 @@ contract PlanningSuite is BetaKitBase {
         uint256 candidateSupportPct,
         uint256 minParticipationPct,
         uint64 voteDuration
-    ) internal returns (AddressBook addressBook, DotVoting dotVoting) 
+    ) internal returns (AddressBook addressBook, DotVoting dotVoting)
     {
         addressBook = AddressBook(
             dao.newAppInstance(
@@ -328,7 +328,7 @@ contract PlanningSuite is BetaKitBase {
         addressBook.initialize();
         dotVoting.initialize(addressBook, token, minParticipationPct, candidateSupportPct, voteDuration);
     }
-    
+
     function createOtherTPSApps (
         Kernel dao,
         Vault vault,
@@ -451,7 +451,7 @@ contract PlanningSuite is BetaKitBase {
     //////////////////////////////////////////////////////////////
     // Additional Internal Helpers
     //////////////////////////////////////////////////////////////
-    
+
     function handleVaultPermissions(
         Kernel dao,
         Allocations allocations,
@@ -464,7 +464,7 @@ contract PlanningSuite is BetaKitBase {
         ACL acl = ACL(dao.acl());
         bytes32 vaultTransferRole = vault.TRANSFER_ROLE();
         // Vault permissions
-        
+
         acl.grantPermission(projects, vault, vaultTransferRole);
         acl.grantPermission(allocations, vault, vaultTransferRole);
         acl.grantPermission(rewards, vault, vaultTransferRole);
