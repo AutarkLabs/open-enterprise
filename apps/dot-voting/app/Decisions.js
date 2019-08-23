@@ -5,11 +5,11 @@ import Votes from './components/Votes'
 import tokenBalanceOfAbi from './abi/token-balanceof.json'
 import tokenDecimalsAbi from './abi/token-decimals.json'
 import tokenSymbolAbi from './abi/token-symbol.json'
-import { safeDiv } from './utils/math-utils'
 import { isBefore } from 'date-fns'
+import { useAragonApi } from '@aragon/api-react'
 import { BackButton, Bar, DropDown, GU, textStyle, useLayout, useTheme } from '@aragon/ui'
 import VoteDetails from './components/VoteDetails'
-import { getQuorumProgress, getTotalSupport } from './utils/vote-utils'
+import { getQuorumProgress } from './utils/vote-utils'
 import { getVoteStatus } from './utils/vote-utils'
 import EmptyFilteredVotes from './components/EmptyFilteredVotes'
 import {
@@ -108,16 +108,15 @@ const useFilterVotes = (votes, voteTime, minParticipationPct) => {
 
 const tokenAbi = [].concat(tokenBalanceOfAbi, tokenDecimalsAbi, tokenSymbolAbi)
 
-const Decisions = ({
-  app,
-  pctBase,
-  minParticipationPct,
-  userAccount,
-  votes,
-  entries,
-  voteTime,
-  tokenAddress,
-}) => {
+const Decisions = ({ decorateVote }) => {
+  const { api: app, appState, connectedAccount } = useAragonApi()
+  const {
+    minParticipationPct,
+    votes,
+    voteTime,
+    tokenAddress,
+  } = appState
+
   const { layoutName } = useLayout()
   const theme = useTheme()
 
@@ -146,31 +145,6 @@ const Decisions = ({
     handleClearFilters,
   } = useFilterVotes(votes, voteTime, minParticipationPct)
 
-  const getAddressLabel = useCallback(option => {
-    const entry = entries.find(entry => entry.addr === option.label)
-    return entry ? entry.data.name : option.label
-  }, [entries])
-
-  // TODO: move this logic to script.js so it's available app-wide by default
-  const decorateVote = useCallback(vote => {
-    const endDate = new Date(vote.data.startDate + voteTime)
-    vote.data.options = vote.data.options.map(option => ({
-      ...option,
-      label: getAddressLabel(option)
-    }))
-    return {
-      ...vote,
-      endDate,
-      open: isBefore(new Date(), endDate),
-      quorum: safeDiv(vote.data.minAcceptQuorum, pctBase),
-      quorumProgress: getQuorumProgress(vote.data),
-      minParticipationPct,
-      description: vote.data.metadata,
-      totalSupport: getTotalSupport(vote.data),
-      type: vote.data.type,
-    }
-  }, [ voteTime, getAddressLabel, pctBase, minParticipationPct ])
-
   const currentVote =
       currentVoteId === -1
         ? null
@@ -189,7 +163,7 @@ const Decisions = ({
         <VoteDetails
           app={app}
           vote={currentVote}
-          userAccount={userAccount}
+          userAccount={connectedAccount}
           tokenContract={tokenContract}
           onVote={handleVote}
           minParticipationPct={minParticipationPct}
@@ -270,7 +244,7 @@ const Decisions = ({
         votes={preparedVotes}
         onSelectVote={handleVoteOpen}
         app={app}
-        userAccount={userAccount}
+        userAccount={connectedAccount}
       />
 
     </React.Fragment>
@@ -278,14 +252,7 @@ const Decisions = ({
 }
 
 Decisions.propTypes = {
-  app: PropTypes.object,
-  tokenAddress: PropTypes.string.isRequired,
-  userAccount: PropTypes.string.isRequired,
-  votes: PropTypes.arrayOf(PropTypes.object).isRequired,
-  entries: PropTypes.arrayOf(PropTypes.object).isRequired,
-  minParticipationPct: PropTypes.number.isRequired,
-  pctBase: PropTypes.number.isRequired,
-  voteTime: PropTypes.number.isRequired,
+  decorateVote: PropTypes.func.isRequired,
 }
 
 const DiscTag = styled.span`

@@ -1,9 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { ASSETS_URL, EmptyStateCard, Header, Main } from '@aragon/ui'
-import Decisions from './Decisions'
 import { useAragonApi } from '@aragon/api-react'
+import { isBefore } from 'date-fns'
+import { getQuorumProgress, getTotalSupport } from './utils/vote-utils'
+import { safeDiv } from './utils/math-utils'
 import { IdentityProvider } from '../../../shared/identity'
+import Decisions from './Decisions'
 import emptyStatePng from './assets/voting-empty-state.png'
 
 const illustration = <img src={emptyStatePng} alt="" height="160" />
@@ -45,10 +48,31 @@ Wrap.propTypes = {
   children: PropTypes.node.isRequired,
 }
 
+const Empty = () => (
+  <Wrap>
+    <div
+      css={`
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: -1;
+      `}
+    >
+      <EmptyStateCard
+        title="You do not have any dot votes."
+        text="Use the Allocations app to get started."
+        onActivate={() => <div />}
+        illustration={illustration}
+      />
+    </div>
+  </Wrap>
+)
+
 const App = () => {
   useVoteCloseWatcher()
 
-  const { api, appState = {}, connectedAccount } = useAragonApi()
+  const { api, appState = {} } = useAragonApi()
 
   const handleResolveLocalIdentity = useCallback(address => {
     return api.resolveAddressIdentity(address).toPromise()
@@ -63,32 +87,37 @@ const App = () => {
   const {
     votes = [],
     entries = [],
-    tokenAddress = '',
     voteTime = 0,
     minParticipationPct = 0,
     pctBase = 0,
   } = appState
 
-  if (!votes.length) return (
-    <Wrap>
-      <div
-        css={`
-          position: fixed;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          z-index: -1;
-        `}
-      >
-        <EmptyStateCard
-          title="You do not have any dot votes."
-          text="Use the Allocations app to get started."
-          onActivate={() => <div />}
-          illustration={illustration}
-        />
-      </div>
-    </Wrap>
-  )
+  const getAddressLabel = useCallback(option => {
+    const entry = entries.find(entry => entry.addr === option.label)
+    return entry ? entry.data.name : option.label
+  }, [entries])
+
+  // TODO: move this logic to script.js so it's available app-wide by default
+  const decorateVote = useCallback(vote => {
+    const endDate = new Date(vote.data.startDate + voteTime)
+    vote.data.options = vote.data.options.map(option => ({
+      ...option,
+      label: getAddressLabel(option)
+    }))
+    return {
+      ...vote,
+      endDate,
+      open: isBefore(new Date(), endDate),
+      quorum: safeDiv(vote.data.minAcceptQuorum, pctBase),
+      quorumProgress: getQuorumProgress(vote.data),
+      minParticipationPct,
+      description: vote.data.metadata,
+      totalSupport: getTotalSupport(vote.data),
+      type: vote.data.type,
+    }
+  }, [ voteTime, getAddressLabel, pctBase, minParticipationPct ])
+
+  if (!votes.length) return <Empty />
 
   return (
     <Wrap>
@@ -96,16 +125,7 @@ const App = () => {
         onResolve={handleResolveLocalIdentity}
         onShowLocalIdentityModal={handleShowLocalIdentityModal}>
 
-        <Decisions
-          app={api}
-          votes={votes}
-          entries={entries}
-          voteTime={voteTime}
-          minParticipationPct={minParticipationPct / 10 ** 16}
-          pctBase={pctBase / 10 ** 16}
-          tokenAddress={tokenAddress}
-          userAccount={connectedAccount}
-        />
+        <Decisions decorateVote={decorateVote} />
       </IdentityProvider>
     </Wrap>
   )
