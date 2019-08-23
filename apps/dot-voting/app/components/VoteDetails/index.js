@@ -5,7 +5,6 @@ import { BigNumber } from 'bignumber.js'
 import {
   Box,
   Button,
-  Countdown,
   GU,
   Info,
   Split,
@@ -14,10 +13,8 @@ import {
   useLayout,
   useTheme,
 } from '@aragon/ui'
-import { format } from 'date-fns'
 import { combineLatest } from 'rxjs'
 import { first } from 'rxjs/operators' // Make sure observables have .first
-import VoteStatus from '../VoteStatus'
 import VotingOption from '../VotingOption'
 import Slider from '../Slider'
 import { getVoteStatus } from '../../utils/vote-utils'
@@ -30,6 +27,7 @@ import VotingOptions from '../VotingOptions'
 import { Spring, config as springs } from 'react-spring'
 import Label from './Label'
 import AppBadge from './AppBadge'
+import Status from './Status'
 
 const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minParticipationPct }) => {
   const network = useNetwork()
@@ -49,12 +47,11 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minPartici
     Array.from(Array(vote.data.options.length), () => ({}))
   )
   const toggleVotingMode = () => setVotingMode(!votingMode)
-  const { support, description, voteId } = vote
+  const { description, voteId } = vote
   const {
     metadata: question,
     participationPct,
     creator,
-    totalVoters,
     options,
     type,
   } = vote.data
@@ -403,45 +400,6 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minPartici
   Participation.propTypes = {
     participationPct: PropTypes.number.isRequired,
     minParticipationPct: PropTypes.number.isRequired,
-  }
-
-  const PastDate = styled.time`
-    font-size: 13px;
-    color: #98a0a2;
-    margin-top: 6px;
-    display: block;
-  `
-
-  const Status = ({ vote }) => (
-    <Box heading="Status">
-      <div>
-        <h2>
-          {vote.open ? 'Time Remaining' : 'Status'}
-        </h2>
-        <div>
-          {vote.open ? (
-            <Countdown end={vote.endDate} />
-          ) : (
-            <React.Fragment>
-              <VoteStatus
-                vote={vote}
-                support={support}
-                tokenSupply={totalVoters}
-              />
-              <PastDate
-                dateTime={format(vote.endDate, 'yyyy-MM-dd\'T\'HH:mm:ss.SSSxxx')}
-              >
-                {format(vote.endDate, 'MMM DD YYYY HH:mm')}
-              </PastDate>
-            </React.Fragment>
-          )}
-        </div>
-      </div>
-    </Box>
-  )
-
-  Status.propTypes = {
-    vote: PropTypes.object.isRequired,
   }
 
   let totalSupport = 0
