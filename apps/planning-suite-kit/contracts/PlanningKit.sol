@@ -12,7 +12,7 @@ import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 // import "@aragon/apps-survey/contracts/Survey.sol";
 
 import "@tps/apps-address-book/contracts/AddressBook.sol";
-import "../../discussions/contracts/DiscussionApp.sol";
+import "@tps/apps-discussions/discussions/contracts/DiscussionApp.sol";
 
 import "@tps/apps-allocations/contracts/Allocations.sol";
 import "@tps/apps-projects/contracts/Projects.sol";

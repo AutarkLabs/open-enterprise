@@ -4,6 +4,7 @@ import "@aragon/kits-beta-base/contracts/BetaKitBase.sol";
 
 import "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
 
+import "@tps/apps-discussions/discussions/contracts/DiscussionApp.sol";
 import "@tps/apps-address-book/contracts/AddressBook.sol";
 import "@tps/apps-allocations/contracts/Allocations.sol";
 import "@tps/apps-projects/contracts/Projects.sol";
@@ -416,6 +417,8 @@ contract PlanningSuite is BetaKitBase {
     {
         ACL acl = ACL(dao.acl());
 
+        (discussions) = createDiscussionApp(msg.sender, acl, dao);
+
         // AddressBook permissions:
         acl.createPermission(voting, addressBook, addressBook.ADD_ENTRY_ROLE(), voting);
         acl.createPermission(voting, addressBook, addressBook.REMOVE_ENTRY_ROLE(), voting);
@@ -451,6 +454,13 @@ contract PlanningSuite is BetaKitBase {
     //////////////////////////////////////////////////////////////
     // Additional Internal Helpers
     //////////////////////////////////////////////////////////////
+
+    function createDiscussionApp(address root, ACL acl, Kernel dao) internal returns (DiscussionApp app) {
+        bytes32 appId = apmNamehash("discussions");
+        app = DiscussionApp(dao.newAppInstance(appId, latestVersionAppBase(appId)));
+        app.initialize();
+        acl.createPermission(ANY_ENTITY, app, app.DISCUSSION_POSTER_ROLE(), root);
+    }
 
     function handleVaultPermissions(
         Kernel dao,
