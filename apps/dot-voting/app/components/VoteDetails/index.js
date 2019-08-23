@@ -30,6 +30,7 @@ import { LocalIdentityBadge } from '../../../../../shared/identity'
 import { useNetwork } from '@aragon/api-react'
 import VotingOptions from '../VotingOptions'
 import { Spring, config as springs } from 'react-spring'
+import Label from './Label'
 
 const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minParticipationPct }) => {
   const network = useNetwork()
@@ -187,18 +188,6 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minPartici
       : 0
     onVote(voteId, optionsArray)
   }, [ voteId, onVote, tokenData, voteOptions ])
-
-  const Label = ({ children }) => <div css={`
-      ${textStyle('label2')};
-      margin-bottom: ${2 * GU}px;
-    `}
-  >
-    {children}
-  </div>
-
-  Label.propTypes = {
-    children: PropTypes.node.isRequired,
-  }
 
   const AppBadge = ({ type, youVoted }) => (
     <div
