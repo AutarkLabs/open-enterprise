@@ -74,9 +74,6 @@ class Decisions extends React.Component {
   handleCreateVoteClose = () => {
     this.setState({ createVoteVisible: false })
   }
-  handleVoteTransitionEnd = opened => {
-    this.setState(opened ? { voteSidebarOpened: true } : { currentVoteId: -1 })
-  }
 
   getAddressLabel = (entries, option) => {
     const index = entries.findIndex(entry => entry.addr === option.label)
@@ -90,6 +87,7 @@ class Decisions extends React.Component {
       votes,
       entries,
       voteTime,
+      onSelectVote,
     } = this.props
     const {
       settingsLoaded,
@@ -125,7 +123,7 @@ class Decisions extends React.Component {
       <StyledDecisions>
         <ScrollWrapper>
           {displayVotes ? (
-            <Votes votes={preparedVotes} onSelectVote={this.props.onSelectVote} app={app}/>
+            <Votes votes={preparedVotes} onSelectVote={onSelectVote} app={app}/>
           ) : (
             <div
               style={{
