@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { BigNumber } from 'bignumber.js'
@@ -103,7 +103,7 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minPartici
     function canIVote() {
       if (userAccount && vote) {
         app
-          .call('canVote', vote.voteId, userAccount)
+          .call('canVote', voteId, userAccount)
           .pipe(first())
           .subscribe(canVote => {
             setCanIVote(canVote)
@@ -135,12 +135,12 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minPartici
   }, [ vote, userAccount ])
 
 
-  const handleExecuteVote = e => {
-    app.executeVote(vote.voteId)
+  const handleExecuteVote = useCallback(e => {
+    app.executeVote(voteId)
     e.stopPropagation()
-  }
+  }, [ app, voteId ])
 
-  const sliderUpdate = (value, idx) => {
+  const sliderUpdate = useCallback((value, idx) => {
     const total = voteOptions.reduce(
       (acc, { trueValue }, index) => {
         return (
@@ -159,9 +159,10 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minPartici
       setRemaining(100 - total)
       setVoteOptions([...voteOptions])
     }
-  }
+  }, [voteOptions])
 
-  const handleVoteSubmit = (voteId, userBalance, onVote) => {
+  const handleVoteSubmit = useCallback(() => {
+    const { userBalance } = tokenData
     let optionsArray = []
 
     voteOptions.forEach(element => {
@@ -185,7 +186,7 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minPartici
       ))
       : 0
     onVote(voteId, optionsArray)
-  }
+  }, [ voteId, onVote, tokenData, voteOptions ])
 
   const Label = ({ children }) => <div css={`
       ${textStyle('label2')};
@@ -342,7 +343,7 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minPartici
     width: 100%;
   `
 
-  const CastVote = ({ voteId, userBalance, options, onVote }) => (
+  const CastVote = ({ options }) => (
     <div css="width: 100%">
       <div css="display: flex; justify-content: space-between">
         <Label>Your vote</Label>
@@ -389,7 +390,7 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minPartici
           css="margin: 1rem 0 1rem 0.5rem"
           mode="strong"
           onClick={() => {
-            handleVoteSubmit(voteId, userBalance, onVote)
+            handleVoteSubmit()
             toggleVotingMode()
           }}
         >
@@ -400,10 +401,7 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minPartici
   )
 
   CastVote.propTypes = {
-    voteId: PropTypes.string.isRequired,
-    userBalance: PropTypes.string.isRequired,
     options: PropTypes.PropTypes.arrayOf(PropTypes.object).isRequired,
-    onVote: PropTypes.func.isRequired,
   }
 
   const VoteEnact = () => (
