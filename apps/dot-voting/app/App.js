@@ -11,6 +11,7 @@ import { VotePanelContent } from './components/Panels'
 import { AppTitle, networkContextType } from '../../../shared/ui'
 import { useAragonApi } from '@aragon/api-react'
 import { IdentityProvider } from '../../../shared/identity'
+import Discussions from '../../discussions/app/modules/Discussions'
 
 const tokenAbi = [].concat(tokenBalanceOfAbi, tokenDecimalsAbi, tokenSymbolAbi)
 
@@ -134,61 +135,63 @@ class App extends React.Component {
     const { displayMenuButton = false } = this.props
     return (
       <Main>
-        <IdentityProvider
-          onResolve={this.handleResolveLocalIdentity}
-          onShowLocalIdentityModal={this.handleShowLocalIdentityModal}>
-          <AppView
-            appBar={
-              <AppBar>
-                <AppTitle
-                  title="Dot Voting"
-                  displayMenuButton={displayMenuButton}
-                  css="padding-left: 30px"
-                />
-              </AppBar>
-            }
-          >
-            <Decisions
-              onActivate={this.handlePanelOpen}
-              app={this.props.api}
-              votes={this.props.votes !== undefined ? this.props.votes : []}
-              entries={this.props.entries !== undefined ? this.props.entries : []}
-              voteTime={this.props.voteTime}
-              minParticipationPct={this.props.minParticipationPct / 10 ** 16}
-              pctBase={this.props.pctBase / 10 ** 16}
-              tokenAddress={this.props.tokenAddress}
-              userAccount={this.props.connectedAccount}
-              onSelectVote={this.handleVoteOpen}
-            />
-          </AppView>
+        <Discussions app={this.props.api}>
+          <IdentityProvider
+            onResolve={this.handleResolveLocalIdentity}
+            onShowLocalIdentityModal={this.handleShowLocalIdentityModal}>
+            <AppView
+              appBar={
+                <AppBar>
+                  <AppTitle
+                    title="Dot Voting"
+                    displayMenuButton={displayMenuButton}
+                    css="padding-left: 30px"
+                  />
+                </AppBar>
+              }
+            >
+              <Decisions
+                onActivate={this.handlePanelOpen}
+                app={this.props.api}
+                votes={this.props.votes !== undefined ? this.props.votes : []}
+                entries={this.props.entries !== undefined ? this.props.entries : []}
+                voteTime={this.props.voteTime}
+                minParticipationPct={this.props.minParticipationPct / 10 ** 16}
+                pctBase={this.props.pctBase / 10 ** 16}
+                tokenAddress={this.props.tokenAddress}
+                userAccount={this.props.connectedAccount}
+                onSelectVote={this.handleVoteOpen}
+              />
+            </AppView>
 
-          <SidePanel
-            title={''}
-            opened={this.state.panelActive}
-            onClose={this.handlePanelClose}
-          >
-            <NewPayoutVotePanelContent />
-          </SidePanel>
+            <SidePanel
+              title={''}
+              opened={this.state.panelActive}
+              onClose={this.handlePanelClose}
+            >
+              <NewPayoutVotePanelContent />
+            </SidePanel>
 
-          {this.state.currentVote && (<SidePanel
-            title={'Dot Vote #' + this.state.currentVoteId}
-            opened={!!this.state.currentVote}
-            onClose={this.handleVoteClose}
-            onTransitionEnd={this.handleVoteTransitionEnd}
-          >
-            <VotePanelContent
-              app={this.props.api}
-              vote={this.state.currentVote}
-              user={this.props.connectedAccount}
-              ready={this.state.voteSidebarOpened}
-              tokenContract={this.state.tokenContract}
-              onVote={this.handleVote}
-              minParticipationPct={this.props.minParticipationPct / 10 ** 16}
-            />
-          </SidePanel>
-          )}
+            {this.state.currentVote && (<SidePanel
+              title={'Dot Vote #' + this.state.currentVoteId}
+              opened={!!this.state.currentVote}
+              onClose={this.handleVoteClose}
+              onTransitionEnd={this.handleVoteTransitionEnd}
+            >
+              <VotePanelContent
+                app={this.props.api}
+                vote={this.state.currentVote}
+                user={this.props.connectedAccount}
+                ready={this.state.voteSidebarOpened}
+                tokenContract={this.state.tokenContract}
+                onVote={this.handleVote}
+                minParticipationPct={this.props.minParticipationPct / 10 ** 16}
+              />
+            </SidePanel>
+            )}
 
-        </IdentityProvider>
+          </IdentityProvider>
+        </Discussions>
       </Main>
     )
   }

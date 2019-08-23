@@ -1,6 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
+import { useAragonApi } from '@aragon/api-react'
 import {
   Badge,
   Button,
@@ -15,6 +16,7 @@ import { VOTE_STATUS_SUCCESSFUL } from '../../utils/vote-types'
 import { getVoteStatus } from '../../utils/vote-utils'
 import { safeDiv } from '../../utils/math-utils'
 import { format } from 'date-fns'
+import Discussion from '../../../../discussions/app/modules/Discussion'
 
 const generateBadge = (foreground, background, text) => (
   <Badge foreground={foreground} background={background}>
@@ -159,14 +161,24 @@ class Vote extends React.Component {
             </Button>
           </div>
         )}
+        <Discussion
+          discussionId={this.props.vote.voteId}
+          ethereumAddress={this.props.connectedAccount}
+        />
       </StyledCard>
     )
   }
 }
 
 Vote.propTypes = {
+  connectedAccount: PropTypes.string.isRequired,
   vote: PropTypes.object.isRequired,
   onSelectVote: PropTypes.func.isRequired,
+}
+
+const WrappedVote = props => {
+  const { connectedAccount } = useAragonApi()
+  return <Vote {...props} connectedAccount={connectedAccount} />
 }
 
 const StyledCard = styled(Card)`
@@ -232,4 +244,4 @@ const FieldTitle = styled(Text.Block)`
 `
 
 // eslint-disable-next-line import/no-unused-modules
-export default Vote
+export default WrappedVote
