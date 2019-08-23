@@ -1,5 +1,11 @@
 {
-  "roles": [],
+  "roles": [
+    {
+      "name": "Is doing nothing, just needed to technically be an AragonApp",
+      "id": "EMPTY_ROLE",
+      "params": []
+    }
+  ],
   "environments": {
     "default": {
       "network": "development",
