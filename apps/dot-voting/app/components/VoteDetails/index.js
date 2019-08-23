@@ -46,7 +46,7 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minPartici
     voteTokenSymbol: '',
   })
   const [ voteOptions, setVoteOptions ] = useState(
-    Array.from(Array(vote.data.options.length), () => { return {}} )
+    Array.from(Array(vote.data.options.length), () => ({}))
   )
   const toggleVotingMode = () => setVotingMode(!votingMode)
   const { support, description, voteId } = vote
@@ -449,7 +449,7 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minPartici
       </Spring>
     </Box>
   )
-  
+
   Participation.propTypes = {
     participationPct: PropTypes.number.isRequired,
     minParticipationPct: PropTypes.number.isRequired,
@@ -489,7 +489,7 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minPartici
       </div>
     </Box>
   )
-  
+
   Status.propTypes = {
     vote: PropTypes.object.isRequired,
   }
