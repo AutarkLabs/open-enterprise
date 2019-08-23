@@ -13,20 +13,20 @@ const repoIdString = 'MDEwOIJlcG9zaXRvcnkxNjY3MjlyMjY='
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 const addedRepo = receipt =>
-  web3.toAscii(receipt.logs.filter(x => x.event == 'RepoAdded')[0].args.repoId)
-const addedBounties = receipt =>
-  receipt.logs.filter(x => x.event == 'BountyAdded')[2]
+  web3.toAscii(receipt.logs.filter(x => x.event === 'RepoAdded')[0].args.repoId)
+//const addedBounties = receipt =>
+//  receipt.logs.filter(x => x.event === 'BountyAdded')[2]
 const addedBountyInfo = receipt =>
-  receipt.logs.filter(x => x.event == 'BountyAdded').map(event => event.args)
-const fulfilledBounty = receipt =>
-  receipt.logs.filter(x => x.event == 'BountyFulfilled')[0].args
+  receipt.logs.filter(x => x.event === 'BountyAdded').map(event => event.args)
+//const fulfilledBounty = receipt =>
+//  receipt.logs.filter(x => x.event === 'BountyFulfilled')[0].args
 
 contract('Projects App', accounts => {
   let APP_MANAGER_ROLE, ADD_REPO_ROLE, CHANGE_SETTINGS_ROLE, CURATE_ISSUES_ROLE
   let FUND_ISSUES_ROLE, FUND_OPEN_ISSUES_ROLE, REMOVE_ISSUES_ROLE, REMOVE_REPO_ROLE
   let REVIEW_APPLICATION_ROLE, TRANSFER_ROLE, UPDATE_BOUNTIES_ROLE, WORK_REVIEW_ROLE
   let daoFact, alternateBounties, bounties, bountiesEvents, app, vaultBase, vault
-  let dao, acl
+  let dao, acl, appBase
 
   // Setup test actor accounts
   const [ root, bountyManager, repoRemover ] = accounts
@@ -159,20 +159,25 @@ contract('Projects App', accounts => {
         const repoInfo = await app.getRepo(repoId, { from: root })
         const result = repoInfo // get repo index on the registry
         assert.equal(
-          result,
+          result[0],
           0, // repoIndex
+          'valid repo info returned'
+        )
+        assert.equal(
+          result[1],
+          0, // open Issues
           'valid repo info returned'
         )
       })
 
       it('can remove repos', async () => {
-        repoId2 = addedRepo(
+        let repoId2 = addedRepo(
           await app.addRepo(
             'MDawOlJlcG9zaXRvcnk3NTM5NTIyNA==', // repoId
             { from: root }
           )
         )
-        repoId3 = addedRepo(
+        let repoId3 = addedRepo(
           await app.addRepo(
             'DRawOlJlcG9zaXRvcnk3NTM5NTIyNA==', // repoId
             { from: root }
@@ -289,7 +294,7 @@ contract('Projects App', accounts => {
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
             { from: root }
           )
-          response = await app.getApplicant(repoId, issueNumber, 0)
+          const response = await app.getApplicant(repoId, issueNumber, 0)
           assert.strictEqual(response[0], root, 'applicant address incorrect')
           assert.strictEqual(
             response[1],
@@ -335,8 +340,8 @@ contract('Projects App', accounts => {
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
             { from: root }
           )
-          applicantQty = await app.getApplicantsLength(repoId, 1)
-          applicant = await app.getApplicant(
+          const applicantQty = await app.getApplicantsLength(repoId, 1)
+          const applicant = await app.getApplicant(
             repoId,
             issueNumber,
             applicantQty.toNumber() - 1
@@ -361,8 +366,8 @@ contract('Projects App', accounts => {
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
             { from: root }
           )
-          applicantQty = await app.getApplicantsLength(repoId, 1)
-          applicant = await app.getApplicant(
+          const applicantQty = await app.getApplicantsLength(repoId, 1)
+          let applicant = await app.getApplicant(
             repoId,
             issueNumber,
             applicantQty.toNumber() - 1
@@ -421,8 +426,8 @@ contract('Projects App', accounts => {
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
             { from: root }
           )
-          applicantQty = await app.getApplicantsLength(repoId, 1)
-          applicant = await app.getApplicant(
+          const applicantQty = await app.getApplicantsLength(repoId, 1)
+          const applicant = await app.getApplicant(
             repoId,
             issueNumber,
             applicantQty.toNumber() - 1
@@ -457,8 +462,8 @@ contract('Projects App', accounts => {
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
             { from: root }
           )
-          applicantQty = await app.getApplicantsLength(repoId, 1)
-          applicant = await app.getApplicant(
+          const applicantQty = await app.getApplicantsLength(repoId, 1)
+          const applicant = await app.getApplicant(
             repoId,
             issueNumber,
             applicantQty.toNumber() - 1
@@ -487,6 +492,57 @@ contract('Projects App', accounts => {
           //assert(false, 'log events')
         })
 
+        it('cannot fulfill unused issue', async () => {
+          return assertRevert( async () => {
+            await app.reviewSubmission(
+              repoId,
+              9999,
+              0,
+              true,
+              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+              [10],
+              { from: bountyManager }
+            )
+          })
+        })
+
+        it('work cannot be accepted without awarding all staked tokens', async () => {
+          await app.requestAssignment(
+            repoId,
+            issueNumber,
+            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+            { from: root }
+          )
+          const applicantQty = await app.getApplicantsLength(repoId, 1)
+          const applicant = await app.getApplicant(
+            repoId,
+            issueNumber,
+            applicantQty.toNumber() - 1
+          )
+          await app.reviewApplication(
+            repoId,
+            issueNumber,
+            applicant[0],
+            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
+            true,
+            { from: bountyManager }
+          )
+          const bountyId = (await app.getIssue(repoId, issueNumber))[1].toString()
+          //console.log(bountyId)
+          await bountiesEvents.fulfillBounty(root, bountyId, [root], 'test')
+          return assertRevert(async () => {
+            await app.reviewSubmission(
+              repoId,
+              issueNumber,
+              0,
+              true,
+              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+              [9],
+              { from: bountyManager }
+            )
+          })
+        })
+
         it('work cannot be accepted twice', async () => {
           await app.requestAssignment(
             repoId,
@@ -494,8 +550,8 @@ contract('Projects App', accounts => {
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
             { from: root }
           )
-          applicantQty = await app.getApplicantsLength(repoId, 1)
-          applicant = await app.getApplicant(
+          const applicantQty = await app.getApplicantsLength(repoId, 1)
+          const applicant = await app.getApplicant(
             repoId,
             issueNumber,
             applicantQty.toNumber() - 1
@@ -650,6 +706,12 @@ contract('Projects App', accounts => {
             )
           })
         })
+
+        it('cannot remove repo with pending bounties', async () => {
+          return assertRevert(async () => {
+            await app.removeRepo(repoId, { from: repoRemover })
+          })
+        })
       })
 
       context('bounty killing', async () => {
@@ -679,7 +741,7 @@ contract('Projects App', accounts => {
           const deadIssue = await app.getIssue(repoId, issueNumber)
           hasBounty = deadIssue[0]
           assert.isFalse(hasBounty)
-          bountySize = deadIssue[3]
+          const bountySize = deadIssue[3]
           assert.equal(bountySize, 0)
           //assert(false, 'log events')
         })
@@ -728,7 +790,7 @@ contract('Projects App', accounts => {
           await token.generateTokens(vault.address, 5)
           const issueNumber = 1
           const initialBalance = (await vault.balance(token.address)).toString()
-          issueReceipt = await addedBountyInfo(
+          await addedBountyInfo(
             await app.addBounties(
               [repoId],
               [issueNumber],
@@ -794,7 +856,7 @@ contract('Projects App', accounts => {
             [ Date.now() + 86400, Date.now() + 86400 ],
             [ 0, 0 ],
             [ 0, 0 ],
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWu',
             'test description', { from: bountyManager, value: value })
           await truffleAssert.fails(
             app.removeBounties([ repoId, repoId ], [6], 'reasons', { from: bountyManager }),
@@ -812,7 +874,7 @@ contract('Projects App', accounts => {
             [Date.now() + 86400],
             [0],
             [0],
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
             'test description', { from: bountyManager, value: 10 })
           await app.removeBounties([repoId], [issueNumber], 'reasons', {
             from: bountyManager
@@ -834,9 +896,13 @@ contract('Projects App', accounts => {
         it('can\'t kill a fulfilled bounty', async () => {
           const issueNumber = 6
           await app.addBounties(
-            [repoId], [issueNumber], [10], [Date.now() + 86400],
-            [0], [0],
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+            [repoId],
+            [issueNumber],
+            [10],
+            [Date.now() + 86400],
+            [0],
+            [0],
+            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
             'test description', { from: bountyManager, value: 10 })
           await app.requestAssignment(
             repoId,
@@ -844,8 +910,8 @@ contract('Projects App', accounts => {
             'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
             { from: root }
           )
-          applicantQty = await app.getApplicantsLength(repoId, issueNumber)
-          applicant = await app.getApplicant(
+          const applicantQty = await app.getApplicantsLength(repoId, issueNumber)
+          const applicant = await app.getApplicant(
             repoId,
             issueNumber,
             applicantQty.toNumber() - 1
@@ -1063,7 +1129,7 @@ contract('Projects App', accounts => {
           bounties.address // bountyAllocator
         )
 
-        response = await app.getSettings()
+        const response = await app.getSettings()
 
         expect(response[0].map(x => x.toNumber())).to.have.ordered.members([
           100,
