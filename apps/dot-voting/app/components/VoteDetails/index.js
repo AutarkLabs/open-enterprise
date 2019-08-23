@@ -7,7 +7,6 @@ import {
   Button,
   Countdown,
   GU,
-  IconCheck,
   Info,
   Split,
   Text,
@@ -22,7 +21,6 @@ import VoteStatus from '../VoteStatus'
 import VotingOption from '../VotingOption'
 import Slider from '../Slider'
 import { getVoteStatus } from '../../utils/vote-utils'
-import { GenerateBadge } from '../../utils/vote-styled-components'
 import {
   VOTE_STATUS_SUCCESSFUL
 } from '../../utils/vote-types'
@@ -31,6 +29,7 @@ import { useNetwork } from '@aragon/api-react'
 import VotingOptions from '../VotingOptions'
 import { Spring, config as springs } from 'react-spring'
 import Label from './Label'
+import AppBadge from './AppBadge'
 
 const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minParticipationPct }) => {
   const network = useNetwork()
@@ -188,42 +187,6 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minPartici
       : 0
     onVote(voteId, optionsArray)
   }, [ voteId, onVote, tokenData, voteOptions ])
-
-  const AppBadge = ({ type, youVoted }) => (
-    <div
-      css={`
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: ${2 * GU}px;
-      `}
-    >
-      <GenerateBadge type={type} />
-      {youVoted && (
-        <div
-          css={`
-            display: inline-grid;
-            grid-template-columns: auto auto;
-            grid-gap: ${0.5 * GU}px;
-            align-items: center;
-            justify-content: center;
-            height: 20px;
-            width: auto;
-            border-radius: 100px;
-            padding: 0 ${1 * GU}px;
-            background: ${theme.infoSurface.alpha(0.08)};
-            color: ${theme.info};
-            ${textStyle('label2')};
-          `}
-        >
-          <IconCheck size="tiny" /> Voted
-        </div>
-      )}
-    </div>
-  )
-  AppBadge.propTypes = {
-    type: PropTypes.string.isRequired,
-    youVoted: PropTypes.bool.isRequired,
-  }
 
   const Title = ({ question }) => (
     <div
