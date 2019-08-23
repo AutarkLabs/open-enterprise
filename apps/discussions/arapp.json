@@ -1,11 +1,5 @@
 {
-  "roles": [
-    {
-      "name": "Add a discussion post",
-      "id": "DISCUSSION_POSTER_ROLE",
-      "params": []
-    }
-  ],
+  "roles": [],
   "environments": {
     "default": {
       "network": "development",
