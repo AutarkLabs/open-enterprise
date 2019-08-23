@@ -9,7 +9,6 @@ import {
   Info,
   Split,
   Text,
-  textStyle,
   useLayout,
   useTheme,
 } from '@aragon/ui'
@@ -28,6 +27,7 @@ import { Spring, config as springs } from 'react-spring'
 import Label from './Label'
 import AppBadge from './AppBadge'
 import Status from './Status'
+import Title from './Title'
 
 const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minParticipationPct }) => {
   const network = useNetwork()
@@ -184,30 +184,6 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minPartici
       : 0
     onVote(voteId, optionsArray)
   }, [ voteId, onVote, tokenData, voteOptions ])
-
-  const Title = ({ question }) => (
-    <div
-      css={`
-        display: grid;
-        grid-template-columns: auto;
-        grid-gap: ${2.5 * GU}px;
-        margin-top: ${2.5 * GU}px;
-        margin-bottom: ${2 * GU}px;
-      `}
-    >
-      <div
-        css={`
-          ${textStyle('title2')};
-        `}
-      >
-        <strong>{question}</strong>
-      </div>
-    </div>
-  )
-
-  Title.propTypes = {
-    question: PropTypes.string.isRequired,
-  }
 
   const DescriptionAndCreator = ({ creator, question, description }) => (
     <div
