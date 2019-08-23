@@ -9,7 +9,6 @@ import {
   Info,
   Split,
   Text,
-  useLayout,
   useTheme,
 } from '@aragon/ui'
 import { combineLatest } from 'rxjs'
@@ -20,18 +19,15 @@ import { getVoteStatus } from '../../utils/vote-utils'
 import {
   VOTE_STATUS_SUCCESSFUL
 } from '../../utils/vote-types'
-import { LocalIdentityBadge } from '../../../../../shared/identity'
-import { useNetwork } from '@aragon/api-react'
 import VotingOptions from '../VotingOptions'
 import { Spring, config as springs } from 'react-spring'
 import Label from './Label'
 import AppBadge from './AppBadge'
 import Status from './Status'
 import Title from './Title'
+import DescriptionAndCreator from './DescriptionAndCreator'
 
 const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minParticipationPct }) => {
-  const network = useNetwork()
-  const { layoutName } = useLayout()
   const theme = useTheme()
   const [ remaining, setRemaining ] = useState(100)
   const [ votingMode, setVotingMode ] = useState(false)
@@ -184,48 +180,6 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minPartici
       : 0
     onVote(voteId, optionsArray)
   }, [ voteId, onVote, tokenData, voteOptions ])
-
-  const DescriptionAndCreator = ({ creator, question, description }) => (
-    <div
-      css={`
-        display: grid;
-        grid-template-columns: ${layoutName === 'large' ? 'auto auto' : 'auto'};
-        grid-gap: ${layoutName === 'large' ? 5 * GU : 2.5 * GU}px;
-        margin-bottom: ${2 * GU}px;
-      `}
-    >
-      <div>
-        <Label>
-          Description
-        </Label>
-        <div>
-          {question === description ? '' : description}
-        </div>
-      </div>
-      <div>
-        <Label>
-          Created By
-        </Label>
-        <div css="display: flex; align-items: flex-start">
-          <LocalIdentityBadge
-            networkType={network.type}
-            entity={creator}
-            shorten={true}
-          />
-        </div>
-      </div>
-    </div>
-  )
-
-  DescriptionAndCreator.propTypes = {
-    creator: PropTypes.string.isRequired,
-    question: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
-  }
-  DescriptionAndCreator.defaultProps = {
-    question: '',
-    description: '',
-  }
 
   const VotingResults = ({ vote, options, totalSupport, voteWeights }) => (
     <React.Fragment>
