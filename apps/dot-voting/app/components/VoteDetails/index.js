@@ -18,17 +18,17 @@ import {
 import { format } from 'date-fns'
 import { combineLatest } from 'rxjs'
 import { first } from 'rxjs/operators' // Make sure observables have .first
-import VoteStatus from './VoteStatus'
-import VotingOption from './VotingOption'
-import Slider from './Slider'
-import { getVoteStatus } from '../utils/vote-utils'
-import { GenerateBadge } from '../utils/vote-styled-components'
+import VoteStatus from '../VoteStatus'
+import VotingOption from '../VotingOption'
+import Slider from '../Slider'
+import { getVoteStatus } from '../../utils/vote-utils'
+import { GenerateBadge } from '../../utils/vote-styled-components'
 import {
   VOTE_STATUS_SUCCESSFUL
-} from '../utils/vote-types'
-import { LocalIdentityBadge } from '../../../../shared/identity'
+} from '../../utils/vote-types'
+import { LocalIdentityBadge } from '../../../../../shared/identity'
 import { useNetwork } from '@aragon/api-react'
-import VotingOptions from './VotingOptions'
+import VotingOptions from '../VotingOptions'
 import { Spring, config as springs } from 'react-spring'
 
 const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minParticipationPct }) => {
