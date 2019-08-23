@@ -229,7 +229,7 @@ class VotePanelContent extends React.Component {
     const showInfo = type === 'allocation' || type === 'curation'
 
     const formatDate = date =>
-      format(date, 'dd/MM/yy') + ' at ' + format(date, 'HH:mm') + 'UTC'
+      format(date, 'DD/MM/YY') + ' at ' + format(date, 'HH:mm') + 'UTC'
 
     return (
       <div>
@@ -261,9 +261,9 @@ class VotePanelContent extends React.Component {
                     tokenSupply={totalVoters}
                   />
                   <PastDate
-                    dateTime={format(endDate, 'yyyy-MM-dd\'T\'HH:mm:ss.SSSxxx')}
+                    dateTime={format(endDate, 'YYYY-MM-DD\'T\'HH:mm:ss.SSSxxx')}
                   >
-                    {format(endDate, 'MMM dd yyyy HH:mm')}
+                    {format(endDate, 'MMM DD YYYY HH:mm')}
                   </PastDate>
 
                 </React.Fragment>
@@ -320,16 +320,17 @@ class VotePanelContent extends React.Component {
               {this.state.voteOptions.map((option, idx) => (
                 <div key={idx}>
                   <SliderAndValueContainer>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div css={'display: flex; flex-direction: column; width: 100%'}>
                       <Text size="small">{option.label}</Text>
                       <div
-                        style={{
-                          display: 'flex',
-                          margin: '0.5rem 0 1rem 0',
-                        }}
+                        css={`
+                          display: flex;
+                          margin: 0.5rem 0 1rem 0;
+                          justify-content: space-between;
+                          width: 100%;
+                        `}
                       >
                         <Slider
-                          width="270px"
                           value={option.sliderValue}
                           onUpdate={value => this.sliderUpdate(value, idx)}
                         />
@@ -392,6 +393,11 @@ class VotePanelContent extends React.Component {
                   key={index}
                   progress={safeDiv(parseInt(option.value, 10), totalSupport)}
                   hasBalance={voteBalance !== undefined}
+                  balanceSplit={
+                    BigNumber(
+                      safeDiv(parseInt(option.value, 10), totalSupport) * displayBalance
+                    ).dp(2).toString() + ' ' + tokenSymbol
+                  }
                   // TODO: Use IdentityBadge for addresses labels once it is integrated on dev branch
                   // (since we don't have a block explorer network context to plug-in yet)
                   // Then truncate the address
@@ -444,15 +450,6 @@ class VotePanelContent extends React.Component {
                     </span>
                   }
                 />
-                {voteBalance !== undefined &&
-                  <BalanceSplit>
-                    {
-                      BigNumber(
-                        safeDiv(parseInt(option.value, 10), totalSupport) * displayBalance
-                      ).dp(2).toString() + ' ' + tokenSymbol
-                    }
-                  </BalanceSplit>
-                }
               </React.Fragment>
             ))}
           {open && (userBalance === '0') &&
@@ -506,7 +503,9 @@ const ValueContainer = styled.div`
 
 const SliderAndValueContainer = styled.div`
   display: flex;
+  flex-direction: column;
   align-items: center;
+  width: 100%
 `
 
 const SubmitButton = styled(Button)`
@@ -532,12 +531,6 @@ const Part = styled.div`
       margin-top: 0;
     }
   }
-`
-
-const BalanceSplit = styled.div`
-  display: inline-block;
-  width: 25%;
-  text-align: right;
 `
 
 const Creator = styled.div`

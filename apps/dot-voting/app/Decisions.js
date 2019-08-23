@@ -9,8 +9,7 @@ import tokenSymbolAbi from './abi/token-symbol.json'
 import { safeDiv } from './utils/math-utils'
 import { hasLoadedVoteSettings } from './utils/vote-settings'
 import { isBefore } from 'date-fns'
-import { EmptyStateCard, SidePanel } from '@aragon/ui'
-import { VotePanelContent } from './components/Panels'
+import { EmptyStateCard } from '@aragon/ui'
 import { EMPTY_CALLSCRIPT, getQuorumProgress, getTotalSupport } from './utils/vote-utils'
 
 const tokenAbi = [].concat(tokenBalanceOfAbi, tokenDecimalsAbi, tokenSymbolAbi)
@@ -20,13 +19,12 @@ const EmptyIcon = () => <img src={emptyIcon} alt="" />
 class Decisions extends React.Component {
   static propTypes = {
     app: PropTypes.object,
-    tokenAddress: PropTypes.string.isRequired,
-    userAccount: PropTypes.string.isRequired,
     votes: PropTypes.arrayOf(PropTypes.object).isRequired,
     entries: PropTypes.arrayOf(PropTypes.object).isRequired,
     minParticipationPct: PropTypes.number.isRequired,
     pctBase: PropTypes.number.isRequired,
     voteTime: PropTypes.number.isRequired,
+    onSelectVote: PropTypes.func.isRequired,
   }
   constructor(props) {
     super(props)
@@ -34,7 +32,6 @@ class Decisions extends React.Component {
       createVoteVisible: false,
       currentVoteId: 0,
       settingsLoaded: true,
-      tokenContract: this.getTokenContract(props.tokenAddress),
       voteVisible: false,
       voteSidebarOpened: false,
     }
@@ -62,11 +59,6 @@ class Decisions extends React.Component {
         settingsLoaded: true,
       })
     }
-    if (nextProps.tokenAddress !== this.props.tokenAddress) {
-      this.setState({
-        tokenContract: this.getTokenContract(nextProps.tokenAddress),
-      })
-    }
   }
 
   getTokenContract(tokenAddress) {
@@ -82,25 +74,6 @@ class Decisions extends React.Component {
   handleCreateVoteClose = () => {
     this.setState({ createVoteVisible: false })
   }
-  handleVoteOpen = voteId => {
-    const exists = this.props.votes.some(vote => voteId === vote.voteId)
-    if (!exists) return
-    this.setState({
-      currentVoteId: voteId,
-      voteVisible: true,
-      voteSidebarOpened: false,
-    })
-  }
-  handleVote = (voteId, supports) => {
-    this.props.app.vote(voteId, supports).toPromise()
-    this.handleVoteClose()
-  }
-  handleVoteClose = () => {
-    this.setState({ voteVisible: false })
-  }
-  handleVoteTransitionEnd = opened => {
-    this.setState(opened ? { voteSidebarOpened: true } : { currentVoteId: -1 })
-  }
 
   getAddressLabel = (entries, option) => {
     const index = entries.findIndex(entry => entry.addr === option.label)
@@ -111,18 +84,13 @@ class Decisions extends React.Component {
       app,
       pctBase,
       minParticipationPct,
-      userAccount,
       votes,
       entries,
       voteTime,
+      onSelectVote,
     } = this.props
     const {
-      createVoteVisible,
-      currentVoteId,
       settingsLoaded,
-      tokenContract,
-      voteSidebarOpened,
-      voteVisible,
     } = this.state
 
     const displayVotes = settingsLoaded && votes.length > 0
@@ -150,16 +118,12 @@ class Decisions extends React.Component {
         }
       })
       : votes
-    const currentVote =
-      currentVoteId === -1
-        ? null
-        : preparedVotes.find(vote => vote.voteId === currentVoteId)
 
     return (
       <StyledDecisions>
         <ScrollWrapper>
           {displayVotes ? (
-            <Votes votes={preparedVotes} onSelectVote={this.handleVoteOpen} app={app}/>
+            <Votes votes={preparedVotes} onSelectVote={onSelectVote} app={app}/>
           ) : (
             <div
               style={{
@@ -178,25 +142,6 @@ class Decisions extends React.Component {
             </div>
           )}
         </ScrollWrapper>
-
-        {displayVotes && currentVote &&(
-          <SidePanel
-            title={'Dot Vote #' + currentVote.voteId}
-            opened={Boolean(!createVoteVisible && voteVisible)}
-            onClose={this.handleVoteClose}
-            onTransitionEnd={this.handleVoteTransitionEnd}
-          >
-            <VotePanelContent
-              app={app}
-              vote={currentVote}
-              user={userAccount}
-              ready={voteSidebarOpened}
-              tokenContract={tokenContract}
-              onVote={this.handleVote}
-              minParticipationPct={minParticipationPct}
-            />
-          </SidePanel>
-        )}
       </StyledDecisions>
     )
   }

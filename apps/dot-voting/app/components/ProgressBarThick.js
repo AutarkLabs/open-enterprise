@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { Motion, spring } from 'react-motion'
 import { Text, theme } from '@aragon/ui'
 
-const ProgressBar = ({ progress, label, hasBalance = false }) => (
+const ProgressBar = ({ progress, label, hasBalance = false, balanceSplit = '' }) => (
   <Motion defaultStyle={{ progress: 0 }} style={{ progress: spring(progress) }}>
     {({ progress }) => (
       <Main hasBalance={hasBalance} >
@@ -14,14 +14,22 @@ const ProgressBar = ({ progress, label, hasBalance = false }) => (
             color={theme.accent}
             style={{ width: `${progress * 100}%` }}
           />
-          <Text
-            size="xsmall"
-            color={theme.textSecondary}
-            style={{ paddingRight: '4px' }}
-          >
-            {Math.round(progress * 100)}%
-          </Text>
         </Base>
+        <Text.Block
+          size="xsmall"
+          color={theme.textSecondary}
+          style={{ paddingRight: '4px', textAlign: 'right' }}
+        >
+          {hasBalance ? (
+            <React.Fragment>
+              {balanceSplit} • {Math.round(progress * 100)}%
+            </React.Fragment>
+          ) : (
+            <React.Fragment>
+              {Math.round(progress * 100)}%
+            </React.Fragment>
+          )}
+        </Text.Block>
       </Main>
     )}
   </Motion>
@@ -35,6 +43,7 @@ ProgressBar.propTypes = {
   progress: PropTypes.number.isRequired,
   label: PropTypes.string.isRequired,
   hasBalance: PropTypes.bool.isRequired,
+  balanceSplit: PropTypes.string.isRequired,
 }
 
 const Label = styled.p`
@@ -44,7 +53,7 @@ const Label = styled.p`
 
 const Main = styled.div`
   display: inline-block;
-  width: ${props => props.hasBalance ? '75%' : '100%'};
+  width: 100%;
   align-items: center;
 `
 const Base = styled.div`
@@ -53,8 +62,8 @@ const Base = styled.div`
   background-color: ${theme.contentBackgroundActive};
   border-radius: 2px;
   text-align: right;
-  line-height: 14px;
-  margin-bottom: 18px;
+  margin-bottom: 2px;
+  margin-top: 2px;
 `
 const Progress = styled.div`
   height: 20px;
