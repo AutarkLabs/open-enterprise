@@ -120,6 +120,7 @@ const Decisions = ({ decorateVote }) => {
   const { layoutName } = useLayout()
   const theme = useTheme()
 
+  // TODO: accomplish this with routing (put routes in App.js, not here)
   const [ currentVoteId, setCurrentVoteId ] = useState(-1)
   const handleVote = useCallback((voteId, supports) => {
     app.vote(voteId, supports)
