@@ -6,7 +6,6 @@ import {
   Box,
   Button,
   GU,
-  Info,
   Split,
   Text,
   useTheme,
@@ -15,17 +14,13 @@ import { combineLatest } from 'rxjs'
 import { first } from 'rxjs/operators' // Make sure observables have .first
 import VotingOption from '../VotingOption'
 import Slider from '../Slider'
-import { getVoteStatus } from '../../utils/vote-utils'
-import {
-  VOTE_STATUS_SUCCESSFUL
-} from '../../utils/vote-types'
-import VotingOptions from '../VotingOptions'
 import { Spring, config as springs } from 'react-spring'
 import Label from './Label'
 import AppBadge from './AppBadge'
 import Status from './Status'
 import Title from './Title'
 import DescriptionAndCreator from './DescriptionAndCreator'
+import VotingResults from './VotingResults'
 
 const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minParticipationPct }) => {
   const theme = useTheme()
@@ -127,12 +122,6 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minPartici
     loadUserBalance()
   }, [ vote, userAccount ])
 
-
-  const handleExecuteVote = useCallback(e => {
-    app.executeVote(voteId)
-    e.stopPropagation()
-  }, [ app, voteId ])
-
   const sliderUpdate = useCallback((value, idx) => {
     const total = voteOptions.reduce(
       (acc, { trueValue }, index) => {
@@ -180,30 +169,6 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minPartici
       : 0
     onVote(voteId, optionsArray)
   }, [ voteId, onVote, tokenData, voteOptions ])
-
-  const VotingResults = ({ vote, options, totalSupport, voteWeights }) => (
-    <React.Fragment>
-      <Label>
-        Current Results
-      </Label>
-      <div>
-        <VotingOptions
-          options={options}
-          totalSupport={totalSupport}
-          color={`${theme.accent}`}
-          voteWeights={voteWeights}
-        />
-      </div>
-      {!vote.open && getVoteStatus(vote) === VOTE_STATUS_SUCCESSFUL && <VoteEnact vote={vote} />}
-    </React.Fragment>
-  )
-
-  VotingResults.propTypes = {
-    vote: PropTypes.object.isRequired,
-    options: PropTypes.PropTypes.arrayOf(PropTypes.object).isRequired,
-    totalSupport: PropTypes.number.isRequired,
-    voteWeights: PropTypes.PropTypes.arrayOf(PropTypes.string).isRequired,
-  }
 
   const ValueContainer = styled.div`
     box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.03);
@@ -282,22 +247,6 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minPartici
   CastVote.propTypes = {
     options: PropTypes.PropTypes.arrayOf(PropTypes.object).isRequired,
   }
-
-  const VoteEnact = () => (
-    <div>
-      <Button
-        mode="strong"
-        wide
-        onClick={handleExecuteVote}
-        css="margin: 10px 0"
-      >
-          Execute Vote
-      </Button>
-      <Info>
-        The voting period is closed and the vote status is passed. <span css="font-weight: bold">Anyone</span> can now enact this vote to execute its action.
-      </Info>
-    </div>
-  )
 
   const Participation = ({ participationPct, minParticipationPct }) => (
     <Box heading="Participation">
