@@ -36,7 +36,7 @@ class VoteRow extends React.Component {
   }
 
   handleVoteClick = () => {
-    this.props.onSelectVote(this.props.vote.voteId)
+    this.props.onSelectVote(this.props.vote)
   }
 
   handleExecuteVote = e => {

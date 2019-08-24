@@ -2,11 +2,17 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { AppBar, AppView, Main, SidePanel } from '@aragon/ui'
 import Decisions from './Decisions'
+import tokenBalanceOfAbi from './abi/token-balanceof.json'
+import tokenDecimalsAbi from './abi/token-decimals.json'
+import tokenSymbolAbi from './abi/token-symbol.json'
 import { hasLoadedVoteSettings } from './utils/vote-settings'
 import { NewPayoutVotePanelContent } from './components/Panels'
+import { VotePanelContent } from './components/Panels'
 import { AppTitle, networkContextType } from '../../../shared/ui'
 import { useAragonApi } from '@aragon/api-react'
 import { IdentityProvider } from '../../../shared/identity'
+
+const tokenAbi = [].concat(tokenBalanceOfAbi, tokenDecimalsAbi, tokenSymbolAbi)
 
 const initialState = {
   template: null,
@@ -14,6 +20,9 @@ const initialState = {
   stepIndex: 0,
   settingsLoaded: false,
   panelActive: false,
+  currentVoteId: -1,
+  currentVote: null,
+  voteSidebarOpened: false,
 }
 
 class App extends React.Component {
@@ -48,6 +57,7 @@ class App extends React.Component {
     super(props)
     this.state = {
       ...initialState,
+      tokenContract: this.getTokenContract(this.props.tokenAddress),
     }
   }
 
@@ -59,7 +69,7 @@ class App extends React.Component {
       },
     }
   }
-
+  
   componentWillReceiveProps(nextProps) {
     const { settingsLoaded } = this.state
     // Is this the first time we've loaded the settings?
@@ -68,8 +78,16 @@ class App extends React.Component {
         settingsLoaded: true,
       })
     }
+    if (nextProps.tokenAddress !== this.props.tokenAddress) {
+      this.setState({
+        tokenContract: this.getTokenContract(nextProps.tokenAddress),
+      })
+    }
   }
-
+  
+  getTokenContract(tokenAddress) {
+    return tokenAddress && this.props.api.external(tokenAddress, tokenAbi)
+  }
   handlePanelOpen = () => {
     this.setState({ panelActive: true })
   }
@@ -87,6 +105,31 @@ class App extends React.Component {
       .requestAddressIdentityModification(address)
       .toPromise()
   }
+
+  handleVoteOpen = selectedVote => {
+    this.setState({
+      currentVoteId: selectedVote.voteId,
+      currentVote: selectedVote,
+      voteVisible: true,
+      voteSidebarOpened: false,
+    })
+  }
+
+  handleVote = (voteId, supports) => {
+    this.props.api.vote(voteId, supports).toPromise()
+    this.handleVoteClose()
+  }
+  handleVoteTransitionEnd = opened => {
+    this.setState(opened ? { voteSidebarOpened: true } : { currentVoteId: -1, currentVote: null })
+  }
+
+  handleVoteClose = () => {
+    this.setState({
+      currentVoteId: -1,
+      currentVote: null,
+    })
+  }
+
   render() {
     const { displayMenuButton = false } = this.props
     return (
@@ -115,6 +158,7 @@ class App extends React.Component {
               pctBase={this.props.pctBase / 10 ** 16}
               tokenAddress={this.props.tokenAddress}
               userAccount={this.props.connectedAccount}
+              onSelectVote={this.handleVoteOpen}
             />
           </AppView>
 
@@ -125,6 +169,25 @@ class App extends React.Component {
           >
             <NewPayoutVotePanelContent />
           </SidePanel>
+
+          {this.state.currentVote && (<SidePanel
+            title={'Dot Vote #' + this.state.currentVoteId}
+            opened={!!this.state.currentVote}
+            onClose={this.handleVoteClose}
+            onTransitionEnd={this.handleVoteTransitionEnd}
+          >
+            <VotePanelContent
+              app={this.props.api}
+              vote={this.state.currentVote}
+              user={this.props.connectedAccount}
+              ready={this.state.voteSidebarOpened}
+              tokenContract={this.state.tokenContract}
+              onVote={this.handleVote}
+              minParticipationPct={this.props.minParticipationPct / 10 ** 16}
+            />
+          </SidePanel>
+          )}
+
         </IdentityProvider>
       </Main>
     )

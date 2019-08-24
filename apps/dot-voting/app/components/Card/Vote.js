@@ -36,7 +36,7 @@ class Vote extends React.Component {
   }
 
   handleVoteClick = () => {
-    this.props.onSelectVote(this.props.vote.voteId)
+    this.props.onSelectVote(this.props.vote)
   }
 
   handleExecuteVote = () => {
@@ -142,7 +142,7 @@ class Vote extends React.Component {
               </Status>
               <Status>
                 <FieldTitle>End date</FieldTitle>
-                <span>{format(endDate, 'MMM dd yyyy HH:mm')}</span>
+                <span>{format(endDate, 'MMM DD YYYY HH:mm')}</span>
               </Status>
             </React.Fragment>
           )}
