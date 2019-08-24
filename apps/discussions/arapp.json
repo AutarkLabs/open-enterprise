@@ -1,8 +1,8 @@
 {
   "roles": [
     {
-      "name": "Add a discussion post",
-      "id": "DISCUSSION_POSTER_ROLE",
+      "name": "Is doing nothing, just needed to technically be an AragonApp",
+      "id": "EMPTY_ROLE",
       "params": []
     }
   ],

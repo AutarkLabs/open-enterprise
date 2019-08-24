@@ -56,7 +56,7 @@ You should first take the `discussions/app/modules/Discussions.js` component, an
 
 ```js
 import { useAragonApi } from '@aragon/api-react'
-import { Discussions } from 'discussions/app/modules/Discussions'
+import Discussions from 'discussions/app/modules/Discussions'
 
 const App = () => {
   const { api } = useAragonApi()
@@ -71,7 +71,7 @@ const App = () => {
 Then, wherever you want to render a contextual discussion thread, you render the `Discussion` component, passing in a `discussionId` and the `ethereumAddress` of the logged in user:
 
 ```js
-import { Discussion } from 'discussions/app/modules/Discussion'
+import Discussion from 'discussions/app/modules/Discussion'
 
 const ComponentThatRendersDiscussionThread = ({ discussionId, ethereumAddress }) => {
   return {

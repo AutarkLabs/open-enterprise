@@ -20,6 +20,8 @@ contract DiscussionApp is IForwarder, AragonApp {
     event Hide(address indexed author, uint256 discussionThreadId, uint256 postId, uint256 hiddenAt);
     event CreateDiscussionThread(uint256 actionId, bytes _evmScript);
 
+    bytes32 public constant EMPTY_ROLE = keccak256("EMPTY_ROLE");
+
     string private constant ERROR_CAN_NOT_FORWARD = "DISCUSSIONS_CAN_NOT_FORWARD";
 
     struct DiscussionPost {
