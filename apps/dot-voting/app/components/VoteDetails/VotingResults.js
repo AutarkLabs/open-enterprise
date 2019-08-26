@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { useTheme } from '@aragon/ui'
 import { getVoteStatus } from '../../utils/vote-utils'
@@ -7,8 +7,17 @@ import VotingOptions from '../VotingOptions'
 import Label from './Label'
 import VoteEnact from './VoteEnact'
 
-const VotingResults = ({ vote, options, totalSupport, voteWeights }) => {
+const VotingResults = ({ vote, voteWeights }) => {
   const theme = useTheme()
+
+  const [ totalSupport, setTotalSupport ] = useState(0)
+  useEffect(() => {
+    setTotalSupport(vote.data.options.reduce(
+      (total, option) => total + parseFloat(option.value, 10),
+      0
+    ))
+  }, [vote.data.options])
+
   return (
     <React.Fragment>
       <Label>
@@ -16,7 +25,7 @@ const VotingResults = ({ vote, options, totalSupport, voteWeights }) => {
       </Label>
       <div>
         <VotingOptions
-          options={options}
+          options={vote.data.options}
           totalSupport={totalSupport}
           color={`${theme.accent}`}
           voteWeights={voteWeights}
@@ -29,8 +38,6 @@ const VotingResults = ({ vote, options, totalSupport, voteWeights }) => {
 
 VotingResults.propTypes = {
   vote: PropTypes.object.isRequired,
-  options: PropTypes.PropTypes.arrayOf(PropTypes.object).isRequired,
-  totalSupport: PropTypes.number.isRequired,
   voteWeights: PropTypes.PropTypes.arrayOf(PropTypes.string).isRequired,
 }
 

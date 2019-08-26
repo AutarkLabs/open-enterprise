@@ -21,7 +21,6 @@ const VoteDetails = ({ app, vote, userAccount, onVote, minParticipationPct }) =>
     metadata: question,
     participationPct,
     creator,
-    options,
     type,
   } = vote.data
 
@@ -60,11 +59,6 @@ const VoteDetails = ({ app, vote, userAccount, onVote, minParticipationPct }) =>
     canIVote()
   }, [ vote, userAccount ])
 
-  let totalSupport = 0
-  // eslint-disable-next-line react/prop-types
-  options.forEach(option => {
-    totalSupport = totalSupport + parseFloat(option.value, 10)
-  })
 
   // eslint-disable-next-line react/prop-types
   const youVoted = voteWeights.length > 0
@@ -107,8 +101,7 @@ const VoteDetails = ({ app, vote, userAccount, onVote, minParticipationPct }) =>
             ) :(
               <VotingResults
                 vote={vote}
-                options={options}
-                totalSupport={totalSupport}
+                options={vote.data.options}
                 voteWeights={voteWeights}
               />
             )}
