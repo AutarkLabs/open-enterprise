@@ -35,11 +35,11 @@ export const handleEvent = async (state, event, settings) => {
     break
   case 'ExecuteVote':
     nextState = await executeVote(nextState, returnValues)
-    handleAction(nextState, event)
+    await handleAction(nextState, event)
     break
   case 'StartVote':
     nextState = await startVote(nextState, returnValues)
-    handleAction(nextState, event)
+    await handleAction(nextState, event)
     break
   case 'EntryAdded':
     nextEntries = await onEntryAdded({ entries, addressBook }, returnValues)

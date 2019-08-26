@@ -1,8 +1,8 @@
-// import { vaultLoadBalance } from './token'
 import { updateAccounts } from './account'
 import { updateAllocations } from './allocation'
 import { addressesEqual } from '../../../../shared/lib/web3-utils'
 import { events, vaultLoadBalance } from '../../../../shared/store-utils'
+import { ipfsGet } from '../../../../shared/ui/utils/ipfs-helpers'
 import { app } from './app'
 
 const eventHandler = async eventData => {
@@ -40,10 +40,12 @@ const eventHandler = async eventData => {
     }
     
   case 'ForwardedActions':
-    console.log('forwardedAction Caught: ', returnValues)
-    onForwardedActions(returnValues)
+      console.log('forwardedAction Caught: ', returnValues)
+      offchainActions = await onForwardedActions(returnValues)
+    if (offchainActions) console.log('nextState with pending actions: ', offchainActions)
     return {
-      ...state
+      ...state,
+      offchainActions
     }
 
   case 'PayoutExecuted':
@@ -60,9 +62,25 @@ const eventHandler = async eventData => {
 
 export default eventHandler
 
-const onForwardedActions = async ({ failedActionKeys, actions }) => {
-  const action = actions[failedActionKeys[0]]
-  console.log(action)
-  console.log('Get the metadata: ',(await app.queryAppMetadata(action.currentApp, action.actionId).toPromise()))
-  app.emitTrigger('test trigger')
+const onForwardedActions = async ({ failedActionKeys = [], pendingActionKeys = [], actions }) => {
+  const offchainActions = { pendingActions: [], failedActions: [] }
+
+  const getDataFromKey = async key => {
+    const action = actions[key]
+    console.log(action)
+    const data = await app.queryAppMetadata(action.currentApp, action.actionId).toPromise()
+    console.log('Get the metadata: ', data)
+    if (!data) return
+    const metadata = await ipfsGet(data.cid)
+    offchainActions.failedActions.push({ ...action, ...metadata })
+  }
+
+  let getFailedActionData = failedActionKeys.map(getDataFromKey)
+
+  let getPendingActionData = pendingActionKeys.map(getDataFromKey)
+
+  await Promise.all([ ...getFailedActionData, ...getPendingActionData ])
+  console.log('offchain state: ', offchainActions)
+  //app.trigger('test trigger')
+  return offchainActions
 }
