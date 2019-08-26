@@ -19,7 +19,7 @@ import DescriptionAndCreator from './DescriptionAndCreator'
 import VotingResults from './VotingResults'
 import CastVote from './CastVote'
 
-const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minParticipationPct }) => {
+const VoteDetails = ({ app, vote, userAccount, onVote, minParticipationPct }) => {
   const theme = useTheme()
   const [ votingMode, setVotingMode ] = useState(false)
   const [ voteWeights, setVoteWeights ] = useState([])
@@ -143,7 +143,6 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minPartici
               <CastVote
                 onVote={onVote}
                 toggleVotingMode={toggleVotingMode}
-                tokenContract={tokenContract}
                 vote={vote}
                 voteWeights={voteWeights}
               />
@@ -171,7 +170,6 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, minPartici
 VoteDetails.propTypes = {
   app: PropTypes.object.isRequired,
   userAccount: PropTypes.string.isRequired,
-  tokenContract: PropTypes.object.isRequired,
   vote: PropTypes.object.isRequired,
   onVote: PropTypes.func.isRequired,
   minParticipationPct: PropTypes.number.isRequired,

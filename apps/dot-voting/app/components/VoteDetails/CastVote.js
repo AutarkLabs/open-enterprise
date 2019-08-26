@@ -3,9 +3,15 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { combineLatest } from 'rxjs'
 import { first } from 'rxjs/operators'
+import { useAragonApi } from '@aragon/api-react'
 import { Button, Text, useTheme } from '@aragon/ui'
+import tokenBalanceOfAbi from '../../abi/token-balanceof.json'
+import tokenDecimalsAbi from '../../abi/token-decimals.json'
+import tokenSymbolAbi from '../../abi/token-symbol.json'
 import Slider from '../Slider'
 import Label from './Label'
+
+const tokenAbi = [].concat(tokenBalanceOfAbi, tokenDecimalsAbi, tokenSymbolAbi)
 
 const ValueContainer = styled.div`
   box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.03);
@@ -27,17 +33,17 @@ const SliderAndValueContainer = styled.div`
 const CastVote = ({
   onVote,
   toggleVotingMode,
-  tokenContract,
   userAccount,
   vote,
   voteWeights,
 }) => {
-  const { options } = vote.data
+  const { api, appState: { tokenAddress } } = useAragonApi()
+
   const theme = useTheme()
 
   const [ remaining, setRemaining ] = useState(100)
   const [ voteOptions, setVoteOptions ] = useState(
-    Array.from(Array(options.length), () => ({}))
+    Array.from(Array(vote.data.options.length), () => ({}))
   )
   const [ tokenData, setTokenData ] = useState({
     userBalance: 0,
@@ -63,10 +69,10 @@ const CastVote = ({
     }
 
     function loadUserBalance() {
-      const { snapshotBlock } = vote.data
+      const tokenContract = tokenAddress && api.external(tokenAddress, tokenAbi)
       if (tokenContract && userAccount) {
         combineLatest(
-          tokenContract.balanceOfAt(userAccount, snapshotBlock),
+          tokenContract.balanceOfAt(userAccount, vote.data.snapshotBlock),
           tokenContract.decimals(),
           tokenContract.symbol()
         )
@@ -143,7 +149,7 @@ const CastVote = ({
       {voteOptions.map((option, index) => (
         <div key={index}>
           <SliderAndValueContainer>
-            <Text size="small" css="width: 100%">{options[index].label}</Text>
+            <Text size="small" css="width: 100%">{vote.data.options[index].label}</Text>
             <div css={`
               display: flex;
               margin: 0.5rem 0 1rem 0;
@@ -194,11 +200,11 @@ const CastVote = ({
 CastVote.propTypes = {
   onVote: PropTypes.func.isRequired,
   toggleVotingMode: PropTypes.func.isRequired,
-  tokenContract: PropTypes.object.isRequired,
   userAccount: PropTypes.string.isRequired,
   vote: PropTypes.shape({
     data: PropTypes.shape({
       options: PropTypes.PropTypes.arrayOf(PropTypes.object).isRequired,
+      snapshotBlock: PropTypes.string.isRequired, // FIXME: is this correct?
     }).isRequired,
     voteId: PropTypes.string.isRequired,
   }).isRequired,

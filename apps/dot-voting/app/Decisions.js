@@ -2,9 +2,6 @@ import React, { useCallback, useEffect, useState }  from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import Votes from './components/Votes'
-import tokenBalanceOfAbi from './abi/token-balanceof.json'
-import tokenDecimalsAbi from './abi/token-decimals.json'
-import tokenSymbolAbi from './abi/token-symbol.json'
 import { isBefore } from 'date-fns'
 import { useAragonApi } from '@aragon/api-react'
 import { BackButton, Bar, DropDown, GU, textStyle, useLayout, useTheme } from '@aragon/ui'
@@ -106,15 +103,12 @@ const useFilterVotes = (votes, voteTime, minParticipationPct) => {
   }
 }
 
-const tokenAbi = [].concat(tokenBalanceOfAbi, tokenDecimalsAbi, tokenSymbolAbi)
-
 const Decisions = ({ decorateVote }) => {
   const { api: app, appState, connectedAccount } = useAragonApi()
   const {
     minParticipationPct,
     votes,
     voteTime,
-    tokenAddress,
   } = appState
 
   const { layoutName } = useLayout()
@@ -154,8 +148,6 @@ const Decisions = ({ decorateVote }) => {
         )
 
   if (currentVote) {
-    const tokenContract = tokenAddress && app.external(tokenAddress, tokenAbi)
-
     return (
       <React.Fragment>
         <Bar>
@@ -165,7 +157,6 @@ const Decisions = ({ decorateVote }) => {
           app={app}
           vote={currentVote}
           userAccount={connectedAccount}
-          tokenContract={tokenContract}
           onVote={handleVote}
           minParticipationPct={minParticipationPct}
         />
