@@ -86,7 +86,7 @@ class VotePanelContent extends React.Component {
     this.props.onVote(this.props.vote.voteId, optionsArray)
   }
   executeVote = () => {
-    this.props.app.executeVote(this.props.vote.voteId)
+    this.props.app.executeVote(this.props.vote.voteId).toPromise()
     this.setState({ panel: { visible: false } })
   }
   loadUserBalance = () => {

@@ -57,6 +57,31 @@ module.exports = {
     'react/no-unused-prop-types': 'warn',
     'sort-imports': ['warn', { ignoreDeclarationSort: true }],
   },
+  "overrides": [
+    {
+      "files": ["test/*.test.js"],
+      "env": {
+        "mocha": true,
+      },
+      "globals": {
+        "contract": "readonly",
+        "artifacts": "readonly",
+        "web3": "readonly",
+        "assert": "readonly",
+        "expect": "readonly",
+      },
+      rules: {
+        "import/no-unused-modules": [
+          "off",
+          {
+            unusedExports: true,
+            missingExports: true,
+            ignoreExports: [],
+          }
+        ],
+      }
+    }
+  ],
   settings: {
     react: {
       version: 'detect',
