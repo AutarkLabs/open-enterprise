@@ -6,12 +6,8 @@ import { first } from 'rxjs/operators'
 import { useAragonApi } from '@aragon/api-react'
 import { Button, Text, useTheme } from '@aragon/ui'
 import tokenBalanceOfAbi from '../../abi/token-balanceof.json'
-import tokenDecimalsAbi from '../../abi/token-decimals.json'
-import tokenSymbolAbi from '../../abi/token-symbol.json'
 import Slider from '../Slider'
 import Label from './Label'
-
-const tokenAbi = [].concat(tokenBalanceOfAbi, tokenDecimalsAbi, tokenSymbolAbi)
 
 const ValueContainer = styled.div`
   box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.03);
@@ -45,11 +41,7 @@ const CastVote = ({
   const [ voteOptions, setVoteOptions ] = useState(
     Array.from(Array(vote.data.options.length), () => ({}))
   )
-  const [ tokenData, setTokenData ] = useState({
-    userBalance: 0,
-    decimals: 0,
-    voteTokenSymbol: '',
-  })
+  const [ userBalance, setUserBalance ] = useState(0)
 
   useEffect(async () => {
     function getVoterState() {
@@ -69,20 +61,14 @@ const CastVote = ({
     }
 
     function loadUserBalance() {
-      const tokenContract = tokenAddress && api.external(tokenAddress, tokenAbi)
+      const tokenContract = tokenAddress && api.external(tokenAddress, tokenBalanceOfAbi)
       if (tokenContract && userAccount) {
         combineLatest(
-          tokenContract.balanceOfAt(userAccount, vote.data.snapshotBlock),
-          tokenContract.decimals(),
-          tokenContract.symbol()
+          tokenContract.balanceOfAt(userAccount, vote.data.snapshotBlock)
         )
           .pipe(first())
-          .subscribe(([ balance, decimals, symbol ]) => {
-            setTokenData({
-              userBalance: balance,
-              decimals: decimals,
-              voteTokenSymbol: symbol,
-            })
+          .subscribe(([userBalance]) => {
+            setUserBalance(userBalance)
           })
       }
     }
@@ -113,7 +99,6 @@ const CastVote = ({
   }, [voteOptions])
 
   const handleVoteSubmit = useCallback(() => {
-    const { userBalance } = tokenData
     let optionsArray = []
 
     voteOptions.forEach(element => {
@@ -137,7 +122,7 @@ const CastVote = ({
       ))
       : 0
     onVote(vote.voteId, optionsArray)
-  }, [ vote.voteId, onVote, tokenData, voteOptions ])
+  }, [ vote.voteId, onVote, userBalance, voteOptions ])
 
   return (
     <div css="width: 100%">
