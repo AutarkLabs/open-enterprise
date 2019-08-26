@@ -189,7 +189,7 @@ CastVote.propTypes = {
   vote: PropTypes.shape({
     data: PropTypes.shape({
       options: PropTypes.PropTypes.arrayOf(PropTypes.object).isRequired,
-      snapshotBlock: PropTypes.string.isRequired, // FIXME: is this correct?
+      snapshotBlock: PropTypes.number.isRequired,
     }).isRequired,
     voteId: PropTypes.string.isRequired,
   }).isRequired,
