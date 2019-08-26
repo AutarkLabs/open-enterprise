@@ -1,26 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { BigNumber } from 'bignumber.js'
-import {
-  Box,
-  Button,
-  GU,
-  Split,
-  Text,
-  useTheme,
-} from '@aragon/ui'
+import { Box, Button, GU, Split } from '@aragon/ui'
 import { first } from 'rxjs/operators' // Make sure observables have .first
-import VotingOption from '../VotingOption'
-import { Spring, config as springs } from 'react-spring'
 import AppBadge from './AppBadge'
 import Status from './Status'
 import Title from './Title'
 import DescriptionAndCreator from './DescriptionAndCreator'
 import VotingResults from './VotingResults'
 import CastVote from './CastVote'
+import Participation from './Participation'
 
 const VoteDetails = ({ app, vote, userAccount, onVote, minParticipationPct }) => {
-  const theme = useTheme()
   const [ votingMode, setVotingMode ] = useState(false)
   const [ voteWeights, setVoteWeights ] = useState([])
   const [ canIVote, setCanIVote ] = useState(false)
@@ -68,39 +59,6 @@ const VoteDetails = ({ app, vote, userAccount, onVote, minParticipationPct }) =>
     getVoteWeights()
     canIVote()
   }, [ vote, userAccount ])
-
-  const Participation = ({ participationPct, minParticipationPct }) => (
-    <Box heading="Participation">
-      <div css="margin-bottom: 10px">
-        {Math.round(participationPct)}%{' '}
-        <Text size="small" color={`${theme.surfaceContentSecondary}`}>
-          ({minParticipationPct}% needed)
-        </Text>
-      </div>
-
-      <Spring
-        delay={500}
-        config={springs.stiff}
-        from={{ value: 0 }}
-        to={{ value: participationPct / 100 }}
-        native
-      >
-        {({ value }) => (
-          <VotingOption
-            valueSpring={value}
-            color={`${theme.positive}`}
-            value={value}
-            threshold={minParticipationPct}
-          />
-        )}
-      </Spring>
-    </Box>
-  )
-
-  Participation.propTypes = {
-    participationPct: PropTypes.number.isRequired,
-    minParticipationPct: PropTypes.number.isRequired,
-  }
 
   let totalSupport = 0
   // eslint-disable-next-line react/prop-types
