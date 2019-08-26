@@ -120,6 +120,7 @@ contract Projects is AragonApp, DepositableStorage {
     string private constant ERROR_LENGTH_MISMATCH = "ARRAY_LENGTH_MISMATCH";
     string private constant ERROR_CID_LENGTH = "IPFS_ADDRESSES_LENGTH";
     string private constant ERROR_ISSUE_INACTIVE = "ISSUE_NOT_ACTIVE";
+    string private constant ERROR_ISSUE_ACTIVE = "ISSUE_HAS_BOUNTY";
     string private constant ERROR_BOUNTY_FULFILLED = "BOUNTY_FULFILLED";
     string private constant ERROR_BOUNTY_REMOVED = "BOUNTY_REMOVED";
     string private constant ERROR_INVALID_AMOUNT = "INVALID_TOKEN_AMOUNT";
@@ -395,7 +396,12 @@ contract Projects is AragonApp, DepositableStorage {
     ) external isInitialized
     {
         Issue storage issue = repos[_repoId].issues[_issueNumber];
+
+        require(!issue.fulfilled,ERROR_BOUNTY_FULFILLED);
+        require(issue.hasBounty, ERROR_ISSUE_INACTIVE);
+        require(issue.assignee != address(-1), ERROR_OPEN_BOUNTY);
         require(issue.assignmentRequests[msg.sender].exists == false, ERROR_USER_APPLIED);
+        
         issue.applicants.push(msg.sender);
         issue.assignmentRequests[msg.sender] = AssignmentRequest(
             SubmissionStatus.Unreviewed,
@@ -515,6 +521,10 @@ contract Projects is AragonApp, DepositableStorage {
     ) external auth(UPDATE_BOUNTIES_ROLE)
     {
         Issue storage issue = repos[_repoId].issues[_issueNumber];
+
+        require(!issue.fulfilled,ERROR_BOUNTY_FULFILLED);
+        require(issue.hasBounty, ERROR_ISSUE_INACTIVE);
+
         bountiesRegistry.changeData(
             address(this),
             issue.standardBountyId,
@@ -901,6 +911,10 @@ contract Projects is AragonApp, DepositableStorage {
     {
         address[] memory emptyAddressArray = new address[](0);
         uint256[] memory emptySubmissionIndexArray = new uint256[](0);
+        //Issue storage issue = repos[_repoId].issues[_issueNumber];
+        require(isRepoAdded(_repoId), ERROR_REPO_MISSING);
+        require(!repos[_repoId].issues[_issueNumber].hasBounty, ERROR_ISSUE_ACTIVE);
+
         repos[_repoId].issues[_issueNumber] = Issue(
             _repoId,
             _issueNumber,

@@ -607,7 +607,7 @@ contract('Projects App', accounts => {
           issueReceipt = await addedBountyInfo(
             await app.addBounties(
               Array(3).fill(repoId),
-              [ 1, 2, 3 ],
+              [ 4, 5, 6 ],
               [ 1, 2, 3 ],
               [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
               [ 20, 20, 20 ],
@@ -621,7 +621,7 @@ contract('Projects App', accounts => {
             assert.deepEqual(
               {
                 repoId: '0x4d4445774f494a6c6347397a61585276636e6b784e6a59334d6a6c794d6a593d',
-                issueNumber: new web3.BigNumber(index + 1),
+                issueNumber: new web3.BigNumber(index + 4),
                 bountySize: new web3.BigNumber(index + 1),
                 registryId: new web3.BigNumber(bounty.registryId)
               },
@@ -636,7 +636,7 @@ contract('Projects App', accounts => {
           issueReceipt = await addedBountyInfo(
             await app.addBounties(
               Array(3).fill(repoId),
-              [ 1, 2, 3 ],
+              [ 7, 8, 9 ],
               [ 1, 2, 3 ],
               [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
               Array(3).fill(1),
@@ -650,7 +650,7 @@ contract('Projects App', accounts => {
             assert.deepEqual(
               {
                 repoId: '0x4d4445774f494a6c6347397a61585276636e6b784e6a59334d6a6c794d6a593d',
-                issueNumber: new web3.BigNumber(index + 1),
+                issueNumber: new web3.BigNumber(index + 7),
                 bountySize: new web3.BigNumber(index + 1),
                 registryId: new web3.BigNumber(bounty.registryId)
               },
