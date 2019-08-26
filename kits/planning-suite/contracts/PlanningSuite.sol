@@ -4,7 +4,7 @@ import "@aragon/kits-beta-base/contracts/BetaKitBase.sol";
 
 import "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
 
-import "@tps/apps-discussions/discussions/contracts/DiscussionApp.sol";
+import "@tps/apps-discussions/contracts/DiscussionApp.sol";
 import "@tps/apps-address-book/contracts/AddressBook.sol";
 import "@tps/apps-allocations/contracts/Allocations.sol";
 import "@tps/apps-projects/contracts/Projects.sol";

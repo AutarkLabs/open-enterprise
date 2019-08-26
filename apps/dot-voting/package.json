@@ -85,5 +85,8 @@
       "stylelint --fix",
       "git add"
     ]
-  }
+  },
+  "browserslist": [
+    "last 2 Chrome versions"
+  ]
 }
