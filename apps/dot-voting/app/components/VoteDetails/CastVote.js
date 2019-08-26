@@ -43,7 +43,7 @@ const CastVote = ({
   )
   const [ userBalance, setUserBalance ] = useState(0)
 
-  useEffect(async () => {
+  useEffect(() => {
     function getVoterState() {
       if (voteWeights.length) {
         let total = 0

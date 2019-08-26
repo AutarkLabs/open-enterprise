@@ -4,7 +4,7 @@ import { GenerateBadge } from '../../utils/vote-styled-components'
 import { GU, IconCheck, textStyle, useTheme } from '@aragon/ui'
 
 const AppBadge = ({ type, youVoted }) => {
-  const { theme } = useTheme()
+  const theme = useTheme()
   return (
     <div
       css={`

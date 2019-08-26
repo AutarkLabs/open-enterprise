@@ -15,7 +15,7 @@ import {
   VOTE_STATUS_SUCCESSFUL,
 } from './utils/vote-types'
 
-const useFilterVotes = (votes, voteTime, minParticipationPct) => {
+const useFilterVotes = (votes, voteTime) => {
   const [ filteredVotes, setFilteredVotes ] = useState(votes)
   // Status - 0: All, 1: Open, 2: Closed
   const [ statusFilter, setStatusFilter ] = useState(-1)
@@ -42,7 +42,6 @@ const useFilterVotes = (votes, voteTime, minParticipationPct) => {
       const open = isBefore(now, endDate)
       const type = vote.data.type
       vote.quorumProgress = getQuorumProgress(vote.data)
-      vote.minParticipationPct = minParticipationPct
       const voteStatus = getVoteStatus(vote)
 
       // Status - 0: All, 1: Open, 2: Closed
@@ -106,7 +105,6 @@ const useFilterVotes = (votes, voteTime, minParticipationPct) => {
 const Decisions = ({ decorateVote }) => {
   const { api: app, appState, connectedAccount } = useAragonApi()
   const {
-    minParticipationPct,
     votes,
     voteTime,
   } = appState
@@ -116,10 +114,10 @@ const Decisions = ({ decorateVote }) => {
 
   // TODO: accomplish this with routing (put routes in App.js, not here)
   const [ currentVoteId, setCurrentVoteId ] = useState(-1)
-  const handleVote = useCallback((voteId, supports) => {
-    app.vote(voteId, supports)
+  const handleVote = useCallback(async (voteId, supports) => {
+    await app.vote(voteId, supports).toPromise()
     setCurrentVoteId(-1) // is this correct?
-  }, [])
+  }, [app])
   const handleBackClick = useCallback(() => {
     setCurrentVoteId(-1)
   }, [])
@@ -138,7 +136,7 @@ const Decisions = ({ decorateVote }) => {
     voteAppFilter,
     handleVoteAppFilterChange,
     handleClearFilters,
-  } = useFilterVotes(votes, voteTime, minParticipationPct)
+  } = useFilterVotes(votes, voteTime)
 
   const currentVote =
       currentVoteId === -1
@@ -158,7 +156,6 @@ const Decisions = ({ decorateVote }) => {
           vote={currentVote}
           userAccount={connectedAccount}
           onVote={handleVote}
-          minParticipationPct={minParticipationPct}
         />
       </React.Fragment>
     )

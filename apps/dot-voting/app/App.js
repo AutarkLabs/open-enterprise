@@ -110,7 +110,7 @@ const App = () => {
       open: isBefore(new Date(), endDate),
       quorum: safeDiv(vote.data.minAcceptQuorum, pctBase),
       quorumProgress: getQuorumProgress(vote.data),
-      minParticipationPct,
+      minParticipationPct: minParticipationPct / 10 ** 16,
       description: vote.data.metadata,
       totalSupport: getTotalSupport(vote.data),
       type: vote.data.type,

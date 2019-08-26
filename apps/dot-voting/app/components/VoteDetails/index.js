@@ -11,7 +11,7 @@ import VotingResults from './VotingResults'
 import CastVote from './CastVote'
 import Participation from './Participation'
 
-const VoteDetails = ({ app, vote, userAccount, onVote, minParticipationPct }) => {
+const VoteDetails = ({ app, vote, userAccount, onVote }) => {
   const [ votingMode, setVotingMode ] = useState(false)
   const [ voteWeights, setVoteWeights ] = useState([])
   const [ canIVote, setCanIVote ] = useState(false)
@@ -95,6 +95,7 @@ const VoteDetails = ({ app, vote, userAccount, onVote, minParticipationPct }) =>
               <CastVote
                 onVote={onVote}
                 toggleVotingMode={toggleVotingMode}
+                userAccount={userAccount}
                 vote={vote}
                 voteWeights={voteWeights}
               />
@@ -110,7 +111,7 @@ const VoteDetails = ({ app, vote, userAccount, onVote, minParticipationPct }) =>
       }
       secondary={
         <React.Fragment>
-          <Participation participationPct={participationPct} minParticipationPct={minParticipationPct} />
+          <Participation vote={vote} />
           <Status vote={vote} />
         </React.Fragment>
       }
@@ -123,7 +124,6 @@ VoteDetails.propTypes = {
   userAccount: PropTypes.string.isRequired,
   vote: PropTypes.object.isRequired,
   onVote: PropTypes.func.isRequired,
-  minParticipationPct: PropTypes.number.isRequired,
 }
 
 export default VoteDetails

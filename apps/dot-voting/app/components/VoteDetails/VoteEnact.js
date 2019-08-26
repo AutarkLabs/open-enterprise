@@ -6,9 +6,8 @@ import { Button, Info } from '@aragon/ui'
 const VoteEnact = ({ voteId }) => {
   const { api } = useAragonApi()
 
-  const handleExecuteVote = useCallback(e => {
-    api.executeVote(voteId)
-    e.stopPropagation()
+  const handleExecuteVote = useCallback(async () => {
+    await api.executeVote(voteId).toPromise()
   }, [ api, voteId ])
 
   return (

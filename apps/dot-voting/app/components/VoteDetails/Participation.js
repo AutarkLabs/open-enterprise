@@ -4,14 +4,14 @@ import { Spring, config as springs } from 'react-spring'
 import { Box, Text, useTheme } from '@aragon/ui'
 import VotingOption from '../VotingOption'
 
-const Participation = ({ participationPct, minParticipationPct }) => {
+const Participation = ({ vote }) => {
   const theme = useTheme()
   return (
     <Box heading="Participation">
       <div css="margin-bottom: 10px">
-        {Math.round(participationPct)}%{' '}
+        {Math.round(vote.data.participationPct)}%{' '}
         <Text size="small" color={`${theme.surfaceContentSecondary}`}>
-          ({minParticipationPct}% needed)
+          ({vote.minParticipationPct}% needed)
         </Text>
       </div>
 
@@ -19,7 +19,7 @@ const Participation = ({ participationPct, minParticipationPct }) => {
         delay={500}
         config={springs.stiff}
         from={{ value: 0 }}
-        to={{ value: participationPct / 100 }}
+        to={{ value: vote.data.participationPct / 100 }}
         native
       >
         {({ value }) => (
@@ -27,7 +27,7 @@ const Participation = ({ participationPct, minParticipationPct }) => {
             valueSpring={value}
             color={`${theme.positive}`}
             value={value}
-            threshold={minParticipationPct}
+            threshold={vote.minParticipationPct}
           />
         )}
       </Spring>
@@ -36,8 +36,12 @@ const Participation = ({ participationPct, minParticipationPct }) => {
 }
 
 Participation.propTypes = {
-  participationPct: PropTypes.number.isRequired,
-  minParticipationPct: PropTypes.number.isRequired,
+  vote: PropTypes.shape({
+    data: PropTypes.shape({
+      participationPct: PropTypes.number.isRequired,
+    }),
+    minParticipationPct: PropTypes.number.isRequired,
+  }).isRequired,
 }
 
 export default Participation
