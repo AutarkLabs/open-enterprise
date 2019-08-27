@@ -101,7 +101,6 @@ const App = () => {
       <IdentityProvider
         onResolve={handleResolveLocalIdentity}
         onShowLocalIdentityModal={handleShowLocalIdentityModal}>
-
         <Accounts
           accounts={accounts}
           onNewAccount={onNewAccount}

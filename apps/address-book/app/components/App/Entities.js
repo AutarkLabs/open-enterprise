@@ -7,10 +7,7 @@ import {
   Badge,
   ContextMenu,
   ContextMenuItem,
-  Table,
-  TableCell,
-  TableHeader,
-  TableRow,
+  DataView,
   Text,
 } from '@aragon/ui'
 
@@ -34,55 +31,53 @@ const Entities = ({ entities, onNewEntity, onRemoveEntity }) => {
     return <Empty action={onNewEntity} />
   } else {
     return (
-      <Table
-        header={
-          <TableRow>
-            <TableHeader title="Entity" />
-          </TableRow>
-        }
-      >
-        {entities.sort(entitiesSort).map(({ data: { name, entryAddress, entryType } }) => {
-          const typeRow = ENTITY_TYPES.filter(row => row.name === entryType)[0]
-          return (
-            <TableRow key={entryAddress}>
-              <EntityCell>
-                <EntityWrapper>
-                  <Text
-                    size="xlarge"
-                    style={{
-                      paddingBottom: '5px',
-                    }}
-                  >
-                    {name}
-                  </Text>
-                  <LocalIdentityBadge
-                    networkType={network && network.type}
-                    entity={entryAddress}
-                    shorten={true}
-                  />
-                </EntityWrapper>
-              </EntityCell>
-              <EntityCell align="right">
-                <Badge foreground={typeRow.fg} background={typeRow.bg}>
-                  {typeRow.name}
-                </Badge>
-              </EntityCell>
-              <EntityCell
-                align="right"
-                style={{
-                  width: '30px',
-                }}
-              >
-                <ContextMenu>
-                  <ContextMenuItem onClick={removeEntity(entryAddress)}>
-                    Remove
-                  </ContextMenuItem>
-                </ContextMenu>
-              </EntityCell>
-            </TableRow>
+      <DataView
+        mode="table"
+        fields={[ 'Entity', '' ]}
+        entries={
+          entities.sort(entitiesSort).map(({ data: { name, entryAddress, entryType } }) =>
+            [ name, entryAddress, entryType ]
           )
-        })}
-      </Table>
+        }
+
+        renderEntry={([ name, entryAddress, entryType ]) => {
+          const typeRow = ENTITY_TYPES.filter(row => row.name === entryType)[0]
+          const values = [
+            // eslint-disable-next-line react/jsx-key
+            <EntityWrapper>
+              <Text
+                size="xlarge"
+                css="padding-bottom: 5px"
+              >
+                {name}
+              </Text>
+              <LocalIdentityBadge
+                networkType={network && network.type}
+                entity={entryAddress}
+                shorten={true}
+              />
+            </EntityWrapper>,
+
+            // eslint-disable-next-line react/jsx-key
+            <Badge
+              foreground={typeRow.fg}
+              background={typeRow.bg}
+              css="text-align: right"
+            >
+              {typeRow.name}
+            </Badge>
+          ]
+          return values
+        }}
+
+        renderEntryActions={([ , entryAddress ]) => (
+          <ContextMenu>
+            <ContextMenuItem onClick={removeEntity(entryAddress)}>
+                Remove
+            </ContextMenuItem>
+          </ContextMenu>
+        )}
+      />
     )
   }
 }
@@ -94,12 +89,10 @@ Entities.propTypes = {
   onRemoveEntity: PropTypes.func.isRequired,
 }
 
-const EntityCell = styled(TableCell)`
-  padding: 15px;
-`
 const EntityWrapper = styled.div`
   display: flex;
   flex-direction: column;
   margin-left: 10px;
+  padding: 15px 0;
 `
 export default Entities
