@@ -1,6 +1,5 @@
 import AddressBookJSON from '../../../shared/json-abis/address-book.json'
-import { INITIALIZATION_TRIGGER, app, handleEvent } from './'
-import { of } from 'rxjs'
+import { app, handleEvent } from './'
 
 export const initStore = addressBookAddress => {
   const addressBookApp = app.external(addressBookAddress, AddressBookJSON.abi)
@@ -30,10 +29,12 @@ export const initStore = addressBookAddress => {
       // always return the state even unmodified
       return state
     },
-    [
-      of({ event: INITIALIZATION_TRIGGER }),
-      // handle address book events
-      addressBookApp.events(),
-    ]
+    {
+      externals: [
+        {
+          contract: addressBookApp
+        }
+      ]
+    }
   )
 }

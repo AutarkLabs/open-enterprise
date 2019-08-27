@@ -1,90 +1,44 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import styled from 'styled-components'
-import { Badge, Viewport } from '@aragon/ui'
-import VotesTable from '../components/VotesTable'
-import VotesList from '../components/VotesList'
+import VotingCardGroup from './VotingCardGroup'
+import VotingCard from './VotingCard'
 
-const TABLE_CARD_BREAKPOINT = 710
+const Votes = ({ app, votes, onSelectVote, userAccount }) => {
 
-class Votes extends React.Component {
-  static propTypes = {
-    app: PropTypes.object,
-    onSelectVote: PropTypes.func.isRequired,
-    votes: PropTypes.arrayOf(PropTypes.object).isRequired,
-  }
+  const openedVotes = votes.filter(({ open }) => open)
+  const closedVotes = votes.filter(({ open }) => !open)
 
-  render() {
-    const { votes, onSelectVote, app } = this.props
-    const openedVotes = votes.filter(({ open }) => open)
-    const closedVotes = votes.filter(vote => !openedVotes.includes(vote))
-    return (
-      <React.Fragment>
-        {openedVotes.length > 0 && (
-          <VotesTableWrapper>
-            <Title>
-              <span>Open Dot Votes</span>{' '}
-              <Badge.Info>{openedVotes.length}</Badge.Info>
-            </Title>
-            <Viewport>
-              {({ below }) => below(TABLE_CARD_BREAKPOINT) ? (
-                <VotesList
-                  votes={openedVotes}
-                  onSelectVote={onSelectVote}
-                />
-              ) : (
-                <VotesTable
-                  opened
-                  votes={openedVotes}
-                  onSelectVote={onSelectVote}
-                />
-              )}
-            </Viewport>
-          </VotesTableWrapper>
-        )}
+  const votingGroups = [
+    [ 'Open votes', openedVotes ],
+    [ 'Past votes', closedVotes ],
+  ]
 
-        {closedVotes.length > 0 && (
-          <VotesTableWrapper>
-            <Title>
-              <span>Closed Dot Votes</span>{' '}
-              <Badge.Info>{closedVotes.length}</Badge.Info>
-            </Title>
-            <Viewport>
-              {({ below }) => below(TABLE_CARD_BREAKPOINT) ? (
-                <VotesList
-                  votes={closedVotes}
-                  onSelectVote={onSelectVote}
-                  app={app}
-                />
-              ) : (
-                <VotesTable
-                  opened={false}
-                  votes={closedVotes}
-                  onSelectVote={onSelectVote}
-                  app={app}
-                />
-              )}
-            </Viewport>
-          </VotesTableWrapper>
-        )}
-      </React.Fragment>
+  return votingGroups.map(([ groupName, votes ]) =>
+    !!votes.length && (
+      <VotingCardGroup
+        title={groupName}
+        count={votes.length}
+        key={groupName}
+      >
+        {votes.map(vote => (
+          <VotingCard
+            key={vote.voteId}
+            app={app}
+            vote={vote}
+            onSelectVote={onSelectVote}
+            userAccount={userAccount}
+          />
+        ))}
+      </VotingCardGroup>
     )
-  }
+  )
 }
 
-const Title = styled.h1`
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-  font-weight: 600;
-  font-size: 16px;
-  & > span:first-child {
-    margin-right: 10px;
-  }
-`
-
-const VotesTableWrapper = styled.div`
-  margin-bottom: 30px;
-`
+Votes.propTypes = {
+  app: PropTypes.object,
+  onSelectVote: PropTypes.func.isRequired,
+  votes: PropTypes.arrayOf(PropTypes.object).isRequired,
+  userAccount: PropTypes.string.isRequired,
+}
 
 export default Votes

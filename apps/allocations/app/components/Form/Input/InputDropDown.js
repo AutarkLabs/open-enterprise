@@ -4,14 +4,12 @@ import { DropDown, TextInput, theme } from '@aragon/ui'
 import styled from 'styled-components'
 
 // TODO: Better naming
-const InputDropDown = ({ textInput, dropDown, wide }) => {
-  return (
-    <StyledInputDropDown wide={wide}>
-      <TextInput {...textInput} />
-      <DropDown {...dropDown} />
-    </StyledInputDropDown>
-  )
-}
+const InputDropDown = ({ textInput, dropDown, wide }) => (
+  <StyledInputDropDown wide={wide}>
+    <TextInput {...textInput} />
+    <DropDown {...dropDown} />
+  </StyledInputDropDown>
+)
 
 InputDropDown.propTypes = {
   textInput: PropTypes.object,

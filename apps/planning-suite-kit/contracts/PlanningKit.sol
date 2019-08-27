@@ -12,6 +12,8 @@ import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 // import "@aragon/apps-survey/contracts/Survey.sol";
 
 import "@tps/apps-address-book/contracts/AddressBook.sol";
+import "../../discussions/contracts/DiscussionApp.sol";
+
 import "@tps/apps-allocations/contracts/Allocations.sol";
 import "@tps/apps-projects/contracts/Projects.sol";
 import {DotVoting as DotVotingApp} from "@tps/apps-dot-voting/contracts/DotVoting.sol";
@@ -20,6 +22,7 @@ import "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
 import "@aragon/apps-finance/contracts/Finance.sol";
 import "@aragon/apps-voting/contracts/Voting.sol";
+
 
 
 
@@ -93,10 +96,12 @@ contract PlanningKit is KitBase {
         address root = msg.sender;
         Vault vault;
         Voting voting;
+        DiscussionApp discussions;
 
         (vault, voting) = createA1Apps(root, acl, dao);
+        (discussions) = createDiscussionApp(root, acl, dao);
 
-        createTPSApps(root, dao, vault, voting);
+        createTPSApps(root, dao, vault, voting, discussions);
 
         //handleCleanupPermissions(dao, acl, root);
 
@@ -187,7 +192,7 @@ contract PlanningKit is KitBase {
 
     }
 
-    function createTPSApps (address root, Kernel dao, Vault vault, Voting voting) internal {
+    function createTPSApps (address root, Kernel dao, Vault vault, Voting voting, DiscussionApp discussions) internal {
         AddressBook addressBook;
         Projects projects;
         DotVotingApp dotVoting;
@@ -217,7 +222,8 @@ contract PlanningKit is KitBase {
             dotVoting,
             allocations,
             rewards,
-            voting
+            voting,
+            discussions
         );
         handleVaultPermissions(
             dao,
@@ -253,7 +259,8 @@ contract PlanningKit is KitBase {
         DotVotingApp dotVoting,
         Allocations allocations,
         Rewards rewards,
-        Voting voting
+        Voting voting,
+        DiscussionApp discussions
     ) internal
     {
         address root = msg.sender;
@@ -301,6 +308,13 @@ contract PlanningKit is KitBase {
         acl.grantPermission(projects, vault, vault.TRANSFER_ROLE());
         acl.grantPermission(allocations, vault, vault.TRANSFER_ROLE());
         acl.grantPermission(rewards, vault, vault.TRANSFER_ROLE());
+    }
+
+    function createDiscussionApp(address root, ACL acl, Kernel dao) internal returns (DiscussionApp app) {
+        bytes32 appId = apmNamehash("discussions");
+        app = DiscussionApp(dao.newAppInstance(appId, latestVersionAppBase(appId)));
+        app.initialize();
+        acl.createPermission(ANY_ENTITY, app, app.EMPTY_ROLE(), root);
     }
 
     function handleCleanupPermissions(Kernel dao, ACL acl, address root) internal {
