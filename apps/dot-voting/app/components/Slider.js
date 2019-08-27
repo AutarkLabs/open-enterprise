@@ -8,7 +8,6 @@ const BAR_HEIGHT = 6
 const HANDLE_SIZE = 24
 const HANDLE_SHADOW_MARGIN = 15
 const PADDING = 5
-const MIN_WIDTH = HANDLE_SIZE * 6
 const HEIGHT = Math.max(HANDLE_SIZE, BAR_HEIGHT) + PADDING * 2
 
 class Slider extends React.Component {

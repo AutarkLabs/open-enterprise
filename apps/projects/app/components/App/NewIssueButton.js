@@ -1,5 +1,5 @@
 import React from 'react'
-import { AppTitleButton } from '../../../../../shared/ui'
+import { AppTitleButton } from '.'
 import { usePanelManagement } from '../Panel'
 
 const NewIssueButton = () => {

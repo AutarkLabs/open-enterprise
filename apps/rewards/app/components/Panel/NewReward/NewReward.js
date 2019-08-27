@@ -257,7 +257,7 @@ class NewReward extends React.Component {
           <DropDown
             wide
             items={this.getItems()}//this.props.balances.slice(1).map(token => token.symbol)}
-            active={this.state.referenceAsset}
+            selected={this.state.referenceAsset}
             onChange={referenceAsset => this.setState({ referenceAsset, ...INTIAL_STATE })}
           />
         }
@@ -291,7 +291,7 @@ class NewReward extends React.Component {
           <DropDown
             wide
             items={rewardTypes}
-            active={this.state.rewardType}
+            selected={this.state.rewardType}
             onChange={rewardType => this.setState({ rewardType })}
           />
         }
@@ -317,7 +317,7 @@ class NewReward extends React.Component {
               dropDown={{
                 name: 'amountCurrency',
                 items: this.props.balances.map(token => token.symbol),
-                active: this.state.amountCurrency,
+                selected: this.state.amountCurrency,
                 onChange: amountCurrency => this.setState({ amountCurrency }),
               }}
             />
@@ -423,7 +423,7 @@ class NewReward extends React.Component {
               dropDown={{
                 name: 'amountCurrency',
                 items: this.props.balances.map(token => token.symbol),
-                active: this.state.amountCurrency,
+                selected: this.state.amountCurrency,
                 onChange: amountCurrency => this.setState({ amountCurrency }),
               }}
             />
@@ -472,7 +472,7 @@ class NewReward extends React.Component {
             <DropDown
               wide
               items={disbursementCycleNames}
-              active={this.state.disbursementCycle}
+              selected={this.state.disbursementCycle}
               onChange={disbursementCycle => {
                 this.changeDate(this.state.dateStart, this.state.dateEnd, disbursementCycle)
               }}
@@ -487,7 +487,7 @@ class NewReward extends React.Component {
             <DropDown
               wide
               items={disbursementDatesItems}
-              active={this.state.disbursementDate}
+              selected={this.state.disbursementDate}
               onChange={disbursementDate => this.setState({ disbursementDate })}
             />
           }
