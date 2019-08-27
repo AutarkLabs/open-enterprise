@@ -19,7 +19,6 @@ const VoteDetails = ({ app, vote, userAccount, onVote }) => {
   const { description, voteId } = vote
   const {
     metadata: question,
-    participationPct,
     creator,
     type,
   } = vote.data

@@ -234,7 +234,7 @@ class App extends React.Component {
 
   render() {
     const { panel, panelProps } = this.state
-    const { network, displayMenuButton = false } = this.props
+    const { network } = this.props
 
     return (
       <Main>
@@ -254,27 +254,27 @@ class App extends React.Component {
             onChange={this.selectTab}
           />
 
-            { this.state.selected === 1 ? (
-              <MyRewards
-                rewards={this.props.rewards === undefined ? [] : this.props.rewards}
-                newReward={this.newReward}
-                openDetails={this.openDetailsMy}
-                network={network}
-                onClaimReward={this.onClaimReward}
-                tokens={this.props.balances}
-                convertRates={this.state.convertRates}
-              />
-            ) : (
-              <Overview
-                rewards={this.props.rewards === undefined ? [] : this.props.rewards}
-                newReward={this.newReward}
-                openDetails={this.openDetailsView}
-                network={network}
-                tokens={this.props.balances}
-                convertRates={this.state.convertRates}
-                claims={this.props.claims}
-              />
-            )}
+          { this.state.selected === 1 ? (
+            <MyRewards
+              rewards={this.props.rewards === undefined ? [] : this.props.rewards}
+              newReward={this.newReward}
+              openDetails={this.openDetailsMy}
+              network={network}
+              onClaimReward={this.onClaimReward}
+              tokens={this.props.balances}
+              convertRates={this.state.convertRates}
+            />
+          ) : (
+            <Overview
+              rewards={this.props.rewards === undefined ? [] : this.props.rewards}
+              newReward={this.newReward}
+              openDetails={this.openDetailsView}
+              network={network}
+              tokens={this.props.balances}
+              convertRates={this.state.convertRates}
+              claims={this.props.claims}
+            />
+          )}
 
           <PanelManager
             onClose={this.closePanel}
