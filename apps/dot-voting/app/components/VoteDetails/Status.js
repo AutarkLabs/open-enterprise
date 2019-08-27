@@ -31,7 +31,7 @@ const Status = ({ vote }) => (
             <PastDate
               dateTime={format(vote.endDate, 'yyyy-MM-dd\'T\'HH:mm:ss.SSSxxx')}
             >
-              {format(vote.endDate, 'MMM DD YYYY HH:mm')}
+              {format(vote.endDate, 'MMM dd yyyy HH:mm')}
             </PastDate>
           </React.Fragment>
         )}
