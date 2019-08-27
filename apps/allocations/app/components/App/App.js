@@ -14,7 +14,7 @@ const App = () => {
   const [ isModalVisible, setModalVisible ] = useState(false)
   const [ currentBudgetId, setCurrentBudgetId ] = useState('')
   const { api, appState } = useAragonApi()
-  const { allocations = [], budgets = [], isSyncing = true } = appState
+  const { allocations = [], budgets = [], isSyncing = true, offchainActions = {} } = appState
 
   const saveBudget = ({ id, amount, name, token }) => {
     if (id) {
@@ -163,7 +163,7 @@ const App = () => {
             </React.Fragment>
           )
         }
-        { !!allocations.length && <AllocationsHistory allocations={allocations} /> }
+        { !!allocations.length && <AllocationsHistory allocations={allocations} offchainData={offchainActions} /> }
         <Deactivate
           visible={isModalVisible}
           budgetId={currentBudgetId}

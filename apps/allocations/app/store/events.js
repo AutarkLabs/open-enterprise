@@ -67,20 +67,36 @@ const onForwardedActions = async ({ failedActionKeys = [], pendingActionKeys = [
 
   const getDataFromKey = async key => {
     const action = actions[key]
-    console.log(action)
     const data = await app.queryAppMetadata(action.currentApp, action.actionId).toPromise()
-    console.log('Get the metadata: ', data)
     if (!data) return
-    const metadata = await ipfsGet(data.cid)
-    offchainActions.failedActions.push({ ...action, ...metadata })
+    let metadata = await ipfsGet(data.cid)
+    if (!metadata) return
+    return { ...action, ...metadata }
   }
 
   let getFailedActionData = failedActionKeys.map(getDataFromKey)
 
   let getPendingActionData = pendingActionKeys.map(getDataFromKey)
 
-  await Promise.all([ ...getFailedActionData, ...getPendingActionData ])
-  console.log('offchain state: ', offchainActions)
-  //app.trigger('test trigger')
+  offchainActions.failedActions = (await Promise.all(getFailedActionData))
+    .filter(action => action !== undefined)
+    .map(action => ({ ...action, 
+      startTime: new Date(action.startDate), 
+      description: action.metadata, 
+      amount: String(action.balance),
+      distSet: false,
+      pending: false
+    }))
+
+  offchainActions.pendingActions = (await Promise.all(getPendingActionData))
+    .filter(action => action !== undefined)
+    .map(action => ({ ...action, 
+      startTime: new Date(action.startDate), 
+      description: action.metadata, 
+      amount: String(action.balance),
+      distSet: false,
+      pending: true
+    }))
+  
   return offchainActions
 }

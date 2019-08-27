@@ -58,11 +58,13 @@ PayoutStatusWrapper.defaultProps = {
   posTop: 0,
 }
 
-const ShowStatus = ({ distSet, recurring, startTime }) => {
+const ShowStatus = ({ distSet, recurring, startTime, payoutId, pending }) => {
   let status
   if (!recurring) {
     if (distSet) status = 1
-    else if (!distSet) status = 2
+    else if (!distSet && (payoutId >= 0)) status = 2
+    else if (Date.now() < startTime) status = 0
+    else if (pending) status = 1
     else status = 3
   }
   else {
@@ -80,7 +82,9 @@ const ShowStatus = ({ distSet, recurring, startTime }) => {
 ShowStatus.propTypes = {
   distSet: PropTypes.bool.isRequired,
   recurring: PropTypes.bool.isRequired,
-  startTime: PropTypes.instanceOf(Date).isRequired
+  startTime: PropTypes.instanceOf(Date).isRequired,
+  payoutId: PropTypes.number,
+  pending: PropTypes.bool,
 }
 
 
@@ -99,7 +103,7 @@ const PayoutsNarrow = ({ executePayout, data, tokens }) => (
         <div css="display: flex; flex-wrap: nowrap; align-items: center">
           <div css="margin-right: 10px">
             <AmountBadge>
-              {displayCurrency(BigNumber(payout.amount))}{' '}{translateToken(payout.token, tokens)}
+              {displayCurrency(BigNumber(payout.amount))}{' '}{payout.tokenSymbol||translateToken(payout.token, tokens)}
             </AmountBadge>
           </div>
           <div>
@@ -126,15 +130,20 @@ PayoutsNarrow.propTypes = {
 }
 
 
-const Payouts = ({ executePayout, payouts, tokens }) => {
+const Payouts = ({ executePayout, payouts, tokens, offchainData }) => {
   const payoutsEmpty = payouts.length === 0
   if (payoutsEmpty) {
     return null
   }
 
+  const {
+    failedActions = [],
+    pendingActions = [],
+  } = offchainData
+
   // Payouts cannot be directly mutated since it is a prop
   // The solution does only a shallow copy
-  const sortedPayouts = [...payouts].sort(sortByDateKey('startTime'))
+  const sortedPayouts = [ ...payouts, ...failedActions, ...pendingActions ].sort(sortByDateKey('startTime'))
 
   return (
     <PayoutsWrap>
@@ -152,7 +161,8 @@ Payouts.propTypes = {
   executePayout: PropTypes.func.isRequired,
   payouts: PropTypes.arrayOf(PropTypes.object).isRequired,
   // TODO: shape the object
-  tokens: PropTypes.arrayOf(PropTypes.object).isRequired
+  tokens: PropTypes.arrayOf(PropTypes.object).isRequired,
+  offchainData: PropTypes.object,
 }
 
 const ActionLabel = styled.span`
