@@ -459,7 +459,7 @@ contract PlanningSuite is BetaKitBase {
         bytes32 appId = apmNamehash("discussions");
         app = DiscussionApp(dao.newAppInstance(appId, latestVersionAppBase(appId)));
         app.initialize();
-        acl.createPermission(ANY_ENTITY, app, app.DISCUSSION_POSTER_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, app, app.EMPTY_ROLE(), root);
     }
 
     function handleVaultPermissions(
