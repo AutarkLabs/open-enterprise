@@ -91,7 +91,7 @@ class NewAllocation extends React.Component {
 
   // TODO: Manage dropdown to return a name and value as the rest of inputs
 
-  changePayoutToken = (index, items) => {
+  changePayoutToken = items => index => {
     this.setState({
       allocationError: false,
       payoutTokenIndex: index,
@@ -192,8 +192,8 @@ class NewAllocation extends React.Component {
     const amountDropDown = {
       name: 'token',
       items: availableTokens,
-      active: state.payoutTokenIndex,
-      onChange: this.changePayoutToken,
+      selected: state.payoutTokenIndex,
+      onChange: this.changePayoutToken(availableTokens),
     }
 
     const amountWarningMessages = (

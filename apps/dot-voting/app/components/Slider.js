@@ -8,7 +8,6 @@ const BAR_HEIGHT = 6
 const HANDLE_SIZE = 24
 const HANDLE_SHADOW_MARGIN = 15
 const PADDING = 5
-const MIN_WIDTH = HANDLE_SIZE * 10
 const HEIGHT = Math.max(HANDLE_SIZE, BAR_HEIGHT) + PADDING * 2
 
 class Slider extends React.Component {
@@ -154,7 +153,7 @@ class Slider extends React.Component {
 }
 
 const Main = styled.div`
-  min-width: ${MIN_WIDTH}px;
+  width: 100%;
   padding: 0 ${HANDLE_SIZE / 2 + PADDING}px;
   ${unselectable};
 `
