@@ -1,4 +1,4 @@
-import { AppBar, AppView, Main, TabBar } from '@aragon/ui'
+import { Button, Header, IconPlus, Main, Tabs } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import throttle from 'lodash.throttle'
@@ -12,7 +12,7 @@ import {
   millisecondsToMonths,
   millisecondsToQuarters
 } from '../../../../../shared/ui/utils'
-import { AppTitle, AppTitleButton, networkContextType } from '../../../../../shared/ui'
+import { networkContextType } from '../../../../../shared/ui'
 import { useAragonApi } from '@aragon/api-react'
 import { IdentityProvider } from '../../../../../shared/identity'
 
@@ -234,60 +234,47 @@ class App extends React.Component {
 
   render() {
     const { panel, panelProps } = this.state
-    const { network, displayMenuButton = false } = this.props
+    const { network } = this.props
 
     return (
       <Main>
         <IdentityProvider
           onResolve={this.handleResolveLocalIdentity}
           onShowLocalIdentityModal={this.handleShowLocalIdentityModal}>
-          <AppView
-            appBar={
-              <AppBar
-                endContent={
-                  <AppTitleButton
-                    caption="New Reward"
-                    onClick={this.newReward}
-                  />
-                }
-                tabs={
-                  <TabBar
-                    items={this.state.tabs}
-                    selected={this.state.selected}
-                    onSelect={this.selectTab}
-                  />
-                }
-              >
-                <AppTitle
-                  title="Rewards"
-                  displayMenuButton={displayMenuButton}
-                  css="padding-left: 30px"
-                />
-              </AppBar>
+
+          <Header
+            primary="Rewards"
+            secondary={
+              <Button mode="strong" icon={<IconPlus />} onClick={this.newReward} label="New Reward" />
             }
-          >
-            { this.state.selected === 1 ? (
-              <MyRewards
-                rewards={this.props.rewards === undefined ? [] : this.props.rewards}
-                newReward={this.newReward}
-                openDetails={this.openDetailsMy}
-                network={network}
-                onClaimReward={this.onClaimReward}
-                tokens={this.props.balances}
-                convertRates={this.state.convertRates}
-              />
-            ) : (
-              <Overview
-                rewards={this.props.rewards === undefined ? [] : this.props.rewards}
-                newReward={this.newReward}
-                openDetails={this.openDetailsView}
-                network={network}
-                tokens={this.props.balances}
-                convertRates={this.state.convertRates}
-                claims={this.props.claims}
-              />
-            )}
-          </AppView>
+          />
+          <Tabs
+            items={this.state.tabs}
+            selected={this.state.selected}
+            onChange={this.selectTab}
+          />
+
+          { this.state.selected === 1 ? (
+            <MyRewards
+              rewards={this.props.rewards === undefined ? [] : this.props.rewards}
+              newReward={this.newReward}
+              openDetails={this.openDetailsMy}
+              network={network}
+              onClaimReward={this.onClaimReward}
+              tokens={this.props.balances}
+              convertRates={this.state.convertRates}
+            />
+          ) : (
+            <Overview
+              rewards={this.props.rewards === undefined ? [] : this.props.rewards}
+              newReward={this.newReward}
+              openDetails={this.openDetailsView}
+              network={network}
+              tokens={this.props.balances}
+              convertRates={this.state.convertRates}
+              claims={this.props.claims}
+            />
+          )}
 
           <PanelManager
             onClose={this.closePanel}
