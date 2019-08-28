@@ -107,7 +107,7 @@ contract('Planning Suite', accounts => {
 
   const neededSupport = pct16(50)
   const minimumAcceptanceQuorum = pct16(20)
-  const minParticipationPct = pct16(50)
+  const globalMinQuorum = pct16(50)
   const candidateSupportPct = pct16(10)
   const votingTime = 60
 
@@ -232,7 +232,7 @@ contract('Planning Suite', accounts => {
           votingAddress,
           tokenAddress,
           candidateSupportPct,
-          minParticipationPct,
+          globalMinQuorum,
           votingTime
         )
         // generated apps from TPS

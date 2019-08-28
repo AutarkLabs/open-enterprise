@@ -22,7 +22,7 @@ module.exports = async (
   console.log('Setting up parameters')
   const neededSupport = pct16(50)
   const minimumAcceptanceQuorum = pct16(20)
-  const minParticipationPct = pct16(50)
+  const globalMinQuorum = pct16(50)
   const candidateSupportPct = 0
   const votingTime = 900
   const holders = [owner]
@@ -81,7 +81,7 @@ module.exports = async (
     votingAddress,
     tokenAddress,
     candidateSupportPct,
-    minParticipationPct,
+    globalMinQuorum,
     votingTime
   )
   console.log('Planning Suite apps added...')

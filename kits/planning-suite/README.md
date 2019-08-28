@@ -27,7 +27,7 @@ planningSuite.newInstance(
   supportNeeded,
   minAcceptanceQuorum,
   candidateSupportPct,
-  minParticipationPct,
+  globalMinQuorum,
   voteDuration
 )
 ```
@@ -50,7 +50,7 @@ planningSuite.newInstance(
 | `supportNeeded`       | Voting App: Percentage of Yeas in casted votes for a vote to succeed .                                                        | 50%                      | 500000000000000000                            |
 | `minAcceptanceQuorum` | Voting App: Percentage of Yeas in total possible votes for a vote to succeed.                                                 | 30%                      | 300000000000000000                            |
 | `candidateSupportPct` | Dot Voting App: Minimum % of an option needs for it be considered valid.                                                      | 50%                      | 50000000000000000                             |
-| `minParticipationPct` | Dot Voting App: Minimum % of all token supply that needs to participate in the Dot Vote in order for the vote to be executed. | 30%                      | 300000000000000000                            |
+| `globalMinQuorum`     | Dot Voting App: Minimum % of all token supply that needs to participate in the Dot Vote in order for the vote to be executed. | 30%                      | 300000000000000000                            |
 | `voteDuration`        | The amount of time a Voting or Dot Voting proposal will be open (in seconds).                                                 | 7 days                   | 604800                                        |
 
 Check [Voting app spec](https://wiki.aragon.org/dev/apps/voting/) for some details and examples

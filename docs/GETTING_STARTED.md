@@ -2,7 +2,7 @@
 You can create a new organization that comes preconfigured with That Planning Suite by visiting [rinkeby.autark.xyz](https://rinkeby.autark.xyz)
 
 ## Configure voting settings
-The Dot Voting "quorum" requirement is the `minParticipationPct`, or minimum percentage of total votes required for a Dot Vote to succeed. This is different than the [Voting app's minimum acceptance quorum](https://wiki.aragon.org/dev/apps/voting/) which is the minimum % of all token supply that needs to vote "yes" in order for the vote to be succeed.
+The Dot Voting "quorum" requirement is the `globalMinQuorum`, or minimum percentage of total votes required for a Dot Vote to succeed. This is different than the [Voting app's minimum acceptance quorum](https://wiki.aragon.org/dev/apps/voting/) which is the minimum % of all token supply that needs to vote "yes" in order for the vote to be succeed.
 
 
 # Installing That Planning Suite to an Existing DAO
@@ -75,9 +75,8 @@ The Dot Voting app is used by both the Allocations app and Projects app. Dot Vot
 
 The Dot Voting app requires the following initialization parameters:
 
-* `AddressBook`: proxy address of the Address Book app (must be installed before initializing Dot Voting)
 * `MinimeToken`: address of a minime token
-* `minParticipationPct`: percentage of total votes required for a vote to succeed (expressed as a percentage of 10^18; eg. 10^16 = 1%, 10^18 = 100%)
+* `globalMinQuorum`: percentage of total votes required for a vote to succeed (expressed as a percentage of 10^18; eg. 10^16 = 1%, 10^18 = 100%)
 * `candidateSupportPct`: minimum percentage required for an option to be valid. This feature is not fully enabled yet, so set this to 0 otherwise the app may behave unexpectedly.
 * `voteDuration`: Seconds that a vote will be open for token holders to vote
 

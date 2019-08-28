@@ -114,7 +114,7 @@ contract PlanningSuite is BetaKitBase {
         Voting voting,
         MiniMeToken token,
         uint256 candidateSupportPct,
-        uint256 minParticipationPct,
+        uint256 globalMinQuorum,
         uint64 voteDuration) public
     {
         addPlanningApps(
@@ -123,7 +123,7 @@ contract PlanningSuite is BetaKitBase {
             voting,
             token,
             candidateSupportPct,
-            minParticipationPct,
+            globalMinQuorum,
             voteDuration
         );
     }
@@ -162,7 +162,7 @@ contract PlanningSuite is BetaKitBase {
         Voting voting,
         MiniMeToken token,
         uint256 candidateSupportPct,
-        uint256 minParticipationPct,
+        uint256 globalMinQuorum,
         uint64 voteDuration
     ) internal
     {
@@ -173,7 +173,7 @@ contract PlanningSuite is BetaKitBase {
             dao,
             token,
             candidateSupportPct,
-            minParticipationPct,
+            globalMinQuorum,
             voteDuration
         );
         createOtherTPSApps(
@@ -308,7 +308,7 @@ contract PlanningSuite is BetaKitBase {
         Kernel dao,
         MiniMeToken token,
         uint256 candidateSupportPct,
-        uint256 minParticipationPct,
+        uint256 globalMinQuorum,
         uint64 voteDuration
     ) internal returns (AddressBook addressBook, DotVoting dotVoting)
     {
@@ -326,7 +326,7 @@ contract PlanningSuite is BetaKitBase {
         );
 
         addressBook.initialize();
-        dotVoting.initialize(addressBook, token, minParticipationPct, candidateSupportPct, voteDuration);
+        dotVoting.initialize(addressBook, token, globalMinQuorum, candidateSupportPct, voteDuration);
     }
 
     function createOtherTPSApps (
