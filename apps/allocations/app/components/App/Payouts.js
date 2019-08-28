@@ -58,12 +58,13 @@ PayoutStatusWrapper.defaultProps = {
   posTop: 0,
 }
 
-const ShowStatus = ({ distSet, recurring, startTime, payoutId, pending }) => {
+const ShowStatus = ({ distSet, recurring, startTime, payoutId, pending, open }) => {
   let status
   if (!recurring) {
     if (distSet) status = 1
     else if (!distSet && (payoutId >= 0)) status = 2
     else if (Date.now() < startTime) status = 0
+    else if (pending && open) status = 0
     else if (pending) status = 1
     else status = 3
   }
@@ -85,6 +86,7 @@ ShowStatus.propTypes = {
   startTime: PropTypes.instanceOf(Date).isRequired,
   payoutId: PropTypes.number,
   pending: PropTypes.bool,
+  open: PropTypes.bool,
 }
 
 
