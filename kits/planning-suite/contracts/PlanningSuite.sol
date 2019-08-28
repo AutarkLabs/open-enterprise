@@ -417,7 +417,7 @@ contract PlanningSuite is BetaKitBase {
     {
         ACL acl = ACL(dao.acl());
 
-        (discussions) = createDiscussionApp(msg.sender, acl, dao);
+        createDiscussionApp(msg.sender, acl, dao);
 
         // AddressBook permissions:
         acl.createPermission(voting, addressBook, addressBook.ADD_ENTRY_ROLE(), voting);
@@ -456,7 +456,8 @@ contract PlanningSuite is BetaKitBase {
     //////////////////////////////////////////////////////////////
 
     function createDiscussionApp(address root, ACL acl, Kernel dao) internal returns (DiscussionApp app) {
-        bytes32 appId = apmNamehash("discussions");
+        // hardcoded discussion app ID for the moment...
+        bytes32 appId = keccak256("discussions");
         app = DiscussionApp(dao.newAppInstance(appId, latestVersionAppBase(appId)));
         app.initialize();
         acl.createPermission(ANY_ENTITY, app, app.EMPTY_ROLE(), root);
