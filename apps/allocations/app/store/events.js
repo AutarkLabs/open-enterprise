@@ -97,6 +97,6 @@ const onForwardedActions = async ({ failedActionKeys = [], pendingActionKeys = [
       distSet: false,
       pending: true
     }))
-  
+
   return offchainActions
 }

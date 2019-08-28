@@ -131,19 +131,26 @@ PayoutsNarrow.propTypes = {
 
 
 const Payouts = ({ executePayout, payouts, tokens, offchainData }) => {
-  const payoutsEmpty = payouts.length === 0
-  if (payoutsEmpty) {
-    return null
-  }
 
   const {
     failedActions = [],
     pendingActions = [],
   } = offchainData
 
+  const payoutsEmpty = payouts.length === 0 &&
+                        failedActions.length === 0 &&
+                        pendingActions.length === 0
+  if (payoutsEmpty) {
+    return null
+  }
+
   // Payouts cannot be directly mutated since it is a prop
   // The solution does only a shallow copy
-  const sortedPayouts = [ ...payouts, ...failedActions, ...pendingActions ].sort(sortByDateKey('startTime'))
+  const sortedPayouts = [
+    ...payouts,
+    ...failedActions.filter(action => action.source === 'Dot Voting'),
+    ...pendingActions.filter(action => action.source === 'Dot Voting'),
+  ].sort(sortByDateKey('startTime'))
 
   return (
     <PayoutsWrap>

@@ -10,13 +10,13 @@ export const handleAction = async ({ votes }, { blockNumber, returnValues }) => 
   const { open, executed, canExecute, executionScript } = votes[voteIndex].data
   
   if (!(open || executed || canExecute )) {
-    const voteDataHash = await ipfsAdd(votes[voteIndex].data)
+    const voteDataHash = await ipfsAdd({ ...votes[voteIndex].data, source: 'Dot Voting' })
     app.registerAppMetadata(blockNumber, voteId, voteDataHash)
     app.updateForwardedAction(voteId, blockNumber, executionScript, 'failed')
   } else if (executed) {
     app.updateForwardedAction(voteId, blockNumber, executionScript, 'completed')
   } else {
-    const voteDataHash = await ipfsAdd(votes[voteIndex].data)
+    const voteDataHash = await ipfsAdd({ ...votes[voteIndex].data, source: 'Dot Voting' })
     app.registerAppMetadata(blockNumber, voteId, voteDataHash)
     app.newForwardedAction(voteId, blockNumber, executionScript)
   }
