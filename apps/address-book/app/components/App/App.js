@@ -40,12 +40,14 @@ const App = () => {
 
   return (
     <Main assetsUrl={ASSETS_URL}>
-      <Header
-        primary="Address Book"
-        secondary={
-          <Button mode="strong" icon={<IconPlus />} onClick={newEntity} label="New Entity" />
-        }
-      />
+      { entries.length > 0 && (
+        <Header
+          primary="Address Book"
+          secondary={
+            <Button mode="strong" icon={<IconPlus />} onClick={newEntity} label="New Entity" />
+          }
+        />
+      )}
       <IdentityProvider
         onResolve={handleResolveLocalIdentity}
         onShowLocalIdentityModal={handleShowLocalIdentityModal}
