@@ -36,6 +36,8 @@ export const handleEvent = async (state, event, settings) => {
     nextEntries = await onEntryRemoved({ entries, addressBook }, returnValues)
     nextState.entries = nextEntries
     break
+  case 'UpdateQuorum':
+  case 'UpdateMinimumSupport':
   default:
     break
   }

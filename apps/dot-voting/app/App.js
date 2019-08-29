@@ -88,7 +88,7 @@ const App = () => {
     votes = [],
     entries = [],
     voteTime = 0,
-    minParticipationPct = 0,
+    globalMinQuorum = 0,
     pctBase = 0,
   } = appState
 
@@ -110,12 +110,12 @@ const App = () => {
       open: isBefore(new Date(), endDate),
       quorum: safeDiv(vote.data.minAcceptQuorum, pctBase),
       quorumProgress: getQuorumProgress(vote.data),
-      minParticipationPct: minParticipationPct / 10 ** 16,
+      globalMinQuorum: globalMinQuorum / 10 ** 16,
       description: vote.data.metadata,
       totalSupport: getTotalSupport(vote.data),
       type: vote.data.type,
     }
-  }, [ voteTime, getAddressLabel, pctBase, minParticipationPct ])
+  }, [ voteTime, getAddressLabel, pctBase, globalMinQuorum ])
 
   if (!votes.length) return <Empty />
 
