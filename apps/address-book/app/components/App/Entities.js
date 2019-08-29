@@ -32,7 +32,7 @@ const Entities = ({ entities, onNewEntity, onRemoveEntity }) => {
   } else {
     return (
       <DataView
-        mode="table"
+        mode="adaptive"
         fields={[ 'Name', 'Address', 'Type' ]}
         entries={
           entities.sort(entitiesSort).map(({ data: { name, entryAddress, entryType } }) =>
