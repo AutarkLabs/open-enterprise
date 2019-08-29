@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import styled from 'styled-components'
 
 import { useNetwork } from '@aragon/api-react'
 import {
@@ -34,7 +33,7 @@ const Entities = ({ entities, onNewEntity, onRemoveEntity }) => {
     return (
       <DataView
         mode="table"
-        fields={[ 'Entity', '' ]}
+        fields={[ 'Name', 'Address', 'Type' ]}
         entries={
           entities.sort(entitiesSort).map(({ data: { name, entryAddress, entryType } }) =>
             [ name, entryAddress, entryType ]
@@ -44,23 +43,21 @@ const Entities = ({ entities, onNewEntity, onRemoveEntity }) => {
         renderEntry={([ name, entryAddress, entryType ]) => {
           const typeRow = ENTITY_TYPES.filter(row => row.name === entryType)[0]
           const values = [
-            // eslint-disable-next-line react/jsx-key
-            <EntityWrapper>
-              <Text
-                size="xlarge"
-                css="padding-bottom: 5px"
-              >
-                {name}
-              </Text>
-              <LocalIdentityBadge
-                networkType={network && network.type}
-                entity={entryAddress}
-                shorten={true}
-              />
-            </EntityWrapper>,
-
-            // eslint-disable-next-line react/jsx-key
+            <Text
+              key={entryAddress}
+              size="xlarge"
+              css="padding-bottom: 5px"
+            >
+              {name}
+            </Text>,
+            <LocalIdentityBadge
+              key={entryAddress}
+              networkType={network && network.type}
+              entity={entryAddress}
+              shorten={true}
+            />,
             <Badge
+              key={entryAddress}
               foreground={typeRow.fg}
               background={typeRow.bg}
               css="text-align: right"
@@ -91,10 +88,4 @@ Entities.propTypes = {
   onRemoveEntity: PropTypes.func.isRequired,
 }
 
-const EntityWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-left: 10px;
-  padding: 15px 0;
-`
 export default Entities
