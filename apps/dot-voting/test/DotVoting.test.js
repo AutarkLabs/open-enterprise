@@ -1,124 +1,78 @@
-const {
-  ACL,
-  DAOFactory,
-  EVMScriptRegistryFactory,
-  Kernel,
-  MiniMeToken
-} = require('@tps/test-helpers/artifacts')
+const { assertRevert } = require('@aragon/test-helpers/assertThrow')
+const { encodeCallScript } = require('@aragon/test-helpers/evmScript')
+const timeTravel = require('@aragon/test-helpers/timeTravel')(web3)
 
-const DotVoting = artifacts.require('DotVotingMock')
-const AddressBook = artifacts.require('AddressBook')
-const ExecutionTarget = artifacts.require('ExecutionTarget')
+/** Helper function to import truffle contract artifacts */
+const getContract = name => artifacts.require(name)
 
-const { assertRevert } = require('@tps/test-helpers/assertThrow')
-const { encodeCallScript } = require('@tps/test-helpers/evmScript')
-const timeTravel = require('@tps/test-helpers/timeTravel')(web3)
+/** Helper function to read events from receipts */
+const getReceipt = (receipt, event, arg) => receipt.logs.filter(l => l.event === event)[0].args[arg]
 
 const pct16 = x =>
   new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))
+
 const getCreatedVoteId = receipt =>
   receipt.logs.filter(x => x.event === 'StartVote')[0].args.voteId
 
 const getCastedVoteId = receipt =>
   receipt.logs.filter(x => x.event === 'CastVote')[0].args.voteId
 
-const parseVoteIdToNumber = voteId =>
+const getQuorum = receipt =>
+  receipt.logs.filter(x => x.event === 'UpdateQuorum')[0].args.quorum
+
+const getMinCandidateSupport = receipt =>
+  receipt.logs.filter(x => x.event === 'UpdateMinimumSupport')[0].args.minSupport
+
+const parseBigNumberToNumber = voteId =>
   new web3.BigNumber(voteId).toNumber()
 
-const ANY_ADDR = '0xffffffffffffffffffffffffffffffffffffffff'
-const NULL_ADDRESS = '0x00'
+/** Useful constants */
+const ANY_ADDRESS = '0xffffffffffffffffffffffffffffffffffffffff'
+const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
-
-contract('DotVoting App', accounts => {
-  let daoFact = {}
-  let app = {}
-  let book = {}
-  let token = {}
-  let executionTarget = {}
+contract('DotVoting', accounts => {
+  let APP_MANAGER_ROLE, ADD_CANDIDATES_ROLE, CREATE_VOTES_ROLE, MODIFY_CANDIDATE_SUPPORT, MODIFY_QUORUM
+  let daoFact, app, book, token, executionTarget
 
   const DotVotingTime = 1000
   const root = accounts[0]
 
   before(async () => {
-    const kernelBase = await Kernel.new(true)
-    const aclBase = await ACL.new()
-    const regFact = await EVMScriptRegistryFactory.new()
-    daoFact = await DAOFactory.new(
+    // Create Base DAO and App contracts
+    const kernelBase = await getContract('Kernel').new(true) // petrify immediately
+    const aclBase = await getContract('ACL').new()
+    const regFact = await getContract('EVMScriptRegistryFactory').new()
+    daoFact = await getContract('DAOFactory').new(
       kernelBase.address,
       aclBase.address,
       regFact.address
     )
-    const r = await daoFact.newDAO(root)
-    const dao = Kernel.at(
-      r.logs.filter(l => l.event == 'DeployDAO')[0].args.dao
-    )
+    appBase = await getContract('DotVotingMock').new()
 
-    const acl = ACL.at(await dao.acl())
+    // Setup ACL roles constants
+    APP_MANAGER_ROLE = await kernelBase.APP_MANAGER_ROLE()
+    ADD_CANDIDATES_ROLE = await appBase.ADD_CANDIDATES_ROLE()
+    CREATE_VOTES_ROLE = await appBase.CREATE_VOTES_ROLE()
+    MODIFY_CANDIDATE_SUPPORT = await appBase.MODIFY_CANDIDATE_SUPPORT()
+    MODIFY_QUORUM = await appBase.MODIFY_QUORUM()
+    
+    /** Create the dao from the dao factory */
+    const daoReceipt = await daoFact.newDAO(root)
+    const dao = getContract('Kernel').at(getReceipt(daoReceipt, 'DeployDAO', 'dao'))
+    
+    /** Setup permission to install app */
+    const acl = getContract('ACL').at(await dao.acl())
+    await acl.createPermission(root, dao.address, APP_MANAGER_ROLE, root)
 
-    await acl.createPermission(
-      root,
-      dao.address,
-      await dao.APP_MANAGER_ROLE(),
-      root,
-      { from: root }
-    )
-
-    // TODO: Revert to only use 2 params when truffle is updated
-    // read: https://github.com/AutarkLabs/planning-suite/pull/243
-    let receipt = await dao.newAppInstance(
-      '0x1234',
-      (await DotVoting.new()).address,
-      0x0,
-      false,
-      { from: root }
-    )
-
-    app = DotVoting.at(
-      receipt.logs.filter(l => l.event === 'NewAppProxy')[0].args.proxy
-    )
-
-    receipt = await dao.newAppInstance(
-      '0x5678',
-      (await AddressBook.new()).address,
-      0x0,
-      false,
-      { from: root }
-    )
-    book = AddressBook.at(
-      receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
-    )
-
-    await book.initialize()
-
-    await acl.createPermission(
-      ANY_ADDR,
-      book.address,
-      await book.ADD_ENTRY_ROLE(),
-      root,
-      { from: root }
-    )
-    await acl.createPermission(
-      ANY_ADDR,
-      book.address,
-      await book.REMOVE_ENTRY_ROLE(),
-      root,
-      { from: root }
-    )
-
-    await acl.createPermission(
-      accounts[2],
-      app.address,
-      await app.CREATE_VOTES_ROLE(),
-      root,
-      { from: root }
-    )
-    await acl.createPermission(
-      ANY_ADDR,
-      app.address,
-      await app.ADD_CANDIDATES_ROLE(),
-      root,
-      { from: root }
-    )
+    /** Install an app instance to the dao */
+    const appReceipt = await dao.newAppInstance('0x1234', appBase.address, '0x', false)
+    app = getContract('DotVotingMock').at(getReceipt(appReceipt, 'NewAppProxy', 'proxy'))
+    
+    /** Setup DotVoting permissions */
+    await acl.createPermission(accounts[2], app.address, MODIFY_CANDIDATE_SUPPORT, root)
+    await acl.createPermission(accounts[2], app.address, MODIFY_QUORUM, root)
+    await acl.createPermission(accounts[2], app.address, CREATE_VOTES_ROLE, root)
+    await acl.createPermission(ANY_ADDRESS, app.address, ADD_CANDIDATES_ROLE, root)
   })
 
   context('before init', () => {
@@ -137,7 +91,6 @@ contract('DotVoting App', accounts => {
       const candidateSupportPct = pct16(5)
       return assertRevert(async () => {
         await app.initialize(
-          book.address,
           0,                    // token address
           0,                    // minimumParticipation
           candidateSupportPct,
@@ -150,7 +103,6 @@ contract('DotVoting App', accounts => {
       const candidateSupportPct = pct16(5)
       return assertRevert(async () => {
         await app.initialize(
-          book.address,
           0,          // token address
           1.1e18,     // minimumParticipation
           candidateSupportPct,
@@ -163,7 +115,6 @@ contract('DotVoting App', accounts => {
       const minimumParticipation = pct16(1)
       return assertRevert(async () => {
         await app.initialize(
-          book.address,
           0,    // token address
           minimumParticipation,
           candidateSupportPct,
@@ -179,11 +130,14 @@ contract('DotVoting App', accounts => {
     const holder50 = accounts[2]
     const nonHolder = accounts[4]
 
+    const initialMinimumParticipation = pct16(29)
+    const initialCandidateSupportPct = pct16(4)
+
     const minimumParticipation = pct16(30)
     const candidateSupportPct = pct16(5)
 
     before(async () => {
-      token = await MiniMeToken.new(
+      token = await getContract('MiniMeToken').new(
         NULL_ADDRESS,
         NULL_ADDRESS,
         0,
@@ -198,26 +152,76 @@ contract('DotVoting App', accounts => {
       await token.generateTokens(holder50, 50)
 
       await app.initialize(
-        book.address,
         token.address,
-        minimumParticipation,
-        candidateSupportPct,
+        initialMinimumParticipation,
+        initialCandidateSupportPct,
         DotVotingTime
       )
 
-      executionTarget = await ExecutionTarget.new()
+      executionTarget = await getContract('ExecutionTarget').new()
     })
 
     it('fails on reinitialization', async () => {
       return assertRevert(async () => {
         await app.initialize(
-          book.address,
           token.address,
           minimumParticipation,
           candidateSupportPct,
           DotVotingTime
         )
       })
+    })
+
+    it('cannot change min candidate support percent to be greater than quorum', async () => {
+      return assertRevert(async () => {
+        await app.setglobalCandidateSupportPct(
+          initialMinimumParticipation + 1,
+          { from: accounts[2] }
+        )
+      })
+    })
+
+    it('can change min candidate support percent', async () => {
+      let candidateSupport = await app.setglobalCandidateSupportPct(
+        candidateSupportPct,
+        { from: accounts[2] }
+      )
+      assert.equal(parseBigNumberToNumber(getMinCandidateSupport(candidateSupport)), parseBigNumberToNumber(candidateSupportPct))
+    })
+
+    it('cannot change quorum to be 0', async () => {
+      return assertRevert(async () => {
+        await app.setGlobalQuorum(
+          pct16(0),
+          { from: accounts[2] }
+        )
+      })
+    })
+    
+    it('cannot change quorum to be over 100%', async () => {
+      return assertRevert(async () => {
+        await app.setGlobalQuorum(
+          pct16(101),
+          { from: accounts[2] }
+        )
+      })
+    })
+    
+    it('cannot change quorum to be less than candidate support', async () => {
+      return assertRevert(async () => {
+        await app.setGlobalQuorum(
+          pct16(1),
+          { from: accounts[2] }
+        )
+      })
+    })
+    
+    it('can change quorum', async () => {
+      let quorum = await app.setGlobalQuorum(
+        minimumParticipation,
+        { from: accounts[2] }
+      )
+      assert.equal(parseBigNumberToNumber(getQuorum(quorum)), parseBigNumberToNumber(minimumParticipation))
     })
 
     it('can create new vote', async () => {
@@ -239,7 +243,7 @@ contract('DotVoting App', accounts => {
       const voteId = getCreatedVoteId(
         await app.newVote(script, '', { from: holder50 })
       )
-      assert.equal(parseVoteIdToNumber(voteId), 1, 'A vote should be created with empty script')
+      assert.equal(parseBigNumberToNumber(voteId), 1, 'A vote should be created with empty script')
     })
     it('tokenholders can cast votes', async () => {
       let action = {
@@ -260,13 +264,13 @@ contract('DotVoting App', accounts => {
       const voteId = getCreatedVoteId(
         await app.newVote(script, '', { from: holder50 })
       )
-      assert.equal(parseVoteIdToNumber(voteId), 2, 'A vote should be created with empty script')
+      assert.equal(parseBigNumberToNumber(voteId), 2, 'A vote should be created with empty script')
       let vote = [ 10, 15, 25 ]
       let voter = holder50
       const castedVoteId = getCastedVoteId(
         await app.vote(voteId, vote, { from: voter })
       )
-      assert.equal(parseVoteIdToNumber(castedVoteId), 2, 'A vote should have been casted to vote Id #2')
+      assert.equal(parseBigNumberToNumber(castedVoteId), 2, 'A vote should have been casted to vote Id #2')
     })
     it('execution scripts can execute actions', async () => {
       let action = {
@@ -287,14 +291,19 @@ contract('DotVoting App', accounts => {
       const voteId = getCreatedVoteId(
         await app.newVote(script, '', { from: holder50 })
       )
-      let vote = [ 10, 15, 25 ]
+      let vote = [ 1, 15, 34 ]
       let voter = holder50
       await app.vote(voteId, vote, { from: voter })
       timeTravel(DotVotingTime + 1)
       await app.executeVote(voteId)
-      //assert.equal(1,0)
       let signal
-      for (let i = 0; i < vote.length; i++) {
+      signal = await executionTarget.getSignal(0)
+      assert.equal(
+        signal[0].toNumber(),
+        0,
+        'Signal 0 should be 0'
+      )
+      for (let i = 1; i < vote.length; i++) {
         signal = await executionTarget.getSignal(i)
         assert.equal(
           signal[0].toNumber(),
@@ -345,7 +354,7 @@ contract('DotVoting App', accounts => {
       const voteId = getCreatedVoteId(
         await app.newVote(callScript, '', { from: holder50 })
       )
-      assert.equal(parseVoteIdToNumber(voteId), 4, 'A vote should be created with empty script')
+      assert.equal(parseBigNumberToNumber(voteId), 4, 'A vote should be created with empty script')
     })
 
     it('execution throws if any action on script throws', async () => {
@@ -387,7 +396,7 @@ contract('DotVoting App', accounts => {
       const voteId = getCreatedVoteId(
         await app.forward(script, { from: holder50 })
       )
-      assert.equal(parseVoteIdToNumber(voteId), 6, 'DotVoting should have been created')
+      assert.equal(parseBigNumberToNumber(voteId), 6, 'DotVoting should have been created')
     })
 
     it('unauthorized entities cannot forward to contract', () => {
@@ -454,8 +463,6 @@ contract('DotVoting App', accounts => {
       })
     })
 
-    xit('can change minimum candidate support', async () => { })
-
     context('creating vote with normal distributions', () => {
       let voteId = {}
       let script = ''
@@ -485,7 +492,7 @@ contract('DotVoting App', accounts => {
       })
 
       it('has correct vote ID', async () => {
-        assert.equal(parseVoteIdToNumber(voteId), 7, 'DotVote should have been created')
+        assert.equal(parseBigNumberToNumber(voteId), 7, 'DotVote should have been created')
       })
 
       it('stored the candidate addresses correctly', async () => {
@@ -740,19 +747,6 @@ contract('DotVoting App', accounts => {
         const canExecute = await app.canExecute(voteId)
         assert.equal(canExecute, false, 'canExecute should be false')
       })
-      it('cannot execute if vote has insufficient candidate support', async () => {
-        let newvote = await app.newVote(script, 'metadata', { from: holder50 })
-        voteId = getCreatedVoteId(newvote)
-        let voteOne = [ 2, 17, 0 ]
-        let voteTwo = [ 18, 12, 1 ]
-        let voteThree = [ 30, 19, 1 ]
-        await app.vote(voteId, voteOne, { from: holder19 })
-        await app.vote(voteId, voteTwo, { from: holder31 })
-        await app.vote(voteId, voteThree, { from: holder50 })
-        timeTravel(DotVotingTime + 1)
-        const canExecute = await app.canExecute(voteId)
-        assert.equal(canExecute, false, 'canExecute should be false')
-      })
       it('can execute vote if minimum participation (quorum) has been met', async () => {
         let newvote = await app.newVote(script, 'metadata', { from: holder50 })
         voteId = getCreatedVoteId(newvote)
@@ -829,7 +823,7 @@ contract('DotVoting App', accounts => {
   context('wrong initializations', () => {
     beforeEach(async () => {
       const n = '0x00'
-      token = await MiniMeToken.new(n, n, 0, 'n', 0, 'n', true) // empty parameters minime
+      token = await getContract('MiniMeToken').new(n, n, 0, 'n', 0, 'n', true) // empty parameters minime
     })
 
     it('fails if min participation is 0', () => {
@@ -837,7 +831,6 @@ contract('DotVoting App', accounts => {
       const candidateSupportPct = pct16(0)
       return assertRevert(async () => {
         await app.initialize(
-          book.address,
           token.address,
           minimumParticipation,
           candidateSupportPct,
@@ -851,7 +844,6 @@ contract('DotVoting App', accounts => {
       const candidateSupportPct = pct16(50)
       return assertRevert(async () => {
         await app.initialize(
-          book.address,
           token.address,
           minimumParticipation,
           candidateSupportPct,
@@ -865,7 +857,6 @@ contract('DotVoting App', accounts => {
       const candidateSupportPct = pct16(20)
       return assertRevert(async () => {
         await app.initialize(
-          book.address,
           token.address,
           minimumParticipation,
           candidateSupportPct,
