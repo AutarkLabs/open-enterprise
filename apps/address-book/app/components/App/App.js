@@ -6,6 +6,7 @@ import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
 import { IdentityProvider } from '../../../../../shared/identity'
 import Entities from './Entities'
 import NewEntity from '../Panel/NewEntity'
+import { Empty } from '../Card'
 
 const ASSETS_URL = './aragon-ui'
 
@@ -40,23 +41,26 @@ const App = () => {
 
   return (
     <Main assetsUrl={ASSETS_URL}>
-      { entries.length > 0 && (
+      { entries.length === 0 && <Empty action={newEntity} /> }
+      { entries.length > 0 &&
         <Header
           primary="Address Book"
           secondary={
             <Button mode="strong" icon={<IconPlus />} onClick={newEntity} label="New Entity" />
           }
         />
-      )}
+      }
       <IdentityProvider
         onResolve={handleResolveLocalIdentity}
         onShowLocalIdentityModal={handleShowLocalIdentityModal}
       >
-        <Entities
-          entities={entries}
-          onNewEntity={newEntity}
-          onRemoveEntity={removeEntity}
-        />
+        { entries.length > 0 &&
+          <Entities
+            entities={entries}
+            onNewEntity={newEntity}
+            onRemoveEntity={removeEntity}
+          />
+        }
         <SidePanel onClose={closePanel} opened={panelVisible} title="New entity">
           <NewEntity onCreateEntity={createEntity} />
         </SidePanel>
