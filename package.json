@@ -52,7 +52,7 @@
     "devchain": "lerna run devchain --stream",
     "lint:address": "cd apps/address-book && npm run lint",
     "lint:allocations": "cd apps/allocations && npm run lint",
-    "lint:contracts": "node_modules/.bin/lerna exec npx solium --stream --scope='@tps/apps-*' --scope='@tps/kits-*' --no-bail -- --dir contracts --fix",
+    "lint:contracts": "lerna run --scope='@tps/apps-*' lint --stream",
     "lint:dot": "cd apps/dot-voting && npm run lint",
     "lint:fix": "lerna exec --scope=@tps/apps-* --stream -- eslint app --fix",
     "lint:projects": "cd apps/projects && npm run lint",
