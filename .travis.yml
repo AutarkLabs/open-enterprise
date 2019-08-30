@@ -7,6 +7,7 @@ stages:
   - precache # warm up cache for default Node.js version
   - lint # lint code and docs
   - test # all tests
+  - deploy
 
 # defaults
 language: node_js
@@ -15,14 +16,14 @@ node_js: '10.15' # equivalent to node 10.15.x
 cache:
   directories:
     - node_modules
-#    - $HOME/.npm
+    - $HOME/.aragon
 
 jobs:
   include:
     - stage: precache
       script: true
       install:
-        - travis_wait npm i
+        - travis_wait npm i        
 
     - stage: lint
       name: Lint contracts and frontend apps
@@ -63,6 +64,12 @@ jobs:
       install: npm run bootstrap
       after_success: npm run coveralls
       env: 'COVERAGE=true'
+    
+    - stage: deploy
+      install: 
+        - travis_wait npm i -g @aragon/cli
+        - npm run bootstrap
+      script: npx lerna run publish:cd
 
     # - &node
     #   script: npm run test
