@@ -18,7 +18,7 @@ import { Empty } from '../Card'
 const ENTITY_TYPES = [
   { name: 'Individual', fg: '#76A4E5', bg: '#76A4E533' },
   { name: 'Organization', fg: '#F78308', bg: '#F7830833' },
-  { name: 'Project', fg: '#B30FB3', bg: '#B30FB333' },
+  { name: '_custom', fg: '#B30FB3', bg: '#B30FB333' },
 ]
 
 const entitiesSort = (a, b) => a.data.name.toUpperCase() > b.data.name.toUpperCase() ? 1 : -1
@@ -41,7 +41,7 @@ const Entities = ({ entities, onNewEntity, onRemoveEntity }) => {
         }
 
         renderEntry={([ name, entryAddress, entryType ]) => {
-          const typeRow = ENTITY_TYPES.filter(row => row.name === entryType)[0]
+          const typeRow = ENTITY_TYPES.filter(row => row.name === entryType || row.name === '_custom')[0]
           const values = [
             // eslint-disable-next-line react/jsx-key
             <EntityWrapper>
@@ -64,7 +64,7 @@ const Entities = ({ entities, onNewEntity, onRemoveEntity }) => {
               background={typeRow.bg}
               css="text-align: right"
             >
-              {typeRow.name}
+              {entryType}
             </Badge>
           ]
           return values

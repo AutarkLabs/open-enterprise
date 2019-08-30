@@ -4,11 +4,13 @@ import { Form, FormField } from '../Form'
 import { DropDown, TextInput } from '@aragon/ui'
 import web3Utils from 'web3-utils'
 
-const ENTITY_TYPES = [ 'Individual', 'Organization', 'Project' ]
+const ENTITY_TYPES = [ 'Individual', 'Organization', 'Custom type…' ]
 const INITIAL_STATE = {
   name: '',
   address: '',
   type: 'Individual',
+  isCustomType: false,
+  customTypeName: '',
   error: {},
 }
 
@@ -28,11 +30,12 @@ class NewEntity extends React.Component {
   changeType = type => {
     this.setState({
       type: ENTITY_TYPES[type],
+      isCustomType: ENTITY_TYPES.length - 1,
     })
   }
 
   handleSubmit = () => {
-    const { name, address, type } = this.state
+    const { name, address, type, isCustomType, customTypeName } = this.state
     const error = {}
     if (!name) {
       error.name = 'Please provide a name'
@@ -40,17 +43,31 @@ class NewEntity extends React.Component {
     if (!web3Utils.isAddress(address)) {
       error.address = 'Please provide a valid ethereum address'
     }
+    if (isCustomType && !customTypeName) {
+      error.customTypeName = 'Please provide a custom type name'
+    }
 
     if (Object.keys(error).length) {
       this.setState({ error: error })
     } else {
       this.setState(INITIAL_STATE)
-      this.props.onCreateEntity({ name, address, type })
+      this.props.onCreateEntity({
+        name,
+        address,
+        type: isCustomType ? customTypeName : type
+      })
     }
   }
 
   render() {
-    const { address, name, type, error } = this.state
+    const {
+      address,
+      name,
+      type,
+      isCustomType,
+      customTypeName,
+      error
+    } = this.state
     const { handleSubmit, changeField, changeType } = this
     return (
       <Form onSubmit={handleSubmit} submitText="Submit Entity">
@@ -89,6 +106,22 @@ class NewEntity extends React.Component {
             />
           }
         />
+
+        { isCustomType &&
+          <FormField
+            required
+            label="Custom Type Name"
+            err={error && error.customTypeName}
+            input={
+              <TextInput
+                name="customTypeName"
+                onChange={changeField}
+                value={customTypeName}
+                wide
+              />
+            }
+          />
+        }
       </Form>
     )
   }
