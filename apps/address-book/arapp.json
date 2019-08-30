@@ -25,7 +25,7 @@
     },
     "continuous-deployment": {
       "registry": "0x98df287b6c145399aaa709692c8d308357bc085d",
-      "appName": "ab-gbg.open.aragonpm.eth",
+      "appName": "abc-gbg.open.aragonpm.eth",
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
       "network": "rinkeby"
     },

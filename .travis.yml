@@ -16,7 +16,7 @@ node_js: '10.15' # equivalent to node 10.15.x
 cache:
   directories:
     - node_modules
-    - $HOME/.aragon
+    - /home/travis/.nvm/versions/node/v10.15.3/lib/node_modules/
 
 jobs:
   include:
@@ -66,6 +66,11 @@ jobs:
     #  env: 'COVERAGE=true'
     
     - stage: deploy
+      before_install:
+      - mkdir $HOME/.aragon
+      - openssl aes-256-cbc -K $encrypted_547551ebf6e1_key -iv $encrypted_547551ebf6e1_iv
+        -in shared/deployments/rinkeby_key.json.enc -out $HOME/.aragon/rinkeby_key.json -d
+      - ls $HOME/.aragon
       install: 
         - travis_wait npm i -g @aragon/cli@5.6.2
         - npm run bootstrap
