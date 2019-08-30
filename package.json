@@ -59,6 +59,7 @@
     "lint": "npm run lint:contracts && lerna exec --scope=@tps/apps-* --stream -- eslint app",
     "mine": "node ./apps/shared/test-helpers/mine.js",
     "postinstall": "npm run bootstrap",
+    "publish:cd": "lerna run publish:cd --stream --no-ci",
     "publish:apps": "lerna run publish",
     "publish:http": "lerna run --scope='@tps/apps-*' publish:http --stream",
     "restart": "RESTART_KIT=true apps/shared/test-helpers/ganache-cli.sh",
