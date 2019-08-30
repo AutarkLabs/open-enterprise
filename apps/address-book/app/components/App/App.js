@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import PropTypes from 'prop-types'
 
 import { useAragonApi } from '@aragon/api-react'
 import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
@@ -38,27 +39,24 @@ const App = () => {
 
   const handleShowLocalIdentityModal = address =>
     api.requestAddressIdentityModification(address).toPromise()
-  
+
   const Wrap = ({ children }) => (
     <Main assetsUrl={ASSETS_URL}>
-      { children }
       <IdentityProvider
         onResolve={handleResolveLocalIdentity}
         onShowLocalIdentityModal={handleShowLocalIdentityModal}
       >
-        { entries.length > 0 &&
-          <Entities
-            entities={entries}
-            onNewEntity={newEntity}
-            onRemoveEntity={removeEntity}
-          />
-        }
+        { children }
         <SidePanel onClose={closePanel} opened={panelVisible} title="New entity">
           <NewEntity onCreateEntity={createEntity} />
         </SidePanel>
       </IdentityProvider>
     </Main>
   )
+
+  Wrap.propTypes = {
+    children: PropTypes.node.isRequired,
+  }
 
   if (!entries.length) return (
     <Wrap><Empty action={newEntity} /></Wrap>
@@ -71,6 +69,11 @@ const App = () => {
         secondary={
           <Button mode="strong" icon={<IconPlus />} onClick={newEntity} label="New Entity" />
         }
+      />
+      <Entities
+        entities={entries}
+        onNewEntity={newEntity}
+        onRemoveEntity={removeEntity}
       />
     </Wrap>
   )
