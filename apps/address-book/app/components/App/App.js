@@ -38,18 +38,10 @@ const App = () => {
 
   const handleShowLocalIdentityModal = address =>
     api.requestAddressIdentityModification(address).toPromise()
-
-  return (
+  
+  const Wrap = ({ children }) => (
     <Main assetsUrl={ASSETS_URL}>
-      { entries.length === 0 && <Empty action={newEntity} /> }
-      { entries.length > 0 &&
-        <Header
-          primary="Address Book"
-          secondary={
-            <Button mode="strong" icon={<IconPlus />} onClick={newEntity} label="New Entity" />
-          }
-        />
-      }
+      { children }
       <IdentityProvider
         onResolve={handleResolveLocalIdentity}
         onShowLocalIdentityModal={handleShowLocalIdentityModal}
@@ -66,6 +58,21 @@ const App = () => {
         </SidePanel>
       </IdentityProvider>
     </Main>
+  )
+
+  if (!entries.length) return (
+    <Wrap><Empty action={newEntity} /></Wrap>
+  )
+
+  return (
+    <Wrap>
+      <Header
+        primary="Address Book"
+        secondary={
+          <Button mode="strong" icon={<IconPlus />} onClick={newEntity} label="New Entity" />
+        }
+      />
+    </Wrap>
   )
 }
 
