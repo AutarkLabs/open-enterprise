@@ -10,7 +10,7 @@
     "wait-on": "^3.2.0"
   },
   "scripts": {
-    "bootstrap": "lerna bootstrap --hoist",
+    "bootstrap": "npx lerna bootstrap --hoist",
     "build:apps": "npm run build:app:address && npm run build:app:allocations && npm run build:app:discussions && npm run build:app:dot && npm run build:app:projects && npm run build:app:rewards",
     "build:app:address": "lerna run build:app --scope=@tps/apps-address-book",
     "build:app:allocations": "lerna run build:app --scope=@tps/apps-allocations",
