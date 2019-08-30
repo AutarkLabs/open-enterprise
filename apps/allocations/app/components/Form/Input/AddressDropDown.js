@@ -34,7 +34,7 @@ const AddressDropDown = ({
   ))
 
   return (
-    <DropDown items={items} active={activeItem} onChange={onChangeInput} wide />
+    <DropDown items={items} selected={activeItem} onChange={onChangeInput} wide />
   )
 }
 
