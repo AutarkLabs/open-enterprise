@@ -16,7 +16,9 @@ const mochaGasSettings = {
 }
 const mocha = process.env.GAS_REPORTER ? mochaGasSettings : {}
 
-const defaultRPC = network => `https://${network}.infura.io`
+const defaultRPC = network =>
+  // This needs client id from infura, because I was receiving errors, ask me for the key if needed
+  `https://${network}.infura.io/v3/***`
 
 const configFilePath = filename => path.join(homedir(), `.aragon/${filename}`)
 
@@ -86,7 +88,7 @@ module.exports = {
   solc: {
     optimizer: {
       enabled: true,
-      runs: 200
+      runs: 200,
     },
   },
 }

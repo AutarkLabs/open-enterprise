@@ -4,17 +4,17 @@ import "@aragon/kits-beta-base/contracts/BetaKitBase.sol";
 
 import "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
 
-import "@tps/apps-discussions/contracts/DiscussionApp.sol";
 import "@tps/apps-address-book/contracts/AddressBook.sol";
 import "@tps/apps-allocations/contracts/Allocations.sol";
 import "@tps/apps-projects/contracts/Projects.sol";
 import { DotVoting } from "@tps/apps-dot-voting/contracts/DotVoting.sol";
 import { Rewards as Rewards } from "@tps/apps-rewards/contracts/Rewards.sol";
+import { DiscussionApp as Discussions } from "@tps/apps-discussions/contracts/DiscussionApp.sol";
 
 
 contract PlanningSuite is BetaKitBase {
     StandardBounties public registry;
-    bytes32[5] public planningAppIds;
+    bytes32[6] public planningAppIds;
     uint256 constant PCT256 = 10 ** 16;
     uint64 constant PCT64 = 10 ** 16;
     address constant ANY_ENTITY = address(-1);
@@ -22,7 +22,7 @@ contract PlanningSuite is BetaKitBase {
     mapping (address => address) tokenCache;
 
     // ensure alphabetic order
-    enum PlanningApps { AddressBook, Allocations, DotVoting, Projects, Rewards }
+    enum PlanningApps { AddressBook, Allocations, Discussions, DotVoting, Projects, Rewards }
 
     // Overload the DeployInstance event for easy grabing of all the things
     event DeployInstance(address dao, address indexed token, address vault, address voting);
@@ -39,7 +39,7 @@ contract PlanningSuite is BetaKitBase {
         MiniMeTokenFactory _minimeFac,
         IFIFSResolvingRegistrar _aragonID,
         bytes32[4] _appIds,
-        bytes32[5] _planningAppIds,
+        bytes32[6] _planningAppIds,
         StandardBounties _registry
     )
         BetaKitBase(_fac, _ens, _minimeFac, _aragonID, _appIds)
@@ -341,6 +341,7 @@ contract PlanningSuite is BetaKitBase {
     ) internal
     {
         Allocations allocations;
+        Discussions discussions;
         Projects projects;
         Rewards rewards;
 
@@ -363,9 +364,18 @@ contract PlanningSuite is BetaKitBase {
                 latestVersionAppBase(planningAppIds[uint8(PlanningApps.Rewards)])
             )
         );
+
+        discussions = Discussions(
+            dao.newAppInstance(
+                planningAppIds[uint8(PlanningApps.Discussions)],
+                latestVersionAppBase(planningAppIds[uint8(PlanningApps.Discussions)])
+            )
+        );
+
         initializeTPSApps(
             addressBook,
             allocations,
+            discussions,
             projects,
             rewards,
             token,
@@ -375,6 +385,7 @@ contract PlanningSuite is BetaKitBase {
             dao,
             addressBook,
             allocations,
+            discussions,
             dotVoting,
             projects,
             rewards,
@@ -394,6 +405,7 @@ contract PlanningSuite is BetaKitBase {
     function initializeTPSApps(
         AddressBook addressBook,
         Allocations allocations,
+        Discussions discussions,
         Projects projects,
         Rewards rewards,
         MiniMeToken token,
@@ -401,6 +413,7 @@ contract PlanningSuite is BetaKitBase {
     ) internal
     {
         allocations.initialize(addressBook, vault);
+        discussions.initialize();
         projects.initialize(registry, vault, token);
         rewards.initialize(vault);
     }
@@ -409,6 +422,7 @@ contract PlanningSuite is BetaKitBase {
         Kernel dao,
         AddressBook addressBook,
         Allocations allocations,
+        Discussions discussions,
         DotVoting dotVoting,
         Projects projects,
         Rewards rewards,
@@ -417,13 +431,16 @@ contract PlanningSuite is BetaKitBase {
     {
         ACL acl = ACL(dao.acl());
 
-        createDiscussionApp(msg.sender, acl, dao);
+        // createDiscussionApp(msg.sender, acl, dao);
 
         // AddressBook permissions:
         acl.createPermission(voting, addressBook, addressBook.ADD_ENTRY_ROLE(), voting);
         acl.createPermission(voting, addressBook, addressBook.REMOVE_ENTRY_ROLE(), voting);
         emit InstalledApp(addressBook, planningAppIds[uint8(PlanningApps.AddressBook)]);
 
+        // Discussions Permissions
+        acl.createPermission(voting, discussions, discussions.EMPTY_ROLE(), voting);
+        emit InstalledApp(discussions, planningAppIds[uint8(PlanningApps.Discussions)]);
 
         // Projects permissions:
         acl.createPermission(voting, projects, projects.FUND_ISSUES_ROLE(), voting);
@@ -455,13 +472,13 @@ contract PlanningSuite is BetaKitBase {
     // Additional Internal Helpers
     //////////////////////////////////////////////////////////////
 
-    function createDiscussionApp(address root, ACL acl, Kernel dao) internal returns (DiscussionApp app) {
-        // hardcoded discussion app ID for the moment...
-        bytes32 appId = keccak256("discussions");
-        app = DiscussionApp(dao.newAppInstance(appId, latestVersionAppBase(appId)));
-        app.initialize();
-        acl.createPermission(ANY_ENTITY, app, app.EMPTY_ROLE(), root);
-    }
+    // function createDiscussionApp(address root, ACL acl, Kernel dao) internal returns (DiscussionApp app) {
+    //     // hardcoded discussion app ID for the moment...
+    //     bytes32 appId = keccak256("discussions");
+    //     app = DiscussionApp(dao.newAppInstance(appId, latestVersionAppBase(appId)));
+    //     app.initialize();
+    //     acl.createPermission(ANY_ENTITY, app, app.EMPTY_ROLE(), root);
+    // }
 
     function handleVaultPermissions(
         Kernel dao,

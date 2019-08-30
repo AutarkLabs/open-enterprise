@@ -14,12 +14,13 @@ const appIds = apps.map(app => namehash(`${app}.aragonpm.eth`))
 const planningApps = [
   'address-book',
   'allocations',
+  'discussions',
   'dot-voting',
   'projects',
   'rewards',
 ]
 const planningAppIds = planningApps.map(app =>
-  namehash(`tps-${app}.open.aragonpm.eth`)
+  namehash(`${app}-staging.open.aragonpm.eth`)
 )
 
 const globalArtifacts = this.artifacts // Not injected unless called directly via truffle
@@ -58,7 +59,7 @@ module.exports = async (
     `${kitName} in ${network} network with ENS ${ensAddress} and owner ${owner}`
   )
 
-  const kitEnsName = kitName + '.open.aragonpm.eth'
+  const kitEnsName = kitName + '-staging.open.aragonpm.eth'
 
   const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory')
   const DAOFactory = artifacts.require('DAOFactory')
