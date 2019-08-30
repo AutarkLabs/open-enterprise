@@ -131,7 +131,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     *                  `votes[_voteId].candidateKeys`, sum of all supports
     *                  must be less than `token.balance[msg.sender]`.
     */
-    function vote(uint256 _voteId, uint256[] _supports) external {
+    function vote(uint256 _voteId, uint256[] _supports)  external isInitialized {
         require(canVote(_voteId, msg.sender)); // solium-disable-line error-reason
         _vote(_voteId, _supports, msg.sender);
     }
@@ -140,7 +140,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     * @notice Execute dot vote `_voteId`
     * @param _voteId Id for vote
     */
-    function executeVote(uint256 _voteId) external {
+    function executeVote(uint256 _voteId) external isInitialized {
         require(canExecute(_voteId), "vote not meeting execution requirements");
         _executeVote(_voteId);
     }
@@ -152,10 +152,13 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     * @param _candidateIndex The candidate descrciption of the candidate.
     */
     function getCandidate(uint256 _voteId, uint256 _candidateIndex)
-    external view returns(address candidateAddress, uint256 voteSupport, string metadata, bytes32 externalId1, bytes32 externalId2)
+    external view isInitialized returns(address candidateAddress, uint256 voteSupport, string metadata, bytes32 externalId1, bytes32 externalId2)
     {
+        require(_voteId < voteLength);
         uint256 actionId = votes[_voteId].actionId;
         Action storage action = actions[actionId];
+        uint256 candidateLength = action.optionKeys.length;
+        require(_candidateIndex < candidateLength);
         OptionState storage candidate = action.options[action.optionKeys[_candidateIndex]];
         candidateAddress = optionAddresses[action.optionKeys[_candidateIndex]];
         voteSupport = candidate.actionSupport;
@@ -261,9 +264,9 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     * @param _voter The address of the entity trying to vote
     * @return True is `_voter` has a vote token balance and vote is open
     */
-    function canVote(uint256 _voteId, address _voter) public view returns (bool) {
+    function canVote(uint256 _voteId, address _voter) public view isInitialized returns (bool) {
+        require(_voteId < voteLength);        
         Vote storage voteInstance = votes[_voteId];
-
         return _isVoteOpen(voteInstance) && token.balanceOfAt(_voter, voteInstance.snapshotBlock) > 0;
     }
 
@@ -274,7 +277,8 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     * @param _voteId id for vote structure this 'ballot action' is connected to
     * @return True if the vote is elligible for execution.
     */
-    function canExecute(uint256 _voteId) public view returns (bool) {
+    function canExecute(uint256 _voteId) public view isInitialized returns (bool) {
+        require(_voteId < voteLength);
         Vote storage voteInstance = votes[_voteId];
         Action storage action = actions[voteInstance.actionId];
         if (action.executed)
@@ -293,7 +297,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     *         struct and returns the individual values.
     * @param _voteId The ID of the Vote struct in the `votes` array
     */
-    function getVote(uint256 _voteId) public view returns
+    function getVote(uint256 _voteId) public view isInitialized returns
     (
         bool open,
         address creator,
@@ -307,6 +311,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
         bool executed,
         string voteDescription
     ) { // solium-disable-line lbrace
+        require(_voteId < voteLength);
         Vote storage voteInstance = votes[_voteId];
         Action memory action = actions[voteInstance.actionId];
         open = _isVoteOpen(voteInstance);
@@ -327,8 +332,9 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     *         a given vote.
     * @param _voteId The ID of the Vote struct in the `votes` array
     */
-    function getCandidateLength(uint256 _voteId) public view returns
+    function getCandidateLength(uint256 _voteId) public view isInitialized returns
     ( uint totalCandidates ) { // solium-disable-line lbrace
+        require(_voteId < voteLength);
         uint256 actionId = votes[_voteId].actionId;
         totalCandidates = actions[actionId].optionKeys.length;
     }
@@ -338,7 +344,8 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     *         struct and returns the individual value.
     * @param _voteId The ID of the Vote struct in the `votes` array
     */
-    function getVoteMetadata(uint256 _voteId) public view returns (string) {
+    function getVoteMetadata(uint256 _voteId) public view isInitialized returns (string) {
+        require(_voteId < voteLength);
         return votes[_voteId].metadata;
     }
 
@@ -348,7 +355,8 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     * @param _voteId The ID of the Vote struct in the `votes` array.
     * @param _voter The voter whose weights will be returned
     */
-    function getVoterState(uint256 _voteId, address _voter) public view returns (uint256[]) {
+    function getVoterState(uint256 _voteId, address _voter) public view isInitialized returns (uint256[]) {
+        require(_voteId < voteLength);
         return votes[_voteId].voters[_voter];
     }
 
@@ -416,6 +424,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
         address _voter
     ) internal
     {
+        require(_voteId < voteLength);
         Vote storage voteInstance = votes[_voteId];
         Action storage action = actions[voteInstance.actionId];
 
@@ -430,31 +439,34 @@ contract DotVoting is ADynamicForwarder, AragonApp {
         uint256 voteSupport;
         uint256[] storage oldVoteSupport = voteInstance.voters[msg.sender];
         bytes32[] storage cKeys = action.optionKeys;
-
+        uint256 cKeysLength = cKeys.length;
         uint256 i = 0;
+        uint256 totalParticipation = voteInstance.totalParticipation;
         // This is going to cost a lot of gas... it'd be cool if there was
         // a better way to do this.
         for (i; i < oldVoteSupport.length; i++) {
+            require(i < cKeysLength);
             totalSupport = totalSupport.add(_supports[i]);
             // Might make sense to move this outside the for loop
             // Probably safer here but some gas calculations should be done
             require(totalSupport <= voterStake); // solium-disable-line error-reason
             voteSupport = action.options[cKeys[i]].actionSupport;
-            voteInstance.totalParticipation = voteInstance.totalParticipation.sub(oldVoteSupport[i]);
+            totalParticipation = totalParticipation.sub(oldVoteSupport[i]);
             voteSupport = voteSupport.sub(oldVoteSupport[i]);
             voteSupport = voteSupport.add(_supports[i]);
-            voteInstance.totalParticipation = voteInstance.totalParticipation.add(_supports[i]);
+            totalParticipation = totalParticipation.add(_supports[i]);
             action.options[cKeys[i]].actionSupport = voteSupport;
         }
         for (i; i < _supports.length; i++) {
+            require(i < cKeysLength);
             totalSupport = totalSupport.add(_supports[i]);
             require(totalSupport <= voterStake); // solium-disable-line error-reason
             voteSupport = action.options[cKeys[i]].actionSupport;
             voteSupport = voteSupport.add(_supports[i]);
-            voteInstance.totalParticipation = voteInstance.totalParticipation.add(_supports[i]);
+            totalParticipation = totalParticipation.add(_supports[i]);
             action.options[cKeys[i]].actionSupport = voteSupport;
         }
-
+        voteInstance.totalParticipation = totalParticipation;
         voteInstance.voters[msg.sender] = _supports;
     }
 
@@ -462,6 +474,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     * @notice `_pruneVotes` trims out options that don't meet the minimum support pct.
     */
     function _pruneVotes(uint256 _voteId, uint256 _candidateSupportPct) internal {
+        require(_voteId < voteLength);
         Vote storage voteInstance = votes[_voteId];
         uint256 actionId = voteInstance.actionId;
         Action storage action = actions[actionId];
@@ -483,6 +496,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     * @return voteId The ID(or index) of this vote in the votes array.
     */
     function _executeVote(uint256 _voteId) internal {
+        require(_voteId < voteLength);
         Vote storage voteInstance = votes[_voteId];
         uint256 actionId = voteInstance.actionId;
         Action storage action = actions[actionId];
