@@ -26,6 +26,7 @@ import {
 } from '../../utils/vote-types'
 import { isAddress } from 'web3-utils'
 import { LocalIdentityBadge } from '../../../../../shared/identity'
+import { Discussion } from '../../../../discussions/app/modules'
 
 class VotePanelContent extends React.Component {
   static propTypes = {
@@ -465,6 +466,8 @@ class VotePanelContent extends React.Component {
               {'A minimum of ' + displayCandidateSupport + '% is required for an option to become validated'}
             </Text>
           )}
+          <Text css={{ marginTop: '1rem' }} size="large" color={theme.textSecondary}>Discussion Thread</Text>
+          <Discussion discussionId={this.props.vote.voteId} ethereumAddress={this.props.user} />
         </div>
       </div>
     )
