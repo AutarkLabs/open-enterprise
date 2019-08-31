@@ -20,6 +20,7 @@
     "rinkeby": {
       "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
       "appName": "tps-dot-voting.open.aragonpm.eth",
+      "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
       "network": "rinkeby"
     },
     "staging": {
@@ -27,6 +28,12 @@
       "appName": "dot-voting-staging.open.aragonpm.eth",
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
       "network": "rinkeby"
+    },
+    "production": {
+      "registry": "0x314159265dd8dbb310642f98f50c066173c1259b",
+      "appName": "dot-voting.open.aragonpm.eth",
+      "wsRPC": "wss://mainnet.eth.aragon.network/ws",
+      "network": "mainnet"
     }
   },
   "path": "contracts/DotVoting.sol"
