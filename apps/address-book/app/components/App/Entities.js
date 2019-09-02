@@ -41,8 +41,7 @@ const Entities = ({ entities, onRemoveEntity }) => {
         const values = [
           <Text
             key={entryAddress}
-            size="xlarge"
-            css="padding-bottom: 5px"
+            size="large"
           >
             {name}
           </Text>,
