@@ -162,7 +162,7 @@ class Vote extends React.Component {
           </div>
         )}
         <Discussion
-          discussionId={this.props.vote.voteId}
+          discussionId={Number(this.props.vote.voteId)}
           ethereumAddress={this.props.connectedAccount}
         />
       </StyledCard>

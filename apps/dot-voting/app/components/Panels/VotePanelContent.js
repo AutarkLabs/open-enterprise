@@ -467,7 +467,7 @@ class VotePanelContent extends React.Component {
             </Text>
           )}
           <Text css={{ marginTop: '1rem' }} size="large" color={theme.textSecondary}>Discussion Thread</Text>
-          <Discussion discussionId={this.props.vote.voteId} ethereumAddress={this.props.user} />
+          <Discussion discussionId={Number(this.props.vote.voteId)} ethereumAddress={this.props.user} />
         </div>
       </div>
     )
