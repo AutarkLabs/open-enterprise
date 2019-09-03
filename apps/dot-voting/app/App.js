@@ -86,24 +86,14 @@ const App = () => {
 
   const {
     votes = [],
-    entries = [],
     voteTime = 0,
     globalMinQuorum = 0,
     pctBase = 0,
   } = appState
 
-  const getAddressLabel = useCallback(option => {
-    const entry = entries.find(entry => entry.addr === option.label)
-    return entry ? entry.data.name : option.label
-  }, [entries])
-
   // TODO: move this logic to script.js so it's available app-wide by default
   const decorateVote = useCallback(vote => {
     const endDate = new Date(vote.data.startDate + voteTime)
-    vote.data.options = vote.data.options.map(option => ({
-      ...option,
-      label: getAddressLabel(option)
-    }))
     return {
       ...vote,
       endDate,
@@ -115,7 +105,7 @@ const App = () => {
       totalSupport: getTotalSupport(vote.data),
       type: vote.data.type,
     }
-  }, [ voteTime, getAddressLabel, pctBase, globalMinQuorum ])
+  }, [ voteTime, pctBase, globalMinQuorum ])
 
   if (!votes.length) return <Empty />
 

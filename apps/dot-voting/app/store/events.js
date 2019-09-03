@@ -6,8 +6,6 @@ export const handleEvent = async (state, event) => {
     event: eventName,
     returnValues: returnValues,
   } = event
-  const { entries } = state
-  let nextEntries
   let nextState = {
     ...state,
     ...(!hasLoadedVoteSettings(state) ? await loadVoteSettings() : {}),

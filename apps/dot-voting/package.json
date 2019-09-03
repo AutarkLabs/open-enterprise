@@ -92,7 +92,7 @@
   "keywords": [],
   "license": "GPL-3.0",
   "lint-staged": {
-    "app/**/*.js": [
+    "*.js": [
       "eslint --fix",
       "stylelint --fix",
       "git add"
