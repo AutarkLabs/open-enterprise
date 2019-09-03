@@ -218,6 +218,55 @@ contract DotVoting is ADynamicForwarder, AragonApp {
         addOption(votes[_voteId].actionId, _metadata, _description, _eId1, _eId2);
     }
 
+    /**
+    * @notice `setglobalCandidateSupportPct` serves as a basic getter using the description
+    *         to return the struct data.
+    * @param _globalCandidateSupportPct Percentage of cast voting power that must
+    *        support a candidate for it to be counted (expressed as a 10^18
+    *        percentage, (eg 10^16 = 1%, 10^18 = 100%)
+    */
+    function setglobalCandidateSupportPct(uint256 _globalCandidateSupportPct)
+    external auth(MODIFY_CANDIDATE_SUPPORT)
+    {
+        require(globalMinQuorum >= _globalCandidateSupportPct); // solium-disable-line error-reason
+        globalCandidateSupportPct = _globalCandidateSupportPct;
+        emit UpdateMinimumSupport(globalCandidateSupportPct);
+    }
+
+    /**
+    * @notice `setGlobalQuorum` serves as a basic setter for the qourum.
+    * @param _minQuorum Percentage of voters that must participate in
+    *        a vote for it to succeed (expressed as a 10^18 percentage,
+    *        (eg 10^16 = 1%, 10^18 = 100%)
+    */
+    function setGlobalQuorum(uint256 _minQuorum)
+    external auth(MODIFY_QUORUM)
+    {
+        require(_minQuorum > 0); // solium-disable-line error-reason
+        require(_minQuorum <= PCT_BASE); // solium-disable-line error-reason
+        require(_minQuorum >= globalCandidateSupportPct); // solium-disable-line error-reason
+        globalMinQuorum = _minQuorum;
+        emit UpdateQuorum(globalMinQuorum);
+    }
+
+    /**
+    * @notice `addCandidate` allows the `ADD_CANDIDATES_ROLE` to add candidates
+    *         (or options) to the current dot vote.
+    * @param _voteId id for vote structure this 'ballot action' is connected to
+    * @param _metadata Any additional information about the candidate.
+    *        Base implementation does not use this parameter.
+    * @param _description This is the string that will be displayed along the
+    *        option when voting
+    * @param _eId1 External ID 1, can be used for basic candidate information
+    * @param _eId2 External ID 2, can be used for basic candidate information
+    */
+    function addCandidate(uint256 _voteId, string _metadata, address _description, bytes32 _eId1, bytes32 _eId2)
+    public auth(ADD_CANDIDATES_ROLE)
+    {
+        require(_voteId < voteLength);
+        addOption(votes[_voteId].actionId, _metadata, _description, _eId1, _eId2);
+    }
+
 ///////////////////////
 // IForwarder functions
 ///////////////////////
