@@ -215,7 +215,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     {
         Vote storage voteInstance = votes[_voteId];
         require(_voteId < voteLength, "Vote ID outside of current vote range");
-        _isVoteOpen(voteInstance);
+        require(_isVoteOpen(voteInstance), "Vote must be open");
         addOption(votes[_voteId].actionId, _metadata, _description, _eId1, _eId2);
     }
 
