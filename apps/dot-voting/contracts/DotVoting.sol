@@ -178,7 +178,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     function setglobalCandidateSupportPct(uint256 _globalCandidateSupportPct)
     external auth(MODIFY_CANDIDATE_SUPPORT)
     {
-        require(globalMinQuorum >= _globalCandidateSupportPct); // solium-disable-line error-reason
+        require(globalMinQuorum >= _globalCandidateSupportPct, QUORUM_SUPPORT_ERROR);
         globalCandidateSupportPct = _globalCandidateSupportPct;
         emit UpdateMinimumSupport(globalCandidateSupportPct);
     }
@@ -217,37 +217,6 @@ contract DotVoting is ADynamicForwarder, AragonApp {
         require(_voteId < voteLength, "Vote ID outside of current vote range");
         require(_isVoteOpen(voteInstance), "Vote must be open");
         addOption(votes[_voteId].actionId, _metadata, _description, _eId1, _eId2);
-    }
-
-    /**
-    * @notice `setglobalCandidateSupportPct` serves as a basic getter using the description
-    *         to return the struct data.
-    * @param _globalCandidateSupportPct Percentage of cast voting power that must
-    *        support a candidate for it to be counted (expressed as a 10^18
-    *        percentage, (eg 10^16 = 1%, 10^18 = 100%)
-    */
-    function setglobalCandidateSupportPct(uint256 _globalCandidateSupportPct)
-    public auth(MODIFY_CANDIDATE_SUPPORT)
-    {
-        require(globalMinQuorum >= _globalCandidateSupportPct, QUORUM_SUPPORT_ERROR);
-        globalCandidateSupportPct = _globalCandidateSupportPct;
-        emit UpdateMinimumSupport(globalCandidateSupportPct);
-    }
-
-    /**
-    * @notice `setGlobalQuorum` serves as a basic setter for the qourum.
-    * @param _minQuorum Percentage of voters that must participate in
-    *        a vote for it to succeed (expressed as a 10^18 percentage,
-    *        (eg 10^16 = 1%, 10^18 = 100%)
-    */
-    function setGlobalQuorum(uint256 _minQuorum)
-    public auth(MODIFY_QUORUM)
-    {
-        require(_minQuorum > 0); // solium-disable-line error-reason
-        require(_minQuorum <= PCT_BASE); // solium-disable-line error-reason
-        require(_minQuorum >= globalCandidateSupportPct); // solium-disable-line error-reason
-        globalMinQuorum = _minQuorum;
-        emit UpdateQuorum(globalMinQuorum);
     }
 
 ///////////////////////
