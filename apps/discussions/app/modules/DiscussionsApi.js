@@ -38,8 +38,11 @@ class Discussions {
   _pastEvents = () =>
     new Promise(resolve =>
       this.contract.pastEvents().subscribe(events => {
-        this.lastEventBlock = events[events.length - 1].blockNumber
-        resolve(events)
+        if (events.length > 0) {
+          this.lastEventBlock = events[events.length - 1].blockNumber
+          return resolve(events)
+        }
+        resolve([])
       })
     )
 
