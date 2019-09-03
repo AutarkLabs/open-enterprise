@@ -27,8 +27,7 @@ const Top = ({ author, createdAt }) => {
   const created = new Date(Number(createdAt) * 1000)
   return (
     <Header>
-      <div>author: {author}</div>
-      {/* <IdentityBadge entity={author} /> */}
+      <IdentityBadge entity={author} />
       <TimeAgo date={created} />
     </Header>
   )
