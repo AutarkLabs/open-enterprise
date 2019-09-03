@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { format, formatDistance } from 'date-fns'
+import { format, distanceInWords } from 'date-fns'
 import { Card, IdentityBadge, theme } from '@aragon/ui'
 import { IconEdit, IconDelete, Markdown } from '../../../../shared/ui'
 import CommentForm from './CommentForm'
@@ -14,7 +14,7 @@ const Header = styled.header`
 
 const TimeAgo = styled.time.attrs(props => ({
   dateTime: format(props.date, "y-MM-dd'T'hh:mm:ss"),
-  children: formatDistance(props.date, new Date(), { addSuffix: true }),
+  children: distanceInWords(new Date(), props.date, { addSuffix: true }),
 }))`
   color: ${theme.textTertiary};
 `
@@ -27,7 +27,8 @@ const Top = ({ author, createdAt }) => {
   const created = new Date(Number(createdAt) * 1000)
   return (
     <Header>
-      <IdentityBadge entity={author} />
+      <div>author: {author}</div>
+      {/* <IdentityBadge entity={author} /> */}
       <TimeAgo date={created} />
     </Header>
   )

@@ -16,7 +16,6 @@ import { VOTE_STATUS_SUCCESSFUL } from '../../utils/vote-types'
 import { getVoteStatus } from '../../utils/vote-utils'
 import { safeDiv } from '../../utils/math-utils'
 import { format } from 'date-fns'
-import Discussion from '../../../../discussions/app/modules/Discussion'
 
 const generateBadge = (foreground, background, text) => (
   <Badge foreground={foreground} background={background}>
@@ -161,10 +160,6 @@ class Vote extends React.Component {
             </Button>
           </div>
         )}
-        <Discussion
-          discussionId={this.props.vote.voteId}
-          ethereumAddress={this.props.connectedAccount}
-        />
       </StyledCard>
     )
   }
