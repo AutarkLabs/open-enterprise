@@ -204,7 +204,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     * @param _voteId id for vote structure this 'ballot action' is connected to
     * @param _metadata Any additional information about the candidate.
     *        Base implementation does not use this parameter.
-    * @param _description This is the string that will be displayed along the
+    * @param _description This is the address that will be displayed along the
     *        option when voting
     * @param _eId1 External ID 1, can be used for basic candidate information
     * @param _eId2 External ID 2, can be used for basic candidate information
@@ -212,7 +212,9 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     function addCandidate(uint256 _voteId, string _metadata, address _description, bytes32 _eId1, bytes32 _eId2)
     public auth(ADD_CANDIDATES_ROLE)
     {
+        Vote storage voteInstance = votes[_voteId];
         require(_voteId < voteLength);
+        _isVoteOpen(voteInstance);
         addOption(votes[_voteId].actionId, _metadata, _description, _eId1, _eId2);
     }
 
@@ -377,13 +379,14 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     *            [ calldata (calldataLength bytes) ]
     *        In order to work with a dot vote the execution script must contain
     *        Arrays as its first six parameters. Non-string array lengths must all equal candidateLength
-    *        The first Array is generally a list of identifiers (bytes32 or address)
+    *        The first Array is generally a list of identifiers (address)
     *        The second array will be composed of support value (uint256).
     *        The third array will be end index for each candidates Information within the infoString (optional uint256)
     *        The fourth array is a string of concatenated candidate information, the infoString (optional string)
-    *        The fifth array is an array of identification keys (optional uint256)
-    *        The sixth array is a second array of identification keys, usually mapping to a second level (optional uint256)
-    *        The seventh parameter is used as the identifier for this vote. (uint256)
+    *        The fifth array is used for description params (optional string)
+    *        The sixth array is an array of identification keys (optional uint256)
+    *        The seventh array is a second array of identification keys, usually mapping to a second level (optional uint256)
+    *        The eigth parameter is used as the identifier for this vote. (uint256)
     *        See ExecutionTarget.sol in the test folder for an example  forwarded function (setSignal)
     * @param _metadata The metadata or vote information attached to this vote
     * @return voteId The ID(or index) of this vote in the votes array.
@@ -440,6 +443,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
         uint256[] storage oldVoteSupport = voteInstance.voters[msg.sender];
         bytes32[] storage cKeys = action.optionKeys;
         uint256 cKeysLength = cKeys.length;
+        require(cKeysLength <= _supports.length);
         uint256 i = 0;
         uint256 totalParticipation = voteInstance.totalParticipation;
         // This is going to cost a lot of gas... it'd be cool if there was
@@ -512,11 +516,11 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     }
 
     /**
-    * @dev Calculates whether `_value` is at least a percent `_pct` over `_total`
+    * @dev Checks whether vote time has passed and whether vote has executed
     */
     function _isVoteOpen(Vote storage voteArg) internal view returns (bool) {
-        Action memory action = actions[voteArg.actionId];
-        return uint64(block.timestamp) < (voteArg.startDate.add(voteTime)) && !action.executed; // solium-disable-line security/no-block-members
+        return uint64(block.timestamp) < (voteArg.startDate.add(voteTime))
+            && !actions[voteArg.actionId].executed; // solium-disable-line security/no-block-members
     }
 
     /**
