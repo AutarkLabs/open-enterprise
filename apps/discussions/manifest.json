@@ -11,5 +11,6 @@
     }
   ],
   "screenshots": [{ "src": "/meta/screenshot-1.png" }],
-  "script": "/script.js"
+  "script": "/script.js",
+  "start_url": "/index.html"
 }
