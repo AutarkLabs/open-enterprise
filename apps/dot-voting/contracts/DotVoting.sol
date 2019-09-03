@@ -250,24 +250,6 @@ contract DotVoting is ADynamicForwarder, AragonApp {
         emit UpdateQuorum(globalMinQuorum);
     }
 
-    /**
-    * @notice `addCandidate` allows the `ADD_CANDIDATES_ROLE` to add candidates
-    *         (or options) to the current dot vote.
-    * @param _voteId id for vote structure this 'ballot action' is connected to
-    * @param _metadata Any additional information about the candidate.
-    *        Base implementation does not use this parameter.
-    * @param _description This is the string that will be displayed along the
-    *        option when voting
-    * @param _eId1 External ID 1, can be used for basic candidate information
-    * @param _eId2 External ID 2, can be used for basic candidate information
-    */
-    function addCandidate(uint256 _voteId, string _metadata, address _description, bytes32 _eId1, bytes32 _eId2)
-    public auth(ADD_CANDIDATES_ROLE)
-    {
-        require(_voteId < voteLength, "Vote ID outside of current vote range");
-        addOption(votes[_voteId].actionId, _metadata, _description, _eId1, _eId2);
-    }
-
 ///////////////////////
 // IForwarder functions
 ///////////////////////
