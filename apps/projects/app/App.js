@@ -4,14 +4,12 @@ import { ApolloProvider } from 'react-apollo'
 
 import { useAragonApi } from '@aragon/api-react'
 import {
+  Bar,
+  BackButton,
+  Header,
   Main,
-  TabBar,
-  AppView,
-  AppBar,
-  NavigationBar,
+  Tabs,
 } from '@aragon/ui'
-
-import { AppTitle } from '../../../shared/ui'
 
 import {
   ErrorBoundary,
@@ -62,7 +60,6 @@ class App extends React.PureComponent {
     api: PropTypes.object, // is not required, since it comes async
     repos: PropTypes.arrayOf(PropTypes.object),
     bountySettings: PropTypes.object,
-    displayMenuButton: PropTypes.bool,
     client: PropTypes.object,
     issues: PropTypes.array,
     tokens: PropTypes.array,
@@ -196,7 +193,7 @@ class App extends React.PureComponent {
       panel,
       panelProps,
     } = this.state
-    const { bountySettings, displayMenuButton = false } = this.props
+    const { bountySettings } = this.props
 
     const status = this.props.github ? this.props.github.status : STATUS.INITIAL
 
@@ -207,14 +204,6 @@ class App extends React.PureComponent {
     const tabNames = tabs.map(t => t.name)
     const TabComponent = tabs[activeIndex.tabIndex].body
 
-    const navigationItems = [
-      <AppTitle
-        key="title"
-        title="Projects"
-        displayMenuButton={displayMenuButton}
-      />,
-      ...(issueDetail ? ['Issue Detail'] : []),
-    ]
 
     return (
       <Main assetsUrl={ASSETS_URL}>
@@ -224,56 +213,52 @@ class App extends React.PureComponent {
               onResolve={this.handleResolveLocalIdentity}
               onShowLocalIdentityModal={this.handleShowLocalIdentityModal}
             >
-              <AppView
-                style={{ height: '100%', overflowY: 'hidden' }}
-                appBar={
-                  <AppBar
-                    endContent={
-                      status === STATUS.AUTHENTICATED &&
-                      tabs[activeIndex.tabIndex].action
-                    }
-                    tabs={
-                      issueDetail ? null : (
-                        <TabBar
-                          items={tabNames}
-                          onChange={this.handleSelect}
-                          selected={activeIndex.tabIndex}
-                        />
-                      )
-                    }
-                  >
-                    <NavigationBar
-                      items={navigationItems}
-                      onBack={() => this.setIssueDetail(false)}
-                    />
-                  </AppBar>
+              <Header
+                primary="Projects"
+                secondary={
+                  status === STATUS.AUTHENTICATED && tabs[activeIndex.tabIndex].action
                 }
-              >
-                <ErrorBoundary>
-                  <TabComponent
-                    onLogin={this.handleGithubSignIn}
-                    status={status}
-                    app={this.props.api}
-                    githubLoading={this.state.githubLoading}
-                    projects={
-                      this.props.repos !== undefined ? this.props.repos : []
-                    }
-                    bountyIssues={
-                      this.props.issues !== undefined ? this.props.issues : []
-                    }
-                    bountySettings={
-                      bountySettings !== undefined ? bountySettings : {}
-                    }
-                    tokens={
-                      this.props.tokens !== undefined ? this.props.tokens : []
-                    }
-                    activeIndex={activeIndex}
-                    changeActiveIndex={this.changeActiveIndex}
-                    setIssueDetail={this.setIssueDetail}
-                    issueDetail={issueDetail}
+              />
+
+              {issueDetail ?
+                <Bar>
+                  <BackButton
+                    onClick={() => {this.setIssueDetail(false)}}
                   />
-                </ErrorBoundary>
-              </AppView>
+                </Bar>
+                :
+                <Tabs
+                  items={tabNames}
+                  onChange={this.handleSelect}
+                  selected={activeIndex.tabIndex}
+                />
+              }
+
+              <ErrorBoundary>
+                <TabComponent
+                  onLogin={this.handleGithubSignIn}
+                  status={status}
+                  app={this.props.api}
+                  githubLoading={this.state.githubLoading}
+                  projects={
+                    this.props.repos !== undefined ? this.props.repos : []
+                  }
+                  bountyIssues={
+                    this.props.issues !== undefined ? this.props.issues : []
+                  }
+                  bountySettings={
+                    bountySettings !== undefined ? bountySettings : {}
+                  }
+                  tokens={
+                    this.props.tokens !== undefined ? this.props.tokens : []
+                  }
+                  activeIndex={activeIndex}
+                  changeActiveIndex={this.changeActiveIndex}
+                  setIssueDetail={this.setIssueDetail}
+                  issueDetail={issueDetail}
+                />
+              </ErrorBoundary>
+
               <PanelManager
                 activePanel={panel}
                 onClose={this.closePanel}
@@ -288,13 +273,12 @@ class App extends React.PureComponent {
 }
 
 const AppWrap = () => {
-  const { api, appState, displayMenuButton } = useAragonApi()
+  const { api, appState } = useAragonApi()
   const client = initApolloClient(appState.github && appState.github.token)
   return (
     <App
       api={api}
       client={client}
-      displayMenuButton={displayMenuButton}
       {...appState}
     />
   )

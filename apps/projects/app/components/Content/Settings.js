@@ -8,11 +8,10 @@ import {
   DropDown,
   Button,
   Field,
-  // IdentityBadge,
   Text,
   TextInput,
-  theme,
-  Viewport,
+  useLayout,
+  useTheme,
 } from '@aragon/ui'
 
 import { FieldTitle } from '../Form'
@@ -33,6 +32,8 @@ class Settings extends React.Component {
     onLogin: PropTypes.func.isRequired,
     status: PropTypes.string.isRequired,
     tokens: PropTypes.array.isRequired,
+    layoutName: PropTypes.string.isRequired,
+    theme: PropTypes.object,
   }
   state = {
     bountyCurrencies: this.props.tokens.map(token => token.symbol),
@@ -154,7 +155,7 @@ class Settings extends React.Component {
       bountyAllocator,
     } = this.state
 
-    const { network } = this.props
+    const { network, layoutName, theme } = this.props
 
     // TODO: hourglass in case settings are still being loaded
     if (!('baseRate' in this.props.bountySettings))
@@ -199,6 +200,7 @@ class Settings extends React.Component {
       <BountyContractAddress
         bountyAllocator={bountyAllocator}
         networkType={network.type}
+        layoutName={layoutName}
       />
     )
 
@@ -208,42 +210,47 @@ class Settings extends React.Component {
       </Button>
     )
 
+    const Separator = styled.hr`
+      height: 1px;
+      border: 0;
+      width: 100%;
+      margin: 10px 0;
+      background: ${theme.border};
+    `
+  
     return (
       <StyledContent>
-        <Viewport>
-          {({ above }) =>
-            above(900) ? (
-              <React.Fragment>
-                <div className="column">
-                  {gitHubConnect}
-                  <Separator />
-                  {experienceLevel}
-                  {saveButton}
-                </div>
-                <div className="column">
-                  {showBaseRate}
-                  <Separator />
-                  {bountyDeadline}
-                  <Separator />
-                  {bountyContractAddress}
-                </div>
-              </React.Fragment>
-            ) : (
-              <div className="column">
-                {gitHubConnect}
-                <Separator />
-                {experienceLevel}
-                <Separator />
-                {showBaseRate}
-                <Separator />
-                {bountyDeadline}
-                <Separator />
-                {bountyContractAddress}
-                {saveButton}
-              </div>
-            )
-          }
-        </Viewport>
+        {layoutName === 'large' ? (
+          <React.Fragment>
+            <div className="column">
+              {gitHubConnect}
+              <Separator />
+              {experienceLevel}
+              {saveButton}
+            </div>
+            <div className="column">
+              {showBaseRate}
+              <Separator />
+              {bountyDeadline}
+              <Separator />
+              {bountyContractAddress}
+            </div>
+          </React.Fragment>
+        ) : (
+          <div className="column">
+            {gitHubConnect}
+            <Separator />
+            {experienceLevel}
+            <Separator />
+            {showBaseRate}
+            <Separator />
+            {bountyDeadline}
+            <Separator />
+            {bountyContractAddress}
+            {saveButton}
+          </div>
+        )
+        }
       </StyledContent>
     )
   }
@@ -294,7 +301,7 @@ const BountyArbiter = ({ bountyArbiter, networkType }) => (
       Bounty Arbiter
     </Text.Block>
     <Text.Block>The entity responsible for dispute resolution.</Text.Block>
-    <div style={{ display: 'flex' }}>
+    <div css="display: flex">
       <LocalIdentityBadge
         networkType={networkType}
         entity={bountyArbiter}
@@ -310,7 +317,7 @@ BountyArbiter.propTypes = {
   networkType: PropTypes.string.isRequired,
 }
 
-const BountyContractAddress = ({ bountyAllocator, networkType }) => (
+const BountyContractAddress = ({ bountyAllocator, networkType, layoutName }) => (
   <div>
     <Text.Block size="large" weight="bold">
       Bounty Contract Address
@@ -318,19 +325,12 @@ const BountyContractAddress = ({ bountyAllocator, networkType }) => (
     <Text.Block>
       This is the smart contract that is actually allocating bounties.
     </Text.Block>
-    <div style={{ display: 'flex' }}>
-      <Viewport>
-        {({ below }) => {
-          const shorten = below('small')
-          return (
-            <LocalIdentityBadge
-              networkType={networkType}
-              entity={bountyAllocator}
-              shorten={shorten}
-            />
-          )
-        }}
-      </Viewport>
+    <div css="display: flex">
+      <LocalIdentityBadge
+        networkType={networkType}
+        entity={bountyAllocator}
+        shorten={layoutName === 'small'}
+      />
     </div>
   </div>
 )
@@ -338,28 +338,42 @@ const BountyContractAddress = ({ bountyAllocator, networkType }) => (
 BountyContractAddress.propTypes = {
   bountyAllocator: PropTypes.string.isRequired,
   networkType: PropTypes.string.isRequired,
+  layoutName: PropTypes.string.isRequired,
 }
 
-const StyledInputDropDown = styled.div`
-  display: flex;
-  min-width: 0;
-  > :first-child {
-    border-radius: 3px 0 0 3px;
-    border: 1px solid ${theme.contentBorder};
-    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.03);
-    min-width: 84px;
-    flex: ${({ wide }) => (wide ? 1 : 0)};
-    z-index: 1;
-    :focus {
-      outline: 0;
-      border: 1px solid ${theme.contentBorderActive};
-    }
-  }
-  > :last-child > :first-child {
-    border-radius: 0 3px 3px 0;
-    margin-left: -1px;
-  }
-`
+const StyledInputDropDown = ({ children }) => {
+  const theme = useTheme()
+
+  return (
+    <div css={`
+      display: flex;
+      min-width: 0;
+      > :first-child {
+        border-radius: 3px 0 0 3px;
+        border: 1px solid ${theme.border};
+        box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.03);
+        min-width: 84px;
+        flex: ${({ wide }) => (wide ? 1 : 0)};
+        z-index: 1;
+        :focus {
+          outline: 0;
+          border: 1px solid ${theme.infoSurface};
+        }
+      }
+      > :last-child > :first-child {
+        border-radius: 0 3px 3px 0;
+        margin-left: -1px;
+      }
+    `}>
+      {children}
+    </div>
+  )
+}
+
+StyledInputDropDown.propTypes = {
+  children: PropTypes.node.isRequired,
+}
+
 const EmptyBaseRate = () => (
   <div>
     <Text.Block size="large" weight="bold">
@@ -549,17 +563,13 @@ const StyledContent = styled.div`
     }
   }
 `
-const Separator = styled.hr`
-  height: 1px;
-  border: 0;
-  width: 100%;
-  margin: 10px 0;
-  background: ${theme.contentBorder};
-`
 
 const SettingsWrap = props => {
   const network = useNetwork()
-  return <Settings network={network} {...props} />
+  const { layoutName } = useLayout()
+  const theme = useTheme()
+
+  return <Settings theme={theme} layoutName={layoutName} network={network} {...props} />
 }
 
 export default SettingsWrap

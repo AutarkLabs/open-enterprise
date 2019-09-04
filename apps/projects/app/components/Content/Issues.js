@@ -10,7 +10,7 @@ import { STATUS } from '../../utils/github'
 import { getIssuesGQL } from '../../utils/gql-queries.js'
 import { FilterBar } from '../Shared'
 import { Issue, Empty } from '../Card'
-import { IssueDetail } from './IssueDetail'
+import IssueDetail from './IssueDetail'
 import Unauthorized from './Unauthorized'
 import ActionsMenu from './ActionsMenu'
 

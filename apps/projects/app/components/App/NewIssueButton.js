@@ -1,11 +1,13 @@
 import React from 'react'
-import { AppTitleButton } from '.'
+import { Button, IconPlus } from '@aragon/ui'
 import { usePanelManagement } from '../Panel'
 
 const NewIssueButton = () => {
   const { setupNewIssue } = usePanelManagement()
 
-  return <AppTitleButton caption="New Issue" onClick={setupNewIssue} />
+  return (
+    <Button mode="strong" icon={<IconPlus />} onClick={setupNewIssue} label="New Issue" />
+  )
 }
 
 // eslint-disable-next-line import/no-unused-modules
