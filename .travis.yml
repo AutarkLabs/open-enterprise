@@ -23,7 +23,7 @@ jobs:
     - stage: precache
       script: true
       install:
-        - travis_wait npm i        
+        - travis_wait npm i
 
     - stage: lint
       name: Lint contracts and frontend apps
@@ -83,3 +83,8 @@ jobs:
 
 notifications:
   email: false
+
+# Only build pushes to dev. All pull requests still build
+branches:
+  only:
+  - dev
