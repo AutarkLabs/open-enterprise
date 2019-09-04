@@ -37,33 +37,33 @@ jobs:
       after_success: npm run coveralls
       env: 'COVERAGE=true'
 
-    #- stage: test
-    #  script: travis_wait 60 npm run coverage -- --scope=@tps/apps-allocations
-    #  name: Allocations app tests and coverage report
-    #  install: npm run bootstrap
-    #  after_success: npm run coveralls
-    #  env: 'COVERAGE=true'
+    - stage: test
+      script: travis_wait 60 npm run coverage -- --scope=@tps/apps-allocations
+      name: Allocations app tests and coverage report
+      install: npm run bootstrap
+      after_success: npm run coveralls
+      env: 'COVERAGE=true'
 
-    #- stage: test
-    #  script: travis_wait 60 npm run coverage -- --scope=@tps/apps-projects
-    #  name: Projects app tests and coverage report
-    #  install: npm run bootstrap
-    #  after_success: npm run coveralls
-    #  env: 'COVERAGE=true'
+    - stage: test
+      script: travis_wait 60 npm run coverage -- --scope=@tps/apps-projects
+      name: Projects app tests and coverage report
+      install: npm run bootstrap
+      after_success: npm run coveralls
+      env: 'COVERAGE=true'
 
-    #- stage: test
-    #  script: travis_wait 60 npm run coverage -- --scope=@tps/apps-dot-voting
-    #  name: Dot Voting app tests and coverage report
-    #  install: npm run bootstrap
-    #  after_success: npm run coveralls
-    #  env: 'COVERAGE=true'
+    - stage: test
+      script: travis_wait 60 npm run coverage -- --scope=@tps/apps-dot-voting
+      name: Dot Voting app tests and coverage report
+      install: npm run bootstrap
+      after_success: npm run coveralls
+      env: 'COVERAGE=true'
 
-    #- stage: test
-    #  script: travis_wait 60 npm run coverage -- --scope=@tps/apps-rewards
-    #  name: Rewards app tests and coverage report
-    #  install: npm run bootstrap
-    #  after_success: npm run coveralls
-    #  env: 'COVERAGE=true'
+    - stage: test
+      script: travis_wait 60 npm run coverage -- --scope=@tps/apps-rewards
+      name: Rewards app tests and coverage report
+      install: npm run bootstrap
+      after_success: npm run coveralls
+      env: 'COVERAGE=true'
     
     - stage: deploy
       before_install:
@@ -74,11 +74,12 @@ jobs:
       install: 
         - travis_wait npm i -g @aragon/cli@5.6.2
         - npm run bootstrap
-      script: npm run publish:cd
-
-    # - &node
-    #   script: npm run test
-    #   node_js: 'lts/*'
+      script: echo deploying if running in dev...
+      deploy:
+        provider: script
+        script: travis_wait 60 npm run publish:cd
+        on:
+          branch: dev
 
 notifications:
   email: false
