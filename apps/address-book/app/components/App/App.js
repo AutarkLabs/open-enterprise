@@ -5,8 +5,8 @@ import { useAragonApi } from '@aragon/api-react'
 import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
 
 import { IdentityProvider } from '../../../../../shared/identity'
-import Entities from './Entities'
-import NewEntity from '../Panel/NewEntity'
+import Contacts from './Contacts'
+import NewContact from '../Panel/NewContact'
 import { Empty } from '../Card'
 
 const ASSETS_URL = './aragon-ui'
@@ -17,16 +17,16 @@ const App = () => {
 
   const { entries = [] } = appState
 
-  const createEntity = ({ address, name, type }) => {
+  const createContact = ({ address, name, type }) => {
     api.addEntry(address, name, type).toPromise()
     closePanel()
   }
 
-  const removeEntity = address => {
+  const removeContact = address => {
     api.removeEntry(address).toPromise()
   }
 
-  const newEntity = () => {
+  const newContact = () => {
     setPanelVisible(true)
   }
 
@@ -48,7 +48,7 @@ const App = () => {
       >
         { children }
         <SidePanel onClose={closePanel} opened={panelVisible} title="New contact">
-          <NewEntity onCreateEntity={createEntity} />
+          <NewContact onCreateContact={createContact} />
         </SidePanel>
       </IdentityProvider>
     </Main>
@@ -59,7 +59,7 @@ const App = () => {
   }
 
   if (!entries.length) return (
-    <Wrap><Empty action={newEntity} /></Wrap>
+    <Wrap><Empty action={newContact} /></Wrap>
   )
 
   return (
@@ -67,13 +67,13 @@ const App = () => {
       <Header
         primary="Contacts"
         secondary={
-          <Button mode="strong" icon={<IconPlus />} onClick={newEntity} label="New contact" />
+          <Button mode="strong" icon={<IconPlus />} onClick={newContact} label="New contact" />
         }
       />
-      <Entities
-        entities={entries}
-        onNewEntity={newEntity}
-        onRemoveEntity={removeEntity}
+      <Contacts
+        contacts={entries}
+        onNewContact={newContact}
+        onRemoveContact={removeContact}
       />
     </Wrap>
   )

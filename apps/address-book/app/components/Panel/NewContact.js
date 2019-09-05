@@ -4,7 +4,7 @@ import { Form, FormField } from '../Form'
 import { DropDown, TextInput } from '@aragon/ui'
 import web3Utils from 'web3-utils'
 
-const ENTITY_TYPES = [ 'Individual', 'Organization', 'Project' ]
+const CONTACT_TYPES = [ 'Individual', 'Organization', 'Project' ]
 const INITIAL_STATE = {
   name: '',
   address: '',
@@ -12,9 +12,9 @@ const INITIAL_STATE = {
   error: {},
 }
 
-class NewEntity extends React.Component {
+class NewContact extends React.Component {
   static propTypes = {
-    onCreateEntity: PropTypes.func.isRequired,
+    onCreateContact: PropTypes.func.isRequired,
   }
 
   state = INITIAL_STATE
@@ -27,7 +27,7 @@ class NewEntity extends React.Component {
 
   changeType = type => {
     this.setState({
-      type: ENTITY_TYPES[type],
+      type: CONTACT_TYPES[type],
     })
   }
 
@@ -45,7 +45,7 @@ class NewEntity extends React.Component {
       this.setState({ error: error })
     } else {
       this.setState(INITIAL_STATE)
-      this.props.onCreateEntity({ name, address, type })
+      this.props.onCreateContact({ name, address, type })
     }
   }
 
@@ -82,9 +82,9 @@ class NewEntity extends React.Component {
           input={
             <DropDown
               name="type"
-              items={ENTITY_TYPES}
+              items={CONTACT_TYPES}
               onChange={changeType}
-              selected={ENTITY_TYPES.indexOf(type)}
+              selected={CONTACT_TYPES.indexOf(type)}
               wide
             />
           }
@@ -94,4 +94,4 @@ class NewEntity extends React.Component {
   }
 }
 
-export default NewEntity
+export default NewContact

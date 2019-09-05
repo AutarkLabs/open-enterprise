@@ -1,5 +1,5 @@
 {
-  "name": "Address Book",
+  "name": "Contacts",
   "description": "A registry of Ethereum addresses mapped to human-readable names. Used in conjunction with the Allocations and Dot Voting apps.",
   "author": "Autark",
   "changelog_url": "https://github.com/AutarkLabs/planning-suite/releases",

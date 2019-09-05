@@ -14,30 +14,30 @@ import { LocalIdentityBadge } from '../../../../../shared/identity'
 import { IconDelete } from '../../../../../shared/ui'
 
 // TODO: colors taken directly from Invision
-const ENTITY_TYPES = [
+const CONTACT_TYPES = [
   { name: 'Individual', fg: '#76A4E5', bg: '#76A4E533' },
   { name: 'Organization', fg: '#F78308', bg: '#F7830833' },
   { name: 'Project', fg: '#B30FB3', bg: '#B30FB333' },
 ]
 
-const entitiesSort = (a, b) => a.data.name.toUpperCase() > b.data.name.toUpperCase() ? 1 : -1
+const contactsSort = (a, b) => a.data.name.toUpperCase() > b.data.name.toUpperCase() ? 1 : -1
 
-const Entities = ({ entities, onRemoveEntity }) => {
+const Contacts = ({ contacts, onRemoveContact }) => {
   const network = useNetwork()
-  const removeEntity = address => () => onRemoveEntity(address)
+  const removeContact = address => () => onRemoveContact(address)
 
   return (
     <DataView
       mode="adaptive"
       fields={[ 'Name', 'Address', 'Type' ]}
       entries={
-        entities.sort(entitiesSort).map(({ data: { name, entryAddress, entryType } }) =>
+        contacts.sort(contactsSort).map(({ data: { name, entryAddress, entryType } }) =>
           [ name, entryAddress, entryType ]
         )
       }
 
       renderEntry={([ name, entryAddress, entryType ]) => {
-        const typeRow = ENTITY_TYPES.filter(row => row.name === entryType)[0]
+        const typeRow = CONTACT_TYPES.filter(row => row.name === entryType)[0]
         const values = [
           <Text
             key={entryAddress}
@@ -65,7 +65,7 @@ const Entities = ({ entities, onRemoveEntity }) => {
 
       renderEntryActions={([ , entryAddress ]) => (
         <ContextMenu>
-          <ContextMenuItem onClick={removeEntity(entryAddress)}>
+          <ContextMenuItem onClick={removeContact(entryAddress)}>
             <IconDelete />
             <span css="padding: 4px 8px 0px">Remove</span>
           </ContextMenuItem>
@@ -75,10 +75,10 @@ const Entities = ({ entities, onRemoveEntity }) => {
   )
 }
 
-Entities.propTypes = {
+Contacts.propTypes = {
   // TODO: shape better
-  entities: PropTypes.array.isRequired,
-  onRemoveEntity: PropTypes.func.isRequired,
+  contacts: PropTypes.array.isRequired,
+  onRemoveContact: PropTypes.func.isRequired,
 }
 
-export default Entities
+export default Contacts
