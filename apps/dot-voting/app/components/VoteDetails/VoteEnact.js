@@ -3,11 +3,12 @@ import PropTypes from 'prop-types'
 import { useAragonApi } from '@aragon/api-react'
 import { Button, Info } from '@aragon/ui'
 
-const VoteEnact = ({ voteId }) => {
+const VoteEnact = ({ voteId, setCurrentVoteId }) => {
   const { api } = useAragonApi()
 
   const handleExecuteVote = useCallback(async () => {
     await api.executeVote(voteId).toPromise()
+    setCurrentVoteId(-1)
   }, [ api, voteId ])
 
   return (
@@ -29,6 +30,7 @@ const VoteEnact = ({ voteId }) => {
 
 VoteEnact.propTypes = {
   voteId: PropTypes.string.isRequired,
+  setCurrentVoteId: PropTypes.func.isRequired,
 }
 
 export default VoteEnact

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { BigNumber } from 'bignumber.js'
-import { Box, Button, GU, Split } from '@aragon/ui'
+import { Box, Button, GU, Split, Text } from '@aragon/ui'
+import { combineLatest } from 'rxjs'
 import { first } from 'rxjs/operators' // Make sure observables have .first
 import AppBadge from './AppBadge'
 import Status from './Status'
@@ -10,11 +11,17 @@ import DescriptionAndCreator from './DescriptionAndCreator'
 import VotingResults from './VotingResults'
 import CastVote from './CastVote'
 import Participation from './Participation'
+import Label from './Label'
 
-const VoteDetails = ({ app, vote, userAccount, onVote }) => {
+const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, setCurrentVoteId }) => {
   const [ votingMode, setVotingMode ] = useState(false)
   const [ voteWeights, setVoteWeights ] = useState([])
   const [ canIVote, setCanIVote ] = useState(false)
+  const [ tokenData, setTokenData ] = useState({
+    userBalance: 0,
+    decimals: 0,
+    voteTokenSymbol: '',
+  })
   const toggleVotingMode = () => setVotingMode(!votingMode)
   const { description, voteId } = vote
   const {
@@ -54,8 +61,28 @@ const VoteDetails = ({ app, vote, userAccount, onVote }) => {
       }
     }
 
+    function loadUserBalance() {
+      const { snapshotBlock } = vote.data
+      if (tokenContract && userAccount) {
+        combineLatest(
+          tokenContract.balanceOfAt(userAccount, snapshotBlock),
+          tokenContract.decimals(),
+          tokenContract.symbol()
+        )
+          .pipe(first())
+          .subscribe(([ balance, decimals, symbol ]) => {
+            setTokenData({
+              userBalance: balance,
+              decimals: decimals,
+              voteTokenSymbol: symbol,
+            })
+          })
+      }
+    }
+
     getVoteWeights()
     canIVote()
+    loadUserBalance()
   }, [ vote, userAccount ])
 
 
@@ -84,6 +111,21 @@ const VoteDetails = ({ app, vote, userAccount, onVote }) => {
               description={description}
             />
 
+            {type === 'allocation' && (
+              <React.Fragment>
+                <Label>
+                  Amount
+                </Label>
+                <Text.Block size="large">
+                  {
+                    BigNumber(vote.data.balance)
+                      .div(BigNumber(10 ** tokenData.decimals))
+                      .toString()
+                  } {vote.data.tokenSymbol}
+                </Text.Block>
+              </React.Fragment>
+            )}
+
             {!votingMode && vote.open && canIVote && (
               <Button mode="strong" onClick={toggleVotingMode}>
                 {youVoted ? 'Change vote' : 'Vote'}
@@ -103,6 +145,7 @@ const VoteDetails = ({ app, vote, userAccount, onVote }) => {
                 vote={vote}
                 options={vote.data.options}
                 voteWeights={voteWeights}
+                setCurrentVoteId={setCurrentVoteId}
               />
             )}
           </div>
@@ -121,8 +164,10 @@ const VoteDetails = ({ app, vote, userAccount, onVote }) => {
 VoteDetails.propTypes = {
   app: PropTypes.object.isRequired,
   userAccount: PropTypes.string.isRequired,
+  tokenContract: PropTypes.object.isRequired,
   vote: PropTypes.object.isRequired,
   onVote: PropTypes.func.isRequired,
+  setCurrentVoteId: PropTypes.func.isRequired,
 }
 
 export default VoteDetails

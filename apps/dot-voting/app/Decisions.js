@@ -14,20 +14,23 @@ import {
   VOTE_STATUS_FAILED,
   VOTE_STATUS_SUCCESSFUL,
 } from './utils/vote-types'
+import tokenBalanceOfAbi from './abi/token-balanceof.json'
+import tokenDecimalsAbi from './abi/token-decimals.json'
+import tokenSymbolAbi from './abi/token-symbol.json'
 
 const useFilterVotes = (votes, voteTime) => {
   const [ filteredVotes, setFilteredVotes ] = useState(votes)
   // Status - 0: All, 1: Open, 2: Closed
-  const [ statusFilter, setStatusFilter ] = useState(-1)
+  const [ statusFilter, setStatusFilter ] = useState(0)
   // Outcome - 0: All, 1: Passed, 2: Rejected, 3: Enacted, 4: Pending
-  const [ outcomeFilter, setOutcomeFilter ] = useState(-1)
+  const [ outcomeFilter, setOutcomeFilter ] = useState(0)
   // 0: All, 1: Allocations, 2: Curation, 3: Informational
-  const [ appFilter, setAppFilter ] = useState(-1)
+  const [ appFilter, setAppFilter ] = useState(0)
 
   const handleClearFilters = useCallback(() => {
-    setStatusFilter(-1)
-    setOutcomeFilter(-1)
-    setAppFilter(-1)
+    setStatusFilter(0)
+    setOutcomeFilter(0)
+    setAppFilter(0)
   }, [
     setStatusFilter,
     setOutcomeFilter,
@@ -84,18 +87,18 @@ const useFilterVotes = (votes, voteTime) => {
     voteStatusFilter: statusFilter,
     handleVoteStatusFilterChange: useCallback(
       index => {
-        setStatusFilter(!index ? -1 : index)
+        setStatusFilter(index)
       },
       [setStatusFilter]
     ),
     voteOutcomeFilter: outcomeFilter,
     handleVoteOutcomeFilterChange: useCallback(
-      index => setOutcomeFilter(!index ? -1 : index),
+      index => setOutcomeFilter(index),
       [setOutcomeFilter]
     ),
     voteAppFilter: appFilter,
     handleVoteAppFilterChange: useCallback(
-      index => setAppFilter(!index ? -1 : index),
+      index => setAppFilter(index),
       [setAppFilter]
     ),
     handleClearFilters,
@@ -107,10 +110,18 @@ const Decisions = ({ decorateVote }) => {
   const {
     votes,
     voteTime,
+    tokenAddress = '',
   } = appState
 
   const { layoutName } = useLayout()
   const theme = useTheme()
+
+  const tokenAbi = [].concat(tokenBalanceOfAbi, tokenDecimalsAbi, tokenSymbolAbi)
+
+  const getTokenContract = (tokenAddress) =>
+    tokenAddress && app.external(tokenAddress, tokenAbi)
+
+  const tokenContract = getTokenContract(tokenAddress)
 
   // TODO: accomplish this with routing (put routes in App.js, not here)
   const [ currentVoteId, setCurrentVoteId ] = useState(-1)
@@ -155,7 +166,9 @@ const Decisions = ({ decorateVote }) => {
           app={app}
           vote={currentVote}
           userAccount={connectedAccount}
+          tokenContract={tokenContract}
           onVote={handleVote}
+          setCurrentVoteId={setCurrentVoteId}
         />
       </React.Fragment>
     )
@@ -214,7 +227,7 @@ const Decisions = ({ decorateVote }) => {
                 label="Outcome"
                 selected={voteOutcomeFilter}
                 onChange={handleVoteOutcomeFilterChange}
-                items={[ 'All', 'Passed', 'Rejected', 'Enacted', 'Pending' ]}
+                items={[ 'Outcome', 'Passed', 'Rejected', 'Enacted', 'Pending' ]}
                 width="128px"
               />
             )}
@@ -222,7 +235,7 @@ const Decisions = ({ decorateVote }) => {
               label="App type"
               selected={voteAppFilter}
               onChange={handleVoteAppFilterChange}
-              items={[ 'All', 'Allocations', 'Issue Curation', 'Informational' ]}
+              items={[ 'Type', 'Allocations', 'Issue Curation', 'Informational' ]}
               width="128px"
             />
           </div>
