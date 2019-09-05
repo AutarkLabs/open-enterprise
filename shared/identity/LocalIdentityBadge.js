@@ -58,6 +58,7 @@ const LocalIdentityBadge = ({ entity, ...props }) => {
           'Address'
         )
       }
+      fontSize="large"
     />
   )
 }

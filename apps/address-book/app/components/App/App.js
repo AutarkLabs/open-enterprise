@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import PropTypes from 'prop-types'
 
 import { useAragonApi } from '@aragon/api-react'
 import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
@@ -6,6 +7,7 @@ import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
 import { IdentityProvider } from '../../../../../shared/identity'
 import Entities from './Entities'
 import NewEntity from '../Panel/NewEntity'
+import { Empty } from '../Card'
 
 const ASSETS_URL = './aragon-ui'
 
@@ -38,28 +40,42 @@ const App = () => {
   const handleShowLocalIdentityModal = address =>
     api.requestAddressIdentityModification(address).toPromise()
 
-  return (
+  const Wrap = ({ children }) => (
     <Main assetsUrl={ASSETS_URL}>
+      <IdentityProvider
+        onResolve={handleResolveLocalIdentity}
+        onShowLocalIdentityModal={handleShowLocalIdentityModal}
+      >
+        { children }
+        <SidePanel onClose={closePanel} opened={panelVisible} title="New entity">
+          <NewEntity onCreateEntity={createEntity} />
+        </SidePanel>
+      </IdentityProvider>
+    </Main>
+  )
+
+  Wrap.propTypes = {
+    children: PropTypes.node.isRequired,
+  }
+
+  if (!entries.length) return (
+    <Wrap><Empty action={newEntity} /></Wrap>
+  )
+
+  return (
+    <Wrap>
       <Header
         primary="Address Book"
         secondary={
           <Button mode="strong" icon={<IconPlus />} onClick={newEntity} label="New Entity" />
         }
       />
-      <IdentityProvider
-        onResolve={handleResolveLocalIdentity}
-        onShowLocalIdentityModal={handleShowLocalIdentityModal}
-      >
-        <Entities
-          entities={entries}
-          onNewEntity={newEntity}
-          onRemoveEntity={removeEntity}
-        />
-        <SidePanel onClose={closePanel} opened={panelVisible} title="New entity">
-          <NewEntity onCreateEntity={createEntity} />
-        </SidePanel>
-      </IdentityProvider>
-    </Main>
+      <Entities
+        entities={entries}
+        onNewEntity={newEntity}
+        onRemoveEntity={removeEntity}
+      />
+    </Wrap>
   )
 }
 
