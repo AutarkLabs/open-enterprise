@@ -460,6 +460,7 @@ contract Projects is AragonApp, DepositableStorage {
      * @param _submissionNumber submission index of the submitted work for review
      * @param _approved decision to accept the contribution
      * @param _updatedSubmissionHash IPFS hash of the submission containing optional feedback
+     * @param _tokenAmounts array of amounts???
      */
     function reviewSubmission(
         bytes32 _repoId,
