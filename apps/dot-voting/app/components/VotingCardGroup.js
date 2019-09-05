@@ -8,6 +8,7 @@ import {
   useLayout,
   useTheme,
 } from '@aragon/ui'
+import styled from 'styled-components'
 
 const VotingCardGroup = ({ title, count, children }) => {
   const theme = useTheme()
@@ -36,13 +37,17 @@ const VotingCardGroup = ({ title, count, children }) => {
         </div>
         <span
           css={`
-            margin-left: 10px;
-            display: flex;
+            margin-left: ${1.5 * GU}px;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
+            color: ${theme.info};
+            ${textStyle('label3')};
           `}
         >
-          <span>{count}</span>
+          <DiscTag>
+            {count > 9999 ? '9999+' : count}
+          </DiscTag>
         </span>
       </h2>
       <CardLayout columnWidthMin={30 * GU} rowHeight={rowHeight}>
@@ -57,5 +62,27 @@ VotingCardGroup.propTypes = {
   count: PropTypes.number.isRequired,
   children: PropTypes.node.isRequired,
 }
+
+const DiscTag = styled.span`
+  display: inline-flex;
+  white-space: nowrap;
+  color: rgb(109, 128, 136);
+  padding-top: 4px;
+  letter-spacing: -0.5px;
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-box-pack: center;
+  justify-content: center;
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-box-align: center;
+  align-items: center;
+  width: 18px;
+  height: 18px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 20px;
+  background: rgb(220, 234, 239);
+  overflow: hidden;
+  border-radius: 9px;
+`
 
 export default VotingCardGroup
