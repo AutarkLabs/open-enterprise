@@ -47,7 +47,7 @@ const App = () => {
         onShowLocalIdentityModal={handleShowLocalIdentityModal}
       >
         { children }
-        <SidePanel onClose={closePanel} opened={panelVisible} title="New entity">
+        <SidePanel onClose={closePanel} opened={panelVisible} title="New contact">
           <NewEntity onCreateEntity={createEntity} />
         </SidePanel>
       </IdentityProvider>
@@ -65,9 +65,9 @@ const App = () => {
   return (
     <Wrap>
       <Header
-        primary="Address Book"
+        primary="Contacts"
         secondary={
-          <Button mode="strong" icon={<IconPlus />} onClick={newEntity} label="New Entity" />
+          <Button mode="strong" icon={<IconPlus />} onClick={newEntity} label="New contact" />
         }
       />
       <Entities

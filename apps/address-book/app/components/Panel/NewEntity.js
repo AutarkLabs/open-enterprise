@@ -53,7 +53,7 @@ class NewEntity extends React.Component {
     const { address, name, type, error } = this.state
     const { handleSubmit, changeField, changeType } = this
     return (
-      <Form onSubmit={handleSubmit} submitText="Submit Entity">
+      <Form onSubmit={handleSubmit} submitText="Submit">
         <FormField
           required
           label="Name"
