@@ -1,13 +1,21 @@
 import { app } from '../app'
 import { ipfsGet } from '../../utils/ipfs-helpers'
+import standardBountiesAbi from '../../abi/StandardBounties.json'
 
 const assignmentRequestStatus = [ 'Unreviewed', 'Accepted', 'Rejected' ]
 
-export const loadIssueData = ({ repoId, issueNumber }) => {
+export const loadIssueData = async ({ repoId, issueNumber }) => {
   return new Promise(resolve => {
-    app.call('getIssue', repoId, issueNumber).subscribe(async ({ hasBounty, standardBountyId, balance, token, dataHash, assignee }) => {
-      const bountyData = await ipfsGet(dataHash)
-      resolve({ balance, hasBounty, token, standardBountyId, assignee, ...bountyData })
+    app.call('getIssue', repoId, issueNumber).subscribe(async ({ hasBounty, standardBountyId, balance, assignee }) => {
+      console.log({ hasBounty, standardBountyId, balance, assignee })
+      const bountiesRegistry = await app.call('bountiesRegistry').toPromise()
+      console.log({ bountiesRegistry })
+      const bountyContract = app.external(bountiesRegistry, standardBountiesAbi)
+      console.log({ bountyContract })
+      const bountyData = await bountyContract.call('getBountyData', standardBountyId)
+      const token = await bountyContract.call('getBountyToken', standardBountyId)
+      console.log({ bountyData, token })
+      resolve({ balance, hasBounty, token, standardBountyId, ...bountyData })
     })
   })
 }
