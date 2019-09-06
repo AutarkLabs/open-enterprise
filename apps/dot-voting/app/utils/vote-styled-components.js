@@ -27,5 +27,5 @@ export const GenerateBadge = ({ type }) => (
 )
 
 GenerateBadge.propTypes = {
-  type: PropTypes.string.isRequired,
+  type: PropTypes.oneOf(Object.keys(badgeDetails)).isRequired,
 }

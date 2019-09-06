@@ -16,7 +16,8 @@ import {
 } from './utils/vote-types'
 import tokenBalanceOfAbi from './abi/token-balanceof.json'
 import tokenDecimalsAbi from './abi/token-decimals.json'
-import tokenSymbolAbi from './abi/token-symbol.json'
+
+const tokenAbi = [].concat(tokenBalanceOfAbi, tokenDecimalsAbi)
 
 const useFilterVotes = (votes, voteTime) => {
   const [ filteredVotes, setFilteredVotes ] = useState(votes)
@@ -115,8 +116,6 @@ const Decisions = ({ decorateVote }) => {
 
   const { layoutName } = useLayout()
   const theme = useTheme()
-
-  const tokenAbi = [].concat(tokenBalanceOfAbi, tokenDecimalsAbi, tokenSymbolAbi)
 
   const getTokenContract = (tokenAddress) =>
     tokenAddress && app.external(tokenAddress, tokenAbi)

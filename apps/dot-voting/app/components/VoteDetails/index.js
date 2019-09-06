@@ -17,11 +17,7 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote }) => {
   const [ votingMode, setVotingMode ] = useState(false)
   const [ voteWeights, setVoteWeights ] = useState([])
   const [ canIVote, setCanIVote ] = useState(false)
-  const [ tokenData, setTokenData ] = useState({
-    userBalance: 0,
-    decimals: 0,
-    voteTokenSymbol: '',
-  })
+  const [ decimals, setDecimals ] = useState(0)
   const toggleVotingMode = () => setVotingMode(!votingMode)
   const { description, voteId } = vote
   const {
@@ -61,28 +57,18 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote }) => {
       }
     }
 
-    function loadUserBalance() {
-      const { snapshotBlock } = vote.data
+    function loadDecimals() {
       if (tokenContract && userAccount) {
-        combineLatest(
-          tokenContract.balanceOfAt(userAccount, snapshotBlock),
-          tokenContract.decimals(),
-          tokenContract.symbol()
-        )
-          .pipe(first())
-          .subscribe(([ balance, decimals, symbol ]) => {
-            setTokenData({
-              userBalance: balance,
-              decimals: decimals,
-              voteTokenSymbol: symbol,
-            })
+        tokenContract.decimals()
+          .subscribe(decimals => {
+            setDecimals(decimals)
           })
       }
     }
 
     getVoteWeights()
     canIVote()
-    loadUserBalance()
+    loadDecimals()
   }, [ vote, userAccount ])
 
 
@@ -119,7 +105,7 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote }) => {
                 <Text.Block size="large">
                   {
                     BigNumber(vote.data.balance)
-                      .div(BigNumber(10 ** tokenData.decimals))
+                      .div(BigNumber(10 ** decimals))
                       .toString()
                   } {vote.data.tokenSymbol}
                 </Text.Block>
@@ -166,7 +152,6 @@ VoteDetails.propTypes = {
   tokenContract: PropTypes.object.isRequired,
   vote: PropTypes.object.isRequired,
   onVote: PropTypes.func.isRequired,
-  setCurrentVoteId: PropTypes.func.isRequired,
 }
 
 export default VoteDetails
