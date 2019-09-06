@@ -13,7 +13,7 @@ import CastVote from './CastVote'
 import Participation from './Participation'
 import Label from './Label'
 
-const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, setCurrentVoteId }) => {
+const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote }) => {
   const [ votingMode, setVotingMode ] = useState(false)
   const [ voteWeights, setVoteWeights ] = useState([])
   const [ canIVote, setCanIVote ] = useState(false)
@@ -145,7 +145,6 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote, setCurrent
                 vote={vote}
                 options={vote.data.options}
                 voteWeights={voteWeights}
-                setCurrentVoteId={setCurrentVoteId}
               />
             )}
           </div>

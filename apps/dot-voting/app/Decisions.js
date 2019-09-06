@@ -168,7 +168,6 @@ const Decisions = ({ decorateVote }) => {
           userAccount={connectedAccount}
           tokenContract={tokenContract}
           onVote={handleVote}
-          setCurrentVoteId={setCurrentVoteId}
         />
       </React.Fragment>
     )

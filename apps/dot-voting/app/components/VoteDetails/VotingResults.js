@@ -7,7 +7,7 @@ import VotingOptions from '../VotingOptions'
 import Label from './Label'
 import VoteEnact from './VoteEnact'
 
-const VotingResults = ({ vote, voteWeights, setCurrentVoteId }) => {
+const VotingResults = ({ vote, voteWeights }) => {
   const theme = useTheme()
 
   const [ totalSupport, setTotalSupport ] = useState(0)
@@ -31,7 +31,7 @@ const VotingResults = ({ vote, voteWeights, setCurrentVoteId }) => {
           voteWeights={voteWeights}
         />
       </div>
-      {!vote.open && getVoteStatus(vote) === VOTE_STATUS_SUCCESSFUL && <VoteEnact voteId={vote.voteId} setCurrentVoteId={setCurrentVoteId} />}
+      {!vote.open && getVoteStatus(vote) === VOTE_STATUS_SUCCESSFUL && <VoteEnact voteId={vote.voteId} />}
     </React.Fragment>
   )
 }
@@ -39,7 +39,6 @@ const VotingResults = ({ vote, voteWeights, setCurrentVoteId }) => {
 VotingResults.propTypes = {
   vote: PropTypes.object.isRequired,
   voteWeights: PropTypes.PropTypes.arrayOf(PropTypes.string).isRequired,
-  setCurrentVoteId: PropTypes.func.isRequired,
 }
 
 export default VotingResults
