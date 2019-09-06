@@ -78,6 +78,7 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
   }
   case BOUNTY_ADDED: {
     if(!returnValues) return nextState
+    console.log({ returnValues })
     const { repoId, issueNumber } = returnValues
     let issueData = await loadIssueData({ repoId, issueNumber })
     issueData = determineWorkStatus(issueData)
