@@ -4,7 +4,7 @@ import "@aragon/kits-beta-base/contracts/BetaKitBase.sol";
 
 import "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
 
-import "@tps/apps-address-book/contracts/AddressBook.sol";
+import "@tps/apps-contacts/contracts/Contacts.sol";
 import "@tps/apps-allocations/contracts/Allocations.sol";
 import "@tps/apps-projects/contracts/Projects.sol";
 import { DotVoting } from "@tps/apps-dot-voting/contracts/DotVoting.sol";
@@ -21,7 +21,7 @@ contract PlanningSuite is BetaKitBase {
     mapping (address => address) tokenCache;
 
     // ensure alphabetic order
-    enum PlanningApps { AddressBook, Allocations, DotVoting, Projects, Rewards }
+    enum PlanningApps { Contacts, Allocations, DotVoting, Projects, Rewards }
 
     // Overload the DeployInstance event for easy grabing of all the things
     event DeployInstance(address dao, address indexed token, address vault, address voting);
@@ -166,10 +166,10 @@ contract PlanningSuite is BetaKitBase {
         uint64 voteDuration
     ) internal
     {
-        AddressBook addressBook;
+        Contacts contacts;
         DotVoting dotVoting;
 
-        (addressBook, dotVoting) = createDotVoting(
+        (contacts, dotVoting) = createDotVoting(
             dao,
             token,
             candidateSupportPct,
@@ -181,7 +181,7 @@ contract PlanningSuite is BetaKitBase {
             vault,
             voting,
             token,
-            addressBook,
+            contacts,
             dotVoting
         );
         handleCleanupPermissions(dao, voting);
@@ -310,12 +310,12 @@ contract PlanningSuite is BetaKitBase {
         uint256 candidateSupportPct,
         uint256 minParticipationPct,
         uint64 voteDuration
-    ) internal returns (AddressBook addressBook, DotVoting dotVoting)
+    ) internal returns (Contacts contacts, DotVoting dotVoting)
     {
-        addressBook = AddressBook(
+        contacts = Contacts(
             dao.newAppInstance(
-                planningAppIds[uint8(PlanningApps.AddressBook)],
-                latestVersionAppBase(planningAppIds[uint8(PlanningApps.AddressBook)])
+                planningAppIds[uint8(PlanningApps.Contacts)],
+                latestVersionAppBase(planningAppIds[uint8(PlanningApps.Contacts)])
             )
         );
         dotVoting = DotVoting(
@@ -325,8 +325,8 @@ contract PlanningSuite is BetaKitBase {
             )
         );
 
-        addressBook.initialize();
-        dotVoting.initialize(addressBook, token, minParticipationPct, candidateSupportPct, voteDuration);
+        contacts.initialize();
+        dotVoting.initialize(contacts, token, minParticipationPct, candidateSupportPct, voteDuration);
     }
 
     function createOtherTPSApps (
@@ -334,7 +334,7 @@ contract PlanningSuite is BetaKitBase {
         Vault vault,
         Voting voting,
         MiniMeToken token,
-        AddressBook addressBook,
+        Contacts contacts,
         DotVoting dotVoting
 
     ) internal
@@ -363,7 +363,7 @@ contract PlanningSuite is BetaKitBase {
             )
         );
         initializeTPSApps(
-            addressBook,
+            contacts,
             allocations,
             projects,
             rewards,
@@ -372,7 +372,7 @@ contract PlanningSuite is BetaKitBase {
         );
         handleTPSPermissions(
             dao,
-            addressBook,
+            contacts,
             allocations,
             dotVoting,
             projects,
@@ -391,7 +391,7 @@ contract PlanningSuite is BetaKitBase {
     }
 
     function initializeTPSApps(
-        AddressBook addressBook,
+        Contacts contacts,
         Allocations allocations,
         Projects projects,
         Rewards rewards,
@@ -399,14 +399,14 @@ contract PlanningSuite is BetaKitBase {
         Vault vault
     ) internal
     {
-        allocations.initialize(addressBook, vault);
+        allocations.initialize(contacts, vault);
         projects.initialize(registry, vault, token);
         rewards.initialize(vault);
     }
 
     function handleTPSPermissions(
         Kernel dao,
-        AddressBook addressBook,
+        Contacts contacts,
         Allocations allocations,
         DotVoting dotVoting,
         Projects projects,
@@ -416,10 +416,10 @@ contract PlanningSuite is BetaKitBase {
     {
         ACL acl = ACL(dao.acl());
 
-        // AddressBook permissions:
-        acl.createPermission(voting, addressBook, addressBook.ADD_ENTRY_ROLE(), voting);
-        acl.createPermission(voting, addressBook, addressBook.REMOVE_ENTRY_ROLE(), voting);
-        emit InstalledApp(addressBook, planningAppIds[uint8(PlanningApps.AddressBook)]);
+        // Contacts permissions:
+        acl.createPermission(voting, contacts, contacts.ADD_ENTRY_ROLE(), voting);
+        acl.createPermission(voting, contacts, contacts.REMOVE_ENTRY_ROLE(), voting);
+        emit InstalledApp(contacts, planningAppIds[uint8(PlanningApps.Contacts)]);
 
 
         // Projects permissions:

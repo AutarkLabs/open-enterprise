@@ -5,7 +5,7 @@ import { addressesEqual } from '../utils/web3-utils'
 
 export const handleEvent = async (state, event, settings) => {
   const { address: eventAddress, event: eventName, returnValues } = event
-  const { addressBook, vault } = settings
+  const { contacts, vault } = settings
   const { accounts, entries, payouts } = state
 
   let nextAccounts, nextBoth
@@ -35,13 +35,13 @@ export const handleEvent = async (state, event, settings) => {
       break
     case 'EntryAdded':
       nextState.entries = await onEntryAdded(
-        { entries, addressBook },
+        { entries, contacts },
         returnValues
       )
       break
     case 'EntryRemoved':
       nextState.entries = await onEntryRemoved(
-        { entries, addressBook },
+        { entries, contacts },
         returnValues
       )
       break

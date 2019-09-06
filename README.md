@@ -53,7 +53,7 @@ $ npm run start:dot
 Open Enterprise is a collection of five Aragon Apps that supports the following:
 
 - **Allocations:** The Allocations app is used to propose a financial allocation meant to be distributed to multiple parties. Allocation proposals are forwarded to the Dot Voting app. The percentage of the allocation amount distributed to each party is determined based on the results of the Dot Vote.
-- **Address Book:** Maintain a list of Ethereum addresses mapped to human-readable names. The Address Book will enable a more user-friendly way to access and review common addresses a DAO uses for Allocations and Dot Voting.
+- **Contacts:** Maintain a list of Ethereum addresses mapped to human-readable names. The Contacts will enable a more user-friendly way to access and review common addresses a DAO uses for Allocations and Dot Voting.
 - **Projects:** Allocate funding to multiple Github issues in a single action and collectively curate issues.
   - **Curate Issues:** Token holders will be able to curate / prioritize the top issues that should be developed. Issue Curation proposals are forwarded to the Dot Voting app.
   - **Fund Issues:** Fund issues in a bulk-fashion, with the possibility to require DAO approval before funding is allocated.

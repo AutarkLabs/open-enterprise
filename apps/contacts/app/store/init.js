@@ -17,7 +17,7 @@ export const initStore = () => {
         // Debug point
         return nextState
       } catch (err) {
-        console.error('[Address Book script] initStore', event, err)
+        console.error('[Contacts script] initStore', event, err)
       }
       // always return the state even unmodified
       return state

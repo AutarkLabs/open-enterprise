@@ -35,11 +35,11 @@ It will check the version published in that transaction, fetch and archive the c
 Example:
 
 ```sh
-$ scripts/save address-book 0x6252302b892d2819eecc3a5400346469bc922fcdaab840c4859c8895a0f39e6c  ede0a45a55e8bb33ba84ac11c6989385416d8049 --environment staging
+$ scripts/save contacts 0x6252302b892d2819eecc3a5400346469bc922fcdaab840c4859c8895a0f39e6c  ede0a45a55e8bb33ba84ac11c6989385416d8049 --environment staging
 
-Fetching info for 'address-book.open.aragonpm.eth' on staging...
-Creating deployment record for address-book.open.aragonpm.eth@1.0.0 on staging
-Saving archive to environments/staging/address-book.open.aragonpm.eth/address-book.open.aragonpm.eth@1.0.0.tar.gz
+Fetching info for 'contacts.open.aragonpm.eth' on staging...
+Creating deployment record for contacts.open.aragonpm.eth@1.0.0 on staging
+Saving archive to environments/staging/contacts.open.aragonpm.eth/contacts.open.aragonpm.eth@1.0.0.tar.gz
 ```
 
 ## Previous deployments

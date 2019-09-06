@@ -20,12 +20,12 @@ import "@aragon/os/contracts/apps/AragonApp.sol";
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *******************************************************************************/
 /*******************************************************************************
-* @title AddressBook Contract
+* @title Contacts Contract
 * @author Sean Marquez
 * @dev This contract defines an address book (registry) that allows the
 * association of a human-readable string to a type, and ethereum address.
 *******************************************************************************/
-contract AddressBook is AragonApp {
+contract Contacts is AragonApp {
 
     struct Entry {
         address entryAddress;

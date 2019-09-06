@@ -19,7 +19,7 @@
     "@aragon/apps-voting": "^2.0.0",
     "@aragon/apps-vault": "^4.1.0",
     "@aragon/os": "^4.2.0",
-    "@tps/apps-address-book": "^0.0.1",
+    "@tps/apps-contacts": "^0.0.1",
     "@tps/apps-allocations": "^0.0.1",
     "@tps/apps-projects": "^0.0.1",
     "@tps/apps-dot-voting": "^0.0.1",

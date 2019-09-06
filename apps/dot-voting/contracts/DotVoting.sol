@@ -4,7 +4,7 @@ import "@aragon/os/contracts/apps/AragonApp.sol";
 
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 
-import "@tps/apps-address-book/contracts/AddressBook.sol";
+import "@tps/apps-contacts/contracts/Contacts.sol";
 
 import "@aragon/os/contracts/lib/math/SafeMath.sol";
 
@@ -51,7 +51,7 @@ contract DotVoting is IForwarder, AragonApp {
     using SafeMath64 for uint64;
 
     MiniMeToken public token;
-    AddressBook public addressBook;
+    Contacts public contacts;
     uint256 public globalCandidateSupportPct; //supportRequiredPct;
     uint256 public minParticipationPct; //minAcceptQuorumPct;
     uint64 public voteTime;
@@ -139,7 +139,7 @@ contract DotVoting is IForwarder, AragonApp {
     *        vote (unless it is impossible for the fate of the vote to change)
     */
     function initialize(
-        AddressBook _addressBook,
+        Contacts _contacts,
         MiniMeToken _token,
         uint256 _minParticipationPct,
         uint256 _candidateSupportPct,
@@ -151,7 +151,7 @@ contract DotVoting is IForwarder, AragonApp {
         require(_minParticipationPct <= PCT_BASE); // solium-disable-line error-reason
         require(_minParticipationPct >= _candidateSupportPct); // solium-disable-line error-reason
         token = _token;
-        addressBook = _addressBook;
+        contacts = _contacts;
         minParticipationPct = _minParticipationPct;
         globalCandidateSupportPct = _candidateSupportPct;
         voteTime = _voteTime;

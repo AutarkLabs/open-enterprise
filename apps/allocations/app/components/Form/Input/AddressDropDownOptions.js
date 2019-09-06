@@ -34,7 +34,7 @@ const AddressDropDownOptions = ({
 
     onChange({
       target: {
-        name: 'addressBookInput',
+        name: 'contactsInput',
         value: {
           addr: value.addr,
           index: value.index,
@@ -66,11 +66,11 @@ const AddressDropDownOptions = ({
           <AddressDropDown
             activeItem={activeItem}
             entities={entities}
-            name="addressBookInput"
+            name="contactsInput"
             onChange={onChangeInput}
             validator={validator}
             values={values}
-            title={'Click to select an Address Book entry'}
+            title={'Click to select an Contacts entry'}
           />
           <IconContainer css="transform: scale(.8)">
             <IconRemove />

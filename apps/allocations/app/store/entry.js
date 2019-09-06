@@ -1,16 +1,16 @@
 import { first, map } from 'rxjs/operators'
 
 /// /////////////////////////////////////
-/*     AddressBook event handlers      */
+/*     Contacts event handlers      */
 /// /////////////////////////////////////
 
-export const onEntryAdded = async ({ entries = [], addressBook }, { addr }) => {
+export const onEntryAdded = async ({ entries = [], contacts }, { addr }) => {
   // is addr already in the state?
   if (entries.some(entry => entry.addr === addr)) {
     // entry already cached, do nothing
   } else {
     // entry not cached
-    const data = await loadEntryData(addr, addressBook) // async load data from contract
+    const data = await loadEntryData(addr, contacts) // async load data from contract
     if (data) {
       // just perform transform and push if data was found (entry was not removed)
       const entry = { addr, data } // transform for the frontend to understand
@@ -32,12 +32,12 @@ export const onEntryRemoved = async ({ entries }, { addr }) => {
 }
 
 /// /////////////////////////////////////
-/*    AddressBook helper functions    */
+/*    Contacts helper functions    */
 /// /////////////////////////////////////
 
-const loadEntryData = async (addr, addressBook) => {
-  const addressBookApp = addressBook.contract
-  return addressBookApp
+const loadEntryData = async (addr, contacts) => {
+  const contactsApp = contacts.contract
+  return contactsApp
     .getEntry(addr)
     .pipe(
       first(),

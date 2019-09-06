@@ -1,5 +1,5 @@
 {
-  "contractName": "AddressBook",
+  "contractName": "Contacts",
   "abi": [
     {
       "anonymous": false,

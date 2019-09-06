@@ -55,17 +55,17 @@ Refer to these links for more information:
 
 
 
-## Install Address Book
-#### tps-address-book.open.aragonpm.eth
+## Install Contacts
+#### tps-contacts.open.aragonpm.eth
 
-The Address Book is for maintaining a list of Ethereum addresses mapped to human-readable names, on-chain. The Address Book will enable a more user-friendly way to access and review common addresses a DAO uses for Allocations and Dot Voting.
+The Contacts is for maintaining a list of Ethereum addresses mapped to human-readable names, on-chain. The Contacts will enable a more user-friendly way to access and review common addresses a DAO uses for Allocations and Dot Voting.
 
 The address book does not require passing any initialization parameters.
 
 #### Sample install command
 
 ```
-dao install <dao-address> tps-address-book.open.aragonpm.eth --environment aragon:rinkeby
+dao install <dao-address> tps-contacts.open.aragonpm.eth --environment aragon:rinkeby
 ```
 
 ## Install Dot Voting App
@@ -75,7 +75,7 @@ The Dot Voting app is used by both the Allocations app and Projects app. Dot Vot
 
 The Dot Voting app requires the following initialization parameters:
 
-* `AddressBook`: proxy address of the Address Book app (must be installed before initializing Dot Voting)
+* `Contacts`: proxy address of the Contacts app (must be installed before initializing Dot Voting)
 * `MinimeToken`: address of a minime token
 * `minParticipationPct`: percentage of total votes required for a vote to succeed (expressed as a percentage of 10^18; eg. 10^16 = 1%, 10^18 = 100%)
 * `candidateSupportPct`: minimum percentage required for an option to be valid. This feature is not fully enabled yet, so set this to 0 otherwise the app may behave unexpectedly.
@@ -85,7 +85,7 @@ The Dot Voting app requires the following initialization parameters:
 #### Sample install command
 This will install a Dot Voting instance with a participation requirement of 50% and a voting period of 7 days.
 ```
-dao install <dao-address> tps-dot-voting.open.aragonpm.eth --app-init-args [AddressBook] [MinimeToken] 500000000000000000 0 604800 --environment aragon:rinkeby
+dao install <dao-address> tps-dot-voting.open.aragonpm.eth --app-init-args [Contacts] [MinimeToken] 500000000000000000 0 604800 --environment aragon:rinkeby
 ```
 
 
@@ -124,13 +124,13 @@ dao install <dao-address> tps-rewards.open.aragonpm.eth --app-init-args [Vault] 
 Allocations is used to propose a financial allocation meant to be distributed to multiple parties or options. Proposals are forwarded to the Dot Voting app for an organization to collectively determine the distribution of funds. The percentage of the allocation amount distributed to each party is determined based on the results of the Dot Vote.
 
 The Allocations app requires the following initialization parameter:
-* `AddressBook`: proxy address of the Address Book app (must be installed before initializing Dot Voting)
+* `Contacts`: proxy address of the Contacts app (must be installed before initializing Dot Voting)
 * `Vault`: proxy address of the Vault you want to connect with the app
 
 
 #### Sample install command
 ```
-dao install <dao-address> tps-allocations.open.aragonpm.eth --app-init-args [AddressBook] [Vault] --environment aragon:rinkeby 
+dao install <dao-address> tps-allocations.open.aragonpm.eth --app-init-args [Contacts] [Vault] --environment aragon:rinkeby 
 ```
 
 
@@ -141,8 +141,8 @@ The following are the initial permissions that are setup via the Planning Suite 
 
 | App               | Permission               | Grantee    | Manager |
 | ----------------- | ------------------------ | ---------- | ------- |
-| Address Book      | ADD_ENTRY_ROLE           | Voting     | Voting  |
-| Address Book      | REMOVE_ENTRY_ROLE        | Voting     | Voting  |
+| Contacts          | ADD_ENTRY_ROLE           | Voting     | Voting  |
+| Contacts          | REMOVE_ENTRY_ROLE        | Voting     | Voting  |
 | Projects          | FUND_ISSUES_ROLE         | Voting      | Voting  |
 | Projects          | REVIEW_APPLICATION_ROLE  | Voting      | Voting  |
 | Projects          | WORK_REVIEW_ROLE         | Voting      | Voting  |

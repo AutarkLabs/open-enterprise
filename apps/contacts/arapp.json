@@ -1,12 +1,12 @@
 {
   "roles": [
     {
-      "name": "Add address book entry",
+      "name": "Add contact",
       "id": "ADD_ENTRY_ROLE",
       "params": []
     },
     {
-      "name": "Remove address book entry",
+      "name": "Remove contact",
       "id": "REMOVE_ENTRY_ROLE",
       "params": []
     }
@@ -15,26 +15,26 @@
     "default": {
       "registry": "0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1",
       "network": "rpc",
-      "appName": "address-book.aragonpm.eth"
+      "appName": "contacts.aragonpm.eth"
     },
     "rinkeby": {
       "registry": "0x98df287b6c145399aaa709692c8d308357bc085d",
-      "appName": "tps-address-book.open.aragonpm.eth",
+      "appName": "tps-contacts.open.aragonpm.eth",
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
       "network": "rinkeby"
     },
     "staging": {
       "registry": "0x98df287b6c145399aaa709692c8d308357bc085d",
-      "appName": "address-book-staging.open.aragonpm.eth",
+      "appName": "contacts-staging.open.aragonpm.eth",
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
       "network": "rinkeby"
     },
     "production": {
       "registry": "0x314159265dd8dbb310642f98f50c066173c1259b",
-      "appName": "address-book.open.aragonpm.eth",
+      "appName": "contacts.open.aragonpm.eth",
       "wsRPC": "wss://mainnet.eth.aragon.network/ws",
       "network": "mainnet"
     }
   },
-  "path": "contracts/AddressBook.sol"
+  "path": "contracts/Contacts.sol"
 }

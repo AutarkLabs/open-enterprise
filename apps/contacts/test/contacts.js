@@ -5,13 +5,13 @@ const {
   Kernel,
 } = require('@tps/test-helpers/artifacts')
 
-const AddressBook = artifacts.require('AddressBook')
+const Contacts = artifacts.require('Contacts')
 
 const { assertRevert } = require('@tps/test-helpers/assertThrow')
 
 const ANY_ADDR = ' 0xffffffffffffffffffffffffffffffffffffffff'
 
-contract('AddressBook App', accounts => {
+contract('Contacts App', accounts => {
   let daoFact = {},
     app = {}
 
@@ -42,12 +42,12 @@ contract('AddressBook App', accounts => {
 
     const receipt = await dao.newAppInstance(
       '0x1234',
-      (await AddressBook.new()).address,
+      (await Contacts.new()).address,
       0x0,
       false,
       { from: root }
     )
-    app = AddressBook.at(
+    app = Contacts.at(
       receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
     )
 

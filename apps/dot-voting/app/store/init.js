@@ -1,8 +1,8 @@
-import AddressBookJSON from '../../../shared/json-abis/address-book.json'
+import ContactsJSON from '../../../shared/json-abis/contacts.json'
 import { app, handleEvent } from './'
 
-export const initStore = addressBookAddress => {
-  const addressBookApp = app.external(addressBookAddress, AddressBookJSON.abi)
+export const initStore = contactsAddress => {
+  const contactsApp = app.external(contactsAddress, ContactsJSON.abi)
 
   const initialState = {
     votes: [],
@@ -15,9 +15,9 @@ export const initStore = addressBookAddress => {
 
       try {
         const next = await handleEvent(state, event, {
-          addressBook: {
-            address: addressBookAddress,
-            contract: addressBookApp,
+          contacts: {
+            address: contactsAddress,
+            contract: contactsApp,
           },
         })
         const nextState = { ...initialState, ...next }
@@ -32,7 +32,7 @@ export const initStore = addressBookAddress => {
     {
       externals: [
         {
-          contract: addressBookApp
+          contract: contactsApp
         }
       ]
     }

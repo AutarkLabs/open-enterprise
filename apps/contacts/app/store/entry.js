@@ -1,6 +1,6 @@
 import { app } from './app'
 /// /////////////////////////////////////
-/*     AddressBook event handlers      */
+/*     Contacts event handlers      */
 /// /////////////////////////////////////
 
 export const onEntryAdded = async ({ entries = [] }, { addr }) => {
@@ -30,7 +30,7 @@ export const onEntryRemoved = async ({ entries }, { addr }) => {
 }
 
 /// /////////////////////////////////////
-/*    AddressBook helper functions    */
+/*    Contacts helper functions    */
 /// /////////////////////////////////////
 
 const loadEntryData = (addr) => {

@@ -15,9 +15,9 @@ import {
 
 const INITIAL_STATE = {
   activePayoutOption: 0,
-  addressBookCandidates: [],
+  contactsCandidates: [],
   // TODO: Merge with userInput
-  addressBookInput: { addr: 0, index: 0 },
+  contactsInput: { addr: 0, index: 0 },
   addressError: false,
   addressSetting: false,
   allocationDescription: '',
@@ -38,7 +38,7 @@ const message = {
   addressError: 'All options must be addresses and cannot be duplicates.',
   descriptionError: 'A description of the allocation is required.',
   allocationError: 'Amount must be set.',
-  addressSetting: 'Use address book for options',
+  addressSetting: 'Use contacts for options',
   transferWarning:
     'This will create a Dot Vote and after it closes, it will result in a financial transfer.',
   tokenTransferWarning:
@@ -72,8 +72,8 @@ class NewAllocation extends React.Component {
   changeField = ({ target: { name, value } }) => {
     // reset error to false if changing related field
     const resetAddressError = [
-      'addressBookInput',
-      'addressBookCandidates',
+      'contactsInput',
+      'contactsCandidates',
       'addressSetting',
       'userInput',
       'userInputCandidates',
@@ -104,14 +104,14 @@ class NewAllocation extends React.Component {
   submitAllocation = () => {
     const { props, state } = this
     const token  = props.balances[state.payoutTokenIndex]
-    const { addressBookInput, addressBookCandidates, addressSetting, userInput, userInputCandidates } = state
+    const { contactsInput, contactsCandidates, addressSetting, userInput, userInputCandidates } = state
     const informational = state.allocationTypeIndex === 0
     const recurring = state.payoutTypeIndex !== 0
     let candidates
     if (addressSetting) {
-      candidates = uniqueAddressValidation(addressBookCandidates, addressBookInput.addr) ?
-        [ addressBookInput, ...addressBookCandidates ] :
-        addressBookCandidates
+      candidates = uniqueAddressValidation(contactsCandidates, contactsInput.addr) ?
+        [ contactsInput, ...contactsCandidates ] :
+        contactsCandidates
     } else {
       candidates = uniqueAddressValidation(userInputCandidates, userInput.addr) ?
         [ userInput, ...userInputCandidates ] :
@@ -273,21 +273,21 @@ class NewAllocation extends React.Component {
       />
     )
 
-    const addressBookField = (
+    const contactsField = (
       <FormField
-        label="Address Book Options"
+        label="Contacts Options"
         required
         visible={state.addressSetting}
         separator
         input={
           <AddressDropDownOptions
-            activeItem={this.state.addressBookInput.index}
+            activeItem={this.state.contactsInput.index}
             entities={props.entities}
-            input={state.addressBookInput}
-            name="addressBookCandidates"
+            input={state.contactsInput}
+            name="contactsCandidates"
             onChange={this.changeField}
             validator={uniqueAddressValidation}
-            values={state.addressBookCandidates}
+            values={state.contactsCandidates}
           />
         }
       />
@@ -326,7 +326,7 @@ class NewAllocation extends React.Component {
           {settingsField}
           {amountField}
           {amountWarningMessages}
-          {addressBookField}
+          {contactsField}
           {userOptionsField}
           {errorMessages}
         </Form>

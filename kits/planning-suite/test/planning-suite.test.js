@@ -21,7 +21,7 @@ const Finance = artifacts.require('Finance')
 const TokenManager = artifacts.require('TokenManager')
 const Vault = artifacts.require('Vault')
 const Voting = artifacts.require('Voting')
-const AddressBook = artifacts.require('AddressBook')
+const Contacts = artifacts.require('Contacts')
 const DotVoting = artifacts.require('DotVoting')
 const Allocations = artifacts.require('Allocations')
 const Projects = artifacts.require('Projects')
@@ -30,7 +30,7 @@ const apps = ['finance', 'token-manager', 'vault', 'voting']
 const appIds = apps.map(app => namehash(`${app}.aragonpm.eth`))
 
 const planningApps = [
-  'address-book',
+  'contacts',
   'allocations',
   'projects',
   'dot-voting',
@@ -90,12 +90,12 @@ contract('Planning Suite', accounts => {
   let financeAddress, tokenManagerAddress, vaultAddress, votingAddress
   let finance, tokenManager, vault, voting
 
-  let addressBookAddress,
+  let contactsAddress,
     allocationsAddress,
     projectsAddress,
     dotVotingAddress,
     rewardsAddress
-  let addressBook, allocations, projects, dotVoting, rewards
+  let contacts, allocations, projects, dotVoting, rewards
 
   let kit, receiptInstance
 
@@ -238,8 +238,8 @@ contract('Planning Suite', accounts => {
         // generated apps from TPS
         vaultAddress = getAppProxy(receiptInstance, appIds[2])
         vault = await Vault.at(vaultAddress)
-        addressBookAddress = getAppProxy(receiptInstance, planningAppIds[0])
-        addressBook = await AddressBook.at(addressBookAddress)
+        contactsAddress = getAppProxy(receiptInstance, planningAppIds[0])
+        contacts = await Contacts.at(contactsAddress)
         allocationsAddress = getAppProxy(receiptInstance, planningAppIds[1])
         allocations = Allocations.at(allocationsAddress)
         projectsAddress = getAppProxy(receiptInstance, planningAppIds[2])

@@ -34,7 +34,7 @@ export async function initializeTokens(state, settings) {
 
   const nextState = {
     ...state,
-    addressBookAddress: settings.addressBook.address,
+    contactsAddress: settings.contacts.address,
     vaultAddress: settings.vault.address,
   }
   const withEthBalance = await loadEthBalance(nextState, settings)

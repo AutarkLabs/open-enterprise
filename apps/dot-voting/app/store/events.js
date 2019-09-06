@@ -9,7 +9,7 @@ export const handleEvent = async (state, event, settings) => {
     // address: eventAddress,
     returnValues: returnValues,
   } = event
-  const { addressBook } = settings
+  const { contacts } = settings
   const { entries } = state
   let nextEntries
   let nextState = {
@@ -29,11 +29,11 @@ export const handleEvent = async (state, event, settings) => {
     nextState = await startVote(nextState, returnValues)
     break
   case 'EntryAdded':
-    nextEntries = await onEntryAdded({ entries, addressBook }, returnValues)
+    nextEntries = await onEntryAdded({ entries, contacts }, returnValues)
     nextState.entries = nextEntries
     break
   case 'EntryRemoved':
-    nextEntries = await onEntryRemoved({ entries, addressBook }, returnValues)
+    nextEntries = await onEntryRemoved({ entries, contacts }, returnValues)
     nextState.entries = nextEntries
     break
   default:

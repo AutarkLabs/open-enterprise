@@ -11,7 +11,7 @@ import "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 // import "@aragon/apps-survey/contracts/Survey.sol";
 
-import "@tps/apps-address-book/contracts/AddressBook.sol";
+import "@tps/apps-contacts/contracts/Contacts.sol";
 import "../../discussions/contracts/DiscussionApp.sol";
 
 import "@tps/apps-allocations/contracts/Allocations.sol";
@@ -193,7 +193,7 @@ contract PlanningKit is KitBase {
     }
 
     function createTPSApps (address root, Kernel dao, Vault vault, Voting voting, DiscussionApp discussions) internal {
-        AddressBook addressBook;
+        Contacts contacts;
         Projects projects;
         DotVotingApp dotVoting;
         Allocations allocations;
@@ -201,7 +201,7 @@ contract PlanningKit is KitBase {
 
 
         bytes32[5] memory apps = [
-            apmNamehash("address-book"),    // 0
+            apmNamehash("contacts"),    // 0
             apmNamehash("projects"),        // 1
             apmNamehash("dot-voting"),    // 2
             apmNamehash("allocations"),     // 3
@@ -209,15 +209,15 @@ contract PlanningKit is KitBase {
         ];
 
         // Planning Apps
-        addressBook = AddressBook(dao.newAppInstance(apps[0], latestVersionAppBase(apps[0])));
+        contacts = Contacts(dao.newAppInstance(apps[0], latestVersionAppBase(apps[0])));
         projects = Projects(dao.newAppInstance(apps[1], latestVersionAppBase(apps[1])));
         dotVoting = DotVotingApp(dao.newAppInstance(apps[2], latestVersionAppBase(apps[2])));
         allocations = Allocations(dao.newAppInstance(apps[3], latestVersionAppBase(apps[3])));
         rewards = Rewards(dao.newAppInstance(apps[4], latestVersionAppBase(apps[4])));
-        initializeTPSApps(addressBook, projects, dotVoting, allocations, rewards, vault);
+        initializeTPSApps(contacts, projects, dotVoting, allocations, rewards, vault);
         handleTPSPermissions(
             dao,
-            addressBook,
+            contacts,
             projects,
             dotVoting,
             allocations,
@@ -236,7 +236,7 @@ contract PlanningKit is KitBase {
     }
 
     function initializeTPSApps(
-        AddressBook addressBook,
+        Contacts contacts,
         Projects projects,
         DotVotingApp dotVoting,
         Allocations allocations,
@@ -245,16 +245,16 @@ contract PlanningKit is KitBase {
     ) internal
     {
         address root = msg.sender;
-        addressBook.initialize();
+        contacts.initialize();
         projects.initialize(registry, vault, token);
-        dotVoting.initialize(addressBook, token, 50 * PCT256, 0, 1 minutes);
-        allocations.initialize(addressBook, vault);
+        dotVoting.initialize(contacts, token, 50 * PCT256, 0, 1 minutes);
+        allocations.initialize(contacts, vault);
         rewards.initialize(vault);
     }
 
     function handleTPSPermissions(
         Kernel dao,
-        AddressBook addressBook,
+        Contacts contacts,
         Projects projects,
         DotVotingApp dotVoting,
         Allocations allocations,
@@ -266,10 +266,10 @@ contract PlanningKit is KitBase {
         address root = msg.sender;
         ACL acl = ACL(dao.acl());
 
-        // AddressBook permissions:
-        acl.createPermission(voting, addressBook, addressBook.ADD_ENTRY_ROLE(), voting);
-        acl.createPermission(voting, addressBook, addressBook.REMOVE_ENTRY_ROLE(), voting);
-        //emit InstalledApp(addressBook, planningAppIds[uint8(PlanningApps.AddressBook)]);
+        // Contacts permissions:
+        acl.createPermission(voting, contacts, contacts.ADD_ENTRY_ROLE(), voting);
+        acl.createPermission(voting, contacts, contacts.REMOVE_ENTRY_ROLE(), voting);
+        //emit InstalledApp(contacts, planningAppIds[uint8(PlanningApps.Contacts)]);
 
 
         // Projects permissions:

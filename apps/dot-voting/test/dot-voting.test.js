@@ -7,7 +7,7 @@ const {
 } = require('@tps/test-helpers/artifacts')
 
 const DotVoting = artifacts.require('DotVotingMock')
-const AddressBook = artifacts.require('AddressBook')
+const Contacts = artifacts.require('Contacts')
 const ExecutionTarget = artifacts.require('ExecutionTarget')
 
 const { assertRevert } = require('@tps/test-helpers/assertThrow')
@@ -79,12 +79,12 @@ contract('DotVoting App', accounts => {
 
     receipt = await dao.newAppInstance(
       '0x5678',
-      (await AddressBook.new()).address,
+      (await Contacts.new()).address,
       0x0,
       false,
       { from: root }
     )
-    book = AddressBook.at(
+    book = Contacts.at(
       receipt.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy
     )
 

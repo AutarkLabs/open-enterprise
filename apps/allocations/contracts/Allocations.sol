@@ -2,7 +2,7 @@ pragma solidity ^0.4.24;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
 
-import "@tps/apps-address-book/contracts/AddressBook.sol";
+import "@tps/apps-contacts/contracts/Contacts.sol";
 
 import "@aragon/os/contracts/lib/math/SafeMath.sol";
 
@@ -98,7 +98,7 @@ contract Allocations is AragonApp, Fundable {
     }
 
 
-    AddressBook public addressBook;
+    Contacts public contacts;
     Vault public vault;
     Account[] accounts;
     Payout[] payouts;
@@ -121,11 +121,11 @@ contract Allocations is AragonApp, Fundable {
     *         None of the distribution or payments are handled in this step.
     */
     function initialize(
-        AddressBook _addressBook,
+        Contacts _contacts,
         Vault _vault
     ) external onlyInit
     {
-        addressBook = _addressBook;
+        contacts = _contacts;
         vault = _vault;
         accounts.length++;  // position 0 is reserved and unused
         initialized();

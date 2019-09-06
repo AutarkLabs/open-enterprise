@@ -12,7 +12,7 @@ const apps = ['finance', 'token-manager', 'vault', 'voting']
 const appIds = apps.map(app => namehash(`${app}.aragonpm.eth`))
 
 const planningApps = [
-  'address-book',
+  'contacts',
   'allocations',
   'dot-voting',
   'projects',
@@ -177,7 +177,7 @@ module.exports = async (
       '0x0000000000000000000000000000000000000000'
     ) {
       log('Deploying Planning apps in local network')
-      await newRepo(apm, 'address-book', owner, 'AddressBook')
+      await newRepo(apm, 'contacts', owner, 'Contacts')
       await newRepo(apm, 'allocations', owner, 'Allocations')
       await newRepo(apm, 'dot-voting', owner, 'DotVoting')
       await newRepo(apm, 'projects', owner, 'Projects')
