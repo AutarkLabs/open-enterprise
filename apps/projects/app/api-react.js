@@ -1,6 +1,11 @@
-import { STATUS } from '../utils/github'
+import buildStubbedApiReact from '../../../shared/api-react'
+import { STATUS } from './utils/github'
+import {
+  initializeGraphQLClient,
+  getRepoData,
+} from './store/helpers'
 
-export default {
+const initialState = process.env.NODE_ENV !== 'production' && {
   repos: [],
   tokens: [
     {
@@ -46,3 +51,34 @@ export default {
   },
   github: { status: STATUS.INITIAL, token: null, event: '' }
 }
+
+const functions = process.env.NODE_ENV !== 'production' && ((appState, setAppState) => ({
+  addRepo: async repoIdHex => {
+    const { token } = appState.github
+    if (!token) return
+
+    initializeGraphQLClient(token)
+    const { _repo, ...metadata } = await getRepoData(repoIdHex)
+
+    const newState = {
+      ...appState,
+      repos: [
+        ...appState.repos,
+        {
+          id: repoIdHex,
+          metadata,
+          data: {
+            _repo,
+            index: undefined,
+          },
+        },
+      ]
+    }
+
+    setAppState(newState)
+  }
+}))
+
+const { useAragonApi, useNetwork } = buildStubbedApiReact({ initialState, functions })
+
+export { useAragonApi, useNetwork }
