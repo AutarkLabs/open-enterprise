@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { BigNumber } from 'bignumber.js'
 import { Box, Button, GU, Split, Text } from '@aragon/ui'
-import { combineLatest } from 'rxjs'
+import { useAragonApi } from '@aragon/api-react'
 import { first } from 'rxjs/operators' // Make sure observables have .first
 import AppBadge from './AppBadge'
 import Status from './Status'
@@ -12,8 +12,12 @@ import VotingResults from './VotingResults'
 import CastVote from './CastVote'
 import Participation from './Participation'
 import Label from './Label'
+import tokenDecimalsAbi from '../../abi/token-decimals.json'
 
-const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote }) => {
+const tokenAbi = [].concat(tokenDecimalsAbi)
+
+const VoteDetails = ({ vote, onVote }) => {
+  const { api, appState: { tokenAddress = '' }, connectedAccount } = useAragonApi()
   const [ votingMode, setVotingMode ] = useState(false)
   const [ voteWeights, setVoteWeights ] = useState([])
   const [ canIVote, setCanIVote ] = useState(false)
@@ -26,10 +30,15 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote }) => {
     type,
   } = vote.data
 
+  const getTokenContract = tokenAddress =>
+    tokenAddress && api.external(tokenAddress, tokenAbi)
+
+  const tokenContract = getTokenContract(tokenAddress)
+
   useEffect(() => {
     async function getVoteWeights() {
-      const result = await app
-        .call('getVoterState', voteId, userAccount)
+      const result = await api
+        .call('getVoterState', voteId, connectedAccount)
         .toPromise()
 
       const totalVotesCount = result.reduce(
@@ -47,9 +56,9 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote }) => {
     }
 
     function canIVote() {
-      if (userAccount && vote) {
-        app
-          .call('canVote', voteId, userAccount)
+      if (connectedAccount && vote) {
+        api
+          .call('canVote', voteId, connectedAccount)
           .pipe(first())
           .subscribe(canVote => {
             setCanIVote(canVote)
@@ -58,7 +67,7 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote }) => {
     }
 
     function loadDecimals() {
-      if (tokenContract && userAccount) {
+      if (tokenContract && connectedAccount) {
         tokenContract.decimals()
           .subscribe(decimals => {
             setDecimals(decimals)
@@ -69,7 +78,7 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote }) => {
     getVoteWeights()
     canIVote()
     loadDecimals()
-  }, [ vote, userAccount ])
+  }, [ vote, connectedAccount ])
 
 
   // eslint-disable-next-line react/prop-types
@@ -122,7 +131,7 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote }) => {
               <CastVote
                 onVote={onVote}
                 toggleVotingMode={toggleVotingMode}
-                userAccount={userAccount}
+                connectedAccount={connectedAccount}
                 vote={vote}
                 voteWeights={voteWeights}
               />
@@ -147,9 +156,6 @@ const VoteDetails = ({ app, vote, tokenContract, userAccount, onVote }) => {
 }
 
 VoteDetails.propTypes = {
-  app: PropTypes.object.isRequired,
-  userAccount: PropTypes.string.isRequired,
-  tokenContract: PropTypes.object.isRequired,
   vote: PropTypes.object.isRequired,
   onVote: PropTypes.func.isRequired,
 }

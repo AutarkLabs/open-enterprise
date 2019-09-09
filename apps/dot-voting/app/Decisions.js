@@ -14,10 +14,6 @@ import {
   VOTE_STATUS_FAILED,
   VOTE_STATUS_SUCCESSFUL,
 } from './utils/vote-types'
-import tokenBalanceOfAbi from './abi/token-balanceof.json'
-import tokenDecimalsAbi from './abi/token-decimals.json'
-
-const tokenAbi = [].concat(tokenBalanceOfAbi, tokenDecimalsAbi)
 
 const useFilterVotes = (votes, voteTime) => {
   const [ filteredVotes, setFilteredVotes ] = useState(votes)
@@ -108,19 +104,10 @@ const useFilterVotes = (votes, voteTime) => {
 
 const Decisions = ({ decorateVote }) => {
   const { api: app, appState, connectedAccount } = useAragonApi()
-  const {
-    votes,
-    voteTime,
-    tokenAddress = '',
-  } = appState
+  const { votes, voteTime } = appState
 
   const { layoutName } = useLayout()
   const theme = useTheme()
-
-  const getTokenContract = (tokenAddress) =>
-    tokenAddress && app.external(tokenAddress, tokenAbi)
-
-  const tokenContract = getTokenContract(tokenAddress)
 
   // TODO: accomplish this with routing (put routes in App.js, not here)
   const [ currentVoteId, setCurrentVoteId ] = useState(-1)
@@ -161,13 +148,7 @@ const Decisions = ({ decorateVote }) => {
         <Bar>
           <BackButton onClick={handleBackClick} />
         </Bar>
-        <VoteDetails
-          app={app}
-          vote={currentVote}
-          userAccount={connectedAccount}
-          tokenContract={tokenContract}
-          onVote={handleVote}
-        />
+        <VoteDetails vote={currentVote} onVote={handleVote} />
       </React.Fragment>
     )
   }
