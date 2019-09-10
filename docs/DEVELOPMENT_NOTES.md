@@ -19,7 +19,11 @@ lerna info versioning independent
 
 ## Recommended instructions
 
-### Before doing anything, run the install script to avoid dependency errors
+### First, clean the repository from previous installs
+
+- `npm run clean:fresh` : Makes the repository ready for a new install. Note that this is not required if you just cloned the repository.
+
+### Run the install script
 
 - `npm i` : Installs root project dependencies and then bootstraps all independent app dependencies.
 
@@ -47,6 +51,17 @@ browser.
 This is the same as above, only all javascript files are published via IPFS.
 This more closely emulates a production environment, but any frontend or worker script changes will
 require a republish to view changes in the browser.
+
+#### To run a specific app for development purposes
+
+The following commands will create a DAO with the Allocations app, and the apps it depends on, namely Dot Voting and Address Book.
+
+- `npm run devchain:reset` : Start a local blockchain
+- `npm run dev:allocations` : Start the development server (instead of IPFS)
+- `npm run publish:allocations` : Publish the contracts on the local blockchain
+- `npm run start:allocations` : Set up an Aragon DAO with the selected apps
+
+Note that you need to run each of these commands (except publish) on separate windows.
 
 ### After doing your work, run the linter and the tests
 
