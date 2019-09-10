@@ -31,7 +31,7 @@ const Entities = ({ entities, onRemoveEntity }) => {
       mode="adaptive"
       fields={[ 'Name', 'Address', 'Type' ]}
       entries={
-        entities.sort(entitiesSort).map(({ data: { name, entryAddress, entryType } }) =>
+        entities.sort(entitiesSort).map(({ addr: entryAddress, data: { name, type: entryType } }) =>
           [ name, entryAddress, entryType ]
         )
       }
