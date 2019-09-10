@@ -60,7 +60,7 @@ const functions = process.env.NODE_ENV !== 'production' && ((appState, setAppSta
     initializeGraphQLClient(token)
     const { _repo, ...metadata } = await getRepoData(repoIdHex)
 
-    const newState = {
+    setAppState({
       ...appState,
       repos: [
         ...appState.repos,
@@ -73,9 +73,7 @@ const functions = process.env.NODE_ENV !== 'production' && ((appState, setAppSta
           },
         },
       ]
-    }
-
-    setAppState(newState)
+    })
   }
 }))
 

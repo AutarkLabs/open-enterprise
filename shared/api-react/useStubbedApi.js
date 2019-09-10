@@ -1,10 +1,6 @@
-import { useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Observable } from 'rxjs'
-import * as localStorage from './localStorage'
-
-const dbName = 'stubbedAragonApi'
-
-const savedAppState = localStorage.load(dbName)
+import createDatabase from './database'
 
 const stubbedFn = key => ([...args]) => {
   console.log( // eslint-disable-line no-console
@@ -23,17 +19,22 @@ const stubbedFn = key => ([...args]) => {
 }
 
 const buildHook = ({ initialState, functions }) => {
-  if (!savedAppState) {
-    localStorage.save(dbName, initialState)
-  }
+  const db = createDatabase({ initialState })
+
+  const currentData = db.fetchData()
 
   const useStubbedAragonApi = () => {
-    const [ appState, setAppStateRaw ] = useState(localStorage.load(dbName))
+    const [ appState, setAppState ] = useState(currentData)
+    const onDatabaseUpdate = useCallback(e => {
+      setAppState(e.detail)
+    }, [])
 
-    const setAppState = state => {
-      localStorage.save(dbName, state)
-      setAppStateRaw(state)
-    }
+    useEffect(() => {
+      db.subscribe(onDatabaseUpdate)
+      return () => {
+        db.unsubscribe(onDatabaseUpdate)
+      }
+    }, [])
 
     const apiOverride = {
       cache: (key, value) => {
@@ -41,13 +42,13 @@ const buildHook = ({ initialState, functions }) => {
           ...appState,
           [key]: value,
         }
-        setAppState(newState)
+        db.setData(newState)
         return value
       },
       getCache: key => {
         return appState[key]
       },
-      ...functions(appState, setAppState),
+      ...functions(appState, db.setData),
     }
 
     const apiProxy = new Proxy(apiOverride, {
