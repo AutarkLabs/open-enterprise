@@ -455,7 +455,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
         uint256 totalParticipation = voteInstance.totalParticipation;
         require(cKeys.length == supportsLength); // solium-disable-line error-reason
         require(oldSupportLength <= supportsLength); // solium-disable-line error-reason
-        _checkTotalSupport(_supports, voterStake); 
+        _checkTotalSupport(_supports, voterStake);
         uint256 i = 0;
         // This is going to cost a lot of gas... it'd be cool if there was
         // a better way to do this.
