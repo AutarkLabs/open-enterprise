@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
+import PropTypes from 'prop-types'
 
 import { useAragonApi } from '@aragon/api-react'
 import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
 
 import { IdentityProvider } from '../../../../../shared/identity'
 import { NewAccount, NewAllocation } from '../Panel'
+import { Empty } from '../Card'
 import { Accounts, Payouts } from '.'
 
 const ASSETS_URL = './aragon-ui'
@@ -88,24 +90,13 @@ const App = () => {
 
   const PanelContent = panel ? panel.content : null
 
-  return (
-    // TODO: Profile App with React.StrictMode, perf and why-did-you-update, apply memoization
+  const Wrap = ({ children }) => (
     <Main assetsUrl={ASSETS_URL}>
-      <Header
-        primary="Allocations"
-        secondary={
-          <Button mode="strong" icon={<IconPlus />} onClick={onNewAccount} label="New Account" />
-        }
-      />
 
       <IdentityProvider
         onResolve={handleResolveLocalIdentity}
         onShowLocalIdentityModal={handleShowLocalIdentityModal}>
-        <Accounts
-          accounts={accounts}
-          onNewAccount={onNewAccount}
-          onNewAllocation={onNewAllocation}
-        />
+        { children }
         <Payouts
           payouts={payouts}
           executePayout={onExecutePayout}
@@ -121,6 +112,30 @@ const App = () => {
         </SidePanel>
       </IdentityProvider>
     </Main>
+  )
+
+  Wrap.propTypes = {
+    children: PropTypes.node.isRequired,
+  }
+
+  if (accounts.length === 0) {
+    return <Wrap><Empty action={onNewAccount} /></Wrap>
+  }
+
+  return (
+    // TODO: Profile App with React.StrictMode, perf and why-did-you-update, apply memoization
+    <Wrap>
+      <Header
+        primary="Allocations"
+        secondary={
+          <Button mode="strong" icon={<IconPlus />} onClick={onNewAccount} label="New Account" />
+        }
+      />
+      <Accounts
+        accounts={accounts}
+        onNewAllocation={onNewAllocation}
+      />
+    </Wrap>
   )
 }
 
