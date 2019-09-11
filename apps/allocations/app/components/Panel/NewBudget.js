@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import { Info, TextInput } from '@aragon/ui'
-import { BigNumber } from 'bignumber.js'
 
 import { Form, FormField } from '../Form'
 import { isStringEmpty } from '../../utils/helpers'
@@ -31,7 +30,7 @@ class NewBudget extends React.Component {
       }
     }
     else if (e.target.name === 'amount') {
-      if (isStringEmpty(e.target.value) || BigNumber(e.target.value).isNaN()) {
+      if (isStringEmpty(e.target.value) || e.target.value <= 0) {
         this.setState({ amountError: true })
       }
       else {
@@ -81,6 +80,7 @@ class NewBudget extends React.Component {
             input={
               <TextInput
                 name="amount"
+                type="number"
                 onChange={this.changeField}
                 wide={true}
                 value={this.state.amount}
