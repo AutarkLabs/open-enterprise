@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { useNetwork } from '@aragon/api-react'
+import { useNetwork } from '../../api-react'
 import { GU, useLayout } from '@aragon/ui'
 import { LocalIdentityBadge } from '../../../../../shared/identity'
 import Label from './Label'

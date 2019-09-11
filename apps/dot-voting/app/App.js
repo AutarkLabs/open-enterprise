@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { ASSETS_URL, EmptyStateCard, Header, Main } from '@aragon/ui'
-import { useAragonApi } from '@aragon/api-react'
+import { useAragonApi } from './api-react'
 import { isBefore } from 'date-fns'
 import { getQuorumProgress, getTotalSupport } from './utils/vote-utils'
 import { safeDiv } from './utils/math-utils'

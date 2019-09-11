@@ -21,10 +21,8 @@ const stubbedFn = key => ([...args]) => {
 const buildHook = ({ initialState, functions }) => {
   const db = createDatabase({ initialState })
 
-  const currentData = db.fetchData()
-
   const useStubbedAragonApi = () => {
-    const [ appState, setAppState ] = useState(currentData)
+    const [ appState, setAppState ] = useState(db.fetchData())
     const onDatabaseUpdate = useCallback(e => {
       setAppState(e.detail)
     }, [])
@@ -55,6 +53,8 @@ const buildHook = ({ initialState, functions }) => {
       get: (target, key) => (key in target ? target[key] : stubbedFn(key)),
       has: () => true,
     })
+
+    window.api = apiProxy
 
     return {
       api: apiProxy,
