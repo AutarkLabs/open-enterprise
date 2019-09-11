@@ -89,15 +89,6 @@ class NewBudget extends React.Component {
           />
         </Form>
 
-        {this.state.nameError && <Info
-          background="#fb79790f"
-          title="Error"
-          style={{ margin: '20px 0' }}
-        >
-          The name of the budget is required.
-        </Info>
-        }
-
         {this.state.amountError && <Info
           background="#fb79790f"
           title="Error"
