@@ -328,7 +328,7 @@ contract Allocations is AragonApp {
     ) external transitionsPeriod isInitialized
     {
         Payout storage payout = accounts[_accountId].payouts[_payoutId];
-        require(payout.distSet);
+        require(payout.distSet); // solium-disable-line error-reason
         require(msg.sender == payout.candidateAddresses[_candidateId], "candidate not receiver");
         _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId);
     }
@@ -345,7 +345,7 @@ contract Allocations is AragonApp {
     ) external transitionsPeriod auth(EXECUTE_PAYOUT_ROLE)
     {
         Payout storage payout = accounts[_accountId].payouts[_payoutId];
-        require(payout.distSet);
+        require(payout.distSet); // solium-disable-line error-reason
         _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId);
     }
 
@@ -521,7 +521,7 @@ contract Allocations is AragonApp {
         Account storage account = accounts[_accountId];
         Payout storage payout = account.payouts[_payoutId];
         uint64 i;
-        require(payout.distSet);
+        require(payout.distSet); // solium-disable-line error-reason
         uint256 length = payout.candidateAddresses.length;
         //handle vault
         for (i = 0; i < length; i++) {
