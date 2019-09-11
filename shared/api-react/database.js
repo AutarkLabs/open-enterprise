@@ -1,3 +1,4 @@
+import { Observable } from 'rxjs'
 import { load, save } from './localStorage';
 
 const SAVE_SUCCESS = 'DatabaseSaveSuccessEvent';
@@ -25,6 +26,8 @@ class Database {
       window.dispatchEvent(
         new CustomEvent(SAVE_SUCCESS, { detail: newData })
       );
+      // stub aragonAPI interface
+      return new Observable(subscriber => subscriber.complete())
     } catch (err) {
       console.error(err)
       window.dispatchEvent(new CustomEvent(SAVE_FAIL));

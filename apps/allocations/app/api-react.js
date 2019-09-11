@@ -1,4 +1,3 @@
-import { Observable } from 'rxjs'
 import buildStubbedApiReact from '../../../shared/api-react'
 
 const initialState = process.env.NODE_ENV !== 'production' && {
@@ -44,25 +43,20 @@ const initialState = process.env.NODE_ENV !== 'production' && {
 }
 
 const functions = process.env.NODE_ENV !== 'production' && ((appState, setAppState) => ({
-  newAccount: description => {
-    setAppState({
-      ...appState,
-      accounts: [
-        ...appState.accounts,
-        {
-          accountId: String(appState.accounts.length + 1),
-          data: {
-            metadata: description,
-            proxy: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
-            balance: String(100e18),
-          }
+  newAccount: description => setAppState({
+    ...appState,
+    accounts: [
+      ...appState.accounts,
+      {
+        accountId: String(appState.accounts.length + 1),
+        data: {
+          metadata: description,
+          proxy: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
+          balance: String(100e18),
         }
-      ]
-    })
-    return new Observable(subscriber => {
-      subscriber.complete()
-    })
-  },
+      }
+    ]
+  }),
 }))
 
 const { useAragonApi, useNetwork } = buildStubbedApiReact({ initialState, functions })
