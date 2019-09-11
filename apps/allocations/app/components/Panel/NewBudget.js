@@ -13,6 +13,7 @@ const INITIAL_STATE = {
   nameError: true,
   amount: '',
   amountError: true,
+  currency: 0,
 }
 
 class NewBudget extends React.Component {
@@ -41,12 +42,11 @@ class NewBudget extends React.Component {
 
   render() {
 
-    const { name, nameError, amount, amountError } = this.state
+    const { name, nameError, amount, amountError, currency } = this.state
 
     return (
       <Form
         onSubmit={this.createBudget}
-        // heading={this.props.heading}
         submitText="Create budget"
         disabled={nameError || amountError}
       >
@@ -80,7 +80,8 @@ class NewBudget extends React.Component {
                 name="currency"
                 css={{ borderRadius: '0px 4px 4px 0px' }}
                 items={[ 'ETH', 'DAI' ]}
-                selected={0}
+                selected={currency}
+                onChange={e => this.setState({ currency: e })}
               />
             </InputGroup>
           }
