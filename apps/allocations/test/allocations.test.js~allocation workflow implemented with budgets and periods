@@ -443,6 +443,7 @@ contract('Allocations App', accounts => {
       dengarInitialBalance = await web3.eth.getBalance(dengar)
       bosskInitialBalance = await web3.eth.getBalance(bossk)
       const zeros = new Array(candidateAddresses.length).fill(0)
+      const timestamp = (await web3.eth.getBlock('latest')).timestamp
       payoutId = (await app.setDistribution(
         candidateAddresses,
         supports,
@@ -453,7 +454,7 @@ contract('Allocations App', accounts => {
         zeros,
         accountId,
         2,
-        1568108961,  // Start time must be current time
+        timestamp,  // Start time must be current time
         86400,
         web3.toWei(0.01, 'ether'),
       )).logs[0].args.payoutId.toNumber()
