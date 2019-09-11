@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { TextInput } from '@aragon/ui'
+import { DropDown, TextInput } from '@aragon/ui'
+import styled from 'styled-components'
 
 import { Form, FormField } from '../Form'
 import { isStringEmpty } from '../../utils/helpers'
@@ -43,31 +44,29 @@ class NewBudget extends React.Component {
     const { name, nameError, amount, amountError } = this.state
 
     return (
-      <React.Fragment>
-
-
-        <Form
-          onSubmit={this.createBudget}
-          // heading={this.props.heading}
-          submitText="Create budget"
-          disabled={nameError || amountError}
-        >
-          <FormField
-            required
-            label="name"
-            input={
-              <TextInput
-                name="name"
-                onChange={this.changeField}
-                wide={true}
-                value={name}
-              />
-            }
-          />
-          <FormField
-            required
-            label="amount"
-            input={
+      <Form
+        onSubmit={this.createBudget}
+        // heading={this.props.heading}
+        submitText="Create budget"
+        disabled={nameError || amountError}
+      >
+        <FormField
+          required
+          label="name"
+          input={
+            <TextInput
+              name="name"
+              onChange={this.changeField}
+              wide={true}
+              value={name}
+            />
+          }
+        />
+        <FormField
+          required
+          label="amount"
+          input={
+            <InputGroup>
               <TextInput
                 name="amount"
                 type="number"
@@ -75,14 +74,25 @@ class NewBudget extends React.Component {
                 onChange={this.changeField}
                 wide={true}
                 value={amount}
+                css={{ borderRadius: '4px 0px 0px 4px' }}
               />
-            }
-          />
-        </Form>
-      </React.Fragment>
+              <DropDown
+                name="currency"
+                css={{ borderRadius: '0px 4px 4px 0px' }}
+                items={[ 'ETH', 'DAI' ]}
+                selected={0}
+              />
+            </InputGroup>
+          }
+        />
+      </Form>
     )
   }
 }
+
+const InputGroup = styled.div`
+  display: flex;
+`
 
 // eslint-disable-next-line import/no-unused-modules
 export default NewBudget
