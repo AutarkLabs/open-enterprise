@@ -34,6 +34,7 @@ const App = () => {
   }
 
   // TODO: Implement FE for this
+  // eslint-disable-next-line no-unused-vars
   const updateEntity = async ({ address, name, type }) => {
     closePanel()
     const content = { name, type }
