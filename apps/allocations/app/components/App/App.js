@@ -5,8 +5,8 @@ import { useAragonApi } from '@aragon/api-react'
 import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
 
 import { IdentityProvider } from '../../../../../shared/identity'
-import { NewAccount, NewAllocation } from '../Panel'
 import { Empty } from '../Card'
+import { NewAllocation, NewBudget } from '../Panel'
 import { Accounts, Payouts } from '.'
 
 const ASSETS_URL = './aragon-ui'
@@ -18,7 +18,7 @@ const App = () => {
   const { api, appState } = useAragonApi()
   const { accounts = [], balances = [], entries = [], payouts = [] } = appState
 
-  const onCreateAccount = ({ description }) => {
+  const onCreateBudget = ({ description }) => {
     api.newAccount(description).toPromise()
     closePanel()
   }
@@ -46,10 +46,10 @@ const App = () => {
     api.runPayout(accountId, payoutId).toPromise()
   }
 
-  const onNewAccount = () => {
+  const onNewBudget = () => {
     setPanel({
-      content: NewAccount,
-      data: { heading: 'New Account', onCreateAccount }
+      content: NewBudget,
+      data: { heading: 'New budget', onCreateBudget }
     })
   }
 
@@ -92,7 +92,6 @@ const App = () => {
 
   const Wrap = ({ children }) => (
     <Main assetsUrl={ASSETS_URL}>
-
       <IdentityProvider
         onResolve={handleResolveLocalIdentity}
         onShowLocalIdentityModal={handleShowLocalIdentityModal}>
@@ -119,7 +118,7 @@ const App = () => {
   }
 
   if (accounts.length === 0) {
-    return <Wrap><Empty action={onNewAccount} /></Wrap>
+    return <Wrap><Empty action={onNewBudget} /></Wrap>
   }
 
   return (
@@ -128,7 +127,7 @@ const App = () => {
       <Header
         primary="Allocations"
         secondary={
-          <Button mode="strong" icon={<IconPlus />} onClick={onNewAccount} label="New Account" />
+          <Button mode="strong" icon={<IconPlus />} onClick={onNewBudget} label="New Account" />
         }
       />
       <Accounts
