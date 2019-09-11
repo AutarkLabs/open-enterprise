@@ -1,9 +1,10 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { Info, TextInput } from '@aragon/ui'
+import { TextInput } from '@aragon/ui'
 
 import { Form, FormField } from '../Form'
 import { isStringEmpty } from '../../utils/helpers'
+import { MIN_AMOUNT } from '../../utils/constants'
 
 // TODO:: This should be votingTokens from account?
 const INITIAL_STATE = {
@@ -21,23 +22,10 @@ class NewBudget extends React.Component {
   state =  INITIAL_STATE
 
   changeField = e => {
-    if (e.target.name === 'name') {
-      if (isStringEmpty(e.target.value)) {
-        this.setState({ nameError: true })
-      }
-      else {
-        this.setState({ nameError: false })
-      }
-    }
-    else if (e.target.name === 'amount') {
-      if (isStringEmpty(e.target.value) || e.target.value <= 0) {
-        this.setState({ amountError: true })
-      }
-      else {
-        this.setState({ amountError: false })
-      }
-    }
+    const { name, value } = e.target
     this.setState({ [e.target.name]: e.target.value })
+    this.setState({ [name + 'Error']: isStringEmpty(value) ||
+                    (name === 'amount' && value < MIN_AMOUNT) })
   }
 
   createBudget = () => {
@@ -52,6 +40,8 @@ class NewBudget extends React.Component {
 
   render() {
 
+    const { name, nameError, amount, amountError } = this.state
+
     return (
       <React.Fragment>
 
@@ -60,7 +50,7 @@ class NewBudget extends React.Component {
           onSubmit={this.createBudget}
           // heading={this.props.heading}
           submitText="Create budget"
-          disabled={this.state.nameError || this.state.amountError}
+          disabled={nameError || amountError}
         >
           <FormField
             required
@@ -70,7 +60,7 @@ class NewBudget extends React.Component {
                 name="name"
                 onChange={this.changeField}
                 wide={true}
-                value={this.state.name}
+                value={name}
               />
             }
           />
@@ -81,23 +71,14 @@ class NewBudget extends React.Component {
               <TextInput
                 name="amount"
                 type="number"
+                min={MIN_AMOUNT}
                 onChange={this.changeField}
                 wide={true}
-                value={this.state.amount}
+                value={amount}
               />
             }
           />
         </Form>
-
-        {this.state.amountError && <Info
-          background="#fb79790f"
-          title="Error"
-          style={{ margin: '20px 0' }}
-        >
-          The entered amount is invalid.
-        </Info>
-        }
-        
       </React.Fragment>
     )
   }
