@@ -1,20 +1,11 @@
+/* eslint-disable import/no-unused-modules */
 import '@babel/polyfill'
 
-import { first } from 'rxjs/operators'
-import { retryEvery } from '../../../shared/ui/utils'
-import { app, initStore } from './store'
+import { getContractAddress, retryEvery } from '../../../shared/ui/utils'
+import { initStore } from './store'
 
 retryEvery(async retry => {
-  // get deployed vault address from contract
-  const vaultAddress = await app
-    .call('vault')
-    .pipe(first())
-    .toPromise()
+  const vaultAddress = await getContractAddress('vault', retry)
 
-  const network = await app
-    .network()
-    .pipe(first())
-    .toPromise()
-
-  initStore(vaultAddress, network)
+  initStore(vaultAddress)
 })

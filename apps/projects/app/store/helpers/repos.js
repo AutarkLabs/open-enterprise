@@ -115,15 +115,15 @@ const checkReposLoaded = async (repos, id, transform) => {
         metadata,
       })
     )
-  } else {
-    const nextRepos = Array.from(repos)
-    nextRepos[repoIndex] = await transform({
-      id,
-      data: { ...data },
-      metadata,
-    })
-    return nextRepos
   }
+
+  const nextRepos = Array.from(repos)
+  nextRepos[repoIndex] = await transform({
+    id,
+    data: { ...data },
+    metadata,
+  })
+  return nextRepos
 }
 
 const updateState = async (state, id, transform) => {

@@ -29,12 +29,12 @@ const AddressDropDown = ({
     })
   }
 
-  const items = entities.map(e => (
-    <span style={{ whiteSpace: 'normal' }}>{e.data.name}</span>
+  const items = entities.map((e, index) => (
+    <span key={index} css="white-space: normal">{e.data.name}</span>
   ))
 
   return (
-    <DropDown items={items} active={activeItem} onChange={onChangeInput} wide />
+    <DropDown items={items} selected={activeItem} onChange={onChangeInput} wide />
   )
 }
 

@@ -41,6 +41,7 @@ FormField.propTypes = {
   label: PropTypes.string,
   required: PropTypes.bool,
   hint: PropTypes.string,
+  input: PropTypes.element,
   separator: PropTypes.bool,
 }
 

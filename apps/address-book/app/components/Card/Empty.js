@@ -1,19 +1,20 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { EmptyStateCard, unselectable } from '@aragon/ui'
-import icon from '../../assets/empty-ab.svg'
+import { Button, EmptyStateCard, GU, unselectable } from '@aragon/ui'
+import emptyStatePng from '../../assets/no-contacts.png'
 
-const Icon = () => <img src={icon} alt="Empty entities icon" />
+const illustration = <img src={emptyStatePng} alt="" height="160" />
 
 const Empty = ({ action }) => (
   <EmptyWrapper>
     <EmptyStateCard
-      title="You have not added anyone  to the address book."
-      text="Get started now by adding a new entity."
-      icon={<Icon />}
+      text="No entities here"
+      illustration={illustration}
       actionText="New Entity"
-      onActivate={action}
+      action={
+        <Button onClick={action}>New entity</Button>
+      }
     />
   </EmptyWrapper>
 )
@@ -24,11 +25,10 @@ Empty.propTypes = {
 
 const EmptyWrapper = styled.div`
   ${unselectable};
-  flex-grow: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  height: calc(100vh - ${14 * GU}px);
 `
 
 export default Empty
-

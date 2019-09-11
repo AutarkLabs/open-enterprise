@@ -326,7 +326,7 @@ contract PlanningSuite is BetaKitBase {
         );
 
         addressBook.initialize();
-        dotVoting.initialize(addressBook, token, minParticipationPct, candidateSupportPct, voteDuration);
+        dotVoting.initialize(token, minParticipationPct, candidateSupportPct, voteDuration);
     }
 
     function createOtherTPSApps (

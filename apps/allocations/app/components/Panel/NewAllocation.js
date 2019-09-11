@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { DropDown, Info } from '@aragon/ui'
+import { Info } from '@aragon/ui'
 import web3Utils from 'web3-utils'
 import { OptionsInput, SettingsInput } from '../../../../../shared/ui'
 import { BigNumber } from 'bignumber.js'
@@ -13,9 +13,6 @@ import {
   InputDropDown,
 } from '../Form'
 
-// TODO: Extract to shared
-const ALLOCATION_TYPES = [ 'Informational', 'Token Transfer' ]
-// const PAYOUT_TYPES = ['One-Time', 'Monthly']
 const INITIAL_STATE = {
   activePayoutOption: 0,
   addressBookCandidates: [],
@@ -62,7 +59,11 @@ class NewAllocation extends React.Component {
   static propTypes = {
     onSubmitAllocation: PropTypes.func.isRequired,
     description: PropTypes.string,
-    entities: PropTypes.array, // TODO: Better shape the array
+    entities: PropTypes.arrayOf(PropTypes.object).isRequired, // TODO: Better shape the array
+    balances: PropTypes.arrayOf(PropTypes.object).isRequired,
+    balance: PropTypes.string.isRequired,
+    id: PropTypes.string.isRequired,
+    subHeading: PropTypes.string,
   }
 
   state = INITIAL_STATE
@@ -90,7 +91,7 @@ class NewAllocation extends React.Component {
 
   // TODO: Manage dropdown to return a name and value as the rest of inputs
 
-  changePayoutToken = (index, items) => {
+  changePayoutToken = items => index => {
     this.setState({
       allocationError: false,
       payoutTokenIndex: index,
@@ -166,7 +167,11 @@ class NewAllocation extends React.Component {
           ).dp(3)
         specificMessage = specificMessage + tokenDisplay
       }
-      return <Info.Action title="Warning" children={specificMessage} style={{ marginBottom: '10px' }} />
+      return (
+        <Info.Action title="Warning" style={{ marginBottom: '10px' }}>
+          {specificMessage}
+        </Info.Action>
+      )
     }
     return null
   }
@@ -187,8 +192,8 @@ class NewAllocation extends React.Component {
     const amountDropDown = {
       name: 'token',
       items: availableTokens,
-      active: state.payoutTokenIndex,
-      onChange: this.changePayoutToken,
+      selected: state.payoutTokenIndex,
+      onChange: this.changePayoutToken(availableTokens),
     }
 
     const amountWarningMessages = (
@@ -232,7 +237,11 @@ class NewAllocation extends React.Component {
     const settingsField = props.entities.length > 1 && (
       <FormField
         label="Settings"
-        input={<React.Fragment children={settingsInputs} />}
+        input={
+          <React.Fragment>
+            {settingsInputs}
+          </React.Fragment>
+        }
       />
     )
 
@@ -328,12 +337,13 @@ class NewAllocation extends React.Component {
 
 const ErrorMessage = ({ hasError, type }) =>
   hasError ? (
-    <Info.Action
+    <Info
       background="#fb79790f"
       title="Error"
-      children={message[type]}
       style={{ margin: '20px 0' }}
-    />
+    >
+      {message[type]}
+    </Info>
   ) : null
 
 ErrorMessage.propTypes = {
@@ -341,19 +351,5 @@ ErrorMessage.propTypes = {
   type: PropTypes.string,
 }
 
-
-
-// TODO: unused
-// const RecurringDropDown = ({ dropDown }) => {
-//   return (
-//     <StyledRecurringDropDown>
-//       <DropDown {...dropDown} wide />
-//     </StyledRecurringDropDown>
-//   )
-// }
-// const StyledRecurringDropDown = styled.div`
-//   margin-left: 17px;
-//   width: 162px;
-// `
-
+// eslint-disable-next-line import/no-unused-modules
 export default NewAllocation

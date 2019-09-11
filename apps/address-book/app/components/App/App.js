@@ -1,120 +1,100 @@
-import { observe, SidePanel, Main, AppBar, AppView, font, breakpoint } from '@aragon/ui'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
-import React from 'react'
-import { hot } from 'react-hot-loader'
-import styled from 'styled-components'
-import { map } from 'rxjs/operators'
+
+import { useAragonApi } from '@aragon/api-react'
+import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
+
+import { IdentityProvider } from '../../../../../shared/identity'
+import { ipfsAdd } from '../../../../../shared/utils/ipfs'
+
 import Entities from './Entities'
 import NewEntity from '../Panel/NewEntity'
-import { networkContextType, AppTitle, AppTitleButton } from '../../../../../shared/ui'
+import { Empty } from '../Card'
 
-class App extends React.Component {
-  static propTypes = {
-    app: PropTypes.object.isRequired,
-    // TODO: Shape this
-    entities: PropTypes.arrayOf(PropTypes.object),
+const ASSETS_URL = './aragon-ui'
+
+const App = () => {
+  const [ panelVisible, setPanelVisible ] = useState(false)
+  const { api, appState = {} } = useAragonApi()
+  
+  const { entries = [] } = appState
+
+  const createEntity = async ({ address, name, type }) => {
+    closePanel()
+    const content = { name, type }
+    // add entry data to IPFS
+    // TODO: show a nice progress animation here before closing the panel?
+    const cId = await ipfsAdd(content)
+    api.addEntry(address, cId).toPromise()
   }
 
-  static defaultProps = {
-    network: {},
+  const removeEntity = address => {
+    const cid = entries.find(e => e.addr === address).data.cid
+    api.removeEntry(address, cid).toPromise()
   }
 
-  static childContextTypes = {
-    network: networkContextType,
+  // TODO: Implement FE for this
+  const updateEntity = async ({ address, name, type }) => {
+    closePanel()
+    const content = { name, type }
+    // add entry data to IPFS
+    // TODO: show a nice progress animation here before closing the panel?
+    const newCid = await ipfsAdd(content)
+    const oldCid = entries.find(e => e.addr === address).data.cid
+    api.updateEntry(address, oldCid, newCid).toPromise()
   }
 
-  state = {
-    panelVisible: false,
+  const newEntity = () => {
+    setPanelVisible(true)
   }
 
-  getChildContext() {
-    const { network } = this.props
-    return {
-      network: {
-        type: network.type,
-      },
-    }
+  const closePanel = () => {
+    setPanelVisible(false)
   }
 
-  createEntity = entity => {
-    this.props.app.addEntry(entity.address, entity.name, entity.type)
-    this.closePanel()
-  }
+  const handleResolveLocalIdentity = address =>
+    api.resolveAddressIdentity(address).toPromise()
 
-  removeEntity = address => {
-    this.props.app.removeEntry(address)
-  }
+  const handleShowLocalIdentityModal = address =>
+    api.requestAddressIdentityModification(address).toPromise()
 
-  newEntity = () => {
-    this.setState({
-      panelVisible: true,
-    })
-  }
-
-  closePanel = () => {
-    this.setState({ panelVisible: false })
-  }
-
-  render() {
-    const { panelVisible } = this.state
-    const { entries, displayMenuButton = false } = this.props
-
-    return (
-      <Main>
-        <AppView
-          padding={0}
-          appBar={
-            <AppBar
-              endContent={
-                <AppTitleButton
-                  caption="New Entity"
-                  onClick={this.newEntity}
-                />
-              }
-            >
-              <AppTitle title="Address Book" displayMenuButton={displayMenuButton} />
-            </AppBar>
-          }
-        >
-
-          <ScrollWrapper>
-            <Entities
-              entities={entries ? entries : []}
-              onNewEntity={this.newEntity}
-              onRemoveEntity={this.removeEntity}
-            />
-          </ScrollWrapper>
-
-        </AppView>
-
-        <SidePanel
-          title="New entity"
-          opened={panelVisible}
-          onClose={this.closePanel}
-        >
-          <NewEntity onCreateEntity={this.createEntity} />
+  const Wrap = ({ children }) => (
+    <Main assetsUrl={ASSETS_URL}>
+      <IdentityProvider
+        onResolve={handleResolveLocalIdentity}
+        onShowLocalIdentityModal={handleShowLocalIdentityModal}
+      >
+        { children }
+        <SidePanel onClose={closePanel} opened={panelVisible} title="New entity">
+          <NewEntity onCreateEntity={createEntity} />
         </SidePanel>
+      </IdentityProvider>
+    </Main>
+  )
 
-      </Main>
-    )
+  Wrap.propTypes = {
+    children: PropTypes.node.isRequired,
   }
+      
+  if (!entries.length) return (
+    <Wrap><Empty action={newEntity} /></Wrap>
+  )
+
+  return (
+    <Wrap>
+      <Header
+        primary="Address Book"
+        secondary={
+          <Button mode="strong" icon={<IconPlus />} onClick={newEntity} label="New Entity" />
+        }
+      />
+      <Entities
+        entities={entries}
+        onNewEntity={newEntity}
+        onRemoveEntity={removeEntity}
+      />
+    </Wrap>
+  )
 }
 
-const ScrollWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: stretch;
-  overflow: auto;
-  flex-grow: 1;
-  ${breakpoint(
-    'small',
-    `
-      padding: 1rem 2rem;
-    `
-  )};
-  padding: 0.3rem;
-`
-export default observe(
-  observable => observable.pipe(map(state => ({ ...state }))),
-  {}
-)(hot(module)(App))
+export default App

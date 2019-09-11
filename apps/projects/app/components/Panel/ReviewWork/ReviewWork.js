@@ -16,10 +16,17 @@ import {
 
 import { FormField, FieldTitle, DescriptionInput } from '../../Form'
 import { IconGitHub } from '../../Shared'
+import useGithubAuth from '../../../hooks/useGithubAuth'
+import { useAragonApi } from '@aragon/api-react'
+import { usePanelManagement } from '../../Panel'
+import { ipfsAdd } from '../../../utils/ipfs-helpers'
+import { toHex } from 'web3-utils'
 
 class ReviewWork extends React.Component {
   static propTypes = {
-    issue: PropTypes.object.isRequired
+    githubCurrentUser: PropTypes.object.isRequired,
+    issue: PropTypes.object.isRequired,
+    onReviewWork: PropTypes.func.isRequired,
   }
 
   state = {
@@ -64,8 +71,8 @@ class ReviewWork extends React.Component {
     const submitterName = submitter.name ? submitter.name : submitter.login
     const ratings = [
       'Select a Rating',
-      '1 - Unusable', 
-      '2 - Needs Rework', 
+      '1 - Unusable',
+      '2 - Needs Rework',
       '3 - Acceptable',
       '4 - Exceeds Expectations',
       '5 - Excellent',
@@ -74,7 +81,7 @@ class ReviewWork extends React.Component {
     return(
       <div>
         <IssueTitle>{issue.title}</IssueTitle>
-        
+
         <SafeLink
           href={issue.url}
           target="_blank"
@@ -88,7 +95,15 @@ class ReviewWork extends React.Component {
 
         <SubmissionDetails>
           <UserLink>
-            <img src={submitter.avatarUrl} style={{ width: '32px', height: '32px', marginRight: '10px' }} />
+            <img
+              alt=""
+              src={submitter.avatarUrl}
+              style={{
+                width: '32px',
+                height: '32px',
+                marginRight: '10px',
+              }}
+            />
             <SafeLink
               href={submitter.url}
               target="_blank"
@@ -116,7 +131,7 @@ class ReviewWork extends React.Component {
           <React.Fragment>
 
             <FieldTitle>Submission Status</FieldTitle>
-          
+
             <div style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
               {work.review.accepted ? (
                 <div>
@@ -130,14 +145,14 @@ class ReviewWork extends React.Component {
               <div>
                 {formatDistance(new Date(work.review.reviewDate), new Date())} ago
               </div>
-            
+
             </div>
 
             <ReviewCard>
               <IssueEventAvatar>
                 <img src={work.review.user.avatarUrl} alt="user avatar" style={{ width: '50px' }} />
               </IssueEventAvatar>
-              
+
               <div>
                 <Text.Block size="small">
                   <SafeLink
@@ -171,7 +186,7 @@ class ReviewWork extends React.Component {
           <React.Fragment>
 
             <FormField
-              label="Quality Rating" 
+              label="Quality Rating"
               required
               input={
                 <DropDown
@@ -223,6 +238,41 @@ class ReviewWork extends React.Component {
   }
 }
 
+const onReviewWork = ({ closePanel, reviewSubmission }) => async (
+  state,
+  issue
+) => {
+  // new IPFS data is old data plus state returned from the panel
+  const ipfsData = issue.workSubmissions[issue.workSubmissions.length - 1]
+  const requestIPFSHash = await ipfsAdd({ ...ipfsData, review: state })
+
+  closePanel()
+  reviewSubmission(
+    toHex(issue.repoId),
+    issue.number,
+    issue.workSubmissions.length - 1,
+    state.accepted,
+    requestIPFSHash
+  )
+}
+
+// TODO: move entire component to functional component
+// the following was a quick way to allow us to use hooks
+const ReviewWorkWrap = props => {
+  const githubCurrentUser = useGithubAuth()
+  const {
+    api: { reviewSubmission },
+  } = useAragonApi()
+  const { closePanel } = usePanelManagement()
+  return (
+    <ReviewWork
+      githubCurrentUser={githubCurrentUser}
+      onReviewWork={onReviewWork({ closePanel, reviewSubmission })}
+      {...props}
+    />
+  )
+}
+
 const IssueTitle = styled(Text)`
   color: ${theme.textSecondary};
   font-size: 17px;
@@ -256,9 +306,6 @@ const DetailText = styled(Text)`
   display: block;
   margin-bottom: 10px;
 `
-const AlertArea = styled.div`
-  padding: 14px
-`
 const ReviewRow = styled.div`
   display: flex;
   margin-bottom: 8px;
@@ -281,4 +328,4 @@ const IssueEventAvatar = styled.div`
   margin: 0;
 `
 
-export default ReviewWork
+export default ReviewWorkWrap

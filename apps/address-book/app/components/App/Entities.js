@@ -1,20 +1,17 @@
+import PropTypes from 'prop-types'
+import React from 'react'
+
+import { useNetwork } from '@aragon/api-react'
 import {
   Badge,
   ContextMenu,
   ContextMenuItem,
-  IdentityBadge,
-  Table,
-  TableCell,
-  TableHeader,
-  TableRow,
+  DataView,
   Text,
-  theme,
 } from '@aragon/ui'
-import PropTypes from 'prop-types'
-import React from 'react'
-import styled from 'styled-components'
-import { Empty } from '../Card'
-import { provideNetwork } from '../../../../../shared/ui'
+
+import { LocalIdentityBadge } from '../../../../../shared/identity'
+import { IconDelete } from '../../../../../shared/ui'
 
 // TODO: colors taken directly from Invision
 const ENTITY_TYPES = [
@@ -23,82 +20,65 @@ const ENTITY_TYPES = [
   { name: 'Project', fg: '#B30FB3', bg: '#B30FB333' },
 ]
 
-const entitiesSort = (a,b) => a.data.name.toUpperCase() > b.data.name.toUpperCase() ? 1 : -1
+const entitiesSort = (a, b) => a.data.name.toUpperCase() > b.data.name.toUpperCase() ? 1 : -1
 
-const Entities = ({ entities, network, onNewEntity, onRemoveEntity }) => {
+const Entities = ({ entities, onRemoveEntity }) => {
+  const network = useNetwork()
   const removeEntity = address => () => onRemoveEntity(address)
 
-  if (entities.length === 0) {
-    return <Empty action={onNewEntity} />
-  } else {
-    return (
-      <Table
-        header={
-          <TableRow>
-            <TableHeader title="Entity" />
-          </TableRow>
-        }
-      >
-        {entities.sort(entitiesSort).map(({ data: { name, entryAddress, entryType } }) => {
-          const typeRow = ENTITY_TYPES.filter(row => row.name === entryType)[0]
-          return (
-            <TableRow key={entryAddress}>
-              <EntityCell>
-                <EntityWrapper>
-                  <Text
-                    size="xlarge"
-                    style={{
-                      paddingBottom: '5px',
-                    }}
-                  >
-                    {name}
-                  </Text>
-                  <IdentityBadge
-                    networkType={network.type}
-                    entity={entryAddress}
-                    shorten={true}
-                  />
-                </EntityWrapper>
-              </EntityCell>
-              <EntityCell align="right">
-                <Badge foreground={typeRow.fg} background={typeRow.bg}>
-                  {typeRow.name}
-                </Badge>
-              </EntityCell>
-              <EntityCell
-                align="right"
-                style={{
-                  width: '30px',
-                }}
-              >
-                <ContextMenu>
-                  <ContextMenuItem onClick={removeEntity(entryAddress)}>
-                    Remove
-                  </ContextMenuItem>
-                </ContextMenu>
-              </EntityCell>
-            </TableRow>
-          )
-        })}
-      </Table>
-    )
-  }
+  return (
+    <DataView
+      mode="adaptive"
+      fields={[ 'Name', 'Address', 'Type' ]}
+      entries={
+        entities.sort(entitiesSort).map(({ addr: entryAddress, data: { name, type: entryType } }) =>
+          [ name, entryAddress, entryType ]
+        )
+      }
+
+      renderEntry={([ name, entryAddress, entryType ]) => {
+        const typeRow = ENTITY_TYPES.filter(row => row.name === entryType)[0]
+        const values = [
+          <Text
+            key={entryAddress}
+            size="large"
+          >
+            {name}
+          </Text>,
+          <LocalIdentityBadge
+            key={entryAddress}
+            networkType={network && network.type}
+            entity={entryAddress}
+            shorten={true}
+          />,
+          <Badge
+            key={entryAddress}
+            foreground={typeRow.fg}
+            background={typeRow.bg}
+            css="text-align: right"
+          >
+            {typeRow.name}
+          </Badge>
+        ]
+        return values
+      }}
+
+      renderEntryActions={([ , entryAddress ]) => (
+        <ContextMenu>
+          <ContextMenuItem onClick={removeEntity(entryAddress)}>
+            <IconDelete />
+            <span css="padding: 4px 8px 0px">Remove</span>
+          </ContextMenuItem>
+        </ContextMenu>
+      )}
+    />
+  )
 }
 
 Entities.propTypes = {
   // TODO: shape better
   entities: PropTypes.array.isRequired,
-  network: PropTypes.object,
-  onNewEntity: PropTypes.func.isRequired,
   onRemoveEntity: PropTypes.func.isRequired,
 }
 
-const EntityCell = styled(TableCell)`
-  padding: 15px;
-`
-const EntityWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-left: 10px;
-`
-export default provideNetwork(Entities)
+export default Entities

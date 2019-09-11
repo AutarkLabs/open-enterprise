@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Text, theme, SidePanelSeparator } from '@aragon/ui'
+import { SidePanelSeparator, Text, theme } from '@aragon/ui'
 
 import { FieldTitle } from '.'
 
@@ -45,7 +45,7 @@ const FormField = ({
 }
 
 FormField.propTypes = {
-  children: PropTypes.node,
+  input: PropTypes.node,
   label: PropTypes.string,
   required: PropTypes.bool,
   hint: PropTypes.string,
