@@ -14,36 +14,34 @@ const functions = process.env.NODE_ENV !== 'production' && ((appState, setAppSta
   createVote: (
     description = 'Which deserve the most?',
     type = 'allocation'
-  ) => {
-    setAppState({
-      ...appState,
-      votes: [
-        ...appState.votes,
-        {
-          voteId: appState.votes.length + 1,
-          data: {
-            balance: 0,
-            creator: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
-            metadata: description,
-            minAcceptQuorum: 0,
-            options: [{
-              label: '0xcaaacaaacaaacaaacaaacaaacaaacaaacaaacaaa',
-              value: 0,
-            }, {
-              label: '0xdaaadaaadaaadaaadaaadaaadaaadaaadaaadaaa',
-              value: 0,
-            }],
-            participationPct: 0,
-            snapshotBlock: -1,
-            startDate: new Date().getTime(),
-            tokenSymbol: 'ETH',
-            totalVoters: 0,
-            type,
-          }
+  ) => setAppState({
+    ...appState,
+    votes: [
+      ...appState.votes,
+      {
+        voteId: appState.votes.length + 1,
+        data: {
+          balance: 0,
+          creator: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
+          metadata: description,
+          minAcceptQuorum: 0,
+          options: [{
+            label: '0xcaaacaaacaaacaaacaaacaaacaaacaaacaaacaaa',
+            value: 0,
+          }, {
+            label: '0xdaaadaaadaaadaaadaaadaaadaaadaaadaaadaaa',
+            value: 0,
+          }],
+          participationPct: 0,
+          snapshotBlock: -1,
+          startDate: new Date().getTime(),
+          tokenSymbol: 'ETH',
+          totalVoters: 0,
+          type,
         }
-      ]
-    })
-  },
+      }
+    ]
+  }),
 }))
 
 const { useAragonApi, useNetwork } = buildStubbedApiReact({ initialState, functions })
