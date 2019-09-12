@@ -620,12 +620,7 @@ contract Projects is AragonApp, DepositableStorage {
         string _description
     ) public payable auth(FUND_ISSUES_ROLE)
     {
-        // ensure the transvalue passed equals transaction value
-        //checkTransValueEqualsMessageValue(msg.value, _bountySizes,_tokenBounties);
-        string memory ipfsHash;
-        uint standardBountyId;
-        require(bytes(_ipfsAddresses).length == (CID_LENGTH * _bountySizes.length), ERROR_CID_LENGTH);
-        _addBounties(_repoIds, _issueNumbers, _bountySizes, _deadlines, _tokenBounties, _tokenContracts, _ipfsAddresses);
+        _addBounties(_repoIds, _issueNumbers, _bountySizes, _deadlines, _tokenTypes, _tokenContracts, _ipfsAddresses);
     }
 
     /**
@@ -650,9 +645,12 @@ contract Projects is AragonApp, DepositableStorage {
         string _description
     ) public payable auth(FUND_OPEN_ISSUES_ROLE)
     {
-        string memory ipfsHash;
         uint standardBountyId;
-        _addBounties(_repoIds, _issueNumbers, _bountySizes, _deadlines, _tokenBounties, _tokenContracts, _ipfsAddresses);
+        _addBounties(_repoIds, _issueNumbers, _bountySizes, _deadlines, _tokenTypes, _tokenContracts, _ipfsAddresses);
+        for (uint i = 0; i < _bountySizes.length; i++) {
+            repos[_repoIds[i]].issues[_issueNumbers[i]].assignee = address(-1);
+            emit AwaitingSubmissions(_repoIds[i], _issueNumbers[i]);
+        }
     }
 
     /**
@@ -713,12 +711,6 @@ contract Projects is AragonApp, DepositableStorage {
 // Internal functions
 ///////////////////////
 
-        /**
-     * @notice Returns Applicant array length
-     * @param _repoId the github repo id of the issue
-     * @param _issueNumber the github issue up for assignmen
-     * @return  array length of the applicants array
-     */
     function _isBountiesContractValid(address _bountyRegistry) internal view returns(bool) {
         if (_bountyRegistry == address(0)) {
             return false;
@@ -764,36 +756,29 @@ contract Projects is AragonApp, DepositableStorage {
         uint256[] _issueNumbers,
         uint256[] _bountySizes,
         uint256[] _deadlines,
-        bool[] _tokenBounties,
+        uint256[] _tokenTypes,
         address[] _tokenContracts,
         string _ipfsAddresses
     ) internal
     {
+        uint standardBountyId;
+        string memory ipfsHash;
         for (uint i = 0; i < _bountySizes.length; i++) {
             ipfsHash = getHash(_ipfsAddresses, i);
-
-            standardBountyId = bounties.issueBounty(
-                this,                           //    address _issuer
-                _deadlines[i],                  //    uint256 _deadlines
-                ipfsHash,                       //    parse input to get ipfs hash
-                _bountySizes[i],                //    uint256 _fulfillmentAmount
-                address(0),                     //    address _arbiter
-                _tokenBounties[i],              //    bool _paysTokens
-                _tokenContracts[i]              //    address _tokenContract
-            );
-
-            _activateBounty(
-                _tokenBounties[i],
+            // submit the bounty to the StandardBounties contract
+            standardBountyId = _issueBounty(
+                ipfsHash,
+                _deadlines[i],
                 _tokenContracts[i],
-                _bountySizes[i],
-                standardBountyId
+                _tokenTypes[i],
+                _bountySizes[i]
             );
-
             //Add bounty to local registry
             _addBounty(
                 _repoIds[i],
                 _issueNumbers[i],
                 standardBountyId,
+                _tokenContracts[i],
                 _bountySizes[i]
             );
         }
