@@ -127,7 +127,7 @@ const App = () => {
       <Header
         primary="Allocations"
         secondary={
-          <Button mode="strong" icon={<IconPlus />} onClick={onNewBudget} label="New Account" />
+          <Button mode="strong" icon={<IconPlus />} onClick={onNewBudget} label="New budget" />
         }
       />
       <Accounts
