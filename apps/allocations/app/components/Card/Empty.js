@@ -2,17 +2,17 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Button, EmptyStateCard, GU, unselectable } from '@aragon/ui'
-import icon from '../../assets/empty-accounts.svg'
+import emptyState from '../../assets/no-budgets.svg'
 
-const Icon = () => <img src={icon} alt="Empty accounts icon" />
+const illustration = <img src={emptyState} alt="No budgets" height="160" />
 
 const Empty = ({ action }) => (
   <EmptyWrapper>
     <EmptyStateCard
-      text="Get started now by creating a new account."
-      illustration={<Icon />}
+      text="No budgets here"
+      illustration={illustration}
       action={
-        <Button onClick={action}>New Account</Button>
+        <Button onClick={action}>New budget</Button>
       }
     />
   </EmptyWrapper>
@@ -24,7 +24,6 @@ Empty.propTypes = {
 
 const EmptyWrapper = styled.div`
   ${unselectable};
-  flex-grow: 1;
   display: flex;
   align-items: center;
   justify-content: center;
