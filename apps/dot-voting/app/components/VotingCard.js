@@ -53,7 +53,6 @@ const VotingCard = ({ app, vote, onSelectVote, userAccount }) => {
   }, [userAccount])
 
   let youVoted = voteWeights.length > 0
-  const showDescriptionLines = options.length > 2 ? 3 : 4
 
   return (
     <Card
@@ -96,10 +95,10 @@ const VotingCard = ({ app, vote, onSelectVote, userAccount }) => {
       <div
         css={`
           ${textStyle('body1')};
-          height: ${28 * showDescriptionLines}px;
+          height: ${28 * 3}px;
           display: -webkit-box;
           -webkit-box-orient: vertical;
-          -webkit-line-clamp: ${showDescriptionLines};
+          -webkit-line-clamp: 3;
           overflow: hidden;
         `}
       >
