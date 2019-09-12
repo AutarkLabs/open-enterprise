@@ -119,6 +119,16 @@ contract Allocations is AragonApp {
         _;
     }
 
+    modifier accountExists(uint64 _accountId) {
+        require(_accountId < accountsLength, ERROR_NO_ACCOUNT);
+        _;
+    }
+
+    modifier payoutExists(uint64 _accountId, uint64 _payoutId) {
+        require(_payoutId < accounts[_accountId].payoutsLength, ERROR_NO_ACCOUNT);
+        _;
+    }
+
     // Modifier used by all methods that impact accounting to make sure accounting period
     // is changed before the operation if needed
     // NOTE: its use **MUST** be accompanied by an initialization check
@@ -266,13 +276,12 @@ contract Allocations is AragonApp {
     function getPeriod(uint64 _periodId)
     external
     view
+    isInitialized
     periodExists(_periodId)
     returns (
         bool isCurrent,
         uint64 startTime,
-        uint64 endTime,
-        uint256 firstTransactionId,
-        uint256 lastTransactionId
+        uint64 endTime
     )
     {
         Period storage period = periods[_periodId];
@@ -281,8 +290,6 @@ contract Allocations is AragonApp {
 
         startTime = period.startTime;
         endTime = period.endTime;
-        firstTransactionId = period.firstTransactionId;
-        lastTransactionId = period.lastTransactionId;
     }
 
 ///////////////////////
@@ -349,6 +356,7 @@ contract Allocations is AragonApp {
         transitionsPeriod
         accountExists(_accountId)
     {
+        require(_accountId < accountsLength);
         accounts[_accountId].budget = _amount;
         if (!accounts[_accountId].hasBudget) {
             accounts[_accountId].hasBudget = true;
@@ -379,11 +387,11 @@ contract Allocations is AragonApp {
         uint64 _accountId,
         uint64 _payoutId,
         uint256 _candidateId
-    ) external transitionsPeriod isInitialized
+    ) external transitionsPeriod isInitialized accountExists(_accountId) payoutExists(_accountId, _payoutId)
     {
-        Payout storage payout = accounts[_accountId].payouts[_payoutId];
-        require(payout.distSet);
-        require(msg.sender == payout.candidateAddresses[_candidateId], "candidate not receiver");
+        //Payout storage payout = accounts[_accountId].payouts[_payoutId];
+        require(accounts[_accountId].payouts[_payoutId].distSet);
+        require(msg.sender == accounts[_accountId].payouts[_payoutId].candidateAddresses[_candidateId], "candidate not receiver");
         _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId);
     }
 
@@ -396,10 +404,9 @@ contract Allocations is AragonApp {
         uint64 _accountId,
         uint64 _payoutId,
         uint256 _candidateId
-    ) external transitionsPeriod auth(EXECUTE_PAYOUT_ROLE)
+    ) external transitionsPeriod auth(EXECUTE_PAYOUT_ROLE) accountExists(_accountId) payoutExists(_accountId, _payoutId)
     {
-        Payout storage payout = accounts[_accountId].payouts[_payoutId];
-        require(payout.distSet);
+        require(accounts[_accountId].payouts[_payoutId].distSet);
         _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId);
     }
 
@@ -452,6 +459,14 @@ contract Allocations is AragonApp {
     returns(bool success)
     {
         success = _runPayout(_accountId, _payoutId);
+    }
+
+    /** @dev This function is provided to circumvent situations where the transition period
+    *        becomes impossible to execute
+    *   @param _limit Maximum number of periods to advance in this execution
+    */
+    function advancePeriod(uint64 _limit) external isInitialized {
+        _tryTransitionAccountingPeriod(_limit);
     }
 
     /**
@@ -514,9 +529,6 @@ contract Allocations is AragonApp {
         payout.executions.length = _supports.length;
         payoutId = account.payoutsLength - 1;
         emit SetDistribution(_accountId, payoutId);
-        if (_startTime <= getTimestamp64()) {
-            _runPayout(_accountId, payoutId);
-        }
     }
 
     function _executePayoutAtLeastOnce(
