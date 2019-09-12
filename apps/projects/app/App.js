@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { ApolloProvider } from 'react-apollo'
 
-import { useAragonApi } from '@aragon/api-react'
+import { useAragonApi } from './api-react'
 import {
   Main,
   TabBar,

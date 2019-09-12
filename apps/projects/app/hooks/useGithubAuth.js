@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useAragonApi } from '@aragon/api-react'
+import { useAragonApi } from '../api-react'
 import { initApolloClient } from '../utils/apollo-client'
 import { CURRENT_USER } from '../utils/gql-queries'
 

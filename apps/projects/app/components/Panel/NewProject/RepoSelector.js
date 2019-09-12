@@ -5,7 +5,7 @@ import { Button, RadioList, Text, TextInput, theme } from '@aragon/ui'
 import { GET_REPOSITORIES } from '../../../utils/gql-queries.js'
 import { LoadingAnimation } from '../../Shared'
 import { Query } from 'react-apollo'
-import { useAragonApi } from '@aragon/api-react'
+import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '../../Panel'
 import { toHex } from 'web3-utils'
 

@@ -10,7 +10,7 @@
     "console": "truffle dev",
     "copy-public-assets": "rsync -rtu ./public/ ./dist",
     "coverage": "SOLIDITY_COVERAGE=true npm run ganache-cli:test",
-    "dev": "npm run sync-assets && parcel app/index.html --port 1111",
+    "frontend": "npm run sync-assets && parcel app/index.html --port 1111",
     "ganache-cli:test": "sh ../../node_modules/@aragon/test-helpers/ganache-cli.sh",
     "lint": "solium --dir ./contracts",
     "precommit": "lint-staged",
