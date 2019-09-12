@@ -62,7 +62,6 @@ contract Rewards is AragonApp {
     uint256 public totalClaimsEach;
 
     /// Rewards internal registry
-    // Reward[] internal rewards; this implementation mimics an array but improves upgradability
     mapping(uint256 => Reward) rewards;
     uint256 rewardsRegistryLength;
     /// Public vault that holds the funds
@@ -234,7 +233,6 @@ contract Rewards is AragonApp {
                 _delay
             );
         }
-        require(_startBlock > _referenceToken.creationBlock(), ERROR_START_BLOCK);
     }
 
     /**

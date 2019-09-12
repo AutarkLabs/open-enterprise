@@ -31,7 +31,7 @@ contract('Rewards', accounts => {
     minBlock
 
   // Setup test actor accounts
-  const [root, contributor1, contributor2, contributor3] = accounts
+  const [ root, contributor1, contributor2, contributor3 ] = accounts
 
   before(async () => {
     // Create Base DAO and App contracts
