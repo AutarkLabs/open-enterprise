@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Text, useTheme } from '@aragon/ui'
+import { Tag, Text, useTheme } from '@aragon/ui'
 import { animated } from 'react-spring'
 import PropTypes from 'prop-types'
 import { isAddress, shortenAddress } from '../utils/vote-utils'
@@ -18,27 +18,7 @@ const VotingOption = ({ valueSpring, label, percentage, color, threshold, userVo
               {displayLabel}
             </Text>
             {userVote !== -1 && (
-              <div css={`
-                display: inline-flex;
-                justify-content: center;
-                white-space: nowrap;
-                min-width: 24px;
-                width: auto;
-                height: 24px;
-                padding: 1px 12px 0 12px;
-                border-radius: 24px;
-                font-size: 12px;
-                line-height: 1.5;
-                text-transform: uppercase;
-                font-weight: 600;
-                user-select: none;
-                color: ${theme.info};
-                background: ${theme.infoSurface.alpha(0.08)};
-                margin-left: 10px;
-                align-items: center;
-              `}>
-                YOU: {userVote}%
-              </div>
+              <Tag label={`YOU: ${userVote}%`} />
             )}
           </div>
         )}

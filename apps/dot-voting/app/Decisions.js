@@ -1,10 +1,18 @@
 import React, { useCallback, useEffect, useState }  from 'react'
-import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import Votes from './components/Votes'
 import { isBefore } from 'date-fns'
 import { useAragonApi } from './api-react'
-import { BackButton, Bar, DropDown, GU, textStyle, useLayout, useTheme } from '@aragon/ui'
+import {
+  BackButton,
+  Bar,
+  DropDown,
+  GU,
+  Tag,
+  textStyle,
+  useLayout,
+  useTheme,
+} from '@aragon/ui'
 import VoteDetails from './components/VoteDetails'
 import { getQuorumProgress } from './utils/vote-utils'
 import { getVoteStatus } from './utils/vote-utils'
@@ -194,9 +202,7 @@ const Decisions = ({ decorateVote }) => {
                     ${textStyle('label3')};
                   `}
                   >
-                    <DiscTag>
-                      {votes.length > 9999 ? '9999+' : votes.length}
-                    </DiscTag>
+                    <Tag limitDigits={4} label={votes.length} size="small" />
                   </span>
                 </div>,
                 'Open',
@@ -244,27 +250,5 @@ const Decisions = ({ decorateVote }) => {
 Decisions.propTypes = {
   decorateVote: PropTypes.func.isRequired,
 }
-
-const DiscTag = styled.span`
-  display: inline-flex;
-  white-space: nowrap;
-  color: rgb(109, 128, 136);
-  padding-top: 2px;
-  letter-spacing: -0.5px;
-  /* stylelint-disable-next-line property-no-vendor-prefix */
-  -webkit-box-pack: center;
-  justify-content: center;
-  /* stylelint-disable-next-line property-no-vendor-prefix */
-  -webkit-box-align: center;
-  align-items: center;
-  width: 18px;
-  height: 18px;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 20px;
-  background: rgb(220, 234, 239);
-  overflow: hidden;
-  border-radius: 9px;
-`
 
 export default Decisions
