@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 
-import { useNetwork } from '@aragon/api-react'
+import { useNetwork } from '../../api-react'
 import {
   Badge,
   ContextMenu,

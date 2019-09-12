@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 
-import { useAragonApi } from '@aragon/api-react'
+import { useAragonApi } from '../../api-react'
 import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
 
 import { IdentityProvider } from '../../../../../shared/identity'
