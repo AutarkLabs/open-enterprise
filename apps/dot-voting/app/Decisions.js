@@ -23,8 +23,7 @@ const OUTCOME_FILTER_REJECTED = 2
 const OUTCOME_FILTER_ENACTED = 3
 const OUTCOME_FILTER_PENDING = 4
 const APP_FILTER_ALLOCATIONS = 1
-const APP_FILTER_CURATIONS = 2
-const APP_FILTER_INFORMATIONAL = 3
+const APP_FILTER_PROJECTS = 2
 
 const useFilterVotes = (votes, voteTime) => {
   const [ filteredVotes, setFilteredVotes ] = useState(votes)
@@ -59,8 +58,7 @@ const useFilterVotes = (votes, voteTime) => {
 
       if (appFilter !== NULL_FILTER_STATE) {
         if (appFilter === APP_FILTER_ALLOCATIONS && type !== 'allocation') return false
-        if (appFilter === APP_FILTER_CURATIONS && type !== 'curation') return false
-        if (appFilter === APP_FILTER_INFORMATIONAL && type !== 'informational') return false
+        if (appFilter === APP_FILTER_PROJECTS && type !== 'curation') return false
       }
 
       if (outcomeFilter !== NULL_FILTER_STATE) {
@@ -217,11 +215,11 @@ const Decisions = ({ decorateVote }) => {
               />
             )}
             <DropDown
-              header="App type"
-              placeholder="App type"
+              header="App"
+              placeholder="App"
               selected={voteAppFilter}
               onChange={handleVoteAppFilterChange}
-              items={[ 'All', 'Allocations', 'Issue Curation', 'Informational' ]}
+              items={[ 'All', 'Allocations', 'Projects' ]}
               width="128px"
             />
           </div>
