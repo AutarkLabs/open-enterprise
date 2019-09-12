@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Observable } from 'rxjs'
 import createDatabase from './database'
+import printWelcomeMessage from './welcomeMessage'
 
 const stubbedFn = key => ([...args]) => {
   console.log( // eslint-disable-line no-console
@@ -20,6 +21,8 @@ const stubbedFn = key => ([...args]) => {
 
 const buildHook = ({ initialState, functions }) => {
   const db = createDatabase({ initialState })
+
+  printWelcomeMessage(Object.keys(functions({}, () => {})))
 
   const useStubbedAragonApi = () => {
     const [ appState, setAppState ] = useState(db.fetchData())
