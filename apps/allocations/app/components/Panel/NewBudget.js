@@ -25,7 +25,7 @@ class NewBudget extends React.Component {
 
   changeField = e => {
     const { name, value } = e.target
-    this.setState({ [e.target.name]: e.target.value })
+    this.setState({ [name]: value })
     this.setState({ [name + 'Error']: isStringEmpty(value) ||
                     (name === 'amount' && value < MIN_AMOUNT) })
   }
