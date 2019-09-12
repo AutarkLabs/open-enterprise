@@ -1,22 +1,26 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Tag, Text, useTheme } from '@aragon/ui'
+import { Tag, Text } from '@aragon/ui'
 import { animated } from 'react-spring'
 import PropTypes from 'prop-types'
-import { isAddress, shortenAddress } from '../utils/vote-utils'
+import { useNetwork } from '../api-react'
+import { LocalIdentityBadge } from '../../../../shared/identity'
 
-const VotingOption = ({ valueSpring, label, percentage, color, threshold, userVote }) => {
-  const theme = useTheme()
-  const displayLabel = isAddress(label) ? shortenAddress(label) : label
+const VotingOption = ({ valueSpring, label, percentage, color, threshold, userVote, fontSize }) => {
+  const network = useNetwork()
 
   return (
     <Main>
       <Labels>
         {label && (
           <div>
-            <Text size="xsmall">
-              {displayLabel}
-            </Text>
+            <LocalIdentityBadge
+              compact
+              fontSize={fontSize}
+              networkType={network.type}
+              entity={label}
+              shorten
+            />
             {userVote !== -1 && (
               <Tag label={`YOU: ${userVote}%`} />
             )}
@@ -57,6 +61,7 @@ VotingOption.defaultProps = {
 }
 
 VotingOption.propTypes = {
+  fontSize: PropTypes.oneOf([ 'xsmall', 'small' ]),
   valueSpring: PropTypes.object.isRequired,
   label: PropTypes.string.isRequired,
   percentage: PropTypes.number.isRequired,

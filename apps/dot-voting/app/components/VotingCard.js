@@ -107,6 +107,7 @@ const VotingCard = ({ app, vote, onSelectVote, userAccount }) => {
 
       <div>
         <VotingOptions
+          fontSize="xsmall"
           options={options.slice(0, 2)}
           totalSupport={totalSupport}
           color={`${theme.accent}`}

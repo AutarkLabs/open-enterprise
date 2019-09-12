@@ -25,6 +25,7 @@ const VotingResults = ({ vote, voteWeights }) => {
       </Label>
       <div>
         <VotingOptions
+          fontSize="small"
           options={vote.data.options}
           totalSupport={totalSupport}
           color={`${theme.accent}`}

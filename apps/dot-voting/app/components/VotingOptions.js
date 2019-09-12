@@ -16,6 +16,7 @@ class VotingOptions extends React.Component {
   }
 
   static propTypes = {
+    fontSize: PropTypes.oneOf([ 'xsmall', 'small' ]),
     options: PropTypes.arrayOf(PropTypes.object).isRequired,
     totalSupport: PropTypes.number.isRequired,
     color: PropTypes.string.isRequired,
@@ -52,6 +53,7 @@ class VotingOptions extends React.Component {
           >
             {({ value }) => (
               <VotingOption
+                fontSize={this.props.fontSize}
                 valueSpring={value}
                 percentage={safeDiv(parseInt(option.value, 10), totalSupport)*100}
                 color={color}
