@@ -105,33 +105,29 @@ const VotingCard = ({ app, vote, onSelectVote, userAccount }) => {
         {description}
       </div>
 
-      <div css="width: 100%">
-        {options.length > 2 ? (
-          <React.Fragment>
-            <VotingOptions
-              options={options.slice(0, 2)}
-              totalSupport={totalSupport}
-              color={`${theme.accent}`}
-              voteWeights={voteWeights}
-            />
+      <div>
+        <VotingOptions
+          options={options.slice(0, 2)}
+          totalSupport={totalSupport}
+          color={`${theme.accent}`}
+          voteWeights={voteWeights}
+        />
 
-            <div css="text-align: center; width: 100%; margin-top: 10px">
-              <Badge
-                shape="compact"
-                foreground={`${theme.surfaceOpened}`}
-                background={`${theme.surfaceUnder}`}
-                css={`
-                  cursor: pointer;
-                  padding: 2px 8px;
-                  pointer-events: auto;
-                `}
-              >
-                {' + ' + (options.length - 2) + ' more'}
-              </Badge>
-            </div>
-          </React.Fragment>
-        ) : (
-          <VotingOptions options={options} totalSupport={totalSupport} color={`${theme.accent}`} />
+        {options.length > 2 && (
+          <div css="text-align: center; width: 100%; margin-top: 10px">
+            <Badge
+              shape="compact"
+              foreground={`${theme.surfaceOpened}`}
+              background={`${theme.surfaceUnder}`}
+              css={`
+                cursor: pointer;
+                padding: 2px 8px;
+                pointer-events: auto;
+              `}
+            >
+              {' + ' + (options.length - 2) + ' more'}
+            </Badge>
+          </div>
         )}
       </div>
 
