@@ -90,6 +90,9 @@ const useFilterVotes = (votes, voteTime) => {
     handleVoteStatusFilterChange: useCallback(
       index => {
         setStatusFilter(index || NULL_FILTER_STATE)
+        if (index === STATUS_FILTER_OPEN) {
+          setOutcomeFilter(NULL_FILTER_STATE)
+        }
       },
       [setStatusFilter]
     ),
