@@ -1,16 +1,5 @@
 pragma solidity 0.4.24;
 
-import "@aragon/os/contracts/factory/DAOFactory.sol";
-import "@aragon/os/contracts/apm/Repo.sol";
-import "@aragon/os/contracts/lib/ens/ENS.sol";
-import "@aragon/os/contracts/lib/ens/PublicResolver.sol";
-import "@aragon/os/contracts/apm/APMNamehash.sol";
-
-// import "@aragon/apps-voting/contracts/Voting.sol";
-import "@aragon/apps-token-manager/contracts/TokenManager.sol";
-import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
-// import "@aragon/apps-survey/contracts/Survey.sol";
-
 import "@tps/apps-address-book/contracts/AddressBook.sol";
 import "../../discussions/contracts/DiscussionApp.sol";
 
@@ -19,10 +8,9 @@ import "@tps/apps-projects/contracts/Projects.sol";
 import {DotVoting as DotVotingApp} from "@tps/apps-dot-voting/contracts/DotVoting.sol";
 import "@tps/apps-rewards/contracts/Rewards.sol";
 import "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
-import "@aragon/apps-vault/contracts/Vault.sol";
-import "@aragon/apps-finance/contracts/Finance.sol";
-import "@aragon/apps-voting/contracts/Voting.sol";
 
+import "@aragon/templates-shared/contracts/TokenCache.sol";
+import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 
 
 
