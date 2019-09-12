@@ -2,16 +2,16 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 
-import { Badge, Text, Viewport } from '@aragon/ui'
+import { Viewport } from '@aragon/ui'
 
 import { CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
-import { Account } from '../Card'
+import { Budget } from '../Card'
 
-const Accounts = ({
-  accounts,
+const Budgets = ({
+  budgets,
   onNewAllocation,
 }) => {
-  if (!accounts) return
+  if (!budgets) return
 
   return (
     <Viewport>
@@ -20,19 +20,15 @@ const Accounts = ({
 
         return (
           <StyledAccounts screenSize={screenSize}>
-            <Text.Block size="large" weight="bold" style={{ marginBottom: '10px', width: '100%' }}>
-              Accounts
-              {' '}
-              <Badge.Info>{accounts.length}</Badge.Info>
-            </Text.Block>
-            {accounts.map(({ accountId, data }) => (
-              <Account
-                balance={data.balance}
-                description={data.metadata}
-                key={accountId}
-                id={accountId}
+            {budgets.map(({ budgetId, data }) => (
+              <Budget
+                key={budgetId}
+                id={budgetId}
+                name={data.name}
+                amount={data.amount}
+                currency={data.currency}
+                allocated={data.allocated}
                 onNewAllocation={onNewAllocation}
-                proxy={data.proxy}
                 screenSize={screenSize}
               />
             ))}
@@ -43,9 +39,8 @@ const Accounts = ({
   )
 }
 
-Accounts.propTypes = {
-  // TODO: Create account shape
-  accounts: PropTypes.arrayOf(PropTypes.object).isRequired,
+Budgets.propTypes = {
+  budgets: PropTypes.arrayOf(PropTypes.object).isRequired,
   onNewAllocation: PropTypes.func.isRequired,
 }
 
@@ -55,4 +50,4 @@ const StyledAccounts = styled.div`
   flex-wrap: wrap;
 `
 
-export default Accounts
+export default Budgets

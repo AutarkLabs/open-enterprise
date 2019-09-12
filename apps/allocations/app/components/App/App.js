@@ -7,7 +7,7 @@ import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
 import { IdentityProvider } from '../../../../../shared/identity'
 import { Empty } from '../Card'
 import { NewAllocation, NewBudget } from '../Panel'
-import { Accounts, Payouts } from '.'
+import { Budgets, Payouts } from '.'
 
 const ASSETS_URL = './aragon-ui'
 
@@ -16,7 +16,21 @@ const nameSorter = (a, b) => a.data.name.toUpperCase() > b.data.name.toUpperCase
 const App = () => {
   const [ panel, setPanel ] = useState(null)
   const { api, appState } = useAragonApi()
-  const { accounts = [], balances = [], payouts = [] } = appState
+  const {
+    // backend stub, remove
+    budgets = [{
+      budgetId: '0',
+      data: {
+        name: 'Marketing',
+        amount: String(80000.123856789012345678e18),
+        currency: 'ETH',
+        allocated: String(23000e18),
+      }
+    }],
+    balances = [],
+    entries = [],
+    payouts = []
+  } = appState
 
   const onCreateBudget = ({ description }) => {
     api.newAccount(description).toPromise()
@@ -108,12 +122,11 @@ const App = () => {
     children: PropTypes.node.isRequired,
   }
 
-  if (accounts.length === 0) {
+  if (budgets.length === 0) {
     return <Wrap><Empty action={onNewBudget} /></Wrap>
   }
 
   return (
-    // TODO: Profile App with React.StrictMode, perf and why-did-you-update, apply memoization
     <Wrap>
       <Header
         primary="Allocations"
@@ -121,13 +134,12 @@ const App = () => {
           <Button mode="strong" icon={<IconPlus />} onClick={onNewBudget} label="New budget" />
         }
       />
-      <Accounts
-        accounts={accounts}
+      <Budgets
+        budgets={budgets}
         onNewAllocation={onNewAllocation}
       />
     </Wrap>
   )
 }
 
-// eslint-disable-next-line import/no-unused-modules
 export default App
