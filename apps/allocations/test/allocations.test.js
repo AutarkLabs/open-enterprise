@@ -15,8 +15,8 @@ const Vault = artifacts.require('Vault')
 const BigNumber = require('bignumber.js')
 const NULL_ADDRESS = '0x00'
 
-// const createdPayoutId = receipt =>
-//   receipt.logs.filter(x => x.event == 'StartPayout')[0].args.voteId // TODO: not-used
+const failedPayment = receipt =>
+  receipt.logs.filter(x => x.event == 'PaymentFailure')[0].args // TODO: not-used
 
 const ANY_ADDR = ' 0xffffffffffffffffffffffffffffffffffffffff'
 const TEM_DAYS = 864000
@@ -133,19 +133,20 @@ contract('Allocations App', accounts => {
         'Fett\'s vett',
         0,
         true,
-        web3.toWei(0.01, 'ether')
+        web3.toWei(0.03, 'ether')
       )).logs[0].args.accountId.toNumber()
 
       await vault.deposit(
         0, // zero address
-        web3.toWei(0.03, 'ether'), 
-        { from: empire, value: web3.toWei(0.03, 'ether') }
+        web3.toWei(0.1, 'ether'), 
+        { from: empire, value: web3.toWei(0.1, 'ether') }
       )
       supports = [ 500, 200, 300 ]
       totalsupport = 1000
       await token.generateTokens(root, 25e18)
       await token.transfer(vault.address, 25e18)
       const zeros = new Array(candidateAddresses.length).fill(0)
+      const timestamp = (await web3.eth.getBlock('latest')).timestamp
       ethPayoutId = (await app.setDistribution(
         candidateAddresses,
         supports,
@@ -170,7 +171,7 @@ contract('Allocations App', accounts => {
         zeros,
         accountId,
         2,
-        Date.now()/1000 + 1,
+        timestamp,
         86400,
         web3.toWei(0.01, 'ether'),
       )).logs[0].args.payoutId.toNumber()
@@ -232,6 +233,7 @@ contract('Allocations App', accounts => {
     })
 
     it('executes the payout (eth)', async () => {
+      await app.runPayout(accountId, ethPayoutId)
       const bobafettBalance = await web3.eth.getBalance(bobafett)
       const dengarBalance = await web3.eth.getBalance(dengar)
       const bosskBalance = await web3.eth.getBalance(bossk)
@@ -294,11 +296,9 @@ contract('Allocations App', accounts => {
     })
 
     it('executes the payout (recurring)', async () => {
-      timetravel(864000)
-      await app.executePayout(accountId, deferredPayoutId, 0)
-      timetravel(864000)
-      await app.executePayout(accountId, deferredPayoutId, 1)
-      await app.executePayout(accountId, deferredPayoutId, 2)
+      timetravel(86400*5)
+      await app.runPayout(accountId, deferredPayoutId)
+
       const bobafettBalance = await web3.eth.getBalance(bobafett)
       const dengarBalance = await web3.eth.getBalance(dengar)
       const bosskBalance = await web3.eth.getBalance(bossk)
@@ -321,9 +321,11 @@ contract('Allocations App', accounts => {
     })
 
     it('cannot execute more than once if non-recurring', async () => {
-      return assertRevert(async () => {
-        await app.runPayout(accountId, ethPayoutId)
-      })
+      const receipt =  await app.runPayout(accountId, ethPayoutId)
+      const firstFailedPayment = failedPayment(receipt)
+      assert.equal(accountId, firstFailedPayment.accountId)
+      assert.equal(ethPayoutId, firstFailedPayment.payoutId)
+      assert.equal(0, firstFailedPayment.candidateId)
     })
 
     context('invalid workflows', () => {
@@ -458,7 +460,7 @@ contract('Allocations App', accounts => {
         86400,
         web3.toWei(0.01, 'ether'),
       )).logs[0].args.payoutId.toNumber()
-
+      await app.runPayout(accountId, payoutId)
       const bobafettBalance = await web3.eth.getBalance(bobafett)
       const dengarBalance = await web3.eth.getBalance(dengar)
       const bosskBalance = await web3.eth.getBalance(bossk)
@@ -478,9 +480,11 @@ contract('Allocations App', accounts => {
         'bounty hunter expense 3 not paid out'
       )
       timetravel(43200)
-      return assertRevert(async () => {
-        await app.runPayout(accountId, payoutId)
-      })
+      const receipt =  await app.runPayout(accountId, ethPayoutId)
+      const firstFailedPayment = failedPayment(receipt)
+      assert.equal(accountId, firstFailedPayment.accountId)
+      assert.equal(payoutId, firstFailedPayment.payoutId)
+      assert.equal(0, firstFailedPayment.candidateId)
     })
   })
 })
