@@ -8,7 +8,7 @@ import { BackButton, Bar, DropDown, GU, textStyle, useLayout, useTheme } from '@
 import VoteDetails from './components/VoteDetails'
 import { getQuorumProgress } from './utils/vote-utils'
 import { getVoteStatus } from './utils/vote-utils'
-import EmptyFilteredVotes from './components/EmptyFilteredVotes'
+import Empty from './components/EmptyFilteredVotes'
 import {
   VOTE_STATUS_EXECUTED,
   VOTE_STATUS_FAILED,
@@ -158,10 +158,6 @@ const Decisions = ({ decorateVote }) => {
     )
   }
 
-  if (!filteredVotes.length) return (
-    <EmptyFilteredVotes onClear={handleClearFilters} />
-  )
-
   const preparedVotes = filteredVotes.map(decorateVote)
 
   return (
@@ -229,13 +225,17 @@ const Decisions = ({ decorateVote }) => {
         </Bar>
       )}
 
-      <Votes
-        votes={preparedVotes}
-        onSelectVote={handleVoteOpen}
-        app={app}
-        userAccount={connectedAccount}
-      />
-
+      {!preparedVotes.length
+        ? <Empty onClear={handleClearFilters} />
+        : (
+          <Votes
+            votes={preparedVotes}
+            onSelectVote={handleVoteOpen}
+            app={app}
+            userAccount={connectedAccount}
+          />
+        )
+      }
     </React.Fragment>
   )
 }
