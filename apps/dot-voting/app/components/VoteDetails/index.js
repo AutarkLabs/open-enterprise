@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { BigNumber } from 'bignumber.js'
-import { Box, Button, GU, Split, Text } from '@aragon/ui'
-import { useAragonApi } from '@aragon/api-react'
+import { Box, Button, GU, Split, Text, textStyle } from '@aragon/ui'
+import { useAragonApi, useNetwork } from '../../api-react'
 import { first } from 'rxjs/operators' // Make sure observables have .first
+import { LocalIdentityBadge } from '../../../../../shared/identity'
 import AppBadge from './AppBadge'
 import Status from './Status'
-import Title from './Title'
-import DescriptionAndCreator from './DescriptionAndCreator'
 import VotingResults from './VotingResults'
 import CastVote from './CastVote'
 import Participation from './Participation'
@@ -25,10 +24,11 @@ const VoteDetails = ({ vote, onVote }) => {
   const toggleVotingMode = () => setVotingMode(!votingMode)
   const { description, voteId } = vote
   const {
-    metadata: question,
     creator,
     type,
   } = vote.data
+
+  const network = useNetwork()
 
   const getTokenContract = tokenAddress =>
     tokenAddress && api.external(tokenAddress, tokenAbi)
@@ -97,14 +97,21 @@ const VoteDetails = ({ vote, onVote }) => {
               type={type}
               youVoted={youVoted}
             />
-            <Title
-              question={question}
-            />
-            <DescriptionAndCreator
-              creator={creator}
-              question={question}
-              description={description}
-            />
+            <h2 css={textStyle('title2')}>
+              {description}
+            </h2>
+            <div css="display: flex; align-items: baseline">
+              <Label>
+                Created By
+              </Label>
+              <div css={`margin-left: ${GU}px`}>
+                <LocalIdentityBadge
+                  networkType={network.type}
+                  entity={creator}
+                  shorten
+                />
+              </div>
+            </div>
 
             {type === 'allocation' && (
               <React.Fragment>

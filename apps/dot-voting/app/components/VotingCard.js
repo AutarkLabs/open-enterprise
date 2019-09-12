@@ -19,10 +19,8 @@ function noop() {}
 const VotingCard = ({ app, vote, onSelectVote, userAccount }) => {
   const theme = useTheme()
   const [ voteWeights, setVoteWeights ] = useState([])
-  const { endDate, open, totalSupport, voteId, support } = vote
+  const { description, endDate, open, totalSupport, voteId, support } = vote
   const {
-    metadata: question,
-    description,
     options,
     totalVoters,
     type,
@@ -105,10 +103,7 @@ const VotingCard = ({ app, vote, onSelectVote, userAccount }) => {
           overflow: hidden;
         `}
       >
-        <span css="font-weight: bold">#{voteId}</span>{' '}
-        {question && (
-          description ? <strong>{question}</strong> : question
-        )}
+        {description}
       </div>
 
       <div css="width: 100%">
