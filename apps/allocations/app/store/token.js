@@ -34,7 +34,6 @@ export async function initializeTokens(state, settings) {
 
   const nextState = {
     ...state,
-    addressBookAddress: settings.addressBook.address,
     vaultAddress: settings.vault.address,
   }
   const withEthBalance = await loadEthBalance(nextState, settings)
@@ -115,7 +114,7 @@ function loadTokenBalance(tokenAddress, { vault }) {
 }
 
 function loadTokenDecimals(tokenContract, tokenAddress, { network }) {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     if (tokenDecimals.has(tokenContract)) {
       resolve(tokenDecimals.get(tokenContract))
     } else {
@@ -137,7 +136,7 @@ function loadTokenDecimals(tokenContract, tokenAddress, { network }) {
 }
 
 function loadTokenName(tokenContract, tokenAddress, { network }) {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     if (tokenName.has(tokenContract)) {
       resolve(tokenName.get(tokenContract))
     } else {
@@ -150,7 +149,7 @@ function loadTokenName(tokenContract, tokenAddress, { network }) {
 }
 
 function loadTokenSymbol(tokenContract, tokenAddress, { network }) {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     if (tokenSymbols.has(tokenContract)) {
       resolve(tokenSymbols.get(tokenContract))
     } else {
