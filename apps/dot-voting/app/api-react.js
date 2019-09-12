@@ -11,10 +11,10 @@ const initialState = process.env.NODE_ENV !== 'production' && {
 }
 
 const functions = process.env.NODE_ENV !== 'production' && ((appState, setAppState) => ({
-  createVote: (
-    description = 'Which deserve the most?',
+  createVote: ({
+    description = 'Define the budget allocation for 2020 ops',
     type = 'allocation'
-  ) => setAppState({
+  }) => setAppState({
     ...appState,
     votes: [
       ...appState.votes,
