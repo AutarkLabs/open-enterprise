@@ -16,7 +16,7 @@ const nameSorter = (a, b) => a.data.name.toUpperCase() > b.data.name.toUpperCase
 const App = () => {
   const [ panel, setPanel ] = useState(null)
   const { api, appState } = useAragonApi()
-  const { accounts = [], balances = [], entries = [], payouts = [] } = appState
+  const { accounts = [], balances = [], payouts = [] } = appState
 
   const onCreateBudget = ({ description }) => {
     api.newAccount(description).toPromise()
@@ -55,14 +55,6 @@ const App = () => {
 
 
   const onNewAllocation = (address, description, id, balance) => {
-    // The whole entries vs entities thing needs to be fixed; these are too close
-    //const userEntity = {addr: '0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb', data: {entryAddress: '0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb', name: 'Bob', entryType: 'user'}}
-    const promptEntity = {
-      addr: 0x0,
-      data: { entryAddress: 0x0, name: 'Select an entry', entryType: 'prompt' },
-    }
-
-    const entities = [promptEntity].concat(entries.sort(nameSorter))
     setPanel({
       content: NewAllocation,
       data: {
@@ -71,7 +63,6 @@ const App = () => {
         address,
         balance,
         balances,
-        entities,
         id,
         onSubmitAllocation,
       },

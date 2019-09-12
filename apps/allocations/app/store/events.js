@@ -1,12 +1,11 @@
 import { vaultLoadBalance } from './token'
 import { onFundedAccount, onNewAccount, onPayoutExecuted } from './account'
-import { onEntryAdded, onEntryRemoved } from './entry'
 import { addressesEqual } from '../utils/web3-utils'
 
 export const handleEvent = async (state, event, settings) => {
   const { address: eventAddress, event: eventName, returnValues } = event
-  const { addressBook, vault } = settings
-  const { accounts, entries, payouts } = state
+  const { vault } = settings
+  const { accounts, payouts } = state
 
   let nextAccounts, nextBoth
   let nextState = { ...state }
@@ -33,23 +32,11 @@ export const handleEvent = async (state, event, settings) => {
       nextState.accounts = nextBoth.accounts
       nextState.payouts = nextBoth.payouts
       break
-    case 'EntryAdded':
-      nextState.entries = await onEntryAdded(
-        { entries, addressBook },
-        returnValues
-      )
-      break
-    case 'EntryRemoved':
-      nextState.entries = await onEntryRemoved(
-        { entries, addressBook },
-        returnValues
-      )
-      break
     default:
       break
     }
   }
-  // If nextAccounts or nextEntries were not generated
+  // If nextAccounts were not generated
   // then return each original array
   return nextState
 }

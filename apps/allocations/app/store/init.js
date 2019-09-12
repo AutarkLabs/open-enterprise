@@ -1,4 +1,3 @@
-import AddressBookJSON from '../../../shared/json-abis/address-book.json'
 import { app, handleEvent } from './'
 import { first } from 'rxjs/operators'
 
@@ -13,19 +12,13 @@ const vaultAbi = [].concat(
   vaultEventAbi
 )
 
-const initialState = { accounts: [], entries: [], payouts: [] }
+const initialState = { accounts: [], payouts: [] }
 
 export const initialize = async (
-  addressBookAddress,
   vaultAddress,
   ethAddress
 ) => {
-  const addressBookContract = app.external(
-    addressBookAddress,
-    AddressBookJSON.abi
-  )
   const vaultContract = app.external(vaultAddress, vaultAbi)
-
   const network = await app
     .network()
     .pipe(first())
@@ -33,10 +26,6 @@ export const initialize = async (
 
   return createStore({
     network,
-    addressBook: {
-      address: addressBookAddress,
-      contract: addressBookContract,
-    },
     ethToken: {
       address: ethAddress,
     },
@@ -75,7 +64,6 @@ const createStore = async settings => {
     },
     {
       externals: [
-        { contract: settings.addressBook.contract },
         {
           contract: settings.vault.contract,
           initializationBlock: vaultInitializationBlock
