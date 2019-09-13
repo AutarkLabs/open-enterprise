@@ -172,7 +172,6 @@ const CastVote = ({
           mode="strong"
           onClick={() => {
             handleVoteSubmit()
-            toggleVotingMode()
           }}
         >
           Submit Vote
