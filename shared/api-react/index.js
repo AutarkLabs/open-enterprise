@@ -1,4 +1,5 @@
 import {
+  AragonApi,
   useAragonApi as useProductionApi,
   useNetwork as useProductionNetwork,
 } from '@aragon/api-react'
@@ -22,5 +23,5 @@ export default ({ initialState = {}, functions = (() => {}) }) => {
     }
   }
 
-  return { useAragonApi, useNetwork }
+  return { AragonApi, useAragonApi, useNetwork }
 }
