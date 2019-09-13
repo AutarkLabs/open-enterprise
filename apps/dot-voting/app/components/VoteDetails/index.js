@@ -138,7 +138,6 @@ const VoteDetails = ({ vote, onVote }) => {
               <CastVote
                 onVote={onVote}
                 toggleVotingMode={toggleVotingMode}
-                connectedAccount={connectedAccount}
                 vote={vote}
                 voteWeights={voteWeights}
               />
