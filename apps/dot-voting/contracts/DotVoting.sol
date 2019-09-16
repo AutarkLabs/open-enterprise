@@ -10,10 +10,10 @@ import "@aragon/os/contracts/lib/math/SafeMath.sol";
 
 import "@aragon/os/contracts/lib/math/SafeMath64.sol";
 
-import "@tps/test-helpers/contracts/evmscript/ScriptHelpers.sol";
+import "@tps/test-helpers/contracts/evmscript/OEScriptHelpers.sol";
 
 
-import "@tps/test-helpers/contracts/common/IForwarder.sol";
+import "@aragon/os/contracts/common/IForwarder.sol";
 
 import "@tps/test-helpers/contracts/lib/misc/Migrations.sol";
 
@@ -45,7 +45,7 @@ import "@tps/test-helpers/contracts/lib/misc/Migrations.sol";
 *  Attention was paid to make the program as generalized as possible.
 *******************************************************************************/
 contract DotVoting is IForwarder, AragonApp {
-    using ScriptHelpers for bytes;
+    using OEScriptHelpers for bytes;
 
     using SafeMath for uint256;
     using SafeMath64 for uint64;

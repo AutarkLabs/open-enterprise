@@ -1,7 +1,7 @@
 pragma solidity 0.4.24;
 
 import "../apps/AragonApp.sol";
-import "./ScriptHelpers.sol";
+import "./OEScriptHelpers.sol";
 import "./IEVMScriptExecutor.sol";
 import "./IEVMScriptRegistry.sol";
 
@@ -9,7 +9,7 @@ import "./IEVMScriptRegistry.sol";
 /* solium-disable function-order */
 // Allow public initialize() to be first
 contract EVMScriptRegistry is IEVMScriptRegistry, EVMScriptRegistryConstants, AragonApp {
-    using ScriptHelpers for bytes;
+    using OEScriptHelpers for bytes;
 
     // bytes32 constant public REGISTRY_ADD_EXECUTOR_ROLE = keccak256("REGISTRY_ADD_EXECUTOR_ROLE");
     bytes32 constant public REGISTRY_ADD_EXECUTOR_ROLE = 0xc4e90f38eea8c4212a009ca7b8947943ba4d4a58d19b683417f65291d1cd9ed2;

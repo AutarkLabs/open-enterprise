@@ -4,7 +4,7 @@ import "./helpers/Assert.sol";
 import "./helpers/ThrowProxy.sol";
 
 import "../common/DelegateProxy.sol";
-import "../evmscript/ScriptHelpers.sol";
+import "../evmscript/OEScriptHelpers.sol";
 
 
 contract Target {
@@ -15,7 +15,7 @@ contract Target {
 
 
 contract TestDelegateProxy is DelegateProxy {
-    using ScriptHelpers for *;
+    using OEScriptHelpers for *;
 
     Target target;
     ThrowProxy throwProxy;

@@ -399,8 +399,8 @@ contract PlanningSuite is BetaKitBase {
         Vault vault
     ) internal
     {
-        allocations.initialize(addressBook, vault);
-        projects.initialize(registry, vault, token);
+        allocations.initialize(vault, 1 days);
+        projects.initialize(registry, vault);
         rewards.initialize(vault);
     }
 

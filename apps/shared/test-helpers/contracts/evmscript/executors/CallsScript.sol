@@ -2,12 +2,12 @@ pragma solidity 0.4.24;
 
 // Inspired by https://github.com/reverendus/tx-manager
 
-import "../ScriptHelpers.sol";
+import "../OEScriptHelpers.sol";
 import "./BaseEVMScriptExecutor.sol";
 
 
 contract CallsScript is BaseEVMScriptExecutor {
-    using ScriptHelpers for bytes;
+    using OEScriptHelpers for bytes;
 
     // bytes32 constant internal EXECUTOR_TYPE = keccak256("CALLS_SCRIPT");
     bytes32 constant internal EXECUTOR_TYPE = 0x2dc858a00f3e417be1394b87c07158e989ec681ce8cc68a9093680ac1a870302;
