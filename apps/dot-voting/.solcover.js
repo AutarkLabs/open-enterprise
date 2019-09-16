@@ -1,11 +1,6 @@
 module.exports = {
-  norpc: true,
-  // TODO: Change this hack when the feel to update solidity-coverage upstream
-  // rsync is needed so symlinks are resolved on copy of lerna packages
   copyPackages: ['@tps/test-helpers'],
-  skipFiles: [
-    'test/TestImports.sol',
-    'test/mocks/ExecutionTarget.sol',
-    'test/mocks/DotVotingMock.sol',
-  ]
+  deepSkip: true,
+  norpc: true,
+  skipFiles: ['test'],
 }

@@ -6,7 +6,7 @@ import { Checkbox, Text, TextInput, theme, SafeLink } from '@aragon/ui'
 
 import { Form, FormField, DateInput, DescriptionInput } from '../../Form'
 import { IconGitHub } from '../../Shared'
-import { useAragonApi } from '@aragon/api-react'
+import { useAragonApi } from '../../../api-react'
 import useGithubAuth from '../../../hooks/useGithubAuth'
 import { usePanelManagement } from '..'
 import { ipfsAdd } from '../../../utils/ipfs-helpers'

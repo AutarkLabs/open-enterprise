@@ -234,9 +234,9 @@ contract PlanningKit is KitBase {
     {
         address root = msg.sender;
         addressBook.initialize();
-        projects.initialize(registry, vault);
+        projects.initialize(registry, vault, token);
         dotVoting.initialize(token, 50 * PCT256, 0, 1 minutes);
-        allocations.initialize(vault, 1 days);
+        allocations.initialize(addressBook, vault);
         rewards.initialize(vault);
     }
 

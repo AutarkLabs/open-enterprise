@@ -6,7 +6,7 @@ import { NEW_ISSUE, GET_ISSUES } from '../../../utils/gql-queries.js'
 import { DescriptionInput, Form } from '../../Form'
 import { LoadingAnimation } from '../../Shared'
 import { usePanelManagement } from '../../Panel'
-import { useAragonApi } from '@aragon/api-react'
+import { useAragonApi } from '../../../api-react'
 
 // TODO: labels
 // TODO: import validator from '../data/validation'

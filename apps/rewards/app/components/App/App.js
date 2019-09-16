@@ -13,7 +13,7 @@ import {
   millisecondsToQuarters
 } from '../../../../../shared/ui/utils'
 import { networkContextType } from '../../../../../shared/ui'
-import { useAragonApi } from '@aragon/api-react'
+import { useAragonApi } from '../../api-react'
 import { IdentityProvider } from '../../../../../shared/identity'
 
 const CONVERT_API_BASE = 'https://min-api.cryptocompare.com/data'

@@ -83,8 +83,5 @@ codealike.json
 **/cypress/videos/
 flattened_contracts
 
-# private keys
-**/secrets.json
-
-# package-lock
-**/package-lock.json
+# Avoid committing other package-lock.json files
+package-lock.json

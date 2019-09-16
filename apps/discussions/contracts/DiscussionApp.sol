@@ -38,7 +38,7 @@ contract DiscussionApp is IForwarder, AragonApp {
 
     mapping(uint256 => DiscussionPost[]) public discussionThreadPosts;
 
-    function initialize() public onlyInit {
+    function initialize() external onlyInit {
         discussionThreadId = 0;
         initialized();
     }

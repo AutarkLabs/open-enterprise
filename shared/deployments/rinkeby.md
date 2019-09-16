@@ -50,6 +50,15 @@ Command:
 
 ## DotVoting (formerly RangeVoting)
 
+### 1.0.5
+
+```sh
+✔ Successfully published tps-dot-voting.open.aragonpm.eth v1.0.5: 
+ℹ Contract address: 0xd191581d372a07d83E8e06Da5a0678b845E638A1
+ℹ Content (ipfs): QmYxZ4rixjAspoDYYQFz4ajTiKKBoNwxRr9HuBGBmEMq4W
+ℹ Transaction hash: 0x0ee849e2250821b335eb56d293fa0e42f1d427092b5b16f659c45f167b91cd72
+```
+
 ### 1.0.2
 
 ```sh

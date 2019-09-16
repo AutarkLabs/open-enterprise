@@ -1,10 +1,12 @@
+/* global artifacts, assert, before, contract, context, it */
 const { assertRevert } = require('@aragon/test-helpers/assertThrow')
 
 /** Helper function to import truffle contract artifacts */
 const getContract = name => artifacts.require(name)
 
 /** Helper function to read events from receipts */
-const getReceipt = (receipt, event, arg) => receipt.logs.filter(l => l.event === event)[0].args[arg]
+const getReceipt = (receipt, event, arg) =>
+  receipt.logs.filter(l => l.event === event)[0].args[arg]
 
 /** Useful constants */
 const ANY_ADDRESS = '0xffffffffffffffffffffffffffffffffffffffff'
@@ -12,7 +14,7 @@ const exampleCid = 'QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco'
 const updatedCid = 'QmxoypizzW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco'
 
 contract('AddressBook', accounts => {
-  let APP_MANAGER_ROLE, ADD_ENTRY_ROLE, REMOVE_ENTRY_ROLE
+  let APP_MANAGER_ROLE, ADD_ENTRY_ROLE, REMOVE_ENTRY_ROLE, UPDATE_ENTRY_ROLE
   let daoFact, app, appBase
 
   // Setup test actor accounts
@@ -38,23 +40,42 @@ contract('AddressBook', accounts => {
 
     /** Create the dao from the dao factory */
     const daoReceipt = await daoFact.newDAO(root)
-    const dao = getContract('Kernel').at(getReceipt(daoReceipt, 'DeployDAO', 'dao'))
+    const dao = getContract('Kernel').at(
+      getReceipt(daoReceipt, 'DeployDAO', 'dao')
+    )
 
     /** Setup permission to install app */
     const acl = getContract('ACL').at(await dao.acl())
     await acl.createPermission(root, dao.address, APP_MANAGER_ROLE, root)
 
     /** Install an app instance to the dao */
-    const appReceipt = await dao.newAppInstance('0x1234', appBase.address, '0x', false)
-    app = getContract('AddressBook').at(getReceipt(appReceipt, 'NewAppProxy', 'proxy'))
+    const appReceipt = await dao.newAppInstance(
+      '0x1234',
+      appBase.address,
+      '0x',
+      false
+    )
+    app = getContract('AddressBook').at(
+      getReceipt(appReceipt, 'NewAppProxy', 'proxy')
+    )
 
     /** Setup permission to create address entries */
     await acl.createPermission(ANY_ADDRESS, app.address, ADD_ENTRY_ROLE, root)
 
     /** Setup permission to remove address entries */
-    await acl.createPermission(ANY_ADDRESS, app.address, REMOVE_ENTRY_ROLE, root)
+    await acl.createPermission(
+      ANY_ADDRESS,
+      app.address,
+      REMOVE_ENTRY_ROLE,
+      root
+    )
     /** Setup permission to update address entries */
-    await acl.createPermission( ANY_ADDRESS, app.address, UPDATE_ENTRY_ROLE, root)
+    await acl.createPermission(
+      ANY_ADDRESS,
+      app.address,
+      UPDATE_ENTRY_ROLE,
+      root
+    )
 
     /** Initialize app */
     await app.initialize()
@@ -62,6 +83,12 @@ contract('AddressBook', accounts => {
 
   context('main context', () => {
     let starfleet = accounts[0]
+    let earth = accounts[1]
+    let moon = accounts[2]
+
+    it('can check if entry is added when the registry is empty', async () => {
+      assert.isFalse(await app.isEntryAdded(starfleet))
+    })
 
     it('should add a new entry', async () => {
       const receipt = await app.addEntry(starfleet, exampleCid)
@@ -71,7 +98,7 @@ contract('AddressBook', accounts => {
     })
 
     it('should get the previously added entry', async () => {
-      entry1 = await app.getEntry(starfleet)
+      const entry1 = await app.getEntry(starfleet)
       assert.equal(entry1, exampleCid)
     })
 
@@ -84,9 +111,43 @@ contract('AddressBook', accounts => {
     })
 
     it('should allow entry updates', async () => {
-      await app.updateEntry(starfleet, updatedCid)
-      entry1 = await app.getEntry(starfleet)
+      await app.updateEntry(starfleet, exampleCid, updatedCid)
+      const entry1 = await app.getEntry(starfleet)
       assert.equal(entry1, updatedCid)
+    })
+
+    it('can obtain entries from the entryArr', async () => {
+      const entryArrLength = await app.entryArrLength()
+      const entryAddress = await app.entryArr(entryArrLength - 1)
+      assert.isTrue(await app.isEntryAdded(entryAddress))
+      const entryIndex = await app.getEntryIndex(entryAddress)
+      assert.strictEqual(entryIndex.toNumber(), 0, 'index value should be 0')
+    })
+
+    it('isEntryAdded returns false when deleted or un-added entry is queried', async () => {
+      await app.addEntry(earth, exampleCid)
+      await app.removeEntry(earth, exampleCid)
+      assert.isFalse(await app.isEntryAdded(earth))
+      assert.isFalse(await app.isEntryAdded(moon))
+    })
+
+    it('removeEntry moves end array entry when shortening array length', async () => {
+      await app.addEntry(earth, exampleCid)
+      await app.addEntry(moon, exampleCid)
+      await app.removeEntry(starfleet, updatedCid)
+      const entryIndex = await app.getEntryIndex(moon)
+      assert.strictEqual(
+        entryIndex.toNumber(),
+        0,
+        'moon’s index should be zero'
+      )
+      assert.strictEqual(
+        await app.entryArr(0),
+        moon,
+        'index 0 should map to moon’s address'
+      )
+      await app.removeEntry(earth, exampleCid)
+      await app.removeEntry(moon, exampleCid)
     })
   })
 
@@ -116,22 +177,33 @@ contract('AddressBook', accounts => {
 
     it('should revert when a CID =/= 46 chars', async () => {
       return assertRevert(async () => {
+        await app.addEntry(bates, updatedCid.slice(0, -1))
+      })
+    })
+
+    it('should revert when a CID does not start with "Qm"', async () => {
+      return assertRevert(async () => {
         await app.addEntry(bates, 'test_CID')
       })
     })
 
-    it('should return a zero-address when getting non-existant entry', async () => {
-      const entryCid  = await app.getEntry(jeanluc)
+    it('should return a zero-address when getting non-existent entry', async () => {
+      const entryCid = await app.getEntry(jeanluc)
       assert.strictEqual(entryCid, '', 'CID should be an empty string')
     })
     it('should revert when an updated CID =/= 46 chars', async () => {
       return assertRevert(async () => {
-        await app.updateEntry(borg, 'test_CID')
+        await app.updateEntry(borg, exampleCid, 'test_CID')
       })
     })
-    it('should revert when updating a non-existant entry', async () => {
+    it('should revert when an updating a CID and the oldCID doesn’t match what’s stored', async () => {
       return assertRevert(async () => {
-        await app.updateEntry(jeanluc, updatedCid)
+        await app.updateEntry(borg, updatedCid, 'test_CID')
+      })
+    })
+    it('should revert when updating a non-existent entry', async () => {
+      return assertRevert(async () => {
+        await app.updateEntry(jeanluc, exampleCid, updatedCid)
       })
     })
   })

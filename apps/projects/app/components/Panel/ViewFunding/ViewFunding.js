@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 
-import { useAragonApi } from '@aragon/api-react'
+import { useAragonApi } from '../../../api-react'
 import { IdentityBadge, Text, theme } from '@aragon/ui'
 import BigNumber from 'bignumber.js'
 

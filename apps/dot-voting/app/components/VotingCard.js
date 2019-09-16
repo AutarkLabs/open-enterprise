@@ -64,7 +64,7 @@ const VotingCard = ({ app, vote, onSelectVote, userAccount }) => {
         height 350px;
         display: grid;
         grid-template-columns: 1fr;
-        grid-template-rows: 20px auto auto 24px;
+        grid-template-rows: 28px 90px auto 24px;
         grid-gap: 12px;
         padding: ${3 * GU}px;
         align-items: start;
