@@ -27,14 +27,18 @@ Form.propTypes = {
   children: PropTypes.node.isRequired,
   onSubmit: PropTypes.func.isRequired,
   submitText: PropTypes.string.isRequired,
-  heading: PropTypes.string,
-  subHeading: PropTypes.string,
-  submitDisabled: PropTypes.bool,
+  heading: PropTypes.string.isRequired,
+  subHeading: PropTypes.string.isRequired,
+  submitDisabled: PropTypes.bool.isRequired,
+  separator: PropTypes.bool.isRequired,
 }
 
 Form.defaultProps = {
   submitText: 'Submit',
   submitDisabled: false,
+  heading: '',
+  subHeading: '',
+  separator: false,
 }
 
 export default Form

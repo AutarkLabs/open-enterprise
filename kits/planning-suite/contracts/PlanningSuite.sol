@@ -326,7 +326,7 @@ contract PlanningSuite is BetaKitBase {
         );
 
         addressBook.initialize();
-        dotVoting.initialize(addressBook, token, minParticipationPct, candidateSupportPct, voteDuration);
+        dotVoting.initialize(token, minParticipationPct, candidateSupportPct, voteDuration);
     }
 
     function createOtherTPSApps (
@@ -399,7 +399,7 @@ contract PlanningSuite is BetaKitBase {
         Vault vault
     ) internal
     {
-        allocations.initialize(addressBook, vault);
+        allocations.initialize(vault, 1 days);
         projects.initialize(registry, vault, token);
         rewards.initialize(vault);
     }

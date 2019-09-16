@@ -45,13 +45,16 @@ const AddressDropDownOptions = ({
 
   const loadOptions = values.map((v, i) => (
     <StyledOption key={i}>
-      <StyledLockedInput children={entities[v.index].data.name} />
+      <StyledLockedInput>
+        {entities[v.index].data.name}
+      </StyledLockedInput>
       <IconContainer
         style={{ transform: 'scale(.8)' }}
         onClick={() => onRemoveOption(v)}
         title="Click to remove"
-        children={<IconRemove />}
-      />
+      >
+        <IconRemove />
+      </IconContainer>
     </StyledOption>
   ))
 
@@ -69,19 +72,19 @@ const AddressDropDownOptions = ({
             values={values}
             title={'Click to select an Address Book entry'}
           />
-          <IconContainer
-            style={{ transform: 'scale(.8)' }}
-            children={<IconRemove />}
-          />
+          <IconContainer css="transform: scale(.8)">
+            <IconRemove />
+          </IconContainer>
         </StyledOption>
       </div>
       <StyledButton
         compact
         mode="secondary"
         onClick={addOption}
-        children={'+ Add option'}
         title={'Click to add'}
-      />
+      >
+        + Add option
+      </StyledButton>
     </div>
   )
 }

@@ -4,7 +4,7 @@ export const GET_ISSUES = gql`
   query getIssuesForRepos($reposIds: [ID!]!) {
     nodes(ids: $reposIds) {
       ... on Repository {
-        issues(last: 100, states:open) {
+        issues(last: 100, states:OPEN) {
           nodes {
             number
             id
@@ -57,7 +57,7 @@ export const getIssuesGQL = repos => {
           pageInfo {
             endCursor
             hasNextPage
-          }    
+          }
           nodes {
             number
             id

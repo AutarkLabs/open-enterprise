@@ -11,7 +11,7 @@ const github = () => {
     .pipe(pluck('result'))
 }
 
-export const initStore = (vaultAddress, network) => {
+export const initStore = vaultAddress => {
   const vaultContract = app.external(vaultAddress, vaultAbi.abi)
   return app.store(
     async (state, action) => {
@@ -19,10 +19,11 @@ export const initStore = (vaultAddress, network) => {
         const nextState = await handleEvent(state, action, vaultAddress, vaultContract)
         return nextState
       } catch (err) {
-        console.error(`[PROJECTS] store error: ${err}
-        event: ${JSON.stringify(action.event, null, 4)}
-        state: ${JSON.stringify(state, null, 4)}
-        `)
+        console.error(
+          `[PROJECTS] store error: ${err}
+          event: ${JSON.stringify(action.event, null, 4)}
+          state: ${JSON.stringify(state, null, 4)}`
+        )
       }
       // always return the state even unmodified
       return state

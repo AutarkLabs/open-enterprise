@@ -2,26 +2,34 @@
   "private": true,
   "name": "planning-suite-monorepo",
   "devDependencies": {
-    "@aragon/cli": "5.6.2",
     "coveralls": "3.0.2",
     "cypress": "^3.1.5",
+    "husky": "^3.0.0",
     "lerna": "^3.10.8",
     "truffle-privatekey-provider": "1.1.0",
     "wait-on": "^3.2.0"
   },
   "scripts": {
     "bootstrap": "npx lerna bootstrap --hoist",
+    "build:apps": "npm run build:app:address && npm run build:app:allocations && npm run build:app:discussions && npm run build:app:dot && npm run build:app:projects && npm run build:app:rewards",
+    "build:app:address": "lerna run build:app --scope=@tps/apps-address-book",
+    "build:app:allocations": "lerna run build:app --scope=@tps/apps-allocations",
+    "build:app:discussions": "lerna run build:app --scope=@tps/apps-discussions",
+    "build:app:dot": "lerna run build:app --scope=@tps/apps-dot-voting",
+    "build:app:projects": "lerna run build:app --scope=@tps/apps-projects",
+    "build:app:rewards": "lerna run build:app --scope=@tps/apps-rewards",
     "build:script:address": "lerna run build:script --scope=@tps/apps-address-book",
     "build:script:allocations": "lerna run build:script --scope=@tps/apps-allocations",
+    "build:script:discussions": "lerna run build:script --scope=@tps/apps-discussions",
     "build:script:dot": "lerna run build:script --scope=@tps/apps-dot-voting",
     "build:script:projects": "lerna run build:script --scope=@tps/apps-projects",
     "build:script:rewards": "lerna run build:script --scope=@tps/apps-rewards",
     "clean:aragon": "rm -rf ~/.aragon && rm -rf ~/.ipfs",
     "clean:build": "npm run clean -- --exclude=node_modules/",
     "clean:commit": "rm -f package-lock.json && npm run bootstrap",
-    "clean": "git clean -fXd",
-    "coverage": "npx lerna run coverage --no-bail",
-    "coveralls": "cat apps/*/coverage/lcov.info | npx coveralls",
+    "clean": "git clean -ffdx",
+    "coverage": "lerna run coverage --no-bail",
+    "coveralls": "cat apps/*/coverage/lcov.info | coveralls",
     "cypress:open": "cypress open",
     "cypress:run": "wait-on http://localhost:3000/#/0x5b6a3301a67A4bfda9D3a528CaD34cac6e7F8070 && cypress run",
     "cypress": "CYPRESS=true apps/shared/test-helpers/ganache-cli.sh",
@@ -44,19 +52,22 @@
     "devchain": "lerna run devchain --stream",
     "lint:address": "cd apps/address-book && npm run lint",
     "lint:allocations": "cd apps/allocations && npm run lint",
+    "lint:contracts": "lerna run --scope='@tps/apps-*' lint --stream",
     "lint:dot": "cd apps/dot-voting && npm run lint",
-    "lint:fix": "lerna exec --scope=@tps/apps-* --stream -- npx eslint app --fix",
+    "lint:fix": "lerna exec --scope=@tps/apps-* --stream -- eslint app --fix",
     "lint:projects": "cd apps/projects && npm run lint",
-    "lint": "npx lerna run lint --no-bail && lerna exec --scope=@tps/apps-* --stream -- npx eslint app",
+    "lint": "npm run lint:contracts && lerna exec --scope=@tps/apps-* --stream -- eslint app",
     "mine": "node ./apps/shared/test-helpers/mine.js",
     "postinstall": "npm run bootstrap",
     "publish:apps": "lerna run publish",
     "publish:http": "lerna run --scope='@tps/apps-*' publish:http --stream",
     "restart": "RESTART_KIT=true apps/shared/test-helpers/ganache-cli.sh",
     "start:kit": "cd apps/planning-suite-kit && npm run start:kit",
+    "start:kit:no:client": "cd apps/planning-suite-kit && npm run start:kit:no:client",
     "start:address": "cd apps/address-book && npm start",
     "start:allocations": "cd apps/allocations && npm start",
     "start:dev": "DEV=true apps/shared/test-helpers/ganache-cli.sh",
+    "start:no:client": "NO_CLIENT=true apps/shared/test-helpers/ganache-cli.sh",
     "start:dot": "cd apps/dot-voting && npm start",
     "start:projects": "cd apps/projects && npm start",
     "start:rpc": "lerna run --scope='@tps/kits-*' start:rpc --stream",
@@ -70,11 +81,16 @@
     "test:projects": "cd apps/projects && npm test",
     "test:rewards": "cd apps/rewards && npm test",
     "test:tps": "lerna run --scope=@tps/kits-planning-suite --stream test",
-    "test": "npx lerna run test --no-bail"
+    "test": "lerna run test --no-bail"
   },
   "dependencies": {
     "ipfs-http-client": "29.1.0",
     "rxjs": "^6.4.0",
     "rxjs-compat": "^6.4.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lerna run --concurrency 1 --stream precommit"
+    }
   }
 }

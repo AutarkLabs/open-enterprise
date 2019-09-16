@@ -1,23 +1,22 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { EmptyStateCard, unselectable } from '@aragon/ui'
 import { IconNewProject } from '../Shared'
+import { usePanelManagement } from '../Panel'
 
-const Empty = ({ action }) => (
-  <EmptyWrapper>
-    <EmptyStateCard
-      title="You have not added any projects."
-      text="Get started now by adding a new project."
-      icon={<IconNewProject alt="Empty projects icon" />}
-      actionText="New Project"
-      onActivate={action}
-    />
-  </EmptyWrapper>
-)
-
-Empty.propTypes = {
-  action: PropTypes.func.isRequired,
+const Empty = () => {
+  const { setupNewProject } = usePanelManagement()
+  return (
+    <EmptyWrapper>
+      <EmptyStateCard
+        title="You have not added any projects."
+        text="Get started now by adding a new project."
+        icon={<IconNewProject alt="Empty projects icon" />}
+        actionText="New Project"
+        onActivate={setupNewProject}
+      />
+    </EmptyWrapper>
+  )
 }
 
 const EmptyWrapper = styled.div`

@@ -5,6 +5,8 @@ import { Field, TextInput, DropDown } from '@aragon/ui'
 import { NEW_ISSUE, GET_ISSUES } from '../../../utils/gql-queries.js'
 import { DescriptionInput, Form } from '../../Form'
 import { LoadingAnimation } from '../../Shared'
+import { usePanelManagement } from '../../Panel'
+import { useAragonApi } from '@aragon/api-react'
 
 // TODO: labels
 // TODO: import validator from '../data/validation'
@@ -27,6 +29,7 @@ const Creating = () => (
 class NewIssue extends React.PureComponent {
   state = NewIssue.initialState
   static propTypes = {
+    closePanel: PropTypes.func.isRequired,
     reposManaged: PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.arrayOf(
@@ -80,14 +83,12 @@ class NewIssue extends React.PureComponent {
   canSubmit = () => !(this.state.title !== '' && this.state.selectedProject > 0)
 
   render() {
-    const { title, description, labels, isValid, selectedProject } = this.state
+    const { title, description, selectedProject } = this.state
     const { reposManaged } = this.props
     const {
       projectChange,
       titleChange,
       descriptionChange,
-      labelsChange,
-      formSubmit,
     } = this
 
     const items =
@@ -112,9 +113,7 @@ class NewIssue extends React.PureComponent {
         mutation={NEW_ISSUE}
         refetchQueries={reGet}
         variables={{ title, description, id }}
-        onError={() => {
-          console.error
-        }}
+        onError={console.error}
       >
         {(newIssue, result) => {
           const { data, loading, error, called } = result
@@ -163,12 +162,34 @@ class NewIssue extends React.PureComponent {
           const { createIssue } = data
           if (createIssue) {
             this.props.closePanel()
-            return null
-          } else return null
+          }
+          return null
         }}
       </Mutation>
     )
   }
 }
 
-export default NewIssue
+// TODO: move entire component to functional component
+// the following was a quick way to allow us to use hooks
+const NewIssueWrap = () => {
+  const { closePanel } = usePanelManagement()
+  const { appState: { repos } } = useAragonApi()
+  const repoNames = repos
+    ? repos.map(repo => ({
+      name: repo.metadata.name,
+      id: repo.data._repo,
+    }))
+    : 'No repos'
+  const reposIds = (repos || []).map(repo => repo.data.repo)
+
+  return (
+    <NewIssue
+      closePanel={closePanel}
+      reposManaged={repoNames}
+      reposIds={reposIds}
+    />
+  )
+}
+
+export default NewIssueWrap

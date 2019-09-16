@@ -22,7 +22,7 @@ export const syncTokens = async (state, { token }, vaultContract) => {
   try {
     const tokens = state.tokens
     let tokenIndex = tokens.findIndex(currentToken => currentToken.addr === token)
-    if(tokenIndex == -1) {
+    if(tokenIndex === -1) {
       let newToken = await loadToken(token, vaultContract)
       tokenIndex = tokens.findIndex(currentToken => currentToken.symbol === newToken.symbol)
       if(tokenIndex !== -1) {

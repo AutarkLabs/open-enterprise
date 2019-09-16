@@ -12,10 +12,10 @@ import {
   breakpoint,
 } from '@aragon/ui'
 import { formatDistance } from 'date-fns'
-import marked from 'marked'
-import renderHTML from 'react-render-html'
 import { IconGitHub, BountyContextMenu } from '../../Shared'
 import { BOUNTY_STATUS, BOUNTY_BADGE_COLOR } from '../../../utils/bounty-status'
+import { Markdown } from '../../../../../../shared/ui'
+import { usePanelManagement } from '../../Panel'
 
 const StyledTable = styled.div`
   margin-bottom: 20px;
@@ -62,6 +62,13 @@ const SummaryTable = ({ expLevel, deadline, workStatus, balance }) => {
     </StyledCell>
   ))
   return <StyledTable>{mappedTableFields}</StyledTable>
+}
+
+SummaryTable.propTypes = {
+  expLevel: PropTypes.string.isRequired,
+  deadline: PropTypes.string.isRequired,
+  workStatus: PropTypes.string.isRequired,
+  balance: PropTypes.string.isRequired,
 }
 
 const Wrapper = styled.div`
@@ -127,6 +134,16 @@ const IssueEvent = props => (
     </IssueEventDetails>
   </IssueEventMain>
 )
+
+IssueEvent.propTypes = {
+  avatarUrl: PropTypes.string.isRequired,
+  url: PropTypes.string.isRequired,
+  login: PropTypes.string.isRequired,
+  eventDescription: PropTypes.string.isRequired,
+  eventMessage: PropTypes.string,
+  eventAction: PropTypes.string,
+  date: PropTypes.string.isRequired,
+}
 
 const calculateAgo = pastDate => {
   const date = Date.now()
@@ -239,16 +256,7 @@ const activities = (
 
 const deadlineDistance = date => formatDistance(new Date(date), new Date())
 
-const detailsCard = ({
-  issue,
-  onReviewApplication,
-  onReviewWork,
-  onUpdateBounty,
-  onViewFunding,
-  onRequestAssignment,
-  onSubmitWork,
-  onAllocateSingleBounty,
-}) => {
+const DetailsCard = ({ issue }) => {
   const summaryData = {
     expLevel: issue.expLevel === undefined ? '-' : issue.expLevel,
     deadline:
@@ -289,18 +297,7 @@ const detailsCard = ({
         </div>
         <div style={{ ...column, flex: 0, alignItems: 'flex-end' }}>
           <ContextMenu>
-            <BountyContextMenu
-              onAllocateSingleBounty={() => onAllocateSingleBounty(issue)}
-              onRequestAssignment={() => onRequestAssignment(issue)}
-              onReviewApplication={() => onReviewApplication(issue)}
-              onReviewWork={() => onReviewWork(issue)}
-              onSubmitWork={() => onSubmitWork(issue)}
-              onUpdateBounty={() => onUpdateBounty(issue)}
-              onViewFunding={() => onViewFunding(issue)}
-              requestsData={issue.requestsData}
-              work={issue.work}
-              workStatus={issue.workStatus}
-            />
+            <BountyContextMenu issue={issue} />
           </ContextMenu>
           {issue.balance > 0 && (
             <Badge
@@ -315,13 +312,10 @@ const detailsCard = ({
       </Wrapper>
       {issue.workStatus ? <SummaryTable {...summaryData} /> : <Separator />}
       <FieldTitle>Description</FieldTitle>
-      <Text.Block style={{ marginTop: '20px', marginBottom: '20px' }}>
-        <MarkdownWrapper>
-          {issue.body
-            ? renderHTML(marked(issue.body))
-            : 'No description available'}
-        </MarkdownWrapper>
-      </Text.Block>
+      <Markdown
+        content={issue.body || 'No description available'}
+        style={{ marginTop: '20px', marginBottom: '20px' }}
+      />
       <Text size="small" color={theme.textTertiary}>
         {issue.labels.totalCount
           ? issue.labels.edges.map(label => (
@@ -340,14 +334,19 @@ const detailsCard = ({
   )
 }
 
-const eventsCard = ({ issue, onReviewApplication, onReviewWork }) => {
+DetailsCard.propTypes = {
+  issue: PropTypes.object.isRequired,
+}
+
+const EventsCard = ({ issue }) => {
+  const { reviewApplication, reviewWork } = usePanelManagement()
   const issueEvents = activities(
     issue,
     issue.requestsData,
     issue.workSubmissions,
     issue.fundingHistory,
-    onReviewApplication,
-    onReviewWork
+    reviewApplication,
+    reviewWork
   )
 
   return (
@@ -368,7 +367,11 @@ const eventsCard = ({ issue, onReviewApplication, onReviewWork }) => {
   )
 }
 
-const IssueDetail = issue => {
+EventsCard.propTypes = {
+  issue: PropTypes.object.isRequired,
+}
+
+const IssueDetail = ({ issue }) => {
   return (
     <Viewport>
       {({ below }) =>
@@ -381,10 +384,10 @@ const IssueDetail = issue => {
                 marginBottom: below('small') ? '0.2rem' : '2rem',
               }}
             >
-              {detailsCard(issue)}
+              <DetailsCard issue={issue} />
             </div>
             <div style={{ minWidth: '330px', width: '100%' }}>
-              {eventsCard(issue)}
+              <EventsCard issue={issue} />
             </div>
           </CardWrapper>
         ) : (
@@ -397,10 +400,10 @@ const IssueDetail = issue => {
                 marginRight: '2rem',
               }}
             >
-              {detailsCard(issue)}
+              <DetailsCard issue={issue} />
             </div>
             <div style={{ maxWidth: '400px', minWidth: '350px', width: '30%' }}>
-              {eventsCard(issue)}
+              <EventsCard issue={issue} />
             </div>
           </CardWrapper>
         )
@@ -410,23 +413,18 @@ const IssueDetail = issue => {
 }
 
 IssueDetail.propTypes = {
-  onAllocateSingleBounty: PropTypes.func.isRequired,
-  onSubmitWork: PropTypes.func.isRequired,
-  onRequestAssignment: PropTypes.func.isRequired,
-  onReviewApplication: PropTypes.func.isRequired,
-  onReviewWork: PropTypes.func.isRequired,
-  onUpdateBounty: PropTypes.func.isRequired,
-  onViewFunding: PropTypes.func.isRequired,
-  workStatus: PropTypes.oneOf([
-    undefined,
-    'funded',
-    'review-applicants',
-    'in-progress',
-    'review-work',
-    'fulfilled',
-  ]),
-  work: PropTypes.oneOf([ undefined, PropTypes.object ]),
-  fundingHistory: PropTypes.array,
+  issue: PropTypes.shape({
+    workStatus: PropTypes.oneOf([
+      undefined,
+      'funded',
+      'review-applicants',
+      'in-progress',
+      'review-work',
+      'fulfilled',
+    ]),
+    work: PropTypes.oneOf([ undefined, PropTypes.object ]),
+    fundingHistory: PropTypes.array,
+  }).isRequired,
 }
 
 const CardWrapper = styled.div`
@@ -460,112 +458,6 @@ const StyledEventsCard = styled(StyledDetailsCard)`
     border-bottom: 1px solid ${theme.contentBorder};
   }
 `
-const MarkdownWrapper = styled.div`
-  word-wrap: break-word;
-
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    font-weight: 700;
-    line-height: 1;
-    cursor: text;
-    position: relative;
-    margin: 1em 0 15px;
-    padding: 0;
-  }
-  h1 {
-    font-size: 2.5em;
-    border-bottom: 1px solid ${theme.contentBorder};
-  }
-  h2 {
-    font-size: 2em;
-    border-bottom: 1px solid ${theme.contentBorder};
-  }
-  h3 {
-    font-size: 1.55em;
-  }
-  h4 {
-    font-size: 1.2em;
-  }
-  h5 {
-    font-size: 1em;
-  }
-  h6 {
-    color: ${theme.textSecondary};
-    font-size: 1em;
-  }
-  p,
-  blockquote,
-  table,
-  pre {
-    margin: 3px 0;
-  }
-  blockquote {
-    padding: 0 15px;
-    border-left: 4px solid ${theme.textTertiary};
-    color: ${theme.textTertiary};
-  }
-  blockquote > :first-child {
-    margin-top: 0;
-  }
-  blockquote > :last-child {
-    margin-bottom: 10px;
-  }
-
-  a {
-    color: ${theme.gradientStart};
-    text-decoration: none;
-  }
-  a:hover {
-    text-decoration: underline;
-  }
-  a > code,
-  p > code {
-    background-color: rgba(27, 31, 35, 0.05);
-    border-radius: 3px;
-    padding: 0.2em 0.4em;
-  }
-  table {
-    border-collapse: collapse;
-  }
-  tr {
-    border-top: 1px solid ${theme.contentBorder};
-  }
-  tr:nth-child(2n) {
-    background-color: #f8f8f8;
-  }
-  th,
-  td {
-    border: 1px solid ${theme.contentBorder};
-    padding: 6px 13px;
-  }
-  img {
-    max-width: 95%;
-  }
-  pre {
-    margin: 0;
-    background-color: ${theme.mainBackground};
-    border-radius: 3px;
-    overflow: auto;
-    padding: 16px;
-  }
-  ul {
-    padding-left: 30px;
-  }
-  li:last-of-type {
-    padding-bottom: 1rem;
-  }
-  ol {
-    padding-left: 30px;
-    padding-bottom: 1rem;
-  }
-  ol li ul:first-of-type {
-    margin-top: 0;
-  }
-`
 
 const Separator = styled.hr`
   height: 1px;
@@ -573,4 +465,5 @@ const Separator = styled.hr`
   opacity: 0.2;
 `
 
+// eslint-disable-next-line import/no-unused-modules
 export default IssueDetail
