@@ -5,6 +5,7 @@ import styled from 'styled-components'
 
 import { Form, FormField } from '../Form'
 import { isStringEmpty } from '../../utils/helpers'
+import { BigNumber } from 'bignumber.js'
 import { MIN_AMOUNT } from '../../utils/constants'
 
 // TODO:: This should be votingTokens from account?
@@ -25,16 +26,18 @@ class NewBudget extends React.Component {
 
   changeField = e => {
     const { name, value } = e.target
-    this.setState({ [name]: value })
-    this.setState({ [name + 'Error']: isStringEmpty(value) ||
-                    (name === 'amount' && value < MIN_AMOUNT) })
+    this.setState({
+      [name]: value,
+      [name + 'Error']: isStringEmpty(value) ||
+        (name === 'amount' && BigNumber(value).lt(MIN_AMOUNT))
+    })
   }
 
   createBudget = () => {
     const { name, amount } = this.state
 
     this.props.onCreateBudget({
-      name,
+      description: name,
       amount,
     })
     this.setState(INITIAL_STATE)
@@ -71,6 +74,7 @@ class NewBudget extends React.Component {
                 name="amount"
                 type="number"
                 min={MIN_AMOUNT}
+                step={0.1}
                 onChange={this.changeField}
                 wide={true}
                 value={amount}
