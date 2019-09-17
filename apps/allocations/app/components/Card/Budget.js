@@ -10,7 +10,7 @@ import {
   IconAdd,
   ProgressBar,
   Text,
-  theme,
+  useTheme,
 } from '@aragon/ui'
 import { displayCurrency } from '../../utils/helpers'
 
@@ -25,6 +25,7 @@ const Budget = ({
   onNewAllocation,
   screenSize,
 }) => {
+  const theme = useTheme()
   const newAllocation = () => {
     onNewAllocation(id, name, amount)
   }
@@ -39,10 +40,10 @@ const Budget = ({
           </ContextMenuItem>
         </ContextMenu>
       </MenuContainer>
-      <CardTitle>{name}</CardTitle>
+      <CardTitle color={theme.content}>{name}</CardTitle>
       <StatsContainer>
         <StyledStats>
-          <StatsValueBig>
+          <StatsValueBig color={theme.contentSecondary}>
             {displayCurrency(BigNumber(amount))}
             <Text>{' ' + currency + ' per period'}</Text>
           </StatsValueBig>
@@ -53,14 +54,14 @@ const Budget = ({
             />
           </StatsValueBig>
           <StatsValueSmall css={{
-            color: '#212B36',
+            color: theme.content,
             paddingTop: '8px',
           }}>
             {displayCurrency(BigNumber(amount).minus(allocated))}
             <Text>{' ' + currency + ' below limit'}</Text>
           </StatsValueSmall>
           <StatsValueSmall css={{
-            color: '#637381',
+            color: theme.contentSecondary,
             paddingTop: '4px',
           }}>
             {BigNumber(amount)
@@ -123,7 +124,7 @@ const CardTitle = styled(Text.Block).attrs({
   margin-top: 10px;
   margin-bottom: 5px;
   text-align: center;
-  color: ${theme.textPrimary};
+  color: ${props => props.color};
   display: block;
   /* stylelint-disable-next-line */
   display: -webkit-box;
@@ -149,7 +150,7 @@ const StyledStats = styled.div`
 
 const StatsValueBig = styled.div`
   font-size: 16px;
-  color: #637381;
+  color: ${props => props.color};
 `
 
 const StatsValueSmall = styled.div`
