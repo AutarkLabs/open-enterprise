@@ -6,6 +6,16 @@
       "params": []
     },
     {
+      "name": "Fund unassigned issues",
+      "id": "FUND_OPEN_ISSUES_ROLE",
+      "params": []
+    },
+    {
+      "name": "Remove funding from issues",
+      "id": "REMOVE_ISSUES_ROLE",
+      "params": []
+    },
+    {
       "name": "Add project repos",
       "id": "ADD_REPO_ROLE",
       "params": []
