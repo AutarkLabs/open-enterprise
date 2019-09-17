@@ -53,10 +53,26 @@ export const initializeGraphQLClient = token => {
   })
 }
 
-const getRepoData = repo => {
+export const getRepoData = async repoIdHex => {
   try {
-    let data = graphQLClient.request(repoData(repo))
-    return data
+    const repoId = toAscii(repoIdHex)
+
+    let { node } = await graphQLClient.request(repoData(repoId))
+    const commits = node.defaultBranchRef
+      ? node.defaultBranchRef.target.history.totalCount
+      : 0
+    const description = node.description
+      ? node.description
+      : '(no description available)'
+    return {
+      _repo: repoId,
+      name: node.name,
+      url: node.url,
+      description: description,
+      // TODO: disabled for now (apparently needs push permission on the repo to work)
+      collaborators: 0, //node.collaborators.totalCount,
+      commits,
+    }
   } catch (err) {
     console.error('getRepoData failed: ', err)
   }
@@ -72,25 +88,10 @@ const loadRepoData = id => {
       // handle repo removed case
         if (!response) return resolve({ repoRemoved: true })
 
-        const _repo = toAscii(id)
-        getRepoData(_repo).then(({ node }) => {
-          const commits = node.defaultBranchRef
-            ? node.defaultBranchRef.target.history.totalCount
-            : 0
-          const description = node.description
-            ? node.description
-            : '(no description available)'
-          const metadata = {
-            name: node.name,
-            url: node.url,
-            description: description,
-            // TODO: disabled for now (apparently needs push permission on the repo to work)
-            collaborators: 0, //node.collaborators.totalCount,
-            commits,
-          }
+        getRepoData(id).then(({ _repo, ...metadata }) => {
           return resolve({
             _repo,
-            index: response.index,
+            index: response.index, // always `undefined`
             metadata,
             repoRemoved: false,
           })

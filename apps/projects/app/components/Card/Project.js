@@ -16,7 +16,7 @@ import {
   BASE_CARD_WIDTH,
   CARD_STRETCH_BREAKPOINT,
 } from '../../utils/responsive'
-import { useAragonApi } from '@aragon/api-react'
+import { useAragonApi } from '../../api-react'
 import { toHex } from 'web3-utils'
 
 const Project = ({

@@ -1,8 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import styled from 'styled-components'
 
-import { useNetwork } from '@aragon/api-react'
+import { useNetwork } from '../../api-react'
 import {
   Badge,
   ContextMenu,
@@ -12,7 +11,7 @@ import {
 } from '@aragon/ui'
 
 import { LocalIdentityBadge } from '../../../../../shared/identity'
-import { Empty } from '../Card'
+import { IconDelete } from '../../../../../shared/ui'
 
 // TODO: colors taken directly from Invision
 const ENTITY_TYPES = [
@@ -23,76 +22,63 @@ const ENTITY_TYPES = [
 
 const entitiesSort = (a, b) => a.data.name.toUpperCase() > b.data.name.toUpperCase() ? 1 : -1
 
-const Entities = ({ entities, onNewEntity, onRemoveEntity }) => {
+const Entities = ({ entities, onRemoveEntity }) => {
   const network = useNetwork()
   const removeEntity = address => () => onRemoveEntity(address)
 
-  if (entities.length === 0) {
-    return <Empty action={onNewEntity} />
-  } else {
-    return (
-      <DataView
-        mode="table"
-        fields={[ 'Entity', '' ]}
-        entries={
-          entities.sort(entitiesSort).map(({ data: { name, entryAddress, entryType } }) =>
-            [ name, entryAddress, entryType ]
-          )
-        }
+  return (
+    <DataView
+      mode="adaptive"
+      fields={[ 'Name', 'Address', 'Type' ]}
+      entries={
+        entities.sort(entitiesSort).map(({ addr: entryAddress, data: { name, type: entryType } }) =>
+          [ name, entryAddress, entryType ]
+        )
+      }
 
-        renderEntry={([ name, entryAddress, entryType ]) => {
-          const typeRow = ENTITY_TYPES.filter(row => row.name === entryType)[0]
-          const values = [
-            // eslint-disable-next-line react/jsx-key
-            <EntityWrapper>
-              <Text
-                size="xlarge"
-                css="padding-bottom: 5px"
-              >
-                {name}
-              </Text>
-              <LocalIdentityBadge
-                networkType={network && network.type}
-                entity={entryAddress}
-                shorten={true}
-              />
-            </EntityWrapper>,
+      renderEntry={([ name, entryAddress, entryType ]) => {
+        const typeRow = ENTITY_TYPES.filter(row => row.name === entryType)[0]
+        const values = [
+          <Text
+            key={entryAddress}
+            size="large"
+          >
+            {name}
+          </Text>,
+          <LocalIdentityBadge
+            key={entryAddress}
+            networkType={network && network.type}
+            entity={entryAddress}
+            shorten={true}
+          />,
+          <Badge
+            key={entryAddress}
+            foreground={typeRow.fg}
+            background={typeRow.bg}
+            css="text-align: right"
+          >
+            {typeRow.name}
+          </Badge>
+        ]
+        return values
+      }}
 
-            // eslint-disable-next-line react/jsx-key
-            <Badge
-              foreground={typeRow.fg}
-              background={typeRow.bg}
-              css="text-align: right"
-            >
-              {typeRow.name}
-            </Badge>
-          ]
-          return values
-        }}
-
-        renderEntryActions={([ , entryAddress ]) => (
-          <ContextMenu>
-            <ContextMenuItem onClick={removeEntity(entryAddress)}>
-                Remove
-            </ContextMenuItem>
-          </ContextMenu>
-        )}
-      />
-    )
-  }
+      renderEntryActions={([ , entryAddress ]) => (
+        <ContextMenu>
+          <ContextMenuItem onClick={removeEntity(entryAddress)}>
+            <IconDelete />
+            <span css="padding: 4px 8px 0px">Remove</span>
+          </ContextMenuItem>
+        </ContextMenu>
+      )}
+    />
+  )
 }
 
 Entities.propTypes = {
   // TODO: shape better
   entities: PropTypes.array.isRequired,
-  onNewEntity: PropTypes.func.isRequired,
   onRemoveEntity: PropTypes.func.isRequired,
 }
 
-const EntityWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-left: 10px;
-  padding: 15px 0;
-`
 export default Entities

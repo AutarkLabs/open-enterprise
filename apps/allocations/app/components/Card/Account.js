@@ -3,7 +3,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { BigNumber } from 'bignumber.js'
 
-import { useNetwork } from '@aragon/api-react'
+import { useNetwork } from '../../api-react'
 import {
   Card,
   ContextMenu,

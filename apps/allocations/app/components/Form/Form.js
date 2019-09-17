@@ -2,7 +2,14 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import { Button, Text, theme } from '@aragon/ui'
 
-const Form = ({ children, onSubmit, submitText, heading, subHeading }) => {
+const Form = ({
+  children,
+  onSubmit,
+  submitText,
+  heading,
+  subHeading,
+  disabled
+}) => {
   return (
     // TODO: Fix the SidePanel 2 lines heading thing
     <React.Fragment>
@@ -15,6 +22,7 @@ const Form = ({ children, onSubmit, submitText, heading, subHeading }) => {
         mode="strong"
         wide
         onClick={onSubmit}
+        disabled={disabled}
       >
         {submitText}
       </Button>
@@ -28,10 +36,12 @@ Form.propTypes = {
   submitText: PropTypes.string.isRequired,
   heading: PropTypes.string,
   subHeading: PropTypes.string,
+  disabled: PropTypes.bool,
 }
 
 Form.defaultProps = {
   submitText: 'Submit',
+  disabled: false,
 }
 
 export default Form
