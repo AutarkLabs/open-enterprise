@@ -6,6 +6,5 @@ module.exports = {
   ),
   Kernel: artifacts.require('./kernel/Kernel'),
   MiniMeToken: artifacts.require('./lib/minime/MiniMeToken'),
-  StandardBounties: artifacts.require('./lib/bounties/StandardBounties'),
   getContract: name => artifacts.require(name)
 }
