@@ -16,7 +16,6 @@ node_js: '10.15' # equivalent to node 10.15.x
 cache:
   directories:
     - node_modules
-    - /home/travis/.nvm/versions/node/v10.15.3/lib/node_modules/
 
 jobs:
   include:

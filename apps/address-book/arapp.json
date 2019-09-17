@@ -17,9 +17,9 @@
       "network": "rpc",
       "appName": "address-book.aragonpm.eth"
     },
-    "rinkeby": {
+    "staging": {
       "registry": "0x98df287b6c145399aaa709692c8d308357bc085d",
-      "appName": "tps-address-book.open.aragonpm.eth",
+      "appName": "address-book-staging.open.aragonpm.eth",
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
       "network": "rinkeby"
     },
@@ -29,9 +29,9 @@
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
       "network": "rinkeby"
     },
-    "staging": {
+    "rinkeby": {
       "registry": "0x98df287b6c145399aaa709692c8d308357bc085d",
-      "appName": "address-book-staging.open.aragonpm.eth",
+      "appName": "tps-address-book.open.aragonpm.eth",
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
       "network": "rinkeby"
     },
