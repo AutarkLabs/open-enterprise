@@ -1,207 +1,191 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { Info } from '@aragon/ui'
+import { DropDown, IconClose, Text, TextInput, theme } from '@aragon/ui'
 import web3Utils from 'web3-utils'
-import { OptionsInput } from '../../../../../shared/ui'
-import { BigNumber } from 'bignumber.js'
+import styled from 'styled-components'
 
-import {
-  DescriptionInput,
-  Form,
-  FormField,
-  InputDropDown,
-} from '../Form'
+import { RecipientsInput } from '../../../../../shared/ui'
+import { BigNumber } from 'bignumber.js'
+import { MIN_AMOUNT } from '../../utils/constants'
+import { isStringEmpty } from '../../utils/helpers'
+import { DescriptionInput, Form, FormField } from '../Form'
 
 const INITIAL_STATE = {
-  activePayoutOption: 0,
-  addressError: false,
-  allocationDescription: '',
-  allocationError: false,
-  allocationType: '',
-  allocationTypeIndex: 1,
-  amount: null,
-  payoutToken: '',
-  payoutTokenIndex: 0,
-  payoutType: '',
-  payoutTypeIndex: 0,
-  userInput: { addr: '' },
-  userInputCandidates: [],
-  votingTokens: null,
+  budgetValue: -1,
+  budgetEmpty: true,
+  descriptionValue: '',
+  descriptionEmpty: true,
+  amountValue: '',
+  amountInvalid: true,
+  amountOverBudget: false,
+  amountOverFunds: false,
+  recipientsCurrent: '',
+  recipientsAll: [],
+  recipientsEmpty: true,
+  recipientsInvalid: false,
 }
 
-const message = {
-  addressError: 'All options must be addresses and cannot be duplicates.',
-  descriptionError: 'A description of the allocation is required.',
-  allocationError: 'Amount must be set.',
-  transferWarning:
-    'This will create a Dot Vote and after it closes, it will result in a financial transfer.',
-  tokenTransferWarning:
-    'Since you are proposing an allocation with tokens, it will be withdrawn from the Vault if approved, since Accounts do not hold tokens. Vault Balance: ' ,
-  ethBalanceError: 'Amount is greater than ETH balance held by Account',
-  tokenBalanceError: 'Amount is greater than token balance held by Vault',
+const errorMessages = {
+  amountOverBudget: 'Amount must be smaller than available budget',
+  amountOverFunds: 'Amount must be smaller than underlying funds',
+  recipientsInvalid: 'Recipients must be valid Ethereum addresses',
 }
 
-const uniqueAddressValidation = (entries, addr) => {
-  const isAddress = web3Utils.isAddress(addr)
-  const isUnique = !entries.length || !entries.map(e => e.addr).includes(addr)
-  const notEmpty = addr && !!addr.length && addr !== '0x0'
-  const validated = isAddress && isUnique && notEmpty
-  return validated // approved if not errorCondition
+const validateRecipient = (current, all) => {
+  if (current === '') return true
+  const isAddress = web3Utils.isAddress(current)
+  const isUnique = !all.length || !all.includes(current)
+  return isAddress && isUnique
+}
+
+const isRecipientEmpty = (current) => {
+  const empty = current.length === 0 || current === '0x0'
+  return empty
 }
 
 class NewAllocation extends React.Component {
   static propTypes = {
-    onSubmitAllocation: PropTypes.func.isRequired,
-    description: PropTypes.string,
-    balances: PropTypes.arrayOf(PropTypes.object).isRequired,
-    // TODO: Fix balance, should be required (is not arriving)
-    balance: PropTypes.string,
     id: PropTypes.string.isRequired,
-    subHeading: PropTypes.string,
+    onSubmitAllocation: PropTypes.func.isRequired,
+    budgetList: PropTypes.arrayOf(PropTypes.string).isRequired,
+    selectedBudget: PropTypes.number,
+    budgetLimit: PropTypes.string.isRequired,
+    fundsLimit: PropTypes.string.isRequired,
+    description: PropTypes.string,
+    currency: PropTypes.string.isRequired,
   }
 
-  state = {
-    ...INITIAL_STATE,
-    tokenAddress: this.props.balances[0].address,
+  constructor(props) {
+    super(props)
+    this.state = INITIAL_STATE
+    if (props.selectedBudget >= 0) {
+      this.state.budgetValue = props.selectedBudget
+      this.state.budgetEmpty = false
+    }
   }
 
-  // TODO: improve field checking for input errors and sanitize
-  changeField = ({ target: { name, value } }) => {
-    // reset error to false if changing related field
-    const resetAddressError = [
-      'userInput',
-      'userInputCandidates',
-    ].includes(name)
-    const resetAllocationsError = name === 'amount'
-    const resetDescriptionError = name === 'allocationDescription'
+  changeField = e => {
+    if (e.target === undefined) {
+      this.setState({
+        budgetValue: e,
+        budgetEmpty: e === -1
+      })
+      return
+    }
+    const { name, value } = e.target
+    const { budgetLimit, fundsLimit } = this.props
+    const { recipientsAll } = this.state
 
-    // react chains the state changes asynchronously
-    resetAddressError && this.setState({ addressError: false })
-    resetAllocationsError && this.setState({ allocationError: false, ethBalanceError: false, tokenBalanceError: false })
-    resetDescriptionError && this.setState({ descriptionError: false })
+    if (name === 'description') {
+      this.setState({
+        descriptionValue: value,
+        descriptionEmpty: isStringEmpty(value),
+      })
+    }
 
-    this.setState({ [name]: value })
-  }
+    else if (name === 'amount') {
+      this.setState({
+        amountValue: value,
+        amountInvalid: isStringEmpty(value)
+          || BigNumber(value).lt(MIN_AMOUNT),
+        amountOverBudget: BigNumber(value).gt(budgetLimit),
+        amountOverFunds: BigNumber(value).gt(fundsLimit),
+      })
+    }
 
-  // TODO: Manage dropdown to return a name and value as the rest of inputs
+    else if (name === 'recipientsChange') {
+      this.setState({
+        recipientsCurrent: value,
+        recipientsInvalid: !validateRecipient(value, recipientsAll),
+        recipientsEmpty: isRecipientEmpty(value),
+      })
+    }
 
-  changePayoutToken = items => index => {
-    this.setState({
-      allocationError: false,
-      payoutTokenIndex: index,
-      payoutToken: items[index],
-      tokenAddress: this.props.balances[index].address
-    })
+    else if (name === 'recipientsAdd') {
+      this.setState({
+        recipientsCurrent: '',
+        recipientsAll: value,
+        recipientsInvalid: false,
+        recipientsEmpty: true,
+      })
+    }
+
+    else if (name === 'recipientsRemove') {
+      this.setState({
+        recipientsAll: value,
+      })
+    }
+
+    else if (name === 'recipientsRemoveCurrent') {
+      if (recipientsAll.length > 0) {
+        const last = recipientsAll.length - 1
+        this.setState({
+          recipientsCurrent: recipientsAll[last],
+          recipientsAll: recipientsAll.slice(0, last),
+          recipientsInvalid: false,
+          recipientsEmpty: false,
+        })
+      }
+      else {
+        this.setState({
+          recipientsCurrent: '',
+          recipientsInvalid: false,
+          recipientsEmpty: true,
+        })
+      }
+    }
   }
 
   submitAllocation = () => {
-    const { props, state } = this
-    const token  = props.balances[state.payoutTokenIndex]
-    const { userInput, userInputCandidates } = state
-    const informational = state.allocationTypeIndex === 0
-    const recurring = state.payoutTypeIndex !== 0
-    const candidates = uniqueAddressValidation(userInputCandidates, userInput.addr) ?
-      [ userInput, ...userInputCandidates ] : userInputCandidates
+    const {
+      budgetValue,
+      descriptionValue,
+      amountValue,
+      recipientsCurrent,
+      recipientsAll
+    } = this.state
+    const recipients = this.state.recipientsEmpty ? recipientsAll
+      : [ ...recipientsAll, recipientsCurrent ]
     const allocation = {
-      budgetId: this.props.id,
-      informational: informational,
-      recurring: recurring,
-      period: recurring ? 86400 * 31 : 0,
-      balance: this.state.amount * 10e17,
-      description: this.state.allocationDescription,
-      tokenAddress: this.state.tokenAddress,
+      payoutId: this.props.id,
+      budgetName: budgetValue,
+      balance: amountValue * 10e17,
+      description: descriptionValue,
+      addresses: recipients
     }
-
-    if (state.addressError || state.allocationError || state.descriptionError) {
-      return
-    }
-    if(allocation.description === ''){
-      this.setState({ descriptionError: true })
-      return
-    }
-    if (!informational && allocation.balance === 0) {
-      this.setState({ allocationError: true })
-      return
-    }
-    if(state.payoutTokenIndex === 0 && state.amount * 10e17 > props.balance) {
-      this.setState({ ethBalanceError: true })
-      return
-    }
-    if(state.payoutTokenIndex !== 0 && state.amount * 10**token.decimals > token.amount) {
-      this.setState({ tokenBalanceError: true })
-      return
-    }
-    if (!candidates.length) {
-      this.setState({ addressError: true })
-      return
-    }
-
-    // If everything is ok (no validation error) add candidates to allocation.addresses
-    allocation.addresses = candidates.map(c => c.addr)
-    props.onSubmitAllocation(allocation)
+    this.props.onSubmitAllocation(allocation)
     this.setState(INITIAL_STATE)
-  }
-  WarningMessage = (hasWarning, type ) =>{
-    if(hasWarning){
-      let specificMessage = message[type]
-      if(type === 'tokenTransferWarning'){
-        let token = this.props.balances[this.state.payoutTokenIndex]
-        let tokenDisplay = BigNumber(token.amount)
-          .div(
-            BigNumber(10).pow(token.decimals)
-          ).dp(3)
-        specificMessage = specificMessage + tokenDisplay
-      }
-      return (
-        <Info.Action title="Warning" style={{ marginBottom: '10px' }}>
-          {specificMessage}
-        </Info.Action>
-      )
-    }
-    return null
   }
 
   render() {
     const { props, state } = this
-    const transferEnabled = state.allocationTypeIndex === 1
-    let availableTokens =  this.props.balances.map( balance => balance.symbol)
 
-    const amountInput = {
-      name: 'amount',
-      value: state.amount || '',
-      onChange: this.changeField,
-      type: 'number',
-      min: '0',
-    }
 
-    const amountDropDown = {
-      name: 'token',
-      items: availableTokens,
-      selected: state.payoutTokenIndex,
-      onChange: this.changePayoutToken(availableTokens),
-    }
-
-    const amountWarningMessages = (
-      this.WarningMessage(state.payoutTokenIndex !== 0, 'tokenTransferWarning')
+    const budgetDropDown = (
+      <FormField
+        required
+        label="Budget"
+        input={
+          <DropDown
+            name="budget"
+            items={props.budgetList}
+            selected={state.budgetValue}
+            onChange={this.changeField}
+            wide={true}
+          />
+        }
+      />
     )
-
-    const errorMessages = [ 'allocationError', 'addressError', 'descriptionError', 'ethBalanceError', 'tokenBalanceError' ].map((e, i) => (
-      <div key={i}>
-        <ErrorMessage hasError={state[e]} type={e} />
-      </div>
-    ))
 
     const descriptionField = (
       <FormField
-        visible={true}
         required
         label="Description"
         input={
           <DescriptionInput
-            name="allocationDescription"
+            name="description"
             onChange={this.changeField}
-            placeholder="Describe your allocation."
-            value={state.allocationDescription}
+            value={state.descriptionValue}
           />
         }
       />
@@ -209,86 +193,122 @@ class NewAllocation extends React.Component {
 
     const amountField = (
       <FormField
-        visible={transferEnabled}
         required
-        separator
         label="Amount"
-        // TODO: We should back to width: '375px' when RecurringDropDown is used again
         input={
-          <div style={{ display: 'flex', width: '220px' }}>
-            <InputDropDown
-              wide
-              textInput={amountInput}
-              dropDown={amountDropDown}
-            />
-            {/* // Not currently implemented: */}
-            {/* <RecurringDropDown
-            dropDown={{
-              name: 'payoutType',
-              items: PAYOUT_TYPES,
-              active: this.payoutTypeIndex,
-              onChange: this.changePayoutType,
-            }}
-          /> */}
-          </div>
+          <React.Fragment>
+            <InputGroup>
+              <TextInput
+                name="amount"
+                type="number"
+                min={MIN_AMOUNT}
+                step="any"
+                value={state.amountValue}
+                onChange={this.changeField}
+                wide={true}
+                css={{ borderRadius: '4px 0px 0px 4px' }}
+              />
+              <CurrencyBox>{props.currency}</CurrencyBox>
+            </InputGroup>
+            <InputGroup css={{ justifyContent: 'right' }}>
+              <Text
+                size="small"
+                css={{ paddingTop: '10px' }}>
+                Available Budget: {props.budgetLimit} {props.currency}
+              </Text>
+            </InputGroup>
+          </React.Fragment>
         }
       />
     )
 
-
-    const userOptionsField = (
+    const userRecipientsField = (
       <FormField
-        label="Options"
+        label="Recipients"
         required
-        separator
         input={
-          <OptionsInput
-            error={state.addressError}
-            input={state.userInput}
-            name="userInputCandidates"
+          <RecipientsInput
+            name="recipients"
+            current={state.recipientsCurrent}
+            all={state.recipientsAll}
             onChange={this.changeField}
-            placeholder="Enter an address option"
-            validator={uniqueAddressValidation}
-            values={state.userInputCandidates}
+            placeholder="Type here…"
+            valid={!state.recipientsInvalid}
+            empty={state.recipientsEmpty}
           />
         }
       />
     )
 
+    const errorBlocks = Object.keys(errorMessages).map((e, i) => (
+      <div key={i}>
+        <ErrorMessage hasError={state[e]} type={e} />
+      </div>
+    ))
+
     return (
       <div>
         <Form
-          subHeading={props.subHeading}
           onSubmit={this.submitAllocation}
           description={props.description}
-          submitText="Submit Allocation"
+          submitText="Submit"
+          disabled={state.budgetEmpty || state.descriptionEmpty
+                    || state.amountInvalid || state.amountOverBudget
+                    || state.amountOverFunds || state.recipientsInvalid
+                    || (state.recipientsAll.length === 0
+                        && state.recipientsEmpty) }
+          errors={errorBlocks}
         >
+          {budgetDropDown}
           {descriptionField}
           {amountField}
-          {amountWarningMessages}
-          {userOptionsField}
-          {errorMessages}
+          {userRecipientsField}
         </Form>
       </div>
     )
   }
 }
 
-const ErrorMessage = ({ hasError, type }) =>
-  hasError ? (
-    <Info
-      background="#fb79790f"
-      title="Error"
-      style={{ margin: '20px 0' }}
-    >
-      {message[type]}
-    </Info>
+const ErrorMessage = ({ hasError, type }) => {
+  return hasError ? (
+    <ErrorText>
+      <IconClose
+        size="tiny"
+        css={{
+          marginRight: '8px',
+          color: theme.negative,
+        }}
+      />
+      {errorMessages[type]}
+    </ErrorText>
   ) : null
+}
 
 ErrorMessage.propTypes = {
   hasError: PropTypes.bool,
   type: PropTypes.string,
 }
+
+const InputGroup = styled.div`
+  display: flex;
+`
+
+const CurrencyBox = styled.div`
+  border: 1px solid #DDE4E9;
+  border-left-style: none;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  padding: 8px 14px 7px;
+  font-weight: normal;
+  border-radius: 0px 4px 4px 0px;
+`
+
+const ErrorText = styled.div`
+  font-size: small;
+  display: flex;
+  align-items: center;
+`
 
 // eslint-disable-next-line import/no-unused-modules
 export default NewAllocation

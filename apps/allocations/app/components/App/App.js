@@ -89,16 +89,25 @@ const App = () => {
     })
   }
 
-  const onNewAllocation = (id, description, balance, token) => {
+  const onNewAllocation = (address, description, id, balance) => {
+    // variable examples, remove this
+    const budgetList = [ 'Hacktivism', 'Marketing' ]
+    const selectedBudget = 0
+    const budgetLimit = '200'
+    const fundsLimit = '300'
+    const currency = 'ETH'
     setPanel({
       content: NewAllocation,
       data: {
-        heading: 'New Allocation',
-        subHeading: description,
-        balance,
-        balances: [token],
         id,
+        heading: 'New allocation',
         onSubmitAllocation,
+        budgetList,
+        selectedBudget,
+        budgetLimit,
+        fundsLimit,
+        description,
+        currency,
       },
     })
   }
