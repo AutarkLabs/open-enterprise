@@ -35,6 +35,7 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
   const { event, returnValues, address } = action
   let nextState = { ...state }
 
+  console.log({ event, returnValues })
   switch (event) {
   case REQUESTING_GITHUB_TOKEN: {
     return state
@@ -77,6 +78,7 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
     return nextState
   }
   case BOUNTY_ADDED: {
+    console.log('BOUNTY_ADDED', { returnValues })
     if(!returnValues) return nextState
     console.log({ returnValues })
     const { repoId, issueNumber } = returnValues
