@@ -608,7 +608,7 @@ contract Projects is AragonApp, DepositableStorage {
      * @param _issueNumbers an array of bounty indexes
      * @param _bountySizes an array of bounty sizes
      * @param _deadlines an array of bounty deadlines
-     * @param _tokenTypes array of currency types: 0=ETH, 1=ETH from vault 20=ERC20
+     * @param _tokenTypes array of currency types: 0=ETH from user's wallet, 1=ETH from vault, 20=ERC20 token from vault
      * @param _tokenContracts an array of token contracts
      * @param _ipfsAddresses a string of ipfs addresses
      * @param _description parsed and display to user when this function is forwarded
