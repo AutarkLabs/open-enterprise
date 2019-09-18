@@ -71,7 +71,7 @@ npm run deploy:rinkeby
 | App               | Permission            | Grantee | Manager |
 | ----------------- | --------------------- | ------- | ------- |
 | Voting            | CREATE_VOTES          | Any     | Voting  |
-| Voting            | MODIFY_QUORUM         | Voting  | Voting  |
+| Voting            | ROLE_MODIFY_QUORUM         | Voting  | Voting  |
 | Voting            | MODIFY_SUPPORT        | None    | Burned  |
 | Vault             | TRANSFER              | Finance | Voting  |
 | Finance           | CREATE_PAYMENTS       | Voting  | Voting  |

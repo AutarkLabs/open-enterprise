@@ -2,12 +2,12 @@
   "roles": [
     {
       "name": "Create new dot votes",
-      "id": "CREATE_VOTES_ROLE",
+      "id": "ROLE_CREATE_VOTES",
       "params": []
     },
     {
       "name": "Add options to an open dot vote",
-      "id": "ADD_CANDIDATES_ROLE",
+      "id": "ROLE_ADD_CANDIDATES",
       "params": []
     }
   ],

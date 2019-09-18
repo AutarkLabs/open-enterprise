@@ -186,9 +186,9 @@ contract PlanningKit is KitBase {
         acl.createPermission(ANY_ENTITY, finance, finance.MANAGE_PAYMENTS_ROLE(), root);
 
         // Voting Permissions
-        acl.createPermission(ANY_ENTITY, voting, voting.CREATE_VOTES_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, voting, voting.ROLE_CREATE_VOTES(), root);
         acl.createPermission(ANY_ENTITY, voting, voting.MODIFY_SUPPORT_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, voting, voting.MODIFY_QUORUM_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, voting, voting.ROLE_MODIFY_QUORUM_ROLE(), root);
 
     }
 
@@ -283,8 +283,8 @@ contract PlanningKit is KitBase {
         //emit InstalledApp(projects, planningAppIds[uint8(PlanningApps.Projects)]);
 
         // Dot-voting permissions
-        acl.createPermission(ANY_ENTITY, dotVoting, dotVoting.CREATE_VOTES_ROLE(), voting);
-        acl.createPermission(ANY_ENTITY, dotVoting, dotVoting.ADD_CANDIDATES_ROLE(), voting);
+        acl.createPermission(ANY_ENTITY, dotVoting, dotVoting.ROLE_CREATE_VOTES(), voting);
+        acl.createPermission(ANY_ENTITY, dotVoting, dotVoting.ROLE_ADD_CANDIDATES(), voting);
         //emit InstalledApp(dotVoting, planningAppIds[uint8(PlanningApps.DotVoting)]);
 
         // Allocations permissions:
