@@ -7,7 +7,7 @@ import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
 import { IdentityProvider } from '../../../../../shared/identity'
 import { Empty } from '../Card'
 import { NewAllocation, NewBudget } from '../Panel'
-import { Budgets, Payouts } from '.'
+import { AllocationsHistory, Budgets } from '.'
 
 const ASSETS_URL = './aragon-ui'
 
@@ -29,7 +29,8 @@ const App = () => {
     }],
     balances = [],
     entries = [],
-    payouts = []
+    payouts = [],
+    allocations = [],
   } = appState
 
   const onCreateBudget = ({ description }) => {
@@ -101,11 +102,7 @@ const App = () => {
         onResolve={handleResolveLocalIdentity}
         onShowLocalIdentityModal={handleShowLocalIdentityModal}>
         { children }
-        <Payouts
-          payouts={payouts}
-          executePayout={onExecutePayout}
-          tokens={balances}
-        />
+        <AllocationsHistory allocations={allocations} />
 
         <SidePanel
           title={(panel && panel.data.heading) || ''}
