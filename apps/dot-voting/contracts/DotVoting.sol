@@ -35,7 +35,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     bytes32 constant public ROLE_ADD_CANDIDATES = keccak256("ROLE_ADD_CANDIDATES");
     bytes32 constant public ROLE_CREATE_VOTES = keccak256("ROLE_CREATE_VOTES");
     bytes32 constant public ROLE_MODIFY_QUORUM = keccak256("ROLE_MODIFY_QUORUM");
-    bytes32 constant public ROLE_ROLE_MODIFY_CANDIDATE_SUPPORT = keccak256("ROLE_MODIFY_CANDIDATE_SUPPORT");
+    bytes32 constant public ROLE_MODIFY_CANDIDATE_SUPPORT = keccak256("ROLE_MODIFY_CANDIDATE_SUPPORT");
     string private constant ERROR_CAN_VOTE = "ERROR_CAN_VOTE";
     string private constant ERROR_MIN_QUORUM = "ERROR_MIN_QUORUM";
     string private constant ERROR_VOTE_LENGTH = "ERROR_VOTE_LENGTH";
