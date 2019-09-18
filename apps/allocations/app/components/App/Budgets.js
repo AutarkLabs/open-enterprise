@@ -10,6 +10,7 @@ import { Budget } from '../Card'
 const Budgets = ({
   budgets,
   onNewAllocation,
+  onEdit,
 }) => {
   if (!budgets) return
 
@@ -29,6 +30,7 @@ const Budgets = ({
                 currency={data.currency}
                 allocated={data.allocated}
                 onNewAllocation={onNewAllocation}
+                onEdit={onEdit}
                 screenSize={screenSize}
               />
             ))}
@@ -42,6 +44,7 @@ const Budgets = ({
 Budgets.propTypes = {
   budgets: PropTypes.arrayOf(PropTypes.object).isRequired,
   onNewAllocation: PropTypes.func.isRequired,
+  onEdit: PropTypes.func,
 }
 
 const StyledAccounts = styled.div`

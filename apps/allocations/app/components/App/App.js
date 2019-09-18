@@ -18,15 +18,26 @@ const App = () => {
   const { api, appState } = useAragonApi()
   const {
     // backend stub, remove
-    budgets = [{
-      budgetId: '0',
-      data: {
-        name: 'Marketing',
-        amount: String(80000.123856789012345678e18),
-        currency: 'ETH',
-        allocated: String(23000e18),
-      }
-    }],
+    budgets = [
+      {
+        budgetId: '0',
+        data: {
+          name: 'Marketing',
+          amount: String(80000.123856789012345678e18),
+          currency: 'ETH',
+          allocated: String(23000e18),
+        }
+      },
+      {
+        budgetId: '1',
+        data: {
+          name: 'Hacktivism',
+          amount: String(38000.123856789012345678e18),
+          currency: 'DAI',
+          allocated: String(37200e18),
+        }
+      },
+    ],
     balances = [],
     entries = [],
     payouts = [],
@@ -84,6 +95,14 @@ const App = () => {
     })
   }
 
+  const onEdit = (id) => {
+    const budget = budgets.find(budget => budget.budgetId === id)
+    setPanel({
+      content: NewBudget,
+      data: { heading: 'Edit budget', onCreateBudget, budget }
+    })
+  }
+
   const closePanel = () => {
     setPanel(null)
   }
@@ -134,6 +153,7 @@ const App = () => {
       <Budgets
         budgets={budgets}
         onNewAllocation={onNewAllocation}
+        onEdit={onEdit}
       />
     </Wrap>
   )
