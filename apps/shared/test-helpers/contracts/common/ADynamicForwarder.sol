@@ -10,7 +10,7 @@ import "@aragon/os/contracts/lib/math/SafeMath64.sol";
 // TODO: Use @aragon/os/contracts/ version when it gets merged
 import "../evmscript/OEScriptHelpers.sol";
 // TODO: Research why using the @aragon/os version breaks coverage
-import "./IForwarder.sol";
+import "@aragon/os/contracts/common/IForwarder.sol";
 
 /**
   * @title ADynamicForwarder App

@@ -24,7 +24,7 @@ contract BaseOETemplate is BaseTemplate {
     bytes32 constant internal ADDRESS_BOOK_ID = 0xe3b84e7e5dbea86505abe0b42cf66a2d38d18d0f23f8b1f1b5ec4974b8c3ab42;
     bytes32 constant internal DISCUSSION_ID = 0x4edce2354c1dbc2978937e4911ffecbea4dc4e7aae02a586d5cc3ba4bb2074c0;
     bytes32 constant internal ALLOCATIONS_ID = 0x2286ac88ea0d1508ed51478e344b9caefab2e516599e3e1f6b440f1ab9780450;
-    bytes32 constant internal PROJECTS_ID = 0x4a96d28087b0d8ac860d6a2708e96a49a33336f6f1e4a60ebe7b964d792ba22fe;
+    bytes32 constant internal PROJECTS_ID = 0xa96d28087b0d8ac860d6a2708e96a49a33336f6f1e4a60ebe7b964d792ba22fe;
     bytes32 constant internal DOT_VOTING_ID = 0x6df1d5c16462c5c8d67397b521883343325d4755baf4f60f42788737a9bf087d;
     bytes32 constant internal REWARARDS_ID = 0x34c4f69c5a540b12dc1972f35b6a4d869e650b9e8617cf155838305cfb43cfde;
     bytes32 constant internal STANDARD_BOUNTY_ID = 0xcd7efa1dc3a5303f019e0ef56168c68acc784ef3b4f15ee5fdacfa0532dda0fc;
@@ -46,7 +46,7 @@ contract BaseOETemplate is BaseTemplate {
         return addressBook;
     }
 
-    function _installNonDefaultAddressApp(Kernel _dao) internal returns (Agent) {
+    function _installNonDefaultAddressApp(Kernel _dao) internal returns (AddressBook) {
         bytes memory initializeData = abi.encodeWithSelector(AddressBook(0).initialize.selector);
         return AddressBook(_installNonDefaultApp(_dao, ADDRESS_BOOK_ID, initializeData));
     }
