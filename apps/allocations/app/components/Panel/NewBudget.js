@@ -6,7 +6,7 @@ import styled from 'styled-components'
 import { Form, FormField } from '../Form'
 import { isStringEmpty } from '../../utils/helpers'
 import { BigNumber } from 'bignumber.js'
-import { MIN_AMOUNT } from '../../utils/constants'
+import { ETH_DECIMALS, MIN_AMOUNT } from '../../utils/constants'
 
 // TODO:: This should be votingTokens from account?
 const INITIAL_STATE = {
@@ -19,10 +19,21 @@ const INITIAL_STATE = {
 
 class NewBudget extends React.Component {
   static propTypes = {
-    onCreateBudget: PropTypes.func.isRequired
+    onCreateBudget: PropTypes.func.isRequired,
+    budget: PropTypes.object,
   }
 
-  state =  INITIAL_STATE
+  constructor(props) {
+    super(props)
+    this.state =  INITIAL_STATE
+    if (props.budget) {
+      this.state.name = props.budget.data.name
+      this.state.nameError = false
+      this.state.amount = BigNumber(props.budget.data.amount).div(ETH_DECIMALS)
+      this.state.amountError = false
+      this.state.currency = props.budget.data.currency === 'ETH' ? 0 : 1 // change this!!
+    }
+  }
 
   changeField = e => {
     const { name, value } = e.target

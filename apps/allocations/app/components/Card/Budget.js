@@ -7,7 +7,8 @@ import {
   Card,
   ContextMenu,
   ContextMenuItem,
-  IconAdd,
+  IconEdit,
+  IconPlus,
   ProgressBar,
   Text,
   useTheme,
@@ -23,11 +24,15 @@ const Budget = ({
   currency,
   allocated,
   onNewAllocation,
+  onEdit,
   screenSize,
 }) => {
   const theme = useTheme()
   const newAllocation = () => {
     onNewAllocation(id, name, amount)
+  }
+  const edit = () => {
+    onEdit(id)
   }
 
   return (
@@ -35,8 +40,12 @@ const Budget = ({
       <MenuContainer>
         <ContextMenu>
           <ContextMenuItem onClick={newAllocation}>
-            <IconAdd />
+            <IconPlus />
             <ActionLabel>New Allocation</ActionLabel>
+          </ContextMenuItem>
+          <ContextMenuItem onClick={edit}>
+            <IconEdit />
+            <ActionLabel>Edit</ActionLabel>
           </ContextMenuItem>
         </ContextMenu>
       </MenuContainer>
@@ -85,6 +94,7 @@ Budget.propTypes = {
   currency: PropTypes.string.isRequired,
   allocated: PropTypes.string.isRequired,
   onNewAllocation: PropTypes.func.isRequired,
+  onEdit: PropTypes.func.isRequired,
   screenSize: PropTypes.number.isRequired
 }
 
