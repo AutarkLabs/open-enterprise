@@ -186,9 +186,9 @@ contract PlanningKit is KitBase {
         acl.createPermission(ANY_ENTITY, finance, finance.MANAGE_PAYMENTS_ROLE(), root);
 
         // Voting Permissions
-        acl.createPermission(ANY_ENTITY, voting, voting.ROLE_CREATE_VOTES(), root);
+        acl.createPermission(ANY_ENTITY, voting, voting.CREATE_VOTES_ROLE(), root);
         acl.createPermission(ANY_ENTITY, voting, voting.MODIFY_SUPPORT_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, voting, voting.ROLE_MODIFY_QUORUM_ROLE(), root);
+        acl.createPermission(ANY_ENTITY, voting, voting.MODIFY_QUORUM_ROLE(), root);
 
     }
 
