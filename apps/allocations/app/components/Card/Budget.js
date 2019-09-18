@@ -49,7 +49,7 @@ const Budget = ({
           </StatsValueBig>
           <StatsValueBig css={{ paddingTop: '24px' }}>
             <ProgressBar
-              color="#1DD9D5"
+              color={theme.accentEnd}
               value={BigNumber(allocated).div(amount).toNumber()}
             />
           </StatsValueBig>
