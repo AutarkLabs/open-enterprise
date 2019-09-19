@@ -15,6 +15,7 @@ const nameSorter = (a, b) => a.data.name.toUpperCase() > b.data.name.toUpperCase
 
 const App = () => {
   const [ panel, setPanel ] = useState(null)
+
   const { api, appState } = useAragonApi()
   const { accounts = [], balances = [], entries = [], payouts = [] } = appState
 
@@ -49,7 +50,7 @@ const App = () => {
   const onNewBudget = () => {
     setPanel({
       content: NewBudget,
-      data: { heading: 'New budget', onCreateBudget }
+      data: { heading: 'New budget', onCreateBudget, connectedAccount }
     })
   }
 
@@ -77,6 +78,8 @@ const App = () => {
       },
     })
   }
+
+  const { connectedAccount } = useAragonApi()
 
   const closePanel = () => {
     setPanel(null)

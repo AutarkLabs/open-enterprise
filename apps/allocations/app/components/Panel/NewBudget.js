@@ -19,7 +19,8 @@ const INITIAL_STATE = {
 
 class NewBudget extends React.Component {
   static propTypes = {
-    onCreateBudget: PropTypes.func.isRequired
+    onCreateBudget: PropTypes.func.isRequired,
+    connectedAccount: PropTypes.string
   }
 
   state =  INITIAL_STATE
@@ -45,13 +46,14 @@ class NewBudget extends React.Component {
 
   render() {
 
+    const { connectedAccount } = this.props
     const { name, nameError, amount, amountError, currency } = this.state
 
     return (
       <Form
         onSubmit={this.createBudget}
         submitText="Create budget"
-        disabled={nameError || amountError}
+        disabled={nameError || amountError || !connectedAccount}
       >
         <FormField
           required
