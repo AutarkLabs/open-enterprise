@@ -1,9 +1,9 @@
 import React from 'react'
 import {
-  AddressField,
   DataView,
   IconCheck,
   IconCross,
+  IdentityBadge,
   ProgressBar,
   useTheme
 } from '@aragon/ui'
@@ -67,7 +67,10 @@ const AllocationsHistory = ({ allocations }) => {
               display: 'flex',
               flexDirection: 'column',
             }}>
-              <AddressField address={recipient.address} />
+              <IdentityBadge
+                entity={recipient.address}
+                shorten={true}
+              />
               <div css={{
                 marginTop: '7px',
                 marginBottom: '4px',
