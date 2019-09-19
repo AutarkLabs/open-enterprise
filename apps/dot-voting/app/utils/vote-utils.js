@@ -10,7 +10,7 @@ export const getVoteStatus = (vote) => {
   if (vote.data.executed) {
     return VOTE_STATUS_EXECUTED
   }
-  const hasMinParticipation = vote.quorumProgress >= vote.minParticipationPct
+  const hasMinParticipation = vote.quorumProgress >= vote.globalMinQuorum
   return hasMinParticipation
     ? VOTE_STATUS_SUCCESSFUL
     : VOTE_STATUS_FAILED

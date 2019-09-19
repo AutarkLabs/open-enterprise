@@ -11,7 +11,7 @@ const Participation = ({ vote }) => {
       <div css="margin-bottom: 10px">
         {Math.round(vote.data.participationPct)}%{' '}
         <Text size="small" color={`${theme.surfaceContentSecondary}`}>
-          ({vote.minParticipationPct}% needed)
+          ({vote.globalMinQuorum}% needed)
         </Text>
       </div>
 
@@ -27,7 +27,7 @@ const Participation = ({ vote }) => {
             valueSpring={value}
             color={`${theme.positive}`}
             value={value}
-            threshold={vote.minParticipationPct}
+            threshold={vote.globalMinQuorum}
           />
         )}
       </Spring>
@@ -40,7 +40,7 @@ Participation.propTypes = {
     data: PropTypes.shape({
       participationPct: PropTypes.number.isRequired,
     }),
-    minParticipationPct: PropTypes.number.isRequired,
+    globalMinQuorum: PropTypes.number.isRequired,
   }).isRequired,
 }
 

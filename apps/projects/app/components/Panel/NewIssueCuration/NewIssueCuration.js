@@ -7,7 +7,7 @@ import {
   Form,
   FormField,
 } from '../../Form'
-import { useAragonApi } from '@aragon/api-react'
+import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '..'
 
 const issueShape = PropTypes.shape({

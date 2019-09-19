@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { BigNumber } from 'bignumber.js'
-import { Box, Button, GU, Split } from '@aragon/ui'
+import { Box, Button, GU, Split, Text } from '@aragon/ui'
+import { useAragonApi } from '@aragon/api-react'
 import { first } from 'rxjs/operators' // Make sure observables have .first
 import AppBadge from './AppBadge'
 import Status from './Status'
@@ -10,11 +11,17 @@ import DescriptionAndCreator from './DescriptionAndCreator'
 import VotingResults from './VotingResults'
 import CastVote from './CastVote'
 import Participation from './Participation'
+import Label from './Label'
+import tokenDecimalsAbi from '../../abi/token-decimals.json'
 
-const VoteDetails = ({ app, vote, userAccount, onVote }) => {
+const tokenAbi = [].concat(tokenDecimalsAbi)
+
+const VoteDetails = ({ vote, onVote }) => {
+  const { api, appState: { tokenAddress = '' }, connectedAccount } = useAragonApi()
   const [ votingMode, setVotingMode ] = useState(false)
   const [ voteWeights, setVoteWeights ] = useState([])
   const [ canIVote, setCanIVote ] = useState(false)
+  const [ decimals, setDecimals ] = useState(0)
   const toggleVotingMode = () => setVotingMode(!votingMode)
   const { description, voteId } = vote
   const {
@@ -23,10 +30,15 @@ const VoteDetails = ({ app, vote, userAccount, onVote }) => {
     type,
   } = vote.data
 
+  const getTokenContract = tokenAddress =>
+    tokenAddress && api.external(tokenAddress, tokenAbi)
+
+  const tokenContract = getTokenContract(tokenAddress)
+
   useEffect(() => {
     async function getVoteWeights() {
-      const result = await app
-        .call('getVoterState', voteId, userAccount)
+      const result = await api
+        .call('getVoterState', voteId, connectedAccount)
         .toPromise()
 
       const totalVotesCount = result.reduce(
@@ -44,9 +56,9 @@ const VoteDetails = ({ app, vote, userAccount, onVote }) => {
     }
 
     function canIVote() {
-      if (userAccount && vote) {
-        app
-          .call('canVote', voteId, userAccount)
+      if (connectedAccount && vote) {
+        api
+          .call('canVote', voteId, connectedAccount)
           .pipe(first())
           .subscribe(canVote => {
             setCanIVote(canVote)
@@ -54,9 +66,19 @@ const VoteDetails = ({ app, vote, userAccount, onVote }) => {
       }
     }
 
+    function loadDecimals() {
+      if (tokenContract && connectedAccount) {
+        tokenContract.decimals()
+          .subscribe(decimals => {
+            setDecimals(decimals)
+          })
+      }
+    }
+
     getVoteWeights()
     canIVote()
-  }, [ vote, userAccount ])
+    loadDecimals()
+  }, [ vote, connectedAccount ])
 
 
   // eslint-disable-next-line react/prop-types
@@ -84,6 +106,21 @@ const VoteDetails = ({ app, vote, userAccount, onVote }) => {
               description={description}
             />
 
+            {type === 'allocation' && (
+              <React.Fragment>
+                <Label>
+                  Amount
+                </Label>
+                <Text.Block size="large">
+                  {
+                    BigNumber(vote.data.balance)
+                      .div(BigNumber(10 ** decimals))
+                      .toString()
+                  } {vote.data.tokenSymbol}
+                </Text.Block>
+              </React.Fragment>
+            )}
+
             {!votingMode && vote.open && canIVote && (
               <Button mode="strong" onClick={toggleVotingMode}>
                 {youVoted ? 'Change vote' : 'Vote'}
@@ -94,7 +131,7 @@ const VoteDetails = ({ app, vote, userAccount, onVote }) => {
               <CastVote
                 onVote={onVote}
                 toggleVotingMode={toggleVotingMode}
-                userAccount={userAccount}
+                connectedAccount={connectedAccount}
                 vote={vote}
                 voteWeights={voteWeights}
               />
@@ -119,8 +156,6 @@ const VoteDetails = ({ app, vote, userAccount, onVote }) => {
 }
 
 VoteDetails.propTypes = {
-  app: PropTypes.object.isRequired,
-  userAccount: PropTypes.string.isRequired,
   vote: PropTypes.object.isRequired,
   onVote: PropTypes.func.isRequired,
 }
