@@ -83,7 +83,7 @@ contract PlanningKit is KitBase {
         // Generate Tokens
         token.generateTokens(address(root), 200 ether); // give root 100 autark tokens
         token.generateTokens(address(this), 100 ether); // give root 100 autark tokens
-        registry = 0x48c2Eac33521070509f9819A824a3D5686Ba5ce8; // hardcoded from the publish:http logs TODO: make dynamic
+        registry = 0x48c2eac33521070509f9819a824a3d5686ba5ce8; // hardcoded from the publish:http logs TODO: make dynamic
     }
 
     function newInstance() public {
