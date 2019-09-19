@@ -82,9 +82,10 @@ const App = () => {
   }
 
   const onNewBudget = () => {
+    const fundsLimit = '300000' // remove this!
     setPanel({
       content: NewBudget,
-      data: { heading: 'New budget', onCreateBudget }
+      data: { heading: 'New budget', onCreateBudget, fundsLimit }
     })
   }
 
@@ -105,10 +106,16 @@ const App = () => {
   }
 
   const onEdit = (id) => {
-    const budget = budgets.find(budget => budget.budgetId === id)
+    const fundsLimit = '300000' // remove this!
+    const editingBudget = budgets.find(budget => budget.budgetId === id)
     setPanel({
       content: NewBudget,
-      data: { heading: 'Edit budget', onCreateBudget, budget }
+      data: {
+        heading: 'Edit budget',
+        onCreateBudget,
+        editingBudget,
+        fundsLimit
+      }
     })
   }
 

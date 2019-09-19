@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { DropDown, TextInput } from '@aragon/ui'
+import { DropDown, IconClose, Info, TextInput, theme } from '@aragon/ui'
 import styled from 'styled-components'
 
 import { Form, FormField } from '../Form'
@@ -14,34 +14,46 @@ const INITIAL_STATE = {
   nameError: true,
   amount: '',
   amountError: true,
+  amountOverFunds: false,
   currency: 0,
+  buttonText: 'Create budget'
 }
 
 class NewBudget extends React.Component {
   static propTypes = {
     onCreateBudget: PropTypes.func.isRequired,
-    budget: PropTypes.object,
+    editingBudget: PropTypes.object,
+    fundsLimit: PropTypes.string.isRequired,
   }
 
   constructor(props) {
     super(props)
     this.state =  INITIAL_STATE
-    if (props.budget) {
-      this.state.name = props.budget.data.name
+    if (props.editingBudget) {
+      this.state.name = props.editingBudget.data.name
       this.state.nameError = false
-      this.state.amount = BigNumber(props.budget.data.amount).div(ETH_DECIMALS)
+      this.state.amount = BigNumber(props.editingBudget.data.amount)
+        .div(ETH_DECIMALS)
       this.state.amountError = false
-      this.state.currency = props.budget.data.currency === 'ETH' ? 0 : 1 // change this!!
+      this.state.currency = props.editingBudget.data.currency === 'ETH' ? 0 : 1 // change this!!
+      this.state.buttonText = 'Submit'
     }
   }
 
   changeField = e => {
     const { name, value } = e.target
+    const { fundsLimit } = this.props
     this.setState({
       [name]: value,
-      [name + 'Error']: isStringEmpty(value) ||
-        (name === 'amount' && BigNumber(value).lt(MIN_AMOUNT))
+      [name + 'Error']: isStringEmpty(value)
     })
+    if (name === 'amount') {
+      const numericValue = BigNumber(value)
+      this.setState({
+        amountError: numericValue.lt(MIN_AMOUNT),
+        amountOverFunds: numericValue.gt(fundsLimit)
+      })
+    }
   }
 
   createBudget = () => {
@@ -56,13 +68,43 @@ class NewBudget extends React.Component {
 
   render() {
 
-    const { name, nameError, amount, amountError, currency } = this.state
+    const {
+      name,
+      nameError,
+      amount,
+      amountError,
+      amountOverFunds,
+      currency,
+      buttonText
+    } = this.state
 
     return (
       <Form
         onSubmit={this.createBudget}
-        submitText="Create budget"
-        disabled={nameError || amountError}
+        submitText={buttonText}
+        disabled={nameError || amountError || amountOverFunds}
+        errors={
+          <div>
+            { amountOverFunds && (
+              <ErrorText>
+                <IconClose
+                  size="tiny"
+                  css={{
+                    marginRight: '8px',
+                    marginBottom: '2px',
+                    color: theme.negative,
+                  }}
+                />
+                Amount must be smaller than underlying funds
+              </ErrorText>
+            )}
+            { this.props.editingBudget && (
+              <Info>
+                Please keep in mind that any changes to the budget amount may only be effectuated upon the starting date of the next accounting period.
+              </Info>
+            ) }
+          </div>
+        }
       >
         <FormField
           required
@@ -85,7 +127,7 @@ class NewBudget extends React.Component {
                 name="amount"
                 type="number"
                 min={MIN_AMOUNT}
-                step={0.1}
+                step="any"
                 onChange={this.changeField}
                 wide={true}
                 value={amount}
@@ -108,6 +150,13 @@ class NewBudget extends React.Component {
 
 const InputGroup = styled.div`
   display: flex;
+`
+
+const ErrorText = styled.div`
+  font-size: small;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
 `
 
 // eslint-disable-next-line import/no-unused-modules
