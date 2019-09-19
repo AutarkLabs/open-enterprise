@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 
 import { useAragonApi } from '../../api-react'
-import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
+import { Button, Header, IconPlus, Main, Modal, SidePanel } from '@aragon/ui'
 
 import { IdentityProvider } from '../../../../../shared/identity'
 import { Empty } from '../Card'
@@ -15,6 +15,7 @@ const nameSorter = (a, b) => a.data.name.toUpperCase() > b.data.name.toUpperCase
 
 const App = () => {
   const [ panel, setPanel ] = useState(null)
+  const [ modal, setModal ] = useState({ visible: false, budgetId: null })
   const { api, appState } = useAragonApi()
   const {
     // backend stub, remove
@@ -26,6 +27,7 @@ const App = () => {
           amount: String(80000.123856789012345678e18),
           currency: 'ETH',
           allocated: String(23000e18),
+          inactive: false,
         }
       },
       {
@@ -35,6 +37,7 @@ const App = () => {
           amount: String(38000.123856789012345678e18),
           currency: 'DAI',
           allocated: String(37200e18),
+          inactive: true,
         }
       },
     ],
@@ -66,6 +69,12 @@ const App = () => {
       tokenAddress
     ).toPromise()
     closePanel()
+  }
+
+  const onSubmitDeactivate = (id) => {
+    console.log(`deactivating budget # ${id}...`)
+    //api.deactivateBudget(id)
+    closeModal()
   }
 
   const onExecutePayout = (accountId, payoutId) => {
@@ -103,8 +112,21 @@ const App = () => {
     })
   }
 
+  const onDeactivate = (id) => {
+    setModal({ visible: true, budgetId: id })
+  }
+
+  const onReactivate = (id) => {
+    console.log(`reactivating budget # ${id}...`)
+    //api.reactivateBudget(id)
+  }
+
   const closePanel = () => {
     setPanel(null)
+  }
+
+  const closeModal = () => {
+    setModal({ visible: false, budgetId: null })
   }
 
   const handleResolveLocalIdentity = address => api.resolveAddressIdentity(address).toPromise()
@@ -121,8 +143,6 @@ const App = () => {
         onResolve={handleResolveLocalIdentity}
         onShowLocalIdentityModal={handleShowLocalIdentityModal}>
         { children }
-        <AllocationsHistory allocations={allocations} />
-
         <SidePanel
           title={(panel && panel.data.heading) || ''}
           opened={panel !== null}
@@ -154,9 +174,55 @@ const App = () => {
         budgets={budgets}
         onNewAllocation={onNewAllocation}
         onEdit={onEdit}
+        onDeactivate={onDeactivate}
+        onReactivate={onReactivate}
+      />
+      <AllocationsHistory allocations={allocations} />
+      <DeactivateModal
+        state={modal}
+        onClose={closeModal}
+        onSubmit={onSubmitDeactivate}
       />
     </Wrap>
   )
+}
+
+const DeactivateModal = ({ state, onClose, onSubmit }) => {
+  const deactivate = () => {
+    onSubmit(state.budgetId)
+  }
+  return (
+    <Modal visible={state.visible} onClose={onClose}>
+      <div css={{ fontSize: '26px' }}>
+        Deactivate budget
+      </div>
+      <div css={{ marginTop: '32px' }}>
+        Deactivating this budget will immediately disable it once the decision is enacted. You may choose to reactivate this budget at any time.
+      </div>
+      <div css={{
+        marginTop: '48px',
+        display: 'flex',
+        justifyContent: 'flex-end'
+      }}>
+        <Button
+          label="Cancel"
+          css={{ marginRight: '8px' }}
+          onClick={onClose}
+        />
+        <Button
+          label="Deactivate"
+          mode="negative"
+          onClick={deactivate}
+        />
+      </div>
+    </Modal>
+  )
+}
+
+DeactivateModal.propTypes = {
+  state: PropTypes.object.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired,
 }
 
 export default App

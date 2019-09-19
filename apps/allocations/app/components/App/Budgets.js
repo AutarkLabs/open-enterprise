@@ -11,6 +11,8 @@ const Budgets = ({
   budgets,
   onNewAllocation,
   onEdit,
+  onDeactivate,
+  onReactivate,
 }) => {
   if (!budgets) return
 
@@ -29,8 +31,11 @@ const Budgets = ({
                 amount={data.amount}
                 currency={data.currency}
                 allocated={data.allocated}
+                inactive={data.inactive}
                 onNewAllocation={onNewAllocation}
                 onEdit={onEdit}
+                onDeactivate={onDeactivate}
+                onReactivate={onReactivate}
                 screenSize={screenSize}
               />
             ))}
@@ -44,7 +49,9 @@ const Budgets = ({
 Budgets.propTypes = {
   budgets: PropTypes.arrayOf(PropTypes.object).isRequired,
   onNewAllocation: PropTypes.func.isRequired,
-  onEdit: PropTypes.func,
+  onEdit: PropTypes.func.isRequired,
+  onDeactivate: PropTypes.func.isRequired,
+  onReactivate: PropTypes.func.isRequired,
 }
 
 const StyledAccounts = styled.div`
