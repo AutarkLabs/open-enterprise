@@ -64,6 +64,7 @@ class NewAllocation extends React.Component {
     balance: PropTypes.string.isRequired,
     id: PropTypes.string.isRequired,
     subHeading: PropTypes.string,
+    connectedAccount: PropTypes.string
   }
 
   state = INITIAL_STATE
@@ -178,6 +179,9 @@ class NewAllocation extends React.Component {
 
   render() {
     const { props, state } = this
+
+    const { connectedAccount } = props
+
     const transferEnabled = state.allocationTypeIndex === 1
     let availableTokens =  this.props.balances.map( balance => balance.symbol)
 
@@ -321,6 +325,7 @@ class NewAllocation extends React.Component {
           onSubmit={this.submitAllocation}
           description={props.description}
           submitText="Submit Allocation"
+          disabled={!connectedAccount}
         >
           {descriptionField}
           {settingsField}

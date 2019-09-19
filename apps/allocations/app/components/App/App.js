@@ -16,7 +16,7 @@ const nameSorter = (a, b) => a.data.name.toUpperCase() > b.data.name.toUpperCase
 const App = () => {
   const [ panel, setPanel ] = useState(null)
 
-  const { api, appState } = useAragonApi()
+  const { api, appState, connectedAccount } = useAragonApi()
   const { accounts = [], balances = [], entries = [], payouts = [] } = appState
 
   const onCreateBudget = ({ description }) => {
@@ -75,11 +75,11 @@ const App = () => {
         entities,
         id,
         onSubmitAllocation,
+        connectedAccount
       },
     })
   }
 
-  const { connectedAccount } = useAragonApi()
 
   const closePanel = () => {
     setPanel(null)
