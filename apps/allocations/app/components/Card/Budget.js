@@ -9,6 +9,8 @@ import {
   ContextMenuItem,
   IconEdit,
   IconPlus,
+  IconProhibited,
+  IconView,
   ProgressBar,
   Text,
   useTheme,
@@ -23,8 +25,11 @@ const Budget = ({
   amount,
   currency,
   allocated,
+  inactive,
   onNewAllocation,
   onEdit,
+  onDeactivate,
+  onReactivate,
   screenSize,
 }) => {
   const theme = useTheme()
@@ -33,6 +38,36 @@ const Budget = ({
   }
   const edit = () => {
     onEdit(id)
+  }
+  const deactivate = () => {
+    onDeactivate(id)
+  }
+
+  const reactivate = () => {
+    onReactivate(id)
+  }
+
+  if (inactive) {
+    return (
+      <StyledCard screenSize={screenSize}>
+        <MenuContainer>
+          <ContextMenu>
+            <ContextMenuItem onClick={reactivate}>
+              <IconView />
+              <ActionLabel>Reactivate</ActionLabel>
+            </ContextMenuItem>
+          </ContextMenu>
+        </MenuContainer>
+        <CardTitle color={theme.content}>{name}</CardTitle>
+        <StatsContainer>
+          <StyledStats>
+            <StatsValueBig color={theme.contentSecondary}>
+              <Text>Inactive</Text>
+            </StatsValueBig>
+          </StyledStats>
+        </StatsContainer>
+      </StyledCard>
+    )
   }
 
   return (
@@ -46,6 +81,10 @@ const Budget = ({
           <ContextMenuItem onClick={edit}>
             <IconEdit />
             <ActionLabel>Edit</ActionLabel>
+          </ContextMenuItem>
+          <ContextMenuItem onClick={deactivate}>
+            <IconProhibited />
+            <ActionLabel>Deactivate</ActionLabel>
           </ContextMenuItem>
         </ContextMenu>
       </MenuContainer>
@@ -93,9 +132,12 @@ Budget.propTypes = {
   amount: PropTypes.string.isRequired,
   currency: PropTypes.string.isRequired,
   allocated: PropTypes.string.isRequired,
+  inactive: PropTypes.bool.isRequired,
   onNewAllocation: PropTypes.func.isRequired,
   onEdit: PropTypes.func.isRequired,
-  screenSize: PropTypes.number.isRequired
+  onDeactivate: PropTypes.func.isRequired,
+  onReactivate: PropTypes.func.isRequired,
+  screenSize: PropTypes.number.isRequired,
 }
 
 const StyledCard = styled(Card)`
