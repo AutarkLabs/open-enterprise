@@ -1,6 +1,7 @@
 // import { vaultLoadBalance } from './token'
 import { updateAccounts } from './account'
-// import { addressesEqual } from '../utils/web3-utils'
+import { addressesEqual } from '../../../../shared/lib/web3-utils'
+import { events, vaultLoadBalance } from '../../../../shared/store-utils'
 
 const eventHandler = async eventData => {
   const {
@@ -9,18 +10,23 @@ const eventHandler = async eventData => {
     settings,
   } = eventData
 
-  // const { vault } = settings
-  // const { accounts, payouts } = state
+  // Syncing events
+  if (event === events.SYNC_STATUS_SYNCING) {
+    return { ...state, isSyncing: true }
+  } else if (event === events.SYNC_STATUS_SYNCED) {
+    return { ...state, isSyncing: false }
+  }
 
-  // let nextAccounts, nextBoth
-  // let nextState = { ...state }
-  // if (addressesEqual(eventAddress, vault.address)) {
-  // Vault event
-  // nextState = await vaultLoadBalance(nextState, event, settings)
-  // } else {
-  // console.log('Event received', eventName)
+  // Vault events
+  if (addressesEqual(address, settings.vault.address)) {
+    // const vaultBalance = vaultLoadBalance(state, returnValues, settings)
+    // console.log('upgrading vault balances', vaultBalance)
+    // return { ...state, shitHappened: true }
 
-  // Allocations event
+    return vaultLoadBalance(state, returnValues, settings)
+  }
+
+  // Allocations events
   switch (event) {
   // case 'FundAccount':
   //   nextAccounts = await onFundedAccount(accounts, returnValues)
@@ -44,7 +50,8 @@ const eventHandler = async eventData => {
     //   nextState.payouts = nextBoth.payouts
     //   break
   default:
-    return state
+    console.log('event received', event, returnValues)
+    return { ...state }
   }
 }
 
