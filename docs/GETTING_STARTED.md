@@ -150,8 +150,8 @@ The following are the initial permissions that are setup via the Planning Suite 
 | Projects          | REMOVE_REPO_ROLE         | Voting     | Voting  |
 | Projects          | CHANGE_SETTINGS_ROLE     | Voting     | Voting  |
 | Projects          | CURATE_ISSUES_ROLE       | Dot Voting | Voting  |
-| Dot Voting        | CREATE_VOTES_ROLE        | Any        | Voting  |
-| Dot Voting        | ADD_CANDIDATES_ROLE      | Any        | Voting  |
+| Dot Voting        | ROLE_CREATE_VOTES        | Any        | Voting  |
+| Dot Voting        | ROLE_ADD_CANDIDATES      | Any        | Voting  |
 | Allocations       | CREATE_ACCOUNT_ROLE      | Voting     | Voting  |
 | Allocations       | CREATE_ALLOCATION_ROLE   | Dot Voting | Voting  |
 | Allocations       | EXECUTE_ALLOCATION_ROLE  | Any        | Voting  |
@@ -163,7 +163,7 @@ The following are the initial permissions that are setup via the Planning Suite 
 | App               | Permission            | Grantee | Manager |
 | ----------------- | --------------------- | ------- | ------- |
 | Voting            | CREATE_VOTES          | Any     | Voting  |
-| Voting            | MODIFY_QUORUM         | Voting  | Voting  |
+| Voting            | ROLE_MODIFY_QUORUM         | Voting  | Voting  |
 | Voting            | MODIFY_SUPPORT        | None    | Burned  |
 | Vault             | TRANSFER              | Finance | Voting  |
 | Vault             | TRANSFER              | Projects | Voting  |
