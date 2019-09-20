@@ -4,12 +4,6 @@ import { ETHER_TOKEN_FAKE_ADDRESS } from '../utils/token-utils'
 import { of } from 'rxjs'
 import { pluck } from 'rxjs/operators'
 
-const rewardsRefreshRequests = () => {
-  return app.rpc
-    .sendAndObserveResponses('cache', [ 'get', 'requestRefresh' ])
-    .pipe(pluck('result'))
-}
-
 export const initStore = (vaultAddress, network) => {
   const vaultContract = app.external(vaultAddress, vaultAbi.abi)
 
@@ -40,7 +34,6 @@ export const initStore = (vaultAddress, network) => {
     [
       // Always initialize the store with our own home-made event
       of({ event: INITIALIZATION_TRIGGER }),
-      rewardsRefreshRequests(),
       // handle vault events
       vaultContract.events(),
     ]

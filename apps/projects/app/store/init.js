@@ -1,15 +1,6 @@
-import { of } from 'rxjs'
-import { pluck } from 'rxjs/operators'
-
 import vaultAbi from '../../../shared/json-abis/vault'
-import { app, handleEvent } from './'
-import { INITIALIZE_STORE, INITIALIZE_VAULT } from './eventTypes'
-
-const github = () => {
-  return app.rpc
-    .sendAndObserveResponses('cache', [ 'get', 'github' ])
-    .pipe(pluck('result'))
-}
+import { app, handleEvent, INITIAL_STATE } from './'
+import { initializeTokens, initializeGraphQLClient } from './helpers'
 
 export const initStore = vaultAddress => {
   const vaultContract = app.external(vaultAddress, vaultAbi.abi)
@@ -28,13 +19,23 @@ export const initStore = vaultAddress => {
       // always return the state even unmodified
       return state
     },
-    [
-      // Always initialize the store with our own home-made event
-      of({ event: INITIALIZE_STORE }),
-      of({ event: INITIALIZE_VAULT }),
-      github(),
-      // handle vault events
-      vaultContract.events(),
-    ]
+    {
+      externals: [
+        // handle vault events
+        { contract: vaultContract },
+      ],
+      init: initState(vaultContract),
+    }
   )
+}
+
+const initState = (vaultContract) => async (cachedState = INITIAL_STATE) => {
+  let nextState = await initializeTokens(cachedState, vaultContract)
+  const github = await app.getCache('github').toPromise()
+  if (github && github.token) {
+    nextState.github = github
+    initializeGraphQLClient(github.token)
+  }
+
+  return nextState
 }
