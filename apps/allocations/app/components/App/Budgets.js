@@ -14,34 +14,28 @@ const Budgets = ({
   onDeactivate,
   onReactivate,
 }) => {
-  if (!budgets) return
-
   return (
     <Viewport>
-      {({ width }) => {
-        const screenSize = width
-
-        return (
-          <StyledAccounts screenSize={screenSize}>
-            {budgets.map(({ budgetId, data }) => (
-              <Budget
-                key={budgetId}
-                id={budgetId}
-                name={data.name}
-                amount={data.amount}
-                currency={data.currency}
-                allocated={data.allocated}
-                inactive={data.inactive}
-                onNewAllocation={onNewAllocation}
-                onEdit={onEdit}
-                onDeactivate={onDeactivate}
-                onReactivate={onReactivate}
-                screenSize={screenSize}
-              />
-            ))}
-          </StyledAccounts>
-        )
-      }}
+      {({ width }) => 
+        <StyledBudgets screenSize={width}>
+          {budgets.map(({ allocated, hasBudget, id, name, amount, token }) => (
+            <Budget
+              key={id}
+              id={id}
+              name={name}
+              amount={amount}
+              token={token.symbol}
+              allocated={allocated}
+              inactive={!hasBudget}
+              onNewAllocation={onNewAllocation}
+              onEdit={onEdit}
+              onDeactivate={onDeactivate}
+              onReactivate={onReactivate}
+              screenSize={width}
+            />
+          ))}
+        </StyledBudgets>
+      }
     </Viewport>
   )
 }
@@ -54,7 +48,7 @@ Budgets.propTypes = {
   onReactivate: PropTypes.func.isRequired,
 }
 
-const StyledAccounts = styled.div`
+const StyledBudgets = styled.div`
   display: flex;
   flex-direction: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? 'column' : 'row'};
   flex-wrap: wrap;

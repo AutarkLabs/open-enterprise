@@ -58,7 +58,7 @@ const initialState = process.env.NODE_ENV !== 'production' && {
       description: 'Some important stuff',
       status: 0,
       amount: String(15e18),
-      currency: 'ETH'
+      token: 'ETH'
     },
     {
       date: String(new Date().getTime()),
@@ -70,7 +70,7 @@ const initialState = process.env.NODE_ENV !== 'production' && {
       description: 'Fight against climate change',
       status: 1,
       amount: String(25e18),
-      currency: 'ETH'
+      token: 'ETH'
     },
     {
       date: String(new Date().getTime()),
@@ -82,7 +82,7 @@ const initialState = process.env.NODE_ENV !== 'production' && {
       description: 'Is but yes',
       status: 2,
       amount: String(4500e18),
-      currency: 'DAI'
+      token: 'DAI'
     },
     {
       date: String(new Date().getTime()),
@@ -94,7 +94,7 @@ const initialState = process.env.NODE_ENV !== 'production' && {
       description: 'Best money can get',
       status: 3,
       amount: String(4500e18),
-      currency: 'DAI'
+      token: 'DAI'
     },
   ]
 }

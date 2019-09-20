@@ -15,8 +15,8 @@ const INITIAL_STATE = {
   amount: '',
   amountError: true,
   amountOverFunds: false,
-  currency: 0,
-  buttonText: 'Create budget'
+  buttonText: 'Create budget',
+  selectedToken: 0
 }
 
 class NewBudget extends React.Component {
@@ -24,18 +24,19 @@ class NewBudget extends React.Component {
     onCreateBudget: PropTypes.func.isRequired,
     editingBudget: PropTypes.object,
     fundsLimit: PropTypes.string.isRequired,
+    tokens: PropTypes.array
   }
 
   constructor(props) {
     super(props)
     this.state =  INITIAL_STATE
     if (props.editingBudget) {
-      this.state.name = props.editingBudget.data.name
+      this.state.name = props.editingBudget.name
       this.state.nameError = false
-      this.state.amount = BigNumber(props.editingBudget.data.amount)
+      this.state.amount = BigNumber(props.editingBudget.amount)
         .div(ETH_DECIMALS)
       this.state.amountError = false
-      this.state.currency = props.editingBudget.data.currency === 'ETH' ? 0 : 1 // change this!!
+      this.state.selectedToken = props.editingBudget.token === 'ETH' ? 0 : 1 // change this!!
       this.state.buttonText = 'Submit'
     }
   }
@@ -57,26 +58,29 @@ class NewBudget extends React.Component {
   }
 
   createBudget = () => {
-    const { name, amount } = this.state
+    const { name, amount, selectedToken } = this.state
+    const token = this.props.tokens[selectedToken]
 
-    this.props.onCreateBudget({
-      description: name,
-      amount,
-    })
+    this.props.onCreateBudget({ name, amount, token })
     this.setState(INITIAL_STATE)
   }
 
-  render() {
+  handleSelectToken = index => {
+    this.setState({ selectedToken: index })
+  } 
 
+  render() {
     const {
       name,
       nameError,
       amount,
       amountError,
       amountOverFunds,
-      currency,
+      selectedToken,
       buttonText
     } = this.state
+    
+    const symbols = this.props.tokens.map(({ symbol }) => symbol)
 
     return (
       <Form
@@ -126,19 +130,20 @@ class NewBudget extends React.Component {
               <TextInput
                 name="amount"
                 type="number"
-                min={MIN_AMOUNT}
-                step="any"
+                min={0}
                 onChange={this.changeField}
-                wide={true}
+                step="any"
                 value={amount}
                 css={{ borderRadius: '4px 0px 0px 4px' }}
+                required
+                wide
               />
               <DropDown
-                name="currency"
-                css={{ borderRadius: '0px 4px 4px 0px' }}
-                items={[ 'ETH', 'DAI' ]}
-                selected={currency}
-                onChange={e => this.setState({ currency: e })}
+                name="token"
+                css={{ borderRadius: '0px 4px 4px 0px', left: '-1px' }}
+                items={symbols}
+                selected={selectedToken}
+                onChange={this.handleSelectToken}
               />
             </InputGroup>
           }
