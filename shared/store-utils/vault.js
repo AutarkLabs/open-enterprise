@@ -1,7 +1,7 @@
-import { getContractAddress, retryEvery } from '.'
-import vaultBalanceAbi from '../json-abis/vault/vault-balance.json'
-import vaultGetInitializationBlockAbi from '../json-abis/vault/vault-getinitializationblock.json'
-import vaultEventAbi from '../json-abis/vault/vault-events.json'
+import vaultBalanceAbi from '../abi/vault/vault-balance.json'
+import vaultGetInitializationBlockAbi from '../abi/vault/vault-getinitializationblock.json'
+import vaultEventAbi from '../abi/vault/vault-events.json'
+import {app, retryEvery, updateBalances} from '.'
 
 const vaultAbi = [].concat(
   vaultBalanceAbi,
@@ -9,17 +9,27 @@ const vaultAbi = [].concat(
   vaultEventAbi
 )
 
-export const getVault = async () =>
-  retryEvery(async retry => {
-    const address = await getContractAddress('vault', retry)
-    const contract = app.external(address, vaultAbi)
-    let initializationBlock
-
+export const getVault = () =>
+  retryEvery(async () => {
     try {
-      initializationBlock = await contract.getInitializationBlock().toPromise()
+      const address = await app.call('vault').toPromise()
+      const contract = app.external(address, vaultAbi)
+      const initializationBlock = await contract
+        .getInitializationBlock()
+        .toPromise()
+      return {address, contract, initializationBlock}
     } catch (err) {
-      console.error('could not get attached vault´s initialization block', err)
+      throw new Error('vault contract not loading', err)
     }
-
-    return { address, contract, initializationBlock }
   })
+
+export const vaultLoadBalance = async (state, {token}, settings) => {
+  return {
+    ...state,
+    balances: await updateBalances(
+      state.balances,
+      token || settings.ethToken.address,
+      settings
+    ),
+  }
+}

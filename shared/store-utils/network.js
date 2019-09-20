@@ -1,5 +1,5 @@
 import { first } from 'rxjs/operators'
-import { app } from './'
+import { app } from '.'
 
 export const getNetwork = async () =>
   await app
