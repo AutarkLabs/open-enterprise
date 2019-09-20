@@ -1,2 +1,5 @@
-import Aragon from '@aragon/api'
-export const app = new Aragon()
+import Aragon, { events } from '@aragon/api'
+
+const app = new Aragon()
+
+export { app, events }

@@ -1,58 +1,74 @@
 import {
   ETHER_TOKEN_FAKE_ADDRESS,
-  getTokenName,
+  getPresetTokens,
   getTokenSymbol,
+  getTokenName,
   isTokenVerified,
+  tokenAbi,
   tokenDataFallback,
-} from '../utils/token-utils'
-import { addressesEqual } from '../utils/web3-utils'
-import tokenSymbolAbi from '../json-abis/token-symbol.json'
-import tokenNameAbi from '../json-abis/token-name.json'
-import tokenBalanceAbi from '../json-abis/token-balanceof.json'
-import tokenDecimalsAbi from '../json-abis/token-decimals.json'
-import { app } from './'
+} from '../lib/token-utils'
+import {addressesEqual} from '../lib/web3-utils'
+import {app} from '.'
 
-export const getEthToken = () => ({ address: ETHER_TOKEN_FAKE_ADDRESS })
-
-const tokenAbi = [].concat(
-  tokenSymbolAbi,
-  tokenNameAbi,
-  tokenBalanceAbi,
-  tokenDecimalsAbi
-)
+export const getEthToken = () => ({address: ETHER_TOKEN_FAKE_ADDRESS})
 
 const tokenContracts = new Map() // Addr -> External contract
 const tokenDecimals = new Map() // External contract -> decimals
-const tokenName = new Map() // External contract -> name
+const tokenNames = new Map() // External contract -> name
 const tokenSymbols = new Map() // External contract -> symbol
 
-const ETH_CONTRACT = Symbol('ETH_CONTRACT')
-
-export const initializeTokens = async (state, settings) => {
+const initEthToken = () => {
   // Set up ETH placeholders
-  tokenContracts.set(settings.ethToken.address, ETH_CONTRACT)
+  const ETH_CONTRACT = Symbol('ETH_CONTRACT')
+  tokenContracts.set(ETHER_TOKEN_FAKE_ADDRESS, ETH_CONTRACT)
   tokenDecimals.set(ETH_CONTRACT, '18')
-  tokenName.set(ETH_CONTRACT, 'Ether')
+  tokenNames.set(ETH_CONTRACT, 'Ether')
   tokenSymbols.set(ETH_CONTRACT, 'ETH')
-
-  const nextState = {
-    ...state,
-    vaultAddress: settings.vault.address,
-  }
-  const withEthBalance = await loadEthBalance(nextState, settings)
-  return withEthBalance
 }
 
-export async function vaultLoadBalance(state, { returnValues }, settings) {
-  const { token } = returnValues
-  const r = await updateBalances(
-    state,
-    token || settings.ethToken.address,
+export const initializeTokens = async (cachedState = {}, settings) => {
+  
+  initEthToken()
+  const newState = {
+    ...cachedState,
+    isSyncing: true,
+    // TODO:  failing on getting periodDuration (should be public or have a getter in the contract)
+    // periodDuration: marshallDate(await app.call('periodDuration').toPromise()),
+    vaultAddress: settings.vault.address,
+  }
+
+  return await loadTokenBalances(
+    newState,
+    getPresetTokens(settings.network.type), // always immediately load some tokens
     settings
   )
-  return {
+}
+
+const loadTokenBalances = async (state, includedTokenAddresses, settings) => {
+  let newState = {
     ...state,
-    balances: r,
+  }
+  
+  if (
+    !Array.isArray(newState.balances) &&
+    !Array.isArray(includedTokenAddresses)
+  ) {
+    return newState
+  }
+
+  let newBalances = newState.balances || []
+  const addresses = new Set(
+    newBalances.map(({address}) => address).concat(includedTokenAddresses || [])
+  )
+  for (const address of addresses) {
+    console.log('Loading new balances')
+
+    newBalances = await updateBalances(newBalances, address, settings)
+  }
+
+  return {
+    ...newState,
+    balances: newBalances,
   }
 }
 
@@ -62,37 +78,31 @@ export async function vaultLoadBalance(state, { returnValues }, settings) {
  *                     *
  ***********************/
 
-async function loadEthBalance(state, settings) {
-  return {
-    ...state,
-    balances: await updateBalances(state, settings.ethToken.address, settings),
-  }
-}
+export const updateBalances = async (balances, tokenAddress, settings) => {
+  const newBalances = Array.from(balances || [])
 
-async function updateBalances({ balances = [] }, tokenAddress, settings) {
   const tokenContract = tokenContracts.has(tokenAddress)
     ? tokenContracts.get(tokenAddress)
     : app.external(tokenAddress, tokenAbi)
   tokenContracts.set(tokenAddress, tokenContract)
 
-  const balancesIndex = balances.findIndex(({ address }) =>
+  const balancesIndex = newBalances.findIndex(({address}) =>
     addressesEqual(address, tokenAddress)
   )
   if (balancesIndex === -1) {
-    return balances.concat(
+    return newBalances.concat(
       await newBalanceEntry(tokenContract, tokenAddress, settings)
     )
   } else {
-    const newBalances = Array.from(balances)
     newBalances[balancesIndex] = {
-      ...balances[balancesIndex],
+      ...newBalances[balancesIndex],
       amount: await loadTokenBalance(tokenAddress, settings),
     }
     return newBalances
   }
 }
 
-async function newBalanceEntry(tokenContract, tokenAddress, settings) {
+const newBalanceEntry = async (tokenContract, tokenAddress, settings) => {
   const [balance, decimals, name, symbol] = await Promise.all([
     loadTokenBalance(tokenAddress, settings),
     loadTokenDecimals(tokenContract, tokenAddress, settings),
@@ -112,54 +122,62 @@ async function newBalanceEntry(tokenContract, tokenAddress, settings) {
   }
 }
 
-function loadTokenBalance(tokenAddress, { vault }) {
-  return vault.contract.balance(tokenAddress).toPromise()
+const loadTokenBalance = (tokenAddress, {vault}) =>
+  vault.contract.balance(tokenAddress).toPromise()
+
+const loadTokenDecimals = async (tokenContract, tokenAddress, {network}) => {
+  if (tokenDecimals.has(tokenContract)) {
+    return tokenDecimals.get(tokenContract)
+  }
+
+  const fallback =
+    tokenDataFallback(tokenAddress, 'decimals', network.type) || '0'
+
+  let decimals
+  try {
+    decimals = (await tokenContract.decimals().toPromise()) || fallback
+    tokenDecimals.set(tokenContract, decimals)
+  } catch (err) {
+    // decimals is optional
+    decimals = fallback
+  }
+  return decimals
 }
 
-function loadTokenDecimals(tokenContract, tokenAddress, { network }) {
-  return new Promise(resolve => {
-    if (tokenDecimals.has(tokenContract)) {
-      resolve(tokenDecimals.get(tokenContract))
-    } else {
-      const fallback =
-        tokenDataFallback(tokenAddress, 'decimals', network.type) || '0'
+const loadTokenName = async (tokenContract, tokenAddress, {network}) => {
+  if (tokenNames.has(tokenContract)) {
+    return tokenNames.get(tokenContract)
+  }
+  const fallback = tokenDataFallback(tokenAddress, 'name', network.type) || ''
 
-      tokenContract.decimals().subscribe(
-        (decimals = fallback) => {
-          tokenDecimals.set(tokenContract, decimals)
-          resolve(decimals)
-        },
-        () => {
-          // Decimals is optional
-          resolve(fallback)
-        }
-      )
-    }
-  })
+  let name
+  try {
+    name = (await getTokenName(app, tokenAddress)) || fallback
+    tokenNames.set(tokenContract, name)
+  } catch (err) {
+    // name is optional
+    name = fallback
+  }
+  return name
 }
 
-function loadTokenName(tokenContract, tokenAddress, { network }) {
-  return new Promise(resolve => {
-    if (tokenName.has(tokenContract)) {
-      resolve(tokenName.get(tokenContract))
-    } else {
-      const fallback =
-        tokenDataFallback(tokenAddress, 'name', network.type) || ''
-      const name = getTokenName(app, tokenAddress)
-      resolve(name || fallback)
-    }
-  })
+const loadTokenSymbol = async (tokenContract, tokenAddress, {network}) => {
+  if (tokenSymbols.has(tokenContract)) {
+    return tokenSymbols.get(tokenContract)
+  }
+  const fallback = tokenDataFallback(tokenAddress, 'symbol', network.type) || ''
+
+  let symbol
+  try {
+    symbol = (await getTokenSymbol(app, tokenAddress)) || fallback
+    tokenSymbols.set(tokenContract, symbol)
+  } catch (err) {
+    // symbol is optional
+    symbol = fallback
+  }
+  return symbol
 }
 
-function loadTokenSymbol(tokenContract, tokenAddress, { network }) {
-  return new Promise(resolve => {
-    if (tokenSymbols.has(tokenContract)) {
-      resolve(tokenSymbols.get(tokenContract))
-    } else {
-      const fallback =
-        tokenDataFallback(tokenAddress, 'symbol', network.type) || ''
-      const tokenSymbol = getTokenSymbol(app, tokenAddress)
-      resolve(tokenSymbol || fallback)
-    }
-  })
-}
+// Represent dates as real numbers, as it's very unlikely they'll hit the limit...
+// Adjust for js time (in ms vs s)
+const marshallDate = date => parseInt(date, 10) * 1000
