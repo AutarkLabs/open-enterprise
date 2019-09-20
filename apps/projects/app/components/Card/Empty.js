@@ -22,17 +22,13 @@ const Empty = () => {
       `}
       >
         <img css="margin: 10px" src={unauthorizedPng} alt="" height="160" />
-
         <Text size="xlarge">
             No projects found
         </Text>
         <Text css="margin-bottom: 6px">
-            It seems that you haven't set up a project yet
+            It seems that you haven&apos;t set up a project yet
         </Text>
-
         <Button mode="strong" onClick={setupNewProject}>New project</Button>
-
-
       </div>
     </EmptyCard>
   )
