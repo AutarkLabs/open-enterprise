@@ -76,8 +76,8 @@ const AllocationsHistory = ({ allocations }) => {
                 marginBottom: '4px',
               }}>
                 <ProgressBar
-                  value={allocated}
-                  color={theme.accentEnd}
+                  value={allocated.toNumber()}
+                  color={String(theme.accentEnd)}
                 />
               </div>
               <div css={{
@@ -121,7 +121,7 @@ const Status = ({ code }) => {
 }
 
 Status.propTypes = {
-  code: PropTypes.string.isRequired,
+  code: PropTypes.number.isRequired,
 }
 
 export default AllocationsHistory
