@@ -66,40 +66,40 @@ const AllocationsHistory = ({ allocations }) => {
           </div>
         ]
       }}
-      //renderEntryExpansion={({ recipients, amount, token }) => {
-      //  return recipients.map((recipient, index) => {
-      //    const allocated = BigNumber(recipient.amount).div(amount)
-      //    return (
-      //      <div key={index} css={{
-      //        display: 'flex',
-      //        flexDirection: 'column',
-      //      }}>
-      //        <IdentityBadge
-      //          entity={recipient.address}
-      //          shorten={true}
-      //        />
-      //        <div css={{
-      //          marginTop: '7px',
-      //          marginBottom: '4px',
-      //        }}>
-      //          <ProgressBar
-      //            value={allocated}
-      //            color={theme.accentEnd}
-      //          />
-      //        </div>
-      //        <div css={{
-      //          color: theme.contentSecondary,
-      //          alignSelf: 'flex-end',
-      //          fontSize: '12px',
-      //        }}>
-      //          { displayCurrency(BigNumber(recipient.amount)) } {' '}
-      //          {token} {' • '}
-      //          { allocated.times(100).dp(0).toNumber() }{'%'}
-      //        </div>
-      //      </div>
-      //    )
-      //  })
-      //}}
+      renderEntryExpansion={({ recipients, amount, token }) => {
+        return recipients.map((recipient, index) => {
+          const allocated = BigNumber(recipient.amount).div(amount)
+          return (
+            <div key={index} css={{
+              display: 'flex',
+              flexDirection: 'column',
+            }}>
+              <IdentityBadge
+                entity={recipient.address}
+                shorten={true}
+              />
+              <div css={{
+                marginTop: '7px',
+                marginBottom: '4px',
+              }}>
+                <ProgressBar
+                  value={allocated.toNumber()}
+                  color={String(theme.accentEnd)}
+                />
+              </div>
+              <div css={{
+                color: theme.contentSecondary,
+                alignSelf: 'flex-end',
+                fontSize: '12px',
+              }}>
+                { displayCurrency(BigNumber(recipient.amount)) } {' '}
+                {token} {' • '}
+                { allocated.times(100).dp(0).toNumber() }{'%'}
+              </div>
+            </div>
+          )
+        })
+      }}
     />
   )
 }
@@ -128,7 +128,7 @@ const Status = ({ code }) => {
 }
 
 Status.propTypes = {
-  code: PropTypes.string.isRequired,
+  code: PropTypes.number.isRequired,
 }
 
 export default AllocationsHistory

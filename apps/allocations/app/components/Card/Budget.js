@@ -62,10 +62,10 @@ const Budget = ({
             </ContextMenuItem>
           </ContextMenu>
         </MenuContainer>
-        <CardTitle color={`${theme.content}`}>{name}</CardTitle>
+        <CardTitle theme={theme}>{name}</CardTitle>
         <StatsContainer>
           <StyledStats>
-            <StatsValueBig color={`${theme.contentSecondary}`}>
+            <StatsValueBig theme={theme}>
               <Text>Inactive</Text>
             </StatsValueBig>
           </StyledStats>
@@ -92,16 +92,17 @@ const Budget = ({
           </ContextMenuItem>
         </ContextMenu>
       </MenuContainer>
-      <CardTitle color={`${theme.content}`}>{name}</CardTitle>
+      <CardTitle theme={theme}>{name}</CardTitle>
       <StatsContainer>
         <StyledStats>
-          <StatsValueBig color={`${theme.contentSecondary}`}>
-            <Text>{`${tokenAmount} ${token.symbol} per period`}</Text>
+          <StatsValueBig theme={theme}>
+            {displayCurrency(BigNumber(amount))}
+            <Text>{' ' + currency + ' per period'}</Text>
           </StatsValueBig>
-          <StatsValueBig css={{ paddingTop: '24px' }}>
+          <StatsValueBig css={{ paddingTop: '24px' }} theme={theme}>
             <ProgressBar
-              color={`${theme.accentEnd}`}
-              value={allocated}
+              color={String(theme.accentEnd)}
+              value={BigNumber(allocated).div(amount).toNumber()}
             />
           </StatsValueBig>
           <StatsValueSmall
@@ -182,6 +183,7 @@ const CardTitle = styled(Text.Block).attrs({
   margin-top: 10px;
   margin-bottom: 5px;
   text-align: center;
+  color: ${({ theme }) => theme.content};
   display: block;
   /* stylelint-disable-next-line */
   display: -webkit-box;
@@ -207,6 +209,7 @@ const StyledStats = styled.div`
 
 const StatsValueBig = styled.div`
   font-size: 16px;
+  color: ${({ theme }) => theme.contentSecondary};
 `
 
 const StatsValueSmall = styled.div`
