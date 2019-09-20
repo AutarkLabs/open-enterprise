@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-import { theme, Viewport } from '@aragon/ui'
+import { theme, useLayout } from '@aragon/ui'
 
 import FilterDropDown from './FilterDropDown'
 
@@ -20,38 +20,35 @@ const splice = (children, ...args) => (
   React.Children.toArray(children).splice(...args)
 )
 
-const Overflow = ({ children }) => (
-  <Viewport>
-    {({ width }) => {
-      const shown = Math.floor((width - spacer) / apprxItemWidth)
-      const elements = splice(children, 0, shown)
+const Overflow = ({ children }) => {
+  const { width } = useLayout()
+  const shown = Math.floor((width - spacer) / apprxItemWidth)
+  const elements = splice(children, 0, shown)
 
-      if (children.length > shown) {
-        elements.push(
-          <FilterDropDown
-            key="overflow"
-            caption={shown ? 'More Filters' : 'Filters'}
-            enabled
-            type="overflow"
-            width="100%"
-            style={{
-              border: 'none',
-              display: 'grid',
-              padding: '1px',
-              gridGap: '1px',
-              background: theme.contentBorder,
-              gridTemplateRows: 'repeat(auto-fit, minmax(0, 1fr))',
-            }}
-          >
-            {splice(children, shown)}
-          </FilterDropDown>
-        )
-      }
+  if (children.length > shown) {
+    elements.push(
+      <FilterDropDown
+        key="overflow"
+        caption={shown ? 'More Filters' : 'Filters'}
+        enabled
+        type="overflow"
+        width="100%"
+        style={{
+          border: 'none',
+          display: 'grid',
+          padding: '1px',
+          gridGap: '1px',
+          background: theme.contentBorder,
+          gridTemplateRows: 'repeat(auto-fit, minmax(0, 1fr))',
+        }}
+      >
+        {splice(children, shown)}
+      </FilterDropDown>
+    )
+  }
 
-      return elements
-    }}
-  </Viewport>
-)
+  return elements
+}
 
 Overflow.propTypes = {
   children: PropTypes.node.isRequired,

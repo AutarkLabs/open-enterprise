@@ -61,7 +61,7 @@ const getTabs = ({ repoCount }) => {
 
 const App = () => {
   const { api, appState } = useAragonApi()
-  const { activeIndex, setActiveIndex } = useState(
+  const [ activeIndex, setActiveIndex ] = useState(
     { tabIndex: 0, tabData: {} }
   )
   const [ issueDetail, setIssueDetail ] = useState(false)
@@ -70,8 +70,6 @@ const App = () => {
   const [ panelProps, setPanelProps ] = useState(null)
   const [ popupRef, setPopupRef ] = useState(null)
 
-  const client = initApolloClient(appState.github && appState.github.token)
-
   const {
     repos = [],
     bountySettings = {},
@@ -79,6 +77,8 @@ const App = () => {
     tokens = [],
     github = { status : STATUS.INITIAL },
   } = appState
+
+  const client = initApolloClient(github && github.token)
 
   useEffect(() => {
     const code = getURLParam('code')
