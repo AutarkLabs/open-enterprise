@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { BigNumber } from 'bignumber.js'
 
 import {
   Card,
@@ -15,24 +14,27 @@ import {
   Text,
   useTheme,
 } from '@aragon/ui'
-import { displayCurrency } from '../../utils/helpers'
 
-import { BASE_CARD_WIDTH, CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
+import {
+  BASE_CARD_WIDTH,
+  CARD_STRETCH_BREAKPOINT,
+} from '../../utils/responsive'
 
 const Budget = ({
   id,
   name,
   amount,
-  currency,
-  allocated,
+  token,
+  allocated = 0,
   inactive,
   onNewAllocation,
   onEdit,
   onDeactivate,
   onReactivate,
-  screenSize,
+  screenSize
 }) => {
   const theme = useTheme()
+
   const newAllocation = () => {
     onNewAllocation(id, name, amount)
   }
@@ -58,10 +60,10 @@ const Budget = ({
             </ContextMenuItem>
           </ContextMenu>
         </MenuContainer>
-        <CardTitle color={theme.content}>{name}</CardTitle>
+        <CardTitle color={`${theme.content}`}>{name}</CardTitle>
         <StatsContainer>
           <StyledStats>
-            <StatsValueBig color={theme.contentSecondary}>
+            <StatsValueBig color={`${theme.contentSecondary}`}>
               <Text>Inactive</Text>
             </StatsValueBig>
           </StyledStats>
@@ -88,37 +90,34 @@ const Budget = ({
           </ContextMenuItem>
         </ContextMenu>
       </MenuContainer>
-      <CardTitle color={theme.content}>{name}</CardTitle>
+      <CardTitle color={`${theme.content}`}>{name}</CardTitle>
       <StatsContainer>
         <StyledStats>
-          <StatsValueBig color={theme.contentSecondary}>
-            {displayCurrency(BigNumber(amount))}
-            <Text>{' ' + currency + ' per period'}</Text>
+          <StatsValueBig color={`${theme.contentSecondary}`}>
+            <Text>{`${amount} ${token} per period`}</Text>
           </StatsValueBig>
           <StatsValueBig css={{ paddingTop: '24px' }}>
             <ProgressBar
-              color={theme.accentEnd}
-              value={BigNumber(allocated).div(amount).toNumber()}
+              color={`${theme.accentEnd}`}
+              value={allocated}
             />
           </StatsValueBig>
-          <StatsValueSmall css={{
-            color: theme.content,
-            paddingTop: '8px',
-          }}>
-            {displayCurrency(BigNumber(amount).minus(allocated))}
-            <Text>{' ' + currency + ' below limit'}</Text>
+          <StatsValueSmall
+            css={{
+              color: theme.content,
+              paddingTop: '8px',
+            }}
+          >
+            
+            <Text>{`${amount} ${token} below limit`}</Text>
           </StatsValueSmall>
-          <StatsValueSmall css={{
-            color: theme.contentSecondary,
-            paddingTop: '4px',
-          }}>
-            {BigNumber(amount)
-              .minus(allocated)
-              .div(amount)
-              .multipliedBy(100)
-              .dp(0)
-              .toString()}
-            <Text>{'% remaining'}</Text>
+          <StatsValueSmall
+            css={{
+              color: theme.contentSecondary,
+              paddingTop: '4px',
+            }}
+          >
+            <Text>{`${amount}% remaining`}</Text>
           </StatsValueSmall>
         </StyledStats>
       </StatsContainer>
@@ -130,7 +129,7 @@ Budget.propTypes = {
   id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   amount: PropTypes.string.isRequired,
-  currency: PropTypes.string.isRequired,
+  token: PropTypes.string.isRequired,
   allocated: PropTypes.string.isRequired,
   inactive: PropTypes.bool.isRequired,
   onNewAllocation: PropTypes.func.isRequired,
@@ -143,14 +142,18 @@ Budget.propTypes = {
 const StyledCard = styled(Card)`
   display: flex;
   margin-bottom: 2rem;
-  margin-right: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? '0.6rem' : '2rem'};
-  box-shadow: 0px 2px 4px rgba(221, 228, 233, 0.5);
-  border: 0px;
+  margin-right: ${props =>
+    props.screenSize < CARD_STRETCH_BREAKPOINT ? '0.6rem' : '2rem'};
+  box-shadow: 0 2px 4px rgba(221, 228, 233, 0.5);
+  border: 0;
   flex-direction: column;
   justify-content: flex-start;
   padding: 12px;
   height: 264px;
-  width: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? '100%' : BASE_CARD_WIDTH + 'px'};
+  width: ${props =>
+    props.screenSize < CARD_STRETCH_BREAKPOINT
+      ? '100%'
+      : BASE_CARD_WIDTH + 'px'};
   transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
   :hover {
     cursor: pointer;
@@ -176,7 +179,6 @@ const CardTitle = styled(Text.Block).attrs({
   margin-top: 10px;
   margin-bottom: 5px;
   text-align: center;
-  color: ${props => props.color};
   display: block;
   /* stylelint-disable-next-line */
   display: -webkit-box;
@@ -202,7 +204,6 @@ const StyledStats = styled.div`
 
 const StatsValueBig = styled.div`
   font-size: 16px;
-  color: ${props => props.color};
 `
 
 const StatsValueSmall = styled.div`
@@ -210,4 +211,5 @@ const StatsValueSmall = styled.div`
   font-weight: 300;
 `
 
+/* eslint-disable-next-line import/no-unused-modules */
 export default Budget

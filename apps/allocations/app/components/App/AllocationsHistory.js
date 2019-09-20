@@ -40,7 +40,7 @@ const AllocationsHistory = ({ allocations }) => {
         description,
         status,
         amount,
-        currency
+        token
       }, index) => {
         return [
           new Date(Number(date)).toLocaleDateString(),
@@ -55,11 +55,11 @@ const AllocationsHistory = ({ allocations }) => {
               color: theme.negative,
               fontWeight: 600,
             }}>
-            { displayCurrency(BigNumber(amount)) } { currency }
+            { displayCurrency(BigNumber(amount)) } { token }
           </div>
         ]
       }}
-      renderEntryExpansion={({ recipients, amount, currency }) => {
+      renderEntryExpansion={({ recipients, amount, token }) => {
         return recipients.map((recipient, index) => {
           const allocated = BigNumber(recipient.amount).div(amount)
           return (
@@ -86,7 +86,7 @@ const AllocationsHistory = ({ allocations }) => {
                 fontSize: '12px',
               }}>
                 { displayCurrency(BigNumber(recipient.amount)) } {' '}
-                {currency} {' • '}
+                {token} {' • '}
                 { allocated.times(100).dp(0).toNumber() }{'%'}
               </div>
             </div>
