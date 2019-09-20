@@ -1,8 +1,5 @@
 {
   "command": {
-    "run": {
-      "concurrency": 1
-    },
     "bootstrap": {
       "progress": true
     }
