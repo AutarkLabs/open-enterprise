@@ -138,19 +138,20 @@ const App = () => {
   const PanelContent = panel ? panel.content : null
 
   const Wrap = ({ children }) => (
-    <IdentityProvider
-      onResolve={handleResolveLocalIdentity}
-      onShowLocalIdentityModal={handleShowLocalIdentityModal}
-    >
-      {children}
-      <SidePanel
-        title={(panel && panel.data.heading) || ''}
-        opened={panel !== null}
-        onClose={closePanel}
-      >
-        {panel && <PanelContent {...panel.data} />}
-      </SidePanel>
-    </IdentityProvider>
+    <Main assetsUrl={ASSETS_URL} scrollView={false}>
+      <IdentityProvider
+        onResolve={handleResolveLocalIdentity}
+        onShowLocalIdentityModal={handleShowLocalIdentityModal}>
+        { children }
+        <SidePanel
+          title={(panel && panel.data.heading) || ''}
+          opened={panel !== null}
+          onClose={closePanel}
+        >
+          {panel && <PanelContent {...panel.data} />}
+        </SidePanel>
+      </IdentityProvider>
+    </Main>
   )
 
   Wrap.propTypes = {
