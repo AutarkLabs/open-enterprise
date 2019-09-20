@@ -7,8 +7,9 @@ import {
 } from '../../../../shared/store-utils'
 import allocationsEventHandler from './events'
 
-const initState = settings => async cachedState =>
-  await initializeTokens(cachedState, settings)
+const initState = settings => async cachedState => {
+  return await initializeTokens(cachedState, settings)
+}
 
 const initialize = async () => {
   const settings = {
