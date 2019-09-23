@@ -134,13 +134,13 @@ class NewBudget extends React.Component {
                 onChange={this.changeField}
                 step="any"
                 value={amount}
-                css={{ borderRadius: '4px 0px 0px 4px' }}
+                css={{ borderRadius: '4px 0 0 4px' }}
                 required
                 wide
               />
               <DropDown
                 name="token"
-                css={{ borderRadius: '0px 4px 4px 0px', left: '-1px' }}
+                css={{ borderRadius: '0 4px 4px 0', left: '-1px' }}
                 items={symbols}
                 selected={selectedToken}
                 onChange={this.handleSelectToken}

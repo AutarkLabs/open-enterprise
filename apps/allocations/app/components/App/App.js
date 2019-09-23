@@ -10,6 +10,8 @@ import { NewAllocation, NewBudget } from '../Panel'
 import { AllocationsHistory, Budgets } from '.'
 import { Deactivate } from '../Modal'
 
+const nameSorter = (a, b) => a.data.name.toUpperCase() > b.data.name.toUpperCase() ? 1 : -1
+
 const App = () => {
   const [ panel, setPanel ] = useState(null)
   const [ isModalVisible, setModalVisible ] = useState(false)
@@ -133,7 +135,7 @@ const App = () => {
   const PanelContent = panel ? panel.content : null
 
   const Wrap = ({ children }) => (
-    <Main assetsUrl={ASSETS_URL} scrollView={false}>
+    <Main scrollView={false}>
       <IdentityProvider
         onResolve={handleResolveLocalIdentity}
         onShowLocalIdentityModal={handleShowLocalIdentityModal}>
