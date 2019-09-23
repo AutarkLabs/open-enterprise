@@ -115,7 +115,7 @@ const App = () => {
     })
   }
 
-  const onDeactivate = (id) => {
+  const onDeactivate = id => {
     setModalVisible(true)
     setCurrentBudgetId(id)
   }
