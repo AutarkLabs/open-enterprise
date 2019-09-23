@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
+import styled from 'styled-components'
 
 import { useAragonApi } from '../../api-react'
 import { Button, Header, IconPlus, Modal, SidePanel } from '@aragon/ui'
@@ -202,21 +203,24 @@ const DeactivateModal = ({ state, onClose, onSubmit }) => {
   }
   return (
     <Modal visible={state.visible} onClose={onClose}>
-      <div css={{ fontSize: '26px' }}>Deactivate budget</div>
-      <div css={{ marginTop: '32px' }}>
-        Deactivating this budget will immediately disable it once the decision
-        is enacted. You may choose to reactivate this budget at any time.
-      </div>
-      <div
-        css={{
-          marginTop: '48px',
-          display: 'flex',
-          justifyContent: 'flex-end',
-        }}
-      >
-        <Button label="Cancel" css={{ marginRight: '8px' }} onClick={onClose} />
-        <Button label="Deactivate" mode="negative" onClick={deactivate} />
-      </div>
+      <ModalTitle>
+        Deactivate budget
+      </ModalTitle>
+      <ModalText>
+        Deactivating this budget will immediately disable it once the decision is enacted. You may choose to reactivate this budget at any time.
+      </ModalText>
+      <ModalButtons>
+        <Button
+          label="Cancel"
+          css={{ marginRight: '8px' }}
+          onClick={onClose}
+        />
+        <Button
+          label="Deactivate"
+          mode="negative"
+          onClick={deactivate}
+        />
+      </ModalButtons>
     </Modal>
   )
 }
@@ -226,5 +230,19 @@ DeactivateModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
 }
+
+const ModalTitle = styled.div`
+  font-size: 26px;
+`
+
+const ModalText = styled.div`
+  margin-top: 32px;
+`
+
+const ModalButtons = styled.div`
+  margin-top: 48px;
+  display: flex;
+  justify-content: flex-end;
+`
 
 export default App
