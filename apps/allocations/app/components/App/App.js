@@ -1,18 +1,19 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
-import styled from 'styled-components'
 
 import { useAragonApi } from '../../api-react'
-import { Button, Header, IconPlus, Modal, SidePanel } from '@aragon/ui'
+import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
 
 import { IdentityProvider } from '../../../../../shared/identity'
 import { Empty } from '../Card'
 import { NewAllocation, NewBudget } from '../Panel'
 import { AllocationsHistory, Budgets } from '.'
+import { Deactivate } from '../Modal'
 
 const App = () => {
   const [ panel, setPanel ] = useState(null)
-  const [ modal, setModal ] = useState({ visible: false, budgetId: null })
+  const [ isModalVisible, setModalVisible ] = useState(false)
+  const [ currentBudgetId, setCurrentBudgetId ] = useState('')
   const { api, appState } = useAragonApi()
   const { allocations = [], budgets = [], tokens = [] } = appState
 
@@ -114,8 +115,9 @@ const App = () => {
     })
   }
 
-  const onDeactivate = id => {
-    setModal({ visible: true, budgetId: id })
+  const onDeactivate = (id) => {
+    setModalVisible(true)
+    setCurrentBudgetId(id)
   }
 
   const onReactivate = () => { // TODO id => {
@@ -127,7 +129,8 @@ const App = () => {
   }
 
   const closeModal = () => {
-    setModal({ visible: false, budgetId: null })
+    setModalVisible(false)
+    setCurrentBudgetId('')
   }
 
   const handleResolveLocalIdentity = address =>
@@ -188,61 +191,14 @@ const App = () => {
         onReactivate={onReactivate}
       />
       <AllocationsHistory allocations={allocations} />
-      <DeactivateModal
-        state={modal}
+      <Deactivate
+        visible={isModalVisible}
+        budgetId={currentBudgetId}
         onClose={closeModal}
         onSubmit={onSubmitDeactivate}
       />
     </Wrap>
   )
 }
-
-const DeactivateModal = ({ state, onClose, onSubmit }) => {
-  const deactivate = () => {
-    onSubmit(state.budgetId)
-  }
-  return (
-    <Modal visible={state.visible} onClose={onClose}>
-      <ModalTitle>
-        Deactivate budget
-      </ModalTitle>
-      <ModalText>
-        Deactivating this budget will immediately disable it once the decision is enacted. You may choose to reactivate this budget at any time.
-      </ModalText>
-      <ModalButtons>
-        <Button
-          label="Cancel"
-          css={{ marginRight: '8px' }}
-          onClick={onClose}
-        />
-        <Button
-          label="Deactivate"
-          mode="negative"
-          onClick={deactivate}
-        />
-      </ModalButtons>
-    </Modal>
-  )
-}
-
-DeactivateModal.propTypes = {
-  state: PropTypes.object.isRequired,
-  onClose: PropTypes.func.isRequired,
-  onSubmit: PropTypes.func.isRequired,
-}
-
-const ModalTitle = styled.div`
-  font-size: 26px;
-`
-
-const ModalText = styled.div`
-  margin-top: 32px;
-`
-
-const ModalButtons = styled.div`
-  margin-top: 48px;
-  display: flex;
-  justify-content: flex-end;
-`
 
 export default App
