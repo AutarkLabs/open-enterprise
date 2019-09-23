@@ -12,7 +12,7 @@ const Form = ({
 }) => {
   return (
     <React.Fragment>
-      <div style={{ height: '24px' }} />
+      <VerticalSpace />
       {children}
       <Button
         style={{ userSelect: 'none', marginTop: '24px' }}
@@ -32,6 +32,10 @@ const Form = ({
 
 const ErrorBlock = styled.div`
   margin-top: 24px;
+`
+
+const VerticalSpace = styled.div`
+  height: 24px;
 `
 
 Form.propTypes = {

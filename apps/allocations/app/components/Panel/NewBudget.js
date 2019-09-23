@@ -88,7 +88,7 @@ class NewBudget extends React.Component {
         submitText={buttonText}
         disabled={nameError || amountError || amountOverFunds}
         errors={
-          <div>
+          <ErrorContainer>
             { amountOverFunds && (
               <ErrorText>
                 <IconClose
@@ -107,7 +107,7 @@ class NewBudget extends React.Component {
                 Please keep in mind that any changes to the budget amount may only be effectuated upon the starting date of the next accounting period.
               </Info>
             ) }
-          </div>
+          </ErrorContainer>
         }
       >
         <FormField
@@ -163,6 +163,8 @@ const ErrorText = styled.div`
   align-items: center;
   margin-bottom: 20px;
 `
+
+const ErrorContainer = styled.div``
 
 // eslint-disable-next-line import/no-unused-modules
 export default NewBudget
