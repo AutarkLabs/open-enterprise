@@ -58,6 +58,8 @@ const App = () => {
   const handleShowLocalIdentityModal = address =>
     api.requestAddressIdentityModification(address).toPromise()
 
+  const addressList = entries.map(entry => entry.addr)
+
   const Wrap = ({ children }) => (
     <Main assetsUrl={ASSETS_URL}>
       <IdentityProvider
@@ -66,7 +68,7 @@ const App = () => {
       >
         { children }
         <SidePanel onClose={closePanel} opened={panelVisible} title="New entity">
-          <NewEntity onCreateEntity={createEntity} />
+          <NewEntity onCreateEntity={createEntity} addressList={addressList} />
         </SidePanel>
       </IdentityProvider>
     </Main>
