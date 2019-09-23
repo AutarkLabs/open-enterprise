@@ -192,7 +192,7 @@ const App = () => {
         onDeactivate={onDeactivate}
         onReactivate={onReactivate}
       />
-      <AllocationsHistory allocations={allocations} />
+      { allocations.length && <AllocationsHistory allocations={allocations} /> }
       <Deactivate
         visible={isModalVisible}
         budgetId={currentBudgetId}
