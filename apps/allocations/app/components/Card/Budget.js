@@ -53,31 +53,31 @@ const Budget = ({
   const tokensRemaining = tokenAmount.minus(BigNumber(allocated).div(BigNumber(10).pow(token.decimals)))
   if (inactive) {
     return (
-      <StyledCard screenSize={screenSize}>
-        <MenuContainer>
-          <ContextMenu>
-            <ContextMenuItem onClick={reactivate}>
-              <IconView />
-              <ActionLabel>Reactivate</ActionLabel>
-            </ContextMenuItem>
-          </ContextMenu>
-        </MenuContainer>
-        <CardTitle theme={theme}>{name}</CardTitle>
-        <StatsContainer>
-          <StyledStats>
-            <StatsValueBig theme={theme}>
-              <Text>Inactive</Text>
-            </StatsValueBig>
-          </StyledStats>
-        </StatsContainer>
-      </StyledCard>
+      <Wrapper
+        name={name}
+        screenSize={screenSize}
+        theme={theme}
+        menu={
+          <ContextMenuItem onClick={reactivate}>
+            <IconView />
+            <ActionLabel>Reactivate</ActionLabel>
+          </ContextMenuItem>
+        }
+      >
+        <StatsValueBig theme={theme}>
+          <Text>Inactive</Text>
+        </StatsValueBig>
+      </Wrapper>
     )
   }
 
   return (
-    <StyledCard screenSize={screenSize}>
-      <MenuContainer>
-        <ContextMenu>
+    <Wrapper
+      name={name}
+      screenSize={screenSize}
+      theme={theme}
+      menu={
+        <React.Fragment>
           <ContextMenuItem onClick={newAllocation}>
             <IconPlus />
             <ActionLabel>New Allocation</ActionLabel>
@@ -90,41 +90,39 @@ const Budget = ({
             <IconProhibited />
             <ActionLabel>Deactivate</ActionLabel>
           </ContextMenuItem>
-        </ContextMenu>
-      </MenuContainer>
-      <CardTitle theme={theme}>{name}</CardTitle>
-      <StatsContainer>
-        <StyledStats>
-          <StatsValueBig theme={theme}>
-            {displayCurrency(BigNumber(amount))}
-            <Text>{' ' + currency + ' per period'}</Text>
-          </StatsValueBig>
-          <StatsValueBig css={{ paddingTop: '24px' }} theme={theme}>
-            <ProgressBar
-              color={String(theme.accentEnd)}
-              value={BigNumber(allocated).div(amount).toNumber()}
-            />
-          </StatsValueBig>
-          <StatsValueSmall
-            css={{
-              color: theme.content,
-              paddingTop: '8px',
-            }}
-          >
-            
-            <Text>{`${tokensRemaining} ${token.symbol} below limit`}</Text>
-          </StatsValueSmall>
-          <StatsValueSmall
-            css={{
-              color: theme.contentSecondary,
-              paddingTop: '4px',
-            }}
-          >
-            <Text>{`${tokensRemaining.div(tokenAmount).times(100)}% remaining`}</Text>
-          </StatsValueSmall>
-        </StyledStats>
-      </StatsContainer>
-    </StyledCard>
+        </React.Fragment>
+      }
+    >
+      <StatsValueBig theme={theme}>
+        {displayCurrency(BigNumber(amount))}
+        <Text>{' ' + currency + ' per period'}</Text>
+      </StatsValueBig>
+      <StatsValueBig css={{ paddingTop: '24px' }} theme={theme}>
+        <ProgressBar
+          color={String(theme.accentEnd)}
+          value={BigNumber(allocated).div(amount).toNumber()}
+        />
+      </StatsValueBig>
+      <StatsValueSmall css={{
+        color: theme.content,
+        paddingTop: '8px',
+      }}>
+        {displayCurrency(BigNumber(amount).minus(allocated))}
+        <Text>{' ' + currency + ' below limit'}</Text>
+      </StatsValueSmall>
+      <StatsValueSmall css={{
+        color: theme.contentSecondary,
+        paddingTop: '4px',
+      }}>
+        {BigNumber(amount)
+          .minus(allocated)
+          .div(amount)
+          .multipliedBy(100)
+          .dp(0)
+          .toString()}
+        <Text>{'% remaining'}</Text>
+      </StatsValueSmall>
+    </Wrapper>
   )
 }
 
@@ -143,12 +141,35 @@ Budget.propTypes = {
   screenSize: PropTypes.number.isRequired,
 }
 
+const Wrapper = ({ children, name, screenSize, theme, menu }) => (
+  <StyledCard screenSize={screenSize} theme={theme}>
+    <MenuContainer>
+      <ContextMenu>
+        {menu}
+      </ContextMenu>
+    </MenuContainer>
+    <CardTitle theme={theme}>{name}</CardTitle>
+    <StatsContainer>
+      <StyledStats>
+        {children}
+      </StyledStats>
+    </StatsContainer>
+  </StyledCard>
+)
+
+Wrapper.propTypes = {
+  children: PropTypes.node.isRequired,
+  name: PropTypes.string.isRequired,
+  screenSize: PropTypes.number.isRequired,
+  theme: PropTypes.object.isRequired,
+  menu: PropTypes.node.isRequired,
+}
+
 const StyledCard = styled(Card)`
   display: flex;
   margin-bottom: 2rem;
-  margin-right: ${props =>
-    props.screenSize < CARD_STRETCH_BREAKPOINT ? '0.6rem' : '2rem'};
-  box-shadow: 0 2px 4px rgba(221, 228, 233, 0.5);
+  margin-right: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? '0.6rem' : '2rem'};
+  box-shadow: ${({ theme }) => '0 2px 4px ' + theme.border};
   border: 0;
   flex-direction: column;
   justify-content: flex-start;
