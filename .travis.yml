@@ -8,7 +8,7 @@ stages:
   - lint # lint code and docs
   - test # all tests
   - name: deploy
-    if: branch = dev AND env(TRAVIS_PULL_REQUEST) = false
+    if: branch = dev AND env(DEV) IS present
 
 # defaults
 language: node_js
