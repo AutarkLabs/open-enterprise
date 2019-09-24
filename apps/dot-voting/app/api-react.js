@@ -15,7 +15,7 @@ const functions = process.env.NODE_ENV !== 'production' && ((appState, setAppSta
   createVote: ({
     description = 'Define the budget allocation for 2020 ops',
     type = 'allocation'
-  }) => setAppState({
+  } = {}) => setAppState({
     ...appState,
     votes: [
       ...appState.votes,
