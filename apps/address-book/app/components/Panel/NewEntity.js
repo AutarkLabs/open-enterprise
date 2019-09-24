@@ -1,15 +1,42 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Form, FormField } from '../Form'
-import { DropDown, TextInput } from '@aragon/ui'
+import { DropDown, IconClose, TextInput, theme } from '@aragon/ui'
+import styled from 'styled-components'
 import web3Utils from 'web3-utils'
 
-const ENTITY_TYPES = [ 'Individual', 'Organization', 'Project' ]
+const isCustomType = type => type === 'Custom type...'
+
+const ENTITY_TYPES = [ 'Individual', 'Organization', 'Project', 'Custom type...' ]
 const INITIAL_STATE = {
   name: '',
   address: '',
   type: 'Individual',
-  error: {},
+  customType: ''
+}
+
+const ErrorText = styled.div`
+  font-size: small;
+  display: flex;
+  align-items: center;
+  margin-top: 24px;
+`
+
+const ErrorMessage = ({ children }) => (
+  <ErrorText>
+    <IconClose
+      size="tiny"
+      css={{
+        marginRight: '8px',
+        color: theme.negative,
+      }}
+    />
+    {children}
+  </ErrorText>
+)
+
+ErrorMessage.propTypes = {
+  children: PropTypes.node,
 }
 
 class NewEntity extends React.Component {
@@ -33,35 +60,57 @@ class NewEntity extends React.Component {
   }
 
   handleSubmit = () => {
-    const { name, address, type } = this.state
-    const error = {}
-    if (!name) {
-      error.name = 'Please provide a name'
-    }
-    if (!web3Utils.isAddress(address)) {
-      error.address = 'Please provide a valid ethereum address'
-    }
-    if (this.props.addressList.includes(address)) {
-      error.address = 'This address already exists in the address book'
+    const { name, address, type, customType } = this.state
+    const data = {
+      name: name,
+      address: address,
+      type: isCustomType(type) ? customType : type,
     }
 
-    if (Object.keys(error).length) {
-      this.setState({ error: error })
-    } else {
-      this.setState(INITIAL_STATE)
-      this.props.onCreateEntity({ name, address, type })
-    }
+    this.setState(INITIAL_STATE)
+    this.props.onCreateEntity(data)
   }
 
   render() {
-    const { address, name, type, error } = this.state
+    const { address, name, type, customType } = this.state
     const { handleSubmit, changeField, changeType } = this
+
+    const emptyName = name.trim() === ''
+    const emptyAddress = address.trim() === ''
+    const emptyCustomType = customType.trim() === ''
+
+    const errorAddress = !emptyAddress && !web3Utils.isAddress(address)
+      ? <ErrorMessage>Please provide a valid ethereum address</ErrorMessage>
+      : null
+
+    const formDisabled = emptyName || emptyAddress || (isCustomType(type) && emptyCustomType) || errorAddress
+
+    const customTypeFormField =
+      type === 'Custom type...' ? (
+        <FormField
+          required
+          label="Custom type"
+          input={
+            <TextInput
+              name="customType"
+              onChange={changeField}
+              value={customType}
+              wide
+            />
+          }
+        />
+      ) : null
+
     return (
-      <Form onSubmit={handleSubmit} submitText="Submit Entity">
+      <Form
+        onSubmit={handleSubmit}
+        disabled={!!formDisabled}
+        submitText="Submit Entity"
+        error={errorAddress}
+      >
         <FormField
           required
           label="Name"
-          err={error && error.name}
           input={
             <TextInput name="name" onChange={changeField} value={name} wide />
           }
@@ -70,7 +119,6 @@ class NewEntity extends React.Component {
         <FormField
           required
           label="Address"
-          err={error && error.address}
           input={
             <TextInput
               name="address"
@@ -93,6 +141,8 @@ class NewEntity extends React.Component {
             />
           }
         />
+
+        {customTypeFormField}
       </Form>
     )
   }
