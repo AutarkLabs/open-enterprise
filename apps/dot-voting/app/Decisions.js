@@ -178,6 +178,7 @@ const Decisions = ({ decorateVote }) => {
   }
 
   const preparedVotes = filteredVotes.map(decorateVote)
+    .sort((a, b) => b.data.startDate - a.data.startDate)
 
   return (
     <React.Fragment>
