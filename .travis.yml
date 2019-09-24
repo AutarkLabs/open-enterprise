@@ -7,7 +7,8 @@ stages:
   - precache # warm up cache for default Node.js version
   - lint # lint code and docs
   - test # all tests
-  - deploy
+  - name: deploy
+    if: branch = dev AND env(TRAVIS_PULL_REQUEST) = false
 
 # defaults
 language: node_js
@@ -63,22 +64,18 @@ jobs:
       install: npm run bootstrap
       after_success: npm run coveralls
       env: 'COVERAGE=true'
-    
+
     - stage: deploy
       before_install:
       - mkdir $HOME/.aragon
       - openssl aes-256-cbc -K $encrypted_547551ebf6e1_key -iv $encrypted_547551ebf6e1_iv
         -in shared/deployments/rinkeby_key.json.enc -out $HOME/.aragon/rinkeby_key.json -d
       - ls $HOME/.aragon
-      install: 
+      install:
         - travis_wait npm i -g @aragon/cli@5.6.2
         - npm run bootstrap
-      script: echo deploying if running in dev...
-      deploy:
-        provider: script
-        script: travis_wait 60 npm run publish:cd
-        on:
-          branch: dev
+      script: travis_wait 60 npm run publish:cd
+
 
 notifications:
   email: false
