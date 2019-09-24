@@ -65,18 +65,29 @@ const useFilterVotes = (votes, voteTime) => {
       }
 
       if (appFilter !== NULL_FILTER_STATE) {
-        if (appFilter === APP_FILTER_ALLOCATIONS && type !== 'allocation') return false
-        if (appFilter === APP_FILTER_PROJECTS && type !== 'curation') return false
+        if (appFilter === APP_FILTER_ALLOCATIONS &&
+          type !== 'allocation'
+        ) return false
+        if (appFilter === APP_FILTER_PROJECTS &&
+          type !== 'curation'
+        ) return false
       }
 
       if (outcomeFilter !== NULL_FILTER_STATE) {
         if (open) return false
         if (outcomeFilter === OUTCOME_FILTER_PASSED &&
-          !(voteStatus === VOTE_STATUS_SUCCESSFUL || voteStatus === VOTE_STATUS_EXECUTED)
+          !(voteStatus === VOTE_STATUS_SUCCESSFUL ||
+            voteStatus === VOTE_STATUS_EXECUTED)
         ) return false
-        if (outcomeFilter === OUTCOME_FILTER_REJECTED && voteStatus !== VOTE_STATUS_FAILED) return false
-        if (outcomeFilter === OUTCOME_FILTER_ENACTED && voteStatus !== VOTE_STATUS_EXECUTED) return false
-        if (outcomeFilter === OUTCOME_FILTER_PENDING && voteStatus !== VOTE_STATUS_SUCCESSFUL) return false
+        if (outcomeFilter === OUTCOME_FILTER_REJECTED &&
+          voteStatus !== VOTE_STATUS_FAILED
+        ) return false
+        if (outcomeFilter === OUTCOME_FILTER_ENACTED &&
+          voteStatus !== VOTE_STATUS_EXECUTED
+        ) return false
+        if (outcomeFilter === OUTCOME_FILTER_PENDING &&
+          voteStatus !== VOTE_STATUS_SUCCESSFUL
+        ) return false
       }
       return true
     })
