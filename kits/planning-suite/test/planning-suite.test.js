@@ -352,7 +352,7 @@ contract('Planning Suite', accounts => {
         // voting
         await checkRole(
           votingAddress,
-          await voting.CREATE_VOTES_ROLE(),
+          await voting.ROLE_CREATE_VOTES(),
           votingAddress,
           'Voting',
           'CREATE_VOTES',
@@ -360,10 +360,10 @@ contract('Planning Suite', accounts => {
         )
         await checkRole(
           votingAddress,
-          await voting.MODIFY_QUORUM_ROLE(),
+          await voting.ROLE_MODIFY_QUORUM_ROLE(),
           votingAddress,
           'Voting',
-          'MODIFY_QUORUM'
+          'ROLE_MODIFY_QUORUM'
         )
         assert.equal(
           await acl.getPermissionManager(

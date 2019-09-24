@@ -44,9 +44,9 @@ function createDiscussionApp(address root, ACL acl, Kernel dao) internal returns
 Every action that gets forwarded through the discussions app creates a new discussion thread. So we need to add the discussions app to the forwarding chain of any action we want to trigger a discussion. In this example, we have a new discussion created _before_ a new dot-vote gets created:
 
 ```
-acl.createPermission(discussions, dotVoting, dotVoting.CREATE_VOTES_ROLE(), voting);
+acl.createPermission(discussions, dotVoting, dotVoting.ROLE_CREATE_VOTES(), voting);
 ```
-If discussions is the only app granted the `CREATE_VOTES_ROLE` permission, every new vote will have its own discussion thread.
+If discussions is the only app granted the `ROLE_CREATE_VOTES` permission, every new vote will have its own discussion thread.
 
 When you send an intent to trigger the action that gets forwarded through the discussions app, you should see the appropriate radspec in the aragon client transaction confirmation panel.
 

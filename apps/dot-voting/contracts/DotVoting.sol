@@ -32,11 +32,13 @@ contract DotVoting is ADynamicForwarder, AragonApp {
 
     uint256 constant public PCT_BASE = 10 ** 18; // 0% = 0; 1% = 10^16; 100% = 10^18
 
-    bytes32 constant public CREATE_VOTES_ROLE = keccak256("CREATE_VOTES_ROLE");
-    bytes32 constant public MODIFY_QUORUM = keccak256("MODIFY_QUORUM");
-    bytes32 constant public MODIFY_CANDIDATE_SUPPORT = keccak256("MODIFY_CANDIDATE_SUPPORT");
-    bytes32 constant public ADD_CANDIDATES_ROLE = keccak256("ADD_CANDIDATES_ROLE");
-    string constant QUORUM_SUPPORT_ERROR= "Global quorum must be greater or equal to candidate support";
+    bytes32 constant public ROLE_ADD_CANDIDATES = keccak256("ROLE_ADD_CANDIDATES");
+    bytes32 constant public ROLE_CREATE_VOTES = keccak256("ROLE_CREATE_VOTES");
+    bytes32 constant public ROLE_MODIFY_QUORUM = keccak256("ROLE_MODIFY_QUORUM");
+    bytes32 constant public ROLE_MODIFY_CANDIDATE_SUPPORT = keccak256("ROLE_MODIFY_CANDIDATE_SUPPORT");
+    string private constant ERROR_CAN_VOTE = "ERROR_CAN_VOTE";
+    string private constant ERROR_MIN_QUORUM = "ERROR_MIN_QUORUM";
+    string private constant ERROR_VOTE_LENGTH = "ERROR_VOTE_LENGTH";
 
     struct Vote {
         string metadata;
@@ -98,9 +100,9 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     ) external onlyInit
     {
         initialized();
-        require(_minQuorum > 0, "Quorum must be greater than 0"); // solium-disable-line error-reason
-        require(_minQuorum <= PCT_BASE, "Qourum must be less than 100"); // solium-disable-line error-reason
-        require(_minQuorum >= _candidateSupportPct, "Quorum must be greater than candidate support"); // solium-disable-line error-reason
+        require(_minQuorum > 0, ERROR_MIN_QUORUM);
+        require(_minQuorum <= PCT_BASE, ERROR_MIN_QUORUM);
+        require(_minQuorum >= _candidateSupportPct, ERROR_MIN_QUORUM);
         token = _token;
         globalMinQuorum = _minQuorum;
         globalCandidateSupportPct = _candidateSupportPct;
@@ -120,7 +122,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     * @return voteId Id for newly created vote
     */
     function newVote(bytes _executionScript, string _metadata)
-        external auth(CREATE_VOTES_ROLE) returns (uint256 voteId)
+        external auth(ROLE_CREATE_VOTES) returns (uint256 voteId)
     {
         voteId = _newVote(_executionScript, _metadata); /*, true);*/
     }
@@ -133,7 +135,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     *                  must be less than `token.balance[msg.sender]`.
     */
     function vote(uint256 _voteId, uint256[] _supports)  external isInitialized {
-        require(canVote(_voteId, msg.sender), "Sender must be a valid voter"); // solium-disable-line error-reason
+        require(canVote(_voteId, msg.sender), ERROR_CAN_VOTE);
         _vote(_voteId, _supports, msg.sender);
     }
 
@@ -142,7 +144,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     * @param _voteId Id for vote
     */
     function executeVote(uint256 _voteId) external isInitialized {
-        require(canExecute(_voteId), "vote not meeting execution requirements");
+        require(canExecute(_voteId), ERROR_CAN_VOTE);
         _executeVote(_voteId);
     }
 
@@ -155,11 +157,11 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     function getCandidate(uint256 _voteId, uint256 _candidateIndex)
     external view isInitialized returns(address candidateAddress, uint256 voteSupport, string metadata, bytes32 externalId1, bytes32 externalId2)
     {
-        require(_voteId < voteLength, "Vote ID outside of current vote range");
+        require(_voteId < voteLength, ERROR_VOTE_LENGTH);//, "Vote ID outside of current vote range");
         uint256 actionId = votes[_voteId].actionId;
         Action storage action = actions[actionId];
         uint256 candidateLength = action.optionKeys.length;
-        require(_candidateIndex < candidateLength, "Candidate index outside of current candidate range");
+        require(_candidateIndex < candidateLength); // solium-disable-line error-reason
         OptionState storage candidate = action.options[action.optionKeys[_candidateIndex]];
         candidateAddress = optionAddresses[action.optionKeys[_candidateIndex]];
         voteSupport = candidate.actionSupport;
@@ -176,9 +178,9 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     *        percentage, (eg 10^16 = 1%, 10^18 = 100%)
     */
     function setglobalCandidateSupportPct(uint256 _globalCandidateSupportPct)
-    external auth(MODIFY_CANDIDATE_SUPPORT)
+    external auth(ROLE_MODIFY_CANDIDATE_SUPPORT)
     {
-        require(globalMinQuorum >= _globalCandidateSupportPct, QUORUM_SUPPORT_ERROR);
+        require(globalMinQuorum >= _globalCandidateSupportPct); // solium-disable-line error-reason
         globalCandidateSupportPct = _globalCandidateSupportPct;
         emit UpdateMinimumSupport(globalCandidateSupportPct);
     }
@@ -190,7 +192,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     *        (eg 10^16 = 1%, 10^18 = 100%)
     */
     function setGlobalQuorum(uint256 _minQuorum)
-    external auth(MODIFY_QUORUM)
+    external auth(ROLE_MODIFY_QUORUM)
     {
         require(_minQuorum > 0); // solium-disable-line error-reason
         require(_minQuorum <= PCT_BASE); // solium-disable-line error-reason
@@ -200,7 +202,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     }
 
     /**
-    * @notice `addCandidate` allows the `ADD_CANDIDATES_ROLE` to add candidates
+    * @notice `addCandidate` allows the `ROLE_ADD_CANDIDATES` to add candidates
     *         (or options) to the current dot vote.
     * @param _voteId id for vote structure this 'ballot action' is connected to
     * @param _metadata Any additional information about the candidate.
@@ -211,11 +213,11 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     * @param _eId2 External ID 2, can be used for basic candidate information
     */
     function addCandidate(uint256 _voteId, string _metadata, address _description, bytes32 _eId1, bytes32 _eId2)
-    public auth(ADD_CANDIDATES_ROLE)
+    public auth(ROLE_ADD_CANDIDATES)
     {
         Vote storage voteInstance = votes[_voteId];
-        require(_voteId < voteLength, "Vote ID outside of current vote range");
-        require(_isVoteOpen(voteInstance), "Vote must be open");
+        require(_voteId < voteLength, ERROR_VOTE_LENGTH);
+        require(_isVoteOpen(voteInstance)); // solium-disable-line error-reason
         addOption(votes[_voteId].actionId, _metadata, _description, _eId1, _eId2);
     }
 
@@ -241,7 +243,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     * @return True is `_sender` has correct permissions
     */
     function canForward(address _sender, bytes /*_evmCallScript*/) public view returns (bool) {
-        return canPerform(_sender, CREATE_VOTES_ROLE, arr());
+        return canPerform(_sender, ROLE_CREATE_VOTES, arr());
     }
 
     // * @param _evmCallScript Not used in this implementation
@@ -268,7 +270,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     * @return True is `_voter` has a vote token balance and vote is open
     */
     function canVote(uint256 _voteId, address _voter) public view isInitialized returns (bool) {
-        require(_voteId < voteLength, "Vote ID outside of current vote range");
+        require(_voteId < voteLength, ERROR_VOTE_LENGTH);
         Vote storage voteInstance = votes[_voteId];
         return _isVoteOpen(voteInstance) && token.balanceOfAt(_voter, voteInstance.snapshotBlock) > 0;
     }
@@ -281,7 +283,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     * @return True if the vote is elligible for execution.
     */
     function canExecute(uint256 _voteId) public view isInitialized returns (bool) {
-        require(_voteId < voteLength, "Vote ID outside of current vote range");
+        require(_voteId < voteLength, ERROR_VOTE_LENGTH);
         Vote storage voteInstance = votes[_voteId];
         Action storage action = actions[voteInstance.actionId];
         if (action.executed)
@@ -314,7 +316,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
         bool executed,
         string voteDescription
     ) { // solium-disable-line lbrace
-        require(_voteId < voteLength, "Vote ID outside of current vote range");
+        require(_voteId < voteLength, ERROR_VOTE_LENGTH);
         Vote storage voteInstance = votes[_voteId];
         Action memory action = actions[voteInstance.actionId];
         open = _isVoteOpen(voteInstance);
@@ -337,7 +339,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     */
     function getCandidateLength(uint256 _voteId) public view isInitialized returns
     ( uint totalCandidates ) { // solium-disable-line lbrace
-        require(_voteId < voteLength, "Vote ID outside of current vote range");
+        require(_voteId < voteLength, ERROR_VOTE_LENGTH);
         uint256 actionId = votes[_voteId].actionId;
         totalCandidates = actions[actionId].optionKeys.length;
     }
@@ -348,7 +350,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     * @param _voteId The ID of the Vote struct in the `votes` array
     */
     function getVoteMetadata(uint256 _voteId) public view isInitialized returns (string) {
-        require(_voteId < voteLength, "Vote ID outside of current vote range");
+        require(_voteId < voteLength, ERROR_VOTE_LENGTH);
         return votes[_voteId].metadata;
     }
 
@@ -359,7 +361,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     * @param _voter The voter whose weights will be returned
     */
     function getVoterState(uint256 _voteId, address _voter) public view isInitialized returns (uint256[]) {
-        require(_voteId < voteLength, "Vote ID outside of current vote range");
+        require(_voteId < voteLength, ERROR_VOTE_LENGTH);
         return votes[_voteId].voters[_voter];
     }
 
@@ -428,7 +430,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
         address _voter
     ) internal
     {
-        require(_voteId < voteLength, "Vote ID outside of current vote range");
+        require(_voteId < voteLength, ERROR_VOTE_LENGTH);
         Vote storage voteInstance = votes[_voteId];
         Action storage action = actions[voteInstance.actionId];
 
@@ -443,18 +445,17 @@ contract DotVoting is ADynamicForwarder, AragonApp {
         uint256 voteSupport;
         uint256[] storage oldVoteSupport = voteInstance.voters[msg.sender];
         bytes32[] storage cKeys = action.optionKeys;
-        uint256 cKeysLength = cKeys.length;
-        require(cKeysLength <= _supports.length, "More supports given than candidates");
-        uint256 i = 0;
+        uint256 supportsLength = _supports.length;
+        uint256 oldSupportLength = oldVoteSupport.length;
         uint256 totalParticipation = voteInstance.totalParticipation;
+        require(cKeys.length == supportsLength); // solium-disable-line error-reason
+        require(oldSupportLength <= supportsLength); // solium-disable-line error-reason
+        _checkTotalSupport(_supports, voterStake);
+        uint256 i = 0;
         // This is going to cost a lot of gas... it'd be cool if there was
         // a better way to do this.
-        for (i; i < oldVoteSupport.length; i++) {
-            require(i < cKeysLength, "Too many old support values exist");
-            totalSupport = totalSupport.add(_supports[i]);
-            // Might make sense to move this outside the for loop
-            // Probably safer here but some gas calculations should be done
-            require(totalSupport <= voterStake); // solium-disable-line error-reason
+        //totalParticipation = _syncOldSupports(oldSupportLength, )
+        for (i; i < oldSupportLength; i++) {
             voteSupport = action.options[cKeys[i]].actionSupport;
             totalParticipation = totalParticipation.sub(oldVoteSupport[i]);
             voteSupport = voteSupport.sub(oldVoteSupport[i]);
@@ -462,9 +463,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
             totalParticipation = totalParticipation.add(_supports[i]);
             action.options[cKeys[i]].actionSupport = voteSupport;
         }
-        for (i; i < _supports.length; i++) {
-            totalSupport = totalSupport.add(_supports[i]);
-            require(totalSupport <= voterStake); // solium-disable-line error-reason
+        for (i; i < supportsLength; i++) {
             voteSupport = action.options[cKeys[i]].actionSupport;
             voteSupport = voteSupport.add(_supports[i]);
             totalParticipation = totalParticipation.add(_supports[i]);
@@ -474,11 +473,19 @@ contract DotVoting is ADynamicForwarder, AragonApp {
         voteInstance.voters[msg.sender] = _supports;
     }
 
+    function _checkTotalSupport(uint256[] _supports, uint256 _voterStake) internal {
+        uint256 totalSupport;
+        for (uint64 i = 0; i < _supports.length; i++) {
+            totalSupport = totalSupport.add(_supports[i]);
+        }
+        require(totalSupport <= _voterStake); // solium-disable-line error-reason
+    }
+
     /**
     * @notice `_pruneVotes` trims out options that don't meet the minimum support pct.
     */
     function _pruneVotes(uint256 _voteId, uint256 _candidateSupportPct) internal {
-        require(_voteId < voteLength, "Vote ID outside of current vote range");
+        require(_voteId < voteLength, ERROR_VOTE_LENGTH);
         Vote storage voteInstance = votes[_voteId];
         uint256 actionId = voteInstance.actionId;
         Action storage action = actions[actionId];
@@ -500,7 +507,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     * @return voteId The ID(or index) of this vote in the votes array.
     */
     function _executeVote(uint256 _voteId) internal {
-        require(_voteId < voteLength, "Vote ID outside of current vote range");
+        require(_voteId < voteLength, ERROR_VOTE_LENGTH);
         Vote storage voteInstance = votes[_voteId];
         uint256 actionId = voteInstance.actionId;
         Action storage action = actions[actionId];

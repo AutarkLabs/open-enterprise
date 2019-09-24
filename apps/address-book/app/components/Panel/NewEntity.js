@@ -15,6 +15,7 @@ const INITIAL_STATE = {
 class NewEntity extends React.Component {
   static propTypes = {
     onCreateEntity: PropTypes.func.isRequired,
+    addressList: PropTypes.arrayOf(PropTypes.string).isRequired,
   }
 
   state = INITIAL_STATE
@@ -39,6 +40,9 @@ class NewEntity extends React.Component {
     }
     if (!web3Utils.isAddress(address)) {
       error.address = 'Please provide a valid ethereum address'
+    }
+    if (this.props.addressList.includes(address)) {
+      error.address = 'This address already exists in the address book'
     }
 
     if (Object.keys(error).length) {

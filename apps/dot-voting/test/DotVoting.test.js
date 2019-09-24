@@ -31,7 +31,7 @@ const ANY_ADDRESS = '0xffffffffffffffffffffffffffffffffffffffff'
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 contract('DotVoting', accounts => {
-  let APP_MANAGER_ROLE, ADD_CANDIDATES_ROLE, CREATE_VOTES_ROLE, MODIFY_CANDIDATE_SUPPORT, MODIFY_QUORUM
+  let APP_MANAGER_ROLE, ROLE_ADD_CANDIDATES, ROLE_CREATE_VOTES, ROLE_MODIFY_CANDIDATE_SUPPORT, ROLE_MODIFY_QUORUM
   let daoFact, app, book, token, executionTarget
 
   const DotVotingTime = 1000
@@ -51,10 +51,10 @@ contract('DotVoting', accounts => {
 
     // Setup ACL roles constants
     APP_MANAGER_ROLE = await kernelBase.APP_MANAGER_ROLE()
-    ADD_CANDIDATES_ROLE = await appBase.ADD_CANDIDATES_ROLE()
-    CREATE_VOTES_ROLE = await appBase.CREATE_VOTES_ROLE()
-    MODIFY_CANDIDATE_SUPPORT = await appBase.MODIFY_CANDIDATE_SUPPORT()
-    MODIFY_QUORUM = await appBase.MODIFY_QUORUM()
+    ROLE_ADD_CANDIDATES = await appBase.ROLE_ADD_CANDIDATES()
+    ROLE_CREATE_VOTES = await appBase.ROLE_CREATE_VOTES()
+    ROLE_MODIFY_CANDIDATE_SUPPORT = await appBase.ROLE_MODIFY_CANDIDATE_SUPPORT()
+    ROLE_MODIFY_QUORUM = await appBase.ROLE_MODIFY_QUORUM()
     
     /** Create the dao from the dao factory */
     const daoReceipt = await daoFact.newDAO(root)
@@ -69,10 +69,10 @@ contract('DotVoting', accounts => {
     app = getContract('DotVotingMock').at(getReceipt(appReceipt, 'NewAppProxy', 'proxy'))
     
     /** Setup DotVoting permissions */
-    await acl.createPermission(accounts[2], app.address, MODIFY_CANDIDATE_SUPPORT, root)
-    await acl.createPermission(accounts[2], app.address, MODIFY_QUORUM, root)
-    await acl.createPermission(accounts[2], app.address, CREATE_VOTES_ROLE, root)
-    await acl.createPermission(ANY_ADDRESS, app.address, ADD_CANDIDATES_ROLE, root)
+    await acl.createPermission(accounts[2], app.address, ROLE_MODIFY_CANDIDATE_SUPPORT, root)
+    await acl.createPermission(accounts[2], app.address, ROLE_MODIFY_QUORUM, root)
+    await acl.createPermission(accounts[2], app.address, ROLE_CREATE_VOTES, root)
+    await acl.createPermission(ANY_ADDRESS, app.address, ROLE_ADD_CANDIDATES, root)
   })
 
   context('before init', () => {

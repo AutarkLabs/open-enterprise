@@ -294,8 +294,8 @@ contract PlanningSuite is BetaKitBase {
         emit InstalledApp(finance, appIds[uint8(Apps.Finance)]);
 
         // // Voting Permissions
-        acl.createPermission(ANY_ENTITY, voting, voting.CREATE_VOTES_ROLE(), voting);
-        acl.createPermission(voting, voting, voting.MODIFY_QUORUM_ROLE(), voting);
+        acl.createPermission(ANY_ENTITY, voting, voting.ROLE_CREATE_VOTES(), voting);
+        acl.createPermission(voting, voting, voting.ROLE_MODIFY_QUORUM_ROLE(), voting);
         emit InstalledApp(voting, appIds[uint8(Apps.Voting)]);
 
 
@@ -433,8 +433,8 @@ contract PlanningSuite is BetaKitBase {
         emit InstalledApp(projects, planningAppIds[uint8(PlanningApps.Projects)]);
 
         // Dot-voting permissions
-        acl.createPermission(ANY_ENTITY, dotVoting, dotVoting.CREATE_VOTES_ROLE(), voting);
-        acl.createPermission(ANY_ENTITY, dotVoting, dotVoting.ADD_CANDIDATES_ROLE(), voting);
+        acl.createPermission(ANY_ENTITY, dotVoting, dotVoting.ROLE_CREATE_VOTES(), voting);
+        acl.createPermission(ANY_ENTITY, dotVoting, dotVoting.ROLE_ADD_CANDIDATES(), voting);
         emit InstalledApp(dotVoting, planningAppIds[uint8(PlanningApps.DotVoting)]);
 
         // Allocations permissions:

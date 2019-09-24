@@ -1,7 +1,8 @@
 # Open Enterprise
-*Note: Open Enterprise is the new name of That Planning Suite. We still need to update the Github repo URL.*
 
-[![Build Status](https://img.shields.io/travis/AutarkLabs/planning-suite.svg?style=flat-square)](https://travis-ci.org/AutarkLabs/planning-suite) [![Coverage Status](https://img.shields.io/coveralls/github/AutarkLabs/planning-suite.svg?style=flat-square)](https://coveralls.io/github/AutarkLabs/planning-suite)
+_Note: Open Enterprise is the new name of That Planning Suite._
+
+[![Build Status](https://img.shields.io/travis/AutarkLabs/open-enterprise.svg?style=flat-square)](https://travis-ci.org/AutarkLabs/open-enterprise) [![Coverage Status](https://img.shields.io/coveralls/github/AutarkLabs/open-enterprise.svg?style=flat-square)](https://coveralls.io/github/AutarkLabs/open-enterprise)
 
 <!-- markdownlint-disable MD033 -->
 <p align="center">
@@ -12,10 +13,9 @@
 <!-- markdownlint-enable MD033 -->
 
 Open Enterprise is a collection of Aragon apps that enable organizations to curate issues, collectively budget, and design custom reward and bounty programs. If you are interested in viewing app demos or want to install them to your Rinkeby organizations, learn more here:
-https://www.autark.xyz/apps
+<https://www.autark.xyz/apps>
 
 **Release status:** The apps are currently on Rinkeby and undergoing a security audit and UX enhancements. The apps will be released to mainnet in Q4 2019.
-
 
 ## Development Setup
 
@@ -61,7 +61,6 @@ Open Enterprise is a collection of five Aragon Apps that supports the following:
 - **Rewards:** Distributes payments to token holders based on the number of tokens one has earned in a specific cycle of time (one-time reward) or based on the total tokens one holds (dividend).
 
 ### [Review more details](https://www.autark.xyz/apps)
-
 
 ## Contact
 
