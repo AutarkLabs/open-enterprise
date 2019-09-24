@@ -14,7 +14,6 @@ import {
   useTheme,
 } from '@aragon/ui'
 import VoteDetails from './components/VoteDetails'
-import { getQuorumProgress } from './utils/vote-utils'
 import { getVoteStatus } from './utils/vote-utils'
 import Empty from './components/EmptyFilteredVotes'
 import {
@@ -34,6 +33,7 @@ const APP_FILTER_ALLOCATIONS = 1
 const APP_FILTER_PROJECTS = 2
 
 const useFilterVotes = (votes, voteTime) => {
+  const { appState: { globalMinQuorum = 0 } } = useAragonApi()
   const [ filteredVotes, setFilteredVotes ] = useState(votes)
   const [ statusFilter, setStatusFilter ] = useState(NULL_FILTER_STATE)
   const [ outcomeFilter, setOutcomeFilter ] = useState(NULL_FILTER_STATE)
@@ -56,8 +56,7 @@ const useFilterVotes = (votes, voteTime) => {
       const endDate = new Date(vote.data.startDate + voteTime)
       const open = isBefore(now, endDate)
       const type = vote.data.type
-      vote.quorumProgress = getQuorumProgress(vote.data)
-      const voteStatus = getVoteStatus(vote)
+      const voteStatus = getVoteStatus(vote, globalMinQuorum)
 
       if (statusFilter !== NULL_FILTER_STATE) {
         if (statusFilter === STATUS_FILTER_OPEN && !isBefore(now, endDate)) return false

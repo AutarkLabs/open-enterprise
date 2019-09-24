@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
+import { useAragonApi } from '@aragon/api-react'
 import { useTheme } from '@aragon/ui'
 import { getVoteStatus } from '../../utils/vote-utils'
 import { VOTE_STATUS_SUCCESSFUL } from '../../utils/vote-types'
@@ -9,6 +10,7 @@ import VoteEnact from './VoteEnact'
 
 const VotingResults = ({ vote, voteWeights }) => {
   const theme = useTheme()
+  const { appState: { globalMinQuorum = 0 } } = useAragonApi()
 
   const [ totalSupport, setTotalSupport ] = useState(0)
   useEffect(() => {
@@ -32,7 +34,10 @@ const VotingResults = ({ vote, voteWeights }) => {
           voteWeights={voteWeights}
         />
       </div>
-      {!vote.open && getVoteStatus(vote) === VOTE_STATUS_SUCCESSFUL && <VoteEnact voteId={vote.voteId} />}
+      {!vote.open &&
+        getVoteStatus(vote, globalMinQuorum) === VOTE_STATUS_SUCCESSFUL && (
+        <VoteEnact voteId={vote.voteId} />
+      )}
     </React.Fragment>
   )
 }
