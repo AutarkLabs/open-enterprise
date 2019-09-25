@@ -48,13 +48,13 @@ start_testrpc() {
 }
 
 if testrpc_running; then
-	echo "Killing testrpc instance at port $testrpc_port"
-	kill -9 "$(lsof -i:"$testrpc_port" -sTCP:LISTEN -t)"
+	echo "Using testrpc instance at port $testrpc_port"
+else
+	echo "Starting our own testrpc instance at port $testrpc_port"
+	start_testrpc
+	sleep 5
 fi
 
-echo "Starting our own testrpc instance at port $testrpc_port"
-start_testrpc
-sleep 5
 
 # Exit error mode so the testrpc instance always gets killed
 set +e

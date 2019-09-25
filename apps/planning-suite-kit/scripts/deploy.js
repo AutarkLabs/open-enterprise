@@ -1,7 +1,7 @@
 const deployTemplate = require('@aragon/templates-shared/scripts/deploy-template')
 
-const TEMPLATE_NAME = 'reputation-template'
-const CONTRACT_NAME = 'ReputationTemplate'
+const TEMPLATE_NAME = 'OE-template'
+const CONTRACT_NAME = 'PlanningKit'
 
 module.exports = callback => {
   deployTemplate(web3, artifacts, TEMPLATE_NAME, CONTRACT_NAME)

@@ -1,10 +1,10 @@
 pragma solidity 0.4.24;
 
 import "@aragon/templates-shared/contracts/TokenCache.sol";
-import "@aragon/templates-shared/contracts/BaseTemplate.sol";
+import "./BaseOETemplate.sol";
 
 
-contract PlanningKit is BaseTemplate, TokenCache {
+contract PlanningKit is BaseOETemplate, TokenCache {
     string constant private ERROR_EMPTY_HOLDERS = "REPUTATION_EMPTY_HOLDERS";
     string constant private ERROR_BAD_HOLDERS_STAKES_LEN = "REPUTATION_BAD_HOLDERS_STAKES_LEN";
     string constant private ERROR_BAD_VOTE_SETTINGS = "REPUTATION_BAD_VOTE_SETTINGS";
@@ -14,13 +14,18 @@ contract PlanningKit is BaseTemplate, TokenCache {
     uint8 constant private TOKEN_DECIMALS = uint8(18);
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(0);
     uint64 constant private DEFAULT_FINANCE_PERIOD = uint64(30 days);
+    uint256 constant PCT256 = 10 ** 16;
+    uint64 constant PCT64 = 10 ** 16;
+    StandardBounties registry;
 
     constructor(DAOFactory _daoFactory, ENS _ens, MiniMeTokenFactory _miniMeFactory, IFIFSResolvingRegistrar _aragonID)
-        BaseTemplate(_daoFactory, _ens, _miniMeFactory, _aragonID)
+        BaseOETemplate(_daoFactory, _ens, new MiniMeTokenFactory(), _aragonID)
         public
     {
-        _ensureAragonIdIsValid(_aragonID);
-        _ensureMiniMeFactoryIsValid(_miniMeFactory);
+        //_ensureAragonIdIsValid(_aragonID);
+        //_ensureMiniMeFactoryIsValid(_miniMeFactory);
+        registry = new StandardBounties(msg.sender);
+
     }
 
     /**
@@ -59,7 +64,7 @@ contract PlanningKit is BaseTemplate, TokenCache {
     function newToken(string memory _name, string memory _symbol) public returns (MiniMeToken) {
         MiniMeToken token = _createToken(_name, _symbol, TOKEN_DECIMALS);
         _cacheToken(token, msg.sender);
-        return token;
+        return token; //MiniMeToken(0x0);
     }
 
     /**
@@ -85,10 +90,12 @@ contract PlanningKit is BaseTemplate, TokenCache {
         _ensureReputationSettings(_holders, _stakes, _votingSettings);
 
         (Kernel dao, ACL acl) = _createDAO();
-        (Finance finance, Voting voting) = _setupApps(dao, acl, _holders, _stakes, _votingSettings, _financePeriod, _useAgentAsVault);
+        MiniMeToken token = _popTokenCache(msg.sender);
+        (Finance finance, Voting voting) = _setupBaseApps(dao, acl, _holders, _stakes, _votingSettings, _financePeriod, _useAgentAsVault, token);
+        _setupOEApps(dao, acl, _useAgentAsVault, token, voting);
         _transferCreatePaymentManagerFromTemplate(acl, finance, voting);
         _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, voting);
-        _registerID(_id, dao);
+        //_registerID(_id, dao);
     }
 
     /**
@@ -117,41 +124,60 @@ contract PlanningKit is BaseTemplate, TokenCache {
         _ensureReputationSettings(_holders, _stakes, _votingSettings, _payrollSettings);
 
         (Kernel dao, ACL acl) = _createDAO();
-        (Finance finance, Voting voting) = _setupApps(dao, acl, _holders, _stakes, _votingSettings, _financePeriod, _useAgentAsVault);
+        MiniMeToken token = _popTokenCache(msg.sender);
+        (Finance finance, Voting voting) = _setupBaseApps(dao, acl, _holders, _stakes, _votingSettings, _financePeriod, _useAgentAsVault, token);
+        _setupOEApps(dao, acl, _useAgentAsVault, token, voting);
         _setupPayrollApp(dao, acl, finance, voting, _payrollSettings);
         _transferCreatePaymentManagerFromTemplate(acl, finance, voting);
         _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, voting);
-        _registerID(_id, dao);
+        /*_registerID(_id, dao);*/
     }
 
-    function _setupApps(
+    function _setupBaseApps(
         Kernel _dao,
         ACL _acl,
         address[] memory _holders,
         uint256[] memory _stakes,
         uint64[3] memory _votingSettings,
         uint64 _financePeriod,
-        bool _useAgentAsVault
+        bool _useAgentAsVault,
+        MiniMeToken _token
     )
         internal
         returns (Finance, Voting)
     {
-        MiniMeToken token = _popTokenCache(msg.sender);
         Vault agentOrVault = _useAgentAsVault ? _installDefaultAgentApp(_dao) : _installVaultApp(_dao);
         Finance finance = _installFinanceApp(_dao, agentOrVault, _financePeriod == 0 ? DEFAULT_FINANCE_PERIOD : _financePeriod);
-        TokenManager tokenManager = _installTokenManagerApp(_dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
-        Voting voting = _installVotingApp(_dao, token, _votingSettings);
+        TokenManager tokenManager = _installTokenManagerApp(_dao, _token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
+        Voting voting = _installVotingApp(_dao, _token, _votingSettings);
 
         _mintTokens(_acl, tokenManager, _holders, _stakes);
         _setupPermissions(_acl, agentOrVault, voting, finance, tokenManager, _useAgentAsVault);
-
+        
         return (finance, voting);
+    }
+
+    function _setupOEApps(
+        Kernel _dao,
+        ACL _acl,
+        bool _useAgentAsVault,
+        MiniMeToken _token,
+        Voting _voting
+    )
+        internal
+    {
+        Vault agentOrVault = _useAgentAsVault ? _installDefaultAgentApp(_dao) : _installVaultApp(_dao);
+        AddressBook addressBook = _installDefaultAddressApp(_dao);
+        Projects projects = _installProjectsApp(_dao, _token, registry, agentOrVault);
+        Allocations allocations = _installAllocationsApp(_dao, addressBook, agentOrVault);
+        Rewards rewards = _installRewardsApp(_dao, agentOrVault);
+        DotVoting dotVoting = _installDotVotingApp(_dao, _token, 50 * PCT256, 0, 1 minutes);
+        _setupOEPermissions(_acl, _voting, addressBook, projects, allocations, rewards, dotVoting);
     }
 
     function _setupPayrollApp(Kernel _dao, ACL _acl, Finance _finance, Voting _voting, uint256[4] memory _payrollSettings) internal {
         (address denominationToken, IFeed priceFeed, uint64 rateExpiryTime, address employeeManager) = _unwrapPayrollSettings(_payrollSettings);
         address manager = employeeManager == address(0) ? _voting : employeeManager;
-
         Payroll payroll = _installPayrollApp(_dao, _finance, denominationToken, priceFeed, rateExpiryTime);
         _createPayrollPermissions(_acl, payroll, manager, _voting, _voting);
         _grantCreatePaymentPermission(_acl, _finance, payroll);
@@ -163,6 +189,7 @@ contract PlanningKit is BaseTemplate, TokenCache {
         Voting _voting,
         Finance _finance,
         TokenManager _tokenManager,
+        //AddressBook _addressBook,
         bool _useAgentAsVault
     )
         internal
@@ -176,6 +203,25 @@ contract PlanningKit is BaseTemplate, TokenCache {
         _createEvmScriptsRegistryPermissions(_acl, _voting, _voting);
         _createVotingPermissions(_acl, _voting, _voting, _tokenManager, _voting);
         _createTokenManagerPermissions(_acl, _tokenManager, _voting, _voting);
+    }
+
+    function _setupOEPermissions(
+        ACL _acl,
+        Voting _voting,
+        AddressBook _addressBook,
+        Projects _projects,
+        Allocations _allocations,
+        Rewards _rewards,
+        DotVoting _dotVoting
+    )
+        internal
+    {
+        _createAddressPermissions(_acl, _addressBook, _voting, _voting);
+        _createProjectsPermissions(_acl, _projects, _voting, _voting);
+        _createAllocationsPermissions(_acl, _allocations, _voting, _voting);
+        _createRewardsPermissions(_acl, _rewards, _voting, _voting);
+        _createDotVotingPermissions(_acl, _dotVoting, _voting, _voting);
+
     }
 
     function _ensureReputationSettings(

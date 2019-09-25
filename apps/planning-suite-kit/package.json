@@ -6,8 +6,9 @@
     "coverage": "SOLIDITY_COVERAGE=true npm run ganache-cli:test",
     "ganache-cli:test": "../shared/test-helpers/ganache-cli.sh",
     "lint": "solium --dir ./contracts",
+    "start:kit": "aragon run --template PlanningKit --template-init 0x5d94e3e7aec542ab0f9129b9a7badeb5b3ca0f77 @ARAGON_ENS 0xd526b7aba39cccf76422835e7fd5327b98ad73c9 0x56d4563e85477ac8aa6a3b980b831ddb18a826ec --template-new-instance newTokenAndInstance --template-args Autark ATK garbage '[\"0xb4124cEB3451635DAcedd11767f004d8a28c6eE7\"]' '[\"1000\"]' '[\"0\", \"0\", \"36000\"]' 0 false --client-version e08deb62080e17fe652fa83f60dc81a02c455c41",
     "compile": "truffle compile --all",
-    "start:kit": "npm run compile && truffle exec ./scripts/deploy.js --network rpc --ens  0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1 --dao-factory  0x5d94e3e7aec542ab0f9129b9a7badeb5b3ca0f77 --mini-me-factory  0xd526b7aba39cccf76422835e7fd5327b98ad73c9 --r false",
+    "start:kit:script": "npm run compile && truffle exec ./scripts/deploy.js --network rpc --ens  0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1 --dao-factory  0x5d94e3e7aec542ab0f9129b9a7badeb5b3ca0f77 --mini-me-factory  0xd526b7aba39cccf76422835e7fd5327b98ad73c9 --r false",
     "start:kit:no:client": "aragon run --template PlanningKit --template-init @ARAGON_ENS --no-client",
     "test:gas": "GAS_REPORTER=true npm test",
     "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
@@ -19,6 +20,7 @@
     "@aragon/apps-token-manager": "2.0.0",
     "@aragon/apps-voting": "2.0.0",
     "@aragon/apps-vault": "4.1.0",
+    "@aragon/templates-shared": "^1.0.0",
     "@aragon/os": "4.2.0",
     "@tps/apps-address-book": "^0.0.1",
     "@tps/apps-allocations": "^0.0.1",
