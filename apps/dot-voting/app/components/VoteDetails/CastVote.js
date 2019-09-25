@@ -164,9 +164,10 @@ const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights }) => {
         <Button
           css="margin: 1rem 0 1rem 0.5rem"
           mode="strong"
-          onClick={() => {
-            handleVoteSubmit()
-          }}
+          onClick={handleVoteSubmit}
+          disabled={
+            voteOptions.reduce((sum, { trueValue = 0 }) => sum + trueValue, 0) === 0
+          }
         >
           Submit Vote
         </Button>
