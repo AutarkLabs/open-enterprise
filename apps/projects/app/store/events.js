@@ -9,7 +9,7 @@ import {
   ASSIGNMENT_REQUESTED,
   ASSIGNMENT_APPROVED,
   SUBMISSION_REJECTED,
-  WORK_SUBMITTED,
+  BOUNTY_FULFILLED,
   SUBMISSION_ACCEPTED,
   BOUNTY_SETTINGS_CHANGED,
   VAULT_DEPOSIT,
@@ -109,12 +109,18 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
     nextState = syncIssues(nextState, returnValues, issueData)
     return nextState
   }
-  case WORK_SUBMITTED: {
+  case BOUNTY_FULFILLED: {
     if(!returnValues) return nextState
-    let issueData = await loadIssueData(returnValues)
-    issueData = await updateIssueDetail(issueData, action)
-    issueData = determineWorkStatus(issueData)
-    nextState = syncIssues(nextState, returnValues, issueData)
+    console.log('BOUNTY_FULFILLED', { returnValues })
+    const { _bountyId } = returnValues
+    console.log('nextState', nextState)
+    if (nextState.issues.map(i => i.data.standardBountyId).includes(_bountyId)) {
+      // TODO: how does this need to change?
+      // let issueData = await loadIssueData(returnValues)
+      // issueData = await updateIssueDetail(issueData, action)
+      // issueData = determineWorkStatus(issueData)
+      // nextState = syncIssues(nextState, returnValues, issueData)
+    }
     return nextState
   }
   case SUBMISSION_ACCEPTED: {
