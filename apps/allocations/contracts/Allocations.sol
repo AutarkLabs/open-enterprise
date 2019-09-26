@@ -392,7 +392,7 @@ contract Allocations is AragonApp {
         //Payout storage payout = accounts[_accountId].payouts[_payoutId];
         require(accounts[_accountId].payouts[_payoutId].distSet);
         require(msg.sender == accounts[_accountId].payouts[_payoutId].candidateAddresses[_candidateId], "candidate not receiver");
-        _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId);
+        _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId, 0);
     }
 
     /** @notice This transaction will execute the payout for candidate `_candidateId` within account #`_accountId`
@@ -407,7 +407,7 @@ contract Allocations is AragonApp {
     ) external transitionsPeriod auth(EXECUTE_PAYOUT_ROLE) accountExists(_accountId) payoutExists(_accountId, _payoutId)
     {
         require(accounts[_accountId].payouts[_payoutId].distSet);
-        _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId);
+        _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId, 0);
     }
 
     /**
@@ -510,7 +510,6 @@ contract Allocations is AragonApp {
         Account storage account = accounts[_accountId];
         require(vault.balance(account.token) >= _amount * _recurrences);
         require(_recurrences > 0, "must execute payout at least once");
-
         Payout storage payout = account.payouts[account.payoutsLength++];
         require(payout.candidateAddresses.length <= maxCandidates);
 
