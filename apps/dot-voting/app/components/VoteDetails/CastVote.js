@@ -8,6 +8,7 @@ import { Button, Text, useTheme } from '@aragon/ui'
 import tokenBalanceOfAbi from '../../abi/token-balanceof.json'
 import Slider from '../Slider'
 import Label from './Label'
+import { BigNumber } from 'bignumber.js'
 
 const ValueContainer = styled.div`
   box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.03);
@@ -96,25 +97,10 @@ const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights }) => {
     let optionsArray = []
 
     voteOptions.forEach(element => {
-      let voteWeight = element.trueValue
-        ? Math.round(
-          parseFloat(
-            (element.trueValue * userBalance).toFixed(2)
-          )
-        )
-        : 0
-      optionsArray.push(voteWeight)
+      let baseValue = element.trueValue ? element.trueValue : 0
+      let voteWeight = BigNumber(baseValue).times(BigNumber(userBalance)).div(100)
+      optionsArray.push(voteWeight.toString(10))
     })
-
-    //re-proportion the supports values so they don't exceed the total balance
-    const valueTotal = optionsArray.reduce((a, b) => a + b, 0)
-    valueTotal > parseInt(userBalance)
-      ? (optionsArray = optionsArray.map(
-        tokenSupport =>
-          (tokenSupport / valueTotal) *
-          (parseInt(userBalance) * 0.9999)
-      ))
-      : 0
     onVote(vote.voteId, optionsArray)
   }, [ vote.voteId, onVote, userBalance, voteOptions ])
 
