@@ -32,6 +32,7 @@ class App extends React.Component {
     connectedAccount: PropTypes.string.isRequired,
     displayMenuButton: PropTypes.bool.isRequired,
     refTokens: PropTypes.array.isRequired,
+    amountTokens: PropTypes.array.isRequired,
     claims: PropTypes.object.isRequired,
   }
 
@@ -134,8 +135,10 @@ class App extends React.Component {
         vaultBalance: '432.9 ETH',
         balances: this.props.balances,
         refTokens: this.props.refTokens,
+        amountTokens: this.props.amountTokens,
         app: this.props.api,
         network: this.props.network,
+        fundsLimit: this.props.fundsLimit,
       },
     })
   }

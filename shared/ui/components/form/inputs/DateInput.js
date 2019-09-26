@@ -12,10 +12,9 @@ const Container = styled.div`
   display: flex;
 `
 const IconWrapper = styled.div`
-  position: relative;
-  left: -28px;
   top: 12px;
   height: 14px;
+  width: 26px;
 `
 const TextInputDate = styled(TextInput).attrs({
   readOnly: true
@@ -67,23 +66,26 @@ class DateInput extends React.PureComponent {
   }
 
   render () {
-    const { value, width } = this.props
+    const { value, width, wide } = this.props
     const formattedValue = formatDate(value, this.props.format)
 
     return (
       <Container
         ref={this.setWrapperRef}
-        width={width}
+        width={ wide ? "100%" : width }
       >
         <TextInputDate
           value={formattedValue}
           onClick={this.handleClick}
-          width={width}
+          width={ wide ? "100%" : width }
+          wide={wide}
+          adornment={
+            <IconWrapper onClick={this.handleClick}>
+              <IconCalendar />
+            </IconWrapper>
+          }
+          adornmentPosition="end"
         />
-
-        <IconWrapper onClick={this.handleClick}>
-          <IconCalendar />
-        </IconWrapper>
 
         {this.state.showPicker && (
           <DatePicker

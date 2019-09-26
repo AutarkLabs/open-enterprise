@@ -2,11 +2,23 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 
-import { DropDown, IconFundraising, Info, SafeLink, TextInput, theme } from '@aragon/ui'
+import {
+  Button,
+  DropDown,
+  IconClose,
+  IconFundraising,
+  IdentityBadge,
+  Info,
+  SafeLink,
+  Text,
+  TextInput,
+  useTheme,
+} from '@aragon/ui'
 
 import { Form, FormField } from '../../Form'
 import { DateInput, InputDropDown } from '../../../../../../shared/ui'
 import { format } from 'date-fns'
+import moment from 'moment'
 import BigNumber from 'bignumber.js'
 import {
   MILLISECONDS_IN_A_MONTH,
@@ -19,8 +31,20 @@ import { toCurrency } from '../../../utils/helpers'
 import { isAddress } from '../../../utils/web3-utils'
 import { ETHER_TOKEN_VERIFIED_BY_SYMBOL } from '../../../utils/verified-tokens'
 import TokenSelectorInstance from './TokenSelectorInstance'
+import {
+  MIN_AMOUNT,
+  REWARD_TYPES,
+  ONE_TIME_DIVIDEND,
+  RECURRING_DIVIDEND,
+  ONE_TIME_MERIT,
+  DAYS,
+  WEEKS,
+  MONTHS,
+  YEARS,
+  DISBURSEMENT_UNITS,
+  OTHER,
+} from '../../../utils/constants'
 
-const rewardTypes = [ 'Merit Reward', 'Dividend' ]
 const disbursementCycleNames = [ 'Quarterly', 'Monthly' ]
 const disbursementCyclesSummary = [ 'quarterly cycle', 'monthly cycle' ]
 const disbursementDates = [ '1 week', '2 weeks' ]
@@ -31,45 +55,62 @@ import tokenCreationBlockAbi from '../../../../../shared/json-abis/token-creatio
 import tokenSymbolAbi from '../../../../../shared/json-abis/token-symbol.json'
 const tokenAbi = [].concat(tokenBalanceOfAbi, tokenBalanceOfAtAbi, tokenCreationBlockAbi, tokenSymbolAbi)
 
-const INTIAL_STATE = {
+const INITIAL_STATE = {
+  description: '',
+  referenceAsset: null,
+  referenceAssets: [],
   customToken: {
-    address: '',
+    isVerified: false,
     value: '',
-    isVerified: null,
+    address: '',
   },
+  rewardType: null,
+  amount: '',
+  amountToken: {
+    balance: '',
+    symbol: '',
+  },
+  dateReference: new Date(),
+  dateStart: new Date(),
+  dateEnd: new Date(),
+  disbursement: '',
+  disbursementUnit: MONTHS,
+  disbursements: [],
+  draftSubmitted: false,
+  semanticErrors: [],
+  errorMessages: {
+    customTokenInvalid: 'Token address must be of a valid ERC20 compatible clonable token.',
+    amountOverBalance: 'Amount must be below the available balance.',
+    dateReferencePassed: 'Reference date must take place after today.',
+    dateStartPassed: 'Start date must take place after today.',
+    dateEndPassed: 'End date must take place after today.',
+    dateStartAfterEnd: 'Start date must take place before the end date.',
+    disbursementsInexistent: 'Disbursement frequency does not output any disbursements for the given time range.',
+  }
 }
 
 function getTokenProp(prop, { refTokens }, { customToken, referenceAsset }, check = prop) {
   return customToken[check]?customToken[prop]:refTokens[referenceAsset-2][prop]
 }
 
-class NewReward extends React.Component {
+class NewRewardClass extends React.Component {
   static propTypes = {
     onNewReward: PropTypes.func.isRequired,
     app: PropTypes.object,
     balances: PropTypes.array,
     network: PropTypes.object,
     refTokens: PropTypes.array,
+    amountTokens: PropTypes.arrayOf(PropTypes.object).isRequired,
+    theme: PropTypes.object.isRequired,
   }
 
   constructor(props) {
     super(props)
     this.getCurrentBlock()
     this.state = {
-      description: '',
-      amount: 0,
-      amountCurrency: 0,
-      dateStart: new Date(),
-      dateEnd: new Date(),
-      rewardType: 0,
-      refTokens: undefined,
-      referenceAsset: 0,
-      disbursementCycle: 0,
-      disbursementDate: 0,
-      occurances: 0,
-      label: 'Token',
-      labelCustomToken: 'Token address or symbol',
-      ...INTIAL_STATE,
+      ...INITIAL_STATE,
+      amountToken: props.amountTokens[0],
+      referenceAssets: this.getReferenceAssets()
     }
   }
 
@@ -79,31 +120,104 @@ class NewReward extends React.Component {
     this.setState({ currentBlock, startBlock })
   }
 
-  changeField = ({ target: { name, value } }) =>
+  changeField = ({ target: { name, value } }) => {
     this.setState({ [name]: value })
-
-  onSubmit = () => {
-    const dataToSend = { ...this.state }
-    dataToSend.amount = toCurrency(this.state.amount,this.props.balances[this.state.amountCurrency].decimals)
-    dataToSend.currency = this.props.balances[this.state.amountCurrency].address
-    dataToSend.disbursementCycle = disbursementCycleNames[this.state.disbursementCycle]
-    dataToSend.disbursementDelay = disbursementDates[this.state.disbursementDate]
-    dataToSend.isMerit = !dataToSend.rewardType ? true : false
-    dataToSend.referenceAsset = getTokenProp('address', this.props, this.state,'isVerified')
-    this.props.onNewReward(dataToSend)
+    if (name === "amount")
+      this.setSemanticErrors({ amount: value })
   }
 
-  canSubmit = () =>
-    !(
-      this.state.amount > 0 &&
-      this.state.description !== '' &&
-      this.state.dateEnd > this.state.dateStart &&
-      (
-        this.state.referenceAsset > 1 ||
-        this.state.customToken.address
-      ) &&
-      !this.errorPrompt()
+  setDisbursements = (dateStart, dateEnd, disbursement, disbursementUnit) => {
+    if (isNaN(disbursement) || disbursement <= 0 ||
+        this.state.rewardType !== RECURRING_DIVIDEND) {
+      this.setState({ disbursements: []})
+      return
+    }
+    let disbursements = [],
+        date = moment(dateStart).add(disbursement, disbursementUnit)
+    while (date.isBefore(dateEnd)) {
+      disbursements.push(date.clone())
+      date.add(disbursement, disbursementUnit)
+    }
+    this.setState({
+      disbursements,
+      disbursementsInexistent: disbursements.length === 0,
+    })
+    this.setSemanticErrors({ dateStart, dateEnd, disbursements })
+  }
+
+  dropDownItems = (name) => {
+    if (name == "amountToken") {
+      return this.props.amountTokens.map(token => token.symbol)
+    }
+    return this.props[name + 's']
+  }
+
+  dropDownSelect = (name) => {
+    return this.props[name + 's'].indexOf(this.state[name])
+  }
+
+  dropDownChange = (name, index) => {
+    this.setState({
+      [name]: this.props[name + 's'][index],
+    })
+  }
+
+  onSubmit = () => {
+    this.props.onNewReward(this.state)
+  }
+
+  isDraftValid = () => {
+    const {
+      description,
+      referenceAsset,
+      rewardType,
+      amount,
+      amountToken,
+      disbursement,
+      semanticErrors,
+    } = this.state
+    const valid = (
+      description !== '' &&
+        referenceAsset !== null &&
+        !isNaN(amount) && +amount > MIN_AMOUNT &&
+        amountToken.symbol !== '' &&
+        rewardType !== null && (
+          rewardType !== RECURRING_DIVIDEND || (
+            !isNaN(disbursement) && +disbursement > 0 &&
+              Math.floor(disbursement) === +disbursement
+          )
+        ) &&
+        semanticErrors.length === 0
     )
+    return valid
+  }
+
+  setSemanticErrors = (changed) => {
+    const state = { ...this.state, ...changed }
+    let semanticErrors = []
+    if (state.referenceAsset === OTHER && !state.customToken.isVerified)
+      semanticErrors.push('customTokenInvalid')
+    if (+state.amount > +state.amountToken.balance)
+      semanticErrors.push('amountOverBalance')
+    const today = moment()
+    if (state.rewardType === ONE_TIME_DIVIDEND &&
+        moment(state.dateReference).isBefore(today, 'day'))
+      semanticErrors.push('dateReferencePassed')
+    if (state.rewardType === RECURRING_DIVIDEND ||
+        state.rewardType === ONE_TIME_MERIT) {
+      const start = moment(state.dateStart), end = moment(state.dateEnd)
+      if (start.isBefore(today, 'day'))
+        semanticErrors.push('dateStartPassed')
+      if (end.isBefore(today, 'day'))
+        semanticErrors.push('dateEndPassed')
+      if (start.isAfter(end, 'day'))
+        semanticErrors.push('dateStartAfterEnd')
+    }
+    if (state.rewardType === RECURRING_DIVIDEND &&
+        state.disbursements.length === 0)
+      semanticErrors.push('disbursementsInexistent')
+    this.setState({ semanticErrors })
+  }
 
   startBeforeTokenCreation = () => (getTokenProp('startBlock',this.props,this.state)) > this.state.startBlock
   disbursementOverflow = () => (this.state.quarterEndDates ? this.state.quarterEndDates.length > 41 : false)
@@ -122,11 +236,11 @@ class NewReward extends React.Component {
 
   showSummary = () => (this.state.referenceAsset > 1 || this.state.customToken.symbol)
 
-  getItems() {
+  getReferenceAssets() {
     if (!this.props.refTokens) {
-      return ['Tokens Loading...']
+      return ['Assets Loading...']
     }
-    return [ 'Select a token', 'Other…', ...this.getTokenItems() ]
+    return [ ...this.getTokenItems(), OTHER ]
   }
 
   getTokenItems() {
@@ -161,16 +275,13 @@ class NewReward extends React.Component {
     else {
       isVerified = false
     }
-
-    this.setState(
-      {
-        customToken: {
-          isVerified,
-          value,
-          address: resolvedAddress,
-        },
-      },
-    )
+    const customToken = {
+      isVerified,
+      value,
+      address: resolvedAddress,
+    }
+    this.setState({ customToken })
+    this.setSemanticErrors({ customToken })
   }
 
   verifyMinime = async (app, tokenState) => {
@@ -247,315 +358,222 @@ class NewReward extends React.Component {
       </React.Fragment>
   )
 
-  rewardMain = (showCustomToken) => (
-    <div>
+  amountWithTokenAndBalance = () => (
+    <VerticalContainer>
+      <HorizontalContainer>
+        <TextInput
+          name="amount"
+          type="number"
+          min={MIN_AMOUNT}
+          step="any"
+          onChange={this.changeField}
+          wide={true}
+          value={this.state.amount}
+          css={{ borderRadius: '4px 0px 0px 4px' }}
+        />
+        <DropDown
+          name="amountToken"
+          css={{ borderRadius: '0px 4px 4px 0px' }}
+          items={this.dropDownItems("amountToken")}
+          selected={this.dropDownSelect("amountToken")}
+          onChange={i => {
+            this.dropDownChange("amountToken", i)
+            this.setSemanticErrors({amountToken: this.props.amountTokens[i]})
+          }}
+        />
+      </HorizontalContainer>
+      <Text
+        size="small"
+        color={this.props.theme.contentSecondary}
+        css={{
+          alignSelf: 'flex-end',
+          marginTop: '8px',
+        }}
+      >
+        {'Available Balance: '}
+        {this.state.amountToken.balance} {this.state.amountToken.symbol}
+      </Text>
+    </VerticalContainer>
+  )
+
+  startAndEndDate = () => (
+    <HorizontalContainer>
       <FormField
+        label="Start date"
         required
-        wide
-        label="Reference Asset"
         input={
-          <DropDown
-            wide
-            items={this.getItems()}//this.props.balances.slice(1).map(token => token.symbol)}
-            selected={this.state.referenceAsset}
-            onChange={referenceAsset => this.setState({ referenceAsset, ...INTIAL_STATE })}
+          <DateInput
+            name="dateStart"
+            value={this.state.dateStart}
+            onChange={dateStart => {
+              this.setState({dateStart,})
+              this.setDisbursements(
+                dateStart,
+                this.state.dateEnd,
+                this.state.disbursement,
+                this.state.disbursementUnit,
+              )
+            }}
           />
         }
       />
-
-      {showCustomToken && (
-        <React.Fragment>
-          <FormField
-            label={this.onMainNet() ? this.state.labelCustomToken : 'TOKEN ADDRESS'}
-            required
-            input={
-              <TextInput
-                name="description"
-                placeholder={this.onMainNet() ? 'SYM…' : ''}
-                wide
-                value={this.state.customToken.value}
-                onChange={this.handleCustomTokenChange}
-              />
-            }
-          />
-          {!this.state.customToken.isVerified &&
-            <Info>{this.customTokenPromptText(this.state.customToken, this.props.network.type)}</Info>
-          }
-        </React.Fragment>
-      )}
-
       <FormField
+        label="End date"
         required
-        label="Type"
         input={
-          <DropDown
-            wide
-            items={rewardTypes}
-            selected={this.state.rewardType}
-            onChange={rewardType => this.setState({ rewardType })}
+          <DateInput
+            name="dateEnd"
+            value={this.state.dateEnd}
+            onChange={dateEnd => {
+              this.setState({dateEnd,})
+              this.setDisbursements(
+                this.state.dateStart,
+                dateEnd,
+                this.state.disbursement,
+                this.state.disbursementUnit,
+              )
+            }}
           />
         }
       />
-    </div>
+    </HorizontalContainer>
   )
 
-  meritDetails = () => (
-    <div>
-      <RewardRow>
-        <FormField
-          required
-          label="Amount"
-          input={
-            <InputDropDown
-              textInput={{
-                name: 'amount',
-                value: this.state.amount,
-                onChange: this.changeField,
-                type: 'number',
-                min: '0',
-              }}
-              dropDown={{
-                name: 'amountCurrency',
-                items: this.props.balances.map(token => token.symbol),
-                selected: this.state.amountCurrency,
-                onChange: amountCurrency => this.setState({ amountCurrency }),
-              }}
-            />
-          }
-        />
-        <VaultBalance>
-          Vault Balance: {
-            BigNumber(this.props.balances[this.state.amountCurrency].amount)
-              .div(10**(this.props.balances[this.state.amountCurrency].decimals)).dp(3).toString()
-          } {' '} {this.props.balances[this.state.amountCurrency].symbol}
-        </VaultBalance>
-      </RewardRow>
-
-      <RewardRow>
-        <FormField
-          label="Period Start"
-          required
-          input={
-            <DateInput
-              width="100%"
-              name="dateStart"
-              value={this.state.dateStart}
-              onChange={dateStart => {
-                this.getCurrentBlock()
-                this.setState({ dateStart })
-              }}
-            />
-          }
-        />
-        <FormField
-          label="Period End"
-          required
-          input={
-            <DateInput
-              width="100%"
-              name="periodEnd"
-              value={this.state.dateEnd}
-              onChange={dateEnd => this.setState({ dateEnd })}
-            />
-          }
-        />
-      </RewardRow>
-
-      <Separator />
-
-      {this.showSummary() &&
-      <Info style={{ marginBottom: '10px' }}>
-        <TokenIcon />
-        <Summary>
-          <p>
-            {'A total of '}
-            <SummaryBold>
-              {this.state.amount} {this.props.balances[this.state.amountCurrency].symbol}
-            </SummaryBold>
-            {' will be distributed as a reward to addresses that earned '}
-            <SummaryBold>
-              {(getTokenProp('symbol',this.props,this.state))}
-            </SummaryBold>
-            {' from '}
-            <SummaryBold>
-              {this.formatDate(this.state.dateStart)}
-            </SummaryBold>
-            {' to '}
-            <SummaryBold>
-              {this.formatDate(this.state.dateEnd)}
-            </SummaryBold>.
-          </p>
-          <p>
-            {'The reward amount will be in proportion to the '}
-            <SummaryBold>
-              {(getTokenProp('symbol',this.props,this.state))}
-            </SummaryBold>
-            {' earned by each account in the specified period.'}
-          </p>
-          <p>
-            {'The reward will be disbursed '}
-            <SafeLink href="#" target="_blank">
-              <SummaryBold>
-                {'upon approval of this proposal'}
-              </SummaryBold>
-            </SafeLink>.
-          </p>
-        </Summary>
-      </Info>}
-    </div>
+  oneTimeDividend = () => (
+    <VerticalContainer>
+      <FormField
+        required
+        label="Total amount"
+        input={this.amountWithTokenAndBalance()}
+      />
+      <FormField
+        label="Reference date"
+        required
+        input={
+          <DateInput
+            name="dateReference"
+            value={this.state.dateReference}
+            onChange={dateReference => {
+              this.setState({dateReference,})
+              this.setSemanticErrors({ dateReference })
+            }}
+            wide
+          />
+        }
+      />
+    </VerticalContainer>
   )
 
-  dividendDetails = () => (
-    <div>
-      <RewardRow>
-        <FormField
-          required
-          label="Amount per cycle"
-          input={
-            <InputDropDown
-              textInput={{
-                name: 'amount',
-                value: this.state.amount,
-                onChange: this.changeField,
-                type: 'number',
-                min: '0',
+  recurringDividend = () => (
+    <VerticalContainer>
+      <FormField
+        required
+        label="Amount per disbursement"
+        input={this.amountWithTokenAndBalance()}
+      />
+      {this.startAndEndDate()}
+      <FormField
+        required
+        label="Disbursement frequency"
+        input={
+          <HorizontalContainer>
+            <TextInput
+              name="disbursement"
+              type="number"
+              min={1}
+              step={1}
+              onChange={e => {
+                this.setState({disbursement: e.target.value,})
+                this.setDisbursements(
+                  this.state.dateStart,
+                  this.state.dateEnd,
+                  e.target.value,
+                  this.state.disbursementUnit,
+                )
               }}
-              dropDown={{
-                name: 'amountCurrency',
-                items: this.props.balances.map(token => token.symbol),
-                selected: this.state.amountCurrency,
-                onChange: amountCurrency => this.setState({ amountCurrency }),
-              }}
+              wide={true}
+              value={this.state.disbursement}
+              css={{ borderRadius: '4px 0px 0px 4px' }}
             />
-          }
-        />
-        <VaultBalance>
-          Vault Balance: {
-            BigNumber(this.props.balances[this.state.amountCurrency].amount)
-              .div(10**(this.props.balances[this.state.amountCurrency].decimals)).dp(3).toString()
-          } {' '} {this.props.balances[this.state.amountCurrency].symbol}
-        </VaultBalance>
-      </RewardRow>
-
-      <RewardRow>
-        <FormField
-          label="Start date"
-          required
-          input={
-            <DateInput
-              width="100%"
-              name="dateStart"
-              value={this.state.dateStart}
-              onChange={dateStart => this.changeDate(dateStart, this.state.dateEnd,this.state.disbursementCycle)}
-            />
-          }
-        />
-        <FormField
-          label="End date"
-          required
-          input={
-            <DateInput
-              width="100%"
-              name="dateEnd"
-              value={this.state.dateEnd}
-              onChange={dateEnd =>this.changeDate(this.state.dateStart,dateEnd,this.state.disbursementCycle)}
-            />
-          }
-        />
-      </RewardRow>
-
-      <RewardRow>
-        <FormField
-          required
-          label="Disbursement cycle"
-          input={
             <DropDown
-              wide
-              items={disbursementCycleNames}
-              selected={this.state.disbursementCycle}
-              onChange={disbursementCycle => {
-                this.changeDate(this.state.dateStart, this.state.dateEnd, disbursementCycle)
+              name="disbursementUnit"
+              css={{ borderRadius: '0px 4px 4px 0px' }}
+              items={DISBURSEMENT_UNITS}
+              selected={DISBURSEMENT_UNITS.indexOf(this.state.disbursementUnit)}
+              onChange={i => {
+                this.setState({disbursementUnit: DISBURSEMENT_UNITS[i],})
+                this.setDisbursements(
+                  this.state.dateStart,
+                  this.state.dateEnd,
+                  this.state.disbursement,
+                  DISBURSEMENT_UNITS[i],
+                )
               }}
             />
-          }
-        />
-        <FormField
-          required
-          label="Disbursement date"
-          width="180px"
-          input={
-            <DropDown
-              wide
-              items={disbursementDatesItems}
-              selected={this.state.disbursementDate}
-              onChange={disbursementDate => this.setState({ disbursementDate })}
-            />
-          }
-        />
-      </RewardRow>
-
-      <Separator />
-      { (this.showSummary() && this.state.occurances > 0) &&
-        <Info style={{ marginBottom: '10px' }}>
-          <TokenIcon />
-          <Summary>
-            <p>
-              {'A total of '}
-              <SummaryBold>
-                {this.state.amount} {this.props.balances[this.state.amountCurrency].symbol}
-              </SummaryBold>
-              {' will be distributed as a dividend to '}
-              <SummaryBold>
-                {(getTokenProp('symbol',this.props,this.state))}
-              </SummaryBold>
-              {' holders on a '}
-              <SummaryBold>
-                {disbursementCyclesSummary[this.state.disbursementCycle]}
-              </SummaryBold>
-              {', from '}
-              <SummaryBold>
-                {this.formatDate(this.state.dateStart)}
-              </SummaryBold>
-              {' to '}
-              <SummaryBold>
-                {this.formatDate(this.state.dateEnd)}
-              </SummaryBold>
-              {' with cycles ending on: '}
-              {
-                this.state.quarterEndDates.map((endTimeStamp, idx) => (
-                  <React.Fragment key={idx}>
-                    <br />
-                    <SummaryBold>
-                      {this.formatDate(endTimeStamp)}
-                    </SummaryBold>
-                  </React.Fragment>
-                ))
-              }.
-            </p>
-            <p>
-          The dividend amount will be in proportion to the <SummaryBold>{(getTokenProp('symbol',this.props,this.state))}</SummaryBold> balance as of the last day of each cycle.
-            </p>
-            <p>
-          The dividend will be disbursed <SummaryBold>{disbursementDates[this.state.disbursementDate]}</SummaryBold> after the end of each cycle.
-            </p>
-          </Summary>
-        </Info>
-
-      }
-    </div>
+          </HorizontalContainer>
+        }
+      />
+    </VerticalContainer>
   )
 
+  oneTimeMerit = () => (
+    <VerticalContainer>
+      <FormField
+        required
+        label="Total amount"
+        input={this.amountWithTokenAndBalance()}
+      />
+      {this.startAndEndDate()}
+    </VerticalContainer>
+  )
 
-  render() {
+  fieldsToDisplay = () => {
+    const { rewardType } = this.state
+    switch (rewardType) {
+    case ONE_TIME_DIVIDEND:
+      return this.oneTimeDividend()
+    case RECURRING_DIVIDEND:
+      return this.recurringDividend()
+    case ONE_TIME_MERIT:
+      return this.oneTimeMerit()
+    default:
+      return <div />
+    }
+  }
 
-    const showCustomToken = this.state.referenceAsset === 1
+  submitDraft = () => {
+    this.setState({ draftSubmitted: true })
+  }
 
+  errorBlocks = () => {
+    const { semanticErrors, errorMessages } = this.state
+    return semanticErrors.map((error, i) => (
+      <ErrorText key={i}>
+        <IconContainer>
+          <IconClose
+            size="tiny"
+            css={{
+              marginRight: '8px',
+              color: this.props.theme.negative,
+            }}
+          />
+        </IconContainer>
+        <Text>{errorMessages[error]}</Text>
+      </ErrorText>
+    ))
+  }
+
+  showDraft = () => {
+    const {
+      rewardType,
+      disbursements,
+    } = this.state
     return (
       <Form
-        onSubmit={this.onSubmit}
-        submitText="Submit Reward"
-        noSeparator
-        submitDisabled={this.canSubmit()}
+        onSubmit={this.submitDraft}
+        submitText="Continue"
+        disabled={!this.isDraftValid()}
+        errors={this.errorBlocks()}
       >
         <FormField
           label="Description"
@@ -564,60 +582,206 @@ class NewReward extends React.Component {
             <TextInput
               name="description"
               wide
+              multiline
+              placeholder="Briefly describe this reward."
               value={this.state.description}
               onChange={this.changeField}
             />
           }
         />
-
-        <Separator />
-
-        {this.rewardMain(showCustomToken)}
-
-        <Separator />
-
-        {this.state.rewardType === 0 ? this.meritDetails() : this.dividendDetails()}
-        {this.ErrorBox()}
+        <FormField
+          required
+          wide
+          label="Reference Asset"
+          help="hey"
+          input={
+            <DropDown
+              name="referenceAsset"
+              wide
+              items={this.state.referenceAssets}
+              selected={this.state.referenceAssets.indexOf(this.state.referenceAsset)}
+              placeholder="Select a token"
+              onChange={i => {
+                this.setState({ referenceAsset: this.state.referenceAssets[i] })
+                this.setSemanticErrors({
+                  referenceAsset: this.state.referenceAssets[i]
+                })
+              }}
+            />
+          }
+        />
+        {this.state.referenceAsset === OTHER && (
+          <React.Fragment>
+            <FormField
+              label={this.onMainNet() ? this.state.labelCustomToken : 'TOKEN ADDRESS'}
+              required
+              input={
+                <TextInput
+                  name="customToken"
+                  placeholder={this.onMainNet() ? 'SYM…' : ''}
+                  wide
+                  value={this.state.customToken.value}
+                  onChange={this.handleCustomTokenChange}
+                />
+              }
+            />
+          </React.Fragment>
+        )}
+        <FormField
+          required
+          label="Type"
+          input={
+            <DropDown
+              wide
+              name="rewardType"
+              items={REWARD_TYPES}
+              selected={REWARD_TYPES.indexOf(rewardType)}
+              placeholder="Select type of reward"
+              onChange={i => {
+                this.setState({ rewardType: REWARD_TYPES[i] })
+                this.setSemanticErrors({ rewardType: REWARD_TYPES[i] })
+              }}
+            />
+          }
+        />
+        {this.fieldsToDisplay()}
       </Form>
     )
   }
+
+  showSummary = () => {
+    const {
+      description,
+      rewardType,
+      referenceAsset,
+      customToken,
+      amount,
+      amountToken,
+      dateReference,
+      dateStart,
+      dateEnd,
+      disbursements,
+    } = this.state
+    return (
+      <VerticalContainer>
+        <VerticalSpace />
+        <GreyBox>
+          <Title>{description}</Title>
+          <SubTitle>{rewardType}</SubTitle>
+          <Heading>Reference Asset</Heading>
+          <Content>
+            {referenceAsset === OTHER ? (
+              <IdentityBadge
+                badgeOnly
+                entity={customToken.address}
+                shorten
+              />
+            ): referenceAsset}
+          </Content>
+          <Heading>
+            {rewardType === ONE_TIME_MERIT && 'Total'}
+            {' Amount '}
+            {rewardType === RECURRING_DIVIDEND && 'per Cycle'}
+          </Heading>
+          <Content>{amount} {amountToken.symbol}</Content>
+          <Heading>
+            {rewardType === ONE_TIME_MERIT ?
+             'Start and End Date' : 'Disbursement Date'}
+            {rewardType === RECURRING_DIVIDEND && 's'}
+          </Heading>
+            {rewardType === ONE_TIME_DIVIDEND && (
+               <Content>{dateReference.toDateString()}</Content>
+             )}
+            {rewardType === RECURRING_DIVIDEND &&
+             disbursements.map((disbursement, i) => (
+               <Content key={i}>
+                 {disbursement.toDate().toDateString()}
+               </Content>
+             ))}
+          {rewardType === ONE_TIME_MERIT && (
+            <Content>
+              {dateStart.toDateString()}{' - '}{dateEnd.toDateString()}
+            </Content>
+          )}
+        </GreyBox>
+        <VerticalSpace />
+        <Info>
+          {'Holding the reference asset at the disbursement date'}
+          {rewardType === 'RECURRING_DIVIDEND' && 's'}
+          {' will issue a proportionally split reward across all token holders.'}
+        </Info>
+        <VerticalSpace />
+        <HorizontalContainer>
+          <Button
+            label="Go back"
+            mode="normal"
+            css={{ fontWeight: 700, marginRight: '4px' }}
+            onClick={e => this.setState({ draftSubmitted: false })}
+            wide
+          />
+          <Button
+            label="Submit"
+            mode="strong"
+            css={{ fontWeight: 700, marginLeft: '4px' }}
+            wide
+            onClick={this.onSubmit}
+          />
+        </HorizontalContainer>
+      </VerticalContainer>
+    )
+  }
+
+  render = () => {
+    return this.state.draftSubmitted ? this.showSummary() : this.showDraft()
+  }
 }
-const Summary = styled.div`
-  padding-bottom: 2px;
-  padding-left: 35px;
-  > :not(:last-child) {
-    margin-bottom: 10px;
-  }
-`
-const SummaryBold = styled.span`
-  font-weight: bold;
-  text-decoration: underline;
-`
-// RewardRow is supposed to have only two elements
-const RewardRow = styled.div`
+
+const VerticalContainer = styled.div`
   display: flex;
-  align-content: stretch;
-  > :first-child {
-    width: 50%;
-    padding-right: 10px;
-  }
-  > :last-child {
-    width: 50%;
-    padding-left: 10px;
-  }
+  flex-direction: column;
 `
-const Separator = styled.hr`
-  height: 1px;
-  width: 100%;
-  color: ${theme.contentBorder};
-  opacity: 0.1;
-  margin: 8px 0;
+const HorizontalContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
 `
-const VaultBalance = styled.div`
+const VerticalSpace = styled.div`
+  height: 24px;
+`
+const GreyBox = styled.div`
+  background-color: #F9FAFC;
+  border: 1px solid #DDE4E9;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 4px;
+`
+const Title = styled(Text).attrs({
+  size: 'xlarge',
+})``
+const SubTitle = styled(Text).attrs({
+  size: 'xsmall',
+})`
+  color: #637381;
+  margin-bottom: 8px;
+`
+const Heading = styled(Text).attrs({
+  smallcaps: true,
+})`
+  color: #637381;
+  margin-top: 16px;
+  margin-bottom: 8px;
+`
+const Content = styled(Text).attrs({})``
+const ErrorText = styled.div`
+  font-size: small;
   display: flex;
   align-items: center;
 `
-const TokenIcon = styled(IconFundraising)`
-  float: left;
-`
+const IconContainer = styled.div``
+
+const NewReward = props => {
+  const theme = useTheme()
+  return <NewRewardClass theme={theme} {...props} />
+}
+
 export default NewReward
