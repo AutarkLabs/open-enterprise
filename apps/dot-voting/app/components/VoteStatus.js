@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { useAragonApi } from '@aragon/api-react'
 import { IconCheck, IconCross, IconTime, useTheme } from '@aragon/ui'
 import {
   VOTE_STATUS_EXECUTED,
@@ -11,7 +12,8 @@ import { getVoteStatus } from '../utils/vote-utils'
 
 const VoteStatus = ({ vote }) => {
   const theme = useTheme()
-  const status = getVoteStatus(vote)
+  const { appState: { globalMinQuorum = 0 } } = useAragonApi()
+  const status = getVoteStatus(vote, globalMinQuorum)
 
   const ATTRIBUTES = {
     [VOTE_STATUS_ONGOING]: {

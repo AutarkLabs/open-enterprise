@@ -5,7 +5,7 @@ import { GU, textStyle } from '@aragon/ui'
 const Label = ({ children }) => (
   <div css={`
       ${textStyle('label2')};
-      margin-bottom: ${2 * GU}px;
+      margin-bottom: ${2 * GU}px !important;
     `}
   >
     {children}
