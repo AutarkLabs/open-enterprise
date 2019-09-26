@@ -210,6 +210,7 @@ contract Projects is AragonApp, DepositableStorage {
     // Fired when a bounty is opened up to work submissions from anyone
     event AwaitingSubmissions(bytes32 repoId, uint256 issueNumber);
 
+
     /**
      * @notice Initialize Projects app for StandardBounties at `_bountiesAddr`
      * @dev Initializes the Projects app, this is the Aragon custom constructor
@@ -222,9 +223,7 @@ contract Projects is AragonApp, DepositableStorage {
     ) external onlyInit
     {
         require(isContract(_vault), ERROR_PROJECTS_VAULT_NOT_CONTRACT);
-        // require(isContract(_bountiesAddr), ERROR_STANDARD_BOUNTIES_NOT_CONTRACT);
-        // We need to discuss whether or not we want to implement this here instead:
-        require(_isBountiesContractValid(_bountiesAddr), ERROR_STANDARD_BOUNTIES_NOT_CONTRACT);
+        require(isContract(_bountiesAddr), ERROR_STANDARD_BOUNTIES_NOT_CONTRACT);
 
         vault = _vault;
 
@@ -775,17 +774,17 @@ contract Projects is AragonApp, DepositableStorage {
         uint256 size;
         // solium-disable-next-line security/no-inline-assembly
         assembly { size := extcodesize(_bountyRegistry) }
-        if (size != 23375) {
+        if (size != 23406) {
             return false;
         }
         uint256 segments = 4;
         uint256 segmentLength = size / segments;
         bytes memory registryCode = new bytes(segmentLength);
         bytes32[4] memory validRegistryHashes = [
-            bytes32(0xfc91efaeeeb7f0cc43f01b8cead464905b5f118e67d9f1308414d24785ae16d1),
-            bytes32(0xb5d9f74367256d83b058680a66f63782846105d68b8fb68340ce76c9237a3f0b),
-            bytes32(0x0f23f2b2b348e8fd656abc681cef6230496c5d117d288b898c8e6edf6476bce0),
-            bytes32(0x4096b2d76eb15fdbbd8e6ab3e7cabb4bfff876bf242c0731d6187fc76c21c52f)
+            bytes32(0x9904de0ff2a8144b30f80f0de9184731b7c39116b1f021bad12dcbb740f8371d),
+            bytes32(0xd2319fa5b8b5614a3634c84ff340d27fa6e5921162e44bc2256f379ad86608f3),
+            bytes32(0x0fd4c8d32b2c21b41989666a6d19f7a5f4987ae6d915dd96698de62db8a79643),
+            bytes32(0x6af9efdc22f9352086c68a7b5c270db4f0fdc2b5ab18984a2d17b92ae327e144)
         ];
         for (uint256 i = 0; i < segments; i++) {
             // solium-disable-next-line security/no-inline-assembly
@@ -794,10 +793,7 @@ contract Projects is AragonApp, DepositableStorage {
                 return false;
             }
         }
-        //bytes memory registryCode = new bytes(size / 2);
-        //assembly{ extcodecopy(_bountyRegistry,add(0x20,registryCode),div(size,2),div(size,2)) }
-        //bytes32 validRegistryHash = 0xf1d821748591de88239c2e66e956de5b732c5202ff72c44c879add9cf56aecc1;
-        //return validRegistryHash == keccak256(registryCode);
+
         return true;
     }
 
@@ -864,16 +860,6 @@ contract Projects is AragonApp, DepositableStorage {
         address[] memory issuers = new address[](1);
         issuers[0] = address(this);
 
-        bountyId = bountiesRegistry.issueBounty(
-                address(this),      // address payable _sender
-                issuers,            // address payable [] memory _issuers
-                issuers,            // address [] memory _approvers
-                _ipfsHash,          // string memory _data
-                _deadline,          // uint _deadline
-                _tokenContract,     // address _token
-                registryTokenType   // uint _tokenVersion
-        );
-
         if (_tokenType > 0) {
             vault.transfer(_tokenContract, this, _bountySize);
             if (registryTokenType != 0) {
@@ -882,15 +868,25 @@ contract Projects is AragonApp, DepositableStorage {
         }
 
         if (registryTokenType == 0) {
-            bountiesRegistry.contribute.value(_bountySize)(
-                address(this),
-                bountyId,
+            bountyId = bountiesRegistry.issueAndContribute.value(_bountySize)(
+                address(this),      // address payable _sender
+                issuers,            // address payable [] memory _issuers
+                issuers,            // address [] memory _approvers
+                _ipfsHash,          // string memory _data
+                _deadline,          // uint _deadline
+                _tokenContract,     // address _token
+                registryTokenType,   // uint _tokenVersion
                 _bountySize
             );
         } else {
-            bountiesRegistry.contribute(
-                address(this),
-                bountyId,
+            bountyId = bountiesRegistry.issueAndContribute(
+                address(this),      // address payable _sender
+                issuers,            // address payable [] memory _issuers
+                issuers,            // address [] memory _approvers
+                _ipfsHash,          // string memory _data
+                _deadline,          // uint _deadline
+                _tokenContract,     // address _token
+                registryTokenType,   // uint _tokenVersion
                 _bountySize
             );
         }
