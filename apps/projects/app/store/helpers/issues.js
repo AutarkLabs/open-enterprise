@@ -1,21 +1,16 @@
 import { app } from '../app'
 import { ipfsGet } from '../../utils/ipfs-helpers'
-import standardBountiesAbi from '../../abi/StandardBounties.json'
+import standardBounties from '../../abi/StandardBounties.json'
 
 const assignmentRequestStatus = [ 'Unreviewed', 'Accepted', 'Rejected' ]
 
 export const loadIssueData = async ({ repoId, issueNumber }) => {
   return new Promise(resolve => {
     app.call('getIssue', repoId, issueNumber).subscribe(async ({ hasBounty, standardBountyId, balance, assignee }) => {
-      console.log({ hasBounty, standardBountyId, balance, assignee })
       const bountiesRegistry = await app.call('bountiesRegistry').toPromise()
-      console.log({ bountiesRegistry })
-      const bountyContract = app.external(bountiesRegistry, standardBountiesAbi)
-      console.log({ bountyContract })
-      const bountyData = await bountyContract.call('getBounty', standardBountyId)
-      console.log({ bountyData })
-      const token = await bountyContract.call('getBountyToken', standardBountyId)
-      console.log({ token })
+      const bountyContract = app.external(bountiesRegistry, standardBounties.abi)
+      const bountyData = await bountyContract.getBounty(standardBountyId).toPromise()
+      const token = await bountyData.token
       resolve({ balance, hasBounty, token, standardBountyId, ...bountyData })
     })
   })
