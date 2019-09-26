@@ -90,6 +90,7 @@ contract Allocations is AragonApp {
     uint64 accountsLength;
     uint64 periodsLength;
     uint64 periodDuration;
+    uint256 maxCandidates;
     Vault public vault;
     mapping (uint64 => Account) accounts;
     mapping (uint64 => Period) periods;
@@ -147,6 +148,7 @@ contract Allocations is AragonApp {
         periodDuration = _periodDuration;
         _newPeriod(getTimestamp64());
         accountsLength++;  // position 0 is reserved and unused
+        maxCandidates = 10;
         initialized();
     }
 
@@ -296,6 +298,14 @@ contract Allocations is AragonApp {
     }
 
     /**
+    * @notice Sets the maximum number of candidates that can be paid out in an allocations.
+    * @param _maxCandidates Maximum number of Candidates
+    */
+    function setMaxCandidates(uint256 _maxCandidates) external {
+        maxCandidates = _maxCandidates;
+    }
+
+    /**
     * @notice Set budget for account number `_accountId` to `@tokenAmount(0, _amount, false)`, effective immediately
     * @param _accountId Account Identifier
     * @param _amount New budget amount
@@ -345,7 +355,7 @@ contract Allocations is AragonApp {
         //Payout storage payout = accounts[_accountId].payouts[_payoutId];
         require(accounts[_accountId].payouts[_payoutId].distSet);
         require(msg.sender == accounts[_accountId].payouts[_payoutId].candidateAddresses[_candidateId], "candidate not receiver");
-        _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId);
+        _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId, 0);
     }
 
     /** @notice This transaction will execute the payout for candidate `_candidateId` within account #`_accountId`
@@ -360,7 +370,7 @@ contract Allocations is AragonApp {
     ) external transitionsPeriod auth(EXECUTE_PAYOUT_ROLE) accountExists(_accountId) payoutExists(_accountId, _payoutId)
     {
         require(accounts[_accountId].payouts[_payoutId].distSet);
-        _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId);
+        _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId, 0);
     }
 
     /**
@@ -420,6 +430,7 @@ contract Allocations is AragonApp {
         Account storage account = accounts[_accountId];
         require(vault.balance(account.token) >= _amount * _recurrences);
         require(_recurrences > 0, "must execute payout at least once");
+        require(payout.candidateAddresses.length <= maxCandidates);
         Payout storage payout = account.payouts[account.payoutsLength++];
 
         payout.amount = _amount;
@@ -440,12 +451,19 @@ contract Allocations is AragonApp {
         emit SetDistribution(_accountId, payoutId);
     }
 
-    function _executePayoutAtLeastOnce(uint64 _accountId, uint64 _payoutId, uint256 _candidateId) internal accountExists(_accountId) {
+    function _executePayoutAtLeastOnce(
+        uint64 _accountId,
+        uint64 _payoutId,
+        uint256 _candidateId,
+        uint256 _paid
+    )
+        internal accountExists(_accountId) returns (uint256)
+    {
         Account storage account = accounts[_accountId];
         Payout storage payout = account.payouts[_payoutId];
         require(_candidateId < payout.supports.length);
 
-        uint64 paid = 0;
+        uint256 paid = _paid;
         uint256 totalSupport = _getTotalSupport(payout);
 
         uint256 individualPayout = payout.supports[_candidateId].mul(payout.amount).div(totalSupport);
@@ -464,6 +482,7 @@ contract Allocations is AragonApp {
             // We've already checked the remaining budget with `_canMakePayment()`
             _executeCandidatePayout(_accountId, _payoutId, _candidateId, totalSupport);
         }
+        return paid;
     }
 
     function _newPeriod(uint64 _startTime) internal returns (Period storage) {
@@ -540,12 +559,13 @@ contract Allocations is AragonApp {
         Account storage account = accounts[_accountId];
         uint256[] storage supports = account.payouts[_payoutId].supports;
         uint64 i;
+        uint256 paid = 0;
         require(account.payouts[_payoutId].distSet);
         uint256 length = account.payouts[_payoutId].candidateAddresses.length;
         //handle vault
         for (i = 0; i < length; i++) {
             if (supports[i] != 0 && _nextPaymentTime(_accountId, _payoutId, i) <= getTimestamp64()) {
-                _executePayoutAtLeastOnce(_accountId, _payoutId, i);
+                paid = _executePayoutAtLeastOnce(_accountId, _payoutId, i, paid);
             } else {
                 emit PaymentFailure(_accountId, _payoutId, i);
             }
