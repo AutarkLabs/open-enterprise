@@ -454,7 +454,7 @@ contract ADynamicForwarder is IForwarder {
         script.copy(origExecScript.getPtr() + 32,0, 64);
         // copy the calldatalength stored in memory into the new script
         memcpyshort((script.getPtr() + 56), callDataLengthMem.getPtr() + 60, 4);
-        // calculate and copy in the locations for all dynami elements
+        // calculate and copy in the locations for all dynamic elements
         addDynamicElements(script, dynamicOffset, optionsLength, infoStrLength, desStrLength);
         // copy over remaining static parameters
         script.copy(origExecScript.getPtr() + 288, 256, dynamicOffset - 256);
