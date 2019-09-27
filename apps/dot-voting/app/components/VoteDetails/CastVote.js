@@ -94,13 +94,11 @@ const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights }) => {
   }, [voteOptions])
 
   const handleVoteSubmit = useCallback(() => {
-    let optionsArray = []
-    let userBalanceBN = new BN(userBalance, 10)
-
-    voteOptions.forEach(element => {
-      let baseValue = element.trueValue ? new BN(element.trueValue, 10) : new BN('0', 10)
-      let voteWeight = baseValue.mul(userBalanceBN).div(new BN('100', 10))
-      optionsArray.push(voteWeight.toString(10))
+    const userBalanceBN = new BN(userBalance, 10)
+    const optionsArray = voteOptions.map(element => {
+      const baseValue = element.trueValue ? new BN(element.trueValue, 10) : new BN('0', 10)
+      const voteWeight = baseValue.mul(userBalanceBN).div(new BN('100', 10))
+      return voteWeight.toString(10)
     })
     onVote(vote.voteId, optionsArray)
   }, [ vote.voteId, onVote, userBalance, voteOptions ])
@@ -153,7 +151,7 @@ const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights }) => {
           mode="strong"
           onClick={handleVoteSubmit}
           disabled={
-            voteOptions.reduce((sum, { trueValue = 0 }) => parseInt(sum) + trueValue, 0) === 0
+            voteOptions.reduce((sum, { trueValue = 0 }) => sum + parseInt(trueValue, 10), 0) === 0
           }
         >
           Submit Vote
