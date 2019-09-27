@@ -5,6 +5,7 @@ import { Box, Button, GU, Split, Text, textStyle } from '@aragon/ui'
 import { useAragonApi, useNetwork } from '../../api-react'
 import { first } from 'rxjs/operators' // Make sure observables have .first
 import { LocalIdentityBadge } from '../../../../../shared/identity'
+import useUserVoteStats from '../../utils/useUserVoteStats'
 import AppBadge from './AppBadge'
 import Status from './Status'
 import VotingResults from './VotingResults'
@@ -18,68 +19,34 @@ const tokenAbi = [].concat(tokenDecimalsAbi)
 const VoteDetails = ({ vote, onVote }) => {
   const { api, appState: { tokenAddress = '' }, connectedAccount } = useAragonApi()
   const [ votingMode, setVotingMode ] = useState(false)
-  const [ voteWeights, setVoteWeights ] = useState([])
   const [ canIVote, setCanIVote ] = useState(false)
   const [ decimals, setDecimals ] = useState(0)
   const toggleVotingMode = () => setVotingMode(!votingMode)
-  const { description, voteId } = vote
-  const {
-    creator,
-    type,
-  } = vote.data
+  const { description, voteId, data: { creator, type } } = vote
+  const { voteWeights, votingPower } = useUserVoteStats(vote)
+  const tokenContract = tokenAddress && api.external(tokenAddress, tokenAbi)
 
   const network = useNetwork()
 
-  const getTokenContract = tokenAddress =>
-    tokenAddress && api.external(tokenAddress, tokenAbi)
-
-  const tokenContract = getTokenContract(tokenAddress)
+  useEffect(() => {
+    if (tokenContract && connectedAccount) {
+      tokenContract.decimals()
+        .subscribe(decimals => {
+          setDecimals(decimals)
+        })
+    }
+  }, [ connectedAccount, tokenContract ])
 
   useEffect(() => {
-    async function getVoteWeights() {
-      const result = await api
-        .call('getVoterState', voteId, connectedAccount)
-        .toPromise()
-
-      const totalVotesCount = result.reduce(
-        (acc, vote) => acc.plus(vote),
-        new BigNumber(0)
-      )
-      const voteWeights = result.map(e =>
-        BigNumber(e)
-          .div(totalVotesCount)
-          .times(100)
-          .dp(2)
-          .toString()
-      )
-      setVoteWeights(voteWeights)
+    if (connectedAccount && voteId) {
+      api
+        .call('canVote', voteId, connectedAccount)
+        .pipe(first())
+        .subscribe(canVote => {
+          setCanIVote(canVote)
+        })
     }
-
-    function canIVote() {
-      if (connectedAccount && vote) {
-        api
-          .call('canVote', voteId, connectedAccount)
-          .pipe(first())
-          .subscribe(canVote => {
-            setCanIVote(canVote)
-          })
-      }
-    }
-
-    function loadDecimals() {
-      if (tokenContract && connectedAccount) {
-        tokenContract.decimals()
-          .subscribe(decimals => {
-            setDecimals(decimals)
-          })
-      }
-    }
-
-    getVoteWeights()
-    canIVote()
-    loadDecimals()
-  }, [ vote, connectedAccount ])
-
+  }, [ api, connectedAccount, voteId ])
 
   // eslint-disable-next-line react/prop-types
   const youVoted = voteWeights.length > 0
@@ -140,6 +107,7 @@ const VoteDetails = ({ vote, onVote }) => {
                 toggleVotingMode={toggleVotingMode}
                 vote={vote}
                 voteWeights={voteWeights}
+                votingPower={votingPower}
               />
             ) :(
               <VotingResults

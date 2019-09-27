@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
 import {
   Badge,
@@ -12,45 +12,19 @@ import {
 import VotingOptions from './VotingOptions'
 import VoteStatus from './VoteStatus'
 import { GenerateBadge } from '../utils/vote-styled-components'
-import { BigNumber } from 'bignumber.js'
+import useUserVoteStats from '../utils/useUserVoteStats'
 
 function noop() {}
 
-const VotingCard = ({ app, vote, onSelectVote, userAccount }) => {
+const VotingCard = ({ vote, onSelectVote }) => {
   const theme = useTheme()
-  const [ voteWeights, setVoteWeights ] = useState([])
+  const { voteWeights } = useUserVoteStats(vote)
   const { description, endDate, open, totalSupport, voteId, support } = vote
-  const {
-    options,
-    totalVoters,
-    type,
-  } = vote.data
+  const { options, totalVoters, type } = vote.data
 
   const handleOpen = useCallback(() => {
     onSelectVote(voteId)
   }, [ voteId, onSelectVote ])
-
-  useEffect(() => {
-    async function getVoterState() {
-      const result = await app
-        .call('getVoterState', voteId, userAccount)
-        .toPromise()
-      const totalVotesCount = result.reduce(
-        (acc, vote) => acc.plus(vote),
-        new BigNumber(0)
-      )
-      const voteWeights = result.map(e =>
-        BigNumber(e)
-          .div(totalVotesCount)
-          .times(100)
-          .dp(2)
-          .toString()
-      )
-      setVoteWeights(voteWeights)
-    }
-
-    getVoterState()
-  }, [userAccount])
 
   let youVoted = voteWeights.length > 0
 
@@ -148,10 +122,8 @@ const VotingCard = ({ app, vote, onSelectVote, userAccount }) => {
 }
 
 VotingCard.propTypes = {
-  app: PropTypes.object,
   vote: PropTypes.object.isRequired,
   onSelectVote: PropTypes.func.isRequired,
-  userAccount: PropTypes.string.isRequired,
 }
 
 VotingCard.defaultProps = {
