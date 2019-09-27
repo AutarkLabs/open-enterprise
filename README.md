@@ -19,9 +19,8 @@ Open Enterprise is a collection of Aragon apps that enable organizations to cura
 
 ## Development Setup
 
-Node.js LTS or greater required.
-
-- Note: @aragon/cli and truffle npm deps are automatically installed when bootstrapping.
+* Node.js LTS or greater required. You can use a tool like [`asdf`](https://asdf-vm.com/) or [`nvm`](https://github.com/nvm-sh/nvm) to manage versions of node.
+* You must install `@aragon/cli` v6.3.2 globally: `npm i -g @aragon/cli@6.3.2`
 
 ```bash
 # Bootstrap project dependencies:

@@ -99,11 +99,8 @@ class App extends React.Component {
   }, CONVERT_THROTTLE_TIME)
 
   updateRewards = async () => {
-    this.props.api && this.props.api.cache('requestRefresh', {
-      event: 'RefreshRewards',
-      returnValues: {
-        userAddress: this.props.connectedAccount
-      },
+    this.props.api && this.props.api.trigger('RefreshRewards', {
+      userAddress: this.props.connectedAccount,
     })
   }
 
