@@ -1,5 +1,5 @@
 import vaultAbi from '../../../shared/json-abis/vault'
-import { INITIALIZATION_TRIGGER, app, handleEvent } from './'
+import { app, handleEvent } from './'
 import { ETHER_TOKEN_FAKE_ADDRESS } from '../utils/token-utils'
 import { of } from 'rxjs'
 import { pluck } from 'rxjs/operators'
@@ -11,7 +11,7 @@ export const initStore = (vaultAddress, network) => {
     async (state, event) => {
       // ensure there are initial placeholder values
       let initialState = { ...state }
-
+      console.log(event)
       try {
         const next = await handleEvent(state, event, {
           network,
@@ -31,11 +31,13 @@ export const initStore = (vaultAddress, network) => {
       }
       return state
     },
-    [
-      // Always initialize the store with our own home-made event
-      of({ event: INITIALIZATION_TRIGGER }),
-      // handle vault events
-      vaultContract.events(),
-    ]
+    { 
+      externals: [
+        {
+          contract: vaultContract,
+        },
+      ],
+      //init: intiState(settings),
+    }
   )
 }
