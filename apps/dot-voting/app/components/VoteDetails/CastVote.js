@@ -8,7 +8,7 @@ import { Button, Text, useTheme } from '@aragon/ui'
 import tokenBalanceOfAbi from '../../abi/token-balanceof.json'
 import Slider from '../Slider'
 import Label from './Label'
-import { BigNumber } from 'bignumber.js'
+import { BN } from 'web3-utils'
 
 const ValueContainer = styled.div`
   box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.03);
@@ -95,10 +95,11 @@ const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights }) => {
 
   const handleVoteSubmit = useCallback(() => {
     let optionsArray = []
+    let userBalanceBN = new BN(userBalance, 10)
 
     voteOptions.forEach(element => {
-      let baseValue = element.trueValue ? element.trueValue : 0
-      let voteWeight = BigNumber(baseValue).times(BigNumber(userBalance)).div(100)
+      let baseValue = element.trueValue ? new BN(element.trueValue, 10) : new BN('0', 10)
+      let voteWeight = baseValue.mul(userBalanceBN).div(new BN('100', 10))
       optionsArray.push(voteWeight.toString(10))
     })
     onVote(vote.voteId, optionsArray)
@@ -152,7 +153,7 @@ const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights }) => {
           mode="strong"
           onClick={handleVoteSubmit}
           disabled={
-            voteOptions.reduce((sum, { trueValue = 0 }) => sum + trueValue, 0) === 0
+            voteOptions.reduce((sum, { trueValue = 0 }) => parseInt(sum) + trueValue, 0) === 0
           }
         >
           Submit Vote
