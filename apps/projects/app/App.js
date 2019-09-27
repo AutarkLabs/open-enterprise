@@ -32,8 +32,6 @@ import { LoadingAnimation } from './components/Shared'
 import { EmptyWrapper } from './components/Shared'
 import { Error } from './components/Card'
 
-const ASSETS_URL = './aragon-ui'
-
 const getTabs = ({ repoCount }) => {
   const tabs = [
     {
@@ -78,7 +76,7 @@ const App = () => {
     github = { status : STATUS.INITIAL },
   } = appState
 
-  const client = initApolloClient(github && github.token)
+  const client = github.token ? initApolloClient(github.token) : null
 
   useEffect(() => {
     const code = getURLParam('code')
@@ -116,8 +114,8 @@ const App = () => {
     }
   }
 
-  const changeActiveIndex = activeIndex => {
-    setActiveIndex({ activeIndex })
+  const changeActiveIndex = data => {
+    setActiveIndex(data)
   }
 
   const closePanel = () => {
@@ -170,13 +168,14 @@ const App = () => {
 
   const tabs = getTabs({
     repoCount: repos.length,
+    //repoCount: 1,
   })
 
   const tabNames = tabs.map(t => t.name)
   const TabComponent = tabs[activeIndex.tabIndex].body
 
   return (
-    <Main assetsUrl={ASSETS_URL}>
+    <Main>
       <ApolloProvider client={client}>
         <PanelContext.Provider value={configurePanel}>
           <IdentityProvider
@@ -186,7 +185,7 @@ const App = () => {
             <Header
               primary="Projects"
               secondary={
-                github.status === STATUS.AUTHENTICATED && tabs[activeIndex.tabIndex].action
+                tabs[activeIndex.tabIndex].action
               }
             />
 

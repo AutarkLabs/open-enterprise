@@ -2,10 +2,10 @@ import React from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import {
-  Badge,
-  Text,
   ContextMenu,
   SafeLink,
+  Tag,
+  Text,
   useTheme,
 } from '@aragon/ui'
 import { formatDistance } from 'date-fns'
@@ -13,11 +13,6 @@ import { IconGitHub, BountyContextMenu } from '../../Shared'
 import { BOUNTY_STATUS, BOUNTY_BADGE_COLOR } from '../../../utils/bounty-status'
 import { Markdown } from '../../../../../../shared/ui'
 import Label from './Label'
-
-const StyledCell = styled.div`
-  padding: 20px 0;
-  align-items: left;
-`
 
 const determineFieldText = (fieldTitle, fieldText, balance) => {
   const isStatusField = fieldTitle.toLowerCase() === 'status'
@@ -61,18 +56,6 @@ SummaryTable.propTypes = {
   balance: PropTypes.string.isRequired,
 }
 
-const IssueLinkRow = styled.div`
-  height: 31px;
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-`
-const Separator = styled.hr`
-  height: 1px;
-  width: 100%;
-  opacity: 0.2;
-`
-
 const calculateAgo = pastDate => {
   const date = Date.now()
   return formatDistance(pastDate, date, { addSuffix: true })
@@ -83,13 +66,10 @@ const deadlineDistance = date => formatDistance(new Date(date), new Date())
 const DetailsCard = ({ issue }) => {
   const theme = useTheme()
   const summaryData = {
-    expLevel: issue.expLevel === undefined ? '-' : issue.expLevel,
+    expLevel: issue.expLevel || '-',
     deadline:
-      issue.deadline === undefined
-        ? '-'
-        : deadlineDistance(issue.deadline) + ' remaining',
-    workStatus:
-      issue.workStatus === undefined ? 'No bounty yet' : issue.workStatus,
+      issue.deadline ? deadlineDistance(issue.deadline) + ' remaining' : '-',
+    workStatus: issue.workStatus || 'No bounty yet',
     balance: issue.balance,
   }
 
@@ -120,10 +100,10 @@ const DetailsCard = ({ issue }) => {
           <SafeLink
             href={issue.url}
             target="_blank"
-            style={{ textDecoration: 'none', color: '#21AAE7' }}
+            style={{ textDecoration: 'none', color: `${theme.infoSurface}` }}
           >
             <IssueLinkRow>
-              <IconGitHub color="#21AAE7" width="14px" height="14px" />
+              <IconGitHub color={`${theme.infoSurface}`} width="14px" height="14px" />
               <Text style={{ marginLeft: '6px' }}>
                 {issue.repo} #{issue.number}
               </Text>
@@ -149,13 +129,13 @@ const DetailsCard = ({ issue }) => {
             <BountyContextMenu issue={issue} />
           </ContextMenu>
           {issue.balance > 0 && (
-            <Badge
+            <Tag
               style={{ padding: '10px', textSize: 'large', marginTop: '15px' }}
               background={BOUNTY_BADGE_COLOR[issue.workStatus].bg}
-              foreground={BOUNTY_BADGE_COLOR[issue.workStatus].fg}
+              color={BOUNTY_BADGE_COLOR[issue.workStatus].fg}
             >
               {issue.balance + ' ' + issue.symbol}
-            </Badge>
+            </Tag>
           )}
         </div>
       
@@ -170,14 +150,14 @@ const DetailsCard = ({ issue }) => {
       <Text size="small" color={`${theme.surfaceContentSecondary}`}>
         {issue.labels.totalCount
           ? issue.labels.edges.map(label => (
-            <Badge
+            <Tag
               key={label.node.id}
               style={{ marginRight: '5px' }}
               background={'#' + label.node.color + '99'}
-              foreground={'#000'}
+              color={`${theme.content}`}
             >
               {label.node.name}
-            </Badge>
+            </Tag>
           ))
           : ''}
       </Text>
@@ -189,5 +169,20 @@ DetailsCard.propTypes = {
   issue: PropTypes.object.isRequired,
 }
 
+const StyledCell = styled.div`
+  padding: 20px 0;
+  align-items: left;
+`
+const IssueLinkRow = styled.div`
+  height: 31px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+`
+const Separator = styled.hr`
+  height: 1px;
+  width: 100%;
+  opacity: 0.2;
+`
 // eslint-disable-next-line import/no-unused-modules
 export default DetailsCard

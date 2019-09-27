@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { Button, Card, Text } from '@aragon/ui'
 import { usePanelManagement } from '../Panel'
 
-import unauthorizedPng from '../../assets/unauthorized.png'
+import unauthorizedSvg from '../../assets/empty.svg'
 
 const Empty = () => {
   const { setupNewProject } = usePanelManagement()
@@ -21,12 +21,12 @@ const Empty = () => {
         justify-content: space-evenly;
       `}
       >
-        <img css="margin: 10px" src={unauthorizedPng} alt="" height="160" />
+        <img css="margin: 10px" src={unauthorizedSvg} alt="" height="160" />
         <Text size="xlarge">
             No projects found
         </Text>
         <Text css="margin-bottom: 6px">
-            It seems that you haven&apos;t set up a project yet
+            It seems that you have not set up a project yet
         </Text>
         <Button mode="strong" onClick={setupNewProject}>New project</Button>
       </div>

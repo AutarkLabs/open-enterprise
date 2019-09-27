@@ -1,172 +1,248 @@
-import React from 'react'
+import React, { useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import {
-  Badge,
+  Button,
+  Card,
   Checkbox,
   ContextMenuItem,
-  theme,
+  DropDown,
+  IconSearch,
+  IconCheck,
+  Popover,
+  Tag,
+  Text,
+  TextInput,
+  useLayout,
+  useTheme,
 } from '@aragon/ui'
-
-import Overflow from './Overflow'
-import FilterDropDown from './FilterDropDown'
+import ActiveFilters from '../../Content/Filters'
 import prepareFilters from './prepareFilters'
 import { IconArrow as IconArrowDown } from '../../../../../../shared/ui'
+import { IconMore, IconSort, IconGrid, IconCoins, IconFilter } from '../../../assets'
+import { usePanelManagement } from '../../Panel'
+import Label from '../../Content/IssueDetail/Label'
 
-class FilterBar extends React.Component {
-  state = {
-    // direction: -1: .oO; 1: Oo.; 0: disabled
-    sortBy: [
-      { what: 'Name', direction: 0 },
-      { what: 'Creation Date', direction: 1 },
-      //{ what: 'Label', direction: 0 },
-      //{ what: 'Milestone', direction: 0 },
-      //{ what: 'Status', direction: 0 },
-    ],
+const FilterBar = ({
+  allSelected,
+  filters,
+  bountyIssues,
+  issues,
+  issuesFiltered,
+  handleSelectAll,
+  handleFiltering,
+  handleSorting,
+  setParentFilters,
+  disableFilter,
+  disableAllFilters,
+  deselectAllIssues,
+  selectedIssues,
+  onSearchChange,
+}) => {
+  // Complete list of sorters for DropDown. Parent has only one item, to perform actual sorting.
+  const [ sortBy, setSortBy ] = useState('Newest')
+
+  const [ textFilter, setTextFilter ] = useState('')
+  const { layoutName } = useLayout()
+  const [ sortMenuVisible, setSortMenuVisible ] = useState(false)
+  const [ actionsMenuVisible, setActionsMenuVisible ] = useState(false)
+  const [ filtersMenuVisible, setFiltersMenuVisible ] = useState(false)
+  const [ searchVisible, setSearchVisible ] = useState(false)
+  const { curateIssues, allocateBounty } = usePanelManagement()
+  const theme = useTheme()
+  const actionsOpener = useRef(null)
+  const sortersOpener = useRef(null)
+  const filtersOpener = useRef(null)
+  const searchOpener = useRef(null)
+  const activeFilters = () => {
+    let count = 0
+    const types = [ 'projects', 'labels', 'milestones', 'statuses' ]
+    types.forEach(t => count += Object.keys(filters[t]).length)
+    return count
   }
 
-  // that's non-event for filters checkboxes to stop browser complaining about missing onChange handler
-  // the point is to make the checkbox controlled by its FilterMenuItem parent
-  noop = () => {}
+  const updateTextFilter = e => {
+    setTextFilter(e.target.value)
+    onSearchChange(e)
+  }
 
-  filter = (type, id) => () => {
-    const { filters } = this.props
+  const noop = () => {}
+
+  const filter = (type, id) => () => {
     if (id in filters[type]) delete filters[type][id]
     else filters[type][id] = true
     // filters are in local state because of checkboxes
     // and sent to the parent (Issues) for actual display change
-    this.props.setParentFilters({ filters })
-    this.props.handleFiltering(filters)
+    setParentFilters({ filters })
+    handleFiltering(filters)
   }
 
-  generateSort = what => () => {
-    const sortBy = this.state.sortBy
-    sortBy.map(s => {
-      if (s.what === what) {
-        s.direction = s.direction === 0 ? -1 : s.direction * -1
-        this.props.handleSorting(s)
-      } else s.direction = 0
-    })
-    this.setState(sortBy)
+  const updateSortBy = way => () => {
+    handleSorting(way)
+    setSortBy(way)
+    setSortMenuVisible(false)
   }
 
-  filterByProject = (filters, filtersData) => (
-    <FilterDropDown
-      caption="Projects"
+  const FilterByProject = ({ filters, filtersData }) => (
+    <DropDown
+      placeholder="Projects"
+      header="Projects"
       enabled={Object.keys(filtersData.projects).length > 0}
-    >
-      {Object.keys(filtersData.projects)
-        .sort(
-          (p1, p2) =>
-            filtersData.projects[p1].name < filtersData.projects[p2].name
+      onChange={noop}
+      items=
+        {Object.keys(filtersData.projects)
+          .sort(
+            (p1, p2) =>
+              filtersData.projects[p1].name < filtersData.projects[p2].name
+                ? -1
+                : 1
+          )
+          .map(id => (
+            <FilterMenuItem
+              key={id}
+              onClick={filter('projects', id)}
+            >
+              <div>
+                <Checkbox
+                  onChange={noop}
+                  checked={id in filters.projects}
+                />
+              </div>
+              <ActionLabel>
+                {filtersData.projects[id].name} (
+                {filtersData.projects[id].count})
+              </ActionLabel>
+            </FilterMenuItem>
+          ))}
+    />
+  )
+  FilterByProject.propTypes = {
+    filters: PropTypes.object.isRequired,
+    filtersData: PropTypes.object.isRequired,
+  }
+
+  const FilterByLabel = ({ filters, filtersData }) => (
+    <DropDown
+      css="width: 128px;"
+      placeholder="Labels"
+      header="Labels"
+      enabled={Object.keys(filtersData.labels).length > 0}
+      onChange={noop}
+      items=
+        {Object.keys(filtersData.labels)
+          .sort((l1, l2) => {
+            if (l1 === 'labelless') return -1
+            if (l2 === 'labelless') return 1
+            return filtersData.labels[l1].name < filtersData.labels[l2].name
               ? -1
               : 1
-        )
-        .map(id => (
-          <FilterMenuItem
-            key={id}
-            onClick={this.filter('projects', id)}
-          >
-            <div>
-              <Checkbox
-                onChange={this.noop}
-                checked={id in filters.projects}
-              />
-            </div>
-            <ActionLabel>
-              {filtersData.projects[id].name} (
-              {filtersData.projects[id].count})
-            </ActionLabel>
-          </FilterMenuItem>
-        ))}
-    </FilterDropDown>
-  )
-
-  filterByLabel = (filters, filtersData) => (
-    <FilterDropDown
-      caption="Labels"
-      enabled={Object.keys(filtersData.labels).length > 0}
-    >
-      {Object.keys(filtersData.labels)
-        .sort((l1, l2) => {
-          if (l1 === 'labelless') return -1
-          if (l2 === 'labelless') return 1
-          return filtersData.labels[l1].name < filtersData.labels[l2].name
-            ? -1
-            : 1
-        })
-        .map(id => (
-          <FilterMenuItem
-            key={id}
-            onClick={this.filter('labels', id)}
-          >
-            <div>
-              <Checkbox
-                onChange={this.noop}
-                checked={id in filters.labels}
-              />
-            </div>
-            <ActionLabel>
-              <Badge
-                background={'#' + filtersData.labels[id].color + '99'}
-                foreground={theme.textPrimary}
-              >
-                {filtersData.labels[id].name}
-              </Badge>{' '}
+          })
+          .map(id => (
+            <FilterMenuItem
+              key={id}
+              onClick={filter('labels', id)}
+            >
+              <div>
+                <Checkbox
+                  onChange={noop}
+                  checked={id in filters.labels}
+                />
+              </div>
+              <ActionLabel>
+                <Tag
+                  background={'#' + filtersData.labels[id].color + '99'}
+                  color={`${theme.surfaceContent}`}
+                >
+                  {filtersData.labels[id].name}
+                </Tag>{' '}
             ({filtersData.labels[id].count})
-            </ActionLabel>
-          </FilterMenuItem>
-        ))}
-    </FilterDropDown>
+              </ActionLabel>
+            </FilterMenuItem>
+          ))}
+    />
   )
+  FilterByLabel.propTypes = {
+    filters: PropTypes.object.isRequired,
+    filtersData: PropTypes.object.isRequired,
+  }
 
-  filterByMilestone = (filters, filtersData) => (
-    <FilterDropDown
-      caption="Milestones"
+  const FilterByMilestone = ({ filters, filtersData }) => (
+    <DropDown
+      header="Milestones"
+      placeholder="Milestones"
       enabled={Object.keys(filtersData.milestones).length > 0}
-    >
-      {Object.keys(filtersData.milestones)
-        .sort((m1, m2) => {
-          if (m1 === 'milestoneless') return -1
-          if (m2 === 'milestoneless') return 1
-          return filtersData.milestones[m1].title <
+      onChange={noop}
+      items=
+        {Object.keys(filtersData.milestones)
+          .sort((m1, m2) => {
+            if (m1 === 'milestoneless') return -1
+            if (m2 === 'milestoneless') return 1
+            return filtersData.milestones[m1].title <
           filtersData.milestones[m2].title
-            ? -1
-            : 1
-        })
-        .map(id => (
-          <FilterMenuItem
-            key={id}
-            onClick={this.filter('milestones', id)}
-          >
-            <div>
-              <Checkbox
-                onChange={this.noop}
-                checked={id in filters.milestones}
-              />
-            </div>
-            <ActionLabel>
-              {filtersData.milestones[id].title} (
-              {filtersData.milestones[id].count})
-            </ActionLabel>
-          </FilterMenuItem>
-        ))}
-    </FilterDropDown>
+              ? -1
+              : 1
+          })
+          .map(id => (
+            <FilterMenuItem
+              key={id}
+              onClick={filter('milestones', id)}
+            >
+              <div>
+                <Checkbox
+                  onChange={noop}
+                  checked={id in filters.milestones}
+                />
+              </div>
+              <ActionLabel>
+                {filtersData.milestones[id].title} (
+                {filtersData.milestones[id].count})
+              </ActionLabel>
+            </FilterMenuItem>
+          ))}
+    />
   )
+  FilterByMilestone.propTypes = {
+    filters: PropTypes.object.isRequired,
+    filtersData: PropTypes.object.isRequired,
+  }
 
-  filterByStatus = (filters, filtersData, allFundedIssues, allIssues) => (
-    <FilterDropDown
-      caption="Status"
+  const FilterByStatus = ({ filters, filtersData, allFundedIssues, allIssues }) => (
+    <DropDown
+      header="Status"
+      placeholder="Status"
       enabled={Object.keys(filtersData.statuses).length > 0}
-    >
-      {allFundedIssues.map(status => (
+      onChange={noop}
+      items={allFundedIssues.map(status => (
         <FilterMenuItem
           key={status}
-          onClick={this.filter('statuses', status)}
+          onClick={filter('statuses', status)}
         >
           <div>
             <Checkbox
-              onChange={this.noop}
+              onChange={noop}
+              checked={status in filters.statuses}
+            />
+          </div>
+          <ActionLabel>
+            {filtersData.statuses[status].name} (
+            {filtersData.statuses[status].count})
+          </ActionLabel>
+        </FilterMenuItem>
+      )),
+      <hr css={`
+        height: 1px;
+        border: 0;
+        width: 100%;
+        background: ${theme.border};
+      `} />,
+      allIssues.map(status => (
+        <FilterMenuItem
+          key={status}
+          onClick={filter('statuses', status)}
+        >
+          <div>
+            <Checkbox
+              onChange={noop}
               checked={status in filters.statuses}
             />
           </div>
@@ -176,86 +252,243 @@ class FilterBar extends React.Component {
           </ActionLabel>
         </FilterMenuItem>
       ))}
-      <Separator />
-      {allIssues.map(status => (
-        <FilterMenuItem
-          key={status}
-          onClick={this.filter('statuses', status)}
-        >
-          <div>
-            <Checkbox
-              onChange={this.noop}
-              checked={status in filters.statuses}
-            />
-          </div>
-          <ActionLabel>
-            {filtersData.statuses[status].name} (
-            {filtersData.statuses[status].count})
-          </ActionLabel>
-        </FilterMenuItem>
-      ))}
-    </FilterDropDown>
+    />
   )
+  FilterByStatus.propTypes = {
+    filters: PropTypes.object.isRequired,
+    filtersData: PropTypes.object.isRequired,
+    allFundedIssues: PropTypes.array.isRequired,
+    allIssues: PropTypes.array.isRequired,
+  }
 
-  sortDropDown = () => (
-    <FilterDropDown
-      caption="Sort"
-      enabled={true}
-      width="auto"
-      type="sorter"
-      style={{ left: 'unset', right: 0 }}
+  const ActionsPopover = ({ selectedIssues, issuesFiltered }) => (
+    <Popover
+      visible={actionsMenuVisible}
+      opener={actionsOpener.current}
+      onClose={() => setActionsMenuVisible(false)}
+      placement="bottom-end"
+      css={`
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+      `}
     >
-      {this.state.sortBy.map(sorter => (
-        <FilterMenuItem
-          key={sorter.what}
-          onClick={this.generateSort(sorter.what)}
-        >
-          {sorter.direction === 1 && (
-            <SortArrow style={{ paddingTop: '3px' }}>
-              <IconArrowDown />
-            </SortArrow>
-          )}
-          {sorter.direction === -1 && (
-            <SortArrow>
-              <IconArrowDown style={{ transform: 'rotate(180deg)' }}/>
-            </SortArrow>
-          )}
-          {sorter.direction === 0 && (
-            <SortArrow />
-          )}
-          <ActionLabel>{sorter.what}</ActionLabel>
-        </FilterMenuItem>
-      ))}
-    </FilterDropDown>
+      <FilterMenuItem
+        key="1"
+        onClick={() => {
+          curateIssues(selectedIssues, issuesFiltered)
+          deselectAllIssues()
+          setActionsMenuVisible(false)
+        }}
+      >
+        <IconFilter />
+        <ActionLabel>Curate Issues</ActionLabel>
+      </FilterMenuItem>
+      <FilterMenuItem
+        key="2"
+        onClick={() => {
+          allocateBounty(selectedIssues)
+          deselectAllIssues()
+          setActionsMenuVisible(false)
+        }}
+      >
+        <IconCoins />
+        <ActionLabel>Fund Issues</ActionLabel>
+      </FilterMenuItem>
+    </Popover>
   )
 
-  render() {
-    const { handleSelectAll, allSelected, issues, bountyIssues, filters } = this.props
-    // filters contain information about active filters (checked checkboxes)
-    // filtersData is about displayed checkboxes
-    const allFundedIssues = [ 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]
-    const allIssues = [ 'all-funded', 'not-funded' ]
-    const filtersData = prepareFilters(issues, bountyIssues)
+  const FiltersPopover = ({ children }) => (
+    <Popover
+      visible={filtersMenuVisible}
+      opener={filtersOpener.current}
+      onClose={() => setFiltersMenuVisible(false)}
+      placement="bottom-end"
+      css={`
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+      `}
+    >
+      {children}
+    </Popover>
+  )
+  FiltersPopover.propTypes = {
+    children: PropTypes.node.isRequired,
+  }
+
+  const SortPopover = () => {
+    const sorters = [
+      'Name ascending',
+      'Name descending',
+      'Newest',
+      'Oldest',
+    ]
 
     return (
-      <StyledFilterBar>
-
-        <SelectAll>
-          <Checkbox onChange={handleSelectAll} checked={allSelected} />
-        </SelectAll>
-
-        <Overflow>
-          {this.filterByProject(filters, filtersData)}
-          {this.filterByLabel(filters, filtersData)}
-          {this.filterByMilestone(filters, filtersData)}
-          {this.filterByStatus(filters, filtersData, allFundedIssues, allIssues)}
-        </Overflow>
-
-        {this.sortDropDown()}
-
-      </StyledFilterBar>
+      <Popover
+        visible={sortMenuVisible}
+        opener={sortersOpener.current}
+        onClose={() => setSortMenuVisible(false)}
+        css="padding: 12px"
+        placement="bottom-end"
+      >
+        <Label text="Sort by" />
+        {sorters.map(way => (
+          <FilterMenuItem
+            key={way}
+            onClick={updateSortBy(way)}
+          >
+            <div css="width: 24px">
+              {way === sortBy && <IconCheck color={`${theme.accent}`} />}
+            </div>
+            <ActionLabel>{way}</ActionLabel>
+          </FilterMenuItem>
+        ))}
+      </Popover>
     )
   }
+
+  const SearchInput = () => (
+    <TextInput
+      placeholder="Search"
+      type="search"
+      onChange={updateTextFilter}
+      value={textFilter}
+      adornment={
+        textFilter === '' && (
+          <IconSearch
+            css={`
+      color: ${theme.surfaceOpened};
+      margin-right: 8px;
+    `}
+          />
+        )
+      }
+      adornmentPosition="end"
+      css="width: 256px"
+    />
+  )
+
+  const SearchPopover = () => (
+    <Popover
+      visible={searchVisible}
+      opener={searchOpener.current}
+      onClose={() => setSearchVisible(false)}
+      css="padding: 12px"
+      placement="bottom-end"
+    >
+      <SearchInput />
+    </Popover>
+  )
+
+  // filters contain information about active filters (checked checkboxes)
+  // filtersData is about displayed checkboxes
+  const allFundedIssues = [ 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]
+  const allIssues = [ 'all-funded', 'not-funded' ]
+  const filtersData = prepareFilters(issues, bountyIssues)
+
+  const actionsClickHandler = () =>
+    selectedIssues.length && setActionsMenuVisible(true)
+  
+  const actionsButtonBg = () =>
+    'background-color: ' + (!selectedIssues.length ? `${theme.background}` : `${theme.surface}`)
+
+  return (
+    <FilterBarCard>
+      <FilterBarMain>
+        <FilterBarMainLeft>
+          <SelectAll>
+            <Checkbox onChange={handleSelectAll} checked={allSelected} />
+          </SelectAll>
+
+          {layoutName === 'large' ? (
+            <React.Fragment>
+              <FilterByProject filters={filters} filtersData={filtersData} />
+              <FilterByLabel filters={filters} filtersData={filtersData} />
+              <FilterByMilestone filters={filters} filtersData={filtersData} />
+              <FilterByStatus filters={filters} filtersData={filtersData} allFundedIssues={allFundedIssues} allIssues={allIssues} />
+            </React.Fragment>
+          ) : (
+            layoutName === 'medium' ? (
+              <React.Fragment>
+                <FilterByProject filters={filters} filtersData={filtersData} />
+                <FilterByLabel filters={filters} filtersData={filtersData} />
+                <FilterByMilestone filters={filters} filtersData={filtersData} />
+
+                <Button icon={<IconMore />} display="icon" onClick={() => setFiltersMenuVisible(true)} ref={filtersOpener} />
+
+                <FiltersPopover>
+                  <FilterByStatus filters={filters} filtersData={filtersData} allFundedIssues={allFundedIssues} allIssues={allIssues} />
+                </FiltersPopover>
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                <FilterByProject filters={filters} filtersData={filtersData} />
+                <FilterByLabel filters={filters} filtersData={filtersData} />
+                
+                <Button icon={<IconMore />} display="icon" onClick={() => setFiltersMenuVisible(true)} ref={filtersOpener} />
+
+                <FiltersPopover>
+                  <FilterByMilestone filters={filters} filtersData={filtersData} />
+                  <FilterByStatus filters={filters} filtersData={filtersData} allFundedIssues={allFundedIssues} allIssues={allIssues} />
+                </FiltersPopover>
+              </React.Fragment>
+            )
+          )}
+        </FilterBarMainLeft>
+
+        <FilterBarMainRight>
+          {layoutName === 'large' ? (
+            <SearchInput />
+          ) : (
+            <React.Fragment>
+              <Button icon={<IconSearch />} display="icon" onClick={() => setSearchVisible(true)} ref={searchOpener} />
+              <SearchPopover />
+            </React.Fragment>
+          )}
+
+          <Button icon={<IconSort />} display="icon" onClick={() => setSortMenuVisible(true)} ref={sortersOpener} />
+          <SortPopover />
+
+          {layoutName === 'large' ? (
+            <Button
+              css={actionsButtonBg()}
+              onClick={actionsClickHandler}
+              ref={actionsOpener}
+            >
+              <IconGrid />
+              <Text css="margin: 0 8px;">Actions</Text>
+              <IconArrowDown />
+            </Button>
+          ) : (
+            <Button
+              css={actionsButtonBg()}
+              icon={<IconGrid />}
+              display="icon"
+              onClick={actionsClickHandler}
+              ref={actionsOpener}
+            />
+          )}
+          <ActionsPopover selectedIssues={selectedIssues} issuesFiltered={issuesFiltered} />
+
+        </FilterBarMainRight>
+      </FilterBarMain>
+
+      {activeFilters() > 0 && (
+        <FilterBarActives>
+          <ActiveFilters
+            issues={issues}
+            bountyIssues={bountyIssues}
+            filters={filters}
+            disableFilter={disableFilter}
+            disableAllFilters={disableAllFilters}
+          />
+        </FilterBarActives>
+      )}
+
+    </FilterBarCard>
+  )
 }
 
 FilterBar.propTypes = {
@@ -263,63 +496,64 @@ FilterBar.propTypes = {
   filters: PropTypes.object.isRequired,
   bountyIssues: PropTypes.arrayOf(PropTypes.object).isRequired,
   issues: PropTypes.arrayOf(PropTypes.object).isRequired,
-  sortBy: PropTypes.object.isRequired,
+  issuesFiltered: PropTypes.array.isRequired,
+  sortBy: PropTypes.string.isRequired,
   handleSelectAll: PropTypes.func.isRequired,
   handleFiltering: PropTypes.func.isRequired,
   handleSorting: PropTypes.func.isRequired,
   setParentFilters: PropTypes.func.isRequired,
+  disableFilter: PropTypes.func.isRequired,
+  disableAllFilters: PropTypes.func.isRequired,
+  selectedIssues: PropTypes.array.isRequired,
+  onSearchChange: PropTypes.func.isRequired,
+  deselectAllIssues: PropTypes.func.isRequired,
 }
 
 const FilterMenuItem = styled(ContextMenuItem)`
-  align-items: flex-start;
   display: flex;
+  align-items: center;
   padding: 5px;
   padding-right: 10px;
-`
-const SortArrow = styled.div`
-  width: 15px;
-  height: 12px;
-`
-const StyledFilterBar = styled.div`
-  background: ${theme.contentBorder};
-  display: grid;
-  grid-gap: 1px;
-  grid-template-columns: 48px repeat(auto-fit, minmax(20px, auto));
-  margin-bottom: 10px;
-  padding: 1px;
-  align-items: center;
-  border-radius: 3px;
-  > * {
-    background: ${theme.contentBackground};
-    height: 100%;
-    width: 100%;
-    z-index: 2;
-    :hover {
-      z-index: 3;
-    }
-  }
-  > :first-child {
-    border-radius: 3px 0 0 3px;
-  }
-  > :last-child {
-    > * {
-      border-radius: 0 3px 3px 0;
-    }
-  }
 `
 const SelectAll = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  margin: 4px 12px 4px 4px;
 `
 const ActionLabel = styled.span`
-  margin-left: 5px;
+  margin-left: 8px;
 `
-const Separator = styled.hr`
-  height: 1px;
-  border: 0;
+
+const FilterBarCard = styled(Card)`
   width: 100%;
-  background: ${theme.contentBorder};
+  height: auto;
+  padding: 12px;
+  margin-bottom: 16px;
+`
+const FilterBarMain = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+
+`
+const FilterBarMainLeft = styled.div`
+  display: flex;
+  > * {
+    margin-right: 8px;
+  }
+`
+const FilterBarMainRight = styled.div`
+  display: flex;
+  > * {
+    margin-left: 8px;
+  }
+`
+const FilterBarActives = styled.div`
+  margin: 0;
+  margin-top: 12px;
+  width: 100%;
+  padding-left: 36px;
 `
 
 export default FilterBar

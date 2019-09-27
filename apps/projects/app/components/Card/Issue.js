@@ -2,121 +2,122 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 
-import { Text, theme, Badge, Checkbox, ContextMenu } from '@aragon/ui'
+import { Text, Tag, Checkbox, ContextMenu, useTheme, IconClock, IconConnect, IconCalendar } from '@aragon/ui'
 
 import { formatDistance } from 'date-fns'
 import { BountyContextMenu } from '../Shared'
 import { BOUNTY_STATUS, BOUNTY_BADGE_COLOR } from '../../utils/bounty-status'
+import { IconBarbell } from '../../assets'
 
-const ClickArea = styled.div`
-  height: 100%;
-  left: 0;
-  position: absolute;
-  width: 100%;
-  z-index: 0;
-  :active {
-    border: 1px solid ${theme.accent};
-    z-index: 3;
-  }
-  :hover {
-    cursor: pointer;
-  }
-`
 const DeadlineDistance = date =>
   formatDistance(new Date(date), new Date(), { addSuffix: true })
 
-const dot = <span style={{ margin: '0px 6px' }}>&middot;</span>
+const dot = <span css="margin: 0px 10px">&middot;</span>
 
-const labelsBadges = labels =>
+const labelsTags = (labels, theme) =>
   labels.edges.map(label => (
-    <Badge
+    <Tag
       key={label.node.id}
-      style={{ marginRight: '10px', width: 'auto' }}
+      css="margin-right: 10px; width: auto"
       background={'#' + label.node.color + '99'}
-      foreground={theme.textPrimary}
+      color={`${theme.surfaceContent}`}
     >
       {label.node.name}
-    </Badge>
+    </Tag>
   ))
 
-class Issue extends React.PureComponent {
-  render() {
-    const { isSelected, onClick, onSelect, ...issue } = this.props
+const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
+  const theme = useTheme()
+  let {
+    workStatus,
+    title,
+    repo,
+    number,
+    labels,
+    balance = 10,
+    symbol = 'AUT',
+    deadline = '2019-10-23 00:00',
+    expLevel = 'easy',
+    createdAt,
+  } = issue
+  
+  workStatus = 'fulfilled'
 
-    const {
-      workStatus,
-      title,
-      repo,
-      number,
-      labels,
-      balance,
-      symbol,
-      deadline,
-      expLevel,
-    } = issue
+  return (
+    <StyledIssue theme={theme}>
+      <div css="padding: 20px 10px">
+        <Checkbox checked={isSelected} onChange={() => onSelect(issue)} />
+      </div>
 
-    return (
-      <StyledIssue>
-        <div style={{ padding: '10px' }}>
-          <Checkbox checked={isSelected} onChange={() => onSelect(issue)} />
-        </div>
+      <IssueData>
+        <ClickArea theme={theme} onClick={() => onClick(issue)} />
 
-        <IssueData>
-          <ClickArea onClick={() => onClick(issue)} />
+        <IssueMain>
+          <div css="display: flex;">
+            <IssueTitle theme={theme}>{title}</IssueTitle>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Text color={theme.textSecondary} size="xsmall">
-              {repo} #{number}
-            </Text>
+            {labels.totalCount > 0 && (
+              <div>
+                {labelsTags(labels, theme)}
+              </div>
+            )}
+          </div>
+
+          <div css="display: flex;">
+            <Balance>
+              {BOUNTY_STATUS[workStatus] && (
+                <Tag
+                  css="padding: 10px; margin-right: 10px;"
+                  background={BOUNTY_BADGE_COLOR[workStatus].bg}
+                  color={BOUNTY_BADGE_COLOR[workStatus].fg}
+                >
+                  {balance + ' ' + symbol}
+                </Tag>
+              )}
+            </Balance>
+
             <ContextMenu>
               <BountyContextMenu issue={issue} />
             </ContextMenu>
           </div>
-          <IssueTitleDetailsBalance>
-            <IssueTitleDetails>
-              <IssueTitle>{title}</IssueTitle>
+        </IssueMain>
 
-              {BOUNTY_STATUS[workStatus] && (
-                <Text.Block
-                  color={theme.textSecondary}
-                  style={{ fontSize: '0.87em' }}
-                >
-                  <span style={{ marginRight: '15px' }}>
-                    {expLevel}
-                    {dot}
-                    {balance > 0
-                      ? BOUNTY_STATUS[workStatus]
-                      : BOUNTY_STATUS['fulfilled']}
-                    {dot}
-                    Due {DeadlineDistance(deadline)}
-                  </span>
-                </Text.Block>
-              )}
-            </IssueTitleDetails>
+        <IssueDetails>
+          <Text.Block color={`${theme.surfaceContentSecondary}`} size="small">
+            <span css="font-weight: 600">{repo} #{number}</span>
 
-            <Balance>
-              {BOUNTY_STATUS[workStatus] && (
-                <Badge
-                  style={{ padding: '10px' }}
-                  background={BOUNTY_BADGE_COLOR[workStatus].bg}
-                  foreground={BOUNTY_BADGE_COLOR[workStatus].fg}
-                >
-                  <Text>{balance + ' ' + symbol}</Text>
-                </Badge>
-              )}
-            </Balance>
-          </IssueTitleDetailsBalance>
+            {dot}
+            <IconClock color={`${theme.surfaceIcon}`} css="margin-bottom: -8px; margin-right: 4px" />
+            opened {DeadlineDistance(createdAt)}
 
-          {labels.totalCount > 0 && (
-            <div>
-              <Separator />
-              {labelsBadges(labels)}
-            </div>
-          )}
-        </IssueData>
-      </StyledIssue>
-    )
-  }
+            {BOUNTY_STATUS[workStatus] && (
+              <React.Fragment>
+                {dot}
+                <IconConnect color={`${theme.surfaceIcon}`} css="margin-bottom: -8px" /> {balance > 0
+                  ? BOUNTY_STATUS[workStatus]
+                  : BOUNTY_STATUS['fulfilled']}
+
+                {dot}
+                <div css={`
+                  display: inline-block;
+                  vertical-align: bottom;
+                  margin-right: 6px;
+                  margin-bottom: -8px;
+                `}>
+                  <IconBarbell color={`${theme.surfaceIcon}`} />
+                </div>
+                {expLevel}
+
+                {dot}
+                <IconCalendar color={`${theme.surfaceIcon}`} css="margin-bottom: -8px; margin-right: 4px" />
+                Due {DeadlineDistance(deadline)}
+              </React.Fragment>
+            )}
+          </Text.Block>
+        </IssueDetails>
+      </IssueData>
+    </StyledIssue>
+  )
 }
 
 Issue.propTypes = {
@@ -137,14 +138,27 @@ Issue.propTypes = {
   work: PropTypes.oneOf([ undefined, PropTypes.object ]),
 }
 
-const StyledIssue = styled.div`
-  flex: 1;
+const ClickArea = styled.div`
+  height: 100%;
+  left: 0;
+  position: absolute;
   width: 100%;
-  background: ${theme.contentBackground};
+  z-index: 1;
+  :active {
+    border: 1px solid ${props => props.theme.accent};
+    z-index: 3;
+  }
+  :hover {
+    cursor: pointer;
+  }
+`
+const StyledIssue = styled.div`
+  width: 100%;
+  background: ${props => props.theme.background};
   display: flex;
   height: auto;
-  align-items: center;
-  border: 1px solid ${theme.contentBorder};
+  align-items: flex-start;
+  border: 1px solid ${props => props.theme.border};
   margin-bottom: -1px;
   position: relative;
   :first-child {
@@ -153,32 +167,33 @@ const StyledIssue = styled.div`
   :last-child {
     border-radius: 0 0 3px 3px;
   }
-`
-const IssueTitleDetailsBalance = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`
-const IssueTitleDetails = styled.div`
-  display: flex;
-  flex-direction: column;
-  > :not(:last-child) {
-    margin-bottom: 6px;
-  }
+  background-color: ${props => props.theme.surface};
 `
 const IssueData = styled.div`
   display: flex;
-  flex: 1 1 auto;
   flex-direction: column;
   justify-content: space-around;
   padding: 18px 18px 18px 0;
   position: relative;
+  width: 100%;
+`
+const IssueDetails = styled.div`
+  display: flex;
+  align-items: center;
+`
+const IssueMain = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content:
+  space-between;
+  align-items: center;
+  margin-bottom: 8px;
 `
 const Balance = styled.div`
   margin-left: 10px;
   padding-top: 5px;
 `
-const IssueTitle = styled(Text.Block).attrs({
+const IssueTitle = styled(Text).attrs({
   size: 'large',
 })`
   display: block;
@@ -187,15 +202,9 @@ const IssueTitle = styled(Text.Block).attrs({
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: ${theme.textPrimary};
+  color: ${props => props.theme.surfaceContent};
   font-size: 1.2em;
-`
-const Separator = styled.hr`
-  height: 1px;
-  width: 100%;
-  color: ${theme.contentBorder};
-  opacity: 0.1;
-  margin: 8px 0;
+  margin-right: 10px;
 `
 
 export default Issue

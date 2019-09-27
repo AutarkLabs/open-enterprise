@@ -13,10 +13,10 @@ const FilterTile = ({ text, disableFilter }) => {
       margin: 1px 4px 1px 0;
       font-weight: 600;
       border-radius: 3px;
-      font-size: 11px;
+      font-size: 12px;
       line-height: 1.5;
       display: flex;
-      padding: 4px 4px 4px 10px;
+      padding: 4px 4px 2px 10px;
       white-space: nowrap;
       background: ${theme.controlBorder};
       color: ${theme.surfaceContentSecondary};

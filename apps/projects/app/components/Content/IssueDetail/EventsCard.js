@@ -2,7 +2,8 @@ import React from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import {
-  Badge,
+  Box,
+  Tag,
   Text,
   useTheme,
   SafeLink,
@@ -10,7 +11,6 @@ import {
 } from '@aragon/ui'
 import { formatDistance } from 'date-fns'
 import { usePanelManagement } from '../../Panel'
-import Label from './Label'
 
 const IssueEventAvatar = styled.div`
   width: 66px;
@@ -43,7 +43,7 @@ const IssueEvent = props => {
           <SafeLink
             href={props.url}
             target="_blank"
-            style={{ textDecoration: 'none', color: '#21AAE7' }}
+            style={{ textDecoration: 'none', color: `${theme.infoSurface}` }}
           >
             {props.login}
           </SafeLink>{' '}
@@ -145,23 +145,23 @@ const activities = (
             : 'rejected ' + data.user.login + '\'s work',
           eventAction:
             data.review.feedback.length === 0 ? (
-              <Badge
-                foreground={theme.surfaceContentSecondary}
-                background={theme.border}
+              <Tag
+                color={`${theme.surfaceContentSecondary}`}
+                background={`${theme.border}`}
               >
                 Quality: {data.review.rating}
-              </Badge>
+              </Tag>
             ) : (
               <div>
                 <Text.Block size="large" style={{ marginBottom: '8px' }}>
                   {data.review.feedback}
                 </Text.Block>
-                <Badge
-                  foreground={theme.surfaceContentSecondary}
-                  background={theme.border}
+                <Tag
+                  color={`${theme.surfaceContentSecondary}`}
+                  background={`${theme.border}`}
                 >
                   Quality: {data.review.rating}
-                </Badge>
+                </Tag>
               </div>
             ),
         }
@@ -195,13 +195,15 @@ const EventsCard = ({ issue }) => {
   )
 
   return (
-    <div css={`
+    <Box
+      heading="Activity"
+      css={`
       flex: 0 1 auto;
       text-align: left;
       background: ${theme.surface};
       border: 1px solid ${theme.border};
       border-radius: 3px;
-      padding: 20px 10px 0 10px;
+      padding: 0;
       > * {
         padding: 16px 0 6px 16px;
       }
@@ -213,7 +215,6 @@ const EventsCard = ({ issue }) => {
       }
     `}
     >
-      <Label text="Activity" css="margin-top: 10px" />
       {Object.keys(issueEvents).length > 0 ? (
         Object.keys(issueEvents)
           .sort((a, b) => new Date(a) - new Date(b))
@@ -225,7 +226,7 @@ const EventsCard = ({ issue }) => {
           This issue has no activity
         </div>
       )}
-    </div>
+    </Box>
   )
 }
 

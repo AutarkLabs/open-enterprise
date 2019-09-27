@@ -24,7 +24,6 @@ const Overview = ({ changeActiveIndex, projects }) => {
           id={project.id}
           repoId={project.data._repo}
           commits={project.metadata.commits}
-          screenSize={width}
           // TODO: Disabled for now
           // contributors={project.metadata.collaborators}
           url={project.metadata.url}

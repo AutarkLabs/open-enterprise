@@ -3,9 +3,9 @@ import PropTypes from 'prop-types'
 import { Button, EmptyStateCard, Text, useTheme } from '@aragon/ui'
 import { EmptyWrapper } from '../Shared'
 
-import unauthorizedPng from '../../assets/unauthorized.png'
+import unauthorizedSvg from '../../assets/empty.svg'
 
-const illustration = <img src={unauthorizedPng} alt="" height="160" />
+const illustration = <img src={unauthorizedSvg} alt="" height="160" />
 
 const Unauthorized = ({ onLogin }) => {
   const theme = useTheme()

@@ -2,6 +2,8 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { Query } from 'react-apollo'
+//import Query from './Query.stub'
+
 import { Button } from '@aragon/ui'
 import BigNumber from 'bignumber.js'
 import { compareAsc, compareDesc } from 'date-fns'
@@ -9,10 +11,8 @@ import { compareAsc, compareDesc } from 'date-fns'
 import { STATUS } from '../../utils/github'
 import { getIssuesGQL } from '../../utils/gql-queries.js'
 import { FilterBar } from '../Shared'
-import { Issue, Empty } from '../Card'
+import { Issue } from '../Card'
 import IssueDetail from './IssueDetail'
-import Unauthorized from './Unauthorized'
-import ActionsMenu from './ActionsMenu'
 
 class Issues extends React.PureComponent {
   static propTypes = {
@@ -23,7 +23,6 @@ class Issues extends React.PureComponent {
     bountySettings: PropTypes.shape({
       expLvls: PropTypes.array.isRequired,
     }).isRequired,
-    onLogin: PropTypes.func.isRequired,
     github: PropTypes.shape({
       status: PropTypes.oneOf([
         STATUS.AUTHENTICATED,
@@ -51,7 +50,7 @@ class Issues extends React.PureComponent {
       experiences: {},
       statuses: {},
     },
-    sortBy: { what: 'Creation Date', direction: -1 },
+    sortBy: 'Newest',
     textFilter: '',
     reload: false,
     currentIssue: {},
@@ -102,6 +101,7 @@ class Issues extends React.PureComponent {
   applyFilters = issues => {
     const { filters, textFilter } = this.state
     const { bountyIssues } = this.props
+
     const bountyIssueObj = {}
     bountyIssues.forEach(issue => {
       bountyIssueObj[issue.issueNumber] = issue.data.workStatus
@@ -199,12 +199,6 @@ class Issues extends React.PureComponent {
     this.setState({ currentIssue: issue })
   }
 
-  // TODO: Not used, left here for reference (if we need to reset currentIssue)
-  handleIssueDetailClose = () => {
-    this.props.setIssueDetail(false)
-    this.setState({ currentIssue: null })
-  }
-
   disableFilter = pathToFilter => {
     let newFilters = { ...this.state.filters }
     recursiveDeletePathFromObject(pathToFilter, newFilters)
@@ -224,21 +218,6 @@ class Issues extends React.PureComponent {
     })
   }
 
-  actionsMenu = (issues, issuesFiltered) => (
-    <ActionsMenu
-      deselectAllIssues={this.deselectAllIssues}
-      disableFilter={this.disableFilter}
-      disableAllFilters={this.disableAllFilters}
-      filters={this.state.filters}
-      issues={issues}
-      issuesFiltered={issuesFiltered}
-      onSearchChange={this.handleTextFilter}
-      selectedIssues={Object.keys(this.state.selectedIssues).map(
-        id => this.state.selectedIssues[id]
-      )}
-    />
-  )
-
   setParentFilters = filters => {
     this.setState(filters)
   }
@@ -257,13 +236,19 @@ class Issues extends React.PureComponent {
         handleSorting={this.handleSorting}
         activeIndex={this.props.activeIndex}
         bountyIssues={this.props.bountyIssues}
+        disableFilter={this.disableFilter}
+        disableAllFilters={this.disableAllFilters}
+        deselectAllIssues={this.deselectAllIssues}
+        onSearchChange={this.handleTextFilter}
+        selectedIssues={Object.keys(this.state.selectedIssues).map(
+          id => this.state.selectedIssues[id]
+        )}
       />
     )
   }
 
   queryLoading = () => (
     <StyledIssues>
-      {this.actionsMenu([], [])}
       {this.filterBar([], [])}
       <IssuesScrollView>
         <div>Loading...</div>
@@ -273,7 +258,6 @@ class Issues extends React.PureComponent {
 
   queryError = (error, refetch) => (
     <StyledIssues>
-      {this.actionsMenu([], [])}
       {this.filterBar([], [])}
       <IssuesScrollView>
         <div>
@@ -333,19 +317,20 @@ class Issues extends React.PureComponent {
   }
 
   generateSorter = () => {
-    const { what, direction } = this.state.sortBy
-    if (what === 'Name')
+    switch (this.state.sortBy) {
+    case 'Name ascending':
       return (i1, i2) => {
-        return i1.title.toUpperCase() < i2.title.toUpperCase()
-          ? direction
-          : direction * -1
+        return i1.title.toUpperCase() > i2.title.toUpperCase() ? 1 : -1
       }
-    else if (what === 'Creation Date')
+    case 'Name descending':
       return (i1, i2) => {
-        return direction === 1
-          ? compareAsc(new Date(i1.createdAt), new Date(i2.createdAt))
-          : compareDesc(new Date(i1.createdAt), new Date(i2.createdAt))
+        return i1.title.toUpperCase() > i2.title.toUpperCase() ? -1 : 1
       }
+    case 'Newest':
+      return (i1, i2) => compareAsc(new Date(i1.createdAt), new Date(i2.createdAt))
+    case 'Oldest':
+      return (i1, i2) => compareDesc(new Date(i1.createdAt), new Date(i2.createdAt))
+    }
   }
 
   renderCurrentIssue = currentIssue => {
@@ -405,10 +390,6 @@ class Issues extends React.PureComponent {
   }
 
   render() {
-    if (this.props.status === STATUS.INITIAL) {
-      return <Unauthorized onLogin={this.props.onLogin} />
-    }
-
     const { projects, issueDetail } = this.props
 
     const { currentIssue, filters } = this.state
@@ -451,7 +432,13 @@ class Issues extends React.PureComponent {
 
     // previous GET_ISSUES is deliberately left in place for reference
     const GET_ISSUES2 = getIssuesGQL(reposQueryParams)
-
+    /*
+      <Query
+        fetchPolicy="cache-first"
+        query={GET_ISSUES2}
+        onError={console.error}
+      >
+    */
     return (
       <Query
         fetchPolicy="cache-first"
@@ -475,7 +462,6 @@ class Issues extends React.PureComponent {
 
             return (
               <StyledIssues>
-                {this.actionsMenu(downloadedIssues, issuesFiltered)}
                 {this.filterBar(downloadedIssues, issuesFiltered)}
 
                 <IssuesScrollView>

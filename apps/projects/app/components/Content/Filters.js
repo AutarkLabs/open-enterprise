@@ -1,7 +1,7 @@
-import React  from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Button, useTheme } from '@aragon/ui'
+import { Button, Text, useTheme } from '@aragon/ui'
 
 import FilterTile from './FilterTile'
 import { prepareFilters } from '../Shared/FilterBar'
@@ -68,31 +68,32 @@ const Filters = ({ filters, issues, bountyIssues, disableFilter, disableAllFilte
 
   return (
     <Wrap style={style}>
-      <div>
-        {Object.keys(filterAliases).map(alias => {
-          const pathToDisableFilter = filterAliases[alias]
-          return (
-            <FilterTile
-              key={pathToDisableFilter.join('')}
-              text={alias}
-              disableFilter={() =>
-                disableFilter(pathToDisableFilter)
-              }
-            />
-          )
-        })}
-      </div>
+      {Object.keys(filterAliases).map(alias => {
+        const pathToDisableFilter = filterAliases[alias]
+        return (
+          <FilterTile
+            key={pathToDisableFilter.join('')}
+            text={alias}
+            disableFilter={() =>
+              disableFilter(pathToDisableFilter)
+            }
+          />
+        )
+      })}
       {Object.keys(filterAliases).length > 0 && (
         <Button
-          mode="text"
-          size="small"
+          size="mini"
           onClick={disableAllFilters}
-          style={{
-            color: theme.accent,
-            marginLeft: '18px',
-          }}
+          css={`
+            margin-left: 8px;
+            border: 0;
+            box-shadow: unset;
+            padding: 4px;
+          `}
         >
+          <Text size="small" color={`${theme.badge}`}>
             Clear Filters
+          </Text>
         </Button>
       )}
     </Wrap>
@@ -101,6 +102,8 @@ const Filters = ({ filters, issues, bountyIssues, disableFilter, disableAllFilte
 
 const Wrap = styled.div`
   display: flex;
+  flex-wrap: wrap;
+  width: 100%;
 `
 
 Filters.propTypes = {

@@ -5,9 +5,11 @@ import NumberFormat from 'react-number-format'
 
 import { useNetwork } from '../../api-react'
 import {
+  Box,
   DropDown,
   Button,
   Field,
+  Info,
   Text,
   TextInput,
   useLayout,
@@ -23,6 +25,220 @@ import useGithubAuth from '../../hooks/useGithubAuth'
 
 const bountyDeadlines = [ 'Weeks', 'Days', 'Hours' ]
 const bountyDeadlinesMul = [ 168, 24, 1 ] // it is one variable in contract, so number * multiplier = hours
+
+const GitHubConnect = ({ onLogin, onLogout, status }) => {
+  const { login: user } = useGithubAuth()
+  const auth = status === STATUS.AUTHENTICATED
+  const bodyText = auth ? (
+    <span>
+      Logged in as
+      <Text weight="bold"> {user}</Text>
+    </span>
+  ) : (
+    'The Projects app uses GitHub to interact with issues.'
+  )
+  const buttonText = auth ? 'Disconnect Account' : 'Connect my GitHub'
+  const buttonAction = auth ? onLogout : onLogin
+  return (
+    <Box heading="GitHub">
+      <Text.Block size="large" weight="bold">
+        GitHub Authorization
+      </Text.Block>
+      <Text.Block>{bodyText}</Text.Block>
+      <StyledButton
+        compact
+        mode="secondary"
+        onClick={buttonAction}
+      >
+        {buttonText}
+      </StyledButton>
+    </Box>
+  )
+}
+
+GitHubConnect.propTypes = {
+  onLogin: PropTypes.func.isRequired,
+  onLogout: PropTypes.func.isRequired,
+  status: PropTypes.string.isRequired,
+}
+
+const BountyContractAddress = ({ bountyAllocator, networkType, layoutName }) => (
+  <Box heading="Bounty Address">
+    <LocalIdentityBadge
+      networkType={networkType}
+      entity={bountyAllocator}
+      shorten={layoutName === 'small'}
+    />
+    <Info css="margin-top: 16px">
+      This address is the smart contract responsible for allocating bounties.
+    </Info>
+  </Box>
+)
+
+BountyContractAddress.propTypes = {
+  bountyAllocator: PropTypes.string.isRequired,
+  networkType: PropTypes.string.isRequired,
+  layoutName: PropTypes.string.isRequired,
+}
+
+const SettingLabel = ({ text }) => {
+  const theme = useTheme()
+
+  return (
+    <Text.Block
+      size="large"
+      color={`${theme.surfaceContentSecondary}`}
+      style={{ marginBottom: '12px' }}
+    >
+      {text}
+    </Text.Block>
+  )
+}
+SettingLabel.propTypes = {
+  text: PropTypes.string.isRequired,
+}
+
+const ExperienceLevel = ({
+  expLevels,
+  onAddExpLevel,
+  generateExpLevelHandler,
+}) => {
+  let last = expLevels[expLevels.length - 1]
+  let disableAdd = last.mul !== '' && last.name !== '' ? false : true
+  return (
+    <div>
+      <SettingLabel text="Difficulty multipliers" />
+
+      {expLevels.map((exp, index) => (
+        <Field key={index} label={'LEVEL ' + index}>
+          <StyledNumberFormat
+            fixedDecimalScale
+            decimalScale={2}
+            value={exp.mul}
+            allowNegative={false}
+            onChange={generateExpLevelHandler(index, 'M')}
+          />
+          <StyledTextInput
+            defaultValue={exp.name}
+            onChange={generateExpLevelHandler(index, 'N')}
+          />
+        </Field>
+      ))}
+      <StyledButton
+        disabled={disableAdd}
+        compact
+        mode="secondary"
+        onClick={onAddExpLevel}
+      >
+        + Add Another
+      </StyledButton>
+    </div>
+  )
+}
+ExperienceLevel.propTypes = {
+  expLevels: PropTypes.array.isRequired,
+  onAddExpLevel: PropTypes.func.isRequired,
+  generateExpLevelHandler: PropTypes.func.isRequired,
+}
+
+const EmptyBaseRate = () => (
+  <div css="margin-bottom: 12px">
+    <SettingLabel text="Base rate" />
+    <Text.Block>
+      Once you have tokens in your Vault you will be able to set your
+      bounty base rate, which provides you with the ability to allocate bounties to issues.
+    </Text.Block>
+  </div>
+)
+
+const BaseRate = ({
+  baseRate,
+  onChangeRate,
+  bountyCurrency,
+  onChangeCurrency,
+  bountyCurrencies,
+}) => (
+  <div>
+    <SettingLabel text="Base rate" />
+    <FieldTitle style={{ marginBottom: '0' }}>Rate per hour</FieldTitle>
+    <StyledInputDropDown>
+      <StyledNumberFormat
+        fixedDecimalScale
+        decimalScale={2}
+        value={baseRate}
+        allowNegative={false}
+        onChange={onChangeRate}
+        style={{ marginRight: '0' }}
+      />
+      <DropDown
+        items={bountyCurrencies}
+        active={bountyCurrency}
+        onChange={onChangeCurrency}
+      />
+    </StyledInputDropDown>
+  </div>
+)
+
+BaseRate.propTypes = {
+  baseRate: PropTypes.number.isRequired,
+  onChangeRate: PropTypes.func.isRequired,
+  bountyCurrency: PropTypes.number.isRequired,
+  onChangeCurrency: PropTypes.func.isRequired,
+  bountyCurrencies: PropTypes.array.isRequired,
+}
+
+const BountyDeadline = ({
+  bountyDeadlineT,
+  onChangeT,
+  bountyDeadlineD,
+  onChangeD,
+}) => (
+  <div>
+    <SettingLabel text="Default work deadline" />
+    <StyledInputDropDown>
+      <StyledNumberFormat
+        fixedDecimalScale
+        decimalScale={0}
+        value={bountyDeadlineT}
+        allowNegative={false}
+        onChange={onChangeT}
+        style={{ marginRight: '0' }}
+      />
+      <DropDown
+        items={bountyDeadlines}
+        active={bountyDeadlineD}
+        onChange={onChangeD}
+      />
+    </StyledInputDropDown>
+  </div>
+)
+BountyDeadline.propTypes = {
+  bountyDeadlineT: PropTypes.number.isRequired,
+  onChangeT: PropTypes.func.isRequired,
+  bountyDeadlineD: PropTypes.number.isRequired,
+  onChangeD: PropTypes.func.isRequired,
+}
+
+const BountyArbiter = ({ bountyArbiter, networkType }) => (
+  <div>
+    <SettingLabel text="Bounty Arbiter" />
+    <div css="display: flex">
+      <LocalIdentityBadge
+        networkType={networkType}
+        entity={bountyArbiter}
+        // TODO:
+        // shorten={false}
+      />
+    </div>
+  </div>
+)
+BountyArbiter.propTypes = {
+  bountyArbiter: PropTypes.string.isRequired,
+  networkType: PropTypes.string.isRequired,
+}
+
+
+
 
 class Settings extends React.Component {
   static propTypes = {
@@ -155,191 +371,101 @@ class Settings extends React.Component {
       bountyAllocator,
     } = this.state
 
-    const { network, layoutName, theme } = this.props
+    const { network, layoutName } = this.props
 
     // TODO: hourglass in case settings are still being loaded
     if (!('baseRate' in this.props.bountySettings))
       return <div>Loading settings...</div>
 
-    const gitHubConnect = (
-      <GitHubConnect
-        onLogin={this.props.onLogin}
-        onLogout={this.handleLogout}
-        status={this.props.status}
-      />
-    )
+   
+    
 
-    const experienceLevel = (
-      <ExperienceLevel
-        expLevels={expLevels}
-        onAddExpLevel={this.addExpLevel}
-        generateExpLevelHandler={this.generateExpLevelHandler}
-      />
-    )
-    const showBaseRate = !this.props.tokens.length ? (
-      <EmptyBaseRate />
-    ) : (
-      <BaseRate
-        baseRate={baseRate}
-        onChangeRate={this.baseRateChange}
-        bountyCurrencies={bountyCurrencies}
-        bountyCurrency={bountyCurrency}
-        onChangeCurrency={this.bountyCurrencyChange}
-      />
-    )
-    const bountyDeadline = (
-      <BountyDeadline
-        bountyDeadlineT={bountyDeadlineT}
-        onChangeT={this.bountyDeadlineChangeT}
-        bountyDeadlineD={bountyDeadlineD}
-        onChangeD={this.bountyDeadlineChangeD}
-      />
-    )
-
-    const bountyContractAddress = (
-      <BountyContractAddress
-        bountyAllocator={bountyAllocator}
-        networkType={network.type}
-        layoutName={layoutName}
-      />
-    )
-
-    const saveButton = (
-      <Button mode="strong" onClick={this.submitChanges} wide>
-        Submit Changes
-      </Button>
-    )
-
-    const Separator = styled.hr`
-      height: 1px;
-      border: 0;
-      width: 100%;
-      margin: 10px 0;
-      background: ${theme.border};
-    `
-  
     return (
-      <StyledContent>
-        {layoutName === 'large' ? (
-          <React.Fragment>
-            <div className="column">
-              {gitHubConnect}
-              <Separator />
-              {experienceLevel}
-              {saveButton}
+      <div css={`
+          display: grid;
+          grid-gap: 12px;
+          grid-template-areas: ${layoutName !== 'small' ? (`
+            "github contract"
+            "funding funding"
+          `) : (`
+            "github"
+            "contract"
+            "funding"
+          `)};
+          grid-template-columns: 1fr 1fr;
+          grid-template-rows: auto;
+          align-items: stretch;
+        `}>
+        <div css="grid-area: contract">
+          <BountyContractAddress
+            bountyAllocator={bountyAllocator}
+            networkType={network.type}
+            layoutName={layoutName}
+          />
+        </div>
+        <div css="grid-area: github">
+          <GitHubConnect
+            onLogin={this.props.onLogin}
+            onLogout={this.handleLogout}
+            status={this.props.status}
+          />
+        </div>
+        <div css="grid-area: funding">
+          <Box
+            heading="Funding Model"
+          >
+            <div css={`
+              display: flex;
+              flex-direction: ${layoutName === 'small' ? 'column' : 'row'};
+              > * {
+                width: 50%;
+                padding-right: 20px;
+              }
+            `}>
+              <div>
+                {!this.props.tokens.length ? (
+                  <EmptyBaseRate />
+                ) : (
+                  <BaseRate
+                    baseRate={baseRate}
+                    onChangeRate={this.baseRateChange}
+                    bountyCurrencies={bountyCurrencies}
+                    bountyCurrency={bountyCurrency}
+                    onChangeCurrency={this.bountyCurrencyChange}
+                  />
+                )}
+                <BountyDeadline
+                  bountyDeadlineT={bountyDeadlineT}
+                  onChangeT={this.bountyDeadlineChangeT}
+                  bountyDeadlineD={bountyDeadlineD}
+                  onChangeD={this.bountyDeadlineChangeD}
+                />
+              </div>
+              <div>
+                <ExperienceLevel
+                  expLevels={expLevels}
+                  onAddExpLevel={this.addExpLevel}
+                  generateExpLevelHandler={this.generateExpLevelHandler}
+                />
+              </div>
             </div>
-            <div className="column">
-              {showBaseRate}
-              <Separator />
-              {bountyDeadline}
-              <Separator />
-              {bountyContractAddress}
-            </div>
-          </React.Fragment>
-        ) : (
-          <div className="column">
-            {gitHubConnect}
-            <Separator />
-            {experienceLevel}
-            <Separator />
-            {showBaseRate}
-            <Separator />
-            {bountyDeadline}
-            <Separator />
-            {bountyContractAddress}
-            {saveButton}
-          </div>
-        )
-        }
-      </StyledContent>
+
+            <Info css="margin: 24px 0">
+              In hourly funding, the hourly rate per issue is the base rate multiplied by the difficulty level selected for the issue.
+            </Info>
+            <Button mode="strong" onClick={this.submitChanges}>
+              Save Changes
+            </Button>
+          </Box>
+        </div>
+      </div>
     )
   }
 }
 
-const BountyDeadline = ({
-  bountyDeadlineT,
-  onChangeT,
-  bountyDeadlineD,
-  onChangeD,
-}) => (
-  <div>
-    <Text.Block size="large" weight="bold">
-        Bounty Deadline
-    </Text.Block>
-    <Text.Block>
-        The default amount of time contributors have to submit work once a bounty
-        is activated.
-    </Text.Block>
-    <StyledInputDropDown>
-      <StyledNumberFormat
-        fixedDecimalScale
-        decimalScale={0}
-        value={bountyDeadlineT}
-        allowNegative={false}
-        onChange={onChangeT}
-        style={{ marginRight: '0' }}
-      />
-      <DropDown
-        items={bountyDeadlines}
-        active={bountyDeadlineD}
-        onChange={onChangeD}
-      />
-    </StyledInputDropDown>
-  </div>
-)
 
-BountyDeadline.propTypes = {
-  bountyDeadlineT: PropTypes.number.isRequired,
-  onChangeT: PropTypes.func.isRequired,
-  bountyDeadlineD: PropTypes.number.isRequired,
-  onChangeD: PropTypes.func.isRequired,
-}
 
-const BountyArbiter = ({ bountyArbiter, networkType }) => (
-  <div>
-    <Text.Block size="large" weight="bold">
-      Bounty Arbiter
-    </Text.Block>
-    <Text.Block>The entity responsible for dispute resolution.</Text.Block>
-    <div css="display: flex">
-      <LocalIdentityBadge
-        networkType={networkType}
-        entity={bountyArbiter}
-        // TODO:
-        // shorten={false}
-      />
-    </div>
-  </div>
-)
 
-BountyArbiter.propTypes = {
-  bountyArbiter: PropTypes.string.isRequired,
-  networkType: PropTypes.string.isRequired,
-}
-
-const BountyContractAddress = ({ bountyAllocator, networkType, layoutName }) => (
-  <div>
-    <Text.Block size="large" weight="bold">
-      Bounty Contract Address
-    </Text.Block>
-    <Text.Block>
-      This is the smart contract that is actually allocating bounties.
-    </Text.Block>
-    <div css="display: flex">
-      <LocalIdentityBadge
-        networkType={networkType}
-        entity={bountyAllocator}
-        shorten={layoutName === 'small'}
-      />
-    </div>
-  </div>
-)
-
-BountyContractAddress.propTypes = {
-  bountyAllocator: PropTypes.string.isRequired,
-  networkType: PropTypes.string.isRequired,
-  layoutName: PropTypes.string.isRequired,
-}
 
 const StyledInputDropDown = ({ children }) => {
   const theme = useTheme()
@@ -374,141 +500,7 @@ StyledInputDropDown.propTypes = {
   children: PropTypes.node.isRequired,
 }
 
-const EmptyBaseRate = () => (
-  <div>
-    <Text.Block size="large" weight="bold">
-      Bounty Base Rate
-    </Text.Block>
-    <Text.Block>
-      Once you have tokens in your Vault you will be able to set your
-      bounty base rate, which provides you with the ability to allocate bounties to issues.
-    </Text.Block>
-  </div>
-)
 
-const BaseRate = ({
-  baseRate,
-  onChangeRate,
-  bountyCurrency,
-  onChangeCurrency,
-  bountyCurrencies,
-}) => (
-  <div>
-    <Text.Block size="large" weight="bold">
-        Bounty Base Rate
-    </Text.Block>
-    <Text.Block>
-        Define your organization’s hourly rate. This is multiplied by the bounty
-        size and converted into the bounty currency under the hood.
-    </Text.Block>
-    <FieldTitle style={{ marginBottom: '0' }}>Rate per hour</FieldTitle>
-    <StyledInputDropDown>
-      <StyledNumberFormat
-        fixedDecimalScale
-        decimalScale={2}
-        value={baseRate}
-        allowNegative={false}
-        onChange={onChangeRate}
-        style={{ marginRight: '0' }}
-      />
-      <DropDown
-        items={bountyCurrencies}
-        active={bountyCurrency}
-        onChange={onChangeCurrency}
-      />
-    </StyledInputDropDown>
-  </div>
-)
-
-BaseRate.propTypes = {
-  baseRate: PropTypes.number.isRequired,
-  onChangeRate: PropTypes.func.isRequired,
-  bountyCurrency: PropTypes.number.isRequired,
-  onChangeCurrency: PropTypes.func.isRequired,
-  bountyCurrencies: PropTypes.array.isRequired,
-}
-
-const GitHubConnect = ({ onLogin, onLogout, status }) => {
-  const { login: user } = useGithubAuth()
-  const auth = status === STATUS.AUTHENTICATED
-  const bodyText = auth ? (
-    <span>
-      Logged in as
-      <Text weight="bold"> {user}</Text>
-    </span>
-  ) : (
-    'The Projects app uses GitHub to interact with issues.'
-  )
-  const buttonText = auth ? 'Disconnect Account' : 'Connect my GitHub'
-  const buttonAction = auth ? onLogout : onLogin
-  return (
-    <div>
-      <Text.Block size="large" weight="bold">
-        GitHub Authorization
-      </Text.Block>
-      <Text.Block>{bodyText}</Text.Block>
-      <StyledButton
-        compact
-        mode="secondary"
-        onClick={buttonAction}
-      >
-        {buttonText}
-      </StyledButton>
-    </div>
-  )
-}
-
-GitHubConnect.propTypes = {
-  onLogin: PropTypes.func.isRequired,
-  onLogout: PropTypes.func.isRequired,
-  status: PropTypes.string.isRequired,
-}
-
-const ExperienceLevel = ({
-  expLevels,
-  onAddExpLevel,
-  generateExpLevelHandler,
-}) => {
-  let last = expLevels[expLevels.length - 1]
-  let disableAdd = last.mul !== '' && last.name !== '' ? false : true
-  return (
-    <div>
-      <Text.Block size="large" weight="bold">
-        Experience Level
-      </Text.Block>
-      <Text.Block>Define the experience level multipliers.</Text.Block>
-      {expLevels.map((exp, index) => (
-        <Field key={index} label={'LEVEL ' + index}>
-          <StyledNumberFormat
-            fixedDecimalScale
-            decimalScale={2}
-            value={exp.mul}
-            allowNegative={false}
-            onChange={generateExpLevelHandler(index, 'M')}
-          />
-          <StyledTextInput
-            defaultValue={exp.name}
-            onChange={generateExpLevelHandler(index, 'N')}
-          />
-        </Field>
-      ))}
-      <StyledButton
-        disabled={disableAdd}
-        compact
-        mode="secondary"
-        onClick={onAddExpLevel}
-      >
-        + Add Another
-      </StyledButton>
-    </div>
-  )
-}
-
-ExperienceLevel.propTypes = {
-  expLevels: PropTypes.array.isRequired,
-  onAddExpLevel: PropTypes.func.isRequired,
-  generateExpLevelHandler: PropTypes.func.isRequired,
-}
 
 const StyledNumberFormat = styled(NumberFormat)`
   border-radius: 3px;
@@ -538,31 +530,6 @@ const StyledButton = styled(Button)`
 `
 // padding-left: 30px;
 // background: url(${cross}) no-repeat 10px calc(50% - 1px);
-
-const StyledContent = styled.div`
-  padding: 2rem;
-  display: flex;
-  height: fit-content;
-  width: 100%;
-  > .column {
-    display: flex;
-    flex-direction: column;
-    min-width: 364px;
-    max-width: 464px;
-    :first-child {
-      width: 100%;
-      margin-right: 30px;
-    }
-    :last-child {
-      width: 100%;
-    }
-    > * {
-      > * {
-        margin-bottom: 10px;
-      }
-    }
-  }
-`
 
 const SettingsWrap = props => {
   const network = useNetwork()
