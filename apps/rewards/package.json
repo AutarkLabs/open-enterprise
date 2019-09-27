@@ -27,7 +27,7 @@
     "start": "aragon run",
     "sync-assets": "copy-aragon-ui-assets -n aragon-ui ./dist && npm run copy-public-assets",
     "test:gas": "GAS_REPORTER=true npm test",
-    "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
+    "test": "cross-env TRUFFLE_TEST=true npm run ganache-cli:test"
   },
   "dependencies": {
     "@aragon/api": "AutarkLabs/aragon-api",
@@ -53,6 +53,7 @@
     "@tps/test-helpers": "^0.0.1",
     "babel-eslint": "^10.0.1",
     "babel-plugin-styled-components": "^1.10.0",
+    "cross-env": "^5.2.0",
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^6.0.0",
     "eslint-config-standard": "^12.0.0",
@@ -64,14 +65,24 @@
     "eslint-plugin-react": "^7.13.0",
     "eslint-plugin-standard": "^4.0.0",
     "lint-staged": "^9.2.0",
-    "parcel-bundler": "1.12.3",
     "prettier-eslint": "^9.0.0",
     "react-axe": "^3.0.1",
     "react-hot-loader": "^4.12.7",
+    "eth-gas-reporter": "0.1.12",
+    "ethereumjs-abi": "0.6.5",
+    "ethlint": "^1.2.4",
+    "ganache-cli": "6.1.8",
+    "homedir": "^0.6.0",
+    "parcel-bundler": "1.12.3",
+    "prettier": "^1.17.1",
+    "solidity-coverage": "0.5.11",
     "stylelint": "^9.5.0",
     "stylelint-config-standard": "^18.3.0",
     "stylelint-config-styled-components": "^0.1.1",
-    "stylelint-processor-styled-components": "^1.7.0"
+    "stylelint-processor-styled-components": "^1.7.0",
+    "truffle": "4.1.14",
+    "truffle-hdwallet-provider-privkey": "0.3.0",
+    "truffle-privatekey-provider": "1.1.0"
   },
   "author": "",
   "repository": {
