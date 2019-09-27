@@ -6,18 +6,16 @@ import {
 
 export const EMPTY_CALLSCRIPT = '0x00000001'
 
-export const getVoteStatus = (vote) => {
-  if (vote.data.executed) {
-    return VOTE_STATUS_EXECUTED
-  }
-  const hasMinParticipation = vote.quorumProgress >= vote.globalMinQuorum
+export const getVoteStatus = (vote, globalMinQuorum) => {
+  if (vote.data.executed) return VOTE_STATUS_EXECUTED
+
+  const hasMinParticipation =
+    vote.data.participationPct >= (globalMinQuorum / 10 ** 16)
+
   return hasMinParticipation
     ? VOTE_STATUS_SUCCESSFUL
     : VOTE_STATUS_FAILED
 }
-
-export const getQuorumProgress = ({ participationPct }) =>
-  participationPct
 
 export const getTotalSupport = ({ options }) => {
   let totalSupport = 0
@@ -26,20 +24,3 @@ export const getTotalSupport = ({ options }) => {
   })
   return totalSupport
 }
-
-export function shortenAddress(address, charsLength = 4) {
-  const prefixLength = 2 // "0x"
-  if (!address) {
-    return ''
-  }
-  if (address.length < charsLength * 2 + prefixLength) {
-    return address
-  }
-  return (
-    address.slice(0, charsLength + prefixLength) +
-    '…' +
-    address.slice(-charsLength)
-  )
-}
-
-export { isAddress } from 'web3-utils'

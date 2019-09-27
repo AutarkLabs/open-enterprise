@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { ASSETS_URL, EmptyStateCard, Header, Main } from '@aragon/ui'
 import { useAragonApi } from './api-react'
 import { isBefore } from 'date-fns'
-import { getQuorumProgress, getTotalSupport } from './utils/vote-utils'
+import { getTotalSupport } from './utils/vote-utils'
 import { safeDiv } from './utils/math-utils'
 import { IdentityProvider } from '../../../shared/identity'
 import Decisions from './Decisions'
@@ -84,12 +84,7 @@ const App = () => {
       .toPromise()
   }, [api])
 
-  const {
-    votes = [],
-    voteTime = 0,
-    globalMinQuorum = 0,
-    pctBase = 0,
-  } = appState
+  const { votes = [], voteTime = 0, pctBase = 0 } = appState
 
   // TODO: move this logic to script.js so it's available app-wide by default
   const decorateVote = useCallback(vote => {
@@ -99,13 +94,11 @@ const App = () => {
       endDate,
       open: isBefore(new Date(), endDate),
       quorum: safeDiv(vote.data.minAcceptQuorum, pctBase),
-      quorumProgress: getQuorumProgress(vote.data),
-      globalMinQuorum: globalMinQuorum / 10 ** 16,
       description: vote.data.metadata,
       totalSupport: getTotalSupport(vote.data),
       type: vote.data.type,
     }
-  }, [ voteTime, pctBase, globalMinQuorum ])
+  }, [ voteTime, pctBase ])
 
   if (!votes.length) return <Empty />
 

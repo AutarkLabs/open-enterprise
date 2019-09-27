@@ -26,14 +26,8 @@ const SliderAndValueContainer = styled.div`
   width: 100%;
 `
 
-const CastVote = ({
-  onVote,
-  toggleVotingMode,
-  userAccount,
-  vote,
-  voteWeights,
-}) => {
-  const { api, appState: { tokenAddress } } = useAragonApi()
+const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights }) => {
+  const { api, appState: { tokenAddress }, connectedAccount } = useAragonApi()
 
   const theme = useTheme()
 
@@ -62,9 +56,9 @@ const CastVote = ({
 
     function loadUserBalance() {
       const tokenContract = tokenAddress && api.external(tokenAddress, tokenBalanceOfAbi)
-      if (tokenContract && userAccount) {
+      if (tokenContract && connectedAccount) {
         combineLatest(
-          tokenContract.balanceOfAt(userAccount, vote.data.snapshotBlock)
+          tokenContract.balanceOfAt(connectedAccount, vote.data.snapshotBlock)
         )
           .pipe(first())
           .subscribe(([userBalance]) => {
@@ -75,7 +69,7 @@ const CastVote = ({
 
     getVoterState()
     loadUserBalance()
-  }, [ vote, userAccount ])
+  }, [ vote, connectedAccount ])
 
   const sliderUpdate = useCallback((value, idx) => {
     const total = voteOptions.reduce(
@@ -170,10 +164,10 @@ const CastVote = ({
         <Button
           css="margin: 1rem 0 1rem 0.5rem"
           mode="strong"
-          onClick={() => {
-            handleVoteSubmit()
-            toggleVotingMode()
-          }}
+          onClick={handleVoteSubmit}
+          disabled={
+            voteOptions.reduce((sum, { trueValue = 0 }) => sum + trueValue, 0) === 0
+          }
         >
           Submit Vote
         </Button>
@@ -185,7 +179,6 @@ const CastVote = ({
 CastVote.propTypes = {
   onVote: PropTypes.func.isRequired,
   toggleVotingMode: PropTypes.func.isRequired,
-  userAccount: PropTypes.string.isRequired,
   vote: PropTypes.shape({
     data: PropTypes.shape({
       options: PropTypes.PropTypes.arrayOf(PropTypes.object).isRequired,

@@ -15,8 +15,8 @@
     "lint": "solium --dir ./contracts",
     "precommit": "lint-staged",
     "prepublishOnly": "truffle compile --all",
-    "publish:cd": "aragon apm publish major --files dist/ --environment continuous-deployment --apm.ipfs.rpc https://ipfs.autark.xyz:5001 --ipfs-check false",
-    "publish:http": "npm run build:script && aragon apm publish major --http localhost:4444 --http-served-from ./dist",
+    "publish:cd": "yes | aragon apm publish major --files dist/ --environment continuous-deployment --apm.ipfs.rpc https://ipfs.autark.xyz:5001 --ipfs-check false --skip-confirmation true",
+    "publish:http": "npm run build:script && yes | aragon apm publish major --http localhost:4444 --http-served-from ./dist --propagate-content false --skip-confirmation true",
     "publish": "aragon apm publish patch && sleep 3",
     "publish:major": "aragon apm publish major --files dist/",
     "publish:minor": "aragon apm publish minor --files dist/",
@@ -30,8 +30,8 @@
     "test": "cross-env TRUFFLE_TEST=true npm run ganache-cli:test"
   },
   "dependencies": {
-    "@aragon/api": "2.0.0-beta.5",
-    "@aragon/api-react": "2.0.0-beta.4",
+    "@aragon/api": "AutarkLabs/aragon-api",
+    "@aragon/api-react": "2.0.0-beta.6",
     "@aragon/apps-shared-minime": "1.0.1",
     "@aragon/os": "4.2.0",
     "@aragon/ui": "1.0.0-alpha.19",

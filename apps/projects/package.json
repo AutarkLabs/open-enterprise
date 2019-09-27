@@ -16,8 +16,8 @@
     "precommit": "lint-staged",
     "prepublishOnly": "truffle compile --all",
     "publish": "aragon apm publish patch && sleep 3",
-    "publish:cd": "aragon apm publish major --files dist/ --environment continuous-deployment --apm.ipfs.rpc https://ipfs.autark.xyz:5001 --ipfs-check false",
-    "publish:http": "npm run build:script && aragon apm publish major --http localhost:3333 --http-served-from ./dist",
+    "publish:cd": "yes | aragon apm publish major --files dist/ --environment continuous-deployment --apm.ipfs.rpc https://ipfs.autark.xyz:5001 --ipfs-check false --skip-confirmation true",
+    "publish:http": "npm run build:script && yes | aragon apm publish major --http localhost:3333 --http-served-from ./dist --propagate-content false --skip-confirmation true",
     "publish:major": "aragon apm publish major --files dist/",
     "publish:minor": "aragon apm publish minor --files dist/",
     "publish:patch": "aragon apm publish patch --files dist/",
@@ -30,8 +30,8 @@
     "test": "TRUFFLE_TEST=true npm run ganache-cli:test"
   },
   "dependencies": {
-    "@aragon/api": "1.1.0",
-    "@aragon/api-react": "1.0.0-beta.2",
+    "@aragon/api": "AutarkLabs/aragon-api",
+    "@aragon/api-react": "2.0.0-beta.6",
     "@aragon/apps-vault": "4.1.0",
     "@aragon/ui": "0.33.0",
     "@babel/polyfill": "^7.2.5",

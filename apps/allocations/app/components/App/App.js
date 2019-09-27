@@ -36,7 +36,7 @@ const App = () => {
       payoutId,
       recurring,
       period,
-      balance,
+      String(balance),
       tokenAddress
     ).toPromise()
     closePanel()

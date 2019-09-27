@@ -19,10 +19,8 @@ function noop() {}
 const VotingCard = ({ app, vote, onSelectVote, userAccount }) => {
   const theme = useTheme()
   const [ voteWeights, setVoteWeights ] = useState([])
-  const { endDate, open, totalSupport, voteId, support } = vote
+  const { description, endDate, open, totalSupport, voteId, support } = vote
   const {
-    metadata: question,
-    description,
     options,
     totalVoters,
     type,
@@ -55,7 +53,6 @@ const VotingCard = ({ app, vote, onSelectVote, userAccount }) => {
   }, [userAccount])
 
   let youVoted = voteWeights.length > 0
-  const showDescriptionLines = options.length > 2 ? 3 : 4
 
   return (
     <Card
@@ -98,46 +95,40 @@ const VotingCard = ({ app, vote, onSelectVote, userAccount }) => {
       <div
         css={`
           ${textStyle('body1')};
-          height: ${28 * showDescriptionLines}px;
+          height: ${28 * 3}px;
           display: -webkit-box;
           -webkit-box-orient: vertical;
-          -webkit-line-clamp: ${showDescriptionLines};
+          -webkit-line-clamp: 3;
           overflow: hidden;
         `}
       >
-        <span css="font-weight: bold">#{voteId}</span>{' '}
-        {question && (
-          description ? <strong>{question}</strong> : question
-        )}
+        {description}
       </div>
 
-      <div css="width: 100%">
-        {options.length > 2 ? (
-          <React.Fragment>
-            <VotingOptions
-              options={options.slice(0, 2)}
-              totalSupport={totalSupport}
-              color={`${theme.accent}`}
-              voteWeights={voteWeights}
-            />
+      <div>
+        <VotingOptions
+          fontSize="xsmall"
+          options={options.slice(0, 2)}
+          totalSupport={totalSupport}
+          color={`${theme.accent}`}
+          voteWeights={voteWeights}
+        />
 
-            <div css="text-align: center; width: 100%; margin-top: 10px">
-              <Badge
-                shape="compact"
-                foreground={`${theme.surfaceOpened}`}
-                background={`${theme.surfaceUnder}`}
-                css={`
-                  cursor: pointer;
-                  padding: 2px 8px;
-                  pointer-events: auto;
-                `}
-              >
-                {' + ' + (options.length - 2) + ' more'}
-              </Badge>
-            </div>
-          </React.Fragment>
-        ) : (
-          <VotingOptions options={options} totalSupport={totalSupport} color={`${theme.accent}`} />
+        {options.length > 2 && (
+          <div css="text-align: center; width: 100%; margin-top: 10px">
+            <Badge
+              shape="compact"
+              foreground={`${theme.surfaceOpened}`}
+              background={`${theme.surfaceUnder}`}
+              css={`
+                cursor: pointer;
+                padding: 2px 8px;
+                pointer-events: auto;
+              `}
+            >
+              {' + ' + (options.length - 2) + ' more'}
+            </Badge>
+          </div>
         )}
       </div>
 

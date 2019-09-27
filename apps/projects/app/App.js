@@ -118,10 +118,9 @@ class App extends React.PureComponent {
             githubLoading: false,
           },
           () => {
-            this.props.api.cache('github', {
-              event: REQUESTED_GITHUB_TOKEN_SUCCESS,
+            this.props.api.trigger(REQUESTED_GITHUB_TOKEN_SUCCESS, {
               status: STATUS.AUTHENTICATED,
-              token,
+              token
             })
           }
         )
@@ -131,8 +130,7 @@ class App extends React.PureComponent {
             githubLoading: false,
           },
           () => {
-            this.props.api.cache('github', {
-              event: REQUESTED_GITHUB_TOKEN_FAILURE,
+            this.props.api.trigger(REQUESTED_GITHUB_TOKEN_FAILURE, {
               status: STATUS.FAILED,
               token: null,
             })
