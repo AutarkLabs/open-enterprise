@@ -11,7 +11,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
     bool constant private TOKEN_TRANSFERABLE = false;
     uint8 constant private TOKEN_DECIMALS = uint8(0);
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(1);
-    uint64 constant private DEFAULT_FINANCE_PERIOD = uint64(30 days);
+    uint64 constant private DEFAULT_PERIOD = uint64(30 days);
 
     // StandardBounties public bountiesRegistry;
     // bytes32[5] public oeAppsIds;
@@ -113,7 +113,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         // TODO: return token if we have issues here (to pass into setupOEApps)
         MiniMeToken token = _popTokenCache(msg.sender);
         Vault vault = _installVaultApp(_dao);
-        Finance finance = _installFinanceApp(_dao, vault, _financePeriod == 0 ? DEFAULT_FINANCE_PERIOD : _financePeriod);
+        Finance finance = _installFinanceApp(_dao, vault, _financePeriod == 0 ? DEFAULT_PERIOD : _financePeriod);
         TokenManager tokenManager = _installTokenManagerApp(_dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
         Voting voting = _installVotingApp(_dao, token, _votingSettings);
 
@@ -142,7 +142,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
 
         MiniMeToken token = _popTokenCache(msg.sender);
         AddressBook addressBook = _installAddressBookApp(_dao);
-        Allocations allocations = _installAllocationsApp(_dao, _vault, _allocationsPeriod);
+        Allocations allocations = _installAllocationsApp(_dao, _vault, _allocationsPeriod == 0 ? DEFAULT_PERIOD : _allocationsPeriod);
         DotVoting dotVoting = _installDotVotingApp(_dao, token, _dotVotingSettings);
         Projects projects = _installProjectsApp(_dao, _vault, token);
         Rewards rewards = _installRewardsApp(_dao, _vault);
