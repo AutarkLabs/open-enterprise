@@ -1,0 +1,1108 @@
+{
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "hasInitialized",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "WORK_REVIEW_ROLE",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "ADD_REPO_ROLE",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_script",
+          "type": "bytes"
+        }
+      ],
+      "name": "getEVMScriptExecutor",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getRecoveryVault",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "CHANGE_SETTINGS_ROLE",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "REVIEW_APPLICATION_ROLE",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "REMOVE_REPO_ROLE",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "name": "allowRecoverability",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "appId",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getInitializationBlock",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_token",
+          "type": "address"
+        }
+      ],
+      "name": "transferToVault",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_sender",
+          "type": "address"
+        },
+        {
+          "name": "_role",
+          "type": "bytes32"
+        },
+        {
+          "name": "_params",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "canPerform",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getEVMScriptRegistry",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "FUND_ISSUES_ROLE",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "CURATE_ISSUES_ROLE",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "kernel",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isPetrified",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "settings",
+      "outputs": [
+        {
+          "name": "baseRate",
+          "type": "uint256"
+        },
+        {
+          "name": "bountyDeadline",
+          "type": "uint256"
+        },
+        {
+          "name": "bountyCurrency",
+          "type": "address"
+        },
+        {
+          "name": "bountyAllocator",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "bounties",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "vault",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "repoId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "name": "index",
+          "type": "uint256"
+        }
+      ],
+      "name": "RepoAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "repoId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "name": "index",
+          "type": "uint256"
+        }
+      ],
+      "name": "RepoRemoved",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "repoId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "name": "newIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "RepoUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "repoId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "name": "issueNumber",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "bountySize",
+          "type": "uint256"
+        }
+      ],
+      "name": "BountyAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "repoId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "IssueCurated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [],
+      "name": "BountySettingsChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "repoId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "name": "issueNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "AssignmentRequested",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "applicant",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "repoId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "name": "issueNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "AssignmentApproved",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "repoId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "name": "issueNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "WorkSubmitted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "submissionNumber",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "repoId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "name": "issueNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "SubmissionAccepted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "submissionNumber",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "repoId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "name": "issueNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "SubmissionRejected",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "executor",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "script",
+          "type": "bytes"
+        },
+        {
+          "indexed": false,
+          "name": "input",
+          "type": "bytes"
+        },
+        {
+          "indexed": false,
+          "name": "returnData",
+          "type": "bytes"
+        }
+      ],
+      "name": "ScriptResult",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "vault",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "RecoverToVault",
+      "type": "event"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_bountiesAddr",
+          "type": "address"
+        },
+        {
+          "name": "_vault",
+          "type": "address"
+        },
+        {
+          "name": "_defaultToken",
+          "type": "address"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_expMultipliers",
+          "type": "uint256[]"
+        },
+        {
+          "name": "_expLevels",
+          "type": "bytes32[]"
+        },
+        {
+          "name": "_baseRate",
+          "type": "uint256"
+        },
+        {
+          "name": "_bountyDeadline",
+          "type": "uint256"
+        },
+        {
+          "name": "_bountyCurrency",
+          "type": "address"
+        },
+        {
+          "name": "_bountyAllocator",
+          "type": "address"
+        }
+      ],
+      "name": "changeBountySettings",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_repoId",
+          "type": "bytes32"
+        },
+        {
+          "name": "_issueNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "getIssue",
+      "outputs": [
+        {
+          "name": "hasBounty",
+          "type": "bool"
+        },
+        {
+          "name": "standardBountyId",
+          "type": "uint256"
+        },
+        {
+          "name": "fulfilled",
+          "type": "bool"
+        },
+        {
+          "name": "balance",
+          "type": "uint256"
+        },
+        {
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "name": "dataHash",
+          "type": "string"
+        },
+        {
+          "name": "assignee",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getReposCount",
+      "outputs": [
+        {
+          "name": "count",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_repoId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getRepo",
+      "outputs": [
+        {
+          "name": "index",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getSettings",
+      "outputs": [
+        {
+          "name": "expMultipliers",
+          "type": "uint256[]"
+        },
+        {
+          "name": "expLevels",
+          "type": "bytes32[]"
+        },
+        {
+          "name": "baseRate",
+          "type": "uint256"
+        },
+        {
+          "name": "bountyDeadline",
+          "type": "uint256"
+        },
+        {
+          "name": "bountyCurrency",
+          "type": "address"
+        },
+        {
+          "name": "bountyAllocator",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_repoId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "addRepo",
+      "outputs": [
+        {
+          "name": "index",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_repoId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "removeRepo",
+      "outputs": [
+        {
+          "name": "success",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_repoId",
+          "type": "bytes32"
+        },
+        {
+          "name": "_issueNumber",
+          "type": "uint256"
+        },
+        {
+          "name": "_application",
+          "type": "string"
+        }
+      ],
+      "name": "requestAssignment",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_repoId",
+          "type": "bytes32"
+        },
+        {
+          "name": "_issueNumber",
+          "type": "uint256"
+        },
+        {
+          "name": "_requestor",
+          "type": "address"
+        },
+        {
+          "name": "_updatedApplication",
+          "type": "string"
+        },
+        {
+          "name": "_approved",
+          "type": "bool"
+        }
+      ],
+      "name": "reviewApplication",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_repoId",
+          "type": "bytes32"
+        },
+        {
+          "name": "_issueNumber",
+          "type": "uint256"
+        },
+        {
+          "name": "_submissionAddress",
+          "type": "string"
+        }
+      ],
+      "name": "submitWork",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_repoId",
+          "type": "bytes32"
+        },
+        {
+          "name": "_issueNumber",
+          "type": "uint256"
+        },
+        {
+          "name": "_submissionNumber",
+          "type": "uint256"
+        },
+        {
+          "name": "_approved",
+          "type": "bool"
+        },
+        {
+          "name": "_updatedSubmissionHash",
+          "type": "string"
+        }
+      ],
+      "name": "reviewSubmission",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_repoIds",
+          "type": "bytes32[]"
+        },
+        {
+          "name": "_issueNumbers",
+          "type": "uint256[]"
+        },
+        {
+          "name": "_bountySizes",
+          "type": "uint256[]"
+        },
+        {
+          "name": "_deadlines",
+          "type": "uint256[]"
+        },
+        {
+          "name": "_tokenBounties",
+          "type": "bool[]"
+        },
+        {
+          "name": "_tokenContracts",
+          "type": "address[]"
+        },
+        {
+          "name": "_ipfsAddresses",
+          "type": "string"
+        },
+        {
+          "name": "_description",
+          "type": "string"
+        }
+      ],
+      "name": "addBounties",
+      "outputs": [],
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "",
+          "type": "address[]"
+        },
+        {
+          "name": "issuePriorities",
+          "type": "uint256[]"
+        },
+        {
+          "name": "issueDescriptionIndices",
+          "type": "uint256[]"
+        },
+        {
+          "name": "",
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "name": "issueRepos",
+          "type": "uint256[]"
+        },
+        {
+          "name": "issueNumbers",
+          "type": "uint256[]"
+        },
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "curateIssues",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_repoId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "isRepoAdded",
+      "outputs": [
+        {
+          "name": "isAdded",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_repoId",
+          "type": "bytes32"
+        },
+        {
+          "name": "_issueNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "getApplicantsLength",
+      "outputs": [
+        {
+          "name": "applicantQty",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_repoId",
+          "type": "bytes32"
+        },
+        {
+          "name": "_issueNumber",
+          "type": "uint256"
+        },
+        {
+          "name": "_idx",
+          "type": "uint256"
+        }
+      ],
+      "name": "getApplicant",
+      "outputs": [
+        {
+          "name": "applicant",
+          "type": "address"
+        },
+        {
+          "name": "application",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "uint8"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_repoId",
+          "type": "bytes32"
+        },
+        {
+          "name": "_issueNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "getSubmissionsLength",
+      "outputs": [
+        {
+          "name": "applicantQty",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_repoId",
+          "type": "bytes32"
+        },
+        {
+          "name": "_issueNumber",
+          "type": "uint256"
+        },
+        {
+          "name": "_submissionNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "getSubmission",
+      "outputs": [
+        {
+          "name": "submissionHash",
+          "type": "string"
+        },
+        {
+          "name": "fulfillmentId",
+          "type": "uint256"
+        },
+        {
+          "name": "status",
+          "type": "uint8"
+        },
+        {
+          "name": "submitter",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}
