@@ -1,0 +1,167 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "name": "_deployedSetupContracts",
+          "type": "address[5]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "dao",
+          "type": "address"
+        }
+      ],
+      "name": "DeployDao",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "dao",
+          "type": "address"
+        }
+      ],
+      "name": "SetupDao",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "name": "DeployToken",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "appProxy",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "appId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "InstalledApp",
+      "type": "event"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_tokenName",
+          "type": "string"
+        },
+        {
+          "name": "_tokenSymbol",
+          "type": "string"
+        },
+        {
+          "name": "_id",
+          "type": "string"
+        },
+        {
+          "name": "_members",
+          "type": "address[]"
+        },
+        {
+          "name": "_votingSettings",
+          "type": "uint64[3]"
+        },
+        {
+          "name": "_dotVotingSettings",
+          "type": "uint64[3]"
+        },
+        {
+          "name": "_periodSettings",
+          "type": "uint64[2]"
+        },
+        {
+          "name": "_useDiscussions",
+          "type": "bool"
+        }
+      ],
+      "name": "newTokenAndInstance",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_name",
+          "type": "string"
+        },
+        {
+          "name": "_symbol",
+          "type": "string"
+        }
+      ],
+      "name": "newToken",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_id",
+          "type": "string"
+        },
+        {
+          "name": "_members",
+          "type": "address[]"
+        },
+        {
+          "name": "_votingSettings",
+          "type": "uint64[3]"
+        },
+        {
+          "name": "_dotVotingSettings",
+          "type": "uint64[3]"
+        },
+        {
+          "name": "_periodSettings",
+          "type": "uint64[2]"
+        },
+        {
+          "name": "_useDiscussions",
+          "type": "bool"
+        }
+      ],
+      "name": "newInstance",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ]
+}

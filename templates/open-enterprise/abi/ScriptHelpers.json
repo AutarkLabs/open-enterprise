@@ -1,0 +1,31 @@
+{
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_a",
+          "type": "bytes"
+        },
+        {
+          "name": "_b",
+          "type": "bytes"
+        },
+        {
+          "name": "_c",
+          "type": "address[]"
+        }
+      ],
+      "name": "abiEncode",
+      "outputs": [
+        {
+          "name": "d",
+          "type": "bytes"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "pure",
+      "type": "function"
+    }
+  ]
+}
