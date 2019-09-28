@@ -41,7 +41,6 @@ const LocalIdentityBadge = ({ entity, ...props }) => {
   const handleClick = () => showLocalIdentityModal(entity)
   return (
     <IdentityBadge
-      {...props}
       customLabel={label || ''}
       entity={entity}
       popoverAction={{
@@ -59,6 +58,7 @@ const LocalIdentityBadge = ({ entity, ...props }) => {
         )
       }
       fontSize="large"
+      {...props}
     />
   )
 }

@@ -76,7 +76,7 @@ contract PlanningKit is KitBase {
     uint256 constant PCT256 = 10 ** 16;
     uint64 constant PCT64 = 10 ** 16;
     address constant ANY_ENTITY = address(-1);
-    constructor(ENS ens) public KitBase(DAOFactory(0), ens) {
+    constructor(ENS ens) public KitBase(DAOFactory(0x5d94e3e7aec542ab0f9129b9a7badeb5b3ca0f77), ens) {
         address root = msg.sender;
 
         tokenFactory = new MiniMeTokenFactory();

@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { BigNumber } from 'bignumber.js'
-import { Box, Button, GU, Split, Text } from '@aragon/ui'
-import { useAragonApi } from '@aragon/api-react'
+import { Box, Button, GU, Split, Text, textStyle } from '@aragon/ui'
+import { useAragonApi, useNetwork } from '../../api-react'
 import { first } from 'rxjs/operators' // Make sure observables have .first
+import { LocalIdentityBadge } from '../../../../../shared/identity'
+import useUserVoteStats from '../../utils/useUserVoteStats'
 import AppBadge from './AppBadge'
 import Status from './Status'
-import Title from './Title'
-import DescriptionAndCreator from './DescriptionAndCreator'
 import VotingResults from './VotingResults'
 import CastVote from './CastVote'
 import Participation from './Participation'
@@ -19,67 +19,34 @@ const tokenAbi = [].concat(tokenDecimalsAbi)
 const VoteDetails = ({ vote, onVote }) => {
   const { api, appState: { tokenAddress = '' }, connectedAccount } = useAragonApi()
   const [ votingMode, setVotingMode ] = useState(false)
-  const [ voteWeights, setVoteWeights ] = useState([])
   const [ canIVote, setCanIVote ] = useState(false)
   const [ decimals, setDecimals ] = useState(0)
   const toggleVotingMode = () => setVotingMode(!votingMode)
-  const { description, voteId } = vote
-  const {
-    metadata: question,
-    creator,
-    type,
-  } = vote.data
+  const { description, voteId, data: { creator, type } } = vote
+  const { voteWeights, votingPower } = useUserVoteStats(vote)
+  const tokenContract = tokenAddress && api.external(tokenAddress, tokenAbi)
 
-  const getTokenContract = tokenAddress =>
-    tokenAddress && api.external(tokenAddress, tokenAbi)
-
-  const tokenContract = getTokenContract(tokenAddress)
+  const network = useNetwork()
 
   useEffect(() => {
-    async function getVoteWeights() {
-      const result = await api
-        .call('getVoterState', voteId, connectedAccount)
-        .toPromise()
-
-      const totalVotesCount = result.reduce(
-        (acc, vote) => acc.plus(vote),
-        new BigNumber(0)
-      )
-      const voteWeights = result.map(e =>
-        BigNumber(e)
-          .div(totalVotesCount)
-          .times(100)
-          .dp(2)
-          .toString()
-      )
-      setVoteWeights(voteWeights)
+    if (tokenContract && connectedAccount) {
+      tokenContract.decimals()
+        .subscribe(decimals => {
+          setDecimals(decimals)
+        })
     }
+  }, [ connectedAccount, tokenContract ])
 
-    function canIVote() {
-      if (connectedAccount && vote) {
-        api
-          .call('canVote', voteId, connectedAccount)
-          .pipe(first())
-          .subscribe(canVote => {
-            setCanIVote(canVote)
-          })
-      }
+  useEffect(() => {
+    if (connectedAccount && voteId) {
+      api
+        .call('canVote', voteId, connectedAccount)
+        .pipe(first())
+        .subscribe(canVote => {
+          setCanIVote(canVote)
+        })
     }
-
-    function loadDecimals() {
-      if (tokenContract && connectedAccount) {
-        tokenContract.decimals()
-          .subscribe(decimals => {
-            setDecimals(decimals)
-          })
-      }
-    }
-
-    getVoteWeights()
-    canIVote()
-    loadDecimals()
-  }, [ vote, connectedAccount ])
-
+  }, [ api, connectedAccount, voteId ])
 
   // eslint-disable-next-line react/prop-types
   const youVoted = voteWeights.length > 0
@@ -97,14 +64,21 @@ const VoteDetails = ({ vote, onVote }) => {
               type={type}
               youVoted={youVoted}
             />
-            <Title
-              question={question}
-            />
-            <DescriptionAndCreator
-              creator={creator}
-              question={question}
-              description={description}
-            />
+            <h2 css={textStyle('title2')}>
+              {description}
+            </h2>
+            <div css="display: flex; align-items: baseline">
+              <Label>
+                Created By
+              </Label>
+              <div css={`margin-left: ${GU}px`}>
+                <LocalIdentityBadge
+                  networkType={network.type}
+                  entity={creator}
+                  shorten
+                />
+              </div>
+            </div>
 
             {type === 'allocation' && (
               <React.Fragment>
@@ -131,9 +105,9 @@ const VoteDetails = ({ vote, onVote }) => {
               <CastVote
                 onVote={onVote}
                 toggleVotingMode={toggleVotingMode}
-                connectedAccount={connectedAccount}
                 vote={vote}
                 voteWeights={voteWeights}
+                votingPower={votingPower}
               />
             ) :(
               <VotingResults

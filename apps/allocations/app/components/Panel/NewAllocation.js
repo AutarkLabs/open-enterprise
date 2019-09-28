@@ -66,7 +66,10 @@ class NewAllocation extends React.Component {
     subHeading: PropTypes.string,
   }
 
-  state = INITIAL_STATE
+  state = {
+    ...INITIAL_STATE,
+    tokenAddress: this.props.balances[0].address,
+  }
 
   // TODO: improve field checking for input errors and sanitize
   changeField = ({ target: { name, value } }) => {

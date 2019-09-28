@@ -356,8 +356,7 @@ class Settings extends React.Component {
   }
 
   handleLogout = () => {
-    this.props.app.cache('github', {
-      event: REQUESTED_GITHUB_DISCONNECT,
+    this.props.app.trigger(REQUESTED_GITHUB_DISCONNECT, {
       status: STATUS.INITIAL,
       token: null,
     })
