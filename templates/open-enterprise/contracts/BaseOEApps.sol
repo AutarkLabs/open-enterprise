@@ -22,6 +22,7 @@ contract BaseOEApps is BaseTemplate, TokenCache {
     bytes32 constant internal PROJECTS_APP_ID = apmNamehash("projects");              // projects.aragonpm.eth;
     bytes32 constant internal REWARDS_APP_ID = apmNamehash("rewards");              // rewards.aragonpm.eth;
     */
+    // TODO: Move to HatchAPM // Main APM ?
     bytes32 constant internal ADDRESS_BOOK_APP_ID = 0x32ec8cc9f3136797e0ae30e7bf3740905b0417b81ff6d4a74f6100f9037425de;
     bytes32 constant internal ALLOCATIONS_APP_ID = 0x370ef8036e8769f293a3d9c1362d0e21bdfa4e0465d2cd9cf196ebd4ba75aa8b;
     bytes32 constant internal DISCUSSIONS_APP_ID = 0xf8c9b8210902c14e71192ea564edd090c1659cbef1384e362fb508d396d72a38;
