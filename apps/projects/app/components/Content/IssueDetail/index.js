@@ -1,10 +1,10 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 import {
   useLayout,
 } from '@aragon/ui'
 import EventsCard from './EventsCard'
 import DetailsCard from './DetailsCard'
+import { issueShape } from '../../../utils/shapes.js'
 
 const IssueDetail = ({ issue }) => {
   const { layoutName } = useLayout()
@@ -42,19 +42,6 @@ const IssueDetail = ({ issue }) => {
   )
 }
   
-IssueDetail.propTypes = {
-  issue: PropTypes.shape({
-    workStatus: PropTypes.oneOf([
-      undefined,
-      'funded',
-      'review-applicants',
-      'in-progress',
-      'review-work',
-      'fulfilled',
-    ]),
-    work: PropTypes.oneOf([ undefined, PropTypes.object ]),
-    fundingHistory: PropTypes.array,
-  }).isRequired,
-}
+IssueDetail.propTypes = issueShape
 
 export default IssueDetail

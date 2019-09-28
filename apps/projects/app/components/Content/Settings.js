@@ -240,6 +240,9 @@ BountyArbiter.propTypes = {
 
 
 
+
+
+
 class Settings extends React.Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
@@ -377,25 +380,11 @@ class Settings extends React.Component {
     if (!('baseRate' in this.props.bountySettings))
       return <div>Loading settings...</div>
 
-   
-    
+
+      
 
     return (
-      <div css={`
-          display: grid;
-          grid-gap: 12px;
-          grid-template-areas: ${layoutName !== 'small' ? (`
-            "github contract"
-            "funding funding"
-          `) : (`
-            "github"
-            "contract"
-            "funding"
-          `)};
-          grid-template-columns: 1fr 1fr;
-          grid-template-rows: auto;
-          align-items: stretch;
-        `}>
+      <SettingsMain layoutName={layoutName}>
         <div css="grid-area: contract">
           <BountyContractAddress
             bountyAllocator={bountyAllocator}
@@ -414,14 +403,7 @@ class Settings extends React.Component {
           <Box
             heading="Funding Model"
           >
-            <div css={`
-              display: flex;
-              flex-direction: ${layoutName === 'small' ? 'column' : 'row'};
-              > * {
-                width: 50%;
-                padding-right: 20px;
-              }
-            `}>
+            <SettingsFunding layoutName={layoutName}>
               <div>
                 {!this.props.tokens.length ? (
                   <EmptyBaseRate />
@@ -448,7 +430,7 @@ class Settings extends React.Component {
                   generateExpLevelHandler={this.generateExpLevelHandler}
                 />
               </div>
-            </div>
+            </SettingsFunding>
 
             <Info css="margin: 24px 0">
               In hourly funding, the hourly rate per issue is the base rate multiplied by the difficulty level selected for the issue.
@@ -458,7 +440,7 @@ class Settings extends React.Component {
             </Button>
           </Box>
         </div>
-      </div>
+      </SettingsMain>
     )
   }
 }
@@ -501,7 +483,29 @@ StyledInputDropDown.propTypes = {
 }
 
 
-
+const SettingsMain = styled.div`
+  display: grid;
+  grid-gap: 12px;
+  grid-template-areas: ${({ layoutName }) => layoutName === 'large' ? (`
+    "github contract"
+    "funding funding"
+  `) : (`
+    "github"
+    "contract"
+    "funding"
+  `)};
+  grid-template-columns: ${({ layoutName }) => layoutName === 'large' ? '1fr 1fr' : '1fr'};
+  grid-template-rows: auto;
+  align-items: stretch;
+`
+const SettingsFunding = styled.div`
+  display: flex;
+  flex-direction: ${({ layoutName })=> layoutName === 'small' ? 'column' : 'row'};
+> * {
+  width: 50%;
+  padding-right: 20px;
+}
+`
 const StyledNumberFormat = styled(NumberFormat)`
   border-radius: 3px;
   border: 1px solid #e6e6e6;
@@ -528,8 +532,6 @@ const StyledTextInput = styled(TextInput).attrs({
 const StyledButton = styled(Button)`
   margin-top: 8px;
 `
-// padding-left: 30px;
-// background: url(${cross}) no-repeat 10px calc(50% - 1px);
 
 const SettingsWrap = props => {
   const network = useNetwork()

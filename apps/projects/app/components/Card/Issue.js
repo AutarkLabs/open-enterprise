@@ -84,33 +84,39 @@ const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
 
         <IssueDetails>
           <Text.Block color={`${theme.surfaceContentSecondary}`} size="small">
-            <span css="font-weight: 600">{repo} #{number}</span>
-
+            <span css="font-weight: 600; white-space: nowrap">{repo} #{number}</span>
             {dot}
-            <IconClock color={`${theme.surfaceIcon}`} css="margin-bottom: -8px; margin-right: 4px" />
+            <span css="white-space: nowrap">
+              <IconClock color={`${theme.surfaceIcon}`} css="margin-bottom: -8px; margin-right: 4px" />
             opened {DeadlineDistance(createdAt)}
-
+            </span>
             {BOUNTY_STATUS[workStatus] && (
               <React.Fragment>
                 {dot}
-                <IconConnect color={`${theme.surfaceIcon}`} css="margin-bottom: -8px" /> {balance > 0
-                  ? BOUNTY_STATUS[workStatus]
-                  : BOUNTY_STATUS['fulfilled']}
+                <span css="white-space: nowrap">
+                  <IconConnect color={`${theme.surfaceIcon}`} css="margin-bottom: -8px" /> {balance > 0
+                    ? BOUNTY_STATUS[workStatus]
+                    : BOUNTY_STATUS['fulfilled']}
+                </span>
 
                 {dot}
-                <div css={`
+                <span css="white-space: nowrap">
+                  <div css={`
                   display: inline-block;
                   vertical-align: bottom;
                   margin-right: 6px;
                   margin-bottom: -8px;
                 `}>
-                  <IconBarbell color={`${theme.surfaceIcon}`} />
-                </div>
-                {expLevel}
+                    <IconBarbell color={`${theme.surfaceIcon}`} />
+                  </div>
+                  {expLevel}
+                </span>
 
                 {dot}
-                <IconCalendar color={`${theme.surfaceIcon}`} css="margin-bottom: -8px; margin-right: 4px" />
+                <span css="white-space: nowrap">
+                  <IconCalendar color={`${theme.surfaceIcon}`} css="margin-bottom: -8px; margin-right: 4px" />
                 Due {DeadlineDistance(deadline)}
+                </span>
               </React.Fragment>
             )}
           </Text.Block>

@@ -21,11 +21,12 @@ import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '../../Panel'
 import { ipfsAdd } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
+import { issueShape } from '../../../utils/shapes.js'
 
 class ReviewWork extends React.Component {
   static propTypes = {
     githubCurrentUser: PropTypes.object.isRequired,
-    issue: PropTypes.object.isRequired,
+    issue: issueShape,
     onReviewWork: PropTypes.func.isRequired,
   }
 

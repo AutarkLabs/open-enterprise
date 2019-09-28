@@ -28,6 +28,7 @@ import { DateInput } from '../../../../../../shared/ui'
 import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
 import { Mutation } from 'react-apollo'
 import { COMMENT } from '../../../utils/gql-queries'
+import { issueShape } from '../../../utils/shapes.js'
 
 const bountySlots = [ '1', '2', '3' ]
 
@@ -36,20 +37,7 @@ class FundIssues extends React.Component {
     closePanel: PropTypes.func.isRequired,
     description: PropTypes.string,
     /** array of issues to allocate bounties on */
-    issues: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.string,
-        deadline: PropTypes.string,
-        exp: PropTypes.number,
-        hours: PropTypes.number,
-        level: PropTypes.string,
-        title: PropTypes.string,
-        fundingHistory: PropTypes.array,
-        number: PropTypes.number,
-        repo: PropTypes.string,
-        repoId: PropTypes.string,
-      })
-    ),
+    issues: PropTypes.arrayOf(issueShape),
     /** base rate in pennies */
     baseRate: PropTypes.number,
     tokens: PropTypes.array.isRequired,

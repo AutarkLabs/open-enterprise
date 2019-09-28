@@ -11,24 +11,9 @@ import {
 } from '@aragon/ui'
 import { formatDistance } from 'date-fns'
 import { usePanelManagement } from '../../Panel'
+import { issueShape } from '../../../utils/shapes.js'
 
-const IssueEventAvatar = styled.div`
-  width: 66px;
-  margin: 0;
-`
-const IssueEventMain = styled.div`
-  display: flex;
-`
-const IssueEventDetails = styled.div`
-  > * {
-    margin-bottom: 10px;
-  }
-`
-const EventButton = styled(Button)`
-  padding: 5px 20px 2px 20px;
-  font-size: 15px;
-  border-radius: 5px;
-`
+const calculateAgo = pastDate => formatDistance(pastDate, Date.now(), { addSuffix: true })
 
 const IssueEvent = props => {
   const theme = useTheme()
@@ -43,7 +28,7 @@ const IssueEvent = props => {
           <SafeLink
             href={props.url}
             target="_blank"
-            style={{ textDecoration: 'none', color: `${theme.infoSurface}` }}
+            style={{ textDecoration: 'none', color: `${theme.accent}` }}
           >
             {props.login}
           </SafeLink>{' '}
@@ -72,11 +57,6 @@ IssueEvent.propTypes = {
   date: PropTypes.string.isRequired,
 }
 
-const calculateAgo = pastDate => {
-  const date = Date.now()
-  return formatDistance(pastDate, date, { addSuffix: true })
-}
-
 const activities = (
   issue,
   requestsData,
@@ -86,7 +66,7 @@ const activities = (
   onReviewWork
 ) => {
   const theme = useTheme()
-  const events = []
+  const events = {}
 
   if (requestsData) {
     requestsData.forEach((data, index) => {
@@ -108,9 +88,7 @@ const activities = (
         events[data.review.reviewDate] = {
           date: data.review.reviewDate,
           ...data.review.user,
-          eventDescription: data.review.approved
-            ? 'assigned ' + data.user.login
-            : 'rejected ' + data.user.login,
+          eventDescription: (data.review.approved ? 'assigned' : 'rejected') + ' ' + data.user.login,
           eventAction:
             data.review.feedback.length === 0 ? null : (
               <Text>{data.review.feedback}</Text>
@@ -140,30 +118,21 @@ const activities = (
         events[data.review.reviewDate] = {
           date: data.review.reviewDate,
           ...data.review.user,
-          eventDescription: data.review.accepted
-            ? 'accepted ' + data.user.login + '\'s work'
-            : 'rejected ' + data.user.login + '\'s work',
-          eventAction:
-            data.review.feedback.length === 0 ? (
+          eventDescription: (data.review.accepted ? 'accepted' : 'rejected') + ' ' + data.user.login + '\'s work',
+          eventAction: 
+            <div>
+              {data.review.feedback.length && (
+                <Text.Block size="large" style={{ marginBottom: '8px' }}>
+                  {data.review.feedback}
+                </Text.Block>
+              )}
               <Tag
                 color={`${theme.surfaceContentSecondary}`}
                 background={`${theme.border}`}
               >
                 Quality: {data.review.rating}
               </Tag>
-            ) : (
-              <div>
-                <Text.Block size="large" style={{ marginBottom: '8px' }}>
-                  {data.review.feedback}
-                </Text.Block>
-                <Tag
-                  color={`${theme.surfaceContentSecondary}`}
-                  background={`${theme.border}`}
-                >
-                  Quality: {data.review.rating}
-                </Tag>
-              </div>
-            ),
+            </div>
         }
       }
     })
@@ -231,8 +200,26 @@ const EventsCard = ({ issue }) => {
 }
 
 EventsCard.propTypes = {
-  issue: PropTypes.object.isRequired,
+  issue: issueShape,
 }
+
+const IssueEventAvatar = styled.div`
+  width: 66px;
+  margin: 0;
+`
+const IssueEventMain = styled.div`
+  display: flex;
+`
+const IssueEventDetails = styled.div`
+  > * {
+    margin-bottom: 10px;
+  }
+`
+const EventButton = styled(Button)`
+  padding: 5px 20px 2px 20px;
+  font-size: 15px;
+  border-radius: 5px;
+`
 
 // eslint-disable-next-line import/no-unused-modules
 export default EventsCard

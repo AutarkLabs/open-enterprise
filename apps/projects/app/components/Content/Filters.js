@@ -5,6 +5,7 @@ import { Button, Text, useTheme } from '@aragon/ui'
 
 import FilterTile from './FilterTile'
 import { prepareFilters } from '../Shared/FilterBar'
+import { issueShape } from '../../utils/shapes.js'
 
 const Filters = ({ filters, issues, bountyIssues, disableFilter, disableAllFilters, style }) => {
   const theme = useTheme()
@@ -115,8 +116,8 @@ Filters.propTypes = {
     experiences: PropTypes.object.isRequired,
     statuses: PropTypes.object.isRequired,
   }),
-  issues: PropTypes.array,
-  bountyIssues: PropTypes.array,
+  issues: PropTypes.arrayOf(issueShape).isRequired,
+  bountyIssues: PropTypes.arrayOf(issueShape).isRequired,
   disableFilter: PropTypes.func.isRequired,
   disableAllFilters: PropTypes.func.isRequired,
   style: PropTypes.object,

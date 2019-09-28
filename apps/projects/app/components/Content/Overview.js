@@ -1,5 +1,5 @@
+import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
-import React from 'react'
 import styled from 'styled-components'
 
 import { Project, Empty } from '../Card'
@@ -9,6 +9,22 @@ import { CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
 const Overview = ({ changeActiveIndex, projects }) => {
   const { width } = useLayout()
 
+  const projectsCards = useCallback(projects.map((project, index) => (
+    <Project
+      key={index}
+      label={project.metadata.name}
+      description={project.metadata.description}
+      id={project.id}
+      repoId={project.data._repo}
+      commits={project.metadata.commits}
+      // TODO: Disabled for now
+      // contributors={project.metadata.collaborators}
+      url={project.metadata.url}
+      changeActiveIndex={changeActiveIndex}
+    />
+  ), [projects]
+  ))
+
   const projectsEmpty = projects.length === 0
   if (projectsEmpty) {
     return <Empty />
@@ -16,20 +32,7 @@ const Overview = ({ changeActiveIndex, projects }) => {
 
   return (
     <StyledProjects screenSize={width}>
-      {projects.map((project, index) => (
-        <Project
-          key={index}
-          label={project.metadata.name}
-          description={project.metadata.description}
-          id={project.id}
-          repoId={project.data._repo}
-          commits={project.metadata.commits}
-          // TODO: Disabled for now
-          // contributors={project.metadata.collaborators}
-          url={project.metadata.url}
-          changeActiveIndex={changeActiveIndex}
-        />
-      ))}
+      {projectsCards}
     </StyledProjects>
   )
 }

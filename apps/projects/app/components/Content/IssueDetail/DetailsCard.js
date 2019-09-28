@@ -13,6 +13,10 @@ import { IconGitHub, BountyContextMenu } from '../../Shared'
 import { BOUNTY_STATUS, BOUNTY_BADGE_COLOR } from '../../../utils/bounty-status'
 import { Markdown } from '../../../../../../shared/ui'
 import Label from './Label'
+import { issueShape } from '../../../utils/shapes.js'
+
+const calculateAgo = pastDate => formatDistance(pastDate, Date.now(), { addSuffix: true })
+const deadlineDistance = date => formatDistance(new Date(date), new Date())
 
 const determineFieldText = (fieldTitle, fieldText, balance) => {
   const isStatusField = fieldTitle.toLowerCase() === 'status'
@@ -56,13 +60,6 @@ SummaryTable.propTypes = {
   balance: PropTypes.string.isRequired,
 }
 
-const calculateAgo = pastDate => {
-  const date = Date.now()
-  return formatDistance(pastDate, date, { addSuffix: true })
-}
-
-const deadlineDistance = date => formatDistance(new Date(date), new Date())
-
 const DetailsCard = ({ issue }) => {
   const theme = useTheme()
   const summaryData = {
@@ -100,11 +97,11 @@ const DetailsCard = ({ issue }) => {
           <SafeLink
             href={issue.url}
             target="_blank"
-            style={{ textDecoration: 'none', color: `${theme.infoSurface}` }}
+            style={{ textDecoration: 'none', color: `${theme.accent}` }}
           >
             <IssueLinkRow>
-              <IconGitHub color={`${theme.infoSurface}`} width="14px" height="14px" />
-              <Text style={{ marginLeft: '6px' }}>
+              <IconGitHub color={`${theme.accent}`} width="14px" height="14px" />
+              <Text css="margin-left: 6px">
                 {issue.repo} #{issue.number}
               </Text>
             </IssueLinkRow>
@@ -166,7 +163,7 @@ const DetailsCard = ({ issue }) => {
 }
 
 DetailsCard.propTypes = {
-  issue: PropTypes.object.isRequired,
+  issue: issueShape,
 }
 
 const StyledCell = styled.div`

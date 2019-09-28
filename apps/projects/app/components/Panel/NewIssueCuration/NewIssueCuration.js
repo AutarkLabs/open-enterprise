@@ -9,13 +9,7 @@ import {
 } from '../../Form'
 import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '..'
-
-const issueShape = PropTypes.shape({
-  id: PropTypes.string,
-  title: PropTypes.string,
-  number: PropTypes.number,
-  repo: PropTypes.string,
-})
+import { issueShape } from '../../../utils/shapes.js'
 
 class NewIssueCuration extends React.Component {
   static propTypes = {

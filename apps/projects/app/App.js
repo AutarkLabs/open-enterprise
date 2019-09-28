@@ -4,20 +4,17 @@ import { ApolloProvider } from 'react-apollo'
 import { useAragonApi } from './api-react'
 import {
   Bar,
+  Button,
   BackButton,
   Header,
+  IconPlus,
   Main,
   Tabs,
 } from '@aragon/ui'
 
-
-import {
-  ErrorBoundary,
-  NewIssueButton,
-  NewProjectButton,
-} from './components/App'
+import ErrorBoundary from './components/App/ErrorBoundary'
 import { Issues, Overview, Settings } from './components/Content'
-import { PanelManager, PanelContext } from './components/Panel'
+import { PanelManager, PanelContext, usePanelManagement } from './components/Panel'
 
 import { IdentityProvider } from '../../../shared/identity'
 import {
@@ -33,11 +30,13 @@ import { EmptyWrapper } from './components/Shared'
 import { Error } from './components/Card'
 
 const getTabs = ({ repoCount }) => {
+  const { setupNewIssue, setupNewProject } = usePanelManagement()
+
   const tabs = [
     {
       name: 'Overview',
       body: Overview,
-      action: <NewProjectButton />,
+      action: <Button mode="strong" icon={<IconPlus />} onClick={setupNewIssue} label="New Issue" />,
     },
   ]
 
@@ -45,7 +44,7 @@ const getTabs = ({ repoCount }) => {
     tabs.push({
       name: 'Issues',
       body: Issues,
-      action: <NewIssueButton />,
+      action: <Button mode="strong" icon={<IconPlus />} onClick={setupNewProject} label="New Project" />,
     })
   }
 

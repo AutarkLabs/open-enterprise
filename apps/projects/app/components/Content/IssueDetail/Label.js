@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { textStyle, unselectable, useTheme } from '@aragon/ui'
 
-const Label = ({ text, block, children }) => {
+const Label = ({ text, children }) => {
   const theme = useTheme()
   return (
     <label
@@ -10,7 +10,6 @@ const Label = ({ text, block, children }) => {
         ${textStyle('label2')};
         ${unselectable()};
         color: ${theme.surfaceContentSecondary};
-        display: ${block ? 'block' : 'initial'};
       `}
     >
       {text}
@@ -19,13 +18,8 @@ const Label = ({ text, block, children }) => {
   )
 }
 
-Label.defaultProps = {
-  block: false,
-}
-
 Label.propTypes = {
   text: PropTypes.string.isRequired,
-  block: PropTypes.bool.isRequired,
   children: PropTypes.node,
 }
 

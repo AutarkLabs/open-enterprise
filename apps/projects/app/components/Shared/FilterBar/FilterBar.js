@@ -22,6 +22,7 @@ import { IconArrow as IconArrowDown } from '../../../../../../shared/ui'
 import { IconMore, IconSort, IconGrid, IconCoins, IconFilter } from '../../../assets'
 import { usePanelManagement } from '../../Panel'
 import Label from '../../Content/IssueDetail/Label'
+import { issueShape } from '../../../utils/shapes.js'
 
 const FilterBar = ({
   allSelected,
@@ -494,9 +495,9 @@ const FilterBar = ({
 FilterBar.propTypes = {
   allSelected: PropTypes.bool.isRequired,
   filters: PropTypes.object.isRequired,
-  bountyIssues: PropTypes.arrayOf(PropTypes.object).isRequired,
-  issues: PropTypes.arrayOf(PropTypes.object).isRequired,
-  issuesFiltered: PropTypes.array.isRequired,
+  bountyIssues: PropTypes.arrayOf(issueShape).isRequired,
+  issues: PropTypes.arrayOf(issueShape).isRequired,
+  issuesFiltered: PropTypes.arrayOf(issueShape).isRequired,
   sortBy: PropTypes.string.isRequired,
   handleSelectAll: PropTypes.func.isRequired,
   handleFiltering: PropTypes.func.isRequired,
@@ -504,7 +505,7 @@ FilterBar.propTypes = {
   setParentFilters: PropTypes.func.isRequired,
   disableFilter: PropTypes.func.isRequired,
   disableAllFilters: PropTypes.func.isRequired,
-  selectedIssues: PropTypes.array.isRequired,
+  selectedIssues: PropTypes.arrayOf(issueShape).isRequired,
   onSearchChange: PropTypes.func.isRequired,
   deselectAllIssues: PropTypes.func.isRequired,
 }
