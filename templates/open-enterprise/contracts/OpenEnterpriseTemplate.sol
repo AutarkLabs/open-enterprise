@@ -25,8 +25,6 @@ contract OpenEnterpriseTemplate is BaseOEApps {
     */
     constructor(address[5] _deployedSetupContracts) BaseOEApps(_deployedSetupContracts) public {}
 
-
-    // TODO: use correct terminology (min acceptance, quorum, etc)
     /**
     * @dev Create a new MiniMe token and deploy a Open Enterprise DAO.
     * @param _tokenName String with the name for the token used by share holders in the organization
@@ -34,20 +32,15 @@ contract OpenEnterpriseTemplate is BaseOEApps {
     * @param _id String with the name for org, will assign `[id].aragonid.eth`
     * @param _members Array of member addresses (1 token will be minted for each member)
     * @param _votingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization
-    * @param _dotVotingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization
-    * @param _periodSettings Array of [financePeriod, allocationsPeriod] for initial duration for accounting periods, it can be set to zero in order to use the default of 30 days.
-    * @param _useDiscussions Boolean to tell whether to use discussions within the Dot Voting app
+    * @param _financePeriod initial duration for accounting periods, it can be set to zero in order to use the default of 30 days.
     */
     function newTokenAndInstance(
         string _tokenName,
         string _tokenSymbol,
         string _id,
         address[] _members,
-        // TODO: add uint256[] tokens also here
-        uint64[3] _votingSettings, // TODO: Merge all these settings?
-        uint64[3] _dotVotingSettings,
-        uint64[2] _periodSettings, // Finance period and allocations period
-        bool _useDiscussions
+        uint64[3] _votingSettings,
+        uint64 _financePeriod
     )
         external
     {
@@ -56,9 +49,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
             _id,
             _members,
             _votingSettings,
-            _dotVotingSettings,
-            _periodSettings,
-            _useDiscussions
+            _financePeriod
         );
     }
 
@@ -79,28 +70,24 @@ contract OpenEnterpriseTemplate is BaseOEApps {
     * @param _id String with the name for org, will assign `[id].aragonid.eth`
     * @param _members Array of member addresses (1 token will be minted for each member)
     * @param _votingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization
-    * @param _dotVotingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization
-    * @param _periodSettings Array of [financePeriod, allocationsPeriod] for initial duration for accounting periods, it can be set to zero in order to use the default of 30 days.
-    * @param _useDiscussions Boolean to tell whether to use discussions within the Dot Voting app
+    * @param _financePeriod duration for accounting periods, it can be set to zero in order to use the default of 30 days.
     */
     function newInstance(
         string memory _id,
         address[] memory _members,
         uint64[3] memory _votingSettings,
-        uint64[3] memory _dotVotingSettings,
-        uint64[2] memory _periodSettings,
-        bool _useDiscussions
+        uint64 _financePeriod
     )
         public
 	{
         _validateId(_id);
-        _ensureOpenEnterpriseSettings(_members, _votingSettings, _dotVotingSettings);
+        // _ensureOpenEnterpriseSettings(_members, _votingSettings, _dotVotingSettings);
 
         (Kernel dao, ACL acl) = _createDAO();
-        (Finance finance, Voting voting, Vault vault) = _setupApps(dao, acl, _members, _votingSettings, _periodSettings[0]);
-        _setupOEApps(dao, acl, vault, voting, _dotVotingSettings, _periodSettings[1], _useDiscussions);
-        _transferCreatePaymentManagerFromTemplate(acl, finance, voting);
-        _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, voting);
+        (Finance finance, Voting voting, Vault vault) = _setupApps(dao, acl, _members, _votingSettings, _financePeriod);
+        // _setupOEApps(dao, acl, vault, voting, _dotVotingSettings, _periodSettings[1], _useDiscussions);
+        // _transferCreatePaymentManagerFromTemplate(acl, finance, voting);
+        // _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, voting);
         _registerID(_id, dao);
     }
 
