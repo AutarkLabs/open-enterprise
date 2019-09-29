@@ -14,8 +14,29 @@ import "@aragon/os/contracts/lib/math/SafeMath.sol";
   * @dev Defines a minimal interface blueprint for the StandardBounties contract
   */
 interface Bounties {
+    /**
+     * @notice `_sender` will submit a fulfillment for bounty #`_bountyId` on Standard Bounties with the following info: `_data`
+     */
+    function fulfillBounty(
+        address _sender,
+        uint _bountyId,
+        address[] _fulfillers,
+        string _data
+    ) external; //{}
 
-    // issueBounty will be deleted once testing is reimplemented
+    /**
+     * @notice `_sender` will update their fulfillment for `_bountyId` on Standard Bounties with the following info: `_data`
+     */
+    function updateFulfillment(
+        address _sender,
+        uint _bountyId,
+        uint _fulfillmentId,
+        address[] _fulfillers,
+        string _data
+    ) external; //{}
+    /**
+     * @notice This is a test
+     */
     function issueBounty(
         address sender,
         address[] _issuers,
@@ -227,7 +248,6 @@ contract Projects is AragonApp, DepositableStorage {
 
         vault = _vault;
 
-        require(isContract(_bountiesAddr), ERROR_STANDARD_BOUNTIES_NOT_CONTRACT);
         bountiesRegistry = Bounties(_bountiesAddr); // Standard Bounties instance
 
         _addExperienceLevel(100, bytes32("Beginner"));
@@ -505,7 +525,7 @@ contract Projects is AragonApp, DepositableStorage {
 
     /**
      * @notice Update Bounty Information: `_description`
-     * @param _repoId The id of the Github repos in the projects registry
+     * @param _repoId The id of the repos in the projects registry
      * @param _issueNumber issue number the bounty is assigned to
      * @param _data Information hash stored in the bounty
      * @param _deadline new deadline for bounty fulfillments
@@ -541,7 +561,7 @@ contract Projects is AragonApp, DepositableStorage {
 
     /**
      * @notice Remove funding from issues: `_description`
-     * @param _repoIds The ids of the Github repos in the projects registry
+     * @param _repoIds The ids of the repos in the projects registry
      * @param _issueNumbers an array of bounty indexes
      * @param _description Utilized when forwarded to give background to the
      *                     issues up for removal
