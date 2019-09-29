@@ -110,7 +110,7 @@ const Overview = ({ tokens, rewards, convertRates, claims, newReward }) => {
         }
 
         <DataView
-          heading="Current rewards"
+          heading={<Text size="xlarge">Current rewards</Text>}
           fields={[ 'description', 'type', 'frequency', 'next payout', 'amount' ]}
           entries={rewards}
           renderEntry={(reward) => {
