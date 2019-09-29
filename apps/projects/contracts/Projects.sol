@@ -15,7 +15,7 @@ import "@aragon/os/contracts/lib/math/SafeMath.sol";
   */
 interface Bounties {
     /**
-     * @notice `_sender` will submit a fulfillment for bounty #`_bountyId` on Standard Bounties with the following info: `_data`
+     * @notice Submit a fulfillment for issue #`_bountyId` with the following info: `_data`
      */
     function fulfillBounty(
         address _sender,
@@ -25,7 +25,7 @@ interface Bounties {
     ) external; //{}
 
     /**
-     * @notice `_sender` will update their fulfillment for `_bountyId` on Standard Bounties with the following info: `_data`
+     * @notice Update fulfillment for issue #`_bountyId` with the following info: `_data`
      */
     function updateFulfillment(
         address _sender,
@@ -34,9 +34,7 @@ interface Bounties {
         address[] _fulfillers,
         string _data
     ) external; //{}
-    /**
-     * @notice This is a test
-     */
+
     function issueBounty(
         address sender,
         address[] _issuers,
@@ -359,8 +357,8 @@ contract Projects is AragonApp, DepositableStorage {
 // Repository functions
 ///////////////////////
     /**
-     * @notice Add repository to the Projects app
-     * @param _repoId id of the repo to be added
+     * @notice Add repository `_repoId`
+     * @param _repoId The id of the repo in the projects registry
      * @return index for the added repo at the registry
      */
     function addRepo(
@@ -376,7 +374,7 @@ contract Projects is AragonApp, DepositableStorage {
     }
 
     /**
-     * @notice Remove repository from the Projects app
+     * @notice Remove repository `_repoId`
      * @param _repoId The id of the repo in the projects registry
      */
     function removeRepo(
@@ -403,7 +401,7 @@ contract Projects is AragonApp, DepositableStorage {
 ///////////////////
 
     /**
-     * @notice Request assignment for issue `_issueNumber`
+     * @notice Request assignment for issue `_issueNumber` with application `_application`
      * @param _repoId the repo id of the issue
      * @param _issueNumber the issue up for assignment
      * @param _application IPFS hash for the applicant's proposed timeline and strategy
@@ -436,7 +434,7 @@ contract Projects is AragonApp, DepositableStorage {
     }
 
     /**
-     * @notice Approve assignment for issue `_issueNumber`
+     * @notice `_approved ? 'Accept' : 'Reject'` `_requestor` for issue `_issueNumber`
      * @param _repoId the repo id of the issue
      * @param _issueNumber the issue up for assignment
      * @param _requestor address of user that will be assigned the issue
@@ -472,7 +470,7 @@ contract Projects is AragonApp, DepositableStorage {
     }
 
     /**
-     * @notice Review work for issue `_issueNumber`
+     * @notice `_approved ? 'Accept' : 'Reject'` work for issue `_issueNumber` with info: `_updatedSubmissionHash`
      * @dev add a submission to local state after it's been added to StandardBounties.sol
      * @param _repoId the repo id of the issue
      * @param _issueNumber the issue up for resolution
@@ -524,7 +522,7 @@ contract Projects is AragonApp, DepositableStorage {
     }
 
     /**
-     * @notice Update Bounty Information: `_description`
+     * @notice Update bounty for issue `_issueNumber`: `_description`
      * @param _repoId The id of the repos in the projects registry
      * @param _issueNumber issue number the bounty is assigned to
      * @param _data Information hash stored in the bounty
@@ -600,9 +598,9 @@ contract Projects is AragonApp, DepositableStorage {
 
     /**
      * @notice Returns Applicant Address
-     * @param _repoId the repo id of the issue
-     * @param _issueNumber the issue up for assignment
-     * @param _idx the applicant's position in the array
+     * @param _repoId The repo id of the issue
+     * @param _issueNumber The issue up for assignment
+     * @param _idx The applicant's position in the array
      * @return  applicant address
      */
     function getApplicant(
@@ -624,12 +622,12 @@ contract Projects is AragonApp, DepositableStorage {
     /**
      * @notice Fund issues: `_description`
      * @param _repoIds The ids of the repos in the projects registry
-     * @param _issueNumbers an array of bounty indexes
-     * @param _bountySizes an array of bounty sizes
-     * @param _deadlines an array of bounty deadlines
-     * @param _tokenTypes array of currency types: 0=ETH from user's wallet, 1=ETH from vault, 20=ERC20 token from vault
-     * @param _tokenContracts an array of token contracts
-     * @param _ipfsAddresses a string of ipfs addresses
+     * @param _issueNumbers An array of bounty indexes
+     * @param _bountySizes An array of bounty sizes
+     * @param _deadlines An array of bounty deadlines
+     * @param _tokenTypes An array of currency types: 0=ETH from user's wallet, 1=ETH from vault, 20=ERC20 token from vault
+     * @param _tokenContracts An array of token contracts
+     * @param _ipfsAddresses A string of IPFS addresses
      * @param _description parsed and display to user when this function is forwarded
      */
     function addBounties(
@@ -673,7 +671,7 @@ contract Projects is AragonApp, DepositableStorage {
     }
 
     /**
-     * @notice Fund issues open to submissions from anyone: `_description`
+     * @notice Fund open-submission issues: `_description`
      * @param _repoIds The ids of the repos in the projects registry
      * @param _issueNumbers an array of bounty indexes
      * @param _bountySizes an array of bounty sizes
@@ -765,7 +763,7 @@ contract Projects is AragonApp, DepositableStorage {
 
     /**
      * @notice Checks if a repo exists in the registry
-     * @param _repoId the repo id to check
+     * @param _repoId The repo id to check
      * @return _repoId Id for newly added repo
      */
     function isRepoAdded(bytes32 _repoId) public view isInitialized returns(bool isAdded) {
@@ -818,7 +816,7 @@ contract Projects is AragonApp, DepositableStorage {
     }
 
     /**
-     * @notice update bounty setting values
+     * @notice Update bounty setting values
      * @dev _changeBountySettings(): update app settings by changing contract setting state
      */
     function _changeBountySettings(
