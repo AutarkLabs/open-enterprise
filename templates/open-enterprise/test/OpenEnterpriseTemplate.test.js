@@ -375,7 +375,7 @@ contract('OpenEnterpriseTemplate', ([ owner, member1, member2 ]) => {
     })
 
     context('when the creation succeeds', () => {
-      let instanceReceipt, tokenReceipt
+      let instanceReceipt, tokenReceipt, baseDAO
 
       const itCostsUpTo = expectedDaoCreationCost => {
         const expectedTokenCreationCost = 1.8e6
@@ -403,6 +403,18 @@ contract('OpenEnterpriseTemplate', ([ owner, member1, member2 ]) => {
           tokenReceipt = await template.newToken(TOKEN_NAME, TOKEN_SYMBOL, { from: owner })
           instanceReceipt = await newInstance(daoID, MEMBERS, VOTING_SETTINGS, DOT_VOTING_SETTINGS, periods, useDiscussions, { from: owner })
           await loadDAO(tokenReceipt, instanceReceipt) //, { discussions: useDiscussions })
+        })
+      }
+
+      const createBaseDAO = () => {
+        daoID = randomId()
+        it('Creates token and dao', async () => {
+          const FINANCE_PERIOD = 0
+          baseDAO = await template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, daoID, MEMBERS, VOTING_SETTINGS, FINANCE_PERIOD, { from: owner })
+          console.log('Costs for base DAO call:', baseDAO.receipt.gasUsed, 'gas')
+          // Costs for token and dao 3249295 -> token, dao and acl
+          // Costs for token and dao 3344131 -> create id
+          // Costs for token and dao 3771214 -> add vault
         })
       }
 
@@ -443,10 +455,11 @@ contract('OpenEnterpriseTemplate', ([ owner, member1, member2 ]) => {
         context('when requesting a vault app', () => {
           const USE_DISCUSSIONS = false
 
-          createDAO(USE_DISCUSSIONS, PERIODS)
-          itCostsUpTo(6.79e6)
-          itSetupsDAOCorrectly(...PERIODS)
-          itSetupsVaultAppCorrectly()
+          // createDAO(USE_DISCUSSIONS, PERIODS)
+          // itCostsUpTo(6.79e6)
+          // itSetupsDAOCorrectly(...PERIODS)
+          // itSetupsVaultAppCorrectly()
+          createBaseDAO()
         })
       })
     })
