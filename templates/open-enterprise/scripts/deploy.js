@@ -1,3 +1,4 @@
+/* global artifacts, web3 */
 // const deployTemplate = require('@aragon/templates-shared/scripts/deploy-template')
 const deployTemplate = require('../temp/scripts/deploy-template')
 
@@ -7,7 +8,7 @@ const CONTRACT_NAME = 'OpenEnterpriseTemplate'
 module.exports = callback => {
   deployTemplate(web3, artifacts, TEMPLATE_NAME, CONTRACT_NAME)
     .then(template => {
-      console.log(template.address)
+      console.log('Open Enterprise template deployed at address', template.address)
       callback()
     })
     .catch(callback)
