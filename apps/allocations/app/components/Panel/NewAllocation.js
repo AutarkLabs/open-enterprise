@@ -23,19 +23,25 @@ const INITIAL_STATE = {
   recipientsAll: [],
   recipientsEmpty: true,
   recipientsInvalid: false,
+  recipientsNotUnique: false,
 }
 
 const errorMessages = {
   amountOverBudget: 'Amount must be smaller than available budget',
   amountOverFunds: 'Amount must be smaller than underlying funds',
   recipientsInvalid: 'Recipients must be valid Ethereum addresses',
+  recipientsNotUnique: 'Recipients must be unique',
 }
 
-const validateRecipient = (current, all) => {
+const isRecipientValid = (current) => {
   if (current === '') return true
-  const isAddress = web3Utils.isAddress(current)
+  return web3Utils.isAddress(current)
+}
+
+const isRecipientUnique = (current, all) => {
+  if (current === '') return true
   const isUnique = !all.length || !all.includes(current)
-  return isAddress && isUnique
+  return isUnique
 }
 
 const isRecipientEmpty = (current) => {
@@ -96,7 +102,8 @@ class NewAllocation extends React.Component {
     else if (name === 'recipientsChange') {
       this.setState({
         recipientsCurrent: value,
-        recipientsInvalid: !validateRecipient(value, recipientsAll),
+        recipientsInvalid: !isRecipientValid(value),
+        recipientsNotUnique: !isRecipientUnique(value, recipientsAll),
         recipientsEmpty: isRecipientEmpty(value),
       })
     }
@@ -106,6 +113,7 @@ class NewAllocation extends React.Component {
         recipientsCurrent: '',
         recipientsAll: value,
         recipientsInvalid: false,
+        recipientsNotUnique: false,
         recipientsEmpty: true,
       })
     }
@@ -123,6 +131,7 @@ class NewAllocation extends React.Component {
           recipientsCurrent: recipientsAll[last],
           recipientsAll: recipientsAll.slice(0, last),
           recipientsInvalid: false,
+          recipientsNotUnique: false,
           recipientsEmpty: false,
         })
       }
@@ -130,6 +139,7 @@ class NewAllocation extends React.Component {
         this.setState({
           recipientsCurrent: '',
           recipientsInvalid: false,
+          recipientsNotUnique: false,
           recipientsEmpty: true,
         })
       }
@@ -159,7 +169,6 @@ class NewAllocation extends React.Component {
 
   render() {
     const { props, state } = this
-
 
     const budgetDropDown = (
       <FormField
@@ -233,7 +242,8 @@ class NewAllocation extends React.Component {
             all={state.recipientsAll}
             onChange={this.changeField}
             placeholder="Type here…"
-            valid={!state.recipientsInvalid}
+            valid={!state.recipientsInvalid && state.recipientsCurrent !== ''
+                   && !state.recipientsNotUnique}
             empty={state.recipientsEmpty}
           />
         }
