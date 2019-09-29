@@ -29,7 +29,7 @@ start_ganache() {
   npx ganache-cli -i ${NETWORK_ID} -l ${GAS_LIMIT} -a ${ACCOUNTS} -e ${BALANCE} -p ${PORT} > /dev/null &
   pid=$!
   sleep 3
-  echo "Running ganache-cli with pid ${pid} in port ${PORT}"
+  echo "Running ganache-cli with pid ${pid} in port ${PORT}, gas limit set to: ${GAS_LIMIT}"
 }
 
 deploy_template() {
