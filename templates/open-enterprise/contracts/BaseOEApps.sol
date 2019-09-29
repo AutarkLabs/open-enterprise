@@ -1,7 +1,8 @@
 pragma solidity 0.4.24;
 
-import "@aragon/templates-shared/contracts/TokenCache.sol";
-import "@aragon/templates-shared/contracts/BaseTemplate.sol";
+// TODO: revert relative path
+import "../../../node_modules/@aragon/templates-shared/contracts/TokenCache.sol";
+import "../../../node_modules/@aragon/templates-shared/contracts/BaseTemplate.sol";
 
 import "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
 
@@ -14,21 +15,21 @@ import "@tps/apps-rewards/contracts/Rewards.sol";
 
 
 contract BaseOEApps is BaseTemplate, TokenCache {
-    /* Hardcoded constant to save gas
+    // /* Hardcoded constant to save gas
     bytes32 constant internal ADDRESS_BOOK_APP_ID = apmNamehash("address-book");              // address-book.aragonpm.eth
     bytes32 constant internal ALLOCATIONS_APP_ID = apmNamehash("allocations");              // allocations.aragonpm.eth;
     bytes32 constant internal DISCUSSIONS_APP_ID = apmNamehash("discussions");            // discussions.aragonpm.eth;
     bytes32 constant internal DOT_VOTING_APP_ID = apmNamehash("dot-voting");            // dot-voting.aragonpm.eth;
     bytes32 constant internal PROJECTS_APP_ID = apmNamehash("projects");              // projects.aragonpm.eth;
     bytes32 constant internal REWARDS_APP_ID = apmNamehash("rewards");              // rewards.aragonpm.eth;
-    */
+    // */
     // TODO: Move to HatchAPM // Main APM ?
-    bytes32 constant internal ADDRESS_BOOK_APP_ID = 0x32ec8cc9f3136797e0ae30e7bf3740905b0417b81ff6d4a74f6100f9037425de;
-    bytes32 constant internal ALLOCATIONS_APP_ID = 0x370ef8036e8769f293a3d9c1362d0e21bdfa4e0465d2cd9cf196ebd4ba75aa8b;
-    bytes32 constant internal DISCUSSIONS_APP_ID = 0xf8c9b8210902c14e71192ea564edd090c1659cbef1384e362fb508d396d72a38;
-    bytes32 constant internal DOT_VOTING_APP_ID = 0x6bf2b7dbfbb51844d0d6fdc211b014638011261157487ccfef5c2e4fb26b1d7e;
-    bytes32 constant internal PROJECTS_APP_ID = 0xac5c7cc8f4ed07bb3543b5a4152c4f1a045e1be68bd86e2cf6720b680d1d14f3;
-    bytes32 constant internal REWARDS_APP_ID = 0x3ca69801a60916e9222ceb2fa3089b3f66b4e1b3fc49f4a562043d9ec1e5a00b;
+    // bytes32 constant internal ADDRESS_BOOK_APP_ID = 0x32ec8cc9f3136797e0ae30e7bf3740905b0417b81ff6d4a74f6100f9037425de;
+    // bytes32 constant internal ALLOCATIONS_APP_ID = 0x370ef8036e8769f293a3d9c1362d0e21bdfa4e0465d2cd9cf196ebd4ba75aa8b;
+    // bytes32 constant internal DISCUSSIONS_APP_ID = 0xf8c9b8210902c14e71192ea564edd090c1659cbef1384e362fb508d396d72a38;
+    // bytes32 constant internal DOT_VOTING_APP_ID = 0x6bf2b7dbfbb51844d0d6fdc211b014638011261157487ccfef5c2e4fb26b1d7e;
+    // bytes32 constant internal PROJECTS_APP_ID = 0xac5c7cc8f4ed07bb3543b5a4152c4f1a045e1be68bd86e2cf6720b680d1d14f3;
+    // bytes32 constant internal REWARDS_APP_ID = 0x3ca69801a60916e9222ceb2fa3089b3f66b4e1b3fc49f4a562043d9ec1e5a00b;
 
     string constant private ERROR_BOUNTIES_NOT_CONTRACT = "BOUNTIES_REGISTRY_NOT_CONTRACT";
 
@@ -172,9 +173,9 @@ contract BaseOEApps is BaseTemplate, TokenCache {
         _acl.createPermission(_grantee, _rewards, _rewards.ADD_REWARD_ROLE(), _manager);
     }
 
-    function _grantVaultPermissions(ACL _acl, Vault _vault, Allocations _allocations, Projects _projects, Rewards _rewards) internal {
+    function _grantVaultPermissions(ACL _acl, Vault _vault, Allocations _allocations) internal {//, Rewards _rewards) internal {//, Projects _projects, Rewards _rewards) internal {
         _acl.grantPermission(_allocations, _vault, _vault.TRANSFER_ROLE());
-        _acl.grantPermission(_projects, _vault, _vault.TRANSFER_ROLE());
-        _acl.grantPermission(_rewards, _vault, _vault.TRANSFER_ROLE());
+        // _acl.grantPermission(_projects, _vault, _vault.TRANSFER_ROLE());
+        // _acl.grantPermission(_rewards, _vault, _vault.TRANSFER_ROLE());
     }
 }
