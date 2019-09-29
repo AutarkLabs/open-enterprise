@@ -360,9 +360,9 @@ const FilterBar = ({
         textFilter === '' && (
           <IconSearch
             css={`
-      color: ${theme.surfaceOpened};
-      margin-right: 8px;
-    `}
+              color: ${theme.surfaceOpened};
+              margin-right: 8px;
+            `}
           />
         )
       }

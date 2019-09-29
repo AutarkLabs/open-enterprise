@@ -36,7 +36,7 @@ const getTabs = ({ repoCount }) => {
     {
       name: 'Overview',
       body: Overview,
-      action: <Button mode="strong" icon={<IconPlus />} onClick={setupNewIssue} label="New Issue" />,
+      action: <Button mode="strong" icon={<IconPlus />} onClick={setupNewProject} label="New Project" />,
     },
   ]
 
@@ -44,7 +44,7 @@ const getTabs = ({ repoCount }) => {
     tabs.push({
       name: 'Issues',
       body: Issues,
-      action: <Button mode="strong" icon={<IconPlus />} onClick={setupNewProject} label="New Project" />,
+      action: <Button mode="strong" icon={<IconPlus />} onClick={setupNewIssue} label="New Issue" />,
     })
   }
 
@@ -97,15 +97,14 @@ const App = () => {
       try {
         const token = await getToken(code)
         setGithubLoading(false)
-        api.cache('github', {
-          event: REQUESTED_GITHUB_TOKEN_SUCCESS,
+        api.trigger(REQUESTED_GITHUB_TOKEN_SUCCESS, {
           status: STATUS.AUTHENTICATED,
-          token,
+          token
         })
+
       } catch (err) {
         setGithubLoading(false)
-        api.cache('github', {
-          event: REQUESTED_GITHUB_TOKEN_FAILURE,
+        api.trigger(REQUESTED_GITHUB_TOKEN_FAILURE, {
           status: STATUS.FAILED,
           token: null,
         })
@@ -214,6 +213,7 @@ const App = () => {
                 changeActiveIndex={changeActiveIndex}
                 setIssueDetail={setIssueDetail}
                 issueDetail={issueDetail}
+                onLogin={handleGithubSignIn}
               />
             </ErrorBoundary>
 

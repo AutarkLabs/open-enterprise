@@ -1,13 +1,14 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Button, RadioList, Text, TextInput, theme } from '@aragon/ui'
+import { Button, GU, IconSearch, Info, RadioList, Text, TextInput, theme } from '@aragon/ui'
 import { GET_REPOSITORIES } from '../../../utils/gql-queries.js'
 import { LoadingAnimation } from '../../Shared'
 import { Query } from 'react-apollo'
 import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '../../Panel'
 import { toHex } from 'web3-utils'
+import noResultsSvg from '../../../assets/noResults.svg'
 
 const UNSELECT = {
   repoSelected: -1,
@@ -83,13 +84,27 @@ class Repo extends React.Component {
     />
   ) : this.state.filter ? (
     <RepoInfo>
-      <Text.Block>
-        There are no repositories matching{' '}
-        <Text weight="bold">{this.state.filter}</Text>
+      <img css={`margin-bottom: ${2 * GU}px`} src={noResultsSvg} alt=""  />
+      <Text.Block style={{ fontSize: '28px', marginBottom: '8px' }}>
+        No results found.
       </Text.Block>
-      <ClearSearch onClick={this.handleClearSearch}>
-        Clear Search
-      </ClearSearch>
+      <Text.Block>
+        We can&#39;t find any items mathing your search.
+      </Text.Block>
+      <Button
+        size="mini"
+        onClick={this.handleClearSearch}
+        css={`
+            margin-left: 8px;
+            border: 0;
+            box-shadow: unset;
+            padding: 4px;
+          `}
+      >
+        <Text size="small" color={`${theme.badge}`}>
+            Clear Filters
+        </Text>
+      </Button>
     </RepoInfo>
   ) : (
     <RepoInfo>
@@ -102,8 +117,8 @@ class Repo extends React.Component {
 
     return (
       <React.Fragment>
-        <div>
-          <Text style={{ marginTop: '16px' }} weight="bold">
+        <div css={`margin-top: ${3 * GU}px`}>
+          <Text weight="bold">
             Which repos do you want to add?
           </Text>
           <div>
@@ -131,10 +146,26 @@ class Repo extends React.Component {
                         wide
                         value={filter}
                         onChange={this.searchRepos(repos)}
+                        adornment={
+                          filter === '' && (
+                            <IconSearch
+                              css={`
+                                color: ${theme.surfaceOpened};
+                                margin-right: 8px;
+                              `}
+                            />
+                          )
+                        }
+                        adornmentPosition="end"
                       />
                       <ScrollableList>
                         { this.repoList(visibleRepos, repoArray) }
                       </ScrollableList>
+                      <Info css={`margin: ${3 * GU}px 0`}>
+                        Projects in Aragon are a one-to-one mapping to a GitHub repository.
+                        You’ll be able to prioritize your backlog, reach consensus on issue
+                        valuations, and allocate bounties to multiple issues.
+                      </Info>
                       <Button
                         mode="strong"
                         wide
@@ -211,21 +242,11 @@ const ScrollableList = styled.div`
   padding-right: 10px;
   margin: 16px 0;
   // Hack needed to make the scrollable list, since the whole SidePanel is a scrollable container
-  height: calc(100vh - 260px);
+  height: calc(100vh - 420px);
 `
 const RepoInfo = styled.div`
   margin: 20px 0;
   text-align: center;
-`
-const ClearSearch = styled(Text.Block).attrs({
-  size: 'small',
-  color: theme.accent,
-})`
-  text-decoration: underline;
-  margin-top: 15px;
-  :hover {
-    cursor: pointer;
-  }
 `
 
 // TODO: Use nodes instead of edges (the app should be adapted at some places)

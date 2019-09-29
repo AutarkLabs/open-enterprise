@@ -1,52 +1,59 @@
+import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import React from 'react'
 import styled from 'styled-components'
 import NumberFormat from 'react-number-format'
-
-import { useNetwork } from '../../api-react'
+import { useAragonApi, useNetwork } from '../../api-react'
 import {
   Box,
   DropDown,
   Button,
   Field,
+  GU,
   Info,
+  SafeLink,
   Text,
   TextInput,
   useLayout,
   useTheme,
 } from '@aragon/ui'
 
-import { FieldTitle } from '../Form'
 import { LocalIdentityBadge } from '../../../../../shared/identity'
 import { STATUS } from '../../utils/github'
 import { fromUtf8, toHex } from 'web3-utils'
 import { REQUESTED_GITHUB_DISCONNECT } from '../../store/eventTypes'
 import useGithubAuth from '../../hooks/useGithubAuth'
+import { LoadingAnimation } from '../Shared'
+import { EmptyWrapper } from '../Shared'
 
 const bountyDeadlines = [ 'Weeks', 'Days', 'Hours' ]
 const bountyDeadlinesMul = [ 168, 24, 1 ] // it is one variable in contract, so number * multiplier = hours
 
 const GitHubConnect = ({ onLogin, onLogout, status }) => {
-  const { login: user } = useGithubAuth()
+  const user = useGithubAuth()
+  const theme = useTheme()
   const auth = status === STATUS.AUTHENTICATED
+
   const bodyText = auth ? (
-    <span>
-      Logged in as
-      <Text weight="bold"> {user}</Text>
-    </span>
+    <Text size="large" css="display: flex; align-items: center">
+      Logged in as <img src={user.avatarUrl} alt="user avatar" css="margin: 8px; width: 50px; border-radius: 50%;" />
+      <SafeLink
+        href={user.url}
+        target="_blank"
+        style={{ textDecoration: 'none', color: `${theme.accent}` }}
+      >
+        {user.login}
+      </SafeLink>
+    </Text>
   ) : (
     'The Projects app uses GitHub to interact with issues.'
   )
-  const buttonText = auth ? 'Disconnect Account' : 'Connect my GitHub'
+  const buttonText = auth ? 'Disconnect' : 'Connect my GitHub'
   const buttonAction = auth ? onLogout : onLogin
   return (
-    <Box heading="GitHub">
-      <Text.Block size="large" weight="bold">
-        GitHub Authorization
-      </Text.Block>
+    <Box heading="GitHub" css="height: 100%">
       <Text.Block>{bodyText}</Text.Block>
       <StyledButton
-        compact
+        wide
         mode="secondary"
         onClick={buttonAction}
       >
@@ -63,7 +70,7 @@ GitHubConnect.propTypes = {
 }
 
 const BountyContractAddress = ({ bountyAllocator, networkType, layoutName }) => (
-  <Box heading="Bounty Address">
+  <Box heading="Bounty Address" css="height: 100%">
     <LocalIdentityBadge
       networkType={networkType}
       entity={bountyAllocator}
@@ -158,9 +165,8 @@ const BaseRate = ({
   onChangeCurrency,
   bountyCurrencies,
 }) => (
-  <div>
+  <div css="margin-bottom: 24px">
     <SettingLabel text="Base rate" />
-    <FieldTitle style={{ marginBottom: '0' }}>Rate per hour</FieldTitle>
     <StyledInputDropDown>
       <StyledNumberFormat
         fixedDecimalScale
@@ -172,7 +178,7 @@ const BaseRate = ({
       />
       <DropDown
         items={bountyCurrencies}
-        active={bountyCurrency}
+        selected={bountyCurrency}
         onChange={onChangeCurrency}
       />
     </StyledInputDropDown>
@@ -206,7 +212,7 @@ const BountyDeadline = ({
       />
       <DropDown
         items={bountyDeadlines}
-        active={bountyDeadlineD}
+        selected={bountyDeadlineD}
         onChange={onChangeD}
       />
     </StyledInputDropDown>
@@ -237,216 +243,193 @@ BountyArbiter.propTypes = {
   networkType: PropTypes.string.isRequired,
 }
 
+const FundingType = ({ fundingType, onChangeType }) => (
+  <div css="margin-bottom: 24px; width: 240px">
+    <SettingLabel text="Type" />
+    <DropDown
+      items={[ 'Hourly', 'Fixed' ]}
+      selected={fundingType}
+      onChange={onChangeType}
+      wide
+    />
+  </div>
+)
+FundingType.propTypes = {
+  fundingType: PropTypes.number.isRequired,
+  onChangeType: PropTypes.func.isRequired,
+}
 
 
 
 
 
 
-class Settings extends React.Component {
-  static propTypes = {
-    app: PropTypes.object.isRequired,
-    bountySettings: PropTypes.object.isRequired,
-    network: PropTypes.object,
-    onLogin: PropTypes.func.isRequired,
-    status: PropTypes.string.isRequired,
-    tokens: PropTypes.array.isRequired,
-    layoutName: PropTypes.string.isRequired,
-    theme: PropTypes.object,
-  }
-  state = {
-    bountyCurrencies: this.props.tokens.map(token => token.symbol),
-  }
+const Settings = ({ onLogin }) => {
+  const [ bountyCurrencies, setBountyCurrencies ] = useState([])
+  const [ expLevels, setExpLevels ] = useState([])
+  const [ baseRate, setBaseRate ] = useState()
+  const [ bountyCurrency, setBountyCurrency ] = useState()
+  const [ bountyAllocator, setBountyAllocator ] = useState()
+  //const [ bountyArbiter, setBountyArbiter ] = useState()
+  const [ bountyDeadlineD, setBountyDeadlineD ] = useState()
+  const [ bountyDeadlineT, setBountyDeadlineT ] = useState()
+  //const [ fundingType, setFundingType ] = useState(0)
+  const [ settingsLoaded, setSettingsLoaded ] = useState(false)
 
-  /*
-    props pass data directly from contract. Settings form needs that data to be modified
-    before use. and then it is simpler to keep them in state, and adjusted before sending
-    back to contract.
-  */
-  static getDerivedStateFromProps(props, state) {
-    // is all configured already? TODO: it might be useful to check
-    // if there was no update to settings (on chain) in the meantime,
-    // and what to do in that case. as of now: changes are ignored.
-    if ('baseRate' in state) return null
+  const { api, appState } = useAragonApi()
+  const network = useNetwork()
+  const { layoutName } = useLayout()
+  const {
+    bountySettings = {},
+    tokens = [],
+    github = { status : STATUS.INITIAL },
+  } = appState
 
-    // before data is downloaded from cache/chain
-    if (!('bountySettings' in props && 'baseRate' in props.bountySettings))
-      return null
 
-    // data has just became available
-    let s = props.bountySettings
-    let bountyCurrency = props.tokens.findIndex(bounty => bounty.addr === s.bountyCurrency)
-    let n = {
-      baseRate: s.baseRate,
-      bountyAllocator: s.bountyAllocator,
-      bountyArbiter: s.bountyArbiter,
-      expLevels: s.expLvls,
-      bountyCurrency: bountyCurrency,
-    }
 
-    // bountyDeadlinesMul = [168, 24, 1]
-    // in order to store the deadline as one number instead of two
+  useEffect(() => {
+    setBountyCurrencies(tokens.map(token => token.symbol))
+  }, [tokens]
+  )
+
+  useEffect(() => {
+    setExpLevels(bountySettings.expLvls)
+    setBaseRate(bountySettings.baseRate)
+    setBountyCurrency(tokens.findIndex(bounty => bounty.addr === bountySettings.bountyCurrency))
+    setBountyAllocator(bountySettings.bountyAllocator)
+    //setBountyArbiter(bountySettings.bountyArbiter)
     for (let i = 0; i < bountyDeadlinesMul.length; i++) {
-      if (s.bountyDeadline % bountyDeadlinesMul[i] === 0) {
-        n.bountyDeadlineD = i
-        n.bountyDeadlineT = s.bountyDeadline / bountyDeadlinesMul[i]
+      if (bountySettings.bountyDeadline % bountyDeadlinesMul[i] === 0) {
+        setBountyDeadlineD(i)
+        setBountyDeadlineT(bountySettings.bountyDeadline / bountyDeadlinesMul[i])
         break
       }
     }
+    setSettingsLoaded(true)
+  }, [bountySettings]
+  )
 
-    return n
-  }
-
-  submitChanges = () => {
-    const {
-      baseRate,
-      expLevels,
-      bountyDeadlineT,
-      bountyDeadlineD,
-      bountyCurrency,
-      bountyAllocator,
-    } = this.state
+  const submitChanges = () => {
     // flatten deadline
     let bountyDeadline = bountyDeadlinesMul[bountyDeadlineD] * bountyDeadlineT
     // flatten expLevels
     const expLevelsDesc = expLevels.map(l => fromUtf8(l.name))
     // uint-ify EXP levels
     let expLevelsMul = expLevels.map(l => toHex(l.mul * 100))
-    this.props.app.changeBountySettings(
+
+    api.changeBountySettings(
       expLevelsMul,
       expLevelsDesc,
       toHex(baseRate * 100),
       toHex(bountyDeadline),
-      this.props.tokens[bountyCurrency].addr,
+      tokens[bountyCurrency].addr,
       bountyAllocator
       //bountyArbiter,
     )
   }
 
-  baseRateChange = e => {
-    this.setState({ baseRate: e.target.value })
-  }
-  bountyDeadlineChangeT = e => {
-    this.setState({ bountyDeadlineT: e.target.value })
-  }
-  bountyDeadlineChangeD = index => {
-    this.setState({ bountyDeadlineD: index })
-  }
-  bountyCurrencyChange = index => {
-    this.setState({ bountyCurrency: index })
-  }
-  bountyAllocatorChange = e => {
-    this.setState({ bountyAllocator: e.target.value })
-  }
-  bountyArbiterChange = e => {
-    this.setState({ bountyArbiter: e.target.value })
+  const baseRateChange = e => setBaseRate(e.target.value)
+  const bountyDeadlineChangeT = e => setBountyDeadlineT(e.target.value)
+  const bountyDeadlineChangeD = index => setBountyDeadlineD(index)
+  const bountyCurrencyChange = index => setBountyCurrency(index)
+  // Unconfigurables (for now):
+  // const fundingTypeChange = index => setFundingType(index)
+  // const bountyAllocatorChange = e => setBountyAllocator(e.target.value)
+  // const bountyArbiterChange = e => setBountyArbiter(e.target.value)
+
+  const addExpLevel = () => {
+    const newExpLevels = [ ...expLevels, { name: '', mul: 1 }]
+    setExpLevels(newExpLevels)
   }
 
-  addExpLevel = () => {
-    let { expLevels } = this.state
-    expLevels.push({ name: '', mul: 1 })
-    this.setState({ expLevels })
+  const generateExpLevelHandler = (index, key) => e => {
+    const newExpLevels = [...expLevels]
+    if (key === 'M') newExpLevels[index].mul = e.target.value
+    else newExpLevels[index].name = e.target.value
+    setExpLevels(newExpLevels)
   }
 
-  generateExpLevelHandler = (index, key) => e => {
-    let { expLevels } = this.state
-    if (key === 'M') expLevels[index].mul = e.target.value
-    else expLevels[index].name = e.target.value
-    this.setState({ expLevels })
-  }
-
-  handleLogout = () => {
-    this.props.app.trigger(REQUESTED_GITHUB_DISCONNECT, {
+  const handleLogout = () => {
+    api.trigger(REQUESTED_GITHUB_DISCONNECT, {
       status: STATUS.INITIAL,
       token: null,
     })
   }
 
-  render() {
-    const {
-      baseRate,
-      expLevels,
-      bountyCurrencies,
-      bountyCurrency,
-      bountyDeadlineT,
-      bountyDeadlineD,
-      bountyAllocator,
-    } = this.state
-
-    const { network, layoutName } = this.props
-
-    // TODO: hourglass in case settings are still being loaded
-    if (!('baseRate' in this.props.bountySettings))
-      return <div>Loading settings...</div>
-
-
-      
-
+  if (!settingsLoaded)
     return (
-      <SettingsMain layoutName={layoutName}>
-        <div css="grid-area: contract">
-          <BountyContractAddress
-            bountyAllocator={bountyAllocator}
-            networkType={network.type}
-            layoutName={layoutName}
-          />
-        </div>
-        <div css="grid-area: github">
-          <GitHubConnect
-            onLogin={this.props.onLogin}
-            onLogout={this.handleLogout}
-            status={this.props.status}
-          />
-        </div>
-        <div css="grid-area: funding">
-          <Box
-            heading="Funding Model"
-          >
-            <SettingsFunding layoutName={layoutName}>
-              <div>
-                {!this.props.tokens.length ? (
-                  <EmptyBaseRate />
-                ) : (
-                  <BaseRate
-                    baseRate={baseRate}
-                    onChangeRate={this.baseRateChange}
-                    bountyCurrencies={bountyCurrencies}
-                    bountyCurrency={bountyCurrency}
-                    onChangeCurrency={this.bountyCurrencyChange}
-                  />
-                )}
-                <BountyDeadline
-                  bountyDeadlineT={bountyDeadlineT}
-                  onChangeT={this.bountyDeadlineChangeT}
-                  bountyDeadlineD={bountyDeadlineD}
-                  onChangeD={this.bountyDeadlineChangeD}
-                />
-              </div>
-              <div>
-                <ExperienceLevel
-                  expLevels={expLevels}
-                  onAddExpLevel={this.addExpLevel}
-                  generateExpLevelHandler={this.generateExpLevelHandler}
-                />
-              </div>
-            </SettingsFunding>
-
-            <Info css="margin: 24px 0">
-              In hourly funding, the hourly rate per issue is the base rate multiplied by the difficulty level selected for the issue.
-            </Info>
-            <Button mode="strong" onClick={this.submitChanges}>
-              Save Changes
-            </Button>
-          </Box>
-        </div>
-      </SettingsMain>
+      <EmptyWrapper>
+        <Text size="large" css={`margin-bottom: ${3 * GU}px`}>
+          Loading settings...
+        </Text>
+        <LoadingAnimation />
+      </EmptyWrapper>
     )
-  }
+
+  return (
+    <SettingsMain layoutName={layoutName}>
+      <div css="grid-area: contract">
+        <BountyContractAddress
+          bountyAllocator={bountyAllocator}
+          networkType={network.type}
+          layoutName={layoutName}
+        />
+      </div>
+      <div css="grid-area: github">
+        <GitHubConnect
+          onLogin={onLogin}
+          onLogout={handleLogout}
+          status={github.status}
+        />
+      </div>
+      <div css="grid-area: funding">
+        <Box
+          heading="Funding Model"
+        >
+          <SettingsFunding layoutName={layoutName}>
+            <div>
+              {!tokens.length ? (
+                <EmptyBaseRate />
+              ) : (
+                <BaseRate
+                  baseRate={baseRate}
+                  onChangeRate={baseRateChange}
+                  bountyCurrencies={bountyCurrencies}
+                  bountyCurrency={bountyCurrency}
+                  onChangeCurrency={bountyCurrencyChange}
+                />
+              )}
+              <BountyDeadline
+                bountyDeadlineT={bountyDeadlineT}
+                onChangeT={bountyDeadlineChangeT}
+                bountyDeadlineD={bountyDeadlineD}
+                onChangeD={bountyDeadlineChangeD}
+              />
+            </div>
+            <div>
+              <ExperienceLevel
+                expLevels={expLevels}
+                onAddExpLevel={addExpLevel}
+                generateExpLevelHandler={generateExpLevelHandler}
+              />
+            </div>
+          </SettingsFunding>
+
+          <Info css="margin: 24px 0">
+              In hourly funding, the hourly rate per issue is the base rate multiplied by the difficulty level selected for the issue.
+          </Info>
+          <Button mode="strong" onClick={submitChanges}>
+              Save Changes
+          </Button>
+        </Box>
+      </div>
+    </SettingsMain>
+  )
 }
 
-
-
-
+Settings.propTypes = {
+  onLogin: PropTypes.func.isRequired,
+}
 
 const StyledInputDropDown = ({ children }) => {
   const theme = useTheme()
@@ -454,22 +437,22 @@ const StyledInputDropDown = ({ children }) => {
   return (
     <div css={`
       display: flex;
-      min-width: 0;
+      width: 240px;
       > :first-child {
         border-radius: 3px 0 0 3px;
         border: 1px solid ${theme.border};
         box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.03);
-        min-width: 84px;
-        flex: ${({ wide }) => (wide ? 1 : 0)};
+        width: 140px;
         z-index: 1;
         :focus {
           outline: 0;
           border: 1px solid ${theme.infoSurface};
         }
       }
-      > :last-child > :first-child {
+      > :second-child {
         border-radius: 0 3px 3px 0;
         margin-left: -1px;
+        width: 100px;
       }
     `}>
       {children}
@@ -480,7 +463,6 @@ const StyledInputDropDown = ({ children }) => {
 StyledInputDropDown.propTypes = {
   children: PropTypes.node.isRequired,
 }
-
 
 const SettingsMain = styled.div`
   display: grid;
@@ -515,7 +497,7 @@ const StyledNumberFormat = styled(NumberFormat)`
   margin-right: 10px;
   padding: 0 10px;
   text-align: right;
-  width: 131px;
+  width: 110px;
 `
 // https://stackoverflow.com/questions/3790935/can-i-hide-the-html5-number-input-s-spin-box
 
@@ -532,12 +514,4 @@ const StyledButton = styled(Button)`
   margin-top: 8px;
 `
 
-const SettingsWrap = props => {
-  const network = useNetwork()
-  const { layoutName } = useLayout()
-  const theme = useTheme()
-
-  return <Settings theme={theme} layoutName={layoutName} network={network} {...props} />
-}
-
-export default SettingsWrap
+export default Settings
