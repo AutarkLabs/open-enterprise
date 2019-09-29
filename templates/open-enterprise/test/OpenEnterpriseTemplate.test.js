@@ -384,11 +384,15 @@ contract('OpenEnterpriseTemplate', ([ owner, member1, member2 ]) => {
         it(`gas costs must be up to ~${expectedTotalCost} gas`, async () => {
           const tokenCreationCost = tokenReceipt.receipt.gasUsed
           assert.isAtMost(tokenCreationCost, expectedTokenCreationCost, `token creation call should cost up to ${tokenCreationCost} gas`)
-
+          
           const daoCreationCost = instanceReceipt.receipt.gasUsed
           assert.isAtMost(daoCreationCost, expectedDaoCreationCost, `dao creation call should cost up to ${expectedDaoCreationCost} gas`)
-
+          
+          console.log('newToken cost', tokenCreationCost)
+          console.log('newInstance cost', daoCreationCost)
+          
           const totalCost = tokenCreationCost + daoCreationCost
+          console.log('totalCost', totalCost)
           assert.isAtMost(totalCost, expectedTotalCost, `total costs should be up to ${expectedTotalCost} gas`)
         })
       }

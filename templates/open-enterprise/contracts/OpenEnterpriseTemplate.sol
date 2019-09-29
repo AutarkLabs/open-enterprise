@@ -25,6 +25,8 @@ contract OpenEnterpriseTemplate is BaseOEApps {
     */
     constructor(address[5] _deployedSetupContracts) BaseOEApps(_deployedSetupContracts) public {}
 
+
+    // TODO: use correct terminology (min acceptance, quorum, etc)
     /**
     * @dev Create a new MiniMe token and deploy a Open Enterprise DAO.
     * @param _tokenName String with the name for the token used by share holders in the organization
@@ -71,6 +73,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         return token;
     }
 
+    // TODO: Use whitelisted token manager as option, since the rest of template is the same
     /**
     * @dev Deploy a Open Enterprise DAO using a previously cached MiniMe token
     * @param _id String with the name for org, will assign `[id].aragonid.eth`
@@ -85,7 +88,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         address[] memory _members,
         uint64[3] memory _votingSettings,
         uint64[3] memory _dotVotingSettings,
-        uint64[2] _periodSettings,
+        uint64[2] memory _periodSettings,
         bool _useDiscussions
     )
         public
@@ -151,17 +154,17 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         // Projects projects = _installProjectsApp(_dao, _vault, token);
         // Rewards rewards = _installRewardsApp(_dao, _vault);
 
-        // _setupOEPermissions(
-        //     _acl,
-        //     _voting,
-        //     addressBook,
-        //     allocations,
-        //     dotVoting //,
-        //     // projects //,
-        //     // rewards
-        // );
+        _setupOEPermissions(
+            _acl,
+            _voting,
+            addressBook,
+            allocations,
+            dotVoting //,
+            // projects //,
+            // rewards
+        );
 
-        // _grantVaultPermissions(_acl, _vault, allocations); //, projects); //, rewards);
+        _grantVaultPermissions(_acl, _vault, allocations); //, projects); //, rewards);
     }
 
     function _setupPermissions(
