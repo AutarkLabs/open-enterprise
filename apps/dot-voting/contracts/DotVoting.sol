@@ -116,7 +116,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
 
 
     /**
-    * @notice Create a new dot vote about "`_metadata`"
+    * @notice Create a new dot vote about "`_metadata`."
     * @param _executionScript EVM script to be executed on approval
     * @param _metadata Vote metadata
     * @return voteId Id for newly created vote
@@ -124,7 +124,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     function newVote(bytes _executionScript, string _metadata)
         external auth(ROLE_CREATE_VOTES) returns (uint256 voteId)
     {
-        voteId = _newVote(_executionScript, _metadata); /*, true);*/
+        voteId = _newVote(_executionScript, _metadata);
     }
 
     /**
@@ -140,7 +140,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     }
 
     /**
-    * @notice Execute dot vote `_voteId`
+    * @notice Execute dot vote #`_voteId`.
     * @param _voteId Id for vote
     */
     function executeVote(uint256 _voteId) external isInitialized {
@@ -157,7 +157,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     function getCandidate(uint256 _voteId, uint256 _candidateIndex)
     external view isInitialized returns(address candidateAddress, uint256 voteSupport, string metadata, bytes32 externalId1, bytes32 externalId2)
     {
-        require(_voteId < voteLength, ERROR_VOTE_LENGTH);//, "Vote ID outside of current vote range");
+        require(_voteId < voteLength, ERROR_VOTE_LENGTH); // "Vote ID outside of current vote range");
         uint256 actionId = votes[_voteId].actionId;
         Action storage action = actions[actionId];
         uint256 candidateLength = action.optionKeys.length;
@@ -171,8 +171,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     }
 
     /**
-    * @notice `setglobalCandidateSupportPct` serves as a basic getter using the description
-    *         to return the struct data.
+    * @notice Change the app-wide minimum candidate support percentage to `@formatPct(_globalCandidateSupportPct)`%.
     * @param _globalCandidateSupportPct Percentage of cast voting power that must
     *        support a candidate for it to be counted (expressed as a 10^18
     *        percentage, (eg 10^16 = 1%, 10^18 = 100%)
@@ -186,7 +185,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     }
 
     /**
-    * @notice `setGlobalQuorum` serves as a basic setter for the qourum.
+    * @notice Change the required support to `@formatPct(_minQuorum)`%.
     * @param _minQuorum Percentage of voters that must participate in
     *        a vote for it to succeed (expressed as a 10^18 percentage,
     *        (eg 10^16 = 1%, 10^18 = 100%)
@@ -202,8 +201,9 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     }
 
     /**
-    * @notice `addCandidate` allows the `ROLE_ADD_CANDIDATES` to add candidates
+    * @dev `addCandidate` allows the `ROLE_ADD_CANDIDATES` to add candidates
     *         (or options) to the current dot vote.
+    * @notice Add `_description` to dot vote #`_voteId` for the purpose of `_metadata`
     * @param _voteId id for vote structure this 'ballot action' is connected to
     * @param _metadata Any additional information about the candidate.
     *        Base implementation does not use this parameter.
@@ -255,7 +255,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     */
     function forward(bytes _evmScript) public { // solium-disable-line function-order
         require(canForward(msg.sender, _evmScript)); // solium-disable-line error-reason
-        _newVote(_evmScript, ""); /*, true);*/
+        _newVote(_evmScript, "");
     }
 
 ///////////////////////
@@ -298,7 +298,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     }
 
     /**
-    * @notice `getVote` simply splits all of the data elements out of a vote
+    * @notice `getVote` splits all of the data elements out of a vote
     *         struct and returns the individual values.
     * @param _voteId The ID of the Vote struct in the `votes` array
     */
@@ -415,8 +415,8 @@ contract DotVoting is ADynamicForwarder, AragonApp {
         emit ExecutionScript(_executionScript, 0);
     }
 
-    /*
-    * @notice `_vote` is the internal function that allows a token holder to
+    /**
+    * @dev `_vote` is the internal function that allows a token holder to
     *         caste a vote on the current options.
     * @param _voteId id for vote structure this 'ballot action' is connected to
     * @param _supports Array of support weights in order of their order in

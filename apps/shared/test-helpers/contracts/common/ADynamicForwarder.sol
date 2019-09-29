@@ -38,8 +38,6 @@ contract ADynamicForwarder is IForwarder {
         string description;
         uint256 infoStringLength;
         bytes executionScript;
-        uint256 scriptOffset;
-        uint256 scriptRemainder;
         bool executed;
         bytes32[] optionKeys;
         mapping (bytes32 => OptionState) options;
@@ -110,6 +108,7 @@ contract ADynamicForwarder is IForwarder {
         OptionState storage option = actionInstance.options[cKey];
         // Make sure that this option has not already been added
         require(option.added == false); // solium-disable-line error-reason
+        require(keys.length < uint8(-1));
         // Set all data for the option
         option.added = true;
         option.keyArrayIndex = uint8(keys.length);
@@ -119,7 +118,6 @@ contract ADynamicForwarder is IForwarder {
         // double check
         optionAddresses[cKey] = _description;
         keys.push(cKey);
-        actionInstance.optionKeys = keys;
         actionInstance.infoStringLength += bytes(_metadata).length;
         emit AddOption(_actionId, optionAddresses[cKey], actionInstance.optionKeys.length);
     }
@@ -484,16 +482,10 @@ contract ADynamicForwarder is IForwarder {
         Action storage actionInstance = actions[actionId];
         actionInstance.executionScript = _executionScript;
         actionInstance.infoStringLength = 0;
-        actionInstance.scriptOffset = 0;
-        actionInstance.scriptRemainder = 0;
         // Spec ID must be 1
         require(_executionScript.uint32At(0x0) == 1); // solium-disable-line error-reason
         if (_executionScript.length != 4) {
-            uint256 scriptOffset;
-            uint256 scriptRemainder;
-            (scriptOffset, scriptRemainder) = _extractOptions(_executionScript, actionId);
-            actionInstance.scriptOffset = scriptOffset;
-            actionInstance.scriptRemainder = scriptRemainder;
+            _extractOptions(_executionScript, actionId);
         }
         // First Static Parameter in script parsed for the externalId
         actionInstance.externalId = _goToParamOffset(TOTAL_DYNAMIC_PARAMS + 1, _executionScript) - 0x20;
