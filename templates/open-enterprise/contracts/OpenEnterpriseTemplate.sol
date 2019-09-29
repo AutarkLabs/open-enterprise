@@ -8,23 +8,16 @@ contract OpenEnterpriseTemplate is BaseOEApps {
     string constant private ERROR_BAD_VOTE_SETTINGS = "OPEN_ENTERPRISE_BAD_VOTE_SETTINGS";
     string constant private ERROR_BAD_DOT_VOTE_SETTINGS = "OPEN_ENTERPRISE_BAD_DOT_VOTE_SETTINGS";
 
+    // TODO: transferable tokens and remove limits
     bool constant private TOKEN_TRANSFERABLE = false;
     uint8 constant private TOKEN_DECIMALS = uint8(0);
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(1);
     uint64 constant private DEFAULT_PERIOD = uint64(30 days);
 
-    // StandardBounties public bountiesRegistry;
-    // bytes32[5] public oeAppsIds;
-    // uint256 constant PCT256 = 10 ** 16;
-    // uint64 constant PCT64 = 10 ** 16;
     // TODO: address constant ANY_ENTITY = address(-1);
 
-    // ensure alphabetic order
-    // enum PlanningApps { AddressBook, Allocations, DotVoting, Projects, Rewards }
 
-    // Events here
-    // event DeployInstance(address dao, address indexed token, address vault, address voting);
-
+    // TODO: the old template used to pass planningAppIds here (useful for hatch and different environments??)
     /**
     * @dev Constructor for Open Enterprise Apps DAO
     * @param _deployedSetupContracts Array of [DaoFactory, ENS, MiniMeTokenFactory, AragonID, StandardBounties]
@@ -48,6 +41,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         string _tokenSymbol,
         string _id,
         address[] _members,
+        // TODO: add uint256[] tokens also here
         uint64[3] _votingSettings, // TODO: Merge all these settings?
         uint64[3] _dotVotingSettings,
         uint64[2] _periodSettings, // Finance period and allocations period
@@ -56,7 +50,14 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         external
     {
         newToken(_tokenName, _tokenSymbol);
-        newInstance(_id, _members, _votingSettings, _dotVotingSettings, _periodSettings, _useDiscussions);
+        newInstance(
+            _id,
+            _members,
+            _votingSettings,
+            _dotVotingSettings,
+            _periodSettings,
+            _useDiscussions
+        );
     }
 
     /**
@@ -110,12 +111,15 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         internal
         returns (Finance, Voting, Vault)
     {
-        // TODO: return token if we have issues here (to pass into setupOEApps)
         MiniMeToken token = _popTokenCache(msg.sender);
         Vault vault = _installVaultApp(_dao);
         Finance finance = _installFinanceApp(_dao, vault, _financePeriod == 0 ? DEFAULT_PERIOD : _financePeriod);
         TokenManager tokenManager = _installTokenManagerApp(_dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
         Voting voting = _installVotingApp(_dao, token, _votingSettings);
+        // TODO: Clean next line (added for testing)
+        // AddressBook addressBook = _installAddressBookApp(_dao);
+
+        _cacheToken(token, msg.sender);
 
         _mintTokens(_acl, tokenManager, _members, 1);
         _setupPermissions(_acl, vault, voting, finance, tokenManager);
@@ -134,30 +138,30 @@ contract OpenEnterpriseTemplate is BaseOEApps {
     )
         internal
     {
-        if (_useDiscussions) {
-            DiscussionApp discussions = _installDiscussionsApp(_dao);
-            // TODO: ANY_ACCOUNT here
-            _createDiscussionsPermissions(_acl, discussions, _voting, _voting);
-        }
+        // if (_useDiscussions) {
+        //     DiscussionApp discussions = _installDiscussionsApp(_dao);
+        //     // TODO: ANY_ACCOUNT here
+        //     _createDiscussionsPermissions(_acl, discussions, _voting, _voting);
+        // }
 
         MiniMeToken token = _popTokenCache(msg.sender);
         AddressBook addressBook = _installAddressBookApp(_dao);
         Allocations allocations = _installAllocationsApp(_dao, _vault, _allocationsPeriod == 0 ? DEFAULT_PERIOD : _allocationsPeriod);
         DotVoting dotVoting = _installDotVotingApp(_dao, token, _dotVotingSettings);
-        Projects projects = _installProjectsApp(_dao, _vault, token);
-        Rewards rewards = _installRewardsApp(_dao, _vault);
+        // Projects projects = _installProjectsApp(_dao, _vault, token);
+        // Rewards rewards = _installRewardsApp(_dao, _vault);
 
-        _setupOEPermissions(
-            _acl,
-            _voting,
-            addressBook,
-            allocations,
-            dotVoting,
-            projects,
-            rewards
-        );
+        // _setupOEPermissions(
+        //     _acl,
+        //     _voting,
+        //     addressBook,
+        //     allocations,
+        //     dotVoting //,
+        //     // projects //,
+        //     // rewards
+        // );
 
-        _grantVaultPermissions(_acl, _vault, allocations, projects, rewards);
+        // _grantVaultPermissions(_acl, _vault, allocations); //, projects); //, rewards);
     }
 
     function _setupPermissions(
@@ -169,7 +173,8 @@ contract OpenEnterpriseTemplate is BaseOEApps {
     )
         internal
     {
-        _createVaultPermissions(_acl, _vault, _finance, _voting);
+        // TODO: reset manager here to be voting instead of this (is needed for OE vault grants)
+        _createVaultPermissions(_acl, _vault, _finance, address(this));
         _createFinancePermissions(_acl, _finance, _voting, _voting);
         _createFinanceCreatePaymentsPermission(_acl, _finance, _voting, address(this));
         _createEvmScriptsRegistryPermissions(_acl, _voting, _voting);
@@ -182,17 +187,17 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         Voting _voting,
         AddressBook _addressBook,
         Allocations _allocations,
-        DotVoting _dotVoting,
-        Projects _projects,
-        Rewards _rewards
+        DotVoting _dotVoting // ,
+        // Projects _projects//,
+        // Rewards _rewards
     )
         internal
     {
         _createAddressBookPermissions(_acl, _addressBook, _voting, _voting);
         _createAllocationsPermissions(_acl, _allocations, _dotVoting, _voting, _voting);
         _createDotVotingPermissions(_acl, _dotVoting, _voting, _voting);
-        _createProjectsPermissions(_acl, _projects, _dotVoting, _voting, _voting);
-        _createRewardsPermissions(_acl, _rewards, _voting, _voting);
+        // _createProjectsPermissions(_acl, _projects, _dotVoting, _voting, _voting);
+        // _createRewardsPermissions(_acl, _rewards, _voting, _voting);
     }
 
     function _ensureOpenEnterpriseSettings(
