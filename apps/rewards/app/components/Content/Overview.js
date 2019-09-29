@@ -2,38 +2,24 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { BigNumber } from 'bignumber.js'
+import moment from 'moment'
+import { DataView, Text } from '@aragon/ui'
 import {
-  Table,
-  TableCell,
-  TableHeader,
-  TableRow,
-  Text,
-  theme,
-} from '@aragon/ui'
-import { displayCurrency, getSymbol } from '../../utils/helpers'
+  ONE_TIME_DIVIDEND,
+  RECURRING_DIVIDEND,
+  ONE_TIME_MERIT,
+  RECURRING,
+  ONE_TIME,
+  MERIT,
+  DIVIDEND
+} from '../../utils/constants'
 import {
-  AmountBadge,
   AverageRewards,
   AverageRewardsTable,
-  NarrowList,
-  NarrowListReward,
-  RewardDescription,
-  RewardsTable,
   formatAvgAmount,
 } from './RewardsTables'
-import { MILLISECONDS_IN_A_MONTH, blocksToMilliseconds, } from '../../../../../shared/ui/utils'
+import { MILLISECONDS_IN_A_MONTH, } from '../../../../../shared/ui/utils'
 import { Empty } from '../Card'
-
-const headersNames = fourth => [
-  'Description',
-  'Type',
-  'id',
-  'Cycle',
-  fourth,
-  'Amount',
-]
-
-const dot = <span style={{ margin: '0px 6px' }}>&middot;</span>
 
 const averageRewardsTitles = [ 'Average Reward', 'Monthly Average', 'Total this year' ]
 // TODO: these need to be actually calculated
@@ -98,121 +84,8 @@ const sumTotalRewards = (rewards, balances, convertRates, rewardFilter) => {
   },0)
 }
 
-const generateOpenDetails = (reward, openDetails) => () => {
-  openDetails(reward)
-}
-
-const getDividendCycle = ({ startBlock, endBlock }) => {
-  const monthCount = Math.round(blocksToMilliseconds(startBlock, endBlock) / MILLISECONDS_IN_A_MONTH)
-
-  switch (monthCount) {
-  case 1:
-    return 'Monthly'
-  case 3:
-    return 'Quarterly'
-  default:
-    return 'Custom'
-  }
-}
-
-const RewardsTableNarrow = ({ tokens, rewards, fourthColumnData, openDetails }) => (
-  <NarrowList>
-    {rewards.map((reward, i) => (
-      <NarrowListReward onClick={generateOpenDetails(reward, openDetails)} key={i}>
-        <div style={{ marginTop: '5px', marginRight: '10px' }}>
-          <RewardDescription>
-            {reward.description}
-          </RewardDescription>
-          <Text.Block size="small" color={theme.textSecondary} style={{ marginTop: '5px' }}>
-            {reward.isMerit ? 'Merit' : 'Dividend'}
-            {dot}
-            {reward.isMerit ? 'One-Time' : getDividendCycle(reward)}
-            {dot}
-            {fourthColumnData(reward)}
-          </Text.Block>
-        </div>
-        <div>
-          <AmountBadge>
-            {displayCurrency(reward.amount)}{' '}{getSymbol(tokens, reward.rewardToken)}
-          </AmountBadge>
-        </div>
-      </NarrowListReward>
-    ))}
-  </NarrowList>
-)
-
-RewardsTableNarrow.propTypes = {
-  tokens: PropTypes.arrayOf(PropTypes.object).isRequired,
-  openDetails: PropTypes.func.isRequired,
-  rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
-  fourthColumnData: PropTypes.func.isRequired,
-}
-
-const RewardsTableWide = ({ tokens, rewards, fourthColumn, fourthColumnData, openDetails }) => {
-  return (
-    <Table
-      style={{ width: '100%' }}
-      header={
-        <TableRow>
-          {headersNames(fourthColumn).map(header => (
-            <TableHeader key={header} title={header} />
-          ))}
-        </TableRow>
-      }
-    >
-      {rewards.map((reward, i) => (
-        <ClickableTableRow key={i} onClick={generateOpenDetails(reward, openDetails)}>
-          <TableCell>
-            <RewardDescription>
-              {reward.description}
-            </RewardDescription>
-          </TableCell>
-          <TableCell>
-            {reward.isMerit ? 'Merit Reward' : 'Dividend'}
-          </TableCell>
-          <TableCell>
-            Reward #{reward.rewardId}
-          </TableCell>
-          <TableCell>
-            {reward.isMerit ? 'One-Time' : getDividendCycle(reward)}
-          </TableCell>
-          <TableCell>
-            {fourthColumnData(reward)}
-          </TableCell>
-          <TableCell>
-            <AmountBadge>
-              {displayCurrency(reward.amount)}{' '}{getSymbol(tokens, reward.rewardToken)}
-            </AmountBadge>
-          </TableCell>
-        </ClickableTableRow>
-      ))}
-    </Table>
-  )}
-
-RewardsTableWide.propTypes = {
-  tokens: PropTypes.arrayOf(PropTypes.object).isRequired,
-  openDetails: PropTypes.func.isRequired,
-  rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
-  fourthColumn:PropTypes.string.isRequired,
-  fourthColumnData: PropTypes.func.isRequired,
-}
-
-const displayNextPayout = reward => Intl.DateTimeFormat().format(reward.endDate)
-const displayLastPayout = reward => Intl.DateTimeFormat().format(reward.endDate)
-const futureRewards = rewards => rewards.filter(reward => reward.endDate > Date.now())
-const pastRewards = rewards => rewards.filter(reward => reward.endDate <= Date.now())
-
-const tableType = [
-  { title: 'Current Rewards', fourthColumn: 'Next Payout', fourthColumnData: displayNextPayout, filterRewards: futureRewards },
-  // This will be implemented after advanced forwarding is implemented in the Aragon API
-  //{ title: 'Pending Rewards', fourthColumn: 'Status', fourthColumnData: displayStatus },
-  { title: 'Past Rewards', fourthColumn: 'Last Payout', fourthColumnData: displayLastPayout, filterRewards: pastRewards },
-]
-
-const Overview = ({ tokens, rewards, convertRates, claims, newReward, openDetails }) => {
+const Overview = ({ tokens, rewards, convertRates, claims, newReward }) => {
   const rewardsEmpty = rewards.length === 0
-
-  // console.log('reward props: ', rewards)
 
   if (rewardsEmpty) {
     return <Empty tab='Overview' action={newReward} />
@@ -236,30 +109,70 @@ const Overview = ({ tokens, rewards, convertRates, claims, newReward, openDetail
           </AverageRewardsTable>
         }
 
-        {tableType.map(({ title, fourthColumn, fourthColumnData, filterRewards }) => (
-          filterRewards(rewards).length > 0
-          &&
-          <RewardsTable
-            key={title}
-            title={title}
-            fourthColumn={fourthColumn}
-            fourthColumnData={fourthColumnData}
-            rewards={filterRewards(rewards)}
-            tokens={tokens}
-            openDetails={openDetails}
-            belowMedium={RewardsTableNarrow}
-            aboveMedium={RewardsTableWide}
-          />
-        ))}
+        <DataView
+          heading="Current rewards"
+          fields={[ 'description', 'type', 'frequency', 'next payout', 'amount' ]}
+          entries={rewards}
+          renderEntry={(reward) => {
+            switch(reward.rewardType) {
+            case ONE_TIME_DIVIDEND:
+              return renderOneTimeDividend(reward)
+            case RECURRING_DIVIDEND:
+              return renderRecurringDividend(reward)
+            case ONE_TIME_MERIT:
+              return renderOneTimeMerit(reward)
+            }
+          }}
+        />
       </RewardsWrap>
     </OverviewMain>
   )
 }
 
+const renderOneTimeDividend = (reward) => {
+  const {
+    description,
+    amount,
+    amountToken,
+    dateReference,
+  } = reward
+  const nextPayout = dateReference.toDateString()
+  const displayAmount = `${amount} ${amountToken}`
+  return [ description, DIVIDEND, ONE_TIME, nextPayout, displayAmount ]
+}
+
+const renderRecurringDividend = (reward) => {
+  const {
+    description,
+    amount,
+    amountToken,
+    disbursement,
+    disbursementUnit,
+    disbursements,
+  } = reward
+  const frequency = `${RECURRING} (${disbursement} ${disbursementUnit})`
+  const today = moment()
+  const nextPayout = disbursements.find(d => moment(d).isAfter(today, 'day'))
+    .toDateString()
+  const displayAmount = `${amount} ${amountToken}`
+  return [ description, DIVIDEND, frequency, nextPayout, displayAmount ]
+}
+
+const renderOneTimeMerit = (reward) => {
+  const {
+    description,
+    amount,
+    amountToken,
+    dateEnd,
+  } = reward
+  const nextPayout = moment(dateEnd).add(1, 'day').toDate().toDateString()
+  const displayAmount = `${amount} ${amountToken}`
+  return [ description, MERIT, ONE_TIME, nextPayout, displayAmount ]
+}
+
 Overview.propTypes = {
   tokens: PropTypes.arrayOf(PropTypes.object).isRequired,
   newReward: PropTypes.func.isRequired,
-  openDetails: PropTypes.func.isRequired,
   rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
   convertRates: PropTypes.object,
   claims: PropTypes.object.isRequired,
@@ -272,11 +185,6 @@ const RewardsWrap = styled.div`
   flex-grow: 1;
   > :not(:last-child) {
     margin-bottom: 20px;
-  }
-`
-const ClickableTableRow = styled(TableRow)`
-  :hover {
-    cursor: pointer;
   }
 `
 
