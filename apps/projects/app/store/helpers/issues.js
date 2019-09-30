@@ -1,9 +1,34 @@
-import { toHex } from 'web3-utils'
+import { hexToAscii, toHex } from 'web3-utils'
 import { app } from '../app'
 import { ipfsGet } from '../../utils/ipfs-helpers'
 import standardBounties from '../../abi/StandardBounties.json'
 
 const assignmentRequestStatus = [ 'Unreviewed', 'Accepted', 'Rejected' ]
+
+const PROJECTS_APP_ID = '0xd79eEe331828492c2ba4c11bf468fb64d52a46F9'
+const LOCAL_SUPERUSER_ID = '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7'
+
+const getBountyStructure = {
+  approvers: [PROJECTS_APP_ID],
+  balance: '1000000000000000000',
+  contributions: [{
+    amount: '1000000000000000000',
+    contributor: PROJECTS_APP_ID,
+    refunded: false,
+  }],
+  deadline: '1569868629565',
+  fulfillments: [{
+    fulfillers: [LOCAL_SUPERUSER_ID],
+    submitter: LOCAL_SUPERUSER_ID,
+  }],
+  hasBounty: true,
+  hasPaidOut: false,
+  issuers: [PROJECTS_APP_ID],
+  standardBountyId: '0',
+  token: '0x0000000000000000000000000000000000000000',
+  tokenVersion: '0',
+  workStatus: 'funded',
+}
 
 export const loadIssueData = async ({ repoId, issueNumber }) => {
   return new Promise(resolve => {
@@ -12,7 +37,35 @@ export const loadIssueData = async ({ repoId, issueNumber }) => {
       const bountyContract = app.external(bountiesRegistry, standardBounties.abi)
       const bountyData = await bountyContract.getBounty(standardBountyId).toPromise()
       const token = await bountyData.token
-      resolve({ balance, hasBounty, token, standardBountyId, ...bountyData })
+      resolve({
+        assignee: '0x0000000000000000000000000000000000000000', // TODO
+        balance,
+        deadline: '2019-10-14T20:34:00.140Z', // TODO
+        detailsOpen: 0, // TODO
+        exp: 0, // TODO
+        fundingHistory: [{ // TODO
+          date: '2019-09-30T20:34:19.416Z',
+          user: {
+            id: 'MDQ6VXNlcjE5ODA4MDc2',
+            login: 'PeterMPhillips',
+            url: 'https://github.com/PeterMPhillips',
+            avatarUrl: 'https://avatars3.githubusercontent.com/u/19808076?v=4',
+            __typename: 'User',
+          },
+        }],
+        hasBounty,
+        hours: 1, // TODO
+        key: 'MDU6SXNzdWU0OTk2NzI3Mzg=', // TODO
+        number: Number(issueNumber),
+        repo: 'open-enterprise', // TODO
+        repoId: hexToAscii(repoId),
+        size: 1, // TODO
+        slots: 1, // TODO
+        slotsIndex: 0, // TODO
+        standardBountyId,
+        token,
+        workStatus: 'funded', // TODO
+      })
     })
   })
 }
