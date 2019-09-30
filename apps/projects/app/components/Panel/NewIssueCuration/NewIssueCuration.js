@@ -116,7 +116,7 @@ const onSubmitCuration = ({ closePanel, curateIssues }) => (
     emptyIntArray,
     issueNumbers,
     1
-  )
+  ).toPromise()
 }
 
 // TODO: move entire component to functional component

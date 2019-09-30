@@ -212,7 +212,7 @@ Repo.propTypes = {
 
 const createProject = ({ closePanel, addRepo }) => ({ project }) => {
   closePanel()
-  addRepo(toHex(project))
+  addRepo(toHex(project)).toPromise()
 }
 
 // TODO: move entire component to functional component
@@ -241,8 +241,7 @@ const ScrollableList = styled.div`
   overflow-y: auto;
   padding-right: 10px;
   margin: 16px 0;
-  // Hack needed to make the scrollable list, since the whole SidePanel is a scrollable container
-  height: calc(100vh - 420px);
+  height: calc(100vh - 420px); /* Hack needed to make the scrollable list, since the whole SidePanel is a scrollable container */
 `
 const RepoInfo = styled.div`
   margin: 20px 0;
