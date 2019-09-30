@@ -142,7 +142,7 @@ contract AddressBook is AragonApp {
     /**
      * @notice Get index associated to entry `_addr` from the registry.
      * @dev getter for the entries mapping for an index in entryArr
-     * @param _addr The Ethreum address of the entry to get
+     * @param _addr The Ethereum address of the entry to get
      * @return contentId pointing to the IPFS structured content object for the entry
      */
     function getEntryIndex(address _addr) external view isInitialized entryExists(_addr) returns (uint256 index) {
