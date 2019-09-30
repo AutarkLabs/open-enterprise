@@ -49,6 +49,7 @@ const usePanelManagement = () => {
       setActivePanel(PANELS.NewIssue)
     },
     setupNewProject: () => {
+console.log('+++new project')
       setActivePanel(PANELS.NewProject)
     },
     submitWork: issue => {

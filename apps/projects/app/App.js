@@ -29,33 +29,6 @@ import { LoadingAnimation } from './components/Shared'
 import { EmptyWrapper } from './components/Shared'
 import { Error } from './components/Card'
 
-const getTabs = ({ repoCount }) => {
-  const { setupNewIssue, setupNewProject } = usePanelManagement()
-
-  const tabs = [
-    {
-      name: 'Overview',
-      body: Overview,
-      action: <Button mode="strong" icon={<IconPlus />} onClick={setupNewProject} label="New Project" />,
-    },
-  ]
-
-  if (repoCount > 0) {
-    tabs.push({
-      name: 'Issues',
-      body: Issues,
-      action: <Button mode="strong" icon={<IconPlus />} onClick={setupNewIssue} label="New Issue" />,
-    })
-  }
-
-  tabs.push({
-    name: 'Settings',
-    body: Settings,
-  })
-
-  return tabs
-}
-
 const App = () => {
   const { api, appState } = useAragonApi()
   const [ activeIndex, setActiveIndex ] = useState(
@@ -158,19 +131,33 @@ const App = () => {
         <LoadingAnimation />
       </EmptyWrapper>
     )
-  } else  if (github.status === STATUS.INITIAL) {
+  } else if (github.status === STATUS.INITIAL) {
     return <Unauthorized onLogin={handleGithubSignIn} />
   } else if (github.status === STATUS.FAILED) {
     return <Error action={noop} />
   }
 
-  const tabs = getTabs({
-    repoCount: repos.length,
-    //repoCount: 1,
-  })
+  // Tabs are dynamic
+  const tabs = [{name: 'Overview', body: Overview, }]
+  //if (repos.length)
+tabs.push({ name: 'Issues', body: Issues })
+  tabs.push({ name: 'Settings', body: Settings })
 
-  const tabNames = tabs.map(t => t.name)
+  // Determine current tab details
   const TabComponent = tabs[activeIndex.tabIndex].body
+  const TabAction = () => {
+    const { setupNewIssue, setupNewProject } = usePanelManagement()
+
+    switch (tabs[activeIndex.tabIndex].name) {
+    case 'Overview': return (
+      <Button mode="strong" icon={<IconPlus />} onClick={setupNewProject} label="New Project" />
+    )
+    case 'Issues': return (
+      <Button mode="strong" icon={<IconPlus />} onClick={setupNewIssue} label="New Issue" />
+    )
+    default: return null
+    }
+  }
 
   return (
     <Main>
@@ -183,7 +170,7 @@ const App = () => {
             <Header
               primary="Projects"
               secondary={
-                tabs[activeIndex.tabIndex].action
+                <TabAction />
               }
             />
 
@@ -195,7 +182,7 @@ const App = () => {
               </Bar>
               :
               <Tabs
-                items={tabNames}
+                items={tabs.map(t => t.name)}
                 onChange={handleSelect}
                 selected={activeIndex.tabIndex}
               />

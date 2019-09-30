@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { Query } from 'react-apollo'
-//import Query from './Query.stub'
+//import { Query } from 'react-apollo'
+import Query from './Query.stub'
 
 import { Button } from '@aragon/ui'
 import BigNumber from 'bignumber.js'
@@ -428,7 +428,7 @@ class Issues extends React.PureComponent {
     }
 
     // previous GET_ISSUES is deliberately left in place for reference
-    const GET_ISSUES2 = getIssuesGQL(reposQueryParams)
+//    const GET_ISSUES2 = getIssuesGQL(reposQueryParams)
     /*
       <Query
         fetchPolicy="cache-first"
@@ -439,7 +439,7 @@ class Issues extends React.PureComponent {
     return (
       <Query
         fetchPolicy="cache-first"
-        query={GET_ISSUES2}
+//        query={GET_ISSUES2}
         onError={console.error}
       >
         {({ data, loading, error, refetch }) => {

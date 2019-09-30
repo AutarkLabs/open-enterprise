@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import {
@@ -55,12 +55,15 @@ const FilterBar = ({
   const sortersOpener = useRef(null)
   const filtersOpener = useRef(null)
   const searchOpener = useRef(null)
+  const searchRef = useRef(null)
   const activeFilters = () => {
     let count = 0
     const types = [ 'projects', 'labels', 'milestones', 'statuses' ]
     types.forEach(t => count += Object.keys(filters[t]).length)
     return count
   }
+
+  useEffect(() => { searchRef.current && searchRef.current.focus()})
 
   const updateTextFilter = e => {
     setTextFilter(e.target.value)
@@ -368,6 +371,7 @@ const FilterBar = ({
       }
       adornmentPosition="end"
       css="width: 256px"
+      ref={searchRef}
     />
   )
 
