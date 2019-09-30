@@ -171,9 +171,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     }
 
     /**
-    * @notice Global parameter change: A dot voting option will require at least
-    *        `@formatPct(_globalCandidateSupportPct)`% of the votes for it to be
-    *        considered valid.
+    * @notice Global parameter change: A dot voting option will require at least `@formatPct(_globalCandidateSupportPct)`% of the votes for it to be considered valid.
     * @param _globalCandidateSupportPct Percentage of votes cast that must support
     *        a voting option for it to be valid (expressed as a 10^18 percentage,
     *        e.g. 10^16 = 1%, 10^18 = 100%)
@@ -187,10 +185,8 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     }
 
     /**
-    * @notice Global parameter change: A dot vote will require a minimum participation
-    *         from `@formatPct(_minQuorum)`% of the total token supply for the proposal
-    *         to be considered valid.
-    * @param _minQuorum Percentage of voters that must participate in a vote for it 
+    * @notice Global parameter change: A dot vote will require a minimum participation from `@formatPct(_minQuorum)`% of the total token supply for the proposal to be considered valid.
+    * @param _minQuorum Percentage of voters that must participate in a vote for it
     *        to be considered valid (expressed as a 10^18 percentage, e.g. 10^16 = 1%,
     *        10^18 = 100%)
     */
@@ -207,7 +203,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     /**
     * @dev `addCandidate` allows the `ROLE_ADD_CANDIDATES` to add candidates
     *      (aka voting options) to an open dot vote.
-    * @notice Add voting option "`_description`" to dot vote #`_voteId` for the purpose of `_metadata`
+    * @notice Add voting option "`_description`" to dot vote #`_voteId` for the purpose of `_metadata`.
     * @param _voteId id for vote structure this 'ballot action' is connected to
     * @param _metadata Any additional information about the candidate.
     *        Base implementation does not use this parameter.
