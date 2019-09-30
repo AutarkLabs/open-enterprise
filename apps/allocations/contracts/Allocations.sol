@@ -125,7 +125,7 @@ contract Allocations is AragonApp {
     }
 
     modifier payoutExists(uint64 _accountId, uint64 _payoutId) {
-        require(_payoutId < accounts[_accountId].payoutsLength, ERROR_NO_ACCOUNT);
+        require(_payoutId < accounts[_accountId].payoutsLength, ERROR_NO_PAYOUT);
         _;
     }
 
