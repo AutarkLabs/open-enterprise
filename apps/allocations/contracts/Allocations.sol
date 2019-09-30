@@ -1,3 +1,7 @@
+/*
+ * SPDX-License-Identitifer: GPL-3.0-or-later
+ */
+
 pragma solidity ^0.4.24;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
@@ -9,38 +13,16 @@ import "@aragon/os/contracts/lib/math/SafeMath64.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
 
 
-/*******************************************************************************
-    Copyright 2018, That Planning Suite
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*******************************************************************************/
-
-/*******************************************************************************
-* @title Allocations Contract
-* @author Autark Labs
-* @dev This contract is meant to handle tasks like basic budgeting,
-*      and fund distributions leveraging dot-voting. Currently it works with ETH
-*      and tokens by use of the Aragon Vault.
-*******************************************************************************/
 contract Allocations is AragonApp {
 
     using SafeMath for uint256;
     using SafeMath64 for uint64;
     using SafeERC20 for ERC20;
 
-    bytes32 constant public CREATE_ACCOUNT_ROLE = 0x9b9e262b9ea0587fdc5926b22b8ed5837efef4f4cc67bc1a7ee18f68ad83062f;
-    bytes32 constant public CREATE_ALLOCATION_ROLE = 0x8af1e3d6225e5adff5174a4949cb3cc04f0f62937083325a9e302eaf5d07cdf1;
-    bytes32 constant public EXECUTE_ALLOCATION_ROLE = 0x1ced0be26d1bb2db7a1a0a01064be22894ce4ca0321b6f4b28d0b1a5ce62e7ea;
-    bytes32 constant public EXECUTE_PAYOUT_ROLE = 0xa5cf757319c734091fd95cf4b09938ff69ee22637eda897ea92ca59e56f00bcb;
+    bytes32 public constant CREATE_ACCOUNT_ROLE = 0x9b9e262b9ea0587fdc5926b22b8ed5837efef4f4cc67bc1a7ee18f68ad83062f;
+    bytes32 public constant CREATE_ALLOCATION_ROLE = 0x8af1e3d6225e5adff5174a4949cb3cc04f0f62937083325a9e302eaf5d07cdf1;
+    bytes32 public constant EXECUTE_ALLOCATION_ROLE = 0x1ced0be26d1bb2db7a1a0a01064be22894ce4ca0321b6f4b28d0b1a5ce62e7ea;
+    bytes32 public constant EXECUTE_PAYOUT_ROLE = 0xa5cf757319c734091fd95cf4b09938ff69ee22637eda897ea92ca59e56f00bcb;
     bytes32 public constant CHANGE_PERIOD_ROLE = 0xd35e458bacdd5343c2f050f574554b2f417a8ea38d6a9a65ce2225dbe8bb9a9d;
     bytes32 public constant CHANGE_BUDGETS_ROLE = 0xd79730e82bfef7d2f9639b9d10bf37ebb662b22ae2211502a00bdf7b2cc3a23a;
 
@@ -51,7 +33,7 @@ contract Allocations is AragonApp {
 
     string private constant ERROR_NO_PERIOD = "ALLOCATIONS_NO_PERIOD";
     string private constant ERROR_NO_ACCOUNT = "ALLOCATIONS_NO_ACCOUNT";
-    string private constant ERROR_NO_Payout = "ALLOCATIONS_NO_PAYOUT";
+    string private constant ERROR_NO_PAYOUT = "ALLOCATIONS_NO_PAYOUT";
     string private constant ERROR_SET_PERIOD_TOO_SHORT = "ALLOCATIONS_SET_PERIOD_TOO_SHORT";
     string private constant ERROR_COMPLETE_TRANSITION = "ALLOCATIONS_COMPLETE_TRANSITION";
 
@@ -117,7 +99,7 @@ contract Allocations is AragonApp {
     }
 
     modifier payoutExists(uint64 _accountId, uint64 _payoutId) {
-        require(_payoutId < accounts[_accountId].payoutsLength, ERROR_NO_ACCOUNT);
+        require(_payoutId < accounts[_accountId].payoutsLength, ERROR_NO_PAYOUT);
         _;
     }
 
@@ -156,7 +138,7 @@ contract Allocations is AragonApp {
 // Getter functions
 ///////////////////////
     /** @notice Basic getter for accounts.
-    *   @param _accountId The Id of the account you'd like to get.
+    *   @param _accountId The budget ID you'd like to get.
     */
     function getAccount(uint64 _accountId) external view accountExists(_accountId) isInitialized
     returns(string metadata, address token, bool hasBudget, uint256 budget)
@@ -168,9 +150,9 @@ contract Allocations is AragonApp {
         budget = account.budget;
     }
 
-    /** @notice Basic getter for payouts.
-    *   @param _accountId The Id of the account you'd like to get.
-    *   @param _payoutId The Id of the payout within the account you'd like to retrieve.
+    /** @notice Basic getter for Allocations.
+    *   @param _accountId The ID of the budget.
+    *   @param _payoutId The ID of the allocation within the budget you'd like to retrieve.
     */
     function getPayout(uint64 _accountId, uint64 _payoutId) external view payoutExists(_accountId, _payoutId) isInitialized
     returns(uint amount, uint64 recurrences, uint startTime, uint period, bool distSet)
@@ -183,9 +165,9 @@ contract Allocations is AragonApp {
         distSet = payout.distSet;
     }
 
-    /** @notice Basic getter for payout descriptions.
-    *   @param _accountId The Id of the account you'd like to get.
-    *   @param _payoutId The Id of the payout within the account you'd like to retrieve.
+    /** @notice Basic getter for Allocation descriptions.
+    *   @param _accountId The Id of the budget.
+    *   @param _payoutId The Id of the allocation within the budget.
     */
     function getPayoutDescription(uint64 _accountId, uint64 _payoutId)
     external
@@ -198,9 +180,9 @@ contract Allocations is AragonApp {
         description = payout.description;
     }
 
-    /** @notice Basic getter for payout candidate length.
-    *   @param _accountId The Id of the account you'd like to get.
-    *   @param _payoutId The Id of the payout within the account you'd like to retrieve.
+    /** @notice Basic getter for getting the number of options in an Allocation.
+    *   @param _accountId The Id of the budget.
+    *   @param _payoutId The Id of the allocation within the budget.
     */
     function getNumberOfCandidates(uint64 _accountId, uint64 _payoutId) external view isInitialized payoutExists(_accountId, _payoutId)
     returns(uint256 numCandidates)
@@ -209,9 +191,9 @@ contract Allocations is AragonApp {
         numCandidates = payout.supports.length;
     }
 
-    /** @notice Basic getter for payout value for a specific recipient.
-    *   @param _accountId The Id of the account you'd like to get.
-    *   @param _payoutId The Id of the payout within the account you'd like to retrieve.
+    /** @notice Basic getter for Allocation value for a specific recipient.
+    *   @param _accountId The Id of the budget.
+    *   @param _payoutId The Id of the allocation within the budget.
     *   @param _idx The Id of the specific recipient you'd like to retrieve information for.
     */
     function getPayoutDistributionValue(uint64 _accountId, uint64 _payoutId, uint256 _idx)
@@ -234,7 +216,7 @@ contract Allocations is AragonApp {
     }
 
     /** @notice Basic getter for period information.
-    *   @param _periodId The Id of the account you'd like to get.
+    *   @param _periodId The Id of the period you'd like to receive information for.
     */
     function getPeriod(uint64 _periodId)
     external
@@ -256,16 +238,15 @@ contract Allocations is AragonApp {
     }
 
 ///////////////////////
-// Payout functions
+// Allocation functions
 ///////////////////////
     /**
-    * @dev This is the function that sets up a basic account with a budget for
-    *      creating allocations.
-    * @notice Create allocation account '`_metadata`'
-    * @param _metadata Any relevent label for the payout
+    * @dev This is the function that sets up a budget for creating allocations.
+    * @notice Create "`_metadata`" budget of `@tokenAmount(_token, _budget)` per period.
+    * @param _metadata The budget description
     * @param _token Token used for account payouts.
-    * @param _hasBudget Whether the account uses budgetting
-    * @param _budget The budget for the account.
+    * @param _hasBudget Whether the account uses budgeting.
+    * @param _budget The budget amount
     */
     function newAccount(
         string _metadata,
@@ -298,7 +279,8 @@ contract Allocations is AragonApp {
     }
 
     /**
-    * @notice Sets the maximum number of candidates that can be paid out in an allocations.
+    * @notice Set the maximum number of candidates that can be paid out in an allocation
+    *         to `_maxCandidates`.
     * @param _maxCandidates Maximum number of Candidates
     */
     function setMaxCandidates(uint256 _maxCandidates) external {
@@ -306,8 +288,8 @@ contract Allocations is AragonApp {
     }
 
     /**
-    * @notice Set budget for account number `_accountId` to `@tokenAmount(0, _amount, false)`, effective immediately
-    * @param _accountId Account Identifier
+    * @notice Update budget #`_accountId` to `@tokenAmount(0, _amount, false)`, effective immediately
+    * @param _accountId Budget Identifier
     * @param _amount New budget amount
     */
     function setBudget(
@@ -328,8 +310,8 @@ contract Allocations is AragonApp {
     }
 
     /**
-    * @notice Remove spending limit for  account number `_accountId`, effective immediately
-    * @param _accountId Address for token
+    * @notice Remove budget #`_accountId`, effective immediately
+    * @param _accountId Id for the budget.
     */
     function removeBudget(uint64 _accountId)
         external
@@ -341,10 +323,11 @@ contract Allocations is AragonApp {
         emit SetBudget(_accountId, 0, false);
     }
 
-    /** @notice This transaction will execute the payout for the senders address for account #`_accountId`
-    *   @param _accountId The Id of the account you'd like to take action against
-    *   @param _payoutId The payout within the account you'd like to execute
-    *   @param _candidateId the Candidate whose payout you'll execute (must be sender)
+    /**
+    * @notice This transaction will execute the allocation for the senders address for budget #`_accountId`
+    * @param _accountId The Id of the budget you'd like to take action against
+    * @param _payoutId The Id of the allocation within the budget you'd like to execute
+    * @param _candidateId The Candidate whose allocation you'll execute (must be sender)
     */
     function candidateExecutePayout(
         uint64 _accountId,
@@ -358,10 +341,11 @@ contract Allocations is AragonApp {
         _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId, 0);
     }
 
-    /** @notice This transaction will execute the payout for candidate `_candidateId` within account #`_accountId`
-    *   @param _accountId The Id of the account you'd like to take action against
-    *   @param _payoutId The payout within the account you'd like to execute
-    *   @param _candidateId the Candidate whose payout you'll execute (must be sender)
+    /**
+    * @notice This transaction will execute the allocation for candidate `_candidateId` within budget #`_accountId`
+    * @param _accountId The Id of the budget you'd like to take action against
+    * @param _payoutId The Id of the allocation within the budget you'd like to execute
+    * @param _candidateId The Candidate whose allocation you'll execute (must be sender)
     */
     function executePayout(
         uint64 _accountId,
@@ -374,10 +358,10 @@ contract Allocations is AragonApp {
     }
 
     /**
-    * @dev This function distributes the payouts to the candidates in accordance with the distribution values
-    * @notice Distribute allocation `_payoutId`
-    * @param _payoutId Any relevent label for the payout
-    * @param _accountId Account the payout belongs to
+    * @dev This function distributes the allocations to the candidates in accordance with the distribution values
+    * @notice Distribute allocation #`_payoutId`
+    * @param _accountId The Id of the budget you'd like to take action against
+    * @param _payoutId The Id of the allocation within the budget you'd like to execute
     */
     function runPayout(uint64 _accountId, uint64 _payoutId)
     external
@@ -390,9 +374,10 @@ contract Allocations is AragonApp {
         success = _runPayout(_accountId, _payoutId);
     }
 
-    /** @dev This function is provided to circumvent situations where the transition period
-    *        becomes impossible to execute
-    *   @param _limit Maximum number of periods to advance in this execution
+    /**
+    * @dev This function is provided to circumvent situations where the transition period
+    *      becomes impossible to execute
+    * @param _limit Maximum number of periods to advance in this execution
     */
     function advancePeriod(uint64 _limit) external isInitialized {
         _tryTransitionAccountingPeriod(_limit);
@@ -403,12 +388,12 @@ contract Allocations is AragonApp {
     *      to be called by a DotVote (options get weird if it's not)
     *      but for our use case the “CREATE_ALLOCATION_ROLE” will be given to
     *      the DotVote. This function is public for stack-depth reasons
-    * @notice Create a `@tokenAmount(_token, _amount)` allocation for ' `_description` '
-    * @param _candidateAddresses Array of candidates to be allocated a portion of the payouut
-    * @param _supports The Array of all support values for the various candidates. These values are set in dot voting
-    * @param _accountId The Account used for the payout
-    * @param _recurrences quantity used to indicate whether this is a recurring or one-time payout
-    * @param _period time interval between each recurring payout
+    * @notice Create a `@tokenAmount(_token, _amount)` allocation for "`_description`"
+    * @param _candidateAddresses Array of potential addresses receiving a share of the allocation.
+    * @param _supports The Array of all support values for the various candidates. These values are set in dot voting.
+    * @param _accountId The Id of the budget used for the allocation
+    * @param _recurrences Quantity used to indicate whether this is a recurring or one-time payout
+    * @param _period Time interval between each recurring allocation
     * @param _amount The quantity of funds to be allocated
     * @param _description The distributions description
     */
