@@ -150,7 +150,7 @@ contract AddressBook is AragonApp {
     }
 
     /**
-     * @notice Checks if an `_entry` exists in the registry
+     * @notice Checks if `_entry` exists in the registry
      * @param _entry the Ethereum address to check
      * @return _repoId Id for entry in entryArr
      */
