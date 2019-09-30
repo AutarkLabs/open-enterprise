@@ -378,10 +378,11 @@ contract Allocations is AragonApp {
         emit SetBudget(_accountId, 0, false);
     }
 
-    /** @notice This transaction will execute the payout for the senders address for account #`_accountId`
-    *   @param _accountId The Id of the account you'd like to take action against
-    *   @param _payoutId The payout within the account you'd like to execute
-    *   @param _candidateId the Candidate whose payout you'll execute (must be sender)
+    /**
+    * @notice This transaction will execute the allocation for the senders address for budget #`_accountId`
+    * @param _accountId The Id of the budget you'd like to take action against
+    * @param _payoutId The Id of the allocation within the budget you'd like to execute
+    * @param _candidateId The Candidate whose allocation you'll execute (must be sender)
     */
     function candidateExecutePayout(
         uint64 _accountId,
@@ -395,10 +396,11 @@ contract Allocations is AragonApp {
         _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId, 0);
     }
 
-    /** @notice This transaction will execute the payout for candidate `_candidateId` within account #`_accountId`
-    *   @param _accountId The Id of the account you'd like to take action against
-    *   @param _payoutId The payout within the account you'd like to execute
-    *   @param _candidateId the Candidate whose payout you'll execute (must be sender)
+    /**
+    * @notice This transaction will execute the allocation for candidate `_candidateId` within budget #`_accountId`
+    * @param _accountId The Id of the budget you'd like to take action against
+    * @param _payoutId The Id of the allocation within the budget you'd like to execute
+    * @param _candidateId The Candidate whose allocation you'll execute (must be sender)
     */
     function executePayout(
         uint64 _accountId,
@@ -461,9 +463,10 @@ contract Allocations is AragonApp {
         success = _runPayout(_accountId, _payoutId);
     }
 
-    /** @dev This function is provided to circumvent situations where the transition period
-    *        becomes impossible to execute
-    *   @param _limit Maximum number of periods to advance in this execution
+    /**
+    * @dev This function is provided to circumvent situations where the transition period
+    *      becomes impossible to execute
+    * @param _limit Maximum number of periods to advance in this execution
     */
     function advancePeriod(uint64 _limit) external isInitialized {
         _tryTransitionAccountingPeriod(_limit);
