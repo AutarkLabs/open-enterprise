@@ -29,9 +29,8 @@ export const initStore = vaultAddress => {
   )
 }
 
-const initState = (vaultContract) => async (cachedState = INITIAL_STATE) => {
-  cachedState = cachedState || INITIAL_STATE
-  let nextState = await initializeTokens(cachedState, vaultContract)
+const initState = (vaultContract) => async (cachedState) => {
+  let nextState = await initializeTokens(cachedState || INITIAL_STATE, vaultContract)
   const github = await app.getCache('github').toPromise()
   if (github && github.token) {
     nextState.github = github
