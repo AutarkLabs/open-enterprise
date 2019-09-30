@@ -2,8 +2,6 @@ pragma solidity 0.4.24;
 
 // TODO: revert relative path
 import "../../../node_modules/@aragon/templates-shared/contracts/TokenCache.sol";
-import "../../../node_modules/@aragon/templates-shared/contracts/BaseTemplate.sol";
-
 import "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
 
 import "@tps/apps-address-book/contracts/AddressBook.sol";
@@ -13,8 +11,10 @@ import { DotVoting } from "@tps/apps-dot-voting/contracts/DotVoting.sol";
 import "@tps/apps-projects/contracts/Projects.sol";
 import "@tps/apps-rewards/contracts/Rewards.sol";
 
+import "./BaseCache.sol";
 
-contract BaseOEApps is BaseTemplate, TokenCache {
+
+contract BaseOEApps is BaseCache, TokenCache {
     // /* Hardcoded constant to save gas
     bytes32 constant internal ADDRESS_BOOK_APP_ID = apmNamehash("address-book");              // address-book.aragonpm.eth
     bytes32 constant internal ALLOCATIONS_APP_ID = apmNamehash("allocations");              // allocations.aragonpm.eth;
@@ -32,7 +32,7 @@ contract BaseOEApps is BaseTemplate, TokenCache {
     // bytes32 constant internal REWARDS_APP_ID = 0x3ca69801a60916e9222ceb2fa3089b3f66b4e1b3fc49f4a562043d9ec1e5a00b;
 
     string constant private ERROR_BOUNTIES_NOT_CONTRACT = "BOUNTIES_REGISTRY_NOT_CONTRACT";
-
+    address constant internal ANY_ENTITY = address(-1);
     StandardBounties internal bountiesRegistry;
 
     /**
@@ -41,12 +41,7 @@ contract BaseOEApps is BaseTemplate, TokenCache {
     *       required pre-deployed contracts to set up the organization
     */
     constructor(address[5] _deployedSetupContracts)
-        BaseTemplate(
-            DAOFactory(_deployedSetupContracts[0]),
-            ENS(_deployedSetupContracts[1]),
-            MiniMeTokenFactory(_deployedSetupContracts[2]),
-            IFIFSResolvingRegistrar(_deployedSetupContracts[3])
-        )
+        BaseCache(_deployedSetupContracts)
         // internal // TODO: This makes the contract abstract
         public
     {
@@ -86,7 +81,7 @@ contract BaseOEApps is BaseTemplate, TokenCache {
     {
         _acl.createPermission(_createAccountsGrantee, _allocations, _allocations.CREATE_ACCOUNT_ROLE(), _manager);
         _acl.createPermission(_createAllocationsGrantee, _allocations, _allocations.CREATE_ALLOCATION_ROLE(), _manager);
-        // _acl.createPermission(ANY_ENTITY, _allocations, _allocations.EXECUTE_ALLOCATION_ROLE(), _manager);
+        _acl.createPermission(ANY_ENTITY, _allocations, _allocations.EXECUTE_ALLOCATION_ROLE(), _manager);
     }
 
     /* DOT-VOTING */
@@ -173,9 +168,9 @@ contract BaseOEApps is BaseTemplate, TokenCache {
         _acl.createPermission(_grantee, _rewards, _rewards.ADD_REWARD_ROLE(), _manager);
     }
 
-    function _grantVaultPermissions(ACL _acl, Vault _vault, Allocations _allocations) internal {//, Rewards _rewards) internal {//, Projects _projects, Rewards _rewards) internal {
+    function _grantVaultPermissions(ACL _acl, Vault _vault, Allocations _allocations, Projects _projects, Rewards _rewards) internal {
         _acl.grantPermission(_allocations, _vault, _vault.TRANSFER_ROLE());
-        // _acl.grantPermission(_projects, _vault, _vault.TRANSFER_ROLE());
-        // _acl.grantPermission(_rewards, _vault, _vault.TRANSFER_ROLE());
+        _acl.grantPermission(_projects, _vault, _vault.TRANSFER_ROLE());
+        _acl.grantPermission(_rewards, _vault, _vault.TRANSFER_ROLE());
     }
 }
