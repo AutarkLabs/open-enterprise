@@ -89,3 +89,6 @@ package-lock.json
 # Ignore only for first level to select just the contract build directories
 */*/abi
 */*/build
+
+# template specific
+arapp_local.json
