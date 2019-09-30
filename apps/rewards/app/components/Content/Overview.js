@@ -88,7 +88,7 @@ const Overview = ({ tokens, rewards, convertRates, claims, newReward }) => {
   const rewardsEmpty = rewards.length === 0
 
   if (rewardsEmpty) {
-    return <Empty tab='Overview' action={newReward} />
+    return <Empty action={newReward} />
   }
   const averageRewardsNumbers = calculateAverageRewardsNumbers(rewards, claims, tokens, convertRates)
   return (
