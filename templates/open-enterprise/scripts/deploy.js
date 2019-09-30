@@ -8,7 +8,10 @@ const CONTRACT_NAME = 'OpenEnterpriseTemplate'
 module.exports = callback => {
   deployTemplate(web3, artifacts, TEMPLATE_NAME, CONTRACT_NAME)
     .then(template => {
-      console.log('Open Enterprise template deployed at address', template.address)
+      console.log(
+        'Open Enterprise template deployed at address\n',
+        template.address
+      )
       callback()
     })
     .catch(callback)
