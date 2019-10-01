@@ -1,5 +1,6 @@
 // import { vaultLoadBalance } from './token'
 import { updateAccounts } from './account'
+import { updateAllocations } from './allocation'
 import { addressesEqual } from '../../../../shared/lib/web3-utils'
 import { events, vaultLoadBalance } from '../../../../shared/store-utils'
 
@@ -37,6 +38,11 @@ const eventHandler = async eventData => {
       ...state,
       accounts: await updateAccounts(state.accounts, returnValues.accountId),
     }
+  // case 'SetDistribution':
+  //   return {
+  //     ...state,
+  //     allocations: await updateAllocations(state.allocations, returnValues)
+  //   }
     // nextState.accounts = nextAccounts
     // break
     // case 'PayoutExecuted':
