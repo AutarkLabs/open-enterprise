@@ -93,7 +93,7 @@ contract('Allocations App', accounts => {
       root,
       { from: root }
     )
-    
+
     vaultBase = await Vault.new()
     const receipt1 = await dao.newAppInstance('0x5678', vaultBase.address, '0x', false, { from: root })
     vault = Vault.at(receipt1.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
@@ -138,7 +138,7 @@ contract('Allocations App', accounts => {
 
       await vault.deposit(
         0, // zero address
-        web3.toWei(0.1, 'ether'), 
+        web3.toWei(0.1, 'ether'),
         { from: empire, value: web3.toWei(0.1, 'ether') }
       )
       supports = [ 500, 200, 300 ]
@@ -171,7 +171,7 @@ contract('Allocations App', accounts => {
         zeros,
         accountId,
         2,
-        timestamp,
+        timestamp+10,
         86400,
         web3.toWei(0.01, 'ether'),
       )).logs[0].args.payoutId.toNumber()
@@ -201,7 +201,7 @@ contract('Allocations App', accounts => {
       ] = await app.getPeriod(periodNo)
       assert(isCurrent, 'current period is current')
       assert.strictEqual(endTime - startTime, TEM_DAYS - 1, 'should be equal to ten days minus one second')
-      
+
     })
 
     it('sets the distribution (eth)', async () => {
@@ -232,11 +232,27 @@ contract('Allocations App', accounts => {
       )
     })
 
-    it('executes the payout (eth)', async () => {
-      await app.runPayout(accountId, ethPayoutId)
+    it('auto-executes the payout (eth)', async () => {
       const bobafettBalance = await web3.eth.getBalance(bobafett)
       const dengarBalance = await web3.eth.getBalance(dengar)
       const bosskBalance = await web3.eth.getBalance(bossk)
+      assert.equal(
+        bobafettBalance.toNumber() - bobafettInitialBalance.toNumber(),
+        (web3.toWei(0.01, 'ether') * supports[0]) / totalsupport,
+        'bobafett expense'
+      )
+      assert.equal(
+        dengarBalance.toNumber() - dengarInitialBalance.toNumber(),
+        (web3.toWei(0.01, 'ether') * supports[1]) / totalsupport,
+        'dengar expense'
+      )
+      assert.equal(
+        bosskBalance.toNumber() - bosskInitialBalance.toNumber(),
+        (web3.toWei(0.01, 'ether') * supports[2]) / totalsupport,
+        'bossk expense'
+      )
+      await app.runPayout(accountId, ethPayoutId)
+      // calling runPayout has no effect
       assert.equal(
         bobafettBalance.toNumber() - bobafettInitialBalance.toNumber(),
         (web3.toWei(0.01, 'ether') * supports[0]) / totalsupport,
@@ -296,7 +312,7 @@ contract('Allocations App', accounts => {
     })
 
     it('executes the payout (recurring)', async () => {
-      timetravel(86400*5)
+      timetravel(2*86400)
       await app.runPayout(accountId, deferredPayoutId)
 
       const bobafettBalance = await web3.eth.getBalance(bobafett)
@@ -409,7 +425,7 @@ contract('Allocations App', accounts => {
       )).logs[0].args.accountId.toNumber()
       await vault.deposit(
         0, // zero address
-        web3.toWei(0.02, 'ether'), 
+        web3.toWei(0.02, 'ether'),
         { from: empire, value: web3.toWei(0.02, 'ether') }
       )
     })

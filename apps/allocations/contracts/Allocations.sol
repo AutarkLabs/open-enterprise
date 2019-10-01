@@ -25,6 +25,7 @@ contract Allocations is AragonApp {
     bytes32 public constant EXECUTE_PAYOUT_ROLE = 0xa5cf757319c734091fd95cf4b09938ff69ee22637eda897ea92ca59e56f00bcb;
     bytes32 public constant CHANGE_PERIOD_ROLE = 0xd35e458bacdd5343c2f050f574554b2f417a8ea38d6a9a65ce2225dbe8bb9a9d;
     bytes32 public constant CHANGE_BUDGETS_ROLE = 0xd79730e82bfef7d2f9639b9d10bf37ebb662b22ae2211502a00bdf7b2cc3a23a;
+    bytes32 public constant SET_MAX_CANDIDATES_ROLE = 0xe593f1908655effa3e2eb1eab075684bd646a51d97f20646bb9ecb2df3e4f2bb;
 
     uint256 internal constant MAX_UINT256 = uint256(-1);
     uint64 internal constant MAX_UINT64 = uint64(-1);
@@ -86,7 +87,6 @@ contract Allocations is AragonApp {
     event PaymentFailure(uint64 accountId, uint64 payoutId, uint256 candidateId);
     event SetBudget(uint256 indexed accountId, uint256 amount, bool hasBudget);
     event ChangePeriodDuration(uint64 newDuration);
-    event Time(uint64 time);
 
     modifier periodExists(uint64 _periodId) {
         require(_periodId < periodsLength, ERROR_NO_PERIOD);
@@ -283,7 +283,7 @@ contract Allocations is AragonApp {
     *         to `_maxCandidates`.
     * @param _maxCandidates Maximum number of Candidates
     */
-    function setMaxCandidates(uint256 _maxCandidates) external {
+    function setMaxCandidates(uint256 _maxCandidates) external auth(SET_MAX_CANDIDATES_ROLE) {
         maxCandidates = _maxCandidates;
     }
 
@@ -301,7 +301,6 @@ contract Allocations is AragonApp {
         transitionsPeriod
         accountExists(_accountId)
     {
-        require(_accountId < accountsLength);
         accounts[_accountId].budget = _amount;
         if (!accounts[_accountId].hasBudget) {
             accounts[_accountId].hasBudget = true;
@@ -359,7 +358,7 @@ contract Allocations is AragonApp {
 
     /**
     * @dev This function distributes the allocations to the candidates in accordance with the distribution values
-    * @notice Distribute allocation #`_payoutId`
+    * @notice Distribute allocation #`_payoutId` from budget #`_accountId`.
     * @param _accountId The Id of the budget you'd like to take action against
     * @param _payoutId The Id of the allocation within the budget you'd like to execute
     */
@@ -388,14 +387,14 @@ contract Allocations is AragonApp {
     *      to be called by a DotVote (options get weird if it's not)
     *      but for our use case the “CREATE_ALLOCATION_ROLE” will be given to
     *      the DotVote. This function is public for stack-depth reasons
-    * @notice Create a `@tokenAmount(_token, _amount)` allocation for "`_description`"
+    * @notice Create an allocation from budget #`_accountId` for "`_description`" that will execute `_recurrences` times.
     * @param _candidateAddresses Array of potential addresses receiving a share of the allocation.
     * @param _supports The Array of all support values for the various candidates. These values are set in dot voting.
+    * @param _description The distribution description
     * @param _accountId The Id of the budget used for the allocation
     * @param _recurrences Quantity used to indicate whether this is a recurring or one-time payout
     * @param _period Time interval between each recurring allocation
     * @param _amount The quantity of funds to be allocated
-    * @param _description The distributions description
     */
     function setDistribution(
         address[] _candidateAddresses,
@@ -415,8 +414,9 @@ contract Allocations is AragonApp {
         Account storage account = accounts[_accountId];
         require(vault.balance(account.token) >= _amount * _recurrences);
         require(_recurrences > 0, "must execute payout at least once");
-        require(payout.candidateAddresses.length <= maxCandidates);
+
         Payout storage payout = account.payouts[account.payoutsLength++];
+        require(payout.candidateAddresses.length <= maxCandidates);
 
         payout.amount = _amount;
         payout.recurrences = _recurrences;
@@ -424,7 +424,6 @@ contract Allocations is AragonApp {
         if (_recurrences > 1) {
             payout.period = _period;
             // minimum granularity is a single day
-            // This check can be disabled currently to enable testing of shorter times
             require(payout.period >= 1 days,"period too short");
         }
         payout.startTime = _startTime; // solium-disable-line security/no-block-members
@@ -434,6 +433,9 @@ contract Allocations is AragonApp {
         payout.executions.length = _supports.length;
         payoutId = account.payoutsLength - 1;
         emit SetDistribution(_accountId, payoutId);
+        if (_startTime <= getTimestamp64()) {
+            _runPayout(_accountId, payoutId);
+        }
     }
 
     function _executePayoutAtLeastOnce(
@@ -575,7 +577,6 @@ contract Allocations is AragonApp {
         // Split in multiple lines to circumvent linter warning
         uint64 increase = payout.executions[_candidateIndex].mul(payout.period);
         uint64 nextPayment = payout.startTime.add(increase);
-        emit Time(nextPayment);
         return nextPayment;
     }
 
