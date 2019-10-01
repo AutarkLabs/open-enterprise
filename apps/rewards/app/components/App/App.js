@@ -34,6 +34,7 @@ class App extends React.Component {
     refTokens: PropTypes.array.isRequired,
     amountTokens: PropTypes.array.isRequired,
     claims: PropTypes.object.isRequired,
+    metrics: PropTypes.arrayOf(PropTypes.object).isRequired,
   }
 
   constructor(props) {
@@ -268,6 +269,7 @@ class App extends React.Component {
               convertRates={this.state.convertRates}
               claims={this.props.claims}
               viewReward={this.viewReward}
+              metrics={this.props.metrics}
             />
           )}
 

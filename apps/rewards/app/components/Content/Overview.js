@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { BigNumber } from 'bignumber.js'
 import moment from 'moment'
 import {
   DataView,
@@ -18,109 +17,24 @@ import {
   MERIT,
   DIVIDEND
 } from '../../utils/constants'
-import {
-  AverageRewards,
-  AverageRewardsTable,
-  formatAvgAmount,
-} from './RewardsTables'
-import { MILLISECONDS_IN_A_MONTH, } from '../../../../../shared/ui/utils'
 import { Empty } from '../Card'
-
-const averageRewardsTitles = [ 'Average Reward', 'Monthly Average', 'Total this year' ]
-// TODO: these need to be actually calculated
-const calculateAverageRewardsNumbers = ( rewards, claims, balances, convertRates ) => {
-  if (Object.keys(claims).length > 0 && balances && convertRates) {
-    return [
-      formatAvgAmount(calculateAvgClaim(claims, balances, convertRates), '$'),
-      formatAvgAmount(calculateMonthlyAvg(rewards, balances, convertRates), '$'),
-      formatAvgAmount(calculateYTDRewards(rewards,balances, convertRates), '$'),
-    ]
-  }
-  else {
-    return Array(3).fill(formatAvgAmount(0, '$'))
-  }
-}
-
-const calculateAvgClaim = ({ claimsByToken, totalClaimsMade }, balances, convertRates) => {
-  return sumTotalRewards(
-    claimsByToken,
-    balances,
-    convertRates,
-    (claim, bal) => claim.address === bal.address
-  ) / totalClaimsMade
-}
-
-const calculateMonthlyAvg = (rewards, balances, convertRates) => {
-  let monthCount = Math.ceil((Date.now() - rewards.reduce((minDate, reward) => {
-    return reward.endDate < minDate.endDate ? reward: minDate
-  }).endDate) / MILLISECONDS_IN_A_MONTH)
-
-  return sumTotalRewards(
-    rewards,
-    balances,
-    convertRates,
-    (rew, bal) => rew.rewardToken === bal.address
-  ) / monthCount
-}
-
-const calculateYTDRewards = (rewards, balances, convertRates) => {
-  const yearBeginning = new Date(new Date(Date.now()).getFullYear(), 0)
-  return sumTotalRewards(
-    rewards,
-    balances,
-    convertRates,
-    (rew, bal) => rew.rewardToken === bal.address && rew.endDate >= yearBeginning
-  )
-}
-
-const sumTotalRewards = (rewards, balances, convertRates, rewardFilter) => {
-  return balances.reduce((balAcc, balance) => {
-    if (convertRates[balance.symbol]) {
-      return rewards.reduce((rewAcc,reward) => {
-        return (rewardFilter(reward, balance))
-          ?
-          BigNumber(reward.amount).div(Math.pow(10, balance.decimals)).div(convertRates[balance.symbol]).plus(rewAcc)
-            .toNumber()
-          :
-          rewAcc
-      },0) + balAcc
-    }
-    else return balAcc
-  },0)
-}
+import Metrics from './Metrics'
 
 const Overview = ({
-  tokens,
   rewards,
-  convertRates,
-  claims,
   newReward,
   viewReward,
+  metrics,
 }) => {
   const rewardsEmpty = rewards.length === 0
 
   if (rewardsEmpty) {
     return <Empty action={newReward} />
   }
-  const averageRewardsNumbers = calculateAverageRewardsNumbers(rewards, claims, tokens, convertRates)
   return (
     <OverviewMain>
       <RewardsWrap>
-
-        {(tokens && convertRates)
-          ?
-          <AverageRewards
-            titles={averageRewardsTitles}
-            numbers={averageRewardsNumbers}
-          />
-          :
-          <AverageRewardsTable>
-            <Text.Block size="large" weight="bold">
-              Calculating summaries...
-            </Text.Block>
-          </AverageRewardsTable>
-        }
-
+        <Metrics content={metrics} />
         <DataView
           heading={<Text size="xlarge">Current rewards</Text>}
           fields={[ 'description', 'type', 'frequency', 'next payout', 'amount' ]}
@@ -205,6 +119,7 @@ Overview.propTypes = {
   rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
   convertRates: PropTypes.object,
   claims: PropTypes.object.isRequired,
+  metrics: PropTypes.arrayOf(PropTypes.object).isRequired,
 }
 
 const OverviewMain = styled.div`

@@ -108,6 +108,23 @@ const initialState = process.env.NODE_ENV !== 'production' && {
     claimsByToken: [],
     totalClaimsMade: [],
   },
+  metrics: [
+    {
+      name: 'Average reward',
+      value: '8.33',
+      unit: 'ETH',
+    },
+    {
+      name: 'Monthly average',
+      value: '12.50',
+      unit: 'ETH',
+    },
+    {
+      name: 'Annual total',
+      value: '25.00',
+      unit: 'ETH',
+    },
+  ],
 }
 
 const functions = process.env.NODE_ENV !== 'production' && (() => ({
