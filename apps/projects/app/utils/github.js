@@ -1,3 +1,5 @@
+import '@babel/polyfill'
+
 const STATUS = {
   AUTHENTICATED: 'authenticated',
   FAILED: 'failed',

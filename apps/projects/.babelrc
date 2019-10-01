@@ -1,6 +1,6 @@
 {
   "presets": [
-    ["@babel/preset-env", { "modules": false, "useBuiltIns": false }]
+    ["@babel/preset-env", { "useBuiltIns": false }]
   ],
   "plugins": [
     ["styled-components", { "displayName": true }],
