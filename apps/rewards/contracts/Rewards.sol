@@ -9,12 +9,6 @@ import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
 
 
-/**
-  * @title Rewards App
-  * @author Autark
-  * @dev Distributes rewards in proportion to a reference asset, either as
-  * one-off merit rewards or as scheduled dividend
-  */
 contract Rewards is AragonApp {
 
     /// Hardcoded constants to save gas
@@ -90,11 +84,11 @@ contract Rewards is AragonApp {
         reward.claimed[msg.sender] = true;
         reward.timeClaimed[msg.sender] = getTimestamp();
 
-        uint256 rewardAmount = calculateRewardAmount(reward);
+        uint256 rewardAmount = _calculateRewardAmount(reward);
         require(vault.balance(reward.rewardToken) > rewardAmount, ERROR_VAULT_FUNDS);
 
         if (rewardAmount > 0) {
-            transferReward(reward, rewardAmount);
+            _transferReward(reward, rewardAmount);
         }
 
         emit RewardClaimed(_rewardID);
@@ -157,7 +151,7 @@ contract Rewards is AragonApp {
         claimed = reward.claimed[msg.sender];
         timeClaimed = reward.timeClaimed[msg.sender];
         creator = reward.creator;
-        rewardAmount = calculateRewardAmount(reward);
+        rewardAmount = _calculateRewardAmount(reward);
     }
 
     /**
@@ -234,7 +228,7 @@ contract Rewards is AragonApp {
     /**
      * @dev Private intermediate function that does the actual vault transfer for a reward and reward amoun
      */
-    function transferReward(Reward reward, uint256 rewardAmount) private {
+    function _transferReward(Reward reward, uint256 rewardAmount) private {
         totalClaimsEach++;
         totalAmountClaimed[reward.rewardToken] += rewardAmount;
         vault.transfer(reward.rewardToken, msg.sender, rewardAmount);
@@ -244,7 +238,7 @@ contract Rewards is AragonApp {
      * @dev Private intermediate function to calculate reward amount dependending of the type, balance and supply
      * @return rewardAmount calculated for that reward
      */
-    function calculateRewardAmount(Reward reward) private view returns (uint256 rewardAmount) {
+    function _calculateRewardAmount(Reward reward) private view returns (uint256 rewardAmount) {
         uint256 balance;
         uint256 supply;
         balance = reward.referenceToken.balanceOfAt(msg.sender, reward.blockStart + reward.duration);
