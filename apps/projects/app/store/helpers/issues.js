@@ -9,6 +9,7 @@ const assignmentRequestStatus = [ 'Unreviewed', 'Accepted', 'Rejected' ]
  * Load issue data from Projects.sol & StandardBounties.sol
  * @param {string} repoId: the identifier of this repo known to Projects.sol
  * @param {string} issueNumber: the identifier of the issue known to Projects.sol
+ * @param {string} ipfsHash: the IPFS hash to fetch data from
  * @returns {Promise} resolves with data about this issue from both contracts, and placeholders for data that will eventually be filled in from elsewhere
  * @example
  *
@@ -18,97 +19,8 @@ const assignmentRequestStatus = [ 'Unreviewed', 'Accepted', 'Rejected' ]
  *     //   assignee: "0x0000000000000000000000000000000000000000",
  *     //   balance: "1000000000000000000",
  *     //   deadline: "2019-10-14T20:34:00.140Z",
- *     //   detailsOpen: null,
- *     //   exp: null,
- *     //   fundingHistory: [],
- *     //   hasBounty: true,
- *     //   hours: null,
- *     //   key: null,
- *     //   number: 1234,
- *     //   repo: null,
- *     //   repoId: "MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=",
- *     //   size: null,
- *     //   slots: null,
- *     //   slotsIndex: null,
- *     //   standardBountyId: "0",
- *     //   token: "0xbdf671b626882fE207Cc2509086EFB804365460B",
- *     //   workStatus: "funded",
- *     // }
- */
-export const loadIssueData = async ({ repoId, issueNumber }) => {
-  return new Promise(resolve => {
-    app.call('getIssue', repoId, issueNumber).subscribe(async ourData => {
-      const { hasBounty, standardBountyId, balance, assignee } = ourData
-      const bountiesRegistry = await app.call('bountiesRegistry').toPromise()
-      const bountyContract = app.external(bountiesRegistry, standardBounties.abi)
-      const bountyData = await bountyContract.getBounty(standardBountyId).toPromise()
-      // example bountyData:
-      // {
-      //   approvers: ['0xd79eEe331828492c2ba4c11bf468fb64d52a46F9'], // projects app id
-      //   balance: '1000000000000000000',
-      //   contributions: [{
-      //     amount: '1000000000000000000',
-      //     contributor: '0xd79eEe331828492c2ba4c11bf468fb64d52a46F9', // projects app id
-      //     refunded: false,
-      //   }],
-      //   deadline: '1569868629565',
-      //   fulfillments: [{
-      //     fulfillers: ['0xb4124cEB3451635DAcedd11767f004d8a28c6eE7'], // local superuser
-      //     submitter: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7', // local superuser
-      //   }],
-      //   hasBounty: true,
-      //   hasPaidOut: false,
-      //   issuers: [PROJECTS_APP_ID],
-      //   standardBountyId: '0',
-      //   token: '0x0000000000000000000000000000000000000000',
-      //   tokenVersion: '0',
-      //   workStatus: 'funded',
-      // }
-      console.log('getIssue', { bountyData, ourData })
-
-      // keep keys explicit for data integrity & code readability
-      resolve({
-        // passed in
-        number: Number(issueNumber),
-        repoId: hexToAscii(repoId),
-
-        // from Projects.sol
-        assignee,
-        balance,
-        hasBounty,
-        standardBountyId,
-
-        // from StandardBounties.sol
-        deadline: new Date(Number(bountyData.deadline)).toISOString(),
-        token: bountyData.token,
-        workStatus: bountyData.workStatus,
-
-        // filled in from IPFS upon BOUNTY_ISSUED event
-        fundingHistory: [],
-        hours: null,
-        key: null,
-        repo: null,
-
-        // TODO from where?
-        detailsOpen: null, // example: 0
-        exp: null, // example: 0
-        size: null, // example: 1
-        slots: null, // example: 1
-        slotsIndex: null, // example: 0
-      })
-    })
-  })
-}
-
-/**
- * Fetch issue data from the given IPFS hash
- * @param {string} hash: the IPFS hash to fetch data from
- * @returns {Promise} resolves with data about this issue that we previously stored at the given hash
- * @example
- *
- *     issueDataFromIpfs('qmblahblahblah')
- *     // example data returned from Promise:
- *     // {
+ *     //   detailsOpen: 0,
+ *     //   exp: 0,
  *     //   fundingHistory: [{
  *     //     date: '2019-09-30T20:34:19.416Z',
  *     //     user: {
@@ -119,20 +31,97 @@ export const loadIssueData = async ({ repoId, issueNumber }) => {
  *     //       __typename: 'User',
  *     //     },
  *     //   }],
+ *     //   hasBounty: true,
  *     //   hours: 1,
  *     //   key: 'MDU6SXNzdWU0OTk2NzI3Mzg=',
+ *     //   number: 1234,
  *     //   repo: 'open-enterprise',
+ *     //   repoId: "MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=",
+ *     //   size: 1,
+ *     //   slots: 1,
+ *     //   slotsIndex: 0,
+ *     //   standardBountyId: "0",
+ *     //   token: "0xbdf671b626882fE207Cc2509086EFB804365460B",
+ *     //   workStatus: "funded",
  *     // }
  */
-export const issueDataFromIpfs = async hash => {
-  const data = await ipfsGet(hash)
-  console.log('issueDataFromIpfs', data)
+export const loadIssueData = async ({ repoId, issueNumber, ipfsHash }) => {
+  const {
+    detailsOpen,
+    exp,
+    fundingHistory,
+    hours,
+    key,
+    repo,
+    size,
+    slots,
+    slotsIndex,
+  } = await ipfsGet(ipfsHash)
+
+  const {
+    hasBounty,
+    standardBountyId,
+    balance,
+    assignee,
+  } = await app.call('getIssue', repoId, issueNumber).toPromise()
+
+  const bountiesRegistry = await app.call('bountiesRegistry').toPromise()
+  const bountyContract = app.external(bountiesRegistry, standardBounties.abi)
+  const {
+    deadline,
+    token,
+    workStatus,
+  } = await bountyContract.getBounty(standardBountyId).toPromise()
+  // example data returned from getBounty:
+  // {
+  //   approvers: ['0xd79eEe331828492c2ba4c11bf468fb64d52a46F9'], // projects app id
+  //   balance: '1000000000000000000',
+  //   contributions: [{
+  //     amount: '1000000000000000000',
+  //     contributor: '0xd79eEe331828492c2ba4c11bf468fb64d52a46F9', // projects app id
+  //     refunded: false,
+  //   }],
+  //   deadline: '1569868629565',
+  //   fulfillments: [{
+  //     fulfillers: ['0xb4124cEB3451635DAcedd11767f004d8a28c6eE7'], // local superuser
+  //     submitter: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7', // local superuser
+  //   }],
+  //   hasBounty: true,
+  //   hasPaidOut: false,
+  //   issuers: [PROJECTS_APP_ID],
+  //   standardBountyId: '0',
+  //   token: '0x0000000000000000000000000000000000000000',
+  //   tokenVersion: '0',
+  //   workStatus: 'funded',
+  // }
+
   // keep keys explicit for data integrity & code readability
   return {
-    fundingHistory: data.fundingHistory,
-    hours: data.hours,
-    key: data.key,
-    repo: data.repo,
+    // passed in
+    number: Number(issueNumber),
+    repoId: hexToAscii(repoId),
+
+    // from Projects.sol
+    assignee,
+    balance,
+    hasBounty,
+    standardBountyId,
+
+    // from StandardBounties.sol
+    deadline: new Date(Number(deadline)).toISOString(),
+    token,
+    workStatus,
+
+    // from IPFS
+    detailsOpen,
+    exp,
+    fundingHistory,
+    hours,
+    key,
+    repo,
+    size,
+    slots,
+    slotsIndex,
   }
 }
 
