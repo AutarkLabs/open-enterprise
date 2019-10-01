@@ -356,7 +356,6 @@ contract Allocations is AragonApp {
         transitionsPeriod
         accountExists(_accountId)
     {
-        require(_accountId < accountsLength);
         accounts[_accountId].budget = _amount;
         if (!accounts[_accountId].hasBudget) {
             accounts[_accountId].hasBudget = true;
@@ -531,6 +530,9 @@ contract Allocations is AragonApp {
         payout.executions.length = _supports.length;
         payoutId = account.payoutsLength - 1;
         emit SetDistribution(_accountId, payoutId);
+        if (_startTime <= getTimestamp64()) {
+            _runPayout(_accountId, payoutId);
+        }
     }
 
     function _executePayoutAtLeastOnce(
