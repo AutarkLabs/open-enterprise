@@ -25,7 +25,10 @@ const convertApiUrl = symbols =>
 class App extends React.Component {
   static propTypes = {
     api: PropTypes.object,
-    rewards: PropTypes.arrayOf(PropTypes.object),
+    rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
+    myRewards: PropTypes.arrayOf(PropTypes.object).isRequired,
+    metrics: PropTypes.arrayOf(PropTypes.object).isRequired,
+    myMetrics: PropTypes.arrayOf(PropTypes.object).isRequired,
     balances: PropTypes.arrayOf(PropTypes.object),
     network: PropTypes.object,
     userAccount: PropTypes.string.isRequired,
@@ -34,7 +37,6 @@ class App extends React.Component {
     refTokens: PropTypes.array.isRequired,
     amountTokens: PropTypes.array.isRequired,
     claims: PropTypes.object.isRequired,
-    metrics: PropTypes.arrayOf(PropTypes.object).isRequired,
   }
 
   constructor(props) {
@@ -229,7 +231,6 @@ class App extends React.Component {
 
   render() {
     const { panel, panelProps } = this.state
-    const { network } = this.props
 
     return (
       <Main>
@@ -251,23 +252,13 @@ class App extends React.Component {
 
           { this.state.selected === 1 ? (
             <MyRewards
-              rewards={this.props.rewards === undefined ? [] : this.props.rewards}
-              newReward={this.newReward}
-              openDetails={this.openDetailsMy}
-              network={network}
-              onClaimReward={this.onClaimReward}
-              tokens={this.props.balances}
-              convertRates={this.state.convertRates}
+              myRewards={this.props.myRewards}
+              myMetrics={this.props.myMetrics}
             />
           ) : (
             <Overview
               rewards={this.props.rewards === undefined ? [] : this.props.rewards}
               newReward={this.newReward}
-              openDetails={this.openDetailsView}
-              network={network}
-              tokens={this.props.balances}
-              convertRates={this.state.convertRates}
-              claims={this.props.claims}
               viewReward={this.viewReward}
               metrics={this.props.metrics}
             />

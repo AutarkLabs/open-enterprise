@@ -53,9 +53,19 @@ const Metric = ({ name, value, unit }) => {
     <Container>
       <Name theme={theme}>{name}</Name>
       <Amount>
-        <Value>{value}</Value>
+        <Value
+          theme={theme}
+          positive={value.startsWith('+')}
+        >
+          {value}
+        </Value>
         {' '}
-        <Unit>{unit}</Unit>
+        <Unit
+          theme={theme}
+          positive={value.startsWith('+')}
+        >
+          {unit}
+        </Unit>
       </Amount>
     </Container>
   )
@@ -74,9 +84,11 @@ const Amount = styled.div`
 
 const Value = styled.span`
   font-size: 26px;
+  color: ${({ theme, positive }) => positive ? theme.positive : 'inherit'};
 `
 const Unit = styled.span`
   font-size: 18px;
+  color: ${({ theme, positive }) => positive ? theme.positive : 'inherit'};
 `
 
 Metric.propTypes = {

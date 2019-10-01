@@ -49,20 +49,51 @@ const initialState = process.env.NODE_ENV !== 'production' && {
   rewards: [
     {
       rewardId: 1,
+      description: 'one time dividend',
+      referenceAsset: 'BAT',
+      rewardType: ONE_TIME_DIVIDEND,
+      amount: 3.45,
+      amountToken: 'DAI',
+      dateReference: new Date(),
+    },
+    {
+      rewardId: 2,
+      description: 'recurring dividend',
+      referenceAsset: 'SNT',
+      rewardType: RECURRING_DIVIDEND,
+      amount: 10,
+      amountToken: 'DAI',
+      disbursement: 2,
+      disbursementUnit: MONTHS,
+      disbursements: [
+        new Date('2019-12-02'),
+        new Date('2020-01-02'),
+        new Date('2020-02-02')
+      ],
+    },
+    {
+      rewardId: 3,
+      description: 'one-time merit',
+      referenceAsset: 'BNB',
+      rewardType: ONE_TIME_MERIT,
+      amount: 100,
+      amountToken: 'DAI',
+      dateStart: new Date(),
+      dateEnd: new Date(),
+    },
+  ],
+  myRewards: [
+    {
+      rewardId: 4,
       description: 'my one time dividend',
       referenceAsset: 'BAT',
       rewardType: ONE_TIME_DIVIDEND,
       amount: 3.45,
       amountToken: 'DAI',
       dateReference: new Date(),
-
-      isMerit: false,
-      startBlock: 1,
-      endBlock: 2,
-      endDate: new Date(),
     },
     {
-      rewardId: 2,
+      rewardId: 5,
       description: 'my recurring dividend',
       referenceAsset: 'SNT',
       rewardType: RECURRING_DIVIDEND,
@@ -75,14 +106,9 @@ const initialState = process.env.NODE_ENV !== 'production' && {
         new Date('2020-01-02'),
         new Date('2020-02-02')
       ],
-      
-      isMerit: false,
-      startBlock: 1000,
-      endBlock: 2200,
-      endDate: new Date(),
     },
     {
-      rewardId: 3,
+      rewardId: 6,
       description: 'my one-time merit',
       referenceAsset: 'BNB',
       rewardType: ONE_TIME_MERIT,
@@ -90,24 +116,8 @@ const initialState = process.env.NODE_ENV !== 'production' && {
       amountToken: 'DAI',
       dateStart: new Date(),
       dateEnd: new Date(),
-      
-      isMerit: false,
-      startBlock: 1000,
-      endBlock: 2200,
-      endDate: new Date(),
     },
   ],
-  balances: [
-    {
-      verified: true,
-      symbol: 'ETH',
-      amount: 10
-    },
-  ],
-  claims: {
-    claimsByToken: [],
-    totalClaimsMade: [],
-  },
   metrics: [
     {
       name: 'Average reward',
@@ -125,6 +135,34 @@ const initialState = process.env.NODE_ENV !== 'production' && {
       unit: 'ETH',
     },
   ],
+  myMetrics: [
+    {
+      name: 'Unclaimed rewards',
+      value: '+10.00',
+      unit: 'ETH',
+    },
+    {
+      name: 'Rewards obtained this year',
+      value: '25.00',
+      unit: 'ETH',
+    },
+    {
+      name: 'All time rewards obtained',
+      value: '25.00',
+      unit: 'ETH',
+    },
+  ],
+  balances: [
+    {
+      verified: true,
+      symbol: 'ETH',
+      amount: 10
+    },
+  ],
+  claims: {
+    claimsByToken: [],
+    totalClaimsMade: [],
+  },
 }
 
 const functions = process.env.NODE_ENV !== 'production' && (() => ({
