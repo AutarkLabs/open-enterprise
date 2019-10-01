@@ -209,7 +209,7 @@ contract Projects is AragonApp, DepositableStorage {
     // Fired when a repo is updated in the registry
     event RepoUpdated(bytes32 indexed repoId, uint newIndex);
     // Fired when a bounty is added to a repo
-    event BountyAdded(bytes32 repoId, uint256 issueNumber, uint256 bountySize, uint256 registryId);
+    event BountyAdded(bytes32 repoId, uint256 issueNumber, uint256 bountySize, uint256 registryId, string ipfsHash);
     // Fired when a bounty is removed
     event BountyRemoved(bytes32 repoId, uint256 issueNumber, uint256 oldBountySize);
     // Fired when an issue is curated
@@ -665,7 +665,8 @@ contract Projects is AragonApp, DepositableStorage {
                 _issueNumbers[i],
                 standardBountyId,
                 _tokenContracts[i],
-                _bountySizes[i]
+                _bountySizes[i],
+                ipfsHash
             );
         }
     }
@@ -713,7 +714,8 @@ contract Projects is AragonApp, DepositableStorage {
                 _issueNumbers[i],
                 standardBountyId,
                 _tokenContracts[i],
-                _bountySizes[i]
+                _bountySizes[i],
+                ipfsHash
             );
 
             repos[_repoIds[i]].issues[_issueNumbers[i]].assignee = address(-1);
@@ -921,7 +923,8 @@ contract Projects is AragonApp, DepositableStorage {
         uint256 _issueNumber,
         uint _standardBountyId,
         address _tokenContract,
-        uint256 _bountySize
+        uint256 _bountySize,
+        string _ipfsHash
     ) internal
     {
         address[] memory emptyAddressArray = new address[](0);
@@ -951,7 +954,8 @@ contract Projects is AragonApp, DepositableStorage {
             _repoId,
             _issueNumber,
             _bountySize,
-            _standardBountyId
+            _standardBountyId,
+            _ipfsHash
         );
     }
 

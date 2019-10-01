@@ -232,14 +232,14 @@ contract('Projects App', accounts => {
 
         it('verifies bounty data contains correct details in emitted event and contract state', async () => {
           issueReceipt.forEach((bounty, index) => {
-            assert.deepEqual(
+            assert.deepInclude(
+              bounty,
               {
                 repoId: '0x4d4445774f494a6c6347397a61585276636e6b784e6a59334d6a6c794d6a593d',
                 issueNumber: new web3.BigNumber(index + 1),
                 bountySize: new web3.BigNumber((index + 1) * 10),
                 registryId: new web3.BigNumber(index)
-              },
-              bounty
+              }
             )
           })
           const issueNumbers = issueReceipt.map(bounty => bounty.issueNumber)
@@ -620,14 +620,14 @@ contract('Projects App', accounts => {
             )
           )
           issueReceipt.forEach((bounty, index) => {
-            assert.deepEqual(
+            assert.deepInclude(
+              bounty,
               {
                 repoId: '0x4d4445774f494a6c6347397a61585276636e6b784e6a59334d6a6c794d6a593d',
                 issueNumber: new web3.BigNumber(index + 4),
                 bountySize: new web3.BigNumber(index + 1),
                 registryId: new web3.BigNumber(bounty.registryId)
-              },
-              bounty
+              }
             )
             assert.isAbove(Number(bounty.registryId), 0, 'a non-zero bounty Id should be returned from standard bounties')
           })
@@ -649,14 +649,14 @@ contract('Projects App', accounts => {
             )
           )
           issueReceipt.forEach((bounty, index) => {
-            assert.deepEqual(
+            assert.deepInclude(
+              bounty,
               {
                 repoId: '0x4d4445774f494a6c6347397a61585276636e6b784e6a59334d6a6c794d6a593d',
                 issueNumber: new web3.BigNumber(index + 7),
                 bountySize: new web3.BigNumber(index + 1),
                 registryId: new web3.BigNumber(bounty.registryId)
-              },
-              bounty
+              }
             )
             assert.isAbove(Number(bounty.registryId), 0, 'a non-zero bounty Id should be returned from standard bounties')
           })
@@ -684,14 +684,14 @@ contract('Projects App', accounts => {
 
         it('verifies bounty data contains correct details in emitted event and contract state', async () => {
           issueReceipt.forEach((bounty, index) => {
-            assert.deepEqual(
+            assert.deepInclude(
+              bounty,
               {
                 repoId: '0x4d4445774f494a6c6347397a61585276636e6b784e6a59334d6a6c794d6a593d',
                 issueNumber: new web3.BigNumber(index + 1),
                 bountySize: new web3.BigNumber((index + 1) * 10),
                 registryId: new web3.BigNumber(bounty.registryId)
-              },
-              bounty
+              }
             )
           })
         })
