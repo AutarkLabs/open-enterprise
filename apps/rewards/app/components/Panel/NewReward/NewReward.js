@@ -3,11 +3,8 @@ import React from 'react'
 import styled from 'styled-components'
 
 import {
-  Button,
   DropDown,
   IconClose,
-  IdentityBadge,
-  Info,
   Text,
   TextInput,
   useTheme,
@@ -29,6 +26,7 @@ import {
   MONTHS,
   OTHER,
 } from '../../../utils/constants'
+import RewardSummary from '../RewardSummary'
 
 import tokenBalanceOfAbi from '../../../../../shared/json-abis/token-balanceof.json'
 import tokenBalanceOfAtAbi from '../../../../../shared/json-abis/token-balanceofat.json'
@@ -100,7 +98,7 @@ class NewRewardClass extends React.Component {
     }
     let date = moment(dateStart), disbursements = []
     while (!date.isAfter(dateEnd, 'days')) {
-      disbursements.push(date.clone())
+      disbursements.push(date.toDate())
       date.add(disbursement, disbursementUnit)
     }
     this.setState({ disbursements })
@@ -541,92 +539,23 @@ class NewRewardClass extends React.Component {
     )
   }
 
-  showSummary = () => {
-    const { theme } = this.props
-    const {
-      description,
-      rewardType,
-      referenceAsset,
-      customToken,
-      amount,
-      amountToken,
-      dateReference,
-      dateStart,
-      dateEnd,
-      disbursements,
-    } = this.state
-    return (
-      <VerticalContainer>
-        <VerticalSpace />
-        <GreyBox theme={theme}>
-          <Title>{description}</Title>
-          <SubTitle theme={theme}>{rewardType}</SubTitle>
-          <Heading theme={theme}>Reference Asset</Heading>
-          <Content>
-            {referenceAsset === OTHER ? (
-              <IdentityBadge
-                badgeOnly
-                entity={customToken.address}
-                shorten
-              />
-            ): referenceAsset}
-          </Content>
-          <Heading theme={theme}>
-            {rewardType === ONE_TIME_MERIT && 'Total'}
-            {' Amount '}
-            {rewardType === RECURRING_DIVIDEND && 'per Cycle'}
-          </Heading>
-          <Content>{amount} {amountToken.symbol}</Content>
-          <Heading theme={theme}>
-            {rewardType === ONE_TIME_MERIT ?
-              'Start and End Date' : 'Disbursement Date'}
-            {rewardType === RECURRING_DIVIDEND && 's'}
-          </Heading>
-          {rewardType === ONE_TIME_DIVIDEND && (
-            <Content>{dateReference.toDateString()}</Content>
-          )}
-          {rewardType === RECURRING_DIVIDEND &&
-             disbursements.map((disbursement, i) => (
-               <Content key={i}>
-                 {disbursement.toDate().toDateString()}
-               </Content>
-             ))}
-          {rewardType === ONE_TIME_MERIT && (
-            <Content>
-              {dateStart.toDateString()}{' - '}{dateEnd.toDateString()}
-            </Content>
-          )}
-        </GreyBox>
-        <VerticalSpace />
-        <Info>
-          {'Holding the reference asset at the disbursement date'}
-          {rewardType === 'RECURRING_DIVIDEND' && 's'}
-          {' will issue a proportionally split reward across all token holders.'}
-        </Info>
-        <VerticalSpace />
-        <HorizontalContainer>
-          <Button
-            label="Go back"
-            mode="normal"
-            css={{ fontWeight: 700, marginRight: '4px' }}
-            onClick={() => this.setState({ draftSubmitted: false })}
-            wide
-          />
-          <Button
-            label="Submit"
-            mode="strong"
-            css={{ fontWeight: 700, marginLeft: '4px' }}
-            wide
-            onClick={this.onSubmit}
-          />
-        </HorizontalContainer>
-      </VerticalContainer>
-    )
-  }
 
   render = () => {
     const { draftSubmitted } = this.state
-    return draftSubmitted ? this.showSummary() : this.showDraft()
+    const { theme } = this.props
+    if (draftSubmitted) {
+      return (
+        <RewardSummary
+          reward={this.state}
+          theme={theme}
+          onCancel={() => this.setState({ draftSubmitted: false })}
+          onSubmit={this.onSubmit}
+        />
+      )
+    }
+    else {
+      return this.showDraft()
+    }
   }
 }
 
@@ -638,34 +567,6 @@ const HorizontalContainer = styled.div`
   display: flex;
   justify-content: space-between;
 `
-const VerticalSpace = styled.div`
-  height: 24px;
-`
-const GreyBox = styled.div`
-  background-color: ${({ theme }) => theme.background};
-  border: 1px solid ${({ theme }) => theme.border};
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  border-radius: 4px;
-`
-const Title = styled(Text).attrs({
-  size: 'xlarge',
-})``
-const SubTitle = styled(Text).attrs({
-  size: 'xsmall',
-})`
-  color: ${({ theme }) => theme.contentSecondary};
-  margin-bottom: 8px;
-`
-const Heading = styled(Text).attrs({
-  smallcaps: true,
-})`
-  color: ${({ theme }) => theme.contentSecondary};
-  margin-top: 16px;
-  margin-bottom: 8px;
-`
-const Content = styled(Text).attrs({})``
 const ErrorText = styled.div`
   font-size: small;
   display: flex;

@@ -205,12 +205,7 @@ class App extends React.Component {
   viewReward = reward => {
     this.setState({
       panel: PANELS.ViewReward,
-      panelProps: {
-        reward: reward,
-        tokens: this.props.balances,
-        onClosePanel: this.closePanel,
-        network: { type: 'rinkeby' }
-      }
+      panelProps: reward,
     })
   }
 
@@ -272,6 +267,7 @@ class App extends React.Component {
               tokens={this.props.balances}
               convertRates={this.state.convertRates}
               claims={this.props.claims}
+              viewReward={this.viewReward}
             />
           )}
 

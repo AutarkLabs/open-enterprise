@@ -92,7 +92,6 @@ const initialState = process.env.NODE_ENV !== 'production' && {
       dateEnd: new Date(),
       
       isMerit: false,
-      rewardId: 2,
       startBlock: 1000,
       endBlock: 2200,
       endDate: new Date(),

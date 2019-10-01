@@ -3,7 +3,12 @@ import React from 'react'
 import styled from 'styled-components'
 import { BigNumber } from 'bignumber.js'
 import moment from 'moment'
-import { DataView, Text } from '@aragon/ui'
+import {
+  DataView,
+  Link,
+  Text,
+  useTheme,
+} from '@aragon/ui'
 import {
   ONE_TIME_DIVIDEND,
   RECURRING_DIVIDEND,
@@ -84,7 +89,14 @@ const sumTotalRewards = (rewards, balances, convertRates, rewardFilter) => {
   },0)
 }
 
-const Overview = ({ tokens, rewards, convertRates, claims, newReward }) => {
+const Overview = ({
+  tokens,
+  rewards,
+  convertRates,
+  claims,
+  newReward,
+  viewReward,
+}) => {
   const rewardsEmpty = rewards.length === 0
 
   if (rewardsEmpty) {
@@ -113,20 +125,37 @@ const Overview = ({ tokens, rewards, convertRates, claims, newReward }) => {
           heading={<Text size="xlarge">Current rewards</Text>}
           fields={[ 'description', 'type', 'frequency', 'next payout', 'amount' ]}
           entries={rewards}
-          renderEntry={(reward) => {
-            switch(reward.rewardType) {
-            case ONE_TIME_DIVIDEND:
-              return renderOneTimeDividend(reward)
-            case RECURRING_DIVIDEND:
-              return renderRecurringDividend(reward)
-            case ONE_TIME_MERIT:
-              return renderOneTimeMerit(reward)
-            }
-          }}
+          renderEntry={(reward) => renderReward(reward, viewReward)}
         />
       </RewardsWrap>
     </OverviewMain>
   )
+}
+
+const renderReward = (reward, viewReward) => {
+  const theme = useTheme()
+  let fields = []
+  switch(reward.rewardType) {
+  case ONE_TIME_DIVIDEND:
+    fields = renderOneTimeDividend(reward)
+    break
+  case RECURRING_DIVIDEND:
+    fields = renderRecurringDividend(reward)
+    break
+  case ONE_TIME_MERIT:
+    fields = renderOneTimeMerit(reward)
+    break
+  }
+  return fields.map(f => (
+    <Link
+      onClick={() => viewReward(reward)}
+      css={{
+        color: theme.content
+      }}
+    >
+      {f}
+    </Link>
+  ))
 }
 
 const renderOneTimeDividend = (reward) => {
