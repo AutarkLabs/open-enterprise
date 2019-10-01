@@ -15,7 +15,7 @@ import "@aragon/os/contracts/lib/math/SafeMath.sol";
   */
 interface Bounties {
     /**
-     * @notice `_sender` submit a fulfillment for issue #`_bountyId` with the following info: `_data`
+     * @notice Submit a fulfillment for issue #`_bountyId` with the following info: `_data`
      */
     function fulfillBounty(
         address _sender,
@@ -25,7 +25,7 @@ interface Bounties {
     ) external; //{}
 
     /**
-     * @notice `_sender` updated their fulfillment for issue #`_bountyId` with the following info: `_data`
+     * @notice Update fulfillment for issue #`_bountyId` with the following info: `_data`
      */
     function updateFulfillment(
         address _sender,
@@ -34,10 +34,7 @@ interface Bounties {
         address[] _fulfillers,
         string _data
     ) external; //{}
-    
-    /**
-     * @notice This is a test
-     */
+
     function issueBounty(
         address sender,
         address[] _issuers,
@@ -71,9 +68,6 @@ interface Bounties {
         string _data
     ) external;
 
-    /**
-    * @notice Accept work from `_sender`
-    */
     function acceptFulfillment(
         address _sender,
         uint _bountyId,
@@ -677,7 +671,7 @@ contract Projects is AragonApp, DepositableStorage {
     }
 
     /**
-     * @notice Fund open submission issues: `_description`
+     * @notice Fund open-submission issues: `_description`
      * @param _repoIds The ids of the repos in the projects registry
      * @param _issueNumbers an array of bounty indexes
      * @param _bountySizes an array of bounty sizes
