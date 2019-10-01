@@ -104,12 +104,12 @@ const loadVoteDataAllocation = async (vote, voteId) => {
 
         resolve({
           ...returnObject,
-          // These numbers indicate the static param location of the setDistribution
-          // functions amount paramater
-          balance: parseInt(vote.executionScript.slice(706, 770), 16),
-          tokenSymbol: symbol,
-          metadata: vote.voteDescription,
-          type: 'allocation',
+          // // These numbers indicate the static param location of the setDistribution
+          // // functions amount paramater
+          // balance: parseInt(vote.executionScript.slice(706, 770), 16),
+          // tokenSymbol: symbol,
+          // metadata: vote.voteDescription,
+          // type: 'allocation',
         })
       })
   })
