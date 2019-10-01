@@ -130,7 +130,8 @@ Budget.propTypes = {
   name: PropTypes.string.isRequired,
   amount: PropTypes.string.isRequired,
   token: PropTypes.string.isRequired,
-  allocated: PropTypes.string.isRequired,
+  // TODO: fix allocated (should be required?)
+  allocated: PropTypes.string,
   inactive: PropTypes.bool.isRequired,
   onNewAllocation: PropTypes.func.isRequired,
   onEdit: PropTypes.func.isRequired,

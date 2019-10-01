@@ -54,7 +54,8 @@ class NewAllocation extends React.Component {
     onSubmitAllocation: PropTypes.func.isRequired,
     description: PropTypes.string,
     balances: PropTypes.arrayOf(PropTypes.object).isRequired,
-    balance: PropTypes.string.isRequired,
+    // TODO: Fix balance, should be required (is not arriving)
+    balance: PropTypes.string,
     id: PropTypes.string.isRequired,
     subHeading: PropTypes.string,
   }

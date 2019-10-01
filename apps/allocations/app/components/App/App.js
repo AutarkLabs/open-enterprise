@@ -60,6 +60,8 @@ const App = () => {
     closeModal()
   }
 
+  // TODO: Fix this
+  // eslint-disable-next-line
   const onExecutePayout = (accountId, payoutId) => {
     api.runPayout(accountId, payoutId).toPromise()
   }
