@@ -1,6 +1,6 @@
 import React from 'react'
 import styled, { css } from 'styled-components'
-import { ContextMenuItem, theme } from '@aragon/ui'
+import { ContextMenuItem, GU, theme } from '@aragon/ui'
 import { usePanelManagement } from '../Panel'
 import { issueShape } from '../../utils/shapes.js'
 
@@ -72,8 +72,8 @@ const Item = styled(ContextMenuItem)`
     css`
       border-top: 1px solid ${theme.shadow};
       margin-top: 10px;
-      padding-top: 10px;
     `};
+  padding: ${1 * GU}px ${2 * GU}px;
 `
 
 BountyContextMenu.propTypes = issueShape

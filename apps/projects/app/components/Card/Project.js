@@ -36,7 +36,7 @@ const Project = ({
   const { width } = useLayout()
 
   const removeProject = () => {
-    removeRepo(toHex(repoId))
+    removeRepo(toHex(repoId)).toPromise()
     // TODO: Toast feedback here maybe
   }
 
@@ -54,7 +54,7 @@ const Project = ({
     <StyledCard onClick={clickContext} screenSize={width}>
       <MenuContainer onClick={clickMenu}>
         <ContextMenu>
-          <ContextMenuItem>
+          <ContextMenuItem css="padding: 20px">
             <IconHome />
             <ActionLabel>
               <SafeLink
@@ -142,8 +142,7 @@ const ActionLabel = styled.span`
 `
 
 const CardTitle = styled(Text.Block).attrs({
-  size: 'large',
-  weight: 'bold',
+  size: 'xlarge',
 })`
   margin-top: 10px;
   margin-bottom: 5px;
@@ -158,7 +157,7 @@ const CardTitle = styled(Text.Block).attrs({
 `
 
 const CardDescriptionText = styled(Text.Block).attrs({
-  size: 'xsmall',
+  size: 'small',
 })`
   display: block;
   display: -webkit-box;

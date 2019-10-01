@@ -137,10 +137,10 @@ const App = () => {
     return <Error action={noop} />
   }
 
-  // Tabs are dynamic
-  const tabs = [{name: 'Overview', body: Overview, }]
-  //if (repos.length)
-tabs.push({ name: 'Issues', body: Issues })
+  // Tabs are not fixed
+  const tabs = [{ name: 'Overview', body: Overview }]
+  if (repos.length)
+    tabs.push({ name: 'Issues', body: Issues })
   tabs.push({ name: 'Settings', body: Settings })
 
   // Determine current tab details

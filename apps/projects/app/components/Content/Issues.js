@@ -1,10 +1,10 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-//import { Query } from 'react-apollo'
-import Query from './Query.stub'
+import { Query } from 'react-apollo'
+//import Query from './Query.stub'
 
-import { Button } from '@aragon/ui'
+import { Button, GU, Text } from '@aragon/ui'
 import BigNumber from 'bignumber.js'
 import { compareAsc, compareDesc } from 'date-fns'
 
@@ -13,6 +13,8 @@ import { getIssuesGQL } from '../../utils/gql-queries.js'
 import { FilterBar } from '../Shared'
 import { Issue } from '../Card'
 import IssueDetail from './IssueDetail'
+import { LoadingAnimation } from '../Shared'
+import { EmptyWrapper } from '../Shared'
 
 class Issues extends React.PureComponent {
   static propTypes = {
@@ -250,9 +252,12 @@ class Issues extends React.PureComponent {
   queryLoading = () => (
     <StyledIssues>
       {this.filterBar([], [])}
-      <IssuesScrollView>
-        <div>Loading...</div>
-      </IssuesScrollView>
+      <EmptyWrapper>
+        <Text size="large" css={`margin-bottom: ${3 * GU}px`}>
+          Loading...
+        </Text>
+        <LoadingAnimation />
+      </EmptyWrapper>
     </StyledIssues>
   )
 
@@ -428,7 +433,7 @@ class Issues extends React.PureComponent {
     }
 
     // previous GET_ISSUES is deliberately left in place for reference
-//    const GET_ISSUES2 = getIssuesGQL(reposQueryParams)
+    const GET_ISSUES2 = getIssuesGQL(reposQueryParams)
     /*
       <Query
         fetchPolicy="cache-first"
@@ -439,7 +444,7 @@ class Issues extends React.PureComponent {
     return (
       <Query
         fetchPolicy="cache-first"
-//        query={GET_ISSUES2}
+        query={GET_ISSUES2}
         onError={console.error}
       >
         {({ data, loading, error, refetch }) => {

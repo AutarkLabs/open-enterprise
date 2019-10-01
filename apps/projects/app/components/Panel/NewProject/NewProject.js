@@ -12,17 +12,22 @@ import noResultsSvg from '../../../assets/noResults.svg'
 
 
 const NewProject = () => {
-  const { api, appState: { repos }} = useAragonApi()
+  const { api, appState: { repos } } = useAragonApi()
   const { closePanel } = usePanelManagement()
   const [ filter, setFilter ] = useState('')
   const [ project, setProject ] = useState()
   const [ repoSelected, setRepoSelected ] = useState(-1)
-  const [ visibleRepos, setVisibleRepos ] = useState(repos)
+
+  /*
+    TODO: Review
+    This line below might be breaking RepoList loading sometimes preventing show repos after login
+  */
 
   const reposAlreadyAdded = (repos || []).map(repo => repo.data._repo)
   const searchRef = useRef(null)
 
   /*
+  TODO: move Query out to the store, apply filters here
   useEffect(
     () => {
       const notAddedRepos = repos.filter(repo => !reposAlreadyAdded.includes(repo.node.id))
@@ -50,7 +55,7 @@ const NewProject = () => {
 
   const handleNewProject = () => {
     closePanel()
-    api.addRepo(toHex(project))
+    api.addRepo(toHex(project)).toPromise()
   }
 
   const onRepoSelected = repoArray => i => {
@@ -108,12 +113,6 @@ const NewProject = () => {
     repoArray: PropTypes.array.isRequired,
   }
 
-  /*
-  // TODO: Review
-  // This is breaking RepoList loading sometimes preventing show repos after login
-  const reposAlreadyAdded = (repos || []).map(repo => repo.data._repo)
-*/
-console.log('---rerender--')
   return (
     <React.Fragment>
       <div css={`margin-top: ${3 * GU}px`}>

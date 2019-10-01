@@ -259,11 +259,6 @@ FundingType.propTypes = {
   onChangeType: PropTypes.func.isRequired,
 }
 
-
-
-
-
-
 const Settings = ({ onLogin }) => {
   const [ bountyCurrencies, setBountyCurrencies ] = useState([])
   const [ expLevels, setExpLevels ] = useState([])
@@ -284,8 +279,6 @@ const Settings = ({ onLogin }) => {
     tokens = [],
     github = { status : STATUS.INITIAL },
   } = appState
-
-
 
   useEffect(() => {
     setBountyCurrencies(tokens.map(token => token.symbol))
@@ -325,7 +318,7 @@ const Settings = ({ onLogin }) => {
       tokens[bountyCurrency].addr,
       bountyAllocator
       //bountyArbiter,
-    )
+    ).toPromise()
   }
 
   const baseRateChange = e => setBaseRate(e.target.value)

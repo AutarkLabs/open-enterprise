@@ -28,7 +28,7 @@ const labelsTags = (labels, theme) =>
 
 const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
   const theme = useTheme()
-  let {
+  const {
     workStatus,
     title,
     repo,
@@ -41,8 +41,6 @@ const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
     createdAt,
   } = issue
   
-  workStatus = 'fulfilled'
-
   return (
     <StyledIssue theme={theme}>
       <div css="padding: 20px 10px">
