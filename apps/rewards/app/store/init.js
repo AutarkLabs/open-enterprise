@@ -1,4 +1,5 @@
 import vaultAbi from '../../../shared/json-abis/vault'
+import { initializeTokens } from './token'
 import { app, handleEvent } from './'
 import { ETHER_TOKEN_FAKE_ADDRESS } from '../utils/token-utils'
 import { of } from 'rxjs'
@@ -6,23 +7,22 @@ import { pluck } from 'rxjs/operators'
 
 export const initStore = (vaultAddress, network) => {
   const vaultContract = app.external(vaultAddress, vaultAbi.abi)
-
+  const settings = {
+    network,
+    vault: {
+      address: vaultAddress,
+      contract: vaultContract,
+    },
+    ethToken: {
+      address: ETHER_TOKEN_FAKE_ADDRESS,
+    },
+  }
   return app.store(
     async (state, event) => {
       // ensure there are initial placeholder values
       let initialState = { ...state }
-      console.log(event)
       try {
-        const next = await handleEvent(state, event, {
-          network,
-          vault: {
-            address: vaultAddress,
-            contract: vaultContract,
-          },
-          ethToken: {
-            address: ETHER_TOKEN_FAKE_ADDRESS,
-          },
-        })
+        const next = await handleEvent(state, event, settings)
         const nextState = { ...initialState, ...next }
         // Debug point
         return nextState
@@ -32,12 +32,22 @@ export const initStore = (vaultAddress, network) => {
       return state
     },
     { 
+      init: initState(settings),
       externals: [
         {
           contract: vaultContract,
         },
       ],
-      //init: intiState(settings),
     }
   )
+}
+
+const initState = (settings) => async cachedState => {
+  const newState = {
+    ...cachedState,
+    isSyncing: true,
+    vaultAddress: settings.vault.address,
+  }
+  const tokenState = await initializeTokens(newState, settings)
+  return tokenState
 }
