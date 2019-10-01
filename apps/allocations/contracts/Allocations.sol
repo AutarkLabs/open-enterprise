@@ -130,7 +130,7 @@ contract Allocations is AragonApp {
         periodDuration = _periodDuration;
         _newPeriod(getTimestamp64());
         accountsLength++;  // position 0 is reserved and unused
-        maxCandidates = 10;
+        maxCandidates = 50;
         initialized();
     }
 
