@@ -10,6 +10,7 @@ import {
   ASSIGNMENT_APPROVED,
   SUBMISSION_REJECTED,
   BOUNTY_FULFILLED,
+  BOUNTY_ISSUED,
   SUBMISSION_ACCEPTED,
   BOUNTY_SETTINGS_CHANGED,
   VAULT_DEPOSIT,
@@ -24,6 +25,7 @@ import {
   loadIssueData,
   determineWorkStatus,
   updateIssueDetail,
+  issueDataFromIpfs,
   syncIssues,
   syncTokens,
   syncSettings
@@ -127,6 +129,20 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
       // issueData = determineWorkStatus(issueData)
       // nextState = syncIssues(nextState, returnValues, issueData)
     }
+    return nextState
+  }
+  case BOUNTY_ISSUED: {
+    if(!returnValues) return nextState
+    const { _bountyId, _data } = returnValues
+    const issueIndex = nextState.issues.findIndex(i => i.data.standardBountyId === _bountyId)
+    if (issueIndex === 1) return nextState
+
+    console.log('BOUNTY_ISSUED before', { nextState, returnValues })
+    nextState.issues[issueIndex].data = {
+      ...nextState.issues[issueIndex].data,
+      ...await issueDataFromIpfs(_data),
+    }
+    console.log('BOUNTY_ISSUED after', { nextState })
     return nextState
   }
   case SUBMISSION_ACCEPTED: {
