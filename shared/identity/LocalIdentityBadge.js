@@ -36,12 +36,12 @@ function useIdentity(address) {
   return [ name, handleShowLocalIdentityModal ]
 }
 
-const LocalIdentityBadge = ({ entity, ...props }) => {
+const LocalIdentityBadge = ({ entity, forceAddress, ...props }) => {
   const [ label, showLocalIdentityModal ] = useIdentity(entity)
   const handleClick = () => showLocalIdentityModal(entity)
   return (
     <IdentityBadge
-      customLabel={label || ''}
+      customLabel={(!forceAddress && label) || ''}
       entity={entity}
       popoverAction={{
         label: `${label ? 'Edit' : 'Add'} custom label`,
@@ -65,6 +65,7 @@ const LocalIdentityBadge = ({ entity, ...props }) => {
 
 LocalIdentityBadge.propTypes = {
   entity: PropTypes.string.isRequired,
+	forceAddress: PropTypes.bool
 }
 
 const Wrap = styled.div`
