@@ -9,7 +9,6 @@ export const initStore = (vaultAddress, standardBountiesAddress) => {
   return app.store(
     async (state, action) => {
       try {
-        console.log('app.store reducer: action:', action)
         const nextState = await handleEvent(state, action, vaultAddress, vaultContract)
         return nextState
       } catch (err) {

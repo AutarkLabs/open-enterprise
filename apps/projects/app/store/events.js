@@ -37,7 +37,6 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
   const { event, returnValues, address } = action
   let nextState = { ...state }
 
-  console.log({ event, returnValues })
   switch (event) {
   case REQUESTING_GITHUB_TOKEN: {
     return state
@@ -80,9 +79,7 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
     return nextState
   }
   case BOUNTY_ADDED: {
-    console.log('BOUNTY_ADDED', { returnValues })
     if(!returnValues) return nextState
-    console.log({ returnValues })
     const { repoId, issueNumber } = returnValues
     let issueData = await loadIssueData({ repoId, issueNumber })
     issueData = determineWorkStatus(issueData)
@@ -118,9 +115,7 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
   }
   case BOUNTY_FULFILLED: {
     if(!returnValues) return nextState
-    console.log('BOUNTY_FULFILLED', { returnValues })
     const { _bountyId } = returnValues
-    console.log('nextState', nextState)
     if (nextState.issues.map(i => i.data.standardBountyId).includes(_bountyId)) {
       // TODO: how does this need to change?
       // const { repoId, issueNumber } = returnValues
@@ -137,12 +132,10 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
     const issueIndex = nextState.issues.findIndex(i => i.data.standardBountyId === _bountyId)
     if (issueIndex === -1) return nextState
 
-    console.log('BOUNTY_ISSUED before', { nextState, returnValues })
     nextState.issues[issueIndex].data = {
       ...nextState.issues[issueIndex].data,
       ...await issueDataFromIpfs(_data),
     }
-    console.log('BOUNTY_ISSUED after', { nextState })
     return nextState
   }
   case SUBMISSION_ACCEPTED: {

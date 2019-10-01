@@ -61,7 +61,7 @@
     "mine": "node ./apps/shared/test-helpers/mine.js",
     "postinstall": "npm run bootstrap",
     "publish:cd": "shared/deployments/publish-cd.sh",
-    "publish:apps": "lerna run publish --parallel",
+    "publish:apps": "lerna run publish",
     "publish:http": "lerna run --scope='@tps/apps-*' publish:http --stream",
     "restart": "RESTART_KIT=true apps/shared/test-helpers/ganache-cli.sh",
     "start:kit": "cd apps/planning-suite-kit && npm run start:kit",
