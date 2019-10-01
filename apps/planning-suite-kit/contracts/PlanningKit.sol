@@ -231,7 +231,6 @@ contract PlanningKit is KitBase {
             rewards,
             vault
         );
-
     }
 
     function initializeTPSApps(

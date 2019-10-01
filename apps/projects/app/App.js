@@ -305,7 +305,7 @@ const AppWrap = () => {
   // })
 
   const { api, appState, displayMenuButton } = useAragonApi()
-
+  console.log('App.js', { appState })
   const client = initApolloClient(appState.github && appState.github.token)
   return (
     <App
