@@ -7,7 +7,9 @@ export const initStore = vaultAddress => {
   return app.store(
     async (state, action) => {
       try {
+        console.log('PRE', { state, action })
         const nextState = await handleEvent(state, action, vaultAddress, vaultContract)
+        console.log('POST', { state, action })
         return nextState
       } catch (err) {
         console.error(

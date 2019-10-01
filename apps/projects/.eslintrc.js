@@ -4,6 +4,7 @@ module.exports = {
     es6: true,
     node: true,
     commonjs: true,
+    jest: true,
   },
   extends: [
     'eslint:recommended',
@@ -42,7 +43,9 @@ module.exports = {
       {
         unusedExports: true,
         missingExports: true,
-        ignoreExports: [],
+        ignoreExports: [
+          '*.test.js',
+        ],
       }
     ],
     "no-undef": "error",
