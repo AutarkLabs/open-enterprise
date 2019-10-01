@@ -39,19 +39,33 @@ const App = () => {
     const emptyIntArray = new Array(addresses.length).fill(0)
     api.setDistribution(
       addresses,
-      emptyIntArray, //[]
-      emptyIntArray, //[]
-      '',
+      emptyIntArray, // unused
+      emptyIntArray, // unused
+      '', // unused
       description,
-      emptyIntArray, // Issue with bytes32 handling
-      emptyIntArray, // Issue with bytes32 handling
-      payoutId,
-      recurring,
+      emptyIntArray, // unused
+      emptyIntArray, // unused
+      payoutId, // account or allocation id...
+      0, // recurrences, 0 for now
+      new Date().getTime(), // startTime, now for now
       period,
-      String(balance),
-      tokenAddress
+      String(balance), // amount
+      // tokenAddress -> token used, now deprecated
     ).toPromise()
     closePanel()
+
+    // address[] _candidateAddresses,
+    // uint256[] _supports,
+    // uint256[] /*unused_infoIndices*/,
+    // string /*unused_candidateInfo*/,
+    // string _description,
+    // uint256[] /*unused_level 1 ID - converted to bytes32*/,
+    // uint256[] /*unused_level 2 ID - converted to bytes32*/,
+    // uint64 _accountId,
+    // uint64 _recurrences,
+    // uint64 _startTime,
+    // uint64 _period,
+    // uint256 _amount
   }
 
   const onSubmitDeactivate = id => {
