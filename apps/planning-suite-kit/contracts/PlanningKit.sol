@@ -103,7 +103,7 @@ contract PlanningKit is KitBase {
 
         createTPSApps(root, dao, vault, voting, discussions);
 
-        //handleCleanupPermissions(dao, acl, root);
+        handleCleanupPermissions(dao, acl, root);
 
         emit DeployInstance(dao);
     }
