@@ -22,6 +22,7 @@ import {
   syncRepos,
   loadReposFromQueue,
   loadIssueData,
+  loadIpfsData,
   determineWorkStatus,
   updateIssueDetail,
   syncIssues,
@@ -79,7 +80,9 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
   case BOUNTY_ADDED: {
     if(!returnValues) return nextState
     const { repoId, issueNumber, ipfsHash } = returnValues
-    let issueData = await loadIssueData({ repoId, issueNumber, ipfsHash })
+    const ipfsData = await loadIpfsData(ipfsHash)
+    let issueData = await loadIssueData({ repoId, issueNumber })
+    issueData = { ...issueData, ...ipfsData }
     issueData = determineWorkStatus(issueData)
     nextState = syncIssues(nextState, returnValues, issueData, [])
     return nextState

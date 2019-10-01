@@ -5,59 +5,7 @@ import standardBounties from '../../abi/StandardBounties.json'
 
 const assignmentRequestStatus = [ 'Unreviewed', 'Accepted', 'Rejected' ]
 
-/**
- * Load issue data from Projects.sol & StandardBounties.sol
- * @param {string} repoId: the identifier of this repo known to Projects.sol
- * @param {string} issueNumber: the identifier of the issue known to Projects.sol
- * @param {string} ipfsHash: the IPFS hash to fetch data from
- * @returns {Promise} resolves with data about this issue from both contracts, and placeholders for data that will eventually be filled in from elsewhere
- * @example
- *
- *     loadIssueData({ repoId: '0xdeadbee5deadbeef', issueNumber: '1234' })
- *     // example data returned from Promise:
- *     // {
- *     //   assignee: "0x0000000000000000000000000000000000000000",
- *     //   balance: "1000000000000000000",
- *     //   deadline: "2019-10-14T20:34:00.140Z",
- *     //   detailsOpen: 0,
- *     //   exp: 0,
- *     //   fundingHistory: [{
- *     //     date: '2019-09-30T20:34:19.416Z',
- *     //     user: {
- *     //       id: 'MDQ6VXNlcjE5ODA4MDc2',
- *     //       login: 'PeterMPhillips',
- *     //       url: 'https://github.com/PeterMPhillips',
- *     //       avatarUrl: 'https://avatars3.githubusercontent.com/u/19808076?v=4',
- *     //       __typename: 'User',
- *     //     },
- *     //   }],
- *     //   hasBounty: true,
- *     //   hours: 1,
- *     //   key: 'MDU6SXNzdWU0OTk2NzI3Mzg=',
- *     //   number: 1234,
- *     //   repo: 'open-enterprise',
- *     //   repoId: "MDEwOlJlcG9zaXRvcnkxMjY4OTkxNDM=",
- *     //   size: 1,
- *     //   slots: 1,
- *     //   slotsIndex: 0,
- *     //   standardBountyId: "0",
- *     //   token: "0xbdf671b626882fE207Cc2509086EFB804365460B",
- *     //   workStatus: "funded",
- *     // }
- */
-export const loadIssueData = async ({ repoId, issueNumber, ipfsHash }) => {
-  const {
-    detailsOpen,
-    exp,
-    fundingHistory,
-    hours,
-    key,
-    repo,
-    size,
-    slots,
-    slotsIndex,
-  } = await ipfsGet(ipfsHash)
-
+export const loadIssueData = async ({ repoId, issueNumber }) => {
   const {
     hasBounty,
     standardBountyId,
@@ -111,8 +59,23 @@ export const loadIssueData = async ({ repoId, issueNumber, ipfsHash }) => {
     deadline: new Date(Number(deadline)).toISOString(),
     token,
     workStatus,
+  }
+}
 
-    // from IPFS
+export const loadIpfsData = async ipfsHash => {
+  const {
+    detailsOpen,
+    exp,
+    fundingHistory,
+    hours,
+    key,
+    repo,
+    size,
+    slots,
+    slotsIndex,
+  } = await ipfsGet(ipfsHash)
+
+  return {
     detailsOpen,
     exp,
     fundingHistory,
@@ -237,9 +200,9 @@ export const updateIssueDetail = async data => {
   const issueNumber = String(data.number)
   const requestsData = await loadRequestsData({ repoId, issueNumber })
   returnData.requestsData = requestsData
-  let submissionData = await loadSubmissionData({ repoId, issueNumber })
-  returnData.workSubmissions = submissionData
-  returnData.work = submissionData[submissionData.length - 1]
+  // let submissionData = await loadSubmissionData({ repoId, issueNumber })
+  // returnData.workSubmissions = submissionData
+  // returnData.work = submissionData[submissionData.length - 1]
   return returnData
 }
 
@@ -257,7 +220,10 @@ const checkIssuesLoaded = (issues, issueNumber, data) => {
   const nextIssues = Array.from(issues)
   nextIssues[issueIndex] = {
     issueNumber,
-    data: data
+    data: {
+      ...nextIssues[issueIndex].data,
+      ...data,
+    },
   }
   return nextIssues
 }
