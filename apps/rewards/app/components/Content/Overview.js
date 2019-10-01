@@ -114,11 +114,9 @@ const renderOneTimeMerit = (reward) => {
 }
 
 Overview.propTypes = {
-  tokens: PropTypes.arrayOf(PropTypes.object).isRequired,
-  newReward: PropTypes.func.isRequired,
   rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
-  convertRates: PropTypes.object,
-  claims: PropTypes.object.isRequired,
+  newReward: PropTypes.func.isRequired,
+  viewReward: PropTypes.func.isRequired,
   metrics: PropTypes.arrayOf(PropTypes.object).isRequired,
 }
 

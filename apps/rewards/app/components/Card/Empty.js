@@ -1,10 +1,10 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { EmptyStateCard, unselectable, Button } from '@aragon/ui'
+import { EmptyStateCard, GU, unselectable, Button } from '@aragon/ui'
 import icon from '../../assets/empty-rewards.svg'
 
-const Icon = () => <img src={icon} />
+const Icon = () => <img src={icon} height={20 * GU} />
 
 const Empty = ({ action }) => (
 

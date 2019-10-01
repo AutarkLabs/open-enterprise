@@ -465,6 +465,7 @@ class NewRewardClass extends React.Component {
         disabled={!this.isDraftValid()}
         errors={this.errorBlocks()}
       >
+        <VerticalSpace />
         <FormField
           label="Description"
           required
@@ -566,6 +567,9 @@ const VerticalContainer = styled.div`
 const HorizontalContainer = styled.div`
   display: flex;
   justify-content: space-between;
+`
+const VerticalSpace = styled.div`
+  height: 24px;
 `
 const ErrorText = styled.div`
   font-size: small;
