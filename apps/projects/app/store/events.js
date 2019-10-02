@@ -1,4 +1,7 @@
+import { ipfsGet } from '../utils/ipfs-helpers'
+
 import {
+  ACTION_PERFORMED,
   REQUESTING_GITHUB_TOKEN,
   REQUESTED_GITHUB_TOKEN_SUCCESS,
   REQUESTED_GITHUB_TOKEN_FAILURE,
@@ -9,9 +12,7 @@ import {
   ASSIGNMENT_REQUESTED,
   ASSIGNMENT_APPROVED,
   ASSIGNMENT_REJECTED,
-  SUBMISSION_REJECTED,
   BOUNTY_FULFILLED,
-  SUBMISSION_ACCEPTED,
   BOUNTY_SETTINGS_CHANGED,
   VAULT_DEPOSIT,
 } from './eventTypes'
@@ -33,6 +34,8 @@ import {
 } from './helpers'
 
 import { STATUS } from '../utils/github'
+
+import { app } from './app'
 
 export const handleEvent = async (state, action, vaultAddress, vaultContract) => {
   const { event, returnValues, address } = action
@@ -122,6 +125,16 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
     const issue = nextState.issues.find(i => i.data.standardBountyId === _bountyId)
     if (!issue) return nextState
 
+    if (
+      issue.data.workSubmissions &&
+      issue.data.workSubmissions[_fulfillmentId] &&
+      issue.data.workSubmissions[_fulfillmentId].review
+    ) {
+      // this indicates that blocks are being processed out of order,
+      // and ACTION_PERFORMED has already marked this submission as reviewed
+      return nextState
+    }
+
     const issueNumber = String(issue.data.number)
     const submission = await buildSubmission({
       fulfillmentId: _fulfillmentId,
@@ -129,12 +142,13 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
       submitter: _submitter,
       ipfsHash: _data,
     })
+
+    const workSubmissions = issue.data.workSubmissions || []
+    workSubmissions[_fulfillmentId] = submission
+
     let issueData = {
       ...issue.data,
-      workSubmissions: [
-        ...(issue.data.workSubmissions || []),
-        submission,
-      ],
+      workSubmissions,
       work: submission,
     }
     issueData = await updateIssueDetail(issueData)
@@ -142,22 +156,34 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
     nextState = syncIssues(nextState, { issueNumber }, issueData)
     return nextState
   }
-  case SUBMISSION_ACCEPTED: {
+  case ACTION_PERFORMED: {
     if (!returnValues) return nextState
-    const { repoId, issueNumber } = returnValues
-    let issueData = await loadIssueData({ repoId, issueNumber })
+    const { _bountyId, _data, _fulfiller } = returnValues
+    const { appAddress } = await app.currentApp().toPromise()
+    if (_fulfiller.toLowerCase() !== appAddress.toLowerCase()) return nextState
+
+    const issue = nextState.issues.find(i =>
+      i.data.standardBountyId === _bountyId
+    )
+    if (!issue) return nextState
+
+    const ipfsData = await ipfsGet(_data)
+
+    // we only care about ActionPerformed when called in ReviewSubmission
+    if (!ipfsData.fulfillmentId) return nextState
+
+    const workSubmissions = issue.data.workSubmissions || []
+    workSubmissions[ipfsData.fulfillmentId] = ipfsData
+
+    let issueData = {
+      ...issue.data,
+      workSubmissions,
+      work: ipfsData,
+    }
     issueData = await updateIssueDetail(issueData)
     issueData = determineWorkStatus(issueData)
-    nextState = syncIssues(nextState, returnValues, issueData)
-    return nextState
-  }
-  case SUBMISSION_REJECTED: {
-    if(!returnValues) return nextState
-    const { repoId, issueNumber } = returnValues
-    let issueData = await loadIssueData({ repoId, issueNumber })
-    issueData = await updateIssueDetail(issueData)
-    issueData = determineWorkStatus(issueData)
-    nextState = syncIssues(nextState, returnValues, issueData)
+    const issueNumber = String(issue.data.number)
+    nextState = syncIssues(nextState, { issueNumber }, issueData)
     return nextState
   }
   case BOUNTY_SETTINGS_CHANGED:

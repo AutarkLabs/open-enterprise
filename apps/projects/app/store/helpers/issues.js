@@ -118,8 +118,15 @@ const existWorkInProgress = issue => {
 }
 
 const isWorkDone = issue => {
-  if (!('workSubmissions' in issue) || issue.workSubmissions.length === 0) return false
-  return issue.workSubmissions.filter(work => ('review' in work && work.review.accepted)).length > 0
+  if (
+    !issue.hasOwnProperty('workSubmissions') ||
+    issue.workSubmissions.length === 0
+  ) return false
+
+  return issue.workSubmissions.some(work =>
+    work.hasOwnProperty('review') &&
+      work.review.accepted
+  )
 }
 
 const workReadyForReview = issue => {
@@ -183,6 +190,7 @@ export const buildSubmission = async ({ fulfillmentId, fulfillers, ipfsHash, sub
     ack2,
     comments,
     fulfillmentId,
+    fulfillers,
     hours,
     proof,
     status: '0',
