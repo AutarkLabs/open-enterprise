@@ -239,7 +239,7 @@ const onReviewApplication = ({ closePanel, reviewApplication }) => async (
     issue.requestsData[requestIndex].contributorAddr,
     requestIPFSHash,
     approved
-  )
+  ).toPromise()
 }
 
 // TODO: move entire component to functional component
@@ -273,12 +273,12 @@ const DetailText = styled(Text)`
 const Separator = styled.hr`
   height: 1px;
   width: 100%;
-  color: #D1D1D1;
+  color: #d1d1d1;
   opacity: 0.1;
 `
 const ApplicationDetails = styled.div`
-  border: 1px solid #DAEAEF;
-  background-color: #F3F9FB;
+  border: 1px solid #daeaef;
+  background-color: #f3f9fb;
   padding: 14px;
   margin-top: 8px;
   margin-bottom: 14px;
