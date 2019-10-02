@@ -154,7 +154,7 @@ class SubmitWork extends React.Component {
 const onSubmitWork = ({ closePanel, submitWork }) => async (state, issue) => {
   closePanel()
   const hash = await ipfsAdd(state)
-  submitWork(toHex(issue.repoId), issue.number, hash)
+  submitWork(toHex(issue.repoId), issue.number, hash).toPromise()
 }
 
 // TODO: move entire component to functional component
