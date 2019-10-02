@@ -36,7 +36,7 @@ export async function initializeTokens(state, settings){
   tokenStartBlock.set(ETH_CONTRACT, null)
 
   const withEthBalance = await loadEthBalance(state, settings)
-  return withEthBalance
+  return {...withEthBalance, amountTokens: []}
 }
 
 export async function vaultLoadBalance(state, { returnValues }, settings) {
@@ -72,14 +72,12 @@ export async function updateBalancesAndRefTokens({ balances = [], refTokens = []
     ? tokenContracts.get(tokenAddress)
     : app.external(tokenAddress, tokenAbi)
   tokenContracts.set(tokenAddress, tokenContract)
-
   const balancesIndex = balances.findIndex(({ address }) =>
     addressesEqual(address, tokenAddress)
   )
   if (balancesIndex === -1) {
     const newBalance = await newBalanceEntry(tokenContract, tokenAddress, settings)
     let newRefTokens = Array.from(refTokens)
-
     if (newBalance.startBlock) {
       const refIndex = refTokens.findIndex(({ address }) =>
         addressesEqual(address, tokenAddress)

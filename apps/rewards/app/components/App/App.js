@@ -12,6 +12,12 @@ import {
   millisecondsToMonths,
   millisecondsToQuarters
 } from '../../../../../shared/ui/utils'
+
+import {
+  ONE_TIME_DIVIDEND,
+  RECURRING_DIVIDEND,
+  ONE_TIME_MERIT,
+} from '../../utils/constants'
 import { networkContextType } from '../../../../../shared/ui'
 import { useAragonApi } from '../../api-react'
 import { IdentityProvider } from '../../../../../shared/identity'
@@ -170,12 +176,19 @@ class App extends React.Component {
       reward.delay = 0
       reward.duration = millisecondsToBlocks(reward.dateStart, reward.dateEnd)
     }
-
+    if (reward.rewardType === ONE_TIME_DIVIDEND || reward.rewardType === ONE_TIME_MERIT) {
+      reward.occurances = 1
+    }
+    if (reward.rewardType === ONE_TIME_MERIT) {
+      reward.isMerit = true
+    } else {
+      reward.isMerit = false
+    }
     this.props.api.newReward(
       reward.description, //string _description
-      reward.isMerit, //bool _isMerit,
-      reward.referenceAsset, //address _referenceToken,
-      reward.currency, //address _rewardToken,
+      reward.isMerit, //reward.isMerit, //bool _isMerit,
+      reward.referenceAsset.key, //address _referenceToken,
+      reward.amountToken.address, //address _rewardToken,
       reward.amount, //uint _amount,
       startBlock, // uint _startBlock
       reward.duration, //uint _duration, (number of blocks until reward will be available)
