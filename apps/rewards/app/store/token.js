@@ -84,8 +84,8 @@ export async function updateBalancesAndRefTokens({ balances = [], refTokens = []
       )
 
       if (refIndex === -1) {
-        const { name, symbol, address, startBlock } = newBalance
-        newRefTokens = newRefTokens.concat({ name, symbol, address, startBlock })
+        const { name, symbol, address, startBlock, decimals } = newBalance
+        newRefTokens = newRefTokens.concat({ name, symbol, address, startBlock, decimals })
       }
     }
     const newBalances = balances.concat(newBalance)

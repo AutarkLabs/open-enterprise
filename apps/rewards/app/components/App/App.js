@@ -5,14 +5,18 @@ import throttle from 'lodash.throttle'
 import { MyRewards, Overview } from '../Content'
 import PanelManager, { PANELS } from '../Panel'
 import {
+  MILLISECONDS_IN_A_DAY,
+  MILLISECONDS_IN_A_WEEK,
   MILLISECONDS_IN_A_MONTH,
-  MILLISECONDS_IN_A_QUARTER,
-  WEEK,
+  MILLISECONDS_IN_A_YEAR,
   millisecondsToBlocks,
-  millisecondsToMonths,
-  millisecondsToQuarters
+  millisecondsToDays,
+  millisecondsToWeeks,
+  millisecondsToMonths,    
+  millisecondsToYears,
 } from '../../../../../shared/ui/utils'
 
+import { BN } from 'web3-utils'
 import {
   ONE_TIME_DIVIDEND,
   RECURRING_DIVIDEND,
@@ -148,58 +152,56 @@ class App extends React.Component {
 
   onNewReward = async reward => {
     let currentBlock = await this.props.api.web3Eth('getBlockNumber').toPromise()
+    const amountBN = new BN(reward.amount)
+    const tenBN =  new BN(10)
+    const decimalsBN = new BN(reward.amountToken.decimals)
+    reward.amount = amountBN.mul(tenBN.pow(decimalsBN))
     let startBlock = currentBlock + millisecondsToBlocks(Date.now(), reward.dateStart)
-    if (!reward.isMerit) {
-      switch (reward.disbursementCycle) {
-      case 'Quarterly':
-        reward.occurances = millisecondsToQuarters(reward.dateStart, reward.dateEnd)
-        reward.duration = millisecondsToBlocks(Date.now(), MILLISECONDS_IN_A_QUARTER + Date.now())
-        break
-      default: // Monthly
-        reward.occurances = millisecondsToMonths(reward.dateStart, reward.dateEnd)
-        reward.duration = millisecondsToBlocks(Date.now(), MILLISECONDS_IN_A_MONTH + Date.now())
-      }
-      switch(reward.disbursementDelay) {
-      case '1 week':
-        reward.delay = millisecondsToBlocks(Date.now(), Date.now() + WEEK)
-        break
-      case '2 weeks':
-        reward.delay = millisecondsToBlocks(Date.now(), Date.now() + (2 * WEEK))
-        break
-      default:
-        reward.delay = 0
-        break
-      }
-    }
-    else {
-      reward.occurances = 1
-      reward.delay = 0
-      reward.duration = millisecondsToBlocks(reward.dateStart, reward.dateEnd)
-    }
     if (reward.rewardType === ONE_TIME_DIVIDEND || reward.rewardType === ONE_TIME_MERIT) {
       reward.occurances = 1
     }
     if (reward.rewardType === ONE_TIME_MERIT) {
       reward.isMerit = true
+      reward.delay = 0
+      reward.duration = millisecondsToBlocks(reward.dateStart, reward.dateEnd)
     } else {
       reward.isMerit = false
+    }
+    if (!reward.isMerit) {
+      switch (reward.disbursementUnit) {
+      case 'Days':
+        reward.occurances = millisecondsToDays(reward.dateStart, reward.dateEnd)
+        reward.duration = millisecondsToBlocks(Date.now(), MILLISECONDS_IN_A_DAY + Date.now())
+        break
+      case 'Weeks':
+        reward.occurances = millisecondsToWeeks(reward.dateStart, reward.dateEnd)
+        reward.duration = millisecondsToBlocks(Date.now(), MILLISECONDS_IN_A_WEEK + Date.now())
+        break
+      case 'Years':
+        reward.occurances = millisecondsToYears(reward.dateStart, reward.dateEnd)
+        reward.duration = millisecondsToBlocks(Date.now(), MILLISECONDS_IN_A_YEAR + Date.now())
+        break                
+      default: // Monthly
+        reward.occurances = millisecondsToMonths(reward.dateStart, reward.dateEnd)
+        reward.duration = millisecondsToBlocks(Date.now(), MILLISECONDS_IN_A_MONTH + Date.now())
+      }
     }
     this.props.api.newReward(
       reward.description, //string _description
       reward.isMerit, //reward.isMerit, //bool _isMerit,
       reward.referenceAsset.key, //address _referenceToken,
       reward.amountToken.address, //address _rewardToken,
-      reward.amount, //uint _amount,
+      reward.amount.toString(10), //uint _amount,
       startBlock, // uint _startBlock
       reward.duration, //uint _duration, (number of blocks until reward will be available)
       reward.occurances, //uint _occurances,
-      reward.delay //uint _delay
+      0 //uint _delay
     ).toPromise()
     this.closePanel()
   }
 
   onClaimReward = reward => {
-    this.props.api.claimReward(Number(reward.rewardId))
+    this.props.api.claimReward(Number(reward.rewardId)).toPromise()
     this.closePanel()
   }
 
