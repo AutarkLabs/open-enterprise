@@ -8,6 +8,7 @@ import {
   BOUNTY_ADDED,
   ASSIGNMENT_REQUESTED,
   ASSIGNMENT_APPROVED,
+  ASSIGNMENT_REJECTED,
   SUBMISSION_REJECTED,
   BOUNTY_FULFILLED,
   SUBMISSION_ACCEPTED,
@@ -97,6 +98,15 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
     return nextState
   }
   case ASSIGNMENT_APPROVED: {
+    if(!returnValues) return nextState
+    const { repoId, issueNumber } = returnValues
+    let issueData = await loadIssueData({ repoId, issueNumber })
+    issueData = await updateIssueDetail(issueData)
+    issueData = determineWorkStatus(issueData)
+    nextState = syncIssues(nextState, returnValues, issueData)
+    return nextState
+  }
+  case ASSIGNMENT_REJECTED: {
     if(!returnValues) return nextState
     const { repoId, issueNumber } = returnValues
     let issueData = await loadIssueData({ repoId, issueNumber })
