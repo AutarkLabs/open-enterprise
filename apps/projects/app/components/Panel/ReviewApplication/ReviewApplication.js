@@ -239,7 +239,7 @@ const onReviewApplication = ({ closePanel, reviewApplication }) => async (
     issue.requestsData[requestIndex].contributorAddr,
     requestIPFSHash,
     approved
-  )
+  ).toPromise()
 }
 
 // TODO: move entire component to functional component

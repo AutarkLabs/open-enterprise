@@ -151,7 +151,7 @@ const onRequestAssignment = ({ closePanel, requestAssignment }) => async (
 ) => {
   closePanel()
   const hash = await ipfsAdd(state)
-  requestAssignment(toHex(issue.repoId), issue.number, hash)
+  requestAssignment(toHex(issue.repoId), issue.number, hash).toPromise()
 }
 
 // TODO: move entire component to functional component

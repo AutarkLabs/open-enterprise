@@ -253,7 +253,7 @@ const onReviewWork = ({ closePanel, reviewSubmission }) => async (
     issue.workSubmissions.length - 1,
     state.accepted,
     requestIPFSHash
-  )
+  ).toPromise()
 }
 
 // TODO: move entire component to functional component
