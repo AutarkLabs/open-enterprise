@@ -265,7 +265,7 @@ class App extends React.Component {
 
     const { rewards, myRewards } = this.props
 
-    if (!rewards.length && !myRewards.length) {
+    if (!rewards && !myRewards) {
       return (
         <Wrapper>
           <EmptyContainer>
