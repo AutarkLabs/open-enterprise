@@ -6,28 +6,16 @@ import {
   Button,
   DropDown,
   IconClose,
-  IconFundraising,
   IdentityBadge,
   Info,
-  SafeLink,
   Text,
   TextInput,
   useTheme,
 } from '@aragon/ui'
 
 import { Form, FormField } from '../../Form'
-import { DateInput, InputDropDown } from '../../../../../../shared/ui'
-import { format } from 'date-fns'
+import { DateInput } from '../../../../../../shared/ui'
 import moment from 'moment'
-import BigNumber from 'bignumber.js'
-import {
-  MILLISECONDS_IN_A_MONTH,
-  MILLISECONDS_IN_A_QUARTER,
-  millisecondsToBlocks,
-  millisecondsToMonths,
-  millisecondsToQuarters,
-} from '../../../../../../shared/ui/utils'
-import { toCurrency } from '../../../utils/helpers'
 import { isAddress } from '../../../utils/web3-utils'
 import { ETHER_TOKEN_VERIFIED_BY_SYMBOL } from '../../../utils/verified-tokens'
 import TokenSelectorInstance from './TokenSelectorInstance'
@@ -37,13 +25,12 @@ import {
   ONE_TIME_DIVIDEND,
   RECURRING_DIVIDEND,
   ONE_TIME_MERIT,
-  DAYS,
-  WEEKS,
   MONTHS,
-  YEARS,
   DISBURSEMENT_UNITS,
   OTHER,
 } from '../../../utils/constants'
+
+import RewardSummary from '../RewardSummary'
 
 const disbursementCycleNames = [ 'Quarterly', 'Monthly' ]
 const disbursementCyclesSummary = [ 'quarterly cycle', 'monthly cycle' ]
@@ -53,6 +40,7 @@ import tokenBalanceOfAbi from '../../../../../shared/json-abis/token-balanceof.j
 import tokenBalanceOfAtAbi from '../../../../../shared/json-abis/token-balanceofat.json'
 import tokenCreationBlockAbi from '../../../../../shared/json-abis/token-creationblock.json'
 import tokenSymbolAbi from '../../../../../shared/json-abis/token-symbol.json'
+
 const tokenAbi = [].concat(tokenBalanceOfAbi, tokenBalanceOfAtAbi, tokenCreationBlockAbi, tokenSymbolAbi)
 
 const INITIAL_STATE = {
@@ -89,15 +77,11 @@ const INITIAL_STATE = {
   }
 }
 
-function getTokenProp(prop, { refTokens }, { customToken, referenceAsset }, check = prop) {
-  return customToken[check]?customToken[prop]:refTokens[referenceAsset-2][prop]
-}
 
 class NewRewardClass extends React.Component {
   static propTypes = {
     onNewReward: PropTypes.func.isRequired,
     app: PropTypes.object,
-    balances: PropTypes.array,
     network: PropTypes.object,
     refTokens: PropTypes.array,
     amountTokens: PropTypes.arrayOf(PropTypes.object).isRequired,
@@ -106,7 +90,6 @@ class NewRewardClass extends React.Component {
 
   constructor(props) {
     super(props)
-    this.getCurrentBlock()
     this.state = {
       ...INITIAL_STATE,
       amountToken: props.amountTokens[0],
@@ -114,10 +97,20 @@ class NewRewardClass extends React.Component {
     }
   }
 
-  getCurrentBlock = async () => {
-    const currentBlock = await this.props.app.web3Eth('getBlockNumber').toPromise()
-    const startBlock = currentBlock + millisecondsToBlocks(Date.now(), this.state.dateStart)
-    this.setState({ currentBlock, startBlock })
+  setDisbursements = (dateStart, dateEnd, disbursement, disbursementUnit) => {
+    if (isNaN(disbursement) || disbursement <= 0 ||
+        this.state.rewardType !== RECURRING_DIVIDEND) {
+      this.setState({ disbursements: [] })
+      this.setSemanticErrors({ dateStart, dateEnd })
+      return
+    }
+    let date = moment(dateStart), disbursements = []
+    while (!date.isAfter(dateEnd, 'days')) {
+      disbursements.push(date.toDate())
+      date.add(disbursement, disbursementUnit)
+    }
+    this.setState({ disbursements })
+    this.setSemanticErrors({ dateStart, dateEnd, disbursements })
   }
 
   changeField = ({ target: { name, value } }) => {
@@ -164,6 +157,10 @@ class NewRewardClass extends React.Component {
 
   onSubmit = () => {
     this.props.onNewReward(this.state)
+  }
+
+  submitDraft = () => {
+    this.setState({ draftSubmitted: true })
   }
 
   isDraftValid = () => {
@@ -214,22 +211,9 @@ class NewRewardClass extends React.Component {
         semanticErrors.push('dateStartAfterEnd')
     }
     if (state.rewardType === RECURRING_DIVIDEND &&
-        state.disbursements.length === 0)
+        state.disbursements.length <= 1)
       semanticErrors.push('disbursementsInexistent')
     this.setState({ semanticErrors })
-  }
-
-  startBeforeTokenCreation = () => (getTokenProp('startBlock',this.props,this.state)) > this.state.startBlock
-  disbursementOverflow = () => (this.state.quarterEndDates ? this.state.quarterEndDates.length > 41 : false)
-  lowVaultBalance = () => this.props.balances[this.state.amountCurrency].amount / Math.pow(10,this.props.balances[this.state.amountCurrency].decimals) < this.state.amount
-  dividendPeriodTooShort = () => (this.state.rewardType > 0 && this.state.occurances <= 0)
-  errorPrompt = () => (this.showSummary() && (this.startBeforeTokenCreation() || this.disbursementOverflow() || this.lowVaultBalance() || this.dividendPeriodTooShort()))
-  customTokenPromptText = ({ address }, networkType) => {
-    if (networkType === 'main') {
-      if (address === 'not found') return 'Symbol not found. Please enter token\'s address'
-      return 'Enter a valid MiniMe token symbol or address'
-    }
-    return 'Enter a valid MiniMe token address'
   }
 
   onMainNet = () => this.props.network.type === 'main'
@@ -315,22 +299,50 @@ class NewRewardClass extends React.Component {
     }
   }
 
-  formatDate = date => format(date, 'yyyy-MM-dd')
-  changeDate = (dateStart, dateEnd, cycle) => {
-    const occurances = cycle === 0 ?
-      millisecondsToQuarters(dateStart, dateEnd) : millisecondsToMonths(dateStart, dateEnd)
-    this.getCurrentBlock()
-    this.setState({
-      dateStart,
-      dateEnd,
-      occurances,
-      disbursementCycle: cycle,
-      quarterEndDates: occurances > 0 ? [...Array(occurances).keys()]
-        .map(occurance => dateStart.valueOf() + ((occurance + 1) * (cycle === 0 ?
-          MILLISECONDS_IN_A_QUARTER : MILLISECONDS_IN_A_MONTH)))
-        : null
-      ,
-    })
+  amountWithTokenAndBalance = () => {
+    const { amountTokens } = this.props
+    const { amountToken } = this.state
+    return (
+      <VerticalContainer>
+        <HorizontalContainer>
+          <TextInput
+            name="amount"
+            type="number"
+            min={MIN_AMOUNT}
+            step="any"
+            onChange={e => {
+              const { value } = e.target
+              this.setState({ amount: value })
+              this.setSemanticErrors({ amount: value })
+            }}
+            wide={true}
+            value={this.state.amount}
+            css={{ borderRadius: '4px 0px 0px 4px' }}
+          />
+          <DropDown
+            name="amountToken"
+            css={{ borderRadius: '0px 4px 4px 0px' }}
+            items={amountTokens.map(token => token.symbol)}
+            selected={amountTokens.indexOf(amountToken)}
+            onChange={i => {
+              this.setState({ amountToken: amountTokens[i] })
+              this.setSemanticErrors({ amountToken: amountTokens[i] })
+            }}
+          />
+        </HorizontalContainer>
+        <Text
+          size="small"
+          color={String(this.props.theme.contentSecondary)}
+          css={{
+            alignSelf: 'flex-end',
+            marginTop: '8px',
+          }}
+        >
+          {'Available Balance: '}
+          {this.state.amountToken.balance} {this.state.amountToken.symbol}
+        </Text>
+      </VerticalContainer>
+    )
   }
 
   ErrorBox = () => (
@@ -406,7 +418,7 @@ class NewRewardClass extends React.Component {
             name="dateStart"
             value={this.state.dateStart}
             onChange={dateStart => {
-              this.setState({dateStart,})
+              this.setState({ dateStart })
               this.setDisbursements(
                 dateStart,
                 this.state.dateEnd,
@@ -425,7 +437,7 @@ class NewRewardClass extends React.Component {
             name="dateEnd"
             value={this.state.dateEnd}
             onChange={dateEnd => {
-              this.setState({dateEnd,})
+              this.setState({ dateEnd })
               this.setDisbursements(
                 this.state.dateStart,
                 dateEnd,
@@ -477,13 +489,13 @@ class NewRewardClass extends React.Component {
         label="Disbursement frequency"
         input={
           <HorizontalContainer>
-            <TextInput
+            <DisbursementInput
               name="disbursement"
               type="number"
               min={1}
               step={1}
               onChange={e => {
-                this.setState({disbursement: e.target.value,})
+                this.setState({ disbursement: e.target.value })
                 this.setDisbursements(
                   this.state.dateStart,
                   this.state.dateEnd,
@@ -493,7 +505,6 @@ class NewRewardClass extends React.Component {
               }}
               wide={true}
               value={this.state.disbursement}
-              css={{ borderRadius: '4px 0px 0px 4px' }}
             />
             <DropDown
               name="disbursementUnit"
@@ -501,7 +512,7 @@ class NewRewardClass extends React.Component {
               items={DISBURSEMENT_UNITS}
               selected={DISBURSEMENT_UNITS.indexOf(this.state.disbursementUnit)}
               onChange={i => {
-                this.setState({disbursementUnit: DISBURSEMENT_UNITS[i],})
+                this.setState({ disbursementUnit: DISBURSEMENT_UNITS[i] })
                 this.setDisbursements(
                   this.state.dateStart,
                   this.state.dateEnd,
@@ -541,10 +552,6 @@ class NewRewardClass extends React.Component {
     }
   }
 
-  submitDraft = () => {
-    this.setState({ draftSubmitted: true })
-  }
-
   errorBlocks = () => {
     const { semanticErrors, errorMessages } = this.state
     return semanticErrors.map((error, i) => (
@@ -564,10 +571,7 @@ class NewRewardClass extends React.Component {
   }
 
   showDraft = () => {
-    const {
-      rewardType,
-      disbursements,
-    } = this.state
+    const { rewardType } = this.state
     return (
       <Form
         onSubmit={this.submitDraft}
@@ -575,6 +579,7 @@ class NewRewardClass extends React.Component {
         disabled={!this.isDraftValid()}
         errors={this.errorBlocks()}
       >
+        <VerticalSpace />
         <FormField
           label="Description"
           required
@@ -585,7 +590,7 @@ class NewRewardClass extends React.Component {
               multiline
               placeholder="Briefly describe this reward."
               value={this.state.description}
-              onChange={this.changeField}
+              onChange={e => this.setState({ description: e.target.value })}
             />
           }
         />
@@ -777,7 +782,9 @@ const ErrorText = styled.div`
   display: flex;
   align-items: center;
 `
-const IconContainer = styled.div``
+const IconContainer = styled.div`
+  display: flex;
+`
 
 const NewReward = props => {
   const theme = useTheme()

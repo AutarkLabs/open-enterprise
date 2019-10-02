@@ -1,13 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { combineLatest } from 'rxjs'
-import { first } from 'rxjs/operators'
-import { useAragonApi } from '../../api-react'
 import { Button, Text, useTheme } from '@aragon/ui'
-import tokenBalanceOfAbi from '../../abi/token-balanceof.json'
 import Slider from '../Slider'
 import Label from './Label'
+import { BN } from 'web3-utils'
 
 const ValueContainer = styled.div`
   box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.03);
@@ -26,50 +23,28 @@ const SliderAndValueContainer = styled.div`
   width: 100%;
 `
 
-const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights }) => {
-  const { api, appState: { tokenAddress }, connectedAccount } = useAragonApi()
-
+const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights, votingPower }) => {
   const theme = useTheme()
 
   const [ remaining, setRemaining ] = useState(100)
   const [ voteOptions, setVoteOptions ] = useState(
     Array.from(Array(vote.data.options.length), () => ({}))
   )
-  const [ userBalance, setUserBalance ] = useState(0)
 
   useEffect(() => {
-    function getVoterState() {
-      if (voteWeights.length) {
-        let total = 0
-        const sliderValues = []
-        voteWeights.map((value, index) => {
-          sliderValues[index] = {
-            sliderValue: value / 100,
-            trueValue: Math.round(value)
-          }
-          total += Math.round(value)
-        })
-        setVoteOptions([...sliderValues])
-        setRemaining(100 - total)
-      }
+    if (voteWeights.length) {
+      const sliderValues = voteWeights.map(value => ({
+        sliderValue: value / 100,
+        trueValue: Math.round(value)
+      }))
+      const total = sliderValues.reduce(
+        (sum, { trueValue }) => sum + trueValue,
+        0
+      )
+      setVoteOptions(sliderValues)
+      setRemaining(100 - total)
     }
-
-    function loadUserBalance() {
-      const tokenContract = tokenAddress && api.external(tokenAddress, tokenBalanceOfAbi)
-      if (tokenContract && connectedAccount) {
-        combineLatest(
-          tokenContract.balanceOfAt(connectedAccount, vote.data.snapshotBlock)
-        )
-          .pipe(first())
-          .subscribe(([userBalance]) => {
-            setUserBalance(userBalance)
-          })
-      }
-    }
-
-    getVoterState()
-    loadUserBalance()
-  }, [ vote, connectedAccount ])
+  }, [voteWeights])
 
   const sliderUpdate = useCallback((value, idx) => {
     const total = voteOptions.reduce(
@@ -93,30 +68,14 @@ const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights }) => {
   }, [voteOptions])
 
   const handleVoteSubmit = useCallback(() => {
-    let optionsArray = []
-
-    voteOptions.forEach(element => {
-      let voteWeight = element.trueValue
-        ? Math.round(
-          parseFloat(
-            (element.trueValue * userBalance).toFixed(2)
-          )
-        )
-        : 0
-      optionsArray.push(voteWeight)
+    const votingPowerBN = new BN(votingPower, 10)
+    const optionsArray = voteOptions.map(element => {
+      const baseValue = element.trueValue ? new BN(element.trueValue, 10) : new BN('0', 10)
+      const voteWeight = baseValue.mul(votingPowerBN).div(new BN('100', 10))
+      return voteWeight.toString(10)
     })
-
-    //re-proportion the supports values so they don't exceed the total balance
-    const valueTotal = optionsArray.reduce((a, b) => a + b, 0)
-    valueTotal > parseInt(userBalance)
-      ? (optionsArray = optionsArray.map(
-        tokenSupport =>
-          (tokenSupport / valueTotal) *
-          (parseInt(userBalance) * 0.9999)
-      ))
-      : 0
     onVote(vote.voteId, optionsArray)
-  }, [ vote.voteId, onVote, userBalance, voteOptions ])
+  }, [ vote.voteId, onVote, votingPower, voteOptions ])
 
   return (
     <div css="width: 100%">
@@ -166,7 +125,7 @@ const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights }) => {
           mode="strong"
           onClick={handleVoteSubmit}
           disabled={
-            voteOptions.reduce((sum, { trueValue = 0 }) => sum + trueValue, 0) === 0
+            voteOptions.reduce((sum, { trueValue = 0 }) => sum + parseInt(trueValue, 10), 0) === 0
           }
         >
           Submit Vote
@@ -187,6 +146,7 @@ CastVote.propTypes = {
     voteId: PropTypes.string.isRequired,
   }).isRequired,
   voteWeights: PropTypes.array.isRequired,
+  votingPower: PropTypes.string.isRequired,
 }
 
 export default CastVote

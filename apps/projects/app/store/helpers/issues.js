@@ -1,3 +1,4 @@
+import { toHex } from 'web3-utils'
 import { app } from '../app'
 import { ipfsGet } from '../../utils/ipfs-helpers'
 
@@ -118,11 +119,13 @@ const loadSubmissionData = ({ repoId, issueNumber }) => {
   })
 }
 
-export const updateIssueDetail = async (data, response) => {
+export const updateIssueDetail = async data => {
   let returnData = { ...data }
-  const requestsData = await loadRequestsData(response.returnValues)
+  const repoId = toHex(data.repoId)
+  const issueNumber = String(data.number)
+  const requestsData = await loadRequestsData({ repoId, issueNumber })
   returnData.requestsData = requestsData
-  let submissionData = await loadSubmissionData(response.returnValues)
+  let submissionData = await loadSubmissionData({ repoId, issueNumber })
   returnData.workSubmissions = submissionData
   returnData.work = submissionData[submissionData.length - 1]
   return returnData

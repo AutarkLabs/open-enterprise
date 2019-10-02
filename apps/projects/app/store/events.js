@@ -78,47 +78,53 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
   }
   case BOUNTY_ADDED: {
     if(!returnValues) return nextState
-    let issueData = await loadIssueData(returnValues)
+    const { repoId, issueNumber } = returnValues
+    let issueData = await loadIssueData({ repoId, issueNumber })
     issueData = determineWorkStatus(issueData)
     nextState = syncIssues(nextState, returnValues, issueData, [])
     return nextState
   }
   case ASSIGNMENT_REQUESTED: {
     if(!returnValues) return nextState
-    let issueData = await loadIssueData(returnValues)
-    issueData = await updateIssueDetail(issueData, action)
+    const { repoId, issueNumber } = returnValues
+    let issueData = await loadIssueData({ repoId, issueNumber })
+    issueData = await updateIssueDetail(issueData)
     issueData = determineWorkStatus(issueData)
     nextState = syncIssues(nextState, returnValues, issueData)
     return nextState
   }
   case ASSIGNMENT_APPROVED: {
     if(!returnValues) return nextState
-    let issueData = await loadIssueData(returnValues)
-    issueData = await updateIssueDetail(issueData, action)
+    const { repoId, issueNumber } = returnValues
+    let issueData = await loadIssueData({ repoId, issueNumber })
+    issueData = await updateIssueDetail(issueData)
     issueData = determineWorkStatus(issueData)
     nextState = syncIssues(nextState, returnValues, issueData)
     return nextState
   }
   case SUBMISSION_REJECTED: {
     if(!returnValues) return nextState
-    let issueData = await loadIssueData(returnValues)
-    issueData = await updateIssueDetail(issueData, action)
+    const { repoId, issueNumber } = returnValues
+    let issueData = await loadIssueData({ repoId, issueNumber })
+    issueData = await updateIssueDetail(issueData)
     issueData = determineWorkStatus(issueData)
     nextState = syncIssues(nextState, returnValues, issueData)
     return nextState
   }
   case WORK_SUBMITTED: {
     if(!returnValues) return nextState
-    let issueData = await loadIssueData(returnValues)
-    issueData = await updateIssueDetail(issueData, action)
+    const { repoId, issueNumber } = returnValues
+    let issueData = await loadIssueData({ repoId, issueNumber })
+    issueData = await updateIssueDetail(issueData)
     issueData = determineWorkStatus(issueData)
     nextState = syncIssues(nextState, returnValues, issueData)
     return nextState
   }
   case SUBMISSION_ACCEPTED: {
     if (!returnValues) return nextState
-    let issueData = await loadIssueData(returnValues)
-    issueData = await updateIssueDetail(issueData, action)
+    const { repoId, issueNumber } = returnValues
+    let issueData = await loadIssueData({ repoId, issueNumber })
+    issueData = await updateIssueDetail(issueData)
     issueData = determineWorkStatus(issueData)
     nextState = syncIssues(nextState, returnValues, issueData)
     return nextState

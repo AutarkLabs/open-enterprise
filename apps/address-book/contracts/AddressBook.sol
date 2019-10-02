@@ -76,9 +76,9 @@ contract AddressBook is AragonApp {
     }
 
     /**
-     * @notice Add the entity `_cid` with address `_addr` to the registry.
+     * @notice Add `_addr` to the registry with metadata `_cid`
      * @dev CIDs must be base58-encoded in order to work with this function
-     * @param _addr The address of the entry to add to the registry
+     * @param _addr The Ethereum address of the entry to add to the registry
      * @param _cid The IPFS hash of the entry to add to the registry
      */
     function addEntry(address _addr, string _cid) external cidIsValid(_cid) auth(ADD_ENTRY_ROLE) {
@@ -92,9 +92,9 @@ contract AddressBook is AragonApp {
     }
 
     /**
-     * @notice Remove entity `_cid` with address `_addr` from the registry.
+     * @notice Remove `_addr` from the registry with metadata `_cid`
      * @dev this function only supports CIDs that are base58-encoded
-     * @param _addr The ID of the entry to remove
+     * @param _addr The Ethereum address of the entry to remove from the registry
      * @param _cid The IPFS hash of the entry to remove from the registry; used only for radspec here
      */
     function removeEntry(address _addr, string _cid) external entryExists(_addr) auth(REMOVE_ENTRY_ROLE) {
@@ -112,11 +112,11 @@ contract AddressBook is AragonApp {
     }
 
     /**
-     * @notice Update address `_addr` from `_oldCid` to `_newCid` in the registry.
+     * @notice Update `_addr` from current metadata `_oldCid` to new metadata `_newCid`
      * @dev this function only supports CIDs that are base58-encoded
-     * @param _addr The ID of the entry to update
-     * @param _oldCid The CID of the existing information
-     * @param _newCid The new CID of updated entity info
+     * @param _addr The Ethereum address of the entry to update
+     * @param _oldCid The current IPFS hash containing the metadata of the entry
+     * @param _newCid The new IPFS hash containing the metadata of the entry
      */
     function updateEntry(
         address _addr,
@@ -132,7 +132,7 @@ contract AddressBook is AragonApp {
     /**
      * @notice Get data associated to entry `_addr` from the registry.
      * @dev getter for the entries mapping to IPFS data
-     * @param _addr The ID of the entry to get
+     * @param _addr The Ethereum address of the entry to get
      * @return contentId pointing to the IPFS structured content object for the entry
      */
     function getEntry(address _addr) external view isInitialized returns (string contentId) {
@@ -142,7 +142,7 @@ contract AddressBook is AragonApp {
     /**
      * @notice Get index associated to entry `_addr` from the registry.
      * @dev getter for the entries mapping for an index in entryArr
-     * @param _addr The ID of the entry to get
+     * @param _addr The Ethereum address of the entry to get
      * @return contentId pointing to the IPFS structured content object for the entry
      */
     function getEntryIndex(address _addr) external view isInitialized entryExists(_addr) returns (uint256 index) {
@@ -150,8 +150,8 @@ contract AddressBook is AragonApp {
     }
 
     /**
-     * @notice Checks if an entry exists in the registry
-     * @param _entry the address to check
+     * @notice Checks if `_entry` exists in the registry
+     * @param _entry the Ethereum address to check
      * @return _repoId Id for entry in entryArr
      */
     function isEntryAdded(address _entry) public view returns (bool isAdded) {

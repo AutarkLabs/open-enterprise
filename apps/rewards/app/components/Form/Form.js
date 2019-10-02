@@ -12,10 +12,9 @@ const Form = ({
 }) => {
   return (
     <React.Fragment>
-      <div style={{ height: '24px' }} />
       {children}
       <Button
-        style={{ userSelect: 'none', marginTop: '24px' }}
+        style={{ userSelect: 'none', marginTop: '8px' }}
         mode="strong"
         wide
         onClick={onSubmit}
