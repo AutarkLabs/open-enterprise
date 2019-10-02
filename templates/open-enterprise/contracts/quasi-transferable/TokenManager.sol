@@ -1,8 +1,6 @@
 /*
- * SPDX-License-Identitifer:    GPL-3.0-or-later
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
-
-/* solium-disable function-order */
 
 pragma solidity 0.4.24;
 
@@ -15,8 +13,9 @@ import "@aragon/apps-shared-minime/contracts/ITokenController.sol";
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 
 interface ITransferOracle {
-    getTransferability(address _from, address _to, uint256 _amount) external;
+    function getTransferability(address _from, address _to, uint256 _amount) external returns(bool);
 }
+
 
 contract TokenManager is ITokenController, IForwarder, AragonApp {
     using SafeMath for uint256;
@@ -56,7 +55,7 @@ contract TokenManager is ITokenController, IForwarder, AragonApp {
     ITransferOracle public oracle;
     uint256 public maxAccountTokens;
 
-    // We are mimicing an array in the inner mapping, we use a mapping instead to make app upgrade more graceful
+    // We are mimicking an array in the inner mapping, we use a mapping instead to make app upgrade more graceful
     mapping (address => mapping (uint256 => TokenVesting)) internal vestings;
     mapping (address => uint256) public vestingsLengths;
 
@@ -102,7 +101,7 @@ contract TokenManager is ITokenController, IForwarder, AragonApp {
     }
 
     function setOracle(address _oracle) external auth(SET_ORACLE) {
-        oracle = _oracle;
+        oracle = ITransferOracle(_oracle);
     }
 
     /**
@@ -209,7 +208,7 @@ contract TokenManager is ITokenController, IForwarder, AragonApp {
         delete vestings[_holder][_vestingId];
 
         // transferFrom always works as controller
-        // onTransfer hook always allows if transfering to token controller
+        // onTransfer hook always allows if transferring to token controller
         require(token.transferFrom(_holder, address(this), nonVested), ERROR_REVOKE_TRANSFER_FROM_REVERTED);
 
         emit RevokeVesting(_holder, _vestingId, nonVested);
@@ -230,7 +229,7 @@ contract TokenManager is ITokenController, IForwarder, AragonApp {
     * @return False if the controller does not authorize the transfer
     */
     function onTransfer(address _from, address _to, uint256 _amount) external onlyToken returns (bool) {
-        bool transferability = getTransferability(_from, _to, _amount);
+        bool transferability = oracle.getTransferability(_from, _to, _amount);
         bool balanceIncreaseAllowed = _isBalanceIncreaseAllowed(_to, _amount) && _transferableBalance(_from, getTimestamp()) >= _amount;
         return transferability && balanceIncreaseAllowed;
     }
@@ -342,8 +341,34 @@ contract TokenManager is ITokenController, IForwarder, AragonApp {
         return token.balanceOf(_receiver).add(_inc) <= maxAccountTokens;
     }
 
+    function _transferableBalance(address _holder, uint256 _time) internal view returns (uint256) {
+        uint256 transferable = token.balanceOf(_holder);
+
+        // This check is not strictly necessary for the current version of this contract, as
+        // Token Managers now cannot assign vestings to themselves.
+        // However, this was a possibility in the past, so in case there were vestings assigned to
+        // themselves, this will still return the correct value (entire balance, as the Token
+        // Manager does not have a spending limit on its own balance).
+        if (_holder != address(this)) {
+            uint256 vestingsCount = vestingsLengths[_holder];
+            for (uint256 i = 0; i < vestingsCount; i++) {
+                TokenVesting storage v = vestings[_holder][i];
+                uint256 nonTransferable = _calculateNonVestedTokens(
+                    v.amount,
+                    _time,
+                    v.start,
+                    v.cliff,
+                    v.vesting
+                );
+                transferable = transferable.sub(nonTransferable);
+            }
+        }
+
+        return transferable;
+    }
+
     /**
-    * @dev Calculate amount of non-vested tokens at a specifc time
+    * @dev Calculate amount of non-vested tokens at a specific time
     * @param tokens The total amount of tokens vested
     * @param time The time at which to check
     * @param start The date vesting started
@@ -397,31 +422,5 @@ contract TokenManager is ITokenController, IForwarder, AragonApp {
 
         // tokens - vestedTokens
         return tokens.sub(vestedTokens);
-    }
-
-    function _transferableBalance(address _holder, uint256 _time) internal view returns (uint256) {
-        uint256 transferable = token.balanceOf(_holder);
-
-        // This check is not strictly necessary for the current version of this contract, as
-        // Token Managers now cannot assign vestings to themselves.
-        // However, this was a possibility in the past, so in case there were vestings assigned to
-        // themselves, this will still return the correct value (entire balance, as the Token
-        // Manager does not have a spending limit on its own balance).
-        if (_holder != address(this)) {
-            uint256 vestingsCount = vestingsLengths[_holder];
-            for (uint256 i = 0; i < vestingsCount; i++) {
-                TokenVesting storage v = vestings[_holder][i];
-                uint256 nonTransferable = _calculateNonVestedTokens(
-                    v.amount,
-                    _time,
-                    v.start,
-                    v.cliff,
-                    v.vesting
-                );
-                transferable = transferable.sub(nonTransferable);
-            }
-        }
-
-        return transferable;
     }
 }
