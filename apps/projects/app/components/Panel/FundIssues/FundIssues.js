@@ -1,3 +1,5 @@
+/* eslint-disable react/prop-types */
+// issues are validated using correct shape - eslint problem?
 import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
@@ -9,6 +11,7 @@ import useGithubAuth from '../../../hooks/useGithubAuth'
 import { usePanelManagement } from '..'
 import { computeIpfsString } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
+import { IconOpen, IconClose } from '../../../assets'
 
 import {
   Box,
@@ -18,16 +21,17 @@ import {
   useTheme,
   Badge,
   Tag,
+  GU,
   Button,
   Info,
 } from '@aragon/ui'
 
 import { Form, FormField, FieldTitle, DescriptionInput } from '../../Form'
 import { DateInput } from '../../../../../../shared/ui'
-import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
 import { Mutation } from 'react-apollo'
 import { COMMENT } from '../../../utils/gql-queries'
 import { issueShape } from '../../../utils/shapes.js'
+import { assertScalarType } from 'graphql'
 
 const FundIssues = ({ issues, mode }) => {
   const githubCurrentUser = useGithubAuth()
@@ -95,7 +99,7 @@ const FundIssues = ({ issues, mode }) => {
   }
 
   const configBounty = (id, key, val) => {
-    const newBounties = [...bounties]
+    const newBounties = { ...bounties }
     // arrow clicked - it's simple value reversal case, 1 indicates details are open, 0 - closed
     if (key === 'detailsOpen') {
       newBounties[id][key] = 1 - newBounties[id][key]
@@ -156,14 +160,14 @@ const FundIssues = ({ issues, mode }) => {
     const idArray = issuesArray.map(issue => toHex(issue.repoId))
     const numberArray = issuesArray.map(issue => issue.number)
     const bountyArray = issuesArray.map(issue =>
-      BigNumber(issue.size)
+      BigNumber(bounties[issue.id].size)
         .times(10 ** tokenDetails.decimals)
         .toString()
     )
     const tokenArray = new Array(issuesArray.length).fill(tokenDetails.addr)
     const dateArray = new Array(issuesArray.length).fill(Date.now() + 8600)
     const booleanArray = new Array(issuesArray.length).fill(true)
-    
+
     api.addBounties(
       idArray,
       numberArray,
@@ -193,11 +197,11 @@ const FundIssues = ({ issues, mode }) => {
     )
   }
 
-  const renderUpdateForm = (issue, bounties) => {
+  const BountyUpdate = ({ issue, bounties }) => {
     const expLevels = bountySettings.expLvls
 
     return (
-      <React.Fragment>
+      <div css={`margin: ${2 * GU}px 0`}>
         <Info.Action title="Warning" style={{ marginBottom: '16px' }}>
           <p style={{ marginTop: '10px' }}>
             The updates you specify will overwrite the existing settings for the bounty.
@@ -268,15 +272,19 @@ const FundIssues = ({ issues, mode }) => {
             }
           />
         </Form>
-      </React.Fragment>
+      </div>
     )
   }
-
-  const renderForm = (issues, bounties) => {
+  BountyUpdate.propTypes = {
+    issue: issueShape,
+    bounties: PropTypes.object.isRequired,
+  }
+  
+  const FundForm = ({ issues, bounties }) => {
     const expLevels = bountySettings.expLvls
 
     return (
-      <div>
+      <div css={`margin: ${2 * GU}px 0`}>
         <Mutation mutation={COMMENT}>
           {(post, result) => (
             <Form
@@ -306,47 +314,53 @@ const FundIssues = ({ issues, mode }) => {
                 input={
                   <React.Fragment>
                     {issues.map(issue => (
-                      <Box key={issue.id}>
+                      <Box key={issue.id} padding={0}>
                         <div css={`
                           display: grid;
                           grid-template-columns: 1fr 1fr;
                           grid-template-rows: auto;
                           grid-template-areas:
-                          "title title"
-                          "hours exp"
-                          "deadline deadline";
+                            "title title"
+                            "hours exp"
+                            "deadline deadline";
                           grid-gap: 12px;
                           align-items: stretch;
-                          `}
-                        >
-                          <div css="display: flex; grid-area: title">
+                        `}>
+                          <div css={`
+                            grid-area: title;
+                            padding: ${2 * GU}px ${2 * GU}px 0 ${2 * GU}px;
+                            display: flex;
+                            justify-content: space-between;
+                          `}>
 
-                            <IBArrow onClick={generateArrowChange(issue.id)}>
+                            <DetailsArrow onClick={generateArrowChange(issue.id)}>
                               {bounties[issue.id]['detailsOpen'] ? (
-                                <IconBigArrowUp />
+                                <IconClose />
                               ) : (
-                                <IconBigArrowDown />
+                                <IconOpen />
                               )}
-                            </IBArrow>
+                            </DetailsArrow>
 
-                            <Text size="normal" weight="bold">
+                            <Text size="large" weight="bold" css={`
+                                width: 100%;
+                                display: block;
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                              `}>
                               {issue.title}
                             </Text>
 
                             {issue.id in bounties &&
                                  bounties[issue.id]['hours'] > 0 && (
-                              <Tag
-                                css="padding: 10px; margin-right: 10px;"
-                              >
-                                {bounties[issue.id]['size'].toFixed(2)}{' '}
-                                {tokenDetails.symbol}
+                              <Tag css="padding: 10px; margin-left: 10px; width: auto">
+                                {bounties[issue.id]['size'].toFixed(2) + ' ' + tokenDetails.symbol}
                               </Tag>
                 
                             )}
                           </div>
 
-                          <div css="grid-area: hours">
-
+                          <div css={`grid-area: hours; padding-left: ${2 * GU}px`}>
                             <FieldTitle>Estimated Hours</FieldTitle>
                             <HoursInput
                               name="hours"
@@ -355,8 +369,8 @@ const FundIssues = ({ issues, mode }) => {
                               wide
                             />
                           </div>
-                          <div css="grid-area: exp">
 
+                          <div css={`grid-area: exp; padding-right: ${2 * GU}px`}>
                             <FormField
                               label="Experience level"
                               input={
@@ -371,8 +385,14 @@ const FundIssues = ({ issues, mode }) => {
 
                           </div>
 
-                          <div css={`"grid-area: deadline; background: ${theme.border}`}>
-
+                          <div css={`
+                            grid-area: deadline;
+                            background: ${theme.background};
+                            border-top: 1px solid ${theme.border};
+                            padding: 0 ${2 * GU}px;
+                            display: none;
+                            display: ${bounties[issue.id]['detailsOpen'] ? 'block' : 'none'};
+                          `}>
                             <FormField
                               label="Deadline"
                               input={
@@ -380,7 +400,7 @@ const FundIssues = ({ issues, mode }) => {
                                   name='deadline'
                                   value={bounties[issue.id]['deadline']}
                                   onChange={generateDeadlineChange(issue.id)}
-                                  wide
+                                  width="100%"
                                 />
                               }
                             />
@@ -409,24 +429,17 @@ const FundIssues = ({ issues, mode }) => {
       </div>
     )
   }
-
-  const renderWarning = issues => (
-    <Info.Action title="Warning">
-      <p style={{ margin: '10px 0' }}>
-        The following issues already have bounties and cannot be updated on a bulk basis. To update an individual issue, select “Update Bounty” from the issue’s context menu.
-      </p>
-      <WarningIssueList>
-        {issues.map(issue => <li key={issue.id}>{issue.title}</li>)}
-      </WarningIssueList>
-    </Info.Action>
-  )
+  FundForm.propTypes = {
+    issues: PropTypes.arrayOf(issueShape),
+    bounties: PropTypes.object.isRequired,
+  }
 
   const bountylessIssues = []
   const alreadyAdded = []
 
   if (!tokens.length || !tokenDetails.balance) {
     return (
-      <div>
+      <div css={`margin-top: ${2 * GU}px`}>
         <VaultDiv><Icon /></VaultDiv>
         <Text color={`${theme.surfaceContentSecondary}`} size='large' >
           <div>
@@ -446,7 +459,7 @@ const FundIssues = ({ issues, mode }) => {
 
   // in 'update' mode there is only one issue
   if (mode === 'update') {
-    return renderUpdateForm(issues[0], bounties)
+    return <BountyUpdate issue={issues[0]} bounties={bounties} />
   }
 
   issues.forEach(issue => {
@@ -456,36 +469,29 @@ const FundIssues = ({ issues, mode }) => {
       bountylessIssues.push(issue)
   })
 
-  if (bountylessIssues.length > 0 && alreadyAdded.length > 0) {
-    return (
-      <DivSeparator>
-        {renderForm(bountylessIssues, bounties)}
-        {renderWarning(alreadyAdded)}
-      </DivSeparator>
-    )
-  } else if (bountylessIssues.length > 0) {
-    return renderForm(bountylessIssues, bounties)
-  }
   return (
-    <DivSeparator>
-      {renderWarning(alreadyAdded)}
-      <Button mode="strong" wide onClick={closePanel}>Close</Button>
-    </DivSeparator>
+    <React.Fragment>
+      {(bountylessIssues.length > 0) && <FundForm issues={bountylessIssues} bounties={bounties} />}
+      {(alreadyAdded.length > 0) && (
+        <Info.Action title="Warning" style={{ marginBottom: `${2 * GU}px` }}>
+          <p style={{ margin: '10px 0' }}>
+          The following issues already have bounties and cannot be updated on a bulk basis. To update an individual issue, select “Update Bounty” from the issue’s context menu.
+          </p>
+          <WarningIssueList>
+            {issues.map(issue => <li key={issue.id}>{issue.title}</li>)}
+          </WarningIssueList>
+        </Info.Action>
+      )}
+      {(!bountylessIssues.length) && <Button mode="strong" wide onClick={closePanel}>Close</Button>}
+    </React.Fragment>
   )
 }
 
-
-
 FundIssues.propTypes = {
-  issues: PropTypes.arrayOf(issueShape),
+  issues: PropTypes.arrayOf(issueShape).isRequired,
   mode: PropTypes.oneOf([ 'new', 'update' ]).isRequired,
 }
 
-const DivSeparator = styled.div`
-  > :last-child {
-    margin-top: 15px;
-  }
-`
 const UpdateRow = styled.div`
   display: flex;
   align-content: stretch;
@@ -512,15 +518,16 @@ const HoursInput = styled(TextInput.Number).attrs({
   min: '0',
   max: '1000',
 })`
-  width: ${ props => props.width ? props.width: '100px' };
+  width: 100%;
   display: inline-block;
   padding-top: 3px;
 `
 const VaultDiv = styled.div`
   text-align: center;
 `
-const IBArrow = styled.div`
+const DetailsArrow = styled.div`
   width: 24px;
+  margin-right: 12px;
 `
 
 export default FundIssues

@@ -92,7 +92,7 @@ const Filters = ({ filters, issues, bountyIssues, disableFilter, disableAllFilte
             padding: 4px;
           `}
         >
-          <Text size="small" color={`${theme.badge}`}>
+          <Text size="small" color={`${theme.link}`}>
             Clear Filters
           </Text>
         </Button>
