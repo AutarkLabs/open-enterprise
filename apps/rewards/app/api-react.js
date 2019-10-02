@@ -78,8 +78,8 @@ const initialState = process.env.NODE_ENV !== 'production' && {
       rewardType: ONE_TIME_MERIT,
       amount: 100,
       amountToken: 'DAI',
-      dateStart: new Date(),
-      dateEnd: new Date(),
+      startDate: new Date(),
+      endDate: new Date(),
     },
   ],
   myRewards: [

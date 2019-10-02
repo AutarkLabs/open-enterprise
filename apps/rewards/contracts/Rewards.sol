@@ -131,11 +131,11 @@ contract Rewards is AragonApp {
         uint256 startBlock,
         uint256 endBlock,
         uint256 duration,
+        uint256 occurances,
         uint256 delay,
         uint256 rewardAmount,
         bool claimed,
-        uint256 timeClaimed,
-        address creator
+        uint256 timeClaimed
     )
     {
         Reward storage reward = rewards[rewardID];
@@ -148,9 +148,9 @@ contract Rewards is AragonApp {
         startBlock = reward.blockStart;
         duration = reward.duration;
         delay = reward.delay;
+        occurances = reward.occurances;
         claimed = reward.claimed[msg.sender];
         timeClaimed = reward.timeClaimed[msg.sender];
-        creator = reward.creator;
         rewardAmount = _calculateRewardAmount(reward);
     }
 

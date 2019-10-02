@@ -14,6 +14,9 @@ export const DAYS = 'Days'
 export const WEEKS = 'Weeks'
 export const MONTHS = 'Months'
 export const YEARS = 'Years'
+export const MERIT = 'Merit'
+export const ONE_TIME = 'One time'
+export const DIVIDEND = 'dividend'
 export const DISBURSEMENT_UNITS = [
   DAYS,
   WEEKS,
