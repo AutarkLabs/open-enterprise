@@ -4,6 +4,8 @@ import React from 'react'
 import throttle from 'lodash.throttle'
 import { MyRewards, Overview } from '../Content'
 import PanelManager, { PANELS } from '../Panel'
+import styled from 'styled-components'
+import { Empty } from '../Card'
 import {
   MILLISECONDS_IN_A_MONTH,
   MILLISECONDS_IN_A_QUARTER,
@@ -230,50 +232,75 @@ class App extends React.Component {
   }
 
   render() {
-    const { panel, panelProps } = this.state
-
-    return (
+    const Wrapper = ({ children }) => (
       <Main>
         <IdentityProvider
           onResolve={this.handleResolveLocalIdentity}
           onShowLocalIdentityModal={this.handleShowLocalIdentityModal}>
-
-          <Header
-            primary="Rewards"
-            secondary={
-              <Button mode="strong" icon={<IconPlus />} onClick={this.newReward} label="New Reward" />
-            }
-          />
-          <Tabs
-            items={this.state.tabs}
-            selected={this.state.selected}
-            onChange={this.selectTab}
-          />
-
-          { this.state.selected === 1 ? (
-            <MyRewards
-              myRewards={this.props.myRewards}
-              myMetrics={this.props.myMetrics}
-            />
-          ) : (
-            <Overview
-              rewards={this.props.rewards === undefined ? [] : this.props.rewards}
-              newReward={this.newReward}
-              viewReward={this.viewReward}
-              metrics={this.props.metrics}
-            />
-          )}
-
+          { children }
           <PanelManager
             onClose={this.closePanel}
-            activePanel={panel}
-            {...panelProps}
+            activePanel={this.state.panel}
+            {...this.state.panelProps}
           />
         </IdentityProvider>
       </Main>
     )
+
+    const { rewards, myRewards } = this.props
+
+    if (!rewards.length && !myRewards.length) {
+      return (
+        <Wrapper>
+          <EmptyContainer>
+            <Empty action={this.newReward} />
+          </EmptyContainer>
+        </Wrapper>
+      )
+    }
+
+    return (
+      <Wrapper>
+        <Header
+          primary="Rewards"
+          secondary={
+            <Button
+              mode="strong"
+              icon={<IconPlus />}
+              onClick={this.newReward}
+              label="New Reward"
+            />
+          }
+        />
+        <Tabs
+          items={this.state.tabs}
+          selected={this.state.selected}
+          onChange={this.selectTab}
+        />
+
+        { this.state.selected === 1 ? (
+          <MyRewards
+            myRewards={this.props.myRewards}
+            myMetrics={this.props.myMetrics}
+          />
+        ) : (
+          <Overview
+            rewards={this.props.rewards === undefined ? [] : this.props.rewards}
+            newReward={this.newReward}
+            viewReward={this.viewReward}
+            metrics={this.props.metrics}
+          />
+        )}
+      </Wrapper>
+    )
   }
 }
+
+const EmptyContainer = styled.div`
+  display: flex;
+  height: 80vh;
+  align-items: center;
+`
 
 // eslint-disable-next-line react/display-name
 export default () => {
