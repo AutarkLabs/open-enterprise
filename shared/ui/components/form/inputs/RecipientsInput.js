@@ -3,6 +3,8 @@ import React from 'react'
 import styled from 'styled-components'
 import { Button, IconRemove, TextInput, theme, unselectable } from '@aragon/ui'
 
+import LocalIdentitiesAutoComplete from './LocalIdentitiesAutoComplete'
+
 const RecipientsInput = ({
   name,
   current,
@@ -12,7 +14,7 @@ const RecipientsInput = ({
   valid,
   empty,
 }) => {
-  const changeRecipient = ({ target: { value } }) => {
+  const changeRecipient = value => {
     onChange({
       target: { name: 'recipientsChange', value: value },
     })
@@ -48,7 +50,12 @@ const RecipientsInput = ({
 
   const allRecipients = all.map((recipient, i) => (
     <StyledRecipient key={i}>
-      <StyledInput readOnly value={recipient} />
+      <StyledInput
+        readOnly
+        value={recipient}
+        onChange={() => {}}
+        wide
+      />
       <IconContainer
         style={{ transform: 'scale(.8)' }}
         onClick={() => removeRecipient(recipient)}
@@ -68,6 +75,7 @@ const RecipientsInput = ({
             value={current}
             onChange={changeRecipient}
             valid={valid}
+            wide
           />
           { valid && !empty && (
             <IconContainer
@@ -115,7 +123,7 @@ const StyledRecipient = styled.div`
   }
 `
 
-const StyledInput = styled(TextInput)`
+const StyledInput = styled(LocalIdentitiesAutoComplete)`
   ${unselectable};
   ::placeholder {
     color: ${theme.contentBorderActive};
