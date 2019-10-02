@@ -374,7 +374,7 @@ class NewRewardClass extends React.Component {
         label="Disbursement frequency"
         input={
           <HorizontalContainer>
-            <TextInput
+            <DisbursementInput
               name="disbursement"
               type="number"
               min={1}
@@ -390,7 +390,6 @@ class NewRewardClass extends React.Component {
               }}
               wide={true}
               value={this.state.disbursement}
-              css={{ borderRadius: '4px 0px 0px 4px' }}
             />
             <DropDown
               name="disbursementUnit"
@@ -560,6 +559,10 @@ class NewRewardClass extends React.Component {
   }
 }
 
+const DisbursementInput = styled(TextInput)`
+  border-radius: 4px 0 0 4px;
+  box-shadow: none;
+`
 const VerticalContainer = styled.div`
   display: flex;
   flex-direction: column;
