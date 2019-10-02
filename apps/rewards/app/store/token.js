@@ -27,7 +27,7 @@ const tokenStartBlock = new Map() // External contract -> creationBlock (uint)
 
 const ETH_CONTRACT = Symbol('ETH_CONTRACT')
 
-export async function initializeTokens(state, settings) {
+export async function initializeTokens(state, settings){
   // Set up ETH placeholders
   tokenContracts.set(settings.ethToken.address, ETH_CONTRACT)
   tokenDecimals.set(ETH_CONTRACT, '18')
@@ -35,11 +35,7 @@ export async function initializeTokens(state, settings) {
   tokenSymbols.set(ETH_CONTRACT, 'ETH')
   tokenStartBlock.set(ETH_CONTRACT, null)
 
-  const nextState = {
-    ...state,
-    vaultAddress: settings.vault.address,
-  }
-  const withEthBalance = await loadEthBalance(nextState, settings)
+  const withEthBalance = await loadEthBalance(state, settings)
   return withEthBalance
 }
 

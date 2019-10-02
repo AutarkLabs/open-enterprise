@@ -1,33 +1,48 @@
 import React, { useCallback, useEffect, useState }  from 'react'
-import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import Votes from './components/Votes'
 import { isBefore } from 'date-fns'
 import { useAragonApi } from './api-react'
-import { BackButton, Bar, DropDown, GU, textStyle, useLayout, useTheme } from '@aragon/ui'
+import {
+  BackButton,
+  Bar,
+  DropDown,
+  GU,
+  Tag,
+  textStyle,
+  useLayout,
+  useTheme,
+} from '@aragon/ui'
 import VoteDetails from './components/VoteDetails'
-import { getQuorumProgress } from './utils/vote-utils'
 import { getVoteStatus } from './utils/vote-utils'
-import EmptyFilteredVotes from './components/EmptyFilteredVotes'
+import Empty from './components/EmptyFilteredVotes'
 import {
   VOTE_STATUS_EXECUTED,
   VOTE_STATUS_FAILED,
   VOTE_STATUS_SUCCESSFUL,
 } from './utils/vote-types'
 
+const NULL_FILTER_STATE = -1
+const STATUS_FILTER_OPEN = 1
+const STATUS_FILTER_CLOSED = 2
+const OUTCOME_FILTER_PASSED = 1
+const OUTCOME_FILTER_REJECTED = 2
+const OUTCOME_FILTER_ENACTED = 3
+const OUTCOME_FILTER_PENDING = 4
+const APP_FILTER_ALLOCATIONS = 1
+const APP_FILTER_PROJECTS = 2
+
 const useFilterVotes = (votes, voteTime) => {
+  const { appState: { globalMinQuorum = 0 } } = useAragonApi()
   const [ filteredVotes, setFilteredVotes ] = useState(votes)
-  // Status - 0: All, 1: Open, 2: Closed
-  const [ statusFilter, setStatusFilter ] = useState(0)
-  // Outcome - 0: All, 1: Passed, 2: Rejected, 3: Enacted, 4: Pending
-  const [ outcomeFilter, setOutcomeFilter ] = useState(0)
-  // 0: All, 1: Allocations, 2: Curation, 3: Informational
-  const [ appFilter, setAppFilter ] = useState(0)
+  const [ statusFilter, setStatusFilter ] = useState(NULL_FILTER_STATE)
+  const [ outcomeFilter, setOutcomeFilter ] = useState(NULL_FILTER_STATE)
+  const [ appFilter, setAppFilter ] = useState(NULL_FILTER_STATE)
 
   const handleClearFilters = useCallback(() => {
-    setStatusFilter(0)
-    setOutcomeFilter(0)
-    setAppFilter(0)
+    setStatusFilter(NULL_FILTER_STATE)
+    setOutcomeFilter(NULL_FILTER_STATE)
+    setAppFilter(NULL_FILTER_STATE)
   }, [
     setStatusFilter,
     setOutcomeFilter,
@@ -41,31 +56,37 @@ const useFilterVotes = (votes, voteTime) => {
       const endDate = new Date(vote.data.startDate + voteTime)
       const open = isBefore(now, endDate)
       const type = vote.data.type
-      vote.quorumProgress = getQuorumProgress(vote.data)
-      const voteStatus = getVoteStatus(vote)
+      const voteStatus = getVoteStatus(vote, globalMinQuorum)
 
-      // Status - 0: All, 1: Open, 2: Closed
-      if (statusFilter > 0) {
-        if (statusFilter === 1 && !isBefore(now, endDate)) return false
-        if (statusFilter === 2 && isBefore(now, endDate)) return false
+      if (statusFilter !== NULL_FILTER_STATE) {
+        if (statusFilter === STATUS_FILTER_OPEN && !isBefore(now, endDate)) return false
+        if (statusFilter === STATUS_FILTER_CLOSED && isBefore(now, endDate)) return false
       }
 
-      // 0: All, 1: Allocations, 2: Curation, 3: Informational
-      if (appFilter > 0) {
-        if (appFilter === 1 && type !== 'allocation') return false
-        if (appFilter === 2 && type !== 'curation') return false
-        if (appFilter === 3 && type !== 'informational') return false
-      }
-
-      // Outcome - 0: All, 1: Passed, 2: Rejected, 3: Enacted, 4: Pending
-      if (outcomeFilter > 0) {
-        if (open) return false
-        if (outcomeFilter === 1 &&
-          !(voteStatus === VOTE_STATUS_SUCCESSFUL || voteStatus === VOTE_STATUS_EXECUTED)
+      if (appFilter !== NULL_FILTER_STATE) {
+        if (appFilter === APP_FILTER_ALLOCATIONS &&
+          type !== 'allocation'
         ) return false
-        if (outcomeFilter === 2 && voteStatus !== VOTE_STATUS_FAILED) return false
-        if (outcomeFilter === 3 && voteStatus !== VOTE_STATUS_EXECUTED) return false
-        if (outcomeFilter === 4 && voteStatus !== VOTE_STATUS_SUCCESSFUL) return false
+        if (appFilter === APP_FILTER_PROJECTS &&
+          type !== 'curation'
+        ) return false
+      }
+
+      if (outcomeFilter !== NULL_FILTER_STATE) {
+        if (open) return false
+        if (outcomeFilter === OUTCOME_FILTER_PASSED &&
+          !(voteStatus === VOTE_STATUS_SUCCESSFUL ||
+            voteStatus === VOTE_STATUS_EXECUTED)
+        ) return false
+        if (outcomeFilter === OUTCOME_FILTER_REJECTED &&
+          voteStatus !== VOTE_STATUS_FAILED
+        ) return false
+        if (outcomeFilter === OUTCOME_FILTER_ENACTED &&
+          voteStatus !== VOTE_STATUS_EXECUTED
+        ) return false
+        if (outcomeFilter === OUTCOME_FILTER_PENDING &&
+          voteStatus !== VOTE_STATUS_SUCCESSFUL
+        ) return false
       }
       return true
     })
@@ -84,18 +105,21 @@ const useFilterVotes = (votes, voteTime) => {
     voteStatusFilter: statusFilter,
     handleVoteStatusFilterChange: useCallback(
       index => {
-        setStatusFilter(index)
+        setStatusFilter(index || NULL_FILTER_STATE)
+        if (index === STATUS_FILTER_OPEN) {
+          setOutcomeFilter(NULL_FILTER_STATE)
+        }
       },
       [setStatusFilter]
     ),
     voteOutcomeFilter: outcomeFilter,
     handleVoteOutcomeFilterChange: useCallback(
-      index => setOutcomeFilter(index),
+      index => setOutcomeFilter(index || NULL_FILTER_STATE),
       [setOutcomeFilter]
     ),
     voteAppFilter: appFilter,
     handleVoteAppFilterChange: useCallback(
-      index => setAppFilter(index),
+      index => setAppFilter(index || NULL_FILTER_STATE),
       [setAppFilter]
     ),
     handleClearFilters,
@@ -153,11 +177,8 @@ const Decisions = ({ decorateVote }) => {
     )
   }
 
-  if (!filteredVotes.length) return (
-    <EmptyFilteredVotes onClear={handleClearFilters} />
-  )
-
   const preparedVotes = filteredVotes.map(decorateVote)
+    .sort((a, b) => b.data.startDate - a.data.startDate)
 
   return (
     <React.Fragment>
@@ -174,9 +195,10 @@ const Decisions = ({ decorateVote }) => {
           `}
           >
             <DropDown
+              header="Status"
+              placeholder="Status"
               selected={voteStatusFilter}
               onChange={handleVoteStatusFilterChange}
-              label="Status"
               items={[
                 // eslint-disable-next-line react/jsx-key
                 <div>
@@ -191,9 +213,7 @@ const Decisions = ({ decorateVote }) => {
                     ${textStyle('label3')};
                   `}
                   >
-                    <DiscTag>
-                      {votes.length > 9999 ? '9999+' : votes.length}
-                    </DiscTag>
+                    <Tag limitDigits={4} label={votes.length} size="small" />
                   </span>
                 </div>,
                 'Open',
@@ -201,33 +221,39 @@ const Decisions = ({ decorateVote }) => {
               ]}
               width="128px"
             />
-            {voteStatusFilter !== 1 && (
+            {voteStatusFilter !== STATUS_FILTER_OPEN && (
               <DropDown
-                label="Outcome"
+                header="Outcome"
+                placeholder="Outcome"
                 selected={voteOutcomeFilter}
                 onChange={handleVoteOutcomeFilterChange}
-                items={[ 'Outcome', 'Passed', 'Rejected', 'Enacted', 'Pending' ]}
+                items={[ 'All', 'Passed', 'Rejected', 'Enacted', 'Pending' ]}
                 width="128px"
               />
             )}
             <DropDown
-              label="App type"
+              header="App"
+              placeholder="App"
               selected={voteAppFilter}
               onChange={handleVoteAppFilterChange}
-              items={[ 'Type', 'Allocations', 'Issue Curation', 'Informational' ]}
+              items={[ 'All', 'Allocations', 'Projects' ]}
               width="128px"
             />
           </div>
         </Bar>
       )}
 
-      <Votes
-        votes={preparedVotes}
-        onSelectVote={handleVoteOpen}
-        app={app}
-        userAccount={connectedAccount}
-      />
-
+      {!preparedVotes.length
+        ? <Empty onClear={handleClearFilters} />
+        : (
+          <Votes
+            votes={preparedVotes}
+            onSelectVote={handleVoteOpen}
+            app={app}
+            userAccount={connectedAccount}
+          />
+        )
+      }
     </React.Fragment>
   )
 }
@@ -235,27 +261,5 @@ const Decisions = ({ decorateVote }) => {
 Decisions.propTypes = {
   decorateVote: PropTypes.func.isRequired,
 }
-
-const DiscTag = styled.span`
-  display: inline-flex;
-  white-space: nowrap;
-  color: rgb(109, 128, 136);
-  padding-top: 2px;
-  letter-spacing: -0.5px;
-  /* stylelint-disable-next-line property-no-vendor-prefix */
-  -webkit-box-pack: center;
-  justify-content: center;
-  /* stylelint-disable-next-line property-no-vendor-prefix */
-  -webkit-box-align: center;
-  align-items: center;
-  width: 18px;
-  height: 18px;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 20px;
-  background: rgb(220, 234, 239);
-  overflow: hidden;
-  border-radius: 9px;
-`
 
 export default Decisions

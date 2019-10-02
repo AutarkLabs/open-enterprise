@@ -15,13 +15,12 @@ const functions = process.env.NODE_ENV !== 'production' && ((appState, setAppSta
   createVote: ({
     description = 'Define the budget allocation for 2020 ops',
     type = 'allocation'
-  }) => setAppState({
+  } = {}) => setAppState({
     ...appState,
     votes: [
       ...appState.votes,
       {
         voteId: appState.votes.length + 1,
-        quorumProgress: 0,
         data: {
           balance: 10e18,
           creator: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',

@@ -100,11 +100,8 @@ class App extends React.Component {
   }, CONVERT_THROTTLE_TIME)
 
   updateRewards = async () => {
-    this.props.api && this.props.api.cache('requestRefresh', {
-      event: 'RefreshRewards',
-      returnValues: {
-        userAddress: this.props.connectedAccount
-      },
+    this.props.api && this.props.api.trigger('RefreshRewards', {
+      userAddress: this.props.connectedAccount,
     })
   }
 
@@ -184,7 +181,7 @@ class App extends React.Component {
       reward.duration, //uint _duration, (number of blocks until reward will be available)
       reward.occurances, //uint _occurances,
       reward.delay //uint _delay
-    )
+    ).toPromise()
     this.closePanel()
   }
 
