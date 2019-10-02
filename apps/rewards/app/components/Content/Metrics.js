@@ -8,7 +8,7 @@ const Metrics = ({ content }) => {
   return (
     <Card
       width="100%"
-      height="147px"
+      height="auto"
       css={{
         justifyContent: 'flex-start'
       }}
@@ -16,7 +16,7 @@ const Metrics = ({ content }) => {
       <Title theme={theme}>metrics</Title>
       <Content>
         {content.map(({ name, value, unit }, i) => (
-          <Metric key={i} name={name} value={value} unit={unit} />
+          <Metric key={i} id={i} name={name} value={value} unit={unit} />
         ))}
       </Content>
     </Card>
@@ -39,18 +39,19 @@ const Content = styled.div`
   width: 100%;
   flex-grow: 1;
   display: flex;
-  padding: 24px;
-  justify-content: space-evenly;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  padding: 12px;
 `
 
 Metrics.propTypes = {
   content: PropTypes.arrayOf(PropTypes.object).isRequired,
 }
 
-const Metric = ({ name, value, unit }) => {
+const Metric = ({ name, value, unit, id }) => {
   const theme = useTheme()
   return (
-    <Container>
+    <Container id={id}>
       <Name theme={theme}>{name}</Name>
       <Amount>
         <Value
@@ -71,7 +72,11 @@ const Metric = ({ name, value, unit }) => {
   )
 }
 
-const Container = styled.div` `
+const Container = styled.div`
+  margin: 12px;
+  flex-grow: ${({ id }) => id === 2 ? 2 : 1};
+  min-width: 180px;
+`
 const Name = styled.div`
   color: ${({ theme }) => theme.contentSecondary};
   font-size: 16px;
