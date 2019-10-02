@@ -115,15 +115,6 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
     nextState = syncIssues(nextState, returnValues, issueData)
     return nextState
   }
-  case SUBMISSION_REJECTED: {
-    if(!returnValues) return nextState
-    const { repoId, issueNumber } = returnValues
-    let issueData = await loadIssueData({ repoId, issueNumber })
-    issueData = await updateIssueDetail(issueData)
-    issueData = determineWorkStatus(issueData)
-    nextState = syncIssues(nextState, returnValues, issueData)
-    return nextState
-  }
   // case BOUNTY_FULFILLED: {
   //   if(!returnValues) return nextState
   //   const { _bountyId, _data } = returnValues
@@ -141,6 +132,15 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
   // }
   case SUBMISSION_ACCEPTED: {
     if (!returnValues) return nextState
+    const { repoId, issueNumber } = returnValues
+    let issueData = await loadIssueData({ repoId, issueNumber })
+    issueData = await updateIssueDetail(issueData)
+    issueData = determineWorkStatus(issueData)
+    nextState = syncIssues(nextState, returnValues, issueData)
+    return nextState
+  }
+  case SUBMISSION_REJECTED: {
+    if(!returnValues) return nextState
     const { repoId, issueNumber } = returnValues
     let issueData = await loadIssueData({ repoId, issueNumber })
     issueData = await updateIssueDetail(issueData)
