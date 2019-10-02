@@ -24,6 +24,7 @@ import {
   loadReposFromQueue,
   loadIssueData,
   loadIpfsData,
+  buildSubmission,
   determineWorkStatus,
   updateIssueDetail,
   syncIssues,
@@ -115,21 +116,32 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
     nextState = syncIssues(nextState, returnValues, issueData)
     return nextState
   }
-  // case BOUNTY_FULFILLED: {
-  //   if(!returnValues) return nextState
-  //   const { _bountyId, _data } = returnValues
-  //   const issue = nextState.issues.find(i => i.data.standardBountyId)
-  //   console.log('BOUNTY_FULFILLED', { returnValues, nextState, issue })
-  //   if (!issue) return nextState
-  //   const repoId = toHex(issue.data.repoId)
-  //   const issueNumber = String(issue.data.number)
-  //   let issueData = await loadIssueData({ repoId, issueNumber }) // TODO: is this the same as issue.data? Do we need to do this?
-  //   issueData = await updateIssueDetail(issueData, _data)
-  //   issueData = determineWorkStatus(issueData)
-  //   nextState = syncIssues(nextState, { issueNumber }, issueData)
-  //   console.log({ _bountyId, nextState })
-  //   return nextState
-  // }
+  case BOUNTY_FULFILLED: {
+    if(!returnValues) return nextState
+    const { _bountyId, _fulfillmentId, _fulfillers, _submitter, _data } = returnValues
+    const issue = nextState.issues.find(i => i.data.standardBountyId === _bountyId)
+    if (!issue) return nextState
+
+    const issueNumber = String(issue.data.number)
+    const submission = await buildSubmission({
+      fulfillmentId: _fulfillmentId,
+      fulfillers: _fulfillers,
+      submitter: _submitter,
+      ipfsHash: _data,
+    })
+    let issueData = {
+      ...issue.data,
+      workSubmissions: [
+        ...(issue.data.workSubmissions || []),
+        submission,
+      ],
+      work: submission,
+    }
+    issueData = await updateIssueDetail(issueData)
+    issueData = determineWorkStatus(issueData)
+    nextState = syncIssues(nextState, { issueNumber }, issueData)
+    return nextState
+  }
   case SUBMISSION_ACCEPTED: {
     if (!returnValues) return nextState
     const { repoId, issueNumber } = returnValues

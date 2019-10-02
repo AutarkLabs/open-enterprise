@@ -167,31 +167,30 @@ const loadRequestsData = ({ repoId, issueNumber }) => {
   })
 }
 
-const getSubmission = (repoId, issueNumber, submissionIndex) => {
-  return new Promise(resolve => {
-    app.call('getSubmission', repoId, issueNumber, submissionIndex)
-      .subscribe(async ({ submissionHash, fulfillmentId, status, submitter }) => {
-        const bountyData = await ipfsGet(submissionHash)
-        resolve({ status,
-          fulfillmentId,
-          submitter,
-          submissionIPFSHash: submissionHash,
-          ...bountyData
-        })
-      })
-  })
-}
+export const buildSubmission = async ({ fulfillmentId, fulfillers, ipfsHash, submitter }) => {
+  const {
+    ack1,
+    ack2,
+    comments,
+    hours,
+    proof,
+    submissionDate,
+    user,
+  } = await ipfsGet(ipfsHash)
 
-const loadSubmissionData = ({ repoId, issueNumber }) => {
-  return new Promise(resolve => {
-    app.call('getSubmissionsLength', repoId, issueNumber).subscribe(async (response) => {
-      let submissions = []
-      for(let submissionId = 0; submissionId < response; submissionId++){
-        submissions.push(await getSubmission(repoId, issueNumber, submissionId))
-      }
-      resolve(submissions)
-    })
-  })
+  return {
+    ack1,
+    ack2,
+    comments,
+    fulfillmentId,
+    hours,
+    proof,
+    status: '0',
+    submissionDate,
+    submissionIPFSHash: ipfsHash,
+    submitter,
+    user,
+  }
 }
 
 export const updateIssueDetail = async data => {
@@ -200,9 +199,6 @@ export const updateIssueDetail = async data => {
   const issueNumber = String(data.number)
   const requestsData = await loadRequestsData({ repoId, issueNumber })
   returnData.requestsData = requestsData
-  // let submissionData = await loadSubmissionData({ repoId, issueNumber })
-  // returnData.workSubmissions = submissionData
-  // returnData.work = submissionData[submissionData.length - 1]
   return returnData
 }
 

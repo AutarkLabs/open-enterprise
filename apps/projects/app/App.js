@@ -285,25 +285,7 @@ class App extends React.PureComponent {
   }
 }
 
-// import standardBounties from './abi/StandardBounties.json'
-
 const AppWrap = () => {
-  // const { api, appState, displayMenuButton, connectedAccount } = useAragonApi()
-  // React.useEffect(() => {
-  //   async function doIt() {
-  //     const bountiesRegistry = await api.call('bountiesRegistry').toPromise()
-  //     const bountyContract = api.external(bountiesRegistry, standardBounties.abi)
-  //     const returnValue = await bountyContract.fulfillBounty(
-  //       connectedAccount,
-  //       '0',
-  //       [connectedAccount],
-  //       'qmblahblahblah',
-  //     ).toPromise()
-  //     console.log({ returnValue })
-  //   }
-  //   doIt()
-  // })
-
   const { api, appState, displayMenuButton } = useAragonApi()
   const client = initApolloClient(appState.github && appState.github.token)
   return (
