@@ -3,72 +3,114 @@ import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import {
   ContextMenu,
-  SafeLink,
+  GU,
+  Link,
   Tag,
   Text,
+  Timer,
   useTheme,
 } from '@aragon/ui'
-import { formatDistance } from 'date-fns'
 import { IconGitHub, BountyContextMenu } from '../../Shared'
-import { BOUNTY_STATUS, BOUNTY_BADGE_COLOR } from '../../../utils/bounty-status'
+import { BOUNTY_BADGE_COLOR } from '../../../utils/bounty-status'
 import { Markdown } from '../../../../../../shared/ui'
 import Label from './Label'
-import { issueShape } from '../../../utils/shapes.js'
-
-const calculateAgo = pastDate => formatDistance(pastDate, Date.now(), { addSuffix: true })
-const deadlineDistance = date => formatDistance(new Date(date), new Date())
-
-const determineFieldText = (fieldTitle, fieldText, balance) => {
-  const isStatusField = fieldTitle.toLowerCase() === 'status'
-  const isFulfilled = isStatusField && Number(balance) === 0
-  if (isFulfilled) return BOUNTY_STATUS['fulfilled']
-  else if (isStatusField) return BOUNTY_STATUS[fieldText]
-  return fieldText
-}
-
-const SummaryTable = ({ expLevel, deadline, workStatus, balance }) => {
-  const theme = useTheme()
-  const FIELD_TITLES = [ 'Experience Level', 'Deadline', 'Status' ]
-
-  return (
-    <div css={`
-      margin-bottom: 20px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      border: solid ${theme.border};
-      border-width: 1px 0;
-      > :not(:first-child) {
-        border-left: 1px solid ${theme.border};
-        padding-left: 15px;
-    `}>
-      {[ expLevel, deadline, workStatus ].map((field, i) => (
-        <StyledCell key={i}>
-          <Label text={FIELD_TITLES[i]} />
-          <Text color={`${theme.textPrimary}`}>
-            {determineFieldText(FIELD_TITLES[i], field, balance)}
-          </Text>
-        </StyledCell>
-      ))}
-    </div>
-  )
-}
-
-SummaryTable.propTypes = {
-  expLevel: PropTypes.string.isRequired,
-  deadline: PropTypes.string.isRequired,
-  workStatus: PropTypes.string.isRequired,
-  balance: PropTypes.string.isRequired,
-}
+import { issueShape, userGitHubShape } from '../../../utils/shapes.js'
 
 const DetailsCard = ({ issue }) => {
   const theme = useTheme()
-  const summaryData = {
-    expLevel: issue.expLevel || '-',
-    deadline:
-      issue.deadline ? deadlineDistance(issue.deadline) + ' remaining' : '-',
-    workStatus: issue.workStatus || 'No bounty yet',
-    balance: issue.balance,
+
+  const SummaryCell = ({ label, children, grid }) => (
+    <div css={`
+      display: flex;
+      flex-direction: column;
+      grid-area: ${grid};
+      overflow: hidden;
+    `}>
+      <Label text={label} />
+      <div css={`
+        height: 100%;
+        display: flex;
+        align-items: center;
+      `}>
+        {children}
+      </div>
+    </div>
+  )
+  SummaryCell.propTypes = {
+    label: PropTypes.string.isRequired,
+    children: PropTypes.node.isRequired,
+    grid: PropTypes.string.isRequired,
   }
+
+  const OpenedBy = ({ author }) => (
+    <Text size="large" css="display: flex; align-items: center">
+      <img src={author.avatarUrl} alt="user avatar" css="margin: 8px; width: 24px; border-radius: 50%;" />
+      <Link
+        href={author.url}
+        target="_blank"
+        style={{ textDecoration: 'none', color: `${theme.link}` }}
+      >
+        {author.login}
+      </Link>
+    </Text>
+  )
+  OpenedBy.propTypes = userGitHubShape
+
+  const SummaryTable = ({ issue }) => (
+    <div css={`
+      display: grid;
+      grid-template-columns: repeat(${issue.hasBounty ? '3' : '4'}, 1fr);
+      grid-template-rows: auto;
+      ${issue.hasBounty ? `
+        grid-template-areas:
+          'deadline exp openedby' 'description description description'
+        ` : `
+        grid-template-areas:
+          'description description description openedby'
+        `
+    };
+      grid-gap: 12px;
+      align-items: stretch;
+    `}>
+      {issue.hasBounty ? (
+        <React.Fragment>
+          <SummaryCell label="Time until due" grid="deadline">
+            <Timer end={new Date(issue.deadline)} />
+          </SummaryCell>
+          <SummaryCell label="Difficulty" grid="exp">
+            <Text.Block>
+              {issue.expLevel}
+            </Text.Block>
+          </SummaryCell>
+          <SummaryCell label="Opened by" grid="openedby">
+            <OpenedBy author={issue.author} />
+          </SummaryCell>
+          <SummaryCell label="Description" grid="description">
+            <Markdown
+              content={issue.body || 'No description available'}
+              style={{ marginTop: '20px', marginBottom: '20px' }}
+            />
+          </SummaryCell>
+        </React.Fragment>
+      ) : (
+        <React.Fragment>
+          <SummaryCell label="Description" grid="description">
+            <Markdown
+              content={issue.body || 'No description available'}
+              style={{ margin: (2 * GU) + 'px 0', width: '100%' }}
+            />
+          </SummaryCell>
+          <div css="grid-area: openedby">
+            <Label text="Opened by" />
+            <OpenedBy author={issue.author} />
+          </div>
+        </React.Fragment>
+      )}
+
+    </div>
+  )
+
+  SummaryTable.propTypes = issueShape
 
   return (
     <div css={`
@@ -83,6 +125,7 @@ const DetailsCard = ({ issue }) => {
         display: flex;
         padding-top: 10px;
         justify-content: space-between;
+        margin-bottom: ${2 * GU};
       `}>
         <div css={`
           display: flex;
@@ -91,28 +134,21 @@ const DetailsCard = ({ issue }) => {
           flex: 2;
           margin-right: 20px;
         `}>
-          <Text.Block size="xlarge" style={{ marginBottom: '5px' }}>
+          <Text.Block size="xxlarge" style={{ marginBottom: (2 * GU) + 'px' }}>
             {issue.title}
           </Text.Block>
-          <SafeLink
+          <Link
             href={issue.url}
             target="_blank"
-            style={{ textDecoration: 'none', color: `${theme.accent}` }}
+            css={`{text-decoration: none; color: ${theme.link}`}
           >
             <IssueLinkRow>
-              <IconGitHub color={`${theme.accent}`} width="14px" height="14px" />
+              <IconGitHub color={`${theme.link}`} width="14px" height="14px" />
               <Text css="margin-left: 6px">
                 {issue.repo} #{issue.number}
               </Text>
             </IssueLinkRow>
-          </SafeLink>
-          <Text.Block
-            size="small"
-            color={`${theme.surfaceContentSecondary}`}
-            style={{ marginBottom: '10px' }}
-          >
-            {calculateAgo(issue.createdAt)}
-          </Text.Block>
+          </Link>
         </div>
 
         <div css={`
@@ -127,7 +163,7 @@ const DetailsCard = ({ issue }) => {
           </ContextMenu>
           {issue.balance > 0 && (
             <Tag
-              style={{ padding: '10px', textSize: 'large', marginTop: '15px' }}
+              css="padding: 10px; text-size: large; margin-top: 15px"
               background={BOUNTY_BADGE_COLOR[issue.workStatus].bg}
               color={BOUNTY_BADGE_COLOR[issue.workStatus].fg}
             >
@@ -138,18 +174,14 @@ const DetailsCard = ({ issue }) => {
       
       </div>
 
-      {issue.workStatus ? <SummaryTable {...summaryData} /> : <Separator />}
-      <Label text="Description" />
-      <Markdown
-        content={issue.body || 'No description available'}
-        style={{ marginTop: '20px', marginBottom: '20px' }}
-      />
+      <SummaryTable issue={issue} />
+
       <Text size="small" color={`${theme.surfaceContentSecondary}`}>
         {issue.labels.totalCount
           ? issue.labels.edges.map(label => (
             <Tag
               key={label.node.id}
-              style={{ marginRight: '5px' }}
+              style={{ marginRight: '5px', marginTop: '20px' }}
               background={'#' + label.node.color + '99'}
               color={`${theme.content}`}
             >
@@ -162,24 +194,13 @@ const DetailsCard = ({ issue }) => {
   )
 }
 
-DetailsCard.propTypes = {
-  issue: issueShape,
-}
+DetailsCard.propTypes = issueShape
 
-const StyledCell = styled.div`
-  padding: 20px 0;
-  align-items: left;
-`
 const IssueLinkRow = styled.div`
   height: 31px;
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
-`
-const Separator = styled.hr`
-  height: 1px;
-  width: 100%;
-  opacity: 0.2;
+  margin-bottom: ${2 * GU}px;
 `
 // eslint-disable-next-line import/no-unused-modules
 export default DetailsCard

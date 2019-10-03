@@ -4,6 +4,7 @@ import {
 } from '@aragon/ui'
 import EventsCard from './EventsCard'
 import DetailsCard from './DetailsCard'
+import StatusCard from './StatusCard'
 import { issueShape } from '../../../utils/shapes.js'
 
 const IssueDetail = ({ issue }) => {
@@ -36,6 +37,7 @@ const IssueDetail = ({ issue }) => {
         <DetailsCard issue={issue} />
       </div>
       <div css="flex-grow: 1">
+        {issue.hasBounty && <StatusCard issue={issue} />}
         <EventsCard issue={issue} />
       </div>
     </div>

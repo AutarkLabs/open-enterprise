@@ -29,4 +29,10 @@ const issueShape = PropTypes.shape({
   workSubmissions: PropTypes.arrayOf(PropTypes.object),
 }).isRequired
 
-export { issueShape }
+const userGitHubShape = PropTypes.shape({
+  avatarUrl: PropTypes.string.isRequired,
+  url: PropTypes.string.isRequired,
+  login: PropTypes.string.isRequired,
+}).isRequired
+
+export { issueShape, userGitHubShape }

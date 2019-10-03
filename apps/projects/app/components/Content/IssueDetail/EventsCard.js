@@ -6,32 +6,32 @@ import {
   Tag,
   Text,
   useTheme,
-  SafeLink,
+  Link,
   Button,
 } from '@aragon/ui'
 import { formatDistance } from 'date-fns'
 import { usePanelManagement } from '../../Panel'
-import { issueShape } from '../../../utils/shapes.js'
+import { issueShape, userGitHubShape } from '../../../utils/shapes.js'
 
 const calculateAgo = pastDate => formatDistance(pastDate, Date.now(), { addSuffix: true })
 
-const IssueEvent = props => {
+const IssueEvent = ({ user, ...props }) => {
   const theme = useTheme()
 
   return (
     <IssueEventMain>
       <IssueEventAvatar>
-        <img src={props.avatarUrl} alt="user avatar" css="width: 50px" />
+        <img src={user.avatarUrl} alt="user avatar" css="width: 50px" />
       </IssueEventAvatar>
       <IssueEventDetails>
         <Text.Block size="small">
-          <SafeLink
-            href={props.url}
+          <Link
+            href={user.url}
             target="_blank"
-            style={{ textDecoration: 'none', color: `${theme.accent}` }}
+            style={{ textDecoration: 'none', color: `${theme.link}` }}
           >
-            {props.login}
-          </SafeLink>{' '}
+            {user.login}
+          </Link>{' '}
           {props.eventDescription}
         </Text.Block>
 
@@ -39,7 +39,7 @@ const IssueEvent = props => {
           <Text.Block size="large">{props.eventMessage}</Text.Block>
         )}
         {props.eventAction && <div>{props.eventAction}</div>}
-        <Text.Block size="xsmall" color={theme.surfaceContentSecondary}>
+        <Text.Block size="xsmall" color={`${theme.surfaceContentSecondary}`}>
           {calculateAgo(props.date)}
         </Text.Block>
       </IssueEventDetails>
@@ -48,9 +48,7 @@ const IssueEvent = props => {
 }
 
 IssueEvent.propTypes = {
-  avatarUrl: PropTypes.string.isRequired,
-  url: PropTypes.string.isRequired,
-  login: PropTypes.string.isRequired,
+  user: userGitHubShape,
   eventDescription: PropTypes.string.isRequired,
   eventMessage: PropTypes.string,
   eventAction: PropTypes.string,
@@ -59,6 +57,7 @@ IssueEvent.propTypes = {
 
 const activities = (
   issue,
+  createdAt,
   requestsData,
   workSubmissions,
   fundingHistory,
@@ -66,13 +65,19 @@ const activities = (
   onReviewWork
 ) => {
   const theme = useTheme()
-  const events = {}
+  const events = {
+    createdAt: {
+      date: createdAt,
+      user: issue.author,
+      eventDescription: 'opened the task'
+    }
+  }
 
   if (requestsData) {
     requestsData.forEach((data, index) => {
       events[data.applicationDate] = {
         date: data.applicationDate,
-        ...data.user,
+        user: data.user,
         eventDescription: 'requested assignment',
         eventAction: (
           <EventButton
@@ -102,7 +107,7 @@ const activities = (
     workSubmissions.forEach((data, index) => {
       events[data.submissionDate] = {
         date: data.submissionDate,
-        ...data.user,
+        user: data.user,
         eventDescription: 'submitted work for review',
         eventAction: (
           <EventButton
@@ -156,6 +161,7 @@ const EventsCard = ({ issue }) => {
   const { reviewApplication, reviewWork } = usePanelManagement()
   const issueEvents = activities(
     issue,
+    issue.createdAt,
     issue.requestsData,
     issue.workSubmissions,
     issue.fundingHistory,
@@ -188,7 +194,7 @@ const EventsCard = ({ issue }) => {
         Object.keys(issueEvents)
           .sort((a, b) => new Date(a) - new Date(b))
           .map((eventDate, i) => {
-            return <IssueEvent key={i} {...issueEvents[eventDate]} />
+            return <IssueEvent key={i} user={issueEvents[eventDate].user} {...issueEvents[eventDate]} />
           })
       ) : (
         <div css="padding: 6px 0 16px 16px">

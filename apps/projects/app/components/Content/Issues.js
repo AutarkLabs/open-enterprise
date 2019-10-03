@@ -293,6 +293,7 @@ class Issues extends React.PureComponent {
         decimals: token.decimals,
       }
     })
+
     return issues.map(({ repository: { id, name }, ...fields }) => {
       const bountyId = bountyIssueObj[fields.number]
       const repoIdFromBounty = bountyId && bountyId.data.repoId
@@ -434,13 +435,7 @@ class Issues extends React.PureComponent {
 
     // previous GET_ISSUES is deliberately left in place for reference
     const GET_ISSUES2 = getIssuesGQL(reposQueryParams)
-    /*
-      <Query
-        fetchPolicy="cache-first"
-        query={GET_ISSUES2}
-        onError={console.error}
-      >
-    */
+
     return (
       <Query
         fetchPolicy="cache-first"
@@ -473,7 +468,7 @@ class Issues extends React.PureComponent {
                       .map(issue => (
                         <Issue
                           isSelected={issue.id in this.state.selectedIssues}
-                          key={issue.id}
+                          key={issue.number}
                           {...issue}
                           onClick={this.handleIssueClick}
                           onSelect={this.handleIssueSelection}

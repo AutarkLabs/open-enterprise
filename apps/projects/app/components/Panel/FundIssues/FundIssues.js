@@ -31,7 +31,6 @@ import { DateInput } from '../../../../../../shared/ui'
 import { Mutation } from 'react-apollo'
 import { COMMENT } from '../../../utils/gql-queries'
 import { issueShape } from '../../../utils/shapes.js'
-import { assertScalarType } from 'graphql'
 
 const FundIssues = ({ issues, mode }) => {
   const githubCurrentUser = useGithubAuth()
@@ -152,11 +151,18 @@ const FundIssues = ({ issues, mode }) => {
     
     // computes an array of issues and denests the actual issue object for smart contract
     const issuesArray = []
-    
-    for (let key in issues) issuesArray.push({ key: key, ...issues[key] })
-    
+
+    for (let key in issues) {
+      issuesArray.push({
+        key: key,
+        exp: bounties[issues[key].id].exp,
+        fundingHistory: bounties[issues[key].id].fundingHistory,
+        deadline: bounties[issues[key].id].deadline,
+        ...issues[key],
+      })
+    }
+
     const ipfsString = await computeIpfsString(issuesArray)
-    
     const idArray = issuesArray.map(issue => toHex(issue.repoId))
     const numberArray = issuesArray.map(issue => issue.number)
     const bountyArray = issuesArray.map(issue =>
