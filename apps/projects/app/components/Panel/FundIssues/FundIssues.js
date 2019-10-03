@@ -488,13 +488,11 @@ const submitBountyAllocation = ({
   const token = tokens.find(token => token.addr === bountyAddr)
   const bountyToken = token.addr
   const bountyDecimals = token.decimals
-  const bountySymbol = token.symbol
 
   for (let key in issues) issuesArray.push({ key: key, ...issues[key] })
 
   const ipfsAddresses = await computeIpfsString(issuesArray)
 
-  console.log({ repoId: issuesArray[0].repoId })
   const repoIds = issuesArray.map(issue => toHex(issue.repoId))
   const issueNumbers = issuesArray.map(issue => issue.number)
   const bountySizes = issuesArray.map(issue =>
@@ -507,7 +505,9 @@ const submitBountyAllocation = ({
   // @param _tokenTypes array of currency types: 0=ETH from current user's wallet, 1=ETH from vault, 20=ERC20 token from vault
   const tokenTypes = new Array(issuesArray.length).fill(1)
 
-  console.log(
+  // during development, sometimes this fails with a cryptic "cannot perform action" error
+  // in case this happens in QA, let's leave this logging here to at least have some paper trail
+  console.log( // eslint-disable-line
     'repoIds', repoIds,
     'issueNumbers', issueNumbers,
     'bountySizes', bountySizes,
@@ -535,7 +535,7 @@ const submitBountyAllocation = ({
       //     variables: {
       //       body:
       //         'This issue has a bounty attached to it.\n' +
-      //         `Amount: ${issue.size.toFixed(2)} ${bountySymbol}\n` +
+      //         `Amount: ${issue.size.toFixed(2)} ${token.symbol}\n` +
       //         `Deadline: ${issue.deadline.toUTCString()}`,
       //       subjectId: issue.key,
       //     },
