@@ -40,7 +40,7 @@ const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
     expLevel = 'easy',
     createdAt,
   } = issue
-  
+
   return (
     <StyledIssue theme={theme}>
       <div css="padding: 20px 10px">
@@ -139,7 +139,7 @@ Issue.propTypes = {
     'review-work',
     'fulfilled',
   ]),
-  work: PropTypes.oneOf([ undefined, PropTypes.object ]),
+  work: PropTypes.object,
 }
 
 const ClickArea = styled.div`
@@ -159,6 +159,7 @@ const ClickArea = styled.div`
 const StyledIssue = styled.div`
   width: 100%;
   background: ${props => props.theme.background};
+  background-color: ${props => props.theme.surface};
   display: flex;
   height: auto;
   align-items: flex-start;
@@ -171,7 +172,6 @@ const StyledIssue = styled.div`
   :last-child {
     border-radius: 0 0 3px 3px;
   }
-  background-color: ${props => props.theme.surface};
 `
 const IssueData = styled.div`
   display: flex;
@@ -188,8 +188,7 @@ const IssueDetails = styled.div`
 const IssueMain = styled.div`
   width: 100%;
   display: flex;
-  justify-content:
-  space-between;
+  justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
 `
@@ -201,14 +200,15 @@ const IssueTitle = styled(Text).attrs({
   size: 'large',
 })`
   display: block;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
   color: ${props => props.theme.surfaceContent};
   font-size: 1.2em;
   margin-right: 10px;
+  /* stylelint-disable declaration-block-no-duplicate-properties, value-no-vendor-prefix, property-no-vendor-prefix */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 `
 
 export default Issue

@@ -61,7 +61,7 @@ class Issues extends React.PureComponent {
     issuesPerCall: 100,
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     if ('filterIssuesByRepoId' in this.props.activeIndex.tabData) {
       const { filters } = this.state
       filters.projects[
@@ -312,6 +312,7 @@ class Issues extends React.PureComponent {
           symbol: tokenObj[data.token].symbol,
           expLevel: expLevels[data.exp].name,
           balance: balance,
+          data,
         }
       }
       return {

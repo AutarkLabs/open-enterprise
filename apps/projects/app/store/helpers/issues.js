@@ -1,16 +1,91 @@
-import { toHex } from 'web3-utils'
+import { hexToAscii, toHex } from 'web3-utils'
 import { app } from '../app'
 import { ipfsGet } from '../../utils/ipfs-helpers'
+import standardBounties from '../../abi/StandardBounties.json'
 
 const assignmentRequestStatus = [ 'Unreviewed', 'Accepted', 'Rejected' ]
 
-export const loadIssueData = ({ repoId, issueNumber }) => {
-  return new Promise(resolve => {
-    app.call('getIssue', repoId, issueNumber).subscribe(async ({ hasBounty, standardBountyId, balance, token, dataHash, assignee }) => {
-      const bountyData = await ipfsGet(dataHash)
-      resolve({ balance, hasBounty, token, standardBountyId, assignee, ...bountyData })
-    })
-  })
+export const loadIssueData = async ({ repoId, issueNumber }) => {
+  const {
+    hasBounty,
+    standardBountyId,
+    balance,
+    assignee,
+  } = await app.call('getIssue', repoId, issueNumber).toPromise()
+
+  const bountiesRegistry = await app.call('bountiesRegistry').toPromise()
+  const bountyContract = app.external(bountiesRegistry, standardBounties.abi)
+  const {
+    deadline,
+    token,
+    workStatus,
+  } = await bountyContract.getBounty(standardBountyId).toPromise()
+  // example data returned from getBounty:
+  // {
+  //   approvers: ['0xd79eEe331828492c2ba4c11bf468fb64d52a46F9'], // projects app id
+  //   balance: '1000000000000000000',
+  //   contributions: [{
+  //     amount: '1000000000000000000',
+  //     contributor: '0xd79eEe331828492c2ba4c11bf468fb64d52a46F9', // projects app id
+  //     refunded: false,
+  //   }],
+  //   deadline: '1569868629565',
+  //   fulfillments: [{
+  //     fulfillers: ['0xb4124cEB3451635DAcedd11767f004d8a28c6eE7'], // local superuser
+  //     submitter: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7', // local superuser
+  //   }],
+  //   hasBounty: true,
+  //   hasPaidOut: false,
+  //   issuers: [PROJECTS_APP_ID],
+  //   standardBountyId: '0',
+  //   token: '0x0000000000000000000000000000000000000000',
+  //   tokenVersion: '0',
+  //   workStatus: 'funded',
+  // }
+
+  // keep keys explicit for data integrity & code readability
+  return {
+    // passed in
+    number: Number(issueNumber),
+    repoId: hexToAscii(repoId),
+
+    // from Projects.sol
+    assignee,
+    balance,
+    hasBounty,
+    standardBountyId,
+
+    // from StandardBounties.sol
+    deadline: new Date(Number(deadline)).toISOString(),
+    token,
+    workStatus,
+  }
+}
+
+export const loadIpfsData = async ipfsHash => {
+  const {
+    detailsOpen,
+    exp,
+    fundingHistory,
+    hours,
+    key,
+    repo,
+    size,
+    slots,
+    slotsIndex,
+  } = await ipfsGet(ipfsHash)
+
+  return {
+    detailsOpen,
+    exp,
+    fundingHistory,
+    hours,
+    key,
+    repo,
+    size,
+    slots,
+    slotsIndex,
+  }
 }
 
 const existPendingApplications = issue => {
@@ -43,8 +118,15 @@ const existWorkInProgress = issue => {
 }
 
 const isWorkDone = issue => {
-  if (!('workSubmissions' in issue) || issue.workSubmissions.length === 0) return false
-  return issue.workSubmissions.filter(work => ('review' in work && work.review.accepted)).length > 0
+  if (
+    !issue.hasOwnProperty('workSubmissions') ||
+    issue.workSubmissions.length === 0
+  ) return false
+
+  return issue.workSubmissions.some(work =>
+    work.hasOwnProperty('review') &&
+      work.review.accepted
+  )
 }
 
 const workReadyForReview = issue => {
@@ -92,31 +174,31 @@ const loadRequestsData = ({ repoId, issueNumber }) => {
   })
 }
 
-const getSubmission = (repoId, issueNumber, submissionIndex) => {
-  return new Promise(resolve => {
-    app.call('getSubmission', repoId, issueNumber, submissionIndex)
-      .subscribe(async ({ submissionHash, fulfillmentId, status, submitter }) => {
-        const bountyData = await ipfsGet(submissionHash)
-        resolve({ status,
-          fulfillmentId,
-          submitter,
-          submissionIPFSHash: submissionHash,
-          ...bountyData
-        })
-      })
-  })
-}
+export const buildSubmission = async ({ fulfillmentId, fulfillers, ipfsHash, submitter }) => {
+  const {
+    ack1,
+    ack2,
+    comments,
+    hours,
+    proof,
+    submissionDate,
+    user,
+  } = await ipfsGet(ipfsHash)
 
-const loadSubmissionData = ({ repoId, issueNumber }) => {
-  return new Promise(resolve => {
-    app.call('getSubmissionsLength', repoId, issueNumber).subscribe(async (response) => {
-      let submissions = []
-      for(let submissionId = 0; submissionId < response; submissionId++){
-        submissions.push(await getSubmission(repoId, issueNumber, submissionId))
-      }
-      resolve(submissions)
-    })
-  })
+  return {
+    ack1,
+    ack2,
+    comments,
+    fulfillmentId,
+    fulfillers,
+    hours,
+    proof,
+    status: '0',
+    submissionDate,
+    submissionIPFSHash: ipfsHash,
+    submitter,
+    user,
+  }
 }
 
 export const updateIssueDetail = async data => {
@@ -125,9 +207,6 @@ export const updateIssueDetail = async data => {
   const issueNumber = String(data.number)
   const requestsData = await loadRequestsData({ repoId, issueNumber })
   returnData.requestsData = requestsData
-  let submissionData = await loadSubmissionData({ repoId, issueNumber })
-  returnData.workSubmissions = submissionData
-  returnData.work = submissionData[submissionData.length - 1]
   return returnData
 }
 
@@ -145,7 +224,10 @@ const checkIssuesLoaded = (issues, issueNumber, data) => {
   const nextIssues = Array.from(issues)
   nextIssues[issueIndex] = {
     issueNumber,
-    data: data
+    data: {
+      ...nextIssues[issueIndex].data,
+      ...data,
+    },
   }
   return nextIssues
 }

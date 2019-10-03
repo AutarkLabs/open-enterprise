@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { formatDistance } from 'date-fns'
+import { BN } from 'web3-utils'
 
 import {
   Text,
@@ -247,14 +248,20 @@ const onReviewWork = ({ closePanel, reviewSubmission }) => async (
   const ipfsData = issue.workSubmissions[issue.workSubmissions.length - 1]
   const requestIPFSHash = await ipfsAdd({ ...ipfsData, review: state })
 
+  const total = new BN(issue.data.balance, 10)
+  const fulfillers = issue.data.work.fulfillers
+  const fulfillmentAmounts = fulfillers.map(() =>
+    total.div(new BN(fulfillers.length, 10)).toString()
+  )
   closePanel()
   reviewSubmission(
     toHex(issue.repoId),
     issue.number,
     issue.workSubmissions.length - 1,
     state.accepted,
-    requestIPFSHash
-  )
+    requestIPFSHash,
+    fulfillmentAmounts
+  ).toPromise()
 }
 
 // TODO: move entire component to functional component
