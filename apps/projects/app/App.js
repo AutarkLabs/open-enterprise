@@ -132,9 +132,17 @@ const App = () => {
       </EmptyWrapper>
     )
   } else if (github.status === STATUS.INITIAL) {
-    return <Unauthorized onLogin={handleGithubSignIn} />
+    return (
+      <Main>
+        <Unauthorized onLogin={handleGithubSignIn} />
+      </Main>
+    )
   } else if (github.status === STATUS.FAILED) {
-    return <Error action={noop} />
+    return (
+      <Main>
+        <Error action={noop} />
+      </Main>
+    )
   }
 
   // Tabs are not fixed
