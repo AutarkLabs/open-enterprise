@@ -38,7 +38,16 @@ const App = () => {
     tokenAddress,
   }) => {
     const emptyIntArray = new Array(addresses.length).fill(0)
-    console.log('budgetId: ', budgetId)
+    console.log('budgetId: ', budgetId, ' balance: ', balance)
+    console.table({
+      addresses,
+      description,
+      budgetId,
+      recurring,
+      period,
+      balance,
+      tokenAddress,
+    })
     api.setDistribution(
       addresses,
       emptyIntArray, // unused
@@ -90,15 +99,15 @@ const App = () => {
     })
   }
 
-  const onNewAllocation = (address, description, id, balance) => {
+  const onNewAllocation = (id, description, balance, token) => {
+    console.log('budgetId: ', id)
     setPanel({
       content: NewAllocation,
       data: {
         heading: 'New Allocation',
         subHeading: description,
-        address,
         balance,
-        balances,
+        balances: [token],
         id,
         onSubmitAllocation,
       },

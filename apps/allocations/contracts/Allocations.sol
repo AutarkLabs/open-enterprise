@@ -433,9 +433,9 @@ contract Allocations is AragonApp {
         payout.executions.length = _supports.length;
         payoutId = account.payoutsLength - 1;
         emit SetDistribution(_accountId, payoutId);
-        if (_startTime <= getTimestamp64()) {
+        //if (_startTime <= getTimestamp64()) {
             _runPayout(_accountId, payoutId);
-        }
+        //}
     }
 
     function _executePayoutAtLeastOnce(
@@ -549,6 +549,7 @@ contract Allocations is AragonApp {
         uint256 paid = 0;
         require(account.payouts[_payoutId].distSet);
         uint256 length = account.payouts[_payoutId].candidateAddresses.length;
+        emit FundAccount(500);
         //handle vault
         for (i = 0; i < length; i++) {
             if (supports[i] != 0 && _nextPaymentTime(_accountId, _payoutId, i) <= getTimestamp64()) {
