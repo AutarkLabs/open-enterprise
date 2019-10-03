@@ -92,7 +92,7 @@ const activities = (
       if ('review' in data) {
         events[data.review.reviewDate] = {
           date: data.review.reviewDate,
-          ...data.review.user,
+          user: data.review.user,
           eventDescription: (data.review.approved ? 'assigned' : 'rejected') + ' ' + data.user.login,
           eventAction:
             data.review.feedback.length === 0 ? null : (
@@ -122,9 +122,9 @@ const activities = (
       if ('review' in data) {
         events[data.review.reviewDate] = {
           date: data.review.reviewDate,
-          ...data.review.user,
+          user: data.review.user,
           eventDescription: (data.review.accepted ? 'accepted' : 'rejected') + ' ' + data.user.login + '\'s work',
-          eventAction: 
+          eventAction:
             <div>
               {data.review.feedback.length && (
                 <Text.Block size="large" style={{ marginBottom: '8px' }}>
@@ -147,7 +147,7 @@ const activities = (
     fundingHistory.forEach((data, i) => {
       events[data.date] = {
         date: data.date,
-        ...data.user,
+        user: data.user,
         eventDescription: (i === 0 ? ' added' : ' updated') + ' funding',
       }
     })
