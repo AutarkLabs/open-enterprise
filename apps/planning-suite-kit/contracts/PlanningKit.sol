@@ -18,7 +18,6 @@ import "@tps/apps-allocations/contracts/Allocations.sol";
 import "@tps/apps-projects/contracts/Projects.sol";
 import {DotVoting as DotVotingApp} from "@tps/apps-dot-voting/contracts/DotVoting.sol";
 import "@tps/apps-rewards/contracts/Rewards.sol";
-import "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
 import "@aragon/apps-finance/contracts/Finance.sol";
 import "@aragon/apps-voting/contracts/Voting.sol";
@@ -71,7 +70,7 @@ contract KitBase is APMNamehash {
 contract PlanningKit is KitBase {
     MiniMeTokenFactory tokenFactory;
     MiniMeToken token;
-    StandardBounties registry;
+    address registry; // StandardBounties contract address
 
     uint256 constant PCT256 = 10 ** 16;
     uint64 constant PCT64 = 10 ** 16;
@@ -84,7 +83,7 @@ contract PlanningKit is KitBase {
         // Generate Tokens
         token.generateTokens(address(root), 200 ether); // give root 100 autark tokens
         token.generateTokens(address(this), 100 ether); // give root 100 autark tokens
-        registry = new StandardBounties(root);
+        registry = 0x46bC737df7f1B3a7436F942813498CBE041a6ea4; // hardcoded from the publish:http logs TODO: make dynamic
     }
 
     function newInstance() public {
@@ -232,7 +231,6 @@ contract PlanningKit is KitBase {
             rewards,
             vault
         );
-
     }
 
     function initializeTPSApps(
@@ -246,7 +244,7 @@ contract PlanningKit is KitBase {
     {
         address root = msg.sender;
         addressBook.initialize();
-        projects.initialize(registry, vault, token);
+        projects.initialize(registry, vault);
         dotVoting.initialize(token, 50 * PCT256, 0, 1 minutes);
         allocations.initialize(vault, 1 days);
         rewards.initialize(vault);
