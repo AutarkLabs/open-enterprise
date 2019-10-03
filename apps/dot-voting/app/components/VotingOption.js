@@ -3,24 +3,44 @@ import styled from 'styled-components'
 import { Tag, Text } from '@aragon/ui'
 import { animated } from 'react-spring'
 import PropTypes from 'prop-types'
+import { isAddress } from 'web3-utils'
 import { useNetwork } from '../api-react'
 import { LocalIdentityBadge } from '../../../../shared/identity'
 
-const VotingOption = ({ valueSpring, label, percentage, color, threshold, userVote, fontSize }) => {
+const Label = ({ fontSize, label }) => {
   const network = useNetwork()
 
+  if (isAddress(label)) {
+    return (
+      <LocalIdentityBadge
+        compact
+        fontSize={fontSize}
+        networkType={network.type}
+        entity={label}
+        shorten
+      />
+    )
+  }
+
+  return (
+    <Text size={fontSize}>
+      {label}
+    </Text>
+  )
+}
+
+Label.propTypes = {
+  fontSize: PropTypes.oneOf([ 'xsmall', 'small' ]),
+  label: PropTypes.string.isRequired,
+}
+
+const VotingOption = ({ valueSpring, label, percentage, color, threshold, userVote, fontSize }) => {
   return (
     <Main>
       <Labels>
         {label && (
           <div>
-            <LocalIdentityBadge
-              compact
-              fontSize={fontSize}
-              networkType={network.type}
-              entity={label}
-              shorten
-            />
+            <Label fontSize={fontSize} label={label} />
             {userVote !== -1 && (
               <Tag label={`YOU: ${userVote}%`} />
             )}
