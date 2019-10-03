@@ -411,16 +411,17 @@ contract Allocations is AragonApp {
         uint256 _amount
     ) public auth(CREATE_ALLOCATION_ROLE) returns(uint64 payoutId)
     {
+        require(_recurrences > 0, "must execute payout at least once");
+        
         Account storage account = accounts[_accountId];
         require(vault.balance(account.token) >= _amount * _recurrences);
-        require(_recurrences > 0, "must execute payout at least once");
 
         Payout storage payout = account.payouts[account.payoutsLength++];
+        payout.candidateAddresses = _candidateAddresses;
         require(payout.candidateAddresses.length <= maxCandidates);
 
         payout.amount = _amount;
         payout.recurrences = _recurrences;
-        payout.candidateAddresses = _candidateAddresses;
         if (_recurrences > 1) {
             payout.period = _period;
             // minimum granularity is a single day

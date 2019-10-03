@@ -1,10 +1,11 @@
 module.exports = {
-  ACL: artifacts.require('./acl/ACL'),
+  ACL: artifacts.require('./contracts/acl/ACL'),
   DAOFactory: artifacts.require('./factory/DAOFactory'),
   EVMScriptRegistryFactory: artifacts.require(
-    './factory/EVMScriptRegistryFactory'
+    './contracts/factory/EVMScriptRegistryFactory'
   ),
-  Kernel: artifacts.require('./kernel/Kernel'),
-  MiniMeToken: artifacts.require('./lib/minime/MiniMeToken'),
+  Kernel: artifacts.require('./contracts/kernel/Kernel'),
+  MiniMeToken: artifacts.require('./contracts/lib/minime/MiniMeToken'),
+  StandardBounties: artifacts.require('./contracts/lib/bounties/StandardBounties'),
   getContract: name => artifacts.require(name)
 }
