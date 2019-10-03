@@ -114,32 +114,6 @@ contract Allocations is AragonApp {
         _;
     }
 
-    modifier periodExists(uint64 _periodId) {
-        require(_periodId < periodsLength, ERROR_NO_PERIOD);
-        _;
-    }
-
-    modifier accountExists(uint64 _accountId) {
-        require(_accountId < accountsLength, ERROR_NO_ACCOUNT);
-        _;
-    }
-
-    modifier payoutExists(uint64 _accountId, uint64 _payoutId) {
-        require(_payoutId < accounts[_accountId].payoutsLength, ERROR_NO_PAYOUT);
-        _;
-    }
-
-    // Modifier used by all methods that impact accounting to make sure accounting period
-    // is changed before the operation if needed
-    // NOTE: its use **MUST** be accompanied by an initialization check
-    modifier transitionsPeriod {
-        require(
-            _tryTransitionAccountingPeriod(getMaxPeriodTransitions()),
-            ERROR_COMPLETE_TRANSITION
-        );
-        _;
-    }
-
     /**
     * @dev On initialization the contract sets a vault, and initializes the periods
     *      and accounts.
@@ -243,35 +217,6 @@ contract Allocations is AragonApp {
 
     /** @notice Basic getter for period information.
     *   @param _periodId The Id of the period you'd like to receive information for.
-    */
-    function getPeriod(uint64 _periodId)
-    external
-    view
-    isInitialized
-    periodExists(_periodId)
-    returns (
-        bool isCurrent,
-        uint64 startTime,
-        uint64 endTime
-    )
-    {
-        Period storage period = periods[_periodId];
-
-        isCurrent = _currentPeriodId() == _periodId;
-
-        startTime = period.startTime;
-        endTime = period.endTime;
-    }
-
-    /**
-    * @dev We have to check for initialization as periods are only valid after initializing
-    */
-    function getCurrentPeriodId() external view isInitialized returns (uint64) {
-        return _currentPeriodId();
-    }
-
-    /** @notice Basic getter for period information.
-    *   @param _periodId The Id of the account you'd like to get.
     */
     function getPeriod(uint64 _periodId)
     external
@@ -412,40 +357,6 @@ contract Allocations is AragonApp {
     }
 
     /**
-    * @notice This transaction will execute the allocation for the senders address for budget #`_accountId`
-    * @param _accountId The Id of the budget you'd like to take action against
-    * @param _payoutId The Id of the allocation within the budget you'd like to execute
-    * @param _candidateId The Candidate whose allocation you'll execute (must be sender)
-    */
-    function candidateExecutePayout(
-        uint64 _accountId,
-        uint64 _payoutId,
-        uint256 _candidateId
-    ) external transitionsPeriod isInitialized accountExists(_accountId) payoutExists(_accountId, _payoutId)
-    {
-        //Payout storage payout = accounts[_accountId].payouts[_payoutId];
-        require(accounts[_accountId].payouts[_payoutId].distSet);
-        require(msg.sender == accounts[_accountId].payouts[_payoutId].candidateAddresses[_candidateId], "candidate not receiver");
-        _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId, 0);
-    }
-
-    /**
-    * @notice This transaction will execute the allocation for candidate `_candidateId` within budget #`_accountId`
-    * @param _accountId The Id of the budget you'd like to take action against
-    * @param _payoutId The Id of the allocation within the budget you'd like to execute
-    * @param _candidateId The Candidate whose allocation you'll execute (must be sender)
-    */
-    function executePayout(
-        uint64 _accountId,
-        uint64 _payoutId,
-        uint256 _candidateId
-    ) external transitionsPeriod auth(EXECUTE_PAYOUT_ROLE) accountExists(_accountId) payoutExists(_accountId, _payoutId)
-    {
-        require(accounts[_accountId].payouts[_payoutId].distSet);
-        _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId, 0);
-    }
-
-    /**
     * @dev This function distributes the allocations to the candidates in accordance with the distribution values
     * @notice Distribute allocation #`_payoutId` from budget #`_accountId`.
     * @param _accountId The Id of the budget you'd like to take action against
@@ -460,15 +371,6 @@ contract Allocations is AragonApp {
     returns(bool success)
     {
         success = _runPayout(_accountId, _payoutId);
-    }
-
-    /**
-    * @dev This function is provided to circumvent situations where the transition period
-    *      becomes impossible to execute
-    * @param _limit Maximum number of periods to advance in this execution
-    */
-    function advancePeriod(uint64 _limit) external isInitialized {
-        _tryTransitionAccountingPeriod(_limit);
     }
 
     /**
@@ -512,6 +414,7 @@ contract Allocations is AragonApp {
         Account storage account = accounts[_accountId];
         require(vault.balance(account.token) >= _amount * _recurrences);
         require(_recurrences > 0, "must execute payout at least once");
+
         Payout storage payout = account.payouts[account.payoutsLength++];
         require(payout.candidateAddresses.length <= maxCandidates);
 
