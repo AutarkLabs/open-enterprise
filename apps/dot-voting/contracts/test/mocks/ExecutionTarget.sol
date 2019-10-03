@@ -16,7 +16,8 @@ contract ExecutionTarget {
         uint256[] _level1Id,
         uint256[] _level2Id,
         uint256 /*external vote Identifier*/,
-        bool /*test param*/
+        bool /*test param*/,
+        uint256 /*test param*/
     ) public
     {
         for (uint i = 0; i < _signal.length; i++) {

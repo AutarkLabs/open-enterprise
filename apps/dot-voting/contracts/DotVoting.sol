@@ -84,12 +84,12 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     *         day `_voteTime >= 172800 ? 's' : ''`
     * @param _token MiniMeToken address that will be used as governance token
     * @param _minQuorum Percentage of voters that must participate in
-    *        a vote for it to succeed (expressed as a 10^18 percentage,
+    *        a dot vote for it to succeed (expressed as a 10^18 percentage,
     *        (eg 10^16 = 1%, 10^18 = 100%)
-    * @param _candidateSupportPct Percentage of cast voting power that must
-    *        support a candidate for it to be counted (expressed as a 10^18
+    * @param _candidateSupportPct Percentage of votes cast that must
+    *        support a voting option for it to be valid (expressed as a 10^18
     *        percentage, (eg 10^16 = 1%, 10^18 = 100%)
-    * @param _voteTime Seconds that a vote will be open for token holders to
+    * @param _voteTime Seconds that a vote will be open for tokenholders to
     *        vote (unless it is impossible for the fate of the vote to change)
     */
     function initialize(
@@ -116,7 +116,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
 
 
     /**
-    * @notice Create a new dot vote about "`_metadata`"
+    * @notice Create a new dot vote about "`_metadata`."
     * @param _executionScript EVM script to be executed on approval
     * @param _metadata Vote metadata
     * @return voteId Id for newly created vote
@@ -124,7 +124,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     function newVote(bytes _executionScript, string _metadata)
         external auth(ROLE_CREATE_VOTES) returns (uint256 voteId)
     {
-        voteId = _newVote(_executionScript, _metadata); /*, true);*/
+        voteId = _newVote(_executionScript, _metadata);
     }
 
     /**
@@ -140,7 +140,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     }
 
     /**
-    * @notice Execute dot vote `_voteId`
+    * @notice Execute dot vote #`_voteId`.
     * @param _voteId Id for vote
     */
     function executeVote(uint256 _voteId) external isInitialized {
@@ -157,7 +157,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     function getCandidate(uint256 _voteId, uint256 _candidateIndex)
     external view isInitialized returns(address candidateAddress, uint256 voteSupport, string metadata, bytes32 externalId1, bytes32 externalId2)
     {
-        require(_voteId < voteLength, ERROR_VOTE_LENGTH);//, "Vote ID outside of current vote range");
+        require(_voteId < voteLength, ERROR_VOTE_LENGTH); // "Vote ID outside of current vote range");
         uint256 actionId = votes[_voteId].actionId;
         Action storage action = actions[actionId];
         uint256 candidateLength = action.optionKeys.length;
@@ -171,11 +171,10 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     }
 
     /**
-    * @notice `setglobalCandidateSupportPct` serves as a basic getter using the description
-    *         to return the struct data.
-    * @param _globalCandidateSupportPct Percentage of cast voting power that must
-    *        support a candidate for it to be counted (expressed as a 10^18
-    *        percentage, (eg 10^16 = 1%, 10^18 = 100%)
+    * @notice Global parameter change: A dot voting option will require at least `@formatPct(_globalCandidateSupportPct)`% of the votes for it to be considered valid.
+    * @param _globalCandidateSupportPct Percentage of votes cast that must support
+    *        a voting option for it to be valid (expressed as a 10^18 percentage,
+    *        e.g. 10^16 = 1%, 10^18 = 100%)
     */
     function setglobalCandidateSupportPct(uint256 _globalCandidateSupportPct)
     external auth(ROLE_MODIFY_CANDIDATE_SUPPORT)
@@ -186,10 +185,10 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     }
 
     /**
-    * @notice `setGlobalQuorum` serves as a basic setter for the qourum.
-    * @param _minQuorum Percentage of voters that must participate in
-    *        a vote for it to succeed (expressed as a 10^18 percentage,
-    *        (eg 10^16 = 1%, 10^18 = 100%)
+    * @notice Global parameter change: A dot vote will require a minimum participation from `@formatPct(_minQuorum)`% of the total token supply for the proposal to be considered valid.
+    * @param _minQuorum Percentage of voters that must participate in a vote for it
+    *        to be considered valid (expressed as a 10^18 percentage, e.g. 10^16 = 1%,
+    *        10^18 = 100%)
     */
     function setGlobalQuorum(uint256 _minQuorum)
     external auth(ROLE_MODIFY_QUORUM)
@@ -202,8 +201,9 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     }
 
     /**
-    * @notice `addCandidate` allows the `ROLE_ADD_CANDIDATES` to add candidates
-    *         (or options) to the current dot vote.
+    * @dev `addCandidate` allows the `ROLE_ADD_CANDIDATES` to add candidates
+    *      (aka voting options) to an open dot vote.
+    * @notice Add voting option "`_description`" to dot vote #`_voteId` for the purpose of `_metadata`.
     * @param _voteId id for vote structure this 'ballot action' is connected to
     * @param _metadata Any additional information about the candidate.
     *        Base implementation does not use this parameter.
@@ -255,7 +255,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     */
     function forward(bytes _evmScript) public { // solium-disable-line function-order
         require(canForward(msg.sender, _evmScript)); // solium-disable-line error-reason
-        _newVote(_evmScript, ""); /*, true);*/
+        _newVote(_evmScript, "");
     }
 
 ///////////////////////
@@ -277,8 +277,8 @@ contract DotVoting is ADynamicForwarder, AragonApp {
 
     /**
     * @notice `canExecute` is used to check that the participation has been met
-    *         and the vote has reached it's end before the execute
-    *         function is called.
+    *         and the vote has reached it's end before the execute function is
+    *         called.
     * @param _voteId id for vote structure this 'ballot action' is connected to
     * @return True if the vote is elligible for execution.
     */
@@ -298,7 +298,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     }
 
     /**
-    * @notice `getVote` simply splits all of the data elements out of a vote
+    * @notice `getVote` splits all of the data elements out of a vote
     *         struct and returns the individual values.
     * @param _voteId The ID of the Vote struct in the `votes` array
     */
@@ -333,8 +333,8 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     }
 
         /**
-    * @notice `getCandidateLength` returns the total number of candidates for
-    *         a given vote.
+    * @notice `getCandidateLength` returns the total number of voting options for
+    *         a given dot vote.
     * @param _voteId The ID of the Vote struct in the `votes` array
     */
     function getCandidateLength(uint256 _voteId) public view isInitialized returns
@@ -345,8 +345,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     }
 
     /**
-    * @notice `getVoteMetadata` simply pulls the vote metadata out of a vote
-    *         struct and returns the individual value.
+    * @notice `getVoteMetadata` returns the vote metadata for a given dot vote.
     * @param _voteId The ID of the Vote struct in the `votes` array
     */
     function getVoteMetadata(uint256 _voteId) public view isInitialized returns (string) {
@@ -355,8 +354,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     }
 
     /**
-    * @notice `getVoterState` allows a user to get the vote weights for a given
-    *         voter.
+    * @notice `getVoterState` returns the voting power for a given voter.
     * @param _voteId The ID of the Vote struct in the `votes` array.
     * @param _voter The voter whose weights will be returned
     */
@@ -391,7 +389,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     *        The seventh array is a second array of identification keys, usually mapping to a second level (optional uint256)
     *        The eigth parameter is used as the identifier for this vote. (uint256)
     *        See ExecutionTarget.sol in the test folder for an example  forwarded function (setSignal)
-    * @param _metadata The metadata or vote information attached to this vote
+    * @param _metadata The metadata or vote information attached to the vote.
     * @return voteId The ID(or index) of this vote in the votes array.
     */
     function _newVote(bytes _executionScript, string _metadata) internal
@@ -415,8 +413,8 @@ contract DotVoting is ADynamicForwarder, AragonApp {
         emit ExecutionScript(_executionScript, 0);
     }
 
-    /*
-    * @notice `_vote` is the internal function that allows a token holder to
+    /**
+    * @dev `_vote` is the internal function that allows a token holder to
     *         caste a vote on the current options.
     * @param _voteId id for vote structure this 'ballot action' is connected to
     * @param _supports Array of support weights in order of their order in

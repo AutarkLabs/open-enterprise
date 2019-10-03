@@ -52,7 +52,7 @@ library ScriptHelpers {
         assembly {
             dest := add(add(_d, 0x20), _pos)
         }
-        memcpy(dest, _src, _length + 32);
+        memcpy(dest, _src, _length);
     }
 
     function getPtr(bytes memory _x) internal pure returns (uint256 ptr) {
