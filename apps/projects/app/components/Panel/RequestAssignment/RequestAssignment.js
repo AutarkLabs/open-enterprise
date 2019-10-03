@@ -165,7 +165,7 @@ const RequestAssignmentWrap = props => {
       githubCurrentUser={githubCurrentUser}
       onRequestAssignment={onRequestAssignment({
         closePanel,
-        requestAssignment: api.requestAssignment,
+        requestAssignment: api.requestAssignment
       })}
       {...props}
     />

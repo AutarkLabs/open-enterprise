@@ -485,40 +485,46 @@ const submitBountyAllocation = ({
   const issuesArray = []
   const bountyAddr = bountySettings.bountyCurrency
 
-  /* eslint-disable-next-line */
-  let bountyToken, bountyDecimals, bountySymbol
-
-  tokens.forEach(token => {
-    if (token.addr === bountyAddr) {
-      bountyToken = token.addr
-      bountyDecimals = token.decimals
-      bountySymbol = token.symbol
-    }
-  })
+  const token = tokens.find(token => token.addr === bountyAddr)
+  const bountyToken = token.addr
+  const bountyDecimals = token.decimals
 
   for (let key in issues) issuesArray.push({ key: key, ...issues[key] })
 
-  const ipfsString = await computeIpfsString(issuesArray)
+  const ipfsAddresses = await computeIpfsString(issuesArray)
 
-  const idArray = issuesArray.map(issue => toHex(issue.repoId))
-  const numberArray = issuesArray.map(issue => issue.number)
-  const bountyArray = issuesArray.map(issue =>
+  const repoIds = issuesArray.map(issue => toHex(issue.repoId))
+  const issueNumbers = issuesArray.map(issue => issue.number)
+  const bountySizes = issuesArray.map(issue =>
     BigNumber(issue.size)
       .times(10 ** bountyDecimals)
       .toString()
   )
-  const tokenArray = new Array(issuesArray.length).fill(bountyToken)
-  const dateArray = new Array(issuesArray.length).fill(Date.now() + 8600)
-  const booleanArray = new Array(issuesArray.length).fill(true)
+  const tokenContracts = new Array(issuesArray.length).fill(bountyToken)
+  const deadlines = new Array(issuesArray.length).fill(Date.now() + 8600)
+  // @param _tokenTypes array of currency types: 0=ETH from current user's wallet, 1=ETH from vault, 20=ERC20 token from vault
+  const tokenTypes = new Array(issuesArray.length).fill(1)
 
+  // during development, sometimes this fails with a cryptic "cannot perform action" error
+  // in case this happens in QA, let's leave this logging here to at least have some paper trail
+  console.log( // eslint-disable-line
+    'repoIds', repoIds,
+    'issueNumbers', issueNumbers,
+    'bountySizes', bountySizes,
+    'deadlines', deadlines,
+    'tokenTypes', tokenTypes,
+    'tokenContracts', tokenContracts,
+    'ipfsAddresses', ipfsAddresses,
+    'description', description
+  )
   addBounties(
-    idArray,
-    numberArray,
-    bountyArray,
-    dateArray,
-    booleanArray,
-    tokenArray,
-    ipfsString,
+    repoIds,
+    issueNumbers,
+    bountySizes,
+    deadlines,
+    tokenTypes,
+    tokenContracts,
+    ipfsAddresses,
     description
   ).subscribe(
     () => {
@@ -529,7 +535,7 @@ const submitBountyAllocation = ({
       //     variables: {
       //       body:
       //         'This issue has a bounty attached to it.\n' +
-      //         `Amount: ${issue.size.toFixed(2)} ${bountySymbol}\n` +
+      //         `Amount: ${issue.size.toFixed(2)} ${token.symbol}\n` +
       //         `Deadline: ${issue.deadline.toUTCString()}`,
       //       subjectId: issue.key,
       //     },
@@ -658,11 +664,11 @@ const IBValueShow = styled.div`
   }
 `
 const VaultDiv = styled.div`
-text-align: center;
+  text-align: center;
 `
 const IBArrow = styled.div`
   grid-area: arrow;
-  place-self: center; // TODO: Check browser support for this
+  place-self: center; /* TODO: Check browser support for this */
 `
 const IBHoursInput = styled.div`
   display: inline-flex;

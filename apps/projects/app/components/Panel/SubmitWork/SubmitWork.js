@@ -10,7 +10,7 @@ import useGithubAuth from '../../../hooks/useGithubAuth'
 import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '../../Panel'
 import { ipfsAdd } from '../../../utils/ipfs-helpers'
-import { toHex } from 'web3-utils'
+import standardBounties from '../../../abi/StandardBounties.json'
 
 class SubmitWork extends React.Component {
   static propTypes = {
@@ -151,24 +151,31 @@ class SubmitWork extends React.Component {
   }
 }
 
-const onSubmitWork = ({ closePanel, submitWork }) => async (state, issue) => {
-  closePanel()
-  const hash = await ipfsAdd(state)
-  submitWork(toHex(issue.repoId), issue.number, hash).toPromise()
-}
-
 // TODO: move entire component to functional component
 // the following was a quick way to allow us to use hooks
 const SubmitWorkWrap = props => {
   const githubCurrentUser = useGithubAuth()
   const { closePanel } = usePanelManagement()
-  const {
-    api: { submitWork }
-  } = useAragonApi()
+  const { api, connectedAccount } = useAragonApi()
+
+  const onSubmitWork = async (state, issue) => {
+    closePanel()
+    const hash = await ipfsAdd(state)
+
+    const bountiesRegistry = await api.call('bountiesRegistry').toPromise()
+    const bountyContract = api.external(bountiesRegistry, standardBounties.abi)
+    bountyContract.fulfillBounty(
+      connectedAccount, // address _sender,
+      issue.standardBountyId, // uint _bountyId,
+      [connectedAccount], // address payable [] memory  _fulfillers,
+      hash // string memory _data
+    ).toPromise()
+  }
+
   return (
     <SubmitWork
       githubCurrentUser={githubCurrentUser}
-      onSubmitWork={onSubmitWork({ closePanel, submitWork })}
+      onSubmitWork={onSubmitWork}
       {...props}
     />
   )
