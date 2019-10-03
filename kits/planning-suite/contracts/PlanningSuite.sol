@@ -463,8 +463,8 @@ contract PlanningSuite is BetaKitBase {
     {
         ACL acl = ACL(dao.acl());
         bytes32 vaultTransferRole = vault.TRANSFER_ROLE();
-        // Vault permissions
 
+        // Vault permissions
         acl.grantPermission(projects, vault, vaultTransferRole);
         acl.grantPermission(allocations, vault, vaultTransferRole);
         acl.grantPermission(rewards, vault, vaultTransferRole);
