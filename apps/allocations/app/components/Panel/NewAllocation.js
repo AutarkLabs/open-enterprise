@@ -94,7 +94,6 @@ class NewAllocation extends React.Component {
     })
   }
 
-  // TODO: fix contract to accept regular strings(informational vote)
   submitAllocation = () => {
     const { props, state } = this
     const token  = props.balances[state.payoutTokenIndex]
@@ -104,7 +103,7 @@ class NewAllocation extends React.Component {
     const candidates = uniqueAddressValidation(userInputCandidates, userInput.addr) ?
       [ userInput, ...userInputCandidates ] : userInputCandidates
     const allocation = {
-      payoutId: this.props.id,
+      budgetId: this.props.id,
       informational: informational,
       recurring: recurring,
       period: recurring ? 86400 * 31 : 0,

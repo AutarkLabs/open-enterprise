@@ -70,14 +70,16 @@ const getAccount = id => {
     .call('getAccount', id)
     .pipe(
       first(),
-      map(({ budget, hasBudget, metadata, token }) => ({
+      map(({ budget, hasBudget, metadata, token }) => {
+        console.log('accountId', id)
+        return {
         // transform response data for the frontend
-        hasBudget,
-        id, // note the id is added along with the other data
-        token,
-        amount: budget,
-        name: metadata,
-      }))
+          hasBudget,
+          id, // note the id is added along with the other data
+          token,
+          amount: budget,
+          name: metadata,
+        }})
     )
     .toPromise()
 }

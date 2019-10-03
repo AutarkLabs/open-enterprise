@@ -16,6 +16,7 @@ const App = () => {
   const { allocations = [], balances = [], budgets = [], tokens = [] } = appState
 
   const onCreateBudget = ({ amount, name, token }) => {
+    console.log('amount: ', amount)
     api
       .newAccount(
         name,             // _metadata
@@ -30,13 +31,14 @@ const App = () => {
   const onSubmitAllocation = ({
     addresses,
     description,
-    payoutId,
+    budgetId,
     recurring,
     period,
     balance,
     tokenAddress,
   }) => {
     const emptyIntArray = new Array(addresses.length).fill(0)
+    console.log('budgetId: ', budgetId)
     api.setDistribution(
       addresses,
       emptyIntArray, // unused
@@ -45,9 +47,9 @@ const App = () => {
       description,
       emptyIntArray, // unused
       emptyIntArray, // unused
-      payoutId, // account or allocation id...
-      0, // recurrences, 0 for now
-      new Date().getTime(), // startTime, now for now
+      '1', // account or allocation id...budgetId
+      '1', // recurrences, 1 for now
+      '0',//Math.floor(new Date().getTime()/1000), // startTime, now for now
       period,
       String(balance), // amount
       // tokenAddress -> token used, now deprecated
