@@ -217,16 +217,14 @@ class ReviewWork extends React.Component {
             <ReviewRow>
               <ReviewButton
                 disabled={this.canSubmit()}
-                emphasis="negative"
-                mode={this.canSubmit() ? 'secondary' : 'strong'}
+                mode="negative"
                 onClick={this.onReject}
               >
             Reject
               </ReviewButton>
               <ReviewButton
                 disabled={this.canSubmit()}
-                emphasis="positive"
-                mode={this.canSubmit() ? 'secondary' : 'strong'}
+                mode="positive"
                 onClick={this.onAccept}
               >
             Accept
