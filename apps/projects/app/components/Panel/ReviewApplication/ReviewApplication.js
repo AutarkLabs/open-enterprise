@@ -20,12 +20,13 @@ import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '../../Panel'
 import { ipfsAdd } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
+import { issueShape } from '../../../utils/shapes.js'
 
 // external data, all of it
 
 class ReviewApplication extends React.Component {
   static propTypes = {
-    issue: PropTypes.object.isRequired,
+    issue: issueShape,
     requestIndex: PropTypes.number.isRequired,
     githubCurrentUser: PropTypes.object.isRequired,
     onReviewApplication: PropTypes.func.isRequired,
@@ -61,7 +62,6 @@ class ReviewApplication extends React.Component {
   changeRequest = (index) => {
     this.setState({ requestIndex: index })
   }
-
 
   render() {
     const { issue } = this.props

@@ -10,7 +10,8 @@ import {
   IconCross,
   IconHome,
   SafeLink,
-  theme,
+  useLayout,
+  useTheme,
 } from '@aragon/ui'
 import {
   BASE_CARD_WIDTH,
@@ -26,14 +27,16 @@ const Project = ({
   commits,
   url,
   changeActiveIndex,
-  screenSize,
 }) => {
   const {
     api: { removeRepo },
   } = useAragonApi()
 
+  const theme = useTheme()
+  const { width } = useLayout()
+
   const removeProject = () => {
-    removeRepo(toHex(repoId))
+    removeRepo(toHex(repoId)).toPromise()
     // TODO: Toast feedback here maybe
   }
 
@@ -48,10 +51,10 @@ const Project = ({
   }
 
   return (
-    <StyledCard onClick={clickContext} screenSize={screenSize}>
+    <StyledCard onClick={clickContext} screenSize={width}>
       <MenuContainer onClick={clickMenu}>
         <ContextMenu>
-          <ContextMenuItem>
+          <ContextMenuItem css="padding: 20px">
             <IconHome />
             <ActionLabel>
               <SafeLink
@@ -71,16 +74,16 @@ const Project = ({
           </ContextMenuItem>
         </ContextMenu>
       </MenuContainer>
-      <CardTitle>{label}</CardTitle>
+      <CardTitle color={`${theme.surfaceContentSecondary}`}>{label}</CardTitle>
       <CardDescription>
-        <CardDescriptionText>{description}</CardDescriptionText>
+        <CardDescriptionText color={`${theme.surfaceContentSecondary}`}>{description}</CardDescriptionText>
       </CardDescription>
       <StyledStats>
         <StatsContainer>
           <IconHistory />
           <Text weight="bold">
             {commits}{' '}
-            <Text weight="normal" color={theme.textSecondary}>
+            <Text weight="normal" color={`${theme.surfaceContentSecondary}`}>
               {parseInt(commits) === 1 ? 'commit' : 'commits'}
             </Text>
           </Text>
@@ -107,7 +110,6 @@ Project.propTypes = {
   url: PropTypes.string.isRequired,
   contributors: PropTypes.array,
   changeActiveIndex: PropTypes.func.isRequired,
-  screenSize: PropTypes.number.isRequired,
 }
 
 const StyledCard = styled(Card)`
@@ -140,13 +142,12 @@ const ActionLabel = styled.span`
 `
 
 const CardTitle = styled(Text.Block).attrs({
-  size: 'large',
-  weight: 'bold',
+  size: 'xlarge',
 })`
   margin-top: 10px;
   margin-bottom: 5px;
   text-align: center;
-  color: ${theme.textPrimary};
+  color: ${({ color }) => color };
   display: block;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -156,7 +157,7 @@ const CardTitle = styled(Text.Block).attrs({
 `
 
 const CardDescriptionText = styled(Text.Block).attrs({
-  size: 'xsmall',
+  size: 'small',
 })`
   display: block;
   display: -webkit-box;
@@ -164,7 +165,7 @@ const CardDescriptionText = styled(Text.Block).attrs({
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: ${theme.textPrimary};
+  color: ${({ color }) => color };
   text-align: center;
 `
 

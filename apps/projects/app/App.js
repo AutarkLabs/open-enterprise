@@ -1,25 +1,20 @@
-import React from 'react'
-import PropTypes from 'prop-types'
+import React, { useEffect, useState } from 'react'
 import { ApolloProvider } from 'react-apollo'
 
 import { useAragonApi } from './api-react'
 import {
+  Bar,
+  Button,
+  BackButton,
+  Header,
+  IconPlus,
   Main,
-  TabBar,
-  AppView,
-  AppBar,
-  NavigationBar,
+  Tabs,
 } from '@aragon/ui'
 
-import { AppTitle } from '../../../shared/ui'
-
-import {
-  ErrorBoundary,
-  NewIssueButton,
-  NewProjectButton,
-} from './components/App'
+import ErrorBoundary from './components/App/ErrorBoundary'
 import { Issues, Overview, Settings } from './components/Content'
-import { PanelManager, PanelContext } from './components/Panel'
+import { PanelManager, PanelContext, usePanelManagement } from './components/Panel'
 
 import { IdentityProvider } from '../../../shared/identity'
 import {
@@ -29,72 +24,33 @@ import {
 
 import { initApolloClient } from './utils/apollo-client'
 import { getToken, getURLParam, githubPopup, STATUS } from './utils/github'
+import Unauthorized from './components/Content/Unauthorized'
+import { LoadingAnimation } from './components/Shared'
+import { EmptyWrapper } from './components/Shared'
+import { Error } from './components/Card'
 
-const ASSETS_URL = './aragon-ui'
+const App = () => {
+  const { api, appState } = useAragonApi()
+  const [ activeIndex, setActiveIndex ] = useState(
+    { tabIndex: 0, tabData: {} }
+  )
+  const [ issueDetail, setIssueDetail ] = useState(false)
+  const [ githubLoading, setGithubLoading ] = useState(false)
+  const [ panel, setPanel ] = useState(null)
+  const [ panelProps, setPanelProps ] = useState(null)
+  const [ popupRef, setPopupRef ] = useState(null)
 
-const getTabs = ({ repoCount }) => {
-  const tabs = [
-    {
-      name: 'Overview',
-      body: Overview,
-      action: <NewProjectButton />,
-    },
-  ]
+  const {
+    repos = [],
+    bountySettings = {},
+    issues = [],
+    tokens = [],
+    github = { status : STATUS.INITIAL },
+  } = appState
 
-  if (repoCount > 0) {
-    tabs.push({
-      name: 'Issues',
-      body: Issues,
-      action: <NewIssueButton />,
-    })
-  }
+  const client = github.token ? initApolloClient(github.token) : null
 
-  tabs.push({
-    name: 'Settings',
-    body: Settings,
-  })
-
-  return tabs
-}
-
-class App extends React.PureComponent {
-  static propTypes = {
-    api: PropTypes.object, // is not required, since it comes async
-    repos: PropTypes.arrayOf(PropTypes.object),
-    bountySettings: PropTypes.object,
-    displayMenuButton: PropTypes.bool,
-    client: PropTypes.object,
-    issues: PropTypes.array,
-    tokens: PropTypes.array,
-    github: PropTypes.shape({
-      status: PropTypes.oneOf([
-        STATUS.AUTHENTICATED,
-        STATUS.FAILED,
-        STATUS.INITIAL,
-      ]).isRequired,
-      token: PropTypes.string,
-      event: PropTypes.string,
-    }),
-  }
-
-  constructor(props) {
-    super(props)
-    this.state = {
-      repos: [],
-      activeIndex: { tabIndex: 0, tabData: {} },
-      githubLoading: false,
-      issueDetail: false,
-      panel: null,
-      panelProps: null,
-    }
-  }
-
-  componentDidMount() {
-    /**
-     * Acting as the redirect target it looks up for 'code' URL param on component mount
-     * if it detects the code then sends to the opener window
-     * via postMessage with 'popup' as origin and close the window (usually a popup)
-     */
+  useEffect(() => {
     const code = getURLParam('code')
     code &&
       window.opener.postMessage(
@@ -102,200 +58,162 @@ class App extends React.PureComponent {
         '*'
       )
     window.close()
-  }
+  })
 
-  handlePopupMessage = async message => {
+  const handlePopupMessage = async message => {
     if (message.data.from !== 'popup') return
     if (message.data.name === 'code') {
       // TODO: Optimize the listeners lifecycle, ie: remove on unmount
-      window.removeEventListener('message', this.messageHandler)
+      window.removeEventListener('message', handlePopupMessage)
 
       const code = message.data.value
       try {
         const token = await getToken(code)
-        this.setState(
-          {
-            githubLoading: false,
-          },
-          () => {
-            this.props.api.trigger(REQUESTED_GITHUB_TOKEN_SUCCESS, {
-              status: STATUS.AUTHENTICATED,
-              token
-            })
-          }
-        )
+        setGithubLoading(false)
+        api.trigger(REQUESTED_GITHUB_TOKEN_SUCCESS, {
+          status: STATUS.AUTHENTICATED,
+          token
+        })
+
       } catch (err) {
-        this.setState(
-          {
-            githubLoading: false,
-          },
-          () => {
-            this.props.api.trigger(REQUESTED_GITHUB_TOKEN_FAILURE, {
-              status: STATUS.FAILED,
-              token: null,
-            })
-          }
-        )
+        setGithubLoading(false)
+        api.trigger(REQUESTED_GITHUB_TOKEN_FAILURE, {
+          status: STATUS.FAILED,
+          token: null,
+        })
       }
     }
   }
 
-  handleMenuPanelOpen = () => {
-    window.parent.postMessage(
-      { from: 'app', name: 'menuPanel', value: true },
-      '*'
-    )
+  const changeActiveIndex = data => {
+    setActiveIndex(data)
   }
 
-  changeActiveIndex = activeIndex => {
-    this.setState({ activeIndex })
+  const closePanel = () => {
+    setPanel(null)
+    setPanelProps(null)
   }
 
-  closePanel = () => {
-    this.setState({ panel: null, panelProps: null })
+  const configurePanel = {
+    setActivePanel: p => setPanel(p),
+    setPanelProps: p => setPanelProps(p),
   }
 
-  setPanel = {
-    setActivePanel: p => this.setState({ panel: p }),
-    setPanelProps: p => this.setState({ panelProps: p }),
-  }
-
-  handleGithubSignIn = () => {
+  const handleGithubSignIn = () => {
     // The popup is launched, its ref is checked and saved in the state in one step
-    this.setState(({ oldPopup }) => ({
-      popup: githubPopup(oldPopup),
-      githubLoading: true,
-    }))
+    setGithubLoading(true)
+
+    setPopupRef(githubPopup(popupRef))
+
     // Listen for the github redirection with the auth-code encoded as url param
-    window.addEventListener('message', this.handlePopupMessage)
+    window.addEventListener('message', handlePopupMessage)
   }
 
-  handleSelect = index => {
-    this.changeActiveIndex({ tabIndex: index, tabData: {} })
+  const handleSelect = index => {
+    changeActiveIndex({ tabIndex: index, tabData: {} })
   }
 
-  setIssueDetail = visible => {
-    this.setState({ issueDetail: visible })
+  const handleResolveLocalIdentity = address => {
+    return api.resolveAddressIdentity(address).toPromise()
   }
 
-  handleResolveLocalIdentity = address => {
-    return this.props.api.resolveAddressIdentity(address).toPromise()
-  }
-  handleShowLocalIdentityModal = address => {
-    return this.props.api
+  const handleShowLocalIdentityModal = address => {
+    return api
       .requestAddressIdentityModification(address)
       .toPromise()
   }
 
-  render() {
-    const {
-      activeIndex,
-      issueDetail,
-      panel,
-      panelProps,
-    } = this.state
-    const { bountySettings, displayMenuButton = false } = this.props
+  const noop = () => {}
 
-    const status = this.props.github ? this.props.github.status : STATUS.INITIAL
-
-    const tabs = getTabs({
-      repoCount: this.props.repos && this.props.repos.length,
-    })
-
-    const tabNames = tabs.map(t => t.name)
-    const TabComponent = tabs[activeIndex.tabIndex].body
-
-    const navigationItems = [
-      <AppTitle
-        key="title"
-        title="Projects"
-        displayMenuButton={displayMenuButton}
-      />,
-      ...(issueDetail ? ['Issue Detail'] : []),
-    ]
-
+  if (githubLoading) {
     return (
-      <Main assetsUrl={ASSETS_URL}>
-        <ApolloProvider client={this.props.client}>
-          <PanelContext.Provider value={this.setPanel}>
-            <IdentityProvider
-              onResolve={this.handleResolveLocalIdentity}
-              onShowLocalIdentityModal={this.handleShowLocalIdentityModal}
-            >
-              <AppView
-                style={{ height: '100%', overflowY: 'hidden' }}
-                appBar={
-                  <AppBar
-                    endContent={
-                      status === STATUS.AUTHENTICATED &&
-                      tabs[activeIndex.tabIndex].action
-                    }
-                    tabs={
-                      issueDetail ? null : (
-                        <TabBar
-                          items={tabNames}
-                          onChange={this.handleSelect}
-                          selected={activeIndex.tabIndex}
-                        />
-                      )
-                    }
-                  >
-                    <NavigationBar
-                      items={navigationItems}
-                      onBack={() => this.setIssueDetail(false)}
-                    />
-                  </AppBar>
-                }
-              >
-                <ErrorBoundary>
-                  <TabComponent
-                    onLogin={this.handleGithubSignIn}
-                    status={status}
-                    app={this.props.api}
-                    githubLoading={this.state.githubLoading}
-                    projects={
-                      this.props.repos !== undefined ? this.props.repos : []
-                    }
-                    bountyIssues={
-                      this.props.issues !== undefined ? this.props.issues : []
-                    }
-                    bountySettings={
-                      bountySettings !== undefined ? bountySettings : {}
-                    }
-                    tokens={
-                      this.props.tokens !== undefined ? this.props.tokens : []
-                    }
-                    activeIndex={activeIndex}
-                    changeActiveIndex={this.changeActiveIndex}
-                    setIssueDetail={this.setIssueDetail}
-                    issueDetail={issueDetail}
-                  />
-                </ErrorBoundary>
-              </AppView>
-              <PanelManager
-                activePanel={panel}
-                onClose={this.closePanel}
-                {...panelProps}
-              />
-            </IdentityProvider>
-          </PanelContext.Provider>
-        </ApolloProvider>
-      </Main>
+      <EmptyWrapper>
+        <LoadingAnimation />
+      </EmptyWrapper>
     )
+  } else if (github.status === STATUS.INITIAL) {
+    return <Unauthorized onLogin={handleGithubSignIn} />
+  } else if (github.status === STATUS.FAILED) {
+    return <Error action={noop} />
   }
-}
 
-const AppWrap = () => {
-  const { api, appState, displayMenuButton } = useAragonApi()
-  const client = initApolloClient(appState.github && appState.github.token)
+  // Tabs are not fixed
+  const tabs = [{ name: 'Overview', body: Overview }]
+  if (repos.length)
+    tabs.push({ name: 'Issues', body: Issues })
+  tabs.push({ name: 'Settings', body: Settings })
+
+  // Determine current tab details
+  const TabComponent = tabs[activeIndex.tabIndex].body
+  const TabAction = () => {
+    const { setupNewIssue, setupNewProject } = usePanelManagement()
+
+    switch (tabs[activeIndex.tabIndex].name) {
+    case 'Overview': return (
+      <Button mode="strong" icon={<IconPlus />} onClick={setupNewProject} label="New Project" />
+    )
+    case 'Issues': return (
+      <Button mode="strong" icon={<IconPlus />} onClick={setupNewIssue} label="New Issue" />
+    )
+    default: return null
+    }
+  }
+
   return (
-    <App
-      api={api}
-      client={client}
-      displayMenuButton={displayMenuButton}
-      {...appState}
-    />
+    <Main>
+      <ApolloProvider client={client}>
+        <PanelContext.Provider value={configurePanel}>
+          <IdentityProvider
+            onResolve={handleResolveLocalIdentity}
+            onShowLocalIdentityModal={handleShowLocalIdentityModal}
+          >
+            <Header
+              primary="Projects"
+              secondary={
+                <TabAction />
+              }
+            />
+
+            {issueDetail ?
+              <Bar>
+                <BackButton
+                  onClick={() => {setIssueDetail(false)}}
+                />
+              </Bar>
+              :
+              <Tabs
+                items={tabs.map(t => t.name)}
+                onChange={handleSelect}
+                selected={activeIndex.tabIndex}
+              />
+            }
+
+            <ErrorBoundary>
+              <TabComponent
+                status={github.status}
+                app={api}
+                projects={repos}
+                bountyIssues={issues}
+                bountySettings={bountySettings}
+                tokens={tokens}
+                activeIndex={activeIndex}
+                changeActiveIndex={changeActiveIndex}
+                setIssueDetail={setIssueDetail}
+                issueDetail={issueDetail}
+                onLogin={handleGithubSignIn}
+              />
+            </ErrorBoundary>
+
+            <PanelManager
+              activePanel={panel}
+              onClose={closePanel}
+              {...panelProps}
+            />
+          </IdentityProvider>
+        </PanelContext.Provider>
+      </ApolloProvider>
+    </Main>
   )
 }
 
-export default AppWrap
+export default App

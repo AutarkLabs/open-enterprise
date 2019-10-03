@@ -10,12 +10,13 @@ import useGithubAuth from '../../../hooks/useGithubAuth'
 import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '../../Panel'
 import { ipfsAdd } from '../../../utils/ipfs-helpers'
+import { issueShape } from '../../../utils/shapes.js'
 import standardBounties from '../../../abi/StandardBounties.json'
 
 class SubmitWork extends React.Component {
   static propTypes = {
     githubCurrentUser: PropTypes.object.isRequired,
-    issue: PropTypes.object.isRequired,
+    issue: issueShape,
     onSubmitWork: PropTypes.func.isRequired,
   }
 

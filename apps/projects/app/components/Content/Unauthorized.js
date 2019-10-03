@@ -1,25 +1,36 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { EmptyStateCard, Text } from '@aragon/ui'
-import { IconGitHub, EmptyWrapper } from '../Shared'
+import { Button, EmptyStateCard, Text, useTheme } from '@aragon/ui'
+import { EmptyWrapper } from '../Shared'
 
-const Unauthorized = ({ onLogin }) => (
-  <EmptyWrapper>
-    <EmptyStateCard
-      // style={{ width: '349px', height: '382px', whiteSpace: 'pre-wrap' }}
-      style={{ padding: '17px' }}
-      title="Projects = Aragon + GitHub *"
-      text="Sign in with GitHub to start managing your repositories as projects
-          within aragon."
-      icon={<IconGitHub height="58px" width="58px" />}
-      actionText="Sign in with GitHub"
-      onActivate={onLogin}
-    />
-    <Text size="xsmall" style={{ paddingTop: '10px' }}>
-      * Note: we plan to decouple from GitHub in the future!
-    </Text>
-  </EmptyWrapper>
-)
+import unauthorizedSvg from '../../assets/empty.svg'
+
+const illustration = <img src={unauthorizedSvg} alt="" height="160" />
+
+const Unauthorized = ({ onLogin }) => {
+  const theme = useTheme()
+
+  return (
+    <EmptyWrapper>
+      <EmptyStateCard
+        text={<div>
+          <Text css="display: block; margin-bottom: 8px">
+            No projects here
+          </Text>
+          <Text.Block size="xsmall" color={`${theme.surfaceContentSecondary}`}>
+          Link your repositories to incentivize work with bounties
+          </Text.Block>
+        </div>
+        }
+        illustration={illustration}
+        actionText="Connect to GitHub"
+        action={
+          <Button onClick={onLogin}>Connect to GitHub</Button>
+        }
+      />
+    </EmptyWrapper>
+  )
+}
 
 Unauthorized.propTypes = {
   onLogin: PropTypes.func.isRequired,
