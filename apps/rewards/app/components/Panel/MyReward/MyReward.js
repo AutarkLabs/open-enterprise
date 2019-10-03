@@ -51,6 +51,7 @@ class MyReward extends React.Component {
       rewardId,
       isMerit,
       referenceToken,
+      referenceTokenSymbol,
       rewardToken,
       startDate,
       endDate,
@@ -96,11 +97,11 @@ class MyReward extends React.Component {
           <Summary>
             {isMerit === true ? (
               <p>
-                You have been granted a one-time <SummaryBold>{displayCurrency(userRewardAmount)} {getSymbol(tokens,rewardToken)}</SummaryBold> reward, based on the <SummaryBold>{getSymbol(tokens, referenceToken)}</SummaryBold> you earned from <SummaryBold>{this.formatDate(startDate)}</SummaryBold> to <SummaryBold>{this.formatDate(endDate)}</SummaryBold>.
+                You have been granted a one-time <SummaryBold>{displayCurrency(userRewardAmount)} {referenceTokenSymbol}</SummaryBold> reward, based on the <SummaryBold>{referenceTokenSymbol}</SummaryBold> you earned from <SummaryBold>{this.formatDate(startDate)}</SummaryBold> to <SummaryBold>{this.formatDate(endDate)}</SummaryBold>.
               </p>
             ) : (
               <p>
-              A dividend, currently worth <SummaryBold>{displayCurrency(userRewardAmount)} {getSymbol(tokens,rewardToken)}</SummaryBold>, will be distributed to you based on your holdings of <SummaryBold>{getSymbol(tokens, referenceToken)}</SummaryBold> on <SummaryBold>{this.formatDate(endDate)}</SummaryBold>.
+              A dividend, currently worth <SummaryBold>{displayCurrency(userRewardAmount)} {referenceTokenSymbol}</SummaryBold>, will be distributed to you based on your holdings of <SummaryBold>{referenceTokenSymbol}</SummaryBold> on <SummaryBold>{this.formatDate(endDate)}</SummaryBold>.
               You will be able to claim it after <SummaryBold>{this.formatDate(endDate + blocksToMilliseconds(0,delay))}</SummaryBold>.
               </p>
             )}
