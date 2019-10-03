@@ -134,7 +134,7 @@ Issue.propTypes = {
     'review-work',
     'fulfilled',
   ]),
-  work: PropTypes.oneOf([ undefined, PropTypes.object ]),
+  work: PropTypes.object,
 }
 
 const StyledIssue = styled.div`
