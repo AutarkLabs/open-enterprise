@@ -364,7 +364,7 @@ contract('DotVoting', accounts => {
     it('execution throws if any action on script throws', async () => {
       let action = {
         to: executionTarget.address,
-        calldata: executionTarget.contract.setSignal.getData([], [], [], '', '', [],[],0,true,0)
+        calldata: executionTarget.contract.setSignal.getData([], [], [], '', '', [], [], 0, true, 0)
       }
       const script = encodeCallScript([action])
       const voteId = getCreatedVoteId(
