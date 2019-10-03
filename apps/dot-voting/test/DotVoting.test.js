@@ -55,11 +55,11 @@ contract('DotVoting', accounts => {
     ROLE_CREATE_VOTES = await appBase.ROLE_CREATE_VOTES()
     ROLE_MODIFY_CANDIDATE_SUPPORT = await appBase.ROLE_MODIFY_CANDIDATE_SUPPORT()
     ROLE_MODIFY_QUORUM = await appBase.ROLE_MODIFY_QUORUM()
-    
+
     /** Create the dao from the dao factory */
     const daoReceipt = await daoFact.newDAO(root)
     const dao = getContract('Kernel').at(getReceipt(daoReceipt, 'DeployDAO', 'dao'))
-    
+
     /** Setup permission to install app */
     const acl = getContract('ACL').at(await dao.acl())
     await acl.createPermission(root, dao.address, APP_MANAGER_ROLE, root)
@@ -67,7 +67,7 @@ contract('DotVoting', accounts => {
     /** Install an app instance to the dao */
     const appReceipt = await dao.newAppInstance('0x1234', appBase.address, '0x', false)
     app = getContract('DotVotingMock').at(getReceipt(appReceipt, 'NewAppProxy', 'proxy'))
-    
+
     /** Setup DotVoting permissions */
     await acl.createPermission(accounts[2], app.address, ROLE_MODIFY_CANDIDATE_SUPPORT, root)
     await acl.createPermission(accounts[2], app.address, ROLE_MODIFY_QUORUM, root)
@@ -197,7 +197,7 @@ contract('DotVoting', accounts => {
         )
       })
     })
-    
+
     it('cannot change quorum to be over 100%', async () => {
       return assertRevert(async () => {
         await app.setGlobalQuorum(
@@ -206,7 +206,7 @@ contract('DotVoting', accounts => {
         )
       })
     })
-    
+
     it('cannot change quorum to be less than candidate support', async () => {
       return assertRevert(async () => {
         await app.setGlobalQuorum(
@@ -215,7 +215,7 @@ contract('DotVoting', accounts => {
         )
       })
     })
-    
+
     it('can change quorum', async () => {
       let quorum = await app.setGlobalQuorum(
         minimumParticipation,
@@ -236,7 +236,8 @@ contract('DotVoting', accounts => {
           [ 0x61, 0x61, 0x61 ],
           [ 0x61, 0x61, 0x61 ],
           5,
-          false
+          false,
+          0
         )
       }
       const script = encodeCallScript([action])
@@ -257,7 +258,8 @@ contract('DotVoting', accounts => {
           [ '0x0', '0x0', '0x0' ],
           [ '0x0', '0x0', '0x0' ],
           5,
-          false
+          false,
+          0
         )
       }
       const script = encodeCallScript([action])
@@ -284,7 +286,8 @@ contract('DotVoting', accounts => {
           [ 1, 2, 3 ],
           [ 2, 4, 6 ],
           5,
-          true
+          true,
+          0
         )
       }
       const script = encodeCallScript([action])
@@ -337,7 +340,8 @@ contract('DotVoting', accounts => {
           [ 1, 2, 3 ],
           [ 2, 4, 6 ],
           5,
-          true
+          true,
+          0
         )
       }
 
@@ -360,7 +364,7 @@ contract('DotVoting', accounts => {
     it('execution throws if any action on script throws', async () => {
       let action = {
         to: executionTarget.address,
-        calldata: executionTarget.contract.setSignal.getData([], [], [], '', '', [],[],0,true)
+        calldata: executionTarget.contract.setSignal.getData([], [], [], '', '', [], [], 0, true, 0)
       }
       const script = encodeCallScript([action])
       const voteId = getCreatedVoteId(
@@ -389,7 +393,8 @@ contract('DotVoting', accounts => {
           [ '0x0', '0x0', '0x0' ],
           [ '0x0', '0x0', '0x0' ],
           5,
-          false
+          false,
+          0
         )
       }
       const script = encodeCallScript([action])
@@ -411,7 +416,8 @@ contract('DotVoting', accounts => {
           [ '0x0', '0x0', '0x0' ],
           [ '0x0', '0x0', '0x0' ],
           5,
-          false
+          false,
+          0
         )
       }
       const script = encodeCallScript([action])
@@ -432,7 +438,8 @@ contract('DotVoting', accounts => {
           [ '0x0', '0x0', '0x0' ],
           [ '0x0', '0x0', '0x0' ],
           5,
-          false
+          false,
+          0
         )
       }
       const script = encodeCallScript([action]) + '00'
@@ -453,7 +460,8 @@ contract('DotVoting', accounts => {
           [ '0x0', '0x0', '0x0' ],
           [ '0x0', '0x0', '0x0' ],
           5,
-          false
+          false,
+          0
         )
       }
       let script = encodeCallScript([action])
@@ -482,7 +490,8 @@ contract('DotVoting', accounts => {
             [ 0x1, 0x2, 0x3 ],
             [ 0x1, 0x2, 0x3 ],
             5,
-            false
+            false,
+            0
           )
         }
 
