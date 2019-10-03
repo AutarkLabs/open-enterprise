@@ -1,16 +1,15 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 
-import { useNetwork } from '../../api-react'
 import {
-  Badge,
   ContextMenu,
   ContextMenuItem,
   DataView,
+  Tag,
   Text,
 } from '@aragon/ui'
 
-import { LocalIdentityBadge } from '../../../../../shared/identity'
+import LocalIdentityBadge from '../LocalIdentityBadge/LocalIdentityBadge'
 import { IconDelete } from '../../../../../shared/ui'
 
 // TODO: colors taken directly from Invision
@@ -23,7 +22,6 @@ const ENTITY_TYPES = [
 const entitiesSort = (a, b) => a.data.name.toUpperCase() > b.data.name.toUpperCase() ? 1 : -1
 
 const Entities = ({ entities, onRemoveEntity }) => {
-  const network = useNetwork()
   const removeEntity = address => () => onRemoveEntity(address)
 
   return (
@@ -47,18 +45,16 @@ const Entities = ({ entities, onRemoveEntity }) => {
           </Text>,
           <LocalIdentityBadge
             key={entryAddress}
-            networkType={network && network.type}
             entity={entryAddress}
-            shorten={true}
           />,
-          <Badge
+          <Tag
             key={entryAddress}
+            mode="identifier"
             foreground={typeRow.fg}
             background={typeRow.bg}
-            css="text-align: right"
           >
             {typeRow.name}
-          </Badge>
+          </Tag>
         ]
         return values
       }}

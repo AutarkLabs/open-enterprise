@@ -19,6 +19,8 @@ import "./IForwarder.sol";
   *     results must be passed out of the contract. It provides options for the voting contract
   *     to then act upon and helpers to parce and encode evmScripts from/to options.
   */
+
+
 contract ADynamicForwarder is IForwarder {
     using ScriptHelpers for bytes;
     using SafeMath for uint256;
@@ -38,8 +40,6 @@ contract ADynamicForwarder is IForwarder {
         string description;
         uint256 infoStringLength;
         bytes executionScript;
-        uint256 scriptOffset;
-        uint256 scriptRemainder;
         bool executed;
         bytes32[] optionKeys;
         mapping (bytes32 => OptionState) options;
@@ -110,6 +110,8 @@ contract ADynamicForwarder is IForwarder {
         OptionState storage option = actionInstance.options[cKey];
         // Make sure that this option has not already been added
         require(option.added == false); // solium-disable-line error-reason
+        // ensure there is no potential for truncation when keys.length gets converted from uint256 to uint8
+        require(keys.length < uint8(-1)); // solium-disable-line error-reason
         // Set all data for the option
         option.added = true;
         option.keyArrayIndex = uint8(keys.length);
@@ -119,7 +121,6 @@ contract ADynamicForwarder is IForwarder {
         // double check
         optionAddresses[cKey] = _description;
         keys.push(cKey);
-        actionInstance.optionKeys = keys;
         actionInstance.infoStringLength += bytes(_metadata).length;
         emit AddOption(_actionId, optionAddresses[cKey], actionInstance.optionKeys.length);
     }
@@ -214,16 +215,15 @@ contract ADynamicForwarder is IForwarder {
     }
 
     /**
-    * @dev This function needs to work with strings instead of addresses but it doesn't
-    *      This fits our current use case better and string manipulation is harder
-    *      since there's more like... dynamic-ness.
-            //TODO Update the above dev info
+    * @dev This function parses the option quantity
+    *      and passes it into _iterateExtraction to parse the option details
+    *
     */
-    function _extractOptions(bytes _executionScript, uint256 _actionId) internal returns(uint256 currentOffset, uint256 calldataLength) {
+    function _extractOptions(bytes _executionScript, uint256 _actionId) internal {
         Action storage actionInstance = actions[_actionId];
         // in order to find out the total length of our call data we take the 3rd
         // relevent byte chunk (after the specid and the target address)
-        calldataLength = uint256(_executionScript.uint32At(0x4 + 0x14));
+        uint256 calldataLength = uint256(_executionScript.uint32At(0x4 + 0x14));
         // Since the calldataLength is 4 bytes the start offset is
         uint256 startOffset = 0x04 + 0x14 + 0x04;
         // The first parameter is located at a byte depth indicated by the first
@@ -233,7 +233,7 @@ contract ADynamicForwarder is IForwarder {
         // note:function signature length (0x04) added in both contexts: grabbing the offset value and the outer offset calculation
         uint256 firstParamOffset = _goToParamOffset(OPTION_ADDR_PARAM_LOC, _executionScript);
         uint256 fifthParamOffset = _goToParamOffset(DESCRIPTION_PARAM_LOC, _executionScript);
-        currentOffset = firstParamOffset;
+        uint256 currentOffset = firstParamOffset;
         // compute end of script / next location and ensure there's no
         // shenanigans
         require(startOffset + calldataLength == _executionScript.length); // solium-disable-line error-reason
@@ -251,10 +251,10 @@ contract ADynamicForwarder is IForwarder {
         // In order to do this we move the offset one word for the length of the param
         // and we move the offset one word for each param.
         //currentOffset = currentOffset.add(_executionScript.uint256At(currentOffset).mul(0x20));
-        currentOffset = fifthParamOffset;
+        //currentOffset = fifthParamOffset;
         // The offset represents the data we've already accounted for; the rest is what will later
         // need to be copied over.
-        calldataLength = calldataLength.sub(currentOffset);
+        //calldataLength = calldataLength.sub(currentOffset);
     }
 
     function addAddressesAndActions(
@@ -454,7 +454,7 @@ contract ADynamicForwarder is IForwarder {
         script.copy(origExecScript.getPtr() + 32,0, 64);
         // copy the calldatalength stored in memory into the new script
         memcpyshort((script.getPtr() + 56), callDataLengthMem.getPtr() + 60, 4);
-        // calculate and copy in the locations for all dynami elements
+        // calculate and copy in the locations for all dynamic elements
         addDynamicElements(script, dynamicOffset, optionsLength, infoStrLength, desStrLength);
         // copy over remaining static parameters
         script.copy(origExecScript.getPtr() + 288, 256, dynamicOffset - 256);
@@ -484,16 +484,10 @@ contract ADynamicForwarder is IForwarder {
         Action storage actionInstance = actions[actionId];
         actionInstance.executionScript = _executionScript;
         actionInstance.infoStringLength = 0;
-        actionInstance.scriptOffset = 0;
-        actionInstance.scriptRemainder = 0;
         // Spec ID must be 1
         require(_executionScript.uint32At(0x0) == 1); // solium-disable-line error-reason
         if (_executionScript.length != 4) {
-            uint256 scriptOffset;
-            uint256 scriptRemainder;
-            (scriptOffset, scriptRemainder) = _extractOptions(_executionScript, actionId);
-            actionInstance.scriptOffset = scriptOffset;
-            actionInstance.scriptRemainder = scriptRemainder;
+            _extractOptions(_executionScript, actionId);
         }
         // First Static Parameter in script parsed for the externalId
         actionInstance.externalId = _goToParamOffset(TOTAL_DYNAMIC_PARAMS + 1, _executionScript) - 0x20;

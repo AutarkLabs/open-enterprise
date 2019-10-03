@@ -32,7 +32,7 @@
   "dependencies": {
     "@aragon/api": "AutarkLabs/aragon-api",
     "@aragon/api-react": "2.0.0-beta.6",
-    "@aragon/ui": "1.0.0-alpha.19",
+    "@aragon/ui": "^1.0.0-alpha.26",
     "axios": "^0.18.0",
     "ipfs-http-client": "29.1.0",
     "prop-types": "^15.7.2",
@@ -94,5 +94,11 @@
       "stylelint --fix",
       "git add"
     ]
-  }
+  },
+  "browserslist": [
+    ">2%",
+    "last 1 edge versions",
+    "not ie > 0",
+    "not op_mini all"
+  ]
 }
