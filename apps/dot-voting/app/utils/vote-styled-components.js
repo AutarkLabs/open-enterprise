@@ -9,8 +9,8 @@ const badgeDetails = {
   'curation': { text: 'Issue Curation', icon: iconProjects },
   'informational': { text: 'Informational', icon: iconDotVoting },
 }
-
-export const GenerateBadge = ({ type }) => (
+// TODO: remove default type once we now it is arriving, or making a generic type
+export const GenerateBadge = ({ type = 'allocation' }) => (
   <div css={`
     display: inline-flex;
     font-weight: 300;
@@ -26,6 +26,7 @@ export const GenerateBadge = ({ type }) => (
   </div>
 )
 
+// TODO: re-add isRequired once we know it will arrive
 GenerateBadge.propTypes = {
-  type: PropTypes.oneOf(Object.keys(badgeDetails)).isRequired,
+  type: PropTypes.oneOf(Object.keys(badgeDetails)),
 }

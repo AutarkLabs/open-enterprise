@@ -2,67 +2,95 @@ import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 
 import { useAragonApi } from '../../api-react'
-import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
+import { Button, Header, IconPlus, Modal, SidePanel } from '@aragon/ui'
 
 import { IdentityProvider } from '../../../../../shared/identity'
 import { Empty } from '../Card'
 import { NewAllocation, NewBudget } from '../Panel'
-import { Accounts, Payouts } from '.'
-
-const ASSETS_URL = './aragon-ui'
-
-const nameSorter = (a, b) => a.data.name.toUpperCase() > b.data.name.toUpperCase() ? 1 : -1
+import { AllocationsHistory, Budgets } from '.'
 
 const App = () => {
   const [ panel, setPanel ] = useState(null)
+  const [ modal, setModal ] = useState({ visible: false, budgetId: null })
   const { api, appState } = useAragonApi()
-  const { accounts = [], balances = [], entries = [], payouts = [] } = appState
+  const { allocations = [], balances = [], budgets = [], tokens = [] } = appState
 
-  const onCreateBudget = ({ description }) => {
-    api.newAccount(description).toPromise()
+  const onCreateBudget = ({ amount, name, token }) => {
+    console.log('amount: ', amount)
+    api
+      .newAccount(
+        name,             // _metadata
+        token.address,    // _token
+        true,             // hasBudget
+        amount
+      )
+      .toPromise()
     closePanel()
   }
 
-  const onSubmitAllocation = ({ addresses, description, payoutId, recurring, period, balance, tokenAddress }) => {
+  const onSubmitAllocation = ({
+    addresses,
+    description,
+    budgetId,
+    recurring,
+    period,
+    balance,
+    tokenAddress,
+  }) => {
     const emptyIntArray = new Array(addresses.length).fill(0)
+    console.log('budgetId: ', budgetId)
     api.setDistribution(
       addresses,
-      emptyIntArray, //[]
-      emptyIntArray, //[]
-      '',
+      emptyIntArray, // unused
+      emptyIntArray, // unused
+      '', // unused
       description,
-      emptyIntArray, // Issue with bytes32 handling
-      emptyIntArray, // Issue with bytes32 handling
-      payoutId,
-      recurring,
+      emptyIntArray, // unused
+      emptyIntArray, // unused
+      '1', // account or allocation id...budgetId
+      '1', // recurrences, 1 for now
+      '0',//Math.floor(new Date().getTime()/1000), // startTime, now for now
       period,
-      String(balance),
-      tokenAddress
+      String(balance), // amount
+      // tokenAddress -> token used, now deprecated
     ).toPromise()
     closePanel()
+
+    // address[] _candidateAddresses,
+    // uint256[] _supports,
+    // uint256[] /*unused_infoIndices*/,
+    // string /*unused_candidateInfo*/,
+    // string _description,
+    // uint256[] /*unused_level 1 ID - converted to bytes32*/,
+    // uint256[] /*unused_level 2 ID - converted to bytes32*/,
+    // uint64 _accountId,
+    // uint64 _recurrences,
+    // uint64 _startTime,
+    // uint64 _period,
+    // uint256 _amount
   }
 
+  const onSubmitDeactivate = id => {
+    console.log(`deactivating budget # ${id}...`)
+    //api.deactivateBudget(id)
+    closeModal()
+  }
+
+  // TODO: Fix this
+  // eslint-disable-next-line
   const onExecutePayout = (accountId, payoutId) => {
     api.runPayout(accountId, payoutId).toPromise()
   }
 
   const onNewBudget = () => {
+    const fundsLimit = '300000' // remove this!
     setPanel({
       content: NewBudget,
-      data: { heading: 'New budget', onCreateBudget }
+      data: { heading: 'New budget', onCreateBudget, fundsLimit, tokens },
     })
   }
 
-
   const onNewAllocation = (address, description, id, balance) => {
-    // The whole entries vs entities thing needs to be fixed; these are too close
-    //const userEntity = {addr: '0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb', data: {entryAddress: '0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb', name: 'Bob', entryType: 'user'}}
-    const promptEntity = {
-      addr: 0x0,
-      data: { entryAddress: 0x0, name: 'Select an entry', entryType: 'prompt' },
-    }
-
-    const entities = [promptEntity].concat(entries.sort(nameSorter))
     setPanel({
       content: NewAllocation,
       data: {
@@ -71,72 +99,138 @@ const App = () => {
         address,
         balance,
         balances,
-        entities,
         id,
         onSubmitAllocation,
       },
     })
   }
 
+  const onEdit = id => {
+    const fundsLimit = '300000' // remove this!
+    const editingBudget = budgets.find(budget => budget.budgetId === id)
+    setPanel({
+      content: NewBudget,
+      data: {
+        heading: 'Edit budget',
+        onCreateBudget,
+        editingBudget,
+        fundsLimit,
+      },
+    })
+  }
+
+  const onDeactivate = id => {
+    setModal({ visible: true, budgetId: id })
+  }
+
+  const onReactivate = id => {
+    console.log(`reactivating budget # ${id}...`)
+    //api.reactivateBudget(id)
+  }
+
   const closePanel = () => {
     setPanel(null)
   }
 
-  const handleResolveLocalIdentity = address => api.resolveAddressIdentity(address).toPromise()
+  const closeModal = () => {
+    setModal({ visible: false, budgetId: null })
+  }
 
-  const handleShowLocalIdentityModal = address => api
-    .requestAddressIdentityModification(address)
-    .toPromise()
+  const handleResolveLocalIdentity = address =>
+    api.resolveAddressIdentity(address).toPromise()
+
+  const handleShowLocalIdentityModal = address =>
+    api.requestAddressIdentityModification(address).toPromise()
 
   const PanelContent = panel ? panel.content : null
 
   const Wrap = ({ children }) => (
-    <Main assetsUrl={ASSETS_URL}>
-      <IdentityProvider
-        onResolve={handleResolveLocalIdentity}
-        onShowLocalIdentityModal={handleShowLocalIdentityModal}>
-        { children }
-        <Payouts
-          payouts={payouts}
-          executePayout={onExecutePayout}
-          tokens={balances}
-        />
-
-        <SidePanel
-          title={(panel && panel.data.heading) || ''}
-          opened={panel !== null}
-          onClose={closePanel}
-        >
-          {panel && <PanelContent {...panel.data} />}
-        </SidePanel>
-      </IdentityProvider>
-    </Main>
+    <IdentityProvider
+      onResolve={handleResolveLocalIdentity}
+      onShowLocalIdentityModal={handleShowLocalIdentityModal}
+    >
+      {children}
+      <SidePanel
+        title={(panel && panel.data.heading) || ''}
+        opened={panel !== null}
+        onClose={closePanel}
+      >
+        {panel && <PanelContent {...panel.data} />}
+      </SidePanel>
+    </IdentityProvider>
   )
 
   Wrap.propTypes = {
     children: PropTypes.node.isRequired,
   }
 
-  if (accounts.length === 0) {
-    return <Wrap><Empty action={onNewBudget} /></Wrap>
+  if (budgets.length === 0) {
+    return (
+      <Wrap>
+        <Empty action={onNewBudget} />
+      </Wrap>
+    )
   }
 
   return (
-    // TODO: Profile App with React.StrictMode, perf and why-did-you-update, apply memoization
     <Wrap>
       <Header
         primary="Allocations"
         secondary={
-          <Button mode="strong" icon={<IconPlus />} onClick={onNewBudget} label="New budget" />
+          <Button
+            mode="strong"
+            icon={<IconPlus />}
+            onClick={onNewBudget}
+            label="New budget"
+          />
         }
       />
-      <Accounts
-        accounts={accounts}
+      <Budgets
+        budgets={budgets}
         onNewAllocation={onNewAllocation}
+        onEdit={onEdit}
+        onDeactivate={onDeactivate}
+        onReactivate={onReactivate}
+      />
+      <AllocationsHistory allocations={allocations} />
+      <DeactivateModal
+        state={modal}
+        onClose={closeModal}
+        onSubmit={onSubmitDeactivate}
       />
     </Wrap>
   )
 }
 
-// eslint-disable-next-line import/no-unused-modules
+const DeactivateModal = ({ state, onClose, onSubmit }) => {
+  const deactivate = () => {
+    onSubmit(state.budgetId)
+  }
+  return (
+    <Modal visible={state.visible} onClose={onClose}>
+      <div css={{ fontSize: '26px' }}>Deactivate budget</div>
+      <div css={{ marginTop: '32px' }}>
+        Deactivating this budget will immediately disable it once the decision
+        is enacted. You may choose to reactivate this budget at any time.
+      </div>
+      <div
+        css={{
+          marginTop: '48px',
+          display: 'flex',
+          justifyContent: 'flex-end',
+        }}
+      >
+        <Button label="Cancel" css={{ marginRight: '8px' }} onClick={onClose} />
+        <Button label="Deactivate" mode="negative" onClick={deactivate} />
+      </div>
+    </Modal>
+  )
+}
+
+DeactivateModal.propTypes = {
+  state: PropTypes.object.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired,
+}
+
 export default App

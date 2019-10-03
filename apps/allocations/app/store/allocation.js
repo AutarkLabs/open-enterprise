@@ -1,4 +1,4 @@
-// import { combineLatest } from 'rxjs'
+import { combineLatest } from 'rxjs'
 import { first, map } from 'rxjs/operators'
 
 import { app } from '../../../../shared/store-utils'
@@ -7,13 +7,13 @@ import { app } from '../../../../shared/store-utils'
 /*    Allocations event handlers      */
 /// /////////////////////////////////////
 
-export const updateAccounts = async (accounts, id) => {
-  const newAccounts = Array.from(accounts || [])
+export const updateAllocations = async (allocations, { accountId, payoutId }) => {
+  const newAllocations = Array.from(allocations || [])
 
-  if (!newAccounts.some(a => a.accountId === id)) {
-    newAccounts.push(await getAccount(id))
+  if (!newAllocations.some(a => a.id === payoutId && a.accountId === accountId)) {
+    newAllocations.push(await getAllocation({ accountId, payoutId }))
   }
-  return newAccounts
+  return newAllocations
 }
 
 // const onNewPayout = async (payouts = [], { accountId, payoutId }) => {
@@ -65,21 +65,34 @@ export const updateAccounts = async (accounts, id) => {
 /*    Allocations helper functions    */
 /// /////////////////////////////////////
 
-const getAccount = id => {
-  return app
-    .call('getAccount', id)
+const getAllocation = async ({ accountId, payoutId }) => {
+  return combineLatest(
+    app.call('getAccount', accountId),
+    app.call('getPayout', accountId, payoutId),
+    app.call('getPayoutDescription', accountId, payoutId)
+  )
     .pipe(
       first(),
-      map(({ budget, hasBudget, metadata, token }) => {
-        console.log('accountId', id)
-        return {
+      map(({
+        amount,
+        description,
+        distSet,
+        period,
+        recurrences,
+        startTime,
+        token,
+      }) => ({
         // transform response data for the frontend
-          hasBudget,
-          id, // note the id is added along with the other data
-          token,
-          amount: budget,
-          name: metadata,
-        }})
+        accountId,
+        amount,
+        description,
+        distSet,
+        payoutId,
+        period,
+        recurrences,
+        startTime,
+        token,
+      }))
     )
     .toPromise()
 }
