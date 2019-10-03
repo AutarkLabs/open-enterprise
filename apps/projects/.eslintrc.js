@@ -42,7 +42,9 @@ module.exports = {
       {
         unusedExports: true,
         missingExports: true,
-        ignoreExports: [],
+        ignoreExports: [
+          '**/test/*'
+        ],
       }
     ],
     "no-undef": "error",

@@ -63,6 +63,11 @@ export const getIssuesGQL = repos => {
             id
             title
             body
+            author {
+              login
+              avatarUrl
+              url
+            }
             createdAt
             repository {
               id

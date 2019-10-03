@@ -11,11 +11,12 @@ import useGithubAuth from '../../../hooks/useGithubAuth'
 import { usePanelManagement } from '..'
 import { ipfsAdd } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
+import { issueShape } from '../../../utils/shapes.js'
 
 class RequestAssignment extends React.Component {
   static propTypes = {
     githubCurrentUser: PropTypes.object.isRequired,
-    issue: PropTypes.object.isRequired,
+    issue: issueShape,
     onRequestAssignment: PropTypes.func.isRequired,
   }
 
@@ -151,7 +152,7 @@ const onRequestAssignment = ({ closePanel, requestAssignment }) => async (
 ) => {
   closePanel()
   const hash = await ipfsAdd(state)
-  requestAssignment(toHex(issue.repoId), issue.number, hash)
+  requestAssignment(toHex(issue.repoId), issue.number, hash).toPromise()
 }
 
 // TODO: move entire component to functional component
@@ -165,7 +166,7 @@ const RequestAssignmentWrap = props => {
       githubCurrentUser={githubCurrentUser}
       onRequestAssignment={onRequestAssignment({
         closePanel,
-        requestAssignment: api.requestAssignment,
+        requestAssignment: api.requestAssignment
       })}
       {...props}
     />

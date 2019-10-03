@@ -1,5 +1,7 @@
+/* eslint-disable react/prop-types */
+// issues are validated using correct shape - eslint problem?
+import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import React from 'react'
 import styled from 'styled-components'
 import { addHours } from 'date-fns'
 import BigNumber from 'bignumber.js'
@@ -9,66 +11,332 @@ import useGithubAuth from '../../../hooks/useGithubAuth'
 import { usePanelManagement } from '..'
 import { computeIpfsString } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
+import { IconOpen, IconClose } from '../../../assets'
 
 import {
+  Box,
   Text,
   TextInput,
   DropDown,
-  theme,
+  useTheme,
   Badge,
-  Table,
-  TableRow,
-  TableCell,
+  Tag,
+  GU,
   Button,
   Info,
 } from '@aragon/ui'
 
 import { Form, FormField, FieldTitle, DescriptionInput } from '../../Form'
 import { DateInput } from '../../../../../../shared/ui'
-import { IconBigArrowDown, IconBigArrowUp } from '../../Shared'
 import { Mutation } from 'react-apollo'
 import { COMMENT } from '../../../utils/gql-queries'
+import { issueShape } from '../../../utils/shapes.js'
 
-const bountySlots = [ '1', '2', '3' ]
+const BountyUpdate = ({
+  issue,
+  bounties,
+  bountySettings,
+  submitBounties,
+  description,
+  generateHoursChange,
+  tokenDetails,
+  generateExpChange,
+  generateDeadlineChange,
+}) => {
+  const expLevels = bountySettings.expLvls
 
-class FundIssues extends React.Component {
-  static propTypes = {
-    closePanel: PropTypes.func.isRequired,
-    description: PropTypes.string,
-    /** array of issues to allocate bounties on */
-    issues: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.string,
-        deadline: PropTypes.string,
-        exp: PropTypes.number,
-        hours: PropTypes.number,
-        level: PropTypes.string,
-        title: PropTypes.string,
-        fundingHistory: PropTypes.array,
-        number: PropTypes.number,
-        repo: PropTypes.string,
-        repoId: PropTypes.string,
-      })
-    ),
-    /** base rate in pennies */
-    baseRate: PropTypes.number,
-    tokens: PropTypes.array.isRequired,
-    mode: PropTypes.oneOf([ 'new', 'update' ]).isRequired,
-    onSubmit: PropTypes.func.isRequired,
-    bountySettings: PropTypes.object.isRequired,
-    githubCurrentUser: PropTypes.object.isRequired,
-  }
+  return (
+    <div css={`margin: ${2 * GU}px 0`}>
+      <Info.Action title="Warning" style={{ marginBottom: '16px' }}>
+        <p style={{ marginTop: '10px' }}>
+          The updates you specify will overwrite the existing settings for the bounty.
+        </p>
+      </Info.Action>
 
-  descriptionChange = e => {
-    this.setState({ description: e.target.value })
-  }
+      <Form
+        onSubmit={submitBounties}
+        description={description}
+        submitText="Submit Update"
+      >
+        <FormField
+          label="Issue"
+          input={
+            <React.Fragment>
+              <Text.Block size="xxlarge" style={{ marginBottom: '16px' }}>
+                {issue.title}
+              </Text.Block>
+              <UpdateRow>
+                <FormField
+                  label="Estimated Hours"
+                  input={
+                    <HoursInput
+                      width="100%"
+                      name="hours"
+                      value={bounties[issue.id]['hours']}
+                      onChange={generateHoursChange(issue.id)}
+                    />
+                  }
+                />
+                {bounties[issue.id]['hours'] > 0 && (
+                  <Badge style={{ padding: '6px', marginTop: '14px', marginLeft: '6px' }}>
+                    <Text size="large">
+                      {bounties[issue.id]['size'].toFixed(2)}{' '}
+                      {tokenDetails.symbol}
+                    </Text>
+                  </Badge>
+                )}
 
-  constructor(props) {
-    super(props)
+                <FormField
+                  label="Experience level"
+                  input={
+                    <DropDown
+                      items={expLevels.map(exp => exp.name)}
+                      onChange={generateExpChange(issue.id)}
+                      active={bounties[issue.id]['exp']}
+                    />
+                  }
+                />
+              </UpdateRow>
+
+              <UpdateRow>
+                <FormField
+                  label="Deadline"
+                  input={
+                    <DateInput
+                      width="120px"
+                      name='deadline'
+                      value={bounties[issue.id]['deadline']}
+                      onChange={generateDeadlineChange(issue.id)}
+                    />
+                  }
+                />
+                {/* second child needed - should be Slots in the future */}
+                <div></div>
+              </UpdateRow>
+            </React.Fragment>
+          }
+        />
+      </Form>
+    </div>
+  )
+}
+BountyUpdate.propTypes = {
+  issue: issueShape,
+  bounties: PropTypes.object.isRequired,
+  bountySettings: PropTypes.object.isRequired,
+  submitBounties: PropTypes.func.isRequired,
+  description: PropTypes.string.isRequired,
+  generateHoursChange: PropTypes.func.isRequired,
+  tokenDetails: PropTypes.object.isRequired,
+  generateExpChange: PropTypes.func.isRequired,
+  generateDeadlineChange: PropTypes.func.isRequired,
+}
+
+const FundForm = ({
+  bountySettings,
+  issues,
+  bounties,
+  submitBounties,
+  description,
+  totalSize,
+  tokenDetails,
+  descriptionChange,
+  generateArrowChange,
+  generateHoursChange,
+  generateExpChange,
+  generateDeadlineChange,
+}) => {
+  const expLevels = bountySettings.expLvls
+  const theme = useTheme()
+
+  return (
+    <div css={`margin: ${2 * GU}px 0`}>
+      <Mutation mutation={COMMENT}>
+        {(post, result) => (
+          <Form
+            onSubmit={() => submitBounties(post, result)}
+            description={description}
+            submitText={issues.length > 1 ? 'Fund Issues' : 'Fund Issue'}
+            submitDisabled={totalSize > tokenDetails.balance}
+          >
+            <FormField
+              label="Description"
+              required
+              input={
+                <DescriptionInput
+                  rows="3"
+                  name="description"
+                  style={{ resize: 'none' }}
+                  onChange={descriptionChange}
+                  value={description}
+                  wide
+                />
+              }
+            />
+            <FormField
+              label="Issues"
+              hint="Enter the estimated hours per issue"
+              required
+              input={
+                <React.Fragment>
+                  {issues.map(issue => (
+                    <Box key={issue.id} padding={0}>
+                      <div css={`
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        grid-template-rows: auto;
+                        grid-template-areas:
+                          "title title"
+                          "hours exp"
+                          "deadline deadline";
+                        grid-gap: 12px;
+                        align-items: stretch;
+                      `}>
+                        <div css={`
+                          grid-area: title;
+                          padding: ${2 * GU}px ${2 * GU}px 0 ${2 * GU}px;
+                          display: flex;
+                          justify-content: space-between;
+                        `}>
+
+                          <DetailsArrow onClick={generateArrowChange(issue.id)}>
+                            {bounties[issue.id]['detailsOpen'] ? (
+                              <IconClose />
+                            ) : (
+                              <IconOpen />
+                            )}
+                          </DetailsArrow>
+
+                          <Text size="large" weight="bold" css={`
+                              width: 100%;
+                              display: block;
+                              white-space: nowrap;
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                            `}>
+                            {issue.title}
+                          </Text>
+
+                          {issue.id in bounties &&
+                               bounties[issue.id]['hours'] > 0 && (
+                            <Tag css="padding: 10px; margin-left: 10px; width: auto">
+                              {bounties[issue.id]['size'].toFixed(2) + ' ' + tokenDetails.symbol}
+                            </Tag>
+
+                          )}
+                        </div>
+
+                        <div css={`grid-area: hours; padding-left: ${2 * GU}px`}>
+                          <FieldTitle>Estimated Hours</FieldTitle>
+                          <HoursInput
+                            name="hours"
+                            value={bounties[issue.id]['hours']}
+                            onChange={generateHoursChange(issue.id)}
+                            wide
+                          />
+                        </div>
+
+                        <div css={`grid-area: exp; padding-right: ${2 * GU}px`}>
+                          <FormField
+                            label="Experience level"
+                            input={
+                              <DropDown
+                                items={expLevels.map(exp => exp.name)}
+                                onChange={generateExpChange(issue.id)}
+                                selected={bounties[issue.id]['exp']}
+                                wide
+                              />
+                            }
+                          />
+
+                        </div>
+
+                        <div css={`
+                          grid-area: deadline;
+                          background: ${theme.background};
+                          border-top: 1px solid ${theme.border};
+                          padding: 0 ${2 * GU}px;
+                          display: none;
+                          display: ${bounties[issue.id]['detailsOpen'] ? 'block' : 'none'};
+                        `}>
+                          <FormField
+                            label="Deadline"
+                            input={
+                              <DateInput
+                                name='deadline'
+                                value={bounties[issue.id]['deadline']}
+                                onChange={generateDeadlineChange(issue.id)}
+                                width="100%"
+                              />
+                            }
+                          />
+                        </div>
+                      </div>
+                    </Box>
+                  ))}
+                </React.Fragment>
+              }
+            />
+          </Form>
+        )}
+      </Mutation>
+      {
+        (
+          totalSize > tokenDetails.balance
+        ) ? (
+            <div>
+              <br />
+              <Info.Action title="Insufficient Token Balance">
+                Please either mint more tokens or stake fewer tokens against these issues.
+              </Info.Action>
+            </div>
+          ) : null
+      }
+    </div>
+  )
+}
+FundForm.propTypes = {
+  bountySettings: PropTypes.object.isRequired,
+  issues: PropTypes.arrayOf(issueShape),
+  bounties: PropTypes.object.isRequired,
+  submitBounties: PropTypes.func.isRequired,
+  description: PropTypes.string.isRequired,
+  totalSize: PropTypes.number.isRequired,
+  tokenDetails: PropTypes.object.isRequired,
+  descriptionChange: PropTypes.func.isRequired,
+  generateArrowChange: PropTypes.func.isRequired,
+  generateHoursChange: PropTypes.func.isRequired,
+  generateExpChange: PropTypes.func.isRequired,
+  generateDeadlineChange: PropTypes.func.isRequired,
+}
+
+const FundIssues = ({ issues, mode }) => {
+  const githubCurrentUser = useGithubAuth()
+  const theme = useTheme()
+  const {
+    api,
+    appState: { bountySettings, tokens },
+  } = useAragonApi()
+  const { closePanel } = usePanelManagement()
+  const [ description, setDescription ] = useState('')
+  const [ totalSize, setTotalSize ] = useState(0)
+  const [ bounties, setBounties ] = useState({})
+  const [ tokenDetails, setTokenDetails ] = useState({})
+
+  useEffect(() => {
+    setBounties(initBounties())
+
+    tokens.forEach(token =>
+      token.addr === bountySettings.bountyCurrency && setTokenDetails(token))
+  }, [ bountySettings, tokens ]
+  )
+
+  const descriptionChange = e => setDescription(e.target.value)
+
+  const initBounties = () => {
     let bounties = {}
-
-    if (this.props.mode === 'update') {
-      const issue = this.props.issues[0]
+    if (mode === 'update') {
+      const issue = issues[0]
       bounties[issue.id] = {
         repo: issue.repo,
         number: issue.number,
@@ -80,16 +348,16 @@ class FundIssues extends React.Component {
         slotsIndex: 0,
         size: 0,
       }
-      bounties[issue.id].size = this.calculateSize(bounties[issue.id])
+      bounties[issue.id].size = calculateSize(bounties[issue.id])
     } else {
-      this.props.issues.map(issue => {
+      issues.map(issue => {
         bounties[issue.id] = {
           repo: issue.repo,
           number: issue.number,
           repoId: issue.repoId,
           hours: 0,
           exp: 0,
-          deadline: addHours(new Date(), this.props.bountySettings.bountyDeadline),
+          deadline: addHours(new Date(), bountySettings.bountyDeadline),
           slots: 1,
           slotsIndex: 0,
           detailsOpen: 0,
@@ -97,480 +365,220 @@ class FundIssues extends React.Component {
         }
       })
     }
-
-    const bountyAddr = this.props.bountySettings.bountyCurrency
-    let tokenSymbol, tokenDecimals, tokenBalance
-    this.props.tokens.forEach(
-      token => {
-        if(token.addr === bountyAddr) {
-          tokenDecimals = token.decimals
-          tokenSymbol = token.symbol
-          tokenBalance = token.balance
-        }
-      }
-    )
-    this.state = {
-      description: '',
-      bounties,
-      tokenBalance,
-      tokenDecimals,
-      tokenSymbol,
-      totalSize: 0,
-    }
+    return bounties
   }
 
-  calculateSize = issue => {
-    const expLevels = this.props.bountySettings.expLvls
+  const calculateSize = issue => {
+    const expLevels = bountySettings.expLvls
     return issue['hours'] *
-      this.props.bountySettings.baseRate *
+      bountySettings.baseRate *
       expLevels[issue['exp']].mul
   }
 
-  configBounty = (id, key, val) => {
-    const { bounties } = this.state
+  const configBounty = (id, key, val) => {
+    const newBounties = { ...bounties }
     // arrow clicked - it's simple value reversal case, 1 indicates details are open, 0 - closed
     if (key === 'detailsOpen') {
-      bounties[id][key] = 1 - bounties[id][key]
+      newBounties[id][key] = 1 - newBounties[id][key]
     } else {
-      bounties[id][key] = val
-      if (key === 'slotsIndex') {
-        // slotsIndex governs DropDown. real value is in 'slots'
-        bounties[id]['slots'] = bountySlots[val]
-      }
+      newBounties[id][key] = val
     }
     // just do it, recalculate size
-    bounties[id]['size'] = this.calculateSize(bounties[id])
-    const bountyValues = Object.values(this.state.bounties)
+    newBounties[id]['size'] = calculateSize(newBounties[id])
+    const bountyValues = Object.values(newBounties)
     const bountyTotal = bountyValues.reduce((acc,val) => BigNumber(val.size).plus(acc), 0)
-      .times(10 ** this.state.tokenDecimals)
+      .times(10 ** tokenDetails.decimals)
       .toNumber()
-    this.setState({ bounties, totalSize: bountyTotal })
+
+    setBounties(newBounties)
+    setTotalSize(bountyTotal)
   }
 
-  generateHoursChange = id => ({ target: { value } }) =>
-    this.configBounty(id, 'hours', parseInt(value))
+  const generateHoursChange = id => ({ target: { value } }) =>
+    configBounty(id, 'hours', parseInt(value))
 
-  generateExpChange = id => index => {
-    this.configBounty(id, 'exp', index)
+  const generateExpChange = id => index => {
+    configBounty(id, 'exp', index)
   }
 
-  generateDeadlineChange = id => deadline => {
-    this.configBounty(id, 'deadline', deadline)
+  const generateDeadlineChange = id => deadline => {
+    configBounty(id, 'deadline', deadline)
   }
 
-  generateSlotsChange = id => index => {
-    this.configBounty(id, 'slotsIndex', index)
+  const generateArrowChange = id => () => {
+    configBounty(id, 'detailsOpen')
   }
 
-  generateArrowChange = id => () => {
-    this.configBounty(id, 'detailsOpen')
-  }
-
-  submitBounties = (post, result) => {
-    const bounties = this.state.bounties
+  const submitBounties = async () => {
     const today = new Date()
     const activity = {
-      user: this.props.githubCurrentUser,
+      user: githubCurrentUser,
       date: today.toISOString(),
     }
 
     Object.keys(bounties).map(id => {
       // if it's an update, there is only one issue
-      if (this.props.mode === 'update') {
-        bounties[id]['fundingHistory'] = [ ...this.props.issues[0].fundingHistory, activity ]
+      if (mode === 'update') {
+        bounties[id]['fundingHistory'] = [ ...issues[0].fundingHistory, activity ]
       } else {
         bounties[id]['fundingHistory'] = [activity]
       }
     })
 
-    this.props.onSubmit(this.state.bounties, this.state.description, post, result)
-  }
+    closePanel()
 
-  renderUpdateForm = (issue, bounties) => {
-    const expLevels = this.props.bountySettings.expLvls
+    // computes an array of issues and denests the actual issue object for smart contract
+    const issuesArray = []
 
-    return (
-      <React.Fragment>
-        <Info.Action title="Warning" style={{ marginBottom: '16px' }}>
-          <p style={{ marginTop: '10px' }}>
-            The updates you specify will overwrite the existing settings for the bounty.
-          </p>
-        </Info.Action>
+    for (let key in issues) {
+      issuesArray.push({
+        key: key,
+        exp: bounties[issues[key].id].exp,
+        fundingHistory: bounties[issues[key].id].fundingHistory,
+        deadline: bounties[issues[key].id].deadline,
+        ...issues[key],
+      })
+    }
 
-        <Form
-          onSubmit={this.submitBounties}
-          description={this.props.description}
-          submitText="Submit Update"
-        >
-          <FormField
-            label="Issue"
-            input={
-              <React.Fragment>
-                <Text.Block size="xxlarge" style={{ marginBottom: '16px' }}>
-                  {issue.title}
-                </Text.Block>
-                <UpdateRow>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <FormField
-                      label="Hours"
-                      input={
-                        <HoursInput
-                          width="100%"
-                          name="hours"
-                          value={bounties[issue.id]['hours']}
-                          onChange={this.generateHoursChange(issue.id)}
-                        />
-                      }
-                    />
-                    {bounties[issue.id]['hours'] > 0 && (
-                      <Badge style={{ padding: '6px', marginTop: '14px', marginLeft: '6px' }}>
-                        <Text size="large">
-                          {bounties[issue.id]['size'].toFixed(2)}{' '}
-                          {this.state.tokenSymbol}
-                        </Text>
-                      </Badge>
-                    )}
-                  </div>
+    const ipfsAddresses = await computeIpfsString(issuesArray)
+    const repoIds = issuesArray.map(issue => toHex(issue.repoId))
+    const issueNumbers = issuesArray.map(issue => issue.number)
+    const bountySizes = issuesArray.map(issue =>
+      BigNumber(bounties[issue.id].size)
+        .times(10 ** tokenDetails.decimals)
+        .toString()
+    )
+    const tokenContracts = new Array(issuesArray.length).fill(tokenDetails.addr)
+    const deadlines = new Array(issuesArray.length).fill(Date.now() + 8600)
+    // @param _tokenTypes array of currency types: 0=ETH from current user's wallet, 1=ETH from vault, 20=ERC20 token from vault
+    const tokenTypes = new Array(issuesArray.length).fill(1)
 
-                  <FormField
-                    label="Experience level"
-                    input={
-                      <DropDown
-                        items={expLevels.map(exp => exp.name)}
-                        onChange={this.generateExpChange(issue.id)}
-                        active={bounties[issue.id]['exp']}
-                      />
-                    }
-                  />
-                </UpdateRow>
-                <UpdateRow>
-                  <FormField
-                    label="Deadline"
-                    input={
-                      <DateInput
-                        width="120px"
-                        name='deadline'
-                        value={bounties[issue.id]['deadline']}
-                        onChange={this.generateDeadlineChange(issue.id)}
-                      />
-                    }
-                  />
-                  {/* second child needed - should be Slots in the future */}
-                  <div></div>
-                </UpdateRow>
-              </React.Fragment>
-            }
-          />
-        </Form>
-      </React.Fragment>
+    // during development, sometimes this fails with a cryptic "cannot perform action" error
+    // in case this happens in QA, let's leave this logging here to at least have some paper trail
+    console.log( // eslint-disable-line
+      'repoIds', repoIds,
+      'issueNumbers', issueNumbers,
+      'bountySizes', bountySizes,
+      'deadlines', deadlines,
+      'tokenTypes', tokenTypes,
+      'tokenContracts', tokenContracts,
+      'ipfsAddresses', ipfsAddresses,
+      'description', description
+    )
+    api.addBounties(
+      repoIds,
+      issueNumbers,
+      bountySizes,
+      deadlines,
+      tokenTypes,
+      tokenContracts,
+      ipfsAddresses,
+      description
+    ).subscribe(
+      () => {
+        // TODO: Temporarily disable commenting on github. Linting was also disabled at lines 480 and 488 for this, to make CI pass
+        // A better workaround in the future would be refactor into an opt-in feature, maybe with a checkbox in Settings?
+        // issuesArray.forEach(issue => {
+        //   post({
+        //     variables: {
+        //       body:
+        //         'This issue has a bounty attached to it.\n' +
+        //         `Amount: ${issue.size.toFixed(2)} ${tokenDetails.symbol}\n` +
+        //         `Deadline: ${issue.deadline.toUTCString()}`,
+        //       subjectId: issue.key,
+        //     },
+        //   })
+        // })
+      },
+      err => console.error(`error: ${err}`)
     )
   }
 
-  renderForm = (issues, bounties) => {
-    const expLevels = this.props.bountySettings.expLvls
+  const bountylessIssues = []
+  const alreadyAdded = []
 
+  if (!tokens.length || !tokenDetails.balance) {
     return (
-      <div>
-        <Mutation mutation={COMMENT}>
-          {(post, result) => (
-            <Form
-              onSubmit={() => this.submitBounties(post, result)}
-              description={this.props.description}
-              submitText={this.props.issues.length > 1 ? 'Fund Issues' : 'Fund Issue'}
-              submitDisabled={this.state.totalSize > this.state.tokenBalance}
-            >
-              <FormField
-                label="Description"
-                required
-                input={
-                  <DescriptionInput
-                    rows="3"
-                    name="description"
-                    style={{ resize: 'none' }}
-                    onChange={this.descriptionChange}
-                    value={this.state.description}
-                    wide
-                  />
-                }
-              />
-              <FormField
-                label="Issues"
-                hint="Enter the estimated hours per issue"
-                required
-                input={
-                  <Table>
-                    {issues.map(issue => (
-                      <TableRow key={issue.id}>
-                        <Cell>
-                          <IBMain>
-                            <IssueBounty>
-                              <IBArrow onClick={this.generateArrowChange(issue.id)}>
-                                {bounties[issue.id]['detailsOpen'] ? (
-                                  <IconBigArrowUp />
-                                ) : (
-                                  <IconBigArrowDown />
-                                )}
-                              </IBArrow>
-                              <IBTitle size="normal" weight="bold">
-                                {issue.title}
-                              </IBTitle>
-                              <IBHours>
-                                <IBHoursInput>
-                                  <FieldTitle>Hours</FieldTitle>
-                                  <HoursInput
-                                    name="hours"
-                                    value={bounties[issue.id]['hours']}
-                                    onChange={this.generateHoursChange(issue.id)}
-                                  />
-                                </IBHoursInput>
-                              </IBHours>
-                              <IBValue>
-                                {issue.id in bounties &&
-                                 bounties[issue.id]['hours'] > 0 && (
-                                  <IBValueShow>
-                                    <FieldTitle>Value</FieldTitle>
-                                    <Badge style={{ marginLeft: '5px' }}>
-                                      {bounties[issue.id]['size'].toFixed(2)}{' '}
-                                      {this.state.tokenSymbol}
-                                    </Badge>
-                                  </IBValueShow>
-                                )}
-                              </IBValue>
-                            </IssueBounty>
-                            <IBDetails open={bounties[issue.id]['detailsOpen']}>
-                              <IBExp>
-                                <FormField
-                                  label="Experience level"
-                                  input={
-                                    <DropDown
-                                      items={expLevels.map(exp => exp.name)}
-                                      onChange={this.generateExpChange(issue.id)}
-                                      active={bounties[issue.id]['exp']}
-                                    />
-                                  }
-                                />
-                              </IBExp>
-                              <IBDeadline>
-                                <FormField
-                                  label="Deadline"
-                                  input={
-                                    <DateInput
-                                      name='deadline'
-                                      value={bounties[issue.id]['deadline']}
-                                      onChange={this.generateDeadlineChange(issue.id)}
-                                    />
-                                  }
-                                />
-                              </IBDeadline>
-                              {/*
-                                 Can add back in when we support multiple slots
-                                 <IBAvail>
-                                 <FormField
-                                 label="Slots Available"
-                                 input={
-                                 <DropDown
-                                 items={bountySlots}
-                                 onChange={this.generateSlotsChange(issue.id)}
-                                 active={bounties[issue.id]['slotsIndex']}
-                                 />
-                                 }
-                                 />
-                                 </IBAvail>
-                               */}
-                            </IBDetails>
-                          </IBMain>
-                        </Cell>
-                      </TableRow>
-                    ))}
-                  </Table>
-                }
-              />
-            </Form>
-          )}
-        </Mutation>
-        {
-          (
-            this.state.totalSize > this.state.tokenBalance
-          ) ? (
-              <div>
-                <br />
-                <Info.Action title="Insufficient Token Balance">
-                  Please either mint more tokens or stake fewer tokens against these issues.
-                </Info.Action>
-              </div>
-            ) : null
-        }
+      <div css={`margin-top: ${2 * GU}px`}>
+        <VaultDiv><Icon /></VaultDiv>
+        <Text color={`${theme.surfaceContentSecondary}`} size='large' >
+          <div>
+            <br />
+            Your base rate has not been set and you do not have
+            any tokens in your Vault.
+            <br /> <br />
+            Once you have tokens in your Vault, you will be
+            able to begin funding issues.
+            <br /> <br />
+            <Button wide onClick={closePanel} mode="strong">Cancel</Button>
+          </div>
+        </Text>
       </div>
     )
   }
 
-  renderWarning = issues => (
-    <Info.Action title="Warning">
-      <p style={{ margin: '10px 0' }}>
-        The following issues already have bounties and cannot be updated on a bulk basis. To update an individual issue, select “Update Bounty” from the issue’s context menu.
-      </p>
-      <WarningIssueList>
-        {issues.map(issue => <li key={issue.id}>{issue.title}</li>)}
-      </WarningIssueList>
-    </Info.Action>
-  )
-
-  render() {
-    const { bounties } = this.state
-    const { tokens, mode, issues } = this.props
-    const bountylessIssues = []
-    const alreadyAdded = []
-
-    if (!tokens.length) {
-      return (
-        <div>
-          <VaultDiv><Icon /></VaultDiv>
-          <Text color={theme.textSecondary} size='large' >
-            <div>
-              <br />
-            Your base rate has not been set and you do not have
-            any tokens in your Vault.
-              <br /> <br />
-            Once you have tokens in your Vault, you will be
-            able to begin funding issues.
-              <br /> <br />
-              <Button wide onClick={this.props.closePanel} mode="strong"  >Cancel</Button>
-            </div>
-          </Text>
-        </div>
-      )
-    }
-
-    // in 'update' mode there is only one issue
-    if (mode === 'update') {
-      return this.renderUpdateForm(issues[0], bounties)
-    }
-
-    issues.forEach(issue => {
-      if (issue.hasBounty)
-        alreadyAdded.push(issue)
-      else
-        bountylessIssues.push(issue)
-    })
-
-    if (bountylessIssues.length > 0 && alreadyAdded.length > 0) {
-      return (
-        <DivSeparator>
-          {this.renderForm(bountylessIssues, bounties)}
-          {this.renderWarning(alreadyAdded)}
-        </DivSeparator>
-      )
-    } else if (bountylessIssues.length > 0) {
-      return this.renderForm(bountylessIssues, bounties)
-    }
+  // in 'update' mode there is only one issue
+  if (mode === 'update') {
     return (
-      <DivSeparator>
-        {this.renderWarning(alreadyAdded)}
-        <Button mode="strong" wide onClick={this.props.closePanel}>Close</Button>
-      </DivSeparator>
+      <BountyUpdate
+        issue={issues[0]}
+        bounties={bounties}
+        bountySettings={bountySettings}
+        submitBounties={submitBounties}
+        description={description}
+        generateHoursChange={generateHoursChange}
+        tokenDetails={tokenDetails}
+        generateExpChange={generateExpChange}
+        generateDeadlineChange={generateDeadlineChange}
+      />
     )
   }
-}
 
-const submitBountyAllocation = ({
-  addBounties,
-  bountySettings,
-  tokens,
-  closePanel,
-  /* eslint-disable-next-line */
-}) => async (issues, description, post) => {
-  closePanel()
-
-  // computes an array of issues and denests the actual issue object for smart contract
-  const issuesArray = []
-  const bountyAddr = bountySettings.bountyCurrency
-
-  /* eslint-disable-next-line */
-  let bountyToken, bountyDecimals, bountySymbol
-
-  tokens.forEach(token => {
-    if (token.addr === bountyAddr) {
-      bountyToken = token.addr
-      bountyDecimals = token.decimals
-      bountySymbol = token.symbol
-    }
+  issues.forEach(issue => {
+    if (issue.hasBounty)
+      alreadyAdded.push(issue)
+    else
+      bountylessIssues.push(issue)
   })
 
-  for (let key in issues) issuesArray.push({ key: key, ...issues[key] })
-
-  const ipfsString = await computeIpfsString(issuesArray)
-
-  const idArray = issuesArray.map(issue => toHex(issue.repoId))
-  const numberArray = issuesArray.map(issue => issue.number)
-  const bountyArray = issuesArray.map(issue =>
-    BigNumber(issue.size)
-      .times(10 ** bountyDecimals)
-      .toString()
-  )
-  const tokenArray = new Array(issuesArray.length).fill(bountyToken)
-  const dateArray = new Array(issuesArray.length).fill(Date.now() + 8600)
-  const booleanArray = new Array(issuesArray.length).fill(true)
-
-  addBounties(
-    idArray,
-    numberArray,
-    bountyArray,
-    dateArray,
-    booleanArray,
-    tokenArray,
-    ipfsString,
-    description
-  ).subscribe(
-    () => {
-      // TODO: Temporarily disable commenting on github. Linting was also disabled at lines 480 and 488 for this, to make CI pass
-      // A better workaround in the future would be refactor into an opt-in feature, maybe with a checkbox in Settings?
-      // issuesArray.forEach(issue => {
-      //   post({
-      //     variables: {
-      //       body:
-      //         'This issue has a bounty attached to it.\n' +
-      //         `Amount: ${issue.size.toFixed(2)} ${bountySymbol}\n` +
-      //         `Deadline: ${issue.deadline.toUTCString()}`,
-      //       subjectId: issue.key,
-      //     },
-      //   })
-      // })
-    },
-    err => console.error(`error: ${err}`)
-  )
-}
-
-// TODO: move entire component to functional component
-// the following was a quick way to allow us to use hooks
-const FundIssuesWrap = props => {
-  const githubCurrentUser = useGithubAuth()
-  const {
-    api,
-    appState: { bountySettings, tokens },
-  } = useAragonApi()
-  const { closePanel } = usePanelManagement()
   return (
-    <FundIssues
-      bountySettings={bountySettings}
-      closePanel={closePanel}
-      githubCurrentUser={githubCurrentUser}
-      tokens={tokens || []}
-      onSubmit={submitBountyAllocation({
-        addBounties: api.addBounties,
-        bountySettings,
-        closePanel,
-        tokens,
-      })}
-      {...props}
-    />
+    <React.Fragment>
+      {(bountylessIssues.length > 0) && (
+        <FundForm
+          submitBounties={submitBounties}
+          bountySettings={bountySettings}
+          issues={bountylessIssues}
+          bounties={bounties}
+          description={description}
+          totalSize={totalSize}
+          tokenDetails={tokenDetails}
+          descriptionChange={descriptionChange}
+          generateArrowChange={generateArrowChange}
+          generateHoursChange={generateHoursChange}
+          generateExpChange={generateExpChange}
+          generateDeadlineChange={generateDeadlineChange}
+        />
+      )}
+      {(alreadyAdded.length > 0) && (
+        <Info.Action title="Warning" style={{ marginBottom: `${2 * GU}px` }}>
+          <p style={{ margin: '10px 0' }}>
+          The following issues already have bounties and cannot be updated on a bulk basis. To update an individual issue, select “Update Bounty” from the issue’s context menu.
+          </p>
+          <WarningIssueList>
+            {issues.map(issue => <li key={issue.id}>{issue.title}</li>)}
+          </WarningIssueList>
+        </Info.Action>
+      )}
+      {(!bountylessIssues.length) && <Button mode="strong" wide onClick={closePanel}>Close</Button>}
+    </React.Fragment>
   )
 }
 
-const DivSeparator = styled.div`
-  > :last-child {
-    margin-top: 15px;
-  }
-`
+FundIssues.propTypes = {
+  issues: PropTypes.arrayOf(issueShape).isRequired,
+  mode: PropTypes.oneOf([ 'new', 'update' ]).isRequired,
+}
+
 const UpdateRow = styled.div`
   display: flex;
   align-content: stretch;
@@ -597,86 +605,16 @@ const HoursInput = styled(TextInput.Number).attrs({
   min: '0',
   max: '1000',
 })`
-  width: ${ props => props.width ? props.width: '100px' };
+  width: 100%;
   display: inline-block;
   padding-top: 3px;
 `
-const Cell = styled(TableCell)`
-  padding: 0;
-`
-const IBMain = styled.div`
-  display: flex;
-  flex-flow: column;
-`
-const IssueBounty = styled.div`
-  clear: all;
-  display: grid;
-  grid-template-columns: 41px 173px auto;
-  grid-template-rows: auto;
-  grid-template-areas:
-    'arrow title title'
-    'arrow hours value';
-`
-const IBTitle = styled(Text)`
-  grid-area: title;
-  line-height: 24px;
-  padding-top: 12px;
-  padding-bottom: 8px;
-`
-const IBHours = styled.div`
-  grid-area: hours;
-`
-const IBExp = styled.div`
-  grid-area: exp;
-`
-const IBDetails = styled.div`
-  display: ${({ open }) => (open ? 'grid' : 'none')};
-  background: ${theme.mainBackground};
-  padding-top: 12px;
-  grid-template-columns: 41px 173px 173px;
-  grid-template-rows: auto;
-  grid-template-areas:
-    '.     exp   dline'
-    '.     slots .    ';
-`
-const IBDeadline = styled.div`
-  grid-area: dline;
-`
-const IBValue = styled.div`
-  grid-area: value;
-`
-const IBValueShow = styled.div`
-  display: inline-flex;
-  position: relative;
-  justify-content: center;
-  > :first-child {
-    height: 40px;
-    line-height: 40px;
-  }
-  > :last-child {
-    margin: 10px 0;
-  }
-`
 const VaultDiv = styled.div`
-text-align: center;
+  text-align: center;
 `
-const IBArrow = styled.div`
-  grid-area: arrow;
-  place-self: center; // TODO: Check browser support for this
-`
-const IBHoursInput = styled.div`
-  display: inline-flex;
-  position: relative;
-  margin-bottom: 10px;
-  > :first-child {
-    height: 40px;
-    width: 45px;
-    line-height: 40px;
-  }
-  > :last-child {
-    width: 65px;
-    height: 40px;
-  }
+const DetailsArrow = styled.div`
+  width: 24px;
+  margin-right: 12px;
 `
 
-export default FundIssuesWrap
+export default FundIssues

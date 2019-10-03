@@ -1,25 +1,11 @@
-import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 
 import { Badge, Text, theme } from '@aragon/ui'
 import { formatDistance } from 'date-fns'
-import BigNumber from 'bignumber.js'
+import { issueShape } from '../../../utils/shapes.js'
 
 import { BOUNTY_STATUS, BOUNTY_BADGE_COLOR } from '../../../utils/bounty-status'
-
-const issueShape = PropTypes.shape({
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
-  expLevel: PropTypes.string.isRequired,
-  deadline: PropTypes.string.isRequired,
-  hours: PropTypes.number.isRequired,
-  number: PropTypes.number.isRequired,
-  repo: PropTypes.string.isRequired,
-  title: PropTypes.string.isRequired,
-  tokenSymbol: PropTypes.string.isRequired,
-  url: PropTypes.string.isRequired,
-  workStatus: PropTypes.string.isRequired,
-})
 
 const Issue = ({
   balance,

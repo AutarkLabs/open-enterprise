@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { formatDistance } from 'date-fns'
+import { BN } from 'web3-utils'
 
 import {
   Text,
@@ -21,11 +22,12 @@ import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '../../Panel'
 import { ipfsAdd } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
+import { issueShape } from '../../../utils/shapes.js'
 
 class ReviewWork extends React.Component {
   static propTypes = {
     githubCurrentUser: PropTypes.object.isRequired,
-    issue: PropTypes.object.isRequired,
+    issue: issueShape,
     onReviewWork: PropTypes.func.isRequired,
   }
 
@@ -215,16 +217,14 @@ class ReviewWork extends React.Component {
             <ReviewRow>
               <ReviewButton
                 disabled={this.canSubmit()}
-                emphasis="negative"
-                mode={this.canSubmit() ? 'secondary' : 'strong'}
+                mode="negative"
                 onClick={this.onReject}
               >
             Reject
               </ReviewButton>
               <ReviewButton
                 disabled={this.canSubmit()}
-                emphasis="positive"
-                mode={this.canSubmit() ? 'secondary' : 'strong'}
+                mode="positive"
                 onClick={this.onAccept}
               >
             Accept
@@ -246,14 +246,20 @@ const onReviewWork = ({ closePanel, reviewSubmission }) => async (
   const ipfsData = issue.workSubmissions[issue.workSubmissions.length - 1]
   const requestIPFSHash = await ipfsAdd({ ...ipfsData, review: state })
 
+  const total = new BN(issue.data.balance, 10)
+  const fulfillers = issue.data.work.fulfillers
+  const fulfillmentAmounts = fulfillers.map(() =>
+    total.div(new BN(fulfillers.length, 10)).toString()
+  )
   closePanel()
   reviewSubmission(
     toHex(issue.repoId),
     issue.number,
     issue.workSubmissions.length - 1,
     state.accepted,
-    requestIPFSHash
-  )
+    requestIPFSHash,
+    fulfillmentAmounts
+  ).toPromise()
 }
 
 // TODO: move entire component to functional component

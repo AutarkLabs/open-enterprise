@@ -20,12 +20,13 @@ import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '../../Panel'
 import { ipfsAdd } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
+import { issueShape } from '../../../utils/shapes.js'
 
 // external data, all of it
 
 class ReviewApplication extends React.Component {
   static propTypes = {
-    issue: PropTypes.object.isRequired,
+    issue: issueShape,
     requestIndex: PropTypes.number.isRequired,
     githubCurrentUser: PropTypes.object.isRequired,
     onReviewApplication: PropTypes.func.isRequired,
@@ -61,7 +62,6 @@ class ReviewApplication extends React.Component {
   changeRequest = (index) => {
     this.setState({ requestIndex: index })
   }
-
 
   render() {
     const { issue } = this.props
@@ -202,13 +202,13 @@ class ReviewApplication extends React.Component {
 
             <ReviewRow>
               <ReviewButton
-                emphasis="negative"
+                mode="negative"
                 onClick={this.onReject}
               >
             Reject
               </ReviewButton>
               <ReviewButton
-                emphasis="positive"
+                mode="positive"
                 onClick={this.onAccept}
               >
             Accept
@@ -239,7 +239,7 @@ const onReviewApplication = ({ closePanel, reviewApplication }) => async (
     issue.requestsData[requestIndex].contributorAddr,
     requestIPFSHash,
     approved
-  )
+  ).toPromise()
 }
 
 // TODO: move entire component to functional component
@@ -273,12 +273,12 @@ const DetailText = styled(Text)`
 const Separator = styled.hr`
   height: 1px;
   width: 100%;
-  color: #D1D1D1;
+  color: #d1d1d1;
   opacity: 0.1;
 `
 const ApplicationDetails = styled.div`
-  border: 1px solid #DAEAEF;
-  background-color: #F3F9FB;
+  border: 1px solid #daeaef;
+  background-color: #f3f9fb;
   padding: 14px;
   margin-top: 8px;
   margin-bottom: 14px;

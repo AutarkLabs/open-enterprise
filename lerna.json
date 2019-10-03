@@ -8,6 +8,6 @@
     }
   },
   "hoist": true,
-  "packages": ["apps/*", "apps/shared/*", "kits/*"],
+  "packages": ["apps/*", "apps/shared/*", "kits/*", "shared/integrations/*"],
   "version": "independent"
 }

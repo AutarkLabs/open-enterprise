@@ -1,2 +1,2 @@
-export { default as Accounts } from './Accounts'
-export { default as Payouts } from './Payouts'
+export { default as Budgets } from './Budgets'
+export { default as AllocationsHistory } from './AllocationsHistory'

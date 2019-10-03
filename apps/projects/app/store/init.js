@@ -1,14 +1,15 @@
 import vaultAbi from '../../../shared/json-abis/vault'
+import standardBounties from '../abi/StandardBounties.json'
 import { app, handleEvent, INITIAL_STATE } from './'
 import { initializeTokens, initializeGraphQLClient } from './helpers'
 
-export const initStore = vaultAddress => {
+export const initStore = (vaultAddress, standardBountiesAddress) => {
   const vaultContract = app.external(vaultAddress, vaultAbi.abi)
+  const standardBountiesContract = app.external(standardBountiesAddress, standardBounties.abi)
   return app.store(
     async (state, action) => {
       try {
-        const nextState = await handleEvent(state, action, vaultAddress, vaultContract)
-        return nextState
+        return await handleEvent(state, action, vaultAddress, vaultContract)
       } catch (err) {
         console.error(
           `[PROJECTS] store error: ${err}
@@ -23,6 +24,7 @@ export const initStore = vaultAddress => {
       externals: [
         // handle vault events
         { contract: vaultContract },
+        { contract: standardBountiesContract },
       ],
       init: initState(vaultContract),
     }

@@ -1,43 +1,16 @@
-import React, { Component } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Button, theme } from '@aragon/ui'
+import { Button, Text, useTheme } from '@aragon/ui'
 
 import FilterTile from './FilterTile'
 import { prepareFilters } from '../Shared/FilterBar'
+import { issueShape } from '../../utils/shapes.js'
 
-export default class Filters extends Component {
-  static propTypes = {
-    filters: PropTypes.shape({
-      projects: PropTypes.object.isRequired,
-      labels: PropTypes.object.isRequired,
-      milestones: PropTypes.object.isRequired,
-      deadlines: PropTypes.object.isRequired,
-      experiences: PropTypes.object.isRequired,
-      statuses: PropTypes.object.isRequired,
-    }),
-    issues: PropTypes.array,
-    bountyIssues: PropTypes.array,
-    disableFilter: PropTypes.func.isRequired,
-    disableAllFilters: PropTypes.func.isRequired,
-    style: PropTypes.object,
-  }
+const Filters = ({ filters, issues, bountyIssues, disableFilter, disableAllFilters, style }) => {
+  const theme = useTheme()
 
-  static defaultProps = {
-    filters: {
-      projects: {},
-      labels: {},
-      milestones: {},
-      deadlines: {},
-      experiences: {},
-      statuses: {},
-    },
-    issues: [],
-    bountyIssues: [],
-  }
-
-  generateFilterNamesAndPaths = (filterInformation, type, textFieldToUse) => {
-    const { filters } = this.props
+  const generateFilterNamesAndPaths = (filterInformation, type, textFieldToUse) => {
     const appliedFilters = {}
     Object.keys(filterInformation[type]).map(id => {
       const filterApplied = id in filters[type]
@@ -58,26 +31,25 @@ export default class Filters extends Component {
 
     to make it easier to deselect filters from this view without multiple state objects
   */
-  calculateFilters = () => {
-    const { issues, bountyIssues } = this.props
+  const calculateFilters = () => {
     const filterInformation = prepareFilters(issues, bountyIssues)
 
-    const projectBasedFilters = this.generateFilterNamesAndPaths(
+    const projectBasedFilters = generateFilterNamesAndPaths(
       filterInformation,
       'projects',
       'name'
     )
-    const labelBasedFilters = this.generateFilterNamesAndPaths(
+    const labelBasedFilters = generateFilterNamesAndPaths(
       filterInformation,
       'labels',
       'name'
     )
-    const milestoneBasedFilters = this.generateFilterNamesAndPaths(
+    const milestoneBasedFilters = generateFilterNamesAndPaths(
       filterInformation,
       'milestones',
       'title'
     )
-    const statusBasedFilters = this.generateFilterNamesAndPaths(
+    const statusBasedFilters = generateFilterNamesAndPaths(
       filterInformation,
       'statuses',
       'name'
@@ -91,46 +63,77 @@ export default class Filters extends Component {
     }
   }
 
-  render() {
-    const filterAliases = this.calculateFilters()
-    const { style } = this.props
+  const filterAliases = calculateFilters()
 
-    if (Object.keys(filterAliases).length === 0) return null
+  if (Object.keys(filterAliases).length === 0) return null
 
-    return (
-      <Wrap style={style}>
-        <div>
-          {Object.keys(filterAliases).map(alias => {
-            const pathToDisableFilter = filterAliases[alias]
-            return (
-              <FilterTile
-                key={pathToDisableFilter.join('')}
-                text={alias}
-                disableFilter={() =>
-                  this.props.disableFilter(pathToDisableFilter)
-                }
-              />
-            )
-          })}
-        </div>
-        {Object.keys(filterAliases).length > 0 && (
-          <Button
-            mode="text"
-            size="small"
-            onClick={this.props.disableAllFilters}
-            style={{
-              color: theme.accent,
-              marginLeft: '18px',
-            }}
-          >
+  return (
+    <Wrap style={style}>
+      {Object.keys(filterAliases).map(alias => {
+        const pathToDisableFilter = filterAliases[alias]
+        return (
+          <FilterTile
+            key={pathToDisableFilter.join('')}
+            text={alias}
+            disableFilter={() =>
+              disableFilter(pathToDisableFilter)
+            }
+          />
+        )
+      })}
+      {Object.keys(filterAliases).length > 0 && (
+        <Button
+          size="mini"
+          onClick={disableAllFilters}
+          css={`
+            margin-left: 8px;
+            border: 0;
+            box-shadow: unset;
+            padding: 4px;
+          `}
+        >
+          <Text size="small" color={`${theme.link}`}>
             Clear Filters
-          </Button>
-        )}
-      </Wrap>
-    )
-  }
+          </Text>
+        </Button>
+      )}
+    </Wrap>
+  )
 }
 
 const Wrap = styled.div`
   display: flex;
+  flex-wrap: wrap;
+  width: 100%;
 `
+
+Filters.propTypes = {
+  filters: PropTypes.shape({
+    projects: PropTypes.object.isRequired,
+    labels: PropTypes.object.isRequired,
+    milestones: PropTypes.object.isRequired,
+    deadlines: PropTypes.object.isRequired,
+    experiences: PropTypes.object.isRequired,
+    statuses: PropTypes.object.isRequired,
+  }),
+  issues: PropTypes.arrayOf(issueShape).isRequired,
+  bountyIssues: PropTypes.arrayOf(issueShape).isRequired,
+  disableFilter: PropTypes.func.isRequired,
+  disableAllFilters: PropTypes.func.isRequired,
+  style: PropTypes.object,
+}
+
+Filters.defaultProps = {
+  filters: {
+    projects: {},
+    labels: {},
+    milestones: {},
+    deadlines: {},
+    experiences: {},
+    statuses: {},
+  },
+  issues: [],
+  bountyIssues: [],
+}
+
+export default Filters
