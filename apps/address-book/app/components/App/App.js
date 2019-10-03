@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import { useAragonApi } from '../../api-react'
 import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
 
-import { IdentityProvider } from '../../../../../shared/identity'
+import { IdentityProvider } from '../LocalIdentityBadge/IdentityManager'
 import { ipfsAdd } from '../../../../../shared/utils/ipfs'
 
 import Entities from './Entities'
