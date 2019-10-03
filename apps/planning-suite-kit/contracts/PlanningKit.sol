@@ -102,7 +102,7 @@ contract PlanningKit is KitBase {
 
         createTPSApps(root, dao, vault, voting, discussions);
 
-        //handleCleanupPermissions(dao, acl, root);
+        handleCleanupPermissions(dao, acl, root);
 
         emit DeployInstance(dao);
     }
@@ -246,7 +246,7 @@ contract PlanningKit is KitBase {
         addressBook.initialize();
         projects.initialize(registry, vault);
         dotVoting.initialize(token, 50 * PCT256, 0, 1 minutes);
-        allocations.initialize(addressBook, vault);
+        allocations.initialize(vault, 1 days);
         rewards.initialize(vault);
     }
 
