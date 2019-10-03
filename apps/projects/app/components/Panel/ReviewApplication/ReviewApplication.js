@@ -202,13 +202,13 @@ class ReviewApplication extends React.Component {
 
             <ReviewRow>
               <ReviewButton
-                emphasis="negative"
+                mode="negative"
                 onClick={this.onReject}
               >
             Reject
               </ReviewButton>
               <ReviewButton
-                emphasis="positive"
+                mode="positive"
                 onClick={this.onAccept}
               >
             Accept
