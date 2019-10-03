@@ -29,7 +29,6 @@ const INITIAL_STATE = {
 const errorMessages = {
   amountOverBudget: 'Amount must be smaller than available budget',
   amountOverFunds: 'Amount must be smaller than underlying funds',
-  recipientsInvalid: 'Recipients must be valid Ethereum addresses',
   recipientsNotUnique: 'Recipients must be unique',
 }
 
