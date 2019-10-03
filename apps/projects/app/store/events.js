@@ -67,6 +67,7 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
   }
   case REQUESTED_GITHUB_DISCONNECT: {
     state.github = INITIAL_STATE.github
+    state.repos = [] // repos will be reloaded from loadReposFromQueue on re-sign-in
     return state
   }
   case REPO_ADDED: {
