@@ -9,7 +9,7 @@ import { app } from '../../../../shared/store-utils'
 
 export const updateAllocations = async (allocations, { accountId, payoutId }) => {
   const newAllocations = Array.from(allocations || [])
-
+  console.log('payout info: ', await app.call('getPayout', accountId, payoutId).pipe(first()).toPromise())
   if (!newAllocations.some(a => a.id === payoutId && a.accountId === accountId)) {
     newAllocations.push(await getAllocation({ accountId, payoutId }))
   }
@@ -73,16 +73,20 @@ const getAllocation = async ({ accountId, payoutId }) => {
   )
     .pipe(
       first(),
-      map(({
+      map(([{
+        budget,
+        token
+      },{
         amount,
-        description,
         distSet,
         period,
         recurrences,
-        startTime,
-        token,
-      }) => ({
+        startTime
+      },
+      description
+      ]) => ({
         // transform response data for the frontend
+        budget,
         accountId,
         amount,
         description,
@@ -90,7 +94,7 @@ const getAllocation = async ({ accountId, payoutId }) => {
         payoutId,
         period,
         recurrences,
-        startTime,
+        date: new Date(startTime*1000),
         token,
       }))
     )

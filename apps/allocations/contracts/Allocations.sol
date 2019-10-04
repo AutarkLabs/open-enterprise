@@ -438,6 +438,28 @@ contract Allocations is AragonApp {
         //}
     }
 
+    /**
+     * @param _accountId The account ID of the budget to be calculated
+     */
+    function getRemainingBudget(uint64 _accountId) public view returns (uint256) {
+        Account storage account = accounts[_accountId];
+        if (!account.hasBudget) {
+            return MAX_UINT256;
+        }
+
+        uint256 budget = account.budget;
+        uint256 spent = periods[_currentPeriodId()].accountStatement[_accountId].expenses[account.token];
+
+        // A budget decrease can cause the spent amount to be greater than period budget
+        // If so, return 0 to not allow more spending during period
+        if (spent >= budget) {
+            return 0;
+        }
+
+        // We're already protected from the overflow above
+        return budget - spent;
+    }
+
     function _executePayoutAtLeastOnce(
         uint64 _accountId,
         uint64 _payoutId,
@@ -520,26 +542,7 @@ contract Allocations is AragonApp {
 
     function _canMakePayment(uint64 _accountId, uint256 _amount) internal view returns (bool) {
         Account storage account = accounts[_accountId];
-        return _getRemainingBudget(_accountId) >= _amount && vault.balance(account.token) >= _amount && _amount > 0;
-    }
-
-    function _getRemainingBudget(uint64 _accountId) internal view returns (uint256) {
-        Account storage account = accounts[_accountId];
-        if (!account.hasBudget) {
-            return MAX_UINT256;
-        }
-
-        uint256 budget = account.budget;
-        uint256 spent = periods[_currentPeriodId()].accountStatement[_accountId].expenses[account.token];
-
-        // A budget decrease can cause the spent amount to be greater than period budget
-        // If so, return 0 to not allow more spending during period
-        if (spent >= budget) {
-            return 0;
-        }
-
-        // We're already protected from the overflow above
-        return budget - spent;
+        return getRemainingBudget(_accountId) >= _amount && vault.balance(account.token) >= _amount && _amount > 0;
     }
 
     function _runPayout(uint64 _accountId, uint64 _payoutId) internal returns(bool success) {
@@ -549,7 +552,6 @@ contract Allocations is AragonApp {
         uint256 paid = 0;
         require(account.payouts[_payoutId].distSet);
         uint256 length = account.payouts[_payoutId].candidateAddresses.length;
-        emit FundAccount(500);
         //handle vault
         for (i = 0; i < length; i++) {
             if (supports[i] != 0 && _nextPaymentTime(_accountId, _payoutId, i) <= getTimestamp64()) {

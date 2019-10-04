@@ -38,11 +38,11 @@ const eventHandler = async eventData => {
       ...state,
       accounts: await updateAccounts(state.accounts, returnValues.accountId),
     }
-  // case 'SetDistribution':
-  //   return {
-  //     ...state,
-  //     allocations: await updateAllocations(state.allocations, returnValues)
-  //   }
+  case 'SetDistribution':
+    return {
+      ...state,
+      allocations: await updateAllocations(state.allocations, returnValues)
+    }
     // nextState.accounts = nextAccounts
     // break
     // case 'PayoutExecuted':
