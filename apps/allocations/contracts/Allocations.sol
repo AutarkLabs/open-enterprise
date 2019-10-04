@@ -166,6 +166,16 @@ contract Allocations is AragonApp {
         distSet = payout.distSet;
     }
 
+    /**
+    * @notice get the account's remaining budget for the current period
+    * @param _accountId The account ID of the budget remaining to be calculated
+    */
+    function getRemainingBudget(uint64 _accountId) external view accountExists(_accountId)
+    returns(uint256)
+    {
+        return _getRemainingBudget(_accountId);
+    }
+
     /** @notice Basic getter for Allocation descriptions.
     *   @param _accountId The Id of the budget.
     *   @param _payoutId The Id of the allocation within the budget.
@@ -441,28 +451,6 @@ contract Allocations is AragonApp {
         }
     }
 
-    /**
-     * @param _accountId The account ID of the budget to be calculated
-     */
-    function getRemainingBudget(uint64 _accountId) public view returns (uint256) {
-        Account storage account = accounts[_accountId];
-        if (!account.hasBudget) {
-            return MAX_UINT256;
-        }
-
-        uint256 budget = account.budget;
-        uint256 spent = periods[_currentPeriodId()].accountStatement[_accountId].expenses[account.token];
-
-        // A budget decrease can cause the spent amount to be greater than period budget
-        // If so, return 0 to not allow more spending during period
-        if (spent >= budget) {
-            return 0;
-        }
-
-        // We're already protected from the overflow above
-        return budget - spent;
-    }
-
     function _executePayoutAtLeastOnce(
         uint64 _accountId,
         uint64 _payoutId,
@@ -545,7 +533,26 @@ contract Allocations is AragonApp {
 
     function _canMakePayment(uint64 _accountId, uint256 _amount) internal view returns (bool) {
         Account storage account = accounts[_accountId];
-        return getRemainingBudget(_accountId) >= _amount && vault.balance(account.token) >= _amount && _amount > 0;
+        return _getRemainingBudget(_accountId) >= _amount && vault.balance(account.token) >= _amount && _amount > 0;
+    }
+
+    function _getRemainingBudget(uint64 _accountId) internal view returns (uint256) {
+        Account storage account = accounts[_accountId];
+        if (!account.hasBudget) {
+            return MAX_UINT256;
+        }
+
+        uint256 budget = account.budget;
+        uint256 spent = periods[_currentPeriodId()].accountStatement[_accountId].expenses[account.token];
+
+        // A budget decrease can cause the spent amount to be greater than period budget
+        // If so, return 0 to not allow more spending during period
+        if (spent >= budget) {
+            return 0;
+        }
+
+        // We're already protected from the overflow above
+        return budget - spent;
     }
 
     function _runPayout(uint64 _accountId, uint64 _payoutId) internal returns(bool success) {
