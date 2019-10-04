@@ -71,7 +71,6 @@ const getAccount = id => {
     .pipe(
       first(),
       map(({ budget, hasBudget, metadata, token }) => {
-        console.log('accountId', id)
         return {
         // transform response data for the frontend
           hasBudget,

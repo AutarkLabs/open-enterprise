@@ -60,16 +60,14 @@ class NewBudget extends React.Component {
   createBudget = () => {
     const { name, amount, selectedToken } = this.state
     const token = this.props.tokens[selectedToken]
-    console.log('token: ', token)
     const amountWithDecimals = BigNumber(amount).times(BigNumber(10).pow(token.decimals)).toString()
-    console.log('amount: ', amount, amountWithDecimals)
     this.props.onCreateBudget({ name, amount: amountWithDecimals, token })
     this.setState(INITIAL_STATE)
   }
 
   handleSelectToken = index => {
     this.setState({ selectedToken: index })
-  } 
+  }
 
   render() {
     const {
@@ -81,7 +79,7 @@ class NewBudget extends React.Component {
       selectedToken,
       buttonText
     } = this.state
-    
+
     const symbols = this.props.tokens.map(({ symbol }) => symbol)
 
     return (
