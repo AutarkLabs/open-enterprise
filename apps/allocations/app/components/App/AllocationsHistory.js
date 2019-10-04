@@ -18,13 +18,11 @@ import { match } from 'minimatch'
 const AllocationsHistory = ({ allocations }) => {
   const theme = useTheme()
   const { balances = [] } = useAppState()
-  const getTokenSymbol = inputAddress => balances.reduce((matchingSymbol,
-    { symbol, address }) => {
-    if (inputAddress === address) return symbol 
-    else return matchingSymbol
-  },
-  ''
-  )
+  const getTokenSymbol = inputAddress => {
+    const matchingBalance = balances.find(({ address }) => inputAddress === address)
+    return matchingBalance ? matchingBalance.symbol : ''
+  }
+
   return (
     <DataView
       mode="adaptive"
@@ -45,8 +43,8 @@ const AllocationsHistory = ({ allocations }) => {
       entries={allocations}
       renderEntry={({
         date,
-        budget,
-        recipients = [ 'test', 'hi' ],
+        accountId,
+        recipients,
         description,
         status,
         amount,
@@ -54,11 +52,13 @@ const AllocationsHistory = ({ allocations }) => {
       }, index) => {
         return [
           new Date(Number(date)).toLocaleDateString(),
-          budget,
+          <div key={index}>
+            {'# ' + accountId}
+          </div>,
           recipients.length === 1 ? '1 entity'
             : recipients.length + ' entities',
           description,
-          <Status key={index} code={2 } />,
+          <Status key={index} code={status} />,
           <div
             key={index}
             css={{

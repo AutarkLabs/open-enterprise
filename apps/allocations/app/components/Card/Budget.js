@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import BN from 'bignumber.js'
+import BigNumber from 'bignumber.js'
 
 import {
   Card,
@@ -49,9 +49,8 @@ const Budget = ({
   const reactivate = () => {
     onReactivate(id)
   }
-  const tokenAmount = BN(amount).div(BN(10).pow(token.decimals))
-  const tokensRemaining = tokenAmount.minus(BN(allocated).div(BN(10).pow(token.decimals)))
-  console.log('budget token: ', tokensRemaining.toString())
+  const tokenAmount = BigNumber(amount).div(BigNumber(10).pow(token.decimals))
+  const tokensRemaining = tokenAmount.minus(BigNumber(allocated).div(BigNumber(10).pow(token.decimals)))
   if (inactive) {
     return (
       <StyledCard screenSize={screenSize}>
