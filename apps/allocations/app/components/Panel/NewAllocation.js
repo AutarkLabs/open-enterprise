@@ -19,33 +19,25 @@ const INITIAL_STATE = {
   amountInvalid: true,
   amountOverBudget: false,
   amountOverFunds: false,
-  recipientsCurrent: '',
-  recipientsAll: [],
-  recipientsEmpty: true,
-  recipientsInvalid: false,
-  recipientsNotUnique: false,
+  recipients: {},
+  recipientsValid: {},
+  recipientsDuplicate: false,
 }
 
 const errorMessages = {
   amountOverBudget: 'Amount must be smaller than available budget',
   amountOverFunds: 'Amount must be smaller than underlying funds',
-  recipientsNotUnique: 'Recipients must be unique',
+  recipientsDuplicate: 'Recipients must be unique',
 }
 
 const isRecipientValid = (current) => {
-  if (current === '') return true
   return web3Utils.isAddress(current)
 }
 
-const isRecipientUnique = (current, all) => {
-  if (current === '') return true
-  const isUnique = !all.length || !all.includes(current)
-  return isUnique
-}
-
-const isRecipientEmpty = (current) => {
-  const empty = current.length === 0 || current === '0x0'
-  return empty
+const recipientsDuplicate = (recipients) => {
+  const values = Object.values(recipients)
+  const set = new Set(values)
+  return set.size !== values.length
 }
 
 class NewAllocation extends React.Component {
@@ -63,6 +55,9 @@ class NewAllocation extends React.Component {
   constructor(props) {
     super(props)
     this.state = INITIAL_STATE
+    const recipientId = Date.now()
+    this.state.recipients[recipientId] = ''
+    this.state.recipientsValid[recipientId] = false
     if (props.selectedBudget >= 0) {
       this.state.budgetValue = props.selectedBudget
       this.state.budgetEmpty = false
@@ -79,7 +74,7 @@ class NewAllocation extends React.Component {
     }
     const { name, value } = e.target
     const { budgetLimit, fundsLimit } = this.props
-    const { recipientsAll } = this.state
+    const { recipients, recipientsValid } = this.state
 
     if (name === 'description') {
       this.setState({
@@ -99,49 +94,32 @@ class NewAllocation extends React.Component {
     }
 
     else if (name === 'recipientsChange') {
+      recipients[e.target.id] = value
+      recipientsValid[e.target.id] = isRecipientValid(value)
       this.setState({
-        recipientsCurrent: value,
-        recipientsInvalid: !isRecipientValid(value),
-        recipientsNotUnique: !isRecipientUnique(value, recipientsAll),
-        recipientsEmpty: isRecipientEmpty(value),
+        recipients,
+        recipientsValid,
+        recipientsDuplicate: recipientsDuplicate(recipients),
       })
     }
 
     else if (name === 'recipientsAdd') {
+      const id = Date.now()
       this.setState({
-        recipientsCurrent: '',
-        recipientsAll: value,
-        recipientsInvalid: false,
-        recipientsNotUnique: false,
-        recipientsEmpty: true,
+        recipients: { [id]: '', ...recipients },
+        recipientsValid: { [id]: false, ...recipientsValid },
+        recipientsDuplicate: recipientsDuplicate(recipients),
       })
     }
 
     else if (name === 'recipientsRemove') {
+      delete recipients[e.target.id]
+      delete recipientsValid[e.target.id]
       this.setState({
-        recipientsAll: value,
+        recipients,
+        recipientsValid,
+        recipientsDuplicate: recipientsDuplicate(recipients),
       })
-    }
-
-    else if (name === 'recipientsRemoveCurrent') {
-      if (recipientsAll.length > 0) {
-        const last = recipientsAll.length - 1
-        this.setState({
-          recipientsCurrent: recipientsAll[last],
-          recipientsAll: recipientsAll.slice(0, last),
-          recipientsInvalid: false,
-          recipientsNotUnique: false,
-          recipientsEmpty: false,
-        })
-      }
-      else {
-        this.setState({
-          recipientsCurrent: '',
-          recipientsInvalid: false,
-          recipientsNotUnique: false,
-          recipientsEmpty: true,
-        })
-      }
     }
   }
 
@@ -150,17 +128,14 @@ class NewAllocation extends React.Component {
       budgetValue,
       descriptionValue,
       amountValue,
-      recipientsCurrent,
-      recipientsAll
+      recipients
     } = this.state
-    const recipients = this.state.recipientsEmpty ? recipientsAll
-      : [ ...recipientsAll, recipientsCurrent ]
     const allocation = {
       payoutId: this.props.id,
       budgetName: budgetValue,
       balance: amountValue * 10e17,
       description: descriptionValue,
-      addresses: recipients
+      addresses: Object.values(recipients),
     }
     this.props.onSubmitAllocation(allocation)
     this.setState(INITIAL_STATE)
@@ -218,10 +193,10 @@ class NewAllocation extends React.Component {
               />
               <CurrencyBox>{props.currency}</CurrencyBox>
             </InputGroup>
-            <InputGroup css={{ justifyContent: 'right' }}>
+            <InputGroup css={{ justifyContent: 'flex-end' }}>
               <Text
                 size="small"
-                css={{ paddingTop: '10px' }}>
+                css={{ paddingTop: '10px', color: theme.contentSecondary }}>
                 Available Budget: {props.budgetLimit} {props.currency}
               </Text>
             </InputGroup>
@@ -236,14 +211,10 @@ class NewAllocation extends React.Component {
         required
         input={
           <RecipientsInput
-            name="recipients"
-            current={state.recipientsCurrent}
-            all={state.recipientsAll}
+            recipients={state.recipients}
+            recipientsValid={state.recipientsValid}
             onChange={this.changeField}
-            placeholder="Type here…"
-            valid={!state.recipientsInvalid && state.recipientsCurrent !== ''
-                   && !state.recipientsNotUnique}
-            empty={state.recipientsEmpty}
+            valid={!state.recipientsInvalid}
           />
         }
       />
@@ -255,17 +226,20 @@ class NewAllocation extends React.Component {
       </div>
     ))
 
+    const areRecipientsInvalid = () => {
+      return Object.values(this.state.recipientsValid).includes(false)
+    }
+
     return (
       <div>
         <Form
           onSubmit={this.submitAllocation}
           description={props.description}
           submitText="Submit"
-          disabled={state.budgetEmpty || state.descriptionEmpty
-                    || state.amountInvalid || state.amountOverBudget
-                    || state.amountOverFunds || state.recipientsInvalid
-                    || (state.recipientsAll.length === 0
-                        && state.recipientsEmpty) }
+          disabled={ state.budgetEmpty || state.descriptionEmpty
+                     || state.amountInvalid || state.amountOverBudget
+                     || state.amountOverFunds || areRecipientsInvalid()
+                     || state.recipientsDuplicate }
           errors={errorBlocks}
         >
           {budgetDropDown}
@@ -303,14 +277,14 @@ const InputGroup = styled.div`
 `
 
 const CurrencyBox = styled.div`
-  border: 1px solid #DDE4E9;
+  border: 1px solid #dde4e9;
   border-left-style: none;
   height: 40px;
   display: flex;
   align-items: center;
   padding: 8px 14px 7px;
   font-weight: normal;
-  border-radius: 0px 4px 4px 0px;
+  border-radius: 0 4px 4px 0;
 `
 
 const ErrorText = styled.div`

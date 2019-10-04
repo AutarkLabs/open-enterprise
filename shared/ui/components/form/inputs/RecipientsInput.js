@@ -2,21 +2,20 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import { Button, IconRemove, TextInput, theme, unselectable } from '@aragon/ui'
+import web3Utils from 'web3-utils'
 
 import LocalIdentitiesAutoComplete from './LocalIdentitiesAutoComplete'
 
 const RecipientsInput = ({
-  name,
-  current,
-  all,
+  recipients,
+  recipientsValid,
   onChange,
   placeholder = '',
-  valid,
-  empty,
 }) => {
-  const changeRecipient = value => {
+
+  const changeRecipient = (value, id) => {
     onChange({
-      target: { name: 'recipientsChange', value: value },
+      target: { name: 'recipientsChange', value, id },
     })
   }
 
@@ -24,76 +23,51 @@ const RecipientsInput = ({
     onChange({
       target: {
         name: 'recipientsAdd',
-        value: [ ...all, current ],
+        value: true,
       }
     })
   }
 
-  const removeRecipient = recipient => {
-    if (recipient) {
-      onChange({
-        target: {
-          name: 'recipientsRemove',
-          value: all.filter(v => v !== recipient)
-        }
-      })
-    }
-    else {
-      onChange({
-        target: {
-          name: 'recipientsRemoveCurrent',
-          value: true
-        }
-      })
-    }
+  const removeRecipient = id => {
+    onChange({
+      target: {
+        name: 'recipientsRemove',
+        id,
+      }
+    })
   }
-
-  const allRecipients = all.map((recipient, i) => (
-    <StyledRecipient key={i}>
-      <StyledInput
-        readOnly
-        value={recipient}
-        onChange={() => {}}
-        wide
-      />
-      <IconContainer
-        style={{ transform: 'scale(.8)' }}
-        onClick={() => removeRecipient(recipient)}
-        title="Remove this recipient"
-        children={<IconRemove />}
-      />
-    </StyledRecipient>
-  ))
 
   return (
     <div>
       <div style={flexColumn}>
-        {allRecipients}
-        <StyledRecipient>
-          <StyledInput
-            placeholder={placeholder}
-            value={current}
-            onChange={changeRecipient}
-            valid={valid}
-            wide
-          />
-          { valid && !empty && (
-            <IconContainer
-              style={{ transform: 'scale(.8)' }}
-              onClick={() => removeRecipient()}
-              title="Remove this recipient"
-              children={<IconRemove />}
-            />
-          )}
-        </StyledRecipient>
+        { Object.keys(recipients)
+          .sort((a, b) => a - b)
+          .map((id) => (
+            <StyledRecipient key={id}>
+              <AutoCompleteWrapper valid={recipientsValid[id]}>
+                <LocalIdentitiesAutoComplete
+                  value={recipients[id]}
+                  onChange={v => changeRecipient(v, id)}
+                  wide
+                />
+              </AutoCompleteWrapper>
+              { Object.keys(recipients).length > 1 && (
+                <IconContainer
+                  style={{ transform: 'scale(.8)' }}
+                  onClick={() => removeRecipient(id)}
+                  title="Remove this recipient"
+                  children={<IconRemove />}
+                />
+              )}
+            </StyledRecipient>
+          ))}
       </div>
       <StyledButton
-        disabled={!valid}
         compact
         mode="secondary"
         onClick={addRecipient}
         children={'+ Add Another'}
-        title={valid ? 'Click to add' : ''}
+        title={'Click to add'}
       />
     </div>
   )
@@ -105,12 +79,10 @@ const StyledButton = styled(Button)`
 `
 
 RecipientsInput.propTypes = {
-  name: PropTypes.string.isRequired,
-  current: PropTypes.string.isRequired,
-  all: PropTypes.array.isRequired,
+  recipients: PropTypes.object.isRequired,
+  recipientsValid: PropTypes.object.isRequired,
   onChange: PropTypes.func.isRequired,
   placeholder: PropTypes.string,
-  valid: PropTypes.bool.isRequired,
 }
 
 const flexColumn = { display: 'flex', flexDirection: 'column' }
@@ -123,23 +95,9 @@ const StyledRecipient = styled.div`
   }
 `
 
-const StyledInput = styled(LocalIdentitiesAutoComplete)`
-  ${unselectable};
-  ::placeholder {
-    color: ${theme.contentBorderActive};
-  }
-  :focus {
-    border-color: ${theme.contentBorderActive};
-    ::placeholder {
-      color: ${theme.contentBorderActive};
-    }
-  }
-  :read-only {
-    cursor: default;
-    :focus {
-      border-color: ${theme.positive};
-    }
-  }
+const AutoCompleteWrapper = styled.div`
+  border: ${({ valid }) => valid ? `2px solid ${theme.positive}` : 'none' };
+  border-radius: 6px;
 `
 
 const IconContainer = styled.button`
