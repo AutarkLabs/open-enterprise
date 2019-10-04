@@ -56,9 +56,9 @@ const App = () => {
       description,
       emptyIntArray, // unused
       emptyIntArray, // unused
-      '1', // account or allocation id...budgetId
+      budgetId, // account or allocation id...budgetId
       '1', // recurrences, 1 for now
-      '0',//Math.floor(new Date().getTime()/1000), // startTime, now for now
+      Math.floor(new Date().getTime()/1000), // startTime, now for now
       period,
       String(balance), // amount
       // tokenAddress -> token used, now deprecated
