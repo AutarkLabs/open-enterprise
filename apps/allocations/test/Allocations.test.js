@@ -705,8 +705,7 @@ contract('Allocations', accounts => {
       // TODO: Mock contract to check the period duration
     })
 
-    /* eslint-disable-next-line */
-    xit('should set the max candidates to zero and fail to set distribution', async () => {
+    it('should set the max candidates to zero and fail to set distribution', async () => {
       await app.setMaxCandidates(0, { from: root })
       return assertRevert(async () => {
         await app.setDistribution(
