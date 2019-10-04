@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import BigNumber from 'bignumber.js'
 
 import {
   Card,
@@ -36,7 +37,7 @@ const Budget = ({
   const theme = useTheme()
 
   const newAllocation = () => {
-    onNewAllocation(id, name, amount)
+    onNewAllocation(id, name, amount, token)
   }
   const edit = () => {
     onEdit(id)
@@ -48,7 +49,8 @@ const Budget = ({
   const reactivate = () => {
     onReactivate(id)
   }
-
+  const tokenAmount = BigNumber(amount).div(BigNumber(10).pow(token.decimals))
+  const tokensRemaining = tokenAmount.minus(BigNumber(allocated).div(BigNumber(10).pow(token.decimals)))
   if (inactive) {
     return (
       <StyledCard screenSize={screenSize}>
@@ -94,7 +96,7 @@ const Budget = ({
       <StatsContainer>
         <StyledStats>
           <StatsValueBig color={`${theme.contentSecondary}`}>
-            <Text>{`${amount} ${token} per period`}</Text>
+            <Text>{`${tokenAmount} ${token.symbol} per period`}</Text>
           </StatsValueBig>
           <StatsValueBig css={{ paddingTop: '24px' }}>
             <ProgressBar
@@ -109,7 +111,7 @@ const Budget = ({
             }}
           >
             
-            <Text>{`${amount} ${token} below limit`}</Text>
+            <Text>{`${tokensRemaining} ${token.symbol} below limit`}</Text>
           </StatsValueSmall>
           <StatsValueSmall
             css={{
@@ -117,7 +119,7 @@ const Budget = ({
               paddingTop: '4px',
             }}
           >
-            <Text>{`${amount}% remaining`}</Text>
+            <Text>{`${tokensRemaining.div(tokenAmount).times(100)}% remaining`}</Text>
           </StatsValueSmall>
         </StyledStats>
       </StatsContainer>
@@ -129,7 +131,7 @@ Budget.propTypes = {
   id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   amount: PropTypes.string.isRequired,
-  token: PropTypes.string.isRequired,
+  token: PropTypes.object.isRequired,
   // TODO: fix allocated (should be required?)
   allocated: PropTypes.string,
   inactive: PropTypes.bool.isRequired,

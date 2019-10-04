@@ -35,6 +35,7 @@ contract Allocations is AragonApp {
     string private constant ERROR_NO_PERIOD = "ALLOCATIONS_NO_PERIOD";
     string private constant ERROR_NO_ACCOUNT = "ALLOCATIONS_NO_ACCOUNT";
     string private constant ERROR_NO_PAYOUT = "ALLOCATIONS_NO_PAYOUT";
+    string private constant ERROR_NO_CANDIDATE = "ALLOCATIONS_NO_CANDIDATE";
     string private constant ERROR_SET_PERIOD_TOO_SHORT = "ALLOCATIONS_SET_PERIOD_TOO_SHORT";
     string private constant ERROR_COMPLETE_TRANSITION = "ALLOCATIONS_COMPLETE_TRANSITION";
 
@@ -165,6 +166,16 @@ contract Allocations is AragonApp {
         distSet = payout.distSet;
     }
 
+    /**
+    * @notice get the account's remaining budget for the current period
+    * @param _accountId The account ID of the budget remaining to be calculated
+    */
+    function getRemainingBudget(uint64 _accountId) external view accountExists(_accountId)
+    returns(uint256)
+    {
+        return _getRemainingBudget(_accountId);
+    }
+
     /** @notice Basic getter for Allocation descriptions.
     *   @param _accountId The Id of the budget.
     *   @param _payoutId The Id of the allocation within the budget.
@@ -201,11 +212,13 @@ contract Allocations is AragonApp {
     view
     isInitialized
     payoutExists(_accountId, _payoutId)
-    returns(uint256 supports)
+    returns(uint256 supports, address candidateAddress, uint64 executions)
     {
         Payout storage payout = accounts[_accountId].payouts[_payoutId];
-        require(_idx < payout.supports.length);
+        require(_idx < payout.supports.length, ERROR_NO_CANDIDATE);
         supports = payout.supports[_idx];
+        candidateAddress = payout.candidateAddresses[_idx];
+        executions = payout.executions[_idx];
     }
 
     /**

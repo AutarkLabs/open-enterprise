@@ -38,7 +38,6 @@ const App = () => {
     tokenAddress,
   }) => {
     const emptyIntArray = new Array(addresses.length).fill(0)
-    console.log('budgetId: ', budgetId)
     api.setDistribution(
       addresses,
       emptyIntArray, // unused
@@ -47,9 +46,9 @@ const App = () => {
       description,
       emptyIntArray, // unused
       emptyIntArray, // unused
-      '1', // account or allocation id...budgetId
+      budgetId, // account or allocation id...budgetId
       '1', // recurrences, 1 for now
-      '0',//Math.floor(new Date().getTime()/1000), // startTime, now for now
+      Math.floor(new Date().getTime()/1000), // startTime, now for now
       period,
       String(balance), // amount
       // tokenAddress -> token used, now deprecated
@@ -90,15 +89,14 @@ const App = () => {
     })
   }
 
-  const onNewAllocation = (address, description, id, balance) => {
+  const onNewAllocation = (id, description, balance, token) => {
     setPanel({
       content: NewAllocation,
       data: {
         heading: 'New Allocation',
         subHeading: description,
-        address,
         balance,
-        balances,
+        balances: [token],
         id,
         onSubmitAllocation,
       },

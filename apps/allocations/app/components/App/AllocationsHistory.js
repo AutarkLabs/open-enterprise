@@ -1,4 +1,5 @@
 import React from 'react'
+import { useAppState } from '@aragon/api-react'
 import {
   DataView,
   IconCheck,
@@ -12,9 +13,16 @@ import PropTypes from 'prop-types'
 
 import { STATUSES } from '../../utils/constants'
 import { displayCurrency } from '../../utils/helpers'
+import { match } from 'minimatch'
 
 const AllocationsHistory = ({ allocations }) => {
   const theme = useTheme()
+  const { balances = [] } = useAppState()
+  const getTokenSymbol = inputAddress => {
+    const matchingBalance = balances.find(({ address }) => inputAddress === address)
+    return matchingBalance ? matchingBalance.symbol : ''
+  }
+
   return (
     <DataView
       mode="adaptive"
@@ -35,7 +43,7 @@ const AllocationsHistory = ({ allocations }) => {
       entries={allocations}
       renderEntry={({
         date,
-        budget,
+        accountId,
         recipients,
         description,
         status,
@@ -44,7 +52,9 @@ const AllocationsHistory = ({ allocations }) => {
       }, index) => {
         return [
           new Date(Number(date)).toLocaleDateString(),
-          budget,
+          <div key={index}>
+            {'# ' + accountId}
+          </div>,
           recipients.length === 1 ? '1 entity'
             : recipients.length + ' entities',
           description,
@@ -55,44 +65,44 @@ const AllocationsHistory = ({ allocations }) => {
               color: theme.negative,
               fontWeight: 600,
             }}>
-            { displayCurrency(BigNumber(amount)) } { token }
+            { displayCurrency(BigNumber(amount)) } { getTokenSymbol(token) }
           </div>
         ]
       }}
-      renderEntryExpansion={({ recipients, amount, token }) => {
-        return recipients.map((recipient, index) => {
-          const allocated = BigNumber(recipient.amount).div(amount)
-          return (
-            <div key={index} css={{
-              display: 'flex',
-              flexDirection: 'column',
-            }}>
-              <IdentityBadge
-                entity={recipient.address}
-                shorten={true}
-              />
-              <div css={{
-                marginTop: '7px',
-                marginBottom: '4px',
-              }}>
-                <ProgressBar
-                  value={allocated}
-                  color={theme.accentEnd}
-                />
-              </div>
-              <div css={{
-                color: theme.contentSecondary,
-                alignSelf: 'flex-end',
-                fontSize: '12px',
-              }}>
-                { displayCurrency(BigNumber(recipient.amount)) } {' '}
-                {token} {' • '}
-                { allocated.times(100).dp(0).toNumber() }{'%'}
-              </div>
-            </div>
-          )
-        })
-      }}
+      //renderEntryExpansion={({ recipients, amount, token }) => {
+      //  return recipients.map((recipient, index) => {
+      //    const allocated = BigNumber(recipient.amount).div(amount)
+      //    return (
+      //      <div key={index} css={{
+      //        display: 'flex',
+      //        flexDirection: 'column',
+      //      }}>
+      //        <IdentityBadge
+      //          entity={recipient.address}
+      //          shorten={true}
+      //        />
+      //        <div css={{
+      //          marginTop: '7px',
+      //          marginBottom: '4px',
+      //        }}>
+      //          <ProgressBar
+      //            value={allocated}
+      //            color={theme.accentEnd}
+      //          />
+      //        </div>
+      //        <div css={{
+      //          color: theme.contentSecondary,
+      //          alignSelf: 'flex-end',
+      //          fontSize: '12px',
+      //        }}>
+      //          { displayCurrency(BigNumber(recipient.amount)) } {' '}
+      //          {token} {' • '}
+      //          { allocated.times(100).dp(0).toNumber() }{'%'}
+      //        </div>
+      //      </div>
+      //    )
+      //  })
+      //}}
     />
   )
 }
