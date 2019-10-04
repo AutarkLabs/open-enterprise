@@ -433,9 +433,9 @@ contract Allocations is AragonApp {
         payout.executions.length = _supports.length;
         payoutId = account.payoutsLength - 1;
         emit SetDistribution(_accountId, payoutId);
-        //if (_startTime <= getTimestamp64()) {
+        if (_startTime <= getTimestamp64()) {
             _runPayout(_accountId, payoutId);
-        //}
+        }
     }
 
     /**
