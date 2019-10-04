@@ -1,3 +1,6 @@
+import BigNumber from 'bignumber.js'
+import { MILLISECONDS_IN_A_MONTH } from '../../../../shared/ui/utils/math-utils'
+
 export const calculateAverageRewardsNumbers = ( rewards, claims, balances, convertRates ) => {
   if (Object.keys(claims).length > 0 && balances && convertRates) {
     return [
@@ -11,7 +14,7 @@ export const calculateAverageRewardsNumbers = ( rewards, claims, balances, conve
   }
 }
 
-export const calculateAvgClaim = ({ claimsByToken, totalClaimsMade }, balances, convertRates) => {
+const calculateAvgClaim = ({ claimsByToken, totalClaimsMade }, balances, convertRates) => {
   return sumTotalRewards(
     claimsByToken,
     balances,
@@ -20,7 +23,7 @@ export const calculateAvgClaim = ({ claimsByToken, totalClaimsMade }, balances, 
   ) / totalClaimsMade
 }
 
-export const calculateMonthlyAvg = (rewards, balances, convertRates) => {
+const calculateMonthlyAvg = (rewards, balances, convertRates) => {
   let monthCount = Math.ceil((Date.now() - rewards.reduce((minDate, reward) => {
     return reward.endDate < minDate.endDate ? reward: minDate
   }).endDate) / MILLISECONDS_IN_A_MONTH)
@@ -33,7 +36,7 @@ export const calculateMonthlyAvg = (rewards, balances, convertRates) => {
   ) / monthCount
 }
 
-export const calculateYTDRewards = (rewards, balances, convertRates) => {
+const calculateYTDRewards = (rewards, balances, convertRates) => {
   const yearBeginning = new Date(new Date(Date.now()).getFullYear(), 0)
   return sumTotalRewards(
     rewards,
@@ -43,7 +46,7 @@ export const calculateYTDRewards = (rewards, balances, convertRates) => {
   )
 }
 
-export const sumTotalRewards = (rewards, balances, convertRates, rewardFilter) => {
+const sumTotalRewards = (rewards, balances, convertRates, rewardFilter) => {
   return balances.reduce((balAcc, balance) => {
     if (convertRates[balance.symbol]) {
       return rewards.reduce((rewAcc,reward) => {

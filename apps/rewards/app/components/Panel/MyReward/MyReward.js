@@ -18,21 +18,12 @@ import {
 import { FieldTitle } from '../../Form'
 import { displayCurrency } from '../../../utils/helpers'
 
-const getSymbol = (tokens, rewardToken) => {
-  return tokens
-    .reduce((symbol, token) => {
-      if (token.address === rewardToken) return token.symbol
-      else return symbol
-    },'')
-}
-
 class MyReward extends React.Component {
   static propTypes = {
     onClaimReward: PropTypes.func.isRequired,
     onClosePanel: PropTypes.func.isRequired,
     viewReward: PropTypes.func.isRequired,
     reward: PropTypes.object.isRequired,
-    tokens: PropTypes.arrayOf(PropTypes.object).isRequired,
   }
 
   onClosePanel = () => this.props.onClosePanel()
@@ -50,17 +41,13 @@ class MyReward extends React.Component {
     const {
       rewardId,
       isMerit,
-      referenceToken,
       referenceTokenSymbol,
-      rewardToken,
       startDate,
       endDate,
       delay,
       claimed,
       userRewardAmount
     } = this.props.reward
-
-    const { tokens } = this.props
 
     return (
       <div>

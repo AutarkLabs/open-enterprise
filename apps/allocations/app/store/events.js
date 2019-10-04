@@ -56,7 +56,6 @@ const eventHandler = async eventData => {
     //   nextState.payouts = nextBoth.payouts
     //   break
   default:
-    console.log('event received', event, returnValues)
     return { ...state }
   }
 }

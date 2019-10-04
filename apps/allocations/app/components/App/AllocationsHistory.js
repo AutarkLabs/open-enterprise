@@ -4,8 +4,6 @@ import {
   DataView,
   IconCheck,
   IconCross,
-  IdentityBadge,
-  ProgressBar,
   useTheme
 } from '@aragon/ui'
 import { BigNumber } from 'bignumber.js'
@@ -13,7 +11,6 @@ import PropTypes from 'prop-types'
 
 import { STATUSES } from '../../utils/constants'
 import { displayCurrency } from '../../utils/helpers'
-import { match } from 'minimatch'
 
 const AllocationsHistory = ({ allocations }) => {
   const theme = useTheme()

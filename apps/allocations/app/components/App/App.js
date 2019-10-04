@@ -13,10 +13,9 @@ const App = () => {
   const [ panel, setPanel ] = useState(null)
   const [ modal, setModal ] = useState({ visible: false, budgetId: null })
   const { api, appState } = useAragonApi()
-  const { allocations = [], balances = [], budgets = [], tokens = [] } = appState
+  const { allocations = [], budgets = [], tokens = [] } = appState
 
   const onCreateBudget = ({ amount, name, token }) => {
-    console.log('amount: ', amount)
     api
       .newAccount(
         name,             // _metadata
@@ -32,10 +31,8 @@ const App = () => {
     addresses,
     description,
     budgetId,
-    recurring,
     period,
     balance,
-    tokenAddress,
   }) => {
     const emptyIntArray = new Array(addresses.length).fill(0)
     api.setDistribution(
@@ -69,8 +66,7 @@ const App = () => {
     // uint256 _amount
   }
 
-  const onSubmitDeactivate = id => {
-    console.log(`deactivating budget # ${id}...`)
+  const onSubmitDeactivate = () => { // TODO id => {
     //api.deactivateBudget(id)
     closeModal()
   }
@@ -121,8 +117,7 @@ const App = () => {
     setModal({ visible: true, budgetId: id })
   }
 
-  const onReactivate = id => {
-    console.log(`reactivating budget # ${id}...`)
+  const onReactivate = () => { // TODO id => {
     //api.reactivateBudget(id)
   }
 
