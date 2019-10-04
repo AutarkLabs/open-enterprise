@@ -7,22 +7,28 @@ const BigNumber = require('bignumber.js')
 const getContract = name => artifacts.require(name)
 
 /** Helper function to read events from receipts */
-const getReceipt = (receipt, event, arg) =>
-  receipt.logs.filter(l => l.event === event)[0].args[arg]
+const getReceipt = (receipt, event, arg) => {
+  const result = receipt.logs.filter(l => l.event === event)[0].args
+  return arg ? result[arg] : result
+}
 
 /** Useful constants */
 const NULL_ADDR = '0x00'
-const ANY_ADDR = ' 0xffffffffffffffffffffffffffffffffffffffff'
-const TEN_DAYS = 864000
+const ANY_ADDR = '0xffffffffffffffffffffffffffffffffffffffff'
+const ONE_DAY = 86400
+const TEN_DAYS = ONE_DAY * 10
 const SUPPORTS = [ 500, 200, 300 ]
 const TOTAL_SUPPORT = 1000
 
 contract('Allocations', accounts => {
   let APP_MANAGER_ROLE,
+    CHANGE_BUDGETS_ROLE,
+    CHANGE_PERIOD_ROLE,
     CREATE_ACCOUNT_ROLE,
     CREATE_ALLOCATION_ROLE,
     EXECUTE_ALLOCATION_ROLE,
     EXECUTE_PAYOUT_ROLE,
+    SET_MAX_CANDIDATES_ROLE,
     TRANSFER_ROLE
   let daoFact, app, appBase, vault, vaultBase, token
 
@@ -48,10 +54,13 @@ contract('Allocations', accounts => {
 
     // Setup ACL roles constants
     APP_MANAGER_ROLE = await kernelBase.APP_MANAGER_ROLE()
+    CHANGE_BUDGETS_ROLE = await appBase.CHANGE_BUDGETS_ROLE()
+    CHANGE_PERIOD_ROLE = await appBase.CHANGE_PERIOD_ROLE()
     CREATE_ACCOUNT_ROLE = await appBase.CREATE_ACCOUNT_ROLE()
     CREATE_ALLOCATION_ROLE = await appBase.CREATE_ALLOCATION_ROLE()
     EXECUTE_ALLOCATION_ROLE = await appBase.EXECUTE_ALLOCATION_ROLE()
     EXECUTE_PAYOUT_ROLE = await appBase.EXECUTE_PAYOUT_ROLE()
+    SET_MAX_CANDIDATES_ROLE = await appBase.SET_MAX_CANDIDATES_ROLE()
     TRANSFER_ROLE = await vaultBase.TRANSFER_ROLE()
 
     /** Create the dao from the dao factory */
@@ -76,6 +85,8 @@ contract('Allocations', accounts => {
     )
 
     /** Setup permissions */
+    await acl.createPermission(ANY_ADDR, app.address, CHANGE_BUDGETS_ROLE, root)
+    await acl.createPermission(ANY_ADDR, app.address, CHANGE_PERIOD_ROLE, root)
     await acl.createPermission(ANY_ADDR, app.address, CREATE_ACCOUNT_ROLE, root)
     await acl.createPermission(
       ANY_ADDR,
@@ -90,6 +101,7 @@ contract('Allocations', accounts => {
       root
     )
     await acl.createPermission(ANY_ADDR, app.address, EXECUTE_PAYOUT_ROLE, root)
+    await acl.createPermission(ANY_ADDR, app.address, SET_MAX_CANDIDATES_ROLE, root)
 
     /** Install a vault instance to the dao */
     const vaultReceipt = await dao.newAppInstance(
@@ -117,6 +129,11 @@ contract('Allocations', accounts => {
       true
     ) // empty parameters minime
 
+    //Confirm revert if period is less than 1 day
+    assertRevert(async () => {
+      await app.initialize(vault.address, ONE_DAY - 1)
+    })
+
     /** Initialize app */
     await app.initialize(vault.address, TEN_DAYS)
   })
@@ -136,7 +153,7 @@ contract('Allocations', accounts => {
 
       accountId = (await app.newAccount(
         'Fett´s vett',
-        0,
+        NULL_ADDR,
         true,
         web3.toWei(0.01, 'ether')
       )).logs[0].args.accountId.toNumber()
@@ -176,7 +193,7 @@ contract('Allocations', accounts => {
         accountId,
         2,
         Date.now() / 1000 + 1,
-        86400,
+        ONE_DAY,
         web3.toWei(0.01, 'ether')
       )).logs[0].args.payoutId.toNumber()
     })
@@ -199,6 +216,13 @@ contract('Allocations', accounts => {
       )
     })
 
+    it('fails to get period information due to periodNo being too high', async () => {
+      const periodNo = (await app.getCurrentPeriodId()).plus(1).toNumber()
+      return assertRevert(async () => {
+        await app.getPeriod(periodNo)
+      })
+    })
+
     it('can get period information', async () => {
       const periodNo = (await app.getCurrentPeriodId()).toNumber()
       const [ isCurrent, startTime, endTime ] = await app.getPeriod(periodNo)
@@ -208,6 +232,17 @@ contract('Allocations', accounts => {
         TEN_DAYS - 1,
         'should be equal to ten days minus one second'
       )
+    })
+
+    it('fails to set the distribution (eth) - idx too high', async () => {
+      const candidateArrayLength = (await app.getNumberOfCandidates(
+        accountId,
+        ethPayoutId
+      )).toNumber()
+
+      return assertRevert(async () => {
+        await app.getPayoutDistributionValue(accountId, ethPayoutId, candidateArrayLength+1)
+      })
     })
 
     it('sets the distribution (eth)', async () => {
@@ -236,6 +271,18 @@ contract('Allocations', accounts => {
         storedSupport.length,
         'distribution array lengths do not match'
       )
+    })
+
+    it('fails to auto-execute the payout (eth) - accountId too high', async () => {
+      return assertRevert(async () => {
+        await app.runPayout(accountId+1, ethPayoutId)
+      })
+    })
+
+    it('fails to auto-execute the payout (eth) - payoutId too high', async () => {
+      return assertRevert(async () => {
+        await app.runPayout(accountId, ethPayoutId+2)
+      })
     })
 
     it('executes the payout (eth)', async () => {
@@ -325,9 +372,9 @@ contract('Allocations', accounts => {
     })
 
     it('executes the payout (recurring)', async () => {
-      timeTravel(864000)
+      timeTravel(TEN_DAYS)
       await app.executePayout(accountId, deferredPayoutId, 0)
-      timeTravel(864000)
+      timeTravel(TEN_DAYS)
       await app.executePayout(accountId, deferredPayoutId, 1)
       await app.executePayout(accountId, deferredPayoutId, 2)
       const bobafettBalance = BigNumber(await web3.eth.getBalance(bobafett))
@@ -352,16 +399,18 @@ contract('Allocations', accounts => {
     })
 
     it('cannot execute more than once if non-recurring', async () => {
-      return assertRevert(async () => {
-        await app.runPayout(accountId, ethPayoutId)
-      })
+      const receipt =  await app.runPayout(accountId, ethPayoutId)
+      const firstFailedPayment = getReceipt(receipt, 'PaymentFailure')
+      assert.equal(accountId, firstFailedPayment.accountId)
+      assert.equal(ethPayoutId, firstFailedPayment.payoutId)
+      assert.equal(0, firstFailedPayment.candidateId)
     })
 
     context('invalid workflows', () => {
       before(async () => {
         accountId = (await app.newAccount(
           'Fett´s vett',
-          false,
+          NULL_ADDR,
           0,
           0
         )).logs[0].args.accountId.toNumber()
@@ -419,7 +468,7 @@ contract('Allocations', accounts => {
       bosskInitialBalance = await web3.eth.getBalance(bossk)
       accountId = (await app.newAccount(
         'Fett´s vett',
-        false,
+        NULL_ADDR,
         0,
         0
       )).logs[0].args.accountId.toNumber()
@@ -442,7 +491,7 @@ contract('Allocations', accounts => {
           accountId,
           2,
           0x0,
-          86300,
+          ONE_DAY - 100,
           web3.toWei(0.01, 'ether'),
           { from: root }
         )
@@ -463,7 +512,7 @@ contract('Allocations', accounts => {
         accountId,
         2,
         currentTimestamp, // This is the internal ganache timestamp
-        86400,
+        ONE_DAY,
         web3.toWei(0.01, 'ether')
       )).logs[0].args.payoutId.toNumber()
 
@@ -486,10 +535,89 @@ contract('Allocations', accounts => {
         (web3.toWei(0.01, 'ether') * SUPPORTS[2]) / TOTAL_SUPPORT,
         'bounty hunter expense 3 not paid out'
       )
-      timeTravel(43200)
+      timeTravel(ONE_DAY / 2)
+      const receipt =  await app.runPayout(accountId, payoutId)
+      const firstFailedPayment = getReceipt(receipt, 'PaymentFailure')
+      assert.equal(accountId, firstFailedPayment.accountId)
+      assert.equal(payoutId, firstFailedPayment.payoutId)
+      assert.equal(0, firstFailedPayment.candidateId)
+    })
+  })
+  context('Update Global State', () => {
+    let accountId
+
+    before(async () => {
+      accountId = (await app.newAccount(
+        'Fett´s vett',
+        NULL_ADDR,
+        0,
+        0
+      )).logs[0].args.accountId.toNumber()
+      await vault.deposit(
+        NULL_ADDR, // zero address
+        web3.toWei('0.02', 'ether'),
+        { from: root, value: web3.toWei('0.02', 'ether') }
+      )
+    })
+
+    it('should fail to set period duration - below minimum period', async () => {
       return assertRevert(async () => {
-        await app.runPayout(accountId, payoutId)
+        await app.setPeriodDuration(ONE_DAY - 1, { from: root })
       })
+    })
+
+    it('should set period duration', async () => {
+      await app.setPeriodDuration(ONE_DAY, { from: root })
+      //Unable to check periodDuration since it's not public
+    })
+
+    it('should set the max candidates to zero and fail to set distribution', async () => {
+      await app.setMaxCandidates(0, { from: root })
+      //In setDistribution() it looks like it checks maxCandidates against the length of an empty payout.candidateAddresses
+      //Wouldn't this always return true?
+      //Shouldn't `require(payout.candidateAddresses.length <= maxCandidates);` follow `payout.candidateAddresses = _candidateAddresses;`?
+      //Or do this `require(_candidateAddresses.length <= maxCandidates);`?
+      /*
+      assertRevert(async () => {
+        await app.setDistribution(
+          candidateAddresses,
+          supports,
+          zeros,
+          '',
+          'ETH description',
+          zeros,
+          zeros,
+          accountId,
+          1,
+          0x0,
+          0x0,
+          web3.toWei('0.01', 'ether'))
+      })
+      */
+      await app.setMaxCandidates(50, { from: root })
+    })
+
+    it('should set budget for accountId', async () => {
+      await app.setBudget(accountId, 1000)
+      const [ , , , budget ] = await app.getAccount(accountId)
+      assert.equal(1000, budget.toNumber())
+    })
+
+    it('should set budget without setting account.hasBudget', async () => {
+      await app.setBudget(accountId, 2000)
+      const [ , , , budget ] = await app.getAccount(accountId)
+      assert.equal(2000, budget.toNumber())
+    })
+
+    it('should remove budget from accountId', async() => {
+      await app.removeBudget(accountId)
+      const [ , , , budget ] = await app.getAccount(accountId)
+      assert.equal(0, budget.toNumber())
+    })
+
+    it('should advance period', async () => {
+      timeTravel(TEN_DAYS)
+      await app.advancePeriod(1)
     })
   })
 })

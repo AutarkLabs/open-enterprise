@@ -7,7 +7,17 @@ pragma solidity 0.4.24;
 import "@aragon/os/contracts/apps/AragonApp.sol";
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
+import "@aragon/os/contracts/lib/math/SafeMath.sol";
+import "@aragon/os/contracts/lib/math/SafeMath64.sol";
 
+
+/**
+  * @title Rewards App
+  * @author Autark
+  * @dev Distributes rewards in proportion to a reference asset, either as
+  * one-off merit rewards or as scheduled dividend
+  */
+contract Rewards is AragonApp {
 
 contract Rewards is AragonApp {
 
