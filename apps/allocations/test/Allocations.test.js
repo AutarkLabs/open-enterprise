@@ -282,7 +282,7 @@ contract('Allocations', accounts => {
           accountId,
           ethPayoutId,
           i
-        )).toNumber()
+        ))[0].toNumber()
         assert.equal(
           SUPPORTS[i],
           supportVal,
@@ -490,7 +490,7 @@ contract('Allocations', accounts => {
           accountId,
           deferredPayoutId,
           i
-        )).toNumber()
+        ))[0].toNumber()
         assert.equal(
           SUPPORTS[i],
           supportVal,
