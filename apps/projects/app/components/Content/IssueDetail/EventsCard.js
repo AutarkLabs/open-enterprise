@@ -6,6 +6,7 @@ import {
   Tag,
   Text,
   useTheme,
+  GU,
   Link,
   Button,
 } from '@aragon/ui'
@@ -173,22 +174,21 @@ const EventsCard = ({ issue }) => {
     <Box
       heading="Activity"
       css={`
-      flex: 0 1 auto;
-      text-align: left;
-      background: ${theme.surface};
-      border: 1px solid ${theme.border};
-      border-radius: 3px;
-      padding: 0;
-      > * {
-        padding: 16px 0 6px 16px;
-      }
-      > :not(:last-child) {
-        margin-bottom: 0;
-      }
-      > :not(:last-child) :not(:first-child) {
-        border-bottom: 1px solid ${theme.border};
-      }
-    `}
+        text-align: left;
+        background: ${theme.surface};
+        border: 1px solid ${theme.border};
+        border-radius: 3px;
+        padding: 0;
+        > :second-child {
+          padding: ${3 * GU}px;
+        }
+        > :not(:last-child) {
+          margin-bottom: 0;
+        }
+        > :not(:last-child) :not(:first-child) {
+          border-bottom: 1px solid ${theme.border};
+        }
+      `}
     >
       {Object.keys(issueEvents).length > 0 ? (
         Object.keys(issueEvents)

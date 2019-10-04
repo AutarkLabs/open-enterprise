@@ -66,6 +66,7 @@ export const loadIpfsData = async ipfsHash => {
   const {
     detailsOpen,
     exp,
+    deadline,
     fundingHistory,
     hours,
     key,
@@ -74,10 +75,10 @@ export const loadIpfsData = async ipfsHash => {
     slots,
     slotsIndex,
   } = await ipfsGet(ipfsHash)
-
   return {
     detailsOpen,
     exp,
+    deadline,
     fundingHistory,
     hours,
     key,

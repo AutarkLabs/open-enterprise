@@ -22,6 +22,7 @@ const IssueDetail = ({ issue }) => {
         <DetailsCard issue={issue} />
       </div>
       <div css="min-width: 330px; width: 100%">
+        {issue.hasBounty && <StatusCard issue={issue} />}
         <EventsCard issue={issue} />
       </div>
     </div>

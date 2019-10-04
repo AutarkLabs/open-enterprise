@@ -3,18 +3,21 @@ import styled from 'styled-components'
 import {
   Box,
   useTheme,
+  GU,
+  Text,
   Button,
 } from '@aragon/ui'
 //import { usePanelManagement } from '../../Panel'
 import { issueShape } from '../../../utils/shapes.js'
-import { BOUNTY_STATUS } from '../../../utils/bounty-status'
+import { usePanelManagement } from '../../Panel'
+import { BOUNTY_STATUS, BOUNTY_STATUS_LONG } from '../../../utils/bounty-status'
 
 const StatusCard = ({ issue }) => {
   const theme = useTheme()
-  //const { reviewApplication, reviewWork } = usePanelManagement()
+  const { submitWork, requestAssignment, reviewApplication, reviewWork } = usePanelManagement()
   
   const determineStatus = (workStatus, balance) =>
-    Number(balance) === 0 ? BOUNTY_STATUS['fulfilled'] : BOUNTY_STATUS[workStatus]
+    Number(balance) === 0 ? BOUNTY_STATUS_LONG['fulfilled'] : BOUNTY_STATUS_LONG[workStatus]
   
   return (
     <Box
@@ -26,18 +29,26 @@ const StatusCard = ({ issue }) => {
       border: 1px solid ${theme.border};
       border-radius: 3px;
       padding: 0;
-      > * {
-        padding: 16px 0 6px 16px;
-      }
-      > :not(:last-child) {
-        margin-bottom: 0;
-      }
-      > :not(:last-child) :not(:first-child) {
-        border-bottom: 1px solid ${theme.border};
+      > :second-child {
+        padding: ${3 * GU}px;
       }
     `}
     >
-      {determineStatus(issue.workStatus)}
+      <Text.Block>
+        {determineStatus(issue.workStatus)}
+      </Text.Block>
+      {issue.workStatus === 'funded' && (
+        <EventButton
+          mode="outline"
+          wide
+          onClick={() => requestAssignment(issue)}
+        >
+          <Text weight="bold">
+            Submit Application
+          </Text>
+        </EventButton>
+      )}
+
     </Box>
   )
 }
@@ -45,6 +56,7 @@ const StatusCard = ({ issue }) => {
 StatusCard.propTypes = issueShape
 
 const EventButton = styled(Button)`
+  margin-top: ${2 * GU}px;
   padding: 5px 20px 2px 20px;
   font-size: 15px;
   border-radius: 5px;
