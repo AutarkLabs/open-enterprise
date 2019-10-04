@@ -59,91 +59,90 @@ class RequestAssignment extends React.Component {
     const { title, repo, number, url } = this.props.issue
 
     return (
-      <div css={`margin: ${2 * GU}px 0`}>
-        <Form
-          onSubmit={this.onRequestAssignment}
-          submitText="Request Assignment"
-          noSeparator
-          submitDisabled={this.canSubmit()}
+      <Form
+        css={`margin: ${2 * GU}px 0`}
+        onSubmit={this.onRequestAssignment}
+        submitText="Request Assignment"
+        noSeparator
+        submitDisabled={this.canSubmit()}
+      >
+        <IssueTitle>{title}</IssueTitle>
+        <SafeLink
+          href={url}
+          target="_blank"
+          style={{ textDecoration: 'none', color: '#21AAE7' }}
         >
-          <IssueTitle>{title}</IssueTitle>
-          <SafeLink
-            href={url}
-            target="_blank"
-            style={{ textDecoration: 'none', color: '#21AAE7' }}
-          >
-            <IssueLinkRow>
-              <IconGitHub color="#21AAE7" width="14px" height="14px" />
-              <Text style={{ marginLeft: '6px' }}>
-                {repo} #{number}
-              </Text>
-            </IssueLinkRow>
-          </SafeLink>
+          <IssueLinkRow>
+            <IconGitHub color="#21AAE7" width="14px" height="14px" />
+            <Text style={{ marginLeft: '6px' }}>
+              {repo} #{number}
+            </Text>
+          </IssueLinkRow>
+        </SafeLink>
 
+        <FormField
+          label="Work Plan"
+          required
+          input={
+            <DescriptionInput
+              value={this.state.workplan}
+              name="workplan"
+              rows="3"
+              onChange={this.changeField}
+              placeholder="Describe how you plan to accomplish the task and any questions you may have."
+            />
+          }
+        />
+
+        <Estimations>
           <FormField
-            label="Work Plan"
-            required
+            label="Estimated Hours"
             input={
-              <DescriptionInput
-                value={this.state.workplan}
-                name="workplan"
-                rows="3"
+              <HoursInput
+                name="hours"
+                value={this.state.hours}
                 onChange={this.changeField}
-                placeholder="Describe how you plan to accomplish the task and any questions you may have."
               />
             }
           />
+          <FormField
+            label="Estimated Completion"
+            input={
+              <DateInput
+                name="eta"
+                value={this.state.eta}
+                onChange={this.changeDate}
+              />
+            }
+          />
+        </Estimations>
+        <VSpace size={1} />
+        <AckRow>
+          <div style={{ width: '23px' }}>
+            <Checkbox checked={this.state.ack1} onChange={this.setAck1} />
+          </div>
+          <AckText>
+          I understand that this is an application and I should wait for
+          approval before starting work.
+          </AckText>
+        </AckRow>
 
-          <Estimations>
-            <FormField
-              label="Estimated Hours"
-              input={
-                <HoursInput
-                  name="hours"
-                  value={this.state.hours}
-                  onChange={this.changeField}
-                />
-              }
-            />
-            <FormField
-              label="Estimated Completion"
-              input={
-                <DateInput
-                  name="eta"
-                  value={this.state.eta}
-                  onChange={this.changeDate}
-                />
-              }
-            />
-          </Estimations>
-          <VSpace size={1} />
-          <AckRow>
-            <div style={{ width: '23px' }}>
-              <Checkbox checked={this.state.ack1} onChange={this.setAck1} />
-            </div>
-            <AckText>
-            I understand that this is an application and I should wait for
-            approval before starting work.
-            </AckText>
-          </AckRow>
-
-          <AckRow>
-            <div css="width: 23px">
-              <Checkbox checked={this.state.ack2} onChange={this.setAck2} />
-            </div>
-            <AckText>
-            I agree to keep the organization informed of my progress every few
-            days.
-            </AckText>
-          </AckRow>
-          <VSpace size={2} />
-          {/* Github commenting is not currently implemented
-        <Info.Alert title="Submission note" background="#FFFAEE" style={{ marginBottom: '10px' }}>
-          Your inputs will be added as a comment to the Github issue from your “{login}” account.
-        </Info.Alert>
-        */}
-        </Form>
-      </div>
+        <AckRow>
+          <div css="width: 23px">
+            <Checkbox checked={this.state.ack2} onChange={this.setAck2} />
+          </div>
+          <AckText>
+          I agree to keep the organization informed of my progress every few
+          days.
+          </AckText>
+        </AckRow>
+        <VSpace size={2} />
+        {/* Github commenting is not currently implemented
+      <Info.Alert title="Submission note" background="#FFFAEE" style={{ marginBottom: '10px' }}>
+        Your inputs will be added as a comment to the Github issue from your “{login}” account.
+      </Info.Alert>
+      */}
+      </Form>
     )
   }
 }
