@@ -32,6 +32,284 @@ import { Mutation } from 'react-apollo'
 import { COMMENT } from '../../../utils/gql-queries'
 import { issueShape } from '../../../utils/shapes.js'
 
+const BountyUpdate = ({
+  issue,
+  bounties,
+  bountySettings,
+  submitBounties,
+  description,
+  generateHoursChange,
+  tokenDetails,
+  generateExpChange,
+  generateDeadlineChange,
+}) => {
+  const expLevels = bountySettings.expLvls
+
+  return (
+    <div css={`margin: ${2 * GU}px 0`}>
+      <Info.Action title="Warning" style={{ marginBottom: '16px' }}>
+        <p style={{ marginTop: '10px' }}>
+          The updates you specify will overwrite the existing settings for the bounty.
+        </p>
+      </Info.Action>
+
+      <Form
+        onSubmit={submitBounties}
+        description={description}
+        submitText="Submit Update"
+      >
+        <FormField
+          label="Issue"
+          input={
+            <React.Fragment>
+              <Text.Block size="xxlarge" style={{ marginBottom: '16px' }}>
+                {issue.title}
+              </Text.Block>
+              <UpdateRow>
+                <FormField
+                  label="Estimated Hours"
+                  input={
+                    <HoursInput
+                      width="100%"
+                      name="hours"
+                      value={bounties[issue.id]['hours']}
+                      onChange={generateHoursChange(issue.id)}
+                    />
+                  }
+                />
+                {bounties[issue.id]['hours'] > 0 && (
+                  <Badge style={{ padding: '6px', marginTop: '14px', marginLeft: '6px' }}>
+                    <Text size="large">
+                      {bounties[issue.id]['size'].toFixed(2)}{' '}
+                      {tokenDetails.symbol}
+                    </Text>
+                  </Badge>
+                )}
+
+                <FormField
+                  label="Experience level"
+                  input={
+                    <DropDown
+                      items={expLevels.map(exp => exp.name)}
+                      onChange={generateExpChange(issue.id)}
+                      active={bounties[issue.id]['exp']}
+                    />
+                  }
+                />
+              </UpdateRow>
+
+              <UpdateRow>
+                <FormField
+                  label="Deadline"
+                  input={
+                    <DateInput
+                      width="120px"
+                      name='deadline'
+                      value={bounties[issue.id]['deadline']}
+                      onChange={generateDeadlineChange(issue.id)}
+                    />
+                  }
+                />
+                {/* second child needed - should be Slots in the future */}
+                <div></div>
+              </UpdateRow>
+            </React.Fragment>
+          }
+        />
+      </Form>
+    </div>
+  )
+}
+BountyUpdate.propTypes = {
+  issue: issueShape,
+  bounties: PropTypes.object.isRequired,
+  bountySettings: PropTypes.object.isRequired,
+  submitBounties: PropTypes.func.isRequired,
+  description: PropTypes.string.isRequired,
+  generateHoursChange: PropTypes.func.isRequired,
+  tokenDetails: PropTypes.object.isRequired,
+  generateExpChange: PropTypes.func.isRequired,
+  generateDeadlineChange: PropTypes.func.isRequired,
+}
+
+const FundForm = ({
+  bountySettings,
+  issues,
+  bounties,
+  submitBounties,
+  description,
+  totalSize,
+  tokenDetails,
+  descriptionChange,
+  generateArrowChange,
+  generateHoursChange,
+  generateExpChange,
+  generateDeadlineChange,
+}) => {
+  const expLevels = bountySettings.expLvls
+  const theme = useTheme()
+
+  return (
+    <div css={`margin: ${2 * GU}px 0`}>
+      <Mutation mutation={COMMENT}>
+        {(post, result) => (
+          <Form
+            onSubmit={() => submitBounties(post, result)}
+            description={description}
+            submitText={issues.length > 1 ? 'Fund Issues' : 'Fund Issue'}
+            submitDisabled={totalSize > tokenDetails.balance}
+          >
+            <FormField
+              label="Description"
+              required
+              input={
+                <DescriptionInput
+                  rows="3"
+                  name="description"
+                  style={{ resize: 'none' }}
+                  onChange={descriptionChange}
+                  value={description}
+                  wide
+                />
+              }
+            />
+            <FormField
+              label="Issues"
+              hint="Enter the estimated hours per issue"
+              required
+              input={
+                <React.Fragment>
+                  {issues.map(issue => (
+                    <Box key={issue.id} padding={0}>
+                      <div css={`
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        grid-template-rows: auto;
+                        grid-template-areas:
+                          "title title"
+                          "hours exp"
+                          "deadline deadline";
+                        grid-gap: 12px;
+                        align-items: stretch;
+                      `}>
+                        <div css={`
+                          grid-area: title;
+                          padding: ${2 * GU}px ${2 * GU}px 0 ${2 * GU}px;
+                          display: flex;
+                          justify-content: space-between;
+                        `}>
+
+                          <DetailsArrow onClick={generateArrowChange(issue.id)}>
+                            {bounties[issue.id]['detailsOpen'] ? (
+                              <IconClose />
+                            ) : (
+                              <IconOpen />
+                            )}
+                          </DetailsArrow>
+
+                          <Text size="large" weight="bold" css={`
+                              width: 100%;
+                              display: block;
+                              white-space: nowrap;
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                            `}>
+                            {issue.title}
+                          </Text>
+
+                          {issue.id in bounties &&
+                               bounties[issue.id]['hours'] > 0 && (
+                            <Tag css="padding: 10px; margin-left: 10px; width: auto">
+                              {bounties[issue.id]['size'].toFixed(2) + ' ' + tokenDetails.symbol}
+                            </Tag>
+
+                          )}
+                        </div>
+
+                        <div css={`grid-area: hours; padding-left: ${2 * GU}px`}>
+                          <FieldTitle>Estimated Hours</FieldTitle>
+                          <HoursInput
+                            name="hours"
+                            value={bounties[issue.id]['hours']}
+                            onChange={generateHoursChange(issue.id)}
+                            wide
+                          />
+                        </div>
+
+                        <div css={`grid-area: exp; padding-right: ${2 * GU}px`}>
+                          <FormField
+                            label="Experience level"
+                            input={
+                              <DropDown
+                                items={expLevels.map(exp => exp.name)}
+                                onChange={generateExpChange(issue.id)}
+                                selected={bounties[issue.id]['exp']}
+                                wide
+                              />
+                            }
+                          />
+
+                        </div>
+
+                        <div css={`
+                          grid-area: deadline;
+                          background: ${theme.background};
+                          border-top: 1px solid ${theme.border};
+                          padding: 0 ${2 * GU}px;
+                          display: none;
+                          display: ${bounties[issue.id]['detailsOpen'] ? 'block' : 'none'};
+                        `}>
+                          <FormField
+                            label="Deadline"
+                            input={
+                              <DateInput
+                                name='deadline'
+                                value={bounties[issue.id]['deadline']}
+                                onChange={generateDeadlineChange(issue.id)}
+                                width="100%"
+                              />
+                            }
+                          />
+                        </div>
+                      </div>
+                    </Box>
+                  ))}
+                </React.Fragment>
+              }
+            />
+          </Form>
+        )}
+      </Mutation>
+      {
+        (
+          totalSize > tokenDetails.balance
+        ) ? (
+            <div>
+              <br />
+              <Info.Action title="Insufficient Token Balance">
+                Please either mint more tokens or stake fewer tokens against these issues.
+              </Info.Action>
+            </div>
+          ) : null
+      }
+    </div>
+  )
+}
+FundForm.propTypes = {
+  bountySettings: PropTypes.object.isRequired,
+  issues: PropTypes.arrayOf(issueShape),
+  bounties: PropTypes.object.isRequired,
+  submitBounties: PropTypes.func.isRequired,
+  description: PropTypes.string.isRequired,
+  totalSize: PropTypes.number.isRequired,
+  tokenDetails: PropTypes.object.isRequired,
+  descriptionChange: PropTypes.func.isRequired,
+  generateArrowChange: PropTypes.func.isRequired,
+  generateHoursChange: PropTypes.func.isRequired,
+  generateExpChange: PropTypes.func.isRequired,
+  generateDeadlineChange: PropTypes.func.isRequired,
+}
+
 const FundIssues = ({ issues, mode }) => {
   const githubCurrentUser = useGithubAuth()
   const theme = useTheme()
@@ -216,243 +494,6 @@ const FundIssues = ({ issues, mode }) => {
     )
   }
 
-  const BountyUpdate = ({ issue, bounties }) => {
-    const expLevels = bountySettings.expLvls
-
-    return (
-      <div css={`margin: ${2 * GU}px 0`}>
-        <Info.Action title="Warning" style={{ marginBottom: '16px' }}>
-          <p style={{ marginTop: '10px' }}>
-            The updates you specify will overwrite the existing settings for the bounty.
-          </p>
-        </Info.Action>
-
-        <Form
-          onSubmit={submitBounties}
-          description={description}
-          submitText="Submit Update"
-        >
-          <FormField
-            label="Issue"
-            input={
-              <React.Fragment>
-                <Text.Block size="xxlarge" style={{ marginBottom: '16px' }}>
-                  {issue.title}
-                </Text.Block>
-                <UpdateRow>
-                  <FormField
-                    label="Estimated Hours"
-                    input={
-                      <HoursInput
-                        width="100%"
-                        name="hours"
-                        value={bounties[issue.id]['hours']}
-                        onChange={generateHoursChange(issue.id)}
-                      />
-                    }
-                  />
-                  {bounties[issue.id]['hours'] > 0 && (
-                    <Badge style={{ padding: '6px', marginTop: '14px', marginLeft: '6px' }}>
-                      <Text size="large">
-                        {bounties[issue.id]['size'].toFixed(2)}{' '}
-                        {tokenDetails.symbol}
-                      </Text>
-                    </Badge>
-                  )}
-
-                  <FormField
-                    label="Experience level"
-                    input={
-                      <DropDown
-                        items={expLevels.map(exp => exp.name)}
-                        onChange={generateExpChange(issue.id)}
-                        active={bounties[issue.id]['exp']}
-                      />
-                    }
-                  />
-                </UpdateRow>
-
-                <UpdateRow>
-                  <FormField
-                    label="Deadline"
-                    input={
-                      <DateInput
-                        width="120px"
-                        name='deadline'
-                        value={bounties[issue.id]['deadline']}
-                        onChange={generateDeadlineChange(issue.id)}
-                      />
-                    }
-                  />
-                  {/* second child needed - should be Slots in the future */}
-                  <div></div>
-                </UpdateRow>
-              </React.Fragment>
-            }
-          />
-        </Form>
-      </div>
-    )
-  }
-  BountyUpdate.propTypes = {
-    issue: issueShape,
-    bounties: PropTypes.object.isRequired,
-  }
-
-  const FundForm = ({ issues, bounties }) => {
-    const expLevels = bountySettings.expLvls
-
-    return (
-      <div css={`margin: ${2 * GU}px 0`}>
-        <Mutation mutation={COMMENT}>
-          {(post, result) => (
-            <Form
-              onSubmit={() => submitBounties(post, result)}
-              description={description}
-              submitText={issues.length > 1 ? 'Fund Issues' : 'Fund Issue'}
-              submitDisabled={totalSize > tokenDetails.balance}
-            >
-              <FormField
-                label="Description"
-                required
-                input={
-                  <DescriptionInput
-                    rows="3"
-                    name="description"
-                    style={{ resize: 'none' }}
-                    onChange={descriptionChange}
-                    value={description}
-                    wide
-                  />
-                }
-              />
-              <FormField
-                label="Issues"
-                hint="Enter the estimated hours per issue"
-                required
-                input={
-                  <React.Fragment>
-                    {issues.map(issue => (
-                      <Box key={issue.id} padding={0}>
-                        <div css={`
-                          display: grid;
-                          grid-template-columns: 1fr 1fr;
-                          grid-template-rows: auto;
-                          grid-template-areas:
-                            "title title"
-                            "hours exp"
-                            "deadline deadline";
-                          grid-gap: 12px;
-                          align-items: stretch;
-                        `}>
-                          <div css={`
-                            grid-area: title;
-                            padding: ${2 * GU}px ${2 * GU}px 0 ${2 * GU}px;
-                            display: flex;
-                            justify-content: space-between;
-                          `}>
-
-                            <DetailsArrow onClick={generateArrowChange(issue.id)}>
-                              {bounties[issue.id]['detailsOpen'] ? (
-                                <IconClose />
-                              ) : (
-                                <IconOpen />
-                              )}
-                            </DetailsArrow>
-
-                            <Text size="large" weight="bold" css={`
-                                width: 100%;
-                                display: block;
-                                white-space: nowrap;
-                                overflow: hidden;
-                                text-overflow: ellipsis;
-                              `}>
-                              {issue.title}
-                            </Text>
-
-                            {issue.id in bounties &&
-                                 bounties[issue.id]['hours'] > 0 && (
-                              <Tag css="padding: 10px; margin-left: 10px; width: auto">
-                                {bounties[issue.id]['size'].toFixed(2) + ' ' + tokenDetails.symbol}
-                              </Tag>
-
-                            )}
-                          </div>
-
-                          <div css={`grid-area: hours; padding-left: ${2 * GU}px`}>
-                            <FieldTitle>Estimated Hours</FieldTitle>
-                            <HoursInput
-                              name="hours"
-                              value={bounties[issue.id]['hours']}
-                              onChange={generateHoursChange(issue.id)}
-                              wide
-                            />
-                          </div>
-
-                          <div css={`grid-area: exp; padding-right: ${2 * GU}px`}>
-                            <FormField
-                              label="Experience level"
-                              input={
-                                <DropDown
-                                  items={expLevels.map(exp => exp.name)}
-                                  onChange={generateExpChange(issue.id)}
-                                  selected={bounties[issue.id]['exp']}
-                                  wide
-                                />
-                              }
-                            />
-
-                          </div>
-
-                          <div css={`
-                            grid-area: deadline;
-                            background: ${theme.background};
-                            border-top: 1px solid ${theme.border};
-                            padding: 0 ${2 * GU}px;
-                            display: none;
-                            display: ${bounties[issue.id]['detailsOpen'] ? 'block' : 'none'};
-                          `}>
-                            <FormField
-                              label="Deadline"
-                              input={
-                                <DateInput
-                                  name='deadline'
-                                  value={bounties[issue.id]['deadline']}
-                                  onChange={generateDeadlineChange(issue.id)}
-                                  width="100%"
-                                />
-                              }
-                            />
-                          </div>
-                        </div>
-                      </Box>
-                    ))}
-                  </React.Fragment>
-                }
-              />
-            </Form>
-          )}
-        </Mutation>
-        {
-          (
-            totalSize > tokenDetails.balance
-          ) ? (
-              <div>
-                <br />
-                <Info.Action title="Insufficient Token Balance">
-                  Please either mint more tokens or stake fewer tokens against these issues.
-                </Info.Action>
-              </div>
-            ) : null
-        }
-      </div>
-    )
-  }
-  FundForm.propTypes = {
-    issues: PropTypes.arrayOf(issueShape),
-    bounties: PropTypes.object.isRequired,
-  }
-
   const bountylessIssues = []
   const alreadyAdded = []
 
@@ -478,7 +519,19 @@ const FundIssues = ({ issues, mode }) => {
 
   // in 'update' mode there is only one issue
   if (mode === 'update') {
-    return <BountyUpdate issue={issues[0]} bounties={bounties} />
+    return (
+      <BountyUpdate
+        issue={issues[0]}
+        bounties={bounties}
+        bountySettings={bountySettings}
+        submitBounties={submitBounties}
+        description={description}
+        generateHoursChange={generateHoursChange}
+        tokenDetails={tokenDetails}
+        generateExpChange={generateExpChange}
+        generateDeadlineChange={generateDeadlineChange}
+      />
+    )
   }
 
   issues.forEach(issue => {
@@ -490,7 +543,22 @@ const FundIssues = ({ issues, mode }) => {
 
   return (
     <React.Fragment>
-      {(bountylessIssues.length > 0) && <FundForm issues={bountylessIssues} bounties={bounties} />}
+      {(bountylessIssues.length > 0) && (
+        <FundForm
+          submitBounties={submitBounties}
+          bountySettings={bountySettings}
+          issues={bountylessIssues}
+          bounties={bounties}
+          description={description}
+          totalSize={totalSize}
+          tokenDetails={tokenDetails}
+          descriptionChange={descriptionChange}
+          generateArrowChange={generateArrowChange}
+          generateHoursChange={generateHoursChange}
+          generateExpChange={generateExpChange}
+          generateDeadlineChange={generateDeadlineChange}
+        />
+      )}
       {(alreadyAdded.length > 0) && (
         <Info.Action title="Warning" style={{ marginBottom: `${2 * GU}px` }}>
           <p style={{ margin: '10px 0' }}>

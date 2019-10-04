@@ -304,22 +304,6 @@ contract('Rewards', accounts => {
         })
       })
 
-      it('fails to create a reward with zero occurrences', async () => {
-        return assertRevert(async () => {
-          await app.newReward(
-            'testReward',
-            true,
-            referenceToken.address,
-            rewardToken.address,
-            6,
-            4e18,
-            minBlock,
-            0,
-            0
-          )
-        })
-      })
-
       it('fails to create merit reward multiple occurrences', async () => {
         return assertRevert(async () => {
           await app.newReward(
@@ -352,23 +336,7 @@ contract('Rewards', accounts => {
         })
       })
 
-      it('fails to create reward with zero duration', async () => {
-        assertRevert(async () => {
-          await app.newReward(
-            'testReward',
-            false,
-            referenceToken.address,
-            rewardToken.address,
-            6,
-            4e18,
-            0,
-            1,
-            0
-          )
-        })
-      })
-
-      it('cannot claim reward before period ends', async () => {
+      it('pays out a merit reward of zero with no token changes', async () => {
         let blockNumber = await getBlockNumber()
         meritRewardIds = rewardAdded(
           await app.newReward(
@@ -401,7 +369,7 @@ contract('Rewards', accounts => {
         })
       })
 
-      it('cannot claim a reward of zero', async () => {
+      it('pays out a merit reward of zero with no token changes for the user', async () => {
         let blockNumber = await getBlockNumber()
         meritRewardIds = rewardAdded(
           await app.newReward(

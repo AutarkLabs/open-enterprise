@@ -9,8 +9,7 @@ export const initStore = (vaultAddress, standardBountiesAddress) => {
   return app.store(
     async (state, action) => {
       try {
-        const nextState = await handleEvent(state, action, vaultAddress, vaultContract)
-        return nextState
+        return await handleEvent(state, action, vaultAddress, vaultContract)
       } catch (err) {
         console.error(
           `[PROJECTS] store error: ${err}

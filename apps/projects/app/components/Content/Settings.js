@@ -262,7 +262,7 @@ FundingType.propTypes = {
 const Settings = ({ onLogin }) => {
   const [ bountyCurrencies, setBountyCurrencies ] = useState([])
   const [ expLevels, setExpLevels ] = useState([])
-  const [ baseRate, setBaseRate ] = useState()
+  const [ baseRate, setBaseRate ] = useState(0)
   const [ bountyCurrency, setBountyCurrency ] = useState()
   const [ bountyAllocator, setBountyAllocator ] = useState()
   //const [ bountyArbiter, setBountyArbiter ] = useState()

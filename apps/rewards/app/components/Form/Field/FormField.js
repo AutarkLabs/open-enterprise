@@ -1,11 +1,19 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { SidePanelSeparator, Text, theme,  } from '@aragon/ui'
+import { SidePanelSeparator, Text, theme, } from '@aragon/ui'
 
 import { FieldTitle } from '.'
 
-const FormField = ({ input, label, hint, required, separator, width }) => {
+const FormField = ({
+  input,
+  label,
+  hint,
+  required,
+  separator,
+  width,
+  help,
+}) => {
   // TODO: Currently it will only work with 1 required child
   // const isRequired = React.Children.toArray(children).some(
   //   ({ props: childProps }) => childProps.required
@@ -49,6 +57,7 @@ FormField.propTypes = {
   hint: PropTypes.string,
   separator: PropTypes.bool,
   width: PropTypes.string,
+  help: PropTypes.string,
 }
 
 FormField.defaultProps = {
