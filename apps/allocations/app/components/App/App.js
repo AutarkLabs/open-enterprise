@@ -1,16 +1,15 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
-
 import { useAragonApi } from '../../api-react'
-import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
+import { Button, Header, IconPlus, Main, Modal, SidePanel } from '@aragon/ui'
+import BigNumber from 'bignumber.js'
 
 import { IdentityProvider } from '../../../../../shared/identity'
 import { Empty } from '../Card'
 import { NewAllocation, NewBudget } from '../Panel'
 import { AllocationsHistory, Budgets } from '.'
 import { Deactivate } from '../Modal'
-
-const nameSorter = (a, b) => a.data.name.toUpperCase() > b.data.name.toUpperCase() ? 1 : -1
+import { displayCurrency } from '../../utils/helpers'
 
 const App = () => {
   const [ panel, setPanel ] = useState(null)
@@ -89,25 +88,19 @@ const App = () => {
     })
   }
 
-  const onNewAllocation = (address, description, id, balance) => {
-    // variable examples, remove this
-    const budgetList = [ 'Hacktivism', 'Marketing' ]
-    const selectedBudget = 0
-    const budgetLimit = '200'
-    const fundsLimit = '300'
-    const currency = 'ETH'
+  const onNewAllocation = (budgetId, token, amount, allocated) => {
     setPanel({
       content: NewAllocation,
       data: {
-        id,
+        budgetId,
         heading: 'New allocation',
         onSubmitAllocation,
-        budgetList,
-        selectedBudget,
-        budgetLimit,
-        fundsLimit,
-        description,
-        currency,
+        budgets,
+        token,
+        budgetLimit: displayCurrency(BigNumber(amount).minus(allocated)),
+        fundsLimit: displayCurrency(
+          appState.balances.find(b => b.symbol === token.symbol).amount
+        ),
       },
     })
   }

@@ -42,24 +42,27 @@ const recipientsDuplicate = (recipients) => {
 
 class NewAllocation extends React.Component {
   static propTypes = {
-    id: PropTypes.string.isRequired,
+    budgetId: PropTypes.string.isRequired,
     onSubmitAllocation: PropTypes.func.isRequired,
-    budgetList: PropTypes.arrayOf(PropTypes.string).isRequired,
-    selectedBudget: PropTypes.number,
+    budgets: PropTypes.arrayOf(PropTypes.object).isRequired,
+    token: PropTypes.object.isRequired,
     budgetLimit: PropTypes.string.isRequired,
     fundsLimit: PropTypes.string.isRequired,
-    description: PropTypes.string,
-    currency: PropTypes.string.isRequired,
   }
 
   constructor(props) {
     super(props)
+    const { budgets, budgetId } = props
     this.state = INITIAL_STATE
+    this.state.recipients = {}
+    this.state.recipientsValid = {}
     const recipientId = Date.now()
     this.state.recipients[recipientId] = ''
     this.state.recipientsValid[recipientId] = false
-    if (props.selectedBudget >= 0) {
-      this.state.budgetValue = props.selectedBudget
+    if (budgetId >= 0) {
+      this.state.budgetValue = budgets.indexOf(
+        budgets.find(b => b.id === budgetId)
+      )
       this.state.budgetEmpty = false
     }
   }
@@ -131,7 +134,7 @@ class NewAllocation extends React.Component {
       recipients
     } = this.state
     const allocation = {
-      payoutId: this.props.id,
+      payoutId: this.props.budgetId,
       budgetName: budgetValue,
       balance: amountValue * 10e17,
       description: descriptionValue,
@@ -151,7 +154,7 @@ class NewAllocation extends React.Component {
         input={
           <DropDown
             name="budget"
-            items={props.budgetList}
+            items={props.budgets.map(b => b.name)}
             selected={state.budgetValue}
             onChange={this.changeField}
             wide={true}
@@ -191,13 +194,13 @@ class NewAllocation extends React.Component {
                 wide={true}
                 css={{ borderRadius: '4px 0px 0px 4px' }}
               />
-              <CurrencyBox>{props.currency}</CurrencyBox>
+              <CurrencyBox>{props.token.symbol}</CurrencyBox>
             </InputGroup>
             <InputGroup css={{ justifyContent: 'flex-end' }}>
               <Text
                 size="small"
                 css={{ paddingTop: '10px', color: theme.contentSecondary }}>
-                Available Budget: {props.budgetLimit} {props.currency}
+                Available Budget: {props.budgetLimit} {props.token.symbol}
               </Text>
             </InputGroup>
           </React.Fragment>
@@ -234,7 +237,6 @@ class NewAllocation extends React.Component {
       <div>
         <Form
           onSubmit={this.submitAllocation}
-          description={props.description}
           submitText="Submit"
           disabled={ state.budgetEmpty || state.descriptionEmpty
                      || state.amountInvalid || state.amountOverBudget

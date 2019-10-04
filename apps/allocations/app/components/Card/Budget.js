@@ -37,7 +37,7 @@ const Budget = ({
   const theme = useTheme()
 
   const newAllocation = () => {
-    onNewAllocation(id, name, amount, token)
+    onNewAllocation(id, token, amount, allocated)
   }
   const edit = () => {
     onEdit(id)
