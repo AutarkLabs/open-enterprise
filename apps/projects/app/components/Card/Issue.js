@@ -48,11 +48,18 @@ const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
       </div>
 
       <IssueData>
-        <ClickArea theme={theme} onClick={() => onClick(issue)} />
-
         <IssueMain>
           <div css="display: flex;">
-            <IssueTitle theme={theme}>{title}</IssueTitle>
+            <a
+              href={`#${number}`}
+              css="text-decoration: none"
+              onClick={e => {
+                e.preventDefault()
+                onClick(issue)
+              }}
+            >
+              <IssueTitle theme={theme}>{title}</IssueTitle>
+            </a>
 
             {labels.totalCount > 0 && (
               <div>
@@ -142,20 +149,6 @@ Issue.propTypes = {
   work: PropTypes.object,
 }
 
-const ClickArea = styled.div`
-  height: 100%;
-  left: 0;
-  position: absolute;
-  width: 100%;
-  z-index: 1;
-  :active {
-    border: 1px solid ${props => props.theme.accent};
-    z-index: 3;
-  }
-  :hover {
-    cursor: pointer;
-  }
-`
 const StyledIssue = styled.div`
   width: 100%;
   background: ${props => props.theme.background};

@@ -411,12 +411,12 @@ contract Allocations is AragonApp {
         uint256 _amount
     ) public auth(CREATE_ALLOCATION_ROLE) returns(uint64 payoutId)
     {
+        require(maxCandidates >= _candidateAddresses.length);
         Account storage account = accounts[_accountId];
         require(vault.balance(account.token) >= _amount * _recurrences);
         require(_recurrences > 0, "must execute payout at least once");
 
         Payout storage payout = account.payouts[account.payoutsLength++];
-        require(payout.candidateAddresses.length <= maxCandidates);
 
         payout.amount = _amount;
         payout.recurrences = _recurrences;
