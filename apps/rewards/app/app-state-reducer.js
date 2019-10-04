@@ -8,7 +8,8 @@ import {
   DIVIDEND
 } from './utils/constants'
 import {
-  calculateAverageRewardsNumbers
+  calculateAverageRewardsNumbers,
+  calculateMyRewardsSummary
 } from './utils/metric-utils'
 
 const CONVERT_API_BASE = 'https://min-api.cryptocompare.com/data'
@@ -20,7 +21,7 @@ function appStateReducer(state) {
 
   if(state){
     state.amountTokens = state.balances.map(token => { 
-      return {amount: token.amount, symbol: token.symbol, address: token.address, decimals: token.decimals}
+      return { amount: token.amount, symbol: token.symbol, address: token.address, decimals: token.decimals }
     })
     state.rewards = state.rewards  || []
     state.claims = state.claims  || []
@@ -28,8 +29,9 @@ function appStateReducer(state) {
       if(reward.isMerit){
         reward.rewardType = ONE_TIME_MERIT
         reward.dateReference = new Date()
-      } else if (reward.occurances === 1){
+      } else if (reward.occurances.toString() === '1'){
         reward.rewardType = ONE_TIME_DIVIDEND
+        reward.dateReference = new Date(reward.endDate)
       } else {
         reward.rewardType = RECURRING_DIVIDEND
       }
@@ -39,8 +41,9 @@ function appStateReducer(state) {
       reward.amountToken = amountToken.symbol
       return reward
     })
-    state.myRewards = state.myRewards || []
-    let metric = calculateAverageRewardsNumbers(state.rewards, state.claims, state.balances, updateConvertedRates(state.balances))
+    state.myRewards = state.rewards.filter(reward => reward.userRewardAmount > 0)
+    let convertRates = updateConvertedRates(state.balances)
+    let metric = calculateAverageRewardsNumbers(state.rewards, state.claims, state.balances, convertRates)
     state.metrics = [
       {
         name: 'Average reward',
@@ -58,8 +61,26 @@ function appStateReducer(state) {
         unit: 'USD',
       },
     ]
-    state.myMetrics = state.myMetrics || []
+    let myMetric = calculateMyRewardsSummary(state.rewards, state.balances, convertRates)
+    state.myMetrics = [
+      {
+        name: 'Unclaimed rewards',
+        value: myMetric[0].toString(),
+        unit: 'USD',
+      },
+      {
+        name: 'Rewards obtained this year',
+        value: myMetric[1].toString(),
+        unit: 'USD',
+      },
+      {
+        name: 'All time rewards obtained',
+        value: myMetric[2].toString(),
+        unit: 'USD',
+      },
+    ]
     state.amountTokens = state.amountTokens || []
+    console.log('end recuders:', state)
   }
 
   return {
