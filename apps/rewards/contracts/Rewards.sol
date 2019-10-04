@@ -19,8 +19,6 @@ import "@aragon/os/contracts/lib/math/SafeMath64.sol";
   */
 contract Rewards is AragonApp {
 
-contract Rewards is AragonApp {
-
     /// Hardcoded constants to save gas
     /// bytes32 public constant ADD_REWARD_ROLE = keccak256("ADD_REWARD_ROLE");
     bytes32 public constant ADD_REWARD_ROLE = 0x7941efc179bdce37ebd8db3e2deb46ce5280bf6d2de2e50938a9e920494c1941;
