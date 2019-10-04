@@ -414,6 +414,7 @@ const FundIssues = ({ issues, mode }) => {
     const activity = {
       user: githubCurrentUser,
       date: today.toISOString(),
+      description,
     }
 
     Object.keys(bounties).map(id => {
@@ -436,6 +437,8 @@ const FundIssues = ({ issues, mode }) => {
         exp: bounties[issues[key].id].exp,
         fundingHistory: bounties[issues[key].id].fundingHistory,
         deadline: bounties[issues[key].id].deadline,
+        hours: bounties[issues[key].id].hours,
+        size: bounties[issues[key].id].size,
         ...issues[key],
       })
     }

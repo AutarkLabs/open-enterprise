@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 
-import { Checkbox, Text, TextInput, theme, SafeLink } from '@aragon/ui'
+import { Checkbox, Text, TextInput, GU, theme, SafeLink } from '@aragon/ui'
 
 import { Form, FormField, DateInput, DescriptionInput } from '../../Form'
 import { IconGitHub } from '../../Shared'
@@ -60,6 +60,7 @@ class RequestAssignment extends React.Component {
 
     return (
       <Form
+        css={`margin: ${2 * GU}px 0`}
         onSubmit={this.onRequestAssignment}
         submitText="Request Assignment"
         noSeparator
@@ -121,26 +122,26 @@ class RequestAssignment extends React.Component {
             <Checkbox checked={this.state.ack1} onChange={this.setAck1} />
           </div>
           <AckText>
-            I understand that this is an application and I should wait for
-            approval before starting work.
+          I understand that this is an application and I should wait for
+          approval before starting work.
           </AckText>
         </AckRow>
 
         <AckRow>
-          <div style={{ width: '23px' }}>
+          <div css="width: 23px">
             <Checkbox checked={this.state.ack2} onChange={this.setAck2} />
           </div>
           <AckText>
-            I agree to keep the organization informed of my progress every few
-            days.
+          I agree to keep the organization informed of my progress every few
+          days.
           </AckText>
         </AckRow>
         <VSpace size={2} />
         {/* Github commenting is not currently implemented
-        <Info.Alert title="Submission note" background="#FFFAEE" style={{ marginBottom: '10px' }}>
-          Your inputs will be added as a comment to the Github issue from your “{login}” account.
-        </Info.Alert>
-        */}
+      <Info.Alert title="Submission note" background="#FFFAEE" style={{ marginBottom: '10px' }}>
+        Your inputs will be added as a comment to the Github issue from your “{login}” account.
+      </Info.Alert>
+      */}
       </Form>
     )
   }
@@ -199,7 +200,7 @@ const IssueLinkRow = styled.div`
   margin-bottom: 10px;
   cursor: pointer;
 `
-const IssueTitle = styled(Text)`
+const IssueTitle = styled(Text.Block)`
   color: #717171;
   font-size: 17px;
   font-weight: 300;
