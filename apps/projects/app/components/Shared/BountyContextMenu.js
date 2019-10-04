@@ -71,7 +71,6 @@ const Item = styled(ContextMenuItem)`
     props.bordered &&
     css`
       border-top: 1px solid ${theme.shadow};
-      margin-top: 10px;
     `};
   padding: ${1 * GU}px ${2 * GU}px;
 `
