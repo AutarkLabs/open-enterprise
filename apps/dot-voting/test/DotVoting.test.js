@@ -34,7 +34,7 @@ const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 contract('DotVoting', accounts => {
   let APP_MANAGER_ROLE, ROLE_ADD_CANDIDATES, ROLE_CREATE_VOTES, ROLE_MODIFY_CANDIDATE_SUPPORT, ROLE_MODIFY_QUORUM
-  let daoFact, dao, acl, app, token, executionTarget, evmState
+  let daoFact, app, token, executionTarget, evmState
 
   const DotVotingTime = 1000
   const root = accounts[0]
@@ -63,10 +63,10 @@ contract('DotVoting', accounts => {
 
     /** Create the dao from the dao factory */
     const daoReceipt = await daoFact.newDAO(root)
-    dao = getContract('Kernel').at(getReceipt(daoReceipt, 'DeployDAO', 'dao'))
+    const dao = getContract('Kernel').at(getReceipt(daoReceipt, 'DeployDAO', 'dao'))
 
     /** Setup permission to install app */
-    acl = getContract('ACL').at(await dao.acl())
+    const acl = getContract('ACL').at(await dao.acl())
     await acl.createPermission(root, dao.address, APP_MANAGER_ROLE, root)
 
     /** Install an app instance to the dao */
