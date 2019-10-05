@@ -1,15 +1,13 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { useAragonApi } from '../../api-react'
-import { Button, Header, IconPlus, Main, Modal, SidePanel } from '@aragon/ui'
-import BigNumber from 'bignumber.js'
+import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
 
 import { IdentityProvider } from '../../../../../shared/identity'
 import { Empty } from '../Card'
 import { NewAllocation, NewBudget } from '../Panel'
 import { AllocationsHistory, Budgets } from '.'
 import { Deactivate } from '../Modal'
-import { displayCurrency } from '../../utils/helpers'
 
 const App = () => {
   const [ panel, setPanel ] = useState(null)
@@ -88,7 +86,8 @@ const App = () => {
     })
   }
 
-  const onNewAllocation = (budgetId, token, amount, allocated) => {
+  const onNewAllocation = (budgetId) => {
+    const { balances } = appState
     setPanel({
       content: NewAllocation,
       data: {
@@ -96,11 +95,7 @@ const App = () => {
         heading: 'New allocation',
         onSubmitAllocation,
         budgets,
-        token,
-        budgetLimit: displayCurrency(BigNumber(amount).minus(allocated)),
-        fundsLimit: displayCurrency(
-          appState.balances.find(b => b.symbol === token.symbol).amount
-        ),
+        balances,
       },
     })
   }
@@ -194,7 +189,7 @@ const App = () => {
         onDeactivate={onDeactivate}
         onReactivate={onReactivate}
       />
-      { allocations.length && <AllocationsHistory allocations={allocations} /> }
+      { !!allocations.length && <AllocationsHistory allocations={allocations} /> }
       <Deactivate
         visible={isModalVisible}
         budgetId={currentBudgetId}

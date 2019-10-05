@@ -3,15 +3,15 @@ import React from 'react'
 import { DropDown, IconClose, Text, TextInput, theme } from '@aragon/ui'
 import web3Utils from 'web3-utils'
 import styled from 'styled-components'
+import { BigNumber } from 'bignumber.js'
 
 import { RecipientsInput } from '../../../../../shared/ui'
-import { BigNumber } from 'bignumber.js'
 import { MIN_AMOUNT } from '../../utils/constants'
-import { isStringEmpty } from '../../utils/helpers'
+import { displayCurrency, isStringEmpty } from '../../utils/helpers'
 import { DescriptionInput, Form, FormField } from '../Form'
 
 const INITIAL_STATE = {
-  budgetValue: -1,
+  budgetValue: {},
   budgetEmpty: true,
   descriptionValue: '',
   descriptionEmpty: true,
@@ -22,6 +22,7 @@ const INITIAL_STATE = {
   recipients: {},
   recipientsValid: {},
   recipientsDuplicate: false,
+  tokenValue: {},
 }
 
 const errorMessages = {
@@ -45,9 +46,7 @@ class NewAllocation extends React.Component {
     budgetId: PropTypes.string.isRequired,
     onSubmitAllocation: PropTypes.func.isRequired,
     budgets: PropTypes.arrayOf(PropTypes.object).isRequired,
-    token: PropTypes.object.isRequired,
-    budgetLimit: PropTypes.string.isRequired,
-    fundsLimit: PropTypes.string.isRequired,
+    balances: PropTypes.arrayOf(PropTypes.object).isRequired,
   }
 
   constructor(props) {
@@ -59,27 +58,30 @@ class NewAllocation extends React.Component {
     const recipientId = Date.now()
     this.state.recipients[recipientId] = ''
     this.state.recipientsValid[recipientId] = false
-    if (budgetId >= 0) {
-      this.state.budgetValue = budgets.indexOf(
-        budgets.find(b => b.id === budgetId)
-      )
+    if (budgetId !== undefined) {
+      const budgetValue = budgets.find(b => b.id === budgetId)
+      this.state.budgetValue = budgetValue
       this.state.budgetEmpty = false
+      this.state.tokenValue = props.balances.find(
+        b => b.symbol === budgetValue.token.symbol
+      )
     }
   }
 
   changeField = e => {
-    if (e.target === undefined) {
-      this.setState({
-        budgetValue: e,
-        budgetEmpty: e === -1
-      })
-      return
-    }
     const { name, value } = e.target
-    const { budgetLimit, fundsLimit } = this.props
-    const { recipients, recipientsValid } = this.state
+    const { balances } = this.props
+    const { recipients, recipientsValid, budgetValue, tokenValue } = this.state
 
-    if (name === 'description') {
+    if (name === 'budget') {
+      this.setState({
+        budgetValue: value,
+        budgetEmpty: false,
+        tokenValue: balances.find(b => b.symbol === value.token.symbol)
+      })
+    }
+
+    else if (name === 'description') {
       this.setState({
         descriptionValue: value,
         descriptionEmpty: isStringEmpty(value),
@@ -91,8 +93,8 @@ class NewAllocation extends React.Component {
         amountValue: value,
         amountInvalid: isStringEmpty(value)
           || BigNumber(value).lt(MIN_AMOUNT),
-        amountOverBudget: BigNumber(value).gt(budgetLimit),
-        amountOverFunds: BigNumber(value).gt(fundsLimit),
+        amountOverBudget: BigNumber(value + 'e18').gt(budgetValue.amount),
+        amountOverFunds: BigNumber(value + 'e18').gt(tokenValue.amount),
       })
     }
 
@@ -145,7 +147,21 @@ class NewAllocation extends React.Component {
   }
 
   render() {
-    const { props, state } = this
+    const { budgets } = this.props
+    const {
+      budgetValue,
+      descriptionValue,
+      amountValue,
+      recipients,
+      recipientsValid,
+      budgetEmpty,
+      descriptionEmpty,
+      amountInvalid,
+      amountOverBudget,
+      amountOverFunds,
+      recipientsDuplicate,
+      tokenValue,
+    } = this.state
 
     const budgetDropDown = (
       <FormField
@@ -154,9 +170,12 @@ class NewAllocation extends React.Component {
         input={
           <DropDown
             name="budget"
-            items={props.budgets.map(b => b.name)}
-            selected={state.budgetValue}
-            onChange={this.changeField}
+            items={budgets.map(b => b.name)}
+            selected={budgets.indexOf(budgetValue)}
+            onChange={i => this.changeField({ target: {
+              name: 'budget',
+              value: budgets[i],
+            } })}
             wide={true}
           />
         }
@@ -171,7 +190,7 @@ class NewAllocation extends React.Component {
           <DescriptionInput
             name="description"
             onChange={this.changeField}
-            value={state.descriptionValue}
+            value={descriptionValue}
           />
         }
       />
@@ -189,18 +208,21 @@ class NewAllocation extends React.Component {
                 type="number"
                 min={MIN_AMOUNT}
                 step="any"
-                value={state.amountValue}
+                value={amountValue}
                 onChange={this.changeField}
                 wide={true}
                 css={{ borderRadius: '4px 0px 0px 4px' }}
               />
-              <CurrencyBox>{props.token.symbol}</CurrencyBox>
+              <CurrencyBox>{tokenValue.symbol}</CurrencyBox>
             </InputGroup>
             <InputGroup css={{ justifyContent: 'flex-end' }}>
               <Text
                 size="small"
                 css={{ paddingTop: '10px', color: theme.contentSecondary }}>
-                Available Budget: {props.budgetLimit} {props.token.symbol}
+                {'Available Budget: '}
+                {displayCurrency(BigNumber(budgetValue.amount))}
+                {' '}
+                {tokenValue.symbol}
               </Text>
             </InputGroup>
           </React.Fragment>
@@ -214,10 +236,9 @@ class NewAllocation extends React.Component {
         required
         input={
           <RecipientsInput
-            recipients={state.recipients}
-            recipientsValid={state.recipientsValid}
+            recipients={recipients}
+            recipientsValid={recipientsValid}
             onChange={this.changeField}
-            valid={!state.recipientsInvalid}
           />
         }
       />
@@ -225,7 +246,7 @@ class NewAllocation extends React.Component {
 
     const errorBlocks = Object.keys(errorMessages).map((e, i) => (
       <div key={i}>
-        <ErrorMessage hasError={state[e]} type={e} />
+        <ErrorMessage hasError={this.state[e]} type={e} />
       </div>
     ))
 
@@ -238,10 +259,9 @@ class NewAllocation extends React.Component {
         <Form
           onSubmit={this.submitAllocation}
           submitText="Submit"
-          disabled={ state.budgetEmpty || state.descriptionEmpty
-                     || state.amountInvalid || state.amountOverBudget
-                     || state.amountOverFunds || areRecipientsInvalid()
-                     || state.recipientsDuplicate }
+          disabled={ budgetEmpty || descriptionEmpty || amountInvalid
+                     || amountOverBudget || amountOverFunds
+                     || areRecipientsInvalid() || recipientsDuplicate }
           errors={errorBlocks}
         >
           {budgetDropDown}

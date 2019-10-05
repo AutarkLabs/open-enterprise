@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import BigNumber from 'bignumber.js'
+import { displayCurrency } from '../../utils/helpers'
 
 import {
   Card,
@@ -37,7 +38,7 @@ const Budget = ({
   const theme = useTheme()
 
   const newAllocation = () => {
-    onNewAllocation(id, token, amount, allocated)
+    onNewAllocation(id)
   }
   const edit = () => {
     onEdit(id)
@@ -95,7 +96,7 @@ const Budget = ({
     >
       <StatsValueBig theme={theme}>
         {displayCurrency(BigNumber(amount))}
-        <Text>{' ' + currency + ' per period'}</Text>
+        <Text>{' ' + token.symbol + ' per period'}</Text>
       </StatsValueBig>
       <StatsValueBig css={{ paddingTop: '24px' }} theme={theme}>
         <ProgressBar
@@ -108,7 +109,7 @@ const Budget = ({
         paddingTop: '8px',
       }}>
         {displayCurrency(BigNumber(amount).minus(allocated))}
-        <Text>{' ' + currency + ' below limit'}</Text>
+        <Text>{' ' + token.symbol + ' below limit'}</Text>
       </StatsValueSmall>
       <StatsValueSmall css={{
         color: theme.contentSecondary,
