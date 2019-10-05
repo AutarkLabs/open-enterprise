@@ -220,7 +220,7 @@ class NewAllocation extends React.Component {
                 size="small"
                 css={{ paddingTop: '10px', color: theme.contentSecondary }}>
                 {'Available Budget: '}
-                {displayCurrency(BigNumber(budgetValue.amount))}
+                {displayCurrency(BigNumber(budgetValue.remaining))}
                 {' '}
                 {tokenValue.symbol}
               </Text>

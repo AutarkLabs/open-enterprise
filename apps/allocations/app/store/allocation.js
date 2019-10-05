@@ -1,5 +1,5 @@
-import { combineLatest } from 'rxjs'
-import { first, map } from 'rxjs/operators'
+import { combineLatest, range } from 'rxjs'
+import { first, map, mergeMap, mergeScan, toArray } from 'rxjs/operators'
 
 import { app } from '../../../../shared/store-utils'
 
@@ -9,7 +9,7 @@ import { app } from '../../../../shared/store-utils'
 
 export const updateAllocations = async (allocations, { accountId, payoutId }) => {
   const newAllocations = Array.from(allocations || [])
-  if (!newAllocations.some(a => a.id === payoutId && a.accountId === accountId)) {
+  if (!newAllocations.some(a => a.payoutId === payoutId && a.accountId === accountId)) {
     newAllocations.push(await getAllocation({ accountId, payoutId }))
   }
   return newAllocations
@@ -69,7 +69,8 @@ const getAllocation = async ({ accountId, payoutId }) => {
     app.call('getAccount', accountId),
     app.call('getPayout', accountId, payoutId),
     app.call('getPayoutDescription', accountId, payoutId),
-    app.call('getNumberOfCandidates', accountId, payoutId)
+    app.call('getNumberOfCandidates', accountId, payoutId),
+    getRecipientData(accountId, payoutId)
   )
     .pipe(
       first(),
@@ -88,7 +89,9 @@ const getAllocation = async ({ accountId, payoutId }) => {
         // getPayoutDescription
         description,
         // getNumberofCandidates
-        recipientsLength
+        recipientsLength,
+        // getRecipientData
+        recipients
       ]) => ({
         // transform response data for the frontend
         budget,
@@ -101,11 +104,25 @@ const getAllocation = async ({ accountId, payoutId }) => {
         recurrences,
         token,
         date: new Date(startTime*1000),
-        recipients: { length: recipientsLength },
-        status: 2 //Approved will be made dynamic once the execution handler is integrated
+        recipients,
+        status: recipients.every(r => r.executions === recurrences) ? 3 : 2, //Approved will be made dynamic once the execution handler is integrated
       }))
     )
     .toPromise()
+}
+
+const getRecipientData = (_accountId, _payoutId) => {
+  return app.call('getNumberOfCandidates', _accountId, _payoutId)
+    .pipe(
+      first(),
+      mergeMap(candidateLength => 
+        range(0, candidateLength)
+      ),
+      mergeMap(candidateIndex => (
+        app.call('getPayoutDistributionValue', _accountId, _payoutId, candidateIndex))
+      ),
+      toArray()
+    )
 }
 
 // const loadPayoutData = async (accountId, payoutId) => {

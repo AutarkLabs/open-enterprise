@@ -17,11 +17,9 @@ const eventHandler = async eventData => {
   } else if (event === events.SYNC_STATUS_SYNCED) {
     return { ...state, isSyncing: false }
   }
-  console.log('event received', event, returnValues)
   // Vault events
   if (addressesEqual(address, settings.vault.address)) {
     // const vaultBalance = vaultLoadBalance(state, returnValues, settings)
-    // console.log('upgrading vault balances', vaultBalance)
 
     return vaultLoadBalance(state, returnValues, settings)
   }
@@ -36,15 +34,15 @@ const eventHandler = async eventData => {
   case 'SetDistribution':
     return {
       ...state,
-      accounts: await updateAccounts(state.accounts, returnValues.accountId),
       allocations: await updateAllocations(state.allocations, returnValues)
     }
 
-    // case 'PayoutExecuted':
-    //   nextBoth = await onPayoutExecuted(payouts, accounts, returnValues)
-    //   nextState.accounts = nextBoth.accounts
-    //   nextState.payouts = nextBoth.payouts
-    //   break
+  case 'PayoutExecuted':
+    return {
+      ...state,
+      accounts: await updateAccounts(state.accounts, returnValues.accountId),
+      allocations: await updateAllocations(state.allocations, returnValues)
+    }
 
   default:
     return { ...state }

@@ -10,8 +10,7 @@ import { combineLatest } from 'rxjs'
 
 export const updateAccounts = async (accounts, id) => {
   const newAccounts = Array.from(accounts || [])
-
-  if (!newAccounts.some(a => a.accountId === id)) {
+  if (!newAccounts.some(a => a.id === id)) {
     newAccounts.push(await getAccount(id))
   }
   return newAccounts
