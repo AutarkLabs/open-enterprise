@@ -256,7 +256,6 @@ const FundForm = ({
                           background: ${theme.background};
                           border-top: 1px solid ${theme.border};
                           padding: 0 ${2 * GU}px;
-                          display: none;
                           display: ${bounties[issue.id]['detailsOpen'] ? 'block' : 'none'};
                         `}>
                           <FormField

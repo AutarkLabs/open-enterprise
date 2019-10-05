@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import {
   Box,
@@ -7,10 +8,26 @@ import {
   Text,
   Button,
 } from '@aragon/ui'
-//import { usePanelManagement } from '../../Panel'
 import { issueShape } from '../../../utils/shapes.js'
 import { usePanelManagement } from '../../Panel'
-import { BOUNTY_STATUS, BOUNTY_STATUS_LONG } from '../../../utils/bounty-status'
+import { BOUNTY_STATUS_LONG } from '../../../utils/bounty-status'
+
+const Action = ({ panel, caption, issue }) => (
+  <EventButton
+    mode="outline"
+    wide
+    onClick={() => panel(issue)}
+  >
+    <Text weight="bold">
+      {caption}
+    </Text>
+  </EventButton>
+)
+Action.propTypes = {
+  panel: PropTypes.func.isRequired,
+  caption: PropTypes.string.isRequired,
+  issue: issueShape,
+}
 
 const StatusCard = ({ issue }) => {
   const theme = useTheme()
@@ -37,16 +54,18 @@ const StatusCard = ({ issue }) => {
       <Text.Block>
         {determineStatus(issue.workStatus)}
       </Text.Block>
+
       {issue.workStatus === 'funded' && (
-        <EventButton
-          mode="outline"
-          wide
-          onClick={() => requestAssignment(issue)}
-        >
-          <Text weight="bold">
-            Submit Application
-          </Text>
-        </EventButton>
+        <Action panel={requestAssignment} caption="Submit application" issue={issue} />
+      )}
+      {issue.workStatus === 'review-applicants' && (
+        <Action panel={reviewApplication} caption="Review applications" issue={issue} />
+      )}
+      {issue.workStatus === 'in-progress' && (
+        <Action panel={submitWork} caption="Submit work" issue={issue} />
+      )}
+      {issue.workStatus === 'review-work' && (
+        <Action panel={reviewWork} caption="Review work" issue={issue} />
       )}
 
     </Box>

@@ -16,6 +16,14 @@ import { issueShape, userGitHubShape } from '../../../utils/shapes.js'
 
 const calculateAgo = pastDate => formatDistance(pastDate, Date.now(), { addSuffix: true })
 
+const workRatings = [
+  '1 - Unusable',
+  '2 - Needs Rework',
+  '3 - Acceptable',
+  '4 - Exceeds Expectations',
+  '5 - Excellent',
+]
+
 const IssueEvent = ({ user, ...props }) => {
   const theme = useTheme()
 
@@ -52,7 +60,10 @@ IssueEvent.propTypes = {
   user: userGitHubShape,
   eventDescription: PropTypes.string.isRequired,
   eventMessage: PropTypes.string,
-  eventAction: PropTypes.string,
+  eventAction: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.object,
+  ]),
   date: PropTypes.string.isRequired,
 }
 
@@ -133,10 +144,11 @@ const activities = (
                 </Text.Block>
               )}
               <Tag
+                uppercase={false}
                 color={`${theme.surfaceContentSecondary}`}
                 background={`${theme.border}`}
               >
-                Quality: {data.review.rating}
+                {'Quality:' + ' ' + workRatings[data.review.rating]}
               </Tag>
             </div>
         }

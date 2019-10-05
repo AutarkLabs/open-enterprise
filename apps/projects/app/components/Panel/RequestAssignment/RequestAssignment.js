@@ -1,8 +1,7 @@
-import PropTypes from 'prop-types'
-import React from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { Checkbox, Text, TextInput, GU, theme, SafeLink } from '@aragon/ui'
+import { Checkbox, Text, TextInput, GU, useTheme, Link } from '@aragon/ui'
 
 import { Form, FormField, DateInput, DescriptionInput } from '../../Form'
 import { IconGitHub } from '../../Shared'
@@ -13,186 +12,150 @@ import { ipfsAdd } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
 import { issueShape } from '../../../utils/shapes.js'
 
-class RequestAssignment extends React.Component {
-  static propTypes = {
-    githubCurrentUser: PropTypes.object.isRequired,
-    issue: issueShape,
-    onRequestAssignment: PropTypes.func.isRequired,
+const RequestAssignment = ({ issue }) => {
+  const githubCurrentUser = useGithubAuth()
+  const { api } = useAragonApi()
+  const theme = useTheme()
+
+  const { closePanel } = usePanelManagement()
+  const [ workplan, setWorkplan ] = useState('')
+  const [ hours, setHours ] = useState(0)
+  const [ eta, setEta ] = useState(new Date())
+  const [ ack1, setAck1 ] = useState(false)
+  const [ ack2, setAck2 ] = useState(false)
+
+  const updateWorkplan = e => setWorkplan(e.target.value)
+  const updateHours = e => setHours(e.target.value)
+  const updateEta = eta => setEta(eta)
+  const toggleAck1 = () => setAck1(!ack1)
+  const toggleAck2 = () => setAck2(!ack2)
+
+  const onRequestAssignment = async () => {
+    closePanel()
+
+    const today = new Date()
+    const data = {
+      workplan,
+      hours,
+      eta,
+      ack1,
+      ack2,
+      user: githubCurrentUser,
+      applicationDate: today.toISOString(),
+    }
+    const hash = await ipfsAdd(data)
+    api.requestAssignment(toHex(issue.repoId), issue.number, hash).toPromise()
   }
 
-  state = {
-    workplan: '',
-    hours: 0,
-    eta: new Date(),
-    ack1: false,
-    ack2: false,
-  }
+  const canSubmit = () => !(ack1 && ack2 && workplan && !isNaN(hours) && hours > 0)
 
-  changeField = ({ target: { name, value } }) =>
-    this.setState({ [name]: value })
-  changeDate = eta => this.setState({ eta })
-  setAck1 = () => this.setState(prevState => ({ ack1: !prevState.ack1 }))
-  setAck2 = () => this.setState(prevState => ({ ack2: !prevState.ack2 }))
+  const { title, repo, number, url } = issue
 
-  onRequestAssignment = () => {
-    let today = new Date()
-    this.props.onRequestAssignment(
-      {
-        ...this.state,
-        user: this.props.githubCurrentUser,
-        applicationDate: today.toISOString(),
-      },
-      this.props.issue
-    )
-  }
-
-  canSubmit = () =>
-    !(
-      this.state.ack1 &&
-      this.state.ack2 &&
-      this.state.workplan &&
-      !isNaN(this.state.hours) &&
-      this.state.hours > 0
-    )
-
-  render() {
-    const { title, repo, number, url } = this.props.issue
-
-    return (
-      <div css={`margin: ${2 * GU}px 0`}>
-        <Form
-          onSubmit={this.onRequestAssignment}
-          submitText="Request Assignment"
-          noSeparator
-          submitDisabled={this.canSubmit()}
+  return (
+    <div css={`margin: ${2 * GU}px 0`}>
+      <Form
+        onSubmit={onRequestAssignment}
+        submitText="Request Assignment"
+        noSeparator
+        submitDisabled={canSubmit()}
+      >
+        <Text.Block size="xlarge">{title}</Text.Block>
+        <Link
+          href={url}
+          target="_blank"
+          style={{ textDecoration: 'none', color: `${theme.link}` }}
         >
-          <IssueTitle>{title}</IssueTitle>
-          <SafeLink
-            href={url}
-            target="_blank"
-            style={{ textDecoration: 'none', color: '#21AAE7' }}
-          >
-            <IssueLinkRow>
-              <IconGitHub color="#21AAE7" width="14px" height="14px" />
-              <Text style={{ marginLeft: '6px' }}>
-                {repo} #{number}
-              </Text>
-            </IssueLinkRow>
-          </SafeLink>
+          <IssueLinkRow>
+            <IconGitHub color={`${theme.link}`} width="14px" height="14px" />
+            <Text css="margin-left: 6px">
+              {repo} #{number}
+            </Text>
+          </IssueLinkRow>
+        </Link>
 
+        <FormField
+          label="Work Plan"
+          required
+          input={
+            <DescriptionInput
+              value={workplan}
+              name="workplan"
+              rows="3"
+              onChange={updateWorkplan}
+              placeholder="Describe how you plan to accomplish the task and any questions you may have."
+            />
+          }
+        />
+
+        <Estimations>
           <FormField
-            label="Work Plan"
-            required
+            label="Estimated Hours"
             input={
-              <DescriptionInput
-                value={this.state.workplan}
-                name="workplan"
-                rows="3"
-                onChange={this.changeField}
-                placeholder="Describe how you plan to accomplish the task and any questions you may have."
+              <HoursInput
+                name="hours"
+                value={hours}
+                onChange={updateHours}
+                wide
               />
             }
           />
+          <FormField
+            label="Estimated Completion"
+            input={
+              <DateInput
+                name="eta"
+                value={eta}
+                onChange={updateEta}
+                width="100%"
+              />
+            }
+          />
+        </Estimations>
 
-          <Estimations>
-            <FormField
-              label="Estimated Hours"
-              input={
-                <HoursInput
-                  name="hours"
-                  value={this.state.hours}
-                  onChange={this.changeField}
-                />
-              }
-            />
-            <FormField
-              label="Estimated Completion"
-              input={
-                <DateInput
-                  name="eta"
-                  value={this.state.eta}
-                  onChange={this.changeDate}
-                />
-              }
-            />
-          </Estimations>
-          <VSpace size={1} />
-          <AckRow>
-            <div style={{ width: '23px' }}>
-              <Checkbox checked={this.state.ack1} onChange={this.setAck1} />
-            </div>
-            <AckText>
+        <AckRow>
+          <div css="width: 23px">
+            <Checkbox checked={ack1} onChange={toggleAck1} />
+          </div>
+          <AckText color={`${theme.surfaceContentSecondary}`}>
             I understand that this is an application and I should wait for
             approval before starting work.
-            </AckText>
-          </AckRow>
+          </AckText>
+        </AckRow>
 
-          <AckRow>
-            <div css="width: 23px">
-              <Checkbox checked={this.state.ack2} onChange={this.setAck2} />
-            </div>
-            <AckText>
-            I agree to keep the organization informed of my progress every few
-            days.
-            </AckText>
-          </AckRow>
-          <VSpace size={2} />
-          {/* Github commenting is not currently implemented
-        <Info.Alert title="Submission note" background="#FFFAEE" style={{ marginBottom: '10px' }}>
-          Your inputs will be added as a comment to the Github issue from your “{login}” account.
-        </Info.Alert>
-        */}
-        </Form>
-      </div>
-    )
-  }
-}
+        <AckRow>
+          <div css="width: 23px">
+            <Checkbox checked={ack2} onChange={toggleAck2} />
+          </div>
+          <AckText color={`${theme.surfaceContentSecondary}`}>
+              I agree to keep the organization informed of my progress every few days.
+          </AckText>
+        </AckRow>
 
-const onRequestAssignment = ({ closePanel, requestAssignment }) => async (
-  state,
-  issue
-) => {
-  closePanel()
-  const hash = await ipfsAdd(state)
-  requestAssignment(toHex(issue.repoId), issue.number, hash).toPromise()
-}
-
-// TODO: move entire component to functional component
-// the following was a quick way to allow us to use hooks
-const RequestAssignmentWrap = props => {
-  const githubCurrentUser = useGithubAuth()
-  const { api } = useAragonApi()
-  const { closePanel } = usePanelManagement()
-  return (
-    <RequestAssignment
-      githubCurrentUser={githubCurrentUser}
-      onRequestAssignment={onRequestAssignment({
-        closePanel,
-        requestAssignment: api.requestAssignment
-      })}
-      {...props}
-    />
+      </Form>
+    </div>
   )
 }
 
+RequestAssignment.propTypes = issueShape
+
 const HoursInput = styled(TextInput.Number)`
-  width: 100px;
   height: 32px;
   display: inline-block;
   padding-top: 3px;
 `
 const Estimations = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-content: stretch;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto;
+  grid-gap: 12px;
+  margin-bottom
 `
 const AckText = styled(Text)`
-  color: ${theme.textSecondary};
-  margin-left: 6px;
+  margin-left: ${GU}px;
 `
 const AckRow = styled.div`
   display: flex;
-  margin-bottom: 8px;
+  margin: ${2 * GU}px 0;
 `
 const IssueLinkRow = styled.div`
   height: 31px;
@@ -201,14 +164,5 @@ const IssueLinkRow = styled.div`
   margin-bottom: 10px;
   cursor: pointer;
 `
-const IssueTitle = styled(Text.Block)`
-  color: #717171;
-  font-size: 17px;
-  font-weight: 300;
-  line-height: 1.5;
-`
-const VSpace = styled.div`
-  height: ${p => (p.size || 1) * 5}px;
-`
 
-export default RequestAssignmentWrap
+export default RequestAssignment
