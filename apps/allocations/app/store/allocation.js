@@ -9,7 +9,6 @@ import { app } from '../../../../shared/store-utils'
 
 export const updateAllocations = async (allocations, { accountId, payoutId }) => {
   const newAllocations = Array.from(allocations || [])
-
   if (!newAllocations.some(a => a.id === payoutId && a.accountId === accountId)) {
     newAllocations.push(await getAllocation({ accountId, payoutId }))
   }
@@ -69,20 +68,30 @@ const getAllocation = async ({ accountId, payoutId }) => {
   return combineLatest(
     app.call('getAccount', accountId),
     app.call('getPayout', accountId, payoutId),
-    app.call('getPayoutDescription', accountId, payoutId)
+    app.call('getPayoutDescription', accountId, payoutId),
+    app.call('getNumberOfCandidates', accountId, payoutId)
   )
     .pipe(
       first(),
-      map(({
-        amount,
+      map(([
+        { // getAccount results
+          budget,
+          token
+        },
+        { // getPayout results
+          amount,
+          distSet,
+          period,
+          recurrences,
+          startTime
+        },
+        // getPayoutDescription
         description,
-        distSet,
-        period,
-        recurrences,
-        startTime,
-        token,
-      }) => ({
+        // getNumberofCandidates
+        recipientsLength
+      ]) => ({
         // transform response data for the frontend
+        budget,
         accountId,
         amount,
         description,
@@ -90,8 +99,10 @@ const getAllocation = async ({ accountId, payoutId }) => {
         payoutId,
         period,
         recurrences,
-        startTime,
         token,
+        date: new Date(startTime*1000),
+        recipients: { length: Number(recipientsLength) },
+        status: 2 //Approved will be made dynamic once the execution handler is integrated
       }))
     )
     .toPromise()

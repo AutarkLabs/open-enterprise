@@ -13,10 +13,9 @@ const App = () => {
   const [ panel, setPanel ] = useState(null)
   const [ modal, setModal ] = useState({ visible: false, budgetId: null })
   const { api, appState } = useAragonApi()
-  const { allocations = [], balances = [], budgets = [], tokens = [] } = appState
+  const { allocations = [], budgets = [], tokens = [] } = appState
 
   const onCreateBudget = ({ amount, name, token }) => {
-    console.log('amount: ', amount)
     api
       .newAccount(
         name,             // _metadata
@@ -32,13 +31,10 @@ const App = () => {
     addresses,
     description,
     budgetId,
-    recurring,
     period,
     balance,
-    tokenAddress,
   }) => {
     const emptyIntArray = new Array(addresses.length).fill(0)
-    console.log('budgetId: ', budgetId)
     api.setDistribution(
       addresses,
       emptyIntArray, // unused
@@ -47,9 +43,9 @@ const App = () => {
       description,
       emptyIntArray, // unused
       emptyIntArray, // unused
-      '1', // account or allocation id...budgetId
+      budgetId, // account or allocation id...budgetId
       '1', // recurrences, 1 for now
-      '0',//Math.floor(new Date().getTime()/1000), // startTime, now for now
+      Math.floor(new Date().getTime()/1000), // startTime, now for now
       period,
       String(balance), // amount
       // tokenAddress -> token used, now deprecated
@@ -70,8 +66,7 @@ const App = () => {
     // uint256 _amount
   }
 
-  const onSubmitDeactivate = id => {
-    console.log(`deactivating budget # ${id}...`)
+  const onSubmitDeactivate = () => { // TODO id => {
     //api.deactivateBudget(id)
     closeModal()
   }
@@ -90,15 +85,14 @@ const App = () => {
     })
   }
 
-  const onNewAllocation = (address, description, id, balance) => {
+  const onNewAllocation = (id, description, balance, token) => {
     setPanel({
       content: NewAllocation,
       data: {
         heading: 'New Allocation',
         subHeading: description,
-        address,
         balance,
-        balances,
+        balances: [token],
         id,
         onSubmitAllocation,
       },
@@ -123,8 +117,7 @@ const App = () => {
     setModal({ visible: true, budgetId: id })
   }
 
-  const onReactivate = id => {
-    console.log(`reactivating budget # ${id}...`)
+  const onReactivate = () => { // TODO id => {
     //api.reactivateBudget(id)
   }
 

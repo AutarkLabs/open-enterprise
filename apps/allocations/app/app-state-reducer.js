@@ -83,8 +83,6 @@ function appStateReducer(state) {
     budgets: budgetsBn,
   }
 
-  console.log('appStateReducer', newState)
-
   return newState
 }
 

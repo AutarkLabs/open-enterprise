@@ -1,28 +1,63 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Tag, Text } from '@aragon/ui'
+import { GU, Tag, Text } from '@aragon/ui'
 import { animated } from 'react-spring'
 import PropTypes from 'prop-types'
+import { isAddress } from 'web3-utils'
 import { useNetwork } from '../api-react'
 import { LocalIdentityBadge } from '../../../../shared/identity'
 
-const VotingOption = ({ valueSpring, label, percentage, color, threshold, userVote, fontSize }) => {
+const Label = ({ fontSize, label }) => {
   const network = useNetwork()
 
+  if (isAddress(label)) {
+    return (
+      <LocalIdentityBadge
+        compact
+        fontSize={fontSize}
+        networkType={network.type}
+        entity={label}
+        shorten
+      />
+    )
+  }
+
+  return (
+    <Text
+      size={fontSize}
+      css={fontSize === 'xsmall' && `
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      `}
+    >
+      {label}
+    </Text>
+  )
+}
+
+Label.propTypes = {
+  fontSize: PropTypes.oneOf([ 'xsmall', 'small' ]),
+  label: PropTypes.string.isRequired,
+}
+
+const VotingOption = ({ valueSpring, label, percentage, color, threshold, userVote, fontSize }) => {
   return (
     <Main>
       <Labels>
         {label && (
-          <div>
-            <LocalIdentityBadge
-              compact
-              fontSize={fontSize}
-              networkType={network.type}
-              entity={label}
-              shorten
-            />
+          <div
+            css={`
+              align-items: center;
+              display: grid;
+              grid-gap: ${0.5 * GU}px;
+              grid-template-columns: 1fr auto;
+              margin-right: ${0.5 * GU}px;
+            `}
+          >
+            <Label fontSize={fontSize} label={label} />
             {userVote !== -1 && (
-              <Tag label={`YOU: ${userVote}%`} />
+              <Tag css={`margin-top: -${0.25 * GU}px`} label={`YOU: ${userVote}%`} />
             )}
           </div>
         )}

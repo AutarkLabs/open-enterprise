@@ -13,7 +13,7 @@ const initialState = process.env.NODE_ENV !== 'production' && {
 }
 
 const functions = process.env.NODE_ENV !== 'production' && ((appState, setAppState) => ({
-  addEntry: (address, cid) => setAppState({
+  addEntry: (address) => setAppState({
     ...appState,
     entries: [
       ...appState.entries,
@@ -28,6 +28,6 @@ const functions = process.env.NODE_ENV !== 'production' && ((appState, setAppSta
   })
 }))
 
-const { AragonApi, useAragonApi, useNetwork } = buildStubbedApiReact({ initialState, functions })
+const { AragonApi, useAragonApi } = buildStubbedApiReact({ initialState, functions })
 
-export { AragonApi, useAragonApi, useNetwork }
+export { AragonApi, useAragonApi }

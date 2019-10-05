@@ -27,7 +27,7 @@ const tokenStartBlock = new Map() // External contract -> creationBlock (uint)
 
 const ETH_CONTRACT = Symbol('ETH_CONTRACT')
 
-export async function initializeTokens(state, settings) {
+export async function initializeTokens(state, settings){
   // Set up ETH placeholders
   tokenContracts.set(settings.ethToken.address, ETH_CONTRACT)
   tokenDecimals.set(ETH_CONTRACT, '18')
@@ -35,12 +35,8 @@ export async function initializeTokens(state, settings) {
   tokenSymbols.set(ETH_CONTRACT, 'ETH')
   tokenStartBlock.set(ETH_CONTRACT, null)
 
-  const nextState = {
-    ...state,
-    vaultAddress: settings.vault.address,
-  }
-  const withEthBalance = await loadEthBalance(nextState, settings)
-  return withEthBalance
+  const withEthBalance = await loadEthBalance(state, settings)
+  return { ...withEthBalance, amountTokens: [] }
 }
 
 export async function vaultLoadBalance(state, { returnValues }, settings) {
@@ -76,22 +72,20 @@ export async function updateBalancesAndRefTokens({ balances = [], refTokens = []
     ? tokenContracts.get(tokenAddress)
     : app.external(tokenAddress, tokenAbi)
   tokenContracts.set(tokenAddress, tokenContract)
-
   const balancesIndex = balances.findIndex(({ address }) =>
     addressesEqual(address, tokenAddress)
   )
   if (balancesIndex === -1) {
     const newBalance = await newBalanceEntry(tokenContract, tokenAddress, settings)
     let newRefTokens = Array.from(refTokens)
-
     if (newBalance.startBlock) {
       const refIndex = refTokens.findIndex(({ address }) =>
         addressesEqual(address, tokenAddress)
       )
 
       if (refIndex === -1) {
-        const { name, symbol, address, startBlock } = newBalance
-        newRefTokens = newRefTokens.concat({ name, symbol, address, startBlock })
+        const { name, symbol, address, startBlock, decimals } = newBalance
+        newRefTokens = newRefTokens.concat({ name, symbol, address, startBlock, decimals })
       }
     }
     const newBalances = balances.concat(newBalance)

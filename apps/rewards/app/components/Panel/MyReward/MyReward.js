@@ -18,21 +18,12 @@ import {
 import { FieldTitle } from '../../Form'
 import { displayCurrency } from '../../../utils/helpers'
 
-const getSymbol = (tokens, rewardToken) => {
-  return tokens
-    .reduce((symbol, token) => {
-      if (token.address === rewardToken) return token.symbol
-      else return symbol
-    },'')
-}
-
 class MyReward extends React.Component {
   static propTypes = {
     onClaimReward: PropTypes.func.isRequired,
     onClosePanel: PropTypes.func.isRequired,
     viewReward: PropTypes.func.isRequired,
     reward: PropTypes.object.isRequired,
-    tokens: PropTypes.arrayOf(PropTypes.object).isRequired,
   }
 
   onClosePanel = () => this.props.onClosePanel()
@@ -50,16 +41,13 @@ class MyReward extends React.Component {
     const {
       rewardId,
       isMerit,
-      referenceToken,
-      rewardToken,
+      referenceTokenSymbol,
       startDate,
       endDate,
       delay,
       claimed,
       userRewardAmount
     } = this.props.reward
-
-    const { tokens } = this.props
 
     return (
       <div>
@@ -96,11 +84,11 @@ class MyReward extends React.Component {
           <Summary>
             {isMerit === true ? (
               <p>
-                You have been granted a one-time <SummaryBold>{displayCurrency(userRewardAmount)} {getSymbol(tokens,rewardToken)}</SummaryBold> reward, based on the <SummaryBold>{getSymbol(tokens, referenceToken)}</SummaryBold> you earned from <SummaryBold>{this.formatDate(startDate)}</SummaryBold> to <SummaryBold>{this.formatDate(endDate)}</SummaryBold>.
+                You have been granted a one-time <SummaryBold>{displayCurrency(userRewardAmount)} {referenceTokenSymbol}</SummaryBold> reward, based on the <SummaryBold>{referenceTokenSymbol}</SummaryBold> you earned from <SummaryBold>{this.formatDate(startDate)}</SummaryBold> to <SummaryBold>{this.formatDate(endDate)}</SummaryBold>.
               </p>
             ) : (
               <p>
-              A dividend, currently worth <SummaryBold>{displayCurrency(userRewardAmount)} {getSymbol(tokens,rewardToken)}</SummaryBold>, will be distributed to you based on your holdings of <SummaryBold>{getSymbol(tokens, referenceToken)}</SummaryBold> on <SummaryBold>{this.formatDate(endDate)}</SummaryBold>.
+              A dividend, currently worth <SummaryBold>{displayCurrency(userRewardAmount)} {referenceTokenSymbol}</SummaryBold>, will be distributed to you based on your holdings of <SummaryBold>{referenceTokenSymbol}</SummaryBold> on <SummaryBold>{this.formatDate(endDate)}</SummaryBold>.
               You will be able to claim it after <SummaryBold>{this.formatDate(endDate + blocksToMilliseconds(0,delay))}</SummaryBold>.
               </p>
             )}

@@ -130,7 +130,6 @@ const RequestAssignment = ({ issue }) => {
               I agree to keep the organization informed of my progress every few days.
           </AckText>
         </AckRow>
-
       </Form>
     </div>
   )

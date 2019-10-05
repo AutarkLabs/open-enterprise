@@ -32,6 +32,8 @@ import { Mutation } from 'react-apollo'
 import { COMMENT } from '../../../utils/gql-queries'
 import { issueShape } from '../../../utils/shapes.js'
 
+const ETHER_TOKEN_FAKE_ADDRESS = '0x0000000000000000000000000000000000000000'
+
 const BountyUpdate = ({
   issue,
   bounties,
@@ -453,7 +455,11 @@ const FundIssues = ({ issues, mode }) => {
     const tokenContracts = new Array(issuesArray.length).fill(tokenDetails.addr)
     const deadlines = new Array(issuesArray.length).fill(Date.now() + 8600)
     // @param _tokenTypes array of currency types: 0=ETH from current user's wallet, 1=ETH from vault, 20=ERC20 token from vault
-    const tokenTypes = new Array(issuesArray.length).fill(1)
+    const tokenTypes = new Array(issuesArray.length).fill(
+      tokenDetails.addr === ETHER_TOKEN_FAKE_ADDRESS
+        ? 1
+        : 20
+    )
 
     // during development, sometimes this fails with a cryptic "cannot perform action" error
     // in case this happens in QA, let's leave this logging here to at least have some paper trail
