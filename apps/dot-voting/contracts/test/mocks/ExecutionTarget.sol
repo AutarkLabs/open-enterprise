@@ -80,7 +80,7 @@ contract ExecutionTarget {
         l2Id = level2Id[sigIndex];
     }
 
-    function getEndValue() public view returns (uint256){
+    function getEndValue() public view returns (uint256) {
       return endValue;
     }
 

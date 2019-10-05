@@ -1,6 +1,7 @@
 pragma solidity 0.4.24;
 
-contract EVMState{
+
+contract EVMState {
   uint256 counter;
 
   constructor(){
