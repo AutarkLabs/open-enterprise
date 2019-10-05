@@ -26,14 +26,19 @@ contract OpenEnterpriseTemplate is BaseOEApps {
      * @param _tokenSymbol String with the symbol for the token used by share holders in the organization
      * @param _id String with the name for org, will assign `[id].aragonid.eth`
      * @param _members Array of member addresses (1 token will be minted for each member)
+     * @param _stakes Array of token stakes for holders (token has 18 decimals, multiply token amount `* 10^18`)
      * @param _votingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization
      * @param _financePeriod initial duration for accounting periods, it can be set to zero in order to use the default of 30 days.
     */
+
+    // TODO: need to add _stakes as a param here, which is an array.
+    // Need to then consume it throughout the app, like for installing token manager.
     function newTokenAndInstance(
         string _tokenName,
         string _tokenSymbol,
         string _id,
         address[] _members,
+        uint256[] _stakes,
         uint64[3] _votingSettings,
         uint64 _financePeriod
     )
@@ -43,6 +48,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         _newInstance(
             _id,
             _members,
+            _stakes,
             _votingSettings,
             _financePeriod
         );
@@ -88,16 +94,17 @@ contract OpenEnterpriseTemplate is BaseOEApps {
     function _newInstance(
         string memory _id,
         address[] memory _members,
+        uint256[] memory _stakes,
         uint64[3] memory _votingSettings,
         uint64 _financePeriod
     )
         internal
     {
         _validateId(_id);
-        _validateSettings(_votingSettings, _members);
+        _validateSettings(_votingSettings, _members, _stakes);
 
         (Kernel dao, ACL acl) = _createDAO();
-        (Finance finance, Voting voting, Vault vault) = _setupApps(dao, acl, _members, _votingSettings, _financePeriod);
+        (Finance finance, Voting voting, Vault vault) = _setupApps(dao, acl, _members, _stakes, _votingSettings, _financePeriod);
         _cacheBase(acl, dao, finance, vault, voting, msg.sender);
         _registerID(_id, dao);
     }
@@ -106,6 +113,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         Kernel _dao,
         ACL _acl,
         address[] memory _members,
+        uint256[] memory _stakes,
         uint64[3] memory _votingSettings,
         uint64 _financePeriod
     )
@@ -119,7 +127,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         Voting voting = _installVotingApp(_dao, token, _votingSettings);
 
         _cacheToken(token, msg.sender);
-        _mintTokens(_acl, tokenManager, _members, 1);
+        _mintTokens(_acl, tokenManager, _members, _stakes);
         _setupPermissions(_acl, vault, voting, finance, tokenManager);
 
         return (finance, voting, vault);
@@ -200,8 +208,9 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         require(_dotVotingSettings.length == 3, ERROR_BAD_DOT_VOTE_SETTINGS);
     }
 
-    function _validateSettings(uint64[3] memory _votingSettings, address[] memory _members) private pure {
+    function _validateSettings(uint64[3] memory _votingSettings, address[] memory _members, uint256[] memory _stakes) private pure {
         require(_members.length > 0, ERROR_MISSING_MEMBERS);
+        require(_members.length == _stakes.length, ERROR_BAD_MEMBERS_STAKES_LEN);
         require(_votingSettings.length == 3, ERROR_BAD_VOTE_SETTINGS);
     }
 }
