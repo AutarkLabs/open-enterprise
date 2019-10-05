@@ -70,6 +70,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         ) = _popBaseCache(msg.sender);
         _setupOEApps(dao, acl, vault, voting, _dotVotingSettings, _allocationsPeriod, _useDiscussions);
         _transferCreatePaymentManagerFromTemplate(acl, finance, voting);
+        _transferPermissionFromTemplate(acl, vault, voting, vault.TRANSFER_ROLE(), voting);
         _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, voting);
     }
 
