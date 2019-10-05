@@ -1007,7 +1007,7 @@ contract('DotVoting', accounts => {
       })
     })
   })
-  context('allocations script calls', () => {
+  context('testing that execution functions receive the correct values from the dynamic forwarder', () => {
     const holder19 = accounts[0]
     const holder31 = accounts[1]
     const holder50 = accounts[2]
@@ -1015,80 +1015,14 @@ contract('DotVoting', accounts => {
     const zeros = new Array(candidates.length).fill(0)
 
     let voteId, voteOne, voteTwo, voteThree
-    let allocations, allocationsBase
 
-    before(async () => {
-      /**ALLOCATIONS**/
-      allocationsBase = await getContract('Allocations').new()
-      const vaultBase = await getContract('Vault').new()
-
-      // Setup ACL roles constants
-      const CREATE_ACCOUNT_ROLE = await allocationsBase.CREATE_ACCOUNT_ROLE()
-      const CREATE_ALLOCATION_ROLE = await allocationsBase.CREATE_ALLOCATION_ROLE()
-      const EXECUTE_ALLOCATION_ROLE = await allocationsBase.EXECUTE_ALLOCATION_ROLE()
-      const EXECUTE_PAYOUT_ROLE = await allocationsBase.EXECUTE_PAYOUT_ROLE()
-      const TRANSFER_ROLE = await vaultBase.TRANSFER_ROLE()
-
-      const allocationsReceipt = await dao.newAppInstance(
-        '0x5678',
-        allocationsBase.address,
-        '0x',
-        false
-      )
-      allocations = getContract('Allocations').at(
-        getReceipt(allocationsReceipt, 'NewAppProxy', 'proxy')
-      )
-
-      //Setup permissions
-      await acl.createPermission(ANY_ADDRESS, allocations.address, CREATE_ACCOUNT_ROLE, root)
-      await acl.createPermission(
-        app.address,
-        allocations.address,
-        CREATE_ALLOCATION_ROLE,
-        root
-      )
-      await acl.createPermission(
-        ANY_ADDRESS,
-        allocations.address,
-        EXECUTE_ALLOCATION_ROLE,
-        root
-      )
-      await acl.createPermission(ANY_ADDRESS, allocations.address, EXECUTE_PAYOUT_ROLE, root)
-
-      // Install a vault instance to the dao
-      const vaultReceipt = await dao.newAppInstance(
-        '0x9123',
-        vaultBase.address,
-        '0x',
-        false
-      )
-      const vault = getContract('Vault').at(
-        getReceipt(vaultReceipt, 'NewAppProxy', 'proxy')
-      )
-      await vault.initialize()
-
-      // Setup permission to transfer funds
-      await acl.createPermission(allocations.address, vault.address, TRANSFER_ROLE, root)
-
-      await allocations.initialize(vault.address, 86400)
-
-      await vault.deposit(NULL_ADDRESS, web3.toWei(0.1, 'ether'), {
-        from: holder19,
-        value: web3.toWei(0.1, 'ether'),
-      })
-    })
-
-    it('dot voting should execute script in allocations', async () => {
-      const accountId = (await allocations.newAccount(
-        'NAMENAMENAME',
-        NULL_ADDRESS,
-        false,
-        0
-      )).logs[0].args.accountId.toNumber()
+    it('dot voting should execute setDistribution and return the payout amount', async () => {
+      const accountId = 0
+      const payout = web3.toWei(0.1, 'ether')
 
       let action = {
-        to: allocations.address,
-        calldata: allocations.contract.setDistribution.getData(
+        to: executionTarget.address,
+        calldata: executionTarget.contract.setDistribution.getData(
           candidates,
           zeros,
           zeros,
@@ -1100,7 +1034,7 @@ contract('DotVoting', accounts => {
           '1',
           '1',
           '0',
-          web3.toWei(0.1, 'ether')
+          payout
         )
       }
       let script = encodeCallScript([action])
@@ -1118,12 +1052,51 @@ contract('DotVoting', accounts => {
       await evmState.update()
       const canExecute = await app.canExecute(voteId)
       assert.equal(canExecute, true, 'canExecute should be true')
-      let balance1 = BigNumber(await web3.eth.getBalance(candidates[0]))
       await app.executeVote(voteId)
-      let balance2 = BigNumber(await web3.eth.getBalance(candidates[0]))
-      assert.equal(balance2.minus(balance1).gt(0), true, 'candidate should have earned funds')
-      let [ , , , , distSet ] = await allocations.getPayout(accountId, 0)
-      assert.equal(distSet, true, 'distribution should be set')
+      const endValue = await executionTarget.getEndValue()
+      assert.equal(endValue.toString(), payout, 'end value should be ' + payout)
+    })
+
+    it('dot voting should execute setLongTarget and return the end value', async () => {
+      const accountId = 0
+      let action = {
+        to: executionTarget.address,
+        calldata: executionTarget.contract.setLongTarget.getData(
+          candidates,
+          zeros,
+          zeros,
+          'arg1arg2arg3',
+          'description',
+          zeros,
+          zeros,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        )
+      }
+      let script = encodeCallScript([action])
+      let newvote = await app.newVote(script, 'metadata', { from: holder50 })
+
+      voteId = getCreatedVoteId(newvote)
+      voteOne = [ 4, 15, 0 ]
+      voteTwo = [ 20, 11, 0 ]
+      voteThree = [ 30, 20, 0 ]
+
+      await app.vote(voteId, voteOne, { from: holder19 })
+      await app.vote(voteId, voteTwo, { from: holder31 })
+      await app.vote(voteId, voteThree, { from: holder50 })
+      timeTravel(DotVotingTime + 1)
+      await evmState.update()
+      const canExecute = await app.canExecute(voteId)
+      assert.equal(canExecute, true, 'canExecute should be true')
+      await app.executeVote(voteId)
+      const endValue = await executionTarget.getEndValue()
+      assert.equal(endValue, 8, 'end value should be 8')
     })
   })
 })
