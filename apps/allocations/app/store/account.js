@@ -2,6 +2,7 @@
 import { first, map } from 'rxjs/operators'
 
 import { app } from '../../../../shared/store-utils'
+import { combineLatest } from 'rxjs'
 
 /// /////////////////////////////////////
 /*    Allocations event handlers      */
@@ -66,16 +67,23 @@ export const updateAccounts = async (accounts, id) => {
 /// /////////////////////////////////////
 
 const getAccount = id => {
-  return app
-    .call('getAccount', id)
+  return combineLatest(
+    app.call('getAccount', id),
+    app.call('getRemainingBudget', id)
+  )
     .pipe(
       first(),
-      map(({ budget, hasBudget, metadata, token }) => {
-        console.log('accountId', id)
+      map((
+        [
+          { budget, hasBudget, metadata, token },
+          remaining
+        ]
+      ) => {
         return {
         // transform response data for the frontend
           hasBudget,
           id, // note the id is added along with the other data
+          remaining,
           token,
           amount: budget,
           name: metadata,

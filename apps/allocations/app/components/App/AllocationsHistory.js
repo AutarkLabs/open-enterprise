@@ -55,7 +55,7 @@ const AllocationsHistory = ({ allocations }) => {
           <div key={index}>
             {'# ' + accountId}
           </div>,
-          recipients.length === 1 ? '1 entity'
+          recipients.length === '1' ? '1 entity'
             : recipients.length + ' entities',
           description,
           <Status key={index} code={status} />,

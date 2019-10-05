@@ -101,7 +101,7 @@ const getAllocation = async ({ accountId, payoutId }) => {
         recurrences,
         token,
         date: new Date(startTime*1000),
-        recipients: { length: Number(recipientsLength) },
+        recipients: { length: recipientsLength },
         status: 2 //Approved will be made dynamic once the execution handler is integrated
       }))
     )

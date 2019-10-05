@@ -26,7 +26,7 @@ const Budget = ({
   name,
   amount,
   token,
-  allocated = 0,
+  remaining = 0,
   inactive,
   onNewAllocation,
   onEdit,
@@ -49,8 +49,8 @@ const Budget = ({
   const reactivate = () => {
     onReactivate(id)
   }
-  const tokenAmount = BigNumber(amount).div(BigNumber(10).pow(token.decimals))
-  const tokensRemaining = tokenAmount.minus(BigNumber(allocated).div(BigNumber(10).pow(token.decimals)))
+  const tokenAmount = rawAmount => BigNumber(rawAmount).div(BigNumber(10).pow(token.decimals))
+  const tokensSpent = tokenAmount(amount).minus(BigNumber(remaining).div(BigNumber(10).pow(token.decimals)))
   if (inactive) {
     return (
       <StyledCard screenSize={screenSize}>
@@ -96,12 +96,12 @@ const Budget = ({
       <StatsContainer>
         <StyledStats>
           <StatsValueBig color={`${theme.contentSecondary}`}>
-            <Text>{`${tokenAmount} ${token.symbol} per period`}</Text>
+            <Text>{`${tokenAmount(amount)} ${token.symbol} per period`}</Text>
           </StatsValueBig>
           <StatsValueBig css={{ paddingTop: '24px' }}>
             <ProgressBar
               color={`${theme.accentEnd}`}
-              value={allocated}
+              value={tokensSpent}
             />
           </StatsValueBig>
           <StatsValueSmall
@@ -111,7 +111,7 @@ const Budget = ({
             }}
           >
             
-            <Text>{`${tokensRemaining} ${token.symbol} below limit`}</Text>
+            <Text>{`${tokenAmount(remaining)} ${token.symbol} below limit`}</Text>
           </StatsValueSmall>
           <StatsValueSmall
             css={{
@@ -119,7 +119,7 @@ const Budget = ({
               paddingTop: '4px',
             }}
           >
-            <Text>{`${tokensRemaining.div(tokenAmount).times(100)}% remaining`}</Text>
+            <Text>{`${tokenAmount(remaining).div(tokenAmount(amount)).times(100)}% remaining`}</Text>
           </StatsValueSmall>
         </StyledStats>
       </StatsContainer>
@@ -132,8 +132,8 @@ Budget.propTypes = {
   name: PropTypes.string.isRequired,
   amount: PropTypes.string.isRequired,
   token: PropTypes.object.isRequired,
-  // TODO: fix allocated (should be required?)
-  allocated: PropTypes.string,
+  // TODO: fix remaining (should be required?)
+  remaining: PropTypes.string,
   inactive: PropTypes.bool.isRequired,
   onNewAllocation: PropTypes.func.isRequired,
   onEdit: PropTypes.func.isRequired,
