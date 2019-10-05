@@ -14,14 +14,13 @@ import {
   millisecondsToBlocks,
   millisecondsToDays,
   millisecondsToWeeks,
-  millisecondsToMonths,    
+  millisecondsToMonths,
   millisecondsToYears,
 } from '../../../../../shared/ui/utils'
 
 import { BN } from 'web3-utils'
 import {
   ONE_TIME_DIVIDEND,
-  RECURRING_DIVIDEND,
   ONE_TIME_MERIT,
 } from '../../utils/constants'
 import { networkContextType } from '../../../../../shared/ui'
@@ -185,7 +184,7 @@ class App extends React.Component {
       case 'Years':
         reward.occurances = millisecondsToYears(reward.dateStart, reward.dateEnd)
         reward.duration = millisecondsToBlocks(Date.now(), MILLISECONDS_IN_A_YEAR + Date.now())
-        break                
+        break
       default: // Monthly
         reward.occurances = millisecondsToMonths(reward.dateStart, reward.dateEnd)
         reward.duration = millisecondsToBlocks(Date.now(), MILLISECONDS_IN_A_MONTH + Date.now())

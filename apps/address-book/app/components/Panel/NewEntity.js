@@ -42,7 +42,6 @@ ErrorMessage.propTypes = {
 class NewEntity extends React.Component {
   static propTypes = {
     onCreateEntity: PropTypes.func.isRequired,
-    addressList: PropTypes.arrayOf(PropTypes.string).isRequired,
   }
 
   state = INITIAL_STATE

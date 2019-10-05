@@ -2,11 +2,10 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { TextInput, theme } from '@aragon/ui'
 
-const DescriptionInput = styled(TextInput.Multiline).attrs({
+const DescriptionInput = styled(TextInput).attrs({
   wide: true,
 })`
   resize: none; /* TODO: Should we have the ability to resize the form? */
-  height: 75px;
   padding: 10px;
   ::placeholder {
     color: ${theme.contentBorderActive};

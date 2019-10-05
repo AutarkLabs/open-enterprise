@@ -1,21 +1,17 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Badge, Viewport } from '@aragon/ui'
-import { ETHER_TOKEN_FAKE_ADDRESS, } from '../../../utils/token-utils'
-import { addressesEqual, shortenAddress } from '../../../utils/web3-utils'
+import { Viewport } from '@aragon/ui'
 
 class TokenSelectorInstance extends React.PureComponent {
   static propTypes = {
-    address: PropTypes.string,
     name: PropTypes.string,
-    shorten: PropTypes.bool.isRequired,
     symbol: PropTypes.string,
     showIcon: PropTypes.bool,
   }
 
   render() {
-    const { address, name, shorten, symbol, showIcon = true } = this.props
+    const { name, symbol, showIcon = true } = this.props
     return (
       <Main>
         {showIcon ? (
@@ -52,11 +48,6 @@ const TokenName = styled.span`
 
 const TokenSymbol = styled.span`
   margin-right: 10px;
-`
-
-const StyledAddressBadge = styled(Badge.Identity)`
-  flex-shrink: 0;
-  margin-left: auto;
 `
 
 // eslint-disable-next-line react/display-name

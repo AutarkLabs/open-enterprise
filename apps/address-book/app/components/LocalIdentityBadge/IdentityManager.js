@@ -66,6 +66,4 @@ IdentityProvider.propTypes = {
   onShowLocalIdentityModal: PropTypes.func.isRequired,
 }
 
-const IdentityConsumer = IdentityContext.Consumer
-
-export { IdentityConsumer, IdentityContext, IdentityProvider, useIdentity }
+export { IdentityProvider, useIdentity }

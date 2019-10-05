@@ -36,7 +36,7 @@ export async function initializeTokens(state, settings){
   tokenStartBlock.set(ETH_CONTRACT, null)
 
   const withEthBalance = await loadEthBalance(state, settings)
-  return {...withEthBalance, amountTokens: []}
+  return { ...withEthBalance, amountTokens: [] }
 }
 
 export async function vaultLoadBalance(state, { returnValues }, settings) {

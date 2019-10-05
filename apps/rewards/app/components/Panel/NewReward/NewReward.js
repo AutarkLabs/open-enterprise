@@ -30,12 +30,6 @@ import {
   OTHER,
 } from '../../../utils/constants'
 
-import RewardSummary from '../RewardSummary'
-
-const disbursementCycleNames = [ 'Quarterly', 'Monthly' ]
-const disbursementCyclesSummary = [ 'quarterly cycle', 'monthly cycle' ]
-const disbursementDates = [ '1 week', '2 weeks' ]
-const disbursementDatesItems = disbursementDates.map(item => 'Cycle end + ' + item)
 import tokenBalanceOfAbi from '../../../../../shared/json-abis/token-balanceof.json'
 import tokenBalanceOfAtAbi from '../../../../../shared/json-abis/token-balanceofat.json'
 import tokenCreationBlockAbi from '../../../../../shared/json-abis/token-creationblock.json'
@@ -77,6 +71,9 @@ const INITIAL_STATE = {
   }
 }
 
+function getTokenProp(prop, { refTokens }, { customToken, referenceAsset }, check = prop) {
+  return customToken[check]?customToken[prop]:refTokens[referenceAsset-2][prop]
+}
 
 class NewRewardClass extends React.Component {
   static propTypes = {
@@ -115,18 +112,18 @@ class NewRewardClass extends React.Component {
 
   changeField = ({ target: { name, value } }) => {
     this.setState({ [name]: value })
-    if (name === "amount")
+    if (name === 'amount')
       this.setSemanticErrors({ amount: value })
   }
 
   setDisbursements = (dateStart, dateEnd, disbursement, disbursementUnit) => {
     if (isNaN(disbursement) || disbursement <= 0 ||
         this.state.rewardType !== RECURRING_DIVIDEND) {
-      this.setState({ disbursements: []})
+      this.setState({ disbursements: [] })
       return
     }
     let disbursements = [],
-        date = moment(dateStart).add(disbursement, disbursementUnit)
+      date = moment(dateStart).add(disbursement, disbursementUnit)
     while (date.isBefore(dateEnd)) {
       disbursements.push(date.clone())
       date.add(disbursement, disbursementUnit)
@@ -139,7 +136,7 @@ class NewRewardClass extends React.Component {
   }
 
   dropDownItems = (name) => {
-    if (name == "amountToken") {
+    if (name == 'amountToken') {
       return this.props.amountTokens.map(token => token.symbol)
     }
     return this.props[name + 's']
@@ -179,11 +176,11 @@ class NewRewardClass extends React.Component {
         !isNaN(amount) && +amount > MIN_AMOUNT &&
         amountToken.symbol !== '' &&
         rewardType !== null && (
-          rewardType !== RECURRING_DIVIDEND || (
-            !isNaN(disbursement) && +disbursement > 0 &&
+        rewardType !== RECURRING_DIVIDEND || (
+          !isNaN(disbursement) && +disbursement > 0 &&
               Math.floor(disbursement) === +disbursement
-          )
-        ) &&
+        )
+      ) &&
         semanticErrors.length === 0
     )
     return valid
@@ -386,11 +383,11 @@ class NewRewardClass extends React.Component {
         <DropDown
           name="amountToken"
           css={{ borderRadius: '0px 4px 4px 0px' }}
-          items={this.dropDownItems("amountToken")}
-          selected={this.dropDownSelect("amountToken")}
+          items={this.dropDownItems('amountToken')}
+          selected={this.dropDownSelect('amountToken')}
           onChange={i => {
-            this.dropDownChange("amountToken", i)
-            this.setSemanticErrors({amountToken: this.props.amountTokens[i]})
+            this.dropDownChange('amountToken', i)
+            this.setSemanticErrors({ amountToken: this.props.amountTokens[i] })
           }}
         />
       </HorizontalContainer>
@@ -466,7 +463,7 @@ class NewRewardClass extends React.Component {
             name="dateReference"
             value={this.state.dateReference}
             onChange={dateReference => {
-              this.setState({dateReference,})
+              this.setState({ dateReference, })
               this.setSemanticErrors({ dateReference })
             }}
             wide
@@ -691,13 +688,13 @@ class NewRewardClass extends React.Component {
           <Content>{amount} {amountToken.symbol}</Content>
           <Heading>
             {rewardType === ONE_TIME_MERIT ?
-             'Start and End Date' : 'Disbursement Date'}
+              'Start and End Date' : 'Disbursement Date'}
             {rewardType === RECURRING_DIVIDEND && 's'}
           </Heading>
-            {rewardType === ONE_TIME_DIVIDEND && (
-               <Content>{dateReference.toDateString()}</Content>
-             )}
-            {rewardType === RECURRING_DIVIDEND &&
+          {rewardType === ONE_TIME_DIVIDEND && (
+            <Content>{dateReference.toDateString()}</Content>
+          )}
+          {rewardType === RECURRING_DIVIDEND &&
              disbursements.map((disbursement, i) => (
                <Content key={i}>
                  {disbursement.toDate().toDateString()}
@@ -721,7 +718,7 @@ class NewRewardClass extends React.Component {
             label="Go back"
             mode="normal"
             css={{ fontWeight: 700, marginRight: '4px' }}
-            onClick={e => this.setState({ draftSubmitted: false })}
+            onClick={() => this.setState({ draftSubmitted: false })}
             wide
           />
           <Button
@@ -753,8 +750,8 @@ const VerticalSpace = styled.div`
   height: 24px;
 `
 const GreyBox = styled.div`
-  background-color: #F9FAFC;
-  border: 1px solid #DDE4E9;
+  background-color: #f9fafc;
+  border: 1px solid #dde4e9;
   padding: 24px;
   display: flex;
   flex-direction: column;

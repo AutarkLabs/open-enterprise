@@ -36,6 +36,7 @@ const eventHandler = async eventData => {
   case 'SetDistribution':
     return {
       ...state,
+      accounts: await updateAccounts(state.accounts, returnValues.accountId),
       allocations: await updateAllocations(state.allocations, returnValues)
     }
 
