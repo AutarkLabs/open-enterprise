@@ -61,6 +61,7 @@ contract BaseOEApps is BaseCache, TokenCache {
     function _createAddressBookPermissions(ACL _acl, AddressBook _addressBook, address _grantee, address _manager) internal {
         _acl.createPermission(_grantee, _addressBook, _addressBook.ADD_ENTRY_ROLE(), _manager);
         _acl.createPermission(_grantee, _addressBook, _addressBook.REMOVE_ENTRY_ROLE(), _manager);
+        _acl.createPermission(_grantee, _addressBook, _addressBook.UPDATE_ENTRY_ROLE(), _manager);
     }
 
     /* ALLOCATIONS */
@@ -80,12 +81,17 @@ contract BaseOEApps is BaseCache, TokenCache {
         internal
     {
         _acl.createPermission(_createAccountsGrantee, _allocations, _allocations.CREATE_ACCOUNT_ROLE(), _manager);
+        _acl.createPermission(_createAccountsGrantee, _allocations, _allocations.CHANGE_BUDGETS_ROLE(), _manager);
         _acl.createPermission(_createAllocationsGrantee, _allocations, _allocations.CREATE_ALLOCATION_ROLE(), _manager);
         _acl.createPermission(ANY_ENTITY, _allocations, _allocations.EXECUTE_ALLOCATION_ROLE(), _manager);
+        _acl.createPermission(ANY_ENTITY, _allocations, _allocations.EXECUTE_PAYOUT_ROLE(), _manager);
     }
 
-    /* DOT-VOTING */
-
+    /** 
+     * DOT-VOTING
+     * @param _dotVotingSettings Array of [minQuorum, candidateSupportPct, voteDuration] to set up the dot voting app of the organization
+    */
+    
     function _installDotVotingApp(Kernel _dao, MiniMeToken _token, uint64[3] memory _dotVotingSettings) internal returns (DotVoting) {
         return _installDotVotingApp(_dao, _token, _dotVotingSettings[0], _dotVotingSettings[1], _dotVotingSettings[2]);
     }
@@ -93,13 +99,13 @@ contract BaseOEApps is BaseCache, TokenCache {
     function _installDotVotingApp(
         Kernel _dao,
         MiniMeToken _token,
+        uint64 _quorum,
         uint64 _support,
-        uint64 _acceptance,
         uint64 _duration
     )
         internal returns (DotVoting)
     {
-        bytes memory initializeData = abi.encodeWithSelector(DotVoting(0).initialize.selector, _token, _support, _acceptance, _duration);
+        bytes memory initializeData = abi.encodeWithSelector(DotVoting(0).initialize.selector, _token, _quorum, _support, _duration);
         return DotVoting(_installNonDefaultApp(_dao, DOT_VOTING_APP_ID, initializeData));
     }
 
@@ -111,8 +117,9 @@ contract BaseOEApps is BaseCache, TokenCache {
     )
         internal
     {
+        //TODO: we should pass _tokenManager into ROLE_CREATE_VOTES as 2nd param, not _dotVoting
         _acl.createPermission(_grantee, _dotVoting, _dotVoting.ROLE_CREATE_VOTES(), _manager);
-        _acl.createPermission(_grantee, _dotVoting, _dotVoting.ROLE_ADD_CANDIDATES(), _manager);
+        _acl.createPermission(_grantee, _voting, _dotVoting.ROLE_ADD_CANDIDATES(), _manager);
     }
 
     /* DISCUSSIONS */
@@ -143,6 +150,9 @@ contract BaseOEApps is BaseCache, TokenCache {
     {
         _acl.createPermission(_curator, _projects, _projects.CURATE_ISSUES_ROLE(), _manager);
         _acl.createPermission(_grantee, _projects, _projects.FUND_ISSUES_ROLE(), _manager);
+        _acl.createPermission(_grantee, _projects, _projects.REMOVE_ISSUES_ROLE(), _manager);
+        _acl.createPermission(_grantee, _projects, _projects.FUND_OPEN_ISSUES_ROLE(), _manager);
+        _acl.createPermission(_grantee, _projects, _projects.UPDATE_BOUNTIES_ROLE(), _manager);
         _acl.createPermission(_grantee, _projects, _projects.ADD_REPO_ROLE(), _manager);
         _acl.createPermission(_grantee, _projects, _projects.CHANGE_SETTINGS_ROLE(), _manager);
         _acl.createPermission(_grantee, _projects, _projects.REMOVE_REPO_ROLE(), _manager);
