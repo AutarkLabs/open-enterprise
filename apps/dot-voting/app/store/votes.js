@@ -3,6 +3,8 @@ import { first } from 'rxjs/operators'
 
 import { app } from './'
 import { EMPTY_CALLSCRIPT } from '../utils/vote-utils'
+import { ETHER_TOKEN_FAKE_ADDRESS, getTokenSymbol } from '../utils/token-utils'
+import allocationsAbi from '../../../shared/json-abis/allocations'
 
 
 export const castVote = async (state, { voteId }) => {
@@ -91,24 +93,28 @@ const loadVoteDataAllocation = async (vote, voteId) => {
           canExecute,
           options,
         }
-        // const symbol
-        // const tokenAddress = '0x' + vote.executionScript.slice(794, 834)
-        // if (tokenAddress === ETHER_TOKEN_FAKE_ADDRESS) {
-        //   symbol = 'ETH'
-        // }
-        // else {
-        //   symbol = await getTokenSymbol(app, tokenAddress)
-        // }
+        const allocationsAddress = '0x' + vote.executionScript.slice(10,50)
+        const allocationsAccountId = parseInt(vote.executionScript.slice(514, 578), 16).toString() //should be 514, 578
+        const allocationsInstance = app.external(allocationsAddress, allocationsAbi)
+        const { token: tokenAddress } = await allocationsInstance.getAccount(allocationsAccountId).toPromise()
+
+        let symbol
+        if (tokenAddress === ETHER_TOKEN_FAKE_ADDRESS) {
+          symbol = 'ETH'
+        }
+        else {
+          symbol = await getTokenSymbol(app, tokenAddress)
+        }
 
 
         resolve({
           ...returnObject,
           // // These numbers indicate the static param location of the setDistribution
           // // functions amount paramater
-          // balance: parseInt(vote.executionScript.slice(706, 770), 16),
-          // tokenSymbol: symbol,
-          // metadata: vote.voteDescription,
-          // type: 'allocation',
+          balance: parseInt(vote.executionScript.slice(770, 834), 16),
+          tokenSymbol: symbol,
+          metadata: vote.voteDescription,
+          type: 'allocation',
         })
       })
   })
