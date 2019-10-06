@@ -87,11 +87,11 @@ contract BaseOEApps is BaseCache, TokenCache {
         _acl.createPermission(ANY_ENTITY, _allocations, _allocations.EXECUTE_PAYOUT_ROLE(), _manager);
     }
 
-    /** 
+    /**
      * DOT-VOTING
      * @param _dotVotingSettings Array of [minQuorum, candidateSupportPct, voteDuration] to set up the dot voting app of the organization
-    */
-    
+     **/
+
     function _installDotVotingApp(Kernel _dao, MiniMeToken _token, uint64[3] memory _dotVotingSettings) internal returns (DotVoting) {
         return _installDotVotingApp(_dao, _token, _dotVotingSettings[0], _dotVotingSettings[1], _dotVotingSettings[2]);
     }
@@ -119,7 +119,7 @@ contract BaseOEApps is BaseCache, TokenCache {
     {
         //TODO: we should pass _tokenManager into ROLE_CREATE_VOTES as 2nd param, not _dotVoting
         _acl.createPermission(_grantee, _dotVoting, _dotVoting.ROLE_CREATE_VOTES(), _manager);
-        _acl.createPermission(_grantee, _voting, _dotVoting.ROLE_ADD_CANDIDATES(), _manager);
+        _acl.createPermission(_grantee, _dotVoting, _dotVoting.ROLE_ADD_CANDIDATES(), _manager);
     }
 
     /* DISCUSSIONS */

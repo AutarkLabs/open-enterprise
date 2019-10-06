@@ -43,6 +43,7 @@ contract BaseCache is BaseTemplate {
 
     function _popBaseCache(address _owner) internal returns (ACL, Kernel, Finance, Vault, Voting) {
         // require(baseCache[_owner] != address(0), ERROR_MISSING_BASE_CACHE);
+        // TODO: need to return tokenManger, but I don't know 
 
         InstalledBase baseInstance = baseCache[_owner];
         ACL acl = baseInstance.acl;

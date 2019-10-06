@@ -1,12 +1,12 @@
 {
   "roles": [
     {
-      "name": "Fund issues",
+      "name": "Fund issues that require applications",
       "id": "FUND_ISSUES_ROLE",
       "params": []
     },
     {
-      "name": "Fund unassigned issues",
+      "name": "Fund issues open-submission issues",
       "id": "FUND_OPEN_ISSUES_ROLE",
       "params": []
     },
@@ -16,7 +16,7 @@
       "params": []
     },
     {
-      "name": "Add project repos",
+      "name": "Add projects",
       "id": "ADD_REPO_ROLE",
       "params": []
     },
@@ -31,7 +31,7 @@
       "params": []
     },
     {
-      "name": "Remove project repos",
+      "name": "Remove projects",
       "id": "REMOVE_REPO_ROLE",
       "params": []
     },
@@ -43,6 +43,11 @@
     {
       "name": "Approve or reject work submissions on issues",
       "id": "WORK_REVIEW_ROLE",
+      "params": []
+    },
+    {
+      "name": "Update bounty data",
+      "id": "UPDATE_BOUNTIES_ROLE",
       "params": []
     }
   ],

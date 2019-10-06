@@ -9,6 +9,11 @@
       "name": "Remove address book entry",
       "id": "REMOVE_ENTRY_ROLE",
       "params": []
+    },
+    {
+      "name": "Update address book entity",
+      "id": "UPDATE_ENTRY_ROLE",
+      "params": []
     }
   ],
   "environments": {

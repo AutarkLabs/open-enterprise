@@ -12,6 +12,7 @@ module.exports = async function newDao({
     financePeriod,
     id,
     members,
+    stakes,
     token,
     useDiscussions,
     votingSettings,
@@ -23,7 +24,7 @@ module.exports = async function newDao({
   try {
     // const template = OpenEnterpriseTemplate.at(await getTemplateAddress())
     const template = OpenEnterpriseTemplate.at(
-      '0xe47c45da69763807897f446d087d84fe572b04c4'
+      '0xee514cde999a30047d57c329f874f64b8a98ff46'
     )
     console.log('template found at:', template.address)
 
@@ -31,7 +32,7 @@ module.exports = async function newDao({
     // console.log('new token receipt', tokenBase.receipt)
 
     const MEMBERS = members
-
+    const STAKES = stakes
     const ONE_DAY = 60 * 60 * 24
     const ONE_WEEK = ONE_DAY * 7
     const THIRTY_DAYS = ONE_DAY * 30
@@ -45,6 +46,11 @@ module.exports = async function newDao({
       MIN_ACCEPTANCE_QUORUM,
       VOTE_DURATION,
     ]
+    const DOT_VOTING_SETTINGS = [
+      MIN_ACCEPTANCE_QUORUM,
+      SUPPORT_REQUIRED,
+      VOTE_DURATION,
+    ]
     //   const DOT_VOTING_SETTINGS = [ SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION ]
 
     const daoID = randomId()
@@ -56,16 +62,18 @@ module.exports = async function newDao({
       TOKEN_SYMBOL,
       daoID,
       MEMBERS,
+      STAKES,
       VOTING_SETTINGS,
       0,
       { from: members[0] }
     )
 
+    console.log('test')
+
     const baseOpenEnterprise = await template.newOpenEnterprise(
-      VOTING_SETTINGS,
+      DOT_VOTING_SETTINGS,
       0,
-      false,
-      { from: members[0] }
+      false
     )
 
     // const baseDAO = await template.newTokenAndInstance(

@@ -7,6 +7,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
     string constant private ERROR_MISSING_MEMBERS = "OPEN_ENTERPRISE_MISSING_MEMBERS";
     string constant private ERROR_BAD_VOTE_SETTINGS = "OPEN_ENTERPRISE_BAD_VOTE_SETTINGS";
     string constant private ERROR_BAD_DOT_VOTE_SETTINGS = "OPEN_ENTERPRISE_BAD_DOT_VOTE_SETTINGS";
+    string constant private ERROR_BAD_MEMBERS_STAKES_LEN = "OPEN_ENTERPRISE_BAD_MEMBER_STAKES_LEN";
 
     uint64 constant private DEFAULT_PERIOD = uint64(30 days);
     uint8 constant private TOKEN_DECIMALS = uint8(18);
@@ -60,7 +61,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         bool _useDiscussions
     ) public
     {
-        _validateSettings(_dotVotingSettings);
+        _validateDotSettings(_dotVotingSettings);
         (
             ACL acl,
             Kernel dao,
@@ -68,6 +69,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
             Vault vault,
             Voting voting
         ) = _popBaseCache(msg.sender);
+        //TODO: need to be able to pass a token manager into _setupOEApps to set proper permissions for dot voting
         _setupOEApps(dao, acl, vault, voting, _dotVotingSettings, _allocationsPeriod, _useDiscussions);
         _transferCreatePaymentManagerFromTemplate(acl, finance, voting);
         _transferPermissionFromTemplate(acl, vault, voting, vault.TRANSFER_ROLE(), voting);
@@ -134,6 +136,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         return (finance, voting, vault);
     }
 
+    // TODO: add Token Manager as param to setup Dot Voting permission
     function _setupOEApps(
         Kernel _dao,
         ACL _acl,
@@ -157,7 +160,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         Projects projects = _installProjectsApp(_dao, _vault, token);
         Rewards rewards = _installRewardsApp(_dao, _vault);
 
-        _setupOEPermissions(
+       _setupOEPermissions(
             _acl,
             _voting,
             addressBook,
@@ -205,7 +208,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         _createRewardsPermissions(_acl, _rewards, _voting, _voting);
     }
 
-    function _validateSettings(uint64[3] memory _dotVotingSettings) private pure {
+    function _validateDotSettings(uint64[3] memory _dotVotingSettings) private pure {
         require(_dotVotingSettings.length == 3, ERROR_BAD_DOT_VOTE_SETTINGS);
     }
 
