@@ -75,7 +75,6 @@ const getAllocation = async ({ accountId, payoutId }) => {
     app.call('getAccount', accountId),
     app.call('getPayout', accountId, payoutId),
     app.call('getPayoutDescription', accountId, payoutId),
-    app.call('getNumberOfCandidates', accountId, payoutId),
     getRecipientData(accountId, payoutId)
   )
     .pipe(
@@ -94,8 +93,6 @@ const getAllocation = async ({ accountId, payoutId }) => {
         },
         // getPayoutDescription
         description,
-        // getNumberofCandidates
-        recipientsLength,
         // getRecipientData
         recipients
       ]) => ({
