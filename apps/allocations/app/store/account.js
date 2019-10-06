@@ -9,9 +9,14 @@ import { combineLatest } from 'rxjs'
 /// /////////////////////////////////////
 
 export const updateAccounts = async (accounts, id) => {
+  //Array.prototype.findIndex()
   const newAccounts = Array.from(accounts || [])
-  if (!newAccounts.some(a => a.id === id)) {
+  const accountIdx = newAccounts.findIndex(a => a.id === id)
+  if (accountIdx === -1) {
     newAccounts.push(await getAccount(id))
+  }
+  else {
+    newAccounts[accountIdx] = await getAccount(id)
   }
   return newAccounts
 }

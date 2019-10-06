@@ -1,5 +1,5 @@
 import { combineLatest, range } from 'rxjs'
-import { first, map, mergeMap, mergeScan, toArray } from 'rxjs/operators'
+import { first, map, mergeMap, toArray } from 'rxjs/operators'
 
 import { app } from '../../../../shared/store-utils'
 
@@ -9,8 +9,14 @@ import { app } from '../../../../shared/store-utils'
 
 export const updateAllocations = async (allocations, { accountId, payoutId }) => {
   const newAllocations = Array.from(allocations || [])
-  if (!newAllocations.some(a => a.payoutId === payoutId && a.accountId === accountId)) {
+  const allocIdx = newAllocations.findIndex(
+    a => a.payoutId === payoutId && a.accountId === accountId
+  )
+  if (allocIdx === -1) {
     newAllocations.push(await getAllocation({ accountId, payoutId }))
+  }
+  else {
+    newAllocations[allocIdx] = await getAllocation({ accountId, payoutId })
   }
   return newAllocations
 }
