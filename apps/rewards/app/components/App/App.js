@@ -16,13 +16,13 @@ import {
   millisecondsToWeeks,
   millisecondsToMonths,
   millisecondsToYears,
-  blocksToMilliseconds,
 } from '../../../../../shared/ui/utils'
 
 import { BN } from 'web3-utils'
 import {
   ONE_TIME_DIVIDEND,
   ONE_TIME_MERIT,
+  RECURRING_DIVIDEND,
 } from '../../utils/constants'
 import { networkContextType } from '../../../../../shared/ui'
 import { useAragonApi } from '../../api-react'
