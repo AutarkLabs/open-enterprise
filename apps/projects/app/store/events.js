@@ -46,18 +46,18 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
   }
   case REQUESTED_GITHUB_TOKEN_SUCCESS: {
     const { token } = returnValues
-    if (token) {
-      initializeGraphQLClient(token)
-    }
+    if (!token) return state
 
-    const loadedRepos = await loadReposFromQueue(state)
+    initializeGraphQLClient(token)
 
-    const status = STATUS.AUTHENTICATED
     state.github = {
       token,
-      status,
+      status: STATUS.AUTHENTICATED,
       event: null
     }
+    app.cache('github', state.github).toPromise()
+
+    const loadedRepos = await loadReposFromQueue(state)
     state.repos = [ ...state.repos, ...loadedRepos ]
 
     return state
@@ -67,6 +67,7 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
   }
   case REQUESTED_GITHUB_DISCONNECT: {
     state.github = INITIAL_STATE.github
+    app.cache('github', state.github).toPromise()
     state.repos = [] // repos will be reloaded from loadReposFromQueue on re-sign-in
     return state
   }

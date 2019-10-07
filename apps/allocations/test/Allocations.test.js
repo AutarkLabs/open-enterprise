@@ -157,7 +157,7 @@ contract('Allocations', accounts => {
         'Fett´s vett',
         NULL_ADDR,
         true,
-        web3.toWei(0.01, 'ether')
+        web3.toWei(0.02, 'ether')
       )).logs[0].args.accountId.toNumber()
 
       await vault.deposit(NULL_ADDR, web3.toWei(0.03, 'ether'), {
@@ -282,7 +282,7 @@ contract('Allocations', accounts => {
           accountId,
           ethPayoutId,
           i
-        )).toNumber()
+        ))[0].toNumber()
         assert.equal(
           SUPPORTS[i],
           supportVal,
@@ -295,6 +295,11 @@ contract('Allocations', accounts => {
         storedSupport.length,
         'distribution array lengths do not match'
       )
+    })
+
+    it('gets the remaining budget', async () =>{
+      const budgetRemaining = await app.getRemainingBudget(accountId)
+      assert.equal(budgetRemaining.toNumber(), 1e16,'0.01 ETH should remain')
     })
 
     it('fails to auto-execute the payout (eth) - accountId too high', async () => {
@@ -490,7 +495,7 @@ contract('Allocations', accounts => {
           accountId,
           deferredPayoutId,
           i
-        )).toNumber()
+        ))[0].toNumber()
         assert.equal(
           SUPPORTS[i],
           supportVal,

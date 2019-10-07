@@ -3,7 +3,6 @@ import { first } from 'rxjs/operators'
 
 import { app } from './'
 import { EMPTY_CALLSCRIPT } from '../utils/vote-utils'
-import { ETHER_TOKEN_FAKE_ADDRESS, getTokenSymbol } from '../utils/token-utils'
 
 
 export const castVote = async (state, { voteId }) => {
@@ -92,14 +91,14 @@ const loadVoteDataAllocation = async (vote, voteId) => {
           canExecute,
           options,
         }
-        let symbol
-        const tokenAddress = '0x' + vote.executionScript.slice(794, 834)
-        if (tokenAddress === ETHER_TOKEN_FAKE_ADDRESS) {
-          symbol = 'ETH'
-        }
-        else {
-          symbol = await getTokenSymbol(app, tokenAddress)
-        }
+        // const symbol
+        // const tokenAddress = '0x' + vote.executionScript.slice(794, 834)
+        // if (tokenAddress === ETHER_TOKEN_FAKE_ADDRESS) {
+        //   symbol = 'ETH'
+        // }
+        // else {
+        //   symbol = await getTokenSymbol(app, tokenAddress)
+        // }
 
 
         resolve({

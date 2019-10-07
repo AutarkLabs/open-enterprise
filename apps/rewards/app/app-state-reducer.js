@@ -2,10 +2,6 @@ import {
   ONE_TIME_DIVIDEND,
   RECURRING_DIVIDEND,
   ONE_TIME_MERIT,
-  RECURRING,
-  ONE_TIME,
-  MERIT,
-  DIVIDEND
 } from './utils/constants'
 import {
   calculateAverageRewardsNumbers,
@@ -20,7 +16,7 @@ const convertApiUrl = symbols =>
 function appStateReducer(state) {
 
   if(state){
-    state.amountTokens = state.balances.map(token => { 
+    state.amountTokens = state.balances.map(token => {
       return { amount: token.amount, symbol: token.symbol, address: token.address, decimals: token.decimals }
     })
     state.rewards = state.rewards  || []

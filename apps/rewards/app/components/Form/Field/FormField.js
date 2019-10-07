@@ -12,7 +12,6 @@ const FormField = ({
   required,
   separator,
   width,
-  help,
 }) => {
   // TODO: Currently it will only work with 1 required child
   // const isRequired = React.Children.toArray(children).some(
@@ -57,7 +56,6 @@ FormField.propTypes = {
   hint: PropTypes.string,
   separator: PropTypes.bool,
   width: PropTypes.string,
-  help: PropTypes.string,
 }
 
 FormField.defaultProps = {
