@@ -1,7 +1,6 @@
 pragma solidity 0.4.24;
 
-// TODO: revert relative path
-import "../../../node_modules/@aragon/templates-shared/contracts/TokenCache.sol";
+import "@aragon/templates-shared/contracts/TokenCache.sol";
 import "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
 
 import "@tps/apps-address-book/contracts/AddressBook.sol";

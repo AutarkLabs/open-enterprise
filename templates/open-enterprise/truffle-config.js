@@ -9,5 +9,6 @@ config.networks.devnet.gas = gasLimit
 config.networks.rinkeby.gas = gasLimit
 config.networks.ropsten.gas = gasLimit
 config.networks.kovan.gas = gasLimit
+config.solc.optimizer.runs = 200
 
 module.exports = config
