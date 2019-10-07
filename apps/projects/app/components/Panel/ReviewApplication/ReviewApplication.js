@@ -102,7 +102,7 @@ const ReviewApplication = ({ issue, requestIndex }) => {
       <FieldTitle>Applicant</FieldTitle>
       <DropDown
         name="Applicant"
-        items={issue.requestsData.map( request => request.user.login)}
+        items={issue.requestsData.map(request => request.user.login)}
         onChange={changeRequest}
         selected={requestIndex}
         wide
@@ -118,7 +118,7 @@ const ReviewApplication = ({ issue, requestIndex }) => {
           <Link
             href={applicant.url}
             target="_blank"
-            style={{ textDecoration: 'none', color: `${theme.link}`, marginRight: '6px' }}
+            style={{ textDecoration: 'none', color: `${theme.link}`, marginRight: 6 }}
           >
             {applicantName}
           </Link>

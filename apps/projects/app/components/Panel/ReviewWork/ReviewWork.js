@@ -23,6 +23,7 @@ import { usePanelManagement } from '../../Panel'
 import { ipfsAdd } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
 import { issueShape } from '../../../utils/shapes.js'
+import workRatings from '../../../utils/work-ratings.js'
 
 const ReviewWork = ({ issue }) => {
   const githubCurrentUser = useGithubAuth()
@@ -82,14 +83,6 @@ const ReviewWork = ({ issue }) => {
   const submitter = issue.work.user
   const submissionDateDistance = formatDistance(new Date(work.submissionDate), new Date())
   const submitterName = submitter.name ? submitter.name : submitter.login
-  const ratings = [
-    'Select a Rating',
-    '1 - Unusable',
-    '2 - Needs Rework',
-    '3 - Acceptable',
-    '4 - Exceeds Expectations',
-    '5 - Excellent',
-  ]
 
   const { title, repo, number, url } = issue
 
@@ -168,7 +161,7 @@ const ReviewWork = ({ issue }) => {
             foreground={`${theme.surfaceContentSecondary}`}
             background={`${theme.border}`}
           >
-            {'Quality:' + ' ' + ratings[work.review.rating]}
+            {'Quality:' + ' ' + workRatings[work.review.rating]}
           </Tag>
 
         </React.Fragment>
@@ -181,7 +174,7 @@ const ReviewWork = ({ issue }) => {
             input={
               <DropDown
                 placeholder="Select rating"
-                items={ratings}
+                items={workRatings}
                 onChange={updateRating}
                 selected={rating}
                 wide

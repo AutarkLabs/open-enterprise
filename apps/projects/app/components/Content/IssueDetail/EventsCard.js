@@ -13,16 +13,9 @@ import {
 import { formatDistance } from 'date-fns'
 import { usePanelManagement } from '../../Panel'
 import { issueShape, userGitHubShape } from '../../../utils/shapes.js'
+import workRatings from '../../../utils/work-ratings.js'
 
 const calculateAgo = pastDate => formatDistance(pastDate, Date.now(), { addSuffix: true })
-
-const workRatings = [
-  '1 - Unusable',
-  '2 - Needs Rework',
-  '3 - Acceptable',
-  '4 - Exceeds Expectations',
-  '5 - Excellent',
-]
 
 const IssueEvent = ({ user, ...props }) => {
   const theme = useTheme()
@@ -43,10 +36,6 @@ const IssueEvent = ({ user, ...props }) => {
           </Link>{' '}
           {props.eventDescription}
         </Text.Block>
-
-        {props.eventMessage && (
-          <Text.Block size="large">{props.eventMessage}</Text.Block>
-        )}
         {props.eventAction && <div>{props.eventAction}</div>}
         <Text.Block size="xsmall" color={`${theme.surfaceContentSecondary}`}>
           {calculateAgo(props.date)}
@@ -59,11 +48,7 @@ const IssueEvent = ({ user, ...props }) => {
 IssueEvent.propTypes = {
   user: userGitHubShape,
   eventDescription: PropTypes.string.isRequired,
-  eventMessage: PropTypes.string,
-  eventAction: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.object,
-  ]),
+  eventAction: PropTypes.object.isRequired,
   date: PropTypes.string.isRequired,
 }
 
