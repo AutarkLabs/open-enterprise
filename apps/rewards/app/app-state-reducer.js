@@ -76,6 +76,7 @@ function appStateReducer(state) {
       },
     ]
     state.amountTokens = state.amountTokens || []
+    console.log('end recuders:', state)
   }
 
   return {

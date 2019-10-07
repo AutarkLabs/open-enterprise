@@ -16,6 +16,7 @@ import {
   millisecondsToWeeks,
   millisecondsToMonths,
   millisecondsToYears,
+  blocksToMilliseconds,
 } from '../../../../../shared/ui/utils'
 
 import { BN } from 'web3-utils'
@@ -161,6 +162,7 @@ class App extends React.Component {
     const tenBN =  new BN(10)
     const decimalsBN = new BN(reward.amountToken.decimals)
     reward.amount = amountBN.mul(tenBN.pow(decimalsBN))
+    console.log(reward)
     let startBlock = currentBlock + millisecondsToBlocks(Date.now(), reward.dateStart)
     if (reward.rewardType === ONE_TIME_DIVIDEND || reward.rewardType === ONE_TIME_MERIT) {
       reward.occurances = 1
