@@ -42,8 +42,8 @@ function appStateReducer(state) {
       return reward
     })
     state.myRewards = state.rewards.filter(reward => reward.userRewardAmount > 0)
-    let convertRates = updateConvertedRates(state.balances)
-    let metric = calculateAverageRewardsNumbers(state.rewards, state.claims, state.balances, convertRates)
+    const convertRates = updateConvertedRates(state.balances)
+    const metric = calculateAverageRewardsNumbers(state.rewards, state.claims, state.balances, convertRates)
     state.metrics = [
       {
         name: 'Average reward',
@@ -61,7 +61,7 @@ function appStateReducer(state) {
         unit: 'USD',
       },
     ]
-    let myMetric = calculateMyRewardsSummary(state.rewards, state.balances, convertRates)
+    const myMetric = calculateMyRewardsSummary(state.rewards, state.balances, convertRates)
     state.myMetrics = [
       {
         name: 'Unclaimed rewards',
@@ -80,7 +80,6 @@ function appStateReducer(state) {
       },
     ]
     state.amountTokens = state.amountTokens || []
-    console.log('end recuders:', state)
   }
 
   return {
