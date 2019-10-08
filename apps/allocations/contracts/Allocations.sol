@@ -32,18 +32,20 @@ contract Allocations is AragonApp {
     uint64 internal constant MINIMUM_PERIOD = uint64(1 days);
     uint256 internal constant MAX_SCHEDULED_PAYOUTS_PER_TX = 20;
 
-    string private constant ERROR_NO_PERIOD = "ALLOCATIONS_NO_PERIOD";
-    string private constant ERROR_NO_ACCOUNT = "ALLOCATIONS_NO_ACCOUNT";
-    string private constant ERROR_NO_PAYOUT = "ALLOCATIONS_NO_PAYOUT";
-    string private constant ERROR_NO_CANDIDATE = "ALLOCATIONS_NO_CANDIDATE";
-    string private constant ERROR_SET_PERIOD_TOO_SHORT = "ALLOCATIONS_SET_PERIOD_TOO_SHORT";
-    string private constant ERROR_COMPLETE_TRANSITION = "ALLOCATIONS_COMPLETE_TRANSITION";
+    string private constant ERROR_NO_PERIOD = "NO_PERIOD";
+    string private constant ERROR_NO_ACCOUNT = "NO_ACCOUNT";
+    string private constant ERROR_NO_PAYOUT = "NO_PAYOUT";
+    string private constant ERROR_NO_CANDIDATE = "NO_CANDIDATE";
+    string private constant ERROR_PERIOD_SHORT = "SET_PERIOD_TOO_SHORT";
+    string private constant ERROR_COMPLETE_TRANSITION = "COMPLETE_TRANSITION";
+    string private constant ERROR_MIN_RECURRENCE = "RECURRENCES_BELOW_ONE";
+    string private constant ERROR_CANDIDATE_NOT_RECEIVER = "CANDIDATE_NOT_RECEIVER";
+    string private constant ERROR_INSUFFICIENT_FUNDS = "INSUFFICIENT_FUNDS";
 
     struct Payout {
         uint64 startTime;
         uint64 recurrences;
         uint64 period;
-        bool distSet;
         address[] candidateAddresses;
         uint256[] supports;
         uint64[] executions;
@@ -70,7 +72,6 @@ contract Allocations is AragonApp {
         mapping (uint256 => AccountStatement) accountStatement;
     }
 
-    //uint256 internal constant MAX_SCHEDULED_PAYOUTS_PER_TX = 20;
     uint64 accountsLength;
     uint64 periodsLength;
     uint64 periodDuration;
@@ -127,7 +128,7 @@ contract Allocations is AragonApp {
     ) external onlyInit
     {
         vault = _vault;
-        require(_periodDuration >= MINIMUM_PERIOD, ERROR_SET_PERIOD_TOO_SHORT);
+        require(_periodDuration >= MINIMUM_PERIOD, ERROR_PERIOD_SHORT);
         periodDuration = _periodDuration;
         _newPeriod(getTimestamp64());
         accountsLength++;  // position 0 is reserved and unused
@@ -156,14 +157,13 @@ contract Allocations is AragonApp {
     *   @param _payoutId The ID of the allocation within the budget you'd like to retrieve.
     */
     function getPayout(uint64 _accountId, uint64 _payoutId) external view payoutExists(_accountId, _payoutId) isInitialized
-    returns(uint amount, uint64 recurrences, uint startTime, uint period, bool distSet)
+    returns(uint amount, uint64 recurrences, uint startTime, uint period)
     {
         Payout storage payout = accounts[_accountId].payouts[_payoutId];
         amount = payout.amount;
         recurrences = payout.recurrences;
         startTime = payout.startTime;
         period = payout.period;
-        distSet = payout.distSet;
     }
 
     /**
@@ -286,7 +286,7 @@ contract Allocations is AragonApp {
         auth(CHANGE_PERIOD_ROLE)
         transitionsPeriod
     {
-        require(_periodDuration >= MINIMUM_PERIOD, ERROR_SET_PERIOD_TOO_SHORT);
+        require(_periodDuration >= MINIMUM_PERIOD, ERROR_PERIOD_SHORT);
         periodDuration = _periodDuration;
         emit ChangePeriodDuration(_periodDuration);
     }
@@ -360,8 +360,7 @@ contract Allocations is AragonApp {
     ) external transitionsPeriod isInitialized accountExists(_accountId) payoutExists(_accountId, _payoutId) // solium-disable-line error-reason
     {
         //Payout storage payout = accounts[_accountId].payouts[_payoutId];
-        require(accounts[_accountId].payouts[_payoutId].distSet); // solium-disable-line error-reason
-        require(msg.sender == accounts[_accountId].payouts[_payoutId].candidateAddresses[_candidateId], "candidate not receiver");
+        require(msg.sender == accounts[_accountId].payouts[_payoutId].candidateAddresses[_candidateId], ERROR_CANDIDATE_NOT_RECEIVER);
         _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId, 0);
     }
 
@@ -377,7 +376,6 @@ contract Allocations is AragonApp {
         uint256 _candidateId
     ) external transitionsPeriod auth(EXECUTE_PAYOUT_ROLE) accountExists(_accountId) payoutExists(_accountId, _payoutId)
     {
-        require(accounts[_accountId].payouts[_payoutId].distSet); // solium-disable-line error-reason
         _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId, 0);
     }
 
@@ -439,7 +437,7 @@ contract Allocations is AragonApp {
         require(maxCandidates >= _candidateAddresses.length); // solium-disable-line error-reason
         Account storage account = accounts[_accountId];
         require(vault.balance(account.token) >= _amount * _recurrences); // solium-disable-line error-reason
-        require(_recurrences > 0, "must execute payout at least once");
+        require(_recurrences > 0, ERROR_MIN_RECURRENCE);
 
         Payout storage payout = account.payouts[account.payoutsLength++];
 
@@ -449,10 +447,9 @@ contract Allocations is AragonApp {
         if (_recurrences > 1) {
             payout.period = _period;
             // minimum granularity is a single day
-            require(payout.period >= 1 days,"period too short");
+            require(payout.period >= 1 days, ERROR_PERIOD_SHORT);
         }
         payout.startTime = _startTime; // solium-disable-line security/no-block-members
-        payout.distSet = true;
         payout.supports = _supports;
         payout.description = _description;
         payout.executions.length = _supports.length;
@@ -473,7 +470,7 @@ contract Allocations is AragonApp {
     {
         Account storage account = accounts[_accountId];
         Payout storage payout = account.payouts[_payoutId];
-        require(_candidateId < payout.supports.length); // solium-disable-line error-reason
+        require(_candidateId < payout.supports.length, ERROR_NO_CANDIDATE); 
 
         uint256 paid = _paid;
         uint256 totalSupport = _getTotalSupport(payout);
@@ -572,7 +569,6 @@ contract Allocations is AragonApp {
         uint256[] storage supports = account.payouts[_payoutId].supports;
         uint64 i;
         uint256 paid = 0;
-        require(account.payouts[_payoutId].distSet); // solium-disable-line error-reason
         uint256 length = account.payouts[_payoutId].candidateAddresses.length;
         //handle vault
         for (i = 0; i < length; i++) {
@@ -615,7 +611,7 @@ contract Allocations is AragonApp {
         Account storage account = accounts[_accountId];
         Payout storage payout = account.payouts[_payoutId];
         uint256 individualPayout = payout.supports[_candidateIndex].mul(payout.amount).div(_totalSupport);
-        require(_canMakePayment(_accountId, individualPayout), "insufficient funds");
+        require(_canMakePayment(_accountId, individualPayout), ERROR_INSUFFICIENT_FUNDS);
 
         address token = account.token;
         uint256 expenses = periods[_currentPeriodId()].accountStatement[_accountId].expenses[token];
