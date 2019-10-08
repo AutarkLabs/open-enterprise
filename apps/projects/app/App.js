@@ -24,7 +24,7 @@ import {
 } from './store/eventTypes'
 
 import { initApolloClient } from './utils/apollo-client'
-import { getToken, getURLParam, githubPopup, STATUS } from './utils/github'
+import { getToken, githubPopup, STATUS } from './utils/github'
 import Unauthorized from './components/Content/Unauthorized'
 import { LoadingAnimation } from './components/Shared'
 import { EmptyWrapper } from './components/Shared'
@@ -60,16 +60,6 @@ const App = () => {
   useEffect(() => {
     setSelectedIssue(selectedIssueId)
   }, [selectedIssueId])
-
-  useEffect(() => {
-    const code = getURLParam('code')
-    code &&
-      window.opener.postMessage(
-        { from: 'popup', name: 'code', value: code },
-        '*'
-      )
-    window.close()
-  })
 
   const handlePopupMessage = async message => {
     if (message.data.from !== 'popup') return

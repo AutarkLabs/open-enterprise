@@ -52,11 +52,6 @@ export const githubPopup = (popup, scope) => {
   return popup
 }
 
-export const getURLParam = param => {
-  const searchParam = new URLSearchParams(window.location.search)
-  return searchParam.get(param)
-}
-
 /**
  * Sends an http request to the AUTH_URI with the auth code obtained from the oauth flow
  * @param {string} code

@@ -1,0 +1,20 @@
+{
+  "name": "@tps/authenticator",
+  "version": "0.0.1",
+  "description": "static html that parses URL for `code` param and posts it to the opening window",
+  "scripts": {
+    "start": "http-server public",
+    "deploy": "./deploy.sh"
+  },
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AutarkLabs/open-enterprise"
+  },
+  "keywords": [],
+  "license": "GPL-3.0",
+  "private": true,
+  "devDependencies": {
+    "http-server": "^0.11.1"
+  }
+}
