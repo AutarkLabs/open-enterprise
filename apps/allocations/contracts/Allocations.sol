@@ -470,7 +470,7 @@ contract Allocations is AragonApp {
     {
         Account storage account = accounts[_accountId];
         Payout storage payout = account.payouts[_payoutId];
-        require(_candidateId < payout.supports.length, ERROR_NO_CANDIDATE); // solium-disable-line error-reason
+        require(_candidateId < payout.supports.length, ERROR_NO_CANDIDATE); 
 
         uint256 paid = _paid;
         uint256 totalSupport = _getTotalSupport(payout);
