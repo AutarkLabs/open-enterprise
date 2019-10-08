@@ -16,7 +16,6 @@ contract Rewards is AragonApp {
     using SafeMath for uint256;
     using SafeMath64 for uint64;
     /// Hardcoded constants to save gas
-    /// bytes32 public constant ADD_REWARD_ROLE = keccak256("ADD_REWARD_ROLE");
     bytes32 public constant ADD_REWARD_ROLE = 0x7941efc179bdce37ebd8db3e2deb46ce5280bf6d2de2e50938a9e920494c1941;
 
     /// Used to limit dividends occurrences for dividend rewards
@@ -56,7 +55,6 @@ contract Rewards is AragonApp {
     uint256 public totalClaimsEach;
 
     /// Rewards internal registry
-    //Reward[] internal rewards; this implementation mimics an array but improves upgradability
     mapping(uint256 => Reward) rewards;
     uint256 rewardsRegistryLength;
     /// Public vault that holds the funds
@@ -92,11 +90,11 @@ contract Rewards is AragonApp {
         require(reward.timeClaimed[msg.sender] == 0, ERROR_REWARD_CLAIMED);
         reward.timeClaimed[msg.sender] = getTimestamp();
 
-        uint256 rewardAmount = calculateRewardAmount(reward);
+        uint256 rewardAmount = _calculateRewardAmount(reward);
         require(rewardAmount > 0, ERROR_ZERO_REWARD);
         require(vault.balance(reward.rewardToken) >= rewardAmount, ERROR_VAULT_FUNDS);
 
-        transferReward(reward, rewardAmount);
+        _transferReward(reward, rewardAmount);
 
         emit RewardClaimed(_rewardID);
         return rewardAmount;
@@ -155,7 +153,7 @@ contract Rewards is AragonApp {
         delay = reward.delay;
         timeClaimed = reward.timeClaimed[msg.sender];
         creator = reward.creator;
-        rewardAmount = calculateRewardAmount(reward);
+        rewardAmount = _calculateRewardAmount(reward);
     }
 
     /**
@@ -203,8 +201,8 @@ contract Rewards is AragonApp {
         require(!_isMerit || _occurrences == 1, ERROR_MERIT_OCCURRENCES);
         require(_occurrences < MAX_OCCURRENCES, ERROR_MAX_OCCURRENCES);
         require(_startBlock > _referenceToken.creationBlock(), ERROR_START_BLOCK);
-        rewardId = rewardsRegistryLength++; /// increment the rewards array to create a new one
-        Reward storage reward = rewards[rewardsRegistryLength - 1]; /// length-1 takes the last, newly created "empty" reward
+        rewardId = rewardsRegistryLength++; // increment the rewards array to create a new one
+        Reward storage reward = rewards[rewardsRegistryLength - 1]; // length-1 takes the last, newly created "empty" reward
         reward.description = _description;
         reward.isMerit = _isMerit;
         reward.referenceToken = _referenceToken;
@@ -233,7 +231,7 @@ contract Rewards is AragonApp {
     /**
      * @dev Private intermediate function that does the actual vault transfer for a reward and reward amoun
      */
-    function transferReward(Reward storage reward, uint256 rewardAmount) private {
+    function _transferReward(Reward storage reward, uint256 rewardAmount) private {
         totalClaimsEach++;
         totalAmountClaimed[reward.rewardToken] = totalAmountClaimed[reward.rewardToken].add(rewardAmount);
         vault.transfer(reward.rewardToken, msg.sender, rewardAmount);
@@ -243,7 +241,7 @@ contract Rewards is AragonApp {
      * @dev Private intermediate function to calculate reward amount depending of the type, balance and supply
      * @return rewardAmount calculated for that reward
      */
-    function calculateRewardAmount(Reward storage reward) private view returns (uint256 rewardAmount) {
+    function _calculateRewardAmount(Reward storage reward) private view returns (uint256 rewardAmount) {
         uint256 balance;
         uint256 supply;
         balance = reward.referenceToken.balanceOfAt(msg.sender, reward.blockStart + reward.duration);
