@@ -86,7 +86,7 @@ contract Allocations is AragonApp {
     event FundAccount(uint64 accountId);
     event SetDistribution(uint64 accountId, uint64 payoutId);
     event PaymentFailure(uint64 accountId, uint64 payoutId, uint256 candidateId);
-    event SetBudget(uint256 indexed accountId, uint256 amount, bool hasBudget);
+    event SetBudget(uint256 indexed accountId, uint256 amount, string name, bool hasBudget);
     event ChangePeriodDuration(uint64 newDuration);
 
     modifier periodExists(uint64 _periodId) {
@@ -301,13 +301,15 @@ contract Allocations is AragonApp {
     }
 
     /**
-    * @notice Update budget #`_accountId` to `@tokenAmount(0, _amount, false)`, effective immediately
+    * @notice Update budget #`_accountId` to `@tokenAmount(0, _amount, false)`, effective immediately and optionally update metadata
     * @param _accountId Budget Identifier
     * @param _amount New budget amount
+    * @param _metadata descriptor for the account (pass in empty string if unchanged)
     */
     function setBudget(
         uint64 _accountId,
-        uint256 _amount
+        uint256 _amount,
+        string _metadata
     )
         external
         auth(CHANGE_BUDGETS_ROLE)
@@ -315,24 +317,34 @@ contract Allocations is AragonApp {
         accountExists(_accountId)
     {
         accounts[_accountId].budget = _amount;
+        // only access storage if necessary
+        if (bytes(_metadata).length > 0) {
+            accounts[_accountId].metadata = _metadata;
+        }
         if (!accounts[_accountId].hasBudget) {
             accounts[_accountId].hasBudget = true;
         }
-        emit SetBudget(_accountId, _amount, true);
+        emit SetBudget(_accountId, _amount, _metadata, true);
     }
 
     /**
-    * @notice Remove budget #`_accountId`, effective immediately
+    * @notice Remove budget #`_accountId`, effective immediately and optionally update budget name.
     * @param _accountId Id for the budget.
+    * @param _metadata descriptor for account (pass in empty string if unchanged)
     */
-    function removeBudget(uint64 _accountId)
+    function removeBudget(uint64 _accountId, string _metadata)
         external
         auth(CHANGE_BUDGETS_ROLE)
         transitionsPeriod
+        accountExists(_accountId)
     {
         accounts[_accountId].budget = 0;
         accounts[_accountId].hasBudget = false;
-        emit SetBudget(_accountId, 0, false);
+        // only access storage if necessary
+        if (bytes(_metadata).length > 0) {
+            accounts[_accountId].metadata = _metadata;
+        }
+        emit SetBudget(_accountId, 0, _metadata, false);
     }
 
     /**
