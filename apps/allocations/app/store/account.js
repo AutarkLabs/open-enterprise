@@ -9,7 +9,6 @@ import { combineLatest } from 'rxjs'
 /// /////////////////////////////////////
 
 export const updateAccounts = async (accounts, id) => {
-  //Array.prototype.findIndex()
   const newAccounts = Array.from(accounts || [])
   const accountIdx = newAccounts.findIndex(a => a.id === id)
   if (accountIdx === -1) {

@@ -93,8 +93,11 @@ const loadVoteDataAllocation = async (vote, voteId) => {
           canExecute,
           options,
         }
+        // allocations appProxy address starts at 10 and is 20 bytes (40 chars) long
         const allocationsAddress = '0x' + vote.executionScript.slice(10,50)
-        const allocationsAccountId = parseInt(vote.executionScript.slice(514, 578), 16).toString() //should be 514, 578
+        // account Address starts at 514 and is stored as as uint256, which is 32 bytes (64 chars) long
+        const allocationsAccountId = parseInt(vote.executionScript.slice(514, 578), 16).toString()
+        // compose a callable external contract from the parsed address and the abi
         const allocationsInstance = app.external(allocationsAddress, allocationsAbi)
         const { token: tokenAddress } = await allocationsInstance.getAccount(allocationsAccountId).toPromise()
 
