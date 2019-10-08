@@ -12,16 +12,6 @@ import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 import "@tps/test-helpers/contracts/common/ADynamicForwarder.sol";
 
 
-/**
-  * @title DotVoting App
-  * @author Autark
-* @dev This vote is meant to take a set of options and then let
-  * holders of a specific token distribute their current voting
-  * weight along all options. The code is designed to work as an
-  * Aragon app [much thanks to the team for much of the codes structure]
-  * but could easily be adapted to other systems.
-  * Attention was paid to make the program as generalized as possible.
-  */
 contract DotVoting is ADynamicForwarder, AragonApp {
 
     MiniMeToken public token;
@@ -32,10 +22,16 @@ contract DotVoting is ADynamicForwarder, AragonApp {
 
     uint256 constant public PCT_BASE = 10 ** 18; // 0% = 0; 1% = 10^16; 100% = 10^18
 
-    bytes32 constant public ROLE_ADD_CANDIDATES = keccak256("ROLE_ADD_CANDIDATES");
-    bytes32 constant public ROLE_CREATE_VOTES = keccak256("ROLE_CREATE_VOTES");
-    bytes32 constant public ROLE_MODIFY_QUORUM = keccak256("ROLE_MODIFY_QUORUM");
-    bytes32 constant public ROLE_MODIFY_CANDIDATE_SUPPORT = keccak256("ROLE_MODIFY_CANDIDATE_SUPPORT");
+
+    // bytes32 constant public ROLE_ADD_CANDIDATES = keccak256("ROLE_ADD_CANDIDATES");
+    bytes32 constant public ROLE_ADD_CANDIDATES = 0xa71d8ae250b03a7b4831d7ee658104bf1ee3193c61256a07e2008fdfb75c5fa9;
+    // bytes32 constant public ROLE_CREATE_VOTES = keccak256("ROLE_CREATE_VOTES");
+    bytes32 constant public ROLE_CREATE_VOTES = 0x59036cbdc6597a5655363d74de8211c9fcba4dd9204c466ef593666e56a6e574;
+    // bytes32 constant public ROLE_MODIFY_QUORUM = keccak256("ROLE_MODIFY_QUORUM");
+    bytes32 constant public ROLE_MODIFY_QUORUM = 0xaa42a0cff9103a0165dffb0f5652f3a480d3fb6edf2c364f5e2110629719a5a7;
+    // bytes32 constant public ROLE_MODIFY_CANDIDATE_SUPPORT = keccak256("ROLE_MODIFY_CANDIDATE_SUPPORT");
+    bytes32 constant public ROLE_MODIFY_CANDIDATE_SUPPORT = 0xbd671bb523f136ed8ffc557fe00fbb016a7f9f856a4b550bb6366d356dcb8c74;
+
     string private constant ERROR_CAN_VOTE = "ERROR_CAN_VOTE";
     string private constant ERROR_MIN_QUORUM = "ERROR_MIN_QUORUM";
     string private constant ERROR_VOTE_LENGTH = "ERROR_VOTE_LENGTH";
