@@ -16,7 +16,6 @@ const STATUS = {
 const AUTH_URI = 'https://tps.autark.xyz/authenticate'
 export const CLIENT_ID = '686f96197cc9bb07a43d'
 export const GITHUB_URI = 'https://github.com/login/oauth/authorize'
-export const REDIRECT_URI = 'https://tps.autark.xyz/tps-auth'
 
 const getPopupSize = () => {
   return { width: 650, height: 850 }
@@ -44,8 +43,7 @@ export const githubPopup = (popup = null) => {
     popup = window.open(
       // TODO: Improve readability here: encode = (params: Object) => (JSON.stringify(params).replace(':', '=').trim())
       // encode url params
-      `${GITHUB_URI}?client_id=${CLIENT_ID}&scope=public_repo&redirect_uri=${REDIRECT_URI}`,
-      // `${REDIRECT_URI}/?code=232r3423`, // <= use this to avoid spamming github for testing purposes
+      `${GITHUB_URI}?client_id=${CLIENT_ID}&scope=public_repo`,
       'githubAuth',
       // TODO: Improve readability here: encode = (fields: Object) => (JSON.stringify(fields).replace(':', '=').trim())
       `scrollbars=no,toolbar=no,location=no,titlebar=no,directories=no,status=no,menubar=no, ${getPopupDimensions()}`
