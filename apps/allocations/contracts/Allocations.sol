@@ -39,6 +39,8 @@ contract Allocations is AragonApp {
     string private constant ERROR_PERIOD_SHORT = "SET_PERIOD_TOO_SHORT";
     string private constant ERROR_COMPLETE_TRANSITION = "COMPLETE_TRANSITION";
     string private constant ERROR_MIN_RECURRENCE = "RECURRENCES_BELOW_ONE";
+    string private constant ERROR_CANDIDATE_NOT_RECEIVER = "CANDIDATE_NOT_RECEIVER";
+    string private constant ERROR_INSUFFICIENT_FUNDS = "INSUFFICIENT_FUNDS";
 
     struct Payout {
         uint64 startTime;
@@ -70,7 +72,6 @@ contract Allocations is AragonApp {
         mapping (uint256 => AccountStatement) accountStatement;
     }
 
-    //uint256 internal constant MAX_SCHEDULED_PAYOUTS_PER_TX = 20;
     uint64 accountsLength;
     uint64 periodsLength;
     uint64 periodDuration;
@@ -359,7 +360,7 @@ contract Allocations is AragonApp {
     ) external transitionsPeriod isInitialized accountExists(_accountId) payoutExists(_accountId, _payoutId) // solium-disable-line error-reason
     {
         //Payout storage payout = accounts[_accountId].payouts[_payoutId];
-        require(msg.sender == accounts[_accountId].payouts[_payoutId].candidateAddresses[_candidateId], "candidate not receiver");
+        require(msg.sender == accounts[_accountId].payouts[_payoutId].candidateAddresses[_candidateId], ERROR_CANDIDATE_NOT_RECEIVER);
         _executePayoutAtLeastOnce(_accountId, _payoutId, _candidateId, 0);
     }
 
@@ -469,7 +470,7 @@ contract Allocations is AragonApp {
     {
         Account storage account = accounts[_accountId];
         Payout storage payout = account.payouts[_payoutId];
-        require(_candidateId < payout.supports.length); // solium-disable-line error-reason
+        require(_candidateId < payout.supports.length, ERROR_NO_CANDIDATE); // solium-disable-line error-reason
 
         uint256 paid = _paid;
         uint256 totalSupport = _getTotalSupport(payout);
@@ -610,7 +611,7 @@ contract Allocations is AragonApp {
         Account storage account = accounts[_accountId];
         Payout storage payout = account.payouts[_payoutId];
         uint256 individualPayout = payout.supports[_candidateIndex].mul(payout.amount).div(_totalSupport);
-        require(_canMakePayment(_accountId, individualPayout), "insufficient funds");
+        require(_canMakePayment(_accountId, individualPayout), ERROR_INSUFFICIENT_FUNDS);
 
         address token = account.token;
         uint256 expenses = periods[_currentPeriodId()].accountStatement[_accountId].expenses[token];
