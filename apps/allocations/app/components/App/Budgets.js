@@ -18,14 +18,14 @@ const Budgets = ({
     <Viewport>
       {({ width }) => 
         <StyledBudgets screenSize={width}>
-          {budgets.map(({ allocated, hasBudget, id, name, amount, token }) => (
+          {budgets.map(({ remaining, hasBudget, id, name, amount, token }) => (
             <Budget
               key={id}
               id={id}
               name={name}
               amount={amount}
               token={token}
-              allocated={allocated}
+              remaining={remaining}
               inactive={!hasBudget}
               onNewAllocation={onNewAllocation}
               onEdit={onEdit}

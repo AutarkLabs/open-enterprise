@@ -734,13 +734,20 @@ contract('Allocations', accounts => {
     })
 
     it('should set budget for accountId', async () => {
-      await app.setBudget(accountId, 1000)
+      await app.setBudget(accountId, 1000, 'testAccount')
       const [ , , , budget ] = await app.getAccount(accountId)
       assert.equal(1000, budget.toNumber())
     })
 
+    it('should set budget for accountId without changing metadata', async () => {
+      await app.setBudget(accountId, 1000, '')
+      const [ name, , , budget ] = await app.getAccount(accountId)
+      assert.equal(1000, budget.toNumber())
+      assert.equal(name, 'testAccount', 'account name should persist from prior call')
+    })
+
     it('should set budget without setting account.hasBudget', async () => {
-      await app.setBudget(accountId, 0)
+      await app.setBudget(accountId,0, 'testAccount')
       const [ , , , budget ] = await app.getAccount(accountId)
       assert.equal(0, budget.toNumber())
     })
@@ -792,9 +799,17 @@ contract('Allocations', accounts => {
     })
 
     it('should remove budget from accountId', async() => {
-      await app.removeBudget(accountId)
-      const [ , , hasBudget ] = await app.getAccount(accountId)
+      await app.removeBudget(accountId, '')
+      const [ name, , hasBudget ] = await app.getAccount(accountId)
       assert.equal(false, hasBudget)
+      assert.equal(name, 'testAccount', 'original name should persist')
+    })
+
+    it('should remove budget from accountId and change name', async() => {
+      await app.removeBudget(accountId, 'newName')
+      const [ name, , hasBudget ] = await app.getAccount(accountId)
+      assert.equal(false, hasBudget)
+      assert.equal(name, 'newName', 'new name should be set')
     })
 
     // TODO: Complete the test or remove it

@@ -4,10 +4,14 @@ import {
   DataView,
   IconCheck,
   IconCross,
-  useTheme
+  IdentityBadge,
+  ProgressBar,
+  Text,
+  useTheme,
 } from '@aragon/ui'
 import { BigNumber } from 'bignumber.js'
 import PropTypes from 'prop-types'
+import styled from 'styled-components'
 
 import { STATUSES } from '../../utils/constants'
 import { displayCurrency } from '../../utils/helpers'
@@ -25,9 +29,7 @@ const AllocationsHistory = ({ allocations }) => {
       mode="adaptive"
       tableRowHeight={92}
       heading={
-        <div>
-          Allocations history
-        </div>
+        <Text size="xlarge">Allocations history</Text>
       }
       fields={[
         'Date',
@@ -56,47 +58,32 @@ const AllocationsHistory = ({ allocations }) => {
             : recipients.length + ' entities',
           description,
           <Status key={index} code={status} />,
-          <div
-            key={index}
-            css={{
-              color: theme.negative,
-              fontWeight: 600,
-            }}>
+          <Amount key={index} theme={theme} >
             { displayCurrency(BigNumber(amount)) } { getTokenSymbol(token) }
-          </div>
+          </Amount>
         ]
       }}
       //renderEntryExpansion={({ recipients, amount, token }) => {
       //  return recipients.map((recipient, index) => {
       //    const allocated = BigNumber(recipient.amount).div(amount)
       //    return (
-      //      <div key={index} css={{
-      //        display: 'flex',
-      //        flexDirection: 'column',
-      //      }}>
+      //      <Recipient key={index}>
       //        <IdentityBadge
       //          entity={recipient.address}
       //          shorten={true}
       //        />
-      //        <div css={{
-      //          marginTop: '7px',
-      //          marginBottom: '4px',
-      //        }}>
+      //        <RecipientProgress>
       //          <ProgressBar
-      //            value={allocated}
-      //            color={theme.accentEnd}
+      //            value={allocated.toNumber()}
+      //            color={String(theme.accentEnd)}
       //          />
-      //        </div>
-      //        <div css={{
-      //          color: theme.contentSecondary,
-      //          alignSelf: 'flex-end',
-      //          fontSize: '12px',
-      //        }}>
+      //        </RecipientProgress>
+      //        <RecipientAmount theme={theme}>
       //          { displayCurrency(BigNumber(recipient.amount)) } {' '}
       //          {token} {' • '}
       //          { allocated.times(100).dp(0).toNumber() }{'%'}
-      //        </div>
-      //      </div>
+      //        </RecipientAmount>
+      //      </Recipient>
       //    )
       //  })
       //}}
@@ -111,24 +98,50 @@ AllocationsHistory.propTypes = {
 const Status = ({ code }) => {
   const theme = useTheme()
   return (
-    <div css={{
-      color: code === 0 ? theme.contentSecondary : theme.content,
-      display: 'flex',
-      alignItems: 'center',
-    }}>
+    <StatusContent theme={theme} code={code}>
       { code === 1 && <IconCross size="medium" color={theme.negative} /> }
       { code > 1 && <IconCheck size="medium" color={theme.positive} /> }
-      <div css={{
-        paddingTop: '4px'
-      }}>
+      <StatusText>
         {STATUSES[code]}
-      </div>
-    </div>
+      </StatusText>
+    </StatusContent>
   )
 }
 
 Status.propTypes = {
-  code: PropTypes.string.isRequired,
+  code: PropTypes.number.isRequired,
 }
+
+const Amount = styled.div`
+  color: ${({ theme }) => theme.negative};
+  font-weight: 600;
+`
+
+const Recipient = styled.div`
+  display: flex;
+  flex-direction: column;
+`
+
+const RecipientProgress = styled.div`
+  margin-top: 7px;
+  margin-bottom: 4px;
+`
+
+const RecipientAmount = styled.div`
+  color: ${({ theme }) => theme.contentSecondary};
+  align-self: flex-end;
+  font-size: 12px;
+`
+
+const StatusContent = styled.div`
+  color: ${({ code, theme }) => code === 0 ?
+    theme.contentSecondary : theme.content};
+  display: flex;
+  align-items: center;
+`
+
+const StatusText = styled.div`
+  padding-top: 4px;
+`
 
 export default AllocationsHistory
