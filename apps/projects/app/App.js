@@ -10,6 +10,7 @@ import {
   IconPlus,
   Main,
   Tabs,
+  useTheme,
 } from '@aragon/ui'
 
 import ErrorBoundary from './components/App/ErrorBoundary'
