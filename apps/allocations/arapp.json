@@ -1,7 +1,7 @@
 {
   "roles": [
     {
-      "name": "Create allocations account",
+      "name": "Create budget account",
       "id": "CREATE_ACCOUNT_ROLE",
       "params": []
     },
