@@ -22,25 +22,31 @@ const IssueEvent = ({ user, ...props }) => {
 
   return (
     <IssueEventMain>
-      <IssueEventAvatar>
-        <img src={user.avatarUrl} alt="user avatar" css="width: 50px" />
-      </IssueEventAvatar>
-      <IssueEventDetails>
-        <Text.Block size="small">
-          <Link
-            href={user.url}
-            target="_blank"
-            style={{ textDecoration: 'none', color: `${theme.link}` }}
-          >
-            {user.login}
-          </Link>{' '}
-          {props.eventDescription}
-        </Text.Block>
-        {props.eventAction && <div>{props.eventAction}</div>}
-        <Text.Block size="xsmall" color={`${theme.surfaceContentSecondary}`}>
-          {calculateAgo(props.date)}
-        </Text.Block>
-      </IssueEventDetails>
+      <div css="display: flex">
+        <IssueEventAvatar>
+          <img src={user.avatarUrl} alt="user avatar" css="width: 40px; border-radius: 50%" />
+        </IssueEventAvatar>
+        <IssueEventDetails>
+          <Text.Block size="small">
+            <Link
+              href={user.url}
+              target="_blank"
+              style={{ textDecoration: 'none', color: `${theme.link}` }}
+            >
+              {user.login}
+            </Link>{' '}
+            {props.eventDescription}
+          </Text.Block>
+          <Text.Block size="xsmall" color={`${theme.surfaceContentSecondary}`}>
+            {calculateAgo(props.date)}
+          </Text.Block>
+        </IssueEventDetails>
+      </div>
+      {props.eventAction && (
+        <div css="margin-top: 8px">
+          {props.eventAction}
+        </div>
+      )}
     </IssueEventMain>
   )
 }
@@ -48,7 +54,7 @@ const IssueEvent = ({ user, ...props }) => {
 IssueEvent.propTypes = {
   user: userGitHubShape,
   eventDescription: PropTypes.string.isRequired,
-  eventAction: PropTypes.object.isRequired,
+  eventAction: PropTypes.object,
   date: PropTypes.string.isRequired,
 }
 
@@ -80,8 +86,11 @@ const activities = (
           <EventButton
             mode="outline"
             onClick={() => onReviewApplication(issue, index)}
+            wide
           >
-            {'review' in data ? 'View' : 'Review'} Application
+            <Text weight="bold">
+              {'review' in data ? 'View' : 'Review'} Application
+            </Text>
           </EventButton>
         ),
       }
@@ -110,8 +119,11 @@ const activities = (
           <EventButton
             mode="outline"
             onClick={() => onReviewWork(issue, index)}
+            wide
           >
-            {'review' in data ? 'View' : 'Review'} Work
+            <Text weight="bold">
+              {'review' in data ? 'View' : 'Review'} Work
+            </Text>
           </EventButton>
         ),
       }
@@ -170,34 +182,31 @@ const EventsCard = ({ issue }) => {
   return (
     <Box
       heading="Activity"
+      padding={0}
       css={`
-        text-align: left;
-        background: ${theme.surface};
-        border: 1px solid ${theme.border};
-        border-radius: 3px;
-        padding: 0;
-        > :second-child {
-          padding: ${3 * GU}px;
-        }
-        > :not(:last-child) {
-          margin-bottom: 0;
-        }
-        > :not(:last-child) :not(:first-child) {
-          border-bottom: 1px solid ${theme.border};
+        > :first-child {
+          padding: ${2 * GU}px;
         }
       `}
     >
-      {Object.keys(issueEvents).length > 0 ? (
-        Object.keys(issueEvents)
-          .sort((a, b) => new Date(a) - new Date(b))
-          .map((eventDate, i) => {
-            return <IssueEvent key={i} user={issueEvents[eventDate].user} {...issueEvents[eventDate]} />
-          })
-      ) : (
-        <div css="padding: 6px 0 16px 16px">
-          This issue has no activity
-        </div>
-      )}
+      <div css={`
+        > :not(:last-child) {
+          border-bottom: 1px solid ${theme.border};
+        }
+      `}>
+        {Object.keys(issueEvents).length > 0 ? (
+          Object.keys(issueEvents)
+            .sort((a, b) => new Date(a) - new Date(b))
+            .map((eventDate, i) => {
+              return <IssueEvent key={i} user={issueEvents[eventDate].user} {...issueEvents[eventDate]} />
+            })
+        ) : (
+          <IssueEventMain>
+              This issue has no activity
+          </IssueEventMain>
+        )
+        }
+      </div>
     </Box>
   )
 }
@@ -207,15 +216,17 @@ EventsCard.propTypes = {
 }
 
 const IssueEventAvatar = styled.div`
-  width: 66px;
-  margin: 0;
+  width: 40px;
+  margin-right: ${GU}px;
 `
 const IssueEventMain = styled.div`
   display: flex;
+  flex-direction: column;
+  padding: ${3 * GU}px;
 `
 const IssueEventDetails = styled.div`
-  > * {
-    margin-bottom: 10px;
+  > :not(:last-child) {
+    margin-bottom: ${GU}px;
   }
 `
 const EventButton = styled(Button)`

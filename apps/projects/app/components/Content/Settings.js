@@ -408,9 +408,6 @@ const Settings = ({ onLogin }) => {
             </div>
           </SettingsFunding>
 
-          <Info css="margin: 24px 0">
-              In hourly funding, the hourly rate per issue is the base rate multiplied by the difficulty level selected for the issue.
-          </Info>
           <Button mode="strong" onClick={submitChanges}>
               Save Changes
           </Button>

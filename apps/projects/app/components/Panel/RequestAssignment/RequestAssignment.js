@@ -1,16 +1,16 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { Checkbox, Text, TextInput, GU, useTheme, Link } from '@aragon/ui'
+import { Checkbox, Text, TextInput, GU, useTheme } from '@aragon/ui'
 
 import { Form, FormField, DateInput, DescriptionInput } from '../../Form'
-import { IconGitHub } from '../../Shared'
 import { useAragonApi } from '../../../api-react'
 import useGithubAuth from '../../../hooks/useGithubAuth'
 import { usePanelManagement } from '..'
 import { ipfsAdd } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
 import { issueShape } from '../../../utils/shapes.js'
+import { IssueTitle } from '../PanelComponents'
 
 const RequestAssignment = ({ issue }) => {
   const githubCurrentUser = useGithubAuth()
@@ -49,8 +49,6 @@ const RequestAssignment = ({ issue }) => {
 
   const canSubmit = () => !(ack1 && ack2 && workplan && !isNaN(hours) && hours > 0)
 
-  const { title, repo, number, url } = issue
-
   return (
     <div css={`margin: ${2 * GU}px 0`}>
       <Form
@@ -59,19 +57,7 @@ const RequestAssignment = ({ issue }) => {
         noSeparator
         submitDisabled={canSubmit()}
       >
-        <Text.Block size="xlarge">{title}</Text.Block>
-        <Link
-          href={url}
-          target="_blank"
-          style={{ textDecoration: 'none', color: `${theme.link}` }}
-        >
-          <IssueLinkRow>
-            <IconGitHub color={`${theme.link}`} width="14px" height="14px" />
-            <Text css="margin-left: 6px">
-              {repo} #{number}
-            </Text>
-          </IssueLinkRow>
-        </Link>
+        <IssueTitle issue={issue} />
 
         <FormField
           label="Work Plan"
@@ -156,12 +142,4 @@ const AckRow = styled.div`
   display: flex;
   margin: ${2 * GU}px 0;
 `
-const IssueLinkRow = styled.div`
-  height: 31px;
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-  cursor: pointer;
-`
-
 export default RequestAssignment
