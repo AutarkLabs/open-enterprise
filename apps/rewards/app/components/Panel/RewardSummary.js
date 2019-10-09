@@ -14,7 +14,7 @@ const RewardSummary = ({ reward, theme, onCancel, onSubmit }) => {
   const {
     description,
     rewardType,
-    referenceTokenSymbol,
+    referenceAsset,
     customToken,
     amount,
     amountToken,
@@ -31,13 +31,13 @@ const RewardSummary = ({ reward, theme, onCancel, onSubmit }) => {
         <SubTitle theme={theme}>{rewardType}</SubTitle>
         <Heading theme={theme}>Reference Asset</Heading>
         <Content>
-          {referenceTokenSymbol === OTHER ? (
+          {referenceAsset === OTHER ? (
             <IdentityBadge
               badgeOnly
               entity={customToken.address}
               shorten
             />
-          ): referenceTokenSymbol}
+          ): referenceAsset}
         </Content>
         <Heading theme={theme}>
           {rewardType === ONE_TIME_MERIT && 'Total'}

@@ -16,7 +16,6 @@ import {
   millisecondsToWeeks,
   millisecondsToMonths,
   millisecondsToYears,
-  blocksToMilliseconds,
 } from '../../../../../shared/ui/utils'
 
 import { BN } from 'web3-utils'
@@ -236,6 +235,12 @@ class App extends React.Component {
     })
   }
 
+  claimReward = reward => {
+    // TODO
+    // api.claimReward(reward)
+    console.log(`claim reward ${reward.rewardId}`)
+  }
+
   openDetailsView = reward => {
     this.viewReward(reward)
   }
@@ -305,6 +310,8 @@ class App extends React.Component {
           <MyRewards
             myRewards={this.props.myRewards}
             myMetrics={this.props.myMetrics}
+            viewReward={this.viewReward}
+            claimReward={this.claimReward}
           />
         ) : (
           <Overview

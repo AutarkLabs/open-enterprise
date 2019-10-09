@@ -3,10 +3,11 @@ import React from 'react'
 import styled from 'styled-components'
 import moment from 'moment'
 import {
+  ContextMenu,
+  ContextMenuItem,
   DataView,
-  Link,
+  IconView,
   Text,
-  useTheme,
 } from '@aragon/ui'
 import {
   ONE_TIME_DIVIDEND,
@@ -36,18 +37,32 @@ const Overview = ({
       <RewardsWrap>
         <Metrics content={metrics} />
         <DataView
-          heading={<Text size="xlarge">Current rewards</Text>}
+          heading={<Text size="xlarge">All rewards</Text>}
           fields={[ 'description', 'type', 'frequency', 'next payout', 'amount' ]}
           entries={rewards}
-          renderEntry={(reward) => renderReward(reward, viewReward)}
+          renderEntry={renderReward}
+          renderEntryActions={(reward) => renderMenu(reward, viewReward)}
         />
       </RewardsWrap>
     </OverviewMain>
   )
 }
 
-const renderReward = (reward, viewReward) => {
-  const theme = useTheme()
+const renderMenu = (reward, viewReward) => (
+  <ContextMenu>
+    <StyledContextMenuItem
+      onClick={() => viewReward(reward)}
+    >
+      <IconView css={{
+        marginRight: '11px',
+        marginBottom: '2px',
+      }}/>
+      <Text>View</Text>
+    </StyledContextMenuItem>
+  </ContextMenu>
+)
+
+const renderReward = (reward) => {
   let fields = []
   switch(reward.rewardType) {
   case ONE_TIME_DIVIDEND:
@@ -60,16 +75,7 @@ const renderReward = (reward, viewReward) => {
     fields = renderOneTimeMerit(reward)
     break
   }
-  return fields.map(f => (
-    <Link
-      onClick={() => viewReward(reward)}
-      css={{
-        color: theme.content
-      }}
-    >
-      {f}
-    </Link>
-  ))
+  return fields
 }
 
 const renderOneTimeDividend = (reward) => {
@@ -128,6 +134,9 @@ const RewardsWrap = styled.div`
   > :not(:last-child) {
     margin-bottom: 20px;
   }
+`
+const StyledContextMenuItem = styled(ContextMenuItem)`
+  padding: 8px 45px 8px 19px;
 `
 
 // eslint-disable-next-line import/no-unused-modules
