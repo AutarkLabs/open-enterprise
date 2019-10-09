@@ -4,8 +4,8 @@ import {
   DataView,
   IconCheck,
   IconCross,
-  IdentityBadge,
-  ProgressBar,
+  // IdentityBadge,
+  // ProgressBar,
   Text,
   useTheme,
 } from '@aragon/ui'
@@ -117,21 +117,21 @@ const Amount = styled.div`
   font-weight: 600;
 `
 
-const Recipient = styled.div`
-  display: flex;
-  flex-direction: column;
-`
-
-const RecipientProgress = styled.div`
-  margin-top: 7px;
-  margin-bottom: 4px;
-`
-
-const RecipientAmount = styled.div`
-  color: ${({ theme }) => theme.contentSecondary};
-  align-self: flex-end;
-  font-size: 12px;
-`
+// const Recipient = styled.div`
+//   display: flex;
+//   flex-direction: column;
+// `
+//
+// const RecipientProgress = styled.div`
+//   margin-top: 7px;
+//   margin-bottom: 4px;
+// `
+//
+// const RecipientAmount = styled.div`
+//   color: ${({ theme }) => theme.contentSecondary};
+//   align-self: flex-end;
+//   font-size: 12px;
+// `
 
 const StatusContent = styled.div`
   color: ${({ code, theme }) => code === 0 ?
