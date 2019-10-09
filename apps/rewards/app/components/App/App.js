@@ -16,7 +16,6 @@ import {
   millisecondsToWeeks,
   millisecondsToMonths,
   millisecondsToYears,
-  blocksToMilliseconds,
 } from '../../../../../shared/ui/utils'
 
 import { BN } from 'web3-utils'
