@@ -3,7 +3,7 @@ import styled from 'styled-components'
 
 import { Checkbox, GU, Text, TextInput, useTheme } from '@aragon/ui'
 
-import { Form, FormField, DescriptionInput } from '../../Form'
+import { Form, FormField } from '../../Form'
 import useGithubAuth from '../../../hooks/useGithubAuth'
 import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '../../Panel'
@@ -71,24 +71,26 @@ const SubmitWork = ({ issue }) => {
           label="Proof of Work"
           required
           input={
-            <DescriptionInput
+            <TextInput.Multiline
               name="proof"
               value={proof}
               rows="3"
               onChange={updateProof}
               placeholder="Please link the Github Pull Request or an alternative proof of work if requested."
+              wide
             />
           }
         />
         <FormField
           label="Additional Comments"
           input={
-            <DescriptionInput
+            <TextInput.Multiline
               name="comments"
               rows="5"
               value={comments}
               onChange={updateComments}
               placeholder="Comments or details that haven’t already been described elsewhere."
+              wide
             />
           }
         />

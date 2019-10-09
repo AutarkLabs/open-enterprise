@@ -1,13 +1,12 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import {
-  DescriptionInput,
   DropDownOptionsInput,
   Form,
   FormField,
 } from '../../Form'
 import { useAragonApi } from '../../../api-react'
-import { GU } from '@aragon/ui'
+import { GU, TextInput } from '@aragon/ui'
 import { usePanelManagement } from '..'
 import { issueShape } from '../../../utils/shapes.js'
 
@@ -75,11 +74,12 @@ const NewIssueCuration = ({ allIssues, selectedIssues }) => {
           required
           label="Description"
           input={
-            <DescriptionInput
+            <TextInput.Multiline
               name="description"
               value={description}
               onChange={updateDescription}
               placeholder="Describe what this curation represents."
+              wide
             />
           }
         />
