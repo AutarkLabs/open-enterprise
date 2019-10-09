@@ -16,13 +16,13 @@ import {
 } from '@aragon/ui'
 
 import { FormField, FieldTitle, DescriptionInput } from '../../Form'
-import { IconGitHub } from '../../Shared'
 import useGithubAuth from '../../../hooks/useGithubAuth'
 import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '../../Panel'
 import { ipfsAdd } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
 import { issueShape } from '../../../utils/shapes.js'
+import { IssueTitle } from '../PanelComponents'
 import workRatings from '../../../utils/work-ratings.js'
 
 const ReviewWork = ({ issue }) => {
@@ -84,24 +84,9 @@ const ReviewWork = ({ issue }) => {
   const submissionDateDistance = formatDistance(new Date(work.submissionDate), new Date())
   const submitterName = submitter.name ? submitter.name : submitter.login
 
-  const { title, repo, number, url } = issue
-
   return(
     <div css={`margin: ${2 * GU}px 0`}>
-      <Text.Block size="xlarge">{title}</Text.Block>
-
-      <Link
-        href={url}
-        target="_blank"
-        style={{ textDecoration: 'none', color: `${theme.link}` }}
-      >
-        <IssueLinkRow>
-          <IconGitHub color={`${theme.link}`} width='14px' height='14px' />
-          <Text css="margin-left: 6px">
-            {repo} #{number}
-          </Text>
-        </IssueLinkRow>
-      </Link>
+      <IssueTitle issue={issue} />
 
       <SubmissionDetails background={`${theme.background}`} border={`${theme.border}`}>
         <UserLink>
@@ -225,12 +210,6 @@ const ReviewWork = ({ issue }) => {
 
 ReviewWork.propTypes = issueShape
 
-const IssueLinkRow = styled.div`
-  height: 31px;
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-`
 const SubmissionDetails = styled.div`
   border: 1px solid ${p => p.border};
   background-color: ${p => p.background};

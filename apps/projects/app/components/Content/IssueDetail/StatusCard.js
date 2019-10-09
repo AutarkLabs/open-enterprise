@@ -32,13 +32,14 @@ Action.propTypes = {
 const StatusCard = ({ issue }) => {
   const theme = useTheme()
   const { submitWork, requestAssignment, reviewApplication, reviewWork } = usePanelManagement()
-  
+
   const determineStatus = (workStatus, balance) =>
     Number(balance) === 0 ? BOUNTY_STATUS_LONG['fulfilled'] : BOUNTY_STATUS_LONG[workStatus]
-  
+
   return (
     <Box
       heading="Status"
+      padding={3 * GU}
       css={`
       flex: 0 1 auto;
       text-align: left;
@@ -46,9 +47,6 @@ const StatusCard = ({ issue }) => {
       border: 1px solid ${theme.border};
       border-radius: 3px;
       padding: 0;
-      > :second-child {
-        padding: ${3 * GU}px;
-      }
     `}
     >
       <Text.Block>

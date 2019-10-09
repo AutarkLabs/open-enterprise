@@ -13,13 +13,13 @@ import {
   useTheme,
 } from '@aragon/ui'
 import { FormField, FieldTitle, DescriptionInput } from '../../Form'
-import { IconGitHub } from '../../Shared'
 import useGithubAuth from '../../../hooks/useGithubAuth'
 import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '../../Panel'
 import { ipfsAdd } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
 import { issueShape } from '../../../utils/shapes.js'
+import { IssueTitle } from '../PanelComponents'
 
 const ReviewApplication = ({ issue, requestIndex }) => {
   const githubCurrentUser = useGithubAuth()
@@ -84,20 +84,7 @@ const ReviewApplication = ({ issue, requestIndex }) => {
 
   return (
     <div css={`margin: ${2 * GU}px 0`}>
-      <Text.Block size="xlarge">{issue.title}</Text.Block>
-
-      <Link
-        href={issue.url}
-        target="_blank"
-        style={{ textDecoration: 'none', color: `${theme.link}` }}
-      >
-        <IssueLinkRow>
-          <IconGitHub color={`${theme.link}`} width='14px' height='14px' />
-          <Text css="margin-left: 6px">
-            {issue.repo} #{issue.number}
-          </Text>
-        </IssueLinkRow>
-      </Link>
+      <IssueTitle issue={issue} />
 
       <FieldTitle>Applicant</FieldTitle>
       <DropDown
@@ -231,12 +218,6 @@ const ReviewRow = styled.div`
   display: flex;
   margin-bottom: 8px;
   justify-content: space-between;
-`
-const IssueLinkRow = styled.div`
-  height: 31px;
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
 `
 
 export default ReviewApplication

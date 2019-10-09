@@ -1,15 +1,15 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { IconHistory } from '../Shared'
+import { IconHistory, IconGitHub } from '../Shared'
 import {
   Card,
   Text,
   ContextMenu,
   ContextMenuItem,
   IconCross,
-  IconHome,
-  SafeLink,
+  GU,
+  Link,
   useLayout,
   useTheme,
 } from '@aragon/ui'
@@ -54,36 +54,45 @@ const Project = ({
     <StyledCard onClick={clickContext} screenSize={width}>
       <MenuContainer onClick={clickMenu}>
         <ContextMenu>
-          <ContextMenuItem css="padding: 20px">
-            <IconHome />
-            <ActionLabel>
-              <SafeLink
-                href={url}
-                target="_blank"
-                style={{ textDecoration: 'none' }}
-              >
+          <div css={`padding: ${GU}px`}>
+            <ContextMenuItem style={{
+              display: 'flex',
+              alignItems: 'center',
+              padding: GU
+            }}>
+              <div css="width: 22px; margin: 4px 2px 0 6px">
+                <IconGitHub width="16px" height="16px" />
+              </div>
+              <ActionLabel>
+                <Link
+                  href={url}
+                  target="_blank"
+                  style={{ textDecoration: 'none', color: theme.surfaceContent }}
+                >
                 View on GitHub
-              </SafeLink>
-            </ActionLabel>
-          </ContextMenuItem>
-          <ContextMenuItem onClick={removeProject}>
-            <IconCross
-              style={{ width: '22px', height: '22px', transform: 'scale(0.6)' }}
-            />
-            <ActionLabel>Remove Project</ActionLabel>
-          </ContextMenuItem>
+                </Link>
+              </ActionLabel>
+            </ContextMenuItem>
+            <ContextMenuItem onClick={removeProject}>
+              <div css="width: 22px; margin: 0 4px; margin-top: 4px">
+                <IconCross width="22px" height="22px" />
+              </div>
+              <ActionLabel>Remove Project</ActionLabel>
+            </ContextMenuItem>
+          </div>
         </ContextMenu>
       </MenuContainer>
-      <CardTitle color={`${theme.surfaceContentSecondary}`}>{label}</CardTitle>
+
+      <CardTitle>{label}</CardTitle>
       <CardDescription>
-        <CardDescriptionText color={`${theme.surfaceContentSecondary}`}>{description}</CardDescriptionText>
+        <CardDescriptionText>{description}</CardDescriptionText>
       </CardDescription>
       <StyledStats>
         <StatsContainer>
           <IconHistory />
           <Text weight="bold">
             {commits}{' '}
-            <Text weight="normal" color={`${theme.surfaceContentSecondary}`}>
+            <Text weight="normal">
               {parseInt(commits) === 1 ? 'commit' : 'commits'}
             </Text>
           </Text>
@@ -138,7 +147,7 @@ const MenuContainer = styled.div`
 `
 
 const ActionLabel = styled.span`
-  margin-left: 15px;
+  margin-left: ${GU}px;
 `
 
 const CardTitle = styled(Text.Block).attrs({
@@ -147,7 +156,6 @@ const CardTitle = styled(Text.Block).attrs({
   margin-top: 10px;
   margin-bottom: 5px;
   text-align: center;
-  color: ${({ color }) => color };
   display: block;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -165,7 +173,6 @@ const CardDescriptionText = styled(Text.Block).attrs({
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: ${({ color }) => color };
   text-align: center;
 `
 

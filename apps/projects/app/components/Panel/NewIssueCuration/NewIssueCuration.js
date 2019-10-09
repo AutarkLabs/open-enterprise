@@ -7,6 +7,7 @@ import {
   FormField,
 } from '../../Form'
 import { useAragonApi } from '../../../api-react'
+import { GU } from '@aragon/ui'
 import { usePanelManagement } from '..'
 import { issueShape } from '../../../utils/shapes.js'
 
@@ -33,7 +34,7 @@ const NewIssueCuration = ({ allIssues, selectedIssues }) => {
         issueDescriptionIndices.push(issue.title.length)
       }
     })
-    
+
     // TODO: splitting of descriptions needs to be fixed at smart contract level
     const issueDescriptions = selectedIssues.map(issue => issue.title).join('')
     /* TODO: The numbers below are supposedly coming from an eventual:
@@ -68,7 +69,11 @@ const NewIssueCuration = ({ allIssues, selectedIssues }) => {
   }
 
   return (
-    <Form onSubmit={submitCuration} submitText="Submit Curation">
+    <Form
+      css={`margin: ${2 * GU}px 0`}
+      onSubmit={submitCuration}
+      submitText="Submit Curation"
+    >
       <FormField
         required
         label="Description"
