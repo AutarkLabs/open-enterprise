@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { ApolloProvider } from 'react-apollo'
 
 import { useAragonApi, usePath } from './api-react'
@@ -18,14 +18,21 @@ import IssueDetail from './components/Content/IssueDetail'
 import { PanelManager, PanelContext, usePanelManagement } from './components/Panel'
 
 import { IdentityProvider } from '../../../shared/identity'
+import {
+  REQUESTED_GITHUB_TOKEN_SUCCESS,
+  REQUESTED_GITHUB_TOKEN_FAILURE,
+} from './store/eventTypes'
 
 import { initApolloClient } from './utils/apollo-client'
-import { STATUS } from './utils/github'
+import { getToken, githubPopup, STATUS } from './utils/github'
 import Unauthorized from './components/Content/Unauthorized'
+import { LoadingAnimation } from './components/Shared'
+import { EmptyWrapper } from './components/Shared'
 import { Error } from './components/Card'
 import { DecoratedReposProvider } from './context/DecoratedRepos'
 import usePathSegments from './hooks/usePathSegments'
-import GithubSignin from './GithubSignin'
+
+let popupRef = null
 
 const App = () => {
   const { api, appState } = useAragonApi()
@@ -55,6 +62,40 @@ const App = () => {
     setSelectedIssue(selectedIssueId)
   }, [selectedIssueId])
 
+  const handlePopupMessage = useCallback(message => {
+    if (!popupRef) return
+    if (message.source !== popupRef) return
+
+    popupRef = null
+
+    async function processCode() {
+      try {
+        const token = await getToken(message.data.value)
+        setGithubLoading(false)
+        api.emitTrigger(REQUESTED_GITHUB_TOKEN_SUCCESS, {
+          status: STATUS.AUTHENTICATED,
+          token
+        })
+      } catch (err) {
+        console.error(err)
+        setGithubLoading(false)
+        api.emitTrigger(REQUESTED_GITHUB_TOKEN_FAILURE, {
+          status: STATUS.FAILED,
+          token: null,
+        })
+      }
+    }
+
+    processCode()
+  }, [api])
+
+  useEffect(() => {
+    window.addEventListener('message', handlePopupMessage)
+    return () => {
+      window.removeEventListener('message', handlePopupMessage)
+    }
+  }, [handlePopupMessage])
+
   const closePanel = () => {
     setPanel(null)
     setPanelProps(null)
@@ -67,6 +108,7 @@ const App = () => {
 
   const handleGithubSignIn = () => {
     setGithubLoading(true)
+    popupRef = githubPopup(popupRef)
   }
 
   const handleResolveLocalIdentity = address => {
@@ -82,7 +124,9 @@ const App = () => {
   const noop = () => {}
   if (githubLoading) {
     return (
-      <GithubSignin setGithubLoading={setGithubLoading} />
+      <EmptyWrapper>
+        <LoadingAnimation />
+      </EmptyWrapper>
     )
   } else if (github.status === STATUS.INITIAL) {
     return (

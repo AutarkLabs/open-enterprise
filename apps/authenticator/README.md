@@ -14,7 +14,7 @@ This mini app deals with Step 3 above.
 Security Note
 =============
 
-Note that any app, not just Projects, could open a popup that loads the OAuth page for our app, which dutifully redirects to this app. If this app blindly passed `code` to the calling page, it would allow any app to sign in users using our GitHub OAuth App. That's why this app checks the identity of `window.opener` against known versions of the Projects app.
+Note that any app, not just Projects, could open a popup that loads the OAuth page for our app, which dutifully redirects to this app. This app then blindly passes `code` to the calling page, which allows any app to sign in users with our GitHub OAuth App. We [experimented with](https://github.com/AutarkLabs/open-enterprise/pull/1300) having this app check `window.opener` against known versions of the Projects app, but could not find a way to get it to work from within the Projects app iframe.
 
 
 Deployment
