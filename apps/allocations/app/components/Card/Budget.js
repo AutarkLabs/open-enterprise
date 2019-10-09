@@ -180,10 +180,6 @@ const StyledCard = styled(Card)`
       ? '100%'
       : BASE_CARD_WIDTH + 'px'};
   transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-  :hover {
-    cursor: pointer;
-    box-shadow: 0 9px 10px 0 rgba(101, 148, 170, 0.1);
-  }
 `
 
 const MenuContainer = styled.div`
