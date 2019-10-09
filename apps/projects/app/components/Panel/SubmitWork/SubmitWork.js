@@ -1,16 +1,16 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { Checkbox, GU, Text, TextInput, Link, useTheme } from '@aragon/ui'
+import { Checkbox, GU, Text, TextInput, useTheme } from '@aragon/ui'
 
 import { Form, FormField, DescriptionInput } from '../../Form'
-import { IconGitHub } from '../../Shared'
 import useGithubAuth from '../../../hooks/useGithubAuth'
 import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '../../Panel'
 import { ipfsAdd } from '../../../utils/ipfs-helpers'
 import { issueShape } from '../../../utils/shapes.js'
 import standardBounties from '../../../abi/StandardBounties.json'
+import { IssueTitle } from '../PanelComponents'
 
 const SubmitWork = ({ issue }) => {
   const githubCurrentUser = useGithubAuth()
@@ -57,8 +57,6 @@ const SubmitWork = ({ issue }) => {
 
   const canSubmit = () => !(ack1 && ack2 && proof && !isNaN(hours) && hours > 0)
 
-  const { title, repo, number, url } = issue
-
   return (
     <div css={`margin: ${2 * GU}px 0`}>
       <Form
@@ -67,19 +65,7 @@ const SubmitWork = ({ issue }) => {
         noSeparator
         submitDisabled={canSubmit()}
       >
-        <Text.Block size="xlarge">{title}</Text.Block>
-        <Link
-          href={url}
-          target="_blank"
-          style={{ textDecoration: 'none', color: `${theme.link}` }}
-        >
-          <IssueLinkRow>
-            <IconGitHub color={`${theme.link}`} width="14px" height="14px" />
-            <Text css="margin-left: 6px">
-              {repo} #{number}
-            </Text>
-          </IssueLinkRow>
-        </Link>
+        <IssueTitle issue={issue} />
 
         <FormField
           label="Proof of Work"
@@ -152,12 +138,6 @@ const AckText = styled(Text)`
 const AckRow = styled.div`
   display: flex;
   margin: ${2 * GU}px 0;
-`
-const IssueLinkRow = styled.div`
-  height: 31px;
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
 `
 
 export default SubmitWork
