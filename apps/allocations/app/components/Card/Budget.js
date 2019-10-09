@@ -17,11 +17,6 @@ import {
   useTheme,
 } from '@aragon/ui'
 
-import {
-  BASE_CARD_WIDTH,
-  CARD_STRETCH_BREAKPOINT,
-} from '../../utils/responsive'
-
 const Budget = ({
   id,
   name,
@@ -33,7 +28,6 @@ const Budget = ({
   onEdit,
   onDeactivate,
   onReactivate,
-  screenSize
 }) => {
   const theme = useTheme()
 
@@ -56,7 +50,6 @@ const Budget = ({
     return (
       <Wrapper
         name={name}
-        screenSize={screenSize}
         theme={theme}
         menu={
           <ContextMenuItem onClick={reactivate}>
@@ -75,7 +68,6 @@ const Budget = ({
   return (
     <Wrapper
       name={name}
-      screenSize={screenSize}
       theme={theme}
       menu={
         <React.Fragment>
@@ -138,11 +130,10 @@ Budget.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDeactivate: PropTypes.func.isRequired,
   onReactivate: PropTypes.func.isRequired,
-  screenSize: PropTypes.number.isRequired,
 }
 
-const Wrapper = ({ children, name, screenSize, theme, menu }) => (
-  <StyledCard screenSize={screenSize} theme={theme}>
+const Wrapper = ({ children, name, theme, menu }) => (
+  <StyledCard theme={theme}>
     <MenuContainer>
       <ContextMenu>
         {menu}
@@ -160,30 +151,16 @@ const Wrapper = ({ children, name, screenSize, theme, menu }) => (
 Wrapper.propTypes = {
   children: PropTypes.node.isRequired,
   name: PropTypes.string.isRequired,
-  screenSize: PropTypes.number.isRequired,
   theme: PropTypes.object.isRequired,
   menu: PropTypes.node.isRequired,
 }
 
 const StyledCard = styled(Card)`
-  display: flex;
-  margin-bottom: 2rem;
-  margin-right: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? '0.6rem' : '2rem'};
   box-shadow: ${({ theme }) => '0 2px 4px ' + theme.border};
   border: 0;
-  flex-direction: column;
-  justify-content: flex-start;
   padding: 12px;
   height: 264px;
-  width: ${props =>
-    props.screenSize < CARD_STRETCH_BREAKPOINT
-      ? '100%'
-      : BASE_CARD_WIDTH + 'px'};
-  transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-  :hover {
-    cursor: pointer;
-    box-shadow: 0 9px 10px 0 rgba(101, 148, 170, 0.1);
-  }
+  width: auto;
 `
 
 const MenuContainer = styled.div`
