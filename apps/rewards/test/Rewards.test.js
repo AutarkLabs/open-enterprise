@@ -1,3 +1,5 @@
+/* global artifacts, assert, before, contract, context, expect, it, web3 */
+
 const { assertRevert } = require('@aragon/test-helpers/assertThrow')
 const getBlockNumber = require('@aragon/test-helpers/blockNumber')(web3)
 const mineBlock = require('./helpers/mineBlock')(web3)
@@ -99,7 +101,7 @@ contract('Rewards', accounts => {
         await rewardToken.transfer(vault.address, 25e18)
       })
 
-      let rewardInformation
+      let rewardInformation, dividendRewardIds, meritRewardIds
       it('creates a dividend reward', async () => {
         let blockNumber = await getBlockNumber()
         dividendRewardIds = rewardAdded(
@@ -304,6 +306,38 @@ contract('Rewards', accounts => {
         })
       })
 
+      it('fails to create reward with invalid duration', async () => {
+        return assertRevert(async () => {
+          await app.newReward(
+            'testReward',
+            false,
+            referenceToken.address,
+            rewardToken.address,
+            4e18,
+            minBlock,
+            0,
+            2,
+            0
+          )
+        })
+      })
+
+      it('fails to create reward with invalid occurences', async () => {
+        return assertRevert(async () => {
+          await app.newReward(
+            'testReward',
+            false,
+            referenceToken.address,
+            rewardToken.address,
+            4e18,
+            minBlock,
+            1,
+            0,
+            0
+          )
+        })
+      })
+
       it('fails to create merit reward multiple occurrences', async () => {
         return assertRevert(async () => {
           await app.newReward(
@@ -333,6 +367,12 @@ contract('Rewards', accounts => {
             43,
             0
           )
+        })
+      })
+
+      it('fail to claim reward - reward ID is not set', async () => {
+        return assertRevert(async () => {
+          await app.claimReward(10000000, { from: root })
         })
       })
 
@@ -417,9 +457,9 @@ contract('Rewards', accounts => {
         await referenceToken.generateTokens(contributor1, 1e18)
         await referenceToken.generateTokens(contributor2, 1e18)
         await referenceToken.generateTokens(contributor3, 1e18)
-        
+
         await app.claimReward(meritRewardId, { from: root })
-        
+
         return assertRevert(async () => {
           await app.claimReward(meritRewardId, { from: root })
         })
@@ -445,7 +485,7 @@ contract('Rewards', accounts => {
         let meritRewardId = meritRewardIds[0]
         await referenceToken.destroyTokens(root, 5e18)
         await referenceToken.generateTokens(contributor1, 2e18)
-        
+
         let rewardInfo = await app.getReward(meritRewardId)
         assert.strictEqual(rewardInfo[9].toNumber(), 0, 'reward amount should be zero because balance < 0')
         rewardInfo = await app.getReward(meritRewardId, { from: contributor1 })
