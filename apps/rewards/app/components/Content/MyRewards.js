@@ -112,17 +112,14 @@ const renderRecurringDividend = (reward) => {
     description,
     amount,
     amountToken,
-    disbursements,
+    endDate
   } = reward
   const displayAmount = (
     <Text color={String(theme.positive)}>
       +{amount} {amountToken}
     </Text>
   )
-  const endOfToday = endOfDay(new Date())
-  const disbursementDate = disbursements.find(
-    d => isAfter(d, endOfToday)
-  ).toDateString()
+  const disbursementDate = (new Date(endDate)).toDateString()
   const status = 'Ready to claim'
   return [ description, disbursementDate, status, displayAmount ]
 }
@@ -133,14 +130,15 @@ const renderOneTimeMerit = (reward) => {
     description,
     amount,
     amountToken,
-    dateEnd,
+    endDate,
   } = reward
   const displayAmount = (
     <Text color={String(theme.positive)}>
       +{amount} {amountToken}
     </Text>
   )
-  const disbursementDate = addDays(new Date(dateEnd), 1).toDateString()
+  const disbursementDate = (new Date(endDate)).toDateString()
+  console.log(disbursementDate)
   const status = 'Ready to claim'
   return [ description, disbursementDate, status, displayAmount ]
 }

@@ -8,11 +8,6 @@ import {
   calculateMyRewardsSummary
 } from './utils/metric-utils'
 
-const CONVERT_API_BASE = 'https://min-api.cryptocompare.com/data'
-
-const convertApiUrl = symbols =>
-  `${CONVERT_API_BASE}/price?fsym=USD&tsyms=${symbols.join(',')}`
-
 function appStateReducer(state) {
 
   if(state){
@@ -22,6 +17,7 @@ function appStateReducer(state) {
     state.rewards = state.rewards  || []
     state.claims = state.claims  || []
     state.rewards = state.rewards.map(reward => {
+      reward.claimed = reward.timeClaimed !== '0'
       if(reward.isMerit){
         reward.rewardType = ONE_TIME_MERIT
         reward.dateReference = new Date()
@@ -38,8 +34,7 @@ function appStateReducer(state) {
       return reward
     })
     state.myRewards = state.rewards.filter(reward => reward.userRewardAmount > 0)
-    const convertRates = updateConvertedRates(state.balances)
-    const metric = calculateAverageRewardsNumbers(state.rewards, state.claims, state.balances, convertRates)
+    const metric = calculateAverageRewardsNumbers(state.rewards, state.claims, state.balances, state.convertRates)
     state.metrics = [
       {
         name: 'Average reward',
@@ -57,7 +52,7 @@ function appStateReducer(state) {
         unit: 'USD',
       },
     ]
-    const myMetric = calculateMyRewardsSummary(state.rewards, state.balances, convertRates)
+    const myMetric = calculateMyRewardsSummary(state.rewards, state.balances, state.convertRates)
     state.myMetrics = [
       {
         name: 'Unclaimed rewards',
@@ -65,37 +60,23 @@ function appStateReducer(state) {
         unit: 'USD',
       },
       {
-        name: 'Rewards obtained this year',
+        name: 'All time rewards obtained',
         value: myMetric[1].toString(),
         unit: 'USD',
       },
       {
-        name: 'All time rewards obtained',
+        name: 'Rewards obtained this year',
         value: myMetric[2].toString(),
         unit: 'USD',
       },
     ]
     state.amountTokens = state.amountTokens || []
-    console.log('end recuders:', state)
+    console.log('end reducers:', state)
   }
 
   return {
     ...state,
   }
-}
-
-async function updateConvertedRates({ balances = [] }) {
-  const verifiedSymbols = balances
-    .filter(({ verified }) => verified)
-    .map(({ symbol }) => symbol)
-
-  if (!verifiedSymbols.length) {
-    return
-  }
-
-  const res = await fetch(convertApiUrl(verifiedSymbols))
-  const convertRates = await res.json()
-  return convertRates
 }
 
 export default appStateReducer

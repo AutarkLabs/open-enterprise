@@ -3,6 +3,12 @@ import { app } from './'
 import { blocksToMilliseconds } from '../../../../shared/ui/utils'
 import { updateBalancesAndRefTokens } from './token'
 
+
+const CONVERT_API_BASE = 'https://min-api.cryptocompare.com/data'
+
+const convertApiUrl = symbols =>
+  `${CONVERT_API_BASE}/price?fsym=USD&tsyms=${symbols.join(',')}`
+
 export async function onRewardAdded({ rewards = [], refTokens = [], balances = [] }, { rewardId }, settings) {
   if (!rewards[rewardId]) {
     rewards[rewardId] = await getRewardById(rewardId)
@@ -43,6 +49,22 @@ export async function onRefreshRewards(nextState, { userAddress }) {
     [...Array(rewardsLength).keys()].map(async rewardId => await getRewardById(rewardId, userAddress))
   )
   return { ...nextState, rewards }
+}
+
+export async function updateConvertedRates({ balances = [] }) {
+  console.log('Update rate:', balances)
+  const verifiedSymbols = balances
+    .filter(({ verified }) => verified)
+    .map(({ symbol }) => symbol)
+
+  if (!verifiedSymbols.length) {
+    return
+  }
+
+  const res = await fetch(convertApiUrl(verifiedSymbols))
+  const convertRates = await res.json()
+  console.log(convertRates)
+  return convertRates
 }
 
 /////////////////////////////////////////

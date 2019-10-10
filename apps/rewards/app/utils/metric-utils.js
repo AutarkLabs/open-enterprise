@@ -85,6 +85,7 @@ const calculateUnclaimedRewards = (rewards, balances, convertRates) => {
 }
 
 const calculateAllRewards = (rewards, balances, convertRates) => {
+  console.log('Calcualte All Rewards Info:', rewards, balances, convertRates)
   return sumUserRewards(
     rewards,
     balances,

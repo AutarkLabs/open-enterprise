@@ -1,5 +1,5 @@
 import { initializeTokens, vaultLoadBalance } from './token'
-import { onRefreshRewards, onRewardAdded, onRewardClaimed } from './reward'
+import { onRefreshRewards, onRewardAdded, onRewardClaimed , updateConvertedRates } from './reward'
 import { addressesEqual } from '../utils/web3-utils'
 import { INITIALIZATION_TRIGGER } from './'
 
@@ -33,5 +33,7 @@ export const handleEvent = async (state, event, settings) => {
   }
 
   nextState = { ...state, ...nextState }
+  nextState.convertRates = await updateConvertedRates(state)
+  console.log(nextState.convertRates)
   return nextState
 }
