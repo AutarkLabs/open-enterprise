@@ -1,5 +1,3 @@
-const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
-
 module.exports = async function newDao({
   artifacts,
   callback,
@@ -25,19 +23,11 @@ module.exports = async function newDao({
 
   try {
     const template = OpenEnterpriseTemplate.at(await getTemplateAddress())
-    /*const template = OpenEnterpriseTemplate.at(
-      '0x67e4e0d558c55b2becb26df8dd84d88d193f4d85'
-    )*/
-    console.log('template found at:', template.address)
-
-    const daoID = randomId()
-
-    console.log('daoId:', daoID)
 
     const baseDAO = await template.newTokenAndInstance(
       token.name,
       token.symbol,
-      daoID,
+      id,
       members,
       stakes,
       votingSettings,
@@ -45,10 +35,7 @@ module.exports = async function newDao({
       { from: members[0] }
     )
 
-    //console.log(baseDAO)
     const dao = Kernel.at(getEventArgument(baseDAO, 'DeployDao', 'dao'))
-    console.log('DAO: ',dao.address)
-
     const baseOpenEnterprise = await template.newOpenEnterprise(
       dotVotingSettings,
       0,
@@ -56,10 +43,14 @@ module.exports = async function newDao({
       { from: members[0] }
     )
 
+    console.log('🤓 Template found at:', template.address)
     console.log(
-      'created new dao with total cost',
-      baseDAO.receipt.gasUsed + baseOpenEnterprise.receipt.gasUsed,
-      'gas'
+      '🚀 Created new dao at address:',
+      dao.address,
+      '\n⛽️ Total gas cost for creation:',
+      baseDAO.receipt.gasUsed + baseOpenEnterprise.receipt.gasUsed, 'gas',
+      '\n🌐 You can access it at:',
+      `http://localhost:8080/ipfs/QmVptozeYf3XxqHfvMjofCkZsYSqi6YuvHFLMc83SECbNw/#/${id}`
     )
     callback()
   } catch (e) {

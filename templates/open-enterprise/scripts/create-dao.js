@@ -1,5 +1,7 @@
 /* global artifacts, web3 */
+const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
 const newDAO = require('../temp/scripts/new-dao')
+
 
 const VOTE_DURATION = 60*60*24*7 // seconds
 const SUPPORT_REQUIRED = 50e16 // 0 = 0%; 50e16 = 50%
@@ -11,7 +13,7 @@ const settings = {
   // The order is important
   dotVotingSettings: [ SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION ],
   financePeriod: 0,
-  id: 'oe',
+  id: randomId(),
   members: [
     '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
     '0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb',
