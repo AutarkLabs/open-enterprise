@@ -18,7 +18,7 @@ import { IssueTitleLink } from '../../Panel/PanelComponents'
 
 const DetailsCard = ({ issue }) => {
   const theme = useTheme()
-console.log('---', issue)
+
   const SummaryCell = ({ label, children, grid }) => (
     <div css={`
       display: flex;
