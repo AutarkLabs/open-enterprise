@@ -75,7 +75,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         //TODO: need to be able to pass a token manager into _setupOEApps to set proper permissions for dot voting
         _setupOEApps(dao, acl, tokenManager, vault, voting, _dotVotingSettings, _allocationsPeriod, _useDiscussions);
         _transferCreatePaymentManagerFromTemplate(acl, finance, voting);
-        _transferPermissionFromTemplate(acl, vault, voting, vault.TRANSFER_ROLE(), voting);
+        _transferPermissionFromTemplate(acl, vault, vault.TRANSFER_ROLE(), voting);
         _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, voting);
     }
 

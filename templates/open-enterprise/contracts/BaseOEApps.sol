@@ -182,4 +182,12 @@ contract BaseOEApps is BaseCache, TokenCache {
         _acl.grantPermission(_projects, _vault, _vault.TRANSFER_ROLE());
         _acl.grantPermission(_rewards, _vault, _vault.TRANSFER_ROLE());
     }
+
+    /**
+     * @dev Overloading from BaseTemplate to remove the grant, that is not needed for Open Enterprise
+     */
+    function _transferPermissionFromTemplate(ACL _acl, address _app, bytes32 _permission, address _manager) internal {
+        _acl.revokePermission(address(this), _app, _permission);
+        _acl.setPermissionManager(_manager, _app, _permission);
+    }
 }
