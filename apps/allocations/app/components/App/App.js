@@ -14,17 +14,21 @@ const App = () => {
   const [ isModalVisible, setModalVisible ] = useState(false)
   const [ currentBudgetId, setCurrentBudgetId ] = useState('')
   const { api, appState } = useAragonApi()
-  const { allocations = [], budgets = [], tokens = [] } = appState
+  const { allocations = [], budgets = [] } = appState
 
-  const onCreateBudget = ({ amount, name, token }) => {
-    api
-      .newAccount(
-        name,             // _metadata
-        token.address,    // _token
-        true,             // hasBudget
-        amount
-      )
-      .toPromise()
+  const saveBudget = ({ id, amount, name, token }) => {
+    if (id) {
+      api.setBudget(id, amount, name).toPromise()
+    } else {
+      api
+        .newAccount(
+          name,             // _metadata
+          token.address,    // _token
+          true,             // hasBudget
+          amount
+        )
+        .toPromise()
+    }
     closePanel()
   }
 
@@ -68,7 +72,7 @@ const App = () => {
     const fundsLimit = '300000' // remove this!
     setPanel({
       content: NewBudget,
-      data: { heading: 'New budget', onCreateBudget, fundsLimit, tokens },
+      data: { heading: 'New budget', saveBudget, fundsLimit },
     })
   }
 
@@ -88,12 +92,12 @@ const App = () => {
 
   const onEdit = id => {
     const fundsLimit = '300000' // remove this!
-    const editingBudget = budgets.find(budget => budget.budgetId === id)
+    const editingBudget = budgets.find(budget => budget.id === id)
     setPanel({
       content: NewBudget,
       data: {
         heading: 'Edit budget',
-        onCreateBudget,
+        saveBudget,
         editingBudget,
         fundsLimit,
       },
