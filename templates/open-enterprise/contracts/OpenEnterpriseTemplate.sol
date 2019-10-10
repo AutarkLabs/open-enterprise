@@ -62,15 +62,18 @@ contract OpenEnterpriseTemplate is BaseOEApps {
     ) public
     {
         _validateDotSettings(_dotVotingSettings);
+
         (
             ACL acl,
             Kernel dao,
             Finance finance,
+            TokenManager tokenManager,
             Vault vault,
             Voting voting
         ) = _popBaseCache(msg.sender);
+
         //TODO: need to be able to pass a token manager into _setupOEApps to set proper permissions for dot voting
-        _setupOEApps(dao, acl, vault, voting, _dotVotingSettings, _allocationsPeriod, _useDiscussions);
+        _setupOEApps(dao, acl, tokenManager, vault, voting, _dotVotingSettings, _allocationsPeriod, _useDiscussions);
         _transferCreatePaymentManagerFromTemplate(acl, finance, voting);
         _transferPermissionFromTemplate(acl, vault, voting, vault.TRANSFER_ROLE(), voting);
         _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, voting);
@@ -107,8 +110,14 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         _validateSettings(_votingSettings, _members, _stakes);
 
         (Kernel dao, ACL acl) = _createDAO();
-        (Finance finance, Voting voting, Vault vault) = _setupApps(dao, acl, _members, _stakes, _votingSettings, _financePeriod);
-        _cacheBase(acl, dao, finance, vault, voting, msg.sender);
+        (
+            Finance finance,
+            TokenManager tokenManager,
+            Voting voting,
+            Vault vault
+        ) = _setupApps(dao, acl, _members, _stakes, _votingSettings, _financePeriod);
+
+        _cacheBase(acl, dao, finance, tokenManager, vault, voting, msg.sender);
         _registerID(_id, dao);
     }
 
@@ -121,7 +130,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         uint64 _financePeriod
     )
         internal
-        returns (Finance, Voting, Vault)
+        returns (Finance, TokenManager, Voting, Vault)
     {
         MiniMeToken token = _popTokenCache(msg.sender);
         Vault vault = _installVaultApp(_dao);
@@ -133,13 +142,14 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         _mintTokens(_acl, tokenManager, _members, _stakes);
         _setupPermissions(_acl, vault, voting, finance, tokenManager);
 
-        return (finance, voting, vault);
+        return (finance, tokenManager, voting, vault);
     }
 
     // TODO: add Token Manager as param to setup Dot Voting permission
     function _setupOEApps(
         Kernel _dao,
         ACL _acl,
+        TokenManager _tokenManager,
         Vault _vault,
         Voting _voting,
         uint64[3] memory _dotVotingSettings,
@@ -160,8 +170,9 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         Projects projects = _installProjectsApp(_dao, _vault, token);
         Rewards rewards = _installRewardsApp(_dao, _vault);
 
-       _setupOEPermissions(
+        _setupOEPermissions(
             _acl,
+            _tokenManager,
             _voting,
             addressBook,
             allocations,
@@ -186,12 +197,13 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         _createFinancePermissions(_acl, _finance, _voting, _voting);
         _createFinanceCreatePaymentsPermission(_acl, _finance, _voting, address(this));
         _createEvmScriptsRegistryPermissions(_acl, _voting, _voting);
-        _createVotingPermissions(_acl, _voting, ANY_ENTITY, _voting, _voting);
+        _createVotingPermissions(_acl, _voting, _voting, _tokenManager, _voting);
         _createTokenManagerPermissions(_acl, _tokenManager, _voting, _voting);
     }
 
     function _setupOEPermissions(
         ACL _acl,
+        TokenManager _tokenManager,
         Voting _voting,
         AddressBook _addressBook,
         Allocations _allocations,
@@ -203,7 +215,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
     {
         _createAddressBookPermissions(_acl, _addressBook, _voting, _voting);
         _createAllocationsPermissions(_acl, _allocations, _dotVoting, _voting, _voting);
-        _createDotVotingPermissions(_acl, _dotVoting, _voting, _voting);
+        _createDotVotingPermissions(_acl, _dotVoting, _tokenManager, _voting);
         _createProjectsPermissions(_acl, _projects, _dotVoting, _voting, _voting);
         _createRewardsPermissions(_acl, _rewards, _voting, _voting);
     }
