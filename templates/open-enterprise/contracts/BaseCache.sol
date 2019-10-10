@@ -1,6 +1,6 @@
 pragma solidity 0.4.24;
 
-import "../../../node_modules/@aragon/templates-shared/contracts/BaseTemplate.sol";
+import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 
 
 contract BaseCache is BaseTemplate {
@@ -43,7 +43,7 @@ contract BaseCache is BaseTemplate {
 
     function _popBaseCache(address _owner) internal returns (ACL, Kernel, Finance, Vault, Voting) {
         // require(baseCache[_owner] != address(0), ERROR_MISSING_BASE_CACHE);
-        // TODO: need to return tokenManger, but I don't know 
+        // TODO: need to return tokenManger, but I don't know
 
         InstalledBase baseInstance = baseCache[_owner];
         ACL acl = baseInstance.acl;

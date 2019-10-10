@@ -1,15 +1,15 @@
 /* global artifacts, web3 */
 const newDAO = require('../temp/scripts/new-dao')
 
-const VOTE_DURATION = 0 // seconds
-const SUPPORT_REQUIRED = 0 // 0 = 0%; 50e16 = 50%
-const MIN_ACCEPTANCE_QUORUM = 0 // 20e16 = 20%
+const VOTE_DURATION = 60*60*24*7 // seconds
+const SUPPORT_REQUIRED = 50e16 // 0 = 0%; 50e16 = 50%
+const MIN_ACCEPTANCE_QUORUM = 20e16 // 20e16 = 20%
 
 // define template params
 const settings = {
   allocationsPeriod: 0,
   // The order is important
-  dotVotingSettings: [ MIN_ACCEPTANCE_QUORUM, SUPPORT_REQUIRED, VOTE_DURATION ],
+  dotVotingSettings: [ SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION ],
   financePeriod: 0,
   id: 'oe',
   members: [
