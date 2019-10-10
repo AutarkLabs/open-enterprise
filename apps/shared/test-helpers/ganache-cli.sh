@@ -67,10 +67,10 @@ elif [ "$TRUFFLE_TEST" = true ]; then
 	truffle test --network rpc "$@" | grep -v 'Compiling'
 	result=$?
 elif [ "$START_KIT" = true ] || [ "$RESTART_KIT" = true ]; then
-	npm run publish:apps && npm run start:kit
+	npm run publish:apps && npm run start:template
 	result=$?
 elif [ "$DEV" = true ]; then
-	npm run publish:http && npm run start:kit
+	npm run publish:http && npm run start:template
 	result=$?
 elif [ "$NO_CLIENT" = true ]; then
 	npm run publish:http && npm run start:kit:no:client
