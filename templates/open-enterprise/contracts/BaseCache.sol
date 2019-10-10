@@ -10,6 +10,7 @@ contract BaseCache is BaseTemplate {
         ACL acl;
         Kernel dao;
         Finance finance;
+        TokenManager tokenManager;
         Vault vault;
         Voting voting;
     }
@@ -28,6 +29,7 @@ contract BaseCache is BaseTemplate {
         ACL _acl,
         Kernel _dao,
         Finance _finance,
+        TokenManager _tokenManager,
         Vault _vault,
         Voting _voting,
         address _owner
@@ -37,22 +39,23 @@ contract BaseCache is BaseTemplate {
         baseInstance.acl = _acl;
         baseInstance.dao = _dao;
         baseInstance.finance = _finance;
+        baseInstance.tokenManager = _tokenManager;
         baseInstance.vault = _vault;
         baseInstance.voting = _voting;
     }
 
-    function _popBaseCache(address _owner) internal returns (ACL, Kernel, Finance, Vault, Voting) {
+    function _popBaseCache(address _owner) internal returns (ACL, Kernel, Finance, TokenManager, Vault, Voting) {
         // require(baseCache[_owner] != address(0), ERROR_MISSING_BASE_CACHE);
-        // TODO: need to return tokenManger, but I don't know
 
-        InstalledBase baseInstance = baseCache[_owner];
+        InstalledBase storage baseInstance = baseCache[_owner];
         ACL acl = baseInstance.acl;
         Kernel dao = baseInstance.dao;
         Finance finance = baseInstance.finance;
+        TokenManager tokenManager = baseInstance.tokenManager;
         Vault vault = baseInstance.vault;
         Voting voting = baseInstance.voting;
 
         delete baseCache[_owner];
-        return (acl, dao, finance, vault, voting);
+        return (acl, dao, finance, tokenManager, vault, voting);
     }
 }
