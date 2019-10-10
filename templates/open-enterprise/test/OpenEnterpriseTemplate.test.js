@@ -79,7 +79,6 @@ contract('OpenEnterpriseTemplate', ([ owner, member1, member2 ]) => {
                             'dot-voting': oeApps['dot-voting'],
                             projects: oeApps['projects'],
                             rewards: oeApps['rewards'] }
-    console.log('installedCoreApps', installedApps)
     assert.equal(dao.address, getEventArgument(baseDAO, 'DeployDao', 'dao'), 'should have emitted a SetupDao event')
 
     assert.equal(installedApps.voting.length, 1, 'should have installed 1 voting app')
@@ -309,17 +308,10 @@ contract('OpenEnterpriseTemplate', ([ owner, member1, member2 ]) => {
 
         it(`gas costs must be up to ~${expectedTotalCost} gas`, async () => {
           const tokenCreationCost = tokenReceipt.receipt.gasUsed
-          console.log('gas cost: ', tokenCreationCost)
           assert.isAtMost(tokenCreationCost, expectedTokenCreationCost, `token creation call should cost up to ${tokenCreationCost} gas`)
-
           const daoCreationCost = instanceReceipt.receipt.gasUsed
           assert.isAtMost(daoCreationCost, expectedDaoCreationCost, `dao creation call should cost up to ${expectedDaoCreationCost} gas`)
-
-          console.log('newTokencost', tokenCreationCost)
-          console.log('newOpenEnterprise cost', daoCreationCost)
-
           const totalCost = tokenCreationCost + daoCreationCost
-          console.log('totalCost', totalCost)
           assert.isAtMost(totalCost, expectedTotalCost, `total costs should be up to ${expectedTotalCost} gas`)
         })
       }
@@ -337,7 +329,6 @@ contract('OpenEnterpriseTemplate', ([ owner, member1, member2 ]) => {
         daoID = randomId()
         it('should create token, dao and base apps', async () => {
           baseDAO = await template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, daoID, MEMBERS, STAKES, VOTING_SETTINGS, 0, { from: owner })
-          console.log('Costs for newTokenAndInstance call:', baseDAO.receipt.gasUsed, 'gas')
           // Costs for token and dao 3249295 -> token, dao and acl
           // Costs for token and dao 3344131 -> create id
           // Costs for token and dao 3771214 -> add vault
@@ -349,7 +340,6 @@ contract('OpenEnterpriseTemplate', ([ owner, member1, member2 ]) => {
         daoID = randomId()
         it('should setup open enterprise correctly', async () => {
           baseOpenEnterprise = await template.newOpenEnterprise(VOTING_SETTINGS, 0, false, { from: owner })
-          console.log('Costs for newOpenEnterprise call:', baseOpenEnterprise.receipt.gasUsed, 'gas')
           // Costs for newOpenEnterprise call: 2798046 gas -> all apps
         })
       }
