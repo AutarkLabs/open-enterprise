@@ -18,7 +18,7 @@ import { IssueTitleLink } from '../../Panel/PanelComponents'
 
 const DetailsCard = ({ issue }) => {
   const theme = useTheme()
-
+console.log('---', issue)
   const SummaryCell = ({ label, children, grid }) => (
     <div css={`
       display: flex;
@@ -75,7 +75,7 @@ const DetailsCard = ({ issue }) => {
       {issue.hasBounty ? (
         <React.Fragment>
           <SummaryCell label="Time until due" grid="deadline">
-            <Timer end={new Date(issue.deadline)} />
+            <Timer end={new Date(Number(issue.deadline))} />
           </SummaryCell>
           <SummaryCell label="Difficulty" grid="exp">
             <Text.Block>

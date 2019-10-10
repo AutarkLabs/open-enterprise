@@ -436,7 +436,10 @@ const FundIssues = ({ issues, mode }) => {
         .toString()
     )
     const tokenContracts = new Array(issuesArray.length).fill(tokenDetails.addr)
-    const deadlines = new Array(issuesArray.length).fill(Date.now() + 8600)
+    const deadlines = Object.keys(bounties).map(
+      id => bounties[id]['deadline'].getTime()
+    )
+
     // @param _tokenTypes array of currency types: 0=ETH from current user's wallet, 1=ETH from vault, 20=ERC20 token from vault
     const tokenTypes = new Array(issuesArray.length).fill(
       tokenDetails.addr === ETHER_TOKEN_FAKE_ADDRESS
@@ -448,6 +451,7 @@ const FundIssues = ({ issues, mode }) => {
     // in case this happens in QA, let's leave this logging here to at least have some paper trail
     console.log( // eslint-disable-line
       'ipfs file', issuesArray,
+      'bounties', bounties,
       'repoIds', repoIds,
       'issueNumbers', issueNumbers,
       'bountySizes', bountySizes,

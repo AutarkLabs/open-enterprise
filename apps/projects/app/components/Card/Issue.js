@@ -36,7 +36,7 @@ const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
     labels,
     balance = 10,
     symbol = 'AUT',
-    deadline = '2019-10-23 00:00',
+    deadline = '2049-01-01 00:00',
     expLevel = 'easy',
     createdAt,
   } = issue
@@ -120,7 +120,7 @@ const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
                 {dot}
                 <span css="white-space: nowrap">
                   <IconCalendar color={`${theme.surfaceIcon}`} css="margin-bottom: -8px; margin-right: 4px" />
-                Due {DeadlineDistance(deadline)}
+                Due {DeadlineDistance(Number(deadline))}
                 </span>
               </React.Fragment>
             )}
