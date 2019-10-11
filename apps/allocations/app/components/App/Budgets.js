@@ -46,6 +46,7 @@ const StyledBudgets = styled.div`
   display: grid;
   grid-gap: ${2 * GU}px;
   grid-template-columns: repeat(auto-fill, minmax(${27 * GU}px, 1fr));
+  margin-bottom: ${2 * GU}px;
 `
 
 export default Budgets
