@@ -30,7 +30,7 @@ const MyRewards = ({
   const rewardsEmpty = myRewards.length === 0
 
   if (rewardsEmpty) {
-    return <Empty />
+    return <Empty noButton />
   }
 
   const renderMenu = (reward) => (
