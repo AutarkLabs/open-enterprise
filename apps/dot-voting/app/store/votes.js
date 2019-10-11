@@ -6,7 +6,6 @@ import { EMPTY_CALLSCRIPT } from '../utils/vote-utils'
 import { ETHER_TOKEN_FAKE_ADDRESS, getTokenSymbol } from '../utils/token-utils'
 import allocationsAbi from '../../../shared/json-abis/allocations'
 
-
 export const castVote = async (state, { voteId }) => {
   const transform = async vote => ({
     ...vote,
@@ -41,6 +40,7 @@ const loadVoteDescription = async (vote) => {
 
   const path = await app.describeScript(vote.executionScript).toPromise()
 
+  vote.executionTargets = [...new Set(path.map(({ to }) => to))]
   vote.description = path
     .map(step => {
       const identifier = step.identifier ? ` (${step.identifier})` : ''
@@ -80,6 +80,7 @@ const loadVoteDataAllocation = async (vote, voteId) => {
       .pipe(first())
       .subscribe(async ([ metadata, totalCandidates, canExecute ]) => {
         const voteDescription = await loadVoteDescription(vote)
+        const decoratedVote = await decorateVote(voteDescription)
         let options = []
         for (let i = 0; i < totalCandidates; i++) {
           const candidateData = await getAllocationCandidate(voteId, i)
@@ -88,7 +89,7 @@ const loadVoteDataAllocation = async (vote, voteId) => {
         options = await Promise.all(options)
 
         const returnObject = {
-          ...marshallVote(voteDescription),
+          ...marshallVote(decoratedVote),
           metadata,
           canExecute,
           options,
@@ -132,14 +133,15 @@ const loadVoteDataProjects = async (vote, voteId) => {
       .pipe(first())
       .subscribe(async ([ totalCandidates, canExecute ]) => {
         const voteDescription = await loadVoteDescription(vote)
+        const decoratedVote = await decorateVote(voteDescription)
         let options = []
         for (let i = 0; i < totalCandidates; i++) {
           let candidateData = await getProjectCandidate(voteId, i)
           options.push(candidateData)
         }
         resolve({
-          ...marshallVote(voteDescription),
-          metadata: vote.voteDescription,
+          ...marshallVote(decoratedVote),
+          metadata: vote.decoratedVote,
           type: 'curation',
           canExecute,
           options,
@@ -212,6 +214,7 @@ const marshallVote = ({
   totalParticipation,
   metadata,
   executionScript,
+  executionTargetData,
   executed,
 }) => {
   totalVoters = parseInt(totalVoters, 10)
@@ -226,8 +229,76 @@ const marshallVote = ({
     totalParticipation: totalParticipation,
     metadata,
     executionScript,
+    executionTargetData,
     executed,
     participationPct:
       totalVoters === 0 ? 0 : (totalParticipation / totalVoters) * 100,
   }
+}
+
+const getVoteExecutionTargets = (vote) => {
+  return vote.executionTargets || []
+}
+
+const decorateVote = async (vote) => {
+  return new Promise(resolve => {
+    const executionTargets = getVoteExecutionTargets(vote)
+    let targetApp
+    if (!executionTargets.length) {
+      // If there's no execution target, consider it targetting this Dot Voting app
+      app.currentApp()
+        .pipe(first())
+        .subscribe((currentApp) => {
+          resolve({
+            ...vote,
+            executionTargetData: {
+              ...currentApp,
+              identifier: undefined,
+            }
+          })
+        })
+    } else if (executionTargets.length > 1) {
+      // If there's multiple targets, make a "multiple" version
+      resolve({
+        ...vote,
+        executionTargetData: {
+          address: '0x0000000000000000000000000000000000000000',
+          name: 'Multiple',
+          iconSrc: null,
+          identifier: undefined,
+        }
+      })
+    } else {
+      // Otherwise, try to find the target from the installed apps
+      app.installedApps()
+        .pipe(first())
+        .subscribe((installedApps) => {
+          const [targetAddress] = executionTargets
+
+          targetApp = installedApps.find(app => app.appAddress === targetAddress)
+          if (!targetApp) {
+            resolve({
+              ...vote,
+              executionTargetData: {
+                address: targetAddress,
+                name: 'External',
+                iconSrc: null,
+                identifier: undefined,
+              }
+            })
+          } else {
+            const { appAddress, icon, identifier, name } = targetApp
+            resolve({
+              ...vote,
+              executionTargetData: {
+                address: appAddress,
+                name,
+                iconSrc: icon(24),
+                identifier,
+              }
+            })
+          }
+        })
+    }
+  })
 }

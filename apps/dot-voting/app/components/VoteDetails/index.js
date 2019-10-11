@@ -22,7 +22,7 @@ const VoteDetails = ({ vote, onVote }) => {
   const [ canIVote, setCanIVote ] = useState(false)
   const [ decimals, setDecimals ] = useState(0)
   const toggleVotingMode = () => setVotingMode(!votingMode)
-  const { description, voteId, data: { creator, type } } = vote
+  const { description, voteId, data: { creator, executionTargetData, type } } = vote
   const { voteWeights, votingPower } = useUserVoteStats(vote)
   const tokenContract = tokenAddress && api.external(tokenAddress, tokenAbi)
 
@@ -61,7 +61,10 @@ const VoteDetails = ({ vote, onVote }) => {
             }
           `}>
             <AppBadge
-              type={type}
+              //appAddress={executionTargetData.address}
+              iconSrc={executionTargetData.iconSrc}
+              //identifier={executionTargetData.identifier}
+              label={executionTargetData.name}
               youVoted={youVoted}
             />
             <h2 css={textStyle('title2')}>

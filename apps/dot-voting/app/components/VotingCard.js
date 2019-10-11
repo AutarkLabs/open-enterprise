@@ -20,7 +20,7 @@ const VotingCard = ({ vote, onSelectVote }) => {
   const theme = useTheme()
   const { voteWeights } = useUserVoteStats(vote)
   const { description, endDate, open, totalSupport, voteId, support } = vote
-  const { options, totalVoters, type } = vote.data
+  const { executionTargetData, options, totalVoters } = vote.data
 
   const handleOpen = useCallback(() => {
     onSelectVote(voteId)
@@ -47,7 +47,12 @@ const VotingCard = ({ vote, onSelectVote }) => {
           justify-content: space-between;
         `}
       >
-        <GenerateBadge type={type} />
+        <GenerateBadge
+          //appAddress={executionTargetData.address}
+          iconSrc={executionTargetData.iconSrc}
+          //identifier={executionTargetData.identifier}
+          label={executionTargetData.name}
+        />
 
         {youVoted && (
           <div
