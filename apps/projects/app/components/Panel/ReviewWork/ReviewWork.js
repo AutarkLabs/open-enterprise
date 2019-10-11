@@ -11,11 +11,12 @@ import {
   IconCross,
   Link,
   Text,
+  TextInput,
   Tag,
   useTheme,
 } from '@aragon/ui'
 
-import { FormField, FieldTitle, DescriptionInput } from '../../Form'
+import { FormField, FieldTitle } from '../../Form'
 import useGithubAuth from '../../../hooks/useGithubAuth'
 import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '../../Panel'
@@ -170,7 +171,7 @@ const ReviewWork = ({ issue }) => {
           <FormField
             label="Feedback"
             input={
-              <DescriptionInput
+              <TextInput.Multiline
                 name="feedback"
                 rows="5"
                 style={{ resize: 'none', height: 'auto' }}
