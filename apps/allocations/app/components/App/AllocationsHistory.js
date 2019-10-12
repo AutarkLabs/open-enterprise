@@ -63,17 +63,15 @@ const AllocationsHistory = ({ allocations }) => {
         ]
       }}
       renderEntryExpansion={({ recipients, amount, token }) => {
-        let totalSupports = 0
-        recipients.forEach((recipient) => {
-          totalSupports += Number(recipient.supports)
-        })
+        const totalSupports = recipients.reduce((total, recipient) => {
+          return total + Number(recipient.supports)
+        }, 0)
         return recipients.map((recipient, index) => {
           const allocated = BigNumber(recipient.supports).div(totalSupports)
           return (
             <Recipient key={index}>
               <IdentityBadge
                 entity={recipient.candidateAddress}
-                shorten={true}
               />
               <RecipientAllocation>
                 <RecipientProgress>
