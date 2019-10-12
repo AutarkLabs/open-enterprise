@@ -4,8 +4,8 @@ import {
   DataView,
   IconCheck,
   IconCross,
-  // IdentityBadge,
-  // ProgressBar,
+  IdentityBadge,
+  ProgressBar,
   Text,
   useTheme,
 } from '@aragon/ui'
@@ -23,7 +23,6 @@ const AllocationsHistory = ({ allocations }) => {
     const matchingBalance = balances.find(({ address }) => inputAddress === address)
     return matchingBalance ? matchingBalance.symbol : ''
   }
-
   return (
     <DataView
       mode="adaptive"
@@ -63,30 +62,36 @@ const AllocationsHistory = ({ allocations }) => {
           </Amount>
         ]
       }}
-      //renderEntryExpansion={({ recipients, amount, token }) => {
-      //  return recipients.map((recipient, index) => {
-      //    const allocated = BigNumber(recipient.amount).div(amount)
-      //    return (
-      //      <Recipient key={index}>
-      //        <IdentityBadge
-      //          entity={recipient.address}
-      //          shorten={true}
-      //        />
-      //        <RecipientProgress>
-      //          <ProgressBar
-      //            value={allocated.toNumber()}
-      //            color={String(theme.accentEnd)}
-      //          />
-      //        </RecipientProgress>
-      //        <RecipientAmount theme={theme}>
-      //          { displayCurrency(BigNumber(recipient.amount)) } {' '}
-      //          {token} {' • '}
-      //          { allocated.times(100).dp(0).toNumber() }{'%'}
-      //        </RecipientAmount>
-      //      </Recipient>
-      //    )
-      //  })
-      //}}
+      renderEntryExpansion={({ recipients, amount, token }) => {
+        let totalSupports = 0
+        recipients.forEach((recipient) => {
+          totalSupports += Number(recipient.supports)
+        })
+        return recipients.map((recipient, index) => {
+          const allocated = BigNumber(recipient.supports).div(totalSupports)
+          return (
+            <Recipient key={index}>
+              <IdentityBadge
+                entity={recipient.candidateAddress}
+                shorten={true}
+              />
+              <RecipientAllocation>
+                <RecipientProgress>
+                  <ProgressBar
+                    value={allocated.toNumber()}
+                    color={String(theme.accentEnd)}
+                  />
+                </RecipientProgress>
+                <RecipientAmount theme={theme}>
+                  { displayCurrency(BigNumber(amount).times(allocated)) } {' '}
+                  {getTokenSymbol(token)} {' • '}
+                  { allocated.times(100).dp(0).toNumber() }{'%'}
+                </RecipientAmount>
+              </RecipientAllocation>
+            </Recipient>
+          )
+        })
+      }}
     />
   )
 }
@@ -117,21 +122,31 @@ const Amount = styled.div`
   font-weight: 600;
 `
 
-// const Recipient = styled.div`
-//   display: flex;
-//   flex-direction: column;
-// `
-//
-// const RecipientProgress = styled.div`
-//   margin-top: 7px;
-//   margin-bottom: 4px;
-// `
-//
-// const RecipientAmount = styled.div`
-//   color: ${({ theme }) => theme.contentSecondary};
-//   align-self: flex-end;
-//   font-size: 12px;
-// `
+const Recipient = styled.div`
+   display: flex;
+   flex-direction: row;
+   width: 100%;
+   padding: 10px 10px 4px;
+   border-radius: 4px;
+   background-color: white;
+   box-shadow: 0 2px 4px #dde4e9;
+ `
+
+const RecipientAllocation = styled.div`
+   width: 100%;
+   align-self: flex-end;
+   margin-left: 20px;
+   text-align: right;
+ `
+const RecipientProgress = styled.span`
+   margin-bottom: 4px;
+ `
+
+const RecipientAmount = styled.span`
+   color: ${({ theme }) => theme.contentSecondary};
+   font-size: 12px;
+   width: 100px;
+ `
 
 const StatusContent = styled.div`
   color: ${({ code, theme }) => code === 0 ?
