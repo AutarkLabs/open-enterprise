@@ -133,12 +133,13 @@ class NewAllocation extends React.Component {
       budgetValue,
       descriptionValue,
       amountValue,
-      recipients
+      recipients,
+      tokenValue
     } = this.state
     const allocation = {
       budgetId: this.props.budgetId,
       budgetName: budgetValue,
-      balance: amountValue * 10e17,
+      balance: BigNumber(amountValue).times(BigNumber(10).pow(tokenValue.decimals)).toString(10),
       description: descriptionValue,
       addresses: Object.values(recipients),
     }
