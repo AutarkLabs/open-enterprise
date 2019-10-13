@@ -54,7 +54,8 @@ contract BaseOEApps is BaseCache, TokenCache {
     /* ADDRESS-BOOK */
 
     function _installAddressBookApp(Kernel _dao) internal returns (AddressBook) {
-        return AddressBook(_installNonDefaultApp(_dao, ADDRESS_BOOK_APP_ID));
+        bytes memory initializeData = abi.encodeWithSelector(AddressBook(0).initialize.selector);
+        return AddressBook(_installNonDefaultApp(_dao, ADDRESS_BOOK_APP_ID, initializeData));
     }
 
     function _createAddressBookPermissions(ACL _acl, AddressBook _addressBook, address _grantee, address _manager) internal {
