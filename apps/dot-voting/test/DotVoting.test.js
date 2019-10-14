@@ -1,6 +1,8 @@
+/* global artifacts, assert, before, beforeEach, context, contract, it, web3 */
 const { assertRevert } = require('@aragon/test-helpers/assertThrow')
 const { encodeCallScript } = require('@aragon/test-helpers/evmScript')
 const timeTravel = require('@aragon/test-helpers/timeTravel')(web3)
+const BigNumber = require('bignumber.js')
 
 /** Helper function to import truffle contract artifacts */
 const getContract = name => artifacts.require(name)
@@ -32,12 +34,15 @@ const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 contract('DotVoting', accounts => {
   let APP_MANAGER_ROLE, ROLE_ADD_CANDIDATES, ROLE_CREATE_VOTES, ROLE_MODIFY_CANDIDATE_SUPPORT, ROLE_MODIFY_QUORUM
-  let daoFact, app, book, token, executionTarget
+  let daoFact, app, token, executionTarget, evmState
 
   const DotVotingTime = 1000
   const root = accounts[0]
 
   before(async () => {
+    // Create EVMState contract to force EVM to update timestamp in solidity-coverage
+    evmState = await getContract('EVMState').new()
+
     // Create Base DAO and App contracts
     const kernelBase = await getContract('Kernel').new(true) // petrify immediately
     const aclBase = await getContract('ACL').new()
@@ -47,7 +52,7 @@ contract('DotVoting', accounts => {
       aclBase.address,
       regFact.address
     )
-    appBase = await getContract('DotVotingMock').new()
+    const appBase = await getContract('DotVotingMock').new()
 
     // Setup ACL roles constants
     APP_MANAGER_ROLE = await kernelBase.APP_MANAGER_ROLE()
@@ -724,13 +729,14 @@ contract('DotVoting', accounts => {
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
         timeTravel(DotVotingTime + 1)
+        await evmState.update()
         await app.executeVote(voteId)
         const canExecute = await app.canExecute(voteId)
-
         assert.equal(canExecute, false, 'canExecute should be false')
       })
       it('can execute if vote has sufficient candidate support', async () => {
         let newvote = await app.newVote(script, 'metadata', { from: holder50 })
+
         voteId = getCreatedVoteId(newvote)
         let voteOne = [ 4, 15, 0 ]
         let voteTwo = [ 20, 10, 1 ]
@@ -739,8 +745,8 @@ contract('DotVoting', accounts => {
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
         timeTravel(DotVotingTime + 1)
+        await evmState.update()
         const canExecute = await app.canExecute(voteId)
-
         assert.equal(canExecute, true, 'canExecute should be true')
       })
       it('cannot execute if vote has 0 candidate support', async () => {
@@ -753,6 +759,7 @@ contract('DotVoting', accounts => {
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
         timeTravel(DotVotingTime + 1)
+        await evmState.update()
         const canExecute = await app.canExecute(voteId)
         assert.equal(canExecute, false, 'canExecute should be false')
       })
@@ -766,6 +773,7 @@ contract('DotVoting', accounts => {
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
         timeTravel(DotVotingTime + 1)
+        await evmState.update()
         const canExecute = await app.canExecute(voteId)
         assert.equal(canExecute, true, 'canExecute should be true')
       })
@@ -779,13 +787,15 @@ contract('DotVoting', accounts => {
         await app.vote(voteId, voteTwo, { from: holder31 })
         await app.vote(voteId, voteThree, { from: holder50 })
         timeTravel(DotVotingTime + 1)
+        await evmState.update()
         const canExecute = await app.canExecute(voteId)
         assert.equal(canExecute, false, 'canExecute should be false')
       })
+
       it('holder can add candidates', async () => {
         let newvote = await app.newVote(script, 'metadata', { from: holder50 })
         voteId = getCreatedVoteId(newvote)
-        mango = accounts[5]
+        const mango = accounts[5]
 
         const fourCandidates = [ ...candidates, mango ]
 
@@ -806,7 +816,7 @@ contract('DotVoting', accounts => {
         )
       })
       it('holder cannot add duplicate candidate', async () => {
-        mango = accounts[5]
+        const mango = accounts[5]
         return assertRevert(async () => {
           await app.addCandidate(voteId, '0xbeefdead', mango, 0x1, 0x1)
         })
@@ -826,6 +836,129 @@ contract('DotVoting', accounts => {
           'metadata',
           'Vote has metadata'
         )
+      })
+    })
+  })
+  context('incorrect input data', () => {
+    const holder19 = accounts[0]
+    const holder31 = accounts[1]
+    const holder50 = accounts[2]
+    const newCandidate = accounts[5]
+
+    let candidates, voteId, voteOne, voteTwo, voteThree, voteFail
+
+    before(async () => {
+      [ , , ...candidates ] = accounts.slice(0, 5)
+      let action = {
+        to: executionTarget.address,
+        calldata: executionTarget.contract.setSignal.getData(
+          candidates,
+          [ 0, 0, 0 ],
+          [ 4, 4, 4 ],
+          'arg1arg2arg3',
+          'description',
+          [ 0x1, 0x2, 0x3 ],
+          [ 0x1, 0x2, 0x3 ],
+          5,
+          false,
+          0
+        )
+      }
+
+      let script = encodeCallScript([action])
+      let newvote = await app.newVote(script, 'metadata', { from: holder50 })
+      voteId = getCreatedVoteId(newvote)
+      voteOne = [ 4, 15, 0 ]
+      voteTwo = [ 20, 11, 0 ]
+      voteThree = [ 30, 20, 0 ]
+      voteFail = [ 0, 0, 0, 1 ]
+    })
+
+    it('fails to get vote due to wrong vote Id', async () => {
+      return assertRevert(async () => {
+        await app.getVote(voteId+1)
+      })
+    })
+
+    it('fails to get vote metadata due to wrong vote Id', async () => {
+      return assertRevert(async () => {
+        await app.getVoteMetadata(voteId+1)
+      })
+    })
+
+    it('fails to get voter state due to wrong vote Id', async () => {
+      return assertRevert(async () => {
+        await app.getVoterState(voteId+1, holder19)
+      })
+    })
+
+    it('fails to check if voter can vote due to wrong vote Id', async () => {
+      return assertRevert(async () => {
+        await app.canVote(voteId+1, holder19)
+      })
+    })
+
+    it('fails to vote due to wrong voteId', async () => {
+      return assertRevert(async () => {
+        await app.vote(voteId+1, voteOne, { from: holder19 })
+      })
+    })
+
+    it('fails to vote due to too many values in supports array', async () => {
+      return assertRevert(async () => {
+        await app.vote(voteId, voteFail, { from: holder19 })
+      })
+    })
+
+    it('fails to get candidate length due to wrong vote Id', async () => {
+      return assertRevert(async () => {
+        await app.getCandidateLength(voteId+1)
+      })
+    })
+
+    it('fails to get candidate due to wrong vote Id', async () => {
+      return assertRevert(async () => {
+        await app.getCandidate(voteId+1, 0)
+      })
+    })
+
+    it('fails to get candidate because candidate index out of range', async () => {
+      return assertRevert(async () => {
+        await app.getCandidate(voteId, candidates.length)
+      })
+    })
+
+    it('fails to add new candidate due to wrong vote Id', async () => {
+      return assertRevert(async () => {
+        await app.addCandidate(voteId+1, '', newCandidate, 0x0, 0x0)
+      })
+    })
+
+    it('should correctly cast votes and complete the vote', async () => {
+      await app.vote(voteId, voteOne, { from: holder19 })
+      await app.vote(voteId, voteTwo, { from: holder31 })
+      await app.vote(voteId, voteThree, { from: holder50 })
+      timeTravel(DotVotingTime + 1)
+      await evmState.update()
+      const canExecute = await app.canExecute(voteId)
+      assert.equal(canExecute, true, 'canExecute should be true')
+    })
+
+    it('fails to check whether vote can execute due to wrong vote Id', async () => {
+      return assertRevert(async () => {
+        await app.canExecute(voteId+1)
+      })
+    })
+
+    it('fails to execute due to wrong vote Id', async () => {
+      return assertRevert(async () => {
+        await app.executeVote(voteId+1)
+      })
+    })
+
+    it('fail to add candidate after vote executed', async () => {
+      return assertRevert(async () => {
+        await app.addCandidate(voteId, '', newCandidate, 0x0, 0x0)
       })
     })
   })
@@ -872,6 +1005,98 @@ contract('DotVoting', accounts => {
           DotVotingTime
         )
       })
+    })
+  })
+  context('testing that execution functions receive the correct values from the dynamic forwarder', () => {
+    const holder19 = accounts[0]
+    const holder31 = accounts[1]
+    const holder50 = accounts[2]
+    const [ , , ...candidates ] = accounts.slice(0, 5)
+    const zeros = new Array(candidates.length).fill(0)
+
+    let voteId, voteOne, voteTwo, voteThree
+
+    it('dot voting should execute setDistribution and return the payout amount', async () => {
+      const accountId = 0
+      const payout = web3.toWei(0.1, 'ether')
+
+      let action = {
+        to: executionTarget.address,
+        calldata: executionTarget.contract.setDistribution.getData(
+          candidates,
+          zeros,
+          zeros,
+          '',
+          'ETH description',
+          zeros,
+          zeros,
+          accountId,
+          '1',
+          '1',
+          '0',
+          payout
+        )
+      }
+      let script = encodeCallScript([action])
+      let newvote = await app.newVote(script, 'metadata', { from: holder50 })
+
+      voteId = getCreatedVoteId(newvote)
+      voteOne = [ 4, 15, 0 ]
+      voteTwo = [ 20, 11, 0 ]
+      voteThree = [ 30, 20, 0 ]
+
+      await app.vote(voteId, voteOne, { from: holder19 })
+      await app.vote(voteId, voteTwo, { from: holder31 })
+      await app.vote(voteId, voteThree, { from: holder50 })
+      timeTravel(DotVotingTime + 1)
+      await evmState.update()
+      const canExecute = await app.canExecute(voteId)
+      assert.equal(canExecute, true, 'canExecute should be true')
+      await app.executeVote(voteId)
+      const endValue = await executionTarget.getEndValue()
+      assert.equal(endValue.toString(), payout, 'end value should be ' + payout)
+    })
+
+    it('dot voting should execute setLongTarget and return the end value', async () => {
+      const accountId = 0
+      let action = {
+        to: executionTarget.address,
+        calldata: executionTarget.contract.setLongTarget.getData(
+          candidates,
+          zeros,
+          zeros,
+          'arg1arg2arg3',
+          'description',
+          zeros,
+          zeros,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        )
+      }
+      let script = encodeCallScript([action])
+      let newvote = await app.newVote(script, 'metadata', { from: holder50 })
+
+      voteId = getCreatedVoteId(newvote)
+      voteOne = [ 4, 15, 0 ]
+      voteTwo = [ 20, 11, 0 ]
+      voteThree = [ 30, 20, 0 ]
+
+      await app.vote(voteId, voteOne, { from: holder19 })
+      await app.vote(voteId, voteTwo, { from: holder31 })
+      await app.vote(voteId, voteThree, { from: holder50 })
+      timeTravel(DotVotingTime + 1)
+      await evmState.update()
+      const canExecute = await app.canExecute(voteId)
+      assert.equal(canExecute, true, 'canExecute should be true')
+      await app.executeVote(voteId)
+      const endValue = await executionTarget.getEndValue()
+      assert.equal(endValue, 8, 'end value should be 8')
     })
   })
 })

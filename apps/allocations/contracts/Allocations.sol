@@ -292,8 +292,7 @@ contract Allocations is AragonApp {
     }
 
     /**
-    * @notice Set the maximum number of candidates that can be paid out in an allocation
-    *         to `_maxCandidates`.
+    * @notice Set the maximum number of candidates that can be paid out in an allocation to `_maxCandidates`.
     * @param _maxCandidates Maximum number of Candidates
     */
     function setMaxCandidates(uint256 _maxCandidates) external auth(SET_MAX_CANDIDATES_ROLE) {
@@ -410,7 +409,7 @@ contract Allocations is AragonApp {
     *      to be called by a DotVote (options get weird if it's not)
     *      but for our use case the “CREATE_ALLOCATION_ROLE” will be given to
     *      the DotVote. This function is public for stack-depth reasons
-    * @notice Create an allocation from budget #`_accountId` for "`_description`" that will execute `_recurrences` times.
+    * @notice Create an allocation from budget #`_accountId` for "`_description`" `(_recurrences > 1) ? 'that will execute ' + _recurrences + ' times': ''`.
     * @param _candidateAddresses Array of potential addresses receiving a share of the allocation.
     * @param _supports The Array of all support values for the various candidates. These values are set in dot voting.
     * @param _description The distribution description
