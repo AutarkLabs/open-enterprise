@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import {
-  DescriptionInput,
   DropDownOptionsInput,
   Form,
   FormField,
 } from '../../Form'
 import { useAragonApi } from '../../../api-react'
+import { GU, TextInput } from '@aragon/ui'
 import { usePanelManagement } from '..'
 import { issueShape } from '../../../utils/shapes.js'
 
@@ -33,7 +33,7 @@ const NewIssueCuration = ({ allIssues, selectedIssues }) => {
         issueDescriptionIndices.push(issue.title.length)
       }
     })
-    
+
     // TODO: splitting of descriptions needs to be fixed at smart contract level
     const issueDescriptions = selectedIssues.map(issue => issue.title).join('')
     /* TODO: The numbers below are supposedly coming from an eventual:
@@ -68,34 +68,37 @@ const NewIssueCuration = ({ allIssues, selectedIssues }) => {
   }
 
   return (
-    <Form onSubmit={submitCuration} submitText="Submit Curation">
-      <FormField
-        required
-        label="Description"
-        input={
-          <DescriptionInput
-            name="description"
-            value={description}
-            onChange={updateDescription}
-            placeholder="Describe what this curation represents."
-          />
-        }
-      />
-      <FormField
-        label="Issues"
-        required
-        input={
-          <DropDownOptionsInput
-            name="issues"
-            placeholder="Select option..."
-            onChange={updateIssues}
-            values={selectedIssues}
-            input={issues}
-            allOptions={allIssues}
-          />
-        }
-      />
-    </Form>
+    <div css={`margin: ${2 * GU}px 0`}>
+      <Form onSubmit={submitCuration} submitText="Submit Curation">
+        <FormField
+          required
+          label="Description"
+          input={
+            <TextInput.Multiline
+              name="description"
+              value={description}
+              onChange={updateDescription}
+              placeholder="Describe what this curation represents."
+              wide
+            />
+          }
+        />
+        <FormField
+          label="Issues"
+          required
+          input={
+            <DropDownOptionsInput
+              name="issues"
+              placeholder="Select option..."
+              onChange={updateIssues}
+              values={selectedIssues}
+              input={issues}
+              allOptions={allIssues}
+            />
+          }
+        />
+      </Form>
+    </div>
   )
 }
 

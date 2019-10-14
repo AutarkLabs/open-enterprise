@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import BigNumber from 'bignumber.js'
+import { displayCurrency } from '../../utils/helpers'
 
 import {
   Card,
@@ -16,28 +17,22 @@ import {
   useTheme,
 } from '@aragon/ui'
 
-import {
-  BASE_CARD_WIDTH,
-  CARD_STRETCH_BREAKPOINT,
-} from '../../utils/responsive'
-
 const Budget = ({
   id,
   name,
   amount,
   token,
-  allocated = 0,
+  remaining = 0,
   inactive,
   onNewAllocation,
   onEdit,
   onDeactivate,
   onReactivate,
-  screenSize
 }) => {
   const theme = useTheme()
 
   const newAllocation = () => {
-    onNewAllocation(id, name, amount, token)
+    onNewAllocation(id)
   }
   const edit = () => {
     onEdit(id)
@@ -49,35 +44,33 @@ const Budget = ({
   const reactivate = () => {
     onReactivate(id)
   }
-  const tokenAmount = BigNumber(amount).div(BigNumber(10).pow(token.decimals))
-  const tokensRemaining = tokenAmount.minus(BigNumber(allocated).div(BigNumber(10).pow(token.decimals)))
+  const tokenAmount = rawAmount => BigNumber(rawAmount).div(BigNumber(10).pow(token.decimals))
+  const tokensSpent = tokenAmount(amount).minus(BigNumber(remaining).div(BigNumber(10).pow(token.decimals)))
   if (inactive) {
     return (
-      <StyledCard screenSize={screenSize}>
-        <MenuContainer>
-          <ContextMenu>
-            <ContextMenuItem onClick={reactivate}>
-              <IconView />
-              <ActionLabel>Reactivate</ActionLabel>
-            </ContextMenuItem>
-          </ContextMenu>
-        </MenuContainer>
-        <CardTitle color={`${theme.content}`}>{name}</CardTitle>
-        <StatsContainer>
-          <StyledStats>
-            <StatsValueBig color={`${theme.contentSecondary}`}>
-              <Text>Inactive</Text>
-            </StatsValueBig>
-          </StyledStats>
-        </StatsContainer>
-      </StyledCard>
+      <Wrapper
+        name={name}
+        theme={theme}
+        menu={
+          <ContextMenuItem onClick={reactivate}>
+            <IconView />
+            <ActionLabel>Reactivate</ActionLabel>
+          </ContextMenuItem>
+        }
+      >
+        <StatsValueBig theme={theme}>
+          <Text>Inactive</Text>
+        </StatsValueBig>
+      </Wrapper>
     )
   }
 
   return (
-    <StyledCard screenSize={screenSize}>
-      <MenuContainer>
-        <ContextMenu>
+    <Wrapper
+      name={name}
+      theme={theme}
+      menu={
+        <React.Fragment>
           <ContextMenuItem onClick={newAllocation}>
             <IconPlus />
             <ActionLabel>New Allocation</ActionLabel>
@@ -90,40 +83,38 @@ const Budget = ({
             <IconProhibited />
             <ActionLabel>Deactivate</ActionLabel>
           </ContextMenuItem>
-        </ContextMenu>
-      </MenuContainer>
-      <CardTitle color={`${theme.content}`}>{name}</CardTitle>
-      <StatsContainer>
-        <StyledStats>
-          <StatsValueBig color={`${theme.contentSecondary}`}>
-            <Text>{`${tokenAmount} ${token.symbol} per period`}</Text>
-          </StatsValueBig>
-          <StatsValueBig css={{ paddingTop: '24px' }}>
-            <ProgressBar
-              color={`${theme.accentEnd}`}
-              value={allocated}
-            />
-          </StatsValueBig>
-          <StatsValueSmall
-            css={{
-              color: theme.content,
-              paddingTop: '8px',
-            }}
-          >
-            
-            <Text>{`${tokensRemaining} ${token.symbol} below limit`}</Text>
-          </StatsValueSmall>
-          <StatsValueSmall
-            css={{
-              color: theme.contentSecondary,
-              paddingTop: '4px',
-            }}
-          >
-            <Text>{`${tokensRemaining.div(tokenAmount).times(100)}% remaining`}</Text>
-          </StatsValueSmall>
-        </StyledStats>
-      </StatsContainer>
-    </StyledCard>
+        </React.Fragment>
+      }
+    >
+      <StatsValueBig theme={theme}>
+        {displayCurrency(BigNumber(amount))}
+        <Text>{' ' + token.symbol + ' per period'}</Text>
+      </StatsValueBig>
+      <StatsValueBig css={{ paddingTop: '24px' }} theme={theme}>
+        <ProgressBar
+          color={String(theme.accentEnd)}
+          value={tokensSpent.div(tokenAmount(amount)).toNumber()}
+        />
+      </StatsValueBig>
+      <StatsValueSmall css={{
+        color: theme.content,
+        paddingTop: '8px',
+      }}>
+        {displayCurrency(BigNumber(remaining))}
+        <Text>{' ' + token.symbol + ' below limit'}</Text>
+      </StatsValueSmall>
+      <StatsValueSmall css={{
+        color: theme.contentSecondary,
+        paddingTop: '4px',
+      }}>
+        {BigNumber(remaining)
+          .div(amount)
+          .multipliedBy(100)
+          .dp(0)
+          .toString()}
+        <Text>{'% remaining'}</Text>
+      </StatsValueSmall>
+    </Wrapper>
   )
 }
 
@@ -132,36 +123,44 @@ Budget.propTypes = {
   name: PropTypes.string.isRequired,
   amount: PropTypes.string.isRequired,
   token: PropTypes.object.isRequired,
-  // TODO: fix allocated (should be required?)
-  allocated: PropTypes.string,
+  // TODO: fix remaining (should be required?)
+  remaining: PropTypes.string,
   inactive: PropTypes.bool.isRequired,
   onNewAllocation: PropTypes.func.isRequired,
   onEdit: PropTypes.func.isRequired,
   onDeactivate: PropTypes.func.isRequired,
   onReactivate: PropTypes.func.isRequired,
-  screenSize: PropTypes.number.isRequired,
+}
+
+const Wrapper = ({ children, name, theme, menu }) => (
+  <StyledCard theme={theme}>
+    <MenuContainer>
+      <ContextMenu>
+        {menu}
+      </ContextMenu>
+    </MenuContainer>
+    <CardTitle theme={theme}>{name}</CardTitle>
+    <StatsContainer>
+      <StyledStats>
+        {children}
+      </StyledStats>
+    </StatsContainer>
+  </StyledCard>
+)
+
+Wrapper.propTypes = {
+  children: PropTypes.node.isRequired,
+  name: PropTypes.string.isRequired,
+  theme: PropTypes.object.isRequired,
+  menu: PropTypes.node.isRequired,
 }
 
 const StyledCard = styled(Card)`
-  display: flex;
-  margin-bottom: 2rem;
-  margin-right: ${props =>
-    props.screenSize < CARD_STRETCH_BREAKPOINT ? '0.6rem' : '2rem'};
-  box-shadow: 0 2px 4px rgba(221, 228, 233, 0.5);
+  box-shadow: ${({ theme }) => '0 2px 4px ' + theme.border};
   border: 0;
-  flex-direction: column;
-  justify-content: flex-start;
   padding: 12px;
   height: 264px;
-  width: ${props =>
-    props.screenSize < CARD_STRETCH_BREAKPOINT
-      ? '100%'
-      : BASE_CARD_WIDTH + 'px'};
-  transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-  :hover {
-    cursor: pointer;
-    box-shadow: 0 9px 10px 0 rgba(101, 148, 170, 0.1);
-  }
+  width: auto;
 `
 
 const MenuContainer = styled.div`
@@ -182,6 +181,7 @@ const CardTitle = styled(Text.Block).attrs({
   margin-top: 10px;
   margin-bottom: 5px;
   text-align: center;
+  color: ${({ theme }) => theme.content};
   display: block;
   /* stylelint-disable-next-line */
   display: -webkit-box;
@@ -207,6 +207,7 @@ const StyledStats = styled.div`
 
 const StatsValueBig = styled.div`
   font-size: 16px;
+  color: ${({ theme }) => theme.contentSecondary};
 `
 
 const StatsValueSmall = styled.div`

@@ -1,6 +1,11 @@
 import buildStubbedApiReact from '../../../shared/api-react'
 import { STATUS } from './utils/github'
 import {
+  REQUESTED_GITHUB_TOKEN_SUCCESS,
+  REQUESTED_GITHUB_DISCONNECT,
+} from './store/eventTypes'
+import { INITIAL_STATE } from './store/index'
+import {
   initializeGraphQLClient,
   getRepoData,
 } from './store/helpers'
@@ -74,6 +79,21 @@ const functions = process.env.NODE_ENV !== 'production' && ((appState, setAppSta
         },
       ]
     })
+  },
+  trigger: (event, { status, token }) => {
+    switch (event) {
+    case REQUESTED_GITHUB_TOKEN_SUCCESS:
+      setAppState({
+        ...appState,
+        github: { token, status, event: null },
+      })
+      break
+    case REQUESTED_GITHUB_DISCONNECT:
+      setAppState({
+        ...appState,
+        github: INITIAL_STATE.github,
+      })
+    }
   }
 }))
 

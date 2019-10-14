@@ -2,6 +2,7 @@
 import { first, map } from 'rxjs/operators'
 
 import { app } from '../../../../shared/store-utils'
+import { combineLatest } from 'rxjs'
 
 /// /////////////////////////////////////
 /*    Allocations event handlers      */
@@ -9,9 +10,12 @@ import { app } from '../../../../shared/store-utils'
 
 export const updateAccounts = async (accounts, id) => {
   const newAccounts = Array.from(accounts || [])
-
-  if (!newAccounts.some(a => a.accountId === id)) {
+  const accountIdx = newAccounts.findIndex(a => a.id === id)
+  if (accountIdx === -1) {
     newAccounts.push(await getAccount(id))
+  }
+  else {
+    newAccounts[accountIdx] = await getAccount(id)
   }
   return newAccounts
 }
@@ -66,15 +70,23 @@ export const updateAccounts = async (accounts, id) => {
 /// /////////////////////////////////////
 
 const getAccount = id => {
-  return app
-    .call('getAccount', id)
+  return combineLatest(
+    app.call('getAccount', id),
+    app.call('getRemainingBudget', id)
+  )
     .pipe(
       first(),
-      map(({ budget, hasBudget, metadata, token }) => {
+      map((
+        [
+          { budget, hasBudget, metadata, token },
+          remaining
+        ]
+      ) => {
         return {
         // transform response data for the frontend
           hasBudget,
           id, // note the id is added along with the other data
+          remaining,
           token,
           amount: budget,
           name: metadata,

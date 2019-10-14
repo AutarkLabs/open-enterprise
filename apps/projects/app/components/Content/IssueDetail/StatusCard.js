@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import {
   Box,
@@ -7,14 +8,30 @@ import {
   Text,
   Button,
 } from '@aragon/ui'
-//import { usePanelManagement } from '../../Panel'
 import { issueShape } from '../../../utils/shapes.js'
 import { usePanelManagement } from '../../Panel'
 import { BOUNTY_STATUS_LONG } from '../../../utils/bounty-status'
 
+const Action = ({ panel, caption, issue }) => (
+  <EventButton
+    mode="outline"
+    wide
+    onClick={() => panel(issue)}
+  >
+    <Text weight="bold">
+      {caption}
+    </Text>
+  </EventButton>
+)
+Action.propTypes = {
+  panel: PropTypes.func.isRequired,
+  caption: PropTypes.string.isRequired,
+  issue: issueShape,
+}
+
 const StatusCard = ({ issue }) => {
   const theme = useTheme()
-  const { requestAssignment } = usePanelManagement()
+  const { submitWork, requestAssignment, reviewApplication, reviewWork } = usePanelManagement()
 
   const determineStatus = (workStatus, balance) =>
     Number(balance) === 0 ? BOUNTY_STATUS_LONG['fulfilled'] : BOUNTY_STATUS_LONG[workStatus]
@@ -22,6 +39,7 @@ const StatusCard = ({ issue }) => {
   return (
     <Box
       heading="Status"
+      padding={3 * GU}
       css={`
       flex: 0 1 auto;
       text-align: left;
@@ -29,24 +47,23 @@ const StatusCard = ({ issue }) => {
       border: 1px solid ${theme.border};
       border-radius: 3px;
       padding: 0;
-      > :second-child {
-        padding: ${3 * GU}px;
-      }
     `}
     >
       <Text.Block>
         {determineStatus(issue.workStatus)}
       </Text.Block>
+
       {issue.workStatus === 'funded' && (
-        <EventButton
-          mode="outline"
-          wide
-          onClick={() => requestAssignment(issue)}
-        >
-          <Text weight="bold">
-            Submit Application
-          </Text>
-        </EventButton>
+        <Action panel={requestAssignment} caption="Submit application" issue={issue} />
+      )}
+      {issue.workStatus === 'review-applicants' && (
+        <Action panel={reviewApplication} caption="Review applications" issue={issue} />
+      )}
+      {issue.workStatus === 'in-progress' && (
+        <Action panel={submitWork} caption="Submit work" issue={issue} />
+      )}
+      {issue.workStatus === 'review-work' && (
+        <Action panel={reviewWork} caption="Review work" issue={issue} />
       )}
 
     </Box>

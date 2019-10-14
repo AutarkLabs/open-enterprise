@@ -2,11 +2,16 @@ import {
   ONE_TIME_DIVIDEND,
   RECURRING_DIVIDEND,
   ONE_TIME_MERIT,
+  MONTHS,
+  DAYS,
+  YEARS,
+  WEEKS,
 } from './utils/constants'
 import {
   calculateAverageRewardsNumbers,
   calculateMyRewardsSummary
 } from './utils/metric-utils'
+import { MILLISECONDS_IN_A_MONTH, MILLISECONDS_IN_A_WEEK, MILLISECONDS_IN_A_YEAR } from '../../../shared/ui/utils/math-utils'
 
 function appStateReducer(state) {
 
@@ -16,7 +21,39 @@ function appStateReducer(state) {
     })
     state.rewards = state.rewards  || []
     state.claims = state.claims  || []
-    state.rewards = state.rewards.map(reward => {
+    const rewardsFiltered = []
+    state.rewards.forEach((element, index) => {
+      const currentReward = rewardsFiltered.find(filteredElement => {
+        console.log(filteredElement)
+        return filteredElement.description === element.description && parseInt(filteredElement.rewardId, 10)+ filteredElement.occurances === parseInt(element.rewardId)
+      })
+      console.log(currentReward)
+      if(currentReward !== undefined){
+        currentReward.occurances += 1
+        currentReward.disbursements.push(new Date(element.endDate))
+        console.log(MILLISECONDS_IN_A_MONTH, currentReward.duration)
+        const durationInBlocks = currentReward.duration*15000
+        if (durationInBlocks % MILLISECONDS_IN_A_YEAR ===0) {
+          currentReward.disbursementUnit = YEARS
+          currentReward.disbursement = durationInBlocks / MILLISECONDS_IN_A_YEAR
+        } else if(durationInBlocks % MILLISECONDS_IN_A_MONTH ===0){
+          currentReward.disbursementUnit = MONTHS
+          currentReward.disbursement = durationInBlocks / MILLISECONDS_IN_A_MONTH
+        } else if(durationInBlocks % MILLISECONDS_IN_A_WEEK ===0){
+          currentReward.disbursementUnit = WEEKS
+          currentReward.disbursement = durationInBlocks / MILLISECONDS_IN_A_WEEK
+        }   else if(durationInBlocks % MILLISECONDS_IN_A_DAY ===0){
+          currentReward.disbursementUnit = DAYS
+          currentReward.disbursement = durationInBlocks / MILLISECONDS_IN_A_DAY
+        }
+        console.log(currentReward.disbursementUnit)
+      } else {
+        element.occurances = 1
+        element.disbursements = [new Date(element.endDate)]
+        rewardsFiltered.push(element)
+      }
+    })
+    state.rewards = rewardsFiltered.map(reward => {
       reward.claimed = reward.timeClaimed !== '0'
       if(reward.isMerit){
         reward.rewardType = ONE_TIME_MERIT

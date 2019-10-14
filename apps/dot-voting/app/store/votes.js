@@ -3,6 +3,8 @@ import { first } from 'rxjs/operators'
 
 import { app } from './'
 import { EMPTY_CALLSCRIPT } from '../utils/vote-utils'
+import { ETHER_TOKEN_FAKE_ADDRESS, getTokenSymbol } from '../utils/token-utils'
+import allocationsAbi from '../../../shared/json-abis/allocations'
 
 
 export const castVote = async (state, { voteId }) => {
@@ -91,24 +93,31 @@ const loadVoteDataAllocation = async (vote, voteId) => {
           canExecute,
           options,
         }
-        // const symbol
-        // const tokenAddress = '0x' + vote.executionScript.slice(794, 834)
-        // if (tokenAddress === ETHER_TOKEN_FAKE_ADDRESS) {
-        //   symbol = 'ETH'
-        // }
-        // else {
-        //   symbol = await getTokenSymbol(app, tokenAddress)
-        // }
+        // allocations appProxy address starts at 10 and is 20 bytes (40 chars) long
+        const allocationsAddress = '0x' + vote.executionScript.slice(10,50)
+        // account Address starts at 514 and is stored as as uint256, which is 32 bytes (64 chars) long
+        const allocationsAccountId = parseInt(vote.executionScript.slice(514, 578), 16).toString()
+        // compose a callable external contract from the parsed address and the abi
+        const allocationsInstance = app.external(allocationsAddress, allocationsAbi)
+        const { token: tokenAddress } = await allocationsInstance.getAccount(allocationsAccountId).toPromise()
+
+        let symbol
+        if (tokenAddress === ETHER_TOKEN_FAKE_ADDRESS) {
+          symbol = 'ETH'
+        }
+        else {
+          symbol = await getTokenSymbol(app, tokenAddress)
+        }
 
 
         resolve({
           ...returnObject,
           // // These numbers indicate the static param location of the setDistribution
           // // functions amount paramater
-          // balance: parseInt(vote.executionScript.slice(706, 770), 16),
-          // tokenSymbol: symbol,
-          // metadata: vote.voteDescription,
-          // type: 'allocation',
+          balance: parseInt(vote.executionScript.slice(770, 834), 16),
+          tokenSymbol: symbol,
+          metadata: vote.voteDescription,
+          type: 'allocation',
         })
       })
   })

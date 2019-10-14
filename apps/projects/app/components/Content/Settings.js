@@ -10,7 +10,7 @@ import {
   Field,
   GU,
   Info,
-  SafeLink,
+  Link,
   Text,
   TextInput,
   useLayout,
@@ -36,13 +36,13 @@ const GitHubConnect = ({ onLogin, onLogout, status }) => {
   const bodyText = auth ? (
     <Text size="large" css="display: flex; align-items: center">
       Logged in as <img src={user.avatarUrl} alt="user avatar" css="margin: 8px; width: 50px; border-radius: 50%;" />
-      <SafeLink
+      <Link
         href={user.url}
         target="_blank"
-        style={{ textDecoration: 'none', color: `${theme.accent}` }}
+        style={{ textDecoration: 'none', color: `${theme.link}` }}
       >
         {user.login}
-      </SafeLink>
+      </Link>
     </Text>
   ) : (
     'The Projects app uses GitHub to interact with issues.'
@@ -408,9 +408,6 @@ const Settings = ({ onLogin }) => {
             </div>
           </SettingsFunding>
 
-          <Info css="margin: 24px 0">
-              In hourly funding, the hourly rate per issue is the base rate multiplied by the difficulty level selected for the issue.
-          </Info>
           <Button mode="strong" onClick={submitChanges}>
               Save Changes
           </Button>

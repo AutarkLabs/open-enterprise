@@ -65,6 +65,7 @@
     "restart": "RESTART_KIT=true apps/shared/test-helpers/ganache-cli.sh",
     "start:kit": "cd apps/planning-suite-kit && npm run start:kit",
     "start:kit:no:client": "cd apps/planning-suite-kit && npm run start:kit:no:client",
+    "start:template": "cd templates/open-enterprise && npm run publish:aragen && npm run start:template:aragen",
     "start:address": "cd apps/address-book && npm start",
     "start:allocations": "cd apps/allocations && npm start",
     "start:dev": "DEV=true apps/shared/test-helpers/ganache-cli.sh",

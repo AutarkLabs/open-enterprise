@@ -1,7 +1,7 @@
 {
   "roles": [
     {
-      "name": "Create allocations account",
+      "name": "Create allocation budget",
       "id": "CREATE_ACCOUNT_ROLE",
       "params": []
     },
@@ -13,6 +13,26 @@
     {
       "name": "Execute allocation",
       "id": "EXECUTE_ALLOCATION_ROLE",
+      "params": []
+    },
+    {
+      "name": "Execute allocation for a single option",
+      "id": "EXECUTE_PAYOUT_ROLE",
+      "params": []
+    },
+    {
+      "name": "Update allocations accounting period",
+      "id": "CHANGE_PERIOD_ROLE",
+      "params": []
+    },
+    {
+      "name": "Update allocations budgets",
+      "id": "CHANGE_BUDGETS_ROLE",
+      "params": []
+    },
+    {
+      "name": "Update maximum number of options for an allocation",
+      "id": "SET_MAX_CANDIDATES_ROLE",
       "params": []
     }
   ],

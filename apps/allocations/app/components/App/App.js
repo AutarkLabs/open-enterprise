@@ -1,29 +1,34 @@
 import React, { useState } from 'react'
-import PropTypes from 'prop-types'
-
 import { useAragonApi } from '../../api-react'
-import { Button, Header, IconPlus, Modal, SidePanel } from '@aragon/ui'
+import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
 
 import { IdentityProvider } from '../../../../../shared/identity'
 import { Empty } from '../Card'
 import { NewAllocation, NewBudget } from '../Panel'
 import { AllocationsHistory, Budgets } from '.'
+import { Deactivate } from '../Modal'
 
 const App = () => {
   const [ panel, setPanel ] = useState(null)
-  const [ modal, setModal ] = useState({ visible: false, budgetId: null })
+  const [ panelOpen, setPanelOpen ] = useState(false)
+  const [ isModalVisible, setModalVisible ] = useState(false)
+  const [ currentBudgetId, setCurrentBudgetId ] = useState('')
   const { api, appState } = useAragonApi()
-  const { allocations = [], budgets = [], tokens = [] } = appState
+  const { allocations = [], budgets = [] } = appState
 
-  const onCreateBudget = ({ amount, name, token }) => {
-    api
-      .newAccount(
-        name,             // _metadata
-        token.address,    // _token
-        true,             // hasBudget
-        amount
-      )
-      .toPromise()
+  const saveBudget = ({ id, amount, name, token }) => {
+    if (id) {
+      api.setBudget(id, amount, name).toPromise()
+    } else {
+      api
+        .newAccount(
+          name,             // _metadata
+          token.address,    // _token
+          true,             // hasBudget
+          amount
+        )
+        .toPromise()
+    }
     closePanel()
   }
 
@@ -31,7 +36,7 @@ const App = () => {
     addresses,
     description,
     budgetId,
-    period,
+    period = 0,
     balance,
   }) => {
     const emptyIntArray = new Array(addresses.length).fill(0)
@@ -47,27 +52,13 @@ const App = () => {
       '1', // recurrences, 1 for now
       Math.floor(new Date().getTime()/1000), // startTime, now for now
       period,
-      String(balance), // amount
-      // tokenAddress -> token used, now deprecated
+      balance, // amount
     ).toPromise()
     closePanel()
 
-    // address[] _candidateAddresses,
-    // uint256[] _supports,
-    // uint256[] /*unused_infoIndices*/,
-    // string /*unused_candidateInfo*/,
-    // string _description,
-    // uint256[] /*unused_level 1 ID - converted to bytes32*/,
-    // uint256[] /*unused_level 2 ID - converted to bytes32*/,
-    // uint64 _accountId,
-    // uint64 _recurrences,
-    // uint64 _startTime,
-    // uint64 _period,
-    // uint256 _amount
   }
 
   const onSubmitDeactivate = () => { // TODO id => {
-    //api.deactivateBudget(id)
     closeModal()
   }
 
@@ -81,40 +72,44 @@ const App = () => {
     const fundsLimit = '300000' // remove this!
     setPanel({
       content: NewBudget,
-      data: { heading: 'New budget', onCreateBudget, fundsLimit, tokens },
+      data: { heading: 'New budget', saveBudget, fundsLimit },
     })
+    setPanelOpen(true)
   }
 
-  const onNewAllocation = (id, description, balance, token) => {
+  const onNewAllocation = (budgetId) => {
+    const { balances } = appState
     setPanel({
       content: NewAllocation,
       data: {
-        heading: 'New Allocation',
-        subHeading: description,
-        balance,
-        balances: [token],
-        id,
+        budgetId,
+        heading: 'New allocation',
         onSubmitAllocation,
+        budgets,
+        balances,
       },
     })
+    setPanelOpen(true)
   }
 
   const onEdit = id => {
     const fundsLimit = '300000' // remove this!
-    const editingBudget = budgets.find(budget => budget.budgetId === id)
+    const editingBudget = budgets.find(budget => budget.id === id)
     setPanel({
       content: NewBudget,
       data: {
         heading: 'Edit budget',
-        onCreateBudget,
+        saveBudget,
         editingBudget,
         fundsLimit,
       },
     })
+    setPanelOpen(true)
   }
 
   const onDeactivate = id => {
-    setModal({ visible: true, budgetId: id })
+    setModalVisible(true)
+    setCurrentBudgetId(id)
   }
 
   const onReactivate = () => { // TODO id => {
@@ -122,11 +117,12 @@ const App = () => {
   }
 
   const closePanel = () => {
-    setPanel(null)
+    setPanelOpen(false)
   }
 
   const closeModal = () => {
-    setModal({ visible: false, budgetId: null })
+    setModalVisible(false)
+    setCurrentBudgetId('')
   }
 
   const handleResolveLocalIdentity = address =>
@@ -137,93 +133,54 @@ const App = () => {
 
   const PanelContent = panel ? panel.content : null
 
-  const Wrap = ({ children }) => (
-    <IdentityProvider
-      onResolve={handleResolveLocalIdentity}
-      onShowLocalIdentityModal={handleShowLocalIdentityModal}
-    >
-      {children}
-      <SidePanel
-        title={(panel && panel.data.heading) || ''}
-        opened={panel !== null}
-        onClose={closePanel}
-      >
-        {panel && <PanelContent {...panel.data} />}
-      </SidePanel>
-    </IdentityProvider>
-  )
-
-  Wrap.propTypes = {
-    children: PropTypes.node.isRequired,
-  }
-
-  if (budgets.length === 0) {
-    return (
-      <Wrap>
-        <Empty action={onNewBudget} />
-      </Wrap>
-    )
-  }
-
   return (
-    <Wrap>
-      <Header
-        primary="Allocations"
-        secondary={
-          <Button
-            mode="strong"
-            icon={<IconPlus />}
-            onClick={onNewBudget}
-            label="New budget"
-          />
+    <Main scrollView={false}>
+      <IdentityProvider
+        onResolve={handleResolveLocalIdentity}
+        onShowLocalIdentityModal={handleShowLocalIdentityModal}
+      >
+        {budgets.length === 0
+          ? <Empty action={onNewBudget} />
+          : (
+            <React.Fragment>
+              <Header
+                primary="Allocations"
+                secondary={
+                  <Button
+                    mode="strong"
+                    icon={<IconPlus />}
+                    onClick={onNewBudget}
+                    label="New budget"
+                  />
+                }
+              />
+              <Budgets
+                budgets={budgets}
+                onNewAllocation={onNewAllocation}
+                onEdit={onEdit}
+                onDeactivate={onDeactivate}
+                onReactivate={onReactivate}
+              />
+            </React.Fragment>
+          )
         }
-      />
-      <Budgets
-        budgets={budgets}
-        onNewAllocation={onNewAllocation}
-        onEdit={onEdit}
-        onDeactivate={onDeactivate}
-        onReactivate={onReactivate}
-      />
-      <AllocationsHistory allocations={allocations} />
-      <DeactivateModal
-        state={modal}
-        onClose={closeModal}
-        onSubmit={onSubmitDeactivate}
-      />
-    </Wrap>
+        { !!allocations.length && <AllocationsHistory allocations={allocations} /> }
+        <Deactivate
+          visible={isModalVisible}
+          budgetId={currentBudgetId}
+          onClose={closeModal}
+          onSubmit={onSubmitDeactivate}
+        />
+        <SidePanel
+          title={(panel && panel.data.heading) || ''}
+          opened={panelOpen}
+          onClose={closePanel}
+        >
+          {panel && <PanelContent {...panel.data} />}
+        </SidePanel>
+      </IdentityProvider>
+    </Main>
   )
-}
-
-const DeactivateModal = ({ state, onClose, onSubmit }) => {
-  const deactivate = () => {
-    onSubmit(state.budgetId)
-  }
-  return (
-    <Modal visible={state.visible} onClose={onClose}>
-      <div css={{ fontSize: '26px' }}>Deactivate budget</div>
-      <div css={{ marginTop: '32px' }}>
-        Deactivating this budget will immediately disable it once the decision
-        is enacted. You may choose to reactivate this budget at any time.
-      </div>
-      <div
-        css={{
-          marginTop: '48px',
-          display: 'flex',
-          justifyContent: 'flex-end',
-        }}
-      >
-        <Button label="Cancel" css={{ marginRight: '8px' }} onClick={onClose} />
-        <Button label="Deactivate" mode="negative" onClick={deactivate} />
-      </div>
-    </Modal>
-  )
-}
-
-DeactivateModal.propTypes = {
-  state: PropTypes.object.isRequired,
-  onClose: PropTypes.func.isRequired,
-  onSubmit: PropTypes.func.isRequired,
 }
 
 export default App

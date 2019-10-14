@@ -70,7 +70,7 @@ contract('Rewards', accounts => {
     await acl.createPermission(app.address, vault.address, TRANSFER_ROLE, root)
 
     /** Create tokens */
-    referenceToken = await getContract('MiniMeToken').new(NULL_ADDRESS, NULL_ADDRESS, 0, 'one', 18, 'one', true) // empty parameters minime
+    referenceToken = await getContract('MiniMeToken').new(NULL_ADDRESS, NULL_ADDRESS, 0, 'one', 18, 'one', false) // empty parameters minime
     rewardToken = await getContract('MiniMeToken').new(NULL_ADDRESS, NULL_ADDRESS, 0, 'two', 18, 'two', true) // empty parameters minime
     minBlock = await getBlockNumber()
   })
@@ -450,6 +450,24 @@ contract('Rewards', accounts => {
         assert.strictEqual(rewardInfo[9].toNumber(), 0, 'reward amount should be zero because balance < 0')
         rewardInfo = await app.getReward(meritRewardId, { from: contributor1 })
         assert.strictEqual(rewardInfo[9].toNumber(), 0, 'reward amount should be zero because supply < 0')
+      })
+
+      it('cannot create merit reward with transferrable reference token', async () => {
+        const transferrableReferenceToken = await getContract('MiniMeToken').new(NULL_ADDRESS, NULL_ADDRESS, 0, 'one', 18, 'one', true) // empty parameters minime
+        let blockNumber = await getBlockNumber()
+        return assertRevert(async () => {
+          await app.newReward(
+            'testRewardTransferrable',
+            true,
+            transferrableReferenceToken.address,
+            rewardToken.address,
+            4e18,
+            blockNumber+1,
+            6,
+            1,
+            0
+          )
+        })
       })
     })
   })

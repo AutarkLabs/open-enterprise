@@ -738,6 +738,11 @@ class NewRewardClass extends React.Component {
   }
 }
 
+const DisbursementInput = styled(TextInput)`
+  border-radius: 4px 0 0 4px;
+  box-shadow: none;
+`
+
 const VerticalContainer = styled.div`
   display: flex;
   flex-direction: column;

@@ -1,5 +1,4 @@
 import React from 'react'
-import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import {
   ContextMenu,
@@ -10,11 +9,12 @@ import {
   Timer,
   useTheme,
 } from '@aragon/ui'
-import { IconGitHub, BountyContextMenu } from '../../Shared'
+import { BountyContextMenu } from '../../Shared'
 import { BOUNTY_BADGE_COLOR } from '../../../utils/bounty-status'
 import { Markdown } from '../../../../../../shared/ui'
 import Label from './Label'
 import { issueShape, userGitHubShape } from '../../../utils/shapes.js'
+import { IssueTitleLink } from '../../Panel/PanelComponents'
 
 const DetailsCard = ({ issue }) => {
   const theme = useTheme()
@@ -75,7 +75,7 @@ const DetailsCard = ({ issue }) => {
       {issue.hasBounty ? (
         <React.Fragment>
           <SummaryCell label="Time until due" grid="deadline">
-            <Timer end={new Date(issue.deadline)} />
+            <Timer end={new Date(Number(issue.deadline))} />
           </SummaryCell>
           <SummaryCell label="Difficulty" grid="exp">
             <Text.Block>
@@ -134,21 +134,10 @@ const DetailsCard = ({ issue }) => {
           flex: 2;
           margin-right: 20px;
         `}>
-          <Text.Block size="xxlarge" style={{ marginBottom: (2 * GU) + 'px' }}>
+          <Text.Block size="xxlarge" style={{ marginBottom: (1.5 * GU) + 'px' }}>
             {issue.title}
           </Text.Block>
-          <Link
-            href={issue.url}
-            target="_blank"
-            css={`{text-decoration: none; color: ${theme.link}`}
-          >
-            <IssueLinkRow>
-              <IconGitHub color={`${theme.link}`} width="14px" height="14px" />
-              <Text css="margin-left: 6px">
-                {issue.repo} #{issue.number}
-              </Text>
-            </IssueLinkRow>
-          </Link>
+          <IssueTitleLink issue={issue} />
         </div>
 
         <div css={`
@@ -171,7 +160,7 @@ const DetailsCard = ({ issue }) => {
             </Tag>
           )}
         </div>
-      
+
       </div>
 
       <SummaryTable issue={issue} />
@@ -196,11 +185,5 @@ const DetailsCard = ({ issue }) => {
 
 DetailsCard.propTypes = issueShape
 
-const IssueLinkRow = styled.div`
-  height: 31px;
-  display: flex;
-  align-items: center;
-  margin-bottom: ${2 * GU}px;
-`
 // eslint-disable-next-line import/no-unused-modules
 export default DetailsCard

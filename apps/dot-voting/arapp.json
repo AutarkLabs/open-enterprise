@@ -9,6 +9,16 @@
       "name": "Add options to an open dot vote",
       "id": "ROLE_ADD_CANDIDATES",
       "params": []
+    },
+    {
+      "name": "Update minimum participation percentage",
+      "id": "ROLE_MODIFY_QUORUM",
+      "params": []
+    },
+    {
+      "name": "Update support required for dot voting option to be valid",
+      "id": "ROLE_MODIFY_CANDIDATE_SUPPORT",
+      "params": []
     }
   ],
   "environments": {

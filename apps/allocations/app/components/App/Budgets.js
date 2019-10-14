@@ -2,9 +2,8 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 
-import { Viewport } from '@aragon/ui'
+import { GU } from '@aragon/ui'
 
-import { CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
 import { Budget } from '../Card'
 
 const Budgets = ({
@@ -15,28 +14,23 @@ const Budgets = ({
   onReactivate,
 }) => {
   return (
-    <Viewport>
-      {({ width }) => 
-        <StyledBudgets screenSize={width}>
-          {budgets.map(({ allocated, hasBudget, id, name, amount, token }) => (
-            <Budget
-              key={id}
-              id={id}
-              name={name}
-              amount={amount}
-              token={token}
-              allocated={allocated}
-              inactive={!hasBudget}
-              onNewAllocation={onNewAllocation}
-              onEdit={onEdit}
-              onDeactivate={onDeactivate}
-              onReactivate={onReactivate}
-              screenSize={width}
-            />
-          ))}
-        </StyledBudgets>
-      }
-    </Viewport>
+    <StyledBudgets>
+      {budgets.map(({ remaining, hasBudget, id, name, amount, token }) => (
+        <Budget
+          key={id}
+          id={id}
+          name={name}
+          amount={amount}
+          token={token}
+          remaining={remaining}
+          inactive={!hasBudget}
+          onNewAllocation={onNewAllocation}
+          onEdit={onEdit}
+          onDeactivate={onDeactivate}
+          onReactivate={onReactivate}
+        />
+      ))}
+    </StyledBudgets>
   )
 }
 
@@ -49,9 +43,10 @@ Budgets.propTypes = {
 }
 
 const StyledBudgets = styled.div`
-  display: flex;
-  flex-direction: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? 'column' : 'row'};
-  flex-wrap: wrap;
+  display: grid;
+  grid-gap: ${2 * GU}px;
+  grid-template-columns: repeat(auto-fill, minmax(${27 * GU}px, 1fr));
+  margin-bottom: ${2 * GU}px;
 `
 
 export default Budgets
