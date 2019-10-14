@@ -58,7 +58,7 @@ const AllocationsHistory = ({ allocations }) => {
             : recipients.length + ' entities',
           description,
           <Status key={index} code={status} />,
-          <Amount key={index} theme={theme} >
+          <Amount key={index}>
             { displayCurrency(BigNumber(amount)) } { getTokenSymbol(token) }
           </Amount>
         ]
@@ -113,7 +113,6 @@ Status.propTypes = {
 }
 
 const Amount = styled.div`
-  color: ${({ theme }) => theme.negative};
   font-weight: 600;
 `
 
