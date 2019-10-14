@@ -1,8 +1,15 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import addDays from 'date-fns/addDays'
+import endOfDay from 'date-fns/endOfDay'
+import isAfter from 'date-fns/isAfter'
 import {
+  ContextMenu,
+  ContextMenuItem,
   DataView,
+  IconCoin,
+  IconView,
   Text,
   useTheme,
 } from '@aragon/ui'
@@ -17,21 +24,48 @@ import Metrics from './Metrics'
 const MyRewards = ({
   myRewards,
   myMetrics,
+  viewReward,
+  claimReward,
 }) => {
   const rewardsEmpty = myRewards.length === 0
 
   if (rewardsEmpty) {
-    return <Empty />
+    return <Empty noButton />
   }
+
+  const renderMenu = (reward) => (
+    <ContextMenu>
+      <StyledContextMenuItem
+        onClick={() => viewReward(reward)}
+      >
+        <IconView css={{
+          marginRight: '11px',
+          marginBottom: '2px',
+        }}/>
+        View
+      </StyledContextMenuItem>
+      <StyledContextMenuItem
+        onClick={() => claimReward(reward)}
+      >
+        <IconCoin css={{
+          marginRight: '11px',
+          marginBottom: '2px',
+        }}/>
+        Claim
+      </StyledContextMenuItem>
+    </ContextMenu>
+  )
+
   return (
     <OverviewMain>
       <RewardsWrap>
         <Metrics content={myMetrics} />
         <DataView
-          heading={<Text size="xlarge">Unclaimed rewards</Text>}
-          fields={[ 'description', 'status', 'amount' ]}
+          heading={<Text size="xlarge">My rewards dashboard</Text>}
+          fields={[ 'description', 'disbursement date', 'status', 'amount' ]}
           entries={myRewards}
           renderEntry={renderReward}
+          renderEntryActions={renderMenu}
         />
       </RewardsWrap>
     </OverviewMain>
@@ -60,13 +94,16 @@ const renderOneTimeDividend = (reward) => {
     description,
     amount,
     amountToken,
+    dateReference,
   } = reward
   const displayAmount = (
     <Text color={String(theme.positive)}>
       +{amount} {amountToken}
     </Text>
   )
-  return [ description, 'Claim', displayAmount ]
+  const disbursementDate = dateReference.toDateString()
+  const status = 'Ready to claim'
+  return [ description, disbursementDate, status, displayAmount ]
 }
 
 const renderRecurringDividend = (reward) => {
@@ -75,13 +112,16 @@ const renderRecurringDividend = (reward) => {
     description,
     amount,
     amountToken,
+    endDate
   } = reward
   const displayAmount = (
     <Text color={String(theme.positive)}>
       +{amount} {amountToken}
     </Text>
   )
-  return [ description, 'Claim', displayAmount ]
+  const disbursementDate = (new Date(endDate)).toDateString()
+  const status = 'Ready to claim'
+  return [ description, disbursementDate, status, displayAmount ]
 }
 
 const renderOneTimeMerit = (reward) => {
@@ -90,13 +130,16 @@ const renderOneTimeMerit = (reward) => {
     description,
     amount,
     amountToken,
+    endDate,
   } = reward
   const displayAmount = (
     <Text color={String(theme.positive)}>
       +{amount} {amountToken}
     </Text>
   )
-  return [ description, 'Claim', displayAmount ]
+  const disbursementDate = (new Date(endDate)).toDateString()
+  const status = 'Ready to claim'
+  return [ description, disbursementDate, status, displayAmount ]
 }
 
 MyRewards.propTypes = {
@@ -112,6 +155,9 @@ const RewardsWrap = styled.div`
   > :not(:last-child) {
     margin-bottom: 20px;
   }
+`
+const StyledContextMenuItem = styled(ContextMenuItem)`
+  padding: 8px 45px 8px 19px;
 `
 
 // eslint-disable-next-line import/no-unused-modules
