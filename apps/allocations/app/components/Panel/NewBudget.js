@@ -65,7 +65,7 @@ class NewBudget extends React.Component {
   createBudget = () => {
     const { name, amount, selectedToken } = this.state
     const token = this.props.tokens[selectedToken]
-    const amountWithDecimals = BigNumber(amount).times(BigNumber(10).pow(token.decimals)).toString()
+    const amountWithDecimals = BigNumber(amount).times(BigNumber(10).pow(token.decimals)).toString(10)
     this.props.saveBudget({ id: this.props.editingBudget.id, name, amount: amountWithDecimals, token })
     this.setState(INITIAL_STATE)
   }

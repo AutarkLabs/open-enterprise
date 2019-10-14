@@ -52,7 +52,7 @@ const App = () => {
       '1', // recurrences, 1 for now
       Math.floor(new Date().getTime()/1000), // startTime, now for now
       period,
-      String(balance), // amount
+      balance, // amount
     ).toPromise()
     closePanel()
 
