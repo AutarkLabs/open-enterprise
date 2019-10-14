@@ -3,7 +3,7 @@ const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
 const newDAO = require('../temp/scripts/new-dao')
 
 
-const VOTE_DURATION = 60*60*24*7 // seconds
+const VOTE_DURATION = 60//*60*24*7 // seconds
 const SUPPORT_REQUIRED = 50e16 // 0 = 0%; 50e16 = 50%
 const MIN_ACCEPTANCE_QUORUM = 20e16 // 20e16 = 20%
 
@@ -20,7 +20,7 @@ const settings = {
   ],
   stakes: [
     '1000000000000000000',
-    '1000000000000000000',
+    '500000000000000000',
   ],
   token: { name: 'Autark Coin', symbol: 'AUT' },
   useDiscussions: true,

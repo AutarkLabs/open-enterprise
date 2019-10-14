@@ -19,6 +19,7 @@ import {
 } from '../../utils/constants'
 import { Empty } from '../Card'
 import Metrics from './Metrics'
+import { displayCurrency } from '../../utils/helpers'
 
 const Overview = ({
   rewards,
@@ -80,7 +81,7 @@ const renderOneTimeDividend = (reward) => {
     dateReference,
   } = reward
   const nextPayout = dateReference.toDateString()
-  const displayAmount = `${amount} ${amountToken}`
+  const displayAmount = `${displayCurrency(amount)} ${amountToken}`
   return [ description, DIVIDEND, ONE_TIME, nextPayout, displayAmount ]
 }
 
@@ -97,7 +98,7 @@ const renderRecurringDividend = (reward) => {
   const today = moment()
   const nextPayout = disbursements.find(d => moment(d).isAfter(today, 'day'))
     .toDateString()
-  const displayAmount = `${amount} ${amountToken}`
+  const displayAmount = `${displayCurrency(amount)} ${amountToken}`
   return [ description, DIVIDEND, frequency, nextPayout, displayAmount ]
 }
 
@@ -109,7 +110,7 @@ const renderOneTimeMerit = (reward) => {
     dateEnd,
   } = reward
   const nextPayout = moment(dateEnd).add(1, 'day').toDate().toDateString()
-  const displayAmount = `${amount} ${amountToken}`
+  const displayAmount = `${displayCurrency(amount)} ${amountToken}`
   return [ description, MERIT, ONE_TIME, nextPayout, displayAmount ]
 }
 
