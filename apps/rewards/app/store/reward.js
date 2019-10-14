@@ -52,7 +52,6 @@ export async function onRefreshRewards(nextState, { userAddress }) {
 }
 
 export async function updateConvertedRates({ balances = [] }) {
-  console.log('Update rate:', balances)
   const verifiedSymbols = balances
     .filter(({ verified }) => verified)
     .map(({ symbol }) => symbol)
@@ -63,7 +62,6 @@ export async function updateConvertedRates({ balances = [] }) {
 
   const res = await fetch(convertApiUrl(verifiedSymbols))
   const convertRates = await res.json()
-  console.log(convertRates)
   return convertRates
 }
 

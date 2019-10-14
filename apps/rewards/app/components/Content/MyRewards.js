@@ -138,7 +138,6 @@ const renderOneTimeMerit = (reward) => {
     </Text>
   )
   const disbursementDate = (new Date(endDate)).toDateString()
-  console.log(disbursementDate)
   const status = 'Ready to claim'
   return [ description, disbursementDate, status, displayAmount ]
 }
