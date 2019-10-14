@@ -11,7 +11,7 @@ import {
   calculateAverageRewardsNumbers,
   calculateMyRewardsSummary
 } from './utils/metric-utils'
-import { MILLISECONDS_IN_A_MONTH, MILLISECONDS_IN_A_WEEK, MILLISECONDS_IN_A_YEAR } from '../../../shared/ui/utils/math-utils'
+import { MILLISECONDS_IN_A_MONTH, MILLISECONDS_IN_A_WEEK, MILLISECONDS_IN_A_YEAR, MILLISECONDS_IN_A_DAY } from '../../../shared/ui/utils/math-utils'
 
 function appStateReducer(state) {
 
@@ -21,17 +21,13 @@ function appStateReducer(state) {
     })
     state.rewards = state.rewards  || []
     state.claims = state.claims  || []
-    const rewardsFiltered = []
-    state.rewards.forEach((element, index) => {
-      const currentReward = rewardsFiltered.find(filteredElement => {
-        console.log(filteredElement)
-        return filteredElement.description === element.description && parseInt(filteredElement.rewardId, 10)+ filteredElement.occurances === parseInt(element.rewardId)
+    state.rewards = state.rewards === [] ? [] : state.rewards.reduce((rewards, reward) => {
+      const currentReward = rewards.find(filteredElement => {
+        return filteredElement.description === reward.description && parseInt(filteredElement.rewardId, 10) + filteredElement.occurances === parseInt(reward.rewardId)
       })
-      console.log(currentReward)
       if(currentReward !== undefined){
         currentReward.occurances += 1
-        currentReward.disbursements.push(new Date(element.endDate))
-        console.log(MILLISECONDS_IN_A_MONTH, currentReward.duration)
+        currentReward.disbursements.push(new Date(reward.endDate))
         const durationInBlocks = currentReward.duration*15000
         if (durationInBlocks % MILLISECONDS_IN_A_YEAR ===0) {
           currentReward.disbursementUnit = YEARS
@@ -46,30 +42,27 @@ function appStateReducer(state) {
           currentReward.disbursementUnit = DAYS
           currentReward.disbursement = durationInBlocks / MILLISECONDS_IN_A_DAY
         }
-        console.log(currentReward.disbursementUnit)
       } else {
-        element.occurances = 1
-        element.disbursements = [new Date(element.endDate)]
-        rewardsFiltered.push(element)
+        reward.occurances = 1
+        reward.disbursements = [new Date(reward.endDate)]
+        reward.claimed = reward.timeClaimed !== '0'
+        if(reward.isMerit){
+          reward.rewardType = ONE_TIME_MERIT
+          reward.dateReference = new Date()
+        } else if (reward.occurances.toString() === '1'){
+          reward.rewardType = ONE_TIME_DIVIDEND
+          reward.dateReference = new Date(reward.endDate)
+        } else {
+          reward.rewardType = RECURRING_DIVIDEND
+        }
+        const referenceAssetToken = state.amountTokens.find( token => token.address === reward.referenceToken)
+        reward.referenceTokenSymbol = referenceAssetToken.symbol
+        const amountToken = state.amountTokens.find( token => token.address === reward.rewardToken)
+        reward.amountToken = amountToken.symbol
+        rewards.push(reward)
       }
-    })
-    state.rewards = rewardsFiltered.map(reward => {
-      reward.claimed = reward.timeClaimed !== '0'
-      if(reward.isMerit){
-        reward.rewardType = ONE_TIME_MERIT
-        reward.dateReference = new Date()
-      } else if (reward.occurances.toString() === '1'){
-        reward.rewardType = ONE_TIME_DIVIDEND
-        reward.dateReference = new Date(reward.endDate)
-      } else {
-        reward.rewardType = RECURRING_DIVIDEND
-      }
-      const referenceAssetToken = state.amountTokens.find( token => token.address === reward.referenceToken)
-      reward.referenceTokenSymbol = referenceAssetToken.symbol
-      const amountToken = state.amountTokens.find( token => token.address === reward.rewardToken)
-      reward.amountToken = amountToken.symbol
-      return reward
-    })
+      return rewards
+    }, [])
     state.myRewards = state.rewards.filter(reward => reward.userRewardAmount > 0)
     const metric = calculateAverageRewardsNumbers(state.rewards, state.claims, state.balances, state.convertRates)
     state.metrics = [

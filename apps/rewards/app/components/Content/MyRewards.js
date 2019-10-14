@@ -1,9 +1,6 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import addDays from 'date-fns/addDays'
-import endOfDay from 'date-fns/endOfDay'
-import isAfter from 'date-fns/isAfter'
 import {
   ContextMenu,
   ContextMenuItem,
