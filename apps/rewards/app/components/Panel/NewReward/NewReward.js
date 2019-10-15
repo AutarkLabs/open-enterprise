@@ -29,6 +29,7 @@ import {
   DISBURSEMENT_UNITS,
   OTHER,
 } from '../../../utils/constants'
+import { displayCurrency, toWei } from '../../../utils/helpers'
 
 import tokenBalanceOfAbi from '../../../../../shared/json-abis/token-balanceof.json'
 import tokenBalanceOfAtAbi from '../../../../../shared/json-abis/token-balanceofat.json'
@@ -69,10 +70,6 @@ const INITIAL_STATE = {
     dateStartAfterEnd: 'Start date must take place before the end date.',
     disbursementsInexistent: 'Disbursement frequency does not output any disbursements for the given time range.',
   }
-}
-
-function getTokenProp(prop, { refTokens }, { customToken, referenceAsset }, check = prop) {
-  return customToken[check]?customToken[prop]:refTokens[referenceAsset-2][prop]
 }
 
 class NewRewardClass extends React.Component {
@@ -191,7 +188,7 @@ class NewRewardClass extends React.Component {
     let semanticErrors = []
     if (state.referenceAsset === OTHER && !state.customToken.isVerified)
       semanticErrors.push('customTokenInvalid')
-    if (+state.amount > +state.amountToken.balance)
+    if (toWei(state.amount) > +state.amountToken.amount)
       semanticErrors.push('amountOverBalance')
     const today = moment()
     if (state.rewardType === ONE_TIME_DIVIDEND &&
@@ -296,77 +293,6 @@ class NewRewardClass extends React.Component {
     }
   }
 
-  amountWithTokenAndBalance = () => {
-    const { amountTokens } = this.props
-    const { amountToken } = this.state
-    return (
-      <VerticalContainer>
-        <HorizontalContainer>
-          <TextInput
-            name="amount"
-            type="number"
-            min={MIN_AMOUNT}
-            step="any"
-            onChange={e => {
-              const { value } = e.target
-              this.setState({ amount: value })
-              this.setSemanticErrors({ amount: value })
-            }}
-            wide={true}
-            value={this.state.amount}
-            css={{ borderRadius: '4px 0px 0px 4px' }}
-          />
-          <DropDown
-            name="amountToken"
-            css={{ borderRadius: '0px 4px 4px 0px' }}
-            items={amountTokens.map(token => token.symbol)}
-            selected={amountTokens.indexOf(amountToken)}
-            onChange={i => {
-              this.setState({ amountToken: amountTokens[i] })
-              this.setSemanticErrors({ amountToken: amountTokens[i] })
-            }}
-          />
-        </HorizontalContainer>
-        <Text
-          size="small"
-          color={String(this.props.theme.contentSecondary)}
-          css={{
-            alignSelf: 'flex-end',
-            marginTop: '8px',
-          }}
-        >
-          {'Available Balance: '}
-          {this.state.amountToken.balance} {this.state.amountToken.symbol}
-        </Text>
-      </VerticalContainer>
-    )
-  }
-
-  ErrorBox = () => (
-    this.errorPrompt() &&
-      <React.Fragment>
-        <Info.Alert>
-          {this.startBeforeTokenCreation() && `The selected start date occurs
-          before your reference asset ${(getTokenProp('symbol',this.props,this.state))}
-          was created. Please choose another date.`}
-
-          {this.disbursementOverflow() && `You have specified a date range that results in
-          ${this.state.quarterEndDates.length} disbursements, yet our system can only handle 41.
-          Choose an end date no later than ${this.formatDate(this.state.quarterEndDates[40])}.`}
-
-          {this.lowVaultBalance() && `You have specified a reward for
-          ${this.state.amount} ${this.props.balances[this.state.amountCurrency].symbol}, yet your vault balance
-          is ${this.props.balances[this.state.amountCurrency].amount / Math.pow(10,this.props.balances[this.state.amountCurrency].decimals)}
-          ${this.props.balances[this.state.amountCurrency].symbol}. To ensure successful
-          execution, specify another amount that does not exceed your balance.`}
-
-          {this.dividendPeriodTooShort() &&
-          'Please select a start and end date that are at least as long as the cycle period selected'}
-        </Info.Alert>
-        <br />
-      </React.Fragment>
-  )
-
   amountWithTokenAndBalance = () => (
     <VerticalContainer>
       <HorizontalContainer>
@@ -400,7 +326,9 @@ class NewRewardClass extends React.Component {
         }}
       >
         {'Available Balance: '}
-        {this.state.amountToken.balance} {this.state.amountToken.symbol}
+        {displayCurrency(this.state.amountToken.amount)}
+        {' '}
+        {this.state.amountToken.symbol}
       </Text>
     </VerticalContainer>
   )
