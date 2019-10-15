@@ -14,6 +14,8 @@ stages:
 language: node_js
 node_js: '10.15' # equivalent to node 10.15.x
 
+env: COVERALLS_PARALLEL=true COVERAGE=true
+
 cache:
   directories:
     - node_modules
@@ -35,35 +37,30 @@ jobs:
       name: Address Book app tests and coverage report
       install: npm run bootstrap
       after_success: npm run coveralls
-      env: 'COVERAGE=true'
 
     - stage: test
       script: travis_wait 60 npm run coverage -- --scope=@tps/apps-allocations
       name: Allocations app tests and coverage report
       install: npm run bootstrap
       after_success: npm run coveralls
-      env: 'COVERAGE=true'
 
     - stage: test
       script: travis_wait 60 npm run coverage -- --scope=@tps/apps-projects
       name: Projects app tests and coverage report
       install: npm run bootstrap
       after_success: npm run coveralls
-      env: 'COVERAGE=true'
 
     - stage: test
       script: travis_wait 60 npm run coverage -- --scope=@tps/apps-dot-voting
       name: Dot Voting app tests and coverage report
       install: npm run bootstrap
       after_success: npm run coveralls
-      env: 'COVERAGE=true'
 
     - stage: test
       script: travis_wait 60 npm run coverage -- --scope=@tps/apps-rewards
       name: Rewards app tests and coverage report
       install: npm run bootstrap
       after_success: npm run coveralls
-      env: 'COVERAGE=true'
 
     - stage: deploy
       before_install:
@@ -78,6 +75,7 @@ jobs:
 
 
 notifications:
+  webhooks: https://coveralls.io/webhook
   email: false
 
 # Only build pushes to dev. All pull requests still build
