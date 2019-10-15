@@ -1,5 +1,4 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 import {
   CardLayout,
   GU,
@@ -10,11 +9,11 @@ import {
   useTheme,
 } from '@aragon/ui'
 
-const VotingCardGroup = ({ title, count, children }) => {
+const VoteCardGroup = ({ title, count, children }) => {
   const theme = useTheme()
   const { layoutName } = useLayout()
   const compactMode = layoutName === 'small'
-  const rowHeight = compactMode ? null : 350
+  const rowHeight = compactMode ? null : 294
 
   return (
     <section>
@@ -22,14 +21,14 @@ const VotingCardGroup = ({ title, count, children }) => {
         css={`
           display: flex;
           align-items: center;
-          ${unselectable};
           margin-bottom: ${3 * GU}px;
           ${compactMode ? `padding: 0 ${2 * GU}px;` : ''}
+          ${unselectable};
         `}
       >
         <div
           css={`
-            ${textStyle(compactMode ? 'body2' : 'body3')};
+            ${textStyle('body2')};
             color: ${theme.content};
           `}
         >
@@ -37,12 +36,10 @@ const VotingCardGroup = ({ title, count, children }) => {
         </div>
         <span
           css={`
-            margin-left: ${1.5 * GU}px;
-            display: inline-flex;
+            margin-left: ${1 * GU}px;
+            display: flex;
             align-items: center;
             justify-content: center;
-            color: ${theme.info};
-            ${textStyle('label3')};
           `}
         >
           <Tag limitDigits={4} label={count} size="small" />
@@ -55,10 +52,4 @@ const VotingCardGroup = ({ title, count, children }) => {
   )
 }
 
-VotingCardGroup.propTypes = {
-  title: PropTypes.string.isRequired,
-  count: PropTypes.number.isRequired,
-  children: PropTypes.node.isRequired,
-}
-
-export default VotingCardGroup
+export default VoteCardGroup

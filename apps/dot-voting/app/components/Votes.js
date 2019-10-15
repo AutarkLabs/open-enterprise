@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import VotingCardGroup from './VotingCardGroup'
+import VoteCardGroup from './VoteCardGroup'
 import VotingCard from './VotingCard'
 
 const Votes = ({ app, votes, onSelectVote, userAccount }) => {
@@ -10,12 +10,12 @@ const Votes = ({ app, votes, onSelectVote, userAccount }) => {
 
   const votingGroups = [
     [ 'Open votes', openedVotes ],
-    [ 'Past votes', closedVotes ],
+    [ 'Closed votes', closedVotes ],
   ]
 
   return votingGroups.map(([ groupName, votes ]) =>
     !!votes.length && (
-      <VotingCardGroup
+      <VoteCardGroup
         title={groupName}
         count={votes.length}
         key={groupName}
@@ -29,7 +29,7 @@ const Votes = ({ app, votes, onSelectVote, userAccount }) => {
             userAccount={userAccount}
           />
         ))}
-      </VotingCardGroup>
+      </VoteCardGroup>
     )
   )
 }
