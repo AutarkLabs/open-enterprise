@@ -15,7 +15,9 @@ export const initializeTokens = async (state, vaultContract) => {
       decimals: '18',
     }]
   }
-  return await syncTokens(nextState, { token: ETHER_TOKEN_FAKE_ADDRESS }, vaultContract)
+  const newState = await syncTokens(nextState, { token: ETHER_TOKEN_FAKE_ADDRESS }, vaultContract)
+  console.log('NEW STATE IN INITIALIZE TOKENS', newState)
+  return newState
 }
 
 export const syncTokens = async (state, { token }, vaultContract) => {

@@ -31,6 +31,7 @@ import { Error } from './components/Card'
 
 const App = () => {
   const { api, appState } = useAragonApi()
+  console.log('USE ARAGON API APP STATE: ', appState)
   const [ activeIndex, setActiveIndex ] = useState(
     { tabIndex: 0, tabData: {} }
   )

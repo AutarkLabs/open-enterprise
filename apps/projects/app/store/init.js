@@ -3,12 +3,16 @@ import standardBounties from '../abi/StandardBounties.json'
 import { app, handleEvent, INITIAL_STATE } from './'
 import { initializeTokens, initializeGraphQLClient } from './helpers'
 
+
 export const initStore = (vaultAddress, standardBountiesAddress) => {
+
   const vaultContract = app.external(vaultAddress, vaultAbi.abi)
   const standardBountiesContract = app.external(standardBountiesAddress, standardBounties.abi)
   return app.store(
     async (state, action) => {
       try {
+        console.log('STATE IN SCRIPT.JS BEFORE HANDLING CONTRACT EVENT', state)
+
         return await handleEvent(state, action, vaultAddress, vaultContract)
       } catch (err) {
         console.error(
@@ -32,6 +36,7 @@ export const initStore = (vaultAddress, standardBountiesAddress) => {
 }
 
 const initState = (vaultContract) => async (cachedState) => {
+  console.log('CACHED STATE IN THE INIT STATE FUNCTION', cachedState)
   let nextState = await initializeTokens(cachedState || INITIAL_STATE, vaultContract)
   const github = await app.getCache('github').toPromise()
   if (github && github.token) {

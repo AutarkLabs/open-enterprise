@@ -13,6 +13,7 @@
 // }
 
 function appStateReducer(state) {
+  console.log('STATE INSIDE THE APP STATE REDUCER: ', state)
   // const { balances, transactions } = state || {}
   // const { github, repos } = state || {}
 
