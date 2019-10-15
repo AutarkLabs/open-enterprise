@@ -357,7 +357,7 @@ contract Projects is AragonApp, DepositableStorage {
 // Repository functions
 ///////////////////////
     /**
-     * @notice Add repository `_repoId`
+     * @notice Add repository `@fromHex(_repoId, "ascii")`
      * @param _repoId The id of the repo in the projects registry
      * @return index for the added repo at the registry
      */
@@ -374,7 +374,7 @@ contract Projects is AragonApp, DepositableStorage {
     }
 
     /**
-     * @notice Remove repository `_repoId`
+     * @notice Remove repository `@fromHex(_repoId, "ascii")`
      * @param _repoId The id of the repo in the projects registry
      */
     function removeRepo(
