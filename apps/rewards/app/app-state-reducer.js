@@ -27,6 +27,7 @@ function appStateReducer(state) {
       })
       if(currentReward !== undefined){
         currentReward.occurances += 1
+        currentReward.rewardType = RECURRING_DIVIDEND
         currentReward.disbursements.push(new Date(reward.endDate))
         const durationInBlocks = currentReward.duration*15000
         if (durationInBlocks % MILLISECONDS_IN_A_YEAR ===0) {
@@ -49,11 +50,9 @@ function appStateReducer(state) {
         if(reward.isMerit){
           reward.rewardType = ONE_TIME_MERIT
           reward.dateReference = new Date()
-        } else if (reward.occurances.toString() === '1'){
+        } else {
           reward.rewardType = ONE_TIME_DIVIDEND
           reward.dateReference = new Date(reward.endDate)
-        } else {
-          reward.rewardType = RECURRING_DIVIDEND
         }
         const referenceAssetToken = state.amountTokens.find( token => token.address === reward.referenceToken)
         reward.referenceTokenSymbol = referenceAssetToken.symbol
