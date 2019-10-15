@@ -28,6 +28,11 @@ import NumberInput from '../Shared/NumberInput'
 const bountyDeadlines = [ 'Days', 'Weeks', 'Months' ]
 const bountyDeadlinesMul = [ 24, 168, 720 ]
 
+const fundingModels = [
+  'Fixed',
+  'Hourly',
+]
+
 const GitHubConnect = ({ onLogin, onLogout, status }) => {
   const user = useGithubAuth()
   const theme = useTheme()
@@ -244,22 +249,6 @@ BountyArbiter.propTypes = {
   networkType: PropTypes.string.isRequired,
 }
 
-const FundingType = ({ fundingType, onChangeType }) => (
-  <div css="margin-bottom: 24px; width: 240px">
-    <SettingLabel text="Type" />
-    <DropDown
-      items={[ 'Hourly', 'Fixed' ]}
-      selected={fundingType}
-      onChange={onChangeType}
-      wide
-    />
-  </div>
-)
-FundingType.propTypes = {
-  fundingType: PropTypes.number.isRequired,
-  onChangeType: PropTypes.func.isRequired,
-}
-
 const getExactIndex = (bountyDeadline, bountyDeadlinesMul) => {
   for (let i = bountyDeadlinesMul.length - 1; i >= 0; i--) {
     if (bountyDeadline % bountyDeadlinesMul[i] === 0) {
@@ -272,13 +261,13 @@ const getExactIndex = (bountyDeadline, bountyDeadlinesMul) => {
 const Settings = ({ onLogin }) => {
   const [ bountyCurrencies, setBountyCurrencies ] = useState([])
   const [ expLevels, setExpLevels ] = useState([])
-  const [ baseRate, setBaseRate ] = useState(0)
+  const [ baseRate, setBaseRate ] = useState('')
   const [ bountyCurrency, setBountyCurrency ] = useState()
   const [ bountyAllocator, setBountyAllocator ] = useState()
   //const [ bountyArbiter, setBountyArbiter ] = useState()
   const [ bountyDeadlineD, setBountyDeadlineD ] = useState()
   const [ bountyDeadlineT, setBountyDeadlineT ] = useState()
-  //const [ fundingType, setFundingType ] = useState(0)
+  const [ selectedFundingModelIndex, setFundingModel ] = useState(0)
   const [ settingsLoaded, setSettingsLoaded ] = useState(false)
 
   const { api, appState } = useAragonApi()
@@ -298,13 +287,13 @@ const Settings = ({ onLogin }) => {
   useEffect(() => {
     const {
       expLvls = [],
-      baseRate = 0,
+      baseRate,
       bountyCurrency,
       bountyAllocator,
       bountyDeadline
     } = bountySettings
     setExpLevels(expLvls)
-    setBaseRate(baseRate)
+    setBaseRate(baseRate ? baseRate : '')
     setBountyCurrency(tokens.findIndex(bounty => bounty.addr === bountyCurrency))
     setBountyAllocator(bountyAllocator)
     let index = getExactIndex(bountyDeadline, bountyDeadlinesMul)
@@ -315,22 +304,27 @@ const Settings = ({ onLogin }) => {
     }
     setBountyDeadlineD(index)
     setBountyDeadlineT(bountyDeadline / bountyDeadlinesMul[index])
+    setFundingModel(fundingModels.indexOf(bountySettings.fundingModel))
     setSettingsLoaded(true)
   }, [bountySettings]
   )
 
   const submitChanges = () => {
     // flatten deadline
-    let bountyDeadline = Math.floor(bountyDeadlinesMul[bountyDeadlineD] * bountyDeadlineT)
+    const bountyDeadline = Math.floor(bountyDeadlinesMul[bountyDeadlineD] * bountyDeadlineT)
     // flatten expLevels
     const expLevelsDesc = expLevels.map(l => fromUtf8(l.name))
     // uint-ify EXP levels
-    let expLevelsMul = expLevels.map(l => toHex(l.mul * 100))
+    const expLevelsMul = expLevels.map(l => toHex(l.mul * 100))
+    // we persist `fundingModel: fixed` by setting baseRate to 0
+    const baseRateModified = fundingModels[selectedFundingModelIndex] === 'Fixed'
+      ? 0
+      : baseRate
 
     api.changeBountySettings(
       expLevelsMul,
       expLevelsDesc,
-      toHex(baseRate * 100),
+      toHex(baseRateModified * 100),
       toHex(bountyDeadline),
       tokens[bountyCurrency].addr,
       bountyAllocator
@@ -343,7 +337,6 @@ const Settings = ({ onLogin }) => {
   const bountyDeadlineChangeD = index => setBountyDeadlineD(index)
   const bountyCurrencyChange = index => setBountyCurrency(index)
   // Unconfigurables (for now):
-  // const fundingTypeChange = index => setFundingType(index)
   // const bountyAllocatorChange = e => setBountyAllocator(e.target.value)
   // const bountyArbiterChange = e => setBountyArbiter(e.target.value)
 
@@ -394,17 +387,34 @@ const Settings = ({ onLogin }) => {
       </div>
       <div css="grid-area: funding">
         <Box
-          heading="Funding Model"
+          heading="Funding Settings"
         >
           <SettingsFunding layoutName={layoutName}>
             <Column>
-              <BaseRate
-                baseRate={baseRate}
-                onChangeRate={baseRateChange}
-                bountyCurrencies={bountyCurrencies}
-                bountyCurrency={bountyCurrency}
-                onChangeCurrency={bountyCurrencyChange}
+              <SettingLabel text="Funding Model" />
+              <DropDown
+                css={`margin-bottom: ${3 * GU}px`}
+                items={fundingModels}
+                selected={selectedFundingModelIndex}
+                onChange={i => setFundingModel(i)}
+                wide
               />
+              {fundingModels[selectedFundingModelIndex] === 'Hourly' && (
+                <React.Fragment>
+                  <Info css={`margin-bottom: ${3 * GU}px`}>
+                    In hourly funding, the hourly rate per issue is the base
+                    rate multiplied by the difficulty level selected for the
+                    issue.
+                  </Info>
+                  <BaseRate
+                    baseRate={baseRate}
+                    onChangeRate={baseRateChange}
+                    bountyCurrencies={bountyCurrencies}
+                    bountyCurrency={bountyCurrency}
+                    onChangeCurrency={bountyCurrencyChange}
+                  />
+                </React.Fragment>
+              )}
               <BountyDeadline
                 bountyDeadlineT={bountyDeadlineT}
                 onChangeT={bountyDeadlineChangeT}
