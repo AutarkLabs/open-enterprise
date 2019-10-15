@@ -118,7 +118,6 @@ Status.propTypes = {
 }
 
 const Amount = styled.div`
-  color: ${({ theme }) => theme.negative};
   font-weight: 600;
 `
 
