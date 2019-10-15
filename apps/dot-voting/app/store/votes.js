@@ -243,7 +243,6 @@ const getVoteExecutionTargets = (vote) => {
 const decorateVote = async (vote) => {
   return new Promise(resolve => {
     const executionTargets = getVoteExecutionTargets(vote)
-    let targetApp
     if (!executionTargets.length) {
       // If there's no execution target, consider it targetting this Dot Voting app
       app.currentApp()
@@ -275,7 +274,7 @@ const decorateVote = async (vote) => {
         .subscribe((installedApps) => {
           const [targetAddress] = executionTargets
 
-          targetApp = installedApps.find(app => app.appAddress === targetAddress)
+          const targetApp = installedApps.find(app => app.appAddress === targetAddress)
           if (!targetApp) {
             resolve({
               ...vote,
@@ -293,6 +292,11 @@ const decorateVote = async (vote) => {
               executionTargetData: {
                 address: appAddress,
                 name,
+                /*
+                icon() function takes pixel size as a paremeter (in our case 24px)
+                and returns the location of the app icon. However, in most (all?)
+                cases it just returns an svg which can be any size.
+                */
                 iconSrc: icon(24),
                 identifier,
               }
