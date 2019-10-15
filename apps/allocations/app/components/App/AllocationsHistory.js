@@ -18,10 +18,14 @@ import { displayCurrency } from '../../utils/helpers'
 
 const AllocationsHistory = ({ allocations }) => {
   const theme = useTheme()
-  const { balances = [] } = useAppState()
+  const { balances = [], budgets = [] } = useAppState()
   const getTokenSymbol = inputAddress => {
     const matchingBalance = balances.find(({ address }) => inputAddress === address)
     return matchingBalance ? matchingBalance.symbol : ''
+  }
+  const getBudgetName = inputId => {
+    const matchingName = budgets.find(({ id }) => inputId === id)
+    return matchingName ? matchingName.name : `# ${inputId}`
   }
   return (
     <DataView
@@ -51,14 +55,14 @@ const AllocationsHistory = ({ allocations }) => {
         return [
           new Date(Number(date)).toLocaleDateString(),
           <div key={index}>
-            {'# ' + accountId}
+            {getBudgetName(accountId)}
           </div>,
           recipients.length === 1 ? '1 entity'
             : recipients.length + ' entities',
           description,
           <Status key={index} code={status} />,
           <Amount key={index} theme={theme} >
-            { displayCurrency(BigNumber(amount)) } { getTokenSymbol(token) }
+            { displayCurrency(BigNumber(-amount)) } { getTokenSymbol(token) }
           </Amount>
         ]
       }}
@@ -69,24 +73,22 @@ const AllocationsHistory = ({ allocations }) => {
         return recipients.map((recipient, index) => {
           const allocated = BigNumber(recipient.supports).div(totalSupports)
           return (
-            <Recipient key={index}>
+            <div key={index}>
               <IdentityBadge
                 entity={recipient.candidateAddress}
               />
-              <RecipientAllocation>
-                <RecipientProgress>
-                  <ProgressBar
-                    value={allocated.toNumber()}
-                    color={String(theme.accentEnd)}
-                  />
-                </RecipientProgress>
-                <RecipientAmount theme={theme}>
-                  { displayCurrency(BigNumber(amount).times(allocated)) } {' '}
-                  {getTokenSymbol(token)} {' • '}
-                  { allocated.times(100).dp(0).toNumber() }{'%'}
-                </RecipientAmount>
-              </RecipientAllocation>
-            </Recipient>
+              <RecipientProgress theme={theme}>
+                <ProgressBar
+                  value={allocated.toNumber()}
+                  color={String(theme.accentEnd)}
+                />
+              </RecipientProgress>
+              <RecipientAmount theme={theme}>
+                { displayCurrency(BigNumber(amount).times(allocated)) } {' '}
+                {getTokenSymbol(token)} {' • '}
+                { allocated.times(100).dp(0).toNumber() }{'%'}
+              </RecipientAmount>
+            </div>
           )
         })
       }}
@@ -120,30 +122,20 @@ const Amount = styled.div`
   font-weight: 600;
 `
 
-const Recipient = styled.div`
-   display: flex;
-   flex-direction: row;
-   width: 100%;
-   padding: 10px 10px 4px;
-   border-radius: 4px;
-   background-color: white;
-   box-shadow: 0 2px 4px #dde4e9;
- `
-
-const RecipientAllocation = styled.div`
-   width: 100%;
-   align-self: flex-end;
-   margin-left: 20px;
-   text-align: right;
- `
-const RecipientProgress = styled.span`
+const RecipientProgress = styled.div`
+   margin-top: 8px;
    margin-bottom: 4px;
+   width: 100%;
+
+   div {
+     background: ${({ theme }) => theme.overlay};
+   }
  `
 
-const RecipientAmount = styled.span`
+const RecipientAmount = styled.div`
    color: ${({ theme }) => theme.contentSecondary};
    font-size: 12px;
-   width: 100px;
+   text-align: right;
  `
 
 const StatusContent = styled.div`

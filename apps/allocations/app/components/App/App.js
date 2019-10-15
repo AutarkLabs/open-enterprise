@@ -134,7 +134,7 @@ const App = () => {
   const PanelContent = panel ? panel.content : null
 
   return (
-    <Main scrollView={true}>
+    <Main>
       <IdentityProvider
         onResolve={handleResolveLocalIdentity}
         onShowLocalIdentityModal={handleShowLocalIdentityModal}
