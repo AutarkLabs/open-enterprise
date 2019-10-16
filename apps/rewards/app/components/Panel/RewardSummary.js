@@ -67,8 +67,11 @@ const RewardSummary = ({ reward, theme, onCancel, onSubmit }) => {
       </GreyBox>
       <VerticalSpace />
       <Info>
-        {'Holding the reference asset at the disbursement date'}
-        {rewardType === 'RECURRING_DIVIDEND' && 's'}
+        {rewardType === ONE_TIME_MERIT ?  'Earning the reference asset between the start and end date'
+          : 'Holding the reference asset at the disbursement date' 
+            + (rewardType === 'RECURRING_DIVIDEND' ? 's' : '')
+        }
+          
         {' will issue a proportionally split reward across all token holders.'}
       </Info>
       <VerticalSpace />
