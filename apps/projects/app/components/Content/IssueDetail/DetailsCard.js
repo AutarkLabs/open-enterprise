@@ -173,6 +173,7 @@ const DetailsCard = ({ issue }) => {
               style={{ marginRight: '5px', marginTop: '20px' }}
               background={'#' + label.node.color + '99'}
               color={`${theme.content}`}
+              uppercase={false}
             >
               {label.node.name}
             </Tag>
