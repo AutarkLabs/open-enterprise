@@ -15,6 +15,17 @@ import { Issue } from '../Card'
 import { LoadingAnimation } from '../Shared'
 import { EmptyWrapper } from '../Shared'
 
+const sorters = {
+  'Name ascending': (i1, i2) =>
+    i1.title.toUpperCase() > i2.title.toUpperCase() ? 1 : -1,
+  'Name descending': (i1, i2) =>
+    i1.title.toUpperCase() > i2.title.toUpperCase() ? -1 : 1,
+  'Newest': (i1, i2) =>
+    compareDesc(new Date(i1.createdAt), new Date(i2.createdAt)),
+  'Oldest': (i1, i2) =>
+    compareAsc(new Date(i1.createdAt), new Date(i2.createdAt)),
+}
+
 class Issues extends React.PureComponent {
   static propTypes = {
     activeIndex: PropTypes.shape({
@@ -270,23 +281,6 @@ class Issues extends React.PureComponent {
     </StyledIssues>
   )
 
-  generateSorter = () => {
-    switch (this.state.sortBy) {
-    case 'Name ascending':
-      return (i1, i2) => {
-        return i1.title.toUpperCase() > i2.title.toUpperCase() ? 1 : -1
-      }
-    case 'Name descending':
-      return (i1, i2) => {
-        return i1.title.toUpperCase() > i2.title.toUpperCase() ? -1 : 1
-      }
-    case 'Newest':
-      return (i1, i2) => compareAsc(new Date(i1.createdAt), new Date(i2.createdAt))
-    case 'Oldest':
-      return (i1, i2) => compareDesc(new Date(i1.createdAt), new Date(i2.createdAt))
-    }
-  }
-
   /*
    Data obtained from github API is data.{repo}.issues.[nodes] and it needs
    flattening into one simple array of issues  before it can be used
@@ -335,8 +329,6 @@ class Issues extends React.PureComponent {
     const { projects } = this.props
 
     const { filters } = this.state
-
-    const currentSorter = this.generateSorter()
 
     // build params for GQL query, each repo to fetch has number of items to download,
     // and a cursor in there are 100+ issues and "Show More" was clicked.
@@ -397,7 +389,7 @@ class Issues extends React.PureComponent {
                 <IssuesScrollView>
                   <ScrollWrapper>
                     {issuesFiltered.map(this.props.shapeIssue)
-                      .sort(currentSorter)
+                      .sort(sorters[this.state.sortBy])
                       .map(issue => (
                         <Issue
                           isSelected={issue.id in this.state.selectedIssues}
