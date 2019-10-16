@@ -2,7 +2,7 @@
 // const deployTemplate = require('@aragon/templates-shared/scripts/deploy-template')
 const deployTemplate = require('../../open-enterprise/temp/scripts/deploy-template')
 
-const TEMPLATE_NAME = 'oe-dev-template'
+const TEMPLATE_NAME = 'open-enterprise-template'
 const CONTRACT_NAME = 'DevTemplate'
 
 module.exports = callback => {

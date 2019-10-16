@@ -1,4 +1,5 @@
 const logDeploy = require('@aragon/os/scripts/helpers/deploy-logger')
+// const deployStandardBounties = require('../scripts/deploy-standardBounties')
 const TemplateDeployer = require('./TemplatesDeployer')
 
 module.exports = class OEDeployer extends TemplateDeployer {
