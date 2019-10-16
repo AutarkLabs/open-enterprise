@@ -3,9 +3,7 @@ import standardBounties from '../abi/StandardBounties.json'
 import { app, handleEvent, INITIAL_STATE } from './'
 import { initializeTokens, initializeGraphQLClient } from './helpers'
 
-
 export const initStore = (vaultAddress, standardBountiesAddress) => {
-
   const vaultContract = app.external(vaultAddress, vaultAbi.abi)
   const standardBountiesContract = app.external(standardBountiesAddress, standardBounties.abi)
   return app.store(
