@@ -17,6 +17,7 @@ import { Issues, Overview, Settings } from './components/Content'
 import { PanelManager, PanelContext, usePanelManagement } from './components/Panel'
 
 import { IdentityProvider } from '../../../shared/identity'
+import { SyncCard } from '../../../shared/ui'
 import {
   REQUESTED_GITHUB_TOKEN_SUCCESS,
   REQUESTED_GITHUB_TOKEN_FAILURE,
@@ -31,7 +32,6 @@ import { Error } from './components/Card'
 
 const App = () => {
   const { api, appState } = useAragonApi()
-  console.log('USE ARAGON API APP STATE: ', appState)
   const [ activeIndex, setActiveIndex ] = useState(
     { tabIndex: 0, tabData: {} }
   )
@@ -40,6 +40,7 @@ const App = () => {
   const [ panel, setPanel ] = useState(null)
   const [ panelProps, setPanelProps ] = useState(null)
   const [ popupRef, setPopupRef ] = useState(null)
+  const [ loadBuffer, setLoadBuffer ] = useState(true)
 
   const {
     repos = [],
@@ -47,10 +48,12 @@ const App = () => {
     issues = [],
     tokens = [],
     github = { status : STATUS.INITIAL },
+    sync
   } = appState
 
   const client = github.token ? initApolloClient(github.token) : null
 
+  useEffect(() => setTimeout(() => setLoadBuffer(false), 5000), [])
   useEffect(() => {
     const code = getURLParam('code')
     code &&
@@ -125,8 +128,17 @@ const App = () => {
   }
 
   const noop = () => {}
+  const isSyncing = ({ initialized, establishingHandshake, completed }) => {
+    return (initialized || establishingHandshake) && !completed
+  }
 
-  if (githubLoading) {
+  if (loadBuffer || isSyncing(sync)) {
+    return (
+      <EmptyWrapper>
+        <SyncCard />
+      </EmptyWrapper>
+    )
+  } else if (githubLoading) {
     return (
       <EmptyWrapper>
         <LoadingAnimation />
