@@ -35,6 +35,7 @@ import tokenBalanceOfAbi from '../../../../../shared/json-abis/token-balanceof.j
 import tokenBalanceOfAtAbi from '../../../../../shared/json-abis/token-balanceofat.json'
 import tokenCreationBlockAbi from '../../../../../shared/json-abis/token-creationblock.json'
 import tokenSymbolAbi from '../../../../../shared/json-abis/token-symbol.json'
+import tokenTransferAbi from '../../../../../shared/json-abis/token-transferable.json'
 
 const tokenAbi = [].concat(tokenBalanceOfAbi, tokenBalanceOfAtAbi, tokenCreationBlockAbi, tokenSymbolAbi)
 
@@ -63,6 +64,7 @@ const INITIAL_STATE = {
   semanticErrors: [],
   errorMessages: {
     customTokenInvalid: 'Token address must be of a valid ERC20 compatible clonable token.',
+    meritTokenTransferable: 'Merit rewards must be non-transferable.',
     amountOverBalance: 'Amount must be below the available balance.',
     dateReferencePassed: 'Reference date must take place after today.',
     dateStartPassed: 'Start date must take place after today.',
@@ -188,6 +190,8 @@ class NewRewardClass extends React.Component {
     let semanticErrors = []
     if (state.referenceAsset === OTHER && !state.customToken.isVerified)
       semanticErrors.push('customTokenInvalid')
+    if (state.rewardType === ONE_TIME_MERIT && state.transferable)
+      semanticErrors.push('meritTokenTransferable')
     if (toWei(state.amount) > +state.amountToken.amount)
       semanticErrors.push('amountOverBalance')
     const today = moment()
@@ -249,6 +253,7 @@ class NewRewardClass extends React.Component {
 
     if (isAddress(value) || isAddress(resolvedAddress)) {
       this.verifyMinime(this.props.app, { address: resolvedAddress || value, value })
+      this.verifyTransferable(this.props.app, resolvedAddress)
     }
     else {
       isVerified = false
@@ -293,6 +298,12 @@ class NewRewardClass extends React.Component {
     }
   }
 
+  verifyTransferable = async (app, tokenAddress) => {
+    console.log(tokenAddress)
+    const token = app.external(tokenAddress, tokenTransferAbi)
+    const transferable = await token.transfersEnabled().toPromise()
+    this.setState({ transferable: transferable })
+  }
   amountWithTokenAndBalance = () => (
     <VerticalContainer>
       <HorizontalContainer>
@@ -531,11 +542,10 @@ class NewRewardClass extends React.Component {
               items={this.state.referenceAssets}
               selected={this.state.referenceAssets.indexOf(this.state.referenceAsset)}
               placeholder="Select a token"
-              onChange={i => {
+              onChange={async (i) => {
                 this.setState({ referenceAsset: this.state.referenceAssets[i] })
-                this.setSemanticErrors({
-                  referenceAsset: this.state.referenceAssets[i]
-                })
+                await this.verifyTransferable(this.props.app, this.state.referenceAssets[i].key)
+                this.setSemanticErrors()
               }}
             />
           }
