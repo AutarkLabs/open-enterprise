@@ -66,18 +66,18 @@ function appStateReducer(state) {
     const metric = calculateAverageRewardsNumbers(state.rewards, state.claims, state.balances, state.convertRates)
     state.metrics = [
       {
-        name: 'Average reward',
-        value: metric[0].toString(),
+        name: 'Average claimed reward',
+        value: metric[0].toFixed(2).toString(),
         unit: 'USD',
       },
       {
         name: 'Monthly average',
-        value: metric[1].toString(),
+        value: metric[1].toFixed(2).toString(),
         unit: 'USD',
       },
       {
         name: 'Annual total',
-        value: metric[2].toString(),
+        value: metric[2].toFixed(2).toString(),
         unit: 'USD',
       },
     ]
