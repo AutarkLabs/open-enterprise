@@ -6,7 +6,6 @@ import "@aragon/os/contracts/factory/EVMScriptRegistryFactory.sol";
 import "@aragon/id/contracts/FIFSResolvingRegistrar.sol";
 import "@aragon/templates-shared/contracts/Migrations.sol";
 
-
 // HACK to workaround truffle artifact loading on dependencies
 contract TestImports {
     constructor() public {

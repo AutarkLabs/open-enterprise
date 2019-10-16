@@ -1,10 +1,17 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import { useAragonApi } from '../../api-react'
-import { DropDown, IconClose, Info, TextInput, theme } from '@aragon/ui'
+import {
+  DropDown,
+  Field,
+  IconClose,
+  Info,
+  TextInput,
+  useTheme
+} from '@aragon/ui'
 import styled from 'styled-components'
 
-import { Form, FormField } from '../Form'
+import { Form } from '../Form'
 import { isStringEmpty } from '../../utils/helpers'
 import { BigNumber } from 'bignumber.js'
 import { ETH_DECIMALS, MIN_AMOUNT } from '../../utils/constants'
@@ -25,7 +32,8 @@ class NewBudget extends React.Component {
     saveBudget: PropTypes.func.isRequired,
     editingBudget: PropTypes.object,
     fundsLimit: PropTypes.string.isRequired,
-    tokens: PropTypes.array
+    tokens: PropTypes.array,
+    theme: PropTypes.object.isRequired,
   }
 
   static defaultProps = {
@@ -91,7 +99,8 @@ class NewBudget extends React.Component {
       <Form
         onSubmit={this.createBudget}
         submitText={buttonText}
-        disabled={nameError || amountError || amountOverFunds}
+        disabled={name === '' || amount === '' || nameError || amountError
+                  || amountOverFunds}
         errors={
           <ErrorContainer>
             { amountOverFunds && (
@@ -101,7 +110,7 @@ class NewBudget extends React.Component {
                   css={{
                     marginRight: '8px',
                     marginBottom: '2px',
-                    color: theme.negative,
+                    color: this.props.theme.negative,
                   }}
                 />
                 Amount must be smaller than underlying funds
@@ -115,44 +124,40 @@ class NewBudget extends React.Component {
           </ErrorContainer>
         }
       >
-        <FormField
+        <Field
           required
-          label="name"
-          input={
+          label="name">
+          <TextInput
+            name="name"
+            onChange={this.changeField}
+            wide={true}
+            value={name}
+          />
+        </Field>
+        <Field
+          required
+          label="amount">
+          <InputGroup>
             <TextInput
-              name="name"
+              name="amount"
+              type="number"
+              min={0}
               onChange={this.changeField}
-              wide={true}
-              value={name}
+              step="any"
+              value={amount}
+              css={{ borderRadius: '4px 0 0 4px' }}
+              required
+              wide
             />
-          }
-        />
-        <FormField
-          required
-          label="amount"
-          input={
-            <InputGroup>
-              <TextInput
-                name="amount"
-                type="number"
-                min={0}
-                onChange={this.changeField}
-                step="any"
-                value={amount}
-                css={{ borderRadius: '4px 0 0 4px' }}
-                required
-                wide
-              />
-              <DropDown
-                name="token"
-                css={{ borderRadius: '0 4px 4px 0', left: '-1px' }}
-                items={symbols}
-                selected={selectedToken}
-                onChange={this.handleSelectToken}
-              />
-            </InputGroup>
-          }
-        />
+            <DropDown
+              name="token"
+              css={{ borderRadius: '0 4px 4px 0', left: '-1px' }}
+              items={symbols}
+              selected={selectedToken}
+              onChange={this.handleSelectToken}
+            />
+          </InputGroup>
+        </Field>
       </Form>
     )
   }
@@ -160,7 +165,8 @@ class NewBudget extends React.Component {
 
 const NewBudgetWrap = props => {
   const { appState: { tokens = [] } } = useAragonApi()
-  return <NewBudget tokens={tokens} {...props} />
+  const theme = useTheme()
+  return <NewBudget tokens={tokens} theme={theme} {...props} />
 }
 
 const InputGroup = styled.div`

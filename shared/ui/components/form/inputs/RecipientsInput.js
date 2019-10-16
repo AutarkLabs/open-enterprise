@@ -1,8 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { Button, IconRemove, TextInput, theme, unselectable } from '@aragon/ui'
-import web3Utils from 'web3-utils'
+import { Button, IconRemove, theme, unselectable } from '@aragon/ui'
 
 import LocalIdentitiesAutoComplete from './LocalIdentitiesAutoComplete'
 
@@ -10,7 +9,6 @@ const RecipientsInput = ({
   recipients,
   recipientsValid,
   onChange,
-  placeholder = '',
 }) => {
 
   const changeRecipient = (value, id) => {
@@ -56,8 +54,9 @@ const RecipientsInput = ({
                   style={{ transform: 'scale(.8)' }}
                   onClick={() => removeRecipient(id)}
                   title="Remove this recipient"
-                  children={<IconRemove />}
-                />
+                >
+                  <IconRemove />
+                </IconContainer>
               )}
             </StyledRecipient>
           ))}
@@ -66,9 +65,10 @@ const RecipientsInput = ({
         compact
         mode="secondary"
         onClick={addRecipient}
-        children={'+ Add Another'}
         title={'Click to add'}
-      />
+      >
+        + Add Another
+      </StyledButton>
     </div>
   )
 }
@@ -82,7 +82,6 @@ RecipientsInput.propTypes = {
   recipients: PropTypes.object.isRequired,
   recipientsValid: PropTypes.object.isRequired,
   onChange: PropTypes.func.isRequired,
-  placeholder: PropTypes.string,
 }
 
 const flexColumn = { display: 'flex', flexDirection: 'column' }
@@ -96,7 +95,6 @@ const StyledRecipient = styled.div`
 `
 
 const AutoCompleteWrapper = styled.div`
-  border: ${({ valid }) => valid ? `2px solid ${theme.positive}` : 'none' };
   border-radius: 6px;
 `
 

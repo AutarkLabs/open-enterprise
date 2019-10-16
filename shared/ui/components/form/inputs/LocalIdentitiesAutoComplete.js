@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useAragonApi } from '@aragon/api-react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
@@ -14,16 +14,16 @@ import {
 const withKey = item => ({ key: item.address, ...item })
 const sortAlphAsc = (a, b) => a.name.localeCompare(b.name)
 
-const LocalIdentitiesAutoComplete = React.memo(
-  React.forwardRef(function LocalIdentitiesAutoComplete(
+const LocalIdentitiesAutoComplete = React.forwardRef(
+  function LocalIdentitiesAutoComplete(
     { onChange, wide, value, required },
     ref
   ) {
     const { api } = useAragonApi()
     const theme = useTheme()
-    const [items, setItems] = useState([])
-    const [selected, setSelected] = useState(null)
-    const [searchTerm, setSearchTerm] = useState('')
+    const [ items, setItems ] = useState([])
+    const [ selected, setSelected ] = useState(null)
+    const [ searchTerm, setSearchTerm ] = useState('')
 
     const handleSearch = useCallback(
       async term => {
@@ -111,7 +111,7 @@ const LocalIdentitiesAutoComplete = React.memo(
         }
       }
       effect()
-    }, [selected, value, api])
+    }, [ selected, value, api ])
 
     return (
       <AutoCompleteSelected
@@ -135,6 +135,7 @@ const LocalIdentitiesAutoComplete = React.memo(
         required={required}
         selected={selected}
         selectedButtonStyles={`
+          display: block;
           padding: 0;
 
           &:focus,
@@ -147,8 +148,9 @@ const LocalIdentitiesAutoComplete = React.memo(
         wide={wide}
       />
     )
-  })
+  }
 )
+
 
 LocalIdentitiesAutoComplete.propTypes = {
   onChange: PropTypes.func.isRequired,

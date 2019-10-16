@@ -49,7 +49,7 @@ const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
 
       <IssueData>
         <IssueMain>
-          <div css="display: flex;">
+          <div>
             <a
               href={`#${number}`}
               css="text-decoration: none"
@@ -62,9 +62,9 @@ const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
             </a>
 
             {labels.totalCount > 0 && (
-              <div>
+              <span>
                 {labelsTags(labels, theme)}
-              </div>
+              </span>
             )}
           </div>
 
@@ -120,7 +120,7 @@ const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
                 {dot}
                 <span css="white-space: nowrap">
                   <IconCalendar color={`${theme.surfaceIcon}`} css="margin-bottom: -8px; margin-right: 4px" />
-                Due {DeadlineDistance(Number(deadline))}
+                Due {DeadlineDistance(deadline)}
                 </span>
               </React.Fragment>
             )}
@@ -172,11 +172,10 @@ const IssueData = styled.div`
   justify-content: space-around;
   padding: 18px 18px 18px 0;
   position: relative;
-  width: 100%;
+  width: calc(100% - 46px);
 `
 const IssueDetails = styled.div`
-  display: flex;
-  align-items: center;
+  width: 100%;
 `
 const IssueMain = styled.div`
   width: 100%;
@@ -192,16 +191,11 @@ const Balance = styled.div`
 const IssueTitle = styled(Text).attrs({
   size: 'large',
 })`
-  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   color: ${props => props.theme.surfaceContent};
   font-size: 1.2em;
   margin-right: 10px;
-  /* stylelint-disable declaration-block-no-duplicate-properties, value-no-vendor-prefix, property-no-vendor-prefix */
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
 `
 
 export default Issue
