@@ -21,6 +21,7 @@ const labelsTags = (labels, theme) =>
       css="margin-right: 10px; width: auto"
       background={'#' + label.node.color + '99'}
       color={`${theme.surfaceContent}`}
+      uppercase={false}
     >
       {label.node.name}
     </Tag>

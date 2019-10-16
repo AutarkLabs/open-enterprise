@@ -31,10 +31,10 @@ export const IssueTitleLink = ({ issue }) => {
 IssueTitleLink.propTypes = issueShape
 
 export const IssueTitle = ({ issue }) => (
-  <React.Fragment>
+  <div>
     <Text.Block size="xlarge">{issue.title}</Text.Block>
     <IssueTitleLink issue={issue} />
-  </React.Fragment>
+  </div>
 )
 IssueTitle.propTypes = issueShape
 
