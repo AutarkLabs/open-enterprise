@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Query } from 'react-apollo'
 //import Query from './Query.stub'
@@ -35,6 +35,7 @@ class Issues extends React.PureComponent {
     bountySettings: PropTypes.shape({
       expLvls: PropTypes.array.isRequired,
     }).isRequired,
+    filters: PropTypes.object.isRequired,
     github: PropTypes.shape({
       status: PropTypes.oneOf([
         STATUS.AUTHENTICATED,
@@ -45,6 +46,7 @@ class Issues extends React.PureComponent {
       event: PropTypes.string,
     }),
     projects: PropTypes.array.isRequired,
+    setFilters: PropTypes.func.isRequired,
     setSelectedIssue: PropTypes.func.isRequired,
     shapeIssue: PropTypes.func.isRequired,
     status: PropTypes.string.isRequired,
@@ -54,16 +56,6 @@ class Issues extends React.PureComponent {
   state = {
     selectedIssues: {},
     allSelected: false,
-    filters: {
-      projects: this.props.activeIndex.tabData.filterIssuesByRepoId
-        ? { [this.props.activeIndex.tabData.filterIssuesByRepoId]: true }
-        : {},
-      labels: {},
-      milestones: {},
-      deadlines: {},
-      experiences: {},
-      statuses: {},
-    },
     sortBy: 'Newest',
     textFilter: '',
     reload: false,
@@ -89,9 +81,9 @@ class Issues extends React.PureComponent {
   }
 
   handleFiltering = filters => {
+    this.props.setFilters(filters)
     // TODO: why is reload necessary?
     this.setState(prevState => ({
-      filters: filters,
       reload: !prevState.reload,
     }))
   }
@@ -102,8 +94,8 @@ class Issues extends React.PureComponent {
   }
 
   applyFilters = issues => {
-    const { filters, textFilter } = this.state
-    const { bountyIssues } = this.props
+    const { textFilter } = this.state
+    const { filters, bountyIssues } = this.props
 
     const bountyIssueObj = {}
     bountyIssues.forEach(issue => {
@@ -198,33 +190,27 @@ class Issues extends React.PureComponent {
   }
 
   disableFilter = pathToFilter => {
-    let newFilters = { ...this.state.filters }
+    let newFilters = { ...this.props.filters }
     recursiveDeletePathFromObject(pathToFilter, newFilters)
-    this.setState({ filters: newFilters })
+    this.props.setFilters(newFilters)
   }
 
   disableAllFilters = () => {
-    this.setState({
-      filters: {
-        projects: {},
-        labels: {},
-        milestones: {},
-        deadlines: {},
-        experiences: {},
-        statuses: {},
-      },
+    this.props.setFilters({
+      projects: {},
+      labels: {},
+      milestones: {},
+      deadlines: {},
+      experiences: {},
+      statuses: {},
     })
-  }
-
-  setParentFilters = filters => {
-    this.setState(filters)
   }
 
   filterBar = (issues, issuesFiltered) => {
     return (
       <FilterBar
-        setParentFilters={this.setParentFilters}
-        filters={this.state.filters}
+        setParentFilters={this.props.setFilters}
+        filters={this.props.filters}
         sortBy={this.state.sortBy}
         handleSelectAll={this.toggleSelectAll(issuesFiltered)}
         allSelected={this.state.allSelected}
@@ -318,9 +304,7 @@ class Issues extends React.PureComponent {
   }
 
   render() {
-    const { projects } = this.props
-
-    const { filters } = this.state
+    const { filters, projects } = this.props
 
     // build params for GQL query, each repo to fetch has number of items to download,
     // and a cursor in there are 100+ issues and "Show More" was clicked.
@@ -420,15 +404,36 @@ class Issues extends React.PureComponent {
   }
 }
 
-const IssuesWrap = props => {
+const IssuesWrap = ({ activeIndex, ...props }) => {
   const shapeIssue = useShapedIssue()
+  const [ filters, setFilters ] = useState({
+    projects: activeIndex.tabData.filterIssuesByRepoId
+      ? { [activeIndex.tabData.filterIssuesByRepoId]: true }
+      : {},
+    labels: {},
+    milestones: {},
+    deadlines: {},
+    experiences: {},
+    statuses: {},
+  })
 
   return (
     <Issues
+      activeIndex={activeIndex}
+      filters={filters}
+      setFilters={setFilters}
       shapeIssue={shapeIssue}
       {...props}
     />
   )
+}
+
+IssuesWrap.propTypes = {
+  activeIndex: PropTypes.shape({
+    tabData: PropTypes.shape({
+      filterIssuesByRepoId: PropTypes.string,
+    }).isRequired,
+  }).isRequired,
 }
 
 const StyledIssues = styled.div`
