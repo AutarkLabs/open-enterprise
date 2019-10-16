@@ -55,7 +55,9 @@ class Issues extends React.PureComponent {
     selectedIssues: {},
     allSelected: false,
     filters: {
-      projects: {},
+      projects: this.props.activeIndex.tabData.filterIssuesByRepoId
+        ? { [this.props.activeIndex.tabData.filterIssuesByRepoId]: true }
+        : {},
       labels: {},
       milestones: {},
       deadlines: {},
@@ -68,16 +70,6 @@ class Issues extends React.PureComponent {
     downloadedRepos: {},
     downloadedIssues: [],
     issuesPerCall: 100,
-  }
-
-  UNSAFE_componentWillMount() {
-    if ('filterIssuesByRepoId' in this.props.activeIndex.tabData) {
-      const { filters } = this.state
-      filters.projects[
-        this.props.activeIndex.tabData.filterIssuesByRepoId
-      ] = true
-      this.setState({ filters })
-    }
   }
 
   deselectAllIssues = () => {
