@@ -1,6 +1,6 @@
 {
   "name": "Allocations",
-  "description": "Create multi-party financial allocations which are forwarded to the Dot Voting app.",
+  "description": "Create multi-recipient financial allocations that are budget-controlled.",
   "author": "Autark",
   "changelog_url": "https://github.com/AutarkLabs/planning-suite/releases",
   "source_url": "https://github.com/AutarkLabs/planning-suite/tree/master/apps/allocations",
