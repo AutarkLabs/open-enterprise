@@ -1,4 +1,6 @@
+import PropTypes from 'prop-types'
 import React from 'react'
+
 import {
   CardLayout,
   GU,
@@ -50,6 +52,12 @@ const VoteCardGroup = ({ title, count, children }) => {
       </CardLayout>
     </section>
   )
+}
+
+VoteCardGroup.propTypes = {
+  children: PropTypes.node,
+  count: PropTypes.number,
+  title: PropTypes.string
 }
 
 export default VoteCardGroup
