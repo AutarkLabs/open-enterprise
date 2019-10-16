@@ -115,7 +115,7 @@ const renderOneTimeMerit = (reward) => {
     amountToken,
     endDate,
   } = reward
-  const nextPayout = new Date(endDate).toString()
+  const nextPayout = new Date(endDate).toDateString()
   const displayAmount = `${displayCurrency(amount)} ${amountToken}`
   return [ description, MERIT, ONE_TIME, nextPayout, displayAmount ]
 }
