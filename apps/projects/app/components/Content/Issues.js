@@ -5,14 +5,13 @@ import { Query } from 'react-apollo'
 //import Query from './Query.stub'
 
 import { Button, GU, Text } from '@aragon/ui'
-import BigNumber from 'bignumber.js'
 import { compareAsc, compareDesc } from 'date-fns'
 
+import useShapedIssue from '../../hooks/useShapedIssue'
 import { STATUS } from '../../utils/github'
 import { getIssuesGQL } from '../../utils/gql-queries.js'
 import { FilterBar } from '../Shared'
 import { Issue } from '../Card'
-import IssueDetail from './IssueDetail'
 import { LoadingAnimation } from '../Shared'
 import { EmptyWrapper } from '../Shared'
 
@@ -34,9 +33,9 @@ class Issues extends React.PureComponent {
       token: PropTypes.string,
       event: PropTypes.string,
     }),
-    issueDetail: PropTypes.bool.isRequired,
     projects: PropTypes.array.isRequired,
-    setIssueDetail: PropTypes.func.isRequired,
+    setSelectedIssue: PropTypes.func.isRequired,
+    shapeIssue: PropTypes.func.isRequired,
     status: PropTypes.string.isRequired,
     tokens: PropTypes.array.isRequired,
   }
@@ -55,7 +54,6 @@ class Issues extends React.PureComponent {
     sortBy: 'Newest',
     textFilter: '',
     reload: false,
-    currentIssue: {},
     downloadedRepos: {},
     downloadedIssues: [],
     issuesPerCall: 100,
@@ -80,7 +78,7 @@ class Issues extends React.PureComponent {
     const allSelected = !this.state.allSelected
     const reload = !this.state.reload
     if (!this.state.allSelected) {
-      this.shapeIssues(issuesFiltered).forEach(
+      issuesFiltered.map(this.props.shapeIssue).forEach(
         issue => (selectedIssues[issue.id] = issue)
       )
     }
@@ -196,11 +194,6 @@ class Issues extends React.PureComponent {
     })
   }
 
-  handleIssueClick = issue => {
-    this.props.setIssueDetail(true)
-    this.setState({ currentIssue: issue })
-  }
-
   disableFilter = pathToFilter => {
     let newFilters = { ...this.state.filters }
     recursiveDeletePathFromObject(pathToFilter, newFilters)
@@ -277,52 +270,6 @@ class Issues extends React.PureComponent {
     </StyledIssues>
   )
 
-  shapeIssues = issues => {
-    const { tokens, bountyIssues, bountySettings } = this.props
-    const bountyIssueObj = {}
-    const tokenObj = {}
-    const expLevels = bountySettings.expLvls
-
-    bountyIssues.forEach(issue => {
-      bountyIssueObj[issue.issueNumber] = issue
-    })
-
-    tokens.forEach(token => {
-      tokenObj[token.addr] = {
-        symbol: token.symbol,
-        decimals: token.decimals,
-      }
-    })
-
-    return issues.map(({ repository: { id, name }, ...fields }) => {
-      const bountyId = bountyIssueObj[fields.number]
-      const repoIdFromBounty = bountyId && bountyId.data.repoId
-      if (bountyId && repoIdFromBounty === id) {
-        const data = bountyIssueObj[fields.number].data
-        const balance = BigNumber(bountyIssueObj[fields.number].data.balance)
-          .div(BigNumber(10 ** tokenObj[data.token].decimals))
-          .dp(3)
-          .toString()
-
-        return {
-          ...fields,
-          ...bountyIssueObj[fields.number].data,
-          repoId: id,
-          repo: name,
-          symbol: tokenObj[data.token].symbol,
-          expLevel: expLevels[data.exp].name,
-          balance: balance,
-          data,
-        }
-      }
-      return {
-        ...fields,
-        repoId: id,
-        repo: name,
-      }
-    })
-  }
-
   generateSorter = () => {
     switch (this.state.sortBy) {
     case 'Name ascending':
@@ -338,18 +285,6 @@ class Issues extends React.PureComponent {
     case 'Oldest':
       return (i1, i2) => compareDesc(new Date(i1.createdAt), new Date(i2.createdAt))
     }
-  }
-
-  renderCurrentIssue = currentIssue => {
-    currentIssue.repository = {
-      name: currentIssue.repo,
-      id: currentIssue.repoId,
-      __typename: 'Repository',
-    }
-
-    const currentIssueShaped = this.shapeIssues([currentIssue])[0]
-
-    return <IssueDetail issue={currentIssueShaped} />
   }
 
   /*
@@ -397,12 +332,9 @@ class Issues extends React.PureComponent {
   }
 
   render() {
-    const { projects, issueDetail } = this.props
+    const { projects } = this.props
 
-    const { currentIssue, filters } = this.state
-
-    // same if we only need to show Issue's Details screen
-    if (issueDetail) return this.renderCurrentIssue(currentIssue, this.props)
+    const { filters } = this.state
 
     const currentSorter = this.generateSorter()
 
@@ -464,14 +396,14 @@ class Issues extends React.PureComponent {
 
                 <IssuesScrollView>
                   <ScrollWrapper>
-                    {this.shapeIssues(issuesFiltered)
+                    {issuesFiltered.map(this.props.shapeIssue)
                       .sort(currentSorter)
                       .map(issue => (
                         <Issue
                           isSelected={issue.id in this.state.selectedIssues}
                           key={issue.number}
                           {...issue}
-                          onClick={this.handleIssueClick}
+                          onClick={this.props.setSelectedIssue}
                           onSelect={this.handleIssueSelection}
                         />
                       ))}
@@ -502,6 +434,17 @@ class Issues extends React.PureComponent {
       </Query>
     )
   }
+}
+
+const IssuesWrap = props => {
+  const shapeIssue = useShapedIssue()
+
+  return (
+    <Issues
+      shapeIssue={shapeIssue}
+      {...props}
+    />
+  )
 }
 
 const StyledIssues = styled.div`
@@ -542,4 +485,4 @@ const recursiveDeletePathFromObject = (path, object) => {
 }
 
 // eslint-disable-next-line import/no-unused-modules
-export default Issues
+export default IssuesWrap

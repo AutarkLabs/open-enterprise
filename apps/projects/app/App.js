@@ -14,6 +14,7 @@ import {
 
 import ErrorBoundary from './components/App/ErrorBoundary'
 import { Issues, Overview, Settings } from './components/Content'
+import IssueDetail from './components/Content/IssueDetail'
 import { PanelManager, PanelContext, usePanelManagement } from './components/Panel'
 
 import { IdentityProvider } from '../../../shared/identity'
@@ -35,7 +36,7 @@ const App = () => {
   const [ activeIndex, setActiveIndex ] = useState(
     { tabIndex: 0, tabData: {} }
   )
-  const [ issueDetail, setIssueDetail ] = useState(false)
+  const [ selectedIssue, setSelectedIssue ] = useState(null)
   const [ githubLoading, setGithubLoading ] = useState(false)
   const [ panel, setPanel ] = useState(null)
   const [ panelProps, setPanelProps ] = useState(null)
@@ -194,35 +195,39 @@ const App = () => {
                 <TabAction />
               }
             />
-
-            {issueDetail ?
-              <Bar>
-                <BackButton
-                  onClick={() => {setIssueDetail(false)}}
-                />
-              </Bar>
-              :
-              <Tabs
-                items={tabs.map(t => t.name)}
-                onChange={handleSelect}
-                selected={activeIndex.tabIndex}
-              />
-            }
-
             <ErrorBoundary>
-              <TabComponent
-                status={github.status}
-                app={api}
-                projects={repos}
-                bountyIssues={issues}
-                bountySettings={bountySettings}
-                tokens={tokens}
-                activeIndex={activeIndex}
-                changeActiveIndex={changeActiveIndex}
-                setIssueDetail={setIssueDetail}
-                issueDetail={issueDetail}
-                onLogin={handleGithubSignIn}
-              />
+
+              {selectedIssue
+                ? (
+                  <React.Fragment>
+                    <Bar>
+                      <BackButton onClick={() => setSelectedIssue(null)} />
+                    </Bar>
+                    <IssueDetail issue={selectedIssue} />
+                  </React.Fragment>
+                )
+                : (
+                  <React.Fragment>
+                    <Tabs
+                      items={tabs.map(t => t.name)}
+                      onChange={handleSelect}
+                      selected={activeIndex.tabIndex}
+                    />
+                    <TabComponent
+                      status={github.status}
+                      app={api}
+                      projects={repos}
+                      bountyIssues={issues}
+                      bountySettings={bountySettings}
+                      tokens={tokens}
+                      activeIndex={activeIndex}
+                      changeActiveIndex={changeActiveIndex}
+                      setSelectedIssue={setSelectedIssue}
+                      onLogin={handleGithubSignIn}
+                    />
+                  </React.Fragment>
+                )
+              }
             </ErrorBoundary>
 
             <PanelManager
