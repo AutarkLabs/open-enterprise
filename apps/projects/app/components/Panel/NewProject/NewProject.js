@@ -144,7 +144,7 @@ const NewProject = () => {
                     <TextInput
                       type="search"
                       style={{ margin: '16px 0', flexShrink: '0' }}
-                      placeholder="Search for a repo"
+                      placeholder="Search"
                       wide
                       value={filter}
                       onChange={updateFilter}
