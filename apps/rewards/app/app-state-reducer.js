@@ -14,7 +14,7 @@ import {
 import { MILLISECONDS_IN_A_MONTH, MILLISECONDS_IN_A_WEEK, MILLISECONDS_IN_A_YEAR, MILLISECONDS_IN_A_DAY } from '../../../shared/ui/utils/math-utils'
 
 function appStateReducer(state) {
-
+  
   if(state){
     state.amountTokens = state.balances.map(token => {
       return { amount: token.amount, symbol: token.symbol, address: token.address, decimals: token.decimals, transferable: token.transfersEnabled }
@@ -54,7 +54,7 @@ function appStateReducer(state) {
           reward.rewardType = ONE_TIME_DIVIDEND
           reward.dateReference = new Date(reward.endDate)
         }
-        const referenceAssetToken = state.amountTokens.find( token => token.address === reward.referenceToken)
+        const referenceAssetToken = state.refTokens.find( token => token.address === reward.referenceToken)
         reward.referenceTokenSymbol = referenceAssetToken.symbol
         const amountToken = state.amountTokens.find( token => token.address === reward.rewardToken)
         reward.amountToken = amountToken.symbol

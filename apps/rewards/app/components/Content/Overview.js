@@ -97,13 +97,16 @@ const renderRecurringDividend = (reward) => {
     amountToken,
     disbursement,
     disbursementUnit,
-    dateReference
+    disbursements
   } = reward
   const frequency = `${RECURRING} (${disbursement} ${disbursementUnit})`
-  const nextPayout = dateReference.toDateString()
+  const today = new Date()
+  const nextPayout = (disbursements.find(d => d.getTime() < today.getTime()) || disbursements[disbursements.length - 1])
+    .toDateString()
   const displayAmount = `${displayCurrency(amount)} ${amountToken}`
   return [ description, DIVIDEND, frequency, nextPayout, displayAmount ]
 }
+
 
 const renderOneTimeMerit = (reward) => {
   const {

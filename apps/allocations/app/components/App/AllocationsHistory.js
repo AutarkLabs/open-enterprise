@@ -4,8 +4,6 @@ import {
   DataView,
   IconCheck,
   IconCross,
-  // IdentityBadge,
-  // ProgressBar,
   Text,
   useTheme,
 } from '@aragon/ui'
@@ -17,7 +15,6 @@ import { STATUSES } from '../../utils/constants'
 import { displayCurrency } from '../../utils/helpers'
 
 const AllocationsHistory = ({ allocations }) => {
-  const theme = useTheme()
   const { balances = [] } = useAppState()
   const getTokenSymbol = inputAddress => {
     const matchingBalance = balances.find(({ address }) => inputAddress === address)

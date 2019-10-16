@@ -198,7 +198,7 @@ class App extends React.Component {
     this.props.api.newReward(
       reward.description, //string _description
       reward.isMerit, //reward.isMerit, //bool _isMerit,
-      reward.referenceAsset.key, //address _referenceToken,
+      reward.referenceAsset.key || reward.customToken.address, //address _referenceToken,
       reward.amountToken.address, //address _rewardToken,
       reward.amount.toString(10), //uint _amount,
       startBlock, // uint _startBlock
