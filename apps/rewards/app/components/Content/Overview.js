@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import moment from 'moment'
 import {
   ContextMenu,
   ContextMenuItem,
@@ -98,12 +97,10 @@ const renderRecurringDividend = (reward) => {
     amountToken,
     disbursement,
     disbursementUnit,
-    disbursements,
+    dateReference
   } = reward
   const frequency = `${RECURRING} (${disbursement} ${disbursementUnit})`
-  const today = moment()
-  const nextPayout = disbursements.find(d => moment(d).isAfter(today, 'day'))
-    .toDateString()
+  const nextPayout = dateReference.toDateString()
   const displayAmount = `${displayCurrency(amount)} ${amountToken}`
   return [ description, DIVIDEND, frequency, nextPayout, displayAmount ]
 }
@@ -113,9 +110,9 @@ const renderOneTimeMerit = (reward) => {
     description,
     amount,
     amountToken,
-    dateEnd,
+    endDate,
   } = reward
-  const nextPayout = moment(dateEnd).add(1, 'day').toDate().toDateString()
+  const nextPayout = new Date(endDate).toString()
   const displayAmount = `${displayCurrency(amount)} ${amountToken}`
   return [ description, MERIT, ONE_TIME, nextPayout, displayAmount ]
 }
