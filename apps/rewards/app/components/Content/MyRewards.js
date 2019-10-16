@@ -17,6 +17,8 @@ import {
 } from '../../utils/constants'
 import { Empty } from '../Card'
 import Metrics from './Metrics'
+import { useAppState } from '@aragon/api-react'
+import BigNumber from 'bignumber.js'
 
 const MyRewards = ({
   myRewards,
@@ -41,15 +43,16 @@ const MyRewards = ({
         }}/>
         View
       </StyledContextMenuItem>
-      <StyledContextMenuItem
-        onClick={() => claimReward(reward)}
-      >
-        <IconCoin css={{
-          marginRight: '11px',
-          marginBottom: '2px',
-        }}/>
+      {!reward.claimed && (
+        <StyledContextMenuItem
+          onClick={() => claimReward(reward)}
+        >
+          <IconCoin css={{
+            marginRight: '11px',
+            marginBottom: '2px',
+          }}/>
         Claim
-      </StyledContextMenuItem>
+        </StyledContextMenuItem>)}
     </ContextMenu>
   )
 
@@ -71,71 +74,79 @@ const MyRewards = ({
 
 const renderReward = (reward) => {
   let fields = []
+  const { amountTokens } = useAppState()
   switch(reward.rewardType) {
   case ONE_TIME_DIVIDEND:
-    fields = renderOneTimeDividend(reward)
+    fields = renderOneTimeDividend(reward, amountTokens)
     break
   case RECURRING_DIVIDEND:
-    fields = renderRecurringDividend(reward)
+    fields = renderRecurringDividend(reward, amountTokens)
     break
   case ONE_TIME_MERIT:
-    fields = renderOneTimeMerit(reward)
+    fields = renderOneTimeMerit(reward, amountTokens)
     break
   }
   return fields
 }
 
-const renderOneTimeDividend = (reward) => {
+const renderOneTimeDividend = (reward, amountTokens) => {
   const theme = useTheme()
   const {
     description,
-    amount,
+    userRewardAmount,
     amountToken,
     dateReference,
+    timeClaimed,
+    endDate
   } = reward
+  console.log('reward: ', reward)
   const displayAmount = (
     <Text color={String(theme.positive)}>
-      +{amount} {amountToken}
+      +{BigNumber(userRewardAmount).div(BigNumber(10).pow(amountTokens.find(t => t.symbol === amountToken).decimals)).toString(10)} {amountToken}
     </Text>
   )
   const disbursementDate = dateReference.toDateString()
-  const status = 'Ready to claim'
+  const status = timeClaimed > 0 ? 'Claimed' : (Date.now() > endDate ? 'Ready to claim' : 'Pending')
   return [ description, disbursementDate, status, displayAmount ]
 }
 
-const renderRecurringDividend = (reward) => {
+const renderRecurringDividend = (reward, amountTokens) => {
   const theme = useTheme()
   const {
     description,
-    amount,
-    amountToken,
-    endDate
-  } = reward
-  const displayAmount = (
-    <Text color={String(theme.positive)}>
-      +{amount} {amountToken}
-    </Text>
-  )
-  const disbursementDate = (new Date(endDate)).toDateString()
-  const status = 'Ready to claim'
-  return [ description, disbursementDate, status, displayAmount ]
-}
-
-const renderOneTimeMerit = (reward) => {
-  const theme = useTheme()
-  const {
-    description,
-    amount,
+    userRewardAmount,
     amountToken,
     endDate,
+    timeClaimed
   } = reward
+  console.log('reward: ', reward)
   const displayAmount = (
     <Text color={String(theme.positive)}>
-      +{amount} {amountToken}
+      +{BigNumber(userRewardAmount).div(BigNumber(10).pow(amountTokens.find(t => t.symbol === amountToken).decimals)).toString(10)} {amountToken}
     </Text>
   )
   const disbursementDate = (new Date(endDate)).toDateString()
-  const status = 'Ready to claim'
+  const status = timeClaimed > 0 ? 'Claimed' : (Date.now() > endDate ? 'Ready to claim' : 'Pending')
+  return [ description, disbursementDate, status, displayAmount ]
+}
+
+const renderOneTimeMerit = (reward, amountTokens) => {
+  const theme = useTheme()
+  const {
+    description,
+    userRewardAmount,
+    amountToken,
+    endDate,
+    timeClaimed
+  } = reward
+  console.log('reward: ', reward)
+  const displayAmount = (
+    <Text color={String(theme.positive)}>
+      +{BigNumber(userRewardAmount).div(BigNumber(10).pow(amountTokens.find(t => t.symbol === amountToken).decimals)).toString(10)} {amountToken}
+    </Text>
+  )
+  const disbursementDate = (new Date(endDate)).toDateString()
+  const status = timeClaimed > 0 ? 'Claimed' : (Date.now() > endDate ? 'Ready to claim' : 'Pending')
   return [ description, disbursementDate, status, displayAmount ]
 }
 
