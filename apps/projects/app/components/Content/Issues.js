@@ -26,6 +26,8 @@ const sorters = {
     compareAsc(new Date(i1.createdAt), new Date(i2.createdAt)),
 }
 
+const ISSUES_PER_CALL = 100
+
 class Issues extends React.PureComponent {
   static propTypes = {
     activeIndex: PropTypes.shape({
@@ -61,7 +63,6 @@ class Issues extends React.PureComponent {
     reload: false,
     downloadedRepos: {},
     downloadedIssues: [],
-    issuesPerCall: 100,
   }
 
   deselectAllIssues = () => {
@@ -277,7 +278,7 @@ class Issues extends React.PureComponent {
       downloadedRepos[repo.id] = {
         downloadedCount: repo.issues.nodes.length,
         totalCount: repo.issues.totalCount,
-        fetch: this.state.issuesPerCall,
+        fetch: ISSUES_PER_CALL,
         hasNextPage: repo.issues.pageInfo.hasNextPage,
         endCursor: repo.issues.pageInfo.endCursor,
       }
@@ -319,7 +320,7 @@ class Issues extends React.PureComponent {
       if (Object.keys(filters.projects).length > 0) {
         Object.keys(filters.projects).forEach(repoId => {
           reposQueryParams[repoId] = {
-            fetch: this.state.issuesPerCall,
+            fetch: ISSUES_PER_CALL,
             showMore: false,
           }
         })
@@ -327,7 +328,7 @@ class Issues extends React.PureComponent {
         projects.forEach(project => {
           const repoId = project.data._repo
           reposQueryParams[repoId] = {
-            fetch: this.state.issuesPerCall,
+            fetch: ISSUES_PER_CALL,
             showMore: false,
           }
         })
