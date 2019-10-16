@@ -234,9 +234,6 @@ const FilterBar = ({
       placeholder="Status"
       enabled={Object.keys(filtersData.statuses).length > 0}
       onChange={closeSubFilters(borderMode)}
-      onClick={e =>
-        console.log('---=, status')
-      }
       css={`
         border-radius: ${borderRadius[borderMode]};
       `}
@@ -335,11 +332,11 @@ const FilterBar = ({
       visible={filtersMenuVisible}
       opener={filtersOpener.current}
       onClose={() => {
-        console.log('--popover close called')
+        console.log('popover close called')
         //setFiltersMenuVisible(false)
       }}
       onClick={() => {
-        console.log('--click called')
+        console.log('click called')
       }}
       placement="bottom-start"
       css={`
@@ -480,7 +477,7 @@ const FilterBar = ({
                 <Button icon={<IconMore />} display="icon" onClick={activateFiltersMenu} ref={filtersOpener} />
 
                 <FiltersPopover>
-                <FilterByMilestone
+                  <FilterByMilestone
                     filters={filters}
                     filtersData={filtersData}
                     borderMode="top"
