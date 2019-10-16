@@ -1,6 +1,6 @@
 {
   "name": "Address Book",
-  "description": "A registry of Ethereum addresses mapped to human-readable names.",
+  "description": "Assign human-readable names to Ethereum addresses.",
   "author": "Autark",
   "changelog_url": "https://github.com/AutarkLabs/planning-suite/releases",
   "source_url": "https://github.com/AutarkLabs/planning-suite/tree/master/apps/address-book",

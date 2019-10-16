@@ -1,6 +1,6 @@
 {
   "name": "Projects",
-  "description": "Allocate funding to multiple Github issues in a single action and collectively curate issues.",
+  "description": "Fund bounties and prioritize Github issues.",
   "author": "Autark",
   "changelog_url": "https://github.com/AutarkLabs/planning-suite/releases",
   "source_url": "https://github.com/AutarkLabs/planning-suite/tree/master/apps/projects",
