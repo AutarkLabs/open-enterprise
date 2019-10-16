@@ -165,7 +165,7 @@ const CardTitle = styled(Text.Block).attrs({
 `
 
 const CardDescriptionText = styled(Text.Block).attrs({
-  size: 'small',
+  size: 'large',
 })`
   display: block;
   display: -webkit-box;

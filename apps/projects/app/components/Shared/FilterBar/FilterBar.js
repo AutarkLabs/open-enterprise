@@ -170,12 +170,26 @@ const FilterBar = ({
     filtersData: PropTypes.object.isRequired,
   }
 
-  const FilterByMilestone = ({ filters, filtersData }) => (
+  const borderRadius = {
+    'top': '3px 3px 0 0',
+    'middle': '0',
+    'bottom': '0 0 3px 3px',
+    'standalone': '3px',
+  }
+
+  const closeSubFilters = (borderMode) => () => {
+    if (borderMode !== 'standalone') setFiltersMenuVisible(false)
+  }
+
+  const FilterByMilestone = ({ filters, filtersData, borderMode }) => (
     <DropDown
       header="Milestones"
       placeholder="Milestones"
       enabled={Object.keys(filtersData.milestones).length > 0}
-      onChange={noop}
+      onChange={closeSubFilters(borderMode)}
+      css={`
+        border-radius: ${borderRadius[borderMode]};
+      `}
       items=
         {Object.keys(filtersData.milestones)
           .sort((m1, m2) => {
@@ -208,14 +222,24 @@ const FilterBar = ({
   FilterByMilestone.propTypes = {
     filters: PropTypes.object.isRequired,
     filtersData: PropTypes.object.isRequired,
+    borderMode: PropTypes.string.isRequired,
+  }
+  FilterByMilestone.defaultProps = {
+    borderMode: 'standalone',
   }
 
-  const FilterByStatus = ({ filters, filtersData, allFundedIssues, allIssues }) => (
+  const FilterByStatus = ({ filters, filtersData, allFundedIssues, allIssues, borderMode }) => (
     <DropDown
       header="Status"
       placeholder="Status"
       enabled={Object.keys(filtersData.statuses).length > 0}
-      onChange={noop}
+      onChange={closeSubFilters(borderMode)}
+      onClick={e =>
+        console.log('---=, status')
+      }
+      css={`
+        border-radius: ${borderRadius[borderMode]};
+      `}
       items={allFundedIssues.map(status => (
         <FilterMenuItem
           key={status}
@@ -263,6 +287,10 @@ const FilterBar = ({
     filtersData: PropTypes.object.isRequired,
     allFundedIssues: PropTypes.array.isRequired,
     allIssues: PropTypes.array.isRequired,
+    borderMode: PropTypes.string.isRequired,
+  }
+  FilterByStatus.defaultProps = {
+    borderMode: 'standalone',
   }
 
   const ActionsPopover = ({ selectedIssues, issuesFiltered }) => (
@@ -306,12 +334,20 @@ const FilterBar = ({
     <Popover
       visible={filtersMenuVisible}
       opener={filtersOpener.current}
-      onClose={() => setFiltersMenuVisible(false)}
-      placement="bottom-end"
+      onClose={() => {
+        console.log('--popover close called')
+        //setFiltersMenuVisible(false)
+      }}
+      onClick={() => {
+        console.log('--click called')
+      }}
+      placement="bottom-start"
       css={`
         display: flex;
         flex-direction: column;
-        padding: 10px;
+        padding: 0;
+        border: 0;
+        border-radius: 3px;
       `}
     >
       {children}
@@ -335,7 +371,7 @@ const FilterBar = ({
         opener={sortersOpener.current}
         onClose={() => setSortMenuVisible(false)}
         css="padding: 12px"
-        placement="bottom-end"
+        placement="bottom-start"
       >
         <Label text="Sort by" />
         {sorters.map(way => (
@@ -399,6 +435,10 @@ const FilterBar = ({
   const actionsButtonBg = () =>
     'background-color: ' + (!selectedIssues.length ? `${theme.background}` : `${theme.surface}`)
 
+  const activateFiltersMenu = () => setFiltersMenuVisible(true)
+  const activateSearch = () => setSearchVisible(true)
+  const activateSort = () => setSortMenuVisible(true)
+
   return (
     <FilterBarCard>
       <FilterBarMain>
@@ -421,10 +461,15 @@ const FilterBar = ({
                 <FilterByLabel filters={filters} filtersData={filtersData} />
                 <FilterByMilestone filters={filters} filtersData={filtersData} />
 
-                <Button icon={<IconMore />} display="icon" onClick={() => setFiltersMenuVisible(true)} ref={filtersOpener} />
+                <Button icon={<IconMore />} display="icon" onClick={activateFiltersMenu} ref={filtersOpener} />
 
                 <FiltersPopover>
-                  <FilterByStatus filters={filters} filtersData={filtersData} allFundedIssues={allFundedIssues} allIssues={allIssues} />
+                  <FilterByStatus
+                    filters={filters}
+                    filtersData={filtersData}
+                    allFundedIssues={allFundedIssues}
+                    allIssues={allIssues}
+                  />
                 </FiltersPopover>
               </React.Fragment>
             ) : (
@@ -448,12 +493,12 @@ const FilterBar = ({
             <SearchInput />
           ) : (
             <React.Fragment>
-              <Button icon={<IconSearch />} display="icon" onClick={() => setSearchVisible(true)} ref={searchOpener} />
+              <Button icon={<IconSearch />} display="icon" onClick={activateSearch} ref={searchOpener} />
               <SearchPopover />
             </React.Fragment>
           )}
 
-          <Button icon={<IconSort />} display="icon" onClick={() => setSortMenuVisible(true)} ref={sortersOpener} />
+          <Button icon={<IconSort />} display="icon" onClick={activateSort} ref={sortersOpener} />
           <SortPopover />
 
           {layoutName === 'large' ? (
