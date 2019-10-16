@@ -338,7 +338,7 @@ const Settings = ({ onLogin }) => {
   }
 
   const baseRateChange = e => setBaseRate(e.target.value)
-  const bountyDeadlineChangeT = e => setBountyDeadlineT(+e.target.value)
+  const bountyDeadlineChangeT = e => setBountyDeadlineT(Number(e.target.value))
   const bountyDeadlineChangeD = index => setBountyDeadlineD(index)
   const bountyCurrencyChange = index => setBountyCurrency(index)
   // Unconfigurables (for now):
