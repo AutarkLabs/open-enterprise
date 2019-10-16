@@ -120,7 +120,7 @@ const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
                 {dot}
                 <span css="white-space: nowrap">
                   <IconCalendar color={`${theme.surfaceIcon}`} css="margin-bottom: -8px; margin-right: 4px" />
-                Due {DeadlineDistance(Number(deadline))}
+                Due {DeadlineDistance(deadline)}
                 </span>
               </React.Fragment>
             )}
