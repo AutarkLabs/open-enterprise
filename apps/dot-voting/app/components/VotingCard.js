@@ -32,10 +32,10 @@ const VotingCard = ({ vote, onSelectVote }) => {
     <Card
       onClick={handleOpen}
       css={`
-        height 350px;
+        height 320px;
         display: grid;
         grid-template-columns: 1fr;
-        grid-template-rows: 28px 90px auto 24px;
+        grid-template-rows: 28px 60px auto 24px;
         grid-gap: 12px;
         padding: ${3 * GU}px;
         align-items: start;
@@ -69,10 +69,10 @@ const VotingCard = ({ vote, onSelectVote }) => {
       <div
         css={`
           ${textStyle('body1')};
-          height: ${28 * 3}px;
+          height: ${28 * 2}px;
           display: -webkit-box;
           -webkit-box-orient: vertical;
-          -webkit-line-clamp: 3;
+          -webkit-line-clamp: 2;
           overflow: hidden;
         `}
       >
