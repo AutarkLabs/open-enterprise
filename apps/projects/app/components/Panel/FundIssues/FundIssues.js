@@ -158,7 +158,7 @@ const FundForm = ({
         message={'It seems that your organization has no funds available to fund issues. Navigate to the Finance app to deposit some funds first.'}
       />
     ) : (
-      (bountySettings.baseRate === 0) ? (
+      (Number(bountySettings.baseRate) === 0) ? (
         <InfoPanel
           imgSrc={NoBaseRate}
           title={'No base rate found.'}
@@ -660,7 +660,7 @@ const IssueTitle = styled(Text).attrs({
 
 const InfoPanel = ({ imgSrc, title, message }) => {
   const theme = useTheme()
-  
+
   return (
     <div css={`
         text-align:center;
