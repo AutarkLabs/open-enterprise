@@ -37,6 +37,7 @@ class Issues extends React.PureComponent {
     bountySettings: PropTypes.shape({
       expLvls: PropTypes.array.isRequired,
     }).isRequired,
+    downloadedRepos: PropTypes.object.isRequired,
     filters: PropTypes.object.isRequired,
     github: PropTypes.shape({
       status: PropTypes.oneOf([
@@ -48,6 +49,7 @@ class Issues extends React.PureComponent {
       event: PropTypes.string,
     }),
     projects: PropTypes.array.isRequired,
+    setDownloadedRepos: PropTypes.func.isRequired,
     setFilters: PropTypes.func.isRequired,
     setSelectedIssue: PropTypes.func.isRequired,
     shapeIssue: PropTypes.func.isRequired,
@@ -61,7 +63,6 @@ class Issues extends React.PureComponent {
     sortBy: 'Newest',
     textFilter: '',
     reload: false,
-    downloadedRepos: {},
     downloadedIssues: [],
   }
 
@@ -298,8 +299,8 @@ class Issues extends React.PureComponent {
     Object.keys(downloadedRepos).forEach(repoId => {
       newDownloadedRepos[repoId].showMore = downloadedRepos[repoId].hasNextPage
     })
+    this.props.setDownloadedRepos(newDownloadedRepos)
     this.setState({
-      downloadedRepos: newDownloadedRepos,
       downloadedIssues,
     })
   }
@@ -311,10 +312,10 @@ class Issues extends React.PureComponent {
     // and a cursor in there are 100+ issues and "Show More" was clicked.
     let reposQueryParams = {}
 
-    if (Object.keys(this.state.downloadedRepos).length > 0) {
-      Object.keys(this.state.downloadedRepos).forEach(repoId => {
-        if (this.state.downloadedRepos[repoId].hasNextPage)
-          reposQueryParams[repoId] = this.state.downloadedRepos[repoId]
+    if (Object.keys(this.props.downloadedRepos).length > 0) {
+      Object.keys(this.props.downloadedRepos).forEach(repoId => {
+        if (this.props.downloadedRepos[repoId].hasNextPage)
+          reposQueryParams[repoId] = this.props.downloadedRepos[repoId]
       })
     } else {
       if (Object.keys(filters.projects).length > 0) {
@@ -407,6 +408,7 @@ class Issues extends React.PureComponent {
 
 const IssuesWrap = ({ activeIndex, ...props }) => {
   const shapeIssue = useShapedIssue()
+  const [ downloadedRepos, setDownloadedRepos ] = useState({})
   const [ filters, setFilters ] = useState({
     projects: activeIndex.tabData.filterIssuesByRepoId
       ? { [activeIndex.tabData.filterIssuesByRepoId]: true }
@@ -421,7 +423,9 @@ const IssuesWrap = ({ activeIndex, ...props }) => {
   return (
     <Issues
       activeIndex={activeIndex}
+      downloadedRepos={downloadedRepos}
       filters={filters}
+      setDownloadedRepos={setDownloadedRepos}
       setFilters={setFilters}
       shapeIssue={shapeIssue}
       {...props}
