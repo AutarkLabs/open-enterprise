@@ -12,6 +12,8 @@ import { usePanelManagement } from '..'
 import { computeIpfsString } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
 import { IconOpen, IconClose } from '../../../assets'
+import NoFunds from '../../../assets/noFunds.svg'
+import NoBaseRate from '../../../assets/noResults.svg'
 
 import {
   Box,
@@ -45,7 +47,6 @@ const BountyUpdate = ({
 }) => {
   const expLevels = bountySettings.expLvls
   const theme = useTheme()
-
   return (
     <div css={`margin: ${2 * GU}px 0`}>
       <Info.Action title="Warning" style={{ marginBottom: '16px' }}>
@@ -149,137 +150,150 @@ const FundForm = ({
 }) => {
   const expLevels = bountySettings.expLvls
   const theme = useTheme()
-
   return (
-    <div css={`margin: ${2 * GU}px 0`}>
-      <Mutation mutation={COMMENT}>
-        {(post, result) => (
-          <Form
-            onSubmit={() => submitBounties(post, result)}
-            description={description}
-            submitText={issues.length > 1 ? 'Fund Issues' : 'Fund Issue'}
-            submitDisabled={totalSize > tokenDetails.balance}
-          >
-            <FormField
-              label="Description"
-              required
-              input={
-                <TextInput.Multiline
-                  rows="3"
-                  name="description"
-                  style={{ resize: 'none' }}
-                  onChange={descriptionChange}
-                  value={description}
-                  wide
+    (Number(tokenDetails.balance) === 0) ? (
+      <InfoPanel
+        imgSrc={NoFunds}
+        title={'No funds found.'}
+        message={'It seems that your organization has no funds available to fund issues. Navigate to the Finance app to deposit some funds first.'}
+      />
+    ) : (
+      (Number(bountySettings.baseRate) === 0) ? (
+        <InfoPanel
+          imgSrc={NoBaseRate}
+          title={'No base rate found.'}
+          message={'It seems that you haven\'t set up a base rate, which is needed to fund issues. Navigate to the Settings tab in this app to set up a base rate.'}
+        />
+      ) : (
+        <div css={`margin: ${2 * GU}px 0`}>
+          <Mutation mutation={COMMENT}>
+            {(post, result) => (
+              <Form
+                onSubmit={() => submitBounties(post, result)}
+                description={description}
+                submitText={issues.length > 1 ? 'Fund Issues' : 'Fund Issue'}
+                submitDisabled={totalSize > tokenDetails.balance}
+              >
+                <FormField
+                  label="Description"
+                  required
+                  input={
+                    <TextInput.Multiline
+                      rows="3"
+                      name="description"
+                      style={{ resize: 'none' }}
+                      onChange={descriptionChange}
+                      value={description}
+                      wide
+                    />
+                  }
                 />
-              }
-            />
-            <FormField
-              label="Issues"
-              hint="Enter the estimated hours per issue"
-              required
-              input={
-                <React.Fragment>
-                  {issues.map(issue => (
-                    <Box key={issue.id} padding={0}>
-                      <div css={`
-                        display: grid;
-                        grid-template-columns: 1fr 1fr;
-                        grid-template-rows: auto;
-                        grid-template-areas:
-                          "title title"
-                          "hours exp"
-                          "deadline deadline";
-                        grid-gap: 12px;
-                        align-items: stretch;
-                      `}>
-                        <IssueTitleBox>
-                          <DetailsArrow onClick={generateArrowChange(issue.id)}>
-                            {bounties[issue.id]['detailsOpen'] ? (
-                              <IconClose />
-                            ) : (
-                              <IconOpen />
-                            )}
-                          </DetailsArrow>
-                          <IssueTitle>
-                            {issue.title}
-                          </IssueTitle>
-                          {issue.id in bounties &&
-                               bounties[issue.id]['hours'] > 0 && (
-                            <TextTag theme={theme}>
-                              {bounties[issue.id]['size'].toFixed(1) + ' ' + tokenDetails.symbol}
-                            </TextTag>
-                          )}
-                        </IssueTitleBox>
+                <FormField
+                  label="Issues"
+                  hint="Enter the estimated hours per issue"
+                  required
+                  input={
+                    <React.Fragment>
+                      {issues.map(issue => (
+                        <Box key={issue.id} padding={0}>
+                          <div css={`
+                                  display: grid;
+                                  grid-template-columns: 1fr 1fr;
+                                  grid-template-rows: auto;
+                                  grid-template-areas:
+                                    "title title"
+                                    "hours exp"
+                                    "deadline deadline";
+                                  grid-gap: 12px;
+                                  align-items: stretch;
+                                `}>
+                            <IssueTitleBox>
+                              <DetailsArrow onClick={generateArrowChange(issue.id)}>
+                                {bounties[issue.id]['detailsOpen'] ? (
+                                  <IconClose />
+                                ) : (
+                                  <IconOpen />
+                                )}
+                              </DetailsArrow>
+                              <IssueTitle>
+                                {issue.title}
+                              </IssueTitle>
+                              {issue.id in bounties &&
+                                         bounties[issue.id]['hours'] > 0 && (
+                                <TextTag theme={theme}>
+                                  {bounties[issue.id]['size'].toFixed(1) + ' ' + tokenDetails.symbol}
+                                </TextTag>
+                              )}
+                            </IssueTitleBox>
 
-                        <div css={`grid-area: hours; padding-left: ${2 * GU}px`}>
-                          <FieldTitle>Estimated Hours</FieldTitle>
-                          <HoursInput
-                            name="hours"
-                            value={bounties[issue.id]['hours']}
-                            onChange={generateHoursChange(issue.id)}
-                            wide
-                          />
-                        </div>
-
-                        <div css={`grid-area: exp; padding-right: ${2 * GU}px`}>
-                          <FormField
-                            label="Experience level"
-                            input={
-                              <DropDown
-                                items={expLevels.map(exp => exp.name)}
-                                onChange={generateExpChange(issue.id)}
-                                selected={bounties[issue.id]['exp']}
+                            <div css={`grid-area: hours; padding-left: ${2 * GU}px`}>
+                              <FieldTitle>Estimated Hours</FieldTitle>
+                              <HoursInput
+                                name="hours"
+                                value={bounties[issue.id]['hours']}
+                                onChange={generateHoursChange(issue.id)}
                                 wide
                               />
-                            }
-                          />
+                            </div>
 
-                        </div>
-
-                        <div css={`
-                          grid-area: deadline;
-                          background: ${theme.background};
-                          border-top: 1px solid ${theme.border};
-                          padding: 0 ${2 * GU}px;
-                          display: ${bounties[issue.id]['detailsOpen'] ? 'block' : 'none'};
-                        `}>
-                          <FormField
-                            label="Deadline"
-                            input={
-                              <DateInput
-                                name='deadline'
-                                value={bounties[issue.id]['deadline']}
-                                onChange={generateDeadlineChange(issue.id)}
-                                width="100%"
+                            <div css={`grid-area: exp; padding-right: ${2 * GU}px`}>
+                              <FormField
+                                label="Experience level"
+                                input={
+                                  <DropDown
+                                    items={expLevels.map(exp => exp.name)}
+                                    onChange={generateExpChange(issue.id)}
+                                    selected={bounties[issue.id]['exp']}
+                                    wide
+                                  />
+                                }
                               />
-                            }
-                          />
-                        </div>
-                      </div>
-                    </Box>
-                  ))}
-                </React.Fragment>
-              }
-            />
-          </Form>
-        )}
-      </Mutation>
-      {
-        (
-          totalSize > tokenDetails.balance
-        ) ? (
+
+                            </div>
+
+                            <div css={`
+                                    grid-area: deadline;
+                                    background: ${theme.background};
+                                    border-top: 1px solid ${theme.border};
+                                    padding: 0 ${2 * GU}px;
+                                    display: ${bounties[issue.id]['detailsOpen'] ? 'block' : 'none'};
+                                  `}>
+                              <FormField
+                                label="Deadline"
+                                input={
+                                  <DateInput
+                                    name='deadline'
+                                    value={bounties[issue.id]['deadline']}
+                                    onChange={generateDeadlineChange(issue.id)}
+                                    width="100%"
+                                  />
+                                }
+                              />
+                            </div>
+                          </div>
+                        </Box>
+                      ))}
+                    </React.Fragment>
+                  }
+                />
+              </Form>
+            )}
+          </Mutation>
+          {(totalSize > tokenDetails.balance) ? (
             <div>
               <br />
               <Info.Action title="Insufficient Token Balance">
-                Please either mint more tokens or stake fewer tokens against these issues.
+                        Please either mint more tokens or stake fewer tokens against these issues.
               </Info.Action>
             </div>
           ) : null
-      }
-    </div>
+          }
+        </div>
+      )
+    )
   )
 }
+
 FundForm.propTypes = {
   bountySettings: PropTypes.object.isRequired,
   issues: PropTypes.arrayOf(issueShape),
@@ -643,5 +657,34 @@ const IssueTitle = styled(Text).attrs({
   overflow: hidden;
   text-overflow: ellipsis;
 `
+
+const InfoPanel = ({ imgSrc, title, message }) => {
+  const theme = useTheme()
+
+  return (
+    <div css={`
+        text-align:center;
+        padding: 30px;
+      `}>
+      <img src={imgSrc} alt='' css={`
+          padding: 10px 0;
+        `}/>
+      <div css={`
+          padding: 10px 0;
+        `}>
+        <Text size='xxlarge'>
+          {title}
+        </Text>
+      </div>
+      <div css={`
+          padding: 10px 0;
+        `}>
+        <Text size='medium' color={theme.contentSecondary}>
+          {message}
+        </Text>
+      </div>
+    </div>
+  )
+}
 
 export default FundIssues
