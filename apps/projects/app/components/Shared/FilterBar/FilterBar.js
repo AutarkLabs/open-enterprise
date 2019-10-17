@@ -40,6 +40,7 @@ const FilterBar = ({
   selectedIssues,
   onSearchChange,
 }) => {
+
   // Complete list of sorters for DropDown. Parent has only one item, to perform actual sorting.
   const [ sortBy, setSortBy ] = useState('Newest')
 
@@ -127,7 +128,6 @@ const FilterBar = ({
 
   const FilterByLabel = ({ filters, filtersData }) => (
     <DropDown
-      css="width: 128px;"
       placeholder="Labels"
       header="Labels"
       enabled={Object.keys(filtersData.labels).length > 0}
@@ -395,7 +395,7 @@ const FilterBar = ({
 
   const actionsClickHandler = () =>
     selectedIssues.length && setActionsMenuVisible(true)
-  
+
   const actionsButtonBg = () =>
     'background-color: ' + (!selectedIssues.length ? `${theme.background}` : `${theme.surface}`)
 
@@ -430,11 +430,11 @@ const FilterBar = ({
             ) : (
               <React.Fragment>
                 <FilterByProject filters={filters} filtersData={filtersData} />
-                <FilterByLabel filters={filters} filtersData={filtersData} />
-                
+
                 <Button icon={<IconMore />} display="icon" onClick={() => setFiltersMenuVisible(true)} ref={filtersOpener} />
 
                 <FiltersPopover>
+                  <FilterByLabel filters={filters} filtersData={filtersData} />
                   <FilterByMilestone filters={filters} filtersData={filtersData} />
                   <FilterByStatus filters={filters} filtersData={filtersData} allFundedIssues={allFundedIssues} allIssues={allIssues} />
                 </FiltersPopover>
@@ -540,7 +540,6 @@ const FilterBarMain = styled.div`
   width: 100%;
   display: flex;
   justify-content: space-between;
-
 `
 const FilterBarMainLeft = styled.div`
   display: flex;
