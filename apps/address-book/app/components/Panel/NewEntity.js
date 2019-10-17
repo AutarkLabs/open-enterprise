@@ -7,7 +7,7 @@ import web3Utils from 'web3-utils'
 
 const isCustomType = type => type === 'Custom type...'
 
-const ENTITY_TYPES = [ 'Individual', 'Organization', 'Project', 'Custom type...' ]
+const ENTITY_TYPES = [ 'Individual', 'Organization', 'Project' ]
 const INITIAL_STATE = {
   name: '',
   address: '',
