@@ -25,8 +25,8 @@ import useGithubAuth from '../../hooks/useGithubAuth'
 import { LoadingAnimation } from '../Shared'
 import { EmptyWrapper } from '../Shared'
 
-const bountyDeadlines = [ 'Weeks', 'Days', 'Hours' ]
-const bountyDeadlinesMul = [ 168, 24, 1 ] // it is one variable in contract, so number * multiplier = hours
+const bountyDeadlines = [ 'Days', 'Weeks', 'Months' ]
+const bountyDeadlinesMul = [ 24, 168, 720 ]
 
 const GitHubConnect = ({ onLogin, onLogout, status }) => {
   const user = useGithubAuth()
@@ -204,7 +204,7 @@ const BountyDeadline = ({
     <StyledInputDropDown>
       <StyledNumberFormat
         fixedDecimalScale
-        decimalScale={0}
+        decimalScale={1}
         value={bountyDeadlineT}
         allowNegative={false}
         onChange={onChangeT}
@@ -259,6 +259,15 @@ FundingType.propTypes = {
   onChangeType: PropTypes.func.isRequired,
 }
 
+const getExactIndex = (bountyDeadline, bountyDeadlinesMul) => {
+  for (let i = bountyDeadlinesMul.length - 1; i >= 0; i--) {
+    if (bountyDeadline % bountyDeadlinesMul[i] === 0) {
+      return i
+    }
+  }
+  return -1
+}
+
 const Settings = ({ onLogin }) => {
   const [ bountyCurrencies, setBountyCurrencies ] = useState([])
   const [ expLevels, setExpLevels ] = useState([])
@@ -286,25 +295,32 @@ const Settings = ({ onLogin }) => {
   )
 
   useEffect(() => {
-    setExpLevels(bountySettings.expLvls)
-    setBaseRate(bountySettings.baseRate)
-    setBountyCurrency(tokens.findIndex(bounty => bounty.addr === bountySettings.bountyCurrency))
-    setBountyAllocator(bountySettings.bountyAllocator)
-    //setBountyArbiter(bountySettings.bountyArbiter)
-    for (let i = 0; i < bountyDeadlinesMul.length; i++) {
-      if (bountySettings.bountyDeadline % bountyDeadlinesMul[i] === 0) {
-        setBountyDeadlineD(i)
-        setBountyDeadlineT(bountySettings.bountyDeadline / bountyDeadlinesMul[i])
-        break
-      }
+    const {
+      expLvls,
+      baseRate,
+      bountyCurrency,
+      bountyAllocator,
+      bountyDeadline
+    } = bountySettings
+    setExpLevels(expLvls)
+    setBaseRate(baseRate)
+    setBountyCurrency(tokens.findIndex(bounty => bounty.addr === bountyCurrency))
+    setBountyAllocator(bountyAllocator)
+    let index = getExactIndex(bountyDeadline, bountyDeadlinesMul)
+    if (index === -1) {
+      const reverseDeadlinesMul = [...bountyDeadlinesMul].sort((a, b) => b - a)
+      const deadlineMul = reverseDeadlinesMul.find(d => d * 2 <= bountyDeadline)
+      index = bountyDeadlinesMul.indexOf(deadlineMul)
     }
+    setBountyDeadlineD(index)
+    setBountyDeadlineT(bountyDeadline / bountyDeadlinesMul[index])
     setSettingsLoaded(true)
   }, [bountySettings]
   )
 
   const submitChanges = () => {
     // flatten deadline
-    let bountyDeadline = bountyDeadlinesMul[bountyDeadlineD] * bountyDeadlineT
+    let bountyDeadline = Math.floor(bountyDeadlinesMul[bountyDeadlineD] * bountyDeadlineT)
     // flatten expLevels
     const expLevelsDesc = expLevels.map(l => fromUtf8(l.name))
     // uint-ify EXP levels
@@ -322,7 +338,7 @@ const Settings = ({ onLogin }) => {
   }
 
   const baseRateChange = e => setBaseRate(e.target.value)
-  const bountyDeadlineChangeT = e => setBountyDeadlineT(e.target.value)
+  const bountyDeadlineChangeT = e => setBountyDeadlineT(Number(e.target.value))
   const bountyDeadlineChangeD = index => setBountyDeadlineD(index)
   const bountyCurrencyChange = index => setBountyCurrency(index)
   // Unconfigurables (for now):
@@ -472,10 +488,10 @@ const SettingsMain = styled.div`
 const SettingsFunding = styled.div`
   display: flex;
   flex-direction: ${({ layoutName })=> layoutName === 'small' ? 'column' : 'row'};
-> * {
-  width: 50%;
-  padding-right: 20px;
-}
+  > * {
+    width: 50%;
+    padding-right: 20px;
+  }
 `
 const StyledNumberFormat = styled(NumberFormat)`
   border-radius: 3px;

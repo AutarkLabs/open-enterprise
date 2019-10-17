@@ -20,7 +20,7 @@ const settings = {
   ],
   stakes: [
     '1000000000000000000',
-    '500000000000000000',
+    '100000000000000000',
   ],
   token: { name: 'Autark Coin', symbol: 'AUT' },
   useDiscussions: true,

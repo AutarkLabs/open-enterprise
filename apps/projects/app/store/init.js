@@ -9,6 +9,13 @@ export const initStore = (vaultAddress, standardBountiesAddress) => {
   return app.store(
     async (state, action) => {
       try {
+        /*
+          Since new events have fired, we know that the next state
+          passed to the front end is not from the cached store,
+
+          setting isFromCachedStore to false will avoid frontend UI flicker
+        */
+        state.isFromCachedStore = false
         return await handleEvent(state, action, vaultAddress, vaultContract)
       } catch (err) {
         console.error(
@@ -38,6 +45,14 @@ const initState = (vaultContract) => async (cachedState) => {
     nextState.github = github
     initializeGraphQLClient(github.token)
   }
+  /*
+    This isFromCachedStore notifier is used to stop frontend flickering.
+    We set the isFromCachedStore => true upon store initialization,
+    when the frontend reducer receives the isFromCachedStore param,
+    it knows its receiving the cached store state, instead of the
+    cached application state.
 
-  return nextState
+    isFromCachedStore is never cached on application frontend
+  */
+  return { ...nextState, isFromCachedStore: true }
 }

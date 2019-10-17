@@ -15,6 +15,8 @@ import {
   BOUNTY_FULFILLED,
   BOUNTY_SETTINGS_CHANGED,
   VAULT_DEPOSIT,
+  SYNC_STATUS_SYNCING,
+  SYNC_STATUS_SYNCED,
 } from './eventTypes'
 
 import { INITIAL_STATE } from './'
@@ -39,8 +41,27 @@ import { app } from './app'
 
 export const handleEvent = async (state, action, vaultAddress, vaultContract) => {
   const { event, returnValues, address } = action
-
   switch (event) {
+  case SYNC_STATUS_SYNCING: {
+    return {
+      ...state,
+      sync: {
+        ...state.sync,
+        completed: false,
+        initialized: true,
+      }
+    }
+  }
+  case SYNC_STATUS_SYNCED: {
+    return {
+      ...state,
+      sync: {
+        ...state.sync,
+        completed: true,
+        initialized: false,
+      }
+    }
+  }
   case REQUESTING_GITHUB_TOKEN: {
     return state
   }

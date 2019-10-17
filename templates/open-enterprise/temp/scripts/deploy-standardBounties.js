@@ -25,18 +25,19 @@ module.exports = async (
     log(`No OWNER environment variable passed, setting StandardBounties owner to provider's account: ${owner}`)
   }
 
-  const standardBounties = artifacts.require('StandardBounties')
-
-  log('Deploying StandardBounties...')
-  const standardBountiesBase = await standardBounties.new(owner)
-  await logDeploy(standardBountiesBase, { verbose })
+  // TODO: we do this externally for now, this script is not called right now
+  // const standardBounties = artifacts.require('StandardBounties')
+  // log('Deploying StandardBounties...')
+  // const standardBountiesBase = await standardBounties.new(owner)
+  // await logDeploy(standardBountiesBase, { verbose })
 
   if (typeof truffleExecCallback === 'function') {
     // Called directly via `truffle exec`
     truffleExecCallback()
   } else {
     return {
-      standardBounties: standardBountiesBase
+      // standardBounties: standardBountiesBase
+      standardBounties: { address: 0 }
     }
   }
 }
