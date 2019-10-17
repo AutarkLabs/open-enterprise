@@ -377,8 +377,8 @@ IssuesQuery.propTypes = {
   query: PropTypes.object.isRequired,
 }
 
-const IssuesWrap = ({ activeIndex, projects, ...props }) => {
-  const { appState: { github } } = useAragonApi()
+const IssuesWrap = ({ activeIndex, ...props }) => {
+  const { appState: { github, repos } } = useAragonApi()
   const shapeIssue = useShapedIssue()
   const [ client, setClient ] = useState(null)
   const [ downloadedRepos, setDownloadedRepos ] = useState({})
@@ -413,8 +413,8 @@ const IssuesWrap = ({ activeIndex, projects, ...props }) => {
           }
         })
       } else {
-        projects.forEach(project => {
-          const repoId = project.data._repo
+        repos.forEach(repo => {
+          const repoId = repo.data._repo
           reposQueryParams[repoId] = {
             fetch: ISSUES_PER_CALL,
             showMore: false,
@@ -424,7 +424,7 @@ const IssuesWrap = ({ activeIndex, projects, ...props }) => {
     }
 
     setQuery(getIssuesGQL(reposQueryParams))
-  }, [ downloadedRepos, filters, projects ])
+  }, [ downloadedRepos, filters, repos ])
 
   useEffect(() => {
     setClient(github.token ? initApolloClient(github.token) : null)
@@ -454,7 +454,6 @@ IssuesWrap.propTypes = {
       filterIssuesByRepoId: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  projects: PropTypes.array.isRequired,
 }
 
 const StyledIssues = styled.div`
