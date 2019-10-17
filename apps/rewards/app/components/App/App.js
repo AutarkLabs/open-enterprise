@@ -161,7 +161,6 @@ class App extends React.Component {
     const tenBN =  new BN(10)
     const decimalsBN = new BN(reward.amountToken.decimals)
     reward.amount = amountBN.mul(tenBN.pow(decimalsBN))
-    console.log(reward)
     let startBlock = currentBlock + millisecondsToBlocks(Date.now(), reward.dateStart)
     if (reward.rewardType === ONE_TIME_DIVIDEND || reward.rewardType === ONE_TIME_MERIT) {
       reward.occurances = 1
@@ -199,7 +198,7 @@ class App extends React.Component {
     this.props.api.newReward(
       reward.description, //string _description
       reward.isMerit, //reward.isMerit, //bool _isMerit,
-      reward.referenceAsset.key, //address _referenceToken,
+      reward.referenceAsset.key || reward.customToken.address, //address _referenceToken,
       reward.amountToken.address, //address _rewardToken,
       reward.amount.toString(10), //uint _amount,
       startBlock, // uint _startBlock
@@ -233,6 +232,11 @@ class App extends React.Component {
       panel: PANELS.ViewReward,
       panelProps: reward,
     })
+  }
+
+  claimReward = reward => {
+    // TODO
+    this.props.api.claimReward(reward.rewardId).toPromise()
   }
 
   openDetailsView = reward => {
@@ -304,6 +308,8 @@ class App extends React.Component {
           <MyRewards
             myRewards={this.props.myRewards}
             myMetrics={this.props.myMetrics}
+            viewReward={this.viewReward}
+            claimReward={this.claimReward}
           />
         ) : (
           <Overview

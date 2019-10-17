@@ -29,11 +29,13 @@ import {
   DISBURSEMENT_UNITS,
   OTHER,
 } from '../../../utils/constants'
+import { displayCurrency, toWei } from '../../../utils/helpers'
 
 import tokenBalanceOfAbi from '../../../../../shared/json-abis/token-balanceof.json'
 import tokenBalanceOfAtAbi from '../../../../../shared/json-abis/token-balanceofat.json'
 import tokenCreationBlockAbi from '../../../../../shared/json-abis/token-creationblock.json'
 import tokenSymbolAbi from '../../../../../shared/json-abis/token-symbol.json'
+import tokenTransferAbi from '../../../../../shared/json-abis/token-transferable.json'
 
 const tokenAbi = [].concat(tokenBalanceOfAbi, tokenBalanceOfAtAbi, tokenCreationBlockAbi, tokenSymbolAbi)
 
@@ -62,6 +64,7 @@ const INITIAL_STATE = {
   semanticErrors: [],
   errorMessages: {
     customTokenInvalid: 'Token address must be of a valid ERC20 compatible clonable token.',
+    meritTokenTransferable: 'Merit rewards must be non-transferable.',
     amountOverBalance: 'Amount must be below the available balance.',
     dateReferencePassed: 'Reference date must take place after today.',
     dateStartPassed: 'Start date must take place after today.',
@@ -69,10 +72,6 @@ const INITIAL_STATE = {
     dateStartAfterEnd: 'Start date must take place before the end date.',
     disbursementsInexistent: 'Disbursement frequency does not output any disbursements for the given time range.',
   }
-}
-
-function getTokenProp(prop, { refTokens }, { customToken, referenceAsset }, check = prop) {
-  return customToken[check]?customToken[prop]:refTokens[referenceAsset-2][prop]
 }
 
 class NewRewardClass extends React.Component {
@@ -191,7 +190,9 @@ class NewRewardClass extends React.Component {
     let semanticErrors = []
     if (state.referenceAsset === OTHER && !state.customToken.isVerified)
       semanticErrors.push('customTokenInvalid')
-    if (+state.amount > +state.amountToken.balance)
+    if (state.rewardType === ONE_TIME_MERIT && state.transferable)
+      semanticErrors.push('meritTokenTransferable')
+    if (toWei(state.amount) > +state.amountToken.amount)
       semanticErrors.push('amountOverBalance')
     const today = moment()
     if (state.rewardType === ONE_TIME_DIVIDEND &&
@@ -252,6 +253,7 @@ class NewRewardClass extends React.Component {
 
     if (isAddress(value) || isAddress(resolvedAddress)) {
       this.verifyMinime(this.props.app, { address: resolvedAddress || value, value })
+      this.verifyTransferable(this.props.app, resolvedAddress)
     }
     else {
       isVerified = false
@@ -296,77 +298,12 @@ class NewRewardClass extends React.Component {
     }
   }
 
-  amountWithTokenAndBalance = () => {
-    const { amountTokens } = this.props
-    const { amountToken } = this.state
-    return (
-      <VerticalContainer>
-        <HorizontalContainer>
-          <TextInput
-            name="amount"
-            type="number"
-            min={MIN_AMOUNT}
-            step="any"
-            onChange={e => {
-              const { value } = e.target
-              this.setState({ amount: value })
-              this.setSemanticErrors({ amount: value })
-            }}
-            wide={true}
-            value={this.state.amount}
-            css={{ borderRadius: '4px 0px 0px 4px' }}
-          />
-          <DropDown
-            name="amountToken"
-            css={{ borderRadius: '0px 4px 4px 0px' }}
-            items={amountTokens.map(token => token.symbol)}
-            selected={amountTokens.indexOf(amountToken)}
-            onChange={i => {
-              this.setState({ amountToken: amountTokens[i] })
-              this.setSemanticErrors({ amountToken: amountTokens[i] })
-            }}
-          />
-        </HorizontalContainer>
-        <Text
-          size="small"
-          color={String(this.props.theme.contentSecondary)}
-          css={{
-            alignSelf: 'flex-end',
-            marginTop: '8px',
-          }}
-        >
-          {'Available Balance: '}
-          {this.state.amountToken.balance} {this.state.amountToken.symbol}
-        </Text>
-      </VerticalContainer>
-    )
+  verifyTransferable = async (app, tokenAddress) => {
+    console.log(tokenAddress)
+    const token = app.external(tokenAddress, tokenTransferAbi)
+    const transferable = await token.transfersEnabled().toPromise()
+    this.setState({ transferable: transferable })
   }
-
-  ErrorBox = () => (
-    this.errorPrompt() &&
-      <React.Fragment>
-        <Info.Alert>
-          {this.startBeforeTokenCreation() && `The selected start date occurs
-          before your reference asset ${(getTokenProp('symbol',this.props,this.state))}
-          was created. Please choose another date.`}
-
-          {this.disbursementOverflow() && `You have specified a date range that results in
-          ${this.state.quarterEndDates.length} disbursements, yet our system can only handle 41.
-          Choose an end date no later than ${this.formatDate(this.state.quarterEndDates[40])}.`}
-
-          {this.lowVaultBalance() && `You have specified a reward for
-          ${this.state.amount} ${this.props.balances[this.state.amountCurrency].symbol}, yet your vault balance
-          is ${this.props.balances[this.state.amountCurrency].amount / Math.pow(10,this.props.balances[this.state.amountCurrency].decimals)}
-          ${this.props.balances[this.state.amountCurrency].symbol}. To ensure successful
-          execution, specify another amount that does not exceed your balance.`}
-
-          {this.dividendPeriodTooShort() &&
-          'Please select a start and end date that are at least as long as the cycle period selected'}
-        </Info.Alert>
-        <br />
-      </React.Fragment>
-  )
-
   amountWithTokenAndBalance = () => (
     <VerticalContainer>
       <HorizontalContainer>
@@ -400,7 +337,9 @@ class NewRewardClass extends React.Component {
         }}
       >
         {'Available Balance: '}
-        {this.state.amountToken.balance} {this.state.amountToken.symbol}
+        {displayCurrency(this.state.amountToken.amount)}
+        {' '}
+        {this.state.amountToken.symbol}
       </Text>
     </VerticalContainer>
   )
@@ -603,11 +542,10 @@ class NewRewardClass extends React.Component {
               items={this.state.referenceAssets}
               selected={this.state.referenceAssets.indexOf(this.state.referenceAsset)}
               placeholder="Select a token"
-              onChange={i => {
+              onChange={async (i) => {
                 this.setState({ referenceAsset: this.state.referenceAssets[i] })
-                this.setSemanticErrors({
-                  referenceAsset: this.state.referenceAssets[i]
-                })
+                await this.verifyTransferable(this.props.app, this.state.referenceAssets[i].key)
+                this.setSemanticErrors()
               }}
             />
           }
@@ -708,8 +646,11 @@ class NewRewardClass extends React.Component {
         </GreyBox>
         <VerticalSpace />
         <Info>
-          {'Holding the reference asset at the disbursement date'}
-          {rewardType === 'RECURRING_DIVIDEND' && 's'}
+          {rewardType === ONE_TIME_MERIT ?  'Earning the reference asset between the start and end date'
+            : 'Holding the reference asset at the disbursement date' 
+            + (rewardType === 'RECURRING_DIVIDEND' ? 's' : '')
+          }
+          
           {' will issue a proportionally split reward across all token holders.'}
         </Info>
         <VerticalSpace />
@@ -737,6 +678,11 @@ class NewRewardClass extends React.Component {
     return this.state.draftSubmitted ? this.showSummary() : this.showDraft()
   }
 }
+
+const DisbursementInput = styled(TextInput)`
+  border-radius: 4px 0 0 4px;
+  box-shadow: none;
+`
 
 const VerticalContainer = styled.div`
   display: flex;

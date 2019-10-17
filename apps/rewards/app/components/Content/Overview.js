@@ -1,12 +1,12 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import moment from 'moment'
 import {
+  ContextMenu,
+  ContextMenuItem,
   DataView,
-  Link,
+  IconView,
   Text,
-  useTheme,
 } from '@aragon/ui'
 import {
   ONE_TIME_DIVIDEND,
@@ -19,6 +19,7 @@ import {
 } from '../../utils/constants'
 import { Empty } from '../Card'
 import Metrics from './Metrics'
+import { displayCurrency } from '../../utils/helpers'
 
 const Overview = ({
   rewards,
@@ -36,18 +37,32 @@ const Overview = ({
       <RewardsWrap>
         <Metrics content={metrics} />
         <DataView
-          heading={<Text size="xlarge">Current rewards</Text>}
+          heading={<Text size="xlarge">All rewards</Text>}
           fields={[ 'description', 'type', 'frequency', 'next payout', 'amount' ]}
           entries={rewards}
-          renderEntry={(reward) => renderReward(reward, viewReward)}
+          renderEntry={renderReward}
+          renderEntryActions={(reward) => renderMenu(reward, viewReward)}
         />
       </RewardsWrap>
     </OverviewMain>
   )
 }
 
-const renderReward = (reward, viewReward) => {
-  const theme = useTheme()
+const renderMenu = (reward, viewReward) => (
+  <ContextMenu>
+    <StyledContextMenuItem
+      onClick={() => viewReward(reward)}
+    >
+      <IconView css={{
+        marginRight: '11px',
+        marginBottom: '2px',
+      }}/>
+      <Text>View</Text>
+    </StyledContextMenuItem>
+  </ContextMenu>
+)
+
+const renderReward = (reward) => {
   let fields = []
   switch(reward.rewardType) {
   case ONE_TIME_DIVIDEND:
@@ -60,16 +75,7 @@ const renderReward = (reward, viewReward) => {
     fields = renderOneTimeMerit(reward)
     break
   }
-  return fields.map(f => (
-    <Link
-      onClick={() => viewReward(reward)}
-      css={{
-        color: theme.content
-      }}
-    >
-      {f}
-    </Link>
-  ))
+  return fields
 }
 
 const renderOneTimeDividend = (reward) => {
@@ -80,7 +86,7 @@ const renderOneTimeDividend = (reward) => {
     dateReference,
   } = reward
   const nextPayout = dateReference.toDateString()
-  const displayAmount = `${amount} ${amountToken}`
+  const displayAmount = `${displayCurrency(amount)} ${amountToken}`
   return [ description, DIVIDEND, ONE_TIME, nextPayout, displayAmount ]
 }
 
@@ -91,25 +97,26 @@ const renderRecurringDividend = (reward) => {
     amountToken,
     disbursement,
     disbursementUnit,
-    disbursements,
+    disbursements
   } = reward
   const frequency = `${RECURRING} (${disbursement} ${disbursementUnit})`
-  const today = moment()
-  const nextPayout = disbursements.find(d => moment(d).isAfter(today, 'day'))
+  const today = new Date()
+  const nextPayout = (disbursements.find(d => d.getTime() > today.getTime()) || disbursements[disbursements.length - 1])
     .toDateString()
-  const displayAmount = `${amount} ${amountToken}`
+  const displayAmount = `${displayCurrency(amount)} ${amountToken}`
   return [ description, DIVIDEND, frequency, nextPayout, displayAmount ]
 }
+
 
 const renderOneTimeMerit = (reward) => {
   const {
     description,
     amount,
     amountToken,
-    dateEnd,
+    endDate,
   } = reward
-  const nextPayout = moment(dateEnd).add(1, 'day').toDate().toDateString()
-  const displayAmount = `${amount} ${amountToken}`
+  const nextPayout = new Date(endDate).toDateString()
+  const displayAmount = `${displayCurrency(amount)} ${amountToken}`
   return [ description, MERIT, ONE_TIME, nextPayout, displayAmount ]
 }
 
@@ -128,6 +135,9 @@ const RewardsWrap = styled.div`
   > :not(:last-child) {
     margin-bottom: 20px;
   }
+`
+const StyledContextMenuItem = styled(ContextMenuItem)`
+  padding: 8px 45px 8px 19px;
 `
 
 // eslint-disable-next-line import/no-unused-modules

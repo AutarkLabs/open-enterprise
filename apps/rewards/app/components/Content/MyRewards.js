@@ -2,7 +2,11 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import {
+  ContextMenu,
+  ContextMenuItem,
   DataView,
+  IconCoin,
+  IconView,
   Text,
   useTheme,
 } from '@aragon/ui'
@@ -13,25 +17,55 @@ import {
 } from '../../utils/constants'
 import { Empty } from '../Card'
 import Metrics from './Metrics'
+import { useAppState } from '@aragon/api-react'
+import BigNumber from 'bignumber.js'
 
 const MyRewards = ({
   myRewards,
   myMetrics,
+  viewReward,
+  claimReward,
 }) => {
   const rewardsEmpty = myRewards.length === 0
 
   if (rewardsEmpty) {
-    return <Empty />
+    return <Empty noButton />
   }
+
+  const renderMenu = (reward) => (
+    <ContextMenu>
+      <StyledContextMenuItem
+        onClick={() => viewReward(reward)}
+      >
+        <IconView css={{
+          marginRight: '11px',
+          marginBottom: '2px',
+        }}/>
+        View
+      </StyledContextMenuItem>
+      {!reward.claimed && (
+        <StyledContextMenuItem
+          onClick={() => claimReward(reward)}
+        >
+          <IconCoin css={{
+            marginRight: '11px',
+            marginBottom: '2px',
+          }}/>
+        Claim
+        </StyledContextMenuItem>)}
+    </ContextMenu>
+  )
+
   return (
     <OverviewMain>
       <RewardsWrap>
         <Metrics content={myMetrics} />
         <DataView
-          heading={<Text size="xlarge">Unclaimed rewards</Text>}
-          fields={[ 'description', 'status', 'amount' ]}
+          heading={<Text size="xlarge">My rewards dashboard</Text>}
+          fields={[ 'description', 'disbursement date', 'status', 'amount' ]}
           entries={myRewards}
           renderEntry={renderReward}
+          renderEntryActions={renderMenu}
         />
       </RewardsWrap>
     </OverviewMain>
@@ -40,63 +74,80 @@ const MyRewards = ({
 
 const renderReward = (reward) => {
   let fields = []
+  const { amountTokens } = useAppState()
   switch(reward.rewardType) {
   case ONE_TIME_DIVIDEND:
-    fields = renderOneTimeDividend(reward)
+    fields = renderOneTimeDividend(reward, amountTokens)
     break
   case RECURRING_DIVIDEND:
-    fields = renderRecurringDividend(reward)
+    fields = renderRecurringDividend(reward, amountTokens)
     break
   case ONE_TIME_MERIT:
-    fields = renderOneTimeMerit(reward)
+    fields = renderOneTimeMerit(reward, amountTokens)
     break
   }
   return fields
 }
 
-const renderOneTimeDividend = (reward) => {
+const renderOneTimeDividend = (reward, amountTokens) => {
   const theme = useTheme()
   const {
     description,
-    amount,
+    userRewardAmount,
     amountToken,
+    dateReference,
+    timeClaimed,
+    endDate
   } = reward
+  console.log('reward: ', reward)
   const displayAmount = (
     <Text color={String(theme.positive)}>
-      +{amount} {amountToken}
+      +{BigNumber(userRewardAmount).div(BigNumber(10).pow(amountTokens.find(t => t.symbol === amountToken).decimals)).toString(10)} {amountToken}
     </Text>
   )
-  return [ description, 'Claim', displayAmount ]
+  const disbursementDate = dateReference.toDateString()
+  const status = timeClaimed > 0 ? 'Claimed' : (Date.now() > endDate ? 'Ready to claim' : 'Pending')
+  return [ description, disbursementDate, status, displayAmount ]
 }
 
-const renderRecurringDividend = (reward) => {
+const renderRecurringDividend = (reward, amountTokens) => {
   const theme = useTheme()
   const {
     description,
-    amount,
+    userRewardAmount,
     amountToken,
+    endDate,
+    timeClaimed
   } = reward
+  console.log('reward: ', reward)
   const displayAmount = (
     <Text color={String(theme.positive)}>
-      +{amount} {amountToken}
+      +{BigNumber(userRewardAmount).div(BigNumber(10).pow(amountTokens.find(t => t.symbol === amountToken).decimals)).toString(10)} {amountToken}
     </Text>
   )
-  return [ description, 'Claim', displayAmount ]
+  const disbursementDate = (new Date(endDate)).toDateString()
+  const status = timeClaimed > 0 ? 'Claimed' : (Date.now() > endDate ? 'Ready to claim' : 'Pending')
+  return [ description, disbursementDate, status, displayAmount ]
 }
 
-const renderOneTimeMerit = (reward) => {
+const renderOneTimeMerit = (reward, amountTokens) => {
   const theme = useTheme()
   const {
     description,
-    amount,
+    userRewardAmount,
     amountToken,
+    endDate,
+    timeClaimed
   } = reward
+  console.log('reward: ', reward)
   const displayAmount = (
     <Text color={String(theme.positive)}>
-      +{amount} {amountToken}
+      +{BigNumber(userRewardAmount).div(BigNumber(10).pow(amountTokens.find(t => t.symbol === amountToken).decimals)).toString(10)} {amountToken}
     </Text>
   )
-  return [ description, 'Claim', displayAmount ]
+  const disbursementDate = (new Date(endDate)).toDateString()
+  const status = timeClaimed > 0 ? 'Claimed' : (Date.now() > endDate ? 'Ready to claim' : 'Pending')
+  return [ description, disbursementDate, status, displayAmount ]
 }
 
 MyRewards.propTypes = {
@@ -112,6 +163,9 @@ const RewardsWrap = styled.div`
   > :not(:last-child) {
     margin-bottom: 20px;
   }
+`
+const StyledContextMenuItem = styled(ContextMenuItem)`
+  padding: 8px 45px 8px 19px;
 `
 
 // eslint-disable-next-line import/no-unused-modules
