@@ -32,6 +32,7 @@
     "test:truffle": "./utils/test.sh"
   },
   "dependencies": {
+    "@apollo/react-hooks": "^3.1.3",
     "@aragon/api": "AutarkLabs/aragon-api",
     "@aragon/api-react": "2.0.0-beta.6",
     "@aragon/apps-shared-minime": "1.0.1",
@@ -42,6 +43,7 @@
     "@babel/runtime": "^7.6.0",
     "apollo-boost": "^0.1.22",
     "axios": "^0.18.0",
+    "date-fns": "2.0.0-alpha.22",
     "graphql": "^14.0.2",
     "graphql-request": "^1.8.2",
     "graphql-tag": "^2.10.0",
@@ -53,8 +55,7 @@
     "react-markdown": "^4.1.0",
     "react-number-format": "^4.0.8",
     "styled-components": "4.1.3",
-    "web3-utils": "^1.0.0",
-    "date-fns": "2.0.0-alpha.22"
+    "web3-utils": "^1.0.0"
   },
   "devDependencies": {
     "@aragon/test-helpers": "^1.0.1",

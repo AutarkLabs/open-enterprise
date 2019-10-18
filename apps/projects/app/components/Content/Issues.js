@@ -1,20 +1,33 @@
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { Query } from 'react-apollo'
-//import Query from './Query.stub'
+import { useQuery } from '@apollo/react-hooks'
 
+import { useAragonApi } from '@aragon/api-react'
 import { Button, GU, Text } from '@aragon/ui'
-import BigNumber from 'bignumber.js'
 import { compareAsc, compareDesc } from 'date-fns'
 
+import { initApolloClient } from '../../utils/apollo-client'
+import useShapedIssue from '../../hooks/useShapedIssue'
 import { STATUS } from '../../utils/github'
 import { getIssuesGQL } from '../../utils/gql-queries.js'
 import { FilterBar } from '../Shared'
 import { Issue } from '../Card'
-import IssueDetail from './IssueDetail'
 import { LoadingAnimation } from '../Shared'
 import { EmptyWrapper } from '../Shared'
+
+const sorters = {
+  'Name ascending': (i1, i2) =>
+    i1.title.toUpperCase() > i2.title.toUpperCase() ? 1 : -1,
+  'Name descending': (i1, i2) =>
+    i1.title.toUpperCase() > i2.title.toUpperCase() ? -1 : 1,
+  'Newest': (i1, i2) =>
+    compareDesc(new Date(i1.createdAt), new Date(i2.createdAt)),
+  'Oldest': (i1, i2) =>
+    compareAsc(new Date(i1.createdAt), new Date(i2.createdAt)),
+}
+
+const ISSUES_PER_CALL = 100
 
 class Issues extends React.PureComponent {
   static propTypes = {
@@ -25,6 +38,7 @@ class Issues extends React.PureComponent {
     bountySettings: PropTypes.shape({
       expLvls: PropTypes.array.isRequired,
     }).isRequired,
+    filters: PropTypes.object.isRequired,
     github: PropTypes.shape({
       status: PropTypes.oneOf([
         STATUS.AUTHENTICATED,
@@ -34,9 +48,16 @@ class Issues extends React.PureComponent {
       token: PropTypes.string,
       event: PropTypes.string,
     }),
-    issueDetail: PropTypes.bool.isRequired,
-    projects: PropTypes.array.isRequired,
-    setIssueDetail: PropTypes.func.isRequired,
+    graphqlQuery: PropTypes.shape({
+      data: PropTypes.object,
+      error: PropTypes.string,
+      loading: PropTypes.bool.isRequired,
+      refetch: PropTypes.func,
+    }).isRequired,
+    setDownloadedRepos: PropTypes.func.isRequired,
+    setFilters: PropTypes.func.isRequired,
+    setSelectedIssue: PropTypes.func.isRequired,
+    shapeIssue: PropTypes.func.isRequired,
     status: PropTypes.string.isRequired,
     tokens: PropTypes.array.isRequired,
   }
@@ -44,31 +65,10 @@ class Issues extends React.PureComponent {
   state = {
     selectedIssues: {},
     allSelected: false,
-    filters: {
-      projects: {},
-      labels: {},
-      milestones: {},
-      deadlines: {},
-      experiences: {},
-      statuses: {},
-    },
     sortBy: 'Newest',
     textFilter: '',
     reload: false,
-    currentIssue: {},
-    downloadedRepos: {},
     downloadedIssues: [],
-    issuesPerCall: 100,
-  }
-
-  UNSAFE_componentWillMount() {
-    if ('filterIssuesByRepoId' in this.props.activeIndex.tabData) {
-      const { filters } = this.state
-      filters.projects[
-        this.props.activeIndex.tabData.filterIssuesByRepoId
-      ] = true
-      this.setState({ filters })
-    }
   }
 
   deselectAllIssues = () => {
@@ -80,7 +80,7 @@ class Issues extends React.PureComponent {
     const allSelected = !this.state.allSelected
     const reload = !this.state.reload
     if (!this.state.allSelected) {
-      this.shapeIssues(issuesFiltered).forEach(
+      issuesFiltered.map(this.props.shapeIssue).forEach(
         issue => (selectedIssues[issue.id] = issue)
       )
     }
@@ -88,9 +88,9 @@ class Issues extends React.PureComponent {
   }
 
   handleFiltering = filters => {
+    this.props.setFilters(filters)
     // TODO: why is reload necessary?
     this.setState(prevState => ({
-      filters: filters,
       reload: !prevState.reload,
     }))
   }
@@ -101,8 +101,8 @@ class Issues extends React.PureComponent {
   }
 
   applyFilters = issues => {
-    const { filters, textFilter } = this.state
-    const { bountyIssues } = this.props
+    const { textFilter } = this.state
+    const { filters, bountyIssues } = this.props
 
     const bountyIssueObj = {}
     bountyIssues.forEach(issue => {
@@ -196,39 +196,28 @@ class Issues extends React.PureComponent {
     })
   }
 
-  handleIssueClick = issue => {
-    this.props.setIssueDetail(true)
-    this.setState({ currentIssue: issue })
-  }
-
   disableFilter = pathToFilter => {
-    let newFilters = { ...this.state.filters }
+    let newFilters = { ...this.props.filters }
     recursiveDeletePathFromObject(pathToFilter, newFilters)
-    this.setState({ filters: newFilters })
+    this.props.setFilters(newFilters)
   }
 
   disableAllFilters = () => {
-    this.setState({
-      filters: {
-        projects: {},
-        labels: {},
-        milestones: {},
-        deadlines: {},
-        experiences: {},
-        statuses: {},
-      },
+    this.props.setFilters({
+      projects: {},
+      labels: {},
+      milestones: {},
+      deadlines: {},
+      experiences: {},
+      statuses: {},
     })
-  }
-
-  setParentFilters = filters => {
-    this.setState(filters)
   }
 
   filterBar = (issues, issuesFiltered) => {
     return (
       <FilterBar
-        setParentFilters={this.setParentFilters}
-        filters={this.state.filters}
+        setParentFilters={this.props.setFilters}
+        filters={this.props.filters}
         sortBy={this.state.sortBy}
         handleSelectAll={this.toggleSelectAll(issuesFiltered)}
         allSelected={this.state.allSelected}
@@ -277,81 +266,6 @@ class Issues extends React.PureComponent {
     </StyledIssues>
   )
 
-  shapeIssues = issues => {
-    const { tokens, bountyIssues, bountySettings } = this.props
-    const bountyIssueObj = {}
-    const tokenObj = {}
-    const expLevels = bountySettings.expLvls
-
-    bountyIssues.forEach(issue => {
-      bountyIssueObj[issue.issueNumber] = issue
-    })
-
-    tokens.forEach(token => {
-      tokenObj[token.addr] = {
-        symbol: token.symbol,
-        decimals: token.decimals,
-      }
-    })
-
-    return issues.map(({ repository: { id, name }, ...fields }) => {
-      const bountyId = bountyIssueObj[fields.number]
-      const repoIdFromBounty = bountyId && bountyId.data.repoId
-      if (bountyId && repoIdFromBounty === id) {
-        const data = bountyIssueObj[fields.number].data
-        const balance = BigNumber(bountyIssueObj[fields.number].data.balance)
-          .div(BigNumber(10 ** tokenObj[data.token].decimals))
-          .dp(3)
-          .toString()
-
-        return {
-          ...fields,
-          ...bountyIssueObj[fields.number].data,
-          repoId: id,
-          repo: name,
-          symbol: tokenObj[data.token].symbol,
-          expLevel: expLevels[data.exp].name,
-          balance: balance,
-          data,
-        }
-      }
-      return {
-        ...fields,
-        repoId: id,
-        repo: name,
-      }
-    })
-  }
-
-  generateSorter = () => {
-    switch (this.state.sortBy) {
-    case 'Name ascending':
-      return (i1, i2) => {
-        return i1.title.toUpperCase() > i2.title.toUpperCase() ? 1 : -1
-      }
-    case 'Name descending':
-      return (i1, i2) => {
-        return i1.title.toUpperCase() > i2.title.toUpperCase() ? -1 : 1
-      }
-    case 'Newest':
-      return (i1, i2) => compareAsc(new Date(i1.createdAt), new Date(i2.createdAt))
-    case 'Oldest':
-      return (i1, i2) => compareDesc(new Date(i1.createdAt), new Date(i2.createdAt))
-    }
-  }
-
-  renderCurrentIssue = currentIssue => {
-    currentIssue.repository = {
-      name: currentIssue.repo,
-      id: currentIssue.repoId,
-      __typename: 'Repository',
-    }
-
-    const currentIssueShaped = this.shapeIssues([currentIssue])[0]
-
-    return <IssueDetail issue={currentIssueShaped} />
-  }
-
   /*
    Data obtained from github API is data.{repo}.issues.[nodes] and it needs
    flattening into one simple array of issues  before it can be used
@@ -370,7 +284,7 @@ class Issues extends React.PureComponent {
       downloadedRepos[repo.id] = {
         downloadedCount: repo.issues.nodes.length,
         totalCount: repo.issues.totalCount,
-        fetch: this.state.issuesPerCall,
+        fetch: ISSUES_PER_CALL,
         hasNextPage: repo.issues.pageInfo.hasNextPage,
         endCursor: repo.issues.pageInfo.endCursor,
       }
@@ -390,36 +304,111 @@ class Issues extends React.PureComponent {
     Object.keys(downloadedRepos).forEach(repoId => {
       newDownloadedRepos[repoId].showMore = downloadedRepos[repoId].hasNextPage
     })
+    this.props.setDownloadedRepos(newDownloadedRepos)
     this.setState({
-      downloadedRepos: newDownloadedRepos,
       downloadedIssues,
     })
   }
 
   render() {
-    const { projects, issueDetail } = this.props
+    const { data, loading, error, refetch } = this.props.graphqlQuery
 
-    const { currentIssue, filters } = this.state
+    if (loading) return this.queryLoading()
 
-    // same if we only need to show Issue's Details screen
-    if (issueDetail) return this.renderCurrentIssue(currentIssue, this.props)
+    if (error) return this.queryError(error, refetch)
 
-    const currentSorter = this.generateSorter()
+    // first, flatten data structure into array of issues
+    const { downloadedIssues, downloadedRepos } = this.flattenIssues(data)
 
-    // build params for GQL query, each repo to fetch has number of items to download,
-    // and a cursor in there are 100+ issues and "Show More" was clicked.
+    // then apply filtering
+    const issuesFiltered = this.applyFilters(downloadedIssues)
+
+    // then determine whether any shown repos have more issues to fetch
+    const moreIssuesToShow =
+      Object.keys(downloadedRepos).filter(
+        repoId => downloadedRepos[repoId].hasNextPage
+      ).length > 0
+
+    return (
+      <StyledIssues>
+        {this.filterBar(downloadedIssues, issuesFiltered)}
+
+        <IssuesScrollView>
+          <ScrollWrapper>
+            {issuesFiltered.map(this.props.shapeIssue)
+              .sort(sorters[this.state.sortBy])
+              .map(issue => (
+                <Issue
+                  isSelected={issue.id in this.state.selectedIssues}
+                  key={issue.number}
+                  {...issue}
+                  onClick={this.props.setSelectedIssue}
+                  onSelect={this.handleIssueSelection}
+                />
+              ))}
+          </ScrollWrapper>
+
+          <div style={{ textAlign: 'center' }}>
+            {moreIssuesToShow && (
+              <Button
+                style={{ margin: '12px 0 30px 0' }}
+                mode="secondary"
+                onClick={() =>
+                  this.showMoreIssues(downloadedIssues, downloadedRepos)
+                }
+              >
+                Show More
+              </Button>
+            )}
+          </div>
+        </IssuesScrollView>
+      </StyledIssues>
+    )
+  }
+}
+
+const IssuesQuery = ({ client, query, ...props }) => {
+  const graphqlQuery = useQuery(query, { client, onError: console.error })
+  return <Issues graphqlQuery={graphqlQuery} {...props} />
+}
+
+IssuesQuery.propTypes = {
+  client: PropTypes.object.isRequired,
+  query: PropTypes.object.isRequired,
+}
+
+const IssuesWrap = ({ activeIndex, projects, ...props }) => {
+  const { appState: { github } } = useAragonApi()
+  const shapeIssue = useShapedIssue()
+  const [ client, setClient ] = useState(null)
+  const [ downloadedRepos, setDownloadedRepos ] = useState({})
+  const [ query, setQuery ] = useState(null)
+  const [ filters, setFilters ] = useState({
+    projects: activeIndex.tabData.filterIssuesByRepoId
+      ? { [activeIndex.tabData.filterIssuesByRepoId]: true }
+      : {},
+    labels: {},
+    milestones: {},
+    deadlines: {},
+    experiences: {},
+    statuses: {},
+  })
+
+  // build params for GQL query, each repo to fetch has number of items to download,
+  // and a cursor if there are 100+ issues and "Show More" was clicked.
+  useEffect(() => {
     let reposQueryParams = {}
 
-    if (Object.keys(this.state.downloadedRepos).length > 0) {
-      Object.keys(this.state.downloadedRepos).forEach(repoId => {
-        if (this.state.downloadedRepos[repoId].hasNextPage)
-          reposQueryParams[repoId] = this.state.downloadedRepos[repoId]
+    if (Object.keys(downloadedRepos).length > 0) {
+      Object.keys(downloadedRepos).forEach(repoId => {
+        if (downloadedRepos[repoId].hasNextPage)
+          reposQueryParams[repoId] = downloadedRepos[repoId]
       })
     } else {
       if (Object.keys(filters.projects).length > 0) {
         Object.keys(filters.projects).forEach(repoId => {
           reposQueryParams[repoId] = {
-            fetch: this.state.issuesPerCall,
+            fetch: ISSUES_PER_CALL,
             showMore: false,
           }
         })
@@ -427,81 +416,45 @@ class Issues extends React.PureComponent {
         projects.forEach(project => {
           const repoId = project.data._repo
           reposQueryParams[repoId] = {
-            fetch: this.state.issuesPerCall,
+            fetch: ISSUES_PER_CALL,
             showMore: false,
           }
         })
       }
     }
 
-    // previous GET_ISSUES is deliberately left in place for reference
-    const GET_ISSUES2 = getIssuesGQL(reposQueryParams)
+    setQuery(getIssuesGQL(reposQueryParams))
+  }, [ downloadedRepos, filters, projects ])
 
-    return (
-      <Query
-        fetchPolicy="cache-first"
-        query={GET_ISSUES2}
-        onError={console.error}
-      >
-        {({ data, loading, error, refetch }) => {
-          if (data && data.node0) {
-            // first, flatten data structure into array of issues
-            const { downloadedIssues, downloadedRepos } = this.flattenIssues(
-              data
-            )
+  useEffect(() => {
+    setClient(github.token ? initApolloClient(github.token) : null)
+  }, [github.token])
 
-            // then apply filtering
-            const issuesFiltered = this.applyFilters(downloadedIssues)
-            // then determine whether any shown repos have more issues to fetch
-            const moreIssuesToShow =
-              Object.keys(downloadedRepos).filter(
-                repoId => downloadedRepos[repoId].hasNextPage
-              ).length > 0
+  if (!query) return 'Loading...'
 
-            return (
-              <StyledIssues>
-                {this.filterBar(downloadedIssues, issuesFiltered)}
+  if (!client) return 'You must sign into GitHub to view issues.'
 
-                <IssuesScrollView>
-                  <ScrollWrapper>
-                    {this.shapeIssues(issuesFiltered)
-                      .sort(currentSorter)
-                      .map(issue => (
-                        <Issue
-                          isSelected={issue.id in this.state.selectedIssues}
-                          key={issue.number}
-                          {...issue}
-                          onClick={this.handleIssueClick}
-                          onSelect={this.handleIssueSelection}
-                        />
-                      ))}
-                  </ScrollWrapper>
+  return (
+    <IssuesQuery
+      activeIndex={activeIndex}
+      client={client}
+      filters={filters}
+      query={query}
+      shapeIssue={shapeIssue}
+      setDownloadedRepos={setDownloadedRepos}
+      setFilters={setFilters}
+      {...props}
+    />
+  )
+}
 
-                  <div style={{ textAlign: 'center' }}>
-                    {moreIssuesToShow && (
-                      <Button
-                        style={{ margin: '12px 0 30px 0' }}
-                        mode="secondary"
-                        onClick={() =>
-                          this.showMoreIssues(downloadedIssues, downloadedRepos)
-                        }
-                      >
-                        Show More
-                      </Button>
-                    )}
-                  </div>
-                </IssuesScrollView>
-              </StyledIssues>
-            )
-          }
-
-          if (loading) return this.queryLoading()
-
-          if (error) return this.queryError(error, refetch)
-        }}
-      </Query>
-    )
-  }
+IssuesWrap.propTypes = {
+  activeIndex: PropTypes.shape({
+    tabData: PropTypes.shape({
+      filterIssuesByRepoId: PropTypes.string,
+    }).isRequired,
+  }).isRequired,
+  projects: PropTypes.array.isRequired,
 }
 
 const StyledIssues = styled.div`
@@ -542,4 +495,4 @@ const recursiveDeletePathFromObject = (path, object) => {
 }
 
 // eslint-disable-next-line import/no-unused-modules
-export default Issues
+export default IssuesWrap
