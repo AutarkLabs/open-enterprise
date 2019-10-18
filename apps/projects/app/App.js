@@ -41,7 +41,6 @@ const App = () => {
   const [ panel, setPanel ] = useState(null)
   const [ panelProps, setPanelProps ] = useState(null)
   const [ popupRef, setPopupRef ] = useState(null)
-  const [ loadBuffer, setLoadBuffer ] = useState(true)
 
   const {
     repos = [],
@@ -49,12 +48,11 @@ const App = () => {
     issues = [],
     tokens = [],
     github = { status : STATUS.INITIAL },
-    sync
+    isSyncing
   } = appState
 
   const client = github.token ? initApolloClient(github.token) : null
 
-  useEffect(() => setTimeout(() => setLoadBuffer(false), 5000), [])
   useEffect(() => {
     const code = getURLParam('code')
     code &&
@@ -129,11 +127,7 @@ const App = () => {
   }
 
   const noop = () => {}
-  const isSyncing = ({ initialized, establishingHandshake, completed }) => {
-    return (initialized || establishingHandshake) && !completed
-  }
-
-  if (loadBuffer || isSyncing(sync)) {
+  if (isSyncing) {
     return (
       <EmptyWrapper>
         <SyncCard />

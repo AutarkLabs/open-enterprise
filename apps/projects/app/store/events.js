@@ -45,21 +45,13 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
   case SYNC_STATUS_SYNCING: {
     return {
       ...state,
-      sync: {
-        ...state.sync,
-        completed: false,
-        initialized: true,
-      }
+      isSyncing: true,
     }
   }
   case SYNC_STATUS_SYNCED: {
     return {
       ...state,
-      sync: {
-        ...state.sync,
-        completed: true,
-        initialized: false,
-      }
+      isSyncing: false,
     }
   }
   case REQUESTING_GITHUB_TOKEN: {
