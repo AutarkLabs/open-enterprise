@@ -1,3 +1,6 @@
+import React from 'react'
+
+const Empty = () => (
 <svg width="223" height="174" viewBox="0 0 223 174" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g clip-path="url(#clip0)">
 <path opacity="0.1" d="M78.2247 170.63C99.7081 170.63 117.124 167.34 117.124 163.281C117.124 159.223 99.7081 155.933 78.2247 155.933C56.7413 155.933 39.3255 159.223 39.3255 163.281C39.3255 167.34 56.7413 170.63 78.2247 170.63Z" fill="#78D7EB"/>
@@ -110,3 +113,6 @@
 </clipPath>
 </defs>
 </svg>
+)
+
+export default Empty
