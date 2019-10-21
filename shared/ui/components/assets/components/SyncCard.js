@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react'
 import { Button, EmptyStateCard, GU, LoadingRing } from '@aragon/ui'
-import empty from '../svg/empty.svg'
+import Empty from './Empty'
 
 export default () => (
   <EmptyStateCard
@@ -26,7 +26,7 @@ export default () => (
             margin: auto;
             height: 170px;
           `}
-          src={empty}
+          src={Empty}
           alt="Syncing your project data. Hang tight homie!"
         />
       }
