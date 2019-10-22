@@ -13,6 +13,7 @@ class VotingOptions extends React.Component {
     voteWeights: [],
     // animationDelay can also be a number to disable the random delay
     animationDelay: { min: ANIM_DELAY_MIN, max: ANIM_DELAY_MAX },
+    displayYouBadge: false,
   }
 
   static propTypes = {
@@ -22,6 +23,7 @@ class VotingOptions extends React.Component {
     color: PropTypes.string.isRequired,
     voteWeights: PropTypes.arrayOf(PropTypes.string).isRequired,
     animationDelay: PropTypes.object.isRequired,
+    displayYouBadge: PropTypes.bool,
   }
 
   constructor(props) {
@@ -38,8 +40,7 @@ class VotingOptions extends React.Component {
 
   render() {
     const { delay } = this.state
-    const { options, totalSupport, color, voteWeights } = this.props
-
+    const { options, totalSupport, color, voteWeights, displayYouBadge } = this.props
     return (
       <React.Fragment>
         {options.map((option, i) =>
@@ -57,7 +58,7 @@ class VotingOptions extends React.Component {
                 valueSpring={value}
                 percentage={safeDiv(parseInt(option.value, 10), totalSupport)*100}
                 color={color}
-                userVote={voteWeights.length ? Math.round(voteWeights[i]) : -1}
+                userVote={(voteWeights.length && displayYouBadge) ? Math.round(voteWeights[i]) : -1}
                 {...option}
               />
             )}

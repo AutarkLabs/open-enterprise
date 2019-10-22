@@ -15,11 +15,10 @@
     "ganache-cli:test:orig": "../shared/test-helpers/ganache-cli.sh",
     "lint": "solium --dir ./contracts",
     "precommit": "lint-staged",
-    "predevelop": "./utils/dev-prep.sh",
     "prepublishOnly": "truffle compile --all",
-    "publish": "npm run predevelop && aragon apm publish patch && sleep 3",
-    "publish:cd": "npm run predevelop && yes | aragon apm publish major --files dist/ --environment continuous-deployment --apm.ipfs.rpc https://ipfs.autark.xyz:5001 --ipfs-check false --skip-confirmation true",
-    "publish:http": "npm run predevelop && npm run build:script && yes | aragon apm publish major --http localhost:3333 --http-served-from ./dist --propagate-content false --skip-confirmation true",
+    "publish": "aragon apm publish patch && sleep 3",
+    "publish:cd": "yes | aragon apm publish major --files dist/ --environment continuous-deployment --apm.ipfs.rpc https://ipfs.autark.xyz:5001 --ipfs-check false --skip-confirmation true",
+    "publish:http": "npm run build:script && yes | aragon apm publish major --http localhost:3333 --http-served-from ./dist --propagate-content false --skip-confirmation true",
     "publish:major": "aragon apm publish major --files dist/",
     "publish:minor": "aragon apm publish minor --files dist/",
     "publish:patch": "aragon apm publish patch --files dist/",
@@ -33,6 +32,7 @@
     "test:truffle": "./utils/test.sh"
   },
   "dependencies": {
+    "@apollo/react-hooks": "^3.1.3",
     "@aragon/api": "AutarkLabs/aragon-api",
     "@aragon/api-react": "2.0.0-beta.6",
     "@aragon/apps-shared-minime": "1.0.1",
@@ -43,6 +43,7 @@
     "@babel/runtime": "^7.6.0",
     "apollo-boost": "^0.1.22",
     "axios": "^0.18.0",
+    "date-fns": "2.0.0-alpha.22",
     "graphql": "^14.0.2",
     "graphql-request": "^1.8.2",
     "graphql-tag": "^2.10.0",
@@ -54,8 +55,7 @@
     "react-markdown": "^4.1.0",
     "react-number-format": "^4.0.8",
     "styled-components": "4.1.3",
-    "web3-utils": "^1.0.0",
-    "date-fns": "2.0.0-alpha.22"
+    "web3-utils": "^1.0.0"
   },
   "devDependencies": {
     "@aragon/test-helpers": "^1.0.1",

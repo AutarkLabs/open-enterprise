@@ -253,7 +253,7 @@ contract Projects is AragonApp, DepositableStorage {
         _addExperienceLevel(500, bytes32("Advanced"));
 
         _changeBountySettings(
-            100, // baseRate
+            0, // baseRate
             336, // bountyDeadline
             ETH, // default bounty currency inits to ETH
             _bountiesAddr // bountyAllocator
@@ -357,7 +357,7 @@ contract Projects is AragonApp, DepositableStorage {
 // Repository functions
 ///////////////////////
     /**
-     * @notice Add repository `_repoId`
+     * @notice Add repository
      * @param _repoId The id of the repo in the projects registry
      * @return index for the added repo at the registry
      */
@@ -374,7 +374,7 @@ contract Projects is AragonApp, DepositableStorage {
     }
 
     /**
-     * @notice Remove repository `_repoId`
+     * @notice Remove repository
      * @param _repoId The id of the repo in the projects registry
      */
     function removeRepo(

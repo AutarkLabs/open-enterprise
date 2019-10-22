@@ -1,7 +1,6 @@
 pragma solidity 0.4.24;
 
 import "@aragon/templates-shared/contracts/TokenCache.sol";
-import "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
 
 import "@tps/apps-address-book/contracts/AddressBook.sol";
 import "@tps/apps-allocations/contracts/Allocations.sol";
@@ -32,7 +31,7 @@ contract BaseOEApps is BaseCache, TokenCache {
 
     string constant private ERROR_BOUNTIES_NOT_CONTRACT = "BOUNTIES_REGISTRY_NOT_CONTRACT";
     address constant internal ANY_ENTITY = address(-1);
-    StandardBounties internal bountiesRegistry;
+    Bounties internal bountiesRegistry;
 
     /**
     * @dev Constructor for Open Enterprise Apps DAO
@@ -48,13 +47,14 @@ contract BaseOEApps is BaseCache, TokenCache {
         _ensureMiniMeFactoryIsValid(_deployedSetupContracts[2]);
         require(isContract(address(_deployedSetupContracts[4])), ERROR_BOUNTIES_NOT_CONTRACT);
 
-        bountiesRegistry = StandardBounties(_deployedSetupContracts[4]);
+        bountiesRegistry = Bounties(_deployedSetupContracts[4]);
     }
 
     /* ADDRESS-BOOK */
 
     function _installAddressBookApp(Kernel _dao) internal returns (AddressBook) {
-        return AddressBook(_installNonDefaultApp(_dao, ADDRESS_BOOK_APP_ID));
+        bytes memory initializeData = abi.encodeWithSelector(AddressBook(0).initialize.selector);
+        return AddressBook(_installNonDefaultApp(_dao, ADDRESS_BOOK_APP_ID, initializeData));
     }
 
     function _createAddressBookPermissions(ACL _acl, AddressBook _addressBook, address _grantee, address _manager) internal {

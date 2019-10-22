@@ -6,13 +6,13 @@ import icon from '../../assets/empty-rewards.svg'
 
 const Icon = () => <img src={icon} height={20 * GU} />
 
-const Empty = ({ action }) => (
+const Empty = ({ action, noButton=false }) => (
 
   <EmptyWrapper>
     <EmptyStateCard
       text="No rewards here"
       illustration={<Icon />}
-      action={<Button label="New reward" onClick={action} />}
+      action={noButton ? '' : <Button label="New reward" onClick={action} />}
     />
   </EmptyWrapper>
 )

@@ -1,12 +1,12 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Mutation } from 'react-apollo'
-import { Field, TextInput, DropDown } from '@aragon/ui'
+import { Field, GU, TextInput, DropDown } from '@aragon/ui'
 import { NEW_ISSUE, GET_ISSUES } from '../../../utils/gql-queries.js'
-import { DescriptionInput, Form } from '../../Form'
+import { Form } from '../../Form'
 import { LoadingAnimation } from '../../Shared'
 import { usePanelManagement } from '../../Panel'
-import { useAragonApi } from '../../../api-react'
+import { useDecoratedRepos } from '../../../context/DecoratedRepos'
 
 // TODO: labels
 // TODO: import validator from '../data/validation'
@@ -109,63 +109,65 @@ class NewIssue extends React.PureComponent {
     ]
 
     return (
-      <Mutation
-        mutation={NEW_ISSUE}
-        refetchQueries={reGet}
-        variables={{ title, description, id }}
-        onError={console.error}
-      >
-        {(newIssue, result) => {
-          const { data, loading, error, called } = result
-          if (!called) {
-            return (
-              <Form
-                onSubmit={newIssue}
-                submitText="Submit Issue"
-                submitDisabled={this.canSubmit()}
-              >
-                <Field label="Project">
-                  <DropDown
-                    items={items}
-                    active={selectedProject}
-                    onChange={projectChange}
-                    wide
-                    required
-                  />
-                </Field>
-                <Field label="Title">
-                  <TextInput onChange={titleChange} required wide />
-                </Field>
-                <Field label="Description">
-                  <DescriptionInput
-                    rows={3}
-                    style={{
-                      resize: 'none',
-                      height: 'auto',
-                      paddingTop: '5px',
-                      paddingBottom: '5px',
-                    }}
-                    onChange={descriptionChange}
-                    wide
-                  />
-                </Field>
-              </Form>
-            )
-          } // end if(!called)
-          if (loading) {
-            return <Creating />
-          }
-          if (error) {
-            return <div>Error</div>
-          }
+      <div css={`margin: ${2 * GU}px 0`}>
+        <Mutation
+          mutation={NEW_ISSUE}
+          refetchQueries={reGet}
+          variables={{ title, description, id }}
+          onError={console.error}
+        >
+          {(newIssue, result) => {
+            const { data, loading, error, called } = result
+            if (!called) {
+              return (
+                <Form
+                  onSubmit={newIssue}
+                  submitText="Submit Issue"
+                  submitDisabled={this.canSubmit()}
+                >
+                  <Field label="Project">
+                    <DropDown
+                      items={items}
+                      selected={selectedProject}
+                      onChange={projectChange}
+                      wide
+                      required
+                    />
+                  </Field>
+                  <Field label="Title">
+                    <TextInput onChange={titleChange} required wide />
+                  </Field>
+                  <Field label="Description">
+                    <TextInput.Multiline
+                      rows={3}
+                      style={{
+                        resize: 'none',
+                        height: 'auto',
+                        paddingTop: '5px',
+                        paddingBottom: '5px',
+                      }}
+                      onChange={descriptionChange}
+                      wide
+                    />
+                  </Field>
+                </Form>
+              )
+            } // end if(!called)
+            if (loading) {
+              return <Creating />
+            }
+            if (error) {
+              return <div>Error</div>
+            }
 
-          const { createIssue } = data
-          if (createIssue) {
-            this.props.closePanel()
-          }
-          return null
-        }}
-      </Mutation>
+            const { createIssue } = data
+            if (createIssue) {
+              this.props.closePanel()
+            }
+            return null
+          }}
+        </Mutation>
+      </div>
     )
   }
 }
@@ -174,14 +176,14 @@ class NewIssue extends React.PureComponent {
 // the following was a quick way to allow us to use hooks
 const NewIssueWrap = () => {
   const { closePanel } = usePanelManagement()
-  const { appState: { repos } } = useAragonApi()
+  const repos = useDecoratedRepos()
   const repoNames = repos
     ? repos.map(repo => ({
       name: repo.metadata.name,
       id: repo.data._repo,
     }))
     : 'No repos'
-  const reposIds = (repos || []).map(repo => repo.data.repo)
+  const reposIds = (repos || []).map(repo => repo.data._repo)
 
   return (
     <NewIssue

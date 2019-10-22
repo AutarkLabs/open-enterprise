@@ -23,10 +23,11 @@ const eventHandler = async eventData => {
 
     return vaultLoadBalance(state, returnValues, settings)
   }
- 
+
   // Allocations events
   switch (event) {
   case 'NewAccount':
+  case 'SetBudget':
     return {
       ...state,
       accounts: await updateAccounts(state.accounts, returnValues.accountId),

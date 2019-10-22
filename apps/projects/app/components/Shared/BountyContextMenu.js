@@ -13,7 +13,6 @@ const BountyContextMenu = ({ issue }) => {
     reviewApplication,
     reviewWork,
     submitWork,
-    viewFunding,
   } = usePanelManagement()
 
   return (
@@ -24,17 +23,11 @@ const BountyContextMenu = ({ issue }) => {
       {workStatus === 'in-progress' && (
         <React.Fragment>
           <Item onClick={() => submitWork(issue)}>Submit Work</Item>
-          <Item bordered onClick={() => viewFunding(issue)}>
-            View Funding Proposal
-          </Item>
         </React.Fragment>
       )}
       {workStatus === 'review-work' && (
         <React.Fragment>
           <Item onClick={() => reviewWork(issue)}>Review Work</Item>
-          <Item bordered onClick={() => viewFunding(issue)}>
-            View Funding Proposal
-          </Item>
         </React.Fragment>
       )}
       {workStatus === 'funded' && (
@@ -45,7 +38,6 @@ const BountyContextMenu = ({ issue }) => {
           <Item bordered onClick={() => editBounty([issue])}>
             Update Funding
           </Item>
-          <Item onClick={() => viewFunding(issue)}>View Funding Proposal</Item>
         </React.Fragment>
       )}
       {workStatus === 'review-applicants' && (
@@ -56,11 +48,7 @@ const BountyContextMenu = ({ issue }) => {
           <Item bordered onClick={() => editBounty([issue])}>
             Update Funding
           </Item>
-          <Item onClick={() => viewFunding(issue)}>View Funding Proposal</Item>
         </React.Fragment>
-      )}
-      {workStatus === 'fulfilled' && (
-        <Item onClick={() => viewFunding(issue)}>View Funding Proposal</Item>
       )}
     </React.Fragment>
   )

@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import PropTypes from 'prop-types'
 
 import { useAragonApi } from '../../api-react'
 import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
@@ -61,42 +60,35 @@ const App = () => {
 
   const addressList = entries.map(entry => entry.addr)
 
-  const Wrap = ({ children }) => (
+  return (
     <Main assetsUrl={ASSETS_URL}>
       <IdentityProvider
         onResolve={handleResolveLocalIdentity}
         onShowLocalIdentityModal={handleShowLocalIdentityModal}
       >
-        { children }
+        { entries.length === 0
+          ? <Empty action={newEntity} />
+          : (
+            <React.Fragment>
+              <Header
+                primary="Address Book"
+                secondary={
+                  <Button mode="strong" icon={<IconPlus />} onClick={newEntity} label="New Entity" />
+                }
+              />
+              <Entities
+                entities={entries}
+                onNewEntity={newEntity}
+                onRemoveEntity={removeEntity}
+              />
+            </React.Fragment>
+          )
+        }
         <SidePanel onClose={closePanel} opened={panelVisible} title="New entity">
           <NewEntity onCreateEntity={createEntity} addressList={addressList} />
         </SidePanel>
       </IdentityProvider>
     </Main>
-  )
-
-  Wrap.propTypes = {
-    children: PropTypes.node.isRequired,
-  }
-      
-  if (!entries.length) return (
-    <Wrap><Empty action={newEntity} /></Wrap>
-  )
-
-  return (
-    <Wrap>
-      <Header
-        primary="Address Book"
-        secondary={
-          <Button mode="strong" icon={<IconPlus />} onClick={newEntity} label="New Entity" />
-        }
-      />
-      <Entities
-        entities={entries}
-        onNewEntity={newEntity}
-        onRemoveEntity={removeEntity}
-      />
-    </Wrap>
   )
 }
 

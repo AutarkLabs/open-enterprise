@@ -4,8 +4,8 @@ import {
   DataView,
   IconCheck,
   IconCross,
-  // IdentityBadge,
-  // ProgressBar,
+  IdentityBadge,
+  ProgressBar,
   Text,
   useTheme,
 } from '@aragon/ui'
@@ -18,12 +18,15 @@ import { displayCurrency } from '../../utils/helpers'
 
 const AllocationsHistory = ({ allocations }) => {
   const theme = useTheme()
-  const { balances = [] } = useAppState()
+  const { balances = [], budgets = [] } = useAppState()
   const getTokenSymbol = inputAddress => {
     const matchingBalance = balances.find(({ address }) => inputAddress === address)
     return matchingBalance ? matchingBalance.symbol : ''
   }
-
+  const getBudgetName = inputId => {
+    const matchingName = budgets.find(({ id }) => inputId === id)
+    return matchingName ? matchingName.name : `# ${inputId}`
+  }
   return (
     <DataView
       mode="adaptive"
@@ -52,41 +55,43 @@ const AllocationsHistory = ({ allocations }) => {
         return [
           new Date(Number(date)).toLocaleDateString(),
           <div key={index}>
-            {'# ' + accountId}
+            {getBudgetName(accountId)}
           </div>,
           recipients.length === 1 ? '1 entity'
             : recipients.length + ' entities',
           description,
           <Status key={index} code={status} />,
           <Amount key={index} theme={theme} >
-            { displayCurrency(BigNumber(amount)) } { getTokenSymbol(token) }
+            { displayCurrency(BigNumber(-amount)) } { getTokenSymbol(token) }
           </Amount>
         ]
       }}
-      //renderEntryExpansion={({ recipients, amount, token }) => {
-      //  return recipients.map((recipient, index) => {
-      //    const allocated = BigNumber(recipient.amount).div(amount)
-      //    return (
-      //      <Recipient key={index}>
-      //        <IdentityBadge
-      //          entity={recipient.address}
-      //          shorten={true}
-      //        />
-      //        <RecipientProgress>
-      //          <ProgressBar
-      //            value={allocated.toNumber()}
-      //            color={String(theme.accentEnd)}
-      //          />
-      //        </RecipientProgress>
-      //        <RecipientAmount theme={theme}>
-      //          { displayCurrency(BigNumber(recipient.amount)) } {' '}
-      //          {token} {' • '}
-      //          { allocated.times(100).dp(0).toNumber() }{'%'}
-      //        </RecipientAmount>
-      //      </Recipient>
-      //    )
-      //  })
-      //}}
+      renderEntryExpansion={({ recipients, amount, token }) => {
+        const totalSupports = recipients.reduce((total, recipient) => {
+          return total + Number(recipient.supports)
+        }, 0)
+        return recipients.map((recipient, index) => {
+          const allocated = BigNumber(recipient.supports).div(totalSupports)
+          return (
+            <div key={index}>
+              <IdentityBadge
+                entity={recipient.candidateAddress}
+              />
+              <RecipientProgress theme={theme}>
+                <ProgressBar
+                  value={allocated.toNumber()}
+                  color={String(theme.accentEnd)}
+                />
+              </RecipientProgress>
+              <RecipientAmount theme={theme}>
+                { displayCurrency(BigNumber(amount).times(allocated)) } {' '}
+                {getTokenSymbol(token)} {' • '}
+                { allocated.times(100).dp(0).toNumber() }{'%'}
+              </RecipientAmount>
+            </div>
+          )
+        })
+      }}
     />
   )
 }
@@ -113,25 +118,24 @@ Status.propTypes = {
 }
 
 const Amount = styled.div`
-  color: ${({ theme }) => theme.negative};
   font-weight: 600;
 `
 
-// const Recipient = styled.div`
-//   display: flex;
-//   flex-direction: column;
-// `
-//
-// const RecipientProgress = styled.div`
-//   margin-top: 7px;
-//   margin-bottom: 4px;
-// `
-//
-// const RecipientAmount = styled.div`
-//   color: ${({ theme }) => theme.contentSecondary};
-//   align-self: flex-end;
-//   font-size: 12px;
-// `
+const RecipientProgress = styled.div`
+   margin-top: 8px;
+   margin-bottom: 4px;
+   width: 100%;
+
+   div {
+     background: ${({ theme }) => theme.overlay};
+   }
+ `
+
+const RecipientAmount = styled.div`
+   color: ${({ theme }) => theme.contentSecondary};
+   font-size: 12px;
+   text-align: right;
+ `
 
 const StatusContent = styled.div`
   color: ${({ code, theme }) => code === 0 ?

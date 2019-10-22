@@ -11,10 +11,10 @@ export const REWARD_TYPES = [
   RECURRING_DIVIDEND,
   ONE_TIME_MERIT
 ]
-const DAYS = 'Days'
-const WEEKS = 'Weeks'
+export const DAYS = 'Days'
+export const WEEKS = 'Weeks'
 export const MONTHS = 'Months'
-const YEARS = 'Years'
+export const YEARS = 'Years'
 export const MERIT = 'Merit'
 export const ONE_TIME = 'One time'
 export const DIVIDEND = 'dividend'

@@ -1,13 +1,14 @@
 import React from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
-import { Button, IdentityBadge, Info, Text } from '@aragon/ui'
+import { Button, Info, Text } from '@aragon/ui'
+import { useAppState } from '@aragon/api-react'
+import BigNumber from 'bignumber.js'
 
 import {
   ONE_TIME_DIVIDEND,
   RECURRING_DIVIDEND,
   ONE_TIME_MERIT,
-  OTHER,
 } from '../../utils/constants'
 
 const RewardSummary = ({ reward, theme, onCancel, onSubmit }) => {
@@ -15,7 +16,6 @@ const RewardSummary = ({ reward, theme, onCancel, onSubmit }) => {
     description,
     rewardType,
     referenceTokenSymbol,
-    customToken,
     amount,
     amountToken,
     dateReference,
@@ -23,6 +23,8 @@ const RewardSummary = ({ reward, theme, onCancel, onSubmit }) => {
     endDate,
     disbursements,
   } = reward
+  const { amountTokens } = useAppState()
+  console.log('reward: ', reward)
   return (
     <VerticalContainer>
       <VerticalSpace />
@@ -31,20 +33,14 @@ const RewardSummary = ({ reward, theme, onCancel, onSubmit }) => {
         <SubTitle theme={theme}>{rewardType}</SubTitle>
         <Heading theme={theme}>Reference Asset</Heading>
         <Content>
-          {referenceTokenSymbol === OTHER ? (
-            <IdentityBadge
-              badgeOnly
-              entity={customToken.address}
-              shorten
-            />
-          ): referenceTokenSymbol}
+          {referenceTokenSymbol}
         </Content>
         <Heading theme={theme}>
           {rewardType === ONE_TIME_MERIT && 'Total'}
           {' Amount '}
           {rewardType === RECURRING_DIVIDEND && 'per Cycle'}
         </Heading>
-        <Content>{amount} {amountToken.symbol}</Content>
+        <Content>{BigNumber(amount).div(BigNumber(10).pow(amountTokens.find(t => t.symbol === amountToken).decimals)).toString(10)} {amountToken}</Content>
         <Heading theme={theme}>
           {rewardType === ONE_TIME_MERIT ?
             'Start and End Date' : 'Disbursement Date'}
@@ -67,8 +63,11 @@ const RewardSummary = ({ reward, theme, onCancel, onSubmit }) => {
       </GreyBox>
       <VerticalSpace />
       <Info>
-        {'Holding the reference asset at the disbursement date'}
-        {rewardType === 'RECURRING_DIVIDEND' && 's'}
+        {rewardType === ONE_TIME_MERIT ?  'Earning the reference asset between the start and end date'
+          : 'Holding the reference asset at the disbursement date' 
+            + (rewardType === 'RECURRING_DIVIDEND' ? 's' : '')
+        }
+          
         {' will issue a proportionally split reward across all token holders.'}
       </Info>
       <VerticalSpace />

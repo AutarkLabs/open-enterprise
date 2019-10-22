@@ -3,7 +3,7 @@ import styled from 'styled-components'
 
 import { Checkbox, Text, TextInput, GU, useTheme } from '@aragon/ui'
 
-import { Form, FormField, DateInput, DescriptionInput } from '../../Form'
+import { Form, FormField, DateInput } from '../../Form'
 import { useAragonApi } from '../../../api-react'
 import useGithubAuth from '../../../hooks/useGithubAuth'
 import { usePanelManagement } from '..'
@@ -63,12 +63,13 @@ const RequestAssignment = ({ issue }) => {
           label="Work Plan"
           required
           input={
-            <DescriptionInput
+            <TextInput.Multiline
               value={workplan}
               name="workplan"
               rows="3"
               onChange={updateWorkplan}
               placeholder="Describe how you plan to accomplish the task and any questions you may have."
+              wide
             />
           }
         />

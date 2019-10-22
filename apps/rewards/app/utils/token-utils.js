@@ -5,6 +5,7 @@ import tokenSymbolBytesAbi from '../../../shared/json-abis/token-symbol-bytes.js
 import tokenNameAbi from '../../../shared/json-abis/token-name.json'
 import tokenNameBytesAbi from '../../../shared/json-abis/token-name-bytes.json'
 import tokenCreationBlockAbi from '../../../shared/json-abis/token-creationblock.json'
+import tokenTransferAbi from '../../../shared/json-abis/token-transferable.json'
 
 // Some known tokens don’t strictly follow ERC-20 and it would be difficult to
 // adapt to every situation. The data listed in this map is used as a fallback
@@ -81,4 +82,12 @@ export async function getTokenStartBlock(app, address) {
   let token = app.external(address, tokenCreationBlockAbi)
   let tokenStartBlock = await token.creationBlock().toPromise()
   return tokenStartBlock
+}
+
+export async function getTransferable(app, address) {
+  // creation block is optional; note that aragon.js doesn't return an error (only an falsey value) when
+  // getting this value fails. It's only available for MiniMe Tokens
+  let token = app.external(address, tokenTransferAbi)
+  let transferable = await token.transfersEnabled().toPromise()
+  return transferable
 }

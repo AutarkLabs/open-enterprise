@@ -17,3 +17,7 @@ export const VAULT_DEPOSIT = 'VaultDeposit'
 /* StandardBounties.sol events */
 export const ACTION_PERFORMED = 'ActionPerformed'
 export const BOUNTY_FULFILLED = 'BountyFulfilled'
+
+/* Aragon.js events */
+export const SYNC_STATUS_SYNCING = 'SYNC_STATUS_SYNCING'
+export const SYNC_STATUS_SYNCED = 'SYNC_STATUS_SYNCED'

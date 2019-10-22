@@ -15,14 +15,14 @@ import {
   BOUNTY_FULFILLED,
   BOUNTY_SETTINGS_CHANGED,
   VAULT_DEPOSIT,
+  SYNC_STATUS_SYNCING,
+  SYNC_STATUS_SYNCED,
 } from './eventTypes'
 
 import { INITIAL_STATE } from './'
 
 import {
-  initializeGraphQLClient,
   syncRepos,
-  loadReposFromQueue,
   loadIssueData,
   loadIpfsData,
   buildSubmission,
@@ -39,8 +39,19 @@ import { app } from './app'
 
 export const handleEvent = async (state, action, vaultAddress, vaultContract) => {
   const { event, returnValues, address } = action
-
   switch (event) {
+  case SYNC_STATUS_SYNCING: {
+    return {
+      ...state,
+      isSyncing: true,
+    }
+  }
+  case SYNC_STATUS_SYNCED: {
+    return {
+      ...state,
+      isSyncing: false,
+    }
+  }
   case REQUESTING_GITHUB_TOKEN: {
     return state
   }
@@ -48,17 +59,12 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
     const { token } = returnValues
     if (!token) return state
 
-    initializeGraphQLClient(token)
-
     state.github = {
       token,
       status: STATUS.AUTHENTICATED,
       event: null
     }
     app.cache('github', state.github).toPromise()
-
-    const loadedRepos = await loadReposFromQueue(state)
-    state.repos = [ ...state.repos, ...loadedRepos ]
 
     return state
   }
@@ -68,7 +74,6 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
   case REQUESTED_GITHUB_DISCONNECT: {
     state.github = INITIAL_STATE.github
     app.cache('github', state.github).toPromise()
-    state.repos = [] // repos will be reloaded from loadReposFromQueue on re-sign-in
     return state
   }
   case REPO_ADDED: {

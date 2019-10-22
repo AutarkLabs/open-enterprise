@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import PropTypes from 'prop-types'
 import { useAragonApi } from '../../api-react'
 import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
 
@@ -11,20 +10,25 @@ import { Deactivate } from '../Modal'
 
 const App = () => {
   const [ panel, setPanel ] = useState(null)
+  const [ panelOpen, setPanelOpen ] = useState(false)
   const [ isModalVisible, setModalVisible ] = useState(false)
   const [ currentBudgetId, setCurrentBudgetId ] = useState('')
   const { api, appState } = useAragonApi()
-  const { allocations = [], budgets = [], tokens = [] } = appState
+  const { allocations = [], budgets = [] } = appState
 
-  const onCreateBudget = ({ amount, name, token }) => {
-    api
-      .newAccount(
-        name,             // _metadata
-        token.address,    // _token
-        true,             // hasBudget
-        amount
-      )
-      .toPromise()
+  const saveBudget = ({ id, amount, name, token }) => {
+    if (id) {
+      api.setBudget(id, amount, name).toPromise()
+    } else {
+      api
+        .newAccount(
+          name,             // _metadata
+          token.address,    // _token
+          true,             // hasBudget
+          amount
+        )
+        .toPromise()
+    }
     closePanel()
   }
 
@@ -48,7 +52,7 @@ const App = () => {
       '1', // recurrences, 1 for now
       Math.floor(new Date().getTime()/1000), // startTime, now for now
       period,
-      String(balance), // amount
+      balance, // amount
     ).toPromise()
     closePanel()
 
@@ -68,8 +72,9 @@ const App = () => {
     const fundsLimit = '300000' // remove this!
     setPanel({
       content: NewBudget,
-      data: { heading: 'New budget', onCreateBudget, fundsLimit, tokens },
+      data: { heading: 'New budget', saveBudget, fundsLimit },
     })
+    setPanelOpen(true)
   }
 
   const onNewAllocation = (budgetId) => {
@@ -84,20 +89,22 @@ const App = () => {
         balances,
       },
     })
+    setPanelOpen(true)
   }
 
   const onEdit = id => {
     const fundsLimit = '300000' // remove this!
-    const editingBudget = budgets.find(budget => budget.budgetId === id)
+    const editingBudget = budgets.find(budget => budget.id === id)
     setPanel({
       content: NewBudget,
       data: {
         heading: 'Edit budget',
-        onCreateBudget,
+        saveBudget,
         editingBudget,
         fundsLimit,
       },
     })
+    setPanelOpen(true)
   }
 
   const onDeactivate = id => {
@@ -110,7 +117,7 @@ const App = () => {
   }
 
   const closePanel = () => {
-    setPanel(null)
+    setPanelOpen(false)
   }
 
   const closeModal = () => {
@@ -126,63 +133,53 @@ const App = () => {
 
   const PanelContent = panel ? panel.content : null
 
-  const Wrap = ({ children }) => (
-    <Main scrollView={false}>
+  return (
+    <Main>
       <IdentityProvider
         onResolve={handleResolveLocalIdentity}
-        onShowLocalIdentityModal={handleShowLocalIdentityModal}>
-        { children }
+        onShowLocalIdentityModal={handleShowLocalIdentityModal}
+      >
+        {budgets.length === 0
+          ? <Empty action={onNewBudget} />
+          : (
+            <React.Fragment>
+              <Header
+                primary="Allocations"
+                secondary={
+                  <Button
+                    mode="strong"
+                    icon={<IconPlus />}
+                    onClick={onNewBudget}
+                    label="New budget"
+                  />
+                }
+              />
+              <Budgets
+                budgets={budgets}
+                onNewAllocation={onNewAllocation}
+                onEdit={onEdit}
+                onDeactivate={onDeactivate}
+                onReactivate={onReactivate}
+              />
+            </React.Fragment>
+          )
+        }
+        { !!allocations.length && <AllocationsHistory allocations={allocations} /> }
+        <Deactivate
+          visible={isModalVisible}
+          budgetId={currentBudgetId}
+          onClose={closeModal}
+          onSubmit={onSubmitDeactivate}
+        />
         <SidePanel
           title={(panel && panel.data.heading) || ''}
-          opened={panel !== null}
+          opened={panelOpen}
           onClose={closePanel}
         >
           {panel && <PanelContent {...panel.data} />}
         </SidePanel>
       </IdentityProvider>
     </Main>
-  )
-
-  Wrap.propTypes = {
-    children: PropTypes.node.isRequired,
-  }
-
-  if (budgets.length === 0) {
-    return (
-      <Wrap>
-        <Empty action={onNewBudget} />
-      </Wrap>
-    )
-  }
-
-  return (
-    <Wrap>
-      <Header
-        primary="Allocations"
-        secondary={
-          <Button
-            mode="strong"
-            icon={<IconPlus />}
-            onClick={onNewBudget}
-            label="New budget"
-          />
-        }
-      />
-      <Budgets
-        budgets={budgets}
-        onNewAllocation={onNewAllocation}
-        onEdit={onEdit}
-        onDeactivate={onDeactivate}
-        onReactivate={onReactivate}
-      />
-      { !!allocations.length && <AllocationsHistory allocations={allocations} /> }
-      <Deactivate
-        visible={isModalVisible}
-        budgetId={currentBudgetId}
-        onClose={closeModal}
-        onSubmit={onSubmitDeactivate}
-      />
-    </Wrap>
   )
 }
 

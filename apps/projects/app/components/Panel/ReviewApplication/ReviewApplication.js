@@ -10,9 +10,10 @@ import {
   IconCross,
   Link,
   Text,
+  TextInput,
   useTheme,
 } from '@aragon/ui'
-import { FormField, FieldTitle, DescriptionInput } from '../../Form'
+import { FormField, FieldTitle } from '../../Form'
 import useGithubAuth from '../../../hooks/useGithubAuth'
 import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '../../Panel'
@@ -152,12 +153,13 @@ const ReviewApplication = ({ issue, requestIndex }) => {
           <FormField
             label="Feedback"
             input={
-              <DescriptionInput
+              <TextInput.Multiline
                 name='feedback'
                 rows="3"
                 onChange={updateFeedback}
                 placeholder="Do you have any feedback to provide the applicant?"
                 value={feedback}
+                wide
               />
             }
           />

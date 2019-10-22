@@ -18,6 +18,7 @@ const Label = ({ fontSize, label }) => {
         networkType={network.type}
         entity={label}
         shorten
+        style={{ padding: 0 }}
       />
     )
   }
@@ -53,6 +54,7 @@ const VotingOption = ({ valueSpring, label, percentage, color, threshold, userVo
               grid-gap: ${0.5 * GU}px;
               grid-template-columns: 1fr auto;
               margin-right: ${0.5 * GU}px;
+              height: 24px;
             `}
           >
             <Label fontSize={fontSize} label={label} />

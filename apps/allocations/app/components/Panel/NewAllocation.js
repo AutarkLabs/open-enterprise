@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { DropDown, IconClose, Text, TextInput, theme } from '@aragon/ui'
+import { DropDown, GU, IconClose, Text, TextInput, font, theme } from '@aragon/ui'
 import web3Utils from 'web3-utils'
 import styled from 'styled-components'
 import { BigNumber } from 'bignumber.js'
@@ -133,12 +133,13 @@ class NewAllocation extends React.Component {
       budgetValue,
       descriptionValue,
       amountValue,
-      recipients
+      recipients,
+      tokenValue
     } = this.state
     const allocation = {
       budgetId: this.props.budgetId,
       budgetName: budgetValue,
-      balance: amountValue * 10e17,
+      balance: BigNumber(amountValue).times(BigNumber(10).pow(tokenValue.decimals)).toString(10),
       description: descriptionValue,
       addresses: Object.values(recipients),
     }
@@ -147,7 +148,7 @@ class NewAllocation extends React.Component {
   }
 
   render() {
-    const { budgets } = this.props
+    const { balances, budgets } = this.props
     const {
       budgetValue,
       descriptionValue,
@@ -162,6 +163,9 @@ class NewAllocation extends React.Component {
       recipientsDuplicate,
       tokenValue,
     } = this.state
+
+    const remainingBudget = displayCurrency(BigNumber(budgetValue.remaining))
+    const inVault = displayCurrency(balances.find(b => b.address === tokenValue.address).amount)
 
     const budgetDropDown = (
       <FormField
@@ -201,8 +205,20 @@ class NewAllocation extends React.Component {
         required
         label="Amount"
         input={
-          <React.Fragment>
-            <InputGroup>
+          <div css={`
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: flex-end;
+            color: ${theme.textSecondary};
+            ${font({ size: 'small' })}
+          `}>
+            <Text>
+              Available in Vault: {inVault} {tokenValue.symbol}
+            </Text>
+            <Text>
+              Available Budget: {remainingBudget} {tokenValue.symbol}
+            </Text>
+            <InputGroup css={`margin-bottom: ${GU}px; width: 100%`}>
               <TextInput
                 name="amount"
                 type="number"
@@ -215,17 +231,7 @@ class NewAllocation extends React.Component {
               />
               <CurrencyBox>{tokenValue.symbol}</CurrencyBox>
             </InputGroup>
-            <InputGroup css={{ justifyContent: 'flex-end' }}>
-              <Text
-                size="small"
-                css={{ paddingTop: '10px', color: theme.contentSecondary }}>
-                {'Available Budget: '}
-                {displayCurrency(BigNumber(budgetValue.remaining))}
-                {' '}
-                {tokenValue.symbol}
-              </Text>
-            </InputGroup>
-          </React.Fragment>
+          </div>
         }
       />
     )

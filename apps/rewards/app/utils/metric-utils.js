@@ -2,11 +2,12 @@ import BigNumber from 'bignumber.js'
 import { MILLISECONDS_IN_A_MONTH } from '../../../../shared/ui/utils/math-utils'
 
 export const calculateAverageRewardsNumbers = ( rewards, claims, balances, convertRates ) => {
-  if (Object.keys(claims).length > 0 && balances && convertRates) {
+  if (balances && convertRates) {
+    const claimsReturn = Object.keys(claims).length > 0 ? calculateAvgClaim(claims, balances, convertRates): 0
     return [
-      (calculateAvgClaim(claims, balances, convertRates), '$'),
-      (calculateMonthlyAvg(rewards, balances, convertRates), '$'),
-      (calculateYTDRewards(rewards,balances, convertRates), '$'),
+      claimsReturn,
+      calculateMonthlyAvg(rewards, balances, convertRates),
+      calculateYTDRewards(rewards,balances, convertRates),
     ]
   }
   else {
@@ -24,26 +25,27 @@ const calculateAvgClaim = ({ claimsByToken, totalClaimsMade }, balances, convert
 }
 
 const calculateMonthlyAvg = (rewards, balances, convertRates) => {
-  let monthCount = Math.ceil((Date.now() - rewards.reduce((minDate, reward) => {
+  let monthCount = Math.ceil((rewards.reduce((minDate, reward) => {
     return reward.endDate < minDate.endDate ? reward: minDate
-  }).endDate) / MILLISECONDS_IN_A_MONTH)
-
-  return sumTotalRewards(
+  }, rewards[0]).endDate - Date.now())/ MILLISECONDS_IN_A_MONTH)
+  const totalRewards = sumTotalRewards(
     rewards,
     balances,
     convertRates,
     (rew, bal) => rew.rewardToken === bal.address
   ) / monthCount
+  return totalRewards
 }
 
 const calculateYTDRewards = (rewards, balances, convertRates) => {
   const yearBeginning = new Date(new Date(Date.now()).getFullYear(), 0)
-  return sumTotalRewards(
+  const totalRewards = sumTotalRewards(
     rewards,
     balances,
     convertRates,
     (rew, bal) => rew.rewardToken === bal.address && rew.endDate >= yearBeginning
   )
+  return totalRewards
 }
 
 const sumTotalRewards = (rewards, balances, convertRates, rewardFilter) => {
