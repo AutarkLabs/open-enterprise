@@ -1,5 +1,5 @@
-import { combineLatest } from 'rxjs'
-import { first } from 'rxjs/operators'
+import { combineLatest, from } from 'rxjs'
+import { first, map, mergeMap } from 'rxjs/operators'
 
 import { app } from './'
 import { EMPTY_CALLSCRIPT } from '../utils/vote-utils'
@@ -242,9 +242,9 @@ const getVoteExecutionTargets = (vote) => {
 
 const decorateVote = async (vote) => {
   const executionTargets = getVoteExecutionTargets(vote)
+  const currentApp = await app.currentApp().toPromise()
   if (!executionTargets.length) {
     // If there's no execution target, consider it targetting this Dot Voting app
-    const currentApp = await app.currentApp().pipe(first()).toPromise()
     return {
       ...vote,
       executionTargetData: {
@@ -259,37 +259,39 @@ const decorateVote = async (vote) => {
       executionTargetData: {
         address: '0x0000000000000000000000000000000000000000',
         name: 'Multiple',
-        iconSrc: null,
+        iconSrc: currentApp.icon(24),
         identifier: undefined,
       }
     }
   } else {
     // Otherwise, try to find the target from the installed apps
     const [targetAddress] = executionTargets
-    const installedApps = await app.installedApps().pipe(first()).toPromise()
-
-    const targetApp = installedApps.find(app => app.appAddress === targetAddress)
-    return targetApp ? {
-      ...vote,
-      executionTargetData: {
-        address: targetApp.appAddress,
-        name: targetApp.name,
-        /*
-        icon() function takes pixel size as a paremeter (in our case 24px)
-        and returns the location of the app icon. However, in most (all?)
-        cases it just returns an svg which can be any size.
-        */
-        iconSrc: targetApp.icon(24),
-        identifier: targetApp.identifier,
-      }
-    } : {
-      ...vote,
-      executionTargetData: {
-        address: targetAddress,
-        name: 'External',
-        iconSrc: null,
-        identifier: undefined,
-      }
-    }
+    return app.installedApps().pipe(
+      first(),
+      mergeMap(installedApps => from(installedApps)),
+      first(
+        app => app.appAddress === targetAddress,
+        {
+          appAddress: targetAddress,
+          name: 'External',
+          icon: currentApp.icon,
+          identifier: undefined,
+        }
+      ),
+      map(targetApp => ({
+        ...vote,
+        executionTargetData: {
+          address: targetApp.appAddress,
+          name: targetApp.name,
+          /*
+          icon() function takes pixel size as a paremeter (in our case 24px)
+          and returns the location of the app icon. However, in most (all?)
+          cases it just returns an svg which can be any size.
+          */
+          iconSrc: targetApp.icon(24),
+          identifier: targetApp.identifier,
+        }
+      }))
+    ).toPromise()
   }
 }
