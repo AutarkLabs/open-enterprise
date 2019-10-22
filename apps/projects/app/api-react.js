@@ -50,6 +50,7 @@ const initialState = process.env.NODE_ENV !== 'production' && {
       { mul: 3, name: 'Intermediate' },
       { mul: 5, name: 'Advanced' },
     ],
+    fundingModel: 'Fixed',
   },
   github: { status: STATUS.INITIAL, token: null, event: '' }
 }

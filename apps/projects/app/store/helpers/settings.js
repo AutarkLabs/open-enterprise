@@ -20,7 +20,12 @@ export const syncSettings = async state => {
     )
     const baseRateDecimal = baseRate / 100.0
 
-    state.bountySettings = { ...settings, baseRate: baseRateDecimal, expLvls }
+    state.bountySettings = {
+      ...settings,
+      baseRate: baseRateDecimal,
+      expLvls,
+      fundingModel: Number(baseRate) === 0 ? 'Fixed' : 'Hourly',
+    }
     return state
   } catch (err) {
     console.error('[Projects script] syncSettings settings failed:', err)
