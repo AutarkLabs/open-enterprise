@@ -30,6 +30,7 @@ import Unauthorized from './components/Content/Unauthorized'
 import { LoadingAnimation } from './components/Shared'
 import { EmptyWrapper } from './components/Shared'
 import { Error } from './components/Card'
+import { DecoratedReposProvider } from './context/DecoratedRepos'
 
 const App = () => {
   const { api, appState } = useAragonApi()
@@ -183,52 +184,53 @@ const App = () => {
             onResolve={handleResolveLocalIdentity}
             onShowLocalIdentityModal={handleShowLocalIdentityModal}
           >
-            <Header
-              primary="Projects"
-              secondary={
-                <TabAction />
-              }
-            />
-            <ErrorBoundary>
+            <DecoratedReposProvider>
+              <Header
+                primary="Projects"
+                secondary={
+                  <TabAction />
+                }
+              />
+              <ErrorBoundary>
 
-              {selectedIssue
-                ? (
-                  <React.Fragment>
-                    <Bar>
-                      <BackButton onClick={() => setSelectedIssue(null)} />
-                    </Bar>
-                    <IssueDetail issue={selectedIssue} />
-                  </React.Fragment>
-                )
-                : (
-                  <React.Fragment>
-                    <Tabs
-                      items={tabs.map(t => t.name)}
-                      onChange={handleSelect}
-                      selected={activeIndex.tabIndex}
-                    />
-                    <TabComponent
-                      status={github.status}
-                      app={api}
-                      projects={repos}
-                      bountyIssues={issues}
-                      bountySettings={bountySettings}
-                      tokens={tokens}
-                      activeIndex={activeIndex}
-                      changeActiveIndex={changeActiveIndex}
-                      setSelectedIssue={setSelectedIssue}
-                      onLogin={handleGithubSignIn}
-                    />
-                  </React.Fragment>
-                )
-              }
-            </ErrorBoundary>
+                {selectedIssue
+                  ? (
+                    <React.Fragment>
+                      <Bar>
+                        <BackButton onClick={() => setSelectedIssue(null)} />
+                      </Bar>
+                      <IssueDetail issue={selectedIssue} />
+                    </React.Fragment>
+                  )
+                  : (
+                    <React.Fragment>
+                      <Tabs
+                        items={tabs.map(t => t.name)}
+                        onChange={handleSelect}
+                        selected={activeIndex.tabIndex}
+                      />
+                      <TabComponent
+                        status={github.status}
+                        app={api}
+                        bountyIssues={issues}
+                        bountySettings={bountySettings}
+                        tokens={tokens}
+                        activeIndex={activeIndex}
+                        changeActiveIndex={changeActiveIndex}
+                        setSelectedIssue={setSelectedIssue}
+                        onLogin={handleGithubSignIn}
+                      />
+                    </React.Fragment>
+                  )
+                }
+              </ErrorBoundary>
 
-            <PanelManager
-              activePanel={panel}
-              onClose={closePanel}
-              {...panelProps}
-            />
+              <PanelManager
+                activePanel={panel}
+                onClose={closePanel}
+                {...panelProps}
+              />
+            </DecoratedReposProvider>
           </IdentityProvider>
         </PanelContext.Provider>
       </ApolloProvider>
