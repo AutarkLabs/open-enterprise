@@ -727,13 +727,14 @@ const DetailsArrow = styled.div`
 `
 const IssueTitleBox = styled.div`
   grid-area: title;
-  padding: ${2 * GU}px ${2 * GU}px 0 ${2 * GU}px;
+  padding: ${2 * GU}px;
+  padding-bottom: 0;
   display: flex;
-  justify-content: flex-start;
 `
 const IssueAmountBox = styled.div`
   grid-area: amount;
-  padding: ${2 * GU}px ${2 * GU}px 0 ${2 * GU}px;
+  padding: ${2 * GU}px;
+  padding-bottom: 0;
   display: flex;
   justify-content: flex-end;
 `
