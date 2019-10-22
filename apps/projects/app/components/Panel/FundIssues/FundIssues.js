@@ -13,7 +13,6 @@ import { computeIpfsString } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
 import { IconOpen, IconClose } from '../../../assets'
 import NoFunds from '../../../assets/noFunds.svg'
-import NoBaseRate from '../../../assets/noResults.svg'
 
 import {
   Box,
@@ -226,10 +225,10 @@ const FundForm = ({
                     <Box key={issue.id} padding={0}>
                       <div css={`
                               display: grid;
-                              grid-template-columns: 1fr 1fr;
+                              grid-template-columns: minmax(0, 1fr) 1fr;
                               grid-template-rows: auto;
                               grid-template-areas:
-                                "title title"
+                                "title amount"
                                 "hours exp"
                                 "deadline deadline";
                               grid-gap: 12px;
@@ -246,13 +245,15 @@ const FundForm = ({
                           <IssueTitle>
                             {issue.title}
                           </IssueTitle>
+                        </IssueTitleBox>
+                        <IssueAmountBox>
                           {issue.id in bounties &&
                                      bounties[issue.id]['hours'] > 0 && (
                             <TextTag theme={theme}>
                               {bounties[issue.id]['size'].toFixed(1) + ' ' + tokenDetails.symbol}
                             </TextTag>
                           )}
-                        </IssueTitleBox>
+                        </IssueAmountBox>
 
                         {bountySettings.baseRate === 0 ? (
                           <div css={`grid-area: hours; padding-left: ${2 * GU}px`}>
@@ -728,7 +729,13 @@ const IssueTitleBox = styled.div`
   grid-area: title;
   padding: ${2 * GU}px ${2 * GU}px 0 ${2 * GU}px;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
+`
+const IssueAmountBox = styled.div`
+  grid-area: amount;
+  padding: ${2 * GU}px ${2 * GU}px 0 ${2 * GU}px;
+  display: flex;
+  justify-content: flex-end;
 `
 const TextTag = styled(Text).attrs({
   size: 'small',
