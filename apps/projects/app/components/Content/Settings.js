@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import NumberFormat from 'react-number-format'
 import { useAragonApi, useNetwork } from '../../api-react'
 import {
   Box,
@@ -24,9 +23,15 @@ import { REQUESTED_GITHUB_DISCONNECT } from '../../store/eventTypes'
 import useGithubAuth from '../../hooks/useGithubAuth'
 import { LoadingAnimation } from '../Shared'
 import { EmptyWrapper } from '../Shared'
+import NumberInput from '../Shared/NumberInput'
 
 const bountyDeadlines = [ 'Days', 'Weeks', 'Months' ]
 const bountyDeadlinesMul = [ 24, 168, 720 ]
+
+const fundingModels = [
+  'Fixed',
+  'Hourly',
+]
 
 const GitHubConnect = ({ onLogin, onLogout, status }) => {
   const user = useGithubAuth()
@@ -52,13 +57,14 @@ const GitHubConnect = ({ onLogin, onLogout, status }) => {
   return (
     <Box heading="GitHub" css="height: 100%">
       <Text.Block>{bodyText}</Text.Block>
-      <StyledButton
+      <Button
+        css={`margin-top: ${1 * GU}px`}
         wide
         mode="secondary"
         onClick={buttonAction}
       >
         {buttonText}
-      </StyledButton>
+      </Button>
     </Box>
   )
 }
@@ -111,35 +117,44 @@ const ExperienceLevel = ({
   generateExpLevelHandler,
 }) => {
   let last = expLevels[expLevels.length - 1]
-  let disableAdd = last.mul !== '' && last.name !== '' ? false : true
+  let canAdd = last && last.mul !== '' && last.name !== ''
   return (
-    <div>
+    <React.Fragment>
       <SettingLabel text="Difficulty multipliers" />
 
       {expLevels.map((exp, index) => (
-        <Field key={index} label={'LEVEL ' + index}>
-          <StyledNumberFormat
-            fixedDecimalScale
-            decimalScale={2}
-            value={exp.mul}
-            allowNegative={false}
-            onChange={generateExpLevelHandler(index, 'M')}
-          />
-          <StyledTextInput
-            defaultValue={exp.name}
-            onChange={generateExpLevelHandler(index, 'N')}
-          />
+        <Field
+          css={`margin-bottom: ${1.5 * GU}px`}
+          key={index}
+          label={'LEVEL ' + index}
+        >
+          <div css="display: flex">
+            <NumberInput
+              css="width: 32%; margin-right: 3%"
+              fixedDecimalScale
+              decimalScale={2}
+              value={exp.mul}
+              allowNegative={false}
+              onChange={generateExpLevelHandler(index, 'M')}
+            />
+            <TextInput
+              type="text"
+              css="font-size: 16px; width: 65%"
+              defaultValue={exp.name}
+              onChange={generateExpLevelHandler(index, 'N')}
+            />
+          </div>
         </Field>
       ))}
-      <StyledButton
-        disabled={disableAdd}
+      <Button
+        disabled={!canAdd}
         compact
         mode="secondary"
         onClick={onAddExpLevel}
       >
         + Add Another
-      </StyledButton>
-    </div>
+      </Button>
+    </React.Fragment>
   )
 }
 ExperienceLevel.propTypes = {
@@ -148,16 +163,6 @@ ExperienceLevel.propTypes = {
   generateExpLevelHandler: PropTypes.func.isRequired,
 }
 
-const EmptyBaseRate = () => (
-  <div css="margin-bottom: 12px">
-    <SettingLabel text="Base rate" />
-    <Text.Block>
-      Once you have tokens in your Vault you will be able to set your
-      bounty base rate, which provides you with the ability to allocate bounties to issues.
-    </Text.Block>
-  </div>
-)
-
 const BaseRate = ({
   baseRate,
   onChangeRate,
@@ -165,10 +170,10 @@ const BaseRate = ({
   onChangeCurrency,
   bountyCurrencies,
 }) => (
-  <div css="margin-bottom: 24px">
+  <React.Fragment>
     <SettingLabel text="Base rate" />
-    <StyledInputDropDown>
-      <StyledNumberFormat
+    <StyledInputDropDown css="margin-bottom: 24px">
+      <NumberInput
         fixedDecimalScale
         decimalScale={2}
         value={baseRate}
@@ -182,11 +187,11 @@ const BaseRate = ({
         onChange={onChangeCurrency}
       />
     </StyledInputDropDown>
-  </div>
+  </React.Fragment>
 )
 
 BaseRate.propTypes = {
-  baseRate: PropTypes.number.isRequired,
+  baseRate: PropTypes.string.isRequired,
   onChangeRate: PropTypes.func.isRequired,
   bountyCurrency: PropTypes.number.isRequired,
   onChangeCurrency: PropTypes.func.isRequired,
@@ -199,10 +204,10 @@ const BountyDeadline = ({
   bountyDeadlineD,
   onChangeD,
 }) => (
-  <div>
+  <React.Fragment>
     <SettingLabel text="Default work deadline" />
     <StyledInputDropDown>
-      <StyledNumberFormat
+      <NumberInput
         fixedDecimalScale
         decimalScale={1}
         value={bountyDeadlineT}
@@ -216,8 +221,9 @@ const BountyDeadline = ({
         onChange={onChangeD}
       />
     </StyledInputDropDown>
-  </div>
+  </React.Fragment>
 )
+
 BountyDeadline.propTypes = {
   bountyDeadlineT: PropTypes.number.isRequired,
   onChangeT: PropTypes.func.isRequired,
@@ -243,22 +249,6 @@ BountyArbiter.propTypes = {
   networkType: PropTypes.string.isRequired,
 }
 
-const FundingType = ({ fundingType, onChangeType }) => (
-  <div css="margin-bottom: 24px; width: 240px">
-    <SettingLabel text="Type" />
-    <DropDown
-      items={[ 'Hourly', 'Fixed' ]}
-      selected={fundingType}
-      onChange={onChangeType}
-      wide
-    />
-  </div>
-)
-FundingType.propTypes = {
-  fundingType: PropTypes.number.isRequired,
-  onChangeType: PropTypes.func.isRequired,
-}
-
 const getExactIndex = (bountyDeadline, bountyDeadlinesMul) => {
   for (let i = bountyDeadlinesMul.length - 1; i >= 0; i--) {
     if (bountyDeadline % bountyDeadlinesMul[i] === 0) {
@@ -271,13 +261,13 @@ const getExactIndex = (bountyDeadline, bountyDeadlinesMul) => {
 const Settings = ({ onLogin }) => {
   const [ bountyCurrencies, setBountyCurrencies ] = useState([])
   const [ expLevels, setExpLevels ] = useState([])
-  const [ baseRate, setBaseRate ] = useState(0)
+  const [ baseRate, setBaseRate ] = useState('')
   const [ bountyCurrency, setBountyCurrency ] = useState()
   const [ bountyAllocator, setBountyAllocator ] = useState()
   //const [ bountyArbiter, setBountyArbiter ] = useState()
   const [ bountyDeadlineD, setBountyDeadlineD ] = useState()
   const [ bountyDeadlineT, setBountyDeadlineT ] = useState()
-  //const [ fundingType, setFundingType ] = useState(0)
+  const [ selectedFundingModelIndex, setFundingModel ] = useState(0)
   const [ settingsLoaded, setSettingsLoaded ] = useState(false)
 
   const { api, appState } = useAragonApi()
@@ -296,14 +286,14 @@ const Settings = ({ onLogin }) => {
 
   useEffect(() => {
     const {
-      expLvls,
+      expLvls = [],
       baseRate,
       bountyCurrency,
       bountyAllocator,
       bountyDeadline
     } = bountySettings
     setExpLevels(expLvls)
-    setBaseRate(baseRate)
+    setBaseRate(baseRate ? baseRate : '')
     setBountyCurrency(tokens.findIndex(bounty => bounty.addr === bountyCurrency))
     setBountyAllocator(bountyAllocator)
     let index = getExactIndex(bountyDeadline, bountyDeadlinesMul)
@@ -314,22 +304,27 @@ const Settings = ({ onLogin }) => {
     }
     setBountyDeadlineD(index)
     setBountyDeadlineT(bountyDeadline / bountyDeadlinesMul[index])
+    setFundingModel(fundingModels.indexOf(bountySettings.fundingModel))
     setSettingsLoaded(true)
   }, [bountySettings]
   )
 
   const submitChanges = () => {
     // flatten deadline
-    let bountyDeadline = Math.floor(bountyDeadlinesMul[bountyDeadlineD] * bountyDeadlineT)
+    const bountyDeadline = Math.floor(bountyDeadlinesMul[bountyDeadlineD] * bountyDeadlineT)
     // flatten expLevels
     const expLevelsDesc = expLevels.map(l => fromUtf8(l.name))
     // uint-ify EXP levels
-    let expLevelsMul = expLevels.map(l => toHex(l.mul * 100))
+    const expLevelsMul = expLevels.map(l => toHex(l.mul * 100))
+    // we persist `fundingModel: fixed` by setting baseRate to 0
+    const baseRateModified = fundingModels[selectedFundingModelIndex] === 'Fixed'
+      ? 0
+      : baseRate
 
     api.changeBountySettings(
       expLevelsMul,
       expLevelsDesc,
-      toHex(baseRate * 100),
+      toHex(baseRateModified * 100),
       toHex(bountyDeadline),
       tokens[bountyCurrency].addr,
       bountyAllocator
@@ -342,7 +337,6 @@ const Settings = ({ onLogin }) => {
   const bountyDeadlineChangeD = index => setBountyDeadlineD(index)
   const bountyCurrencyChange = index => setBountyCurrency(index)
   // Unconfigurables (for now):
-  // const fundingTypeChange = index => setFundingType(index)
   // const bountyAllocatorChange = e => setBountyAllocator(e.target.value)
   // const bountyArbiterChange = e => setBountyArbiter(e.target.value)
 
@@ -393,20 +387,33 @@ const Settings = ({ onLogin }) => {
       </div>
       <div css="grid-area: funding">
         <Box
-          heading="Funding Model"
+          heading="Funding Settings"
         >
           <SettingsFunding layoutName={layoutName}>
-            <div>
-              {!tokens.length ? (
-                <EmptyBaseRate />
-              ) : (
-                <BaseRate
-                  baseRate={baseRate}
-                  onChangeRate={baseRateChange}
-                  bountyCurrencies={bountyCurrencies}
-                  bountyCurrency={bountyCurrency}
-                  onChangeCurrency={bountyCurrencyChange}
-                />
+            <Column>
+              <SettingLabel text="Funding Model" />
+              <DropDown
+                css={`margin-bottom: ${3 * GU}px`}
+                items={fundingModels}
+                selected={selectedFundingModelIndex}
+                onChange={i => setFundingModel(i)}
+                wide
+              />
+              {fundingModels[selectedFundingModelIndex] === 'Hourly' && (
+                <React.Fragment>
+                  <Info css={`margin-bottom: ${3 * GU}px`}>
+                    In hourly funding, the hourly rate per issue is the base
+                    rate multiplied by the difficulty level selected for the
+                    issue.
+                  </Info>
+                  <BaseRate
+                    baseRate={baseRate}
+                    onChangeRate={baseRateChange}
+                    bountyCurrencies={bountyCurrencies}
+                    bountyCurrency={bountyCurrency}
+                    onChangeCurrency={bountyCurrencyChange}
+                  />
+                </React.Fragment>
               )}
               <BountyDeadline
                 bountyDeadlineT={bountyDeadlineT}
@@ -414,14 +421,14 @@ const Settings = ({ onLogin }) => {
                 bountyDeadlineD={bountyDeadlineD}
                 onChangeD={bountyDeadlineChangeD}
               />
-            </div>
-            <div>
+            </Column>
+            <Column>
               <ExperienceLevel
                 expLevels={expLevels}
                 onAddExpLevel={addExpLevel}
                 generateExpLevelHandler={generateExpLevelHandler}
               />
-            </div>
+            </Column>
           </SettingsFunding>
 
           <Button mode="strong" onClick={submitChanges}>
@@ -437,28 +444,24 @@ Settings.propTypes = {
   onLogin: PropTypes.func.isRequired,
 }
 
-const StyledInputDropDown = ({ children }) => {
+const StyledInputDropDown = ({ children, className }) => {
   const theme = useTheme()
 
   return (
-    <div css={`
+    <div className={className} css={`
       display: flex;
-      width: 240px;
       > :first-child {
         border-radius: 3px 0 0 3px;
         border: 1px solid ${theme.border};
         box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.03);
-        width: 140px;
+        flex: 1;
         z-index: 1;
-        :focus {
-          outline: 0;
-          border: 1px solid ${theme.infoSurface};
+        &, &:focus-within {
+          border-right: none;
         }
       }
-      > :second-child {
+      > :last-child {
         border-radius: 0 3px 3px 0;
-        margin-left: -1px;
-        width: 100px;
       }
     `}>
       {children}
@@ -468,6 +471,7 @@ const StyledInputDropDown = ({ children }) => {
 
 StyledInputDropDown.propTypes = {
   children: PropTypes.node.isRequired,
+  className: PropTypes.string,
 }
 
 const SettingsMain = styled.div`
@@ -486,38 +490,14 @@ const SettingsMain = styled.div`
   align-items: stretch;
 `
 const SettingsFunding = styled.div`
-  display: flex;
-  flex-direction: ${({ layoutName })=> layoutName === 'small' ? 'column' : 'row'};
-  > * {
-    width: 50%;
-    padding-right: 20px;
-  }
-`
-const StyledNumberFormat = styled(NumberFormat)`
-  border-radius: 3px;
-  border: 1px solid #e6e6e6;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
-  font-size: 16px;
-  height: 40px;
-  line-height: 1.5;
-  margin-right: 10px;
-  padding: 0 10px;
-  text-align: right;
-  width: 110px;
-`
-// https://stackoverflow.com/questions/3790935/can-i-hide-the-html5-number-input-s-spin-box
-
-// TODO: Refactor styles
-const StyledTextInput = styled(TextInput).attrs({
-  type: 'text',
-})`
-  height: 40px;
-  width: 185px;
-  font-size: 16px;
+  display: grid;
+  grid-gap: ${3 * GU}px;
+  grid-template-columns: ${({ layoutName }) => layoutName === 'small' ? '1fr' : '1fr 1fr'};
+  margin-bottom: ${3 * GU}px;
 `
 
-const StyledButton = styled(Button)`
-  margin-top: 8px;
+const Column = styled.div`
+  max-width: ${35 * GU}px;
 `
 
 export default Settings

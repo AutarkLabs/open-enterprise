@@ -1,14 +1,14 @@
 import React from 'react'
-import { useAppState } from '@aragon/api-react'
+import { useAppState, useNetwork } from '@aragon/api-react'
 import {
   DataView,
   IconCheck,
   IconCross,
-  IdentityBadge,
   ProgressBar,
   Text,
   useTheme,
 } from '@aragon/ui'
+import LocalIdentityBadge from '../LocalIdentityBadge/LocalIdentityBadge'
 import { BigNumber } from 'bignumber.js'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
@@ -19,6 +19,7 @@ import { displayCurrency } from '../../utils/helpers'
 const AllocationsHistory = ({ allocations }) => {
   const theme = useTheme()
   const { balances = [], budgets = [] } = useAppState()
+  const network = useNetwork()
   const getTokenSymbol = inputAddress => {
     const matchingBalance = balances.find(({ address }) => inputAddress === address)
     return matchingBalance ? matchingBalance.symbol : ''
@@ -74,8 +75,9 @@ const AllocationsHistory = ({ allocations }) => {
           const allocated = BigNumber(recipient.supports).div(totalSupports)
           return (
             <div key={index}>
-              <IdentityBadge
+              <LocalIdentityBadge
                 entity={recipient.candidateAddress}
+                networkType={network && network.type}
               />
               <RecipientProgress theme={theme}>
                 <ProgressBar

@@ -25,6 +25,9 @@ const calculateAvgClaim = ({ claimsByToken, totalClaimsMade }, balances, convert
 }
 
 const calculateMonthlyAvg = (rewards, balances, convertRates) => {
+  if(rewards.length === 0) {
+    return 0
+  }
   let monthCount = Math.ceil((rewards.reduce((minDate, reward) => {
     return reward.endDate < minDate.endDate ? reward: minDate
   }, rewards[0]).endDate - Date.now())/ MILLISECONDS_IN_A_MONTH)

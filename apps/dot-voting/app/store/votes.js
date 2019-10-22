@@ -1,11 +1,10 @@
-import { combineLatest } from 'rxjs'
-import { first } from 'rxjs/operators'
+import { combineLatest, from } from 'rxjs'
+import { first, map, mergeMap } from 'rxjs/operators'
 
 import { app } from './'
 import { EMPTY_CALLSCRIPT } from '../utils/vote-utils'
 import { ETHER_TOKEN_FAKE_ADDRESS, getTokenSymbol } from '../utils/token-utils'
 import allocationsAbi from '../../../shared/json-abis/allocations'
-
 
 export const castVote = async (state, { voteId }) => {
   const transform = async vote => ({
@@ -41,6 +40,7 @@ const loadVoteDescription = async (vote) => {
 
   const path = await app.describeScript(vote.executionScript).toPromise()
 
+  vote.executionTargets = [...new Set(path.map(({ to }) => to))]
   vote.description = path
     .map(step => {
       const identifier = step.identifier ? ` (${step.identifier})` : ''
@@ -80,6 +80,7 @@ const loadVoteDataAllocation = async (vote, voteId) => {
       .pipe(first())
       .subscribe(async ([ metadata, totalCandidates, canExecute ]) => {
         const voteDescription = await loadVoteDescription(vote)
+        const decoratedVote = await decorateVote(voteDescription)
         let options = []
         for (let i = 0; i < totalCandidates; i++) {
           const candidateData = await getAllocationCandidate(voteId, i)
@@ -88,7 +89,7 @@ const loadVoteDataAllocation = async (vote, voteId) => {
         options = await Promise.all(options)
 
         const returnObject = {
-          ...marshallVote(voteDescription),
+          ...marshallVote(decoratedVote),
           metadata,
           canExecute,
           options,
@@ -132,14 +133,15 @@ const loadVoteDataProjects = async (vote, voteId) => {
       .pipe(first())
       .subscribe(async ([ totalCandidates, canExecute ]) => {
         const voteDescription = await loadVoteDescription(vote)
+        const decoratedVote = await decorateVote(voteDescription)
         let options = []
         for (let i = 0; i < totalCandidates; i++) {
           let candidateData = await getProjectCandidate(voteId, i)
           options.push(candidateData)
         }
         resolve({
-          ...marshallVote(voteDescription),
-          metadata: vote.voteDescription,
+          ...marshallVote(decoratedVote),
+          metadata: vote.decoratedVote,
           type: 'curation',
           canExecute,
           options,
@@ -212,6 +214,7 @@ const marshallVote = ({
   totalParticipation,
   metadata,
   executionScript,
+  executionTargetData,
   executed,
 }) => {
   totalVoters = parseInt(totalVoters, 10)
@@ -226,8 +229,69 @@ const marshallVote = ({
     totalParticipation: totalParticipation,
     metadata,
     executionScript,
+    executionTargetData,
     executed,
     participationPct:
       totalVoters === 0 ? 0 : (totalParticipation / totalVoters) * 100,
+  }
+}
+
+const getVoteExecutionTargets = (vote) => {
+  return vote.executionTargets || []
+}
+
+const decorateVote = async (vote) => {
+  const executionTargets = getVoteExecutionTargets(vote)
+  const currentApp = await app.currentApp().toPromise()
+  if (!executionTargets.length) {
+    // If there's no execution target, consider it targetting this Dot Voting app
+    return {
+      ...vote,
+      executionTargetData: {
+        ...currentApp,
+        identifier: undefined,
+      }
+    }
+  } else if (executionTargets.length > 1) {
+    // If there's multiple targets, make a "multiple" version
+    return {
+      ...vote,
+      executionTargetData: {
+        address: '0x0000000000000000000000000000000000000000',
+        name: 'Multiple',
+        iconSrc: currentApp.icon(24),
+        identifier: undefined,
+      }
+    }
+  } else {
+    // Otherwise, try to find the target from the installed apps
+    const [targetAddress] = executionTargets
+    return app.installedApps().pipe(
+      first(),
+      mergeMap(installedApps => from(installedApps)),
+      first(
+        app => app.appAddress === targetAddress,
+        {
+          appAddress: targetAddress,
+          name: 'External',
+          icon: currentApp.icon,
+          identifier: undefined,
+        }
+      ),
+      map(targetApp => ({
+        ...vote,
+        executionTargetData: {
+          address: targetApp.appAddress,
+          name: targetApp.name,
+          /*
+          icon() function takes pixel size as a paremeter (in our case 24px)
+          and returns the location of the app icon. However, in most (all?)
+          cases it just returns an svg which can be any size.
+          */
+          iconSrc: targetApp.icon(24),
+          identifier: targetApp.identifier,
+        }
+      }))
+    ).toPromise()
   }
 }

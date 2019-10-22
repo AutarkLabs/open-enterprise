@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { GenerateBadge } from '../../utils/vote-styled-components'
 import { GU, IconCheck, textStyle, useTheme } from '@aragon/ui'
 
-const AppBadge = ({ type, youVoted }) => {
+const AppBadge = ({ iconSrc, label, youVoted }) => {
   const theme = useTheme()
   return (
     <div
@@ -13,7 +13,10 @@ const AppBadge = ({ type, youVoted }) => {
         margin-bottom: ${2 * GU}px;
       `}
     >
-      <GenerateBadge type={type} />
+      <GenerateBadge
+        iconSrc={iconSrc}
+        label={label}
+      />
       {youVoted && (
         <div
           css={`
@@ -39,7 +42,8 @@ const AppBadge = ({ type, youVoted }) => {
 }
 
 AppBadge.propTypes = {
-  type: PropTypes.string.isRequired,
+  iconSrc: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired,
   youVoted: PropTypes.bool.isRequired,
 }
 

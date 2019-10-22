@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import {
@@ -23,6 +23,97 @@ import { IconSort, IconGrid, IconCoins, IconFilter } from '../../../assets'
 import { usePanelManagement } from '../../Panel'
 import Label from '../../Content/IssueDetail/Label'
 import { issueShape } from '../../../utils/shapes.js'
+
+const SearchInput = ({ textFilter, updateTextFilter }) => {
+  const theme = useTheme()
+
+  return (
+    <TextInput
+      placeholder="Search"
+      type="search"
+      onChange={updateTextFilter}
+      value={textFilter}
+      adornment={
+        <IconSearch
+          css={`
+            color: ${theme.surfaceOpened};
+            margin-right: 8px;
+          `}
+        />
+      }
+      adornmentPosition="start"
+      css="width: 256px"
+    />
+  )
+}
+
+SearchInput.propTypes = {
+  textFilter: PropTypes.string.isRequired,
+  updateTextFilter: PropTypes.func.isRequired,
+}
+
+const SearchPopover = ({ visible, opener, setSearchVisible, textFilter, updateTextFilter }) => (
+  <Popover
+    visible={visible}
+    opener={opener}
+    onClose={() => setSearchVisible(false)}
+    css="padding: 12px"
+    placement="bottom-end"
+  >
+    <SearchInput
+      textFilter={textFilter}
+      updateTextFilter={updateTextFilter}
+    />
+  </Popover>
+)
+
+SearchPopover.propTypes = {
+  visible: PropTypes.bool.isRequired,
+  opener: PropTypes.object,
+  setSearchVisible: PropTypes.func.isRequired,
+  textFilter: PropTypes.string.isRequired,
+  updateTextFilter: PropTypes.func.isRequired,
+}
+
+const SortPopover = ({ visible, opener, setSortMenuVisible, sortBy, updateSortBy }) => {
+  const theme = useTheme()
+  const sorters = [
+    'Name ascending',
+    'Name descending',
+    'Newest',
+    'Oldest',
+  ]
+
+  return (
+    <Popover
+      visible={visible}
+      opener={opener}
+      onClose={() => setSortMenuVisible(false)}
+      css="padding: 12px"
+      placement="bottom-start"
+    >
+      <Label text="Sort by" />
+      {sorters.map(way => (
+        <FilterMenuItem
+          key={way}
+          onClick={updateSortBy(way)}
+        >
+          <div css="width: 24px">
+            {way === sortBy && <IconCheck color={`${theme.accent}`} />}
+          </div>
+          <ActionLabel>{way}</ActionLabel>
+        </FilterMenuItem>
+      ))}
+    </Popover>
+  )
+}
+SortPopover.propTypes = {
+  visible: PropTypes.bool.isRequired,
+  opener: PropTypes.object,
+  setSortMenuVisible: PropTypes.func.isRequired,
+  sortBy: PropTypes.string.isRequired,
+  updateSortBy: PropTypes.func.isRequired,
+}
 
 const FilterBar = ({
   allSelected,
@@ -54,15 +145,12 @@ const FilterBar = ({
   const actionsOpener = useRef(null)
   const sortersOpener = useRef(null)
   const searchOpener = useRef(null)
-  const searchRef = useRef(null)
   const activeFilters = () => {
     let count = 0
     const types = [ 'projects', 'labels', 'milestones', 'statuses' ]
     types.forEach(t => count += Object.keys(filters[t]).length)
     return count
   }
-
-  useEffect(() => { searchRef.current && searchRef.current.focus()})
 
   const updateTextFilter = e => {
     setTextFilter(e.target.value)
@@ -309,72 +397,6 @@ const FilterBar = ({
     </Popover>
   )
 
-  const SortPopover = () => {
-    const sorters = [
-      'Name ascending',
-      'Name descending',
-      'Newest',
-      'Oldest',
-    ]
-
-    return (
-      <Popover
-        visible={sortMenuVisible}
-        opener={sortersOpener.current}
-        onClose={() => setSortMenuVisible(false)}
-        css="padding: 12px"
-        placement="bottom-start"
-      >
-        <Label text="Sort by" />
-        {sorters.map(way => (
-          <FilterMenuItem
-            key={way}
-            onClick={updateSortBy(way)}
-          >
-            <div css="width: 24px">
-              {way === sortBy && <IconCheck color={`${theme.accent}`} />}
-            </div>
-            <ActionLabel>{way}</ActionLabel>
-          </FilterMenuItem>
-        ))}
-      </Popover>
-    )
-  }
-
-  const SearchInput = () => (
-    <TextInput
-      placeholder="Search"
-      type="search"
-      onChange={updateTextFilter}
-      value={textFilter}
-      adornment={
-        textFilter === '' && (
-          <IconSearch
-            css={`
-              color: ${theme.surfaceOpened};
-              margin-right: 8px;
-            `}
-          />
-        )
-      }
-      adornmentPosition="end"
-      css="width: 256px"
-      ref={searchRef}
-    />
-  )
-
-  const SearchPopover = () => (
-    <Popover
-      visible={searchVisible}
-      opener={searchOpener.current}
-      onClose={() => setSearchVisible(false)}
-      css="padding: 12px"
-      placement="bottom-end"
-    >
-      <SearchInput />
-    </Popover>
-  )
-
   // filters contain information about active filters (checked checkboxes)
   // filtersData is about displayed checkboxes
   const allFundedIssues = [ 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]
@@ -450,16 +472,31 @@ const FilterBar = ({
 
         <FilterBarMainRight>
           {layoutName === 'large' ? (
-            <SearchInput />
+            <SearchInput
+              textFilter={textFilter}
+              updateTextFilter={updateTextFilter}
+            />
           ) : (
             <React.Fragment>
               <Button icon={<IconSearch />} display="icon" onClick={activateSearch} ref={searchOpener} />
-              <SearchPopover />
+              <SearchPopover
+                visible={searchVisible}
+                opener={searchOpener.current}
+                setSearchVisible={setSearchVisible}
+                textFilter={textFilter}
+                updateTextFilter={updateTextFilter}
+              />
             </React.Fragment>
           )}
 
           <Button icon={<IconSort />} display="icon" onClick={activateSort} ref={sortersOpener} />
-          <SortPopover />
+          <SortPopover
+            visible={sortMenuVisible}
+            opener={sortersOpener.current}
+            setSortMenuVisible={setSortMenuVisible}
+            sortBy={sortBy}
+            updateSortBy={updateSortBy}
+          />
 
           {layoutName === 'large' ? (
             <Button
