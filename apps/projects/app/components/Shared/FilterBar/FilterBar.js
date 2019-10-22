@@ -122,10 +122,11 @@ const FilterBar = ({
     filtersData: PropTypes.object.isRequired,
   }
 
-  const FilterByLabel = ({ filters, filtersData }) => (
+  const FilterByLabel = ({ filters, filtersData, type }) => (
     <FilterDropDown
       caption="Labels"
       enabled={Object.keys(filtersData.labels).length > 0}
+      type={type}
     >
       {Object.keys(filtersData.labels)
         .sort((l1, l2) => {
@@ -163,12 +164,17 @@ const FilterBar = ({
   FilterByLabel.propTypes = {
     filters: PropTypes.object.isRequired,
     filtersData: PropTypes.object.isRequired,
+    type: PropTypes.string.isRequired,
+  }
+  FilterByLabel.defaultProps = {
+    type: 'filter',
   }
 
-  const FilterByMilestone = ({ filters, filtersData }) => (
+  const FilterByMilestone = ({ filters, filtersData, type }) => (
     <FilterDropDown
       caption="Milestones"
       enabled={Object.keys(filtersData.milestones).length > 0}
+      type={type}
     >
       {Object.keys(filtersData.milestones)
         .sort((m1, m2) => {
@@ -201,16 +207,17 @@ const FilterBar = ({
   FilterByMilestone.propTypes = {
     filters: PropTypes.object.isRequired,
     filtersData: PropTypes.object.isRequired,
-    borderMode: PropTypes.string.isRequired,
+    type: PropTypes.string.isRequired,
   }
   FilterByMilestone.defaultProps = {
-    borderMode: 'standalone',
+    type: 'filter',
   }
 
-  const FilterByStatus = ({ filters, filtersData, allFundedIssues, allIssues }) => (
+  const FilterByStatus = ({ filters, filtersData, allFundedIssues, allIssues, type }) => (
     <FilterDropDown
       caption="Status"
       enabled={Object.keys(filtersData.statuses).length > 0}
+      type={type}
     >
       {allFundedIssues.map(status => (
         <FilterMenuItem
@@ -259,10 +266,10 @@ const FilterBar = ({
     filtersData: PropTypes.object.isRequired,
     allFundedIssues: PropTypes.array.isRequired,
     allIssues: PropTypes.array.isRequired,
-    borderMode: PropTypes.string.isRequired,
+    type: PropTypes.string.isRequired,
   }
   FilterByStatus.defaultProps = {
-    borderMode: 'standalone',
+    type: 'filter',
   }
 
   const ActionsPopover = ({ selectedIssues, issuesFiltered }) => (
@@ -396,7 +403,12 @@ const FilterBar = ({
               <FilterByProject filters={filters} filtersData={filtersData} />
               <FilterByLabel filters={filters} filtersData={filtersData} />
               <FilterByMilestone filters={filters} filtersData={filtersData} />
-              <FilterByStatus filters={filters} filtersData={filtersData} allFundedIssues={allFundedIssues} allIssues={allIssues} />
+              <FilterByStatus
+                filters={filters}
+                filtersData={filtersData}
+                allFundedIssues={allFundedIssues}
+                allIssues={allIssues}
+              />
             </React.Fragment>
           ) : (
             layoutName === 'medium' ? (
@@ -416,14 +428,21 @@ const FilterBar = ({
             ) : (
               <React.Fragment>
                 <FilterByProject filters={filters} filtersData={filtersData} />
-
-                <Button icon={<IconMore />} display="icon" onClick={() => setFiltersMenuVisible(true)} ref={filtersOpener} />
-
-                <FiltersPopover>
-                  <FilterByLabel filters={filters} filtersData={filtersData} />
-                  <FilterByMilestone filters={filters} filtersData={filtersData} />
-                  <FilterByStatus filters={filters} filtersData={filtersData} allFundedIssues={allFundedIssues} allIssues={allIssues} />
-                </FiltersPopover>
+                <FilterByLabel filters={filters} filtersData={filtersData} />
+                <FilterDropDown type="overflow">
+                  <FilterByMilestone
+                    filters={filters}
+                    filtersData={filtersData}
+                    type="overflowTop"
+                  />
+                  <FilterByStatus
+                    filters={filters}
+                    filtersData={filtersData}
+                    allFundedIssues={allFundedIssues}
+                    allIssues={allIssues}
+                    type="overflowBottom"
+                  />
+                </FilterDropDown>
               </React.Fragment>
             )
           )}

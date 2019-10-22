@@ -185,98 +185,93 @@ const FundForm = ({
                     />
                   }
                 />
-              }
-            />
-            <FormField
-              label="Issues"
-              hint="Enter the estimated hours per issue"
-              required
-              input={
-                <React.Fragment>
-                  {issues.map(issue => (
-                    <Box key={issue.id} padding={0}>
-                      <div css={`
-                        display: grid;
-                        grid-template-columns: 1fr 1fr;
-                        grid-template-rows: auto;
-                        grid-template-areas:
-                          "title title"
-                          "hours exp"
-                          "deadline deadline";
-                        grid-gap: 12px;
-                        align-items: stretch;
-                      `}>
-                        <IssueTitleBox>
-                          <DetailsArrow onClick={generateArrowChange(issue.id)}>
-                            {bounties[issue.id]['detailsOpen'] ? (
-                              <IconClose />
-                            ) : (
-                              <IconOpen />
-                            )}
-                          </DetailsArrow>
-                          <IssueTitleSmall>
-                            {issue.title}
-                          </IssueTitleSmall>
-                          {issue.id in bounties &&
-                               bounties[issue.id]['hours'] > 0 && (
-                            <TextTag theme={theme}>
-                              {bounties[issue.id]['size'].toFixed(1) + ' ' + tokenDetails.symbol}
-                            </TextTag>
-                          )}
-                        </IssueTitleBox>
+                <FormField
+                  label="Issues"
+                  hint="Enter the estimated hours per issue"
+                  required
+                  input={
+                    <React.Fragment>
+                      {issues.map(issue => (
+                        <Box key={issue.id} padding={0}>
+                          <div css={`
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            grid-template-rows: auto;
+                            grid-template-areas:
+                              "title title"
+                              "hours exp"
+                              "deadline deadline";
+                            grid-gap: 12px;
+                            align-items: stretch;
+                          `}>
+                            <IssueTitleBox>
+                              <DetailsArrow onClick={generateArrowChange(issue.id)}>
+                                {bounties[issue.id]['detailsOpen'] ? (
+                                  <IconClose />
+                                ) : (
+                                  <IconOpen />
+                                )}
+                              </DetailsArrow>
+                              <IssueTitleSmall>
+                                {issue.title}
+                              </IssueTitleSmall>
+                              {issue.id in bounties &&
+                                   bounties[issue.id]['hours'] > 0 && (
+                                <TextTag theme={theme}>
+                                  {bounties[issue.id]['size'].toFixed(1) + ' ' + tokenDetails.symbol}
+                                </TextTag>
+                              )}
+                            </IssueTitleBox>
 
-                        <div css={`grid-area: hours; padding-left: ${2 * GU}px; margin-bottom: 4px;`}>
-                          <FieldTitle>Estimated Hours</FieldTitle>
-                          <HoursInput
-                            name="hours"
-                            value={bounties[issue.id]['hours']}
-                            onChange={generateHoursChange(issue.id)}
-                            wide
-                          />
-                        </div>
+                            <div css={`grid-area: hours; padding-left: ${2 * GU}px; margin-bottom: 4px;`}>
+                              <FieldTitle>Estimated Hours</FieldTitle>
+                              <HoursInput
+                                name="hours"
+                                value={bounties[issue.id]['hours']}
+                                onChange={generateHoursChange(issue.id)}
+                                wide
+                              />
+                            </div>
 
-                        <div css={`grid-area: exp; padding-right: ${2 * GU}px; margin-bottom: 4px;`}>
-                          <FieldTitle>Experience level</FieldTitle>
-                          <DropDown
-                            items={expLevels.map(exp => exp.name)}
-                            onChange={generateExpChange(issue.id)}
-                            selected={bounties[issue.id]['exp']}
-                            wide
-                          />
-                        </div>
+                            <div css={`grid-area: exp; padding-right: ${2 * GU}px; margin-bottom: 4px;`}>
+                              <FieldTitle>Experience level</FieldTitle>
+                              <DropDown
+                                items={expLevels.map(exp => exp.name)}
+                                onChange={generateExpChange(issue.id)}
+                                selected={bounties[issue.id]['exp']}
+                                wide
+                              />
+                            </div>
 
-                        <div css={`
-                          grid-area: deadline;
-                          background: ${theme.background};
-                          border-top: 1px solid ${theme.border};
-                          padding: 12px ${2 * GU}px ${2 * GU}px ${2 * GU}px;
-                          display: ${bounties[issue.id]['detailsOpen'] ? 'block' : 'none'};
-                        `}>
-                          <FieldTitle>Deadline</FieldTitle>
-                          <DateInput
-                            name='deadline'
-                            value={bounties[issue.id]['deadline']}
-                            onChange={generateDeadlineChange(issue.id)}
-                            width="100%"
-                          />
-                        </div>
-                      </div>
-                    </Box>
-                  ))}
-                </React.Fragment>
-              }
-            />
-          </Form>
-        )}
-      </Mutation>
-      {
-        (
-          totalSize > tokenDetails.balance
-        ) ? (
+                            <div css={`
+                              grid-area: deadline;
+                              background: ${theme.background};
+                              border-top: 1px solid ${theme.border};
+                              padding: 12px ${2 * GU}px ${2 * GU}px ${2 * GU}px;
+                              display: ${bounties[issue.id]['detailsOpen'] ? 'block' : 'none'};
+                            `}>
+                              <FieldTitle>Deadline</FieldTitle>
+                              <DateInput
+                                name='deadline'
+                                value={bounties[issue.id]['deadline']}
+                                onChange={generateDeadlineChange(issue.id)}
+                                width="100%"
+                              />
+                            </div>
+                          </div>
+                        </Box>
+                      ))}
+                    </React.Fragment>
+                  }
+                />
+              </Form>
+            )}
+          </Mutation>
+          {(totalSize > tokenDetails.balance) ? (
             <div>
               <br />
               <Info.Action title="Insufficient Token Balance">
-                        Please either mint more tokens or stake fewer tokens against these issues.
+                Please either mint more tokens or stake fewer tokens against these issues.
               </Info.Action>
             </div>
           ) : null
