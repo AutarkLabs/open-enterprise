@@ -4,11 +4,11 @@ import {
   DataView,
   IconCheck,
   IconCross,
-  IdentityBadge,
   ProgressBar,
   Text,
   useTheme,
 } from '@aragon/ui'
+import LocalIdentityBadge from '../LocalIdentityBadge/LocalIdentityBadge'
 import { BigNumber } from 'bignumber.js'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
@@ -74,7 +74,7 @@ const AllocationsHistory = ({ allocations }) => {
           const allocated = BigNumber(recipient.supports).div(totalSupports)
           return (
             <div key={index}>
-              <IdentityBadge
+              <LocalIdentityBadge
                 entity={recipient.candidateAddress}
               />
               <RecipientProgress theme={theme}>

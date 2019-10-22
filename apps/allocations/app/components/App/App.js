@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useAragonApi } from '../../api-react'
 import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
 
-import { IdentityProvider } from '../../../../../shared/identity'
+import { IdentityProvider } from '../LocalIdentityBadge/IdentityManager'
 import { Empty } from '../Card'
 import { NewAllocation, NewBudget } from '../Panel'
 import { AllocationsHistory, Budgets } from '.'
