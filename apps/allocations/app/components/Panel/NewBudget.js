@@ -4,7 +4,6 @@ import { useAragonApi } from '../../api-react'
 import {
   DropDown,
   Field,
-  IconClose,
   Info,
   TextInput,
   useTheme
@@ -22,7 +21,6 @@ const INITIAL_STATE = {
   nameError: true,
   amount: '',
   amountError: true,
-  amountOverFunds: false,
   buttonText: 'Create budget',
   selectedToken: 0
 }
@@ -31,9 +29,7 @@ class NewBudget extends React.Component {
   static propTypes = {
     saveBudget: PropTypes.func.isRequired,
     editingBudget: PropTypes.object,
-    fundsLimit: PropTypes.string.isRequired,
     tokens: PropTypes.array,
-    theme: PropTypes.object.isRequired,
   }
 
   static defaultProps = {
@@ -56,7 +52,6 @@ class NewBudget extends React.Component {
 
   changeField = e => {
     const { name, value } = e.target
-    const { fundsLimit } = this.props
     this.setState({
       [name]: value,
       [name + 'Error']: isStringEmpty(value)
@@ -65,7 +60,6 @@ class NewBudget extends React.Component {
       const numericValue = BigNumber(value)
       this.setState({
         amountError: numericValue.lt(MIN_AMOUNT),
-        amountOverFunds: numericValue.gt(fundsLimit)
       })
     }
   }
@@ -88,7 +82,6 @@ class NewBudget extends React.Component {
       nameError,
       amount,
       amountError,
-      amountOverFunds,
       selectedToken,
       buttonText
     } = this.state
@@ -99,23 +92,9 @@ class NewBudget extends React.Component {
       <Form
         onSubmit={this.createBudget}
         submitText={buttonText}
-        disabled={name === '' || amount === '' || nameError || amountError
-                  || amountOverFunds}
+        disabled={name === '' || amount === '' || nameError || amountError}
         errors={
           <ErrorContainer>
-            { amountOverFunds && (
-              <ErrorText>
-                <IconClose
-                  size="tiny"
-                  css={{
-                    marginRight: '8px',
-                    marginBottom: '2px',
-                    color: this.props.theme.negative,
-                  }}
-                />
-                Amount must be smaller than underlying funds
-              </ErrorText>
-            )}
             { this.props.editingBudget.id && (
               <Info>
                 Please keep in mind that any changes to the budget amount may only be effectuated upon the starting date of the next accounting period.
@@ -171,13 +150,6 @@ const NewBudgetWrap = props => {
 
 const InputGroup = styled.div`
   display: flex;
-`
-
-const ErrorText = styled.div`
-  font-size: small;
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
 `
 
 const ErrorContainer = styled.div``
