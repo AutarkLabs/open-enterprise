@@ -6,7 +6,6 @@ import {
   Card,
   Checkbox,
   ContextMenuItem,
-  DropDown,
   IconSearch,
   IconCheck,
   Popover,
@@ -16,10 +15,11 @@ import {
   useLayout,
   useTheme,
 } from '@aragon/ui'
+import FilterDropDown from './FilterDropDown'
 import ActiveFilters from '../../Content/Filters'
 import prepareFilters from './prepareFilters'
 import { IconArrow as IconArrowDown } from '../../../../../../shared/ui'
-import { IconMore, IconSort, IconGrid, IconCoins, IconFilter } from '../../../assets'
+import { IconSort, IconGrid, IconCoins, IconFilter } from '../../../assets'
 import { usePanelManagement } from '../../Panel'
 import Label from '../../Content/IssueDetail/Label'
 import { issueShape } from '../../../utils/shapes.js'
@@ -48,13 +48,11 @@ const FilterBar = ({
   const { layoutName } = useLayout()
   const [ sortMenuVisible, setSortMenuVisible ] = useState(false)
   const [ actionsMenuVisible, setActionsMenuVisible ] = useState(false)
-  const [ filtersMenuVisible, setFiltersMenuVisible ] = useState(false)
   const [ searchVisible, setSearchVisible ] = useState(false)
   const { curateIssues, allocateBounty } = usePanelManagement()
   const theme = useTheme()
   const actionsOpener = useRef(null)
   const sortersOpener = useRef(null)
-  const filtersOpener = useRef(null)
   const searchOpener = useRef(null)
   const searchRef = useRef(null)
   const activeFilters = () => {
@@ -89,37 +87,35 @@ const FilterBar = ({
   }
 
   const FilterByProject = ({ filters, filtersData }) => (
-    <DropDown
-      placeholder="Projects"
-      header="Projects"
+    <FilterDropDown
+      caption="Projects"
       enabled={Object.keys(filtersData.projects).length > 0}
-      onChange={noop}
-      items=
-        {Object.keys(filtersData.projects)
-          .sort(
-            (p1, p2) =>
-              filtersData.projects[p1].name < filtersData.projects[p2].name
-                ? -1
-                : 1
-          )
-          .map(id => (
-            <FilterMenuItem
-              key={id}
-              onClick={filter('projects', id)}
-            >
-              <div>
-                <Checkbox
-                  onChange={noop}
-                  checked={id in filters.projects}
-                />
-              </div>
-              <ActionLabel>
-                {filtersData.projects[id].name} (
-                {filtersData.projects[id].count})
-              </ActionLabel>
-            </FilterMenuItem>
-          ))}
-    />
+    >
+      {Object.keys(filtersData.projects)
+        .sort(
+          (p1, p2) =>
+            filtersData.projects[p1].name < filtersData.projects[p2].name
+              ? -1
+              : 1
+        )
+        .map(id => (
+          <FilterMenuItem
+            key={id}
+            onClick={filter('projects', id)}
+          >
+            <div>
+              <Checkbox
+                onChange={noop}
+                checked={id in filters.projects}
+              />
+            </div>
+            <ActionLabel>
+              {filtersData.projects[id].name} (
+              {filtersData.projects[id].count})
+            </ActionLabel>
+          </FilterMenuItem>
+        ))}
+    </FilterDropDown>
   )
   FilterByProject.propTypes = {
     filters: PropTypes.object.isRequired,
@@ -127,97 +123,80 @@ const FilterBar = ({
   }
 
   const FilterByLabel = ({ filters, filtersData }) => (
-    <DropDown
-      placeholder="Labels"
-      header="Labels"
+    <FilterDropDown
+      caption="Labels"
       enabled={Object.keys(filtersData.labels).length > 0}
-      onChange={noop}
-      items=
-        {Object.keys(filtersData.labels)
-          .sort((l1, l2) => {
-            if (l1 === 'labelless') return -1
-            if (l2 === 'labelless') return 1
-            return filtersData.labels[l1].name < filtersData.labels[l2].name
-              ? -1
-              : 1
-          })
-          .map(id => (
-            <FilterMenuItem
-              key={id}
-              onClick={filter('labels', id)}
-            >
-              <div>
-                <Checkbox
-                  onChange={noop}
-                  checked={id in filters.labels}
-                />
-              </div>
-              <ActionLabel>
-                <Tag
-                  background={'#' + filtersData.labels[id].color + '99'}
-                  color={`${theme.surfaceContent}`}
-                >
-                  {filtersData.labels[id].name}
-                </Tag>{' '}
+    >
+      {Object.keys(filtersData.labels)
+        .sort((l1, l2) => {
+          if (l1 === 'labelless') return -1
+          if (l2 === 'labelless') return 1
+          return filtersData.labels[l1].name < filtersData.labels[l2].name
+            ? -1
+            : 1
+        })
+        .map(id => (
+          <FilterMenuItem
+            key={id}
+            onClick={filter('labels', id)}
+          >
+            <div>
+              <Checkbox
+                onChange={noop}
+                checked={id in filters.labels}
+              />
+            </div>
+            <ActionLabel>
+              <Tag
+                background={'#' + filtersData.labels[id].color + '99'}
+                color={`${theme.surfaceContent}`}
+                uppercase={false}
+              >
+                {filtersData.labels[id].name}
+              </Tag>{' '}
             ({filtersData.labels[id].count})
-              </ActionLabel>
-            </FilterMenuItem>
-          ))}
-    />
+            </ActionLabel>
+          </FilterMenuItem>
+        ))}
+    </FilterDropDown>
   )
   FilterByLabel.propTypes = {
     filters: PropTypes.object.isRequired,
     filtersData: PropTypes.object.isRequired,
   }
 
-  const borderRadius = {
-    'top': '3px 3px 0 0',
-    'middle': '0',
-    'bottom': '0 0 3px 3px',
-    'standalone': '3px',
-  }
-
-  const closeSubFilters = (borderMode) => () => {
-    if (borderMode !== 'standalone') setFiltersMenuVisible(false)
-  }
-
-  const FilterByMilestone = ({ filters, filtersData, borderMode }) => (
-    <DropDown
-      header="Milestones"
-      placeholder="Milestones"
+  const FilterByMilestone = ({ filters, filtersData }) => (
+    <FilterDropDown
+      caption="Milestones"
       enabled={Object.keys(filtersData.milestones).length > 0}
-      onChange={closeSubFilters(borderMode)}
-      css={`
-        border-radius: ${borderRadius[borderMode]};
-      `}
-      items=
-        {Object.keys(filtersData.milestones)
-          .sort((m1, m2) => {
-            if (m1 === 'milestoneless') return -1
-            if (m2 === 'milestoneless') return 1
-            return filtersData.milestones[m1].title <
-          filtersData.milestones[m2].title
-              ? -1
-              : 1
-          })
-          .map(id => (
-            <FilterMenuItem
-              key={id}
-              onClick={filter('milestones', id)}
-            >
-              <div>
-                <Checkbox
-                  onChange={noop}
-                  checked={id in filters.milestones}
-                />
-              </div>
-              <ActionLabel>
-                {filtersData.milestones[id].title} (
-                {filtersData.milestones[id].count})
-              </ActionLabel>
-            </FilterMenuItem>
-          ))}
-    />
+    >
+      {Object.keys(filtersData.milestones)
+        .sort((m1, m2) => {
+          if (m1 === 'milestoneless') return -1
+          if (m2 === 'milestoneless') return 1
+          return filtersData.milestones[m1].title <
+        filtersData.milestones[m2].title
+            ? -1
+            : 1
+        })
+        .map(id => (
+          <FilterMenuItem
+            key={id}
+            onClick={filter('milestones', id)}
+          >
+            <div>
+              <Checkbox
+                onChange={noop}
+                checked={id in filters.milestones}
+              />
+            </div>
+            <ActionLabel>
+              {filtersData.milestones[id].title} (
+              {filtersData.milestones[id].count})
+            </ActionLabel>
+          </FilterMenuItem>
+        ))}
+    </FilterDropDown>
   )
   FilterByMilestone.propTypes = {
     filters: PropTypes.object.isRequired,
@@ -228,39 +207,12 @@ const FilterBar = ({
     borderMode: 'standalone',
   }
 
-  const FilterByStatus = ({ filters, filtersData, allFundedIssues, allIssues, borderMode }) => (
-    <DropDown
-      header="Status"
-      placeholder="Status"
+  const FilterByStatus = ({ filters, filtersData, allFundedIssues, allIssues }) => (
+    <FilterDropDown
+      caption="Status"
       enabled={Object.keys(filtersData.statuses).length > 0}
-      onChange={closeSubFilters(borderMode)}
-      css={`
-        border-radius: ${borderRadius[borderMode]};
-      `}
-      items={allFundedIssues.map(status => (
-        <FilterMenuItem
-          key={status}
-          onClick={filter('statuses', status)}
-        >
-          <div>
-            <Checkbox
-              onChange={noop}
-              checked={status in filters.statuses}
-            />
-          </div>
-          <ActionLabel>
-            {filtersData.statuses[status].name} (
-            {filtersData.statuses[status].count})
-          </ActionLabel>
-        </FilterMenuItem>
-      )),
-      <hr css={`
-        height: 1px;
-        border: 0;
-        width: 100%;
-        background: ${theme.border};
-      `} />,
-      allIssues.map(status => (
+    >
+      {allFundedIssues.map(status => (
         <FilterMenuItem
           key={status}
           onClick={filter('statuses', status)}
@@ -277,7 +229,30 @@ const FilterBar = ({
           </ActionLabel>
         </FilterMenuItem>
       ))}
-    />
+      <hr css={`
+        height: 1px;
+        border: 0;
+        width: 100%;
+        background: ${theme.border};
+      `} />,
+      {allIssues.map(status => (
+        <FilterMenuItem
+          key={status}
+          onClick={filter('statuses', status)}
+        >
+          <div>
+            <Checkbox
+              onChange={noop}
+              checked={status in filters.statuses}
+            />
+          </div>
+          <ActionLabel>
+            {filtersData.statuses[status].name} (
+            {filtersData.statuses[status].count})
+          </ActionLabel>
+        </FilterMenuItem>
+      ))}
+    </FilterDropDown>
   )
   FilterByStatus.propTypes = {
     filters: PropTypes.object.isRequired,
@@ -326,33 +301,6 @@ const FilterBar = ({
       </FilterMenuItem>
     </Popover>
   )
-
-  const FiltersPopover = ({ children }) => (
-    <Popover
-      visible={filtersMenuVisible}
-      opener={filtersOpener.current}
-      onClose={() => {
-        console.log('popover close called')
-        //setFiltersMenuVisible(false)
-      }}
-      onClick={() => {
-        console.log('click called')
-      }}
-      placement="bottom-start"
-      css={`
-        display: flex;
-        flex-direction: column;
-        padding: 0;
-        border: 0;
-        border-radius: 3px;
-      `}
-    >
-      {children}
-    </Popover>
-  )
-  FiltersPopover.propTypes = {
-    children: PropTypes.node.isRequired,
-  }
 
   const SortPopover = () => {
     const sorters = [
@@ -432,7 +380,6 @@ const FilterBar = ({
   const actionsButtonBg = () =>
     'background-color: ' + (!selectedIssues.length ? `${theme.background}` : `${theme.surface}`)
 
-  const activateFiltersMenu = () => setFiltersMenuVisible(true)
   const activateSearch = () => setSearchVisible(true)
   const activateSort = () => setSortMenuVisible(true)
 
@@ -457,17 +404,14 @@ const FilterBar = ({
                 <FilterByProject filters={filters} filtersData={filtersData} />
                 <FilterByLabel filters={filters} filtersData={filtersData} />
                 <FilterByMilestone filters={filters} filtersData={filtersData} />
-
-                <Button icon={<IconMore />} display="icon" onClick={activateFiltersMenu} ref={filtersOpener} />
-
-                <FiltersPopover>
+                <FilterDropDown type="overflow">
                   <FilterByStatus
                     filters={filters}
                     filtersData={filtersData}
                     allFundedIssues={allFundedIssues}
                     allIssues={allIssues}
                   />
-                </FiltersPopover>
+                </FilterDropDown>
               </React.Fragment>
             ) : (
               <React.Fragment>
