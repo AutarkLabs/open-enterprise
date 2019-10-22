@@ -14,6 +14,7 @@ import { Form } from '../Form'
 import { isStringEmpty } from '../../utils/helpers'
 import { BigNumber } from 'bignumber.js'
 import { ETH_DECIMALS, MIN_AMOUNT } from '../../utils/constants'
+import CurrencyBox from '../Form/Field/CurrencyBox'
 
 // TODO:: This should be votingTokens from account?
 const INITIAL_STATE = {
@@ -128,13 +129,18 @@ class NewBudget extends React.Component {
               required
               wide
             />
-            <DropDown
-              name="token"
-              css={{ borderRadius: '0 4px 4px 0', left: '-1px' }}
-              items={symbols}
-              selected={selectedToken}
-              onChange={this.handleSelectToken}
-            />
+            {this.props.editingBudget.id ? (
+              <CurrencyBox>{symbols[selectedToken]}</CurrencyBox>
+            ) : (
+              <DropDown
+                name="token"
+                css={{ borderRadius: '0 4px 4px 0', left: '-1px' }}
+                items={symbols}
+                selected={selectedToken}
+                onChange={this.handleSelectToken}
+              />
+            )}
+
           </InputGroup>
         </Field>
       </Form>
