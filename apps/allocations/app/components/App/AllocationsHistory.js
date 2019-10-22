@@ -1,5 +1,5 @@
 import React from 'react'
-import { useAppState } from '@aragon/api-react'
+import { useAppState, useNetwork } from '@aragon/api-react'
 import {
   DataView,
   IconCheck,
@@ -19,6 +19,7 @@ import { displayCurrency } from '../../utils/helpers'
 const AllocationsHistory = ({ allocations }) => {
   const theme = useTheme()
   const { balances = [], budgets = [] } = useAppState()
+  const network = useNetwork()
   const getTokenSymbol = inputAddress => {
     const matchingBalance = balances.find(({ address }) => inputAddress === address)
     return matchingBalance ? matchingBalance.symbol : ''
@@ -76,6 +77,7 @@ const AllocationsHistory = ({ allocations }) => {
             <div key={index}>
               <LocalIdentityBadge
                 entity={recipient.candidateAddress}
+                networkType={network && network.type}
               />
               <RecipientProgress theme={theme}>
                 <ProgressBar
