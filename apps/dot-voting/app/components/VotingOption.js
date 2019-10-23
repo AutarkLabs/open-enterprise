@@ -4,21 +4,18 @@ import { GU, Tag, Text } from '@aragon/ui'
 import { animated } from 'react-spring'
 import PropTypes from 'prop-types'
 import { isAddress } from 'web3-utils'
-import { useNetwork } from '../api-react'
-import { LocalIdentityBadge } from '../../../../shared/identity'
+import LocalIdentityBadge from './LocalIdentityBadge/LocalIdentityBadge'
 
 const Label = ({ fontSize, label }) => {
-  const network = useNetwork()
-
   if (isAddress(label)) {
     return (
       <LocalIdentityBadge
-        compact
-        fontSize={fontSize}
-        networkType={network.type}
+        key={label}
         entity={label}
-        shorten
+        fontSize={fontSize}
         style={{ padding: 0 }}
+        compact
+        shorten
       />
     )
   }

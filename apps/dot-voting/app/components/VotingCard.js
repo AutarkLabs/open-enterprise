@@ -11,7 +11,7 @@ import {
 } from '@aragon/ui'
 import VotingOptions from './VotingOptions'
 import VoteStatus from './VoteStatus'
-import { GenerateBadge } from '../utils/vote-styled-components'
+import LocalLabelAppBadge from './LocalIdentityBadge/LocalLabelAppBadge'
 import useUserVoteStats from '../utils/useUserVoteStats'
 
 function noop() {}
@@ -47,10 +47,10 @@ const VotingCard = ({ vote, onSelectVote }) => {
           justify-content: space-between;
         `}
       >
-        <GenerateBadge
-          //appAddress={executionTargetData.address}
+        <LocalLabelAppBadge
+          appAddress={executionTargetData.address}
           iconSrc={executionTargetData.iconSrc}
-          //identifier={executionTargetData.identifier}
+          identifier={executionTargetData.identifier}
           label={executionTargetData.name}
         />
 
