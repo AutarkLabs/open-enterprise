@@ -6,6 +6,7 @@ import {
   Card,
   Checkbox,
   ContextMenuItem,
+  GU,
   IconSearch,
   IconCheck,
   Popover,
@@ -24,6 +25,13 @@ import { usePanelManagement } from '../../Panel'
 import Label from '../../Content/IssueDetail/Label'
 import { issueShape } from '../../../utils/shapes.js'
 
+const sorters = [
+  'Name ascending',
+  'Name descending',
+  'Newest',
+  'Oldest',
+]
+
 const SearchInput = ({ textFilter, updateTextFilter }) => {
   const theme = useTheme()
 
@@ -37,7 +45,7 @@ const SearchInput = ({ textFilter, updateTextFilter }) => {
         <IconSearch
           css={`
             color: ${theme.surfaceOpened};
-            margin-right: 8px;
+            margin-right: ${GU}px;
           `}
         />
       }
@@ -57,7 +65,7 @@ const SearchPopover = ({ visible, opener, setSearchVisible, textFilter, updateTe
     visible={visible}
     opener={opener}
     onClose={() => setSearchVisible(false)}
-    css="padding: 12px"
+    css={`padding: ${1.5 * GU}px`}
     placement="bottom-end"
   >
     <SearchInput
@@ -77,19 +85,13 @@ SearchPopover.propTypes = {
 
 const SortPopover = ({ visible, opener, setSortMenuVisible, sortBy, updateSortBy }) => {
   const theme = useTheme()
-  const sorters = [
-    'Name ascending',
-    'Name descending',
-    'Newest',
-    'Oldest',
-  ]
 
   return (
     <Popover
       visible={visible}
       opener={opener}
       onClose={() => setSortMenuVisible(false)}
-      css="padding: 12px"
+      css={`padding: ${1.5 * GU}px`}
       placement="bottom-start"
     >
       <Label text="Sort by" />
@@ -98,7 +100,7 @@ const SortPopover = ({ visible, opener, setSortMenuVisible, sortBy, updateSortBy
           key={way}
           onClick={updateSortBy(way)}
         >
-          <div css="width: 24px">
+          <div css={`width: ${3 * GU}px`}>
             {way === sortBy && <IconCheck color={`${theme.accent}`} />}
           </div>
           <ActionLabel>{way}</ActionLabel>

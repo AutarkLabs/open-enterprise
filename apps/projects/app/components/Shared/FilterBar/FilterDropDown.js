@@ -76,7 +76,7 @@ const DropDownButtonFilter = ({ disabled, handleBaseButtonClick, caption, openPr
     <FilterButton
       onClick={handleBaseButtonClick}
       disabled={disabled}
-      width={'128px'}
+      width="128px"
       style={{ borderRadius: borders[type] }}
     >
       <div css={`display: flex; width: 100%; justify-content: space-between; padding: 0 ${2 * GU}px`}>
@@ -115,7 +115,7 @@ const DropDownButtonOverflow = ({ disabled, handleBaseButtonClick, openProgress,
     <FilterButton
       onClick={handleBaseButtonClick}
       disabled={disabled}
-      width={'40px'}
+      width="40px"
     >
       <IconMore />
     </FilterButton>
