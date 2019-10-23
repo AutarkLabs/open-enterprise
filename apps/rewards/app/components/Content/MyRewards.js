@@ -19,6 +19,7 @@ import { Empty } from '../Card'
 import Metrics from './Metrics'
 import { useAppState } from '@aragon/api-react'
 import BigNumber from 'bignumber.js'
+import { displayCurrency } from '../../utils/helpers'
 
 const MyRewards = ({
   myRewards,
@@ -99,9 +100,10 @@ const renderOneTimeDividend = (reward, amountTokens) => {
     timeClaimed,
     endDate
   } = reward
+  const decimals = amountTokens.find(t => t.symbol === amountToken).decimals
   const displayAmount = (
     <Text color={String(theme.positive)}>
-      +{BigNumber(userRewardAmount).div(BigNumber(10).pow(amountTokens.find(t => t.symbol === amountToken).decimals)).toString(10)} {amountToken}
+      +{displayCurrency(BigNumber(userRewardAmount), decimals)} {amountToken}
     </Text>
   )
   const disbursementDate = dateReference.toDateString()
@@ -118,10 +120,10 @@ const renderRecurringDividend = (reward, amountTokens) => {
     endDate,
     timeClaimed
   } = reward
-  console.log('reward: ', reward)
+  const decimals = amountTokens.find(t => t.symbol === amountToken).decimals
   const displayAmount = (
     <Text color={String(theme.positive)}>
-      +{BigNumber(userRewardAmount).div(BigNumber(10).pow(amountTokens.find(t => t.symbol === amountToken).decimals)).toString(10)} {amountToken}
+      +{displayCurrency(BigNumber(userRewardAmount), decimals)} {amountToken}
     </Text>
   )
   const disbursementDate = (new Date(endDate)).toDateString()
@@ -138,10 +140,10 @@ const renderOneTimeMerit = (reward, amountTokens) => {
     endDate,
     timeClaimed
   } = reward
-  console.log('reward: ', reward)
+  const decimals = amountTokens.find(t => t.symbol === amountToken).decimals
   const displayAmount = (
     <Text color={String(theme.positive)}>
-      +{BigNumber(userRewardAmount).div(BigNumber(10).pow(amountTokens.find(t => t.symbol === amountToken).decimals)).toString(10)} {amountToken}
+      +{displayCurrency(BigNumber(userRewardAmount), decimals)} {amountToken}
     </Text>
   )
   const disbursementDate = (new Date(endDate)).toDateString()
