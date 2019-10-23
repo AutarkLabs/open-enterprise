@@ -46,6 +46,8 @@ const Entities = ({ entities, onRemoveEntity }) => {
           <LocalIdentityBadge
             key={entryAddress}
             entity={entryAddress}
+            shorten={true}
+            forceAddress
           />,
           <Tag
             key={entryAddress}
