@@ -115,25 +115,6 @@ class NewRewardClass extends React.Component {
       this.setSemanticErrors({ amount: value })
   }
 
-  setDisbursements = (dateStart, dateEnd, disbursement, disbursementUnit) => {
-    if (isNaN(disbursement) || disbursement <= 0 ||
-        this.state.rewardType !== RECURRING_DIVIDEND) {
-      this.setState({ disbursements: [] })
-      return
-    }
-    let disbursements = [],
-      date = moment(dateStart).add(disbursement, disbursementUnit)
-    while (date.isBefore(dateEnd)) {
-      disbursements.push(date.clone())
-      date.add(disbursement, disbursementUnit)
-    }
-    this.setState({
-      disbursements,
-      disbursementsInexistent: disbursements.length === 0,
-    })
-    this.setSemanticErrors({ dateStart, dateEnd, disbursements })
-  }
-
   dropDownItems = (name) => {
     if (name == 'amountToken') {
       return this.props.amountTokens.map(token => token.symbol)
