@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { BigNumber } from 'bignumber.js'
 import { Box, Button, GU, Split, Text, textStyle } from '@aragon/ui'
-import { useAragonApi, useNetwork } from '../../api-react'
+import { useAragonApi } from '../../api-react'
 import { first } from 'rxjs/operators' // Make sure observables have .first
-import { LocalIdentityBadge } from '../../../../../shared/identity'
+import LocalIdentityBadge from '../LocalIdentityBadge/LocalIdentityBadge'
+import DetailedAppBadge from './DetailedAppBadge'
 import useUserVoteStats from '../../utils/useUserVoteStats'
-import AppBadge from './AppBadge'
 import Status from './Status'
 import VotingResults from './VotingResults'
 import CastVote from './CastVote'
@@ -26,7 +26,7 @@ const VoteDetails = ({ vote, onVote }) => {
   const { voteWeights, votingPower } = useUserVoteStats(vote)
   const tokenContract = tokenAddress && api.external(tokenAddress, tokenAbi)
 
-  const network = useNetwork()
+  //const network = useNetwork()
 
   useEffect(() => {
     if (tokenContract && connectedAccount) {
@@ -60,10 +60,10 @@ const VoteDetails = ({ vote, onVote }) => {
               margin-bottom: ${3 * GU}px;
             }
           `}>
-            <AppBadge
-              //appAddress={executionTargetData.address}
+            <DetailedAppBadge
+              appAddress={executionTargetData.address}
               iconSrc={executionTargetData.iconSrc}
-              //identifier={executionTargetData.identifier}
+              identifier={executionTargetData.identifier}
               label={executionTargetData.name}
               youVoted={youVoted}
             />
@@ -76,9 +76,8 @@ const VoteDetails = ({ vote, onVote }) => {
               </Label>
               <div css={`margin-left: ${GU}px`}>
                 <LocalIdentityBadge
-                  networkType={network.type}
+                  key={creator}
                   entity={creator}
-                  shorten
                 />
               </div>
             </div>

@@ -1,13 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import { ASSETS_URL, EmptyStateCard, Header, Main } from '@aragon/ui'
+import { EmptyStateCard, Header, Main } from '@aragon/ui'
 import { useAragonApi } from './api-react'
 import { isBefore } from 'date-fns'
 import { getTotalSupport } from './utils/vote-utils'
 import { safeDiv } from './utils/math-utils'
-import { IdentityProvider } from '../../../shared/identity'
+import { IdentityProvider } from './components/LocalIdentityBadge/IdentityManager'
 import Decisions from './Decisions'
 import emptyStatePng from './assets/voting-empty-state.png'
+
+const ASSETS_URL = './aragon-ui'
 
 const illustration = <img src={emptyStatePng} alt="" height="160" />
 
@@ -62,7 +64,6 @@ const Empty = () => (
       <EmptyStateCard
         title="You do not have any dot votes."
         text="Use the Allocations app to get started."
-        onActivate={() => <div />}
         illustration={illustration}
       />
     </div>
