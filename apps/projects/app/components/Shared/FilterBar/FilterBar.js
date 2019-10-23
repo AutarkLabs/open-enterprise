@@ -331,7 +331,7 @@ const FilterBar = ({
         border: 0;
         width: 100%;
         background: ${theme.border};
-      `} />,
+      `} />
       {allIssues.map(status => (
         <FilterMenuItem
           key={status}
