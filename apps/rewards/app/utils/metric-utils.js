@@ -28,16 +28,22 @@ const calculateMonthlyAvg = (rewards, balances, convertRates) => {
   if(rewards.length === 0) {
     return 0
   }
-  let monthCount = Math.ceil((rewards.reduce((minDate, reward) => {
-    return reward.endDate < minDate.endDate ? reward: minDate
-  }, rewards[0]).endDate - Date.now())/ MILLISECONDS_IN_A_MONTH)
+  const earliestReward = rewards.reduce(
+    (minDate, reward) => {
+      return reward.endDate < minDate.endDate ? reward : minDate
+    },
+    rewards[0]
+  )
+  const millisecondsFromNow = Math.abs(earliestReward.endDate - Date.now())
+  const monthsFromNow = Math.ceil(millisecondsFromNow / MILLISECONDS_IN_A_MONTH)
   const totalRewards = sumTotalRewards(
     rewards,
     balances,
     convertRates,
     (rew, bal) => rew.rewardToken === bal.address
-  ) / monthCount
-  return totalRewards
+  )
+  const monthlyAvg = totalRewards / monthsFromNow
+  return monthlyAvg
 }
 
 const calculateYTDRewards = (rewards, balances, convertRates) => {
