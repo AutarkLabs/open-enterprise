@@ -238,9 +238,7 @@ const FundForm = ({
                               <IconOpen />
                             )}
                           </DetailsArrow>
-                          <IssueTitle>
-                            {issue.title}
-                          </IssueTitle>
+                          <IssueTitle issue={issue} />
                         </IssueTitleBox>
                         <IssueAmountBox>
                           {issue.id in bounties &&
