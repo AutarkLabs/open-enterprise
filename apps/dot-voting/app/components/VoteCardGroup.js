@@ -6,16 +6,11 @@ import {
   GU,
   Tag,
   textStyle,
-  unselectable,
-  useLayout,
   useTheme,
 } from '@aragon/ui'
 
 const VoteCardGroup = ({ title, count, children }) => {
   const theme = useTheme()
-  const { layoutName } = useLayout()
-  const compactMode = layoutName === 'small'
-  const rowHeight = compactMode ? null : 294
 
   return (
     <section>
@@ -24,8 +19,7 @@ const VoteCardGroup = ({ title, count, children }) => {
           display: flex;
           align-items: center;
           margin-bottom: ${3 * GU}px;
-          ${compactMode ? `padding: 0 ${2 * GU}px;` : ''}
-          ${unselectable};
+          padding: 0 ${2 * GU}px;
         `}
       >
         <div
@@ -47,7 +41,7 @@ const VoteCardGroup = ({ title, count, children }) => {
           <Tag limitDigits={4} label={count} size="small" />
         </span>
       </h2>
-      <CardLayout columnWidthMin={30 * GU} rowHeight={rowHeight}>
+      <CardLayout columnWidthMin={30 * GU} css="grid-auto-rows: auto">
         {children}
       </CardLayout>
     </section>

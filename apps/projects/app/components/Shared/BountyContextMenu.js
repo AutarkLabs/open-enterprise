@@ -35,9 +35,10 @@ const BountyContextMenu = ({ issue }) => {
           <Item onClick={() => requestAssignment(issue)}>
             Request Assignment
           </Item>
-          <Item bordered onClick={() => editBounty([issue])}>
-            Update Funding
-          </Item>
+          {/* Disabled since the contract doesn't allow updating the amount */}
+          {/* <Item bordered onClick={() => editBounty([issue])}> */}
+          {/*   Update Funding */}
+          {/* </Item> */}
         </React.Fragment>
       )}
       {workStatus === 'review-applicants' && (

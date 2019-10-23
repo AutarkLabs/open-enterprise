@@ -5,28 +5,29 @@ import styled from 'styled-components'
 import { Project, Empty } from '../Card'
 import { useLayout } from '@aragon/ui'
 import { CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
+import { useDecoratedRepos } from '../../context/DecoratedRepos'
 
-const Overview = ({ changeActiveIndex, projects }) => {
+const Overview = ({ changeActiveIndex }) => {
   const { width } = useLayout()
+  const repos = useDecoratedRepos()
 
-  const projectsCards = useCallback(projects.map((project, index) => (
+  const projectsCards = useCallback(repos.map(repo => (
     <Project
-      key={index}
-      label={project.metadata.name}
-      description={project.metadata.description}
-      id={project.id}
-      repoId={project.data._repo}
-      commits={project.metadata.commits}
+      key={repo.id}
+      label={repo.metadata.name}
+      description={repo.metadata.description}
+      id={repo.id}
+      repoId={repo.data._repo}
+      commits={repo.metadata.commits}
       // TODO: Disabled for now
-      // contributors={project.metadata.collaborators}
-      url={project.metadata.url}
+      // contributors={repo.metadata.collaborators}
+      url={repo.metadata.url}
       changeActiveIndex={changeActiveIndex}
     />
-  ), [projects]
+  ), [repos]
   ))
 
-  const projectsEmpty = projects.length === 0
-  if (projectsEmpty) {
+  if (!repos.length) {
     return <Empty />
   }
 
@@ -39,7 +40,6 @@ const Overview = ({ changeActiveIndex, projects }) => {
 
 Overview.propTypes = {
   changeActiveIndex: PropTypes.func.isRequired,
-  projects: PropTypes.arrayOf(PropTypes.object).isRequired,
 }
 
 const StyledProjects = styled.div`

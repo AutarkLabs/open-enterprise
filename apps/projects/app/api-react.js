@@ -1,3 +1,4 @@
+import { hexToAscii } from 'web3-utils'
 import buildStubbedApiReact from '../../../shared/api-react'
 import { STATUS } from './utils/github'
 import {
@@ -5,10 +6,6 @@ import {
   REQUESTED_GITHUB_DISCONNECT,
 } from './store/eventTypes'
 import { INITIAL_STATE } from './store/index'
-import {
-  initializeGraphQLClient,
-  getRepoData,
-} from './store/helpers'
 
 const initialState = process.env.NODE_ENV !== 'production' && {
   repos: [],
@@ -53,33 +50,22 @@ const initialState = process.env.NODE_ENV !== 'production' && {
       { mul: 3, name: 'Intermediate' },
       { mul: 5, name: 'Advanced' },
     ],
+    fundingModel: 'Fixed',
   },
   github: { status: STATUS.INITIAL, token: null, event: '' }
 }
 
 const functions = process.env.NODE_ENV !== 'production' && ((appState, setAppState) => ({
-  addRepo: async repoIdHex => {
-    const { token } = appState.github
-    if (!token) return
-
-    initializeGraphQLClient(token)
-    const { _repo, ...metadata } = await getRepoData(repoIdHex)
-
-    setAppState({
-      ...appState,
-      repos: [
-        ...appState.repos,
-        {
-          id: repoIdHex,
-          metadata,
-          data: {
-            _repo,
-            index: undefined,
-          },
-        },
-      ]
-    })
-  },
+  addRepo: repoIdHex => setAppState({
+    ...appState,
+    repos: [
+      ...appState.repos,
+      {
+        id: repoIdHex,
+        data: { _repo: hexToAscii(repoIdHex) },
+      },
+    ]
+  }),
   trigger: (event, { status, token }) => {
     switch (event) {
     case REQUESTED_GITHUB_TOKEN_SUCCESS:

@@ -32,6 +32,7 @@ const VotingResults = ({ vote, voteWeights }) => {
           totalSupport={totalSupport}
           color={`${theme.accent}`}
           voteWeights={voteWeights}
+          displayYouBadge={true}
         />
       </div>
       {!vote.open &&

@@ -22,9 +22,7 @@ import {
 import { INITIAL_STATE } from './'
 
 import {
-  initializeGraphQLClient,
   syncRepos,
-  loadReposFromQueue,
   loadIssueData,
   loadIpfsData,
   buildSubmission,
@@ -45,21 +43,13 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
   case SYNC_STATUS_SYNCING: {
     return {
       ...state,
-      sync: {
-        ...state.sync,
-        completed: false,
-        initialized: true,
-      }
+      isSyncing: true,
     }
   }
   case SYNC_STATUS_SYNCED: {
     return {
       ...state,
-      sync: {
-        ...state.sync,
-        completed: true,
-        initialized: false,
-      }
+      isSyncing: false,
     }
   }
   case REQUESTING_GITHUB_TOKEN: {
@@ -69,17 +59,12 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
     const { token } = returnValues
     if (!token) return state
 
-    initializeGraphQLClient(token)
-
     state.github = {
       token,
       status: STATUS.AUTHENTICATED,
       event: null
     }
     app.cache('github', state.github).toPromise()
-
-    const loadedRepos = await loadReposFromQueue(state)
-    state.repos = [ ...state.repos, ...loadedRepos ]
 
     return state
   }
@@ -89,7 +74,6 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
   case REQUESTED_GITHUB_DISCONNECT: {
     state.github = INITIAL_STATE.github
     app.cache('github', state.github).toPromise()
-    state.repos = [] // repos will be reloaded from loadReposFromQueue on re-sign-in
     return state
   }
   case REPO_ADDED: {

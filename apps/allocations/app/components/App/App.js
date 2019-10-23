@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useAragonApi } from '../../api-react'
 import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
 
-import { IdentityProvider } from '../../../../../shared/identity'
+import { IdentityProvider } from '../LocalIdentityBadge/IdentityManager'
 import { Empty } from '../Card'
 import { NewAllocation, NewBudget } from '../Panel'
 import { AllocationsHistory, Budgets } from '.'
@@ -69,10 +69,9 @@ const App = () => {
   }
 
   const onNewBudget = () => {
-    const fundsLimit = '300000' // remove this!
     setPanel({
       content: NewBudget,
-      data: { heading: 'New budget', saveBudget, fundsLimit },
+      data: { heading: 'New budget', saveBudget },
     })
     setPanelOpen(true)
   }
@@ -93,7 +92,6 @@ const App = () => {
   }
 
   const onEdit = id => {
-    const fundsLimit = '300000' // remove this!
     const editingBudget = budgets.find(budget => budget.id === id)
     setPanel({
       content: NewBudget,
@@ -101,7 +99,6 @@ const App = () => {
         heading: 'Edit budget',
         saveBudget,
         editingBudget,
-        fundsLimit,
       },
     })
     setPanelOpen(true)
