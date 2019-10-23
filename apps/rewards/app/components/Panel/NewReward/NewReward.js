@@ -299,7 +299,6 @@ class NewRewardClass extends React.Component {
   }
 
   verifyTransferable = async (app, tokenAddress) => {
-    console.log(tokenAddress)
     const token = app.external(tokenAddress, tokenTransferAbi)
     const transferable = await token.transfersEnabled().toPromise()
     this.setState({ transferable: transferable })
@@ -330,7 +329,7 @@ class NewRewardClass extends React.Component {
       </HorizontalContainer>
       <Text
         size="small"
-        color={this.props.theme.contentSecondary}
+        color={String(this.props.theme.contentSecondary)}
         css={{
           alignSelf: 'flex-end',
           marginTop: '8px',
