@@ -6,11 +6,14 @@ import {
   GU,
   Tag,
   textStyle,
+  useLayout,
   useTheme,
 } from '@aragon/ui'
 
 const VoteCardGroup = ({ title, count, children }) => {
   const theme = useTheme()
+  const { layoutName } = useLayout()
+  const compactMode = layoutName === 'small'
 
   return (
     <section>
@@ -19,7 +22,7 @@ const VoteCardGroup = ({ title, count, children }) => {
           display: flex;
           align-items: center;
           margin-bottom: ${3 * GU}px;
-          padding: 0 ${2 * GU}px;
+          ${compactMode ? `padding: 0 ${2 * GU}px;` : ''}
         `}
       >
         <div
