@@ -4,8 +4,7 @@ import styled from 'styled-components'
 import { Button, Text, useTheme } from '@aragon/ui'
 import Slider from '../Slider'
 import Label from './Label'
-import { useNetwork } from '../../api-react'
-import { LocalIdentityBadge } from '../../../../../shared/identity'
+import LocalIdentityBadge from '../LocalIdentityBadge/LocalIdentityBadge'
 import { BN } from 'web3-utils'
 
 const ValueContainer = styled.div`
@@ -79,8 +78,6 @@ const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights, votingPower }) 
     onVote(vote.voteId, optionsArray)
   }, [ vote.voteId, onVote, votingPower, voteOptions ])
 
-  const network = useNetwork()
-
   return (
     <div css="width: 100%">
       <div css="display: flex; justify-content: space-between">
@@ -95,7 +92,7 @@ const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights, votingPower }) 
               <LocalIdentityBadge
                 compact
                 fontSize="small"
-                networkType={network.type}
+                key={vote.data.options[index].label}
                 entity={vote.data.options[index].label}
                 shorten
               />
