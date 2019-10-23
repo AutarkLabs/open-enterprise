@@ -26,8 +26,6 @@ const VoteDetails = ({ vote, onVote }) => {
   const { voteWeights, votingPower } = useUserVoteStats(vote)
   const tokenContract = tokenAddress && api.external(tokenAddress, tokenAbi)
 
-  //const network = useNetwork()
-
   useEffect(() => {
     if (tokenContract && connectedAccount) {
       tokenContract.decimals()
