@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "dependencies": {
-    "@aragon/api": "AutarkLabs/aragon-api",
+    "@aragon/api": "2.0.0-beta.8",
     "@aragon/api-react": "2.0.0-beta.6",
     "@aragon/ui": "1.0.0-alpha.11",
     "@babel/polyfill": "^7.2.5",

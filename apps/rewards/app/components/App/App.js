@@ -115,7 +115,7 @@ class App extends React.Component {
   }, CONVERT_THROTTLE_TIME)
 
   updateRewards = async () => {
-    this.props.api && this.props.api.trigger('RefreshRewards', {
+    this.props.api && this.props.api.emitTrigger('RefreshRewards', {
       userAddress: this.props.connectedAccount,
     })
   }
