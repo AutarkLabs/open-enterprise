@@ -353,7 +353,7 @@ const Settings = ({ onLogin }) => {
   }
 
   const handleLogout = () => {
-    api.trigger(REQUESTED_GITHUB_DISCONNECT, {
+    api.emitTrigger(REQUESTED_GITHUB_DISCONNECT, {
       status: STATUS.INITIAL,
       token: null,
     })
