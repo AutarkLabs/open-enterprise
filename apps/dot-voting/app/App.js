@@ -63,7 +63,7 @@ const Empty = () => (
     >
       <EmptyStateCard
         title="You do not have any dot votes."
-        text="Use the Allocations app to get started."
+        text="After you create an allocation or issue curation, you can vote here."
         illustration={illustration}
       />
     </div>

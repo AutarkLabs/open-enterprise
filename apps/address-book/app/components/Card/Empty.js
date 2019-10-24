@@ -9,7 +9,7 @@ const illustration = <img src={emptyStatePng} alt="" height="160" />
 const Empty = ({ action }) => (
   <EmptyWrapper>
     <EmptyStateCard
-      text="No entities here"
+      text="No entities here!"
       illustration={illustration}
       actionText="New Entity"
       action={
