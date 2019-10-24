@@ -11,7 +11,9 @@ const Form = ({
   errors,
 }) => {
   return (
-    <React.Fragment>
+    <div css={`
+      position: relative;
+    `}>
       {children}
       <Button
         style={{ userSelect: 'none', marginTop: '8px' }}
@@ -25,7 +27,7 @@ const Form = ({
       <ErrorBlock>
         {errors}
       </ErrorBlock>
-    </React.Fragment>
+    </div>
   )
 }
 
