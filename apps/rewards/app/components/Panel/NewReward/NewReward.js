@@ -5,6 +5,7 @@ import styled from 'styled-components'
 import {
   Button,
   DropDown,
+  IconCaution,
   IconClose,
   IdentityBadge,
   Info,
@@ -59,10 +60,11 @@ const INITIAL_STATE = {
   dateEnd: new Date(),
   disbursement: '',
   disbursementUnit: MONTHS,
-  disbursements: [],
+  disbursements: [new Date()],
   draftSubmitted: false,
   semanticErrors: [],
-  errorMessages: {
+  warnings: [],
+  messages: {
     customTokenInvalid: 'Token address must be of a valid ERC20 compatible clonable token.',
     meritTokenTransferable: 'Merit rewards must be non-transferable.',
     amountOverBalance: 'Amount must be below the available balance.',
@@ -70,8 +72,8 @@ const INITIAL_STATE = {
     dateStartPassed: 'Start date must take place after today.',
     dateEndPassed: 'End date must take place after today.',
     dateStartAfterEnd: 'Start date must take place before the end date.',
-    disbursementsInexistent: 'Disbursement frequency does not output any disbursements for the given time range.',
-  }
+    singleDisbursement: 'While you selected a recurring dividend, based on your parameters, there will only be a single disbursement.',
+  },
 }
 
 class NewRewardClass extends React.Component {
@@ -168,7 +170,8 @@ class NewRewardClass extends React.Component {
 
   setSemanticErrors = (changed) => {
     const state = { ...this.state, ...changed }
-    let semanticErrors = []
+    const semanticErrors = []
+    const warnings = []
     if (state.referenceAsset === OTHER && !state.customToken.isVerified)
       semanticErrors.push('customTokenInvalid')
     if (state.rewardType === ONE_TIME_MERIT && state.transferable)
@@ -191,8 +194,8 @@ class NewRewardClass extends React.Component {
     }
     if (state.rewardType === RECURRING_DIVIDEND &&
         state.disbursements.length <= 1)
-      semanticErrors.push('disbursementsInexistent')
-    this.setState({ semanticErrors })
+      warnings.push('singleDisbursement')
+    this.setState({ semanticErrors, warnings })
   }
 
   onMainNet = () => this.props.network.type === 'main'
@@ -469,7 +472,7 @@ class NewRewardClass extends React.Component {
   }
 
   errorBlocks = () => {
-    const { semanticErrors, errorMessages } = this.state
+    const { semanticErrors, messages } = this.state
     return semanticErrors.map((error, i) => (
       <ErrorText key={i}>
         <IconContainer>
@@ -481,7 +484,25 @@ class NewRewardClass extends React.Component {
             }}
           />
         </IconContainer>
-        <Text>{errorMessages[error]}</Text>
+        <Text>{messages[error]}</Text>
+      </ErrorText>
+    ))
+  }
+
+  warningBlocks = () => {
+    const { warnings, messages } = this.state
+    return warnings.map((warning, i) => (
+      <ErrorText key={i}>
+        <IconContainer>
+          <IconCaution
+            size="tiny"
+            css={{
+              marginRight: '8px',
+              color: this.props.theme.warningSurfaceContent,
+            }}
+          />
+        </IconContainer>
+        <Text>{messages[warning]}</Text>
       </ErrorText>
     ))
   }
@@ -493,7 +514,12 @@ class NewRewardClass extends React.Component {
         onSubmit={this.submitDraft}
         submitText="Continue"
         disabled={!this.isDraftValid()}
-        errors={this.errorBlocks()}
+        errors={
+          <React.Fragment>
+            { this.errorBlocks() }
+            { this.warningBlocks() }
+          </React.Fragment>
+        }
       >
         <VerticalSpace />
         <FormField
