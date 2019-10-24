@@ -116,9 +116,8 @@ contract BaseOEApps is BaseCache, TokenCache {
     )
         internal
     {
-        //TODO: we should pass _tokenManager into ROLE_CREATE_VOTES as 2nd param, not _dotVoting
         _acl.createPermission(_grantee, _dotVoting, _dotVoting.ROLE_CREATE_VOTES(), _manager);
-        _acl.createPermission(_grantee, _dotVoting, _dotVoting.ROLE_ADD_CANDIDATES(), _manager);
+        _acl.createPermission(_manager, _dotVoting, _dotVoting.ROLE_ADD_CANDIDATES(), _manager);
     }
 
     /* DISCUSSIONS */
