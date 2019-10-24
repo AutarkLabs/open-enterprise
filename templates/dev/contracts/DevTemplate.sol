@@ -213,11 +213,11 @@ contract DevTemplate is BaseOEApps {
     )
         internal
     {
-        _createAddressBookPermissions(_acl, _addressBook, ANY_ENTITY, ANY_ENTITY);
-        _createAllocationsPermissions(_acl, _allocations, _dotVoting, ANY_ENTITY, ANY_ENTITY);
-        _createDotVotingPermissions(_acl, _dotVoting, ANY_ENTITY, ANY_ENTITY);
-        _createProjectsPermissions(_acl, _projects, _dotVoting, ANY_ENTITY, ANY_ENTITY);
-        _createRewardsPermissions(_acl, _rewards, ANY_ENTITY, ANY_ENTITY);
+        _createAddressBookPermissions(_acl, _addressBook, _tokenManager, _tokenManager);
+        _createAllocationsPermissions(_acl, _allocations, _dotVoting, _tokenManager, _tokenManager);
+        _createDotVotingPermissions(_acl, _dotVoting, _tokenManager, _tokenManager);
+        _createProjectsPermissions(_acl, _projects, _dotVoting, _tokenManager, _tokenManager);
+        _createRewardsPermissions(_acl, _rewards, _tokenManager, _tokenManager);
     }
 
     function _validateDotSettings(uint64[3] memory _dotVotingSettings) private pure {
