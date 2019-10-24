@@ -1,6 +1,7 @@
 import { BigNumber } from 'bignumber.js'
 
 export const ETH_DECIMALS = new BigNumber(10e17)
+export const ETH_DECIMALS_NUMBER = 18
 export const MIN_AMOUNT = new BigNumber(1e-18)
 export const ONE_TIME_DIVIDEND = 'One-time Dividend'
 export const RECURRING_DIVIDEND = 'Recurring Dividend'
