@@ -141,7 +141,7 @@ const loadVoteDataProjects = async (vote, voteId) => {
         }
         resolve({
           ...marshallVote(decoratedVote),
-          metadata: vote.decoratedVote,
+          metadata: vote.voteDescription,
           type: 'curation',
           canExecute,
           options,
