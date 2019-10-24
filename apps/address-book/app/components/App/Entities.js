@@ -7,21 +7,20 @@ import {
   DataView,
   Tag,
   Text,
+  useTheme,
 } from '@aragon/ui'
 
 import LocalIdentityBadge from '../LocalIdentityBadge/LocalIdentityBadge'
 import { IconDelete } from '../../../../../shared/ui'
 
-// TODO: colors taken directly from Invision
-const ENTITY_TYPES = [
-  { name: 'Individual', fg: '#76A4E5', bg: '#76A4E533' },
-  { name: 'Organization', fg: '#F78308', bg: '#F7830833' },
-  { name: 'Project', fg: '#B30FB3', bg: '#B30FB333' },
-]
-
 const entitiesSort = (a, b) => a.data.name.toUpperCase() > b.data.name.toUpperCase() ? 1 : -1
 
 const Entities = ({ entities, onRemoveEntity }) => {
+  const theme = useTheme()
+  const ENTITY_TYPES = [
+    { name: 'Individual', fg: theme.tagIdentifierContent, bg: theme.tagIdentifier },
+    { name: 'Organization', fg: theme.warningSurfaceContent, bg: theme.warningSurface },
+  ]
   const removeEntity = address => () => onRemoveEntity(address)
 
   return (
@@ -50,9 +49,12 @@ const Entities = ({ entities, onRemoveEntity }) => {
             forceAddress
           />,
           <Tag
+            style={{
+              fontWeight: 1000
+            }}
             key={entryAddress}
             mode="identifier"
-            foreground={typeRow.fg}
+            color={typeRow.fg}
             background={typeRow.bg}
           >
             {typeRow.name}
