@@ -332,6 +332,18 @@ const EmptyContainer = styled.div`
 
 // eslint-disable-next-line react/display-name
 export default () => {
-  const { api, appState, connectedAccount, displayMenuButton } = useAragonApi()
-  return <App api={api} {...appState} connectedAccount={connectedAccount} displayMenuButton={displayMenuButton} />
+  const { api, appState, connectedAccount } = useAragonApi()
+  return (
+    <App
+      api={api}
+      rewards={appState.rewards}
+      myRewards={appState.myRewards}
+      metrics={appState.metrics}
+      myMetrics={appState.myMetrics}
+      amountTokens={appState.amountTokens}
+      claims={appState.claims}
+      {...appState}
+      connectedAccount={connectedAccount}
+    />
+  )
 }

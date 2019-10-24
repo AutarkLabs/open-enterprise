@@ -99,7 +99,6 @@ const renderOneTimeDividend = (reward, amountTokens) => {
     timeClaimed,
     endDate
   } = reward
-  console.log('reward: ', reward)
   const displayAmount = (
     <Text color={String(theme.positive)}>
       +{BigNumber(userRewardAmount).div(BigNumber(10).pow(amountTokens.find(t => t.symbol === amountToken).decimals)).toString(10)} {amountToken}

@@ -24,7 +24,6 @@ const RewardSummary = ({ reward, theme, onCancel, onSubmit }) => {
     disbursements,
   } = reward
   const { amountTokens } = useAppState()
-  console.log('reward: ', reward)
   return (
     <VerticalContainer>
       <VerticalSpace />

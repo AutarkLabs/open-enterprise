@@ -101,7 +101,6 @@ function appStateReducer(state) {
     ]
     state.amountTokens = state.amountTokens || []
   }
-  console.log(state)
   return {
     ...state,
   }

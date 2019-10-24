@@ -18,7 +18,7 @@ const Empty = ({ action, noButton=false }) => (
 )
 
 Empty.propTypes = {
-  action: PropTypes.func.isRequired,
+  action: PropTypes.func,
 }
 
 const EmptyWrapper = styled.div`
