@@ -31,9 +31,6 @@ contract OpenEnterpriseTemplate is BaseOEApps {
      * @param _votingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization
      * @param _financePeriod initial duration for accounting periods, it can be set to zero in order to use the default of 30 days.
     */
-
-    // TODO: need to add _stakes as a param here, which is an array.
-    // Need to then consume it throughout the app, like for installing token manager.
     function newTokenAndInstance(
         string _tokenName,
         string _tokenSymbol,
@@ -55,6 +52,12 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         );
     }
 
+    /**
+     * @dev Add Open Enterprise apps to the instance
+     * @param _dotVotingSettings Array of [minQuorum, candidateSupportPct, voteDuration] to set up the Dot Voting app of the organization
+     * @param _allocationsPeriod initial duration for accounting periods for the Allocations app
+     * @param _useDiscussions boolean to determine whether Discussions app should be added
+    */
     function newOpenEnterprise(
         uint64[3] memory _dotVotingSettings,
         uint64 _allocationsPeriod,
@@ -72,7 +75,6 @@ contract OpenEnterpriseTemplate is BaseOEApps {
             Voting voting
         ) = _popBaseCache(msg.sender);
 
-        //TODO: need to be able to pass a token manager into _setupOEApps to set proper permissions for dot voting
         _setupOEApps(dao, acl, tokenManager, vault, voting, _dotVotingSettings, _allocationsPeriod, _useDiscussions);
         _transferCreatePaymentManagerFromTemplate(acl, finance, voting);
         _transferPermissionFromTemplate(acl, vault, vault.TRANSFER_ROLE(), voting);
@@ -145,7 +147,6 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         return (finance, tokenManager, voting, vault);
     }
 
-    // TODO: add Token Manager as param to setup Dot Voting permission
     function _setupOEApps(
         Kernel _dao,
         ACL _acl,
