@@ -41,7 +41,6 @@ const useVoteCloseWatcher = () => {
 
 const Wrap = ({ children }) => (
   <Main assetsUrl={ASSETS_URL}>
-    <Header primary="Dot Voting" />
     {children}
   </Main>
 )
@@ -108,7 +107,7 @@ const App = () => {
       <IdentityProvider
         onResolve={handleResolveLocalIdentity}
         onShowLocalIdentityModal={handleShowLocalIdentityModal}>
-
+        <Header primary="Dot Voting" />
         <Decisions decorateVote={decorateVote} />
       </IdentityProvider>
     </Wrap>
