@@ -41,7 +41,6 @@ const useVoteCloseWatcher = () => {
 
 const Wrap = ({ children }) => (
   <Main assetsUrl={ASSETS_URL}>
-    <Header primary="Dot Voting" />
     {children}
   </Main>
 )
@@ -63,7 +62,7 @@ const Empty = () => (
     >
       <EmptyStateCard
         title="You do not have any dot votes."
-        text="Use the Allocations app to get started."
+        text="After you create an allocation or issue curation, you can vote here."
         illustration={illustration}
       />
     </div>
@@ -108,7 +107,7 @@ const App = () => {
       <IdentityProvider
         onResolve={handleResolveLocalIdentity}
         onShowLocalIdentityModal={handleShowLocalIdentityModal}>
-
+        <Header primary="Dot Voting" />
         <Decisions decorateVote={decorateVote} />
       </IdentityProvider>
     </Wrap>

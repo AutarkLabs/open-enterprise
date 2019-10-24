@@ -10,7 +10,7 @@ const Empty = ({ action, noButton=false }) => (
 
   <EmptyWrapper>
     <EmptyStateCard
-      text="No rewards here"
+      text="No rewards here!"
       illustration={<Icon />}
       action={noButton ? '' : <Button label="New reward" onClick={action} />}
     />
