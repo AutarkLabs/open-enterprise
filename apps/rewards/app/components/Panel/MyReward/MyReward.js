@@ -6,6 +6,7 @@ import { blocksToMilliseconds } from '../../../../../../shared/ui/utils'
 
 import {
   Button,
+  Field,
   IconCheck,
   IconFundraising,
   IconTime,
@@ -15,7 +16,6 @@ import {
   Text,
 } from '@aragon/ui'
 
-import { FieldTitle } from '../../Form'
 import { displayCurrency } from '../../../utils/helpers'
 
 class MyReward extends React.Component {
@@ -52,8 +52,7 @@ class MyReward extends React.Component {
     return (
       <div>
         <SidePanelSplit>
-          <div>
-            <FieldTitle>Origin</FieldTitle>
+          <Field label={'Origin'} >
             <SafeLink
               href="#"
               onClick={this.onViewOrigin}
@@ -61,10 +60,8 @@ class MyReward extends React.Component {
             >
             Reward #{rewardId}
             </SafeLink>
-          </div>
-          <div>
-            <FieldTitle>Status</FieldTitle>
-
+          </Field>
+          <Field label={'Status'} >
             {claimed ? (
               <div>
                 <IconCheck /> Claimed
@@ -74,7 +71,7 @@ class MyReward extends React.Component {
                 <IconTime foreground="#D2C558" /> Unclaimed
               </div>
             )}
-          </div>
+          </Field>
         </SidePanelSplit>
         <Part>
           <Text size='large' weight='bold' >Reward Summary</Text>
