@@ -237,7 +237,7 @@ class NewRewardClass extends React.Component {
 
     if (isAddress(value) || isAddress(resolvedAddress)) {
       this.verifyMinime(this.props.app, { address: resolvedAddress || value, value })
-      this.verifyTransferable(this.props.app, resolvedAddress)
+      this.verifyTransferable(this.props.app, resolvedAddress || value)
     }
     else {
       isVerified = false
@@ -263,21 +263,25 @@ class NewRewardClass extends React.Component {
         await token.balanceOfAt(testAddress,currentBlock).toPromise(),
       ]))
       if (verifiedTests[0] !== verifiedTests[2]) {
-        this.setState({ customToken: { ...tokenState, isVerified: false } })
+        const customToken = { ...tokenState, isVerified: false }
+        this.setState({ customToken  })
+        this.setSemanticErrors({ customToken })
         return false
       }
-      this.setState({
-        customToken: {
-          ...tokenState,
-          isVerified: true,
-          symbol: await token.symbol().toPromise(),
-          startBlock: await token.creationBlock().toPromise(),
-        }
-      })
+      const customToken = {
+        ...tokenState,
+        isVerified: true,
+        symbol: await token.symbol().toPromise(),
+        startBlock: await token.creationBlock().toPromise(),
+      }
+      this.setState({ customToken })
+      this.setSemanticErrors({ customToken })
       return true
     }
     catch (error) {
-      this.setState({ customToken: { ...tokenState, isVerified: false } })
+      const customToken = { ...tokenState, isVerified: false }
+      this.setState({ customToken })
+      this.setSemanticErrors({ customToken })
       return false
     }
   }
@@ -285,8 +289,10 @@ class NewRewardClass extends React.Component {
   verifyTransferable = async (app, tokenAddress) => {
     const token = app.external(tokenAddress, tokenTransferAbi)
     const transferable = await token.transfersEnabled().toPromise()
-    this.setState({ transferable: transferable })
+    this.setState({ transferable })
+    this.setSemanticErrors({ transferable })
   }
+
   amountWithTokenAndBalance = () => (
     <VerticalContainer>
       <HorizontalContainer>
@@ -549,9 +555,11 @@ class NewRewardClass extends React.Component {
               selected={this.state.referenceAssets.indexOf(this.state.referenceAsset)}
               placeholder="Select a token"
               onChange={async (i) => {
-                this.setState({ referenceAsset: this.state.referenceAssets[i] })
-                await this.verifyTransferable(this.props.app, this.state.referenceAssets[i].key)
-                this.setSemanticErrors()
+                const referenceAsset = this.state.referenceAssets[i]
+                this.setState({ referenceAsset })
+                if (referenceAsset !== OTHER)
+                  await this.verifyTransferable(this.props.app, referenceAsset.key)
+                this.setSemanticErrors({ referenceAsset })
               }}
             />
           }
