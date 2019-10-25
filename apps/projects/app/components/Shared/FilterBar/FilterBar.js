@@ -16,7 +16,7 @@ import {
   useLayout,
   useTheme,
 } from '@aragon/ui'
-import FilterDropDown from './FilterDropDown'
+import { FilterDropDown, OverflowDropDown } from './FilterDropDown'
 import ActiveFilters from '../../Content/Filters'
 import prepareFilters from './prepareFilters'
 import { IconArrow as IconArrowDown } from '../../../../../../shared/ui'
@@ -440,20 +440,20 @@ const FilterBar = ({
                 <FilterByProject filters={filters} filtersData={filtersData} />
                 <FilterByLabel filters={filters} filtersData={filtersData} />
                 <FilterByMilestone filters={filters} filtersData={filtersData} />
-                <FilterDropDown type="overflow">
+                <OverflowDropDown>
                   <FilterByStatus
                     filters={filters}
                     filtersData={filtersData}
                     allFundedIssues={allFundedIssues}
                     allIssues={allIssues}
                   />
-                </FilterDropDown>
+                </OverflowDropDown>
               </React.Fragment>
             ) : (
               <React.Fragment>
                 <FilterByProject filters={filters} filtersData={filtersData} />
                 <FilterByLabel filters={filters} filtersData={filtersData} />
-                <FilterDropDown type="overflow">
+                <OverflowDropDown>
                   <FilterByMilestone
                     filters={filters}
                     filtersData={filtersData}
@@ -466,7 +466,7 @@ const FilterBar = ({
                     allIssues={allIssues}
                     type="overflowBottom"
                   />
-                </FilterDropDown>
+                </OverflowDropDown>
               </React.Fragment>
             )
           )}
