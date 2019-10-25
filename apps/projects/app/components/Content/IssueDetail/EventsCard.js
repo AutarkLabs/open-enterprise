@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import {
@@ -58,82 +58,88 @@ IssueEvent.propTypes = {
   date: PropTypes.string.isRequired,
 }
 
-const activities = (
-  issue,
-  createdAt,
-  requestsData,
-  workSubmissions,
-  fundingHistory,
-  onReviewApplication,
-  onReviewWork
-) => {
+
+
+const EventsCard = ({ issue }) => {
+  const [ issueEvents, setIssueEvents ] = useState({})
   const theme = useTheme()
-  const events = {
-    createdAt: {
-      date: createdAt,
-      user: issue.author,
-      eventDescription: 'opened the task'
-    }
-  }
+  const { reviewApplication, reviewWork } = usePanelManagement()
 
-  if (requestsData) {
-    requestsData.forEach((data, index) => {
-      events[data.applicationDate] = {
-        date: data.applicationDate,
-        user: data.user,
-        eventDescription: 'requested assignment',
-        eventAction: (
-          <EventButton
-            mode="outline"
-            onClick={() => onReviewApplication(issue, index)}
-            wide
-          >
-            <Text weight="bold">
-              {'review' in data ? 'View' : 'Review'} Application
-            </Text>
-          </EventButton>
-        ),
+  const activities = (
+    issue,
+    createdAt,
+    requestsData,
+    workSubmissions,
+    fundingHistory,
+    onReviewApplication,
+    onReviewWork
+  ) => {
+    const events = {
+      createdAt: {
+        date: createdAt,
+        user: issue.author,
+        eventDescription: 'opened the task'
       }
+    }
 
-      if ('review' in data) {
-        events[data.review.reviewDate] = {
-          date: data.review.reviewDate,
-          user: data.review.user,
-          eventDescription: (data.review.approved ? 'assigned' : 'rejected') + ' ' + data.user.login,
-          eventAction:
+    if (requestsData) {
+      requestsData.forEach((data, index) => {
+        events[data.applicationDate] = {
+          date: data.applicationDate,
+          user: data.user,
+          eventDescription: 'requested assignment',
+          eventAction: (
+            <EventButton
+              mode="outline"
+              onClick={() => onReviewApplication(issue, index)}
+              wide
+            >
+              <Text weight="bold">
+                {'review' in data ? 'View' : 'Review'} Application
+              </Text>
+            </EventButton>
+          ),
+        }
+
+        if ('review' in data) {
+          events[data.review.reviewDate] = {
+            date: data.review.reviewDate,
+            user: data.review.user,
+            eventDescription: (data.review.approved ? 'assigned' : 'rejected') + ' ' + data.user.login,
+            eventAction:
             data.review.feedback.length === 0 ? null : (
               <Text>{data.review.feedback}</Text>
             ),
+          }
         }
-      }
-    })
-  }
+      })
+    }
 
-  if (workSubmissions) {
-    workSubmissions.forEach((data, index) => {
-      events[data.submissionDate] = {
-        date: data.submissionDate,
-        user: data.user,
-        eventDescription: 'submitted work for review',
-        eventAction: (
-          <EventButton
-            mode="outline"
-            onClick={() => onReviewWork(issue, index)}
-            wide
-          >
-            <Text weight="bold">
-              {'review' in data ? 'View' : 'Review'} Work
-            </Text>
-          </EventButton>
-        ),
-      }
+    if (workSubmissions) {
+      workSubmissions.forEach((data, index) => {
+        events[data.submissionDate] = {
+          date: data.submissionDate,
+          user: data.user,
+          eventDescription: 'submitted work for review',
+          eventAction: (
+            <EventButton
+              mode="outline"
+              onClick={() => onReviewWork(issue, index)}
+              wide
+            >
+              <Text weight="bold">
+                {'review' in data ? 'View' : 'Review'} Work
+              </Text>
+            </EventButton>
+          ),
+        }
 
-      if ('review' in data) {
-        events[data.review.reviewDate] = {
-          date: data.review.reviewDate,
-          user: data.review.user,
-          eventDescription: (data.review.accepted ? 'accepted' : 'rejected') + ' ' + data.user.login + '\'s work',
-          eventAction:
+        if ('review' in data) {
+          events[data.review.reviewDate] = {
+            date: data.review.reviewDate,
+            user: data.review.user,
+            eventDescription: (data.review.accepted ? 'accepted' : 'rejected') + ' ' + data.user.login + '\'s work',
+            eventAction:
             <div>
               {data.review.feedback.length && (
                 <Text.Block size="large" style={{ marginBottom: '8px' }}>
@@ -148,36 +154,37 @@ const activities = (
                 {'Quality:' + ' ' + workRatings[data.review.rating]}
               </Tag>
             </div>
+          }
         }
-      }
-    })
+      })
+    }
+
+    if (fundingHistory) {
+      fundingHistory.forEach((data, i) => {
+        events[data.date] = {
+          date: data.date,
+          user: data.user,
+          eventDescription: (i === 0 ? ' added' : ' updated') + ' funding',
+        }
+      })
+    }
+
+    return events
   }
 
-  if (fundingHistory) {
-    fundingHistory.forEach((data, i) => {
-      events[data.date] = {
-        date: data.date,
-        user: data.user,
-        eventDescription: (i === 0 ? ' added' : ' updated') + ' funding',
-      }
-    })
-  }
+  useEffect(() => {
+    setIssueEvents(activities(
+      issue,
+      issue.createdAt,
+      issue.requestsData,
+      issue.workSubmissions,
+      issue.fundingHistory,
+      reviewApplication,
+      reviewWork
+    ))
+  }, [issue])
 
-  return events
-}
-
-const EventsCard = ({ issue }) => {
-  const theme = useTheme()
-  const { reviewApplication, reviewWork } = usePanelManagement()
-  const issueEvents = activities(
-    issue,
-    issue.createdAt,
-    issue.requestsData,
-    issue.workSubmissions,
-    issue.fundingHistory,
-    reviewApplication,
-    reviewWork
-  )
+  console.log('this is the received issue, it should have fundingHistory!', issue)
 
   return (
     <Box

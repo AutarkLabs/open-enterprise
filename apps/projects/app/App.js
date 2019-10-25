@@ -64,6 +64,18 @@ const App = () => {
     window.close()
   })
 
+  // Hacky solution to update selectedIssue on appState event changes
+  useEffect(() => {
+    if (selectedIssue) {
+      const updatedIssue = issues.find(i => i.data.number === selectedIssue.number)
+      console.log('updated issue', updatedIssue)
+      if (updatedIssue) {
+        setSelectedIssue({ ...selectedIssue, data: updatedIssue.data })
+      }
+      console.log('this is the new selected issue', selectedIssue)
+    }
+  }, [issues])
+
   const handlePopupMessage = async message => {
     if (message.data.from !== 'popup') return
     if (message.data.name === 'code') {
