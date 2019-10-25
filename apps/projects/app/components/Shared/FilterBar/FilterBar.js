@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import {
@@ -14,6 +14,7 @@ import {
   Text,
   TextInput,
   useLayout,
+  useViewport,
   useTheme,
 } from '@aragon/ui'
 import FilterDropDown from './FilterDropDown'
@@ -32,7 +33,7 @@ const sorters = [
   'Oldest',
 ]
 
-const SearchInput = ({ textFilter, updateTextFilter }) => {
+const TextFilterInput = ({ textFilter, updateTextFilter }) => {
   const theme = useTheme()
 
   return (
@@ -50,47 +51,77 @@ const SearchInput = ({ textFilter, updateTextFilter }) => {
         />
       }
       adornmentPosition="start"
-      css="width: 256px"
+      css="width: 228px"
     />
   )
 }
 
-SearchInput.propTypes = {
+TextFilterInput.propTypes = {
   textFilter: PropTypes.string.isRequired,
   updateTextFilter: PropTypes.func.isRequired,
 }
 
-const SearchPopover = ({ visible, opener, setSearchVisible, textFilter, updateTextFilter }) => (
+const TextFilterPopover = ({ visible, opener, setVisible, textFilter, updateTextFilter }) => (
   <Popover
     visible={visible}
     opener={opener}
-    onClose={() => setSearchVisible(false)}
+    onClose={() => setVisible(false)}
     css={`padding: ${1.5 * GU}px`}
     placement="bottom-end"
   >
-    <SearchInput
+    <TextFilterInput
       textFilter={textFilter}
       updateTextFilter={updateTextFilter}
     />
   </Popover>
 )
 
-SearchPopover.propTypes = {
+TextFilterPopover.propTypes = {
   visible: PropTypes.bool.isRequired,
   opener: PropTypes.object,
-  setSearchVisible: PropTypes.func.isRequired,
+  setVisible: PropTypes.func.isRequired,
   textFilter: PropTypes.string.isRequired,
   updateTextFilter: PropTypes.func.isRequired,
 }
 
-const SortPopover = ({ visible, opener, setSortMenuVisible, sortBy, updateSortBy }) => {
+const TextFilter = ({ visible, setVisible, openerRef, onClick, textFilter, updateTextFilter }) => {
+  const { layoutName } = useLayout()
+
+  return layoutName === 'large' ? (
+    <TextFilterInput
+      textFilter={textFilter}
+      updateTextFilter={updateTextFilter}
+    />
+  ) : (
+    <React.Fragment>
+      <Button icon={<IconSearch />} display="icon" onClick={onClick} ref={openerRef} label="Text Filter" />
+      <TextFilterPopover
+        visible={visible}
+        opener={openerRef.current}
+        setVisible={setVisible}
+        textFilter={textFilter}
+        updateTextFilter={updateTextFilter}
+      />
+    </React.Fragment>
+  )
+}
+TextFilter.propTypes = {
+  visible: PropTypes.bool.isRequired,
+  openerRef: PropTypes.object,
+  setVisible: PropTypes.func.isRequired,
+  onClick: PropTypes.func.isRequired,
+  textFilter: PropTypes.string.isRequired,
+  updateTextFilter: PropTypes.func.isRequired,
+}
+
+const SortPopover = ({ visible, opener, setVisible, sortBy, updateSortBy }) => {
   const theme = useTheme()
 
   return (
     <Popover
       visible={visible}
       opener={opener}
-      onClose={() => setSortMenuVisible(false)}
+      onClose={() => setVisible(false)}
       css={`padding: ${1.5 * GU}px`}
       placement="bottom-start"
     >
@@ -112,9 +143,126 @@ const SortPopover = ({ visible, opener, setSortMenuVisible, sortBy, updateSortBy
 SortPopover.propTypes = {
   visible: PropTypes.bool.isRequired,
   opener: PropTypes.object,
-  setSortMenuVisible: PropTypes.func.isRequired,
+  setVisible: PropTypes.func.isRequired,
   sortBy: PropTypes.string.isRequired,
   updateSortBy: PropTypes.func.isRequired,
+}
+
+const ActionsPopover = ({ visible, setVisible, openerRef, selectedIssues, issuesFiltered, deselectAllIssues }) => {
+  const { curateIssues, allocateBounty } = usePanelManagement()
+
+  return (
+    <Popover
+      visible={visible}
+      opener={openerRef.current}
+      onClose={() => setVisible(false)}
+      placement="bottom-end"
+      css={`
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+      `}
+    >
+      <FilterMenuItem
+        key="1"
+        onClick={() => {
+          curateIssues(selectedIssues, issuesFiltered)
+          deselectAllIssues()
+          setVisible(false)
+        }}
+      >
+        <IconFilter />
+        <ActionLabel>Curate Issues</ActionLabel>
+      </FilterMenuItem>
+      <FilterMenuItem
+        key="2"
+        onClick={() => {
+          allocateBounty(selectedIssues)
+          deselectAllIssues()
+          setVisible(false)
+        }}
+      >
+        <IconCoins />
+        <ActionLabel>Fund Issues</ActionLabel>
+      </FilterMenuItem>
+    </Popover>
+  )
+}
+ActionsPopover.propTypes = {
+  visible: PropTypes.bool.isRequired,
+  setVisible: PropTypes.func.isRequired,
+  openerRef: PropTypes.object.isRequired,
+  selectedIssues: PropTypes.arrayOf(issueShape).isRequired,
+  issuesFiltered: PropTypes.arrayOf(issueShape).isRequired,
+  deselectAllIssues: PropTypes.func.isRequired,
+}
+
+const Actions = ({ onClick, openerRef, visible, setVisible, selectedIssues, issuesFiltered, deselectAllIssues,  }) => {
+  const { layoutName } = useLayout()
+  const theme = useTheme()
+
+  const actionsButtonBg = () =>
+    'background-color: ' + (!selectedIssues.length ? `${theme.background}` : `${theme.surface}`)
+
+  return (
+    <React.Fragment>
+      {layoutName === 'large' ? (
+        <Button
+          css={actionsButtonBg()}
+          onClick={onClick}
+          ref={openerRef}
+        >
+          <IconGrid />
+          <Text css="margin: 0 8px;">Actions</Text>
+          <IconArrowDown />
+        </Button>
+      ) : (
+        <Button
+          css={actionsButtonBg()}
+          onClick={onClick}
+          ref={openerRef}
+          icon={<IconGrid />}
+          display="icon"
+          label="Actions Menu"
+        />
+      )}
+      <ActionsPopover
+        openerRef={openerRef}
+        onClick={onClick}
+        selectedIssues={selectedIssues}
+        issuesFiltered={issuesFiltered}
+        visible={visible}
+        setVisible={setVisible}
+        deselectAllIssues={deselectAllIssues}
+      />
+    </React.Fragment>
+  )
+}
+Actions.propTypes = {
+  onClick: PropTypes.func.isRequired,
+  visible: PropTypes.bool.isRequired,
+  setVisible: PropTypes.func.isRequired,
+  openerRef: PropTypes.object.isRequired,
+  selectedIssues: PropTypes.arrayOf(issueShape).isRequired,
+  issuesFiltered: PropTypes.arrayOf(issueShape).isRequired,
+  deselectAllIssues: PropTypes.func.isRequired,
+}
+
+const Overflow = ({ children, filtersDisplayNumber }) => {
+  const elements = React.Children.toArray(children).splice(0, filtersDisplayNumber)
+
+  if (children.length > filtersDisplayNumber) {
+    elements.push(
+      <FilterDropDown type="overflow">
+        {React.Children.toArray(children).splice(filtersDisplayNumber)}
+      </FilterDropDown>
+    )
+  }
+  return elements
+}
+Overflow.propTypes = {
+  children: PropTypes.func.isRequired,
+  filtersDisplayNumber: PropTypes.number.isRequired,
 }
 
 const FilterBar = ({
@@ -136,23 +284,36 @@ const FilterBar = ({
 
   // Complete list of sorters for DropDown. Parent has only one item, to perform actual sorting.
   const [ sortBy, setSortBy ] = useState('Newest')
-
   const [ textFilter, setTextFilter ] = useState('')
-  const { layoutName } = useLayout()
   const [ sortMenuVisible, setSortMenuVisible ] = useState(false)
   const [ actionsMenuVisible, setActionsMenuVisible ] = useState(false)
-  const [ searchVisible, setSearchVisible ] = useState(false)
-  const { curateIssues, allocateBounty } = usePanelManagement()
+  const [ textFilterVisible, setTextFilterVisible ] = useState(false)
+  const [ filtersDisplayNumber, setFiltersDisplayNumber ] = useState(1)
   const theme = useTheme()
   const actionsOpener = useRef(null)
   const sortersOpener = useRef(null)
-  const searchOpener = useRef(null)
+  const textFilterOpener = useRef(null)
+  const mainFBRef = useRef(null)
+  const rightFBRef = useRef(null)
   const activeFilters = () => {
     let count = 0
     const types = [ 'projects', 'labels', 'milestones', 'statuses' ]
     types.forEach(t => count += Object.keys(filters[t]).length)
     return count
   }
+
+  // TODO: recalculation of divs widths doesn't work without it. side effects?
+  useViewport()
+
+  useEffect(() => {
+    const total = mainFBRef.current ? mainFBRef.current.offsetWidth : 0
+    const right = rightFBRef.current ? rightFBRef.current.offsetWidth : 0
+    // 80px is "selectAll" checkbox + padding, etc
+    // width is calculated from total width of main FB div and right FB div
+    // (containing actions, text filter and sorters)
+    const width = total - right - 80
+    setFiltersDisplayNumber(Math.floor(width / (128+8)))
+  })
 
   const updateTextFilter = e => {
     setTextFilter(e.target.value)
@@ -362,43 +523,6 @@ const FilterBar = ({
     type: 'filter',
   }
 
-  const ActionsPopover = ({ selectedIssues, issuesFiltered }) => (
-    <Popover
-      visible={actionsMenuVisible}
-      opener={actionsOpener.current}
-      onClose={() => setActionsMenuVisible(false)}
-      placement="bottom-end"
-      css={`
-        display: flex;
-        flex-direction: column;
-        padding: 10px;
-      `}
-    >
-      <FilterMenuItem
-        key="1"
-        onClick={() => {
-          curateIssues(selectedIssues, issuesFiltered)
-          deselectAllIssues()
-          setActionsMenuVisible(false)
-        }}
-      >
-        <IconFilter />
-        <ActionLabel>Curate Issues</ActionLabel>
-      </FilterMenuItem>
-      <FilterMenuItem
-        key="2"
-        onClick={() => {
-          allocateBounty(selectedIssues)
-          deselectAllIssues()
-          setActionsMenuVisible(false)
-        }}
-      >
-        <IconCoins />
-        <ActionLabel>Fund Issues</ActionLabel>
-      </FilterMenuItem>
-    </Popover>
-  )
-
   // filters contain information about active filters (checked checkboxes)
   // filtersData is about displayed checkboxes
   const allFundedIssues = [ 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]
@@ -408,118 +532,57 @@ const FilterBar = ({
   const actionsClickHandler = () =>
     selectedIssues.length && setActionsMenuVisible(true)
 
-  const actionsButtonBg = () =>
-    'background-color: ' + (!selectedIssues.length ? `${theme.background}` : `${theme.surface}`)
-
-  const activateSearch = () => setSearchVisible(true)
+  const activateTextFilter = () => setTextFilterVisible(true)
   const activateSort = () => setSortMenuVisible(true)
 
   return (
     <FilterBarCard>
-      <FilterBarMain>
+      <FilterBarMain ref={mainFBRef}>
         <FilterBarMainLeft>
           <SelectAll>
             <Checkbox onChange={handleSelectAll} checked={allSelected} />
           </SelectAll>
-
-          {layoutName === 'large' ? (
-            <React.Fragment>
-              <FilterByProject filters={filters} filtersData={filtersData} />
-              <FilterByLabel filters={filters} filtersData={filtersData} />
-              <FilterByMilestone filters={filters} filtersData={filtersData} />
-              <FilterByStatus
-                filters={filters}
-                filtersData={filtersData}
-                allFundedIssues={allFundedIssues}
-                allIssues={allIssues}
-              />
-            </React.Fragment>
-          ) : (
-            layoutName === 'medium' ? (
-              <React.Fragment>
-                <FilterByProject filters={filters} filtersData={filtersData} />
-                <FilterByLabel filters={filters} filtersData={filtersData} />
-                <FilterByMilestone filters={filters} filtersData={filtersData} />
-                <FilterDropDown type="overflow">
-                  <FilterByStatus
-                    filters={filters}
-                    filtersData={filtersData}
-                    allFundedIssues={allFundedIssues}
-                    allIssues={allIssues}
-                  />
-                </FilterDropDown>
-              </React.Fragment>
-            ) : (
-              <React.Fragment>
-                <FilterByProject filters={filters} filtersData={filtersData} />
-                <FilterByLabel filters={filters} filtersData={filtersData} />
-                <FilterDropDown type="overflow">
-                  <FilterByMilestone
-                    filters={filters}
-                    filtersData={filtersData}
-                    type="overflowTop"
-                  />
-                  <FilterByStatus
-                    filters={filters}
-                    filtersData={filtersData}
-                    allFundedIssues={allFundedIssues}
-                    allIssues={allIssues}
-                    type="overflowBottom"
-                  />
-                </FilterDropDown>
-              </React.Fragment>
-            )
-          )}
+          <Overflow filtersDisplayNumber={filtersDisplayNumber}>
+            <FilterByProject filters={filters} filtersData={filtersData} />
+            <FilterByLabel filters={filters} filtersData={filtersData} />
+            <FilterByMilestone filters={filters} filtersData={filtersData} />
+            <FilterByStatus
+              filters={filters}
+              filtersData={filtersData}
+              allFundedIssues={allFundedIssues}
+              allIssues={allIssues}
+            />
+          </Overflow>
         </FilterBarMainLeft>
 
-        <FilterBarMainRight>
-          {layoutName === 'large' ? (
-            <SearchInput
-              textFilter={textFilter}
-              updateTextFilter={updateTextFilter}
-            />
-          ) : (
-            <React.Fragment>
-              <Button icon={<IconSearch />} display="icon" onClick={activateSearch} ref={searchOpener} />
-              <SearchPopover
-                visible={searchVisible}
-                opener={searchOpener.current}
-                setSearchVisible={setSearchVisible}
-                textFilter={textFilter}
-                updateTextFilter={updateTextFilter}
-              />
-            </React.Fragment>
-          )}
+        <FilterBarMainRight ref={rightFBRef}>
+          <TextFilter
+            onClick={activateTextFilter}
+            textFilter={textFilter}
+            updateTextFilter={updateTextFilter}
+            visible={textFilterVisible}
+            openerRef={textFilterOpener}
+            setVisible={setTextFilterVisible}
+          />
 
-          <Button icon={<IconSort />} display="icon" onClick={activateSort} ref={sortersOpener} />
+          <Button icon={<IconSort />} display="icon" onClick={activateSort} ref={sortersOpener} label="Sorters" />
           <SortPopover
             visible={sortMenuVisible}
             opener={sortersOpener.current}
-            setSortMenuVisible={setSortMenuVisible}
+            setVisible={setSortMenuVisible}
             sortBy={sortBy}
             updateSortBy={updateSortBy}
           />
 
-          {layoutName === 'large' ? (
-            <Button
-              css={actionsButtonBg()}
-              onClick={actionsClickHandler}
-              ref={actionsOpener}
-            >
-              <IconGrid />
-              <Text css="margin: 0 8px;">Actions</Text>
-              <IconArrowDown />
-            </Button>
-          ) : (
-            <Button
-              css={actionsButtonBg()}
-              icon={<IconGrid />}
-              display="icon"
-              onClick={actionsClickHandler}
-              ref={actionsOpener}
-            />
-          )}
-          <ActionsPopover selectedIssues={selectedIssues} issuesFiltered={issuesFiltered} />
+          <Actions
+            onClick={actionsClickHandler}
+            visible={actionsMenuVisible}
+            setVisible={setActionsMenuVisible}
+            openerRef={actionsOpener}
+            selectedIssues={selectedIssues}
+            issuesFiltered={issuesFiltered}
+            deselectAllIssues={deselectAllIssues}
+          />
 
         </FilterBarMainRight>
       </FilterBarMain>
@@ -586,6 +649,7 @@ const FilterBarMain = styled.div`
   justify-content: space-between;
 `
 const FilterBarMainLeft = styled.div`
+  width: 100%;
   display: flex;
   > * {
     margin-right: 8px;
