@@ -18,7 +18,7 @@ const Title = styled(Text.Block)`
   text-transform: lowercase;
   font-variant: small-caps;
   font-weight: bold;
-  color: theme.surfaceContentSecondary
+  color: ${props => props.color};
 `
 
 export default FieldTitle

@@ -10,7 +10,7 @@ const Empty = ({ action, noButton=false }) => (
 
   <EmptyWrapper>
     <EmptyStateCard
-      text="No rewards here"
+      text="No rewards here!"
       illustration={<Icon />}
       action={noButton ? '' : <Button label="New reward" onClick={action} />}
     />
@@ -18,7 +18,7 @@ const Empty = ({ action, noButton=false }) => (
 )
 
 Empty.propTypes = {
-  action: PropTypes.func.isRequired,
+  action: PropTypes.func,
 }
 
 const EmptyWrapper = styled.div`

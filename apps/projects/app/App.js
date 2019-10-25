@@ -74,14 +74,14 @@ const App = () => {
       try {
         const token = await getToken(code)
         setGithubLoading(false)
-        api.trigger(REQUESTED_GITHUB_TOKEN_SUCCESS, {
+        api.emitTrigger(REQUESTED_GITHUB_TOKEN_SUCCESS, {
           status: STATUS.AUTHENTICATED,
           token
         })
 
       } catch (err) {
         setGithubLoading(false)
-        api.trigger(REQUESTED_GITHUB_TOKEN_FAILURE, {
+        api.emitTrigger(REQUESTED_GITHUB_TOKEN_FAILURE, {
           status: STATUS.FAILED,
           token: null,
         })

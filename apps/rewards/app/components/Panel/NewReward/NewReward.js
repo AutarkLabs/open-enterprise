@@ -5,6 +5,7 @@ import styled from 'styled-components'
 import {
   Button,
   DropDown,
+  IconCaution,
   IconClose,
   IdentityBadge,
   Info,
@@ -59,10 +60,11 @@ const INITIAL_STATE = {
   dateEnd: new Date(),
   disbursement: '',
   disbursementUnit: MONTHS,
-  disbursements: [],
+  disbursements: [new Date()],
   draftSubmitted: false,
   semanticErrors: [],
-  errorMessages: {
+  warnings: [],
+  messages: {
     customTokenInvalid: 'Token address must be of a valid ERC20 compatible clonable token.',
     meritTokenTransferable: 'Merit rewards must be non-transferable.',
     amountOverBalance: 'Amount must be below the available balance.',
@@ -70,8 +72,8 @@ const INITIAL_STATE = {
     dateStartPassed: 'Start date must take place after today.',
     dateEndPassed: 'End date must take place after today.',
     dateStartAfterEnd: 'Start date must take place before the end date.',
-    disbursementsInexistent: 'Disbursement frequency does not output any disbursements for the given time range.',
-  }
+    singleDisbursement: 'While you selected a recurring dividend, based on your parameters, there will only be a single disbursement.',
+  },
 }
 
 class NewRewardClass extends React.Component {
@@ -113,25 +115,6 @@ class NewRewardClass extends React.Component {
     this.setState({ [name]: value })
     if (name === 'amount')
       this.setSemanticErrors({ amount: value })
-  }
-
-  setDisbursements = (dateStart, dateEnd, disbursement, disbursementUnit) => {
-    if (isNaN(disbursement) || disbursement <= 0 ||
-        this.state.rewardType !== RECURRING_DIVIDEND) {
-      this.setState({ disbursements: [] })
-      return
-    }
-    let disbursements = [],
-      date = moment(dateStart).add(disbursement, disbursementUnit)
-    while (date.isBefore(dateEnd)) {
-      disbursements.push(date.clone())
-      date.add(disbursement, disbursementUnit)
-    }
-    this.setState({
-      disbursements,
-      disbursementsInexistent: disbursements.length === 0,
-    })
-    this.setSemanticErrors({ dateStart, dateEnd, disbursements })
   }
 
   dropDownItems = (name) => {
@@ -187,7 +170,8 @@ class NewRewardClass extends React.Component {
 
   setSemanticErrors = (changed) => {
     const state = { ...this.state, ...changed }
-    let semanticErrors = []
+    const semanticErrors = []
+    const warnings = []
     if (state.referenceAsset === OTHER && !state.customToken.isVerified)
       semanticErrors.push('customTokenInvalid')
     if (state.rewardType === ONE_TIME_MERIT && state.transferable)
@@ -210,8 +194,8 @@ class NewRewardClass extends React.Component {
     }
     if (state.rewardType === RECURRING_DIVIDEND &&
         state.disbursements.length <= 1)
-      semanticErrors.push('disbursementsInexistent')
-    this.setState({ semanticErrors })
+      warnings.push('singleDisbursement')
+    this.setState({ semanticErrors, warnings })
   }
 
   onMainNet = () => this.props.network.type === 'main'
@@ -253,7 +237,7 @@ class NewRewardClass extends React.Component {
 
     if (isAddress(value) || isAddress(resolvedAddress)) {
       this.verifyMinime(this.props.app, { address: resolvedAddress || value, value })
-      this.verifyTransferable(this.props.app, resolvedAddress)
+      this.verifyTransferable(this.props.app, resolvedAddress || value)
     }
     else {
       isVerified = false
@@ -279,31 +263,36 @@ class NewRewardClass extends React.Component {
         await token.balanceOfAt(testAddress,currentBlock).toPromise(),
       ]))
       if (verifiedTests[0] !== verifiedTests[2]) {
-        this.setState({ customToken: { ...tokenState, isVerified: false } })
+        const customToken = { ...tokenState, isVerified: false }
+        this.setState({ customToken  })
+        this.setSemanticErrors({ customToken })
         return false
       }
-      this.setState({
-        customToken: {
-          ...tokenState,
-          isVerified: true,
-          symbol: await token.symbol().toPromise(),
-          startBlock: await token.creationBlock().toPromise(),
-        }
-      })
+      const customToken = {
+        ...tokenState,
+        isVerified: true,
+        symbol: await token.symbol().toPromise(),
+        startBlock: await token.creationBlock().toPromise(),
+      }
+      this.setState({ customToken })
+      this.setSemanticErrors({ customToken })
       return true
     }
     catch (error) {
-      this.setState({ customToken: { ...tokenState, isVerified: false } })
+      const customToken = { ...tokenState, isVerified: false }
+      this.setState({ customToken })
+      this.setSemanticErrors({ customToken })
       return false
     }
   }
 
   verifyTransferable = async (app, tokenAddress) => {
-    console.log(tokenAddress)
     const token = app.external(tokenAddress, tokenTransferAbi)
     const transferable = await token.transfersEnabled().toPromise()
-    this.setState({ transferable: transferable })
+    this.setState({ transferable })
+    this.setSemanticErrors({ transferable })
   }
+
   amountWithTokenAndBalance = () => (
     <VerticalContainer>
       <HorizontalContainer>
@@ -330,7 +319,7 @@ class NewRewardClass extends React.Component {
       </HorizontalContainer>
       <Text
         size="small"
-        color={this.props.theme.contentSecondary}
+        color={String(this.props.theme.contentSecondary)}
         css={{
           alignSelf: 'flex-end',
           marginTop: '8px',
@@ -489,7 +478,7 @@ class NewRewardClass extends React.Component {
   }
 
   errorBlocks = () => {
-    const { semanticErrors, errorMessages } = this.state
+    const { semanticErrors, messages } = this.state
     return semanticErrors.map((error, i) => (
       <ErrorText key={i}>
         <IconContainer>
@@ -501,7 +490,25 @@ class NewRewardClass extends React.Component {
             }}
           />
         </IconContainer>
-        <Text>{errorMessages[error]}</Text>
+        <Text>{messages[error]}</Text>
+      </ErrorText>
+    ))
+  }
+
+  warningBlocks = () => {
+    const { warnings, messages } = this.state
+    return warnings.map((warning, i) => (
+      <ErrorText key={i}>
+        <IconContainer>
+          <IconCaution
+            size="tiny"
+            css={{
+              marginRight: '8px',
+              color: this.props.theme.warningSurfaceContent,
+            }}
+          />
+        </IconContainer>
+        <Text>{messages[warning]}</Text>
       </ErrorText>
     ))
   }
@@ -513,7 +520,12 @@ class NewRewardClass extends React.Component {
         onSubmit={this.submitDraft}
         submitText="Continue"
         disabled={!this.isDraftValid()}
-        errors={this.errorBlocks()}
+        errors={
+          <React.Fragment>
+            { this.errorBlocks() }
+            { this.warningBlocks() }
+          </React.Fragment>
+        }
       >
         <VerticalSpace />
         <FormField
@@ -543,9 +555,11 @@ class NewRewardClass extends React.Component {
               selected={this.state.referenceAssets.indexOf(this.state.referenceAsset)}
               placeholder="Select a token"
               onChange={async (i) => {
-                this.setState({ referenceAsset: this.state.referenceAssets[i] })
-                await this.verifyTransferable(this.props.app, this.state.referenceAssets[i].key)
-                this.setSemanticErrors()
+                const referenceAsset = this.state.referenceAssets[i]
+                this.setState({ referenceAsset })
+                if (referenceAsset !== OTHER)
+                  await this.verifyTransferable(this.props.app, referenceAsset.key)
+                this.setSemanticErrors({ referenceAsset })
               }}
             />
           }

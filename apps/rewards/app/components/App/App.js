@@ -18,7 +18,7 @@ import {
   millisecondsToYears,
 } from '../../../../../shared/ui/utils'
 
-import { BN } from 'web3-utils'
+import { BigNumber } from 'bignumber.js'
 import {
   ONE_TIME_DIVIDEND,
   ONE_TIME_MERIT,
@@ -115,7 +115,7 @@ class App extends React.Component {
   }, CONVERT_THROTTLE_TIME)
 
   updateRewards = async () => {
-    this.props.api && this.props.api.trigger('RefreshRewards', {
+    this.props.api && this.props.api.emitTrigger('RefreshRewards', {
       userAddress: this.props.connectedAccount,
     })
   }
@@ -157,10 +157,10 @@ class App extends React.Component {
 
   onNewReward = async reward => {
     let currentBlock = await this.props.api.web3Eth('getBlockNumber').toPromise()
-    const amountBN = new BN(reward.amount)
-    const tenBN =  new BN(10)
-    const decimalsBN = new BN(reward.amountToken.decimals)
-    reward.amount = amountBN.mul(tenBN.pow(decimalsBN))
+    const amountBN = new BigNumber(reward.amount)
+    const tenBN =  new BigNumber(10)
+    const decimalsBN = new BigNumber(reward.amountToken.decimals)
+    reward.amount = amountBN.times(tenBN.pow(decimalsBN))
     let startBlock = currentBlock + millisecondsToBlocks(Date.now(), reward.dateStart)
     if (reward.rewardType === ONE_TIME_DIVIDEND || reward.rewardType === ONE_TIME_MERIT) {
       reward.occurances = 1
@@ -332,6 +332,18 @@ const EmptyContainer = styled.div`
 
 // eslint-disable-next-line react/display-name
 export default () => {
-  const { api, appState, connectedAccount, displayMenuButton } = useAragonApi()
-  return <App api={api} {...appState} connectedAccount={connectedAccount} displayMenuButton={displayMenuButton} />
+  const { api, appState, connectedAccount } = useAragonApi()
+  return (
+    <App
+      api={api}
+      rewards={appState.rewards}
+      myRewards={appState.myRewards}
+      metrics={appState.metrics}
+      myMetrics={appState.myMetrics}
+      amountTokens={appState.amountTokens}
+      claims={appState.claims}
+      {...appState}
+      connectedAccount={connectedAccount}
+    />
+  )
 }

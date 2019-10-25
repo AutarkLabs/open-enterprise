@@ -1,9 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { GenerateBadge } from '../../utils/vote-styled-components'
+import LocalLabelAppBadge from '../LocalIdentityBadge/LocalLabelAppBadge'
 import { GU, IconCheck, textStyle, useTheme } from '@aragon/ui'
 
-const AppBadge = ({ iconSrc, label, youVoted }) => {
+const DetailedAppBadge = ({ appAddress, iconSrc, identifier, label, youVoted }) => {
   const theme = useTheme()
   return (
     <div
@@ -13,8 +13,10 @@ const AppBadge = ({ iconSrc, label, youVoted }) => {
         margin-bottom: ${2 * GU}px;
       `}
     >
-      <GenerateBadge
+      <LocalLabelAppBadge
+        appAddress={appAddress}
         iconSrc={iconSrc}
+        identifier={identifier}
         label={label}
       />
       {youVoted && (
@@ -41,10 +43,12 @@ const AppBadge = ({ iconSrc, label, youVoted }) => {
   )
 }
 
-AppBadge.propTypes = {
+DetailedAppBadge.propTypes = {
+  appAddress: PropTypes.string.isRequired,
   iconSrc: PropTypes.string.isRequired,
+  identifier: PropTypes.string,
   label: PropTypes.string.isRequired,
   youVoted: PropTypes.bool.isRequired,
 }
 
-export default AppBadge
+export default DetailedAppBadge

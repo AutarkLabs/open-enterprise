@@ -1,43 +1,38 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useAragonApi } from '@aragon/api-react'
 import BigNumber from 'bignumber.js'
 
 export default () => {
   const { appState } = useAragonApi()
-  const { tokens = [], bountyIssues = [], bountySettings = {} } = appState
+  const { bountySettings = {} } = appState
 
-  const bountyIssueObj = {}
-  const tokenObj = {}
-  const expLevels = bountySettings.expLvls
+  const bounties = useMemo(() => (appState.issues || []).reduce(
+    (obj, i) => { obj[i.issueNumber] = i; return obj },
+    {}
+  ), [appState.issues])
 
-  bountyIssues.forEach(issue => {
-    bountyIssueObj[issue.issueNumber] = issue
-  })
-
-  tokens.forEach(token => {
-    tokenObj[token.addr] = {
-      symbol: token.symbol,
-      decimals: token.decimals,
-    }
-  })
+  const tokens = useMemo(() => (appState.tokens || []).reduce(
+    (obj, t) => { obj[t.addr] = t; return obj },
+    {}
+  ), [appState.tokens])
 
   const shapeIssue = useCallback(issue => {
-    const bountyId = bountyIssueObj[issue.number]
-    const repoIdFromBounty = bountyId && bountyId.data.repoId
-    if (bountyId && repoIdFromBounty === issue.repository.id) {
-      const data = bountyIssueObj[issue.number].data
-      const balance = BigNumber(bountyIssueObj[issue.number].data.balance)
-        .div(BigNumber(10 ** tokenObj[data.token].decimals))
+    const bounty = bounties[issue.number]
+    const repoIdFromBounty = bounty && bounty.data.repoId
+    if (bounty && repoIdFromBounty === issue.repository.id) {
+      const data = bounties[issue.number].data
+      const balance = BigNumber(bounties[issue.number].data.balance)
+        .div(BigNumber(10 ** tokens[data.token].decimals))
         .dp(3)
         .toString()
 
       return {
         ...issue,
-        ...bountyIssueObj[issue.number].data,
+        ...bounties[issue.number].data,
         repoId: issue.repository.id,
         repo: issue.repository.name,
-        symbol: tokenObj[data.token].symbol,
-        expLevel: expLevels[data.exp].name,
+        symbol: tokens[data.token].symbol,
+        expLevel: bountySettings.expLvls[data.exp].name,
         balance: balance,
         data,
       }
@@ -47,7 +42,7 @@ export default () => {
       repoId: issue.repository.id,
       repo: issue.repository.name,
     }
-  }, [ tokens, bountyIssues, bountySettings ])
+  }, [ bounties, bountySettings.expLvls, tokens ])
 
   return shapeIssue
 }

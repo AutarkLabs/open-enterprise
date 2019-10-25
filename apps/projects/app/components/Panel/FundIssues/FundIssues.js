@@ -13,6 +13,7 @@ import { computeIpfsString } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
 import { IconOpen, IconClose } from '../../../assets'
 import NoFunds from '../../../assets/noFunds.svg'
+import { IssueTitle } from '../PanelComponents'
 
 import {
   Box,
@@ -25,8 +26,7 @@ import {
   Info,
 } from '@aragon/ui'
 
-import { Form, FormField, FieldTitle } from '../../Form'
-import { DateInput } from '../../../../../../shared/ui'
+import { Form, FormField, FieldTitle, DateInput } from '../../Form'
 import { Mutation } from 'react-apollo'
 import { COMMENT } from '../../../utils/gql-queries'
 import { issueShape } from '../../../utils/shapes.js'
@@ -51,32 +51,26 @@ const BountyUpdate = ({
   const theme = useTheme()
   return (
     <div css={`margin: ${2 * GU}px 0`}>
-      <Info.Action title="Warning" style={{ marginBottom: '16px' }}>
-        <p style={{ marginTop: '10px' }}>
-          The updates you specify will overwrite the existing settings for the bounty.
-        </p>
-      </Info.Action>
-
       <Form
         onSubmit={submitBounties}
         description={description}
-        submitText="Submit Update"
+        submitText="Submit"
       >
         <FormField
-          label="Issue"
           input={
             <React.Fragment>
-              <IssueTitleBox>
-                <IssueTitle>
-                  {issue.title}
-                </IssueTitle>
-
+              <div css={`
+                display: flex;
+                justify-content: space-between;
+              `}>
+                <IssueTitle issue={issue} />
                 {bounties[issue.id]['hours'] > 0 && (
                   <TextTag theme={theme}>
                     {bounties[issue.id]['size'].toFixed(1) + ' ' + tokenDetails.symbol}
                   </TextTag>
                 )}
-              </IssueTitleBox>
+              </div>
+
               <UpdateRow>
                 { bountySettings.baseRate === 0 ? (
                   <FormField
@@ -113,32 +107,34 @@ const BountyUpdate = ({
                 )}
 
                 <FormField
-                  label="Experience level"
+                  label="Difficulty"
                   input={
                     <DropDown
                       items={expLevels.map(exp => exp.name)}
                       onChange={generateExpChange(issue.id)}
                       selected={bounties[issue.id]['exp']}
+                      wide
                     />
                   }
                 />
               </UpdateRow>
 
-              <UpdateRow>
+              <div css={`
+                width: 100%;
+                margin-bottom: ${3 * GU}px;
+              `}>
                 <FormField
                   label="Deadline"
                   input={
                     <DateInput
-                      width="120px"
                       name='deadline'
                       value={bounties[issue.id]['deadline']}
                       onChange={generateDeadlineChange(issue.id)}
+                      width="100%"
                     />
                   }
                 />
-                {/* second child needed - should be Slots in the future */}
-                <div></div>
-              </UpdateRow>
+              </div>
             </React.Fragment>
           }
         />
@@ -242,9 +238,7 @@ const FundForm = ({
                               <IconOpen />
                             )}
                           </DetailsArrow>
-                          <IssueTitle>
-                            {issue.title}
-                          </IssueTitle>
+                          <IssueTitle issue={issue} />
                         </IssueTitleBox>
                         <IssueAmountBox>
                           {issue.id in bounties &&
@@ -674,7 +668,7 @@ FundIssues.propTypes = {
 const UpdateRow = styled.div`
   display: flex;
   align-content: stretch;
-  margin: 10px 0;
+  margin-bottom: ${2 * GU};
   > :first-child {
     width: 50%;
     padding-right: 10px;
@@ -752,16 +746,6 @@ const TextTag = styled(Text).attrs({
   text-transform: uppercase;
   color: ${props => props.theme.tagIndicatorContent};
   background: ${props => props.theme.tagIndicator};
-`
-const IssueTitle = styled(Text).attrs({
-  size: 'large',
-  weight: 'bold',
-})`
-  width: 100%;
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 `
 
 const InfoPanel = ({ imgSrc, title, message }) => {

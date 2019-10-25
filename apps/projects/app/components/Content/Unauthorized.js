@@ -15,9 +15,9 @@ const Unauthorized = ({ onLogin }) => {
       <EmptyStateCard
         text={<div>
           <Text css="display: block; margin-bottom: 8px">
-            No projects here
+            No projects here!
           </Text>
-          <Text.Block size="xsmall" color={`${theme.surfaceContentSecondary}`}>
+          <Text.Block size="small" color={`${theme.surfaceContentSecondary}`}>
           Link your repositories to incentivize work with bounties
           </Text.Block>
         </div>

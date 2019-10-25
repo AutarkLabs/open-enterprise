@@ -85,23 +85,22 @@ function appStateReducer(state) {
     state.myMetrics = [
       {
         name: 'Unclaimed rewards',
-        value: myMetric[0].toString(),
+        value: myMetric[0].toFixed(2).toString(),
         unit: 'USD',
       },
       {
         name: 'All time rewards obtained',
-        value: myMetric[1].toString(),
+        value: myMetric[1].toFixed(2).toString(),
         unit: 'USD',
       },
       {
         name: 'Rewards obtained this year',
-        value: myMetric[2].toString(),
+        value: myMetric[2].toFixed(2).toString(),
         unit: 'USD',
       },
     ]
     state.amountTokens = state.amountTokens || []
   }
-  console.log(state)
   return {
     ...state,
   }
