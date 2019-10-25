@@ -39,7 +39,7 @@ Label.propTypes = {
   label: PropTypes.string.isRequired,
 }
 
-const VotingOption = ({ valueSpring, label, percentage, color, threshold, userVote, fontSize }) => {
+const VotingOption = ({ valueSpring, label, percentage, allocation, color, threshold, userVote, fontSize }) => {
   return (
     <Main>
       <Labels>
@@ -60,11 +60,18 @@ const VotingOption = ({ valueSpring, label, percentage, color, threshold, userVo
             )}
           </div>
         )}
-        {percentage !== -1 &&
-            <Text size="xsmall" color="#98A0A2">
-              {Math.round(percentage)}%
+        <div>
+          {percentage !== -1 &&
+              <Text size="xsmall" color="#98A0A2">
+                {Math.round(percentage)}%
+              </Text>
+          }
+          {allocation && (
+            <Text size="xsmall" color="#98A0A2" css={`margin-left: ${0.25 * GU}px`}>
+                ({allocation})
             </Text>
-        }
+          )}
+        </div>
       </Labels>
       <div css={`
           display: flex;
@@ -91,6 +98,7 @@ VotingOption.defaultProps = {
   threshold: -1,
   label: '',
   percentage: -1,
+  allocations: '',
   userVote: -1,
 }
 
@@ -99,6 +107,7 @@ VotingOption.propTypes = {
   valueSpring: PropTypes.object.isRequired,
   label: PropTypes.string.isRequired,
   percentage: PropTypes.number.isRequired,
+  allocation: PropTypes.string,
   threshold: PropTypes.number.isRequired,
   color: PropTypes.string.isRequired,
   userVote: PropTypes.number.isRequired,

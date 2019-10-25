@@ -48,7 +48,6 @@ const VoteDetails = ({ vote, onVote }) => {
 
   // eslint-disable-next-line react/prop-types
   const youVoted = voteWeights.length > 0
-
   return (
     <Split
       primary={
@@ -109,11 +108,12 @@ const VoteDetails = ({ vote, onVote }) => {
                 voteWeights={voteWeights}
                 votingPower={votingPower}
               />
-            ) :(
+            ) : (
               <VotingResults
                 vote={vote}
                 options={vote.data.options}
                 voteWeights={voteWeights}
+                balance={(type === 'allocation') ? BigNumber(vote.data.balance).div(BigNumber(10 ** decimals)).toNumber() : 0}
               />
             )}
           </div>
