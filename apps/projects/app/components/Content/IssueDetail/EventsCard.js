@@ -135,7 +135,7 @@ const activities = (
           eventDescription: (data.review.accepted ? 'accepted' : 'rejected') + ' ' + data.user.login + '\'s work',
           eventAction:
             <div>
-              {data.review.feedback.length && (
+              {!!data.review.feedback.length && (
                 <Text.Block size="large" style={{ marginBottom: '8px' }}>
                   {data.review.feedback}
                 </Text.Block>
