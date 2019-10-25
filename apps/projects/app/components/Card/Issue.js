@@ -56,7 +56,7 @@ const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
               css="text-decoration: none"
               onClick={e => {
                 e.preventDefault()
-                onClick(issue)
+                onClick(issue.id)
               }}
             >
               <IssueTitle theme={theme}>{title}</IssueTitle>

@@ -37,7 +37,7 @@ const App = () => {
   const [ activeIndex, setActiveIndex ] = useState(
     { tabIndex: 0, tabData: {} }
   )
-  const [ selectedIssue, setSelectedIssue ] = useState(null)
+  const [ selectedIssueId, setSelectedIssue ] = useState(null)
   const [ githubLoading, setGithubLoading ] = useState(false)
   const [ panel, setPanel ] = useState(null)
   const [ panelProps, setPanelProps ] = useState(null)
@@ -193,13 +193,13 @@ const App = () => {
               />
               <ErrorBoundary>
 
-                {selectedIssue
+                {selectedIssueId
                   ? (
                     <React.Fragment>
                       <Bar>
                         <BackButton onClick={() => setSelectedIssue(null)} />
                       </Bar>
-                      <IssueDetail issue={selectedIssue} />
+                      <IssueDetail issueId={selectedIssueId} />
                     </React.Fragment>
                   )
                   : (

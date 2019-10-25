@@ -1,5 +1,38 @@
 import { gql } from 'apollo-boost'
 
+const issueAttributes = `
+  number
+  id
+  title
+  body
+  author {
+    login
+    avatarUrl
+    url
+  }
+  createdAt
+  repository {
+    id
+    name
+  }
+  labels(first: 50) {
+    totalCount
+    edges {
+      node {
+        id
+        name
+        color
+      }
+    }
+  }
+  milestone {
+    id
+    title
+  }
+  state
+  url
+`
+
 export const GET_ISSUES = gql`
   query getIssuesForRepos($reposIds: [ID!]!) {
     nodes(ids: $reposIds) {
@@ -58,38 +91,7 @@ export const getIssuesGQL = repos => {
             endCursor
             hasNextPage
           }
-          nodes {
-            number
-            id
-            title
-            body
-            author {
-              login
-              avatarUrl
-              url
-            }
-            createdAt
-            repository {
-              id
-              name
-            }
-            labels(first: 50) {
-              totalCount
-              edges {
-                node {
-                  id
-                  name
-                  color
-                }
-              }
-            }
-            milestone {
-              id
-              title
-            }
-            state
-            url
-          }
+          nodes { ${issueAttributes} }
         }
       }
     }
@@ -100,6 +102,14 @@ export const getIssuesGQL = repos => {
   `
   return gql`${q}`
 }
+
+export const GET_ISSUE = gql`
+  query GetIssue($id: ID!) {
+    node(id: $id) {
+      ... on Issue { ${issueAttributes} }
+    }
+  }
+`
 
 export const NEW_ISSUE = gql`
   mutation create($title: String!, $description: String, $id: ID!) {
