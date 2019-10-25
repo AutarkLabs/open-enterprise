@@ -32,12 +32,19 @@ IssueTitleLink.propTypes = issueShape
 
 export const IssueTitle = ({ issue }) => (
   <div>
-    <Text.Block size="xlarge">{issue.title}</Text.Block>
+    <IssueText>
+      <Text css='font-size: 18px;'>{issue.title}</Text>
+    </IssueText>
     <IssueTitleLink issue={issue} />
   </div>
 )
 IssueTitle.propTypes = issueShape
 
+export const IssueText = styled.div`
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`
 const IssueLinkRow = styled.div`
   height: 31px;
   display: flex;

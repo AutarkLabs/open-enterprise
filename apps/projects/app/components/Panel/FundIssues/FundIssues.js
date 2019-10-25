@@ -13,7 +13,7 @@ import { computeIpfsString } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
 import { IconOpen, IconClose } from '../../../assets'
 import NoFunds from '../../../assets/noFunds.svg'
-import { IssueTitle } from '../PanelComponents'
+import { IssueText } from '../PanelComponents'
 
 import {
   Box,
@@ -60,15 +60,13 @@ const BountyUpdate = ({
           input={
             <React.Fragment>
               <div css={`
+                padding: ${2 * GU}px 0;
                 display: flex;
-                justify-content: space-between;
               `}>
-                <IssueTitle issue={issue} />
-                {bounties[issue.id]['hours'] > 0 && (
-                  <TextTag theme={theme}>
-                    {bounties[issue.id]['size'].toFixed(1) + ' ' + tokenDetails.symbol}
-                  </TextTag>
-                )}
+                <IssueTitleCompact
+                  title={issue.title}
+                  tag={(issue.id in bounties && bounties[issue.id]['hours'] > 0) ? bounties[issue.id]['size'].toFixed(2) + ' ' + tokenDetails.symbol : ''}
+                />
               </div>
 
               <UpdateRow>
@@ -220,34 +218,31 @@ const FundForm = ({
                   {issues.map(issue => (
                     <Box key={issue.id} padding={0}>
                       <div css={`
+                        padding: ${2 * GU}px;
+                        display: flex;
+                      `}>
+                        <DetailsArrow onClick={generateArrowChange(issue.id)}>
+                          {bounties[issue.id]['detailsOpen'] ? (
+                            <IconClose />
+                          ) : (
+                            <IconOpen />
+                          )}
+                        </DetailsArrow>
+                        <IssueTitleCompact
+                          title={issue.title}
+                          tag={(issue.id in bounties && bounties[issue.id]['hours'] > 0) ? bounties[issue.id]['size'].toFixed(2) + ' ' + tokenDetails.symbol : ''}
+                        />
+                      </div>
+                      <div css={`
                               display: grid;
-                              grid-template-columns: minmax(0, 1fr) 1fr;
+                              grid-template-columns: minmax(1fr, 0) 1fr;
                               grid-template-rows: auto;
                               grid-template-areas:
-                                "title amount"
                                 "hours exp"
                                 "deadline deadline";
                               grid-gap: 12px;
                               align-items: stretch;
                             `}>
-                        <IssueTitleBox>
-                          <DetailsArrow onClick={generateArrowChange(issue.id)}>
-                            {bounties[issue.id]['detailsOpen'] ? (
-                              <IconClose />
-                            ) : (
-                              <IconOpen />
-                            )}
-                          </DetailsArrow>
-                          <IssueTitle issue={issue} />
-                        </IssueTitleBox>
-                        <IssueAmountBox>
-                          {issue.id in bounties &&
-                                     bounties[issue.id]['hours'] > 0 && (
-                            <TextTag theme={theme}>
-                              {bounties[issue.id]['size'].toFixed(1) + ' ' + tokenDetails.symbol}
-                            </TextTag>
-                          )}
-                        </IssueAmountBox>
 
                         {bountySettings.baseRate === 0 ? (
                           <div css={`grid-area: hours; padding-left: ${2 * GU}px`}>
@@ -450,7 +445,7 @@ const FundIssues = ({ issues, mode }) => {
   }
 
   const generateHoursChange = id => ({ target: { value } }) =>
-    configBounty(id, 'hours', parseInt(value))
+    configBounty(id, 'hours', parseFloat(value))
 
   const generateExpChange = id => index => {
     configBounty(id, 'exp', index)
@@ -689,17 +684,14 @@ const HorizontalInputGroup = styled.div`
   display: flex;
 `
 const HoursInput = styled(TextInput.Number).attrs({
-  mode: 'strong',
-  step: '1',
+  step: '0.25',
   min: '0',
-  max: '1000',
 })`
   width: 100%;
   display: inline-block;
   padding-top: 3px;
 `
 const AmountInput = styled(TextInput.Number).attrs({
-  mode: 'strong',
   step: 'any',
   min: '1e-18',
 })`
@@ -719,18 +711,8 @@ const DetailsArrow = styled.div`
   width: 24px;
   margin-right: 12px;
 `
-const IssueTitleBox = styled.div`
-  grid-area: title;
-  padding: ${2 * GU}px;
-  padding-bottom: 0;
+const IssueAmount = styled.span`
   display: flex;
-`
-const IssueAmountBox = styled.div`
-  grid-area: amount;
-  padding: ${2 * GU}px;
-  padding-bottom: 0;
-  display: flex;
-  justify-content: flex-end;
 `
 const TextTag = styled(Text).attrs({
   size: 'small',
@@ -747,6 +729,29 @@ const TextTag = styled(Text).attrs({
   color: ${props => props.theme.tagIndicatorContent};
   background: ${props => props.theme.tagIndicator};
 `
+
+const IssueTitleCompact = ({ title, tag = '' }) => {
+  const theme = useTheme()
+
+  return (
+    <React.Fragment>
+      <IssueText>
+        <Text >{title}</Text>
+      </IssueText>
+      {tag && (
+        <IssueAmount>
+          <TextTag theme={theme}>
+            {tag}
+          </TextTag>
+        </IssueAmount>
+      )}
+    </React.Fragment>
+  )
+}
+IssueTitleCompact.propTypes = {
+  title: PropTypes.string.isRequired,
+  tag: PropTypes.string,
+}
 
 const InfoPanel = ({ imgSrc, title, message }) => {
   const theme = useTheme()
