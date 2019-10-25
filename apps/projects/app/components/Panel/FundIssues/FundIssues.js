@@ -63,17 +63,10 @@ const BountyUpdate = ({
                 padding: ${2 * GU}px 0;
                 display: flex;
               `}>
-                <IssueText>
-                  <Text >{issue.title}</Text>
-                </IssueText>
-                <IssueAmount>
-                  {issue.id in bounties &&
-                             bounties[issue.id]['hours'] > 0 && (
-                    <TextTag theme={theme}>
-                      {bounties[issue.id]['size'].toFixed(1) + ' ' + tokenDetails.symbol}
-                    </TextTag>
-                  )}
-                </IssueAmount>
+                <IssueTitleCompact
+                  title={issue.title}
+                  tag={(issue.id in bounties && bounties[issue.id]['hours'] > 0) ? bounties[issue.id]['size'].toFixed(2) + ' ' + tokenDetails.symbol : ''}
+                />
               </div>
 
               <UpdateRow>
@@ -235,17 +228,10 @@ const FundForm = ({
                             <IconOpen />
                           )}
                         </DetailsArrow>
-                        <IssueText>
-                          <Text >{issue.title}</Text>
-                        </IssueText>
-                        <IssueAmount>
-                          {issue.id in bounties &&
-                                     bounties[issue.id]['hours'] > 0 && (
-                            <TextTag theme={theme}>
-                              {bounties[issue.id]['size'].toFixed(1) + ' ' + tokenDetails.symbol}
-                            </TextTag>
-                          )}
-                        </IssueAmount>
+                        <IssueTitleCompact
+                          title={issue.title}
+                          tag={(issue.id in bounties && bounties[issue.id]['hours'] > 0) ? bounties[issue.id]['size'].toFixed(2) + ' ' + tokenDetails.symbol : ''}
+                        />
                       </div>
                       <div css={`
                               display: grid;
@@ -459,7 +445,7 @@ const FundIssues = ({ issues, mode }) => {
   }
 
   const generateHoursChange = id => ({ target: { value } }) =>
-    configBounty(id, 'hours', parseInt(value))
+    configBounty(id, 'hours', parseFloat(value))
 
   const generateExpChange = id => index => {
     configBounty(id, 'exp', index)
@@ -698,17 +684,14 @@ const HorizontalInputGroup = styled.div`
   display: flex;
 `
 const HoursInput = styled(TextInput.Number).attrs({
-  mode: 'strong',
-  step: '1',
+  step: '0.25',
   min: '0',
-  max: '1000',
 })`
   width: 100%;
   display: inline-block;
   padding-top: 3px;
 `
 const AmountInput = styled(TextInput.Number).attrs({
-  mode: 'strong',
   step: 'any',
   min: '1e-18',
 })`
@@ -746,6 +729,29 @@ const TextTag = styled(Text).attrs({
   color: ${props => props.theme.tagIndicatorContent};
   background: ${props => props.theme.tagIndicator};
 `
+
+const IssueTitleCompact = ({ title, tag = '' }) => {
+  const theme = useTheme()
+
+  return (
+    <React.Fragment>
+      <IssueText>
+        <Text >{title}</Text>
+      </IssueText>
+      {tag && (
+        <IssueAmount>
+          <TextTag theme={theme}>
+            {tag}
+          </TextTag>
+        </IssueAmount>
+      )}
+    </React.Fragment>
+  )
+}
+IssueTitleCompact.propTypes = {
+  title: PropTypes.string.isRequired,
+  tag: PropTypes.string,
+}
 
 const InfoPanel = ({ imgSrc, title, message }) => {
   const theme = useTheme()

@@ -125,10 +125,8 @@ const RequestAssignment = ({ issue }) => {
 RequestAssignment.propTypes = issueShape
 
 const HoursInput = styled(TextInput.Number).attrs({
-  mode: 'strong',
-  step: '1',
+  step: '0.25',
   min: '0',
-  max: '1000',
 })`
   width: 100%;
   display: inline-block;

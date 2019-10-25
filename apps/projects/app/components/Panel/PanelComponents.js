@@ -33,7 +33,7 @@ IssueTitleLink.propTypes = issueShape
 export const IssueTitle = ({ issue }) => (
   <div>
     <IssueText>
-      <Text css={'font-size: 18px;'}>{issue.title}</Text>
+      <Text css='font-size: 18px;'>{issue.title}</Text>
     </IssueText>
     <IssueTitleLink issue={issue} />
   </div>
