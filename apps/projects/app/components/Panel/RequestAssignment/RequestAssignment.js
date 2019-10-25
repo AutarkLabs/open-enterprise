@@ -124,17 +124,22 @@ const RequestAssignment = ({ issue }) => {
 
 RequestAssignment.propTypes = issueShape
 
-const HoursInput = styled(TextInput.Number)`
-  height: 32px;
+const HoursInput = styled(TextInput.Number).attrs({
+  mode: 'strong',
+  step: '1',
+  min: '0',
+  max: '1000',
+})`
+  width: 100%;
   display: inline-block;
   padding-top: 3px;
 `
+
 const Estimations = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto;
   grid-gap: 12px;
-  margin-bottom
 `
 const AckText = styled(Text)`
   margin-left: ${GU}px;
