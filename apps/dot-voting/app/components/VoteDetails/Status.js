@@ -13,24 +13,29 @@ const PastDate = styled.time`
 `
 
 const Status = ({ vote }) => (
-  <Box heading={vote.open ? 'Time Remaining' : 'Status'}>
+  <Box heading="Status">
     <div>
-      {vote.open ? (
-        <Countdown end={vote.endDate} />
-      ) : (
-        <React.Fragment>
-          <VoteStatus
-            vote={vote}
-            support={vote.support}
-            tokenSupply={vote.data.totalVoters}
-          />
-          <PastDate
-            dateTime={format(vote.endDate, 'yyyy-MM-dd\'T\'HH:mm:ss.SSSxxx')}
-          >
-            {format(vote.endDate, 'MMM dd yyyy HH:mm')}
-          </PastDate>
-        </React.Fragment>
+      {vote.open && (
+        <h2>Time Remaining</h2>
       )}
+      <div>
+        {vote.open ? (
+          <Countdown end={vote.endDate} />
+        ) : (
+          <React.Fragment>
+            <VoteStatus
+              vote={vote}
+              support={vote.support}
+              tokenSupply={vote.data.totalVoters}
+            />
+            <PastDate
+              dateTime={format(vote.endDate, 'yyyy-MM-dd\'T\'HH:mm:ss.SSSxxx')}
+            >
+              {format(vote.endDate, 'MMM dd yyyy HH:mm')}
+            </PastDate>
+          </React.Fragment>
+        )}
+      </div>
     </div>
   </Box>
 )
