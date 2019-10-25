@@ -29,7 +29,7 @@
     },
     "rinkeby": {
       "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
-      "appName": "tps-dot-voting.open.aragonpm.eth",
+      "appName": "dot-voting.aragonpm.eth",
       "network": "rinkeby"
     },
     "continuous-deployment": {
