@@ -54,8 +54,8 @@ const Entities = ({ entities, onRemoveEntity }) => {
             }}
             key={entryAddress}
             mode="identifier"
-            color={typeRow.fg}
-            background={typeRow.bg}
+            color={String(typeRow.fg)}
+            background={String(typeRow.bg)}
           >
             {typeRow.name}
           </Tag>
