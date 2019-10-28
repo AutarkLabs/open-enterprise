@@ -7,13 +7,6 @@ import { springs, GU, theme } from '@aragon/ui'
 import FilterButton from './FilterButton'
 import { IconMore, IconDropArrow } from '../../../assets'
 
-const borders = {
-  'overflowTop': '3px 3px 0 0',
-  'overflowMiddle': '0',
-  'overflowBottom': '0 0 3px 3px',
-  'filter': '3px',
-}
-
 const SpringWrap = ({ handleClickOut, opened, children }) => (
   <ClickOutHandler onClickOut={handleClickOut}>
     <Spring
@@ -26,7 +19,7 @@ const SpringWrap = ({ handleClickOut, opened, children }) => (
   </ClickOutHandler>
 )
 SpringWrap.propTypes = {
-  children: PropTypes.node.isRequired,
+  children: PropTypes.func.isRequired,
   opened: PropTypes.bool.isRequired,
   handleClickOut: PropTypes.func.isRequired,
 }
@@ -67,7 +60,7 @@ OverflowDropDown.defaultProps = {
   enabled: true,
 }
 
-export const FilterDropDown = ({ caption, type, children, enabled }) => {
+export const FilterDropDown = ({ caption, children, enabled }) => {
   const [ opened, setOpened ] = useState(false)
   const handleClickOut = () => setOpened(false)
   const handleBaseButtonClick = () => {
@@ -82,7 +75,6 @@ export const FilterDropDown = ({ caption, type, children, enabled }) => {
             onClick={handleBaseButtonClick}
             disabled={!enabled}
             width="128px"
-            style={{ borderRadius: borders[type] }}
           >
             <div css={`display: flex; width: 100%; justify-content: space-between; padding: 0 ${2 * GU}px`}>
               {caption}
@@ -114,7 +106,6 @@ FilterDropDown.propTypes = {
   caption: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
   enabled: PropTypes.bool.isRequired,
-  type: PropTypes.string.isRequired,
 }
 FilterDropDown.defaultProps = {
   enabled: true,

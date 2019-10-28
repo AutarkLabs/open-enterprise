@@ -46,7 +46,6 @@ const prepareFilters = (issues, bountyIssues) => {
       } else {
         filters.milestones['milestoneless'] = {
           title: 'Issues without milestones',
-          color: 'F2F2F2',
           id: 'milestoneless',
           count: 1,
         }
@@ -67,7 +66,6 @@ const prepareFilters = (issues, bountyIssues) => {
       } else {
         filters.labels['labelless'] = {
           name: 'Issues without labels',
-          color: 'F2F2F2',
           id: 'labelless',
           count: 1,
         }
