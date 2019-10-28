@@ -651,7 +651,7 @@ class NewRewardClass extends React.Component {
           {rewardType === RECURRING_DIVIDEND &&
              disbursements.map((disbursement, i) => (
                <Content key={i}>
-                 {disbursement.toDate().toDateString()}
+                 {disbursement.toDateString()}
                </Content>
              ))}
           {rewardType === ONE_TIME_MERIT && (
