@@ -3,6 +3,7 @@ import { app, handleEvent } from './'
 export const initStore = () => {
   const initialState = {
     votes: [],
+    isSyncing: false,
   }
   return app.store(
     async (state, event) => {

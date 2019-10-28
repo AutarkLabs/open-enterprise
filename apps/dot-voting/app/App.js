@@ -7,6 +7,7 @@ import { getTotalSupport } from './utils/vote-utils'
 import { safeDiv } from './utils/math-utils'
 import { IdentityProvider } from './components/LocalIdentityBadge/IdentityManager'
 import Decisions from './Decisions'
+import { SyncCard } from '../../../shared/ui'
 import emptyStatePng from './assets/voting-empty-state.png'
 
 const ASSETS_URL = './aragon-ui'
@@ -49,7 +50,7 @@ Wrap.propTypes = {
   children: PropTypes.node.isRequired,
 }
 
-const Empty = () => (
+const CenterCard = ({ children }) => (
   <Wrap>
     <div
       css={`
@@ -60,13 +61,29 @@ const Empty = () => (
         z-index: -1;
       `}
     >
-      <EmptyStateCard
-        title="You do not have any dot votes."
-        text="After you create an allocation or issue curation, you can vote here."
-        illustration={illustration}
-      />
+      {children}
     </div>
   </Wrap>
+)
+
+CenterCard.propTypes = {
+  children: PropTypes.node.isRequired,
+}
+
+const Empty = () => (
+  <CenterCard>
+    <EmptyStateCard
+      title="You do not have any dot votes."
+      text="After you create an allocation or issue curation, you can vote here."
+      illustration={illustration}
+    />
+  </CenterCard>
+)
+
+const Syncing = () => (
+  <CenterCard>
+    <SyncCard />
+  </CenterCard>
 )
 
 const App = () => {
@@ -84,7 +101,7 @@ const App = () => {
       .toPromise()
   }, [api])
 
-  const { votes = [], voteTime = 0, pctBase = 0 } = appState
+  const { isSyncing = true, votes = [], voteTime = 0, pctBase = 0 } = appState
 
   // TODO: move this logic to script.js so it's available app-wide by default
   const decorateVote = useCallback(vote => {
@@ -100,6 +117,7 @@ const App = () => {
     }
   }, [ voteTime, pctBase ])
 
+  if (isSyncing) return <Syncing />
   if (!votes.length) return <Empty />
 
   return (
