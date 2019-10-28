@@ -7,6 +7,7 @@ const FieldTitle = styled(Text.Block)`
   text-transform: lowercase;
   font-variant: small-caps;
   font-weight: bold;
+  display: flex;
 `
 
 export default FieldTitle

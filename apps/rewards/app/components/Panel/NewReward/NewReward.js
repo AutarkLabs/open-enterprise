@@ -335,10 +335,11 @@ class NewRewardClass extends React.Component {
     </VerticalContainer>
   )
 
-  startAndEndDate = () => (
+  startAndEndDate = (isMerit) => (
     <HorizontalContainer>
       <FormField
         label="Start date"
+        hint={isMerit && <span>The <b>start date</b> for one-time merits defines the beginning of the review period in which newly accrued amounts of the reference asset will be determined.</span>}
         required
         input={
           <DateInput
@@ -358,6 +359,7 @@ class NewRewardClass extends React.Component {
       />
       <FormField
         label="End date"
+        hint={isMerit && <span>The <b>end date</b> for one-time merits defines the end of the review period in which newly accrued amounts of the reference asset will be determined.</span>}
         required
         input={
           <DateInput
@@ -387,6 +389,7 @@ class NewRewardClass extends React.Component {
       />
       <FormField
         label="Reference date"
+        hint={<span>The <b>reference date</b> is the date at which a snapshot of all the tokenholder's accounts is taken to determine which tokenholders are qualified for the reward. Disbursement will follow either immediately the reward proposal is processed or whenever the reference date passes.</span>}
         required
         input={
           <DateInput
@@ -410,10 +413,11 @@ class NewRewardClass extends React.Component {
         label="Amount per disbursement"
         input={this.amountWithTokenAndBalance()}
       />
-      {this.startAndEndDate()}
+      {this.startAndEndDate(false)}
       <FormField
         required
         label="Disbursement frequency"
+        hint={<span>The <b>disbursement frequency</b> is the time in between each dividend disbursement.</span>}
         input={
           <HorizontalContainer>
             <DisbursementInput
@@ -461,7 +465,7 @@ class NewRewardClass extends React.Component {
         label="Total amount"
         input={this.amountWithTokenAndBalance()}
       />
-      {this.startAndEndDate()}
+      {this.startAndEndDate(true)}
     </VerticalContainer>
   )
 
@@ -548,7 +552,7 @@ class NewRewardClass extends React.Component {
           required
           wide
           label="Reference Asset"
-          help="hey"
+          hint={<span>The <b>reference asset</b> is the token that members will be required to hold in order to receive the reward. For example, if the reference asset is ANT, then any member that holds ANT at the reference date(s) will be eligible to receive the reward. The reference asset is not the token to be paid as reward amount.</span>}
           input={
             <DropDown
               name="referenceAsset"
@@ -586,6 +590,7 @@ class NewRewardClass extends React.Component {
         <FormField
           required
           label="Type"
+          hint="Rewards can either be dividends or merits. Dividends are rewards that are distributed based on holding the reference asset at the reference date(s), and they can either be one-time or recurring. Merits can only be one-time, and are based on the newly accrued amount of a particular token over a specified period of time."
           input={
             <DropDown
               wide
