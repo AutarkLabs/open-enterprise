@@ -6,7 +6,6 @@ import { IdentityProvider } from '../LocalIdentityBadge/IdentityManager'
 import { Empty } from '../Card'
 import { NewAllocation, NewBudget } from '../Panel'
 import { AllocationsHistory, Budgets } from '.'
-import { Deactivate } from '../Modal'
 
 const App = () => {
   const [ panel, setPanel ] = useState(null)
@@ -58,10 +57,6 @@ const App = () => {
 
   }
 
-  const onSubmitDeactivate = () => { // TODO id => {
-    closeModal()
-  }
-
   // TODO: Fix this
   // eslint-disable-next-line
   const onExecutePayout = (accountId, payoutId) => {
@@ -102,15 +97,6 @@ const App = () => {
       },
     })
     setPanelOpen(true)
-  }
-
-  const onDeactivate = id => {
-    setModalVisible(true)
-    setCurrentBudgetId(id)
-  }
-
-  const onReactivate = () => { // TODO id => {
-    //api.reactivateBudget(id)
   }
 
   const closePanel = () => {
@@ -155,19 +141,11 @@ const App = () => {
                 budgets={budgets}
                 onNewAllocation={onNewAllocation}
                 onEdit={onEdit}
-                onDeactivate={onDeactivate}
-                onReactivate={onReactivate}
               />
             </React.Fragment>
           )
         }
         { !!allocations.length && <AllocationsHistory allocations={allocations} /> }
-        <Deactivate
-          visible={isModalVisible}
-          budgetId={currentBudgetId}
-          onClose={closeModal}
-          onSubmit={onSubmitDeactivate}
-        />
         <SidePanel
           title={(panel && panel.data.heading) || ''}
           opened={panelOpen}

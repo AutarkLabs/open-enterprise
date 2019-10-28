@@ -23,11 +23,8 @@ const Budget = ({
   amount,
   token,
   remaining = 0,
-  inactive,
   onNewAllocation,
   onEdit,
-  onDeactivate,
-  onReactivate,
 }) => {
   const theme = useTheme()
 
@@ -37,33 +34,8 @@ const Budget = ({
   const edit = () => {
     onEdit(id)
   }
-  const deactivate = () => {
-    onDeactivate(id)
-  }
-
-  const reactivate = () => {
-    onReactivate(id)
-  }
   const tokenAmount = rawAmount => BigNumber(rawAmount).div(BigNumber(10).pow(token.decimals))
   const tokensSpent = tokenAmount(amount).minus(BigNumber(remaining).div(BigNumber(10).pow(token.decimals)))
-  if (inactive) {
-    return (
-      <Wrapper
-        name={name}
-        theme={theme}
-        menu={
-          <ContextMenuItem onClick={reactivate}>
-            <IconView />
-            <ActionLabel>Reactivate</ActionLabel>
-          </ContextMenuItem>
-        }
-      >
-        <StatsValueBig theme={theme}>
-          <Text>Inactive</Text>
-        </StatsValueBig>
-      </Wrapper>
-    )
-  }
 
   return (
     <Wrapper
@@ -78,10 +50,6 @@ const Budget = ({
           <ContextMenuItem onClick={edit}>
             <IconEdit />
             <ActionLabel>Edit</ActionLabel>
-          </ContextMenuItem>
-          <ContextMenuItem onClick={deactivate}>
-            <IconProhibited />
-            <ActionLabel>Deactivate</ActionLabel>
           </ContextMenuItem>
         </React.Fragment>
       }
@@ -125,11 +93,8 @@ Budget.propTypes = {
   token: PropTypes.object.isRequired,
   // TODO: fix remaining (should be required?)
   remaining: PropTypes.string,
-  inactive: PropTypes.bool.isRequired,
   onNewAllocation: PropTypes.func.isRequired,
   onEdit: PropTypes.func.isRequired,
-  onDeactivate: PropTypes.func.isRequired,
-  onReactivate: PropTypes.func.isRequired,
 }
 
 const Wrapper = ({ children, name, theme, menu }) => (
