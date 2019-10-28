@@ -49,6 +49,10 @@ const buildHook = ({ initialState, functions }) => {
       getCache: key => {
         return appState[key]
       },
+      resolveAddressIdentity: address => new Observable(subscriber => {
+        subscriber.next(`STUBBED-${address}`)
+        subscriber.complete()
+      }),
       ...functions(appState, db.setData),
     }
 
