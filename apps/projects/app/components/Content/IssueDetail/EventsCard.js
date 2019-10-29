@@ -84,7 +84,7 @@ const activities = (
         eventDescription: 'requested assignment',
         eventAction: (
           <EventButton
-            mode="outline"
+            mode="normal"
             onClick={() => onReviewApplication(issue, index)}
             wide
           >
@@ -117,7 +117,7 @@ const activities = (
         eventDescription: 'submitted work for review',
         eventAction: (
           <EventButton
-            mode="outline"
+            mode="normal"
             onClick={() => onReviewWork(issue, index)}
             wide
           >

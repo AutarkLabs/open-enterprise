@@ -3,18 +3,20 @@ import PropTypes from 'prop-types'
 import {
   ContextMenu,
   GU,
-  Link,
   Tag,
   Text,
-  Timer,
   useTheme,
 } from '@aragon/ui'
 import { BountyContextMenu } from '../../Shared'
 import { BOUNTY_BADGE_COLOR } from '../../../utils/bounty-status'
 import { Markdown } from '../../../../../../shared/ui'
 import Label from './Label'
-import { issueShape, userGitHubShape } from '../../../utils/shapes.js'
+import { issueShape } from '../../../utils/shapes.js'
 import { IssueTitleLink } from '../../Panel/PanelComponents'
+import { formatDistance } from 'date-fns'
+
+const DeadlineDistance = ({ date }) =>
+  formatDistance(new Date(date), new Date(), { addSuffix: true })
 
 const DetailsCard = ({ issue }) => {
   const theme = useTheme()
@@ -31,6 +33,7 @@ const DetailsCard = ({ issue }) => {
         height: 100%;
         display: flex;
         align-items: center;
+        margin-top: ${2 * GU}px;
       `}>
         {children}
       </div>
@@ -42,69 +45,49 @@ const DetailsCard = ({ issue }) => {
     grid: PropTypes.string.isRequired,
   }
 
-  const OpenedBy = ({ author }) => (
-    <Text size="large" css="display: flex; align-items: center">
-      <img src={author.avatarUrl} alt="user avatar" css="margin: 8px; width: 24px; border-radius: 50%;" />
-      <Link
-        href={author.url}
-        target="_blank"
-        style={{ textDecoration: 'none', color: `${theme.link}` }}
-      >
-        {author.login}
-      </Link>
-    </Text>
-  )
-  OpenedBy.propTypes = userGitHubShape
-
   const SummaryTable = ({ issue }) => (
     <div css={`
       display: grid;
-      grid-template-columns: repeat(${issue.hasBounty ? '3' : '4'}, 1fr);
+      grid-template-columns: repeat(${issue.hasBounty ? '2' : '3'}, 1fr);
       grid-template-rows: auto;
       ${issue.hasBounty ? `
         grid-template-areas:
-          'deadline exp openedby' 'description description description'
+          'deadline exp' 'description description'
         ` : `
         grid-template-areas:
-          'description description description openedby'
+          'description description description'
         `
     };
-      grid-gap: 12px;
+      grid-gap: ${3 * GU}px;
       align-items: stretch;
+      margin-top: ${1.5 * GU}px;
     `}>
       {issue.hasBounty ? (
         <React.Fragment>
-          <SummaryCell label="Time until due" grid="deadline">
-            <Timer end={new Date(issue.deadline)} />
+          <SummaryCell label="Deadline" grid="deadline">
+            <Text.Block>
+              <DeadlineDistance date={issue.deadline} />
+            </Text.Block>
           </SummaryCell>
           <SummaryCell label="Difficulty" grid="exp">
             <Text.Block>
               {issue.expLevel}
             </Text.Block>
           </SummaryCell>
-          <SummaryCell label="Opened by" grid="openedby">
-            <OpenedBy author={issue.author} />
-          </SummaryCell>
           <SummaryCell label="Description" grid="description">
             <Markdown
               content={issue.body || 'No description available'}
-              style={{ marginTop: '20px', marginBottom: '20px' }}
+              style={{ marginBottom: (2 * 16) + 'px' }}
             />
           </SummaryCell>
         </React.Fragment>
       ) : (
-        <React.Fragment>
-          <SummaryCell label="Description" grid="description">
-            <Markdown
-              content={issue.body || 'No description available'}
-              style={{ margin: (2 * GU) + 'px 0', width: '100%' }}
-            />
-          </SummaryCell>
-          <div css="grid-area: openedby">
-            <Label text="Opened by" />
-            <OpenedBy author={issue.author} />
-          </div>
-        </React.Fragment>
+        <SummaryCell label="Description" grid="description">
+          <Markdown
+            content={issue.body || 'No description available'}
+            style={{ marginBottom: (2 * GU) + 'px', width: '100%' }}
+          />
+        </SummaryCell>
       )}
 
     </div>

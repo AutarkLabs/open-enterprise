@@ -14,7 +14,7 @@ import { BOUNTY_STATUS_LONG } from '../../../utils/bounty-status'
 
 const Action = ({ panel, caption, issue }) => (
   <EventButton
-    mode="outline"
+    mode="normal"
     wide
     onClick={() => panel(issue)}
   >
