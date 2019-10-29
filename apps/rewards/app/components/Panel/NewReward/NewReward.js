@@ -5,6 +5,7 @@ import styled from 'styled-components'
 import {
   Button,
   DropDown,
+  GU,
   IconCaution,
   IconClose,
   IdentityBadge,
@@ -339,11 +340,13 @@ class NewRewardClass extends React.Component {
     <HorizontalContainer>
       <FormField
         label="Start date"
+        width={`calc(50% - ${GU}px)`}
         required
         input={
           <DateInput
-            position="left"
             name="dateStart"
+            horizontal="left"
+            width="100%"
             value={this.state.dateStart}
             onChange={dateStart => {
               this.setState({ dateStart })
@@ -359,10 +362,12 @@ class NewRewardClass extends React.Component {
       />
       <FormField
         label="End date"
+        width={`calc(50% - ${GU}px)`}
         required
         input={
           <DateInput
             name="dateEnd"
+            width="100%"
             value={this.state.dateEnd}
             onChange={dateEnd => {
               this.setState({ dateEnd })

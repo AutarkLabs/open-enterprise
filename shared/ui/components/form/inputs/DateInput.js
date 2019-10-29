@@ -10,6 +10,7 @@ import { IconCalendar } from '../../assets'
 const Container = styled.div`
   width: ${props => props.width};
   display: flex;
+  position: relative;
 `
 const IconWrapper = styled.div`
   top: 12px;
@@ -66,7 +67,7 @@ class DateInput extends React.PureComponent {
   }
 
   render () {
-    const { value, width, wide, position } = this.props
+    const { value, width, wide, horizontal, vertical } = this.props
     const formattedValue = formatDate(value, this.props.format)
 
     return (
@@ -89,7 +90,8 @@ class DateInput extends React.PureComponent {
 
         {this.state.showPicker && (
           <DatePicker
-            position={position}
+            horizontal={horizontal}
+            vertical={vertical}
             currentDate={value}
             onSelect={this.handleSelect}
             overlay={true}
@@ -113,7 +115,8 @@ DateInput.defaultProps = {
   format: 'LL/dd/yyyy',
   onChange: () => {},
   width: '180px',
-  position: 'right',
+  horizontal: 'right',
+  vertical: 'top',
 }
 
 export default DateInput

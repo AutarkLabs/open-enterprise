@@ -32,10 +32,16 @@ const Container = styled.div`
   ${props => props.overlay && css`
     &&& {
       position: absolute;
-      ${props => props.position === 'left' && css`
+      ${props => props.vertical === 'top' && css`
+        top:0;
+      `}
+      ${props => props.vertical === 'bottom' && css`
+        bottom: 0;
+      `}
+      ${props => props.horizontal === 'left' && css`
         left:0;
       `}
-      ${props => props.position === 'right' && css`
+      ${props => props.horizontal === 'right' && css`
         right: 0;
       `}
       z-index: 10;
@@ -166,7 +172,11 @@ class DatePicker extends React.PureComponent {
     const { value: selected = today } = this.state
 
     return (
-      <Container overlay={this.props.overlay} position={this.props.position}>
+      <Container
+        overlay={this.props.overlay}
+        horizontal={this.props.horizontal}
+        vertical={this.props.vertical}
+      >
         {!this.props.hideYearSelector && (
           <Selector>
             <ArrowButton onClick={this.previousYear}>
@@ -252,7 +262,8 @@ DatePicker.propTypes = {
   yearFormat: PropTypes.string,
 
   // Positioning
-  position: PropTypes.string,
+  horizontal: PropTypes.string,
+  vertical: PropTypes.string,
 }
 
 DatePicker.defaultProps = {
@@ -262,7 +273,8 @@ DatePicker.defaultProps = {
   monthYearFormat: 'MMMM yyyy',
   weekDayFormat: 'eee',
   yearFormat: 'yyyy',
-  position: 'right',
+  horizontal: 'right',
+  vertical: 'top',
 }
 
 export default DatePicker
