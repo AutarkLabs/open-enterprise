@@ -33,10 +33,10 @@ const Container = styled.div`
     &&& {
       position: absolute;
       ${props => props.vertical === 'top' && css`
-        top:0;
+        top:40px;
       `}
       ${props => props.vertical === 'bottom' && css`
-        bottom: 0;
+        bottom: 40px;
       `}
       ${props => props.horizontal === 'left' && css`
         left:0;

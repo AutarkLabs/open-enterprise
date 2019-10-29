@@ -346,7 +346,7 @@ class NewRewardClass extends React.Component {
           <DateInput
             name="dateStart"
             horizontal="left"
-            width="100%"
+            wide
             value={this.state.dateStart}
             onChange={dateStart => {
               this.setState({ dateStart })
@@ -367,7 +367,7 @@ class NewRewardClass extends React.Component {
         input={
           <DateInput
             name="dateEnd"
-            width="100%"
+            wide
             value={this.state.dateEnd}
             onChange={dateEnd => {
               this.setState({ dateEnd })

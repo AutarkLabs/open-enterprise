@@ -11,9 +11,7 @@ const Form = ({
   errors,
 }) => {
   return (
-    <div css={`
-      position: relative;
-    `}>
+    <div>
       {children}
       <Button
         style={{ userSelect: 'none', marginTop: '8px' }}
