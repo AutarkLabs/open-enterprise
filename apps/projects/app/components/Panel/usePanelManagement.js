@@ -32,7 +32,10 @@ const usePanelManagement = () => {
     },
     requestAssignment: issue => {
       setActivePanel(PANELS.RequestAssignment)
-      setPanelProps({ issue })
+      setPanelProps({
+        title: 'Submit application',
+        issue
+      })
     },
     reviewApplication: (issue, requestIndex = 0) => {
       setActivePanel(PANELS.ReviewApplication)

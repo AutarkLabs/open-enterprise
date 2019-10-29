@@ -53,7 +53,7 @@ const RequestAssignment = ({ issue }) => {
     <div css={`margin: ${2 * GU}px 0`}>
       <Form
         onSubmit={onRequestAssignment}
-        submitText="Request Assignment"
+        submitText="Submit application"
         noSeparator
         submitDisabled={canSubmit()}
       >
