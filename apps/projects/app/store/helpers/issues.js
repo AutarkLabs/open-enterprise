@@ -65,10 +65,11 @@ export const loadIssueData = async ({ repoId, issueNumber }) => {
 export const loadIpfsData = async ipfsHash => {
   const {
     detailsOpen,
-    exp,
     deadline,
+    exp,
     fundingHistory,
     hours,
+    id,
     key,
     repo,
     size,
@@ -81,6 +82,7 @@ export const loadIpfsData = async ipfsHash => {
     deadline,
     fundingHistory,
     hours,
+    id,
     key,
     repo,
     size,

@@ -28,7 +28,11 @@ const prepareFilters = (issues, bountyIssues) => {
     name: BOUNTY_STATUS['not-funded'],
     count: issues.length - bountyIssues.length,
   }
-  bountyIssues.map(issue => filters.statuses[issue.data.workStatus].count++)
+  bountyIssues.map(issue => {
+    if (issues.map(i => i.id).includes(issue.data.id)) {
+      filters.statuses[issue.data.workStatus].count++
+    }
+  })
 
   issues.map(issue => {
     if (issue.milestone) {

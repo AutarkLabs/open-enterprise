@@ -340,7 +340,7 @@ class Issues extends React.PureComponent {
               .map(issue => (
                 <Issue
                   isSelected={issue.id in this.state.selectedIssues}
-                  key={issue.number}
+                  key={issue.id}
                   {...issue}
                   onClick={this.props.setSelectedIssue}
                   onSelect={this.handleIssueSelection}

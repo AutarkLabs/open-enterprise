@@ -488,6 +488,7 @@ const FundIssues = ({ issues, mode }) => {
         fundingHistory: bounties[issues[key].id].fundingHistory,
         deadline: bounties[issues[key].id].deadline,
         hours: bounties[issues[key].id].hours,
+        id: bounties[issues[key].id].id,
         size: bounties[issues[key].id].size,
         amount: bounties[issues[key].id].amount,
         token: bounties[issues[key].id].token,
