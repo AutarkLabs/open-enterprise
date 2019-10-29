@@ -41,10 +41,9 @@ const Wrap = styled.div`
 `
 
 const EditVoteOption = ({
+  label,
   onUpdate,
-  option,
-  optionIndex,
-  vote,
+  value,
 }) => {
   const theme = useTheme()
   return (
@@ -52,22 +51,22 @@ const EditVoteOption = ({
       <Label>
         <LocalIdentityBadge
           compact
-          entity={vote.data.options[optionIndex].label}
+          entity={label}
           fontSize="small"
           shorten
         />
       </Label>
       <Inputs>
         <Slider
-          onUpdate={value => onUpdate(value * 100, optionIndex)}
-          value={(option.sliderValue || 0) / 100}
+          onUpdate={value => onUpdate(value * 100)}
+          value={value / 100}
         />
         <TextInput
           type="number"
           theme={theme}
-          value={option.trueValue || 0}
+          value={value}
           onChange={e => {
-            onUpdate(parseInt(e.target.value, 10), optionIndex)
+            onUpdate(parseInt(e.target.value, 10))
           }}
         />
       </Inputs>
@@ -77,12 +76,8 @@ const EditVoteOption = ({
 
 EditVoteOption.propTypes = {
   onUpdate: PropTypes.func.isRequired,
-  option: PropTypes.shape({
-    sliderValue: PropTypes.number,
-    trueValue: PropTypes.number,
-  }).isRequired,
-  optionIndex: PropTypes.number.isRequired,
-  vote: PropTypes.object.isRequired,
+  label: PropTypes.string.isRequired,
+  value: PropTypes.number.isRequired,
 }
 
 export default EditVoteOption

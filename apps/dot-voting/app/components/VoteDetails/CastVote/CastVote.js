@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Button, Text, useTheme } from '@aragon/ui'
 import Label from '../Label'
@@ -8,56 +8,36 @@ import EditVoteOption from './EditVoteOption'
 const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights, votingPower }) => {
   const theme = useTheme()
 
-  const [ remaining, setRemaining ] = useState(100)
-  const [ voteOptions, setVoteOptions ] = useState(
-    Array.from(Array(vote.data.options.length), () => ({}))
+  const [ voteAmounts, setVoteAmounts ] = useState(
+    voteWeights.length
+      ? voteWeights.map(weight => parseInt(weight, 10))
+      : Array.from(Array(vote.data.options.length), () => 0)
   )
 
-  useEffect(() => {
-    if (voteWeights.length) {
-      const sliderValues = voteWeights.map(value => ({
-        sliderValue: value / 100,
-        trueValue: Math.round(value)
-      }))
-      const total = sliderValues.reduce(
-        (sum, { trueValue }) => sum + trueValue,
-        0
-      )
-      setVoteOptions(sliderValues)
-      setRemaining(100 - total)
-    }
-  }, [voteWeights])
+  const [ remaining, setRemaining ] = useState(
+    100 - voteAmounts.reduce((sum, n) => sum + n, 0)
+  )
 
-  const sliderUpdate = useCallback((value, idx) => {
-    const total = voteOptions.reduce(
-      (acc, { trueValue }, index) => {
-        return (
-          acc +
-          (idx === index
-            ? Math.round(value) || 0
-            : trueValue || 0)
-        )
-      },
-      0
-    )
+  const updateVoteAmount = (idx, newValue) => {
+    const newVoteAmounts = [...voteAmounts]
+    newVoteAmounts[idx] = Math.round(newValue)
+    const total = newVoteAmounts.reduce((sum, n) => sum + n, 0)
 
     if (total <= 100) {
-      voteOptions[idx].sliderValue = value
-      voteOptions[idx].trueValue = Math.round(value)
       setRemaining(100 - total)
-      setVoteOptions([...voteOptions])
+      setVoteAmounts(newVoteAmounts)
     }
-  }, [voteOptions])
+  }
 
   const handleVoteSubmit = useCallback(() => {
     const votingPowerBN = new BN(votingPower, 10)
-    const optionsArray = voteOptions.map(element => {
-      const baseValue = element.trueValue ? new BN(element.trueValue, 10) : new BN('0', 10)
+    const optionsArray = voteAmounts.map(value => {
+      const baseValue = value ? new BN(value, 10) : new BN('0', 10)
       const voteWeight = baseValue.mul(votingPowerBN).div(new BN('100', 10))
       return voteWeight.toString(10)
     })
     onVote(vote.voteId, optionsArray)
-  }, [ vote.voteId, onVote, votingPower, voteOptions ])
+  }, [ vote.voteId, onVote, votingPower, voteAmounts ])
 
   return (
     <div css="width: 100%">
@@ -66,20 +46,18 @@ const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights, votingPower }) 
         <Label>Percentage</Label>
       </div>
 
-      {voteOptions.map((option, index) => (
+      {vote.data.options.map((option, index) => (
         <EditVoteOption
           key={index}
-          onUpdate={sliderUpdate}
-          option={option}
-          optionIndex={index}
-          vote={vote}
+          onUpdate={updateVoteAmount.bind(null, index)}
+          label={option.label}
+          value={voteAmounts[index]}
         />
       ))}
 
       <Text.Block
         size="small"
         color={`${theme.surfaceContentSecondary}`}
-
       >
         <span css="font-weight: bold; float: right">
           You have <span css={`color: ${theme.accent}`}>{remaining}</span> dots remaining
@@ -94,9 +72,7 @@ const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights, votingPower }) 
           css="margin: 1rem 0 1rem 0.5rem"
           mode="strong"
           onClick={handleVoteSubmit}
-          disabled={
-            voteOptions.reduce((sum, { trueValue = 0 }) => sum + parseInt(trueValue, 10), 0) === 0
-          }
+          disabled={remaining === 100}
         >
           Submit Vote
         </Button>
