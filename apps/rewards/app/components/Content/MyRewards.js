@@ -44,7 +44,7 @@ const MyRewards = ({
         }}/>
         View
       </StyledContextMenuItem>
-      {(!reward.claimed && (reward.endDate < Date.now())) && (
+      {(reward.claims < reward.disbursements.length && (reward.disbursements[reward.claims] < Date.now())) && (
         <StyledContextMenuItem
           onClick={() => claimReward(reward)}
         >
@@ -118,7 +118,9 @@ const renderRecurringDividend = (reward, amountTokens) => {
     userRewardAmount,
     amountToken,
     endDate,
-    timeClaimed
+    timeClaimed,
+    claims,
+    disbursements
   } = reward
   const decimals = amountTokens.find(t => t.symbol === amountToken).decimals
   const displayAmount = (
@@ -126,8 +128,8 @@ const renderRecurringDividend = (reward, amountTokens) => {
       +{displayCurrency(BigNumber(userRewardAmount), decimals)} {amountToken}
     </Text>
   )
-  const disbursementDate = (new Date(endDate)).toDateString()
-  const status = timeClaimed > 0 ? 'Claimed' : (Date.now() > endDate ? 'Ready to claim' : 'Pending')
+  const disbursementDate = (disbursements[claims] || disbursements[claims-1]).toDateString()
+  const status = claims === disbursements.length ? 'Claimed' : (Date.now() > disbursements[claims].getTime() ? 'Ready to claim' : 'Pending')
   return [ description, disbursementDate, status, displayAmount ]
 }
 
