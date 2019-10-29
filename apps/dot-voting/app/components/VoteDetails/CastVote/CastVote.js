@@ -1,28 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import styled from 'styled-components'
 import { Button, Text, useTheme } from '@aragon/ui'
-import Slider from '../Slider'
-import Label from './Label'
-import LocalIdentityBadge from '../LocalIdentityBadge/LocalIdentityBadge'
+import Label from '../Label'
 import { BN } from 'web3-utils'
-
-const ValueContainer = styled.div`
-  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.03);
-  border-radius: 3px;
-  width: 69px;
-  height: 40px;
-  border: 1px solid ${({ theme }) => theme.surfaceIcon};
-  padding-top: 0.5rem;
-  text-align: center;
-`
-
-const SliderAndValueContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-`
+import EditVoteOption from './EditVoteOption'
 
 const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights, votingPower }) => {
   const theme = useTheme()
@@ -53,7 +34,7 @@ const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights, votingPower }) 
         return (
           acc +
           (idx === index
-            ? Math.round(value * 100) || 0
+            ? Math.round(value) || 0
             : trueValue || 0)
         )
       },
@@ -62,7 +43,7 @@ const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights, votingPower }) 
 
     if (total <= 100) {
       voteOptions[idx].sliderValue = value
-      voteOptions[idx].trueValue = Math.round(value * 100)
+      voteOptions[idx].trueValue = Math.round(value)
       setRemaining(100 - total)
       setVoteOptions([...voteOptions])
     }
@@ -86,33 +67,13 @@ const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights, votingPower }) 
       </div>
 
       {voteOptions.map((option, index) => (
-        <div key={index}>
-          <SliderAndValueContainer>
-            <div style={{ width: '100%' }}>
-              <LocalIdentityBadge
-                compact
-                fontSize="small"
-                key={vote.data.options[index].label}
-                entity={vote.data.options[index].label}
-                shorten
-              />
-            </div>
-            <div css={`
-              display: flex;
-              margin: 0.5rem 0 1rem 0;
-              justify-content: space-between;
-              width: 100%;
-            `}>
-              <Slider
-                value={option.sliderValue}
-                onUpdate={value => sliderUpdate(value, index)}
-              />
-              <ValueContainer theme={theme}>
-                {option.trueValue || 0}
-              </ValueContainer>
-            </div>
-          </SliderAndValueContainer>
-        </div>
+        <EditVoteOption
+          key={index}
+          onUpdate={sliderUpdate}
+          option={option}
+          optionIndex={index}
+          vote={vote}
+        />
       ))}
 
       <Text.Block
