@@ -66,7 +66,7 @@ class DateInput extends React.PureComponent {
   }
 
   render () {
-    const { value, width, wide } = this.props
+    const { value, width, wide, position } = this.props
     const formattedValue = formatDate(value, this.props.format)
 
     return (
@@ -89,6 +89,7 @@ class DateInput extends React.PureComponent {
 
         {this.state.showPicker && (
           <DatePicker
+            position={position}
             currentDate={value}
             onSelect={this.handleSelect}
             overlay={true}
@@ -104,6 +105,7 @@ DateInput.propTypes = {
   onChange: PropTypes.func.isRequired,
   value: PropTypes.any,
   width: PropTypes.string,
+  position: PropTypes.string,
 }
 
 DateInput.defaultProps = {
@@ -111,6 +113,7 @@ DateInput.defaultProps = {
   format: 'LL/dd/yyyy',
   onChange: () => {},
   width: '180px',
+  position: 'right',
 }
 
 export default DateInput

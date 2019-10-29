@@ -45,6 +45,7 @@ const FormField = ({
 }
 
 const FieldContainer = styled.div`
+  position: relative;
   width: ${props => props.width};
   margin-bottom: 1rem;
 `
@@ -63,4 +64,3 @@ FormField.defaultProps = {
 }
 
 export default FormField
-

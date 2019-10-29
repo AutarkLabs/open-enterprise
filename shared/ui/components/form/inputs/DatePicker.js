@@ -28,11 +28,16 @@ const Container = styled.div`
   border: 1px solid ${theme.contentBorder};
   border-radius: 3px;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
-  
+
   ${props => props.overlay && css`
     &&& {
       position: absolute;
-      right: 0;
+      ${props => props.position === 'left' && css`
+        left:0;
+      `}
+      ${props => props.position === 'right' && css`
+        right: 0;
+      `}
       z-index: 10;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
     }
@@ -85,7 +90,7 @@ const DayView = styled.li`
     pointer-events: none;
     color: ${theme.disabled};
   `}
-  
+
   ${props => props.selected && css`
     &&& {
       background: ${mainColor};
@@ -161,7 +166,7 @@ class DatePicker extends React.PureComponent {
     const { value: selected = today } = this.state
 
     return (
-      <Container overlay={this.props.overlay}>
+      <Container overlay={this.props.overlay} position={this.props.position}>
         {!this.props.hideYearSelector && (
           <Selector>
             <ArrowButton onClick={this.previousYear}>
@@ -244,7 +249,10 @@ DatePicker.propTypes = {
   monthFormat: PropTypes.string,
   monthYearFormat: PropTypes.string,
   weekDayFormat: PropTypes.string,
-  yearFormat: PropTypes.string
+  yearFormat: PropTypes.string,
+
+  // Positioning
+  position: PropTypes.string,
 }
 
 DatePicker.defaultProps = {
@@ -253,7 +261,8 @@ DatePicker.defaultProps = {
   monthFormat: 'MMMM',
   monthYearFormat: 'MMMM yyyy',
   weekDayFormat: 'eee',
-  yearFormat: 'yyyy'
+  yearFormat: 'yyyy',
+  position: 'right',
 }
 
 export default DatePicker
