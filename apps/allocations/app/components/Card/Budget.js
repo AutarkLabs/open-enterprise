@@ -10,7 +10,7 @@ import {
   ContextMenuItem,
   IconEdit,
   IconPlus,
-  IconProhibited,
+  // IconProhibited,
   IconView,
   ProgressBar,
   Text,
@@ -44,8 +44,7 @@ const Budget = ({
   const reactivate = () => {
     onReactivate(id)
   }
-  const tokenAmount = rawAmount => BigNumber(rawAmount).div(BigNumber(10).pow(token.decimals))
-  const tokensSpent = tokenAmount(amount).minus(BigNumber(remaining).div(BigNumber(10).pow(token.decimals)))
+  const tokensSpent = BigNumber(amount).minus(remaining)
   if (inactive) {
     return (
       <Wrapper
@@ -93,26 +92,15 @@ const Budget = ({
       <StatsValueBig css={{ paddingTop: '24px' }} theme={theme}>
         <ProgressBar
           color={String(theme.accentEnd)}
-          value={tokensSpent.div(tokenAmount(amount)).toNumber()}
+          value={tokensSpent.div(amount).toNumber()}
         />
       </StatsValueBig>
       <StatsValueSmall css={{
         color: theme.content,
         paddingTop: '8px',
       }}>
-        {displayCurrency(BigNumber(remaining))}
-        <Text>{' ' + token.symbol + ' below limit'}</Text>
-      </StatsValueSmall>
-      <StatsValueSmall css={{
-        color: theme.contentSecondary,
-        paddingTop: '4px',
-      }}>
-        {BigNumber(remaining)
-          .div(amount)
-          .multipliedBy(100)
-          .dp(0)
-          .toString()}
-        <Text>{'% remaining'}</Text>
+        {displayCurrency(tokensSpent)}
+        <Text>{' ' + token.symbol + ' utilized'}</Text>
       </StatsValueSmall>
     </Wrapper>
   )
@@ -212,7 +200,7 @@ const StatsValueBig = styled.div`
 
 const StatsValueSmall = styled.div`
   font-size: 14px;
-  font-weight: 300;
+  font-weight: normal;
 `
 
 /* eslint-disable-next-line import/no-unused-modules */
