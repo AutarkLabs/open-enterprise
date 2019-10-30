@@ -18,6 +18,12 @@ export const handleEvent = async (state, event, settings) => {
   }
   else {
     switch (eventName) {
+    case 'SYNC_STATUS_SYNCING':
+      nextState.isSyncing = true
+      break
+    case 'SYNC_STATUS_SYNCED':
+      nextState.isSyncing = false
+      break
     case 'RewardClaimed':
       nextState = await onRewardClaimed(nextState, returnValues)
       break

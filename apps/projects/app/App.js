@@ -9,6 +9,7 @@ import {
   Header,
   IconPlus,
   Main,
+  SyncIndicator,
   Tabs,
 } from '@aragon/ui'
 
@@ -224,7 +225,7 @@ const App = () => {
                   )
                 }
               </ErrorBoundary>
-
+              <SyncIndicator visible={isSyncing} />
               <PanelManager
                 activePanel={panel}
                 onClose={closePanel}

@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import { EmptyStateCard, Header, Main } from '@aragon/ui'
+import { EmptyStateCard, GU, Header, LoadingRing, Main, SyncIndicator } from '@aragon/ui'
 import { useAragonApi } from './api-react'
 import { isBefore } from 'date-fns'
 import { getTotalSupport } from './utils/vote-utils'
 import { safeDiv } from './utils/math-utils'
 import { IdentityProvider } from './components/LocalIdentityBadge/IdentityManager'
 import Decisions from './Decisions'
-import { SyncCard } from '../../../shared/ui'
 import emptyStatePng from './assets/voting-empty-state.png'
 
 const ASSETS_URL = './aragon-ui'
@@ -50,7 +49,7 @@ Wrap.propTypes = {
   children: PropTypes.node.isRequired,
 }
 
-const CenterCard = ({ children }) => (
+const Empty = ({ isSyncing }) => (
   <Wrap>
     <div
       css={`
@@ -61,30 +60,33 @@ const CenterCard = ({ children }) => (
         z-index: -1;
       `}
     >
-      {children}
+      <EmptyStateCard
+        text={
+          isSyncing ? (
+            <div
+              css={`
+                display: grid;
+                align-items: center;
+                justify-content: center;
+                grid-template-columns: auto auto;
+                grid-gap: ${1 * GU}px;
+              `}
+            >
+              <LoadingRing />
+              <span>Syncing…</span>
+            </div>
+          ) : (
+            'After you create an allocation or issue curation, you can vote here.'
+          )}
+        illustration={illustration}
+      />
     </div>
   </Wrap>
 )
 
-CenterCard.propTypes = {
-  children: PropTypes.node.isRequired,
+Empty.propTypes = {
+  isSyncing: PropTypes.bool.isRequired,
 }
-
-const Empty = () => (
-  <CenterCard>
-    <EmptyStateCard
-      title="You do not have any dot votes."
-      text="After you create an allocation or issue curation, you can vote here."
-      illustration={illustration}
-    />
-  </CenterCard>
-)
-
-const Syncing = () => (
-  <CenterCard>
-    <SyncCard />
-  </CenterCard>
-)
 
 const App = () => {
   useVoteCloseWatcher()
@@ -117,8 +119,7 @@ const App = () => {
     }
   }, [ voteTime, pctBase ])
 
-  if (isSyncing) return <Syncing />
-  if (!votes.length) return <Empty />
+  if (!votes.length) return <Empty isSyncing={isSyncing}/>
 
   return (
     <Wrap>
@@ -127,6 +128,7 @@ const App = () => {
         onShowLocalIdentityModal={handleShowLocalIdentityModal}>
         <Header primary="Dot Voting" />
         <Decisions decorateVote={decorateVote} />
+        <SyncIndicator visible={isSyncing} />
       </IdentityProvider>
     </Wrap>
   )

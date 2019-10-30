@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useAragonApi } from '../../api-react'
-import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
+import { Button, Header, IconPlus, Main, SidePanel, SyncIndicator } from '@aragon/ui'
 
 import { IdentityProvider } from '../LocalIdentityBadge/IdentityManager'
 import { Empty } from '../Card'
@@ -14,7 +14,7 @@ const App = () => {
   const [ isModalVisible, setModalVisible ] = useState(false)
   const [ currentBudgetId, setCurrentBudgetId ] = useState('')
   const { api, appState } = useAragonApi()
-  const { allocations = [], budgets = [] } = appState
+  const { allocations = [], budgets = [], isSyncing = true } = appState
 
   const saveBudget = ({ id, amount, name, token }) => {
     if (id) {
@@ -137,7 +137,7 @@ const App = () => {
         onShowLocalIdentityModal={handleShowLocalIdentityModal}
       >
         {budgets.length === 0
-          ? <Empty action={onNewBudget} />
+          ? <Empty action={onNewBudget} isSyncing={isSyncing} />
           : (
             <React.Fragment>
               <Header
@@ -168,6 +168,7 @@ const App = () => {
           onClose={closeModal}
           onSubmit={onSubmitDeactivate}
         />
+        <SyncIndicator visible={isSyncing} />
         <SidePanel
           title={(panel && panel.data.heading) || ''}
           opened={panelOpen}

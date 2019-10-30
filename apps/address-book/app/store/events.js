@@ -5,6 +5,12 @@ export const handleEvent = async (state, event) => {
   const { entries } = state
   let nextState = { ...state, }
   switch (eventName) {
+  case 'SYNC_STATUS_SYNCING':
+    nextState.isSyncing = true
+    break
+  case 'SYNC_STATUS_SYNCED':
+    nextState.isSyncing = false
+    break
   case 'EntryAdded':
     nextState.entries = await onEntryAdded({ entries }, returnValues)
     break
