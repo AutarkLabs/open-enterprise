@@ -1,4 +1,10 @@
-function appStateReducer(state) {
+import { getContentHolder } from '../../../shared/lib/utils'
+
+let prevState = {}
+
+function appStateReducer(currentState) {
+  const state = getContentHolder('repos', currentState, prevState)
+  prevState = { ...state }
   return state || {}
 }
 

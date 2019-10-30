@@ -12,8 +12,14 @@ import {
   calculateMyRewardsSummary
 } from './utils/metric-utils'
 import { MILLISECONDS_IN_A_MONTH, MILLISECONDS_IN_A_WEEK, MILLISECONDS_IN_A_YEAR, MILLISECONDS_IN_A_DAY } from '../../../shared/ui/utils/math-utils'
+import { getContentHolder } from '../../../shared/lib/utils'
 
-function appStateReducer(state) {
+let prevState = {}
+
+function appStateReducer(currentState) {
+
+  const state = getContentHolder('rewards', currentState, prevState)
+  prevState = { ...state }
   
   if(state){
     state.amountTokens = state.balances.map(token => {

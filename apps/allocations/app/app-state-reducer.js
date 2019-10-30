@@ -1,5 +1,6 @@
 import { BigNumber } from 'bignumber.js'
 import { ETHER_TOKEN_FAKE_ADDRESS } from '../../../shared/lib/token-utils'
+import { getContentHolder } from '../../../shared/lib/utils'
 
 // Use this function to sort by ETH and then token symbol
 const compareBalancesByEthAndSymbol = (tokenA, tokenB) => {
@@ -17,7 +18,13 @@ const getTokenFromAddress = (tokenAddress, tokenList) => {
   return tokenList.find(token => token.address === tokenAddress)
 }
 
-function appStateReducer(state) {
+let prevState = {}
+
+function appStateReducer(currentState) {
+
+  const state = getContentHolder('accounts', currentState, prevState)
+  prevState = { ...state }
+
   const { accounts: budgets, balances } = state || {}
 
   const balancesBn = balances
