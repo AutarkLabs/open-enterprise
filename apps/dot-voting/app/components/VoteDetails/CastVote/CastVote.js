@@ -40,7 +40,7 @@ const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights, votingPower }) 
   }, [ vote.voteId, onVote, votingPower, voteAmounts ])
 
   return (
-    <div css="width: 100%">
+    <form onSubmit={handleVoteSubmit} css="width: 100%">
       <div css="display: flex; justify-content: space-between">
         <Label>Your vote</Label>
         <Label>Percentage</Label>
@@ -65,19 +65,19 @@ const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights, votingPower }) 
       </Text.Block>
 
       <div css="display: flex; justify-content: flex-end; align-items: center; width: 100%">
-        <Button onClick={toggleVotingMode}>
+        <Button type="button" onClick={toggleVotingMode}>
           Cancel
         </Button>
         <Button
           css="margin: 1rem 0 1rem 0.5rem"
           mode="strong"
-          onClick={handleVoteSubmit}
+          type="submit"
           disabled={remaining === 100}
         >
           Submit Vote
         </Button>
       </div>
-    </div>
+    </form>
   )
 }
 
