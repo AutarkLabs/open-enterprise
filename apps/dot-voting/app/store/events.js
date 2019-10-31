@@ -11,6 +11,20 @@ export const handleEvent = async (state, event) => {
     ...(!hasLoadedVoteSettings(state) ? await loadVoteSettings() : {}),
   }
   switch (eventName) {
+  case 'SYNC_STATUS_SYNCING': {
+    nextState = {
+      ...nextState,
+      isSyncing: true,
+    }
+    break
+  }
+  case 'SYNC_STATUS_SYNCED': {
+    nextState = {
+      ...nextState,
+      isSyncing: false,
+    }
+    break
+  }
   case 'CastVote':
     nextState = await castVote(nextState, returnValues)
     break
