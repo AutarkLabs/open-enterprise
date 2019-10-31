@@ -49,7 +49,7 @@ class App extends React.Component {
     displayMenuButton: PropTypes.bool.isRequired,
     refTokens: PropTypes.array.isRequired,
     amountTokens: PropTypes.array.isRequired,
-    claims: PropTypes.object.isRequired,
+    claims: PropTypes.array.isRequired,
   }
 
   constructor(props) {
@@ -64,11 +64,18 @@ class App extends React.Component {
 
   static defaultProps = {
     network: {},
-    claims: {},
+    claims: [],
     userAccount: '',
     refTokens: [],
     balances: [],
     isSyncing: true,
+    rewards: [],
+    myRewards: [],
+    metrics: [],
+    myMetrics: [],
+    displayMenuButton: true,
+    amountTokens: [],
+
   }
 
   static childContextTypes = {
