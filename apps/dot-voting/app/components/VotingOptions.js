@@ -59,7 +59,7 @@ class VotingOptions extends React.Component {
           >
             {({ value }) => {
               const percentage = safeDiv(parseInt(option.value, 10), totalSupport)
-              const allocation = symbol ? `${BigNumber(balance).times(percentage).toString()} ${symbol}` : ''
+              const allocation = symbol ? `${BigNumber(balance).times(percentage).dp(3).toString()} ${symbol}` : ''
               return (
                 <VotingOption
                   fontSize={this.props.fontSize}
