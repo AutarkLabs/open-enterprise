@@ -173,23 +173,21 @@ class App extends React.Component {
       reward.isMerit = false
     }
     if (reward.rewardType === RECURRING_DIVIDEND) {
+      reward.occurances = reward.disbursements.length
       switch (reward.disbursementUnit) {
       case 'Days':
-        reward.occurances = millisecondsToDays(reward.dateStart, reward.dateEnd)
         reward.duration = millisecondsToBlocks(Date.now(), MILLISECONDS_IN_A_DAY + Date.now())
         break
       case 'Weeks':
-        reward.occurances = millisecondsToWeeks(reward.dateStart, reward.dateEnd)
         reward.duration = millisecondsToBlocks(Date.now(), MILLISECONDS_IN_A_WEEK + Date.now())
         break
       case 'Years':
-        reward.occurances = millisecondsToYears(reward.dateStart, reward.dateEnd)
         reward.duration = millisecondsToBlocks(Date.now(), MILLISECONDS_IN_A_YEAR + Date.now())
         break
       default: // Monthly
-        reward.occurances = millisecondsToMonths(reward.dateStart, reward.dateEnd)
         reward.duration = millisecondsToBlocks(Date.now(), MILLISECONDS_IN_A_MONTH + Date.now())
       }
+      startBlock -= reward.duration
     }
     if(reward.rewardType === ONE_TIME_DIVIDEND){
       startBlock = currentBlock
@@ -236,7 +234,7 @@ class App extends React.Component {
 
   claimReward = reward => {
     // TODO
-    this.props.api.claimReward(reward.rewardId).toPromise()
+    this.props.api.claimReward(reward.rewardId + reward.claims).toPromise()
   }
 
   openDetailsView = reward => {
