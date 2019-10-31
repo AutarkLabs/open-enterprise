@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { GU, Tag, Text } from '@aragon/ui'
+import { GU, Tag, Text, theme } from '@aragon/ui'
 import { animated } from 'react-spring'
 import PropTypes from 'prop-types'
 import { isAddress } from 'web3-utils'
@@ -62,12 +62,12 @@ const VotingOption = ({ valueSpring, label, percentage, allocation, color, thres
         )}
         <div>
           {percentage !== -1 &&
-              <Text size="xsmall" color="#98A0A2">
+              <Text size="xsmall" color={theme.textTertiary}>
                 {Math.round(percentage)}%
               </Text>
           }
           {allocation && (
-            <Text size="xsmall" color="#98A0A2" css={`margin-left: ${0.25 * GU}px`}>
+            <Text size="xsmall" color={theme.textTertiary} css={`margin-left: ${0.25 * GU}px`}>
                 ({allocation})
             </Text>
           )}

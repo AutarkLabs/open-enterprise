@@ -2,12 +2,12 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { format } from 'date-fns'
-import { Box, Countdown } from '@aragon/ui'
+import { Box, Countdown, theme } from '@aragon/ui'
 import VoteStatus from '../VoteStatus'
 
 const PastDate = styled.time`
   font-size: 13px;
-  color: #98a0a2;
+  color: ${theme.textTertiary};
   margin-top: 6px;
   display: block;
 `
