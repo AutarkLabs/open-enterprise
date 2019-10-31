@@ -158,6 +158,7 @@ const App = () => {
                 onDeactivate={onDeactivate}
                 onReactivate={onReactivate}
               />
+              <SyncIndicator visible={isSyncing} />
             </React.Fragment>
           )
         }
@@ -168,7 +169,6 @@ const App = () => {
           onClose={closeModal}
           onSubmit={onSubmitDeactivate}
         />
-        <SyncIndicator visible={isSyncing} />
         <SidePanel
           title={(panel && panel.data.heading) || ''}
           opened={panelOpen}
