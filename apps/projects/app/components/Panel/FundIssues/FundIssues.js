@@ -48,7 +48,6 @@ const BountyUpdate = ({
   generateDeadlineChange,
 }) => {
   const expLevels = bountySettings.expLvls
-  const theme = useTheme()
   return (
     <div css={`margin: ${2 * GU}px 0`}>
       <Form

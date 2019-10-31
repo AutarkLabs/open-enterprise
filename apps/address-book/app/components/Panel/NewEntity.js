@@ -42,6 +42,7 @@ ErrorMessage.propTypes = {
 class NewEntity extends React.Component {
   static propTypes = {
     onCreateEntity: PropTypes.func.isRequired,
+    addressList: PropTypes.arrayOf(PropTypes.string).isRequired,
   }
 
   state = INITIAL_STATE
@@ -71,18 +72,30 @@ class NewEntity extends React.Component {
   }
 
   render() {
+    const { addressList } = this.props
     const { address, name, type, customType } = this.state
     const { handleSubmit, changeField, changeType } = this
 
     const emptyName = name.trim() === ''
     const emptyAddress = address.trim() === ''
     const emptyCustomType = customType.trim() === ''
+    const errorBlock = []
 
-    const errorAddress = !emptyAddress && !web3Utils.isAddress(address)
-      ? <ErrorMessage>Please provide a valid ethereum address</ErrorMessage>
+    const errorAddress = !emptyAddress && !web3Utils.isAddress(address) ?
+      <ErrorMessage key="errorAddress">
+        Please provide a valid ethereum address
+      </ErrorMessage>
       : null
+    errorBlock.push(errorAddress)
 
-    const formDisabled = emptyName || emptyAddress || (isCustomType(type) && emptyCustomType) || errorAddress
+    const errorDuplicate = addressList.includes(address) ?
+      <ErrorMessage key="errorDuplicate">
+        This address already exists in the address book
+      </ErrorMessage>
+      : null
+    errorBlock.push(errorDuplicate)
+
+    const formDisabled = emptyName || emptyAddress || (isCustomType(type) && emptyCustomType) || errorAddress || errorDuplicate
 
     const customTypeFormField =
       type === 'Custom type...' ? (
@@ -105,7 +118,7 @@ class NewEntity extends React.Component {
         onSubmit={handleSubmit}
         disabled={!!formDisabled}
         submitText="Submit Entity"
-        error={errorAddress}
+        error={errorBlock}
       >
         <FormField
           required

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 
 import { useAragonApi } from '../../api-react'
-import { Button, Header, IconPlus, Main, SidePanel } from '@aragon/ui'
+import { Button, Header, IconPlus, Main, SidePanel, SyncIndicator } from '@aragon/ui'
 
 import { IdentityProvider } from '../LocalIdentityBadge/IdentityManager'
 import { ipfsAdd } from '../../../../../shared/utils/ipfs'
@@ -15,8 +15,8 @@ const ASSETS_URL = './aragon-ui'
 const App = () => {
   const [ panelVisible, setPanelVisible ] = useState(false)
   const { api, appState = {} } = useAragonApi()
-  
-  const { entries = [] } = appState
+
+  const { entries = [], isSyncing = true } = appState
 
   const createEntity = async ({ address, name, type }) => {
     closePanel()
@@ -67,7 +67,7 @@ const App = () => {
         onShowLocalIdentityModal={handleShowLocalIdentityModal}
       >
         { entries.length === 0
-          ? <Empty action={newEntity} />
+          ? <Empty action={newEntity} isSyncing={isSyncing} />
           : (
             <React.Fragment>
               <Header
@@ -81,6 +81,7 @@ const App = () => {
                 onNewEntity={newEntity}
                 onRemoveEntity={removeEntity}
               />
+              <SyncIndicator visible={isSyncing} />
             </React.Fragment>
           )
         }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import { useAragonApi } from '@aragon/api-react'
+import { useAragonApi } from '../../api-react'
 import { useTheme } from '@aragon/ui'
 import { getVoteStatus } from '../../utils/vote-utils'
 import { VOTE_STATUS_SUCCESSFUL } from '../../utils/vote-types'
