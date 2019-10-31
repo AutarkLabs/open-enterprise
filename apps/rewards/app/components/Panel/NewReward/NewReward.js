@@ -17,6 +17,7 @@ import {
 import { Form, FormField } from '../../Form'
 import { DateInput } from '../../../../../../shared/ui'
 import moment from 'moment'
+import { isBefore } from 'date-fns'
 import { isAddress } from '../../../utils/web3-utils'
 import { ETHER_TOKEN_VERIFIED_BY_SYMBOL } from '../../../utils/verified-tokens'
 import TokenSelectorInstance from './TokenSelectorInstance'
@@ -76,6 +77,7 @@ const INITIAL_STATE = {
     dateEndPassed: 'End date must take place after today.',
     dateStartAfterEnd: 'Start date must take place before the end date.',
     singleDisbursement: 'While you selected a recurring dividend, based on your parameters, there will only be a single disbursement.',
+    dateBeforeAsset: 'The selected ${dateType} date occurs before the reference asset, ${tokenSymbol}, was created. Please choose another date.',
   },
 }
 
@@ -172,31 +174,82 @@ class NewRewardClass extends React.Component {
   }
 
   setSemanticErrors = (changed) => {
+
     const state = { ...this.state, ...changed }
     const semanticErrors = []
     const warnings = []
+
     if (state.referenceAsset === OTHER && !state.customToken.isVerified)
-      semanticErrors.push('customTokenInvalid')
+      semanticErrors.push({
+        name: 'customTokenInvalid'
+      })
     if (state.rewardType === ONE_TIME_MERIT && state.transferable)
-      semanticErrors.push('meritTokenTransferable')
+      semanticErrors.push({
+        name: 'meritTokenTransferable'
+      })
     if (toWei(state.amount) > +state.amountToken.amount)
-      semanticErrors.push('amountOverBalance')
-    if (state.rewardType === ONE_TIME_DIVIDEND &&
-        moment(state.dateReference).isBefore(tomorrow, 'day'))
-      semanticErrors.push('dateReferencePassed')
+      semanticErrors.push({
+        name: 'amountOverBalance'
+      })
     if (state.rewardType === RECURRING_DIVIDEND ||
         state.rewardType === ONE_TIME_MERIT) {
-      const start = moment(state.dateStart), end = moment(state.dateEnd)
-      if (start.isBefore(tomorrow, 'day'))
-        semanticErrors.push('dateStartPassed')
-      if (end.isBefore(tomorrow, 'day'))
-        semanticErrors.push('dateEndPassed')
-      if (start.isAfter(end, 'day'))
-        semanticErrors.push('dateStartAfterEnd')
+      if (isBefore(state.dateEnd, state.dateStart))
+        semanticErrors.push({
+          name: 'dateStartAfterEnd'
+        })
     }
+    if (state.referenceAsset !== null && state.rewardType !== null) {
+      let tokenCreationDate, tokenSymbol
+      if (state.referenceAsset === OTHER && state.customToken.isVerified) {
+        tokenCreationDate = state.customToken.creationDate
+        tokenSymbol = state.customToken.symbol
+      }
+      else {
+        const refToken = this.props.refTokens.find(t => {
+          return t.address === state.referenceAsset.props.address
+        })
+        tokenCreationDate = refToken.creationDate
+        tokenSymbol = refToken.symbol
+      }
+      if (state.rewardType === RECURRING_DIVIDEND ||
+          state.rewardType === ONE_TIME_MERIT) {
+        if (isBefore(state.dateStart, tokenCreationDate)) {
+          semanticErrors.push({
+            name: 'dateBeforeAsset',
+            params: {
+              dateType: 'start',
+              tokenSymbol: tokenSymbol,
+            }
+          })
+        }
+        if (isBefore(state.dateEnd, tokenCreationDate)) {
+          semanticErrors.push({
+            name: 'dateBeforeAsset',
+            params: {
+              dateType: 'end',
+              tokenSymbol: tokenSymbol,
+            }
+          })
+        }
+      }
+      if (state.rewardType === ONE_TIME_DIVIDEND
+          && isBefore(state.dateReference, tokenCreationDate)) {
+        semanticErrors.push({
+          name: 'dateBeforeAsset',
+          params: {
+            dateType: 'reference',
+            tokenSymbol: tokenSymbol,
+          }
+        })
+      }
+    }
+
     if (state.rewardType === RECURRING_DIVIDEND &&
         state.disbursements.length <= 1)
-      warnings.push('singleDisbursement')
+      warnings.push({
+        name: 'singleDisbursement'
+      })
+
     this.setState({ semanticErrors, warnings })
   }
 
@@ -270,11 +323,16 @@ class NewRewardClass extends React.Component {
         this.setSemanticErrors({ customToken })
         return false
       }
+      const creationBlockNumber = await token.creationBlock().toPromise()
+      const creationBlock = await app.web3Eth('getBlock', creationBlockNumber)
+        .toPromise()
+      const creationDate = new Date(creationBlock.timestamp * 1000)
       const customToken = {
         ...tokenState,
         isVerified: true,
         symbol: await token.symbol().toPromise(),
-        startBlock: await token.creationBlock().toPromise(),
+        startBlock: creationBlockNumber,
+        creationDate,
       }
       this.setState({ customToken })
       this.setSemanticErrors({ customToken })
@@ -479,8 +537,21 @@ class NewRewardClass extends React.Component {
     }
   }
 
+  showMessage = messageObject => {
+    const { messages } = this.state
+    if (!messageObject.hasOwnProperty('params'))
+      return messages[messageObject.name]
+    let message = messages[messageObject.name]
+    const params = messageObject.params
+    Object.keys(params).forEach(name => {
+      const value = params[name]
+      message = message.replace('${' + name + '}', value)
+    })
+    return message
+  }
+
   errorBlocks = () => {
-    const { semanticErrors, messages } = this.state
+    const { semanticErrors } = this.state
     return semanticErrors.map((error, i) => (
       <ErrorText key={i}>
         <IconContainer>
@@ -492,13 +563,13 @@ class NewRewardClass extends React.Component {
             }}
           />
         </IconContainer>
-        <Text>{messages[error]}</Text>
+        <Text>{this.showMessage(error)}</Text>
       </ErrorText>
     ))
   }
 
   warningBlocks = () => {
-    const { warnings, messages } = this.state
+    const { warnings } = this.state
     return warnings.map((warning, i) => (
       <ErrorText key={i}>
         <IconContainer>
@@ -510,7 +581,7 @@ class NewRewardClass extends React.Component {
             }}
           />
         </IconContainer>
-        <Text>{messages[warning]}</Text>
+        <Text>{this.showMessage(warning)}</Text>
       </ErrorText>
     ))
   }
