@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Spring, config as springs } from 'react-spring'
-import { useAragonApi } from '@aragon/api-react'
+import { useAragonApi } from '../../api-react'
 import { Box, GU, Text, useTheme } from '@aragon/ui'
 import VotingOption from '../VotingOption'
 
