@@ -67,7 +67,7 @@ class DateInput extends React.PureComponent {
   }
 
   render () {
-    const { value, width, wide, horizontal, vertical } = this.props
+    const { value, width, wide, horizontalAlign, verticalAlign } = this.props
     const formattedValue = formatDate(value, this.props.format)
 
     return (
@@ -90,8 +90,8 @@ class DateInput extends React.PureComponent {
 
         {this.state.showPicker && (
           <DatePicker
-            horizontalAlign={horizontal}
-            verticalAlign={vertical}
+            horizontalAlign={horizontalAlign}
+            verticalAlign={verticalAlign}
             currentDate={value}
             onSelect={this.handleSelect}
             overlay={true}
@@ -108,8 +108,8 @@ DateInput.propTypes = {
   value: PropTypes.any,
   width: PropTypes.string,
   position: PropTypes.string,
-  horizontal: PropTypes.string,
-  vertical: PropTypes.string,
+  horizontalAlign: PropTypes.string,
+  verticalAlign: PropTypes.string,
   wide: PropTypes.bool
 }
 
@@ -118,8 +118,8 @@ DateInput.defaultProps = {
   format: 'LL/dd/yyyy',
   onChange: () => {},
   width: '180px',
-  horizontal: 'right',
-  vertical: 'top',
+  horizontalAlign: 'right',
+  verticalALign: 'top',
 }
 
 export default DateInput

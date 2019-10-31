@@ -345,7 +345,7 @@ class NewRewardClass extends React.Component {
         input={
           <DateInput
             name="dateStart"
-            horizontal="left"
+            horizontalAlign="left"
             wide
             value={this.state.dateStart}
             onChange={dateStart => {
