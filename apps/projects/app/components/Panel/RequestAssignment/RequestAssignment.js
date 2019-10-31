@@ -53,7 +53,7 @@ const RequestAssignment = ({ issue }) => {
     <div css={`margin: ${2 * GU}px 0`}>
       <Form
         onSubmit={onRequestAssignment}
-        submitText="Request Assignment"
+        submitText="Submit application"
         noSeparator
         submitDisabled={canSubmit()}
       >
@@ -124,17 +124,20 @@ const RequestAssignment = ({ issue }) => {
 
 RequestAssignment.propTypes = issueShape
 
-const HoursInput = styled(TextInput.Number)`
-  height: 32px;
+const HoursInput = styled(TextInput.Number).attrs({
+  step: '0.25',
+  min: '0',
+})`
+  width: 100%;
   display: inline-block;
   padding-top: 3px;
 `
+
 const Estimations = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto;
   grid-gap: 12px;
-  margin-bottom
 `
 const AckText = styled(Text)`
   margin-left: ${GU}px;

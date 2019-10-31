@@ -18,8 +18,15 @@ const entitiesSort = (a, b) => a.data.name.toUpperCase() > b.data.name.toUpperCa
 const Entities = ({ entities, onRemoveEntity }) => {
   const theme = useTheme()
   const ENTITY_TYPES = [
-    { name: 'Individual', fg: theme.tagIdentifierContent, bg: theme.tagIdentifier },
-    { name: 'Organization', fg: theme.warningSurfaceContent, bg: theme.warningSurface },
+    {
+      name: 'Individual',
+      fg: theme.tagIdentifierContent.toString(),
+      bg: theme.tagIdentifier.toString(),
+    },
+    { name: 'Organization',
+      fg: theme.warningSurfaceContent.toString(),
+      bg: theme.warningSurface.toString(),
+    },
   ]
   const removeEntity = address => () => onRemoveEntity(address)
 
@@ -34,33 +41,25 @@ const Entities = ({ entities, onRemoveEntity }) => {
       }
 
       renderEntry={([ name, entryAddress, entryType ]) => {
-        const typeRow = ENTITY_TYPES.filter(row => row.name === entryType)[0]
-        const values = [
-          <Text
-            key={entryAddress}
-            size="large"
-          >
-            {name}
-          </Text>,
+        const type = ENTITY_TYPES.find(t => t.name === entryType)
+        return [
+          <Text key="1" size="large">{name}</Text>,
           <LocalIdentityBadge
-            key={entryAddress}
             entity={entryAddress}
-            shorten={true}
             forceAddress
+            key="2"
+            shorten
           />,
           <Tag
-            style={{
-              fontWeight: 1000
-            }}
-            key={entryAddress}
+            background={type.bg}
+            css="font-weight: bold"
+            foreground={type.fg}
+            key="3"
             mode="identifier"
-            color={typeRow.fg}
-            background={typeRow.bg}
           >
-            {typeRow.name}
+            {type.name}
           </Tag>
         ]
-        return values
       }}
 
       renderEntryActions={([ , entryAddress ]) => (

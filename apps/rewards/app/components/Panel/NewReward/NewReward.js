@@ -40,6 +40,9 @@ import tokenTransferAbi from '../../../../../shared/json-abis/token-transferable
 
 const tokenAbi = [].concat(tokenBalanceOfAbi, tokenBalanceOfAtAbi, tokenCreationBlockAbi, tokenSymbolAbi)
 
+const tomorrow = new Date()
+tomorrow.setDate(tomorrow.getDate() + 1)
+
 const INITIAL_STATE = {
   description: '',
   referenceAsset: null,
@@ -55,12 +58,12 @@ const INITIAL_STATE = {
     balance: '',
     symbol: '',
   },
-  dateReference: new Date(),
-  dateStart: new Date(),
-  dateEnd: new Date(),
+  dateReference: tomorrow,
+  dateStart: tomorrow,
+  dateEnd: tomorrow,
   disbursement: '',
   disbursementUnit: MONTHS,
-  disbursements: [new Date()],
+  disbursements: [tomorrow],
   draftSubmitted: false,
   semanticErrors: [],
   warnings: [],
@@ -178,16 +181,15 @@ class NewRewardClass extends React.Component {
       semanticErrors.push('meritTokenTransferable')
     if (toWei(state.amount) > +state.amountToken.amount)
       semanticErrors.push('amountOverBalance')
-    const today = moment()
     if (state.rewardType === ONE_TIME_DIVIDEND &&
-        moment(state.dateReference).isBefore(today, 'day'))
+        moment(state.dateReference).isBefore(tomorrow, 'day'))
       semanticErrors.push('dateReferencePassed')
     if (state.rewardType === RECURRING_DIVIDEND ||
         state.rewardType === ONE_TIME_MERIT) {
       const start = moment(state.dateStart), end = moment(state.dateEnd)
-      if (start.isBefore(today, 'day'))
+      if (start.isBefore(tomorrow, 'day'))
         semanticErrors.push('dateStartPassed')
-      if (end.isBefore(today, 'day'))
+      if (end.isBefore(tomorrow, 'day'))
         semanticErrors.push('dateEndPassed')
       if (start.isAfter(end, 'day'))
         semanticErrors.push('dateStartAfterEnd')
@@ -649,7 +651,7 @@ class NewRewardClass extends React.Component {
           {rewardType === RECURRING_DIVIDEND &&
              disbursements.map((disbursement, i) => (
                <Content key={i}>
-                 {disbursement.toDate().toDateString()}
+                 {disbursement.toDateString()}
                </Content>
              ))}
           {rewardType === ONE_TIME_MERIT && (

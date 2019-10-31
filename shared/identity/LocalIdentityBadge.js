@@ -65,7 +65,7 @@ const LocalIdentityBadge = ({ entity, forceAddress, ...props }) => {
 
 LocalIdentityBadge.propTypes = {
   entity: PropTypes.string.isRequired,
-	forceAddress: PropTypes.bool
+  forceAddress: PropTypes.bool
 }
 
 const Wrap = styled.div`
