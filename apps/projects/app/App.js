@@ -9,7 +9,6 @@ import {
   Header,
   IconPlus,
   Main,
-  SyncIndicator,
   Tabs,
 } from '@aragon/ui'
 
@@ -19,7 +18,6 @@ import IssueDetail from './components/Content/IssueDetail'
 import { PanelManager, PanelContext, usePanelManagement } from './components/Panel'
 
 import { IdentityProvider } from '../../../shared/identity'
-import { SyncCard } from '../../../shared/ui'
 import {
   REQUESTED_GITHUB_TOKEN_SUCCESS,
   REQUESTED_GITHUB_TOKEN_FAILURE,
@@ -50,7 +48,7 @@ const App = () => {
     issues = [],
     tokens = [],
     github = { status : STATUS.INITIAL },
-    isSyncing
+    isSyncing = true,
   } = appState
 
   const client = github.token ? initApolloClient(github.token) : null
@@ -129,13 +127,7 @@ const App = () => {
   }
 
   const noop = () => {}
-  if (isSyncing) {
-    return (
-      <EmptyWrapper>
-        <SyncCard />
-      </EmptyWrapper>
-    )
-  } else if (githubLoading) {
+  if (githubLoading) {
     return (
       <EmptyWrapper>
         <LoadingAnimation />
@@ -144,7 +136,7 @@ const App = () => {
   } else if (github.status === STATUS.INITIAL) {
     return (
       <Main>
-        <Unauthorized onLogin={handleGithubSignIn} />
+        <Unauthorized onLogin={handleGithubSignIn} isSyncing={isSyncing} />
       </Main>
     )
   } else if (github.status === STATUS.FAILED) {
@@ -225,7 +217,6 @@ const App = () => {
                   )
                 }
               </ErrorBoundary>
-              <SyncIndicator visible={isSyncing} />
               <PanelManager
                 activePanel={panel}
                 onClose={closePanel}
