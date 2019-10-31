@@ -26,7 +26,7 @@ const Budget = ({
   inactive,
   onNewAllocation,
   onEdit,
-  onDeactivate,
+  // onDeactivate,
   onReactivate,
 }) => {
   const theme = useTheme()
@@ -37,9 +37,9 @@ const Budget = ({
   const edit = () => {
     onEdit(id)
   }
-  const deactivate = () => {
-    onDeactivate(id)
-  }
+  // const deactivate = () => {
+  //   onDeactivate(id)
+  // }
 
   const reactivate = () => {
     onReactivate(id)
@@ -79,10 +79,10 @@ const Budget = ({
             <IconEdit />
             <ActionLabel>Edit</ActionLabel>
           </ContextMenuItem>
-          <ContextMenuItem onClick={deactivate}>
-            <IconProhibited />
-            <ActionLabel>Deactivate</ActionLabel>
-          </ContextMenuItem>
+          {/* <ContextMenuItem onClick={deactivate}> */}
+          {/*   <IconProhibited /> */}
+          {/*   <ActionLabel>Deactivate</ActionLabel> */}
+          {/* </ContextMenuItem> */}
         </React.Fragment>
       }
     >
@@ -128,7 +128,7 @@ Budget.propTypes = {
   inactive: PropTypes.bool.isRequired,
   onNewAllocation: PropTypes.func.isRequired,
   onEdit: PropTypes.func.isRequired,
-  onDeactivate: PropTypes.func.isRequired,
+  // onDeactivate: PropTypes.func.isRequired,
   onReactivate: PropTypes.func.isRequired,
 }
 
