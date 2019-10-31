@@ -48,14 +48,14 @@ const DetailsCard = ({ issue }) => {
   const SummaryTable = ({ issue }) => (
     <div css={`
       display: grid;
-      grid-template-columns: repeat(${issue.hasBounty ? '2' : '3'}, 1fr);
+      grid-template-columns: repeat(${issue.hasBounty ? '2' : '1'}, 1fr);
       grid-template-rows: auto;
       ${issue.hasBounty ? `
         grid-template-areas:
           'deadline exp' 'description description'
         ` : `
         grid-template-areas:
-          'description description description'
+          'description'
         `
     };
       grid-gap: ${3 * GU}px;
