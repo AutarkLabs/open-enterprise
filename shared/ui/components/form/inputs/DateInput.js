@@ -90,8 +90,8 @@ class DateInput extends React.PureComponent {
 
         {this.state.showPicker && (
           <DatePicker
-            horizontal={horizontal}
-            vertical={vertical}
+            horizontalAlign={horizontal}
+            verticalAlign={vertical}
             currentDate={value}
             onSelect={this.handleSelect}
             overlay={true}
@@ -108,6 +108,9 @@ DateInput.propTypes = {
   value: PropTypes.any,
   width: PropTypes.string,
   position: PropTypes.string,
+  horizontal: PropTypes.string,
+  vertical: PropTypes.string,
+  wide: PropTypes.bool
 }
 
 DateInput.defaultProps = {

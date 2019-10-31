@@ -32,16 +32,16 @@ const Container = styled.div`
   ${props => props.overlay && css`
     &&& {
       position: absolute;
-      ${props => props.vertical === 'top' && css`
+      ${props => props.verticalAlign === 'top' && css`
         top:40px;
       `}
-      ${props => props.vertical === 'bottom' && css`
+      ${props => props.verticalAlign === 'bottom' && css`
         bottom: 40px;
       `}
-      ${props => props.horizontal === 'left' && css`
+      ${props => props.horizontalAlign === 'left' && css`
         left:0;
       `}
-      ${props => props.horizontal === 'right' && css`
+      ${props => props.horizontalAlign === 'right' && css`
         right: 0;
       `}
       z-index: 10;
@@ -174,8 +174,8 @@ class DatePicker extends React.PureComponent {
     return (
       <Container
         overlay={this.props.overlay}
-        horizontal={this.props.horizontal}
-        vertical={this.props.vertical}
+        horizontalAlign={this.props.horizontalAlign}
+        verticalAlign={this.props.verticalAlign}
       >
         {!this.props.hideYearSelector && (
           <Selector>
@@ -262,8 +262,8 @@ DatePicker.propTypes = {
   yearFormat: PropTypes.string,
 
   // Positioning
-  horizontal: PropTypes.string,
-  vertical: PropTypes.string,
+  horizontalAlign: PropTypes.string,
+  verticalAlign: PropTypes.string,
 }
 
 DatePicker.defaultProps = {
@@ -273,8 +273,8 @@ DatePicker.defaultProps = {
   monthYearFormat: 'MMMM yyyy',
   weekDayFormat: 'eee',
   yearFormat: 'yyyy',
-  horizontal: 'right',
-  vertical: 'top',
+  horizontalAlign: 'right',
+  verticalAlign: 'top',
 }
 
 export default DatePicker
