@@ -121,8 +121,8 @@ const VoteDetails = ({ vote, onVote }) => {
       }
       secondary={
         <React.Fragment>
-          <Participation vote={vote} />
           <Status vote={vote} />
+          <Participation vote={vote} />
         </React.Fragment>
       }
     />
