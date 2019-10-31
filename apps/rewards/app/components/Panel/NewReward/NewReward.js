@@ -5,6 +5,7 @@ import styled from 'styled-components'
 import {
   Button,
   DropDown,
+  GU,
   IconCaution,
   IconClose,
   IdentityBadge,
@@ -339,10 +340,13 @@ class NewRewardClass extends React.Component {
     <HorizontalContainer>
       <FormField
         label="Start date"
+        width={`calc(50% - ${GU}px)`}
         required
         input={
           <DateInput
             name="dateStart"
+            horizontalAlign="left"
+            wide
             value={this.state.dateStart}
             onChange={dateStart => {
               this.setState({ dateStart })
@@ -358,10 +362,12 @@ class NewRewardClass extends React.Component {
       />
       <FormField
         label="End date"
+        width={`calc(50% - ${GU}px)`}
         required
         input={
           <DateInput
             name="dateEnd"
+            wide
             value={this.state.dateEnd}
             onChange={dateEnd => {
               this.setState({ dateEnd })
@@ -663,10 +669,10 @@ class NewRewardClass extends React.Component {
         <VerticalSpace />
         <Info>
           {rewardType === ONE_TIME_MERIT ?  'Earning the reference asset between the start and end date'
-            : 'Holding the reference asset at the disbursement date' 
+            : 'Holding the reference asset at the disbursement date'
             + (rewardType === 'RECURRING_DIVIDEND' ? 's' : '')
           }
-          
+
           {' will issue a proportionally split reward across all token holders.'}
         </Info>
         <VerticalSpace />
