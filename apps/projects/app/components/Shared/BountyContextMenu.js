@@ -3,6 +3,7 @@ import styled, { css } from 'styled-components'
 import { ContextMenuItem, GU, theme } from '@aragon/ui'
 import { usePanelManagement } from '../Panel'
 import { issueShape } from '../../utils/shapes.js'
+import { IconCoin, IconConnect, IconFile, IconView } from '@aragon/ui'
 
 const BountyContextMenu = ({ issue }) => {
   const { workStatus } = issue
@@ -18,22 +19,40 @@ const BountyContextMenu = ({ issue }) => {
   return (
     <React.Fragment>
       {workStatus === undefined && (
-        <Item onClick={() => allocateBounty([issue])}>Fund Issue</Item>
+        <Item onClick={() => allocateBounty([issue])}>
+          <IconCoin color={`${theme.surfaceIcon}`} />
+          <ActionLabel>
+            Fund Issue
+          </ActionLabel>
+        </Item>
       )}
       {workStatus === 'in-progress' && (
         <React.Fragment>
-          <Item onClick={() => submitWork(issue)}>Submit Work</Item>
+          <Item onClick={() => submitWork(issue)}>
+            <IconConnect color={`${theme.surfaceIcon}`} />
+            <ActionLabel>
+              Submit Work
+            </ActionLabel>
+          </Item>
         </React.Fragment>
       )}
       {workStatus === 'review-work' && (
         <React.Fragment>
-          <Item onClick={() => reviewWork(issue)}>Review Work</Item>
+          <Item onClick={() => reviewWork(issue)}>
+            <IconView color={`${theme.surfaceIcon}`} />
+            <ActionLabel>
+              Review Work
+            </ActionLabel>
+          </Item>
         </React.Fragment>
       )}
       {workStatus === 'funded' && (
         <React.Fragment>
           <Item onClick={() => requestAssignment(issue)}>
-            Request Assignment
+            <IconFile color={`${theme.surfaceIcon}`} />
+            <ActionLabel>
+              Submit Application
+            </ActionLabel>
           </Item>
           {/* Disabled since the contract doesn't allow updating the amount */}
           {/* <Item bordered onClick={() => editBounty([issue])}> */}
@@ -43,11 +62,23 @@ const BountyContextMenu = ({ issue }) => {
       )}
       {workStatus === 'review-applicants' && (
         <React.Fragment>
+          <Item onClick={() => requestAssignment(issue)}>
+            <IconFile color={`${theme.surfaceIcon}`} />
+            <ActionLabel>
+              Submit Application
+            </ActionLabel>
+          </Item>
           <Item onClick={() => reviewApplication(issue)}>
-            Review Application {issue.requestsData ? `(${issue.requestsData.length})` : ''}
+            <IconView color={`${theme.surfaceIcon}`} />
+            <ActionLabel>
+              Review Application {issue.requestsData ? `(${issue.requestsData.length})` : ''}
+            </ActionLabel>
           </Item>
           <Item bordered onClick={() => editBounty([issue])}>
-            Update Funding
+            <IconCoin color={`${theme.surfaceIcon}`} />
+            <ActionLabel>
+              Update Funding
+            </ActionLabel>
           </Item>
         </React.Fragment>
       )}
@@ -56,12 +87,17 @@ const BountyContextMenu = ({ issue }) => {
 }
 
 const Item = styled(ContextMenuItem)`
+  display: flex;
+  align-items: center;
+  padding: ${1 * GU}px ${2 * GU}px;
   ${props =>
     props.bordered &&
     css`
       border-top: 1px solid ${theme.shadow};
     `};
-  padding: ${1 * GU}px ${2 * GU}px;
+`
+const ActionLabel = styled.span`
+  margin-left: 8px;
 `
 
 BountyContextMenu.propTypes = issueShape

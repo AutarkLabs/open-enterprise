@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { format } from 'date-fns'
-import { Box, Countdown, theme } from '@aragon/ui'
+import { Box, Countdown, GU, theme } from '@aragon/ui'
 import VoteStatus from '../VoteStatus'
 
 const PastDate = styled.time`
@@ -13,11 +13,11 @@ const PastDate = styled.time`
 `
 
 const Status = ({ vote }) => (
-  <Box heading="Status">
-    <div>
-      <h2>
-        {vote.open ? 'Time Remaining' : 'Status'}
-      </h2>
+  <Box heading="Status" padding={0}>
+    <div css={`padding: ${2 * GU}px ${3 * GU}px`}>
+      {vote.open && (
+        <h2 css={`margin-bottom: ${GU}px`}>Time Remaining</h2>
+      )}
       <div>
         {vote.open ? (
           <Countdown end={vote.endDate} />

@@ -401,7 +401,7 @@ contract Projects is AragonApp, DepositableStorage {
 ///////////////////
 
     /**
-     * @notice Request assignment for issue `_issueNumber` with application `_application`
+     * @notice Submit application for issue `_issueNumber` with application `_application`
      * @param _repoId the repo id of the issue
      * @param _issueNumber the issue up for assignment
      * @param _application IPFS hash for the applicant's proposed timeline and strategy

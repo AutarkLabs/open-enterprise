@@ -6,6 +6,7 @@ import {
   IconCross,
   ProgressBar,
   Text,
+  useLayout,
   useTheme,
 } from '@aragon/ui'
 import LocalIdentityBadge from '../LocalIdentityBadge/LocalIdentityBadge'
@@ -18,6 +19,7 @@ import { displayCurrency } from '../../utils/helpers'
 
 const AllocationsHistory = ({ allocations }) => {
   const theme = useTheme()
+  const { layoutName } = useLayout()
   const { balances = [], budgets = [] } = useAppState()
   const network = useNetwork()
   const getTokenSymbol = inputAddress => {
@@ -71,10 +73,13 @@ const AllocationsHistory = ({ allocations }) => {
         const totalSupports = recipients.reduce((total, recipient) => {
           return total + Number(recipient.supports)
         }, 0)
-        return recipients.map((recipient, index) => {
+        return recipients.map(recipient => {
           const allocated = BigNumber(recipient.supports).div(totalSupports)
           return (
-            <div key={index}>
+            <RecipientContainer
+              key={recipient.candidateAddress}
+              layoutName={layoutName}
+            >
               <LocalIdentityBadge
                 entity={recipient.candidateAddress}
                 networkType={network && network.type}
@@ -90,7 +95,7 @@ const AllocationsHistory = ({ allocations }) => {
                 {getTokenSymbol(token)} {' • '}
                 { allocated.times(100).dp(0).toNumber() }{'%'}
               </RecipientAmount>
-            </div>
+            </RecipientContainer>
           )
         })
       }}
@@ -121,6 +126,10 @@ Status.propTypes = {
 
 const Amount = styled.div`
   font-weight: 600;
+`
+
+const RecipientContainer = styled.div`
+  width: ${({ layoutName }) => layoutName === 'large' ? 50 : 100}%;
 `
 
 const RecipientProgress = styled.div`

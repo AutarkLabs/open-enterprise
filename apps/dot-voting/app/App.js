@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import { EmptyStateCard, Header, Main } from '@aragon/ui'
+import { EmptyStateCard, GU, Header, LoadingRing, Main, SyncIndicator } from '@aragon/ui'
 import { useAragonApi } from './api-react'
 import { isBefore } from 'date-fns'
 import { getTotalSupport } from './utils/vote-utils'
@@ -49,7 +49,7 @@ Wrap.propTypes = {
   children: PropTypes.node.isRequired,
 }
 
-const Empty = () => (
+const Empty = ({ isSyncing }) => (
   <Wrap>
     <div
       css={`
@@ -61,13 +61,32 @@ const Empty = () => (
       `}
     >
       <EmptyStateCard
-        title="You do not have any dot votes."
-        text="After you create an allocation or issue curation, you can vote here."
+        text={
+          isSyncing ? (
+            <div
+              css={`
+                display: grid;
+                align-items: center;
+                justify-content: center;
+                grid-template-columns: auto auto;
+                grid-gap: ${1 * GU}px;
+              `}
+            >
+              <LoadingRing />
+              <span>Syncing…</span>
+            </div>
+          ) : (
+            'After you create an allocation or issue curation, you can vote here.'
+          )}
         illustration={illustration}
       />
     </div>
   </Wrap>
 )
+
+Empty.propTypes = {
+  isSyncing: PropTypes.bool.isRequired,
+}
 
 const App = () => {
   useVoteCloseWatcher()
@@ -84,7 +103,7 @@ const App = () => {
       .toPromise()
   }, [api])
 
-  const { votes = [], voteTime = 0, pctBase = 0 } = appState
+  const { isSyncing = true, votes = [], voteTime = 0, pctBase = 0 } = appState
 
   // TODO: move this logic to script.js so it's available app-wide by default
   const decorateVote = useCallback(vote => {
@@ -100,7 +119,7 @@ const App = () => {
     }
   }, [ voteTime, pctBase ])
 
-  if (!votes.length) return <Empty />
+  if (!votes.length) return <Empty isSyncing={isSyncing}/>
 
   return (
     <Wrap>
@@ -109,6 +128,7 @@ const App = () => {
         onShowLocalIdentityModal={handleShowLocalIdentityModal}>
         <Header primary="Dot Voting" />
         <Decisions decorateVote={decorateVote} />
+        <SyncIndicator visible={isSyncing} />
       </IdentityProvider>
     </Wrap>
   )

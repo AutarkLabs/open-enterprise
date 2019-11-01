@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 
-import { Text, Tag, Checkbox, ContextMenu, useTheme, IconClock, IconConnect, IconCalendar } from '@aragon/ui'
+import { Text, Tag, Checkbox, ContextMenu, useLayout, useTheme, IconClock, IconConnect, IconCalendar } from '@aragon/ui'
 
 import { formatDistance } from 'date-fns'
 import { BountyContextMenu } from '../Shared'
@@ -27,8 +27,27 @@ const labelsTags = (labels, theme) =>
     </Tag>
   ))
 
+const FlexibleDiv = ({ compact, children }) => {
+  return compact ? (
+    <div>
+      {children}
+    </div>
+  ) : (
+    <React.Fragment>
+      {dot}
+      {children}
+    </React.Fragment>
+  )
+}
+
+FlexibleDiv.propTypes = {
+  compact: PropTypes.bool,
+  children: PropTypes.node.isRequired,
+}
+
 const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
   const theme = useTheme()
+  const { layoutName } = useLayout()
   const {
     workStatus,
     title,
@@ -91,38 +110,45 @@ const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
         <IssueDetails>
           <Text.Block color={`${theme.surfaceContentSecondary}`} size="small">
             <span css="font-weight: 600; white-space: nowrap">{repo} #{number}</span>
-            {dot}
-            <span css="white-space: nowrap">
-              <IconClock color={`${theme.surfaceIcon}`} css="margin-bottom: -8px; margin-right: 4px" />
-            opened {DeadlineDistance(createdAt)}
-            </span>
+            <FlexibleDiv
+              compact={layoutName === 'small'}
+            >
+              <span css="white-space: nowrap">
+                <IconClock color={`${theme.surfaceIcon}`} css="margin-bottom: -8px; margin-right: 4px" />
+              opened {DeadlineDistance(createdAt)}
+              </span>
+            </FlexibleDiv>
             {BOUNTY_STATUS[workStatus] && (
               <React.Fragment>
-                {dot}
-                <span css="white-space: nowrap">
-                  <IconConnect color={`${theme.surfaceIcon}`} css="margin-bottom: -8px" /> {balance > 0
-                    ? BOUNTY_STATUS[workStatus]
-                    : BOUNTY_STATUS['fulfilled']}
-                </span>
-
-                {dot}
-                <span css="white-space: nowrap">
-                  <div css={`
-                  display: inline-block;
-                  vertical-align: bottom;
-                  margin-right: 6px;
-                  margin-bottom: -8px;
-                `}>
-                    <IconBarbell color={`${theme.surfaceIcon}`} />
-                  </div>
-                  {expLevel}
-                </span>
-
-                {dot}
-                <span css="white-space: nowrap">
-                  <IconCalendar color={`${theme.surfaceIcon}`} css="margin-bottom: -8px; margin-right: 4px" />
-                Due {DeadlineDistance(deadline)}
-                </span>
+                <FlexibleDiv
+                  compact={layoutName !== 'large'}
+                >
+                  <span css="white-space: nowrap">
+                    <IconConnect color={`${theme.surfaceIcon}`} css="margin-bottom: -8px" /> {balance > 0
+                      ? BOUNTY_STATUS[workStatus]
+                      : BOUNTY_STATUS['fulfilled']}
+                  </span>
+                  {dot}
+                  <span css="white-space: nowrap">
+                    <div css={`
+                    display: inline-block;
+                    vertical-align: bottom;
+                    margin-right: 6px;
+                    margin-bottom: -8px;
+                  `}>
+                      <IconBarbell color={`${theme.surfaceIcon}`} />
+                    </div>
+                    {expLevel}
+                  </span>
+                </FlexibleDiv>
+                <FlexibleDiv
+                  compact={layoutName !== 'large'}
+                >
+                  <span css="white-space: nowrap">
+                    <IconCalendar color={`${theme.surfaceIcon}`} css="margin-bottom: -8px; margin-right: 4px" />
+                    Due {DeadlineDistance(deadline)}
+                  </span>
+                </FlexibleDiv>
               </React.Fragment>
             )}
           </Text.Block>

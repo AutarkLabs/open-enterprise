@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { useAragonApi } from '@aragon/api-react'
+import { useAragonApi } from '../api-react'
 import { IconCheck, IconCross, IconTime, useTheme } from '@aragon/ui'
 import {
   VOTE_STATUS_EXECUTED,

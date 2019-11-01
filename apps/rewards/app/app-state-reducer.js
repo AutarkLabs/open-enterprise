@@ -22,13 +22,15 @@ function appStateReducer(state) {
     state.rewards = state.rewards  || []
     state.claims = state.claims  || []
     state.rewards = state.rewards === [] ? [] : state.rewards.reduce((rewards, reward) => {
-      const currentReward = rewards.find(filteredElement => {
+      const currentReward = reward.isMerit ? undefined : rewards.find(filteredElement => {
         return filteredElement.description === reward.description && parseInt(filteredElement.rewardId, 10) + filteredElement.occurances === parseInt(reward.rewardId)
       })
       if(currentReward !== undefined){
         currentReward.occurances += 1
         currentReward.rewardType = RECURRING_DIVIDEND
+        currentReward.disbursementBlocks.push(reward.endBlock)
         currentReward.disbursements.push(new Date(reward.endDate))
+        currentReward.claims = (currentReward.claims || !!currentReward.claimed) + !!parseInt(reward.timeClaimed, 10)
         const durationInBlocks = currentReward.duration*15000
         if (durationInBlocks % MILLISECONDS_IN_A_YEAR ===0) {
           currentReward.disbursementUnit = YEARS
@@ -45,7 +47,9 @@ function appStateReducer(state) {
         }
       } else {
         reward.occurances = 1
+        reward.claims = 0 + !!reward.claimed
         reward.disbursements = [new Date(reward.endDate)]
+        reward.disbursementBlocks = [reward.endBlock]
         reward.claimed = reward.timeClaimed !== '0'
         if(reward.isMerit){
           reward.rewardType = ONE_TIME_MERIT
