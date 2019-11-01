@@ -53,7 +53,7 @@ const Entities = ({ entities, onRemoveEntity }) => {
           <Tag
             background={type.bg}
             css="font-weight: bold"
-            foreground={type.fg}
+            color={type.fg}
             key="3"
             mode="identifier"
           >
