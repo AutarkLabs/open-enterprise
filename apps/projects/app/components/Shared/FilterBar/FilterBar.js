@@ -123,7 +123,7 @@ const SortPopover = ({ visible, opener, setVisible, sortBy, updateSortBy }) => {
       opener={opener}
       onClose={() => setVisible(false)}
       css={`padding: ${1.5 * GU}px`}
-      placement="bottom-start"
+      placement="bottom-end"
     >
       <Label text="Sort by" />
       {sorters.map(way => (
@@ -164,7 +164,6 @@ const ActionsPopover = ({ visible, setVisible, openerRef, selectedIssues, issues
       `}
     >
       <FilterMenuItem
-        key="1"
         onClick={() => {
           curateIssues(selectedIssues, issuesFiltered)
           deselectAllIssues()
@@ -175,7 +174,6 @@ const ActionsPopover = ({ visible, setVisible, openerRef, selectedIssues, issues
         <ActionLabel>Curate Issues</ActionLabel>
       </FilterMenuItem>
       <FilterMenuItem
-        key="2"
         onClick={() => {
           allocateBounty(selectedIssues)
           deselectAllIssues()
@@ -253,9 +251,9 @@ const Overflow = ({ children, filtersDisplayNumber }) => {
 
   if (children.length > filtersDisplayNumber) {
     elements.push(
-      <FilterDropDown type="overflow">
+      <OverflowDropDown type="overflow">
         {React.Children.toArray(children).splice(filtersDisplayNumber)}
-      </FilterDropDown>
+      </OverflowDropDown>
     )
   }
   return elements
