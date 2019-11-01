@@ -46,22 +46,21 @@ const DetailsCard = ({ issue }) => {
   }
 
   const SummaryTable = ({ issue }) => (
-    <div css={`
-      display: grid;
-      grid-template-columns: repeat(${issue.hasBounty ? '2' : '1'}, 1fr);
-      grid-template-rows: auto;
-      ${issue.hasBounty ? `
+    <div css={
+      issue.hasBounty ? `
+        margin-top: ${1.5 * GU}px;
+        display: grid;
+        grid-template-rows: auto;
+        grid-gap: ${3 * GU}px;
+        grid-template-columns: 1fr 1fr;
         grid-template-areas:
-          'deadline exp' 'description description'
-        ` : `
-        grid-template-areas:
-          'description'
-        `
-    };
-      grid-gap: ${3 * GU}px;
-      align-items: stretch;
-      margin-top: ${1.5 * GU}px;
-    `}>
+          'deadline exp'
+          'description description'
+        ;
+      ` : `
+        margin-top: ${1.5 * GU}px;
+      `
+    }>
       {issue.hasBounty ? (
         <React.Fragment>
           <SummaryCell label="Deadline" grid="deadline">
