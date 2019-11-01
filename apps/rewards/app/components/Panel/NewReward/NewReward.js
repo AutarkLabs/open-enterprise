@@ -305,9 +305,8 @@ class NewRewardClass extends React.Component {
           min={MIN_AMOUNT}
           step="any"
           onChange={this.changeField}
-          wide={true}
           value={this.state.amount}
-          css={{ borderRadius: '4px 0px 0px 4px' }}
+          css="border-radius: 4px 0px 0px 4px; flex: 1"
         />
         <DropDown
           name="amountToken"
