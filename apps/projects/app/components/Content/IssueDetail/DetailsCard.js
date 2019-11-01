@@ -47,7 +47,7 @@ const DetailsCard = ({ issue }) => {
 
   const SummaryTable = ({ issue }) => (
     <div css={
-      issue.hasBounty ? `
+      `${issue.hasBounty && `
         margin-top: ${1.5 * GU}px;
         display: grid;
         grid-template-rows: auto;
@@ -56,8 +56,7 @@ const DetailsCard = ({ issue }) => {
         grid-template-areas:
           'deadline exp'
           'description description'
-        ;
-      ` : `
+        ;`}
         margin-top: ${1.5 * GU}px;
       `
     }>
