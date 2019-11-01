@@ -48,7 +48,6 @@ const DetailsCard = ({ issue }) => {
   const SummaryTable = ({ issue }) => (
     <div css={
       `${issue.hasBounty && `
-        margin-top: ${1.5 * GU}px;
         display: grid;
         grid-template-rows: auto;
         grid-gap: ${3 * GU}px;
