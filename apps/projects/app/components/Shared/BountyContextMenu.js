@@ -51,7 +51,7 @@ const BountyContextMenu = ({ issue }) => {
           <Item onClick={() => requestAssignment(issue)}>
             <IconFile color={`${theme.surfaceIcon}`} />
             <ActionLabel>
-              Submit application
+              Submit Application
             </ActionLabel>
           </Item>
           {/* Disabled since the contract doesn't allow updating the amount */}
@@ -65,7 +65,7 @@ const BountyContextMenu = ({ issue }) => {
           <Item onClick={() => requestAssignment(issue)}>
             <IconFile color={`${theme.surfaceIcon}`} />
             <ActionLabel>
-              Submit application
+              Submit Application
             </ActionLabel>
           </Item>
           <Item onClick={() => reviewApplication(issue)}>
