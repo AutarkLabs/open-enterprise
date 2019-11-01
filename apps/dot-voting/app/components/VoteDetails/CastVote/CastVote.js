@@ -10,18 +10,20 @@ const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights, votingPower }) 
 
   const [ voteAmounts, setVoteAmounts ] = useState(
     voteWeights.length
-      ? voteWeights.map(weight => parseInt(weight, 10))
-      : Array.from(Array(vote.data.options.length), () => 0)
+      ? voteWeights
+      : Array.from(Array(vote.data.options.length), () => '')
   )
 
   const [ remaining, setRemaining ] = useState(
-    100 - voteAmounts.reduce((sum, n) => sum + n, 0)
+    100 - voteAmounts.reduce((sum, n) => sum + Number(n), 0)
   )
 
   const updateVoteAmount = (idx, newValue) => {
+    if (Number(newValue) < 0) return
+
     const newVoteAmounts = [...voteAmounts]
-    newVoteAmounts[idx] = Math.round(newValue)
-    const total = newVoteAmounts.reduce((sum, n) => sum + n, 0)
+    newVoteAmounts[idx] = String(newValue)
+    const total = newVoteAmounts.reduce((sum, n) => sum + Number(n), 0)
 
     if (total <= 100) {
       setRemaining(100 - total)
