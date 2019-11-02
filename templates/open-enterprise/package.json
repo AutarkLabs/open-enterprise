@@ -24,7 +24,7 @@
     "docker:run": "cd ../../node_modules/@aragon/templates-shared/; docker-compose -f docker-compose.yml up -d; RESULT=$?; cd -; $(exit $RESULT)",
     "docker:stop": "cd ../../node_modules/@aragon/templates-shared/; docker-compose down; cd -",
     "docker:wait-gas": "truffle exec ../../node_modules/@aragon/templates-shared/scripts/sleep-until-gaslimit.js --network devnet 6900000",
-    "deploy:rpc": "npm run compile && truffle exec ./scripts/deploy.js --network rpc",
+    "deploy:rpc": "BOUNTIES=$(npm run deploy:bounties | tail -n 1) && npm run compile && truffle exec ./scripts/deploy.js --network rpc --ens 0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1 --dao-factory 0x5d94e3e7aec542ab0f9129b9a7badeb5b3ca0f77 --mini-me-factory 0xd526b7aba39cccf76422835e7fd5327b98ad73c9 --r true --s $BOUNTIES",
     "deploy:coverage": "npm run compile && truffle exec ./scripts/deploy.js --network coverage",
     "deploy:devnet": "npm run compile && truffle exec ./scripts/deploy.js --network devnet",
     "deploy:bounties": "cd ../../shared/integrations/StandardBounties && npm run migrate",
