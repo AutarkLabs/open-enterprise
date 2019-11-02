@@ -42,8 +42,7 @@
     },
     "production": {
       "registry": "0x314159265dd8dbb310642f98f50c066173c1259b",
-      "appName": "address-book.open.aragonpm.eth",
-      "wsRPC": "wss://mainnet.eth.aragon.network/ws",
+      "appName": "address-book.aragonpm.eth",
       "network": "mainnet"
     }
   },
