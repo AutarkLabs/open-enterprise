@@ -439,8 +439,8 @@ class NewRewardClass extends React.Component {
                   this.state.disbursementUnit,
                 )
               }}
-              wide={true}
               value={this.state.disbursement}
+              css="flex: 1"
             />
             <DropDown
               name="disbursementUnit"
