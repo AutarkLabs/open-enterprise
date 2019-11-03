@@ -212,8 +212,12 @@ contract Rewards is AragonApp {
         reward.referenceToken = _referenceToken;
         reward.rewardToken = _rewardToken;
         reward.amount = _amount;
-        reward.duration = _duration;
         reward.delay = _delay;
+        if (!_isMerit) {
+            reward.duration = 1;
+        } else {
+            reward.duration = _duration;
+        }
         reward.blockStart = _startBlock;
         reward.creator = msg.sender;
         emit RewardAdded(rewardId);
