@@ -1,5 +1,5 @@
-# Installing Open Enterprise via rinkeby.aragon.org
-You can create a new organization that comes preconfigured with Open Enterprise by visiting [rinkeby.aragon.org](https://rinkeby.aragon.org). The governance for the Open Enterprise template that is there today is based on a DAO governed by members who hold transferable tokens. In the future we will have a few more template options for you. But with the installation instructions below, you can create more customized DAOs based on your preferences, using the aragonCLI.
+# Installing Open Enterprise
+You can create a new organization that comes preconfigured with Open Enterprise by visiting [mainnet.aragon.org](https://mainnet.aragon.org) or a test organization on [rinkeby.aragon.org](https://rinkeby.aragon.org). The governance for the Open Enterprise template that is there today is based on a DAO governed by members who hold transferable tokens. In the future we will have a few more template options for you. But with the installation instructions below, you can create more customized DAOs based on your preferences, using the aragonCLI.
 
 For more details about the template, [read this guide](https://autark.gitbook.io/open-enterprise/getting-started).
 
@@ -21,7 +21,7 @@ dao install <dao-addr> <app-apm-repo>
 dao install <dao-addr> <app-apm-repo> --app-init-args <param1> <param2>
 ```
 
-Be sure to also pass the `--environment aragon:rinkeby` flag since these apps are on rinkeby.
+Be sure to also pass the `--environment aragon:rinkeby` flag if you are working with a rinkeby organization. 
 
 ### Permissions
 In order to make the apps appear in the UI, you need to initialize at least one permission per app via the cli. Once you setup at least one permission via the cli, you can do the rest in the UI via Permissions.
@@ -58,7 +58,7 @@ The address book does not require passing any initialization parameters.
 #### Sample install command
 
 ```
-dao install <dao-address> address-book.aragonpm.eth --environment aragon:rinkeby
+dao install <dao-address> address-book.aragonpm.eth
 ```
 
 ## Install Dot Voting App
@@ -77,7 +77,7 @@ The Dot Voting app requires the following initialization parameters:
 #### Sample install command
 This will install a Dot Voting instance with a participation requirement of 50% and a voting period of 7 days.
 ```
-dao install <dao-address> dot-voting.aragonpm.eth --app-init-args [MinimeToken] 500000000000000000 0 604800 --environment aragon:rinkeby
+dao install <dao-address> dot-voting.aragonpm.eth --app-init-args [MinimeToken] 500000000000000000 0 604800
 ```
 
 
@@ -92,7 +92,7 @@ The Projects app requires the following initialization parameters:
 
 #### Sample install command
 ```
-dao install <dao-address> projects.aragonpm.eth --app-init-args 0x38f1886081759f7d352c28984908d04e8d2205a6 [Vault] --environment aragon:rinkeby 
+dao install <dao-address> projects.aragonpm.eth --app-init-args 0x38f1886081759f7d352c28984908d04e8d2205a6 [Vault]
 ```
 
 ## Install the Rewards app
@@ -106,7 +106,7 @@ The Rewards app requires the following initialization parameter:
 
 #### Sample install command
 ```
-dao install <dao-address> rewards.aragonpm.eth --app-init-args [Vault] --environment aragon:rinkeby 
+dao install <dao-address> rewards.aragonpm.eth --app-init-args [Vault] 
 ```
 
 ## Install the Allocations app
@@ -122,7 +122,7 @@ The Allocations app requires the following initialization parameter:
 #### Sample install command
 This will install an Allocations instance with with an accounting period of 30 days.
 ```
-dao install <dao-address> allocations.aragonpm.eth --app-init-args [Vault] 2592000 --environment aragon:rinkeby 
+dao install <dao-address> allocations.aragonpm.eth --app-init-args [Vault] 2592000
 ```
 
 
