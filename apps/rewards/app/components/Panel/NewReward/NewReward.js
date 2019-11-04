@@ -171,50 +171,66 @@ class NewRewardClass extends React.Component {
     return valid
   }
 
-  getReferenceToken = () => (
-    this.state.referenceAsset === OTHER &&
-    this.state.customToken.isVerified
-      ? this.state.customToken
-      : this.props.refTokens.find(t =>
-        t.address === this.state.referenceAsset.props.address
-      )
-  )
+  getReferenceToken = (state) => {
+    const { referenceAsset, customToken } = state
+    const { refTokens } = this.props
+    const nullAsset = {
+      creationDate: new Date(0),
+      symbol: null,
+    }
+    if (referenceAsset === null)
+      return nullAsset
+    if (referenceAsset === OTHER) {
+      if(customToken.isVerified) {
+        return customToken
+      }
+      else return nullAsset
+    }
+    const selectedToken = refTokens.find(t => (
+      t.address === referenceAsset.props.address
+    ))
+    return selectedToken
+  }
 
   setErrors = (changed) => {
     const state = { ...this.state, ...changed }
-    const relevantToken = this.getReferenceToken()
+    const {
+      referenceAsset,
+      customToken,
+      rewardType,
+      transferable,
+      amount,
+      amountToken,
+      dateReference,
+      dateStart,
+      dateEnd,
+    } = state
+    const { creationDate, symbol } = this.getReferenceToken(state)
     const errors = []
     const warnings = []
 
-    if (state.referenceAsset === OTHER && !state.customToken.isVerified)
+    if (referenceAsset === OTHER && !customToken.isVerified)
       errors.push(messages.customTokenInvalid())
-    if (state.rewardType === ONE_TIME_MERIT && state.transferable)
+    if (rewardType === ONE_TIME_MERIT && transferable)
       errors.push(messages.meritTokenTransferable())
-    if (toWei(state.amount) > +state.amountToken.amount)
+    if (toWei(amount) > +amountToken.amount)
       errors.push(messages.amountOverBalance())
-    if (state.rewardType === RECURRING_DIVIDEND ||
-        state.rewardType === ONE_TIME_MERIT) {
-      if (isBefore(state.dateEnd, state.dateStart))
+    if (rewardType === RECURRING_DIVIDEND ||
+        rewardType === ONE_TIME_MERIT) {
+      if (isBefore(dateEnd, dateStart))
         errors.push(messages.dateStartAfterEnd())
-    }
-    if (state.referenceAsset !== null && state.rewardType !== null && relevantToken) {
-      const { creationDate, symbol } = relevantToken
-      if (state.rewardType === RECURRING_DIVIDEND ||
-          state.rewardType === ONE_TIME_MERIT) {
-        if (isBefore(state.dateStart, creationDate)) {
-          errors.push(messages.dateBeforeAsset('start', symbol))
-        }
-        if (isBefore(state.dateEnd, creationDate)) {
-          errors.push(messages.dateBeforeAsset('end', symbol))
-        }
+      if (isBefore(dateStart, creationDate)) {
+        errors.push(messages.dateBeforeAsset('start', symbol))
       }
-      if (state.rewardType === ONE_TIME_DIVIDEND
-          && isBefore(state.dateReference, creationDate)) {
-        errors.push(messages.dateBeforeAsset('reference', symbol))
+      if (isBefore(dateEnd, creationDate)) {
+        errors.push(messages.dateBeforeAsset('end', symbol))
       }
     }
-
-    if (state.rewardType === RECURRING_DIVIDEND &&
+    if (rewardType === ONE_TIME_DIVIDEND &&
+        isBefore(dateReference, creationDate)) {
+      errors.push(messages.dateBeforeAsset('reference', symbol))
+    }
+    if (rewardType === RECURRING_DIVIDEND &&
         state.disbursements.length <= 1)
       warnings.push(messages.singleDisbursement())
 
