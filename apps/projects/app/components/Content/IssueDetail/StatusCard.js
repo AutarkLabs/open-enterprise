@@ -14,7 +14,7 @@ import { BOUNTY_STATUS_LONG } from '../../../utils/bounty-status'
 
 const Action = ({ panel, caption, issue }) => (
   <EventButton
-    mode="outline"
+    mode="normal"
     wide
     onClick={() => panel(issue)}
   >
@@ -57,7 +57,10 @@ const StatusCard = ({ issue }) => {
         <Action panel={requestAssignment} caption="Submit application" issue={issue} />
       )}
       {issue.workStatus === 'review-applicants' && (
-        <Action panel={reviewApplication} caption="Review applications" issue={issue} />
+        <React.Fragment>
+          <Action panel={requestAssignment} caption="Submit application" issue={issue} />
+          <Action panel={reviewApplication} caption="Review applications" issue={issue} />
+        </React.Fragment>
       )}
       {issue.workStatus === 'in-progress' && (
         <Action panel={submitWork} caption="Submit work" issue={issue} />

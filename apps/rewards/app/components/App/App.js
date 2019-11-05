@@ -1,4 +1,4 @@
-import { Button, Header, IconPlus, Main, Tabs } from '@aragon/ui'
+import { Button, Header, IconPlus, Main, SyncIndicator, Tabs } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
 import throttle from 'lodash.throttle'
@@ -42,13 +42,14 @@ class App extends React.Component {
     metrics: PropTypes.arrayOf(PropTypes.object).isRequired,
     myMetrics: PropTypes.arrayOf(PropTypes.object).isRequired,
     balances: PropTypes.arrayOf(PropTypes.object),
+    isSyncing: PropTypes.bool.isRequired,
     network: PropTypes.object,
     userAccount: PropTypes.string.isRequired,
     connectedAccount: PropTypes.string.isRequired,
     displayMenuButton: PropTypes.bool.isRequired,
     refTokens: PropTypes.array.isRequired,
     amountTokens: PropTypes.array.isRequired,
-    claims: PropTypes.object.isRequired,
+    claims: PropTypes.array.isRequired,
   }
 
   constructor(props) {
@@ -63,10 +64,18 @@ class App extends React.Component {
 
   static defaultProps = {
     network: {},
-    claims: {},
+    claims: [],
     userAccount: '',
     refTokens: [],
     balances: [],
+    isSyncing: true,
+    rewards: [],
+    myRewards: [],
+    metrics: [],
+    myMetrics: [],
+    displayMenuButton: true,
+    amountTokens: [],
+
   }
 
   static childContextTypes = {
@@ -270,14 +279,14 @@ class App extends React.Component {
       </Main>
     )
 
-    const { rewards, myRewards } = this.props
+    const { rewards, myRewards, isSyncing } = this.props
 
     if (!rewards || !myRewards) return null
     else if (!rewards.length && !myRewards.length) {
       return (
         <Wrapper>
           <EmptyContainer>
-            <Empty action={this.newReward} />
+            <Empty action={this.newReward} isSyncing={isSyncing} />
           </EmptyContainer>
         </Wrapper>
       )
@@ -301,7 +310,7 @@ class App extends React.Component {
           selected={this.state.selected}
           onChange={this.selectTab}
         />
-
+        <SyncIndicator visible={isSyncing} />
         { this.state.selected === 1 ? (
           <MyRewards
             myRewards={this.props.myRewards}

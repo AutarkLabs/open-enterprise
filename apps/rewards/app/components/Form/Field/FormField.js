@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { SidePanelSeparator, Text, theme, } from '@aragon/ui'
+import { Help, SidePanelSeparator, Text, theme, } from '@aragon/ui'
 
 import { FieldTitle } from '.'
 
@@ -32,12 +32,20 @@ const FormField = ({
             *
           </Text>
         )}
+        {hint && (
+          <div
+            style={{
+              marginLeft: '0.3rem',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            <Help >
+              {hint}
+            </Help>
+          </div>
+        )}
       </FieldTitle>
-      {hint && (
-        <Text size="xsmall" color={theme.textTertiary}>
-          {hint}
-        </Text>
-      )}
       {input}
       {separator && <SidePanelSeparator style={{ marginTop: '1rem' }} />}
     </FieldContainer>
@@ -63,4 +71,3 @@ FormField.defaultProps = {
 }
 
 export default FormField
-

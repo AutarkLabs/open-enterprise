@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Text, useTheme, Link } from '@aragon/ui'
+import { Text, GU, useTheme, Link } from '@aragon/ui'
 import { IconGitHub } from '../Shared'
 import { issueShape } from '../../utils/shapes.js'
 
@@ -49,5 +49,5 @@ const IssueLinkRow = styled.div`
   height: 31px;
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: ${1.5 * GU}px;
 `

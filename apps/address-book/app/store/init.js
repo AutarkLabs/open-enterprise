@@ -5,6 +5,7 @@ export const initStore = () => {
 
   const initialState = {
     entries: [],
+    isSyncing: false,
   }
   return app.store(
     async (state, event) => {
@@ -21,6 +22,17 @@ export const initStore = () => {
       }
       // always return the state even unmodified
       return state
+    },
+    {
+      init: initState(),
     }
   )
+}
+
+const initState = () => async cachedState => {
+  const newState = {
+    ...cachedState,
+    isSyncing: true,
+  }
+  return newState
 }

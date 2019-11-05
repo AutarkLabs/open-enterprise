@@ -3,114 +3,85 @@ import PropTypes from 'prop-types'
 import {
   ContextMenu,
   GU,
-  Link,
   Tag,
   Text,
-  Timer,
   useTheme,
 } from '@aragon/ui'
 import { BountyContextMenu } from '../../Shared'
 import { BOUNTY_BADGE_COLOR } from '../../../utils/bounty-status'
 import { Markdown } from '../../../../../../shared/ui'
 import Label from './Label'
-import { issueShape, userGitHubShape } from '../../../utils/shapes.js'
+import { issueShape } from '../../../utils/shapes.js'
 import { IssueTitleLink } from '../../Panel/PanelComponents'
+import { formatDistance } from 'date-fns'
+
+const DeadlineDistance = ({ date }) =>
+  formatDistance(new Date(date), new Date(), { addSuffix: true })
+
+const SummaryCell = ({ label, children, grid }) => (
+  <div css={`
+    display: flex;
+    flex-direction: column;
+    grid-area: ${grid};
+    overflow: hidden;
+  `}>
+    <Label text={label} />
+    <div css={`
+      height: 100%;
+      display: flex;
+      align-items: center;
+      margin-top: ${2 * GU}px;
+    `}>
+      {children}
+    </div>
+  </div>
+)
+SummaryCell.propTypes = {
+  label: PropTypes.string.isRequired,
+  children: PropTypes.node.isRequired,
+  grid: PropTypes.string.isRequired,
+}
+
+const SummaryTable = ({ issue }) => (
+  <div css={`
+    margin-top: ${1.5 * GU}px;
+    ${issue.hasBounty && `
+      display: grid;
+      grid-template-rows: auto;
+      grid-gap: ${3 * GU}px;
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas:
+        'deadline exp'
+        'description description';
+    `}
+  `}>
+    {issue.hasBounty &&
+      <>
+        <SummaryCell label="Deadline" grid="deadline">
+          <Text.Block>
+            <DeadlineDistance date={issue.deadline} />
+          </Text.Block>
+        </SummaryCell>
+        <SummaryCell label="Difficulty" grid="exp">
+          <Text.Block>
+            {issue.expLevel}
+          </Text.Block>
+        </SummaryCell>
+      </>
+    }
+    <SummaryCell label="Description" grid="description">
+      <Markdown
+        content={issue.body || 'No description available'}
+        style={{ marginBottom: 2 * GU + 'px' }}
+      />
+    </SummaryCell>
+  </div>
+)
+
+SummaryTable.propTypes = issueShape
 
 const DetailsCard = ({ issue }) => {
   const theme = useTheme()
-
-  const SummaryCell = ({ label, children, grid }) => (
-    <div css={`
-      display: flex;
-      flex-direction: column;
-      grid-area: ${grid};
-      overflow: hidden;
-    `}>
-      <Label text={label} />
-      <div css={`
-        height: 100%;
-        display: flex;
-        align-items: center;
-      `}>
-        {children}
-      </div>
-    </div>
-  )
-  SummaryCell.propTypes = {
-    label: PropTypes.string.isRequired,
-    children: PropTypes.node.isRequired,
-    grid: PropTypes.string.isRequired,
-  }
-
-  const OpenedBy = ({ author }) => (
-    <Text size="large" css="display: flex; align-items: center">
-      <img src={author.avatarUrl} alt="user avatar" css="margin: 8px; width: 24px; border-radius: 50%;" />
-      <Link
-        href={author.url}
-        target="_blank"
-        style={{ textDecoration: 'none', color: `${theme.link}` }}
-      >
-        {author.login}
-      </Link>
-    </Text>
-  )
-  OpenedBy.propTypes = userGitHubShape
-
-  const SummaryTable = ({ issue }) => (
-    <div css={`
-      display: grid;
-      grid-template-columns: repeat(${issue.hasBounty ? '3' : '4'}, 1fr);
-      grid-template-rows: auto;
-      ${issue.hasBounty ? `
-        grid-template-areas:
-          'deadline exp openedby' 'description description description'
-        ` : `
-        grid-template-areas:
-          'description description description openedby'
-        `
-    };
-      grid-gap: 12px;
-      align-items: stretch;
-    `}>
-      {issue.hasBounty ? (
-        <React.Fragment>
-          <SummaryCell label="Time until due" grid="deadline">
-            <Timer end={new Date(issue.deadline)} />
-          </SummaryCell>
-          <SummaryCell label="Difficulty" grid="exp">
-            <Text.Block>
-              {issue.expLevel}
-            </Text.Block>
-          </SummaryCell>
-          <SummaryCell label="Opened by" grid="openedby">
-            <OpenedBy author={issue.author} />
-          </SummaryCell>
-          <SummaryCell label="Description" grid="description">
-            <Markdown
-              content={issue.body || 'No description available'}
-              style={{ marginTop: '20px', marginBottom: '20px' }}
-            />
-          </SummaryCell>
-        </React.Fragment>
-      ) : (
-        <React.Fragment>
-          <SummaryCell label="Description" grid="description">
-            <Markdown
-              content={issue.body || 'No description available'}
-              style={{ margin: (2 * GU) + 'px 0', width: '100%' }}
-            />
-          </SummaryCell>
-          <div css="grid-area: openedby">
-            <Label text="Opened by" />
-            <OpenedBy author={issue.author} />
-          </div>
-        </React.Fragment>
-      )}
-
-    </div>
-  )
-
-  SummaryTable.propTypes = issueShape
 
   return (
     <div css={`

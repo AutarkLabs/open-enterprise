@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { TextInput as AragonTextInput, useTheme } from '@aragon/ui'
@@ -7,6 +7,12 @@ import LocalIdentityBadge from '../../LocalIdentityBadge/LocalIdentityBadge'
 
 const Label = styled.div`
   width: 100%;
+`
+
+// a11y rules say inputs must have a label;
+// this adds the label for screenreaders but hides it visually
+const HiddenLabel = styled.label`
+  text-indent: -9999em;
 `
 
 const Inputs = styled.div`
@@ -46,6 +52,7 @@ const EditVoteOption = ({
   value,
 }) => {
   const theme = useTheme()
+  const input = useRef()
   return (
     <Wrap>
       <Label>
@@ -58,16 +65,23 @@ const EditVoteOption = ({
       </Label>
       <Inputs>
         <Slider
-          onUpdate={value => onUpdate(value * 100)}
+          onUpdate={x => onUpdate(Math.round(x * 100))}
           value={value / 100}
         />
+        <HiddenLabel htmlFor="percentage">Percentage</HiddenLabel>
         <TextInput
-          type="number"
+          name="percentage"
+          min={0}
+          onBlur={() => onUpdate(value) /* re-render component to reset input */}
+          onChange={e => onUpdate(e.target.value)}
+          ref={input}
           theme={theme}
-          value={value}
-          onChange={e => {
-            onUpdate(parseInt(e.target.value, 10))
-          }}
+          type="number"
+          value={
+            !value && input.current === document.activeElement
+              ? ''
+              : Number(value)
+          }
         />
       </Inputs>
     </Wrap>
@@ -77,7 +91,7 @@ const EditVoteOption = ({
 EditVoteOption.propTypes = {
   onUpdate: PropTypes.func.isRequired,
   label: PropTypes.string.isRequired,
-  value: PropTypes.number.isRequired,
+  value: PropTypes.string.isRequired,
 }
 
 export default EditVoteOption
