@@ -75,7 +75,7 @@ const ReviewApplication = ({ issue, requestIndex }) => {
     },
     workplan: request.workplan,
     hours: request.hours,
-    eta: (new Date(request.eta)).toLocaleDateString(),
+    eta: (request.eta === '-') ? request.eta : (new Date(request.eta)).toLocaleDateString(),
     applicationDate: request.applicationDate
   }
 
@@ -118,11 +118,16 @@ const ReviewApplication = ({ issue, requestIndex }) => {
         <FieldTitle>Work Plan</FieldTitle>
         <DetailText>{application.workplan}</DetailText>
 
-        <FieldTitle>Estimated Hours</FieldTitle>
-        <DetailText>{application.hours}</DetailText>
-
-        <FieldTitle>Estimated Completion</FieldTitle>
-        <DetailText>{application.eta}</DetailText>
+        <Estimations>
+          <div>
+            <FieldTitle>Estimated Hours</FieldTitle>
+            <DetailText>{application.hours}</DetailText>
+          </div>
+          <div>
+            <FieldTitle>Estimated Completion</FieldTitle>
+            <DetailText>{application.eta}</DetailText>
+          </div>
+        </Estimations>
       </ApplicationDetails>
 
       {('review' in request) ? (
@@ -220,6 +225,12 @@ const ReviewRow = styled.div`
   display: flex;
   margin-bottom: 8px;
   justify-content: space-between;
+`
+const Estimations = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto;
+  grid-gap: 12px;
 `
 
 export default ReviewApplication

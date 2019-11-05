@@ -34,10 +34,14 @@ const RequestAssignment = ({ issue }) => {
     closePanel()
 
     const today = new Date()
+    //If user hasn't set values, we display them as '-'
+    const date = (eta <= today) ? '-' : eta
+    const time = (hours === '' || hours === 0) ? '-' : hours
+
     const data = {
       workplan,
-      hours,
-      eta,
+      hours: time,
+      eta: date,
       ack1,
       ack2,
       user: githubCurrentUser,
@@ -47,7 +51,7 @@ const RequestAssignment = ({ issue }) => {
     api.requestAssignment(toHex(issue.repoId), issue.number, hash).toPromise()
   }
 
-  const canSubmit = () => !(ack1 && ack2 && workplan && !isNaN(hours) && hours > 0)
+  const canSubmit = () => !(ack1 && ack2 && workplan)
 
   return (
     <div css={`margin: ${2 * GU}px 0`}>
