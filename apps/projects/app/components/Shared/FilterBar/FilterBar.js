@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import {
@@ -14,7 +14,6 @@ import {
   Text,
   TextInput,
   useLayout,
-  useViewport,
   useTheme,
 } from '@aragon/ui'
 import { FilterDropDown, OverflowDropDown } from './FilterDropDown'
@@ -87,23 +86,23 @@ TextFilterPopover.propTypes = {
 const TextFilter = ({ visible, setVisible, openerRef, onClick, textFilter, updateTextFilter }) => {
   const { layoutName } = useLayout()
 
-  return layoutName === 'large' ? (
+  if (layoutName === 'large') return (
     <TextFilterInput
       textFilter={textFilter}
       updateTextFilter={updateTextFilter}
     />
-  ) : (
-    <React.Fragment>
-      <Button icon={<IconSearch />} display="icon" onClick={onClick} ref={openerRef} label="Text Filter" />
-      <TextFilterPopover
-        visible={visible}
-        opener={openerRef.current}
-        setVisible={setVisible}
-        textFilter={textFilter}
-        updateTextFilter={updateTextFilter}
-      />
-    </React.Fragment>
   )
+  return [
+    <Button key="tf1" icon={<IconSearch />} display="icon" onClick={onClick} ref={openerRef} label="Text Filter" />,
+    <TextFilterPopover
+      key="tf2"
+      visible={visible}
+      opener={openerRef.current}
+      setVisible={setVisible}
+      textFilter={textFilter}
+      updateTextFilter={updateTextFilter}
+    />
+  ]
 }
 TextFilter.propTypes = {
   visible: PropTypes.bool.isRequired,
@@ -195,28 +194,21 @@ ActionsPopover.propTypes = {
   deselectAllIssues: PropTypes.func.isRequired,
 }
 
-const Actions = ({ onClick, openerRef, visible, setVisible, selectedIssues, issuesFiltered, deselectAllIssues,  }) => {
+const Actions = ({ onClick, openerRef, visible, setVisible, selectedIssues, issuesFiltered, deselectAllIssues }) => {
   const { layoutName } = useLayout()
-  const theme = useTheme()
 
-  const actionsButtonBg = () =>
-    'background-color: ' + (!selectedIssues.length ? `${theme.background}` : `${theme.surface}`)
+  if (!selectedIssues.length) return null
 
   return (
     <React.Fragment>
       {layoutName === 'large' ? (
-        <Button
-          css={actionsButtonBg()}
-          onClick={onClick}
-          ref={openerRef}
-        >
+        <Button onClick={onClick} ref={openerRef}>
           <IconGrid />
           <Text css="margin: 0 8px;">Actions</Text>
           <IconArrowDown />
         </Button>
       ) : (
         <Button
-          css={actionsButtonBg()}
           onClick={onClick}
           ref={openerRef}
           icon={<IconGrid />}
@@ -247,19 +239,20 @@ Actions.propTypes = {
 }
 
 const Overflow = ({ children, filtersDisplayNumber }) => {
-  const elements = React.Children.toArray(children).splice(0, filtersDisplayNumber)
+  const childrenArray = React.Children.toArray(children)
+  const elements = childrenArray.splice(0, filtersDisplayNumber)
 
-  if (children.length > filtersDisplayNumber) {
+  if (childrenArray.length > filtersDisplayNumber) {
     elements.push(
-      <OverflowDropDown type="overflow">
-        {React.Children.toArray(children).splice(filtersDisplayNumber)}
+      <OverflowDropDown key="overflow" type="overflow">
+        {childrenArray.splice(filtersDisplayNumber)}
       </OverflowDropDown>
     )
   }
   return elements
 }
 Overflow.propTypes = {
-  children: PropTypes.func.isRequired,
+  children: PropTypes.array.isRequired,
   filtersDisplayNumber: PropTypes.number.isRequired,
 }
 
@@ -300,10 +293,7 @@ const FilterBar = ({
     return count
   }
 
-  // TODO: recalculation of divs widths doesn't work without it. side effects?
-  useViewport()
-
-  useEffect(() => {
+  const recalculateFiltersDisplayNumber = useCallback(() => {
     const total = mainFBRef.current ? mainFBRef.current.offsetWidth : 0
     const right = rightFBRef.current ? rightFBRef.current.offsetWidth : 0
     // 80px is "selectAll" checkbox + padding, etc
@@ -311,7 +301,14 @@ const FilterBar = ({
     // (containing actions, text filter and sorters)
     const width = total - right - 80
     setFiltersDisplayNumber(Math.floor(width / (128+8)))
-  })
+  }, [])
+
+  useEffect(() => {
+    window.addEventListener('resize', recalculateFiltersDisplayNumber)
+    return () => {
+      window.removeEventListener('resize', recalculateFiltersDisplayNumber)
+    }
+  }, [])
 
   const updateTextFilter = e => {
     setTextFilter(e.target.value)
@@ -659,5 +656,4 @@ const FilterBarActives = styled.div`
   width: 100%;
   padding-left: 36px;
 `
-
 export default FilterBar
