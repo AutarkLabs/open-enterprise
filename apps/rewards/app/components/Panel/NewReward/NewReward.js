@@ -90,6 +90,59 @@ const INITIAL_STATE = {
   warnings: [],
 }
 
+const getBlockProps = (state, currentBlock) => {
+  const {
+    amount,
+    amountToken,
+    rewardType,
+    dateReference,
+    dateStart,
+    dateEnd,
+    disbursement,
+    disbursementUnit,
+    disbursements,
+  } = state
+  const BLOCK_PADDING = 1
+  const amountBN = new BigNumber(amount)
+  const tenBN =  new BigNumber(10)
+  const decimalsBN = new BigNumber(amountToken.decimals)
+  const amountWei = amountBN.times(tenBN.pow(decimalsBN))
+  let startBlock = currentBlock + millisecondsToBlocks(Date.now(), dateStart)
+  let occurrences, isMerit, duration
+  if (rewardType === ONE_TIME_DIVIDEND || rewardType === ONE_TIME_MERIT) {
+    occurrences = 1
+  }
+  if (rewardType === ONE_TIME_MERIT) {
+    isMerit = true
+    duration = millisecondsToBlocks(dateStart, dateEnd)
+  } else {
+    isMerit = false
+  }
+  if (rewardType === RECURRING_DIVIDEND) {
+    occurrences = disbursements.length
+    switch (disbursementUnit) {
+    case 'Days':
+      duration = millisecondsToBlocks(Date.now(), disbursement * MILLISECONDS_IN_A_DAY + Date.now())
+      break
+    case 'Weeks':
+      duration = millisecondsToBlocks(Date.now(), disbursement * MILLISECONDS_IN_A_WEEK + Date.now())
+      break
+    case 'Years':
+      duration = millisecondsToBlocks(Date.now(), disbursement * MILLISECONDS_IN_A_YEAR + Date.now())
+      break
+    default:
+      duration = millisecondsToBlocks(Date.now(), disbursement * MILLISECONDS_IN_A_MONTH + Date.now())
+    }
+    startBlock -= duration
+  }
+  if(rewardType === ONE_TIME_DIVIDEND){
+    const rawBlockDuration = millisecondsToBlocks(Date.now(), dateReference)
+    startBlock = dateReference <= new Date() ? currentBlock + rawBlockDuration - BLOCK_PADDING : currentBlock 
+    duration = dateReference <= new Date() ? BLOCK_PADDING : rawBlockDuration
+  }
+  return [ isMerit, amountWei, startBlock, duration, occurrences ]
+}
+
 class NewRewardClass extends React.Component {
   static propTypes = {
     onNewReward: PropTypes.func.isRequired,
@@ -679,82 +732,28 @@ class NewRewardClass extends React.Component {
     )
   }
 
-  getBlockProps = currentBlock => {
-    const {
-      amount,
-      amountToken,
-      rewardType,
-      dateReference,
-      dateStart,
-      dateEnd,
-      disbursement,
-      disbursementUnit,
-      disbursements,
-    } = this.state
-    const BLOCK_PADDING = 1
-    const amountBN = new BigNumber(amount)
-    const tenBN =  new BigNumber(10)
-    const decimalsBN = new BigNumber(amountToken.decimals)
-    const amountWei = amountBN.times(tenBN.pow(decimalsBN))
-    let startBlock = currentBlock + millisecondsToBlocks(Date.now(), dateStart)
-    let occurrences, isMerit, duration
-    if (rewardType === ONE_TIME_DIVIDEND || rewardType === ONE_TIME_MERIT) {
-      occurrences = 1
-    }
-    if (rewardType === ONE_TIME_MERIT) {
-      isMerit = true
-      duration = millisecondsToBlocks(dateStart, dateEnd)
-    } else {
-      isMerit = false
-    }
-    if (rewardType === RECURRING_DIVIDEND) {
-      occurrences = disbursements.length
-      switch (disbursementUnit) {
-      case 'Days':
-        duration = millisecondsToBlocks(Date.now(), disbursement * MILLISECONDS_IN_A_DAY + Date.now())
-        break
-      case 'Weeks':
-        duration = millisecondsToBlocks(Date.now(), disbursement * MILLISECONDS_IN_A_WEEK + Date.now())
-        break
-      case 'Years':
-        duration = millisecondsToBlocks(Date.now(), disbursement * MILLISECONDS_IN_A_YEAR + Date.now())
-        break
-      default:
-        duration = millisecondsToBlocks(Date.now(), disbursement * MILLISECONDS_IN_A_MONTH + Date.now())
-      }
-      startBlock -= duration
-    }
-    if(rewardType === ONE_TIME_DIVIDEND){
-      const rawBlockDuration = millisecondsToBlocks(Date.now(), dateReference)
-      startBlock = dateReference <= new Date() ? currentBlock + rawBlockDuration - BLOCK_PADDING : currentBlock 
-      duration = dateReference <= new Date() ? BLOCK_PADDING : rawBlockDuration
-    }
-    this.setState({
+  setDisbursementBlocks = currentBlockNumber => {
+    if (currentBlockNumber === this.state.currentBlockNumber)
+      return
+    const [
       isMerit,
       amountWei,
       startBlock,
       duration,
       occurrences,
-    })
-    return [ startBlock, duration, occurrences ]
-  }
-
-  setDisbursementBlocks = currentBlockNumber => {
-    if (currentBlockNumber === this.state.currentBlockNumber)
-      return
-    const [
-      startBlock,
-      duration,
-      occurrences,
-    ] = this.getBlockProps(currentBlockNumber)
+    ] = getBlockProps(this.state, currentBlockNumber)
     const disbursementBlocks = []
     for (let i = 1; i <= occurrences; i ++) {
       const block = startBlock + duration * i
       disbursementBlocks.push(block)
     }
-    console.log(disbursementBlocks)
     this.setState({
       currentBlockNumber,
+      isMerit,
+      amountWei,
+      startBlock,
+      duration,
+      occurrences,
       disbursementBlocks,
     })
   }
