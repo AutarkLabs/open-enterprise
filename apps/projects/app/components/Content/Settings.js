@@ -40,17 +40,24 @@ const GitHubConnect = ({ onLogin, onLogout, status }) => {
 
   const bodyText = auth ? (
     <Text size="large" css="display: flex; align-items: center">
-      Logged in as <img src={user.avatarUrl} alt="user avatar" css="margin: 8px; width: 50px; border-radius: 50%;" />
-      <Link
-        href={user.url}
-        target="_blank"
-        style={{ textDecoration: 'none', color: `${theme.link}` }}
-      >
-        {user.login}
-      </Link>
+      Logged in as
+      {user.avatarUrl ? (
+        <React.Fragment>
+          <img src={user.avatarUrl ? user.avatarUrl : ''} alt="user avatar" css="margin: 8px; width: 50px; border-radius: 50%;" />
+          <Link
+            href={user.url}
+            target="_blank"
+            style={{ textDecoration: 'none', color: `${theme.link}` }}
+          >
+            {user.login}
+          </Link>
+        </React.Fragment>
+      ) : (
+        <span css="margin: 8px; height: 50px;"></span>
+      )}
     </Text>
   ) : (
-    'The Projects app uses GitHub to interact with issues.'
+    <span css="line-height: 50px;">The Projects app uses GitHub to interact with issues.</span>
   )
   const buttonText = auth ? 'Disconnect' : 'Connect my GitHub'
   const buttonAction = auth ? onLogout : onLogin
