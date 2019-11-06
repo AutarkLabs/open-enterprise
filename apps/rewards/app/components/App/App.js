@@ -6,24 +6,6 @@ import { MyRewards, Overview } from '../Content'
 import PanelManager, { PANELS } from '../Panel'
 import styled from 'styled-components'
 import { Empty } from '../Card'
-import {
-  MILLISECONDS_IN_A_DAY,
-  MILLISECONDS_IN_A_WEEK,
-  MILLISECONDS_IN_A_MONTH,
-  MILLISECONDS_IN_A_YEAR,
-  millisecondsToBlocks,
-  millisecondsToDays,
-  millisecondsToWeeks,
-  millisecondsToMonths,
-  millisecondsToYears,
-} from '../../../../../shared/ui/utils'
-
-import { BigNumber } from 'bignumber.js'
-import {
-  ONE_TIME_DIVIDEND,
-  ONE_TIME_MERIT,
-  RECURRING_DIVIDEND,
-} from '../../utils/constants'
 import { networkContextType } from '../../../../../shared/ui'
 import { useAragonApi } from '../../api-react'
 import { IdentityProvider } from '../../../../../shared/identity'
@@ -165,53 +147,15 @@ class App extends React.Component {
   }
 
   onNewReward = async reward => {
-    const BLOCK_PADDING = 1 // ensuring the start block is different from the end block
-    let currentBlock = await this.props.api.web3Eth('getBlockNumber').toPromise()
-    const amountBN = new BigNumber(reward.amount)
-    const tenBN =  new BigNumber(10)
-    const decimalsBN = new BigNumber(reward.amountToken.decimals)
-    reward.amount = amountBN.times(tenBN.pow(decimalsBN))
-    let startBlock = currentBlock + millisecondsToBlocks(Date.now(), reward.dateStart)
-    if (reward.rewardType === ONE_TIME_DIVIDEND || reward.rewardType === ONE_TIME_MERIT) {
-      reward.occurances = 1
-    }
-    if (reward.rewardType === ONE_TIME_MERIT) {
-      reward.isMerit = true
-      reward.delay = 0
-      reward.duration = millisecondsToBlocks(reward.dateStart, reward.dateEnd)
-    } else {
-      reward.isMerit = false
-    }
-    if (reward.rewardType === RECURRING_DIVIDEND) {
-      reward.occurances = reward.disbursements.length
-      switch (reward.disbursementUnit) {
-      case 'Days':
-        reward.duration = millisecondsToBlocks(Date.now(), reward.disbursement * MILLISECONDS_IN_A_DAY + Date.now())
-        break
-      case 'Weeks':
-        reward.duration = millisecondsToBlocks(Date.now(), reward.disbursement * MILLISECONDS_IN_A_WEEK + Date.now())
-        break
-      case 'Years':
-        reward.duration = millisecondsToBlocks(Date.now(), reward.disbursement * MILLISECONDS_IN_A_YEAR + Date.now())
-        break
-      default: // Monthly
-        reward.duration = millisecondsToBlocks(Date.now(), reward.disbursement * MILLISECONDS_IN_A_MONTH + Date.now())
-      }
-    }
-    if(reward.rewardType === ONE_TIME_DIVIDEND){
-      const rawBlockDuration = millisecondsToBlocks(Date.now(), reward.dateReference)
-      startBlock = reward.dateReference <= new Date() ? currentBlock + rawBlockDuration - BLOCK_PADDING : currentBlock 
-      reward.duration = reward.dateReference <= new Date() ? BLOCK_PADDING : rawBlockDuration
-    }
     this.props.api.newReward(
       reward.description, //string _description
       reward.isMerit, //reward.isMerit, //bool _isMerit,
       reward.referenceAsset.key || reward.customToken.address, //address _referenceToken,
       reward.amountToken.address, //address _rewardToken,
-      reward.amount.toString(10), //uint _amount,
-      startBlock, // uint _startBlock
+      reward.amountWei.toString(10), //uint _amount,
+      reward.startBlock, // uint _startBlock
       reward.duration, //uint _duration, (number of blocks until reward will be available)
-      reward.occurances, //uint _occurances,
+      reward.occurrences, //uint _occurrences,
       0 //uint _delay
     ).toPromise()
     this.closePanel()
