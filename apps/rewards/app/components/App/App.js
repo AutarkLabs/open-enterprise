@@ -196,7 +196,6 @@ class App extends React.Component {
       default: // Monthly
         reward.duration = millisecondsToBlocks(Date.now(), MILLISECONDS_IN_A_MONTH + Date.now())
       }
-      startBlock -= reward.duration
     }
     if(reward.rewardType === ONE_TIME_DIVIDEND){
       startBlock = currentBlock
