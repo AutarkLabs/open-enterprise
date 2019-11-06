@@ -94,21 +94,23 @@ const ReviewWork = ({ issue }) => {
           <img
             alt=""
             src={submitter.avatarUrl}
-            css="width: 32px; height: 32px; margin-right: 10px"
+            css="width: 32px; height: 32px; margin-right: 10px; border-radius: 50%;"
           />
-          <Link
-            href={submitter.url}
-            target="_blank"
-            style={{ textDecoration: 'none', color: `${theme.link}`, marginRight: '6px' }}
-          >
-            {submitterName}
-          </Link>
-            applied {submissionDateDistance} ago
+          <div>
+            <Link
+              href={submitter.url}
+              target="_blank"
+              style={{ textDecoration: 'none', color: `${theme.link}`, marginRight: '6px' }}
+            >
+              {submitterName}
+            </Link>
+              submitted work {submissionDateDistance} ago
+          </div>
         </UserLink>
 
         <Separator/>
 
-        <FieldTitle>Proof of Work</FieldTitle>
+        <FieldTitle>Submission</FieldTitle>
         <DetailText>{work.proof}</DetailText>
 
         {work.comments && <FieldTitle>Additional Comments</FieldTitle>}

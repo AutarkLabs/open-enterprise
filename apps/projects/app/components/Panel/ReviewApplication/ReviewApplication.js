@@ -101,7 +101,7 @@ const ReviewApplication = ({ issue, requestIndex }) => {
           <img
             alt=""
             src={applicant.avatar}
-            css="width: 32px; height: 32px; margin-right: 10px"
+            css="width: 32px; height: 32px; margin-right: 10px; border-radius: 50%;"
           />
           <Link
             href={applicant.url}
