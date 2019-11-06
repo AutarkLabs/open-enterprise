@@ -240,12 +240,12 @@ Actions.propTypes = {
 
 const Overflow = ({ children, filtersDisplayNumber }) => {
   const childrenArray = React.Children.toArray(children)
-  const elements = childrenArray.splice(0, filtersDisplayNumber)
+  const elements = childrenArray.slice(0, filtersDisplayNumber)
 
   if (childrenArray.length > filtersDisplayNumber) {
     elements.push(
       <OverflowDropDown key="overflow" type="overflow">
-        {childrenArray.splice(filtersDisplayNumber)}
+        {childrenArray.slice(filtersDisplayNumber)}
       </OverflowDropDown>
     )
   }
@@ -279,7 +279,7 @@ const FilterBar = ({
   const [ sortMenuVisible, setSortMenuVisible ] = useState(false)
   const [ actionsMenuVisible, setActionsMenuVisible ] = useState(false)
   const [ textFilterVisible, setTextFilterVisible ] = useState(false)
-  const [ filtersDisplayNumber, setFiltersDisplayNumber ] = useState(1)
+  const [ filtersDisplayNumber, setFiltersDisplayNumber ] = useState(10)
   const theme = useTheme()
   const actionsOpener = useRef(null)
   const sortersOpener = useRef(null)
