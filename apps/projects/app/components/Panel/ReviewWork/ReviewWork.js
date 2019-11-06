@@ -94,21 +94,23 @@ const ReviewWork = ({ issue }) => {
           <img
             alt=""
             src={submitter.avatarUrl}
-            css="width: 32px; height: 32px; margin-right: 10px"
+            css="width: 32px; height: 32px; margin-right: 10px; border-radius: 50%;"
           />
-          <Link
-            href={submitter.url}
-            target="_blank"
-            style={{ textDecoration: 'none', color: `${theme.link}`, marginRight: '6px' }}
-          >
-            {submitterName}
-          </Link>
-            applied {submissionDateDistance} ago
+          <div>
+            <Link
+              href={submitter.url}
+              target="_blank"
+              style={{ textDecoration: 'none', color: `${theme.link}`, marginRight: '6px' }}
+            >
+              {submitterName}
+            </Link>
+              submitted work {submissionDateDistance} ago
+          </div>
         </UserLink>
 
         <Separator/>
 
-        <FieldTitle>Proof of Work</FieldTitle>
+        <FieldTitle>Submission</FieldTitle>
         <DetailText>{work.proof}</DetailText>
 
         {work.comments && <FieldTitle>Additional Comments</FieldTitle>}
@@ -120,10 +122,8 @@ const ReviewWork = ({ issue }) => {
 
       {('review' in work) ? (
         <React.Fragment>
-
           <FieldTitle>Submission Status</FieldTitle>
-
-          <div css="margin: 10px 0">
+          <FieldText>
             {work.review.accepted ? (
               <div css="display: flex; align-items: center">
                 <IconCheck color={`${theme.positive}`} css="margin-top: -4px; margin-right: 8px"/>
@@ -135,21 +135,21 @@ const ReviewWork = ({ issue }) => {
                 <Text color={`${theme.negative}`}>Rejected</Text>
               </div>
             )}
-          </div>
+          </FieldText>
 
           <FieldTitle>Feedback</FieldTitle>
-          <Text.Block style={{ margin: '10px 0' }}>
-            {work.review.feedback.length ? work.review.feedback : 'No feedback was provided'}
-          </Text.Block>
+          <FieldText>
+            <Text.Block>
+              {work.review.feedback.length ? work.review.feedback : 'No feedback was provided'}
+            </Text.Block>
+          </FieldText>
 
-          <Tag
-            uppercase={false}
-            foreground={`${theme.surfaceContentSecondary}`}
-            background={`${theme.border}`}
-          >
-            {'Quality:' + ' ' + workRatings[work.review.rating]}
-          </Tag>
-
+          <FieldTitle>Quality Rating</FieldTitle>
+          <FieldText>
+            <Text.Block>
+              {workRatings[work.review.rating]}
+            </Text.Block>
+          </FieldText>
         </React.Fragment>
       ) : (
         <React.Fragment>
@@ -173,8 +173,7 @@ const ReviewWork = ({ issue }) => {
             input={
               <TextInput.Multiline
                 name="feedback"
-                rows="5"
-                style={{ resize: 'none', height: 'auto' }}
+                rows="3"
                 onChange={updateFeedback}
                 value={feedback}
                 placeholder="Do you have any feedback to provide the contributor?"
@@ -238,6 +237,9 @@ const ReviewRow = styled.div`
 `
 const ReviewButton = styled(Button)`
   width: 48%;
+`
+const FieldText = styled.div`
+  margin: ${0.5 * GU}px 0 ${2 * GU}px;
 `
 
 export default ReviewWork

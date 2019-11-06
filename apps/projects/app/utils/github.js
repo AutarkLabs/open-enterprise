@@ -37,13 +37,13 @@ const getPopupDimensions = () => {
   return `width=${width},height=${height},top=${top},left=${left}`
 }
 
-export const githubPopup = (popup = null) => {
+export const githubPopup = (popup, scope) => {
   // Checks to save some memory if the popup exists as a window object
   if (popup === null || popup.closed) {
     popup = window.open(
       // TODO: Improve readability here: encode = (params: Object) => (JSON.stringify(params).replace(':', '=').trim())
       // encode url params
-      `${GITHUB_URI}?client_id=${CLIENT_ID}&scope=public_repo`,
+      `${GITHUB_URI}?client_id=${CLIENT_ID}&scope=${scope}`,
       'githubAuth',
       // TODO: Improve readability here: encode = (fields: Object) => (JSON.stringify(fields).replace(':', '=').trim())
       `scrollbars=no,toolbar=no,location=no,titlebar=no,directories=no,status=no,menubar=no, ${getPopupDimensions()}`
