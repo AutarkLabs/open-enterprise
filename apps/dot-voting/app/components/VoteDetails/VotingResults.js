@@ -32,8 +32,9 @@ const VotingResults = ({ vote, voteWeights, balance }) => {
           totalSupport={totalSupport}
           color={`${theme.accent}`}
           voteWeights={voteWeights}
-          balance={!vote.open ? balance : 0}
-          symbol={(!vote.open && vote.data.tokenSymbol) ? vote.data.tokenSymbol : ''}
+          voteOpen={vote.open}
+          balance={balance}
+          symbol={vote.data.tokenSymbol}
           displayYouBadge={true}
         />
       </div>

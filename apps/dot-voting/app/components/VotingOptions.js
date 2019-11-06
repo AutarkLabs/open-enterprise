@@ -1,5 +1,6 @@
 import React from 'react'
 import { Spring, config as springs } from 'react-spring'
+import { GU, Text, theme } from '@aragon/ui'
 import VotingOption from './VotingOption'
 import { safeDiv } from '../utils/math-utils'
 import PropTypes from 'prop-types'
@@ -12,6 +13,7 @@ class VotingOptions extends React.Component {
   static defaultProps = {
     options: [],
     voteWeights: [],
+    voteOpen: true,
     balance: 0,
     symbol: '',
     // animationDelay can also be a number to disable the random delay
@@ -25,6 +27,7 @@ class VotingOptions extends React.Component {
     totalSupport: PropTypes.number.isRequired,
     color: PropTypes.string.isRequired,
     voteWeights: PropTypes.arrayOf(PropTypes.string).isRequired,
+    voteOpen: PropTypes.bool,
     balance: PropTypes.number,
     symbol: PropTypes.string,
     animationDelay: PropTypes.object.isRequired,
@@ -45,7 +48,7 @@ class VotingOptions extends React.Component {
 
   render() {
     const { delay } = this.state
-    const { options, totalSupport, color, voteWeights, balance, symbol, displayYouBadge } = this.props
+    const { options, totalSupport, color, voteWeights, voteOpen, balance, symbol, displayYouBadge } = this.props
     return (
       <React.Fragment>
         {options.map((option, i) =>
@@ -59,7 +62,14 @@ class VotingOptions extends React.Component {
           >
             {({ value }) => {
               const percentage = safeDiv(parseInt(option.value, 10), totalSupport)
-              const allocation = symbol ? `${BigNumber(balance).times(percentage).dp(3).toString()} ${symbol}` : ''
+
+              let allocation
+              if(!voteOpen && symbol) {
+                allocation = <Text size="xsmall" color={theme.textTertiary} css={`margin-left: ${0.25 * GU}px`}>
+                  {`(${BigNumber(balance).times(percentage).dp(3).toString()} ${symbol})`}
+                </Text>
+              }
+
               return (
                 <VotingOption
                   fontSize={this.props.fontSize}
