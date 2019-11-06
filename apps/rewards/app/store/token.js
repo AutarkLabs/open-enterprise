@@ -84,7 +84,7 @@ export async function updateBalancesAndRefTokens({ balances = [], refTokens = []
   if (balancesIndex === -1) {
     const newBalance = await newBalanceEntry(tokenContract, tokenAddress, settings)
     let newRefTokens = Array.from(refTokens)
-    if (newBalance.startBlock) {
+    if (newBalance.startBlock !== null) {
       const refIndex = refTokens.findIndex(({ address }) =>
         addressesEqual(address, tokenAddress)
       )
