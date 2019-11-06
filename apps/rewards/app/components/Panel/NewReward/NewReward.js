@@ -155,6 +155,7 @@ class NewRewardClass extends React.Component {
       amount,
       amountToken,
       disbursement,
+      disbursements,
       semanticErrors,
     } = this.state
     const valid = (
@@ -165,7 +166,9 @@ class NewRewardClass extends React.Component {
         rewardType !== null && (
         rewardType !== RECURRING_DIVIDEND || (
           !isNaN(disbursement) && +disbursement > 0 &&
-              Math.floor(disbursement) === +disbursement
+              Math.floor(disbursement) === +disbursement 
+        ) && (
+          !!disbursements.length
         )
       ) &&
         semanticErrors.length === 0
