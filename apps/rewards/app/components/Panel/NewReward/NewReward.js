@@ -18,6 +18,7 @@ import {
 import { Form, FormField } from '../../Form'
 import { DateInput } from '../../../../../../shared/ui'
 import moment from 'moment'
+import { isBefore } from 'date-fns'
 import { isAddress } from '../../../utils/web3-utils'
 import { ETHER_TOKEN_VERIFIED_BY_SYMBOL } from '../../../utils/verified-tokens'
 import TokenSelectorInstance from './TokenSelectorInstance'
@@ -44,6 +45,15 @@ const tokenAbi = [].concat(tokenBalanceOfAbi, tokenBalanceOfAtAbi, tokenCreation
 const tomorrow = new Date()
 tomorrow.setDate(tomorrow.getDate() + 1)
 
+const messages = {
+  customTokenInvalid: () => 'Token address must be of a valid ERC20 compatible clonable token.',
+  meritTokenTransferable: () => 'Merit rewards must be non-transferable.',
+  amountOverBalance: () => 'Amount must be below the available balance.',
+  dateStartAfterEnd: () => 'Start date must take place before the end date.',
+  singleDisbursement: () => 'While you selected a recurring dividend, based on your parameters, there will only be a single disbursement.',
+  dateBeforeAsset: (dateType, tokenSymbol) => `The selected ${dateType} date occurs before the reference asset, ${tokenSymbol}, was created. Please choose another date.`,
+}
+
 const INITIAL_STATE = {
   description: '',
   referenceAsset: null,
@@ -66,18 +76,8 @@ const INITIAL_STATE = {
   disbursementUnit: MONTHS,
   disbursements: [tomorrow],
   draftSubmitted: false,
-  semanticErrors: [],
+  errors: [],
   warnings: [],
-  messages: {
-    customTokenInvalid: 'Token address must be of a valid ERC20 compatible clonable token.',
-    meritTokenTransferable: 'Merit rewards must be non-transferable.',
-    amountOverBalance: 'Amount must be below the available balance.',
-    dateReferencePassed: 'Reference date must take place after today.',
-    dateStartPassed: 'Start date must take place after today.',
-    dateEndPassed: 'End date must take place after today.',
-    dateStartAfterEnd: 'Start date must take place before the end date.',
-    singleDisbursement: 'While you selected a recurring dividend, based on your parameters, there will only be a single disbursement.',
-  },
 }
 
 class NewRewardClass extends React.Component {
@@ -103,7 +103,7 @@ class NewRewardClass extends React.Component {
     if (isNaN(disbursement) || disbursement <= 0 ||
         this.state.rewardType !== RECURRING_DIVIDEND) {
       this.setState({ disbursements: [] })
-      this.setSemanticErrors({ dateStart, dateEnd })
+      this.setErrors({ dateStart, dateEnd })
       return
     }
     let date = moment(dateStart), disbursements = []
@@ -112,13 +112,13 @@ class NewRewardClass extends React.Component {
       date.add(disbursement, disbursementUnit)
     }
     this.setState({ disbursements })
-    this.setSemanticErrors({ dateStart, dateEnd, disbursements })
+    this.setErrors({ dateStart, dateEnd, disbursements })
   }
 
   changeField = ({ target: { name, value } }) => {
     this.setState({ [name]: value })
     if (name === 'amount')
-      this.setSemanticErrors({ amount: value })
+      this.setErrors({ amount: value })
   }
 
   dropDownItems = (name) => {
@@ -154,7 +154,7 @@ class NewRewardClass extends React.Component {
       amount,
       amountToken,
       disbursement,
-      semanticErrors,
+      errors,
     } = this.state
     const valid = (
       description !== '' &&
@@ -167,38 +167,75 @@ class NewRewardClass extends React.Component {
               Math.floor(disbursement) === +disbursement
         )
       ) &&
-        semanticErrors.length === 0
+        errors.length === 0
     )
     return valid
   }
 
-  setSemanticErrors = (changed) => {
-    const state = { ...this.state, ...changed }
-    const semanticErrors = []
-    const warnings = []
-    if (state.referenceAsset === OTHER && !state.customToken.isVerified)
-      semanticErrors.push('customTokenInvalid')
-    if (state.rewardType === ONE_TIME_MERIT && state.transferable)
-      semanticErrors.push('meritTokenTransferable')
-    if (toWei(state.amount) > +state.amountToken.amount)
-      semanticErrors.push('amountOverBalance')
-    if (state.rewardType === ONE_TIME_DIVIDEND &&
-        moment(state.dateReference).isBefore(tomorrow, 'day'))
-      semanticErrors.push('dateReferencePassed')
-    if (state.rewardType === RECURRING_DIVIDEND ||
-        state.rewardType === ONE_TIME_MERIT) {
-      const start = moment(state.dateStart), end = moment(state.dateEnd)
-      if (start.isBefore(tomorrow, 'day'))
-        semanticErrors.push('dateStartPassed')
-      if (end.isBefore(tomorrow, 'day'))
-        semanticErrors.push('dateEndPassed')
-      if (start.isAfter(end, 'day'))
-        semanticErrors.push('dateStartAfterEnd')
+  getReferenceToken = (state) => {
+    const { referenceAsset, customToken } = state
+    const { refTokens } = this.props
+    const nullAsset = {
+      creationDate: new Date(0),
+      symbol: null,
     }
-    if (state.rewardType === RECURRING_DIVIDEND &&
+    if (referenceAsset === null)
+      return nullAsset
+    if (referenceAsset === OTHER) {
+      if(customToken.isVerified) {
+        return customToken
+      }
+      else return nullAsset
+    }
+    const selectedToken = refTokens.find(t => (
+      t.address === referenceAsset.props.address
+    ))
+    return selectedToken
+  }
+
+  setErrors = (changed) => {
+    const state = { ...this.state, ...changed }
+    const {
+      referenceAsset,
+      customToken,
+      rewardType,
+      transferable,
+      amount,
+      amountToken,
+      dateReference,
+      dateStart,
+      dateEnd,
+    } = state
+    const { creationDate, symbol } = this.getReferenceToken(state)
+    const errors = []
+    const warnings = []
+
+    if (referenceAsset === OTHER && !customToken.isVerified)
+      errors.push(messages.customTokenInvalid())
+    if (rewardType === ONE_TIME_MERIT && transferable)
+      errors.push(messages.meritTokenTransferable())
+    if (toWei(amount) > +amountToken.amount)
+      errors.push(messages.amountOverBalance())
+    if (rewardType === RECURRING_DIVIDEND ||
+        rewardType === ONE_TIME_MERIT) {
+      if (isBefore(dateEnd, dateStart))
+        errors.push(messages.dateStartAfterEnd())
+      if (isBefore(dateStart, creationDate)) {
+        errors.push(messages.dateBeforeAsset('start', symbol))
+      }
+      if (isBefore(dateEnd, creationDate)) {
+        errors.push(messages.dateBeforeAsset('end', symbol))
+      }
+    }
+    if (rewardType === ONE_TIME_DIVIDEND &&
+        isBefore(dateReference, creationDate)) {
+      errors.push(messages.dateBeforeAsset('reference', symbol))
+    }
+    if (rewardType === RECURRING_DIVIDEND &&
         state.disbursements.length <= 1)
-      warnings.push('singleDisbursement')
-    this.setState({ semanticErrors, warnings })
+      warnings.push(messages.singleDisbursement())
+
+    this.setState({ errors, warnings })
   }
 
   onMainNet = () => this.props.network.type === 'main'
@@ -251,7 +288,7 @@ class NewRewardClass extends React.Component {
       address: resolvedAddress,
     }
     this.setState({ customToken })
-    this.setSemanticErrors({ customToken })
+    this.setErrors({ customToken })
   }
 
   verifyMinime = async (app, tokenState) => {
@@ -268,23 +305,28 @@ class NewRewardClass extends React.Component {
       if (verifiedTests[0] !== verifiedTests[2]) {
         const customToken = { ...tokenState, isVerified: false }
         this.setState({ customToken  })
-        this.setSemanticErrors({ customToken })
+        this.setErrors({ customToken })
         return false
       }
+      const creationBlockNumber = await token.creationBlock().toPromise()
+      const creationBlock = await app.web3Eth('getBlock', creationBlockNumber)
+        .toPromise()
+      const creationDate = new Date(creationBlock.timestamp * 1000)
       const customToken = {
         ...tokenState,
         isVerified: true,
         symbol: await token.symbol().toPromise(),
-        startBlock: await token.creationBlock().toPromise(),
+        startBlock: creationBlockNumber,
+        creationDate,
       }
       this.setState({ customToken })
-      this.setSemanticErrors({ customToken })
+      this.setErrors({ customToken })
       return true
     }
     catch (error) {
       const customToken = { ...tokenState, isVerified: false }
       this.setState({ customToken })
-      this.setSemanticErrors({ customToken })
+      this.setErrors({ customToken })
       return false
     }
   }
@@ -293,7 +335,7 @@ class NewRewardClass extends React.Component {
     const token = app.external(tokenAddress, tokenTransferAbi)
     const transferable = await token.transfersEnabled().toPromise()
     this.setState({ transferable })
-    this.setSemanticErrors({ transferable })
+    this.setErrors({ transferable })
   }
 
   amountWithTokenAndBalance = () => (
@@ -315,7 +357,7 @@ class NewRewardClass extends React.Component {
           selected={this.dropDownSelect('amountToken')}
           onChange={i => {
             this.dropDownChange('amountToken', i)
-            this.setSemanticErrors({ amountToken: this.props.amountTokens[i] })
+            this.setErrors({ amountToken: this.props.amountTokens[i] })
           }}
         />
       </HorizontalContainer>
@@ -402,7 +444,7 @@ class NewRewardClass extends React.Component {
             value={this.state.dateReference}
             onChange={dateReference => {
               this.setState({ dateReference, })
-              this.setSemanticErrors({ dateReference })
+              this.setErrors({ dateReference })
             }}
             wide
           />
@@ -488,41 +530,35 @@ class NewRewardClass extends React.Component {
     }
   }
 
-  errorBlocks = () => {
-    const { semanticErrors, messages } = this.state
-    return semanticErrors.map((error, i) => (
-      <ErrorText key={i}>
-        <IconContainer>
-          <IconClose
-            size="tiny"
-            css={{
-              marginRight: '8px',
-              color: this.props.theme.negative,
-            }}
-          />
-        </IconContainer>
-        <Text>{messages[error]}</Text>
-      </ErrorText>
-    ))
-  }
+  errorBlocks = () => this.state.errors.map(error => (
+    <ErrorText key={error}>
+      <IconContainer>
+        <IconClose
+          size="tiny"
+          css={{
+            marginRight: '8px',
+            color: this.props.theme.negative,
+          }}
+        />
+      </IconContainer>
+      <Text>{error}</Text>
+    </ErrorText>
+  ))
 
-  warningBlocks = () => {
-    const { warnings, messages } = this.state
-    return warnings.map((warning, i) => (
-      <ErrorText key={i}>
-        <IconContainer>
-          <IconCaution
-            size="tiny"
-            css={{
-              marginRight: '8px',
-              color: this.props.theme.warningSurfaceContent,
-            }}
-          />
-        </IconContainer>
-        <Text>{messages[warning]}</Text>
-      </ErrorText>
-    ))
-  }
+  warningBlocks = () => this.state.warnings.map(warning => (
+    <ErrorText key={warning}>
+      <IconContainer>
+        <IconCaution
+          size="tiny"
+          css={{
+            marginRight: '8px',
+            color: this.props.theme.warningSurfaceContent,
+          }}
+        />
+      </IconContainer>
+      <Text>{warning}</Text>
+    </ErrorText>
+  ))
 
   showDraft = () => {
     const { rewardType } = this.state
@@ -570,7 +606,7 @@ class NewRewardClass extends React.Component {
                 this.setState({ referenceAsset })
                 if (referenceAsset !== OTHER)
                   await this.verifyTransferable(this.props.app, referenceAsset.key)
-                this.setSemanticErrors({ referenceAsset })
+                this.setErrors({ referenceAsset })
               }}
             />
           }
@@ -605,7 +641,7 @@ class NewRewardClass extends React.Component {
               placeholder="Select type of reward"
               onChange={i => {
                 this.setState({ rewardType: REWARD_TYPES[i] })
-                this.setSemanticErrors({ rewardType: REWARD_TYPES[i] })
+                this.setErrors({ rewardType: REWARD_TYPES[i] })
               }}
             />
           }
