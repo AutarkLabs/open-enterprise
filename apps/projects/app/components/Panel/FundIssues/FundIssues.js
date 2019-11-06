@@ -11,7 +11,8 @@ import useGithubAuth from '../../../hooks/useGithubAuth'
 import { usePanelManagement } from '..'
 import { computeIpfsString } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
-import { IconOpen, IconClose } from '../../../assets'
+import { IconOpen, IconCollapse } from '../../../assets'
+import { IconClose } from '@aragon/ui'
 import NoFunds from '../../../assets/noFunds.svg'
 import { IssueText } from '../PanelComponents'
 
@@ -40,6 +41,7 @@ const BountyUpdate = ({
   submitBounties,
   description,
   generateHoursChange,
+  totalSize,
   tokenDetails,
   tokens,
   amountChange,
@@ -47,13 +49,33 @@ const BountyUpdate = ({
   generateExpChange,
   generateDeadlineChange,
 }) => {
+  const [ submitDisabled, setSubmitDisabled ] = useState(false)
+  const [ maxError, setMaxError ] = useState(false)
+  const [ zeroError, setZeroError ] = useState(false)
+  const [ dateError, setDateError ] = useState(false)
+
   const expLevels = bountySettings.expLvls
+
+  useEffect(() => {
+    console.log(bounties)
+    const today = new Date()
+    const maxErr = totalSize > tokenDetails.balance
+    const amountErr = (bounties[issue.id].hours || bounties[issue.id].amount) ? false : true
+    const zeroErr = (bounties[issue.id].hours === 0 && bounties[issue.id].amount === 0) ? true : false
+    const dateErr = today > bounties[issue.id].deadline
+    setMaxError(maxErr)
+    setZeroError(zeroErr)
+    setDateError(dateErr)
+    setSubmitDisabled( maxErr || amountErr || dateErr )
+  }, [bounties])
+
   return (
     <div css={`margin: ${2 * GU}px 0`}>
       <Form
         onSubmit={submitBounties}
         description={description}
         submitText="Submit"
+        submitDisabled={submitDisabled}
       >
         <FormField
           input={
@@ -64,7 +86,7 @@ const BountyUpdate = ({
               `}>
                 <IssueTitleCompact
                   title={issue.title}
-                  tag={(issue.id in bounties && bounties[issue.id]['hours'] > 0) ? bounties[issue.id]['size'].toFixed(2) + ' ' + tokenDetails.symbol : ''}
+                  tag={(issue.id in bounties && bounties[issue.id]['hours'] > 0) ? BigNumber(bounties[issue.id]['size']).dp(2) + ' ' + tokenDetails.symbol : ''}
                 />
               </div>
 
@@ -136,6 +158,9 @@ const BountyUpdate = ({
           }
         />
       </Form>
+      <ErrorMessage hasError={maxError} type='total' />
+      <ErrorMessage hasError={zeroError} type='amount' />
+      <ErrorMessage hasError={dateError} type='date' />
     </div>
   )
 }
@@ -146,6 +171,7 @@ BountyUpdate.propTypes = {
   submitBounties: PropTypes.func.isRequired,
   description: PropTypes.string.isRequired,
   generateHoursChange: PropTypes.func.isRequired,
+  totalSize: PropTypes.number.isRequired,
   tokenDetails: PropTypes.object.isRequired,
   tokens: PropTypes.array.isRequired,
   amountChange: PropTypes.func.isRequired,
@@ -171,8 +197,30 @@ const FundForm = ({
   generateExpChange,
   generateDeadlineChange,
 }) => {
+  const [ submitDisabled, setSubmitDisabled ] = useState(true)
+  const [ maxError, setMaxError ] = useState(false)
+  const [ zeroError, setZeroError ] = useState([])
+  const [ dateError, setDateError ] = useState([])
+
   const expLevels = bountySettings.expLvls
   const theme = useTheme()
+
+  useEffect(() => {
+    const today = new Date()
+    const maxErr = totalSize > tokenDetails.balance
+    const amountErrArray = []
+    const zeroErrArray = []
+    const dateErrArray = []
+    issues.map(issue => {
+      amountErrArray.push((bounties[issue.id].hours || bounties[issue.id].amount) ? false : true)
+      zeroErrArray.push((bounties[issue.id].hours === 0 || bounties[issue.id].amount === 0) ? true : false)
+      dateErrArray.push(today > bounties[issue.id].deadline)
+    })
+    setMaxError(maxErr)
+    setZeroError(zeroErrArray)
+    setDateError(dateErrArray)
+    setSubmitDisabled( description === '' || maxErr || amountErrArray.includes(true) || dateErrArray.includes(true))
+  }, [ bounties, totalSize, description ])
 
   if (Number(tokenDetails.balance) === 0) {
     return (
@@ -189,10 +237,10 @@ const FundForm = ({
       <Mutation mutation={COMMENT}>
         {(post, result) => (
           <Form
-            onSubmit={() => submitBounties(post, result)}
+            onSubmit={submitBounties}
             description={description}
             submitText={issues.length > 1 ? 'Fund Issues' : 'Fund Issue'}
-            submitDisabled={totalSize > tokenDetails.balance}
+            submitDisabled={submitDisabled}
           >
             <FormField
               label="Description"
@@ -214,7 +262,7 @@ const FundForm = ({
               required
               input={
                 <React.Fragment>
-                  {issues.map(issue => (
+                  {issues.map((issue, index) => (
                     <Box key={issue.id} padding={0}>
                       <div css={`
                         padding: ${2 * GU}px;
@@ -222,19 +270,19 @@ const FundForm = ({
                       `}>
                         <DetailsArrow onClick={generateArrowChange(issue.id)}>
                           {bounties[issue.id]['detailsOpen'] ? (
-                            <IconClose />
+                            <IconCollapse />
                           ) : (
                             <IconOpen />
                           )}
                         </DetailsArrow>
                         <IssueTitleCompact
                           title={issue.title}
-                          tag={(issue.id in bounties && bounties[issue.id]['hours'] > 0) ? bounties[issue.id]['size'].toFixed(2) + ' ' + tokenDetails.symbol : ''}
+                          tag={(issue.id in bounties && bounties[issue.id]['hours'] > 0) ? BigNumber(bounties[issue.id]['size']).dp(2) + ' ' + tokenDetails.symbol : ''}
                         />
                       </div>
                       <div css={`
                               display: grid;
-                              grid-template-columns: minmax(1fr, 0) 1fr;
+                              grid-template-columns: calc(55% - ${GU}px) calc(45% - ${GU}px);
                               grid-template-rows: auto;
                               grid-template-areas:
                                 "hours exp"
@@ -273,7 +321,7 @@ const FundForm = ({
                           </div>
                         )}
 
-                        <div css={`grid-area: exp; padding-right: ${2 * GU}px`}>
+                        <div css={`grid-area: exp; padding-right: ${2 * GU}px; width: 100%;`}>
                           <FormField
                             label="Experience level"
                             input={
@@ -315,15 +363,9 @@ const FundForm = ({
           </Form>
         )}
       </Mutation>
-      {(totalSize > tokenDetails.balance) ? (
-        <div>
-          <br />
-          <Info.Action title="Insufficient Token Balance">
-                    Please either mint more tokens or stake fewer tokens against these issues.
-          </Info.Action>
-        </div>
-      ) : null
-      }
+      <ErrorMessage hasError={maxError} type='total' />
+      <ErrorMessage hasError={zeroError.includes(true)} type='amount' />
+      <ErrorMessage hasError={dateError.includes(true)} type='date' />
     </div>
   )
 }
@@ -370,7 +412,7 @@ const FundIssues = ({ issues, mode }) => {
   const tokenSelect = (id, i) => {
     configBounty(id, 'token', tokens[i])
   }
-  const amountChange = (id, value) => configBounty(id, 'amount', value)
+  const amountChange = (id, value) => configBounty(id, 'amount', parseFloat(value))
 
   const initBounties = () => {
     let bounties = {}
@@ -386,13 +428,13 @@ const FundIssues = ({ issues, mode }) => {
         repo: issue.repo,
         number: issue.number,
         repoId: issue.repoId,
-        hours: issue.hours,
+        hours: parseFloat(issue.hours),
         exp: issue.exp,
         deadline: new Date(issue.deadline),
         slots: 1,
         slotsIndex: 0,
         size: 0,
-        amount: issue.balance,
+        amount: parseFloat(issue.balance),
         token,
       }
       bounties[issue.id].size = calculateSize(bounties[issue.id])
@@ -402,7 +444,7 @@ const FundIssues = ({ issues, mode }) => {
           repo: issue.repo,
           number: issue.number,
           repoId: issue.repoId,
-          hours: 0,
+          hours: '',
           exp: 0,
           deadline: addHours(new Date(), bountySettings.bountyDeadline),
           slots: 1,
@@ -433,7 +475,7 @@ const FundIssues = ({ issues, mode }) => {
       newBounties[id][key] = val
     }
     // just do it, recalculate size
-    newBounties[id]['size'] = calculateSize(newBounties[id])
+    newBounties[id]['size'] = key === 'amount' ? val : calculateSize(newBounties[id])
     const bountyValues = Object.values(newBounties)
     const bountyTotal = bountyValues.reduce((acc,val) => BigNumber(val.size).plus(acc), 0)
       .times(10 ** tokenDetails.decimals)
@@ -458,7 +500,8 @@ const FundIssues = ({ issues, mode }) => {
     configBounty(id, 'detailsOpen')
   }
 
-  const submitBounties = async () => {
+  const submitBounties = async (e) => {
+    e.preventDefault()
     const today = new Date()
     const activity = {
       user: githubCurrentUser,
@@ -486,9 +529,9 @@ const FundIssues = ({ issues, mode }) => {
         exp: bounties[issues[key].id].exp,
         fundingHistory: bounties[issues[key].id].fundingHistory,
         deadline: bounties[issues[key].id].deadline,
-        hours: bounties[issues[key].id].hours,
+        hours: bounties[issues[key].id].hours ? bounties[issues[key].id].hours : 0,
         size: bounties[issues[key].id].size,
-        amount: bounties[issues[key].id].amount,
+        amount: bounties[issues[key].id].amount ? bounties[issues[key].id].amount : 0,
         token: bounties[issues[key].id].token,
         ...issues[key],
       })
@@ -539,6 +582,7 @@ const FundIssues = ({ issues, mode }) => {
       'ipfsAddresses', ipfsAddresses,
       'description', description
     )
+
     api.addBounties(
       repoIds,
       issueNumbers,
@@ -601,6 +645,7 @@ const FundIssues = ({ issues, mode }) => {
         submitBounties={submitBounties}
         description={description}
         generateHoursChange={generateHoursChange}
+        totalSize={totalSize}
         tokenDetails={tokenDetails}
         tokens={tokens}
         amountChange={amountChange}
@@ -664,11 +709,11 @@ const UpdateRow = styled.div`
   align-content: stretch;
   margin-bottom: ${2 * GU};
   > :first-child {
-    width: 50%;
+    width: 55%;
     padding-right: 10px;
   }
   > :last-child {
-    width: 50%;
+    width: 45%;
     padding-left: 10px;
   }
 `
@@ -702,6 +747,8 @@ const AmountInput = styled(TextInput.Number).attrs({
 const TokenInput = styled(DropDown)`
   border-radius: 0 4px 4px 0;
   left: -1px;
+  min-width: auto;
+  max-width: 120px;
 `
 const VaultDiv = styled.div`
   text-align: center;
@@ -779,6 +826,40 @@ const InfoPanel = ({ imgSrc, title, message }) => {
       </div>
     </div>
   )
+}
+
+const ErrorText = styled.div`
+  font-size: small;
+  display: flex;
+  align-items: center;
+  margin: ${2 * GU}px 0;
+`
+
+const ErrorMessage = ({ hasError, type }) => {
+  const theme = useTheme()
+  const errorMessages = {
+    amount: 'Funding amounts must be greater than zero',
+    date: 'The deadline cannot be a date in the past',
+    total: 'The funding amount being requests exceeds the available funds in the vault'
+  }
+
+  return hasError ? (
+    <ErrorText>
+      <IconClose
+        size="tiny"
+        css={{
+          marginRight: '8px',
+          color: theme.negative,
+        }}
+      />
+      {errorMessages[type]}
+    </ErrorText>
+  ) : null
+}
+
+ErrorMessage.propTypes = {
+  hasError: PropTypes.bool,
+  type: PropTypes.string,
 }
 
 export default FundIssues

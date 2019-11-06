@@ -460,7 +460,7 @@ const StyledInputDropDown = ({ children, className }) => {
           border-right: none;
         }
       }
-      > :last-child {
+      > :nth-child(2) {
         border-radius: 0 3px 3px 0;
       }
     `}>

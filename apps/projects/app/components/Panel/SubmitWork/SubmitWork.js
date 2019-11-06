@@ -32,12 +32,13 @@ const SubmitWork = ({ issue }) => {
 
   const onSubmitWork = async() => {
     const today = new Date()
+    const time = (hours === '' || hours === 0) ? '-' : hours
     const data = {
       user: githubCurrentUser,
       submissionDate: today.toISOString(),
       comments,
       proof,
-      hours,
+      hours: time,
       ack1,
       ack2,
     }
@@ -55,7 +56,7 @@ const SubmitWork = ({ issue }) => {
     ).toPromise()
   }
 
-  const canSubmit = () => !(ack1 && ack2 && proof && !isNaN(hours) && hours > 0)
+  const canSubmit = () => !(ack1 && ack2 && proof)
 
   return (
     <div css={`margin: ${2 * GU}px 0`}>
@@ -76,7 +77,7 @@ const SubmitWork = ({ issue }) => {
               value={proof}
               rows="3"
               onChange={updateProof}
-              placeholder="Please link the Github Pull Request or an alternative proof of work if requested."
+              placeholder="Add a link to your work, such as a document or a pull request."
               wide
             />
           }
@@ -86,7 +87,7 @@ const SubmitWork = ({ issue }) => {
           input={
             <TextInput.Multiline
               name="comments"
-              rows="5"
+              rows="3"
               value={comments}
               onChange={updateComments}
               placeholder="Comments or details that haven’t already been described elsewhere."
@@ -122,9 +123,7 @@ const SubmitWork = ({ issue }) => {
             <Checkbox checked={ack2} onChange={toggleAck2} />
           </div>
           <AckText color={`${theme.surfaceContentSecondary}`}>
-            I am reporting my hours honestly. I understand that this is for
-            informational purposes only and it will be used to optimize pricing
-            of future tasks.
+            I understand that reporting hours is for informational and planning purposes only.
           </AckText>
         </AckRow>
       </Form>
