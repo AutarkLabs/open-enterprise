@@ -622,7 +622,7 @@ class NewRewardClass extends React.Component {
                   this.setState({ referenceAsset })
                   if (referenceAsset !== OTHER)
                     await this.verifyTransferable(this.props.app, referenceAsset.key)
-                  this.setSemanticErrors({ referenceAsset })
+                  this.setErrors({ referenceAsset })
                 }}
               />
             }
@@ -657,7 +657,7 @@ class NewRewardClass extends React.Component {
                 placeholder="Select type of reward"
                 onChange={i => {
                   this.setState({ rewardType: REWARD_TYPES[i] })
-                  this.setSemanticErrors({ rewardType: REWARD_TYPES[i] })
+                  this.setErrors({ rewardType: REWARD_TYPES[i] })
                 }}
               />
             }
