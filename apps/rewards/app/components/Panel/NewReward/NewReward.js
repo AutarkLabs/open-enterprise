@@ -84,14 +84,13 @@ const INITIAL_STATE = {
   disbursementUnit: MONTHS,
   disbursements: [tomorrow],
   disbursementBlocks: Array(50).fill('loading...'),
-  currentBlockNumber: 0,
   draftSubmitted: false,
   errors: [],
   warnings: [],
 }
 
-const getBlockProps = (state, currentBlock) => {
-  const {
+const getBlockProps = (
+  {
     amount,
     amountToken,
     rewardType,
@@ -101,7 +100,9 @@ const getBlockProps = (state, currentBlock) => {
     disbursement,
     disbursementUnit,
     disbursements,
-  } = state
+  },
+  currentBlock
+) => {
   const BLOCK_PADDING = 1
   const amountBN = new BigNumber(amount)
   const tenBN =  new BigNumber(10)
@@ -140,7 +141,7 @@ const getBlockProps = (state, currentBlock) => {
     startBlock = dateReference <= new Date() ? currentBlock + rawBlockDuration - BLOCK_PADDING : currentBlock 
     duration = dateReference <= new Date() ? BLOCK_PADDING : rawBlockDuration
   }
-  return [ isMerit, amountWei, startBlock, duration, occurrences ]
+  return { isMerit, amountWei, startBlock, duration, occurrences }
 }
 
 class NewRewardClass extends React.Component {
@@ -207,6 +208,8 @@ class NewRewardClass extends React.Component {
   }
 
   submitDraft = () => {
+    this.props.app.web3Eth('getBlockNumber')
+      .subscribe(this.setDisbursementBlocks)
     this.setState({ draftSubmitted: true })
   }
 
@@ -732,23 +735,20 @@ class NewRewardClass extends React.Component {
     )
   }
 
-  setDisbursementBlocks = currentBlockNumber => {
-    if (currentBlockNumber === this.state.currentBlockNumber)
-      return
-    const [
+  setDisbursementBlocks = currentBlock => {
+    const {
       isMerit,
       amountWei,
       startBlock,
       duration,
       occurrences,
-    ] = getBlockProps(this.state, currentBlockNumber)
+    } = getBlockProps(this.state, currentBlock)
     const disbursementBlocks = []
     for (let i = 1; i <= occurrences; i ++) {
       const block = startBlock + duration * i
       disbursementBlocks.push(block)
     }
     this.setState({
-      currentBlockNumber,
       isMerit,
       amountWei,
       startBlock,
@@ -772,8 +772,6 @@ class NewRewardClass extends React.Component {
       disbursements,
       disbursementBlocks,
     } = this.state
-    this.props.app.web3Eth('getBlockNumber')
-      .subscribe(this.setDisbursementBlocks)
     return (
       <VerticalContainer>
         <VerticalSpace />
