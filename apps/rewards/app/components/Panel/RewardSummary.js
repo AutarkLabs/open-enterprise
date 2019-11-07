@@ -22,6 +22,7 @@ const RewardSummary = ({ reward, theme, onCancel, onSubmit }) => {
     startDate,
     endDate,
     disbursements,
+    disbursementBlocks,
   } = reward
   const { amountTokens } = useAppState()
   return (
@@ -46,12 +47,12 @@ const RewardSummary = ({ reward, theme, onCancel, onSubmit }) => {
           {rewardType === RECURRING_DIVIDEND && 's'}
         </Heading>
         {rewardType === ONE_TIME_DIVIDEND && (
-          <Content>{dateReference.toDateString()}</Content>
+          <Content>{dateReference.toDateString()} (block: {disbursementBlocks[0]})</Content>
         )}
         {rewardType === RECURRING_DIVIDEND &&
          disbursements.map((disbursement, i) => (
            <Content key={i}>
-             {disbursement.toDateString()}
+             {disbursement.toDateString()} (block: {disbursementBlocks[i]})
            </Content>
          ))}
         {rewardType === ONE_TIME_MERIT && (

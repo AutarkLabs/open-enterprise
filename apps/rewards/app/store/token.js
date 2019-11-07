@@ -1,6 +1,7 @@
 import {
   getTokenName,
   getTokenStartBlock,
+  getTokenCreationDate,
   getTokenSymbol,
   getTransferable,
   isTokenVerified,
@@ -26,6 +27,7 @@ const tokenName = new Map() // External contract -> name
 const tokenSymbols = new Map() // External contract -> symbol
 const tokensTransferable = new Map() // External contract -> symbol
 const tokenStartBlock = new Map() // External contract -> creationBlock (uint)
+const tokenCreationDate = new Map()
 
 const ETH_CONTRACT = Symbol('ETH_CONTRACT')
 
@@ -37,6 +39,7 @@ export async function initializeTokens(state, settings){
   tokenSymbols.set(ETH_CONTRACT, 'ETH')
   tokensTransferable.set(ETH_CONTRACT, true)
   tokenStartBlock.set(ETH_CONTRACT, null)
+  tokenCreationDate.set(ETH_CONTRACT, new Date(0))
 
   const withEthBalance = await loadEthBalance(state, settings)
   return { ...withEthBalance, amountTokens: [] }
@@ -81,14 +84,28 @@ export async function updateBalancesAndRefTokens({ balances = [], refTokens = []
   if (balancesIndex === -1) {
     const newBalance = await newBalanceEntry(tokenContract, tokenAddress, settings)
     let newRefTokens = Array.from(refTokens)
-    if (newBalance.startBlock) {
+    if (newBalance.startBlock !== null) {
       const refIndex = refTokens.findIndex(({ address }) =>
         addressesEqual(address, tokenAddress)
       )
 
       if (refIndex === -1) {
-        const { name, symbol, address, startBlock, decimals } = newBalance
-        newRefTokens = newRefTokens.concat({ name, symbol, address, startBlock, decimals })
+        const {
+          name,
+          symbol,
+          address,
+          startBlock,
+          creationDate,
+          decimals,
+        } = newBalance
+        newRefTokens = newRefTokens.concat({
+          name,
+          symbol,
+          address,
+          startBlock,
+          creationDate,
+          decimals,
+        })
       }
     }
     const newBalances = balances.concat(newBalance)
@@ -105,12 +122,21 @@ export async function updateBalancesAndRefTokens({ balances = [], refTokens = []
 }
 
 async function newBalanceEntry(tokenContract, tokenAddress, settings) {
-  const [ balance, decimals, name, symbol, startBlock, transfersEnabled ] = await Promise.all([
+  const [
+    balance,
+    decimals,
+    name,
+    symbol,
+    startBlock,
+    creationDate,
+    transfersEnabled,
+  ] = await Promise.all([
     loadTokenBalance(tokenAddress, settings),
     loadTokenDecimals(tokenContract, tokenAddress, settings),
     loadTokenName(tokenContract, tokenAddress, settings),
     loadTokenSymbol(tokenContract, tokenAddress, settings),
     loadTokenStartBlock(tokenContract, tokenAddress, settings),
+    loadTokenCreationDate(tokenContract, tokenAddress, settings),
     loadTransferable(tokenContract, tokenAddress, settings),
   ])
 
@@ -121,6 +147,7 @@ async function newBalanceEntry(tokenContract, tokenAddress, settings) {
     address: tokenAddress,
     amount: balance,
     startBlock,
+    creationDate,
     transfersEnabled,
     verified:
       isTokenVerified(tokenAddress, settings.network.type) ||
@@ -200,6 +227,17 @@ function loadTokenStartBlock(tokenContract, tokenAddress) {
     } else {
       const tokenStartBlock = getTokenStartBlock(app, tokenAddress)
       resolve(tokenStartBlock)
+    }
+  })
+}
+
+function loadTokenCreationDate(tokenContract, tokenAddress) {
+  return new Promise(resolve => {
+    if (tokenStartBlock.has(tokenContract)) {
+      resolve(tokenCreationDate.get(tokenContract))
+    } else {
+      const tokenCreationDate = getTokenCreationDate(app, tokenAddress)
+      resolve(tokenCreationDate)
     }
   })
 }

@@ -169,7 +169,7 @@ contract Rewards is AragonApp {
     }
 
     /**
-     * @notice Create a new `_isMerit ? 'merit reward' : 'dividend'` of `@tokenAmount(_rewardToken, _amount)` for `_referenceToken.symbol(): string` holders (`_description`)
+     * @notice Create a `_isMerit ? 'merit reward' : 'dividend'` that will distribute `@tokenAmount(_rewardToken, _amount)` to token holders who `_isMerit ? 'earned ' : 'hold '` `_referenceToken.symbol(): string` `(_occurrences > 1) ? ' from block ' + _startBlock + ' to block ' + (_startBlock + _duration) + '. This dividend will disburse every ' + _duration + ' blocks in proportion to the holders balance on the disbursement date. The first disbursement occurs at the end of the first cycle, on block ' + (_startBlock + _duration) + '.' : (_isMerit ? 'from block ' + _startBlock + 'to block ' + (_startBlock + _duration) +'.' : 'on block '+ _startBlock + '.')` (Reference: `_description`)
      * @dev This function creates a reward instance to be added to the rewards array. ID's
      *      are assigned the new intance's index of that array
      * @param _description description of the reward

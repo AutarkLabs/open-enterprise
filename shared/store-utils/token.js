@@ -61,8 +61,6 @@ const loadTokenBalances = async (state, includedTokenAddresses, settings) => {
     newBalances.map(({address}) => address).concat(includedTokenAddresses || [])
   )
   for (const address of addresses) {
-    console.log('Loading new balances')
-
     newBalances = await updateBalances(newBalances, address, settings)
   }
 
