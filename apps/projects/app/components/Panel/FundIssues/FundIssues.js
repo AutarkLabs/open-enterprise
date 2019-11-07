@@ -1,11 +1,10 @@
 /* eslint-disable react/prop-types */
 // issues are validated using correct shape - eslint problem?
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { addHours } from 'date-fns'
 import BigNumber from 'bignumber.js'
-import Icon from '../../Shared/assets/components/IconEmptyVault'
 import { useAragonApi } from '../../../api-react'
 import useGithubAuth from '../../../hooks/useGithubAuth'
 import { usePanelManagement } from '..'
@@ -15,6 +14,7 @@ import { IconOpen, IconCollapse } from '../../../assets'
 import { IconClose } from '@aragon/ui'
 import NoFunds from '../../../assets/noFunds.svg'
 import { IssueText } from '../PanelComponents'
+import { BN } from 'web3-utils'
 
 import {
   Box,
@@ -91,7 +91,7 @@ const BountyUpdate = ({
               </div>
 
               <UpdateRow>
-                { bountySettings.baseRate === 0 ? (
+                { bountySettings.fundingModel === 'Fixed' ? (
                   <FormField
                     label="Amount"
                     input={
@@ -222,16 +222,6 @@ const FundForm = ({
     setSubmitDisabled( description === '' || maxErr || amountErrArray.includes(true) || dateErrArray.includes(true))
   }, [ bounties, totalSize, description ])
 
-  if (Number(tokenDetails.balance) === 0) {
-    return (
-      <InfoPanel
-        imgSrc={NoFunds}
-        title={'No funds found.'}
-        message={'It seems that your organization has no funds available to fund issues. Navigate to the Finance app to deposit some funds first.'}
-      />
-    )
-  }
-
   return (
     <div css={`margin: ${2 * GU}px 0`}>
       <Mutation mutation={COMMENT}>
@@ -291,7 +281,7 @@ const FundForm = ({
                               align-items: stretch;
                             `}>
 
-                        {bountySettings.baseRate === 0 ? (
+                        {bountySettings.fundingModel === 'Fixed' ? (
                           <div css={`grid-area: hours; padding-left: ${2 * GU}px`}>
                             <FieldTitle>Amount</FieldTitle>
                             <HorizontalInputGroup>
@@ -407,6 +397,16 @@ const FundIssues = ({ issues, mode }) => {
       token.addr === bountySettings.bountyCurrency && setTokenDetails(token))
   }, [ bountySettings, tokens ]
   )
+
+  const fundsAvailable = useMemo(() => {
+    if (bountySettings.fundingModel === 'Hourly') {
+      return new BN(tokenDetails.balance, 10)
+    }
+    return tokens.reduce(
+      (sum, t) => sum.add(new BN(t.balance, 10)),
+      new BN(0)
+    )
+  }, [ bountySettings.fundingModel, tokens, tokenDetails.balance ])
 
   const descriptionChange = e => setDescription(e.target.value)
   const tokenSelect = (id, i) => {
@@ -545,7 +545,7 @@ const FundIssues = ({ issues, mode }) => {
     let tokenTypes = []
     for (let i = 0; i < issuesArray.length; i++) {
       const issue = issuesArray[i]
-      if (bountySettings.baseRate === 0) {
+      if (bountySettings.fundingModel === 'Fixed') {
         const tokenAddress = mode === 'update' ? issue.token : issue.token.addr
         const tokenDecimals = mode === 'update' ? 18 : issue.token.decimals
         tokenContracts.push(tokenAddress)
@@ -615,23 +615,16 @@ const FundIssues = ({ issues, mode }) => {
   const bountylessIssues = []
   const alreadyAdded = []
 
-  if (!tokens.length || !tokenDetails.balance) {
+  // FIXME: initialize bounties & tokenDetails better 😝
+  if (!tokens.length || !tokenDetails.balance) return null
+
+  if (fundsAvailable.toString() === '0') {
     return (
-      <div css={`margin-top: ${2 * GU}px`}>
-        <VaultDiv><Icon /></VaultDiv>
-        <Text color={`${theme.surfaceContentSecondary}`} size='large' >
-          <div>
-            <br />
-            Your base rate has not been set and you do not have
-            any tokens in your Vault.
-            <br /> <br />
-            Once you have tokens in your Vault, you will be
-            able to begin funding issues.
-            <br /> <br />
-            <Button wide onClick={closePanel} mode="strong">Cancel</Button>
-          </div>
-        </Text>
-      </div>
+      <InfoPanel
+        imgSrc={NoFunds}
+        title="No funds found."
+        message="It seems that your organization has no funds available to fund issues. Navigate to the Finance app to deposit some funds first."
+      />
     )
   }
 
@@ -749,9 +742,6 @@ const TokenInput = styled(DropDown)`
   left: -1px;
   min-width: auto;
   max-width: 120px;
-`
-const VaultDiv = styled.div`
-  text-align: center;
 `
 const DetailsArrow = styled.div`
   width: 24px;
