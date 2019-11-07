@@ -81,7 +81,7 @@ contract('Rewards', accounts => {
 
   context('radspec', () => {
     it.only('can evaluate radspec', async () => {
-      const expression = "Create a `_isMerit ? 'merit reward' : 'dividend'` that will distribute `@tokenAmount(_rewardToken, _amount)` to token holders who `_isMerit ? 'earned ' : 'hold '` `_referenceToken.symbol(): string` `(_occurences > 1) ? ' from block ' + _startBlock + 'to block ' + (_startBlock + _duration) + '. This dividend will disburse 'every ' + _duration + 'blocks in proportion to the holder's balance on the disbursement date. The first disbursement occurs at the end of the first cycle, on block ' + (_startBlock + _duration) + '.' : (_isMerit ? 'from block ' + _startBlock + 'to block ' + (_startBlock + _duration) +'.' : 'on'+ _startBlock + '.')` (Reference: `_description`)" //eslint-disable-line quotes
+      const expression = "Create a `_isMerit ? 'merit reward' : 'dividend'` that will distribute `@tokenAmount(_rewardToken, _amount)` to token holders who `_isMerit ? 'earned ' : 'hold '` `_referenceToken.symbol(): string` `(_occurences > 1) ? ' from block ' + _startBlock + 'to block ' + (_startBlock + _duration) + '. This dividend will disburse every ' + _duration + 'blocks in proportion to the holders balance on the disbursement date. The first disbursement occurs at the end of the first cycle, on block ' + (_startBlock + _duration) + '.' : (_isMerit ? 'from block ' + _startBlock + 'to block ' + (_startBlock + _duration) +'.' : 'on'+ _startBlock + '.')` (Reference: `_description`)" //eslint-disable-line quotes
       let blockNumber = await getBlockNumber()
       const data = app.contract.newReward.getData(
         'testReward',
