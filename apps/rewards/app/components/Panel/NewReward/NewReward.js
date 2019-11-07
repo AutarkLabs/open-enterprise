@@ -6,7 +6,6 @@ import {
   Button,
   DropDown,
   GU,
-  IconCaution,
   IconClose,
   IdentityBadge,
   Info,
@@ -58,7 +57,9 @@ const messages = {
   meritTokenTransferable: () => 'Merit rewards must be non-transferable.',
   amountOverBalance: () => 'Amount must be below the available balance.',
   dateStartAfterEnd: () => 'Start date must take place before the end date.',
-  singleDisbursement: () => 'While you selected a recurring dividend, based on your parameters, there will only be a single disbursement.',
+  noDisbursements: (disbursement, displayUnit) => `Based on your selected parameters, there will be no disbursements, as your end date falls before the end of the first cycle. Please choose an end date that is at least ${disbursement} ${displayUnit} after the start date.`,
+  singleDisbursement: (disbursement, displayUnit) => `There will only be a single reward under this policy, which will be disbursed ${disbursement} ${displayUnit} after your chosen start date. Dates are approximate as disbursements occur based on block number.`,
+  multipleDisbursements: (disbursement, displayUnit) => `The first reward under this policy will be disbursed ${disbursement} ${displayUnit} after your chosen start date, and repeat every ${disbursement} ${displayUnit} until your chosen end date. Dates are approximate as disbursements occur based on block number.`,
   dateBeforeAsset: (dateType, tokenSymbol) => `The selected ${dateType} date occurs before the reference asset, ${tokenSymbol}, was created. Please choose another date.`,
 }
 
@@ -166,7 +167,7 @@ class NewRewardClass extends React.Component {
     if (isNaN(disbursement) || disbursement <= 0 ||
         this.state.rewardType !== RECURRING_DIVIDEND) {
       this.setState({ disbursements: [] })
-      this.setErrors({ dateStart, dateEnd })
+      this.setErrors({ dateStart, dateEnd, disbursement })
       return
     }
     const date = moment(dateStart).add(disbursement, disbursementUnit)
@@ -176,7 +177,13 @@ class NewRewardClass extends React.Component {
       date.add(disbursement, disbursementUnit)
     }
     this.setState({ disbursements })
-    this.setErrors({ dateStart, dateEnd, disbursements })
+    this.setErrors({
+      dateStart,
+      dateEnd,
+      disbursement,
+      disbursementUnit,
+      disbursements,
+    })
   }
 
   changeField = ({ target: { name, value } }) => {
@@ -265,6 +272,9 @@ class NewRewardClass extends React.Component {
   setErrors = (changed) => {
     const state = { ...this.state, ...changed }
     const {
+      disbursements,
+      disbursement,
+      disbursementUnit,
       referenceAsset,
       customToken,
       rewardType,
@@ -300,9 +310,17 @@ class NewRewardClass extends React.Component {
         isBefore(dateReference, creationDate)) {
       errors.push(messages.dateBeforeAsset('reference', symbol))
     }
-    if (rewardType === RECURRING_DIVIDEND &&
-        state.disbursements.length <= 1)
-      warnings.push(messages.singleDisbursement())
+    if (rewardType === RECURRING_DIVIDEND && disbursement !== '') {
+      const displayUnit = (disbursement === '1' ?
+        disbursementUnit.slice(0, -1) : disbursementUnit).toLowerCase()
+      if (disbursements.length === 0)
+        errors.push(messages.noDisbursements(disbursement, displayUnit))
+      else if (disbursements.length === 1)
+        warnings.push(messages.singleDisbursement(disbursement, displayUnit))
+      else warnings.push(
+        messages.multipleDisbursements(disbursement, displayUnit)
+      )
+    }
 
     this.setState({ errors, warnings })
   }
@@ -615,30 +633,8 @@ class NewRewardClass extends React.Component {
   ))
 
   warningBlocks = () => this.state.warnings.map(warning => (
-    <ErrorText key={warning}>
-      <IconContainer>
-        <IconCaution
-          size="tiny"
-          css={{
-            marginRight: '8px',
-            color: this.props.theme.warningSurfaceContent,
-          }}
-        />
-      </IconContainer>
-      <Text>{warning}</Text>
-    </ErrorText>
+    <Info key={warning}>{warning}</Info>
   ))
-
-  recurringDividendInfo = () => {
-    const { disbursement, disbursementUnit, rewardType } = this.state
-    return rewardType === 'Recurring Dividend' && (
-      <Info>
-        The first reward under this policy will be disbursed {disbursement} {disbursementUnit.slice(0, disbursement > 1 ? disbursementUnit.length : -1).toLowerCase()} after 
-        your chosen start date, and repeat every {disbursement} {disbursementUnit.slice(0, disbursement > 1 ? disbursementUnit.length : -1).toLowerCase()} until your chosen 
-        end date. Dates are approximate as our disbursements occur based on block number.
-      </Info>
-    )
-  }
 
   showDraft = () => {
     const { rewardType } = this.state
@@ -729,7 +725,6 @@ class NewRewardClass extends React.Component {
           />
           {this.fieldsToDisplay()}
         </Form>
-        { this.isDraftValid() && this.recurringDividendInfo() }
       </React.Fragment>
     )
   }
