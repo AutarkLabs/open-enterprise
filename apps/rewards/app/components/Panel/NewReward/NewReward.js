@@ -134,7 +134,6 @@ const getBlockProps = (
     default:
       duration = millisecondsToBlocks(Date.now(), disbursement * MILLISECONDS_IN_A_MONTH + Date.now())
     }
-    startBlock -= duration
   }
   if(rewardType === ONE_TIME_DIVIDEND){
     const rawBlockDuration = millisecondsToBlocks(Date.now(), dateReference)
