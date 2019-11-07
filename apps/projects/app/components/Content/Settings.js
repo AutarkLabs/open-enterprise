@@ -33,8 +33,7 @@ const fundingModels = [
   'Hourly',
 ]
 
-const GitHubConnect = ({ onLogin, onLogout, status }) => {
-  const user = useGithubAuth()
+const GitHubConnect = ({ onLogin, onLogout, user, status }) => {
   const theme = useTheme()
   const auth = status === STATUS.AUTHENTICATED
 
@@ -72,6 +71,7 @@ const GitHubConnect = ({ onLogin, onLogout, status }) => {
 GitHubConnect.propTypes = {
   onLogin: PropTypes.func.isRequired,
   onLogout: PropTypes.func.isRequired,
+  user: PropTypes.object.isRequired,
   status: PropTypes.string.isRequired,
 }
 
@@ -271,6 +271,7 @@ const Settings = ({ onLogin }) => {
   const [ settingsLoaded, setSettingsLoaded ] = useState(false)
 
   const { api, appState } = useAragonApi()
+  const user = useGithubAuth()
   const network = useNetwork()
   const { layoutName } = useLayout()
   const {
@@ -359,11 +360,11 @@ const Settings = ({ onLogin }) => {
     })
   }
 
-  if (!settingsLoaded)
+  if (!settingsLoaded  || !user.avatarUrl)
     return (
       <EmptyWrapper>
         <Text size="large" css={`margin-bottom: ${3 * GU}px`}>
-          Loading settings...
+          Loading...
         </Text>
         <LoadingAnimation />
       </EmptyWrapper>
@@ -382,6 +383,7 @@ const Settings = ({ onLogin }) => {
         <GitHubConnect
           onLogin={onLogin}
           onLogout={handleLogout}
+          user={user}
           status={github.status}
         />
       </div>
