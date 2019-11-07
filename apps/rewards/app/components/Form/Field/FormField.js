@@ -40,7 +40,7 @@ const FormField = ({
               alignItems: 'center',
             }}
           >
-            <Help >
+            <Help hint="">
               {hint}
             </Help>
           </div>
@@ -61,7 +61,7 @@ FormField.propTypes = {
   input: PropTypes.node,
   label: PropTypes.string,
   required: PropTypes.bool,
-  hint: PropTypes.string,
+  hint: PropTypes.node,
   separator: PropTypes.bool,
   width: PropTypes.string,
 }
