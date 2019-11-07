@@ -33,28 +33,21 @@ const fundingModels = [
   'Hourly',
 ]
 
-const GitHubConnect = ({ onLogin, onLogout, status }) => {
-  const user = useGithubAuth()
+const GitHubConnect = ({ onLogin, onLogout, user, status }) => {
   const theme = useTheme()
   const auth = status === STATUS.AUTHENTICATED
 
   const bodyText = auth ? (
     <Text size="large" css="display: flex; align-items: center">
       Logged in as
-      {user.avatarUrl ? (
-        <React.Fragment>
-          <img src={user.avatarUrl ? user.avatarUrl : ''} alt="user avatar" css="margin: 8px; width: 50px; border-radius: 50%;" />
-          <Link
-            href={user.url}
-            target="_blank"
-            style={{ textDecoration: 'none', color: `${theme.link}` }}
-          >
-            {user.login}
-          </Link>
-        </React.Fragment>
-      ) : (
-        <span css="margin: 8px; height: 50px;"></span>
-      )}
+      <img src={user.avatarUrl} alt="user avatar" css="margin: 8px; width: 50px; border-radius: 50%;" />
+      <Link
+        href={user.url}
+        target="_blank"
+        style={{ textDecoration: 'none', color: `${theme.link}` }}
+      >
+        {user.login}
+      </Link>
     </Text>
   ) : (
     <span css="line-height: 50px;">The Projects app uses GitHub to interact with issues.</span>
@@ -79,6 +72,7 @@ const GitHubConnect = ({ onLogin, onLogout, status }) => {
 GitHubConnect.propTypes = {
   onLogin: PropTypes.func.isRequired,
   onLogout: PropTypes.func.isRequired,
+  user: PropTypes.object.isRequired,
   status: PropTypes.string.isRequired,
 }
 
@@ -278,6 +272,7 @@ const Settings = ({ onLogin }) => {
   const [ settingsLoaded, setSettingsLoaded ] = useState(false)
 
   const { api, appState } = useAragonApi()
+  const user = useGithubAuth()
   const network = useNetwork()
   const { layoutName } = useLayout()
   const {
@@ -366,11 +361,11 @@ const Settings = ({ onLogin }) => {
     })
   }
 
-  if (!settingsLoaded)
+  if (!settingsLoaded  || !user.avatarUrl)
     return (
       <EmptyWrapper>
         <Text size="large" css={`margin-bottom: ${3 * GU}px`}>
-          Loading settings...
+          Loading...
         </Text>
         <LoadingAnimation />
       </EmptyWrapper>
@@ -389,6 +384,7 @@ const Settings = ({ onLogin }) => {
         <GitHubConnect
           onLogin={onLogin}
           onLogout={handleLogout}
+          user={user}
           status={github.status}
         />
       </div>
