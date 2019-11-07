@@ -186,18 +186,17 @@ class App extends React.Component {
       reward.occurances = reward.disbursements.length
       switch (reward.disbursementUnit) {
       case 'Days':
-        reward.duration = millisecondsToBlocks(Date.now(), MILLISECONDS_IN_A_DAY + Date.now())
+        reward.duration = millisecondsToBlocks(Date.now(), reward.disbursement * MILLISECONDS_IN_A_DAY + Date.now())
         break
       case 'Weeks':
-        reward.duration = millisecondsToBlocks(Date.now(), MILLISECONDS_IN_A_WEEK + Date.now())
+        reward.duration = millisecondsToBlocks(Date.now(), reward.disbursement * MILLISECONDS_IN_A_WEEK + Date.now())
         break
       case 'Years':
-        reward.duration = millisecondsToBlocks(Date.now(), MILLISECONDS_IN_A_YEAR + Date.now())
+        reward.duration = millisecondsToBlocks(Date.now(), reward.disbursement * MILLISECONDS_IN_A_YEAR + Date.now())
         break
       default: // Monthly
-        reward.duration = millisecondsToBlocks(Date.now(), MILLISECONDS_IN_A_MONTH + Date.now())
+        reward.duration = millisecondsToBlocks(Date.now(), reward.disbursement * MILLISECONDS_IN_A_MONTH + Date.now())
       }
-      startBlock -= reward.duration
     }
     if(reward.rewardType === ONE_TIME_DIVIDEND){
       const rawBlockDuration = millisecondsToBlocks(Date.now(), reward.dateReference)
