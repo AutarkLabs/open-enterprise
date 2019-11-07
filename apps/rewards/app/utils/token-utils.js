@@ -77,8 +77,7 @@ export async function getTokenName(app, address) {
 }
 
 export async function getTokenStartBlock(app, address) {
-  // creation block is optional; note that aragon.js doesn't return an error (only an falsey value) when
-  // getting this value fails. It's only available for MiniMe Tokens
+  // creation block is optional; It's only available for MiniMe Tokens
   let token = app.external(address, tokenCreationBlockAbi)
   let tokenStartBlock
   try {
@@ -91,17 +90,22 @@ export async function getTokenStartBlock(app, address) {
 }
 
 export async function getTokenCreationDate(app, address) {
+  // creation Date is optional; It's only available for MiniMe Tokens
   const token = app.external(address, tokenCreationBlockAbi)
-  const creationBlockNumber = await token.creationBlock().toPromise()
-  const creationBlock = await app.web3Eth('getBlock', creationBlockNumber)
-    .toPromise()
-  const creationDate = new Date(creationBlock.timestamp * 1000)
-  return creationDate
+  try {
+    const creationBlockNumber = await token.creationBlock().toPromise()
+    const creationBlock = await app.web3Eth('getBlock', creationBlockNumber)
+      .toPromise()
+    const creationDate = new Date(creationBlock.timestamp * 1000)
+    return creationDate
+  }
+  catch (e) {
+    return new Date(0)
+  }
 }
 
 export async function getTransferable(app, address) {
-  // creation block is optional; note that aragon.js doesn't return an error (only an falsey value) when
-  // getting this value fails. It's only available for MiniMe Tokens
+  // creation block is optional; It's only available for MiniMe Tokens
   let token = app.external(address, tokenTransferAbi)
   let transferable 
   try {
