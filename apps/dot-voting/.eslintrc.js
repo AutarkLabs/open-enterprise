@@ -37,14 +37,14 @@ module.exports = {
     ],
     'func-style': ["warn", "declaration", { "allowArrowFunctions": true }],
     'object-curly-spacing': ['error', 'always'],
-    "import/no-unused-modules": [
-      "warn",
-      {
-        unusedExports: true,
-        missingExports: true,
-        ignoreExports: [],
-      }
-    ],
+    //"import/no-unused-modules": [
+    //  "warn",
+    //  {
+    //    unusedExports: true,
+    //    missingExports: true,
+    //    ignoreExports: [],
+    //  }
+    //],
     "no-undef": "error",
     "no-unused-vars": ["warn", { "vars": "all", "args": "after-used", "ignoreRestSiblings": false }],
     'no-console': ['warn', { allow: ['warn', 'error'] }],
