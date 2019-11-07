@@ -106,7 +106,8 @@ class NewRewardClass extends React.Component {
       this.setErrors({ dateStart, dateEnd })
       return
     }
-    let date = moment(dateStart), disbursements = []
+    const date = moment(dateStart).add(disbursement, disbursementUnit)
+    const disbursements = []
     while (!date.isAfter(dateEnd, 'days')) {
       disbursements.push(date.toDate())
       date.add(disbursement, disbursementUnit)
@@ -154,6 +155,7 @@ class NewRewardClass extends React.Component {
       amount,
       amountToken,
       disbursement,
+      disbursements,
       errors,
     } = this.state
     const valid = (
@@ -164,7 +166,9 @@ class NewRewardClass extends React.Component {
         rewardType !== null && (
         rewardType !== RECURRING_DIVIDEND || (
           !isNaN(disbursement) && +disbursement > 0 &&
-              Math.floor(disbursement) === +disbursement
+              Math.floor(disbursement) === +disbursement 
+        ) && (
+          !!disbursements.length
         )
       ) &&
         errors.length === 0
@@ -560,94 +564,108 @@ class NewRewardClass extends React.Component {
     </ErrorText>
   ))
 
+  recurringDividendInfo = () => {
+    const { disbursement, disbursementUnit, rewardType } = this.state
+    return rewardType === 'Recurring Dividend' && (
+      <Info>
+        The first reward under this policy will be disbursed {disbursement} {disbursementUnit.slice(0, disbursement > 1 ? disbursementUnit.length : -1).toLowerCase()} after 
+        your chosen start date, and repeat every {disbursement} {disbursementUnit.slice(0, disbursement > 1 ? disbursementUnit.length : -1).toLowerCase()} until your chosen 
+        end date. Dates are approximate as our disbursements occur based on block number.
+      </Info>
+    )
+  }
+
   showDraft = () => {
     const { rewardType } = this.state
     return (
-      <Form
-        onSubmit={this.submitDraft}
-        submitText="Continue"
-        disabled={!this.isDraftValid()}
-        errors={
-          <React.Fragment>
-            { this.errorBlocks() }
-            { this.warningBlocks() }
-          </React.Fragment>
-        }
-      >
-        <VerticalSpace />
-        <FormField
-          label="Description"
-          required
-          input={
-            <TextInput
-              name="description"
-              wide
-              multiline
-              placeholder="Briefly describe this reward."
-              value={this.state.description}
-              onChange={e => this.setState({ description: e.target.value })}
-            />
+      <React.Fragment>
+        <Form
+          onSubmit={this.submitDraft}
+          submitText="Continue"
+          disabled={!this.isDraftValid()}
+          errors={
+            <React.Fragment>
+              { this.errorBlocks() }
+              { this.warningBlocks() }
+            </React.Fragment>
           }
-        />
-        <FormField
-          required
-          wide
-          label="Reference Asset"
-          hint={<span>The <b>reference asset</b> is the token that members will be required to hold in order to receive the reward. For example, if the reference asset is ANT, then any member that holds ANT at the reference date(s) will be eligible to receive the reward. The reference asset is not the token to be paid as reward amount.</span>}
-          input={
-            <DropDown
-              name="referenceAsset"
-              wide
-              items={this.state.referenceAssets}
-              selected={this.state.referenceAssets.indexOf(this.state.referenceAsset)}
-              placeholder="Select a token"
-              onChange={async (i) => {
-                const referenceAsset = this.state.referenceAssets[i]
-                this.setState({ referenceAsset })
-                if (referenceAsset !== OTHER)
-                  await this.verifyTransferable(this.props.app, referenceAsset.key)
-                this.setErrors({ referenceAsset })
-              }}
-            />
-          }
-        />
-        {this.state.referenceAsset === OTHER && (
-          <React.Fragment>
-            <FormField
-              label={this.onMainNet() ? this.state.labelCustomToken : 'TOKEN ADDRESS'}
-              required
-              input={
-                <TextInput
-                  name="customToken"
-                  placeholder={this.onMainNet() ? 'SYM…' : ''}
-                  wide
-                  value={this.state.customToken.value}
-                  onChange={this.handleCustomTokenChange}
-                />
-              }
-            />
-          </React.Fragment>
-        )}
-        <FormField
-          required
-          label="Type"
-          hint="Rewards can either be dividends or merits. Dividends are rewards that are distributed based on holding the reference asset at the reference date(s), and they can either be one-time or recurring. Merits can only be one-time, and are based on the newly accrued amount of a particular token over a specified period of time."
-          input={
-            <DropDown
-              wide
-              name="rewardType"
-              items={REWARD_TYPES}
-              selected={REWARD_TYPES.indexOf(rewardType)}
-              placeholder="Select type of reward"
-              onChange={i => {
-                this.setState({ rewardType: REWARD_TYPES[i] })
-                this.setErrors({ rewardType: REWARD_TYPES[i] })
-              }}
-            />
-          }
-        />
-        {this.fieldsToDisplay()}
-      </Form>
+        >
+          <VerticalSpace />
+          <FormField
+            label="Description"
+            required
+            input={
+              <TextInput
+                name="description"
+                wide
+                multiline
+                placeholder="Briefly describe this reward."
+                value={this.state.description}
+                onChange={e => this.setState({ description: e.target.value })}
+              />
+            }
+          />
+          <FormField
+            required
+            wide
+            label="Reference Asset"
+            hint={<span>The <b>reference asset</b> is the token that members will be required to hold in order to receive the reward. For example, if the reference asset is ANT, then any member that holds ANT at the reference date(s) will be eligible to receive the reward. The reference asset is not the token to be paid as reward amount.</span>}
+            input={
+              <DropDown
+                name="referenceAsset"
+                wide
+                items={this.state.referenceAssets}
+                selected={this.state.referenceAssets.indexOf(this.state.referenceAsset)}
+                placeholder="Select a token"
+                onChange={async (i) => {
+                  const referenceAsset = this.state.referenceAssets[i]
+                  this.setState({ referenceAsset })
+                  if (referenceAsset !== OTHER)
+                    await this.verifyTransferable(this.props.app, referenceAsset.key)
+                  this.setSemanticErrors({ referenceAsset })
+                }}
+              />
+            }
+          />
+          {this.state.referenceAsset === OTHER && (
+            <React.Fragment>
+              <FormField
+                label={this.onMainNet() ? this.state.labelCustomToken : 'TOKEN ADDRESS'}
+                required
+                input={
+                  <TextInput
+                    name="customToken"
+                    placeholder={this.onMainNet() ? 'SYM…' : ''}
+                    wide
+                    value={this.state.customToken.value}
+                    onChange={this.handleCustomTokenChange}
+                  />
+                }
+              />
+            </React.Fragment>
+          )}
+          <FormField
+            required
+            label="Type"
+            hint="Rewards can either be dividends or merits. Dividends are rewards that are distributed based on holding the reference asset at the reference date(s), and they can either be one-time or recurring. Merits can only be one-time, and are based on the newly accrued amount of a particular token over a specified period of time."
+            input={
+              <DropDown
+                wide
+                name="rewardType"
+                items={REWARD_TYPES}
+                selected={REWARD_TYPES.indexOf(rewardType)}
+                placeholder="Select type of reward"
+                onChange={i => {
+                  this.setState({ rewardType: REWARD_TYPES[i] })
+                  this.setSemanticErrors({ rewardType: REWARD_TYPES[i] })
+                }}
+              />
+            }
+          />
+          {this.fieldsToDisplay()}
+        </Form>
+        { this.isDraftValid() && this.recurringDividendInfo() }
+      </React.Fragment>
     )
   }
 

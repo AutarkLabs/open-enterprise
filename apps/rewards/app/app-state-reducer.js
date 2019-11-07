@@ -23,7 +23,8 @@ function appStateReducer(state) {
     state.claims = state.claims  || []
     state.rewards = state.rewards === [] ? [] : state.rewards.reduce((rewards, reward) => {
       const currentReward = reward.isMerit ? undefined : rewards.find(filteredElement => {
-        return filteredElement.description === reward.description && parseInt(filteredElement.rewardId, 10) + filteredElement.occurances === parseInt(reward.rewardId)
+        return filteredElement.description === reward.description && parseInt(filteredElement.rewardId, 10) + filteredElement.occurances === parseInt(reward.rewardId) && 
+        reward.amount === filteredElement.amount && filteredElement.duration === reward.duration
       })
       if(currentReward !== undefined){
         currentReward.occurances += 1
