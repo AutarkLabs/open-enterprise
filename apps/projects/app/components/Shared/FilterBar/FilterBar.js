@@ -10,13 +10,18 @@ import {
   IconSearch,
   IconCheck,
   Popover,
-  Tag,
   Text,
   TextInput,
   useLayout,
   useTheme,
 } from '@aragon/ui'
 import { FilterDropDown, OverflowDropDown } from './FilterDropDown'
+import {
+  OptionsProjects,
+  OptionsLabels,
+  OptionsMilestones,
+  OptionsStatuses,
+} from './FiltersOptions'
 import ActiveFilters from '../../Content/Filters'
 import prepareFilters from './prepareFilters'
 import { IconArrow as IconArrowDown } from '../../../../../../shared/ui'
@@ -280,7 +285,6 @@ const FilterBar = ({
   const [ actionsMenuVisible, setActionsMenuVisible ] = useState(false)
   const [ textFilterVisible, setTextFilterVisible ] = useState(false)
   const [ filtersDisplayNumber, setFiltersDisplayNumber ] = useState(10)
-  const theme = useTheme()
   const actionsOpener = useRef(null)
   const sortersOpener = useRef(null)
   const textFilterOpener = useRef(null)
@@ -315,8 +319,6 @@ const FilterBar = ({
     onSearchChange(e)
   }
 
-  const noop = () => {}
-
   const filter = (type, id) => () => {
     if (id in filters[type]) delete filters[type][id]
     else filters[type][id] = true
@@ -330,186 +332,6 @@ const FilterBar = ({
     handleSorting(way)
     setSortBy(way)
     setSortMenuVisible(false)
-  }
-
-  const FilterByProject = ({ filters, filtersData }) => (
-    <FilterDropDown
-      caption="Projects"
-      enabled={Object.keys(filtersData.projects).length > 0}
-    >
-      {Object.keys(filtersData.projects)
-        .sort(
-          (p1, p2) =>
-            filtersData.projects[p1].name < filtersData.projects[p2].name
-              ? -1
-              : 1
-        )
-        .map(id => (
-          <FilterMenuItem
-            key={id}
-            onClick={filter('projects', id)}
-          >
-            <div>
-              <Checkbox
-                onChange={noop}
-                checked={id in filters.projects}
-              />
-            </div>
-            <ActionLabel>
-              {filtersData.projects[id].name} (
-              {filtersData.projects[id].count})
-            </ActionLabel>
-          </FilterMenuItem>
-        ))}
-    </FilterDropDown>
-  )
-  FilterByProject.propTypes = {
-    filters: PropTypes.object.isRequired,
-    filtersData: PropTypes.object.isRequired,
-  }
-
-  const FilterByLabel = ({ filters, filtersData }) => (
-    <FilterDropDown
-      caption="Labels"
-      enabled={Object.keys(filtersData.labels).length > 0}
-    >
-      {Object.keys(filtersData.labels)
-        .sort((l1, l2) => {
-          if (l1 === 'labelless') return -1
-          if (l2 === 'labelless') return 1
-          return filtersData.labels[l1].name < filtersData.labels[l2].name
-            ? -1
-            : 1
-        })
-        .map(id => {
-          const decoration = filtersData.labels[id].color ?
-            { background: '#' + filtersData.labels[id].color + '99' }
-            :
-            {
-              style: { border: `1px solid ${theme.border}` },
-              background: `#${theme.white}`
-            }
-          return (
-            <FilterMenuItem
-              key={id}
-              onClick={filter('labels', id)}
-            >
-              <div>
-                <Checkbox
-                  onChange={noop}
-                  checked={id in filters.labels}
-                />
-              </div>
-              <ActionLabel>
-                <Tag
-                  {...decoration}
-                  color={`${theme.surfaceContent}`}
-                  uppercase={false}
-                >
-                  {filtersData.labels[id].name}
-                </Tag>{' '}
-              ({filtersData.labels[id].count})
-              </ActionLabel>
-            </FilterMenuItem>
-          )}
-        )}
-    </FilterDropDown>
-  )
-  FilterByLabel.propTypes = {
-    filters: PropTypes.object.isRequired,
-    filtersData: PropTypes.object.isRequired,
-  }
-
-  const FilterByMilestone = ({ filters, filtersData }) => (
-    <FilterDropDown
-      caption="Milestones"
-      enabled={Object.keys(filtersData.milestones).length > 0}
-    >
-      {Object.keys(filtersData.milestones)
-        .sort((m1, m2) => {
-          if (m1 === 'milestoneless') return -1
-          if (m2 === 'milestoneless') return 1
-          return filtersData.milestones[m1].title <
-        filtersData.milestones[m2].title
-            ? -1
-            : 1
-        })
-        .map(id => (
-          <FilterMenuItem
-            key={id}
-            onClick={filter('milestones', id)}
-          >
-            <div>
-              <Checkbox
-                onChange={noop}
-                checked={id in filters.milestones}
-              />
-            </div>
-            <ActionLabel>
-              {filtersData.milestones[id].title} (
-              {filtersData.milestones[id].count})
-            </ActionLabel>
-          </FilterMenuItem>
-        ))}
-    </FilterDropDown>
-  )
-  FilterByMilestone.propTypes = {
-    filters: PropTypes.object.isRequired,
-    filtersData: PropTypes.object.isRequired,
-  }
-
-  const FilterByStatus = ({ filters, filtersData, allFundedIssues, allIssues }) => (
-    <FilterDropDown
-      caption="Status"
-      enabled={Object.keys(filtersData.statuses).length > 0}
-    >
-      {allFundedIssues.map(status => (
-        <FilterMenuItem
-          key={status}
-          onClick={filter('statuses', status)}
-        >
-          <div>
-            <Checkbox
-              onChange={noop}
-              checked={status in filters.statuses}
-            />
-          </div>
-          <ActionLabel>
-            {filtersData.statuses[status].name} (
-            {filtersData.statuses[status].count})
-          </ActionLabel>
-        </FilterMenuItem>
-      ))}
-      <hr css={`
-        height: 1px;
-        border: 0;
-        width: 100%;
-        background: ${theme.border};
-      `} />
-      {allIssues.map(status => (
-        <FilterMenuItem
-          key={status}
-          onClick={filter('statuses', status)}
-        >
-          <div>
-            <Checkbox
-              onChange={noop}
-              checked={status in filters.statuses}
-            />
-          </div>
-          <ActionLabel>
-            {filtersData.statuses[status].name} (
-            {filtersData.statuses[status].count})
-          </ActionLabel>
-        </FilterMenuItem>
-      ))}
-    </FilterDropDown>
-  )
-  FilterByStatus.propTypes = {
-    filters: PropTypes.object.isRequired,
-    filtersData: PropTypes.object.isRequired,
-    allFundedIssues: PropTypes.array.isRequired,
-    allIssues: PropTypes.array.isRequired,
   }
 
   // filters contain information about active filters (checked checkboxes)
@@ -531,17 +353,28 @@ const FilterBar = ({
           <SelectAll>
             <Checkbox onChange={handleSelectAll} checked={allSelected} />
           </SelectAll>
+
           <Overflow filtersDisplayNumber={filtersDisplayNumber}>
-            <FilterByProject filters={filters} filtersData={filtersData} />
-            <FilterByLabel filters={filters} filtersData={filtersData} />
-            <FilterByMilestone filters={filters} filtersData={filtersData} />
-            <FilterByStatus
-              filters={filters}
-              filtersData={filtersData}
-              allFundedIssues={allFundedIssues}
-              allIssues={allIssues}
-            />
+            <FilterDropDown caption="Projects" enabled={false}>
+              <OptionsProjects onClick={filter} filters={filters} projects={filtersData.projects} />
+            </FilterDropDown>
+            <FilterDropDown caption="Labels" enabled={Object.keys(filtersData.labels).length > 0}>
+              <OptionsLabels onClick={filter} filters={filters} labels={filtersData.labels} />
+            </FilterDropDown>
+            <FilterDropDown caption="Milestones" enabled={Object.keys(filtersData.milestones).length > 0}>
+              <OptionsMilestones onClick={filter} filters={filters} milestones={filtersData.milestones} />
+            </FilterDropDown>
+            <FilterDropDown caption="Status" enabled={Object.keys(filtersData.statuses).length > 0}>
+              <OptionsStatuses
+                onClick={filter}
+                filters={filters}
+                statuses={filtersData.statuses}
+                allFundedIssues={allFundedIssues}
+                allIssues={allIssues}
+              />
+            </FilterDropDown>
           </Overflow>
+
         </FilterBarMainLeft>
 
         <FilterBarMainRight ref={rightFBRef}>

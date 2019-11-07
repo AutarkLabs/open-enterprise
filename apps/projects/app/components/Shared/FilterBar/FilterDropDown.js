@@ -24,11 +24,11 @@ SpringWrap.propTypes = {
   handleClickOut: PropTypes.func.isRequired,
 }
 
-export const OverflowDropDown = ({ children, enabled }) => {
+export const OverflowDropDown = ({ children }) => {
   const [ opened, setOpened ] = useState(false)
   const handleClickOut = () => setOpened(false)
   const handleBaseButtonClick = () => {
-    if (enabled) setOpened(!opened)
+    setOpened(!opened)
   }
 
   return (
@@ -37,7 +37,6 @@ export const OverflowDropDown = ({ children, enabled }) => {
         <Main>
           <FilterButton
             onClick={handleBaseButtonClick}
-            disabled={!enabled}
             width="40px"
           >
             <IconMore />
@@ -54,10 +53,6 @@ export const OverflowDropDown = ({ children, enabled }) => {
 }
 OverflowDropDown.propTypes = {
   children: PropTypes.node.isRequired,
-  enabled: PropTypes.bool.isRequired,
-}
-OverflowDropDown.defaultProps = {
-  enabled: true,
 }
 
 export const FilterDropDown = ({ caption, children, enabled }) => {
