@@ -115,6 +115,7 @@ const App = () => {
 
   const closePanel = () => {
     setPanelOpen(false)
+    setPanel(null)
   }
 
   const closeModal = () => {
