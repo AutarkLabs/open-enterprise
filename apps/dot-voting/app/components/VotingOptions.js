@@ -1,6 +1,6 @@
 import React from 'react'
 import { Spring, config as springs } from 'react-spring'
-import { GU, Text, theme } from '@aragon/ui'
+import { GU, Text, useTheme } from '@aragon/ui'
 import VotingOption from './VotingOption'
 import { safeDiv } from '../utils/math-utils'
 import PropTypes from 'prop-types'
@@ -16,6 +16,7 @@ class VotingOptions extends React.Component {
     voteOpen: true,
     balance: 0,
     symbol: '',
+    decimals: '18',
     // animationDelay can also be a number to disable the random delay
     animationDelay: { min: ANIM_DELAY_MIN, max: ANIM_DELAY_MAX },
     displayYouBadge: false,
@@ -30,6 +31,7 @@ class VotingOptions extends React.Component {
     voteOpen: PropTypes.bool,
     balance: PropTypes.number,
     symbol: PropTypes.string,
+    decimals: PropTypes.number,
     animationDelay: PropTypes.object.isRequired,
     displayYouBadge: PropTypes.bool,
   }
@@ -48,7 +50,17 @@ class VotingOptions extends React.Component {
 
   render() {
     const { delay } = this.state
-    const { options, totalSupport, color, voteWeights, voteOpen, balance, symbol, displayYouBadge } = this.props
+    const { options,
+      totalSupport,
+      color,
+      voteWeights,
+      voteOpen,
+      balance,
+      symbol,
+      decimals,
+      displayYouBadge
+    } = this.props
+
     return (
       <React.Fragment>
         {options.map((option, i) =>
@@ -62,12 +74,14 @@ class VotingOptions extends React.Component {
           >
             {({ value }) => {
               const percentage = safeDiv(parseInt(option.value, 10), totalSupport)
-
+              const formattedBalance = BigNumber(balance).div(BigNumber(10 ** decimals))
               let allocation
               if(!voteOpen && symbol) {
-                allocation = <Text size="xsmall" color={theme.textTertiary} css={`margin-left: ${0.25 * GU}px`}>
-                  {`(${BigNumber(balance).times(percentage).dp(3).toString()} ${symbol})`}
-                </Text>
+                allocation = <AllocationText
+                  balance={formattedBalance}
+                  percentage={percentage}
+                  symbol={symbol}
+                />
               }
 
               return (
@@ -87,6 +101,21 @@ class VotingOptions extends React.Component {
       </React.Fragment>
     )
   }
+}
+
+const AllocationText = ({ balance, percentage, symbol }) => {
+  const theme = useTheme()
+  return (
+    <Text size="xsmall" color={theme.contentSecondary} css={`margin-left: ${0.25 * GU}px`}>
+      {`(${balance.times(percentage).dp(3).toString()} ${symbol})`}
+    </Text>
+  )
+}
+
+AllocationText.propTypes = {
+  balance: PropTypes.object.isRequired,
+  percentage: PropTypes.number.isRequired,
+  symbol: PropTypes.string.isRequired,
 }
 
 export default VotingOptions

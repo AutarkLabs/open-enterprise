@@ -30,7 +30,7 @@ const VoteDetails = ({ vote, onVote }) => {
     if (tokenContract && connectedAccount) {
       tokenContract.decimals()
         .subscribe(decimals => {
-          setDecimals(decimals)
+          setDecimals(parseInt(decimals))
         })
     }
   }, [ connectedAccount, tokenContract ])
@@ -111,9 +111,8 @@ const VoteDetails = ({ vote, onVote }) => {
             ) : (
               <VotingResults
                 vote={vote}
-                options={vote.data.options}
                 voteWeights={voteWeights}
-                balance={(type === 'allocation') ? BigNumber(vote.data.balance).div(BigNumber(10 ** decimals)).toNumber() : 0}
+                decimals={decimals}
               />
             )}
           </div>

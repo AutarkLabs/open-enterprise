@@ -8,7 +8,7 @@ import VotingOptions from '../VotingOptions'
 import Label from './Label'
 import VoteEnact from './VoteEnact'
 
-const VotingResults = ({ vote, voteWeights, balance }) => {
+const VotingResults = ({ vote, voteWeights, decimals }) => {
   const theme = useTheme()
   const { appState: { globalMinQuorum = 0 } } = useAragonApi()
 
@@ -33,8 +33,9 @@ const VotingResults = ({ vote, voteWeights, balance }) => {
           color={`${theme.accent}`}
           voteWeights={voteWeights}
           voteOpen={vote.open}
-          balance={balance}
+          balance={vote.data.balance}
           symbol={vote.data.tokenSymbol}
+          decimals={decimals}
           displayYouBadge={true}
         />
       </div>
@@ -49,7 +50,7 @@ const VotingResults = ({ vote, voteWeights, balance }) => {
 VotingResults.propTypes = {
   vote: PropTypes.object.isRequired,
   voteWeights: PropTypes.PropTypes.arrayOf(PropTypes.string).isRequired,
-  balance: PropTypes.number.isRequired,
+  decimals: PropTypes.number.isRequired,
 }
 
 export default VotingResults

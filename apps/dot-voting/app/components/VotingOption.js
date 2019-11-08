@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { GU, Tag, Text, theme } from '@aragon/ui'
+import { GU, Tag, Text, useTheme } from '@aragon/ui'
 import { animated } from 'react-spring'
 import PropTypes from 'prop-types'
 import { isAddress } from 'web3-utils'
@@ -40,6 +40,7 @@ Label.propTypes = {
 }
 
 const VotingOption = ({ valueSpring, label, percentage, allocation, color, threshold, userVote, fontSize }) => {
+  const theme = useTheme()
   return (
     <Main>
       <Labels>
@@ -62,7 +63,7 @@ const VotingOption = ({ valueSpring, label, percentage, allocation, color, thres
         )}
         <div>
           {percentage !== -1 &&
-              <Text size="xsmall" color={theme.textTertiary}>
+              <Text size="xsmall" color={theme.contentSecondary}>
                 {Math.round(percentage)}%
               </Text>
           }
