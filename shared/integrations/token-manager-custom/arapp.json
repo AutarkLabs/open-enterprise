@@ -1,0 +1,75 @@
+{
+  "environments": {
+    "default": {
+      "registry": "0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1",
+      "appName": "token-manager-custom.aragonpm.eth",
+      "network": "rpc"
+    },
+    "rinkeby": {
+      "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
+      "appName": "token-manager-custom.aragonpm.eth",
+      "network": "rinkeby"
+    },
+    "staging": {
+      "registry": "0xfe03625ea880a8cba336f9b5ad6e15b0a3b5a939",
+      "appName": "token-manager-custom.aragonpm.eth",
+      "network": "rinkeby"
+    },
+    "mainnet": {
+      "registry": "0x314159265dd8dbb310642f98f50c066173c1259b",
+      "appName": "token-manager-custom.aragonpm.eth",
+      "network": "mainnet"
+    },
+    "ropsten": {
+      "registry": "0x6afe2cacee211ea9179992f89dc61ff25c61e923",
+      "appName": "token-manager-custom.aragonpm.eth",
+      "network": "ropsten"
+    },
+    "rinkeby-old": {
+      "registry": "0xfbae32d1cde62858bc45f51efc8cc4fa1415447e",
+      "appName": "token-manager-custom.aragonpm.eth",
+      "network": "rinkeby"
+    }
+  },
+  "roles": [
+    {
+      "name": "Mint tokens",
+      "id": "MINT_ROLE",
+      "params": [
+        "Receiver",
+        "Token amount"
+      ]
+    },
+    {
+      "name": "Issue tokens",
+      "id": "ISSUE_ROLE",
+      "params": [
+        "Token amount"
+      ]
+    },
+    {
+      "name": "Assign tokens",
+      "id": "ASSIGN_ROLE",
+      "params": [
+        "Receiver",
+        "Token amount"
+      ]
+    },
+    {
+      "name": "Revoke vesting",
+      "id": "REVOKE_VESTINGS_ROLE",
+      "params": [
+        "Holder"
+      ]
+    },
+    {
+      "name": "Burn tokens",
+      "id": "BURN_ROLE",
+      "params": [
+        "Holder",
+        "Token amount"
+      ]
+    }
+  ],
+  "path": "contracts/TokenManager.sol"
+}

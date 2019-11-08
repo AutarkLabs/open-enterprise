@@ -1,0 +1,28 @@
+# aragon-cli
+**/**/artifact.json
+
+# Dependencies
+node_modules
+**/*/node_modules
+
+# coverage
+*/**/coverage
+*/**/coverageEnv
+*/**/coverage.json
+*/**/allFiredEvents
+*/**/scTopics
+
+# lerna
+lerna-debug.log
+
+# truffle build artifacts
+*/**/abi
+*/**/build
+*/**/.DS_Store
+
+# yarn
+yarn-error.log
+
+# Ignore lock files
+package-lock.json
+yarn.lock
