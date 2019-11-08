@@ -19,7 +19,7 @@
     "lint": "solium --dir ./contracts",
     "coverage": "SOLIDITY_COVERAGE=true npm run test",
     "test": "npm run test:ganache",
-    "test:ganache": "./temp/scripts/test-ganache.sh # ../../node_modules/@aragon/templates-shared/scripts/test-ganache.sh",
+    "test:ganache": "./temp/scripts/test-ganache.sh",
     "test:geth": "npm run docker:run && npm run docker:wait-gas && npm run deploy:devnet && truffle test --network devnet && npm run docker:stop",
     "docker:run": "cd ../../node_modules/@aragon/templates-shared/; docker-compose -f docker-compose.yml up -d; RESULT=$?; cd -; $(exit $RESULT)",
     "docker:stop": "cd ../../node_modules/@aragon/templates-shared/; docker-compose down; cd -",

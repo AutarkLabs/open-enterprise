@@ -47,9 +47,14 @@ start_testrpc() {
   echo "Running testrpc-sc with pid ${rpc_pid} in port ${PORT}"
 }
 
+deploy_standard_bounties() {
+  echo "Deploying bounties contract..."
+  BOUNTIES=$(npm run deploy:bounties | tail -n 1)
+}
+
 deploy_template_rpc() {
   echo "Deploying template..."
-  npm run deploy:rpc
+  npm run deploy:rpc -- --s ${BOUNTIES}
 }
 
 deploy_template_coverage() {
@@ -81,6 +86,7 @@ else
   setup_testing_variables
   start_ganache
   clean_deploy
+  deploy_standard_bounties
   deploy_template_rpc
   run_tests $@
 fi
