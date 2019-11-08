@@ -69,7 +69,7 @@ const SubmitWork = ({ issue }) => {
         <IssueTitle issue={issue} />
 
         <FormField
-          label="Proof of Work"
+          label="Submission"
           required
           input={
             <TextInput.Multiline
