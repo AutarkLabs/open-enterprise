@@ -53,6 +53,8 @@
     "@aragon/apps-token-manager": "^2.1.0",
     "@aragon/apps-shared-minime": "^1.0.0",
     "@aragon/templates-shared": "^1.0.0",
+    "@autark/apps-token-manager-custom": "^0.0.1",
+    "@autark/apps-whitelist-oracle": "^0.0.1",
     "@tps/apps-address-book": "^0.0.1",
     "@tps/apps-allocations": "^0.0.1",
     "@tps/apps-discussions": "^1.0.0",
