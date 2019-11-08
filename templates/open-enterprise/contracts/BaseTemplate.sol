@@ -5,7 +5,6 @@ import "@aragon/apps-vault/contracts/Vault.sol";
 import "@aragon/apps-voting/contracts/Voting.sol";
 import "@aragon/apps-payroll/contracts/Payroll.sol";
 import "@aragon/apps-finance/contracts/Finance.sol";
-import "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import "@aragon/apps-survey/contracts/Survey.sol";
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 
@@ -20,26 +19,32 @@ import "@aragon/os/contracts/common/IsContract.sol";
 import "@aragon/os/contracts/common/Uint256Helpers.sol";
 import "@aragon/id/contracts/IFIFSResolvingRegistrar.sol";
 
+// Custom Autark Apps
+import "@autark/apps-token-manager-custom/contracts/TokenManager.sol";
+import "@autark/apps-whitelist-oracle/contracts/WhitelistOracle.sol";
+
 
 contract BaseTemplate is APMNamehash, IsContract {
     using Uint256Helpers for uint256;
 
     /* Hardcoded constant to save gas
-    * bytes32 constant internal AGENT_APP_ID = apmNamehash("agent");                  // agent.aragonpm.eth
-    * bytes32 constant internal VAULT_APP_ID = apmNamehash("vault");                  // vault.aragonpm.eth
-    * bytes32 constant internal VOTING_APP_ID = apmNamehash("voting");                // voting.aragonpm.eth
-    * bytes32 constant internal SURVEY_APP_ID = apmNamehash("survey");                // survey.aragonpm.eth
-    * bytes32 constant internal PAYROLL_APP_ID = apmNamehash("payroll");              // payroll.aragonpm.eth
-    * bytes32 constant internal FINANCE_APP_ID = apmNamehash("finance");              // finance.aragonpm.eth
-    * bytes32 constant internal TOKEN_MANAGER_APP_ID = apmNamehash("token-manager");  // token-manager.aragonpm.eth
+    * bytes32 constant internal AGENT_APP_ID = apmNamehash("agent");                            // agent.aragonpm.eth
+    * bytes32 constant internal VAULT_APP_ID = apmNamehash("vault");                            // vault.aragonpm.eth
+    * bytes32 constant internal VOTING_APP_ID = apmNamehash("voting");                          // voting.aragonpm.eth
+    * bytes32 constant internal SURVEY_APP_ID = apmNamehash("survey");                          // survey.aragonpm.eth
+    * bytes32 constant internal PAYROLL_APP_ID = apmNamehash("payroll");                        // payroll.aragonpm.eth
+    * bytes32 constant internal FINANCE_APP_ID = apmNamehash("finance");                        // finance.aragonpm.eth
+    * bytes32 constant internal TOKEN_MANAGER_APP_ID = apmNamehash("token-manager-custom");     // token-manager-custom.aragonpm.eth
+    * bytes32 constant internal TOKEN_MANAGER_APP_ID = apmNamehash("whitelist-oracle");         // whitelist-oracle.aragonpm.eth
     */
     bytes32 constant internal AGENT_APP_ID = 0x9ac98dc5f995bf0211ed589ef022719d1487e5cb2bab505676f0d084c07cf89a;
     bytes32 constant internal VAULT_APP_ID = 0x7e852e0fcfce6551c13800f1e7476f982525c2b5277ba14b24339c68416336d1;
     bytes32 constant internal VOTING_APP_ID = 0x9fa3927f639745e587912d4b0fea7ef9013bf93fb907d29faeab57417ba6e1d4;
     bytes32 constant internal PAYROLL_APP_ID = 0x463f596a96d808cb28b5d080181e4a398bc793df2c222f6445189eb801001991;
     bytes32 constant internal FINANCE_APP_ID = 0xbf8491150dafc5dcaee5b861414dca922de09ccffa344964ae167212e8c673ae;
-    bytes32 constant internal TOKEN_MANAGER_APP_ID = 0x6b20a3010614eeebf2138ccec99f028a61c811b3b1a3343b6ff635985c75c91f;
+    bytes32 constant internal TOKEN_MANAGER_APP_ID = 0x76653910e9cc1addb131daa2a5718d5e4d622b53b12858fedc8f604fad817779;
     bytes32 constant internal SURVEY_APP_ID = 0x030b2ab880b88e228f2da5a3d19a2a31bc10dbf91fb1143776a6de489389471e;
+    bytes32 constant internal WHITELIST_ORACLE_APP_ID = 0x41a68a245a2401bf50f524075aad214310f3b8a470fc92149a8b02d2ef858e3a;
 
     string constant private ERROR_ENS_NOT_CONTRACT = "TEMPLATE_ENS_NOT_CONTRACT";
     string constant private ERROR_DAO_FACTORY_NOT_CONTRACT = "TEMPLATE_DAO_FAC_NOT_CONTRACT";
@@ -325,6 +330,19 @@ contract BaseTemplate is APMNamehash, IsContract {
         _createPermissionForTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
         _tokenManager.mint(_holder, _stake);
         _removePermissionFromTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
+    }
+
+    function _setOracle(ACL _acl, TokenManager _tokenManager, address _whitelistOracle) internal {
+        _createPermissionForTemplate(_acl, _tokenManager, _tokenManager.SET_ORACLE());
+        _tokenManager.setOracle(_whitelistOracle);
+        _removePermissionFromTemplate(_acl, _tokenManager, _tokenManager.SET_ORACLE());
+    }
+
+    /* WHITELIST ORACLE */
+
+    function _installWhitelistOracleApp(Kernel _dao, address[] _whitelistedSenders) internal returns (WhitelistOracle) {
+        bytes memory initializeData = abi.encodeWithSelector(WhitelistOracle(0).initialize.selector, _whitelistedSenders);
+        return WhitelistOracle(_installNonDefaultApp(_dao, WHITELIST_ORACLE_APP_ID, initializeData));
     }
 
     /* EVM SCRIPTS */
