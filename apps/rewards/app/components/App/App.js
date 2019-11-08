@@ -156,6 +156,7 @@ class App extends React.Component {
   }
 
   onNewReward = async reward => {
+    const BLOCK_PADDING = 1 // ensuring the start block is different from the end block
     let currentBlock = await this.props.api.web3Eth('getBlockNumber').toPromise()
     const amountBN = new BigNumber(reward.amount)
     const tenBN =  new BigNumber(10)
@@ -190,8 +191,9 @@ class App extends React.Component {
       startBlock -= reward.duration
     }
     if(reward.rewardType === ONE_TIME_DIVIDEND){
-      startBlock = currentBlock
-      reward.duration = millisecondsToBlocks(Date.now(), reward.dateReference)
+      const rawBlockDuration = millisecondsToBlocks(Date.now(), reward.dateReference)
+      startBlock = reward.dateReference <= new Date() ? currentBlock + rawBlockDuration - BLOCK_PADDING : currentBlock 
+      reward.duration = reward.dateReference <= new Date() ? BLOCK_PADDING : rawBlockDuration
     }
     this.props.api.newReward(
       reward.description, //string _description
@@ -282,7 +284,6 @@ class App extends React.Component {
         </Wrapper>
       )
     }
-
     return (
       <Wrapper>
         <Header
