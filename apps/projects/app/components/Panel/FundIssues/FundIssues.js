@@ -15,7 +15,7 @@ import { IconClose } from '@aragon/ui'
 import NoFunds from '../../../assets/noFunds.svg'
 import { IssueText } from '../PanelComponents'
 import { BN } from 'web3-utils'
-
+import { toDecimals, fromDecimals } from '../../../utils/math-utils'
 import {
   Box,
   Text,
@@ -217,14 +217,14 @@ const FundForm = ({
         const inVault = new BN(token.balance, 10)
         const bountiesForToken = Object.values(bounties).filter(b => b.token.symbol === token.symbol)
         const total = bountiesForToken.reduce(
-          (sum, b) => sum.add(new BN(b.size, 10).mul(new BN(10).pow(new BN(b.token.decimals)))),
+          (sum, b) => sum.add(new BN(toDecimals(b.size.toString(10), parseInt(b.token.decimals,10)))),
           new BN(0)
         )
         if (total.gt(inVault)) {
           errors.push({
             inVault: inVault.div(new BN(10).pow(new BN(token.decimals, 10))).toString(),
             symbol: token.symbol,
-            total: total.div(new BN(10).pow(new BN(token.decimals, 10))).toString(),
+            total: fromDecimals(total.toString(10), parseInt(token.decimals)),
             sayTotal: bountiesForToken.length > 1,
           })
         }
