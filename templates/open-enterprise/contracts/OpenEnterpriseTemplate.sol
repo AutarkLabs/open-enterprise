@@ -11,7 +11,6 @@ contract OpenEnterpriseTemplate is BaseOEApps {
 
     uint64 constant private DEFAULT_PERIOD = uint64(30 days);
     uint8 constant private TOKEN_DECIMALS = uint8(18);
-    bool constant private TOKEN_TRANSFERABLE = true;
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(0);
 
     /**
@@ -38,7 +37,8 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         address[] _members,
         uint256[] _stakes,
         uint64[3] _votingSettings,
-        uint64 _financePeriod
+        uint64 _financePeriod,
+        bool _tokenTransferable
     )
         external
     {
@@ -48,7 +48,8 @@ contract OpenEnterpriseTemplate is BaseOEApps {
             _members,
             _stakes,
             _votingSettings,
-            _financePeriod
+            _financePeriod,
+            _tokenTransferable
         );
     }
 
@@ -104,7 +105,8 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         address[] memory _members,
         uint256[] memory _stakes,
         uint64[3] memory _votingSettings,
-        uint64 _financePeriod
+        uint64 _financePeriod,
+        bool _tokenTransferable
     )
         internal
     {
@@ -117,7 +119,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
             TokenManager tokenManager,
             Voting voting,
             Vault vault
-        ) = _setupApps(dao, acl, _members, _stakes, _votingSettings, _financePeriod);
+        ) = _setupApps(dao, acl, _members, _stakes, _votingSettings, _financePeriod, _tokenTransferable);
 
         _cacheBase(acl, dao, finance, tokenManager, vault, voting, msg.sender);
         _registerID(_id, dao);
@@ -129,7 +131,8 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         address[] memory _members,
         uint256[] memory _stakes,
         uint64[3] memory _votingSettings,
-        uint64 _financePeriod
+        uint64 _financePeriod,
+        bool _tokenTransferable
     )
         internal
         returns (Finance, TokenManager, Voting, Vault)
@@ -137,7 +140,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         MiniMeToken token = _popTokenCache(msg.sender);
         Vault vault = _installVaultApp(_dao);
         Finance finance = _installFinanceApp(_dao, vault, _financePeriod == 0 ? DEFAULT_PERIOD : _financePeriod);
-        TokenManager tokenManager = _installTokenManagerApp(_dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
+        TokenManager tokenManager = _installTokenManagerApp(_dao, token, _tokenTransferable, TOKEN_MAX_PER_ACCOUNT);
         Voting voting = _installVotingApp(_dao, token, _votingSettings);
 
         _cacheToken(token, msg.sender);
