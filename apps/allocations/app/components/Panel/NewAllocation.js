@@ -9,6 +9,7 @@ import { RecipientsInput } from '../../../../../shared/ui'
 import { MIN_AMOUNT } from '../../utils/constants'
 import { displayCurrency, isStringEmpty } from '../../utils/helpers'
 import { DescriptionInput, Form, FormField } from '../Form'
+import CurrencyBox from '../Form/Field/CurrencyBox'
 
 const INITIAL_STATE = {
   budgetValue: {},
@@ -27,7 +28,7 @@ const INITIAL_STATE = {
 
 const errorMessages = {
   amountOverBudget: 'Amount must be smaller than available budget',
-  amountOverFunds: 'Amount must be smaller than underlying funds',
+  amountOverFunds: 'Amount must be smaller than funds available in Vault',
   recipientsDuplicate: 'Recipients must be unique',
 }
 
@@ -302,17 +303,6 @@ ErrorMessage.propTypes = {
 
 const InputGroup = styled.div`
   display: flex;
-`
-
-const CurrencyBox = styled.div`
-  border: 1px solid #dde4e9;
-  border-left-style: none;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  padding: 8px 14px 7px;
-  font-weight: normal;
-  border-radius: 0 4px 4px 0;
 `
 
 const ErrorText = styled.div`

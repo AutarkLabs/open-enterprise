@@ -74,12 +74,13 @@ const BountyContextMenu = ({ issue }) => {
               Review Application {issue.requestsData ? `(${issue.requestsData.length})` : ''}
             </ActionLabel>
           </Item>
-          <Item bordered onClick={() => editBounty([issue])}>
-            <IconCoin color={`${theme.surfaceIcon}`} />
-            <ActionLabel>
-              Update Funding
-            </ActionLabel>
-          </Item>
+          {/* Disabled since the contract doesn't allow updating the amount */}
+          {/*<Item bordered onClick={() => editBounty([issue])}>*/}
+          {/*  <IconCoin color={`${theme.surfaceIcon}`} />*/}
+          {/*  <ActionLabel>*/}
+          {/*    Update Funding*/}
+          {/*  </ActionLabel>*/}
+          {/*</Item>*/}
         </React.Fragment>
       )}
     </React.Fragment>

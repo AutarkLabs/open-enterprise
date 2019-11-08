@@ -15,7 +15,7 @@ import { IconClose } from '@aragon/ui'
 import NoFunds from '../../../assets/noFunds.svg'
 import { IssueText } from '../PanelComponents'
 import { BN } from 'web3-utils'
-
+import { toDecimals, fromDecimals } from '../../../utils/math-utils'
 import {
   Box,
   Text,
@@ -34,6 +34,14 @@ import { issueShape } from '../../../utils/shapes.js'
 
 const ETHER_TOKEN_FAKE_ADDRESS = '0x0000000000000000000000000000000000000000'
 
+const errorMessages = {
+  amount: () => 'Funding amounts must be greater than zero',
+  date: () => 'The deadline cannot be a date in the past',
+  total: ({ inVault, sayTotal, symbol, total }) =>
+    `The ${sayTotal ? 'total' : ''} funding amount of ${total} ${symbol} ` +
+    `exceeds the available funds in the vault (${inVault} ${symbol}).`
+}
+
 const BountyUpdate = ({
   issue,
   bounties,
@@ -41,8 +49,6 @@ const BountyUpdate = ({
   submitBounties,
   description,
   generateHoursChange,
-  totalSize,
-  tokenDetails,
   tokens,
   amountChange,
   tokenSelect,
@@ -57,9 +63,10 @@ const BountyUpdate = ({
   const expLevels = bountySettings.expLvls
 
   useEffect(() => {
-    console.log(bounties)
     const today = new Date()
-    const maxErr = totalSize > tokenDetails.balance
+    const maxErr = new BN(bounties[issue.id].size, 10)
+      .mul(10 ** bounties[issue.id].decimals)
+      .gt(new BN(bounties[issue.id].balance))
     const amountErr = (bounties[issue.id].hours || bounties[issue.id].amount) ? false : true
     const zeroErr = (bounties[issue.id].hours === 0 && bounties[issue.id].amount === 0) ? true : false
     const dateErr = today > bounties[issue.id].deadline
@@ -86,7 +93,10 @@ const BountyUpdate = ({
               `}>
                 <IssueTitleCompact
                   title={issue.title}
-                  tag={(issue.id in bounties && bounties[issue.id]['hours'] > 0) ? BigNumber(bounties[issue.id]['size']).dp(2) + ' ' + tokenDetails.symbol : ''}
+                  tag={bounties[issue.id] && bounties[issue.id].hours > 0
+                    ? BigNumber(bounties[issue.id].size).dp(2) + ' ' + bounties[issue.id].symbol
+                    : ''
+                  }
                 />
               </div>
 
@@ -158,9 +168,9 @@ const BountyUpdate = ({
           }
         />
       </Form>
-      <ErrorMessage hasError={maxError} type='total' />
-      <ErrorMessage hasError={zeroError} type='amount' />
-      <ErrorMessage hasError={dateError} type='date' />
+      {maxError && <ErrorMessage text={errorMessages.total()} />}
+      {zeroError && <ErrorMessage text={errorMessages.amount()} />}
+      {dateError && <ErrorMessage text={errorMessages.date()} />}
     </div>
   )
 }
@@ -171,8 +181,6 @@ BountyUpdate.propTypes = {
   submitBounties: PropTypes.func.isRequired,
   description: PropTypes.string.isRequired,
   generateHoursChange: PropTypes.func.isRequired,
-  totalSize: PropTypes.number.isRequired,
-  tokenDetails: PropTypes.object.isRequired,
   tokens: PropTypes.array.isRequired,
   amountChange: PropTypes.func.isRequired,
   tokenSelect: PropTypes.func.isRequired,
@@ -186,8 +194,6 @@ const FundForm = ({
   bounties,
   submitBounties,
   description,
-  totalSize,
-  tokenDetails,
   tokens,
   tokenSelect,
   amountChange,
@@ -198,7 +204,7 @@ const FundForm = ({
   generateDeadlineChange,
 }) => {
   const [ submitDisabled, setSubmitDisabled ] = useState(true)
-  const [ maxError, setMaxError ] = useState(false)
+  const [ maxErrors, setMaxErrors ] = useState([])
   const [ zeroError, setZeroError ] = useState([])
   const [ dateError, setDateError ] = useState([])
 
@@ -206,8 +212,30 @@ const FundForm = ({
   const theme = useTheme()
 
   useEffect(() => {
+    setMaxErrors(tokens.reduce(
+      (errors, token) => {
+        const inVault = new BN(token.balance, 10)
+        const bountiesForToken = Object.values(bounties).filter(b => b.token.symbol === token.symbol)
+        const total = bountiesForToken.reduce(
+          (sum, b) => sum.add(new BN(toDecimals(b.size.toString(10), parseInt(b.token.decimals,10)))),
+          new BN(0)
+        )
+        if (total.gt(inVault)) {
+          errors.push({
+            inVault: inVault.div(new BN(10).pow(new BN(token.decimals, 10))).toString(),
+            symbol: token.symbol,
+            total: fromDecimals(total.toString(10), parseInt(token.decimals)),
+            sayTotal: bountiesForToken.length > 1,
+          })
+        }
+        return errors
+      },
+      []
+    ))
+  }, [ tokens, bounties ])
+
+  useEffect(() => {
     const today = new Date()
-    const maxErr = totalSize > tokenDetails.balance
     const amountErrArray = []
     const zeroErrArray = []
     const dateErrArray = []
@@ -216,11 +244,10 @@ const FundForm = ({
       zeroErrArray.push((bounties[issue.id].hours === 0 || bounties[issue.id].amount === 0) ? true : false)
       dateErrArray.push(today > bounties[issue.id].deadline)
     })
-    setMaxError(maxErr)
     setZeroError(zeroErrArray)
     setDateError(dateErrArray)
-    setSubmitDisabled( description === '' || maxErr || amountErrArray.includes(true) || dateErrArray.includes(true))
-  }, [ bounties, totalSize, description ])
+    setSubmitDisabled( description === '' || maxErrors.length || amountErrArray.includes(true) || dateErrArray.includes(true))
+  }, [ bounties, description, maxErrors ])
 
   return (
     <div css={`margin: ${2 * GU}px 0`}>
@@ -267,7 +294,10 @@ const FundForm = ({
                         </DetailsArrow>
                         <IssueTitleCompact
                           title={issue.title}
-                          tag={(issue.id in bounties && bounties[issue.id]['hours'] > 0) ? BigNumber(bounties[issue.id]['size']).dp(2) + ' ' + tokenDetails.symbol : ''}
+                          tag={issue.id in bounties && bounties[issue.id].hours > 0
+                            ? BigNumber(bounties[issue.id].size).dp(2) + ' ' + bounties[issue.id].token.symbol
+                            : ''
+                          }
                         />
                       </div>
                       <div css={`
@@ -353,9 +383,11 @@ const FundForm = ({
           </Form>
         )}
       </Mutation>
-      <ErrorMessage hasError={maxError} type='total' />
-      <ErrorMessage hasError={zeroError.includes(true)} type='amount' />
-      <ErrorMessage hasError={dateError.includes(true)} type='date' />
+      {maxErrors.map((maxError, i) => (
+        <ErrorMessage key={i} text={errorMessages.total(maxError)} />
+      ))}
+      {zeroError.includes(true) && <ErrorMessage text={errorMessages.amount()} />}
+      {dateError.includes(true) && <ErrorMessage text={errorMessages.date()} />}
     </div>
   )
 }
@@ -366,8 +398,6 @@ FundForm.propTypes = {
   bounties: PropTypes.object.isRequired,
   submitBounties: PropTypes.func.isRequired,
   description: PropTypes.string.isRequired,
-  totalSize: PropTypes.number.isRequired,
-  tokenDetails: PropTypes.object.isRequired,
   tokens: PropTypes.array.isRequired,
   tokenSelect: PropTypes.func.isRequired,
   amountChange: PropTypes.func.isRequired,
@@ -381,32 +411,24 @@ FundForm.propTypes = {
 const FundIssues = ({ issues, mode }) => {
   const githubCurrentUser = useGithubAuth()
   const theme = useTheme()
-  const {
-    api,
-    appState: { bountySettings, tokens },
-  } = useAragonApi()
+  const { api, appState } = useAragonApi()
+  const { bountySettings } = appState
   const { closePanel } = usePanelManagement()
   const [ description, setDescription ] = useState('')
-  const [ totalSize, setTotalSize ] = useState(0)
   const [ bounties, setBounties ] = useState({})
-  const [ tokenDetails, setTokenDetails ] = useState({})
+  const tokens = useMemo(() => {
+    if (bountySettings.fundingModel === 'Fixed') return appState.tokens
+    return [appState.tokens.find(t => t.addr === bountySettings.bountyCurrency)]
+  }, [bountySettings])
 
   useEffect(() => {
     setBounties(initBounties())
-    tokens.forEach(token =>
-      token.addr === bountySettings.bountyCurrency && setTokenDetails(token))
-  }, [ bountySettings, tokens ]
-  )
+  }, [bountySettings])
 
-  const fundsAvailable = useMemo(() => {
-    if (bountySettings.fundingModel === 'Hourly') {
-      return new BN(tokenDetails.balance, 10)
-    }
-    return tokens.reduce(
-      (sum, t) => sum.add(new BN(t.balance, 10)),
-      new BN(0)
-    )
-  }, [ bountySettings.fundingModel, tokens, tokenDetails.balance ])
+  const fundsAvailable = useMemo(() => tokens.reduce(
+    (sum, t) => sum.add(new BN(t.balance, 10)),
+    new BN(0)
+  ), [ bountySettings.fundingModel, tokens ])
 
   const descriptionChange = e => setDescription(e.target.value)
   const tokenSelect = (id, i) => {
@@ -476,13 +498,7 @@ const FundIssues = ({ issues, mode }) => {
     }
     // just do it, recalculate size
     newBounties[id]['size'] = key === 'amount' ? val : calculateSize(newBounties[id])
-    const bountyValues = Object.values(newBounties)
-    const bountyTotal = bountyValues.reduce((acc,val) => BigNumber(val.size).plus(acc), 0)
-      .times(10 ** tokenDetails.decimals)
-      .toNumber()
-
     setBounties(newBounties)
-    setTotalSize(bountyTotal)
   }
 
   const generateHoursChange = id => ({ target: { value } }) =>
@@ -545,24 +561,15 @@ const FundIssues = ({ issues, mode }) => {
     let tokenTypes = []
     for (let i = 0; i < issuesArray.length; i++) {
       const issue = issuesArray[i]
-      if (bountySettings.fundingModel === 'Fixed') {
-        const tokenAddress = mode === 'update' ? issue.token : issue.token.addr
-        const tokenDecimals = mode === 'update' ? 18 : issue.token.decimals
-        tokenContracts.push(tokenAddress)
-        bountySizes.push(
-          BigNumber(issue.amount).times(10 ** tokenDecimals).toString()
-        )
-        tokenTypes.push(tokenAddress === ETHER_TOKEN_FAKE_ADDRESS ? 1 : 20)
-      }
-      else {
-        tokenContracts.push(tokenDetails.addr)
-        bountySizes.push(
-          BigNumber(issue.size)
-            .times(10 ** tokenDetails.decimals)
-            .toString()
-        )
-        tokenTypes.push(tokenDetails.addr === ETHER_TOKEN_FAKE_ADDRESS ? 1 : 20)
-      }
+      tokenContracts.push(issue.token.addr)
+      tokenTypes.push(issue.token.addr === ETHER_TOKEN_FAKE_ADDRESS ? 1 : 20)
+      bountySizes.push(
+        BigNumber(
+          bountySettings.fundingModel === 'Fixed'
+            ? issue.amount
+            : issue.size
+        ).times(10 ** issue.token.decimals).toString()
+      )
     }
     const deadlines = Object.keys(bounties).map(
       id => bounties[id]['deadline'].getTime()
@@ -601,7 +608,7 @@ const FundIssues = ({ issues, mode }) => {
         //     variables: {
         //       body:
         //         'This issue has a bounty attached to it.\n' +
-        //         `Amount: ${issue.size.toFixed(2)} ${tokenDetails.symbol}\n` +
+        //         `Amount: ${issue.size.toFixed(2)} ${issue.token.symbol}\n` +
         //         `Deadline: ${issue.deadline.toUTCString()}`,
         //       subjectId: issue.key,
         //     },
@@ -615,8 +622,8 @@ const FundIssues = ({ issues, mode }) => {
   const bountylessIssues = []
   const alreadyAdded = []
 
-  // FIXME: initialize bounties & tokenDetails better 😝
-  if (!tokens.length || !tokenDetails.balance) return null
+  // FIXME: initialize bounties better 😝
+  if (!Object.keys(bounties).length) return null
 
   if (fundsAvailable.toString() === '0') {
     return (
@@ -638,8 +645,6 @@ const FundIssues = ({ issues, mode }) => {
         submitBounties={submitBounties}
         description={description}
         generateHoursChange={generateHoursChange}
-        totalSize={totalSize}
-        tokenDetails={tokenDetails}
         tokens={tokens}
         amountChange={amountChange}
         tokenSelect={tokenSelect}
@@ -665,8 +670,6 @@ const FundIssues = ({ issues, mode }) => {
           issues={bountylessIssues}
           bounties={bounties}
           description={description}
-          totalSize={totalSize}
-          tokenDetails={tokenDetails}
           tokens={tokens}
           tokenSelect={tokenSelect}
           amountChange={amountChange}
@@ -825,31 +828,25 @@ const ErrorText = styled.div`
   margin: ${2 * GU}px 0;
 `
 
-const ErrorMessage = ({ hasError, type }) => {
-  const theme = useTheme()
-  const errorMessages = {
-    amount: 'Funding amounts must be greater than zero',
-    date: 'The deadline cannot be a date in the past',
-    total: 'The funding amount being requests exceeds the available funds in the vault'
-  }
+const X = styled(IconClose).attrs({
+  size: 'tiny',
+})`
+  margin-right: 8px;
+  color: ${p => p.theme.negative};
+`
 
-  return hasError ? (
+const ErrorMessage = ({ text }) => {
+  const theme = useTheme()
+  return (
     <ErrorText>
-      <IconClose
-        size="tiny"
-        css={{
-          marginRight: '8px',
-          color: theme.negative,
-        }}
-      />
-      {errorMessages[type]}
+      <X theme={theme} />
+      {text}
     </ErrorText>
-  ) : null
+  )
 }
 
 ErrorMessage.propTypes = {
-  hasError: PropTypes.bool,
-  type: PropTypes.string,
+  text: PropTypes.string.isRequired,
 }
 
 export default FundIssues
