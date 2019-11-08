@@ -74,10 +74,10 @@ const Budget = ({
             <IconPlus />
             <ActionLabel>New Allocation</ActionLabel>
           </ContextMenuItem>
-          <ContextMenuItem onClick={edit}>
-            <IconEdit />
-            <ActionLabel>Edit</ActionLabel>
-          </ContextMenuItem>
+          {/*<ContextMenuItem onClick={edit}>*/}
+          {/*  <IconEdit />*/}
+          {/*  <ActionLabel>Edit</ActionLabel>*/}
+          {/*</ContextMenuItem>*/}
           {/* <ContextMenuItem onClick={deactivate}> */}
           {/*   <IconProhibited /> */}
           {/*   <ActionLabel>Deactivate</ActionLabel> */}
