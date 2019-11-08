@@ -43,6 +43,11 @@
       "appName": "dot-voting-staging.open.aragonpm.eth",
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
       "network": "rinkeby"
+    },
+    "production": {
+      "registry": "0x314159265dd8dbb310642f98f50c066173c1259b",
+      "appName": "dot-voting.aragonpm.eth",
+      "network": "mainnet"
     }
   },
   "path": "contracts/DotVoting.sol"

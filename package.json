@@ -57,7 +57,7 @@
     "lint:fix": "lerna exec --scope=@tps/apps-* --stream -- eslint app --fix",
     "lint:projects": "cd apps/projects && npm run lint",
     "lint": "npm run lint:contracts && lerna exec --scope=@tps/apps-* --stream -- eslint app",
-    "mine": "node ./apps/shared/test-helpers/mine.js",
+    "mine": "lerna exec --scope=@tps/test-helpers truffle exec ./mine.js",
     "postinstall": "npm run bootstrap",
     "publish:cd": "shared/deployments/publish-cd.sh",
     "publish:apps": "lerna run publish",

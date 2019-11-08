@@ -56,13 +56,14 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
     return state
   }
   case REQUESTED_GITHUB_TOKEN_SUCCESS: {
-    const { token } = returnValues
+    const { token, scope } = returnValues
     if (!token) return state
 
     state.github = {
-      token,
+      event: null,
+      scope,
       status: STATUS.AUTHENTICATED,
-      event: null
+      token,
     }
     app.cache('github', state.github).toPromise()
 

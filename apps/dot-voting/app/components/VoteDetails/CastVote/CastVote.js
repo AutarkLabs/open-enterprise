@@ -31,7 +31,8 @@ const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights, votingPower }) 
     }
   }
 
-  const handleVoteSubmit = useCallback(() => {
+  const handleVoteSubmit = useCallback((e) => {
+    e.preventDefault()
     const votingPowerBN = new BN(votingPower, 10)
     const optionsArray = voteAmounts.map(value => {
       const baseValue = value ? new BN(value, 10) : new BN('0', 10)

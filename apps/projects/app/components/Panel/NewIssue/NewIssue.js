@@ -1,12 +1,14 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Mutation } from 'react-apollo'
+import { useAragonApi } from '../../../api-react'
 import { Field, GU, TextInput, DropDown } from '@aragon/ui'
 import { NEW_ISSUE, GET_ISSUES } from '../../../utils/gql-queries.js'
 import { Form } from '../../Form'
 import { LoadingAnimation } from '../../Shared'
 import { usePanelManagement } from '../../Panel'
 import { useDecoratedRepos } from '../../../context/DecoratedRepos'
+import AuthorizeGitHub from './AuthorizeGitHub'
 
 // TODO: labels
 // TODO: import validator from '../data/validation'
@@ -177,6 +179,9 @@ class NewIssue extends React.PureComponent {
 const NewIssueWrap = () => {
   const { closePanel } = usePanelManagement()
   const repos = useDecoratedRepos()
+  const { appState: { github } } = useAragonApi()
+  if (!github.scope) return <AuthorizeGitHub />
+
   const repoNames = repos
     ? repos.map(repo => ({
       name: repo.metadata.name,

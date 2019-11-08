@@ -1,43 +1,70 @@
-const Web3 = require("web3");
-const PrivateKeyProvider = require("truffle-privatekey-provider");
-const provider = new PrivateKeyProvider(
-    "A8A54B2D8197BC0B19BB8A084031BE71835580A01E70A45A13BABD16C9BC1563",
-    "http://localhost:8545"
-  );
-const web3 = new Web3(provider);
+const mineBlock = require("./mineBlock")
+const getBlock = require("./blockNumber")
 
-const mineBlock = require("./mineBlock")(web3)
-const getBlock = require("./blockNumber")(web3)
+const getWeb3 = () => {
+    const Web3 = require("web3");
+    const PrivateKeyProvider = require("truffle-privatekey-provider");
+    const provider = new PrivateKeyProvider(
+        "A8A54B2D8197BC0B19BB8A084031BE71835580A01E70A45A13BABD16C9BC1563",
+        "http://localhost:8545"
+    );
+    return new Web3(provider);
+}
 
-const mineBlocks = async (blocks) => {
-    for (var i = 0; i < blocks; i++) {
-        try {
-            await mineBlock()
-        }
-        catch(e) {
-            console.error('error: ',e)
+// truffle script: can be run with `truffle exec`
+const mine = async (cb) => {
+    const root = this
+    let activeWeb3
+    let argIdx
+    if (typeof cb !== 'function') {
+        activeWeb3 = getWeb3()
+        argIdx = 2
+    } else {
+        activeWeb3 = web3
+        argIdx = 4
+    }
+    const mineBlockFn = mineBlock(activeWeb3)
+    const getBlockFn = getBlock(activeWeb3)
+
+    const mineBlocks = async (blocks) => {
+        const blockArr = new Array(Number(blocks)).fill(0)
+        blockArr.forEach(async () => {
+            try {
+                await mineBlockFn()
+            }
+            catch(e) {
+                console.error('error: ',e)
+            }
+        })
+    }
+
+    const mineToBlock = async (blockNumber) => {
+        while (blockNumber > await getBlockFn()) {
+            try {
+                await mineBlockFn()
+            }
+            catch(e) {
+                console.error('error: ',e)
+            }
         }
     }
-    console.log('\nblock',await getBlock(), 'mined')
-    process.exit()
-}
-
-const mineToBlock = async (blockNumber) => {
-    while (blockNumber > await getBlock()) {
-        try {
-            await mineBlock()
-        }
-        catch(e) {
-            console.error('error: ',e)
-        }
+    if (!Number(process.argv[argIdx])) {
+        await mineToBlock(process.argv[argIdx + 1])
     }
-    console.log('\nblock',await getBlock(), 'mined')
-    process.exit()
+    else {
+        await mineBlocks(process.argv[argIdx])
+    }
+
+    console.log('\nblock',await getBlockFn(), 'mined')
+
+    if (typeof cb === 'function') {
+        cb()
+    } else {
+        process.exit()
+    }
 }
 
-if (!Number(process.argv[2])) {
-    mineToBlock(process.argv[3])
-}
-else {
-    mineBlocks(process.argv[2])
+module.exports = mine
+if (!process.argv[1].includes('truffle')) {
+    mine()
 }

@@ -7,7 +7,7 @@ const ETHER_TOKEN_FAKE_ADDRESS = '0x0000000000000000000000000000000000000000'
 const tokenAbi = [].concat(tokenDecimalsAbi, tokenSymbolAbi)
 
 export const initializeTokens = async (state, vaultContract) => {
-  const nextState = {
+  const nextState = state.tokens.find(t => t.symbol === 'ETH') ? state : {
     ...state,
     tokens: [{
       addr: ETHER_TOKEN_FAKE_ADDRESS,

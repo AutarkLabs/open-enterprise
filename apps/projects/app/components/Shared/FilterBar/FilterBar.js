@@ -303,11 +303,12 @@ const FilterBar = ({
     // 80px is "selectAll" checkbox + padding, etc
     // width is calculated from total width of main FB div and right FB div
     // (containing actions, text filter and sorters)
-    const width = total - right - 80
+    const width = total - (right + 120)
     setFiltersDisplayNumber(Math.floor(width / (128+8)))
   }, [])
 
   useEffect(() => {
+    recalculateFiltersDisplayNumber()
     window.addEventListener('resize', recalculateFiltersDisplayNumber)
     return () => {
       window.removeEventListener('resize', recalculateFiltersDisplayNumber)

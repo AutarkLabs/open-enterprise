@@ -3,6 +3,7 @@
 const { assertRevert } = require('@aragon/test-helpers/assertThrow')
 const getBlockNumber = require('@aragon/test-helpers/blockNumber')(web3)
 const mineBlock = require('./helpers/mineBlock')(web3)
+const radspec = require('radspec')
 
 /** Helper function to import truffle contract artifacts */
 const getContract = name => artifacts.require(name)
@@ -75,6 +76,34 @@ contract('Rewards', accounts => {
     referenceToken = await getContract('MiniMeToken').new(NULL_ADDRESS, NULL_ADDRESS, 0, 'one', 18, 'one', false) // empty parameters minime
     rewardToken = await getContract('MiniMeToken').new(NULL_ADDRESS, NULL_ADDRESS, 0, 'two', 18, 'two', true) // empty parameters minime
     minBlock = await getBlockNumber()
+  })
+
+  xcontext('radspec', () => {
+    it('can evaluate radspec', async () => {
+      const expression = "Create a `_isMerit ? 'merit reward' : 'dividend'` that will distribute to token holders who `_isMerit ? 'earned ' : 'hold '` `(_occurrences > 1) ? ' from block ' + _startBlock + 'to block ' + (_startBlock + _duration) + '. This dividend will disburse every ' + _duration + 'blocks in proportion to the holders balance on the disbursement date. The first disbursement occurs at the end of the first cycle, on block ' + (_startBlock + _duration) + '.' : (_isMerit ? 'from block ' + _startBlock + 'to block ' + (_startBlock + _duration) +'.' : 'on'+ _startBlock + '.')` (Reference: `_description`)" //eslint-disable-line quotes
+      let blockNumber = await getBlockNumber()
+      const data = app.contract.newReward.getData(
+        'testReward',
+        true,
+        referenceToken.address,
+        rewardToken.address,
+        4e18,
+        blockNumber,
+        1,
+        1,
+        0
+      )
+
+      const abi = app.abi
+      const call = {
+        abi: abi,
+        transaction: {
+          to: app.address,
+          data: data
+        }
+      }
+      console.log('radspec in func: ', await radspec.evaluate(expression, call))
+    })
   })
 
   context('pre-initialization', () => {
