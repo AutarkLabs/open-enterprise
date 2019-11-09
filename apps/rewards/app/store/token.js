@@ -6,7 +6,9 @@ import {
   getTransferable,
   isTokenVerified,
   tokenDataFallback,
+  DAI_MAINNET_TOKEN_ADDRESS,
 } from '../utils/token-utils'
+import { getPresetTokens } from '../../../../shared/lib/token-utils'
 import { addressesEqual } from '../utils/web3-utils'
 import tokenSymbolAbi from '../../../shared/json-abis/token-symbol.json'
 import tokenNameAbi from '../../../shared/json-abis/token-name.json'
@@ -30,6 +32,7 @@ const tokenStartBlock = new Map() // External contract -> creationBlock (uint)
 const tokenCreationDate = new Map()
 
 const ETH_CONTRACT = Symbol('ETH_CONTRACT')
+const DAI_CONTRACT = Symbol('DAI_CONTRACT')
 
 export async function initializeTokens(state, settings){
   // Set up ETH placeholders
@@ -41,8 +44,22 @@ export async function initializeTokens(state, settings){
   tokenStartBlock.set(ETH_CONTRACT, null)
   tokenCreationDate.set(ETH_CONTRACT, new Date(0))
 
-  const withEthBalance = await loadEthBalance(state, settings)
-  return { ...withEthBalance, amountTokens: [] }
+  if(settings.network.type === 'main'){
+    // Set up DAI placeholders
+    tokenContracts.set(DAI_MAINNET_TOKEN_ADDRESS, DAI_CONTRACT)
+    tokenDecimals.set(DAI_CONTRACT, '18')
+    tokenName.set(DAI_CONTRACT, 'Dai Stablecoin v1.0')
+    tokenSymbols.set(DAI_CONTRACT, 'DAI')
+    tokensTransferable.set(DAI_CONTRACT, true)
+    tokenStartBlock.set(DAI_CONTRACT, null)
+    tokenCreationDate.set(DAI_CONTRACT, new Date(0))
+  }
+
+  const newState = await loadTokenBalances(
+    state,
+    getPresetTokens(settings.network.type),
+    settings)
+  return { ...newState, amountTokens: [] }
 }
 
 export async function vaultLoadBalance(state, { returnValues }, settings) {
@@ -73,17 +90,53 @@ async function loadEthBalance(state, settings) {
   }
 }
 
+async function loadTokenBalances(state, includedTokenAddresses, settings) {
+  let newState = {
+    ...state,
+  }
+
+  if (
+    !Array.isArray(newState.balances) &&
+    !Array.isArray(includedTokenAddresses)
+  ) {
+    return newState
+  }
+
+  let newBalances = newState.balances || []
+  const addresses = new Set(
+    newBalances.map(({ address }) => address).concat(includedTokenAddresses || [])
+  )
+  console.log('Addresses: ', addresses)
+  for (const address of addresses) {
+    console.log('Address: ', address)
+    const { balances, refTokens } = await updateBalancesAndRefTokens(newState, address, settings)
+    console.log('Balances: ', balances)
+    console.log('RefTokens: ', refTokens)
+    newState = {
+      ...newState,
+      balances,
+      refTokens
+    }
+  }
+
+  return newState
+}
+
 export async function updateBalancesAndRefTokens({ balances = [], refTokens = [] }, tokenAddress, settings) {
   const tokenContract = tokenContracts.has(tokenAddress)
     ? tokenContracts.get(tokenAddress)
     : app.external(tokenAddress, tokenAbi)
+  console.log('Token contract: ', tokenContract)
   tokenContracts.set(tokenAddress, tokenContract)
   const balancesIndex = balances.findIndex(({ address }) =>
     addressesEqual(address, tokenAddress)
   )
+  console.log('Balances Index: ', balancesIndex)
   if (balancesIndex === -1) {
     const newBalance = await newBalanceEntry(tokenContract, tokenAddress, settings)
+    console.log('New Balance: ', newBalance)
     let newRefTokens = Array.from(refTokens)
+    console.log('New Balance Startblock: ', newBalance.startBlock)
     if (newBalance.startBlock !== null) {
       const refIndex = refTokens.findIndex(({ address }) =>
         addressesEqual(address, tokenAddress)
