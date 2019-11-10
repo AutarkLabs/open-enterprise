@@ -125,17 +125,13 @@ export async function updateBalancesAndRefTokens({ balances = [], refTokens = []
   const tokenContract = tokenContracts.has(tokenAddress)
     ? tokenContracts.get(tokenAddress)
     : app.external(tokenAddress, tokenAbi)
-  console.log('Token contract: ', tokenContract)
   tokenContracts.set(tokenAddress, tokenContract)
   const balancesIndex = balances.findIndex(({ address }) =>
     addressesEqual(address, tokenAddress)
   )
-  console.log('Balances Index: ', balancesIndex)
   if (balancesIndex === -1) {
     const newBalance = await newBalanceEntry(tokenContract, tokenAddress, settings)
-    console.log('New Balance: ', newBalance)
     let newRefTokens = Array.from(refTokens)
-    console.log('New Balance Startblock: ', newBalance.startBlock)
     if (newBalance.startBlock !== null) {
       const refIndex = refTokens.findIndex(({ address }) =>
         addressesEqual(address, tokenAddress)

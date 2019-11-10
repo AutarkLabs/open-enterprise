@@ -577,18 +577,18 @@ const FundIssues = ({ issues, mode }) => {
 
     // during development, sometimes this fails with a cryptic "cannot perform action" error
     // in case this happens in QA, let's leave this logging here to at least have some paper trail
-    console.log( // eslint-disable-line
-      'ipfs file', issuesArray,
-      'bounties', bounties,
-      'repoIds', repoIds,
-      'issueNumbers', issueNumbers,
-      'bountySizes', bountySizes,
-      'deadlines', deadlines,
-      'tokenTypes', tokenTypes,
-      'tokenContracts', tokenContracts,
-      'ipfsAddresses', ipfsAddresses,
-      'description', description
-    )
+    //console.log( // eslint-disable-line
+    //  'ipfs file', issuesArray,
+    //  'bounties', bounties,
+    //  'repoIds', repoIds,
+    //  'issueNumbers', issueNumbers,
+    //  'bountySizes', bountySizes,
+    //  'deadlines', deadlines,
+    //  'tokenTypes', tokenTypes,
+    //  'tokenContracts', tokenContracts,
+    //  'ipfsAddresses', ipfsAddresses,
+    //  'description', description
+    //)
 
     api.addBounties(
       repoIds,
