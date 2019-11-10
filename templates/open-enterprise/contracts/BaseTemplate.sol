@@ -1,23 +1,23 @@
 pragma solidity 0.4.24;
 
 import "@aragon/apps-agent/contracts/Agent.sol";
+import "@aragon/apps-finance/contracts/Finance.sol";
+import "@aragon/apps-payroll/contracts/Payroll.sol";
+import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
+import "@aragon/apps-survey/contracts/Survey.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
 import "@aragon/apps-voting/contracts/Voting.sol";
-import "@aragon/apps-payroll/contracts/Payroll.sol";
-import "@aragon/apps-finance/contracts/Finance.sol";
-import "@aragon/apps-survey/contracts/Survey.sol";
-import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 
+import "@aragon/id/contracts/IFIFSResolvingRegistrar.sol";
 import "@aragon/os/contracts/acl/ACL.sol";
-import "@aragon/os/contracts/apm/Repo.sol";
 import "@aragon/os/contracts/apm/APMNamehash.sol";
+import "@aragon/os/contracts/apm/Repo.sol";
+import "@aragon/os/contracts/common/IsContract.sol";
+import "@aragon/os/contracts/common/Uint256Helpers.sol";
+import "@aragon/os/contracts/factory/DAOFactory.sol";
 import "@aragon/os/contracts/kernel/Kernel.sol";
 import "@aragon/os/contracts/lib/ens/ENS.sol";
 import "@aragon/os/contracts/lib/ens/PublicResolver.sol";
-import "@aragon/os/contracts/factory/DAOFactory.sol";
-import "@aragon/os/contracts/common/IsContract.sol";
-import "@aragon/os/contracts/common/Uint256Helpers.sol";
-import "@aragon/id/contracts/IFIFSResolvingRegistrar.sol";
 
 // Custom Autark Apps
 import "@autark/apps-token-manager-custom/contracts/TokenManager.sol";
@@ -29,49 +29,49 @@ contract BaseTemplate is APMNamehash, IsContract {
 
     /* Hardcoded constant to save gas
     * bytes32 constant internal AGENT_APP_ID = apmNamehash("agent");                            // agent.aragonpm.eth
-    * bytes32 constant internal VAULT_APP_ID = apmNamehash("vault");                            // vault.aragonpm.eth
-    * bytes32 constant internal VOTING_APP_ID = apmNamehash("voting");                          // voting.aragonpm.eth
-    * bytes32 constant internal SURVEY_APP_ID = apmNamehash("survey");                          // survey.aragonpm.eth
-    * bytes32 constant internal PAYROLL_APP_ID = apmNamehash("payroll");                        // payroll.aragonpm.eth
     * bytes32 constant internal FINANCE_APP_ID = apmNamehash("finance");                        // finance.aragonpm.eth
+    * bytes32 constant internal PAYROLL_APP_ID = apmNamehash("payroll");                        // payroll.aragonpm.eth
+    * bytes32 constant internal SURVEY_APP_ID = apmNamehash("survey");                          // survey.aragonpm.eth
     * bytes32 constant internal TOKEN_MANAGER_APP_ID = apmNamehash("token-manager-custom");     // token-manager-custom.aragonpm.eth
     * bytes32 constant internal TOKEN_MANAGER_APP_ID = apmNamehash("whitelist-oracle");         // whitelist-oracle.aragonpm.eth
+    * bytes32 constant internal VAULT_APP_ID = apmNamehash("vault");                            // vault.aragonpm.eth
+    * bytes32 constant internal VOTING_APP_ID = apmNamehash("voting");                          // voting.aragonpm.eth
     */
     bytes32 constant internal AGENT_APP_ID = 0x9ac98dc5f995bf0211ed589ef022719d1487e5cb2bab505676f0d084c07cf89a;
+    bytes32 constant internal FINANCE_APP_ID = 0xbf8491150dafc5dcaee5b861414dca922de09ccffa344964ae167212e8c673ae;
+    bytes32 constant internal PAYROLL_APP_ID = 0x463f596a96d808cb28b5d080181e4a398bc793df2c222f6445189eb801001991;
+    bytes32 constant internal SURVEY_APP_ID = 0x030b2ab880b88e228f2da5a3d19a2a31bc10dbf91fb1143776a6de489389471e;
+    bytes32 constant internal TOKEN_MANAGER_APP_ID = 0x76653910e9cc1addb131daa2a5718d5e4d622b53b12858fedc8f604fad817779;
     bytes32 constant internal VAULT_APP_ID = 0x7e852e0fcfce6551c13800f1e7476f982525c2b5277ba14b24339c68416336d1;
     bytes32 constant internal VOTING_APP_ID = 0x9fa3927f639745e587912d4b0fea7ef9013bf93fb907d29faeab57417ba6e1d4;
-    bytes32 constant internal PAYROLL_APP_ID = 0x463f596a96d808cb28b5d080181e4a398bc793df2c222f6445189eb801001991;
-    bytes32 constant internal FINANCE_APP_ID = 0xbf8491150dafc5dcaee5b861414dca922de09ccffa344964ae167212e8c673ae;
-    bytes32 constant internal TOKEN_MANAGER_APP_ID = 0x76653910e9cc1addb131daa2a5718d5e4d622b53b12858fedc8f604fad817779;
-    bytes32 constant internal SURVEY_APP_ID = 0x030b2ab880b88e228f2da5a3d19a2a31bc10dbf91fb1143776a6de489389471e;
     bytes32 constant internal WHITELIST_ORACLE_APP_ID = 0x41a68a245a2401bf50f524075aad214310f3b8a470fc92149a8b02d2ef858e3a;
 
-    string constant private ERROR_ENS_NOT_CONTRACT = "TEMPLATE_ENS_NOT_CONTRACT";
-    string constant private ERROR_DAO_FACTORY_NOT_CONTRACT = "TEMPLATE_DAO_FAC_NOT_CONTRACT";
-    string constant private ERROR_ARAGON_ID_NOT_PROVIDED = "TEMPLATE_ARAGON_ID_NOT_PROVIDED";
     string constant private ERROR_ARAGON_ID_NOT_CONTRACT = "TEMPLATE_ARAGON_ID_NOT_CONTRACT";
-    string constant private ERROR_MINIME_FACTORY_NOT_PROVIDED = "TEMPLATE_MINIME_FAC_NOT_PROVIDED";
-    string constant private ERROR_MINIME_FACTORY_NOT_CONTRACT = "TEMPLATE_MINIME_FAC_NOT_CONTRACT";
+    string constant private ERROR_ARAGON_ID_NOT_PROVIDED = "TEMPLATE_ARAGON_ID_NOT_PROVIDED";
     string constant private ERROR_CANNOT_CAST_VALUE_TO_ADDRESS = "TEMPLATE_CANNOT_CAST_VALUE_TO_ADDRESS";
+    string constant private ERROR_DAO_FACTORY_NOT_CONTRACT = "TEMPLATE_DAO_FAC_NOT_CONTRACT";
+    string constant private ERROR_ENS_NOT_CONTRACT = "TEMPLATE_ENS_NOT_CONTRACT";
     string constant private ERROR_INVALID_ID = "TEMPLATE_INVALID_ID";
+    string constant private ERROR_MINIME_FACTORY_NOT_CONTRACT = "TEMPLATE_MINIME_FAC_NOT_CONTRACT";
+    string constant private ERROR_MINIME_FACTORY_NOT_PROVIDED = "TEMPLATE_MINIME_FAC_NOT_PROVIDED";
 
-    ENS internal ens;
     DAOFactory internal daoFactory;
-    MiniMeTokenFactory internal miniMeFactory;
+    ENS internal ens;
     IFIFSResolvingRegistrar internal aragonID;
+    MiniMeTokenFactory internal miniMeFactory;
 
     event DeployDao(address dao);
-    event SetupDao(address dao);
     event DeployToken(address token);
     event InstalledApp(address appProxy, bytes32 appId);
+    event SetupDao(address dao);
 
     constructor(DAOFactory _daoFactory, ENS _ens, MiniMeTokenFactory _miniMeFactory, IFIFSResolvingRegistrar _aragonID) public {
-        require(isContract(address(_ens)), ERROR_ENS_NOT_CONTRACT);
         require(isContract(address(_daoFactory)), ERROR_DAO_FACTORY_NOT_CONTRACT);
+        require(isContract(address(_ens)), ERROR_ENS_NOT_CONTRACT);
 
-        ens = _ens;
         aragonID = _aragonID;
         daoFactory = _daoFactory;
+        ens = _ens;
         miniMeFactory = _miniMeFactory;
     }
 
