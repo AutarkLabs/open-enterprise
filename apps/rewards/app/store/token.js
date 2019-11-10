@@ -1,14 +1,17 @@
 import {
-  getTokenName,
   getTokenStartBlock,
   getTokenCreationDate,
-  getTokenSymbol,
   getTransferable,
   isTokenVerified,
   tokenDataFallback,
   DAI_MAINNET_TOKEN_ADDRESS,
 } from '../utils/token-utils'
-import { getPresetTokens } from '../../../../shared/lib/token-utils'
+import { 
+  getPresetTokens,
+  getTokenDecimals,
+  getTokenName,
+  getTokenSymbol
+} from '../../../../shared/lib/token-utils'
 import { addressesEqual } from '../utils/web3-utils'
 import tokenSymbolAbi from '../../../shared/json-abis/token-symbol.json'
 import tokenNameAbi from '../../../shared/json-abis/token-name.json'
@@ -106,12 +109,8 @@ async function loadTokenBalances(state, includedTokenAddresses, settings) {
   const addresses = new Set(
     newBalances.map(({ address }) => address).concat(includedTokenAddresses || [])
   )
-  console.log('Addresses: ', addresses)
   for (const address of addresses) {
-    console.log('Address: ', address)
     const { balances, refTokens } = await updateBalancesAndRefTokens(newState, address, settings)
-    console.log('Balances: ', balances)
-    console.log('RefTokens: ', refTokens)
     newState = {
       ...newState,
       balances,
@@ -220,16 +219,8 @@ function loadTokenDecimals(tokenContract, tokenAddress, { network }) {
       const fallback =
         tokenDataFallback(tokenAddress, 'decimals', network.type) || '0'
 
-      tokenContract.decimals().subscribe(
-        (decimals = fallback) => {
-          tokenDecimals.set(tokenContract, decimals)
-          resolve(decimals)
-        },
-        () => {
-          // Decimals is optional
-          resolve(fallback)
-        }
-      )
+      const tokenDecimals = getTokenDecimals(app, tokenAddress)
+      resolve(tokenDecimals || fallback)
     }
   })
 }

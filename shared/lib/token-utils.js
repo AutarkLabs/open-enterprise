@@ -2,6 +2,7 @@ import { ETHER_TOKEN_VERIFIED_ADDRESSES } from './verified-tokens'
 import { toUtf8 } from './web3-utils'
 import tokenBalanceAbi from '../abi/token-balanceof.json'
 import tokenDecimalsAbi from '../abi/token-decimals.json'
+import tokenDecimals256Abi from '../abi/token-decimals256.json'
 import tokenNameAbi from '../abi/token-name.json'
 import tokenNameBytesAbi from '../abi/token-name-bytes.json'
 import tokenSymbolAbi from '../abi/token-symbol.json'
@@ -98,6 +99,18 @@ export async function getTokenName(app, address) {
   }
 
   return tokenName || null
+}
+
+export async function getTokenDecimals(app, address) {
+  try {
+    const token = app.external(address, tokenDecimalsAbi)
+    return await token.decimals().toPromise()
+  }
+  catch (err) {
+    const token = app.external(address, tokenDecimals256Abi)
+    return await token.decimals().toPromise()
+  }
+
 }
 
 export function getPresetTokens(networkType) {
