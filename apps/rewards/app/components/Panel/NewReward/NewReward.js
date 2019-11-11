@@ -523,7 +523,7 @@ class NewRewardClass extends React.Component {
       </Field>
       <Field
         label="Reference date"
-        hint={<span>The <b>reference date</b> is the date at which a snapshot of all the tokenholders accounts is taken to determine which tokenholders are qualified for the reward. Disbursement will follow either immediately the reward proposal is processed or whenever the reference date passes.</span>}
+        hint={<span>The <b>reference date</b> is the date at which a snapshot of all the tokenholders' accounts is taken to determine which tokenholders are qualified for the reward. Disbursement will follow either immediately the reward proposal is processed or whenever the reference date passes.</span>}
         required
       >
         <DateInput
