@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs'
 import buildStubbedApiReact from '../../../shared/api-react'
-import { ETHER_TOKEN_FAKE_ADDRESS } from './utils/token-utils'
+import { ETHER_TOKEN_FAKE_ADDRESS } from '../../../shared/lib/token-utils'
 
 const initialState = process.env.NODE_ENV !== 'production' && {
   token: ETHER_TOKEN_FAKE_ADDRESS,

@@ -1,6 +1,7 @@
 import { app } from '../app'
 import tokenSymbolAbi from '../../abi/token-symbol.json'
 import tokenDecimalsAbi from '../../abi/token-decimal.json'
+import { getTokenSymbol, getTokenDecimals } from '../../../../../shared/lib/token-utils'
 
 const ETHER_TOKEN_FAKE_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -52,8 +53,8 @@ const loadToken = async (tokenAddress, vaultContract) => {
 
   const [ balance, decimals, symbol ] = await Promise.all([
     loadTokenBalance(tokenAddress, vaultContract),
-    tokenContract.decimals().toPromise(),
-    tokenContract.symbol().toPromise(),
+    getTokenDecimals(app, tokenAddress),
+    getTokenSymbol(app, tokenAddress),
   ])
 
   return ({

@@ -88,7 +88,7 @@ const VoteDetails = ({ vote, onVote }) => {
                 <Text.Block size="large">
                   {
                     BigNumber(vote.data.balance)
-                      .div(BigNumber(10 ** decimals))
+                      .div(BigNumber(10 ** (decimals || 18))) // added fallback to prevent flashing on delayed decimals calls. We should avoid this by getting this info in the store
                       .toString()
                   } {vote.data.tokenSymbol}
                 </Text.Block>

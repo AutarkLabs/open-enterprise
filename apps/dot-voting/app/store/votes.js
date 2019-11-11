@@ -3,7 +3,7 @@ import { first, map, mergeMap } from 'rxjs/operators'
 
 import { app } from './'
 import { EMPTY_CALLSCRIPT } from '../utils/vote-utils'
-import { ETHER_TOKEN_FAKE_ADDRESS, getTokenSymbol } from '../utils/token-utils'
+import { ETHER_TOKEN_FAKE_ADDRESS, getTokenSymbol } from '../../../../shared/lib/token-utils'
 import allocationsAbi from '../../../shared/json-abis/allocations'
 
 export const castVote = async (state, { voteId }) => {
