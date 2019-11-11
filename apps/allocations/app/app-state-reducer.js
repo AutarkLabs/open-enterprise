@@ -1,5 +1,6 @@
 import { BigNumber } from 'bignumber.js'
 import { ETHER_TOKEN_FAKE_ADDRESS } from '../../../shared/lib/token-utils'
+import { addressesEqual } from '../../../shared/lib/web3-utils'
 
 // Use this function to sort by ETH and then token symbol
 const compareBalancesByEthAndSymbol = (tokenA, tokenB) => {
@@ -14,7 +15,7 @@ const compareBalancesByEthAndSymbol = (tokenA, tokenB) => {
 
 const getTokenFromAddress = (tokenAddress, tokenList) => {
   if (!tokenList || !tokenList.length) return tokenAddress
-  return tokenList.find(token => token.address === tokenAddress)
+  return tokenList.find(token => addressesEqual(token.address, tokenAddress))
 }
 
 function appStateReducer(state) {
