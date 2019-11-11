@@ -16,6 +16,7 @@ import styled from 'styled-components'
 
 import { STATUSES } from '../../utils/constants'
 import { displayCurrency } from '../../utils/helpers'
+import { addressesEqual } from '../../../../../shared/lib/web3-utils'
 
 const AllocationsHistory = ({ allocations }) => {
   const theme = useTheme()
@@ -23,7 +24,7 @@ const AllocationsHistory = ({ allocations }) => {
   const { balances = [], budgets = [] } = useAppState()
   const network = useNetwork()
   const getTokenSymbol = inputAddress => {
-    const matchingBalance = balances.find(({ address }) => inputAddress === address)
+    const matchingBalance = balances.find(({ address }) => addressesEqual(inputAddress, address))
     return matchingBalance ? matchingBalance.symbol : ''
   }
   const getBudgetName = inputId => {

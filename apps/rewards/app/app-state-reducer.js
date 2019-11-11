@@ -7,6 +7,7 @@ import {
   YEARS,
   WEEKS,
 } from './utils/constants'
+import { addressesEqual } from '../../../shared/lib/web3-utils'
 import {
   calculateAverageRewardsNumbers,
   calculateMyRewardsSummary
@@ -59,9 +60,9 @@ function appStateReducer(state) {
           reward.rewardType = ONE_TIME_DIVIDEND
           reward.dateReference = new Date(reward.endDate)
         }
-        const referenceAssetToken = state.refTokens.find( token => token.address === reward.referenceToken)
+        const referenceAssetToken = state.refTokens.find( token => addressesEqual(token.address, reward.referenceToken))
         reward.referenceTokenSymbol = referenceAssetToken.symbol
-        const amountToken = state.amountTokens.find( token => token.address === reward.rewardToken)
+        const amountToken = state.amountTokens.find( token => addressesEqual(token.address, reward.rewardToken))
         reward.amountToken = amountToken.symbol
         rewards.push(reward)
       }

@@ -27,7 +27,7 @@ import {
 import moment from 'moment'
 import { isBefore } from 'date-fns'
 import { BigNumber } from 'bignumber.js'
-import { isAddress } from '../../../utils/web3-utils'
+import { isAddress, addressesEqual } from '../../../../../../shared/lib/web3-utils'
 import { ETHER_TOKEN_VERIFIED_BY_SYMBOL } from '../../../utils/verified-tokens'
 import TokenSelectorInstance from './TokenSelectorInstance'
 import {
@@ -265,7 +265,7 @@ class NewRewardClass extends React.Component {
       else return nullAsset
     }
     const selectedToken = refTokens.find(t => (
-      t.address === referenceAsset.props.address
+      addressesEqual(t.address, referenceAsset.props.address)
     ))
     return selectedToken
   }

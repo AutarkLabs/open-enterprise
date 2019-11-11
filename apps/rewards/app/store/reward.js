@@ -1,6 +1,7 @@
 import { first, map } from 'rxjs/operators'
 import { app } from './'
 import { blocksToMilliseconds } from '../../../../shared/ui/utils'
+import { addressesEqual } from '../../../../shared/lib/web3-utils'
 import { updateBalancesAndRefTokens } from './token'
 
 
@@ -25,7 +26,7 @@ export async function onRewardClaimed({ rewards = [], claims = {} }, { rewardId 
 
   let { claimsByToken = [], totalClaimsMade = 0 } = claims
 
-  const tokenIndex = claimsByToken.findIndex(token => token.address === rewards[rewardId].rewardToken)
+  const tokenIndex = claimsByToken.findIndex(token => addressesEqual(token.address, rewards[rewardId].rewardToken))
 
   if (tokenIndex === -1) {
     claimsByToken.push({
