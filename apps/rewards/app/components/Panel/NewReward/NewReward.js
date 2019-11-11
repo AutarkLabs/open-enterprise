@@ -5,6 +5,7 @@ import styled from 'styled-components'
 import {
   Button,
   DropDown,
+  Field,
   GU,
   IconClose,
   IdentityBadge,
@@ -14,7 +15,7 @@ import {
   useTheme,
 } from '@aragon/ui'
 
-import { Form, FormField } from '../../Form'
+import { Form } from '../../Form'
 import { DateInput } from '../../../../../../shared/ui'
 import {
   millisecondsToBlocks,
@@ -138,7 +139,7 @@ const getBlockProps = (
   }
   if(rewardType === ONE_TIME_DIVIDEND){
     const rawBlockDuration = millisecondsToBlocks(Date.now(), dateReference)
-    startBlock = dateReference <= new Date() ? currentBlock + rawBlockDuration - BLOCK_PADDING : currentBlock 
+    startBlock = dateReference <= new Date() ? currentBlock + rawBlockDuration - BLOCK_PADDING : currentBlock
     duration = dateReference <= new Date() ? BLOCK_PADDING : rawBlockDuration
   }
   return { isMerit, amountWei, startBlock, duration, occurrences }
@@ -238,7 +239,7 @@ class NewRewardClass extends React.Component {
         rewardType !== null && (
         rewardType !== RECURRING_DIVIDEND || (
           !isNaN(disbursement) && +disbursement > 0 &&
-              Math.floor(disbursement) === +disbursement 
+              Math.floor(disbursement) === +disbursement
         ) && (
           !!disbursements.length
         )
@@ -466,139 +467,138 @@ class NewRewardClass extends React.Component {
 
   startAndEndDate = (isMerit) => (
     <HorizontalContainer>
-      <FormField
+      <Field
         label="Start date"
         hint={isMerit && <span>The <b>start date</b> for one-time merits defines the beginning of the review period in which newly accrued amounts of the reference asset will be determined.</span>}
-        width={`calc(50% - ${GU}px)`}
+        css={`width: calc(50% - ${GU}px);`}
         required
-        input={
-          <DateInput
-            name="dateStart"
-            horizontalAlign="left"
-            wide
-            value={this.state.dateStart}
-            onChange={dateStart => {
-              this.setState({ dateStart })
-              this.setDisbursements(
-                dateStart,
-                this.state.dateEnd,
-                this.state.disbursement,
-                this.state.disbursementUnit,
-              )
-            }}
-          />
-        }
-      />
-      <FormField
+      >
+        <DateInput
+          name="dateStart"
+          horizontalAlign="left"
+          wide
+          value={this.state.dateStart}
+          onChange={dateStart => {
+            this.setState({ dateStart })
+            this.setDisbursements(
+              dateStart,
+              this.state.dateEnd,
+              this.state.disbursement,
+              this.state.disbursementUnit,
+            )
+          }}
+        />
+      </Field>
+      <Field
         label="End date"
         hint={isMerit && <span>The <b>end date</b> for one-time merits defines the end of the review period in which newly accrued amounts of the reference asset will be determined.</span>}
-        width={`calc(50% - ${GU}px)`}
+        css={`width: calc(50% - ${GU}px);`}
         required
-        input={
-          <DateInput
-            name="dateEnd"
-            wide
-            value={this.state.dateEnd}
-            onChange={dateEnd => {
-              this.setState({ dateEnd })
-              this.setDisbursements(
-                this.state.dateStart,
-                dateEnd,
-                this.state.disbursement,
-                this.state.disbursementUnit,
-              )
-            }}
-          />
-        }
-      />
+      >
+        <DateInput
+          name="dateEnd"
+          wide
+          value={this.state.dateEnd}
+          onChange={dateEnd => {
+            this.setState({ dateEnd })
+            this.setDisbursements(
+              this.state.dateStart,
+              dateEnd,
+              this.state.disbursement,
+              this.state.disbursementUnit,
+            )
+          }}
+        />
+      </Field>
     </HorizontalContainer>
   )
 
   oneTimeDividend = () => (
     <VerticalContainer>
-      <FormField
+      <Field
         required
         label="Total amount"
-        input={this.amountWithTokenAndBalance()}
-      />
-      <FormField
+      >
+        {this.amountWithTokenAndBalance()}
+      </Field>
+      <Field
         label="Reference date"
-        hint={<span>The <b>reference date</b> is the date at which a snapshot of all the tokenholder's accounts is taken to determine which tokenholders are qualified for the reward. Disbursement will follow either immediately the reward proposal is processed or whenever the reference date passes.</span>}
+        hint={<span>The <b>reference date</b> is the date at which a snapshot of all the tokenholders' accounts is taken to determine which tokenholders are qualified for the reward. Disbursement will follow either immediately the reward proposal is processed or whenever the reference date passes.</span>}
         required
-        input={
-          <DateInput
-            name="dateReference"
-            value={this.state.dateReference}
-            onChange={dateReference => {
-              this.setState({ dateReference, })
-              this.setErrors({ dateReference })
-            }}
-            wide
-          />
-        }
-      />
+      >
+        <DateInput
+          name="dateReference"
+          value={this.state.dateReference}
+          onChange={dateReference => {
+            this.setState({ dateReference, })
+            this.setErrors({ dateReference })
+          }}
+          wide
+        />
+      </Field>
     </VerticalContainer>
   )
 
   recurringDividend = () => (
     <VerticalContainer>
-      <FormField
+      <Field
         required
         label="Amount per disbursement"
-        input={this.amountWithTokenAndBalance()}
-      />
+      >
+        {this.amountWithTokenAndBalance()}
+      </Field>
       {this.startAndEndDate(false)}
-      <FormField
+      <Field
         required
         label="Disbursement frequency"
         hint={<span>The <b>disbursement frequency</b> is the time in between each dividend disbursement.</span>}
-        input={
-          <HorizontalContainer>
-            <DisbursementInput
-              name="disbursement"
-              type="number"
-              min={1}
-              step={1}
-              onChange={e => {
-                this.setState({ disbursement: e.target.value })
-                this.setDisbursements(
-                  this.state.dateStart,
-                  this.state.dateEnd,
-                  e.target.value,
-                  this.state.disbursementUnit,
-                )
-              }}
-              value={this.state.disbursement}
-              css="flex: 1"
-            />
-            <DropDown
-              name="disbursementUnit"
-              css={{ borderRadius: '0px 4px 4px 0px' }}
-              items={DISBURSEMENT_UNITS}
-              selected={DISBURSEMENT_UNITS.indexOf(this.state.disbursementUnit)}
-              onChange={i => {
-                this.setState({ disbursementUnit: DISBURSEMENT_UNITS[i] })
-                this.setDisbursements(
-                  this.state.dateStart,
-                  this.state.dateEnd,
-                  this.state.disbursement,
-                  DISBURSEMENT_UNITS[i],
-                )
-              }}
-            />
-          </HorizontalContainer>
-        }
-      />
+      >
+        <HorizontalContainer>
+          <DisbursementInput
+            name="disbursement"
+            type="number"
+            min={1}
+            step={1}
+            onChange={e => {
+              this.setState({ disbursement: e.target.value })
+              this.setDisbursements(
+                this.state.dateStart,
+                this.state.dateEnd,
+                e.target.value,
+                this.state.disbursementUnit,
+              )
+            }}
+            value={this.state.disbursement}
+            css="flex: 1"
+          />
+          <DropDown
+            name="disbursementUnit"
+            css={{ borderRadius: '0px 4px 4px 0px' }}
+            items={DISBURSEMENT_UNITS}
+            selected={DISBURSEMENT_UNITS.indexOf(this.state.disbursementUnit)}
+            onChange={i => {
+              this.setState({ disbursementUnit: DISBURSEMENT_UNITS[i] })
+              this.setDisbursements(
+                this.state.dateStart,
+                this.state.dateEnd,
+                this.state.disbursement,
+                DISBURSEMENT_UNITS[i],
+              )
+            }}
+          />
+        </HorizontalContainer>
+      </Field>
     </VerticalContainer>
   )
 
   oneTimeMerit = () => (
     <VerticalContainer>
-      <FormField
+      <Field
         required
         label="Total amount"
-        input={this.amountWithTokenAndBalance()}
-      />
+      >
+        {this.amountWithTokenAndBalance()}
+      </Field>
       {this.startAndEndDate(true)}
     </VerticalContainer>
   )
@@ -652,77 +652,73 @@ class NewRewardClass extends React.Component {
           }
         >
           <VerticalSpace />
-          <FormField
+          <Field
             label="Description"
             required
-            input={
-              <TextInput
-                name="description"
-                wide
-                multiline
-                placeholder="Briefly describe this reward."
-                value={this.state.description}
-                onChange={e => this.setState({ description: e.target.value })}
-              />
-            }
-          />
-          <FormField
+          >
+            <TextInput
+              name="description"
+              wide
+              multiline
+              placeholder="Briefly describe this reward."
+              value={this.state.description}
+              onChange={e => this.setState({ description: e.target.value })}
+            />
+          </Field>
+          <Field
             required
             wide
             label="Reference Asset"
             hint={<span>The <b>reference asset</b> is the token that members will be required to hold in order to receive the reward. For example, if the reference asset is ANT, then any member that holds ANT at the reference date(s) will be eligible to receive the reward. The reference asset is not the token to be paid as reward amount.</span>}
-            input={
-              <DropDown
-                name="referenceAsset"
-                wide
-                items={this.state.referenceAssets}
-                selected={this.state.referenceAssets.indexOf(this.state.referenceAsset)}
-                placeholder="Select a token"
-                onChange={async (i) => {
-                  const referenceAsset = this.state.referenceAssets[i]
-                  this.setState({ referenceAsset })
-                  if (referenceAsset !== OTHER)
-                    await this.verifyTransferable(this.props.app, referenceAsset.key)
-                  this.setErrors({ referenceAsset })
-                }}
-              />
-            }
-          />
+          >
+            <DropDown
+              name="referenceAsset"
+              wide
+              items={this.state.referenceAssets}
+              selected={this.state.referenceAssets.indexOf(this.state.referenceAsset)}
+              placeholder="Select a token"
+              onChange={async (i) => {
+                const referenceAsset = this.state.referenceAssets[i]
+                this.setState({ referenceAsset })
+                if (referenceAsset !== OTHER)
+                  await this.verifyTransferable(this.props.app, referenceAsset.key)
+                this.setErrors({ referenceAsset })
+              }}
+            />
+          </Field>
           {this.state.referenceAsset === OTHER && (
             <React.Fragment>
-              <FormField
+              <Field
                 label={this.onMainNet() ? this.state.labelCustomToken : 'TOKEN ADDRESS'}
                 required
-                input={
-                  <TextInput
-                    name="customToken"
-                    placeholder={this.onMainNet() ? 'SYM…' : ''}
-                    wide
-                    value={this.state.customToken.value}
-                    onChange={this.handleCustomTokenChange}
-                  />
-                }
-              />
+              >
+                <TextInput
+                  name="customToken"
+                  placeholder={this.onMainNet() ? 'SYM…' : ''}
+                  wide
+                  value={this.state.customToken.value}
+                  onChange={this.handleCustomTokenChange}
+                />
+              </Field>
             </React.Fragment>
           )}
-          <FormField
+          <Field
             required
             label="Type"
             hint="Rewards can either be dividends or merits. Dividends are rewards that are distributed based on holding the reference asset at the reference date(s), and they can either be one-time or recurring. Merits can only be one-time, and are based on the newly accrued amount of a particular token over a specified period of time."
-            input={
-              <DropDown
-                wide
-                name="rewardType"
-                items={REWARD_TYPES}
-                selected={REWARD_TYPES.indexOf(rewardType)}
-                placeholder="Select type of reward"
-                onChange={i => {
-                  this.setState({ rewardType: REWARD_TYPES[i] })
-                  this.setErrors({ rewardType: REWARD_TYPES[i] })
-                }}
-              />
-            }
-          />
+          >
+            <DropDown
+              wide
+              name="rewardType"
+              items={REWARD_TYPES}
+              selected={REWARD_TYPES.indexOf(rewardType)}
+              placeholder="Select type of reward"
+              onChange={i => {
+                this.setState({ rewardType: REWARD_TYPES[i] })
+                this.setErrors({ rewardType: REWARD_TYPES[i] })
+              }}
+            />
+          </Field>
           {this.fieldsToDisplay()}
         </Form>
       </React.Fragment>
