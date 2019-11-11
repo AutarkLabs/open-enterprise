@@ -1,6 +1,6 @@
 {
   "name": "Dot Voting",
-  "description": "Participate in multi-option dot votes, such as allocations and issue curation.",
+  "description": "Participate in multi-option dot votes, including allocations and issue curation.",
   "author": "Autark",
   "changelog_url": "https://github.com/AutarkLabs/planning-suite/releases",
   "source_url": "https://github.com/AutarkLabs/planning-suite/tree/master/apps/dot-voting",
