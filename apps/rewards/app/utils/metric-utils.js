@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { MILLISECONDS_IN_A_MONTH } from '../../../../shared/ui/utils/math-utils'
+import { addressesEqual } from '../../../../shared/lib/web3-utils'
 
 export const calculateAverageRewardsNumbers = ( rewards, claims, balances, convertRates ) => {
   if (balances && convertRates) {
@@ -20,7 +21,7 @@ const calculateAvgClaim = ({ claimsByToken, totalClaimsMade }, balances, convert
     claimsByToken,
     balances,
     convertRates,
-    (claim, bal) => claim.address === bal.address
+    (claim, bal) => addressesEqual(claim.address, bal.address)
   ) / totalClaimsMade
 }
 
@@ -40,7 +41,7 @@ const calculateMonthlyAvg = (rewards, balances, convertRates) => {
     rewards,
     balances,
     convertRates,
-    (rew, bal) => rew.rewardToken === bal.address
+    (rew, bal) => addressesEqual(rew.rewardToken, bal.address)
   )
   const monthlyAvg = totalRewards / monthsFromNow
   return monthlyAvg
@@ -52,7 +53,7 @@ const calculateYTDRewards = (rewards, balances, convertRates) => {
     rewards,
     balances,
     convertRates,
-    (rew, bal) => rew.rewardToken === bal.address && rew.endDate >= yearBeginning
+    (rew, bal) => addressesEqual(rew.rewardToken, bal.address) && rew.endDate >= yearBeginning
   )
   return totalRewards
 }
@@ -91,7 +92,7 @@ const calculateUnclaimedRewards = (rewards, balances, convertRates) => {
     rewards,
     balances,
     convertRates,
-    (rew, bal) => !rew.claimed && rew.rewardToken === bal.address // rewardFilter
+    (rew, bal) => !rew.claimed && addressesEqual(rew.rewardToken, bal.address) // rewardFilter
   )
 }
 
@@ -100,7 +101,7 @@ const calculateAllRewards = (rewards, balances, convertRates) => {
     rewards,
     balances,
     convertRates,
-    (rew, bal) => rew.claimed && rew.rewardToken === bal.address, // RewardFilter
+    (rew, bal) => rew.claimed && addressesEqual(rew.rewardToken, bal.address), // RewardFilter
   )
 }
 
@@ -110,7 +111,7 @@ const calculateYTDUserRewards = (rewards, balances, convertRates) => {
     rewards,
     balances,
     convertRates,
-    (rew, bal) => rew.claimed && rew.rewardToken === bal.address && rew.endDate >= yearBeginning
+    (rew, bal) => rew.claimed && addressesEqual(rew.rewardToken, bal.address) && rew.endDate >= yearBeginning
   )
 }
 

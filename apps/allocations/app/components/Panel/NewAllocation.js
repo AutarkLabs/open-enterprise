@@ -5,6 +5,7 @@ import web3Utils from 'web3-utils'
 import styled from 'styled-components'
 import { BigNumber } from 'bignumber.js'
 
+import { addressesEqual } from '../../../../../shared/lib/web3-utils'
 import { RecipientsInput } from '../../../../../shared/ui'
 import { MIN_AMOUNT } from '../../utils/constants'
 import { displayCurrency, isStringEmpty } from '../../utils/helpers'
@@ -166,7 +167,7 @@ class NewAllocation extends React.Component {
     } = this.state
 
     const remainingBudget = displayCurrency(BigNumber(budgetValue.remaining))
-    const inVault = displayCurrency(balances.find(b => b.address === tokenValue.address).amount)
+    const inVault = displayCurrency(balances.find(b => addressesEqual(b.address, tokenValue.address)).amount)
 
     const budgetDropDown = (
       <FormField
