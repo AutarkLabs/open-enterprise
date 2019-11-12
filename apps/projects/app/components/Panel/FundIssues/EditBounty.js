@@ -29,14 +29,10 @@ const Deadline = styled.div`
 `
 
 const EditBounty = ({
-  amountChange,
   bounty,
-  generateDeadlineChange,
-  generateExpChange,
-  generateHoursChange,
   issue,
   tokens,
-  tokenSelect,
+  updateBounty,
 }) => {
   const theme = useTheme()
   const [ detailsOpen, setDetailsOpen ] = useState(false)
@@ -54,7 +50,7 @@ const EditBounty = ({
         <IssueTitleCompact
           title={issue.title}
           tag={bounty && bounty.hours > 0
-            ? BigNumber(bounty.size).dp(2) + ' ' + bounty.token.symbol
+            ? BigNumber(bounty.payout).dp(2) + ' ' + bounty.token.symbol
             : ''
           }
         />
@@ -76,15 +72,15 @@ const EditBounty = ({
             <HorizontalInputGroup>
               <AmountInput
                 name="amount"
-                value={bounty.amount}
-                onChange={e => amountChange(issue.id, e.target.value)}
+                value={bounty.payout}
+                onChange={e => updateBounty({ payout: e.target.value })}
                 wide
               />
               <TokenInput
                 name="token"
                 items={tokens.map(t => t.symbol)}
                 selected={tokens.indexOf(bounty.token)}
-                onChange={i => tokenSelect(issue.id, i)}
+                onChange={i => updateBounty({ token: tokens[i] })}
               />
             </HorizontalInputGroup>
           </div>
@@ -94,7 +90,7 @@ const EditBounty = ({
             <HoursInput
               name="hours"
               value={bounty.hours}
-              onChange={generateHoursChange(issue.id)}
+              onChange={e => updateBounty({ hours: e.target.value })}
               wide
             />
           </div>
@@ -106,7 +102,7 @@ const EditBounty = ({
             input={
               <DropDown
                 items={bountySettings.expLvls.map(exp => exp.name)}
-                onChange={generateExpChange(issue.id)}
+                onChange={index => updateBounty({ exp: index })}
                 selected={bounty.exp}
                 wide
               />
@@ -121,7 +117,7 @@ const EditBounty = ({
               <DateInput
                 name='deadline'
                 value={bounty.deadline}
-                onChange={generateDeadlineChange(issue.id)}
+                onChange={deadline => updateBounty({ deadline })}
                 width="100%"
               />
             }
@@ -133,14 +129,10 @@ const EditBounty = ({
 }
 
 EditBounty.propTypes = {
-  amountChange: PropTypes.func.isRequired,
   bounty: PropTypes.object,
-  generateDeadlineChange: PropTypes.func.isRequired,
-  generateExpChange: PropTypes.func.isRequired,
-  generateHoursChange: PropTypes.func.isRequired,
   issue: issueShape,
   tokens: PropTypes.array.isRequired,
-  tokenSelect: PropTypes.func.isRequired,
+  updateBounty: PropTypes.func.isRequired,
 }
 
 export default EditBounty

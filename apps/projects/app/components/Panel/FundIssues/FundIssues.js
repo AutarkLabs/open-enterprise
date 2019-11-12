@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 // issues are validated using correct shape - eslint problem?
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { addHours } from 'date-fns'
@@ -43,27 +43,20 @@ const errorMessages = {
     `exceeds the available funds in the vault (${inVault} ${symbol}).`
 }
 
-const calculateSize = ({ baseRate, exp, expLvls, hours }) => (
-  hours * baseRate * expLvls[exp].mul
-)
-
 const bountiesFor = ({ bountySettings, issues, tokens }) => issues.reduce(
   (bounties, issue) => {
-    const exp = issue.exp || 0
-    const hours = issue.hours ? parseFloat(issue.hours) : ''
     bounties[issue.id] = {
       repo: issue.repo,
       number: issue.number,
       repoId: issue.repoId,
-      hours,
-      exp,
+      hours: issue.hours ? parseFloat(issue.hours) : '',
+      exp: issue.exp || 0,
       deadline: issue.deadline
         ?  new Date(issue.deadline)
         : addHours(new Date(), bountySettings.bountyDeadline),
       slots: 1,
       slotsIndex: 0,
-      size: hours ? calculateSize({ ...bountySettings, exp, hours }) : 0,
-      amount: issue.balance ? parseFloat(issue.balance) : '',
+      payout: issue.payout || 0,
       token: tokens.find(t => t.symbol === issue.symbol) || tokens[0],
     }
     return bounties
@@ -76,12 +69,8 @@ const BountyUpdate = ({
   bounty,
   submitBounties,
   description,
-  generateHoursChange,
   tokens,
-  amountChange,
-  tokenSelect,
-  generateExpChange,
-  generateDeadlineChange,
+  updateBounty,
 }) => {
   const { appState: { bountySettings } } = useAragonApi()
   const [ submitDisabled, setSubmitDisabled ] = useState(false)
@@ -93,11 +82,11 @@ const BountyUpdate = ({
 
   useEffect(() => {
     const today = new Date()
-    const maxErr = BigNumber(bounty.size)
+    const maxErr = BigNumber(bounty.payout)
       .times(10 ** bounty.decimals)
       .gt(BigNumber(bounty.balance))
-    const amountErr = (bounty.hours || bounty.amount) ? false : true
-    const zeroErr = (bounty.hours === 0 && bounty.amount === 0) ? true : false
+    const amountErr = (bounty.hours || bounty.payout) ? false : true
+    const zeroErr = (bounty.hours === 0 && bounty.payout === 0) ? true : false
     const dateErr = today > bounty.deadline
     setMaxError(maxErr)
     setZeroError(zeroErr)
@@ -124,7 +113,7 @@ const BountyUpdate = ({
                 <IssueTitleCompact
                   title={issue.title}
                   tag={bounty && bounty.hours > 0
-                    ? BigNumber(bounty.size).dp(2) + ' ' + bounty.symbol
+                    ? BigNumber(bounty.payout).dp(2) + ' ' + bounty.symbol
                     : ''
                   }
                 />
@@ -138,15 +127,15 @@ const BountyUpdate = ({
                       <HorizontalInputGroup>
                         <AmountInput
                           name="amount"
-                          value={bounty.amount}
-                          onChange={e => amountChange(issue.id, e.target.value)}
+                          value={bounty.payout}
+                          onChange={e => updateBounty({ payout: e.target.value })}
                           wide
                         />
                         <TokenInput
                           name="token"
                           items={tokens.map(t => t.symbol)}
                           selected={tokens.indexOf(bounty.token)}
-                          onChange={i => tokenSelect(issue.id, i)}
+                          onChange={i => updateBounty({ token: tokens[i] })}
                         />
                       </HorizontalInputGroup>
                     }
@@ -159,7 +148,9 @@ const BountyUpdate = ({
                         width="100%"
                         name="hours"
                         value={bounty.hours}
-                        onChange={generateHoursChange(issue.id)}
+                        onChange={e => updateBounty({
+                          hours: e.target.value && parseFloat(e.target.value)
+                        })}
                       />
                     }
                   />
@@ -170,7 +161,7 @@ const BountyUpdate = ({
                   input={
                     <DropDown
                       items={expLevels.map(exp => exp.name)}
-                      onChange={generateExpChange(issue.id)}
+                      onChange={index => updateBounty({ exp: index })}
                       selected={bounty.exp}
                       wide
                     />
@@ -188,7 +179,7 @@ const BountyUpdate = ({
                     <DateInput
                       name='deadline'
                       value={bounty.deadline}
-                      onChange={generateDeadlineChange(issue.id)}
+                      onChange={deadline => updateBounty({ deadline })}
                       width="100%"
                     />
                   }
@@ -209,12 +200,8 @@ BountyUpdate.propTypes = {
   bounty: PropTypes.object.isRequired,
   submitBounties: PropTypes.func.isRequired,
   description: PropTypes.string.isRequired,
-  generateHoursChange: PropTypes.func.isRequired,
   tokens: PropTypes.array.isRequired,
-  amountChange: PropTypes.func.isRequired,
-  tokenSelect: PropTypes.func.isRequired,
-  generateExpChange: PropTypes.func.isRequired,
-  generateDeadlineChange: PropTypes.func.isRequired,
+  updateBounty: PropTypes.func.isRequired,
 }
 
 const FundForm = ({
@@ -223,12 +210,8 @@ const FundForm = ({
   submitBounties,
   description,
   tokens,
-  tokenSelect,
-  amountChange,
   descriptionChange,
-  generateHoursChange,
-  generateExpChange,
-  generateDeadlineChange,
+  updateBounty,
 }) => {
   const [ submitDisabled, setSubmitDisabled ] = useState(true)
   const [ maxErrors, setMaxErrors ] = useState([])
@@ -242,7 +225,7 @@ const FundForm = ({
         const bountiesForToken = Object.values(bounties)
           .filter(b => b.token.symbol === token.symbol)
         const total = bountiesForToken.reduce(
-          (sum, b) => sum.plus(BigNumber(b.size || 0).times(10 ** token.decimals)),
+          (sum, b) => sum.plus(BigNumber(b.payout || 0).times(10 ** token.decimals)),
           BigNumber(0)
         )
         if (total.gt(inVault)) {
@@ -265,8 +248,8 @@ const FundForm = ({
     const zeroErrArray = []
     const dateErrArray = []
     issues.map(issue => {
-      amountErrArray.push((bounties[issue.id].hours || bounties[issue.id].amount) ? false : true)
-      zeroErrArray.push((bounties[issue.id].hours === 0 || bounties[issue.id].amount === 0) ? true : false)
+      amountErrArray.push((bounties[issue.id].hours || bounties[issue.id].payout) ? false : true)
+      zeroErrArray.push((bounties[issue.id].hours === 0 || bounties[issue.id].payout === 0) ? true : false)
       dateErrArray.push(today > bounties[issue.id].deadline)
     })
     setZeroError(zeroErrArray)
@@ -308,12 +291,8 @@ const FundForm = ({
                   key={issue.id}
                   issue={issue}
                   bounty={bounties[issue.id]}
-                  amountChange={amountChange}
-                  generateDeadlineChange={generateDeadlineChange}
-                  generateExpChange={generateExpChange}
-                  generateHoursChange={generateHoursChange}
                   tokens={tokens}
-                  tokenSelect={tokenSelect}
+                  updateBounty={updateBounty(issue.id)}
                 />
               ))}
             </React.Fragment>
@@ -335,12 +314,8 @@ FundForm.propTypes = {
   submitBounties: PropTypes.func.isRequired,
   description: PropTypes.string.isRequired,
   tokens: PropTypes.array.isRequired,
-  tokenSelect: PropTypes.func.isRequired,
-  amountChange: PropTypes.func.isRequired,
   descriptionChange: PropTypes.func.isRequired,
-  generateHoursChange: PropTypes.func.isRequired,
-  generateExpChange: PropTypes.func.isRequired,
-  generateDeadlineChange: PropTypes.func.isRequired,
+  updateBounty: PropTypes.func.isRequired,
 }
 
 const FundIssues = ({ issues, mode }) => {
@@ -362,29 +337,23 @@ const FundIssues = ({ issues, mode }) => {
 
   const descriptionChange = e => setDescription(e.target.value)
 
-  const tokenSelect = (id, i) => {
-    configBounty(id, 'token', tokens[i])
-  }
-  const amountChange = (id, value) => configBounty(id, 'amount', parseFloat(value))
+  const updateBounty = useCallback(issueId => update => {
+    const newBounties = {
+      ...bounties,
+      [issueId]: {
+        ...bounties[issueId],
+        ...update,
+      }
+    }
 
-  const configBounty = (id, key, val) => {
-    const newBounties = { ...bounties }
-    newBounties[id][key] = val
-    // just do it, recalculate size
-    newBounties[id]['size'] = key === 'amount' ? val : calculateSize({ ...bountySettings, ...newBounties[id] })
+    if (update.hours || update.exp) {
+      const { exp, hours } = newBounties[issueId]
+      const { baseRate, expLvls } = bountySettings
+      newBounties[issueId].payout = hours * baseRate * expLvls[exp].mul
+    }
+
     setBounties(newBounties)
-  }
-
-  const generateHoursChange = id => ({ target: { value } }) =>
-    configBounty(id, 'hours', parseFloat(value))
-
-  const generateExpChange = id => index => {
-    configBounty(id, 'exp', index)
-  }
-
-  const generateDeadlineChange = id => deadline => {
-    configBounty(id, 'deadline', deadline)
-  }
+  }, [ bounties, bountySettings ])
 
   const submitBounties = async (e) => {
     e.preventDefault()
@@ -416,8 +385,7 @@ const FundIssues = ({ issues, mode }) => {
         fundingHistory: bounties[issues[key].id].fundingHistory,
         deadline: bounties[issues[key].id].deadline,
         hours: bounties[issues[key].id].hours ? bounties[issues[key].id].hours : 0,
-        size: bounties[issues[key].id].size,
-        amount: bounties[issues[key].id].amount ? bounties[issues[key].id].amount : 0,
+        payout: bounties[issues[key].id].payout,
         token: bounties[issues[key].id].token,
         ...issues[key],
       })
@@ -434,11 +402,7 @@ const FundIssues = ({ issues, mode }) => {
       tokenContracts.push(issue.token.addr)
       tokenTypes.push(issue.token.addr === ETHER_TOKEN_FAKE_ADDRESS ? 1 : 20)
       bountySizes.push(
-        BigNumber(
-          bountySettings.fundingModel === 'Fixed'
-            ? issue.amount
-            : issue.size
-        ).times(10 ** issue.token.decimals).toString()
+        BigNumber(issue.payout).times(10 ** issue.token.decimals).toString()
       )
     }
     const deadlines = Object.keys(bounties).map(
@@ -478,7 +442,7 @@ const FundIssues = ({ issues, mode }) => {
         //     variables: {
         //       body:
         //         'This issue has a bounty attached to it.\n' +
-        //         `Amount: ${issue.size.toFixed(2)} ${issue.token.symbol}\n` +
+        //         `Amount: ${issue.payout.toFixed(2)} ${issue.token.symbol}\n` +
         //         `Deadline: ${issue.deadline.toUTCString()}`,
         //       subjectId: issue.key,
         //     },
@@ -499,20 +463,18 @@ const FundIssues = ({ issues, mode }) => {
     )
   }
 
-  // in 'update' mode there is only one issue
   if (mode === 'update') {
+    // in 'update' mode there is only one issue
+    const issue = issues[0]
+    const bounty = bounties[issues[0].id]
     return (
       <BountyUpdate
-        issue={issues[0]}
-        bounty={bounties[issues[0].id]}
+        issue={issue}
+        bounty={bounty}
         submitBounties={submitBounties}
         description={description}
-        generateHoursChange={generateHoursChange}
         tokens={tokens}
-        amountChange={amountChange}
-        tokenSelect={tokenSelect}
-        generateExpChange={generateExpChange}
-        generateDeadlineChange={generateDeadlineChange}
+        updateBounty={updateBounty(issue.id)}
       />
     )
   }
@@ -534,12 +496,8 @@ const FundIssues = ({ issues, mode }) => {
           bounties={bounties}
           description={description}
           tokens={tokens}
-          tokenSelect={tokenSelect}
-          amountChange={amountChange}
           descriptionChange={descriptionChange}
-          generateHoursChange={generateHoursChange}
-          generateExpChange={generateExpChange}
-          generateDeadlineChange={generateDeadlineChange}
+          updateBounty={updateBounty}
         />
       )}
       {(alreadyAdded.length > 0) && (
