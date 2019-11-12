@@ -14,8 +14,6 @@ import { IconOpen, IconCollapse } from '../../../assets'
 import { IconClose } from '@aragon/ui'
 import NoFunds from '../../../assets/noFunds.svg'
 import { IssueText } from '../PanelComponents'
-import { BN } from 'web3-utils'
-import { toDecimals, fromDecimals } from '../../../utils/math-utils'
 import {
   Box,
   Text,
@@ -91,9 +89,9 @@ const BountyUpdate = ({
 
   useEffect(() => {
     const today = new Date()
-    const maxErr = new BN(bounty.size, 10)
-      .mul(10 ** bounty.decimals)
-      .gt(new BN(bounty.balance))
+    const maxErr = BigNumber(bounty.size)
+      .times(10 ** bounty.decimals)
+      .gt(BigNumber(bounty.balance))
     const amountErr = (bounty.hours || bounty.amount) ? false : true
     const zeroErr = (bounty.hours === 0 && bounty.amount === 0) ? true : false
     const dateErr = today > bounty.deadline
@@ -242,17 +240,18 @@ const FundForm = ({
   useEffect(() => {
     setMaxErrors(tokens.reduce(
       (errors, token) => {
-        const inVault = new BN(token.balance, 10)
-        const bountiesForToken = Object.values(bounties).filter(b => b.token.symbol === token.symbol)
+        const inVault = BigNumber(token.balance)
+        const bountiesForToken = Object.values(bounties)
+          .filter(b => b.token.symbol === token.symbol)
         const total = bountiesForToken.reduce(
-          (sum, b) => sum.add(new BN(toDecimals(b.size.toString(10), parseInt(b.token.decimals,10)))),
-          new BN(0)
+          (sum, b) => sum.plus(BigNumber(b.size || 0).times(10 ** token.decimals)),
+          BigNumber(0)
         )
         if (total.gt(inVault)) {
           errors.push({
-            inVault: inVault.div(new BN(10).pow(new BN(token.decimals, 10))).toString(),
+            inVault: inVault.div(10 ** token.decimals).dp(4).toString(),
             symbol: token.symbol,
-            total: fromDecimals(total.toString(10), parseInt(token.decimals)),
+            total: total.div(10 ** token.decimals).dp(4).toString(),
             sayTotal: bountiesForToken.length > 1,
           })
         }
@@ -446,8 +445,8 @@ const FundIssues = ({ issues, mode }) => {
   const [ bounties, setBounties ] = useState(bountiesFor({ bountySettings, issues, tokens }))
 
   const fundsAvailable = useMemo(() => tokens.reduce(
-    (sum, t) => sum.add(new BN(t.balance, 10)),
-    new BN(0)
+    (sum, t) => sum.plus(BigNumber(t.balance)),
+    BigNumber(0)
   ), [ bountySettings.fundingModel, tokens ])
 
   const descriptionChange = e => setDescription(e.target.value)
