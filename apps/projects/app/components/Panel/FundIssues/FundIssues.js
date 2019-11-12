@@ -10,12 +10,9 @@ import useGithubAuth from '../../../hooks/useGithubAuth'
 import { usePanelManagement } from '..'
 import { computeIpfsString } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
-import { IconOpen, IconCollapse } from '../../../assets'
 import { IconClose } from '@aragon/ui'
 import NoFunds from '../../../assets/noFunds.svg'
-import { IssueText } from '../PanelComponents'
 import {
-  Box,
   Text,
   TextInput,
   DropDown,
@@ -25,8 +22,16 @@ import {
   Info,
 } from '@aragon/ui'
 
-import { Form, FormField, FieldTitle, DateInput } from '../../Form'
+import { Form, FormField, DateInput } from '../../Form'
 import { issueShape } from '../../../utils/shapes.js'
+import EditBounty from './EditBounty'
+import {
+  AmountInput,
+  HorizontalInputGroup,
+  HoursInput,
+  IssueTitleCompact,
+  TokenInput,
+} from './styled'
 
 const ETHER_TOKEN_FAKE_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -60,7 +65,6 @@ const bountiesFor = ({ bountySettings, issues, tokens }) => issues.reduce(
       size: hours ? calculateSize({ ...bountySettings, exp, hours }) : 0,
       amount: issue.balance ? parseFloat(issue.balance) : '',
       token: tokens.find(t => t.symbol === issue.symbol) || tokens[0],
-      detailsOpen: 0,
     }
     return bounties
   },
@@ -70,7 +74,6 @@ const bountiesFor = ({ bountySettings, issues, tokens }) => issues.reduce(
 const BountyUpdate = ({
   issue,
   bounty,
-  bountySettings,
   submitBounties,
   description,
   generateHoursChange,
@@ -80,6 +83,7 @@ const BountyUpdate = ({
   generateExpChange,
   generateDeadlineChange,
 }) => {
+  const { appState: { bountySettings } } = useAragonApi()
   const [ submitDisabled, setSubmitDisabled ] = useState(false)
   const [ maxError, setMaxError ] = useState(false)
   const [ zeroError, setZeroError ] = useState(false)
@@ -203,7 +207,6 @@ const BountyUpdate = ({
 BountyUpdate.propTypes = {
   issue: issueShape,
   bounty: PropTypes.object.isRequired,
-  bountySettings: PropTypes.object.isRequired,
   submitBounties: PropTypes.func.isRequired,
   description: PropTypes.string.isRequired,
   generateHoursChange: PropTypes.func.isRequired,
@@ -215,7 +218,6 @@ BountyUpdate.propTypes = {
 }
 
 const FundForm = ({
-  bountySettings,
   issues,
   bounties,
   submitBounties,
@@ -224,7 +226,6 @@ const FundForm = ({
   tokenSelect,
   amountChange,
   descriptionChange,
-  generateArrowChange,
   generateHoursChange,
   generateExpChange,
   generateDeadlineChange,
@@ -233,9 +234,6 @@ const FundForm = ({
   const [ maxErrors, setMaxErrors ] = useState([])
   const [ zeroError, setZeroError ] = useState([])
   const [ dateError, setDateError ] = useState([])
-
-  const expLevels = bountySettings.expLvls
-  const theme = useTheme()
 
   useEffect(() => {
     setMaxErrors(tokens.reduce(
@@ -306,102 +304,17 @@ const FundForm = ({
           input={
             <React.Fragment>
               {issues.map(issue => (
-                <Box key={issue.id} padding={0}>
-                  <div css={`
-                    padding: ${2 * GU}px;
-                    display: flex;
-                  `}>
-                    <DetailsArrow onClick={generateArrowChange(issue.id)}>
-                      {bounties[issue.id]['detailsOpen'] ? (
-                        <IconCollapse />
-                      ) : (
-                        <IconOpen />
-                      )}
-                    </DetailsArrow>
-                    <IssueTitleCompact
-                      title={issue.title}
-                      tag={issue.id in bounties && bounties[issue.id].hours > 0
-                        ? BigNumber(bounties[issue.id].size).dp(2) + ' ' + bounties[issue.id].token.symbol
-                        : ''
-                      }
-                    />
-                  </div>
-                  <div css={`
-                          display: grid;
-                          grid-template-columns: calc(55% - ${GU}px) calc(45% - ${GU}px);
-                          grid-template-rows: auto;
-                          grid-template-areas:
-                            "hours exp"
-                            "deadline deadline";
-                          grid-gap: 12px;
-                          align-items: stretch;
-                        `}>
-
-                    {bountySettings.fundingModel === 'Fixed' ? (
-                      <div css={`grid-area: hours; padding-left: ${2 * GU}px`}>
-                        <FieldTitle>Amount</FieldTitle>
-                        <HorizontalInputGroup>
-                          <AmountInput
-                            name="amount"
-                            value={bounties[issue.id]['amount']}
-                            onChange={e => amountChange(issue.id, e.target.value)}
-                            wide
-                          />
-                          <TokenInput
-                            name="token"
-                            items={tokens.map(t => t.symbol)}
-                            selected={tokens.indexOf(bounties[issue.id].token)}
-                            onChange={i => tokenSelect(issue.id, i)}
-                          />
-                        </HorizontalInputGroup>
-                      </div>
-                    ) : (
-                      <div css={`grid-area: hours; padding-left: ${2 * GU}px`}>
-                        <FieldTitle>Estimated Hours</FieldTitle>
-                        <HoursInput
-                          name="hours"
-                          value={bounties[issue.id]['hours']}
-                          onChange={generateHoursChange(issue.id)}
-                          wide
-                        />
-                      </div>
-                    )}
-
-                    <div css={`grid-area: exp; padding-right: ${2 * GU}px; width: 100%;`}>
-                      <FormField
-                        label="Experience level"
-                        input={
-                          <DropDown
-                            items={expLevels.map(exp => exp.name)}
-                            onChange={generateExpChange(issue.id)}
-                            selected={bounties[issue.id]['exp']}
-                            wide
-                          />
-                        }
-                      />
-                    </div>
-
-                    <div css={`
-                            grid-area: deadline;
-                            background: ${theme.background};
-                            border-top: 1px solid ${theme.border};
-                            padding: 0 ${2 * GU}px;
-                            display: ${bounties[issue.id]['detailsOpen'] ? 'block' : 'none'};
-                          `}>
-                      <FormField
-                        label="Deadline"
-                        input={
-                          <DateInput
-                            name='deadline'
-                            value={bounties[issue.id]['deadline']}
-                            onChange={generateDeadlineChange(issue.id)}
-                            width="100%"
-                          />
-                        }
-                      />
-                    </div>
-                  </div>
-                </Box>
+                <EditBounty
+                  key={issue.id}
+                  issue={issue}
+                  bounty={bounties[issue.id]}
+                  amountChange={amountChange}
+                  generateDeadlineChange={generateDeadlineChange}
+                  generateExpChange={generateExpChange}
+                  generateHoursChange={generateHoursChange}
+                  tokens={tokens}
+                  tokenSelect={tokenSelect}
+                />
               ))}
             </React.Fragment>
           }
@@ -417,7 +330,6 @@ const FundForm = ({
 }
 
 FundForm.propTypes = {
-  bountySettings: PropTypes.object.isRequired,
   issues: PropTypes.arrayOf(issueShape),
   bounties: PropTypes.object.isRequired,
   submitBounties: PropTypes.func.isRequired,
@@ -426,7 +338,6 @@ FundForm.propTypes = {
   tokenSelect: PropTypes.func.isRequired,
   amountChange: PropTypes.func.isRequired,
   descriptionChange: PropTypes.func.isRequired,
-  generateArrowChange: PropTypes.func.isRequired,
   generateHoursChange: PropTypes.func.isRequired,
   generateExpChange: PropTypes.func.isRequired,
   generateDeadlineChange: PropTypes.func.isRequired,
@@ -450,6 +361,7 @@ const FundIssues = ({ issues, mode }) => {
   ), [ bountySettings.fundingModel, tokens ])
 
   const descriptionChange = e => setDescription(e.target.value)
+
   const tokenSelect = (id, i) => {
     configBounty(id, 'token', tokens[i])
   }
@@ -457,12 +369,7 @@ const FundIssues = ({ issues, mode }) => {
 
   const configBounty = (id, key, val) => {
     const newBounties = { ...bounties }
-    // arrow clicked - it's simple value reversal case, 1 indicates details are open, 0 - closed
-    if (key === 'detailsOpen') {
-      newBounties[id][key] = 1 - newBounties[id][key]
-    } else {
-      newBounties[id][key] = val
-    }
+    newBounties[id][key] = val
     // just do it, recalculate size
     newBounties[id]['size'] = key === 'amount' ? val : calculateSize({ ...bountySettings, ...newBounties[id] })
     setBounties(newBounties)
@@ -477,10 +384,6 @@ const FundIssues = ({ issues, mode }) => {
 
   const generateDeadlineChange = id => deadline => {
     configBounty(id, 'deadline', deadline)
-  }
-
-  const generateArrowChange = id => () => {
-    configBounty(id, 'detailsOpen')
   }
 
   const submitBounties = async (e) => {
@@ -602,7 +505,6 @@ const FundIssues = ({ issues, mode }) => {
       <BountyUpdate
         issue={issues[0]}
         bounty={bounties[issues[0].id]}
-        bountySettings={bountySettings}
         submitBounties={submitBounties}
         description={description}
         generateHoursChange={generateHoursChange}
@@ -628,7 +530,6 @@ const FundIssues = ({ issues, mode }) => {
       {(bountylessIssues.length > 0) && (
         <FundForm
           submitBounties={submitBounties}
-          bountySettings={bountySettings}
           issues={bountylessIssues}
           bounties={bounties}
           description={description}
@@ -636,7 +537,6 @@ const FundIssues = ({ issues, mode }) => {
           tokenSelect={tokenSelect}
           amountChange={amountChange}
           descriptionChange={descriptionChange}
-          generateArrowChange={generateArrowChange}
           generateHoursChange={generateHoursChange}
           generateExpChange={generateExpChange}
           generateDeadlineChange={generateDeadlineChange}
@@ -682,78 +582,6 @@ const WarningIssueList = styled.ul`
     margin-bottom: 10px;
   }
 `
-const HorizontalInputGroup = styled.div`
-  display: flex;
-`
-const HoursInput = styled(TextInput.Number).attrs({
-  step: '0.25',
-  min: '0',
-})`
-  width: 100%;
-  display: inline-block;
-  padding-top: 3px;
-`
-const AmountInput = styled(TextInput.Number).attrs({
-  step: 'any',
-  min: '1e-18',
-  autoComplete: 'off',
-})`
-  width: 100%;
-  display: inline-block;
-  padding-top: 3px;
-  border-radius: 4px 0 0 4px;
-`
-const TokenInput = styled(DropDown)`
-  border-radius: 0 4px 4px 0;
-  left: -1px;
-  min-width: auto;
-  max-width: 120px;
-`
-const DetailsArrow = styled.div`
-  width: 24px;
-  margin-right: 12px;
-`
-const IssueAmount = styled.span`
-  display: flex;
-`
-const TextTag = styled(Text).attrs({
-  size: 'small',
-  weight:'bold',
-})`
-  padding: 0 10px;
-  margin-left: 10px;
-  white-space: nowrap;
-  width: auto;
-  height: 24px;
-  line-height: 28px;
-  border-radius: 24px;
-  text-transform: uppercase;
-  color: ${props => props.theme.tagIndicatorContent};
-  background: ${props => props.theme.tagIndicator};
-`
-
-const IssueTitleCompact = ({ title, tag = '' }) => {
-  const theme = useTheme()
-
-  return (
-    <React.Fragment>
-      <IssueText>
-        <Text >{title}</Text>
-      </IssueText>
-      {tag && (
-        <IssueAmount>
-          <TextTag theme={theme}>
-            {tag}
-          </TextTag>
-        </IssueAmount>
-      )}
-    </React.Fragment>
-  )
-}
-IssueTitleCompact.propTypes = {
-  title: PropTypes.string.isRequired,
-  tag: PropTypes.string,
-}
 
 const InfoPanel = ({ imgSrc, title, message }) => {
   const theme = useTheme()
