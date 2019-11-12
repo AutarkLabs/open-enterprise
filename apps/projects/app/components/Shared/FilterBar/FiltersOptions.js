@@ -6,10 +6,15 @@ import {
   Tag,
   useTheme,
 } from '@aragon/ui'
+import { BOUNTY_STATUS_FUNDED, BOUNTY_STATUS_GENERAL } from '../../../utils/bounty-status'
+import { useIssuesFilters } from '../../../context/IssuesFilters.js'
 
 const noop = () => {}
 
-export const OptionsProjects = ({ onClick, filters, projects }) => {
+export const OptionsProjects = ({ projects }) => {
+  const { activeFilters, toggleFilter } = useIssuesFilters()
+  const onClick = (id) => () => toggleFilter('projects', id)
+
   return Object.keys(projects)
     .sort(
       (p1, p2) =>
@@ -20,12 +25,12 @@ export const OptionsProjects = ({ onClick, filters, projects }) => {
     .map(id => (
       <Option
         key={id}
-        onClick={onClick('projects', id)}
+        onClick={onClick(id)}
       >
         <div>
           <Checkbox
             onChange={noop}
-            checked={id in filters.projects}
+            checked={id in activeFilters.projects}
           />
         </div>
         <span css="margin-left: 8px;">
@@ -36,14 +41,12 @@ export const OptionsProjects = ({ onClick, filters, projects }) => {
     ))
 }
 
-OptionsProjects.propTypes = {
-  onClick: PropTypes.func.isRequired,
-  filters: PropTypes.object.isRequired,
-  projects: PropTypes.object.isRequired,
-}
+OptionsProjects.propTypes = PropTypes.object.isRequired
 
-export const OptionsLabels = ({ onClick, filters, labels }) => {
+export const OptionsLabels = ({ labels }) => {
   const theme = useTheme()
+  const { activeFilters, toggleFilter } = useIssuesFilters()
+  const onClick = (id) => () => toggleFilter('labels', id)
 
   return Object.keys(labels)
     .sort((l1, l2) => {
@@ -64,12 +67,12 @@ export const OptionsLabels = ({ onClick, filters, labels }) => {
       return (
         <Option
           key={id}
-          onClick={onClick('labels', id)}
+          onClick={onClick(id)}
         >
           <div>
             <Checkbox
               onChange={noop}
-              checked={id in filters.labels}
+              checked={id in activeFilters.labels}
             />
           </div>
           <span css="margin-left: 8px;">
@@ -86,13 +89,12 @@ export const OptionsLabels = ({ onClick, filters, labels }) => {
       )
     })
 }
-OptionsLabels.propTypes = {
-  onClick: PropTypes.func.isRequired,
-  filters: PropTypes.object.isRequired,
-  labels: PropTypes.object.isRequired,
-}
+OptionsLabels.propTypes = PropTypes.object.isRequired
 
-export const OptionsMilestones = ({ onClick, filters, milestones }) => {
+export const OptionsMilestones = ({ milestones }) => {
+  const { activeFilters, toggleFilter } = useIssuesFilters()
+  const onClick = (id) => () => toggleFilter('milestones', id)
+
   return Object.keys(milestones)
     .sort((m1, m2) => {
       if (m1 === 'milestoneless') return -1
@@ -105,12 +107,12 @@ export const OptionsMilestones = ({ onClick, filters, milestones }) => {
     .map(id => (
       <Option
         key={id}
-        onClick={onClick('milestones', id)}
+        onClick={onClick(id)}
       >
         <div>
           <Checkbox
             onChange={noop}
-            checked={id in filters.milestones}
+            checked={id in activeFilters.milestones}
           />
         </div>
         <span css="margin-left: 8px;">
@@ -120,25 +122,23 @@ export const OptionsMilestones = ({ onClick, filters, milestones }) => {
       </Option>
     ))
 }
-OptionsMilestones.propTypes = {
-  onClick: PropTypes.func.isRequired,
-  filters: PropTypes.object.isRequired,
-  milestones: PropTypes.object.isRequired,
-}
+OptionsMilestones.propTypes = PropTypes.object.isRequired
 
-export const OptionsStatuses = ({ onClick, filters, statuses, allFundedIssues, allIssues }) => {
+export const OptionsStatuses = ({ statuses }) => {
+  const { activeFilters, toggleFilter } = useIssuesFilters()
+  const onClick = (id) => () => toggleFilter('statuses', id)
   const theme = useTheme()
 
   return [
-    allFundedIssues.map(status => (
+    BOUNTY_STATUS_FUNDED.map(status => (
       <Option
         key={status}
-        onClick={onClick('statuses', status)}
+        onClick={onClick(status)}
       >
         <div>
           <Checkbox
             onChange={noop}
-            checked={status in filters.statuses}
+            checked={status in activeFilters.statuses}
           />
         </div>
         <span css="margin-left: 8px;">
@@ -156,15 +156,15 @@ export const OptionsStatuses = ({ onClick, filters, statuses, allFundedIssues, a
         background: ${theme.border};
       `}
     />,
-    allIssues.map(status => (
+    BOUNTY_STATUS_GENERAL.map(status => (
       <Option
         key={status}
-        onClick={onClick('statuses', status)}
+        onClick={onClick(status)}
       >
         <div>
           <Checkbox
             onChange={noop}
-            checked={status in filters.statuses}
+            checked={status in activeFilters.statuses}
           />
         </div>
         <span css="margin-left: 8px;">
@@ -175,13 +175,7 @@ export const OptionsStatuses = ({ onClick, filters, statuses, allFundedIssues, a
     ))
   ]
 }
-OptionsStatuses.propTypes = {
-  onClick: PropTypes.func.isRequired,
-  filters: PropTypes.object.isRequired,
-  statuses: PropTypes.object.isRequired,
-  allFundedIssues: PropTypes.array.isRequired,
-  allIssues: PropTypes.array.isRequired,
-}
+OptionsStatuses.propTypes = PropTypes.object.isRequired
 
 const Option = styled.a`
   display: flex;

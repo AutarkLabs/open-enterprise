@@ -67,6 +67,10 @@ const usePanelManagement = () => {
         title: 'Issue Funding #Unknown',
       })
     },
+    filters: (applyFilter, filters, filtersData) => {
+      setActivePanel(PANELS.Filters)
+      setPanelProps({ applyFilter, filters, filtersData })
+    }
   }
 }
 

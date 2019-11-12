@@ -30,6 +30,22 @@ import { LoadingAnimation } from './components/Shared'
 import { EmptyWrapper } from './components/Shared'
 import { Error } from './components/Card'
 import { DecoratedReposProvider } from './context/DecoratedRepos'
+import { useIssuesFilters, IssuesFiltersProvider } from './context/IssuesFilters'
+
+
+const TestF = () => {
+  const {
+     buildAllFiltersData,
+    filtersAllData,
+    activeFilters,
+    toggleFilter,
+    activeFiltersCount
+  } = useIssuesFilters()
+
+  console.log('-TestF-', filtersAllData, activeFilters, activeFiltersCount)
+
+  return <div>check!</div>
+}
 
 const App = () => {
   const { api, appState } = useAragonApi()
@@ -178,50 +194,53 @@ const App = () => {
             onShowLocalIdentityModal={handleShowLocalIdentityModal}
           >
             <DecoratedReposProvider>
-              <Header
-                primary="Projects"
-                secondary={
-                  <TabAction />
-                }
-              />
-              <ErrorBoundary>
+              <IssuesFiltersProvider>
+                <TestF >test</TestF>
+                <Header
+                  primary="Projects"
+                  secondary={
+                    <TabAction />
+                  }
+                />
+                <ErrorBoundary>
 
-                {selectedIssueId
-                  ? (
-                    <React.Fragment>
-                      <Bar>
-                        <BackButton onClick={() => setSelectedIssue(null)} />
-                      </Bar>
-                      <IssueDetail issueId={selectedIssueId} />
-                    </React.Fragment>
-                  )
-                  : (
-                    <React.Fragment>
-                      <Tabs
-                        items={tabs.map(t => t.name)}
-                        onChange={handleSelect}
-                        selected={activeIndex.tabIndex}
-                      />
-                      <TabComponent
-                        status={github.status}
-                        app={api}
-                        bountyIssues={issues}
-                        bountySettings={bountySettings}
-                        tokens={tokens}
-                        activeIndex={activeIndex}
-                        changeActiveIndex={changeActiveIndex}
-                        setSelectedIssue={setSelectedIssue}
-                        onLogin={handleGithubSignIn}
-                      />
-                    </React.Fragment>
-                  )
-                }
-              </ErrorBoundary>
-              <PanelManager
-                activePanel={panel}
-                onClose={closePanel}
-                {...panelProps}
-              />
+                  {selectedIssueId
+                    ? (
+                      <React.Fragment>
+                        <Bar>
+                          <BackButton onClick={() => setSelectedIssue(null)} />
+                        </Bar>
+                        <IssueDetail issueId={selectedIssueId} />
+                      </React.Fragment>
+                    )
+                    : (
+                      <React.Fragment>
+                        <Tabs
+                          items={tabs.map(t => t.name)}
+                          onChange={handleSelect}
+                          selected={activeIndex.tabIndex}
+                        />
+                        <TabComponent
+                          status={github.status}
+                          app={api}
+                          bountyIssues={issues}
+                          bountySettings={bountySettings}
+                          tokens={tokens}
+                          activeIndex={activeIndex}
+                          changeActiveIndex={changeActiveIndex}
+                          setSelectedIssue={setSelectedIssue}
+                          onLogin={handleGithubSignIn}
+                        />
+                      </React.Fragment>
+                    )
+                  }
+                </ErrorBoundary>
+                <PanelManager
+                  activePanel={panel}
+                  onClose={closePanel}
+                  {...panelProps}
+                />
+              </IssuesFiltersProvider>
             </DecoratedReposProvider>
           </IdentityProvider>
         </PanelContext.Provider>

@@ -7,8 +7,11 @@ import {
   Checkbox,
   ContextMenuItem,
   GU,
-  IconSearch,
   IconCheck,
+  IconCoin,
+  IconConfiguration,
+  IconFilter,
+  IconSearch,
   Popover,
   Text,
   TextInput,
@@ -25,10 +28,11 @@ import {
 import ActiveFilters from '../../Content/Filters'
 import prepareFilters from './prepareFilters'
 import { IconArrow as IconArrowDown } from '../../../../../../shared/ui'
-import { IconSort, IconGrid, IconCoins, IconFilter } from '../../../assets'
+import { IconSort, IconGrid } from '../../../assets'
 import { usePanelManagement } from '../../Panel'
 import Label from '../../Content/IssueDetail/Label'
 import { issueShape } from '../../../utils/shapes.js'
+import { useIssuesFilters } from '../../../context/IssuesFilters.js'
 
 const sorters = [
   'Name ascending',
@@ -154,6 +158,7 @@ SortPopover.propTypes = {
 
 const ActionsPopover = ({ visible, setVisible, openerRef, selectedIssues, issuesFiltered, deselectAllIssues }) => {
   const { curateIssues, allocateBounty } = usePanelManagement()
+  const theme = useTheme()
 
   return (
     <Popover
@@ -174,7 +179,7 @@ const ActionsPopover = ({ visible, setVisible, openerRef, selectedIssues, issues
           setVisible(false)
         }}
       >
-        <IconFilter />
+        <IconConfiguration css={`color: ${theme.surfaceIcon};`} />
         <ActionLabel>Curate Issues</ActionLabel>
       </FilterMenuItem>
       <FilterMenuItem
@@ -184,7 +189,7 @@ const ActionsPopover = ({ visible, setVisible, openerRef, selectedIssues, issues
           setVisible(false)
         }}
       >
-        <IconCoins />
+        <IconCoin css={`color: ${theme.surfaceIcon};`} />
         <ActionLabel>Fund Issues</ActionLabel>
       </FilterMenuItem>
     </Popover>
@@ -243,7 +248,18 @@ Actions.propTypes = {
   deselectAllIssues: PropTypes.func.isRequired,
 }
 
-const Overflow = ({ children, filtersDisplayNumber }) => {
+const Overflow = ({
+  children,
+  filtersData,
+  filtersDisplayNumber,
+}) => {
+  if (filtersDisplayNumber < 3) {
+    const { filters: filtersPanel } = usePanelManagement()
+    const openFiltersPanel = () => filtersPanel(applyFilter, filters, filtersData)
+
+    return <Button icon={<IconFilter />} display="icon" onClick={openFiltersPanel} label="Filters Panel" />
+  }
+
   const childrenArray = React.Children.toArray(children)
   const elements = childrenArray.slice(0, filtersDisplayNumber)
 
@@ -258,6 +274,7 @@ const Overflow = ({ children, filtersDisplayNumber }) => {
 }
 Overflow.propTypes = {
   children: PropTypes.array.isRequired,
+  filtersData: PropTypes.object.isRequired,
   filtersDisplayNumber: PropTypes.number.isRequired,
 }
 
@@ -268,9 +285,7 @@ const FilterBar = ({
   issues,
   issuesFiltered,
   handleSelectAll,
-  handleFiltering,
   handleSorting,
-  setParentFilters,
   disableFilter,
   disableAllFilters,
   deselectAllIssues,
@@ -290,12 +305,11 @@ const FilterBar = ({
   const textFilterOpener = useRef(null)
   const mainFBRef = useRef(null)
   const rightFBRef = useRef(null)
-  const activeFilters = () => {
-    let count = 0
-    const types = [ 'projects', 'labels', 'milestones', 'statuses' ]
-    types.forEach(t => count += Object.keys(filters[t]).length)
-    return count
-  }
+  const { activeFiltersCount, buildAllFiltersData } = useIssuesFilters()
+
+  buildAllFiltersData(issues, bountyIssues)
+
+console.log('---activeFiltersCount---', activeFiltersCount)
 
   const recalculateFiltersDisplayNumber = useCallback(() => {
     const total = mainFBRef.current ? mainFBRef.current.offsetWidth : 0
@@ -320,15 +334,6 @@ const FilterBar = ({
     onSearchChange(e)
   }
 
-  const filter = (type, id) => () => {
-    if (id in filters[type]) delete filters[type][id]
-    else filters[type][id] = true
-    // filters are in local state because of checkboxes
-    // and sent to the parent (Issues) for actual display change
-    setParentFilters({ filters })
-    handleFiltering(filters)
-  }
-
   const updateSortBy = way => () => {
     handleSorting(way)
     setSortBy(way)
@@ -337,8 +342,6 @@ const FilterBar = ({
 
   // filters contain information about active filters (checked checkboxes)
   // filtersData is about displayed checkboxes
-  const allFundedIssues = [ 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]
-  const allIssues = [ 'all-funded', 'not-funded' ]
   const filtersData = prepareFilters(issues, bountyIssues)
 
   const actionsClickHandler = () =>
@@ -355,24 +358,21 @@ const FilterBar = ({
             <Checkbox onChange={handleSelectAll} checked={allSelected} />
           </SelectAll>
 
-          <Overflow filtersDisplayNumber={filtersDisplayNumber}>
+          <Overflow
+            filtersDisplayNumber={filtersDisplayNumber}
+            filtersData={filtersData}
+          >
             <FilterDropDown caption="Projects" enabled={false}>
-              <OptionsProjects onClick={filter} filters={filters} projects={filtersData.projects} />
+              <OptionsProjects projects={filtersData.projects} />
             </FilterDropDown>
             <FilterDropDown caption="Labels" enabled={Object.keys(filtersData.labels).length > 0}>
-              <OptionsLabels onClick={filter} filters={filters} labels={filtersData.labels} />
+              <OptionsLabels labels={filtersData.labels} />
             </FilterDropDown>
             <FilterDropDown caption="Milestones" enabled={Object.keys(filtersData.milestones).length > 0}>
-              <OptionsMilestones onClick={filter} filters={filters} milestones={filtersData.milestones} />
+              <OptionsMilestones milestones={filtersData.milestones} />
             </FilterDropDown>
             <FilterDropDown caption="Status" enabled={Object.keys(filtersData.statuses).length > 0}>
-              <OptionsStatuses
-                onClick={filter}
-                filters={filters}
-                statuses={filtersData.statuses}
-                allFundedIssues={allFundedIssues}
-                allIssues={allIssues}
-              />
+              <OptionsStatuses statuses={filtersData.statuses} />
             </FilterDropDown>
           </Overflow>
 
@@ -410,7 +410,7 @@ const FilterBar = ({
         </FilterBarMainRight>
       </FilterBarMain>
 
-      {activeFilters() > 0 && (
+      {activeFiltersCount > 0 && (
         <FilterBarActives>
           <ActiveFilters
             issues={issues}
@@ -428,16 +428,12 @@ const FilterBar = ({
 
 FilterBar.propTypes = {
   allSelected: PropTypes.bool.isRequired,
-  filters: PropTypes.object.isRequired,
   bountyIssues: PropTypes.arrayOf(issueShape).isRequired,
   issues: PropTypes.arrayOf(issueShape).isRequired,
   issuesFiltered: PropTypes.arrayOf(issueShape).isRequired,
   sortBy: PropTypes.string.isRequired,
   handleSelectAll: PropTypes.func.isRequired,
-  handleFiltering: PropTypes.func.isRequired,
   handleSorting: PropTypes.func.isRequired,
-  setParentFilters: PropTypes.func.isRequired,
-  disableFilter: PropTypes.func.isRequired,
   disableAllFilters: PropTypes.func.isRequired,
   selectedIssues: PropTypes.arrayOf(issueShape).isRequired,
   onSearchChange: PropTypes.func.isRequired,
