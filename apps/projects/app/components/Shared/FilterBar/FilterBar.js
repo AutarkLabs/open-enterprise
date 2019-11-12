@@ -314,9 +314,6 @@ console.log('---activeFiltersCount---', activeFiltersCount)
   const recalculateFiltersDisplayNumber = useCallback(() => {
     const total = mainFBRef.current ? mainFBRef.current.offsetWidth : 0
     const right = rightFBRef.current ? rightFBRef.current.offsetWidth : 0
-    // 80px is "selectAll" checkbox + padding, etc
-    // width is calculated from total width of main FB div and right FB div
-    // (containing actions, text filter and sorters)
     const width = total - (right + 120)
     setFiltersDisplayNumber(Math.floor(width / (128+8)))
   }, [])
@@ -388,7 +385,7 @@ console.log('---activeFiltersCount---', activeFiltersCount)
             setVisible={setTextFilterVisible}
           />
 
-          <Button icon={<IconSort />} display="icon" onClick={activateSort} ref={sortersOpener} label="Sorters" />
+          <Button icon={<IconSort />} display="icon" onClick={activateSort} ref={sortersOpener} label="Sort by" />
           <SortPopover
             visible={sortMenuVisible}
             opener={sortersOpener.current}
