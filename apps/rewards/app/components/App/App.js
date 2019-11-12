@@ -118,7 +118,11 @@ class App extends React.Component {
   }
 
   closePanel = () => {
-    this.setState({ panel: undefined, panelProps: undefined })
+    this.setState({
+      panel: undefined,
+      panelProps: undefined,
+      panelTitle: undefined,
+    })
   }
 
   selectTab = idx => {
@@ -179,10 +183,11 @@ class App extends React.Component {
     })
   }
 
-  viewReward = reward => {
+  viewReward = (reward, panelTitle) => {
     this.setState({
       panel: PANELS.ViewReward,
       panelProps: reward,
+      panelTitle,
     })
   }
 
@@ -218,6 +223,7 @@ class App extends React.Component {
           <PanelManager
             onClose={this.closePanel}
             activePanel={this.state.panel}
+            title={this.state.panelTitle}
             {...this.state.panelProps}
           />
         </IdentityProvider>
@@ -259,14 +265,14 @@ class App extends React.Component {
           <MyRewards
             myRewards={this.props.myRewards}
             myMetrics={this.props.myMetrics}
-            viewReward={this.viewReward}
+            viewReward={reward => this.viewReward(reward, 'View my reward')}
             claimReward={this.claimReward}
           />
         ) : (
           <Overview
             rewards={this.props.rewards === undefined ? [] : this.props.rewards}
             newReward={this.newReward}
-            viewReward={this.viewReward}
+            viewReward={reward => this.viewReward(reward, 'View Reward')}
             metrics={this.props.metrics}
           />
         )}

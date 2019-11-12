@@ -18,8 +18,13 @@ const PANELS = Object.keys(dynamicImport).reduce((obj, item) => {
   return obj
 }, {})
 
-const PanelManager = ({ activePanel = null, onClose, ...panelProps }) => {
-  let panelTitle = activePanel && camel2title(activePanel)
+const PanelManager = ({
+  activePanel = null,
+  onClose,
+  title,
+  ...panelProps
+}) => {
+  let panelTitle = activePanel && (title || camel2title(activePanel))
   const PanelComponent = activePanel && React.lazy(dynamicImport[activePanel])
   if (panelProps.reward) {
     panelTitle += ' #' + panelProps.reward.rewardId
