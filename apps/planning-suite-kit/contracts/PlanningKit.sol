@@ -12,14 +12,16 @@ import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 // import "@aragon/apps-survey/contracts/Survey.sol";
 
 import "@tps/apps-address-book/contracts/AddressBook.sol";
+import "../../discussions/contracts/DiscussionApp.sol";
+
 import "@tps/apps-allocations/contracts/Allocations.sol";
 import "@tps/apps-projects/contracts/Projects.sol";
 import {DotVoting as DotVotingApp} from "@tps/apps-dot-voting/contracts/DotVoting.sol";
 import "@tps/apps-rewards/contracts/Rewards.sol";
-import "@tps/test-helpers/contracts/lib/bounties/StandardBounties.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
 import "@aragon/apps-finance/contracts/Finance.sol";
 import "@aragon/apps-voting/contracts/Voting.sol";
+
 
 
 
@@ -68,12 +70,12 @@ contract KitBase is APMNamehash {
 contract PlanningKit is KitBase {
     MiniMeTokenFactory tokenFactory;
     MiniMeToken token;
-    StandardBounties registry;
+    address registry; // StandardBounties contract address
 
     uint256 constant PCT256 = 10 ** 16;
     uint64 constant PCT64 = 10 ** 16;
     address constant ANY_ENTITY = address(-1);
-    constructor(ENS ens) public KitBase(DAOFactory(0), ens) {
+    constructor(ENS ens) public KitBase(DAOFactory(0x5d94e3e7aec542ab0f9129b9a7badeb5b3ca0f77), ens) {
         address root = msg.sender;
 
         tokenFactory = new MiniMeTokenFactory();
@@ -81,7 +83,7 @@ contract PlanningKit is KitBase {
         // Generate Tokens
         token.generateTokens(address(root), 200 ether); // give root 100 autark tokens
         token.generateTokens(address(this), 100 ether); // give root 100 autark tokens
-        registry = new StandardBounties(root);
+        registry = 0x2e25c8F88c5cCcbC9400e5bc86cF9C58C7604327; // hardcoded from the publish:http logs TODO: make dynamic
     }
 
     function newInstance() public {
@@ -93,12 +95,14 @@ contract PlanningKit is KitBase {
         address root = msg.sender;
         Vault vault;
         Voting voting;
+        DiscussionApp discussions;
 
         (vault, voting) = createA1Apps(root, acl, dao);
+        (discussions) = createDiscussionApp(root, acl, dao);
 
-        createTPSApps(root, dao, vault, voting);
+        createTPSApps(root, dao, vault, voting, discussions);
 
-        //handleCleanupPermissions(dao, acl, root);
+        handleCleanupPermissions(dao, acl, root);
 
         emit DeployInstance(dao);
     }
@@ -187,7 +191,7 @@ contract PlanningKit is KitBase {
 
     }
 
-    function createTPSApps (address root, Kernel dao, Vault vault, Voting voting) internal {
+    function createTPSApps (address root, Kernel dao, Vault vault, Voting voting, DiscussionApp discussions) internal {
         AddressBook addressBook;
         Projects projects;
         DotVotingApp dotVoting;
@@ -217,7 +221,8 @@ contract PlanningKit is KitBase {
             dotVoting,
             allocations,
             rewards,
-            voting
+            voting,
+            discussions
         );
         handleVaultPermissions(
             dao,
@@ -226,7 +231,6 @@ contract PlanningKit is KitBase {
             rewards,
             vault
         );
-
     }
 
     function initializeTPSApps(
@@ -240,9 +244,9 @@ contract PlanningKit is KitBase {
     {
         address root = msg.sender;
         addressBook.initialize();
-        projects.initialize(registry, vault, token);
-        dotVoting.initialize(addressBook, token, 50 * PCT256, 0, 1 minutes);
-        allocations.initialize(addressBook, vault);
+        projects.initialize(registry, vault);
+        dotVoting.initialize(token, 50 * PCT256, 0, 1 minutes);
+        allocations.initialize(vault, 1 days);
         rewards.initialize(vault);
     }
 
@@ -253,43 +257,43 @@ contract PlanningKit is KitBase {
         DotVotingApp dotVoting,
         Allocations allocations,
         Rewards rewards,
-        Voting voting
+        Voting voting,
+        DiscussionApp discussions
     ) internal
     {
         address root = msg.sender;
-
         ACL acl = ACL(dao.acl());
 
         // AddressBook permissions:
-        acl.createPermission(ANY_ENTITY, addressBook, addressBook.ADD_ENTRY_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, addressBook, addressBook.REMOVE_ENTRY_ROLE(), root);
-        // emit InstalledApp(addressBook, addressBookAppId);
+        acl.createPermission(voting, addressBook, addressBook.ADD_ENTRY_ROLE(), voting);
+        acl.createPermission(voting, addressBook, addressBook.REMOVE_ENTRY_ROLE(), voting);
+        //emit InstalledApp(addressBook, planningAppIds[uint8(PlanningApps.AddressBook)]);
 
 
         // Projects permissions:
-        acl.createPermission(voting, projects, projects.ADD_BOUNTY_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, projects, projects.ADD_REPO_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, projects, projects.CHANGE_SETTINGS_ROLE(), root);
-        acl.createPermission(dotVoting, projects, projects.CURATE_ISSUES_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, projects, projects.REMOVE_REPO_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, projects, projects.TASK_ASSIGNMENT_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, projects, projects.WORK_REVIEW_ROLE(), root);
-        // emit InstalledApp(projects, apps[2]);
+        acl.createPermission(root, projects, projects.FUND_ISSUES_ROLE(), voting);
+        acl.createPermission(voting, projects, projects.ADD_REPO_ROLE(), voting);
+        acl.createPermission(voting, projects, projects.CHANGE_SETTINGS_ROLE(), voting);
+        acl.createPermission(dotVoting, projects, projects.CURATE_ISSUES_ROLE(), voting);
+        acl.createPermission(voting, projects, projects.REMOVE_REPO_ROLE(), voting);
+        acl.createPermission(root, projects, projects.REVIEW_APPLICATION_ROLE(), voting);
+        acl.createPermission(root, projects, projects.WORK_REVIEW_ROLE(), voting);
+        //emit InstalledApp(projects, planningAppIds[uint8(PlanningApps.Projects)]);
 
-        // Dot-Voting permissions
-        acl.createPermission(ANY_ENTITY, dotVoting, dotVoting.CREATE_VOTES_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, dotVoting, dotVoting.ADD_CANDIDATES_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, dotVoting, dotVoting.MODIFY_PARTICIPATION_ROLE(), root);
-        // emit InstalledApp(dotVoting, apps[3]);
+        // Dot-voting permissions
+        acl.createPermission(ANY_ENTITY, dotVoting, dotVoting.ROLE_CREATE_VOTES(), voting);
+        acl.createPermission(ANY_ENTITY, dotVoting, dotVoting.ROLE_ADD_CANDIDATES(), voting);
+        //emit InstalledApp(dotVoting, planningAppIds[uint8(PlanningApps.DotVoting)]);
 
         // Allocations permissions:
-        acl.createPermission(ANY_ENTITY, allocations, allocations.START_PAYOUT_ROLE(), root);
-        acl.createPermission(dotVoting, allocations, allocations.SET_DISTRIBUTION_ROLE(), root);
-        acl.createPermission(ANY_ENTITY, allocations, allocations.EXECUTE_PAYOUT_ROLE(), root);
-        // emit InstalledApp(allocations, apps[1]);
+        acl.createPermission(voting, allocations, allocations.CREATE_ACCOUNT_ROLE(), voting);
+        acl.createPermission(dotVoting, allocations, allocations.CREATE_ALLOCATION_ROLE(), voting);
+        acl.createPermission(ANY_ENTITY, allocations, allocations.EXECUTE_ALLOCATION_ROLE(), voting);
+        //emit InstalledApp(allocations, planningAppIds[uint8(PlanningApps.Allocations)]);
 
-        // Rewards Permissions
-        acl.createPermission(ANY_ENTITY, rewards, rewards.ADD_REWARD_ROLE(), root);
+        // Rewards permissions:
+        acl.createPermission(voting, rewards, rewards.ADD_REWARD_ROLE(), voting);
+        //emit InstalledApp(rewards, planningAppIds[uint8(PlanningApps.Rewards)]);
 
     }
 
@@ -302,6 +306,13 @@ contract PlanningKit is KitBase {
         acl.grantPermission(projects, vault, vault.TRANSFER_ROLE());
         acl.grantPermission(allocations, vault, vault.TRANSFER_ROLE());
         acl.grantPermission(rewards, vault, vault.TRANSFER_ROLE());
+    }
+
+    function createDiscussionApp(address root, ACL acl, Kernel dao) internal returns (DiscussionApp app) {
+        bytes32 appId = apmNamehash("discussions");
+        app = DiscussionApp(dao.newAppInstance(appId, latestVersionAppBase(appId)));
+        app.initialize();
+        acl.createPermission(ANY_ENTITY, app, app.EMPTY_ROLE(), root);
     }
 
     function handleCleanupPermissions(Kernel dao, ACL acl, address root) internal {

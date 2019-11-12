@@ -1,40 +1,49 @@
-import React, { PureComponent } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
-import { Badge } from '@aragon/ui'
+import { useTheme } from '@aragon/ui'
 
 import IconX from '../Shared/assets/components/IconX'
 
-export default class FilterTile extends PureComponent {
-  static propTypes = {
-    text: PropTypes.string.isRequired,
-    disableFilter: PropTypes.func.isRequired,
-  }
-  render() {
-    return (
-      <div style={{ margin: '1px 4px 1px 0' }}>
-        <Badge.Identity>
-          <div style={{
-            paddingLeft: '10px',
-            paddingTop: '4px',
-            paddingBottom: '4px',
-            display: 'flex',
-            flexDirection: 'row'
-          }}>
-            {this.props.text}
-            <div
-              style={{
-                marginLeft: '10px',
-                paddingRight: '4px',
-                cursor: 'pointer'
-              }}
-              role="button" aria-pressed="false"
-              onClick={this.props.disableFilter}
-            >
-              <IconX height='8px' width='8px' />
-            </div>
-          </div>
-        </Badge.Identity>
-      </div>
-    )
-  }
+const FilterTile = ({ text, disableFilter }) => {
+  const theme = useTheme()
+
+  return (
+    <div css={`
+      display: inline-flex;
+      margin: 1px 4px 1px 0;
+      font-weight: 600;
+      border-radius: 3px;
+      font-size: 12px;
+      line-height: 1.5;
+      display: flex;
+      padding: 4px 4px 2px 10px;
+      white-space: nowrap;
+      background: ${theme.controlBorder};
+      color: ${theme.surfaceContentSecondary};
+    `}>
+      {text}
+      <button onClick={disableFilter} css={`
+        background: none;
+        border: none;
+        cursor: pointer;
+        font: inherit;
+        outline: none;
+        padding: 0 4px 0 10px;
+        :hover, :focus, :active {
+          polygon, rect {
+            fill: ${theme.negative};
+          }
+        }
+      `}>
+        <IconX height="8px" width="8px" />
+      </button>
+    </div>
+  )
 }
+
+FilterTile.propTypes = {
+  text: PropTypes.string.isRequired,
+  disableFilter: PropTypes.func.isRequired,
+}
+
+export default FilterTile

@@ -1,21 +1,48 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Form, FormField } from '../Form'
-import { TextInput, DropDown } from '@aragon/ui'
+import { DropDown, IconClose, TextInput, theme } from '@aragon/ui'
+import styled from 'styled-components'
 import web3Utils from 'web3-utils'
 
-// TODO: fields validation and error handling need improvement!
+const isCustomType = type => type === 'Custom type...'
 
-const ENTITY_TYPES = [ 'Individual', 'Organization', 'Project' ]
+const ENTITY_TYPES = [ 'Individual', 'Organization' ]
 const INITIAL_STATE = {
   name: '',
   address: '',
   type: 'Individual',
+  customType: ''
+}
+
+const ErrorText = styled.div`
+  font-size: small;
+  display: flex;
+  align-items: center;
+  margin-top: 24px;
+`
+
+const ErrorMessage = ({ children }) => (
+  <ErrorText>
+    <IconClose
+      size="tiny"
+      css={{
+        marginRight: '8px',
+        color: theme.negative,
+      }}
+    />
+    {children}
+  </ErrorText>
+)
+
+ErrorMessage.propTypes = {
+  children: PropTypes.node,
 }
 
 class NewEntity extends React.Component {
   static propTypes = {
     onCreateEntity: PropTypes.func.isRequired,
+    addressList: PropTypes.arrayOf(PropTypes.string).isRequired,
   }
 
   state = INITIAL_STATE
@@ -33,32 +60,69 @@ class NewEntity extends React.Component {
   }
 
   handleSubmit = () => {
-    const { name, address, type } = this.state
-    const error = {}
-    if (!name) {
-      error.name = 'Please provide a name'
-    }
-    if (!web3Utils.isAddress(address)) {
-      error.address = 'Please provide a valid ethereum address'
+    const { name, address, type, customType } = this.state
+    const data = {
+      name: name,
+      address: address,
+      type: isCustomType(type) ? customType : type,
     }
 
-    if (Object.keys(error).length) {
-      this.setState({ error: error })
-    } else {
-      this.setState(INITIAL_STATE)
-      this.props.onCreateEntity({ name, address, type })
-    }
+    this.setState(INITIAL_STATE)
+    this.props.onCreateEntity(data)
   }
 
   render() {
-    const { address, name, type, error } = this.state
+    const { addressList } = this.props
+    const { address, name, type, customType } = this.state
     const { handleSubmit, changeField, changeType } = this
+
+    const emptyName = name.trim() === ''
+    const emptyAddress = address.trim() === ''
+    const emptyCustomType = customType.trim() === ''
+    const errorBlock = []
+
+    const errorAddress = !emptyAddress && !web3Utils.isAddress(address) ?
+      <ErrorMessage key="errorAddress">
+        Please provide a valid ethereum address
+      </ErrorMessage>
+      : null
+    errorBlock.push(errorAddress)
+
+    const errorDuplicate = addressList.includes(address) ?
+      <ErrorMessage key="errorDuplicate">
+        This address already exists in the address book
+      </ErrorMessage>
+      : null
+    errorBlock.push(errorDuplicate)
+
+    const formDisabled = emptyName || emptyAddress || (isCustomType(type) && emptyCustomType) || errorAddress || errorDuplicate
+
+    const customTypeFormField =
+      type === 'Custom type...' ? (
+        <FormField
+          required
+          label="Custom type"
+          input={
+            <TextInput
+              name="customType"
+              onChange={changeField}
+              value={customType}
+              wide
+            />
+          }
+        />
+      ) : null
+
     return (
-      <Form onSubmit={handleSubmit} submitText="Submit Entity">
+      <Form
+        onSubmit={handleSubmit}
+        disabled={!!formDisabled}
+        submitText="Submit Entity"
+        error={errorBlock}
+      >
         <FormField
           required
           label="Name"
-          err={error && error.name}
           input={
             <TextInput name="name" onChange={changeField} value={name} wide />
           }
@@ -67,7 +131,6 @@ class NewEntity extends React.Component {
         <FormField
           required
           label="Address"
-          err={error && error.address}
           input={
             <TextInput
               name="address"
@@ -85,11 +148,13 @@ class NewEntity extends React.Component {
               name="type"
               items={ENTITY_TYPES}
               onChange={changeType}
-              active={ENTITY_TYPES.indexOf(type)}
+              selected={ENTITY_TYPES.indexOf(type)}
               wide
             />
           }
         />
+
+        {customTypeFormField}
       </Form>
     )
   }

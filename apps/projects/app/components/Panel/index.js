@@ -1,1 +1,4 @@
-export { default, PANELS } from './PanelManager'
+import { PanelManager, PANELS, PanelContext } from './PanelManager'
+import usePanelManagement from './usePanelManagement'
+
+export { PanelManager, PANELS, PanelContext, usePanelManagement }

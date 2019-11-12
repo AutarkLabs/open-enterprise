@@ -1,291 +1,144 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { BigNumber } from 'bignumber.js'
 import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableCell,
+  ContextMenu,
+  ContextMenuItem,
+  DataView,
+  IconView,
   Text,
-  Viewport,
-  theme,
-  Badge,
 } from '@aragon/ui'
-import { displayCurrency, getSymbol } from '../../utils/helpers'
 import {
-  AverageRewards,
-  AverageRewardsTable,
-  formatAvgAmount,
-  RewardDescription,
-  RewardsTable,
-  NarrowList,
-  NarrowListReward,
-  AmountBadge,
-} from './RewardsTables'
-import { MILLISECONDS_IN_A_MONTH } from '../../../../../shared/ui/utils'
+  ONE_TIME_DIVIDEND,
+  RECURRING_DIVIDEND,
+  ONE_TIME_MERIT,
+  RECURRING,
+  ONE_TIME,
+  MERIT,
+  DIVIDEND
+} from '../../utils/constants'
 import { Empty } from '../Card'
+import Metrics from './Metrics'
+import { displayCurrency } from '../../utils/helpers'
 
-const fourthColumns = [ 'Next Payout', 'Status', 'Last Payout' ]
-const headersNames = fourth => [
-  'Description',
-  'Type',
-  'Cycle',
-  fourth,
-  'Amount',
-]
-
-const dot = <span style={{ margin: '0px 6px' }}>&middot;</span>
-
-const averageRewardsTitles = [ 'Average Reward', 'Monthly Average', 'Total this year' ]
-// TODO: these need to be actually calculated
-const calculateAverageRewardsNumbers = ( rewards, claims, balances, convertRates ) => {
-  if (claims && balances && convertRates) {
-    return [
-      formatAvgAmount(calculateAvgClaim(claims, balances, convertRates), '$'),
-      formatAvgAmount(calculateMonthlyAvg(rewards, balances, convertRates), '$'),
-      formatAvgAmount(calculateYTDRewards(rewards,balances, convertRates), '$'),
-    ]
-  }
-  else {
-    return Array(3).fill(formatAvgAmount(0, '$'))
-  }
-}
-
-const calculateAvgClaim = ({ claimsByToken, totalClaimsMade }, balances, convertRates) => {
-  return sumTotalRewards(
-    claimsByToken,
-    balances,
-    convertRates,
-    (claim, bal) => claim.address === bal.address
-  ) / totalClaimsMade
-}
-
-const calculateMonthlyAvg = (rewards, balances, convertRates) => {
-  let monthCount = Math.ceil((Date.now() - rewards.reduce((minDate, reward) => {
-    return reward.endDate < minDate.endDate ? reward: minDate
-  }).endDate) / MILLISECONDS_IN_A_MONTH)
-
-  return sumTotalRewards(
-    rewards,
-    balances,
-    convertRates,
-    (rew, bal) => rew.rewardToken === bal.address
-  ) / monthCount
-}
-
-const calculateYTDRewards = (rewards, balances, convertRates) => {
-  const yearBeginning = new Date(new Date(Date.now()).getFullYear(), 0)
-  return sumTotalRewards(
-    rewards,
-    balances,
-    convertRates,
-    (rew, bal) => rew.rewardToken === bal.address && rew.endDate >= yearBeginning
-  )
-}
-
-const sumTotalRewards = (rewards, balances, convertRates, rewardFilter) => {
-  return balances.reduce((balAcc, balance) => {
-    if (convertRates[balance.symbol]) {
-      return rewards.reduce((rewAcc,reward) => {
-        return (rewardFilter(reward, balance))
-          ?
-          BigNumber(reward.amount).div(Math.pow(10, balance.decimals)).div(convertRates[balance.symbol]).plus(rewAcc)
-            .toNumber()
-          :
-          rewAcc
-      },0) + balAcc
-    }
-    else return balAcc
-  },0)
-}
-
-const generateOpenDetails = (reward, openDetails) => () => {
-  openDetails(reward)
-}
-
-const RewardsTableNarrow = ({ title, tokens, rewards, fourthColumn, fourthColumnData, openDetails }) => (
-  <NarrowList>
-    {rewards.map((reward, i) => (
-      <NarrowListReward onClick={generateOpenDetails(reward, openDetails)} key={i}>
-        <div style={{ marginTop: '5px', marginRight: '10px' }}>
-          <RewardDescription>
-            {reward.description}
-          </RewardDescription>
-          <Text.Block size="small" color={theme.textSecondary} style={{ marginTop: '5px' }}>
-            {reward.isMerit ? 'Merit' : 'Dividend'}
-            {dot}
-            {reward.isMerit ? 'One-Time' : 'Quarterly'}
-            {dot}
-            {fourthColumnData(reward)}
-          </Text.Block>
-        </div>
-        <div>
-          <AmountBadge>
-            {displayCurrency(reward.amount)}{' '}{getSymbol(tokens, reward.rewardToken)}
-          </AmountBadge>
-        </div>
-      </NarrowListReward>
-    ))}
-  </NarrowList>
-)
-
-const RewardsTableWide = ({ title, tokens, rewards, fourthColumn, fourthColumnData, openDetails }) => {
-  return (
-    <Table
-      style={{ width: '100%' }}
-      header={
-        <TableRow>
-          {headersNames(fourthColumn).map(header => (
-            <TableHeader key={header} title={header} />
-          ))}
-        </TableRow>
-      }
-    >
-      {rewards.map((reward, i) => (
-        <ClickableTableRow key={i} onClick={generateOpenDetails(reward, openDetails)}>
-          <TableCell>
-            <RewardDescription>
-              {reward.description}
-            </RewardDescription>
-          </TableCell>
-          <TableCell>
-            {reward.isMerit ? 'Merit Reward' : 'Dividend'}
-          </TableCell>
-          <TableCell>
-            {reward.isMerit ? 'One-Time' : 'Monthly'}
-          </TableCell>
-          <TableCell>
-            {fourthColumnData(reward)}
-          </TableCell>
-          <TableCell>
-            <AmountBadge>
-              {displayCurrency(reward.amount)}{' '}{getSymbol(tokens, reward.rewardToken)}
-            </AmountBadge>
-          </TableCell>
-        </ClickableTableRow>
-      ))}
-    </Table>
-  )}
-
-/*
-const leadersList = leaders => (
-  <LeadersLlist>
-    {leaders.sort((l1, l2) => l1.amount < l2.amount ? 1 : -1).map(leader => (
-      <li><span>{leader.name}</span><span style={{ fontWeight: 'bold' }}>$ {leader.amount}</span></li>
-    ))}
-  </LeadersLlist>
-)
-*/
-
-const displayNextPayout = reward => Intl.DateTimeFormat().format(reward.endDate)
-const displayStatus = reward => 'Pending'
-const displayLastPayout = reward => Intl.DateTimeFormat().format(reward.endDate)
-const futureRewards = rewards => rewards.filter(reward => reward.endDate > Date.now())
-const pastRewards = rewards => rewards.filter(reward => reward.endDate <= Date.now())
-
-const tableType = [
-  { title: 'Current Rewards', fourthColumn: 'Next Payout', fourthColumnData: displayNextPayout, filterRewards: futureRewards },
-  // This will be implemented after advanced forwarding is implemented in the Aragon API
-  //{ title: 'Pending Rewards', fourthColumn: 'Status', fourthColumnData: displayStatus },
-  { title: 'Past Rewards', fourthColumn: 'Last Payout', fourthColumnData: displayLastPayout, filterRewards: pastRewards },
-]
-
-const Overview = ({ tokens, rewards, convertRates, claims, newReward, openDetails }) => {
+const Overview = ({
+  rewards,
+  newReward,
+  viewReward,
+  metrics,
+}) => {
   const rewardsEmpty = rewards.length === 0
-  const averageRewardsNumbers = calculateAverageRewardsNumbers(rewards, claims, tokens, convertRates)
 
   if (rewardsEmpty) {
-    return <Empty tab='Overview' action={newReward} />
+    return <Empty action={newReward} />
   }
   return (
     <OverviewMain>
       <RewardsWrap>
-
-        {(tokens && convertRates)
-          ?
-          <AverageRewards
-            titles={averageRewardsTitles}
-            numbers={averageRewardsNumbers}
-          />
-          :
-          <AverageRewardsTable>
-            <Text.Block size="large" weight="bold">
-              Calculating summaries...
-            </Text.Block>
-          </AverageRewardsTable>
-        }
-
-        {tableType.map(({ title, fourthColumn, fourthColumnData, filterRewards }) => (
-          filterRewards(rewards).length > 0
-          &&
-          <RewardsTable
-            key={title}
-            title={title}
-            fourthColumn={fourthColumn}
-            fourthColumnData={fourthColumnData}
-            rewards={filterRewards(rewards)}
-            tokens={tokens}
-            openDetails={openDetails}
-            belowMedium={RewardsTableNarrow}
-            aboveMedium={RewardsTableWide}
-          />
-        ))}
+        <Metrics content={metrics} />
+        <DataView
+          heading={<Text size="xlarge">All rewards</Text>}
+          fields={[ 'description', 'type', 'frequency', 'next payout', 'amount' ]}
+          entries={rewards}
+          renderEntry={renderReward}
+          renderEntryActions={(reward) => renderMenu(reward, viewReward)}
+        />
       </RewardsWrap>
-
-      {/*<LeaderBoardWrap>
-        <FieldTitle
-          style={{ borderBottom: '1px solid grey', marginBottom: '10px' }}
-        >
-          Leaderboard
-        </FieldTitle>
-        {leadersList(leaders)}
-      </LeaderBoardWrap> */}
     </OverviewMain>
   )
 }
 
+const renderMenu = (reward, viewReward) => (
+  <ContextMenu>
+    <StyledContextMenuItem
+      onClick={() => viewReward(reward)}
+    >
+      <IconView css={{
+        marginRight: '11px',
+        marginBottom: '2px',
+      }}/>
+      <Text>View</Text>
+    </StyledContextMenuItem>
+  </ContextMenu>
+)
+
+const renderReward = (reward) => {
+  let fields = []
+  switch(reward.rewardType) {
+  case ONE_TIME_DIVIDEND:
+    fields = renderOneTimeDividend(reward)
+    break
+  case RECURRING_DIVIDEND:
+    fields = renderRecurringDividend(reward)
+    break
+  case ONE_TIME_MERIT:
+    fields = renderOneTimeMerit(reward)
+    break
+  }
+  return fields
+}
+
+const renderOneTimeDividend = (reward) => {
+  const {
+    description,
+    amount,
+    amountToken,
+    dateReference,
+  } = reward
+  const nextPayout = dateReference.toDateString()
+  const displayAmount = `${displayCurrency(amount)} ${amountToken}`
+  return [ description, DIVIDEND, ONE_TIME, nextPayout, displayAmount ]
+}
+
+const renderRecurringDividend = (reward) => {
+  const {
+    description,
+    amount,
+    amountToken,
+    disbursement,
+    disbursementUnit,
+    disbursements
+  } = reward
+  const frequency = `${RECURRING} (${disbursement} ${disbursementUnit})`
+  const today = new Date()
+  const nextPayout = (disbursements.find(d => d.getTime() > today.getTime()) || disbursements[disbursements.length - 1])
+    .toDateString()
+  const displayAmount = `${displayCurrency(amount)} ${amountToken}`
+  return [ description, DIVIDEND, frequency, nextPayout, displayAmount ]
+}
+
+
+const renderOneTimeMerit = (reward) => {
+  const {
+    description,
+    amount,
+    amountToken,
+    endDate,
+  } = reward
+  const nextPayout = new Date(endDate).toDateString()
+  const displayAmount = `${displayCurrency(amount)} ${amountToken}`
+  return [ description, MERIT, ONE_TIME, nextPayout, displayAmount ]
+}
+
 Overview.propTypes = {
-  newReward: PropTypes.func.isRequired,
-  openDetails: PropTypes.func.isRequired,
   rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
+  newReward: PropTypes.func.isRequired,
+  viewReward: PropTypes.func.isRequired,
+  metrics: PropTypes.arrayOf(PropTypes.object).isRequired,
 }
 
 const OverviewMain = styled.div`
-  background-color: #F8FCFD;
+  background-color: #f8fcfd;
 `
 const RewardsWrap = styled.div`
   flex-grow: 1;
-  /*background: #1DD9D5;*/
   > :not(:last-child) {
     margin-bottom: 20px;
   }
 `
-const ClickableTableRow = styled(TableRow)`
-  :hover {
-    cursor: pointer;
-  }
-`
-/*
-const LeaderBoardWrap = styled.div`
-  ${breakpoint(
-    'medium',
-    `
-    width: 300px;
-    `
-  )};
-
-  width: 100%;
-  background: #8196FF;
-  padding: 10px;
+const StyledContextMenuItem = styled(ContextMenuItem)`
+  padding: 8px 45px 8px 19px;
 `
 
-const LeadersLlist = styled.ul`
-  list-style: none;
-  li {
-    display: flex;
-    justify-content: space-between;
-  }
-`
-*/
+// eslint-disable-next-line import/no-unused-modules
 export default Overview

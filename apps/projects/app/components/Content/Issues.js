@@ -1,31 +1,44 @@
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { Query } from 'react-apollo'
-import {
-  Button,
-  TextInput,
-  theme,
-  ContextMenuItem,
-  IconFundraising,
-  breakpoint,
-  Viewport,
-} from '@aragon/ui'
-import BigNumber from 'bignumber.js'
+import { useQuery } from '@apollo/react-hooks'
+
+import { useAragonApi } from '@aragon/api-react'
+import { Button, GU, Text } from '@aragon/ui'
 import { compareAsc, compareDesc } from 'date-fns'
 
+import { initApolloClient } from '../../utils/apollo-client'
+import useShapedIssue from '../../hooks/useShapedIssue'
 import { STATUS } from '../../utils/github'
 import { getIssuesGQL } from '../../utils/gql-queries.js'
-import { DropDownButton as ActionsMenu, FilterBar, IconCurate } from '../Shared'
-import { Issue, Empty } from '../Card'
-import { IssueDetail } from './IssueDetail'
-import Unauthorized from './Unauthorized'
-import ActiveFilters from './Filters'
+import { FilterBar } from '../Shared'
+import { Issue } from '../Card'
+import { LoadingAnimation } from '../Shared'
+import { EmptyWrapper } from '../Shared'
+
+const sorters = {
+  'Name ascending': (i1, i2) =>
+    i1.title.toUpperCase() > i2.title.toUpperCase() ? 1 : -1,
+  'Name descending': (i1, i2) =>
+    i1.title.toUpperCase() > i2.title.toUpperCase() ? -1 : 1,
+  'Newest': (i1, i2) =>
+    compareDesc(new Date(i1.createdAt), new Date(i2.createdAt)),
+  'Oldest': (i1, i2) =>
+    compareAsc(new Date(i1.createdAt), new Date(i2.createdAt)),
+}
+
+const ISSUES_PER_CALL = 100
 
 class Issues extends React.PureComponent {
   static propTypes = {
-    onLogin: PropTypes.func.isRequired,
-    githubCurrentUser: PropTypes.object.isRequired,
+    activeIndex: PropTypes.shape({
+      tabData: PropTypes.object.isRequired,
+    }).isRequired,
+    bountyIssues: PropTypes.array.isRequired,
+    bountySettings: PropTypes.shape({
+      expLvls: PropTypes.array.isRequired,
+    }).isRequired,
+    filters: PropTypes.object.isRequired,
     github: PropTypes.shape({
       status: PropTypes.oneOf([
         STATUS.AUTHENTICATED,
@@ -35,64 +48,31 @@ class Issues extends React.PureComponent {
       token: PropTypes.string,
       event: PropTypes.string,
     }),
+    graphqlQuery: PropTypes.shape({
+      data: PropTypes.object,
+      error: PropTypes.string,
+      loading: PropTypes.bool.isRequired,
+      refetch: PropTypes.func,
+    }).isRequired,
+    setDownloadedRepos: PropTypes.func.isRequired,
+    setFilters: PropTypes.func.isRequired,
+    setSelectedIssue: PropTypes.func.isRequired,
+    shapeIssue: PropTypes.func.isRequired,
+    status: PropTypes.string.isRequired,
+    tokens: PropTypes.array.isRequired,
   }
 
   state = {
     selectedIssues: {},
     allSelected: false,
-    filters: {
-      projects: {},
-      labels: {},
-      milestones: {},
-      deadlines: {},
-      experiences: {},
-      statuses: {},
-    },
-    sortBy: { what: 'Creation Date', direction: -1 },
+    sortBy: 'Newest',
     textFilter: '',
     reload: false,
-    currentIssue: {},
-    showIssueDetail: false,
-    downloadedRepos: {},
     downloadedIssues: [],
-    issuesPerCall: 100,
   }
 
-  componentWillMount() {
-    if ('filterIssuesByRepoId' in this.props.activeIndex.tabData) {
-      const { filters } = this.state
-      filters.projects[
-        this.props.activeIndex.tabData.filterIssuesByRepoId
-      ] = true
-      this.setState({ filters })
-    }
-  }
-
-  selectedIssuesArray = () =>
-    Object.keys(this.state.selectedIssues).map(
-      id => this.state.selectedIssues[id]
-    )
-
-  handleCurateIssues = issuesFiltered => () => {
-    this.props.onCurateIssues(this.selectedIssuesArray(), issuesFiltered)
-    // this is called from ActionMenu, on selected Issues -
-    // return to default state where nothing is selected
-    this.setState({ selectedIssues: [], allSelected: false })
-  }
-
-  handleAllocateSingleBounty = issue => {
-    this.props.onAllocateBounties([issue])
-  }
-
-  handleUpdateBounty = issue => {
-    this.props.onUpdateBounty([issue])
-  }
-
-  handleAllocateBounties = () => {
-    this.props.onAllocateBounties(this.selectedIssuesArray())
-    // this is called from ActionMenu, on selected Issues -
-    // return to default state where nothing is selected
-    this.setState({ selectedIssues: [], allSelected: false })
+  deselectAllIssues = () => {
+    this.setState({ selectedIssues: {}, allSelected: false })
   }
 
   toggleSelectAll = issuesFiltered => () => {
@@ -100,7 +80,7 @@ class Issues extends React.PureComponent {
     const allSelected = !this.state.allSelected
     const reload = !this.state.reload
     if (!this.state.allSelected) {
-      this.shapeIssues(issuesFiltered).forEach(
+      issuesFiltered.map(this.props.shapeIssue).forEach(
         issue => (selectedIssues[issue.id] = issue)
       )
     }
@@ -108,9 +88,9 @@ class Issues extends React.PureComponent {
   }
 
   handleFiltering = filters => {
+    this.props.setFilters(filters)
     // TODO: why is reload necessary?
     this.setState(prevState => ({
-      filters: filters,
       reload: !prevState.reload,
     }))
   }
@@ -121,8 +101,9 @@ class Issues extends React.PureComponent {
   }
 
   applyFilters = issues => {
-    const { filters, textFilter } = this.state
-    const { bountyIssues } = this.props
+    const { textFilter } = this.state
+    const { filters, bountyIssues } = this.props
+
     const bountyIssueObj = {}
     bountyIssues.forEach(issue => {
       bountyIssueObj[issue.issueNumber] = issue.data.workStatus
@@ -158,7 +139,7 @@ class Issues extends React.PureComponent {
       // if there are no MS filters, all issues pass
       if (Object.keys(filters.milestones).length === 0) return true
       // should issues without milestones pass?
-      if ('milestoneless' in filters.milestones && issue.milestone == null)
+      if ('milestoneless' in filters.milestones && issue.milestone === null)
         return true
       // if issues without milestones should not pass, they are rejected below
       if (issue.milestone === null) return false
@@ -186,8 +167,10 @@ class Issues extends React.PureComponent {
 
     // last but not least, if there is any text in textFilter...
     if (textFilter) {
-      return issuesByStatus.filter(issue =>
-        issue.title.toUpperCase().match(textFilter)
+      return issuesByStatus.filter(
+        issue =>
+          issue.title.toUpperCase().indexOf(textFilter) !== -1 ||
+          String(issue.number).indexOf(textFilter) !== -1
       )
     }
 
@@ -213,124 +196,29 @@ class Issues extends React.PureComponent {
     })
   }
 
-  handleIssueClick = issue => {
-    this.setState({ showIssueDetail: true, currentIssue: issue })
-  }
-
-  handleIssueDetailClose = () => {
-    this.setState({ showIssueDetail: false, currentIssue: null })
-  }
-
   disableFilter = pathToFilter => {
-    let newFilters = { ...this.state.filters }
+    let newFilters = { ...this.props.filters }
     recursiveDeletePathFromObject(pathToFilter, newFilters)
-    this.setState({ filters: newFilters })
+    this.props.setFilters(newFilters)
   }
 
   disableAllFilters = () => {
-    this.setState({
-      filters: {
-        projects: {},
-        labels: {},
-        milestones: {},
-        deadlines: {},
-        experiences: {},
-        statuses: {},
-      },
+    this.props.setFilters({
+      projects: {},
+      labels: {},
+      milestones: {},
+      deadlines: {},
+      experiences: {},
+      statuses: {},
     })
-  }
-
-  actionsContextMenu = issuesFiltered => (
-    <ActionsMenu enabled={(Object.keys(this.state.selectedIssues).length !== 0)}>
-      <ContextMenuItem
-        onClick={this.handleCurateIssues(issuesFiltered)}
-        style={{ display: 'flex', alignItems: 'flex-start' }}
-      >
-        <div>
-          <IconCurate color={theme.textTertiary} />
-        </div>
-        <ActionLabel>Curate Issues</ActionLabel>
-      </ContextMenuItem>
-      <ContextMenuItem
-        onClick={this.handleAllocateBounties}
-        style={{ display: 'flex', alignItems: 'flex-start' }}
-      >
-        <div style={{ marginLeft: '4px' }}>
-          <IconFundraising color={theme.textTertiary} />
-        </div>
-        <ActionLabel>Fund Issues</ActionLabel>
-      </ContextMenuItem>
-    </ActionsMenu>
-  )
-
-  actionsMenu = (issues, issuesFiltered) => (
-    <Viewport>
-      {({ below }) =>
-        below('small') ? (
-          <React.Fragment>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '0',
-                justifyContent: 'space-between',
-                alignContent: 'stretch',
-                marginTop: '10px',
-              }}
-            >
-              <TextInput
-                placeholder="Search issue titles"
-                type="search"
-                onChange={this.handleTextFilter}
-                style={{ marginRight: '6px' }}
-              />
-              {this.actionsContextMenu(issuesFiltered)}
-            </div>
-            <ActiveFilters
-              issues={issues}
-              bountyIssues={this.props.bountyIssues}
-              filters={this.state.filters}
-              disableFilter={this.disableFilter}
-              disableAllFilters={this.disableAllFilters}
-            />
-          </React.Fragment>
-        ) : (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0',
-              justifyContent: 'space-between',
-            }}
-          >
-            <TextInput
-              placeholder="Search issue titles"
-              type="search"
-              onChange={this.handleTextFilter}
-            />
-            <ActiveFilters
-              issues={issues}
-              bountyIssues={this.props.bountyIssues}
-              filters={this.state.filters}
-              disableFilter={this.disableFilter}
-              disableAllFilters={this.disableAllFilters}
-            />
-            {this.actionsContextMenu(issuesFiltered)}
-          </div>
-        )
-      }
-    </Viewport>
-  )
-
-  setParentFilters = filters => {
-    this.setState(filters)
   }
 
   filterBar = (issues, issuesFiltered) => {
     return (
       <FilterBar
-        setParentFilters={this.setParentFilters}
-        filters={this.state.filters}
+        setParentFilters={this.props.setFilters}
+        filters={this.props.filters}
+        sortBy={this.state.sortBy}
         handleSelectAll={this.toggleSelectAll(issuesFiltered)}
         allSelected={this.state.allSelected}
         issues={issues}
@@ -339,23 +227,31 @@ class Issues extends React.PureComponent {
         handleSorting={this.handleSorting}
         activeIndex={this.props.activeIndex}
         bountyIssues={this.props.bountyIssues}
+        disableFilter={this.disableFilter}
+        disableAllFilters={this.disableAllFilters}
+        deselectAllIssues={this.deselectAllIssues}
+        onSearchChange={this.handleTextFilter}
+        selectedIssues={Object.keys(this.state.selectedIssues).map(
+          id => this.state.selectedIssues[id]
+        )}
       />
     )
   }
 
   queryLoading = () => (
     <StyledIssues>
-      {this.actionsMenu([], [])}
       {this.filterBar([], [])}
-      <IssuesScrollView>
-        <div>Loading...</div>
-      </IssuesScrollView>
+      <EmptyWrapper>
+        <Text size="large" css={`margin-bottom: ${3 * GU}px`}>
+          Loading...
+        </Text>
+        <LoadingAnimation />
+      </EmptyWrapper>
     </StyledIssues>
   )
 
   queryError = (error, refetch) => (
     <StyledIssues>
-      {this.actionsMenu([], [])}
       {this.filterBar([], [])}
       <IssuesScrollView>
         <div>
@@ -370,96 +266,6 @@ class Issues extends React.PureComponent {
     </StyledIssues>
   )
 
-  shapeIssues = issues => {
-    const { tokens, bountyIssues, bountySettings } = this.props
-    const bountyIssueObj = {}
-    const tokenObj = {}
-    const expLevels = bountySettings.expLvls
-
-    bountyIssues.forEach(issue => {
-      bountyIssueObj[issue.issueNumber] = issue
-    })
-
-    tokens.forEach(token => {
-      tokenObj[token.addr] = {
-        symbol: token.symbol,
-        decimals: token.decimals,
-      }
-    })
-    return issues.map(({ __typename, repository: { id, name }, ...fields }) => {
-      const bountyId = bountyIssueObj[fields.number]
-      const repoIdFromBounty = bountyId && bountyId.data.repoId
-      if (bountyId && repoIdFromBounty === id) {
-        const data = bountyIssueObj[fields.number].data
-        const balance = BigNumber(bountyIssueObj[fields.number].data.balance)
-          .div(BigNumber(10 ** tokenObj[data.token].decimals))
-          .dp(3)
-          .toString()
-
-        return {
-          ...fields,
-          ...bountyIssueObj[fields.number].data,
-          repoId: id,
-          repo: name,
-          symbol: tokenObj[data.token].symbol,
-          expLevel: expLevels[data.exp].name,
-          balance: balance,
-        }
-      }
-      return {
-        ...fields,
-        repoId: id,
-        repo: name,
-      }
-    })
-  }
-
-  generateSorter = () => {
-    const { what, direction } = this.state.sortBy
-    if (what === 'Name')
-      return (i1, i2) => {
-        return i1.title.toUpperCase() < i2.title.toUpperCase()
-          ? direction
-          : direction * -1
-      }
-    else if (what === 'Creation Date')
-      return (i1, i2) => {
-        return direction == 1
-          ? compareAsc(new Date(i1.createdAt), new Date(i2.createdAt))
-          : compareDesc(new Date(i1.createdAt), new Date(i2.createdAt))
-      }
-  }
-
-  renderCurrentIssue = currentIssue => {
-    const {
-      onRequestAssignment,
-      onReviewApplication,
-      onSubmitWork,
-      onReviewWork,
-    } = this.props
-
-    currentIssue.repository = {
-      name: currentIssue.repo,
-      id: currentIssue.repoId,
-      __typename: 'Repository',
-    }
-
-    const currentIssueShaped = this.shapeIssues([currentIssue])[0]
-
-    return (
-      <IssueDetail
-        issue={currentIssueShaped}
-        onClose={this.handleIssueDetailClose}
-        onReviewApplication={onReviewApplication}
-        onRequestAssignment={onRequestAssignment}
-        onSubmitWork={onSubmitWork}
-        onAllocateSingleBounty={this.handleAllocateSingleBounty}
-        onUpdateBounty={this.handleUpdateBounty}
-        onReviewWork={onReviewWork}
-      />
-    )
-  }
-
   /*
    Data obtained from github API is data.{repo}.issues.[nodes] and it needs
    flattening into one simple array of issues  before it can be used
@@ -471,7 +277,6 @@ class Issues extends React.PureComponent {
   flattenIssues = data => {
     let downloadedIssues = []
     const downloadedRepos = {}
-    let totalCount = 0
 
     Object.keys(data).forEach(nodeName => {
       const repo = data[nodeName]
@@ -479,7 +284,7 @@ class Issues extends React.PureComponent {
       downloadedRepos[repo.id] = {
         downloadedCount: repo.issues.nodes.length,
         totalCount: repo.issues.totalCount,
-        fetch: this.state.issuesPerCall,
+        fetch: ISSUES_PER_CALL,
         hasNextPage: repo.issues.pageInfo.hasNextPage,
         endCursor: repo.issues.pageInfo.endCursor,
       }
@@ -499,156 +304,162 @@ class Issues extends React.PureComponent {
     Object.keys(downloadedRepos).forEach(repoId => {
       newDownloadedRepos[repoId].showMore = downloadedRepos[repoId].hasNextPage
     })
+    this.props.setDownloadedRepos(newDownloadedRepos)
     this.setState({
-      downloadedRepos: newDownloadedRepos,
       downloadedIssues,
     })
   }
 
   render() {
-    if (this.props.status === STATUS.INITIAL) {
-      return <Unauthorized onLogin={this.props.onLogin} />
-    }
+    const { data, loading, error, refetch } = this.props.graphqlQuery
 
-    const {
-      projects,
-      onNewProject,
-      onRequestAssignment,
-      onReviewApplication,
-      onSubmitWork,
-      onReviewWork,
-    } = this.props
+    if (loading) return this.queryLoading()
 
-    const { currentIssue, showIssueDetail, filters } = this.state
+    if (error) return this.queryError(error, refetch)
 
-    // better return early if we have no projects added
-    if (projects.length === 0) return <Empty action={onNewProject} />
+    // first, flatten data structure into array of issues
+    const { downloadedIssues, downloadedRepos } = this.flattenIssues(data)
 
-    // same if we only need to show Issue's Details screen
-    if (showIssueDetail)
-      return this.renderCurrentIssue(currentIssue, this.props)
+    // then apply filtering
+    const issuesFiltered = this.applyFilters(downloadedIssues)
 
-    const currentSorter = this.generateSorter()
+    // then determine whether any shown repos have more issues to fetch
+    const moreIssuesToShow =
+      Object.keys(downloadedRepos).filter(
+        repoId => downloadedRepos[repoId].hasNextPage
+      ).length > 0
 
-    // build params for GQL query, each repo to fetch has number of items to download,
-    // and a cursor in there are 100+ issues and "Show More" was clicked.
+    return (
+      <StyledIssues>
+        {this.filterBar(downloadedIssues, issuesFiltered)}
+
+        <IssuesScrollView>
+          <ScrollWrapper>
+            {issuesFiltered.map(this.props.shapeIssue)
+              .sort(sorters[this.state.sortBy])
+              .map(issue => (
+                <Issue
+                  isSelected={issue.id in this.state.selectedIssues}
+                  key={issue.number}
+                  {...issue}
+                  onClick={this.props.setSelectedIssue}
+                  onSelect={this.handleIssueSelection}
+                />
+              ))}
+          </ScrollWrapper>
+
+          <div style={{ textAlign: 'center' }}>
+            {moreIssuesToShow && (
+              <Button
+                style={{ margin: '12px 0 30px 0' }}
+                mode="secondary"
+                onClick={() =>
+                  this.showMoreIssues(downloadedIssues, downloadedRepos)
+                }
+              >
+                Show More
+              </Button>
+            )}
+          </div>
+        </IssuesScrollView>
+      </StyledIssues>
+    )
+  }
+}
+
+const IssuesQuery = ({ client, query, ...props }) => {
+  const graphqlQuery = useQuery(query, { client, onError: console.error })
+  return <Issues graphqlQuery={graphqlQuery} {...props} />
+}
+
+IssuesQuery.propTypes = {
+  client: PropTypes.object.isRequired,
+  query: PropTypes.object.isRequired,
+}
+
+const IssuesWrap = ({ activeIndex, ...props }) => {
+  const { appState: { github, repos } } = useAragonApi()
+  const shapeIssue = useShapedIssue()
+  const [ client, setClient ] = useState(null)
+  const [ downloadedRepos, setDownloadedRepos ] = useState({})
+  const [ query, setQuery ] = useState(null)
+  const [ filters, setFilters ] = useState({
+    projects: activeIndex.tabData.filterIssuesByRepoId
+      ? { [activeIndex.tabData.filterIssuesByRepoId]: true }
+      : {},
+    labels: {},
+    milestones: {},
+    deadlines: {},
+    experiences: {},
+    statuses: {},
+  })
+
+  // build params for GQL query, each repo to fetch has number of items to download,
+  // and a cursor if there are 100+ issues and "Show More" was clicked.
+  useEffect(() => {
     let reposQueryParams = {}
 
-    if (Object.keys(this.state.downloadedRepos).length > 0) {
-      Object.keys(this.state.downloadedRepos).forEach(repoId => {
-        if (this.state.downloadedRepos[repoId].hasNextPage)
-          reposQueryParams[repoId] = this.state.downloadedRepos[repoId]
+    if (Object.keys(downloadedRepos).length > 0) {
+      Object.keys(downloadedRepos).forEach(repoId => {
+        if (downloadedRepos[repoId].hasNextPage)
+          reposQueryParams[repoId] = downloadedRepos[repoId]
       })
     } else {
       if (Object.keys(filters.projects).length > 0) {
         Object.keys(filters.projects).forEach(repoId => {
           reposQueryParams[repoId] = {
-            fetch: this.state.issuesPerCall,
+            fetch: ISSUES_PER_CALL,
             showMore: false,
           }
         })
       } else {
-        projects.forEach(project => {
-          const repoId = project.data._repo
+        repos.forEach(repo => {
+          const repoId = repo.data._repo
           reposQueryParams[repoId] = {
-            fetch: this.state.issuesPerCall,
+            fetch: ISSUES_PER_CALL,
             showMore: false,
           }
         })
       }
     }
 
-    // previous GET_ISSUES is deliberately left in place for reference
-    const GET_ISSUES2 = getIssuesGQL(reposQueryParams)
+    setQuery(getIssuesGQL(reposQueryParams))
+  }, [ downloadedRepos, filters, repos ])
 
-    return (
-      <Query
-        fetchPolicy="cache-first"
-        query={GET_ISSUES2}
-        onError={console.error}
-      >
-        {({ data, loading, error, refetch }) => {
-          if (data && data.node0) {
-            // first, flatten data structure into array of issues
-            const { downloadedIssues, downloadedRepos } = this.flattenIssues(
-              data
-            )
+  useEffect(() => {
+    setClient(github.token ? initApolloClient(github.token) : null)
+  }, [github.token])
 
-            // then apply filtering
-            const issuesFiltered = this.applyFilters(downloadedIssues)
-            // then determine whether any shown repos have more issues to fetch
-            const moreIssuesToShow =
-              Object.keys(downloadedRepos).filter(
-                repoId => downloadedRepos[repoId].hasNextPage
-              ).length > 0
+  if (!query) return 'Loading...'
 
-            return (
-              <StyledIssues>
-                {this.actionsMenu(downloadedIssues, issuesFiltered)}
-                {this.filterBar(downloadedIssues, issuesFiltered)}
+  if (!client) return 'You must sign into GitHub to view issues.'
 
-                <IssuesScrollView>
-                  <ScrollWrapper>
-                    {this.shapeIssues(issuesFiltered)
-                      .sort(currentSorter)
-                      .map((issue, index) => {
-                        return (
-                          <Issue
-                            isSelected={issue.id in this.state.selectedIssues}
-                            key={index}
-                            {...issue}
-                            onClick={this.handleIssueClick}
-                            onSelect={this.handleIssueSelection}
-                            onReviewApplication={onReviewApplication}
-                            onSubmitWork={onSubmitWork}
-                            onRequestAssignment={onRequestAssignment}
-                            onAllocateSingleBounty={
-                              this.handleAllocateSingleBounty
-                            }
-                            onUpdateBounty={this.handleUpdateBounty}
-                            onReviewWork={onReviewWork}
-                          />
-                        )
-                      })}
-                  </ScrollWrapper>
+  return (
+    <IssuesQuery
+      activeIndex={activeIndex}
+      client={client}
+      filters={filters}
+      query={query}
+      shapeIssue={shapeIssue}
+      setDownloadedRepos={setDownloadedRepos}
+      setFilters={setFilters}
+      {...props}
+    />
+  )
+}
 
-                  <div style={{ textAlign: 'center' }}>
-                    {moreIssuesToShow && (
-                      <Button
-                        mode="secondary"
-                        onClick={() =>
-                          this.showMoreIssues(downloadedIssues, downloadedRepos)
-                        }
-                      >
-                        Show More
-                      </Button>
-                    )}
-                  </div>
-                </IssuesScrollView>
-              </StyledIssues>
-            )
-          }
-
-          if (loading) return this.queryLoading()
-
-          if (error) return this.queryError(error, refetch)
-        }}
-      </Query>
-    )
-  }
+IssuesWrap.propTypes = {
+  activeIndex: PropTypes.shape({
+    tabData: PropTypes.shape({
+      filterIssuesByRepoId: PropTypes.string,
+    }).isRequired,
+  }).isRequired,
 }
 
 const StyledIssues = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  ${breakpoint(
-    'small',
-    `
-    padding: 1rem 2rem;
-  `
-  )};
-  padding: 0.3rem;
 `
 
 const ScrollWrapper = styled.div`
@@ -670,11 +481,6 @@ const ScrollWrapper = styled.div`
 const IssuesScrollView = styled.div`
   height: 75vh;
   position: relative;
-  overflow-y: hidden;
-`
-
-const ActionLabel = styled.span`
-  margin-left: 15px;
 `
 
 const recursiveDeletePathFromObject = (path, object) => {
@@ -687,4 +493,5 @@ const recursiveDeletePathFromObject = (path, object) => {
   }
 }
 
-export default Issues
+// eslint-disable-next-line import/no-unused-modules
+export default IssuesWrap

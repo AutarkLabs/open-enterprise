@@ -2,154 +2,160 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 
-import {
-  Text,
-  theme,
-  Badge,
-  Checkbox,
-  ContextMenu,
-} from '@aragon/ui'
+import { Text, Tag, Checkbox, ContextMenu, useLayout, useTheme, IconClock, IconConnect, IconCalendar } from '@aragon/ui'
 
 import { formatDistance } from 'date-fns'
 import { BountyContextMenu } from '../Shared'
 import { BOUNTY_STATUS, BOUNTY_BADGE_COLOR } from '../../utils/bounty-status'
+import { IconBarbell } from '../../assets'
 
-const ClickArea = styled.div`
-  height: 100%;
-  left: 0;
-  position: absolute;
-  width: 100%;
-  z-index: 0;
-  :active {
-    border: 1px solid ${theme.accent};
-    z-index: 3;
-  }
-  :hover {
-    cursor: pointer;
-  }
-`
 const DeadlineDistance = date =>
   formatDistance(new Date(date), new Date(), { addSuffix: true })
 
-const dot = <span style={{ margin: '0px 6px' }}>&middot;</span>
+const dot = <span css="margin: 0px 10px">&middot;</span>
 
-const labelsBadges = labels =>
+const labelsTags = (labels, theme) =>
   labels.edges.map(label => (
-    <Badge
+    <Tag
       key={label.node.id}
-      style={{ marginRight: '10px', width: 'auto' }}
+      css="margin-right: 10px; width: auto"
       background={'#' + label.node.color + '99'}
-      foreground={theme.textPrimary}
+      color={`${theme.surfaceContent}`}
+      uppercase={false}
     >
       {label.node.name}
-    </Badge>
+    </Tag>
   ))
- 
-class Issue extends React.PureComponent {
- 
-  render() {
-    const {
-      isSelected,
-      onClick,
-      onSelect,
-      onSubmitWork,
-      onRequestAssignment,
-      onReviewApplication,
-      onAllocateSingleBounty,
-      onUpdateBounty,
-      onReviewWork,
-      ...issue
-    } = this.props
 
-    const {
-      id,
-      work,
-      workStatus,
-      title,
-      repo,
-      number,
-      labels,
-      balance,
-      symbol,
-      deadline,
-      requestsData,
-      expLevel,
-    } = issue
+const FlexibleDiv = ({ compact, children }) => {
+  return compact ? (
+    <div>
+      {children}
+    </div>
+  ) : (
+    <React.Fragment>
+      {dot}
+      {children}
+    </React.Fragment>
+  )
+}
 
-    return (
-      <StyledIssue>
-        <div style={{ padding: '10px' }}>
-          <Checkbox checked={isSelected} onChange={() => onSelect(issue)} />
-        </div>
+FlexibleDiv.propTypes = {
+  compact: PropTypes.bool,
+  children: PropTypes.node.isRequired,
+}
 
-        <IssueData>
-          <ClickArea onClick={() => onClick(issue)} />
+const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
+  const theme = useTheme()
+  const { layoutName } = useLayout()
+  const {
+    workStatus,
+    title,
+    repo,
+    number,
+    labels,
+    balance = 10,
+    symbol = 'AUT',
+    deadline = '2049-01-01 00:00',
+    expLevel = 'easy',
+    createdAt,
+  } = issue
 
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Text color={theme.textSecondary} size="xsmall">
-              {repo} #{number}
-            </Text>
-            {workStatus !== 'fulfilled' && (
-              <ContextMenu>
-                <BountyContextMenu
-                  work={work}
-                  workStatus={workStatus}
-                  requestsData={requestsData}
-                  onAllocateSingleBounty={() => onAllocateSingleBounty(issue)}
-                  onSubmitWork={() => onSubmitWork(issue)}
-                  onRequestAssignment={() => onRequestAssignment(issue)}
-                  onReviewApplication={() => onReviewApplication(issue)}
-                  onReviewWork={() => onReviewWork(issue)}
-                  onUpdateBounty={() => onUpdateBounty(issue)}
-                />
-              </ContextMenu>
+  return (
+    <StyledIssue theme={theme}>
+      <div css="padding: 20px 10px">
+        <Checkbox checked={isSelected} onChange={() => onSelect(issue)} />
+      </div>
+
+      <IssueData>
+        <IssueMain>
+          <div>
+            <a
+              href={`#${number}`}
+              css="text-decoration: none"
+              onClick={e => {
+                e.preventDefault()
+                onClick(issue.id)
+              }}
+            >
+              <IssueTitle theme={theme}>{title}</IssueTitle>
+            </a>
+
+            {labels.totalCount > 0 && (
+              <span>
+                {labelsTags(labels, theme)}
+              </span>
             )}
-
           </div>
-          <IssueTitleDetailsBalance>
-            <IssueTitleDetails>
-              <IssueTitle>
-                {title}
-              </IssueTitle>
 
-              {(BOUNTY_STATUS[workStatus]) && (
-                <Text.Block color={theme.textSecondary} style={{ fontSize: '0.87em' }}>
-                  <span style={{ marginRight: '15px' }}>
-                    {expLevel}
-                    {dot}
-                    {balance > 0 ? BOUNTY_STATUS[workStatus] : BOUNTY_STATUS['fulfilled']}
-                    {dot}
-                    Due {DeadlineDistance(deadline)}
-                  </span>
-                </Text.Block>
-              )}
-            </IssueTitleDetails>
-
+          <div css="display: flex;">
             <Balance>
-              {(BOUNTY_STATUS[workStatus]) && (
-                <Badge
-                  style={{ padding: '10px' }}
+              {BOUNTY_STATUS[workStatus] && (
+                <Tag
+                  css="padding: 10px; margin-right: 10px;"
                   background={BOUNTY_BADGE_COLOR[workStatus].bg}
-                  foreground={BOUNTY_BADGE_COLOR[workStatus].fg}
+                  color={BOUNTY_BADGE_COLOR[workStatus].fg}
                 >
-                  <Text>
-                    {balance + ' ' + symbol}
-                  </Text>
-                </Badge>
+                  {balance + ' ' + symbol}
+                </Tag>
               )}
             </Balance>
-          </IssueTitleDetailsBalance>
 
-          {(labels.totalCount > 0) && (
-            <div>
-              <Separator />
-              {labelsBadges(labels)}
-            </div>
-          )}
-        </IssueData>
-      </StyledIssue>
-    )
-  }
+            <ContextMenu>
+              <BountyContextMenu issue={issue} />
+            </ContextMenu>
+          </div>
+        </IssueMain>
+
+        <IssueDetails>
+          <Text.Block color={`${theme.surfaceContentSecondary}`} size="small">
+            <span css="font-weight: 600; white-space: nowrap">{repo} #{number}</span>
+            <FlexibleDiv
+              compact={layoutName === 'small'}
+            >
+              <span css="white-space: nowrap">
+                <IconClock color={`${theme.surfaceIcon}`} css="margin-bottom: -8px; margin-right: 4px" />
+              opened {DeadlineDistance(createdAt)}
+              </span>
+            </FlexibleDiv>
+            {BOUNTY_STATUS[workStatus] && (
+              <React.Fragment>
+                <FlexibleDiv
+                  compact={layoutName !== 'large'}
+                >
+                  <span css="white-space: nowrap">
+                    <IconConnect color={`${theme.surfaceIcon}`} css="margin-bottom: -8px" /> {balance > 0
+                      ? BOUNTY_STATUS[workStatus]
+                      : BOUNTY_STATUS['fulfilled']}
+                  </span>
+                  {dot}
+                  <span css="white-space: nowrap">
+                    <div css={`
+                    display: inline-block;
+                    vertical-align: bottom;
+                    margin-right: 6px;
+                    margin-bottom: -8px;
+                  `}>
+                      <IconBarbell color={`${theme.surfaceIcon}`} />
+                    </div>
+                    {expLevel}
+                  </span>
+                </FlexibleDiv>
+                <FlexibleDiv
+                  compact={layoutName !== 'large'}
+                >
+                  <span css="white-space: nowrap">
+                    <IconCalendar color={`${theme.surfaceIcon}`} css="margin-bottom: -8px; margin-right: 4px" />
+                    Due {DeadlineDistance(deadline)}
+                  </span>
+                </FlexibleDiv>
+              </React.Fragment>
+            )}
+          </Text.Block>
+        </IssueDetails>
+      </IssueData>
+    </StyledIssue>
+  )
 }
 
 Issue.propTypes = {
@@ -159,73 +165,64 @@ Issue.propTypes = {
   isSelected: PropTypes.bool,
   onClick: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,
-  onSubmitWork: PropTypes.func.isRequired,
-  onRequestAssignment: PropTypes.func.isRequired,
-  onReviewApplication: PropTypes.func.isRequired,
-  onAllocateSingleBounty: PropTypes.func.isRequired,
-  onUpdateBounty: PropTypes.func.isRequired,
-  onReviewWork: PropTypes.func.isRequired,
-  workStatus: PropTypes.oneOf([ undefined, 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]),
-  work: PropTypes.oneOf([
+  workStatus: PropTypes.oneOf([
     undefined,
-    PropTypes.object,
+    'funded',
+    'review-applicants',
+    'in-progress',
+    'review-work',
+    'fulfilled',
   ]),
+  work: PropTypes.object,
 }
-  
+
 const StyledIssue = styled.div`
-  flex: 1;
   width: 100%;
-  background: ${theme.contentBackground};
+  background: ${props => props.theme.background};
+  background-color: ${props => props.theme.surface};
   display: flex;
   height: auto;
-  align-items: center;
-  border-radius: 3px;
-  border: 1px solid ${theme.contentBorder};
+  align-items: flex-start;
+  border: 1px solid ${props => props.theme.border};
   margin-bottom: -1px;
   position: relative;
-`
-const IssueTitleDetailsBalance = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`
-const IssueTitleDetails = styled.div`
-  display: flex;
-  flex-direction: column;
-  > :not(:last-child) {
-    margin-bottom: 6px;
+  :first-child {
+    border-radius: 3px 3px 0 0;
+  }
+  :last-child {
+    border-radius: 0 0 3px 3px;
   }
 `
 const IssueData = styled.div`
   display: flex;
-  flex: 1 1 auto;
   flex-direction: column;
   justify-content: space-around;
   padding: 18px 18px 18px 0;
   position: relative;
+  width: calc(100% - 46px);
+`
+const IssueDetails = styled.div`
+  width: 100%;
+`
+const IssueMain = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
 `
 const Balance = styled.div`
   margin-left: 10px;
   padding-top: 5px;
 `
-const IssueTitle = styled(Text.Block).attrs({
+const IssueTitle = styled(Text).attrs({
   size: 'large',
 })`
-  display: block;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: ${theme.textPrimary};
+  color: ${props => props.theme.surfaceContent};
   font-size: 1.2em;
-`
-const Separator = styled.hr`
-  height: 1px;
-  width: 100%;
-  color: ${theme.contentBorder};
-  opacity: 0.1;
-  margin: 8px 0;
+  margin-right: 10px;
 `
 
 export default Issue

@@ -1,83 +1,98 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { IconHistory, IconContributors } from '../Shared'
+import { IconHistory, IconGitHub } from '../Shared'
 import {
   Card,
   Text,
   ContextMenu,
   ContextMenuItem,
   IconCross,
-  IconHome,
-  SafeLink,
-  theme,
-  breakpoint,
+  GU,
+  Link,
+  useLayout,
+  useTheme,
 } from '@aragon/ui'
-import { BASE_CARD_WIDTH, CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
-
-const colors = {
-  iconColor: theme.textTertiary,
-  labelColor: theme.textPrimary,
-}
+import {
+  BASE_CARD_WIDTH,
+  CARD_STRETCH_BREAKPOINT,
+} from '../../utils/responsive'
+import { useAragonApi } from '../../api-react'
+import { toHex } from 'web3-utils'
 
 const Project = ({
-  id,
   repoId,
   label,
   description,
   commits,
   url,
-  contributors,
-  onRemoveProject,
   changeActiveIndex,
-  screenSize,
 }) => {
+  const {
+    api: { removeRepo },
+  } = useAragonApi()
+
+  const theme = useTheme()
+  const { width } = useLayout()
+
   const removeProject = () => {
-    onRemoveProject(repoId)
+    removeRepo(toHex(repoId)).toPromise()
+    // TODO: Toast feedback here maybe
   }
 
   const clickMenu = e => e.stopPropagation()
 
   const clickContext = e => {
     e.stopPropagation()
-    changeActiveIndex({ tabIndex: 1, tabData: { filterIssuesByRepoId: repoId } })
+    changeActiveIndex({
+      tabIndex: 1,
+      tabData: { filterIssuesByRepoId: repoId },
+    })
   }
 
   return (
-    <StyledCard onClick={clickContext} screenSize={screenSize}>
+    <StyledCard onClick={clickContext} screenSize={width}>
       <MenuContainer onClick={clickMenu}>
         <ContextMenu>
-          <ContextMenuItem>
-            <IconHome />
-            <ActionLabel>
-              <SafeLink
-                href={url}
-                target="_blank"
-                style={{ textDecoration: 'none' }}
-              >
+          <div css={`padding: ${GU}px`}>
+            <ContextMenuItem style={{
+              display: 'flex',
+              alignItems: 'center',
+              padding: GU
+            }}>
+              <div css="width: 22px; margin: 4px 2px 0 6px">
+                <IconGitHub width="16px" height="16px" />
+              </div>
+              <ActionLabel>
+                <Link
+                  href={url}
+                  target="_blank"
+                  style={{ textDecoration: 'none', color: theme.surfaceContent }}
+                >
                 View on GitHub
-              </SafeLink>
-            </ActionLabel>
-          </ContextMenuItem>
-          <ContextMenuItem onClick={removeProject}>
-            <IconCross
-              style={{ width: '22px', height: '22px', transform: 'scale(0.6)' }}
-            />
-            <ActionLabel>Remove Project</ActionLabel>
-          </ContextMenuItem>
+                </Link>
+              </ActionLabel>
+            </ContextMenuItem>
+            <ContextMenuItem onClick={removeProject}>
+              <div css="width: 22px; margin: 0 4px; margin-top: 4px">
+                <IconCross width="22px" height="22px" />
+              </div>
+              <ActionLabel>Remove Project</ActionLabel>
+            </ContextMenuItem>
+          </div>
         </ContextMenu>
       </MenuContainer>
+
       <CardTitle>{label}</CardTitle>
       <CardDescription>
-        <CardDescriptionText>
-          {description}
-        </CardDescriptionText>
+        <CardDescriptionText>{description}</CardDescriptionText>
       </CardDescription>
       <StyledStats>
         <StatsContainer>
           <IconHistory />
           <Text weight="bold">
             {commits}{' '}
-            <Text weight="normal" color={theme.textSecondary}>
+            <Text weight="normal">
               {parseInt(commits) === 1 ? 'commit' : 'commits'}
             </Text>
           </Text>
@@ -96,21 +111,29 @@ const Project = ({
   )
 }
 
+Project.propTypes = {
+  repoId: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+  commits: PropTypes.number.isRequired,
+  url: PropTypes.string.isRequired,
+  contributors: PropTypes.array,
+  changeActiveIndex: PropTypes.func.isRequired,
+}
+
 const StyledCard = styled(Card)`
   display: flex;
-  ${breakpoint(
-    'small',
-    `
-    margin-bottom: 2rem;
-    `
-  )};
-  margin-bottom: 0.3rem;
-  margin-right: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? '0.6rem' : '2rem' };
+  margin-bottom: 2rem;
+  margin-right: ${props =>
+    props.screenSize < CARD_STRETCH_BREAKPOINT ? '0.6rem' : '2rem'};
   flex-direction: column;
   justify-content: flex-start;
   padding: 12px;
   height: 240px;
-  width: ${props => props.screenSize < CARD_STRETCH_BREAKPOINT ? '100%' : BASE_CARD_WIDTH + 'px' };
+  width: ${props =>
+    props.screenSize < CARD_STRETCH_BREAKPOINT
+      ? '100%'
+      : BASE_CARD_WIDTH + 'px'};
   transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
   :hover {
     cursor: pointer;
@@ -124,17 +147,15 @@ const MenuContainer = styled.div`
 `
 
 const ActionLabel = styled.span`
-  margin-left: 15px;
+  margin-left: ${GU}px;
 `
 
 const CardTitle = styled(Text.Block).attrs({
-  size: 'large',
-  weight: 'bold',
+  size: 'xlarge',
 })`
   margin-top: 10px;
   margin-bottom: 5px;
   text-align: center;
-  color: ${theme.textPrimary};
   display: block;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -144,15 +165,14 @@ const CardTitle = styled(Text.Block).attrs({
 `
 
 const CardDescriptionText = styled(Text.Block).attrs({
-  size: 'xsmall',
+  size: 'large',
 })`
   display: block;
   display: -webkit-box;
-  -webkit-line-clamp: 5;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: ${theme.textPrimary};
   text-align: center;
 `
 

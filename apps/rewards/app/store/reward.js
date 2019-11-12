@@ -1,14 +1,24 @@
-import { first, map } from 'rxjs/operators' // Make sure observables have .first
-import BigNumber from 'bignumber.js'
+import { first, map } from 'rxjs/operators'
 import { app } from './'
 import { blocksToMilliseconds } from '../../../../shared/ui/utils'
+import { addressesEqual } from '../../../../shared/lib/web3-utils'
+import { updateBalancesAndRefTokens } from './token'
 
-export async function onRewardAdded({ rewards = [] }, { rewardId }) {
+
+const CONVERT_API_BASE = 'https://min-api.cryptocompare.com/data'
+
+const convertApiUrl = symbols =>
+  `${CONVERT_API_BASE}/price?fsym=USD&tsyms=${symbols.join(',')}`
+
+export async function onRewardAdded({ rewards = [], refTokens = [], balances = [] }, { rewardId }, settings) {
   if (!rewards[rewardId]) {
     rewards[rewardId] = await getRewardById(rewardId)
+    const { referenceToken } = rewards[rewardId]
+    const response = await updateBalancesAndRefTokens({ balances, refTokens }, referenceToken, settings)
+    return { rewards, refTokens: response.refTokens }
   }
 
-  return { rewards }
+  return { rewards, refTokens }
 }
 
 export async function onRewardClaimed({ rewards = [], claims = {} }, { rewardId }) {
@@ -16,7 +26,7 @@ export async function onRewardClaimed({ rewards = [], claims = {} }, { rewardId 
 
   let { claimsByToken = [], totalClaimsMade = 0 } = claims
 
-  const tokenIndex = claimsByToken.findIndex(token => token.address === rewards[rewardId].rewardToken)
+  const tokenIndex = claimsByToken.findIndex(token => addressesEqual(token.address, rewards[rewardId].rewardToken))
 
   if (tokenIndex === -1) {
     claimsByToken.push({
@@ -30,7 +40,7 @@ export async function onRewardClaimed({ rewards = [], claims = {} }, { rewardId 
 
   totalClaimsMade = await getTotalClaims()
 
-  return { rewards, claims:{ claimsByToken, totalClaimsMade } }
+  return { rewards, claims: { claimsByToken, totalClaimsMade } }
 
 }
 
@@ -40,6 +50,20 @@ export async function onRefreshRewards(nextState, { userAddress }) {
     [...Array(rewardsLength).keys()].map(async rewardId => await getRewardById(rewardId, userAddress))
   )
   return { ...nextState, rewards }
+}
+
+export async function updateConvertedRates({ balances = [] }) {
+  const verifiedSymbols = balances
+    .filter(({ verified }) => verified)
+    .map(({ symbol }) => symbol)
+
+  if (!verifiedSymbols.length) {
+    return
+  }
+
+  const res = await fetch(convertApiUrl(verifiedSymbols))
+  const convertRates = await res.json()
+  return convertRates
 }
 
 /////////////////////////////////////////
@@ -63,12 +87,12 @@ const getRewardById = async (rewardId, userAddress) => {
         endBlock: data.endBlock,
         duration: data.duration,
         delay: data.delay,
-        startDate: Date.now() + blocksToMilliseconds(currentBlock,data.startBlock),
+        startDate: Date.now() + blocksToMilliseconds(currentBlock, data.startBlock),
         endDate: Date.now() + blocksToMilliseconds(currentBlock, data.endBlock),
         userRewardAmount: data.rewardAmount,
         claimed: data.claimed,
         timeClaimed: data.timeClaimed,
-        creator: data.creator,
+        occurances: data.occurances,
       }))
     )
     .toPromise()

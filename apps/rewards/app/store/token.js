@@ -1,15 +1,20 @@
 import {
-  ETHER_TOKEN_FAKE_ADDRESS,
+  getTokenStartBlock,
+  getTokenCreationDate,
+  getTransferable,
   isTokenVerified,
   tokenDataFallback,
-  getTokenSymbol,
-  getTokenName,
+  DAI_MAINNET_TOKEN_ADDRESS,
 } from '../utils/token-utils'
+import { 
+  getPresetTokens,
+  getTokenDecimals,
+  getTokenName,
+  getTokenSymbol
+} from '../../../../shared/lib/token-utils'
 import { addressesEqual } from '../utils/web3-utils'
 import tokenSymbolAbi from '../../../shared/json-abis/token-symbol.json'
-import tokenSymbolBytesAbi from '../../../shared/json-abis/token-symbol-bytes.json'
 import tokenNameAbi from '../../../shared/json-abis/token-name.json'
-import tokenNameBytesAbi from '../../../shared/json-abis/token-name-bytes.json'
 import tokenBalanceAbi from '../../../shared/json-abis/token-balanceof.json'
 import tokenDecimalsAbi from '../../../shared/json-abis/token-decimals.json'
 import { app } from './'
@@ -25,34 +30,52 @@ const tokenContracts = new Map() // Addr -> External contract
 const tokenDecimals = new Map() // External contract -> decimals
 const tokenName = new Map() // External contract -> name
 const tokenSymbols = new Map() // External contract -> symbol
+const tokensTransferable = new Map() // External contract -> symbol
+const tokenStartBlock = new Map() // External contract -> creationBlock (uint)
+const tokenCreationDate = new Map()
 
 const ETH_CONTRACT = Symbol('ETH_CONTRACT')
+const DAI_CONTRACT = Symbol('DAI_CONTRACT')
 
-export async function initializeTokens(state, settings) {
+export async function initializeTokens(state, settings){
   // Set up ETH placeholders
   tokenContracts.set(settings.ethToken.address, ETH_CONTRACT)
   tokenDecimals.set(ETH_CONTRACT, '18')
   tokenName.set(ETH_CONTRACT, 'Ether')
   tokenSymbols.set(ETH_CONTRACT, 'ETH')
+  tokensTransferable.set(ETH_CONTRACT, true)
+  tokenStartBlock.set(ETH_CONTRACT, null)
+  tokenCreationDate.set(ETH_CONTRACT, new Date(0))
 
-  const nextState = {
-    ...state,
-    vaultAddress: settings.vault.address,
+  if(settings.network.type === 'main'){
+    // Set up DAI placeholders
+    tokenContracts.set(DAI_MAINNET_TOKEN_ADDRESS, DAI_CONTRACT)
+    tokenDecimals.set(DAI_CONTRACT, '18')
+    tokenName.set(DAI_CONTRACT, 'Dai Stablecoin v1.0')
+    tokenSymbols.set(DAI_CONTRACT, 'DAI')
+    tokensTransferable.set(DAI_CONTRACT, true)
+    tokenStartBlock.set(DAI_CONTRACT, null)
+    tokenCreationDate.set(DAI_CONTRACT, new Date(0))
   }
-  const withEthBalance = await loadEthBalance(nextState, settings)
-  return withEthBalance
+
+  const newState = await loadTokenBalances(
+    state,
+    getPresetTokens(settings.network.type),
+    settings)
+  return { ...newState, amountTokens: [] }
 }
 
 export async function vaultLoadBalance(state, { returnValues }, settings) {
   const { token } = returnValues
-  const r = await updateBalances(
+  const { balances, refTokens } = await updateBalancesAndRefTokens(
     state,
     token || settings.ethToken.address,
     settings
   )
   return {
     ...state,
-    balances: r,
+    balances,
+    refTokens,
   }
 }
 
@@ -63,41 +86,106 @@ export async function vaultLoadBalance(state, { returnValues }, settings) {
  ***********************/
 
 async function loadEthBalance(state, settings) {
+  const { balances } = await updateBalancesAndRefTokens(state, settings.ethToken.address, settings)
   return {
     ...state,
-    balances: await updateBalances(state, settings.ethToken.address, settings),
+    balances,
   }
 }
 
-async function updateBalances({ balances = [] }, tokenAddress, settings) {
+async function loadTokenBalances(state, includedTokenAddresses, settings) {
+  let newState = {
+    ...state,
+  }
+
+  if (
+    !Array.isArray(newState.balances) &&
+    !Array.isArray(includedTokenAddresses)
+  ) {
+    return newState
+  }
+
+  let newBalances = newState.balances || []
+  const addresses = new Set(
+    newBalances.map(({ address }) => address).concat(includedTokenAddresses || [])
+  )
+  for (const address of addresses) {
+    const { balances, refTokens } = await updateBalancesAndRefTokens(newState, address, settings)
+    newState = {
+      ...newState,
+      balances,
+      refTokens
+    }
+  }
+
+  return newState
+}
+
+export async function updateBalancesAndRefTokens({ balances = [], refTokens = [] }, tokenAddress, settings) {
   const tokenContract = tokenContracts.has(tokenAddress)
     ? tokenContracts.get(tokenAddress)
     : app.external(tokenAddress, tokenAbi)
   tokenContracts.set(tokenAddress, tokenContract)
-
   const balancesIndex = balances.findIndex(({ address }) =>
     addressesEqual(address, tokenAddress)
   )
   if (balancesIndex === -1) {
-    return balances.concat(
-      await newBalanceEntry(tokenContract, tokenAddress, settings)
-    )
+    const newBalance = await newBalanceEntry(tokenContract, tokenAddress, settings)
+    let newRefTokens = Array.from(refTokens)
+    if (newBalance.startBlock !== null) {
+      const refIndex = refTokens.findIndex(({ address }) =>
+        addressesEqual(address, tokenAddress)
+      )
+
+      if (refIndex === -1) {
+        const {
+          name,
+          symbol,
+          address,
+          startBlock,
+          creationDate,
+          decimals,
+        } = newBalance
+        newRefTokens = newRefTokens.concat({
+          name,
+          symbol,
+          address,
+          startBlock,
+          creationDate,
+          decimals,
+        })
+      }
+    }
+    const newBalances = balances.concat(newBalance)
+    return { balances: newBalances, refTokens: newRefTokens }
   } else {
     const newBalances = Array.from(balances)
     newBalances[balancesIndex] = {
       ...balances[balancesIndex],
       amount: await loadTokenBalance(tokenAddress, settings),
     }
-    return newBalances
+
+    return { balances: newBalances, refTokens }
   }
 }
 
 async function newBalanceEntry(tokenContract, tokenAddress, settings) {
-  const [ balance, decimals, name, symbol ] = await Promise.all([
+  const [
+    balance,
+    decimals,
+    name,
+    symbol,
+    startBlock,
+    creationDate,
+    transfersEnabled,
+  ] = await Promise.all([
     loadTokenBalance(tokenAddress, settings),
     loadTokenDecimals(tokenContract, tokenAddress, settings),
     loadTokenName(tokenContract, tokenAddress, settings),
     loadTokenSymbol(tokenContract, tokenAddress, settings),
+    loadTokenStartBlock(tokenContract, tokenAddress, settings),
+    loadTokenCreationDate(tokenContract, tokenAddress, settings),
+    loadTransferable(tokenContract, tokenAddress, settings),
   ])
 
   return {
@@ -106,6 +194,9 @@ async function newBalanceEntry(tokenContract, tokenAddress, settings) {
     symbol,
     address: tokenAddress,
     amount: balance,
+    startBlock,
+    creationDate,
+    transfersEnabled,
     verified:
       isTokenVerified(tokenAddress, settings.network.type) ||
       addressesEqual(tokenAddress, settings.ethToken.address),
@@ -117,29 +208,21 @@ function loadTokenBalance(tokenAddress, { vault }) {
 }
 
 function loadTokenDecimals(tokenContract, tokenAddress, { network }) {
-  return new Promise((resolve, _reject) => {
+  return new Promise(resolve => {
     if (tokenDecimals.has(tokenContract)) {
       resolve(tokenDecimals.get(tokenContract))
     } else {
       const fallback =
         tokenDataFallback(tokenAddress, 'decimals', network.type) || '0'
 
-      tokenContract.decimals().subscribe(
-        (decimals = fallback) => {
-          tokenDecimals.set(tokenContract, decimals)
-          resolve(decimals)
-        },
-        () => {
-          // Decimals is optional
-          resolve(fallback)
-        }
-      )
+      const tokenDecimals = getTokenDecimals(app, tokenAddress)
+      resolve(tokenDecimals || fallback)
     }
   })
 }
 
 function loadTokenName(tokenContract, tokenAddress, { network }) {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     if (tokenName.has(tokenContract)) {
       resolve(tokenName.get(tokenContract))
     } else {
@@ -152,7 +235,7 @@ function loadTokenName(tokenContract, tokenAddress, { network }) {
 }
 
 function loadTokenSymbol(tokenContract, tokenAddress, { network }) {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     if (tokenSymbols.has(tokenContract)) {
       resolve(tokenSymbols.get(tokenContract))
     } else {
@@ -160,6 +243,41 @@ function loadTokenSymbol(tokenContract, tokenAddress, { network }) {
         tokenDataFallback(tokenAddress, 'symbol', network.type) || ''
       const tokenSymbol = getTokenSymbol(app, tokenAddress)
       resolve(tokenSymbol || fallback)
+    }
+  })
+}
+
+function loadTransferable(tokenContract, tokenAddress, { network }) {
+  return new Promise(resolve => {
+    if (tokensTransferable.has(tokenContract)) {
+      resolve(tokensTransferable.get(tokenContract))
+    } else {
+      const fallback =
+        tokenDataFallback(tokenAddress, 'transfersEnabled', network.type) || ''
+      const tokenTransferable = getTransferable(app, tokenAddress)
+      resolve(tokenTransferable || fallback)
+    }
+  })
+}
+
+function loadTokenStartBlock(tokenContract, tokenAddress) {
+  return new Promise(resolve => {
+    if (tokenStartBlock.has(tokenContract)) {
+      resolve(tokenStartBlock.get(tokenContract))
+    } else {
+      const tokenStartBlock = getTokenStartBlock(app, tokenAddress)
+      resolve(tokenStartBlock)
+    }
+  })
+}
+
+function loadTokenCreationDate(tokenContract, tokenAddress) {
+  return new Promise(resolve => {
+    if (tokenStartBlock.has(tokenContract)) {
+      resolve(tokenCreationDate.get(tokenContract))
+    } else {
+      const tokenCreationDate = getTokenCreationDate(app, tokenAddress)
+      resolve(tokenCreationDate)
     }
   })
 }

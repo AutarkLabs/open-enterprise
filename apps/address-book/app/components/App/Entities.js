@@ -1,104 +1,83 @@
-import {
-  Badge,
-  ContextMenu,
-  ContextMenuItem,
-  IdentityBadge,
-  Table,
-  TableCell,
-  TableHeader,
-  TableRow,
-  Text,
-  theme,
-} from '@aragon/ui'
 import PropTypes from 'prop-types'
 import React from 'react'
-import styled from 'styled-components'
-import { Empty } from '../Card'
-import { provideNetwork } from '../../../../../shared/ui'
 
-// TODO: colors taken directly from Invision
-const ENTITY_TYPES = [
-  { name: 'Individual', fg: '#76A4E5', bg: '#76A4E533' },
-  { name: 'Organization', fg: '#F78308', bg: '#F7830833' },
-  { name: 'Project', fg: '#B30FB3', bg: '#B30FB333' },
-]
+import {
+  ContextMenu,
+  ContextMenuItem,
+  DataView,
+  Tag,
+  Text,
+  useTheme,
+} from '@aragon/ui'
 
-const entitiesSort = (a,b) => a.data.name.toUpperCase() > b.data.name.toUpperCase() ? 1 : -1
+import LocalIdentityBadge from '../LocalIdentityBadge/LocalIdentityBadge'
+import { IconDelete } from '../../../../../shared/ui'
 
-const Entities = ({ entities, network, onNewEntity, onRemoveEntity }) => {
+const entitiesSort = (a, b) => a.data.name.toUpperCase() > b.data.name.toUpperCase() ? 1 : -1
+
+const Entities = ({ entities, onRemoveEntity }) => {
+  const theme = useTheme()
+  const ENTITY_TYPES = [
+    {
+      name: 'Individual',
+      fg: theme.tagIdentifierContent.toString(),
+      bg: theme.tagIdentifier.toString(),
+    },
+    { name: 'Organization',
+      fg: theme.warningSurfaceContent.toString(),
+      bg: theme.warningSurface.toString(),
+    },
+  ]
   const removeEntity = address => () => onRemoveEntity(address)
 
-  if (entities.length === 0) {
-    return <Empty action={onNewEntity} />
-  } else {
-    return (
-      <Table
-        header={
-          <TableRow>
-            <TableHeader title="Entity" />
-          </TableRow>
-        }
-      >
-        {entities.sort(entitiesSort).map(({ data: { name, entryAddress, entryType } }) => {
-          const typeRow = ENTITY_TYPES.filter(row => row.name === entryType)[0]
-          return (
-            <TableRow key={entryAddress}>
-              <EntityCell>
-                <EntityWrapper>
-                  <Text
-                    size="xlarge"
-                    style={{
-                      paddingBottom: '5px',
-                    }}
-                  >
-                    {name}
-                  </Text>
-                  <IdentityBadge
-                    networkType={network.type}
-                    entity={entryAddress}
-                    shorten={true}
-                  />
-                </EntityWrapper>
-              </EntityCell>
-              <EntityCell align="right">
-                <Badge foreground={typeRow.fg} background={typeRow.bg}>
-                  {typeRow.name}
-                </Badge>
-              </EntityCell>
-              <EntityCell
-                align="right"
-                style={{
-                  width: '30px',
-                }}
-              >
-                <ContextMenu>
-                  <ContextMenuItem onClick={removeEntity(entryAddress)}>
-                    Remove
-                  </ContextMenuItem>
-                </ContextMenu>
-              </EntityCell>
-            </TableRow>
-          )
-        })}
-      </Table>
-    )
-  }
+  return (
+    <DataView
+      mode="adaptive"
+      fields={[ 'Name', 'Address', 'Type' ]}
+      entries={
+        entities.sort(entitiesSort).map(({ addr: entryAddress, data: { name, type: entryType } }) =>
+          [ name, entryAddress, entryType ]
+        )
+      }
+
+      renderEntry={([ name, entryAddress, entryType ]) => {
+        const type = ENTITY_TYPES.find(t => t.name === entryType)
+        return [
+          <Text key="1" size="large">{name}</Text>,
+          <LocalIdentityBadge
+            entity={entryAddress}
+            forceAddress
+            key="2"
+            shorten
+          />,
+          <Tag
+            background={type.bg}
+            css="font-weight: bold"
+            color={type.fg}
+            key="3"
+            mode="identifier"
+          >
+            {type.name}
+          </Tag>
+        ]
+      }}
+
+      renderEntryActions={([ , entryAddress ]) => (
+        <ContextMenu>
+          <ContextMenuItem onClick={removeEntity(entryAddress)}>
+            <IconDelete />
+            <span css="padding: 4px 8px 0px">Remove</span>
+          </ContextMenuItem>
+        </ContextMenu>
+      )}
+    />
+  )
 }
 
 Entities.propTypes = {
   // TODO: shape better
   entities: PropTypes.array.isRequired,
-  network: PropTypes.object,
-  onNewEntity: PropTypes.func.isRequired,
   onRemoveEntity: PropTypes.func.isRequired,
 }
 
-const EntityCell = styled(TableCell)`
-  padding: 15px;
-`
-const EntityWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-left: 10px;
-`
-export default provideNetwork(Entities)
+export default Entities

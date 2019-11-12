@@ -17,9 +17,9 @@ contract Voting is IForwarder, AragonApp {
     using SafeMath for uint256;
     using SafeMath64 for uint64;
 
-    bytes32 public constant CREATE_VOTES_ROLE = keccak256("CREATE_VOTES_ROLE");
+    bytes32 public constant ROLE_CREATE_VOTES = keccak256("ROLE_CREATE_VOTES");
     bytes32 public constant MODIFY_SUPPORT_ROLE = keccak256("MODIFY_SUPPORT_ROLE");
-    bytes32 public constant MODIFY_QUORUM_ROLE = keccak256("MODIFY_QUORUM_ROLE");
+    bytes32 public constant ROLE_MODIFY_QUORUM_ROLE = keccak256("ROLE_MODIFY_QUORUM_ROLE");
 
     uint256 public constant PCT_BASE = 10 ** 18; // 0% = 0; 1% = 10^16; 100% = 10^18
 
@@ -108,7 +108,7 @@ contract Voting is IForwarder, AragonApp {
     */
     function changeMinAcceptQuorumPct(uint256 _minAcceptQuorumPct)
         external
-        authP(MODIFY_QUORUM_ROLE, arr(_minAcceptQuorumPct, minAcceptQuorumPct))
+        authP(ROLE_MODIFY_QUORUM_ROLE, arr(_minAcceptQuorumPct, minAcceptQuorumPct))
     {
         require(_minAcceptQuorumPct <= supportRequiredPct);
         minAcceptQuorumPct = _minAcceptQuorumPct;
@@ -122,7 +122,7 @@ contract Voting is IForwarder, AragonApp {
     * @param _metadata Vote metadata
     * @return voteId Id for newly created vote
     */
-    function newVote(bytes _executionScript, string _metadata) external auth(CREATE_VOTES_ROLE) returns (uint256 voteId) {
+    function newVote(bytes _executionScript, string _metadata) external auth(ROLE_CREATE_VOTES) returns (uint256 voteId) {
         return _newVote(_executionScript, _metadata, true, true);
     }
 
@@ -136,7 +136,7 @@ contract Voting is IForwarder, AragonApp {
      */
     function newVote(bytes _executionScript, string _metadata, bool _castVote, bool _executesIfDecided)
         external
-        auth(CREATE_VOTES_ROLE)
+        auth(ROLE_CREATE_VOTES)
         returns (uint256 voteId)
     {
         return _newVote(_executionScript, _metadata, _castVote, _executesIfDecided);
@@ -171,7 +171,7 @@ contract Voting is IForwarder, AragonApp {
     }
 
     /**
-    * @notice Creates a vote to execute the desired action, and casts a support vote
+    * @notice Creates a vote to execute the desired action
     * @dev IForwarder interface conformance
     * @param _evmScript Start vote with script
     */
@@ -182,7 +182,7 @@ contract Voting is IForwarder, AragonApp {
 
     function canForward(address _sender, bytes) public view returns (bool) {
         // Note that `canPerform()` implicitly does an initialization check itself
-        return canPerform(_sender, CREATE_VOTES_ROLE, arr());
+        return canPerform(_sender, ROLE_CREATE_VOTES, arr());
     }
 
     function canVote(uint256 _voteId, address _voter) public view voteExists(_voteId) returns (bool) {

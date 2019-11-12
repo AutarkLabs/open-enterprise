@@ -38,6 +38,7 @@ replace_manifest_path() {
 
 export -f replace_manifest_path
 
+# TODO: This is not needed anymore and images/icon.svg needs to be replaced
 copy_assets() {
 	mkdir -p dist/images && cp images/icon.svg dist/images/
 }
@@ -46,8 +47,8 @@ export -f copy_assets
 
 deploy_contract() {
 	# TODO: Are we sure we want to mute truffle output? we should discuss this maybe
-	npx truffle compile >/dev/null
-	deployed_at=$(npx truffle migrate --reset | tail -4 | head -1 | awk '{ print $NF }')
+	truffle compile >/dev/null
+	deployed_at=$(truffle migrate --reset | tail -4 | head -1 | awk '{ print $NF }')
 	echo "Deployed at:" "$deployed_at"
 	published=$(npm run publish:http -- --contract "$deployed_at" | tail -2)
 	echo "$published"

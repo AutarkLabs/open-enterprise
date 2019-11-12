@@ -1,29 +1,29 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { isDate, format as formatDate } from 'date-fns'
+import { format as formatDate } from 'date-fns'
 
 import { TextInput } from '@aragon/ui'
 import DatePicker from './DatePicker'
 import { IconCalendar } from '../../Shared'
 
 const Container = styled.div`
-  width: 200px;
-  display: flex;
+  width: 100%;
+  position: relative;
 `
 const IconWrapper = styled.div`
-  position: relative;
-  left: -28px;
-  top: 8px;
+  position: absolute;
+  right: 12px;
+  top: 12px;
   height: 14px;
 `
 const TextInputDate = styled(TextInput).attrs({
   readOnly: true
 })`
-  width: 123px;
-  height: 32px;
+  height: 40px;
   display: inline-block;
   padding-top: 3px;
+  width: 100%;
 `
 
 class DateInput extends React.PureComponent {

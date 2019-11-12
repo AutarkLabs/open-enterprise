@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unused-modules */
 const savedRepos = {
   user: {
     repositories: {
@@ -603,7 +604,8 @@ const savedRepos = {
                     id: 'MDU6SXNzdWUzMDg3NzI4NDc=',
                     title: 'Create instructions for contributors',
                     state: 'CLOSED',
-                    url: 'https://github.com/AutarkLabs/planning-suite/issues/1',
+                    url:
+                      'https://github.com/AutarkLabs/planning-suite/issues/1',
                     createdAt: '2018-03-26T23:44:36Z',
                     number: 1,
                     repository: {
@@ -623,7 +625,8 @@ const savedRepos = {
                     id: 'MDU6SXNzdWUzMDg3NzQ3MTM=',
                     title: 'Initialize Planning Suite (dev)',
                     state: 'CLOSED',
-                    url: 'https://github.com/AutarkLabs/planning-suite/issues/2',
+                    url:
+                      'https://github.com/AutarkLabs/planning-suite/issues/2',
                     createdAt: '2018-03-26T23:55:20Z',
                     number: 2,
                     repository: {
@@ -654,7 +657,8 @@ const savedRepos = {
                     id: 'MDU6SXNzdWUzMDg3NzQ3NzU=',
                     title: 'Dot Voting - Smart contracts',
                     state: 'OPEN',
-                    url: 'https://github.com/AutarkLabs/planning-suite/issues/3',
+                    url:
+                      'https://github.com/AutarkLabs/planning-suite/issues/3',
                     createdAt: '2018-03-26T23:55:40Z',
                     number: 3,
                     repository: {
@@ -665,7 +669,8 @@ const savedRepos = {
                     milestone: {
                       id: 'MDk6TWlsZXN0b25lMzI5NDU4Mg==',
                       title: 'Sprint 2 (Milestone 1)',
-                      url: 'https://github.com/AutarkLabs/planning-suite/milestone/2',
+                      url:
+                        'https://github.com/AutarkLabs/planning-suite/milestone/2',
                       description: '',
                     },
                     labels: {
@@ -679,7 +684,8 @@ const savedRepos = {
                     id: 'MDU6SXNzdWUzMDg3NzQ4NjU=',
                     title: 'Issue Curation',
                     state: 'OPEN',
-                    url: 'https://github.com/AutarkLabs/planning-suite/issues/4',
+                    url:
+                      'https://github.com/AutarkLabs/planning-suite/issues/4',
                     createdAt: '2018-03-26T23:56:10Z',
                     number: 4,
                     repository: {
@@ -690,7 +696,8 @@ const savedRepos = {
                     milestone: {
                       id: 'MDk6TWlsZXN0b25lMzM2NzU1MQ==',
                       title: 'Sprint 4 (Milestone 1)',
-                      url: 'https://github.com/AutarkLabs/planning-suite/milestone/4',
+                      url:
+                        'https://github.com/AutarkLabs/planning-suite/milestone/4',
                       description: '',
                     },
                     labels: {
@@ -715,7 +722,8 @@ const savedRepos = {
                     id: 'MDU6SXNzdWUzMDg3NzQ4OTg=',
                     title: 'Payout Engine - UI design',
                     state: 'CLOSED',
-                    url: 'https://github.com/AutarkLabs/planning-suite/issues/5',
+                    url:
+                      'https://github.com/AutarkLabs/planning-suite/issues/5',
                     createdAt: '2018-03-26T23:56:20Z',
                     number: 5,
                     repository: {
@@ -736,7 +744,8 @@ const savedRepos = {
                     title:
                       'Github Integration (oAuth) - For adding projects/issues',
                     state: 'OPEN',
-                    url: 'https://github.com/AutarkLabs/planning-suite/issues/6',
+                    url:
+                      'https://github.com/AutarkLabs/planning-suite/issues/6',
                     createdAt: '2018-03-26T23:56:29Z',
                     number: 6,
                     repository: {
@@ -757,7 +766,8 @@ const savedRepos = {
                     title:
                       'Ability to allocate bounties to issues in a bulk-fashion',
                     state: 'OPEN',
-                    url: 'https://github.com/AutarkLabs/planning-suite/issues/7',
+                    url:
+                      'https://github.com/AutarkLabs/planning-suite/issues/7',
                     createdAt: '2018-03-28T17:09:08Z',
                     number: 7,
                     repository: {
@@ -768,7 +778,8 @@ const savedRepos = {
                     milestone: {
                       id: 'MDk6TWlsZXN0b25lMzM2NzU1MQ==',
                       title: 'Sprint 4 (Milestone 1)',
-                      url: 'https://github.com/AutarkLabs/planning-suite/milestone/4',
+                      url:
+                        'https://github.com/AutarkLabs/planning-suite/milestone/4',
                       description: '',
                     },
                     labels: {
@@ -794,7 +805,8 @@ const savedRepos = {
                     title:
                       'Document development strategy for Status Open Bounty integration',
                     state: 'CLOSED',
-                    url: 'https://github.com/AutarkLabs/planning-suite/issues/8',
+                    url:
+                      'https://github.com/AutarkLabs/planning-suite/issues/8',
                     createdAt: '2018-03-28T17:37:06Z',
                     number: 8,
                     repository: {
@@ -837,7 +849,8 @@ const savedRepos = {
                     id: 'MDU6SXNzdWUzMTAxOTY2NDE=',
                     title: 'Design UML for dot voting smart contracts',
                     state: 'OPEN',
-                    url: 'https://github.com/AutarkLabs/planning-suite/issues/9',
+                    url:
+                      'https://github.com/AutarkLabs/planning-suite/issues/9',
                     createdAt: '2018-03-31T00:19:12Z',
                     number: 9,
                     repository: {
@@ -856,9 +869,10 @@ const savedRepos = {
                   node: {
                     id: 'MDU6SXNzdWUzMTAxOTgyMDg=',
                     title:
-                      'Dot voting comments, variables, and function signatures',
+                      'Dot Voting comments, variables, and function signatures',
                     state: 'CLOSED',
-                    url: 'https://github.com/AutarkLabs/planning-suite/issues/10',
+                    url:
+                      'https://github.com/AutarkLabs/planning-suite/issues/10',
                     createdAt: '2018-03-31T00:37:29Z',
                     number: 10,
                     repository: {

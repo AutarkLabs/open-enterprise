@@ -1,12 +1,24 @@
+import React from 'react'
 import styled from 'styled-components'
-import { Text, theme, unselectable } from '@aragon/ui'
+import { Text, useTheme, unselectable } from '@aragon/ui'
+import PropTypes from 'prop-types'
 
-const FieldTitle = styled(Text.Block)`
+const FieldTitle = ({ children }) => {
+  const theme = useTheme()
+
+  return <Title color={`${theme.surfaceContentSecondary}`}>
+    {children}
+  </Title>
+}
+
+FieldTitle.propTypes = PropTypes.node.isRequired
+
+const Title = styled(Text.Block)`
   ${unselectable};
-  color: ${theme.textTertiary};
   text-transform: lowercase;
   font-variant: small-caps;
   font-weight: bold;
+  color: ${props => props.color};
 `
 
 export default FieldTitle

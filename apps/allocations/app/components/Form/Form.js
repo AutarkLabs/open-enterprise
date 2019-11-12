@@ -1,37 +1,54 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { Button, Text, theme } from '@aragon/ui'
+import styled from 'styled-components'
+import { Button } from '@aragon/ui'
 
-const Form = ({ children, onSubmit, submitText, heading, subHeading }) => {
+const Form = ({
+  children,
+  onSubmit,
+  submitText,
+  disabled,
+  errors,
+}) => {
   return (
-    // TODO: Fix the SidePanel 2 lines heading thing
     <React.Fragment>
-      {heading && <Text size="xxlarge">{heading}</Text>}
-      {subHeading && <Text size="large" color={theme.textSecondary}>{subHeading}</Text>}
-      <div style={{ height: '10px' }} />
+      <VerticalSpace />
       {children}
       <Button
-        style={{ userSelect: 'none' }}
+        style={{ userSelect: 'none', marginTop: '24px' }}
         mode="strong"
         wide
         onClick={onSubmit}
+        disabled={disabled}
       >
         {submitText}
       </Button>
+      <ErrorBlock>
+        {errors}
+      </ErrorBlock>
     </React.Fragment>
   )
 }
+
+const ErrorBlock = styled.div`
+  margin-top: 24px;
+`
+
+const VerticalSpace = styled.div`
+  height: 24px;
+`
 
 Form.propTypes = {
   children: PropTypes.node.isRequired,
   onSubmit: PropTypes.func.isRequired,
   submitText: PropTypes.string.isRequired,
-  heading: PropTypes.string,
-  subHeading: PropTypes.string,
+  disabled: PropTypes.bool,
+  errors: PropTypes.node,
 }
 
 Form.defaultProps = {
   submitText: 'Submit',
+  disabled: false,
 }
 
 export default Form

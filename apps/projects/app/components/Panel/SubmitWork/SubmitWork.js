@@ -1,98 +1,97 @@
-import PropTypes from 'prop-types'
-import React from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { Checkbox, Text, TextInput, theme, Info, SafeLink } from '@aragon/ui'
+import { Checkbox, GU, Text, TextInput, useTheme } from '@aragon/ui'
 
-import { Form, FormField, DescriptionInput } from '../../Form'
-import { IconGitHub } from '../../Shared'
+import { Form, FormField } from '../../Form'
+import useGithubAuth from '../../../hooks/useGithubAuth'
+import { useAragonApi } from '../../../api-react'
+import { usePanelManagement } from '../../Panel'
+import { ipfsAdd } from '../../../utils/ipfs-helpers'
+import { issueShape } from '../../../utils/shapes.js'
+import standardBounties from '../../../abi/StandardBounties.json'
+import { IssueTitle } from '../PanelComponents'
 
-class SubmitWork extends React.Component {
-  static propTypes = {
-    issue: PropTypes.object.isRequired,
+const SubmitWork = ({ issue }) => {
+  const githubCurrentUser = useGithubAuth()
+  const { api, connectedAccount } = useAragonApi()
+  const theme = useTheme()
+
+  const { closePanel } = usePanelManagement()
+  const [ comments, setComments ] = useState('')
+  const [ hours, setHours ] = useState(0)
+  const [ proof, setProof ] = useState('')
+  const [ ack1, setAck1 ] = useState(false)
+  const [ ack2, setAck2 ] = useState(false)
+
+  const updateComments = e => setComments(e.target.value)
+  const updateHours = e => setHours(e.target.value)
+  const updateProof = e => setProof(e.target.value)
+  const toggleAck1 = () => setAck1(!ack1)
+  const toggleAck2 = () => setAck2(!ack2)
+
+  const onSubmitWork = async() => {
+    const today = new Date()
+    const time = (hours === '' || hours === 0) ? '-' : hours
+    const data = {
+      user: githubCurrentUser,
+      submissionDate: today.toISOString(),
+      comments,
+      proof,
+      hours: time,
+      ack1,
+      ack2,
+    }
+
+    closePanel()
+
+    const ipfsHash = await ipfsAdd(data)
+    const bountiesRegistry = await api.call('bountiesRegistry').toPromise()
+    const bountyContract = api.external(bountiesRegistry, standardBounties.abi)
+    bountyContract.fulfillBounty(
+      connectedAccount, // address _sender,
+      issue.standardBountyId, // uint _bountyId,
+      [connectedAccount], // address payable [] memory  _fulfillers,
+      ipfsHash // string memory _data
+    ).toPromise()
   }
 
-  state = {
-    proof: '',
-    comments: '',
-    hours: 0,
-    ack1: false,
-    ack2: false,
-  }
+  const canSubmit = () => !(ack1 && ack2 && proof)
 
-  changeField = ({ target: { name, value } }) =>
-    this.setState({ [name]: value })
-  setAck1 = () => this.setState(prevState => ({ ack1: !prevState.ack1 }))
-  setAck2 = () => this.setState(prevState => ({ ack2: !prevState.ack2 }))
-
-  onSubmitWork = () => {
-    let today = new Date()
-    this.props.onSubmitWork(
-      {
-        user: this.props.githubCurrentUser,
-        submissionDate: today.toISOString(),
-        ...this.state,
-      },
-      this.props.issue
-    )
-  }
-
-  canSubmit = () =>
-    !(
-      this.state.ack1 &&
-      this.state.ack2 &&
-      this.state.proof &&
-      !isNaN(this.state.hours) &&
-      this.state.hours > 0
-    )
-
-  render() {
-    const { login } = this.props.githubCurrentUser
-    const { title, repo, number, url } = this.props.issue
-
-    return (
+  return (
+    <div css={`margin: ${2 * GU}px 0`}>
       <Form
-        onSubmit={this.onSubmitWork}
+        onSubmit={onSubmitWork}
         submitText="Submit Work"
         noSeparator
-        submitDisabled={this.canSubmit()}
+        submitDisabled={canSubmit()}
       >
-        <IssueTitle>{title}</IssueTitle>
-        <SafeLink
-          href={url}
-          target="_blank"
-          style={{ textDecoration: 'none', color: '#21AAE7' }}
-        >
-          <IssueLinkRow>
-            <IconGitHub color="#21AAE7" width="14px" height="14px" />
-            <Text style={{ marginLeft: '6px' }}>
-              {repo} #{number}
-            </Text>
-          </IssueLinkRow>
-        </SafeLink>
+        <IssueTitle issue={issue} />
 
         <FormField
-          label="Proof of Work"
+          label="Submission"
           required
           input={
-            <DescriptionInput
+            <TextInput.Multiline
               name="proof"
-              value={this.state.proof}
+              value={proof}
               rows="3"
-              onChange={this.changeField}
-              placeholder="Please link the Github Pull Request or an alternative proof of work if requested."
+              onChange={updateProof}
+              placeholder="Add a link to your work, such as a document or a pull request."
+              wide
             />
           }
         />
         <FormField
           label="Additional Comments"
           input={
-            <DescriptionInput
+            <TextInput.Multiline
               name="comments"
-              rows="5"
-              value={this.state.comments}
-              onChange={this.changeField}
+              rows="3"
+              value={comments}
+              onChange={updateComments}
               placeholder="Comments or details that haven’t already been described elsewhere."
+              wide
             />
           }
         />
@@ -102,72 +101,44 @@ class SubmitWork extends React.Component {
           input={
             <TextInput.Number
               name="hours"
-              value={this.state.hours}
-              onChange={this.changeField}
+              value={hours}
+              onChange={updateHours}
+              wide
             />
           }
         />
-        <VSpace size={1} />
+
         <AckRow>
-          <div style={{ width: '23px' }}>
-            <Checkbox checked={this.state.ack1} onChange={this.setAck1} />
+          <div css="width: 23px">
+            <Checkbox checked={ack1} onChange={toggleAck1} />
           </div>
-          <AckText>
+          <AckText color={`${theme.surfaceContentSecondary}`}>
             I acknowledge that my work must be accepted for me to receive the
             payout.
           </AckText>
         </AckRow>
 
         <AckRow>
-          <div style={{ width: '23px' }}>
-            <Checkbox checked={this.state.ack2} onChange={this.setAck2} />
+          <div css="width: 23px">
+            <Checkbox checked={ack2} onChange={toggleAck2} />
           </div>
-          <AckText>
-            I am reporting my hours honestly. I understand that this is for
-            informational purposes only and it will be used to optimize pricing
-            of future tasks.
+          <AckText color={`${theme.surfaceContentSecondary}`}>
+            I understand that reporting hours is for informational and planning purposes only.
           </AckText>
         </AckRow>
-        <VSpace size={2} />
-
-        { /* TODO: restore when GitHub commenting works
-        <Info.Alert
-          title="Submission note"
-          background="#FFFAEE"
-          style={{ marginBottom: '10px' }}
-        >
-          Your inputs will be added as a comment to the Github issue from your “
-          {login}” account.
-        </Info.Alert>
-        */ }
       </Form>
-    )
-  }
+    </div>
+  )
 }
 
+SubmitWork.propTypes = issueShape
+
 const AckText = styled(Text)`
-  color: ${theme.textSecondary};
-  margin-left: 6px;
+  margin-left: ${GU}px;
 `
 const AckRow = styled.div`
   display: flex;
-  margin-bottom: 8px;
-`
-const IssueLinkRow = styled.div`
-  height: 31px;
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-`
-const IssueTitle = styled(Text)`
-  color: #717171;
-  font-size: 17px;
-  font-weight: 300;
-  line-height: 1.5;
-`
-
-const VSpace = styled.div`
-  height: ${p => (p.size || 1) * 5}px;
+  margin: ${2 * GU}px 0;
 `
 
 export default SubmitWork

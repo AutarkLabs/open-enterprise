@@ -1,168 +1,185 @@
-import { Main, observe, AppBar, AppView, SidePanel } from '@aragon/ui'
-import PropTypes from 'prop-types'
-import React from 'react'
-import { map } from 'rxjs/operators'
-import { Accounts, Payouts } from '.'
-import { NewAccount, NewAllocation } from '../Panel'
-import { networkContextType, AppTitle, AppTitleButton } from '../../../../../shared/ui'
+import React, { useState } from 'react'
+import { useAragonApi } from '../../api-react'
+import { Button, Header, IconPlus, Main, SidePanel, SyncIndicator } from '@aragon/ui'
 
-class App extends React.Component {
-  static propTypes = {
-    app: PropTypes.object.isRequired,
-    accounts: PropTypes.arrayOf(PropTypes.object),
-  }
+import { IdentityProvider } from '../LocalIdentityBadge/IdentityManager'
+import { Empty } from '../Card'
+import { NewAllocation, NewBudget } from '../Panel'
+import { AllocationsHistory, Budgets } from '.'
+import { Deactivate } from '../Modal'
 
-  static defaultProps = {
-    network: {},
-  }
+const App = () => {
+  const [ panel, setPanel ] = useState(null)
+  const [ panelOpen, setPanelOpen ] = useState(false)
+  const [ isModalVisible, setModalVisible ] = useState(false)
+  const [ currentBudgetId, setCurrentBudgetId ] = useState('')
+  const { api, appState } = useAragonApi()
+  const { allocations = [], budgets = [], isSyncing = true } = appState
 
-  static childContextTypes = {
-    network: networkContextType,
-  }
-
-  state = {
-    accounts: [],
-    panel: {
-      visible: false,
+  const saveBudget = ({ id, amount, name, token }) => {
+    if (id) {
+      api.setBudget(id, amount, name).toPromise()
+    } else {
+      api
+        .newAccount(
+          name,             // _metadata
+          token.address,    // _token
+          true,             // hasBudget
+          amount
+        )
+        .toPromise()
     }
+    closePanel()
   }
 
-  getChildContext() {
-    const { network } = this.props
-    return {
-      network: {
-        type: network.type,
-      },
-    }
+  const onSubmitAllocation = ({
+    addresses,
+    description,
+    budgetId,
+    period = 0,
+    balance,
+  }) => {
+    const emptyIntArray = new Array(addresses.length).fill(0)
+    api.setDistribution(
+      addresses,
+      emptyIntArray, // unused
+      emptyIntArray, // unused
+      '', // unused
+      description,
+      emptyIntArray, // unused
+      emptyIntArray, // unused
+      budgetId, // account or allocation id...budgetId
+      '1', // recurrences, 1 for now
+      Math.floor(new Date().getTime()/1000), // startTime, now for now
+      period,
+      balance, // amount
+    ).toPromise()
+    closePanel()
+
   }
 
-  createAccount = (account) => {
-    account.balance = 0
-    this.props.app.newAccount(account.description)
-    this.closePanel()
-    this.setState({})
+  const onSubmitDeactivate = () => { // TODO id => {
+    closeModal()
   }
 
-  submitAllocation = allocation => {
-    const emptyIntArray = new Array(allocation.addresses.length).fill(0)
-    this.props.app.setDistribution(
-      allocation.addresses,
-      emptyIntArray, //[]
-      emptyIntArray, //[]
-      '',
-      allocation.description,
-      emptyIntArray, // Issue with bytes32 handling
-      emptyIntArray, // Issue with bytes32 handling
-      allocation.payoutId,
-      allocation.recurring,
-      allocation.period,
-      allocation.balance,
-      allocation.tokenAddress
-    )
-    this.closePanel()
+  // TODO: Fix this
+  // eslint-disable-next-line
+  const onExecutePayout = (accountId, payoutId) => {
+    api.runPayout(accountId, payoutId).toPromise()
   }
 
-  onExecutePayout = (accountId, payoutId) => {
-    this.props.app.runPayout(accountId, payoutId)
+  const onNewBudget = () => {
+    setPanel({
+      content: NewBudget,
+      data: { heading: 'New budget', saveBudget },
+    })
+    setPanelOpen(true)
   }
 
-
-  newAccount = () => {
-    this.setState({
-      panel: {
-        visible: true,
-        content: NewAccount,
-        data: { heading: 'New Account', onCreateAccount: this.createAccount },
+  const onNewAllocation = (budgetId) => {
+    const { balances } = appState
+    setPanel({
+      content: NewAllocation,
+      data: {
+        budgetId,
+        heading: 'New allocation',
+        onSubmitAllocation,
+        budgets,
+        balances,
       },
     })
+    setPanelOpen(true)
   }
 
-  entitiesSort = (a,b) => a.data.name.toUpperCase() > b.data.name.toUpperCase() ? 1 : -1
-
-  newAllocation = (address, description, id, balance) => {
-    // The whole entries vs entities thing needs to be fixed; these are too close
-    //const userEntity = {addr: '0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb', data: {entryAddress: '0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb', name: 'Bob', entryType: 'user'}}
-    const promptEntity = {
-      addr: 0x0,
-      data: { entryAddress: 0x0, name: 'Select an entry', entryType: 'prompt' },
-    }
-    let entities = this.props.entries !== undefined ? this.props.entries.sort(this.entitiesSort) : []
-    const entriesList = [promptEntity].concat(entities)
-    this.setState({
-      panel: {
-        visible: true,
-        content: NewAllocation,
-        data: {
-          address,
-          id,
-          balance,
-          heading: 'New Allocation',
-          subHeading: description,
-          onSubmitAllocation: this.submitAllocation,
-          entities: entriesList,
-          balances: this.props.balances ? this.props.balances : []
-        },
+  const onEdit = id => {
+    const editingBudget = budgets.find(budget => budget.id === id)
+    setPanel({
+      content: NewBudget,
+      data: {
+        heading: 'Edit budget',
+        saveBudget,
+        editingBudget,
       },
     })
+    setPanelOpen(true)
   }
 
-  closePanel = () => {
-    this.setState({ panel: { visible: false } })
+  const onDeactivate = id => {
+    setModalVisible(true)
+    setCurrentBudgetId(id)
   }
 
-  render() {
-    const { panel } = this.state
-    const { displayMenuButton = false } = this.props
-    const PanelContent = panel.content
-    return (
-      // TODO: Profile App with React.StrictMode, perf and why-did-you-update, apply memoization
-      <Main>
-        <AppView
-          padding={0}
-          appBar={
-            <AppBar
-              endContent={
-                <AppTitleButton
-                  caption="New Account"
-                  onClick={this.newAccount}
-                />
-              }
-            >
-              <AppTitle title="Allocations" displayMenuButton={displayMenuButton} />
-            </AppBar>
-          }
-        >
-          <Accounts
-            accounts={
-              this.props.accounts !== undefined ? this.props.accounts : []
-            }
-            onNewAccount={this.newAccount}
-            onNewAllocation={this.newAllocation}
-            app={this.props.app}
-          />
-          <Payouts
-            payouts={
-              this.props.payouts !== undefined ? this.props.payouts : []
-            }
-            executePayout={this.onExecutePayout}
-            network={this.props.network}
-            tokens={this.props.balances}
-          />
-        </AppView>
+  const onReactivate = () => { // TODO id => {
+    //api.reactivateBudget(id)
+  }
 
+  const closePanel = () => {
+    setPanelOpen(false)
+    setPanel(null)
+  }
+
+  const closeModal = () => {
+    setModalVisible(false)
+    setCurrentBudgetId('')
+  }
+
+  const handleResolveLocalIdentity = address =>
+    api.resolveAddressIdentity(address).toPromise()
+
+  const handleShowLocalIdentityModal = address =>
+    api.requestAddressIdentityModification(address).toPromise()
+
+  const PanelContent = panel ? panel.content : null
+
+  return (
+    <Main>
+      <IdentityProvider
+        onResolve={handleResolveLocalIdentity}
+        onShowLocalIdentityModal={handleShowLocalIdentityModal}
+      >
+        {budgets.length === 0
+          ? <Empty action={onNewBudget} isSyncing={isSyncing} />
+          : (
+            <React.Fragment>
+              <Header
+                primary="Allocations"
+                secondary={
+                  <Button
+                    mode="strong"
+                    icon={<IconPlus />}
+                    onClick={onNewBudget}
+                    label="New budget"
+                  />
+                }
+              />
+              <Budgets
+                budgets={budgets}
+                onNewAllocation={onNewAllocation}
+                onEdit={onEdit}
+                onDeactivate={onDeactivate}
+                onReactivate={onReactivate}
+              />
+              <SyncIndicator visible={isSyncing} />
+            </React.Fragment>
+          )
+        }
+        { !!allocations.length && <AllocationsHistory allocations={allocations} /> }
+        <Deactivate
+          visible={isModalVisible}
+          budgetId={currentBudgetId}
+          onClose={closeModal}
+          onSubmit={onSubmitDeactivate}
+        />
         <SidePanel
-          title={(panel.data && panel.data.heading) || ''}
-          opened={panel.visible}
-          onClose={this.closePanel}
+          title={(panel && panel.data.heading) || ''}
+          opened={panelOpen}
+          onClose={closePanel}
         >
-          {panel.content && <PanelContent {...panel.data} />}
+          {panel && <PanelContent {...panel.data} />}
         </SidePanel>
-      </Main>
-    )
-  }
+      </IdentityProvider>
+    </Main>
+  )
 }
 
-export default observe(
-  observable => observable.pipe(map(state => ({ ...state }))),
-  {}
-)(App)
+export default App

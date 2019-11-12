@@ -1,219 +1,265 @@
-import React from 'react'
-import styled from 'styled-components'
+import React, { useCallback, useEffect, useState }  from 'react'
 import PropTypes from 'prop-types'
-import emptyIcon from './assets/new_dot_vote.svg'
 import Votes from './components/Votes'
-import tokenBalanceOfAbi from './abi/token-balanceof.json'
-import tokenDecimalsAbi from './abi/token-decimals.json'
-import tokenSymbolAbi from './abi/token-symbol.json'
-import { safeDiv } from './utils/math-utils'
-import { hasLoadedVoteSettings } from './utils/vote-settings'
 import { isBefore } from 'date-fns'
-import { EmptyStateCard, SidePanel, breakpoint } from '@aragon/ui'
-import { VotePanelContent } from './components/Panels'
-import { EMPTY_CALLSCRIPT, getQuorumProgress, getTotalSupport } from './utils/vote-utils'
+import { useAragonApi } from './api-react'
+import {
+  BackButton,
+  Bar,
+  DropDown,
+  GU,
+  Tag,
+  textStyle,
+  useLayout,
+  useTheme,
+} from '@aragon/ui'
+import VoteDetails from './components/VoteDetails'
+import { getVoteStatus } from './utils/vote-utils'
+import Empty from './components/EmptyFilteredVotes'
+import {
+  VOTE_STATUS_EXECUTED,
+  VOTE_STATUS_FAILED,
+  VOTE_STATUS_SUCCESSFUL,
+} from './utils/vote-types'
 
-const tokenAbi = [].concat(tokenBalanceOfAbi, tokenDecimalsAbi, tokenSymbolAbi)
+const NULL_FILTER_STATE = -1
+const STATUS_FILTER_OPEN = 1
+const STATUS_FILTER_CLOSED = 2
+const OUTCOME_FILTER_PASSED = 1
+const OUTCOME_FILTER_REJECTED = 2
+const OUTCOME_FILTER_ENACTED = 3
+const OUTCOME_FILTER_PENDING = 4
+const APP_FILTER_ALLOCATIONS = 1
+const APP_FILTER_PROJECTS = 2
 
-const EmptyIcon = () => <img src={emptyIcon} alt="" />
+const useFilterVotes = (votes, voteTime) => {
+  const { appState: { globalMinQuorum = 0 } } = useAragonApi()
+  const [ filteredVotes, setFilteredVotes ] = useState(votes)
+  const [ statusFilter, setStatusFilter ] = useState(NULL_FILTER_STATE)
+  const [ outcomeFilter, setOutcomeFilter ] = useState(NULL_FILTER_STATE)
+  const [ appFilter, setAppFilter ] = useState(NULL_FILTER_STATE)
 
-class Decisions extends React.Component {
-  static propTypes = {
-    app: PropTypes.object.isRequired,
-  }
-  constructor(props) {
-    super(props)
-    this.state = {
-      createVoteVisible: false,
-      currentVoteId: 0,
-      settingsLoaded: true,
-      tokenContract: this.getTokenContract(props.tokenAddress),
-      voteVisible: false,
-      voteSidebarOpened: false,
-    }
-  }
+  const handleClearFilters = useCallback(() => {
+    setStatusFilter(NULL_FILTER_STATE)
+    setOutcomeFilter(NULL_FILTER_STATE)
+    setAppFilter(NULL_FILTER_STATE)
+  }, [
+    setStatusFilter,
+    setOutcomeFilter,
+    setAppFilter,
+  ])
 
-  componentWillMount() {
-    this.setState({
-      now : new Date()
+  useEffect(() => {
+    const now = new Date()
+    const filtered = votes.filter(vote => {
+
+      const endDate = new Date(vote.data.startDate + voteTime)
+      const open = isBefore(now, endDate)
+      const type = vote.data.type
+      const voteStatus = getVoteStatus(vote, globalMinQuorum)
+
+      if (statusFilter !== NULL_FILTER_STATE) {
+        if (statusFilter === STATUS_FILTER_OPEN && !isBefore(now, endDate)) return false
+        if (statusFilter === STATUS_FILTER_CLOSED && isBefore(now, endDate)) return false
+      }
+
+      if (appFilter !== NULL_FILTER_STATE) {
+        if (appFilter === APP_FILTER_ALLOCATIONS &&
+          type !== 'allocation'
+        ) return false
+        if (appFilter === APP_FILTER_PROJECTS &&
+          type !== 'curation'
+        ) return false
+      }
+
+      if (outcomeFilter !== NULL_FILTER_STATE) {
+        if (open) return false
+        if (outcomeFilter === OUTCOME_FILTER_PASSED &&
+          !(voteStatus === VOTE_STATUS_SUCCESSFUL ||
+            voteStatus === VOTE_STATUS_EXECUTED)
+        ) return false
+        if (outcomeFilter === OUTCOME_FILTER_REJECTED &&
+          voteStatus !== VOTE_STATUS_FAILED
+        ) return false
+        if (outcomeFilter === OUTCOME_FILTER_ENACTED &&
+          voteStatus !== VOTE_STATUS_EXECUTED
+        ) return false
+        if (outcomeFilter === OUTCOME_FILTER_PENDING &&
+          voteStatus !== VOTE_STATUS_SUCCESSFUL
+        ) return false
+      }
+      return true
     })
-  }
 
-  componentDidMount() {
-    setInterval( () => {
-      this.setState({
-        now : new Date()
-      })
-    },1000)
-  }
+    setFilteredVotes(filtered)
+  }, [
+    statusFilter,
+    outcomeFilter,
+    appFilter,
+    setFilteredVotes,
+    votes,
+  ])
 
-  UNSAFE_componentWillReceiveProps(nextProps) {
-    const { settingsLoaded } = this.state
-    // Is this the first time we've loaded the settings?
-    if (!settingsLoaded && hasLoadedVoteSettings(nextProps)) {
-      this.setState({
-        settingsLoaded: true,
-      })
-    }
-    if (nextProps.tokenAddress !== this.props.tokenAddress) {
-      this.setState({
-        tokenContract: this.getTokenContract(nextProps.tokenAddress),
-      })
-    }
-  }
-
-  getTokenContract(tokenAddress) {
-    return tokenAddress && this.props.app.external(tokenAddress, tokenAbi)
-  }
-  handleCreateVote = question => {
-    this.props.app.newVote(EMPTY_CALLSCRIPT, question)
-    this.handleCreateVoteClose()
-  }
-  handleCreateVoteOpen = () => {
-    this.setState({ createVoteVisible: true })
-  }
-  handleCreateVoteClose = () => {
-    this.setState({ createVoteVisible: false })
-  }
-  handleVoteOpen = voteId => {
-    const exists = this.props.votes.some(vote => voteId === vote.voteId)
-    if (!exists) return
-    this.setState({
-      currentVoteId: voteId,
-      voteVisible: true,
-      voteSidebarOpened: false,
-    })
-  }
-  handleVote = (voteId, supports) => {
-    this.props.app.vote(voteId, supports)
-    this.handleVoteClose()
-  }
-  handleVoteClose = () => {
-    this.setState({ voteVisible: false })
-  }
-  handleVoteTransitionEnd = opened => {
-    this.setState(opened ? { voteSidebarOpened: true } : { currentVoteId: -1 })
-  }
-
-  getAddressLabel = (entries, option) => {
-    const index = entries.findIndex(entry => entry.addr === option.label)
-    return index > -1 ? entries[index].data.name : option.label
-  }
-  render() {
-    const {
-      app,
-      pctBase,
-      minParticipationPct,
-      userAccount,
-      votes,
-      entries,
-      voteTime,
-    } = this.props
-    const {
-      createVoteVisible,
-      currentVoteId,
-      settingsLoaded,
-      tokenContract,
-      voteSidebarOpened,
-      voteVisible,
-    } = this.state
-
-    const displayVotes = settingsLoaded && votes.length > 0
-
-    // Add useful properties to the votes
-    const preparedVotes = displayVotes
-      ? votes.map(vote => {
-        const endDate = new Date(vote.data.startDate + voteTime)
-        vote.data.options = vote.data.options.map(option => {
-          return {
-            ...option,
-            label: this.getAddressLabel(entries, option)
-          }
-        })
-        return {
-          ...vote,
-          endDate,
-          open: isBefore(this.state.now, endDate),
-          quorum: safeDiv(vote.data.minAcceptQuorum, pctBase),
-          quorumProgress: getQuorumProgress(vote.data),
-          minParticipationPct: minParticipationPct,
-          description: vote.data.metadata,
-          totalSupport: getTotalSupport(vote.data),
-          type: vote.data.type,
+  return {
+    filteredVotes,
+    voteStatusFilter: statusFilter,
+    handleVoteStatusFilterChange: useCallback(
+      index => {
+        setStatusFilter(index || NULL_FILTER_STATE)
+        if (index === STATUS_FILTER_OPEN) {
+          setOutcomeFilter(NULL_FILTER_STATE)
         }
-      })
-      : votes
-    const currentVote =
-      currentVoteId === -1
-        ? null
-        : preparedVotes.find(vote => vote.voteId === currentVoteId)
-
-    return (
-      <StyledDecisions>
-        <ScrollWrapper>
-          {displayVotes ? (
-            <Votes votes={preparedVotes} onSelectVote={this.handleVoteOpen} app={app}/>
-          ) : (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexGrow: 1
-              }}
-            >
-              <EmptyStateCard
-                icon={<EmptyIcon />}
-                title="You do not have any dot votes."
-                text="Use the Allocations app to get started."
-                actionButton={() => <div />}
-              />
-            </div>
-          )}
-        </ScrollWrapper>
-
-        {displayVotes && currentVote &&(
-          <SidePanel
-            title={'Dot Vote #' + currentVote.voteId}
-            opened={Boolean(!createVoteVisible && voteVisible)}
-            onClose={this.handleVoteClose}
-            onTransitionEnd={this.handleVoteTransitionEnd}
-          >
-            <VotePanelContent
-              app={app}
-              vote={currentVote}
-              user={userAccount}
-              ready={voteSidebarOpened}
-              tokenContract={tokenContract}
-              onVote={this.handleVote}
-              minParticipationPct={minParticipationPct}
-            />
-          </SidePanel>
-        )}
-      </StyledDecisions>
-    )
+      },
+      [setStatusFilter]
+    ),
+    voteOutcomeFilter: outcomeFilter,
+    handleVoteOutcomeFilterChange: useCallback(
+      index => setOutcomeFilter(index || NULL_FILTER_STATE),
+      [setOutcomeFilter]
+    ),
+    voteAppFilter: appFilter,
+    handleVoteAppFilterChange: useCallback(
+      index => setAppFilter(index || NULL_FILTER_STATE),
+      [setAppFilter]
+    ),
+    handleClearFilters,
   }
 }
 
-const ScrollWrapper = styled.div`
-  position: relative;
-  z-index: 1;
-  height: 100%;
-  overflow: auto;
-`
-const StyledDecisions = styled.div`
-  ${breakpoint(
-    'small',
-    `
-    padding: 2rem;
-    `
-  )};
-  padding: 0.3rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: stretch;
-  overflow: auto;
-  flex-grow: 1;
-`
+const Decisions = ({ decorateVote }) => {
+  const { api: app, appState, connectedAccount } = useAragonApi()
+  const { votes, voteTime } = appState
+
+  const { layoutName } = useLayout()
+  const theme = useTheme()
+
+  // TODO: accomplish this with routing (put routes in App.js, not here)
+  const [ currentVoteId, setCurrentVoteId ] = useState(-1)
+  const handleVote = useCallback(async (voteId, supports) => {
+    await app.vote(voteId, supports).toPromise()
+    setCurrentVoteId(-1) // is this correct?
+  }, [app])
+  const handleBackClick = useCallback(() => {
+    setCurrentVoteId(-1)
+  }, [])
+  const handleVoteOpen = useCallback(voteId => {
+    const exists = votes.some(vote => voteId === vote.voteId)
+    if (!exists) return
+    setCurrentVoteId(voteId)
+  }, [votes])
+
+  const {
+    filteredVotes,
+    voteStatusFilter,
+    handleVoteStatusFilterChange,
+    voteOutcomeFilter,
+    handleVoteOutcomeFilterChange,
+    voteAppFilter,
+    handleVoteAppFilterChange,
+    handleClearFilters,
+  } = useFilterVotes(votes, voteTime)
+
+  const currentVote =
+      currentVoteId === -1
+        ? null
+        : decorateVote(
+          filteredVotes.find(vote => vote.voteId === currentVoteId)
+        )
+
+  if (currentVote) {
+    return (
+      <React.Fragment>
+        <Bar>
+          <BackButton onClick={handleBackClick} />
+        </Bar>
+        <VoteDetails vote={currentVote} onVote={handleVote} />
+      </React.Fragment>
+    )
+  }
+
+  const preparedVotes = filteredVotes.map(decorateVote)
+    .sort((a, b) => b.data.startDate - a.data.startDate)
+
+  return (
+    <React.Fragment>
+      {layoutName !== 'small' && (
+        <Bar>
+          <div
+            css={`
+            height: ${8 * GU}px;
+            display: grid;
+            grid-template-columns: auto auto auto 1fr;
+            grid-gap: ${1 * GU}px;
+            align-items: center;
+            padding-left: ${3 * GU}px;
+          `}
+          >
+            <DropDown
+              header="Status"
+              placeholder="Status"
+              selected={voteStatusFilter}
+              onChange={handleVoteStatusFilterChange}
+              items={[
+                // eslint-disable-next-line react/jsx-key
+                <div>
+                All
+                  <span
+                    css={`
+                    margin-left: ${1.5 * GU}px;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: ${theme.info};
+                    ${textStyle('label3')};
+                  `}
+                  >
+                    <Tag limitDigits={4} label={votes.length} size="small" />
+                  </span>
+                </div>,
+                'Open',
+                'Closed',
+              ]}
+              width="128px"
+            />
+            {voteStatusFilter !== STATUS_FILTER_OPEN && (
+              <DropDown
+                header="Outcome"
+                placeholder="Outcome"
+                selected={voteOutcomeFilter}
+                onChange={handleVoteOutcomeFilterChange}
+                items={[ 'All', 'Passed', 'Rejected', 'Enacted', 'Pending' ]}
+                width="128px"
+              />
+            )}
+            <DropDown
+              header="App"
+              placeholder="App"
+              selected={voteAppFilter}
+              onChange={handleVoteAppFilterChange}
+              items={[ 'All', 'Allocations', 'Projects' ]}
+              width="128px"
+            />
+          </div>
+        </Bar>
+      )}
+
+      {!preparedVotes.length
+        ? <Empty onClear={handleClearFilters} />
+        : (
+          <Votes
+            votes={preparedVotes}
+            onSelectVote={handleVoteOpen}
+            app={app}
+            userAccount={connectedAccount}
+          />
+        )
+      }
+    </React.Fragment>
+  )
+}
+
+Decisions.propTypes = {
+  decorateVote: PropTypes.func.isRequired,
+}
 
 export default Decisions

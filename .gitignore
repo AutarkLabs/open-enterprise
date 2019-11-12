@@ -62,7 +62,6 @@ aragon-ui/
 
 .cache
 dist
-build
 codealike.json
 
 # solidity coverage
@@ -81,3 +80,15 @@ codealike.json
 # Cypress
 **/cypress/screenshots/
 **/cypress/videos/
+flattened_contracts
+
+# Avoid committing other package-lock.json files
+package-lock.json
+
+# truffle build artifacts
+# Ignore only for first level to select just the contract build directories
+*/*/abi
+*/*/build
+
+# template specific
+arapp_local.json

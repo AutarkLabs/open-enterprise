@@ -55,13 +55,13 @@ module.exports = {
       network_id: 15,
       host: 'localhost',
       port: 8545,
-      gas: 6.9e6,
+      gas: 8.2e6,
     },
     development: {
       host: 'localhost',
       port: 8545,
       network_id: '*',
-      gas: 7984452, // Block Gas Limit same as latest on Mainnet https://ethstats.net/
+      gas: 8.2e6,
       gasPrice: 2000000000, // same as latest on Mainnet https://ethstats.net/
     },
     coverage: {
@@ -74,6 +74,7 @@ module.exports = {
     rinkeby: {
       network_id: 4,
       provider: providerForNetwork('rinkeby'),
+      gasPrice: 6000000000,
     },
     mainnet: {
       network_id: 1,
@@ -88,4 +89,9 @@ module.exports = {
       runs: 200
     },
   },
+  compilers: {
+    solc: {
+      version: "0.4.24"
+    }
+  }
 }

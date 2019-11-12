@@ -1,32 +1,40 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { EmptyStateCard, unselectable } from '@aragon/ui'
-import { IconNewProject } from '../Shared'
+import { Button, Card, GU, Text } from '@aragon/ui'
+import { usePanelManagement } from '../Panel'
 
-const Empty = ({ action }) => (
-  <EmptyWrapper>
-    <EmptyStateCard
-      title="You have not added any projects."
-      text="Get started now by adding a new project."
-      icon={<IconNewProject alt="Empty projects icon" />}
-      actionText="New Project"
-      onActivate={action}
-    />
-  </EmptyWrapper>
-)
+import unauthorizedSvg from '../../assets/empty.svg'
 
-Empty.propTypes = {
-  action: PropTypes.func.isRequired,
+const Empty = () => {
+  const { setupNewProject } = usePanelManagement()
+
+  return (
+
+    <EmptyCard>
+      <div
+        css={`
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      `}
+      >
+        <img css={`margin-bottom: ${2 * GU}px`} src={unauthorizedSvg} alt="" height="160" />
+        <Text size="xlarge" css={`margin: ${2 * GU}px`}>
+            No projects found
+        </Text>
+        <Text css={`margin-bottom: ${3 * GU}px`}>
+            It seems that you have not set up a project yet
+        </Text>
+        <Button mode="strong" onClick={setupNewProject}>New project</Button>
+      </div>
+    </EmptyCard>
+  )
 }
 
-const EmptyWrapper = styled.div`
-  ${unselectable};
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: calc(100vh - 64px - 38px);
+const EmptyCard = styled(Card)`
+  width: 100%;
+  height: auto;
+  padding: ${7 * GU}px;
 `
 
 export default Empty

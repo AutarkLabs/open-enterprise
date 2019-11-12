@@ -1,11 +1,11 @@
-import { first } from 'rxjs/operators' // Make sure observables have .first and .map
-//import 'rxjs/add/operator/map' // Make sure observables have .map
+import { combineLatest, from } from 'rxjs'
+import { first, map, mergeMap } from 'rxjs/operators'
 
 import { app } from './'
-import { combineLatest } from '../rxjs'
 import { EMPTY_CALLSCRIPT } from '../utils/vote-utils'
-import { getTokenSymbol, ETHER_TOKEN_FAKE_ADDRESS } from '../utils/token-utils'
-
+import { ETHER_TOKEN_FAKE_ADDRESS, getTokenSymbol } from '../../../../shared/lib/token-utils'
+import { addressesEqual } from '../../../../shared/lib/web3-utils'
+import allocationsAbi from '../../../shared/json-abis/allocations'
 
 export const castVote = async (state, { voteId }) => {
   const transform = async vote => ({
@@ -15,7 +15,7 @@ export const castVote = async (state, { voteId }) => {
 
   return updateState(state, voteId, transform)
 }
-  
+
 export const executeVote = async (state, { voteId }) => {
   const transform = ({ data, ...vote }) => ({
     ...vote,
@@ -23,39 +23,39 @@ export const executeVote = async (state, { voteId }) => {
   })
   return updateState(state, voteId, transform)
 }
-  
+
 export const startVote = async (state, { voteId }) => {
   return updateState(state, voteId, vote => vote)
 }
-  
+
 /***********************
    *                     *
    *       Helpers       *
    *                     *
    ***********************/
-  
+
 const loadVoteDescription = async (vote) => {
   if (!vote.executionScript || vote.executionScript === EMPTY_CALLSCRIPT) {
     return vote
   }
-  
+
   const path = await app.describeScript(vote.executionScript).toPromise()
-  
+
+  vote.executionTargets = [...new Set(path.map(({ to }) => to))]
   vote.description = path
     .map(step => {
       const identifier = step.identifier ? ` (${step.identifier})` : ''
       const app = step.name ? `${step.name}${identifier}` : `${step.to}`
-  
+
       return `${app}: ${step.description || 'No description'}`
     })
     .join('\n')
-  
+
   return vote
 }
-  
+
 const loadVoteData = async (voteId) => {
-  let vote
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     app
       .call('getVote', voteId)
       .pipe(first())
@@ -69,7 +69,7 @@ const loadVoteData = async (voteId) => {
       })
   })
 }
-  
+
 // These functions arn't DRY make them better
 const loadVoteDataAllocation = async (vote, voteId) => {
   return new Promise(resolve => {
@@ -79,61 +79,69 @@ const loadVoteDataAllocation = async (vote, voteId) => {
       app.call('canExecute', voteId)
     )
       .pipe(first())
-      .subscribe(async ([ metadata, totalCandidates, canExecute, payout ]) => {
+      .subscribe(async ([ metadata, totalCandidates, canExecute ]) => {
         const voteDescription = await loadVoteDescription(vote)
+        const decoratedVote = await decorateVote(voteDescription)
         let options = []
         for (let i = 0; i < totalCandidates; i++) {
           const candidateData = await getAllocationCandidate(voteId, i)
           options.push(candidateData)
         }
         options = await Promise.all(options)
-  
+
         const returnObject = {
-          ...marshallVote(voteDescription),
+          ...marshallVote(decoratedVote),
           metadata,
           canExecute,
           options,
         }
+        // allocations appProxy address starts at 10 and is 20 bytes (40 chars) long
+        const allocationsAddress = '0x' + vote.executionScript.slice(10,50)
+        // account Address starts at 514 and is stored as as uint256, which is 32 bytes (64 chars) long
+        const allocationsAccountId = parseInt(vote.executionScript.slice(514, 578), 16).toString()
+        // compose a callable external contract from the parsed address and the abi
+        const allocationsInstance = app.external(allocationsAddress, allocationsAbi)
+        const { token: tokenAddress } = await allocationsInstance.getAccount(allocationsAccountId).toPromise()
+
         let symbol
-        const tokenAddress = '0x' + vote.executionScript.slice(794,834)
         if (tokenAddress === ETHER_TOKEN_FAKE_ADDRESS) {
           symbol = 'ETH'
         }
         else {
-          symbol =  await getTokenSymbol(app, tokenAddress)
+          symbol = await getTokenSymbol(app, tokenAddress)
         }
-  
-  
+
+
         resolve({
           ...returnObject,
-          // These numbers indicate the static param location of the setDistribution
-          // functions amount paramater
-          balance: parseInt(vote.executionScript.slice(706, 770), 16),
-          tokenSymbol:  symbol,
+          // // These numbers indicate the static param location of the setDistribution
+          // // functions amount paramater
+          balance: parseInt(vote.executionScript.slice(770, 834), 16),
+          tokenSymbol: symbol,
           metadata: vote.voteDescription,
           type: 'allocation',
         })
       })
   })
 }
-  
+
 const loadVoteDataProjects = async (vote, voteId) => {
   return new Promise(resolve => {
     combineLatest(
-      app.call('getVoteMetadata', voteId),
       app.call('getCandidateLength', voteId),
       app.call('canExecute', voteId)
     )
       .pipe(first())
-      .subscribe(async ([ metadata, totalCandidates, canExecute ]) => {
+      .subscribe(async ([ totalCandidates, canExecute ]) => {
         const voteDescription = await loadVoteDescription(vote)
+        const decoratedVote = await decorateVote(voteDescription)
         let options = []
         for (let i = 0; i < totalCandidates; i++) {
           let candidateData = await getProjectCandidate(voteId, i)
           options.push(candidateData)
         }
         resolve({
-          ...marshallVote(voteDescription),
+          ...marshallVote(decoratedVote),
           metadata: vote.voteDescription,
           type: 'curation',
           canExecute,
@@ -142,8 +150,8 @@ const loadVoteDataProjects = async (vote, voteId) => {
       })
   })
 }
-  
-const updateVotes = async  (votes, voteId, transform) => {
+
+const updateVotes = async (votes, voteId, transform) => {
   const voteIndex = votes.findIndex(vote => vote.voteId === voteId)
   let nextVotes = Array.from(votes)
   if (voteIndex === -1) {
@@ -159,8 +167,8 @@ const updateVotes = async  (votes, voteId, transform) => {
   }
   return nextVotes
 }
-  
-const getAllocationCandidate = async  (voteId, candidateIndex) => {
+
+const getAllocationCandidate = async (voteId, candidateIndex) => {
   return new Promise(resolve => {
     app
       .call('getCandidate', voteId, candidateIndex)
@@ -173,7 +181,7 @@ const getAllocationCandidate = async  (voteId, candidateIndex) => {
       })
   })
 }
-  
+
 const getProjectCandidate = async (voteId, candidateIndex) => {
   return new Promise(resolve => {
     app
@@ -187,8 +195,8 @@ const getProjectCandidate = async (voteId, candidateIndex) => {
       })
   })
 }
-  
-const updateState = async  (state, voteId, transform, candidate = null) => {
+
+const updateState = async (state, voteId, transform) => {
   let { votes = [] } = state ? state : []
   votes = await updateVotes(votes, voteId, transform)
   return {
@@ -196,8 +204,8 @@ const updateState = async  (state, voteId, transform, candidate = null) => {
     votes: votes,
   }
 }
-  
-const marshallVote =  ({
+
+const marshallVote = ({
   open,
   creator,
   startDate,
@@ -207,6 +215,7 @@ const marshallVote =  ({
   totalParticipation,
   metadata,
   executionScript,
+  executionTargetData,
   executed,
 }) => {
   totalVoters = parseInt(totalVoters, 10)
@@ -221,9 +230,69 @@ const marshallVote =  ({
     totalParticipation: totalParticipation,
     metadata,
     executionScript,
+    executionTargetData,
     executed,
     participationPct:
-        totalVoters === 0 ? 0 : (totalParticipation / totalVoters) * 100,
+      totalVoters === 0 ? 0 : (totalParticipation / totalVoters) * 100,
   }
 }
-  
+
+const getVoteExecutionTargets = (vote) => {
+  return vote.executionTargets || []
+}
+
+const decorateVote = async (vote) => {
+  const executionTargets = getVoteExecutionTargets(vote)
+  const currentApp = await app.currentApp().toPromise()
+  if (!executionTargets.length) {
+    // If there's no execution target, consider it targetting this Dot Voting app
+    return {
+      ...vote,
+      executionTargetData: {
+        ...currentApp,
+        identifier: undefined,
+      }
+    }
+  } else if (executionTargets.length > 1) {
+    // If there's multiple targets, make a "multiple" version
+    return {
+      ...vote,
+      executionTargetData: {
+        address: '0x0000000000000000000000000000000000000000',
+        name: 'Multiple',
+        iconSrc: currentApp.icon(24),
+        identifier: undefined,
+      }
+    }
+  } else {
+    // Otherwise, try to find the target from the installed apps
+    const [targetAddress] = executionTargets
+    return app.installedApps().pipe(
+      first(),
+      mergeMap(installedApps => from(installedApps)),
+      first(
+        app => addressesEqual(app.appAddress, targetAddress),
+        {
+          appAddress: targetAddress,
+          name: 'External',
+          icon: currentApp.icon,
+          identifier: undefined,
+        }
+      ),
+      map(targetApp => ({
+        ...vote,
+        executionTargetData: {
+          address: targetApp.appAddress,
+          name: targetApp.name,
+          /*
+          icon() function takes pixel size as a paremeter (in our case 24px)
+          and returns the location of the app icon. However, in most (all?)
+          cases it just returns an svg which can be any size.
+          */
+          iconSrc: targetApp.icon(24),
+          identifier: targetApp.identifier,
+        }
+      }))
+    ).toPromise()
+  }
+}

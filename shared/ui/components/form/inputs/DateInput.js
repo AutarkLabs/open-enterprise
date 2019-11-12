@@ -10,12 +10,12 @@ import { IconCalendar } from '../../assets'
 const Container = styled.div`
   width: ${props => props.width};
   display: flex;
+  position: relative;
 `
 const IconWrapper = styled.div`
-  position: relative;
-  left: -28px;
   top: 12px;
   height: 14px;
+  width: 26px;
 `
 const TextInputDate = styled(TextInput).attrs({
   readOnly: true
@@ -67,26 +67,31 @@ class DateInput extends React.PureComponent {
   }
 
   render () {
-    const { value, width } = this.props
+    const { value, width, wide, horizontalAlign, verticalAlign } = this.props
     const formattedValue = formatDate(value, this.props.format)
 
     return (
       <Container
         ref={this.setWrapperRef}
-        width={width}
+        width={ wide ? "100%" : width }
       >
         <TextInputDate
           value={formattedValue}
           onClick={this.handleClick}
-          width={width}
+          width={ wide ? "100%" : width }
+          wide={wide}
+          adornment={
+            <IconWrapper onClick={this.handleClick}>
+              <IconCalendar />
+            </IconWrapper>
+          }
+          adornmentPosition="end"
         />
-
-        <IconWrapper onClick={this.handleClick}>
-          <IconCalendar />
-        </IconWrapper>
 
         {this.state.showPicker && (
           <DatePicker
+            horizontalAlign={horizontalAlign}
+            verticalAlign={verticalAlign}
             currentDate={value}
             onSelect={this.handleSelect}
             overlay={true}
@@ -102,6 +107,10 @@ DateInput.propTypes = {
   onChange: PropTypes.func.isRequired,
   value: PropTypes.any,
   width: PropTypes.string,
+  position: PropTypes.string,
+  horizontalAlign: PropTypes.string,
+  verticalAlign: PropTypes.string,
+  wide: PropTypes.bool
 }
 
 DateInput.defaultProps = {
@@ -109,6 +118,8 @@ DateInput.defaultProps = {
   format: 'LL/dd/yyyy',
   onChange: () => {},
   width: '180px',
+  horizontalAlign: 'right',
+  verticalALign: 'top',
 }
 
 export default DateInput

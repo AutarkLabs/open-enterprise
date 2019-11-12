@@ -38,7 +38,11 @@ start_testrpc() {
 		aragon devchain --reset --port "$testrpc_port" &
 	elif [ "$DEV" = true ]; then
 		aragon devchain --reset --port "$testrpc_port" &
-		lerna run dev --parallel --scope=@tps/apps-* &
+		sleep 10 # wait for devchain to start TODO: modify cli to return rather than require interruption
+		npm run frontend &
+	elif [ "$NO_CLIENT" = true ]; then
+		aragon devchain --reset --port "$testrpc_port" &
+		npm run frontend &
 	fi
 
 	testrpc_pid=$!
@@ -63,10 +67,13 @@ elif [ "$TRUFFLE_TEST" = true ]; then
 	truffle test --network rpc "$@" | grep -v 'Compiling'
 	result=$?
 elif [ "$START_KIT" = true ] || [ "$RESTART_KIT" = true ]; then
-	npm run publish:apps && npm run start:kit
+	npm run publish:apps && npm run start:template
 	result=$?
 elif [ "$DEV" = true ]; then
-	npm run publish:http && npm run start:kit
+	npm run publish:http && npm run start:dev-template
+	result=$?
+elif [ "$NO_CLIENT" = true ]; then
+	npm run publish:http && npm run start:kit:no:client
 	result=$?
 elif [ "$CYPRESS" = true ]; then
 	npm run publish:apps && npm run start:kit &> /dev/null &

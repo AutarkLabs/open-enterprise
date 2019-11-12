@@ -1,209 +1,198 @@
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
-import React from 'react'
 import styled from 'styled-components'
 import { formatDistance } from 'date-fns'
-
 import {
-  Text,
   Button,
-  SafeLink,
   DropDown,
+  GU,
   IconCheck,
   IconCross,
-  theme,
+  Link,
+  Text,
+  TextInput,
+  useTheme,
 } from '@aragon/ui'
+import { FormField, FieldTitle } from '../../Form'
+import useGithubAuth from '../../../hooks/useGithubAuth'
+import { useAragonApi } from '../../../api-react'
+import { usePanelManagement } from '../../Panel'
+import { ipfsAdd } from '../../../utils/ipfs-helpers'
+import { toHex } from 'web3-utils'
+import { issueShape } from '../../../utils/shapes.js'
+import { IssueTitle } from '../PanelComponents'
 
-import { Form, FormField, FieldTitle, DescriptionInput } from '../../Form'
-import { IconGitHub } from '../../Shared'
+const ReviewApplication = ({ issue, requestIndex }) => {
+  const githubCurrentUser = useGithubAuth()
+  const {
+    api: { reviewApplication },
+  } = useAragonApi()
+  const { closePanel } = usePanelManagement()
+  const theme = useTheme()
 
-// external data, all of it
+  const [ feedback, setFeedback ] = useState('')
+  const [ index, setIndex ] = useState(requestIndex)
 
-class ReviewApplication extends React.Component {
-  static propTypes = {
-    issue: PropTypes.object.isRequired
-  }
+  const updateFeedback = e => setFeedback(e.target.value)
 
-  state = {
-    feedback: '',
-    requestIndex: this.props.requestIndex,
-  }
-
-  changeField = ({ target: { name, value } }) => this.setState({ [name]: value })
-
-  buildReturnData = approved => {
-    let today = new Date()
+  const buildReturnData = approved => {
+    const today = new Date()
     return {
-      feedback: this.state.feedback,
+      feedback,
       approved,
-      user: this.props.githubCurrentUser,
+      user: githubCurrentUser,
       reviewDate: today.toISOString(),
     }
   }
 
-  onAccept = () => {
-    const returnData = this.buildReturnData(true)
-    this.props.onReviewApplication(this.props.issue, this.state.requestIndex, true, returnData)
+  const onAccept = () => onReviewApplication(true)
+  const onReject = () => onReviewApplication(false)
+  const changeRequest = (index) => setIndex(index)
+
+  const onReviewApplication = async (approved) => {
+    closePanel()
+    const review = buildReturnData(approved)
+    // new IPFS data is old data plus state returned from the panel
+    const ipfsData = issue.requestsData[index]
+    const requestIPFSHash = await ipfsAdd({ ...ipfsData, review })
+
+    reviewApplication(
+      toHex(issue.repoId),
+      issue.number,
+      issue.requestsData[index].contributorAddr,
+      requestIPFSHash,
+      approved
+    ).toPromise()
   }
 
-  onReject = () => {
-    const returnData = this.buildReturnData(false)
-    this.props.onReviewApplication(this.props.issue, this.state.requestIndex, false, returnData)
+  const request = issue.requestsData[index]
+  const application = {
+    user: {
+      login: request.user.login,
+      name: request.user.login,
+      avatar: request.user.avatarUrl,
+      url: request.user.url
+    },
+    workplan: request.workplan,
+    hours: request.hours,
+    eta: (request.eta === '-') ? request.eta : (new Date(request.eta)).toLocaleDateString(),
+    applicationDate: request.applicationDate
   }
 
-  changeRequest = (index) => {
-    this.setState({ requestIndex: index })
-  }
+  const applicant = application.user
+  const applicantName = applicant.name ? applicant.name : applicant.login
+  const applicationDateDistance = formatDistance(new Date(application.applicationDate), new Date())
 
+  return (
+    <div css={`margin: ${2 * GU}px 0`}>
+      <IssueTitle issue={issue} />
 
-  render() {
-    const { issue } = this.props
-    const request = issue.requestsData[this.state.requestIndex]
-    const application = {
-      user: {
-        login: request.user.login,
-        name: request.user.login,
-        avatar: request.user.avatarUrl,
-        url: request.user.url
-      },
-      workplan: request.workplan,
-      hours: request.hours,
-      eta: (new Date(request.eta)).toLocaleDateString(),
-      applicationDate: request.applicationDate
-    }
+      <FieldTitle>Applicant</FieldTitle>
+      <DropDown
+        name="Applicant"
+        items={issue.requestsData.map(request => request.user.login)}
+        onChange={changeRequest}
+        selected={requestIndex}
+        wide
+      />
 
-    const applicant = application.user
-    const applicantName = applicant.name ? applicant.name : applicant.login
-    const applicationDateDistance = formatDistance(new Date(application.applicationDate), new Date())
-    return (
-      <div>
-        <IssueTitle>{issue.title}</IssueTitle>
-
-        <SafeLink
-          href={issue.url}
-          target="_blank"
-          style={{ textDecoration: 'none', color: '#21AAE7' }}
-        >
-          <IssueLinkRow>
-            <IconGitHub color="#21AAE7" width='14px' height='14px' />
-            <Text style={{ marginLeft: '6px' }}>{issue.repo} #{issue.number}</Text>
-          </IssueLinkRow>
-        </SafeLink>
-
-        <FieldTitle>Applicant</FieldTitle>
-        <DropDown
-          name="Applicant"
-          items={issue.requestsData.map( request => request.user.login)}
-          onChange={this.changeRequest}
-          active={this.state.requestIndex}
-          wide
-        />
-
-        <ApplicationDetails>
-          <UserLink>
-            <img src={applicant.avatar} style={{ width: '32px', height: '32px', marginRight: '10px' }} />
-            <SafeLink
-              href={applicant.url}
-              target="_blank"
-              style={{ textDecoration: 'none', color: '#21AAE7', marginRight: '6px' }}
-            >
-              {applicantName}
-            </SafeLink>
+      <ApplicationDetails background={`${theme.background}`} border={`${theme.border}`}>
+        <UserLink>
+          <img
+            alt=""
+            src={applicant.avatar}
+            css="width: 32px; height: 32px; margin-right: 10px; border-radius: 50%;"
+          />
+          <Link
+            href={applicant.url}
+            target="_blank"
+            style={{ textDecoration: 'none', color: `${theme.link}`, marginRight: 6 }}
+          >
+            {applicantName}
+          </Link>
             applied {applicationDateDistance} ago
-          </UserLink>
+        </UserLink>
 
-          <Separator/>
+        <Separator/>
 
-          <FieldTitle>Work Plan</FieldTitle>
-          <DetailText>{application.workplan}</DetailText>
+        <FieldTitle>Work Plan</FieldTitle>
+        <DetailText>{application.workplan}</DetailText>
 
-          <FieldTitle>Estimated Hours</FieldTitle>
-          <DetailText>{application.hours}</DetailText>
+        <Estimations>
+          <div>
+            <FieldTitle>Estimated Hours</FieldTitle>
+            <DetailText>{application.hours}</DetailText>
+          </div>
+          <div>
+            <FieldTitle>Estimated Completion</FieldTitle>
+            <DetailText>{application.eta}</DetailText>
+          </div>
+        </Estimations>
+      </ApplicationDetails>
 
-          <FieldTitle>Estimated Completion</FieldTitle>
-          <DetailText>{application.eta}</DetailText>
-        </ApplicationDetails>
+      {('review' in request) ? (
+        <React.Fragment>
 
-        {('review' in request) ? (
-          <React.Fragment>
-
-            <FieldTitle>Application Status</FieldTitle>
-          
-            <div style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
-              {request.review.approved ? (
-                <div>
-                  <IconCheck /> <Text size="small" color={theme.positive}>Accepted</Text>
-                </div>
-              ) : (
-                <div>
-                  <IconCross /> <Text size="small" color={theme.negative}>Rejected</Text>
-                </div>
-              )}
-              <div>
-                {formatDistance(new Date(request.review.reviewDate), new Date())} ago
+          <FieldTitle>Application Status</FieldTitle>
+          <div css="margin: 10px 0">
+            {request.review.approved ? (
+              <div css="display: flex; align-items: center">
+                <IconCheck color={`${theme.positive}`} css="margin-top: -4px; margin-right: 8px"/>
+                <Text color={`${theme.positive}`}>Accepted</Text>
               </div>
-            
-            </div>
-
-            <ReviewCard>
-              <IssueEventAvatar>
-                <img src={request.review.user.avatarUrl} alt="user avatar" style={{ width: '50px' }} />
-              </IssueEventAvatar>
-              
-              <div>
-                <Text.Block size="small">
-                  <SafeLink
-                    href={request.review.user.url}
-                    target="_blank"
-                    style={{ textDecoration: 'none', color: '#21AAE7' }}
-                  >
-                    {request.review.user.login}
-                  </SafeLink> {
-                    request.review.approved ? 'assigned ' + applicantName : 'rejected ' + applicantName}
-                </Text.Block>
-                {request.review.feedback.length === 0 ?
-                  null
-                  :
-                  <Text>{request.review.feedback}</Text>
-                }
+            ) : (
+              <div css="display: flex; align-items: center">
+                <IconCross color={`${theme.negative}`} css="margin-top: -4px; margin-right: 8px" />
+                <Text color={`${theme.negative}`}>Rejected</Text>
               </div>
-            </ReviewCard>
-          </React.Fragment>
-        ) : (
-          <React.Fragment>
+            )}
+          </div>
 
-            <FormField
-              label="Feedback"
-              input={
-                <DescriptionInput
-                  name='feedback'
-                  rows="3"
-                  onChange={this.changeField}
-                  placeholder="Do you have any feedback to provide the applicant?"
-                  value={this.state.feedback}
-                />
-              }
-            />
+          <FieldTitle>Feedback</FieldTitle>
+          <Text.Block style={{ margin: '10px 0' }}>
+            {request.review.feedback.length ? request.review.feedback : 'No feedback was provided'}
+          </Text.Block>
+        </React.Fragment>
+      ) : (
+        <React.Fragment>
+          <FormField
+            label="Feedback"
+            input={
+              <TextInput.Multiline
+                name='feedback'
+                rows="3"
+                onChange={updateFeedback}
+                placeholder="Do you have any feedback to provide the applicant?"
+                value={feedback}
+                wide
+              />
+            }
+          />
+          <ReviewRow>
+            <ReviewButton
+              mode="negative"
+              onClick={onReject}
+              icon={<IconCross />}
+            >
+                Reject
+            </ReviewButton>
+            <ReviewButton
+              icon={<IconCheck />}
+              mode="positive"
+              onClick={onAccept}
+            >
+                Accept
+            </ReviewButton>
+          </ReviewRow>
+        </React.Fragment>
+      )}
 
-            <ReviewRow>
-              <ReviewButton
-                emphasis="negative"
-                onClick={this.onReject}
-              >
-            Reject
-              </ReviewButton>
-              <ReviewButton
-                emphasis="positive"
-                onClick={this.onAccept}
-              >
-            Accept
-              </ReviewButton>
-            </ReviewRow>
-          </React.Fragment>
-        )}
-
-      </div>
-    )
-  }
+    </div>
+  )
+}
+ReviewApplication.propTypes = {
+  issue: issueShape,
+  requestIndex: PropTypes.number.isRequired,
 }
 
 const UserLink = styled.div`
@@ -217,24 +206,16 @@ const DetailText = styled(Text)`
 const Separator = styled.hr`
   height: 1px;
   width: 100%;
-  color: #D1D1D1;
+  color: #d1d1d1;
   opacity: 0.1;
 `
 const ApplicationDetails = styled.div`
-  border: 1px solid #DAEAEF;
-  background-color: #F3F9FB;
+  border: 1px solid ${p => p.border};
+  background-color: ${p => p.background};
   padding: 14px;
   margin-top: 8px;
   margin-bottom: 14px;
 `
-const IssueTitle = styled(Text)`
-  color: #717171;
-  font-size: 17px;
-  font-weight: 300;
-  line-height: 1.5;
-  margin-bottom: 10px;
-`
-
 const ReviewButton = styled(Button).attrs({
   mode: 'strong',
 })`
@@ -245,24 +226,11 @@ const ReviewRow = styled.div`
   margin-bottom: 8px;
   justify-content: space-between;
 `
-const IssueLinkRow = styled.div`
-  height: 31px;
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-`
-const ReviewCard = styled.div`
-  display: flex;
-  text-align: left;
-  padding: 15px 30px;
-  margin: 0;
-  background: ${theme.contentBackground};
-  border: 1px solid ${theme.contentBorder};
-  border-radius: 3px;
-`
-const IssueEventAvatar = styled.div`
-  width: 66px;
-  margin: 0;
+const Estimations = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto;
+  grid-gap: 12px;
 `
 
 export default ReviewApplication

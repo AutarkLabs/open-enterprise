@@ -1,6 +1,6 @@
 import { SidePanel } from '@aragon/ui'
 import PropTypes from 'prop-types'
-import React, { Suspense } from 'react'
+import React, { Suspense, createContext } from 'react'
 
 const camel2title = camelCase =>
   camelCase
@@ -16,15 +16,23 @@ const dynamicImport = Object.freeze({
   ReviewApplication: () => import('./ReviewApplication'),
   ReviewWork: () => import('./ReviewWork'),
   SubmitWork: () => import('./SubmitWork'),
+  ViewFunding: () => import('./ViewFunding'),
 })
 
-const PANELS = Object.keys(dynamicImport).reduce((obj, item) => {
+export const PANELS = Object.keys(dynamicImport).reduce((obj, item) => {
   obj[item] = item
   return obj
 }, {})
 
-const PanelManager = ({ activePanel = null, onClose, ...panelProps }) => {
-  const panelTitle = panelProps.title ? panelProps.title : activePanel && camel2title(activePanel)
+export const PanelContext = createContext({
+  setActivePanel: () => {},
+  setPanelProps: () => {},
+})
+
+export const PanelManager = ({ activePanel = null, onClose, ...panelProps }) => {
+  const panelTitle = panelProps.title
+    ? panelProps.title
+    : activePanel && camel2title(activePanel)
   const PanelComponent = activePanel && React.lazy(dynamicImport[activePanel])
   return (
     <SidePanel
@@ -43,6 +51,3 @@ PanelManager.propTypes = {
   activePanel: PropTypes.string,
   onClose: PropTypes.func,
 }
-
-export default PanelManager
-export { PANELS }

@@ -7,23 +7,25 @@ stages:
   - precache # warm up cache for default Node.js version
   - lint # lint code and docs
   - test # all tests
+  - name: deploy
+    if: branch = dev AND type = push
 
 # defaults
 language: node_js
-node_js: '10' # equivalent to node 10
+node_js: '10.15' # equivalent to node 10.15.x
+
+env: COVERALLS_PARALLEL=true COVERAGE=true
 
 cache:
   directories:
-    - $HOME/.npm
     - node_modules
 
 jobs:
   include:
-
     - stage: precache
       script: true
       install:
-        - npm i
+        - travis_wait npm i
 
     - stage: lint
       name: Lint contracts and frontend apps
@@ -35,39 +37,48 @@ jobs:
       name: Address Book app tests and coverage report
       install: npm run bootstrap
       after_success: npm run coveralls
-      env: 'COVERAGE=true'
 
     - stage: test
       script: travis_wait 60 npm run coverage -- --scope=@tps/apps-allocations
       name: Allocations app tests and coverage report
       install: npm run bootstrap
       after_success: npm run coveralls
-      env: 'COVERAGE=true'
 
     - stage: test
       script: travis_wait 60 npm run coverage -- --scope=@tps/apps-projects
       name: Projects app tests and coverage report
       install: npm run bootstrap
       after_success: npm run coveralls
-      env: 'COVERAGE=true'
 
     - stage: test
       script: travis_wait 60 npm run coverage -- --scope=@tps/apps-dot-voting
       name: Dot Voting app tests and coverage report
       install: npm run bootstrap
       after_success: npm run coveralls
-      env: 'COVERAGE=true'
 
     - stage: test
       script: travis_wait 60 npm run coverage -- --scope=@tps/apps-rewards
       name: Rewards app tests and coverage report
       install: npm run bootstrap
       after_success: npm run coveralls
-      env: 'COVERAGE=true'
 
-    # - &node
-    #   script: npm run test
-    #   node_js: 'lts/*'
+    - stage: deploy
+      before_install:
+      - mkdir $HOME/.aragon
+      - openssl aes-256-cbc -K $encrypted_547551ebf6e1_key -iv $encrypted_547551ebf6e1_iv
+        -in shared/deployments/rinkeby_key.json.enc -out $HOME/.aragon/rinkeby_key.json -d
+      - ls $HOME/.aragon
+      install:
+        - travis_wait npm i -g @aragon/cli@5.6.2
+        - npm run bootstrap
+      script: travis_wait 60 npm run publish:cd
+
 
 notifications:
+  webhooks: https://coveralls.io/webhook
   email: false
+
+# Only build pushes to dev. All pull requests still build
+branches:
+  only:
+  - dev

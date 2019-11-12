@@ -1,10 +1,43 @@
 import { gql } from 'apollo-boost'
 
+const issueAttributes = `
+  number
+  id
+  title
+  body
+  author {
+    login
+    avatarUrl
+    url
+  }
+  createdAt
+  repository {
+    id
+    name
+  }
+  labels(first: 50) {
+    totalCount
+    edges {
+      node {
+        id
+        name
+        color
+      }
+    }
+  }
+  milestone {
+    id
+    title
+  }
+  state
+  url
+`
+
 export const GET_ISSUES = gql`
   query getIssuesForRepos($reposIds: [ID!]!) {
     nodes(ids: $reposIds) {
       ... on Repository {
-        issues(last: 100, states:open) {
+        issues(last: 100, states:OPEN) {
           nodes {
             number
             id
@@ -57,34 +90,8 @@ export const getIssuesGQL = repos => {
           pageInfo {
             endCursor
             hasNextPage
-          }    
-          nodes {
-            number
-            id
-            title
-            body
-            createdAt
-            repository {
-              id
-              name
-            }
-            labels(first: 50) {
-              totalCount
-              edges {
-                node {
-                  id
-                  name
-                  color
-                }
-              }
-            }
-            milestone {
-              id
-              title
-            }
-            state
-            url
           }
+          nodes { ${issueAttributes} }
         }
       }
     }
@@ -95,6 +102,14 @@ export const getIssuesGQL = repos => {
   `
   return gql`${q}`
 }
+
+export const GET_ISSUE = gql`
+  query GetIssue($id: ID!) {
+    node(id: $id) {
+      ... on Issue { ${issueAttributes} }
+    }
+  }
+`
 
 export const NEW_ISSUE = gql`
   mutation create($title: String!, $description: String, $id: ID!) {
@@ -139,4 +154,15 @@ export const GET_REPOSITORIES = gql`
      }
    }
  }
+`
+export const COMMENT = gql`
+  mutation comment($body: String!, $subjectId: ID!) {
+    addComment(
+      input: { body: $body, subjectId: $subjectId }
+    ) {
+      subject {
+        id
+      }
+    }
+  }
 `

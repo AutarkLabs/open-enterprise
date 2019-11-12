@@ -1,23 +1,24 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Text, theme, SidePanelSeparator } from '@aragon/ui'
+import { Text, useTheme, SidePanelSeparator } from '@aragon/ui'
 
 import { FieldTitle } from '.'
 
 const FormField = ({ input, label, hint, required, separator }) => {
+  const theme = useTheme()
   // TODO: Currently it will only work with 1 required child
   // const isRequired = React.Children.toArray(children).some(
   //   ({ props: childProps }) => childProps.required
   // )
 
   return (
-    <div style={{ marginBottom: '1rem' }}>
+    <div css="margin-bottom: 1rem">
       <FieldTitle>
-        {label && <Text color={theme.textTertiary}>{label}</Text>}
+        {label && <Text color={`${theme.surfaceContentSecondary}`}>{label}</Text>}
         {required && (
           <Text
             size="xsmall"
-            color={theme.accent}
+            color={`${theme.accent}`}
             title="Required"
             style={{ marginLeft: '0.3rem' }}
           >
@@ -26,12 +27,12 @@ const FormField = ({ input, label, hint, required, separator }) => {
         )}
       </FieldTitle>
       {hint && (
-        <Text size="xsmall" color={theme.textTertiary}>
+        <Text size="xsmall" color={`${theme.surfaceContentSecondary}`}>
           {hint}
         </Text>
       )}
       {input}
-      {separator && <SidePanelSeparator style={{ marginTop: '1rem' }} />}
+      {separator && <SidePanelSeparator css="margin-top: 1rem" />}
     </div>
   )
 }
@@ -41,6 +42,7 @@ FormField.propTypes = {
   label: PropTypes.string,
   required: PropTypes.bool,
   hint: PropTypes.string,
+  input: PropTypes.element,
   separator: PropTypes.bool,
 }
 

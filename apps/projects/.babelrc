@@ -1,10 +1,11 @@
 {
-  "presets": ["env", "react", "stage-3"],
+  "presets": [
+    ["@babel/preset-env", { "modules": false, "useBuiltIns": false }]
+  ],
   "plugins": [
-    "transform-class-properties",
-    "transform-runtime",
-    "transform-react-jsx-source",
     ["styled-components", { "displayName": true }],
-    "react-hot-loader/babel"
+    "@babel/plugin-proposal-class-properties",
+    "react-hot-loader/babel",
+    "@babel/plugin-transform-runtime"
   ]
 }

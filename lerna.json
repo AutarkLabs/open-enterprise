@@ -1,14 +1,13 @@
 {
   "command": {
     "run": {
-      "concurrency": 1,
-      "scope": "@tps/apps-*"
+      "concurrency": 1
     },
     "bootstrap": {
       "progress": true
     }
   },
   "hoist": true,
-  "packages": ["apps/*", "apps/shared/*", "kits/*", "shared/*"],
+  "packages": ["apps/*", "apps/shared/*", "kits/*", "shared/integrations/*", "templates/*"],
   "version": "independent"
 }
