@@ -14,7 +14,7 @@ import "@aragon/os/contracts/lib/math/SafeMath.sol";
 import "@aragon/apps-shared-minime/contracts/ITokenController.sol";
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 
-import { ITransferOracle } from "@autark/apps-whitelist-oracle/contracts/WhitelistOracle.sol";
+import { ITransferOracle } from "../../whitelist-oracle/contracts/WhitelistOracle.sol";
 
 
 contract TokenManager is ITokenController, IForwarder, AragonApp {
