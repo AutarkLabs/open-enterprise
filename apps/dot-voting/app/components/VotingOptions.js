@@ -16,7 +16,7 @@ class VotingOptions extends React.Component {
     voteOpen: true,
     balance: 0,
     symbol: '',
-    decimals: '18',
+    decimals: 18,
     // animationDelay can also be a number to disable the random delay
     animationDelay: { min: ANIM_DELAY_MIN, max: ANIM_DELAY_MAX },
     displayYouBadge: false,
