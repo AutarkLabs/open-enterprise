@@ -338,9 +338,15 @@ contract BaseTemplate is APMNamehash, IsContract {
     }
 
     /* WHITELIST ORACLE */
+    function _installWhitelistOracleApp(Kernel _dao, address _vault, address _bounties) internal returns (WhitelistOracle) {
+        address[] storage list;
+        list.push(_vault);
+        list.push(_bounties);
+        return _installWhitelistOracleApp(_dao, list);
+    }
 
-    function _installWhitelistOracleApp(Kernel _dao/*, address[] _whitelistedSenders*/) internal returns (WhitelistOracle) {
-        bytes memory initializeData = abi.encodeWithSelector(WhitelistOracle(0).initialize.selector/*, _whitelistedSenders*/);
+    function _installWhitelistOracleApp(Kernel _dao, address[] _whitelistedSenders) internal returns (WhitelistOracle) {
+        bytes memory initializeData = abi.encodeWithSelector(WhitelistOracle(0).initialize.selector, _whitelistedSenders);
         return WhitelistOracle(_installNonDefaultApp(_dao, WHITELIST_ORACLE_APP_ID, initializeData));
     }
 

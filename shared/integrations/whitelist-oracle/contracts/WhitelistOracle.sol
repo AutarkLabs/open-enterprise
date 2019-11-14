@@ -30,12 +30,11 @@ contract WhitelistOracle is AragonApp, ITransferOracle {
 
     mapping(address => bool) validSender;
 
-    function initialize(/*address[] _senders*/) external onlyInit {
+    function initialize(address[] _senders) external onlyInit {
         initialized();
         for (uint256 i = 0; i < _senders.length; i++) {
             validSender[_senders[i]] = true;
         }
-        */
     }
 
     function addSender(address _sender) external auth(ADD_SENDER_ROLE) {
