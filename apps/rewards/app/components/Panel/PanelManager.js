@@ -26,9 +26,6 @@ const PanelManager = ({
 }) => {
   let panelTitle = activePanel && (title || camel2title(activePanel))
   const PanelComponent = activePanel && React.lazy(dynamicImport[activePanel])
-  if (panelProps.reward) {
-    panelTitle += ' #' + panelProps.reward.rewardId
-  }
   return (
     <SidePanel
       title={panelTitle || ''}
