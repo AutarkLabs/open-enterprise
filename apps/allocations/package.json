@@ -15,7 +15,7 @@
     "lint": "solium --dir ./contracts",
     "precommit": "lint-staged",
     "prepublishOnly": "truffle compile",
-    "publish:cd": "yes | aragon apm publish major --files dist/ --environment continuous-deployment --apm.ipfs.rpc https://ipfs.autark.xyz:5001 --ipfs-check false --skip-confirmation true",
+    "publish:cd": "../../shared/deployments/check-publish.sh",
     "publish:http": "npm run build:script && yes | aragon apm publish major --files dist --http localhost:2222 --http-served-from ./dist --propagate-content false --skip-confirmation true",
     "publish": "aragon apm publish patch && sleep 3",
     "publish:major": "aragon apm publish major --files dist/",

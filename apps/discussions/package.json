@@ -53,7 +53,7 @@
     "build": "npm run sync-assets && npm run build:app && npm run build:script",
     "build:app": "parcel build ./app/index.html -d dist/ --public-url \".\" --no-cache",
     "build:script": "parcel build ./app/script.js -d dist/ --no-cache",
-    "publish:cd": "yes | aragon apm publish major --files dist/ --environment continuous-deployment --apm.ipfs.rpc https://ipfs.autark.xyz:5001 --ipfs-check false --skip-confirmation true",
+    "publish:cd": "../../shared/deployments/check-publish.sh",
     "publish:http": "npm run build:script && yes | aragon apm publish major --files dist --http localhost:9999 --http-served-from ./dist --propagate-content false --skip-confirmation true",
     "publish:patch": "aragon apm publish patch",
     "publish:minor": "aragon apm publish minor",
