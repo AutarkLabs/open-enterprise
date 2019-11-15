@@ -46,6 +46,7 @@ const errorMessages = {
 const bountiesFor = ({ bountySettings, issues, tokens }) => issues.reduce(
   (bounties, issue) => {
     bounties[issue.id] = {
+      issueId: issue.id,
       repo: issue.repo,
       number: issue.number,
       repoId: issue.repoId,
@@ -85,13 +86,12 @@ const BountyUpdate = ({
     const maxErr = BigNumber(bounty.payout)
       .times(10 ** bounty.decimals)
       .gt(BigNumber(bounty.balance))
-    const amountErr = (bounty.hours || bounty.payout) ? false : true
-    const zeroErr = (bounty.hours === 0 && bounty.payout === 0) ? true : false
+    const zeroErr = bounty.payout === 0
     const dateErr = today > bounty.deadline
     setMaxError(maxErr)
     setZeroError(zeroErr)
     setDateError(dateErr)
-    setSubmitDisabled( maxErr || amountErr || dateErr )
+    setSubmitDisabled( maxErr || zeroErr || dateErr )
   }, [bounty])
 
   return (
@@ -244,17 +244,20 @@ const FundForm = ({
 
   useEffect(() => {
     const today = new Date()
-    const amountErrArray = []
     const zeroErrArray = []
     const dateErrArray = []
-    issues.map(issue => {
-      amountErrArray.push((bounties[issue.id].hours || bounties[issue.id].payout) ? false : true)
-      zeroErrArray.push((bounties[issue.id].hours === 0 || bounties[issue.id].payout === 0) ? true : false)
-      dateErrArray.push(today > bounties[issue.id].deadline)
+    Object.values(bounties).forEach(bounty => {
+      if (bounty.payout === 0) zeroErrArray.push(bounty.issueId)
+      if (today > bounty.deadline) dateErrArray.push(bounty.issueId)
     })
     setZeroError(zeroErrArray)
     setDateError(dateErrArray)
-    setSubmitDisabled( description === '' || !!maxErrors.length || amountErrArray.includes(true) || dateErrArray.includes(true))
+    setSubmitDisabled(
+      description === '' ||
+      !!maxErrors.length ||
+      !!zeroErrArray.length ||
+      !!dateErrArray.length
+    )
   }, [ bounties, description, maxErrors ])
 
   return (
@@ -302,8 +305,8 @@ const FundForm = ({
       {maxErrors.map((maxError, i) => (
         <ErrorMessage key={i} text={errorMessages.total(maxError)} />
       ))}
-      {zeroError.includes(true) && <ErrorMessage text={errorMessages.amount()} />}
-      {dateError.includes(true) && <ErrorMessage text={errorMessages.date()} />}
+      {!!zeroError.length && <ErrorMessage text={errorMessages.amount()} />}
+      {!!dateError.length && <ErrorMessage text={errorMessages.date()} />}
     </>
   )
 }
