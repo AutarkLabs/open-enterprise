@@ -50,7 +50,7 @@
     "start:app": "cd app && npm start && cd ..",
     "test": "cross-env TRUFFLE_TEST=true npm run ganache-cli:test",
     "compile": "aragon contracts compile",
-    "build": "npm run compile && npm run sync-assets && npm run build:app && npm run build:script",
+    "build": "npm run sync-assets && npm run build:app && npm run build:script",
     "build:app": "parcel build ./app/index.html -d dist/ --public-url \".\" --no-cache",
     "build:script": "parcel build ./app/script.js -d dist/ --no-cache",
     "publish:cd": "yes | aragon apm publish major --files dist/ --environment continuous-deployment --apm.ipfs.rpc https://ipfs.autark.xyz:5001 --ipfs-check false --skip-confirmation true",

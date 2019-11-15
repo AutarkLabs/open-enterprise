@@ -5,7 +5,7 @@
   "scripts": {
     "build:app": "parcel build app/index.html -d dist/ --public-url '.' --no-cache",
     "build:script": "parcel build app/script.js -d dist/ --no-cache",
-    "build": "npm run compile && npm run sync-assets && npm run build:app && npm run build:script",
+    "build": "npm run sync-assets && npm run build:app && npm run build:script",
     "compile": "truffle compile",
     "console": "truffle dev",
     "copy-public-assets": "rsync -rtu ./public/ ./dist",
