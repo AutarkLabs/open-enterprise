@@ -37,7 +37,7 @@ const ETHER_TOKEN_FAKE_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 const errorMessages = {
   amount: () => 'Funding amounts must be greater than zero',
-  date: () => 'The deadline cannot be a date in the past',
+  date: () => 'The deadline cannot be in the past',
   total: ({ inVault, sayTotal, symbol, total }) =>
     `The ${sayTotal ? 'total' : ''} funding amount of ${total} ${symbol} ` +
     `exceeds the available funds in the vault (${inVault} ${symbol}).`
