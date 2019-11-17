@@ -20,8 +20,8 @@ import "@aragon/os/contracts/lib/ens/ENS.sol";
 import "@aragon/os/contracts/lib/ens/PublicResolver.sol";
 
 // Custom Autark Apps
-import "../../../shared/integrations/token-manager-custom/contracts/TokenManager.sol";
-import "../../../shared/integrations/whitelist-oracle/contracts/WhitelistOracle.sol";
+import "@autark/apps-token-manager-custom/contracts/TokenManager.sol";
+import "@autark/apps-whitelist-oracle/contracts/WhitelistOracle.sol";
 
 
 contract BaseTemplate is APMNamehash, IsContract {
@@ -338,13 +338,6 @@ contract BaseTemplate is APMNamehash, IsContract {
     }
 
     /* WHITELIST ORACLE */
-    function _installWhitelistOracleApp(Kernel _dao, address _vault, address _bounties) internal returns (WhitelistOracle) {
-        address[] storage list;
-        list.push(_vault);
-        list.push(_bounties);
-        return _installWhitelistOracleApp(_dao, list);
-    }
-
     function _installWhitelistOracleApp(Kernel _dao, address[] _whitelistedSenders) internal returns (WhitelistOracle) {
         bytes memory initializeData = abi.encodeWithSelector(WhitelistOracle(0).initialize.selector, _whitelistedSenders);
         return WhitelistOracle(_installNonDefaultApp(_dao, WHITELIST_ORACLE_APP_ID, initializeData));

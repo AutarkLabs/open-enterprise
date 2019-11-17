@@ -11,6 +11,10 @@ cleanup() {
   if [ -n "$pid" ] && ps -p $pid > /dev/null; then
     kill -9 $pid
   fi
+  # Kill the TestRPC instance
+  if [ -n "$rpc_pid" ] && ps -p $rpc_pid > /dev/null; then
+    kill -9 $rpc_pid
+  fi
 
   # Remove local deploy file in case it was created
   clean_deploy
