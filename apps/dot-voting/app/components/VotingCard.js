@@ -18,6 +18,7 @@ function noop() {}
 
 const VotingCard = ({ vote, onSelectVote }) => {
   const theme = useTheme()
+  console.log(theme)
   const { voteWeights } = useUserVoteStats(vote)
   const { description, endDate, open, totalSupport, voteId, support } = vote
   const { executionTargetData, options, totalVoters } = vote.data
@@ -96,13 +97,14 @@ const VotingCard = ({ vote, onSelectVote }) => {
         {options.length > 2 && (
           <div css="text-align: center; width: 100%; margin-top: 10px">
             <Badge
-              shape="compact"
-              foreground={`${theme.surfaceOpened}`}
-              background={`${theme.surfaceUnder}`}
+              foreground={`${theme.surfaceContentSecondary}bf`}
+              background={`${theme.border}7f`}
+              uppercase={false}
               css={`
                 cursor: pointer;
                 padding: 2px 8px;
                 pointer-events: auto;
+                mix-blend-mode: normal;
               `}
             >
               {' + ' + (options.length - 2) + ' more'}
