@@ -1,5 +1,5 @@
 import React from 'react'
-import { useAragonApi } from '@aragon/api-react'
+import { useAragonApi } from '../api-react'
 import { GraphQLClient } from 'graphql-request'
 
 const repoQuery = repoId => `{
