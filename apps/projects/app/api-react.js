@@ -1,4 +1,6 @@
 import { hexToAscii } from 'web3-utils'
+import { Observable } from 'rxjs'
+import { ipfsGet } from '../../../shared/utils/ipfs'
 import buildStubbedApiReact from '../../../shared/api-react'
 import {
   REQUESTED_GITHUB_TOKEN_SUCCESS,
@@ -13,7 +15,7 @@ const initialState = process.env.NODE_ENV !== 'production' && {
       addr: '0x0000000000000000000000000000000000000000',
       symbol: 'ETH',
       decimals: '18',
-      balance: '0',
+      balance: '100000000000000000000',
     },
     {
       addr: '0xB1Aa712237895EF25fb8c6dA491Ba8662bB80256',
@@ -65,6 +67,68 @@ const functions = process.env.NODE_ENV !== 'production' && ((appState, setAppSta
         data: { _repo: hexToAscii(repoIdHex) },
       },
     ]
+  }),
+  addBounties: (
+    repoIds,
+    issueNumbers,
+    bountySizes,
+    deadlines,
+    tokenTypes,
+    tokenContracts, // ignored here
+    ipfsAddresses,
+    description // FIXME: also stored in IPFS fundingHistory
+  ) => new Observable(subscriber => {
+    async function getIssues() {
+      const issues = await Promise.all([
+        ...appState.issues,
+        ...repoIds.map(async (repoId, index) => {
+          const token = appState.tokens.find(({ symbol }) =>
+            tokenTypes[index] === 1 ? symbol === 'ETH' : symbol !== 'ETH'
+          )
+          const ipfsAddress = ipfsAddresses.slice(46 * index, 46 * (index + 1))
+          const {
+            key, // FIXME: why do we store this in IPFS?
+            exp,
+            fundingHistory,
+            // deadline, // FIXME: why store this in IPFS?
+            hours,
+            // payout, // FIXME: why store this in IPFS?
+            repository,
+            // token, // FIXME: why store this in IPFS?
+          } = await ipfsGet(ipfsAddress)
+          return {
+            issueNumber: String(issueNumbers[index]),
+            data: {
+              assignee: '0x0000000000000000000000000000000000000000',
+              balance: bountySizes[index],
+              deadline: new Date(deadlines[index]).toISOString(),
+              exp,
+              fundingHistory: [{
+                ...fundingHistory[0], // only one item in array at this point
+                description, // could omit this here; including for clarity
+              }],
+              hasBounty: true,
+              hours,
+              key, // FIXME: what is this?
+              number: issueNumbers[index],
+              repo: repository.name,
+              repoId: hexToAscii(repoId),
+              size: undefined,
+              slots: undefined,
+              slotsIndex: undefined,
+              standardBountyId: undefined, // FIXME: how to spoof?
+              token: token.addr,
+              workStatus: 'funded',
+            }
+          }
+        })
+      ])
+      const nextState = { ...appState, issues }
+      setAppState(nextState)
+      subscriber.next(nextState)
+      subscriber.complete()
+    }
+    getIssues()
   }),
   emitTrigger: (event, { status, token }) => {
     switch (event) {
