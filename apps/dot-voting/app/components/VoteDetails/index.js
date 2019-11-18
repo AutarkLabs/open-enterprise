@@ -30,7 +30,7 @@ const VoteDetails = ({ vote, onVote }) => {
     if (tokenContract && connectedAccount) {
       tokenContract.decimals()
         .subscribe(decimals => {
-          setDecimals(decimals)
+          setDecimals(parseInt(decimals))
         })
     }
   }, [ connectedAccount, tokenContract ])
@@ -48,7 +48,6 @@ const VoteDetails = ({ vote, onVote }) => {
 
   // eslint-disable-next-line react/prop-types
   const youVoted = voteWeights.length > 0
-
   return (
     <Split
       primary={
@@ -88,7 +87,7 @@ const VoteDetails = ({ vote, onVote }) => {
                 <Text.Block size="large">
                   {
                     BigNumber(vote.data.balance)
-                      .div(BigNumber(10 ** decimals))
+                      .div(BigNumber(10 ** (decimals || 18))) // added fallback to prevent flashing on delayed decimals calls. We should avoid this by getting this info in the store
                       .toString()
                   } {vote.data.tokenSymbol}
                 </Text.Block>
@@ -109,11 +108,11 @@ const VoteDetails = ({ vote, onVote }) => {
                 voteWeights={voteWeights}
                 votingPower={votingPower}
               />
-            ) :(
+            ) : (
               <VotingResults
                 vote={vote}
-                options={vote.data.options}
                 voteWeights={voteWeights}
+                decimals={decimals}
               />
             )}
           </div>

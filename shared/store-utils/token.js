@@ -1,6 +1,7 @@
 import {
   ETHER_TOKEN_FAKE_ADDRESS,
   getPresetTokens,
+  getTokenDecimals,
   getTokenSymbol,
   getTokenName,
   isTokenVerified,
@@ -133,7 +134,7 @@ const loadTokenDecimals = async (tokenContract, tokenAddress, {network}) => {
 
   let decimals
   try {
-    decimals = (await tokenContract.decimals().toPromise()) || fallback
+    decimals = (await getTokenDecimals(app, tokenAddress)) || fallback
     tokenDecimals.set(tokenContract, decimals)
   } catch (err) {
     // decimals is optional

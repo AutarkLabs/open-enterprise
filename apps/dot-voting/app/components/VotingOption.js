@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { GU, Tag, Text } from '@aragon/ui'
+import { GU, Tag, Text, useTheme } from '@aragon/ui'
 import { animated } from 'react-spring'
 import PropTypes from 'prop-types'
 import { isAddress } from 'web3-utils'
@@ -39,7 +39,8 @@ Label.propTypes = {
   label: PropTypes.string.isRequired,
 }
 
-const VotingOption = ({ valueSpring, label, percentage, color, threshold, userVote, fontSize }) => {
+const VotingOption = ({ valueSpring, label, percentage, allocation, color, threshold, userVote, fontSize }) => {
+  const theme = useTheme()
   return (
     <Main>
       <Labels>
@@ -60,11 +61,14 @@ const VotingOption = ({ valueSpring, label, percentage, color, threshold, userVo
             )}
           </div>
         )}
-        {percentage !== -1 &&
-            <Text size="xsmall" color="#98A0A2">
-              {Math.round(percentage)}%
-            </Text>
-        }
+        <div>
+          {percentage !== -1 &&
+              <Text size="xsmall" color={theme.contentSecondary}>
+                {Math.round(percentage)}%
+              </Text>
+          }
+          {allocation}
+        </div>
       </Labels>
       <div css={`
           display: flex;
@@ -91,6 +95,7 @@ VotingOption.defaultProps = {
   threshold: -1,
   label: '',
   percentage: -1,
+  allocation: '',
   userVote: -1,
 }
 
@@ -99,6 +104,7 @@ VotingOption.propTypes = {
   valueSpring: PropTypes.object.isRequired,
   label: PropTypes.string.isRequired,
   percentage: PropTypes.number.isRequired,
+  allocation: PropTypes.node,
   threshold: PropTypes.number.isRequired,
   color: PropTypes.string.isRequired,
   userVote: PropTypes.number.isRequired,

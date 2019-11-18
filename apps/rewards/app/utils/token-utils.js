@@ -7,6 +7,9 @@ import tokenNameBytesAbi from '../../../shared/json-abis/token-name-bytes.json'
 import tokenCreationBlockAbi from '../../../shared/json-abis/token-creationblock.json'
 import tokenTransferAbi from '../../../shared/json-abis/token-transferable.json'
 
+export const DAI_MAINNET_TOKEN_ADDRESS = '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359'
+export const ETHER_TOKEN_FAKE_ADDRESS = '0x0000000000000000000000000000000000000000'
+
 // Some known tokens don’t strictly follow ERC-20 and it would be difficult to
 // adapt to every situation. The data listed in this map is used as a fallback
 // if either some part of their interface doesn't conform to a standard we
@@ -16,15 +19,12 @@ const KNOWN_TOKENS_FALLBACK = new Map([
     'main',
     new Map([
       [
-        '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359',
+        DAI_MAINNET_TOKEN_ADDRESS,
         { symbol: 'DAI', name: 'Dai Stablecoin v1.0', decimals: '18' },
       ],
     ]),
   ],
 ])
-
-export const ETHER_TOKEN_FAKE_ADDRESS =
-  '0x0000000000000000000000000000000000000000'
 
 export const isTokenVerified = (tokenAddress, networkType) =>
   // The verified list is without checksums
@@ -107,7 +107,7 @@ export async function getTokenCreationDate(app, address) {
 export async function getTransferable(app, address) {
   // creation block is optional; It's only available for MiniMe Tokens
   let token = app.external(address, tokenTransferAbi)
-  let transferable 
+  let transferable
   try {
     transferable = await token.transfersEnabled().toPromise()
   }

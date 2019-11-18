@@ -167,7 +167,7 @@ contract DevTemplate is BaseOEApps {
         AddressBook addressBook = _installAddressBookApp(_dao);
         Allocations allocations = _installAllocationsApp(_dao, _vault, _allocationsPeriod == 0 ? DEFAULT_PERIOD : _allocationsPeriod);
         DotVoting dotVoting = _installDotVotingApp(_dao, token, _dotVotingSettings);
-        Projects projects = _installProjectsApp(_dao, _vault, token);
+        Projects projects = _installProjectsApp(_dao, _vault);
         Rewards rewards = _installRewardsApp(_dao, _vault);
 
         _setupOEPermissions(

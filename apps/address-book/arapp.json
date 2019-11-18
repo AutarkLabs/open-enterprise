@@ -1,12 +1,12 @@
 {
   "roles": [
     {
-      "name": "Add address book entry",
+      "name": "Add address book entity",
       "id": "ADD_ENTRY_ROLE",
       "params": []
     },
     {
-      "name": "Remove address book entry",
+      "name": "Remove address book entity",
       "id": "REMOVE_ENTRY_ROLE",
       "params": []
     },

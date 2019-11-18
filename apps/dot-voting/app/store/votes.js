@@ -3,7 +3,8 @@ import { first, map, mergeMap } from 'rxjs/operators'
 
 import { app } from './'
 import { EMPTY_CALLSCRIPT } from '../utils/vote-utils'
-import { ETHER_TOKEN_FAKE_ADDRESS, getTokenSymbol } from '../utils/token-utils'
+import { ETHER_TOKEN_FAKE_ADDRESS, getTokenSymbol } from '../../../../shared/lib/token-utils'
+import { addressesEqual } from '../../../../shared/lib/web3-utils'
 import allocationsAbi from '../../../shared/json-abis/allocations'
 
 export const castVote = async (state, { voteId }) => {
@@ -270,7 +271,7 @@ const decorateVote = async (vote) => {
       first(),
       mergeMap(installedApps => from(installedApps)),
       first(
-        app => app.appAddress === targetAddress,
+        app => addressesEqual(app.appAddress, targetAddress),
         {
           appAddress: targetAddress,
           name: 'External',

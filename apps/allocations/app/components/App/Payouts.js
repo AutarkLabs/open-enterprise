@@ -15,6 +15,7 @@ import {
   theme,
 } from '@aragon/ui'
 
+import { addressesEqual } from '../../../../../shared/lib/web3-utils'
 import { displayCurrency, sortByDateKey } from '../../utils/helpers'
 import {
   AmountBadge,
@@ -28,7 +29,7 @@ const translateToken = (payoutToken, tokens) => {
   if (payoutToken === '0x0000000000000000000000000000000000000000') {
     return 'ETH'
   }
-  const index = tokens.findIndex(a => a.address === payoutToken)
+  const index = tokens.findIndex(a => addressesEqual(a.address, payoutToken))
   if (index > 0) {
     return tokens[index].symbol
   }
