@@ -22,7 +22,7 @@ const BountyContextMenu = ({ issue }) => {
         <Item onClick={() => allocateBounty([issue])}>
           <IconCoin color={`${theme.surfaceIcon}`} />
           <ActionLabel>
-            Fund Issue
+            Fund issue
           </ActionLabel>
         </Item>
       )}
@@ -31,7 +31,7 @@ const BountyContextMenu = ({ issue }) => {
           <Item onClick={() => submitWork(issue)}>
             <IconConnect color={`${theme.surfaceIcon}`} />
             <ActionLabel>
-              Submit Work
+              Submit work
             </ActionLabel>
           </Item>
         </React.Fragment>
@@ -41,7 +41,7 @@ const BountyContextMenu = ({ issue }) => {
           <Item onClick={() => reviewWork(issue)}>
             <IconView color={`${theme.surfaceIcon}`} />
             <ActionLabel>
-              Review Work
+              Review work
             </ActionLabel>
           </Item>
         </React.Fragment>
@@ -51,7 +51,7 @@ const BountyContextMenu = ({ issue }) => {
           <Item onClick={() => requestAssignment(issue)}>
             <IconFile color={`${theme.surfaceIcon}`} />
             <ActionLabel>
-              Submit Application
+              Submit application
             </ActionLabel>
           </Item>
           {/* Disabled since the contract doesn't allow updating the amount */}
@@ -65,13 +65,13 @@ const BountyContextMenu = ({ issue }) => {
           <Item onClick={() => requestAssignment(issue)}>
             <IconFile color={`${theme.surfaceIcon}`} />
             <ActionLabel>
-              Submit Application
+              Submit application
             </ActionLabel>
           </Item>
           <Item onClick={() => reviewApplication(issue)}>
             <IconView color={`${theme.surfaceIcon}`} />
             <ActionLabel>
-              Review Application {issue.requestsData ? `(${issue.requestsData.length})` : ''}
+              Review application {issue.requestsData ? `(${issue.requestsData.length})` : ''}
             </ActionLabel>
           </Item>
           {/* Disabled since the contract doesn't allow updating the amount */}

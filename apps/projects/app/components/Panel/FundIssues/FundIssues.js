@@ -506,10 +506,10 @@ const FundIssues = ({ issues, mode }) => {
       {(alreadyAdded.length > 0) && (
         <Info.Action title="Warning" style={{ marginBottom: `${2 * GU}px` }}>
           <p style={{ margin: '10px 0' }}>
-          The following issues already have bounties and cannot be updated on a bulk basis. To update an individual issue, select “Update Bounty” from the issue’s context menu.
+          The following issues already have active bounties, so they have been discarded from this funding proposal:
           </p>
           <WarningIssueList>
-            {issues.map(issue => <li key={issue.id}>{issue.title}</li>)}
+            {alreadyAdded.map(issue => <li key={issue.id}>{issue.title}</li>)}
           </WarningIssueList>
         </Info.Action>
       )}
