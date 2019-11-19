@@ -87,14 +87,10 @@ const functions = process.env.NODE_ENV !== 'production' && ((appState, setAppSta
           )
           const ipfsAddress = ipfsAddresses.slice(46 * index, 46 * (index + 1))
           const {
-            key, // FIXME: why do we store this in IPFS?
             exp,
             fundingHistory,
-            // deadline, // FIXME: why store this in IPFS?
             hours,
-            // payout, // FIXME: why store this in IPFS?
-            repository,
-            // token, // FIXME: why store this in IPFS?
+            repo,
           } = await ipfsGet(ipfsAddress)
           return {
             issueNumber: String(issueNumbers[index]),
@@ -109,13 +105,9 @@ const functions = process.env.NODE_ENV !== 'production' && ((appState, setAppSta
               }],
               hasBounty: true,
               hours,
-              key, // FIXME: what is this?
               number: issueNumbers[index],
-              repo: repository.name,
+              repo,
               repoId: hexToAscii(repoId),
-              size: undefined,
-              slots: undefined,
-              slotsIndex: undefined,
               standardBountyId: undefined, // FIXME: how to spoof?
               token: token.addr,
               workStatus: 'funded',
