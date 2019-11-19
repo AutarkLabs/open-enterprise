@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types'
+import { STATUS } from './github'
 
 const issueShape = PropTypes.shape({
   balance: PropTypes.string,
@@ -35,4 +36,14 @@ const userGitHubShape = PropTypes.shape({
   login: PropTypes.string.isRequired,
 }).isRequired
 
-export { issueShape, userGitHubShape }
+const github = PropTypes.shape({
+  status: PropTypes.oneOf([
+    STATUS.AUTHENTICATED,
+    STATUS.FAILED,
+    STATUS.INITIAL,
+  ]).isRequired,
+  token: PropTypes.string,
+  event: PropTypes.string,
+})
+
+export { github, issueShape, userGitHubShape }
