@@ -1,5 +1,4 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import {
   Checkbox,
@@ -7,13 +6,14 @@ import {
   useTheme,
 } from '@aragon/ui'
 import { BOUNTY_STATUS_FUNDED, BOUNTY_STATUS_GENERAL } from '../../../utils/bounty-status'
-import { useIssuesFilters } from '../../../context/IssuesFilters.js'
+import { useIssueFilters } from '../../../context/IssueFilters'
 
 const noop = () => {}
 
-export const OptionsProjects = ({ projects }) => {
-  const { activeFilters, toggleFilter } = useIssuesFilters()
+export const OptionsProjects = () => {
+  const { availableFilters, activeFilters, toggleFilter } = useIssueFilters()
   const onClick = (id) => () => toggleFilter('projects', id)
+  const projects = availableFilters.projects
 
   return Object.keys(projects)
     .sort(
@@ -41,12 +41,11 @@ export const OptionsProjects = ({ projects }) => {
     ))
 }
 
-OptionsProjects.propTypes = PropTypes.object.isRequired
-
-export const OptionsLabels = ({ labels }) => {
+export const OptionsLabels = () => {
   const theme = useTheme()
-  const { activeFilters, toggleFilter } = useIssuesFilters()
+  const { availableFilters, activeFilters, toggleFilter } = useIssueFilters()
   const onClick = (id) => () => toggleFilter('labels', id)
+  const labels = availableFilters.labels
 
   return Object.keys(labels)
     .sort((l1, l2) => {
@@ -75,7 +74,7 @@ export const OptionsLabels = ({ labels }) => {
               checked={id in activeFilters.labels}
             />
           </div>
-          <span css="margin-left: 8px;">
+          <div css="margin-left: 8px;">
             <Tag
               {...decoration}
               color={`${theme.surfaceContent}`}
@@ -84,16 +83,16 @@ export const OptionsLabels = ({ labels }) => {
               {labels[id].name}
             </Tag>{' '}
           ({labels[id].count})
-          </span>
+          </div>
         </Option>
       )
     })
 }
-OptionsLabels.propTypes = PropTypes.object.isRequired
 
-export const OptionsMilestones = ({ milestones }) => {
-  const { activeFilters, toggleFilter } = useIssuesFilters()
+export const OptionsMilestones = () => {
+  const { availableFilters, activeFilters, toggleFilter } = useIssueFilters()
   const onClick = (id) => () => toggleFilter('milestones', id)
+  const milestones = availableFilters.milestones
 
   return Object.keys(milestones)
     .sort((m1, m2) => {
@@ -116,18 +115,18 @@ export const OptionsMilestones = ({ milestones }) => {
           />
         </div>
         <span css="margin-left: 8px;">
-          {milestones[id].title} (
+          {milestones[id].name} (
           {milestones[id].count})
         </span>
       </Option>
     ))
 }
-OptionsMilestones.propTypes = PropTypes.object.isRequired
 
-export const OptionsStatuses = ({ statuses }) => {
-  const { activeFilters, toggleFilter } = useIssuesFilters()
+export const OptionsStatuses = () => {
+  const { availableFilters, activeFilters, toggleFilter } = useIssueFilters()
   const onClick = (id) => () => toggleFilter('statuses', id)
   const theme = useTheme()
+  const statuses = availableFilters.statuses
 
   return [
     BOUNTY_STATUS_FUNDED.map(status => (
@@ -175,13 +174,12 @@ export const OptionsStatuses = ({ statuses }) => {
     ))
   ]
 }
-OptionsStatuses.propTypes = PropTypes.object.isRequired
 
-const Option = styled.a`
+const Option = styled.div`
   display: flex;
   align-items: center;
   padding: 5px;
   padding-right: 10px;
-  pointer: cursor;
+  cursor: pointer;
   white-space: nowrap;
 `

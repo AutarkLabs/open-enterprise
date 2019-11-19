@@ -3,22 +3,22 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import {
   springs,
-  Button,
-  DropDown,
   GU,
+  IconCheck,
   useTheme,
 } from '@aragon/ui'
-import { usePanelManagement } from '../../Panel'
 import {
   OptionsProjects,
   OptionsLabels,
   OptionsMilestones,
   OptionsStatuses,
-} from '../../Shared/FilterBar/FiltersOptions'
+} from '../../Shared/FilterBar/FilterOptions'
 import { Spring, animated } from 'react-spring'
 import ClickOutHandler from 'react-onclickout'
-//import FilterButton from '../../Shared/FilterBar/FilterButton'
 import { IconDropArrow } from '../../../assets'
+import { sortOptions, useIssueFilters } from '../../../context/IssueFilters'
+import ActiveFilters from '../../Shared/FilterBar/ActiveFilters'
+import Label from '../../Content/IssueDetail/Label'
 
 const FilterButton = ({ children, onClick, disabled }) => {
   const theme = useTheme()
@@ -88,24 +88,23 @@ SpringWrap.propTypes = {
 
 const FilterDropDown = ({ caption, children, enabled }) => {
   const [ opened, setOpened ] = useState(false)
-  const handleClickOut = () => setOpened(false)
   const handleBaseButtonClick = () => {
     if (enabled) setOpened(!opened)
-    console.log('opened:', opened, enabled)
   }
+  const handleClickOut = () => setOpened(false)
 
   const theme = useTheme()
 
   const Main = styled(animated.div)`
-  background: ${theme.white};
-`
-const Popup = styled(animated.div)`
-  background: ${theme.background};
-  padding: ${GU}px;
-`
+    background: ${theme.white};
+  `
+  const Popup = styled(animated.div)`
+    background: ${theme.background};
+    padding: ${GU}px;
+  `
 
   return (
-    <SpringWrap opened={opened}>
+    <SpringWrap opened={opened} handleClickOut={handleClickOut}>
       {(openProgress) => (
         <Main>
           <FilterButton
@@ -148,41 +147,69 @@ FilterDropDown.defaultProps = {
   enabled: true,
 }
 
-const Filters = ({ applyFilter, filters, filtersData }) => {
-console.log('++++', applyFilter, filters, filtersData)
-  const { closePanel } = usePanelManagement()
+const Filters = () => {
+  const { availableFilters, activeFiltersCount, sortBy, setSortBy } = useIssueFilters()
+  const theme = useTheme()
 
   return (
-    <div css={`margin: 0 -${3*GU}px 0 -${3*GU}px`}>
-    <FilterDropDown
-      caption="Projects"
-      enabled={Object.keys(filtersData.projects).length > 0}
-      onChange={applyFilter}
-    >
-      <OptionsProjects projects={filtersData.projects} />
-    </FilterDropDown>
+    <div css={`
+    margin: 0 -${3*GU}px;
+    padding: ${2 * GU};
+    `}>
+      <FilterDropDown caption="Projects" enabled={Object.keys(availableFilters.projects).length > 0}>
+        <OptionsProjects />
+      </FilterDropDown>
 
-    <FilterDropDown caption="Labels" enabled={Object.keys(filtersData.labels).length > 0}>
-      <OptionsLabels labels={filtersData.labels} />
-    </FilterDropDown>
+      <FilterDropDown caption="Labels" enabled={Object.keys(availableFilters.labels).length > 0}>
+        <OptionsLabels />
+      </FilterDropDown>
 
-    <FilterDropDown caption="Milestones" enabled={Object.keys(filtersData.milestones).length > 0}>
-      <OptionsMilestones milestones={filtersData.milestones} />
-    </FilterDropDown>
+      <FilterDropDown caption="Milestones" enabled={Object.keys(availableFilters.milestones).length > 0}>
+        <OptionsMilestones />
+      </FilterDropDown>
 
-    <FilterDropDown caption="Status" enabled={Object.keys(filtersData.statuses).length > 0}>
-      <OptionsStatuses statuses={filtersData.statuses} />
-    </FilterDropDown>
+      <FilterDropDown caption="Status" enabled={Object.keys(availableFilters.statuses).length > 0}>
+        <OptionsStatuses />
+      </FilterDropDown>
 
-    <Button onClick={() => applyFilter('hello from panel')} label="done">done</Button>
+      <div css={`padding: ${2 * GU}px`}>
+        {activeFiltersCount > 0 && (
+          <FilterBarActives>
+            <ActiveFilters />
+          </FilterBarActives>
+        )}
+
+        <Label text="Sort by" />
+        {sortOptions.map(way => (
+          <FilterMenuItem
+            key={way}
+            onClick={() => setSortBy(way)}
+          >
+            <div css={`width: ${3 * GU}px`}>
+              {way === sortBy && <IconCheck color={`${theme.accent}`} />}
+            </div>
+            <ActionLabel>{way}</ActionLabel>
+          </FilterMenuItem>
+        ))}
+      </div>
     </div>
   )
 }
-Filters.propTypes = {
-  filtersData: PropTypes.object.isRequired,
-}
 
-
+const FilterBarActives = styled.div`
+  width: 100%;
+  margin-bottom: ${2 * GU}px;
+`
+const FilterMenuItem = styled.a`
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  padding-right: 10px;
+  cursor: pointer;
+`
+const ActionLabel = styled.span`
+  margin-left: ${GU}px;
+`
 
 export default Filters
 
