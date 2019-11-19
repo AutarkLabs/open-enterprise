@@ -125,7 +125,7 @@ const ExperienceLevel = ({
   let canAdd = last && last.mul !== '' && last.name !== ''
   return (
     <React.Fragment>
-      <SettingLabel text="Difficulty multipliers" />
+      <SettingLabel text={`Difficulty ${fundingModel === 'Hourly' ? 'multipliers' : ''}`} />
       {expLevels.map((exp, index) => (
         <React.Fragment key={index}>
           {fundingModel === 'Hourly' ? (
