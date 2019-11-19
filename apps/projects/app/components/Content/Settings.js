@@ -148,6 +148,15 @@ const ExperienceLevel = ({
                   defaultValue={exp.name}
                   onChange={generateExpLevelHandler(index, 'N')}
                 />
+                <IconContainer
+                  theme={theme}
+                  disabled={expLevels.length <= 1}
+                  style={{ transform: 'scale(.8)' }}
+                  onClick={() => onRemoveExpLevel(index)}
+                  title="Remove this difficulty multiplier"
+                >
+                  <IconRemove />
+                </IconContainer>
               </div>
             </Field>
           ) : (
