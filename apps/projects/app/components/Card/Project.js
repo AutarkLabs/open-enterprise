@@ -19,6 +19,7 @@ import {
 } from '../../utils/responsive'
 import { useAragonApi } from '../../api-react'
 import { toHex } from 'web3-utils'
+import { useIssueFilters } from '../../context/IssueFilters'
 
 const Project = ({
   repoId,
@@ -34,6 +35,14 @@ const Project = ({
 
   const theme = useTheme()
   const { width } = useLayout()
+  const {
+    activeFilters,
+    availableFilters,
+    setAvailableFilters,
+    setActiveFilters,
+    activeFiltersCount,
+    setActiveFiltersCount,
+  } = useIssueFilters()
 
   const removeProject = () => {
     removeRepo(toHex(repoId)).toPromise()
@@ -44,10 +53,12 @@ const Project = ({
 
   const clickContext = e => {
     e.stopPropagation()
-    changeActiveIndex({
-      tabIndex: 1,
-      tabData: { filterIssuesByRepoId: repoId },
-    })
+    const newActiveFilters = { ...activeFilters, projects: { [repoId]: true } }
+    setActiveFilters(newActiveFilters)
+    const newAvailableFilters = { ...availableFilters, projects: { [repoId]: { name: label } } }
+    setAvailableFilters(newAvailableFilters)
+    setActiveFiltersCount(activeFiltersCount + 1)
+    changeActiveIndex(1)
   }
 
   return (
