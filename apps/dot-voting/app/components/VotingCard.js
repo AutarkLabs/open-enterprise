@@ -18,7 +18,6 @@ function noop() {}
 
 const VotingCard = ({ vote, onSelectVote }) => {
   const theme = useTheme()
-  console.log(theme)
   const { voteWeights } = useUserVoteStats(vote)
   const { description, endDate, open, totalSupport, voteId, support } = vote
   const { executionTargetData, options, totalVoters } = vote.data
