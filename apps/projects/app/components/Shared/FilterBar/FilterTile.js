@@ -2,11 +2,10 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { useTheme } from '@aragon/ui'
 
-import IconX from '../Shared/assets/components/IconX'
+import IconX from '../assets/components/IconX'
 
 const FilterTile = ({ text, disableFilter }) => {
   const theme = useTheme()
-
   return (
     <div css={`
       display: inline-flex;
