@@ -1,4 +1,9 @@
-export const applyFilters = ({ issues, textFilter, activeFilters, bountyIssues }) => {
+import { useIssueFilters } from '../../context/IssueFilters'
+
+
+export const applyFilters = ({ issues, bountyIssues }) => {
+  const { textFilter, activeFilters } = useIssueFilters()
+
   const bountyIssueObj = {}
   bountyIssues.forEach(issue => {
     bountyIssueObj[issue.issueNumber] = issue.data.workStatus
@@ -64,7 +69,7 @@ export const applyFilters = ({ issues, textFilter, activeFilters, bountyIssues }
   if (textFilter) {
     return issuesByStatus.filter(
       issue =>
-        issue.title.toUpperCase().indexOf(textFilter) !== -1 ||
+        issue.title.toUpperCase().indexOf(textFilter.toUpperCase()) !== -1 ||
         String(issue.number).indexOf(textFilter) !== -1
     )
   }
