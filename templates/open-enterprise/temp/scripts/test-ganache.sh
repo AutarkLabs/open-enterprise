@@ -78,6 +78,8 @@ run_tests() {
 
 measure_coverage() {
   echo "Measuring coverage..."
+  # TODO: rimraf or crossenv
+  rm -rf flattened_contracts
   solidity-coverage
 }
 
