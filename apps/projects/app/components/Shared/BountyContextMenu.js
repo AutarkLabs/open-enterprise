@@ -6,6 +6,7 @@ import { issueShape } from '../../utils/shapes.js'
 import { IconCoin, IconConnect, IconFile, IconView } from '@aragon/ui'
 
 const BountyContextMenu = ({ issue }) => {
+  const pastDeadline = (new Date()) > (new Date(issue.deadline))
   const { workStatus } = issue
   const {
     allocateBounty,
@@ -62,12 +63,14 @@ const BountyContextMenu = ({ issue }) => {
       )}
       {workStatus === 'review-applicants' && (
         <React.Fragment>
-          <Item onClick={() => requestAssignment(issue)}>
-            <IconFile color={`${theme.surfaceIcon}`} />
-            <ActionLabel>
-              Submit Application
-            </ActionLabel>
-          </Item>
+          {!pastDeadline && (
+            <Item onClick={() => requestAssignment(issue)}>
+              <IconFile color={`${theme.surfaceIcon}`} />
+              <ActionLabel>
+                Submit Application
+              </ActionLabel>
+            </Item>
+          )}
           <Item onClick={() => reviewApplication(issue)}>
             <IconView color={`${theme.surfaceIcon}`} />
             <ActionLabel>
