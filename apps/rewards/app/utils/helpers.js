@@ -5,7 +5,14 @@ import {
   RECURRING_DIVIDEND,
 } from './constants'
 import BigNumber from 'bignumber.js'
-import { GU, IconCheck, IconCircleCheck, IconClock, useTheme } from '@aragon/ui'
+import {
+  GU,
+  IconCheck,
+  IconCircleCheck,
+  IconClock,
+  Text,
+  useTheme,
+} from '@aragon/ui'
 import React from 'react'
 
 export const displayCurrency = (amount, decimalsNumber=ETH_DECIMALS_NUMBER) => {
