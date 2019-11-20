@@ -33,7 +33,7 @@ setup_testing_variables() {
 
 start_ganache() {
   echo "Starting ganache-cli..."
-  npx ganache-cli -i ${NETWORK_ID} -l ${GAS_LIMIT} -a ${ACCOUNTS} -e ${BALANCE} -p ${PORT} > /dev/null &
+  ganache-cli -i ${NETWORK_ID} -l ${GAS_LIMIT} -a ${ACCOUNTS} -e ${BALANCE} -p ${PORT} > /dev/null &
   pid=$!
   sleep 3
   echo "Running ganache-cli with pid ${pid} in port ${PORT}, gas limit set to: ${GAS_LIMIT}"
@@ -41,7 +41,7 @@ start_ganache() {
 
 start_testrpc() {
   echo "Starting testrpc-sc..."
-  npx testrpc-sc -i ${NETWORK_ID} -l ${GAS_LIMIT} -e ${BALANCE} -p ${PORT} > /dev/null &
+  testrpc-sc -i ${NETWORK_ID} -l ${GAS_LIMIT} -e ${BALANCE} -p ${PORT} > /dev/null &
   rpc_pid=$!
   sleep 3
   echo "Running testrpc-sc with pid ${rpc_pid} in port ${PORT}"
@@ -50,6 +50,11 @@ start_testrpc() {
 deploy_standard_bounties() {
   echo "Deploying bounties contract..."
   BOUNTIES=$(npm run deploy:bounties | tail -n 1)
+}
+
+deploy_standard_bounties_coverage() {
+  echo "Deploying bounties contract..."
+  BOUNTIES=$(npm run deploy:bounties:coverage | tail -n 1)
 }
 
 deploy_template_rpc() {
@@ -68,18 +73,19 @@ clean_deploy() {
 
 run_tests() {
   echo "Running tests $@..."
-  npx truffle test --network rpc $@
+  truffle test --network rpc $@
 }
 
 measure_coverage() {
   echo "Measuring coverage..."
-  npx solidity-coverage
+  solidity-coverage
 }
 
 if [ "$SOLIDITY_COVERAGE" = true ]; then
   setup_coverage_variables
   start_testrpc
   clean_deploy
+  deploy_standard_bounties_coverage
   deploy_template_coverage
   measure_coverage
 else
