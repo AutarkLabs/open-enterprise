@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { useQuery } from '@apollo/react-hooks'
 
@@ -63,7 +63,7 @@ QueryError.propTypes = {
   refetch: PropTypes.func.isRequired,
 }
 
-const Issues = ({ data, setSelectedIssue, showMoreIssues }) => {
+const Issues = ({ graphqlQuery, setSelectedIssue, showMoreIssues }) => {
   const [ selectedIssues, setSelectedIssues ] = useState({})
   const [ allSelected, setAllSelected ] = useState(false)
   const shapeIssue = useShapedIssue()
@@ -74,13 +74,7 @@ const Issues = ({ data, setSelectedIssue, showMoreIssues }) => {
   }
   const { appState: { issues: bountyIssues } } = useAragonApi()
 
-  const { issues, downloadedRepos } = useMemo(() => flattenIssues(data, []), [data])
-
-  useEffect(() => {
-    buildAvailableFilters(issues, bountyIssues)
-  }, [ issues, bountyIssues ])
-
-  const toggleSelectAll = issuesFiltered => () => {
+  const toggleSelectAll = useCallback(issuesFiltered => () => {
     const selectedIssues = {}
     setAllSelected(!allSelected)
     if (!allSelected) {
@@ -89,9 +83,9 @@ const Issues = ({ data, setSelectedIssue, showMoreIssues }) => {
       )
     }
     setSelectedIssues(selectedIssues)
-  }
+  }, [ allSelected, selectedIssues, shapeIssue ])
 
-  const handleIssueSelection = issue => {
+  const handleIssueSelection = useCallback(issue => {
     const newSelectedIssues = { ...selectedIssues }
     if (issue.id in newSelectedIssues) {
       delete newSelectedIssues[issue.id]
@@ -99,14 +93,23 @@ const Issues = ({ data, setSelectedIssue, showMoreIssues }) => {
       newSelectedIssues[issue.id] = issue
     }
     setSelectedIssues(newSelectedIssues)
-  }
+  }, [selectedIssues])
 
-  // then apply filtering
+  const { loading, error, data, refetch } = graphqlQuery
+
+  const { issues, downloadedRepos } = data ? flattenIssues(data, []) : {}
+
   const issuesFiltered = applyFilters({ issues, bountyIssues })
 
-  // then determine whether any shown repos have more issues to fetch
-  const moreIssuesToShow =
-  Object.keys(downloadedRepos).filter(
+  useEffect(() => {
+    if (issues) buildAvailableFilters(issues, bountyIssues)
+  }, [ issues, bountyIssues ])
+
+  if (loading) return <QueryLoading />
+
+  if (error) return <QueryError error={error} refetch={refetch} />
+
+  const moreIssuesToShow = Object.keys(downloadedRepos).filter(
     repoId => downloadedRepos[repoId].hasNextPage
   ).length > 0
 
@@ -156,7 +159,7 @@ const Issues = ({ data, setSelectedIssue, showMoreIssues }) => {
 }
 
 Issues.propTypes = {
-  data: PropTypes.object.isRequired,
+  graphqlQuery: PropTypes.object.isRequired,
   setSelectedIssue: PropTypes.func.isRequired,
   showMoreIssues: PropTypes.func.isRequired,
 }
@@ -194,7 +197,7 @@ const flattenIssues = (data, alreadyDownloadedIssues) => {
 }
 
 const IssuesQuery = ({ client, query, setDownloadedRepos, ...props }) => {
-  const { loading, error, data, refetch } = useQuery(query, { client, onError: console.error })
+  const graphqlQuery = useQuery(query, { client, onError: console.error })
   const [ alreadyDownloadedIssues, setAlreadyDownloadedIssues ] = useState([])
 
   const showMoreIssues = (newDownloadedIssues, downloadedRepos) => {
@@ -207,13 +210,9 @@ const IssuesQuery = ({ client, query, setDownloadedRepos, ...props }) => {
     setAlreadyDownloadedIssues(newDownloadedIssues)
   }
 
-  if (loading) return <QueryLoading />
-
-  if (error) return <QueryError error={error} refetch={refetch} />
-
   return (
     <Issues
-      data={data}
+      graphqlQuery={graphqlQuery}
       showMoreIssues={showMoreIssues}
       {...props}
     />

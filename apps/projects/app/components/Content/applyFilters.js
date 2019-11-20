@@ -1,7 +1,7 @@
 import { useIssueFilters } from '../../context/IssueFilters'
 
 
-export const applyFilters = ({ issues, bountyIssues }) => {
+export const applyFilters = ({ issues = [], bountyIssues }) => {
   const { textFilter, activeFilters } = useIssueFilters()
 
   const bountyIssueObj = {}
