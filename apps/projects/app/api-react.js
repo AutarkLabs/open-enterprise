@@ -1,6 +1,5 @@
 import { hexToAscii } from 'web3-utils'
 import buildStubbedApiReact from '../../../shared/api-react'
-import { STATUS } from './utils/github'
 import {
   REQUESTED_GITHUB_TOKEN_SUCCESS,
   REQUESTED_GITHUB_DISCONNECT,
@@ -52,7 +51,8 @@ const initialState = process.env.NODE_ENV !== 'production' && {
     ],
     fundingModel: 'Fixed',
   },
-  github: { status: STATUS.INITIAL, token: null, event: '' }
+  github: INITIAL_STATE.github,
+  isSyncing: false,
 }
 
 const functions = process.env.NODE_ENV !== 'production' && ((appState, setAppState) => ({
@@ -66,7 +66,7 @@ const functions = process.env.NODE_ENV !== 'production' && ((appState, setAppSta
       },
     ]
   }),
-  trigger: (event, { status, token }) => {
+  emitTrigger: (event, { status, token }) => {
     switch (event) {
     case REQUESTED_GITHUB_TOKEN_SUCCESS:
       setAppState({
