@@ -10,14 +10,14 @@ export const sortOptions = [
   'Name descending',
 ]
 
-export const INIT_FILTERS = {
+const initFilters = () => ({
   projects: {},
   labels: {},
   milestones: {},
   deadlines: {},
   experiences: {},
   statuses: {},
-}
+})
 
 export function useIssueFilters() {
   const context = useContext(IssueFiltersContext)
@@ -38,17 +38,8 @@ export function useIssueFilters() {
   } = context
 
   const resetFilters = useCallback(() => {
-    const filters = { ...activeFilters }
-
-    // setActiveFilters(INIT_FILTERS) is not working - why?
-    Object.keys(activeFilters).forEach(type =>
-      Object.keys(activeFilters[type]).forEach(id =>
-        delete filters[type][id]
-      )
-    )
-
     setActiveFiltersCount(0)
-    setActiveFilters(filters)
+    setActiveFilters(initFilters())
   }, [activeFilters])
 
   const buildAvailableFilters = useCallback((issues, bountyIssues) => {
@@ -91,8 +82,8 @@ export function useIssueFilters() {
 }
 
 export function IssueFiltersProvider(props) {
-  const [ availableFilters, setAvailableFilters ] = useState(INIT_FILTERS)
-  const [ activeFilters, setActiveFilters ] = useState(INIT_FILTERS)
+  const [ availableFilters, setAvailableFilters ] = useState(initFilters())
+  const [ activeFilters, setActiveFilters ] = useState(initFilters())
   const [ textFilter, setTextFilter ] = useState('')
   const [ sortBy, setSortBy ] = useState(sortOptions[0])
   const [ activeFiltersCount, setActiveFiltersCount ] = useState(0)
