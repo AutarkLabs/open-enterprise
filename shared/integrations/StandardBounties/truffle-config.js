@@ -30,10 +30,9 @@ module.exports = {
     },
     coverage: {
       host: 'localhost',
-      network_id: '*',
+      network_id: 16,
       port: 8555,
       gas: 0xfffffffffff,
-      gasPrice: 0x01,
     },
     live: {
       network_id: 1, // Ethereum public network,
