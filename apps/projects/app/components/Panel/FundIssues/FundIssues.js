@@ -227,6 +227,7 @@ const FundForm = ({
   const [ maxErrors, setMaxErrors ] = useState([])
   const [ zeroError, setZeroError ] = useState([])
   const [ dateError, setDateError ] = useState([])
+  const [ validate, setValidate ] = useState(false)
 
   useEffect(() => {
     setMaxErrors(tokens.reduce(
@@ -253,6 +254,7 @@ const FundForm = ({
   }, [ tokens, bounties ])
 
   useEffect(() => {
+    if (!validate) return
     const today = new Date()
     const zeroErrArray = []
     const dateErrArray = []
@@ -268,7 +270,7 @@ const FundForm = ({
       !!zeroErrArray.length ||
       !!dateErrArray.length
     )
-  }, [ bounties, description, maxErrors ])
+  }, [ validate, bounties, description, maxErrors ])
 
   return (
     <>
@@ -305,6 +307,7 @@ const FundForm = ({
                   issue={issue}
                   bounty={bounties[issue.id]}
                   tokens={tokens}
+                  onBlur={() => setValidate(true)}
                   updateBounty={updateBounty(issue.id)}
                 />
               ))}
