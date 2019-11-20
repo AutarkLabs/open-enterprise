@@ -64,7 +64,7 @@ deploy_template_rpc() {
 
 deploy_template_coverage() {
   echo "Deploying template..."
-  npm run deploy:coverage
+  npm run deploy:coverage -- --s ${BOUNTIES}
 }
 
 clean_deploy() {

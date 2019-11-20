@@ -1,5 +1,5 @@
 module.exports = {
   norpc: true,
-  skipFiles: ['test'],
+  skipFiles: ['test', 'flattened_contracts'],
   deepSkip: true
 }
