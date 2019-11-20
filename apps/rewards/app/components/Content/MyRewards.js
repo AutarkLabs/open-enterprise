@@ -5,6 +5,10 @@ import {
   ContextMenu,
   ContextMenuItem,
   DataView,
+  GU,
+  IconCheck,
+  IconCircleCheck,
+  IconClock,
   IconCoin,
   IconView,
   Text,
@@ -20,6 +24,36 @@ import Metrics from './Metrics'
 import { useAppState } from '@aragon/api-react'
 import BigNumber from 'bignumber.js'
 import { displayCurrency } from '../../utils/helpers'
+
+const types = {
+  claimed: { icon: IconCircleCheck, text: 'Claimed', color: 'positive' },
+  ready: { icon: IconCheck, text: 'Ready to claim', color: 'positive' },
+  pending: { icon: IconClock, text: 'Pending', color: 'warning' },
+}
+
+const Status = ({ type }) => {
+  const theme = useTheme()
+  const status = types[type]
+  const text = status.text
+  const Icon = status.icon
+  const color = theme[status.color]
+  return (
+    <div css='display: flex;'>
+      <Icon style={{
+        marginRight: 0.5 * GU + 'px',
+        marginTop: -0.25 * GU + 'px',
+        color: color,
+      }} />
+      <Text>
+        {text}
+      </Text>
+    </div>
+  )
+}
+
+Status.propTypes = {
+  type: PropTypes.oneOf(Object.keys(types)).isRequired,
+}
 
 const MyRewards = ({
   myRewards,
@@ -107,7 +141,9 @@ const renderOneTimeDividend = (reward, amountTokens) => {
     </Text>
   )
   const disbursementDate = dateReference.toDateString()
-  const status = timeClaimed > 0 ? 'Claimed' : (Date.now() > endDate ? 'Ready to claim' : 'Pending')
+  const status = timeClaimed > 0 ? <Status type="claimed" /> : (
+    Date.now() > endDate ? <Status type="ready" /> : <Status type="pending" />
+  )
   return [ description, disbursementDate, status, displayAmount ]
 }
 
@@ -117,8 +153,6 @@ const renderRecurringDividend = (reward, amountTokens) => {
     description,
     userRewardAmount,
     amountToken,
-    endDate,
-    timeClaimed,
     claims,
     disbursements
   } = reward
@@ -129,7 +163,10 @@ const renderRecurringDividend = (reward, amountTokens) => {
     </Text>
   )
   const disbursementDate = (disbursements[claims] || disbursements[claims-1]).toDateString()
-  const status = claims === disbursements.length ? 'Claimed' : (Date.now() > disbursements[claims].getTime() ? 'Ready to claim' : 'Pending')
+  const status = claims === disbursements.length ? <Status type="claimed" /> : (
+    Date.now() > disbursements[claims].getTime() ? <Status type="ready" /> :
+      <Status type="pending" />
+  )
   return [ description, disbursementDate, status, displayAmount ]
 }
 
@@ -149,7 +186,9 @@ const renderOneTimeMerit = (reward, amountTokens) => {
     </Text>
   )
   const disbursementDate = (new Date(endDate)).toDateString()
-  const status = timeClaimed > 0 ? 'Claimed' : (Date.now() > endDate ? 'Ready to claim' : 'Pending')
+  const status = timeClaimed > 0 ? <Status type="claimed" /> : (
+    Date.now() > endDate ? <Status type="ready" /> : <Status type="pending" />
+  )
   return [ description, disbursementDate, status, displayAmount ]
 }
 
