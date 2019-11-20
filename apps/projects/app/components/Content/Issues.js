@@ -16,7 +16,6 @@ import { LoadingAnimation } from '../Shared'
 import { EmptyWrapper } from '../Shared'
 import { useIssueFilters } from '../../context/IssueFilters'
 import { applyFilters } from './applyFilters'
-import { issueShape } from '../../utils/shapes.js'
 
 const sorters = {
   'Name ascending': (i1, i2) =>
@@ -63,8 +62,9 @@ QueryError.propTypes = {
   refetch: PropTypes.func.isRequired,
 }
 
-const Issues = ({ graphqlQuery, setSelectedIssue, showMoreIssues }) => {
+const Issues = ({ graphqlQuery, setSelectedIssue, setDownloadedRepos }) => {
   const [ selectedIssues, setSelectedIssues ] = useState({})
+  const [ alreadyDownloadedIssues, setAlreadyDownloadedIssues ] = useState([])
   const [ allSelected, setAllSelected ] = useState(false)
   const shapeIssue = useShapedIssue()
   const { buildAvailableFilters, sortBy } = useIssueFilters()
@@ -97,12 +97,12 @@ const Issues = ({ graphqlQuery, setSelectedIssue, showMoreIssues }) => {
 
   const { loading, error, data, refetch } = graphqlQuery
 
-  const { issues, downloadedRepos } = data ? flattenIssues(data, []) : {}
+  const { issues, downloadedRepos } = useMemo(() => flattenIssues(data, alreadyDownloadedIssues), [ data, alreadyDownloadedIssues ])
 
   const issuesFiltered = applyFilters({ issues, bountyIssues })
 
   useEffect(() => {
-    if (issues) buildAvailableFilters(issues, bountyIssues)
+    if (issues.length) buildAvailableFilters(issues, bountyIssues)
   }, [ issues, bountyIssues ])
 
   if (loading) return <QueryLoading />
@@ -112,6 +112,16 @@ const Issues = ({ graphqlQuery, setSelectedIssue, showMoreIssues }) => {
   const moreIssuesToShow = Object.keys(downloadedRepos).filter(
     repoId => downloadedRepos[repoId].hasNextPage
   ).length > 0
+
+  const showMoreIssues = (issues, downloadedRepos) => {
+    let newDownloadedRepos = { ...downloadedRepos }
+
+    Object.keys(downloadedRepos).forEach(repoId => {
+      newDownloadedRepos[repoId].showMore = downloadedRepos[repoId].hasNextPage
+    })
+    setDownloadedRepos(newDownloadedRepos)
+    setAlreadyDownloadedIssues(issues)
+  }
 
   return (
     <StyledIssues>
@@ -161,7 +171,7 @@ const Issues = ({ graphqlQuery, setSelectedIssue, showMoreIssues }) => {
 Issues.propTypes = {
   graphqlQuery: PropTypes.object.isRequired,
   setSelectedIssue: PropTypes.func.isRequired,
-  showMoreIssues: PropTypes.func.isRequired,
+  setDownloadedRepos: PropTypes.func.isRequired,
 }
 
 /*
@@ -177,6 +187,8 @@ const flattenIssues = (data, alreadyDownloadedIssues) => {
   let downloadedIssues = []
   const downloadedRepos = {}
 
+  if (!data) return { issues: downloadedIssues, downloadedRepos }
+
   Object.keys(data).forEach(nodeName => {
     const repo = data[nodeName]
     downloadedRepos[repo.id] = {
@@ -190,7 +202,11 @@ const flattenIssues = (data, alreadyDownloadedIssues) => {
   })
 
   if (alreadyDownloadedIssues.length > 0) {
-    downloadedIssues = downloadedIssues.concat(alreadyDownloadedIssues)
+    const keys = downloadedIssues.map(issue => issue.id)
+
+    downloadedIssues = downloadedIssues.concat(
+      alreadyDownloadedIssues.filter(issue => (!keys.includes(issue.id)))
+    )
   }
 
   return { issues: downloadedIssues, downloadedRepos }
@@ -198,22 +214,11 @@ const flattenIssues = (data, alreadyDownloadedIssues) => {
 
 const IssuesQuery = ({ client, query, setDownloadedRepos, ...props }) => {
   const graphqlQuery = useQuery(query, { client, onError: console.error })
-  const [ alreadyDownloadedIssues, setAlreadyDownloadedIssues ] = useState([])
-
-  const showMoreIssues = (newDownloadedIssues, downloadedRepos) => {
-    let newDownloadedRepos = { ...downloadedRepos }
-
-    Object.keys(downloadedRepos).forEach(repoId => {
-      newDownloadedRepos[repoId].showMore = downloadedRepos[repoId].hasNextPage
-    })
-    setDownloadedRepos(newDownloadedRepos)
-    setAlreadyDownloadedIssues(newDownloadedIssues)
-  }
 
   return (
     <Issues
       graphqlQuery={graphqlQuery}
-      showMoreIssues={showMoreIssues}
+      setDownloadedRepos={setDownloadedRepos}
       {...props}
     />
   )
