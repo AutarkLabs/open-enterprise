@@ -36,7 +36,9 @@ import {
 const ETHER_TOKEN_FAKE_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 const errorMessages = {
-  amount: () => 'Funding amounts must be greater than zero',
+  amount: ({ sayAmount, plural }) =>
+    (sayAmount ? `Funding amount${plural ? 's' : ''}` : 'Estimated hours') +
+    ' must be greater than zero',
   date: () => 'The deadline cannot be in the past',
   total: ({ inVault, sayTotal, symbol, total }) =>
     `The ${sayTotal ? 'total' : ''} funding amount of ${total} ${symbol} ` +
@@ -190,7 +192,14 @@ const BountyUpdate = ({
         />
       </Form>
       {maxError && <ErrorMessage text={errorMessages.total()} />}
-      {zeroError && <ErrorMessage text={errorMessages.amount()} />}
+      {zeroError &&
+        <ErrorMessage text={
+          errorMessages.amount({
+            sayAmount: bountySettings.fundingModel === 'Fixed',
+            plural: false,
+          })}
+        />
+      }
       {dateError && <ErrorMessage text={errorMessages.date()} />}
     </>
   )
@@ -213,6 +222,7 @@ const FundForm = ({
   descriptionChange,
   updateBounty,
 }) => {
+  const { appState: { bountySettings } } = useAragonApi()
   const [ submitDisabled, setSubmitDisabled ] = useState(true)
   const [ maxErrors, setMaxErrors ] = useState([])
   const [ zeroError, setZeroError ] = useState([])
@@ -247,7 +257,7 @@ const FundForm = ({
     const zeroErrArray = []
     const dateErrArray = []
     Object.values(bounties).forEach(bounty => {
-      if (bounty.payout === 0) zeroErrArray.push(bounty.issueId)
+      if (!bounty.payout) zeroErrArray.push(bounty.issueId)
       if (today > bounty.deadline) dateErrArray.push(bounty.issueId)
     })
     setZeroError(zeroErrArray)
@@ -305,7 +315,14 @@ const FundForm = ({
       {maxErrors.map((maxError, i) => (
         <ErrorMessage key={i} text={errorMessages.total(maxError)} />
       ))}
-      {!!zeroError.length && <ErrorMessage text={errorMessages.amount()} />}
+      {!!zeroError.length &&
+        <ErrorMessage text={
+          errorMessages.amount({
+            sayAmount: bountySettings.fundingModel === 'Fixed',
+            plural: issues.length > 1,
+          })}
+        />
+      }
       {!!dateError.length && <ErrorMessage text={errorMessages.date()} />}
     </>
   )
