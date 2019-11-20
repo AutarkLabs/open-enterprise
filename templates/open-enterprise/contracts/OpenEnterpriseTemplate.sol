@@ -100,15 +100,15 @@ contract OpenEnterpriseTemplate is BaseOEApps {
 
         (Kernel dao,) = _createDAO();
         _cacheDao(dao);
-        // (
-        //     Finance finance,
-        //     TokenManager tokenManager,
-        //     Voting voting,
-        //     Vault vault
-        // ) = _setupApps(_members, _stakes, _votingSettings, _financePeriod, _tokenTransferable);
+        (
+            Finance finance,
+            TokenManager tokenManager,
+            Voting voting,
+            Vault vault
+        ) = _setupApps(_members, _stakes, _votingSettings, _financePeriod, _tokenTransferable);
 
-        // _cacheBaseApps(finance, tokenManager, vault, voting);
-        // _registerID(_id, dao);
+        _cacheBaseApps(finance, tokenManager, vault, voting);
+        _registerID(_id, dao);
     }
 
     function _setupApps(
