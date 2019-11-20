@@ -62,8 +62,8 @@ contract Rewards is AragonApp {
     Vault public vault;
 
     /// Events
-    event RewardAdded(uint256 rewardId); /// Emitted when a new reward is created
-    event RewardClaimed(uint256 rewardId); /// Emitted when a reward is claimed
+    event RewardAdded(uint256 rewardId, address adder);
+    event RewardClaimed(uint256 rewardId, address claimant);
 
     /**
      * @notice Initialize Rewards app for Vault at `_vault`
@@ -97,7 +97,7 @@ contract Rewards is AragonApp {
 
         _transferReward(reward, rewardAmount);
 
-        emit RewardClaimed(_rewardID);
+        emit RewardClaimed(_rewardID, tx.origin);
         return rewardAmount;
     }
 
@@ -216,7 +216,7 @@ contract Rewards is AragonApp {
         reward.delay = _delay;
         reward.blockStart = _startBlock;
         reward.creator = msg.sender;
-        emit RewardAdded(rewardId);
+        emit RewardAdded(rewardId, tx.origin);
         if (_occurrences > 1) {
             newReward(
                 _description,

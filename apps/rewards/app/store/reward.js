@@ -10,9 +10,13 @@ const CONVERT_API_BASE = 'https://min-api.cryptocompare.com/data'
 const convertApiUrl = symbols =>
   `${CONVERT_API_BASE}/price?fsym=USD&tsyms=${symbols.join(',')}`
 
-export async function onRewardAdded({ rewards = [], refTokens = [], balances = [] }, { rewardId }, settings) {
+export async function onRewardAdded(
+  { rewards = [], refTokens = [], balances = [] },
+  { rewardId, adder },
+  settings
+) {
   if (!rewards[rewardId]) {
-    rewards[rewardId] = await getRewardById(rewardId)
+    rewards[rewardId] = await getRewardById(rewardId, adder)
     const { referenceToken } = rewards[rewardId]
     const response = await updateBalancesAndRefTokens({ balances, refTokens }, referenceToken, settings)
     return { rewards, refTokens: response.refTokens }
@@ -21,8 +25,11 @@ export async function onRewardAdded({ rewards = [], refTokens = [], balances = [
   return { rewards, refTokens }
 }
 
-export async function onRewardClaimed({ rewards = [], claims = {} }, { rewardId }) {
-  rewards[rewardId] = await getRewardById(rewardId)
+export async function onRewardClaimed(
+  { rewards = [], claims = {} },
+  { rewardId, claimant }
+) {
+  rewards[rewardId] = await getRewardById(rewardId, claimant)
 
   let { claimsByToken = [], totalClaimsMade = 0 } = claims
 
