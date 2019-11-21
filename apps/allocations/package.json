@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@aragon/api": "2.0.0-beta.8",
-    "@aragon/api-react": "2.0.0-beta.6",
+    "@aragon/api-react": "2.0.0-beta.8",
     "@aragon/apps-vault": "4.1.0",
     "@aragon/os": "4.2.0",
     "@aragon/ui": "1.0.0-alpha.26",
