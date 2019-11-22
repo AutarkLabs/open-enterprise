@@ -100,8 +100,8 @@ const renderOneTimeDividend = (reward, amountTokens) => {
     </Text>
   )
   const disbursementDate = dateReference.toDateString()
-  const Status = getStatus(reward)
-  return [ description, disbursementDate, Status, displayAmount ]
+  const status = getStatus(reward)
+  return [ description, disbursementDate, status, displayAmount ]
 }
 
 const renderRecurringDividend = (reward, amountTokens) => {
@@ -120,8 +120,8 @@ const renderRecurringDividend = (reward, amountTokens) => {
     </Text>
   )
   const disbursementDate = (disbursements[claims] || disbursements[claims-1]).toDateString()
-  const Status = getStatus(reward)
-  return [ description, disbursementDate, Status, displayAmount ]
+  const status = getStatus(reward)
+  return [ description, disbursementDate, status, displayAmount ]
 }
 
 const renderOneTimeMerit = (reward, amountTokens) => {
@@ -134,8 +134,8 @@ const renderOneTimeMerit = (reward, amountTokens) => {
     </Text>
   )
   const disbursementDate = (new Date(endDate)).toDateString()
-  const Status = getStatus(reward)
-  return [ description, disbursementDate, Status, displayAmount ]
+  const status = getStatus(reward)
+  return [ description, disbursementDate, status, displayAmount ]
 }
 
 MyRewards.propTypes = {

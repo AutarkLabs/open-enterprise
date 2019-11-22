@@ -183,7 +183,7 @@ class App extends React.Component {
     })
   }
 
-  viewReward = (reward, isMyReward) => {
+  viewReward = ({ reward, isMyReward }) => {
     const panelTitle = isMyReward ?  'View my reward' : 'View Reward'
     this.setState({
       panel: PANELS.ViewReward,
@@ -269,14 +269,20 @@ class App extends React.Component {
           <MyRewards
             myRewards={this.props.myRewards}
             myMetrics={this.props.myMetrics}
-            viewReward={reward => this.viewReward(reward, true)}
+            viewReward={reward => this.viewReward({
+              reward,
+              isMyReward: true
+            })}
             claimReward={this.claimReward}
           />
         ) : (
           <Overview
             rewards={this.props.rewards === undefined ? [] : this.props.rewards}
             newReward={this.newReward}
-            viewReward={reward => this.viewReward(reward, false)}
+            viewReward={reward => this.viewReward({
+              reward,
+              isMyReward: false,
+            })}
             metrics={this.props.metrics}
           />
         )}

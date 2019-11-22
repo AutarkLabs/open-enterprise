@@ -24,7 +24,7 @@ const PanelManager = ({
   title,
   ...panelProps
 }) => {
-  let panelTitle = activePanel && (title || camel2title(activePanel))
+  const panelTitle = title || activePanel && camel2title(activePanel)
   const PanelComponent = activePanel && React.lazy(dynamicImport[activePanel])
   return (
     <SidePanel

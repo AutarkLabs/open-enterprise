@@ -32,17 +32,17 @@ const RewardSummary = ({ reward, theme, onCancel, onSubmit }) => {
       <GreyBox theme={theme}>
         <Title>{description}</Title>
         <SubTitle theme={theme}>{rewardType}</SubTitle>
-        <Header theme={theme}>Reference Asset</Header>
+        <Header>Reference Asset</Header>
         <Content>
           {referenceTokenSymbol}
         </Content>
-        <Header theme={theme}>
+        <Header>
           {rewardType === ONE_TIME_MERIT && 'Total'}
           {' Amount '}
           {rewardType === RECURRING_DIVIDEND && 'per Cycle'}
         </Header>
         <Content>{BigNumber(amount).div(BigNumber(10).pow(amountTokens.find(t => t.symbol === amountToken).decimals)).toString(10)} {amountToken}</Content>
-        <Header theme={theme}>
+        <Header>
           {rewardType === ONE_TIME_MERIT ?
             'Start and End Date' : 'Disbursement Date'}
           {rewardType === RECURRING_DIVIDEND && 's'}

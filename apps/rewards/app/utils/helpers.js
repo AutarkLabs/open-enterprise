@@ -60,12 +60,18 @@ export const getStatus = ({
   claims,
   disbursements
 }) => {
-  if (rewardType === RECURRING_DIVIDEND)
-    return claims === disbursements.length ? <Status type="claimed" /> : (
-      Date.now() > disbursements[claims].getTime() ? <Status type="ready" /> :
-        <Status type="pending" />
-    )
-  else return timeClaimed > 0 ? <Status type="claimed" /> : (
-    Date.now() > endDate ? <Status type="ready" /> : <Status type="pending" />
-  )
+  if (rewardType === RECURRING_DIVIDEND) {
+    if (claims === disbursements.length)
+      return <Status type="claimed" />
+    if (Date.now() > disbursements[claims].getTime())
+      return <Status type="ready" />
+    return <Status type="pending" />
+  }
+  else {
+    if (timeClaimed > 0)
+      return <Status type="claimed" />
+    if (Date.now() > endDate)
+      return <Status type="ready" />
+    return <Status type="pending" />
+  }
 }

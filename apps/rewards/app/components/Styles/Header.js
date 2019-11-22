@@ -1,12 +1,18 @@
-import styled from 'styled-components'
-import { Text } from '@aragon/ui'
+import React from 'react'
+import { GU, Text, useTheme } from '@aragon/ui'
 
-const Header = styled(Text.Block).attrs({
-  smallcaps: true,
-})`
-  color: ${({ theme }) => theme.contentSecondary};
-  margin-top: 16px;
-  margin-bottom: 8px;
-`
-
-export default Header
+export default function Header({ children }) {
+  const theme = useTheme()
+  return (
+    <Text.Block
+      smallcaps
+      style={{
+        color: theme.contentSecondary,
+        marginTop: 2 * GU + 'px',
+        marginBottom: GU + 'px',
+      }}
+    >
+      {children}
+    </Text.Block>
+  )
+}
