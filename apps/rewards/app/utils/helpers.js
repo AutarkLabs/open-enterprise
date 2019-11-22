@@ -29,12 +29,13 @@ const types = {
   pending: { icon: IconClock, text: 'Pending', color: 'warning' },
 }
 
-const Status = ({ type }) => {
+const Status = ({ type, time }) => {
   const theme = useTheme()
   const status = types[type]
   const text = status.text
   const Icon = status.icon
   const color = theme[status.color]
+  const displayTime = time ? new Date(time * 1000).toLocaleString() : ''
   return (
     <div css='display: flex;'>
       <Icon style={{
@@ -43,7 +44,7 @@ const Status = ({ type }) => {
         color: color,
       }} />
       <Text>
-        {text}
+        {text} {displayTime}
       </Text>
     </div>
   )
@@ -51,6 +52,7 @@ const Status = ({ type }) => {
 
 Status.propTypes = {
   type: PropTypes.oneOf(Object.keys(types)).isRequired,
+  time: PropTypes.string,
 }
 
 export const getStatus = ({
@@ -62,14 +64,14 @@ export const getStatus = ({
 }) => {
   if (rewardType === RECURRING_DIVIDEND) {
     if (claims === disbursements.length)
-      return <Status type="claimed" />
+      return <Status type="claimed" time={timeClaimed} />
     if (Date.now() > disbursements[claims].getTime())
       return <Status type="ready" />
     return <Status type="pending" />
   }
   else {
     if (timeClaimed > 0)
-      return <Status type="claimed" />
+      return <Status type="claimed" time={timeClaimed} />
     if (Date.now() > endDate)
       return <Status type="ready" />
     return <Status type="pending" />
