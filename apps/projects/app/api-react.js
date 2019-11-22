@@ -87,6 +87,7 @@ const functions = process.env.NODE_ENV !== 'production' && ((appState, setAppSta
           )
           const ipfsAddress = ipfsAddresses.slice(46 * index, 46 * (index + 1))
           const {
+            issueId,
             exp,
             fundingHistory,
             hours,
@@ -105,6 +106,7 @@ const functions = process.env.NODE_ENV !== 'production' && ((appState, setAppSta
               }],
               hasBounty: true,
               hours,
+              issueId,
               number: issueNumbers[index],
               repo,
               repoId: hexToAscii(repoId),

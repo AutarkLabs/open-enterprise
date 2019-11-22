@@ -413,6 +413,7 @@ const FundIssues = ({ issues, mode }) => {
       )
       deadlines.push(bounty.deadline.getTime())
       ipfsData.push({
+        issueId: bounty.issueId,
         exp: bounty.exp,
         fundingHistory: [
           ...bounty.fundingHistory,
