@@ -8,6 +8,7 @@ import { safeDiv } from './utils/math-utils'
 import { IdentityProvider } from './components/LocalIdentityBadge/IdentityManager'
 import Decisions from './Decisions'
 import emptyStatePng from './assets/voting-empty-state.png'
+import Discussions from '../../discussions/app/modules/Discussions'
 
 const ASSETS_URL = './aragon-ui'
 
@@ -123,13 +124,15 @@ const App = () => {
 
   return (
     <Wrap>
-      <IdentityProvider
-        onResolve={handleResolveLocalIdentity}
-        onShowLocalIdentityModal={handleShowLocalIdentityModal}>
-        <Header primary="Dot Voting" />
-        <Decisions decorateVote={decorateVote} />
-        <SyncIndicator visible={isSyncing} />
-      </IdentityProvider>
+      <Discussions app={api}>
+        <IdentityProvider
+          onResolve={handleResolveLocalIdentity}
+          onShowLocalIdentityModal={handleShowLocalIdentityModal}>
+          <Header primary="Dot Voting" />
+          <Decisions decorateVote={decorateVote} />
+          <SyncIndicator visible={isSyncing} />
+        </IdentityProvider>
+      </Discussions>
     </Wrap>
   )
 }

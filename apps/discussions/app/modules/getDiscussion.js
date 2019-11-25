@@ -6,7 +6,7 @@
 const getDiscussion = (relativeDiscussionId, discussions) => {
   const absoluteDiscussionId = Object.keys(discussions)
     .map(discussionId => Number(discussionId))
-    .sort()[relativeDiscussionId]
+    .sort((a, b) => a - b)[relativeDiscussionId];
 
   return discussions[absoluteDiscussionId] || {}
 }
