@@ -81,5 +81,6 @@
       "network": "mainnet"
     }
   },
-  "path": "contracts/Projects.sol"
+  "path": "contracts/Projects.sol",
+  "storage": true
 }
