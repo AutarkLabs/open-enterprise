@@ -92,7 +92,7 @@ const ReviewApplication = ({ issue, requestIndex }) => {
         name="Applicant"
         items={issue.requestsData.map(request => request.user.login)}
         onChange={changeRequest}
-        selected={requestIndex}
+        selected={index}
         wide
       />
 
@@ -173,16 +173,14 @@ const ReviewApplication = ({ issue, requestIndex }) => {
               mode="negative"
               onClick={onReject}
               icon={<IconCross />}
-            >
-                Reject
-            </ReviewButton>
+              label="Reject"
+            />
             <ReviewButton
-              icon={<IconCheck />}
               mode="positive"
               onClick={onAccept}
-            >
-                Accept
-            </ReviewButton>
+              icon={<IconCheck />}
+              label="Accept"
+            />
           </ReviewRow>
         </React.Fragment>
       )}
@@ -216,9 +214,7 @@ const ApplicationDetails = styled.div`
   margin-top: 8px;
   margin-bottom: 14px;
 `
-const ReviewButton = styled(Button).attrs({
-  mode: 'strong',
-})`
+const ReviewButton = styled(Button)`
   width: 48%;
 `
 const ReviewRow = styled.div`
