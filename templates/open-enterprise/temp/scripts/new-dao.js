@@ -39,7 +39,7 @@ module.exports = async function newDao({
     const baseOpenEnterprise = await template.newOpenEnterprise(
       dotVotingSettings,
       0,
-      false,
+      useDiscussions,
       { from: members[0] }
     )
 
@@ -48,7 +48,8 @@ module.exports = async function newDao({
       '🚀 Created new dao at address:',
       dao.address,
       '\n⛽️ Total gas cost for creation:',
-      baseDAO.receipt.gasUsed + baseOpenEnterprise.receipt.gasUsed, 'gas',
+      baseDAO.receipt.gasUsed + baseOpenEnterprise.receipt.gasUsed,
+      'gas',
       '\n🌐 You can access it at:',
       `http://localhost:8080/ipfs/QmVptozeYf3XxqHfvMjofCkZsYSqi6YuvHFLMc83SECbNw/#/${id}`
     )
