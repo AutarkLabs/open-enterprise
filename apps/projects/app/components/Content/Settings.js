@@ -174,7 +174,7 @@ const ExperienceLevel = ({
                 disabled={expLevels.length <= 1}
                 style={{ transform: 'scale(.8)' }}
                 onClick={() => onRemoveExpLevel(index)}
-                title="Remove this difficulty multiplier"
+                title="Remove this difficulty setting"
               >
                 <IconRemove />
               </IconContainer>
@@ -551,16 +551,22 @@ const Column = styled.div`
 const IconContainer = styled.button`
   ${unselectable};
   all: unset;
-  color: ${({ disabled, theme }) => (disabled ? theme.disabled : theme.contentSecondary)};
-  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
   display: flex;
   justify-content: center;
-  :hover {
-    color: ${({ disabled, theme }) => disabled ? theme.disabled : theme.contentBorderActive};
-  }
-  :active {
-    color: ${({ disabled, theme }) => (disabled ? theme.disabled : theme.accent)};
-  }
+  ${({ disabled, theme }) => (disabled ? `
+      color: ${theme.disabled};
+      cursor: not-allowed;
+    ` : `
+      color: ${theme.contentSecondary};
+      cursor: pointer;
+      :hover {
+        color: ${theme.surfaceOpened};
+      }
+      :active {
+        color: ${theme.accent};
+      }
+    `)
+}
   > svg {
     color: inherit;
     height: 40px;
