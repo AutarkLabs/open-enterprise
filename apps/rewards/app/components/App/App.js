@@ -40,6 +40,7 @@ class App extends React.Component {
     this.state = {
       selected: 0,
       tabs: [ 'Overview', 'My Rewards' ],
+      claimHashes: {},
     }
     this.updateRewards()
   }
@@ -196,8 +197,12 @@ class App extends React.Component {
   }
 
   claimReward = reward => {
-    // TODO
-    this.props.api.claimReward(reward.rewardId + reward.claims).toPromise()
+    this.props.api.claimReward(reward.rewardId + reward.claims)
+      .subscribe(claimHash => {
+        const { claimHashes } = this.state
+        claimHashes[reward.rewardId] = claimHash
+        this.setState({ claimHashes })
+      })
   }
 
   openDetailsView = reward => {
@@ -274,6 +279,7 @@ class App extends React.Component {
               isMyReward: true
             })}
             claimReward={this.claimReward}
+            claimHashes={this.state.claimHashes}
           />
         ) : (
           <Overview

@@ -5,7 +5,9 @@ import {
   ContextMenu,
   ContextMenuItem,
   DataView,
+  GU,
   IconCoin,
+  IconHash,
   IconView,
   Text,
   useTheme,
@@ -14,48 +16,59 @@ import {
   ONE_TIME_DIVIDEND,
   RECURRING_DIVIDEND,
   ONE_TIME_MERIT,
+  READY,
+  CLAIMED,
 } from '../../utils/constants'
 import { Empty } from '../Card'
 import Metrics from './Metrics'
-import { useAppState } from '@aragon/api-react'
+import { useAppState, useNetwork } from '@aragon/api-react'
 import BigNumber from 'bignumber.js'
-import { displayCurrency, getStatus } from '../../utils/helpers'
+import { displayCurrency, getStatus, getStatusId } from '../../utils/helpers'
 
 const MyRewards = ({
   myRewards,
   myMetrics,
   viewReward,
   claimReward,
+  claimHashes,
 }) => {
+  const network = useNetwork()
   const rewardsEmpty = myRewards.length === 0
+
+  const getEtherscanLink = reward => {
+    const networkChunk = network.id === 1 ? '' : `${network.type}.`
+    const claimHash = claimHashes[reward.rewardId]
+    const link = `https://${networkChunk}etherscan.io/tx/${claimHash}`
+    return link
+  }
 
   if (rewardsEmpty) {
     return <Empty noButton />
   }
 
-  const renderMenu = (reward) => (
-    <ContextMenu>
-      <StyledContextMenuItem
-        onClick={() => viewReward(reward)}
-      >
-        <IconView css={{
-          marginRight: '11px',
-          marginBottom: '2px',
-        }}/>
-        View
-      </StyledContextMenuItem>
-      {(reward.claims < reward.disbursements.length && (reward.disbursements[reward.claims] < Date.now())) && (
-        <StyledContextMenuItem
-          onClick={() => claimReward(reward)}
-        >
-          <IconCoin css={{
-            marginRight: '11px',
-            marginBottom: '2px',
-          }}/>
-        Claim
-        </StyledContextMenuItem>)}
-    </ContextMenu>
-  )
+  const renderMenu = (reward) => {
+    const statusId = getStatusId(reward)
+    return (
+      <ContextMenu>
+        <StyledContextMenuItem onClick={() => viewReward(reward)} >
+          <StyledIcon Icon={IconView} />
+          View reward
+        </StyledContextMenuItem>
+        {statusId === READY && (
+          <StyledContextMenuItem onClick={() => claimReward(reward)} >
+            <StyledIcon Icon={IconCoin} />
+            Claim
+          </StyledContextMenuItem>
+        )}
+        {statusId === CLAIMED && (
+          <StyledContextMenuItem href={getEtherscanLink(reward)}>
+            <StyledIcon Icon={IconHash} />
+            View on Etherscan
+          </StyledContextMenuItem>
+        )}
+      </ContextMenu>
+    )
+  }
 
   return (
     <OverviewMain>
@@ -142,6 +155,13 @@ MyRewards.propTypes = {
   myRewards: PropTypes.arrayOf(PropTypes.object).isRequired,
   myMetrics: PropTypes.arrayOf(PropTypes.object).isRequired,
 }
+
+const StyledIcon = ({ Icon }) => (
+  <Icon style={{
+    marginRight: GU * 1.5 + 'px',
+    marginBottom: GU / 4 + 'px',
+  }}/>
+)
 
 const OverviewMain = styled.div`
   background-color: #f8fcfd;

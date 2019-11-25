@@ -3,6 +3,9 @@ import {
   ETH_DECIMALS,
   ETH_DECIMALS_NUMBER,
   RECURRING_DIVIDEND,
+  PENDING,
+  READY,
+  CLAIMED,
 } from './constants'
 import BigNumber from 'bignumber.js'
 import {
@@ -55,7 +58,7 @@ Status.propTypes = {
   time: PropTypes.string,
 }
 
-export const getStatus = ({
+export const getStatusId = ({
   rewardType,
   timeClaimed,
   endDate,
@@ -64,16 +67,30 @@ export const getStatus = ({
 }) => {
   if (rewardType === RECURRING_DIVIDEND) {
     if (claims === disbursements.length)
-      return <Status type="claimed" time={timeClaimed} />
+      return CLAIMED
     if (Date.now() > disbursements[claims].getTime())
-      return <Status type="ready" />
-    return <Status type="pending" />
+      return READY
+    return PENDING
   }
   else {
     if (timeClaimed > 0)
-      return <Status type="claimed" time={timeClaimed} />
+      return CLAIMED
     if (Date.now() > endDate)
-      return <Status type="ready" />
+      return READY
+    return PENDING
+  }
+}
+
+export const getStatus = (reward) => {
+  const statusId = getStatusId(reward)
+  switch(statusId) {
+  case PENDING:
     return <Status type="pending" />
+  case READY:
+    return <Status type="ready" />
+  case CLAIMED:
+    return <Status type="claimed" time={reward.timeClaimed} />
+  default:
+    return ''
   }
 }
