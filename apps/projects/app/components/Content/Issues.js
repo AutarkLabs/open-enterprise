@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { useQuery } from '@apollo/react-hooks'
 
-import { useAragonApi } from '@aragon/api-react'
+import { useAragonApi } from '../../api-react'
 import { Button, GU, Text } from '@aragon/ui'
 import { compareAsc, compareDesc } from 'date-fns'
 
