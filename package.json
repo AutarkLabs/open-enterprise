@@ -50,6 +50,7 @@
     "frontend": "lerna run frontend --parallel",
     "frontend:address": "cd apps/address-book && npm run frontend",
     "frontend:allocations": "cd apps/allocations && npm run frontend",
+    "frontend:discussions": "cd apps/discussions && npm run frontend",
     "frontend:dot": "cd apps/dot-voting && npm run frontend",
     "frontend:projects": "cd apps/projects && npm run frontend",
     "frontend:rewards": "cd apps/rewards && npm run frontend",

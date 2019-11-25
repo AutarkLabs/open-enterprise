@@ -62,7 +62,8 @@
     "lint": "solium --dir ./contracts",
     "lint:fix": "eslint . --fix && solium --dir ./contracts --fix",
     "coverage": "cross-env SOLIDITY_COVERAGE=true npm run ganache-cli:test",
-    "ganache-cli:test": "sh ./node_modules/@aragon/test-helpers/ganache-cli.sh"
+    "ganache-cli:test": "sh ./node_modules/@aragon/test-helpers/ganache-cli.sh",
+    "frontend": "npm run sync-assets && parcel app/index.html --port 9999"
   },
   "browserslist": [
     "last 2 Chrome versions"
