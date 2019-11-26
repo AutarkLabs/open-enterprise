@@ -152,7 +152,7 @@ const ExperienceLevel = ({
         mode="secondary"
         onClick={onAddExpLevel}
       >
-        + Add Another
+        + Add another
       </Button>
     </React.Fragment>
   )
@@ -434,7 +434,7 @@ const Settings = ({ onLogin }) => {
           </SettingsFunding>
 
           <Button mode="strong" onClick={submitChanges}>
-              Save Changes
+              Save changes
           </Button>
         </Box>
       </div>

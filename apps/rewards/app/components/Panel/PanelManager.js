@@ -4,8 +4,8 @@ import React, { Suspense } from 'react'
 
 const camel2title = camelCase =>
   camelCase
-    .replace(/([A-Z])/g, match => ` ${match}`)
-    .replace(/^./, match => match.toUpperCase())
+    .replace(/([A-Z])/g, match => ` ${match.toLowerCase()}`)
+    .replace(/^ (.)/, match => match.toUpperCase())
 
 const dynamicImport = Object.freeze({
   NewReward: () => import('./NewReward'),

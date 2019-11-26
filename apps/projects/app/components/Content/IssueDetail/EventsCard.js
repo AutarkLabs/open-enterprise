@@ -89,7 +89,7 @@ const activities = (
             wide
           >
             <Text weight="bold">
-              {'review' in data ? 'View' : 'Review'} Application
+              View application
             </Text>
           </EventButton>
         ),
@@ -122,7 +122,7 @@ const activities = (
             wide
           >
             <Text weight="bold">
-              {'review' in data ? 'View' : 'Review'} Work
+              View work
             </Text>
           </EventButton>
         ),

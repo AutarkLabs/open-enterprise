@@ -12,7 +12,6 @@ import {
   Link,
   Text,
   TextInput,
-  Tag,
   useTheme,
 } from '@aragon/ui'
 
@@ -188,17 +187,15 @@ const ReviewWork = ({ issue }) => {
               mode="negative"
               onClick={onReject}
               icon={<IconCross />}
-            >
-              Reject
-            </ReviewButton>
+              label="Reject"
+            />
             <ReviewButton
               disabled={canSubmit()}
-              icon={<IconCheck />}
               mode="positive"
               onClick={onAccept}
-            >
-              Accept
-            </ReviewButton>
+              icon={<IconCheck />}
+              label="Accept"
+            />
           </ReviewRow>
 
         </React.Fragment>

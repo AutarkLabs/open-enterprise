@@ -72,7 +72,7 @@ const Budget = ({
         <React.Fragment>
           <ContextMenuItem onClick={newAllocation}>
             <IconPlus />
-            <ActionLabel>New Allocation</ActionLabel>
+            <ActionLabel>New allocation</ActionLabel>
           </ContextMenuItem>
           {/*<ContextMenuItem onClick={edit}>*/}
           {/*  <IconEdit />*/}

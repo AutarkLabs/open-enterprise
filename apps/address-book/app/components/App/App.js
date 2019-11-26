@@ -73,7 +73,7 @@ const App = () => {
               <Header
                 primary="Address Book"
                 secondary={
-                  <Button mode="strong" icon={<IconPlus />} onClick={newEntity} label="New Entity" />
+                  <Button mode="strong" icon={<IconPlus />} onClick={newEntity} label="New entity" />
                 }
               />
               <Entities
