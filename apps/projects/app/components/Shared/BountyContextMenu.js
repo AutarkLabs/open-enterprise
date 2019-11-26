@@ -25,7 +25,7 @@ const BountyContextMenu = ({ issue }) => {
         <Item onClick={() => allocateBounty([issue])}>
           <IconCoin color={`${theme.surfaceContent}`} />
           <ActionLabel>
-            Fund Issue
+            Fund issue
           </ActionLabel>
         </Item>
       )}
@@ -35,14 +35,14 @@ const BountyContextMenu = ({ issue }) => {
             <Item onClick={() => submitWork(issue)}>
               <IconConnect color={`${theme.surfaceContent}`} />
               <ActionLabel>
-                Submit Work
+                Submit work
               </ActionLabel>
             </Item>
           )}
           <Item onClick={() => reviewApplication(issue)}>
             <IconView color={`${theme.surfaceContent}`} />
             <ActionLabel>
-              View Applications ({issue.requestsData.length})
+              View applications ({issue.requestsData.length})
             </ActionLabel>
           </Item>
 
@@ -53,7 +53,7 @@ const BountyContextMenu = ({ issue }) => {
           <Item onClick={() => reviewWork(issue)}>
             <IconView color={`${theme.surfaceContent}`} />
             <ActionLabel>
-              Review Work
+              Review work
             </ActionLabel>
           </Item>
         </React.Fragment>
@@ -63,7 +63,7 @@ const BountyContextMenu = ({ issue }) => {
           <Item onClick={() => requestAssignment(issue)}>
             <IconFile color={`${theme.surfaceContent}`} />
             <ActionLabel>
-              Submit Application
+              Submit application
             </ActionLabel>
           </Item>
           {/* Disabled since the contract doesn't allow updating the amount */}
@@ -77,13 +77,13 @@ const BountyContextMenu = ({ issue }) => {
           <Item onClick={() => requestAssignment(issue)}>
             <IconFile color={`${theme.surfaceContent}`} />
             <ActionLabel>
-              Submit Application
+              Submit application
             </ActionLabel>
           </Item>
           <Item onClick={() => reviewApplication(issue)}>
             <IconView color={`${theme.surfaceContent}`} />
             <ActionLabel>
-              Review Applications ({issue.requestsData.length})
+              Review applications ({issue.requestsData.length})
             </ActionLabel>
           </Item>
           {/* Disabled since the contract doesn't allow updating the amount */}
