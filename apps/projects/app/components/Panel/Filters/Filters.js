@@ -20,6 +20,8 @@ import { sortOptions, useIssueFilters } from '../../../context/IssueFilters'
 import ActiveFilters from '../../Shared/FilterBar/ActiveFilters'
 import Label from '../../Content/IssueDetail/Label'
 
+const noop = () => {}
+
 const FilterButton = ({ children, onClick, disabled }) => {
   const theme = useTheme()
 
@@ -91,7 +93,6 @@ const FilterDropDown = ({ caption, children, enabled }) => {
   const handleBaseButtonClick = () => {
     if (enabled) setOpened(!opened)
   }
-  const handleClickOut = () => setOpened(false)
 
   const theme = useTheme()
 
@@ -104,7 +105,7 @@ const FilterDropDown = ({ caption, children, enabled }) => {
   `
 
   return (
-    <SpringWrap opened={opened} handleClickOut={handleClickOut}>
+    <SpringWrap opened={opened} handleClickOut={noop}>
       {(openProgress) => (
         <Main>
           <FilterButton
