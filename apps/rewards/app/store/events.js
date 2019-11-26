@@ -4,7 +4,12 @@ import { addressesEqual } from '../utils/web3-utils'
 import { INITIALIZATION_TRIGGER } from './'
 
 export const handleEvent = async (state, event, settings) => {
-  const { event: eventName, returnValues, address: eventAddress, } = event
+  const {
+    event: eventName,
+    returnValues,
+    address: eventAddress,
+    transactionHash,
+  } = event
   const { vault } = settings
 
   let nextState = { ...state, }
@@ -25,7 +30,11 @@ export const handleEvent = async (state, event, settings) => {
       nextState.isSyncing = false
       break
     case 'RewardClaimed':
-      nextState = await onRewardClaimed(nextState, returnValues)
+      nextState = await onRewardClaimed(
+        nextState,
+        returnValues,
+        transactionHash
+      )
       break
     case 'RewardAdded':
       nextState = await onRewardAdded(nextState, returnValues, settings)

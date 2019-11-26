@@ -23,11 +23,14 @@ export async function onRewardAdded({ rewards = [], refTokens = [], balances = [
 
 export async function onRewardClaimed(
   { rewards = [], claims = {} },
-  { rewardId, claimant }
+  { rewardId, claimant },
+  transactionHash
 ) {
   rewards[rewardId] = await getRewardById(rewardId, claimant)
 
-  let { claimsByToken = [], totalClaimsMade = 0 } = claims
+  let { claimsByToken = [], totalClaimsMade = 0, claimHashes = {}, } = claims
+
+  claimHashes[rewardId] = transactionHash
 
   const tokenIndex = claimsByToken.findIndex(token => addressesEqual(token.address, rewards[rewardId].rewardToken))
 
@@ -43,7 +46,7 @@ export async function onRewardClaimed(
 
   totalClaimsMade = await getTotalClaims()
 
-  return { rewards, claims: { claimsByToken, totalClaimsMade } }
+  return { rewards, claims: { claimsByToken, totalClaimsMade, claimHashes } }
 
 }
 
