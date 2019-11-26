@@ -170,7 +170,7 @@ const ActionsPopover = ({ visible, setVisible, openerRef, selectedIssues, issues
         }}
       >
         <IconFilter />
-        <ActionLabel>Curate Issues</ActionLabel>
+        <ActionLabel>Curate issues</ActionLabel>
       </FilterMenuItem>
       <FilterMenuItem
         onClick={() => {
@@ -180,7 +180,7 @@ const ActionsPopover = ({ visible, setVisible, openerRef, selectedIssues, issues
         }}
       >
         <IconCoins />
-        <ActionLabel>Fund Issues</ActionLabel>
+        <ActionLabel>Fund issues</ActionLabel>
       </FilterMenuItem>
     </Popover>
   )

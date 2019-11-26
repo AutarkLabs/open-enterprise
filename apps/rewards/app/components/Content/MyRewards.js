@@ -19,7 +19,7 @@ import { Empty } from '../Card'
 import Metrics from './Metrics'
 import { useAppState } from '@aragon/api-react'
 import BigNumber from 'bignumber.js'
-import { displayCurrency } from '../../utils/helpers'
+import { displayCurrency, getStatus } from '../../utils/helpers'
 
 const MyRewards = ({
   myRewards,
@@ -92,14 +92,7 @@ const renderReward = (reward) => {
 
 const renderOneTimeDividend = (reward, amountTokens) => {
   const theme = useTheme()
-  const {
-    description,
-    userRewardAmount,
-    amountToken,
-    dateReference,
-    timeClaimed,
-    endDate
-  } = reward
+  const { description, userRewardAmount, amountToken, dateReference } = reward
   const decimals = amountTokens.find(t => t.symbol === amountToken).decimals
   const displayAmount = (
     <Text color={String(theme.positive)}>
@@ -107,7 +100,7 @@ const renderOneTimeDividend = (reward, amountTokens) => {
     </Text>
   )
   const disbursementDate = dateReference.toDateString()
-  const status = timeClaimed > 0 ? 'Claimed' : (Date.now() > endDate ? 'Ready to claim' : 'Pending')
+  const status = getStatus(reward)
   return [ description, disbursementDate, status, displayAmount ]
 }
 
@@ -117,8 +110,6 @@ const renderRecurringDividend = (reward, amountTokens) => {
     description,
     userRewardAmount,
     amountToken,
-    endDate,
-    timeClaimed,
     claims,
     disbursements
   } = reward
@@ -129,19 +120,13 @@ const renderRecurringDividend = (reward, amountTokens) => {
     </Text>
   )
   const disbursementDate = (disbursements[claims] || disbursements[claims-1]).toDateString()
-  const status = claims === disbursements.length ? 'Claimed' : (Date.now() > disbursements[claims].getTime() ? 'Ready to claim' : 'Pending')
+  const status = getStatus(reward)
   return [ description, disbursementDate, status, displayAmount ]
 }
 
 const renderOneTimeMerit = (reward, amountTokens) => {
   const theme = useTheme()
-  const {
-    description,
-    userRewardAmount,
-    amountToken,
-    endDate,
-    timeClaimed
-  } = reward
+  const { description, userRewardAmount, amountToken, endDate } = reward
   const decimals = amountTokens.find(t => t.symbol === amountToken).decimals
   const displayAmount = (
     <Text color={String(theme.positive)}>
@@ -149,7 +134,7 @@ const renderOneTimeMerit = (reward, amountTokens) => {
     </Text>
   )
   const disbursementDate = (new Date(endDate)).toDateString()
-  const status = timeClaimed > 0 ? 'Claimed' : (Date.now() > endDate ? 'Ready to claim' : 'Pending')
+  const status = getStatus(reward)
   return [ description, disbursementDate, status, displayAmount ]
 }
 

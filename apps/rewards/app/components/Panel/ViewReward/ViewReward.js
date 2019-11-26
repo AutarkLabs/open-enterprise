@@ -1,14 +1,24 @@
 import React from 'react'
 import RewardSummary from '../RewardSummary'
-import { useTheme } from '@aragon/ui'
+import { Text, useTheme } from '@aragon/ui'
+import { getStatus } from '../../../utils/helpers'
+import Header from '../../Styles/Header'
 
-const ViewReward = (reward) => {
+const ViewReward = ({ reward, isMyReward }) => {
   const theme = useTheme()
   return (
-    <RewardSummary
-      reward={reward}
-      theme={theme}
-    />
+    <div>
+      <RewardSummary
+        reward={reward}
+        theme={theme}
+      />
+      {isMyReward && (
+        <div>
+          <Header>status</Header>
+          <Text>{ getStatus(reward) }</Text>
+        </div>
+      )}
+    </div>
   )
 }
 
