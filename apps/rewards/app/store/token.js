@@ -3,14 +3,13 @@ import {
   getTokenCreationDate,
   getTransferable,
   isTokenVerified,
-  tokenDataFallback,
-  DAI_MAINNET_TOKEN_ADDRESS,
 } from '../utils/token-utils'
 import { 
   getPresetTokens,
   getTokenDecimals,
   getTokenName,
-  getTokenSymbol
+  getTokenSymbol,
+  tokenDataOverride
 } from '../../../../shared/lib/token-utils'
 import { addressesEqual } from '../utils/web3-utils'
 import tokenSymbolAbi from '../../../shared/json-abis/token-symbol.json'
@@ -35,7 +34,6 @@ const tokenStartBlock = new Map() // External contract -> creationBlock (uint)
 const tokenCreationDate = new Map()
 
 const ETH_CONTRACT = Symbol('ETH_CONTRACT')
-const DAI_CONTRACT = Symbol('DAI_CONTRACT')
 
 export async function initializeTokens(state, settings){
   // Set up ETH placeholders
@@ -46,17 +44,6 @@ export async function initializeTokens(state, settings){
   tokensTransferable.set(ETH_CONTRACT, true)
   tokenStartBlock.set(ETH_CONTRACT, null)
   tokenCreationDate.set(ETH_CONTRACT, new Date(0))
-
-  if(settings.network.type === 'main'){
-    // Set up DAI placeholders
-    tokenContracts.set(DAI_MAINNET_TOKEN_ADDRESS, DAI_CONTRACT)
-    tokenDecimals.set(DAI_CONTRACT, '18')
-    tokenName.set(DAI_CONTRACT, 'Dai Stablecoin v1.0')
-    tokenSymbols.set(DAI_CONTRACT, 'DAI')
-    tokensTransferable.set(DAI_CONTRACT, true)
-    tokenStartBlock.set(DAI_CONTRACT, null)
-    tokenCreationDate.set(DAI_CONTRACT, new Date(0))
-  }
 
   const newState = await loadTokenBalances(
     state,
@@ -212,11 +199,11 @@ function loadTokenDecimals(tokenContract, tokenAddress, { network }) {
     if (tokenDecimals.has(tokenContract)) {
       resolve(tokenDecimals.get(tokenContract))
     } else {
-      const fallback =
-        tokenDataFallback(tokenAddress, 'decimals', network.type) || '0'
+      const override =
+        tokenDataOverride(tokenAddress, 'decimals', network.type)
 
       const tokenDecimals = getTokenDecimals(app, tokenAddress)
-      resolve(tokenDecimals || fallback)
+      resolve(override || tokenDecimals || '0')
     }
   })
 }
@@ -226,10 +213,10 @@ function loadTokenName(tokenContract, tokenAddress, { network }) {
     if (tokenName.has(tokenContract)) {
       resolve(tokenName.get(tokenContract))
     } else {
-      const fallback =
-        tokenDataFallback(tokenAddress, 'name', network.type) || ''
+      const override =
+        tokenDataOverride(tokenAddress, 'name', network.type)
       const name = getTokenName(app, tokenAddress)
-      resolve(name || fallback)
+      resolve(override || name || '')
     }
   })
 }
@@ -239,10 +226,10 @@ function loadTokenSymbol(tokenContract, tokenAddress, { network }) {
     if (tokenSymbols.has(tokenContract)) {
       resolve(tokenSymbols.get(tokenContract))
     } else {
-      const fallback =
-        tokenDataFallback(tokenAddress, 'symbol', network.type) || ''
+      const override =
+        tokenDataOverride(tokenAddress, 'symbol', network.type)
       const tokenSymbol = getTokenSymbol(app, tokenAddress)
-      resolve(tokenSymbol || fallback)
+      resolve(override || tokenSymbol || '')
     }
   })
 }
@@ -252,10 +239,10 @@ function loadTransferable(tokenContract, tokenAddress, { network }) {
     if (tokensTransferable.has(tokenContract)) {
       resolve(tokensTransferable.get(tokenContract))
     } else {
-      const fallback =
-        tokenDataFallback(tokenAddress, 'transfersEnabled', network.type) || ''
+      const override =
+        tokenDataOverride(tokenAddress, 'transfersEnabled', network.type)
       const tokenTransferable = getTransferable(app, tokenAddress)
-      resolve(tokenTransferable || fallback)
+      resolve(override || tokenTransferable || false)
     }
   })
 }
