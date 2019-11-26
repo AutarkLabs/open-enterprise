@@ -164,15 +164,17 @@ const App = () => {
     )
     case 'Issues': return (
       <>
-        <MiniFilterBar>
-          <Button icon={<IconFilter />} onClick={filtersPanel} label="Filters Panel" />
-          <TextFilter
-            onClick={activateTextFilter}
-            visible={textFilterVisible}
-            openerRef={textFilterOpenerApp}
-            setVisible={setTextFilterVisible}
-          />
-        </MiniFilterBar>
+        {!selectedIssueId && (
+          <MiniFilterBar>
+            <Button icon={<IconFilter />} onClick={filtersPanel} label="Filters Panel" />
+            <TextFilter
+              onClick={activateTextFilter}
+              visible={textFilterVisible}
+              openerRef={textFilterOpenerApp}
+              setVisible={setTextFilterVisible}
+            />
+          </MiniFilterBar>
+        )}
         <Button mode="strong" icon={<IconPlus />} onClick={setupNewIssue} label="New issue" />
       </>
     )
