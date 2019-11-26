@@ -245,7 +245,8 @@ const MiniFilterBar = styled.span`
   > * {
     margin-right: ${GU}px;
   }
-  @media only screen and (min-width: 514px) {
+
+  @media only screen and (min-width: 515px) {
     display: none;
   }
 `
