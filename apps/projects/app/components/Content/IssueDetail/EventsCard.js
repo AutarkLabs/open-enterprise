@@ -3,17 +3,14 @@ import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import {
   Box,
-  Tag,
   Text,
   useTheme,
   GU,
   Link,
-  Button,
 } from '@aragon/ui'
 import { formatDistance } from 'date-fns'
 import { usePanelManagement } from '../../Panel'
 import { issueShape, userGitHubShape } from '../../../utils/shapes.js'
-import workRatings from '../../../utils/work-ratings.js'
 
 const calculateAgo = pastDate => formatDistance(pastDate, Date.now(), { addSuffix: true })
 
@@ -28,13 +25,6 @@ const IssueEvent = ({ user, ...props }) => {
         </IssueEventAvatar>
         <IssueEventDetails>
           <Text.Block size="small">
-            <Link
-              href={user.url}
-              target="_blank"
-              style={{ textDecoration: 'none', color: `${theme.link}` }}
-            >
-              {user.login}
-            </Link>{' '}
             {props.eventDescription}
           </Text.Block>
           <Text.Block size="xsmall" color={`${theme.surfaceContentSecondary}`}>
@@ -53,10 +43,25 @@ const IssueEvent = ({ user, ...props }) => {
 
 IssueEvent.propTypes = {
   user: userGitHubShape,
-  eventDescription: PropTypes.string.isRequired,
+  eventDescription: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.object,
+  ]).isRequired,
   eventAction: PropTypes.object,
   date: PropTypes.string.isRequired,
 }
+
+const applicationLink = (user, onReviewApplication, issue, index) => (
+  <React.Fragment>
+    {user} submitted <Link onClick={() => onReviewApplication(issue, index)}>an application for review</Link>
+  </React.Fragment>
+)
+
+const workLink = (user, onReviewWork, issue, index) => (
+  <React.Fragment>
+    {user} submitted <Link onClick={() => onReviewWork(issue, index)}>work for review</Link>
+  </React.Fragment>
+)
 
 const activities = (
   issue,
@@ -67,12 +72,11 @@ const activities = (
   onReviewApplication,
   onReviewWork
 ) => {
-  const theme = useTheme()
   const events = {
     createdAt: {
       date: createdAt,
       user: issue.author,
-      eventDescription: 'opened the task'
+      eventDescription: issue.author.login + ' opened this issue'
     }
   }
 
@@ -81,29 +85,20 @@ const activities = (
       events[data.applicationDate] = {
         date: data.applicationDate,
         user: data.user,
-        eventDescription: 'requested assignment',
-        eventAction: (
-          <EventButton
-            mode="normal"
-            onClick={() => onReviewApplication(issue, index)}
-            wide
-          >
-            <Text weight="bold">
-              {'review' in data ? 'View' : 'Review'} Application
-            </Text>
-          </EventButton>
-        ),
+        eventDescription: applicationLink(data.user.login, onReviewApplication, issue, index),
       }
 
       if ('review' in data) {
         events[data.review.reviewDate] = {
           date: data.review.reviewDate,
-          user: data.review.user,
-          eventDescription: (data.review.approved ? 'assigned' : 'rejected') + ' ' + data.user.login,
-          eventAction:
-            data.review.feedback.length === 0 ? null : (
-              <Text>{data.review.feedback}</Text>
-            ),
+          user: data.user,
+          eventDescription: (
+            data.user.login + (data.review.approved ?
+              ' was assigned to this task'
+              :
+              '\'s application was rejected'
+            )
+          ),
         }
       }
     })
@@ -114,40 +109,20 @@ const activities = (
       events[data.submissionDate] = {
         date: data.submissionDate,
         user: data.user,
-        eventDescription: 'submitted work for review',
-        eventAction: (
-          <EventButton
-            mode="normal"
-            onClick={() => onReviewWork(issue, index)}
-            wide
-          >
-            <Text weight="bold">
-              {'review' in data ? 'View' : 'Review'} Work
-            </Text>
-          </EventButton>
-        ),
+        eventDescription: workLink(data.user.login, onReviewWork, issue, index),
       }
 
       if ('review' in data) {
         events[data.review.reviewDate] = {
           date: data.review.reviewDate,
-          user: data.review.user,
-          eventDescription: (data.review.accepted ? 'accepted' : 'rejected') + ' ' + data.user.login + '\'s work',
-          eventAction:
-            <div>
-              {!!data.review.feedback.length && (
-                <Text.Block size="large" style={{ marginBottom: '8px' }}>
-                  {data.review.feedback}
-                </Text.Block>
-              )}
-              <Tag
-                uppercase={false}
-                color={`${theme.surfaceContentSecondary}`}
-                background={`${theme.border}`}
-              >
-                {'Quality:' + ' ' + workRatings[data.review.rating]}
-              </Tag>
-            </div>
+          user: data.user,
+          eventDescription: (
+            data.user.login + (data.review.accepted ?
+              '\'s work was accepted'
+              :
+              '\'s work was rejected'
+            )
+          ),
         }
       }
     })
@@ -158,7 +133,7 @@ const activities = (
       events[data.date] = {
         date: data.date,
         user: data.user,
-        eventDescription: (i === 0 ? ' added' : ' updated') + ' funding',
+        eventDescription: data.user.login + (i ? ' updated the' : ' placed a') + ' bounty',
       }
     })
   }
@@ -228,11 +203,6 @@ const IssueEventDetails = styled.div`
   > :not(:last-child) {
     margin-bottom: ${GU}px;
   }
-`
-const EventButton = styled(Button)`
-  padding: 5px 20px 2px 20px;
-  font-size: 15px;
-  border-radius: 5px;
 `
 
 // eslint-disable-next-line import/no-unused-modules
