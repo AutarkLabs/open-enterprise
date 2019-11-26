@@ -77,7 +77,7 @@ const CastVote = ({ onVote, toggleVotingMode, vote, voteWeights, votingPower }) 
           type="submit"
           disabled={remaining === 100}
         >
-          Submit Vote
+          Submit vote
         </Button>
       </div>
     </form>

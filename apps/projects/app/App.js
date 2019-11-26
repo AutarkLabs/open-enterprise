@@ -160,7 +160,7 @@ const App = () => {
 
     switch (tabs[activeIndex].name) {
     case 'Overview': return (
-      <Button mode="strong" icon={<IconPlus />} onClick={setupNewProject} label="New Project" />
+      <Button mode="strong" icon={<IconPlus />} onClick={setupNewProject} label="New project" />
     )
     case 'Issues': return (
       <>
@@ -173,7 +173,7 @@ const App = () => {
             setVisible={setTextFilterVisible}
           />
         </MiniFilterBar>
-        <Button mode="strong" icon={<IconPlus />} onClick={setupNewIssue} label="New Issue" />
+        <Button mode="strong" icon={<IconPlus />} onClick={setupNewIssue} label="New issue" />
       </>
     )
     default: return null

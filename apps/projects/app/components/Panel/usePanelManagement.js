@@ -25,7 +25,7 @@ const usePanelManagement = () => {
     editBounty: issues => {
       setActivePanel(PANELS.FundIssues)
       setPanelProps({
-        title: 'Update Funding',
+        title: 'Update funding',
         issues,
         mode: 'update',
       })
@@ -42,11 +42,16 @@ const usePanelManagement = () => {
       setPanelProps({
         issue,
         requestIndex,
+        title: 'View application'
       })
     },
     reviewWork: (issue, index = 0) => {
       setActivePanel(PANELS.ReviewWork)
-      setPanelProps({ issue, index })
+      setPanelProps({
+        issue,
+        index,
+        title: 'View work'
+      })
     },
     setupNewIssue: () => {
       setActivePanel(PANELS.NewIssue)

@@ -55,7 +55,7 @@ tomorrow.setDate(tomorrow.getDate() + 1)
 
 const messages = {
   customTokenInvalid: () => 'Token address must be of a valid ERC20 compatible clonable token.',
-  meritTokenTransferable: () => 'Merit rewards must be non-transferable.',
+  meritTokenTransferable: () => 'Merit rewards must have a reference asset that is non-transferable.',
   amountOverBalance: () => 'Amount must be below the available balance.',
   dateStartAfterEnd: () => 'Start date must take place before the end date.',
   noDisbursements: (disbursement, displayUnit) => `Based on your selected parameters, there will be no disbursements, as your end date falls before the end of the first cycle. Please choose an end date that is at least ${disbursement} ${displayUnit} after the start date.`,

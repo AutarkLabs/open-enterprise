@@ -36,7 +36,9 @@ import {
 const ETHER_TOKEN_FAKE_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 const errorMessages = {
-  amount: () => 'Funding amounts must be greater than zero',
+  amount: ({ sayAmount, plural }) =>
+    (sayAmount ? `Funding amount${plural ? 's' : ''}` : 'Estimated hours') +
+    ' must be greater than zero',
   date: () => 'The deadline cannot be in the past',
   total: ({ inVault, sayTotal, symbol, total }) =>
     `The ${sayTotal ? 'total' : ''} funding amount of ${total} ${symbol} ` +
@@ -190,7 +192,14 @@ const BountyUpdate = ({
         />
       </Form>
       {maxError && <ErrorMessage text={errorMessages.total()} />}
-      {zeroError && <ErrorMessage text={errorMessages.amount()} />}
+      {zeroError &&
+        <ErrorMessage text={
+          errorMessages.amount({
+            sayAmount: bountySettings.fundingModel === 'Fixed',
+            plural: false,
+          })}
+        />
+      }
       {dateError && <ErrorMessage text={errorMessages.date()} />}
     </>
   )
@@ -213,10 +222,12 @@ const FundForm = ({
   descriptionChange,
   updateBounty,
 }) => {
+  const { appState: { bountySettings } } = useAragonApi()
   const [ submitDisabled, setSubmitDisabled ] = useState(true)
   const [ maxErrors, setMaxErrors ] = useState([])
   const [ zeroError, setZeroError ] = useState([])
   const [ dateError, setDateError ] = useState([])
+  const [ validate, setValidate ] = useState(false)
 
   useEffect(() => {
     setMaxErrors(tokens.reduce(
@@ -243,11 +254,12 @@ const FundForm = ({
   }, [ tokens, bounties ])
 
   useEffect(() => {
+    if (!validate) return
     const today = new Date()
     const zeroErrArray = []
     const dateErrArray = []
     Object.values(bounties).forEach(bounty => {
-      if (bounty.payout === 0) zeroErrArray.push(bounty.issueId)
+      if (!bounty.payout) zeroErrArray.push(bounty.issueId)
       if (today > bounty.deadline) dateErrArray.push(bounty.issueId)
     })
     setZeroError(zeroErrArray)
@@ -258,7 +270,7 @@ const FundForm = ({
       !!zeroErrArray.length ||
       !!dateErrArray.length
     )
-  }, [ bounties, description, maxErrors ])
+  }, [ validate, bounties, description, maxErrors ])
 
   return (
     <>
@@ -295,6 +307,7 @@ const FundForm = ({
                   issue={issue}
                   bounty={bounties[issue.id]}
                   tokens={tokens}
+                  onBlur={() => setValidate(true)}
                   updateBounty={updateBounty(issue.id)}
                 />
               ))}
@@ -305,7 +318,14 @@ const FundForm = ({
       {maxErrors.map((maxError, i) => (
         <ErrorMessage key={i} text={errorMessages.total(maxError)} />
       ))}
-      {!!zeroError.length && <ErrorMessage text={errorMessages.amount()} />}
+      {!!zeroError.length &&
+        <ErrorMessage text={
+          errorMessages.amount({
+            sayAmount: bountySettings.fundingModel === 'Fixed',
+            plural: issues.length > 1,
+          })}
+        />
+      }
       {!!dateError.length && <ErrorMessage text={errorMessages.date()} />}
     </>
   )
@@ -506,10 +526,10 @@ const FundIssues = ({ issues, mode }) => {
       {(alreadyAdded.length > 0) && (
         <Info.Action title="Warning" style={{ marginBottom: `${2 * GU}px` }}>
           <p style={{ margin: '10px 0' }}>
-          The following issues already have bounties and cannot be updated on a bulk basis. To update an individual issue, select “Update Bounty” from the issue’s context menu.
+          The following issues already have active bounties, so they have been discarded from this funding proposal:
           </p>
           <WarningIssueList>
-            {issues.map(issue => <li key={issue.id}>{issue.title}</li>)}
+            {alreadyAdded.map(issue => <li key={issue.id}>{issue.title}</li>)}
           </WarningIssueList>
         </Info.Action>
       )}

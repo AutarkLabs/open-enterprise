@@ -88,8 +88,8 @@ const ActionsPopover = ({ visible, setVisible, openerRef, selectedIssues, issues
           setVisible(false)
         }}
       >
-        <IconConfiguration css={`color: ${theme.surfaceIcon};`} />
-        <ActionLabel>Curate Issues</ActionLabel>
+        <IconConfiguration css={`color: ${theme.surfaceIcon}`} />
+        <ActionLabel>Curate issues</ActionLabel>
       </FilterMenuItem>
       <FilterMenuItem
         onClick={() => {
@@ -98,8 +98,8 @@ const ActionsPopover = ({ visible, setVisible, openerRef, selectedIssues, issues
           setVisible(false)
         }}
       >
-        <IconCoin css={`color: ${theme.surfaceIcon};`} />
-        <ActionLabel>Fund Issues</ActionLabel>
+        <IconCoin css={`color: ${theme.surfaceIcon}`} />
+        <ActionLabel>Fund issues</ActionLabel>
       </FilterMenuItem>
     </Popover>
   )

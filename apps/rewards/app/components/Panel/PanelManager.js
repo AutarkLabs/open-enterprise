@@ -4,8 +4,8 @@ import React, { Suspense } from 'react'
 
 const camel2title = camelCase =>
   camelCase
-    .replace(/([A-Z])/g, match => ` ${match}`)
-    .replace(/^./, match => match.toUpperCase())
+    .replace(/([A-Z])/g, match => ` ${match.toLowerCase()}`)
+    .replace(/^ (.)/, match => match.toUpperCase())
 
 const dynamicImport = Object.freeze({
   NewReward: () => import('./NewReward'),
@@ -18,12 +18,14 @@ const PANELS = Object.keys(dynamicImport).reduce((obj, item) => {
   return obj
 }, {})
 
-const PanelManager = ({ activePanel = null, onClose, ...panelProps }) => {
-  let panelTitle = activePanel && camel2title(activePanel)
+const PanelManager = ({
+  activePanel = null,
+  onClose,
+  title,
+  ...panelProps
+}) => {
+  const panelTitle = title || activePanel && camel2title(activePanel)
   const PanelComponent = activePanel && React.lazy(dynamicImport[activePanel])
-  if (panelProps.reward) {
-    panelTitle += ' #' + panelProps.reward.rewardId
-  }
   return (
     <SidePanel
       title={panelTitle || ''}

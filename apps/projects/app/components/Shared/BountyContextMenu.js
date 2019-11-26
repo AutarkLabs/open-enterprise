@@ -3,45 +3,63 @@ import styled, { css } from 'styled-components'
 import { ContextMenuItem, GU, theme } from '@aragon/ui'
 import { usePanelManagement } from '../Panel'
 import { issueShape } from '../../utils/shapes.js'
-import { IconCoin, IconConnect, IconFile, IconView } from '@aragon/ui'
+import { IconCoin, IconConnect, IconFile, IconView, useTheme } from '@aragon/ui'
+import { useAragonApi } from '../../api-react'
 
 const BountyContextMenu = ({ issue }) => {
-  const { workStatus } = issue
+  const { workStatus, assignee } = issue
+  const { connectedAccount } = useAragonApi()
+
   const {
     allocateBounty,
-    editBounty,
     requestAssignment,
     reviewApplication,
     reviewWork,
     submitWork,
   } = usePanelManagement()
+  const theme = useTheme()
 
   return (
     <React.Fragment>
       {workStatus === undefined && (
         <Item onClick={() => allocateBounty([issue])}>
-          <IconCoin color={`${theme.surfaceIcon}`} />
+          <IconCoin color={`${theme.surfaceContent}`} />
           <ActionLabel>
-            Fund Issue
+            Fund issue
           </ActionLabel>
         </Item>
       )}
       {workStatus === 'in-progress' && (
         <React.Fragment>
-          <Item onClick={() => submitWork(issue)}>
-            <IconConnect color={`${theme.surfaceIcon}`} />
+          {(connectedAccount === assignee) && (
+            <Item onClick={() => submitWork(issue)}>
+              <IconConnect color={`${theme.surfaceContent}`} />
+              <ActionLabel>
+                Submit work
+              </ActionLabel>
+            </Item>
+          )}
+          <Item onClick={() => reviewApplication(issue)}>
+            <IconView color={`${theme.surfaceContent}`} />
             <ActionLabel>
-              Submit Work
+              View applications ({issue.requestsData.length})
             </ActionLabel>
           </Item>
+
         </React.Fragment>
       )}
       {workStatus === 'review-work' && (
         <React.Fragment>
           <Item onClick={() => reviewWork(issue)}>
+            <IconView color={`${theme.surfaceContent}`} />
+            <ActionLabel>
+              View work
+            </ActionLabel>
+          </Item>
+          <Item onClick={() => reviewApplication(issue)}>
             <IconView color={`${theme.surfaceIcon}`} />
             <ActionLabel>
-              Review Work
+              View applications ({issue.requestsData.length})
             </ActionLabel>
           </Item>
         </React.Fragment>
@@ -49,9 +67,9 @@ const BountyContextMenu = ({ issue }) => {
       {workStatus === 'funded' && (
         <React.Fragment>
           <Item onClick={() => requestAssignment(issue)}>
-            <IconFile color={`${theme.surfaceIcon}`} />
+            <IconFile color={`${theme.surfaceContent}`} />
             <ActionLabel>
-              Submit Application
+              Submit application
             </ActionLabel>
           </Item>
           {/* Disabled since the contract doesn't allow updating the amount */}
@@ -63,24 +81,40 @@ const BountyContextMenu = ({ issue }) => {
       {workStatus === 'review-applicants' && (
         <React.Fragment>
           <Item onClick={() => requestAssignment(issue)}>
-            <IconFile color={`${theme.surfaceIcon}`} />
+            <IconFile color={`${theme.surfaceContent}`} />
             <ActionLabel>
-              Submit Application
+              Submit application
+            </ActionLabel>
+          </Item>
+          <Item onClick={() => reviewApplication(issue)}>
+            <IconView color={`${theme.surfaceContent}`} />
+            <ActionLabel>
+              View applications ({issue.requestsData.length})
+            </ActionLabel>
+          </Item>
+          {/* Disabled since the contract doesn't allow updating the amount */}
+          {/*<Item bordered onClick={() => editBounty([issue])}>*/}
+          {/*  <IconCoin color={`${theme.surfaceContent}`} />*/}
+          {/*  <ActionLabel>*/}
+          {/*    Update Funding*/}
+          {/*  </ActionLabel>*/}
+          {/*</Item>*/}
+        </React.Fragment>
+      )}
+      {workStatus === 'fulfilled' && (
+        <React.Fragment>
+          <Item onClick={() => reviewWork(issue)}>
+            <IconView color={`${theme.surfaceIcon}`} />
+            <ActionLabel>
+              View work
             </ActionLabel>
           </Item>
           <Item onClick={() => reviewApplication(issue)}>
             <IconView color={`${theme.surfaceIcon}`} />
             <ActionLabel>
-              Review Application {issue.requestsData ? `(${issue.requestsData.length})` : ''}
+              View applications ({issue.requestsData.length})
             </ActionLabel>
           </Item>
-          {/* Disabled since the contract doesn't allow updating the amount */}
-          {/*<Item bordered onClick={() => editBounty([issue])}>*/}
-          {/*  <IconCoin color={`${theme.surfaceIcon}`} />*/}
-          {/*  <ActionLabel>*/}
-          {/*    Update Funding*/}
-          {/*  </ActionLabel>*/}
-          {/*</Item>*/}
         </React.Fragment>
       )}
     </React.Fragment>
