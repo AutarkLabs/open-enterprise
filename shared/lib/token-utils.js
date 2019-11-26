@@ -9,7 +9,7 @@ import tokenSymbolAbi from '../abi/token-symbol.json'
 import tokenSymbolBytesAbi from '../abi/token-symbol-bytes.json'
 
 const ANT_MAINNET_TOKEN_ADDRESS = '0x960b236A07cf122663c4303350609A66A7B288C0'
-const DAI_MAINNET_TOKEN_ADDRESS = '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359'
+const SAI_MAINNET_TOKEN_ADDRESS = '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359'
 
 export const tokenAbi = [].concat(
   tokenSymbolAbi,
@@ -28,7 +28,7 @@ const PRESET_TOKENS = new Map([
     [
       ETHER_TOKEN_FAKE_ADDRESS,
       ANT_MAINNET_TOKEN_ADDRESS,
-      DAI_MAINNET_TOKEN_ADDRESS,
+      SAI_MAINNET_TOKEN_ADDRESS,
     ],
   ],
 ])
@@ -37,16 +37,16 @@ const PRESET_TOKENS = new Map([
 // adapt to every situation. The data listed in this map is used as a fallback
 // if either some part of their interface doesn't conform to a standard we
 // support.
-const KNOWN_TOKENS_FALLBACK = new Map([
+const KNOWN_TOKENS_OVERRIDE = new Map([
   [
     'main',
     new Map([
       [
-        DAI_MAINNET_TOKEN_ADDRESS,
-        { symbol: 'DAI', name: 'Dai Stablecoin v1.0', decimals: '18' },
+        SAI_MAINNET_TOKEN_ADDRESS,
+        { symbol: 'SAI', name: 'Sai Stablecoin v1.0', decimals: '18' },
       ],
     ]),
-  ],
+  ]
 ])
 
 export const isTokenVerified = (tokenAddress, networkType) =>
@@ -55,18 +55,18 @@ export const isTokenVerified = (tokenAddress, networkType) =>
     ? ETHER_TOKEN_VERIFIED_ADDRESSES.has(tokenAddress.toLowerCase())
     : true
 
-export const tokenDataFallback = (tokenAddress, fieldName, networkType) => {
-  // The fallback list is without checksums
+export const tokenDataOverride = (tokenAddress, fieldName, networkType) => {
+  // The override list is without checksums
   const addressWithoutChecksum = tokenAddress.toLowerCase()
 
-  const fallbacksForNetwork = KNOWN_TOKENS_FALLBACK.get(networkType)
+  const overridesForNetwork = KNOWN_TOKENS_OVERRIDE.get(networkType)
   if (
-    fallbacksForNetwork == null ||
-    !fallbacksForNetwork.has(addressWithoutChecksum)
+    overridesForNetwork == null ||
+    !overridesForNetwork.has(addressWithoutChecksum)
   ) {
     return null
   }
-  return fallbacksForNetwork.get(addressWithoutChecksum)[fieldName] || null
+  return overridesForNetwork.get(addressWithoutChecksum)[fieldName] || null
 }
 
 export async function getTokenSymbol(app, address) {
