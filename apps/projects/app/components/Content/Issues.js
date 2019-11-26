@@ -236,11 +236,17 @@ const IssuesWrap = props => {
   const [ downloadedRepos, setDownloadedRepos ] = useState({})
   const [ query, setQuery ] = useState(null)
 
-  const { activeFilters } = useIssueFilters()
+  const { activeFilters, resetFilters } = useIssueFilters()
+
+  // clear filters when component unmounts
+  useEffect(() => {
+    return () => {
+      resetFilters()
+    }
+  }, [])
 
   // build params for GQL query, each repo to fetch has number of items to download,
   // and a cursor if there are 100+ issues and "Show More" was clicked.
-
   useEffect(() => {
     let reposQueryParams = {}
 
