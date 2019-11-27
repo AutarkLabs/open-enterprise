@@ -72,12 +72,12 @@ const Budget = ({
         <React.Fragment>
           <ContextMenuItem onClick={newAllocation}>
             <IconPlus />
-            <ActionLabel>New Allocation</ActionLabel>
+            <ActionLabel>New allocation</ActionLabel>
           </ContextMenuItem>
-          {/*<ContextMenuItem onClick={edit}>*/}
-          {/*  <IconEdit />*/}
-          {/*  <ActionLabel>Edit</ActionLabel>*/}
-          {/*</ContextMenuItem>*/}
+          <ContextMenuItem onClick={edit}>
+            <IconEdit />
+            <ActionLabel>Edit</ActionLabel>
+          </ContextMenuItem>
           {/* <ContextMenuItem onClick={deactivate}> */}
           {/*   <IconProhibited /> */}
           {/*   <ActionLabel>Deactivate</ActionLabel> */}

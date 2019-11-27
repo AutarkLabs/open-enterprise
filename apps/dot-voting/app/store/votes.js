@@ -3,29 +3,30 @@ import { first, map, mergeMap } from 'rxjs/operators'
 
 import { app } from './'
 import { EMPTY_CALLSCRIPT } from '../utils/vote-utils'
-import { ETHER_TOKEN_FAKE_ADDRESS, getTokenSymbol } from '../../../../shared/lib/token-utils'
+import { ETHER_TOKEN_FAKE_ADDRESS, tokenAbi } from '../../../../shared/lib/token-utils'
+import { loadTokenSymbol } from '../../../../shared/store-utils/token'
 import { addressesEqual } from '../../../../shared/lib/web3-utils'
 import allocationsAbi from '../../../shared/json-abis/allocations'
 
-export const castVote = async (state, { voteId }) => {
+export const castVote = async (state, { voteId }, settings) => {
   const transform = async vote => ({
     ...vote,
-    data: await loadVoteData(voteId),
+    data: await loadVoteData(voteId, settings),
   })
 
   return updateState(state, voteId, transform)
 }
 
-export const executeVote = async (state, { voteId }) => {
+export const executeVote = async (state, { voteId }, settings) => {
   const transform = ({ data, ...vote }) => ({
     ...vote,
     data: { ...data, executed: true },
   })
-  return updateState(state, voteId, transform)
+  return updateState(state, voteId, transform, settings)
 }
 
-export const startVote = async (state, { voteId }) => {
-  return updateState(state, voteId, vote => vote)
+export const startVote = async (state, { voteId }, settings) => {
+  return updateState(state, voteId, vote => vote, settings)
 }
 
 /***********************
@@ -54,7 +55,7 @@ const loadVoteDescription = async (vote) => {
   return vote
 }
 
-const loadVoteData = async (voteId) => {
+const loadVoteData = async (voteId, settings) => {
   return new Promise(resolve => {
     app
       .call('getVote', voteId)
@@ -64,14 +65,14 @@ const loadVoteData = async (voteId) => {
         if (funcSig == 'b3670f9e') {
           resolve(loadVoteDataProjects(voteData, voteId))
         } else {
-          resolve(loadVoteDataAllocation(voteData, voteId))
+          resolve(loadVoteDataAllocation(voteData, voteId, settings))
         }
       })
   })
 }
 
 // These functions arn't DRY make them better
-const loadVoteDataAllocation = async (vote, voteId) => {
+const loadVoteDataAllocation = async (vote, voteId, settings) => {
   return new Promise(resolve => {
     combineLatest(
       app.call('getVoteMetadata', voteId),
@@ -108,7 +109,8 @@ const loadVoteDataAllocation = async (vote, voteId) => {
           symbol = 'ETH'
         }
         else {
-          symbol = await getTokenSymbol(app, tokenAddress)
+          const tokenContract = app.external(tokenAddress, tokenAbi)
+          symbol = await loadTokenSymbol(tokenContract, tokenAddress, settings)
         }
 
 
@@ -151,7 +153,7 @@ const loadVoteDataProjects = async (vote, voteId) => {
   })
 }
 
-const updateVotes = async (votes, voteId, transform) => {
+const updateVotes = async (votes, voteId, transform, settings) => {
   const voteIndex = votes.findIndex(vote => vote.voteId === voteId)
   let nextVotes = Array.from(votes)
   if (voteIndex === -1) {
@@ -159,7 +161,7 @@ const updateVotes = async (votes, voteId, transform) => {
     nextVotes = votes.concat(
       await transform({
         voteId,
-        data: await loadVoteData(voteId),
+        data: await loadVoteData(voteId, settings),
       })
     )
   } else {
@@ -196,9 +198,9 @@ const getProjectCandidate = async (voteId, candidateIndex) => {
   })
 }
 
-const updateState = async (state, voteId, transform) => {
+const updateState = async (state, voteId, transform, settings) => {
   let { votes = [] } = state ? state : []
-  votes = await updateVotes(votes, voteId, transform)
+  votes = await updateVotes(votes, voteId, transform, settings)
   return {
     ...state,
     votes: votes,

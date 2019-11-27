@@ -117,7 +117,7 @@ class NewEntity extends React.Component {
       <Form
         onSubmit={handleSubmit}
         disabled={!!formDisabled}
-        submitText="Submit Entity"
+        submitText="Submit entity"
         error={errorBlock}
       >
         <FormField

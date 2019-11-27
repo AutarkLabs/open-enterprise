@@ -1,7 +1,7 @@
 import { castVote, executeVote, startVote } from './votes'
 import { hasLoadedVoteSettings, loadVoteSettings } from '../utils/vote-settings'
 
-export const handleEvent = async (state, event) => {
+export const handleEvent = async (state, event, settings) => {
   const {
     event: eventName,
     returnValues: returnValues,
@@ -26,15 +26,15 @@ export const handleEvent = async (state, event) => {
     break
   }
   case 'CastVote':
-    nextState = await castVote(nextState, returnValues)
+    nextState = await castVote(nextState, returnValues, settings)
     break
   case 'ExecutionScript':
     break
   case 'ExecuteVote':
-    nextState = await executeVote(nextState, returnValues)
+    nextState = await executeVote(nextState, returnValues, settings)
     break
   case 'StartVote':
-    nextState = await startVote(nextState, returnValues)
+    nextState = await startVote(nextState, returnValues, settings)
     break
   case 'UpdateQuorum':
   case 'UpdateMinimumSupport':

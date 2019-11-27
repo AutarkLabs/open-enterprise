@@ -77,7 +77,7 @@ const Project = ({
               <div css="width: 22px; margin: 0 4px; margin-top: 4px">
                 <IconCross width="22px" height="22px" />
               </div>
-              <ActionLabel>Remove Project</ActionLabel>
+              <ActionLabel>Remove project</ActionLabel>
             </ContextMenuItem>
           </div>
         </ContextMenu>
