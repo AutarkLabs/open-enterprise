@@ -196,6 +196,7 @@ class App extends React.Component {
   }
 
   claimReward = reward => {
+    // TODO
     this.props.api.claimReward(reward.rewardId + reward.claims).toPromise()
   }
 

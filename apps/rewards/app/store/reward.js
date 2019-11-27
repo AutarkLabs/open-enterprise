@@ -30,7 +30,10 @@ export async function onRewardClaimed(
 
   let { claimsByToken = [], totalClaimsMade = 0, claimHashes = {}, } = claims
 
-  claimHashes[rewardId] = transactionHash
+  claimHashes[rewardId] = {
+    ...claimHashes[rewardId],
+    [claimant]: transactionHash
+  }
 
   const tokenIndex = claimsByToken.findIndex(token => addressesEqual(token.address, rewards[rewardId].rewardToken))
 

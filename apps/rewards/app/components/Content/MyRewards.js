@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 import {
   ContextMenu,
@@ -21,7 +21,7 @@ import {
 } from '../../utils/constants'
 import { Empty } from '../Card'
 import Metrics from './Metrics'
-import { useAppState, useNetwork } from '@aragon/api-react'
+import { useAppState, useAragonApi, useNetwork } from '@aragon/api-react'
 import BigNumber from 'bignumber.js'
 import { displayCurrency, getStatus, getStatusId } from '../../utils/helpers'
 
@@ -34,10 +34,13 @@ const MyRewards = ({
 }) => {
   const network = useNetwork()
   const rewardsEmpty = myRewards.length === 0
+  const { api } = useAragonApi()
+  const [ user, setUser ] = useState()
+  api.accounts().subscribe(accounts => setUser(accounts[0]))
 
   const getEtherscanLink = reward => {
     const networkChunk = network.id === 1 ? '' : `${network.type}.`
-    const claimHash = claimHashes[reward.rewardId]
+    const claimHash = claimHashes[reward.rewardId][user]
     const link = `https://${networkChunk}etherscan.io/tx/${claimHash}`
     return link
   }
