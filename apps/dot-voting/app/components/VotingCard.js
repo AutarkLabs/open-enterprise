@@ -103,7 +103,6 @@ const VotingCard = ({ vote, onSelectVote }) => {
                 cursor: pointer;
                 padding: 2px 8px;
                 pointer-events: auto;
-                mix-blend-mode: normal;
               `}
             >
               {' + ' + (options.length - 2) + ' more'}
