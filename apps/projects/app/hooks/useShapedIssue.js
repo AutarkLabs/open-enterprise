@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { useAragonApi } from '@aragon/api-react'
+import { useAragonApi } from '../api-react'
 import BigNumber from 'bignumber.js'
 
 export default () => {

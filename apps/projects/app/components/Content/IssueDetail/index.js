@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import PropTypes from 'prop-types'
-import { useAragonApi } from '@aragon/api-react'
+import { useAragonApi } from '../../../api-react'
 import { useLayout } from '@aragon/ui'
 import { useQuery } from '@apollo/react-hooks'
 import useShapedIssue from '../../../hooks/useShapedIssue'

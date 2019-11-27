@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import { Button, Info, Text } from '@aragon/ui'
 import { useAppState } from '@aragon/api-react'
+import Header from '../Styles/Header'
 import BigNumber from 'bignumber.js'
 
 import {
@@ -31,21 +32,21 @@ const RewardSummary = ({ reward, theme, onCancel, onSubmit }) => {
       <GreyBox theme={theme}>
         <Title>{description}</Title>
         <SubTitle theme={theme}>{rewardType}</SubTitle>
-        <Heading theme={theme}>Reference Asset</Heading>
+        <Header>Reference Asset</Header>
         <Content>
           {referenceTokenSymbol}
         </Content>
-        <Heading theme={theme}>
+        <Header>
           {rewardType === ONE_TIME_MERIT && 'Total'}
           {' Amount '}
           {rewardType === RECURRING_DIVIDEND && 'per Cycle'}
-        </Heading>
+        </Header>
         <Content>{BigNumber(amount).div(BigNumber(10).pow(amountTokens.find(t => t.symbol === amountToken).decimals)).toString(10)} {amountToken}</Content>
-        <Heading theme={theme}>
+        <Header>
           {rewardType === ONE_TIME_MERIT ?
             'Start and End Date' : 'Disbursement Date'}
           {rewardType === RECURRING_DIVIDEND && 's'}
-        </Heading>
+        </Header>
         {rewardType === ONE_TIME_DIVIDEND && (
           <Content>{dateReference.toDateString()} (block: {disbursementBlocks[0]})</Content>
         )}
@@ -70,9 +71,9 @@ const RewardSummary = ({ reward, theme, onCancel, onSubmit }) => {
           
         {' will issue a proportionally split reward across all token holders.'}
       </Info>
-      <VerticalSpace />
       { onCancel && onSubmit && (
         <HorizontalContainer>
+          <VerticalSpace />
           <Button
             label="Go back"
             mode="normal"
@@ -126,13 +127,6 @@ const SubTitle = styled(Text).attrs({
   size: 'xsmall',
 })`
   color: ${({ theme }) => theme.contentSecondary};
-  margin-bottom: 8px;
-`
-const Heading = styled(Text).attrs({
-  smallcaps: true,
-})`
-  color: ${({ theme }) => theme.contentSecondary};
-  margin-top: 16px;
   margin-bottom: 8px;
 `
 const Content = styled(Text).attrs({})``
