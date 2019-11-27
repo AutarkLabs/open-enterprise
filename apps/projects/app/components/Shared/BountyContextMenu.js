@@ -67,7 +67,7 @@ const BountyContextMenu = ({ issue }) => {
             <Item onClick={() => requestAssignment(issue)}>
               <IconFile color={`${theme.surfaceIcon}`} />
               <ActionLabel>
-                Submit Application
+                Submit application
               </ActionLabel>
             </Item>
           )}
