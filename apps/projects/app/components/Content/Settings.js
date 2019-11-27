@@ -145,7 +145,7 @@ const ExperienceLevel = ({
                 <TextInput
                   type="text"
                   css="font-size: 16px; width: 65%"
-                  defaultValue={exp.name}
+                  value={exp.name}
                   onChange={generateExpLevelHandler(index, 'N')}
                 />
                 <IconContainer
@@ -166,7 +166,7 @@ const ExperienceLevel = ({
               <TextInput
                 type="text"
                 css="font-size: 16px; flex-grow: 1"
-                defaultValue={exp.name}
+                value={exp.name}
                 onChange={generateExpLevelHandler(index, 'N')}
               />
               <IconContainer
