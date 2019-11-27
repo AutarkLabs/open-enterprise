@@ -5,7 +5,6 @@ import {
   ContextMenu,
   ContextMenuItem,
   DataView,
-  GU,
   IconCoin,
   IconHash,
   IconView,
@@ -161,8 +160,8 @@ MyRewards.propTypes = {
 
 const StyledIcon = ({ Icon }) => (
   <Icon style={{
-    marginRight: GU * 1.5 + 'px',
-    marginBottom: GU / 4 + 'px',
+    marginRight: '11px',
+    marginBottom: '2px',
   }}/>
 )
 
