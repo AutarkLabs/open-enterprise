@@ -300,7 +300,7 @@ contract Allocations is AragonApp {
     }
 
     /**
-    * @notice Update budget #`_accountId` to `@tokenAmount(0, _amount, false)`, effective immediately and optionally update metadata
+    * @notice Update budget #`_accountId` to `@tokenAmount(0x0000000000000000000000000000000000000000, _amount, false)`, effective immediately and optionally update metadata
     * @param _accountId Budget Identifier
     * @param _amount New budget amount
     * @param _metadata descriptor for the account (pass in empty string if unchanged)
@@ -469,7 +469,7 @@ contract Allocations is AragonApp {
     {
         Account storage account = accounts[_accountId];
         Payout storage payout = account.payouts[_payoutId];
-        require(_candidateId < payout.supports.length, ERROR_NO_CANDIDATE); 
+        require(_candidateId < payout.supports.length, ERROR_NO_CANDIDATE);
 
         uint256 paid = _paid;
         uint256 totalSupport = _getTotalSupport(payout);

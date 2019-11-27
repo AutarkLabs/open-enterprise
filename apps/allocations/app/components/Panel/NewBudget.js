@@ -46,7 +46,6 @@ class NewBudget extends React.Component {
       this.state.amount = BigNumber(props.editingBudget.amount)
         .div(ETH_DECIMALS)
       this.state.amountError = false
-      this.state.selectedToken = props.editingBudget.token.symbol === 'ETH' ? 0 : 1
       this.state.buttonText = 'Submit'
     }
   }
@@ -130,7 +129,7 @@ class NewBudget extends React.Component {
               wide
             />
             {this.props.editingBudget.id ? (
-              <CurrencyBox>{symbols[selectedToken]}</CurrencyBox>
+              <CurrencyBox>{this.props.editingBudget.token.symbol}</CurrencyBox>
             ) : (
               <DropDown
                 name="token"
