@@ -143,7 +143,7 @@ contract BaseOEApps is BaseTemplate {
 /* PROJECTS */
 
     function _installProjectsApp(Kernel _dao, Vault _vault) internal returns (Projects) {
-        bytes memory initializeData = abi.encodeWithSelector(Projects(0).initialize.selector, bountiesRegistry, _vault);
+        bytes memory initializeData = abi.encodeWithSelector(Projects(0).initialize.selector, _bountiesRegCache(), _vault);
         return Projects(_installNonDefaultApp(_dao, PROJECTS_APP_ID, initializeData));
     }
 
