@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import PropTypes from 'prop-types'
 import { ApolloProvider } from 'react-apollo'
 import styled from 'styled-components'
 import { useAragonApi } from './api-react'
@@ -35,6 +36,46 @@ import { DecoratedReposProvider } from './context/DecoratedRepos'
 import { IssueFiltersProvider } from './context/IssueFilters'
 import { TextFilter } from './components/Shared/FilterBar/TextFilter'
 
+const noop = () => {}
+
+const tabOptions = [ 'Overview', 'Issues', 'Settings' ]
+
+const tabContents = { Overview, Issues, Settings }
+
+const TabAction = ({ currentTab, showFilters }) => {
+  const { setupNewIssue, setupNewProject, filters: filtersPanel } = usePanelManagement()
+  switch (currentTab) {
+  case 'Settings':
+    return null
+  case 'Overview':
+    return (
+      <Button
+        icon={<IconPlus />}
+        label="New project"
+        mode="strong"
+        onClick={setupNewProject}
+      />
+    )
+  case 'Issues':
+    return (
+      <>
+        {showFilters && (
+          <MiniFilterBar>
+            <Button icon={<IconFilter />} onClick={filtersPanel} label="Filters Panel" />
+            <TextFilter />
+          </MiniFilterBar>
+        )}
+        <Button mode="strong" icon={<IconPlus />} onClick={setupNewIssue} label="New issue" />
+      </>
+    )
+  }
+}
+
+TabAction.propTypes = {
+  currentTab: PropTypes.oneOf(tabOptions).isRequired,
+  showFilters: PropTypes.bool.isRequired,
+}
+
 const App = () => {
   const { api, appState } = useAragonApi()
   const [ activeIndex, setActiveIndex ] = useState(0)
@@ -65,7 +106,7 @@ const App = () => {
     window.close()
   })
 
-  const handlePopupMessage = async message => {
+  const handlePopupMessage = useCallback(async message => {
     if (message.data.from !== 'popup') return
     if (message.data.name === 'code') {
       // TODO: Optimize the listeners lifecycle, ie: remove on unmount
@@ -88,21 +129,21 @@ const App = () => {
         })
       }
     }
-  }
+  }, [api])
 
-  const changeActiveIndex = index => setActiveIndex(index)
+  const changeActiveIndex = useCallback(index => setActiveIndex(index), [])
 
-  const closePanel = () => {
+  const closePanel = useCallback(() => {
     setPanel(null)
     setPanelProps(null)
-  }
+  }, [])
 
-  const configurePanel = {
+  const configurePanel = useMemo(() => ({
     setActivePanel: p => setPanel(p),
     setPanelProps: p => setPanelProps(p),
-  }
+  }), [])
 
-  const handleGithubSignIn = () => {
+  const handleGithubSignIn = useCallback(() => {
     // The popup is launched, its ref is checked and saved in the state in one step
     setGithubLoading(true)
 
@@ -110,67 +151,56 @@ const App = () => {
 
     // Listen for the github redirection with the auth-code encoded as url param
     window.addEventListener('message', handlePopupMessage)
-  }
+  }, [handlePopupMessage])
 
-  const handleResolveLocalIdentity = address => {
+  const handleResolveLocalIdentity = useCallback(address => {
     return api.resolveAddressIdentity(address).toPromise()
-  }
+  }, [api])
 
-  const handleShowLocalIdentityModal = address => {
+  const handleShowLocalIdentityModal = useCallback(address => {
     return api
       .requestAddressIdentityModification(address)
       .toPromise()
-  }
+  }, [api])
 
-  const noop = () => {}
+  const [ tabNames, setTabNames ] = useState(
+    repos.length
+      ? tabOptions
+      : tabOptions.filter(t => t !== 'Issues')
+  )
+
+  useEffect(() => {
+    // only mutate tabNames when first repo is added
+    if (tabNames.length === 2 && repos.length === 1) {
+      setTabNames(tabOptions)
+    }
+  }, [repos.length])
+
+  const currentTab = tabNames[activeIndex]
+  const TabComponent = tabContents[currentTab]
+
   if (githubLoading) {
     return (
       <EmptyWrapper>
         <LoadingAnimation />
       </EmptyWrapper>
     )
-  } else if (github.status === STATUS.INITIAL) {
+  }
+
+  if (github.status === STATUS.INITIAL) {
     return (
       <Main>
         <Unauthorized onLogin={handleGithubSignIn} isSyncing={isSyncing} />
       </Main>
     )
-  } else if (github.status === STATUS.FAILED) {
+  }
+
+  if (github.status === STATUS.FAILED) {
     return (
       <Main>
         <Error action={noop} />
       </Main>
     )
-  }
-
-  // Tabs are not fixed
-  const tabs = [{ name: 'Overview', body: Overview }]
-  if (repos.length)
-    tabs.push({ name: 'Issues', body: Issues })
-  tabs.push({ name: 'Settings', body: Settings })
-
-  // Determine current tab details
-  const TabComponent = tabs[activeIndex].body
-  const TabAction = () => {
-    const { setupNewIssue, setupNewProject, filters: filtersPanel } = usePanelManagement()
-
-    switch (tabs[activeIndex].name) {
-    case 'Overview': return (
-      <Button mode="strong" icon={<IconPlus />} onClick={setupNewProject} label="New project" />
-    )
-    case 'Issues': return (
-      <>
-        {!selectedIssueId && (
-          <MiniFilterBar>
-            <Button icon={<IconFilter />} onClick={filtersPanel} label="Filters Panel" />
-            <TextFilter />
-          </MiniFilterBar>
-        )}
-        <Button mode="strong" icon={<IconPlus />} onClick={setupNewIssue} label="New issue" />
-      </>
-    )
-    default: return null
-    }
   }
 
   return (
@@ -186,7 +216,10 @@ const App = () => {
                 <Header
                   primary="Projects"
                   secondary={
-                    <TabAction />
+                    <TabAction
+                      currentTab={currentTab}
+                      showFilters={!selectedIssueId}
+                    />
                   }
                 />
                 <ErrorBoundary>
@@ -202,7 +235,7 @@ const App = () => {
                     : (
                       <React.Fragment>
                         <Tabs
-                          items={tabs.map(t => t.name)}
+                          items={tabNames}
                           onChange={changeActiveIndex}
                           selected={activeIndex}
                         />
