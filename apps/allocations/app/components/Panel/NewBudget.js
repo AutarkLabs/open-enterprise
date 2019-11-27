@@ -46,7 +46,6 @@ class NewBudget extends React.Component {
       this.state.amount = BigNumber(props.editingBudget.amount)
         .div(ETH_DECIMALS)
       this.state.amountError = false
-      this.state.selectedToken = 0
       this.state.buttonText = 'Submit'
     }
   }
