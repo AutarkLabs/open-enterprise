@@ -1,18 +1,12 @@
 import React, { useState } from 'react'
-import styled from 'styled-components'
 import { formatDistance } from 'date-fns'
 import { BN } from 'web3-utils'
 
 import {
-  Button,
   DropDown,
   GU,
-  IconCheck,
-  IconCross,
-  Link,
   Text,
   TextInput,
-  Tag,
   useTheme,
 } from '@aragon/ui'
 
@@ -23,7 +17,15 @@ import { usePanelManagement } from '../../Panel'
 import { ipfsAdd } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
 import { issueShape } from '../../../utils/shapes.js'
-import { IssueTitle } from '../PanelComponents'
+import {
+  Avatar,
+  FieldText,
+  IssueTitle,
+  ReviewButtons,
+  Status,
+  SubmissionDetails,
+  UserLink,
+} from '../PanelComponents'
 import workRatings from '../../../utils/work-ratings.js'
 
 const ReviewWork = ({ issue }) => {
@@ -37,12 +39,12 @@ const ReviewWork = ({ issue }) => {
   const [ feedback, setFeedback ] = useState('')
   const [ rating, setRating ] = useState(-1)
 
-  const buildReturnData = (accepted) => {
+  const buildReturnData = (approved) => {
     const today = new Date()
     return {
       feedback,
       rating,
-      accepted,
+      approved,
       user: githubCurrentUser,
       reviewDate: today.toISOString(),
     }
@@ -55,8 +57,8 @@ const ReviewWork = ({ issue }) => {
 
   const canSubmit = () => !(rating > 0)
 
-  const onReviewSubmission = async (accepted) => {
-    const data = buildReturnData(accepted)
+  const onReviewSubmission = async (approved) => {
+    const data = buildReturnData(approved)
 
     // new IPFS data is old data plus state returned from the panel
     const ipfsData = issue.workSubmissions[issue.workSubmissions.length - 1]
@@ -74,7 +76,7 @@ const ReviewWork = ({ issue }) => {
       toHex(issue.repoId),
       issue.number,
       issue.workSubmissions.length - 1,
-      accepted,
+      approved,
       requestIPFSHash,
       fulfillmentAmounts
     ).toPromise()
@@ -91,50 +93,33 @@ const ReviewWork = ({ issue }) => {
 
       <SubmissionDetails background={`${theme.background}`} border={`${theme.border}`}>
         <UserLink>
-          <img
-            alt=""
-            src={submitter.avatarUrl}
-            css="width: 32px; height: 32px; margin-right: 10px; border-radius: 50%;"
-          />
-          <div>
-            <Link
-              href={submitter.url}
-              target="_blank"
-              style={{ textDecoration: 'none', color: `${theme.link}`, marginRight: '6px' }}
-            >
-              {submitterName}
-            </Link>
-              submitted work {submissionDateDistance} ago
-          </div>
+          <Avatar user={submitter} />
+          {submitterName} submitted work {submissionDateDistance} ago
         </UserLink>
 
-        <Separator/>
-
         <FieldTitle>Submission</FieldTitle>
-        <DetailText>{work.proof}</DetailText>
+        <Text css={`display: block; margin-bottom: ${2 * GU}px`}>
+          {work.proof}
+        </Text>
 
-        {work.comments && <FieldTitle>Additional Comments</FieldTitle>}
-        {work.comments && <DetailText>{work.comments}</DetailText>}
+        {work.comments && (
+          <>
+            <FieldTitle>Additional Comments</FieldTitle>
+            <Text css={`display: block; margin-bottom: ${2 * GU}px`}>
+              {work.comments}
+            </Text>
+          </>
+        )}
 
         <FieldTitle>Hours Worked</FieldTitle>
-        <DetailText>{work.hours}</DetailText>
+        <Text>{work.hours}</Text>
       </SubmissionDetails>
 
       {('review' in work) ? (
         <React.Fragment>
           <FieldTitle>Submission Status</FieldTitle>
           <FieldText>
-            {work.review.accepted ? (
-              <div css="display: flex; align-items: center">
-                <IconCheck color={`${theme.positive}`} css="margin-top: -4px; margin-right: 8px"/>
-                <Text color={`${theme.positive}`}>Accepted</Text>
-              </div>
-            ) : (
-              <div css="display: flex; align-items: center">
-                <IconCross color={`${theme.negative}`} css="margin-top: -4px; margin-right: 8px" />
-                <Text color={`${theme.negative}`}>Rejected</Text>
-              </div>
-            )}
+            <Status review={work.review} />
           </FieldText>
 
           <FieldTitle>Feedback</FieldTitle>
@@ -153,7 +138,6 @@ const ReviewWork = ({ issue }) => {
         </React.Fragment>
       ) : (
         <React.Fragment>
-
           <FormField
             label="Quality Rating"
             required
@@ -182,24 +166,7 @@ const ReviewWork = ({ issue }) => {
             }
           />
 
-          <ReviewRow>
-            <ReviewButton
-              disabled={canSubmit()}
-              mode="negative"
-              onClick={onReject}
-              icon={<IconCross />}
-            >
-              Reject
-            </ReviewButton>
-            <ReviewButton
-              disabled={canSubmit()}
-              icon={<IconCheck />}
-              mode="positive"
-              onClick={onAccept}
-            >
-              Accept
-            </ReviewButton>
-          </ReviewRow>
+          <ReviewButtons onAccept={onAccept} onReject={onReject} disabled={canSubmit()} />
 
         </React.Fragment>
       )}
@@ -209,37 +176,5 @@ const ReviewWork = ({ issue }) => {
 }
 
 ReviewWork.propTypes = issueShape
-
-const SubmissionDetails = styled.div`
-  border: 1px solid ${p => p.border};
-  background-color: ${p => p.background};
-  padding: ${2 * GU}px ${2 * GU}px 0 ${2 * GU}px;
-  margin-bottom: ${2 * GU}px;
-`
-const UserLink = styled.div`
-  display: flex;
-  align-items: center;
-`
-const Separator = styled.hr`
-  height: 1px;
-  width: 100%;
-  color: grey;
-  opacity: 0.1;
-`
-const DetailText = styled(Text)`
-  display: block;
-  margin-bottom: 10px;
-`
-const ReviewRow = styled.div`
-  display: flex;
-  margin-bottom: 8px;
-  justify-content: space-between;
-`
-const ReviewButton = styled(Button)`
-  width: 48%;
-`
-const FieldText = styled.div`
-  margin: ${0.5 * GU}px 0 ${2 * GU}px;
-`
 
 export default ReviewWork

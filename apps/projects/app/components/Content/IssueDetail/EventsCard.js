@@ -21,7 +21,13 @@ const IssueEvent = ({ user, ...props }) => {
     <IssueEventMain>
       <div css="display: flex">
         <IssueEventAvatar>
-          <img src={user.avatarUrl} alt="user avatar" css="width: 40px; border-radius: 50%" />
+          <Link
+            href={user.url}
+            target="_blank"
+            style={{ textDecoration: 'none', color: `${theme.link}` }}
+          >
+            <img src={user.avatarUrl} alt="user avatar" css="width: 40px; border-radius: 50%" />
+          </Link>
         </IssueEventAvatar>
         <IssueEventDetails>
           <Text.Block size="small">
