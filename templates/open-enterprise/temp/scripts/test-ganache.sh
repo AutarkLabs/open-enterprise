@@ -76,7 +76,7 @@ run_coverage() {
 
 [[ "$SOLIDITY_COVERAGE" = true ]] && setup_coverage_variables || setup_testing_variables
 start_chain
-clean_deploy
-deploy_standard_bounties
-deploy_template
+# clean_deploy
+# deploy_standard_bounties
+# deploy_template
 ${MAIN_TASK} $@
