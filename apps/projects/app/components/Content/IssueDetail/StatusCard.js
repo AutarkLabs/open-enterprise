@@ -59,14 +59,14 @@ const StatusCard = ({ issue }) => {
       {issue.workStatus === 'review-applicants' && (
         <React.Fragment>
           <Action panel={requestAssignment} caption="Submit application" issue={issue} />
-          <Action panel={reviewApplication} caption="Review applications" issue={issue} />
+          <Action panel={reviewApplication} caption="View applications" issue={issue} />
         </React.Fragment>
       )}
       {issue.workStatus === 'in-progress' && (
         <Action panel={submitWork} caption="Submit work" issue={issue} />
       )}
       {issue.workStatus === 'review-work' && (
-        <Action panel={reviewWork} caption="Review work" issue={issue} />
+        <Action panel={reviewWork} caption="View work" issue={issue} />
       )}
 
     </Box>

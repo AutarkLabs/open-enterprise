@@ -1,10 +1,17 @@
 /* eslint-disable import/no-unused-modules */
 import '@babel/polyfill'
 
+import { first } from 'rxjs/operators'
 import { retryEvery } from '../../../shared/ui/utils'
-import { initStore } from './store'
+import { app, initStore } from './store'
 
 retryEvery(async () => {
-  initStore()
+
+  const network = await app
+    .network()
+    .pipe(first())
+    .toPromise()
+
+  initStore(network)
 })
 

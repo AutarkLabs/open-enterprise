@@ -21,8 +21,11 @@ export async function onRewardAdded({ rewards = [], refTokens = [], balances = [
   return { rewards, refTokens }
 }
 
-export async function onRewardClaimed({ rewards = [], claims = {} }, { rewardId }) {
-  rewards[rewardId] = await getRewardById(rewardId)
+export async function onRewardClaimed(
+  { rewards = [], claims = {} },
+  { rewardId, claimant }
+) {
+  rewards[rewardId] = await getRewardById(rewardId, claimant)
 
   let { claimsByToken = [], totalClaimsMade = 0 } = claims
 

@@ -33,57 +33,15 @@ const issueAttributes = `
   url
 `
 
-export const GET_ISSUES = gql`
-  query getIssuesForRepos($reposIds: [ID!]!) {
-    nodes(ids: $reposIds) {
-      ... on Repository {
-        issues(last: 100, states:OPEN) {
-          nodes {
-            number
-            id
-            title
-            body
-            createdAt
-            repository {
-              id
-              name
-            }
-            labels(first: 50) {
-              totalCount
-              edges {
-                node {
-                  id
-                  name
-                  color
-                }
-              }
-            }
-            milestone {
-              id
-              title
-            }
-            state
-            url
-          }
-        }
-      }
-    }
-  }
-`
-
 export const getIssuesGQL = repos => {
-  let q = `
-    query getIssuesForRepos {
-  `
-  Object.keys(repos).forEach((repoId, i) => {
-    q += 'node' + i + ': node(id: "' + repoId + `") {
+  const queries = Object.keys(repos).map((repoId, i) => `
+    node${i}: node(id: "${repoId}") {
       id
       ... on Repository {
         issues(
           states:OPEN,
-          first: ` + repos[repoId].fetch + ', ' +
-          (repos[repoId].showMore ? 'after: "' + repos[repoId].endCursor + '", ' : '') +
-          `
+          first: ${repos[repoId].fetch},
+          ${repos[repoId].showMore ? `after: "${repos[repoId].endCursor}",` : ''}
          orderBy: {field: CREATED_AT, direction: DESC}
         ) {
           totalCount
@@ -94,13 +52,11 @@ export const getIssuesGQL = repos => {
           nodes { ${issueAttributes} }
         }
       }
-    }
-    `
-  })
-  q += `
-}
-  `
-  return gql`${q}`
+    }`
+  )
+  return gql`query getIssuesForRepos {
+    ${queries.join('')}
+  }`
 }
 
 export const GET_ISSUE = gql`

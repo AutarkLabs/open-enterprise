@@ -96,9 +96,9 @@ const VotingCard = ({ vote, onSelectVote }) => {
         {options.length > 2 && (
           <div css="text-align: center; width: 100%; margin-top: 10px">
             <Badge
-              shape="compact"
-              foreground={`${theme.surfaceOpened}`}
-              background={`${theme.surfaceUnder}`}
+              foreground={theme.surfaceContentSecondary}
+              background={theme.surfaceUnder}
+              uppercase={false}
               css={`
                 cursor: pointer;
                 padding: 2px 8px;

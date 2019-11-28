@@ -1,17 +1,19 @@
 import { app, handleEvent } from './'
+import { initEthToken } from '../../../../shared/store-utils/token'
 
-export const initStore = () => {
+export const initStore = (network) => {
   const initialState = {
     votes: [],
     isSyncing: false,
   }
+  const settings = { network }
   return app.store(
     async (state, event) => {
       // ensure there are initial placeholder values
       if (!state) state = initialState
 
       try {
-        const next = await handleEvent(state, event)
+        const next = await handleEvent(state, event, settings)
         const nextState = { ...initialState, ...next }
         // Debug point
         return nextState
@@ -28,6 +30,7 @@ export const initStore = () => {
 }
 
 const initState = () => async cachedState => {
+  initEthToken()
   const newState = {
     ...cachedState,
     isSyncing: true,

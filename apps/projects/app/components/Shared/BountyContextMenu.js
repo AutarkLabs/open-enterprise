@@ -53,7 +53,13 @@ const BountyContextMenu = ({ issue }) => {
           <Item onClick={() => reviewWork(issue)}>
             <IconView color={`${theme.surfaceContent}`} />
             <ActionLabel>
-              Review work
+              View work
+            </ActionLabel>
+          </Item>
+          <Item onClick={() => reviewApplication(issue)}>
+            <IconView color={`${theme.surfaceIcon}`} />
+            <ActionLabel>
+              View applications ({issue.requestsData.length})
             </ActionLabel>
           </Item>
         </React.Fragment>
@@ -83,7 +89,7 @@ const BountyContextMenu = ({ issue }) => {
           <Item onClick={() => reviewApplication(issue)}>
             <IconView color={`${theme.surfaceContent}`} />
             <ActionLabel>
-              Review applications ({issue.requestsData.length})
+              View applications ({issue.requestsData.length})
             </ActionLabel>
           </Item>
           {/* Disabled since the contract doesn't allow updating the amount */}
@@ -93,6 +99,22 @@ const BountyContextMenu = ({ issue }) => {
           {/*    Update Funding*/}
           {/*  </ActionLabel>*/}
           {/*</Item>*/}
+        </React.Fragment>
+      )}
+      {workStatus === 'fulfilled' && (
+        <React.Fragment>
+          <Item onClick={() => reviewWork(issue)}>
+            <IconView color={`${theme.surfaceIcon}`} />
+            <ActionLabel>
+              View work
+            </ActionLabel>
+          </Item>
+          <Item onClick={() => reviewApplication(issue)}>
+            <IconView color={`${theme.surfaceIcon}`} />
+            <ActionLabel>
+              View applications ({issue.requestsData.length})
+            </ActionLabel>
+          </Item>
         </React.Fragment>
       )}
     </React.Fragment>
