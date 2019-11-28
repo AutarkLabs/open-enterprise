@@ -66,22 +66,24 @@ Open a new terminal window and install node
 
 `npm i -g @aragon/cli`
 
-Since version 6.0.0 ipfs is not including with the cli so install it with
+Since version 6.0.0 ipfs is not included with the cli so install it with
 
 `aragon ipfs install`
 
-#### 4. configure cli
-Finally, if you are not using frame as you signing provider (frame is highly recommended) you need to set up a private key for use with the cli.
+#### 4. Configure the CLI
+Finally, if you are not using frame as you signing provider (frame is highly recommended) you need to set up a private key for use with the CLI.
 
-Create a new key and get some test net Eth from the rinkeby faucet
+Create a new key and get some testnet ETH from the Rinkeby faucet
 
-Some times the ~/.aragon file is not included in the installation which is a problem because that's where your private key goes.
+Sometimes the ~/.aragon folder is not included in the installation, which is a problem because that's where your private key goes.
 
 `cd ~/.aragon`
 
-If you get file not found run the dev chain first aragon devchain and try again
+If you get file not found run the devchain first,
 
 `aragon devchain`
+
+and try again.
 
 Once you're in the `~/.aragon` folder you need to create a file that holds your private key.
 
@@ -101,7 +103,7 @@ This will open a blank file, copy and paste the following replacing the text wit
 }
 ```
 
-now test out your configuration by launching a DAO on rinkeby
+now test out your configuration by launching a DAO on Rinkeby.
 
 `
 dao new --environment aragon:rinkeby
