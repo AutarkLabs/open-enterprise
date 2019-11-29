@@ -7,10 +7,17 @@ const ipfsEndpoint = 'https://ipfs.autark.xyz:5001/api/v0'
 const bufferFile = (content) => autarkIpfs.types.Buffer.from(JSON.stringify(content))
 
 export const ipfsAdd = async (content) => {
-  const file = bufferFile(content)
+  const formData = new FormData()
+  const val = new Blob([bufferFile(content)])
+  formData.append('entry', val)
+
   try {
-    const result = await autarkIpfs.add(file)
-    return result[0].hash
+    const result = await axios.post(
+      'http://localhost:3612/api/v0/files/add',
+      formData
+    )
+
+    return result.data
   } catch (err) {
     console.error('Error pinning file to IPFS', err)
   }
@@ -20,12 +27,12 @@ export const ipfsAdd = async (content) => {
 // this is specific for our bounty smart contract interface
 export const computeIpfsString = async issues => {
   const issueHashArray =
-      await Promise.all(issues.map(async issue => await ipfsAdd(issue)))
+    await Promise.all(issues.map(async issue => await ipfsAdd(issue)))
   return issueHashArray.join('')
 }
 
 export const ipfsGet = async (hash) => {
-  const endpoint = `${ipfsEndpoint}/cat?arg=${hash}`
+  const endpoint = `http://localhost:3612/api/v0/cat?arg=${hash}`
   try {
     const { data } = await axios.get(endpoint)
     return data
