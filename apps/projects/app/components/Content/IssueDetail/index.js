@@ -54,7 +54,7 @@ const IssueDetail = ({ issueId }) => {
         <DetailsCard issue={issue} />
       </div>
       <div css="flex-grow: 1">
-        {issue.hasBounty && <StatusCard issue={issue} />}
+        <StatusCard issue={issue} />
         <EventsCard issue={issue} />
       </div>
     </div>

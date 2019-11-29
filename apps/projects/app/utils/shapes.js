@@ -17,7 +17,7 @@ const issueShape = PropTypes.shape({
   symbol: PropTypes.string,
   title: PropTypes.string,
   url: PropTypes.string,
-  work: PropTypes.oneOf([ undefined, PropTypes.object ]),
+  work: PropTypes.oneOfType([ undefined, PropTypes.object ]),
   workStatus: PropTypes.oneOf([
     undefined,
     'funded',
