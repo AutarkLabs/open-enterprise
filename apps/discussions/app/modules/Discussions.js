@@ -22,11 +22,10 @@ const Discussions = ({ children, app }) => {
 
       api.listenForUpdates(setDiscussions)
     }
-
     if (!hasInit && handshakeOccured) {
       initDiscussions()
     }
-  }, [handshakeOccured])
+  }, [hasInit, handshakeOccured])
   return (
     <DiscussionsContext.Provider value={{ discussions, discussionApi }}>
       {children}

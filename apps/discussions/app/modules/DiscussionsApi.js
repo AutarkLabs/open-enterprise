@@ -260,10 +260,14 @@ class Discussions {
   }
 
   listenForUpdates = callback =>
-    this.contract.events(this.lastEventBlock + 1).subscribe(async event => {
-      this.discussions = await this._buildState(this.discussions, [event])
-      callback(this.discussions)
-    })
+    this.contract
+      .events({
+        fromBlock: this.lastEventBlock + 1,
+      })
+      .subscribe(async event => {
+        this.discussions = await this._buildState(this.discussions, [event])
+        callback(this.discussions)
+      })
 
   post = async (text, discussionThreadId, ethereumAddress) => {
     const discussionPost = {
