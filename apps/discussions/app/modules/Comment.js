@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { format, formatDistance } from 'date-fns'
-import { Card, IdentityBadge, theme } from '@aragon/ui'
+import { Card, IdentityBadge, theme, Main } from '@aragon/ui'
 import { IconEdit, IconDelete, Markdown } from '../../../../shared/ui'
 import CommentForm from './CommentForm'
 
@@ -133,13 +133,15 @@ const Comment = ({
           onSave={update}
         />
       ) : (
-        <React.Fragment>
-          <Top author={author} createdAt={createdAt} />
-          <Markdown content={text} />
-          {author === currentUser && (
-            <Bottom onDelete={onDelete} onEdit={() => setEditing(true)} />
-          )}
-        </React.Fragment>
+        <div style={{ height: '10vh' }}>
+          <Main>
+            <Top author={author} createdAt={createdAt} />
+            <Markdown content={text} />
+            {author === currentUser && (
+              <Bottom onDelete={onDelete} onEdit={() => setEditing(true)} />
+            )}
+          </Main>
+        </div>
       )}
     </CommentCard>
   )
