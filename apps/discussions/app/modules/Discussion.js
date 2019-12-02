@@ -5,7 +5,7 @@ import Comment from './Comment'
 import CommentForm from './CommentForm'
 
 const Discussion = ({ discussionId, ethereumAddress }) => {
-  const { discussion, discussionApi } = useDiscussion(discussionId)
+  const { discussion, discussionApi, app } = useDiscussion(discussionId)
 
   const save = ({ text, id, revisions, postCid }) =>
     id
@@ -29,6 +29,7 @@ const Discussion = ({ discussionId, ethereumAddress }) => {
     <div css="margin-bottom: 40px">
       {discussion.map(comment => (
         <Comment
+          app={app}
           comment={comment}
           currentUser={ethereumAddress}
           key={comment.id}
