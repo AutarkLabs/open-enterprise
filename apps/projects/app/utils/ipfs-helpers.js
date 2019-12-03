@@ -13,7 +13,7 @@ export const ipfsAdd = async (content) => {
 
   try {
     const result = await axios.post(
-      'http://localhost:3612/api/v0/files/add',
+      'http://localhost:3612/api/v0/add',
       formData
     )
 

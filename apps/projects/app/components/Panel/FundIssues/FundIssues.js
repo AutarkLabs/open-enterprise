@@ -414,7 +414,10 @@ const FundIssues = ({ issues, mode }) => {
       })
     }
 
-    const ipfsAddresses = await computeIpfsString(issuesArray)
+    const issueHashArray =
+      await Promise.all(issuesArray.map(async issue => await api.datastore('add', issue).toPromise()))
+
+    const ipfsAddresses = issueHashArray.join('')
     const repoIds = issuesArray.map(issue => toHex(issue.repoId))
     const issueNumbers = issuesArray.map(issue => issue.number)
     let tokenContracts = []
