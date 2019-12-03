@@ -43,8 +43,6 @@ const App = () => {
   const [ panel, setPanel ] = useState(null)
   const [ panelProps, setPanelProps ] = useState(null)
   const [ popupRef, setPopupRef ] = useState(null)
-  const [ textFilterVisible, setTextFilterVisible ] = useState(false)
-  const textFilterOpenerApp = useRef(null)
 
   const {
     repos = [],
@@ -151,8 +149,6 @@ const App = () => {
     tabs.push({ name: 'Issues', body: Issues })
   tabs.push({ name: 'Settings', body: Settings })
 
-  const activateTextFilter = () => setTextFilterVisible(true)
-
   // Determine current tab details
   const TabComponent = tabs[activeIndex].body
   const TabAction = () => {
@@ -167,12 +163,7 @@ const App = () => {
         {!selectedIssueId && (
           <MiniFilterBar>
             <Button icon={<IconFilter />} onClick={filtersPanel} label="Filters Panel" />
-            <TextFilter
-              onClick={activateTextFilter}
-              visible={textFilterVisible}
-              openerRef={textFilterOpenerApp}
-              setVisible={setTextFilterVisible}
-            />
+            <TextFilter />
           </MiniFilterBar>
         )}
         <Button mode="strong" icon={<IconPlus />} onClick={setupNewIssue} label="New issue" />

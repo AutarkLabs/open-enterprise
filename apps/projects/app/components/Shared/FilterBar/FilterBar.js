@@ -184,11 +184,9 @@ const FilterBar = ({
 }) => {
   const [ sortMenuVisible, setSortMenuVisible ] = useState(false)
   const [ actionsMenuVisible, setActionsMenuVisible ] = useState(false)
-  const [ textFilterVisible, setTextFilterVisible ] = useState(false)
   const [ filtersDisplayNumber, setFiltersDisplayNumber ] = useState(10)
   const actionsOpener = useRef(null)
   const sortersOpener = useRef(null)
-  const textFilterOpener = useRef(null)
   const mainFBRef = useRef(null)
   const rightFBRef = useRef(null)
   const { availableFilters, activeFiltersCount } = useIssueFilters()
@@ -212,7 +210,6 @@ const FilterBar = ({
   const actionsClickHandler = () =>
     selectedIssues.length && setActionsMenuVisible(true)
 
-  const activateTextFilter = () => setTextFilterVisible(true)
   const activateSort = () => setSortMenuVisible(true)
 
   return (
@@ -240,12 +237,7 @@ const FilterBar = ({
         </FilterBarMainLeft>
 
         <FilterBarMainRight ref={rightFBRef}>
-          <TextFilter
-            onClick={activateTextFilter}
-            visible={textFilterVisible}
-            openerRef={textFilterOpener}
-            setVisible={setTextFilterVisible}
-          />
+          <TextFilter />
 
           <Button icon={<IconSort />} display="icon" onClick={activateSort} ref={sortersOpener} label="Sort by" />
           <SortPopover visible={sortMenuVisible} opener={sortersOpener.current} setVisible={setSortMenuVisible}
@@ -312,6 +304,7 @@ const FilterBarCard = styled(Card)`
   height: auto;
   padding: 12px;
   margin-bottom: 16px;
+
   @media only screen and (max-width: 514px) {
     display: none;
   }

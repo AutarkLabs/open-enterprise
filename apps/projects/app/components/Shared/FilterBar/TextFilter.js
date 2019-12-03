@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 import {
   Button,
@@ -51,15 +51,23 @@ TextFilterPopover.propTypes = {
   setVisible: PropTypes.func.isRequired,
 }
 
-export const TextFilter = ({ visible, setVisible, openerRef, onClick }) => {
+export const TextFilter = () => {
   const { layoutName } = useLayout()
+  const openerRef = useRef()
+  const [ visible, setVisible ] = useState(false)
 
   if (layoutName === 'large') return (
     <TextFilterInput />
   )
   return (
     <>
-      <Button icon={<IconSearch />} display="icon" onClick={onClick} ref={openerRef} label="Text Filter" />
+      <Button
+        display="icon"
+        icon={<IconSearch />}
+        label="Text Filter"
+        onClick={() => setVisible(!visible)}
+        ref={openerRef}
+      />
       <TextFilterPopover
         visible={visible}
         opener={openerRef.current}
@@ -67,10 +75,4 @@ export const TextFilter = ({ visible, setVisible, openerRef, onClick }) => {
       />
     </>
   )
-}
-TextFilter.propTypes = {
-  visible: PropTypes.bool.isRequired,
-  openerRef: PropTypes.object,
-  setVisible: PropTypes.func.isRequired,
-  onClick: PropTypes.func.isRequired,
 }
