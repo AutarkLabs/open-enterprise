@@ -439,6 +439,29 @@ const FundIssues = ({ issues, mode }) => {
 
     setSubmitting(true)
 
+    // computes an array of issues and denests the actual issue object for smart contract
+    const issuesArray = []
+
+    for (let key in issues) {
+      issuesArray.push({
+        key: key,
+        exp: bounties[issues[key].id].exp,
+        fundingHistory: bounties[issues[key].id].fundingHistory,
+        deadline: bounties[issues[key].id].deadline,
+        hours: bounties[issues[key].id].hours ? bounties[issues[key].id].hours : 0,
+        payout: bounties[issues[key].id].payout,
+        token: bounties[issues[key].id].token,
+        ...issues[key],
+      })
+    }
+
+    const issueHashArray =
+      await Promise.all(issuesArray.map(async issue => {
+        const val = new Blob([Buffer.from(JSON.stringify(issue))])
+        return await api.datastore('add', val).toPromise()
+      }))
+
+    const ipfsAddresses = issueHashArray.join('')
     const repoIds = []
     const issueNumbers = []
     const bountySizes = []
@@ -470,7 +493,6 @@ const FundIssues = ({ issues, mode }) => {
         repo: bounty.repo,
       })
     })
-    const ipfsAddresses = await computeIpfsString(ipfsData)
 
     const addBountiesF = openSubmission ? api.addBountiesNoAssignment : api.addBounties
     await addBountiesF(
