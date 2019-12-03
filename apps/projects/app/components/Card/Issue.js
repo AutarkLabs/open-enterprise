@@ -54,10 +54,10 @@ const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
     repo,
     number,
     labels,
-    balance = 10,
-    symbol = 'AUT',
-    deadline = '2049-01-01 00:00',
-    expLevel = 'easy',
+    balance,
+    symbol,
+    deadline,
+    expLevel,
     createdAt,
   } = issue
 
