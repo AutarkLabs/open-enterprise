@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Fragment } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { format, formatDistance } from 'date-fns'
-import { Card, IdentityBadge, theme, Main } from '@aragon/ui'
+import { Card, IdentityBadge, theme } from '@aragon/ui'
 import { IconEdit, IconDelete, Markdown } from '../../../../shared/ui'
 import CommentForm from './CommentForm'
 
@@ -10,6 +10,7 @@ const Header = styled.header`
   display: flex;
   justify-content: space-between;
   margin-bottom: 10px;
+  width: 100%;
 `
 
 const TimeAgo = styled.time.attrs(props => ({
@@ -151,15 +152,13 @@ const Comment = ({
           onSave={update}
         />
       ) : (
-        <div style={{ height: '10vh' }}>
-          <Main>
-            <Top author={author} identity={identity} createdAt={createdAt} />
-            <Markdown content={text} />
-            {author === currentUser && (
-              <Bottom onDelete={onDelete} onEdit={() => setEditing(true)} />
-            )}
-          </Main>
-        </div>
+        <Fragment>
+          <Top author={author} identity={identity} createdAt={createdAt} />
+          <Markdown content={text} />
+          {author === currentUser && (
+            <Bottom onDelete={onDelete} onEdit={() => setEditing(true)} />
+          )}
+        </Fragment>
       )}
     </CommentCard>
   )
