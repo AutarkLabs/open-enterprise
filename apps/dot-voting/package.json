@@ -34,7 +34,7 @@
     "@aragon/api-react": "2.0.0-beta.6",
     "@aragon/apps-shared-minime": "1.0.1",
     "@aragon/os": "4.2.0",
-    "@aragon/ui": "1.0.0-alpha.32",
+    "@aragon/ui": "1.0.0",
     "@babel/polyfill": "^7.2.5",
     "bignumber.js": "^7.2.1",
     "prop-types": "^15.7.2",

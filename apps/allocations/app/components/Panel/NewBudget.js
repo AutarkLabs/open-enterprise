@@ -123,9 +123,8 @@ class NewBudget extends React.Component {
               onChange={this.changeField}
               step="any"
               value={amount}
-              css={{ borderRadius: '4px 0 0 4px' }}
+              css={{ borderRadius: '4px 0 0 4px', flexGrow: 1 }}
               required
-              wide
             />
             {this.props.editingBudget.id ? (
               <CurrencyBox>{this.props.editingBudget.token.symbol}</CurrencyBox>
