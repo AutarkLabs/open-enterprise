@@ -8,6 +8,7 @@ import "@tps/apps-discussions/contracts/DiscussionApp.sol";
 import { DotVoting } from "@tps/apps-dot-voting/contracts/DotVoting.sol";
 import "@tps/apps-projects/contracts/Projects.sol";
 import "@tps/apps-rewards/contracts/Rewards.sol";
+import "../../../apps/storage/contracts/Storage.sol";
 
 import "./BaseCache.sol";
 
@@ -19,6 +20,7 @@ contract BaseOEApps is BaseCache, TokenCache {
     bytes32 constant internal DISCUSSIONS_APP_ID = apmNamehash("discussions");            // discussions.aragonpm.eth;
     bytes32 constant internal DOT_VOTING_APP_ID = apmNamehash("dot-voting");            // dot-voting.aragonpm.eth;
     bytes32 constant internal PROJECTS_APP_ID = apmNamehash("projects");              // projects.aragonpm.eth;
+    bytes32 constant internal STORAGE_APP_ID = apmNamehash("storage");              // storage.aragonpm.eth
     bytes32 constant internal REWARDS_APP_ID = apmNamehash("rewards");              // rewards.aragonpm.eth;
     // */
     // TODO: Move to HatchAPM // Main APM ?
@@ -156,6 +158,15 @@ contract BaseOEApps is BaseCache, TokenCache {
         _acl.createPermission(_grantee, _projects, _projects.REMOVE_REPO_ROLE(), _manager);
         _acl.createPermission(_grantee, _projects, _projects.REVIEW_APPLICATION_ROLE(), _manager);
         _acl.createPermission(_grantee, _projects, _projects.WORK_REVIEW_ROLE(), _manager);
+    }
+
+    /* STORAGE */
+    function _installStorageApp(Kernel _dao) internal returns (Storage) {
+        return Storage(_dao.newAppInstance(STORAGE_APP_ID, _latestVersionAppBase(STORAGE_APP_ID), new bytes(0), true));
+    }
+
+    function _createStorageAppPermissions(ACL _acl, Storage _storage, address _grantee, address _manager) internal {
+        _acl.createPermission(_grantee, _storage, _storage.REGISTER_DATA_ROLE(), _manager);
     }
 
     /* REWARDS */

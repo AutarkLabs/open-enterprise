@@ -77,6 +77,7 @@ contract DevTemplate is BaseOEApps {
         _transferCreatePaymentManagerFromTemplate(acl, finance, voting);
         _transferPermissionFromTemplate(acl, vault, vault.TRANSFER_ROLE(), voting);
         _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, voting);
+        _setupStorageApp(dao, acl, voting);
     }
 
     /**
@@ -218,6 +219,11 @@ contract DevTemplate is BaseOEApps {
         _createDotVotingPermissions(_acl, _dotVoting, _tokenManager, _tokenManager);
         _createProjectsPermissions(_acl, _projects, _dotVoting, _tokenManager, _tokenManager);
         _createRewardsPermissions(_acl, _rewards, _tokenManager, _tokenManager);
+    }
+
+    function _setupStorageApp(Kernel _dao, ACL _acl, Voting _voting) internal {
+        Storage storageApp = _installStorageApp(_dao);
+        _createStorageAppPermissions(_acl, storageApp, ANY_ENTITY, _voting);
     }
 
     function _validateDotSettings(uint64[3] memory _dotVotingSettings) private pure {
