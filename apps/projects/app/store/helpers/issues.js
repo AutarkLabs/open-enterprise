@@ -64,28 +64,18 @@ export const loadIssueData = async ({ repoId, issueNumber }) => {
 
 export const loadIpfsData = async ipfsHash => {
   const {
-    detailsOpen,
+    issueId,
     exp,
-    deadline,
     fundingHistory,
     hours,
-    key,
     repo,
-    size,
-    slots,
-    slotsIndex,
   } = await ipfsGet(ipfsHash)
   return {
-    detailsOpen,
+    issueId,
     exp,
-    deadline,
     fundingHistory,
     hours,
-    key,
     repo,
-    size,
-    slots,
-    slotsIndex,
   }
 }
 

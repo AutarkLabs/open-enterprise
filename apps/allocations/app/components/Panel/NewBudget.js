@@ -39,7 +39,7 @@ class NewBudget extends React.Component {
 
   constructor(props) {
     super(props)
-    this.state =  INITIAL_STATE
+    this.state = { ...INITIAL_STATE }
     if (props.editingBudget.id) {
       this.state.name = props.editingBudget.name
       this.state.nameError = false
