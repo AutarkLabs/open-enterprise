@@ -60,68 +60,81 @@ const VoteDetails = ({ vote, onVote }) => {
     <Fragment>
       <Split
         primary={
-          <Box>
-            <div
-              css={`
-                > :not(:last-child) {
-                  margin-bottom: ${3 * GU}px;
-                }
-              `}
-            >
-              <DetailedAppBadge
-                appAddress={executionTargetData.address}
-                iconSrc={executionTargetData.iconSrc}
-                identifier={executionTargetData.identifier}
-                label={executionTargetData.name}
-                youVoted={youVoted}
-              />
-              <h2 css={textStyle('title2')}>{description}</h2>
-              <div css="display: flex; align-items: baseline">
-                <Label>Created By</Label>
-                <div
-                  css={`
-                    margin-left: ${GU}px;
-                  `}
-                >
-                  <LocalIdentityBadge key={creator} entity={creator} />
+          <>
+            <Box>
+              <div
+                css={`
+                  > :not(:last-child) {
+                    margin-bottom: ${3 * GU}px;
+                  }
+                `}
+              >
+                <DetailedAppBadge
+                  appAddress={executionTargetData.address}
+                  iconSrc={executionTargetData.iconSrc}
+                  identifier={executionTargetData.identifier}
+                  label={executionTargetData.name}
+                  youVoted={youVoted}
+                />
+                <h2 css={textStyle('title2')}>{description}</h2>
+                <div css="display: flex; align-items: baseline">
+                  <Label>Created By</Label>
+                  <div
+                    css={`
+                      margin-left: ${GU}px;
+                    `}
+                  >
+                    <LocalIdentityBadge key={creator} entity={creator} />
+                  </div>
                 </div>
+
+                {type === 'allocation' && (
+                  <React.Fragment>
+                    <Label>Amount</Label>
+                    <Text.Block size="large">
+                      {BigNumber(vote.data.balance)
+                        .div(BigNumber(10 ** (decimals || 18))) // added fallback to prevent flashing on delayed decimals calls. We should avoid this by getting this info in the store
+                        .toString()}{' '}
+                      {vote.data.tokenSymbol}
+                    </Text.Block>
+                  </React.Fragment>
+                )}
+
+                {!votingMode && vote.open && canIVote && (
+                  <Button mode="strong" onClick={toggleVotingMode}>
+                    {youVoted ? 'Change vote' : 'Vote'}
+                  </Button>
+                )}
+
+                {votingMode ? (
+                  <CastVote
+                    onVote={onVote}
+                    toggleVotingMode={toggleVotingMode}
+                    vote={vote}
+                    voteWeights={voteWeights}
+                    votingPower={votingPower}
+                  />
+                ) : (
+                  <VotingResults
+                    vote={vote}
+                    voteWeights={voteWeights}
+                    decimals={decimals}
+                  />
+                )}
               </div>
-
-              {type === 'allocation' && (
-                <React.Fragment>
-                  <Label>Amount</Label>
-                  <Text.Block size="large">
-                    {BigNumber(vote.data.balance)
-                      .div(BigNumber(10 ** (decimals || 18))) // added fallback to prevent flashing on delayed decimals calls. We should avoid this by getting this info in the store
-                      .toString()}{' '}
-                    {vote.data.tokenSymbol}
-                  </Text.Block>
-                </React.Fragment>
-              )}
-
-              {!votingMode && vote.open && canIVote && (
-                <Button mode="strong" onClick={toggleVotingMode}>
-                  {youVoted ? 'Change vote' : 'Vote'}
-                </Button>
-              )}
-
-              {votingMode ? (
-                <CastVote
-                  onVote={onVote}
-                  toggleVotingMode={toggleVotingMode}
-                  vote={vote}
-                  voteWeights={voteWeights}
-                  votingPower={votingPower}
-                />
-              ) : (
-                <VotingResults
-                  vote={vote}
-                  voteWeights={voteWeights}
-                  decimals={decimals}
-                />
-              )}
-            </div>
-          </Box>
+            </Box>
+            <Text
+              css={`display: block; margin-top: ${3 * GU}px`}
+              size="large"
+              color={theme.textSecondary}
+            >
+              Discussion
+            </Text>
+            <Discussion
+              discussionId={Number(voteId)}
+              ethereumAddress={connectedAccount}
+            />
+          </>
         }
         secondary={
           <React.Fragment>
@@ -129,17 +142,6 @@ const VoteDetails = ({ vote, onVote }) => {
             <Participation vote={vote} />
           </React.Fragment>
         }
-      />
-      <Text
-        css={{ marginTop: '1rem' }}
-        size="large"
-        color={theme.textSecondary}
-      >
-        Discussion Thread
-      </Text>
-      <Discussion
-        discussionId={Number(voteId)}
-        ethereumAddress={connectedAccount}
       />
     </Fragment>
   )
