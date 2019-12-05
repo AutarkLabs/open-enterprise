@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { formatDistance } from 'date-fns'
+import { format as formatDate, formatDistance } from 'date-fns'
 import {
   Button,
   DropDown,
@@ -135,17 +135,22 @@ const ReviewApplication = ({ issue, requestIndex }) => {
 
           <FieldTitle>Application Status</FieldTitle>
           <div css="margin: 10px 0">
-            {request.review.approved ? (
-              <div css="display: flex; align-items: center">
-                <IconCheck color={`${theme.positive}`} css="margin-top: -4px; margin-right: 8px"/>
-                <Text color={`${theme.positive}`}>Accepted</Text>
-              </div>
-            ) : (
-              <div css="display: flex; align-items: center">
-                <IconCross color={`${theme.negative}`} css="margin-top: -4px; margin-right: 8px" />
-                <Text color={`${theme.negative}`}>Rejected</Text>
-              </div>
-            )}
+            <div css="display: flex; align-items: center">
+              {request.review.approved ? (
+                <>
+                  <IconCheck color={`${theme.positive}`} css="margin-top: -4px; margin-right: 8px"/>
+                  <Text color={`${theme.positive}`}>Accepted</Text>
+                </>
+              ) : (
+                <>
+                  <IconCross color={`${theme.negative}`} css="margin-top: -4px; margin-right: 8px" />
+                  <Text color={`${theme.negative}`}>Rejected</Text>
+                </>
+              )}
+              <Text color={`${theme.contentSecondary}`} css={`margin-left: ${GU}px`}>
+                {formatDate(new Date(request.review.reviewDate), 'd MMM yy, h:MM a (z)')}
+              </Text>
+            </div>
           </div>
 
           <FieldTitle>Feedback</FieldTitle>
