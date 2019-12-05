@@ -37,6 +37,7 @@ const prepareFilters = (issues, bountyIssues) => {
       } else {
         filters.milestones[issue.milestone.id] = {
           ...issue.milestone,
+          name: issue.milestone.title,
           count: 1,
         }
       }
@@ -45,7 +46,7 @@ const prepareFilters = (issues, bountyIssues) => {
         filters.milestones['milestoneless'].count++
       } else {
         filters.milestones['milestoneless'] = {
-          title: 'Issues without milestones',
+          name: 'Issues without milestones',
           id: 'milestoneless',
           count: 1,
         }
@@ -57,7 +58,10 @@ const prepareFilters = (issues, bountyIssues) => {
         if (label.node.id in filters.labels) {
           filters.labels[label.node.id].count++
         } else {
-          filters.labels[label.node.id] = { ...label.node, count: 1 }
+          filters.labels[label.node.id] = {
+            ...label.node,
+            count: 1,
+          }
         }
       })
     } else {

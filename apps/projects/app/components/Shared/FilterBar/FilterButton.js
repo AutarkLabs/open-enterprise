@@ -45,5 +45,8 @@ FilterButton.propTypes = {
   onClick: PropTypes.func.isRequired,
   disabled: PropTypes.bool.isRequired,
 }
+FilterButton.defaultProps = {
+  disabled: false,
+}
 
 export default FilterButton

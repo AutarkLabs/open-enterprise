@@ -8,6 +8,19 @@ const BOUNTY_STATUS = {
   'fulfilled': 'Fulfilled',
 }
 
+const BOUNTY_STATUS_FUNDED = [
+  'funded',
+  'review-applicants',
+  'in-progress',
+  'review-work',
+  'fulfilled'
+]
+
+const BOUNTY_STATUS_GENERAL = [
+  'all-funded',
+  'not-funded'
+]
+
 const BOUNTY_BADGE_COLOR = {
   'funded': { bg: '#e7f8ec', fg: '#51d4b7' },
   'review-applicants': { bg: '#e7f8ec', fg: '#51d4b7' },
@@ -24,5 +37,5 @@ const BOUNTY_STATUS_LONG = {
   'fulfilled': 'Fulfilled',
 }
 
-export { BOUNTY_STATUS, BOUNTY_STATUS_LONG, BOUNTY_BADGE_COLOR }
+export { BOUNTY_BADGE_COLOR, BOUNTY_STATUS, BOUNTY_STATUS_FUNDED, BOUNTY_STATUS_GENERAL, BOUNTY_STATUS_LONG }
 

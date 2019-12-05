@@ -17,6 +17,7 @@ const dynamicImport = Object.freeze({
   ReviewWork: () => import('./ReviewWork'),
   SubmitWork: () => import('./SubmitWork'),
   ViewFunding: () => import('./ViewFunding'),
+  Filters: () => import('./Filters'),
 })
 
 export const PANELS = Object.keys(dynamicImport).reduce((obj, item) => {

@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { ApolloProvider } from 'react-apollo'
-
+import styled from 'styled-components'
 import { useAragonApi } from './api-react'
 import {
   Bar,
   Button,
   BackButton,
+  GU,
   Header,
+  IconFilter,
   IconPlus,
   Main,
   Tabs,
@@ -30,12 +32,12 @@ import { LoadingAnimation } from './components/Shared'
 import { EmptyWrapper } from './components/Shared'
 import { Error } from './components/Card'
 import { DecoratedReposProvider } from './context/DecoratedRepos'
+import { IssueFiltersProvider } from './context/IssueFilters'
+import { TextFilter } from './components/Shared/FilterBar/TextFilter'
 
 const App = () => {
   const { api, appState } = useAragonApi()
-  const [ activeIndex, setActiveIndex ] = useState(
-    { tabIndex: 0, tabData: {} }
-  )
+  const [ activeIndex, setActiveIndex ] = useState(0)
   const [ selectedIssueId, setSelectedIssue ] = useState(null)
   const [ githubLoading, setGithubLoading ] = useState(false)
   const [ panel, setPanel ] = useState(null)
@@ -88,9 +90,7 @@ const App = () => {
     }
   }
 
-  const changeActiveIndex = data => {
-    setActiveIndex(data)
-  }
+  const changeActiveIndex = index => setActiveIndex(index)
 
   const closePanel = () => {
     setPanel(null)
@@ -110,10 +110,6 @@ const App = () => {
 
     // Listen for the github redirection with the auth-code encoded as url param
     window.addEventListener('message', handlePopupMessage)
-  }
-
-  const handleSelect = index => {
-    changeActiveIndex({ tabIndex: index, tabData: {} })
   }
 
   const handleResolveLocalIdentity = address => {
@@ -154,16 +150,24 @@ const App = () => {
   tabs.push({ name: 'Settings', body: Settings })
 
   // Determine current tab details
-  const TabComponent = tabs[activeIndex.tabIndex].body
+  const TabComponent = tabs[activeIndex].body
   const TabAction = () => {
-    const { setupNewIssue, setupNewProject } = usePanelManagement()
+    const { setupNewIssue, setupNewProject, filters: filtersPanel } = usePanelManagement()
 
-    switch (tabs[activeIndex.tabIndex].name) {
+    switch (tabs[activeIndex].name) {
     case 'Overview': return (
       <Button mode="strong" icon={<IconPlus />} onClick={setupNewProject} label="New project" />
     )
     case 'Issues': return (
-      <Button mode="strong" icon={<IconPlus />} onClick={setupNewIssue} label="New issue" />
+      <>
+        {!selectedIssueId && (
+          <MiniFilterBar>
+            <Button icon={<IconFilter />} onClick={filtersPanel} label="Filters Panel" />
+            <TextFilter />
+          </MiniFilterBar>
+        )}
+        <Button mode="strong" icon={<IconPlus />} onClick={setupNewIssue} label="New issue" />
+      </>
     )
     default: return null
     }
@@ -178,50 +182,51 @@ const App = () => {
             onShowLocalIdentityModal={handleShowLocalIdentityModal}
           >
             <DecoratedReposProvider>
-              <Header
-                primary="Projects"
-                secondary={
-                  <TabAction />
-                }
-              />
-              <ErrorBoundary>
-
-                {selectedIssueId
-                  ? (
-                    <React.Fragment>
-                      <Bar>
-                        <BackButton onClick={() => setSelectedIssue(null)} />
-                      </Bar>
-                      <IssueDetail issueId={selectedIssueId} />
-                    </React.Fragment>
-                  )
-                  : (
-                    <React.Fragment>
-                      <Tabs
-                        items={tabs.map(t => t.name)}
-                        onChange={handleSelect}
-                        selected={activeIndex.tabIndex}
-                      />
-                      <TabComponent
-                        status={github.status}
-                        app={api}
-                        bountyIssues={issues}
-                        bountySettings={bountySettings}
-                        tokens={tokens}
-                        activeIndex={activeIndex}
-                        changeActiveIndex={changeActiveIndex}
-                        setSelectedIssue={setSelectedIssue}
-                        onLogin={handleGithubSignIn}
-                      />
-                    </React.Fragment>
-                  )
-                }
-              </ErrorBoundary>
-              <PanelManager
-                activePanel={panel}
-                onClose={closePanel}
-                {...panelProps}
-              />
+              <IssueFiltersProvider>
+                <Header
+                  primary="Projects"
+                  secondary={
+                    <TabAction />
+                  }
+                />
+                <ErrorBoundary>
+                  {selectedIssueId
+                    ? (
+                      <React.Fragment>
+                        <Bar>
+                          <BackButton onClick={() => setSelectedIssue(null)} />
+                        </Bar>
+                        <IssueDetail issueId={selectedIssueId} />
+                      </React.Fragment>
+                    )
+                    : (
+                      <React.Fragment>
+                        <Tabs
+                          items={tabs.map(t => t.name)}
+                          onChange={changeActiveIndex}
+                          selected={activeIndex}
+                        />
+                        <TabComponent
+                          status={github.status}
+                          app={api}
+                          bountyIssues={issues}
+                          bountySettings={bountySettings}
+                          tokens={tokens}
+                          activeIndex={activeIndex}
+                          changeActiveIndex={changeActiveIndex}
+                          setSelectedIssue={setSelectedIssue}
+                          onLogin={handleGithubSignIn}
+                        />
+                      </React.Fragment>
+                    )
+                  }
+                </ErrorBoundary>
+                <PanelManager
+                  activePanel={panel}
+                  onClose={closePanel}
+                  {...panelProps}
+                />
+              </IssueFiltersProvider>
             </DecoratedReposProvider>
           </IdentityProvider>
         </PanelContext.Provider>
@@ -229,5 +234,14 @@ const App = () => {
     </Main>
   )
 }
+const MiniFilterBar = styled.span`
+  > * {
+    margin-right: ${GU}px;
+  }
+
+  @media only screen and (min-width: 515px) {
+    display: none;
+  }
+`
 
 export default App
