@@ -34,10 +34,7 @@ const ActionButton = ({ panel, caption, issue }) => (
 ActionButton.propTypes = {
   panel: PropTypes.func.isRequired,
   caption: PropTypes.string.isRequired,
-  issue: PropTypes.oneOfType([
-    issueShape,
-    PropTypes.arrayOf(issueShape),
-  ]).isRequired,
+  issue: issueShape,
 }
 
 const address = address => (
@@ -49,7 +46,7 @@ const address = address => (
 const DeadlineDistance = ({ date }) =>
   formatDistance(new Date(date), new Date(), { addSuffix: true })
 
-const plural = number => number > 1 ? 's' : ''
+const pluralize = (word, number) => `${number} ${word}${number > 1 ? 's' : ''}`
 
 const Status = ({ issue }) => {
   const theme = useTheme()
@@ -93,13 +90,14 @@ const Submissions = ({ issue }) => {
   )
   case 'review-applicants': return (
     <Link onClick={() => reviewApplication(issue, 0)}>
-      {issue.requestsData.length + ' application' + plural(issue.requestsData.length)}
+      {pluralize('application', issue.requestsData.length)}
+
     </Link>
   )
   case 'in-progress':
     if ('workSubmissions' in issue) return (
       <Link onClick={() => reviewWork(issue, 0)}>
-        {issue.workSubmissions.length + ' work submission' + plural(issue.workSubmissions.length)}
+        {pluralize('work submission', issue.workSubmissions.length)}
       </Link>
     )
     return (
@@ -108,8 +106,9 @@ const Submissions = ({ issue }) => {
   case 'review-work':
   case 'fulfilled': return (
     <Link onClick={() => reviewWork(issue, 0)}>
-      {issue.workSubmissions.length + ' work submission' + plural(issue.workSubmissions.length)}
+      {pluralize('work submission', issue.workSubmissions.length)}
     </Link>)
+  default: return null
   }
 }
 Submissions.propTypes = issueShape
@@ -129,15 +128,19 @@ Dot.propTypes = PropTypes.string.isRequired
 const BountyDot = ({ workStatus }) => {
   const theme = useTheme()
 
-  if (workStatus === 'funded' || workStatus === 'review-applicants')
+  switch(workStatus) {
+  case 'funded':
+  case 'review-applicants':
     return (
       <Dot color={theme.success} />
     )
-  if (workStatus === 'in-progress' || workStatus === 'review-work')
+  case 'in-progress':
+  case 'review-work':
     return (
       <Dot color={theme.warning} />
     )
-  return null
+  default: return null
+  }
 }
 BountyDot.propTypes = PropTypes.string.isRequired
 
@@ -145,13 +148,19 @@ const Action = ({ issue }) => {
   const { requestAssignment, submitWork } = usePanelManagement()
   const { connectedAccount } = useAragonApi()
 
-  if (issue.workStatus === 'funded' || issue.workStatus === 'review-applicants') return (
-    <ActionButton panel={requestAssignment} caption="Submit application" issue={issue} />
-  )
-  else if (issue.workStatus === 'in-progress' && connectedAccount === issue.assignee) return (
-    <ActionButton panel={submitWork} caption="Submit work" issue={issue} />
-  )
-  return null
+  switch(issue.workStatus) {
+  case 'funded':
+  case 'review-applicants':
+    return (
+      <ActionButton panel={requestAssignment} caption="Submit application" issue={issue} />
+    )
+  case 'in-progress':
+    if (connectedAccount === issue.assignee) return (
+      <ActionButton panel={submitWork} caption="Submit work" issue={issue} />
+    )
+    return null
+  default: return null
+  }
 }
 Action.propTypes = issueShape
 
@@ -225,5 +234,4 @@ const BountyText = styled.div`
   display: flex;
 `
 
-// eslint-disable-next-line import/no-unused-modules
 export default BountyCard

@@ -6,7 +6,7 @@ const issueShape = PropTypes.shape({
   deadline: PropTypes.string,
   exp: PropTypes.number,
   fundingHistory: PropTypes.arrayOf(PropTypes.object),
-  hours: PropTypes.number,
+  hours: PropTypes.string,
   id: PropTypes.string,
   labels: PropTypes.object,
   level: PropTypes.string,
@@ -17,7 +17,7 @@ const issueShape = PropTypes.shape({
   symbol: PropTypes.string,
   title: PropTypes.string,
   url: PropTypes.string,
-  work: PropTypes.oneOfType([ undefined, PropTypes.object ]),
+  work: PropTypes.object,
   workStatus: PropTypes.oneOf([
     undefined,
     'funded',
