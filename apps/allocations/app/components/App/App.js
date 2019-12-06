@@ -1,9 +1,10 @@
 import React from 'react'
+import { Route } from 'react-router'
 import { useAragonApi } from '../../api-react'
 import { Main, SidePanel, SyncIndicator } from '@aragon/ui'
 
 import { IdentityProvider } from '../LocalIdentityBadge/IdentityManager'
-import { Overview } from '.'
+import { BudgetDetail, Overview } from '.'
 import { usePanel } from '../../context/Panel'
 
 const App = () => {
@@ -32,7 +33,12 @@ const App = () => {
         onResolve={handleResolveLocalIdentity}
         onShowLocalIdentityModal={handleShowLocalIdentityModal}
       >
-        <Overview />
+        <Route path="/" exact>
+          <Overview />
+        </Route>
+        <Route path="/budgets/:id" exact>
+          <BudgetDetail />
+        </Route>
         <SyncIndicator visible={isSyncing} />
         <SidePanel
           title={(panel && panel.data.heading) || ''}

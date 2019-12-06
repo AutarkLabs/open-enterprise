@@ -105,6 +105,6 @@ const functions = process.env.NODE_ENV !== 'production' && ((appState, setAppSta
   }),
 }))
 
-const { AragonApi, useAragonApi } = buildStubbedApiReact({ initialState, functions })
+const { AragonApi, AragonRouter, useAragonApi } = buildStubbedApiReact({ initialState, functions })
 
-export { AragonApi, useAragonApi }
+export { AragonApi, AragonRouter, useAragonApi }
