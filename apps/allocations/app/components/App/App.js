@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useAragonApi } from '../../api-react'
 import { Button, Header, IconPlus, Main, SidePanel, SyncIndicator } from '@aragon/ui'
 
@@ -6,22 +6,13 @@ import { IdentityProvider } from '../LocalIdentityBadge/IdentityManager'
 import { Empty } from '../Card'
 import { NewBudget } from '../Panel'
 import { AllocationsHistory, Budgets } from '.'
+import { usePanel } from '../../context/Panel'
 
 const App = () => {
-  const [ panel, setPanelRaw ] = useState(null)
-  const [ panelOpen, setPanelOpen ] = useState(false)
   const { api, appState } = useAragonApi()
   const { allocations = [], budgets = [], isSyncing = true } = appState
 
-  const setPanel = args => {
-    if (args) {
-      setPanelRaw(args)
-      setPanelOpen(true)
-    } else {
-      setPanelOpen(false)
-      setTimeout(() => setPanelRaw(args), 500)
-    }
-  }
+  const { panel, panelOpen, setPanel } = usePanel()
 
   const saveBudget = ({ amount, name, token }) => {
     api
@@ -77,7 +68,7 @@ const App = () => {
                   />
                 }
               />
-              <Budgets setPanel={setPanel} />
+              <Budgets />
               <SyncIndicator visible={isSyncing} />
             </React.Fragment>
           )
