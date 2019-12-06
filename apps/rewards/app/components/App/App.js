@@ -9,6 +9,7 @@ import { Empty } from '../Card'
 import { networkContextType } from '../../../../../shared/ui'
 import { useAragonApi } from '../../api-react'
 import { IdentityProvider } from '../../../../../shared/identity'
+import { useAppLogic } from '../../app-logic'
 
 const CONVERT_API_BASE = 'https://min-api.cryptocompare.com/data'
 const CONVERT_THROTTLE_TIME = 5000
@@ -32,16 +33,19 @@ class App extends React.Component {
     refTokens: PropTypes.array.isRequired,
     amountTokens: PropTypes.array.isRequired,
     claims: PropTypes.array.isRequired,
+    tabs: PropTypes.array.isRequired,
+    fromPath: PropTypes.object.isRequired,
+    selectReward: PropTypes.func.isRequired,
+    selectTab: PropTypes.func.isRequired,
   }
 
   constructor(props) {
     super(props)
-
     this.state = {
-      selected: 0,
-      tabs: [ 'Overview', 'My Rewards' ],
+      selected: 0
     }
     this.updateRewards()
+    this.updatePath(props)
   }
 
   static defaultProps = {
@@ -57,7 +61,10 @@ class App extends React.Component {
     myMetrics: [],
     displayMenuButton: true,
     amountTokens: [],
-
+    tabs: ['Overview'],
+    fromPath: {},
+    selectTab: () => null,
+    selectReward: () => null,
   }
 
   static childContextTypes = {
@@ -76,6 +83,10 @@ class App extends React.Component {
   shouldComponentUpdate(nextProps, nextState) {
     // do not re-render if the NewReward
     // panel is open
+
+    if (nextProps.fromPath !== this.props.fromPath) {
+      this.updatePath(nextProps)
+    }
     if (this.state.panel && this.state.panel === nextState.panel) {
       return false
     }
@@ -86,6 +97,9 @@ class App extends React.Component {
     this.updateConvertedRates(this.props)
     if (prevProps.userAccount !== this.props.userAccount) {
       this.updateRewards()
+    }
+    if (prevProps.fromPath !== this.props.fromPath || prevProps.rewards !== this.props.rewards) {
+      this.updatePath(this.props)
     }
   }
 
@@ -111,6 +125,25 @@ class App extends React.Component {
     })
   }
 
+  updatePath = (props) => {
+    const { selected, rewardId } = props.fromPath
+    this.state.selected = selected
+    if(rewardId && props.rewards.length > 0){
+      const selectedReward = props.rewards.find(reward => String(reward.rewardId) === rewardId)
+      if(selectedReward){
+        //Clear panel state
+        this.state.panel = null
+        this.state.panelProps = null
+        this.state.panelTitle = null
+        //Set panel
+        this.viewReward({
+          reward: selectedReward,
+          isMyReward: selected === 1
+        })
+      }
+    }
+  }
+
   handleMenuPanelOpen = () => {
     window.parent.postMessage(
       { from: 'app', name: 'menuPanel', value: true }, '*'
@@ -123,11 +156,13 @@ class App extends React.Component {
       panelProps: undefined,
       panelTitle: undefined,
     })
+    this.props.selectReward(this.state.selected, null)
   }
 
   selectTab = idx => {
-    this.setState({ selected: idx })
+    this.props.selectTab(idx)
     this.updateRewards()
+    this.updatePath(this.props)
   }
 
   getRewards = (rewards) => {
@@ -193,20 +228,21 @@ class App extends React.Component {
       },
       panelTitle,
     })
+    this.props.selectReward(this.state.selected, String(reward.rewardId))
   }
 
   claimReward = reward => {
     // TODO
     this.props.api.claimReward(reward.rewardId + reward.claims).toPromise()
   }
-
+  /*
   openDetailsView = reward => {
     this.viewReward(reward)
   }
   openDetailsMy = reward => {
     this.myReward(reward)
   }
-
+*/
   handleResolveLocalIdentity = address => {
     return this.props.api.resolveAddressIdentity(address).toPromise()
   }
@@ -260,7 +296,7 @@ class App extends React.Component {
           }
         />
         <Tabs
-          items={this.state.tabs}
+          items={this.props.tabs}
           selected={this.state.selected}
           onChange={this.selectTab}
         />
@@ -300,6 +336,7 @@ const EmptyContainer = styled.div`
 // eslint-disable-next-line react/display-name
 export default () => {
   const { api, appState, connectedAccount } = useAragonApi()
+  const appLogic = useAppLogic()
   return (
     <App
       api={api}
@@ -310,6 +347,7 @@ export default () => {
       amountTokens={appState.amountTokens}
       claims={appState.claims}
       {...appState}
+      {...appLogic}
       connectedAccount={connectedAccount}
     />
   )
