@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
@@ -8,12 +7,14 @@ import { GU } from '@aragon/ui'
 import { NewAllocation, NewBudget } from '../Panel'
 import { Budget } from '../Card'
 import { Deactivate } from '../Modal'
+import { usePanel } from '../../context/Panel'
 
-const Budgets = ({ setPanel }) => {
+const Budgets = () => {
   const { api, appState } = useAragonApi()
   const { budgets = [] } = appState
   const [ isModalVisible, setModalVisible ] = useState(false)
   const [ currentBudgetId, setCurrentBudgetId ] = useState('')
+  const { setPanel } = usePanel()
 
   const closeModal = () => {
     setModalVisible(false)
@@ -116,10 +117,6 @@ const Budgets = ({ setPanel }) => {
       />
     </>
   )
-}
-
-Budgets.propTypes = {
-  setPanel: PropTypes.func.isRequired,
 }
 
 const StyledBudgets = styled.div`
