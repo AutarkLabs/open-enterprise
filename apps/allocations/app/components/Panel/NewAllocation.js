@@ -146,7 +146,6 @@ class NewAllocation extends React.Component {
       addresses: Object.values(recipients),
     }
     this.props.onSubmitAllocation(allocation)
-    this.setState(INITIAL_STATE)
   }
 
   render() {

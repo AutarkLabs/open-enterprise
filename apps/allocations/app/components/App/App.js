@@ -9,12 +9,22 @@ import { AllocationsHistory, Budgets } from '.'
 import { Deactivate } from '../Modal'
 
 const App = () => {
-  const [ panel, setPanel ] = useState(null)
+  const [ panel, setPanelRaw ] = useState(null)
   const [ panelOpen, setPanelOpen ] = useState(false)
   const [ isModalVisible, setModalVisible ] = useState(false)
   const [ currentBudgetId, setCurrentBudgetId ] = useState('')
   const { api, appState } = useAragonApi()
   const { allocations = [], budgets = [], isSyncing = true } = appState
+
+  const setPanel = args => {
+    if (args) {
+      setPanelRaw(args)
+      setPanelOpen(true)
+    } else {
+      setPanelOpen(false)
+      setTimeout(() => setPanelRaw(args), 500)
+    }
+  }
 
   const saveBudget = ({ id, amount, name, token }) => {
     if (id) {
@@ -29,7 +39,7 @@ const App = () => {
         )
         .toPromise()
     }
-    closePanel()
+    setPanel(null)
   }
 
   const onSubmitAllocation = ({
@@ -54,8 +64,7 @@ const App = () => {
       period,
       balance, // amount
     ).toPromise()
-    closePanel()
-
+    setPanel(null)
   }
 
   const onSubmitDeactivate = () => { // TODO id => {
@@ -73,7 +82,6 @@ const App = () => {
       content: NewBudget,
       data: { heading: 'New budget', saveBudget },
     })
-    setPanelOpen(true)
   }
 
   const onNewAllocation = (budgetId) => {
@@ -88,7 +96,6 @@ const App = () => {
         balances,
       },
     })
-    setPanelOpen(true)
   }
 
   const onEdit = id => {
@@ -101,7 +108,6 @@ const App = () => {
         editingBudget,
       },
     })
-    setPanelOpen(true)
   }
 
   const onDeactivate = id => {
@@ -111,11 +117,6 @@ const App = () => {
 
   const onReactivate = () => { // TODO id => {
     //api.reactivateBudget(id)
-  }
-
-  const closePanel = () => {
-    setPanelOpen(false)
-    setPanel(null)
   }
 
   const closeModal = () => {
@@ -173,7 +174,7 @@ const App = () => {
         <SidePanel
           title={(panel && panel.data.heading) || ''}
           opened={panelOpen}
-          onClose={closePanel}
+          onClose={() => setPanel(null)}
         >
           {panel && <PanelContent {...panel.data} />}
         </SidePanel>
