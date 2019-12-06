@@ -16,13 +16,5 @@ const BOUNTY_BADGE_COLOR = {
   'fulfilled': { bg: '#d1d1d1', fg: '#445159' },
 }
 
-const BOUNTY_STATUS_LONG = {
-  'funded': 'Accepting applications for work on this issue',
-  'review-applicants': 'Pending application review',
-  'in-progress': 'Accepting work for review on this issue',
-  'review-work': 'Work ready for review',
-  'fulfilled': 'Fulfilled',
-}
-
-export { BOUNTY_STATUS, BOUNTY_STATUS_LONG, BOUNTY_BADGE_COLOR }
+export { BOUNTY_STATUS, BOUNTY_BADGE_COLOR }
 
