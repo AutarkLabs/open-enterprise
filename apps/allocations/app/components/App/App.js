@@ -1,11 +1,12 @@
 import React from 'react'
+import { Route } from 'react-router'
 import { useAragonApi } from '../../api-react'
 import { Button, Header, IconPlus, Main, SidePanel, SyncIndicator } from '@aragon/ui'
 
 import { IdentityProvider } from '../LocalIdentityBadge/IdentityManager'
 import { Empty } from '../Card'
 import { NewBudget } from '../Panel'
-import { AllocationsHistory, Budgets } from '.'
+import { AllocationsHistory, BudgetDetail, Budgets } from '.'
 import { usePanel } from '../../context/Panel'
 
 const App = () => {
@@ -68,7 +69,8 @@ const App = () => {
                   />
                 }
               />
-              <Budgets />
+              <Route path="/" exact component={Budgets} />
+              <Route path="/budgets/:id" exact component={BudgetDetail} />
               <SyncIndicator visible={isSyncing} />
             </React.Fragment>
           )
