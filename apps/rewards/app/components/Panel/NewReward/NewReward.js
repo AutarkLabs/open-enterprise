@@ -61,7 +61,7 @@ const messages = {
   noDisbursements: (disbursement, displayUnit) => `Based on your selected parameters, there will be no disbursements, as your end date falls before the end of the first cycle. Please choose an end date that is at least ${disbursement} ${displayUnit} after the start date.`,
   singleDisbursement: (disbursement, displayUnit) => `There will only be a single reward under this policy, which will be disbursed ${disbursement} ${displayUnit} after your chosen start date. Dates are approximate as disbursements occur based on block number.`,
   multipleDisbursements: (disbursement, displayUnit) => `The first reward under this policy will be disbursed ${disbursement} ${displayUnit} after your chosen start date, and repeat every ${disbursement} ${displayUnit} until your chosen end date. Dates are approximate as disbursements occur based on block number.`,
-  dateBeforeAsset: (dateType, tokenSymbol) => `The selected ${dateType} date occurs before the reference asset, ${tokenSymbol}, was created. Please choose another date.`,
+  dateBeforeAsset: (dateType, tokenSymbol) => `The selected ${dateType} date occurs before the reference asset ${tokenSymbol} was created. Please choose another date.`,
 }
 
 const INITIAL_STATE = {
@@ -647,7 +647,7 @@ class NewRewardClass extends React.Component {
           errors={
             <React.Fragment>
               { this.errorBlocks() }
-              { this.warningBlocks() }
+              { this.isDraftValid() && this.warningBlocks() }
             </React.Fragment>
           }
         >
