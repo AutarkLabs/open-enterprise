@@ -2,16 +2,17 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import { useAragonApi } from '../../api-react'
-import { GU } from '@aragon/ui'
+import { Button, GU, Header, IconPlus } from '@aragon/ui'
 
+import { AllocationsHistory } from '.'
 import { NewAllocation, NewBudget } from '../Panel'
-import { Budget } from '../Card'
+import { Budget, Empty } from '../Card'
 import { Deactivate } from '../Modal'
 import { usePanel } from '../../context/Panel'
 
-const Budgets = () => {
+const Overview = () => {
   const { api, appState } = useAragonApi()
-  const { budgets = [] } = appState
+  const { allocations = [], budgets = [], isSyncing = true } = appState
   const [ isModalVisible, setModalVisible ] = useState(false)
   const [ currentBudgetId, setCurrentBudgetId ] = useState('')
   const { setPanel } = usePanel()
@@ -21,9 +22,27 @@ const Budgets = () => {
     setCurrentBudgetId('')
   }
 
-  const saveBudget = ({ id, amount, name }) => {
-    api.setBudget(id, amount, name).toPromise()
+  const saveBudget = ({ id, amount, name, token }) => {
+    if (id) {
+      api.setBudget(id, amount, name).toPromise()
+    } else {
+      api
+        .newAccount(
+          name,             // _metadata
+          token.address,    // _token
+          true,             // hasBudget
+          amount
+        )
+        .toPromise()
+    }
     setPanel(null)
+  }
+
+  const onNewBudget = () => {
+    setPanel({
+      content: NewBudget,
+      data: { heading: 'New budget', saveBudget },
+    })
   }
 
   const onSubmitAllocation = ({
@@ -90,8 +109,23 @@ const Budgets = () => {
     //api.reactivateBudget(id)
   }
 
+  if (budgets.length === 0) {
+    return <Empty action={onNewBudget} isSyncing={isSyncing} />
+  }
+
   return (
     <>
+      <Header
+        primary="Allocations"
+        secondary={
+          <Button
+            mode="strong"
+            icon={<IconPlus />}
+            onClick={onNewBudget}
+            label="New budget"
+          />
+        }
+      />
       <StyledBudgets>
         {budgets.map(({ amount, hasBudget, id, name, remaining, token }) => (
           <Budget
@@ -115,6 +149,7 @@ const Budgets = () => {
         onClose={closeModal}
         onSubmit={onSubmitDeactivate}
       />
+      { !!allocations.length && <AllocationsHistory allocations={allocations} /> }
     </>
   )
 }
@@ -126,4 +161,4 @@ const StyledBudgets = styled.div`
   margin-bottom: ${2 * GU}px;
 `
 
-export default Budgets
+export default Overview
