@@ -127,6 +127,7 @@ const ReviewApplication = ({ issue, requestIndex }) => {
       {('review' in request) ? (
         <React.Fragment>
           <FieldTitle>Application Status</FieldTitle>
+
           <FieldText>
             <Status review={request.review} />
           </FieldText>

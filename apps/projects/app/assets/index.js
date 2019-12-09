@@ -7,5 +7,7 @@ import IconBarbell from './IconBarbell'
 import IconOpen from './IconOpen'
 import IconCollapse from './IconCollapse'
 import IconDropArrow from './IconDropArrow'
+import IconDoubleCheck from './IconDoubleCheck'
+import IconUserCheck from './IconUserCheck'
 
-export { IconMore, IconSort, IconGrid, IconCoins, IconFilter, IconBarbell, IconOpen, IconCollapse, IconDropArrow }
+export { IconMore, IconSort, IconGrid, IconCoins, IconFilter, IconBarbell, IconOpen, IconCollapse, IconDropArrow, IconDoubleCheck, IconUserCheck }

@@ -54,7 +54,7 @@ class NewAllocation extends React.Component {
   constructor(props) {
     super(props)
     const { budgets, budgetId } = props
-    this.state = INITIAL_STATE
+    this.state = { ...INITIAL_STATE }
     this.state.recipients = {}
     this.state.recipientsValid = {}
     const recipientId = Date.now()

@@ -7,9 +7,9 @@ import { IconCoin, IconConnect, IconFile, IconView, useTheme } from '@aragon/ui'
 import { useAragonApi } from '../../api-react'
 
 const BountyContextMenu = ({ issue }) => {
+  const pastDeadline = (new Date()) > (new Date(issue.deadline))
   const { workStatus, assignee } = issue
   const { connectedAccount } = useAragonApi()
-
   const {
     allocateBounty,
     requestAssignment,
@@ -80,12 +80,14 @@ const BountyContextMenu = ({ issue }) => {
       )}
       {workStatus === 'review-applicants' && (
         <React.Fragment>
-          <Item onClick={() => requestAssignment(issue)}>
-            <IconFile color={`${theme.surfaceContent}`} />
-            <ActionLabel>
-              Submit application
-            </ActionLabel>
-          </Item>
+          {!pastDeadline && (
+            <Item onClick={() => requestAssignment(issue)}>
+              <IconFile color={`${theme.surfaceContent}`} />
+              <ActionLabel>
+                Submit application
+              </ActionLabel>
+            </Item>
+          )}
           <Item onClick={() => reviewApplication(issue)}>
             <IconView color={`${theme.surfaceContent}`} />
             <ActionLabel>

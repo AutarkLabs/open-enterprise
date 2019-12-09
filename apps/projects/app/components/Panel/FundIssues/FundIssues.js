@@ -16,6 +16,7 @@ import {
   Text,
   TextInput,
   DropDown,
+  LoadingRing,
   useTheme,
   GU,
   Button,
@@ -48,6 +49,7 @@ const errorMessages = {
 const bountiesFor = ({ bountySettings, issues, tokens }) => issues.reduce(
   (bounties, issue) => {
     bounties[issue.id] = {
+      fundingHistory: issue.fundingHistory || [],
       issueId: issue.id,
       repo: issue.repo,
       number: issue.number,
@@ -71,6 +73,7 @@ const BountyUpdate = ({
   issue,
   bounty,
   submitBounties,
+  submitting,
   description,
   tokens,
   updateBounty,
@@ -102,8 +105,11 @@ const BountyUpdate = ({
         css={`margin: ${2 * GU}px 0`}
         onSubmit={submitBounties}
         description={description}
-        submitText="Submit"
-        submitDisabled={submitDisabled}
+        submitText={submitting
+          ? <><LoadingRing /> Saving...</>
+          : 'Submit'
+        }
+        submitDisabled={submitDisabled || submitting}
       >
         <FormField
           input={
@@ -208,6 +214,7 @@ BountyUpdate.propTypes = {
   issue: issueShape,
   bounty: PropTypes.object.isRequired,
   submitBounties: PropTypes.func.isRequired,
+  submitting: PropTypes.bool.isRequired,
   description: PropTypes.string.isRequired,
   tokens: PropTypes.array.isRequired,
   updateBounty: PropTypes.func.isRequired,
@@ -216,6 +223,7 @@ BountyUpdate.propTypes = {
 const FundForm = ({
   issues,
   bounties,
+  submitting,
   submitBounties,
   description,
   tokens,
@@ -278,8 +286,11 @@ const FundForm = ({
         css={`margin: ${2 * GU}px 0`}
         onSubmit={submitBounties}
         description={description}
-        submitText={issues.length > 1 ? 'Fund Issues' : 'Fund Issue'}
-        submitDisabled={submitDisabled}
+        submitText={submitting
+          ? <><LoadingRing /> Saving...</>
+          : issues.length > 1 ? 'Fund Issues' : 'Fund Issue'
+        }
+        submitDisabled={submitDisabled || submitting}
       >
         <FormField
           label="Description"
@@ -335,6 +346,7 @@ FundForm.propTypes = {
   issues: PropTypes.arrayOf(issueShape),
   bounties: PropTypes.object.isRequired,
   submitBounties: PropTypes.func.isRequired,
+  submitting: PropTypes.bool.isRequired,
   description: PropTypes.string.isRequired,
   tokens: PropTypes.array.isRequired,
   descriptionChange: PropTypes.func.isRequired,
@@ -346,6 +358,7 @@ const FundIssues = ({ issues, mode }) => {
   const { api, appState } = useAragonApi()
   const { bountySettings } = appState
   const { closePanel } = usePanelManagement()
+  const [ submitting, setSubmitting ] = useState(false)
   const [ description, setDescription ] = useState('')
   const tokens = useMemo(() => {
     if (bountySettings.fundingModel === 'Fixed') return appState.tokens
@@ -378,76 +391,45 @@ const FundIssues = ({ issues, mode }) => {
     setBounties(newBounties)
   }, [ bounties, bountySettings ])
 
-  const submitBounties = async (e) => {
+  const submitBounties = useCallback(async e => {
     e.preventDefault()
-    const today = new Date()
-    const activity = {
-      user: githubCurrentUser,
-      date: today.toISOString(),
-      description,
-    }
 
-    Object.keys(bounties).map(id => {
-      // if it's an update, there is only one issue
-      if (mode === 'update') {
-        bounties[id]['fundingHistory'] = [ ...issues[0].fundingHistory, activity ]
-      } else {
-        bounties[id]['fundingHistory'] = [activity]
-      }
-    })
+    setSubmitting(true)
 
-    closePanel()
-
-    // computes an array of issues and denests the actual issue object for smart contract
-    const issuesArray = []
-
-    for (let key in issues) {
-      issuesArray.push({
-        key: key,
-        exp: bounties[issues[key].id].exp,
-        fundingHistory: bounties[issues[key].id].fundingHistory,
-        deadline: bounties[issues[key].id].deadline,
-        hours: bounties[issues[key].id].hours ? bounties[issues[key].id].hours : 0,
-        payout: bounties[issues[key].id].payout,
-        token: bounties[issues[key].id].token,
-        ...issues[key],
-      })
-    }
-
-    const ipfsAddresses = await computeIpfsString(issuesArray)
-    const repoIds = issuesArray.map(issue => toHex(issue.repoId))
-    const issueNumbers = issuesArray.map(issue => issue.number)
-    let tokenContracts = []
-    let bountySizes = []
-    let tokenTypes = []
-    for (let i = 0; i < issuesArray.length; i++) {
-      const issue = issuesArray[i]
-      tokenContracts.push(issue.token.addr)
-      tokenTypes.push(issue.token.addr === ETHER_TOKEN_FAKE_ADDRESS ? 1 : 20)
+    const repoIds = []
+    const issueNumbers = []
+    const bountySizes = []
+    const deadlines = []
+    const tokenTypes = []
+    const tokenContracts = []
+    const ipfsData = []
+    Object.values(bounties).forEach(bounty => {
+      repoIds.push(toHex(bounty.repoId))
+      issueNumbers.push(bounty.number)
+      tokenContracts.push(bounty.token.addr)
+      tokenTypes.push(bounty.token.addr === ETHER_TOKEN_FAKE_ADDRESS ? 1 : 20)
       bountySizes.push(
-        BigNumber(issue.payout).times(10 ** issue.token.decimals).toString()
+        BigNumber(bounty.payout).times(10 ** bounty.token.decimals).toString()
       )
-    }
-    const deadlines = Object.keys(bounties).map(
-      id => bounties[id]['deadline'].getTime()
-    )
+      deadlines.push(bounty.deadline.getTime())
+      ipfsData.push({
+        issueId: bounty.issueId,
+        exp: bounty.exp,
+        fundingHistory: [
+          ...bounty.fundingHistory,
+          {
+            user: githubCurrentUser,
+            date: new Date().toISOString(),
+            description,
+          },
+        ],
+        hours: bounty.hours,
+        repo: bounty.repo,
+      })
+    })
+    const ipfsAddresses = await computeIpfsString(ipfsData)
 
-    // during development, sometimes this fails with a cryptic "cannot perform action" error
-    // in case this happens in QA, let's leave this logging here to at least have some paper trail
-    //console.log( // eslint-disable-line
-    //  'ipfs file', issuesArray,
-    //  'bounties', bounties,
-    //  'repoIds', repoIds,
-    //  'issueNumbers', issueNumbers,
-    //  'bountySizes', bountySizes,
-    //  'deadlines', deadlines,
-    //  'tokenTypes', tokenTypes,
-    //  'tokenContracts', tokenContracts,
-    //  'ipfsAddresses', ipfsAddresses,
-    //  'description', description
-    //)
-
-    api.addBounties(
+    await api.addBounties(
       repoIds,
       issueNumbers,
       bountySizes,
@@ -456,25 +438,10 @@ const FundIssues = ({ issues, mode }) => {
       tokenContracts,
       ipfsAddresses,
       description
-    ).subscribe(
-      () => {
-        // TODO: Temporarily disable commenting on github. Linting was also disabled at lines 480 and 488 for this, to make CI pass
-        // A better workaround in the future would be refactor into an opt-in feature, maybe with a checkbox in Settings?
-        // issuesArray.forEach(issue => {
-        //   post({
-        //     variables: {
-        //       body:
-        //         'This issue has a bounty attached to it.\n' +
-        //         `Amount: ${issue.payout.toFixed(2)} ${issue.token.symbol}\n` +
-        //         `Deadline: ${issue.deadline.toUTCString()}`,
-        //       subjectId: issue.key,
-        //     },
-        //   })
-        // })
-      },
-      err => console.error(`error: ${err}`)
-    )
-  }
+    ).toPromise()
+
+    closePanel()
+  }, [bounties])
 
   if (fundsAvailable.toString() === '0') {
     return (
@@ -495,6 +462,7 @@ const FundIssues = ({ issues, mode }) => {
         issue={issue}
         bounty={bounty}
         submitBounties={submitBounties}
+        submitting={submitting}
         description={description}
         tokens={tokens}
         updateBounty={updateBounty(issue.id)}
@@ -515,6 +483,7 @@ const FundIssues = ({ issues, mode }) => {
       {(bountylessIssues.length > 0) && (
         <FundForm
           submitBounties={submitBounties}
+          submitting={submitting}
           issues={bountylessIssues}
           bounties={bounties}
           description={description}

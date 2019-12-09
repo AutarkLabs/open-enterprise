@@ -44,7 +44,7 @@
     "dev": "apps/shared/test-helpers/develop-kit.sh",
     "devchain:reset": "aragon devchain --reset",
     "devchain": "lerna run devchain --stream",
-    "frontend": "lerna run frontend --stream --parallel",
+    "frontend": "lerna run frontend --parallel",
     "frontend:address": "cd apps/address-book && npm run frontend",
     "frontend:allocations": "cd apps/allocations && npm run frontend",
     "frontend:dot": "cd apps/dot-voting && npm run frontend",

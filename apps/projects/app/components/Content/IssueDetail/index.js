@@ -8,7 +8,7 @@ import { GET_ISSUE } from '../../../utils/gql-queries.js'
 import { initApolloClient } from '../../../utils/apollo-client'
 import EventsCard from './EventsCard'
 import DetailsCard from './DetailsCard'
-import StatusCard from './StatusCard'
+import BountyCard from './BountyCard'
 
 const IssueDetail = ({ issueId }) => {
   const { appState: { github } } = useAragonApi()
@@ -38,7 +38,7 @@ const IssueDetail = ({ issueId }) => {
         <DetailsCard issue={issue} />
       </div>
       <div css="min-width: 330px; width: 100%">
-        {issue.hasBounty && <StatusCard issue={issue} />}
+        {issue.hasBounty && <BountyCard issue={issue} />}
         <EventsCard issue={issue} />
       </div>
     </div>
@@ -54,7 +54,7 @@ const IssueDetail = ({ issueId }) => {
         <DetailsCard issue={issue} />
       </div>
       <div css="flex-grow: 1">
-        {issue.hasBounty && <StatusCard issue={issue} />}
+        {issue.hasBounty && <BountyCard issue={issue} />}
         <EventsCard issue={issue} />
       </div>
     </div>
