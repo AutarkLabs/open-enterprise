@@ -3,7 +3,7 @@ import { updateAllocations } from './allocation'
 import { addressesEqual } from '../../../../shared/lib/web3-utils'
 import { events, vaultLoadBalance } from '../../../../shared/store-utils'
 import { ipfsGet } from '../../../../shared/ui/utils/ipfs-helpers'
-import { app } from './app'
+import { app } from '../../../../shared/store-utils'
 
 const eventHandler = async eventData => {
   const {
@@ -40,12 +40,10 @@ const eventHandler = async eventData => {
     }
     
   case 'ForwardedActions':
-      console.log('forwardedAction Caught: ', returnValues)
-      offchainActions = await onForwardedActions(returnValues)
-    if (offchainActions) console.log('nextState with pending actions: ', offchainActions)
+    console.log('forwardedAction Caught: ', returnValues)
     return {
       ...state,
-      offchainActions
+      offchainActions: await onForwardedActions(returnValues)
     }
 
   case 'PayoutExecuted':
@@ -81,22 +79,29 @@ const onForwardedActions = async ({ failedActionKeys = [], pendingActionKeys = [
   offchainActions.failedActions = (await Promise.all(getFailedActionData))
     .filter(action => action !== undefined)
     .map(action => ({ ...action, 
-      startTime: new Date(action.startDate), 
-      description: action.metadata, 
+      date: new Date(action.startDate), 
+      description: action.metadata,
       amount: String(action.balance),
       distSet: false,
-      pending: false
+      pending: false,
+      recipients: action.options.map(optionsToRecipients),
+      status: 1
     }))
 
   offchainActions.pendingActions = (await Promise.all(getPendingActionData))
     .filter(action => action !== undefined)
     .map(action => ({ ...action, 
-      startTime: new Date(action.startDate), 
+      date: new Date(action.startDate), 
       description: action.metadata, 
       amount: String(action.balance),
       distSet: false,
-      pending: true
+      pending: true,
+      recipients: action.options.map(optionsToRecipients),
+      status: 0
     }))
 
   return offchainActions
 }
+
+const optionsToRecipients = ({ label: candidateAddress, value: supports }) =>
+  ({ candidateAddress, supports, executions: 0 })

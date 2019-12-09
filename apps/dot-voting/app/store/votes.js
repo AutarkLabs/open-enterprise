@@ -121,6 +121,8 @@ const loadVoteDataAllocation = async (vote, voteId, settings) => {
           balance: parseInt(vote.executionScript.slice(770, 834), 16),
           tokenSymbol: symbol,
           metadata: vote.voteDescription,
+          accountId: allocationsAccountId,
+          token: tokenAddress,
           type: 'allocation',
         })
       })

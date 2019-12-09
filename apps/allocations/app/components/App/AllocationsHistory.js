@@ -70,10 +70,10 @@ const AllocationsHistory = ({ allocations }) => {
           </Amount>
         ]
       }}
-      renderEntryExpansion={({ recipients, amount, token }) => {
+      renderEntryExpansion={({ recipients, amount, token, totalVoters = 1 }) => {
         const totalSupports = recipients.reduce((total, recipient) => {
           return total + Number(recipient.supports)
-        }, 0)
+        }, 0) || totalVoters
         return recipients.map(recipient => {
           const allocated = BigNumber(recipient.supports).div(totalSupports)
           return (

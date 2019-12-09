@@ -19,8 +19,8 @@ const getTokenFromAddress = (tokenAddress, tokenList) => {
 }
 
 function appStateReducer(state) {
-  const { accounts: budgets, balances } = state || {}
-
+  const { accounts: budgets, balances, allocations = [], offchainActions = { pendingActions: [], failedActions: [] } } = state || {}
+  console.log(allocations, offchainActions)
   const balancesBn = balances
     ? balances
       .map(balance => ({
@@ -82,8 +82,10 @@ function appStateReducer(state) {
     balances: balancesBn.filter(balance => balance.amount !== 0),
 
     budgets: budgetsBn,
-  }
 
+    allocations: [ ...allocations, ...offchainActions.pendingActions, ...offchainActions.failedActions ]
+  }
+  console.log('incoming state: ', newState)
   return newState
 }
 
