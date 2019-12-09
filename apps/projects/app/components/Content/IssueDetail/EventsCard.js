@@ -10,6 +10,7 @@ import {
 } from '@aragon/ui'
 import { formatDistance } from 'date-fns'
 import { usePanelManagement } from '../../Panel'
+import { Avatar } from '../../Panel/PanelComponents'
 import { issueShape, userGitHubShape } from '../../../utils/shapes.js'
 
 const calculateAgo = pastDate => formatDistance(pastDate, Date.now(), { addSuffix: true })
@@ -20,15 +21,7 @@ const IssueEvent = ({ user, ...props }) => {
   return (
     <IssueEventMain>
       <div css="display: flex">
-        <IssueEventAvatar>
-          <Link
-            href={user.url}
-            target="_blank"
-            style={{ textDecoration: 'none', color: `${theme.link}` }}
-          >
-            <img src={user.avatarUrl} alt="user avatar" css="width: 40px; border-radius: 50%" />
-          </Link>
-        </IssueEventAvatar>
+        <Avatar user={user} />
         <IssueEventDetails>
           <Text.Block size="small">
             {props.eventDescription}
@@ -196,10 +189,6 @@ EventsCard.propTypes = {
   issue: issueShape,
 }
 
-const IssueEventAvatar = styled.div`
-  width: 40px;
-  margin-right: ${GU}px;
-`
 const IssueEventMain = styled.div`
   display: flex;
   flex-direction: column;

@@ -13,7 +13,7 @@ export const IssueTitleLink = ({ issue }) => {
     <Link
       href={issue.url}
       target="_blank"
-      style={{ textDecoration: 'none' }}
+      css="text-decoration: none"
     >
       <IssueLinkRow>
         <div css="margin-top: 2px">
@@ -49,7 +49,7 @@ export const Avatar = ({ user }) => {
     <Link
       href={user.url}
       target="_blank"
-      style={{ textDecoration: 'none', color: `${theme.link}`, marginRight: 6 }}
+      css={`text-decoration: none; color: ${theme.link}; margin-right: ${.7 * GU}px`}
     >
       <img
         alt=""
