@@ -1,5 +1,5 @@
 import React from 'react'
-import { Route } from 'react-router'
+import { Route } from 'react-router-dom'
 import { useAragonApi } from '../../api-react'
 import { Main, SidePanel, SyncIndicator } from '@aragon/ui'
 

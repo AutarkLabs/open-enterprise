@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import BigNumber from 'bignumber.js'
+import { Link } from 'react-router-dom'
 import { displayCurrency } from '../../utils/helpers'
 
 import {
@@ -48,6 +49,7 @@ const Budget = ({
   if (inactive) {
     return (
       <Wrapper
+        id={id}
         name={name}
         theme={theme}
         menu={
@@ -66,6 +68,7 @@ const Budget = ({
 
   return (
     <Wrapper
+      id={id}
       name={name}
       theme={theme}
       menu={
@@ -120,14 +123,18 @@ Budget.propTypes = {
   onReactivate: PropTypes.func.isRequired,
 }
 
-const Wrapper = ({ children, name, theme, menu }) => (
+const Wrapper = ({ children, id, name, theme, menu }) => (
   <StyledCard theme={theme}>
     <MenuContainer>
       <ContextMenu>
         {menu}
       </ContextMenu>
     </MenuContainer>
-    <CardTitle theme={theme}>{name}</CardTitle>
+    <CardTitle theme={theme}>
+      <Link to={`/budgets/${id}`}>
+        {name}
+      </Link>
+    </CardTitle>
     <StatsContainer>
       <StyledStats>
         {children}
@@ -138,6 +145,7 @@ const Wrapper = ({ children, name, theme, menu }) => (
 
 Wrapper.propTypes = {
   children: PropTypes.node.isRequired,
+  id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   theme: PropTypes.object.isRequired,
   menu: PropTypes.node.isRequired,

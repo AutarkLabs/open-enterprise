@@ -1,5 +1,5 @@
 import React from 'react'
-import { Redirect, useParams } from 'react-router'
+import { Redirect, useParams } from 'react-router-dom'
 import { useAragonApi } from '../../api-react'
 
 export default function BudgetDetail() {
