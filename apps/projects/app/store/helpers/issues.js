@@ -69,6 +69,7 @@ export const loadIpfsData = async ipfsHash => {
     fundingHistory,
     hours,
     repo,
+    openSubmission,
   } = await ipfsGet(ipfsHash)
   return {
     issueId,
@@ -76,6 +77,7 @@ export const loadIpfsData = async ipfsHash => {
     fundingHistory,
     hours,
     repo,
+    openSubmission,
   }
 }
 

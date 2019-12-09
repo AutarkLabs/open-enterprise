@@ -1,5 +1,3 @@
-/* eslint-disable react/prop-types */
-// issues are validated using correct shape - eslint problem?
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
@@ -13,14 +11,16 @@ import { toHex } from 'web3-utils'
 import { IconClose } from '@aragon/ui'
 import NoFunds from '../../../assets/noFunds.svg'
 import {
+  Button,
+  DropDown,
+  GU,
+  Help,
+  Info,
+  LoadingRing,
+  Switch,
   Text,
   TextInput,
-  DropDown,
-  LoadingRing,
   useTheme,
-  GU,
-  Button,
-  Info,
 } from '@aragon/ui'
 
 import { Form, FormField, DateInput } from '../../Form'
@@ -63,6 +63,7 @@ const bountiesFor = ({ bountySettings, issues, tokens }) => issues.reduce(
       slotsIndex: 0,
       payout: issue.payout || 0,
       token: tokens.find(t => t.symbol === issue.symbol) || tokens[0],
+      openSubmission: issue.openSubmission,
     }
     return bounties
   },
@@ -229,6 +230,8 @@ const FundForm = ({
   tokens,
   descriptionChange,
   updateBounty,
+  openSubmission,
+  setOpenSubmission,
 }) => {
   const { appState: { bountySettings } } = useAragonApi()
   const [ submitDisabled, setSubmitDisabled ] = useState(true)
@@ -307,22 +310,50 @@ const FundForm = ({
           }
         />
         <FormField
+          label="Work terms"
+          input={
+            <div css={`
+              display: flex;
+              justify-content: space-between;
+              margin: ${GU}px 0 ${2 * GU}px 0;
+            `}>
+              <Text css="display: flex">
+                Applications required to work on issues&nbsp;
+                <Help hint="The work terms" css={`margin-left: ${.5 * GU}`}>
+                  By default, the issues in this funding proposal will not require
+                  applications to work on a bounty before work is submitted.
+                  To require applications, click on the switch to enable this term.
+                </Help>
+              </Text>
+              <Switch
+                checked={!openSubmission}
+                onChange={() => setOpenSubmission(!openSubmission)}
+              />
+            </div>
+          }
+        />
+
+        <FormField
           label="Issues"
-          hint="Enter the estimated hours per issue"
           required
           input={
-            <React.Fragment>
-              {issues.map(issue => (
-                <EditBounty
-                  key={issue.id}
-                  issue={issue}
-                  bounty={bounties[issue.id]}
-                  tokens={tokens}
-                  onBlur={() => setValidate(true)}
-                  updateBounty={updateBounty(issue.id)}
-                />
-              ))}
-            </React.Fragment>
+            <>
+              <Text css={`display: flex; display: block; margin: ${GU}px 0 ${2 * GU}px 0`}>
+                Enter the estimated hours per issue
+              </Text>
+              <React.Fragment>
+                {issues.map(issue => (
+                  <EditBounty
+                    key={issue.id}
+                    issue={issue}
+                    bounty={bounties[issue.id]}
+                    tokens={tokens}
+                    onBlur={() => setValidate(true)}
+                    updateBounty={updateBounty(issue.id)}
+                  />
+                ))}
+              </React.Fragment>
+            </>
           }
         />
       </Form>
@@ -351,6 +382,8 @@ FundForm.propTypes = {
   tokens: PropTypes.array.isRequired,
   descriptionChange: PropTypes.func.isRequired,
   updateBounty: PropTypes.func.isRequired,
+  openSubmission: PropTypes.bool.isRequired,
+  setOpenSubmission: PropTypes.func.isRequired,
 }
 
 const FundIssues = ({ issues, mode }) => {
@@ -360,6 +393,7 @@ const FundIssues = ({ issues, mode }) => {
   const { closePanel } = usePanelManagement()
   const [ submitting, setSubmitting ] = useState(false)
   const [ description, setDescription ] = useState('')
+  const [ openSubmission, setOpenSubmission ] = useState(true)
   const tokens = useMemo(() => {
     if (bountySettings.fundingModel === 'Fixed') return appState.tokens
     return [appState.tokens.find(t => t.addr === bountySettings.bountyCurrency)]
@@ -425,6 +459,7 @@ const FundIssues = ({ issues, mode }) => {
         ],
         hours: bounty.hours,
         repo: bounty.repo,
+        openSubmission,
       })
     })
     const ipfsAddresses = await computeIpfsString(ipfsData)
@@ -490,6 +525,8 @@ const FundIssues = ({ issues, mode }) => {
           tokens={tokens}
           descriptionChange={descriptionChange}
           updateBounty={updateBounty}
+          openSubmission={openSubmission}
+          setOpenSubmission={setOpenSubmission}
         />
       )}
       {(alreadyAdded.length > 0) && (
@@ -551,6 +588,11 @@ const InfoPanel = ({ imgSrc, title, message }) => {
       </div>
     </div>
   )
+}
+InfoPanel.propTypes = {
+  imgSrc: PropTypes.string.isRequired,
+  title: PropTypes.string.isRequired,
+  message: PropTypes.string.isRequired,
 }
 
 const ErrorText = styled.div`
