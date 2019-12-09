@@ -4,11 +4,11 @@ import {
   ETH_DECIMALS_NUMBER,
   RECURRING_DIVIDEND,
 } from './constants'
+import doubleCheck from '../assets/double-check.svg'
 import BigNumber from 'bignumber.js'
 import {
   GU,
   IconCheck,
-  IconCircleCheck,
   IconClock,
   Text,
   useTheme,
@@ -23,8 +23,10 @@ export const toWei = amount => {
   return BigNumber(amount).times(ETH_DECIMALS).toNumber()
 }
 
+const IconDoubleCheck = () => <img src={doubleCheck} />
+
 const types = {
-  claimed: { icon: IconCircleCheck, text: 'Claimed', color: 'positive' },
+  claimed: { icon: IconDoubleCheck, text: 'Claimed', color: 'positive' },
   ready: { icon: IconCheck, text: 'Ready to claim', color: 'positive' },
   pending: { icon: IconClock, text: 'Pending', color: 'warning' },
 }
