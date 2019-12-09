@@ -4,28 +4,29 @@ import { Text, GU, useTheme, Link } from '@aragon/ui'
 import { IconGitHub } from '../Shared'
 import { issueShape } from '../../utils/shapes.js'
 
-export const IssueTitleLink = ({ issue }) => {
+export const IssueTitleLink = ({ children, issue }) => {
   const theme = useTheme()
 
   return (
-    <Link
-      href={issue.url}
-      target="_blank"
-      style={{ textDecoration: 'none' }}
-    >
-      <IssueLinkRow>
-        <div css="margin-top: 2px">
-          <IconGitHub
-            color={`${theme.surfaceContentSecondary}`}
-            width="16px"
-            height="16px"
-          />
-        </div>
+    <IssueLinkRow>
+      <div css={`margin-top: ${.5 * GU}px`}>
+        <IconGitHub
+          color={`${theme.surfaceContentSecondary}`}
+          width="16px"
+          height="16px"
+        />
+      </div>
+      <Link
+        href={issue.url}
+        target="_blank"
+        style={{ textDecoration: 'none' }}
+      >
         <Text css="margin-left: 6px" color={`${theme.link}`}>
           {issue.repo} #{issue.number}
         </Text>
-      </IssueLinkRow>
-    </Link>
+      </Link>
+      {children}
+    </IssueLinkRow>
   )
 }
 IssueTitleLink.propTypes = issueShape
