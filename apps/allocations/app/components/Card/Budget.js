@@ -8,10 +8,11 @@ import {
   Card,
   ContextMenu,
   ContextMenuItem,
+  IconCheck,
+  IconCross,
   IconEdit,
   IconPlus,
-  // IconProhibited,
-  IconView,
+  IconProhibited,
   ProgressBar,
   Text,
   useTheme,
@@ -26,8 +27,7 @@ const Budget = ({
   inactive,
   onNewAllocation,
   onEdit,
-  // onDeactivate,
-  onReactivate,
+  onDeactivate,
 }) => {
   const theme = useTheme()
 
@@ -37,37 +37,20 @@ const Budget = ({
   const edit = () => {
     onEdit(id)
   }
-  // const deactivate = () => {
-  //   onDeactivate(id)
-  // }
 
-  const reactivate = () => {
-    onReactivate(id)
+  const deactivate = () => {
+    onDeactivate(id)
   }
+
   const tokensSpent = BigNumber(amount).minus(remaining)
-  if (inactive) {
-    return (
-      <Wrapper
-        name={name}
-        theme={theme}
-        menu={
-          <ContextMenuItem onClick={reactivate}>
-            <IconView />
-            <ActionLabel>Reactivate</ActionLabel>
-          </ContextMenuItem>
-        }
-      >
-        <StatsValueBig theme={theme}>
-          <Text>Inactive</Text>
-        </StatsValueBig>
-      </Wrapper>
-    )
-  }
 
   return (
     <Wrapper
       name={name}
       theme={theme}
+      amount={amount}
+      symbol={token.symbol}
+      inactive={inactive}
       menu={
         <React.Fragment>
           <ContextMenuItem onClick={newAllocation}>
@@ -76,32 +59,34 @@ const Budget = ({
           </ContextMenuItem>
           <ContextMenuItem onClick={edit}>
             <IconEdit />
-            <ActionLabel>Edit</ActionLabel>
+            <ActionLabel>{amount === '0' ? 'Reactivate' : 'Edit'}</ActionLabel>
           </ContextMenuItem>
-          {/* <ContextMenuItem onClick={deactivate}> */}
-          {/*   <IconProhibited /> */}
-          {/*   <ActionLabel>Deactivate</ActionLabel> */}
-          {/* </ContextMenuItem> */}
+          {amount > 0 && (
+            <ContextMenuItem onClick={deactivate}>
+              <IconProhibited />
+              <ActionLabel>Deactivate</ActionLabel>
+            </ContextMenuItem>
+          )}
         </React.Fragment>
       }
     >
-      <StatsValueBig theme={theme}>
-        {displayCurrency(BigNumber(amount))}
-        <Text>{' ' + token.symbol + ' per period'}</Text>
-      </StatsValueBig>
-      <StatsValueBig css={{ paddingTop: '24px' }} theme={theme}>
-        <ProgressBar
-          color={String(theme.accentEnd)}
-          value={tokensSpent.div(amount).toNumber()}
-        />
-      </StatsValueBig>
-      <StatsValueSmall css={{
-        color: theme.content,
-        paddingTop: '8px',
-      }}>
-        {displayCurrency(tokensSpent)}
-        <Text>{' ' + token.symbol + ' utilized'}</Text>
-      </StatsValueSmall>
+      {amount > 0 && (
+        <React.Fragment>
+          <StatsValueBig css={{ paddingTop: '24px' }} theme={theme}>
+            <ProgressBar
+              color={String(theme.accentEnd)}
+              value={tokensSpent.div(amount).toNumber()}
+            />
+          </StatsValueBig>
+          <StatsValueSmall css={{
+            color: theme.content,
+            paddingTop: '8px',
+          }}>
+            {displayCurrency(tokensSpent)}
+            <Text>{' ' + token.symbol + ' utilized'}</Text>
+          </StatsValueSmall>
+        </React.Fragment>
+      )}
     </Wrapper>
   )
 }
@@ -116,11 +101,10 @@ Budget.propTypes = {
   inactive: PropTypes.bool.isRequired,
   onNewAllocation: PropTypes.func.isRequired,
   onEdit: PropTypes.func.isRequired,
-  // onDeactivate: PropTypes.func.isRequired,
-  onReactivate: PropTypes.func.isRequired,
+  onDeactivate: PropTypes.func.isRequired,
 }
 
-const Wrapper = ({ children, name, theme, menu }) => (
+const Wrapper = ({ children, name, amount, symbol, inactive, theme, menu }) => (
   <StyledCard theme={theme}>
     <MenuContainer>
       <ContextMenu>
@@ -133,14 +117,52 @@ const Wrapper = ({ children, name, theme, menu }) => (
         {children}
       </StyledStats>
     </StatsContainer>
+    <CardBottom theme={theme}>
+      <Text>{displayCurrency(BigNumber(amount)) + ' ' + symbol + ' / PERIOD'}</Text>
+      {(amount === '0' || inactive) ? (
+        <Status
+          color={theme.negative}
+          icon={<IconCross />}
+        >
+          INACTIVE
+        </Status>
+      ) : (
+        <Status
+          color={theme.positive}
+          icon={<IconCheck />}
+        >
+          ACTIVE
+        </Status>
+      )}
+    </CardBottom>
   </StyledCard>
 )
 
 Wrapper.propTypes = {
   children: PropTypes.node.isRequired,
   name: PropTypes.string.isRequired,
+  amount: PropTypes.string.isRequired,
+  symbol: PropTypes.string.isRequired,
+  inactive: PropTypes.bool.isRequired,
   theme: PropTypes.object.isRequired,
   menu: PropTypes.node.isRequired,
+}
+
+const Status = ({ children, color, icon }) => (
+  <div css={`
+      display: flex;
+      color: ${color}
+    `}
+  >
+    {icon}
+    <span>{children}</span>
+  </div>
+)
+
+Status.propTypes = {
+  children: PropTypes.node.isRequired,
+  icon: PropTypes.node.isRequired,
+  color: PropTypes.object.isRequired,
 }
 
 const StyledCard = styled(Card)`
@@ -149,6 +171,20 @@ const StyledCard = styled(Card)`
   padding: 12px;
   height: 264px;
   width: auto;
+`
+
+const CardBottom = styled.div`
+  padding: 4px 12px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  position: absolute;
+  bottom: 0;
+  font-size: 12px;
+  line-height: 26px;
+  vertical-align: middle;
+  color: ${({ theme }) => theme.contentSecondary};
+  border-top: 1px solid ${({ theme }) => theme.border};
 `
 
 const MenuContainer = styled.div`
