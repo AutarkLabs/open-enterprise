@@ -50,8 +50,17 @@ const pluralize = (word, number) => `${number} ${word}${number > 1 ? 's' : ''}`
 
 const Status = ({ issue }) => {
   const theme = useTheme()
+  const workStatus = issue.openSubmission ? 'openSubmission' : issue.workStatus
 
-  switch(issue.workStatus) {
+  switch(workStatus) {
+  case 'openSubmission': return (
+    <>
+      <IconAddUser color={`${theme.surfaceIcon}`} />
+      <BountyText>
+        Accepting work submissions
+      </BountyText>
+    </>
+  )
   case 'funded':
   case 'review-applicants': return (
     <>
@@ -83,8 +92,9 @@ Status.propTypes = issueShape
 
 const Submissions = ({ issue }) => {
   const { reviewApplication, reviewWork } = usePanelManagement()
+  const workStatus = issue.openSubmission ? 'openSubmission' : issue.workStatus
 
-  switch(issue.workStatus) {
+  switch(workStatus) {
   case 'funded': return (
     'No applications'
   )
@@ -94,6 +104,7 @@ const Submissions = ({ issue }) => {
 
     </Link>
   )
+  case 'openSubmission':
   case 'in-progress':
     if ('workSubmissions' in issue) return (
       <Link onClick={() => reviewWork(issue, 0)}>
@@ -147,13 +158,16 @@ BountyDot.propTypes = PropTypes.string.isRequired
 const Action = ({ issue }) => {
   const { requestAssignment, submitWork } = usePanelManagement()
   const { connectedAccount } = useAragonApi()
+  const workStatus = issue.openSubmission ? 'openSubmission' : issue.workStatus
 
-  switch(issue.workStatus) {
+  switch(workStatus) {
   case 'funded':
-  case 'review-applicants':
-    return (
-      <ActionButton panel={requestAssignment} caption="Submit application" issue={issue} />
-    )
+  case 'review-applicants': return (
+    <ActionButton panel={requestAssignment} caption="Submit application" issue={issue} />
+  )
+  case 'openSubmission': return (
+    <ActionButton panel={submitWork} caption="Submit work" issue={issue} />
+  )
   case 'in-progress':
     if (connectedAccount === issue.assignee) return (
       <ActionButton panel={submitWork} caption="Submit work" issue={issue} />
