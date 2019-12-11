@@ -10,6 +10,7 @@ import {
   GU,
   Header,
   IconPlus,
+  ProgressBar,
   Text,
   textStyle,
   useTheme,
@@ -62,28 +63,26 @@ CurrencyValue.propTypes = {
   context: PropTypes.string.isRequired,
 }
 
-function InfoBlock({ children, title }) {
+function InfoBlock({ children, className, title }) {
   const theme = useTheme()
   return (
-    <>
+    <div className={className}>
       <div css={`
           ${textStyle('label2')};
           margin-bottom: ${GU}px;
           color: ${theme.surfaceContentSecondary};
-          &:not(:first-child) {
-            margin-top: ${2 * GU}px;
-          }
         `}
       >
         {title}
       </div>
       {children}
-    </>
+    </div>
   )
 }
 
 InfoBlock.propTypes = {
   children: PropTypes.node,
+  className: PropTypes.string,
   title: PropTypes.string,
 }
 
@@ -126,6 +125,7 @@ export default function BudgetDetail() {
   const { newAllocation } = usePanel()
   const period = usePeriod()
   const patientlyRequestPath = usePatientRequestPath()
+  const theme = useTheme()
 
   const matchData = path.match(ID_REGEX)
   if (!matchData) {
@@ -164,27 +164,35 @@ export default function BudgetDetail() {
         <Text.Block size="great" style={{ marginBottom: 2 * GU + 'px' }}>
           {budget.name}
         </Text.Block>
-        <InfoBlock title="Budget">
-          <CurrencyValue
-            amount={budget.amount}
-            token={budget.token}
-            context="per 30 days"
+        <div css="display: flex">
+          <InfoBlock css="flex: 1" title="Budget">
+            <CurrencyValue
+              amount={budget.amount}
+              token={budget.token}
+              context="per 30 days"
+            />
+          </InfoBlock>
+          <InfoBlock css="flex: 1" title="Utilized">
+            <CurrencyValue
+              amount={utilized}
+              token={budget.token}
+              context={percentOf(utilized, budget.amount)}
+            />
+          </InfoBlock>
+          <InfoBlock css="flex: 1" title="Remaining">
+            <CurrencyValue
+              amount={budget.remaining}
+              token={budget.token}
+              context={percentOf(budget.remaining, budget.amount)}
+            />
+          </InfoBlock>
+        </div>
+        <div css={`margin-top: ${3 * GU}px; margin-bottom: ${GU}px`}>
+          <ProgressBar
+            color={String(theme.accentEnd)}
+            value={utilized / budget.amount}
           />
-        </InfoBlock>
-        <InfoBlock title="Utilized">
-          <CurrencyValue
-            amount={utilized}
-            token={budget.token}
-            context={percentOf(utilized, budget.amount)}
-          />
-        </InfoBlock>
-        <InfoBlock title="Remaining">
-          <CurrencyValue
-            amount={budget.remaining}
-            token={budget.token}
-            context={percentOf(budget.remaining, budget.amount)}
-          />
-        </InfoBlock>
+        </div>
       </Box>
       <Box heading="Budget info">
         <InfoBlock title="Budget ID">
@@ -195,7 +203,7 @@ export default function BudgetDetail() {
         <InfoBlock title="Start Date">
           {formatDate(period.startDate)}
         </InfoBlock>
-        <InfoBlock title="End Date">
+        <InfoBlock css={`margin-top: ${2 * GU}px`} title="End Date">
           {formatDate(period.endDate)}
         </InfoBlock>
       </Box>
