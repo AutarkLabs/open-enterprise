@@ -23,6 +23,12 @@ const ID_REGEX = new RegExp('^/budgets/(?<id>[0-9]+)')
 const percentOf = (smaller, bigger) =>
   `${BigNumber(100 * smaller / bigger).dp(1).toString()}%`
 
+const formatDate = date =>
+  new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'long',
+    timeStyle: 'long',
+  }).format(date)
+
 function CurrencyValue({ amount, context, token }) {
   const theme = useTheme()
 
@@ -117,7 +123,7 @@ export default function BudgetDetail() {
   }
 
   const allocations = (appState.allocations || []).filter(a => a.accountId === id)
-
+  const period = appState.period
   const utilized = budget.amount - budget.remaining
 
   return (
@@ -144,7 +150,7 @@ export default function BudgetDetail() {
           <CurrencyValue
             amount={budget.amount}
             token={budget.token}
-            context="per 4 weeks"
+            context="per 30 days"
           />
         </InfoBlock>
         <InfoBlock title="Utilized">
@@ -165,6 +171,14 @@ export default function BudgetDetail() {
       <Box heading="Budget info">
         <InfoBlock title="Budget ID">
           #{budget.id}
+        </InfoBlock>
+      </Box>
+      <Box heading="Period info">
+        <InfoBlock title="Start Date">
+          {formatDate(period.startDate)}
+        </InfoBlock>
+        <InfoBlock title="End Date">
+          {formatDate(period.endDate)}
         </InfoBlock>
       </Box>
       { !!allocations.length && <AllocationsHistory allocations={allocations} /> }
