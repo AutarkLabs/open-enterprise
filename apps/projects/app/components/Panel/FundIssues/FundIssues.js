@@ -267,7 +267,7 @@ const FundForm = ({
     const zeroErrArray = []
     const dateErrArray = []
     Object.values(bounties).forEach(bounty => {
-      if (!bounty.payout) zeroErrArray.push(bounty.issueId)
+      if (!bounty.payout || bounty.payout === '0') zeroErrArray.push(bounty.issueId)
       if (today > bounty.deadline) dateErrArray.push(bounty.issueId)
     })
     setZeroError(zeroErrArray)
@@ -278,7 +278,7 @@ const FundForm = ({
       !!zeroErrArray.length ||
       !!dateErrArray.length
     )
-  }, [ validate, bounties, description, maxErrors ])
+  }, [ bounties, description, maxErrors ])
 
   return (
     <>
@@ -318,7 +318,7 @@ const FundForm = ({
                   issue={issue}
                   bounty={bounties[issue.id]}
                   tokens={tokens}
-                  onBlur={() => setValidate(true)}
+                  onFocus={() => setValidate(true)}
                   updateBounty={updateBounty(issue.id)}
                 />
               ))}
@@ -364,7 +364,19 @@ const FundIssues = ({ issues, mode }) => {
     if (bountySettings.fundingModel === 'Fixed') return appState.tokens
     return [appState.tokens.find(t => t.addr === bountySettings.bountyCurrency)]
   }, [bountySettings])
-  const [ bounties, setBounties ] = useState(bountiesFor({ bountySettings, issues, tokens }))
+  const bountylessIssues = useMemo(
+    () => issues.filter(i => !i.hasBounty),
+    [issues]
+  )
+  const alreadyAdded = useMemo(
+    () => issues.filter(i => i.hasBounty),
+    [issues]
+  )
+  const [ bounties, setBounties ] = useState(bountiesFor({
+    bountySettings,
+    issues: bountylessIssues,
+    tokens
+  }))
 
   const fundsAvailable = useMemo(() => tokens.reduce(
     (sum, t) => sum.plus(BigNumber(t.balance)),
@@ -382,7 +394,7 @@ const FundIssues = ({ issues, mode }) => {
       }
     }
 
-    if (update.hours || update.exp) {
+    if (update.hours !== undefined || update.exp) {
       const { exp, hours } = newBounties[issueId]
       const { baseRate, expLvls } = bountySettings
       newBounties[issueId].payout = hours * baseRate * expLvls[exp].mul
@@ -469,14 +481,6 @@ const FundIssues = ({ issues, mode }) => {
       />
     )
   }
-
-  const bountylessIssues = []
-  const alreadyAdded = []
-
-  issues.forEach(issue => {
-    if (issue.hasBounty) alreadyAdded.push(issue)
-    else bountylessIssues.push(issue)
-  })
 
   return (
     <React.Fragment>
