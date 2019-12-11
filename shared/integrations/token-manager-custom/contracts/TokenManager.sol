@@ -1,5 +1,5 @@
 /*
- * SPDX-License-Identitifer:    GPL-3.0-or-later
+ * SPDX-License-Identifier:    GPL-3.0-or-later
  */
 
 /* solium-disable function-order */
@@ -62,7 +62,7 @@ contract TokenManager is ITokenController, IForwarder, AragonApp {
     ITransferOracle public oracle;
     uint256 public maxAccountTokens;
 
-    // We are mimicing an array in the inner mapping, we use a mapping instead to make app upgrade more graceful
+    // We are mimicking an array in the inner mapping, we use a mapping instead to make app upgrade more graceful
     mapping (address => mapping (uint256 => TokenVesting)) internal vestings;
     mapping (address => uint256) public vestingsLengths;
 
@@ -215,7 +215,7 @@ contract TokenManager is ITokenController, IForwarder, AragonApp {
         delete vestings[_holder][_vestingId];
 
         // transferFrom always works as controller
-        // onTransfer hook always allows if transfering to token controller
+        // onTransfer hook always allows if transferring to token controller
         require(token.transferFrom(_holder, address(this), nonVested), ERROR_REVOKE_TRANSFER_FROM_REVERTED);
 
         emit RevokeVesting(_holder, _vestingId, nonVested);
@@ -352,7 +352,7 @@ contract TokenManager is ITokenController, IForwarder, AragonApp {
     }
 
     /**
-    * @dev Calculate amount of non-vested tokens at a specifc time
+    * @dev Calculate amount of non-vested tokens at a specific time
     * @param tokens The total amount of tokens vested
     * @param time The time at which to check
     * @param start The date vesting started

@@ -3,13 +3,12 @@ pragma solidity 0.4.24;
 import "@tps/apps-address-book/contracts/AddressBook.sol";
 import "@tps/apps-allocations/contracts/Allocations.sol";
 import "@tps/apps-discussions/contracts/DiscussionApp.sol";
-import { DotVoting } from "@tps/apps-dot-voting/contracts/DotVoting.sol";
 import "@tps/apps-projects/contracts/Projects.sol";
 import "@tps/apps-rewards/contracts/Rewards.sol";
-import "./BaseTemplate.sol";
+import "./BaseCache.sol";
 
 
-contract BaseOEApps is BaseTemplate {
+contract BaseOEApps is BaseCache {
 // Hard-coded constants to save gas
     // bytes32 constant internal ADDRESS_BOOK_APP_ID = apmNamehash("address-book");              // address-book.aragonpm.eth
     // bytes32 constant internal ALLOCATIONS_APP_ID = apmNamehash("allocations");              // allocations.aragonpm.eth;
@@ -26,18 +25,8 @@ contract BaseOEApps is BaseTemplate {
 
     string constant private ERROR_BOUNTIES_NOT_CONTRACT = "BOUNTIES_REGISTRY_NOT_CONTRACT";
     address constant internal ANY_ENTITY = address(-1);
-
-    struct Cache {
-        address bounties;
-        address finance;
-        address dao;
-        address shareToken;
-        address tokenManager;
-        address vault;
-        address voting;
-    }
-
-    mapping (address => Cache) private cache;
+    Bounties internal bountiesRegistry;
+    address[] private whiteListed = [address(0), address(0)];
 
     /**
     * @dev Constructor for Open Enterprise Apps DAO
@@ -45,19 +34,16 @@ contract BaseOEApps is BaseTemplate {
     *       required pre-deployed contracts to set up the organization
     */
     constructor(address[5] _deployedSetupContracts)
-        BaseTemplate(
-            DAOFactory(_deployedSetupContracts[0]),
-            ENS(_deployedSetupContracts[1]),
-            MiniMeTokenFactory(_deployedSetupContracts[2]),
-            IFIFSResolvingRegistrar(_deployedSetupContracts[3])
-        )
+        BaseCache(_deployedSetupContracts)
         // internal // TODO: This makes the contract abstract
         public
     {
-        _ensureMiniMeFactoryIsValid(_deployedSetupContracts[2]);
         _ensureAragonIdIsValid(_deployedSetupContracts[3]);
-        require(isContract(_deployedSetupContracts[4]), ERROR_BOUNTIES_NOT_CONTRACT);
-        _cacheBountiesReg(_deployedSetupContracts[4]);
+        _ensureMiniMeFactoryIsValid(_deployedSetupContracts[2]);
+        require(isContract(address(_deployedSetupContracts[4])), ERROR_BOUNTIES_NOT_CONTRACT);
+
+        bountiesRegistry = Bounties(_deployedSetupContracts[4]);
+        whiteListed[1] = address(bountiesRegistry);
     }
 
 /* ADDRESS-BOOK */
@@ -133,7 +119,8 @@ contract BaseOEApps is BaseTemplate {
 /* DISCUSSIONS */
 
     function _installDiscussionsApp(Kernel _dao) internal returns (DiscussionApp) {
-        return DiscussionApp(_installNonDefaultApp(_dao, DISCUSSIONS_APP_ID));
+        bytes memory initializeData = abi.encodeWithSelector(DiscussionApp(0).initialize.selector);
+        return DiscussionApp(_installNonDefaultApp(_dao, DISCUSSIONS_APP_ID, initializeData));
     }
 
     function _createDiscussionsPermissions(ACL _acl, DiscussionApp _discussions, address _grantee, address _manager) internal {
@@ -143,7 +130,7 @@ contract BaseOEApps is BaseTemplate {
 /* PROJECTS */
 
     function _installProjectsApp(Kernel _dao, Vault _vault) internal returns (Projects) {
-        bytes memory initializeData = abi.encodeWithSelector(Projects(0).initialize.selector, _bountiesRegCache(), _vault);
+        bytes memory initializeData = abi.encodeWithSelector(Projects(0).initialize.selector, bountiesRegistry, _vault);
         return Projects(_installNonDefaultApp(_dao, PROJECTS_APP_ID, initializeData));
     }
 
@@ -186,6 +173,13 @@ contract BaseOEApps is BaseTemplate {
         _acl.createPermission(_grantee, _rewards, _rewards.ADD_REWARD_ROLE(), _manager);
     }
 
+/* WHITELIST-ORACLE */
+
+    function _installWhitelistOracleApp(Kernel _dao, address _vault) internal returns (WhitelistOracle) {
+        whiteListed[0] = _vault;
+        return _installWhitelistOracleApp(_dao, whiteListed);
+    }
+
 /* OPEN ENTERPRISE SPECIFIC VAULT PERMISSIONS */
 
     function _grantVaultPermissions(ACL _acl, Vault _vault, Allocations _allocations, Projects _projects, Rewards _rewards) internal {
@@ -200,53 +194,5 @@ contract BaseOEApps is BaseTemplate {
     function _transferPermissionFromTemplate(ACL _acl, address _app, bytes32 _permission, address _manager) internal {
         _acl.revokePermission(address(this), _app, _permission);
         _acl.setPermissionManager(_manager, _app, _permission);
-    }
-
-/* CACHE */
-
-    function _cacheShareToken(MiniMeToken _shareToken) internal {
-        Cache storage c = cache[msg.sender];
-        c.shareToken = address(_shareToken);
-    }
-
-    function _shareTokenCache() internal returns (MiniMeToken shareToken) {
-        Cache storage c = cache[msg.sender];
-        shareToken = MiniMeToken(c.shareToken);
-    }
-
-    function _cacheDao(Kernel _dao) internal {
-        Cache storage c = cache[msg.sender];
-        c.dao = address(_dao);
-    }
-
-    function _daoCache() internal returns (Kernel dao) {
-        Cache storage c = cache[msg.sender];
-        dao = Kernel(c.dao);
-    }
-
-    function _cacheBaseApps(Finance _finance, TokenManager _tokenManager, Vault _vault, Voting _voting) internal {
-        Cache storage c = cache[msg.sender];
-        c.finance = address(_finance);
-        c.tokenManager = address(_tokenManager);
-        c.vault = address(_vault);
-        c.voting = address(_voting);
-    }
-
-    function _baseAppsCache() internal returns (Finance finance, TokenManager tokenManager, Vault vault, Voting voting) {
-        Cache storage c = cache[msg.sender];
-        finance = Finance(c.finance);
-        tokenManager = TokenManager(c.tokenManager);
-        vault = Vault(c.vault);
-        voting = Voting(c.voting);
-    }
-
-    function _cacheBountiesReg(address _bountiesRegistry) private {
-        Cache storage c = cache[msg.sender];
-        c.bounties = _bountiesRegistry;
-    }
-
-    function _bountiesRegCache() private returns (Bounties bountiesRegistry) {
-        Cache storage c = cache[msg.sender];
-        bountiesRegistry = Bounties(c.bounties);
     }
 }

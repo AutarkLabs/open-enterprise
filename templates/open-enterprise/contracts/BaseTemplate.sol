@@ -27,16 +27,15 @@ import "@autark/apps-whitelist-oracle/contracts/WhitelistOracle.sol";
 contract BaseTemplate is APMNamehash, IsContract {
     using Uint256Helpers for uint256;
 
-    /* Hardcoded constant to save gas
-    * bytes32 constant internal AGENT_APP_ID = apmNamehash("agent");                            // agent.aragonpm.eth
-    * bytes32 constant internal FINANCE_APP_ID = apmNamehash("finance");                        // finance.aragonpm.eth
-    * bytes32 constant internal PAYROLL_APP_ID = apmNamehash("payroll");                        // payroll.aragonpm.eth
-    * bytes32 constant internal SURVEY_APP_ID = apmNamehash("survey");                          // survey.aragonpm.eth
-    * bytes32 constant internal TOKEN_MANAGER_APP_ID = apmNamehash("token-manager-custom");     // token-manager-custom.aragonpm.eth
-    * bytes32 constant internal TOKEN_MANAGER_APP_ID = apmNamehash("whitelist-oracle");         // whitelist-oracle.aragonpm.eth
-    * bytes32 constant internal VAULT_APP_ID = apmNamehash("vault");                            // vault.aragonpm.eth
-    * bytes32 constant internal VOTING_APP_ID = apmNamehash("voting");                          // voting.aragonpm.eth
-    */
+// Hard-coded constants to save gas
+    // bytes32 constant internal AGENT_APP_ID = apmNamehash("agent");                            // agent.aragonpm.eth
+    // bytes32 constant internal FINANCE_APP_ID = apmNamehash("finance");                        // finance.aragonpm.eth
+    // bytes32 constant internal PAYROLL_APP_ID = apmNamehash("payroll");                        // payroll.aragonpm.eth
+    // bytes32 constant internal SURVEY_APP_ID = apmNamehash("survey");                          // survey.aragonpm.eth
+    // bytes32 constant internal TOKEN_MANAGER_APP_ID = apmNamehash("token-manager-custom");     // token-manager-custom.aragonpm.eth
+    // bytes32 constant internal VAULT_APP_ID = apmNamehash("vault");                            // vault.aragonpm.eth
+    // bytes32 constant internal VOTING_APP_ID = apmNamehash("voting");                          // voting.aragonpm.eth
+    // bytes32 constant internal WHITELIST_ORACLE_APP_ID = apmNamehash("whitelist-oracle");      // whitelist-oracle.aragonpm.eth
     bytes32 constant internal AGENT_APP_ID = 0x9ac98dc5f995bf0211ed589ef022719d1487e5cb2bab505676f0d084c07cf89a;
     bytes32 constant internal FINANCE_APP_ID = 0xbf8491150dafc5dcaee5b861414dca922de09ccffa344964ae167212e8c673ae;
     bytes32 constant internal PAYROLL_APP_ID = 0x463f596a96d808cb28b5d080181e4a398bc793df2c222f6445189eb801001991;
@@ -131,7 +130,7 @@ contract BaseTemplate is APMNamehash, IsContract {
         bytes memory initializeData = abi.encodeWithSelector(Agent(0).initialize.selector);
         Agent agent = Agent(_installDefaultApp(_dao, AGENT_APP_ID, initializeData));
         // We assume that installing the Agent app as a default app means the DAO should have its
-        // Vault replaced by the Agent. Thus, we also set the DAO's recovery app to the Agent.
+        // Vault replaced by the Agent. Thus, we also set the DAO´s recovery app to the Agent.
         _dao.setRecoveryVaultAppId(AGENT_APP_ID);
         return agent;
     }
@@ -343,6 +342,11 @@ contract BaseTemplate is APMNamehash, IsContract {
     function _installWhitelistOracleApp(Kernel _dao, address[] _whitelistedSenders) internal returns (WhitelistOracle) {
         bytes memory initializeData = abi.encodeWithSelector(WhitelistOracle(0).initialize.selector, _whitelistedSenders);
         return WhitelistOracle(_installNonDefaultApp(_dao, WHITELIST_ORACLE_APP_ID, initializeData));
+    }
+
+    function _createWhitelistPermissions(ACL _acl, WhitelistOracle _whitelist, address _grantee, address _manager) internal {
+        _acl.createPermission(_grantee, _whitelist, _whitelist.ADD_SENDER_ROLE(), _manager);
+        _acl.createPermission(_grantee, _whitelist, _whitelist.REMOVE_SENDER_ROLE(), _manager);
     }
 
     /* EVM SCRIPTS */

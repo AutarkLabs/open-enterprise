@@ -12,6 +12,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
     uint64 constant private DEFAULT_PERIOD = uint64(30 days);
     uint8 constant private TOKEN_DECIMALS = uint8(18);
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(0);
+    uint256 constant private MEMBERSHIP_MAX_PER_ACCOUNT = uint256(1e18);
 
     /**
      * @dev Constructor for Open Enterprise Apps DAO
@@ -22,197 +23,219 @@ contract OpenEnterpriseTemplate is BaseOEApps {
 
     /**
      * @dev Create a new MiniMe token and deploy a Open Enterprise DAO.
-     * @param _tokenName String with the name for the token used by share holders in the organization
-     * @param _tokenSymbol String with the symbol for the token used by share holders in the organization
      * @param _id String with the name for org, will assign `[id].aragonid.eth`
-     * @param _members Array of member addresses (1 token will be minted for each member)
-     * @param _stakes Array of token stakes for holders (token has 18 decimals, multiply token amount `* 10^18`)
-     * @param _votingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization
-     * @param _financePeriod initial duration for accounting periods, it can be set to zero in order to use the default of 30 days.
     */
-    function newTokenAndInstance(
-        string _tokenName,
-        string _tokenSymbol,
+    function newTokensAndInstance(
         string _id,
-        address[] _members,
-        uint256[] _stakes,
-        uint64[3] _votingSettings,
-        uint64 _financePeriod,
-        bool _tokenTransferable
+        string _name1,
+        string _symbol1,
+        string _name2,
+        string _symbol2,
+        uint64[6] _votingSettings,
+        bool[2] _votingBools
     )
         external
     {
-        MiniMeToken token = _createToken(_tokenName, _tokenSymbol, TOKEN_DECIMALS);
-        _cacheShareToken(token);
-        _newInstance(
-            _id,
-            _members,
-            _stakes,
-            _votingSettings,
-            _financePeriod,
-            _tokenTransferable
+        (MiniMeToken token1, MiniMeToken token2) = newTokens(_name1, _symbol1, _name2, _symbol2);
+        _newInstance(_id, _votingSettings, _votingBools, token1, token2);
+    }
+
+    /**
+     * @dev Install and configure TokenManager apps for previously created tokens
+     * @param _tokenBools Array of [transferable?, fixedTokensPerAccount?]
+     *       related to the first token. Note: fixedTokens will be non-transferable
+     */
+    function newTokenManagers(
+        address[] _members1,
+        uint256[] _stakes1,
+        address[] _members2,
+        uint256[] _stakes2,
+        bool[2] _tokenBools
+    ) public
+    {
+        _validateTokenSettings(_members1, _stakes1);
+        _validateTokenSettings(_members2, _stakes2);
+        (ACL acl, Kernel dao, Vault vault) = _popBaseCache(msg.sender);
+        (MiniMeToken token1, MiniMeToken token2) = _popTokensCache(msg.sender);
+        TokenManager tokenManager1 = _installTokenManagerApp(
+            dao,
+            token1,
+            !_tokenBools[1],
+            _tokenBools[1] ? MEMBERSHIP_MAX_PER_ACCOUNT : TOKEN_MAX_PER_ACCOUNT
+        );
+        TokenManager tokenManager2 = TokenManager(0);
+        if (address(token2) != address(0) || (_tokenBools[0] && !_tokenBools[1])) {
+            WhitelistOracle whitelist = _installWhitelistOracleApp(dao, vault);
+            //If token 1 is a reputation token
+            // if (_tokenBools[0]) {
+            //     _setOracle(acl, tokenManager1, whitelist);
+            // }
+            //If token 2 is set (token 2 is always a reputation token)
+            // if (address(token2) != address(0)) {
+            //     WhitelistOracle whitelist = WhitelistOracle(0);
+            //     tokenManager2 = _installTokenManagerApp(dao, token2, true, TOKEN_MAX_PER_ACCOUNT);
+            //     _mintTokens(acl, tokenManager2, _members2, _stakes2);
+            //     _setOracle(acl, tokenManager2, whitelist);
+            // }
+        }
+        _mintTokens(acl, tokenManager1, _members1, _stakes1);
+        _cacheBase(acl, dao, vault, msg.sender);
+        _cacheTokenManagers(tokenManager1, tokenManager2, whitelist, msg.sender);
+    }
+
+    function finalizeDao(
+        uint64[2] _periods,
+        bool _useDiscussions
+    ) public
+    {
+        (ACL acl, Kernel dao, Vault vault) = _popBaseCache(msg.sender);
+        AddressBook addressBook = _installAddressBookApp(dao);
+        Allocations allocations = _installAllocationsApp(dao, vault, _periods[0] == 0 ? DEFAULT_PERIOD : _periods[0]);
+        Finance finance = _installFinanceApp(dao, vault, _periods[1] == 0 ? DEFAULT_PERIOD : _periods[1]);
+        Projects projects = _installProjectsApp(dao, vault);
+        Rewards rewards = _installRewardsApp(dao, vault);
+        DiscussionApp discussions = DiscussionApp(0);
+        if (_useDiscussions) {
+            discussions = _installDiscussionsApp(dao);
+        }
+
+        _setupTokenPermissions(acl, dao);
+        _setupPermissions(
+            acl,
+            dao,
+            addressBook,
+            allocations,
+            discussions,
+            finance,
+            projects,
+            rewards,
+            vault
         );
     }
 
     /**
-     * @dev Add Open Enterprise apps to the instance
-     * @param _dotVotingSettings Array of [minQuorum, candidateSupportPct, voteDuration] to set up the Dot Voting app of the organization
-     * @param _allocationsPeriod initial duration for accounting periods for the Allocations app
-     * @param _useDiscussions boolean to determine whether Discussions app should be added
+     * @dev Create a new MiniMe token and cache it for the user
+     * @param _name1 String with the name for the primary token used by share holders in the organization
+     * @param _name2 String with the name for the reputation token used in the organization
+     * @param _symbol1 String with the symbol for the primary token used by share holders in the organization
+     * @param _symbol2 String with the symbol for the reputation token used in the organization
     */
-    function newOpenEnterprise(
-        uint64[3] memory _dotVotingSettings,
-        uint64 _allocationsPeriod,
-        bool _useDiscussions
-    ) public
+    function newTokens(
+        string _name1,
+        string _symbol1,
+        string _name2,
+        string _symbol2
+    )
+    public returns (MiniMeToken, MiniMeToken)
     {
-        _validateDotSettings(_dotVotingSettings);
+        MiniMeToken token1 = _createToken(_name1, _symbol1, TOKEN_DECIMALS);
+        MiniMeToken token2 = MiniMeToken(0);
+        if (keccak256(abi.encodePacked(_symbol2)) != keccak256(abi.encodePacked(""))) {
+            token2 = _createToken(_name2, _symbol2, TOKEN_DECIMALS);
+        }
+        _cacheTokens(token1, token2, msg.sender);
 
-        Kernel dao = _daoCache();
-        ACL acl = ACL(dao.acl());
-        (Finance finance, TokenManager tokenManager, Vault vault, Voting voting) = _baseAppsCache();
-
-        _setupOEApps(dao, acl, tokenManager, vault, voting, _dotVotingSettings, _allocationsPeriod, _useDiscussions);
-        _transferCreatePaymentManagerFromTemplate(acl, finance, voting);
-        _transferPermissionFromTemplate(acl, vault, vault.TRANSFER_ROLE(), voting);
-        _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, voting);
+        return (token1, token2);
     }
 
     /**
      * @dev Deploy a Open Enterprise DAO using a previously cached MiniMe token
      * @param _id String with the name for org, will assign `[id].aragonid.eth`
-     * @param _members Array of member addresses (1 token will be minted for each member)
-     * @param _votingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization
-     * @param _financePeriod duration for accounting periods, it can be set to zero in order to use the default of 30 days.
+     * @param _votingBools Array of 2 booleans to select reference for apps:
+     *                     [DotVotingToken, VotingToken] true will select token2 as controller
     */
     function _newInstance(
-        string memory _id,
-        address[] memory _members,
-        uint256[] memory _stakes,
-        uint64[3] memory _votingSettings,
-        uint64 _financePeriod,
-        bool _tokenTransferable
+        string _id,
+        uint64[6] memory _votingSettings,
+        bool[2] memory _votingBools,
+        MiniMeToken _token1,
+        MiniMeToken _token2
     )
         internal
     {
         _validateId(_id);
-        _validateSettings(_votingSettings, _members, _stakes);
+        _validateVotingSettings(_votingSettings);
 
-        (Kernel dao,) = _createDAO();
-        _cacheDao(dao);
-        (
-            Finance finance,
-            TokenManager tokenManager,
-            Voting voting,
-            Vault vault
-        ) = _setupApps(_members, _stakes, _votingSettings, _financePeriod, _tokenTransferable);
-
-        _cacheBaseApps(finance, tokenManager, vault, voting);
-        _registerID(_id, dao);
-    }
-
-    function _setupApps(
-        address[] memory _members,
-        uint256[] memory _stakes,
-        uint64[3] memory _votingSettings,
-        uint64 _financePeriod,
-        bool _tokenTransferable
-    )
-        internal
-        returns (Finance, TokenManager, Voting, Vault)
-    {
-        Vault vault = _installVaultApp(_daoCache());
-        Finance finance = _installFinanceApp(_daoCache(), vault, _financePeriod == 0 ? DEFAULT_PERIOD : _financePeriod);
-        TokenManager tokenManager = _installTokenManagerApp(_daoCache(), _shareTokenCache(), _tokenTransferable, TOKEN_MAX_PER_ACCOUNT);
-        Voting voting = _installVotingApp(_daoCache(), _shareTokenCache(), _votingSettings);
-
-        _mintTokens(ACL(_daoCache().acl()), tokenManager, _members, _stakes);
-        _setupPermissions(ACL(_daoCache().acl()), vault, voting, finance, tokenManager);
-
-        return (finance, tokenManager, voting, vault);
-    }
-
-    function _setupOEApps(
-        Kernel _dao,
-        ACL _acl,
-        TokenManager _tokenManager,
-        Vault _vault,
-        Voting _voting,
-        uint64[3] memory _dotVotingSettings,
-        uint64 _allocationsPeriod,
-        bool _useDiscussions
-    )
-        internal
-    {
-        if (_useDiscussions) {
-            DiscussionApp discussions = _installDiscussionsApp(_dao);
-            _createDiscussionsPermissions(_acl, discussions, ANY_ENTITY, _voting);
-        }
-
-        MiniMeToken token = _shareTokenCache();
-        AddressBook addressBook = _installAddressBookApp(_dao);
-        Allocations allocations = _installAllocationsApp(_dao, _vault, _allocationsPeriod == 0 ? DEFAULT_PERIOD : _allocationsPeriod);
-        DotVoting dotVoting = _installDotVotingApp(_dao, token, _dotVotingSettings);
-        Projects projects = _installProjectsApp(_dao, _vault);
-        Rewards rewards = _installRewardsApp(_dao, _vault);
-
-        _setupOEPermissions(
-            _acl,
-            _tokenManager,
-            _voting,
-            addressBook,
-            allocations,
-            dotVoting,
-            projects,
-            rewards
+        (Kernel dao, ACL acl) = _createDAO();
+        Vault vault = _installVaultApp(dao);
+        DotVoting dotVoting = _installDotVotingApp(
+            dao,
+            _votingBools[0] ? _token2 : _token1,
+            _votingSettings[0],
+            _votingSettings[1],
+            _votingSettings[2]
         );
+        Voting voting = _installVotingApp(dao, _votingBools[1] ? _token2 : _token1, _votingSettings[3], _votingSettings[4], _votingSettings[5]);
 
-        _grantVaultPermissions(_acl, _vault, allocations, projects, rewards);
+        _cacheVotingApps(dotVoting, voting, _votingBools[0], _votingBools[1], msg.sender);
+        _cacheBase(acl, dao, vault, msg.sender);
+        _registerID(_id, dao);
     }
 
     function _setupPermissions(
         ACL _acl,
-        Vault _vault,
-        Voting _voting,
-        Finance _finance,
-        TokenManager _tokenManager
-    )
-        internal
-    {
-        _createVaultPermissions(_acl, _vault, _finance, address(this));
-        _createFinancePermissions(_acl, _finance, _voting, _voting);
-        _createFinanceCreatePaymentsPermission(_acl, _finance, _voting, address(this));
-        _createEvmScriptsRegistryPermissions(_acl, _voting, _voting);
-        _createVotingPermissions(_acl, _voting, _voting, _tokenManager, _voting);
-        _createTokenManagerPermissions(_acl, _tokenManager, _voting, _voting);
-    }
-
-    function _setupOEPermissions(
-        ACL _acl,
-        TokenManager _tokenManager,
-        Voting _voting,
+        Kernel _dao,
         AddressBook _addressBook,
         Allocations _allocations,
-        DotVoting _dotVoting,
+        DiscussionApp _discussions,
+        Finance _finance,
         Projects _projects,
-        Rewards _rewards
-    )
-        internal
+        Rewards _rewards,
+        Vault _vault
+    ) internal
     {
-        _createAddressBookPermissions(_acl, _addressBook, _voting, _voting);
-        _createAllocationsPermissions(_acl, _allocations, _dotVoting, _voting, _voting);
-        _createDotVotingPermissions(_acl, _dotVoting, _tokenManager, _voting);
-        _createProjectsPermissions(_acl, _projects, _dotVoting, _voting, _voting);
-        _createRewardsPermissions(_acl, _rewards, _voting, _voting);
+        (DotVoting dotVoting, Voting voting, , ) = _popVotingAppsCache(msg.sender);
+        if (address(_discussions) != address(0)) {
+            _createDiscussionsPermissions(_acl, _discussions, ANY_ENTITY, voting);
+        }
+        _createAddressBookPermissions(_acl, _addressBook, voting, voting);
+        _createAllocationsPermissions(_acl, _allocations, dotVoting, voting, voting);
+        _createEvmScriptsRegistryPermissions(_acl, voting, voting);
+        _createFinancePermissions(_acl, _finance, voting, voting);
+        _createFinanceCreatePaymentsPermission(_acl, _finance, voting, voting);
+        _createProjectsPermissions(_acl, _projects, dotVoting, voting, voting);
+        _createRewardsPermissions(_acl, _rewards, voting, voting);
+        _createVaultPermissions(_acl, _vault, _finance, address(this));
+        _grantVaultPermissions(_acl, _vault, _allocations, _projects, _rewards);
+
+        //Return permissions from the template
+        //_transferCreatePaymentManagerFromTemplate(_acl, _finance, voting);
+        _transferPermissionFromTemplate(_acl, _vault, _vault.TRANSFER_ROLE(), voting);
+        _transferRootPermissionsFromTemplateAndFinalizeDAO(_dao, voting);
     }
 
+    function _setupTokenPermissions(
+        ACL _acl,
+        Kernel _dao
+    ) internal
+    {
+        (DotVoting dotVoting, Voting voting, bool secondaryDot, bool secondaryVoting) = _popVotingAppsCache(msg.sender);
+        (TokenManager tokenManager1, TokenManager tokenManager2, WhitelistOracle whitelist) = _popTokenManagersCache(msg.sender);
+        if (address(tokenManager2) != address(0)) {
+            _createTokenManagerPermissions(_acl, tokenManager2, voting, voting);
+        }
+        if (address(whitelist) != address(0)) {
+            _createWhitelistPermissions(_acl, whitelist, voting, voting);
+        }
+        _createDotVotingPermissions(_acl, dotVoting, secondaryDot ? tokenManager2 : tokenManager1, voting);
+        _createTokenManagerPermissions(_acl, tokenManager1, voting, voting);
+        _createVotingPermissions(_acl, voting, voting, secondaryVoting ? tokenManager2 : tokenManager1, voting);
+
+        _cacheVotingApps(dotVoting, voting, secondaryDot, secondaryVoting, msg.sender);
+    }
+
+    function _validateVotingSettings(uint64[6] memory _votingSettings) private pure {
+        require(_votingSettings.length == 6, ERROR_BAD_VOTE_SETTINGS);
+    }
+
+    /*
     function _validateDotSettings(uint64[3] memory _dotVotingSettings) private pure {
         require(_dotVotingSettings.length == 3, ERROR_BAD_DOT_VOTE_SETTINGS);
     }
+    */
 
-    function _validateSettings(uint64[3] memory _votingSettings, address[] memory _members, uint256[] memory _stakes) private pure {
+    function _validateTokenSettings(address[] memory _members, uint256[] memory _stakes) private pure {
         require(_members.length > 0, ERROR_MISSING_MEMBERS);
         require(_members.length == _stakes.length, ERROR_BAD_MEMBERS_STAKES_LEN);
-        require(_votingSettings.length == 3, ERROR_BAD_VOTE_SETTINGS);
     }
 }

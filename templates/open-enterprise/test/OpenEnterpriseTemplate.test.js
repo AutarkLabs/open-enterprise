@@ -26,16 +26,23 @@ const THIRTY_DAYS = ONE_DAY * 30
 
 contract('OpenEnterpriseTemplate', ([ owner, member1, member2, member3 ]) => {
   const DAO_ID = randomId()
-  const TOKEN_NAME = 'DaoToken'
-  const TOKEN_SYMBOL = 'DT'
+  const TOKEN1_NAME = 'DaoToken1'
+  const TOKEN1_SYMBOL = 'DT1'
+  const TOKEN2_NAME = 'DaoToken2'
+  const TOKEN2_SYMBOL = 'DT2'
+  const VOTING_BOOLS = [ false, false ]
   const TOKEN_TRANSFERABLE = false
+  const TOKENS_LIMIT = true
   const TOKEN_HOLDERS = [ member1, member2, member3 ]
   const TOKEN_STAKES = [ 100, 200, 500 ]
+  const TOKEN_BOOLS = [ TOKEN_TRANSFERABLE, TOKENS_LIMIT ]
 
   const VOTE_DURATION = ONE_WEEK
   const SUPPORT_REQUIRED = 50e16
   const MIN_ACCEPTANCE_QUORUM = 20e16
-  const VOTING_SETTINGS = [ SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION ]
+  const A1_VOTING_SETTINGS = [ SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION ]
+  const DOT_VOTING_SETTINGS = [ SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION ]
+  const VOTING_SETTINGS = [ ...DOT_VOTING_SETTINGS, ...A1_VOTING_SETTINGS ]
   const FINANCE_PERIOD = THIRTY_DAYS
 
   let template
@@ -132,22 +139,37 @@ contract('OpenEnterpriseTemplate', ([ owner, member1, member2, member3 ]) => {
     const baseContracts = [ daoFactBase.address, ens.address, miniMeFactoryBase.address, aragonID.address, bountiesAddress ]
     template = await getContract('OpenEnterpriseTemplate').new(baseContracts)
     console.log('       Deployed OpenEnterpriseTemplate at', template.address)
+    console.log('\n       ===== Deployments completed =====\n')
   })
 
-  context('newTokenAndInstance', () => {
-    it('should run without error', async () => {
-      // TODO: sort params in the contract
-      await template.newTokenAndInstance(
-        TOKEN_NAME,
-        TOKEN_SYMBOL,
+  context('dao instantiation', () => {
+    it('should run newTokensAndInstance without error', async () => {
+      await template.newTokensAndInstance(
         DAO_ID,
+        TOKEN1_NAME,
+        TOKEN1_SYMBOL,
+        TOKEN2_NAME,
+        TOKEN2_SYMBOL,
+        VOTING_SETTINGS,
+        VOTING_BOOLS
+      )
+    })
+
+    it('should run newTokenManagers without error', async () => {
+      await template.newTokenManagers(
         TOKEN_HOLDERS,
         TOKEN_STAKES,
-        VOTING_SETTINGS,
-        FINANCE_PERIOD,
-        TOKEN_TRANSFERABLE,
+        TOKEN_HOLDERS,
+        TOKEN_STAKES,
+        TOKEN_BOOLS
       )
+    })
 
+    it('should run finalizeDao without error', async () => {
+      await template.finalizeDao(
+        [ FINANCE_PERIOD, FINANCE_PERIOD ],
+        false
+      )
     })
 
     it('should cost below gas limit', () => {
