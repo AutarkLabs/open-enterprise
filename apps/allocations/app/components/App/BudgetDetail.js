@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import BigNumber from 'bignumber.js'
 import { useAragonApi, usePath } from '../../api-react'
@@ -78,9 +78,25 @@ InfoBlock.propTypes = {
   title: PropTypes.string,
 }
 
+// if this page is the first page loaded for the user,
+// we may still have incomplete state from aragonAPI;
+// let's give it a second before redirecting
+const usePatientRequestPath = () => {
+  const [ , requestPath ] = usePath()
+  const [ firstTry, setFirstTry ] = useState(true)
+  return path => {
+    if (firstTry) {
+      setTimeout(() => setFirstTry(false), 1000)
+    } else {
+      requestPath(path)
+    }
+  }
+}
+
 export default function BudgetDetail() {
   const { appState } = useAragonApi()
   const [ path, requestPath ] = usePath()
+  const patientlyRequestPath = usePatientRequestPath()
 
   const matchData = path.match(ID_REGEX)
   if (!matchData) {
@@ -92,7 +108,7 @@ export default function BudgetDetail() {
 
   const budget = appState.budgets.find(b => b.id === id)
   if (!budget) {
-    requestPath('/')
+    patientlyRequestPath('/')
     return null
   }
 
