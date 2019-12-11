@@ -7,7 +7,6 @@ import { Form, FormField } from '../../Form'
 import useGithubAuth from '../../../hooks/useGithubAuth'
 import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '../../Panel'
-import { ipfsAdd } from '../../../utils/ipfs-helpers'
 import { issueShape } from '../../../utils/shapes.js'
 import standardBounties from '../../../abi/StandardBounties.json'
 import { IssueTitle } from '../PanelComponents'
@@ -45,7 +44,7 @@ const SubmitWork = ({ issue }) => {
 
     closePanel()
 
-    const ipfsHash = await ipfsAdd(data)
+    const ipfsHash = await api.datastore('add', data).toPromise()
     const bountiesRegistry = await api.call('bountiesRegistry').toPromise()
     const bountyContract = api.external(bountiesRegistry, standardBounties.abi)
     bountyContract.fulfillBounty(

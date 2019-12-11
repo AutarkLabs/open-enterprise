@@ -1,5 +1,3 @@
-import { ipfsGet } from '../utils/ipfs-helpers'
-
 import {
   ACTION_PERFORMED,
   REQUESTING_GITHUB_TOKEN,
@@ -167,7 +165,7 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
     )
     if (!issue) return state
 
-    const ipfsData = await ipfsGet(_data)
+    const ipfsData = await app.datastore('cat', _data).toPromise()
 
     // we only care about ActionPerformed when called in ReviewSubmission
     if (!ipfsData.fulfillmentId) return state

@@ -1,6 +1,5 @@
 import { hexToAscii, toHex } from 'web3-utils'
 import { app } from '../app'
-import { ipfsGet } from '../../utils/ipfs-helpers'
 import standardBounties from '../../abi/StandardBounties.json'
 
 const assignmentRequestStatus = [ 'Unreviewed', 'Accepted', 'Rejected' ]
@@ -74,7 +73,8 @@ export const loadIpfsData = async ipfsHash => {
     size,
     slots,
     slotsIndex,
-  } = await ipfsGet(ipfsHash)
+  } = await app.datastore('cat', ipfsHash).toPromise()
+
   return {
     detailsOpen,
     exp,
@@ -152,7 +152,10 @@ export const determineWorkStatus = issue => {
 const getRequest = (repoId, issueNumber, applicantId) => {
   return new Promise(resolve => {
     app.call('getApplicant', repoId, issueNumber, applicantId).subscribe(async (response) => {
-      const bountyData = await ipfsGet(response.application)
+      const bountyData = await app.datastore('cat', response.application).toPromise()
+      console.log('GOT BOUNTY DATA')
+      console.log('GOT BOUNTY DATA')
+      console.log('GOT BOUNTY DATA', bountyData)
       resolve({
         contributorAddr: response.applicant,
         status: assignmentRequestStatus[parseInt(response.status)],
@@ -176,6 +179,7 @@ const loadRequestsData = ({ repoId, issueNumber }) => {
 }
 
 export const buildSubmission = async ({ fulfillmentId, fulfillers, ipfsHash, submitter }) => {
+  console.log('getting bounty datad')
   const {
     ack1,
     ack2,
@@ -184,7 +188,7 @@ export const buildSubmission = async ({ fulfillmentId, fulfillers, ipfsHash, sub
     proof,
     submissionDate,
     user,
-  } = await ipfsGet(ipfsHash)
+  } = await app.datastore('cat', ipfsHash).toPromise()
 
   return {
     ack1,
