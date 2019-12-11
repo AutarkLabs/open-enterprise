@@ -59,6 +59,7 @@ export const loadIssueData = async ({ repoId, issueNumber }) => {
     deadline: new Date(Number(deadline)).toISOString(),
     token,
     workStatus,
+    openSubmission: /^0xf{40}$/i.test(assignee),
   }
 }
 
