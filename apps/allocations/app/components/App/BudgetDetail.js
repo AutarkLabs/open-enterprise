@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import BigNumber from 'bignumber.js'
+import styled from 'styled-components'
 import { useAragonApi, usePath } from '../../api-react'
 import {
+  BREAKPOINTS,
   BackButton,
   Bar,
   Box,
@@ -119,6 +121,25 @@ function usePeriod() {
   return { startDate, endDate }
 }
 
+const Grid = styled.div`
+  display: grid;
+  grid-gap: ${2 * GU}px;
+  grid-template-areas:
+    "main"
+    "budget"
+    "period"
+    "allocations";
+
+  @media (min-width: ${BREAKPOINTS.large}px) {
+    grid-template-columns: 3fr 1fr;
+    grid-template-rows: repeat(3, auto);
+    grid-template-areas:
+      "main budget"
+      "main period"
+      "allocations period";
+  }
+`
+
 export default function BudgetDetail() {
   const { appState } = useAragonApi()
   const [ path, requestPath ] = usePath()
@@ -160,54 +181,72 @@ export default function BudgetDetail() {
       <Bar>
         <BackButton onClick={() => requestPath('/')} />
       </Bar>
-      <Box heading="Budget">
-        <Text.Block size="great" style={{ marginBottom: 2 * GU + 'px' }}>
-          {budget.name}
-        </Text.Block>
-        <div css="display: flex">
-          <InfoBlock css="flex: 1" title="Budget">
-            <CurrencyValue
-              amount={budget.amount}
-              token={budget.token}
-              context="per 30 days"
-            />
-          </InfoBlock>
-          <InfoBlock css="flex: 1" title="Utilized">
-            <CurrencyValue
-              amount={utilized}
-              token={budget.token}
-              context={percentOf(utilized, budget.amount)}
-            />
-          </InfoBlock>
-          <InfoBlock css="flex: 1" title="Remaining">
-            <CurrencyValue
-              amount={budget.remaining}
-              token={budget.token}
-              context={percentOf(budget.remaining, budget.amount)}
-            />
-          </InfoBlock>
+      <Grid>
+        <div css="grid-area: main">
+          <Box heading="Budget">
+            <Text.Block size="great" style={{ marginBottom: 2 * GU + 'px' }}>
+              {budget.name}
+            </Text.Block>
+            <div css="display: flex">
+              <InfoBlock css="flex: 1" title="Budget">
+                <CurrencyValue
+                  amount={budget.amount}
+                  token={budget.token}
+                  context="per 30 days"
+                />
+              </InfoBlock>
+              <InfoBlock css="flex: 1" title="Utilized">
+                <CurrencyValue
+                  amount={utilized}
+                  token={budget.token}
+                  context={percentOf(utilized, budget.amount)}
+                />
+              </InfoBlock>
+              <InfoBlock css="flex: 1" title="Remaining">
+                <CurrencyValue
+                  amount={budget.remaining}
+                  token={budget.token}
+                  context={percentOf(budget.remaining, budget.amount)}
+                />
+              </InfoBlock>
+            </div>
+            <div css={`margin-top: ${3 * GU}px; margin-bottom: ${GU}px`}>
+              <ProgressBar
+                color={String(theme.accentEnd)}
+                value={utilized / budget.amount}
+              />
+            </div>
+          </Box>
         </div>
-        <div css={`margin-top: ${3 * GU}px; margin-bottom: ${GU}px`}>
-          <ProgressBar
-            color={String(theme.accentEnd)}
-            value={utilized / budget.amount}
-          />
+        <div css="grid-area: budget">
+          <Box
+            css="margin-top: 0 !important"
+            heading="Budget info"
+          >
+            <InfoBlock title="Budget ID">
+              #{budget.id}
+            </InfoBlock>
+          </Box>
         </div>
-      </Box>
-      <Box heading="Budget info">
-        <InfoBlock title="Budget ID">
-          #{budget.id}
-        </InfoBlock>
-      </Box>
-      <Box heading="Period info">
-        <InfoBlock title="Start Date">
-          {formatDate(period.startDate)}
-        </InfoBlock>
-        <InfoBlock css={`margin-top: ${2 * GU}px`} title="End Date">
-          {formatDate(period.endDate)}
-        </InfoBlock>
-      </Box>
-      { !!allocations.length && <AllocationsHistory allocations={allocations} /> }
+        <div css="grid-area: period">
+          <Box
+            css="margin-top: 0 !important"
+            heading="Period info"
+          >
+            <InfoBlock title="Start Date">
+              {formatDate(period.startDate)}
+            </InfoBlock>
+            <InfoBlock css={`margin-top: ${2 * GU}px`} title="End Date">
+              {formatDate(period.endDate)}
+            </InfoBlock>
+          </Box>
+        </div>
+        { !!allocations.length &&
+          <div css="grid-area: allocations">
+            <AllocationsHistory allocations={allocations} />
+          </div>
+        }
+      </Grid>
     </>
   )
 }
