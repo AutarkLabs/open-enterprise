@@ -37,7 +37,7 @@ const usePanelManagement = () => {
         issue
       })
     },
-    reviewApplication: (issue, requestIndex = 0, readOnly = false) => {
+    reviewApplication: ({ issue, requestIndex = 0, readOnly = false }) => {
       setActivePanel(PANELS.ReviewApplication)
       setPanelProps({
         issue,
@@ -46,7 +46,7 @@ const usePanelManagement = () => {
         title: 'View application',
       })
     },
-    reviewWork: (issue, index = 0, readOnly = false) => {
+    reviewWork: ({ issue, index = 0, readOnly = false }) => {
       setActivePanel(PANELS.ReviewWork)
       setPanelProps({
         issue,

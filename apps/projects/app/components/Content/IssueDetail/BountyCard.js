@@ -89,14 +89,14 @@ const Submissions = ({ issue }) => {
     'No applications'
   )
   case 'review-applicants': return (
-    <Link onClick={() => reviewApplication(issue, 0)}>
+    <Link onClick={() => reviewApplication({ issue, requestIndex: 0 })}>
       {pluralize('application', issue.requestsData.length)}
 
     </Link>
   )
   case 'in-progress':
     if ('workSubmissions' in issue) return (
-      <Link onClick={() => reviewWork(issue, 0)}>
+      <Link onClick={() => reviewWork({ issue, index: 0 })}>
         {pluralize('work submission', issue.workSubmissions.length)}
       </Link>
     )
@@ -105,7 +105,7 @@ const Submissions = ({ issue }) => {
     )
   case 'review-work':
   case 'fulfilled': return (
-    <Link onClick={() => reviewWork(issue, 0)}>
+    <Link onClick={() => reviewWork({ issue, index: 0 })}>
       {pluralize('work submission', issue.workSubmissions.length)}
     </Link>)
   default: return null

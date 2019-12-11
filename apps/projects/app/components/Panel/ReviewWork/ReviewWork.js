@@ -157,7 +157,7 @@ const ReviewWork = ({ issue, readOnly }) => {
           </FieldText>
         </React.Fragment>
       )}
-      {!(readOnly || 'review' in work) && (
+      {!readOnly && !work.review && (
         <React.Fragment>
 
           <FormField

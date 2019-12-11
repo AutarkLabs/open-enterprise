@@ -159,7 +159,7 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
           </Text.Block>
         </React.Fragment>
       )}
-      {!(readOnly || 'review' in request) && (
+      {!readOnly && !request.review && (
         <React.Fragment>
           <FormField
             label="Feedback"
