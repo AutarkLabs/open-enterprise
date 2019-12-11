@@ -13,7 +13,6 @@ import { FormField, FieldTitle } from '../../Form'
 import useGithubAuth from '../../../hooks/useGithubAuth'
 import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '../../Panel'
-import { ipfsAdd } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
 import { issueShape } from '../../../utils/shapes.js'
 import { DetailHyperText } from '../../../../../../shared/ui'
@@ -32,9 +31,8 @@ import useReviewFilters from '../../../hooks/useReviewFilters'
 
 const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
   const githubCurrentUser = useGithubAuth()
-  const {
-    api: { reviewApplication },
-  } = useAragonApi()
+  const { api } = useAragonApi()
+  const reviewApplication = api.reviewApplication
   const { closePanel } = usePanelManagement()
   const theme = useTheme()
   const [ feedback, setFeedback ] = useState('')
@@ -69,7 +67,7 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
     const review = buildReturnData(approved)
     // new IPFS data is old data plus state returned from the panel
     const ipfsData = items[selectedFilter][selectedItem]
-    const requestIPFSHash = await ipfsAdd({ ...ipfsData, review })
+    const requestIPFSHash = await api.datastore('add', { ...ipfsData, review }).toPromise()
     reviewApplication(
       toHex(issue.repoId),
       issue.number,
