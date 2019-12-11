@@ -25,6 +25,7 @@ import { toHex } from 'web3-utils'
 import { issueShape } from '../../../utils/shapes.js'
 import { IssueTitle } from '../PanelComponents'
 import workRatings from '../../../utils/work-ratings.js'
+import { DetailHyperText } from '../../../../../../shared/ui'
 
 const ReviewWork = ({ issue, readOnly }) => {
   const githubCurrentUser = useGithubAuth()
@@ -111,10 +112,10 @@ const ReviewWork = ({ issue, readOnly }) => {
         <Separator/>
 
         <FieldTitle>Submission</FieldTitle>
-        <DetailText>{work.proof}</DetailText>
+        <DetailHyperText>{work.proof}</DetailHyperText>
 
         {work.comments && <FieldTitle>Additional Comments</FieldTitle>}
-        {work.comments && <DetailText>{work.comments}</DetailText>}
+        {work.comments && <DetailHyperText>{work.comments}</DetailHyperText>}
 
         <FieldTitle>Hours Worked</FieldTitle>
         <DetailText>{work.hours}</DetailText>
