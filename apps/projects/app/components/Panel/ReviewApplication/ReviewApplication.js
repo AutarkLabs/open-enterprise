@@ -21,6 +21,7 @@ import { ipfsAdd } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
 import { issueShape } from '../../../utils/shapes.js'
 import { IssueTitle } from '../PanelComponents'
+import { DetailHyperText } from '../../../../../../shared/ui'
 
 const ReviewApplication = ({ issue, requestIndex }) => {
   const githubCurrentUser = useGithubAuth()
@@ -116,7 +117,7 @@ const ReviewApplication = ({ issue, requestIndex }) => {
         <Separator/>
 
         <FieldTitle>Work Plan</FieldTitle>
-        <DetailText>{application.workplan}</DetailText>
+        <DetailHyperText>{application.workplan}</DetailHyperText>
 
         <Estimations>
           <div>
