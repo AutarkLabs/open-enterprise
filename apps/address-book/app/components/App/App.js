@@ -24,7 +24,7 @@ const App = () => {
     const content = { name, type }
     // add entry data to IPFS
     // TODO: show a nice progress animation here before closing the panel?
-    const cId = await api.datastore('add', content).toPromise()
+    const cId = await ipfsAdd(content)
     api.addEntry(address, cId).toPromise()
   }
 
@@ -40,7 +40,7 @@ const App = () => {
     const content = { name, type }
     // add entry data to IPFS
     // TODO: show a nice progress animation here before closing the panel?
-    const newCid = await api.datastore('add', content).toPromise()
+    const newCid = await ipfsAdd(content)
     const oldCid = entries.find(e => e.addr === address).data.cid
     api.updateEntry(address, oldCid, newCid).toPromise()
   }
