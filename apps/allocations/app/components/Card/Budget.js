@@ -5,6 +5,7 @@ import BigNumber from 'bignumber.js'
 import { displayCurrency } from '../../utils/helpers'
 import { usePanel } from '../../context/Panel'
 
+import { usePath } from '../../api-react'
 import {
   Card,
   ContextMenu,
@@ -14,6 +15,7 @@ import {
   IconEdit,
   IconPlus,
   IconProhibited,
+  Link,
   ProgressBar,
   Text,
   useTheme,
@@ -44,6 +46,7 @@ const Budget = ({
 
   return (
     <Wrapper
+      id={id}
       name={name}
       theme={theme}
       amount={amount}
@@ -101,42 +104,50 @@ Budget.propTypes = {
   onDeactivate: PropTypes.func.isRequired,
 }
 
-const Wrapper = ({ children, name, amount, symbol, active, theme, menu }) => (
-  <StyledCard theme={theme}>
-    <CardTop>
-      <MenuContainer>
-        <ContextMenu>
-          {menu}
-        </ContextMenu>
-      </MenuContainer>
-      <CardTitle theme={theme}>{name}</CardTitle>
-      <StatsContainer>
-        {children}
-      </StatsContainer>
-    </CardTop>
-    <CardBottom theme={theme}>
-      <Text>{displayCurrency(BigNumber(amount)) + ' ' + symbol + ' / PERIOD'}</Text>
-      {active ? (
-        <Status
-          color={theme.positive}
-          icon={<IconCheck />}
-        >
-          ACTIVE
-        </Status>
-      ) : (
-        <Status
-          color={theme.negative}
-          icon={<IconCross />}
-        >
-          INACTIVE
-        </Status>
-      )}
-    </CardBottom>
-  </StyledCard>
-)
+const Wrapper = ({ children, id, name, amount, symbol, active, theme, menu }) => {
+  const [ , requestPath ] = usePath()
+  return (
+    <StyledCard theme={theme}>
+      <CardTop>
+        <MenuContainer>
+          <ContextMenu>
+            {menu}
+          </ContextMenu>
+        </MenuContainer>
+        <CardTitle theme={theme}>
+          <Link onClick={() => requestPath(`/budgets/${id}`)}>
+            {name}
+          </Link>
+        </CardTitle>
+        <StatsContainer>
+          {children}
+        </StatsContainer>
+      </CardTop>
+      <CardBottom theme={theme}>
+        <Text>{displayCurrency(BigNumber(amount)) + ' ' + symbol + ' / PERIOD'}</Text>
+        {active ? (
+          <Status
+            color={theme.positive}
+            icon={<IconCheck />}
+          >
+            ACTIVE
+          </Status>
+        ) : (
+          <Status
+            color={theme.negative}
+            icon={<IconCross />}
+          >
+            INACTIVE
+          </Status>
+        )}
+      </CardBottom>
+    </StyledCard>
+  )
+}
 
 Wrapper.propTypes = {
   children: PropTypes.node.isRequired,
+  id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   amount: PropTypes.string.isRequired,
   symbol: PropTypes.string.isRequired,
