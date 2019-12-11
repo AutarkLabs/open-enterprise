@@ -153,9 +153,6 @@ const getRequest = (repoId, issueNumber, applicantId) => {
   return new Promise(resolve => {
     app.call('getApplicant', repoId, issueNumber, applicantId).subscribe(async (response) => {
       const bountyData = await app.datastore('cat', response.application).toPromise()
-      console.log('GOT BOUNTY DATA')
-      console.log('GOT BOUNTY DATA')
-      console.log('GOT BOUNTY DATA', bountyData)
       resolve({
         contributorAddr: response.applicant,
         status: assignmentRequestStatus[parseInt(response.status)],
@@ -179,7 +176,6 @@ const loadRequestsData = ({ repoId, issueNumber }) => {
 }
 
 export const buildSubmission = async ({ fulfillmentId, fulfillers, ipfsHash, submitter }) => {
-  console.log('getting bounty datad')
   const {
     ack1,
     ack2,
