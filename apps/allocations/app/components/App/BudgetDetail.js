@@ -6,13 +6,16 @@ import {
   BackButton,
   Bar,
   Box,
+  Button,
   GU,
   Header,
+  IconPlus,
   Text,
   textStyle,
   useTheme,
 } from '@aragon/ui'
 
+import { usePanel } from '../../context/Panel'
 import { AllocationsHistory } from '.'
 
 const ID_REGEX = new RegExp('^/budgets/(?<id>[0-9]+)')
@@ -96,6 +99,7 @@ const usePatientRequestPath = () => {
 export default function BudgetDetail() {
   const { appState } = useAragonApi()
   const [ path, requestPath ] = usePath()
+  const { newAllocation } = usePanel()
   const patientlyRequestPath = usePatientRequestPath()
 
   const matchData = path.match(ID_REGEX)
@@ -120,6 +124,14 @@ export default function BudgetDetail() {
     <>
       <Header
         primary="Allocations"
+        secondary={
+          <Button
+            mode="strong"
+            icon={<IconPlus />}
+            onClick={() => newAllocation(id)}
+            label="New allocation"
+          />
+        }
       />
       <Bar>
         <BackButton onClick={() => requestPath('/')} />

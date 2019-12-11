@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types'
 import React from 'react'
+import { useAragonApi } from '../../api-react'
 import { DropDown, GU, IconClose, Text, TextInput, font, theme } from '@aragon/ui'
 import web3Utils from 'web3-utils'
 import styled from 'styled-components'
@@ -8,6 +9,7 @@ import { BigNumber } from 'bignumber.js'
 import { addressesEqual } from '../../../../../shared/lib/web3-utils'
 import { RecipientsInput } from '../../../../../shared/ui'
 import { MIN_AMOUNT } from '../../utils/constants'
+import { usePanel } from '../../context/Panel'
 import { displayCurrency, isStringEmpty } from '../../utils/helpers'
 import { DescriptionInput, Form, FormField } from '../Form'
 import CurrencyBox from '../Form/Field/CurrencyBox'
@@ -281,6 +283,46 @@ class NewAllocation extends React.Component {
   }
 }
 
+const NewAllocationWrap = props => {
+  const { api, appState } = useAragonApi()
+  const { balances, budgets } = appState
+  const { setPanel } = usePanel()
+
+  const onSubmitAllocation = ({
+    addresses,
+    description,
+    budgetId,
+    period = 0,
+    balance,
+  }) => {
+    const emptyIntArray = new Array(addresses.length).fill(0)
+    api.setDistribution(
+      addresses,
+      emptyIntArray, // unused
+      emptyIntArray, // unused
+      '', // unused
+      description,
+      emptyIntArray, // unused
+      emptyIntArray, // unused
+      budgetId, // account or allocation id...budgetId
+      '1', // recurrences, 1 for now
+      Math.floor(new Date().getTime()/1000), // startTime, now for now
+      period,
+      balance, // amount
+    ).toPromise()
+    setPanel(null)
+  }
+
+  return (
+    <NewAllocation
+      balances={balances}
+      budgets={budgets}
+      onSubmitAllocation={onSubmitAllocation}
+      {...props}
+    />
+  )
+}
+
 const ErrorMessage = ({ hasError, type }) => {
   return hasError ? (
     <ErrorText>
@@ -312,4 +354,4 @@ const ErrorText = styled.div`
 `
 
 // eslint-disable-next-line import/no-unused-modules
-export default NewAllocation
+export default NewAllocationWrap

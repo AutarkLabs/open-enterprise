@@ -3,6 +3,7 @@ import React from 'react'
 import styled from 'styled-components'
 import BigNumber from 'bignumber.js'
 import { displayCurrency } from '../../utils/helpers'
+import { usePanel } from '../../context/Panel'
 
 import {
   Card,
@@ -25,15 +26,12 @@ const Budget = ({
   token,
   remaining = 0,
   active,
-  onNewAllocation,
   onEdit,
   onDeactivate,
 }) => {
   const theme = useTheme()
+  const { newAllocation } = usePanel()
 
-  const newAllocation = () => {
-    onNewAllocation(id)
-  }
   const edit = () => {
     onEdit(id)
   }
@@ -54,7 +52,7 @@ const Budget = ({
       menu={
         <React.Fragment>
           {active && (
-            <ContextMenuItem onClick={newAllocation}>
+            <ContextMenuItem onClick={() => newAllocation(id)}>
               <IconPlus />
               <ActionLabel>New allocation</ActionLabel>
             </ContextMenuItem>
@@ -99,7 +97,6 @@ Budget.propTypes = {
   // TODO: fix remaining (should be required?)
   remaining: PropTypes.string,
   active: PropTypes.bool.isRequired,
-  onNewAllocation: PropTypes.func.isRequired,
   onEdit: PropTypes.func.isRequired,
   onDeactivate: PropTypes.func.isRequired,
 }
@@ -224,11 +221,6 @@ const CardTitle = styled(Text.Block).attrs({
 const StatsContainer = styled.div`
   text-align: center;
   padding: 12px;
-`
-
-const StatsValueBig = styled.div`
-  font-size: 16px;
-  color: ${({ theme }) => theme.contentSecondary};
 `
 
 const StatsValueSmall = styled.div`

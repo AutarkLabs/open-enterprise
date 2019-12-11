@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { useAragonApi } from '../../api-react'
 import { GU } from '@aragon/ui'
 
-import { NewAllocation, NewBudget } from '../Panel'
+import { NewBudget } from '../Panel'
 import { Budget } from '../Card'
 import { usePanel } from '../../context/Panel'
 
@@ -16,45 +16,6 @@ const Budgets = () => {
   const saveBudget = ({ id, amount, name }) => {
     api.setBudget(id, amount, name).toPromise()
     setPanel(null)
-  }
-
-  const onSubmitAllocation = ({
-    addresses,
-    description,
-    budgetId,
-    period = 0,
-    balance,
-  }) => {
-    const emptyIntArray = new Array(addresses.length).fill(0)
-    api.setDistribution(
-      addresses,
-      emptyIntArray, // unused
-      emptyIntArray, // unused
-      '', // unused
-      description,
-      emptyIntArray, // unused
-      emptyIntArray, // unused
-      budgetId, // account or allocation id...budgetId
-      '1', // recurrences, 1 for now
-      Math.floor(new Date().getTime()/1000), // startTime, now for now
-      period,
-      balance, // amount
-    ).toPromise()
-    setPanel(null)
-  }
-
-  const onNewAllocation = budgetId => {
-    const { balances } = appState
-    setPanel({
-      content: NewAllocation,
-      data: {
-        budgetId,
-        heading: 'New allocation',
-        onSubmitAllocation,
-        budgets,
-        balances,
-      },
-    })
   }
 
   const onEdit = id => {
@@ -92,7 +53,6 @@ const Budgets = () => {
             token={token}
             remaining={remaining}
             active={active}
-            onNewAllocation={onNewAllocation}
             onEdit={onEdit}
             onDeactivate={onDeactivate}
           />
