@@ -63,7 +63,6 @@ const bountiesFor = ({ bountySettings, issues, tokens }) => issues.reduce(
       slotsIndex: 0,
       payout: issue.payout || 0,
       token: tokens.find(t => t.symbol === issue.symbol) || tokens[0],
-      openSubmission: issue.openSubmission,
     }
     return bounties
   },
