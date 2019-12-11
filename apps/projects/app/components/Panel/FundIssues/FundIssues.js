@@ -459,12 +459,12 @@ const FundIssues = ({ issues, mode }) => {
         ],
         hours: bounty.hours,
         repo: bounty.repo,
-        openSubmission,
       })
     })
     const ipfsAddresses = await computeIpfsString(ipfsData)
 
-    await api.addBounties(
+    const addBountiesF = openSubmission ? api.addBountiesNoAssignment : api.addBounties
+    await addBountiesF(
       repoIds,
       issueNumbers,
       bountySizes,

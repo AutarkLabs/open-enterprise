@@ -59,6 +59,7 @@ export const loadIssueData = async ({ repoId, issueNumber }) => {
     deadline: new Date(Number(deadline)).toISOString(),
     token,
     workStatus,
+    openSubmission: /^0xf{40}$/i.test(assignee),
   }
 }
 
@@ -69,7 +70,6 @@ export const loadIpfsData = async ipfsHash => {
     fundingHistory,
     hours,
     repo,
-    openSubmission,
   } = await ipfsGet(ipfsHash)
   return {
     issueId,
@@ -77,7 +77,6 @@ export const loadIpfsData = async ipfsHash => {
     fundingHistory,
     hours,
     repo,
-    openSubmission,
   }
 }
 
