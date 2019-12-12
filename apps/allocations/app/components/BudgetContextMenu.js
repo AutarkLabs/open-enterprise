@@ -1,11 +1,9 @@
 import React from 'react'
 import styled from 'styled-components'
-import { usePath } from '../api-react'
 import {
   ContextMenu,
   ContextMenuItem,
   IconEdit,
-  IconPlus,
   IconProhibited,
   useTheme,
 } from '@aragon/ui'
@@ -18,8 +16,7 @@ const ActionLabel = styled.span`
 `
 
 export default function BudgetContextMenu({ budget }) {
-  const [path] = usePath()
-  const { newAllocation, editBudget } = usePanel()
+  const { editBudget } = usePanel()
   const saveBudget = useSaveBudget()
   const theme = useTheme()
 
@@ -33,12 +30,6 @@ export default function BudgetContextMenu({ budget }) {
 
   return (
     <ContextMenu>
-      {!path.match('^/budgets') && budget.active && (
-        <ContextMenuItem onClick={() => newAllocation(budget.id)}>
-          <IconPlus color={theme.surfaceIcon} />
-          <ActionLabel>New allocation</ActionLabel>
-        </ContextMenuItem>
-      )}
       <ContextMenuItem onClick={() => editBudget(budget)}>
         <IconEdit color={theme.surfaceIcon} />
         <ActionLabel>{budget.active ? 'Edit' : 'Reactivate'}</ActionLabel>

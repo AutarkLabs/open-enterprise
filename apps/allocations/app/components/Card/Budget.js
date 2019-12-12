@@ -15,7 +15,6 @@ import {
   Text,
   useTheme,
 } from '@aragon/ui'
-import BudgetContextMenu from '../BudgetContextMenu'
 
 const Budget = ({ budget }) => {
   const theme = useTheme()
@@ -52,39 +51,34 @@ const Wrapper = ({ budget, children, theme }) => {
   const [ , requestPath ] = usePath()
   const { active, amount, id, name, token } = budget
   return (
-    <StyledCard theme={theme}>
-      <CardTop>
-        <MenuContainer>
-          <BudgetContextMenu budget={budget} />
-        </MenuContainer>
-        <CardTitle theme={theme}>
-          <Link onClick={() => requestPath(`/budgets/${id}`)}>
-            {name}
-          </Link>
-        </CardTitle>
-        <StatsContainer>
-          {children}
-        </StatsContainer>
-      </CardTop>
-      <CardBottom theme={theme}>
-        <Text>{displayCurrency(BigNumber(amount)) + ' ' + token.symbol + ' / PERIOD'}</Text>
-        {active ? (
-          <Status
-            color={theme.positive}
-            icon={<IconCheck />}
-          >
-            ACTIVE
-          </Status>
-        ) : (
-          <Status
-            color={theme.negative}
-            icon={<IconCross />}
-          >
-            INACTIVE
-          </Status>
-        )}
-      </CardBottom>
-    </StyledCard>
+    <Link onClick={() => requestPath(`/budgets/${id}`)}>
+      <StyledCard theme={theme}>
+        <CardTop>
+          <CardTitle theme={theme}>{name}</CardTitle>
+          <StatsContainer>
+            {children}
+          </StatsContainer>
+        </CardTop>
+        <CardBottom theme={theme}>
+          <Text>{displayCurrency(BigNumber(amount)) + ' ' + token.symbol + ' / PERIOD'}</Text>
+          {active ? (
+            <Status
+              color={theme.positive}
+              icon={<IconCheck />}
+            >
+              ACTIVE
+            </Status>
+          ) : (
+            <Status
+              color={theme.negative}
+              icon={<IconCross />}
+            >
+              INACTIVE
+            </Status>
+          )}
+        </CardBottom>
+      </StyledCard>
+    </Link>
   )
 }
 
@@ -114,8 +108,13 @@ Status.propTypes = {
 const StyledCard = styled(Card)`
   box-shadow: ${({ theme }) => '0 2px 4px ' + theme.border};
   border: 0;
-  height: 264px;
+  cursor: pointer;
+  height: 234px;
   width: auto;
+  :hover {
+    box-shadow: ${p => `0 2px 4px ${p.theme.border},
+    0 2px 8px ${p.theme.border}`}
+  }
 `
 
 const CardTop = styled.div`
