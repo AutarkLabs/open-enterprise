@@ -62,7 +62,7 @@ const Budgets = () => {
     setPanel({
       content: NewBudget,
       data: {
-        heading: editingBudget.amount > 0 ? 'Edit budget' : 'Reactivate budget',
+        heading: editingBudget.active ? 'Edit budget' : 'Reactivate budget',
         saveBudget,
         editingBudget,
       },
@@ -83,7 +83,7 @@ const Budgets = () => {
   return (
     <>
       <StyledBudgets>
-        {budgets.map(({ amount, hasBudget, id, name, remaining, token }) => (
+        {budgets.map(({ amount, active, id, name, remaining, token }) => (
           <Budget
             key={id}
             id={id}
@@ -91,7 +91,7 @@ const Budgets = () => {
             amount={amount}
             token={token}
             remaining={remaining}
-            inactive={!hasBudget}
+            active={active}
             onNewAllocation={onNewAllocation}
             onEdit={onEdit}
             onDeactivate={onDeactivate}

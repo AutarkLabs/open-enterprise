@@ -24,7 +24,7 @@ const Budget = ({
   amount,
   token,
   remaining = 0,
-  inactive,
+  active,
   onNewAllocation,
   onEdit,
   onDeactivate,
@@ -50,7 +50,7 @@ const Budget = ({
       theme={theme}
       amount={amount}
       symbol={token.symbol}
-      inactive={inactive}
+      active={active}
       menu={
         <React.Fragment>
           <ContextMenuItem onClick={newAllocation}>
@@ -59,9 +59,9 @@ const Budget = ({
           </ContextMenuItem>
           <ContextMenuItem onClick={edit}>
             <IconEdit />
-            <ActionLabel>{amount === '0' ? 'Reactivate' : 'Edit'}</ActionLabel>
+            <ActionLabel>{active ? 'Edit' : 'Reactivate'}</ActionLabel>
           </ContextMenuItem>
-          {amount > 0 && (
+          {active && (
             <ContextMenuItem onClick={deactivate}>
               <IconProhibited />
               <ActionLabel>Deactivate</ActionLabel>
@@ -70,7 +70,7 @@ const Budget = ({
         </React.Fragment>
       }
     >
-      {amount > 0 && (
+      {active && (
         <React.Fragment>
           <StatsValueBig css={{ paddingTop: '24px' }} theme={theme}>
             <ProgressBar
@@ -98,13 +98,13 @@ Budget.propTypes = {
   token: PropTypes.object.isRequired,
   // TODO: fix remaining (should be required?)
   remaining: PropTypes.string,
-  inactive: PropTypes.bool.isRequired,
+  active: PropTypes.bool.isRequired,
   onNewAllocation: PropTypes.func.isRequired,
   onEdit: PropTypes.func.isRequired,
   onDeactivate: PropTypes.func.isRequired,
 }
 
-const Wrapper = ({ children, name, amount, symbol, inactive, theme, menu }) => (
+const Wrapper = ({ children, name, amount, symbol, active, theme, menu }) => (
   <StyledCard theme={theme}>
     <MenuContainer>
       <ContextMenu>
@@ -119,19 +119,19 @@ const Wrapper = ({ children, name, amount, symbol, inactive, theme, menu }) => (
     </StatsContainer>
     <CardBottom theme={theme}>
       <Text>{displayCurrency(BigNumber(amount)) + ' ' + symbol + ' / PERIOD'}</Text>
-      {(amount === '0' || inactive) ? (
-        <Status
-          color={theme.negative}
-          icon={<IconCross />}
-        >
-          INACTIVE
-        </Status>
-      ) : (
+      {active ? (
         <Status
           color={theme.positive}
           icon={<IconCheck />}
         >
           ACTIVE
+        </Status>
+      ) : (
+        <Status
+          color={theme.negative}
+          icon={<IconCross />}
+        >
+          INACTIVE
         </Status>
       )}
     </CardBottom>
@@ -143,7 +143,7 @@ Wrapper.propTypes = {
   name: PropTypes.string.isRequired,
   amount: PropTypes.string.isRequired,
   symbol: PropTypes.string.isRequired,
-  inactive: PropTypes.bool.isRequired,
+  active: PropTypes.bool.isRequired,
   theme: PropTypes.object.isRequired,
   menu: PropTypes.node.isRequired,
 }
