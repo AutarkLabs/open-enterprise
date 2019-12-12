@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
 import { useAragonApi } from '../../api-react'
@@ -6,20 +6,12 @@ import { GU } from '@aragon/ui'
 
 import { NewAllocation, NewBudget } from '../Panel'
 import { Budget } from '../Card'
-import { Deactivate } from '../Modal'
 import { usePanel } from '../../context/Panel'
 
 const Budgets = () => {
   const { api, appState } = useAragonApi()
   const { budgets = [] } = appState
-  const [ isModalVisible, setModalVisible ] = useState(false)
-  const [ currentBudgetId, setCurrentBudgetId ] = useState('')
   const { setPanel } = usePanel()
-
-  const closeModal = () => {
-    setModalVisible(false)
-    setCurrentBudgetId('')
-  }
 
   const saveBudget = ({ id, amount, name }) => {
     api.setBudget(id, amount, name).toPromise()
@@ -70,7 +62,7 @@ const Budgets = () => {
     setPanel({
       content: NewBudget,
       data: {
-        heading: 'Edit budget',
+        heading: editingBudget.active ? 'Edit budget' : 'Reactivate budget',
         saveBudget,
         editingBudget,
       },
@@ -78,22 +70,20 @@ const Budgets = () => {
   }
 
   const onDeactivate = id => {
-    setModalVisible(true)
-    setCurrentBudgetId(id)
-  }
-
-  const onSubmitDeactivate = () => { // TODO id => {
-    closeModal()
-  }
-
-  const onReactivate = () => { // TODO id => {
-    //api.reactivateBudget(id)
+    const thisBudget = budgets.find(budget => budget.id === id)
+    if(thisBudget){
+      saveBudget({
+        id,
+        amount: 0,
+        name: thisBudget.name
+      })
+    }
   }
 
   return (
     <>
       <StyledBudgets>
-        {budgets.map(({ amount, hasBudget, id, name, remaining, token }) => (
+        {budgets.map(({ amount, active, id, name, remaining, token }) => (
           <Budget
             key={id}
             id={id}
@@ -101,20 +91,13 @@ const Budgets = () => {
             amount={amount}
             token={token}
             remaining={remaining}
-            inactive={!hasBudget}
+            active={active}
             onNewAllocation={onNewAllocation}
             onEdit={onEdit}
             onDeactivate={onDeactivate}
-            onReactivate={onReactivate}
           />
         ))}
       </StyledBudgets>
-      <Deactivate
-        visible={isModalVisible}
-        budgetId={currentBudgetId}
-        onClose={closeModal}
-        onSubmit={onSubmitDeactivate}
-      />
     </>
   )
 }
