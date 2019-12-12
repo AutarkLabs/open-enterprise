@@ -230,7 +230,10 @@ export default function BudgetDetail() {
         )}
         { !!allocations.length &&
           <div css="grid-area: allocations">
-            <AllocationsHistory allocations={allocations} />
+            <AllocationsHistory
+              allocations={allocations}
+              skipBudgetColumn
+            />
           </div>
         }
       </Grid>
