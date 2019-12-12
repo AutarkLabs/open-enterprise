@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
 import BigNumber from 'bignumber.js'
 import styled from 'styled-components'
-import { useAragonApi, usePath } from '../../api-react'
+import { useAragonApi } from '../../api-react'
 import {
   BREAKPOINTS,
   BackButton,
@@ -19,10 +19,9 @@ import {
 } from '@aragon/ui'
 
 import { usePanel } from '../../context/Panel'
+import usePathHelpers from '../../hooks/usePathHelpers'
 import { AllocationsHistory } from '.'
 import BudgetContextMenu from '../BudgetContextMenu'
-
-const ID_REGEX = new RegExp('^/budgets/(?<id>[0-9]+)')
 
 const percentOf = (smaller, bigger) =>
   `${BigNumber(100 * smaller / bigger).dp(1).toString()}%`
@@ -89,21 +88,6 @@ InfoBlock.propTypes = {
   title: PropTypes.string,
 }
 
-// if this page is the first page loaded for the user,
-// we may still have incomplete state from aragonAPI;
-// let's give it a second before redirecting
-const usePatientRequestPath = () => {
-  const [ , requestPath ] = usePath()
-  const [ firstTry, setFirstTry ] = useState(true)
-  return path => {
-    if (firstTry) {
-      setTimeout(() => setFirstTry(false), 1000)
-    } else {
-      requestPath(path)
-    }
-  }
-}
-
 function usePeriod() {
   const { appState } = useAragonApi()
   if (!appState.period) return {}
@@ -143,19 +127,12 @@ const Grid = styled.div`
 
 export default function BudgetDetail() {
   const { appState } = useAragonApi()
-  const [ path, requestPath ] = usePath()
+  const { parsePath, patientlyRequestPath, requestPath } = usePathHelpers()
   const { newAllocation } = usePanel()
   const period = usePeriod()
-  const patientlyRequestPath = usePatientRequestPath()
   const theme = useTheme()
 
-  const matchData = path.match(ID_REGEX)
-  if (!matchData) {
-    requestPath('/')
-    return null
-  }
-
-  const { id } = matchData.groups
+  const { id } = parsePath('/budgets/:id')
 
   const budget = appState.budgets.find(b => b.id === id)
   if (!budget) {
