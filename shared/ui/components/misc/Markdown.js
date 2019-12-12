@@ -1,9 +1,19 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Checkbox, Link, theme } from '@aragon/ui'
+import { Checkbox, SafeLink, theme } from '@aragon/ui'
 
 import MDReactComponent from 'react-markdown'
+
+const Link = ({ children, ...props }) => (
+  <SafeLink {...props} target="_blank">
+    {children}
+  </SafeLink>
+)
+
+Link.propTypes = {
+  children: PropTypes.element.isRequired,
+}
 
 const ListItem = ({ checked, children }) => {
   let checkbox = null
@@ -30,7 +40,6 @@ const Markdown = ({ content, style }) => {
       <MDReactComponent
         source={content}
         renderers={{ link: Link, listItem: ListItem }}
-        escapeHtml={true}
       />
     </MarkdownWrapper>
   )
