@@ -5,7 +5,7 @@ const PATH_REGEX = /^\/(rewards|myrewards)(?:\/([0-9])?)?(?:\/)?$/
 
 export const TABS = [ 'Overview', 'My Rewards' ]
 
-const urlify = (str) => {
+const urlify = str => {
   if(str) {
     str = str.toLowerCase()
     str = str.replace(' ', '')
