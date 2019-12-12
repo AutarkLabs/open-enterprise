@@ -1,6 +1,5 @@
-import PropTypes from 'prop-types'
-import React, { useCallback, useMemo, } from 'react'
-import { AragonApi, usePath } from '@aragon/api-react'
+import { useCallback, useMemo, } from 'react'
+import { usePath } from '@aragon/api-react'
 
 const PATH_REGEX = /^\/(rewards|myrewards)(?:\/([0-9])?)?(?:\/)?$/
 
@@ -18,8 +17,8 @@ export const usePathSegments = () => {
   const [ path, requestPath ] = usePath()
 
   const fromPath = useMemo(() => {
-    const [ , urltab, rewardId ] = path.match(PATH_REGEX) || []
-    const tabIndex = TABS.findIndex(tab => urlify(tab) === urlify(urltab))
+    const [ , urlTab, rewardId ] = path.match(PATH_REGEX) || []
+    const tabIndex = TABS.findIndex(tab => urlify(tab) === urlify(urlTab))
     const pathSegments = {
       selected: tabIndex !== -1 ? tabIndex : 0,
       rewardId: rewardId ? String(rewardId) : null
@@ -31,8 +30,8 @@ export const usePathSegments = () => {
     tabIndex => {
       const tab = urlify(TABS[tabIndex])
       // For consistency "/overview/"" path will be transformed to root "/" path
-      const newpath = (!tabIndex || tabIndex < 1) ? '' : `/${tab}`
-      requestPath(newpath)
+      const newPath = (!tabIndex || tabIndex < 1) ? '' : `/${tab}`
+      requestPath(newPath)
     },
     [requestPath]
   )
