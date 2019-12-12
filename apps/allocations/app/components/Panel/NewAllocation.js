@@ -285,7 +285,8 @@ class NewAllocation extends React.Component {
 
 const NewAllocationWrap = props => {
   const { api, appState } = useAragonApi()
-  const { balances, budgets } = appState
+  const { balances } = appState
+  const budgets = appState.budgets.filter(b => b.active)
   const { setPanel } = usePanel()
 
   const onSubmitAllocation = ({

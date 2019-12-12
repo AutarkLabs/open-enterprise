@@ -128,7 +128,7 @@ const Grid = styled.div`
   grid-template-areas:
     "main"
     "budget"
-    "period"
+    ${p => p.active && '"period"'}
     "allocations";
 
   @media (min-width: ${BREAKPOINTS.large}px) {
@@ -170,19 +170,19 @@ export default function BudgetDetail() {
     <>
       <Header
         primary="Allocations"
-        secondary={
+        secondary={budget.active && (
           <Button
             mode="strong"
             icon={<IconPlus />}
             onClick={() => newAllocation(id)}
             label="New allocation"
           />
-        }
+        )}
       />
       <Bar>
         <BackButton onClick={() => requestPath('/')} />
       </Bar>
-      <Grid>
+      <Grid active={budget.active}>
         <div css="grid-area: main">
           <Box heading="Budget">
             <div css="display: flex; justify-content: space-between">
@@ -191,35 +191,39 @@ export default function BudgetDetail() {
               </Text>
               <BudgetContextMenu budget={budget} />
             </div>
-            <div css="display: flex">
-              <InfoBlock css="flex: 1" title="Budget">
-                <CurrencyValue
-                  amount={budget.amount}
-                  token={budget.token}
-                  context="per 30 days"
-                />
-              </InfoBlock>
-              <InfoBlock css="flex: 1" title="Utilized">
-                <CurrencyValue
-                  amount={utilized}
-                  token={budget.token}
-                  context={percentOf(utilized, budget.amount)}
-                />
-              </InfoBlock>
-              <InfoBlock css="flex: 1" title="Remaining">
-                <CurrencyValue
-                  amount={budget.remaining}
-                  token={budget.token}
-                  context={percentOf(budget.remaining, budget.amount)}
-                />
-              </InfoBlock>
-            </div>
-            <div css={`margin-top: ${3 * GU}px; margin-bottom: ${GU}px`}>
-              <ProgressBar
-                color={String(theme.accentEnd)}
-                value={utilized / budget.amount}
-              />
-            </div>
+            {budget.active && (
+              <>
+                <div css="display: flex">
+                  <InfoBlock css="flex: 1" title="Budget">
+                    <CurrencyValue
+                      amount={budget.amount}
+                      token={budget.token}
+                      context="per 30 days"
+                    />
+                  </InfoBlock>
+                  <InfoBlock css="flex: 1" title="Utilized">
+                    <CurrencyValue
+                      amount={utilized}
+                      token={budget.token}
+                      context={percentOf(utilized, budget.amount)}
+                    />
+                  </InfoBlock>
+                  <InfoBlock css="flex: 1" title="Remaining">
+                    <CurrencyValue
+                      amount={budget.remaining}
+                      token={budget.token}
+                      context={percentOf(budget.remaining, budget.amount)}
+                    />
+                  </InfoBlock>
+                </div>
+                <div css={`margin-top: ${3 * GU}px; margin-bottom: ${GU}px`}>
+                  <ProgressBar
+                    color={String(theme.accentEnd)}
+                    value={utilized / budget.amount}
+                  />
+                </div>
+              </>
+            )}
           </Box>
         </div>
         <div css="grid-area: budget">
@@ -232,19 +236,21 @@ export default function BudgetDetail() {
             </InfoBlock>
           </Box>
         </div>
-        <div css="grid-area: period">
-          <Box
-            css="margin-top: 0 !important"
-            heading="Period info"
-          >
-            <InfoBlock title="Start Date">
-              {formatDate(period.startDate)}
-            </InfoBlock>
-            <InfoBlock css={`margin-top: ${2 * GU}px`} title="End Date">
-              {formatDate(period.endDate)}
-            </InfoBlock>
-          </Box>
-        </div>
+        {budget.active && (
+          <div css="grid-area: period">
+            <Box
+              css="margin-top: 0 !important"
+              heading="Period info"
+            >
+              <InfoBlock title="Start Date">
+                {formatDate(period.startDate)}
+              </InfoBlock>
+              <InfoBlock css={`margin-top: ${2 * GU}px`} title="End Date">
+                {formatDate(period.endDate)}
+              </InfoBlock>
+            </Box>
+          </div>
+        )}
         { !!allocations.length &&
           <div css="grid-area: allocations">
             <AllocationsHistory allocations={allocations} />
