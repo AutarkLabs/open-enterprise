@@ -19,7 +19,7 @@ import { formatDistance } from 'date-fns'
 const OpenedAgo = ({ date }) =>
   formatDistance(new Date(date), new Date(), { addSuffix: true })
 
-const dot = <span css="margin: 0px 10px">&middot;</span>
+const Dot = () => <span css="margin: 0px 10px">&middot;</span>
 
 const Title = ({ issue }) => {
   const theme = useTheme()
@@ -35,14 +35,17 @@ const Title = ({ issue }) => {
       <Text.Block size="xxlarge" style={{ marginBottom: 1.5 * GU + 'px' }}>
         {issue.title}
       </Text.Block>
-      <IssueTitleLink issue={issue}>
-        {dot}
-        <IconInfo
-          color={`${theme.positiveSurfaceContent}`}
-          css={`margin-top: -${.5 * GU}px; margin-right: ${.6 * GU}px`}
-        />
-        Opened <OpenedAgo date={issue.createdAt} />
-      </IssueTitleLink>
+      <div css="display: flex">
+        <IssueTitleLink issue={issue} />
+        <div css={`display: flex; align-items: center; margin-bottom: ${1.5 * GU}px`}>
+          <Dot />
+          <IconInfo
+            color={`${theme.positiveSurfaceContent}`}
+            css={`margin-top: -${.5 * GU}px; margin-right: ${.6 * GU}px`}
+          />
+          Opened <OpenedAgo date={issue.createdAt} />
+        </div>
+      </div>
     </div>
   )
 }

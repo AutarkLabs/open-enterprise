@@ -4,7 +4,7 @@ import { Text, GU, useTheme, Link } from '@aragon/ui'
 import { IconGitHub } from '../Shared'
 import { issueShape } from '../../utils/shapes.js'
 
-export const IssueTitleLink = ({ children, issue }) => {
+export const IssueTitleLink = ({ issue }) => {
   const theme = useTheme()
 
   return (
@@ -25,7 +25,6 @@ export const IssueTitleLink = ({ children, issue }) => {
           {issue.repo} #{issue.number}
         </Text>
       </Link>
-      {children}
     </IssueLinkRow>
   )
 }
