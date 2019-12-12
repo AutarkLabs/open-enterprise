@@ -9,7 +9,7 @@ import { Empty } from '../Card'
 import { networkContextType } from '../../../../../shared/ui'
 import { useAragonApi } from '../../api-react'
 import { IdentityProvider } from '../../../../../shared/identity'
-import { TABS, useAppLogic } from '../../app-logic'
+import { useAppLogic } from '../../app-logic'
 
 const CONVERT_API_BASE = 'https://min-api.cryptocompare.com/data'
 const CONVERT_THROTTLE_TIME = 5000
@@ -27,7 +27,7 @@ class App extends React.Component {
     displayMenuButton: PropTypes.bool.isRequired,
     fromPath: PropTypes.exact({
       selected: PropTypes.number,
-      rewardId: PropTypes.number
+      rewardId: PropTypes.string
     }).isRequired,
     isSyncing: PropTypes.bool.isRequired,
     metrics: PropTypes.arrayOf(PropTypes.object).isRequired,
@@ -38,7 +38,7 @@ class App extends React.Component {
     rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
     selectReward: PropTypes.func.isRequired,
     selectTab: PropTypes.func.isRequired,
-    tabs: PropTypes.oneOf(TABS).isRequired,
+    tabs: PropTypes.array.isRequired,
     userAccount: PropTypes.string.isRequired,
   }
 
@@ -48,7 +48,6 @@ class App extends React.Component {
       selected: 0
     }
     this.updateRewards()
-    this.updatePath(props)
   }
 
   static defaultProps = {
@@ -130,21 +129,23 @@ class App extends React.Component {
 
   updatePath = (props) => {
     const { selected, rewardId } = props.fromPath
-    this.state.selected = selected
-    if(rewardId && props.rewards.length > 0){
-      const selectedReward = props.rewards.find(reward => String(reward.rewardId) === rewardId)
-      if(selectedReward){
-        //Clear panel state
-        this.state.panel = null
-        this.state.panelProps = null
-        this.state.panelTitle = null
-        //Set panel
-        this.viewReward({
-          reward: selectedReward,
-          isMyReward: selected === 1
-        })
+    this.setState({
+      selected,
+      panel: null,
+      panelProps: null,
+      panelTitle: null
+    }, () => {
+      if(rewardId && props.rewards.length > 0){
+        const selectedReward = props.rewards.find(reward => String(reward.rewardId) === rewardId)
+        if(selectedReward){
+          //Set panel
+          this.viewReward({
+            reward: selectedReward,
+            isMyReward: selected === 1
+          })
+        }
       }
-    }
+    })
   }
 
   handleMenuPanelOpen = () => {
@@ -238,14 +239,7 @@ class App extends React.Component {
     // TODO
     this.props.api.claimReward(reward.rewardId + reward.claims).toPromise()
   }
-  /*
-  openDetailsView = reward => {
-    this.viewReward(reward)
-  }
-  openDetailsMy = reward => {
-    this.myReward(reward)
-  }
-*/
+
   handleResolveLocalIdentity = address => {
     return this.props.api.resolveAddressIdentity(address).toPromise()
   }
