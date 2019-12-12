@@ -26,9 +26,9 @@ const Discussions = ({ children, app }) => {
     if (!hasInit && handshakeOccured) {
       initDiscussions()
     }
-  }, [handshakeOccured])
+  }, [hasInit, handshakeOccured])
   return (
-    <DiscussionsContext.Provider value={{ discussions, discussionApi }}>
+    <DiscussionsContext.Provider value={{ app, discussions, discussionApi }}>
       {children}
     </DiscussionsContext.Provider>
   )
