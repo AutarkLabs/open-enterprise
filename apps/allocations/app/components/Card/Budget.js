@@ -3,76 +3,28 @@ import React from 'react'
 import styled from 'styled-components'
 import BigNumber from 'bignumber.js'
 import { displayCurrency } from '../../utils/helpers'
-import { usePanel } from '../../context/Panel'
+import * as types from '../../utils/prop-types'
 
 import { usePath } from '../../api-react'
 import {
   Card,
-  ContextMenu,
-  ContextMenuItem,
   IconCheck,
   IconCross,
-  IconEdit,
-  IconPlus,
-  IconProhibited,
   Link,
   ProgressBar,
   Text,
   useTheme,
 } from '@aragon/ui'
+import BudgetContextMenu from '../BudgetContextMenu'
 
-const Budget = ({
-  id,
-  name,
-  amount,
-  token,
-  remaining = 0,
-  active,
-  onEdit,
-  onDeactivate,
-}) => {
+const Budget = ({ budget }) => {
   const theme = useTheme()
-  const { newAllocation } = usePanel()
-
-  const edit = () => {
-    onEdit(id)
-  }
-
-  const deactivate = () => {
-    onDeactivate(id)
-  }
+  const { active, amount, remaining, token } = budget
 
   const tokensSpent = BigNumber(amount).minus(remaining)
 
   return (
-    <Wrapper
-      id={id}
-      name={name}
-      theme={theme}
-      amount={amount}
-      symbol={token.symbol}
-      active={active}
-      menu={
-        <React.Fragment>
-          {active && (
-            <ContextMenuItem onClick={() => newAllocation(id)}>
-              <IconPlus />
-              <ActionLabel>New allocation</ActionLabel>
-            </ContextMenuItem>
-          )}
-          <ContextMenuItem onClick={edit}>
-            <IconEdit />
-            <ActionLabel>{active ? 'Edit' : 'Reactivate'}</ActionLabel>
-          </ContextMenuItem>
-          {active && (
-            <ContextMenuItem onClick={deactivate}>
-              <IconProhibited />
-              <ActionLabel>Deactivate</ActionLabel>
-            </ContextMenuItem>
-          )}
-        </React.Fragment>
-      }
-    >
+    <Wrapper budget={budget} theme={theme}>
       {active && (
         <React.Fragment>
           <ProgressBar
@@ -93,26 +45,17 @@ const Budget = ({
 }
 
 Budget.propTypes = {
-  id: PropTypes.string.isRequired,
-  name: PropTypes.string.isRequired,
-  amount: PropTypes.string.isRequired,
-  token: PropTypes.object.isRequired,
-  // TODO: fix remaining (should be required?)
-  remaining: PropTypes.string,
-  active: PropTypes.bool.isRequired,
-  onEdit: PropTypes.func.isRequired,
-  onDeactivate: PropTypes.func.isRequired,
+  budget: types.budget.isRequired,
 }
 
-const Wrapper = ({ children, id, name, amount, symbol, active, theme, menu }) => {
+const Wrapper = ({ budget, children, theme }) => {
   const [ , requestPath ] = usePath()
+  const { active, amount, id, name, token } = budget
   return (
     <StyledCard theme={theme}>
       <CardTop>
         <MenuContainer>
-          <ContextMenu>
-            {menu}
-          </ContextMenu>
+          <BudgetContextMenu budget={budget} />
         </MenuContainer>
         <CardTitle theme={theme}>
           <Link onClick={() => requestPath(`/budgets/${id}`)}>
@@ -124,7 +67,7 @@ const Wrapper = ({ children, id, name, amount, symbol, active, theme, menu }) =>
         </StatsContainer>
       </CardTop>
       <CardBottom theme={theme}>
-        <Text>{displayCurrency(BigNumber(amount)) + ' ' + symbol + ' / PERIOD'}</Text>
+        <Text>{displayCurrency(BigNumber(amount)) + ' ' + token.symbol + ' / PERIOD'}</Text>
         {active ? (
           <Status
             color={theme.positive}
@@ -146,14 +89,9 @@ const Wrapper = ({ children, id, name, amount, symbol, active, theme, menu }) =>
 }
 
 Wrapper.propTypes = {
+  budget: types.budget.isRequired,
   children: PropTypes.node.isRequired,
-  id: PropTypes.string.isRequired,
-  name: PropTypes.string.isRequired,
-  amount: PropTypes.string.isRequired,
-  symbol: PropTypes.string.isRequired,
-  active: PropTypes.bool.isRequired,
   theme: PropTypes.object.isRequired,
-  menu: PropTypes.node.isRequired,
 }
 
 const Status = ({ children, color, icon }) => (
@@ -203,10 +141,6 @@ const CardBottom = styled.div`
 const MenuContainer = styled.div`
   align-self: flex-end;
   align-items: center;
-`
-
-const ActionLabel = styled.span`
-  margin-left: 15px;
 `
 
 const CardTitle = styled(Text.Block).attrs({

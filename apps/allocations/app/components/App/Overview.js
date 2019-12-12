@@ -7,23 +7,13 @@ import { AllocationsHistory, Budgets } from '.'
 import { NewBudget } from '../Panel'
 import { Empty } from '../Card'
 import { usePanel } from '../../context/Panel'
+import useSaveBudget from '../../hooks/useSaveBudget'
 
 const Overview = () => {
-  const { api, appState } = useAragonApi()
+  const { appState } = useAragonApi()
   const { allocations = [], budgets = [], isSyncing = true } = appState
   const { setPanel } = usePanel()
-
-  const saveBudget = ({ amount, name, token }) => {
-    api
-      .newAccount(
-        name,             // _metadata
-        token.address,    // _token
-        true,             // hasBudget
-        amount
-      )
-      .toPromise()
-    setPanel(null)
-  }
+  const saveBudget = useSaveBudget()
 
   const onNewBudget = () => {
     setPanel({

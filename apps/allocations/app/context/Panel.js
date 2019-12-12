@@ -1,5 +1,5 @@
 import React from 'react'
-import { NewAllocation } from '../components/Panel'
+import { NewAllocation, NewBudget } from '../components/Panel'
 
 const PanelContext = React.createContext()
 
@@ -35,8 +35,18 @@ export function PanelProvider(props) {
     })
   }, [])
 
+  const editBudget = React.useCallback(budget => {
+    setPanel({
+      content: NewBudget,
+      data: {
+        heading: budget.active ? 'Edit budget' : 'Reactivate budget',
+        editingBudget: budget,
+      },
+    })
+  }, [])
+
   const value = React.useMemo(() => {
-    return { panel, panelOpen, setPanel, newAllocation }
+    return { panel, panelOpen, setPanel, newAllocation, editBudget }
   }, [ panel, panelOpen ])
 
   return <PanelContext.Provider value={value} {...props} />

@@ -20,6 +20,7 @@ import {
 
 import { usePanel } from '../../context/Panel'
 import { AllocationsHistory } from '.'
+import BudgetContextMenu from '../BudgetContextMenu'
 
 const ID_REGEX = new RegExp('^/budgets/(?<id>[0-9]+)')
 
@@ -184,9 +185,12 @@ export default function BudgetDetail() {
       <Grid>
         <div css="grid-area: main">
           <Box heading="Budget">
-            <Text.Block size="great" style={{ marginBottom: 2 * GU + 'px' }}>
-              {budget.name}
-            </Text.Block>
+            <div css="display: flex; justify-content: space-between">
+              <Text size="great" style={{ marginBottom: 2 * GU + 'px' }}>
+                {budget.name}
+              </Text>
+              <BudgetContextMenu budget={budget} />
+            </div>
             <div css="display: flex">
               <InfoBlock css="flex: 1" title="Budget">
                 <CurrencyValue
