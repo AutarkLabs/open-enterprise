@@ -53,10 +53,12 @@ const Budget = ({
       active={active}
       menu={
         <React.Fragment>
-          <ContextMenuItem onClick={newAllocation}>
-            <IconPlus />
-            <ActionLabel>New allocation</ActionLabel>
-          </ContextMenuItem>
+          {active && (
+            <ContextMenuItem onClick={newAllocation}>
+              <IconPlus />
+              <ActionLabel>New allocation</ActionLabel>
+            </ContextMenuItem>
+          )}
           <ContextMenuItem onClick={edit}>
             <IconEdit />
             <ActionLabel>{active ? 'Edit' : 'Reactivate'}</ActionLabel>
