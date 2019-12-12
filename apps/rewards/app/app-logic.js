@@ -3,7 +3,7 @@ import { usePath } from '@aragon/api-react'
 
 const PATH_REGEX = /^\/(rewards|myrewards)(?:\/([0-9])?)?(?:\/)?$/
 
-const TABS = [ 'Overview', 'My Rewards' ]
+export const TABS = [ 'Overview', 'My Rewards' ]
 
 const urlify = (str) => {
   if(str) {

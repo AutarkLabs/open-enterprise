@@ -9,7 +9,7 @@ import { Empty } from '../Card'
 import { networkContextType } from '../../../../../shared/ui'
 import { useAragonApi } from '../../api-react'
 import { IdentityProvider } from '../../../../../shared/identity'
-import { useAppLogic } from '../../app-logic'
+import { TABS, useAppLogic } from '../../app-logic'
 
 const CONVERT_API_BASE = 'https://min-api.cryptocompare.com/data'
 const CONVERT_THROTTLE_TIME = 5000
@@ -19,24 +19,27 @@ const convertApiUrl = symbols =>
 
 class App extends React.Component {
   static propTypes = {
+    amountTokens: PropTypes.array.isRequired,
     api: PropTypes.object,
-    rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
-    myRewards: PropTypes.arrayOf(PropTypes.object).isRequired,
-    metrics: PropTypes.arrayOf(PropTypes.object).isRequired,
-    myMetrics: PropTypes.arrayOf(PropTypes.object).isRequired,
     balances: PropTypes.arrayOf(PropTypes.object),
-    isSyncing: PropTypes.bool.isRequired,
-    network: PropTypes.object,
-    userAccount: PropTypes.string.isRequired,
+    claims: PropTypes.array.isRequired,
     connectedAccount: PropTypes.string.isRequired,
     displayMenuButton: PropTypes.bool.isRequired,
+    fromPath: PropTypes.exact({
+      selected: PropTypes.number,
+      rewardId: PropTypes.number
+    }).isRequired,
+    isSyncing: PropTypes.bool.isRequired,
+    metrics: PropTypes.arrayOf(PropTypes.object).isRequired,
+    myMetrics: PropTypes.arrayOf(PropTypes.object).isRequired,
+    myRewards: PropTypes.arrayOf(PropTypes.object).isRequired,
+    network: PropTypes.object,
     refTokens: PropTypes.array.isRequired,
-    amountTokens: PropTypes.array.isRequired,
-    claims: PropTypes.array.isRequired,
-    tabs: PropTypes.array.isRequired,
-    fromPath: PropTypes.object.isRequired,
+    rewards: PropTypes.arrayOf(PropTypes.object).isRequired,
     selectReward: PropTypes.func.isRequired,
     selectTab: PropTypes.func.isRequired,
+    tabs: PropTypes.oneOf(TABS).isRequired,
+    userAccount: PropTypes.string.isRequired,
   }
 
   constructor(props) {
