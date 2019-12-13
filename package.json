@@ -59,7 +59,7 @@
     "lint": "npm run lint:contracts && lerna exec --scope=@tps/apps-* --stream -- eslint app",
     "mine": "lerna exec --scope=@tps/test-helpers truffle exec ./mine.js",
     "postinstall": "npm run bootstrap",
-    "publish:cd": "shared/deployments/publish-cd.sh",
+    "publish:cd": "lerna run publish:cd --no-ci --stream --no-bail --scope=@tps/apps*",
     "publish:apps": "lerna run publish",
     "publish:http": "lerna run --scope='@tps/apps-*' publish:http --stream",
     "recoverTemplate": "cd templates/open-enterprise && npm run recover:tx",
