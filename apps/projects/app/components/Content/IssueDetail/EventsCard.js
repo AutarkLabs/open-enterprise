@@ -10,6 +10,7 @@ import {
 } from '@aragon/ui'
 import { formatDistance } from 'date-fns'
 import { usePanelManagement } from '../../Panel'
+import { Avatar } from '../../Panel/PanelComponents'
 import { issueShape, userGitHubShape } from '../../../utils/shapes.js'
 
 const calculateAgo = pastDate => formatDistance(pastDate, Date.now(), { addSuffix: true })
@@ -20,9 +21,7 @@ const IssueEvent = ({ user, ...props }) => {
   return (
     <IssueEventMain>
       <div css="display: flex">
-        <IssueEventAvatar>
-          <img src={user.avatarUrl} alt="user avatar" css="width: 40px; border-radius: 50%" />
-        </IssueEventAvatar>
+        <Avatar user={user} />
         <IssueEventDetails>
           <Text.Block size="small">
             {props.eventDescription}
@@ -53,13 +52,17 @@ IssueEvent.propTypes = {
 
 const applicationLink = (user, onReviewApplication, issue, index) => (
   <React.Fragment>
-    {user} submitted <Link onClick={() => onReviewApplication(issue, index)}>an application for review</Link>
+    {user} submitted <Link onClick={() =>
+      onReviewApplication({ issue, index, readOnly: true })
+    }>an application for review</Link>
   </React.Fragment>
 )
 
 const workLink = (user, onReviewWork, issue, index) => (
   <React.Fragment>
-    {user} submitted <Link onClick={() => onReviewWork(issue, index)}>work for review</Link>
+    {user} submitted <Link onClick={() =>
+      onReviewWork({ issue, index, readOnly: true })
+    }>work for review</Link>
   </React.Fragment>
 )
 
@@ -190,10 +193,6 @@ EventsCard.propTypes = {
   issue: issueShape,
 }
 
-const IssueEventAvatar = styled.div`
-  width: 40px;
-  margin-right: ${GU}px;
-`
 const IssueEventMain = styled.div`
   display: flex;
   flex-direction: column;

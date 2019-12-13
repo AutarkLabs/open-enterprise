@@ -1,45 +1,21 @@
-import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 
+import { useAragonApi } from '../../api-react'
 import { GU } from '@aragon/ui'
 
 import { Budget } from '../Card'
 
-const Budgets = ({
-  budgets,
-  onNewAllocation,
-  onEdit,
-  onDeactivate,
-  onReactivate,
-}) => {
+const Budgets = () => {
+  const { appState: { budgets } } = useAragonApi()
+
   return (
     <StyledBudgets>
-      {budgets.map(({ remaining, hasBudget, id, name, amount, token }) => (
-        <Budget
-          key={id}
-          id={id}
-          name={name}
-          amount={amount}
-          token={token}
-          remaining={remaining}
-          inactive={!hasBudget}
-          onNewAllocation={onNewAllocation}
-          onEdit={onEdit}
-          onDeactivate={onDeactivate}
-          onReactivate={onReactivate}
-        />
+      {budgets.map(budget => (
+        budget.token && <Budget key={budget.id} budget={budget} />
       ))}
     </StyledBudgets>
   )
-}
-
-Budgets.propTypes = {
-  budgets: PropTypes.arrayOf(PropTypes.object).isRequired,
-  onNewAllocation: PropTypes.func.isRequired,
-  onEdit: PropTypes.func.isRequired,
-  onDeactivate: PropTypes.func.isRequired,
-  onReactivate: PropTypes.func.isRequired,
 }
 
 const StyledBudgets = styled.div`
