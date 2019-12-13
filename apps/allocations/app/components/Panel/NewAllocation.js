@@ -57,7 +57,7 @@ const recipientsDuplicate = (recipients) => {
 
 class NewAllocation extends React.Component {
   static propTypes = {
-    budgetId: PropTypes.string.isRequired,
+    budgetId: PropTypes.string,
     onSubmitAllocation: PropTypes.func.isRequired,
     budgets: PropTypes.arrayOf(PropTypes.object).isRequired,
     balances: PropTypes.arrayOf(PropTypes.object).isRequired,
@@ -73,7 +73,7 @@ class NewAllocation extends React.Component {
     const recipientId = Date.now()
     this.state.recipients[recipientId] = ''
     this.state.recipientsValid[recipientId] = false
-    if (budgetId !== undefined) {
+    if (budgetId) {
       const budgetValue = budgets.find(b => b.id === budgetId)
       this.state.budgetValue = budgetValue
       this.state.budgetEmpty = false
@@ -178,8 +178,10 @@ class NewAllocation extends React.Component {
       tokenValue,
     } = this.state
 
-    const remainingBudget = BigNumber(budgetValue.remaining)
-    const inVault = balances.find(b => addressesEqual(b.address, tokenValue.address)).amount
+    const remainingBudget = tokenValue.address &&
+      BigNumber(budgetValue.remaining)
+    const inVault = tokenValue.address &&
+      balances.find(b => addressesEqual(b.address, tokenValue.address)).amount
     const vaultLow = inVault.lt(remainingBudget)
 
     const budgetDropDown = (
@@ -294,9 +296,13 @@ class NewAllocation extends React.Component {
           errors={errorBlocks}
         >
           {budgetDropDown}
-          {descriptionField}
-          {amountField}
-          {userRecipientsField}
+          {tokenValue.symbol && (
+            <>
+              {descriptionField}
+              {amountField}
+              {userRecipientsField}
+            </>
+          )}
         </Form>
       </div>
     )
