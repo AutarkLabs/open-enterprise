@@ -24,8 +24,8 @@ MenuItem.propTypes = {
   panel: PropTypes.func.isRequired,
   caption: PropTypes.string.isRequired,
   panelParams: PropTypes.oneOfType([
-    issueShape,
-    PropTypes.arrayOf(issueShape)
+    PropTypes.object,
+    PropTypes.arrayOf(PropTypes.object)
   ]).isRequired,
   Icon: PropTypes.func.isRequired,
 }
@@ -60,7 +60,7 @@ const BountyContextMenu = ({ issue }) => {
       )}
       <MenuItem
         panel={reviewApplication}
-        panelParams={issue}
+        panelParams={{ issue }}
         caption={pluralize('View application', issue.requestsData.length)}
         Icon={IconView}
       />
@@ -73,7 +73,7 @@ const BountyContextMenu = ({ issue }) => {
       )}
       <MenuItem
         panel={reviewApplication}
-        panelParams={issue}
+        panelParams={{ issue }}
         caption={pluralize('View application', issue.requestsData.length)}
         Icon={IconView}
       />
@@ -86,14 +86,14 @@ const BountyContextMenu = ({ issue }) => {
       )}
       <MenuItem
         panel={reviewWork}
-        panelParams={issue}
+        panelParams={{ issue }}
         caption={pluralize('View work submission', issue.workSubmissions.length)}
         Icon={IconView}
       />
       {!openSubmission && (
         <MenuItem
           panel={reviewApplication}
-          panelParams={issue}
+          panelParams={{ issue }}
           caption={pluralize('View application', issue.requestsData.length)}
           Icon={IconView}
         />
@@ -104,14 +104,14 @@ const BountyContextMenu = ({ issue }) => {
     <>
       <MenuItem
         panel={reviewWork}
-        panelParams={issue}
+        panelParams={{ issue }}
         caption={pluralize('View work submission', issue.workSubmissions.length)}
         Icon={IconView}
       />
       {!openSubmission && (
         <MenuItem
           panel={reviewApplication}
-          panelParams={issue}
+          panelParams={{ issue }}
           caption={pluralize('View application', issue.requestsData.length)}
           Icon={IconView}
         />
