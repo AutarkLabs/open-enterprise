@@ -61,6 +61,7 @@ export const loadIssueData = async ({ repoId, issueNumber }) => {
 }
 
 export const loadIpfsData = async ipfsHash => {
+  const res = await app.datastore('cat', ipfsHash).toPromise()
   const {
     issueId,
     exp,
@@ -70,7 +71,7 @@ export const loadIpfsData = async ipfsHash => {
     size,
     slots,
     slotsIndex,
-  } = await app.datastore('cat', ipfsHash).toPromise()
+  } = res.data
 
   return {
     issueId,
@@ -144,7 +145,8 @@ export const determineWorkStatus = issue => {
 const getRequest = (repoId, issueNumber, applicantId) => {
   return new Promise(resolve => {
     app.call('getApplicant', repoId, issueNumber, applicantId).subscribe(async (response) => {
-      const bountyData = await app.datastore('cat', response.application).toPromise()
+      const res = await app.datastore('cat', response.application).toPromise()
+      const bountyData = res.data
       resolve({
         contributorAddr: response.applicant,
         requestIPFSHash: response.application,
@@ -167,6 +169,7 @@ const loadRequestsData = ({ repoId, issueNumber }) => {
 }
 
 export const buildSubmission = async ({ fulfillmentId, fulfillers, ipfsHash, submitter }) => {
+  const res = await app.datastore('cat', ipfsHash).toPromise()
   const {
     ack1,
     ack2,
@@ -175,7 +178,7 @@ export const buildSubmission = async ({ fulfillmentId, fulfillers, ipfsHash, sub
     proof,
     submissionDate,
     user,
-  } = await app.datastore('cat', ipfsHash).toPromise()
+  } = res.data
 
   return {
     ack1,

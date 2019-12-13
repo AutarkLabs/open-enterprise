@@ -44,7 +44,8 @@ const SubmitWork = ({ issue }) => {
 
     closePanel()
 
-    const ipfsHash = await api.datastore('add', data).toPromise()
+    const val = new Blob([Buffer.from(JSON.stringify(data))])
+    const ipfsHash = await api.datastore('add', val).toPromise()
     const bountiesRegistry = await api.call('bountiesRegistry').toPromise()
     const bountyContract = api.external(bountiesRegistry, standardBounties.abi)
     bountyContract.fulfillBounty(
