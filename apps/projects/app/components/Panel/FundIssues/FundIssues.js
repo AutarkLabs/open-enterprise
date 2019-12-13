@@ -8,7 +8,6 @@ import BigNumber from 'bignumber.js'
 import { useAragonApi } from '../../../api-react'
 import useGithubAuth from '../../../hooks/useGithubAuth'
 import { usePanelManagement } from '..'
-import { computeIpfsString } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
 import { IconClose } from '@aragon/ui'
 import NoFunds from '../../../assets/noFunds.svg'
@@ -414,7 +413,13 @@ const FundIssues = ({ issues, mode }) => {
       })
     }
 
-    const ipfsAddresses = await computeIpfsString(issuesArray)
+    const issueHashArray =
+      await Promise.all(issuesArray.map(async issue => {
+        const val = new Blob([Buffer.from(JSON.stringify(issue))])
+        return await api.datastore('add', val).toPromise()
+      }))
+
+    const ipfsAddresses = issueHashArray.join('')
     const repoIds = issuesArray.map(issue => toHex(issue.repoId))
     const issueNumbers = issuesArray.map(issue => issue.number)
     let tokenContracts = []
