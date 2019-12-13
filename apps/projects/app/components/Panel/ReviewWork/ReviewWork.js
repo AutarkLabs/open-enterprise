@@ -28,6 +28,7 @@ import {
   UserLink,
 } from '../PanelComponents'
 import workRatings from '../../../utils/work-ratings.js'
+import { DetailHyperText } from '../../../../../../shared/ui'
 
 const ReviewWork = ({ issue, readOnly }) => {
   const githubCurrentUser = useGithubAuth()
@@ -99,16 +100,12 @@ const ReviewWork = ({ issue, readOnly }) => {
         </UserLink>
 
         <FieldTitle>Submission</FieldTitle>
-        <Text css={`display: block; margin-bottom: ${2 * GU}px`}>
-          {work.proof}
-        </Text>
+        <DetailHyperText>{work.proof}</DetailHyperText>
 
         {work.comments && (
           <>
             <FieldTitle>Additional Comments</FieldTitle>
-            <Text css={`display: block; margin-bottom: ${2 * GU}px`}>
-              {work.comments}
-            </Text>
+            <DetailHyperText>{work.comments}</DetailHyperText>
           </>
         )}
 
