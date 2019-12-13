@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import PropTypes from 'prop-types'
 import { formatDistance } from 'date-fns'
 import { BN } from 'web3-utils'
 

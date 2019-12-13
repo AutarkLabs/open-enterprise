@@ -63,7 +63,7 @@ Avatar.propTypes = {
   user: PropTypes.shape({
     url: PropTypes.string.isRequired,
     avatarUrl: PropTypes.string.isRequired,
-  })
+  }).isRequired,
 }
 
 const statuses = [
@@ -90,7 +90,7 @@ Status.propTypes = {
   review: PropTypes.shape({
     approved: PropTypes.bool.isRequired,
     reviewDate: PropTypes.string.isRequired,
-  }),
+  }).isRequired,
 }
 
 export const ReviewButtons = ({ onAccept, onReject, disabled }) => (
