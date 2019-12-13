@@ -8,6 +8,7 @@ const rl = require('readline').createInterface({
 const OpenEnterpriseTemplate = fs.readFileSync('../build/contracts/OpenEnterpriseTemplate.json')
 
 const zeroAddress = '0x00000000000000000000000000000000000000000'
+const PCT_BASE = 1e18
 
 let deployedInfo = null
 
@@ -52,15 +53,26 @@ const waitASecond = () => {
 }
 const getVoteDuration = () => {
   return new Promise((resolve) => {
-    rl.question('enter the desired dot voting period length, in days > ', (answer) => {
-      resolve(answer * 24 * 60 * 60 )
+    rl.question('enter the desired dot voting period length, in seconds > ', async (answer) => {
+      if (answer <= 0) {
+        rl.write('Error: Vote Duration must be greater than zero\n')
+        resolve(await getVoteDuration())
+      }
+      resolve(answer)
     })
   })
 }
 
 const getMinSupport = () => {
   return new Promise((resolve) => {
-    rl.question('enter the dot voting minimum candidate support percentage > ', (answer) => {
+    rl.question('enter the dot voting minimum candidate support percentage > ', async (answer) => {
+      if ((answer * 1e16) > PCT_BASE) {
+        rl.write('Error: Minimum Support Percentage must be less than 100%\n')
+        resolve(await getMinSupport())
+      } else if (answer <= 0) {
+        rl.write('Error: Minimum Support Percentage must be greater than zero\n')
+        resolve(await getMinSupport())
+      }
       resolve(answer * 1e16)
     })
   })
@@ -69,8 +81,11 @@ const getMinSupport = () => {
 const getQuorum = (minSupport) => {
   return new Promise((resolve) => {
     rl.question('enter the dot voting quorum percentage > ', async (answer) => {
-      if ((answer * 1e16) > minSupport) {
-        rl.write('Error: Quorum must be less than or equal to minimum candidate support percentage\n')
+      if ((answer * 1e16) < minSupport) {
+        rl.write('Error: Quorum must be greater than or equal to minimum candidate support percentage\n')
+        resolve(await getQuorum(minSupport))
+      } else if ((answer * 1e16) > PCT_BASE) {
+        rl.write('Error: Quorum must be less than 100%\n')
         resolve(await getQuorum(minSupport))
       }
       resolve(answer * 1e16)
@@ -80,7 +95,11 @@ const getQuorum = (minSupport) => {
 
 const getAllocationsPeriod = () => {
   return new Promise((resolve) => {
-    rl.question('enter the allocations period duration, in days > ', (answer) => {
+    rl.question('enter the allocations period duration, in days > ', async (answer) => {
+      if (answer <= 0) {
+        rl.write('Error: Allocations budgeting period must be greater than zero\n')
+        resolve(await getAllocationsPeriod())
+      }
       resolve(answer * 24 * 60 * 60)
     })
   })
