@@ -2,19 +2,55 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { useAragonApi } from '../../api-react'
-import { GU } from '@aragon/ui'
+import { Bar, DropDown, GU, Tag } from '@aragon/ui'
 
 import { Budget } from '../Card'
 
-const Budgets = () => {
+function AllBudgetsLabel() {
   const { appState: { budgets } } = useAragonApi()
+  return (
+    <div css="display: flex; align-items: center">
+      <span css={{ marginRight: GU }}>All budgets</span>
+      <Tag limitDigits={4} label={budgets.length} size="small" />
+    </div>
+  )
+}
+
+const statusOptions = [
+  <AllBudgetsLabel key="1" />,
+  'Active',
+  'Inactive',
+]
+
+// always make sure `token` is loaded correctly
+const statusFilters = [
+  budget => budget.token, // all
+  budget => budget.token && budget.active, // active
+  budget => budget.token && !budget.active, // inactive
+]
+
+const Budgets = () => {
+  const { appState } = useAragonApi()
+  const [ status, setStatus ] = React.useState(0)
+  const budgets = appState.budgets.filter(statusFilters[status])
 
   return (
-    <StyledBudgets>
-      {budgets.map(budget => (
-        budget.token && <Budget key={budget.id} budget={budget} />
-      ))}
-    </StyledBudgets>
+    <>
+      <Bar
+        primary={
+          <DropDown
+            selected={status}
+            onChange={setStatus}
+            items={statusOptions}
+          />
+        }
+      />
+      <StyledBudgets>
+        {budgets.map(budget => (
+          <Budget key={budget.id} budget={budget} />
+        ))}
+      </StyledBudgets>
+    </>
   )
 }
 
