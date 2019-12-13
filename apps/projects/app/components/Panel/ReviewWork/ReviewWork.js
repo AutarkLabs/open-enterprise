@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { format as formatDate, formatDistance } from 'date-fns'
 import { BN } from 'web3-utils'
@@ -26,7 +27,7 @@ import { IssueTitle } from '../PanelComponents'
 import workRatings from '../../../utils/work-ratings.js'
 import { DetailHyperText } from '../../../../../../shared/ui'
 
-const ReviewWork = ({ issue }) => {
+const ReviewWork = ({ issue, readOnly }) => {
   const githubCurrentUser = useGithubAuth()
   const {
     api: { reviewSubmission },
@@ -120,7 +121,7 @@ const ReviewWork = ({ issue }) => {
         <DetailText>{work.hours}</DetailText>
       </SubmissionDetails>
 
-      {('review' in work) ? (
+      {('review' in work) && (
         <React.Fragment>
           <FieldTitle>Submission Status</FieldTitle>
           <FieldText>
@@ -156,7 +157,8 @@ const ReviewWork = ({ issue }) => {
             </Text.Block>
           </FieldText>
         </React.Fragment>
-      ) : (
+      )}
+      {!readOnly && !work.review && (
         <React.Fragment>
 
           <FormField
@@ -211,7 +213,10 @@ const ReviewWork = ({ issue }) => {
   )
 }
 
-ReviewWork.propTypes = issueShape
+ReviewWork.propTypes = {
+  issue: issueShape,
+  readOnly: PropTypes.bool.isRequired,
+}
 
 const SubmissionDetails = styled.div`
   border: 1px solid ${p => p.border};

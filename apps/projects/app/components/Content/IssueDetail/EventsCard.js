@@ -53,13 +53,17 @@ IssueEvent.propTypes = {
 
 const applicationLink = (user, onReviewApplication, issue, index) => (
   <React.Fragment>
-    {user} submitted <Link onClick={() => onReviewApplication(issue, index)}>an application for review</Link>
+    {user} submitted <Link onClick={() =>
+      onReviewApplication({ issue, index, readOnly: true })
+    }>an application for review</Link>
   </React.Fragment>
 )
 
 const workLink = (user, onReviewWork, issue, index) => (
   <React.Fragment>
-    {user} submitted <Link onClick={() => onReviewWork(issue, index)}>work for review</Link>
+    {user} submitted <Link onClick={() =>
+      onReviewWork({ issue, index, readOnly: true })
+    }>work for review</Link>
   </React.Fragment>
 )
 
