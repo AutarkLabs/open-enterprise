@@ -12,9 +12,9 @@ export default function usePathHelpers() {
   const parsePath = React.useCallback(pattern => {
     const namedParameters = pattern.match(/(:[a-zA-Z]+)/g)
 
-    // replace named paramaters with regex-compatible "named groups"
+    // replace named paramaters with regex-compatible capture groups
     namedParameters.forEach(x => {
-      pattern = pattern.replace(x, `(?<${x.slice(1)}>[a-zA-Z0-9=-]+)`)
+      pattern = pattern.replace(x, '([a-zA-Z0-9=-]+)')
     })
 
     const matchData = path.match(pattern)
@@ -23,7 +23,15 @@ export default function usePathHelpers() {
       return {}
     }
 
-    return matchData.groups
+    const groups = namedParameters.reduce(
+      (acc, namedParameter, index) => {
+        acc[namedParameter.slice(1)] = matchData[index + 1]
+        return acc
+      },
+      {}
+    )
+
+    return groups
   }, [ path, requestPath ])
 
   // if this page is the first page loaded for the user,
