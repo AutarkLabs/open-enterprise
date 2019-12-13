@@ -15,6 +15,7 @@ import { isStringEmpty } from '../../utils/helpers'
 import { BigNumber } from 'bignumber.js'
 import { ETH_DECIMALS, MIN_AMOUNT } from '../../utils/constants'
 import CurrencyBox from '../Form/Field/CurrencyBox'
+import useSaveBudget from '../../hooks/useSaveBudget'
 
 // TODO:: This should be votingTokens from account?
 const INITIAL_STATE = {
@@ -69,7 +70,6 @@ class NewBudget extends React.Component {
     const token = this.props.tokens[selectedToken]
     const amountWithDecimals = BigNumber(amount).times(BigNumber(10).pow(token.decimals)).toString(10)
     this.props.saveBudget({ id: this.props.editingBudget.id, name, amount: amountWithDecimals, token })
-    this.setState(INITIAL_STATE)
   }
 
   handleSelectToken = index => {
@@ -150,7 +150,16 @@ class NewBudget extends React.Component {
 const NewBudgetWrap = props => {
   const { appState: { tokens = [] } } = useAragonApi()
   const theme = useTheme()
-  return <NewBudget tokens={tokens} theme={theme} {...props} />
+  const saveBudget = useSaveBudget()
+
+  return (
+    <NewBudget
+      saveBudget={saveBudget}
+      tokens={tokens}
+      theme={theme}
+      {...props}
+    />
+  )
 }
 
 const InputGroup = styled.div`

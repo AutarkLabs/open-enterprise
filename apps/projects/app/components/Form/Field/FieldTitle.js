@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Text, useTheme, unselectable } from '@aragon/ui'
+import { GU, Text, useTheme, unselectable } from '@aragon/ui'
 import PropTypes from 'prop-types'
 
 const FieldTitle = ({ children }) => {
@@ -19,6 +19,7 @@ const Title = styled(Text.Block)`
   font-variant: small-caps;
   font-weight: bold;
   color: ${props => props.color};
+  margin-bottom: ${GU}px;
 `
 
 export default FieldTitle
