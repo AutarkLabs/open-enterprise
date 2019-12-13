@@ -62,7 +62,8 @@ const Bounty = ({ issue }) => {
   const { workStatus, deadline, expLevel, openSubmission } = issue
 
   let status = BOUNTY_STATUS[workStatus]
-  if (openSubmission && workStatus === 'funded') status = 'Accepting work submissions'
+  if (openSubmission && workStatus === 'funded')
+    status = BOUNTY_STATUS['open-submission-funded']
 
   return (
     <React.Fragment>
@@ -76,14 +77,9 @@ const Bounty = ({ issue }) => {
         </span>
         {dot}
         <span css="white-space: nowrap">
-          <div css={`
-              display: inline-block;
-              vertical-align: bottom;
-              margin-right: 6px;
-              margin-bottom: -8px;
-            `}>
-            <IconClock color={`${theme.surfaceIcon}`} css="margin-right: 4px" />
-          </div>
+          <IconClock color={`${theme.surfaceIcon}`}
+            css="margin-bottom: -8px; margin-right: 4px"
+          />
           Due {DeadlineDistance(deadline)}
         </span>
       </FlexibleDiv>
