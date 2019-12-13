@@ -22,15 +22,10 @@ import { usePanel } from '../../context/Panel'
 import usePathHelpers from '../../hooks/usePathHelpers'
 import { AllocationsHistory } from '.'
 import BudgetContextMenu from '../BudgetContextMenu'
+import { formatDate } from '../../utils/helpers'
 
 const percentOf = (smaller, bigger) =>
   `${BigNumber(100 * smaller / bigger).dp(1).toString()}%`
-
-const formatDate = date =>
-  new Intl.DateTimeFormat(undefined, {
-    dateStyle: 'long',
-    timeStyle: 'long',
-  }).format(date)
 
 function CurrencyValue({ amount, context, token }) {
   const theme = useTheme()
@@ -220,10 +215,10 @@ export default function BudgetDetail() {
               heading="Period info"
             >
               <InfoBlock title="Start Date">
-                {formatDate(period.startDate)}
+                {formatDate({ date: period.startDate })}
               </InfoBlock>
               <InfoBlock css={`margin-top: ${2 * GU}px`} title="End Date">
-                {formatDate(period.endDate)}
+                {formatDate({ date: period.endDate })}
               </InfoBlock>
             </Box>
           </div>
