@@ -53,10 +53,12 @@ const Budget = ({
       active={active}
       menu={
         <React.Fragment>
-          <ContextMenuItem onClick={newAllocation}>
-            <IconPlus />
-            <ActionLabel>New allocation</ActionLabel>
-          </ContextMenuItem>
+          {active && (
+            <ContextMenuItem onClick={newAllocation}>
+              <IconPlus />
+              <ActionLabel>New allocation</ActionLabel>
+            </ContextMenuItem>
+          )}
           <ContextMenuItem onClick={edit}>
             <IconEdit />
             <ActionLabel>{active ? 'Edit' : 'Reactivate'}</ActionLabel>
@@ -72,12 +74,10 @@ const Budget = ({
     >
       {active && (
         <React.Fragment>
-          <StatsValueBig css={{ paddingTop: '24px' }} theme={theme}>
-            <ProgressBar
-              color={String(theme.accentEnd)}
-              value={tokensSpent.div(amount).toNumber()}
-            />
-          </StatsValueBig>
+          <ProgressBar
+            color={String(theme.accentEnd)}
+            value={tokensSpent.div(amount).toNumber()}
+          />
           <StatsValueSmall css={{
             color: theme.content,
             paddingTop: '8px',
@@ -106,17 +106,17 @@ Budget.propTypes = {
 
 const Wrapper = ({ children, name, amount, symbol, active, theme, menu }) => (
   <StyledCard theme={theme}>
-    <MenuContainer>
-      <ContextMenu>
-        {menu}
-      </ContextMenu>
-    </MenuContainer>
-    <CardTitle theme={theme}>{name}</CardTitle>
-    <StatsContainer>
-      <StyledStats>
+    <CardTop>
+      <MenuContainer>
+        <ContextMenu>
+          {menu}
+        </ContextMenu>
+      </MenuContainer>
+      <CardTitle theme={theme}>{name}</CardTitle>
+      <StatsContainer>
         {children}
-      </StyledStats>
-    </StatsContainer>
+      </StatsContainer>
+    </CardTop>
     <CardBottom theme={theme}>
       <Text>{displayCurrency(BigNumber(amount)) + ' ' + symbol + ' / PERIOD'}</Text>
       {active ? (
@@ -168,9 +168,16 @@ Status.propTypes = {
 const StyledCard = styled(Card)`
   box-shadow: ${({ theme }) => '0 2px 4px ' + theme.border};
   border: 0;
-  padding: 12px;
   height: 264px;
   width: auto;
+`
+
+const CardTop = styled.div`
+  padding: 12px;
+  height: 229px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 `
 
 const CardBottom = styled.div`
@@ -178,8 +185,6 @@ const CardBottom = styled.div`
   width: 100%;
   display: flex;
   justify-content: space-between;
-  position: absolute;
-  bottom: 0;
   font-size: 12px;
   line-height: 26px;
   vertical-align: middle;
@@ -200,10 +205,10 @@ const CardTitle = styled(Text.Block).attrs({
   size: 'large',
   weight: 'bold',
 })`
-  font-size: 26px;
+  height: 78px;
+  font-size: 24px;
   font-weight: 400;
-  margin-top: 10px;
-  margin-bottom: 5px;
+  margin: 20px 12px;
   text-align: center;
   color: ${({ theme }) => theme.content};
   display: block;
@@ -217,16 +222,8 @@ const CardTitle = styled(Text.Block).attrs({
 `
 
 const StatsContainer = styled.div`
-  display: flex;
-  flex-grow: 1;
-  justify-content: center;
-  align-content: stretch;
-`
-
-const StyledStats = styled.div`
-  display: inline-block;
   text-align: center;
-  flex-grow: 1;
+  padding: 12px;
 `
 
 const StatsValueBig = styled.div`

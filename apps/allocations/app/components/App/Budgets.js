@@ -84,7 +84,7 @@ const Budgets = () => {
     <>
       <StyledBudgets>
         {budgets.map(({ amount, active, id, name, remaining, token }) => (
-          <Budget
+          token && <Budget
             key={id}
             id={id}
             name={name}
