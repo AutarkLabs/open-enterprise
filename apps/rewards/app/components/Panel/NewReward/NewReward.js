@@ -55,7 +55,7 @@ tomorrow.setDate(tomorrow.getDate() + 1)
 
 const messages = {
   customTokenInvalid: () => 'Token address must be of a valid ERC20 compatible clonable token.',
-  meritTokenTransferable: () => 'Merit rewards must have a reference asset that is non-transferable.',
+  meritTokenTransferable: () => 'Merit rewards must have a reference token that is non-transferable.',
   amountOverBalance: () => 'Amount must be below the available balance.',
   dateStartAfterEnd: () => 'Start date must take place before the end date.',
   noDisbursements: (disbursement, displayUnit) => `Based on your selected parameters, there will be no disbursements, as your end date falls before the end of the first cycle. Please choose an end date that is at least ${disbursement} ${displayUnit} after the start date.`,
@@ -469,7 +469,7 @@ class NewRewardClass extends React.Component {
     <HorizontalContainer>
       <Field
         label="Start date"
-        hint={isMerit && <span>The <b>start date</b> for one-time merits defines the beginning of the review period in which newly accrued amounts of the reference asset will be determined.</span>}
+        hint={isMerit && <span>The <b>start date</b> for one-time merits defines the beginning of the review period in which newly accrued amounts of the reference token will be determined.</span>}
         css={`width: calc(50% - ${GU}px);`}
         required
       >
@@ -491,7 +491,7 @@ class NewRewardClass extends React.Component {
       </Field>
       <Field
         label="End date"
-        hint={isMerit && <span>The <b>end date</b> for one-time merits defines the end of the review period in which newly accrued amounts of the reference asset will be determined.</span>}
+        hint={isMerit && <span>The <b>end date</b> for one-time merits defines the end of the review period in which newly accrued amounts of the reference token will be determined.</span>}
         css={`width: calc(50% - ${GU}px);`}
         required
       >
@@ -668,8 +668,8 @@ class NewRewardClass extends React.Component {
           <Field
             required
             wide
-            label="Reference Asset"
-            hint={<span>The <b>reference asset</b> is the token that members will be required to hold in order to receive the reward. For example, if the reference asset is ANT, then any member that holds ANT at the reference date(s) will be eligible to receive the reward. The reference asset is not the token to be paid as reward amount.</span>}
+            label="Reference token"
+            hint={<span>The <b>reference token</b> is the token that members will be required to hold in order to receive the reward. For example, if the reference token is ANT, then any member that holds ANT at the reference date(s) will be eligible to receive the reward. The reference token is not the token to be paid as reward amount.</span>}
           >
             <DropDown
               name="referenceAsset"
@@ -705,7 +705,7 @@ class NewRewardClass extends React.Component {
           <Field
             required
             label="Type"
-            hint="Rewards can either be dividends or merits. Dividends are rewards that are distributed based on holding the reference asset at the reference date(s), and they can either be one-time or recurring. Merits can only be one-time, and are based on the newly accrued amount of a particular token over a specified period of time."
+            hint="Rewards can either be dividends or merits. Dividends are rewards that are distributed based on holding the reference token at the reference date(s), and they can either be one-time or recurring. Merits can only be one-time, and are based on the newly accrued amount of a particular token over a specified period of time."
           >
             <DropDown
               wide
@@ -768,7 +768,7 @@ class NewRewardClass extends React.Component {
         <GreyBox>
           <Title>{description}</Title>
           <SubTitle>{rewardType}</SubTitle>
-          <Heading>Reference Asset</Heading>
+          <Heading>Reference Token</Heading>
           <Content>
             {referenceAsset === OTHER ? (
               <IdentityBadge
@@ -808,8 +808,8 @@ class NewRewardClass extends React.Component {
         </GreyBox>
         <VerticalSpace />
         <Info>
-          {rewardType === ONE_TIME_MERIT ?  'Earning the reference asset between the start and end date'
-            : 'Holding the reference asset at the disbursement date'
+          {rewardType === ONE_TIME_MERIT ?  'Earning the reference token between the start and end date'
+            : 'Holding the reference token at the disbursement date'
             + (rewardType === 'RECURRING_DIVIDEND' ? 's' : '')
           }
 

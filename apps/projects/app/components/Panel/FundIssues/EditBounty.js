@@ -31,7 +31,7 @@ const Deadline = styled.div`
 const EditBounty = ({
   bounty,
   issue,
-  onBlur,
+  onFocus,
   tokens,
   updateBounty,
 }) => {
@@ -74,7 +74,7 @@ const EditBounty = ({
               <AmountInput
                 name="amount"
                 value={bounty.payout}
-                onBlur={onBlur}
+                onFocus={onFocus}
                 onChange={e => updateBounty({ payout: e.target.value })}
                 wide
               />
@@ -92,7 +92,7 @@ const EditBounty = ({
             <HoursInput
               name="hours"
               value={bounty.hours}
-              onBlur={onBlur}
+              onFocus={onFocus}
               onChange={e => updateBounty({ hours: e.target.value })}
               wide
             />
@@ -134,7 +134,7 @@ const EditBounty = ({
 EditBounty.propTypes = {
   bounty: PropTypes.object,
   issue: issueShape,
-  onBlur: PropTypes.func,
+  onFocus: PropTypes.func,
   tokens: PropTypes.array.isRequired,
   updateBounty: PropTypes.func.isRequired,
 }
