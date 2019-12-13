@@ -2,9 +2,10 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { useAragonApi } from '../../api-react'
-import { Bar, DropDown, GU, Tag } from '@aragon/ui'
+import { Bar, Button, DropDown, GU, IconPlus, Tag } from '@aragon/ui'
 
 import { Budget } from '../Card'
+import { usePanel } from '../../context/Panel'
 
 function AllBudgetsLabel() {
   const { appState: { budgets } } = useAragonApi()
@@ -33,6 +34,7 @@ const Budgets = () => {
   const { appState } = useAragonApi()
   const [ status, setStatus ] = React.useState(0)
   const budgets = appState.budgets.filter(statusFilters[status])
+  const { newBudget } = usePanel()
 
   return (
     <>
@@ -42,6 +44,14 @@ const Budgets = () => {
             selected={status}
             onChange={setStatus}
             items={statusOptions}
+          />
+        }
+        secondary={
+          <Button
+            icon={<IconPlus />}
+            label="New budget"
+            mode="secondary"
+            onClick={newBudget}
           />
         }
       />

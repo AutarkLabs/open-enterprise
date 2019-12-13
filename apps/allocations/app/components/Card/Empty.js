@@ -3,7 +3,6 @@ import styled from 'styled-components'
 import { useAragonApi } from '../../api-react'
 import { Button, EmptyStateCard, GU, LoadingRing } from '@aragon/ui'
 import emptyState from '../../assets/no-budgets.svg'
-import { NewBudget } from '../Panel'
 import { usePanel } from '../../context/Panel'
 
 const illustration = <img src={emptyState} alt="No budgets" height="160" />
@@ -17,14 +16,7 @@ const Wrapper = styled.div`
 
 export default function Empty() {
   const { appState: { isSyncing } } = useAragonApi()
-  const { setPanel } = usePanel()
-
-  const onNewBudget = () => {
-    setPanel({
-      content: NewBudget,
-      data: { heading: 'New budget' },
-    })
-  }
+  const { newBudget } = usePanel()
 
   return (
     <Wrapper>
@@ -49,7 +41,7 @@ export default function Empty() {
 
         illustration={illustration}
         action={
-          <Button onClick={onNewBudget}>New budget</Button>
+          <Button onClick={newBudget}>New budget</Button>
         }
       />
     </Wrapper>
