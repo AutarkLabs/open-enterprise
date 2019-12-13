@@ -24,11 +24,13 @@ MenuItem.propTypes = {
   panel: PropTypes.func.isRequired,
   caption: PropTypes.string.isRequired,
   panelParams: PropTypes.oneOfType([
-    PropTypes.object,
-    PropTypes.arrayOf(PropTypes.object)
+    issueShape,
+    PropTypes.arrayOf(issueShape)
   ]).isRequired,
   Icon: PropTypes.func.isRequired,
 }
+
+const pluralize = (word, number) => `${word}${number > 1 ? 's (' + number + ')' : ''}`
 
 const BountyContextMenu = ({ issue }) => {
   const pastDeadline = (new Date()) > (new Date(issue.deadline))
@@ -41,8 +43,6 @@ const BountyContextMenu = ({ issue }) => {
     reviewWork,
     submitWork,
   } = usePanelManagement()
-
-  const pluralize = (word, number) => `${word}${number > 1 ? 's (' + number + ')' : ''}`
 
   switch(workStatus) {
   case undefined: return (
@@ -90,7 +90,7 @@ const BountyContextMenu = ({ issue }) => {
         caption={pluralize('View work submission', issue.workSubmissions.length)}
         Icon={IconView}
       />
-      {openSubmission || (
+      {!openSubmission && (
         <MenuItem
           panel={reviewApplication}
           panelParams={issue}
@@ -108,7 +108,7 @@ const BountyContextMenu = ({ issue }) => {
         caption={pluralize('View work submission', issue.workSubmissions.length)}
         Icon={IconView}
       />
-      {openSubmission || (
+      {!openSubmission && (
         <MenuItem
           panel={reviewApplication}
           panelParams={issue}
