@@ -414,7 +414,10 @@ const FundIssues = ({ issues, mode }) => {
     }
 
     const issueHashArray =
-      await Promise.all(issuesArray.map(async issue => await api.datastore('add', issue).toPromise()))
+      await Promise.all(issuesArray.map(async issue => {
+        const val = new Blob([Buffer.from(JSON.stringify(issue))])
+        return await api.datastore('add', val).toPromise()
+      }))
 
     const ipfsAddresses = issueHashArray.join('')
     const repoIds = issuesArray.map(issue => toHex(issue.repoId))

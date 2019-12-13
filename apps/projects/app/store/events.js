@@ -165,7 +165,8 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
     )
     if (!issue) return state
 
-    const ipfsData = await app.datastore('cat', _data).toPromise()
+    const res = await app.datastore('cat', _data).toPromise()
+    const ipfsData = res.data
 
     // we only care about ActionPerformed when called in ReviewSubmission
     if (!ipfsData.fulfillmentId) return state

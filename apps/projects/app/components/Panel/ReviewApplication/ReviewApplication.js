@@ -52,7 +52,8 @@ const ReviewApplication = ({ issue, requestIndex }) => {
     const review = buildReturnData(approved)
     // new IPFS data is old data plus state returned from the panel
     const ipfsData = issue.requestsData[index]
-    const requestIPFSHash = await api.datastore('add', { ...ipfsData, review }).toPromise()
+    const val = new Blob([Buffer.from(JSON.stringify({ ...ipfsData, review }))])
+    const requestIPFSHash = await api.datastore('add', val).toPromise()
 
     reviewApplication(
       toHex(issue.repoId),

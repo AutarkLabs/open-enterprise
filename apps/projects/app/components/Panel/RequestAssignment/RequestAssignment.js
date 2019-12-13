@@ -46,7 +46,9 @@ const RequestAssignment = ({ issue }) => {
       user: githubCurrentUser,
       applicationDate: today.toISOString(),
     }
-    const hash = await api.datastore('add', data).toPromise()
+
+    const val = new Blob([Buffer.from(JSON.stringify(data))])
+    const hash = await api.datastore('add', val).toPromise()
     api.requestAssignment(toHex(issue.repoId), issue.number, hash).toPromise()
   }
 
