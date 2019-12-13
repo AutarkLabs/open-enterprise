@@ -28,7 +28,7 @@ import {
 } from '../PanelComponents'
 import workRatings from '../../../utils/work-ratings.js'
 
-const ReviewWork = ({ issue }) => {
+const ReviewWork = ({ issue, readOnly }) => {
   const githubCurrentUser = useGithubAuth()
   const {
     api: { reviewSubmission },
@@ -115,7 +115,7 @@ const ReviewWork = ({ issue }) => {
         <Text>{work.hours}</Text>
       </SubmissionDetails>
 
-      {('review' in work) ? (
+      {('review' in work) && (
         <React.Fragment>
           <FieldTitle>Submission Status</FieldTitle>
           <FieldText>
@@ -136,7 +136,8 @@ const ReviewWork = ({ issue }) => {
             </Text.Block>
           </FieldText>
         </React.Fragment>
-      ) : (
+      )}
+      {!readOnly && !work.review && (
         <React.Fragment>
           <FormField
             label="Quality Rating"
@@ -175,6 +176,9 @@ const ReviewWork = ({ issue }) => {
   )
 }
 
-ReviewWork.propTypes = issueShape
+ReviewWork.propTypes = {
+  issue: issueShape,
+  readOnly: PropTypes.bool.isRequired,
+}
 
 export default ReviewWork

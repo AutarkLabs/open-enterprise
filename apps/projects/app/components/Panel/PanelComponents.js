@@ -10,24 +10,24 @@ export const IssueTitleLink = ({ issue }) => {
   const theme = useTheme()
 
   return (
-    <Link
-      href={issue.url}
-      target="_blank"
-      css="text-decoration: none"
-    >
-      <IssueLinkRow>
-        <div css="margin-top: 2px">
-          <IconGitHub
-            color={`${theme.surfaceContentSecondary}`}
-            width="16px"
-            height="16px"
-          />
-        </div>
+    <IssueLinkRow>
+      <div css={`margin-top: ${.5 * GU}px`}>
+        <IconGitHub
+          color={`${theme.surfaceContentSecondary}`}
+          width="16px"
+          height="16px"
+        />
+      </div>
+      <Link
+        href={issue.url}
+        target="_blank"
+        style={{ textDecoration: 'none' }}
+      >
         <Text css="margin-left: 6px" color={`${theme.link}`}>
           {issue.repo} #{issue.number}
         </Text>
-      </IssueLinkRow>
-    </Link>
+      </Link>
+    </IssueLinkRow>
   )
 }
 IssueTitleLink.propTypes = issueShape

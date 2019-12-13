@@ -26,7 +26,7 @@ import {
   UserLink,
 } from '../PanelComponents'
 
-const ReviewApplication = ({ issue, requestIndex }) => {
+const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
   const githubCurrentUser = useGithubAuth()
   const {
     api: { reviewApplication },
@@ -124,7 +124,7 @@ const ReviewApplication = ({ issue, requestIndex }) => {
         </Estimations>
       </SubmissionDetails>
 
-      {('review' in request) ? (
+      {('review' in request) && (
         <React.Fragment>
           <FieldTitle>Application Status</FieldTitle>
 
@@ -137,7 +137,8 @@ const ReviewApplication = ({ issue, requestIndex }) => {
             {request.review.feedback.length ? request.review.feedback : 'No feedback was provided'}
           </Text.Block>
         </React.Fragment>
-      ) : (
+      )}
+      {!readOnly && !request.review && (
         <React.Fragment>
           <FormField
             label="Feedback"
@@ -164,6 +165,7 @@ const ReviewApplication = ({ issue, requestIndex }) => {
 ReviewApplication.propTypes = {
   issue: issueShape,
   requestIndex: PropTypes.number.isRequired,
+  readOnly: PropTypes.bool.isRequired,
 }
 
 const Estimations = styled.div`

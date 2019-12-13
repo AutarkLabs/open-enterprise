@@ -39,7 +39,7 @@ const BountyContextMenu = ({ issue }) => {
               </ActionLabel>
             </Item>
           )}
-          <Item onClick={() => reviewApplication(issue)}>
+          <Item onClick={() => reviewApplication({ issue })}>
             <IconView color={`${theme.surfaceContent}`} />
             <ActionLabel>
               View applications ({issue.requestsData.length})
@@ -50,13 +50,13 @@ const BountyContextMenu = ({ issue }) => {
       )}
       {workStatus === 'review-work' && (
         <React.Fragment>
-          <Item onClick={() => reviewWork(issue)}>
+          <Item onClick={() => reviewWork({ issue })}>
             <IconView color={`${theme.surfaceContent}`} />
             <ActionLabel>
               View work
             </ActionLabel>
           </Item>
-          <Item onClick={() => reviewApplication(issue)}>
+          <Item onClick={() => reviewApplication({ issue })}>
             <IconView color={`${theme.surfaceIcon}`} />
             <ActionLabel>
               View applications ({issue.requestsData.length})
@@ -88,7 +88,7 @@ const BountyContextMenu = ({ issue }) => {
               </ActionLabel>
             </Item>
           )}
-          <Item onClick={() => reviewApplication(issue)}>
+          <Item onClick={() => reviewApplication({ issue })}>
             <IconView color={`${theme.surfaceContent}`} />
             <ActionLabel>
               View applications ({issue.requestsData.length})
@@ -105,13 +105,13 @@ const BountyContextMenu = ({ issue }) => {
       )}
       {workStatus === 'fulfilled' && (
         <React.Fragment>
-          <Item onClick={() => reviewWork(issue)}>
+          <Item onClick={() => reviewWork({ issue })}>
             <IconView color={`${theme.surfaceIcon}`} />
             <ActionLabel>
               View work
             </ActionLabel>
           </Item>
-          <Item onClick={() => reviewApplication(issue)}>
+          <Item onClick={() => reviewApplication({ issue })}>
             <IconView color={`${theme.surfaceIcon}`} />
             <ActionLabel>
               View applications ({issue.requestsData.length})

@@ -41,7 +41,7 @@ function appStateReducer(state) {
   const budgetsBn = budgets
     ? budgets.map(budget => ({
       ...budget,
-
+      active: budget.hasBudget && Number(budget.amount) > 0,
       // get some extra info about the token
       token: getTokenFromAddress(budget.token, balances)
 
