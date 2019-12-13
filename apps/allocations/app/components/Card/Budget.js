@@ -3,75 +3,27 @@ import React from 'react'
 import styled from 'styled-components'
 import BigNumber from 'bignumber.js'
 import { displayCurrency } from '../../utils/helpers'
+import * as types from '../../utils/prop-types'
 
+import { usePath } from '../../api-react'
 import {
   Card,
-  ContextMenu,
-  ContextMenuItem,
   IconCheck,
   IconCross,
-  IconEdit,
-  IconPlus,
-  IconProhibited,
+  Link,
   ProgressBar,
   Text,
   useTheme,
 } from '@aragon/ui'
 
-const Budget = ({
-  id,
-  name,
-  amount,
-  token,
-  remaining = 0,
-  active,
-  onNewAllocation,
-  onEdit,
-  onDeactivate,
-}) => {
+const Budget = ({ budget }) => {
   const theme = useTheme()
-
-  const newAllocation = () => {
-    onNewAllocation(id)
-  }
-  const edit = () => {
-    onEdit(id)
-  }
-
-  const deactivate = () => {
-    onDeactivate(id)
-  }
+  const { active, amount, remaining, token } = budget
 
   const tokensSpent = BigNumber(amount).minus(remaining)
 
   return (
-    <Wrapper
-      name={name}
-      theme={theme}
-      amount={amount}
-      symbol={token.symbol}
-      active={active}
-      menu={
-        <React.Fragment>
-          {active && (
-            <ContextMenuItem onClick={newAllocation}>
-              <IconPlus />
-              <ActionLabel>New allocation</ActionLabel>
-            </ContextMenuItem>
-          )}
-          <ContextMenuItem onClick={edit}>
-            <IconEdit />
-            <ActionLabel>{active ? 'Edit' : 'Reactivate'}</ActionLabel>
-          </ContextMenuItem>
-          {active && (
-            <ContextMenuItem onClick={deactivate}>
-              <IconProhibited />
-              <ActionLabel>Deactivate</ActionLabel>
-            </ContextMenuItem>
-          )}
-        </React.Fragment>
-      }
-    >
+    <Wrapper budget={budget} theme={theme}>
       {active && (
         <React.Fragment>
           <ProgressBar
@@ -92,60 +44,48 @@ const Budget = ({
 }
 
 Budget.propTypes = {
-  id: PropTypes.string.isRequired,
-  name: PropTypes.string.isRequired,
-  amount: PropTypes.string.isRequired,
-  token: PropTypes.object.isRequired,
-  // TODO: fix remaining (should be required?)
-  remaining: PropTypes.string,
-  active: PropTypes.bool.isRequired,
-  onNewAllocation: PropTypes.func.isRequired,
-  onEdit: PropTypes.func.isRequired,
-  onDeactivate: PropTypes.func.isRequired,
+  budget: types.budget.isRequired,
 }
 
-const Wrapper = ({ children, name, amount, symbol, active, theme, menu }) => (
-  <StyledCard theme={theme}>
-    <CardTop>
-      <MenuContainer>
-        <ContextMenu>
-          {menu}
-        </ContextMenu>
-      </MenuContainer>
-      <CardTitle theme={theme}>{name}</CardTitle>
-      <StatsContainer>
-        {children}
-      </StatsContainer>
-    </CardTop>
-    <CardBottom theme={theme}>
-      <Text>{displayCurrency(BigNumber(amount)) + ' ' + symbol + ' / PERIOD'}</Text>
-      {active ? (
-        <Status
-          color={theme.positive}
-          icon={<IconCheck />}
-        >
-          ACTIVE
-        </Status>
-      ) : (
-        <Status
-          color={theme.negative}
-          icon={<IconCross />}
-        >
-          INACTIVE
-        </Status>
-      )}
-    </CardBottom>
-  </StyledCard>
-)
+const Wrapper = ({ budget, children, theme }) => {
+  const [ , requestPath ] = usePath()
+  const { active, amount, id, name, token } = budget
+  return (
+    <Link onClick={() => requestPath(`/budgets/${id}`)}>
+      <StyledCard theme={theme}>
+        <CardTop>
+          <CardTitle theme={theme}>{name}</CardTitle>
+          <StatsContainer>
+            {children}
+          </StatsContainer>
+        </CardTop>
+        <CardBottom theme={theme}>
+          <Text>{displayCurrency(BigNumber(amount)) + ' ' + token.symbol + ' / PERIOD'}</Text>
+          {active ? (
+            <Status
+              color={theme.positive}
+              icon={<IconCheck />}
+            >
+              ACTIVE
+            </Status>
+          ) : (
+            <Status
+              color={theme.negative}
+              icon={<IconCross />}
+            >
+              INACTIVE
+            </Status>
+          )}
+        </CardBottom>
+      </StyledCard>
+    </Link>
+  )
+}
 
 Wrapper.propTypes = {
+  budget: types.budget.isRequired,
   children: PropTypes.node.isRequired,
-  name: PropTypes.string.isRequired,
-  amount: PropTypes.string.isRequired,
-  symbol: PropTypes.string.isRequired,
-  active: PropTypes.bool.isRequired,
   theme: PropTypes.object.isRequired,
-  menu: PropTypes.node.isRequired,
 }
 
 const Status = ({ children, color, icon }) => (
@@ -168,8 +108,13 @@ Status.propTypes = {
 const StyledCard = styled(Card)`
   box-shadow: ${({ theme }) => '0 2px 4px ' + theme.border};
   border: 0;
-  height: 264px;
+  cursor: pointer;
+  height: 234px;
   width: auto;
+  :hover {
+    box-shadow: ${p => `0 2px 4px ${p.theme.border},
+    0 2px 8px ${p.theme.border}`}
+  }
 `
 
 const CardTop = styled.div`
@@ -197,10 +142,6 @@ const MenuContainer = styled.div`
   align-items: center;
 `
 
-const ActionLabel = styled.span`
-  margin-left: 15px;
-`
-
 const CardTitle = styled(Text.Block).attrs({
   size: 'large',
   weight: 'bold',
@@ -224,11 +165,6 @@ const CardTitle = styled(Text.Block).attrs({
 const StatsContainer = styled.div`
   text-align: center;
   padding: 12px;
-`
-
-const StatsValueBig = styled.div`
-  font-size: 16px;
-  color: ${({ theme }) => theme.contentSecondary};
 `
 
 const StatsValueSmall = styled.div`
