@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, Fragment } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { format, formatDistance } from 'date-fns'
@@ -10,6 +10,7 @@ const Header = styled.header`
   display: flex;
   justify-content: space-between;
   margin-bottom: 10px;
+  width: 100%;
 `
 
 const TimeAgo = styled.time.attrs(props => ({
@@ -23,11 +24,15 @@ TimeAgo.propTypes = {
   date: PropTypes.instanceOf(Date).isRequired,
 }
 
-const Top = ({ author, createdAt }) => {
+const Top = ({ author, createdAt, identity }) => {
   const created = new Date(Number(createdAt) * 1000)
   return (
     <Header>
-      <IdentityBadge entity={author} />
+      {identity && identity.name ? (
+        <IdentityBadge entity={author} customLabel={identity.name} />
+      ) : (
+        <IdentityBadge entity={author} />
+      )}
       <TimeAgo date={created} />
     </Header>
   )
@@ -112,17 +117,31 @@ const Bottom = ({ onDelete, onEdit }) => {
 }
 
 const Comment = ({
+  app,
   currentUser,
   comment: { author, id, text, createdAt, revisions, postCid },
   onDelete,
   onSave,
 }) => {
   const [editing, setEditing] = useState(false)
+  const [identity, setIdentity] = useState(null)
 
   const update = async updated => {
     await onSave({ id, text: updated.text, revisions, postCid })
     setEditing(false)
   }
+
+  useEffect(() => {
+    const resolveIdentity = async () => {
+      const addressIdentity = await app
+        .resolveAddressIdentity(author)
+        .toPromise()
+      if (addressIdentity) {
+        setIdentity(addressIdentity)
+      }
+    }
+    resolveIdentity()
+  }, [author])
 
   return (
     <CommentCard>
@@ -133,13 +152,13 @@ const Comment = ({
           onSave={update}
         />
       ) : (
-        <React.Fragment>
-          <Top author={author} createdAt={createdAt} />
+        <Fragment>
+          <Top author={author} identity={identity} createdAt={createdAt} />
           <Markdown content={text} />
           {author === currentUser && (
             <Bottom onDelete={onDelete} onEdit={() => setEditing(true)} />
           )}
-        </React.Fragment>
+        </Fragment>
       )}
     </CommentCard>
   )

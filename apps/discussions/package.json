@@ -3,17 +3,19 @@
   "version": "1.0.0",
   "description": "",
   "dependencies": {
+    "@babel/polyfill": "^7.2.5",
+    "ipfs-http-client": "^32.0.1",
+    "lodash.clonedeep": "^4.5.0",
+    "react-markdown": "^4.1.0",
+    "prop-types": "^15.7.2",
+    "styled-components": "4.1.3"
+  },
+  "peerDependencies": {
     "@aragon/api": "2.0.0-beta.8",
     "@aragon/api-react": "2.0.0-beta.6",
-    "@aragon/ui": "1.0.0-alpha.11",
-    "@babel/polyfill": "^7.2.5",
-    "prop-types": "^15.7.2",
+    "@aragon/ui": "^1.0.0",
     "react": "^16.8.6",
-    "react-dom": "^16.8.6",
-    "react-markdown": "^4.1.0",
-    "styled-components": "4.1.3",
-    "ipfs-http-client": "^32.0.1",
-    "lodash.clonedeep": "^4.5.0"
+    "react-dom": "^16.8.6"
   },
   "devDependencies": {
     "@babel/core": "^7.4.5",
@@ -50,10 +52,10 @@
     "start:app": "cd app && npm start && cd ..",
     "test": "cross-env TRUFFLE_TEST=true npm run ganache-cli:test",
     "compile": "aragon contracts compile",
-    "build": "npm run sync-assets && npm run build:app && npm run build:script",
+    "build": "npm run compile && npm run sync-assets && npm run build:app && npm run build:script",
     "build:app": "parcel build ./app/index.html -d dist/ --public-url \".\" --no-cache",
     "build:script": "parcel build ./app/script.js -d dist/ --no-cache",
-    "publish:cd": "../../shared/deployments/check-publish.sh",
+    "publish:cd": "yes | aragon apm publish major --files dist/ --environment continuous-deployment --apm.ipfs.rpc https://ipfs.autark.xyz:5001 --ipfs-check false --skip-confirmation true",
     "publish:http": "npm run build:script && yes | aragon apm publish major --files dist --http localhost:9999 --http-served-from ./dist --propagate-content false --skip-confirmation true",
     "publish:patch": "aragon apm publish patch",
     "publish:minor": "aragon apm publish minor",
@@ -62,7 +64,8 @@
     "lint": "solium --dir ./contracts",
     "lint:fix": "eslint . --fix && solium --dir ./contracts --fix",
     "coverage": "cross-env SOLIDITY_COVERAGE=true npm run ganache-cli:test",
-    "ganache-cli:test": "sh ./node_modules/@aragon/test-helpers/ganache-cli.sh"
+    "ganache-cli:test": "sh ./node_modules/@aragon/test-helpers/ganache-cli.sh",
+    "frontend": "npm run sync-assets && parcel app/index.html --port 9999"
   },
   "browserslist": [
     "last 2 Chrome versions"

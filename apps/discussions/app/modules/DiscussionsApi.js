@@ -1,3 +1,16 @@
+/*
+ * The DiscussionsApi is a mock-backend service that implements functionality
+ * for interacting with contextual discussions app.
+ *
+ * This backend system is meant to be replaceable - so we could swap
+ * in other backend services like mongoDB, orbitDB...etc
+ *
+ * Its two responsibilities are:
+ * (1) to manage discussion states (listening for updates, collecting info)
+ * and (2) to provide a gateway to interacting with discussions
+ *
+ */
+
 import cloneDeep from 'lodash.clonedeep'
 import { ipfs } from '../ipfs'
 
@@ -38,11 +51,20 @@ class Discussions {
   _pastEvents = () =>
     new Promise(resolve =>
       this.contract.pastEvents().subscribe(events => {
-        this.lastEventBlock = events[events.length - 1].blockNumber
-        resolve(events)
+        if (events.length > 0) {
+          this.lastEventBlock = events[events.length - 1].blockNumber
+          return resolve(events)
+        }
+        resolve([])
       })
     )
 
+  /*
+   * Here we're using hardcoded discussion ThreadIds to get around the
+   * fact that the forwarder API changes are not yet merged. We rely on
+   * the forwarder API to generate and organize discussion thread IDs across
+   * various apps
+   */
   _collectDiscussionThreadIds = () =>
     new Promise(resolve => {
       resolve(
@@ -154,6 +176,7 @@ class Discussions {
       // })
     })
 
+  // We only want events from the api that pertain to discussions
   _filterRelevantDiscussionEvents = (discussionThreadIds, discussionEvents) => {
     return discussionEvents.filter(
       ({ event, returnValues }) =>
@@ -161,6 +184,8 @@ class Discussions {
         discussionThreadIds.has(returnValues.discussionThreadId)
     )
   }
+
+  /* ~~~~~ STATE MANAGEMENT ~~~~~~~ */
 
   _handleHide = async (
     state,
@@ -236,6 +261,8 @@ class Discussions {
     return this._buildState(newState, events)
   }
 
+  /* ~~~~~~ FETCH AND LISTEN FOR INFORMATION ~~~~~~~ */
+
   collect = async () => {
     const relevantDiscussionThreads = await this._collectDiscussionThreadIds()
     const allDiscussionEvents = await this._pastEvents()
@@ -257,10 +284,14 @@ class Discussions {
   }
 
   listenForUpdates = callback =>
-    this.contract.events(this.lastEventBlock + 1).subscribe(async event => {
-      this.discussions = await this._buildState(this.discussions, [event])
-      callback(this.discussions)
-    })
+    this.contract
+      .events({ fromBlock: this.lastEventBlock + 1 })
+      .subscribe(async event => {
+        this.discussions = await this._buildState(this.discussions, [event])
+        callback(this.discussions)
+      })
+
+  /* ~~~~~ INTERACTIONS WITH THE DISCUSSIONS SMART CONTRACT ~~~~~~~ */
 
   post = async (text, discussionThreadId, ethereumAddress) => {
     const discussionPost = {
