@@ -4,7 +4,9 @@ import { useAragonApi } from '../../api-react'
 import {
   DropDown,
   Field,
+  GU,
   Info,
+  Text,
   TextInput,
   useTheme
 } from '@aragon/ui'
@@ -16,6 +18,9 @@ import { BigNumber } from 'bignumber.js'
 import { ETH_DECIMALS, MIN_AMOUNT } from '../../utils/constants'
 import CurrencyBox from '../Form/Field/CurrencyBox'
 import useSaveBudget from '../../hooks/useSaveBudget'
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000
+const DEFAULT_DURATION = 30 * MS_PER_DAY
 
 // TODO:: This should be votingTokens from account?
 const INITIAL_STATE = {
@@ -95,11 +100,15 @@ class NewBudget extends React.Component {
         disabled={name === '' || amount === '' || nameError || amountError}
         errors={
           <ErrorContainer>
-            { this.props.editingBudget.id && (
+            { this.props.editingBudget.id ? (
               <Info>
                 Please keep in mind that any changes to the budget amount may only be effectuated upon the starting date of the next accounting period.
               </Info>
-            ) }
+            ) : (
+              <Info>
+                Budgets represent a spending limit that is imposed upon an allocation category for the accounting period. Budgets do not hold any actual funds.
+              </Info>
+            )}
           </ErrorContainer>
         }
       >
@@ -139,7 +148,7 @@ class NewBudget extends React.Component {
                 onChange={this.handleSelectToken}
               />
             )}
-
+            <Duration />
           </InputGroup>
         </Field>
       </Form>
@@ -149,16 +158,48 @@ class NewBudget extends React.Component {
 
 const NewBudgetWrap = props => {
   const { appState: { tokens = [] } } = useAragonApi()
-  const theme = useTheme()
   const saveBudget = useSaveBudget()
 
   return (
     <NewBudget
       saveBudget={saveBudget}
       tokens={tokens}
-      theme={theme}
       {...props}
     />
+  )
+}
+
+const Duration = () => {
+  const { appState: { period } } = useAragonApi()
+  const theme = useTheme()
+  //Set duration to default, then calculate if 'period' is set
+  let duration = DEFAULT_DURATION
+  if(period) {
+    const { startDate, endDate } = period
+    duration = endDate - startDate + 1000
+  }
+
+  const days = Math.round(duration/MS_PER_DAY)
+  let string
+  if(days%7 === 0) {
+    const weeks = days/7
+    string = weeks === 1 ? 'week' : `${weeks} weeks`
+  } else {
+    string = days === 1 ? 'day' : `${days} days`
+  }
+
+  return (
+    <Text
+      css={`
+        white-space: nowrap;
+        line-height: 40px;
+        padding-left: ${2 * GU}px;
+        font-size: 16px;
+        color: ${theme.contentSecondary};
+      `}
+    >
+      every {string}
+    </Text>
   )
 }
 
