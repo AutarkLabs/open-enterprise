@@ -35,6 +35,13 @@ export function PanelProvider(props) {
     })
   }, [])
 
+  const newBudget = React.useCallback(() => {
+    setPanel({
+      content: NewBudget,
+      data: { heading: 'New budget' },
+    })
+  }, [])
+
   const editBudget = React.useCallback(budget => {
     setPanel({
       content: NewBudget,
@@ -46,7 +53,14 @@ export function PanelProvider(props) {
   }, [])
 
   const value = React.useMemo(() => {
-    return { panel, panelOpen, setPanel, newAllocation, editBudget }
+    return {
+      editBudget,
+      newAllocation,
+      newBudget,
+      panel,
+      panelOpen,
+      setPanel,
+    }
   }, [ panel, panelOpen ])
 
   return <PanelContext.Provider value={value} {...props} />
