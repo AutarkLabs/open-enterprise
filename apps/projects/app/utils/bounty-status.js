@@ -2,6 +2,7 @@ const BOUNTY_STATUS = {
   'not-funded': 'Issues without funding',
   'all-funded': 'Funded issues',
   'funded': 'Accepting applicants',
+  'open-submission-funded': 'Accepting work submissions',
   'review-applicants': 'Pending application review',
   'in-progress': 'Work in progress',
   'review-work': 'Work ready for review',

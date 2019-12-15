@@ -16,6 +16,7 @@ import { usePanelManagement } from '../../Panel'
 import { ipfsAdd } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
 import { issueShape } from '../../../utils/shapes.js'
+import { DetailHyperText } from '../../../../../../shared/ui'
 import {
   Avatar,
   FieldText,
@@ -108,9 +109,7 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
         </UserLink>
 
         <FieldTitle>Work Plan</FieldTitle>
-        <Text css={`display: block; margin-bottom: ${2 * GU}px`}>
-          {application.workplan}
-        </Text>
+        <DetailHyperText>{application.workplan}</DetailHyperText>
 
         <Estimations>
           <div>

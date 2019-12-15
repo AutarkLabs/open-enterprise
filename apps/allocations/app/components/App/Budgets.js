@@ -2,100 +2,62 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { useAragonApi } from '../../api-react'
-import { GU } from '@aragon/ui'
+import { Bar, Button, DropDown, GU, IconPlus, Tag } from '@aragon/ui'
 
-import { NewAllocation, NewBudget } from '../Panel'
 import { Budget } from '../Card'
 import { usePanel } from '../../context/Panel'
 
+function AllBudgetsLabel() {
+  const { appState: { budgets } } = useAragonApi()
+  return (
+    <div css="display: flex; align-items: center">
+      <span css={{ marginRight: GU }}>All budgets</span>
+      <Tag limitDigits={4} label={budgets.length} size="small" />
+    </div>
+  )
+}
+
+const statusOptions = [
+  <AllBudgetsLabel key="1" />,
+  'Active',
+  'Inactive',
+]
+
+// always make sure `token` is loaded correctly
+const statusFilters = [
+  budget => budget.token, // all
+  budget => budget.token && budget.active, // active
+  budget => budget.token && !budget.active, // inactive
+]
+
 const Budgets = () => {
-  const { api, appState } = useAragonApi()
-  const { budgets = [] } = appState
-  const { setPanel } = usePanel()
-
-  const saveBudget = ({ id, amount, name }) => {
-    api.setBudget(id, amount, name).toPromise()
-    setPanel(null)
-  }
-
-  const onSubmitAllocation = ({
-    addresses,
-    description,
-    budgetId,
-    period = 0,
-    balance,
-  }) => {
-    const emptyIntArray = new Array(addresses.length).fill(0)
-    api.setDistribution(
-      addresses,
-      emptyIntArray, // unused
-      emptyIntArray, // unused
-      '', // unused
-      description,
-      emptyIntArray, // unused
-      emptyIntArray, // unused
-      budgetId, // account or allocation id...budgetId
-      '1', // recurrences, 1 for now
-      Math.floor(new Date().getTime()/1000), // startTime, now for now
-      period,
-      balance, // amount
-    ).toPromise()
-    setPanel(null)
-  }
-
-  const onNewAllocation = budgetId => {
-    const { balances } = appState
-    setPanel({
-      content: NewAllocation,
-      data: {
-        budgetId,
-        heading: 'New allocation',
-        onSubmitAllocation,
-        budgets,
-        balances,
-      },
-    })
-  }
-
-  const onEdit = id => {
-    const editingBudget = budgets.find(budget => budget.id === id)
-    setPanel({
-      content: NewBudget,
-      data: {
-        heading: editingBudget.active ? 'Edit budget' : 'Reactivate budget',
-        saveBudget,
-        editingBudget,
-      },
-    })
-  }
-
-  const onDeactivate = id => {
-    const thisBudget = budgets.find(budget => budget.id === id)
-    if(thisBudget){
-      saveBudget({
-        id,
-        amount: 0,
-        name: thisBudget.name
-      })
-    }
-  }
+  const { appState } = useAragonApi()
+  const [ status, setStatus ] = React.useState(0)
+  const budgets = appState.budgets.filter(statusFilters[status])
+  const { newBudget } = usePanel()
 
   return (
     <>
-      <StyledBudgets>
-        {budgets.map(({ amount, active, id, name, remaining, token }) => (
-          token && <Budget
-            key={id}
-            id={id}
-            name={name}
-            amount={amount}
-            token={token}
-            remaining={remaining}
-            active={active}
-            onNewAllocation={onNewAllocation}
-            onEdit={onEdit}
-            onDeactivate={onDeactivate}
+      <Bar
+        primary={
+          <DropDown
+            selected={status}
+            onChange={setStatus}
+            items={statusOptions}
           />
+        }
+        secondary={
+          <Button
+            icon={<IconPlus />}
+            label="New budget"
+            mode="secondary"
+            onClick={newBudget}
+          />
+        }
+      />
+      <StyledBudgets>
+        {budgets.map(budget => (
+          <Budget key={budget.id} budget={budget} />
         ))}
       </StyledBudgets>
     </>
